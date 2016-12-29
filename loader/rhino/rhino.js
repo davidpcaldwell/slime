@@ -76,8 +76,13 @@
 		}
 
 		var getNamedJavaClass = function(name) {
+			//	TODO	could this be $rhino.getClasspath().getClass(name) ?
 			return Packages.org.mozilla.javascript.Context.getCurrentContext().getApplicationClassLoader().loadClass(name);
 		};
+
+		this.getJavaClass = function(name) {
+			return Packages[name];
+		}
 
 		this.toNativeJavaClass = function(javaclass) {
 			var className = getJavaClassName(javaclass);
@@ -88,8 +93,6 @@
 		this.isNativeJavaObject = function(object) {
 			return String(object.getClass) == "function getClass() {/*\njava.lang.Class getClass()\n*/}\n";
 		};
-
-		this.getNamedJavaClass = getNamedJavaClass;
 
 		this.test = {};
 	};

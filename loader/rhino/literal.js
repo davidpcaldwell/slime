@@ -69,8 +69,8 @@
 	})(loader.mime);
 
 	loader.java = loader.file({ name: "rhino/java.js", string: String($javahost.getLoaderCode("rhino/java.js")) }, {
-		$rhino: loader,
-		engine: $bridge
+		engine: $bridge,
+		classpath: $javahost.getClasspath()
 	});
 	loader.io = loader.file({ name: "rhino/io.js", string: String($javahost.getLoaderCode("rhino/io.js")) }, {
 		_streams: _streams,

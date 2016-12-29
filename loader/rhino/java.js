@@ -11,15 +11,6 @@
 //	Contributor(s):
 //	END LICENSE
 
-var liveconnect = {
-	getJavaPackagesReference: function(name) {
-		//	TODO	Rhino version was:
-		//			return Packages[name];
-		//			... but Nashorn version was different; would Rhino version work for both?
-		return eval("Packages." + name);
-	}
-}
-
 var javaLangObjectArrayClass;
 
 var isJavaObjectArray = function(v) {
@@ -30,12 +21,10 @@ var isJavaObjectArray = function(v) {
 
 $exports.toNativeJavaClass = $context.engine.toNativeJavaClass;
 
-$exports.test = $context.engine.test;
-
 $exports.getClass = function(name) {
 	$api.Function.argument.isString({ index: 0, name: "name" }).apply(this,arguments);
-	if ($context.$rhino.classpath.getClass(name)) {
-		return liveconnect.getJavaPackagesReference(name);
+	if ($context.classpath.getClass(name)) {
+		return $context.engine.getJavaClass(name);
 	}
 	return null;
 };
@@ -55,17 +44,12 @@ $exports.isJavaObject = isJavaObject;
 
 //	Used by io.js
 $exports.isJavaType = function(javaclass) {
-	var $isJavaType = function isJavaType(javaclass,object) {
+	if (arguments.length != 1) throw new Error("isJavaType takes one argument.");
+	return function isSpecificJavaType(object) {
 		if (!isJavaObject(object)) return false;
 		var loaded = $context.engine.toNativeJavaClass(javaclass);
 		return loaded.isInstance(object);
-	};
-
-	if (arguments.length == 2) {
-		warning("WARNING: Use of deprecated 2-argument form of isJavaType.");
-		return $isJavaType(javaclass,arguments[1]);
-	}
-	return function(object) {
-		return $isJavaType(javaclass,object);
 	}
 };
+
+$exports.test = $context.engine.test;

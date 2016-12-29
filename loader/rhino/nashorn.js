@@ -203,16 +203,16 @@ load("nashorn:mozilla_compat.js");
 		};
 
 		var $bridge = new function() {
+			this.getJavaClass = function(name) {
+				return Java.type(name);
+			};
+
 			this.toNativeJavaClass = function(javaclass) {
 				return javaclass.class;
 			};
 
 			this.isNativeJavaObject = function(object) {
 				return typeof(object.getClass) == "function" && object.getClass() == Java.type(object.getClass().getName()).class;
-			};
-
-			this.getNamedJavaClass = function(name) {
-				return Java.type(name).class;
 			};
 
 			this.test = {
