@@ -11,7 +11,9 @@
 //	Contributor(s):
 //	END LICENSE
 
-var getNamedJavaClass = $context.liveconnect.getNamedJavaClass;
+for (var x in $context.bridge) {
+	$exports[x] = $context.bridge[x];
+}
 
 for (var x in $context.liveconnect) {
 	$exports[x] = $context.liveconnect[x];
@@ -20,7 +22,7 @@ for (var x in $context.liveconnect) {
 $exports.getClass = function(name) {
 	$api.Function.argument.isString({ index: 0, name: "name" }).apply(this,arguments);
 	if ($context.$rhino.classpath.getClass(name)) {
-		return $context.$rhino.java.getJavaPackagesReference(name);
+		return $context.liveconnect.getJavaPackagesReference(name);
 	}
 	return null;
 };
@@ -38,6 +40,7 @@ var isJavaObject = function(object) {
 }
 $exports.isJavaObject = isJavaObject;
 
+//	Used by io.js
 $exports.isJavaType = function(javaclass) {
 	var getJavaClassName = function(javaclass) {
 		var toString = "" + javaclass;
@@ -52,7 +55,7 @@ $exports.isJavaType = function(javaclass) {
 		var className = getJavaClassName(javaclass);
 		if (className == null) throw new TypeError("Not a class: " + javaclass);
 		if (!isJavaObject(object)) return false;
-		var loaded = getNamedJavaClass(className);
+		var loaded = $context.bridge.getNamedJavaClass(className);
 		return loaded.isInstance(object);
 	};
 
@@ -64,4 +67,3 @@ $exports.isJavaType = function(javaclass) {
 		return $isJavaType(javaclass,object);
 	}
 };
-$exports.isJavaType.getNamedJavaClass = getNamedJavaClass;

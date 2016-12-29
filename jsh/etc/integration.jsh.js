@@ -166,7 +166,7 @@ if (CATALINA_HOME) {
 	scenario.part("shell", {
 		parts: {}
 	});
-	
+
 	ScriptVerifier({
 		parent: scenario.parts.shell,
 		path: "jsh.shell/echo.jsh.js",
@@ -175,7 +175,7 @@ if (CATALINA_HOME) {
 			verify(output)[0].is("true");
 		}
 	});
-	
+
 	ScriptVerifier({
 		parent: scenario.parts.shell,
 		path: "jsh.shell/properties.jsh.js",
@@ -184,7 +184,7 @@ if (CATALINA_HOME) {
 			verify(output)[0].is("Passed.");
 		}
 	});
-	
+
 
 	//	testCommandOutput("jsh.shell/stdio.1.jsh.js", function(options) {
 	//		return options.output == "Hello, World!" && options.err == "Hello, tty!";
@@ -198,7 +198,7 @@ if (CATALINA_HOME) {
 			verify(this).stdio.error.is("Hello, tty!");
 		}
 	});
-	
+
 	(function() {
 		var input_abcdefghij = "ABCDEFGHIJ";
 		ScriptVerifier({
@@ -226,7 +226,7 @@ if (CATALINA_HOME) {
 			verify(this).status.is(0);
 		}
 	});
-	
+
 	ScriptVerifier({
 		parent: scenario.parts.shell,
 		path: "jsh.shell/jsh.shell.jsh.jsh.js",

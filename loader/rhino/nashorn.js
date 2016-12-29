@@ -202,29 +202,35 @@ load("nashorn:mozilla_compat.js");
 			//	TODO	MetaObject?
 		};
 
-		var liveconnect = new function() {
+		var $bridge = new function() {
 			this.isJavaObjectArray = function(object) {
 				return (Java.type("java.lang.Object[]").class.isInstance(object));
 			};
+
 			this.isJavaInstance = function(object) {
 				return typeof(object.getClass) == "function" && object.getClass() == Java.type(object.getClass().getName()).class;
-			}
+			};
+
 			this.getNamedJavaClass = function(name) {
 				return Java.type(name).class;
-			}
-			this.getJavaPackagesReference = function(name) {
-				return eval("Packages." + name);
-			}
+			};
+
 			this.Array = function(JavaClass,length) {
 				return Packages.java.lang.reflect.Array.newInstance(JavaClass.class,length);
-			}
+			};
 
 			this.test = {
 				HAS_NASHORN_ERROR_HACK: hasNashornErrorHack
 			}
+		}
+
+		var liveconnect = new function() {
+			this.getJavaPackagesReference = function(name) {
+				return eval("Packages." + name);
+			}
 		};
 
-		var rv = $javahost.script("rhino/literal.js", $getLoaderCode("rhino/literal.js"), toScope({ $javahost: $javahost, liveconnect: liveconnect }), null);
+		var rv = $javahost.script("rhino/literal.js", $getLoaderCode("rhino/literal.js"), toScope({ $javahost: $javahost, $bridge: $bridge, $liveconnect: liveconnect }), null);
 
 		return rv;
 	}

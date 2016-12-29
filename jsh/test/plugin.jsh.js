@@ -194,7 +194,7 @@ plugin({
 		jsh.test.mock.Internet = function(o) {
 			if (!o) o = {};
 			var tomcat = new jsh.httpd.Tomcat({});
-			
+
 			var handlers = [];
 
 			tomcat.map({
@@ -226,13 +226,13 @@ plugin({
 			this.add = function(handler) {
 				handlers.push(handler);
 			}
-			
+
 			this.start = function() {
 				tomcat.start();
 			}
 
 			this.port = tomcat.port;
-			
+
 			this.client = new jsh.http.Client({
 				proxy: {
 					http: {
@@ -241,7 +241,7 @@ plugin({
 					}
 				}
 			});
-			
+
 			this.stop = function() {
 				tomcat.stop();
 			};
