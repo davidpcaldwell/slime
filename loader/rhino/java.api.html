@@ -40,6 +40,10 @@ END LICENSE
 			<script type="application/x.jsapi#tests">
 				verify(api).is.type("object");
 				verify(api).java.is.type("object");
+
+				var array = new api.java.Array(Packages.java.lang.Number,3);
+				verify(array).evaluate(function() { return this.length; }).is(3);
+				verify(array).evaluate(function() { return api.java.isJavaObject(array); }).is(true);
 			</script>
 		</ul>
 	</div>

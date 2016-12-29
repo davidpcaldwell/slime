@@ -28,7 +28,10 @@ var isJavaObjectArray = function(v) {
 	return javaLangObjectArrayClass.isInstance(v);
 };
 
-$exports.Array = $context.engine.Array;
+$exports.Array = function(javaclass,length) {
+	return Packages.java.lang.reflect.Array.newInstance($context.engine.toNativeJavaClass(javaclass),length);
+};
+
 $exports.test = $context.engine.test;
 
 $exports.getClass = function(name) {

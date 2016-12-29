@@ -91,10 +91,6 @@
 
 		this.getNamedJavaClass = getNamedJavaClass;
 
-		this.Array = function(JavaClass,length) {
-			return Packages.java.lang.reflect.Array.newInstance(JavaClass,length);
-		};
-
 		this.test = {};
 	};
 

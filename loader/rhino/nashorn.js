@@ -219,10 +219,6 @@ load("nashorn:mozilla_compat.js");
 				return Java.type(name).class;
 			};
 
-			this.Array = function(JavaClass,length) {
-				return Packages.java.lang.reflect.Array.newInstance(JavaClass.class,length);
-			};
-
 			this.test = {
 				HAS_NASHORN_ERROR_HACK: hasNashornErrorHack
 			}
