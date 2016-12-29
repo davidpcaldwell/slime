@@ -66,18 +66,30 @@
 	};
 
 	var $bridge = new function() {
-		this.getJavaLangObjectArrayClass = function(object) {
-			//	TODO	would this work with Nashorn?
-			return Packages.java.lang.reflect.Array.newInstance(Packages.java.lang.Object, 0).getClass();
+		var getJavaClassName = function(javaclass) {
+			var toString = "" + javaclass;
+			if (/\[JavaClass /.test(toString)) {
+				return toString.substring("[JavaClass ".length, toString.length-1);
+			} else {
+				return null;
+			}
+		}
+
+		var getNamedJavaClass = function(name) {
+			return Packages.org.mozilla.javascript.Context.getCurrentContext().getApplicationClassLoader().loadClass(name);
+		};
+
+		this.toNativeJavaClass = function(javaclass) {
+			var className = getJavaClassName(javaclass);
+			if (className == null) throw new TypeError("Not a class: " + javaclass);
+			return getNamedJavaClass(className);
 		};
 
 		this.isNativeJavaObject = function(object) {
 			return String(object.getClass) == "function getClass() {/*\njava.lang.Class getClass()\n*/}\n";
 		};
 
-		this.getNamedJavaClass = function(name) {
-			return Packages.org.mozilla.javascript.Context.getCurrentContext().getApplicationClassLoader().loadClass(name);
-		};
+		this.getNamedJavaClass = getNamedJavaClass;
 
 		this.Array = function(JavaClass,length) {
 			return Packages.java.lang.reflect.Array.newInstance(JavaClass,length);

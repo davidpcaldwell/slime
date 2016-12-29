@@ -20,9 +20,13 @@ var liveconnect = {
 	}
 }
 
+var javaLangObjectArrayClass;
+
 var isJavaObjectArray = function(v) {
-	return $context.engine.getJavaLangObjectArrayClass().isInstance(v);
-}
+	//	TODO	In Nashorn, this could be: Java.type("java.lang.Object[]").class;
+	if (!javaLangObjectArrayClass) javaLangObjectArrayClass = Packages.java.lang.reflect.Array.newInstance($context.engine.toNativeJavaClass(Packages.java.lang.Object), 0).getClass();
+	return javaLangObjectArrayClass.isInstance(v);
+};
 
 $exports.getNamedJavaClass = $context.engine.getNamedJavaClass;
 $exports.Array = $context.engine.Array;
@@ -51,20 +55,9 @@ $exports.isJavaObject = isJavaObject;
 
 //	Used by io.js
 $exports.isJavaType = function(javaclass) {
-	var getJavaClassName = function(javaclass) {
-		var toString = "" + javaclass;
-		if (/\[JavaClass /.test(toString)) {
-			return toString.substring("[JavaClass ".length, toString.length-1);
-		} else {
-			return null;
-		}
-	}
-
 	var $isJavaType = function isJavaType(javaclass,object) {
-		var className = getJavaClassName(javaclass);
-		if (className == null) throw new TypeError("Not a class: " + javaclass);
 		if (!isJavaObject(object)) return false;
-		var loaded = $context.engine.getNamedJavaClass(className);
+		var loaded = $context.engine.toNativeJavaClass(javaclass);
 		return loaded.isInstance(object);
 	};
 
