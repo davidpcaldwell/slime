@@ -66,12 +66,12 @@
 	};
 
 	var $bridge = new function() {
-		this.isJavaObjectArray = function(object) {
+		this.getJavaLangObjectArrayClass = function(object) {
 			//	TODO	would this work with Nashorn?
-			return ( Packages.java.lang.reflect.Array.newInstance(Packages.java.lang.Object, 0).getClass().isInstance(object) );
+			return Packages.java.lang.reflect.Array.newInstance(Packages.java.lang.Object, 0).getClass();
 		};
 
-		this.isJavaInstance = function(object) {
+		this.isNativeJavaObject = function(object) {
 			return String(object.getClass) == "function getClass() {/*\njava.lang.Class getClass()\n*/}\n";
 		};
 
@@ -86,14 +86,7 @@
 		this.test = {};
 	};
 
-	//	TODO	can this be merged with Nashorn version?
-	var liveconnect = new function() {
-		this.getJavaPackagesReference = function(name) {
-			return Packages[name];
-		}
-	};
-
-	var rv = $rhino.script("rhino/literal.js", $loader.getLoaderCode("rhino/literal.js"), { $javahost: $javahost, $bridge: $bridge, $liveconnect: liveconnect }, null);
+	var rv = $rhino.script("rhino/literal.js", $loader.getLoaderCode("rhino/literal.js"), { $javahost: $javahost, $bridge: $bridge }, null);
 
 	rv.getDebugger = function() {
 		return $rhino.getDebugger();

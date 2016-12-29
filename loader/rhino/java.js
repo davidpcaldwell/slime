@@ -11,18 +11,27 @@
 //	Contributor(s):
 //	END LICENSE
 
-for (var x in $context.bridge) {
-	$exports[x] = $context.bridge[x];
+var liveconnect = {
+	getJavaPackagesReference: function(name) {
+		//	TODO	Rhino version was:
+		//			return Packages[name];
+		//			... but Nashorn version was different; would Rhino version work for both?
+		return eval("Packages." + name);
+	}
 }
 
-for (var x in $context.liveconnect) {
-	$exports[x] = $context.liveconnect[x];
+var isJavaObjectArray = function(v) {
+	return $context.engine.getJavaLangObjectArrayClass().isInstance(v);
 }
+
+$exports.getNamedJavaClass = $context.engine.getNamedJavaClass;
+$exports.Array = $context.engine.Array;
+$exports.test = $context.engine.test;
 
 $exports.getClass = function(name) {
 	$api.Function.argument.isString({ index: 0, name: "name" }).apply(this,arguments);
 	if ($context.$rhino.classpath.getClass(name)) {
-		return $context.liveconnect.getJavaPackagesReference(name);
+		return liveconnect.getJavaPackagesReference(name);
 	}
 	return null;
 };
@@ -34,8 +43,8 @@ var isJavaObject = function(object) {
 	if (typeof(object) == "boolean") return false;
 	if (object == null) return false;
 	//	TODO	Is the next line superfluous now?
-	if ($context.$rhino.java.isJavaObjectArray(object)) return true;
-	if ($context.$rhino.java.isJavaInstance(object)) return true;
+	if (isJavaObjectArray(object)) return true;
+	if ($context.engine.isNativeJavaObject(object)) return true;
 	return false;
 }
 $exports.isJavaObject = isJavaObject;
@@ -55,7 +64,7 @@ $exports.isJavaType = function(javaclass) {
 		var className = getJavaClassName(javaclass);
 		if (className == null) throw new TypeError("Not a class: " + javaclass);
 		if (!isJavaObject(object)) return false;
-		var loaded = $context.bridge.getNamedJavaClass(className);
+		var loaded = $context.engine.getNamedJavaClass(className);
 		return loaded.isInstance(object);
 	};
 

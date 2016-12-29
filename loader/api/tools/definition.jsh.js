@@ -17,6 +17,11 @@ var parameters = jsh.script.getopts({
 	}
 });
 
+if (!parameters.options.to) {
+	jsh.shell.console("Usage: " + jsh.script.file + " -to <destination-file>");
+	jsh.shell.exit(1);
+}
+
 var document = new jsh.document.Document({
 	string: jsh.script.file.parent.parent.getFile("api.template.html").read(String)
 });

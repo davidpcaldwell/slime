@@ -203,11 +203,11 @@ load("nashorn:mozilla_compat.js");
 		};
 
 		var $bridge = new function() {
-			this.isJavaObjectArray = function(object) {
-				return (Java.type("java.lang.Object[]").class.isInstance(object));
+			this.getJavaLangObjectArrayClass = function(object) {
+				return Java.type("java.lang.Object[]").class;
 			};
 
-			this.isJavaInstance = function(object) {
+			this.isNativeJavaObject = function(object) {
 				return typeof(object.getClass) == "function" && object.getClass() == Java.type(object.getClass().getName()).class;
 			};
 
@@ -224,13 +224,7 @@ load("nashorn:mozilla_compat.js");
 			}
 		}
 
-		var liveconnect = new function() {
-			this.getJavaPackagesReference = function(name) {
-				return eval("Packages." + name);
-			}
-		};
-
-		var rv = $javahost.script("rhino/literal.js", $getLoaderCode("rhino/literal.js"), toScope({ $javahost: $javahost, $bridge: $bridge, $liveconnect: liveconnect }), null);
+		var rv = $javahost.script("rhino/literal.js", $getLoaderCode("rhino/literal.js"), toScope({ $javahost: $javahost, $bridge: $bridge }), null);
 
 		return rv;
 	}
