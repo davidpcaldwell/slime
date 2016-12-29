@@ -207,10 +207,6 @@ load("nashorn:mozilla_compat.js");
 				return javaclass.class;
 			};
 
-			this.getJavaLangObjectArrayClass = function(object) {
-				return Java.type("java.lang.Object[]").class;
-			};
-
 			this.isNativeJavaObject = function(object) {
 				return typeof(object.getClass) == "function" && object.getClass() == Java.type(object.getClass().getName()).class;
 			};

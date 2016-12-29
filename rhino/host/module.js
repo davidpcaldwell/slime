@@ -236,7 +236,7 @@ $api.experimental($exports,"isJavaType");
 $exports.Array = new function() {
 	this.create = function(p) {
 		var type = (p.type) ? p.type : Packages.java.lang.Object;
-		var rv = $context.$java.Array(type,p.array.length);
+		var rv = Packages.java.lang.reflect.Array.newInstance($context.$rhino.java.toNativeJavaClass(type),p.array.length);
 		for (var i=0; i<p.array.length; i++) {
 			rv[i] = p.array[i];
 		}
@@ -278,7 +278,7 @@ $exports.toJsArray = $api.deprecate(toJsArray);
 //	TODO	at least implement this in terms of $exports.Array.create
 var toJavaArray = function(jsArray,javaclass,adapter) {
 	if (!adapter) adapter = function(x) { return x; }
-	var rv = new $context.$rhino.java.Array(javaclass,jsArray.length);
+	var rv = Packages.java.lang.reflect.Array.newInstance($context.$rhino.java.toNativeJavaClass(javaclass),jsArray.length);
 	for (var i=0; i<jsArray.length; i++) {
 		rv[i] = adapter(jsArray[i]);
 	}
