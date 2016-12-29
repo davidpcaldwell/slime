@@ -230,8 +230,6 @@ var experimental = function(name) {
 	$api.experimental($exports, name);
 };
 
-var getNamedJavaClass = $context.$rhino.java.getNamedJavaClass;
-
 $exports.isJavaType = $context.$rhino.java.isJavaType;
 $api.experimental($exports,"isJavaType");
 
