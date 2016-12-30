@@ -36,12 +36,121 @@ END LICENSE
 	</div>
 	<div>
 		<h1>Exports</h1>
-		<ul jsapi:id="exports">
-			<script type="application/x.jsapi#tests">
-				verify(api).is.type("object");
-				verify(api).java.is.type("object");
-			</script>
-		</ul>
+		<div jsapi:id="exports">
+			<ul>
+				<script type="application/x.jsapi#initialize"><![CDATA[
+					scope.isRhino = Boolean(typeof(Packages.org.mozilla.javascript.Context) == "function"
+						&& (Packages.org.mozilla.javascript.Context.getCurrentContext() != null));
+				]]></script>
+				<script type="application/x.jsapi#tests">
+					verify(api).is.type("object");
+					verify(api).java.is.type("object");
+				</script>
+				<li class="function">
+					<div class="name">toNativeClass</div>
+					<span>__DESCRIPTION__</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+							<li class="value">
+								<span class="type">JavaClass</span>
+								<span>A JavaClass object.</span>
+							</li>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type"><code>Packages.java.lang.Class</code></span>
+						<span>The native Java class corresponding to the given class.</span>
+					</div>
+					<script type="application/x.jsapi#tests">
+						var Object = api.java.toNativeClass(Packages.java.lang.Object);
+						verify(Object).is.type("object");
+						verify(Object).evaluate(function() { return String(this.getName()); }).is("java.lang.Object");
+						verify(Object).evaluate(function() { return String(this.getSimpleName()); }).is("Object");
+					</script>
+				</li>
+				<li class="function" jsapi:id="getClass">
+					<div class="name">getClass</div>
+					<span>
+						Returns a Java class given its name. Note that the name expected is the VM-level class name, not the
+						source-level class name. So for inner class <code>Baz</code> of class <code>foo.Bar</code>, the argument given
+						should be <code>"foo.Bar$Baz"</code>.
+					</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+							<li class="value">
+								<span class="type">string</span>
+								<span>The name of a Java class.</span>
+							</li>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type">JavaClass</span>
+						<span>
+							The JavaClass representing the Java class with the given name, or <code>null</code> if no such class
+							exists.
+						</span>
+					</div>
+					<script type="application/x.jsapi#tests">
+						var ObjectType = api.java.getClass("java.lang.Object");
+						verify(ObjectType).is.type("function");
+						var Object = api.java.toNativeClass(ObjectType);
+						verify(Object).is.type("object");
+						verify(Object).evaluate(function() { return String(this.getName()); }).is("java.lang.Object");
+						verify(Object).evaluate(function() { return String(this.getSimpleName()); }).is("Object");
+
+
+						var Foo = api.java.getClass("foo.bar.Baz");
+						verify(Foo).is(null);
+
+						verify(api).java.getClass("inonit.script.runtime.io.Streams").is.type("function");
+						verify(api).java.getClass("inonit.script.runtime.io.Streams$Null").is.type("function");
+						verify(api).java.evaluate(function() { return String(this.getClass("inonit.script.runtime.io.Streams$Null")); }).is("[JavaClass inonit.script.runtime.io.Streams$Null]");
+						verify(api).java.getClass("inonit.script.runtime.io.Streams.Null").is.type("null");
+					</script>
+				</li>
+				<li class="function" jsapi:id="isJavaObject">
+					<div class="name">isJavaObject</div>
+					<span>A method that can be used to determine whether a given value is a native Java host object.</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+							<li class="value">
+								<span class="type">(any)</span>
+								<span>A value.</span>
+							</li>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type">boolean</span>
+						<span><code>true</code> if the given value is a native Java object.</span>
+						<!--	TODO	What about JavaPackage? JavaClass?	-->
+					</div>
+					<script type="application/x.jsapi#tests">
+						verify(api).java.isJavaObject(Packages.java.lang.Runtime.getRuntime()).is(true);
+						verify(api).java.isJavaObject(new Packages.java.lang.Object()).is(true);
+						verify(api).java.isJavaObject(Packages.java.lang.Character.UnicodeBlock.GREEK).is(true);
+						verify(api).java.isJavaObject(Packages.java.lang.reflect.Array.newInstance(api.java.toNativeClass(Packages.java.lang.Object),0)).is(true);
+
+						verify(api).java.isJavaObject(void(0)).is(false);
+						verify(api).java.isJavaObject(null).is(false);
+						verify(api).java.isJavaObject(false).is(false);
+						verify(api).java.isJavaObject(1).is(false);
+						verify(api).java.isJavaObject(1.0).is(false);
+						verify(api).java.isJavaObject("foo").is(false);
+						verify(api).java.isJavaObject({}).is(false);
+
+						verify(api).java.isJavaObject(new Packages.java.lang.String("hello world")).is(isRhino);
+						verify(api).java.isJavaObject(new Packages.java.lang.Integer(4)).is(isRhino);
+						verify(api).java.isJavaObject(new Packages.java.lang.Boolean(true)).is(isRhino);
+					</script>
+				</li>
+			</ul>
+		</div>
 	</div>
 </body>
 </html>

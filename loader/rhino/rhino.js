@@ -84,7 +84,7 @@
 			return Packages[name];
 		}
 
-		this.toNativeJavaClass = function(javaclass) {
+		this.toNativeClass = function(javaclass) {
 			var className = getJavaClassName(javaclass);
 			if (className == null) throw new TypeError("Not a class: " + javaclass);
 			return getNamedJavaClass(className);

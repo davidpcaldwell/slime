@@ -11,15 +11,7 @@
 //	Contributor(s):
 //	END LICENSE
 
-var javaLangObjectArrayClass;
-
-var isJavaObjectArray = function(v) {
-	//	TODO	In Nashorn, this could be: Java.type("java.lang.Object[]").class;
-	if (!javaLangObjectArrayClass) javaLangObjectArrayClass = Packages.java.lang.reflect.Array.newInstance($context.engine.toNativeJavaClass(Packages.java.lang.Object), 0).getClass();
-	return javaLangObjectArrayClass.isInstance(v);
-};
-
-$exports.toNativeJavaClass = $context.engine.toNativeJavaClass;
+$exports.toNativeClass = $context.engine.toNativeClass;
 
 $exports.getClass = function(name) {
 	$api.Function.argument.isString({ index: 0, name: "name" }).apply(this,arguments);
@@ -34,9 +26,7 @@ var isJavaObject = function(object) {
 	if (typeof(object) == "string") return false;
 	if (typeof(object) == "number") return false;
 	if (typeof(object) == "boolean") return false;
-	if (object == null) return false;
-	//	TODO	Is the next line superfluous now?
-	if (isJavaObjectArray(object)) return true;
+	if (object === null) return false;
 	if ($context.engine.isNativeJavaObject(object)) return true;
 	return false;
 }
@@ -47,7 +37,7 @@ $exports.isJavaType = function(javaclass) {
 	if (arguments.length != 1) throw new Error("isJavaType takes one argument.");
 	return function isSpecificJavaType(object) {
 		if (!isJavaObject(object)) return false;
-		var loaded = $context.engine.toNativeJavaClass(javaclass);
+		var loaded = $context.engine.toNativeClass(javaclass);
 		return loaded.isInstance(object);
 	}
 };

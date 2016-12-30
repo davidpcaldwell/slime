@@ -45,84 +45,18 @@ END LICENSE
 		<script type="application/x.jsapi#initialize"><![CDATA[
 			scope.isRhino = typeof(Packages.org.mozilla.javascript.Context) == "function"
 				&& (Packages.org.mozilla.javascript.Context.getCurrentContext() != null);
+			scope.api = jsh.$jsapi.$rhino;
 		]]></script>
 		<h1>Exports</h1>
 		<ul>
-			<li class="function" jsapi:id="getClass">
+			<li class="function" jsapi:id="getClass" jsapi:reference="getApi('../../loader/rhino/java.api.html').getElement('exports/getClass')">
 				<!--	TODO	Semantics for inner classes unclear	-->
 				<div class="name">getClass</div>
-				<span>
-					Returns a Java class given its name. Note that the name expected is the VM-level class name, not the
-					source-level class name. So for inner class <code>Baz</code> of class <code>foo.Bar</code>, the argument given
-					should be <code>"foo.Bar$Baz"</code>.
-				</span>
-				<div class="arguments">
-					<div class="label">Arguments</div>
-					<ol>
-						<li class="value">
-							<span class="type">string</span>
-							<span>A class name.</span>
-						</li>
-					</ol>
-				</div>
-				<div class="returns">
-					<div class="label">Returns</div>
-					<span class="type">JavaClass</span>
-					<span>The JavaClass object with the given name, or <code>null</code> if one does not exist.</span>
-				</div>
-				<script type="application/x.jsapi#tests">
-					test(Boolean(module.getClass("java.lang.Object")));
-					test(!Boolean(module.getClass("foo.bar.baz")));
-					test(Boolean(module.getClass("inonit.script.runtime.io.Streams")));
-					test(Boolean(module.getClass("inonit.script.runtime.io.Streams$Null")));
-					test(String(module.getClass("inonit.script.runtime.io.Streams$Null")) == "[JavaClass inonit.script.runtime.io.Streams$Null]");
-				</script>
+				<span>See <a href="../../loader/rhino/java.api.html">detailed documentation</a>.</span>
 			</li>
-			<li class="function">
+			<li class="function" jsapi:reference="getApi('../../loader/rhino/java.api.html').getElement('exports/isJavaObject')">
 				<div class="name">isJavaObject</div>
-				<div class="arguments">
-					<div class="label">Arguments</div>
-					<ol>
-						<li>A JavaScript value</li>
-					</ol>
-				</div>
-				<div class="returns">
-					<div class="label">Returns</div>
-					<span class="type">boolean</span> <code>true</code> if the given argument is a Java object, and <code>false</code> if it is
-					<code>undefined</code>, <code>null</code>, a JavaScript primitive
-					value, or a JavaScript object.
-					<!--	TODO	What if it is JavaPackage? JavaClass?	-->
-				</div>
-				<script type="application/x.jsapi#tests" jsapi:id="isJavaObject"><![CDATA[
-					var isJavaObject = module.isJavaObject;
-					test(isJavaObject(Packages.java.lang.Runtime.getRuntime()));
-					test(isJavaObject(new Packages.java.lang.Object()));
-					if (isRhino) {
-						test(isJavaObject(new Packages.java.lang.String("hello world")));
-						test(isJavaObject(new Packages.java.lang.Integer(4)));
-						test(isJavaObject(new Packages.java.lang.Boolean(true)));
-					} else {
-						//	Nashorn appears to map these to JavaScript types
-						//	TODO	clarify and document this
-						verify(module).isJavaObject(new Packages.java.lang.String("hello world")).is(false);
-						verify(module).isJavaObject(new Packages.java.lang.Integer(4)).is(false);
-						verify(module).isJavaObject(new Packages.java.lang.Boolean(true)).is(false);
-//						test(!isJavaObject(new Packages.java.lang.String("hello world")));
-//						test(!isJavaObject(new Packages.java.lang.Integer(4)));
-//						test(!isJavaObject(new Packages.java.lang.Boolean(true)));
-					}
-					test(isJavaObject(Packages.java.lang.Character.UnicodeBlock.GREEK));
-					test(!isJavaObject("hello world"));
-					test(!isJavaObject(2));
-					test(!isJavaObject(true));
-					test(!isJavaObject(2.0));
-					var x = {};
-					test(!isJavaObject(x.myUndefinedMember));
-					test(!isJavaObject(null));
-					test(!isJavaObject({}));
-					var javaArray = module.Array.create({ array: [null,null,null,null] });
-					test(isJavaObject(javaArray));
-				]]></script>
+				<span>See <a href="../../loader/rhino/java.api.html">detailed documentation</a>.</span>
 			</li>
 			<li class="object">
 				<div class="name">Array</div>
