@@ -58,6 +58,14 @@ END LICENSE
 				<div class="name">isJavaObject</div>
 				<span>See <a href="../../loader/rhino/java.api.html">detailed documentation</a>.</span>
 			</li>
+			<li class="function" jsapi:reference="getApi('../../loader/rhino/java.api.html').getElement('exports/isJavaType')">
+				<div class="name">isJavaType</div>
+				<span>See <a href="../../loader/rhino/java.api.html">detailed documentation</a>.</span>
+			</li>
+			<li class="function" jsapi:reference="getApi('../../loader/rhino/java.api.html').getElement('exports/toNativeClass')">
+				<div class="name">toNativeClass</div>
+				<span>See <a href="../../loader/rhino/java.api.html">detailed documentation</a>.</span>
+			</li>
 			<li class="object">
 				<div class="name">Array</div>
 				<span>Contains methods that operate on Java arrays.</span>
@@ -761,28 +769,6 @@ END LICENSE
 						}
 					}
 				});
-				$doc.members.isJavaType.$unit = function(scope) {
-					scope.scenario( new function() {
-						this.name = "isJavaType";
-
-						this.execute = function(scope) {
-							scope.test(module.isJavaType(Packages.java.lang.Object)(new Packages.java.lang.Object()));
-							scope.test(!module.isJavaType(Packages.java.lang.Integer)(new Packages.java.lang.Object()));
-							scope.test(module.isJavaType(Packages.java.lang.Object)(new Packages.java.lang.Integer(8)));
-							scope.test(module.isJavaType(Packages.java.lang.Runnable)(new Packages.java.lang.Thread()));
-						}
-					})
-				}
-
-				scope.scenario( new function() {
-					this.name = "Java types";
-
-					this.execute = function(scope) {
-						scope.test( module.isJavaType(Packages.java.io.OutputStream)(new Packages.java.io.ByteArrayOutputStream()) );
-						scope.test( module.isJavaType(Packages.java.io.OutputStream)(new Packages.java.io.ByteArrayOutputStream()) );
-						scope.test( !module.isJavaType(Packages.java.io.InputStream)("Hello") );
-					}
-				} );
 			-->
 			<!--
 				//	No unit tests!

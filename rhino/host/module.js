@@ -38,6 +38,10 @@ $exports.getClass = $context.$rhino.java.getClass;
 var isJavaObject = $context.$rhino.java.isJavaObject;
 $exports.isJavaObject = isJavaObject;
 
+$exports.isJavaType = $context.$rhino.java.isJavaType;
+
+$exports.toNativeClass = $context.$rhino.java.toNativeClass;
+
 if (typeof(Packages.org.mozilla.javascript.Context) == "function" && false) {
 	$exports.Properties = function($properties) {
 		return Packages.inonit.script.runtime.Properties.create($properties);
@@ -229,9 +233,6 @@ var experimental = function(name) {
 	$exports[name] = items[name];
 	$api.experimental($exports, name);
 };
-
-$exports.isJavaType = $context.$rhino.java.isJavaType;
-$api.experimental($exports,"isJavaType");
 
 $exports.Array = new function() {
 	this.create = function(p) {

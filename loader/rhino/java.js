@@ -11,8 +11,6 @@
 //	Contributor(s):
 //	END LICENSE
 
-$exports.toNativeClass = $context.engine.toNativeClass;
-
 $exports.getClass = function(name) {
 	$api.Function.argument.isString({ index: 0, name: "name" }).apply(this,arguments);
 	if ($context.classpath.getClass(name)) {
@@ -41,5 +39,7 @@ $exports.isJavaType = function(javaclass) {
 		return loaded.isInstance(object);
 	}
 };
+
+$exports.toNativeClass = $context.engine.toNativeClass;
 
 $exports.test = $context.engine.test;

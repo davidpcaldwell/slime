@@ -40,36 +40,27 @@ END LICENSE
 			<ul>
 				<script type="application/x.jsapi#initialize"><![CDATA[
 					scope.isRhino = Boolean(typeof(Packages.org.mozilla.javascript.Context) == "function"
-						&& (Packages.org.mozilla.javascript.Context.getCurrentContext() != null));
+						&& (Packages.org.mozilla.javascript.Context.getCurrentContext() != null))
+					;
 				]]></script>
 				<script type="application/x.jsapi#tests">
 					verify(api).is.type("object");
 					verify(api).java.is.type("object");
+
+					//	Verify and document JS engine differences
+
+					var typeofJavaInteger = (isRhino) ? "object" : "number";
+					var i = new Packages.java.lang.Integer(8);
+					verify(i.wait).is.type("function");
+					verify(i.foo).is.type("undefined");
+					verify(typeof(i)).is(typeofJavaInteger);
+
+					var javaObjectMethodTypeOnPrimitive = (isRhino) ? "undefined" : "function";
+					var n = 8;
+					verify(n.wait,"number.wait").is.type(javaObjectMethodTypeOnPrimitive);
+					var s = "string";
+					verify(s.wait,"string.wait").is.type(javaObjectMethodTypeOnPrimitive);
 				</script>
-				<li class="function">
-					<div class="name">toNativeClass</div>
-					<span>__DESCRIPTION__</span>
-					<div class="arguments">
-						<div class="label">Arguments</div>
-						<ol>
-							<li class="value">
-								<span class="type">JavaClass</span>
-								<span>A JavaClass object.</span>
-							</li>
-						</ol>
-					</div>
-					<div class="returns">
-						<div class="label">Returns</div>
-						<span class="type"><code>Packages.java.lang.Class</code></span>
-						<span>The native Java class corresponding to the given class.</span>
-					</div>
-					<script type="application/x.jsapi#tests">
-						var Object = api.java.toNativeClass(Packages.java.lang.Object);
-						verify(Object).is.type("object");
-						verify(Object).evaluate(function() { return String(this.getName()); }).is("java.lang.Object");
-						verify(Object).evaluate(function() { return String(this.getSimpleName()); }).is("Object");
-					</script>
-				</li>
 				<li class="function" jsapi:id="getClass">
 					<div class="name">getClass</div>
 					<span>
@@ -147,6 +138,93 @@ END LICENSE
 						verify(api).java.isJavaObject(new Packages.java.lang.String("hello world")).is(isRhino);
 						verify(api).java.isJavaObject(new Packages.java.lang.Integer(4)).is(isRhino);
 						verify(api).java.isJavaObject(new Packages.java.lang.Boolean(true)).is(isRhino);
+					</script>
+				</li>
+				<li class="function" jsapi:id="isJavaType">
+					<div class="name">isJavaType</div>
+					<span>
+						A function that creates a function that can determine whether that function's
+						argument is of the given Java type.
+					</span>
+					<div class="type">
+						<a class="type" name="types.isJavaType.Filter">Filter</a>
+						<span class="type">function</span>
+						<div class="function">
+							<span>A function that determines whether its argument is of a certain Java type.</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="value">
+										<span class="type">(any)</span>
+										<span>A value.</span>
+									</li>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">boolean</span>
+								<span>
+									<code>true</code> if the value is a Java object which is an instance of the given class;
+									<code>false</code> otherwise.
+								</span>
+							</div>
+						</div>
+					</div>
+
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+							<li class="value">
+								<span class="type">JavaClass</span>
+								<span>A Java type.</span>
+							</li>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type"><a href="#types.isJavaType.Filter">Filter</a></span>
+						<span>A function that can determine whether its argument is of the given type.</span>
+					</div>
+					<script type="application/x.jsapi#tests">
+						var filters = {
+							Object: api.java.isJavaType(Packages.java.lang.Object),
+							Runnable: api.java.isJavaType(Packages.java.lang.Runnable),
+							OutputStream: api.java.isJavaType(Packages.java.io.OutputStream),
+							InputStream: api.java.isJavaType(Packages.java.io.InputStream)
+						};
+
+						verify(filters.Object(new Packages.java.lang.Object()),"Object/Object").is(true);
+						verify(filters.Runnable(new Packages.java.lang.Thread())).is(true);
+						verify(filters.OutputStream(new Packages.java.io.ByteArrayOutputStream())).is(true);
+						verify(filters.InputStream(new Packages.java.io.ByteArrayOutputStream())).is(false);
+
+						verify(filters.Object(new Packages.java.lang.Integer(8))).is(isRhino);
+						verify(filters.Object(new Packages.java.lang.String("8"))).is(isRhino);
+						verify(filters.Object(new Packages.java.lang.Boolean(true))).is(isRhino);
+					</script>
+				</li>
+				<li class="function" jsapi:id="toNativeClass">
+					<div class="name">toNativeClass</div>
+					<span>__DESCRIPTION__</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+							<li class="value">
+								<span class="type">JavaClass</span>
+								<span>A JavaClass object.</span>
+							</li>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type"><code>Packages.java.lang.Class</code></span>
+						<span>The native Java class corresponding to the given class.</span>
+					</div>
+					<script type="application/x.jsapi#tests">
+						var Object = api.java.toNativeClass(Packages.java.lang.Object);
+						verify(Object).is.type("object");
+						verify(Object).evaluate(function() { return String(this.getName()); }).is("java.lang.Object");
+						verify(Object).evaluate(function() { return String(this.getSimpleName()); }).is("Object");
 					</script>
 				</li>
 			</ul>
