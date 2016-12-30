@@ -42,6 +42,59 @@ $exports.isJavaType = $context.$rhino.java.isJavaType;
 
 $exports.toNativeClass = $context.$rhino.java.toNativeClass;
 
+var JavaArray = new function() {
+	this.create = function(p) {
+		var type = (p.type) ? p.type : Packages.java.lang.Object;
+		var rv = Packages.java.lang.reflect.Array.newInstance($context.$rhino.java.toNativeClass(type),p.array.length);
+		for (var i=0; i<p.array.length; i++) {
+			rv[i] = p.array[i];
+		}
+		return rv;
+	};
+
+	this.adapt = function(_p) {
+		//	TODO	probably can be done with Array.prototype.slice()
+		if (typeof(_p.length) == "number") {
+			var rv = [];
+			for (var i=0; i<_p.length; i++) {
+				rv[i] = _p[i];
+			}
+			return rv;
+		} else if (typeof(_p.size) == "function") {
+			var rv = [];
+			for (var i=0; i<_p.size(); i++) {
+				rv[i] = _p.get(i);
+			}
+			return rv;
+		} else {
+			throw new Error("Unsupported type for Array.adapt");
+		}
+	}
+};
+
+$exports.Array = JavaArray;
+
+$exports.invoke = function(p) {
+	var parameterTypes = (p.method.parameterTypes) ? p.method.parameterTypes : [];
+	var _types = JavaArray.create({
+		type: Packages.java.lang.Class,
+		//	TODO	would be better to use Packages.xxx rather than names
+		array: parameterTypes.map($context.$rhino.java.toNativeClass)
+	});
+	var _class = (p.method.class) ? $context.$rhino.java.toNativeClass(p.method.class) : p.target.getClass();
+	var _method = _class.getDeclaredMethod(p.method.name, _types);
+	_method.setAccessible(true);
+	var rv = _method.invoke(
+		p.target,
+		JavaArray.create({
+			type: Packages.java.lang.Object,
+			array: (p.arguments) ? p.arguments : []
+		})
+	);
+	if (_method.getReturnType() == Packages.java.lang.Void.TYPE) return void(0);
+	return rv;
+};
+
 if (typeof(Packages.org.mozilla.javascript.Context) == "function" && false) {
 	$exports.Properties = function($properties) {
 		return Packages.inonit.script.runtime.Properties.create($properties);
@@ -232,36 +285,6 @@ $api.experimental($exports,"ErrorType");
 var experimental = function(name) {
 	$exports[name] = items[name];
 	$api.experimental($exports, name);
-};
-
-$exports.Array = new function() {
-	this.create = function(p) {
-		var type = (p.type) ? p.type : Packages.java.lang.Object;
-		var rv = Packages.java.lang.reflect.Array.newInstance($context.$rhino.java.toNativeClass(type),p.array.length);
-		for (var i=0; i<p.array.length; i++) {
-			rv[i] = p.array[i];
-		}
-		return rv;
-	};
-
-	this.adapt = function(_p) {
-		//	TODO	probably can be done with Array.prototype.slice()
-		if (typeof(_p.length) == "number") {
-			var rv = [];
-			for (var i=0; i<_p.length; i++) {
-				rv[i] = _p[i];
-			}
-			return rv;
-		} else if (typeof(_p.size) == "function") {
-			var rv = [];
-			for (var i=0; i<_p.size(); i++) {
-				rv[i] = _p.get(i);
-			}
-			return rv;
-		} else {
-			throw new Error("Unsupported type for Array.adapt");
-		}
-	}
 };
 
 var toJsArray = function(javaArray,scriptValueFactory) {

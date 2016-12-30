@@ -45,7 +45,8 @@ END LICENSE
 		<script type="application/x.jsapi#initialize"><![CDATA[
 			scope.isRhino = typeof(Packages.org.mozilla.javascript.Context) == "function"
 				&& (Packages.org.mozilla.javascript.Context.getCurrentContext() != null);
-			scope.api = jsh.$jsapi.$rhino;
+
+			scope.api = { java: scope.module };
 		]]></script>
 		<h1>Exports</h1>
 		<ul>
@@ -65,6 +66,107 @@ END LICENSE
 			<li class="function" jsapi:reference="getApi('../../loader/rhino/java.api.html').getElement('exports/toNativeClass')">
 				<div class="name">toNativeClass</div>
 				<span>See <a href="../../loader/rhino/java.api.html">detailed documentation</a>.</span>
+			</li>
+			<li class="function">
+				<div class="name">invoke</div>
+				<span>
+					Invokes a method on a Java object via reflection. Ordinarily, Java methods can simply be invoked with
+					JavaScript semantics using a LiveConnect implementation. The <code>invoke</code> function provides the ability
+					to invoke methods that are not accessible (for example, those that are private, package or protected).
+				</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="object">
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="value">
+									<div class="name">target</div>
+									<span class="type">Packages.java.lang.Object</span>
+									<span>
+										The Java object on which to invoke the method. May be omitted for <code>static</code>
+										methods.
+									</span>
+								</li>
+								<li class="object">
+									<div class="name">method</div>
+									<span>An object specifying the Java method to invoke.</span>
+									<div class="label">has properties:</div>
+									<ul>
+										<li class="value">
+											<div class="name">name</div>
+											<span class="type">string</span>
+											<span>The name of the method to invoke.</span>
+										</li>
+										<li class="value">
+											<div class="name">parameterTypes</div>
+											<span class="type">Array of JavaClass</span>
+											<span>
+												(optional; defaults to a method with no parameters)
+												The list of parameter types in the signature of the method to invoke.
+											</span>
+										</li>
+										<li class="value">
+											<div class="name">class</div>
+											<span class="type">JavaClass</span>
+											<span>
+												The declaring class of the method to be invoked. If the method is declared
+												in the concrete class of the object, this value may be omitted.
+											</span>
+										</li>
+									</ul>
+								</li>
+								<li class="value">
+									<div class="name">arguments</div>
+									<span class="type">Array of Packages.java.lang.Object</span>
+									<span>
+										(may be omitted if the Java method takes no arguments)
+										The arguments with which to invoke the method.
+									</span>
+								</li>
+							</ul>
+						</li>
+					</ol>
+				</div>
+				<div class="returns">
+					<div class="label">Returns</div>
+					<span class="type">Packages.java.lang.Object</span>
+					<span>The value returned by the Java method, or <code>undefined</code> for <code>void</code> methods.</span>
+				</div>
+				<script type="application/x.jsapi#tests">
+					var directVersion = String(Packages.java.lang.System.getProperty("java.version"));
+
+					var _version = module.invoke({
+						method: {
+							name: "getProperty",
+							parameterTypes: [Packages.java.lang.String],
+							class: Packages.java.lang.System
+						},
+						arguments: [new Packages.java.lang.String("java.version")]
+					});
+					var version = String(_version);
+					verify(version).is(directVersion);
+
+					var string = new Packages.java.lang.String("Hello");
+					var _toString = module.invoke({
+						target: string,
+						method: {
+							name: "toString"
+						}
+					});
+					verify(String(_toString)).is("Hello");
+
+					var _void = module.invoke({
+						method: {
+							name: "gc",
+							class: Packages.java.lang.System
+						}
+					});
+					verify(_void).is.type("undefined");
+
+					var _v2 = Packages.java.lang.System.gc();
+					verify(_v2).is.type("undefined");
+				</script>
 			</li>
 			<li class="object">
 				<div class="name">Array</div>
