@@ -79,7 +79,7 @@ END LICENSE
 					<div class="label">Arguments</div>
 					<ol>
 						<li class="object">
-							<span>__DESCRIPTION__</span>
+							<span>An argument describing the application.</span>
 							<div class="label">has properties:</div>
 							<ul>
 								<!--	TODO	other forms of servlet	-->
@@ -95,7 +95,7 @@ END LICENSE
 								<li class="value">
 									<div class="name">servlet</div>
 									<span class="type"><a href="#types.application.servlet">servlet</a></span>
-									<span>A <a href="../http/servlet/api.html#servlet">servlet</a> <!-- TODO check link --> to run.</span>
+									<span>A <a href="../http/servlet/api.html">servlet</a> <!-- TODO check link --> to run.</span>
 								</li>
 								<li class="value">
 									<div class="name">parameters</div>
@@ -104,24 +104,23 @@ END LICENSE
 										An object to supply to the servlet as its <code>$parameters</code> object.
 									</span>
 								</li>
-								<li class="value">
-									<div class="name">path</div>
-									<span class="type">string</span>
-									<span>The relative path of the page to open.</span>
-								</li>
-								<li class="value">
+								<li class="object">
 									<div class="name">on</div>
-									<span class="type">object</span>
-									<span>
-										(optional)
-										Event handlers passed through to the underlying
-										<!--	TODO	better hyperlink	-->
-										<a href="api.html">Frame</a>.
-									</span>
+									<span>(optional)</span>
+									<div class="label">has properties:</div>
+									<ul>
+										<li class="function">
+											<div class="name">close</div>
+											<span>
+												A callback function invoked when the application is closed. The application is
+												closed when the browser within which it is running closes.
+											</span>
+										</li>
+									</ul>
 								</li>
 								<li class="object">
 									<div class="name">browser</div>
-									<span>__DESCRIPTION__</span>
+									<span>An object providing information about the browser to run.</span>
 									<div class="label">has properties:</div>
 									<ul>
 										<li class="value">
@@ -135,10 +134,30 @@ END LICENSE
 												is running.
 											</span>
 										</li>
-										<li class="value">
-											<div class="name">on</div>
-											<span class="type">__TYPE__</span>
-											<span>__DESCRIPTION__</span>
+										<li class="function">
+											<div class="name">proxy</div>
+											<span>A function that can create appropriate browser proxy settings.</span>
+											<div class="arguments">
+												<div class="label">Arguments</div>
+												<ol>
+													<li class="object">
+														<span>An object describing the application environment.</span>
+														<div class="label">has properties:</div>
+														<ul>
+															<li class="value">
+																<div class="name">port</div>
+																<span class="type">number</span>
+																<span>The port number on which the server is running.</span>
+															</li>
+														</ul>
+													</li>
+												</ol>
+											</div>
+											<div class="returns">
+												<div class="label">Returns</div>
+												<span class="type">object</span>
+												<span>An argument for <a><code>jsh.shell.browser.ProxyConfiguration</code></a></span>
+											</div>
 										</li>
 										<li>
 											One of:
@@ -167,9 +186,14 @@ END LICENSE
 														<div class="label">has properties:</div>
 														<ul>
 															<li class="value">
+																<div class="name">location</div>
+																<span class="type">Pathname</span>
+																<span>See jsh.shell.browser.chrome.Instance</span>
+															</li>
+															<li class="value">
 																<div class="name">directory</div>
-																<span class="type">__TYPE__</span>
-																<span>__DESCRIPTION__</span>
+																<span class="type">directory</span>
+																<span>See jsh.shell.browser.chrome.Instance</span>
 															</li>
 															<li class="value">
 																<div class="name">browser</div>
@@ -185,63 +209,15 @@ END LICENSE
 													</li>
 												</ul>
 											</div>
+											<!--	TODO	create is undocumented	-->
+											<!--	TODO	run is undocumented	-->
 										</li>
 									</ul>
 								</li>
 								<li class="value">
-									<div class="name">browser</div>
-									<div>
-										<span class="type">object</span>
-										<span>A JavaFX Webview component; see
-											<!--	TODO	make sure WebView properly documented and hyperlink this	-->
-											<code>jsh.ui.javafx.WebView</code>.
-										</span>
-										<div class="label">has properties:</div>
-										<ul>
-											<li class="value">
-												<div class="name">console</div>
-												<span class="type">__TYPE__</span>
-												<span>__DESCRIPTION__</span>
-											</li>
-											<li class="value">
-												<div class="name">zoom</div>
-												<span class="type">__TYPE__</span>
-												<span>__DESCRIPTION__</span>
-											</li>
-										</ul>
-									</div>
-									- OR -
-									<div class="label">has properties:</div>
-									<ul>
-										<li class="function">
-											<div class="name">run</div>
-											<span>
-												A function that opens a web browser window to a given URL and blocks until the
-												browser is closed.
-											</span>
-											<div class="arguments">
-												<div class="label">Arguments</div>
-												<ol>
-													<li class="object">
-														<span>__DESCRIPTION__</span>
-														<div class="label">has properties:</div>
-														<ul>
-															<li class="value">
-																<div class="name">url</div>
-																<span class="type">string</span>
-																<span>__DESCRIPTION__</span>
-															</li>
-														</ul>
-													</li>
-												</ol>
-											</div>
-											<div class="returns">
-												<div class="label">Returns</div>
-												<span class="type">__TYPE__</span>
-												<span>__DESCRIPTION__</span>
-											</div>
-										</li>
-									</ul>
+									<div class="name">path</div>
+									<span class="type">string</span>
+									<span>The relative path of the page to open.</span>
 								</li>
 							</ul>
 						</li>

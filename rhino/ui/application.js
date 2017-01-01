@@ -52,10 +52,6 @@ var Server = function(p) {
 var Chrome = function(o) {
 	//	TODO	add location (rather than directory) argument
 	return function(p) {
-		if (!o) o = {};
-		var directory = (o.directory) ? o.directory : jsh.shell.TMPDIR.createTemporary({ directory: true });
-		directory.getRelativePath("First Run").write("", { append: false });
-
 		var lock = new jsh.java.Thread.Monitor();
 
 		var notify = function() {
@@ -210,7 +206,7 @@ var Application = function(p) {
 	var server = (p.server) ? p.server : Server(p);
 	server.start();
 
-	var stopTomcat = new JavaAdapter(
+	var stopServer = new JavaAdapter(
 		Packages.java.lang.Runnable,
 		new function() {
 			this.run = function() {
@@ -219,7 +215,13 @@ var Application = function(p) {
 		}
 	);
 
-	Packages.java.lang.Runtime.getRuntime().addShutdownHook(new Packages.java.lang.Thread(stopTomcat));
+	Packages.java.lang.Runtime.getRuntime().addShutdownHook(new Packages.java.lang.Thread(stopServer));
+
+	var on = (p.on) ? p.on : {
+		close: function() {
+			Packages.java.lang.System.exit(0);
+		}
+	};
 
 	if (!p.browser) {
 		$api.deprecate(function() {
@@ -238,11 +240,6 @@ var Application = function(p) {
 			}
 		})(p.browser);
 	}
-	var on = (p.on) ? p.on : {
-		close: function() {
-			Packages.java.lang.System.exit(0);
-		}
-	};
 	if (p.browser.chrome) {
 		p.browser.create = Chrome(p.browser.chrome);
 	}
