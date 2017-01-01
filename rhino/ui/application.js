@@ -207,7 +207,7 @@ var javafx = function(settings) {
 }
 
 var Application = function(p) {
-	var server = Server(p);
+	var server = (p.server) ? p.server : Server(p);
 	server.start();
 
 	var stopTomcat = new JavaAdapter(
