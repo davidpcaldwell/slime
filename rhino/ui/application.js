@@ -116,6 +116,91 @@ var Chrome = function(o) {
 	}
 };
 
+var javafx = function(settings) {
+	return function(p) {
+		var addTitleListener = function() {
+			this.listeners.add("title", function(e) {
+				this._frame.setTitle(e.detail.after);
+			});
+		};
+
+		var lock = new jsh.java.Thread.Monitor();
+		var closed = false;
+
+		jsh.ui.javafx.launch({
+			title: "WebView",	//	TODO	default
+			Scene: jsh.ui.javafx.WebView({
+				page: { url: p.url },
+				//	TODO	configurable
+				alert: function(s) {
+					jsh.shell.console("ALERT: " + s);
+				},
+				//	TODO	configurable
+				console: (settings.browser.console) ? settings.browser.console : new function() {
+					this.toString = function() {
+						if (this.delegee) {
+							return "WebView console: " + this.delegee.log;
+						} else {
+							return "WebView console: " + this.log;
+						}
+					};
+
+					this.log = function() {
+						jsh.shell.console("WEBVIEW CONSOLE: " + Array.prototype.slice.call(arguments).join("|"));
+					}
+				},
+				popup: function(_popup) {
+					if (!_popup) _popup = this._popup;
+					jsh.shell.console("Creating popup " + _popup + " ...");
+					var browser = new Packages.javafx.scene.web.WebView();
+					//	TODO	This seems to be a layer higher than it should be; perhaps the lower layer should be creating this
+					//			object and calling back into the application layer with it already configured with things like the
+					//			zoom level by default
+					browser.setZoom(this._browser.getZoom());
+					new jsh.ui.javafx.Frame({
+						Scene: jsh.ui.javafx.WebView({
+							browser: browser,
+							initialize: function() {
+								addTitleListener.call(this);
+							}
+						}),
+						on: {
+							close: function() {
+								this.close();
+							}
+						}
+					});
+					return browser.getEngine();
+				},
+				//	TODO	configurable
+				initialize: function() {
+					addTitleListener.call(this);
+				},
+				zoom: settings.browser.zoom
+			}),
+			on: {
+				close: function(p) {
+					new lock.Waiter({
+						until: function() {
+							return true;
+						},
+						then: function() {
+							closed = true;
+						}
+					})();
+				}
+			}
+		});
+		new lock.Waiter({
+			until: function() {
+				return closed;
+			},
+			then: function() {
+			}
+		})();
+	};
+}
+
 var Application = function(p) {
 	var server = Server(p);
 	server.start();
@@ -150,97 +235,6 @@ var Application = function(p) {
 	}
 	var authority = (p.browser.host) ? p.browser.host : "127.0.0.1:" + server.port;
 	var url = "http://" + authority + "/" + ((p.path) ? p.path : "");
-	var proxy;
-	if (p.browser.host) {
-		proxy = new jsh.shell.browser.ProxyConfiguration({ port: server.port });
-	}
-	var browser;
-	if (typeof(p.browser.run) != "function") {
-		(function(settings) {
-			settings.browser.run = function(p) {
-				var addTitleListener = function() {
-					this.listeners.add("title", function(e) {
-						this._frame.setTitle(e.detail.after);
-					});
-				};
-
-				var lock = new jsh.java.Thread.Monitor();
-				var closed = false;
-
-				jsh.ui.javafx.launch({
-					title: "WebView",	//	TODO	default
-					Scene: jsh.ui.javafx.WebView({
-						page: { url: p.url },
-						//	TODO	configurable
-						alert: function(s) {
-							jsh.shell.console("ALERT: " + s);
-						},
-						//	TODO	configurable
-						console: (settings.browser.console) ? settings.browser.console : new function() {
-							this.toString = function() {
-								if (this.delegee) {
-									return "WebView console: " + this.delegee.log;
-								} else {
-									return "WebView console: " + this.log;
-								}
-							};
-
-							this.log = function() {
-								jsh.shell.console("WEBVIEW CONSOLE: " + Array.prototype.slice.call(arguments).join("|"));
-							}
-						},
-						popup: function(_popup) {
-							if (!_popup) _popup = this._popup;
-							jsh.shell.console("Creating popup " + _popup + " ...");
-							var browser = new Packages.javafx.scene.web.WebView();
-							//	TODO	This seems to be a layer higher than it should be; perhaps the lower layer should be creating this
-							//			object and calling back into the application layer with it already configured with things like the
-							//			zoom level by default
-							browser.setZoom(this._browser.getZoom());
-							new jsh.ui.javafx.Frame({
-								Scene: jsh.ui.javafx.WebView({
-									browser: browser,
-									initialize: function() {
-										addTitleListener.call(this);
-									}
-								}),
-								on: {
-									close: function() {
-										this.close();
-									}
-								}
-							});
-							return browser.getEngine();
-						},
-						//	TODO	configurable
-						initialize: function() {
-							addTitleListener.call(this);
-						},
-						zoom: settings.browser.zoom
-					}),
-					on: {
-						close: function(p) {
-							new lock.Waiter({
-								until: function() {
-									return true;
-								},
-								then: function() {
-									closed = true;
-								}
-							})();
-						}
-					}
-				});
-				new lock.Waiter({
-					until: function() {
-						return closed;
-					},
-					then: function() {
-					}
-				})();
-			}
-		})(p);
-	}
 	var on = (p.on) ? p.on : {
 		close: function() {
 			Packages.java.lang.System.exit(0);
@@ -249,14 +243,21 @@ var Application = function(p) {
 	if (p.browser.chrome) {
 		p.browser.create = Chrome(p.browser.chrome);
 	}
+	var proxy;
+	if (p.browser.host) {
+		proxy = new jsh.shell.browser.ProxyConfiguration({ port: server.port });
+	}
 	if (p.browser.create) {
-		browser = p.browser.create({ url: url, proxy: proxy });
+		var browser = p.browser.create({ url: url, proxy: proxy });
 		jsh.java.Thread.start(function() {
 			browser.run();
 			server.stop();
 			on.close();
 		});
 	} else {
+		if (typeof(p.browser.run) != "function") {
+			p.browser.run = javafx(p);
+		}
 		jsh.java.Thread.start(function() {
 			p.browser.run({ url: url, proxy: proxy });
 			server.stop();
