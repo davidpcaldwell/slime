@@ -50,6 +50,7 @@ var Server = function(p) {
 };
 
 var Chrome = function(o) {
+	//	TODO	add location (rather than directory) argument
 	return function(p) {
 		if (!o) o = {};
 		var directory = (o.directory) ? o.directory : jsh.shell.TMPDIR.createTemporary({ directory: true });
@@ -241,7 +242,13 @@ var Application = function(p) {
 	if (p.browser.chrome) {
 		p.browser.create = Chrome(p.browser.chrome);
 	}
-	var proxy = (p.browser.host) ? new jsh.shell.browser.ProxyConfiguration({ port: server.port }) : void(0);
+	var proxySettings = (function() {
+		if (p.browser.proxy && typeof(p.browser.proxy) == "object") return p.browser.proxy;
+		if (p.browser.proxy && typeof(p.browser.proxy) == "function") return p.browser.proxy({ port: server.port });
+		if (p.browser.host) return { port: server.port };
+		return null;
+	})();
+	var proxy = (proxySettings) ? new jsh.shell.browser.ProxyConfiguration(proxySettings) : void(0);
 	var authority = (p.browser.host) ? p.browser.host : "127.0.0.1:" + server.port;
 	var url = "http://" + authority + "/" + ((p.path) ? p.path : "");
 	if (p.browser.create) {
