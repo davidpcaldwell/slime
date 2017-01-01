@@ -29,9 +29,12 @@ var Chrome = function(b) {
 					return false;
 				}
 			});
-			if (!u.directory.getFile("First Run")) {
-				u.directory.getRelativePath("First Run").write("", { append: false });
-			}
+		}
+		if (!u.directory) {
+			u.directory = $context.TMPDIR.createTemporary({ directory: true });
+		}
+		if (!u.directory.getFile("First Run")) {
+			u.directory.getRelativePath("First Run").write("", { append: false });
 		}
 		//	This Stack Overflow question:
 		//	http://superuser.com/questions/240522/how-can-i-use-a-proxy-in-a-single-chrome-profile

@@ -68,7 +68,11 @@ var Chrome = function(o) {
 			})();
 		}
 
-		var instance = new jsh.shell.browser.chrome.Instance({ directory: directory, proxy: p.proxy });
+		var instance = new jsh.shell.browser.chrome.Instance({ 
+			location: o.location,
+			directory: o.directory,
+			proxy: p.proxy 
+		});
 
 		var process;
 		var finished = false;
