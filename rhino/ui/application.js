@@ -233,8 +233,6 @@ var Application = function(p) {
 			}
 		})(p.browser);
 	}
-	var authority = (p.browser.host) ? p.browser.host : "127.0.0.1:" + server.port;
-	var url = "http://" + authority + "/" + ((p.path) ? p.path : "");
 	var on = (p.on) ? p.on : {
 		close: function() {
 			Packages.java.lang.System.exit(0);
@@ -243,10 +241,9 @@ var Application = function(p) {
 	if (p.browser.chrome) {
 		p.browser.create = Chrome(p.browser.chrome);
 	}
-	var proxy;
-	if (p.browser.host) {
-		proxy = new jsh.shell.browser.ProxyConfiguration({ port: server.port });
-	}
+	var proxy = (p.browser.host) ? new jsh.shell.browser.ProxyConfiguration({ port: server.port }) : void(0);
+	var authority = (p.browser.host) ? p.browser.host : "127.0.0.1:" + server.port;
+	var url = "http://" + authority + "/" + ((p.path) ? p.path : "");
 	if (p.browser.create) {
 		var browser = p.browser.create({ url: url, proxy: proxy });
 		jsh.java.Thread.start(function() {
