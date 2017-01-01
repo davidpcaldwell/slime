@@ -30,7 +30,7 @@ var Chrome = function(b) {
 				}
 			});
 			if (!u.directory.getFile("First Run")) {
-				u.directory.getFile("First Run").write("", { append: false });
+				u.directory.getRelativePath("First Run").write("", { append: false });
 			}
 		}
 		//	This Stack Overflow question:

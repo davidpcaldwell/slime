@@ -12,7 +12,8 @@
 
 //	TODO	is there a better way in our error framework?
 var newError = function(p) {
-	var e = new Error();
+	var message = (p.message) ? p.message : Object.keys(p)[0];
+	var e = new Error(message);
 	for (var x in p) {
 		e[x] = p[x];
 	}
