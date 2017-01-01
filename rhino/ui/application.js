@@ -50,11 +50,11 @@ var Server = function(p) {
 };
 
 var Chrome = function(o) {
-	if (!o) o = {};
-	var directory = (o.directory) ? o.directory : jsh.shell.TMPDIR.createTemporary({ directory: true });
-	directory.getRelativePath("First Run").write("", { append: false });
-
 	return function(p) {
+		if (!o) o = {};
+		var directory = (o.directory) ? o.directory : jsh.shell.TMPDIR.createTemporary({ directory: true });
+		directory.getRelativePath("First Run").write("", { append: false });
+
 		var lock = new jsh.java.Thread.Monitor();
 
 		var notify = function() {
