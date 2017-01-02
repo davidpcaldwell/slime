@@ -27,7 +27,8 @@ var Chrome = function(b) {
 			u.directory = u.location.createDirectory({
 				ifExists: function(dir) {
 					return false;
-				}
+				},
+				recursive: true
 			});
 		}
 		if (!u.directory) {
