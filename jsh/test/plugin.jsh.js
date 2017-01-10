@@ -227,11 +227,12 @@ plugin({
 				handlers.push(handler);
 			}
 
+			this.port = tomcat.port;
+			
 			this.start = function() {
 				tomcat.start();
 			}
-
-			this.port = tomcat.port;
+			
 
 			this.client = new jsh.http.Client({
 				proxy: {
@@ -263,11 +264,24 @@ plugin({
 					var Sourceroot = function(root) {
 						var loader = new jsh.file.Loader({ directory: root.directory });
 						var HEAD = null;
+						var required;
+						if (root.access) {
+							required = new jsh.http.Authentication.Basic.Authorization(root.access);
+							debugger;
+						}
 						this.get = function(body,tokens) {
 							var type = tokens.shift();
 							if (type == "raw") {
 								var version = tokens.shift();
 								if (version == "local") {
+									var authorization = request.headers.value("Authorization");
+									if (required && required != authorization) {
+										return {
+											status: {
+												code: 401
+											}
+										};
+									}
 									var path = tokens.join("/");
 									var pathname = root.directory.getRelativePath(path);
 									if (pathname.file) {
