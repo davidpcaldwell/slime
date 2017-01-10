@@ -233,6 +233,9 @@ plugin({
 				tomcat.start();
 			}
 			
+			this.run = function() {
+				tomcat.run();
+			}
 
 			this.client = new jsh.http.Client({
 				proxy: {

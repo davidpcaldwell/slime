@@ -115,7 +115,7 @@ public abstract class Code {
 			}
 
 			//	TODO	this implementation will not respond correctly to getInputStream() being called multiple times
-			public static File create(final URL url) {
+			private static File create(final URL url, final URLConnection opened) {
 				return new File() {
 					@Override public URI getURI() {
 						return URI.create(url);
@@ -129,7 +129,11 @@ public abstract class Code {
 
 					private URLConnection connect() throws IOException {
 						if (connection == null) {
-							connection = url.openConnection();
+							if (opened != null) {
+								connection = opened;
+							} else {
+								connection = url.openConnection();
+							}
 						}
 						return connection;
 					}
@@ -143,6 +147,9 @@ public abstract class Code {
 					}
 
 					@Override public Long getLength() {
+					//	TODO	Do something fancier to retain backward compatibility with 1.6
+//						Long length = (connection.getContentLengthLong() == -1) ? null : new Long(connection.getContentLengthLong());
+//						Long length = (connection.getContentLength() == -1) ? null : new Long(connection.getContentLength());
 						try {
 							int i = connect().getContentLength();
 							if (i == -1) return null;
@@ -163,10 +170,12 @@ public abstract class Code {
 					}
 				};
 			}
+			
+			public static File create(final URL url) {
+				return create(url, (URLConnection)null);
+			}
 
 			//	Used in rhino/io to create Code.Source.File objects in resources implementation
-			//	TODO	this is actually wrong, given that it uses a single input stream, making it so that the input stream cannot
-			//			be created more than once
 			public static File create(final URI uri, final String name, final Long length, final java.util.Date modified, final InputStream in) {
 				return new File() {
 					private byte[] bytes;
@@ -202,6 +211,19 @@ public abstract class Code {
 						return new ByteArrayInputStream(bytes);
 					}
 				};
+			}
+			
+			public static File create(java.net.URL url, UrlBased.HttpConnector connector) {
+				try {
+					URLConnection connection = url.openConnection();
+					if (connector != null && connection instanceof HttpURLConnection) {
+						connector.decorate((HttpURLConnection)connection);
+					}
+					return create(url, connection);
+				} catch (IOException e) {
+					//	TODO	is this the only way to test whether the URL is available?
+					return null;
+				}	
 			}
 		}
 
@@ -249,7 +271,7 @@ public abstract class Code {
 		}
 
 		private static Source create(final java.net.URL url, Enumerator enumerator) {
-			return new UrlBased(url, enumerator);
+			return new UrlBased(url, enumerator, null);
 		}
 
 		public static Source create(java.io.File file) {
@@ -261,7 +283,7 @@ public abstract class Code {
 		}
 
 		public static Source create(final java.net.URL url) {
-			return new UrlBased(url, null);
+			return new UrlBased(url, null, null);
 		}
 
 		public static Source zip(final java.io.File file) {
@@ -500,14 +522,17 @@ public abstract class Code {
 			};
 		}
 
-		private static class UrlBased extends Source {
+		public static class UrlBased extends Source {
 			private java.net.URL url;
 			private Enumerator enumerator;
+			private HttpConnector connector;
 			private Classes classes;
 
-			UrlBased(final java.net.URL url, Enumerator enumerator) {
+			UrlBased(final java.net.URL url, Enumerator enumerator, HttpConnector connector) {
+				//	TODO	could this.url be replaced by calls to the created classes object?
 				this.url = url;
 				this.enumerator = enumerator;
+				this.connector = connector;
 				this.classes = new Classes() {
 					private java.net.URLClassLoader delegate = new java.net.URLClassLoader(new java.net.URL[] {url});
 
@@ -547,28 +572,32 @@ public abstract class Code {
 			}
 
 			public File getFile(String path) throws IOException {
+				URI uri = new URI(toURI(new URL(this.url,path)));
 				URL url = classes.getResource(path);
-//				if (url != null && path.indexOf("Throwables") != -1) {
-//					System.err.println("this.url=" + this.url + " url=" + url + " path=" + path + " sourceName=" + getSourceName(url,path));
-//				}
 				if (url == null) return null;
-				try {
-					URLConnection connection = url.openConnection();
-					//	TODO	Do something fancier to retain backward compatibility with 1.6
-//					Long length = (connection.getContentLengthLong() == -1) ? null : new Long(connection.getContentLengthLong());
-					Long length = (connection.getContentLength() == -1) ? null : new Long(connection.getContentLength());
-					java.util.Date modified = (connection.getLastModified() == 0) ? null : new java.util.Date(connection.getLastModified());
-					return File.create(
-						new URI(toURI(new URL(this.url,path))),
-						getSourceName(url),
-						length,
-						modified,
-						connection.getInputStream()
-					);
-				} catch (IOException e) {
-					//	TODO	is this the only way to test whether the URL is available?
-					return null;
-				}
+				return File.create(url, connector);
+//				if (url == null) return null;
+//				try {
+//					URLConnection connection = url.openConnection();
+//					if (connector != null && connection instanceof HttpURLConnection) {
+//						connector.decorate((HttpURLConnection)connection);
+//					}
+//					return File.create(url, connection);
+//					//	TODO	Do something fancier to retain backward compatibility with 1.6
+////					Long length = (connection.getContentLengthLong() == -1) ? null : new Long(connection.getContentLengthLong());
+////					Long length = (connection.getContentLength() == -1) ? null : new Long(connection.getContentLength());
+////					java.util.Date modified = (connection.getLastModified() == 0) ? null : new java.util.Date(connection.getLastModified());
+////					return File.create(
+////						uri,
+////						getSourceName(url),
+////						length,
+////						modified,
+////						connection.getInputStream()
+////					);
+//				} catch (IOException e) {
+//					//	TODO	is this the only way to test whether the URL is available?
+//					return null;
+//				}
 			}
 
 			public Enumerator getEnumerator() {
@@ -577,6 +606,15 @@ public abstract class Code {
 
 			public Classes getClasses() {
 				return classes;
+			}
+			
+			public static abstract class HttpConnector {
+				public abstract void decorate(HttpURLConnection connection);
+				
+				public static final HttpConnector NULL = new HttpConnector() {
+					@Override public void decorate(HttpURLConnection connection) {
+					}
+				};
 			}
 		}
 	}
