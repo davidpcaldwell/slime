@@ -233,7 +233,7 @@ for (var i=0; i<$api.arguments.length; i++) {
 
 //	TODO	try to figure out a way to get rid of HTTP property passthrough; used for testing of HTTP-based launch
 //			from Bitbucket
-var passthrough = ["http.proxyHost","http.proxyPort"];
+var passthrough = ["http.proxyHost","http.proxyPort","jsh.loader.user","jsh.loader.password"];
 for (var i=0; i<passthrough.length; i++) {
 	if (Packages.java.lang.System.getProperty(passthrough[i])) {
 		command.systemProperty(passthrough[i], Packages.java.lang.System.getProperty(passthrough[i]));

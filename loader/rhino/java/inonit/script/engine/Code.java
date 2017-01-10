@@ -117,15 +117,32 @@ public abstract class Code {
 			//	TODO	this implementation will not respond correctly to getInputStream() being called multiple times
 			private static File create(final URL url, final URLConnection opened) {
 				return new File() {
-					@Override public URI getURI() {
-						return URI.create(url);
-					}
+					private URLConnection connection;
 
-					@Override public String getSourceName() {
+					private String getSourceName(URL url) {
+						if (url.getProtocol().equals("file")) {
+							try {
+								java.io.File file = new java.io.File(url.toURI());
+								return file.getCanonicalPath();
+							} catch (URISyntaxException e) {
+							} catch (IOException e) {
+							}
+						}
 						return url.toExternalForm();
 					}
 
-					private URLConnection connection;
+					private java.net.URI toURI(URL url) {
+						//	.toURI does not work correctly for files with certain characters, like spaces.
+						//	See http://stackoverflow.com/questions/4494063/how-to-avoid-java-net-urisyntaxexception-in-url-touri
+						if (url.getProtocol().equals("file")) {
+							return new java.io.File(url.getFile()).toURI();
+						}
+						try {
+							return url.toURI();
+						} catch (URISyntaxException e) {
+							throw new RuntimeException(e);
+						}
+					}
 
 					private URLConnection connect() throws IOException {
 						if (connection == null) {
@@ -136,6 +153,14 @@ public abstract class Code {
 							}
 						}
 						return connection;
+					}
+
+					@Override public URI getURI() {
+						return new URI(toURI(url));
+					}
+
+					@Override public String getSourceName() {
+						return getSourceName(url);
 					}
 
 					@Override public InputStream getInputStream() {
@@ -472,6 +497,15 @@ public abstract class Code {
 
 			public abstract String[] list(String prefix);
 		}
+			
+		public static abstract class HttpConnector {
+			public abstract void decorate(HttpURLConnection connection);
+
+			public static final HttpConnector NULL = new HttpConnector() {
+				@Override public void decorate(HttpURLConnection connection) {
+				}
+			};
+		}
 
 		public abstract File getFile(String path) throws IOException;
 		public abstract Enumerator getEnumerator();
@@ -546,58 +580,10 @@ public abstract class Code {
 				return Code.Source.class.getName() + " url=" + url;
 			}
 
-			private String getSourceName(URL url) {
-				if (url.getProtocol().equals("file")) {
-					try {
-						java.io.File file = new java.io.File(url.toURI());
-						return file.getCanonicalPath();
-					} catch (URISyntaxException e) {
-					} catch (IOException e) {
-					}
-				}
-				return url.toExternalForm();
-			}
-
-			private java.net.URI toURI(URL url) {
-				//	.toURI does not work correctly for files with certain characters, like spaces.
-				//	See http://stackoverflow.com/questions/4494063/how-to-avoid-java-net-urisyntaxexception-in-url-touri
-				if (url.getProtocol().equals("file")) {
-					return new java.io.File(url.getFile()).toURI();
-				}
-				try {
-					return url.toURI();
-				} catch (URISyntaxException e) {
-					throw new RuntimeException(e);
-				}
-			}
-
 			public File getFile(String path) throws IOException {
-				URI uri = new URI(toURI(new URL(this.url,path)));
 				URL url = classes.getResource(path);
 				if (url == null) return null;
 				return File.create(url, connector);
-//				if (url == null) return null;
-//				try {
-//					URLConnection connection = url.openConnection();
-//					if (connector != null && connection instanceof HttpURLConnection) {
-//						connector.decorate((HttpURLConnection)connection);
-//					}
-//					return File.create(url, connection);
-//					//	TODO	Do something fancier to retain backward compatibility with 1.6
-////					Long length = (connection.getContentLengthLong() == -1) ? null : new Long(connection.getContentLengthLong());
-////					Long length = (connection.getContentLength() == -1) ? null : new Long(connection.getContentLength());
-////					java.util.Date modified = (connection.getLastModified() == 0) ? null : new java.util.Date(connection.getLastModified());
-////					return File.create(
-////						uri,
-////						getSourceName(url),
-////						length,
-////						modified,
-////						connection.getInputStream()
-////					);
-//				} catch (IOException e) {
-//					//	TODO	is this the only way to test whether the URL is available?
-//					return null;
-//				}
 			}
 
 			public Enumerator getEnumerator() {
@@ -606,15 +592,6 @@ public abstract class Code {
 
 			public Classes getClasses() {
 				return classes;
-			}
-			
-			public static abstract class HttpConnector {
-				public abstract void decorate(HttpURLConnection connection);
-				
-				public static final HttpConnector NULL = new HttpConnector() {
-					@Override public void decorate(HttpURLConnection connection) {
-					}
-				};
 			}
 		}
 	}

@@ -409,6 +409,24 @@ public class Main {
 				}
 			};
 		}
+		
+		private Code.Source.HttpConnector getHttpConnector() {
+			if (System.getProperty("jsh.loader.user") != null) {
+				return new Code.Source.HttpConnector() {
+					@Override public void decorate(HttpURLConnection connection) {
+						String user = System.getProperty("jsh.loader.user");
+						String password = System.getProperty("jsh.loader.password");
+						String authorization = "Basic " 
+							+ javax.xml.bind.DatatypeConverter.printBase64Binary(
+								(user + ":" + password).getBytes()
+							)
+						;
+						connection.addRequestProperty("Authorization", authorization);
+					}
+				};
+			}
+			return Code.Source.HttpConnector.NULL;
+		}
 
 		Shell.Invocation invocation(String[] arguments) throws Shell.Invocation.CheckedException {
 			if (arguments.length == 0) {
@@ -421,39 +439,35 @@ public class Main {
 			args.addAll(Arrays.asList(arguments));
 			final String scriptPath = args.remove(0);
 			if (scriptPath.startsWith("http://") || scriptPath.startsWith("https://")) {
-				final java.net.URL url;
-				final java.io.InputStream stream;
 				try {
-					url = new java.net.URL(scriptPath);
-					stream = url.openStream();
+					final java.net.URL url = new java.net.URL(scriptPath);
+					return new Shell.Invocation() {
+						public Shell.Script getScript() {
+							return new Shell.Script() {
+								@Override public java.net.URI getUri() {
+									try {
+										return url.toURI();
+									} catch (java.net.URISyntaxException e) {
+										//	TODO	when can this happen? Probably should refactor to do this parsing earlier and use
+										//			CheckedException
+										throw new RuntimeException(e);
+									}
+								}
+
+								@Override public Code.Source.File getSource() {
+									return Code.Source.File.create(url, getHttpConnector());
+	//								return Code.Source.File.create(Code.Source.URI.create(url), scriptPath, null, null, stream);
+								}
+							};
+						}
+
+						public String[] getArguments() {
+							return args.toArray(new String[args.size()]);
+						}
+					};
 				} catch (java.net.MalformedURLException e) {
 					throw new Shell.Invocation.CheckedException("Malformed URL: " + scriptPath, e);
-				} catch (IOException e) {
-					throw new Shell.Invocation.CheckedException("Could not open: " + scriptPath, e);
 				}
-				return new Shell.Invocation() {
-					public Shell.Script getScript() {
-						return new Shell.Script() {
-							@Override public java.net.URI getUri() {
-								try {
-									return url.toURI();
-								} catch (java.net.URISyntaxException e) {
-									//	TODO	when can this happen? Probably should refactor to do this parsing earlier and use
-									//			CheckedException
-									throw new RuntimeException(e);
-								}
-							}
-
-							@Override public Code.Source.File getSource() {
-								return Code.Source.File.create(Code.Source.URI.create(url), scriptPath, null, null, stream);
-							}
-						};
-					}
-
-					public String[] getArguments() {
-						return args.toArray(new String[args.size()]);
-					}
-				};
 			} else {
 				final File mainScript = new File(scriptPath);
 				if (!mainScript.exists()) {
