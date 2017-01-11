@@ -396,6 +396,19 @@ plugin({
 								throw e;
 							}
 						}
+					} else if (tokenized[2] == "downloads") {
+						if (o.src[tokenized[0]] && o.src[tokenized[0]][tokenized[1]]) {
+							var downloads = o.src[tokenized[0]][tokenized[1]].downloads;
+							var file = tokenized[3];
+							if (downloads && downloads[file]) {
+								return {
+									status: { code: 200 },
+									body: {
+										stream: downloads[file].read(jsh.io.Streams.binary)
+									}
+								}
+							}
+						}
 					}
 				}
 			};

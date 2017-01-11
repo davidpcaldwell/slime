@@ -21,26 +21,31 @@
 //	TODO	this script can only be run with JDK Rhino and Nashorn; allow Mozilla Rhino
 
 (function() {
-	(function initializeLogging() {
-		var System = Packages.java.lang.System;
-		var set = (System.getProperty("java.util.logging.config.file") != null || System.getProperty("java.util.logging.config.class") != null);
-		if (!set) {
-			try {
-				var properties = new Packages.java.util.Properties();
-				var buffer = new Packages.java.io.ByteArrayOutputStream();
-				properties.store(buffer, null);
-				buffer.close();
-				var encoded = buffer.toByteArray();
-				var stream = new Packages.java.io.ByteArrayInputStream(encoded);
-				Packages.java.util.logging.LogManager.getLogManager().readConfiguration(stream);
-				stream.close();
-			} catch (e) {
-				Packages.java.lang.System.err.println(e);
-				Packages.java.lang.System.err.println(e.stack);
-				throw new Packages.java.lang.RuntimeException("Unreachable");
-			}			
-		}
-	})();
+	//	The below would initialize the logging configuration to be empty, rather than the JDK default. The only logging done is for
+	//	remote shells, which otherwise would produce an uncomfortably long silence before the program started running. So they are
+	//	instead a little bit chatty. A user could configure this by configuring Java logging. Alternatively, I suppose we could
+	//	provide a way to configure it by providing the ability to configure it via a URL for a logging properties file
+
+//	(function initializeLogging() {
+//		var System = Packages.java.lang.System;
+//		var set = (System.getProperty("java.util.logging.config.file") != null || System.getProperty("java.util.logging.config.class") != null);
+//		if (!set) {
+//			try {
+//				var properties = new Packages.java.util.Properties();
+//				var buffer = new Packages.java.io.ByteArrayOutputStream();
+//				properties.store(buffer, null);
+//				buffer.close();
+//				var encoded = buffer.toByteArray();
+//				var stream = new Packages.java.io.ByteArrayInputStream(encoded);
+//				Packages.java.util.logging.LogManager.getLogManager().readConfiguration(stream);
+//				stream.close();
+//			} catch (e) {
+//				Packages.java.lang.System.err.println(e);
+//				Packages.java.lang.System.err.println(e.stack);
+//				throw new Packages.java.lang.RuntimeException("Unreachable");
+//			}			
+//		}
+//	})();
 	
 	var $script = (this.$api && this.$api.script) ? this.$api.script : null;
 	var $arguments = (this.$api && this.$api.arguments) ? this.$api.arguments : null;
