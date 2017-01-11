@@ -53,6 +53,7 @@
 
 	$api.debug = function(message) {
 		if (arguments.callee.on) Packages.java.lang.System.err.println(message);
+		Packages.java.util.logging.Logger.getLogger("inonit.jrunscript").log(Packages.java.util.logging.Level.FINE, message);
 	};
 
 	$api.console = function(message) {
