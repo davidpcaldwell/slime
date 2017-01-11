@@ -46,9 +46,12 @@ if [ -n "$INONIT_PROVISION_USER" ]; then
 fi
 
 jsh() {
+	if [ -z "$INONIT_PROVISION_PROTOCOL" ]; then
+		INONIT_PROVISION_PROTOCOL=https
+	fi
 	PROXY_HOST=$(echo $http_proxy | sed 's/http:\/\/\(.*\):.*/\1/')
 	PROXY_PORT=$(echo $http_proxy | sed 's/http:\/\/.*:\(.*\)/\1/' | tr -d "/")
-	jrunscript -Dhttp.proxyHost=$PROXY_HOST -Dhttp.proxyPort=$PROXY_PORT -Djsh.loader.user=$INONIT_PROVISION_USER -Djsh.loader.password=$INONIT_PROVISION_PASSWORD -e "load('http://bitbucket.org/api/1.0/repositories/davidpcaldwell/slime/raw/$INONIT_PROVISION_VERSION/rhino/jrunscript/api.js?jsh')" "$@"
+	jrunscript -Dhttp.proxyHost=$PROXY_HOST -Dhttp.proxyPort=$PROXY_PORT -Djsh.loader.user=$INONIT_PROVISION_USER -Djsh.loader.password=$INONIT_PROVISION_PASSWORD -e "load('$INONIT_PROVISION_PROTOCOL://bitbucket.org/api/1.0/repositories/davidpcaldwell/slime/raw/$INONIT_PROVISION_VERSION/rhino/jrunscript/api.js?jsh')" "$@"
 }
 
 if [ -n "$INONIT_PROVISION_SCRIPT_BASH" ]; then
