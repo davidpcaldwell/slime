@@ -39,4 +39,3 @@ Other environment variables affect the behavior of the provisioner. For unprotec
 shell; for protected remote scripts, they can be supplied along with the other environment values.
 
 *	`INONIT_PROVISION_VERSION`=[commit, tag or bookmark] (defaults to `tip`)
-*	`INONIT_SLIME_VERSION`=[commit, tag or bookmark] (defaults to `tip`)
