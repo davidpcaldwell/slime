@@ -42,7 +42,7 @@ var writeUrl = function(url,mock) {
 var proxy = "export http_proxy=http://" + ip + ":" + server.port;
 
 var versions = function(mock) {
-	if (mock) return ["INONIT_PROVISION_VERSION=local"]
+	if (mock) return ["INONIT_PROVISION_VERSION=local","INONIT_PROVISION_PROTOCOL=http"]
 	return [];
 };
 
