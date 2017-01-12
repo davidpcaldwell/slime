@@ -25,17 +25,17 @@ var server = new jsh.test.provision.Server({
 	}
 });
 
-var ip = parameters.options.ip;
-
 var writeUrl = function(url,mock) {
 	if (mock) url = url.replace(/https:\/\//g, "http://");
 	if (mock) url = url.replace(/raw\/tip/g, "raw/local");
 	return url;
 }
 
-var proxy = "export http_proxy=http://" + ip + ":" + server.port;
+var proxy = function(mock) {
+	return "export http_proxy=http://" + mock.server.ip + ":" + mock.server.port;
+}
 
-var versions = function(mock) {
+var variables = function(mock) {
 	if (mock) return ["INONIT_PROVISION_VERSION=local","INONIT_PROVISION_PROTOCOL=http"]
 	return [];
 };
@@ -44,9 +44,9 @@ var curl = function(closed,mock) {
 	return "curl -s -L " + ((closed) ? "-o $TMP_INSTALLER " : "") + writeUrl("https://bitbucket.org/api/1.0/repositories/davidpcaldwell/slime/raw/tip/jsh/tools/provision/remote.bash",mock);
 };
 
-var Command = function(mock) {
+var Command = function(p) {
 	this.commands = [];
-	if (mock) this.commands.push(proxy);
+	if (p.mock) this.commands.push(proxy(p.mock));
 	
 	this.toString = function() {
 		if (this.commands.length > 1) {
@@ -57,35 +57,65 @@ var Command = function(mock) {
 	}
 }
 
-var Open = function(mock) {
-	Command.call(this,mock);
-	this.commands.push(curl(false,mock) + " | env " + versions(mock).join(" ") + " INONIT_PROVISION_SCRIPT_JSH=" + writeUrl("https://bitbucket.org/api/1.0/repositories/davidpcaldwell/slime/raw/tip/jsh/tools/provision/test/application.jsh.js",mock) + " bash");
+var Open = function(p) {
+	Command.call(this,p);
+	var mockVariables = variables(p.mock).join(" ");
+	if (mockVariables) mockVariables += " ";
+	this.commands.push(curl(false,p.mock) + " | env " + mockVariables + "INONIT_PROVISION_SCRIPT_JSH=" + writeUrl(p.script,p.mock) + " bash");
 }
 
-var Closed = function(mock) {
-	Command.call(this,mock);
+var Closed = function(p) {
+	Command.call(this,p);
 	this.commands.push("export TMP_INSTALLER=$(mktemp)");
-	this.commands.push("export INONIT_PROVISION_SCRIPT_JSH=" + writeUrl("https://bitbucket.org/api/1.0/repositories/davidpcaldwell/slime-kit/raw/tip/test/provision-script.jsh.js",mock));
-	this.commands.push("export INONIT_PROVISION_USER=" + parameters.options.user);
-	this.commands.push.apply(this.commands,versions(mock).map(function(declaration) {
+	this.commands.push("export INONIT_PROVISION_SCRIPT_JSH=" + writeUrl(p.script,p.mock));
+	this.commands.push("export INONIT_PROVISION_USER=" + p.user);
+	this.commands.push.apply(this.commands,variables(p.mock).map(function(declaration) {
 		return "export " + declaration;
 	}));
-	this.commands.push(curl(true,mock));
+	this.commands.push(curl(true,p.mock));
 	this.commands.push("chmod +x $TMP_INSTALLER");
 	this.commands.push("$TMP_INSTALLER");
 }
 
+var getCommand = function(p) {
+	return (p.user) ? new Closed(p) : new Open(p);
+}
+
+var mock = {
+	server: {
+		ip: parameters.options.ip,
+		port: server.port
+	}
+};
+
+var scripts = {
+	open: "https://bitbucket.org/api/1.0/repositories/davidpcaldwell/slime/raw/tip/jsh/tools/provision/test/application.jsh.js",
+	closed: "https://bitbucket.org/api/1.0/repositories/davidpcaldwell/slime-kit/raw/tip/test/provision-script.jsh.js"
+};
+
 jsh.shell.console("Testing (open):");
-jsh.shell.console(new Open(true));
-jsh.shell.console("");
-jsh.shell.console("Testing (closed):");
-jsh.shell.console(new Closed(true));
+jsh.shell.console(getCommand({
+	mock: mock,
+	script: scripts.open
+}));
 jsh.shell.console("");
 jsh.shell.console("README (open)");
-jsh.shell.console(new Open(false));
+jsh.shell.console(getCommand({
+	script: scripts.open
+}));
+jsh.shell.console("");
+jsh.shell.console("Testing (closed):");
+jsh.shell.console(getCommand({
+	mock: mock,
+	script: scripts.closed,
+	user: parameters.options.user
+}));
 jsh.shell.console("");
 jsh.shell.console("README (closed)");
-jsh.shell.console(new Closed(false));
+jsh.shell.console(getCommand({
+	script: scripts.closed,
+	user: parameters.options.user
+}));
 jsh.shell.console("");
 jsh.shell.console("Starting server on port " + server.port + " ...");
 server.run();
