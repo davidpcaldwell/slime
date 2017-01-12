@@ -27,7 +27,7 @@ plugin({
 		}
 
 		var proxy = function(mock) {
-			return "export http_proxy=http://" + mock.server.ip + ":" + mock.server.port;
+			return "export http_proxy=http://" + mock.server.host + ":" + mock.server.port;
 		}
 
 		var variables = function(mock) {
