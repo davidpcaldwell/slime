@@ -9,29 +9,29 @@ var parameters = jsh.script.getopts({
 		password: String
 	}
 });
-var server = new jsh.test.mock.Internet();
-server.add(jsh.test.mock.Internet.bitbucket({
-	src: {
-		davidpcaldwell: {
-			slime: {
-				directory: jsh.shell.jsh.src,
-				downloads: {
-					"jdk-8u112-macosx-x64.dmg": jsh.shell.user.downloads.getFile("jdk-8u112-macosx-x64.dmg")
-				}
-			},
-			"slime-kit": {
-				directory: parameters.options.kit.directory,
-				access: {
-					user: parameters.options.user,
-					password: parameters.options.password
+var server = new jsh.test.provision.Server({
+	bitbucket: {
+		src: {
+			davidpcaldwell: {
+				slime: {
+					directory: jsh.shell.jsh.src,
+					downloads: {
+						"jdk-8u112-macosx-x64.dmg": jsh.shell.user.downloads.getFile("jdk-8u112-macosx-x64.dmg")
+					}
+				},
+				"slime-kit": {
+					directory: parameters.options.kit.directory,
+					access: {
+						user: parameters.options.user,
+						password: parameters.options.password
+					}
 				}
 			}
-		}
+		}		
 	}
-}));
+});
 
 var ip = parameters.options.ip;
-jsh.shell.console("Starting server on port " + server.port + " ...");
 
 var writeUrl = function(url,mock) {
 	if (mock) url = url.replace(/https:\/\//g, "http://");
@@ -49,10 +49,6 @@ var versions = function(mock) {
 var curl = function(closed,mock) {
 	return "curl -s -L " + ((closed) ? "-o $TMP_INSTALLER " : "") + writeUrl("https://bitbucket.org/api/1.0/repositories/davidpcaldwell/slime/raw/tip/jsh/tools/provision/remote.bash",mock);
 };
-
-var script = function(mock) {
-	return "INONIT_PROVISION_SCRIPT_JSH=" + writeUrl()
-}
 
 var Command = function(mock) {
 	this.commands = [];
@@ -97,4 +93,5 @@ jsh.shell.console("");
 jsh.shell.console("README (closed)");
 jsh.shell.console(new Closed(false));
 jsh.shell.console("");
+jsh.shell.console("Starting server on port " + server.port + " ...");
 server.run();

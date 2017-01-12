@@ -1092,7 +1092,6 @@
 		})();
 		if ($query == "api") {
 		} else if ($query == "jsh") {
-			Packages.java.lang.System.err.println("Running jsh");
 			$api.script.resolve("../../jsh/launcher/main.js").load();
 		} else if ($query == "jsh/install") {
 			Packages.java.lang.System.err.println("Installing jsh from SLIME source code at " + $api.script.resolve("../../").toString());
