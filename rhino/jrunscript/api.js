@@ -53,6 +53,7 @@
 
 	$api.debug = function(message) {
 		if (arguments.callee.on) Packages.java.lang.System.err.println(message);
+		Packages.java.util.logging.Logger.getLogger("inonit.jrunscript").log(Packages.java.util.logging.Level.FINE, message);
 	};
 
 	$api.console = function(message) {
@@ -1091,6 +1092,7 @@
 		})();
 		if ($query == "api") {
 		} else if ($query == "jsh") {
+			Packages.java.lang.System.err.println("Running jsh");
 			$api.script.resolve("../../jsh/launcher/main.js").load();
 		} else if ($query == "jsh/install") {
 			Packages.java.lang.System.err.println("Installing jsh from SLIME source code at " + $api.script.resolve("../../").toString());
