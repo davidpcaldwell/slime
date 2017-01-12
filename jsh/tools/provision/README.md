@@ -24,7 +24,7 @@ The provisioner also supports scripts that are protected by HTTP basic authentic
 `INONIT_PROVISION_USER` environment variable must be defined as the user name; this will trigger the remote script to prompt for
 the password. Because the password will be read by the script from standard input, the remote provisioner must be written to
 a temporary file and then executed from there (which makes the command somewhat longer). (Note that this sample command will not
-work; the repository is fictional.)
+work without modification; the repository is private.)
 
 	(export TMP_INSTALLER=$(mktemp);
 	export INONIT_PROVISION_SCRIPT_JSH=https://bitbucket.org/api/1.0/repositories/davidpcaldwell/slime-kit/raw/tip/test/provision-script.jsh.js;
