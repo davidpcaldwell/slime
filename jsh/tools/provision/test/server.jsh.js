@@ -13,12 +13,6 @@ var server = new jsh.test.provision.Server({
 	bitbucket: {
 		src: {
 			davidpcaldwell: {
-				slime: {
-					directory: jsh.shell.jsh.src,
-					downloads: {
-						"jdk-8u112-macosx-x64.dmg": jsh.shell.user.downloads.getFile("jdk-8u112-macosx-x64.dmg")
-					}
-				},
 				"slime-kit": {
 					directory: parameters.options.kit.directory,
 					access: {
