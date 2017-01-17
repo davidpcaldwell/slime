@@ -17,7 +17,7 @@ if (!jsh.unit) {
 	jsh.loader.plugins(src.getRelativePath("jsh/unit"));
 	jsh.loader.plugins(src.getRelativePath("jsh/test"));
 }
-jsh.unit.integration({
+jsh.test.integration({
 	scenario: function(parameters) {
 		var max = Packages.java.lang.Runtime.getRuntime().maxMemory();
 		var half = max / 2;

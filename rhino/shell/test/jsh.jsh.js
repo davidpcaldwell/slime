@@ -10,7 +10,7 @@
 //	Contributor(s):
 //	END LICENSE
 
-if (!jsh.unit || !jsh.unit.integration) {
+if (!jsh.test || !jsh.test.integration) {
 	//	TODO	can this be implemented for URL-based launches?
 	if (jsh.script.file) {
 		jsh.loader.plugins(jsh.script.file.parent.parent.parent.parent.getRelativePath("loader/api"));
@@ -18,14 +18,14 @@ if (!jsh.unit || !jsh.unit.integration) {
 		jsh.loader.plugins(jsh.script.file.parent.parent.parent.parent.getRelativePath("jsh/test"));
 	} else {
 		//	URL-based launch, just mock it, essentially
-		jsh.unit = {};
-		jsh.unit.integration = function(o) {
+		if (!jsh.test) jsh.test = {};
+		jsh.test.integration = function(o) {
 			o.run();
 		};
 	}
 }
 
-jsh.unit.integration({
+jsh.test.integration({
 	scenario: function() {
 		var server = jsh.httpd.Tomcat.serve({ directory: jsh.script.file.parent });
 		this.part("1", {

@@ -17,7 +17,7 @@ if (!jsh.unit) {
 	jsh.loader.plugins(src.getRelativePath("jsh/unit"));
 	jsh.loader.plugins(src.getRelativePath("jsh/test"));
 }
-jsh.unit.integration({
+jsh.test.integration({
 	getopts: {
 		options: {
 			rhino: jsh.file.Pathname
@@ -139,7 +139,7 @@ jsh.unit.integration({
 		[unbuilt,built].forEach(function(implementation) {
 			var shell = (unbuilt) ? home : src;
 			var id = ["unbuilt","built"][arguments[1]];
-			this.scenario(id, jsh.unit.Suite.Integration({
+			this.scenario(id, jsh.test.Suite({
 				shell: shell,
 				script: jsh.script.file.parent.getFile("options.jsh.js")
 			}));
@@ -152,7 +152,7 @@ jsh.unit.integration({
 		},this);
 
 		engines.forEach(function(engine) {
-			this.scenario(engine, jsh.unit.Suite.Integration({
+			this.scenario(engine, jsh.test.Suite({
 				shell: home,
 				script: jsh.script.file.getRelativePath("packaged.jsh.js").file,
 				environment: {

@@ -15,7 +15,7 @@
 
 var SLIME = jsh.script.file.parent.parent.parent.parent;
 
-jsh.unit.integration({
+jsh.test.integration({
 	getopts: {
 		options: {
 			jdk: jsh.file.Pathname

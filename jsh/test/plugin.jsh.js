@@ -16,72 +16,20 @@ plugin({
 		return jsh.js && jsh.io && jsh.shell && jsh.unit;
 	},
 	load: function() {
-		var ForkScenario = function(p) {
-			return new jsh.unit.Scenario({
-				name: p.name,
-				execute: function(scope) {
-					p.method(jsh.js.Object.set({}, p, {
-						evaluate: function(result) {
-							scope.test(function() {
-								return {
-									success: !result.status,
-									message: "Exit status " + result.status
-								}
-							});
-						}
-					}))
-				}
-			});
-		}
+		if (!jsh.test) jsh.test = {};
 
-		jsh.unit.CommandScenario = function(p) {
-			return new ForkScenario(jsh.js.Object.set({}, p, {
-				method: jsh.shell.run
-			}));
-		};
-		jsh.unit.ScriptScenario = function(p) {
-			return new ForkScenario(jsh.js.Object.set({}, p, {
-				method: jsh.shell.jsh
-			}));
-		};
-//		jsh.unit.Scenario.Integration = function(p) {
-//			return new jsh.unit.Scenario.Fork(jsh.js.Object.set({}, p, {
-//				run: jsh.shell.jsh,
-//				arguments: ["-scenario", "-view", "child"]
-//			}));
-////			var buffer = new jsh.io.Buffer();
-////			var write = buffer.writeBinary();
-////			return jsh.shell.jsh({
-////				fork: true,
-////				shell: p.shell,
-////				script: p.script,
-////				arguments: ["-scenario", "-view", "child"],
-////				stdio: {
-////					output: write
-////				},
-////				evaluate: function(result) {
-////					write.java.adapt().flush();
-////					buffer.close();
-////					return new jsh.unit.Scenario.Stream({
-////						name: p.script.toString(),
-////						stream: buffer.readBinary()
-////					});
-////				}
-////			})
-//		}
-
-		jsh.unit.Suite.Integration = function(p) {
+		jsh.test.Suite = function(p) {
 			return new jsh.unit.Suite.Fork(jsh.js.Object.set({}, p, {
 				run: jsh.shell.jsh,
 				arguments: ["-scenario", "-view", "stdio"]
 			}));
-		}
+		};
 
 		//	if -scenario is on command line, invokes scenario, otherwise run()
 		//	scenario: receives a composite scenario as this, receives command-line arguments as function arguments, view argument
 		//		[console/webview/child] determines format of scenario reporting
 		//	run: receives processed results of getopts as argument
-		jsh.unit.integration = function(o) {
+		jsh.test.integration = function(o) {
 			var parameters = jsh.script.getopts({
 				options: {
 					scenario: false,
@@ -101,7 +49,7 @@ plugin({
 			} else {
 				o.run(getopts);
 			}
-		}
+		};
 	}
 });
 
