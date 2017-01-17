@@ -12,7 +12,8 @@ plugin({
 				o.bitbucket.src.davidpcaldwell.slime = {
 					directory: jsh.shell.jsh.src,
 					downloads: {
-						"jdk-8u112-macosx-x64.dmg": jsh.shell.user.downloads.getFile("jdk-8u112-macosx-x64.dmg")
+						"jdk-8u112-macosx-x64.dmg": jsh.shell.user.downloads.getFile("jdk-8u112-macosx-x64.dmg"),
+						"jdk-8u112-linux-x64.tar.gz": jsh.shell.user.downloads.getFile("jdk-8u112-linux-x64.tar.gz")
 					}
 				};
 			}
