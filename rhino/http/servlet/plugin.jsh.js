@@ -155,71 +155,77 @@ plugin({
 				var server = $loader.module("server.js", {
 					api: api
 				});
+				
+				var addContext = function(path,base) {
+					return tomcat.addContext(path, base.pathname.java.adapt().getCanonicalPath());
+				};
+				
+				var addServlet = function(context,resources,pattern,servletName,servletDeclaration) {
+					var servletImplementation = jsh.httpd.spi.argument(resources,servletDeclaration);
+					Packages.org.apache.catalina.startup.Tomcat.addServlet(context,servletName,new JavaAdapter(
+						Packages.javax.servlet.http.HttpServlet,
+						new function() {
+							//	TODO	could use jsh.io here
+							var servlet;
+
+							this.init = function() {
+								var apiScope = {
+									$host: new function() {
+										this.parameters = (servletDeclaration.parameters) ? servletDeclaration.parameters : {};
+
+										this.loaders = {
+											api: new $loader.Child("server/"),
+											script: servletImplementation.$loader,
+											container: servletImplementation.resources
+										};
+
+										this.getCode = function(scope) {
+											servletImplementation.load(scope);
+										}
+
+										this.$java = $jsh;
+
+										this.$exports = {};
+										this.server = server;
+										this.api = api;
+									}
+								};
+								$loader.run("api.js", apiScope);
+								servlet = apiScope.$host.$exports.servlet;
+							};
+
+							this.service = function(_request,_response) {
+								servlet.service(_request,_response);
+							}
+
+							this.destroy = function() {
+								servlet.destroy();
+							}
+						}
+					));
+					context.addServletMapping(pattern,servletName);
+				};
 
 				this.map = function(m) {
 					if (typeof(m.path) == "string" && m.servlets) {
-						var context = tomcat.addContext(m.path, base.pathname.java.adapt().getCanonicalPath());
+						var context = addContext(m.path,base);
 						var id = 0;
 						for (var pattern in m.servlets) {
-							//	TODO	below may not work if more than one servlet; value changes during loop and may be picked up
-							//			by servlets earlier in loop
-							var servletDeclaration = m.servlets[pattern];
-							var servletImplementation = jsh.httpd.spi.argument(m.resources,servletDeclaration);
-		//					if (!servletDeclaration.file) {
-		//						throw new Error("Incorrect launch.");
-		//					}
-							var servletName = "slime" + String(id++);
-							Packages.org.apache.catalina.startup.Tomcat.addServlet(context,servletName,new JavaAdapter(
-								Packages.javax.servlet.http.HttpServlet,
-								new function() {
-									//	TODO	could use jsh.io here
-									var servlet;
-
-									this.init = function() {
-										var apiScope = {
-											$host: new function() {
-												this.parameters = (servletDeclaration.parameters) ? servletDeclaration.parameters : {};
-
-												this.loaders = {
-													api: new $loader.Child("server/"),
-													script: servletImplementation.$loader,
-													container: servletImplementation.resources
-												};
-
-												this.getCode = function(scope) {
-													servletImplementation.load(scope);
-												}
-
-												this.$java = $jsh;
-
-												this.$exports = {};
-												this.server = server;
-												this.api = api;
-											}
-										};
-										$loader.run("api.js", apiScope);
-										servlet = apiScope.$host.$exports.servlet;
-									};
-
-									this.service = function(_request,_response) {
-										servlet.service(_request,_response);
-									}
-
-									this.destroy = function() {
-										servlet.destroy();
-									}
-								}
-							));
-							context.addServletMapping(pattern,servletName);
+							addServlet(context,m.resources,pattern,"slime" + String(id++),m.servlets[pattern])
 						}
 					} else if (typeof(m.path) == "string" && m.webapp) {
 						tomcat.getEngine().setParentClassLoader(tomcat.getEngine().getClass().getClassLoader());
 						var context = tomcat.addWebapp(m.path, m.webapp.java.adapt().getCanonicalPath());
-						jsh.shell.echo("Added " + context);
+						jsh.shell.console("Added " + context);
 					}
-				}
-
-				//	TODO	are both start() and run() needed?
+				};
+				
+				this.servlet = function(declaration) {
+					var context = addContext("",base);
+					//	TODO	provide a way to specify resources?
+					var resources = null;
+					addServlet(context,resources,"/*","slime",declaration);
+				};
 
 				var started = false;
 

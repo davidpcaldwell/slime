@@ -158,6 +158,73 @@ END LICENSE
 								verify(r2).headers[0].value.is("http://www.foo.com/foo");
 							</script>
 						</li>
+						<li class="constructor">
+							<div class="name">Proxy</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="object">
+										<span>__DESCRIPTION__</span>
+										<div class="label">has properties:</div>
+										<ul>
+										</ul>
+									</li>
+								</ol>
+							</div>
+							<div class="instances">
+								<div class="label">Instances</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</div>
+							<script type="application/x.jsapi#tests">
+								var backend = new jsh.httpd.Tomcat();
+								backend.servlet({
+									load: function(scope) {
+										scope.$exports.handle = function(request) {
+											return JSON.stringify({
+												server: "backend",
+												request: {
+													path: request.path
+												}
+											})
+										};
+									}
+								});
+								
+								var frontend = new jsh.httpd.Tomcat();
+								frontend.servlet(new function() {
+									var handler = new module.Handler.Proxy({
+										target: {
+											host: "127.0.0.1",
+											port: backend.port
+										}
+									});
+									this.load = function(scope) {
+										scope.$exports.handle = handler;
+									}
+								});
+								
+//								var client = new jsh.http.Client();
+//								var response = client.request({
+//									url: "http://127.0.0.1:" + frontend.port + "/" + "path",
+//									evaluate: function(response) {
+//										if (response.status.code == 200) {
+//											return {
+//												status: response.status,
+//												headers: response.headers,
+//												body: JSON.parse(response.body.stream.character().asString())
+//											};
+//										} else {
+//											throw new Error("Response code: " + response.status.code);
+//										}
+//									}
+//								});
+//								verify(response).status.code.is(200);
+//								verify(response).body.server.is("backend");
+//								verify(response).body.request.path.is("path");
+							</script>
+						</li>
 					</ul>
 				</li>
 			</ul>

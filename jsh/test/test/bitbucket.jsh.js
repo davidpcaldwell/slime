@@ -1,11 +1,12 @@
 var parameters = jsh.script.getopts({
 	options: {
-		view: "console"
+		view: "console",
+		serve: false
 	}
 });
 
-var server = new jsh.test.mock.Internet();
-server.add(jsh.test.mock.Internet.bitbucket({
+var server = new jsh.test.mock.Web();
+var bitbucket = {
 	src: {
 		davidpcaldwell: {
 			jshtest: {
@@ -14,12 +15,20 @@ server.add(jsh.test.mock.Internet.bitbucket({
 					user: "foo",
 					password: "bar"
 				}
+			},
+			slime: {
+				directory: jsh.shell.jsh.src
 			}
 		}
 	}
-}));
-
+};
+server.add(jsh.test.mock.Web.bitbucket(bitbucket));
 server.start();
+
+if (parameters.options.serve) {
+	jsh.shell.console("hg --config http_proxy.host=127.0.0.1:" + server.port);
+	server.run();
+}
 
 var client = server.client;
 

@@ -114,4 +114,14 @@ $exports.Handler.HostRedirect = function(p) {
 			return redirect(to, request.parameters);
 		}
 	}
+};
+$exports.Handler.Proxy = function(o) {
+	return function(request) {
+		var send = {
+			method: request.method
+		};
+		return {
+			status: { code: 500 }
+		}
+	};
 }

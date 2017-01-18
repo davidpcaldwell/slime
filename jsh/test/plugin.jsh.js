@@ -139,7 +139,7 @@ plugin({
 	load: function() {
 		if (!jsh.test) jsh.test = {};
 		jsh.test.mock = {};
-		jsh.test.mock.Internet = function(o) {
+		jsh.test.mock.Web = function(o) {
 			if (!o) o = {};
 			var tomcat = new jsh.httpd.Tomcat({});
 
@@ -195,11 +195,27 @@ plugin({
 			});
 
 			this.stop = function() {
+				handlers.forEach(function(handler) {
+					if (handler.stop) handler.stop();
+				});
 				tomcat.stop();
 			};
 		};
-		jsh.test.mock.Internet.bitbucket = function(o) {
-			return function(request) {
+		jsh.test.mock.Internet = $api.deprecate(jsh.test.mock.Web);
+		jsh.test.mock.Web.bitbucket = function(o) {
+			var hgserve;
+			
+			var startHgServer = function() {
+				if (!hgserve) {
+					hgserve = new jsh.test.mock.Hg.bitbucket(o);
+					hgserve.start();
+				}
+				return hgserve;
+			};
+
+			var rv = function(request) {
+				jsh.shell.console("host = " + request.headers.value("host"));
+				jsh.shell.console("path = " + request.path);
 				if (request.headers.value("host") == "bitbucket.org") {
 					if (request.path == "") {
 						return {
@@ -293,7 +309,21 @@ plugin({
 						} else {
 							throw new Error("No definition for repository " + user + "/" + repository);
 						}
+					} else if (tokenized[2] == "downloads") {
+						if (o.src[tokenized[0]] && o.src[tokenized[0]][tokenized[1]]) {
+							var downloads = o.src[tokenized[0]][tokenized[1]].downloads;
+							var file = tokenized[3];
+							if (downloads && downloads[file]) {
+								return {
+									status: { code: 200 },
+									body: {
+										stream: downloads[file].read(jsh.io.Streams.binary)
+									}
+								}
+							}
+						}
 					} else if (o.src[tokenized[0]] && o.src[tokenized[0]][tokenized[1]] && tokenized[2] == "get") {
+						//	TODO	is this included in hgweb server?
 						var SRC = o.src[tokenized[0]][tokenized[1]];
 						if (tokenized[3] == "local.zip") {
 							try {
@@ -344,22 +374,109 @@ plugin({
 								throw e;
 							}
 						}
-					} else if (tokenized[2] == "downloads") {
-						if (o.src[tokenized[0]] && o.src[tokenized[0]][tokenized[1]]) {
-							var downloads = o.src[tokenized[0]][tokenized[1]].downloads;
-							var file = tokenized[3];
-							if (downloads && downloads[file]) {
-								return {
-									status: { code: 200 },
-									body: {
-										stream: downloads[file].read(jsh.io.Streams.binary)
-									}
-								}
-							}
+					} else if (o.src[tokenized[0]] && o.src[tokenized[0]][tokenized[1]]) {
+						//	forward to delegate server
+						jsh.shell.console("Forward to delegate server");
+						var delegate = startHgServer();
+						jsh.shell.console("Return proxy for " + delegate.port + " and request " + request.path);
+						return {
+							status: { code: 599 }
+						}
+					} else {
+						jsh.shell.console("Unhandled: " + tokenized.join("/"));
+						return {
+							status: { code: 598 }
 						}
 					}
 				}
 			};
+			rv.stop = function() {
+				if (hgserve) hgserve.stop();
+			};
+			return rv;
+		};
+		jsh.test.mock.Internet.bitbucket = $api.deprecate(jsh.test.mock.Web.bitbucket);
+		
+		jsh.test.mock.Hg = function() {
+		};
+		jsh.test.mock.Hg.bitbucket = function(o) {
+			var config = [];
+			config.push("[paths]");
+			for (var x in o.src) {
+				for (var y in o.src[x]) {
+					//	TODO	repository
+					config.push("/" + x + "/" + y + "=" + o.src[x][y].directory);
+				}
+			}
+			var CONFIG = jsh.shell.TMPDIR.createTemporary();
+			CONFIG.pathname.write(config.join("\n"), { append: false });
+			
+			var port;
+			
+			var run = function(p,on) {
+				jsh.shell.run({
+					command: "hg",
+					arguments: (function() {
+						var rv = ["serve"];
+						port = jsh.ip.tcp.getEphemeralPortNumber();
+						rv.push("-p", String(port));
+						rv.push("--web-conf", CONFIG);
+						jsh.shell.console("args = " + rv);
+						return rv;
+					})(),
+					on: {
+						start: function() {
+							jsh.shell.console("run started");
+							if (on && on.start) on.start.apply(this,arguments);
+						}
+					}
+				})
+			};
+			
+			var running;
+			
+			Object.defineProperty(this,"port",{
+				get: function() {
+					return port;
+				}
+			});
+			
+			this.start = function(p) {
+				var lock = new jsh.java.Thread.Monitor();
+				if (!running) {
+					jsh.java.Thread.start(function() {
+						run(p,{
+							start: function() {
+								jsh.shell.console("started");
+								var process = arguments[0];
+								new lock.Waiter({
+									until: function() {
+										return true;
+									},
+									then: function() {
+										jsh.shell.console("setting");
+										running = process;
+									}
+								})();
+							}
+						})
+					});
+				}
+				return new lock.Waiter({
+					until: function() {
+						jsh.shell.console("Checking");
+						return Boolean(running);
+					},
+					then: function() {
+						jsh.shell.console("Returning ...");
+						return running;
+					}
+				})();
+			}
+			
+			this.stop = function() {
+				if (running) running.kill();
+			}
 		}
 	}
 })

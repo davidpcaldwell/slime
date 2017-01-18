@@ -173,20 +173,28 @@ END LICENSE
 						}
 					});
 					server.start();
+					
+					var evaluateJson = function(response) {
+						if (response.status.code != 200) {
+							throw new Error("Response code: " + response.status.code);
+						}
+						return JSON.parse(response.body.stream.character().asString());
+					}
 
 					try {
 						var client = new jsh.http.Client();
 						var response = client.request({
-							url: "http://127.0.0.1:" + server.port + "/aPath?aName=aValue",
-							evaluate: function(response) {
-								if (response.status.code != 200) {
-									throw new Error("Response code: " + response.status.code);
-								}
-								return JSON.parse(response.body.stream.character().asString());
-							}
+							url: "http://127.0.0.1:" + server.port + "/aPath",
+							evaluate: evaluateJson
 						});
 						verify(response).source.ip.is("127.0.0.1");
 						verify(response).method.is("GET");
+						verify(response).path.is("aPath");
+						verify(response).evaluate.property("query").is(void(0));
+						response = client.request({
+							url: "http://127.0.0.1:" + server.port + "/aPath?aName=aValue",
+							evaluate: evaluateJson
+						});
 						verify(response).path.is("aPath");
 						verify(response).query.string.is("aName=aValue");
 						verify(response).query.form[0].name.is("aName");
