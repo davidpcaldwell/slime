@@ -116,12 +116,16 @@ $exports.Handler.HostRedirect = function(p) {
 	}
 };
 $exports.Handler.Proxy = function(o) {
+	var client = new jsh.http.Client();
+	
 	return function(request) {
+		//	TODO	what about protocol? What about host header?
+		var path = (request.query) ? request.path + "?" + request.query.string : request.path;
 		var send = {
-			method: request.method
+			method: request.method,
+			url: "http://" + o.target.host + ":" + o.target.port + "/" + path
 		};
-		return {
-			status: { code: 500 }
-		}
+		var response = client.request(send);
+		return response;
 	};
 }
