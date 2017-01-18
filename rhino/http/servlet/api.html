@@ -161,7 +161,9 @@ END LICENSE
 				};
 
 				if (jsh.httpd.Tomcat) {
-					var server = new jsh.httpd.Tomcat();
+					var server = new jsh.httpd.Tomcat({
+						https: {}
+					});
 					server.map({
 						path: "",
 						servlets: {
@@ -199,6 +201,43 @@ END LICENSE
 						verify(response).query.string.is("aName=aValue");
 						verify(response).query.form[0].name.is("aName");
 						verify(response).query.form[0].value.is("aValue");
+
+						jsh.shell.console("port = " + server.https.port);
+						
+						//	TODO	this HTTPS trust rigamarole should probably be in the shell somewhere, perhaps as a test API
+						var _trustManagers = jsh.java.Array.create({
+							type: Packages.javax.net.ssl.TrustManager,
+							array: [
+								new JavaAdapter(
+									Packages.javax.net.ssl.X509TrustManager,
+									{}
+								)
+							]
+						});
+						var _sslContext = Packages.javax.net.ssl.SSLContext.getInstance("SSL");
+						_sslContext.init(null, _trustManagers, new Packages.java.security.SecureRandom());
+						Packages.javax.net.ssl.HttpsURLConnection.setDefaultSSLSocketFactory(_sslContext.getSocketFactory());
+
+						Packages.javax.net.ssl.HttpsURLConnection.setDefaultHostnameVerifier(
+							new JavaAdapter(
+								Packages.javax.net.ssl.HostnameVerifier,
+								{
+									verify: function(hostname,session) {
+										return true;
+									}
+								}
+							)
+						);
+
+						response = client.request({
+							url: "https://127.0.0.1:" + server.https.port + "/aPath",
+							evaluate: evaluateJson
+						});
+						//	TODO	can we detect incoming request was https?
+						verify(response).source.ip.is("127.0.0.1");
+						verify(response).method.is("GET");
+						verify(response).path.is("aPath");
+						verify(response).evaluate.property("query").is(void(0));
 					} catch (e) {
 						throw e;
 					} finally {

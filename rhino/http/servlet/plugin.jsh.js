@@ -19,6 +19,43 @@ plugin({
 		if (!jsh.httpd) {
 			jsh.httpd = {};
 		}
+		
+		var keygen = function(p) {
+			var pathname = jsh.shell.HOME.getRelativePath(".inonit/jsh/etc/keystore");
+			if (!pathname.file) {
+				pathname.parent.createDirectory({
+					ifExists: function(dir) {
+						return false;
+					}
+				});
+				if (!p) p = {};
+				if (!p.dname) p.dname = {};
+				//	"CN=Embedded Tomcat, OU=jsh, O=SLIME, L=Unknown, ST=Unknown, C=Unknown";
+				if (!p.dname.cn) p.dname.cn = "Embedded Tomcat";
+				if (!p.dname.ou) p.dname.ou = "jsh";
+				if (!p.dname.o) p.dname.o = "SLIME";
+				if (!p.dname.l) p.dname.l = "Unknown";
+				if (!p.dname.st) p.dname.st = "Unknown";
+				if (!p.dname.c) p.dname.c = "Unknown";
+				var dname = ["cn","ou","o","l","st","c"].map(function(name) {
+					return name.toUpperCase() + "=" + p.dname[name];
+				}).join(", ");
+				jsh.shell.run({
+					command: jsh.shell.java.keytool,
+					arguments: [
+						"-genkey",
+						"-noprompt",
+						"-alias", "tomcat",
+						"-dname", dname,
+						//	TODO	is this the right place? for built shells?
+						"-keystore", pathname.toString(),
+						"-storepass", "inonit",
+						"-keypass", "inonit"
+					]
+				});
+			}
+			return jsh.shell.HOME.getFile(".inonit/jsh/etc/keystore");
+		}
 
 		var getMimeType = function(file) {
 			var type = jsh.io.mime.Type.guess({
@@ -133,15 +170,40 @@ plugin({
 				var base = (p.base) ? p.base : jsh.shell.TMPDIR.createTemporary({ directory: true, prefix: "tomcat" });
 
 				this.base = base;
-
-				var port = (p.port) ? p.port : (function() {
+				
+				var getOpenPort = function() {
 					var address = new Packages.java.net.ServerSocket(0);
 					var rv = address.getLocalPort();
 					address.close();
-					return rv;
-				})();
+					return rv;					
+				};
+
+				var port = (p.port) ? p.port : getOpenPort();
 
 				this.port = port;
+				
+				if (p.https) {
+					var file = keygen();
+					var _https = new Packages.org.apache.catalina.connector.Connector();
+					var hport = (p.https.port) ? p.https.port : getOpenPort();
+					_https.setPort(hport);
+					_https.setSecure(true);
+					_https.setScheme("https");
+					//	TODO	some DRY violations; see keygen() above
+					_https.setAttribute("keyAlias", "tomcat");
+					_https.setAttribute("keystorePass", "inonit");
+					_https.setAttribute("keystoreFile", file.toString());
+					_https.setAttribute("clientAuth", "false");
+					_https.setAttribute("sslProtocol", "TLS");
+					_https.setAttribute("SSLEnabled", "true");
+					jsh.shell.console("Adding connector " + _https);
+					tomcat.getService().addConnector(_https);
+					jsh.shell.console("Service " + tomcat.getService());
+					jsh.shell.console("Tomcat " + tomcat);
+					this.https = {
+						port: hport
+					};
+				}
 
 				tomcat.setBaseDir(base);
 				tomcat.setPort(port);

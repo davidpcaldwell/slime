@@ -556,7 +556,16 @@ $exports.java = function(p) {
 				return $context.api.file.Searchpath([self.home.getRelativePath("bin"),self.home.getRelativePath("../bin")]).getCommand("jrunscript");
 			})
 		}
-	)
+	);
+	
+	Object.defineProperty(
+		this, "keytool",
+		{
+			get: $api.Function.singleton(function() {
+				return $context.api.file.Searchpath([self.home.getRelativePath("bin")]).getCommand("keytool");				
+			})
+		}
+	);
 //	this.jrunscript = $context.api.file.Searchpath([this.home.getRelativePath("bin"),this.home.getRelativePath("../bin")]).getCommand("jrunscript");
 }).call($exports.java);
 
