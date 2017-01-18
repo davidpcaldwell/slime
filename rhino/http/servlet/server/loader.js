@@ -123,9 +123,16 @@ $exports.Handler.Proxy = function(o) {
 		var path = (request.query) ? request.path + "?" + request.query.string : request.path;
 		var send = {
 			method: request.method,
-			url: "http://" + o.target.host + ":" + o.target.port + "/" + path
+			url: "http://" + o.target.host + ":" + o.target.port + "/" + path,
+			headers: request.headers,
+			body: (request.method == "GET") ? void(0) : request.body
 		};
 		var response = client.request(send);
+		response.headers = response.headers.filter(function(header) {
+			var name = header.name.toLowerCase();
+			if (name == "transfer-encoding") return false;
+			return true;
+		});
 		return response;
 	};
 }

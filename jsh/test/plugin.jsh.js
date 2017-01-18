@@ -203,19 +203,30 @@ plugin({
 		};
 		jsh.test.mock.Internet = $api.deprecate(jsh.test.mock.Web);
 		jsh.test.mock.Web.bitbucket = function(o) {
-			var hgserve;
-			
-			var startHgServer = function() {
-				if (!hgserve) {
-					hgserve = new jsh.test.mock.Hg.bitbucket(o);
-					hgserve.start();
-				}
+			var startHgServer = $api.Function.singleton(function() {
+				hgserve = new jsh.test.mock.Hg.bitbucket(o);
+				hgserve.start();
 				return hgserve;
-			};
+			});
 
+			var httpd = (function() {
+				if (jsh.shell.jsh.src) return jsh.loader.file(jsh.shell.jsh.src.getRelativePath("rhino/http/servlet/server/loader.js"));
+			})();
+			
+			var getHgServerProxy = (httpd) 
+				? $api.Function.singleton(function() {
+					var server = startHgServer();
+					return new httpd.Handler.Proxy({
+						target: {
+							host: "127.0.0.1",
+							port: server.port
+						}
+					});
+				})
+				: void(0)
+			;
+			
 			var rv = function(request) {
-				jsh.shell.console("host = " + request.headers.value("host"));
-				jsh.shell.console("path = " + request.path);
 				if (request.headers.value("host") == "bitbucket.org") {
 					if (request.path == "") {
 						return {
@@ -374,14 +385,12 @@ plugin({
 								throw e;
 							}
 						}
-					} else if (o.src[tokenized[0]] && o.src[tokenized[0]][tokenized[1]]) {
+					} else if (getHgServerProxy && o.src[tokenized[0]] && o.src[tokenized[0]][tokenized[1]]) {
 						//	forward to delegate server
 						jsh.shell.console("Forward to delegate server");
-						var delegate = startHgServer();
-						jsh.shell.console("Return proxy for " + delegate.port + " and request " + request.path);
-						return {
-							status: { code: 599 }
-						}
+						var delegate = getHgServerProxy();
+						jsh.shell.console("Return proxy for " + delegate + " and request " + request.path);
+						return delegate(request);
 					} else {
 						jsh.shell.console("Unhandled: " + tokenized.join("/"));
 						return {
