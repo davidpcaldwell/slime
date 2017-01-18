@@ -203,11 +203,15 @@ plugin({
 		};
 		jsh.test.mock.Internet = $api.deprecate(jsh.test.mock.Web);
 		jsh.test.mock.Web.bitbucket = function(o) {
-			var startHgServer = $api.Function.singleton(function() {
-				hgserve = new jsh.test.mock.Hg.bitbucket(o);
-				hgserve.start();
+			var hgserve;
+			
+			var startHgServer = function() {
+				if (!hgserve) {
+					hgserve = new jsh.test.mock.Hg.bitbucket(o);
+					hgserve.start();
+				}
 				return hgserve;
-			});
+			};
 
 			var httpd = (function() {
 				if (jsh.shell.jsh.src) return jsh.loader.file(jsh.shell.jsh.src.getRelativePath("rhino/http/servlet/server/loader.js"));
