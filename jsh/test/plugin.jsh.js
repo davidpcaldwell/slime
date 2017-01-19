@@ -183,7 +183,7 @@ plugin({
 				port: tomcat.https.port,
 				client: new jsh.http.Client({
 					proxy: {
-						http: {
+						https: {
 							host: "127.0.0.1",
 							port: tomcat.https.port
 						}

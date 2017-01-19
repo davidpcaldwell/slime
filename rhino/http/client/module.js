@@ -139,10 +139,23 @@ var Cookies = function() {
 
 var spi = function(p) {
 	var connect = function(method,url,headers,mode) {
+		if (typeof(url) == "string") url = $context.api.web.Url.parse(url);
+		var hostHeader;
+		if (url.scheme == "https" && mode.proxy && mode.proxy.https) {
+			Packages.java.lang.System.setProperty("sun.net.http.allowRestrictedHeaders", "true");
+			//	Currently implemented by re-writing the URL; would be better to implement a tunnel through an HTTP proxy but
+			//	could not get that working with Tomcat, which returned 400 errors when https requests are sent to http listener
+			//	TODO	does this work for default port?
+			hostHeader = url.host + ((url.port) ? ":" + url.port : "");
+			url.host = mode.proxy.https.host;
+			url.port = mode.proxy.https.port;
+		}
 		var $url = new Packages.java.net.URL(url.toString());
 		debug("Requesting: " + url);
 		var $urlConnection = (function(proxy) {
 			if (!proxy) {
+				return $url.openConnection();
+			} else if (proxy.https) {
 				return $url.openConnection();
 			} else if (proxy.http || proxy.socks) {
 				var _type = (function() {
@@ -171,6 +184,9 @@ var spi = function(p) {
 			if (mode.timeout.read) {
 				$urlConnection.setReadTimeout(mode.timeout.read);
 			}
+		}
+		if (hostHeader) {
+			$urlConnection.addRequestProperty("Host",hostHeader);
 		}
 		headers.forEach( function(header) {
 			$urlConnection.addRequestProperty(header.name,header.value);

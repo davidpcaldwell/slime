@@ -2,7 +2,6 @@ var parameters = jsh.script.getopts({
 	options: {
 		view: "console",
 		serve: false,
-		https: false,
 		system: false,
 		httptunnel: false
 	}
@@ -64,17 +63,28 @@ suite.part("authorization", {
 		});
 		verify(okDirect).status.code.is(200);
 		
-		var protocol = (parameters.options.https) ? "https" : "http";
-		var unauthorized = client.request({
-			url: protocol + "://bitbucket.org/api/1.0/repositories/davidpcaldwell/jshtest/raw/local/test/bitbucket.jsh.js",
-			authorization: null
-		});
-		verify(unauthorized).status.code.is(401);
-		var ok = client.request({
-			url: protocol + "://bitbucket.org/api/1.0/repositories/davidpcaldwell/jshtest/raw/local/test/bitbucket.jsh.js",
-			authorization: new jsh.http.Authentication.Basic.Authorization({ user: "foo", password: "bar" })
-		});
-		verify(ok).status.code.is(200);
+		var verifyApi = function(client,protocol) {
+			var unauthorized = client.request({
+				url: protocol + "://bitbucket.org/api/1.0/repositories/davidpcaldwell/jshtest/raw/local/test/bitbucket.jsh.js",
+				authorization: null
+			});
+			if (unauthorized.status.code == 400) {
+				jsh.shell.console(unauthorized.headers.map(function(h) { return h.name + ": " + h.value; }).join("\n"));
+				jsh.shell.console(unauthorized.body.type);
+				jsh.shell.console(unauthorized.body.stream);
+			}
+			verify(unauthorized).status.code.is(401);
+			var ok = client.request({
+				url: protocol + "://bitbucket.org/api/1.0/repositories/davidpcaldwell/jshtest/raw/local/test/bitbucket.jsh.js",
+				authorization: new jsh.http.Authentication.Basic.Authorization({ user: "foo", password: "bar" })
+			});
+			verify(ok).status.code.is(200);			
+		}
+		
+		verifyApi(server.client,"http");
+		//verifyApi(server.client,"https");
+		//verifyApi(new jsh.http.Client(),"https");
+		verifyApi(server.https.client,"https");
 	}
 });
 
