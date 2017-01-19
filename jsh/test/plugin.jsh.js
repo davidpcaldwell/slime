@@ -405,9 +405,7 @@ plugin({
 						}
 					} else if (getHgServerProxy && o.src[tokenized[0]] && o.src[tokenized[0]][tokenized[1]]) {
 						//	forward to delegate server
-						jsh.shell.console("Forward to delegate server");
 						var delegate = getHgServerProxy();
-						jsh.shell.console("Return proxy for " + delegate + " and request " + request.path);
 						return delegate(request);
 					} else {
 						jsh.shell.console("Unhandled: " + tokenized.join("/"));
