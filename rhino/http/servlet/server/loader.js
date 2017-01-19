@@ -121,9 +121,13 @@ $exports.Handler.Proxy = function(o) {
 	return function(request) {
 		//	TODO	what about protocol? What about host header?
 		var path = (request.query) ? request.path + "?" + request.query.string : request.path;
+		var target = (function() {
+			if (request.scheme == "http") return o.target;
+			if (request.scheme == "https") return o.https;
+		})();
 		var send = {
 			method: request.method,
-			url: "http://" + o.target.host + ":" + o.target.port + "/" + path,
+			url: request.scheme + "://" + target.host + ":" + target.port + "/" + path,
 			headers: request.headers,
 			body: (request.method == "GET") ? void(0) : request.body
 		};

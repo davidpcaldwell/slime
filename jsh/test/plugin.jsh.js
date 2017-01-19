@@ -141,7 +141,9 @@ plugin({
 		jsh.test.mock = {};
 		jsh.test.mock.Web = function(o) {
 			if (!o) o = {};
-			var tomcat = new jsh.httpd.Tomcat({});
+			var tomcat = new jsh.httpd.Tomcat({
+				https: {}
+			});
 
 			var handlers = [];
 
@@ -176,6 +178,18 @@ plugin({
 			}
 
 			this.port = tomcat.port;
+			
+			this.https = {
+				port: tomcat.https.port,
+				client: new jsh.http.Client({
+					proxy: {
+						http: {
+							host: "127.0.0.1",
+							port: tomcat.https.port
+						}
+					}
+				})
+			};
 			
 			this.start = function() {
 				tomcat.start();
@@ -231,7 +245,7 @@ plugin({
 			;
 			
 			var rv = function(request) {
-				if (request.headers.value("host") == "bitbucket.org") {
+				if (request.headers.value("host") == "bitbucket.org" || o.loopback) {
 					if (request.path == "") {
 						return {
 							status: {

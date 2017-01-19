@@ -196,10 +196,7 @@ plugin({
 					_https.setAttribute("clientAuth", "false");
 					_https.setAttribute("sslProtocol", "TLS");
 					_https.setAttribute("SSLEnabled", "true");
-					jsh.shell.console("Adding connector " + _https);
 					tomcat.getService().addConnector(_https);
-					jsh.shell.console("Service " + tomcat.getService());
-					jsh.shell.console("Tomcat " + tomcat);
 					this.https = {
 						port: hport
 					};

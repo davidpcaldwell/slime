@@ -142,6 +142,7 @@ END LICENSE
 						source: {
 							ip: request.source.ip
 						},
+						scheme: request.scheme,
 						method: request.method,
 						path: request.path
 					};
@@ -190,6 +191,7 @@ END LICENSE
 							evaluate: evaluateJson
 						});
 						verify(response).source.ip.is("127.0.0.1");
+						verify(response).scheme.is("http");
 						verify(response).method.is("GET");
 						verify(response).path.is("aPath");
 						verify(response).evaluate.property("query").is(void(0));
@@ -204,30 +206,7 @@ END LICENSE
 
 						jsh.shell.console("port = " + server.https.port);
 						
-						//	TODO	this HTTPS trust rigamarole should probably be in the shell somewhere, perhaps as a test API
-						var _trustManagers = jsh.java.Array.create({
-							type: Packages.javax.net.ssl.TrustManager,
-							array: [
-								new JavaAdapter(
-									Packages.javax.net.ssl.X509TrustManager,
-									{}
-								)
-							]
-						});
-						var _sslContext = Packages.javax.net.ssl.SSLContext.getInstance("SSL");
-						_sslContext.init(null, _trustManagers, new Packages.java.security.SecureRandom());
-						Packages.javax.net.ssl.HttpsURLConnection.setDefaultSSLSocketFactory(_sslContext.getSocketFactory());
-
-						Packages.javax.net.ssl.HttpsURLConnection.setDefaultHostnameVerifier(
-							new JavaAdapter(
-								Packages.javax.net.ssl.HostnameVerifier,
-								{
-									verify: function(hostname,session) {
-										return true;
-									}
-								}
-							)
-						);
+						jsh.http.test.disableHttpsSecurity();
 
 						response = client.request({
 							url: "https://127.0.0.1:" + server.https.port + "/aPath",
@@ -235,6 +214,7 @@ END LICENSE
 						});
 						//	TODO	can we detect incoming request was https?
 						verify(response).source.ip.is("127.0.0.1");
+						verify(response).scheme.is("https");
 						verify(response).method.is("GET");
 						verify(response).path.is("aPath");
 						verify(response).evaluate.property("query").is(void(0));

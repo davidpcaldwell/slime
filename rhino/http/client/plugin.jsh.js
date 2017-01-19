@@ -22,5 +22,34 @@ plugin({
 				web: jsh.js.web
 			}
 		});
+		
+		jsh.http.test = new function() {
+			this.disableHttpsSecurity = function() {
+				//	TODO	this HTTPS trust rigamarole should probably be in the shell somewhere, perhaps as a test API
+				var _trustManagers = jsh.java.Array.create({
+					type: Packages.javax.net.ssl.TrustManager,
+					array: [
+						new JavaAdapter(
+							Packages.javax.net.ssl.X509TrustManager,
+							{}
+						)
+					]
+				});
+				var _sslContext = Packages.javax.net.ssl.SSLContext.getInstance("SSL");
+				_sslContext.init(null, _trustManagers, new Packages.java.security.SecureRandom());
+				Packages.javax.net.ssl.HttpsURLConnection.setDefaultSSLSocketFactory(_sslContext.getSocketFactory());
+
+				Packages.javax.net.ssl.HttpsURLConnection.setDefaultHostnameVerifier(
+					new JavaAdapter(
+						Packages.javax.net.ssl.HostnameVerifier,
+						{
+							verify: function(hostname,session) {
+								return true;
+							}
+						}
+					)
+				);				
+			}
+		}
 	}
 });
