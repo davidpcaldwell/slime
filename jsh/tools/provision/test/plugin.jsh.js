@@ -4,9 +4,57 @@ plugin({
 	},
 	load: function() {
 		jsh.test.provision = {};
+		
+		var getMockConfiguration = function(base,isPrivateRepository) {
+			var repository = new hg.Repository({ local: base });
+			var all = [];
+
+			var addRepositories = function recurse(top) {
+				all.push(top);
+				var sub = top.subrepositories();
+				if (sub) {
+					sub.forEach(function(r) {
+						recurse(r);
+					})
+				}
+			};
+
+			addRepositories(repository);
+
+			var bitbucket = {
+				src: {
+				}
+			};
+			var isPrivate = function(owner,repository) {
+				if (owner == "davidpcaldwell" && (repository == "slim" || repository == "slime")) return false;
+				if (owner == "davidpcaldwell") return true;
+				return isPrivateRepository(owner,repository);
+			}
+			all.forEach(function(r) {
+				var origin = r.paths.default;
+				var tokens = origin.url.path.substring(1).split("/");
+				var owner = tokens[0];
+				var repository = tokens[1];
+				if (!bitbucket.src[owner]) {
+					bitbucket.src[owner] = {};
+				}
+				if (!bitbucket.src[owner][repository]) {
+					bitbucket.src[owner][repository] = { 
+						directory: r.directory,
+						access: (isPrivate(owner,repository)) ? { user: owner, password: "foo" } : void(0)
+					}
+				}
+			});
+			return bitbucket;
+		};
+
 		jsh.test.provision.Server = function(o) {
 			var server = new jsh.test.mock.Internet();
-			var bitbucket = o.bitbucket;
+			var bitbucket = (function() {
+				if (o.bitbucket) return o.bitbucket;
+				//	TODO	publish this API and make it work for non-davidpcaldwell repositories
+				if (o.base) return getMockConfiguration(o.base);
+			})();
 			if (!o.bitbucket.src.davidpcaldwell) o.bitbucket.src.davidpcaldwell = {};
 			if (!o.bitbucket.src.davidpcaldwell.slime) {
 				o.bitbucket.src.davidpcaldwell.slime = {
@@ -19,7 +67,8 @@ plugin({
 			}
 			server.add(jsh.test.mock.Internet.bitbucket(bitbucket));
 			return server;
-		}
+		};
+		jsh.test.provision.Server.getMockBitbucketConfiguration = getMockConfiguration;
 		
 		var writeUrl = function(url,mock) {
 			if (mock) url = url.replace(/https:\/\//g, "http://");
