@@ -58,7 +58,8 @@ END LICENSE
 					api: {
 						shell: jsh.shell,
 						http: jsh.http,
-						file: jsh.file
+						file: jsh.file,
+						Error: jsh.js.Error
 					},
 					downloads: p.downloads
 				});
@@ -68,7 +69,8 @@ END LICENSE
 				api: {
 					shell: jsh.shell,
 					http: jsh.http,
-					file: jsh.file
+					file: jsh.file,
+					Error: jsh.js.Error
 				},
 				downloads: scope.downloads
 			});
@@ -498,9 +500,11 @@ END LICENSE
 								client: mockclient,
 								api: {
 									shell: jsh.shell,
-									http: jsh.http
+									http: jsh.http,
+									file: jsh.file,
+									Error: jsh.js.Error
 								},
-							downloads: mockdownloads
+								downloads: mockdownloads
 							});
 
 							var GET_API_HTML = function() { return this.getFile("api.html") };

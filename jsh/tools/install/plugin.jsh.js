@@ -13,7 +13,7 @@
 
 plugin({
 	isReady: function() {
-		return jsh.http && jsh.shell;
+		return jsh.js && jsh.file && jsh.http && jsh.shell;
 	},
 	load: function() {
 		if (!jsh.tools) jsh.tools = {};
@@ -21,7 +21,8 @@ plugin({
 			api: {
 				shell: jsh.shell,
 				http: jsh.http,
-				file: jsh.file
+				file: jsh.file,
+				Error: jsh.js.Error
 			},
 			downloads: jsh.shell.user.downloads
 		});

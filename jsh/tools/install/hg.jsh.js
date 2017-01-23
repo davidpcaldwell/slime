@@ -47,59 +47,6 @@ if (parameters.options.test) {
 	});
 }
 
-var installed = (function() {
-	var command = jsh.shell.PATH.getCommand("hg");
-	if (command) {
-		var output = jsh.shell.run({
-			command: command,
-			arguments: ["-q", "version"],
-			stdio: {
-				output: String
-			},
-			evaluate: function(result) {
-				return result.stdio.output.split("\n")[0];
-			}
-		});
-		var versionMatcher = /.*\(version ([\d\.]+)(?:.*)\)/;
-		var version = versionMatcher.exec(output)[1];
-		return {
-			version: version
-		}
-	} else {
-		return null;
-	}
-})();
-
 var api = jsh.script.loader.file("hg.js");
 
-if (jsh.shell.os.name == "Mac OS X") {
-	jsh.shell.console("Detected OS X " + jsh.shell.os.version);
-
-	var distribution = api.distribution.osx({ os: jsh.shell.os.version });
-
-	if (installed && distribution.hg == installed.version) {
-		jsh.shell.console("Already installed: hg " + installed.version);
-		jsh.shell.exit(0);
-	} else if (installed) {
-		jsh.shell.console("Found version: " + installed.version + "; upgrading to " + distribution.hg);
-	}
-
-	jsh.shell.console("Getting " + distribution.distribution.url);
-	var file = jsh.tools.install.get({
-		url: distribution.distribution.url
-	});
-
-	if (/\.pkg$/.test(file.pathname.basename)) {
-		jsh.shell.console("Install: " + file);
-		jsh.shell.run({
-			command: "open",
-			arguments: [file]
-		});
-		jsh.shell.console("Please execute the graphical installer.");
-		jsh.shell.exit(1);
-	} else {
-		throw new Error("Unimplemented: installation of file type that is not .pkg: " + file);
-	}
-} else {
-	throw new Error("Unimplemented: installation of Mercurial for non-OS X system.");
-}
+api.install();

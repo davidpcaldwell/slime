@@ -175,3 +175,11 @@ var apache = $loader.file("apache.js", {
 });
 
 $exports.apache = apache;
+
+$exports.hg = $loader.file("hg.js", {
+	api: {
+		shell: $context.api.shell,
+		Error: $context.api.Error,
+		install: $exports
+	}
+})
