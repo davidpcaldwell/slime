@@ -47,6 +47,4 @@ if (parameters.options.test) {
 	});
 }
 
-var api = jsh.script.loader.file("hg.js");
-
-api.install();
+jsh.tools.install.hg.install();
