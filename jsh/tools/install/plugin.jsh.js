@@ -26,5 +26,33 @@ plugin({
 			},
 			downloads: jsh.shell.user.downloads
 		});
+		
+		jsh.tools.install.rhino = {};
+		jsh.tools.install.rhino.install = function(p) {
+			if (!p) p = {};
+			if (jsh.shell.jsh.lib.getFile("js.jar") && !p.replace) {
+				jsh.shell.console("Rhino already installed at " + jsh.shell.jsh.lib.getFile("js.jar"));
+				return;
+			}
+			jsh.shell.console("Installing Rhino ...");
+			var operation = "copy";
+			if (!p.local) {
+				var jrunscript = {
+					$api: {
+						arguments: ["api"]
+					}
+				};
+				var SRC = (function() {
+					if (jsh.shell.jsh.home) return jsh.shell.jsh.home.getRelativePath("jsh.js");
+					if (jsh.shell.jsh.src) return jsh.shell.jsh.src.getRelativePath("rhino/jrunscript/api.js");
+				})();
+				jsh.loader.run(SRC, {}, jrunscript);
+				var _rhino = jrunscript.$api.rhino.download();
+				p.local = jsh.file.Pathname(String(_rhino.getCanonicalPath())).file;
+				operation = "move";
+			}
+			p.local[operation](jsh.shell.jsh.lib.getRelativePath("js.jar"), { recursive: true });
+			jsh.shell.console("Installed Rhino at " + jsh.shell.jsh.lib.getRelativePath("js.jar"));
+		}
 	}
 });
