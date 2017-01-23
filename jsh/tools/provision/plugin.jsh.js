@@ -1,6 +1,6 @@
 plugin({
 	isReady: function() {
-		return jsh.java.tools.askpass.gui && jsh.shell;
+		return jsh.java && jsh.java.tools && jsh.java.tools.askpass && jsh.java.tools.askpass.gui && jsh.shell;
 	},
 	load: function() {
 		if (!jsh.tools) jsh.tools = {};
