@@ -53,6 +53,8 @@ plugin({
 			}
 			p.local[operation](jsh.shell.jsh.lib.getRelativePath("js.jar"), { recursive: true });
 			jsh.shell.console("Installed Rhino at " + jsh.shell.jsh.lib.getRelativePath("js.jar"));
-		}
+		};
+		
+		jsh.tools.install.tomcat = $loader.file("plugin.jsh.tomcat.js");
 	}
 });
