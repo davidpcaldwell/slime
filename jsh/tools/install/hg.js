@@ -112,6 +112,7 @@ $exports.installed = function() {
 	}
 };
 
+var GUI = $context.api.Error.Type("Please execute the graphical installer.");
 $exports.install = function() {
 	var installed = $exports.installed();
 	if ($context.api.shell.os.name == "Mac OS X") {
@@ -121,7 +122,7 @@ $exports.install = function() {
 
 		if (installed && distribution.hg == installed.version) {
 			$context.api.shell.console("Already installed: hg " + installed.version);
-			$context.api.shell.exit(0);
+			return;
 		} else if (installed) {
 			$context.api.shell.console("Found version: " + installed.version + "; upgrading to " + distribution.hg);
 		}
@@ -137,12 +138,13 @@ $exports.install = function() {
 				command: "open",
 				arguments: [file]
 			});
-			$context.api.shell.console("Please execute the graphical installer.");
-			$context.api.shell.exit(1);
+			//	TODO	probably this will not look pretty, should catch this error
+			throw new GUI("Please execute the graphical installer.");
 		} else {
 			throw new Error("Unimplemented: installation of file type that is not .pkg: " + file);
 		}
 	} else {
 		throw new Error("Unimplemented: installation of Mercurial for non-OS X system.");
 	}
-}
+};
+$exports.install.GUI = GUI;
