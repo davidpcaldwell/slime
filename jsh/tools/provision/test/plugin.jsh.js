@@ -74,11 +74,12 @@ plugin({
 				};
 			}
 			server.add(jsh.test.mock.Internet.bitbucket(bitbucket));
+			var version = (o.version) ? o.version : "tip";
 			var script = (function() {
 				var repository = String(new hg.Repository({ local: o.base }).paths.default.url);
 				if (repository.substring(repository.length-1) != "/") repository += "/";
 				repository += "raw/";
-				repository += o.version + "/";
+				repository += version + "/";
 				repository += o.script;
 				return repository;
 			})();
