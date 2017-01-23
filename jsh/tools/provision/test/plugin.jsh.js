@@ -5,7 +5,14 @@ plugin({
 	load: function() {
 		jsh.test.provision = {};
 		
+		var loadhg = function() {
+			if (!global.hg) {
+				jsh.loader.plugins(jsh.shell.jsh.src.getRelativePath("rhino/tools/hg"));
+			}
+		}
+		
 		var getMockConfiguration = function(base,isPrivateRepository) {
+			loadhg();
 			var repository = new hg.Repository({ local: base });
 			var all = [];
 
@@ -49,6 +56,7 @@ plugin({
 		};
 
 		jsh.test.provision.Server = function(o) {
+			loadhg();
 			var server = new jsh.test.mock.Internet();
 			var bitbucket = (function() {
 				if (o.bitbucket) return o.bitbucket;
@@ -66,6 +74,31 @@ plugin({
 				};
 			}
 			server.add(jsh.test.mock.Internet.bitbucket(bitbucket));
+			var script = (function() {
+				var repository = String(new hg.Repository({ local: o.base }).paths.default.url);
+				if (repository.substring(repository.length-1) != "/") repository += "/";
+				repository += "raw/";
+				repository += o.version + "/";
+				repository += o.script;
+				return repository;
+			})();
+			var command = {
+				mock: { 
+					server: {
+						host: (o.host) ? o.host : "127.0.0.1",
+						port: server.port
+					}
+				},
+				script: script,
+				user: o.user
+			};
+			var mock = new jsh.test.provision.Command(command);
+			jsh.shell.console(mock);
+			delete command.mock;
+			jsh.shell.console("");
+			var real = new jsh.test.provision.Command(command);
+			jsh.shell.console(real);
+			server.run();
 			return server;
 		};
 		jsh.test.provision.Server.getMockBitbucketConfiguration = getMockConfiguration;
