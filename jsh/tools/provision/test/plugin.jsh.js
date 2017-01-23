@@ -55,7 +55,7 @@ plugin({
 			return bitbucket;
 		};
 
-		jsh.test.provision.Server = function(o) {
+		jsh.test.provision.serve = function(o) {
 			loadhg();
 			var server = new jsh.test.mock.Internet();
 			var bitbucket = (function() {
@@ -63,9 +63,9 @@ plugin({
 				//	TODO	publish this API and make it work for non-davidpcaldwell repositories
 				if (o.base) return getMockConfiguration(o.base);
 			})();
-			if (!o.bitbucket.src.davidpcaldwell) o.bitbucket.src.davidpcaldwell = {};
-			if (!o.bitbucket.src.davidpcaldwell.slime) {
-				o.bitbucket.src.davidpcaldwell.slime = {
+			if (!bitbucket.src.davidpcaldwell) o.bitbucket.src.davidpcaldwell = {};
+			if (!bitbucket.src.davidpcaldwell.slime) {
+				bitbucket.src.davidpcaldwell.slime = {
 					directory: jsh.shell.jsh.src,
 					downloads: {
 						"jdk-8u112-macosx-x64.dmg": jsh.shell.user.downloads.getFile("jdk-8u112-macosx-x64.dmg"),
@@ -101,7 +101,9 @@ plugin({
 			server.run();
 			return server;
 		};
-		jsh.test.provision.Server.getMockBitbucketConfiguration = getMockConfiguration;
+		jsh.test.provision.serve.getMockBitbucketConfiguration = getMockConfiguration;
+		jsh.test.provision.Server = $api.deprecate(jsh.test.provision.serve);
+		jsh.test.provision.Server.getMockBitbucketConfiguration = $api.deprecate(getMockConfiguration);
 		
 		var writeUrl = function(url,mock) {
 			if (mock) url = url.replace(/https:\/\//g, "http://");
