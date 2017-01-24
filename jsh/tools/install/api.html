@@ -123,11 +123,12 @@ END LICENSE
 				return tmp;
 			};
 		</script>
-		<div>
+		<div jsapi:id="exports">
 			<h1>Exports</h1>
 			<div class="type">
 				<a class="type" name="types.installation">installation</a>
-				<span>Specifies software to be installed (including where to obtain it and how it is structured) and a destination
+				<span>
+					Specifies software to be installed (including where to obtain it and how it is structured) and a destination
 					to which to install it.
 				</span>
 				<div class="label">has properties:</div>
@@ -527,6 +528,17 @@ END LICENSE
 							verify(mockdownloads).getFile("api.html").evaluate(EQUALS(string)).is(true);
 						}
 					</script>
+				</li>
+				<li class="object">
+					<div class="name">hg</div>
+					<span>__DESCRIPTION__</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="function">
+							<div class="name">install</div>
+							<span>Updates the Mercurial install to the best version for the platform.</span>
+						</li>
+					</ul>
 				</li>
 			</ul>
 		</div>
