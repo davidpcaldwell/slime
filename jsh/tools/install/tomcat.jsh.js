@@ -20,4 +20,9 @@ var parameters = jsh.script.getopts({
 	}
 });
 
-jsh.tools.install.tomcat.install(parameters.options);
+jsh.tools.install.tomcat.install({
+	version: parameters.options.version,
+	local: parameters.options.local.file,
+	replace: parameters.options.replace,
+	to: parameters.options.to
+});

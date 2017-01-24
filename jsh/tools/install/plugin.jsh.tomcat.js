@@ -77,13 +77,10 @@ $exports.install = function(p) {
 			mirror: mirror,
 			path: "tomcat/tomcat-7/v" + p.version + "/bin/apache-tomcat-" + p.version + ".zip"
 		});
-		p.local = zip.pathname;
+		p.local = zip;
 	} else {
 		if (!p.version) {
-			if (!p.local.file) {
-				throw new Error("Not found: " + p.local);
-			}
-			var match = getLatestVersion.pattern.exec(p.local.basename);
+			var match = getLatestVersion.pattern.exec(p.local.pathname.basename);
 			if (match) {
 				p.version = match[1] + "." + match[2] + "." + match[3];
 				jsh.shell.console("Installing version " + p.version + " determined from local filename.");
@@ -95,7 +92,7 @@ $exports.install = function(p) {
 	var to = jsh.shell.TMPDIR.createTemporary({ directory: true });
 	jsh.shell.console("Unzipping to: " + to);
 	jsh.file.unzip({
-		zip: p.local.file,
+		zip: p.local,
 		to: to
 	});
 	jsh.shell.console("Installing Tomcat at " + p.to);

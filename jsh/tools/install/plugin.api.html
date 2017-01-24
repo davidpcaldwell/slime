@@ -1,0 +1,122 @@
+<!--
+LICENSE
+This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+The Original Code is the SLIME loader infrastructure.
+
+The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+Portions created by the Initial Developer are Copyright (C) 2013 the Initial Developer. All Rights Reserved.
+
+Contributor(s):
+END LICENSE
+-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
+	<head>
+		<title>jsh.tools.install</title>
+		<link href="../../../loader/api/api.css" rel="stylesheet" type="text/css" />
+		<script src="../../../loader/api/api.js"></script>
+	</head>
+	<body>
+		<div>__DESCRIPTION__</div>
+		<div jsapi:reference="getApi('api.html').getElement('exports')">
+			<h1>Exports</h1>
+			<ul>
+			</ul>
+		</div>
+		<div>
+			<h1>jsh plugin</h1>
+			<ul>
+				<li class="object">
+					<div class="name">rhino</div>
+					<span>__DESCRIPTION__</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="function">
+							<div class="name">install</div>
+							<span>Installs Rhino as a JavaScript engine for the currently executing shell.</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="object">
+										<span>
+											(optional; defaults to empty object)
+										</span>
+										<div class="label">has properties:</div>
+										<ul>
+											<li class="value">
+												<div class="name">local</div>
+												<span class="type"><a href="../../../rhino/file/api.html#types.file">file</a></span>
+												<span>The Rhino JAR file.</span>
+											</li>
+											<li class="value">
+												<div class="name">replace</div>
+												<span class="type">boolean</span>
+												<span>Whether to proceed if Rhino is already part of the shell.</span>
+											</li>
+										</ul>
+									</li>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</div>
+						</li>
+					</ul>
+				</li>
+				<li class="object">
+					<div class="name">tomcat</div>
+					<span>__DESCRIPTION__</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="function">
+							<div class="name">install</div>
+							<span>Installs Tomcat to a given directory (or to the shell).</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="object">
+										<span></span>
+										<div class="label">has properties:</div>
+										<ul>
+											<li class="value">
+												<div class="name">to</div>
+												<span class="type">Pathname</span>
+												<span>
+													(optional; defaults to <code>jsh.shell.jsh.lib.getRelativePath("tomcat")</code>)
+												</span>
+											</li>
+											<li class="value">
+												<div class="name">replace</div>
+												<span class="type">boolean</span>
+												<span>
+													Whether to replace an installation found at the given <code>to</code>.
+												</span>
+											</li>
+											<li class="value">
+												<div class="name">version</div>
+												<span class="type">string</span>
+												<span>
+													(optional; defaults to latest version of Tomcat 7 if no <code>local</code>,
+													otherwise attempts to parse filename of <code>local</code>)
+												</span>
+											</li>
+											<li class="value">
+												<div class="name">local</div>
+												<span class="type"><a href="../../../rhino/file/api.html#types.file">file</a></span>
+												<span>A local Tomcat distribution to install.</span>
+											</li>
+										</ul>
+									</li>
+								</ol>
+							</div>
+						</li>
+					</ul>
+				</li>
+			</ul>
+		</div>
+	</body>
+</html>
