@@ -113,27 +113,30 @@ $exports.installed = function() {
 };
 
 var GUI = $context.api.Error.Type("Please execute the graphical installer.");
-$exports.install = function() {
+$exports.install = $context.api.Events.Function(function(p,events) {
+	var console = function(message) {
+		events.fire("console", message);
+	}
 	var installed = $exports.installed();
 	if ($context.api.shell.os.name == "Mac OS X") {
-		$context.api.shell.console("Detected OS X " + $context.api.shell.os.version);
+		events.console("Detected OS X " + $context.api.shell.os.version);
 
 		var distribution = $exports.distribution.osx({ os: $context.api.shell.os.version });
 
 		if (installed && distribution.hg == installed.version) {
-			$context.api.shell.console("Already installed: hg " + installed.version);
+			console("Already installed: hg " + installed.version);
 			return;
 		} else if (installed) {
-			$context.api.shell.console("Found version: " + installed.version + "; upgrading to " + distribution.hg);
+			console("Found version: " + installed.version + "; upgrading to " + distribution.hg);
 		}
 
-		$context.api.shell.console("Getting " + distribution.distribution.url);
+		console("Getting " + distribution.distribution.url);
 		var file = $context.api.install.get({
 			url: distribution.distribution.url
 		});
 
 		if (/\.pkg$/.test(file.pathname.basename)) {
-			$context.api.shell.console("Install: " + file);
+			console("Install: " + file);
 			$context.api.shell.run({
 				command: "open",
 				arguments: [file]
@@ -146,5 +149,5 @@ $exports.install = function() {
 	} else {
 		throw new Error("Unimplemented: installation of Mercurial for non-OS X system.");
 	}
-};
+});
 $exports.install.GUI = GUI;

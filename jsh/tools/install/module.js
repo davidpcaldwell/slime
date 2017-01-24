@@ -11,26 +11,38 @@
 //	Contributor(s):
 //	END LICENSE
 
-var Listeners = function(p) {
-	if (!p) p = {};
-	var source = (p.source) ? p.source : {};
-	var events = $api.Events({ source: source });
-	var on = (p.on) ? p.on : {};
+var listening = function(f) {
+	var Listeners = function(p) {
+		if (!p) p = {};
+		var source = (p.source) ? p.source : {};
+		var events = $api.Events({ source: source });
+		var on = (p.on) ? p.on : {};
 
-	this.add = function() {
-		for (var x in on) {
-			source.listeners.add(x,on[x]);
-		}
+		this.add = function() {
+			for (var x in on) {
+				source.listeners.add(x,on[x]);
+			}
+		};
+
+		this.remove = function() {
+			for (var x in on) {
+				source.listeners.remove(x,on[x]);
+			}
+		};
+
+		this.events = events;
 	};
 
-	this.remove = function() {
-		for (var x in on) {
-			source.listeners.remove(x,on[x]);
+	return function(p,on) {
+		var listeners = new Listeners({ on: on });
+		listeners.add();
+		try {
+			return f(p,listeners.events);
+		} finally {
+			listeners.remove();
 		}
-	};
-
-	this.events = events;
-};
+	}
+}
 
 var client = ($context.client) ? $context.client : new $context.api.http.Client();
 
@@ -74,10 +86,10 @@ var algorithms = {
 	}
 };
 
-var installLocalArchive = function(p,listeners) {
+var installLocalArchive = function(p,events) {
 	var algorithm = p.format;
 	var untardir = $context.api.shell.TMPDIR.createTemporary({ directory: true });
-	listeners.events.fire("console", { message: "Extracting " + p.file + " to " + untardir });
+	events.fire("console", { message: "Extracting " + p.file + " to " + untardir });
 	algorithm.extract(p.file,untardir);
 	var unzippedDestination = (function() {
 		if (p.getDestinationPath) {
@@ -88,9 +100,9 @@ var installLocalArchive = function(p,listeners) {
 		//	TODO	list directory and take only option if there is only one and it is a directory?
 		throw new Error("Cannot determine destination path for " + p.file);
 	})();
-	listeners.events.fire("console", { message: "Assuming destination directory created was " + unzippedDestination });
+	events.fire("console", { message: "Assuming destination directory created was " + unzippedDestination });
 	var unzippedTo = untardir.getSubdirectory(unzippedDestination);
-	listeners.events.fire("console", { message: "Directory is: " + unzippedTo });
+	events.fire("console", { message: "Directory is: " + unzippedTo });
 	unzippedTo.move(p.to, {
 		overwrite: false,
 		recursive: true
@@ -98,19 +110,7 @@ var installLocalArchive = function(p,listeners) {
 	return p.to.directory;
 };
 
-var listening = function(f) {
-	return function(p,on) {
-		var listeners = new Listeners({ on: on });
-		listeners.add();
-		try {
-			return f(p,listeners);
-		} finally {
-			listeners.remove();
-		}
-	}
-}
-
-var get = function(p,listeners) {
+var get = function(p,events) {
 	if (!p.file) {
 		if (p.url) {
 			//	Apache supplies name so that url property, which is getter that hits Apache mirror list, is not invoked
@@ -120,14 +120,14 @@ var get = function(p,listeners) {
 			if (!pathname.file) {
 				//	TODO	we could check to make sure this URL is http
 				//	Only access url property once because in Apache case it is actually a getter that can return different values
-				listeners.events.fire("console", { message: "Downloading from " + find() + " to: " + $context.downloads });
+				events.fire("console", { message: "Downloading from " + find() + " to: " + $context.downloads });
 				var response = client.request({
 					url: find()
 				});
 				pathname.write(response.body.stream, { append: false });
-				listeners.events.fire("console", { message: "Wrote to: " + $context.downloads });
+				events.fire("console", { message: "Wrote to: " + $context.downloads });
 			} else {
-				listeners.events.fire("console", { message: "Found " + pathname.file + "; using cached version." });
+				events.fire("console", { message: "Found " + pathname.file + "; using cached version." });
 			}
 			p.file = pathname.file;
 		}
@@ -135,13 +135,13 @@ var get = function(p,listeners) {
 	return p;
 };
 
-var install = function(p,listeners) {
-	get(p,listeners);
-	return installLocalArchive(p,listeners);
+var install = function(p,events) {
+	get(p,events);
+	return installLocalArchive(p,events);
 };
 
-$exports.get = listening(function(p,listeners) {
-	get(p,listeners);
+$exports.get = listening(function(p,events) {
+	get(p,events);
 	return p.file;
 });
 
@@ -153,8 +153,8 @@ if (algorithms.gzip.extract) {
 	$exports.format.gzip = algorithms.gzip;
 }
 
-$exports.install = listening(function(p,listeners) {
-	return install(p,listeners);
+$exports.install = listening(function(p,events) {
+	return install(p,events);
 });
 
 if (algorithms.gzip.extract) {
@@ -180,6 +180,9 @@ $exports.hg = $loader.file("hg.js", {
 	api: {
 		shell: $context.api.shell,
 		Error: $context.api.Error,
-		install: $exports
+		install: $exports,
+		Events: {
+			Function: listening
+		}
 	}
-})
+});
