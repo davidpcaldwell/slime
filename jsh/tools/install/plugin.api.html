@@ -189,6 +189,34 @@ END LICENSE
 									</li>
 								</ol>
 							</div>
+							<script type="application/x.jsapi#tests">
+								var Captor = function(array,types) {
+									types.forEach(function(type) {
+										this[type] = function(e) {
+											array.push(e);
+										}
+									},this);
+								};
+								
+								var isType = function(name) {
+									return function(e) {
+										return e.type == name;
+									}
+								};
+								
+								var mock = {
+									lib: jsh.shell.TMPDIR.createTemporary({ directory: true })
+								};
+								
+								(function alreadyInstalled() {
+									var events = [];
+									mock.lib.getRelativePath("tomcat").createDirectory();
+									jsh.tools.install.tomcat.install({ mock: mock }, new Captor(events,["console","installed"]));
+									verify(events)[0].type.is("console");
+									verify(events)[0].detail.is("Tomcat already installed at " + mock.lib.getSubdirectory("tomcat"));
+									mock.lib.getSubdirectory("tomcat").remove();
+								})();
+							</script>
 						</li>
 					</ul>
 				</li>

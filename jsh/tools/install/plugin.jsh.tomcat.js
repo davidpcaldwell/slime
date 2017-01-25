@@ -49,14 +49,17 @@ var getLatestVersion = function() {
 }
 getLatestVersion.pattern = /^apache-tomcat-(\d+)\.(\d+)\.(\d+)\.zip$/;
 
-$exports.install = function(p) {
+$exports.install = $context.$api.Events.Function(function(p,events) {
 	if (!p) p = {};
+	
+	var lib = (p.mock && p.mock.lib) ? p.mock.lib : jsh.shell.jsh.lib;
+	
 	if (!p.to) {
-		p.to = jsh.shell.jsh.lib.getRelativePath("tomcat");
+		p.to = lib.getRelativePath("tomcat");
 	}
 
 	if (p.to.directory && !p.replace) {
-		jsh.shell.console("Tomcat already installed at " + p.to.directory);
+		events.fire("console", "Tomcat already installed at " + p.to.directory);
 		return;
 	}
 
@@ -69,7 +72,7 @@ $exports.install = function(p) {
 				throw new Error("Could not determine latest Tomcat 7 version; not installing.");
 			}
 		} else {
-			jsh.shell.console("Installing specified version " + p.version);
+			events.fire("console","Installing specified version " + p.version);
 			mirror = "https://archive.apache.org/dist/";
 		}
 
@@ -83,18 +86,23 @@ $exports.install = function(p) {
 			var match = getLatestVersion.pattern.exec(p.local.pathname.basename);
 			if (match) {
 				p.version = match[1] + "." + match[2] + "." + match[3];
-				jsh.shell.console("Installing version " + p.version + " determined from local filename.");
+				events.fire("console","Installing version " + p.version + " determined from local filename.");
 			} else {
 				throw new Error("Unable to determine version from filename: " + p.local);
 			}
 		}
 	}
 	var to = jsh.shell.TMPDIR.createTemporary({ directory: true });
-	jsh.shell.console("Unzipping to: " + to);
+	events.fire("console","Unzipping to: " + to);
 	jsh.file.unzip({
 		zip: p.local,
 		to: to
 	});
-	jsh.shell.console("Installing Tomcat at " + p.to);
-	to.getSubdirectory("apache-tomcat-" + p.version).move(p.to, { overwrite: true });	
-}
+	events.fire("console","Installing Tomcat at " + p.to);
+	to.getSubdirectory("apache-tomcat-" + p.version).move(p.to, { overwrite: true });
+	events.fire("installed", { to: p.to });
+}, {
+	console: function(e) {
+		jsh.shell.console(e.detail);
+	}
+});

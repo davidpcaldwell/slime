@@ -70,6 +70,8 @@ plugin({
 			}
 		});
 		
-		jsh.tools.install.tomcat = $loader.file("plugin.jsh.tomcat.js");
+		jsh.tools.install.tomcat = $loader.file("plugin.jsh.tomcat.js", {
+			$api: jsh.tools.install.$api
+		});
 	}
 });

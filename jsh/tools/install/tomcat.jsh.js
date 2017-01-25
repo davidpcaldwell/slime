@@ -22,7 +22,7 @@ var parameters = jsh.script.getopts({
 
 jsh.tools.install.tomcat.install({
 	version: parameters.options.version,
-	local: parameters.options.local.file,
+	local: (parameters.options.local) ? parameters.options.local.file : null,
 	replace: parameters.options.replace,
 	to: parameters.options.to
 });
