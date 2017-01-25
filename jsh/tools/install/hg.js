@@ -121,7 +121,7 @@ $exports.install = $context.api.Events.Function(function(p,events) {
 	var console = function(message) {
 		events.fire("console", message);
 	}
-	var installed = (p && p.mock && p.mock.installed) ? p.mock.installed : $exports.installed();
+	var installed = (p && p.mock && typeof(p.mock.installed) != "undefined") ? p.mock.installed : $exports.installed();
 	if (api.shell.os.name == "Mac OS X") {
 		console("Detected OS X " + api.shell.os.version);
 

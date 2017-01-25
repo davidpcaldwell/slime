@@ -624,6 +624,42 @@ END LICENSE
 									verify(result).threw.evaluate(function() { return this instanceof TypeError; }).is(false);
 									verify(result).threw.evaluate(function() { return this instanceof api.hg.install.GUI; }).is(true);
 								})();
+								
+								(function install() {
+									var mock = {
+										shell: {
+											os: {
+												name: "Mac OS X",
+												version: "10.11"
+											},
+											run: function(p) {
+												if (p.command == "open" && p.arguments.length == 1 && p.arguments[0].pathname.basename == "file.pkg") {
+													return;
+												} else {
+													throw new Error();
+												}
+											}
+										},
+										install: {
+											get: function(p) {
+												return {
+													pathname: {
+														basename: "file.pkg"
+													}
+												};
+											}
+										},
+										installed: null
+									};
+									var result = runInstall({ mock: mock });
+									var events = result.events;
+									var versions = events[1];
+									verify(versions).type.is("console");
+									verify(versions).detail.is("Getting https://www.mercurial-scm.org/mac/binaries/Mercurial-4.0.1-macosx10.11.pkg");
+									verify(result).threw.is.type("object");
+									verify(result).threw.evaluate(function() { return this instanceof TypeError; }).is(false);
+									verify(result).threw.evaluate(function() { return this instanceof api.hg.install.GUI; }).is(true);
+								})();
 							]]></script>
 						</li>
 					</ul>
