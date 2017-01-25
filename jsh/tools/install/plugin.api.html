@@ -46,6 +46,7 @@ END LICENSE
 										<div class="label">has properties:</div>
 										<ul>
 											<li class="value">
+												<!--	TODO	no tests for this property	-->
 												<div class="name">local</div>
 												<span class="type"><a href="../../../rhino/file/api.html#types.file">file</a></span>
 												<span>The Rhino JAR file.</span>
@@ -75,13 +76,57 @@ END LICENSE
 								}
 								
 								var lib = jsh.shell.TMPDIR.createTemporary({ directory: true });
-								lib.getRelativePath("js.jar").write("before", { append: false });
-								var captor = new Captor();
-								jsh.tools.install.rhino.install({ mock: { lib: lib }}, captor);
-								verify(captor,"captor").is(captor);
-								verify(captor).captured.length.is(1);
-								verify(captor).captured[0].type.is("console");
-								verify(captor).captured[0].detail.is("Rhino already installed at " + lib.getFile("js.jar"));
+								
+								var mock = { lib: lib };
+								
+								var readFile = function() {
+									return this.read(String);
+								};
+								
+								(function alreadyInstalled() {
+									lib.getRelativePath("js.jar").write("already", { append: false });
+									var captor = new Captor();
+									jsh.tools.install.rhino.install({ mock: mock }, captor);
+									verify(captor).captured[0].type.is("console");
+									verify(captor).captured[0].detail.is("Rhino already installed at " + lib.getFile("js.jar"));
+									verify(lib).getFile("js.jar").evaluate(readFile).is("already");
+									lib.getFile("js.jar").remove();
+								})();
+								
+								(function refuse() {
+									lib.getRelativePath("js.jar").write("original", { append: false });
+									lib.getRelativePath("download").write("downloaded", { append: false });
+									mock.rhino = lib.getFile("download");
+									var captor = new Captor();
+									jsh.tools.install.rhino.install({ mock: mock }, captor);
+									verify(captor).captured[0].type.is("console");
+									verify(captor).captured[0].detail.is("Rhino already installed at " + lib.getFile("js.jar"));
+									verify(lib).getFile("js.jar").evaluate(readFile).is("original");
+									lib.getFile("js.jar").remove();
+								})();
+								
+								(function replace() {
+									lib.getRelativePath("js.jar").write("original", { append: false });
+									lib.getRelativePath("download").write("downloaded", { append: false });
+									mock.rhino = lib.getFile("download");
+									var captor = new Captor();
+									jsh.tools.install.rhino.install({ mock: mock, replace: true }, captor);
+									verify(captor).captured[0].type.is("console");
+									verify(captor).captured[0].detail.is("Installing Rhino ...");
+									verify(lib).getFile("js.jar").evaluate(readFile).is("downloaded");
+									lib.getFile("js.jar").remove();
+								})();
+								
+								(function install() {
+									lib.getRelativePath("download").write("downloaded", { append: false });
+									mock.rhino = lib.getFile("download");
+									var captor = new Captor();
+									jsh.tools.install.rhino.install({ mock: mock }, captor);
+									verify(captor).captured[0].type.is("console");
+									verify(captor).captured[0].detail.is("Installing Rhino ...");
+									verify(lib).getFile("js.jar").evaluate(readFile).is("downloaded");
+									lib.getFile("js.jar").remove();
+								})();
 							</script>
 						</li>
 					</ul>

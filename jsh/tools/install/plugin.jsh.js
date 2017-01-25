@@ -48,13 +48,21 @@ plugin({
 					if (jsh.shell.jsh.home) return jsh.shell.jsh.home.getRelativePath("jsh.js");
 					if (jsh.shell.jsh.src) return jsh.shell.jsh.src.getRelativePath("rhino/jrunscript/api.js");
 				})();
-				jsh.loader.run(SRC, {}, jrunscript);
+				jsh.loader.run(
+					SRC, 
+					{
+						load: function() {
+							jsh.shell.console("load(" + Array.prototype.slice.call(arguments) + ")");
+						}
+					}, 
+					jrunscript
+				);
 				var _rhino = (p.mock && p.mock.rhino) ? p.mock.rhino.pathname.java.adapt() : jrunscript.$api.rhino.download();
 				p.local = jsh.file.Pathname(String(_rhino.getCanonicalPath())).file;
 				operation = "move";
 			}
-			p.local[operation](lib.getRelativePath("js.jar"), { recursive: true });
-			events.fire("Installed Rhino at " + lib.getRelativePath("js.jar"));
+			p.local[operation](lib.getRelativePath("js.jar"), { recursive: true, overwrite: true });
+			events.fire("console", "Installed Rhino at " + lib.getRelativePath("js.jar"));
 		}, {
 			console: function(e) {
 				jsh.shell.console(e.detail);
