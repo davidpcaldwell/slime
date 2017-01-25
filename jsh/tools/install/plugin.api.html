@@ -72,7 +72,15 @@ END LICENSE
 										events.push(e);
 									}
 									
+									this.installed = function(e) {
+										events.push(e);
+									}
+									
 									this.captured = events;
+									
+									this.captured.type = function(type) {
+										return events.filter(function(e) { return e.type == type; });
+									}
 								}
 								
 								var lib = jsh.shell.TMPDIR.createTemporary({ directory: true });
@@ -90,6 +98,7 @@ END LICENSE
 									verify(captor).captured[0].type.is("console");
 									verify(captor).captured[0].detail.is("Rhino already installed at " + lib.getFile("js.jar"));
 									verify(lib).getFile("js.jar").evaluate(readFile).is("already");
+									verify(captor.captured.type("installed")).length.is(0);
 									lib.getFile("js.jar").remove();
 								})();
 								
@@ -102,6 +111,7 @@ END LICENSE
 									verify(captor).captured[0].type.is("console");
 									verify(captor).captured[0].detail.is("Rhino already installed at " + lib.getFile("js.jar"));
 									verify(lib).getFile("js.jar").evaluate(readFile).is("original");
+									verify(captor.captured.type("installed")).length.is(0);
 									lib.getFile("js.jar").remove();
 								})();
 								
@@ -114,6 +124,7 @@ END LICENSE
 									verify(captor).captured[0].type.is("console");
 									verify(captor).captured[0].detail.is("Installing Rhino ...");
 									verify(lib).getFile("js.jar").evaluate(readFile).is("downloaded");
+									verify(captor.captured.type("installed")).length.is(1);
 									lib.getFile("js.jar").remove();
 								})();
 								
@@ -125,6 +136,7 @@ END LICENSE
 									verify(captor).captured[0].type.is("console");
 									verify(captor).captured[0].detail.is("Installing Rhino ...");
 									verify(lib).getFile("js.jar").evaluate(readFile).is("downloaded");
+									verify(captor.captured.type("installed")).length.is(1);
 									lib.getFile("js.jar").remove();
 								})();
 							</script>

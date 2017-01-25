@@ -62,6 +62,7 @@ plugin({
 				operation = "move";
 			}
 			p.local[operation](lib.getRelativePath("js.jar"), { recursive: true, overwrite: true });
+			events.fire("installed", { to: lib.getRelativePath("js.jar") });
 			events.fire("console", "Installed Rhino at " + lib.getRelativePath("js.jar"));
 		}, {
 			console: function(e) {
