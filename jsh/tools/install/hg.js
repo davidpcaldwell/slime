@@ -114,14 +114,18 @@ $exports.installed = function() {
 
 var GUI = $context.api.Error.Type("Please execute the graphical installer.");
 $exports.install = $context.api.Events.Function(function(p,events) {
+	var api = {
+		shell: (p && p.mock && p.mock.shell) ? p.mock.shell : $context.api.shell,
+		install: (p && p.mock && p.mock.install) ? p.mock.install : $context.api.install
+	};
 	var console = function(message) {
 		events.fire("console", message);
 	}
-	var installed = $exports.installed();
-	if ($context.api.shell.os.name == "Mac OS X") {
-		events.console("Detected OS X " + $context.api.shell.os.version);
+	var installed = (p && p.mock && p.mock.installed) ? p.mock.installed : $exports.installed();
+	if (api.shell.os.name == "Mac OS X") {
+		console("Detected OS X " + api.shell.os.version);
 
-		var distribution = $exports.distribution.osx({ os: $context.api.shell.os.version });
+		var distribution = $exports.distribution.osx({ os: api.shell.os.version });
 
 		if (installed && distribution.hg == installed.version) {
 			console("Already installed: hg " + installed.version);
@@ -131,13 +135,13 @@ $exports.install = $context.api.Events.Function(function(p,events) {
 		}
 
 		console("Getting " + distribution.distribution.url);
-		var file = $context.api.install.get({
+		var file = api.install.get({
 			url: distribution.distribution.url
 		});
 
 		if (/\.pkg$/.test(file.pathname.basename)) {
 			console("Install: " + file);
-			$context.api.shell.run({
+			api.shell.run({
 				command: "open",
 				arguments: [file]
 			});

@@ -16,4 +16,8 @@ var parameters = jsh.script.getopts({
 	}
 });
 
-jsh.tools.install.hg.install();
+jsh.tools.install.hg.install({}, {
+	console: function(e) {
+		jsh.shell.console(e.detail);
+	}
+});

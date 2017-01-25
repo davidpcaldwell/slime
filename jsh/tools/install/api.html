@@ -548,6 +548,83 @@ END LICENSE
 						<li class="function">
 							<div class="name">install</div>
 							<span>Updates the Mercurial install to the best version for the platform.</span>
+							<script type="application/x.jsapi#tests"><![CDATA[
+								var Listener = function() {
+									var events = [];
+									
+									this.console = function(e) {
+										events.push(e);
+									};
+									
+									this.received = function() {
+										return events;
+									}
+								};
+								
+								var runInstall = function(p) {
+									var listener = new Listener();
+									var rv = {};
+									try {
+										api.hg.install({ mock: p.mock }, listener);
+									} catch(e) {
+										rv.threw = e;
+									}
+									rv.events = listener.received();
+									return rv;
+								};
+								
+								(function alreadyInstalled() {
+									var mock = {
+										shell: {
+											os: {
+												name: "Mac OS X",
+												version: "10.11"
+											}
+										},
+										installed: { version: "4.0.1" }
+									};
+									var events = runInstall({ mock: mock }).events;
+									var last = events[events.length-1];
+									verify(last).type.is("console");
+									verify(last).detail.is("Already installed: hg 4.0.1");									
+								})();
+								
+								(function upgrade() {
+									var mock = {
+										shell: {
+											os: {
+												name: "Mac OS X",
+												version: "10.11"
+											},
+											run: function(p) {
+												if (p.command == "open" && p.arguments.length == 1 && p.arguments[0].pathname.basename == "file.pkg") {
+													return;
+												} else {
+													throw new Error();
+												}
+											}
+										},
+										install: {
+											get: function(p) {
+												return {
+													pathname: {
+														basename: "file.pkg"
+													}
+												};
+											}
+										},
+										installed: { version: "3.4" }
+									};
+									var result = runInstall({ mock: mock });
+									var events = result.events;
+									var versions = events[1];
+									verify(versions).type.is("console");
+									verify(versions).detail.is("Found version: 3.4; upgrading to 4.0.1");
+									verify(result).threw.is.type("object");
+									verify(result).threw.evaluate(function() { return this instanceof TypeError; }).is(false);
+									verify(result).threw.evaluate(function() { return this instanceof api.hg.install.GUI; }).is(true);
+								})();
+							]]></script>
 						</li>
 					</ul>
 				</li>
