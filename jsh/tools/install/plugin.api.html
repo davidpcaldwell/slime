@@ -57,13 +57,32 @@ END LICENSE
 											</li>
 										</ul>
 									</li>
+									<li class="value">
+										<span class="type">on</span>
+										<span>An event listener.</span>
+									</li>
 								</ol>
 							</div>
-							<div class="returns">
-								<div class="label">Returns</div>
-								<span class="type">__TYPE__</span>
-								<span>__DESCRIPTION__</span>
-							</div>
+							<script type="application/x.jsapi#tests">
+								var Captor = function() {
+									var events = [];
+									
+									this.console = function(e) {
+										events.push(e);
+									}
+									
+									this.captured = events;
+								}
+								
+								var lib = jsh.shell.TMPDIR.createTemporary({ directory: true });
+								lib.getRelativePath("js.jar").write("before", { append: false });
+								var captor = new Captor();
+								jsh.tools.install.rhino.install({ mock: { lib: lib }}, captor);
+								verify(captor,"captor").is(captor);
+								verify(captor).captured.length.is(1);
+								verify(captor).captured[0].type.is("console");
+								verify(captor).captured[0].detail.is("Rhino already installed at " + lib.getFile("js.jar"));
+							</script>
 						</li>
 					</ul>
 				</li>

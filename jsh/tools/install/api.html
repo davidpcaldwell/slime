@@ -60,70 +60,70 @@ END LICENSE
 				</li>
 			</ul>
 		</div>
-		<script type="application/x.jsapi#initialize">
-			scope.downloads = jsh.shell.TMPDIR.createTemporary({ directory: true });
+		<div jsapi:id="exports">
+			<script type="application/x.jsapi#initialize">
+				scope.downloads = jsh.shell.TMPDIR.createTemporary({ directory: true });
 
-			scope.module = function(p) {
-				return $jsapi.loader.module("module.js", {
+				scope.module = function(p) {
+					return $jsapi.loader.module("module.js", {
+						api: {
+							shell: jsh.shell,
+							http: jsh.http,
+							file: jsh.file,
+							Error: jsh.js.Error
+						},
+						downloads: p.downloads
+					});
+				};
+
+				scope.api = $jsapi.loader.module("module.js", {
 					api: {
 						shell: jsh.shell,
 						http: jsh.http,
 						file: jsh.file,
 						Error: jsh.js.Error
 					},
-					downloads: p.downloads
-				});
-			};
-
-			scope.api = $jsapi.loader.module("module.js", {
-				api: {
-					shell: jsh.shell,
-					http: jsh.http,
-					file: jsh.file,
-					Error: jsh.js.Error
-				},
-				downloads: scope.downloads
-			});
-
-			var tmpdir = jsh.shell.TMPDIR.createTemporary({ directory: true });
-			tmpdir.getRelativePath("directory").createDirectory();
-			tmpdir.getRelativePath("directory/file").write("text", { append: false });
-
-			var tmpdest = jsh.shell.TMPDIR.createTemporary({ directory: true });
-
-			scope.harness = {};
-
-			if (jsh.shell.PATH.getCommand("tar")) {
-				jsh.shell.run({
-					command: "tar",
-					arguments: ["czvf", tmpdest.getRelativePath("directory.tar.gz"), "directory"],
-					directory: tmpdir
+					downloads: scope.downloads
 				});
 
-				scope.harness.tar = tmpdest.getFile("directory.tar.gz");
-				scope.harness.renamed = scope.harness.tar.copy(tmpdest.getRelativePath("renamed.tar.gz"));
-			}
+				var tmpdir = jsh.shell.TMPDIR.createTemporary({ directory: true });
+				tmpdir.getRelativePath("directory").createDirectory();
+				tmpdir.getRelativePath("directory/file").write("text", { append: false });
 
-			jsh.file.zip({
-				from: tmpdir,
-				to: tmpdest.getRelativePath("directory.zip")
-			});
-			scope.harness.zip = tmpdest.getFile("directory.zip");
+				var tmpdest = jsh.shell.TMPDIR.createTemporary({ directory: true });
 
-			if (jsh.httpd.Tomcat) {
-				var server = jsh.httpd.Tomcat.serve({ directory: tmpdest });
-				scope.server = server;
-			} else {
-				scope.server = null;
-			}
+				scope.harness = {};
 
-			scope.tmpdir = function() {
-				var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
-				tmp.directory.remove();
-				return tmp;
-			};
-		</script>
-		<div jsapi:id="exports">
+				if (jsh.shell.PATH.getCommand("tar")) {
+					jsh.shell.run({
+						command: "tar",
+						arguments: ["czvf", tmpdest.getRelativePath("directory.tar.gz"), "directory"],
+						directory: tmpdir
+					});
+
+					scope.harness.tar = tmpdest.getFile("directory.tar.gz");
+					scope.harness.renamed = scope.harness.tar.copy(tmpdest.getRelativePath("renamed.tar.gz"));
+				}
+
+				jsh.file.zip({
+					from: tmpdir,
+					to: tmpdest.getRelativePath("directory.zip")
+				});
+				scope.harness.zip = tmpdest.getFile("directory.zip");
+
+				if (jsh.httpd.Tomcat) {
+					var server = jsh.httpd.Tomcat.serve({ directory: tmpdest });
+					scope.server = server;
+				} else {
+					scope.server = null;
+				}
+
+				scope.tmpdir = function() {
+					var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
+					tmp.directory.remove();
+					return tmp;
+				};
+			</script>
 			<h1>Exports</h1>
 			<div class="type">
 				<a class="type" name="types.installation">installation</a>

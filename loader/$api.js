@@ -391,8 +391,7 @@
 	};
 
 	$exports.Function.evaluator = function() {
-		//	creates a composed function that invokes each function in turn with its arguments, returning the first result that is not
-		//	undefined
+		//	Provides an ordered cache implementation
 		var components = arguments;
 		return function() {
 			var rv;

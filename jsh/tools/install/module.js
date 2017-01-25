@@ -11,22 +11,20 @@
 //	Contributor(s):
 //	END LICENSE
 
-var listening = function(f) {
+var listening = function(f,defaultOn) {
 	var Listeners = function(p) {
-		if (!p) p = {};
-		var source = (p.source) ? p.source : {};
+		var source = {};
 		var events = $api.Events({ source: source });
-		var on = (p.on) ? p.on : {};
 
 		this.add = function() {
-			for (var x in on) {
-				source.listeners.add(x,on[x]);
+			for (var x in p.on) {
+				source.listeners.add(x,p.on[x]);
 			}
 		};
 
 		this.remove = function() {
-			for (var x in on) {
-				source.listeners.remove(x,on[x]);
+			for (var x in p.on) {
+				source.listeners.remove(x,p.on[x]);
 			}
 		};
 
@@ -34,7 +32,13 @@ var listening = function(f) {
 	};
 
 	return function(p,on) {
-		var listeners = new Listeners({ on: on });
+		var listeners = new Listeners({ 
+			on: $api.Function.evaluator(
+				function() { return on; }, 
+				function() { return defaultOn; }, 
+				function() { return {}; }
+			)() 
+		});
 		listeners.add();
 		try {
 			return f(p,listeners.events);
@@ -42,7 +46,13 @@ var listening = function(f) {
 			listeners.remove();
 		}
 	}
-}
+};
+
+$exports.$api = {
+	Events: {
+		Function: listening
+	}
+};
 
 var client = ($context.client) ? $context.client : new $context.api.http.Client();
 
