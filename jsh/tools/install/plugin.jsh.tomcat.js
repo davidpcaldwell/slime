@@ -49,6 +49,34 @@ var getLatestVersion = function() {
 }
 getLatestVersion.pattern = /^apache-tomcat-(\d+)\.(\d+)\.(\d+)\.zip$/;
 
+var Version = function(s) {
+	this.toString = function() {
+		return s;
+	}
+};
+
+$exports.installed = function(p) {
+	if (!p) p = {};
+	var notes = (function() {
+		if (p.mock && p.mock.notes) return p.mock.notes;
+		var home = (typeof(p.home) != "undefined") ? p.home : jsh.shell.jsh.lib.getSubdirectory("tomcat");
+		if (!home) return null;
+		return home.getFile("RELEASE-NOTES");
+	})();
+	if (!notes) return null;
+	var lines = notes.read(String).split("\n");
+	var rv;
+	lines.forEach(function(line) {
+		if (rv) return;
+		var matcher = /(?:\s*)Apache Tomcat Version (\d+\.\d+\.\d+)(?:\s*)/;
+		var match = matcher.exec(line);
+		if (match) {
+			rv = { version: new Version(match[1]) };
+		}
+	});
+	return rv;
+}
+
 $exports.install = $context.$api.Events.Function(function(p,events) {
 	if (!p) p = {};
 	

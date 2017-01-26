@@ -26,6 +26,9 @@ END LICENSE
 			</ul>
 		</div>
 		<div>
+			<script tyoe="application/x.jsapi#initialize">
+				jsh.loader.plugins($jsapi.loader);
+			</script>
 			<h1>jsh plugin</h1>
 			<ul>
 				<li class="object">
@@ -133,8 +136,67 @@ END LICENSE
 				<li class="object">
 					<div class="name">tomcat</div>
 					<span>__DESCRIPTION__</span>
+					<div class="type">
+						<a class="type" name="types.tomcat.installation">installation</a>
+						<span>A Tomcat installation.</span>
+						<div class="label">has properties:</div>
+						<ul>
+							<li class="value">
+								<div class="name">version</div>
+								<div class="label">has properties:</div>
+								<ul>
+									<li class="function">
+										<div class="name">toString</div>
+										<span></span>
+										<div class="returns">
+											<div class="label">Returns</div>
+											<span class="type">string</span>
+											<span>The version string for this Tomcat; e.g., <code>"7.0.70"</code>.</span>
+										</div>
+									</li>
+								</ul>
+								<span>An object representing the installed version of Tomcat.</span>
+							</li>
+						</ul>
+					</div>
+
 					<div class="label">has properties:</div>
 					<ul>
+						<li class="function">
+							<div class="name">installed</div>
+							<span>Returns information about a currently installed Tomcat.</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="object">
+										<span>(optional; if omitted, an empty object is used)</span>
+										<div class="label">has properties:</div>
+										<ul>
+											<li class="value">
+												<div class="name">home</div>
+												<span class="type">directory</span>
+												<span>
+													(optional; if omitted, returns information about the version installed with
+													<code>jsh</code>)
+												</span>
+											</li>
+										</ul>
+									</li>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type"><a href="#types.tomcat.installation">installation</a></span>
+							</div>
+							<script type="application/x.jsapi#tests">
+								var toString = function() {
+									return this.toString();
+								};
+								
+								var installed = jsh.tools.install.tomcat.installed({ mock: { notes: $jsapi.loader.get("text/data/tomcat-release-notes-7.0.70.txt") } });
+								verify(installed).version.evaluate(toString).is("7.0.70");
+							</script>
+						</li>
 						<li class="function">
 							<div class="name">install</div>
 							<span>Installs Tomcat to a given directory (or to the shell).</span>
@@ -149,7 +211,7 @@ END LICENSE
 												<div class="name">to</div>
 												<span class="type">Pathname</span>
 												<span>
-													(optional; defaults to <code>jsh.shell.jsh.lib.getRelativePath("tomcat")</code>)
+													(optional; defaults to installing into <code>jsh</code>)
 												</span>
 											</li>
 											<li class="value">
@@ -201,10 +263,12 @@ END LICENSE
 										var tmpdir = jsh.shell.TMPDIR.createTemporary({ directory: true });
 										var dist = tmpdir.getRelativePath("apache-tomcat-7.0.99").createDirectory();
 										dist.getRelativePath("a").write("a", { append: false });
+										dist.getRelativePath("RELEASE-NOTES").write($jsapi.loader.get("test/data/tomcat-release-notes-7.0.70.txt").read(String).replace(/7\.0\.70/g, "7.0.99"), { append: false });
 										var rv = jsh.shell.TMPDIR.createTemporary({ suffix: ".zip" }).pathname;
 										jsh.io.archive.zip.encode({
 											stream: rv.write(jsh.io.Streams.binary, { append: false }),
 											entries: [
+												{ path: "apache-tomcat-7.0.99/RELEASE-NOTES", resource: dist.getFile("RELEASE-NOTES") },
 												{ path: "apache-tomcat-7.0.99/a", resource: dist.getFile("a") }
 											]
 										});
@@ -232,7 +296,10 @@ END LICENSE
 									verify(events)[0].evaluate(function() { return /^Unzipping to\:(.*)$/.test(this.detail); }).is(true);
 									verify(mock.lib).getSubdirectory("tomcat").getFile("a").is.type("object");
 									verify(mock.lib).getSubdirectory("tomcat").getFile("b").is.type("null");
-									mock.lib.getSubdirectory("tomcat").remove();									
+									var installed = jsh.tools.install.tomcat.installed({ home: mock.lib.getSubdirectory("tomcat") });
+									var version = installed.version.toString();
+									verify(version).is("7.0.99");
+									mock.lib.getSubdirectory("tomcat").remove();
 								})();
 							</script>
 						</li>
