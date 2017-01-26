@@ -253,29 +253,38 @@ END LICENSE
 									}
 								};
 								
-								var mock = {
-									lib: jsh.shell.TMPDIR.createTemporary({ directory: true })
+								var getVersionString = function() {
+									if (!this.version) return null;
+									return this.version.toString();
 								};
 								
-								verify("pre").is("pre");
-								var distributions = {
-									"7.0.99": (function() {
-										var tmpdir = jsh.shell.TMPDIR.createTemporary({ directory: true });
-										var dist = tmpdir.getRelativePath("apache-tomcat-7.0.99").createDirectory();
-										dist.getRelativePath("a").write("a", { append: false });
-										dist.getRelativePath("RELEASE-NOTES").write($jsapi.loader.get("test/data/tomcat-release-notes-7.0.70.txt").read(String).replace(/7\.0\.70/g, "7.0.99"), { append: false });
-										var rv = jsh.shell.TMPDIR.createTemporary({ suffix: ".zip" }).pathname;
-										jsh.io.archive.zip.encode({
-											stream: rv.write(jsh.io.Streams.binary, { append: false }),
-											entries: [
-												{ path: "apache-tomcat-7.0.99/RELEASE-NOTES", resource: dist.getFile("RELEASE-NOTES") },
-												{ path: "apache-tomcat-7.0.99/a", resource: dist.getFile("a") }
-											]
-										});
-										return rv.file;
-									})()
+								var Distribution = function(version) {
+									var tmpdir = jsh.shell.TMPDIR.createTemporary({ directory: true });
+									var dist = tmpdir.getRelativePath("apache-tomcat-" + version).createDirectory();
+									dist.getRelativePath("a").write("a", { append: false });
+									dist.getRelativePath("RELEASE-NOTES").write($jsapi.loader.get("test/data/tomcat-release-notes-7.0.70.txt").read(String).replace(/7\.0\.70/g, version), { append: false });
+									var rv = jsh.shell.TMPDIR.createTemporary({ suffix: ".zip" }).pathname;
+									jsh.io.archive.zip.encode({
+										stream: rv.write(jsh.io.Streams.binary, { append: false }),
+										entries: [
+											{ path: "apache-tomcat-" + version + "/" + "RELEASE-NOTES", resource: dist.getFile("RELEASE-NOTES") },
+											{ path: "apache-tomcat-" + version + "/" + "a", resource: dist.getFile("a") }
+										]
+									});
+									return rv.file;
+								}
+								
+								var mock = {
+									lib: jsh.shell.TMPDIR.createTemporary({ directory: true }),
+									getLatestVersion: function() {
+										return "7.0.99";
+									},
+									findApache: function(o) {
+										if (o.path == "tomcat/tomcat-7/v7.0.98/bin/apache-tomcat-7.0.98.zip") return Distribution("7.0.98");
+										if (o.path == "tomcat/tomcat-7/v7.0.99/bin/apache-tomcat-7.0.99.zip") return Distribution("7.0.99");
+										throw new Error("Mock: " + o.path);
+									}
 								};
-								verify("post").is("post");
 								
 								(function alreadyInstalled() {
 									var events = [];
@@ -288,9 +297,6 @@ END LICENSE
 								
 								(function install() {
 									var events = [];
-									mock.getLatestVersion = function() { return "7.0.99"; };
-									mock.findApache = function(o) { return distributions["7.0.99"] };
-									verify(distributions["7.0.99"]).is(distributions["7.0.99"]);
 									jsh.tools.install.tomcat.install({ mock: mock }, new Captor(events,["console","installed"]));
 									verify(events)[0].type.is("console");
 									verify(events)[0].evaluate(function() { return /^Unzipping to\:(.*)$/.test(this.detail); }).is(true);
@@ -299,6 +305,19 @@ END LICENSE
 									var installed = jsh.tools.install.tomcat.installed({ home: mock.lib.getSubdirectory("tomcat") });
 									var version = installed.version.toString();
 									verify(version).is("7.0.99");
+									mock.lib.getSubdirectory("tomcat").remove();
+								})();
+								
+								(function replace() {
+									jsh.tools.install.tomcat.install({ mock: mock, version: "7.0.98" });
+									var installed = jsh.tools.install.tomcat.installed({ home: mock.lib.getSubdirectory("tomcat") });
+									verify(installed).evaluate(getVersionString).is("7.0.98");
+									jsh.tools.install.tomcat.install({ mock: mock });
+									installed = jsh.tools.install.tomcat.installed({ home: mock.lib.getSubdirectory("tomcat") });
+									verify(installed).evaluate(getVersionString).is("7.0.98");
+									jsh.tools.install.tomcat.install({ mock: mock, replace: true });									
+									installed = jsh.tools.install.tomcat.installed({ home: mock.lib.getSubdirectory("tomcat") });
+									verify(installed).evaluate(getVersionString).is("7.0.99");
 									mock.lib.getSubdirectory("tomcat").remove();
 								})();
 							</script>
