@@ -312,12 +312,19 @@ END LICENSE
 									jsh.tools.install.tomcat.install({ mock: mock, version: "7.0.98" });
 									var installed = jsh.tools.install.tomcat.installed({ home: mock.lib.getSubdirectory("tomcat") });
 									verify(installed).evaluate(getVersionString).is("7.0.98");
-									jsh.tools.install.tomcat.install({ mock: mock });
+									
+									var noreplace = [];
+									jsh.tools.install.tomcat.install({ mock: mock }, new Captor(noreplace,["installed"]));
 									installed = jsh.tools.install.tomcat.installed({ home: mock.lib.getSubdirectory("tomcat") });
 									verify(installed).evaluate(getVersionString).is("7.0.98");
-									jsh.tools.install.tomcat.install({ mock: mock, replace: true });									
+									verify(noreplace).length.is(0);
+									
+									var replace = [];
+									jsh.tools.install.tomcat.install({ mock: mock, replace: true }, new Captor(replace,["installed"]));
 									installed = jsh.tools.install.tomcat.installed({ home: mock.lib.getSubdirectory("tomcat") });
 									verify(installed).evaluate(getVersionString).is("7.0.99");
+									verify(replace).length.is(1);
+									
 									mock.lib.getSubdirectory("tomcat").remove();
 								})();
 							</script>
