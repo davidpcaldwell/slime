@@ -53,6 +53,8 @@ $exports.install = $context.$api.Events.Function(function(p,events) {
 	if (!p) p = {};
 	
 	var lib = (p.mock && p.mock.lib) ? p.mock.lib : jsh.shell.jsh.lib;
+	var getLatest = (p.mock && p.mock.getLatestVersion) ? p.mock.getLatestVersion : getLatestVersion;
+	var findApache = (p.mock && p.mock.findApache) ? p.mock.findApache : jsh.tools.install.apache.find;
 	
 	if (!p.to) {
 		p.to = lib.getRelativePath("tomcat");
@@ -67,7 +69,7 @@ $exports.install = $context.$api.Events.Function(function(p,events) {
 		var mirror;
 		if (!p.version) {
 			//	Check tomcat.apache.org; if unreachable, use latest version in downloads directory
-			p.version = getLatestVersion();
+			p.version = getLatest();
 			if (!p.version) {
 				throw new Error("Could not determine latest Tomcat 7 version; not installing.");
 			}
@@ -76,7 +78,7 @@ $exports.install = $context.$api.Events.Function(function(p,events) {
 			mirror = "https://archive.apache.org/dist/";
 		}
 
-		var zip = jsh.tools.install.apache.find({
+		var zip = findApache({
 			mirror: mirror,
 			path: "tomcat/tomcat-7/v" + p.version + "/bin/apache-tomcat-" + p.version + ".zip"
 		});

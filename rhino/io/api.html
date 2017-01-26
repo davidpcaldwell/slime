@@ -245,6 +245,113 @@ END LICENSE
 				<span class="type">object</span>
 				<span>See <a href="mime.api.html">detailed documentation</a>.</span>
 			</li>
+			<li class="object">
+				<div class="name">archive</div>
+				<span>
+					An <dfn>archive</dfn> format is a format that can encode a series of resources with paths (like a directory
+					structure) as a single stream, and decode that stream into a series of resources with paths.
+				</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="object">
+						<script type="application/x.jsapi#initialize">
+							scope.readFile = function() {
+								return this.read(String);
+							};
+						</script>
+						<div class="name">zip</div>
+						<span>__DESCRIPTION__</span>
+						<div class="label">has properties:</div>
+						<ul>
+							<li class="function">
+								<div class="name">encode</div>
+								<span>__DESCRIPTION__</span>
+								<div class="arguments">
+									<div class="label">Arguments</div>
+									<ol>
+									</ol>
+								</div>
+								<div class="returns">
+									<div class="label">Returns</div>
+									<span class="type">__TYPE__</span>
+									<span>__DESCRIPTION__</span>
+								</div>
+								<script type="application/x.jsapi#tests">
+									var expanded = jsh.shell.TMPDIR.createTemporary({ directory: true });
+									expanded.getRelativePath("a").write("aa", { append: false });
+									expanded.getRelativePath("b/c").write("cc", { append: false, recursive: true });
+									var zip = jsh.shell.TMPDIR.createTemporary({ suffix: ".zip" }).pathname;
+									zip.file.remove();
+									var unzip = jsh.shell.TMPDIR.createTemporary({ directory: true });
+									module.archive.zip.encode({
+										stream: zip.write(jsh.io.Streams.binary),
+										entries: [
+											{ path: "a", resource: expanded.getFile("a") },
+											{ path: "b/c", resource: expanded.getFile("b/c") }
+										]
+									});
+									module.archive.zip.decode({
+										stream: zip.file.read(jsh.io.Streams.binary),
+										output: {
+											directory: function(p) {
+												unzip.getRelativePath(p.path).createDirectory();
+											},
+											file: function(p) {
+												return unzip.getRelativePath(p.path).write(jsh.io.Streams.binary, { append: false });
+											}
+										}
+									});
+									verify(unzip).getFile("a").evaluate(readFile).is("aa");
+									verify(unzip).getFile("b/c").evaluate(readFile).is("cc");
+								</script>
+							</li>
+							<li class="function">
+								<div class="name">decode</div>
+								<span>__DESCRIPTION__</span>
+								<div class="arguments">
+									<div class="label">Arguments</div>
+									<ol>
+									</ol>
+								</div>
+								<div class="returns">
+									<div class="label">Returns</div>
+									<span class="type">__TYPE__</span>
+									<span>__DESCRIPTION__</span>
+								</div>
+								<script type="application/x.jsapi#tests">
+									var expanded = jsh.shell.TMPDIR.createTemporary({ directory: true });
+									expanded.getRelativePath("a").write("a", { append: false });
+									expanded.getRelativePath("b/c").write("c", { append: false, recursive: true });
+									var zipped = jsh.shell.TMPDIR.createTemporary({ suffix: ".zip" }).pathname;
+									zipped.file.remove();
+									var to = jsh.shell.TMPDIR.createTemporary({ directory: true });
+									var path = jsh.file.Searchpath([jsh.shell.java.home.getRelativePath("bin"),jsh.shell.java.home.parent.getRelativePath("bin")]);
+									jsh.shell.run({
+										command: path.getCommand("jar"),
+										arguments: ["cf", zipped, "a", "b"],
+										directory: expanded
+									});
+									module.archive.zip.decode(
+										{ 
+											stream: zipped.file.read(jsh.io.Streams.binary),
+											output: {
+												directory: function(p) {
+													to.getRelativePath(p.path).createDirectory();
+												},
+												file: function(p) {
+													return to.getRelativePath(p.path).write(jsh.io.Streams.binary, { append: false });
+												}
+											}
+										}
+									);
+									verify(to).getFile("a").is.type("object");
+									verify(to).getFile("aa").is.type("null");
+								</script>
+							</li>
+						</ul>
+					</li>
+				</ul>
+			</li>
 		</ul>
 		<!--	TODO	below tests are intertwined with this module despite mostly pertaining to Java SLIME loader; refactor	-->
 		<script type="application/x.jsapi#tests">

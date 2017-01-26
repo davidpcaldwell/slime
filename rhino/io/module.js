@@ -93,7 +93,7 @@ $exports.java = new function() {
 			throw "Unimplemented java.adapt: " + type + object;
 		}
 	};
-}
+};
 
 $exports.mime = $loader.file("mime.js", {
 	_streams: _java,
@@ -106,3 +106,10 @@ $exports.mime = $loader.file("mime.js", {
 		io: $exports
 	}
 });
+
+$exports.archive = {
+	zip: $loader.file("zip.js", {
+		InputStream: InputStream,
+		Streams: $context.$rhino.io.Streams
+	})
+};
