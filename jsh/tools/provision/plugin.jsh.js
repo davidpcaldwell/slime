@@ -41,6 +41,7 @@ plugin({
 				command: "hg",
 				arguments: (function() {
 					var rv = [];
+					if (p.debug) rv.push("-v");
 					if (proxy) rv.push("--config", "http_proxy.host=" + proxy);
 					for (var x in config) {
 						rv.push("--config", x + "=" + config[x]);

@@ -17,12 +17,10 @@ if [ "$UNAME" = "Darwin" ]; then
 		distribution_install Java $JAVA_DMG_FILENAME $JAVA_DMG_URL jdk_install
 	fi
 elif [ "$UNAME" = "Linux" ]; then
-	>&2 echo "Disabled."
-	exit 1
 	#	The below would be 180$JDK8_UPDATE for pre-1xx updates, so probably need to do string length or something for the future
 	MAGNITUDE=18$JDK8_UPDATE
 	JAVA_TARBALL_FILENAME="jdk-${RELEASE}-linux-x64.tar.gz"
-	JAVA_TARBALL_URL=https://bitbucket.org/davidpcaldwell/provision/downloads/$JAVA_TARBALL_FILENAME
+	JAVA_TARBALL_URL=https://bitbucket.org/davidpcaldwell/slime/downloads/$JAVA_TARBALL_FILENAME
 	JAVA_DESTINATION=/usr/lib/jvm/jdk$VERSION
 	if [ ! -d $JAVA_DESTINATION ]; then
 		if [ -f /mnt/host/downloads/${JAVA_TARBALL_FILENAME} ]; then

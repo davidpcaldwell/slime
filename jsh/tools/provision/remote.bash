@@ -18,7 +18,6 @@ download() {
 	chmod +x $REMOTE_PROVISION/$1
 }
 
-download bootstrap.bash
 download rc.bash
 download jdk.bash
 
