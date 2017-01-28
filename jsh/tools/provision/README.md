@@ -39,3 +39,93 @@ Other environment variables affect the behavior of the provisioner. For unprotec
 shell; for protected remote scripts, they can be supplied along with the other environment values.
 
 *	`INONIT_PROVISION_VERSION`=[commit, tag or bookmark] (defaults to `tip`)
+
+#	Recommended structure
+
+The following describes one way to structure a provisioning implementation that uses Bitbucket as the host.
+
+##	install.jsh.js
+
+The top-level `install.jsh.js` can be used as the value for `INONIT_PROVISION_SCRIPT_JSH`.
+
+###	Install Mercurial
+
+It should first install Mercurial, so that the repository code can be cloned from Bitbucket:
+
+```
+jsh.tools.install.hg.install();
+```
+
+###	Clone the repository
+
+Under most circumstances, it should also provide a destination to which to clone the code, by default, along with an environment
+variable that allows the script to clone the code to a different place.
+
+The following snippet clones the code in *repository*, owned by Bitbucket user *user*, to `$HOME/src/local` unless the 
+`INONIT_PROVISION_DESTINATION` environment variable is provided; in that case, the code is cloned to the location specified by that.
+
+```
+var destination = (jsh.shell.environment.INONIT_PROVISION_DESTINATION) ? jsh.file.Pathname(jsh.shell.environment.INONIT_PROVISION_DESTINATION) : jsh.shell.HOME.getRelativePath("src/local");
+jsh.tools.provision.clone({
+	destination: destination,
+	user: "user",
+	repository: "repository"
+});
+```
+
+###	Run a setup script from the repository
+
+```
+jsh.shell.run({
+	command: "bash",
+	arguments: [
+		destination.directory.getRelativePath("setup.bash")
+	]
+});
+```
+
+##	setup.bash
+
+The `setup.bash` script can simply specify a `jsh` script that does the local setup, and a `jsh` shell to execute it. For example,
+if the shell is located at `setup/slime`, and the script is at `setup/main.jsh.js`, the following code can be used:
+
+```
+BASE=$(dirname $0)
+jrunscript $BASE/setup/slime/rhino/jrunscript/api.js jsh $BASE/setup/main.jsh.js "$@"
+```
+
+##	setup/main.jsh.js
+
+The `setup/main.jsh.js` script should, under most circumstances, begin by installing Rhino and Tomcat into the shell if they are not
+already present. Rhino is used as the primary `jsh` interpreter, and Tomcat is used for the creation of local applications (and
+thus may be needed for an installer). If either needs to be installed, the shell should re-launch with the two libraries included.
+
+The following sample code implements the above:
+
+```
+jsh.shell.console("Verifying jsh libraries (Rhino/Tomcat) ...");
+var relaunch = false;
+jsh.tools.install.rhino.install({}, {
+	installed: function(e) {
+		relaunch = true;
+	}
+});
+jsh.tools.install.tomcat.install({}, {
+	installed: function(e) {
+		relaunch = true;
+	}
+});
+
+if (relaunch) {
+	jsh.shell.console("Relaunching with Rhino/Tomcat in shell ...");
+	jsh.shell.jsh({
+		script: jsh.script.file,
+		arguments: [],
+		evaluate: function(result) {
+			jsh.shell.exit(result.status);
+		}
+	});
+}
+```
+
+The setup script can then proceed with arbitrary code, knowing that both Rhino and Tomcat are available.
