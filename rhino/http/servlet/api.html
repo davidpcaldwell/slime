@@ -176,7 +176,7 @@ END LICENSE
 						}
 					});
 					server.start();
-					
+
 					var evaluateJson = function(response) {
 						if (response.status.code != 200) {
 							throw new Error("Response code: " + response.status.code);
@@ -205,7 +205,7 @@ END LICENSE
 						verify(response).query.form[0].value.is("aValue");
 
 						jsh.shell.console("port = " + server.https.port);
-						
+
 						jsh.http.test.disableHttpsSecurity();
 
 						response = client.request({

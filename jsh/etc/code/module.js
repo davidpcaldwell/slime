@@ -60,6 +60,7 @@ $exports.files = new function() {
 		if (/\.xml$/.test(basename)) return true;
 		if (/\.properties$/.test(basename)) return true;
 		if (/\.coffee$/.test(basename)) return true;
+		if (/\.md/.test(basename)) return true;
 		if (/\.wav$/.test(basename)) return false;
 		//	TODO	if license.js has a license for the file, should always return true; we are repeating information
 		if (/\.hgrc$/.test(basename)) return true;

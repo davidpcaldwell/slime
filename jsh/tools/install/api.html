@@ -551,16 +551,16 @@ END LICENSE
 							<script type="application/x.jsapi#tests"><![CDATA[
 								var Listener = function() {
 									var events = [];
-									
+
 									this.console = function(e) {
 										events.push(e);
 									};
-									
+
 									this.received = function() {
 										return events;
 									}
 								};
-								
+
 								var runInstall = function(p) {
 									var listener = new Listener();
 									var rv = {};
@@ -572,7 +572,7 @@ END LICENSE
 									rv.events = listener.received();
 									return rv;
 								};
-								
+
 								(function alreadyInstalled() {
 									var mock = {
 										shell: {
@@ -586,9 +586,9 @@ END LICENSE
 									var events = runInstall({ mock: mock }).events;
 									var last = events[events.length-1];
 									verify(last).type.is("console");
-									verify(last).detail.is("Already installed: hg 4.0.1");									
+									verify(last).detail.is("Already installed: hg 4.0.1");
 								})();
-								
+
 								(function upgrade() {
 									var mock = {
 										shell: {
@@ -624,7 +624,7 @@ END LICENSE
 									verify(result).threw.evaluate(function() { return this instanceof TypeError; }).is(false);
 									verify(result).threw.evaluate(function() { return this instanceof api.hg.install.GUI; }).is(true);
 								})();
-								
+
 								(function install() {
 									var mock = {
 										shell: {

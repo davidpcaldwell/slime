@@ -216,6 +216,8 @@ $exports.languages = new function() {
 
 	this.html = new BeginEnd("<!--","-->");
 	this.xml = new BeginEnd("<!--","-->");
+	//	One source suggests triple-dash: http://stackoverflow.com/questions/4823468/comments-in-markdown
+	this.md = new BeginEnd("<!--","-->");
 	this.js = cplusplus;
 	this.coffee = new BeginEnd("###","###");
 	this.bash = new Line("#");

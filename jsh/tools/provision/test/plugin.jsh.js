@@ -1,16 +1,29 @@
+//	LICENSE
+//	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+//	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+//
+//	The Original Code is the jsh JavaScript/Java shell.
+//
+//	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+//	Portions created by the Initial Developer are Copyright (C) 2017 the Initial Developer. All Rights Reserved.
+//
+//	Contributor(s):
+//	END LICENSE
+
 plugin({
 	isReady: function() {
 		return jsh.test;
 	},
 	load: function() {
 		jsh.test.provision = {};
-		
+
 		var loadhg = function() {
 			if (!global.hg) {
 				jsh.loader.plugins(jsh.shell.jsh.src.getRelativePath("rhino/tools/hg"));
 			}
 		}
-		
+
 		var getMockConfiguration = function(base,isPrivateRepository) {
 			loadhg();
 			var repository = new hg.Repository({ local: base });
@@ -46,7 +59,7 @@ plugin({
 					bitbucket.src[owner] = {};
 				}
 				if (!bitbucket.src[owner][repository]) {
-					bitbucket.src[owner][repository] = { 
+					bitbucket.src[owner][repository] = {
 						directory: r.directory,
 						access: (isPrivate(owner,repository)) ? { user: owner, password: "foo" } : void(0)
 					}
@@ -84,7 +97,7 @@ plugin({
 				return repository;
 			})();
 			var command = {
-				mock: { 
+				mock: {
 					server: {
 						host: (o.host) ? o.host : "127.0.0.1",
 						port: server.port
@@ -105,7 +118,7 @@ plugin({
 		jsh.test.provision.serve.getMockBitbucketConfiguration = getMockConfiguration;
 		jsh.test.provision.Server = $api.deprecate(jsh.test.provision.serve);
 		jsh.test.provision.Server.getMockBitbucketConfiguration = $api.deprecate(getMockConfiguration);
-		
+
 		var writeUrl = function(url,mock) {
 			if (mock) url = url.replace(/https:\/\//g, "http://");
 			if (mock) url = url.replace(/raw\/tip/g, "raw/local");
@@ -140,7 +153,7 @@ plugin({
 			if (!p.user) {
 				var mockVariables = variables(p.mock).join(" ");
 				if (mockVariables) mockVariables += " ";
-				this.commands.push(curl(false,p.mock) + " | env " + mockVariables + "INONIT_PROVISION_SCRIPT_JSH=" + writeUrl(p.script,p.mock) + " bash");		
+				this.commands.push(curl(false,p.mock) + " | env " + mockVariables + "INONIT_PROVISION_SCRIPT_JSH=" + writeUrl(p.script,p.mock) + " bash");
 			} else {
 				this.commands.push("export TMP_INSTALLER=$(mktemp)");
 				this.commands.push("export INONIT_PROVISION_SCRIPT_JSH=" + writeUrl(p.script,p.mock));
@@ -150,7 +163,7 @@ plugin({
 				}));
 				this.commands.push(curl(true,p.mock));
 				this.commands.push("chmod +x $TMP_INSTALLER");
-				this.commands.push("$TMP_INSTALLER");		
+				this.commands.push("$TMP_INSTALLER");
 			}
 		}
 
