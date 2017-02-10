@@ -257,13 +257,12 @@ END LICENSE
 				</tr>
 			</tbody>
 		</table>
-
 	</div>
 	<div>
-		<h1>Specifications</h1>
+		<h1>Definitions</h1>
 		<div>
 			SLIME blends the concept of documentation and testing: documentation describing behavior and the tests for
-			conformance with that behavior are bundled into a single format called a specification.
+			conformance with that behavior are bundled into a single format called a <dfn>definition</dfn>.
 		</div>
 		<table>
 			<thead>
@@ -276,7 +275,7 @@ END LICENSE
 				<tr>
 					<td><a href="../../loader/api/unit.api.html">(testing)</a></td>
 					<td>
-						SLIME testing constructs
+						SLIME testing constructs (suites, parts, scenarios, verifiers)
 						<script jsapi:id="slime.unit" type="application/x.jsapi#tests">
 							verify.suite($jsapi.loader.suite("../../loader/api/unit.api.html"));
 						</script>
@@ -285,7 +284,7 @@ END LICENSE
 				<tr>
 					<td><a href="../../loader/api/api.html">(api.html)</a></td>
 					<td>
-						HTML format for interface definitions
+						HTML format for definitions and tools associated with processing HTML definitions
 						<script jsapi:id="slime.api" type="application/x.jsapi#tests">
 							verify.suite($jsapi.loader.suite("../../loader/api/api.html"));
 						</script>
@@ -294,7 +293,7 @@ END LICENSE
 				<tr>
 					<td><a href="../../jsh/unit/plugin.jsh.api.html">jsh.unit</a></td>
 					<td>
-						Creating and running tests
+						APIs for running tests within <code>jsh</code>.
 						<script jsapi:id="jsh.unit" type="application/x.jsapi#tests">
 							verify.suite($jsapi.loader.suite("../../jsh/unit/api.html"));
 						</script>
@@ -323,6 +322,29 @@ END LICENSE
 							verify.suite($jsapi.loader.suite("../../jsh/tools/install/plugin.api.html"));
 						</script>
 					</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+	<div>
+		<h1>Provisioning</h1>
+		<table>
+			<thead>
+				<tr>
+					<th>Page</th>
+					<th>Description</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td><a href="../../jsh/tools/provision/README.md">(provisioning)</a></td>
+					<td>Description of the provisioning API.</td>
+					<!-- no tests -->
+				</tr>
+				<tr>
+					<td><a href="../../jsh/tools/provision/test/plugin.api.html">jsh.test.provision</a></td>
+					<td>Tools for provisioning a machine or application online, including tools to enable local testing.</td>
+					<!-- no tests -->
 				</tr>
 			</tbody>
 		</table>
