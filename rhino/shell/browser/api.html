@@ -144,14 +144,33 @@ END LICENSE
 									<div class="label">has properties:</div>
 									<ul>
 										<li class="value">
+											<div class="name">location</div>
+											<span class="type"><a href="../../../rhino/file/api.html#types.Pathname">Pathname</a></span>
+											<span>
+												<span>
+													(optional; if not specified, <code>directory</code> will be checked)
+												</span>
+												The location to use for the user data directory. The directory will be created
+												if it does not exist.
+											</span>
+										</li>
+										<li class="value">
 											<div class="name">directory</div>
 											<span class="type"><a href="../../../rhino/file/api.html#types.directory">directory</a></span>
-											<span>__DESCRIPTION__</span>
+											<span>
+												<span>
+													(optional; if not specified, and <code>location</code> not specified, a temporary directory will be created and used)
+												</span>
+												The user data directory to use.
+											</span>
 										</li>
 										<li class="value">
 											<div class="name">proxy</div>
 											<span class="type"><a href="#types.ProxyConfiguration">ProxyConfiguration</a></span>
-											<span>__DESCRIPTION__</span>
+											<span>
+												(optional)
+												The proxy configuration to use for this instance.
+											</span>
 										</li>
 										<!--	Undocumented / used internally: 'install' property	-->
 									</ul>
@@ -161,12 +180,12 @@ END LICENSE
 						<div class="instances">
 							<div class="label">Instances</div>
 							<span class="type"><a href="#types.Chrome.Instance">Instance</a></span>
-							<span>__DESCRIPTION__</span>
+							<span></span>
 						</div>
 					</li>
 					<li class="value">
 						<div class="name">instance</div>
-						<span class="type">__TYPE__</span>
+						<span class="type"><a href="#types.Chrome.Instance">Instance</a></span>
 						<span>The default Chrome instance.</span>
 					</li>
 				</ul>

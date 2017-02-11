@@ -130,8 +130,9 @@ END LICENSE
 												A host name to use when running the application. The name will be used as the
 												authority section of the client-side URL; the value <code>host</code> will produce
 												a URL like <code>http://host/<i>page</i></code>. The browser will also be provided
-												with proxy settings routing all requests to the local port on which the server
-												is running.
+												with proxy settings routing all requests for this host name to the local port on
+												which the server is running, unless the <code>proxy</code> property is also
+												specified.
 											</span>
 										</li>
 										<li class="function">
@@ -188,12 +189,12 @@ END LICENSE
 															<li class="value">
 																<div class="name">location</div>
 																<span class="type">Pathname</span>
-																<span>See jsh.shell.browser.chrome.Instance</span>
+																<span>See <a href="../../rhino/shell/browser/api.html">jsh.shell.browser.chrome.Instance</a></span>
 															</li>
 															<li class="value">
 																<div class="name">directory</div>
 																<span class="type">directory</span>
-																<span>See jsh.shell.browser.chrome.Instance</span>
+																<span>See <a href="../../rhino/shell/browser/api.html">jsh.shell.browser.chrome.Instance</a></span>
 															</li>
 															<li class="value">
 																<div class="name">browser</div>
@@ -239,7 +240,7 @@ END LICENSE
 					</ul>
 				</div>
 				<script type="application/x.jsapi#initialize">
-					scope.api = $jsapi.loader.file("application.js");
+					scope.api = $jsapi.loader.module("application.js");
 				</script>
 				<script type="application/x.jsapi#tests"><![CDATA[
 					verify("hello").is("hello");

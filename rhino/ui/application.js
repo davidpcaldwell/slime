@@ -246,7 +246,7 @@ var Application = function(p) {
 	var proxySettings = (function() {
 		if (p.browser.proxy && typeof(p.browser.proxy) == "object") return p.browser.proxy;
 		if (p.browser.proxy && typeof(p.browser.proxy) == "function") return p.browser.proxy({ port: server.port });
-		if (p.browser.host) return { port: server.port };
+		if (p.browser.host) return hostToPort(p.browser.host)({ port: server.port });
 		return null;
 	})();
 	var proxy = (proxySettings) ? new jsh.shell.browser.ProxyConfiguration(proxySettings) : void(0);
@@ -275,6 +275,15 @@ var Application = function(p) {
 		server: server,
 		browser: browser
 	};
+};
+
+var hostToPort = function(name) {
+	return function(o) {
+		var code = $loader.get("application-hostToPort.pac").read(String).replace(/__HOST__/g, name).replace(/__PORT__/g, String(o.port));
+		return {
+			code: code
+		}
+	}	
 };
 
 $exports.Application = Application;

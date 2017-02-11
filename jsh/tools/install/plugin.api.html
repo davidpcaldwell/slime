@@ -193,7 +193,7 @@ END LICENSE
 									return this.toString();
 								};
 								
-								var installed = jsh.tools.install.tomcat.installed({ mock: { notes: $jsapi.loader.get("text/data/tomcat-release-notes-7.0.70.txt") } });
+								var installed = jsh.tools.install.tomcat.installed({ mock: { notes: $jsapi.loader.get("test/data/tomcat-release-notes-7.0.70.txt") } });
 								verify(installed).version.evaluate(toString).is("7.0.70");
 							</script>
 						</li>
