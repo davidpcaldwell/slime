@@ -25,7 +25,7 @@ var Chrome = function(b) {
 	this.Instance = function(u) {
 		if (u.location) {
 			u.directory = u.location.createDirectory({
-				ifExists: function(dir) {
+				exists: function(dir) {
 					return false;
 				},
 				recursive: true
