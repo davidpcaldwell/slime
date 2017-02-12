@@ -26,7 +26,7 @@ plugin({
 			},
 			downloads: jsh.shell.user.downloads
 		});
-		
+
 		jsh.tools.install.rhino = {};
 		jsh.tools.install.rhino.install = jsh.tools.install.$api.Events.Function(function(p,events) {
 			if (!p) p = {};
@@ -49,12 +49,12 @@ plugin({
 					if (jsh.shell.jsh.src) return jsh.shell.jsh.src.getRelativePath("rhino/jrunscript/api.js");
 				})();
 				jsh.loader.run(
-					SRC, 
+					SRC,
 					{
 						load: function() {
 							jsh.shell.console("load(" + Array.prototype.slice.call(arguments) + ")");
 						}
-					}, 
+					},
 					jrunscript
 				);
 				var _rhino = (p.mock && p.mock.rhino) ? p.mock.rhino.pathname.java.adapt() : jrunscript.$api.rhino.download();
@@ -69,7 +69,7 @@ plugin({
 				jsh.shell.console(e.detail);
 			}
 		});
-		
+
 		jsh.tools.install.tomcat = $loader.file("plugin.jsh.tomcat.js", {
 			$api: jsh.tools.install.$api
 		});

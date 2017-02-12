@@ -194,11 +194,11 @@ END LICENSE
 													})
 												}
 											}
-											return 
+											return
 										};
 									}
 								});
-								
+
 								var frontend = new jsh.httpd.Tomcat();
 								frontend.servlet(new function() {
 									var handler = new module.Handler.Proxy({
@@ -211,10 +211,10 @@ END LICENSE
 										scope.$exports.handle = handler;
 									}
 								});
-								
+
 								backend.start();
 								frontend.start();
-								
+
 								var client = new jsh.http.Client();
 								var response = client.request({
 									url: "http://127.0.0.1:" + frontend.port + "/" + "path",

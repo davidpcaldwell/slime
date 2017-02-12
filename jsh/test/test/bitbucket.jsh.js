@@ -1,3 +1,16 @@
+//	LICENSE
+//	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+//	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+//
+//	The Original Code is the jsh JavaScript/Java shell.
+//
+//	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+//	Portions created by the Initial Developer are Copyright (C) 2017 the Initial Developer. All Rights Reserved.
+//
+//	Contributor(s):
+//	END LICENSE
+
 var parameters = jsh.script.getopts({
 	options: {
 		view: "console",
@@ -60,13 +73,13 @@ suite.part("authorization", {
 			authorization: null
 		});
 		verify(unauthorizedDirect).status.code.is(401);
-		
+
 		var okDirect = direct.request({
 			url: "https://127.0.0.1:" + server.https.port + "/api/1.0/repositories/davidpcaldwell/jshtest/raw/local/test/bitbucket.jsh.js",
 			authorization: new jsh.http.Authentication.Basic.Authorization({ user: "foo", password: "bar" })
 		});
 		verify(okDirect).status.code.is(200);
-		
+
 		var verifyApi = function(client,protocol) {
 			var unauthorized = client.request({
 				url: protocol + "://bitbucket.org/api/1.0/repositories/davidpcaldwell/jshtest/raw/local/test/bitbucket.jsh.js",
@@ -82,9 +95,9 @@ suite.part("authorization", {
 				url: protocol + "://bitbucket.org/api/1.0/repositories/davidpcaldwell/jshtest/raw/local/test/bitbucket.jsh.js",
 				authorization: new jsh.http.Authentication.Basic.Authorization({ user: "foo", password: "bar" })
 			});
-			verify(ok).status.code.is(200);			
+			verify(ok).status.code.is(200);
 		}
-		
+
 		verifyApi(server.client,"http");
 		//verifyApi(server.client,"https");
 		//verifyApi(new jsh.http.Client(),"https");

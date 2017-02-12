@@ -32,12 +32,12 @@ var listening = function(f,defaultOn) {
 	};
 
 	return function(p,on) {
-		var listeners = new Listeners({ 
+		var listeners = new Listeners({
 			on: $api.Function.evaluator(
-				function() { return on; }, 
-				function() { return defaultOn; }, 
+				function() { return on; },
+				function() { return defaultOn; },
 				function() { return {}; }
-			)() 
+			)()
 		});
 		listeners.add();
 		try {
@@ -194,5 +194,16 @@ $exports.hg = $loader.file("hg.js", {
 		Events: {
 			Function: listening
 		}
+	}
+});
+
+$exports.git = $loader.file("git.js", {
+	api: {
+		Events: {
+			Function: listening
+		},
+		Error: $context.api.Error,
+		shell: $context.api.shell,
+		file: $context.api.file
 	}
 });

@@ -19,7 +19,7 @@ plugin({
 		if (!jsh.httpd) {
 			jsh.httpd = {};
 		}
-		
+
 		var keygen = function(p) {
 			var pathname = jsh.shell.HOME.getRelativePath(".inonit/jsh/etc/keystore");
 			if (!pathname.file) {
@@ -170,18 +170,18 @@ plugin({
 				var base = (p.base) ? p.base : jsh.shell.TMPDIR.createTemporary({ directory: true, prefix: "tomcat" });
 
 				this.base = base;
-				
+
 				var getOpenPort = function() {
 					var address = new Packages.java.net.ServerSocket(0);
 					var rv = address.getLocalPort();
 					address.close();
-					return rv;					
+					return rv;
 				};
 
 				var port = (p.port) ? p.port : getOpenPort();
 
 				this.port = port;
-				
+
 				if (p.https) {
 					var file = keygen();
 					var _https = new Packages.org.apache.catalina.connector.Connector();
@@ -214,11 +214,11 @@ plugin({
 				var server = $loader.module("server.js", {
 					api: api
 				});
-				
+
 				var addContext = function(path,base) {
 					return tomcat.addContext(path, base.pathname.java.adapt().getCanonicalPath());
 				};
-				
+
 				var addServlet = function(context,resources,pattern,servletName,servletDeclaration) {
 					var servletImplementation = jsh.httpd.spi.argument(resources,servletDeclaration);
 					Packages.org.apache.catalina.startup.Tomcat.addServlet(context,servletName,new JavaAdapter(
@@ -278,7 +278,7 @@ plugin({
 						jsh.shell.console("Added " + context);
 					}
 				};
-				
+
 				this.servlet = function(declaration) {
 					var context = addContext("",base);
 					//	TODO	provide a way to specify resources?

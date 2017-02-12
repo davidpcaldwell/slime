@@ -117,7 +117,7 @@ $exports.Handler.HostRedirect = function(p) {
 };
 $exports.Handler.Proxy = function(o) {
 	var client = new jsh.http.Client();
-	
+
 	return function(request) {
 		//	TODO	what about protocol? What about host header?
 		var path = (request.query) ? request.path + "?" + request.query.string : request.path;

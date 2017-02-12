@@ -178,7 +178,7 @@ plugin({
 			}
 
 			this.port = tomcat.port;
-			
+
 			this.https = {
 				port: tomcat.https.port,
 				client: new jsh.http.Client({
@@ -190,11 +190,11 @@ plugin({
 					}
 				})
 			};
-			
+
 			this.start = function() {
 				tomcat.start();
 			}
-			
+
 			this.run = function() {
 				tomcat.run();
 			}
@@ -218,7 +218,7 @@ plugin({
 		jsh.test.mock.Internet = $api.deprecate(jsh.test.mock.Web);
 		jsh.test.mock.Web.bitbucket = function(o) {
 			var hgserve;
-			
+
 			var startHgServer = function() {
 				if (!hgserve) {
 					hgserve = new jsh.test.mock.Hg.bitbucket(o);
@@ -230,8 +230,8 @@ plugin({
 			var httpd = (function() {
 				if (jsh.shell.jsh.src) return jsh.loader.file(jsh.shell.jsh.src.getRelativePath("rhino/http/servlet/server/loader.js"));
 			})();
-			
-			var getHgServerProxy = (httpd) 
+
+			var getHgServerProxy = (httpd)
 				? $api.Function.singleton(function() {
 					var server = startHgServer();
 					return new httpd.Handler.Proxy({
@@ -243,7 +243,7 @@ plugin({
 				})
 				: void(0)
 			;
-			
+
 			var rv = function(request) {
 				if (request.headers.value("host") == "bitbucket.org" || o.loopback) {
 					if (request.path == "") {
@@ -421,7 +421,7 @@ plugin({
 			return rv;
 		};
 		jsh.test.mock.Internet.bitbucket = $api.deprecate(jsh.test.mock.Web.bitbucket);
-		
+
 		jsh.test.mock.Hg = function() {
 		};
 		jsh.test.mock.Hg.bitbucket = function(o) {
@@ -435,9 +435,9 @@ plugin({
 			}
 			var CONFIG = jsh.shell.TMPDIR.createTemporary();
 			CONFIG.pathname.write(config.join("\n"), { append: false });
-			
+
 			var port;
-			
+
 			var run = function(p,on) {
 				jsh.shell.run({
 					command: "hg",
@@ -457,15 +457,15 @@ plugin({
 					}
 				})
 			};
-			
+
 			var running;
-			
+
 			Object.defineProperty(this,"port",{
 				get: function() {
 					return port;
 				}
 			});
-			
+
 			this.start = function(p) {
 				var lock = new jsh.java.Thread.Monitor();
 				if (!running) {
@@ -498,7 +498,7 @@ plugin({
 					}
 				})();
 			}
-			
+
 			this.stop = function() {
 				if (running) running.kill();
 			}

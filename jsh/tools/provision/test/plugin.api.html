@@ -19,7 +19,15 @@ END LICENSE
 		<script src="../../../../loader/api/api.js"></script>
 	</head>
 	<body>
-		<div>Provides APIs useful for testing provisioning software.</div>
+		<div>
+			<p>
+				Provides APIs useful for testing provisioning software.
+			</p>
+			<p>
+				To enable these APIs, execute:
+				<code>jsh.tools.provision.plugin.test();</code>
+			</p>
+		</div>
 		<div>
 			<h1>Exports</h1>
 			<ul>
@@ -78,6 +86,54 @@ END LICENSE
 						<span class="type">__TYPE__</span>
 						<span>__DESCRIPTION__</span>
 					</div>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="function">
+							<div class="name">getMockBitbucketConfiguration</div>
+							<span>
+								Returns a mock server configuration derived by examining a top-level directory, scanning for
+								subrepositories.
+							</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="value">
+										<span class="type">base</span>
+										<span>The project base.</span>
+									</li>
+									<li class="function">
+										<!--
+										<div class="name">isPrivateRepository</div>
+										-->
+										<span>A function that tells the mock server whether a particular repository is private.</span>
+										<div class="arguments">
+											<div class="label">Arguments</div>
+											<ol>
+												<li class="value">
+													<span class="type">string</span>
+													<span>The user ID of the owner.</span>
+												</li>
+												<li class="value">
+													<span class="type">string</span>
+													<span>The name of the repository.</span>
+												</li>
+											</ol>
+										</div>
+										<div class="returns">
+											<div class="label">Returns</div>
+											<span class="type">boolean</span>
+											<span>Whether the specified repository is private.</span>
+										</div>
+									</li>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">object</span>
+								<span>An object suitable for use as the <code>bitbucket</code> property of <code>serve()</code></span>
+							</div>
+						</li>
+					</ul>
 				</li>
 			</ul>
 		</div>
