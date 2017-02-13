@@ -445,6 +445,21 @@ Object.defineProperty(
 	}
 )
 
+Object.defineProperty(
+	$exports.system,
+	"opendesktop",
+	{
+		get: $api.Function.singleton(function() {
+			return $loader.file("opendesktop.js", {
+				api: {
+					js: $context.api.js,
+					shell: $exports
+				}
+			});
+		})
+	}
+)
+
 var addPropertyArgumentsTo = function(jargs,properties) {
 	if (properties) {
 		for (var x in properties) {
