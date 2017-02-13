@@ -318,7 +318,7 @@ END LICENSE
 					verify(second).request.method.is("GET");
 					verify(second).request.path.is("");
 					verify(second).request.evaluate(getHeader("host")).is("foo");
-					
+
 					var invoked = false;
 					var third = singleRequestApplication(function() {
 						this.browser.proxy = function(server) {

@@ -195,7 +195,7 @@ public abstract class Code {
 					}
 				};
 			}
-			
+
 			public static File create(final URL url) {
 				return create(url, (URLConnection)null);
 			}
@@ -237,7 +237,7 @@ public abstract class Code {
 					}
 				};
 			}
-			
+
 			public static File create(java.net.URL url, UrlBased.HttpConnector connector) {
 				try {
 					URLConnection connection = url.openConnection();
@@ -248,7 +248,7 @@ public abstract class Code {
 				} catch (IOException e) {
 					//	TODO	is this the only way to test whether the URL is available?
 					return null;
-				}	
+				}
 			}
 		}
 
@@ -497,7 +497,7 @@ public abstract class Code {
 
 			public abstract String[] list(String prefix);
 		}
-			
+
 		public static abstract class HttpConnector {
 			public abstract void decorate(HttpURLConnection connection);
 

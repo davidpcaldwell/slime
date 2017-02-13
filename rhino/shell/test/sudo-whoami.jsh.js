@@ -3,7 +3,7 @@
 //	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 //
-//	The Original Code is the jsh JavaScript/Java shell.
+//	The Original Code is the rhino/shell SLIME module.
 //
 //	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
 //	Portions created by the Initial Developer are Copyright (C) 2017 the Initial Developer. All Rights Reserved.
@@ -11,4 +11,7 @@
 //	Contributor(s):
 //	END LICENSE
 
-jsh.shell.console("Hello, World!");
+jsh.shell.run({
+	command: "sudo",
+	arguments: ["-k", "whoami"]
+});

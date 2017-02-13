@@ -43,10 +43,10 @@
 //				Packages.java.lang.System.err.println(e);
 //				Packages.java.lang.System.err.println(e.stack);
 //				throw new Packages.java.lang.RuntimeException("Unreachable");
-//			}			
+//			}
 //		}
 //	})();
-	
+
 	var $script = (this.$api && this.$api.script) ? this.$api.script : null;
 	var $arguments = (this.$api && this.$api.arguments) ? this.$api.arguments : null;
 	var $api = {};

@@ -1,3 +1,16 @@
+//	LICENSE
+//	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+//	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+//
+//	The Original Code is the jsh JavaScript/Java shell.
+//
+//	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+//	Portions created by the Initial Developer are Copyright (C) 2017 the Initial Developer. All Rights Reserved.
+//
+//	Contributor(s):
+//	END LICENSE
+
 var getLatestVersion = function() {
 	try {
 		var downloadRawHtml = new jsh.http.Client().request({
@@ -79,11 +92,11 @@ $exports.installed = function(p) {
 
 $exports.install = $context.$api.Events.Function(function(p,events) {
 	if (!p) p = {};
-	
+
 	var lib = (p.mock && p.mock.lib) ? p.mock.lib : jsh.shell.jsh.lib;
 	var getLatest = (p.mock && p.mock.getLatestVersion) ? p.mock.getLatestVersion : getLatestVersion;
 	var findApache = (p.mock && p.mock.findApache) ? p.mock.findApache : jsh.tools.install.apache.find;
-	
+
 	if (!p.to) {
 		p.to = lib.getRelativePath("tomcat");
 	}

@@ -572,12 +572,12 @@ $exports.java = function(p) {
 			})
 		}
 	);
-	
+
 	Object.defineProperty(
 		this, "keytool",
 		{
 			get: $api.Function.singleton(function() {
-				return $context.api.file.Searchpath([self.home.getRelativePath("bin")]).getCommand("keytool");				
+				return $context.api.file.Searchpath([self.home.getRelativePath("bin")]).getCommand("keytool");
 			})
 		}
 	);

@@ -22,7 +22,7 @@ plugin({
 				web: jsh.js.web
 			}
 		});
-		
+
 		jsh.http.test = new function() {
 			this.disableHttpsSecurity = function() {
 				//	TODO	this HTTPS trust rigamarole should probably be in the shell somewhere, perhaps as a test API
@@ -48,7 +48,7 @@ plugin({
 							}
 						}
 					)
-				);				
+				);
 			}
 		}
 	}

@@ -151,7 +151,38 @@ $exports.install = $context.api.Events.Function(function(p,events) {
 			throw new Error("Unimplemented: installation of file type that is not .pkg: " + file);
 		}
 	} else {
-		throw new Error("Unimplemented: installation of Mercurial for non-OS X system.");
+		if (installed) {
+			jsh.shell.console("hg installed: version " + installed.version);
+		} else if (jsh.shell.PATH.getCommand("apt")) {
+			//	TODO	should actually detect GUI rather than assuming
+			var HAS_GUI = true;
+			if (HAS_GUI) {
+				var password = jsh.java.tools.askpass.gui({
+					prompt: "Enter password for sudo:"
+				});
+				jsh.shell.run({
+					command: "sudo",
+					arguments: ["-S", "apt", "install", "mercurial"],
+					stdio: {
+						input: password + "\n"
+					}
+				});
+			} else {
+				throw new Error("Unsupported: Mercurial installation without GUI to input password");
+				//	TODO	options for sudo password
+				//			*	force user to do sudo ls beforehand to cache credentials
+				//			*	figure out way to use -S flag to route password typed from console to sudo
+				jsh.shell.run({
+					command: "sudo",
+					arguments: ["-k", "apt", "install", "mercurial"],
+					stdio: {
+						input: jsh.shell.stdio.input
+					}
+				});
+			}
+		} else {
+			throw new Error("Unsupported: Mercurial install on non-OS X, non-apt system.");
+		}
 	}
 });
 $exports.install.GUI = GUI;

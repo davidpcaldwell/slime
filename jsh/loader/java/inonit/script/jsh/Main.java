@@ -409,14 +409,14 @@ public class Main {
 				}
 			};
 		}
-		
+
 		private Code.Source.HttpConnector getHttpConnector() {
 			if (System.getProperty("jsh.loader.user") != null) {
 				return new Code.Source.HttpConnector() {
 					@Override public void decorate(HttpURLConnection connection) {
 						String user = System.getProperty("jsh.loader.user");
 						String password = System.getProperty("jsh.loader.password");
-						String authorization = "Basic " 
+						String authorization = "Basic "
 							+ javax.xml.bind.DatatypeConverter.printBase64Binary(
 								(user + ":" + password).getBytes()
 							)
