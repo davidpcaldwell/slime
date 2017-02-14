@@ -3,7 +3,7 @@
 //	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 //
-//	The Original Code is the SLIME Java GUI module.
+//	The Original Code is the SLIME JDK interface.
 //
 //	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
 //	Portions created by the Initial Developer are Copyright (C) 2017 the Initial Developer. All Rights Reserved.
@@ -11,8 +11,8 @@
 //	Contributor(s):
 //	END LICENSE
 
-function FindProxyForURL(url, host) {
-	if (host == "__HOST__") return "PROXY 127.0.0.1:__PORT__";
-	return "DIRECT";
-}
+var global = (function() { return this; })();
+jsh.shell.console("git = " + global.git);
+jsh.java.tools.plugin.git();
+jsh.shell.console("git = " + global.git);
 

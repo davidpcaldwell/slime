@@ -50,6 +50,7 @@ $exports.files = new function() {
 		var basename = node.pathname.basename;
 		if (/\.txt$/.test(basename)) return true;
 		if (/\.js$/.test(basename)) return true;
+		if (/\.pac$/.test(basename)) return true;
 		if (/\.jsh$/.test(basename)) return true;
 		if (/\.bash$/.test(basename)) return true;
 		if (/\.html$/.test(basename)) return true;
