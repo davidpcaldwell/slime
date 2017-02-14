@@ -13,6 +13,38 @@
 
 plugin({
 	isReady: function() {
+		return jsh.js && jsh.script && jsh.shell;
+	},
+	load: function() {
+		if (!jsh.test) jsh.test = {};
+		jsh.test.relaunchInDebugger = function(p) {
+			for (var i=0; i<jsh.script.arguments.length; i++) {
+				if (jsh.script.arguments[i] == p.argument) {
+					var args = Array.prototype.slice.call(jsh.script.arguments);
+					args.splice(i,1);
+					var shell = (function() {
+						if (jsh.shell.jsh.src) return jsh.shell.jsh.src;
+						throw new Error("Unimplemented: relaunchInDebugger for non-unbuilt shell.");
+					})();
+					jsh.shell.jsh({
+						shell: shell,
+						script: jsh.script.file,
+						arguments: args,
+						environment: jsh.js.Object.set({}, jsh.shell.environment, {
+							JSH_DEBUG_SCRIPT: "rhino"
+						}),
+						evaluate: function(result) {
+							jsh.shell.exit(result.status);
+						}
+					});
+				}
+			}
+		}
+	}
+})
+
+plugin({
+	isReady: function() {
 		return jsh.js && jsh.io && jsh.shell && jsh.unit;
 	},
 	load: function() {
