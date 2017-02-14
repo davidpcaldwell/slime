@@ -70,7 +70,7 @@ plugin({
 
 		jsh.test.provision.serve = function(o) {
 			loadhg();
-			var server = new jsh.test.mock.Internet();
+			var server = new jsh.test.mock.Web();
 			var bitbucket = (function() {
 				if (o.bitbucket) return o.bitbucket;
 				//	TODO	publish this API and make it work for non-davidpcaldwell repositories
@@ -86,7 +86,7 @@ plugin({
 					}
 				};
 			}
-			server.add(jsh.test.mock.Internet.bitbucket(bitbucket));
+			server.add(jsh.test.mock.Web.bitbucket(bitbucket));
 			var version = (o.version) ? o.version : "tip";
 			var script = (function() {
 				var repository = String(new hg.Repository({ local: o.base }).paths.default.url);
