@@ -502,6 +502,79 @@ plugin({
 			this.stop = function() {
 				if (running) running.kill();
 			}
-		}
+		};
+		jsh.test.mock.git = {};
+		jsh.test.mock.git.Server = function(o) {
+			return function(request) {
+				jsh.shell.console("Creating git CGI request ...");
+				var cgi = {
+					GIT_HTTP_EXPORT_ALL: "true",
+					GATEWAY_INTERFACE: "CGI/1.1"
+				};
+
+				jsh.shell.console(JSON.stringify(cgi));
+				if (request.body) {
+					cgi.CONTENT_LENGTH = request.headers.value("Content-Length");
+					cgi.CONTENT_TYPE = request.headers.value("Content-Type");
+				}
+				jsh.shell.console(JSON.stringify(cgi));
+
+				cgi.PATH_INFO = "/" + request.path;
+				jsh.shell.console(JSON.stringify(cgi));
+				cgi.PATH_TRANSLATED = o.getLocation(request.path).toString();
+				jsh.shell.console(JSON.stringify(cgi));
+				cgi.QUERY_STRING = (request.query) ? request.query.string : "";
+				jsh.shell.console(JSON.stringify(cgi));
+				cgi.REMOTE_ADDR = request.source.ip;
+				jsh.shell.console(JSON.stringify(cgi));
+				cgi.REQUEST_METHOD = request.method;
+				jsh.shell.console(JSON.stringify(cgi));
+
+				//	TODO	SCRIPT_NAME
+				var host = (function(value) {
+					if (value.indexOf(":") == -1) {
+						return {
+							host: value,
+							port: "80"
+						}
+					} else {
+						var tokens = value.split(":");
+						return {
+							host: tokens[0],
+							port: tokens[1]
+						}
+					}
+				})(request.headers.value("host"));
+				cgi.SERVER_NAME = host.host;
+				cgi.SERVER_PORT = host.port;
+				jsh.shell.console(JSON.stringify(cgi));
+
+				cgi.SERVER_PROTOCOL = "HTTP";
+				cgi.SERVER_SOFTWARE = "jsh-mock-git-server";
+				jsh.shell.console(JSON.stringify(cgi));
+
+				var stdio = {};
+
+				if (request.body) {
+					stdio.input = request.body.stream;
+				}
+
+				jsh.shell.console("Created git CGI request ...");
+				jsh.shell.console(JSON.stringify(cgi));
+
+				jsh.shell.run({
+					command: "git",
+					arguments: [
+						"http-backend"
+					],
+					stdio: stdio,
+					environment: cgi
+				});
+
+				return {
+					status: { code: 503 }
+				};
+			};
+		};
 	}
 })
