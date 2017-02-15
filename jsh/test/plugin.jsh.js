@@ -506,29 +506,21 @@ plugin({
 		jsh.test.mock.git = {};
 		jsh.test.mock.git.Server = function(o) {
 			return function(request) {
-				jsh.shell.console("Creating git CGI request ...");
 				var cgi = {
 					GIT_HTTP_EXPORT_ALL: "true",
 					GATEWAY_INTERFACE: "CGI/1.1"
 				};
 
-				jsh.shell.console(JSON.stringify(cgi));
 				if (request.body) {
 					cgi.CONTENT_LENGTH = request.headers.value("Content-Length");
 					cgi.CONTENT_TYPE = request.headers.value("Content-Type");
 				}
-				jsh.shell.console(JSON.stringify(cgi));
 
 				cgi.PATH_INFO = "/" + request.path;
-				jsh.shell.console(JSON.stringify(cgi));
 				cgi.PATH_TRANSLATED = o.getLocation(request.path).toString();
-				jsh.shell.console(JSON.stringify(cgi));
 				cgi.QUERY_STRING = (request.query) ? request.query.string : "";
-				jsh.shell.console(JSON.stringify(cgi));
 				cgi.REMOTE_ADDR = request.source.ip;
-				jsh.shell.console(JSON.stringify(cgi));
 				cgi.REQUEST_METHOD = request.method;
-				jsh.shell.console(JSON.stringify(cgi));
 
 				//	TODO	SCRIPT_NAME
 				var host = (function(value) {
@@ -547,11 +539,9 @@ plugin({
 				})(request.headers.value("host"));
 				cgi.SERVER_NAME = host.host;
 				cgi.SERVER_PORT = host.port;
-				jsh.shell.console(JSON.stringify(cgi));
 
 				cgi.SERVER_PROTOCOL = "HTTP";
 				cgi.SERVER_SOFTWARE = "jsh-mock-git-server";
-				jsh.shell.console(JSON.stringify(cgi));
 
 				var stdio = {};
 
@@ -559,8 +549,8 @@ plugin({
 					stdio.input = request.body.stream;
 				}
 
-				jsh.shell.console("Created git CGI request ...");
-				jsh.shell.console(JSON.stringify(cgi));
+				var stdout = new jsh.io.Buffer();
+				stdio.output = stdout.writeBinary();
 
 				jsh.shell.run({
 					command: "git",
@@ -570,10 +560,76 @@ plugin({
 					stdio: stdio,
 					environment: cgi
 				});
+				stdout.close();
 
-				return {
-					status: { code: 503 }
+				var stream = stdout.readBinary();
+
+				var Response = function() {
+					this.status = { code: 200 };
+					this.headers = [];
+					this.body = {
+					}
 				};
+
+				var response = new Response();
+
+				var addLine = function(name,value) {
+					if (name.toLowerCase() == "status") {
+						var tokens = value.split(" ");
+						response.status.code = Number(tokens[0]);
+						response.status.message = tokens.slice(1).join(" ");
+					} else if (name.toLowerCase() == "content-type") {
+						response.body.type = value;
+					} else if (name.toLowerCase() == "location") {
+						throw new Error("Redirect");
+					} else {
+						response.headers.push({ name: name, value: value });
+					}
+				};
+
+				var cgiParser = /^(.*)\:(?:\s*)(.*)$/
+				var addRawLine = function(line) {
+					var match = cgiParser.exec(line);
+					var name = match[1].toLowerCase();
+					var value = match[2];
+					addLine(name,value);
+				}
+				if (false) {
+					//	TODO	Somehow this does not work; the character version of the stream seems to read ahead or something
+					//			which corrupts the version of the stream handed over when headers are finished.
+					stream.character().readLines(function(line) {
+						if (line.length == 0) return true;
+						addRawLine(line);
+						//	TODO	Location header not supported; does Git use it?
+					}, {
+						ending: "\r\n",
+						onEnd: function() {
+						}
+					});
+				} else {
+					var _in = stream.java.adapt();
+					var more = true;
+					var line = "";
+					while(more) {
+						var b = _in.read();
+						var c = String.fromCharCode(b);
+//						jsh.shell.console("byte: " + b + " char: " + c);
+						line += c;
+						if (line.substring(line.length-2) == "\r\n") {
+							if (line.length == 2) {
+								more = false;
+							} else {
+								var content = line.substring(0,line.length-2);
+								addRawLine(content);
+								line = "";
+							}
+						}
+					}
+				}
+
+				response.body.stream = stream;
+
+				return response;
 			};
 		};
 	}
