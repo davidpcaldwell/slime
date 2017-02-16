@@ -80,9 +80,20 @@ plugin({
 			if (!bitbucket.src.davidpcaldwell.slime) {
 				bitbucket.src.davidpcaldwell.slime = {
 					directory: jsh.shell.jsh.src,
-					downloads: {
-						"jdk-8u112-macosx-x64.dmg": jsh.shell.user.downloads.getFile("jdk-8u112-macosx-x64.dmg"),
-						"jdk-8u112-linux-x64.tar.gz": jsh.shell.user.downloads.getFile("jdk-8u112-linux-x64.tar.gz")
+					downloads: new function() {
+						var minor;
+						jsh.shell.jsh.src.getFile("jsh/tools/provision/jdk.bash").read(String).split("\n").forEach(function(line) {
+							var parser = /^JDK8_UPDATE\=(.*)/;
+							var match = parser.exec(line);
+							if (match) {
+								minor = match[1];
+							}
+						});
+						if (!minor) throw new Error();
+						var osxFilename = "jdk-8u" + minor + "-macosx-x64.dmg";
+						var linuxFilename = "jdk-8u" + minor + "-linux-x64.tar.gz";
+						this[osxFilename] = jsh.shell.user.downloads.getFile(osxFilename);
+						this[linuxFilename] = jsh.shell.user.downloads.getFile(linuxFilename);
 					}
 				};
 			}

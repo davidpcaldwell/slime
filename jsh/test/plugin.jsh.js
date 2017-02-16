@@ -446,13 +446,15 @@ plugin({
 						port = jsh.ip.tcp.getEphemeralPortNumber();
 						rv.push("-p", String(port));
 						rv.push("--web-conf", CONFIG);
-						jsh.shell.console("args = " + rv);
 						return rv;
 					})(),
 					on: {
 						start: function() {
-							jsh.shell.console("run started");
 							if (on && on.start) on.start.apply(this,arguments);
+							try {
+								Packages.java.lang.Thread.sleep(500);
+							} catch (e) {
+							}
 						}
 					}
 				})
