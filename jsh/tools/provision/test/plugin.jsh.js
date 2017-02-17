@@ -24,6 +24,22 @@ plugin({
 			}
 		}
 
+		var SlimeDownloads = function() {
+			var minor;
+			jsh.shell.jsh.src.getFile("jsh/tools/provision/jdk.bash").read(String).split("\n").forEach(function(line) {
+				var parser = /^JDK8_UPDATE\=(.*)/;
+				var match = parser.exec(line);
+				if (match) {
+					minor = match[1];
+				}
+			});
+			if (!minor) throw new Error();
+			var osxFilename = "jdk-8u" + minor + "-macosx-x64.dmg";
+			var linuxFilename = "jdk-8u" + minor + "-linux-x64.tar.gz";
+			this[osxFilename] = jsh.shell.user.downloads.getFile(osxFilename);
+			this[linuxFilename] = jsh.shell.user.downloads.getFile(linuxFilename);
+		}
+
 		var getMockConfiguration = function(base,isPrivateRepository) {
 			loadhg();
 			var repository = new hg.Repository({ local: base });
@@ -80,21 +96,7 @@ plugin({
 			if (!bitbucket.src.davidpcaldwell.slime) {
 				bitbucket.src.davidpcaldwell.slime = {
 					directory: jsh.shell.jsh.src,
-					downloads: new function() {
-						var minor;
-						jsh.shell.jsh.src.getFile("jsh/tools/provision/jdk.bash").read(String).split("\n").forEach(function(line) {
-							var parser = /^JDK8_UPDATE\=(.*)/;
-							var match = parser.exec(line);
-							if (match) {
-								minor = match[1];
-							}
-						});
-						if (!minor) throw new Error();
-						var osxFilename = "jdk-8u" + minor + "-macosx-x64.dmg";
-						var linuxFilename = "jdk-8u" + minor + "-linux-x64.tar.gz";
-						this[osxFilename] = jsh.shell.user.downloads.getFile(osxFilename);
-						this[linuxFilename] = jsh.shell.user.downloads.getFile(linuxFilename);
-					}
+					downloads: new SlimeDownloads()
 				};
 			}
 			server.add(jsh.test.mock.Web.bitbucket(bitbucket));
@@ -127,6 +129,7 @@ plugin({
 			return server;
 		};
 		jsh.test.provision.serve.getMockBitbucketConfiguration = getMockConfiguration;
+		jsh.test.provision.serve.getMockBitbucketConfiguration.SlimeDownloads = SlimeDownloads;
 		jsh.test.provision.Server = $api.deprecate(jsh.test.provision.serve);
 		jsh.test.provision.Server.getMockBitbucketConfiguration = $api.deprecate(getMockConfiguration);
 
