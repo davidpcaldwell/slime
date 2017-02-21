@@ -119,9 +119,13 @@ plugin({
 		jsh.test.provision.Server = $api.deprecate(jsh.test.provision.serve);
 		jsh.test.provision.Server.getMockBitbucketConfiguration = $api.deprecate(getMockConfiguration);
 
-		var writeUrl = function(url,mock) {
+		var writeUrl = function(url,mock,version) {
 			if (mock) url = url.replace(/https:\/\//g, "http://");
-			if (mock) url = url.replace(/raw\/tip/g, "raw/local");
+			if (mock) {
+				url = url.replace(/raw\/tip/g, "raw/local");
+			} else if (version) {
+				url = url.replace(/raw\/tip/g, "raw/" + version);
+			}
 			return url;
 		}
 
@@ -134,8 +138,8 @@ plugin({
 			return [];
 		};
 
-		var curl = function(closed,mock) {
-			return "curl -s -L " + ((closed) ? "-o $TMP_INSTALLER " : "") + writeUrl("https://bitbucket.org/api/1.0/repositories/davidpcaldwell/slime/raw/tip/jsh/tools/provision/remote.bash",mock);
+		var curl = function(closed,mock,version) {
+			return "curl -s -L " + ((closed) ? "-o $TMP_INSTALLER " : "") + writeUrl("https://bitbucket.org/api/1.0/repositories/davidpcaldwell/slime/raw/tip/jsh/tools/provision/remote.bash",mock,version);
 		};
 
 		jsh.test.provision.Command = function(p) {
@@ -153,7 +157,7 @@ plugin({
 			if (!p.user) {
 				var mockVariables = variables(p.mock).join(" ");
 				if (mockVariables) mockVariables += " ";
-				this.commands.push(curl(false,p.mock) + " | env " + mockVariables + "INONIT_PROVISION_SCRIPT_JSH=" + writeUrl(p.script,p.mock) + " bash");
+				this.commands.push(curl(false,p.mock,p.version) + " | env " + mockVariables + "INONIT_PROVISION_SCRIPT_JSH=" + writeUrl(p.script,p.mock) + " bash");
 			} else {
 				this.commands.push("export TMP_INSTALLER=$(mktemp)");
 				this.commands.push("export INONIT_PROVISION_SCRIPT_JSH=" + writeUrl(p.script,p.mock));
@@ -161,7 +165,7 @@ plugin({
 				this.commands.push.apply(this.commands,variables(p.mock).map(function(declaration) {
 					return "export " + declaration;
 				}));
-				this.commands.push(curl(true,p.mock));
+				this.commands.push(curl(true,p.mock,p.version));
 				this.commands.push("chmod +x $TMP_INSTALLER");
 				this.commands.push("$TMP_INSTALLER");
 			}
