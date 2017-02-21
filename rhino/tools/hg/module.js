@@ -180,36 +180,6 @@ var Installation = function(environment) {
 				}
 			});
 		};
-
-		this.identify = function(p) {
-			if (this.on.access) this.on.access.call(this);
-			//	TODO	hg help identify claims there is a way that this can include two parent identifiers, but cannot so far reproduce
-			//			that
-			var local = Boolean(this.directory);
-			var rv = shell({
-				command: "identify",
-				arguments: ((local) ? ["-ni"] : []).concat([this.reference]),
-				evaluate: function(result) {
-					var output = result.out.split("\n").slice(0,-1)[0];
-					if (local) {
-						var match = /([0-9a-f]+)(\+?)\s+(\-?[0-9]+)(\+?)/.exec(output);
-						if (!match) {
-							throw new Error("No match for: [" + output + "]");
-						}
-						return {
-							changeset: {
-								global: match[1],
-								local: Number(match[3])
-							},
-							modified: Boolean(match[2])
-						};
-					} else {
-						return { changeset: { global: output } };
-					}
-				}
-			});
-			return rv;
-		};
 	};
 
 	var RemoteRepository = function(url) {
@@ -461,6 +431,36 @@ var Installation = function(environment) {
 					return parseLog(result.stdio.output.split("\n"))[0];
 				}
 			});
+		};
+
+		this.identify = function(p) {
+			if (this.on.access) this.on.access.call(this);
+			//	TODO	hg help identify claims there is a way that this can include two parent identifiers, but cannot so far reproduce
+			//			that
+			var local = Boolean(this.directory);
+			var rv = shell({
+				command: "identify",
+				arguments: ((local) ? ["-ni"] : []).concat([this.reference]),
+				evaluate: function(result) {
+					var output = result.out.split("\n").slice(0,-1)[0];
+					if (local) {
+						var match = /([0-9a-f]+)(\+?)\s+(\-?[0-9]+)(\+?)/.exec(output);
+						if (!match) {
+							throw new Error("No match for: [" + output + "]");
+						}
+						return {
+							changeset: {
+								global: match[1],
+								local: Number(match[3])
+							},
+							modified: Boolean(match[2])
+						};
+					} else {
+						return { changeset: { global: output } };
+					}
+				}
+			});
+			return rv;
 		};
 
 		this.parents = function() {
