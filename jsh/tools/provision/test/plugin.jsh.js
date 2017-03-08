@@ -24,6 +24,22 @@ plugin({
 			}
 		}
 
+		var SlimeDownloads = function() {
+			var minor;
+			jsh.shell.jsh.src.getFile("jsh/tools/provision/jdk.bash").read(String).split("\n").forEach(function(line) {
+				var parser = /^JDK8_UPDATE\=(.*)/;
+				var match = parser.exec(line);
+				if (match) {
+					minor = match[1];
+				}
+			});
+			if (!minor) throw new Error();
+			var osxFilename = "jdk-8u" + minor + "-macosx-x64.dmg";
+			var linuxFilename = "jdk-8u" + minor + "-linux-x64.tar.gz";
+			this[osxFilename] = jsh.shell.user.downloads.getFile(osxFilename);
+			this[linuxFilename] = jsh.shell.user.downloads.getFile(linuxFilename);
+		}
+
 		var getMockConfiguration = function(base,isPrivateRepository) {
 			loadhg();
 			var repository = new hg.Repository({ local: base });
@@ -70,7 +86,7 @@ plugin({
 
 		jsh.test.provision.serve = function(o) {
 			loadhg();
-			var server = new jsh.test.mock.Internet();
+			var server = new jsh.test.mock.Web();
 			var bitbucket = (function() {
 				if (o.bitbucket) return o.bitbucket;
 				//	TODO	publish this API and make it work for non-davidpcaldwell repositories
@@ -80,13 +96,10 @@ plugin({
 			if (!bitbucket.src.davidpcaldwell.slime) {
 				bitbucket.src.davidpcaldwell.slime = {
 					directory: jsh.shell.jsh.src,
-					downloads: {
-						"jdk-8u112-macosx-x64.dmg": jsh.shell.user.downloads.getFile("jdk-8u112-macosx-x64.dmg"),
-						"jdk-8u112-linux-x64.tar.gz": jsh.shell.user.downloads.getFile("jdk-8u112-linux-x64.tar.gz")
-					}
+					downloads: new SlimeDownloads()
 				};
 			}
-			server.add(jsh.test.mock.Internet.bitbucket(bitbucket));
+			server.add(jsh.test.mock.Web.bitbucket(bitbucket));
 			var version = (o.version) ? o.version : "tip";
 			var script = (function() {
 				var repository = String(new hg.Repository({ local: o.base }).paths.default.url);
@@ -116,12 +129,17 @@ plugin({
 			return server;
 		};
 		jsh.test.provision.serve.getMockBitbucketConfiguration = getMockConfiguration;
+		jsh.test.provision.serve.getMockBitbucketConfiguration.SlimeDownloads = SlimeDownloads;
 		jsh.test.provision.Server = $api.deprecate(jsh.test.provision.serve);
 		jsh.test.provision.Server.getMockBitbucketConfiguration = $api.deprecate(getMockConfiguration);
 
-		var writeUrl = function(url,mock) {
+		var writeUrl = function(url,mock,version) {
 			if (mock) url = url.replace(/https:\/\//g, "http://");
-			if (mock) url = url.replace(/raw\/tip/g, "raw/local");
+			if (mock) {
+				url = url.replace(/raw\/tip/g, "raw/local");
+			} else if (version) {
+				url = url.replace(/raw\/tip/g, "raw/" + version);
+			}
 			return url;
 		}
 
@@ -134,8 +152,8 @@ plugin({
 			return [];
 		};
 
-		var curl = function(closed,mock) {
-			return "curl -s -L " + ((closed) ? "-o $TMP_INSTALLER " : "") + writeUrl("https://bitbucket.org/api/1.0/repositories/davidpcaldwell/slime/raw/tip/jsh/tools/provision/remote.bash",mock);
+		var curl = function(closed,mock,version) {
+			return "curl -s -L " + ((closed) ? "-o $TMP_INSTALLER " : "") + writeUrl("https://bitbucket.org/api/1.0/repositories/davidpcaldwell/slime/raw/tip/jsh/tools/provision/remote.bash",mock,version);
 		};
 
 		jsh.test.provision.Command = function(p) {
@@ -153,7 +171,7 @@ plugin({
 			if (!p.user) {
 				var mockVariables = variables(p.mock).join(" ");
 				if (mockVariables) mockVariables += " ";
-				this.commands.push(curl(false,p.mock) + " | env " + mockVariables + "INONIT_PROVISION_SCRIPT_JSH=" + writeUrl(p.script,p.mock) + " bash");
+				this.commands.push(curl(false,p.mock,p.version) + " | env " + mockVariables + "INONIT_PROVISION_SCRIPT_JSH=" + writeUrl(p.script,p.mock) + " bash");
 			} else {
 				this.commands.push("export TMP_INSTALLER=$(mktemp)");
 				this.commands.push("export INONIT_PROVISION_SCRIPT_JSH=" + writeUrl(p.script,p.mock));
@@ -161,7 +179,7 @@ plugin({
 				this.commands.push.apply(this.commands,variables(p.mock).map(function(declaration) {
 					return "export " + declaration;
 				}));
-				this.commands.push(curl(true,p.mock));
+				this.commands.push(curl(true,p.mock,p.version));
 				this.commands.push("chmod +x $TMP_INSTALLER");
 				this.commands.push("$TMP_INSTALLER");
 			}

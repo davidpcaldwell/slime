@@ -12,18 +12,22 @@
 
 plugin({
 	isReady: function() {
-		return Boolean(jsh.shell.PATH.getCommand("git"));
+		return jsh.shell && Boolean(jsh.shell.PATH.getCommand("git"));
 	},
 	load: function() {
 		global.git = $loader.module("module.js", {
 			program: jsh.shell.PATH.getCommand("git")
 		});
 		global.git.jsh = {};
-		global.git.jsh.credentialHelper = [
-			jsh.shell.java.jrunscript.toString(),
-			jsh.shell.jsh.src.getRelativePath("rhino/jrunscript/api.js"),
-			"jsh",
-			jsh.shell.jsh.src.getRelativePath("rhino/tools/git/credential-helper.jsh.js")
-		].join(" ")
+		//	TODO	enable credentialHelper for built shells
+		//	TODO	investigate enabling credentialHelper for remote shells
+		if (jsh.shell.jsh.src) {
+			global.git.jsh.credentialHelper = [
+				jsh.shell.java.jrunscript.toString(),
+				jsh.shell.jsh.src.getRelativePath("rhino/jrunscript/api.js"),
+				"jsh",
+				jsh.shell.jsh.src.getRelativePath("rhino/tools/git/credential-helper.jsh.js")
+			].join(" ")
+		}
 	}
 })

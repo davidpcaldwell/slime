@@ -1,23 +1,36 @@
+//	LICENSE
+//	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+//	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+//
+//	The Original Code is the rhino/shell SLIME module.
+//
+//	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+//	Portions created by the Initial Developer are Copyright (C) 2017 the Initial Developer. All Rights Reserved.
+//
+//	Contributor(s):
+//	END LICENSE
+
 //	See http://standards.freedesktop.org/desktop-entry-spec/1.0/
 $exports.Entry = function(p) {
 	var lines = [];
-	
+
 	if (typeof(p) == "string") {
 		lines.push.apply(lines,p.split("\n"));
 	} else if (p.Type && p.Name && p.Exec) {
 		lines.push("[Desktop Entry]");
-		
+
 		for (var x in p) {
 			lines.push(x + "=" + p[x]);
 		}
 	} else {
 		throw new Error("Unsupported format: " + p);
 	}
-	
+
 	this.toString = function() {
 		return lines.join("\n");
 	}
-	
+
 	this.get = function(name) {
 		var group;
 		for (var i=0; i<lines.length; i++) {
@@ -33,7 +46,7 @@ $exports.Entry = function(p) {
 		}
 		return null;
 	};
-	
+
 	this.set = function(name,value) {
 		var group;
 		for (var i=0; i<lines.length; i++) {
@@ -88,7 +101,7 @@ $exports.install = function(p) {
 			});
 		} else {
 			//	TODO	warn if problem was no ln in PATH
-			copy(p.src,destination.src);	
+			copy(p.src,destination.src);
 		}
 	}
 	//jsh.shell.echo("Writing opendesktop to " + p.opendesktop.entry);

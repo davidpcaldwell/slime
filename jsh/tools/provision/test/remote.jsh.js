@@ -3,7 +3,7 @@
 //	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 //
-//	The Original Code is the SLIME Java GUI module.
+//	The Original Code is the jsh JavaScript/Java shell.
 //
 //	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
 //	Portions created by the Initial Developer are Copyright (C) 2017 the Initial Developer. All Rights Reserved.
@@ -11,8 +11,9 @@
 //	Contributor(s):
 //	END LICENSE
 
-function FindProxyForURL(url, host) {
-	if (host == "__HOST__") return "PROXY 127.0.0.1:__PORT__";
-	return "DIRECT";
-}
-
+jsh.tools.provision.plugin.test();
+jsh.test.provision.serve({
+	bitbucket: { src: {} },
+	base: jsh.shell.jsh.src,
+	script: "jsh/tools/provision/test/application.jsh.js"
+});
