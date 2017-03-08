@@ -211,7 +211,7 @@ plugin({
 				directory: true
 			}).pathname;
 			var directory = location.createDirectory({
-				ifExists: function(dir) {
+				exists: function(dir) {
 					return false;
 				}
 			});
