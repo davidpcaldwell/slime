@@ -418,6 +418,16 @@
 		};
 	};
 
+	$exports.Function.series = function() {
+		var functions = arguments;
+		return function() {
+			for (var i=0; i<functions.length; i++) {
+				var rv = functions[i].apply(this,arguments);
+				if (typeof(rv) != "undefined") return rv;
+			}
+		};
+	};
+
 	$exports.Function.singleton = function(f) {
 		var memo;
 

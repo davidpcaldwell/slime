@@ -29,9 +29,12 @@ $exports.install = $context.api.Events.Function(function(p,events) {
 		if (!exists("/Applications/Xcode.app") && !exists("/Library/Developer/CommandLineTools")) {
 			console("Install Apple's command line developer tools.");
 			api.shell.run({
-				command: "/usr/bin/git"
+				command: "/usr/bin/git",
+				evaluate: function(result) {
+					//	Do nothing; exit status will be 1
+					throw new GUI();
+				}
 			});
-			throw new GUI();
 		} else {
 			console("Git already installed.");
 		}

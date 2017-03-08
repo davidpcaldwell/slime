@@ -26,5 +26,14 @@ plugin({
 				java: jsh.java
 			}
 		});
+
+		jsh.java.tools.plugin = {
+			hg: function() {
+				jsh.loader.plugins(new $loader.Child("hg/"));
+			},
+			git: function() {
+				jsh.loader.plugins(new $loader.Child("git/"));
+			}
+		};
 	}
 })

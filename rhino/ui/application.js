@@ -283,7 +283,7 @@ var hostToPort = function(name) {
 		return {
 			code: code
 		}
-	}	
+	}
 };
 
 $exports.Application = Application;
