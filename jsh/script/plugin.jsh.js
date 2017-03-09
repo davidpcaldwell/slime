@@ -36,6 +36,7 @@ plugin({
 		jsh.script = $loader.module("module.js", jsh.js.Object.set({}, {
 			api: {
 				js: jsh.js,
+				web: jsh.js.web,
 				file: jsh.file,
 				http: function() {
 					return jsh.http;

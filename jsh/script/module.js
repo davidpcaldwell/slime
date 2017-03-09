@@ -23,7 +23,7 @@ if ($context.file) {
 } else if ($context.packaged) {
 	$exports.file = $context.packaged.file;
 } else if ($context.uri) {
-	$exports.url = $context.uri;
+	$exports.url = $context.api.web.Url.parse($context.uri);
 } else {
 //	throw new Error("Unreachable.");
 }
