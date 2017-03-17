@@ -108,6 +108,7 @@ plugin({
 						}
 					});
 					jsh.java.Thread.start(function() {
+						//	TODO	currently no way to report error
 						p.run(arg);
 						buffer.close();
 					});
