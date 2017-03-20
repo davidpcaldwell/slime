@@ -206,16 +206,9 @@ var Application = function(p) {
 	var server = (p.server) ? p.server : Server(p);
 	server.start();
 
-	var stopServer = new JavaAdapter(
-		Packages.java.lang.Runnable,
-		new function() {
-			this.run = function() {
-				server.stop();
-			}
-		}
-	);
-
-	Packages.java.lang.Runtime.getRuntime().addShutdownHook(new Packages.java.lang.Thread(stopServer));
+	jsh.java.addShutdownHook(function() {
+		server.stop();
+	});
 
 	var on = (p.on) ? p.on : {
 		close: function() {

@@ -136,22 +136,15 @@ if (parameters.options["mysql:server"]) {
 	})();
 	jsh.shell.console("mysqld start detected.");
 
-	Packages.java.lang.Runtime.getRuntime().addShutdownHook(
-		new JavaAdapter(
-			Packages.java.lang.Thread,
-			{
-				run: function() {
-					if (server) {
-						jsh.shell.console("Stopping mysqld ...");
-						server.kill();
-						jsh.shell.console("Stopped mysqld.");
-					} else {
-						jsh.shell.console("mysqld not running.");
-					}
-				}
-			}
-		)
-	);
+	jsh.java.addShutdownHook(function() {
+		if (server) {
+			jsh.shell.console("Stopping mysqld ...");
+			server.kill();
+			jsh.shell.console("Stopped mysqld.");
+		} else {
+			jsh.shell.console("mysqld not running.");
+		}
+	});
 
 	if (parameters.options["mysql:jdbc"]) {
 		suite.part("mysql", new jsh.unit.part.Html({
