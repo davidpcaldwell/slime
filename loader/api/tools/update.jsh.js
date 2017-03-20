@@ -62,7 +62,7 @@ var apis = parameters.options.base.directory.list({
 	};
 
 	var readFile = function(path) {
-		var string = jsh.script.file.parent.getFile(path).read(String);
+		var string = jsh.script.file.parent.parent.getFile(path).read(String);
 		//	filter out license
 		var lines = string.split("\n");
 		if (path == "api.js") {
@@ -83,6 +83,7 @@ var apis = parameters.options.base.directory.list({
 	if (style == -1) {
 		style = head.children.length;
 		head.children.push(void(0));
+		head.children.push(jsh.document.Text({ data: "\n" }));
 	}
 
 	//	TODO	if document namespace is xhtml, should give these elements namespace also
@@ -107,6 +108,7 @@ var apis = parameters.options.base.directory.list({
 	if (script == -1) {
 		script = head.children.length;
 		head.children.push(void(0));
+		head.children.push(jsh.document.Text({ data: "\n" }));
 	}
 
 	head.children[script] = new jsh.document.Element({
