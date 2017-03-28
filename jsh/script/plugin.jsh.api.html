@@ -80,156 +80,6 @@ END LICENSE
 		scope.module = $jsapi.loader.module("module.js", scope.context);
 	</script>
 	<div>
-		<h1>Context</h1>
-		<ul>
-			<li class="object">
-				<div class="name">api</div>
-				<div class="label">has properties:</div>
-				<ul>
-					<li class="value">
-						<div class="name">js</div>
-						<span>The js/object module.</span>
-					</li>
-					<li class="value">
-						<div class="name">file</div>
-						<span>The rhino/file module.</span>
-					</li>
-					<li class="function">
-						<div class="name">addClasses</div>
-						<span>Adds a file to the classpath of this script.</span>
-						<div class="arguments">
-							<div class="label">Arguments</div>
-							<ol>
-								<li class="value">
-									<span class="type">jsh.file Pathname</span>
-									<span>A file to add to the classpath (either a directory or a .jar file)</span>
-								</li>
-							</ol>
-						</div>
-					</li>
-				</ul>
-			</li>
-			<li class="value">
-				<div class="name">file</div>
-				<span class="type">rhino/file file</span>
-				<span>
-					The object representing the main file this shell is running, if it is an ordinary file.
-				</span>
-			</li>
-			<li class="value">
-				<div class="name">uri</div>
-				<span class="type">string</span>
-				<span>The URL from which the main script file was loaded.</span>
-			</li>
-			<li class="object">
-				<div class="name">packaged</div>
-				<span>__DESCRIPTION__</span>
-				<div class="label">has properties:</div>
-				<ul>
-					<li class="value">
-						<div class="name">file</div>
-						<span class="type">rhino/file file</span>
-						<span>The object representing the package file this shell is running.</span>
-					</li>
-					<li class="value">
-						<div class="name">loader</div>
-						<span class="type">__TYPE__</span>
-						<span>__DESCRIPTION__</span>
-					</li>
-				</ul>
-			</li>
-			<li class="value">
-				<div class="name">arguments</div>
-				<span class="type">Array of string</span>
-				<span>The arguments passed to the script.</span>
-			</li>
-			<li class="constructor">
-				<!--	TODO	modularize; get this description from the export property below	-->
-				<div class="name">Loader</div>
-				<span>__DESCRIPTION__</span>
-				<div class="arguments">
-					<div class="label">Arguments</div>
-					<ol>
-						<li class="value">
-							<span class="type"><a href="../../rhino/file/api.html#types.directory">rhino/file directory</a></span>
-							<span>The base directory for this loader.</span>
-						</li>
-					</ol>
-				</div>
-				<div class="instances">
-					<div class="label">Instances</div>
-					<span class="type"><a href="#types.Loader">Loader</a></span>
-					<span>__DESCRIPTION__</span>
-				</div>
-			</li>
-			<li class="value">
-				<div class="name">loader</div>
-				<span class="type"><a href="#types.Loader">Loader</a></span>
-				<span>
-					(optional)
-					An object that can load code from the currently running package file, if the current script is packaged.
-				</span>
-			</li>
-		</ul>
-		<script type="application/x.jsapi#context"><![CDATA[
-			(function() {
-				var js = $jsapi.loader.module("../../js/object/");
-				var host = $jsapi.loader.module("../../rhino/host/", {
-					$rhino: jsh.$jsapi.$rhino
-				});
-				debugger;
-				var context = {
-					api: {
-						js: js,
-						java: host,
-						io: $jsapi.loader.module("../../rhino/io/", {
-							$java: new Packages.inonit.script.runtime.io.Streams(),
-							$rhino: jsh.$jsapi.$rhino,
-							api: {
-								java: host,
-								mime: jsh.$jsapi.mime
-							}
-						}),
-						loader: jsh.$jsapi.$rhino
-					},
-					$pwd: String(jsh.shell.properties.object.user.dir),
-					$rhino: jsh.$jsapi.$rhino
-				};
-				var System = Packages.java.lang.System;
-				if (System.getProperty("cygwin.root")) {
-					context.cygwin = {
-						root: String(System.getProperty("cygwin.root"))
-					};
-					if (System.getProperty("cygwin.paths")) {
-						context.cygwin.paths = String(System.getProperty("cygwin.paths"));
-					}
-				};
-				var file = $jsapi.loader.module("../../rhino/file/", context);
-				var $filesystem = file.filesystem;
-				var FILE = file;
-				return new function() {
-					this.api = new function() {
-						this.js = js;
-						this.file = file;
-						this.addClasses = jsh.loader.addClasses;
-					};
-
-					this.directory = jsh.shell.PWD;
-
-					this.file = jsh.script.file;
-					this.arguments = ["a","bb","C"];
-
-					this.Loader = jsh.script.Loader;
-					//	loader
-
-					//	TODO	what are the next two for?
-					this.$filesystem = $filesystem;
-					this.FILE = file;
-				};
-			})()
-		]]></script>
-	</div>
-	<div>
 		<h1>Exports</h1>
 		<ul>
 			<li class="value">
@@ -250,6 +100,11 @@ END LICENSE
 					The object representing the script being executed. In the case of a packaged script, this value will be absent
 					as the script is embedded in the package file itself.
 				</span>
+			</li>
+			<li class="value">
+				<div class="name">url</div>
+				<span class="type"><a href="../../js/web/api.html">Url</a></span>
+				<span>The URL from which this script was loaded, if it is a remote script.</span>
 			</li>
 			<li class="value">
 				<div class="name">arguments</div>
