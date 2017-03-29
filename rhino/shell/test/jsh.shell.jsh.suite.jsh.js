@@ -63,31 +63,12 @@ suite.part("jdwp", {
 	}
 });
 
-suite.part("http", {
-	execute: function(scope,verify) {
-		if (jsh.httpd.Tomcat) {
-			jsh.shell.jsh({
-				fork: true,
-				script: jsh.script.file.parent.getFile("jsh.jsh.js"),
-				arguments: ["-scenario"],
-				stdio: {
-					output: String,
-					error: String
-				},
-				evaluate: function(result) {
-					if (result.status) {
-						jsh.shell.echo("STATUS: " + result.status, { stream: jsh.shell.stdio.error });
-						jsh.shell.echo(result.stdio.output, { stream: jsh.shell.stdio.error });
-						jsh.shell.echo(result.stdio.error, { stream: jsh.shell.stdio.error });
-					}
-					verify(result).status.is(0);
-				}
-			});
-		} else {
-			var message = "Skipped URL tests; no Tomcat present";
-			verify(message).is(message);
-		}
-	}
-})
+suite.part("http", jsh.unit.Suite.Fork({
+	name: "http",
+	run: jsh.shell.jsh,
+	fork: true,
+	script: jsh.script.file.parent.getFile("jsh.jsh.js"),
+	arguments: ["-scenario","-view","stdio"]
+}));
 
 jsh.unit.interface.create(suite, { view: parameters.options.view });
