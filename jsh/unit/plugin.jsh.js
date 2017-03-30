@@ -75,6 +75,10 @@ plugin({
 		jsh.unit.interface.create = function(suite,o) {
 			//	TODO	argument checking
 			if (o.view) {
+				if (o.view == "structure") {
+					jsh.shell.echo(JSON.stringify(jsh.unit.getStructure(suite)));
+					jsh.shell.exit(0);
+				}
 				var view = jsh.unit.view.options.select(o.view);
 				view.listen(suite);
 				var success = suite.run({ path: o.path });

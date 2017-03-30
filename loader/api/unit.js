@@ -861,6 +861,20 @@ $exports.Scenario = {};
 	$exports.Suite = Suite;
 })();
 
+$exports.getStructure = function getStructure(part) {
+	var rv = {
+		id: part.id,
+		name: part.name
+	};
+	if (part.parts) {
+		var parts = part.parts;
+		rv.parts = {};
+		for (var x in parts) {
+			rv.parts[x] = getStructure(parts[x]);
+		}
+	}
+	return rv;
+};
 
 $exports.View = function(o) {
 	var addConsoleListener = function(scenario,implementation) {
