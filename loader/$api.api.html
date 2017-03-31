@@ -435,6 +435,89 @@ END LICENSE
 					<span>__DESCRIPTION__</span>
 					<div class="label">has properties:</div>
 					<ul>
+						<li class="object">
+							<div class="name">argument</div>
+							<span>__DESCRIPTION__</span>
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="function">
+									<div class="name">check</div>
+									<span>Creates an argument-checking function that validates a single function argument.</span>
+									<div class="arguments">
+										<div class="label">Arguments</div>
+										<ol>
+											<li class="object">
+												<span>__DESCRIPTION__</span>
+												<div class="label">has properties:</div>
+												<ul>
+													<li class="value">
+														<div class="name">index</div>
+														<span class="type">number</span>
+														<span>
+															The index of the argument to check.
+														</span>
+													</li>
+													<li class="value">
+														<div class="name">name</div>
+														<span class="type">string</span>
+														<span>
+															The name of the argument.
+														</span>
+													</li>
+													<li class="value">
+														<div class="name">type</div>
+														<span class="type">string</span>
+														<span>
+															The expected type of the argument, as returned by the JavaScript
+															<code>typeof</code> operator. If the argument should be a string,
+															for example, the value <code>"string"</code> should be used.
+														</span>
+													</li>
+													<li class="value">
+														<div class="name">null</div>
+														<span class="type">boolean</span>
+														<span>
+															Whether the value <code>null</code> is also an acceptable value for
+															the argument.
+														</span>
+													</li>
+													<li class="value">
+														<div class="name">undefined</div>
+														<span class="type">boolean</span>
+														<span>
+															Whether the value <code>undefined</code> is also an acceptable value for
+															the argument.
+														</span>
+													</li>
+												</ul>
+											</li>
+										</ol>
+									</div>
+									<div class="returns">
+										<div class="label">Returns</div>
+										<span class="type">function</span>
+										<span>
+											A function that takes an <code>arguments</code> object and throws a 
+											<code>TypeError</code> if the specified argument does not meet the specified criteria.
+										</span>
+									</div>
+									<script type="application/x.jsapi#tests">
+										var check = api.Function.argument.check;
+										
+										var tester = {
+											invoke: function(argument,array) {
+												var f = check(argument);
+												return f.apply(this,array);
+											}
+										};
+										
+										verify(tester).evaluate(function() { return this.invoke({ index: 0, type: "string" },[1]) }).threw.type(TypeError);
+										verify(tester).evaluate(function() { return this.invoke({ index: 0, type: "string" },[void(0)]) }).threw.type(TypeError);
+										verify(tester).evaluate(function() { return this.invoke({ index: 0, type: "string" },[null]) }).threw.type(TypeError);
+									</script>
+								</li>
+							</ul>
+						</li>
 					</ul>
 				</li>
 				<li class="object" jsapi:id="Constructor">

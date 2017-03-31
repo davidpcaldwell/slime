@@ -381,6 +381,16 @@
 	}
 
 	$exports.Function.argument = {};
+	$exports.Function.argument.check = function(p) {
+		if (p.type) {
+			var reference = (p.name) ? "arguments[" + p.index + "] (" + p.name + ")" : "arguments[" + p.index + "]";
+			return function() {
+				if (typeof(arguments[p.index]) == "undefined" && !p.undefined) throw new TypeError(reference + " must be a string, not undefined.");
+				if (arguments[p.index] === null && !p["null"]) throw new TypeError(reference + " must be a string, not null.");
+				if (typeof(arguments[p.index]) != p.type) throw new TypeError(reference + " must be type " + "\"" + p.type + "\"" + ", not " + typeof(arguments[p.index]));				
+			}
+		}
+	};
 	$exports.Function.argument.isString = function(p) {
 		var reference = (p.name) ? "arguments[" + p.index + "] (" + p.name + ")" : "arguments[" + p.index + "]";
 		return function() {

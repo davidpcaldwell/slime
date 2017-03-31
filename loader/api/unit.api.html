@@ -86,6 +86,7 @@ END LICENSE
 					};
 
 					v(methodThrows).evaluate(function() { return this.method(); }).threw.type(Error);
+					v(methodThrows).evaluate(function() { return this.method(); }).threw.message.is("Wrong again, knave!");
 					v(methodThrows).evaluate(function() { return this.works(); }).threw.nothing();
 				</script>
 			</div>

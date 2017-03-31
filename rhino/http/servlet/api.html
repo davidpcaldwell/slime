@@ -22,295 +22,6 @@ END LICENSE
 <body>
 	<div>The SLIME servlet implementation allows Java servlets to be authored in JavaScript.</div>
 	<div>
-		<div class="type">
-			<a class="type" name="types.header">header</a>
-			<span>Represents an HTTP header.</span>
-			<div class="label">has properties:</div>
-			<ul>
-				<li class="value">
-					<div class="name">name</div>
-					<span class="type">string</span>
-					<span>The name of the header.</span>
-				</li>
-				<li class="value">
-					<div class="name">value</div>
-					<span class="type">string</span>
-					<span>The value of the header.</span>
-				</li>
-			</ul>
-		</div>
-		<div class="type">
-			<a class="type" name="types.pair">pair</a>
-			<span>Represents a name-value pair.</span>
-			<div class="label">has properties:</div>
-			<ul>
-				<li class="value">
-					<div class="name">name</div>
-					<span class="type">string</span>
-				</li>
-				<li class="value">
-					<div class="name">value</div>
-					<span class="type">string</span>
-				</li>
-			</ul>
-		</div>
-		<div class="type">
-			<a class="type" name="types.request">request</a>
-			<span>An HTTP request from a client.</span>
-			<div class="label">has properties:</div>
-			<ul>
-				<li class="object">
-					<div class="name">source</div>
-					<div class="label">has properties:</div>
-					<ul>
-						<li class="value">
-							<div class="name">ip</div>
-							<span class="type">string</span>
-							<span>The remote IP address of the requestor.</span>
-						</li>
-					</ul>
-				</li>
-				<li class="value">
-					<div class="name">method</div>
-					<span class="type">string</span>
-					<span>The HTTP method used for the request, as an uppercase string.</span>
-				</li>
-				<li class="value">
-					<div class="name">path</div>
-					<span class="type">string</span>
-					<span>
-						The path used for the request, relative to the webapp. Note that unlike in Java servlets, and many other
-						HTTP server environments, this path does not contain a leading <code>/</code>.
-					</span>
-				</li>
-				<li class="object">
-					<div class="name">query</div>
-					<span>__DESCRIPTION__</span>
-					<div class="label">has properties:</div>
-					<ul>
-						<li class="value">
-							<div class="name">string</div>
-							<span class="type">string</span>
-							<span>The query string of the requested URL.</span>
-						</li>
-						<li class="function">
-							<div class="name">form</div>
-							<span>__DESCRIPTION__</span>
-							<div class="arguments">
-								<div class="label">Arguments</div>
-								<ol>
-								</ol>
-							</div>
-							<div class="returns">
-								<div class="label">Returns</div>
-								<span class="type">Array of <a href="#types.pair">pair</a></span>
-								<span>__DESCRIPTION__</span>
-							</div>
-						</li>
-					</ul>
-				</li>
-				<li class="value deprecated">
-					<div class="name">parameters</div>
-					<span class="type">Array of <a href="#types.pair">pair</a></span>
-					<span>
-						<strong>Replaced by <code>query.form()</code></strong>
-						The query string parameters provided as part of this request. Note that these parameters do <em>not</em>
-						include form data provided as part of a <code>POST</code> request.
-					</span>
-				</li>
-				<li class="object">
-					<div class="name">body</div>
-					<span>The body of the request.</span>
-					<div class="label">has properties:</div>
-					<ul>
-						<li class="value">
-							<div class="name">type</div>
-							<span class="type">MIME <a href="../../../loader/mime.api.html#types.type">type</a></span>
-							<span>The MIME type of the request body.</span>
-						</li>
-						<li class="value">
-							<div class="name">stream</div>
-							<span class="type"><a href="../../../rhino/io/api.html#types.binput">byte input stream</a></span>
-							<span>A stream from which the request body can be read.</span>
-						</li>
-					</ul>
-				</li>
-			</ul>
-			<script type="application/x.jsapi#tests"><![CDATA[
-				var echo = function(request) {
-					var response = {
-						source: {
-							ip: request.source.ip
-						},
-						scheme: request.scheme,
-						method: request.method,
-						path: request.path
-					};
-					if (request.query) {
-						response.query = {
-							string: request.query.string,
-							form: request.query.form()
-						}
-					}
-					return {
-						status: { code: 200 },
-						body: {
-							type: "application/json",
-							string: JSON.stringify(response,void(0),"\t")
-						}
-					};
-				};
-
-				if (jsh.httpd.Tomcat) {
-					var server = new jsh.httpd.Tomcat({
-						https: {}
-					});
-					server.map({
-						path: "",
-						servlets: {
-							"/*": {
-								load: function(scope) {
-									scope.$exports.handle = echo;
-								}
-							}
-						}
-					});
-					server.start();
-
-					var evaluateJson = function(response) {
-						if (response.status.code != 200) {
-							throw new Error("Response code: " + response.status.code);
-						}
-						return JSON.parse(response.body.stream.character().asString());
-					}
-
-					try {
-						var client = new jsh.http.Client();
-						var response = client.request({
-							url: "http://127.0.0.1:" + server.port + "/aPath",
-							evaluate: evaluateJson
-						});
-						verify(response).source.ip.is("127.0.0.1");
-						verify(response).scheme.is("http");
-						verify(response).method.is("GET");
-						verify(response).path.is("aPath");
-						verify(response).evaluate.property("query").is(void(0));
-						response = client.request({
-							url: "http://127.0.0.1:" + server.port + "/aPath?aName=aValue",
-							evaluate: evaluateJson
-						});
-						verify(response).path.is("aPath");
-						verify(response).query.string.is("aName=aValue");
-						verify(response).query.form[0].name.is("aName");
-						verify(response).query.form[0].value.is("aValue");
-
-						jsh.shell.console("port = " + server.https.port);
-
-						jsh.http.test.disableHttpsSecurity();
-
-						response = client.request({
-							url: "https://127.0.0.1:" + server.https.port + "/aPath",
-							evaluate: evaluateJson
-						});
-						//	TODO	can we detect incoming request was https?
-						verify(response).source.ip.is("127.0.0.1");
-						verify(response).scheme.is("https");
-						verify(response).method.is("GET");
-						verify(response).path.is("aPath");
-						verify(response).evaluate.property("query").is(void(0));
-					} catch (e) {
-						throw e;
-					} finally {
-						server.stop();
-					}
-				}
-			]]></script>
-		</div>
-		<div class="type">
-			<a class="type" name="types.response">response</a>
-			<p>A response to be sent to a client in response to a request.</p>
-			<p>
-				The content of the body must be specified in some way. Using a resource causes the type and content to be
-				specified; note that using a Java <a href="../../../loader/rhino/api.html#types.resource">resource</a>
-				automatically provides other capabilities (<code>Last-Modified</code> and <code>Content-Length</code>
-				headers).
-			</p>
-			<div class="type">
-				<a class="type" name="types.body">body</a>
-				<div class="label">has properties:</div>
-				<ul>
-					<li class="value">
-						<div class="name">type</div>
-						<span class="type">string</span>
-						-OR-
-						<span class="type">MIME <a href="../../../loader/mime.api.html#types.type">type</a></span>
-						<span>(optional) The MIME type of the request body.</span>
-					</li>
-					<li class="value">
-						<div class="name">string</div>
-						<span class="type">string</span>
-						<span>(optional) The message body to send to the client, as a string.</span>
-					</li>
-					<li class="value">
-						<div class="name">stream</div>
-						<span class="type"><a href="../../../rhino/io/api.html#types.binput">binary input stream</a></span>
-						<span>
-							(optional; ignored if <code>string</code> is present)
-							A stream from which the message body to send to the client may be read.
-						</span>
-					</li>
-				</ul>
-			</div>
-			<div class="label">has properties:</div>
-			<ul>
-				<li class="object">
-					<div class="name">status</div>
-					<span>The status to use in the response.</span>
-					<div class="label">has properties:</div>
-					<ul>
-						<li class="value">
-							<div class="name">code</div>
-							<span class="type">number</span>
-							<span>The HTTP status code to use in the response to the client.</span>
-						</li>
-					</ul>
-				</li>
-				<li class="value">
-					<div class="name">headers</div>
-					<span class="type">Array of <a href="#types.header">header</a></span>
-					<span>(optional) Headers to use in the response.</span>
-				</li>
-				<li class="value">
-					<div class="name">body</div>
-					<span class="type">
-						<a href="../../../loader/api.html#types.Loader.resource">resource</a>
-					</span>
-					-or-
-					<span class="type"><a href="#types.body">body</a></span>
-					<span>
-						The HTTP request body to send to the client.
-					</span>
-				</li>
-			</ul>
-		</div>
-		<div class="type">
-			<a class="type" name="types.Handler">Handler</a>
-			<span>A function that can handle requests.</span>
-			<div class="arguments">
-				<div class="label">Arguments</div>
-				<ol>
-					<li class="value">
-						<span class="type"><a href="#types.request">request</a></span>
-						<span>A request.</span>
-					</li>
-				</ol>
-			</div>
-			<div class="returns">
-				<div class="label">Returns</div>
-				<span class="type"><a href="#types.response">response</a></span>
-				<span>A response.</span>
-			</div>
-		</div>
 	</div>
 	<div>
 		<h1>Scope</h1>
@@ -318,10 +29,330 @@ END LICENSE
 		with its environment, answer requests, and do various computations.
 		<div>
 			<h2><a id="scope.httpd">httpd</a></h2>
-			The <code>httpd</code> property represents APIs available to every servlet. It implements the following interface:
+			<p>
+				The <code>httpd</code> property represents APIs available to every servlet.
+			</p>
+			<div>
+				The following SLIME APIs are provided:
+				<table>
+					<thead>
+						<tr>
+							<th>Name</th>
+							<th>Description</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td><code><a href="../../../loader/$api.api.html">$api</a></code></td>
+							<td>JavaScript utilities.</td>
+						</tr>
+						<tr>
+							<td><code><a href="../../../js/object/">httpd.js</a></code></td>
+							<td>The <code>js/object</code> API.</td>
+						</tr>
+						<tr>
+							<td><code><a href="../../../rhino/java/">httpd.java</a></code></td>
+							<td>The <code>rhino/java</code> API.</td>
+						</tr>
+						<tr>
+							<td><code><a href="../../../rhino/io/">httpd.io</a></code></td>
+							<td>The <code>rhino/io</code> API.</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+			<div class="type">
+				<a class="type" name="types.header">header</a>
+				<span>Represents an HTTP header.</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="value">
+						<div class="name">name</div>
+						<span class="type">string</span>
+						<span>The name of the header.</span>
+					</li>
+					<li class="value">
+						<div class="name">value</div>
+						<span class="type">string</span>
+						<span>The value of the header.</span>
+					</li>
+				</ul>
+			</div>
+			<div class="type">
+				<a class="type" name="types.pair">pair</a>
+				<span>Represents a name-value pair.</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="value">
+						<div class="name">name</div>
+						<span class="type">string</span>
+					</li>
+					<li class="value">
+						<div class="name">value</div>
+						<span class="type">string</span>
+					</li>
+				</ul>
+			</div>
+			<div class="type">
+				<a class="type" name="types.request">request</a>
+				<span>An HTTP request from a client.</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="object">
+						<div class="name">source</div>
+						<div class="label">has properties:</div>
+						<ul>
+							<li class="value">
+								<div class="name">ip</div>
+								<span class="type">string</span>
+								<span>The remote IP address of the requestor.</span>
+							</li>
+						</ul>
+					</li>
+					<li class="value">
+						<div class="name">method</div>
+						<span class="type">string</span>
+						<span>The HTTP method used for the request, as an uppercase string.</span>
+					</li>
+					<li class="value">
+						<div class="name">path</div>
+						<span class="type">string</span>
+						<span>
+							The path used for the request, relative to the webapp. Note that unlike in Java servlets, and many other
+							HTTP server environments, this path does not contain a leading <code>/</code>.
+						</span>
+					</li>
+					<li class="object">
+						<div class="name">query</div>
+						<span>__DESCRIPTION__</span>
+						<div class="label">has properties:</div>
+						<ul>
+							<li class="value">
+								<div class="name">string</div>
+								<span class="type">string</span>
+								<span>The query string of the requested URL.</span>
+							</li>
+							<li class="function">
+								<div class="name">form</div>
+								<span>__DESCRIPTION__</span>
+								<div class="arguments">
+									<div class="label">Arguments</div>
+									<ol>
+									</ol>
+								</div>
+								<div class="returns">
+									<div class="label">Returns</div>
+									<span class="type">Array of <a href="#types.pair">pair</a></span>
+									<span>__DESCRIPTION__</span>
+								</div>
+							</li>
+						</ul>
+					</li>
+					<li class="value deprecated">
+						<div class="name">parameters</div>
+						<span class="type">Array of <a href="#types.pair">pair</a></span>
+						<span>
+							<strong>Replaced by <code>query.form()</code></strong>
+							The query string parameters provided as part of this request. Note that these parameters do <em>not</em>
+							include form data provided as part of a <code>POST</code> request.
+						</span>
+					</li>
+					<li class="object">
+						<div class="name">body</div>
+						<span>The body of the request.</span>
+						<div class="label">has properties:</div>
+						<ul>
+							<li class="value">
+								<div class="name">type</div>
+								<span class="type">MIME <a href="../../../loader/mime.api.html#types.type">type</a></span>
+								<span>The MIME type of the request body.</span>
+							</li>
+							<li class="value">
+								<div class="name">stream</div>
+								<span class="type"><a href="../../../rhino/io/api.html#types.binput">byte input stream</a></span>
+								<span>A stream from which the request body can be read.</span>
+							</li>
+						</ul>
+					</li>
+				</ul>
+				<script type="application/x.jsapi#tests"><![CDATA[
+					var echo = function(request) {
+						var response = {
+							source: {
+								ip: request.source.ip
+							},
+							scheme: request.scheme,
+							method: request.method,
+							path: request.path
+						};
+						if (request.query) {
+							response.query = {
+								string: request.query.string,
+								form: request.query.form()
+							}
+						}
+						return {
+							status: { code: 200 },
+							body: {
+								type: "application/json",
+								string: JSON.stringify(response,void(0),"\t")
+							}
+						};
+					};
+
+					if (jsh.httpd.Tomcat) {
+						var server = new jsh.httpd.Tomcat({
+							https: {}
+						});
+						server.map({
+							path: "",
+							servlets: {
+								"/*": {
+									load: function(scope) {
+										scope.$exports.handle = echo;
+									}
+								}
+							}
+						});
+						server.start();
+
+						var evaluateJson = function(response) {
+							if (response.status.code != 200) {
+								throw new Error("Response code: " + response.status.code);
+							}
+							return JSON.parse(response.body.stream.character().asString());
+						}
+
+						try {
+							var client = new jsh.http.Client();
+							var response = client.request({
+								url: "http://127.0.0.1:" + server.port + "/aPath",
+								evaluate: evaluateJson
+							});
+							verify(response).source.ip.is("127.0.0.1");
+							verify(response).scheme.is("http");
+							verify(response).method.is("GET");
+							verify(response).path.is("aPath");
+							verify(response).evaluate.property("query").is(void(0));
+							response = client.request({
+								url: "http://127.0.0.1:" + server.port + "/aPath?aName=aValue",
+								evaluate: evaluateJson
+							});
+							verify(response).path.is("aPath");
+							verify(response).query.string.is("aName=aValue");
+							verify(response).query.form[0].name.is("aName");
+							verify(response).query.form[0].value.is("aValue");
+
+							jsh.shell.console("port = " + server.https.port);
+
+							jsh.http.test.disableHttpsSecurity();
+
+							response = client.request({
+								url: "https://127.0.0.1:" + server.https.port + "/aPath",
+								evaluate: evaluateJson
+							});
+							//	TODO	can we detect incoming request was https?
+							verify(response).source.ip.is("127.0.0.1");
+							verify(response).scheme.is("https");
+							verify(response).method.is("GET");
+							verify(response).path.is("aPath");
+							verify(response).evaluate.property("query").is(void(0));
+						} catch (e) {
+							throw e;
+						} finally {
+							server.stop();
+						}
+					}
+				]]></script>
+			</div>
+			<div class="type">
+				<a class="type" name="types.response">response</a>
+				<p>A response to be sent to a client in response to a request.</p>
+				<p>
+					The content of the body must be specified in some way. Using a resource causes the type and content to be
+					specified; note that using a Java <a href="../../../loader/rhino/api.html#types.resource">resource</a>
+					automatically provides other capabilities (<code>Last-Modified</code> and <code>Content-Length</code>
+					headers).
+				</p>
+				<div class="type">
+					<a class="type" name="types.body">body</a>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="value">
+							<div class="name">type</div>
+							<span class="type">string</span>
+							-OR-
+							<span class="type">MIME <a href="../../../loader/mime.api.html#types.type">type</a></span>
+							<span>(optional) The MIME type of the request body.</span>
+						</li>
+						<li class="value">
+							<div class="name">string</div>
+							<span class="type">string</span>
+							<span>(optional) The message body to send to the client, as a string.</span>
+						</li>
+						<li class="value">
+							<div class="name">stream</div>
+							<span class="type"><a href="../../../rhino/io/api.html#types.binput">binary input stream</a></span>
+							<span>
+								(optional; ignored if <code>string</code> is present)
+								A stream from which the message body to send to the client may be read.
+							</span>
+						</li>
+					</ul>
+				</div>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="object">
+						<div class="name">status</div>
+						<span>The status to use in the response.</span>
+						<div class="label">has properties:</div>
+						<ul>
+							<li class="value">
+								<div class="name">code</div>
+								<span class="type">number</span>
+								<span>The HTTP status code to use in the response to the client.</span>
+							</li>
+						</ul>
+					</li>
+					<li class="value">
+						<div class="name">headers</div>
+						<span class="type">Array of <a href="#types.header">header</a></span>
+						<span>(optional) Headers to use in the response.</span>
+					</li>
+					<li class="value">
+						<div class="name">body</div>
+						<span class="type">
+							<a href="../../../loader/api.html#types.Loader.resource">resource</a>
+						</span>
+						-or-
+						<span class="type"><a href="#types.body">body</a></span>
+						<span>
+							The HTTP request body to send to the client.
+						</span>
+					</li>
+				</ul>
+			</div>
+			<div class="type">
+				<a class="type" name="types.Handler">Handler</a>
+				<span>A function that can handle requests.</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="value">
+							<span class="type"><a href="#types.request">request</a></span>
+							<span>A request.</span>
+						</li>
+					</ol>
+				</div>
+				<div class="returns">
+					<div class="label">Returns</div>
+					<span class="type"><a href="#types.response">response</a></span>
+					<span>A response.</span>
+				</div>
+			</div>
 			<ul>
 				<li class="value">
-					<div class="name">loader</div>
+					<div class="name">httpd.loader</div>
 					<span class="type"><a href="../../../rhino/io/api.html#types.Loader">Loader</a></span>
 					<span>
 						<span>(conditional: not present if no resources specified when mapping the servlet)</span>
@@ -329,20 +360,8 @@ END LICENSE
 						servlet resource loaders, SLIME loaders do not use a leading slash as part of the resource path.
 					</span>
 				</li>
-				<li class="value">
-					<div class="name">js</div>
-					<span>The <a href="../../../js/object/api.html">js/object</a> module.</span>
-				</li>
-				<li class="value">
-					<div class="name">java</div>
-					<span>The <a href="../../../rhino/host/api.html">rhino/host</a> module.</span>
-				</li>
-				<li class="value">
-					<div class="name">io</div>
-					<span>The <a href="../../../rhino/io/api.html">rhino/io</a> module.</span>
-				</li>
 				<li class="object">
-					<div class="name">http</div>
+					<div class="name">httpd.http</div>
 					<span>Provides HTTP constructs to be used in constructing responses.</span>
 					<div class="label">has properties:</div>
 					<ul>
@@ -389,7 +408,7 @@ END LICENSE
 					</ul>
 				</li>
 				<li class="value" jsapi:reference="getApi('server/api.html').getElement('Handler')">
-					<div class="name">Handler</div>
+					<div class="name">httpd.Handler</div>
 					<span class="type">object</span>
 					<!--	TODO	should we include by reference so that tests are run?	-->
 					<span>See <a href="server/api.html">detailed documentation</a>.</span>
