@@ -143,3 +143,12 @@ if (relaunch) {
 ```
 
 The setup script can then proceed with arbitrary code, knowing that both Rhino and Tomcat are available.
+
+##	Post-installation
+
+The `jdk.bash` script can be executed by itself in order to conditionally upgrade Java. It will exit with a status of 1 if a GUI
+installation is needed. In that case, the caller should print a message like "Then re-execute the installation command." This
+message will make sense when used in context of the output of the script itself. In the above structure, most likely `jdk.bash`
+would be executed from `setup.bash` or `setup/main.jsh.js`.
+
+This mechanism can be used from `jsh` by loading the `jsh.tools.provision` plugin and executing `jsh.tools.provision.jdk()`.

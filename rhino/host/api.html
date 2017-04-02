@@ -217,6 +217,29 @@ END LICENSE
 					verify(array).evaluate(function() { return module.isJavaObject(array); }).is(true);
 				]]></script>
 			</li>
+			<li class="function">
+				<div class="name">addShutdownHook</div>
+				<span>
+					Adds a function to be run at VM shutdown. Note that under some scenarios (for example, a script executed
+					without forking), this may not be at script exit.
+				</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="value">
+							<span class="type">function</span>
+							<span>
+								A function, which will be invoked with no arguments and the global object as <code>this</code>.
+							</span>
+						</li>
+					</ol>
+				</div>
+				<div class="returns">
+					<div class="label">Returns</div>
+					<span class="type">__TYPE__</span>
+					<span>__DESCRIPTION__</span>
+				</div>
+			</li>
 			<li class="object">
 				<div class="name">Thread</div>
 				<div class="type">
