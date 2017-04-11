@@ -25,59 +25,12 @@ END LICENSE
 </head>
 <body>
 	<script type="application/x.jsapi#initialize">
-		var js = $jsapi.loader.module("../../js/object/");
-		var host = $jsapi.loader.module("../../rhino/host/", {
-			$rhino: jsh.$jsapi.$rhino
-		});
-		var context = {
-			api: {
-				js: js,
-				java: host,
-				io: $jsapi.loader.module("../../rhino/io/", {
-					$java: new Packages.inonit.script.runtime.io.Streams(),
-					$rhino: jsh.$jsapi.$rhino,
-					api: {
-						java: host,
-						mime: jsh.$jsapi.mime
-					}
-				}),
-				loader: jsh.$jsapi.$rhino
-			},
-			$pwd: String(jsh.shell.properties.object.user.dir),
-			$rhino: jsh.$jsapi.$rhino
-		};
-		var System = Packages.java.lang.System;
-		if (System.getProperty("cygwin.root")) {
-			context.cygwin = {
-				root: String(System.getProperty("cygwin.root"))
-			};
-			if (System.getProperty("cygwin.paths")) {
-				context.cygwin.paths = String(System.getProperty("cygwin.paths"));
-			}
-		};
-		var file = $jsapi.loader.module("../../rhino/file/", context);
-		var $filesystem = file.filesystem;
-		var FILE = file;
-		scope.context = new function() {
-			this.api = new function() {
-				this.js = js;
-				this.file = file;
-				this.addClasses = jsh.loader.addClasses;
-			};
-
-			this.directory = jsh.shell.PWD;
-
-			this.file = jsh.script.file;
-			this.arguments = ["a","bb","C"];
-
-			this.Loader = jsh.script.Loader;
-			//	loader
-
-			//	TODO	what are the next two for?
-			this.$filesystem = $filesystem;
-			this.FILE = file;
-		};
-		scope.module = $jsapi.loader.module("module.js", scope.context);
+		jsh.loader.plugins( $jsapi.loader );
+		scope.module = jsh.script;
+		scope.context = {
+			FILE: jsh.file,
+			$filesystem: jsh.file.filesystem
+		}
 	</script>
 	<div>
 		<h1>Exports</h1>
@@ -564,6 +517,37 @@ END LICENSE
 				<div jsapi:reference="getApi('Application.api.html').getElement('api')">
 					<span>See <a href="Application.api.html">detailed documentation</a>.</span>
 				</div>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="function">
+						<div class="name">run</div>
+						<span>
+							Creates and executes an Application using a descriptor. Arguments can optionally be supplied;
+							otherwise, the global script arguments will be used.
+						</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="value">
+									<span class="type"><a href="#types.Application.descriptor">descriptor</a></span>
+									<span>A descriptor describing an application.</span>
+								</li>
+								<li class="value">
+									<span class="type">Array of string</span>
+									<span>
+										(optional; if omitted, <code>jsh.script.arguments</code>) 
+										An array of arguments to pass to the application.
+									</span>
+								</li>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">(any)</span>
+							<span>The value returned by the command executed.</span>
+						</div>
+					</li>
+				</ul>
 			</li>
 		</ul>
 	</div>
