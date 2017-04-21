@@ -10,6 +10,8 @@
 //	Contributor(s):
 //	END LICENSE
 
+//	TODO	this is now run via jsh.loader.run, from develop.jsh.js, which is sloppy but was an easy way to wrap a jsh script
+
 //var parameters = jsh.script.getopts({
 //	options: {
 //		base: jsh.file.Pathname,
