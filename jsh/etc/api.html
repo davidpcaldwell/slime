@@ -117,6 +117,15 @@ END LICENSE
 					</td>
 				</tr>
 				<tr>
+					<td><a href="../../rhino/tools/api.html">jsh.java.tools</a></td>
+					<td>
+						Java compilation and password tools
+						<script jsapi:id="jsh.java.tools" type="application/x.jsapi#tests">
+							verify.suite($jsapi.loader.suite("../../rhino/tools/plugin.jsh.api.html"));
+						</script>
+					</td>
+				</tr>
+				<tr>
 					<td><a href="../../rhino/io/api.html">jsh.io</a></td>
 					<td>
 						Stream-based input and output
@@ -315,11 +324,11 @@ END LICENSE
 				<tr><td><a href="../../jsh/tools/api.html">(tools)</a></td><td>jsh Tools</td><!-- no tests --></tr>
 				<tr><td><a href="../../jsh/loader/plugin.api.html">(plugins)</a></td><td>Interface for creating plugins</td><!-- no tests --></tr>
 				<tr>
-					<td><a href="../../jsh/tools/install/plugin.api.html">jsh.tools.install</a></td>
+					<td><a href="../../jsh/tools/install/plugin.jsh.api.html">jsh.tools.install</a></td>
 					<td>
 						APIs and programs for installing <code>jsh</code>-related software
 						<script jsapi:id="jsh.tools.install" type="application/x.jsapi#tests">
-							verify.suite($jsapi.loader.suite("../../jsh/tools/install/plugin.api.html"));
+							verify.suite($jsapi.loader.suite("../../jsh/tools/install/plugin.jsh.api.html"));
 						</script>
 					</td>
 				</tr>

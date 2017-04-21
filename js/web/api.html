@@ -15,7 +15,6 @@ END LICENSE
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
 <head>
 	<title>SLIME Web API</title>
-	<!--	TODO	change these to use local copies of these files at the appropriate location	-->
 	<link rel="stylesheet" type="text/css" href="../../loader/api/api.css" />
 	<script src="../../loader/api/api.js"></script>
 </head>
@@ -150,8 +149,8 @@ END LICENSE
 				</li>
 				<li class="value">
 					<div class="name">query</div>
-					<span class="type">__TYPE__</span>
-					<span>__DESCRIPTION__</span>
+					<span class="type">string</span>
+					<span>The query portion of this URL (with no preceding <code>?</code>).</span>
 				</li>
 				<li class="value">
 					<div class="name">fragment</div>
@@ -241,7 +240,7 @@ END LICENSE
 							test(one.host == "server.com");
 							test(one.port === 999);
 							test(one.path == "/path");
-							test(one.query == "q=query");
+							verify(one).query.is("q=query");
 							test(one.fragment == "section");
 
 							(function() {
@@ -251,7 +250,7 @@ END LICENSE
 								test(url.host == "server.com");
 								//	TODO	should port be null or undefined
 								test(url.path == "/path");
-								test(url.query == "q=query");
+								verify(url).query.is("q=query");
 								test(url.fragment == "section");
 							})();
 
@@ -263,13 +262,14 @@ END LICENSE
 								verify(url).host.is("server.com");
 								//	TODO	should port be null or undefined
 								test(url.path == "/path");
-								test(url.query == "q=query");
+								verify(url).query.is("q=query");
 								test(url.fragment == "section");
 							})();
 
 							(function() {
 								var url = module.Url.parse("hello.html");
 								test(url.path == "hello.html");
+								verify(url).evaluate.property("query").is(void(0));
 							})();
 						</script>
 					</li>
