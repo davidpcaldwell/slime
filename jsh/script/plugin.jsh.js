@@ -12,7 +12,7 @@
 
 var load = function($context) {
 	var $exports = {};
-	
+
 	if ($context.file) {
 		$exports.file = $context.file;
 		$exports.script = $context.file;
@@ -90,7 +90,7 @@ var load = function($context) {
 		js: $context.api.js,
 		getopts: $exports.getopts
 	}).Application;
-	
+
 	return $exports;
 };
 
@@ -131,7 +131,7 @@ plugin({
 			directory: jsh.shell.PWD,
 			arguments: jsh.java.Array.adapt($jsh.getInvocation().getArguments()).map(function(s) { return String(s); }),
 		}, source));
-		
+
 		jsh.script.Application.run = function(descriptor,args) {
 			try {
 				return new jsh.script.Application(descriptor).run.apply(null, (args) ? args : jsh.script.arguments);
@@ -151,7 +151,7 @@ plugin({
 				}
 			}
 		};
-		
+
 		jsh.shell.getopts = $api.deprecate(jsh.script.getopts);
 	}
 })

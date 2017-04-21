@@ -69,7 +69,7 @@ plugin({
 			});
 			jsh.shell.console("Cloned to " + p.destination);
 		}
-		
+
 		jsh.tools.provision.jdk = function() {
 			jsh.shell.run({
 				command: jsh.shell.jsh.src.getFile("jsh/tools/provision/jdk.bash"),

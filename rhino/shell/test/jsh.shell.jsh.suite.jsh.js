@@ -15,7 +15,7 @@ suite.part("local", {
 	execute: function(scope,verify) {
 		var test = verify.test;
 		var module = jsh.shell;
-		
+
 		var unforked = module.jsh({
 			script: jsh.script.file.parent.getFile("jsh.jsh.js"),
 			arguments: [],
@@ -48,7 +48,7 @@ suite.part("local", {
 				return (result.status == 2) ? "worked" : "did not work";
 			}
 		});
-		test(issue82 == "worked");		
+		test(issue82 == "worked");
 	}
 });
 

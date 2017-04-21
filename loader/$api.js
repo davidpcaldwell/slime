@@ -387,7 +387,7 @@
 			return function() {
 				if (typeof(arguments[p.index]) == "undefined" && !p.undefined) throw new TypeError(reference + " must be a string, not undefined.");
 				if (arguments[p.index] === null && !p["null"]) throw new TypeError(reference + " must be a string, not null.");
-				if (typeof(arguments[p.index]) != p.type) throw new TypeError(reference + " must be type " + "\"" + p.type + "\"" + ", not " + typeof(arguments[p.index]));				
+				if (typeof(arguments[p.index]) != p.type) throw new TypeError(reference + " must be type " + "\"" + p.type + "\"" + ", not " + typeof(arguments[p.index]));
 			}
 		}
 	};

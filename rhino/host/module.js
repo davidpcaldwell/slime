@@ -664,5 +664,5 @@ $exports.addShutdownHook = function(f) {
 				run: f
 			}
 		)
-	));	
+	));
 }
