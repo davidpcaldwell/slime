@@ -352,24 +352,6 @@ var toLocalSearchpath = function(searchpath) {
 
 $api.experimental($exports.properties,"object");
 
-//	TODO	document
-$exports.os = new function() {
-	this.name = $exports.properties.get("os.name");
-	this.arch = $exports.properties.get("os.arch");
-	this.version = $exports.properties.get("os.version");
-	this.newline = $exports.properties.get("line.separator");
-
-	this.resolve = function(p) {
-		if (typeof(p) == "function") {
-			return p.call(this);
-		} else if (typeof(p) == "object") {
-			if (p[this.name]) return p[this.name];
-			if (/^Windows/.test(this.name) && p.Windows) return p.Windows;
-			if ( (this.name == "Linux" || this.name == "Mac OS X") && p.UNIX ) return p.UNIX;
-		}
-	}
-};
-
 $exports.TMPDIR = $exports.properties.directory("java.io.tmpdir");
 $exports.USER = $exports.properties.get("user.name");
 $exports.HOME = $exports.properties.directory("user.home");
@@ -385,15 +367,27 @@ if ($exports.environment.PATH) {
 	$exports.PATH = $context.api.file.Searchpath([]);
 }
 
-$exports.user = {};
-if ($exports.HOME.getSubdirectory("Downloads")) $exports.user.downloads = $exports.HOME.getSubdirectory("Downloads");
-//	TODO	document that this is optional; that there are some environments where "working directory" makes little sense
+//	TODO	document
+$exports.os = new function() {
+	this.name = $exports.properties.get("os.name");
+	this.arch = $exports.properties.get("os.arch");
+	this.version = $exports.properties.get("os.version");
+	this.newline = $exports.properties.get("line.separator");
 
-$loader.run("os.js", {
-	$context: {
+	this.resolve = function(p) {
+		if (typeof(p) == "function") {
+			return p.call(this);
+		} else if (typeof(p) == "object") {
+			if (p[this.name]) return p[this.name];
+			if (/^Windows/.test(this.name) && p.Windows) return p.Windows;
+			if ( (this.name == "Linux" || this.name == "Mac OS X") && p.UNIX ) return p.UNIX;
+		}
+	};
+	
+	var system = $loader.file("os.js", {
 		PATH: $exports.PATH,
 		TMPDIR: $exports.TMPDIR,
-		os: $exports.os,
+		os: this,
 		run: $exports.run,
 		environment: $exports.environment,
 		api: {
@@ -401,9 +395,35 @@ $loader.run("os.js", {
 			io: $context.api.io,
 			file: $context.api.file
 		}
-	},
-	$exports: $exports.os
-});
+	});
+	var ps = this.resolve(system.ps);
+	if (ps) {
+		this.process = {};
+		this.process.list = ps;
+	}
+	if (system.sudo) this.sudo = system.sudo;
+	if (system.ping) this.ping = system.ping;
+};
+
+$exports.user = {};
+if ($exports.HOME.getSubdirectory("Downloads")) $exports.user.downloads = $exports.HOME.getSubdirectory("Downloads");
+//	TODO	document that this is optional; that there are some environments where "working directory" makes little sense
+
+//$loader.run("os.js", {
+//	$context: {
+//		PATH: $exports.PATH,
+//		TMPDIR: $exports.TMPDIR,
+//		os: $exports.os,
+//		run: $exports.run,
+//		environment: $exports.environment,
+//		api: {
+//			js: $context.api.js,
+//			io: $context.api.io,
+//			file: $context.api.file
+//		}
+//	},
+//	$exports: $exports.os
+//});
 
 Object.defineProperty(
 	$exports,

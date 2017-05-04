@@ -102,13 +102,8 @@ var ps = new function() {
 	this["Mac OS X"] = unix;
 
 	this.Linux = unix;
-}
-
-var myps = ps[$context.os.name];
-if (myps) {
-	$exports.process = {};
-	$exports.process.list = myps;
-}
+};
+$exports.ps = ps;
 
 if ($context.os.name == "Mac OS X") {
 	var correctPassword;
@@ -237,7 +232,7 @@ if ($context.os.name == "Mac OS X") {
 				var successline = result.stdio.output.split("\n")[1];
 				var successmatch = /(?:.*)time\=(\d+\.\d+) ms$/;
 				var success;
-				if (successline) {
+				if (successline && successmatch.test(successline)) {
 					success = Number(successmatch.exec(successline)[1]) / 1000;
 				}
 				return {
