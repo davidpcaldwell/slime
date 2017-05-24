@@ -71,13 +71,13 @@ END LICENSE
 										<li class="object">
 											<div class="name">loader</div>
 											<span>
-												In addition to the loader <code>module</code>, <code>file</code>,
-												<code>run</code>, and <code>get</code>, this implementation adds:
+												In addition to the <a href="../../loader/api/api.html">standard properties</a>, the
+												object supports the following interface:
 											</span>
 											<div class="label">has properties:</div>
 											<ul>
 												<li class="function">
-													<div class="name">eval</div>
+													<div class="name">run</div>
 													<span>__DESCRIPTION__</span>
 													<div class="arguments">
 														<div class="label">Arguments</div>
@@ -91,7 +91,7 @@ END LICENSE
 													</div>
 												</li>
 												<li class="function">
-													<div class="name">string</div>
+													<div class="name">get</div>
 													<span>__DESCRIPTION__</span>
 													<div class="arguments">
 														<div class="label">Arguments</div>
@@ -104,10 +104,20 @@ END LICENSE
 														<span>__DESCRIPTION__</span>
 													</div>
 												</li>
-												<li class="value">
-													<div class="name">coffee</div>
-													<span class="type">__TYPE__</span>
+												<li class="function">
+													<div class="name">plugins</div>
 													<span>__DESCRIPTION__</span>
+													<div class="arguments">
+														<div class="label">Arguments</div>
+														<ol>
+															<li class="value">
+																<span class="type">string</span>
+																<span>
+																	(optional) A path relative to the definition page
+																</span>
+															</li>
+														</ol>
+													</div>
 												</li>
 												<li class="function">
 													<div class="name">suite</div>

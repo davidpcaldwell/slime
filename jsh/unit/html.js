@@ -206,15 +206,6 @@ var Scope = function(suite,environment) {
 			};
 		},this);
 
-		this.plugins = function(path) {
-			if (path) {
-				jsh.loader.plugins(new Loader(path));
-			} else {
-//				jsh.loader.plugins(new jsh.file.Loader({ directory: suite.html.parent }));
-				jsh.loader.plugins(new Loader("."));
-			}
-		};
-
 		var Directory = function(path) {
 			return new function() {
 				var directory = suite.getRelativePath(path).directory;
@@ -249,6 +240,15 @@ var Scope = function(suite,environment) {
 		};
 
 		this.coffee = jsh.$jsapi.coffee;
+
+		this.plugins = function(path) {
+			if (path) {
+				jsh.loader.plugins(new Loader(path));
+			} else {
+//				jsh.loader.plugins(new jsh.file.Loader({ directory: suite.html.parent }));
+				jsh.loader.plugins(new Loader("."));
+			}
+		};
 
 		this.suite = function(path,p) {
 			var apifile = getApiHtml(suite.getRelativePath(path));
