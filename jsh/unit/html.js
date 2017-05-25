@@ -186,54 +186,8 @@ var Scope = function(suite,environment) {
 	var Loader = function(suite) {
 		var delegate = new jsh.file.Loader({ directory: suite.getRelativePath(".").directory });
 		
-//		var parse = function(path) {
-//			var index = path.lastIndexOf("/");
-//			var directory = path.substring(0,index);
-//			var basename = path.substring(index+1);
-//			return {
-//				directory: directory,
-//				basename: basename
-//			};
-//		};
-
-//		var Loader = function(path) {
-//			var pathname = suite.getRelativePath(path);
-//			return new jsh.file.Loader({ directory: pathname.directory });
-//		};
-		
-		this.source = delegate.source;
-//		this.source = new Loader(".").source;
-
-		["module","file","run","get"].forEach(function(operation) {
-			this[operation] = function(name,context,target) {
-				return delegate[operation].apply(delegate,arguments);
-//				var parsed = parse(name);
-//				return new Loader(parsed.directory)[operation](parsed.basename,context,target);
-			};
-		},this);
-
-//		var Directory = function(path) {
-//			return new function() {
-//				var directory = suite.getRelativePath(path).directory;
-//
-//				if (!directory) {
-//					throw new Error("No directory at " + path + " relative to " + suite);
-//				}
-//
-//				this.string = function(path) {
-//					var file = directory.getFile(path);
-//					if (!file) {
-//						throw new Error("No file at " + path + " in " + directory);
-//					}
-//					return file.read(String);
-//				}
-//			}
-//		};
-
-		this.eval = function(name,scope) {
-//			var parsed = parse(name);
-//			var code = new Directory(parsed.directory).string(parsed.basename);
-			var code = delegate.get(name).read(String);
+		delegate.eval = function(name,scope) {
+			var code = this.get(name).read(String);
 			if (!code) throw new Error("No file at " + code + " path=" + name);
 			var scope = (scope) ? scope : {};
 			with(scope) {
@@ -241,24 +195,21 @@ var Scope = function(suite,environment) {
 			}
 		};
 
-		this.string = function(name) {
-			return delegate.get(name).read(String);
-//			var parsed = parse(name);
-//			return new Directory(parsed.directory).string(parsed.basename);
+		delegate.string = function(name) {
+			return this.get(name).read(String);
 		};
 
-		this.coffee = jsh.$jsapi.coffee;
+		delegate.coffee = jsh.$jsapi.coffee;
 
-		this.plugins = function(path) {
+		delegate.plugins = function(path) {
 			if (path) {
-				jsh.loader.plugins(new delegate.Child(path));
+				jsh.loader.plugins(new this.Child(path));
 			} else {
-//				jsh.loader.plugins(new jsh.file.Loader({ directory: suite.html.parent }));
-				jsh.loader.plugins(delegate);
+				jsh.loader.plugins(this);
 			}
 		};
 
-		this.suite = function(path,p) {
+		delegate.suite = function(path,p) {
 			var apifile = getApiHtml(suite.getRelativePath(path));
 			var page = loadApiHtml(apifile);
 			var name = path;
@@ -273,9 +224,11 @@ var Scope = function(suite,environment) {
 			return rv;
 		};
 
-		this.getRelativePath = function(path) {
+		delegate.getRelativePath = function(path) {
 			return suite.getRelativePath(path);
 		};
+		
+		return delegate;
 	}
 
 	this.$jsapi = {
