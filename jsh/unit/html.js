@@ -196,12 +196,13 @@ var Scope = function(suite,environment) {
 //			};
 //		};
 
-		var Loader = function(path) {
-			var pathname = suite.getRelativePath(path);
-			return new jsh.file.Loader({ directory: pathname.directory });
-		};
+//		var Loader = function(path) {
+//			var pathname = suite.getRelativePath(path);
+//			return new jsh.file.Loader({ directory: pathname.directory });
+//		};
 		
-		this.source = new Loader(".").source;
+		this.source = delegate.source;
+//		this.source = new Loader(".").source;
 
 		["module","file","run","get"].forEach(function(operation) {
 			this[operation] = function(name,context,target) {
@@ -211,23 +212,23 @@ var Scope = function(suite,environment) {
 			};
 		},this);
 
-		var Directory = function(path) {
-			return new function() {
-				var directory = suite.getRelativePath(path).directory;
-
-				if (!directory) {
-					throw new Error("No directory at " + path + " relative to " + suite);
-				}
-
-				this.string = function(path) {
-					var file = directory.getFile(path);
-					if (!file) {
-						throw new Error("No file at " + path + " in " + directory);
-					}
-					return file.read(String);
-				}
-			}
-		};
+//		var Directory = function(path) {
+//			return new function() {
+//				var directory = suite.getRelativePath(path).directory;
+//
+//				if (!directory) {
+//					throw new Error("No directory at " + path + " relative to " + suite);
+//				}
+//
+//				this.string = function(path) {
+//					var file = directory.getFile(path);
+//					if (!file) {
+//						throw new Error("No file at " + path + " in " + directory);
+//					}
+//					return file.read(String);
+//				}
+//			}
+//		};
 
 		this.eval = function(name,scope) {
 //			var parsed = parse(name);
