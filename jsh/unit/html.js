@@ -184,15 +184,17 @@ var Scope = function(suite,environment) {
 	};
 
 	var Loader = function(suite) {
-		var parse = function(path) {
-			var index = path.lastIndexOf("/");
-			var directory = path.substring(0,index);
-			var basename = path.substring(index+1);
-			return {
-				directory: directory,
-				basename: basename
-			};
-		};
+		var delegate = new jsh.file.Loader({ directory: suite.getRelativePath(".").directory });
+		
+//		var parse = function(path) {
+//			var index = path.lastIndexOf("/");
+//			var directory = path.substring(0,index);
+//			var basename = path.substring(index+1);
+//			return {
+//				directory: directory,
+//				basename: basename
+//			};
+//		};
 
 		var Loader = function(path) {
 			var pathname = suite.getRelativePath(path);
@@ -203,8 +205,9 @@ var Scope = function(suite,environment) {
 
 		["module","file","run","get"].forEach(function(operation) {
 			this[operation] = function(name,context,target) {
-				var parsed = parse(name);
-				return new Loader(parsed.directory)[operation](parsed.basename,context,target);
+				return delegate[operation].apply(delegate,arguments);
+//				var parsed = parse(name);
+//				return new Loader(parsed.directory)[operation](parsed.basename,context,target);
 			};
 		},this);
 
@@ -227,8 +230,9 @@ var Scope = function(suite,environment) {
 		};
 
 		this.eval = function(name,scope) {
-			var parsed = parse(name);
-			var code = new Directory(parsed.directory).string(parsed.basename);
+//			var parsed = parse(name);
+//			var code = new Directory(parsed.directory).string(parsed.basename);
+			var code = delegate.get(name).read(String);
 			if (!code) throw new Error("No file at " + code + " path=" + name);
 			var scope = (scope) ? scope : {};
 			with(scope) {
@@ -237,18 +241,19 @@ var Scope = function(suite,environment) {
 		};
 
 		this.string = function(name) {
-			var parsed = parse(name);
-			return new Directory(parsed.directory).string(parsed.basename);
+			return delegate.get(name).read(String);
+//			var parsed = parse(name);
+//			return new Directory(parsed.directory).string(parsed.basename);
 		};
 
 		this.coffee = jsh.$jsapi.coffee;
 
 		this.plugins = function(path) {
 			if (path) {
-				jsh.loader.plugins(new Loader(path));
+				jsh.loader.plugins(new delegate.Child(path));
 			} else {
 //				jsh.loader.plugins(new jsh.file.Loader({ directory: suite.html.parent }));
-				jsh.loader.plugins(new Loader("."));
+				jsh.loader.plugins(delegate);
 			}
 		};
 
