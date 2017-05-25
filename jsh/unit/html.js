@@ -198,6 +198,8 @@ var Scope = function(suite,environment) {
 			var pathname = suite.getRelativePath(path);
 			return new jsh.file.Loader({ directory: pathname.directory });
 		};
+		
+		this.source = new Loader(".").source;
 
 		["module","file","run","get"].forEach(function(operation) {
 			this[operation] = function(name,context,target) {
