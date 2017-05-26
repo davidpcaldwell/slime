@@ -337,11 +337,14 @@
 				var Child = (function(parent,argument) {
 					return function(prefix) {
 						var parameter = (p.child) ? p.child(prefix) : {
+							toString: function() {
+								return "Child [" + prefix + "] of " + argument.toString();
+							},
 							get: function(path) {
 								return argument.get(prefix + path);
 							},
-							list: (p.list) ? function(wasprefix) {
-								var nowprefix = (wasprefix) ? wasprefix + "/" + prefix : prefix;
+							list: (p.list) ? function(given) {
+								var nowprefix = (given) ? prefix + "/" + given : prefix;
 								return p.list(nowprefix);
 							} : null
 						};
@@ -367,7 +370,7 @@
 						}
 						if (all[i].loader) {
 							if (m.descendants(all[i])) {
-								list(new Child(name),m,{ path: path },callback);
+								list(new Child(name + "/"),m,{ path: path },callback);
 							}
 						}
 					}
@@ -382,8 +385,10 @@
 						list(this,m,{ path: [] },function(entry) {
 							//	TODO	switch to 'name' property
 							if (entry.loader) {
-								rv.push({ path: entry.path, loader: new Child(entry.path) });
+								rv.push({ path: entry.path, loader: new Child(entry.path + "/") });
 							} else if (entry.resource) {
+								var gotten = p.get(entry.path);
+								if (!gotten) throw new Error("Unexpected error: resource is " + entry.resource + " path is " + entry.path + " p is " + p);
 								rv.push({ path: entry.path, resource: p.get(entry.path) });
 							}
 						});
