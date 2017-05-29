@@ -12,15 +12,19 @@
 //	END LICENSE
 
 var apis = [
-	"loader/$api.js",
 	"loader/browser/",
+	"loader/browser/client.js",
+	
 	"loader/api/unit.js",
 	"loader/api/",
 	"loader/api/test/data/1/",
+	
+	"loader/$api.js",
 	"js/object/",
 	"js/object/Error.js",
 	"js/document/",
-	"js/web/"
+	"js/web/",
+	"js/time/"
 ];
 
 var SRC = jsh.script.file.parent.parent.parent.parent;
