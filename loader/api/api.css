@@ -81,12 +81,19 @@ div.label, span.label { font-weight: bold; font-size: 90%; }
 .deprecated { background-color: #c0c0c0; font-style: italic; }
 .experimental { background-color: #ffffc0; font-style: italic; }
 
-script[type="application/x.jsapi#tests"] {
+script[type="application/x.jsapi#tests"], script[type="application/x.jsapi#initialize"] {
 	display: block; font-family: monospace; white-space: pre;
 	margin: 10px 0px;
 	padding: 5px;
 	border: 1px solid black;
-	background-color: #e0e0e0;
 	font-size: 9pt;
 	tab-size: 4;
+}
+
+script[type="application/x.jsapi#initialize"] {
+	background-color: #e0e0ff;
+}
+
+script[type="application/x.jsapi#tests"] {
+	background-color: #e0e0e0;
 }
