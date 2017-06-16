@@ -293,22 +293,31 @@ var LocalRepository = function(o) {
 			evaluate: function(result) {
 				if (output) {
 					var rv = result.stdio.output.split("\n").filter(function(line) { return line; }).map(function(line) {
-						var rv = {};
 						if (line.indexOf("->") != -1) {
 							//	TODO	better parsing
 							//	See http://stackoverflow.com/questions/12613793/why-is-there-a-remotes-origin-head-origin-master-entry-in-my-git-branch-l
-							rv.line = line;
+							return { line: line };
 						} else if (line) {
-							rv.current = (line.substring(0,1) == "*");
-							var matcher = /^(\S+)(?:\s+)(\S+)(?:\s+)(?:.*)$/;
-							var match = matcher.exec(line.substring(2));
-							if (!match) throw new Error("Does not match " + matcher + ": " + line.substring(2));
-							rv.name = match[1];
-							rv.commit = {
-								hash: match[2]
+							var detachedMatcher = /\(.*?\)(?:\s+)(\S+)(?:\s+)(?:.*)/;
+							var match = detachedMatcher.exec(line.substring(2));
+							if (match) return {
+								current: (line.substring(0,1) == "*"),
+								commit: {
+									hash: match[1]
+								}
 							};
+							var branchMatcher = /^(\S+)(?:\s+)(\S+)(?:\s+)(?:.*)$/;
+							match = branchMatcher.exec(line.substring(2));
+							if (!match) throw new Error("Does not match " + detachedMatcher + " or " + branchMatcher + ": " + line.substring(2));
+							return {
+								current: (line.substring(0,1) == "*"),
+								name: (match[1].substring(0,1) == "(") ? null : match[1],
+								commit: {
+									hash: match[2]
+								}
+							}
 						}
-						return rv;
+						return {};
 					});
 					if (!p.all) {
 						rv = rv.filter(function(branch) {
