@@ -37,7 +37,7 @@ download jdk.bash
 $REMOTE_PROVISION/jdk.bash
 
 if [ "$?" == "1" ]; then
-	#	If the bootstrap.bash script returns 1, the calling script should immediately exit with status 0
+	#	If the jdk.bash script returns 1, the calling script should immediately exit with status 0
 	>&2 echo "Then re-execute the installation command."
 	#	TODO	ideally we would not re-download the provisioning code, but to make it all work we would likely have to output
 	#			a command pointing to this (presumably-now-local) script and providing all the environment variables provided

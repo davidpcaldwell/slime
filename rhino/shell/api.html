@@ -172,6 +172,9 @@ END LICENSE
 						<div class="name">input</div>
 						<span class="type"><a href="../io/api.html#types.binput">byte input stream</a></span>
 						<span>The standard input stream (stdin).</span>
+						- OR -
+						<span class="type">string</span>
+						<span>A string that will be translated to bytes and supplied to the process as input.</span>
 					</li>
 					<li class="value">
 						<div class="name">output</div>
@@ -185,6 +188,54 @@ END LICENSE
 					</li>
 				</ul>
 			</div>
+			<li class="value" jsapi:id="environment">
+				<div class="name">environment</div>
+				<span class="type">object</span>
+				<span>
+					An object describing the operating system process environment under which this script was executed. Each
+					variable defined in the environment is represented as a property in this object, with its name being the name
+					of the property and its value being the value of that property. This object uses JavaScript semantics, and
+					thus this object has case-sensitive names. In the event that the underlying operating system has
+					environment variables that are <em>not</em> case-sensitive, all properties of this object will have
+					UPPERCASE names.
+				</span>
+				<script type="application/x.jsapi#tests">
+					var environment = module.environment;
+
+					test( typeof(environment.PATH) != "undefined" );
+					test( typeof(environment.ZZFF) == "undefined" );
+				</script>
+			</li>
+			<li class="value" jsapi:id="properties">
+				<div class="name">properties</div>
+				<span>
+					<b>(experimental)</b>
+					An object that attempts to allow the use of JavaScript semantics to access Java system properties. For example,
+					the <code>java.home</code> system property is referenced as <code>properties.java.home</code>. This value can be
+					examined using <code>String(properties.java.home)</code> to obtain its value as a <code>string</code>.
+				</span>
+			</li>
+			<li class="value" jsapi:id="TMPDIR">
+				<div class="name">TMPDIR</div>
+				<span class="type"><a href="../../rhino/file/api.html#types.directory">directory</a></span>
+				<span>A temporary directory that may be used by this shell.</span>
+			</li>
+			<li class="value" jsapi:id="HOME">
+				<div class="name">HOME</div>
+				<span class="type"><a href="../../rhino/file/api.html#types.directory">directory</a></span>
+				<span>The home directory of the user executing this shell.</span>
+			</li>
+			<li class="value" jsapi:id="PWD">
+				<div class="name">PWD</div>
+				<span class="type"><a href="../../rhino/file/api.html#types.directory">directory</a></span>
+				<!--	TODO	can this be changed while the shell is running?	-->
+				<span>The current working directory.</span>
+			</li>
+			<li class="value" jsapi:id="PATH">
+				<div class="name">PATH</div>
+				<span class="type"><a href="../../rhino/file/api.html#types.searchpath">searchpath</a></span>
+				<span>__DESCRIPTION__</span>
+			</li>
 			<li class="object" jsapi:id="os">
 				<div class="name">os</div>
 				<span>An object representing the current operating system.</span>
@@ -285,59 +336,111 @@ os.resolve(function() {
 						</div>
 						<div class="returns">
 							<div class="label">Returns</div>
+							<span class="type">(any)</span>
+							<span>
+								The value returned by the given function, or the value of the specified property of the given
+								object.
+							</span>
+						</div>
+					</li>
+					<li class="object experimental">
+						<div class="name">process</div>
+						<span>__DESCRIPTION__</span>
+						<div class="label">has properties:</div>
+						<ul>
+							<li class="function">
+								<div class="name">list</div>
+								<span>(Mac OS X; untested on Linux)</span>
+								<div class="arguments">
+									<div class="label">Arguments</div>
+									<ol>
+									</ol>
+								</div>
+								<div class="returns">
+									<div class="label">Returns</div>
+									<span class="type">__TYPE__</span>
+									<span>__DESCRIPTION__</span>
+								</div>
+								<script type="application/x.jsapi#tests">
+									if (module.os.name == "Mac OS X") {
+										verify(module).os.process.is.type("object");
+										verify(module).os.process.evaluate.property("list").is.type("function");
+										var ps = module.os.process.list();
+										verify(ps)[0].is.type("object");
+										verify(ps)[0].id.is.type("number");
+										verify(ps)[0].command.is.type("string");
+									}
+								</script>
+							</li>
+						</ul>
+					</li>
+					<li class="function experimental">
+						<div class="name">sudo</div>
+						<span>(Mac OS X only) Executes a command under <code>sudo</code>.</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="object">
+									<span>
+										An argument compatible with the argument for <code>run</code>, with
+										additional properties:
+									</span>
+									<div class="label">has properties:</div>
+									<ul>
+										<li class="value">
+											<div class="name">password</div>
+											<div>
+												<span class="type">string</span>
+												<span>The account password to use.</span>
+											</div>
+											-OR-
+											<div>
+												<span class="type">function</span>
+												<span>A function to invoke, with no arguments, to obtain the account password.</span>
+											</div>
+										</li>
+									</ul>
+								</li>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">(any)</span>
+							<span>See the definition of <code>run</code>.</span>
+						</div>
+						<script type="application/x.jsapi#tests">
+							//	Tested manually via the test/manual/sudo.jsh.js script with no arguments
+						</script>
+					</li>
+					<li class="function experimental">
+						<div class="name">ping</div>
+						<span>__DESCRIPTION__</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
 							<span class="type">__TYPE__</span>
 							<span>__DESCRIPTION__</span>
 						</div>
+						<script type="application/x.jsapi#tests">
+							if (module.os.name == "Mac OS X") {
+								verify(module).os.evaluate.property("ping").is.type("function");
+								var local = module.os.ping({ host: "127.0.0.1" });
+								verify(local).status.is(0);
+								verify(local).output.is.type("object");
+								verify(local).output[0].is.type("string");
+								verify(local).success.is.type("number");
+								
+								var fake = module.os.ping({ host: "198.51.100.0" });
+								verify(fake).status.is(2);
+								verify(fake).evaluate.property("success").is.type("undefined");
+							}
+						</script>
 					</li>
 				</ul>
-			</li>
-			<li class="value" jsapi:id="environment">
-				<div class="name">environment</div>
-				<span class="type">object</span>
-				<span>
-					An object describing the operating system process environment under which this script was executed. Each
-					variable defined in the environment is represented as a property in this object, with its name being the name
-					of the property and its value being the value of that property. This object uses JavaScript semantics, and
-					thus this object has case-sensitive names. In the event that the underlying operating system has
-					environment variables that are <em>not</em> case-sensitive, all properties of this object will have
-					UPPERCASE names.
-				</span>
-				<script type="application/x.jsapi#tests">
-					var environment = module.environment;
-
-					test( typeof(environment.PATH) != "undefined" );
-					test( typeof(environment.ZZFF) == "undefined" );
-				</script>
-			</li>
-			<li class="value" jsapi:id="properties">
-				<div class="name">properties</div>
-				<span>
-					<b>(experimental)</b>
-					An object that attempts to allow the use of JavaScript semantics to access Java system properties. For example,
-					the <code>java.home</code> system property is referenced as <code>properties.java.home</code>. This value can be
-					examined using <code>String(properties.java.home)</code> to obtain its value as a <code>string</code>.
-				</span>
-			</li>
-			<li class="value" jsapi:id="TMPDIR">
-				<div class="name">TMPDIR</div>
-				<span class="type"><a href="../../rhino/file/api.html#types.directory">directory</a></span>
-				<span>A temporary directory that may be used by this shell.</span>
-			</li>
-			<li class="value" jsapi:id="HOME">
-				<div class="name">HOME</div>
-				<span class="type"><a href="../../rhino/file/api.html#types.directory">directory</a></span>
-				<span>The home directory of the user executing this shell.</span>
-			</li>
-			<li class="value" jsapi:id="PWD">
-				<div class="name">PWD</div>
-				<span class="type"><a href="../../rhino/file/api.html#types.directory">directory</a></span>
-				<!--	TODO	can this be changed while the shell is running?	-->
-				<span>The current working directory.</span>
-			</li>
-			<li class="value" jsapi:id="PATH">
-				<div class="name">PATH</div>
-				<span class="type"><a href="../../rhino/file/api.html#types.searchpath">searchpath</a></span>
-				<span>__DESCRIPTION__</span>
 			</li>
 			<li class="object" jsapi:id="user">
 				<div class="name">user</div>

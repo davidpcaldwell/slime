@@ -50,34 +50,22 @@ END LICENSE
 									<div class="label">has properties:</div>
 									<ul>
 										<li class="object">
-											<div class="name">file</div>
+											<div class="name">environment</div>
 											<span>__DESCRIPTION__</span>
 											<div class="label">has properties:</div>
 											<ul>
-												<li class="deprecated function">
-													<div class="name">newTemporaryDirectory</div>
-													<span>
-														<b>Deprecated. <i>Use <code>jsh.shell.TMPDIR.createTemporary({ directory: true })</code></i></b>
-														Creates a temporary directory.
-													</span>
-													<div class="returns">
-														<div class="label">Returns</div>
-														<span class="type"><a href="../../rhino/file/api.html#types.directory">directory</a></span>
-														<span>A new temporary directory.</span>
-													</div>
-												</li>
 											</ul>
 										</li>
 										<li class="object">
 											<div class="name">loader</div>
 											<span>
-												In addition to the loader <code>module</code>, <code>file</code>,
-												<code>run</code>, and <code>get</code>, this implementation adds:
+												In addition to the <a href="../../loader/api/api.html">standard properties</a>, the
+												object supports the following interface:
 											</span>
 											<div class="label">has properties:</div>
 											<ul>
 												<li class="function">
-													<div class="name">eval</div>
+													<div class="name">run</div>
 													<span>__DESCRIPTION__</span>
 													<div class="arguments">
 														<div class="label">Arguments</div>
@@ -91,7 +79,7 @@ END LICENSE
 													</div>
 												</li>
 												<li class="function">
-													<div class="name">string</div>
+													<div class="name">get</div>
 													<span>__DESCRIPTION__</span>
 													<div class="arguments">
 														<div class="label">Arguments</div>
@@ -104,10 +92,20 @@ END LICENSE
 														<span>__DESCRIPTION__</span>
 													</div>
 												</li>
-												<li class="value">
-													<div class="name">coffee</div>
-													<span class="type">__TYPE__</span>
+												<li class="function">
+													<div class="name">plugins</div>
 													<span>__DESCRIPTION__</span>
+													<div class="arguments">
+														<div class="label">Arguments</div>
+														<ol>
+															<li class="value">
+																<span class="type">string</span>
+																<span>
+																	(optional) A path relative to the definition page
+																</span>
+															</li>
+														</ol>
+													</div>
 												</li>
 												<li class="function">
 													<div class="name">suite</div>
@@ -136,6 +134,83 @@ END LICENSE
 														<span class="type">__TYPE__</span>
 														<span>__DESCRIPTION__</span>
 													</div>
+												</li>
+											</ul>
+										</li>
+										<li class="object">
+											<div class="name">debug</div>
+											<span>__DESCRIPTION__</span>
+											<div class="label">has properties:</div>
+											<ul>
+												<li class="function deprecated">
+													<div class="name">disableBreakOnExceptions</div>
+													<span>
+														Returns a function that disables the debugger's break-on-exception behavior for the duration of the
+														function.
+													</span>
+													<div class="arguments">
+														<div class="label">Arguments</div>
+														<ol>
+															<li class="value">
+																<span class="type">function</span>
+																<span>A function</span>
+															</li>
+														</ol>
+													</div>
+													<div class="returns">
+														<div class="label">Returns</div>
+														<span class="type">function</span>
+														<span>A function with identical behavior, except it does not break on exceptions in the debugger.</span>
+													</div>
+												</li>
+											</ul>
+										</li>
+										<li class="object">
+											<div class="name">file</div>
+											<span>__DESCRIPTION__</span>
+											<div class="label">has properties:</div>
+											<ul>
+												<li class="deprecated function">
+													<div class="name">newTemporaryDirectory</div>
+													<span>
+														<b>Deprecated. <i>Use <code>jsh.shell.TMPDIR.createTemporary({ directory: true })</code></i></b>
+														Creates a temporary directory.
+													</span>
+													<div class="returns">
+														<div class="label">Returns</div>
+														<span class="type"><a href="../../rhino/file/api.html#types.directory">directory</a></span>
+														<span>A new temporary directory.</span>
+													</div>
+												</li>
+											</ul>
+										</li>
+										<li class="object">
+											<div class="name">java</div>
+											<span>__DESCRIPTION__</span>
+											<div class="label">has properties:</div>
+											<ul>
+												<li class="value">
+													<div class="name">loader</div>
+													<span class="type">__TYPE__</span>
+													<span>__DESCRIPTION__</span>
+												</li>
+												<li class="object">
+													<div class="name">io</div>
+													<span>__DESCRIPTION__</span>
+													<div class="label">has properties:</div>
+													<ul>
+														<li class="function">
+															<div class="name">newTemporaryDirectory</div>
+															<span>
+																Returns a <code>java.io.File</code> representing a new, empty directory.
+															</span>
+															<div class="returns">
+																<div class="label">Returns</div>
+																<span class="type">JavaClass java.io.File</span>
+																<span>__DESCRIPTION__</span>
+															</div>
+														</li>
+													</ul>
 												</li>
 											</ul>
 										</li>

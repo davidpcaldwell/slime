@@ -336,12 +336,23 @@
 
 				var Child = (function(parent,argument) {
 					return function(prefix) {
+						//	TODO	should we short-circuit if prefix is empty string?
+						if (prefix && prefix.substring(prefix.length-1) != "/") throw new Error("Prefix not ending with /");
 						var parameter = (p.child) ? p.child(prefix) : {
+							toString: function() {
+								return "Child [" + prefix + "] of " + argument.toString();
+							},
 							get: function(path) {
 								return argument.get(prefix + path);
 							},
-							list: (p.list) ? function(wasprefix) {
-								var nowprefix = (wasprefix) ? wasprefix + "/" + prefix : prefix;
+							list: (p.list) ? function(given) {
+								if (given) {
+									var slash = given.substring(given.length-1);
+									if (slash != "/") {
+										throw new Error("Given list path not ending with /: " + given)
+									}
+								}
+								var nowprefix = (given) ? prefix + given : prefix;
 								return p.list(nowprefix);
 							} : null
 						};
@@ -351,29 +362,29 @@
 
 				this.Child = $api.experimental(Child);
 
-				var list = function(loader,m,context,callback) {
-					var all = loader.source.list();
-					for (var i=0; i<all.length; i++) {
-						var path = context.path.slice();
-						var name = all[i].path;
-						path.push(name);
-						if (m.filter(all[i])) {
-							var arg = {};
-							for (var x in all[i]) {
-								arg[x] = all[i][x];
+				if (p.list) {
+					var list = function recurse(loader,m,context,callback) {
+						var all = loader.source.list();
+						for (var i=0; i<all.length; i++) {
+							var path = context.path.slice();
+							var name = all[i].path;
+							path.push(name);
+							if (m.filter(all[i])) {
+								var arg = {};
+								for (var x in all[i]) {
+									arg[x] = all[i][x];
+								}
+								arg.path = path.join("/");
+								callback(arg);
 							}
-							arg.path = path.join("/");
-							callback(arg);
-						}
-						if (all[i].loader) {
-							if (m.descendants(all[i])) {
-								list(new Child(name),m,{ path: path },callback);
+							if (all[i].loader) {
+								if (m.descendants(all[i])) {
+									recurse(new Child(name + "/"),m,{ path: path },callback);
+								}
 							}
 						}
 					}
-				}
 
-				if (p.list) {
 					this.list = function(m) {
 						if (!m) m = {};
 						if (!m.filter) m.filter = function() { return true; };
@@ -382,8 +393,10 @@
 						list(this,m,{ path: [] },function(entry) {
 							//	TODO	switch to 'name' property
 							if (entry.loader) {
-								rv.push({ path: entry.path, loader: new Child(entry.path) });
+								rv.push({ path: entry.path, loader: new Child(entry.path + "/") });
 							} else if (entry.resource) {
+								var gotten = p.get(entry.path);
+								if (!gotten) throw new Error("Unexpected error: resource is " + entry.resource + " path is " + entry.path + " p is " + p);
 								rv.push({ path: entry.path, resource: p.get(entry.path) });
 							}
 						});

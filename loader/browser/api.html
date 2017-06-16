@@ -15,12 +15,15 @@ END LICENSE
 <!DOCTYPE html "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
 	<head>
 		<title>SLIME: browser</title>
-		<!--	TODO	change these to use local copies of these files at the appropriate location	-->
 		<link href="../../loader/api/api.css" rel="stylesheet" type="text/css" />
 		<script src="../../loader/api/api.js"></script>
 	</head>
 	<body>
 		<div>__DESCRIPTION__</div>
+		<!--
+			TODO	APIs listed here should also be listed in browser/etc/unit.jsh.js
+					Currently we have no DRY way to do that
+		-->
 		<div>
 			<h1>Bootstrap</h1>
 			<table>
@@ -36,6 +39,46 @@ END LICENSE
 						<td>A script usable in a &lt;script> tag that bootstraps the SLIME loader system
 							as <code>inonit.loader</code>
 						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		<div>
+			<h1>APIs</h1>
+			<div>
+				SLIME provides a number of APIs that are pure JavaScript (not including Java calls), and hence can be used in
+				a browser.
+			</div>
+			<table>
+				<thead>
+					<tr>
+						<th>Path</th>
+						<th>Description</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td><a href="../../loader/$api.api.html"><code>$api</code></a></td>
+						<td>
+							(Provided by the name <code>$api</code> to all code loaded by <code>inonit.loader</code>.)
+							JavaScript language constructs.
+						</td>
+					</tr>
+					<tr>
+						<td><a href="../../js/object/api.html">js/object/</a></td>
+						<td>Further JavaScript language constructs.</td>
+					</tr>
+					<tr>
+						<td><a href="../../js/document/api.html">js/document/</a></td>
+						<td>XML and HTML documents.</td>
+					</tr>
+					<tr>
+						<td><a href="../../js/web/api.html">js/web/</a></td>
+						<td>Web-related concepts like URLs and form data.</td>
+					</tr>
+					<tr>
+						<td><a href="../../js/time/api.html">js/time/</a></td>
+						<td>Dates and times.</td>
 					</tr>
 				</tbody>
 			</table>
@@ -70,44 +113,6 @@ END LICENSE
 					</tr>
 				</tbody>
 			</table>
-		</div>
-		<div>
-			<h1>Context</h1>
-			<ul>
-			</ul>
-		</div>
-		<div>
-			<h1>Scope</h1>
-			<div class="label">has properties:</div>
-			<ul>
-				<li class="object">
-					<div class="name">$api</div>
-					<div>See <a href="../$api.api.html">detailed documentation</a>.</div>
-				</li>
-			</ul>
-		</div>
-		<div>
-			<h1>Properties</h1>
-			<ul>
-				<li class="constructor">
-					<div class="name">Loader</div>
-					<span>__DESCRIPTION__</span>
-					<div class="arguments">
-						<div class="label">Arguments</div>
-						<ol>
-						</ol>
-					</div>
-					<div class="instances">
-						<div class="label">Instances</div>
-						<span class="type">__TYPE__</span>
-						<span>__DESCRIPTION__</span>
-					</div>
-					<script type="application/x.jsapi#initialize">
-						scope.api = inonit.loader;
-					</script>
-					<div jsapi:reference="getApi('../api.html').getElement('global/Loader/tests')"
-				</li>
-			</ul>
 		</div>
 	</body>
 </html>

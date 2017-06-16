@@ -228,9 +228,19 @@ $exports.Loader = function(p) {
 			if (!p.directory) return null;
 			return getFile(path);
 		}
-		p.list = function() {
+		p.list = function(path) {
 			if (!p.directory) return [];
-			return p.directory.list().map(function(node) {
+			//	Validate path
+			if (path) {
+//				Packages.java.lang.System.err.println("directory list(" + path + ")");
+				var last = path.substring(path.length-1);
+				if (last == "/") {
+					path = path.substring(0,path.length-1);
+				}
+			}
+			var directory = (path) ? p.directory.getSubdirectory(path) : p.directory;
+//			Packages.java.lang.System.err.println("Listing " + directory);
+			return directory.list().map(function(node) {
 				return { path: node.pathname.basename, loader: node.directory, resource: !node.directory };
 			});
 		}

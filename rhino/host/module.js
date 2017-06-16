@@ -655,3 +655,14 @@ $exports.Environment = function(_environment) {
 	}
 	return rv;
 };
+
+$exports.addShutdownHook = function(f) {
+	Packages.java.lang.Runtime.getRuntime().addShutdownHook(new Packages.java.lang.Thread(
+		new JavaAdapter(
+			Packages.java.lang.Runnable,
+			{
+				run: f
+			}
+		)
+	));
+}

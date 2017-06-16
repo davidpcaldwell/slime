@@ -497,20 +497,20 @@ END LICENSE
 										<div class="label">Returns</div>
 										<span class="type">function</span>
 										<span>
-											A function that takes an <code>arguments</code> object and throws a 
+											A function that takes an <code>arguments</code> object and throws a
 											<code>TypeError</code> if the specified argument does not meet the specified criteria.
 										</span>
 									</div>
 									<script type="application/x.jsapi#tests">
 										var check = api.Function.argument.check;
-										
+
 										var tester = {
 											invoke: function(argument,array) {
 												var f = check(argument);
 												return f.apply(this,array);
 											}
 										};
-										
+
 										verify(tester).evaluate(function() { return this.invoke({ index: 0, type: "string" },[1]) }).threw.type(TypeError);
 										verify(tester).evaluate(function() { return this.invoke({ index: 0, type: "string" },[void(0)]) }).threw.type(TypeError);
 										verify(tester).evaluate(function() { return this.invoke({ index: 0, type: "string" },[null]) }).threw.type(TypeError);

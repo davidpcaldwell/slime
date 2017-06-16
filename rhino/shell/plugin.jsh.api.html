@@ -129,8 +129,6 @@ END LICENSE
 			</div>
 		-->
 		<ul>
-			<li class="function" jsapi:reference="getApi('api.html').getElement('os')">
-			</li>
 			<li class="value" jsapi:reference="getApi('api.html').getElement('environment')">
 				<div class="name"><a name="$exports.environment">environment</a></div>
 				<span>The rhino/shell environment.</span>
@@ -146,6 +144,8 @@ END LICENSE
 			<li class="value" jsapi:reference="getApi('api.html').getElement('PWD')">
 			</li>
 			<li class="value" jsapi:reference="getApi('api.html').getElement('PATH')">
+			</li>
+			<li class="function" jsapi:reference="getApi('api.html').getElement('os')">
 			</li>
 			<li class="value" jsapi:reference="getApi('api.html').getElement('user')">
 			</li>
@@ -261,6 +261,19 @@ END LICENSE
 				</div>
 			</li>
 			<li class="function">
+				<div class="name">console</div>
+				<span>Writes a message to the console (as represented by the standard error stream).</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="value">
+							<span class="type">string</span>
+							<span>A message to write to the console (followed by a platform-specific line ending).</span>
+						</li>
+					</ol>
+				</div>
+			</li>
+			<li class="function">
 				<div class="name"><a id="shell">shell</a></div>
 				<span>Executes a subprocess.</span>
 				<div class="arguments">
@@ -332,7 +345,7 @@ END LICENSE
 			<li class="function" jsapi:id="jsh">
 				<div class="name"><a id="exports.jsh">jsh</a></div>
 				<span>
-					Runs a jsh script. <a href="test/plugin.jsh.integration.api.html">Tests</a> are in a separate file.
+					Runs a jsh script. <a href="test/jsh.shell.jsh.suite.jsh.js">Tests</a> are in a separate file.
 				</span>
 				<div class="arguments">
 					<div class="label">Arguments</div>

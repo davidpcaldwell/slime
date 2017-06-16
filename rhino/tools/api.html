@@ -22,20 +22,18 @@ END LICENSE
 	<div>
 		<h1>Context</h1>
 		<!--	TODO	make the context below load the module definitions from source	-->
-		<script type="application/x.jsapi#context">
-			{
-				api: {
-					js: $jsapi.loader.module("../../js/object/"),
-					java: $jsapi.loader.module("../../rhino/host/", {
-						$rhino: jsh.$jsapi.$rhino
-					})
-				}
-			}
-		</script>
 	</div>
 	<div>
+		<script type="application/x.jsapi#initialize">
+			scope.module = $jsapi.loader.module("module.js", {
+				api: {
+					js: jsh.js,
+					java: jsh.java
+				}
+			});
+		</script>
 		<h1>Exports</h1>
-		<ul>
+		<ul jsapi:id="exports">
 			<li class="function">
 				<div class="name">javac</div>
 				<span><strong>(experimental: API likely to evolve in future versions)</strong></span>
@@ -169,13 +167,13 @@ END LICENSE
 					</span>
 				</div>
 				<script type="application/x.jsapi#tests">
-					var source = $module.getResourcePathname("test/java/Hello.java");
+					var source = $jsapi.loader.getRelativePath("test/java/Hello.java");
 					var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true });
 					module.javac({
 						destination: tmp.pathname,
 						arguments: [source.file]
 					});
-					jsh.shell.echo("Compiled to " + tmp);
+					jsh.shell.console("Compiled to " + tmp);
 					var buffer = new jsh.io.Buffer();
 					var output = jsh.shell.java({
 						classpath: jsh.file.Searchpath([tmp.pathname]),
@@ -186,8 +184,8 @@ END LICENSE
 							return buffer.readText().asString();
 						}
 					});
-					jsh.shell.echo("output: [" + output + "]");
-					test(output == String(Packages.java.lang.String.format("Hello, World!%n")));
+					jsh.shell.console("output: [" + output + "]");
+					verify(output).is(String(Packages.java.lang.String.format("Hello, World!%n")));
 				</script>
 			</li>
 		</ul>

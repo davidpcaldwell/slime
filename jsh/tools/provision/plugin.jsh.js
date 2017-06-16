@@ -70,6 +70,20 @@ plugin({
 			jsh.shell.console("Cloned to " + p.destination);
 		}
 
+		jsh.tools.provision.jdk = function() {
+			jsh.shell.run({
+				command: jsh.shell.jsh.src.getFile("jsh/tools/provision/jdk.bash"),
+				evaluate: function(result) {
+					if (result.status == 1) {
+						jsh.shell.console("Then re-execute the installation command.");
+						jsh.shell.exit(0);
+					} else {
+						jsh.shell.console("JDK is up to date.");
+					}
+				}
+			});
+		}
+
 		jsh.tools.provision.plugin = {
 			test: function() {
 				jsh.loader.plugins(new $loader.Child("test/"));

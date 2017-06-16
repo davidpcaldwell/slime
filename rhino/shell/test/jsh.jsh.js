@@ -28,6 +28,7 @@ if (!jsh.test || !jsh.test.integration) {
 jsh.test.integration({
 	scenario: function() {
 		var server = jsh.httpd.Tomcat.serve({ directory: jsh.script.file.parent });
+		var url = "http://127.0.0.1:" + server.port + "/jsh.jsh.js";
 		this.part("1", {
 			name: "HTTP unforked",
 			execute: function(scope,verify) {
@@ -44,6 +45,8 @@ jsh.test.integration({
 							jsh.shell.echo(result.stdio.output);
 							jsh.shell.echo(result.stdio.error);
 						}
+						var output = JSON.parse(result.stdio.output);
+						verify(output).url.is(url);
 						verify(result).status.is(2);
 						return result;
 					}
@@ -55,9 +58,7 @@ jsh.test.integration({
 			execute: function(scope,verify) {
 				jsh.shell.jsh({
 					fork: true,
-					script: jsh.js.web.Url.parse(
-						"http://127.0.0.1:" + server.port + "/jsh.jsh.js"
-					),
+					script: jsh.js.web.Url.parse(url),
 					stdio: {
 						output: String,
 						error: String
@@ -67,6 +68,8 @@ jsh.test.integration({
 							jsh.shell.echo(result.stdio.output);
 							jsh.shell.echo(result.stdio.error);
 						}
+						var output = JSON.parse(result.stdio.output);
+						verify(output).url.is(url);
 						verify(result).status.is(2);
 						return result;
 					}
@@ -75,6 +78,9 @@ jsh.test.integration({
 		});
 	},
 	run: function() {
+		jsh.shell.echo(JSON.stringify({
+			url: (jsh.script.url) ? jsh.script.url.toString() : void(0)
+		}));
 		jsh.shell.exit(2);
 	}
 });

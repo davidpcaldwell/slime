@@ -12,18 +12,16 @@
 
 var parameters = jsh.script.getopts({
 	options: {
-		password: String,
-		correct: false
+		omit: false,
+		wrong: String,
+		prompt: false
 	}
 });
-jsh.shell.run({
-	command: "sudo",
-	arguments: ["-k"]
-});
 
-var run = function() {
+var run = function(p) {
+	if (!p) p = {};
 	jsh.shell.os.sudo({
-		password: parameters.options.password,
+		password: p.password,
 		command: "ls",
 		stdio: {
 			error: String
@@ -36,31 +34,22 @@ var run = function() {
 	});
 };
 
-if (typeof(parameters.options.password) == "undefined") {
+if (parameters.options.omit) {
 	try {
 		run();
-		jsh.shell.echo("Command succeeded but should have failed.");
+		jsh.shell.console("Command succeeded but should have failed.");
 		jsh.shell.exit(1);
 	} catch (e) {
 		if (e instanceof jsh.shell.os.sudo.PasswordRequired) {
-			jsh.shell.echo("Correctly generated PasswordRequired exception.");
+			jsh.shell.console("Correctly generated PasswordRequired exception.");
 		} else {
-			jsh.shell.echo("Wrong error: " + e);
+			jsh.shell.console("Wrong error: " + e);
 			jsh.shell.exit(1);
-		}
+		}		
 	}
-} else if (parameters.options.correct) {
+} else if (parameters.options.wrong) {
 	try {
-		run();
-	} catch (e) {
-		jsh.shell.echo("Unexpected exception: " + e);
-		jsh.shell.exit(1);
-	}
-} else {
-	try {
-		run();
-		jsh.shell.echo("Command succeeded but should have failed.");
-		jsh.shell.exit(1);
+		run({ password: parameters.options.wrong });
 	} catch (e) {
 		if (e instanceof jsh.shell.os.sudo.PasswordIncorrect) {
 			jsh.shell.echo("Correctly generated PasswordIncorrect exception.");
@@ -69,4 +58,30 @@ if (typeof(parameters.options.password) == "undefined") {
 			jsh.shell.exit(1);
 		}
 	}
+} else if (parameters.options.prompt) {
+	try {
+		run({ password: function() {
+			return jsh.java.tools.askpass.gui({ prompt: "Account password:" });
+		} });
+		jsh.shell.console("Correctly did not generate exception.");
+	} catch (e) {
+		jsh.shell.echo("Unexpected exception: " + e);
+		jsh.shell.exit(1);
+	}	
+} else {
+	jsh.shell.jsh({
+		fork: true,
+		script: jsh.script.file,
+		arguments: ["-omit"]
+	});
+	jsh.shell.jsh({
+		fork: true,
+		script: jsh.script.file,
+		arguments: ["-wrong", "WRONG"]
+	});
+	jsh.shell.jsh({
+		fork: true,
+		script: jsh.script.file,
+		arguments: ["-prompt"]		
+	})
 }

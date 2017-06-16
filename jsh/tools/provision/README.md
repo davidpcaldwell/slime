@@ -1,17 +1,16 @@
-<!--
-LICENSE
-This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
-distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+[comment]: # (	LICENSE)
+[comment]: # (	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not)
+[comment]: # (	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.)
+[comment]: # ()
+[comment]: # ()
+[comment]: # (	The Original Code is the jsh JavaScript/Java shell.)
+[comment]: # ()
+[comment]: # (	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.)
+[comment]: # (	Portions created by the Initial Developer are Copyright (C) 2017 the Initial Developer. All Rights Reserved.)
+[comment]: # ()
+[comment]: # (	Contributor(s):)
+[comment]: # (	END LICENSE)
 
-
-The Original Code is the jsh JavaScript/Java shell.
-
-The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
-Portions created by the Initial Developer are Copyright (C) 2017 the Initial Developer. All Rights Reserved.
-
-Contributor(s):
-END LICENSE
--->
 #	Role of the provisioner
 
 The provisioner is designed to be executed remotely, and to bootstrap the execution of a remote `jsh` script. `jsh` scripts can also
@@ -143,3 +142,12 @@ if (relaunch) {
 ```
 
 The setup script can then proceed with arbitrary code, knowing that both Rhino and Tomcat are available.
+
+##	Post-installation
+
+The `jdk.bash` script can be executed by itself in order to conditionally upgrade Java. It will exit with a status of 1 if a GUI
+installation is needed. In that case, the caller should print a message like "Then re-execute the installation command." This
+message will make sense when used in context of the output of the script itself. In the above structure, most likely `jdk.bash`
+would be executed from `setup.bash` or `setup/main.jsh.js`.
+
+This mechanism can be used from `jsh` by loading the `jsh.tools.provision` plugin and executing `jsh.tools.provision.jdk()`.

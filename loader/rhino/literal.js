@@ -130,6 +130,7 @@
 				if (p._source.getEnumerator()) {
 					p.list = function() {
 						var _paths = p._source.getEnumerator().list(null);
+						if (!_paths) throw new Error("No enumerator list for " + p._source);
 						var rv = [];
 						for (var i=0; i<_paths.length; i++) {
 							var path = String(_paths[i]);

@@ -671,133 +671,119 @@ END LICENSE
 				<li class="constructor" jsapi:id="Loader">
 					<div class="name"><a name="exports.Loader">Loader</a></div>
 					<span>Creates a <a href="#types.Loader">Loader</a>.</span>
+					<div class="type">
+						<a class="type" name="types.Loader.source">source</a>
+						<span>__DESCRIPTION__</span>
+						<div class="label">has properties:</div>
+						<ul>
+							<li class="function">
+								<div class="name">toString</div>
+								<span>
+									(optional)
+									Provides the <code>toString</code> for the created Loader by default.
+								</span>
+							</li>
+							<li class="function">
+								<div class="name">get</div>
+								<span>Retrieves a resource.</span>
+								<div class="arguments">
+									<div class="label">Arguments</div>
+									<ol>
+										<li class="value">
+											<span class="type">string</span>
+											<span>The path from which to load a resource.</span>
+										</li>
+									</ol>
+								</div>
+								<div class="returns">
+									<div class="label">Returns</div>
+									<span class="type"><a href="#types.Loader.resource">resource</a></span>
+									<span>The resource at the given path, or <code>null</code> if there is none.</span>
+								</div>
+							</li>
+							<li class="function">
+								<div class="name">child</div>
+								<span>
+									(optional; if omitted, a child that delegates requests back to the parent, prepended by the
+									child's path, will be created)
+									A factory method that this loader implementation can use to create its own child implementations.
+								</span>
+								<div class="arguments">
+									<div class="label">Arguments</div>
+									<ol>
+										<li class="value">
+											<span class="type">string</span>
+											<span>
+												The path representing this child underneath the parent.
+												<span class="experimental">
+													Currently, this path can be either the empty string <code>""</code> or a string
+													ending in <code>/</code>.
+												</span>
+											</span>
+										</li>
+									</ol>
+								</div>
+								<div class="returns">
+									<div class="label">Returns</div>
+									<span class="type"><a href="">source</a></span>
+									<span>A source that represents a child of the parent source.</span>
+								</div>
+							</li>
+							<li class="function">
+								<div class="name">list</div>
+								<span>__DESCRIPTION__</span>
+								<div class="type">
+									<a class="type" name="types.Loader.list.arguments[0].entry">entry</a>
+									<span>__DESCRIPTION__</span>
+									<div class="label">has properties:</div>
+									<ul>
+										<li class="value">
+											<div class="name">path</div>
+											<span class="type">string</span>
+											<span>The name of this entry.</span>
+										</li>
+										<li class="value">
+											<div class="name">loader</div>
+											<span class="type">boolean</span>
+											<span>
+												Whether this entry represents a child loader (for example, a directory or
+												folder)
+											</span>
+										</li>
+										<li class="value">
+											<div class="name">resource</div>
+											<span class="type">boolean</span>
+											<span>Whether this entry represents a resource.</span>
+										</li>
+									</ul>
+								</div>
+								<div class="arguments">
+									<div class="label">Arguments</div>
+									<ol>
+										<li class="value">
+											<span class="type">string</span>
+											<span>A path under this loader to list. 
+												<span class="experimental">Currently, this will either be the empty
+												string, in which case the top level should be listed, or it will be a path
+												ending in <code>/</code>.</span>
+											</span>
+										</li>
+									</ol>
+								</div>
+								<div class="returns">
+									<div class="label">Returns</div>
+									<span class="type">__TYPE__</span>
+									<span>__DESCRIPTION__</span>
+								</div>
+							</li>
+						</ul>
+					</div>
 					<div class="arguments">
 						<div class="label">Arguments</div>
 						<ol>
-							<li class="object">
-								<div class="label">has properties:</div>
-								<ul>
-									<li class="function">
-										<div class="name">toString</div>
-										<span>
-											(optional)
-											Provides the <code>toString</code> for the created Loader by default.
-										</span>
-									</li>
-									<li class="function">
-										<div class="name">get</div>
-										<span>Retrieves a resource.</span>
-										<div class="arguments">
-											<div class="label">Arguments</div>
-											<ol>
-												<li class="value">
-													<span class="type">string</span>
-													<span>The path from which to load a resource.</span>
-												</li>
-											</ol>
-										</div>
-										<div class="returns">
-											<div class="label">Returns</div>
-											<span class="type"><a href="#types.Loader.resource">resource</a></span>
-											<span>The resource at the given path, or <code>null</code> if there is none.</span>
-										</div>
-									</li>
-									<li class="function">
-										<div class="name">child</div>
-										<span>__DESCRIPTION__</span>
-										<div class="arguments">
-											<div class="label">Arguments</div>
-											<ol>
-											</ol>
-										</div>
-										<div class="returns">
-											<div class="label">Returns</div>
-											<span class="type">__TYPE__</span>
-											<span>__DESCRIPTION__</span>
-										</div>
-									</li>
-									<li class="function">
-										<div class="name">list</div>
-										<span>__DESCRIPTION__</span>
-										<div class="type">
-											<a class="type" name="types.Loader.list.arguments[0].entry">entry</a>
-											<span>__DESCRIPTION__</span>
-											<div class="label">has properties:</div>
-											<ul>
-												<li class="value">
-													<div class="name">path</div>
-													<span class="type">string</span>
-													<span>The name of this entry.</span>
-												</li>
-												<li class="value">
-													<div class="name">loader</div>
-													<span class="type">boolean</span>
-													<span>
-														Whether this entry represents a child loader (for example, a directory or
-														folder)
-													</span>
-												</li>
-												<li class="value">
-													<div class="name">resource</div>
-													<span class="type">boolean</span>
-													<span>Whether this entry represents a resource.</span>
-												</li>
-											</ul>
-										</div>
-										<div class="arguments">
-											<div class="label">Arguments</div>
-											<ol>
-											</ol>
-										</div>
-										<div class="returns">
-											<div class="label">Returns</div>
-											<span class="type">__TYPE__</span>
-											<span>__DESCRIPTION__</span>
-										</div>
-									</li>
-									<!--
-									<li class="function">
-										<div class="name">getScript</div>
-										<span>Locates JavaScript code to execute given a path.</span>
-										<div class="arguments">
-											<div class="label">Arguments</div>
-											<ol>
-												<li class="value">
-													<span class="type">string</span>
-													<span>A path.</span>
-												</li>
-											</ol>
-										</div>
-										<div class="returns">
-											<div class="label">Returns</div>
-											<span class="type"><a href="#types.script">script</a></span>
-										</div>
-									</li>
-									<li class="constructor">
-										<div class="name">Loader</div>
-										<span>
-											A constructor-like function invoked when a child loader is created. A standard
-											implementation is first invoked and the resulting object is the <code>this</code> object
-											of the invocation. Like a constructor, if a value is returned, it replaces the standard
-											implementation; otherwise, operations executed inside the function modify the standard
-											implementation.
-										</span>
-										<div class="arguments">
-											<div class="label">Arguments</div>
-											<ol>
-												<li class="value">
-													<span class="type">string</span>
-													<span>A path relative to the parent loader to use as the base for loading code.</span>
-												</li>
-											</ol>
-										</div>
-										<div class="instances">
-											<div class="label">Instances</div>
-											<span class="type"><a href="#types.Loader">Loader</a></span>
-										</div>
-									</li>
-									-->
-								</ul>
+							<li class="value">
+								<span class="type"><a href="#types.Loader.source">source</a></span>
+								<span>The implementation of this <code>Loader</code>.</span>
 							</li>
 						</ol>
 					</div>
@@ -904,7 +890,7 @@ END LICENSE
 									}
 								},
 								list: function(prefix) {
-									if (prefix == "b") return [ { path: "c", resource: true } ];
+									if (prefix == "b/") return [ { path: "c", resource: true } ];
 									return [ { path: "a", resource: true }, { path: "b", loader: true } ]
 								}
 							});

@@ -162,13 +162,16 @@ $exports.languages = new function() {
 		}
 	}
 
-	var Line = function(prefix) {
+	var Line = function(prefix,suffix) {
+		if (!suffix) suffix = "";
+
 		var getBlock = function(lines) {
 			var block = [];
-			block.push(lines[0].substring(prefix.length+1));
+			block.push(lines[0].substring(prefix.length+1,lines[0].length-suffix.length));
 			var index = 1;
-			while((lines[index] == prefix) || (lines[index].substring(0,prefix.length+1) == (prefix+"\t"))) {
-				block.push(lines[index++].substring(prefix.length+1));
+			while((lines[index] == prefix+suffix) || (lines[index].substring(0,prefix.length+1) == (prefix+"\t"))) {
+				block.push(lines[index].substring(prefix.length+1,lines[index].length-suffix.length));
+				index++;
 			}
 			if (block[block.length-1] != ("END LICENSE")) {
 				throw new Error("Expected END LICENSE to end license; got " + block[block.length-1] + " in ");
@@ -180,7 +183,7 @@ $exports.languages = new function() {
 		}
 
 		this.getLicense = function(lines,template) {
-			if (lines[0] == (prefix+"\t"+"LICENSE")) {
+			if (lines[0] == (prefix+"\t"+"LICENSE"+suffix)) {
 				var block = getBlock(lines);
 				return parseLicense(template,block);
 			} else {
@@ -199,15 +202,22 @@ $exports.languages = new function() {
 			insert.push("END LICENSE");
 			insert = insert.map( function(line) {
 				if (line.length > 0) {
-					return prefix + "\t" + line;
+					return prefix + "\t" + line + suffix;
 				} else {
-					return prefix;
+					return prefix + suffix;
 				}
 			});
 			insert.push("");
 			for (var i=0; i<insert.length; i++) {
 				lines.splice(i,0,insert[i]);
 			}
+		}
+	};
+
+	var Markdown = function() {
+		var delegate = new Line("[comment]: # (");
+		this.getLicense = function(lines,template) {
+
 		}
 	}
 
@@ -217,7 +227,7 @@ $exports.languages = new function() {
 	this.html = new BeginEnd("<!--","-->");
 	this.xml = new BeginEnd("<!--","-->");
 	//	One source suggests triple-dash: http://stackoverflow.com/questions/4823468/comments-in-markdown
-	this.md = new BeginEnd("<!--","-->");
+	this.md = new Line("[comment]: # (",")");
 	this.js = cplusplus;
 	this.pac = cplusplus;
 	this.coffee = new BeginEnd("###","###");

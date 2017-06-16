@@ -100,7 +100,7 @@ window.onload = function() {
 					lines.splice(lines.length-1,1);
 				}
 				var prefix;
-				var matcher = /^(\s+)(\S+)/;
+				var matcher = /^(\s*)(\S+)/;
 				for (var i=0; i<lines.length; i++) {
 					var match = matcher.exec(lines[i]);
 					if (match) {

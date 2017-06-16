@@ -387,7 +387,7 @@
 			return function() {
 				if (typeof(arguments[p.index]) == "undefined" && !p.undefined) throw new TypeError(reference + " must be a string, not undefined.");
 				if (arguments[p.index] === null && !p["null"]) throw new TypeError(reference + " must be a string, not null.");
-				if (typeof(arguments[p.index]) != p.type) throw new TypeError(reference + " must be type " + "\"" + p.type + "\"" + ", not " + typeof(arguments[p.index]));				
+				if (typeof(arguments[p.index]) != p.type) throw new TypeError(reference + " must be type " + "\"" + p.type + "\"" + ", not " + typeof(arguments[p.index]));
 			}
 		}
 	};
@@ -684,11 +684,9 @@
 		return rv;
 	};
 
-	//	TODO	probably can do better than using eval() here now
 	$exports.threads = (function($context) {
 		var $exports = {};
 		$platform.execute($slime.getLoaderScript("threads.js"), { $context: $context, $exports: $exports }, null);
-//		eval($slime.getLoaderScript("threads.js").code);
 		return $exports;
 	})($exports);
 
