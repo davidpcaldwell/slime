@@ -135,7 +135,7 @@ END LICENSE
 				</script>
 			</div>
 			<div class="type">
-				<a class="type" name="types.RemoteRepository">__NAME__</a>
+				<a class="type" name="types.RemoteRepository">RemoteRepository</a>
 				<span>__DESCRIPTION__</span>
 				<div class="label">has properties:</div>
 				<ul>
@@ -161,8 +161,61 @@ END LICENSE
 			<div class="type">
 				<a class="type" name="types.LocalRepository">LocalRepository</a>
 				<span>__DESCRIPTION__</span>
+				<script type="application/x.jsapi#initialize">
+					scope.newRepository = function() {
+						var tmpdir = jsh.shell.TMPDIR.createTemporary({ directory: true });
+						var repository = module.init({
+							pathname: tmpdir.pathname
+						});
+						return repository;
+					};
+					scope.writeFile = function(repository,path,content) {
+						repository.directory.getRelativePath(path).write(content, { append: false });
+					};
+				</script>
 				<div class="label">has properties:</div>
 				<ul>
+					<li class="function">
+						<div class="name">checkout</div>
+						<span>Executes the git <code>checkout</code> command to select a branch in a repository.</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="object">
+									<span>An object representing arguments to <code>git checkout</code>.</span>
+									<div class="label">has properties:</div>
+									<ul>
+										<li class="value">
+											<div class="name">branch</div>
+											<span class="type">string</span>
+											<span>Denotes a branch or commit to use with <code>git checkout</code>.</span>
+										</li>
+									</ul>
+								</li>
+							</ol>
+						</div>
+						<script type="application/x.jsapi#tests">
+							var repository = newRepository();
+
+							writeFile(repository,"start","start");
+							repository.add({ path: "start" });
+							repository.commit({ message: "start" });
+
+							repository.branch({ name: "a" });
+							repository.branch({ name: "b" });
+							repository.checkout({ branch: "a" });
+
+							var commit = repository.show();
+							verify(commit,"commit").is(commit);
+							writeFile(repository,"a","a");
+							repository.add({ path: "a" });
+							repository.commit({ message: "a" });
+
+							verify(repository).getFile("a").is.type("object");
+							repository.checkout({ branch: "b" });
+							verify(repository).getFile("a").is.type("null");
+						</script>
+					</li>
 				</ul>
 				<script type="application/x.jsapi#tests">
 					var tmpdir = jsh.shell.TMPDIR.createTemporary({ directory: true });
