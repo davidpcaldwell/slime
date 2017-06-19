@@ -684,6 +684,45 @@
 		return rv;
 	};
 
+	var listening = function(f,defaultOn) {
+		var Listeners = function(p) {
+			var source = {};
+			var events = $exports.Events({ source: source });
+
+			this.add = function() {
+				for (var x in p.on) {
+					source.listeners.add(x,p.on[x]);
+				}
+			};
+
+			this.remove = function() {
+				for (var x in p.on) {
+					source.listeners.remove(x,p.on[x]);
+				}
+			};
+
+			this.events = events;
+		};
+
+		return function(p,on) {
+			var listeners = new Listeners({
+				on: $exports.Function.evaluator(
+					function() { return on; },
+					function() { return defaultOn; },
+					function() { return {}; }
+				)()
+			});
+			listeners.add();
+			try {
+				return f(p,listeners.events);
+			} finally {
+				listeners.remove();
+			}
+		}
+	};
+
+	$exports.Events.Function = listening;
+
 	$exports.threads = (function($context) {
 		var $exports = {};
 		$platform.execute($slime.getLoaderScript("threads.js"), { $context: $context, $exports: $exports }, null);

@@ -678,7 +678,7 @@ END LICENSE
 										}
 									}
 								};
-								var value = $api.Value(one,"one");
+								var value = api.Value(one,"one");
 								var disableBreakOnExceptions = ($jsapi.debug && $jsapi.debug.disableBreakOnExceptions) ? $jsapi.debug.disableBreakOnExceptions : function(f) { return f; };
 								disableBreakOnExceptions(function() {
 									verify(value).evaluate(function() { return this.require(); }).threw.nothing();
@@ -771,7 +771,7 @@ END LICENSE
 					</div>
 					<script type="application/x.jsapi#tests">
 						var source = new function() {
-							var events = $api.Events({ source: this });
+							var events = api.Events({ source: this });
 
 							this.doIt = function(p) {
 								events.fire("done", p);
@@ -799,7 +799,7 @@ END LICENSE
 					</script>
 					<script type="application/x.jsapi#tests">
 						var Child = function(parentEvents) {
-							var events = $api.Events({ source: this, parent: parentEvents });
+							var events = api.Events({ source: this, parent: parentEvents });
 
 							this.doIt = function() {
 								events.fire("a", { hello: "world" });
@@ -807,7 +807,7 @@ END LICENSE
 						};
 
 						var Parent = function() {
-							var events = $api.Events({ source: this });
+							var events = api.Events({ source: this });
 
 							this.addChild = function() {
 								return new Child(events);
@@ -838,6 +838,50 @@ END LICENSE
 						verify(parentEvents).is(2);
 						verify(childEvents).is(1);
 					</script>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="function">
+							<div class="name">Function</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</div>
+							<script type="application/x.jsapi#tests">
+								var firer = function(p,events) {
+									if (p.a) events.fire("a", p.a);
+									if (p.b) events.fire("b", p.b);
+								};
+								var On = function() {
+									var events = [];
+									
+									var received = function(e) {
+										events.push(e);
+									};
+								
+									this.a = received;
+									this.b = received;
+									
+									this.got = events;
+								};
+								var noDefault = api.Events.Function(firer);
+								var onNoDefault = new On();
+								noDefault({}, onNoDefault);
+								verify(onNoDefault,"on").got.length.is(0);
+								
+								var onA = new On();
+								noDefault({ a: {} }, onA);
+								verify(onA,"on").got.length.is(1);
+								verify(onA,"on").got[0].type.is("a");
+							</script>
+						</li>
+					</ul>
 				</li>
 				<li class="object">
 					<div class="name">steps</div>
