@@ -80,7 +80,7 @@ window.onload = function() {
 
 		var fixScriptElements = function() {
 			var matchingScriptElements = getElements(function(e) {
-				return e.tagName.toLowerCase() == "script" && e.type == "application/x.jsapi#tests";
+				return e.tagName.toLowerCase() == "script" && (e.type == "application/x.jsapi#tests" || e.type == "application/x.jsapi#initialize" || e.type == "application/x.jsapi#destroy");
 			});
 			matchingScriptElements.forEach(function(element) {
 				console.log(element);
