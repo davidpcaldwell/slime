@@ -20,32 +20,6 @@ END LICENSE
 </head>
 <body>
 	<div>
-		<script type="application/x.jsapi#initialize">
-			if (!$jsapi.environment.file) {
-				//	TODO	this is grotesque but probably will work for now
-				$jsapi.environment.file = jsh.shell.jsh.src.getFile("jsh/unit/api.html");
-			}
-		</script>
-		<script type="application/x.jsapi#tests">
-			var suite = new jsh.unit.Suite({
-				parts: {
-					reload: new jsh.unit.part.Html({
-						reload: true,
-						pathname: $jsapi.environment.file.parent.getRelativePath("test.api.html")
-					}),
-					static: new jsh.unit.part.Html({
-						pathname: $jsapi.environment.file.parent.getRelativePath("test.api.html")
-					})
-				}
-			});
-			verify(Object.keys(suite.parts)).length.is(2);
-			var staticPart = verify(suite).evaluate(function() { return this.parts.static; });
-			var reloadPart = verify(suite).evaluate(function() { return this.parts.reload; });
-			staticPart.is.type("object");
-			staticPart.evaluate(function() { return this.parts; }).is.type("object");
-			reloadPart.evaluate(function() { return this.parts; }).is.type("undefined");
-			verify(suite).run().is(true);
-		</script>
 		<h1>jsapi.jsh.js</h1>
 		Command-line arguments
 		<ul>

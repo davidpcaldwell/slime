@@ -45,6 +45,15 @@ $set({
 
 			this.port = tomcat.port;
 
+			this.client = new jsh.http.Client({
+				proxy: {
+					http: {
+						host: "127.0.0.1",
+						port: tomcat.port
+					}
+				}
+			});
+
 			this.https = {
 				port: tomcat.https.port,
 				client: new jsh.http.Client({
@@ -64,15 +73,6 @@ $set({
 			this.run = function() {
 				tomcat.run();
 			}
-
-			this.client = new jsh.http.Client({
-				proxy: {
-					http: {
-						host: "127.0.0.1",
-						port: tomcat.port
-					}
-				}
-			});
 
 			this.stop = function() {
 				handlers.forEach(function(handler) {

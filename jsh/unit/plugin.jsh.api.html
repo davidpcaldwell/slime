@@ -21,8 +21,9 @@ END LICENSE
 	</head>
 	<body>
 		<div>
-			Implementations of the various SLIME unit testing mechanisms.
-			The SLIME unit testing <a href="../../loader/api/unit.api.html">base</a> is loaded as <code>jsh.unit</code>.
+			Implementations of the various SLIME unit testing mechanisms, as well as tools for authoring unit tests (like mocks).
+			The SLIME unit testing <a href="../../loader/api/unit.api.html">base</a> is loaded as <code>jsh.unit</code>, and the
+			following APIs are added to it.
 		</div>
 		<div>(<a href="api.html">Older, semi-obsolete documentation</a>)</div>
 		<div>
@@ -255,6 +256,32 @@ END LICENSE
 							<span class="type">__TYPE__</span>
 							<span>__DESCRIPTION__</span>
 						</div>
+						<script type="application/x.jsapi#initialize">
+							if (!$jsapi.environment.file) {
+								//	TODO	this is grotesque but probably will work for now
+								$jsapi.environment.file = jsh.shell.jsh.src.getFile("jsh/unit/plugin.jsh.api.html");
+							}
+						</script>
+						<script type="application/x.jsapi#tests">
+							var suite = new jsh.unit.Suite({
+								parts: {
+									reload: new jsh.unit.part.Html({
+										reload: true,
+										pathname: $jsapi.environment.file.parent.getRelativePath("test.api.html")
+									}),
+									static: new jsh.unit.part.Html({
+										pathname: $jsapi.environment.file.parent.getRelativePath("test.api.html")
+									})
+								}
+							});
+							verify(Object.keys(suite.parts)).length.is(2);
+							var staticPart = verify(suite).evaluate(function() { return this.parts.static; });
+							var reloadPart = verify(suite).evaluate(function() { return this.parts.reload; });
+							staticPart.is.type("object");
+							staticPart.evaluate(function() { return this.parts; }).is.type("object");
+							reloadPart.evaluate(function() { return this.parts; }).is.type("undefined");
+							verify(suite).run().is(true);
+						</script>
 					</li>
 				</ul>
 			</div>
@@ -515,6 +542,72 @@ END LICENSE
 					</li>
 				</ul>
 			</div>
+			<div>
+				<h2><code>jsh.unit.mock</code></h2>
+				<ul>
+					<li class="constructor">
+						<div class="name">Web</div>
+						<span>__DESCRIPTION__</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+							</ol>
+						</div>
+						<div class="instances">
+							<div class="label">Instances</div>
+							<span class="type">__TYPE__</span>
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="function">
+									<div class="name">add</div>
+									<span>__DESCRIPTION__</span>
+									<div class="arguments">
+										<div class="label">Arguments</div>
+										<ol>
+											<li class="value">
+												<span class="type">handler</span>
+												<span>__DESCRIPTION__</span>
+											</li>
+										</ol>
+									</div>
+								</li>
+								<li class="value">
+									<div class="name">client</div>
+									<span class="type">jsh.http.Client</span>
+									<span>A client that proxies all requests through this object.</span>
+								</li>
+							</ul>
+						</div>
+						<script type="application/x.jsapi#tests">
+							var web = new jsh.unit.mock.Web();
+							web.add(function(request) {
+								if (request.headers.value("host") == "www.foo.com") {
+									return {
+										status: { code: 200 },
+										body: {
+											type: "application/json",
+											string: JSON.stringify({ path: request.path })
+										}
+									}
+								}
+							});
+							web.start();
+							var client = web.client;
+							var response = client.request({
+								url: "http://www.foo.com/pathis",
+								evaluate: function(response) {
+									if (response.status.code != 200) {
+										throw new Error();
+									}
+									return JSON.parse(response.body.stream.character().asString());
+								}
+							});
+							verify(response).path.is("pathis");
+							web.stop();
+						</script>
+					</li>
+				</ul>
+			</div>
 			<script type="application/x.jsapi#tests">
 				var remote = $jsapi.loader.file("remote.js", {
 					api: {
@@ -533,7 +626,7 @@ END LICENSE
 						});
 					}
 				}
-				var scenario = new jsh.unit.Scenario({
+				var scenario = new jsh.unit.Suite({
 					name: "Target",
 					execute: function(scope) {
 						scope.test(function() {
@@ -555,14 +648,14 @@ END LICENSE
 				new jsh.unit.view.Console({
 					writer: jsh.shell.stdio.output
 				}).listen(scenario);
-				var listener = new jsh.unit.Scenario(new remote.Events({
+				var listener = new jsh.unit.Suite(new remote.Events({
 					source: decoder
 				}));
 				scenario.run();
 				new jsh.unit.view.Console({
-						writer: jsh.shell.stdio.output
+					writer: jsh.shell.stdio.output
 				}).listen(listener);
-				listener.run()
+				listener.run();
 			</script>
 		</div>
 	</body>
