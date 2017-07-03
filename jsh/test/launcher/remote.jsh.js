@@ -25,7 +25,8 @@ var parameters = jsh.script.getopts({
 	unhandled: jsh.script.getopts.UNEXPECTED_OPTION_PARSER.SKIP
 });
 
-jsh.loader.plugins(jsh.script.file.parent.parent.pathname);
+jsh.loader.plugins(jsh.script.file.parent.parent.parent.getRelativePath("unit"));
+//jsh.loader.plugins(jsh.script.file.parent.parent.pathname);
 jsh.loader.plugins(jsh.script.file.parent.pathname);
 
 var SRC = jsh.script.file.parent.parent.parent.parent;

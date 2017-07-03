@@ -27,7 +27,7 @@ server.map({
 	servlets: {
 		"/*": {
 			load: function(scope) {
-				var backend = new jsh.test.mock.git.Server({
+				var backend = new jsh.unit.mock.git.Server({
 					getLocation: function(path) {
 						//jsh.shell.console("path = " + path + " basename = " + name);
 						if (path.substring(0,name.length+1) == (name + "/")) {

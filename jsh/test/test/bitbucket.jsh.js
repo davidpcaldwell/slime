@@ -20,7 +20,7 @@ var parameters = jsh.script.getopts({
 	}
 });
 
-var server = new jsh.test.mock.Web();
+var server = new jsh.unit.mock.Web();
 var bitbucket = {
 	src: {
 		davidpcaldwell: {
@@ -38,7 +38,7 @@ var bitbucket = {
 	},
 	loopback: true
 };
-server.add(jsh.test.mock.Web.bitbucket(bitbucket));
+server.add(jsh.unit.mock.Web.bitbucket(bitbucket));
 server.start();
 
 if (parameters.options.serve) {

@@ -21,13 +21,12 @@ plugin({
 			$coffee: $jsh.coffee,
 			java: $jsh.java
 		};
-
 	}
 });
 
 plugin({
 	isReady: function() {
-		return Boolean(jsh.java && jsh.io && jsh.shell && jsh.unit);
+		return Boolean(jsh.java && jsh.io && jsh.shell && jsh.unit && jsh.unit.Scenario && jsh.unit.html);
 	},
 	load: function() {
 		var remote = $loader.file("remote.js", {
@@ -204,7 +203,7 @@ var serializeEvent = function(e) {
 
 plugin({
 	isReady: function() {
-		return jsh.js && jsh.shell && jsh.httpd && jsh.httpd.Tomcat && jsh.http && jsh.unit && jsh.unit.Scenario.Events && jsh.java && jsh.file;
+		return jsh.js && jsh.shell && jsh.httpd && jsh.httpd.Tomcat && jsh.http && jsh.unit && jsh.unit.Scenario && jsh.unit.Scenario.Events && jsh.java && jsh.file;
 	},
 	load: function() {
 		var $exports = {};
@@ -302,4 +301,6 @@ plugin({
 			}
 		})(jsh.unit.interface.create);
 	}
-})
+});
+
+plugin($loader.value("plugin.jsh.web.js", { jsh: jsh }));

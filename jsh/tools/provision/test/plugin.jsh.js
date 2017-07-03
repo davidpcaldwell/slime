@@ -86,7 +86,7 @@ plugin({
 
 		jsh.test.provision.serve = function(o) {
 			loadhg();
-			var server = new jsh.test.mock.Web();
+			var server = new jsh.unit.mock.Web();
 			var bitbucket = (function() {
 				if (o.bitbucket) return o.bitbucket;
 				//	TODO	publish this API and make it work for non-davidpcaldwell repositories
@@ -99,7 +99,7 @@ plugin({
 					downloads: new SlimeDownloads()
 				};
 			}
-			server.add(jsh.test.mock.Web.bitbucket(bitbucket));
+			server.add(jsh.unit.mock.Web.bitbucket(bitbucket));
 			var version = (o.version) ? o.version : "tip";
 			var script = (function() {
 				var repository = String(new hg.Repository({ local: o.base }).paths.default.url);

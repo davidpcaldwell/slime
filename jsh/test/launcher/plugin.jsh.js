@@ -13,14 +13,14 @@
 
 plugin({
 	isReady: function() {
-		return jsh.httpd.Tomcat && jsh.http && jsh.test.mock.Internet;
+		return jsh.httpd.Tomcat && jsh.http && jsh.unit.mock.Web;
 	},
 	load: function() {
 		if (!jsh.test) jsh.test = {};
 		if (!jsh.test.launcher) jsh.test.launcher = {};
 		jsh.test.launcher.MockRemote = function(o) {
-			var delegate = new jsh.test.mock.Internet();
-			delegate.add(jsh.test.mock.Internet.bitbucket({
+			var delegate = new jsh.unit.mock.Web();
+			delegate.add(jsh.unit.mock.Web.bitbucket({
 				src: o.src
 			}));
 			delegate.add(function(request) {
