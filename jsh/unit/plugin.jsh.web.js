@@ -53,6 +53,9 @@ $set({
 					}
 				}
 			});
+			this.client.toString = function() {
+				return "Mock client for 127.0.0.1:" + tomcat.port;
+			}
 
 			this.https = {
 				port: tomcat.https.port,

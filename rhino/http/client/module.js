@@ -9,6 +9,7 @@
 //
 //	Contributor(s):
 //	END LICENSE
+Packages.java.lang.System.setProperty("sun.net.http.allowRestrictedHeaders", "true");
 
 (function($context) {
 	$context.property("api").require();
@@ -142,7 +143,6 @@ var spi = function(p) {
 		if (typeof(url) == "string") url = $context.api.web.Url.parse(url);
 		var hostHeader;
 		if (url.scheme == "https" && mode.proxy && mode.proxy.https) {
-			Packages.java.lang.System.setProperty("sun.net.http.allowRestrictedHeaders", "true");
 			//	Currently implemented by re-writing the URL; would be better to implement a tunnel through an HTTP proxy but
 			//	could not get that working with Tomcat, which returned 400 errors when https requests are sent to http listener
 			//	TODO	does this work for default port?
