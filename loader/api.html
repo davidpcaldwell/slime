@@ -211,6 +211,38 @@ END LICENSE
 				});
 			</script>
 			<div class="label">has properties:</div>
+			<div class="type">
+				<a class="type" name="types.script">script</a>
+				<span>A type of resource that can be executed.</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="value">
+						<div class="name">type</div>
+						<span class="type">mime.Type</span>
+						<span>
+							(optional; if omitted and <code>name</code> is present, uses <code>mime.Type.fromName</code>
+							to determine; if omitted and <code>name</code> is absent, defaults to
+							<code>application/javascript</code>) The type of this script.
+							<code>application/javascript</code> scripts will be executed as
+							JavaScript. <code>application/vnd.coffeescript</code> will be interpreted as CoffeeScript.
+						</span>
+					</li>
+					<li class="value">
+						<div class="name">name</div>
+						<span class="type">string</span>
+						<span>
+							(optional) The name of the script. May be
+							used by the underlying JavaScript engine when evaluating the resource as code (for display in tools,
+							for example).
+						</span>
+					</li>
+					<li class="value">
+						<div class="name">string</div>
+						<span class="type">string</span>
+						<span>The content of this script as a string.</span>
+					</li>
+				</ul>
+			</div>
 			<div class="type" jsapi:id="types.Loader">
 				<a class="type" name="types.Loader">Loader</a>
 				<span jsapi:id="topdescription">A <i>Loader</i> loads and executes JavaScript code from a specific source.</span>
@@ -252,39 +284,6 @@ END LICENSE
 						</li>
 					</ul>
 				</div>
-				<div class="type">
-					<a class="type" name="types.Loader.script">script</a>
-					<span>A type of resource that can be executed.</span>
-					<div class="label">has properties:</div>
-					<ul>
-						<li class="value">
-							<div class="name">type</div>
-							<span class="type">mime.Type</span>
-							<span>
-								(optional; if omitted and <code>name</code> is present, uses <code>mime.Type.fromName</code>
-								to determine; if omitted and <code>name</code> is absent, defaults to
-								<code>application/javascript</code>) The type of this script.
-								<code>application/javascript</code> scripts will be executed as
-								JavaScript. <code>application/vnd.coffeescript</code> will be interpreted as CoffeeScript.
-							</span>
-						</li>
-						<li class="value">
-							<div class="name">name</div>
-							<span class="type">string</span>
-							<span>
-								(optional) The name of the script. May be
-								used by the underlying JavaScript engine when evaluating the resource as code (for display in tools,
-								for example).
-							</span>
-						</li>
-						<li class="value">
-							<div class="name">string</div>
-							<span class="type">string</span>
-							<span>The content of this script as a string.</span>
-						</li>
-					</ul>
-				</div>
-
 				<div class="label">has properties:</div>
 				<ul>
 					<li class="function" jsapi:id="run">
@@ -293,7 +292,7 @@ END LICENSE
 							Executes code in a particular scope with a particular <code>this</code> value. The code will automatically
 							contain the <code>$platform</code> and <code>$api</code> objects described above in its scope.
 						</span>
-						<div class="arguments">
+						<div class="arguments" jsapi:id="arguments">
 							<div class="label">Arguments</div>
 							<ol>
 								<li class="value">
@@ -320,7 +319,7 @@ END LICENSE
 							application-specific context to provide to the script; the <code>$exports</code> object represents an object to
 							which the script can assign properties that will be visible outside the script.
 						</span>
-						<div class="arguments">
+						<div class="arguments" jsapi:id="arguments">
 							<div class="label">Arguments</div>
 							<ol>
 								<li class="value">
@@ -365,7 +364,7 @@ END LICENSE
 								</li>
 							</ul>
 						</div>
-						<div class="arguments">
+						<div class="arguments" jsapi:id="arguments">
 							<div class="label">Arguments</div>
 							<ol>
 								<li class="value">
@@ -393,8 +392,8 @@ END LICENSE
 						</div>
 					</li>
 					<li class="function" jsapi:id="value">
-						<div class="name">value</div>
-						<div>
+						<div class="name"><a id="types.Loader.value">value</a></div>
+						<div jsapi:id="description">
 							Identical to <code>run</code>, except that the code to execute is supplied with a <code>$set</code>
 							function in its scope that allows it to set a value to be returned to the caller:
 							<div class="label">has properties:</div>
@@ -414,11 +413,11 @@ END LICENSE
 								</li>
 							</ul>
 						</div>
-						<div class="arguments">
+						<div class="arguments" jsapi:id="arguments">
 							<div class="label">Arguments</div>
 							See <a href="#Loader.run">run</a>.
 						</div>
-						<div class="returns">
+						<div class="returns" jsapi:id="returns">
 							<div class="label">Returns</div>
 							<span class="type">(any)</span>
 							<span>
@@ -666,6 +665,34 @@ END LICENSE
 					<div class="returns" jsapi:id="returns">
 						<div class="label">Returns</div>
 						<span>See <a href="#Loader.file">Loader.file()</a>.</span>
+					</div>
+				</li>
+				<li class="function">
+					<div class="name">value</div>
+					<span>
+						Analogous to <a href="#types.Loader.value">Loader.value()</a>, except that the caller specifies a
+						<a href="#types.script">script</a> to execute rather than a path within a <a href="#types.Loader">Loader</a>.
+					</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+							<li class="value">
+								<span class="type"><a href="#types.script">script</a></span>
+								<span>The script to execute.</span>
+							</li>
+							<li class="value" jsapi:id="arguments[1]">
+								<span class="type">object</span>
+								<span>See <a href="#types.Loader.value">Loader.value()</a>.</span>
+							</li>
+							<li class="value" jsapi:id="arguments[2]">
+								<span class="type">object</span>
+								<span>See <a href="#types.Loader.value">Loader.value()</a>.</span>
+							</li>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span>See <a href="#types.Loader.value">Loader.value()</a>.</span>
 					</div>
 				</li>
 				<li class="constructor" jsapi:id="Loader">

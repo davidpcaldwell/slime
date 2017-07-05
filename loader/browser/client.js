@@ -197,6 +197,9 @@
 								code = code + "\n//# sourceURL=" + prefix+path;
 							}
 							return { name: path, path: prefix+path, string: code };
+						},
+						toString: function() {
+							return "Browser loader: prefix=[" + prefix + "]";
 						}
 					}
 				})(canonicalize(p));
