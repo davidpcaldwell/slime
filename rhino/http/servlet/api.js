@@ -10,7 +10,7 @@
 //	Contributor(s):
 //	END LICENSE
 
-var $loader = (function() {
+var $java = (function() {
 	if ($host.getLoader && $host.getEngine) {
 		return $host.getEngine().script("rhino/rhino.js", $host.getLoader().getLoaderCode("rhino/rhino.js"), { $loader: $host.getLoader(), $rhino: $host.getEngine() }, null);
 	} else if ($host.getLoader && $host.getClasspath) {
@@ -33,6 +33,7 @@ var $loader = (function() {
 		return rv;
 	}
 })();
+var $loader = $java;
 
 var $servlet = (function() {
 	if ($host.getServlet) {
