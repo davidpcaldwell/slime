@@ -301,6 +301,8 @@ scope.httpd.$reload = ($host.getCode) ? function() {
 	servlet.reload(scope.$exports);
 } : null;
 
+//	TODO	trying to push this first form back into a register() method in the jsh plugin, but for some reason it does not work;
+//			figure out why and do it
 if ($host.$exports) {
 	$host.$exports.servlet = servlet;
 } else if ($host.register) {

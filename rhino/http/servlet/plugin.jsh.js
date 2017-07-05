@@ -254,7 +254,7 @@ plugin({
 									}
 								};
 								$loader.run("api.js", apiScope);
-								servlet = apiScope.$host.$exports.servlet;
+								if (!servlet) servlet = apiScope.$host.$exports.servlet;
 							};
 
 							this.service = function(_request,_response) {
