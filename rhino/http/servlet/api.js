@@ -10,7 +10,7 @@
 //	Contributor(s):
 //	END LICENSE
 
-var $loader = (function() {
+var $java = (function() {
 	if ($host.getLoader && $host.getEngine) {
 		return $host.getEngine().script("rhino/rhino.js", $host.getLoader().getLoaderCode("rhino/rhino.js"), { $loader: $host.getLoader(), $rhino: $host.getEngine() }, null);
 	} else if ($host.getLoader && $host.getClasspath) {
@@ -69,9 +69,8 @@ var scope = {
 };
 
 var bootstrap = (function() {
-	if ($loader && $servlet) {
-		var $rhino = $loader;
-		var loader = new $rhino.Loader({
+	if ($java && $servlet) {
+		var loader = new $java.Loader({
 			_source: $servlet.resources
 		});
 		var rv = {};
@@ -80,8 +79,8 @@ var bootstrap = (function() {
 		});
 		rv.java = loader.module("WEB-INF/slime/rhino/host/", {
 			globals: true,
-			$rhino: $loader,
-			$java: $loader.java
+			$rhino: $java,
+			$java: $java.java
 		});
 		rv.java.log = loader.file("WEB-INF/slime/js/debug/logging.java.js", {
 			prefix: "slime",
@@ -90,10 +89,10 @@ var bootstrap = (function() {
 			}
 		}).log;
 		rv.io = loader.module("WEB-INF/slime/rhino/io/", {
-			$rhino: $rhino,
+			$rhino: $java,
 			api: {
 				js: rv.js,
-				mime: $rhino.mime,
+				mime: $java.mime,
 				java: rv.java
 			}
 		});
@@ -188,7 +187,7 @@ var api = (function() {
 })();
 
 var loaders = (function() {
-	if ($loader && $servlet) {
+	if ($java && $servlet) {
 		//	servlet container, determine webapp path and load relative to that
 		var path = String($servlet.path);
 		var tokens = path.split("/");
@@ -243,7 +242,7 @@ var $code = (function() {
 
 scope.httpd = {};
 scope.httpd.$java = (function() {
-	if ($loader && $servlet) return $loader;
+	if ($java && $servlet) return $java;
 	return $host.$java;
 })();
 
@@ -300,11 +299,7 @@ scope.httpd.$reload = ($host.getCode) ? function() {
 	servlet.reload(scope.$exports);
 } : null;
 
-if ($host.$exports) {
-	$host.$exports.servlet = servlet;
-} else if ($host.register) {
-	$host.register(new JavaAdapter(
-		Packages.inonit.script.servlet.Servlet.Script,
-		servlet
-	));
-}
+$host.register(new JavaAdapter(
+	Packages.inonit.script.servlet.Servlet.Script,
+	servlet
+));
