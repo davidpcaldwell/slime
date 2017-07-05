@@ -247,6 +247,10 @@ plugin({
 										this.$exports = {};
 										this.server = server;
 										this.api = api;
+										
+										this.register = function(_servlet) {
+											servlet = (_servlet.delegee) ? _servlet.delegee : _servlet
+										}
 									}
 								};
 								$loader.run("api.js", apiScope);
