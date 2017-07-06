@@ -64,7 +64,7 @@ END LICENSE
 			});
 			if (!java) throw new Error("Not found: rhino/host/");
 
-			this.$rhino = jsh.$jsapi.$rhino;
+			this.$java = jsh.$jsapi.$rhino;
 
 			this.api = {
 				js:  $jsapi.loader.module("../../js/object/", { globals: true }),
@@ -396,7 +396,7 @@ END LICENSE
 			p.store(buffer.writeBinary().java.adapt(), "No comment!");
 			buffer.close();
 
-			var resource = new (buffer.readBinary()).Resource(new context.$rhino.mime.Type("text","plain"));
+			var resource = new (buffer.readBinary()).Resource(new context.$java.mime.Type("text","plain"));
 
 			var props = resource.read(Packages.java.util.Properties);
 			test( props.get("yes") == "i do" );

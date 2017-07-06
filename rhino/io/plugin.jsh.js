@@ -17,7 +17,7 @@ plugin({
 	},
 	load: function() {
 		jsh.io = $loader.module("module.js", {
-			$rhino: $jsh,
+			$java: $jsh,
 			api: {
 				js: jsh.js,
 				java: jsh.java

@@ -89,7 +89,7 @@ var bootstrap = (function() {
 			}
 		}).log;
 		rv.io = loader.module("WEB-INF/slime/rhino/io/", {
-			$rhino: $java,
+			$java: $java,
 			api: {
 				js: rv.js,
 				mime: $java.mime,

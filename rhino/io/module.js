@@ -11,7 +11,7 @@
 //	END LICENSE
 
 var InputStream = function(peer) {
-	$context.$rhino.io.InputStream.apply(this,arguments);
+	$context.$java.io.InputStream.apply(this,arguments);
 	
 	var _readBytes = this.java.array;
 
@@ -25,7 +25,7 @@ var InputStream = function(peer) {
 	//	TODO	push back into loader/rhino
 	this.Resource = function(type) {
 		var _bytes = _readBytes();
-		return new $context.$rhino.io.Resource(new function() {
+		return new $context.$java.io.Resource(new function() {
 			this.type = type;
 
 			this.read = new function() {
@@ -41,10 +41,10 @@ var InputStream = function(peer) {
 	});
 };
 
-$exports.Streams = $context.$rhino.io.Streams;
+$exports.Streams = $context.$java.io.Streams;
 
 $exports.Buffer = function() {
-	$context.$rhino.io.Buffer.apply(this,arguments);
+	$context.$java.io.Buffer.apply(this,arguments);
 
 	this.readBinary = (function(was) {
 		return function() {
@@ -54,9 +54,9 @@ $exports.Buffer = function() {
 	})(this.readBinary);
 };
 
-$exports.Resource = $context.$rhino.io.Resource;
+$exports.Resource = $context.$java.io.Resource;
 
-$exports.Loader = $context.$rhino.Loader;
+$exports.Loader = $context.$java.Loader;
 
 $exports.java = new function() {
 	this.adapt = function(object) {
@@ -64,11 +64,11 @@ $exports.java = new function() {
 		} else if ($context.api.java.isJavaObject(object) && $context.api.java.isJavaType(Packages.java.io.InputStream)(object)) {
 			return new InputStream(object);
 		} else if ($context.api.java.isJavaObject(object) && $context.api.java.isJavaType(Packages.java.io.OutputStream)(object)) {
-			return new $context.$rhino.io.OutputStream(object);
+			return new $context.$java.io.OutputStream(object);
 		} else if ($context.api.java.isJavaObject(object) && $context.api.java.isJavaType(Packages.java.io.Reader)(object)) {
-			return new $context.$rhino.io.Reader(object);
+			return new $context.$java.io.Reader(object);
 		} else if ($context.api.java.isJavaObject(object) && $context.api.java.isJavaType(Packages.java.io.Writer)(object)) {
-			return new $context.$rhino.io.Writer(object);
+			return new $context.$java.io.Writer(object);
 		} else {
 			var type = (function() {
 				if (object.getClass) {
@@ -89,8 +89,8 @@ $exports.java = new function() {
 
 $exports.mime = $loader.file("mime.js", {
 	nojavamail: $context.nojavamail,
-	$rhino: {
-		mime: $context.$rhino.mime
+	$java: {
+		mime: $context.$java.mime
 	},
 	api: {
 		java: $context.api.java,
@@ -101,6 +101,6 @@ $exports.mime = $loader.file("mime.js", {
 $exports.archive = {
 	zip: $loader.file("zip.js", {
 		InputStream: InputStream,
-		Streams: $context.$rhino.io.Streams
+		Streams: $context.$java.io.Streams
 	})
 };

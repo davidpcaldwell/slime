@@ -53,7 +53,7 @@ END LICENSE
 			this.java = java;
 			this.io = $jsapi.loader.module("../../rhino/io/", {
 				$java: new Packages.inonit.script.runtime.io.Streams()
-				,$rhino: jsh.$jsapi.$rhino
+				,$java: jsh.$jsapi.$rhino
 				,api: {
 					java: java,
 					mime: jsh.$jsapi.mime
