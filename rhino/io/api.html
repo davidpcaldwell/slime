@@ -31,11 +31,6 @@ END LICENSE
 		<div class="label">has properties:</div>
 		<ul>
 			<li class="value">
-				<div class="name">_streams</div>
-				<span class="type">JavaClass inonit.script.runtime.io.Streams</span>
-				<span>(optional) An instance of <code>inonit.script.runtime.io.Streams</code>.</span>
-			</li>
-			<li class="value">
 				<div class="name">$rhino</div>
 				<span class="type">__TYPE__</span>
 				<span>__DESCRIPTION__</span>
@@ -68,8 +63,6 @@ END LICENSE
 				$rhino: jsh.$jsapi.$rhino
 			});
 			if (!java) throw new Error("Not found: rhino/host/");
-
-			this._streams = new Packages.inonit.script.runtime.io.Streams();
 
 			this.$rhino = jsh.$jsapi.$rhino;
 

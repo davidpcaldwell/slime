@@ -21,8 +21,6 @@
 //	TODO	find callers in case API needs to be changed
 //	grep --exclude-dir=rhino/mime --exclude-dir=http/client --exclude-dir=google --exclude-dir=mail -R Multipart *
 
-var _streams = ($context._streams) ? $context._streams : new Packages.inonit.script.runtime.io.Streams();
-
 //	Old name for this variable
 if ($context.gae) {
 	$api.deprecate(function() {
@@ -123,7 +121,7 @@ $exports.Multipart = function(p) {
 			var characters = new Packages.java.io.OutputStreamWriter(bytes);
 			if (false) {
 			} else if (part.stream && part.stream.java && typeof(part.stream.java.adapt) == "function" && $context.api.java.isJavaType(Packages.java.io.InputStream)(part.stream.java.adapt())) {
-				_streams.copy(part.stream.java.adapt(),bytes);
+				$context.api.io.Streams.binary.copy(part.stream.java.adapt(),bytes);
 			} else if (part.string) {
 				characters.write(part.string);
 				characters.flush();

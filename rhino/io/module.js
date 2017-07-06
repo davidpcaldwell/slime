@@ -10,11 +10,10 @@
 //	Contributor(s):
 //	END LICENSE
 
-//	TODO	rename this
-var _java = ($context._streams) ? $context._streams : new Packages.inonit.script.runtime.io.Streams();
-
 var InputStream = function(peer) {
 	$context.$rhino.io.InputStream.apply(this,arguments);
+	
+	var _readBytes = this.java.array;
 
 	this.asProperties = function() {
 		var properties = new Packages.java.util.Properties();
@@ -25,7 +24,7 @@ var InputStream = function(peer) {
 
 	//	TODO	push back into loader/rhino
 	this.Resource = function(type) {
-		var _bytes = _java.readBytes(peer);
+		var _bytes = _readBytes();
 		return new $context.$rhino.io.Resource(new function() {
 			this.type = type;
 
@@ -38,14 +37,7 @@ var InputStream = function(peer) {
 	};
 
 	this.cache = $api.deprecate(function() {
-		var $bytes = _java.readBytes(peer);
-		return new $context.$rhino.io.Resource(new function() {
-			this.read = new function() {
-				this.binary = function() {
-					return new InputStream(new Packages.java.io.ByteArrayInputStream($bytes));
-				}
-			}
-		});
+		return new this.Resource();
 	});
 };
 
@@ -96,7 +88,6 @@ $exports.java = new function() {
 };
 
 $exports.mime = $loader.file("mime.js", {
-	_streams: _java,
 	nojavamail: $context.nojavamail,
 	$rhino: {
 		mime: $context.$rhino.mime

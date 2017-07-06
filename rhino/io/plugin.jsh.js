@@ -17,7 +17,6 @@ plugin({
 	},
 	load: function() {
 		jsh.io = $loader.module("module.js", {
-			_streams: new Packages.inonit.script.runtime.io.Streams(),
 			$rhino: $jsh,
 			api: {
 				js: jsh.js,
