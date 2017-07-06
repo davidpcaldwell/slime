@@ -296,6 +296,22 @@ END LICENSE
 							<span>(optional) The MIME type of the request body.</span>
 						</li>
 						<li class="value">
+							<div class="name">length</div>
+							<span class="type">number</span>
+							<span>
+								(optional) The length of the content, in bytes. Used to set the
+								<code>Content-Length</code> header in the response.
+							</span>
+						</li>
+						<li class="value">
+							<div class="name">modified</div>
+							<span class="type">Date</span>
+							<span>
+								(optional) The date that the content was last modified. Used to set the <code>Last-Modified</code>
+								header.
+							</span>
+						</li>
+						<li class="value">
 							<div class="name">string</div>
 							<span class="type">string</span>
 							<span>(optional) The message body to send to the client, as a string.</span>

@@ -150,6 +150,9 @@ $exports.Servlet = function(script) {
 						}
 					}
 				}
+				//	TODO	implement more intelligent caching
+				//	For now, be conservative; force re-validation of every request
+				_response.addHeader("Cache-Control", "max-age=0");
 				if (response.body && response.body.read && response.body.read.binary) {
 					$context.api.io.Streams.binary.copy(response.body.read.binary(),_response.getOutputStream());
 //				} else if (response.body && response.body.read && response.body.read.text) {
