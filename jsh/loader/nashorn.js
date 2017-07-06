@@ -11,25 +11,23 @@
 //	END LICENSE
 
 $jsh.setHost((function() {
-	var $loader = eval($jsh.getBootstrapCode());
-
 	//	TODO	the below, with scripts and rv, looks funny; does it load the same code twice? Why? Should either fix or provide
 	//			explanation
 
-	var scripts = eval($loader.getLoaderCode("rhino/nashorn.js"));
+	var scripts = eval($jsh.getLoaderCode("rhino/nashorn.js"));
 
 	var rv = scripts.script(
 		"rhino/nashorn.js",
-		$loader.getLoaderCode("rhino/nashorn.js"),
+		$jsh.getLoaderCode("rhino/nashorn.js"),
 		{
 			Java: Java,
 			Packages: Packages,
 			load: load,
 			$getLoaderCode: function(path) {
-				return $loader.getLoaderCode(path);
+				return $jsh.getLoaderCode(path);
 			},
 			$getCoffeeScript: function() {
-				return $loader.getCoffeeScript();
+				return $jsh.getCoffeeScript();
 			},
 			$classpath: $nashorn.getClasspath()
 		},

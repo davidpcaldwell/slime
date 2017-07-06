@@ -81,11 +81,6 @@ public class Shell {
 		this.classpath = classpath;
 	}
 
-	//	Used by engine
-	public final String getBootstrapCode() throws IOException {
-		return streams.readString(configuration.getInstallation().getJshLoader().getFile("bootstrap.js").getReader());
-	}
-
 	public Code.Source getPlatformLoader() {
 		return configuration.getInstallation().getPlatformLoader();
 	}
@@ -107,6 +102,16 @@ public class Shell {
 		}
 	}
 
+	public String getLoaderCode(String path) throws IOException {
+		return streams.readString(getPlatformLoader().getFile(path).getReader());
+	};
+
+	public String getCoffeeScript() throws IOException {
+		Code.Source.File _file = getLibraries().getFile("coffee-script.js");
+		if (_file == null) return null;
+		return streams.readString(_file.getReader());
+	}
+	
 	public final Code[] getPlugins() {
 		if (classpath == null) throw new IllegalStateException();
 		return configuration.getInstallation().getExtensions().getPlugins(classpath).toArray(new Code[0]);

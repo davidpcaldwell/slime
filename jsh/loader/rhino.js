@@ -11,10 +11,7 @@
 //	END LICENSE
 
 $jsh.setHost((function() {
-	//	Try to port inonit.script.rhino.Loader.Bootstrap
-	var $loader = eval(String($jsh.getBootstrapCode()));
-
-	var rv = $rhino.script("rhino/rhino.js", $loader.getLoaderCode("rhino/rhino.js"), { $loader: $loader, $rhino: $rhino }, null);
+	var rv = $rhino.script("rhino/rhino.js", $jsh.getLoaderCode("rhino/rhino.js"), { $loader: $jsh, $rhino: $rhino }, null);
 
 	rv.exit = function(status) {
 		return $rhino.exit(status);
