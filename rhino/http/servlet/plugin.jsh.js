@@ -244,17 +244,15 @@ plugin({
 
 										this.$java = $jsh;
 
-										this.$exports = {};
 										this.server = server;
 										this.api = api;
 										
-										this.register = function(_servlet) {
-											servlet = (_servlet.delegee) ? _servlet.delegee : _servlet
+										this.script = function(script) {
+											servlet = script;
 										}
 									}
 								};
 								$loader.run("api.js", apiScope);
-								if (!servlet) servlet = apiScope.$host.$exports.servlet;
 							};
 
 							this.service = function(_request,_response) {
