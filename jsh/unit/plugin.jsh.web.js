@@ -332,10 +332,6 @@ $set({
 					on: {
 						start: function() {
 							if (on && on.start) on.start.apply(this,arguments);
-							try {
-								Packages.java.lang.Thread.sleep(500);
-							} catch (e) {
-							}
 						}
 					}
 				})
