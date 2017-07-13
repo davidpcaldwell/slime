@@ -17,6 +17,8 @@ var parameters = jsh.script.getopts({
 		serve: false,
 		system: false,
 		httptunnel: false,
+		//	TODO	clone over https currently does not work
+		https: false,
 		pause: Number,
 		part: String
 	}
@@ -75,7 +77,12 @@ if (parameters.options.system) {
 var suite = new jsh.unit.Suite();
 
 var hgconfig = {
-	"http_proxy.host": "127.0.0.1:" + server.port
+	http: {
+		"http_proxy.host": "127.0.0.1:" + server.port
+	},
+	https: {
+		"http_proxy.host": "127.0.0.1:" + server.https.port		
+	}
 };
 
 suite.part("clone", {
@@ -83,8 +90,16 @@ suite.part("clone", {
 		var remote = new hg.Repository({ url: "http://bitbucket.org/user/slime" });
 		var tmp1 = jsh.shell.TMPDIR.createTemporary({ directory: true });
 		verify(tmp1).getSubdirectory(".hg").is.type("null");
-		remote.clone({ to: tmp1, config: hgconfig });
+		remote.clone({ to: tmp1, config: hgconfig.http });
 		verify(tmp1).getSubdirectory(".hg").is.type("object");
+		
+		if (parameters.options.https) {
+			var sRemote = new hg.Repository({ url: "https://bitbucket.org/user/slime" });
+			var tmp2 = jsh.shell.TMPDIR.createTemporary({ directory: true });
+			verify(tmp2).getSubdirectory(".hg").is.type("null");
+			sRemote.clone({ to: tmp2, config: hgconfig.https, debug: true, verbose: true });
+			verify(tmp2).getSubdirectory(".hg").is.type("object");
+		}
 	}
 });
 

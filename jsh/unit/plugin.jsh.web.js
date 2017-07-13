@@ -274,7 +274,6 @@ $set({
 						}
 					} else if (getHgServerProxy && o.src[tokenized[0]] && o.src[tokenized[0]][tokenized[1]]) {
 						//	forward to delegate server
-						debugger;
 						var delegate = getHgServerProxy();
 						return delegate(request);
 					} else {

@@ -79,6 +79,14 @@ var Installation = function(environment) {
 		var invocation = {};
 
 		var args = [];
+		
+		if (p.verbose) {
+			args.push("-v");
+		}
+		
+		if (p.debug) {
+			args.push("--debug");
+		}
 
 		if (p.config) {
 			for (var x in p.config) {
@@ -161,10 +169,12 @@ var Installation = function(environment) {
 				command: "clone",
 				arguments: [this.reference, todir.toString()],
 				config: (p && p.config) ? p.config : {},
+				debug: (p && p.debug),
+				verbose: (p && p.verbose),
 				evaluate: function(result) {
 					if (result.status != 0) {
 						//	TODO	develop test for clone error and then switch this to use newer API
-						throw new Error(result.err + " args=" + result.arguments.join(","));
+						throw new Error("err=" + result.err + "\n" + "out=" + result.out + "\n" + "args=" + result.arguments.join(","));
 					}
 					var rv = new LocalRepository(todir);
 					//	Manually emulate hg 2.4+ behavior of updating to the @ bookmark. Should be merely redundant if hg client
