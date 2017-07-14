@@ -273,6 +273,28 @@ END LICENSE
 							})();
 						</script>
 					</li>
+					<li class="function">
+						<div class="name">query</div>
+						<span>__DESCRIPTION__</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="value">
+									<span class="type">Array of pair</span>
+									<span>__DESCRIPTION__</span>
+								</li>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">string</span>
+							<span>__DESCRIPTION__</span>
+						</div>
+						<script type="application/x.jsapi#tests"><![CDATA[
+							var array = [ { name: "foo", value: "bar" }, { name: "foo", value: "baz" } ];
+							verify(module.Url.query(array)).is("foo=bar&foo=baz");
+						]]></script>
+					</li>
 				</ul>
 			</li>
 			<li class="constructor">
