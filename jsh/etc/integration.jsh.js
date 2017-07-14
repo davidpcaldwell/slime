@@ -89,6 +89,30 @@ scenario.part("packaged", LOADER.value("jsh/test/packaged/suite.js", {
 	getClasses: compileAddClasses
 }));
 
+var ScriptPart = function(o) {
+	return new function() {
+		this.name = o.script.toString();
+
+		this.execute = function(scope,verify) {
+			jsh.shell.jsh({
+				fork: true,
+				shell: o.shell,
+				script: o.script,
+				arguments: (o.arguments) ? o.arguments : [],
+				stdio: {
+					output: String,
+					error: o.error,
+					input: (o.input) ? o.input : null
+				},
+				environment: (o.environment) ? o.environment : jsh.shell.environment,
+				evaluate: function(result) {
+					o.check.call(result,verify);
+				}
+			});
+		}
+	};
+}
+
 var ScriptVerifier = function(o) {
 	var script = jsh.script.file.getRelativePath("../test/" + o.path).file;
 	var tokens = [o.path].concat((o.arguments) ? o.arguments : []);
@@ -377,6 +401,18 @@ ScriptVerifier({
 	}
 });
 
+scenario.part("jsh.unit", {
+	parts: {
+		htmlReload: new ScriptPart({
+			shell: src,
+			script: src.getFile("jsh/unit/test/fail.jsh.js"),
+			check: function(verify) {
+				verify(this).status.is(1);
+			}
+		})
+	}
+});
+
 scenario.part("rhino.optimization", {
 	execute: function(scope,verify) {
 		[-1,0,1].forEach(function(level) {
@@ -517,16 +553,16 @@ scenario.part("executable", new function() {
 	}
 });
 
-if (parameters.options.part) {
-	//	TODO	this should probably be pushed farther down into the loader/api implementation
-	scenario = (function recurse(scenario,path) {
-		if (path.length) {
-			var child = path.shift();
-			return recurse(scenario.getParts()[child], path);
-		}
-		return scenario;
-	})(scenario,parameters.options.part.split("/"));
-}
+//if (parameters.options.part) {
+//	//	TODO	this should probably be pushed farther down into the loader/api implementation
+//	scenario = (function recurse(scenario,path) {
+//		if (path.length) {
+//			var child = path.shift();
+//			return recurse(scenario.getParts()[child], path);
+//		}
+//		return scenario;
+//	})(scenario,parameters.options.part.split("/"));
+//}
 
 jsh.unit.interface.create(scenario, new function() {
 	if (parameters.options.view == "chrome") {
@@ -537,4 +573,6 @@ jsh.unit.interface.create(scenario, new function() {
 	} else {
 		this.view = parameters.options.view;
 	}
+	
+	this.path = (parameters.options.part) ? parameters.options.part.split("/") : [];
 });

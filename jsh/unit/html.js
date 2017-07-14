@@ -286,7 +286,7 @@ var PartDescriptor = function(p) {
 $exports.PartDescriptor = function(p) {
 	if (p.reload) {
 		return {
-		name: p.name,
+			name: p.name,
 			execute: function() {
 				var suite = new jsh.unit.Suite(new PartDescriptor(p));
 				var fire = (function(e) {

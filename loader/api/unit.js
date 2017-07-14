@@ -566,15 +566,19 @@ var Scope = function(o) {
 		} else {
 			o.events.fire("scenario", { end: o.scenario, success: this.success });
 		}
-	}
-
-	this.fire = function(type,detail) {
-		o.events.fire(type,detail);
+	};
+	
+	this.checkForFailure = function(type,detail) {
 		if (typeof(detail.success) != "undefined") {
 			if (detail.success === false) {
 				success = false;
 			}
 		}
+	}
+
+	this.fire = function(type,detail) {
+		o.events.fire(type,detail);
+		this.checkForFailure(type,detail);
 	}
 };
 $exports.Scope = Scope;
@@ -699,6 +703,12 @@ $exports.Scenario = {};
 			if (error) {
 				vscope.fail();
 			} else {
+				var checkForScopeFailure = function(e) {
+					vscope.checkForFailure(e.type,e.detail);
+				};
+				this.listeners.add("scenario", checkForScopeFailure);
+				this.listeners.add("test", checkForScopeFailure);
+				
 				var verify = new Verify(vscope);
 				verify.test = $api.deprecate(function() {
 					return vscope.test.apply(this,arguments);
