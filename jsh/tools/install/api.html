@@ -550,7 +550,7 @@ END LICENSE
 
 						verify(scope.api.hg).evaluate(function() { return this.distribution.osx({ os: "10.3.2" }) }).threw.type(Error);
 
-						verify(scope.api.hg).distribution.osx({ os: "10.12.2" }).distribution.url.is("https://www.mercurial-scm.org/mac/binaries/Mercurial-4.0.1-macosx10.11.pkg");
+						verify(scope.api.hg).distribution.osx({ os: "10.13.1" }).distribution.url.is("https://www.mercurial-scm.org/mac/binaries/Mercurial-4.2.2-macosx10.12.pkg");
 					</script>
 					<ul>
 						<li class="function">
@@ -633,12 +633,12 @@ END LICENSE
 									verify(result).threw.evaluate(function() { return this instanceof api.hg.install.GUI; }).is(true);
 								})();
 
-								(function install() {
+								var install = function(os,hg) {
 									var mock = {
 										shell: {
 											os: {
 												name: "Mac OS X",
-												version: "10.11"
+												version: os
 											},
 											run: function(p) {
 												if (p.command == "open" && p.arguments.length == 1 && p.arguments[0].pathname.basename == "file.pkg") {
@@ -663,11 +663,13 @@ END LICENSE
 									var events = result.events;
 									var versions = events[1];
 									verify(versions).type.is("console");
-									verify(versions).detail.is("Getting https://www.mercurial-scm.org/mac/binaries/Mercurial-4.0.1-macosx10.11.pkg");
+									verify(versions).detail.is("Getting https://www.mercurial-scm.org/mac/binaries/Mercurial-" + hg + "-macosx" + os + ".pkg");
 									verify(result).threw.is.type("object");
 									verify(result).threw.evaluate(function() { return this instanceof TypeError; }).is(false);
 									verify(result).threw.evaluate(function() { return this instanceof api.hg.install.GUI; }).is(true);
-								})();
+								};
+								install("10.11","4.0.1");
+								install("10.12","4.2.2");
 							]]></script>
 						</li>
 					</ul>
