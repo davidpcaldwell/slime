@@ -314,16 +314,23 @@ $set({
 						var rv = ["serve"];
 						port = jsh.ip.tcp.getEphemeralPortNumber();
 						rv.push("-p", String(port));
+						//	Adding verbose output causes the server to print a message when it starts
+						rv.push("-v");
 						rv.push("--web-conf", CONFIG);
 						return rv;
 					})(),
+					stdio: {
+						output: {
+							line: function(line) {
+								if (/listening at/.test(line)) {
+									on.started();
+								}
+							}
+						}
+					},
 					on: {
 						start: function() {
 							if (on && on.start) on.start.apply(this,arguments);
-							try {
-								Packages.java.lang.Thread.sleep(500);
-							} catch (e) {
-							}
 						}
 					}
 				})
@@ -339,32 +346,31 @@ $set({
 
 			this.start = function(p) {
 				var lock = new jsh.java.Thread.Monitor();
+				var process;
 				if (!running) {
 					jsh.java.Thread.start(function() {
 						run(p,{
 							start: function() {
-								jsh.shell.console("started");
-								var process = arguments[0];
+								process = arguments[0];
+							},
+							started: function() {
 								new lock.Waiter({
 									until: function() {
 										return true;
 									},
 									then: function() {
-										jsh.shell.console("setting");
 										running = process;
 									}
-								})();
+								})();								
 							}
 						})
 					});
 				}
 				return new lock.Waiter({
 					until: function() {
-						jsh.shell.console("Checking");
 						return Boolean(running);
 					},
 					then: function() {
-						jsh.shell.console("Returning ...");
 						return running;
 					}
 				})();

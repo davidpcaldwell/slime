@@ -16,14 +16,18 @@ var parameters = jsh.script.getopts({
 		view: "console",
 		serve: false,
 		system: false,
-		httptunnel: false
+		httptunnel: false,
+		//	TODO	clone over https currently does not work
+		https: false,
+		pause: Number,
+		part: String
 	}
 });
 
 var server = new jsh.unit.mock.Web();
 var bitbucket = {
 	src: {
-		davidpcaldwell: {
+		user: {
 			jshtest: {
 				directory: jsh.script.file.parent.parent,
 				access: {
@@ -36,10 +40,15 @@ var bitbucket = {
 			}
 		}
 	},
+	pause: parameters.options.pause,
 	loopback: true
 };
 server.add(jsh.unit.mock.Web.bitbucket(bitbucket));
 server.start();
+//if (parameters.options.pause) {
+//	jsh.shell.console("Pausing ...");
+//	Packages.java.lang.Thread.currentThread().sleep(parameters.options.pause);
+//}
 
 if (parameters.options.serve) {
 	var httpProxy = "-Dhttp.proxyHost=127.0.0.1 -Dhttp.proxyPort=" + server.port;
@@ -50,6 +59,7 @@ if (parameters.options.serve) {
 	server.run();
 }
 
+jsh.java.tools.plugin.hg();
 jsh.http.test.disableHttpsSecurity();
 
 var direct = new jsh.http.Client();
@@ -66,23 +76,50 @@ if (parameters.options.system) {
 
 var suite = new jsh.unit.Suite();
 
+var hgconfig = {
+	http: {
+		"http_proxy.host": "127.0.0.1:" + server.port
+	},
+	https: {
+		"http_proxy.host": "127.0.0.1:" + server.https.port		
+	}
+};
+
+suite.part("clone", {
+	execute: function(scope,verify) {
+		var remote = new hg.Repository({ url: "http://bitbucket.org/user/slime" });
+		var tmp1 = jsh.shell.TMPDIR.createTemporary({ directory: true });
+		verify(tmp1).getSubdirectory(".hg").is.type("null");
+		remote.clone({ to: tmp1, config: hgconfig.http });
+		verify(tmp1).getSubdirectory(".hg").is.type("object");
+		
+		if (parameters.options.https) {
+			var sRemote = new hg.Repository({ url: "https://bitbucket.org/user/slime" });
+			var tmp2 = jsh.shell.TMPDIR.createTemporary({ directory: true });
+			verify(tmp2).getSubdirectory(".hg").is.type("null");
+			sRemote.clone({ to: tmp2, config: hgconfig.https, debug: true, verbose: true });
+			verify(tmp2).getSubdirectory(".hg").is.type("object");
+		}
+	}
+});
+
 suite.part("authorization", {
 	execute: function(scope,verify) {
 		var unauthorizedDirect = direct.request({
-			url: "https://127.0.0.1:" + server.https.port + "/api/1.0/repositories/davidpcaldwell/jshtest/raw/local/test/bitbucket.jsh.js",
+			url: "https://127.0.0.1:" + server.https.port + "/api/1.0/repositories/user/jshtest/raw/local/test/bitbucket.jsh.js",
 			authorization: null
 		});
 		verify(unauthorizedDirect).status.code.is(401);
 
 		var okDirect = direct.request({
-			url: "https://127.0.0.1:" + server.https.port + "/api/1.0/repositories/davidpcaldwell/jshtest/raw/local/test/bitbucket.jsh.js",
+			url: "https://127.0.0.1:" + server.https.port + "/api/1.0/repositories/user/jshtest/raw/local/test/bitbucket.jsh.js",
 			authorization: new jsh.http.Authentication.Basic.Authorization({ user: "foo", password: "bar" })
 		});
 		verify(okDirect).status.code.is(200);
 
 		var verifyApi = function(client,protocol) {
 			var unauthorized = client.request({
-				url: protocol + "://bitbucket.org/api/1.0/repositories/davidpcaldwell/jshtest/raw/local/test/bitbucket.jsh.js",
+				url: protocol + "://bitbucket.org/api/1.0/repositories/user/jshtest/raw/local/test/bitbucket.jsh.js",
 				authorization: null
 			});
 			if (unauthorized.status.code == 400) {
@@ -92,7 +129,7 @@ suite.part("authorization", {
 			}
 			verify(unauthorized).status.code.is(401);
 			var ok = client.request({
-				url: protocol + "://bitbucket.org/api/1.0/repositories/davidpcaldwell/jshtest/raw/local/test/bitbucket.jsh.js",
+				url: protocol + "://bitbucket.org/api/1.0/repositories/user/jshtest/raw/local/test/bitbucket.jsh.js",
 				authorization: new jsh.http.Authentication.Basic.Authorization({ user: "foo", password: "bar" })
 			});
 			verify(ok).status.code.is(200);
@@ -105,6 +142,12 @@ suite.part("authorization", {
 	}
 });
 
+//	TODO	after -view chrome, does execution proceed?
 jsh.unit.interface.create(suite, {
-	view: parameters.options.view
+	view: parameters.options.view,
+	path: (parameters.options.part) ? parameters.options.part.split("/") : []
 });
+
+jsh.shell.console("Stopping mock web ...");
+server.stop();
+jsh.shell.console("Stopped mock web.");
