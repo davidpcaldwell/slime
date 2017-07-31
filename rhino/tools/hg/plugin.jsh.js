@@ -18,7 +18,8 @@ plugin(new function() {
 	};
 
 	this.load = function() {
-		global.hg = $loader.module("module.js", {
+		if (!global.jsh.tools) global.jsh.tools = {};
+		global.jsh.tools.hg = $loader.module("module.js", {
 			api: {
 				js: jsh.js,
 				web: jsh.js.web,
@@ -31,5 +32,7 @@ plugin(new function() {
 			},
 			install: jsh.shell.PATH.getCommand("hg")
 		});
+		global.hg = global.jsh.tools.hg;
+		$api.deprecate(global,"hg");
 	}
 });

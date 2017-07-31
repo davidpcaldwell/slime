@@ -20,6 +20,53 @@ END LICENSE
 	<div>
 		<h1>Context</h1>
 		<ul>
+			<li class="object">
+				<div class="name">api</div>
+				<span>__DESCRIPTION__</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="value">
+						<div class="name">js</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</li>
+					<li class="value">
+						<div class="name">web</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</li>
+					<li class="value">
+						<div class="name">java</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</li>
+					<li class="value">
+						<div class="name">io</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</li>
+					<li class="value">
+						<div class="name">ip</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</li>
+					<li class="value">
+						<div class="name">file</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</li>
+					<li class="value">
+						<div class="name">shell</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</li>
+					<li class="value">
+						<div class="name">time</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</li>
+				</ul>
+			</li>
 			<li class="value">
 				<div class="name">install</div>
 				<span class="type"><a href="../../../rhino/file/api.html#types.file">file</a></span>
@@ -30,19 +77,8 @@ END LICENSE
 	<div>
 		<h1>Exports</h1>
 		<script type="application/x.jsapi#initialize">
-			scope.module = $jsapi.loader.module("module.js", {
-				api: {
-					js: jsh.js,
-					web: jsh.js.web,
-					java: jsh.java,
-					io: jsh.io,
-					ip: jsh.ip,
-					file: jsh.file,
-					shell: jsh.shell,
-					time: jsh.time
-				},
-				install: jsh.shell.PATH.getCommand("hg")
-			});
+			$jsapi.loader.plugins();
+			scope.module = jsh.tools.hg;
 			scope.module.unit = {
 				Repository: function() {
 					var rv = this;
