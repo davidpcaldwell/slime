@@ -11,7 +11,7 @@
 #	Contributor(s):
 #	END LICENSE
 
-function create_host_mount() {
+create_host_mount() {
 	if [ ! -d /mnt ]; then
 		sudo mkdir /mnt
 	fi
@@ -26,7 +26,7 @@ if [ -d "$VMWARE" ]; then
 	create_host_mount "$VMWARE"
 fi
 
-function distribution_install() {
+distribution_install() {
 	DISTRIBUTION_NAME=$1
 	DISTRIBUTION_FILENAME=$2
 	DISTRIBUTION_URL=$3
