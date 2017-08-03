@@ -751,7 +751,9 @@ var Installation = function(environment) {
 	rv.Repository = function(p) {
 		if (typeof(p) == "object" && p) {
 			if (p.local) {
-				return new LocalRepository(p.local);
+				return $api.deprecate(function() {
+					return new LocalRepository(p.local);
+				})();
 			} else if (p.url) {
 				return new RemoteRepository(p.url);
 			} else if (p.directory && p.pathname) {
@@ -778,172 +780,174 @@ $exports.Installation = function(o) {
 $exports.Repository = function(p) {
 	return new installation.Repository(p);
 
-	this.__defineGetter__("changesets", function() {
-		var rv = {};
-		exec(["parents"],dir,{
-			callback: function(output) {
-				rv.parents = parseLog(output.split("\n"));
-			}
-		});
-		exec(["tip"],dir,{
-			callback: function(output) {
-				rv.tip = parseLog(output.split("\n"))[0];
-			}
-		});
-		return rv;
-	});
-
-	this.heads = function() {
-		var lines;
-		exec(["heads"],dir,{
-			callback: function(output,error) {
-				lines = output.split("\n");
-			}
-		});
-		return parseLog(lines);
-	}
-
-	this.tag = function(name,mode) {
-		if (!mode) mode = {};
-		var command = ["tag"];
-		if (mode.local) {
-			command.push("-l");
-		}
-		if (mode.force) {
-			command.push("-f");
-		}
-		command.push(name);
-		exec(command,dir,{callback: function(output) {
-		}});
-	}
-
-	this.clone = function(todir) {
-		exec(["clone",toNativePath(dir.pathname),toNativePath(todir.pathname)],dir,new function() {
-			var output;
-
-			this.callback = function(out,err) {
-				output = { out: out, err: err };
-			}
-
-			this.parse = function(result) {
-				if (result.status != 0) {
-					throw new Error(output.err + " args=" + result.arguments.join(","));
+	if (false) {
+		this.__defineGetter__("changesets", function() {
+			var rv = {};
+			exec(["parents"],dir,{
+				callback: function(output) {
+					rv.parents = parseLog(output.split("\n"));
 				}
-			}
+			});
+			exec(["tip"],dir,{
+				callback: function(output) {
+					rv.tip = parseLog(output.split("\n"))[0];
+				}
+			});
+			return rv;
 		});
-		return new $exports.Repository(todir);
-	};
 
-	var Repository = arguments.callee;
-
-	var toRepository = function(p) {
-		if (typeof(p.heads) == "function") {
-			return p;
+		this.heads = function() {
+			var lines;
+			exec(["heads"],dir,{
+				callback: function(output,error) {
+					lines = output.split("\n");
+				}
+			});
+			return parseLog(lines);
 		}
-		if (typeof(p.heads) == "undefined" && typeof(p.pathname) == "object" && typeof(p.pathname.directory) == "object") {
-			//	DEPRECATED: should be Repository, not directory
-			debugger;
-			return new Repository(p);
-		}
-		throw new TypeError("Not a repository: " + p);
-	};
 
-	var toRepositoryArgument = function(p) {
-		var r;
-		if (typeof(p) == "string") {
-			//	should be remote repository
-			return p;
-		} else if (r = toRepository(p)) {
-			return toNativePath(r.directory.pathname);
-		} else {
-			throw new TypeError(p);
-		}
-	}
-
-	var inout = function(verb,destination,p) {
-		var args = [];
-		if (p && p.config) {
-			for (var x in p.config) {
-				args.push("--config", x + "=" + p.config[x]);
+		this.tag = function(name,mode) {
+			if (!mode) mode = {};
+			var command = ["tag"];
+			if (mode.local) {
+				command.push("-l");
 			}
+			if (mode.force) {
+				command.push("-f");
+			}
+			command.push(name);
+			exec(command,dir,{callback: function(output) {
+			}});
 		}
-		args.push(verb);
-		if (destination) {
-			args.push(toRepositoryArgument(destination));
-		}
-		if (false) jsh.shell.echo("Command: " + args.join(" "));
-		var result = exec(args,dir,{
-			parse: function(result) {
-				if (result.output.err == "abort: repository is unrelated\n") {
-					throw { unrelated: true };
-				} else if (result.status != 0) {
-					if (/^abort\: repository (.*) not found\!\n$/.test(result.output.err)) {
-						throw { notFound: true };
+
+		this.clone = function(todir) {
+			exec(["clone",toNativePath(dir.pathname),toNativePath(todir.pathname)],dir,new function() {
+				var output;
+
+				this.callback = function(out,err) {
+					output = { out: out, err: err };
+				}
+
+				this.parse = function(result) {
+					if (result.status != 0) {
+						throw new Error(output.err + " args=" + result.arguments.join(","));
 					}
 				}
-				return {
-					status: result.status,
-					err: result.output.err,
-					lines: result.output.out.split("\n")
-				};
+			});
+			return new $exports.Repository(todir);
+		};
+
+		var Repository = arguments.callee;
+
+		var toRepository = function(p) {
+			if (typeof(p.heads) == "function") {
+				return p;
 			}
-		});
-		if (result.lines[2] == "no changes found" && result.status == 1) {
-			return [];
-		} else {
-			if (!/^comparing with /.test(result.lines[0])) throw "Wrong line 0: " + result.lines[0];
-			//	TODO	probably need to review this with some test cases: what is status when no changes found?
-			if (result.status != 0) {
-				throw new Error("Status: " + result.status + " err:\n" + result.err);
+			if (typeof(p.heads) == "undefined" && typeof(p.pathname) == "object" && typeof(p.pathname.directory) == "object") {
+				//	DEPRECATED: should be Repository, not directory
+				debugger;
+				return new Repository(p);
 			}
-			if (result.lines[1] != "searching for changes" && result.lines[1] != "no changes found") {
-				throw new Error("Wrong line 1: " + result.lines[1] + "\nLines:\n" + result.lines.join("\n"));
+			throw new TypeError("Not a repository: " + p);
+		};
+
+		var toRepositoryArgument = function(p) {
+			var r;
+			if (typeof(p) == "string") {
+				//	should be remote repository
+				return p;
+			} else if (r = toRepository(p)) {
+				return toNativePath(r.directory.pathname);
+			} else {
+				throw new TypeError(p);
 			}
-			return parseLog(result.lines.slice(2));
 		}
-	};
 
-	this.outgoing = function(destination,m) {
-		return inout("outgoing",destination,$context.api.js.Object.set({},p,m));
-	}
-
-	this.incoming = function(destination,m) {
-		return inout("incoming",destination,$context.api.js.Object.set({},p,m));
-	}
-
-	this.pull = function(from) {
-		var output;
-		var args = ["pull"];
-		if (from) {
-			args.push(toNativePath(from.directory.pathname));
-		}
-		exec(args,dir,{
-			callback: function(out,err) {
-				output = { out: out, err: err }
-			},
-			onExit: function(result) {
-				if (result.status != 0) {
-					throw new Error("Failure: " + output.err + " arguments=" + result.arguments.join(","));
+		var inout = function(verb,destination,p) {
+			var args = [];
+			if (p && p.config) {
+				for (var x in p.config) {
+					args.push("--config", x + "=" + p.config[x]);
 				}
 			}
-		});
-
-		//	does not work under some circumstances:
-		//	on pull:
-		//		(run 'hg heads' to see heads, 'hg merge' to merge)
-		//	on attempt to update:
-		//		abort: crosses branches (use 'hg merge' or 'hg update -C')
-		if (false) {
-			if (this.heads().length > 1) {
-				exec(["merge"],dir);
+			args.push(verb);
+			if (destination) {
+				args.push(toRepositoryArgument(destination));
+			}
+			if (false) jsh.shell.echo("Command: " + args.join(" "));
+			var result = exec(args,dir,{
+				parse: function(result) {
+					if (result.output.err == "abort: repository is unrelated\n") {
+						throw { unrelated: true };
+					} else if (result.status != 0) {
+						if (/^abort\: repository (.*) not found\!\n$/.test(result.output.err)) {
+							throw { notFound: true };
+						}
+					}
+					return {
+						status: result.status,
+						err: result.output.err,
+						lines: result.output.out.split("\n")
+					};
+				}
+			});
+			if (result.lines[2] == "no changes found" && result.status == 1) {
+				return [];
 			} else {
-				exec(["update"],dir);
+				if (!/^comparing with /.test(result.lines[0])) throw "Wrong line 0: " + result.lines[0];
+				//	TODO	probably need to review this with some test cases: what is status when no changes found?
+				if (result.status != 0) {
+					throw new Error("Status: " + result.status + " err:\n" + result.err);
+				}
+				if (result.lines[1] != "searching for changes" && result.lines[1] != "no changes found") {
+					throw new Error("Wrong line 1: " + result.lines[1] + "\nLines:\n" + result.lines.join("\n"));
+				}
+				return parseLog(result.lines.slice(2));
+			}
+		};
+
+		this.outgoing = function(destination,m) {
+			return inout("outgoing",destination,$context.api.js.Object.set({},p,m));
+		}
+
+		this.incoming = function(destination,m) {
+			return inout("incoming",destination,$context.api.js.Object.set({},p,m));
+		}
+
+		this.pull = function(from) {
+			var output;
+			var args = ["pull"];
+			if (from) {
+				args.push(toNativePath(from.directory.pathname));
+			}
+			exec(args,dir,{
+				callback: function(out,err) {
+					output = { out: out, err: err }
+				},
+				onExit: function(result) {
+					if (result.status != 0) {
+						throw new Error("Failure: " + output.err + " arguments=" + result.arguments.join(","));
+					}
+				}
+			});
+
+			//	does not work under some circumstances:
+			//	on pull:
+			//		(run 'hg heads' to see heads, 'hg merge' to merge)
+			//	on attempt to update:
+			//		abort: crosses branches (use 'hg merge' or 'hg update -C')
+			if (false) {
+				if (this.heads().length > 1) {
+					exec(["merge"],dir);
+				} else {
+					exec(["update"],dir);
+				}
 			}
 		}
-	}
 
-	this.view = function() {
-		exec(["view"],dir);
+		this.view = function() {
+			exec(["view"],dir);
+		}
 	}
 };
 
