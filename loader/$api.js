@@ -571,6 +571,27 @@
 //			if (typeof(this.arguments[p.index]) != "string") throw new TypeError(reference + " must be a string, not " + typeof(this.arguments[p.index]));
 //		};
 //	};
+	$exports.Key = {};
+	$exports.Key.by = function(p) {
+		var rv = {};
+		var create = function(key) {
+			rv[key] = (p.count) ? 0 : [];
+		};
+		var add = function(key,value) {
+			if (p.count) {
+				rv[key]++;
+			} else {
+				rv[key].push(value);
+			}
+		};
+		if (p.keys) p.keys.forEach(create);
+		p.array.forEach(function(element) {
+			var key = p.key(element);
+			if (!rv[key]) create(key);
+			add(key,element);
+		});
+		return rv;
+	}
 	$exports.Object = function(p) {
 		var rv = {};
 		if (p.properties) {

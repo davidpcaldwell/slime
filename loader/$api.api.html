@@ -557,7 +557,7 @@ END LICENSE
 					</script>
 				</li>
 				<li class="function">
-					<div class="name">Map</div>
+					<div class="name">Key</div>
 					<span>__DESCRIPTION__</span>
 					<div class="arguments">
 						<div class="label">Arguments</div>
@@ -572,7 +572,7 @@ END LICENSE
 					<div class="label">has properties:</div>
 					<ul>
 						<li class="function">
-							<div class="name">categorize</div>
+							<div class="name">by</div>
 							<span>__DESCRIPTION__</span>
 							<div class="arguments">
 								<div class="label">Arguments</div>
@@ -584,11 +584,48 @@ END LICENSE
 								<span class="type">__TYPE__</span>
 								<span>__DESCRIPTION__</span>
 							</div>
+							<script type="application/x.jsapi#tests">
+								var array = [
+									{ a: 1, b: 2 },
+									{ a: 1, b: 3 },
+									{ a: 2, b: 4 },
+									{ a: 1, b: 5 }
+								];
+
+								var lists = api.Key.by({
+									key: function(value) {
+										return value.a;
+									},
+									array: array
+								});
+								verify(lists)[1].length.is(3);
+								verify(lists)[2].length.is(1);
+
+								var counts = api.Key.by({
+									key: function(value) {
+										return value.a;
+									},
+									count: true,
+									array: array
+								});
+								verify(counts)[1].is(3);
+								verify(counts)[2].is(1);
+								verify(counts).evaluate.property(3).is(void(0));
+
+								var countKeys = api.Key.by({
+									keys: [1,2,3],
+									key: function(value) {
+										return value.a;
+									},
+									count: true,
+									array: array									
+								});
+								verify(countKeys)[1].is(3);
+								verify(countKeys)[2].is(1);
+								verify(countKeys)[3].is(0);								
+							</script>
 						</li>
 					</ul>
-					<script type="application/x.jsapi#tests">
-						verify(1).is(1);
-					</script>
 				</li>
 				<li class="function">
 					<div class="name">Object</div>

@@ -1,0 +1,44 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
+	<head>
+		<title>SLIME: development</title>
+		<link href="loader/api/api.css" rel="stylesheet" type="text/css" />
+		<script src="loader/api/api.js"></script>
+		<script>
+			//	TODO	CORS
+			document.domain = document.domain;
+		</script>
+	</head>
+	<body>
+		<div>This page contains resources for developing SLIME itself.</div>
+		<div>
+			<h1>Tests</h1>
+			<ul>
+				<li>
+					Browser module tests
+					<ul>
+						<li>Run all browser module tests: <code>loader/browser/etc/unit.jsh.js</code></li>
+						<li>
+							Run selected browser module tests: <code>jsh/unit/browser.jsh.js [-interactive] <i>file</i> <i>[file...]</i></code>
+							<div>
+								Example: <code>jsh/unit/browser.jsh.js loader/\$api.js</code>
+							</div>
+							Arguments:
+							<ul>
+								<li><code>-interactive</code>: Do not close browser on exit.</li>
+								<li>
+									<code>-chrome</code>, <code>-firefox</code>, <code>-safari</code>, <code>-ie</code>: Run
+									tests in specified browser. If no browsers are specified, all detected browsers will be run.
+								</li>
+								<li>
+									<code>-chrome:profile <i>pathname</i></code>: Use the specified location for storing Chrome's
+									user profiles; useful for having multiple Chrome environments configured for local development.
+								</li>
+							</ul>
+						</li>
+					</ul>
+				</li>
+			</ul>
+		</div>
+	</body>
+</html>
