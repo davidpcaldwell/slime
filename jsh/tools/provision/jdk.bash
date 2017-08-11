@@ -23,7 +23,7 @@ if [ "$UNAME" = "Darwin" ]; then
 	JAVA_DMG_FILENAME=jdk-${RELEASE}-macosx-x64.dmg
 	JAVA_DMG_URL=http://bitbucket.org/davidpcaldwell/slime/downloads/$JAVA_DMG_FILENAME
 	if [ ! -d "$JAVA_HOME" ]; then
-		function jdk_install() {
+		jdk_install() {
 			hdiutil attach $1 >/dev/null
 			open "/Volumes/$JAVA_DMG_INSTALLER"
 		}
