@@ -479,7 +479,7 @@ $exports.fire = new function() {
 		bubbles: true,
 		cancelable: true,
 		//	TODO	should detail be 1?
-		detail: 0
+		detail: 1
 	});
 
 	this.mousedown = function(element,p) {
