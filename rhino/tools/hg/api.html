@@ -15,6 +15,7 @@ END LICENSE
 <head>
 	<title>Mercurial</title>
 	<link rel="stylesheet" type="text/css" href="../../../loader/api/api.css" />
+	<script src="../../../loader/api/api.js"></script>
 </head>
 <body>
 	<div>
@@ -518,9 +519,13 @@ END LICENSE
 						var parent = module.init({ pathname: pathname });
 						var child = module.init({ pathname: pathname.directory.getRelativePath("child") });
 						pathname.directory.getRelativePath(".hgsub").write("child = child\n", { append: false });
-						var subrepositories = parent.subrepositories();
+						var subrepositories = parent.subrepositories({ array: true });
 						verify(subrepositories).length.is(1);
 						verify(subrepositories)[0].directory.toString().is(pathname.directory.getSubdirectory("child").toString());
+						
+						subrepositories = parent.subrepositories();
+						verify(subrepositories).evaluate.property("child").is.type("object");
+						verify(subrepositories).evaluate.property("foo").is.type("undefined");
 					</script>
 				</li>
 				<li class="function">
@@ -760,6 +765,42 @@ END LICENSE
 						server.kill();
 						verify("killed").is("killed");
 					</script>
+				</li>
+				<li class="function">
+					<div class="name">shell</div>
+					<span>__DESCRIPTION__</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+							<li class="object">
+								<div class="name">__NAME__</div>
+								<span>__DESCRIPTION__</span>
+								<div class="label">has properties:</div>
+								<ul>
+									<li class="value">
+										<div class="name">command</div>
+										<span class="type">__TYPE__</span>
+										<span>__DESCRIPTION__</span>
+									</li>
+									<li class="value">
+										<div class="name">arguments</div>
+										<span class="type">__TYPE__</span>
+										<span>__DESCRIPTION__</span>
+									</li>
+									<li class="value">
+										<div class="name">config</div>
+										<span class="type">__TYPE__</span>
+										<span>__DESCRIPTION__</span>
+									</li>
+								</ul>
+							</li>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</div>
 				</li>
 			</ul>
 		</div>

@@ -503,19 +503,25 @@ var Installation = function(environment) {
 			});
 		};
 
-		this.subrepositories = function() {
+		this.subrepositories = function(p) {
+			if (!p) p = {};
 			var file = dir.getFile(".hgsub");
 			//	TODO	or empty array?
 			if (!file) return null;
 			var hgsub = new $exports.Hgrc({ file: file/*, section: "" */ });
 			var list = hgsub.get();
-			var rv = [];
+			var rv = (p.array) ? [] : {};
 			for (var x in list) {
 				if (/^subpaths\./.test(x)) {
 				} else {
-					var sub = dir.getSubdirectory(x);
-					if (!sub) throw new Error("No subdirectory " + x + " entries=" + JSON.stringify(list));
-					rv.push(new Recurse(sub));
+					var sub = dir.getSubdirectory(list[x]);
+					var repository = (sub) ? new Recurse(sub) : null;
+					if (p.array) {
+						if (!repository) throw new Error("No subdirectory " + x + " entries=" + JSON.stringify(list));
+						rv.push(repository);
+					} else {
+						rv[list[x]] = repository;
+					}
 				}
 			}
 			return rv;
