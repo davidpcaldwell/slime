@@ -510,6 +510,15 @@ var Installation = function(environment) {
 			if (!file) return null;
 			var hgsub = new $exports.Hgrc({ file: file/*, section: "" */ });
 			var list = hgsub.get();
+			
+			var hgsubstate = {};
+			if (dir.getFile(".hgsubstate")) {
+				dir.getFile(".hgsubstate").read(String).split("\n").forEach(function(line) {
+					var tokens = line.split(" ");
+					hgsubstate[tokens[1]] = tokens[0];
+				});
+			}
+			
 			var rv = (p.array) ? [] : {};
 			for (var x in list) {
 				if (/^subpaths\./.test(x)) {
@@ -520,7 +529,10 @@ var Installation = function(environment) {
 						if (!repository) throw new Error("No subdirectory " + x + " entries=" + JSON.stringify(list));
 						rv.push(repository);
 					} else {
-						rv[list[x]] = repository;
+						rv[list[x]] = {
+							repository: repository,
+							revision: hgsubstate[x]
+						}
 					}
 				}
 			}
