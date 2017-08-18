@@ -14,7 +14,7 @@
 $loader.run("initialize.js", { $api: $api });
 
 var OldStep = function(o) {
-	this.setup = function() {
+	this.before = function() {
 		if (o.edits) {
 			o.edits();
 		}
@@ -28,14 +28,11 @@ var OldStep = function(o) {
 
 	this.async = o.wait || !o.event;
 
-	this.check = function(scope) {
+	this.after = function(scope) {
 		if (o.tests) {
 			o.tests(scope);
 		}
 //		scope.fail();
-	};
-
-	this.cleanup = function() {
 		if (o.cleanup) {
 			o.cleanup();
 		} else if (o.undo) {
