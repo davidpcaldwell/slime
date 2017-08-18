@@ -47,9 +47,13 @@ var OldStep = function(o) {
 };
 
 var Step = function(target,o) {
-	this.setup = function() {
+	this.before = function(scope) {
 		if (o.setup) {
 			o.setup.call(target);
+		}
+		var verify = new $context.api.unit.Verify(scope);
+		if (o.before) {
+			o.before.call(target,verify);
 		}
 	};
 
@@ -64,16 +68,16 @@ var Step = function(target,o) {
 
 	this.async = true;
 
-	this.check = function(scope) {
+	this.after = function(scope) {
 		var verify = new $context.api.unit.Verify(scope);
 		if (o.check) {
 			o.check.call(target,verify);
 		}
-	}
-
-	this.cleanup = function() {
+		if (o.after) {
+			o.after.call(target,verify);			
+		}
 		if (o.cleanup) {
-			o.cleanup.call(target);
+			o.cleanup.call(target);			
 		}
 	}
 };
@@ -104,9 +108,8 @@ var Set = function(p) {
 
 	var evaluateTests = function(index) {
 		if (index < 0) return;
-		steps[index].check(p.scope);
+		steps[index].after(p.scope);
 		if (!p.scope.success) success = false;
-		steps[index].cleanup();
 	}
 
 	var proceed = function() {
@@ -117,7 +120,7 @@ var Set = function(p) {
 	var fire = function() {
 		var step = steps[index];
 		if (step) {
-			step.setup();
+			step.before(p.scope);
 			index++;
 			step.run();
 			if (!step.async) {
