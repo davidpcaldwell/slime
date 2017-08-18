@@ -90,6 +90,10 @@ script[type="application/x.jsapi#tests"], script[type="application/x.jsapi#initi
 	tab-size: 4;
 }
 
+pre {
+	tab-size: 4;
+}
+
 script[type="application/x.jsapi#initialize"] {
 	background-color: #e0e0ff;
 }
