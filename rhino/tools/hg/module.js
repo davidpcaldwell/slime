@@ -109,17 +109,22 @@ var Installation = function(environment) {
 		}
 
 		if (p.evaluate) {
-			invocation.stdio = {
-				output: String,
-				error: String
-			}
-			//	TODO	get rid of out/err below and reference now-standard rhino/shell result.stdio in callers
-			invocation.evaluate = function(result) {
-				var myresult = $context.api.js.Object.set({}, result, (result.stdio) ? {
-					out: result.stdio.output,
-					err: result.stdio.error
-				} : {});
-				return p.evaluate(myresult);
+			if (p.stdio) {
+				invocation.stdio = p.stdio;
+				invocation.evaluate = p.evaluate;
+			} else {
+				invocation.stdio = {
+					output: String,
+					error: String
+				}
+				//	TODO	get rid of out/err below and reference now-standard rhino/shell result.stdio in callers
+				invocation.evaluate = function(result) {
+					var myresult = $context.api.js.Object.set({}, result, (result.stdio) ? {
+						out: result.stdio.output,
+						err: result.stdio.error
+					} : {});
+					return p.evaluate(myresult);
+				}
 			}
 		} else if (p.stdio) {
 			invocation.stdio = p.stdio;
@@ -135,13 +140,23 @@ var Installation = function(environment) {
 			}
 		}
 
-		invocation.command = environment.install;
-		invocation.arguments = args;
+		if (environment.install && $context.api.shell.os.name == "Linux") {
+			var shebang = environment.install.read(String).split("\n")[0];
+			var parsed = /\#\!(?:\s*)(\S+)(?:\s*)$/.exec(shebang);
+			invocation.command = parsed[1];
+			args.unshift(environment.install.toString());
+			invocation.arguments = args;
+			debugger;
+		} else {
+			invocation.command = environment.install;
+			invocation.arguments = args;
+		}
 
 		if (p.on) {
 			invocation.on = p.on;
 		}
 
+		//Packages.java.lang.System.err.println("Shelling " + invocation.command + " " + invocation.arguments.join(" "));
 		return $context.api.shell.run(invocation);
 	};
 
@@ -157,7 +172,7 @@ var Installation = function(environment) {
 				if (p.directory === true && p.pathname) return p;
 				if (p.createDirectory) {
 					return p.createDirectory({
-						ifExists: function(dir) {
+						exists: function(dir) {
 							return false;
 						}
 					});
@@ -165,13 +180,18 @@ var Installation = function(environment) {
 				if (p.to) return arguments.callee(p.to);
 				throw new TypeError("Argument must be directory or pathname")
 			})(p);
+			//Packages.java.lang.System.err.println("verbose " + Boolean(p && p.verbose));
+			//Packages.java.lang.System.err.println("debug " + Boolean(p && p.debug));
 			return shell({
 				command: "clone",
 				arguments: [this.reference, todir.toString()],
 				config: (p && p.config) ? p.config : {},
 				debug: (p && p.debug),
 				verbose: (p && p.verbose),
+				stdio: (p && p.stdio) ? p.stdio : void(0),
 				evaluate: function(result) {
+					//Packages.java.lang.System.err.println("result = " + result);
+					//Packages.java.lang.System.err.println("result.status = " + result.status);
 					if (result.status != 0) {
 						//	TODO	develop test for clone error and then switch this to use newer API
 						throw new Error("err=" + result.err + "\n" + "out=" + result.out + "\n" + "args=" + result.arguments.join(","));
@@ -754,7 +774,7 @@ var Installation = function(environment) {
 			})(p);
 		}
 		var dir = p.pathname.createDirectory({
-			ifExists: function(dir) {
+			exists: function(dir) {
 				return false;
 			},
 			recursive: true

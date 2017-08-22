@@ -24,6 +24,19 @@ $exports.run = function(p) {
 	var context = new JavaAdapter(
 		Packages.inonit.system.Command.Context,
 		new function() {
+			this.toString = function() {
+				var environment = (p.environment) ? (function(e) {
+					var rv = {};
+					for (var x in e) {
+						rv[x] = String(e[x]);
+					}
+					return rv;
+				})(p.environment) : null;
+				return JSON.stringify({
+					environment: environment
+				});
+			};
+			
 			this.getStandardOutput = function() {
 				return (stdio && stdio.output) ? stdio.output.java.adapt() : Packages.inonit.script.runtime.io.Streams.Null.OUTPUT_STREAM;
 			};
@@ -141,6 +154,10 @@ $exports.run = function(p) {
 	var configuration = new JavaAdapter(
 		Packages.inonit.system.Command.Configuration,
 		new function() {
+			this.toString = function() {
+				return "command: " + invocation.configuration.command + " arguments: " + invocation.configuration.arguments;
+			};
+			
 			var args = $context.api.java.Array.create({
 				type: Packages.java.lang.String,
 				array: invocation.configuration.arguments.map(function(s) {
@@ -196,13 +213,16 @@ $exports.run = function(p) {
 				throw new Error("Unhandled Java thread interruption.");
 			};
 		};
+		//Packages.java.lang.System.err.println("Waiting for subprocess: " + _subprocess);
 		_subprocess.wait(new JavaAdapter(
 			Packages.inonit.system.Subprocess.Listener,
 			listener
 		));
 		result.status = listener.status;
 	} else {
+		//Packages.java.lang.System.err.println("Launching context/configuration: " + context + " " + configuration);
 		var _listener = Packages.inonit.system.OperatingSystem.get().run( context, configuration );
+		//Packages.java.lang.System.err.println("Finished.");
 		if (_listener.getLaunchException()) {
 			result.error = _listener.getLaunchException();
 		} else {

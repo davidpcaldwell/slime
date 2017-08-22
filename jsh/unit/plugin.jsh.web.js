@@ -102,7 +102,9 @@ $set({
 
 			var getHgServerProxy = (httpd)
 				? $api.Function.singleton(function() {
+					//Packages.java.lang.System.err.println("Invoke startHgServer");
 					var server = startHgServer();
+					//Packages.java.lang.System.err.println("Return httpd.Handler.Proxy");
 					return new httpd.Handler.Proxy({
 						target: {
 							host: "127.0.0.1",
@@ -273,8 +275,10 @@ $set({
 							}
 						}
 					} else if (getHgServerProxy && o.src[tokenized[0]] && o.src[tokenized[0]][tokenized[1]]) {
+						//Packages.java.lang.System.err.println("Forwarding hg server request: " + request.method + " " + request.path);
 						//	forward to delegate server
 						var delegate = getHgServerProxy();
+						//Packages.java.lang.System.err.println("Got hg server proxy");
 						return delegate(request);
 					} else {
 						jsh.shell.console("Unhandled: " + tokenized.join("/"));
@@ -308,11 +312,12 @@ $set({
 			var port;
 
 			var run = function(p,on) {
+				port = jsh.ip.tcp.getEphemeralPortNumber();
+				//Packages.java.lang.System.err.println("Starting hg serve on " + port + " ...");
 				jsh.shell.run({
 					command: "hg",
 					arguments: (function() {
 						var rv = ["serve"];
-						port = jsh.ip.tcp.getEphemeralPortNumber();
 						rv.push("-p", String(port));
 						//	Adding verbose output causes the server to print a message when it starts
 						rv.push("-v");
@@ -322,24 +327,34 @@ $set({
 					stdio: {
 						output: {
 							line: function(line) {
+								//Packages.java.lang.System.err.println("hg serve output: " + line);
 								if (/listening at/.test(line)) {
 									on.started();
 								}
+							}
+						},
+						error: {
+							line: function(line) {
+								//Packages.java.lang.System.err.println("hg serve error: " + line);
 							}
 						}
 					},
 					on: {
 						start: function() {
+							//Packages.java.lang.System.err.println("on.start: " + on.start);
 							if (on && on.start) on.start.apply(this,arguments);
+							//Packages.java.lang.System.err.println("on.start invoked");
 						}
 					}
-				})
+				});
+				//Packages.java.lang.System.err.println("Exited hg serve");
 			};
 
 			var running;
 
 			Object.defineProperty(this,"port",{
 				get: function() {
+					//Packages.java.lang.System.err.println("Returning port " + port);
 					return port;
 				}
 			});
@@ -349,21 +364,27 @@ $set({
 				var process;
 				if (!running) {
 					jsh.java.Thread.start(function() {
-						run(p,{
-							start: function() {
-								process = arguments[0];
-							},
-							started: function() {
-								new lock.Waiter({
-									until: function() {
-										return true;
-									},
-									then: function() {
-										running = process;
-									}
-								})();								
-							}
-						})
+						try {
+							run(p,{
+								start: function() {
+									//Packages.java.lang.System.err.println("pid = " + arguments[0].pid);
+									process = arguments[0];
+								},
+								started: function() {
+									//Packages.java.lang.System.err.println("Got 'started' callback for hg serve");
+									new lock.Waiter({
+										until: function() {
+											return true;
+										},
+										then: function() {
+											running = process;
+										}
+									})();								
+								}
+							})
+						} catch (e) {
+							//Packages.java.lang.System.err.println("e = " + e);
+						}
 					});
 				}
 				return new lock.Waiter({
