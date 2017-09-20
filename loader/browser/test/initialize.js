@@ -26,6 +26,7 @@ document.domain = document.domain;
 	}
 
 	var Asynchrony = function() {
+		var Promise = window.Promise;
 		var next = arguments[0];
 		var pending = [];
 
@@ -63,11 +64,26 @@ document.domain = document.domain;
 
 		var controlled;
 
+		this.finished = function(process) {
+			console.log("Finished: " + process);
+			pending.splice(pending.indexOf(process),1);
+			console.log("still pending = " + pending.length);
+			console.log(pending.join("\n"));
+			if (pending.length == 0) {
+				if (next) next();
+				if (controlled) {
+					var toResolve = controlled;
+					controlled = void(0);
+					toResolve.resolve();
+				}
+			}
+		};
+
 		if (window.Promise) {
 			var Controllable = function() {
 				var resolveIt;
 				
-				var promise = new window.Promise(function(resolve,reject) {
+				var promise = new Promise(function(resolve,reject) {
 					resolveIt = resolve;
 				});
 				
@@ -85,30 +101,14 @@ document.domain = document.domain;
 				return controlled;
 			};			
 		}
-
-		this.finished = function(process) {
-			console.log("Finished: " + process);
-			pending.splice(pending.indexOf(process),1);
-			console.log("still pending = " + pending.length);
-			console.log(pending.join("\n"));
-			if (pending.length == 0) {
-				if (next) next();
-				if (controlled) {
-					var toResolve = controlled;
-					controlled = void(0);
-					toResolve.resolve();
-				}
-			}
-		};
-		
 	};
+
+	var asynchrony = new Asynchrony();
 
 	var Network = function() {
 	};
 
 	window.XMLHttpRequest = (function(before) {
-		var asynchrony = new Asynchrony();
-
 		var network = new Network();
 
 		var rv = function() {
@@ -262,7 +262,6 @@ document.domain = document.domain;
 	if (window.Promise) {
 		window.Promise = (function(was) {
 			return function(executor) {
-				var asynchrony = window.XMLHttpRequest.asynchrony;
 				var delegate = new was(executor);
 				asynchrony.started(this);
 				

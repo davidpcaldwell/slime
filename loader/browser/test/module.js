@@ -56,12 +56,20 @@ var Step = function(target,o) {
 
 	this.run = function() {
 		var fake = {};
-		window.XMLHttpRequest.asynchrony.started(fake);
+		$context.asynchrony.started(fake);
 		if (o.run) {
 			o.run.call(target);
 		}
-		window.XMLHttpRequest.asynchrony.finished(fake);
+		$context.asynchrony.finished(fake);
 	};
+	
+	this.promise = function() {
+		var running = $context.asynchrony.promise();
+		if (o.run) {
+			o.run.call(target);
+		}
+		return running;
+	}
 
 	this.async = true;
 
@@ -130,32 +138,37 @@ var Set = function(p) {
 		}
 	}
 
+	//	TODO	arguably should get rid of window and put these in $context
+	
 	this.run = function() {
-		window.XMLHttpRequest.asynchrony.next(proceed);
+		if (!$context.asynchrony) {
+			$api.deprecate(function() {
+				$context.asynchrony = window.XMLHttpRequest.asynchrony;
+			})();
+		}
+		$context.asynchrony.next(proceed);
 
-		if (!window.XMLHttpRequest.asynchrony.open()) fire();
+		if (!$context.asynchrony.open()) fire();
 	}
-};
-
-var Tests = function() {
-	var events = $api.Events({ source: this });
-	var scope = new $context.api.unit.Scope({ events: events });
-
-	var set = new Set({ events: events, scope: scope });
-
-	this.target = function(page) {
-		set.target(page);
-	};
-
-	this.test = function(test) {
-		set.test(test);
-	};
-
-
-	//	TODO	this is used by the unit test button to run the tests; could encapsulate
-	this.run = function(next) {
-		set.run(next);
-	};
+	
+	this.promise = function() {
+		return new $context.api.Promise(function(resolve,reject) {
+			var success = true;
+			for (var i=0; i<steps.length; i++) {
+				var step = steps[i];
+				step.before(p.scope);
+				step.promise().then(function(proceed) {
+					step.after(p.scope);
+					if (!p.scope.success) {
+						success = false;
+					}
+				})
+			}
+			if (p.events) p.events.fire("end", (index > 0) ? success : true);
+			if (p.scope.fire) p.scope.fire("end", { success: (index > 0) ? success : true });
+			resolve(success);
+		});
+	}
 };
 
 var global = new function() {
@@ -172,6 +185,27 @@ var global = new function() {
 	};
 
 	var Old = function() {
+		var Tests = function() {
+			var events = $api.Events({ source: this });
+			var scope = new $context.api.unit.Scope({ events: events });
+
+			var set = new Set({ events: events, scope: scope });
+
+			this.target = function(page) {
+				set.target(page);
+			};
+
+			this.test = function(test) {
+				set.test(test);
+			};
+
+
+			//	TODO	this is used by the unit test button to run the tests; could encapsulate
+			this.run = function(next) {
+				set.run(next);
+			};
+		};
+
 		var global = new Tests();
 
 		this.structure = function() {
@@ -257,7 +291,7 @@ var global = new function() {
 					timestamp: new Date()
 				});
 				//	Stop asynchronous events from being delivered
-				window.XMLHttpRequest.asynchrony.next(null);
+				$context.asynchrony.next(null);
 			});
 		};
 		
