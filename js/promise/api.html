@@ -40,13 +40,26 @@
 			verify(window).evaluate(function() { return this.XMLHttpRequest.asynchrony.started; }).is.type("function");
 			verify(window).evaluate(function() { return this.XMLHttpRequest.asynchrony.finished; }).is.type("function");
 
+			var first = new browser.Scenario();
+			
+			first.test(new function() {
+				this.before = function(verify) {
+					verify("before").is("before");
+				};
+				
+				this.after = function(verify) {
+					verify("after").is("after");
+				}
+			});
+			
 			var suite = new unit.Suite({
 				parts: {
 					inline: {
 						execute: function(scope,verify) {
 							verify(1).is(1);
 						}
-					}
+					},
+					first: first
 				}
 			});
 
