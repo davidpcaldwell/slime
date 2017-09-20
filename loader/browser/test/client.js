@@ -484,9 +484,16 @@ window.callbacks.push(function() {
 			haltOnException: HALT_ON_EXCEPTION,
 			callback: (ASYNCHRONOUS) ? function(success) { onResult(success) } : void(0)
 		};
-		var result = scenario.run(run);
-		if (!ASYNCHRONOUS) {
-			onResult(result);
+		if (scenario.promise) {
+			debugger;
+			scenario.promise(run).then(function(result) {
+				onResult(result);
+			});
+		} else {
+			var result = scenario.run(run);
+			if (!ASYNCHRONOUS) {
+				onResult(result);
+			}
 		}
 	}
 });

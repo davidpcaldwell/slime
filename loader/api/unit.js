@@ -878,6 +878,15 @@ $exports.Scenario = {};
 			}
 			if (!next) return part.after(success,scope);
 		}
+		
+		if ($context.api && $context.api.Promise) {
+			this.promise = function(p) {
+				var self = this;
+				return new $context.api.Promise(function(resolve,reject) {
+					resolve(self.run(p));
+				});
+			}
+		}
 
 		this.scenario = $api.deprecate(function(id,p) {
 			addPart(id,p);
