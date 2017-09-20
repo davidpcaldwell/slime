@@ -264,13 +264,13 @@ document.domain = document.domain;
 			return function(executor) {
 				var asynchrony = window.XMLHttpRequest.asynchrony;
 				var delegate = new was(executor);
+				asynchrony.started(this);
 				
 				var end = (function() {
 					if (asynchrony) asynchrony.finished(this);
 				}).bind(this);
 
 				this.then = function(resolved,rejected) {
-					if (asynchrony) asynchrony.started(this);
 					var args = [];
 					args.push(function() {
 						var rv = resolved.apply(null,arguments);
