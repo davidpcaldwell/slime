@@ -24,7 +24,8 @@ var apis = [
 	"js/object/Error.js",
 	"js/document/",
 	"js/web/",
-	"js/time/"
+	"js/time/",
+	"js/promise/"
 ];
 
 var SRC = jsh.script.file.parent.parent.parent.parent;

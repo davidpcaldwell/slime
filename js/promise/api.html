@@ -1,0 +1,94 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
+	<head>
+		<title>SLIME Promises</title>
+		<link href="../../loader/api/api.css" rel="stylesheet" type="text/css" />
+		<script src="../../loader/api/api.js"></script>
+		<script>
+			//	TODO	CORS
+			document.domain = document.domain;
+		</script>
+	</head>
+	<body>
+		<script type="application/x.jsapi#initialize">
+			$jsapi.loader.eval("../../loader/browser/test/initialize.js", {
+				$api: $api
+			});
+			scope.api = $jsapi.loader.file("module.js", {
+				asynchrony: function() {
+					return window.XMLHttpRequest.asynchrony;
+				},
+				Promise: window.Promise
+			});
+		</script>
+		<script type="application/x.jsapi#tests">
+			verify(api).evaluate.property("Promise").is.type("function");
+			verify(window).evaluate(function() { return this.XMLHttpRequest.asynchrony; }).is.type("object");
+			verify(window).evaluate(function() { return this.XMLHttpRequest.asynchrony.started; }).is.type("function");
+			verify(window).evaluate(function() { return this.XMLHttpRequest.asynchrony.finished; }).is.type("function");
+		</script>
+		<script type="application/javascript">
+		</script>
+		<div>__DESCRIPTION__</div>
+		<div>
+			<h1>Context</h1>
+			<div class="type">
+				<a class="type" name="types.asynchrony">asynchrony</a>
+				<span>
+					A type that allows this module to hook into an asynchronous processing monitor. For example, the SLIME
+					browser loader allows HTTP testing with asynchronous calls; that testing framework requires that asynchronous
+					code notify it of the start and end of asynchronous processes.
+				</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="function">
+						<div class="name">started</div>
+						<span>__DESCRIPTION__</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="value">
+									<span class="type">__TYPE__</span>
+									<span>__DESCRIPTION__</span>
+								</li>
+							</ol>
+						</div>
+					</li>
+					<li class="function">
+						<div class="name">finished</div>
+						<span>__DESCRIPTION__</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="value">
+									<span class="type">__TYPE__</span>
+									<span>__DESCRIPTION__</span>
+								</li>
+							</ol>
+						</div>
+					</li>
+				</ul>
+			</div>
+
+			<ul>
+				<li class="value">
+					<div class="name">Promise</div>
+					<span class="type">function</span>
+					<span>A constructor that can create an A+-compliant Promise.</span>
+				</li>
+				<li class="function">
+					<div class="name">asynchrony</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type"><a href="#types.asynchrony">asynchrony</a></span>
+					</div>
+				</li>
+			</ul>
+		</div>
+		<div>
+			<h1>Exports</h1>
+			<ul>
+			</ul>
+		</div>
+	</body>
+</html>
