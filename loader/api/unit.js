@@ -10,6 +10,10 @@
 //	Contributor(s):
 //	END LICENSE
 
+if ($context.api && $context.api.Promise) {
+	debugger;
+}
+
 //	We have an object called Object in this file, so this
 var defineProperty = Object.defineProperty;
 
@@ -812,21 +816,41 @@ $exports.Scenario = {};
 						for (var x in parts) {
 							keys.push(x);
 						}
-						var index = 0;
-						var proceed = function recurse(result) {
-							if (index == keys.length) {
-								if (!result) success = false;
-								next(result);
-							} else {
-								var x = keys[index++];
-								var subscope = copy(scope);
-								parts[x].run({
-									scope: subscope,
-									path: []
-								},recurse);
+						if ($context.api && $context.api.Promise && false) {
+							//	TODO	enable the Promise version; this is currently untested
+							var promise = $context.api.Promise.resolve();
+							for (var i=0; i<keys.length; i++) {
+								promise = promise.then(function() {
+									return new $context.api.Promise(function(resolve,reject) {
+										var x = keys[index++];
+										var subscope = copy(scope);
+										resolve(parts[x].run({
+											scope: subscope,
+											path: []
+										}));
+									});
+								}).then(function(result) {
+									if (!result) success = false;
+									return $context.api.Promise.resolve();
+								});
 							}
-						};
-						proceed();
+						} else {
+							var index = 0;
+							var proceed = function recurse(result) {
+								if (index == keys.length) {
+									if (!result) success = false;
+									next(result);
+								} else {
+									var x = keys[index++];
+									var subscope = copy(scope);
+									parts[x].run({
+										scope: subscope,
+										path: []
+									},recurse);
+								}
+							};
+							proceed();
+						}
 					} else {
 						for (var x in parts) {
 							var result = parts[x].run({

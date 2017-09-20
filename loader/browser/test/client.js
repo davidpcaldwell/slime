@@ -43,6 +43,9 @@ window.callbacks.push(function() {
 		log.flush();
 		var jsapi = inonit.loader.file(parameters.jsapi+"unit.js", {
 			//	TODO	use parameters to create these functions, in the event there are long-running tests
+			api: {
+				Promise: window.Promise
+			},
 			asynchronous: {
 				scenario: function(next) {
 					window.setTimeout(next,1);
