@@ -286,7 +286,6 @@ var global = new function() {
 	};
 
 	this.run = function(_callbacks) {
-		debugger;
 		return delegate.run(_callbacks);
 	};
 	

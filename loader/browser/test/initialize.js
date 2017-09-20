@@ -258,6 +258,41 @@ document.domain = document.domain;
 		rv.asynchrony = asynchrony;
 		return rv;
 	})(window.XMLHttpRequest);
+	
+	if (window.Promise) {
+		window.Promise = (function(was) {
+			return function(executor) {
+				var asynchrony = window.XMLHttpRequest.asynchrony;
+				var delegate = new was(executor);
+				
+				var end = (function() {
+					if (asynchrony) asynchrony.finished(this);
+				}).bind(this);
+
+				this.then = function(resolved,rejected) {
+					if (asynchrony) asynchrony.started(this);
+					var args = [];
+					args.push(function() {
+						var rv = resolved.apply(null,arguments);
+						end();
+						return rv;
+					});
+					if (rejected) args.push(function() {
+						var rv = rejected.apply(null,arguments);
+						end();
+						return rv;
+					});						
+					return delegate.then.apply(delegate,args);
+				};
+				
+				this.catch = function(rejected) {
+					var rv = delegate.catch.apply(null,arguments);
+					end();
+					return rv;
+				};
+			}
+		})(window.Promise)
+	}
 
 	if (!window.alert.jsh) window.alert = function(string) {
 		if (window.console) window.console.log("Alert: " + string);

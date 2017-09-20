@@ -33,21 +33,12 @@ var SlimePromise = function Wrap(p) {
 	}
 
 	this.then = function(resolved,rejected) {
-		var asynchrony = $context.asynchrony();
-		if (asynchrony) asynchrony.started(this);
-		var end = (function() {
-			if (asynchrony) asynchrony.finished(this);
-		}).bind(this);
 		var args = [];
-		args.push(function() {
-			var rv = resolved.apply(p.target,arguments);
-			end();
-			return rv;
+		if (arguments.length > 0) args.push(function() {
+			return resolved.apply(p.target,arguments);
 		});
-		if (rejected) args.push(function() {
-			var rv = rejected.apply(p.target,arguments);
-			end();
-			return rv;
+		if (arguments.length > 1) args.push(function() {
+			return rejected.apply(p.target,arguments);
 		});
 		var delegate = getDelegate();
 		var toWrap = delegate.then.apply(delegate,args);
@@ -56,9 +47,7 @@ var SlimePromise = function Wrap(p) {
 
 	this.catch = function(rejected) {
 		return getDelegate().catch(function() {
-			var rv = rejected.apply(p.target,arguments);
-			end();
-			return rv;
+			return rejected.apply(p.target,arguments);
 		});
 	};
 };
