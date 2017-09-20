@@ -11,10 +11,6 @@
 	</head>
 	<body>
 		<script type="application/x.jsapi#initialize">
-			$jsapi.loader.eval("../../loader/browser/test/initialize.js", {
-				$api: $api
-			});
-			
 			var unit = $jsapi.loader.file("../../loader/api/unit.js");
 			
 			scope.unit = unit;
@@ -43,12 +39,29 @@
 			var first = new browser.Scenario();
 			
 			first.test(new function() {
+				var PROMISES_ALLOWED = false;
+				
+				var result;
+				
 				this.before = function(verify) {
 					verify("before").is("before");
+
+					if (PROMISES_ALLOWED) {
+						//	TODO	even executing this code causes the .after method to execute after the suite represented
+						//			by the enclosing <script> block has finished.
+						new api.Promise(function(resolve,reject) {
+							resolve(42);
+						}).then(function(n) {
+							result = n;
+						});
+					}
 				};
 				
 				this.after = function(verify) {
 					verify("after").is("after");
+					if (PROMISES_ALLOWED) {
+						verify(result).is(42);
+					}
 				}
 			});
 			
