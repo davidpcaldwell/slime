@@ -14,6 +14,19 @@
 			$jsapi.loader.eval("../../loader/browser/test/initialize.js", {
 				$api: $api
 			});
+			
+			var unit = $jsapi.loader.file("../../loader/api/unit.js");
+			
+			scope.unit = unit;
+			
+			var browser = $jsapi.loader.module("../../loader/browser/test/module.js", {
+				api: {
+					unit: unit
+				}
+			});
+			
+			scope.browser = browser;
+			
 			scope.api = $jsapi.loader.file("module.js", {
 				asynchrony: function() {
 					return window.XMLHttpRequest.asynchrony;
@@ -26,6 +39,29 @@
 			verify(window).evaluate(function() { return this.XMLHttpRequest.asynchrony; }).is.type("object");
 			verify(window).evaluate(function() { return this.XMLHttpRequest.asynchrony.started; }).is.type("function");
 			verify(window).evaluate(function() { return this.XMLHttpRequest.asynchrony.finished; }).is.type("function");
+
+			if (false) {
+				var suite = new unit.Suite({
+					parts: {
+						inline: {
+							execute: function(scope,verify) {
+								verify(1).is(1);
+							}
+						}
+					}
+				});
+
+				browser.suite(suite);
+				browser.run({
+					event: function(e) {
+						console.log("promise event", e);
+						verify.scope.fire(e.type,e.detail);
+					},
+					end: function(v) {
+						console.log("promise end", v);
+					}
+				});
+			}
 		</script>
 		<script type="application/javascript">
 		</script>

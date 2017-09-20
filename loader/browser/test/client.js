@@ -366,7 +366,7 @@ window.callbacks.push(function() {
 					if (declaration) return declaration.getAttribute("path");
 					return "";
 				})();
-				var moduleScenario = apiHtml.getSuite(scope,test.path);
+				var moduleScenario = apiHtml.getSuiteDescriptor(scope,test.path);
 				moduleScenario.name = (test.path) ? (module + ":" + test.path) : module;
 				scenarios.push(moduleScenario);
 			})();
@@ -374,7 +374,7 @@ window.callbacks.push(function() {
 
 		var scenario = new jsapi.Suite({ old: true });
 		for (var i=0; i<scenarios.length; i++) {
-			scenario.suite(String(i+1),scenarios[i]);
+			scenario.part(String(i+1),scenarios[i]);
 //					scenario.add({ scenario: scenarios[i] });
 		}
 //				var _scenario = {};
