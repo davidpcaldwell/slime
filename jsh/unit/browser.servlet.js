@@ -62,7 +62,8 @@ $exports.handle = function(request) {
 	}
 	if ($parameters.url && request.path == $parameters.url.split("/").slice(0,-1).join("/") + "/console") {
 		if (request.method == "POST") {
-			var body = JSON.parse(request.body.stream.character().asString());
+			var json = request.body.stream.character().asString();
+			var body = JSON.parse(json);
 			body.forEach(function(entry) {
 				if (!entry.close) {
 					console.push(entry);
@@ -104,14 +105,12 @@ $exports.handle = function(request) {
 	}
 	if (request.path == $parameters.url) {
 		if (request.method == "POST") {
-			debugger;
 			//	TODO	perhaps need better concurrency construct, like Notifier
 			var waiter = new lock.Waiter({
 				until: function() {
 					return true;
 				},
 				then: function() {
-					debugger;
 					var string = request.body.stream.character().asString();
 					if (string == "true") {
 						success = true;

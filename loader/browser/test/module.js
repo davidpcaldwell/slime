@@ -247,7 +247,10 @@ var global = new function() {
 				_callbacks.event({
 					type: "scenario",
 					detail: {
-						end: true,
+						end: {
+							id: suite.id,
+							name: suite.name
+						},
 						success: success
 					},
 					path: [],

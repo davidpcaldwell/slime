@@ -133,7 +133,7 @@ plugin({
 
 					this.execute = function(scope,verify) {
 						p.events.forEach(function(event) {
-							verify.fire(event.type,event.detail);
+							verify.scope.fire(event.type,event.detail);
 						});
 					}
 				}
