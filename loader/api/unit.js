@@ -10,6 +10,10 @@
 //	Contributor(s):
 //	END LICENSE
 
+var USE_PROMISES = {
+	Suite: true
+};
+
 //	We have an object called Object in this file, so this
 var defineProperty = (function() { return this.Object.defineProperty; })();
 
@@ -761,7 +765,7 @@ $exports.Scenario = {};
 
 		part.create();
 	}
-
+	
 	var Suite = function Suite(c,context) {
 		var part = Part.apply(this,arguments);
 
@@ -812,8 +816,7 @@ $exports.Scenario = {};
 						for (var x in parts) {
 							keys.push(x);
 						}
-						if ($context.api && $context.api.Promise && false) {
-							//	TODO	enable the Promise version; this is currently untested
+						if ($context.api && $context.api.Promise && USE_PROMISES.Suite) {
 							var promise = $context.api.Promise.resolve();
 							for (var i=0; i<keys.length; i++) {
 								promise = promise.then(function() {

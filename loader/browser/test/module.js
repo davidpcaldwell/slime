@@ -341,6 +341,7 @@ var Scenario = function() {
 	var next;
 
 	this.next = function(f) {
+		debugger;
 		next = f;
 	}
 
