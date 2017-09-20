@@ -17,7 +17,8 @@
 			
 			var browser = $jsapi.loader.module("../../loader/browser/test/module.js", {
 				api: {
-					unit: unit
+					unit: unit,
+					Promise: window.Promise
 				}
 			});
 			
@@ -35,6 +36,30 @@
 			verify(window).evaluate(function() { return this.XMLHttpRequest.asynchrony; }).is.type("object");
 			verify(window).evaluate(function() { return this.XMLHttpRequest.asynchrony.started; }).is.type("function");
 			verify(window).evaluate(function() { return this.XMLHttpRequest.asynchrony.finished; }).is.type("function");
+			
+			var Controllable = function() {
+				var resolveIt;
+				
+				var promise = new window.Promise(function(resolve,reject) {
+					resolveIt = resolve;
+				});
+				
+				this.then = function() {
+					return promise.then.apply(promise,arguments);
+				}
+				
+				this.resolve = function(value) {
+					resolveIt(value);
+				}
+			};
+			
+			var controlled = new Controllable();
+			
+			controlled.then(function(result) {
+				verify(result).is(30);
+			});
+			
+			controlled.resolve(30);
 
 			var first = new browser.Scenario();
 			
@@ -77,7 +102,7 @@
 			});
 
 			browser.suite(suite);
-			browser.run({
+			browser.promise({
 				event: function(e) {
 					console.log("promise event", e);
 					verify.scope.fire(e.type,e.detail);
@@ -85,6 +110,7 @@
 				end: function(v) {
 					console.log("promise end", v);
 				}
+			}).then(function(result) {
 			});
 		</script>
 		<script type="application/javascript">

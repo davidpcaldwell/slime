@@ -485,7 +485,6 @@ window.callbacks.push(function() {
 			callback: (ASYNCHRONOUS) ? function(success) { onResult(success) } : void(0)
 		};
 		if (scenario.promise) {
-			debugger;
 			scenario.promise(run).then(function(result) {
 				onResult(result);
 			});

@@ -10,12 +10,8 @@
 //	Contributor(s):
 //	END LICENSE
 
-if ($context.api && $context.api.Promise) {
-	debugger;
-}
-
 //	We have an object called Object in this file, so this
-var defineProperty = Object.defineProperty;
+var defineProperty = (function() { return this.Object.defineProperty; })();
 
 //	TODO	it appears that $context and $context.asynchronous are unused
 

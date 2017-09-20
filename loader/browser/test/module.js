@@ -260,6 +260,15 @@ var global = new function() {
 				window.XMLHttpRequest.asynchrony.next(null);
 			});
 		};
+		
+		if ($context.api && $context.api.Promise) {
+			this.promise = function(_callbacks) {
+				var self = this;
+				return new $context.api.Promise(function(resolve,reject) {
+					resolve(self.run(_callbacks));
+				});
+			}
+		}
 	};
 
 	var delegate = new Old();
@@ -277,7 +286,13 @@ var global = new function() {
 	};
 
 	this.run = function(_callbacks) {
+		debugger;
 		return delegate.run(_callbacks);
+	};
+	
+	this.promise = function(_callbacks) {
+		if (!delegate.promise) throw new Error();
+		return delegate.promise(_callbacks);
 	}
 };
 
@@ -341,6 +356,10 @@ $exports.test = $api.deprecate(function(test) {
 $exports.run = function(_callbacks) {
 	global.run(_callbacks);
 };
+
+$exports.promise = function(_callbacks) {
+	return global.promise(_callbacks);
+}
 
 //	currently undocumented
 //	TODO	probably unused

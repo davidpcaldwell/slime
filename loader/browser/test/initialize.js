@@ -61,15 +61,46 @@ document.domain = document.domain;
 			pending.push(process);
 		};
 
+		var controlled;
+
+		if (window.Promise) {
+			var Controllable = function() {
+				var resolveIt;
+				
+				var promise = new window.Promise(function(resolve,reject) {
+					resolveIt = resolve;
+				});
+				
+				this.then = function() {
+					return promise.then.apply(promise,arguments);
+				}
+				
+				this.resolve = function(value) {
+					resolveIt(value);
+				}
+			};
+			
+			this.promise = function() {
+				controlled = new Controllable();
+				return controlled;
+			};			
+		}
+
 		this.finished = function(process) {
 			console.log("Finished: " + process);
 			pending.splice(pending.indexOf(process),1);
 			console.log("still pending = " + pending.length);
 			console.log(pending.join("\n"));
-			if (pending.length == 0 && next) {
-				next();
+			if (pending.length == 0) {
+				if (next) next();
+				if (controlled) {
+					var toResolve = controlled;
+					controlled = void(0);
+					toResolve.resolve();
+				}
 			}
-		}
+		};
+		
 	};
 
 	var Network = function() {
