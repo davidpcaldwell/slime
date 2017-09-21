@@ -11,7 +11,7 @@
 //	END LICENSE
 
 var USE_PROMISES = {
-	Suite: true
+	Suite: false
 };
 
 //	We have an object called Object in this file, so this
@@ -692,6 +692,7 @@ $exports.Scenario = {};
 			var vscope = new Scope({ events: part.events });
 
 			if (next) {
+				debugger;
 				if (part.find("next")) {
 					part.find("next")(function() {
 						var result = part.after(vscope.success,local);
@@ -816,19 +817,21 @@ $exports.Scenario = {};
 						for (var x in parts) {
 							keys.push(x);
 						}
+						var createPartPromise = function(x) {
+							return function() {
+								return new $context.api.Promise(function(resolve,reject) {
+									var subscope = copy(scope);
+									resolve(parts[x].run({
+										scope: subscope,
+										path: []
+									}));
+								});
+							};
+						}
 						if ($context.api && $context.api.Promise && USE_PROMISES.Suite) {
 							var promise = $context.api.Promise.resolve();
 							for (var i=0; i<keys.length; i++) {
-								promise = promise.then(function() {
-									return new $context.api.Promise(function(resolve,reject) {
-										var x = keys[index++];
-										var subscope = copy(scope);
-										resolve(parts[x].run({
-											scope: subscope,
-											path: []
-										}));
-									});
-								}).then(function(result) {
+								promise = promise.then(createPartPromise(keys[i])).then(function(result) {
 									if (!result) success = false;
 									return $context.api.Promise.resolve();
 								});

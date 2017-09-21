@@ -11,7 +11,11 @@
 	</head>
 	<body>
 		<script type="application/x.jsapi#initialize">
-			var unit = $jsapi.loader.file("../../loader/api/unit.js");
+			var unit = $jsapi.loader.file("../../loader/api/unit.js", {
+				api: {
+					Promise: window.Promise
+				}
+			});
 			
 			scope.unit = unit;
 			
