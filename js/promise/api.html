@@ -42,54 +42,33 @@
 			verify(window).evaluate(function() { return this.XMLHttpRequest.asynchrony.started; }).is.type("function");
 			verify(window).evaluate(function() { return this.XMLHttpRequest.asynchrony.finished; }).is.type("function");
 			
-			var Controllable = function() {
-				var resolveIt;
-				
-				var promise = new window.Promise(function(resolve,reject) {
-					resolveIt = resolve;
-				});
-				
-				this.then = function() {
-					return promise.then.apply(promise,arguments);
-				}
-				
-				this.resolve = function(value) {
-					resolveIt(value);
-				}
-			};
-			
-//			var controlled = new Controllable();
-//			
-//			controlled.then(function(result) {
-//				verify(result).is(30);
-//			});
-//			
-//			controlled.resolve(30);
+			var PROMISES_IN_TESTS_ALLOWED = false;
 
 			var first = new browser.Scenario();
 			
 			first.test(new function() {
-				var PROMISES_ALLOWED = false;
-				
 				var result;
 				
 				this.before = function(verify) {
 					verify("before").is("before");
-
-					if (PROMISES_ALLOWED) {
+				};
+				
+				this.run = function() {
+					if (PROMISES_IN_TESTS_ALLOWED) {
 						//	TODO	even executing this code causes the .after method to execute after the suite represented
 						//			by the enclosing <script> block has finished.
+						debugger;
 						new api.Promise(function(resolve,reject) {
 							resolve(42);
 						}).then(function(n) {
 							result = n;
 						});
-					}
-				};
+					}					
+				}
 				
 				this.after = function(verify) {
 					verify("after").is("after");
-					if (PROMISES_ALLOWED) {
+					if (PROMISES_IN_TESTS_ALLOWED) {
 						verify(result).is(42);
 					}
 				}
