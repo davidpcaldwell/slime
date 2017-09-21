@@ -368,7 +368,6 @@ var Scenario = function() {
 
 	this.execute = function(scope,verify) {
 		var set = createSet(verify);
-		debugger;
 		set.run();
 	}
 	

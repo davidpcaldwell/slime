@@ -10,7 +10,7 @@
 //	Contributor(s):
 //	END LICENSE
 
-var USE_PROMISES = {
+var USE_PROMISES = ($context.USE_PROMISES) ? $context.USE_PROMISES : {
 	Suite: false,
 	Scenario: false
 };
@@ -695,7 +695,6 @@ $exports.Scenario = {};
 			var vscope = new Scope({ events: part.events });
 
 			if (next) {
-				debugger;
 				if (part.find("next")) {
 					part.find("next")(function() {
 						var result = part.after(vscope.success,local);
@@ -752,8 +751,7 @@ $exports.Scenario = {};
 					var execute = part.find("execute");
 					var promise = (USE_PROMISES.Scenario) ? part.find("promise") : void(0);
 					if (!execute) throw new Error("execute not found in " + o);
-					if (!promise) {
-						debugger;
+					if (!promise || !next) {
 						execute.call(this,local,verify);
 					}
 				} catch (e) {
@@ -765,7 +763,6 @@ $exports.Scenario = {};
 			if (!next) {
 				return part.after(vscope.success,local);
 			} else if (!part.find("next")) {
-				debugger;
 				next(part.after(vscope.success,local));
 			} else {
 				if (promise) {

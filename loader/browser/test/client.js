@@ -39,12 +39,31 @@ window.callbacks.push(function() {
 		document.getElementById("results").style.display = "none";
 		document.getElementById("debug").style.display = "none";
 	}
+	//	Currently this passes with suite and scenario OR suite and html but not both (html scenario promise implementation wrong)
+	var USE_PROMISES = {
+		suite: true,
+		scenario: false,
+		html: false
+	};
+	if (parameters.asynchronous) {
+		var tokens = parameters.asynchronous.split(",");
+		tokens.forEach(function(token) {
+			USE_PROMISES[token] = true;
+		});
+	}
 	if (parameters) {
+		var loaders = {};
+		loaders.jsapi = new inonit.loader.Loader(inonit.loader.nugget.page.base+parameters.jsapi);
+//		loaders.jsapi = 
 		log.flush();
-		var jsapi = inonit.loader.file(parameters.jsapi+"unit.js", {
+		var jsapi = loaders.jsapi.file("unit.js", {
 			//	TODO	use parameters to create these functions, in the event there are long-running tests
 			api: {
 				Promise: window.Promise
+			},
+			USE_PROMISES: {
+				Suite: USE_PROMISES.suite,
+				Scenario: USE_PROMISES.scenario
 			},
 			asynchronous: {
 				scenario: function(next) {
@@ -56,9 +75,10 @@ window.callbacks.push(function() {
 			},
 			REMOVE_OLD: parameters.REMOVE_OLD
 		});
-		var Console = inonit.loader.file(parameters.jsapi+"console.js").Forwarder;
-		var apiHtmlScript = inonit.loader.file(parameters.jsapi+"api.html.js", {
+		var Console = loaders.jsapi.file("console.js").Forwarder;
+		var apiHtmlScript = loaders.jsapi.file("api.html.js", {
 			REMOVE_OLD: parameters.REMOVE_OLD,
+			USE_PROMISES: USE_PROMISES.html,
 			api: {
 				Promise: window.Promise
 			}
@@ -172,16 +192,17 @@ window.callbacks.push(function() {
 								//			that has a terminal file name, probably needs to strip that file name to find the
 								//			base from which to load the module at 'path'
 								return inonit.loader.module(
-									base + self.top + path,
+									inonit.loader.nugget.page.relative(base+path),
 									context
 								);
 							};
 							this.file = function(path,context) {
 								return inonit.loader.file(
-									base + self.top + path,
+									inonit.loader.nugget.page.relative(base+path),
 									context
 								);
 							};
+							//	TODO	can the below eval and string be replaced by a form of loader.get() or something?
 							this.eval = function(path,scope) {
 								if (!scope) scope = {};
 								with(scope) {
@@ -347,7 +368,7 @@ window.callbacks.push(function() {
 				var apiHtml = new apiHtmlScript.ApiHtmlTests(loaderApiDom,module);
 				var base = (function() {
 					var tokens = module.split("/");
-					if (tokens[tokens.length-1].length == 0) return module;
+					if (tokens[tokens.length-1].length == 0) return tokens.join("/");
 					return tokens.slice(0,tokens.length-1).join("/") + "/";
 				})();
 				var scope = new Scope(base);

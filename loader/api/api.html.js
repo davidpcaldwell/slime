@@ -12,7 +12,7 @@
 
 //	Shared code for unit test harnesses
 
-var USE_PROMISES = false;
+var USE_PROMISES = Boolean($context.USE_PROMISES);
 
 //	TODO	in-progress refactoring of ApiHtmlTests below may make this unneeded as a public variable
 $exports.MEDIA_TYPE = "application/x.jsapi";
@@ -335,7 +335,6 @@ $exports.ApiHtmlTests = function(html,name) {
 					hscope.test = verify.test;
 					hscope.scope = hscope;
 					run(element.getContentString(),hscope);
-					debugger;
 				}
 			};
 			//	TODO	get this working

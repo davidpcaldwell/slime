@@ -250,7 +250,10 @@
 			this.getCurrentScript = getCurrentScript;
 
 			this.page = {
-				base: getPageBase()
+				base: getPageBase(),
+				relative: function(path) {
+					return canonicalize(getPageBase() + path);
+				}
 			};
 		};
 
