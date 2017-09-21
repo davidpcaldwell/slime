@@ -58,7 +58,10 @@ window.callbacks.push(function() {
 		});
 		var Console = inonit.loader.file(parameters.jsapi+"console.js").Forwarder;
 		var apiHtmlScript = inonit.loader.file(parameters.jsapi+"api.html.js", {
-			REMOVE_OLD: parameters.REMOVE_OLD
+			REMOVE_OLD: parameters.REMOVE_OLD,
+			api: {
+				Promise: window.Promise
+			}
 		});
 		var HALT_ON_EXCEPTION = Boolean(parameters.nocatch);
 

@@ -11,8 +11,11 @@
 //	END LICENSE
 
 var USE_PROMISES = {
-	Suite: false
+	Suite: false,
+	Scenario: false
 };
+
+var log = ($context.log) ? $context.log : function(){};
 
 //	We have an object called Object in this file, so this
 var defineProperty = (function() { return this.Object.defineProperty; })();
@@ -747,8 +750,12 @@ $exports.Scenario = {};
 				try {
 					//	TODO	execute is apparently mandatory
 					var execute = part.find("execute");
+					var promise = (USE_PROMISES.Scenario) ? part.find("promise") : void(0);
 					if (!execute) throw new Error("execute not found in " + o);
-					execute.call(this,local,verify);
+					if (!promise) {
+						debugger;
+						execute.call(this,local,verify);
+					}
 				} catch (e) {
 					vscope.error(e);
 				}
@@ -758,9 +765,18 @@ $exports.Scenario = {};
 			if (!next) {
 				return part.after(vscope.success,local);
 			} else if (!part.find("next")) {
+				debugger;
 				next(part.after(vscope.success,local));
 			} else {
-				part.find("next")(next);
+				if (promise) {
+					debugger;
+					promise.call(this,local,verify).then(function() {
+						debugger;
+						next();
+					});
+				} else {
+					part.find("next")(next);
+				}
 			}
 		}
 
@@ -836,6 +852,10 @@ $exports.Scenario = {};
 									return $context.api.Promise.resolve();
 								});
 							}
+							promise.then(function() {
+								log("Done with suite", this);
+								next(success);
+							});
 						} else {
 							var index = 0;
 							var proceed = function recurse(result) {

@@ -12,6 +12,8 @@
 
 //	Shared code for unit test harnesses
 
+var USE_PROMISES = false;
+
 //	TODO	in-progress refactoring of ApiHtmlTests below may make this unneeded as a public variable
 $exports.MEDIA_TYPE = "application/x.jsapi";
 
@@ -315,7 +317,7 @@ $exports.ApiHtmlTests = function(html,name) {
 			}
 		}
 		if (isScenario(element)) {
-			return {
+			var rv = {
 				name: getElementName(element,name),
 				initialize: initialize,
 				destroy: function() {
@@ -333,8 +335,19 @@ $exports.ApiHtmlTests = function(html,name) {
 					hscope.test = verify.test;
 					hscope.scope = hscope;
 					run(element.getContentString(),hscope);
+					debugger;
+				}
+			};
+			//	TODO	get this working
+			if ($context.api && $context.api.Promise && USE_PROMISES) {
+				rv.promise = function(tscope,verify) {
+					if (!window.XMLHttpRequest.asynchrony) throw new Error();
+					var rv = window.XMLHttpRequest.asynchrony.promise();
+					this.execute(tscope,verify);
+					return rv;
 				}
 			}
+			return rv;
 		} else if (isScript) {
 			//	do nothing
 		} else {

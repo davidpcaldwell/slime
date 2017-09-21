@@ -14,6 +14,8 @@
 document.domain = document.domain;
 
 (function() {
+	if (window.XMLHttpRequest.asynchrony) return;
+	
 	var forEach = function(array,f) {
 		if (array.forEach) {
 			array.forEach(f);
@@ -82,6 +84,10 @@ document.domain = document.domain;
 		if (window.Promise) {
 			var Controllable = function() {
 				var resolveIt;
+				
+				this.toString = function() {
+					return "Controllable Promise: " + promise;
+				};
 				
 				var promise = new Promise(function(resolve,reject) {
 					resolveIt = resolve;

@@ -12,6 +12,7 @@
 //	END LICENSE
 
 $loader.run("initialize.js", { $api: $api });
+var asynchrony = window.XMLHttpRequest.asynchrony;
 
 var OldStep = function(o) {
 	this.before = function() {
@@ -56,15 +57,16 @@ var Step = function(target,o) {
 
 	this.run = function() {
 		var fake = {};
-		$context.asynchrony.started(fake);
+		asynchrony.started(fake);
 		if (o.run) {
 			o.run.call(target);
 		}
-		$context.asynchrony.finished(fake);
+		asynchrony.finished(fake);
 	};
 	
 	this.promise = function() {
-		var running = $context.asynchrony.promise();
+		debugger;
+		var running = asynchrony.promise();
 		if (o.run) {
 			o.run.call(target);
 		}
@@ -141,32 +143,34 @@ var Set = function(p) {
 	//	TODO	arguably should get rid of window and put these in $context
 	
 	this.run = function() {
-		if (!$context.asynchrony) {
-			$api.deprecate(function() {
-				$context.asynchrony = window.XMLHttpRequest.asynchrony;
-			})();
-		}
-		$context.asynchrony.next(proceed);
+		asynchrony.next(proceed);
 
-		if (!$context.asynchrony.open()) fire();
+		if (!asynchrony.open()) fire();
 	}
 	
 	this.promise = function() {
 		return new $context.api.Promise(function(resolve,reject) {
+			debugger;
 			var success = true;
+			var promise = $context.api.Promise.resolve();
 			for (var i=0; i<steps.length; i++) {
-				var step = steps[i];
-				step.before(p.scope);
-				step.promise().then(function(proceed) {
-					step.after(p.scope);
-					if (!p.scope.success) {
-						success = false;
-					}
-				})
+				(function(step) {
+					promise = promise.then($context.api.Promise.resolve(step.before(p.scope))).then(function() {
+						return step.promise();
+					}).then(function() {
+						step.after(p.scope);
+						if (!p.scope.success) {
+							success = false;
+						}					
+					});					
+				})(steps[i]);
 			}
-			if (p.events) p.events.fire("end", (index > 0) ? success : true);
-			if (p.scope.fire) p.scope.fire("end", { success: (index > 0) ? success : true });
-			resolve(success);
+			promise.then(function() {
+				debugger;
+				if (p.events) p.events.fire("end", (index > 0) ? success : true);
+				if (p.scope.fire) p.scope.fire("end", { success: (index > 0) ? success : true });
+				resolve(success);						
+			});
 		});
 	}
 };
@@ -291,7 +295,7 @@ var global = new function() {
 					timestamp: new Date()
 				});
 				//	Stop asynchronous events from being delivered
-				$context.asynchrony.next(null);
+				asynchrony.next(null);
 			});
 		};
 		
@@ -341,7 +345,6 @@ var Scenario = function() {
 	var next;
 
 	this.next = function(f) {
-		debugger;
 		next = f;
 	}
 
@@ -351,16 +354,27 @@ var Scenario = function() {
 
 	this.test = function(t) {
 		tests.push(t);
-	}
-
-	this.execute = function(scope,verify) {
+	};
+	
+	var createSet = function(verify) {
 		var set = new Set({ scope: verify.scope });
 		set.target(getTarget());
 		if (next) set.next(next);
 		tests.forEach(function(test) {
 			set.test(test);
-		})
+		});
+		return set;
+	}
+
+	this.execute = function(scope,verify) {
+		var set = createSet(verify);
+		debugger;
 		set.run();
+	}
+	
+	this.promise = function(scope,verify) {
+		var set = createSet(verify);
+		return set.promise();
 	}
 }
 

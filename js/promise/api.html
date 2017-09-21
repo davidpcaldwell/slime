@@ -14,6 +14,9 @@
 			var unit = $jsapi.loader.file("../../loader/api/unit.js", {
 				api: {
 					Promise: window.Promise
+				},
+				log: function() {
+					window.console.log.apply(window.console,arguments);
 				}
 			});
 			
@@ -23,8 +26,7 @@
 				api: {
 					unit: unit,
 					Promise: window.Promise
-				},
-				asynchrony: window.XMLHttpRequest.asynchrony
+				}
 			});
 			
 			scope.browser = browser;
@@ -77,12 +79,12 @@
 			
 			var suite = new unit.Suite({
 				parts: {
+					first: first,
 					inline: {
 						execute: function(scope,verify) {
 							verify(1).is(1);
 						}
-					},
-					first: first
+					}
 				}
 			});
 
