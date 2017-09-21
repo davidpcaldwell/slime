@@ -42,6 +42,7 @@
 			verify(window).evaluate(function() { return this.XMLHttpRequest.asynchrony.started; }).is.type("function");
 			verify(window).evaluate(function() { return this.XMLHttpRequest.asynchrony.finished; }).is.type("function");
 			
+			//	TODO	get this to true
 			var PROMISES_IN_TESTS_ALLOWED = false;
 
 			var first = new browser.Scenario();
