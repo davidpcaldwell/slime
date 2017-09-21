@@ -45,7 +45,7 @@
 			verify(window).evaluate(function() { return this.XMLHttpRequest.asynchrony.finished; }).is.type("function");
 			
 			//	TODO	get this to true
-			var PROMISES_IN_TESTS_ALLOWED = false;
+			var PROMISES_IN_TESTS_ALLOWED = $jsapi.environment.promises;
 
 			var first = new browser.Scenario();
 			

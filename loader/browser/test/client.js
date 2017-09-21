@@ -216,6 +216,24 @@ window.callbacks.push(function() {
 
 							//	TODO	add this.scenario; see jsh/unit/jsapi.js
 						};
+
+						this.environment = {};
+						for (var x in parameters) {
+							var pattern = /^environment\.(.*)/;
+							var match = pattern.exec(x);;
+							if (match) {
+								var tokens = match[1].split(".");
+								var target = this.environment;
+								for (var i=0; i<tokens.length; i++) {
+									if (i < tokens.length-1) {
+										target[tokens[i]] = {};
+										target = target[tokens[i]];
+									} else {
+										target[tokens[i]] = parameters[x];
+									}
+								}
+							}
+						}
 					};
 
 					this.$platform = inonit.loader.$sdk.platform;
