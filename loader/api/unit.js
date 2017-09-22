@@ -825,7 +825,9 @@ $exports.Scenario = {};
 
 				var factory = part.find("promise");
 				if (!factory) throw new Error();
-				return factory(local,verify);
+				return factory(local,verify,function() {
+					return vscope.success;
+				});
 			}
 		}
 
@@ -980,7 +982,8 @@ $exports.Scenario = {};
 					}
 
 					promise.then(function() {
-						resolve(success);						
+						part.after(success,scope);
+						resolve(success);
 					});
 				});
 			}

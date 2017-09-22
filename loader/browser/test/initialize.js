@@ -64,7 +64,7 @@ document.domain = document.domain;
 			pending.push(process);
 		};
 
-		var controlled;
+		var controlled = [];
 
 		this.finished = function(process) {
 			console.log("Finished: " + process);
@@ -73,16 +73,17 @@ document.domain = document.domain;
 			console.log(pending.join("\n"));
 			if (pending.length == 0) {
 				if (next) next();
-				if (controlled) {
-					var toResolve = controlled;
-					controlled = void(0);
-					toResolve.resolve();
+				while(controlled.length) {
+					controlled[0].resolve();
+					controlled.splice(0,1);
 				}
 			}
 		};
 
 		if (window.Promise) {
-			var Controllable = function() {
+			var Controllable = function(evaluator) {
+				controlled.push(this);
+
 				var resolveIt;
 				
 				this.toString = function() {
@@ -98,13 +99,16 @@ document.domain = document.domain;
 				}
 				
 				this.resolve = function(value) {
+					if (arguments.length == 0) {
+						value = evaluator();
+					}
+					window.console.log("Resolving " + this + " to " + value);
 					resolveIt(value);
 				}
 			};
 			
-			this.promise = function() {
-				controlled = new Controllable();
-				return controlled;
+			this.promise = function(evaluator) {
+				return new Controllable(evaluator);
 			};			
 		}
 	};
@@ -278,11 +282,13 @@ document.domain = document.domain;
 				this.then = function(resolved,rejected) {
 					var args = [];
 					args.push(function() {
+						window.console.log("Resolving", executor, arguments[0]);
 						var rv = resolved.apply(null,arguments);
 						end();
 						return rv;
 					});
 					if (rejected) args.push(function() {
+						window.console.log("Rejecting", executor, arguments[0]);
 						var rv = rejected.apply(null,arguments);
 						end();
 						return rv;
@@ -291,6 +297,7 @@ document.domain = document.domain;
 				};
 				
 				this.catch = function(rejected) {
+					window.console.log("Rejecting", executor, arguments[0]);
 					var rv = delegate.catch.apply(null,arguments);
 					end();
 					return rv;

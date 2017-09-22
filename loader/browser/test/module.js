@@ -56,7 +56,11 @@ var Step = function(target,o) {
 	};
 
 	this.run = function() {
-		var fake = {};
+		var fake = {
+			toString: function() {
+				return "Asynchronous wrapper for " + ((o.run) ? o.run.toString() : " empty run()");
+			}
+		};
 		asynchrony.started(fake);
 		if (o.run) {
 			o.run.call(target);

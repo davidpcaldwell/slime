@@ -343,9 +343,9 @@ $exports.ApiHtmlTests = function(html,name) {
 			};
 			//	TODO	get this working
 			if ($context.api && $context.api.Promise && USE_PROMISES) {
-				rv.promise = (function(tscope,verify) {
+				rv.promise = (function(tscope,verify,evaluator) {
 					if (!window.XMLHttpRequest.asynchrony) throw new Error();
-					var rv = window.XMLHttpRequest.asynchrony.promise();
+					var rv = window.XMLHttpRequest.asynchrony.promise(evaluator);
 					this.execute(tscope,verify);
 					return rv;
 				}).bind(rv);
