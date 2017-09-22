@@ -826,6 +826,7 @@ $exports.Scenario = {};
 				var factory = part.find("promise");
 				if (!factory) throw new Error();
 				return factory(local,verify,function() {
+					part.after(vscope.success,local);
 					return vscope.success;
 				});
 			}
