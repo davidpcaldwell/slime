@@ -65,7 +65,6 @@ var Step = function(target,o) {
 	};
 	
 	this.promise = function() {
-		debugger;
 		var running = asynchrony.promise();
 		if (o.run) {
 			o.run.call(target);

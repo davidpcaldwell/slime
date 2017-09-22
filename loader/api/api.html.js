@@ -14,6 +14,12 @@
 
 var USE_PROMISES = Boolean($context.USE_PROMISES);
 
+var assign = (function() {
+	if ($context.api.assign) return $context.api.assign;
+	if (Object.assign) return Object.assign;
+	throw new Error();
+})();
+
 //	TODO	in-progress refactoring of ApiHtmlTests below may make this unneeded as a public variable
 $exports.MEDIA_TYPE = "application/x.jsapi";
 
@@ -307,9 +313,7 @@ $exports.ApiHtmlTests = function(html,name) {
 
 		var initialize = function(s) {
 			var relative = shared.relativeScope(element);
-			for (var x in relative) {
-				s[x] = relative[x];
-			}
+			assign(s,relative);
 			s.scope = s;
 			var initializes = getScripts(element,"initialize");
 			for (var i=0; i<initializes.length; i++) {
@@ -339,12 +343,12 @@ $exports.ApiHtmlTests = function(html,name) {
 			};
 			//	TODO	get this working
 			if ($context.api && $context.api.Promise && USE_PROMISES) {
-				rv.promise = function(tscope,verify) {
+				rv.promise = (function(tscope,verify) {
 					if (!window.XMLHttpRequest.asynchrony) throw new Error();
 					var rv = window.XMLHttpRequest.asynchrony.promise();
 					this.execute(tscope,verify);
 					return rv;
-				}
+				}).bind(rv);
 			}
 			return rv;
 		} else if (isScript) {

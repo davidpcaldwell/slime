@@ -688,12 +688,66 @@ $exports.Scenario = {};
 			part.events.fire.apply(part.events,arguments);
 		}
 
+		var createVerify = function(vscope) {
+			var verify = new Verify(vscope);
+			verify.test = $api.deprecate(function() {
+				return vscope.test.apply(this,arguments);
+			});
+			verify.suite = $api.deprecate(function(o) {
+				var suite = new $exports.Suite(o);
+				var fire = (function(e) {
+					this.scope.fire(e.type,e.detail);
+				}).bind(this);
+				suite.listeners.add("scenario",fire);
+				suite.listeners.add("test",fire);
+				suite.run();
+			});
+			verify.scenario = function(o) {
+				var suite = new $exports.Suite({
+					parts: {
+						scenario: o
+					}
+				});
+				var fire = (function(e) {
+					this.scope.fire(e.type,e.detail);
+				}).bind(this);
+				suite.listeners.add("scenario",fire);
+				suite.listeners.add("test",fire);
+				suite.run();
+			};
+			verify.promise = function(o) {
+				var suite = new $exports.Suite({
+					parts: {
+						scenario: o
+					}
+				});
+				var fire = (function(e) {
+					this.scope.fire(e.type,e.detail);
+				}).bind(this);
+				suite.listeners.add("scenario",fire);
+				suite.listeners.add("test",fire);
+				var rv = window.XMLHttpRequest.asynchrony.promise();
+				suite.promise().then(function() {
+					rv.resolve();
+				});
+				rv.then(function() {
+					debugger;
+				});
+			}
+			verify.fire = $api.deprecate(function(type,detail) {
+				vscope.fire(type,detail);
+			});
+			verify.scope = vscope;
+			return verify;	
+		}
+
+
 		this.run = function(p,next) {
 			var local = part.before(p).scope;
 
 			//	TODO	compare below initialize with one used in part
 			var vscope = new Scope({ events: part.events });
-
+			
 			if (next) {
 				if (part.find("next")) {
 					part.find("next")(function() {
@@ -715,37 +769,9 @@ $exports.Scenario = {};
 				};
 				this.listeners.add("scenario", checkForScopeFailure);
 				this.listeners.add("test", checkForScopeFailure);
+
+				var verify = createVerify(vscope);
 				
-				var verify = new Verify(vscope);
-				verify.test = $api.deprecate(function() {
-					return vscope.test.apply(this,arguments);
-				});
-				verify.suite = $api.deprecate(function(o) {
-					var suite = new $exports.Suite(o);
-					var fire = (function(e) {
-						this.scope.fire(e.type,e.detail);
-					}).bind(this);
-					suite.listeners.add("scenario",fire);
-					suite.listeners.add("test",fire);
-					suite.run();
-				});
-				verify.scenario = function(o) {
-					var suite = new $exports.Suite({
-						parts: {
-							scenario: o
-						}
-					});
-					var fire = (function(e) {
-						this.scope.fire(e.type,e.detail);
-					}).bind(this);
-					suite.listeners.add("scenario",fire);
-					suite.listeners.add("test",fire);
-					suite.run();
-				}
-				verify.fire = $api.deprecate(function(type,detail) {
-					vscope.fire(type,detail);
-				});
-				verify.scope = vscope;
 				try {
 					//	TODO	execute is apparently mandatory
 					var execute = part.find("execute");
@@ -774,6 +800,32 @@ $exports.Scenario = {};
 				} else {
 					part.find("next")(next);
 				}
+			}
+		}
+
+		this.promise = function(p) {
+			var local = part.before(p).scope;
+
+			//	TODO	compare below initialize with one used in part
+			var vscope = new Scope({ events: part.events });
+
+			var error = part.initialize(local);
+
+			if (error) {
+				vscope.fail();
+				return Promise.resolve(false);
+			} else {
+				var checkForScopeFailure = function(e) {
+					vscope.checkForFailure(e.type,e.detail);
+				};
+				this.listeners.add("scenario", checkForScopeFailure);
+				this.listeners.add("test", checkForScopeFailure);
+
+				var verify = createVerify(vscope);
+
+				var factory = part.find("promise");
+				if (!factory) throw new Error();
+				return factory(local,verify);
 			}
 		}
 
@@ -900,9 +952,36 @@ $exports.Scenario = {};
 		
 		if ($context.api && $context.api.Promise) {
 			this.promise = function(p) {
-				var self = this;
+				//	TODO	allow p.path, for compatibility and to allow partial suites to be run
 				return new $context.api.Promise(function(resolve,reject) {
-					resolve(self.run(p));
+					var scope = part.before(p).scope;
+
+					var success = true;
+					var promise = $context.api.Promise.resolve();
+
+					var error = part.initialize(scope);
+					if (error) {
+						success = false;
+					} else {
+						var partPromiseFactory = function(x) {
+							return function() {
+								return parts[x].promise({
+									scope: copy(scope),
+									path: []
+								});							
+							}
+						};
+
+						for (var x in parts) {
+							promise = promise.then(partPromiseFactory(x)).then(function(result) {
+								if (!result) success = false;
+							})
+						}
+					}
+
+					promise.then(function() {
+						resolve(success);						
+					});
 				});
 			}
 		}

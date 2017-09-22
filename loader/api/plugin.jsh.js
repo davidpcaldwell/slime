@@ -12,12 +12,19 @@
 //	END LICENSE
 
 plugin({
+	isReady: function() {
+		return jsh.js;
+	},
 	load: function() {
 		jsh.unit = $loader.file("unit.js", {
 			REMOVE_OLD: Packages.java.lang.System.getenv("TMP_UNIT_REMOVE_OLD")
 		});
 		jsh.unit.html = $loader.module("api.html.js", new function() {
 			this.REMOVE_OLD = Packages.java.lang.System.getenv("TMP_UNIT_REMOVE_OLD");
+			
+			this.api = new function() {
+				this.assign = jsh.js.Object.set;
+			}
 
 			var seq = 0;
 

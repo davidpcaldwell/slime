@@ -49,6 +49,8 @@
 
 			var first = new browser.Scenario();
 			
+			first.name = "Asynchronous: promises=" + PROMISES_IN_TESTS_ALLOWED;
+
 			first.test(new function() {
 				var result;
 				
@@ -77,28 +79,14 @@
 				}
 			});
 			
-			var suite = new unit.Suite({
-				parts: {
-					first: first,
-					inline: {
-						execute: function(scope,verify) {
-							verify(1).is(1);
-						}
-					}
+			verify.scenario({
+				name: "identity",
+				execute: function(scope,verify) {
+					verify(1).is(1);
 				}
 			});
-
-			browser.suite(suite);
-			browser.promise({
-				event: function(e) {
-					console.log("promise event", e);
-					verify.scope.fire(e.type,e.detail);
-				},
-				end: function(v) {
-					console.log("promise end", v);
-				}
-			}).then(function(result) {
-			});
+			
+			verify.scenario(first);
 		</script>
 		<script type="application/javascript">
 		</script>

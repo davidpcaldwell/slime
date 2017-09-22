@@ -75,6 +75,8 @@ window.callbacks.push(function() {
 			},
 			REMOVE_OLD: parameters.REMOVE_OLD
 		});
+		//	TODO	may not be right place for this
+		inonit.loader.run("initialize.js");
 		var Console = loaders.jsapi.file("console.js").Forwarder;
 		var apiHtmlScript = loaders.jsapi.file("api.html.js", {
 			REMOVE_OLD: parameters.REMOVE_OLD,
@@ -526,7 +528,7 @@ window.callbacks.push(function() {
 			haltOnException: HALT_ON_EXCEPTION,
 			callback: (ASYNCHRONOUS) ? function(success) { onResult(success) } : void(0)
 		};
-		if (scenario.promise) {
+		if (parameters.asynchronous) {
 			scenario.promise(run).then(function(result) {
 				onResult(result);
 			});
