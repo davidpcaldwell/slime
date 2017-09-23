@@ -73,6 +73,10 @@ var Step = function(target,o) {
 		if (o.run) {
 			o.run.call(target);
 		}
+		new window.Promise(function fake(resolve,reject) {
+			resolve();
+		}).then(function() {
+		})
 		return running;
 	}
 
@@ -151,14 +155,14 @@ var Set = function(p) {
 		if (!asynchrony.open()) fire();
 	}
 	
-	this.promise = function() {
+	this.promise = function promiseForSet() {
 		return new $context.api.Promise(function(resolve,reject) {
-			debugger;
 			var success = true;
 			var promise = $context.api.Promise.resolve();
 			for (var i=0; i<steps.length; i++) {
 				(function(step) {
 					promise = promise.then($context.api.Promise.resolve(step.before(p.scope))).then(function() {
+						window.console.log(asynchrony.toString());
 						return step.promise();
 					}).then(function() {
 						step.after(p.scope);
@@ -169,7 +173,6 @@ var Set = function(p) {
 				})(steps[i]);
 			}
 			promise.then(function() {
-				debugger;
 				if (p.events) p.events.fire("end", (index > 0) ? success : true);
 				if (p.scope.fire) p.scope.fire("end", { success: (index > 0) ? success : true });
 				resolve(success);						

@@ -341,15 +341,22 @@ $exports.ApiHtmlTests = function(html,name) {
 					run(element.getContentString(),hscope);
 				}
 			};
-			//	TODO	get this working
-			if ($context.api && $context.api.Promise && USE_PROMISES) {
-				rv.promise = (function(tscope,verify,evaluator) {
-					if (!window.XMLHttpRequest.asynchrony) throw new Error();
-					var rv = window.XMLHttpRequest.asynchrony.promise(evaluator);
-					this.execute(tscope,verify);
-					return rv;
-				}).bind(rv);
-			}
+// 			//	TODO	get this working
+// 			if ($context.api && $context.api.Promise && USE_PROMISES) {
+// 				rv.promise = (function(tscope,verify,evaluator) {
+// 					var self = this;
+// 					var rv = new $context.api.Promise(function(resolve,reject) {
+// 						resolve(self.execute(tscope,verify));
+// 					})
+// 					var name = this.name;
+// 					rv.toString = (function(was) {
+// 						return function() {
+// 							return name + " " + was.apply(this,arguments);
+// 						}
+// 					})(rv.toString);
+// 					return rv;
+// 				}).bind(rv);
+// 			}
 			return rv;
 		} else if (isScript) {
 			//	do nothing

@@ -99,7 +99,7 @@ document.domain = document.domain;
 				}
 				
 				this.resolve = function(value) {
-					if (arguments.length == 0) {
+					if (arguments.length == 0 && evaluator) {
 						value = evaluator();
 					}
 					window.console.log("Resolving " + this + " to " + value);
@@ -271,7 +271,11 @@ document.domain = document.domain;
 	
 	if (window.Promise) {
 		window.Promise = (function(was) {
-			return function(executor) {
+			var rv = function(executor) {
+				this.toString = function() {
+					return "asynchrony: " + executor;
+				};
+
 				var delegate = new was(executor);
 				asynchrony.started(this);
 				
@@ -302,7 +306,11 @@ document.domain = document.domain;
 					end();
 					return rv;
 				};
+			};
+			rv.resolve = function(v) {
+				return was.resolve(v);
 			}
+			return rv;
 		})(window.Promise)
 	}
 

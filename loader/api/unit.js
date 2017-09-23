@@ -688,7 +688,7 @@ $exports.Scenario = {};
 			part.events.fire.apply(part.events,arguments);
 		}
 
-		var createVerify = function(vscope) {
+		var createVerify = function(vscope,promises) {
 			var verify = new Verify(vscope);
 			verify.test = $api.deprecate(function() {
 				return vscope.test.apply(this,arguments);
@@ -713,27 +713,16 @@ $exports.Scenario = {};
 				}).bind(this);
 				suite.listeners.add("scenario",fire);
 				suite.listeners.add("test",fire);
-				suite.run();
-			};
-			verify.promise = function(o) {
-				var suite = new $exports.Suite({
-					parts: {
-						scenario: o
+				if (!promises) {
+					suite.run();					
+				} else {
+					if (o.promise) {
+						promises.push(suite.promise());
+					} else {
+						suite.run();
 					}
-				});
-				var fire = (function(e) {
-					this.scope.fire(e.type,e.detail);
-				}).bind(this);
-				suite.listeners.add("scenario",fire);
-				suite.listeners.add("test",fire);
-				var rv = window.XMLHttpRequest.asynchrony.promise();
-				suite.promise().then(function() {
-					rv.resolve();
-				});
-				rv.then(function() {
-					debugger;
-				});
-			}
+				}
+			};
 			verify.fire = $api.deprecate(function(type,detail) {
 				vscope.fire(type,detail);
 			});
@@ -803,7 +792,7 @@ $exports.Scenario = {};
 			}
 		}
 
-		this.promise = function(p) {
+		this.promise = function scenarioPromise(p) {
 			var local = part.before(p).scope;
 
 			//	TODO	compare below initialize with one used in part
@@ -821,14 +810,21 @@ $exports.Scenario = {};
 				this.listeners.add("scenario", checkForScopeFailure);
 				this.listeners.add("test", checkForScopeFailure);
 
-				var verify = createVerify(vscope);
+				var promises = [];
+				var verify = createVerify(vscope,promises);
 
-				var factory = part.find("promise");
-				if (!factory) throw new Error();
-				return factory(local,verify,function() {
-					part.after(vscope.success,local);
-					return vscope.success;
+				var execute = part.find("execute");
+
+				var self = this;
+				var rv = new $context.api.Promise(function(resolve,reject) {
+					execute.call(self,local,verify);
+					$context.api.Promise.all(promises).then(function() {
+						part.after(vscope.success,local);
+						resolve(vscope.success);
+					});
 				});
+
+				return rv;
 			}
 		}
 
@@ -954,7 +950,7 @@ $exports.Scenario = {};
 		}
 		
 		if ($context.api && $context.api.Promise) {
-			this.promise = function(p) {
+			this.promise = function suitePromise(p) {
 				//	TODO	allow p.path, for compatibility and to allow partial suites to be run
 				return new $context.api.Promise(function(resolve,reject) {
 					var scope = part.before(p).scope;
