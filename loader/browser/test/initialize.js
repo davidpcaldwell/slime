@@ -29,6 +29,7 @@ document.domain = document.domain;
 
 	var Asynchrony = function() {
 		var Promise = window.Promise;
+		
 		var next = arguments[0];
 		var pending = [];
 
@@ -80,7 +81,7 @@ document.domain = document.domain;
 			}
 		};
 
-		if (window.Promise) {
+		if (Promise) {
 			var Controllable = function(evaluator) {
 				controlled.push(this);
 
@@ -271,12 +272,17 @@ document.domain = document.domain;
 	
 	if (window.Promise) {
 		window.Promise = (function(was) {
-			var rv = function(executor) {
+			var Promise = function(executor) {
 				this.toString = function() {
 					return "asynchrony: " + executor;
 				};
 
-				var delegate = new was(executor);
+				var delegate;
+				if (typeof(executor) == "function") {
+					delegate = new was(executor);
+				} else {
+					delegate = executor;
+				}
 				asynchrony.started(this);
 				
 				var end = (function() {
@@ -307,10 +313,11 @@ document.domain = document.domain;
 					return rv;
 				};
 			};
-			rv.resolve = function(v) {
-				return was.resolve(v);
+			Promise.resolve = function(v) {
+				var rv = was.resolve(v);
+				return new Promise(rv);
 			}
-			return rv;
+			return Promise;
 		})(window.Promise)
 	}
 
