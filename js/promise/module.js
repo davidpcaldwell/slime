@@ -1,4 +1,6 @@
 var SlimePromise = function Wrap(p) {
+	var Promise = $context.Promise;
+	
 	if (typeof(p) == "function") {
 		p = { executor: p };
 	}
@@ -13,14 +15,14 @@ var SlimePromise = function Wrap(p) {
 	var delegate = (p.delegate) ? p.delegate : void(0);
 
 	var wrap = function(v) {
-		if (typeof(v) == "object" && v instanceof $context.Promise) {
+		if (typeof(v) == "object" && v instanceof Promise) {
 			return new Wrap({ delegate: v, target: p.target });
 		}
 		return v;
 	};
 
 	var getDelegate = function() {
-		if (!delegate) delegate = new $context.Promise(executor);
+		if (!delegate) delegate = new Promise(executor);
 		return delegate;
 	}
 

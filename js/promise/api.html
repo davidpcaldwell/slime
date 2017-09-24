@@ -32,9 +32,6 @@
 			scope.browser = browser;
 			
 			scope.api = $jsapi.loader.file("module.js", {
-				asynchrony: function() {
-					return window.XMLHttpRequest.asynchrony;
-				},
 				Promise: window.Promise
 			});
 		</script>
