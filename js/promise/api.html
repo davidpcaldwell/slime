@@ -32,7 +32,9 @@
 			scope.browser = browser;
 			
 			scope.api = $jsapi.loader.file("module.js", {
-				Promise: window.Promise
+				Promise: function() {
+					return window.Promise;
+				}
 			});
 		</script>
 		<script type="application/x.jsapi#tests">
@@ -51,6 +53,7 @@
 			first.test(new function() {
 				var result;
 				var targeted;
+				var resolve;
 				
 				this.before = function(verify) {
 					verify("before").is("before");
@@ -60,7 +63,6 @@
 					if (PROMISES_IN_TESTS_ALLOWED) {
 						//	TODO	even executing this code causes the .after method to execute after the suite represented
 						//			by the enclosing <script> block has finished.
-						debugger;
 						new api.Promise(function(resolve,reject) {
 							resolve(42);
 						}).then(function(n) {
@@ -78,6 +80,10 @@
 						}).then(function(n) {
 							targeted = this.foo;
 						});
+						
+						window.Promise.resolve("resolve").then(function(string) {
+							resolve = string;
+						})
 					}					
 				}
 				
@@ -86,6 +92,7 @@
 					if (PROMISES_IN_TESTS_ALLOWED) {
 						verify(result).is(42);
 						verify(targeted).is(30);
+						verify(resolve).is("resolve");
 					}
 				}
 			});

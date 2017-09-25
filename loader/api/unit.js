@@ -618,7 +618,7 @@ $exports.Scenario = {};
 
 		var find = (function(property) {
 			if (definition && definition[property]) return definition[property];
-			if (this[property]) {
+			if (this[property] && property != "promise") {
 				return $api.deprecate(function() {
 					return this[property];
 				}).call(this);

@@ -278,15 +278,21 @@ document.domain = document.domain;
 				};
 
 				var delegate;
+				var track;
 				if (typeof(executor) == "function") {
 					delegate = new was(executor);
+					track = true;
+				} else if (typeof(executor) == "object" && typeof(executor.delegate) == "object" && typeof(executor.track) == "boolean") {
+					delegate = executor.delegate;
+					track = executor.track;
 				} else {
-					delegate = executor;
+					debugger;
 				}
-				asynchrony.started(this);
+
+				if (track) asynchrony.started(this);
 				
 				var end = (function() {
-					if (asynchrony) asynchrony.finished(this);
+					if (track) asynchrony.finished(this);
 				}).bind(this);
 
 				this.then = function(resolved,rejected) {
@@ -302,8 +308,15 @@ document.domain = document.domain;
 						var rv = rejected.apply(this,arguments);
 						end();
 						return rv;
-					});						
-					return delegate.then.apply(delegate,args);
+					});
+					var rv = delegate.then.apply(delegate,args);
+					if (rv instanceof was) {
+						rv = new Promise({
+							delegate: rv,
+							track: false
+						});
+					}
+					return rv;
 				};
 				
 				this.catch = function(rejected) {
@@ -315,7 +328,10 @@ document.domain = document.domain;
 			};
 			Promise.resolve = function(v) {
 				var rv = was.resolve(v);
-				return new Promise(rv);
+				return new Promise({
+					delegate: rv,
+					track: true
+				});
 			}
 			return Promise;
 		})(window.Promise)

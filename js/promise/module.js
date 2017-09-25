@@ -1,5 +1,5 @@
-var SlimePromise = function Wrap(p) {
-	var Promise = $context.Promise;
+var SlimePromise = function Targeter(p) {
+	var Promise = $context.Promise();
 	
 	if (typeof(p) == "function") {
 		p = { executor: p };
@@ -16,7 +16,9 @@ var SlimePromise = function Wrap(p) {
 
 	var wrap = function(v) {
 		if (typeof(v) == "object" && v instanceof Promise) {
-			return new Wrap({ delegate: v, target: p.target });
+			return new Targeter({ delegate: v, target: p.target });
+		} else {
+			var lineForBreakpoint = 1;
 		}
 		return v;
 	};
