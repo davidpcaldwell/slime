@@ -13,7 +13,11 @@
 		<script type="application/x.jsapi#initialize">
 			var unit = $jsapi.loader.file("../../loader/api/unit.js", {
 				api: {
-					Promise: window.Promise
+					Promise: (function(constant) {
+						return function() {
+							return constant;
+						}
+					})(window.Promise)
 				},
 				log: function() {
 					window.console.log.apply(window.console,arguments);
@@ -21,6 +25,13 @@
 			});
 			
 			scope.unit = unit;
+			
+			
+			scope.api = $jsapi.loader.file("module.js", {
+				Promise: function() {
+					return window.Promise;
+				}
+			});
 			
 			var browser = $jsapi.loader.module("../../loader/browser/test/module.js", {
 				api: {
@@ -30,12 +41,6 @@
 			});
 			
 			scope.browser = browser;
-			
-			scope.api = $jsapi.loader.file("module.js", {
-				Promise: function() {
-					return window.Promise;
-				}
-			});
 		</script>
 		<script type="application/x.jsapi#tests">
 			verify(api).evaluate.property("Promise").is.type("function");
@@ -51,19 +56,41 @@
 			first.name = "Asynchronous: promises=" + PROMISES_IN_TESTS_ALLOWED;
 
 			first.test(new function() {
+				var resolve;
 				var result;
 				var targeted;
-				var resolve;
+				var chained;
+				var chain = {};
 				
 				this.before = function(verify) {
 					verify("before").is("before");
 				};
 				
 				this.run = function() {
+					debugger;
 					if (PROMISES_IN_TESTS_ALLOWED) {
-						//	TODO	even executing this code causes the .after method to execute after the suite represented
-						//			by the enclosing <script> block has finished.
-						new api.Promise(function(resolve,reject) {
+						new window.Promise(function(resolve,reject) {
+							resolve("resolve");
+						}).then(function(value) {
+							debugger;
+							resolve = value;
+							return "yo";
+						}).then(function(result) {
+							debugger;
+						});
+						
+						if (false) window.Promise.resolve("resolve").then(function(string) {
+							resolve = string;
+						});
+						
+						if (false) window.Promise.resolve("resolve").then(function(string) {
+							return string + "chain";
+						}).then(function(value) {
+							debugger;
+							chained = value;
+						});
+						
+						if (false) new api.Promise(function(resolve,reject) {
 							resolve(42);
 						}).then(function(n) {
 							result = n;
@@ -72,7 +99,7 @@
 						var target = {
 							foo: 30
 						};
-						new api.Promise({
+						if (false) new api.Promise({
 							target: target,
 							executor: function(resolve,reject) {
 								resolve(this.foo);
@@ -81,23 +108,70 @@
 							targeted = this.foo;
 						});
 						
-						window.Promise.resolve("resolve").then(function(string) {
-							resolve = string;
+						if (false) window.Promise.resolve().then(function() {
+							chain.native = {};
+							chain.native.first = true;
+							return Promise.resolve();
+						}).then(function() {
+							chain.native.second = true;
+							window.console.log("second");
+							return Promise.resolve();
+						}).then(function() {
+							window.console.log("third");
+							chain.native.third = true;
 						})
+						
+						if (false) var ThisPromise = new api.Promise({
+							target: chain,
+							executor: function(resolve,reject) {
+								resolve(99);
+							}
+						});
+						
+						if (false) var SetPromise = function() {
+							return new api.Promise({
+								executor: function(resolve,reject) {
+									resolve("delayed");
+//									debugger;
+//									window.setTimeout(function() {
+//										debugger;
+//										resolve("delayed");
+//									}, 50);
+								}
+							})
+						};
+						
+						if (false) ThisPromise.then(function(value) {
+							this.set = value;
+							debugger;
+							return new SetPromise();
+						}).then(function(delayed) {
+							debugger;
+							this.asynchronous = delayed;
+						}).then(function(nothing) {
+							debugger;
+						});
 					}					
 				}
 				
 				this.after = function(verify) {
 					verify("after").is("after");
 					if (PROMISES_IN_TESTS_ALLOWED) {
-						verify(result).is(42);
-						verify(targeted).is(30);
 						verify(resolve).is("resolve");
+//						verify(chained).is("resolvechain");
+//						verify(result).is(42);
+//						verify(targeted).is(30);
+//						verify(chain.native).is.type("object");
+//						verify(chain.native.first).is(true);
+//						verify(chain.native.second).is(true);
+//						verify(chain.native.third).is(true);
+//						verify(chain.set).is(99);
+//						verify(chain.asynchronous).is("delayed");
 					}
 				}
 			});
 			
-			verify.scenario({
+			if (false) verify.scenario({
 				name: "identity",
 				execute: function(scope,verify) {
 					verify(1).is(1);

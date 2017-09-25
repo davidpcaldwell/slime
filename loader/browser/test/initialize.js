@@ -274,7 +274,9 @@ document.domain = document.domain;
 		window.Promise = (function(was) {
 			var Promise = function(executor) {
 				this.toString = function() {
-					return "asynchrony: " + executor;
+					if (typeof(executor) == "function") return "asynchrony: " + executor;
+					if (typeof(executor) == "object" && executor.delegate) return "asynchrony delegate: " + executor.delegate;
+					return executor.toString();
 				};
 
 				var delegate;
@@ -295,28 +297,58 @@ document.domain = document.domain;
 					if (track) asynchrony.finished(this);
 				}).bind(this);
 
+				var finished = delegate.then(function onFulfilled(value) {
+					end();
+					return value;
+				}, function onRejected() {
+					//	TODO	read the spec, how does this work?
+					debugger;
+					end();
+				});
+
 				this.then = function(resolved,rejected) {
-					var args = [];
-					args.push(function() {
-						window.console.log("Resolving", executor, arguments[0]);
-						var rv = resolved.apply(this,arguments);
-						end();
-						return rv;
-					});
-					if (rejected) args.push(function() {
+					var raw = finished.then(function(value) {
+ 						window.console.log("Resolving", executor, arguments[0]);
+						return resolved.apply(this,arguments);
+					}, function(reason) {
 						window.console.log("Rejecting", executor, arguments[0]);
-						var rv = rejected.apply(this,arguments);
-						end();
-						return rv;
+						return rejected.apply(this,arguments);
 					});
-					var rv = delegate.then.apply(delegate,args);
-					if (rv instanceof was) {
-						rv = new Promise({
-							delegate: rv,
-							track: false
-						});
-					}
-					return rv;
+					return new Promise({
+						delegate: raw,
+						track: true,
+						string: "raw " + raw,
+						toString: function() {
+							return this.string;
+						}
+					});
+// 					var args = [];
+// 					args.push(function() {
+// 						window.console.log("Resolving", executor, arguments[0]);
+// 						var rv = resolved.apply(this,arguments);
+// 						end();
+// 						return rv;
+// 					});
+// 					if (rejected) args.push(function() {
+// 						window.console.log("Rejecting", executor, arguments[0]);
+// 						var rv = rejected.apply(this,arguments);
+// 						end();
+// 						return rv;
+// 					});
+// 					var rv = delegate.then.apply(delegate,args);
+// 					if (rv instanceof was) {
+// 						rv = new Promise({
+// 							delegate: rv,
+// 							track: true,
+// 							string: "delegate " + rv,
+// 							toString: function() {
+// 								return this.string;
+// 							}
+// 						});
+// 					} else {
+// 						throw new Error("Should always be a Promise");
+// 					}
+// 					return rv;
 				};
 				
 				this.catch = function(rejected) {
@@ -332,7 +364,15 @@ document.domain = document.domain;
 					delegate: rv,
 					track: true
 				});
+			};
+			Promise.all = function(array) {
+				var now = was.all(array);
+				return new Promise({
+					delegate: now,
+					track: true
+				});
 			}
+			//	TODO	other methods, surely
 			return Promise;
 		})(window.Promise)
 	}

@@ -793,6 +793,7 @@ $exports.Scenario = {};
 		}
 
 		this.promise = function scenarioPromise(p) {
+			var Promise = $context.api.Promise();
 			var local = part.before(p).scope;
 
 			//	TODO	compare below initialize with one used in part
@@ -814,11 +815,18 @@ $exports.Scenario = {};
 				var verify = createVerify(vscope,promises);
 
 				var execute = part.find("execute");
+				var promise = part.find("promise");
 
 				var self = this;
-				var rv = new $context.api.Promise(function(resolve,reject) {
-					execute.call(self,local,verify);
-					$context.api.Promise.all(promises).then(function() {
+				var rv = new Promise(function(resolve,reject) {
+					if (execute && !promise) {
+						execute.call(self,local,verify);
+					} else if (promise) {
+						promises.unshift(promise.call(self,local,verify));
+					} else {
+						throw new Error();
+					}
+					Promise.all(promises).then(function() {
 						part.after(vscope.success,local);
 						resolve(vscope.success);
 					});
@@ -951,12 +959,13 @@ $exports.Scenario = {};
 		
 		if ($context.api && $context.api.Promise) {
 			this.promise = function suitePromise(p) {
+				var Promise = $context.api.Promise();
 				//	TODO	allow p.path, for compatibility and to allow partial suites to be run
-				return new $context.api.Promise(function(resolve,reject) {
+				return new Promise(function(resolve,reject) {
 					var scope = part.before(p).scope;
 
 					var success = true;
-					var promise = $context.api.Promise.resolve();
+					var promise = Promise.resolve();
 
 					var error = part.initialize(scope);
 					if (error) {

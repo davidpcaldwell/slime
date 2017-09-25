@@ -59,7 +59,11 @@ window.callbacks.push(function() {
 		var jsapi = loaders.jsapi.file("unit.js", {
 			//	TODO	use parameters to create these functions, in the event there are long-running tests
 			api: {
-				Promise: window.Promise
+				Promise: (function(constant) {
+					return function() {
+						return constant;
+					};
+				})(window.Promise)
 			},
 			USE_PROMISES: {
 				Suite: USE_PROMISES.suite,
