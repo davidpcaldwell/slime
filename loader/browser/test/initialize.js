@@ -293,13 +293,13 @@ document.domain = document.domain;
 					var args = [];
 					args.push(function() {
 						window.console.log("Resolving", executor, arguments[0]);
-						var rv = resolved.apply(null,arguments);
+						var rv = resolved.apply(this,arguments);
 						end();
 						return rv;
 					});
 					if (rejected) args.push(function() {
 						window.console.log("Rejecting", executor, arguments[0]);
-						var rv = rejected.apply(null,arguments);
+						var rv = rejected.apply(this,arguments);
 						end();
 						return rv;
 					});						
@@ -308,7 +308,7 @@ document.domain = document.domain;
 				
 				this.catch = function(rejected) {
 					window.console.log("Rejecting", executor, arguments[0]);
-					var rv = delegate.catch.apply(null,arguments);
+					var rv = delegate.catch.apply(this,arguments);
 					end();
 					return rv;
 				};

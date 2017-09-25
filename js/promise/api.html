@@ -50,6 +50,7 @@
 
 			first.test(new function() {
 				var result;
+				var targeted;
 				
 				this.before = function(verify) {
 					verify("before").is("before");
@@ -65,6 +66,18 @@
 						}).then(function(n) {
 							result = n;
 						});
+						
+						var target = {
+							foo: 30
+						};
+						new api.Promise({
+							target: target,
+							executor: function(resolve,reject) {
+								resolve(this.foo);
+							}
+						}).then(function(n) {
+							targeted = this.foo;
+						});
 					}					
 				}
 				
@@ -72,6 +85,7 @@
 					verify("after").is("after");
 					if (PROMISES_IN_TESTS_ALLOWED) {
 						verify(result).is(42);
+						verify(targeted).is(30);
 					}
 				}
 			});
