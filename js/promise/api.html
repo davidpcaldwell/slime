@@ -134,85 +134,87 @@
 			}
 		</script>
 		<script type="application/x.jsapi#tests">
-			var targeted = new browser.Scenario();
-			targeted.name = "Browser tests: targeted promise";
+			if (PROMISES_IN_TESTS_ALLOWED) {
+				var targeted = new browser.Scenario();
+				targeted.name = "Browser tests: targeted promise";
 
-			targeted.test(new function() {
-				var result;
+				targeted.test(new function() {
+					var result;
 
-				this.run = function() {
-					new api.Promise(function(resolve,reject) {
-						resolve(42);
-					}).then(function(n) {
-						result = n;
-					});
+					this.run = function() {
+						new api.Promise(function(resolve,reject) {
+							resolve(42);
+						}).then(function(n) {
+							result = n;
+						});
 
-				}
+					}
 
-				this.after = function(verify) {
-					verify("done").is("done");
-					verify(result).is(42);
-				}
-			});
-			
-			targeted.test(new function() {
-				var targeted;
-				
-				this.run = function() {
-					var target = {
-						foo: 30
-					};
-					new api.Promise({
-						target: target,
-						executor: function(resolve,reject) {
-							resolve(this.foo);
-						}
-					}).then(function(n) {
-						targeted = this.foo;
-					});
-				};
-				
-				this.after = function(verify) {
-					verify(targeted).is(30);
-				}
-			});
-			
-			targeted.test(new function() {
-				var chain = {};
-				
-				this.run = function() {
-					if (true) var ThisPromise = new api.Promise({
-						target: chain,
-						executor: function(resolve,reject) {
-							resolve(99);
-						}
-					});
+					this.after = function(verify) {
+						verify("done").is("done");
+						verify(result).is(42);
+					}
+				});
 
-					if (true) var SetPromise = function() {
-						return new api.Promise({
+				targeted.test(new function() {
+					var targeted;
+
+					this.run = function() {
+						var target = {
+							foo: 30
+						};
+						new api.Promise({
+							target: target,
 							executor: function(resolve,reject) {
-								window.setTimeout(function() {
-									resolve("delayed");
-								}, 50);
+								resolve(this.foo);
 							}
-						})
+						}).then(function(n) {
+							targeted = this.foo;
+						});
 					};
 
-					if (true) ThisPromise.then(function(value) {
-						this.set = value;
-						return new SetPromise();
-					}).then(function(delayed) {
-						this.asynchronous = delayed;
-					});
-				};
-				
-				this.after = function(verify) {
-					verify(chain.set).is(99);
-					verify(chain.asynchronous).is("delayed");
-				}
-			});
+					this.after = function(verify) {
+						verify(targeted).is(30);
+					}
+				});
 
-			verify.scenario(targeted);
+				targeted.test(new function() {
+					var chain = {};
+
+					this.run = function() {
+						if (true) var ThisPromise = new api.Promise({
+							target: chain,
+							executor: function(resolve,reject) {
+								resolve(99);
+							}
+						});
+
+						if (true) var SetPromise = function() {
+							return new api.Promise({
+								executor: function(resolve,reject) {
+									window.setTimeout(function() {
+										resolve("delayed");
+									}, 50);
+								}
+							})
+						};
+
+						if (true) ThisPromise.then(function(value) {
+							this.set = value;
+							return new SetPromise();
+						}).then(function(delayed) {
+							this.asynchronous = delayed;
+						});
+					};
+
+					this.after = function(verify) {
+						verify(chain.set).is(99);
+						verify(chain.asynchronous).is("delayed");
+					}
+				});
+
+				verify.scenario(targeted);
+			}
 		</script>
 		<script type="application/javascript">
 		</script>
