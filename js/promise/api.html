@@ -191,25 +191,18 @@
 					if (true) var SetPromise = function() {
 						return new api.Promise({
 							executor: function(resolve,reject) {
-								resolve("delayed");
-//									debugger;
-//									window.setTimeout(function() {
-//										debugger;
-//										resolve("delayed");
-//									}, 50);
+								window.setTimeout(function() {
+									resolve("delayed");
+								}, 50);
 							}
 						})
 					};
 
 					if (true) ThisPromise.then(function(value) {
 						this.set = value;
-						debugger;
 						return new SetPromise();
 					}).then(function(delayed) {
-						debugger;
 						this.asynchronous = delayed;
-					}).then(function(nothing) {
-						debugger;
 					});
 				};
 				
