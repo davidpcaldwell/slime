@@ -39,35 +39,17 @@ window.callbacks.push(function() {
 		document.getElementById("results").style.display = "none";
 		document.getElementById("debug").style.display = "none";
 	}
-	//	Currently this passes with suite and scenario OR suite and html but not both (html scenario promise implementation wrong)
-	var USE_PROMISES = {
-		suite: true,
-		scenario: false,
-		html: false
-	};
-	if (parameters.asynchronous) {
-		var tokens = parameters.asynchronous.split(",");
-		tokens.forEach(function(token) {
-			USE_PROMISES[token] = true;
-		});
-	}
 	if (parameters) {
 		var loaders = {};
 		loaders.jsapi = new inonit.loader.Loader(inonit.loader.nugget.page.base+parameters.jsapi);
-//		loaders.jsapi = 
 		log.flush();
 		var jsapi = loaders.jsapi.file("unit.js", {
-			//	TODO	use parameters to create these functions, in the event there are long-running tests
 			api: {
 				Promise: (function(constant) {
 					return function() {
 						return constant;
 					};
 				})(window.Promise)
-			},
-			USE_PROMISES: {
-				Suite: USE_PROMISES.suite,
-				Scenario: USE_PROMISES.scenario
 			},
 			asynchronous: {
 				scenario: function(next) {
@@ -76,15 +58,12 @@ window.callbacks.push(function() {
 				,test: function(next) {
 					window.setTimeout(next,1);
 				}
-			},
-			REMOVE_OLD: parameters.REMOVE_OLD
+			}
 		});
 //		//	TODO	may not be right place for this
 //		inonit.loader.run(inonit.loader.nugget.page.base+"initialize.js");
 		var Console = loaders.jsapi.file("console.js").Forwarder;
 		var apiHtmlScript = loaders.jsapi.file("api.html.js", {
-			REMOVE_OLD: parameters.REMOVE_OLD,
-			USE_PROMISES: USE_PROMISES.html,
 			api: {
 				Promise: window.Promise
 			}

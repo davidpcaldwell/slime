@@ -20,11 +20,6 @@ var parameters = jsh.script.getopts({
 	}
 });
 
-if (!parameters.options["chrome:profile"]) {
-	parameters.options["chrome:profile"] = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
-}
-parameters.options["chrome:profile"].directory.getRelativePath("First Run").write("", { append: false });
-
 var SLIME = new jsh.file.Loader({ directory: jsh.script.file.parent.parent.parent.parent.parent });
 
 var lock = new jsh.java.Thread.Monitor();
@@ -50,7 +45,7 @@ tomcat.map({
 				scope.$exports.handle = function(request) {
 					if (request.path == "loader/api/ui/test/result") {
 						var json = request.body.stream.character().asString();
-						jsh.shell.console("Got " + json);
+						jsh.shell.console("Got result JSON=" + json);
 						result.received(JSON.parse(json));
 						return { status: { code: 200 } };
 					}
@@ -72,17 +67,16 @@ tomcat.map({
 
 tomcat.start();
 
-var chrome = new jsh.shell.browser.chrome.User({
-	directory: parameters.options["chrome:profile"].createDirectory({
-		ifExists: function(dir) {
-			return false;
-		}
+var chrome = new jsh.shell.browser.chrome.Instance({
+	location: parameters.options["chrome:profile"],
+	proxy: new jsh.shell.browser.ProxyConfiguration({
+		port: tomcat.port
 	})
 });
 
 if (parameters.options.interactive) {
 	chrome.run({
-		uri: "http://127.0.0.1:" + tomcat.port + "/loader/api/ui/test/browser.html" + ((parameters.options.success) ? "?success" : "")
+		uri: "http://api-ui-test/loader/api/ui/test/browser.html" + ((parameters.options.success) ? "?success" : "")
 	});
 } else {
 	var opened;
@@ -107,7 +101,7 @@ if (parameters.options.interactive) {
 	};
 
 	chrome.launch({
-		uri: "http://127.0.0.1:" + tomcat.port + "/loader/api/ui/test/browser.html?unit.run" + ((parameters.options.success) ? "&success" : ""),
+		uri: "http://api-ui-test/loader/api/ui/test/browser.html?unit.run" + ((parameters.options.success) ? "&success" : ""),
 		on: on
 	});
 

@@ -11,8 +11,8 @@
 //	END LICENSE
 
 var USE_PROMISES = ($context.USE_PROMISES) ? $context.USE_PROMISES : {
-	Suite: false,
-	Scenario: false
+	Suite: true,
+	Scenario: true
 };
 
 var log = ($context.log) ? $context.log : function(){};
@@ -20,7 +20,7 @@ var log = ($context.log) ? $context.log : function(){};
 //	We have an object called Object in this file, so this
 var defineProperty = (function() { return this.Object.defineProperty; })();
 
-//	TODO	it appears that $context and $context.asynchronous are unused
+//	TODO	it appears that $context.asynchronous is unused
 
 var Verify = function(scope,vars) {
 	var Value = function(v,name) {
@@ -782,9 +782,9 @@ $exports.Scenario = {};
 			} else {
 				if (promise) {
 					debugger;
-					promise.call(this,local,verify).then(function() {
+					promise.call(this,local,verify).then(function(result) {
 						debugger;
-						next();
+						next(result);
 					});
 				} else {
 					part.find("next")(next);
