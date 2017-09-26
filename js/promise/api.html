@@ -57,9 +57,11 @@
 
 			first.test(new function() {
 				var resolve;
+				var Promise_resolve;
+				var chained;
+				
 				var result;
 				var targeted;
-				var chained;
 				var chain = {};
 				
 				this.before = function(verify) {
@@ -67,26 +69,20 @@
 				};
 				
 				this.run = function() {
-					debugger;
 					if (PROMISES_IN_TESTS_ALLOWED) {
 						new window.Promise(function(resolve,reject) {
 							resolve("resolve");
 						}).then(function(value) {
-							debugger;
 							resolve = value;
-							return "yo";
-						}).then(function(result) {
-							debugger;
 						});
 						
-						if (false) window.Promise.resolve("resolve").then(function(string) {
-							resolve = string;
+						window.Promise.resolve("Promise.resolve").then(function(value) {
+							Promise_resolve = value;
 						});
 						
-						if (false) window.Promise.resolve("resolve").then(function(string) {
-							return string + "chain";
+						window.Promise.resolve("resolve").then(function(string) {
+							return string + ".chain";
 						}).then(function(value) {
-							debugger;
 							chained = value;
 						});
 						
@@ -158,7 +154,8 @@
 					verify("after").is("after");
 					if (PROMISES_IN_TESTS_ALLOWED) {
 						verify(resolve).is("resolve");
-//						verify(chained).is("resolvechain");
+						verify(Promise_resolve).is("Promise.resolve");
+						verify(chained).is("resolve.chain");
 //						verify(result).is(42);
 //						verify(targeted).is(30);
 //						verify(chain.native).is.type("object");
