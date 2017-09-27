@@ -16,148 +16,69 @@
 					return window.Promise;
 				}
 			});
-			
-			//	TODO	get this to true; probably need to use a Promise series rather than Promise.all in the appropriate code
-			//			within loader/api/unit.js
-			scope.MULTIPLE_SCENARIOS_ALLOWED = $jsapi.environment.multipleScenarios;
 		</script>
 		<script type="application/x.jsapi#tests">
 			verify(api).evaluate.property("Promise").is.type("function");
-			verify(window).evaluate(function() { return this.XMLHttpRequest.asynchrony; }).is.type("object");
-			verify(window).evaluate(function() { return this.XMLHttpRequest.asynchrony.started; }).is.type("function");
-			verify(window).evaluate(function() { return this.XMLHttpRequest.asynchrony.finished; }).is.type("function");
-			
-			var asynchronous = new $jsapi.api.browser.Scenario();
-			
-			asynchronous.name = "Browser tests for asynchronous wrapper";
 
-			asynchronous.test(new function() {
-				var resolve;
-				var Promise_resolve;
-				var chained;
-				var chain = {};
-				
-				this.before = function(verify) {
-					verify("before").is("before");
-				};
-				
-				this.run = function() {
-					new window.Promise(function(resolve,reject) {
-						resolve("resolve");
-					}).then(function(value) {
-						resolve = value;
-					});
-
-					window.Promise.resolve("Promise.resolve").then(function(value) {
-						Promise_resolve = value;
-					});
-
-					window.Promise.resolve("resolve").then(function(string) {
-						return string + ".chain";
-					}).then(function(value) {
-						chained = value;
-					});
-
-					window.Promise.resolve().then(function() {
-						chain.native = {};
-						chain.native.first = true;
-						return Promise.resolve();
-					}).then(function() {
-						chain.native.second = true;
-						window.console.log("second");
-						return Promise.resolve();
-					}).then(function() {
-						window.console.log("third");
-						chain.native.third = true;
-					})
-				};
-				
-				this.after = function(verify) {
-					verify("after").is("after");
-					verify(resolve).is("resolve");
-					verify(Promise_resolve).is("Promise.resolve");
-					verify(chained).is("resolve.chain");
-					verify(chain.native).is.type("object");
-					verify(chain.native.first).is(true);
-					verify(chain.native.second).is(true);
-					verify(chain.native.third).is(true);
-//						verify(targeted).is(30);
-//						verify(chain.set).is(99);
-//						verify(chain.asynchronous).is("delayed");
-				}
-			});
-			
-			verify.scenario(asynchronous);
-			
-			if (MULTIPLE_SCENARIOS_ALLOWED) {
-				var multiple = new browser.Scenario();
-				multiple.name = "Browser tests: multiple scenarios via scenario.verify";
-
-				multiple.test(new function() {
-					this.after = function(verify) {
-						verify("multiple").is("multiple");
-					}
-				});
-				
-				verify.scenario(multiple);
-			}
-		</script>
-		<script type="application/x.jsapi#tests">
 			var targeted = new $jsapi.api.browser.Scenario();
 			targeted.name = "Browser tests: targeted promise";
 
 			targeted.test(new function() {
-				var result;
+				var result = {};
 
 				this.run = function() {
 					new api.Promise(function(resolve,reject) {
-						resolve(42);
+						resolve("resolved");
 					}).then(function(n) {
-						result = n;
+						result.resolved = n;
 					});
 
 				}
 
 				this.after = function(verify) {
-					verify("done").is("done");
-					verify(result).is(42);
+					verify(result).resolved.is("resolved");
 				}
 			});
 
 			targeted.test(new function() {
-				var targeted;
-
+				var target = {
+					thirty: 30
+				};
+				
 				this.run = function() {
-					var target = {
-						foo: 30
-					};
 					new api.Promise({
 						target: target,
 						executor: function(resolve,reject) {
 							resolve(this.foo);
 						}
 					}).then(function(n) {
-						targeted = this.foo;
+						this.sixty = this.thirty * 2;
 					});
 				};
 
 				this.after = function(verify) {
-					verify(targeted).is(30);
+					verify(target).thirty.is(30);
+					verify(target).sixty.is(60);
 				}
 			});
 
 			targeted.test(new function() {
 				var chain = {};
+				
+				this.before = function(verify) {
+					verify(chain).evaluate.property(99).is.type("undefined");
+					verify(chain).evaluate.property("asynchronous").is.type("undefined");
+				}
 
 				this.run = function() {
-					if (true) var ThisPromise = new api.Promise({
+					var NinetyNinePromise = new api.Promise({
 						target: chain,
 						executor: function(resolve,reject) {
 							resolve(99);
 						}
 					});
 
-					if (true) var SetPromise = function() {
+					var SetDelayedPromise = function() {
 						return new api.Promise({
 							executor: function(resolve,reject) {
 								window.setTimeout(function() {
@@ -167,17 +88,17 @@
 						})
 					};
 
-					if (true) ThisPromise.then(function(value) {
-						this.set = value;
-						return new SetPromise();
+					NinetyNinePromise.then(function(value) {
+						this[99] = value;
+						return new SetDelayedPromise();
 					}).then(function(delayed) {
 						this.asynchronous = delayed;
 					});
 				};
 
 				this.after = function(verify) {
-					verify(chain.set).is(99);
-					verify(chain.asynchronous).is("delayed");
+					verify(chain)[99].is(99);
+					verify(chain).asynchronous.is("delayed");
 				}
 			});
 

@@ -47,7 +47,9 @@ var OldStep = function(o) {
 var Step = function(target,o) {
 	this.before = function(scope) {
 		if (o.setup) {
-			o.setup.call(target);
+			$api.deprecate(function() {
+				o.setup.call(target);				
+			})();
 		}
 		var verify = new $context.api.unit.Verify(scope);
 		if (o.before) {
@@ -85,13 +87,17 @@ var Step = function(target,o) {
 	this.after = function(scope) {
 		var verify = new $context.api.unit.Verify(scope);
 		if (o.check) {
-			o.check.call(target,verify);
+			$api.deprecate(function() {
+				o.check.call(target,verify);				
+			})();
 		}
 		if (o.after) {
 			o.after.call(target,verify);			
 		}
 		if (o.cleanup) {
-			o.cleanup.call(target);			
+			$api.deprecate(function() {
+				o.cleanup.call(target);
+			})();
 		}
 	}
 };
@@ -410,26 +416,10 @@ $exports.run = function(_callbacks) {
 	global.run(_callbacks);
 };
 
+//	currently undocumented
 $exports.promise = function(_callbacks) {
 	return global.promise(_callbacks);
 }
-
-//	currently undocumented
-//	TODO	probably unused
-$exports.nugget = new function() {
-	var addLoadHook;
-	if (window.addEventListener) {
-		addLoadHook = function(f) {
-			window.addEventListener("load", f, false);
-		}
-	} else if (window.attachEvent) {
-		addLoadHook = function(f) {
-			window.attachEvent("onload", f);
-		}
-	}
-
-	this.addLoadHook = addLoadHook;
-};
 
 //	currently undocumented
 $exports.fire = new function() {
@@ -602,7 +592,9 @@ $exports.fire = new function() {
 	};
 };
 
-$exports.ui = function() {
+//	currently undocumented
+//	TODO	this appears unused. Deprecating for now, pending more thorough check
+$exports.ui = $api.deprecate(function() {
 	var unit = this;
 
 	var loadUnitTests = function() {
@@ -655,4 +647,4 @@ $exports.ui = function() {
 	};
 
 	loadUnitTests();
-}
+})

@@ -19,6 +19,8 @@ var apis = [
 	"loader/api/unit.js",
 	"loader/api/",
 	"loader/api/test/data/1/",
+
+	"loader/browser/test/",
 	
 	"loader/$api.js",
 	"js/object/",
@@ -26,6 +28,7 @@ var apis = [
 	"js/document/",
 	"js/web/",
 	"js/time/",
+
 	"js/promise/"
 ];
 
