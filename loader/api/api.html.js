@@ -12,8 +12,6 @@
 
 //	Shared code for unit test harnesses
 
-var USE_PROMISES = Boolean($context.USE_PROMISES);
-
 var assign = (function() {
 	if ($context.api.assign) return $context.api.assign;
 	if (Object.assign) return Object.assign;
@@ -341,22 +339,6 @@ $exports.ApiHtmlTests = function(html,name) {
 					run(element.getContentString(),hscope);
 				}
 			};
-// 			//	TODO	get this working
-// 			if ($context.api && $context.api.Promise && USE_PROMISES) {
-// 				rv.promise = (function(tscope,verify,evaluator) {
-// 					var self = this;
-// 					var rv = new $context.api.Promise(function(resolve,reject) {
-// 						resolve(self.execute(tscope,verify));
-// 					})
-// 					var name = this.name;
-// 					rv.toString = (function(was) {
-// 						return function() {
-// 							return name + " " + was.apply(this,arguments);
-// 						}
-// 					})(rv.toString);
-// 					return rv;
-// 				}).bind(rv);
-// 			}
 			return rv;
 		} else if (isScript) {
 			//	do nothing

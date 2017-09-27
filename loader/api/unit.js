@@ -10,11 +10,6 @@
 //	Contributor(s):
 //	END LICENSE
 
-var USE_PROMISES = ($context.USE_PROMISES) ? $context.USE_PROMISES : {
-	Suite: true,
-	Scenario: true
-};
-
 var log = ($context.log) ? $context.log : function(){};
 
 //	We have an object called Object in this file, so this
@@ -764,7 +759,7 @@ $exports.Scenario = {};
 				try {
 					//	TODO	execute is apparently mandatory
 					var execute = part.find("execute");
-					var promise = (USE_PROMISES.Scenario) ? part.find("promise") : void(0);
+					var promise = part.find("promise");
 					if (!execute) throw new Error("execute not found in " + o);
 					if (!promise || !next) {
 						execute.call(this,local,verify);
@@ -900,7 +895,7 @@ $exports.Scenario = {};
 								});
 							};
 						}
-						if ($context.api && $context.api.Promise && USE_PROMISES.Suite) {
+						if ($context.api && $context.api.Promise) {
 							var promise = $context.api.Promise.resolve();
 							for (var i=0; i<keys.length; i++) {
 								promise = promise.then(createPartPromise(keys[i])).then(function(result) {

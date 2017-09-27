@@ -473,7 +473,8 @@ window.callbacks.push(function() {
 			}
 		};
 		new jsapi.View(console).listen(scenario);
-		var ASYNCHRONOUS = Boolean(parameters.asynchronous);
+		//	TODO	remove this, and then UI element and conditionals using it, when it is shown to be stable (added 2017 Sep 27)
+		var ASYNCHRONOUS = true;
 
 		var onResult = (function() {
 			if (window.opener
@@ -508,10 +509,11 @@ window.callbacks.push(function() {
 		})();
 		var run = {
 			console: console,
-			haltOnException: HALT_ON_EXCEPTION,
-			callback: (ASYNCHRONOUS) ? function(success) { onResult(success) } : void(0)
+			haltOnException: HALT_ON_EXCEPTION
+			//,
+			//callback: (ASYNCHRONOUS) ? function(success) { onResult(success) } : void(0)
 		};
-		if (parameters.asynchronous) {
+		if (ASYNCHRONOUS) {
 			scenario.promise(run).then(function(result) {
 				onResult(result);
 			});
