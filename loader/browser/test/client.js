@@ -60,6 +60,12 @@ window.callbacks.push(function() {
 				}
 			}
 		});
+		var browser = inonit.loader.loader.module("module.js", {
+			api: {
+				unit: jsapi,
+				Promise: window.Promise
+			}
+		});
 //		//	TODO	may not be right place for this
 //		inonit.loader.run(inonit.loader.nugget.page.base+"initialize.js");
 		var Console = loaders.jsapi.file("console.js").Forwarder;
@@ -171,6 +177,11 @@ window.callbacks.push(function() {
 					};
 
 					this.$jsapi = new function() {
+						this.api = {
+							browser: browser,
+							unit: jsapi
+						};
+						
 						this.loader = new function() {
 							this.module = function(path,context) {
 								//	TODO	probable bug here; probably works when module path ends in /, but for module path

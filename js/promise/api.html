@@ -10,39 +10,15 @@
 		</script>
 	</head>
 	<body>
-		<script type="application/x.jsapi#initialize">
-			var unit = $jsapi.loader.file("../../loader/api/unit.js", {
-				api: {
-					Promise: (function(constant) {
-						return function() {
-							return constant;
-						}
-					})(window.Promise)
-				},
-				log: function() {
-					window.console.log.apply(window.console,arguments);
-				}
-			});
-			
-			scope.unit = unit;
-			
-			
+		<script type="application/x.jsapi#initialize">			
 			scope.api = $jsapi.loader.file("module.js", {
 				Promise: function() {
 					return window.Promise;
 				}
 			});
 			
-			var browser = $jsapi.loader.module("../../loader/browser/test/module.js", {
-				api: {
-					unit: unit,
-					Promise: window.Promise
-				}
-			});
-			
-			scope.browser = browser;
-			
-			//	TODO	get this to true
+			//	TODO	get this to true; probably need to use a Promise series rather than Promise.all in the appropriate code
+			//			within loader/api/unit.js
 			scope.MULTIPLE_SCENARIOS_ALLOWED = $jsapi.environment.multipleScenarios;
 		</script>
 		<script type="application/x.jsapi#tests">
@@ -51,7 +27,7 @@
 			verify(window).evaluate(function() { return this.XMLHttpRequest.asynchrony.started; }).is.type("function");
 			verify(window).evaluate(function() { return this.XMLHttpRequest.asynchrony.finished; }).is.type("function");
 			
-			var asynchronous = new browser.Scenario();
+			var asynchronous = new $jsapi.api.browser.Scenario();
 			
 			asynchronous.name = "Browser tests for asynchronous wrapper";
 
@@ -127,7 +103,7 @@
 			}
 		</script>
 		<script type="application/x.jsapi#tests">
-			var targeted = new browser.Scenario();
+			var targeted = new $jsapi.api.browser.Scenario();
 			targeted.name = "Browser tests: targeted promise";
 
 			targeted.test(new function() {
