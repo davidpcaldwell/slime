@@ -167,7 +167,9 @@ var Set = function(p) {
 			var promise = $context.api.Promise.resolve();
 			for (var i=0; i<steps.length; i++) {
 				(function(step) {
-					promise = promise.then($context.api.Promise.resolve(step.before(p.scope))).then(function() {
+					promise = promise.then(function() {
+						step.before(p.scope);
+					}).then(function() {
 						window.console.log(asynchrony.toString());
 						return step.promise();
 					}).then(function() {

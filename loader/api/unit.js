@@ -776,9 +776,7 @@ $exports.Scenario = {};
 				next(part.after(vscope.success,local));
 			} else {
 				if (promise) {
-					debugger;
 					promise.call(this,local,verify).then(function(result) {
-						debugger;
 						next(result);
 					});
 				} else {

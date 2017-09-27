@@ -383,5 +383,34 @@ END LICENSE
 				verify.scenario(multiple);
 			}
 		</script>
+		<script type="application/x.jsapi#tests">
+			var asynchronous = new $jsapi.api.browser.Scenario();
+			
+			asynchronous.name = "Multi-test scenario";
+			
+			var shared;
+			
+			asynchronous.test(new function() {
+				this.before = function() {
+					shared = 2;
+				};
+				
+				this.after = function() {
+					verify(shared).is(2);
+				}
+			});
+
+			asynchronous.test(new function() {
+				this.before = function() {
+					shared = 3;
+				};
+				
+				this.after = function() {
+					verify(shared).is(3);
+				}
+			});
+			
+			verify.scenario(asynchronous);
+		</script>
 	</body>
 </html>
