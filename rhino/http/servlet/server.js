@@ -23,7 +23,7 @@ var multipartParser;
 var Request = function(_request) {
 	log.INFO("Creating request peer for %s", _request);
 	
-	this.uri = String(_request.getRequestURI());
+	this.uri = $context.api.web.Url.parse(String(_request.getRequestURI()));
 
 	this.source = new function() {
 		this.ip = String(_request.getRemoteAddr());
