@@ -151,14 +151,36 @@ var LocalRepository = function(o) {
 			command: "merge",
 			arguments: args
 		}, (p.stdio) ? { stdio: p.stdio } : {}));
-	}
+	};
+	
+	var formats = {
+		log: {
+			format: "%H~~%cn~~%s~~%ct~~%an",
+			parse: function(line) {
+				var tokens = line.split("~~");
+				return {
+					commit: {
+						hash: tokens[0]
+					},
+					author: {
+						name: tokens[4]
+					},
+					committer: {
+						name: tokens[1],
+						date: (jsh.time) ? new jsh.time.When({ unix: Number(tokens[3])*1000 }) : Number(tokens[3])*1000
+					},
+					subject: tokens[2]
+				}
+			}
+		}
+	};
 
 	this.log = function(p) {
 		return execute({
 			command: "log",
 			arguments: (function() {
 				var rv = [];
-				rv.push("--format=format:%H~~%cn~~%s~~%ct~~%an");
+				rv.push("--format=format:" + formats.log.format);
 				if (p && p.since && p.until) {
 					rv.push(p.since+".."+p.until);
 					rv.push("--");
@@ -182,20 +204,7 @@ var LocalRepository = function(o) {
 				}
 				return result.stdio.output.split("\n").map(function(line) {
 					if (line.length == 0) return null;
-					var tokens = line.split("~~");
-					return {
-						commit: {
-							hash: tokens[0]
-						},
-						author: {
-							name: tokens[4]
-						},
-						committer: {
-							name: tokens[1],
-							date: (jsh.time) ? new jsh.time.When({ unix: Number(tokens[3])*1000 }) : Number(tokens[3])*1000
-						},
-						subject: tokens[2]
-					}
+					return formats.log.parse(line);
 				}).filter(function(commit) {
 					return Boolean(commit && commit.subject);
 				});
@@ -204,9 +213,16 @@ var LocalRepository = function(o) {
 	};
 
 	this.show = function(p) {
+		if (!p) p = {};
 		return execute({
 			command: "show",
-			arguments: ["--format=%H"],
+			//	Some sources say to use undocumented --quiet: see https://stackoverflow.com/questions/1828252/how-to-display-metainformation-about-single-commit-in-git
+			arguments: (function(rv) {
+				rv.push("-s");
+				rv.push("--format=format:" + formats.log.format);
+				if (p.object) rv.push(p.object, "--");
+				return rv;
+			})([]),
 			stdio: {
 				output: String,
 				error: String
@@ -216,7 +232,7 @@ var LocalRepository = function(o) {
 				if (result.status) {
 					throw new Error(result.stdio.error);
 				}
-				return result.stdio.output;
+				return formats.log.parse(result.stdio.output.split("\n")[0]);
 			}
 		});
 	};

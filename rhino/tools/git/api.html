@@ -167,10 +167,14 @@ END LICENSE
 						var repository = module.init({
 							pathname: tmpdir.pathname
 						});
+						repository.test = {};
+						repository.test.writeFile = function(path,content) {
+							repository.directory.getRelativePath(path).write(content, { append: false });							
+						}
 						return repository;
 					};
 					scope.writeFile = function(repository,path,content) {
-						repository.directory.getRelativePath(path).write(content, { append: false });
+						repository.test.writeFile(path,content);
 					};
 				</script>
 				<div class="label">has properties:</div>
@@ -214,6 +218,88 @@ END LICENSE
 							verify(repository).getFile("a").is.type("object");
 							repository.checkout({ branch: "b" });
 							verify(repository).getFile("a").is.type("null");
+						</script>
+					</li>
+					<li class="function">
+						<div class="name">show</div>
+						<span>__DESCRIPTION__</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</div>
+					</li>
+					<li class="function">
+						<div class="name">branch</div>
+						<span>__DESCRIPTION__</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="object">
+									<div class="name">__NAME__</div>
+									<span>__DESCRIPTION__</span>
+									<div class="label">has properties:</div>
+									<ul>
+										<li class="value">
+											<div class="name">name</div>
+											<span class="type">string</span>
+											<span>The name of the branch.</span>
+										</li>
+									</ul>
+								</li>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</div>
+					</li>
+					<li class="function">
+						<div class="name">mergeBase</div>
+						<span>
+							Runs the <code>merge-base</code> command in order to determine the common ancestor of a set of
+							commits.
+						</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">string</span>
+							<span>__DESCRIPTION__</span>
+						</div>
+						<script type="application/x.jsapi#tests">
+							var repository = newRepository();
+							
+							repository.test.writeFile("a","a");
+							repository.add({ path: "a" });
+							repository.commit({ message: "a" });
+							repository.branch({ name: "a" });
+							
+							repository.branch({ name: "b" });
+							repository.checkout({ branch: "b" });
+							repository.test.writeFile("b","b");
+							repository.add({ path: "b" });
+							repository.commit({ message: "b" });
+							
+							repository.checkout({ branch: "a" });
+							repository.branch({ name: "c" });
+							repository.checkout({ branch: "c" });
+							repository.test.writeFile("c","c");
+							repository.add({ path: "c" });
+							repository.commit({ message: "c" });
+							
+							var mergeBase = repository.mergeBase({ commits: ["b","c"] });
+							var a = repository.show({ object: "a" });
+							verify(a).commit.hash.is(mergeBase);
 						</script>
 					</li>
 				</ul>
