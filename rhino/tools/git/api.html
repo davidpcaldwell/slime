@@ -177,8 +177,134 @@ END LICENSE
 						repository.test.writeFile(path,content);
 					};
 				</script>
+				<div class="type">
+					<a class="type" name="types.commit">commit</a>
+					<span>__DESCRIPTION__</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="object">
+							<div class="name">commit</div>
+							<span>__DESCRIPTION__</span>
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="value">
+									<div class="name">hash</div>
+									<span class="type">__TYPE__</span>
+									<span>__DESCRIPTION__</span>
+								</li>
+							</ul>
+						</li>
+						<li class="object">
+							<div class="name">author</div>
+							<span>__DESCRIPTION__</span>
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="value">
+									<div class="name">name</div>
+									<span class="type">__TYPE__</span>
+									<span>__DESCRIPTION__</span>
+								</li>
+							</ul>
+						</li>
+						<li class="object">
+							<div class="name">committer</div>
+							<span>__DESCRIPTION__</span>
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="value">
+									<div class="name">name</div>
+									<span class="type">__TYPE__</span>
+									<span>__DESCRIPTION__</span>
+								</li>
+								<li class="value">
+									<div class="name">date</div>
+									<span class="type">__TYPE__</span>
+									<span>__DESCRIPTION__</span>
+								</li>
+							</ul>
+						</li>
+						<li class="value">
+							<div class="name">subject</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</li>
+					</ul>
+				</div>
+				<div class="type">
+					<a class="type" name="types.branch">branch</a>
+					<span>__DESCRIPTION__</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="value">
+							<div class="name">name</div>
+							<span class="type">string</span>
+							<span>__DESCRIPTION__</span>
+						</li>
+					</ul>
+				</div>
 				<div class="label">has properties:</div>
 				<ul>
+					<li class="function">
+						<div class="name">status</div>
+						<span>__DESCRIPTION__</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type"><a href="#types.commit">commit</a></span>
+							<span>The returned object has the following additional properties.</span>
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="value">
+									<div class="name">branch</div>
+									<span class="type"><a href="#types.branch">branch</a></span>
+									<span>__DESCRIPTION__</span>
+								</li>
+								<li class="value">
+									<div class="name">paths</div>
+									<span class="type">object</span>
+									<span>
+										An object whose keys are string paths within the repository, and whose values are the two-letter output
+										of the <code>git status --porcelain</code> command.										
+									</span>
+								</li>
+							</ul>
+						</div>
+						<script type="application/x.jsapi#tests" jsapi:id="status">
+							var repository = newRepository();
+							verify(repository).status().evaluate.property("paths").is(void(0));
+							repository.test.writeFile("a","a");
+							verify(repository).status().paths.a.is("??");
+							repository.add({ path: "a" });
+							repository.commit({ message: "amessage" });
+							var status = repository.status();
+							verify(status).branch.name.is("master");
+							verify(status).subject.is("amessage");
+						</script>
+					</li>
+					<li class="function">
+						<div class="name">add</div>
+						<span>__DESCRIPTION__</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</div>
+						<script type="application/x.jsapi#tests">
+							var repository = newRepository();
+							repository.test.writeFile("a","a");
+							repository.add({ path: "a" });
+							verify(repository).status().paths.evaluate.property("a").is("A ");
+						</script>
+					</li>
 					<li class="function">
 						<div class="name">checkout</div>
 						<span>Executes the git <code>checkout</code> command to select a branch in a repository.</span>
@@ -226,11 +352,23 @@ END LICENSE
 						<div class="arguments">
 							<div class="label">Arguments</div>
 							<ol>
+								<li class="object">
+									<div class="name">__NAME__</div>
+									<span>__DESCRIPTION__</span>
+									<div class="label">has properties:</div>
+									<ul>
+										<li class="value">
+											<div class="name">object</div>
+											<span class="type">string</span>
+											<span>__DESCRIPTION__</span>
+										</li>
+									</ul>
+								</li>
 							</ol>
 						</div>
 						<div class="returns">
 							<div class="label">Returns</div>
-							<span class="type">__TYPE__</span>
+							<span class="type"><a href="#types.commit">commit</a></span>
 							<span>__DESCRIPTION__</span>
 						</div>
 					</li>
@@ -299,7 +437,7 @@ END LICENSE
 							
 							var mergeBase = repository.mergeBase({ commits: ["b","c"] });
 							var a = repository.show({ object: "a" });
-							verify(a).commit.hash.is(mergeBase);
+							verify(a).commit.hash.is(mergeBase.commit.hash);
 						</script>
 					</li>
 				</ul>
@@ -326,12 +464,12 @@ END LICENSE
 						pathname: tmpdir.pathname
 					});
 					repository.directory.getRelativePath("a").write("a", { append: false });
-					verify(repository.status()).a.is("??");
+					verify(repository.status()).paths.a.is("??");
 					repository.add({ path: "a" });
 					jsh.shell.echo(JSON.stringify(repository.status()));
-					verify(repository.status()).a.is("A");
+					verify(repository.status()).paths.a.is("A ");
 					repository.commit({ message: "a" });
-					verify(repository.status()).evaluate.property("a").is(void(0));
+					verify(repository.status()).evaluate.property("paths").is(void(0));
 				</script>
 			</div>
 			<ul>
@@ -362,6 +500,20 @@ END LICENSE
 					</div>
 					<div class="instances">
 						<div class="label">Instances</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</div>
+				</li>
+				<li class="function">
+					<div class="name">init</div>
+					<span>__DESCRIPTION__</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
 						<span class="type">__TYPE__</span>
 						<span>__DESCRIPTION__</span>
 					</div>

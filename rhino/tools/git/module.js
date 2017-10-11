@@ -10,6 +10,8 @@
 //	Contributor(s):
 //	END LICENSE
 
+//	TODO	eliminate dependency on jsh
+
 var Installation = function(environment) {
 	this.git = function(m) {
 		return jsh.shell.run(
@@ -104,7 +106,41 @@ var LocalRepository = function(o) {
 			environment: jsh.js.Object.set({}, jsh.shell.environment, (o && o.environment) ? o.environment : {}, (p.environment) ? p.environment : {}),
 			directory: directory
 		}));
-	}
+	};
+	
+	this.status = function(p) {
+		var self = this;
+		
+		return execute({
+			command: "status",
+			arguments: ["--porcelain", "-b"],
+			stdio: {
+				output: String
+			},
+			evaluate: function(result) {
+				//	TODO	This ignores renamed files; see git help status
+				var parser = /(..) (\S+)/;
+				var rv = {};
+				result.stdio.output.split("\n").forEach(function(line) {
+					if (line.substring(0,2) == "##") {
+						var branchName = line.substring(3);
+						rv.branch = { name: branchName };
+						jsh.js.Object.set(rv, self.show({ object: branchName }));
+					} else {
+						var match = parser.exec(line);
+						if (match) {
+							if (!rv.paths) rv.paths = {};
+							rv.paths[match[2]] = match[1];
+						} else if (line == "") {
+						} else {
+							throw new Error("Unexpected line: [" + line + "]");
+						}
+					}
+				});
+				return rv;
+			}
+		});
+	};
 
 	this.add = function(p) {
 		execute({
@@ -237,28 +273,6 @@ var LocalRepository = function(o) {
 		});
 	};
 
-	this.status = function(p) {
-		//	TODO	dependency on jsh
-		return execute({
-			command: "status",
-			arguments: ["-s"],
-			stdio: {
-				output: String
-			},
-			evaluate: function(result) {
-				var parser = /(\S+)(?:\s+)(\S+)/;
-				var rv = {};
-				result.stdio.output.split("\n").forEach(function(line) {
-					if (parser.exec(line)) {
-						var match = parser.exec(line);
-						rv[match[2]] = match[1];
-					}
-				});
-				return rv;
-			}
-		});
-	};
-
 	this.fetch = function(p) {
 		var args = [];
 		if (p && p.all) {
@@ -386,6 +400,8 @@ var LocalRepository = function(o) {
 		});
 	}).bind(this);
 
+	var show = this.show.bind(this);
+	
 	this.mergeBase = function(p) {
 		var args = [];
 		args = args.concat(p.commits);
@@ -401,7 +417,7 @@ var LocalRepository = function(o) {
 					if (!rv) {
 						throw new Error("No match: [" + result.stdio.output + "]");
 					}
-					return rv;
+					return show({ object: rv });
 //					return result.stdio.output;
 				} else {
 					throw new Error("git exited with status " + result.status);
