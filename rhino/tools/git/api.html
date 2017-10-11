@@ -401,6 +401,16 @@ END LICENSE
 							<span class="type">__TYPE__</span>
 							<span>__DESCRIPTION__</span>
 						</div>
+						<script type="application/x.jsapi#tests">
+							var repository = newRepository();
+							repository.test.writeFile("a","a");
+							repository.add({ path: "a" });
+							repository.commit({ message: "message a" });
+							repository.branch({ name: "a" });
+							repository.branch({ name: "b" });
+							var branches = repository.branch();
+							verify(branches).length.is(3);
+						</script>
 					</li>
 					<li class="function">
 						<div class="name">mergeBase</div>
@@ -415,7 +425,7 @@ END LICENSE
 						</div>
 						<div class="returns">
 							<div class="label">Returns</div>
-							<span class="type">string</span>
+							<span class="type"><a href="#types.commit">commit</a></span>
 							<span>__DESCRIPTION__</span>
 						</div>
 						<script type="application/x.jsapi#tests">

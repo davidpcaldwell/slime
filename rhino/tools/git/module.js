@@ -350,30 +350,41 @@ var LocalRepository = function(o) {
 						} else if (line) {
 							var detachedMatcher = /\(.*?\)(?:\s+)(\S+)(?:\s+)(?:.*)/;
 							var match = detachedMatcher.exec(line.substring(2));
-							if (match) return {
-								current: (line.substring(0,1) == "*"),
-								commit: {
-									hash: match[1]
-								}
-							};
 							var branchMatcher = /^(\S+)(?:\s+)(\S+)(?:\s+)(?:.*)$/;
-							match = branchMatcher.exec(line.substring(2));
-							if (!match) throw new Error("Does not match " + detachedMatcher + " or " + branchMatcher + ": " + line.substring(2));
-							return {
-								current: (line.substring(0,1) == "*"),
-								name: (match[1].substring(0,1) == "(") ? null : match[1],
-								commit: {
-									hash: match[2]
+							var current = (line.substring(0,1) == "*");
+							if (p.old) {
+								if (match) return {
+									current: current,
+									commit: {
+										hash: match[1]
+									}
+								};
+								var branchMatcher = /^(\S+)(?:\s+)(\S+)(?:\s+)(?:.*)$/;
+								match = branchMatcher.exec(line.substring(2));
+								if (!match) throw new Error("Does not match " + detachedMatcher + " or " + branchMatcher + ": " + line.substring(2));
+								return {
+									current: (line.substring(0,1) == "*"),
+									name: (match[1].substring(0,1) == "(") ? null : match[1],
+									commit: {
+										hash: match[2]
+									}
 								}
+							} else {
+								var dMatch = detachedMatcher.exec(line);
+								if (dMatch) return jsh.js.Object.set({}, { branch: { current: true } }, show({ object: match[1] }));
+								var bMatch = branchMatcher.exec(line.substring(2));
+								//	TODO	starting to think we need a Branch object
+								return jsh.js.Object.set({}, { branch: { name: bMatch[1] } }, show({ object: bMatch[1] }));
 							}
 						}
 						return {};
 					});
-					if (!p.all) {
+					if (p.old && !p.all) {
 						rv = rv.filter(function(branch) {
 							return branch.current;
 						})[0];
 					}
+					jsh.shell.console(JSON.stringify(rv));
 					return rv;
 				} else {
 					return (function(){})();
