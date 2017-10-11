@@ -374,17 +374,22 @@ var LocalRepository = function(o) {
 								if (dMatch) return jsh.js.Object.set({}, { branch: { current: true } }, show({ object: match[1] }));
 								var bMatch = branchMatcher.exec(line.substring(2));
 								//	TODO	starting to think we need a Branch object
-								return jsh.js.Object.set({}, { branch: { name: bMatch[1] } }, show({ object: bMatch[1] }));
+								if (!bMatch) throw new Error("Does not match: [" + line + "]");
+								if (String(bMatch[1]) == "undefined") throw new Error("Line: [" + line + "]");
+								return jsh.js.Object.set({}, { name: bMatch[1] }, show({ object: bMatch[1] }));
 							}
 						}
 						return {};
+					});
+					//	Remove "remotes/origin/HEAD -> origin/master"
+					rv = rv.filter(function(branch) {
+						return !branch.line;
 					});
 					if (p.old && !p.all) {
 						rv = rv.filter(function(branch) {
 							return branch.current;
 						})[0];
 					}
-					jsh.shell.console(JSON.stringify(rv));
 					return rv;
 				} else {
 					return (function(){})();
