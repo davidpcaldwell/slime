@@ -108,6 +108,44 @@ var LocalRepository = function(o) {
 		}));
 	};
 	
+	var formats = {
+		log: {
+			format: "%H~~%cn~~%s~~%ct~~%an~~%D",
+			parse: function(line) {
+				var tokens = line.split("~~");
+				var refs = (function(string) {
+					var tokens = string.split(", ");
+					var rv = {};
+					tokens.forEach(function(token) {
+						var t = token.split(" -> ");
+						if (t.length > 1) {
+							if (!rv.names) rv.names = [];
+							rv.names.push(t[1]);
+						} else {
+							if (!rv.names) rv.names = [];
+							rv.names.push(t[0]);
+						}
+					});
+					return rv;
+				})(tokens[5]);
+				return {
+					names: refs.names,
+					commit: {
+						hash: tokens[0]
+					},
+					author: {
+						name: tokens[4]
+					},
+					committer: {
+						name: tokens[1],
+						date: (jsh.time) ? new jsh.time.When({ unix: Number(tokens[3])*1000 }) : Number(tokens[3])*1000
+					},
+					subject: tokens[2]
+				}
+			}
+		}
+	};
+
 	var show = function(p) {
 		return execute({
 			command: "show",
@@ -213,28 +251,6 @@ var LocalRepository = function(o) {
 		}, (p.stdio) ? { stdio: p.stdio } : {}));
 	};
 	
-	var formats = {
-		log: {
-			format: "%H~~%cn~~%s~~%ct~~%an",
-			parse: function(line) {
-				var tokens = line.split("~~");
-				return {
-					commit: {
-						hash: tokens[0]
-					},
-					author: {
-						name: tokens[4]
-					},
-					committer: {
-						name: tokens[1],
-						date: (jsh.time) ? new jsh.time.When({ unix: Number(tokens[3])*1000 }) : Number(tokens[3])*1000
-					},
-					subject: tokens[2]
-				}
-			}
-		}
-	};
-
 	this.log = function(p) {
 		return execute({
 			command: "log",

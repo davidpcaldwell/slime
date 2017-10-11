@@ -285,8 +285,8 @@ END LICENSE
 							var status = repository.status();
 							verify(status).branch.name.is("master");
 							verify(status).subject.is("amessage");
-//							verify(status).names.length.is(1);
-//							verify(status).names[0].is("master");
+							verify(status).names.length.is(1);
+							verify(status).names[0].is("master");
 						</script>
 					</li>
 					<li class="function">
