@@ -275,6 +275,8 @@ END LICENSE
 						</div>
 						<script type="application/x.jsapi#tests" jsapi:id="status">
 							var repository = newRepository();
+							debugger;
+							var status = repository.status();
 							verify(repository).status().evaluate.property("paths").is(void(0));
 							repository.test.writeFile("a","a");
 							verify(repository).status().paths.a.is("??");
@@ -283,6 +285,8 @@ END LICENSE
 							var status = repository.status();
 							verify(status).branch.name.is("master");
 							verify(status).subject.is("amessage");
+//							verify(status).names.length.is(1);
+//							verify(status).names[0].is("master");
 						</script>
 					</li>
 					<li class="function">

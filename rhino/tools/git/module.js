@@ -108,6 +108,30 @@ var LocalRepository = function(o) {
 		}));
 	};
 	
+	var show = function(p) {
+		return execute({
+			command: "show",
+			//	Some sources say to use undocumented --quiet: see https://stackoverflow.com/questions/1828252/how-to-display-metainformation-about-single-commit-in-git
+			arguments: (function(rv) {
+				rv.push("-s");
+				rv.push("--format=format:" + formats.log.format);
+				if (p.object) rv.push(p.object, "--");
+				return rv;
+			})([]),
+			stdio: {
+				output: String,
+				error: String
+			}
+			,evaluate: function(result) {
+				if (result.status == 128) return null;
+				if (result.status) {
+					throw new Error(result.stdio.error);
+				}
+				return formats.log.parse(result.stdio.output.split("\n")[0]);
+			}
+		});		
+	};
+	
 	this.status = function(p) {
 		var self = this;
 		
@@ -250,27 +274,7 @@ var LocalRepository = function(o) {
 
 	this.show = function(p) {
 		if (!p) p = {};
-		return execute({
-			command: "show",
-			//	Some sources say to use undocumented --quiet: see https://stackoverflow.com/questions/1828252/how-to-display-metainformation-about-single-commit-in-git
-			arguments: (function(rv) {
-				rv.push("-s");
-				rv.push("--format=format:" + formats.log.format);
-				if (p.object) rv.push(p.object, "--");
-				return rv;
-			})([]),
-			stdio: {
-				output: String,
-				error: String
-			}
-			,evaluate: function(result) {
-				if (result.status == 128) return null;
-				if (result.status) {
-					throw new Error(result.stdio.error);
-				}
-				return formats.log.parse(result.stdio.output.split("\n")[0]);
-			}
-		});
+		return show(p);
 	};
 
 	this.fetch = function(p) {
@@ -400,8 +404,6 @@ var LocalRepository = function(o) {
 		});
 	}).bind(this);
 
-	var show = this.show.bind(this);
-	
 	this.mergeBase = function(p) {
 		var args = [];
 		args = args.concat(p.commits);
