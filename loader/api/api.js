@@ -183,7 +183,7 @@ window.onload = function() {
 					}
 				};
 				var found = eval(code);
-				console.log("Found",found);
+				console.log("Found",found,"for",code);
 				references[i].innerHTML = found.node.innerHTML;
 				new Markup({ node: references[i], base: found.base }).fix();
 			}
