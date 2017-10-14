@@ -83,8 +83,8 @@ plugin({
 			});
 			return bitbucket;
 		};
-
-		jsh.test.provision.serve = function(o) {
+		
+		var Server = function(o) {
 			loadhg();
 			var server = new jsh.unit.mock.Web();
 			var bitbucket = (function() {
@@ -100,38 +100,18 @@ plugin({
 				};
 			}
 			server.add(jsh.unit.mock.Web.bitbucket(bitbucket));
-			var version = (o.version) ? o.version : "tip";
-			var script = (function() {
-				var repository = String(new hg.Repository({ local: o.base }).paths.default.url);
-				if (repository.substring(repository.length-1) != "/") repository += "/";
-				repository += "raw/";
-				repository += version + "/";
-				repository += o.script;
-				return repository;
-			})();
-			var command = {
-				mock: {
-					server: {
-						host: (o.host) ? o.host : "127.0.0.1",
-						port: server.port
-					}
-				},
-				script: script,
-				user: o.user
-			};
-			var mock = new jsh.test.provision.Command(command);
-			jsh.shell.console(mock);
-			delete command.mock;
-			jsh.shell.console("");
-			var real = new jsh.test.provision.Command(command);
-			jsh.shell.console(real);
+			return server;
+		}
+
+		jsh.test.provision.serve = function(o) {
+			var server = new Server(o);
 			server.run();
 			return server;
 		};
 		jsh.test.provision.serve.getMockBitbucketConfiguration = getMockConfiguration;
 		jsh.test.provision.serve.getMockBitbucketConfiguration.SlimeDownloads = SlimeDownloads;
-		jsh.test.provision.Server = $api.deprecate(jsh.test.provision.serve);
-		jsh.test.provision.Server.getMockBitbucketConfiguration = $api.deprecate(getMockConfiguration);
+		jsh.test.provision.Server = Server;
+		jsh.test.provision.Server.getMockBitbucketConfiguration = getMockConfiguration;
 
 		var writeUrl = function(url,mock,version) {
 			if (mock) url = url.replace(/https:\/\//g, "http://");

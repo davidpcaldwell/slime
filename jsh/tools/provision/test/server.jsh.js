@@ -25,6 +25,8 @@ var parameters = jsh.script.getopts({
 	}
 });
 
+jsh.loader.plugins(jsh.script.file.parent.pathname);
+
 var bitbucket = {
 	src: {}
 };
