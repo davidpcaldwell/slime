@@ -136,10 +136,10 @@ public class Profiler {
 		}
 
 		void stop(Node node) {
-			stack.peek().stop();
 			if (stack.peek() != node) {
 				throw new RuntimeException("Stack is not correct.");
 			}
+			stack.peek().stop();
 			stack.pop();
 		}
 
