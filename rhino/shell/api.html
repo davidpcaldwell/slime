@@ -434,7 +434,7 @@ os.resolve(function() {
 								verify(local).output[0].is.type("string");
 								verify(local).success.is.type("number");
 								
-								var fake = module.os.ping({ host: "198.51.100.0" });
+								var fake = module.os.ping({ host: "198.51.100.0", timeout: 1 });
 								verify(fake).status.is(2);
 								verify(fake).evaluate.property("success").is.type("undefined");
 							}
