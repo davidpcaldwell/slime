@@ -19,7 +19,17 @@ var parameters = jsh.script.getopts({
 	}
 });
 
+if (!parameters.options.install) {
+	jsh.shell.console("Required: -install <directory> indicating directory in which Mongo is installed.");
+	jsh.shell.exit(1);
+}
+
 if (parameters.options.driver) jsh.loader.plugins(parameters.options.driver);
+var shouldBeAvailable = jsh.loader.java.getClass("com.mongodb.ServerAddress");
+if (!shouldBeAvailable) {
+	jsh.shell.console("Required: -driver <jar> indicating location of Mongo Java driver.");
+	jsh.shell.exit(1);
+}
 
 var environment = {
 	mongo: {
