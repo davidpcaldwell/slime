@@ -63,7 +63,9 @@ END LICENSE
 			</div>
 			<div class="type">
 				<a class="type" name="types.header">header</a>
-				<span>Represents an HTTP header.</span>
+				<span>
+					Represents an HTTP header. The value of the <code>name</code> property should be treated as case-insensitive.
+				</span>
 				<div class="label">has properties:</div>
 				<ul>
 					<li class="value">
@@ -164,8 +166,34 @@ END LICENSE
 					</li>
 					<li class="value">
 						<div class="name">headers</div>
-						<span class="type">__TYPE__</span>
-						<span>__DESCRIPTION__</span>
+						<span class="type">Array of <a href="#types.header">header</a></span>
+						<span>
+							The headers included with this request. The given array also has the following method:
+						</span>
+						<div class="label">has properties:</div>
+						<ul>
+							<li class="function experimental">
+								<div class="name">value</div>
+								<span>
+									Returns the value of the given header as a string. Multiple values will be comma-delimited,
+									per RFC 2616.
+								</span>
+								<div class="arguments">
+									<div class="label">Arguments</div>
+									<ol>
+										<li class="value">
+											<span class="type">string</span>
+											<span>A (case-insensitive) header name.</span>
+										</li>
+									</ol>
+								</div>
+								<div class="returns">
+									<div class="label">Returns</div>
+									<span class="type">string</span>
+									<span>The value of that header, or <code>null</code> if it is not present.</span>
+								</div>
+							</li>
+						</ul>
 					</li>
 					<li class="object">
 						<div class="name">body</div>

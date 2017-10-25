@@ -120,6 +120,7 @@ this.jsh = new function() {
 		this.run = loader.run;
 		this.file = loader.file;
 		this.module = loader.module;
+		this.value = loader.value;
 		this.namespace = loader.namespace;
 
 		//	experimental interface and therefore currently undocumented

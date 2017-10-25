@@ -15,6 +15,9 @@
 			<h1>Tests</h1>
 			<ul>
 				<li>
+					Unit tests (Java): <code>jsh/etc/unit.jsh.js [-unit &lt;unit>]</code>
+				</li>
+				<li>
 					<code>jsh</code> Integration tests: <code>jsh/etc/integration.jsh.js -part <i>part</i></code>
 				</li>
 				<li>
@@ -42,6 +45,25 @@
 					</ul>
 				</li>
 			</ul>
+		</div>
+		<div>
+			<h1>Manual testing required</h1>
+			<div>
+				<h2>Provisioning</h2>
+				<div>
+					<code>jrunscript rhino/jrunscript/api.js jsh jsh/tools/provision/test/server.jsh.js</code>
+				</div>
+				<div>
+					Test: copy and paste the <samp>Testing (standard)</samp> output and make sure it produces a Hello, World message.
+				</div>
+				<div>
+					Testing private repositories requires the private <code>slime-kit</code> repository, and can be invoked as
+					follows:
+					<div>
+						<code>-repository:name slime-kit -repository:location <i>directory where slime-kit is located</i> -repository:script test/provision-script.jsh.js -password <i>password for server to use for davidpcaldwell</i></code>
+					</div>
+				</div>
+			</div>
 		</div>
 	</body>
 </html>
