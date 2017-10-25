@@ -154,13 +154,6 @@ var Database = function(_db) {
 		_db.authenticate(username,new Packages.java.lang.String(password).toCharArray());
 	};
 	
-	this.rs = new function() {
-		this.slaveOk = function() {
-			//	TODO	uses deprecated call from 2.14; supposed to switch to ReadPreference
-			_db.slaveOk();
-		}
-	}
-
 	this.getCollectionNames = function() {
 		var _names = _db.getCollectionNames();
 		var rv = [];
@@ -184,6 +177,30 @@ var Database = function(_db) {
 
 	this.dropDatabase = function() {
 		_db.dropDatabase();
+	}
+	
+	var rs = new function() {
+		this.slaveOk = function() {
+			//	TODO	uses deprecated call from 2.14; supposed to switch to ReadPreference
+			_db.slaveOk();
+		}
+	}
+
+	this.script = function(p) {
+		var scope = {
+			db: this,
+			printjson: function(o) {
+				jsh.shell.echo(JSON.stringify(o,void(0),"    "));
+			},
+			print: function(s) {
+				jsh.shell.echo(s);
+			},
+			rs: rs
+		};
+		if (p.scope) {
+			p.scope(scope);
+		}
+		jsh.loader.run(p.file.pathname, scope);
 	}
 }
 
