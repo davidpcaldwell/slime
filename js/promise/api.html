@@ -19,7 +19,7 @@
 		</script>
 		<script type="application/x.jsapi#tests">
 			verify(api).evaluate.property("Promise").is.type("function");
-
+			
 			var targeted = new $jsapi.api.browser.Scenario();
 			targeted.name = "Browser tests: targeted promise";
 
@@ -109,62 +109,78 @@
 		<div>__DESCRIPTION__</div>
 		<div>
 			<h1>Context</h1>
-			<div class="type">
-				<a class="type" name="types.asynchrony">asynchrony</a>
-				<span>
-					A type that allows this module to hook into an asynchronous processing monitor. For example, the SLIME
-					browser loader allows HTTP testing with asynchronous calls; that testing framework requires that asynchronous
-					code notify it of the start and end of asynchronous processes.
-				</span>
-				<div class="label">has properties:</div>
-				<ul>
-					<li class="function">
-						<div class="name">started</div>
-						<span>__DESCRIPTION__</span>
-						<div class="arguments">
-							<div class="label">Arguments</div>
-							<ol>
-								<li class="value">
-									<span class="type">__TYPE__</span>
-									<span>__DESCRIPTION__</span>
-								</li>
-							</ol>
-						</div>
-					</li>
-					<li class="function">
-						<div class="name">finished</div>
-						<span>__DESCRIPTION__</span>
-						<div class="arguments">
-							<div class="label">Arguments</div>
-							<ol>
-								<li class="value">
-									<span class="type">__TYPE__</span>
-									<span>__DESCRIPTION__</span>
-								</li>
-							</ol>
-						</div>
-					</li>
-				</ul>
-			</div>
-
 			<ul>
 				<li class="value">
 					<div class="name">Promise</div>
 					<span class="type">function</span>
 					<span>A constructor that can create an A+-compliant Promise.</span>
 				</li>
-				<li class="function">
-					<div class="name">asynchrony</div>
-					<div class="returns">
-						<div class="label">Returns</div>
-						<span class="type"><a href="#types.asynchrony">asynchrony</a></span>
-					</div>
-				</li>
 			</ul>
 		</div>
 		<div>
 			<h1>Exports</h1>
 			<ul>
+				<li class="constructor experimental">
+					<div class="name">Controlled</div>
+					<span>__DESCRIPTION__</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+						</ol>
+					</div>
+					<div class="instances">
+						<div class="label">Instances</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</div>
+					<script type="application/x.jsapi#tests">
+						var controlled = new $jsapi.api.browser.Scenario();
+
+						controlled.test(new function() {
+							var x;
+
+							this.before = function(verify) {
+								verify(x).is(void(0));
+							};
+
+							this.run = function() {
+								var explicit = new api.Controlled();
+								explicit.then(function(value) {
+									x = value;
+								});
+								explicit.resolve(8);
+							};
+
+							this.after = function(verify) {
+								verify(x).is(8);
+							}
+						});
+
+						controlled.test(new function() {
+							var x;
+
+							this.before = function(verify) {
+								verify(x).is(void(0));
+							};
+
+							this.run = function() {
+								var implicit = new api.Controlled(function() {
+									return 9;
+								});
+								implicit.then(function(value) {
+									x = value;
+								});
+								implicit.resolve();
+							};
+
+							this.after = function(verify) {
+								verify(x).is(9);
+							}
+						});
+
+						verify.scenario(controlled);
+					</script>
+				</li>
 			</ul>
 		</div>
 	</body>

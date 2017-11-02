@@ -57,3 +57,29 @@ var SlimePromise = function Targeter(p) {
 };
 
 $exports.Promise = SlimePromise;
+
+var Controllable = function(evaluator) {
+	var resolveIt;
+
+	this.toString = function() {
+		return "Controllable Promise: " + promise;
+	};
+
+	var promise = new Promise(function(resolve,reject) {
+		resolveIt = resolve;
+	});
+
+	this.then = function() {
+		return promise.then.apply(promise,arguments);
+	}
+
+	this.resolve = function(value) {
+		if (arguments.length == 0 && evaluator) {
+			value = evaluator();
+		}
+		window.console.log("Resolving " + this + " to " + value);
+		resolveIt(value);
+	}
+};
+
+$exports.Controlled = Controllable;

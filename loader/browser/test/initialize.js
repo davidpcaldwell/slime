@@ -82,6 +82,7 @@ document.domain = document.domain;
 		};
 
 		if (Promise) {
+			//	TODO	merge this implementation with js/promise implementation
 			var Controllable = function(evaluator) {
 				controlled.push(this);
 
