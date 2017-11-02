@@ -65,7 +65,8 @@ var browsers = (function() {
 					var directory = parameters.options["chrome:profile"].createDirectory({
 						ifExists: function(dir) {
 							return false;
-						}
+						},
+						recursive: true
 					});
 					rv.push(new jsh.unit.browser.Chrome({ user: directory }))
 				} else {

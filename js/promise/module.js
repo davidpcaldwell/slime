@@ -1,4 +1,5 @@
 var SlimePromise = function Targeter(p) {
+	if (!p) p = {};
 	var Promise = $context.Promise();
 	
 	if (typeof(p) == "function") {
@@ -13,6 +14,8 @@ var SlimePromise = function Targeter(p) {
 	})(p);
 	
 	var delegate = (p.delegate) ? p.delegate : void(0);
+
+	if (!delegate && !executor) throw new TypeError("Required: either 'delegate' promise or 'executor' function");
 
 	var wrap = function(v) {
 		if (typeof(v) == "object" && v instanceof Promise) {

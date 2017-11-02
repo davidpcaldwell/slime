@@ -17,93 +17,6 @@
 				}
 			});
 		</script>
-		<script type="application/x.jsapi#tests">
-			verify(api).evaluate.property("Promise").is.type("function");
-			
-			var targeted = new $jsapi.api.browser.Scenario();
-			targeted.name = "Browser tests: targeted promise";
-
-			targeted.test(new function() {
-				var result = {};
-
-				this.run = function() {
-					new api.Promise(function(resolve,reject) {
-						resolve("resolved");
-					}).then(function(n) {
-						result.resolved = n;
-					});
-
-				}
-
-				this.after = function(verify) {
-					verify(result).resolved.is("resolved");
-				}
-			});
-
-			targeted.test(new function() {
-				var target = {
-					thirty: 30
-				};
-				
-				this.run = function() {
-					new api.Promise({
-						target: target,
-						executor: function(resolve,reject) {
-							resolve(this.foo);
-						}
-					}).then(function(n) {
-						this.sixty = this.thirty * 2;
-					});
-				};
-
-				this.after = function(verify) {
-					verify(target).thirty.is(30);
-					verify(target).sixty.is(60);
-				}
-			});
-
-			targeted.test(new function() {
-				var chain = {};
-				
-				this.before = function(verify) {
-					verify(chain).evaluate.property(99).is.type("undefined");
-					verify(chain).evaluate.property("asynchronous").is.type("undefined");
-				}
-
-				this.run = function() {
-					var NinetyNinePromise = new api.Promise({
-						target: chain,
-						executor: function(resolve,reject) {
-							resolve(99);
-						}
-					});
-
-					var SetDelayedPromise = function() {
-						return new api.Promise({
-							executor: function(resolve,reject) {
-								window.setTimeout(function() {
-									resolve("delayed");
-								}, 50);
-							}
-						})
-					};
-
-					NinetyNinePromise.then(function(value) {
-						this[99] = value;
-						return new SetDelayedPromise();
-					}).then(function(delayed) {
-						this.asynchronous = delayed;
-					});
-				};
-
-				this.after = function(verify) {
-					verify(chain)[99].is(99);
-					verify(chain).asynchronous.is("delayed");
-				}
-			});
-
-			verify.scenario(targeted);
-		</script>
 		<script type="application/javascript">
 		</script>
 		<div>__DESCRIPTION__</div>
@@ -113,13 +26,205 @@
 				<li class="value">
 					<div class="name">Promise</div>
 					<span class="type">function</span>
-					<span>A constructor that can create an A+-compliant Promise.</span>
+					<span>A no-argument function that returns a constructor that can be used to create an A+ promise.</span>
 				</li>
 			</ul>
 		</div>
 		<div>
 			<h1>Exports</h1>
 			<ul>
+				<li class="constructor">
+					<div class="name">Promise</div>
+					<span>
+						Creates an A+-like Promise that allows the <dfn>target</dfn>, or <code>this</code> value within its
+						<code>then</code> method, to be configured.
+					</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+							<li class="object">
+								<span>__DESCRIPTION__</span>
+								<div class="label">has properties:</div>
+								<ul>
+									<li class="value">
+										<div class="name">delegate</div>
+										<span class="type">Promise</span>
+										<span>
+											(optional) A native <code>Promise</code> to which this promise will delegate its
+											behavior.
+										</span>
+									</li>
+									<li class="value">
+										<div class="name">executor</div>
+										<span class="type">function</span>
+										<span>
+											(optional; needed if <code>delegate</code> not specified) An <dfn>executor</dfn>
+											function, as specified in the <a href="https://tc39.github.io/ecma262/#sec-promise-executor">ECMAScript</a>.
+										</span>
+									</li>
+									<li class="value">
+										<div class="name">target</div>
+										<span class="type">object</span>
+										<span>
+											A target object to use as <code>this</code> when invoking the <code>then</code> method
+											of the promise.
+										</span>
+									</li>
+								</ul>
+							</li>
+						</ol>
+					</div>
+					<div class="instances">
+						<div class="label">Instances</div>
+						<span class="type">__TYPE__</span>
+						<div class="label">has properties:</div>
+						<ul>
+							<li class="function">
+								<div class="name">then</div>
+								<span>__DESCRIPTION__</span>
+								<div class="arguments">
+									<div class="label">Arguments</div>
+									<ol>
+									</ol>
+								</div>
+								<div class="returns">
+									<div class="label">Returns</div>
+									<span class="type">__TYPE__</span>
+									<span>__DESCRIPTION__</span>
+								</div>
+							</li>
+						</ul>
+					</div>
+					<script type="application/x.jsapi#tests">
+						verify(api).evaluate.property("Promise").is.type("function");
+
+						var targeted = new $jsapi.api.browser.Scenario();
+						targeted.name = "Browser tests: targeted promise";
+
+						targeted.test(new function() {
+							var result = {};
+
+							this.run = function() {
+								new api.Promise(function(resolve,reject) {
+									resolve("resolved");
+								}).then(function(n) {
+									result.resolved = n;
+								});
+							}
+
+							this.after = function(verify) {
+								verify(result).resolved.is("resolved");
+							}
+						});
+
+						targeted.test(new function() {
+							var target = {
+								thirty: 30
+							};
+
+							this.run = function() {
+								new api.Promise({
+									target: target,
+									executor: function(resolve,reject) {
+										resolve(this.foo);
+									}
+								}).then(function(n) {
+									this.sixty = this.thirty * 2;
+								});
+							};
+
+							this.after = function(verify) {
+								verify(target).thirty.is(30);
+								verify(target).sixty.is(60);
+							}
+						});
+
+						targeted.test(new function() {
+							var chain = {};
+
+							this.before = function(verify) {
+								verify(chain).evaluate.property(99).is.type("undefined");
+								verify(chain).evaluate.property("asynchronous").is.type("undefined");
+							}
+
+							this.run = function() {
+								var NinetyNinePromise = new api.Promise({
+									target: chain,
+									executor: function(resolve,reject) {
+										resolve(99);
+									}
+								});
+
+								var SetDelayedPromise = function() {
+									return new api.Promise({
+										executor: function(resolve,reject) {
+											window.setTimeout(function() {
+												resolve("delayed");
+											}, 50);
+										}
+									})
+								};
+
+								NinetyNinePromise.then(function(value) {
+									this[99] = value;
+									return new SetDelayedPromise();
+								}).then(function(delayed) {
+									this.asynchronous = delayed;
+								});
+							};
+
+							this.after = function(verify) {
+								verify(chain)[99].is(99);
+								verify(chain).asynchronous.is("delayed");
+							}
+						});
+
+						targeted.test(new function() {
+							var target = {};
+
+							this.before = function(verify) {
+								verify(target).evaluate.property("resolved").is(void(0));
+							};
+
+							this.run = function() {
+								var delegate = new window.Promise(function(resolve,reject) {
+									resolve("delegated");
+								});
+								var wrapped = new api.Promise({
+									delegate: delegate,
+									target: target
+								});
+								wrapped.then(function(value) {
+									target.resolved = value;
+								});
+							}
+
+							this.after = function(verify) {
+								verify(target).resolved.is("delegated");
+							};
+						});
+
+						targeted.test(new function() {
+							var ran = false;
+							var error;
+
+							this.run = function() {
+								try {
+									var illegal = new api.Promise();
+								} catch (e) {
+									error = e;
+								}
+							};
+
+							this.after = function(verify) {
+								verify(ran).is(false);
+								verify(error).evaluate(function() { return this instanceof TypeError; }).is(true);
+							}
+						});
+
+						verify.scenario(targeted);
+					</script>
+				</li>
 				<li class="constructor experimental">
 					<div class="name">Controlled</div>
 					<span>__DESCRIPTION__</span>
