@@ -10,6 +10,8 @@
 //	Contributor(s):
 //	END LICENSE
 
+//	TODO	eliminate dependency on jsh
+
 var Installation = function(environment) {
 	this.git = function(m) {
 		return jsh.shell.run(
@@ -104,7 +106,103 @@ var LocalRepository = function(o) {
 			environment: jsh.js.Object.set({}, jsh.shell.environment, (o && o.environment) ? o.environment : {}, (p.environment) ? p.environment : {}),
 			directory: directory
 		}));
-	}
+	};
+	
+	var formats = {
+		log: {
+			format: "%H~~%cn~~%s~~%ct~~%an~~%D",
+			parse: function(line) {
+				var tokens = line.split("~~");
+				var refs = (function(string) {
+					var tokens = string.split(", ");
+					var rv = {};
+					tokens.forEach(function(token) {
+						var t = token.split(" -> ");
+						if (t.length > 1) {
+							if (!rv.names) rv.names = [];
+							rv.names.push(t[1]);
+						} else {
+							if (!rv.names) rv.names = [];
+							rv.names.push(t[0]);
+						}
+					});
+					return rv;
+				})(tokens[5]);
+				return {
+					names: refs.names,
+					commit: {
+						hash: tokens[0]
+					},
+					author: {
+						name: tokens[4]
+					},
+					committer: {
+						name: tokens[1],
+						date: (jsh.time) ? new jsh.time.When({ unix: Number(tokens[3])*1000 }) : Number(tokens[3])*1000
+					},
+					subject: tokens[2]
+				}
+			}
+		}
+	};
+
+	var show = function(p) {
+		return execute({
+			command: "show",
+			//	Some sources say to use undocumented --quiet: see https://stackoverflow.com/questions/1828252/how-to-display-metainformation-about-single-commit-in-git
+			arguments: (function(rv) {
+				rv.push("-s");
+				rv.push("--format=format:" + formats.log.format);
+				if (p.object) rv.push(p.object, "--");
+				return rv;
+			})([]),
+			stdio: {
+				output: String,
+				error: String
+			}
+			,evaluate: function(result) {
+				if (result.status == 128) return null;
+				if (result.status) {
+					throw new Error(result.stdio.error);
+				}
+				return formats.log.parse(result.stdio.output.split("\n")[0]);
+			}
+		});		
+	};
+	
+	this.status = function(p) {
+		var self = this;
+		
+		return execute({
+			command: "status",
+			arguments: ["--porcelain", "-b"],
+			stdio: {
+				output: String
+			},
+			evaluate: function(result) {
+				//	TODO	This ignores renamed files; see git help status
+				var parser = /(..) (\S+)/;
+				var rv = {};
+				result.stdio.output.split("\n").forEach(function(line) {
+					if (line.substring(0,2) == "##") {
+						var branchName = line.substring(3);
+						rv.branch = { name: branchName };
+						jsh.js.Object.set(rv, self.show({ object: branchName }));
+					} else {
+						var match = parser.exec(line);
+						if (match) {
+							if (!rv.paths) rv.paths = {};
+							rv.paths[match[2]] = match[1];
+						} else if (line == "") {
+						} else {
+							throw new Error("Unexpected line: [" + line + "]");
+						}
+					}
+				});
+				return rv;
+			}
+		});
+	};
 
 	this.add = function(p) {
 		execute({
@@ -151,14 +249,14 @@ var LocalRepository = function(o) {
 			command: "merge",
 			arguments: args
 		}, (p.stdio) ? { stdio: p.stdio } : {}));
-	}
-
+	};
+	
 	this.log = function(p) {
 		return execute({
 			command: "log",
 			arguments: (function() {
 				var rv = [];
-				rv.push("--format=format:%H~~%cn~~%s~~%ct~~%an");
+				rv.push("--format=format:" + formats.log.format);
 				if (p && p.since && p.until) {
 					rv.push(p.since+".."+p.until);
 					rv.push("--");
@@ -182,20 +280,7 @@ var LocalRepository = function(o) {
 				}
 				return result.stdio.output.split("\n").map(function(line) {
 					if (line.length == 0) return null;
-					var tokens = line.split("~~");
-					return {
-						commit: {
-							hash: tokens[0]
-						},
-						author: {
-							name: tokens[4]
-						},
-						committer: {
-							name: tokens[1],
-							date: (jsh.time) ? new jsh.time.When({ unix: Number(tokens[3])*1000 }) : Number(tokens[3])*1000
-						},
-						subject: tokens[2]
-					}
+					return formats.log.parse(line);
 				}).filter(function(commit) {
 					return Boolean(commit && commit.subject);
 				});
@@ -204,43 +289,8 @@ var LocalRepository = function(o) {
 	};
 
 	this.show = function(p) {
-		return execute({
-			command: "show",
-			arguments: ["--format=%H"],
-			stdio: {
-				output: String,
-				error: String
-			}
-			,evaluate: function(result) {
-				if (result.status == 128) return null;
-				if (result.status) {
-					throw new Error(result.stdio.error);
-				}
-				return result.stdio.output;
-			}
-		});
-	};
-
-	this.status = function(p) {
-		//	TODO	dependency on jsh
-		return execute({
-			command: "status",
-			arguments: ["-s"],
-			stdio: {
-				output: String
-			},
-			evaluate: function(result) {
-				var parser = /(\S+)(?:\s+)(\S+)/;
-				var rv = {};
-				result.stdio.output.split("\n").forEach(function(line) {
-					if (parser.exec(line)) {
-						var match = parser.exec(line);
-						rv[match[2]] = match[1];
-					}
-				});
-				return rv;
-			}
-		});
+		if (!p) p = {};
+		return show(p);
 	};
 
 	this.fetch = function(p) {
@@ -300,26 +350,42 @@ var LocalRepository = function(o) {
 						} else if (line) {
 							var detachedMatcher = /\(.*?\)(?:\s+)(\S+)(?:\s+)(?:.*)/;
 							var match = detachedMatcher.exec(line.substring(2));
-							if (match) return {
-								current: (line.substring(0,1) == "*"),
-								commit: {
-									hash: match[1]
-								}
-							};
 							var branchMatcher = /^(\S+)(?:\s+)(\S+)(?:\s+)(?:.*)$/;
-							match = branchMatcher.exec(line.substring(2));
-							if (!match) throw new Error("Does not match " + detachedMatcher + " or " + branchMatcher + ": " + line.substring(2));
-							return {
-								current: (line.substring(0,1) == "*"),
-								name: (match[1].substring(0,1) == "(") ? null : match[1],
-								commit: {
-									hash: match[2]
+							var current = (line.substring(0,1) == "*");
+							if (p.old) {
+								if (match) return {
+									current: current,
+									commit: {
+										hash: match[1]
+									}
+								};
+								var branchMatcher = /^(\S+)(?:\s+)(\S+)(?:\s+)(?:.*)$/;
+								match = branchMatcher.exec(line.substring(2));
+								if (!match) throw new Error("Does not match " + detachedMatcher + " or " + branchMatcher + ": " + line.substring(2));
+								return {
+									current: (line.substring(0,1) == "*"),
+									name: (match[1].substring(0,1) == "(") ? null : match[1],
+									commit: {
+										hash: match[2]
+									}
 								}
+							} else {
+								var dMatch = detachedMatcher.exec(line);
+								if (dMatch) return jsh.js.Object.set({}, { branch: { current: true } }, show({ object: match[1] }));
+								var bMatch = branchMatcher.exec(line.substring(2));
+								//	TODO	starting to think we need a Branch object
+								if (!bMatch) throw new Error("Does not match: [" + line + "]");
+								if (String(bMatch[1]) == "undefined") throw new Error("Line: [" + line + "]");
+								return jsh.js.Object.set({}, { name: bMatch[1] }, show({ object: bMatch[1] }));
 							}
 						}
 						return {};
 					});
-					if (!p.all) {
+					//	Remove "remotes/origin/HEAD -> origin/master"
+					rv = rv.filter(function(branch) {
+						return !branch.line;
+					});
+					if (p.old && !p.all) {
 						rv = rv.filter(function(branch) {
 							return branch.current;
 						})[0];
@@ -385,7 +451,7 @@ var LocalRepository = function(o) {
 					if (!rv) {
 						throw new Error("No match: [" + result.stdio.output + "]");
 					}
-					return rv;
+					return show({ object: rv });
 //					return result.stdio.output;
 				} else {
 					throw new Error("git exited with status " + result.status);

@@ -13,7 +13,6 @@
 var parameters = jsh.script.getopts({
 	options: {
 		src: jsh.script.file.parent.parent.parent.pathname,
-		rhino: jsh.file.Pathname,
 		part: String,
 		view: "console",
 		"test:unbuilt": false,
