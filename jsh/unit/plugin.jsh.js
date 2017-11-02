@@ -81,7 +81,11 @@ plugin({
 				var view = jsh.unit.view.options.select(o.view);
 				view.listen(suite);
 				var success = suite.run({ path: o.path });
-				jsh.shell.exit( (success) ? 0 : 1 );
+				if (o.view == "stdio") {
+					jsh.shell.exit(0);
+				} else {
+					jsh.shell.exit( (success) ? 0 : 1 );
+				}
 			}
 		};
 
