@@ -113,6 +113,7 @@ var LocalRepository = function(o) {
 			format: "%H~~%cn~~%s~~%ct~~%an~~%D",
 			parse: function(line) {
 				var tokens = line.split("~~");
+				if (!tokens[5]) throw new Error("No tokens[5]: [" + tokens + "]");
 				var refs = (function(string) {
 					var tokens = string.split(", ");
 					var rv = {};
@@ -186,6 +187,9 @@ var LocalRepository = function(o) {
 				result.stdio.output.split("\n").forEach(function(line) {
 					if (line.substring(0,2) == "##") {
 						var branchName = line.substring(3);
+						if (branchName.indexOf("...") != -1) {
+							branchName = branchName.substring(0,branchName.indexOf("..."));
+						}
 						rv.branch = { name: branchName };
 						jsh.js.Object.set(rv, self.show({ object: branchName }));
 					} else {
