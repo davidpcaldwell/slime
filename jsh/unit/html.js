@@ -129,19 +129,20 @@ var Jsdom = function(base,dom) {
 };
 
 var loadApiHtml = function(file) {
+	var DISABLE_CACHE = !Boolean(jsh.shell.environment.JSH_UNIT_USE_API_CACHE);
 	if (!arguments.callee.cache) {
 		arguments.callee.cache = {};
 	}
-	if (true || !arguments.callee.cache[file.pathname.toString()]) {
+	if (DISABLE_CACHE || !arguments.callee.cache[file.pathname.toString()]) {
 		arguments.callee.cache[file.pathname.toString()] = (function() {
-			jsh.shell.echo("Loading API file: " + file.pathname);
+			jsh.shell.console("Loading API file: " + file.pathname);
 			var doc = new jsh.document.Document({
 				stream: file.read(jsh.io.Streams.binary)
 			});
 			return new Jsdom(file.parent,doc);
 		})();
 	} else {
-		jsh.shell.echo("Returning cached api.html: " + file.pathname);
+		jsh.shell.console("Returning cached api.html: " + file.pathname);
 	}
 	return arguments.callee.cache[file.pathname.toString()];
 }

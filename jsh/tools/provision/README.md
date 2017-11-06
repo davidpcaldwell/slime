@@ -25,11 +25,15 @@ installing Java, a second run of the provisioner will run the remote `jsh` scrip
 
 ##	Sample command (unprotected remote script)
 
+[comment]: # The two sample commands can be obtained using the private slime-kit repository by running:
+[comment]: # jrunscript rhino/jrunscript/api.js jsh jsh/tools/provision/test/server.jsh.js -repository:name slime-kit -repository:location <directory where slime-kit is located> -repository:script test/provision-script.jsh.js -password <any>
+[comment]: # and pasting the output for "README (standard)" and then "README (specified)"
+
 For a remote script hosted at a reachable URL, a single command can be used to launch the script. The provisioner must be provided
 the URL of the remote script as the `INONIT_PROVISION_SCRIPT_JSH` environment variable. Here is a sample command that runs a test
 script from the provisioner repository.
 
-	curl -s -L https://bitbucket.org/api/1.0/repositories/davidpcaldwell/slime/raw/tip/jsh/tools/provision/remote.bash | env  INONIT_PROVISION_SCRIPT_JSH=https://bitbucket.org/api/1.0/repositories/davidpcaldwell/slime/raw/tip/jsh/tools/provision/test/application.jsh.js bash
+	curl -s -L https://bitbucket.org/api/1.0/repositories/davidpcaldwell/slime/raw/tip/jsh/tools/provision/remote.bash | env INONIT_PROVISION_SCRIPT_JSH=https://bitbucket.org/api/1.0/repositories/davidpcaldwell/slime/raw/tip/jsh/tools/provision/test/application.jsh.js bash
 
 ##	Sample command (protected remote script)
 

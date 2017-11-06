@@ -224,7 +224,14 @@ if ($context.os.name == "Mac OS X") {
 		//	TODO	where should stderr go?
 		return $context.run({
 			command: "ping",
-			arguments: ["-c", "1", p.host],
+			arguments: (function(rv) {
+				rv.push("-c","1");
+				if (p.timeout) {
+					rv.push("-t",String(p.timeout));
+				}
+				rv.push(p.host);
+				return rv;
+			})([]),
 			stdio: {
 				output: String
 			},

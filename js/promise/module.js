@@ -1,4 +1,5 @@
 var SlimePromise = function Targeter(p) {
+	if (!p) p = {};
 	var Promise = $context.Promise();
 	
 	if (typeof(p) == "function") {
@@ -13,6 +14,8 @@ var SlimePromise = function Targeter(p) {
 	})(p);
 	
 	var delegate = (p.delegate) ? p.delegate : void(0);
+
+	if (!delegate && !executor) throw new TypeError("Required: either 'delegate' promise or 'executor' function");
 
 	var wrap = function(v) {
 		if (typeof(v) == "object" && v instanceof Promise) {
@@ -57,3 +60,29 @@ var SlimePromise = function Targeter(p) {
 };
 
 $exports.Promise = SlimePromise;
+
+var Controllable = function(evaluator) {
+	var resolveIt;
+
+	this.toString = function() {
+		return "Controllable Promise: " + promise;
+	};
+
+	var promise = new Promise(function(resolve,reject) {
+		resolveIt = resolve;
+	});
+
+	this.then = function() {
+		return promise.then.apply(promise,arguments);
+	}
+
+	this.resolve = function(value) {
+		if (arguments.length == 0 && evaluator) {
+			value = evaluator();
+		}
+		window.console.log("Resolving " + this + " to " + value);
+		resolveIt(value);
+	}
+};
+
+$exports.Controlled = Controllable;
