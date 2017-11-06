@@ -197,6 +197,18 @@ var Database = function(_db) {
 			},
 			rs: rs
 		};
+		scope.load = function(string) {
+			var pwd = p.file.parent;
+			var code = pwd.getFile(string).read(String);
+			var global = (function() { return this; })();
+			jsh.loader.run(pwd.getRelativePath(string), scope, { 
+				slime: {
+					export: function(name,value) {
+						scope[name] = value;
+					}
+				} 
+			});
+		};
 		if (p.scope) {
 			p.scope(scope);
 		}
