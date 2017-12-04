@@ -113,10 +113,11 @@ var LocalRepository = function(o) {
 			format: "%H~~%cn~~%s~~%ct~~%an~~%D",
 			parse: function(line) {
 				var tokens = line.split("~~");
-				if (!tokens[5]) throw new Error("No tokens[5]: [" + tokens + "]");
+				if (typeof(tokens[5]) == "undefined") throw new Error("No tokens[5]: [" + line + "]");
 				var refs = (function(string) {
-					var tokens = string.split(", ");
 					var rv = {};
+					if (string.length == 0) return rv;
+					var tokens = string.split(", ");
 					tokens.forEach(function(token) {
 						var t = token.split(" -> ");
 						if (t.length > 1) {
