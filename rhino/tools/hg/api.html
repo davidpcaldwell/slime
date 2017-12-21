@@ -530,6 +530,26 @@ END LICENSE
 				</li>
 				<li class="function">
 					<div class="name">status</div>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+							<li class="object">
+								<div class="label">has properties:</div>
+								<ul>
+									<li class="value">
+										<div class="name">subrepos</div>
+										<span class="type">boolean</span>
+										<span>
+											(optional; if omitted, will be <code>true</code> if subrepositories are directed, and
+											<code>false</code> otherwise)
+											If <code>true</code>, the status information for subrepositories will be included. If
+											<code>false</code>, it will be omitted.
+										</span>
+									</li>
+								</ul>
+							</li>
+						</ol>
+					</div>
 					<div class="returns">
 						<div class="label">Returns</div>
 						An object with properties representing each file that has a status. The names of these properties

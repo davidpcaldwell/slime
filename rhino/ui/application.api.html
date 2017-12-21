@@ -313,11 +313,11 @@ END LICENSE
 					verify(first).request.evaluate(getHeader("host")).is("127.0.0.1:" + first.application.server.port);
 
 					var second = singleRequestApplication(function() {
-						this.browser.host = "foo";
+						this.browser.host = "x";
 					});
 					verify(second).request.method.is("GET");
 					verify(second).request.path.is("");
-					verify(second).request.evaluate(getHeader("host")).is("foo");
+					verify(second).request.evaluate(getHeader("host")).is("x");
 
 					var invoked = false;
 					var third = singleRequestApplication(function() {

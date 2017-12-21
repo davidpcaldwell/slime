@@ -794,8 +794,8 @@ var Installation = function(environment) {
 				})();
 			} else if (p.url) {
 				return new RemoteRepository(p.url);
-			} else if (p.directory && p.pathname) {
-				return new LocalRepository(p);
+			} else if (p.directory && p.directory.pathname) {
+				return new LocalRepository(p.directory);
 			} else {
 				throw new Error("Required: local or url");
 			}
