@@ -413,6 +413,12 @@ var Pathname = function Pathname(parameters) {
 			}
 		});
 		var resource = new $context.Resource(rdata);
+		
+		Object.defineProperty(this,"length",{
+			get: function() {
+				return rdata.length;
+			}
+		});
 
 		this.resource = resource;
 
