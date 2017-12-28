@@ -321,16 +321,20 @@ $exports.Chrome = function(p) {
 	if (!user.getFile("First Run")) {
 		user.getRelativePath("First Run").write("", { append: false });
 	}
-	//	ignoring p.program
-	var browser = new jsh.shell.browser.chrome.Instance({
-		directory: user
-	});
 
 	this.browse = function(uri,done) {
+		//	ignoring p.program
+		var url = jsh.js.web.Url.parse(uri);
+		var browser = new jsh.shell.browser.chrome.Instance({
+			directory: user,
+			proxy: new jsh.shell.browser.ProxyConfiguration({ port: url.port })
+		});
+		url.host = "unit";
+		url.port = void(0);
 		var lock = new jsh.java.Thread.Monitor();
 		var opened;
 		browser.launch({
-			uri: uri,
+			uri: url.toString(),
 			on: {
 				start: function(p) {
 					new lock.Waiter({

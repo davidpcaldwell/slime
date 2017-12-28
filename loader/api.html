@@ -200,8 +200,11 @@ END LICENSE
 			<script type="application/x.jsapi#initialize">
 				scope.api = $jsapi.loader.eval("literal.js", {
 					$slime: {
-						getCode: function(path) {
-							return $jsapi.loader.string(path);
+						getLoaderScript: function(path) {
+							return {
+								name: path,
+								code: $jsapi.loader.string(path)
+							}
 						},
 						getCoffeeScript: function() {
 							return null;
@@ -209,6 +212,9 @@ END LICENSE
 					},
 					$engine: void(0)
 				});
+				scope.loadTestModule = function(path,context) {
+					return $jsapi.loader.module(path,context);
+				}
 			</script>
 			<div class="label">has properties:</div>
 			<div class="type">
