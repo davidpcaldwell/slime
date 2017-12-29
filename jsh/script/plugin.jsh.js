@@ -38,7 +38,7 @@ var load = function($context) {
 	if ($context.packaged) {
 		$exports.loader = $context.packaged.loader;
 	} else if ($context.file) {
-		$exports.loader = new $context.api.file.Loader($context.file.parent);
+		$exports.loader = new $context.api.file.Loader({ directory: $context.file.parent });
 	} else if ($context.uri) {
 		Object.defineProperty($exports, "loader", new function() {
 			var value;
