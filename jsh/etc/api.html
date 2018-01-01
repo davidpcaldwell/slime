@@ -50,8 +50,8 @@ END LICENSE
 				-->
 				<!--	Internal tests	-->
 				<script type="application/x.jsapi#tests" jsapi:id="internal">
-					//	Functionality used internally or accessed through jsh/loader
-					//	verify.suite($jsapi.loader.suite("../../loader/api.html"));
+					//	Functionality used internally or accessed through loader/rhino (although untested by loader/rhino)
+					verify.suite($jsapi.loader.suite("../../loader/api.html"));
 					//	Test cases of loader implementation
 					verify.suite($jsapi.loader.suite("../../loader/rhino/api.html"));
 					//	TODO	loader/rhino/java has some tests
@@ -147,7 +147,7 @@ END LICENSE
 				<tr>
 					<td><a href="../../rhino/shell/plugin.jsh.api.html">jsh.shell</a></td>
 					<td>
-						jsh.shell
+						APIs for interacting with the surrounding system, including web browsers
 						<script jsapi:id="jsh.shell" type="application/x.jsapi#tests">
 							verify.suite($jsapi.loader.suite("../../rhino/shell/api.html"));
 							verify.suite($jsapi.loader.suite("../../rhino/shell/plugin.jsh.api.html"));

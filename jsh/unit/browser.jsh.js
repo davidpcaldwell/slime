@@ -25,12 +25,29 @@ var parameters = jsh.script.getopts({
 		safari: false,
 		firefox: false,
 		chrome: false,
+		"chrome:instance": jsh.file.Pathname,
+		//	-chrome:profile is deprecated
 		"chrome:profile": jsh.file.Pathname,
 		browser: jsh.script.getopts.OBJECT(jsh.file.Pathname),
 		coffeescript: jsh.file.Pathname
 	},
 	unhandled: jsh.script.getopts.UNEXPECTED_OPTION_PARSER.SKIP
 });
+
+(function() {
+	var old = parameters.options["chrome:profile"];
+	var instance = parameters.options["chrome:instance"];
+	if (old && instance) {
+		if (old.toString() != instance.toString()) {
+			jsh.shell.console("-chrome:instance (" + instance + ") and deprecated -chrome:profile (" + old + ") conflict.");
+			jsh.shell.exit(1);
+		} else {
+			jsh.shell.console("Both -chrome:instance and deprecated -chrome:profile specified.");
+		}
+	} else if (old && !instance) {
+		parameters.options["chrome:instance"] = old;
+	}
+})();
 
 if (!jsh.httpd || !jsh.httpd.Tomcat) {
 	jsh.shell.stderr.write("Cannot run browser tests; Tomcat not present.\n");
@@ -42,7 +59,7 @@ if (!jsh.java.Thread) {
 	jsh.shell.exit(1);
 }
 
-if (parameters.options["chrome:profile"]) {
+if (parameters.options["chrome:instance"]) {
 	parameters.options.chrome = true;
 }
 
@@ -61,8 +78,8 @@ var browsers = (function() {
 			if (pathname) {
 				rv.push(new jsh.unit.browser[name]({ program: pathname.file }));
 			} else if (jsh.unit.browser.installed[property]) {
-				if (property == "chrome" && parameters.options["chrome:profile"]) {
-					var directory = parameters.options["chrome:profile"].createDirectory({
+				if (property == "chrome" && parameters.options["chrome:instance"]) {
+					var directory = parameters.options["chrome:instance"].createDirectory({
 						ifExists: function(dir) {
 							return false;
 						},

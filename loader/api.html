@@ -200,8 +200,11 @@ END LICENSE
 			<script type="application/x.jsapi#initialize">
 				scope.api = $jsapi.loader.eval("literal.js", {
 					$slime: {
-						getCode: function(path) {
-							return $jsapi.loader.string(path);
+						getLoaderScript: function(path) {
+							return {
+								name: path,
+								code: $jsapi.loader.string(path)
+							}
 						},
 						getCoffeeScript: function() {
 							return null;
@@ -209,6 +212,9 @@ END LICENSE
 					},
 					$engine: void(0)
 				});
+				scope.loadTestModule = function(path,context) {
+					return $jsapi.loader.module(path,context);
+				}
 			</script>
 			<div class="label">has properties:</div>
 			<div class="type">
@@ -344,16 +350,18 @@ END LICENSE
 						</li>
 						<li class="function">
 							<div class="name">list</div>
-							<span>__DESCRIPTION__</span>
+							<span>Returns a list of the top-level entries at a particular location in this loader.</span>
 							<div class="type">
 								<a class="type" name="types.Loader.list.arguments[0].entry">entry</a>
-								<span>__DESCRIPTION__</span>
+								<span>Either a resource or a child loader contained within a Loader.</span>
 								<div class="label">has properties:</div>
 								<ul>
 									<li class="value">
 										<div class="name">path</div>
 										<span class="type">string</span>
-										<span>The name of this entry.</span>
+										<span>
+											The name of this entry. It does <em>not</em> have a trailing slash for loaders.
+										</span>
 									</li>
 									<li class="value">
 										<div class="name">loader</div>
@@ -385,8 +393,7 @@ END LICENSE
 							</div>
 							<div class="returns">
 								<div class="label">Returns</div>
-								<span class="type">__TYPE__</span>
-								<span>__DESCRIPTION__</span>
+								<span class="type">Array of <a href="#types.Loader.list.arguments[0].entry">entry</a></span>
 							</div>
 						</li>
 					</ul>
@@ -845,6 +852,50 @@ END LICENSE
 					</div>
 					<div class="label">has properties:</div>
 					<ul>
+						<li class="object">
+							<div class="name">source</div>
+							<span>__DESCRIPTION__</span>
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="constructor">
+									<div class="name">Memory</div>
+									<span>Creates an in-memory loader source.</span>
+									<div class="arguments">
+										<div class="label">Arguments</div>
+										<ol>
+										</ol>
+									</div>
+									<div class="instances">
+										<div class="label">Instances</div>
+										<span class="type">__TYPE__</span>
+										<span>__DESCRIPTION__</span>
+									</div>
+									<script type="application/x.jsapi#tests">
+										verify(api).evaluate(function() { return this.Loader.source.object; }).is.type("function");
+										var source = new api.Loader.source.object({
+											a: {
+												resource: {
+													string: "a"
+												}
+											},
+											b: {
+												loader: {
+													c: {
+														resource: {
+															string: "c"
+														}
+													}
+												}
+											}
+										});
+										var loader = new api.Loader(source);
+										verify(loader).get("a").string.is("a");
+										verify(loader).get("b/c").string.is("c");
+										verify(loader).list().length.is(2);
+									</script>
+								</li>
+							</ul>
+						</li>
 						<li class="experimental function">
 							<div class="name">series</div>
 							<span>
