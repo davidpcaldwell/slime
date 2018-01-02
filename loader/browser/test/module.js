@@ -26,6 +26,18 @@ var OldStep = function(o) {
 			o.event();
 		}
 	};
+	
+	this.promise = function() {
+		var running = asynchrony.promise();
+		if (o.event) {
+			o.event();
+		}
+		new window.Promise(function fake(resolve,reject) {
+			resolve();
+		}).then(function() {
+		})
+		return running;
+	};
 
 	this.async = o.wait || !o.event;
 

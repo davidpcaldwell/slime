@@ -139,8 +139,8 @@ END LICENSE
 				</li>
 				<li class="value">
 					<div class="name">port</div>
-					<span class="type">__TYPE__</span>
-					<span>__DESCRIPTION__</span>
+					<span class="type">number</span>
+					<span>If a port number is specified in the URL, the port number; otherwise, <code>undefined</code>.</span>
 				</li>
 				<li class="value">
 					<div class="name">path</div>
@@ -238,7 +238,7 @@ END LICENSE
 							var one = module.Url.parse("scheme://server.com:999/path?q=query#section");
 							test(one.scheme == "scheme");
 							test(one.host == "server.com");
-							test(one.port === 999);
+							verify(one).port.is(999);
 							test(one.path == "/path");
 							verify(one).query.is("q=query");
 							test(one.fragment == "section");
@@ -248,6 +248,7 @@ END LICENSE
 								//	TODO	test optional port, since it is a number
 								test(url.scheme == "scheme");
 								test(url.host == "server.com");
+								verify(url).evaluate.property("port").is(void(0));
 								//	TODO	should port be null or undefined
 								test(url.path == "/path");
 								verify(url).query.is("q=query");

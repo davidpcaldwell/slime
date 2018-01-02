@@ -121,13 +121,19 @@ END LICENSE
 							A <code>jsh</code> script that allows running multiple definition files in a browser.
 							Usage:
 							<ul>
-								<li><code>-interactive</code></li>
+								<li><code>-interactive</code>: Do not close browser on exit.</li>
 								<!--	-view	-->
 								<!--	-port	-->
-								<li><code>-ie</code>, <code>-safari</code>, <code>-firefox</code>, <code>-chrome</code></li>
-								<li><code>-chrome:profile</code> <i>pathname</i></li>
+								<li><code>-ie</code>, <code>-safari</code>, <code>-firefox</code>, <code>-chrome</code>: Run
+									tests in specified browser. If no browsers are specified, all detected browsers will be run.</li>
+								<li><code>-chrome:instance</code> <i>pathname</i>: Use the specified location for storing Chrome's
+									user profiles; useful for having multiple Chrome environments configured for local development.</li>
 								<li><code>-browser <i>name</i>=<i>pathname</i></code></li>
 								<!--	coffeescript	-->
+								<li>
+									<code>path/</code> or <code>path/script.js</code> 
+									(<strong>not</strong> <code>path/api.html</code> or <code>path/script.api.html</code>)
+								</li>
 							</ul>
 						</td>
 					</tr>

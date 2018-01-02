@@ -52,7 +52,10 @@ END LICENSE
 			<h1>Exports</h1>
 			<div class="type">
 				<a class="type" name="types.ProxyConfiguration">ProxyConfiguration</a>
-				<span>__DESCRIPTION__</span>
+				<span>
+					This type is used internally; instances of it are created by the
+					<a href="#exports.ProxyConfiguration">ProxyConfiguration</a> constructor.
+				</span>
 				<div class="label">has properties:</div>
 				<ul>
 					<li class="value">
@@ -107,21 +110,28 @@ END LICENSE
 					<ul>
 						<li class="function">
 							<div class="name">run</div>
-							<span>__DESCRIPTION__</span>
+							<span>
+								Opens a page by launching a process in this Chrome instance. Depending on Chrome's evolving
+								architecture, this might behave differently if other processes are already running in the Chrome
+								instance.
+							</span>
 							<div class="arguments">
 								<div class="label">Arguments</div>
 								<ol>
+									<li class="value">
+										<div class="name">arguments</div>
+										<span class="type">Array of string</span>
+										<span>
+											(optional)
+											A set of additional arguments to send to the Chrome process.
+										</span>
+									</li>
 									<li class="value">
 										<div class="name">uri</div>
 										<span class="type">string</span>
 										<span>The URI of a page to open.</span>
 									</li>
 								</ol>
-							</div>
-							<div class="returns">
-								<div class="label">Returns</div>
-								<span class="type">__TYPE__</span>
-								<span>__DESCRIPTION__</span>
 							</div>
 						</li>
 					</ul>
@@ -193,7 +203,7 @@ END LICENSE
 
 			<ul>
 				<li class="constructor">
-					<div class="name">ProxyConfiguration</div>
+					<div class="name"><a id="exports.ProxyConfiguration">ProxyConfiguration</a></div>
 					<span>Creates a <dfn>proxy auto-config file</dfn>.</span>
 					<div class="arguments">
 						<div class="label">Arguments</div>
