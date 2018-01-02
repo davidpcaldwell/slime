@@ -301,8 +301,8 @@ END LICENSE
 								var searchpath = new filesystem.Searchpath(array);
 								var searchpathstring = searchpath.toString();
 								var parsed = filesystem.Searchpath.parse(searchpathstring);
-								test(parsed.pathnames[0].directory.toString() == array[0].toString());
-								test(parsed.pathnames[1].directory.toString() == array[1].toString());
+								test(parsed.pathnames[0].toString() == array[0].toString());
+								test(parsed.pathnames[1].toString() == array[1].toString());
 								test(parsed.toString() == searchpath.toString());
 							</script>
 						</li>
@@ -487,7 +487,7 @@ END LICENSE
 					);
 					test(
 						filec.pathname.toString().substring(filec.pathname.toString().length-1)
-						== filesystem.$unit.getPathnameSeparator()
+						!= filesystem.$unit.getPathnameSeparator()
 					);
 
 					test(filea.pathname.basename == "a");
@@ -551,19 +551,24 @@ END LICENSE
 								var tmpdir = jsh.shell.TMPDIR.createTemporary({ directory: true });
 								var relative = tmpdir.getRelativePath("relative");
 								var endsWithSlashPattern = /\/$/;
-								var toStringEndsWithSlash = function() {
-									var string = this.toString();
-									var rv = endsWithSlashPattern.test(string);
-									jsh.shell.console("path=" + string + " rv=" + rv);
-									return rv;
+								var toStringMatches = function(regex) {
+									return function() {
+										var string = this.toString();
+										var rv = regex.test(string);
+										jsh.shell.console("pattern = " + regex + " path=" + string + " rv=" + rv);
+										return rv;
+									}
 								};
+								var toStringEndsWithSlash = toStringMatches(/\/$/);
+								var toStringEndsWithDoubleSlash = toStringMatches(/\/\/$/);
 								verify(relative).evaluate(toStringEndsWithSlash).is(false);
 								var directory = relative.createDirectory();
 								jsh.shell.console(directory.toString());
 								verify(relative).evaluate(toStringEndsWithSlash).is(false);
 								verify(directory).evaluate(toStringEndsWithSlash).is(true);
+								verify(directory).evaluate(toStringEndsWithDoubleSlash).is(false);
 								//	TODO	fix this and see if it breaks anything else
-								if (false) {
+								if (true) {
 									verify(directory).pathname.evaluate(toStringEndsWithSlash).is(false);
 								}
 							</script>
@@ -1395,7 +1400,10 @@ END LICENSE
 						verify.test.apply(this,arguments);
 					};
 					if (scope.UNIX) {
-						test( Pathname("/foo").parent.toString() == "/" );
+						var foo = Pathname("/foo");
+						verify(foo).parent.toString().is("");
+						verify(foo).parent.directory.toString().is("/");
+//						test( Pathname("/foo").parent.toString() == "/" );
 						test( Pathname("/foo/bar").parent.toString() == "/foo" );
 						test( Pathname("/").parent == null );
 						test( Pathname("/").directory.list()[0].pathname.toString().substring(0,2) != "//" );
@@ -1409,7 +1417,7 @@ END LICENSE
 					if (scope.UNIX) {
 						test( Pathname("/home/inonit").basename == "inonit" );
 						test( Pathname("/home").basename == "home" );
-						test( Pathname("/").basename == "/" );
+						test( Pathname("/").basename == "" );
 					} else {
 						test( Pathname("C:\\cygwin\\tmp").basename == "tmp" );
 						test( Pathname("C:\\cygwin").basename == "cygwin" );
@@ -1417,7 +1425,7 @@ END LICENSE
 					}
 				}
 			]]></script>
-			<script type="application/x.jsapi#tests"><![CDATA[
+			<script type="application/x.jsapi#tests" jsapi:id="filesystemTests"><![CDATA[
 	//			var SCOPE = this;
 
 	//			var createTests = function(filesystem) {

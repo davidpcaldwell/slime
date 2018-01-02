@@ -24,6 +24,11 @@ var firstDefined = function(object/*, names */) {
 }
 
 var Pathname = function Pathname(parameters) {
+	if (parameters.directory) {
+		$api.deprecate(function() {
+			var directorySpecified = true;
+		})();
+	}
 	if (!parameters) {
 		fail("Missing argument to new Pathname()");
 	}
@@ -48,8 +53,10 @@ var Pathname = function Pathname(parameters) {
 
 	var toString = constant(function() {
 		var rv = $filesystem.peerToString(peer);
-		if (parameters.directory && (rv.substring(rv.length-$filesystem.separators.pathname.length) != $filesystem.separators.pathname)) {
-			rv += $filesystem.separators.pathname;
+		if (rv.substring(rv.length-$filesystem.separators.pathname.length) == $filesystem.separators.pathname) {
+			$api.deprecate(function() {
+				rv = rv.substring(0,rv.length-$filesystem.separators.pathname.length);				
+			})();
 		}
 		return rv;
 	});
@@ -85,7 +92,7 @@ var Pathname = function Pathname(parameters) {
 	var getDirectory = function() {
 		if (!$filesystem.exists(peer)) return null;
 		if (!$filesystem.isDirectory(peer)) return null;
-		var pathname = new Pathname({ filesystem: $filesystem, peer: peer, directory: true });
+		var pathname = new Pathname({ filesystem: $filesystem, peer: peer });
 		return new Directory(pathname,peer);
 	}
 	this.__defineGetter__("directory", getDirectory);
@@ -434,6 +441,12 @@ var Pathname = function Pathname(parameters) {
 
 	var Directory = function(pathname,peer) {
 		Node.call(this,pathname,"");
+		
+		this.toString = (function(was) {
+			return function() {
+				return was.apply(this,arguments) + "/";
+			}
+		})(this.toString);
 
 		this.directory = true;
 
