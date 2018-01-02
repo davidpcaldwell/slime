@@ -547,6 +547,26 @@ END LICENSE
 								<div class="label">Returns</div>
 								<span class="type">string</span> Converts the path to a string and returns it.
 							</div>
+							<script type="application/x.jsapi#tests">
+								var tmpdir = jsh.shell.TMPDIR.createTemporary({ directory: true });
+								var relative = tmpdir.getRelativePath("relative");
+								var endsWithSlashPattern = /\/$/;
+								var toStringEndsWithSlash = function() {
+									var string = this.toString();
+									var rv = endsWithSlashPattern.test(string);
+									jsh.shell.console("path=" + string + " rv=" + rv);
+									return rv;
+								};
+								verify(relative).evaluate(toStringEndsWithSlash).is(false);
+								var directory = relative.createDirectory();
+								jsh.shell.console(directory.toString());
+								verify(relative).evaluate(toStringEndsWithSlash).is(false);
+								verify(directory).evaluate(toStringEndsWithSlash).is(true);
+								//	TODO	fix this and see if it breaks anything else
+								if (false) {
+									verify(directory).pathname.evaluate(toStringEndsWithSlash).is(false);
+								}
+							</script>
 						</li>
 						<li class="function">
 							<div class="name">write</div>
