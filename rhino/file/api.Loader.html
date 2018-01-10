@@ -81,6 +81,9 @@ END LICENSE
 				var api = loader.get("api.html");
 				verify(api).modified.is.type("object");
 			</script>
+			<script type="application/x.jsapi#tests">
+				verify(module).evaluate(function() { return new module.Loader({ directory: null }) }).threw.type(Error);
+			</script>
 		</li>
 	</ul>
 </body>

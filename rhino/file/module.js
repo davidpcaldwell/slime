@@ -176,80 +176,82 @@ $exports.Searchpath.prototype = prototypes.Searchpath;
 //	};
 //});
 
-$exports.Loader = function(p) {
-	//	TODO	defensive programming: could we modify arguments in place?
-	if (arguments.length == 1 && arguments[0].pathname && arguments[0].directory) {
-		arguments[0] = {
-			directory: p
-		};
+$exports.Loader = function recurse(p) {
+	if (typeof(arguments[0]) != "object") throw new TypeError("Argument 0 must be an object.");
+	
+	if (arguments[0].pathname && arguments[0].directory) {
+		return $api.deprecate(function() {
+			return new recurse({ directory: p });
+		})();
 	}
-	if (arguments[0].directory || arguments[0].directory === null) {
-		if (!arguments[0].type) arguments[0].type = function(path) {
-			return $context.api.io.mime.Type.fromName({ name: path });
-		}
-		p = arguments[0];
-		p.toString = function() {
-			return "rhino/file Loader: directory=" + p.directory;
-		};
+	
+	if (arguments[0].directory === null || typeof(arguments[0].directory) == "undefined") {
+		throw new TypeError("'directory' property must be present and an object.");
+	}
+	
+	if (!p.type) p.type = function(path) {
+		return $context.api.io.mime.Type.fromName({ name: path });
+	}
 
-		var getFile = function getFile(path) {
-			var file = p.directory.getFile(path);
-			//	TODO	could we modify this so that file supported Resource?
-			if (file) {
-				var data = {
-					name: p.directory.toString() + path,
-					type: p.type(file),
-					getInputStream: function() {
-						return file.read($context.api.io.Streams.binary).java.adapt();
-					},
-					read: {
-						binary: function() {
-							return file.read($context.api.io.Streams.binary);
-						}
+	p.toString = function() {
+		return "rhino/file Loader: directory=" + p.directory;
+	};
+
+	var getFile = function getFile(path) {
+		var file = p.directory.getFile(path);
+		//	TODO	could we modify this so that file supported Resource?
+		if (file) {
+			var data = {
+				name: p.directory.toString() + path,
+				type: p.type(file),
+				getInputStream: function() {
+					return file.read($context.api.io.Streams.binary).java.adapt();
+				},
+				read: {
+					binary: function() {
+						return file.read($context.api.io.Streams.binary);
 					}
-				};
-				Object.defineProperty(data,"length",{
-					get: function() {
-						return file.resource.length;
-					}
-				});
-				Object.defineProperty(data,"modified",{
-					get: function() {
-						return file.modified;
-					}
-				});
+				}
+			};
+			Object.defineProperty(data,"length",{
+				get: function() {
+					return file.resource.length;
+				}
+			});
+			Object.defineProperty(data,"modified",{
+				get: function() {
+					return file.modified;
+				}
+			});
 //					length: file.resource.length,
 //					modified: file.modified,
-				return new $context.$rhino.io.Resource(data);
-			}
-			return null;
+			return new $context.$rhino.io.Resource(data);
 		}
-		p.get = function(path) {
-			if (!p.directory) return null;
-			return getFile(path);
-		}
-		p.list = function(path) {
-			if (!p.directory) return [];
-			//	Validate path
-			if (path) {
+		return null;
+	}
+	p.get = function(path) {
+		if (!p.directory) return null;
+		return getFile(path);
+	}
+	p.list = function(path) {
+		if (!p.directory) return [];
+		//	Validate path
+		if (path) {
 //				Packages.java.lang.System.err.println("directory list(" + path + ")");
-				var last = path.substring(path.length-1);
-				if (last == "/") {
-					path = path.substring(0,path.length-1);
-				}
+			var last = path.substring(path.length-1);
+			if (last == "/") {
+				path = path.substring(0,path.length-1);
 			}
-			var directory = (path) ? p.directory.getSubdirectory(path) : p.directory;
+		}
+		var directory = (path) ? p.directory.getSubdirectory(path) : p.directory;
 //			Packages.java.lang.System.err.println("Listing " + directory);
-			return directory.list().map(function(node) {
-				return { path: node.pathname.basename, loader: node.directory, resource: !node.directory };
-			});
-		}
-		p.child = function(prefix) {
-			if (!p.directory) return { directory: null };
-			return { directory: p.directory.getSubdirectory(prefix) };
-		}
-	} else if (typeof(arguments[0]) == "object" && arguments[0].hasOwnProperty("directory") && typeof(arguments[0].directory) == "undefined") {
-		throw new Error("'directory' property must not be undefined.");
+		return directory.list().map(function(node) {
+			return { path: node.pathname.basename, loader: node.directory, resource: !node.directory };
+		});
+	}
+	p.child = function(prefix) {
+		if (!p.directory) return { directory: null };
+		return { directory: p.directory.getSubdirectory(prefix) };
 	}
 	$context.api.io.Loader.apply(this,arguments);
 };
