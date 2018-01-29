@@ -11,6 +11,7 @@
 //	Contributor(s):
 //	END LICENSE
 
+//	TODO	replace the below with $api.Events.Function
 var listening = function(f,defaultOn) {
 	var Listeners = function(p) {
 		var source = {};
