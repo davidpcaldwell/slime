@@ -186,25 +186,3 @@ var apache = $loader.file("apache.js", {
 });
 
 $exports.apache = apache;
-
-$exports.hg = $loader.file("hg.js", {
-	api: {
-		shell: $context.api.shell,
-		Error: $context.api.Error,
-		install: $exports,
-		Events: {
-			Function: listening
-		}
-	}
-});
-
-$exports.git = $loader.file("git.js", {
-	api: {
-		Events: {
-			Function: listening
-		},
-		Error: $context.api.Error,
-		shell: $context.api.shell,
-		file: $context.api.file
-	}
-});

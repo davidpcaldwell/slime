@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+	<head>
+		<title>jsh Provisioning</title>
+		<link href="../../../loader/api/api.css" rel="stylesheet" type="text/css" />
+		<script src="../../../loader/api/api.js"></script>
+	</head>
+	<body>
+		<div>
+			<h1>Role of the provisioner</h1>
+			<p>
+				The provisioner is designed to be executed remotely, and to bootstrap the execution of a remote <code>jsh</code>
+				script. <code>jsh</code>
+				scripts can already be executed remotely, but <code>jrunscript</code> is required to be installed locally in order
+				to launch them. Thus, the provisioner checks whether the desired version of the Java Development Kit (JDK) is
+				installed, and if it is not, installs it before executing the remote <code>jsh</code> script.
+			</p>
+			<p>
+				On OS X, since the JDK has a GUI installer, when Java is not present, the provisioner launches the JDK installer and
+				exits. After installing Java, a second run of the provisioner will run the remote `jsh` script.
+			</p>
+		</div>
+		<div>
+			<h1>Using the provisioner</h1>
+			<!--
+				[comment]: # The two sample commands can be obtained using the private slime-kit repository by running:
+				[comment]: # jrunscript rhino/jrunscript/api.js jsh jsh/tools/provision/test/server.jsh.js -repository:name slime-kit -repository:location <directory where slime-kit is located> -repository:script test/provision-script.jsh.js -password <any>
+				[comment]: # and pasting the output for "README (standard)" and then "README (specified)"
+			-->
+			<div>
+				<h2>Sample command (unprotected remote script)</h2>
+				<p>
+					For a remote script hosted at a reachable URL, a single command can be used to launch the script. The
+					provisioner must be provided the URL of the remote script as the <code>INONIT_PROVISION_SCRIPT_JSH</code>
+					environment variable. Here is a sample command that runs a test script from the provisioner repository.
+				</p>
+				<div>
+					<pre><code>
+curl -s -L https://bitbucket.org/api/1.0/repositories/davidpcaldwell/slime/raw/tip/jsh/tools/provision/remote.bash | env INONIT_PROVISION_SCRIPT_JSH=https://bitbucket.org/api/1.0/repositories/davidpcaldwell/slime/raw/tip/jsh/tools/provision/test/application.jsh.js bash
+					</code></pre>
+				</div>
+			</div>
+			<div>
+				<h2>Sample command (protected remote script)</h2>
+				<p>
+					The provisioner also supports scripts that are protected by HTTP basic authentication. In order to use such a
+					script, the <code>INONIT_PROVISION_USER</code> environment variable must be defined as the user name; this will
+					trigger the remote script to prompt for the password. Because the password will be read by the script from
+					standard input, the remote provisioner must be written to a temporary file and then executed from there (which
+					makes the command somewhat longer). (Note that this sample command will not work without modification; the
+					repository is private.)
+				</p>
+				<div>
+					<pre><code>
+(export TMP_INSTALLER=$(mktemp);
+export INONIT_PROVISION_SCRIPT_JSH=https://bitbucket.org/api/1.0/repositories/davidpcaldwell/slime-kit/raw/tip/test/provision-script.jsh.js;
+export INONIT_PROVISION_USER=davidpcaldwell;
+curl -s -L -o $TMP_INSTALLER https://bitbucket.org/api/1.0/repositories/davidpcaldwell/slime/raw/tip/jsh/tools/provision/remote.bash;
+chmod +x $TMP_INSTALLER;
+$TMP_INSTALLER)						
+					</code></pre>
+				</div>
+			</div>
+			<div>
+				<h2>Configuring the provisioner</h2>
+				<p>
+					Other environment variables affect the behavior of the provisioner. For unprotected remote scripts these can be
+					supplied to the shell; for protected remote scripts, they can be supplied along with the other environment
+					values.
+				</p>
+				<ul>
+					<li><code>INONIT_PROVISION_VERSION=<i>[commit, tag or bookmark]</i></code> (defaults to <code>tip</code>)</li>
+				</ul>
+			</div>
+		</div>
+		<div>
+			<h1>Recommended structure</h1>
+			<div>
+				<p>
+					The following describes one way to structure a provisioning implementation that uses Bitbucket as a Mercurial
+					host.
+				</p>
+			</div>
+			<div>
+				<h2><code>install.jsh.js</code></h2>
+				<p>
+					The top-level <code>install.jsh.js</code> can be used as the value for <code>INONIT_PROVISION_SCRIPT_JSH</code>.					
+				</p>
+				<div>
+					<h3>Install Mercurial</h3>
+					<!--	TODO	API is undocumented	-->
+					<p>
+					It should first install Mercurial, so that the repository code can be cloned from Bitbucket:
+					</p>
+					<p><code>jsh.tools.install.hg.install();</code></p>
+				</div>
+				<div>
+					<h3>Clone the repository</h3>
+					<p>
+Under most circumstances, it should also provide a destination to which to clone the code, by default, along with an environment
+variable that allows the script to clone the code to a different place.
+					</p>
+					<p>
+						The following snippet clones the code in <code>repository</code>, owned by Bitbucket user <code>user</code>, to 
+						<code>$HOME/applications/pong</code> unless the
+						<code>INONIT_PROVISION_DESTINATION</code> environment variable is provided; in that case, the code is cloned to the location specified by that.
+					</p>
+					<pre>
+<code>var destination = (jsh.shell.environment.INONIT_PROVISION_DESTINATION) ? jsh.file.Pathname(jsh.shell.environment.INONIT_PROVISION_DESTINATION) : jsh.shell.HOME.getRelativePath("applications/pong");
+jsh.tools.provision.clone({
+	destination: destination,
+	user: "user",
+	repository: "repository"
+});</code>
+					</pre>
+				</div>
+				<div>
+					<h3>Run a setup command script from the repository</h3>
+					<div>
+						<pre><code>
+jsh.shell.run({
+	command: "bash",
+	arguments: [
+		destination.directory.getRelativePath("setup.bash")
+	]
+});
+						</code></pre>
+					</div>
+				</div>
+				<div>
+					<h3>Implement the setup script using a jsh shell and script</h3>
+					<p>
+						The <code>setup.bash</code> script can simply specify a <code>jsh</code> script that does the local setup,
+						and a <code>jsh</code> shell in which to execute it. For example, if the shell is located at
+						<code>setup/slime</code>, and the script is at <code>setup/main.jsh.js</code>, the following code can be
+						used:
+					</p>
+					<div>
+						<pre><code>
+BASE=$(dirname $0)
+jrunscript $BASE/setup/slime/rhino/jrunscript/api.js jsh $BASE/setup/main.jsh.js "$@"
+						</code></pre>
+					</div>
+				</div>
+				<div>
+					<h3>Implement the <code>jsh</code> script: install libraries</h3>
+					<p>
+The `setup/main.jsh.js` script should, under most circumstances, begin by installing Rhino and Tomcat into the shell if they are not
+already present. Rhino is used as the primary `jsh` interpreter, and Tomcat is used for the creation of local applications (and
+thus may be needed for an installer). If either needs to be installed, the shell should re-launch with the two libraries included.						
+					</p>
+					<p>
+The following sample code implements the above:						
+					</p>
+					<pre><code>	
+jsh.shell.console("Verifying jsh libraries (Rhino/Tomcat) ...");
+var relaunch = false;
+jsh.tools.install.rhino.install({}, {
+	installed: function(e) {
+		relaunch = true;
+	}
+});
+jsh.tools.install.tomcat.install({}, {
+	installed: function(e) {
+		relaunch = true;
+	}
+});
+
+if (relaunch) {
+	jsh.shell.console("Relaunching with Rhino/Tomcat in shell ...");
+	jsh.shell.jsh({
+		script: jsh.script.file,
+		arguments: [],
+		evaluate: function(result) {
+			jsh.shell.exit(result.status);
+		}
+	});
+}
+					</code></pre>
+					<p>
+						The setup script can then proceed with arbitrary code, knowing that both Rhino and Tomcat are available.
+					</p>
+				</div>
+			</div>
+			<div>
+				<h2>Post-installation</h2>
+				<p>
+					The <code>jdk.bash</code> script can be executed by itself in order to conditionally upgrade Java. It will exit
+					with a status of 1 if a GUI installation is needed. In that case, the caller should print a message like
+					"Then re-execute the installation command." This message will make sense when used in context of the output of
+					the script itself. In the above structure, most likely `jdk.bash` would be executed from <code>setup.bash</code>
+					or <code>setup/main.jsh.js</code>.					
+				</p>
+				<p>
+					This mechanism can be used from <code>jsh</code> by loading the <code>jsh.tools.provision</code> plugin and
+					executing <code>jsh.tools.provision.jdk()</code>.
+				</p>
+			</div>
+		</div>
+	</body>
+</html>

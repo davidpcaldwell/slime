@@ -20,16 +20,16 @@ END LICENSE
 	</head>
 	<body>
 		<div><code>jsh</code> plugin for installing software.</div>
-		<div jsapi:reference="getApi('api.html').getElement('exports')">
-			<h1>Exports</h1>
-			<ul>
-			</ul>
+		<div>
+			<h1><code>jsh.tools.install</code></h1>
+			<div jsapi:reference="getApi('api.html').getElement('exports')">
+			</div>
 		</div>
 		<div>
 			<script tyoe="application/x.jsapi#initialize">
 				jsh.loader.plugins($jsapi.loader);
 			</script>
-			<h1>jsh plugin</h1>
+			<h1><code>jsh.tools</code></h1>
 			<ul>
 				<li class="object">
 					<div class="name">rhino</div>
@@ -99,7 +99,7 @@ END LICENSE
 								(function alreadyInstalled() {
 									lib.getRelativePath("js.jar").write("already", { append: false });
 									var captor = new Captor();
-									jsh.tools.install.rhino.install({ mock: mock }, captor);
+									jsh.tools.rhino.install({ mock: mock }, captor);
 									verify(captor).captured[0].type.is("console");
 									verify(captor).captured[0].detail.is("Rhino already installed at " + lib.getFile("js.jar"));
 									verify(lib).getFile("js.jar").evaluate(readFile).is("already");
@@ -112,7 +112,7 @@ END LICENSE
 									lib.getRelativePath("download").write("downloaded", { append: false });
 									mock.rhino = lib.getFile("download");
 									var captor = new Captor();
-									jsh.tools.install.rhino.install({ mock: mock, replace: true }, captor);
+									jsh.tools.rhino.install({ mock: mock, replace: true }, captor);
 									verify(captor).captured[0].type.is("console");
 									verify(captor).captured[0].detail.is("Installing Rhino ...");
 									verify(lib).getFile("js.jar").evaluate(readFile).is("downloaded");
@@ -124,7 +124,7 @@ END LICENSE
 									lib.getRelativePath("download").write("downloaded", { append: false });
 									mock.rhino = lib.getFile("download");
 									var captor = new Captor();
-									jsh.tools.install.rhino.install({ mock: mock }, captor);
+									jsh.tools.rhino.install({ mock: mock }, captor);
 									verify(captor).captured[0].type.is("console");
 									verify(captor).captured[0].detail.is("Installing Rhino ...");
 									verify(lib).getFile("js.jar").evaluate(readFile).is("downloaded");
@@ -195,7 +195,7 @@ END LICENSE
 									return this.toString();
 								};
 
-								var installed = jsh.tools.install.tomcat.installed({ mock: { notes: $jsapi.loader.get("test/data/tomcat-release-notes-7.0.70.txt") } });
+								var installed = jsh.tools.tomcat.installed({ mock: { notes: $jsapi.loader.get("test/data/tomcat-release-notes-7.0.70.txt") } });
 								verify(installed).version.evaluate(toString).is("7.0.70");
 							</script>
 						</li>
@@ -291,7 +291,7 @@ END LICENSE
 								(function alreadyInstalled() {
 									var events = [];
 									mock.lib.getRelativePath("tomcat").createDirectory();
-									jsh.tools.install.tomcat.install({ mock: mock }, new Captor(events,["console","installed"]));
+									jsh.tools.tomcat.install({ mock: mock }, new Captor(events,["console","installed"]));
 									verify(events)[0].type.is("console");
 									verify(events)[0].detail.is("Tomcat already installed at " + mock.lib.getSubdirectory("tomcat"));
 									mock.lib.getSubdirectory("tomcat").remove();
@@ -299,37 +299,205 @@ END LICENSE
 
 								(function install() {
 									var events = [];
-									jsh.tools.install.tomcat.install({ mock: mock }, new Captor(events,["console","installed"]));
+									jsh.tools.tomcat.install({ mock: mock }, new Captor(events,["console","installed"]));
 									verify(events)[0].type.is("console");
 									verify(events)[0].evaluate(function() { return /^Unzipping to\:(.*)$/.test(this.detail); }).is(true);
 									verify(mock.lib).getSubdirectory("tomcat").getFile("a").is.type("object");
 									verify(mock.lib).getSubdirectory("tomcat").getFile("b").is.type("null");
-									var installed = jsh.tools.install.tomcat.installed({ home: mock.lib.getSubdirectory("tomcat") });
+									var installed = jsh.tools.tomcat.installed({ home: mock.lib.getSubdirectory("tomcat") });
 									var version = installed.version.toString();
 									verify(version).is("7.0.99");
 									mock.lib.getSubdirectory("tomcat").remove();
 								})();
 
 								(function replace() {
-									jsh.tools.install.tomcat.install({ mock: mock, version: "7.0.98" });
-									var installed = jsh.tools.install.tomcat.installed({ home: mock.lib.getSubdirectory("tomcat") });
+									jsh.tools.tomcat.install({ mock: mock, version: "7.0.98" });
+									var installed = jsh.tools.tomcat.installed({ home: mock.lib.getSubdirectory("tomcat") });
 									verify(installed).evaluate(getVersionString).is("7.0.98");
 
 									var noreplace = [];
-									jsh.tools.install.tomcat.install({ mock: mock }, new Captor(noreplace,["installed"]));
-									installed = jsh.tools.install.tomcat.installed({ home: mock.lib.getSubdirectory("tomcat") });
+									jsh.tools.tomcat.install({ mock: mock }, new Captor(noreplace,["installed"]));
+									installed = jsh.tools.tomcat.installed({ home: mock.lib.getSubdirectory("tomcat") });
 									verify(installed).evaluate(getVersionString).is("7.0.98");
 									verify(noreplace).length.is(0);
 
 									var replace = [];
-									jsh.tools.install.tomcat.install({ mock: mock, replace: true }, new Captor(replace,["installed"]));
-									installed = jsh.tools.install.tomcat.installed({ home: mock.lib.getSubdirectory("tomcat") });
+									jsh.tools.tomcat.install({ mock: mock, replace: true }, new Captor(replace,["installed"]));
+									installed = jsh.tools.tomcat.installed({ home: mock.lib.getSubdirectory("tomcat") });
 									verify(installed).evaluate(getVersionString).is("7.0.99");
 									verify(replace).length.is(1);
 
 									mock.lib.getSubdirectory("tomcat").remove();
 								})();
 							</script>
+						</li>
+					</ul>
+				</li>
+				<li class="object">
+					<div class="name">ncdbg</div>
+					<span>__DESCRIPTION__</span>
+					<div class="label">has properties:</div>
+					<ul>
+					</ul>
+				</li>
+				<li class="object">
+					<div class="name">hg</div>
+					<span>__DESCRIPTION__</span>
+					<div class="label">has properties:</div>
+					<script type="application/x.jsapi#initialize">
+						scope.api = jsh.tools;
+					</script>
+					<script type="application/x.jsapi#tests">
+						verify(1).is(1);
+						verify(scope).api.hg.is.type("object");
+
+						var distribution = scope.api.hg.distribution.osx({ os: "10.9.2" });
+						verify(distribution).distribution.url.is("https://www.mercurial-scm.org/mac/binaries/Mercurial-3.4.2-py2.7-macosx10.9.zip");
+
+						verify(scope.api.hg).evaluate(function() { return this.distribution.osx({ os: "10.3.2" }) }).threw.type(Error);
+
+						verify(scope.api.hg).distribution.osx({ os: "10.13.1" }).distribution.url.is("https://www.mercurial-scm.org/mac/binaries/Mercurial-4.2.2-macosx10.12.pkg");
+					</script>
+					<ul>
+						<li class="function">
+							<div class="name">install</div>
+							<span>Updates the Mercurial install to the best version for the platform.</span>
+							<script type="application/x.jsapi#tests"><![CDATA[
+								var Listener = function() {
+									var events = [];
+
+									this.console = function(e) {
+										events.push(e);
+									};
+
+									this.received = function() {
+										return events;
+									}
+								};
+
+								var runInstall = function(p) {
+									var listener = new Listener();
+									var rv = {};
+									try {
+										api.hg.install({ mock: p.mock }, listener);
+									} catch(e) {
+										rv.threw = e;
+									}
+									rv.events = listener.received();
+									return rv;
+								};
+
+								(function alreadyInstalled() {
+									var mock = {
+										shell: {
+											os: {
+												name: "Mac OS X",
+												version: "10.11"
+											}
+										},
+										installed: { version: "4.0.1" }
+									};
+									var events = runInstall({ mock: mock }).events;
+									var last = events[events.length-1];
+									verify(last).type.is("console");
+									verify(last).detail.is("Already installed: hg 4.0.1");
+								})();
+
+								(function upgrade() {
+									var mock = {
+										shell: {
+											os: {
+												name: "Mac OS X",
+												version: "10.11"
+											},
+											run: function(p) {
+												if (p.command == "open" && p.arguments.length == 1 && p.arguments[0].pathname.basename == "file.pkg") {
+													return;
+												} else {
+													throw new Error();
+												}
+											}
+										},
+										install: {
+											get: function(p) {
+												return {
+													pathname: {
+														basename: "file.pkg"
+													}
+												};
+											}
+										},
+										installed: { version: "3.4" }
+									};
+									var result = runInstall({ mock: mock });
+									var events = result.events;
+									var versions = events[1];
+									verify(versions).type.is("console");
+									verify(versions).detail.is("Found version: 3.4; upgrading to 4.0.1");
+									verify(result).threw.is.type("object");
+									verify(result).threw.evaluate(function() { return this instanceof TypeError; }).is(false);
+									verify(result).threw.evaluate(function() { return this instanceof api.hg.install.GUI; }).is(true);
+								})();
+
+								var install = function(os,hg) {
+									var mock = {
+										shell: {
+											os: {
+												name: "Mac OS X",
+												version: os
+											},
+											run: function(p) {
+												if (p.command == "open" && p.arguments.length == 1 && p.arguments[0].pathname.basename == "file.pkg") {
+													return;
+												} else {
+													throw new Error();
+												}
+											}
+										},
+										install: {
+											get: function(p) {
+												return {
+													pathname: {
+														basename: "file.pkg"
+													}
+												};
+											}
+										},
+										installed: null
+									};
+									var result = runInstall({ mock: mock });
+									var events = result.events;
+									var versions = events[1];
+									verify(versions).type.is("console");
+									verify(versions).detail.is("Getting https://www.mercurial-scm.org/mac/binaries/Mercurial-" + hg + "-macosx" + os + ".pkg");
+									verify(result).threw.is.type("object");
+									verify(result).threw.evaluate(function() { return this instanceof TypeError; }).is(false);
+									verify(result).threw.evaluate(function() { return this instanceof api.hg.install.GUI; }).is(true);
+								};
+								install("10.11","4.0.1");
+								install("10.12","4.2.2");
+							]]></script>
+						</li>
+					</ul>
+				</li>
+				<li class="object">
+					<div class="name">git</div>
+					<span>__DESCRIPTION__</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="function">
+							<div class="name">install</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</div>
 						</li>
 					</ul>
 				</li>

@@ -60,642 +60,472 @@ END LICENSE
 				</li>
 			</ul>
 		</div>
-		<div jsapi:id="exports">
-			<script type="application/x.jsapi#initialize">
-				scope.downloads = jsh.shell.TMPDIR.createTemporary({ directory: true });
+		<div>
+			<h1>Exports</h1>			
+			<div jsapi:id="exports">
+				<script type="application/x.jsapi#initialize">
+					scope.downloads = jsh.shell.TMPDIR.createTemporary({ directory: true });
 
-				scope.module = function(p) {
-					return $jsapi.loader.module("module.js", {
+					scope.module = function(p) {
+						return $jsapi.loader.module("module.js", {
+							api: {
+								shell: jsh.shell,
+								http: jsh.http,
+								file: jsh.file,
+								Error: jsh.js.Error
+							},
+							downloads: p.downloads
+						});
+					};
+
+					scope.api = $jsapi.loader.module("module.js", {
 						api: {
 							shell: jsh.shell,
 							http: jsh.http,
 							file: jsh.file,
 							Error: jsh.js.Error
 						},
-						downloads: p.downloads
-					});
-				};
-
-				scope.api = $jsapi.loader.module("module.js", {
-					api: {
-						shell: jsh.shell,
-						http: jsh.http,
-						file: jsh.file,
-						Error: jsh.js.Error
-					},
-					downloads: scope.downloads
-				});
-
-				var tmpdir = jsh.shell.TMPDIR.createTemporary({ directory: true });
-				tmpdir.getRelativePath("directory").createDirectory();
-				tmpdir.getRelativePath("directory/file").write("text", { append: false });
-
-				var tmpdest = jsh.shell.TMPDIR.createTemporary({ directory: true });
-
-				scope.harness = {};
-
-				if (jsh.shell.PATH.getCommand("tar")) {
-					jsh.shell.run({
-						command: "tar",
-						arguments: ["czvf", tmpdest.getRelativePath("directory.tar.gz"), "directory"],
-						directory: tmpdir
+						downloads: scope.downloads
 					});
 
-					scope.harness.tar = tmpdest.getFile("directory.tar.gz");
-					scope.harness.renamed = scope.harness.tar.copy(tmpdest.getRelativePath("renamed.tar.gz"));
-				}
+					var tmpdir = jsh.shell.TMPDIR.createTemporary({ directory: true });
+					tmpdir.getRelativePath("directory").createDirectory();
+					tmpdir.getRelativePath("directory/file").write("text", { append: false });
 
-				jsh.file.zip({
-					from: tmpdir,
-					to: tmpdest.getRelativePath("directory.zip")
-				});
-				scope.harness.zip = tmpdest.getFile("directory.zip");
+					var tmpdest = jsh.shell.TMPDIR.createTemporary({ directory: true });
 
-				if (jsh.httpd.Tomcat) {
-					var server = jsh.httpd.Tomcat.serve({ directory: tmpdest });
-					scope.server = server;
-				} else {
-					scope.server = null;
-				}
+					scope.harness = {};
 
-				scope.tmpdir = function() {
-					var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
-					tmp.directory.remove();
-					return tmp;
-				};
-			</script>
-			<h1>Exports</h1>
-			<div class="type">
-				<a class="type" name="types.installation">installation</a>
-				<span>
-					Specifies software to be installed (including where to obtain it and how it is structured) and a destination
-					to which to install it.
-				</span>
-				<div class="label">has properties:</div>
-				<ul>
-				</ul>
-			</div>
-			<div class="type">
-				<a class="type" name="types.listener">listener</a>
-				<span>An event handling object.</span>
-				<div class="label">has properties:</div>
-				<ul>
-					<li class="function">
-						<div class="name">console</div>
-						<span>
-							(optional)
-							A callback invoked with events containing messages suitable for display on the console.
-						</span>
-						<div class="arguments">
-							<div class="label">Arguments</div>
-							<ol>
-								<li class="value">
-									<span class="type">event</span>
-									<span>An event whose detail is:</span>
-									<div class="label">has properties:</div>
-									<ul>
-										<li class="value">
-											<div class="name">message</div>
-											<span class="type">string</span>
-											<span>A message.</span>
-										</li>
-									</ul>
-								</li>
-							</ol>
-						</div>
-					</li>
-				</ul>
-			</div>
-			<ul>
-				<li class="function">
-					<div class="name">get</div>
-					<span>
-						Provides a file containing an installer. The source of the file is specified by the argument passed to
-						the method.
-					</span>
-					<div class="arguments">
-						<div class="label">Arguments</div>
-						<ol>
-							<li class="object">
-								<span>__DESCRIPTION__</span>
-								<div class="label">has properties:</div>
-								<ul>
-
-								</ul>
-							</li>
-							<li class="object">
-								<span>A handler object for events sent during the method's execution.</span>
-								<div class="label">has properties:</div>
-								<ul>
-									<li class="function">
-										<div class="name">console</div>
-										<span>__DESCRIPTION__</span>
-										<div class="arguments">
-											<div class="label">Arguments</div>
-											<ol>
-											</ol>
-										</div>
-									</li>
-								</ul>
-							</li>
-						</ol>
-					</div>
-					<div class="returns">
-						<div class="label">Returns</div>
-						<span class="type"><a href="../../../rhino/file/api.html#types.file">file</a></span>
-						<span>A file containing the installer.</span>
-					</div>
-					<script type="application/x.jsapi#tests">
-						var downloads = jsh.shell.TMPDIR.createTemporary({ directory: true });
-						var api = module({ downloads: downloads });
-						var messages = [];
-						var file = api.get({
-							url: "http://127.0.0.1:" + server.port + "/directory.tar.gz"
-						}, {
-							console: function(e) {
-								messages.push(e);
-							}
+					if (jsh.shell.PATH.getCommand("tar")) {
+						jsh.shell.run({
+							command: "tar",
+							arguments: ["czvf", tmpdest.getRelativePath("directory.tar.gz"), "directory"],
+							directory: tmpdir
 						});
-						var TOSTRING = function() {
-							return { string: this.toString() };
-						};
-						var messageStartsWith = function(string) {
-							return function() {
-								return Boolean(this.detail.message.substring(0,string.length) == string);
-							}
-						};
-						verify(file).is.type("object");
-						verify(downloads).getFile("directory.tar.gz").is.not(null);
-						verify(downloads).getFile("directory.tar.gz").evaluate(TOSTRING).string.is(file.toString());
-						verify(messages,"messages").is(messages);
-						verify(messages).length.is(2);
-						verify(messages)[0].evaluate(messageStartsWith("Downloading")).is(true);
-						verify(messages)[0].evaluate(messageStartsWith("Found")).is(false);
-						verify(messages)[1].evaluate(messageStartsWith("Wrote")).is(true);
-					</script>
-				</li>
-				<li class="object">
-					<div class="name"><a id="$exports.format">format</a></div>
-					<span>__DESCRIPTION__</span>
-					<div class="label">has properties:</div>
-					<ul>
-						<li class="value">
-							<div class="name">zip</div>
-							<span class="type">__TYPE__</span>
-							<span>__DESCRIPTION__</span>
-						</li>
-						<li class="value">
-							<div class="name">gzip</div>
-							<span class="type">__TYPE__</span>
-							<span>
-								(conditional; requires <code>tar</code> to be in the <code>PATH</code>)
-								A <code>gzip</code>ped <code>tar</code> file.
-							</span>
-						</li>
-					</ul>
-				</li>
-				<li class="function">
-					<div class="name">install</div>
-					<div>
-						This method can process both local and remote files. For remote files, it is assumed that the filename of
-						the file uniquely identifies the file, and that this assumption can be relied upon to determine whether the
-						remote file has already been downloaded. This restriction may be removed in a future release, perhaps by
-						adding additional configuration arguments.
-					</div>
-					<div>
-						The file, when expanded, is assumed to create a single directory containing the installation. This directory
-						is assumed to have the same name as the file (minus the extension). For a given archive, if the desired
-						directory has a different path within, it can be specified with <code>getDestinationPath</code>.
-					</div>
-					<div class="arguments">
-						<div class="label">Arguments</div>
-						<ol>
-							<li class="object">
-								<span></span>
-								<div class="label">has properties:</div>
-								<ul>
-									<!--	TODO	not really specified what happens if both url and file are present	-->
-									<li class="value">
-										<div class="name">url</div>
-										<span class="type">string</span>
-										<span>
-											(optional; not necessary if <code>file</code> is present)
-											The URL from which the file can be downloaded. Currently, only <code>http</code> and
-											<code>https</code> URLs are supported.
-										</span>
-									</li>
-									<li class="value">
-										<div class="name">file</div>
-										<span class="type"><a href="../../../rhino/file/api.html#types.file">file</a></span>
-										<span>
-											(optional; not necessary if <code>url</code> is present)
-										</span>
-									</li>
-									<li class="value">
-										<div class="name">format</div>
-										<span class="type">__TYPE__</span>
-										<span>One of the values from <a href="$exports.format"><code>format</code></a>.</span>
-									</li>
-									<li class="value">
-										<div class="name">to</div>
-										<span class="type"><a href="../../../rhino/file/api.html#types.Pathname">Pathname</a></span>
-										<span>
-											The location to which to install the installation.
-										</span>
-									</li>
-									<li class="function">
-										<div class="name">getDestinationPath</div>
-										<span>
-											(optional; defaults to the name of the archive, excluding the extension)
-											A function specifying the path within the archive of the installation.
-										</span>
-										<div class="arguments">
-											<div class="label">Arguments</div>
-											<ol>
-												<li class="value">
-													<span class="type"><a href="../../../rhino/file/api.html#types.file">file</a></span>
-													<span>The archive file.</span>
-												</li>
-											</ol>
-										</div>
-										<div class="returns">
-											<div class="label">Returns</div>
-											<span class="type">string</span>
-											<span>A path within the archive to treat as the installation.</span>
-										</div>
-									</li>
-								</ul>
-							</li>
-							<li class="value">
-								<span class="type"><a href="#types.listener">listener</a></span>
-								<span>A listener that will be informed about events during the installation.</span>
-							</li>
-						</ol>
-					</div>
-					<div class="returns">
-						<div class="label">Returns</div>
-						<span class="type"><a href="../../../rhino/file/api.html#types.directory">directory</a></span>
-						<span>The directory to which the installation was installed.</span>
-					</div>
-					<script type="application/x.jsapi#tests" jsapi:id="present">
-						verify(api).is.type("object");
-						if (jsh.shell.PATH.getCommand("tar")) {
-							verify(api).evaluate(function() { return this.format.gzip; }).is.type("object");
-							verify(api).evaluate(function() { return this.gzip; }).is.type("function");
-						}
-					</script>
-					<script type="application/x.jsapi#tests"><![CDATA[
+
+						scope.harness.tar = tmpdest.getFile("directory.tar.gz");
+						scope.harness.renamed = scope.harness.tar.copy(tmpdest.getRelativePath("renamed.tar.gz"));
+					}
+
+					jsh.file.zip({
+						from: tmpdir,
+						to: tmpdest.getRelativePath("directory.zip")
+					});
+					scope.harness.zip = tmpdest.getFile("directory.zip");
+
+					if (jsh.httpd.Tomcat) {
+						var server = jsh.httpd.Tomcat.serve({ directory: tmpdest });
+						scope.server = server;
+					} else {
+						scope.server = null;
+					}
+
+					scope.tmpdir = function() {
 						var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
 						tmp.directory.remove();
-
-						if (harness.tar) {
-							api.install({
-								file: harness.tar,
-								format: api.format.gzip,
-								to: tmp
-							});
-
-							verify(tmp).directory.getFile("file").evaluate(function() { return this.read(String); }).is("text");
-
-							//	Test a file with different download name can also be expanded, using getDestinationPath()
-							(function() {
-								var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
-								tmp.directory.remove();
-								api.install({
-									file: harness.renamed,
-									format: api.format.gzip,
-									to: tmp,
-									getDestinationPath: function() { return "directory"; }
-								});
-								verify(tmp).directory.getFile("file").evaluate(function() { return this.read(String); }).is("text");
-							})();
-						}
-
-						//	Test a downloaded file
-						if (server && harness.tar) (function() {
-							var tmp = tmpdir();
-							verify(downloads).getFile("directory.tar.gz").is(null);
-							api.install({
-								url: "http://127.0.0.1:" + server.port + "/directory.tar.gz",
-								format: api.format.gzip,
-								to: tmp
-							});
-							verify(downloads).getFile("directory.tar.gz").is.not(null);
-							verify(tmp).directory.getFile("file").evaluate(function() { return this.read(String); }).is("text");
-						})();
-
-						//	TODO	ensure when a copy has already been downloaded, the cached version is used
-					]]></script>
-				</li>
-				<li class="function">
-					<div class="name">zip</div>
-					<span>__DESCRIPTION__</span>
-					<div class="arguments">
-						<div class="label">Arguments</div>
-						<ol>
-						</ol>
-					</div>
-					<div class="returns">
-						<div class="label">Returns</div>
-						<span class="type">__TYPE__</span>
-						<span>__DESCRIPTION__</span>
-					</div>
-					<script type="application/x.jsapi#tests">
-						if (server) {
-							(function() {
-								var tmp = tmpdir();
-								verify(downloads).getFile("directory.zip").is(null);
-								api.install({
-									url: "http://127.0.0.1:" + server.port + "/directory.zip",
-									format: api.format.zip,
-									to: tmp
-								});
-								verify(downloads).getFile("directory.zip").is.not(null);
-								verify(tmp).directory.getFile("file").evaluate(function() { return this.read(String); }).is("text");
-							})();
-						}
-					</script>
-				</li>
-				<li class="object">
-					<script type="application/x.jsapi#initialize">
-						if (jsh.httpd.Tomcat) {
-							var mock = new jsh.httpd.Tomcat();
-							mock.map({
-								path: "/",
-								servlets: {
-									"/*": {
-										load: function(scope) {
-											Packages.java.lang.System.err.println("custom servlet loading ...");
-											scope.$exports.handle = function(request) {
-												Packages.java.lang.System.err.println("Got request ...");
-												var host = request.headers.value("host");
-												Packages.java.lang.System.err.println("host = " + host);
-												if (host == "www.apache.org") {
-													if (request.path == "dyn/closer.cgi") {
-														return {
-															status: { code: 200 },
-															body: {
-																type: "application/json",
-																string: JSON.stringify({
-																	preferred: "http://apache.inonit.com/"
-																})
-															}
-														};
-													}
-												}
-												if (host == "apache.inonit.com") {
-													return {
-														status: { code: 200 },
-														body: $jsapi.loader.get(request.path)
-													};
-												}
-											};
-											Packages.java.lang.System.err.println("custom servlet loaded.");
-										}
-									}
-								},
-								resources: null
-							});
-							mock.start();
-							scope.mock = mock;
-						} else {
-							scope.mock = null;
-						}
-					</script>
-					<script type="application/x.jsapi#destroy">
-						if (scope.mock) scope.mock.stop();
-					</script>
-					<div class="name">apache</div>
-					<span>__DESCRIPTION__</span>
+						return tmp;
+					};
+				</script>
+				<div class="type">
+					<a class="type" name="types.installation">installation</a>
+					<span>
+						Specifies software to be installed (including where to obtain it and how it is structured) and a destination
+						to which to install it.
+					</span>
+					<div class="label">has properties:</div>
+					<ul>
+					</ul>
+				</div>
+				<div class="type">
+					<a class="type" name="types.listener">listener</a>
+					<span>An event handling object.</span>
 					<div class="label">has properties:</div>
 					<ul>
 						<li class="function">
-							<div class="name">find</div>
+							<div class="name">console</div>
 							<span>
-								Locates a distribution from Apache, either in a local cache, or from an Apache mirror, and
-								returns a local file containing the distribution (downloading it if necessary).
+								(optional)
+								A callback invoked with events containing messages suitable for display on the console.
 							</span>
 							<div class="arguments">
 								<div class="label">Arguments</div>
 								<ol>
-									<li class="object">
-										<span>__DESCRIPTION__</span>
+									<li class="value">
+										<span class="type">event</span>
+										<span>An event whose detail is:</span>
 										<div class="label">has properties:</div>
 										<ul>
 											<li class="value">
-												<div class="name">path</div>
+												<div class="name">message</div>
 												<span class="type">string</span>
-												<span>__DESCRIPTION__</span>
+												<span>A message.</span>
 											</li>
 										</ul>
 									</li>
 								</ol>
 							</div>
-							<div class="returns">
-								<div class="label">Returns</div>
-								<span class="type"><a href="../../../rhino/file/api.html">file</a></span>
-								<span>A local file containing the content from Apache.</span>
-							</div>
 						</li>
 					</ul>
-					<script type="application/x.jsapi#tests">
-						if (jsh.httpd.Tomcat) {
-							verify(api).apache.is.type("object");
-							verify(api).apache.evaluate.property("find").is.type("function");
-							verify(mock).is.type("object");
+				</div>
+				<ul>
+					<li class="function">
+						<div class="name">get</div>
+						<span>
+							Provides a file containing an installer. The source of the file is specified by the argument passed to
+							the method.
+						</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="object">
+									<span>__DESCRIPTION__</span>
+									<div class="label">has properties:</div>
+									<ul>
 
-							var PROXY = {
-								http: {
-									host: "127.0.0.1",
-									port: mock.port
+									</ul>
+								</li>
+								<li class="object">
+									<span>A handler object for events sent during the method's execution.</span>
+									<div class="label">has properties:</div>
+									<ul>
+										<li class="function">
+											<div class="name">console</div>
+											<span>__DESCRIPTION__</span>
+											<div class="arguments">
+												<div class="label">Arguments</div>
+												<ol>
+												</ol>
+											</div>
+										</li>
+									</ul>
+								</li>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type"><a href="../../../rhino/file/api.html#types.file">file</a></span>
+							<span>A file containing the installer.</span>
+						</div>
+						<script type="application/x.jsapi#tests">
+							var downloads = jsh.shell.TMPDIR.createTemporary({ directory: true });
+							var api = module({ downloads: downloads });
+							var messages = [];
+							var file = api.get({
+								url: "http://127.0.0.1:" + server.port + "/directory.tar.gz"
+							}, {
+								console: function(e) {
+									messages.push(e);
+								}
+							});
+							var TOSTRING = function() {
+								return { string: this.toString() };
+							};
+							var messageStartsWith = function(string) {
+								return function() {
+									return Boolean(this.detail.message.substring(0,string.length) == string);
 								}
 							};
-
-							var mockdownloads = $jsapi.file.newTemporaryDirectory();
-							var mockclient = new jsh.http.Client({
-								proxy: PROXY
-							});
-							var mockapi = $jsapi.loader.module("module.js", {
-								client: mockclient,
-								api: {
-									shell: jsh.shell,
-									http: jsh.http,
-									file: jsh.file,
-									Error: jsh.js.Error
-								},
-								downloads: mockdownloads
-							});
-
-							var GET_API_HTML = function() { return this.getFile("api.html") };
-							var EQUALS = function(string) { return function() { return this.read(String) == string; } };
-							verify(mockdownloads).evaluate(GET_API_HTML).is(null);
-							var file = mockapi.apache.find({ path: "api.html" });
-							var string = $jsapi.loader.string("api.html");
-							verify(file).evaluate(EQUALS(string)).is(true);
-							verify(mockdownloads).evaluate(GET_API_HTML).is.not(null);
-							verify(mockdownloads).getFile("api.html").evaluate(EQUALS(string)).is(true);
-						}
-					</script>
-				</li>
-				<li class="object">
-					<div class="name">hg</div>
-					<span>__DESCRIPTION__</span>
-					<div class="label">has properties:</div>
-					<script type="application/x.jsapi#tests">
-						verify(1).is(1);
-						verify(scope).api.hg.is.type("object");
-
-						var distribution = scope.api.hg.distribution.osx({ os: "10.9.2" });
-						verify(distribution).distribution.url.is("https://www.mercurial-scm.org/mac/binaries/Mercurial-3.4.2-py2.7-macosx10.9.zip");
-
-						verify(scope.api.hg).evaluate(function() { return this.distribution.osx({ os: "10.3.2" }) }).threw.type(Error);
-
-						verify(scope.api.hg).distribution.osx({ os: "10.13.1" }).distribution.url.is("https://www.mercurial-scm.org/mac/binaries/Mercurial-4.2.2-macosx10.12.pkg");
-					</script>
-					<ul>
-						<li class="function">
-							<div class="name">install</div>
-							<span>Updates the Mercurial install to the best version for the platform.</span>
-							<script type="application/x.jsapi#tests"><![CDATA[
-								var Listener = function() {
-									var events = [];
-
-									this.console = function(e) {
-										events.push(e);
-									};
-
-									this.received = function() {
-										return events;
-									}
-								};
-
-								var runInstall = function(p) {
-									var listener = new Listener();
-									var rv = {};
-									try {
-										api.hg.install({ mock: p.mock }, listener);
-									} catch(e) {
-										rv.threw = e;
-									}
-									rv.events = listener.received();
-									return rv;
-								};
-
-								(function alreadyInstalled() {
-									var mock = {
-										shell: {
-											os: {
-												name: "Mac OS X",
-												version: "10.11"
-											}
-										},
-										installed: { version: "4.0.1" }
-									};
-									var events = runInstall({ mock: mock }).events;
-									var last = events[events.length-1];
-									verify(last).type.is("console");
-									verify(last).detail.is("Already installed: hg 4.0.1");
-								})();
-
-								(function upgrade() {
-									var mock = {
-										shell: {
-											os: {
-												name: "Mac OS X",
-												version: "10.11"
-											},
-											run: function(p) {
-												if (p.command == "open" && p.arguments.length == 1 && p.arguments[0].pathname.basename == "file.pkg") {
-													return;
-												} else {
-													throw new Error();
-												}
-											}
-										},
-										install: {
-											get: function(p) {
-												return {
-													pathname: {
-														basename: "file.pkg"
-													}
-												};
-											}
-										},
-										installed: { version: "3.4" }
-									};
-									var result = runInstall({ mock: mock });
-									var events = result.events;
-									var versions = events[1];
-									verify(versions).type.is("console");
-									verify(versions).detail.is("Found version: 3.4; upgrading to 4.0.1");
-									verify(result).threw.is.type("object");
-									verify(result).threw.evaluate(function() { return this instanceof TypeError; }).is(false);
-									verify(result).threw.evaluate(function() { return this instanceof api.hg.install.GUI; }).is(true);
-								})();
-
-								var install = function(os,hg) {
-									var mock = {
-										shell: {
-											os: {
-												name: "Mac OS X",
-												version: os
-											},
-											run: function(p) {
-												if (p.command == "open" && p.arguments.length == 1 && p.arguments[0].pathname.basename == "file.pkg") {
-													return;
-												} else {
-													throw new Error();
-												}
-											}
-										},
-										install: {
-											get: function(p) {
-												return {
-													pathname: {
-														basename: "file.pkg"
-													}
-												};
-											}
-										},
-										installed: null
-									};
-									var result = runInstall({ mock: mock });
-									var events = result.events;
-									var versions = events[1];
-									verify(versions).type.is("console");
-									verify(versions).detail.is("Getting https://www.mercurial-scm.org/mac/binaries/Mercurial-" + hg + "-macosx" + os + ".pkg");
-									verify(result).threw.is.type("object");
-									verify(result).threw.evaluate(function() { return this instanceof TypeError; }).is(false);
-									verify(result).threw.evaluate(function() { return this instanceof api.hg.install.GUI; }).is(true);
-								};
-								install("10.11","4.0.1");
-								install("10.12","4.2.2");
-							]]></script>
-						</li>
-					</ul>
-				</li>
-				<li class="object">
-					<div class="name">git</div>
-					<span>__DESCRIPTION__</span>
-					<div class="label">has properties:</div>
-					<ul>
-						<li class="function">
-							<div class="name">install</div>
-							<span>__DESCRIPTION__</span>
-							<div class="arguments">
-								<div class="label">Arguments</div>
-								<ol>
-								</ol>
-							</div>
-							<div class="returns">
-								<div class="label">Returns</div>
+							verify(file).is.type("object");
+							verify(downloads).getFile("directory.tar.gz").is.not(null);
+							verify(downloads).getFile("directory.tar.gz").evaluate(TOSTRING).string.is(file.toString());
+							verify(messages,"messages").is(messages);
+							verify(messages).length.is(2);
+							verify(messages)[0].evaluate(messageStartsWith("Downloading")).is(true);
+							verify(messages)[0].evaluate(messageStartsWith("Found")).is(false);
+							verify(messages)[1].evaluate(messageStartsWith("Wrote")).is(true);
+						</script>
+					</li>
+					<li class="object">
+						<div class="name"><a id="$exports.format">format</a></div>
+						<span>__DESCRIPTION__</span>
+						<div class="label">has properties:</div>
+						<ul>
+							<li class="value">
+								<div class="name">zip</div>
 								<span class="type">__TYPE__</span>
 								<span>__DESCRIPTION__</span>
-							</div>
-						</li>
-					</ul>
-				</li>
-			</ul>
+							</li>
+							<li class="value">
+								<div class="name">gzip</div>
+								<span class="type">__TYPE__</span>
+								<span>
+									(conditional; requires <code>tar</code> to be in the <code>PATH</code>)
+									A <code>gzip</code>ped <code>tar</code> file.
+								</span>
+							</li>
+						</ul>
+					</li>
+					<li class="function">
+						<div class="name">install</div>
+						<div>
+							This method can process both local and remote files. For remote files, it is assumed that the filename of
+							the file uniquely identifies the file, and that this assumption can be relied upon to determine whether the
+							remote file has already been downloaded. This restriction may be removed in a future release, perhaps by
+							adding additional configuration arguments.
+						</div>
+						<div>
+							The file, when expanded, is assumed to create a single directory containing the installation. This directory
+							is assumed to have the same name as the file (minus the extension). For a given archive, if the desired
+							directory has a different path within, it can be specified with <code>getDestinationPath</code>.
+						</div>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="object">
+									<span></span>
+									<div class="label">has properties:</div>
+									<ul>
+										<!--	TODO	not really specified what happens if both url and file are present	-->
+										<li class="value">
+											<div class="name">url</div>
+											<span class="type">string</span>
+											<span>
+												(optional; not necessary if <code>file</code> is present)
+												The URL from which the file can be downloaded. Currently, only <code>http</code> and
+												<code>https</code> URLs are supported.
+											</span>
+										</li>
+										<li class="value">
+											<div class="name">file</div>
+											<span class="type"><a href="../../../rhino/file/api.html#types.file">file</a></span>
+											<span>
+												(optional; not necessary if <code>url</code> is present)
+											</span>
+										</li>
+										<li class="value">
+											<div class="name">format</div>
+											<span class="type">__TYPE__</span>
+											<span>One of the values from <a href="$exports.format"><code>format</code></a>.</span>
+										</li>
+										<li class="value">
+											<div class="name">to</div>
+											<span class="type"><a href="../../../rhino/file/api.html#types.Pathname">Pathname</a></span>
+											<span>
+												The location to which to install the installation.
+											</span>
+										</li>
+										<li class="function">
+											<div class="name">getDestinationPath</div>
+											<span>
+												(optional; defaults to the name of the archive, excluding the extension)
+												A function specifying the path within the archive of the installation.
+											</span>
+											<div class="arguments">
+												<div class="label">Arguments</div>
+												<ol>
+													<li class="value">
+														<span class="type"><a href="../../../rhino/file/api.html#types.file">file</a></span>
+														<span>The archive file.</span>
+													</li>
+												</ol>
+											</div>
+											<div class="returns">
+												<div class="label">Returns</div>
+												<span class="type">string</span>
+												<span>A path within the archive to treat as the installation.</span>
+											</div>
+										</li>
+									</ul>
+								</li>
+								<li class="value">
+									<span class="type"><a href="#types.listener">listener</a></span>
+									<span>A listener that will be informed about events during the installation.</span>
+								</li>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type"><a href="../../../rhino/file/api.html#types.directory">directory</a></span>
+							<span>The directory to which the installation was installed.</span>
+						</div>
+						<script type="application/x.jsapi#tests" jsapi:id="present">
+							verify(api).is.type("object");
+							if (jsh.shell.PATH.getCommand("tar")) {
+								verify(api).evaluate(function() { return this.format.gzip; }).is.type("object");
+								verify(api).evaluate(function() { return this.gzip; }).is.type("function");
+							}
+						</script>
+						<script type="application/x.jsapi#tests"><![CDATA[
+							var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
+							tmp.directory.remove();
+
+							if (harness.tar) {
+								api.install({
+									file: harness.tar,
+									format: api.format.gzip,
+									to: tmp
+								});
+
+								verify(tmp).directory.getFile("file").evaluate(function() { return this.read(String); }).is("text");
+
+								//	Test a file with different download name can also be expanded, using getDestinationPath()
+								(function() {
+									var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
+									tmp.directory.remove();
+									api.install({
+										file: harness.renamed,
+										format: api.format.gzip,
+										to: tmp,
+										getDestinationPath: function() { return "directory"; }
+									});
+									verify(tmp).directory.getFile("file").evaluate(function() { return this.read(String); }).is("text");
+								})();
+							}
+
+							//	Test a downloaded file
+							if (server && harness.tar) (function() {
+								var tmp = tmpdir();
+								verify(downloads).getFile("directory.tar.gz").is(null);
+								api.install({
+									url: "http://127.0.0.1:" + server.port + "/directory.tar.gz",
+									format: api.format.gzip,
+									to: tmp
+								});
+								verify(downloads).getFile("directory.tar.gz").is.not(null);
+								verify(tmp).directory.getFile("file").evaluate(function() { return this.read(String); }).is("text");
+							})();
+
+							//	TODO	ensure when a copy has already been downloaded, the cached version is used
+						]]></script>
+						<script type="application/x.jsapi#tests">
+							if (server) {
+								(function() {
+									var tmp = tmpdir();
+									verify(downloads).getFile("directory.zip").is(null);
+									api.install({
+										url: "http://127.0.0.1:" + server.port + "/directory.zip",
+										format: api.format.zip,
+										to: tmp
+									});
+									verify(downloads).getFile("directory.zip").is.not(null);
+									verify(tmp).directory.getFile("file").evaluate(function() { return this.read(String); }).is("text");
+								})();
+							}
+						</script>
+					</li>
+					<li class="object">
+						<script type="application/x.jsapi#initialize">
+							if (jsh.httpd.Tomcat) {
+								var mock = new jsh.httpd.Tomcat();
+								mock.map({
+									path: "/",
+									servlets: {
+										"/*": {
+											load: function(scope) {
+												Packages.java.lang.System.err.println("custom servlet loading ...");
+												scope.$exports.handle = function(request) {
+													Packages.java.lang.System.err.println("Got request ...");
+													var host = request.headers.value("host");
+													Packages.java.lang.System.err.println("host = " + host);
+													if (host == "www.apache.org") {
+														if (request.path == "dyn/closer.cgi") {
+															return {
+																status: { code: 200 },
+																body: {
+																	type: "application/json",
+																	string: JSON.stringify({
+																		preferred: "http://apache.inonit.com/"
+																	})
+																}
+															};
+														}
+													}
+													if (host == "apache.inonit.com") {
+														return {
+															status: { code: 200 },
+															body: $jsapi.loader.get(request.path)
+														};
+													}
+												};
+												Packages.java.lang.System.err.println("custom servlet loaded.");
+											}
+										}
+									},
+									resources: null
+								});
+								mock.start();
+								scope.mock = mock;
+							} else {
+								scope.mock = null;
+							}
+						</script>
+						<script type="application/x.jsapi#destroy">
+							if (scope.mock) scope.mock.stop();
+						</script>
+						<div class="name">apache</div>
+						<span>__DESCRIPTION__</span>
+						<div class="label">has properties:</div>
+						<ul>
+							<li class="function">
+								<div class="name">find</div>
+								<span>
+									Locates a distribution from Apache, either in a local cache, or from an Apache mirror, and
+									returns a local file containing the distribution (downloading it if necessary).
+								</span>
+								<div class="arguments">
+									<div class="label">Arguments</div>
+									<ol>
+										<li class="object">
+											<span>__DESCRIPTION__</span>
+											<div class="label">has properties:</div>
+											<ul>
+												<li class="value">
+													<div class="name">path</div>
+													<span class="type">string</span>
+													<span>__DESCRIPTION__</span>
+												</li>
+											</ul>
+										</li>
+									</ol>
+								</div>
+								<div class="returns">
+									<div class="label">Returns</div>
+									<span class="type"><a href="../../../rhino/file/api.html">file</a></span>
+									<span>A local file containing the content from Apache.</span>
+								</div>
+							</li>
+						</ul>
+						<script type="application/x.jsapi#tests">
+							if (jsh.httpd.Tomcat) {
+								verify(api).apache.is.type("object");
+								verify(api).apache.evaluate.property("find").is.type("function");
+								verify(mock).is.type("object");
+
+								var PROXY = {
+									http: {
+										host: "127.0.0.1",
+										port: mock.port
+									}
+								};
+
+								var mockdownloads = $jsapi.file.newTemporaryDirectory();
+								var mockclient = new jsh.http.Client({
+									proxy: PROXY
+								});
+								var mockapi = $jsapi.loader.module("module.js", {
+									client: mockclient,
+									api: {
+										shell: jsh.shell,
+										http: jsh.http,
+										file: jsh.file,
+										Error: jsh.js.Error
+									},
+									downloads: mockdownloads
+								});
+
+								var GET_API_HTML = function() { return this.getFile("api.html") };
+								var EQUALS = function(string) { return function() { return this.read(String) == string; } };
+								verify(mockdownloads).evaluate(GET_API_HTML).is(null);
+								var file = mockapi.apache.find({ path: "api.html" });
+								var string = $jsapi.loader.string("api.html");
+								verify(file).evaluate(EQUALS(string)).is(true);
+								verify(mockdownloads).evaluate(GET_API_HTML).is.not(null);
+								verify(mockdownloads).getFile("api.html").evaluate(EQUALS(string)).is(true);
+							}
+						</script>
+					</li>
+				</ul>
+			</div>
 		</div>
 		<script type="application/x.jsapi#destroy">
 			if (scope.server) scope.server.stop();
