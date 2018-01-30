@@ -51,6 +51,42 @@ END LICENSE
 					<span>__DESCRIPTION__</span>
 					<div class="label">has properties:</div>
 					<ul>
+						<li class="function">
+							<div class="name">series</div>
+							<span>
+								Creates a <code>Handler</code> from an ordered list of <code>Handler</code>s. Requests received
+								by the resulting <code>Handler</code> will be handled by invoking each provided <code>Handler</code>
+								in order and returning the first result that is not <code>undefined</code>.
+							</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<div>
+									Each argument passed to the function is expected to be a <code>Handler</code>.
+								</div>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">Handler</span>
+							</div>
+							<script type="application/x.jsapi#tests">
+								var condition = function(request) {
+									if (request.path == "condition") return { status: { code: 200 }, body: { string: "satisfied" } };
+								};
+								var nulling = function(request) { return null; };
+								var handlers = {
+									empty: module.Handler.series(),
+									condition: module.Handler.series(condition,nulling)
+								};
+								var requests = {
+									condition: { path: "condition" },
+									root: { path: "" }
+								};
+								verify(handlers).empty(requests.root).is.type("undefined");
+								verify(handlers).condition(requests.root).is.type("null");
+								verify(handlers).condition(requests.condition).is.type("object");
+								verify(handlers).condition(requests.condition).status.code.is(200);
+							</script>
+						</li>
 						<li class="constructor">
 							<div class="name">Child</div>
 							<span>__DESCRIPTION__</span>

@@ -52,6 +52,16 @@ $exports.http.Response.NOT_FOUND = function() {
 	}
 };
 
+$exports.http.Response.SEE_OTHER = function(p) {
+	var rv = {
+		status: { code: 303 },
+		headers: [
+			{ "Location": p.location }
+		]
+	};
+	return rv;
+}
+
 $exports.Handler = function(p) {
 	throw new Error("Reserved for future use.");
 };
