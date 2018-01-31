@@ -83,6 +83,50 @@ END LICENSE
 							<div class="label">has properties:</div>
 							<ul>
 								<!--	TODO	other forms of servlet	-->
+								<li class="object">
+									<div class="name">server</div>
+									<span>
+										(optional; if omitted, a Tomcat server will be created using 
+										<code>port</code>, <code>resources</code>, <code>servlet</code> and <code>parameters</code> 
+										properties)
+									</span>
+									<div class="label">has properties:</div>
+									<ul>
+										<li class="value">
+											<div class="name">port</div>
+											<span class="type">number</span>
+											<span>__DESCRIPTION__</span>
+										</li>
+										<li class="function">
+											<div class="name">start</div>
+											<span>__DESCRIPTION__</span>
+											<div class="arguments">
+												<div class="label">Arguments</div>
+												<ol>
+												</ol>
+											</div>
+											<div class="returns">
+												<div class="label">Returns</div>
+												<span class="type">__TYPE__</span>
+												<span>__DESCRIPTION__</span>
+											</div>
+										</li>
+										<li class="function">
+											<div class="name">stop</div>
+											<span>__DESCRIPTION__</span>
+											<div class="arguments">
+												<div class="label">Arguments</div>
+												<ol>
+												</ol>
+											</div>
+											<div class="returns">
+												<div class="label">Returns</div>
+												<span class="type">__TYPE__</span>
+												<span>__DESCRIPTION__</span>
+											</div>
+										</li>
+									</ul>
+								</li>
 								<li class="value">
 									<div class="name">port</div>
 									See <a href="../../rhino/http/servlet/plugin.jsh.api.html#$exports.Tomcat">Tomcat</a>.
@@ -162,7 +206,7 @@ END LICENSE
 										</li>
 										<li>
 											One of:
-											<div>
+											<div class="deprecated">
 												For JavaFX browser
 												<ul>
 													<li class="value">
@@ -236,6 +280,16 @@ END LICENSE
 							<div class="name">port</div>
 							<span class="type">number</span>
 							<span>The port number on which the application is running.</span>
+						</li>
+						<li class="value">
+							<div class="name">server</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</li>
+						<li class="value">
+							<div class="name">browser</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
 						</li>
 					</ul>
 				</div>
