@@ -56,7 +56,7 @@ $exports.http.Response.SEE_OTHER = function(p) {
 	var rv = {
 		status: { code: 303 },
 		headers: [
-			{ "Location": p.location }
+			{ name: "Location", value: p.location }
 		]
 	};
 	return rv;
