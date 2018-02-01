@@ -28,9 +28,8 @@ END LICENSE
 			Run *that* askpass.bash with a prompt argument
 		-->
 		<script type="application/x.jsapi#initialize">
-			scope.module = $jsapi.loader.module("module.js", {
-				program: jsh.shell.PATH.getCommand("git")
-			});
+			$jsapi.loader.plugins();
+			scope.module = jsh.tools.git;
 		</script>
 		<div>__DESCRIPTION__</div>
 		<div>

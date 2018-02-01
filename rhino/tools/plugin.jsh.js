@@ -26,14 +26,10 @@ plugin({
 				java: jsh.java
 			}
 		});
-
-		jsh.java.tools.plugin = {
-			hg: function() {
-				jsh.loader.plugins(new $loader.Child("hg/"));
-			},
-			git: function() {
-				jsh.loader.plugins(new $loader.Child("git/"));
-			}
-		};
+		
+		if (!plugins.slime) plugins.slime = {};
+		if (!plugins.slime.tools) plugins.slime.tools = {};
+		plugins.slime.tools.hg = $loader.module("hg/module.js");
+		plugins.slime.tools.git = $loader.module("git/module.js");
 	}
 })

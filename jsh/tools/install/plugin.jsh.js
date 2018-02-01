@@ -13,7 +13,7 @@
 
 plugin({
 	isReady: function() {
-		return jsh.js && jsh.file && jsh.http && jsh.shell;
+		return jsh.js && jsh.file && jsh.http && jsh.shell && plugins.slime && plugins.slime.tools && plugins.slime.tools.hg;
 	},
 	load: function() {
 		if (!jsh.tools) jsh.tools = {};
@@ -105,26 +105,67 @@ plugin({
 			}
 		};
 
-		jsh.tools.hg = $loader.file("hg.js", {
-			api: {
-				shell: jsh.shell,
-				Error: jsh.js.Error,
-				install: jsh.tools.install,
-				Events: {
-					Function: jsh.tools.install.$api.Events.Function
+		var loadHg = function() {
+			jsh.tools.hg = $loader.file("hg.js", {
+				api: {
+					Installation: plugins.slime.tools.hg.Installation,
+					shell: jsh.shell,
+					Error: jsh.js.Error,
+					install: jsh.tools.install,
+					Events: {
+						Function: jsh.tools.install.$api.Events.Function
+					}
 				}
-			}
-		});
+			});
 
-		jsh.tools.git = $loader.file("git.js", {
-			api: {
-				Events: {
-					Function: jsh.tools.install.$api.Events.Function
-				},
-				Error: jsh.js.Error,
-				shell: jsh.shell,
-				file: jsh.file
-			}
-		});
+			if (jsh.shell.PATH.getCommand("hg")) {
+				jsh.tools.hg.installation = new plugins.slime.tools.hg.Installation({
+					install: jsh.shell.PATH.getCommand("hg")
+				});
+				global.hg = {};
+				["Repository","init"].forEach(function(name) {
+					jsh.tools.hg[name] = jsh.tools.hg.installation[name];
+					global.hg[name] = jsh.tools.hg.installation[name];
+				});
+				$api.deprecate(global,"hg");
+			}			
+		};
+		
+		var loadGit = function() {
+			jsh.tools.git = $loader.file("git.js", {
+				api: {
+					Installation: plugins.slime.tools.git.Installation,
+					Events: {
+						Function: jsh.tools.install.$api.Events.Function
+					},
+					Error: jsh.js.Error,
+					shell: jsh.shell,
+					file: jsh.file
+				}
+			});
+			if (jsh.shell.PATH.getCommand("git")) {
+				jsh.tools.git.installation = new plugins.slime.tools.git.Installation({
+					program: jsh.shell.PATH.getCommand("git")
+				});
+				global.git = {};
+				["Repository","init"].forEach(function(name) {
+					jsh.tools.git[name] = jsh.tools.git.installation[name];
+					global.git[name] = jsh.tools.git.installation[name];
+				});
+				$api.deprecate(global,"git");
+			}			
+		};
+		
+		loadHg();
+		loadGit();
+		
+		jsh.java.tools.plugin = {
+			hg: $api.deprecate(function() {
+				loadHg();
+			}),
+			git: $api.deprecate(function() {
+				loadGit();
+			})
+		};
 	}
 });
