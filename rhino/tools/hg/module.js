@@ -10,6 +10,8 @@
 //	Contributor(s):
 //	END LICENSE
 
+if (!$context.api.web) throw new Error("Required $context: api.web");
+
 var toNativePath = function(pathname) {
 	if ($context.api.file.filesystems.cygwin) {
 		return $context.api.file.filesystems.cygwin.toWindows(pathname).toString();
