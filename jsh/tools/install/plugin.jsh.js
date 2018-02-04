@@ -147,6 +147,17 @@ plugin({
 				jsh.tools.git.installation = new plugins.slime.tools.git.Installation({
 					program: jsh.shell.PATH.getCommand("git")
 				});
+				//	TODO	enable credentialHelper for built shells
+				//	TODO	investigate enabling credentialHelper for remote shells
+				if (jsh.shell.jsh.src) {
+					var credentialHelper = [
+						jsh.shell.java.jrunscript.toString(),
+						jsh.shell.jsh.src.getRelativePath("rhino/jrunscript/api.js"),
+						"jsh",
+						jsh.shell.jsh.src.getRelativePath("rhino/tools/git/credential-helper.jsh.js")						
+					].join(" ");
+					jsh.tools.git.credentialHelper.jsh = credentialHelper;
+				}
 				global.git = {};
 				["Repository","init"].forEach(function(name) {
 					jsh.tools.git[name] = jsh.tools.git.installation[name];
