@@ -112,6 +112,11 @@ plugin({
 					shell: jsh.shell,
 					Error: jsh.js.Error,
 					install: jsh.tools.install,
+					web: jsh.js.web,
+					time: jsh.time,
+					js: jsh.js,
+					ip: jsh.ip,
+					java: jsh.java,
 					Events: {
 						Function: jsh.tools.install.$api.Events.Function
 					}
