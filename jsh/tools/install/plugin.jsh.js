@@ -13,7 +13,7 @@
 
 plugin({
 	isReady: function() {
-		return jsh.js && && jsh.js.web && jsh.java && jsh.ip && jsh.time && jsh.file && jsh.http && jsh.shell && plugins.slime && plugins.slime.tools && plugins.slime.tools.hg;
+		return jsh.js && jsh.js.web && jsh.java && jsh.ip && jsh.time && jsh.file && jsh.http && jsh.shell && plugins.slime && plugins.slime.tools && plugins.slime.tools.hg;
 	},
 	load: function() {
 		if (!jsh.tools) jsh.tools = {};
