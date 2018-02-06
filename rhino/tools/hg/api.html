@@ -522,7 +522,7 @@ END LICENSE
 						var subrepositories = parent.subrepositories({ array: true });
 						verify(subrepositories).length.is(1);
 						verify(subrepositories)[0].directory.toString().is(pathname.directory.getSubdirectory("child").toString());
-						
+
 						subrepositories = parent.subrepositories();
 						verify(subrepositories).evaluate.property("child").is.type("object");
 						verify(subrepositories).evaluate.property("foo").is.type("undefined");

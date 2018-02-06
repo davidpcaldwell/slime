@@ -61,7 +61,7 @@ plugin({
 					}
 					if (p.mock && p.mock.config) {
 						for (var x in p.mock.config) {
-							rv.push("--config", x + "=" + p.mock.config[x]);							
+							rv.push("--config", x + "=" + p.mock.config[x]);
 						}
 					}
 					var scheme = (p.mock) ? p.mock.scheme : jsh.shell.jsh.url.scheme;
@@ -75,9 +75,9 @@ plugin({
 			});
 			jsh.shell.console("Cloned to " + p.destination);
 		};
-		
+
 		jsh.tools.provision.clone = $api.deprecate(bitbucketHgClone);
-		
+
 		jsh.tools.provision.bitbucket = {};
 		//	Probably should not use hg plugin given that we are potentially running this remotely
 		//	TODO	use more sophisticated mechanism to decide whether to attach hg property based on Mercurial presence/absence

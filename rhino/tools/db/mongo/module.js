@@ -105,7 +105,7 @@ var Collection = function(_db,name) {
 	this.find = function(criteria,projection) {
 		return new Cursor(_db.getCollection(name),criteria,projection);
 	};
-	
+
 	this.findOne = function(criteria,projection) {
 		var rv = _db.getCollection(name).findOne(_wrap(criteria),_wrap(projection));
 		return _unwrap(rv);
@@ -148,12 +148,12 @@ var Collection = function(_db,name) {
 //	TODO	as partial solution for the above, could iterate over names on connection and only reflect local changes to names
 var Database = function(_db) {
 	this.name = String(_db.getName());
-	
+
 	this.auth = function(username,password) {
 		//	TODO	uses deprecated call from 2.14
 		_db.authenticate(username,new Packages.java.lang.String(password).toCharArray());
 	};
-	
+
 	this.getCollectionNames = function() {
 		var _names = _db.getCollectionNames();
 		var rv = [];
@@ -178,7 +178,7 @@ var Database = function(_db) {
 	this.dropDatabase = function() {
 		_db.dropDatabase();
 	}
-	
+
 	var rs = new function() {
 		this.slaveOk = function() {
 			//	TODO	uses deprecated call from 2.14; supposed to switch to ReadPreference
@@ -201,12 +201,12 @@ var Database = function(_db) {
 			var pwd = p.file.parent;
 			var code = pwd.getFile(string).read(String);
 			var global = (function() { return this; })();
-			jsh.loader.run(pwd.getRelativePath(string), scope, { 
+			jsh.loader.run(pwd.getRelativePath(string), scope, {
 				slime: {
 					export: function(name,value) {
 						scope[name] = value;
 					}
-				} 
+				}
 			});
 		};
 		if (p.scope) {

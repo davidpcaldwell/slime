@@ -181,7 +181,7 @@ window.callbacks.push(function() {
 							browser: browser,
 							unit: jsapi
 						};
-						
+
 						this.loader = new function() {
 							this.module = function(path,context) {
 								//	TODO	probable bug here; probably works when module path ends in /, but for module path

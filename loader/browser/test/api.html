@@ -113,7 +113,7 @@ END LICENSE
 									(optional; default is to do nothing)
 									Implements the test. May contain asynchronous calls using <code>window.XMLHttpRequest</code> or
 									<code>window.Promise</code>; the test will wait for all asynchronous calls to complete before
-									proceeding.								
+									proceeding.
 								</span>
 							</li>
 							<li class="function">
@@ -348,7 +348,7 @@ END LICENSE
 					</li>
 				</ul>
 		</div>
-		<script type="application/x.jsapi#initialize">			
+		<script type="application/x.jsapi#initialize">
 			//	TODO	get this to true; probably need to use a Promise series rather than Promise.all in the appropriate code
 			//			within loader/api/unit.js
 			scope.MULTIPLE_SCENARIOS_ALLOWED = $jsapi.environment.multipleScenarios;
@@ -357,9 +357,9 @@ END LICENSE
 			verify(window).evaluate(function() { return this.XMLHttpRequest.asynchrony; }).is.type("object");
 			verify(window).evaluate(function() { return this.XMLHttpRequest.asynchrony.started; }).is.type("function");
 			verify(window).evaluate(function() { return this.XMLHttpRequest.asynchrony.finished; }).is.type("function");
-			
+
 			var asynchronous = new $jsapi.api.browser.Scenario();
-			
+
 			asynchronous.name = "Browser tests for asynchronous wrapper";
 
 			asynchronous.test(new function() {
@@ -367,11 +367,11 @@ END LICENSE
 				var Promise_resolve;
 				var chained;
 				var chain = {};
-				
+
 				this.before = function(verify) {
 					verify("before").is("before");
 				};
-				
+
 				this.run = function() {
 					new window.Promise(function(resolve,reject) {
 						resolve("resolve");
@@ -402,7 +402,7 @@ END LICENSE
 						chain.native.third = true;
 					})
 				};
-				
+
 				this.after = function(verify) {
 					verify("after").is("after");
 					verify(resolve).is("resolve");
@@ -414,9 +414,9 @@ END LICENSE
 					verify(chain.native.third).is(true);
 				}
 			});
-			
+
 			verify.scenario(asynchronous);
-			
+
 			if (MULTIPLE_SCENARIOS_ALLOWED) {
 				var multiple = new browser.Scenario();
 				multiple.name = "Browser tests: multiple scenarios via scenario.verify";
@@ -426,22 +426,22 @@ END LICENSE
 						verify("multiple").is("multiple");
 					}
 				});
-				
+
 				verify.scenario(multiple);
 			}
 		</script>
 		<script type="application/x.jsapi#tests">
 			var asynchronous = new $jsapi.api.browser.Scenario();
-			
+
 			asynchronous.name = "Multi-test scenario";
-			
+
 			var shared;
-			
+
 			asynchronous.test(new function() {
 				this.before = function() {
 					shared = 2;
 				};
-				
+
 				this.after = function() {
 					verify(shared).is(2);
 				}
@@ -451,12 +451,12 @@ END LICENSE
 				this.before = function() {
 					shared = 3;
 				};
-				
+
 				this.after = function() {
 					verify(shared).is(3);
 				}
 			});
-			
+
 			verify.scenario(asynchronous);
 		</script>
 	</body>

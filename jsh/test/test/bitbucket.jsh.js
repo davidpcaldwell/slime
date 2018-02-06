@@ -81,7 +81,7 @@ var hgconfig = {
 		"http_proxy.host": "127.0.0.1:" + server.port
 	},
 	https: {
-		"http_proxy.host": "127.0.0.1:" + server.https.port		
+		"http_proxy.host": "127.0.0.1:" + server.https.port
 	}
 };
 
@@ -92,7 +92,7 @@ suite.part("clone", {
 		verify(tmp1).getSubdirectory(".hg").is.type("null");
 		remote.clone({ to: tmp1, config: hgconfig.http });
 		verify(tmp1).getSubdirectory(".hg").is.type("object");
-		
+
 		if (parameters.options.https) {
 			var sRemote = new hg.Repository({ url: "https://bitbucket.org/user/slime" });
 			var tmp2 = jsh.shell.TMPDIR.createTemporary({ directory: true });

@@ -15,7 +15,7 @@ document.domain = document.domain;
 
 (function() {
 	if (window.XMLHttpRequest.asynchrony) return;
-	
+
 	var forEach = function(array,f) {
 		if (array.forEach) {
 			array.forEach(f);
@@ -29,7 +29,7 @@ document.domain = document.domain;
 
 	var Asynchrony = function() {
 		var Promise = window.Promise;
-		
+
 		var next = arguments[0];
 		var pending = [];
 
@@ -87,19 +87,19 @@ document.domain = document.domain;
 				controlled.push(this);
 
 				var resolveIt;
-				
+
 				this.toString = function() {
 					return "Controllable Promise: " + promise;
 				};
-				
+
 				var promise = new Promise(function(resolve,reject) {
 					resolveIt = resolve;
 				});
-				
+
 				this.then = function() {
 					return promise.then.apply(promise,arguments);
 				}
-				
+
 				this.resolve = function(value) {
 					if (arguments.length == 0 && evaluator) {
 						value = evaluator();
@@ -108,10 +108,10 @@ document.domain = document.domain;
 					resolveIt(value);
 				}
 			};
-			
+
 			this.promise = function(evaluator) {
 				return new Controllable(evaluator);
-			};			
+			};
 		}
 	};
 
@@ -270,7 +270,7 @@ document.domain = document.domain;
 		rv.asynchrony = asynchrony;
 		return rv;
 	})(window.XMLHttpRequest);
-	
+
 	if (window.Promise) {
 		window.Promise = (function(was) {
 			var Promise = function(executor) {
@@ -293,7 +293,7 @@ document.domain = document.domain;
 				}
 
 				if (track) asynchrony.started(this);
-				
+
 				var end = (function() {
 					if (track) asynchrony.finished(this);
 				}).bind(this);
@@ -351,7 +351,7 @@ document.domain = document.domain;
 // 					}
 // 					return rv;
 				};
-				
+
 				this.catch = function(rejected) {
 					window.console.log("Rejecting", executor, arguments[0]);
 					var rv = delegate.catch.apply(this,arguments);

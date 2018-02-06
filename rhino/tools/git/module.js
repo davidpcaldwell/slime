@@ -150,7 +150,7 @@ var Installation = function(environment) {
 					}
 					return formats.log.parse(result.stdio.output.split("\n")[0]);
 				}
-			});		
+			});
 		};
 
 		this.status = function(p) {

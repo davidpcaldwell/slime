@@ -142,6 +142,8 @@ for (var i=0; i<files.length; i++) {
 			original = "the js/object SLIME module";
 		} else if (startsWith("js/debug/")(relative)) {
 			original = "the js/debug SLIME module";
+		} else if (startsWith("js/promise/")(relative)) {
+			original = "the js/promise SLIME module";
 		} else if (startsWith("js/time/")(relative)) {
 			original = "the js/time SLIME module";
 		} else if (startsWith("js/web/")(relative)) {
@@ -180,6 +182,8 @@ for (var i=0; i<files.length; i++) {
 			original = "the SLIME JDK interface";
 		} else if (startsWith("rhino/jrunscript/")(relative)) {
 			original = "the InOnIt jrunscript API";
+		} else if (relative == "api.html" || relative == "internal.api.html") {
+			original = "the SLIME project";
 		} else {
 			throw new Error("Unimplemented: " + relative);
 		}

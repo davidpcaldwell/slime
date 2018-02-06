@@ -111,7 +111,7 @@ public class Shell {
 		if (_file == null) return null;
 		return streams.readString(_file.getReader());
 	}
-	
+
 	public final Code[] getPlugins() {
 		if (classpath == null) throw new IllegalStateException();
 		return configuration.getInstallation().getExtensions().getPlugins(classpath).toArray(new Code[0]);

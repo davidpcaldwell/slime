@@ -572,6 +572,6 @@ jsh.unit.interface.create(scenario, new function() {
 	} else {
 		this.view = parameters.options.view;
 	}
-	
+
 	this.path = (parameters.options.part) ? parameters.options.part.split("/") : [];
 });

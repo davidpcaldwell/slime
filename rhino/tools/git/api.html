@@ -168,7 +168,7 @@ END LICENSE
 						});
 						repository.test = {};
 						repository.test.writeFile = function(path,content) {
-							repository.directory.getRelativePath(path).write(content, { append: false });							
+							repository.directory.getRelativePath(path).write(content, { append: false });
 						}
 						return repository;
 					};
@@ -267,7 +267,7 @@ END LICENSE
 									<span class="type">object</span>
 									<span>
 										An object whose keys are string paths within the repository, and whose values are the two-letter output
-										of the <code>git status --porcelain</code> command.										
+										of the <code>git status --porcelain</code> command.
 									</span>
 								</li>
 							</ul>
@@ -429,25 +429,25 @@ END LICENSE
 						</div>
 						<script type="application/x.jsapi#tests">
 							var repository = newRepository();
-							
+
 							repository.test.writeFile("a","a");
 							repository.add({ path: "a" });
 							repository.commit({ message: "a" });
 							repository.branch({ name: "a" });
-							
+
 							repository.branch({ name: "b" });
 							repository.checkout({ branch: "b" });
 							repository.test.writeFile("b","b");
 							repository.add({ path: "b" });
 							repository.commit({ message: "b" });
-							
+
 							repository.checkout({ branch: "a" });
 							repository.branch({ name: "c" });
 							repository.checkout({ branch: "c" });
 							repository.test.writeFile("c","c");
 							repository.add({ path: "c" });
 							repository.commit({ message: "c" });
-							
+
 							var mergeBase = repository.mergeBase({ commits: ["b","c"] });
 							var a = repository.show({ object: "a" });
 							verify(a).commit.hash.is(mergeBase.commit.hash);

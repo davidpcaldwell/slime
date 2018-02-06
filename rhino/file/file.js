@@ -55,7 +55,7 @@ var Pathname = function Pathname(parameters) {
 		var rv = $filesystem.peerToString(peer);
 		if (rv.substring(rv.length-$filesystem.separators.pathname.length) == $filesystem.separators.pathname) {
 			$api.deprecate(function() {
-				rv = rv.substring(0,rv.length-$filesystem.separators.pathname.length);				
+				rv = rv.substring(0,rv.length-$filesystem.separators.pathname.length);
 			})();
 		}
 		return rv;
@@ -420,7 +420,7 @@ var Pathname = function Pathname(parameters) {
 			}
 		});
 		var resource = new $context.Resource(rdata);
-		
+
 		Object.defineProperty(this,"length",{
 			get: function() {
 				return rdata.length;
@@ -441,7 +441,7 @@ var Pathname = function Pathname(parameters) {
 
 	var Directory = function(pathname,peer) {
 		Node.call(this,pathname,"");
-		
+
 		this.toString = (function(was) {
 			return function() {
 				return was.apply(this,arguments) + "/";

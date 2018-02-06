@@ -36,7 +36,7 @@ $exports.run = function(p) {
 					environment: environment
 				});
 			};
-			
+
 			this.getStandardOutput = function() {
 				return (stdio && stdio.output) ? stdio.output.java.adapt() : Packages.inonit.script.runtime.io.Streams.Null.OUTPUT_STREAM;
 			};
@@ -157,7 +157,7 @@ $exports.run = function(p) {
 			this.toString = function() {
 				return "command: " + invocation.configuration.command + " arguments: " + invocation.configuration.arguments;
 			};
-			
+
 			var args = $context.api.java.Array.create({
 				type: Packages.java.lang.String,
 				array: invocation.configuration.arguments.map(function(s) {
@@ -403,7 +403,7 @@ $exports.os = new function() {
 			if ( (this.name == "Linux" || this.name == "Mac OS X") && p.UNIX ) return p.UNIX;
 		}
 	};
-	
+
 	var system = $loader.file("os.js", {
 		PATH: $exports.PATH,
 		TMPDIR: $exports.TMPDIR,

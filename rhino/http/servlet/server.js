@@ -22,7 +22,7 @@ var multipartParser;
 
 var Request = function(_request) {
 	log.INFO("Creating request peer for %s", _request);
-	
+
 	this.uri = $context.api.web.Url.parse(String(_request.getRequestURI()));
 
 	this.source = new function() {
@@ -86,7 +86,7 @@ var Request = function(_request) {
 		}
 	}
 	this.headers = headers;
-	
+
 	var user = (function() {
 		var _principal = _request.getUserPrincipal();
 		if (!_principal) return void(0);
@@ -95,7 +95,7 @@ var Request = function(_request) {
 			name: String(_name)
 		}
 	})();
-	
+
 	this.user = user;
 
 	//	TODO	it would make more sense for this property to be absent if there is no content

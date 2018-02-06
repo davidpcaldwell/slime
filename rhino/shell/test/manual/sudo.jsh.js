@@ -45,7 +45,7 @@ if (parameters.options.omit) {
 		} else {
 			jsh.shell.console("Wrong error: " + e);
 			jsh.shell.exit(1);
-		}		
+		}
 	}
 } else if (parameters.options.wrong) {
 	try {
@@ -67,7 +67,7 @@ if (parameters.options.omit) {
 	} catch (e) {
 		jsh.shell.echo("Unexpected exception: " + e);
 		jsh.shell.exit(1);
-	}	
+	}
 } else {
 	jsh.shell.jsh({
 		fork: true,
@@ -82,6 +82,6 @@ if (parameters.options.omit) {
 	jsh.shell.jsh({
 		fork: true,
 		script: jsh.script.file,
-		arguments: ["-prompt"]		
+		arguments: ["-prompt"]
 	})
 }

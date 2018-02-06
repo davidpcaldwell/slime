@@ -618,11 +618,11 @@ END LICENSE
 										return value.a;
 									},
 									count: true,
-									array: array									
+									array: array
 								});
 								verify(countKeys)[1].is(3);
 								verify(countKeys)[2].is(1);
-								verify(countKeys)[3].is(0);								
+								verify(countKeys)[3].is(0);
 							</script>
 						</li>
 					</ul>
@@ -930,21 +930,21 @@ END LICENSE
 								};
 								var On = function() {
 									var events = [];
-									
+
 									var received = function(e) {
 										events.push(e);
 									};
-								
+
 									this.a = received;
 									this.b = received;
-									
+
 									this.got = events;
 								};
 								var noDefault = api.Events.Function(firer);
 								var onNoDefault = new On();
 								noDefault({}, onNoDefault);
 								verify(onNoDefault,"on").got.length.is(0);
-								
+
 								var onA = new On();
 								noDefault({ a: {} }, onA);
 								verify(onA,"on").got.length.is(1);

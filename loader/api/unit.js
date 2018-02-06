@@ -569,7 +569,7 @@ var Scope = function(o) {
 			o.events.fire("scenario", { end: o.scenario, success: this.success });
 		}
 	};
-	
+
 	this.checkForFailure = function(type,detail) {
 		if (typeof(detail.success) != "undefined") {
 			if (detail.success === false) {
@@ -709,7 +709,7 @@ $exports.Scenario = {};
 				suite.listeners.add("scenario",fire);
 				suite.listeners.add("test",fire);
 				if (!promises) {
-					suite.run();					
+					suite.run();
 				} else {
 					if (o.promise) {
 						promises.push(suite.promise());
@@ -722,7 +722,7 @@ $exports.Scenario = {};
 				vscope.fire(type,detail);
 			});
 			verify.scope = vscope;
-			return verify;	
+			return verify;
 		}
 
 
@@ -731,7 +731,7 @@ $exports.Scenario = {};
 
 			//	TODO	compare below initialize with one used in part
 			var vscope = new Scope({ events: part.events });
-			
+
 			if (next) {
 				if (part.find("next")) {
 					part.find("next")(function() {
@@ -755,7 +755,7 @@ $exports.Scenario = {};
 				this.listeners.add("test", checkForScopeFailure);
 
 				var verify = createVerify(vscope);
-				
+
 				try {
 					//	TODO	execute is apparently mandatory
 					var execute = part.find("execute");
@@ -831,7 +831,7 @@ $exports.Scenario = {};
 
 		part.create();
 	}
-	
+
 	var Suite = function Suite(c,context) {
 		var part = Part.apply(this,arguments);
 
@@ -949,7 +949,7 @@ $exports.Scenario = {};
 			}
 			if (!next) return part.after(success,scope);
 		}
-		
+
 		if ($context.api && $context.api.Promise) {
 			this.promise = function suitePromise(p) {
 				var Promise = $context.api.Promise();
@@ -969,7 +969,7 @@ $exports.Scenario = {};
 								return parts[x].promise({
 									scope: copy(scope),
 									path: []
-								});							
+								});
 							}
 						};
 

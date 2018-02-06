@@ -12,7 +12,7 @@
 
 var InputStream = function(peer) {
 	$context.$java.io.InputStream.apply(this,arguments);
-	
+
 	var _readBytes = this.java.array;
 
 	this.asProperties = function() {

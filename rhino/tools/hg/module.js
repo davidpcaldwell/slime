@@ -79,11 +79,11 @@ var Installation = function(environment) {
 		var invocation = {};
 
 		var args = [];
-		
+
 		if (p.verbose) {
 			args.push("-v");
 		}
-		
+
 		if (p.debug) {
 			args.push("--debug");
 		}
@@ -530,7 +530,7 @@ var Installation = function(environment) {
 			if (!file) return null;
 			var hgsub = new $exports.Hgrc({ file: file/*, section: "" */ });
 			var list = hgsub.get();
-			
+
 			var hgsubstate = {};
 			if (dir.getFile(".hgsubstate")) {
 				dir.getFile(".hgsubstate").read(String).split("\n").forEach(function(line) {
@@ -538,7 +538,7 @@ var Installation = function(environment) {
 					hgsubstate[tokens[1]] = tokens[0];
 				});
 			}
-			
+
 			var rv = (p.array) ? [] : {};
 			for (var x in list) {
 				if (/^subpaths\./.test(x)) {

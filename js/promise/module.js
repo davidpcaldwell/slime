@@ -1,18 +1,31 @@
+//	LICENSE
+//	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+//	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+//
+//	The Original Code is the js/promise SLIME module.
+//
+//	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+//	Portions created by the Initial Developer are Copyright (C) 2018 the Initial Developer. All Rights Reserved.
+//
+//	Contributor(s):
+//	END LICENSE
+
 var SlimePromise = function Targeter(p) {
 	if (!p) p = {};
 	var Promise = $context.Promise();
-	
+
 	if (typeof(p) == "function") {
 		p = { executor: p };
 	}
-	
+
 	var executor = (function(p) {
 		if (p.executor) return p.executor;
 		if (p.promise) return $api.deprecate(function() {
 			return p.promise;
 		})();
 	})(p);
-	
+
 	var delegate = (p.delegate) ? p.delegate : void(0);
 
 	if (!delegate && !executor) throw new TypeError("Required: either 'delegate' promise or 'executor' function");

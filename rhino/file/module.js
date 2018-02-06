@@ -178,17 +178,17 @@ $exports.Searchpath.prototype = prototypes.Searchpath;
 
 $exports.Loader = function recurse(p) {
 	if (typeof(arguments[0]) != "object") throw new TypeError("Argument 0 must be an object.");
-	
+
 	if (arguments[0].pathname && arguments[0].directory) {
 		return $api.deprecate(function() {
 			return new recurse({ directory: p });
 		})();
 	}
-	
+
 	if (arguments[0].directory === null || typeof(arguments[0].directory) == "undefined") {
 		throw new TypeError("'directory' property must be present and an object.");
 	}
-	
+
 	if (!p.type) p.type = function(path) {
 		return $context.api.io.mime.Type.fromName({ name: path });
 	}

@@ -58,6 +58,7 @@ if (jsh.script.arguments.length == 0) {
 			}
 			if (entry.path == ".hgsub") return true;
 			if (entry.path == ".hgsubstate") return false;
+			if (entry.path == ".hgignore") return false;
 			return code.files.isText(entry.node);
 		},
 		on: {

@@ -435,13 +435,13 @@
 						path: tokens[tokens.length-1]
 					};
 				};
-				
+
 				this.get = function(path) {
 					//	TODO	should not return directories
 					var location = getLocation(path);
 					return (location) ? location.loader[location.path].resource : null;
 				};
-				
+
 				this.list = function(path) {
 					var location = getLocation(path);
 					if (location.path) throw new Error("Wrong path: [" + path + "]");

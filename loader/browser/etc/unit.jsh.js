@@ -15,13 +15,13 @@ var apis = [
 	//	TODO	loader/browser/ has zero tests
 	"loader/browser/",
 	"loader/browser/client.js",
-	
+
 	"loader/api/unit.js",
 	"loader/api/",
 	"loader/api/test/data/1/",
 
 	"loader/browser/test/",
-	
+
 	"loader/$api.js",
 	"js/object/",
 	"js/object/Error.js",

@@ -186,7 +186,7 @@ var Scope = function(suite,environment) {
 
 	var Loader = function(suite) {
 		var delegate = new jsh.file.Loader({ directory: suite.getRelativePath(".").directory });
-		
+
 		delegate.eval = function(name,scope) {
 			var code = this.get(name).read(String);
 			if (!code) throw new Error("No file at " + code + " path=" + name);
@@ -228,7 +228,7 @@ var Scope = function(suite,environment) {
 		delegate.getRelativePath = function(path) {
 			return suite.getRelativePath(path);
 		};
-		
+
 		return delegate;
 	}
 

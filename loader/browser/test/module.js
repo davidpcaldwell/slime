@@ -26,7 +26,7 @@ var OldStep = function(o) {
 			o.event();
 		}
 	};
-	
+
 	this.promise = function() {
 		var running = asynchrony.promise();
 		if (o.event) {
@@ -60,7 +60,7 @@ var Step = function(target,o) {
 	this.before = function(scope) {
 		if (o.setup) {
 			$api.deprecate(function() {
-				o.setup.call(target);				
+				o.setup.call(target);
 			})();
 		}
 		var verify = new $context.api.unit.Verify(scope);
@@ -81,7 +81,7 @@ var Step = function(target,o) {
 		}
 		asynchrony.finished(fake);
 	};
-	
+
 	this.promise = function() {
 		var running = asynchrony.promise();
 		if (o.run) {
@@ -100,11 +100,11 @@ var Step = function(target,o) {
 		var verify = new $context.api.unit.Verify(scope);
 		if (o.check) {
 			$api.deprecate(function() {
-				o.check.call(target,verify);				
+				o.check.call(target,verify);
 			})();
 		}
 		if (o.after) {
-			o.after.call(target,verify);			
+			o.after.call(target,verify);
 		}
 		if (o.cleanup) {
 			$api.deprecate(function() {
@@ -166,13 +166,13 @@ var Set = function(p) {
 	}
 
 	//	TODO	arguably should get rid of window and put these in $context
-	
+
 	this.run = function() {
 		asynchrony.next(proceed);
 
 		if (!asynchrony.open()) fire();
 	}
-	
+
 	this.promise = function promiseForSet() {
 		return new $context.api.Promise(function(resolve,reject) {
 			var success = true;
@@ -188,14 +188,14 @@ var Set = function(p) {
 						step.after(p.scope);
 						if (!p.scope.success) {
 							success = false;
-						}					
-					});					
+						}
+					});
 				})(steps[i]);
 			}
 			promise.then(function() {
 				if (p.events) p.events.fire("end", (index > 0) ? success : true);
 				if (p.scope.fire) p.scope.fire("end", { success: (index > 0) ? success : true });
-				resolve(success);						
+				resolve(success);
 			});
 		});
 	}
@@ -324,7 +324,7 @@ var global = new function() {
 				asynchrony.next(null);
 			});
 		};
-		
+
 		if ($context.api && $context.api.Promise) {
 			this.promise = function(_callbacks) {
 				var self = this;
@@ -352,7 +352,7 @@ var global = new function() {
 	this.run = function(_callbacks) {
 		return delegate.run(_callbacks);
 	};
-	
+
 	this.promise = function(_callbacks) {
 		if (!delegate.promise) throw new Error();
 		return delegate.promise(_callbacks);
@@ -381,7 +381,7 @@ var Scenario = function() {
 	this.test = function(t) {
 		tests.push(t);
 	};
-	
+
 	var createSet = function(verify) {
 		var set = new Set({ scope: verify.scope });
 		set.target(getTarget());
@@ -396,7 +396,7 @@ var Scenario = function() {
 		var set = createSet(verify);
 		set.run();
 	}
-	
+
 	this.promise = function(scope,verify) {
 		var set = createSet(verify);
 		return set.promise();

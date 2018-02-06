@@ -246,7 +246,7 @@ plugin({
 
 										this.server = server;
 										this.api = api;
-										
+
 										this.script = function(script) {
 											servlet = script;
 										}
@@ -359,7 +359,7 @@ plugin({
 				tomcat.start();
 				return tomcat;
 			};
-			
+
 			jsh.httpd.plugin = {};
 			jsh.httpd.plugin.tools = function() {
 				jsh.loader.plugins(new $loader.Child("tools/"));

@@ -82,13 +82,13 @@ $set((function() {
 		};
 
 		this.value = function(code,scope,target) {
-			return $host.value(getCode(code),scope,target);			
+			return $host.value(getCode(code),scope,target);
 		};
 
 		this.file = function(code,$context) {
 			return $host.file(getCode(code),$context);
 		};
-		
+
 		this.module = function(pathname) {
 			var format = {};
 			if (pathname.directory) {

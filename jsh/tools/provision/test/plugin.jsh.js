@@ -83,7 +83,7 @@ plugin({
 			});
 			return bitbucket;
 		};
-		
+
 		var Server = function(o) {
 			loadhg();
 			var server = new jsh.unit.mock.Web();

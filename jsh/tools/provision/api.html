@@ -1,3 +1,17 @@
+<!--
+LICENSE
+This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+
+The Original Code is the jsh JavaScript/Java shell.
+
+The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+Portions created by the Initial Developer are Copyright (C) 2018 the Initial Developer. All Rights Reserved.
+
+Contributor(s):
+END LICENSE
+-->
 <!DOCTYPE html>
 <!--
 To change this license header, choose License Headers in Project Properties.
@@ -62,7 +76,7 @@ export INONIT_PROVISION_SCRIPT_JSH=https://bitbucket.org/api/1.0/repositories/da
 export INONIT_PROVISION_USER=davidpcaldwell;
 curl -s -L -o $TMP_INSTALLER https://bitbucket.org/api/1.0/repositories/davidpcaldwell/slime/raw/tip/jsh/tools/provision/remote.bash;
 chmod +x $TMP_INSTALLER;
-$TMP_INSTALLER)						
+$TMP_INSTALLER)
 					</code></pre>
 				</div>
 			</div>
@@ -133,7 +147,7 @@ $TMP_INSTALLER)
 											}
 										}));
 										server.start();
-										
+
 										var destination = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
 										destination.directory.remove();
 										jsh.tools.provision.bitbucket.hg.clone({
@@ -148,7 +162,7 @@ $TMP_INSTALLER)
 										});
 										verify(destination).directory.is.not(null);
 										verify(destination).directory.getSubdirectory(".hg").is.not(null);
-										
+
 										server.stop();
 									</script>
 								</li>
@@ -169,8 +183,8 @@ $TMP_INSTALLER)
 			<div>
 				<h2>Remote <code>jsh</code>: <code>install.jsh.js</code></h2>
 				<p>
-					A top-level <code>install.jsh.js</code> within the application repository can be used as the value for 
-					<code>INONIT_PROVISION_SCRIPT_JSH</code>.					
+					A top-level <code>install.jsh.js</code> within the application repository can be used as the value for
+					<code>INONIT_PROVISION_SCRIPT_JSH</code>.
 				</p>
 				<div>
 					<h3>Install Mercurial</h3>
@@ -187,7 +201,7 @@ Under most circumstances, it should also provide a destination to which to clone
 variable that allows the script to clone the code to a different place.
 					</p>
 					<p>
-						The following snippet clones the code in <code>repository</code>, owned by Bitbucket user <code>user</code>, to 
+						The following snippet clones the code in <code>repository</code>, owned by Bitbucket user <code>user</code>, to
 						<code>$HOME/applications/pong</code> unless the
 						<code>INONIT_PROVISION_DESTINATION</code> environment variable is provided; in that case, the code is cloned to the location specified by that.
 					</p>
@@ -239,12 +253,12 @@ jrunscript $BASE/setup/slime/rhino/jrunscript/api.js jsh $BASE/setup/main.jsh.js
 					<p>
 The `setup/main.jsh.js` script should, under most circumstances, begin by installing Rhino and Tomcat into the shell if they are not
 already present. Rhino is used as the primary `jsh` interpreter, and Tomcat is used for the creation of local applications (and
-thus may be needed for an installer). If either needs to be installed, the shell should re-launch with the two libraries included.						
+thus may be needed for an installer). If either needs to be installed, the shell should re-launch with the two libraries included.
 					</p>
 					<p>
-The following sample code implements the above:						
+The following sample code implements the above:
 					</p>
-					<pre><code>	
+					<pre><code>
 jsh.shell.console("Verifying jsh libraries (Rhino/Tomcat) ...");
 var relaunch = false;
 jsh.tools.rhino.install({}, {

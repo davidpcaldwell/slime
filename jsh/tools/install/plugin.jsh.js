@@ -26,7 +26,7 @@ plugin({
 			},
 			downloads: jsh.shell.user.downloads
 		});
-		
+
 		var installRhino = jsh.tools.install.$api.Events.Function(function(p,events) {
 			if (!p) p = {};
 			var lib = (p.mock && p.mock.lib) ? p.mock.lib : jsh.shell.jsh.lib;
@@ -74,20 +74,20 @@ plugin({
 		jsh.tools.install.rhino = {};
 		$api.deprecate(jsh.tools.install,"rhino");
 		jsh.tools.install.rhino.install = $api.deprecate(installRhino);
-		
+
 		var tomcat = $loader.file("plugin.jsh.tomcat.js", {
 			$api: jsh.tools.install.$api
 		});
 		jsh.tools.tomcat = tomcat;
 		jsh.tools.install.tomcat = tomcat;
-		
+
 		jsh.tools.ncdbg = new function() {
 			Object.defineProperty(this, "installed", {
 				get: function() {
 					return jsh.shell.jsh.lib.getSubdirectory("ncdbg");
 				}
 			});
-			
+
 			this.install = function(p) {
 				jsh.shell.console("Installing ncdbg ...");
 				jsh.tools.install.install({
@@ -128,9 +128,9 @@ plugin({
 					global.hg[name] = jsh.tools.hg.installation[name];
 				});
 				$api.deprecate(global,"hg");
-			}			
+			}
 		};
-		
+
 		var loadGit = function() {
 			jsh.tools.git = $loader.file("git.js", {
 				api: {
@@ -154,7 +154,7 @@ plugin({
 						jsh.shell.java.jrunscript.toString(),
 						jsh.shell.jsh.src.getRelativePath("rhino/jrunscript/api.js"),
 						"jsh",
-						jsh.shell.jsh.src.getRelativePath("rhino/tools/git/credential-helper.jsh.js")						
+						jsh.shell.jsh.src.getRelativePath("rhino/tools/git/credential-helper.jsh.js")
 					].join(" ");
 					jsh.tools.git.credentialHelper.jsh = credentialHelper;
 				}
@@ -164,12 +164,12 @@ plugin({
 					global.git[name] = jsh.tools.git.installation[name];
 				});
 				$api.deprecate(global,"git");
-			}			
+			}
 		};
-		
+
 		loadHg();
 		loadGit();
-		
+
 		jsh.java.tools.plugin = {
 			hg: $api.deprecate(function() {
 				loadHg();
