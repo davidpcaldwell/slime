@@ -247,12 +247,12 @@ The following sample code implements the above:
 					<pre><code>	
 jsh.shell.console("Verifying jsh libraries (Rhino/Tomcat) ...");
 var relaunch = false;
-jsh.tools.install.rhino.install({}, {
+jsh.tools.rhino.install({}, {
 	installed: function(e) {
 		relaunch = true;
 	}
 });
-jsh.tools.install.tomcat.install({}, {
+jsh.tools.tomcat.install({}, {
 	installed: function(e) {
 		relaunch = true;
 	}
@@ -277,15 +277,8 @@ if (relaunch) {
 			<div>
 				<h2>Post-installation</h2>
 				<p>
-					The <code>jdk.bash</code> script can be executed by itself in order to conditionally upgrade Java. It will exit
-					with a status of 1 if a GUI installation is needed. In that case, the caller should print a message like
-					"Then re-execute the installation command." This message will make sense when used in context of the output of
-					the script itself. In the above structure, most likely `jdk.bash` would be executed from <code>setup.bash</code>
-					or <code>setup/main.jsh.js</code>.					
-				</p>
-				<p>
-					This mechanism can be used from <code>jsh</code> by loading the <code>jsh.tools.provision</code> plugin and
-					executing <code>jsh.tools.provision.jdk()</code>.
+					Installed applications with setup scripts may execute the <code>jsh.tools.provision.jdk()</code> function in
+					order to ensure that the JDK version required by the running shell is installed. See the documentation above.
 				</p>
 			</div>
 		</div>

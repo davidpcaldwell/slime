@@ -34,9 +34,16 @@ END LICENSE
 		</script>
 		<h1>Exports</h1>
 		<ul jsapi:id="exports">
-			<li class="function">
+			<li class="function experimental">
 				<div class="name">javac</div>
-				<span><strong>(experimental: API likely to evolve in future versions)</strong></span>
+				<span>
+					(conditional: present only if the Java compiler is available because the execution environment is a JDK rather
+					than a JRE)
+					Executes the Java compiler. See the documentation for
+					<a href="http://docs.oracle.com/javase/7/docs/technotes/tools/solaris/javac.html">UNIX</a> and
+					<a href="http://docs.oracle.com/javase/7/docs/technotes/tools/windows/javac.html">Windows</a> operating
+					systems.
+				</span>
 				<div class="type">
 					<a class="type" name="types.javac.result">result</a>
 					<span>The result of a compilation.</span>
@@ -54,14 +61,6 @@ END LICENSE
 						</li>
 					</ul>
 				</div>
-				<span>
-					(conditional: present only if the Java compiler is available because the execution environment is a JDK rather
-					than a JRE)
-					Executes the Java compiler. See the documentation for
-					<a href="http://docs.oracle.com/javase/7/docs/technotes/tools/solaris/javac.html">UNIX</a> and
-					<a href="http://docs.oracle.com/javase/7/docs/technotes/tools/windows/javac.html">Windows</a> operating
-					systems.
-				</span>
 				<div class="arguments">
 					<div class="label">Arguments</div>
 					<ol>
