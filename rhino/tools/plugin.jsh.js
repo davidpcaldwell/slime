@@ -29,7 +29,17 @@ plugin({
 		
 		if (!plugins.slime) plugins.slime = {};
 		if (!plugins.slime.tools) plugins.slime.tools = {};
-		plugins.slime.tools.hg = $loader.module("hg/module.js");
+		plugins.slime.tools.hg = $loader.module("hg/module.js", {
+			api: {
+				file: jsh.file,
+				time: jsh.time,
+				js: jsh.js,
+				shell: jsh.shell,
+				web: jsh.js.web,
+				java: jsh.java,
+				ip: jsh.ip
+			}			
+		});
 		plugins.slime.tools.git = $loader.module("git/module.js");
 	}
 })

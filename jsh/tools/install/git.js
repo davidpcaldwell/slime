@@ -43,3 +43,5 @@ $exports.install = $context.api.Events.Function(function(p,events) {
 	}
 });
 $exports.install.GUI = GUI;
+
+$exports.credentialHelper = {};
