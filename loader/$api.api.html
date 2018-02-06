@@ -924,11 +924,13 @@ END LICENSE
 								<span>__DESCRIPTION__</span>
 							</div>
 							<script type="application/x.jsapi#tests">
-								var firer = function(p,events) {
-									if (p.a) events.fire("a", p.a);
-									if (p.b) events.fire("b", p.b);
+								var firesArgumentPropertyValues = function(p,events) {
+									for (var x in p) {
+										events.fire(x, p[x]);
+									}
 								};
-								var On = function() {
+
+								var Captor = function() {
 									var events = [];
 
 									var received = function(e) {
@@ -940,13 +942,14 @@ END LICENSE
 
 									this.got = events;
 								};
-								var noDefault = api.Events.Function(firer);
-								var onNoDefault = new On();
-								noDefault({}, onNoDefault);
-								verify(onNoDefault,"on").got.length.is(0);
 
-								var onA = new On();
-								noDefault({ a: {} }, onA);
+								var onPropertyValues = api.Events.Function(firesArgumentPropertyValues);
+								var on = new Captor();
+								onPropertyValues({}, on);
+								verify(on,"on").got.length.is(0);
+
+								var onA = new Captor();
+								onPropertyValues({ a: {} }, onA);
 								verify(onA,"on").got.length.is(1);
 								verify(onA,"on").got[0].type.is("a");
 							</script>
