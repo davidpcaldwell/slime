@@ -18,7 +18,7 @@ plugin({
 	load: function() {
 		if (!jsh.tools) jsh.tools = {};
 		if (!jsh.tools.provision) jsh.tools.provision = {};
-		jsh.tools.provision.clone = function(p) {
+		bitbucketHgClone = function(p) {
 			if (!p.owner) p.owner = p.user;
 			if (!p.version) p.version = "tip";
 			p.destination.parent.createDirectory({
@@ -30,7 +30,7 @@ plugin({
 				throw new Error("Destination already exists: " + p.destination);
 			}
 
-			var password = jsh.java.tools.askpass.gui({
+			var password = (p.mock && p.mock.password) ? p.mock.password : jsh.java.tools.askpass.gui({
 				prompt: "Enter password for Bitbucket (" + p.user + ")"
 			});
 
@@ -59,8 +59,14 @@ plugin({
 					for (var x in config) {
 						rv.push("--config", x + "=" + config[x]);
 					}
+					if (p.mock && p.mock.config) {
+						for (var x in p.mock.config) {
+							rv.push("--config", x + "=" + p.mock.config[x]);							
+						}
+					}
+					var scheme = (p.mock) ? p.mock.scheme : jsh.shell.jsh.url.scheme;
 					rv.push("clone");
-					rv.push(jsh.shell.jsh.url.scheme + "://" + p.user + "@bitbucket.org/" + p.owner + "/" + p.repository);
+					rv.push(scheme + "://" + p.user + "@bitbucket.org/" + p.owner + "/" + p.repository);
 					rv.push("-u", p.version);
 					rv.push(p.destination);
 					jsh.shell.console("Cloning to " + p.destination + " ...");
@@ -68,8 +74,18 @@ plugin({
 				})()
 			});
 			jsh.shell.console("Cloned to " + p.destination);
-		}
+		};
+		
+		jsh.tools.provision.clone = $api.deprecate(bitbucketHgClone);
+		
+		jsh.tools.provision.bitbucket = {};
+		//	Probably should not use hg plugin given that we are potentially running this remotely
+		//	TODO	use more sophisticated mechanism to decide whether to attach hg property based on Mercurial presence/absence
+		jsh.tools.provision.bitbucket.hg = {
+			clone: bitbucketHgClone
+		};
 
+		//	TODO	make this work for non-src shells
 		jsh.tools.provision.jdk = function() {
 			jsh.shell.run({
 				command: jsh.shell.jsh.src.getFile("jsh/tools/provision/jdk.bash"),

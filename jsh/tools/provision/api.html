@@ -22,7 +22,7 @@ and open the template in the editor.
 			</p>
 			<p>
 				On OS X, since the JDK has a GUI installer, when Java is not present, the provisioner launches the JDK installer and
-				exits. After installing Java, a second run of the provisioner will run the remote `jsh` script.
+				exits. After installing Java, a second run of the provisioner will run the remote <code>jsh</code> script.
 			</p>
 		</div>
 		<div>
@@ -74,12 +74,92 @@ $TMP_INSTALLER)
 					values.
 				</p>
 				<ul>
-					<li><code>INONIT_PROVISION_VERSION=<i>[commit, tag or bookmark]</i></code> (defaults to <code>tip</code>)</li>
+					<li>
+						<code>INONIT_PROVISION_VERSION=<i>[commit, tag or bookmark]</i></code> (defaults to <code>tip</code>):
+						Specifies the version of both the provisioner scripts to use <em>and</em> the remote <code>jsh</code>
+						shell to execute if executing <code>jsh</code> scripts.
+					</li>
 				</ul>
 			</div>
 		</div>
 		<div>
-			<h1>Recommended structure</h1>
+			<h1><code>jsh</code> plugin APIs</h1>
+			<h2><code>jsh.tools.provision</code></h2>
+			<span>__DESCRIPTION__</span>
+			<div class="label">has properties:</div>
+			<ul>
+				<li class="function">
+					<div class="name">jdk</div>
+					<span>
+						Executes the logic for ensuring that the Java version required by
+						<code>jsh</code> is up to date. <span class="experimental">If a new JDK is required, the method will
+						print a message to the console indicating that the installation script should be re-executed, and the
+						<code>jsh</code> script will exit. Otherwise, the method will print a message to the console indicating
+						that the JDK is up to date.</span>
+					</span>
+				</li>
+				<li class="object">
+					<div class="name">bitbucket</div>
+					<span>__DESCRIPTION__</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="object">
+							<div class="name">hg</div>
+							<span>__DESCRIPTION__</span>
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="function">
+									<div class="name">clone</div>
+									<span>__DESCRIPTION__</span>
+									<div class="arguments">
+										<div class="label">Arguments</div>
+										<ol>
+										</ol>
+									</div>
+									<div class="returns">
+										<div class="label">Returns</div>
+										<span class="type">__TYPE__</span>
+										<span>__DESCRIPTION__</span>
+									</div>
+									<script type="application/x.jsapi#tests">
+										var server = new jsh.unit.mock.Web();
+										server.add(jsh.unit.mock.Web.bitbucket({
+											src: {
+												davidpcaldwell: {
+													slime: {
+														directory: jsh.shell.jsh.src
+													}
+												}
+											}
+										}));
+										server.start();
+										
+										var destination = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
+										destination.directory.remove();
+										jsh.tools.provision.bitbucket.hg.clone({
+											mock: {
+												config: server.hg.config,
+												scheme: "http",
+												password: "foo"
+											},
+											user: "davidpcaldwell",
+											repository: "slime",
+											destination: destination
+										});
+										verify(destination).directory.is.not(null);
+										verify(destination).directory.getSubdirectory(".hg").is.not(null);
+										
+										server.stop();
+									</script>
+								</li>
+							</ul>
+						</li>
+					</ul>
+				</li>
+			</ul>
+		</div>
+		<div>
+			<h1>Recommended structure for provisioning an application to an environment</h1>
 			<div>
 				<p>
 					The following describes one way to structure a provisioning implementation that uses Bitbucket as a Mercurial
@@ -87,17 +167,18 @@ $TMP_INSTALLER)
 				</p>
 			</div>
 			<div>
-				<h2><code>install.jsh.js</code></h2>
+				<h2>Remote <code>jsh</code>: <code>install.jsh.js</code></h2>
 				<p>
-					The top-level <code>install.jsh.js</code> can be used as the value for <code>INONIT_PROVISION_SCRIPT_JSH</code>.					
+					A top-level <code>install.jsh.js</code> within the application repository can be used as the value for 
+					<code>INONIT_PROVISION_SCRIPT_JSH</code>.					
 				</p>
 				<div>
 					<h3>Install Mercurial</h3>
-					<!--	TODO	API is undocumented	-->
 					<p>
-					It should first install Mercurial, so that the repository code can be cloned from Bitbucket:
+						It should first install Mercurial, so that the repository code can be cloned from Bitbucket. This can be
+						done using the <a href="../../../jsh/tools/install">installation APIs</a>:
 					</p>
-					<p><code>jsh.tools.install.hg.install();</code></p>
+					<p><code>jsh.tools.hg.install();</code></p>
 				</div>
 				<div>
 					<h3>Clone the repository</h3>
@@ -112,7 +193,7 @@ variable that allows the script to clone the code to a different place.
 					</p>
 					<pre>
 <code>var destination = (jsh.shell.environment.INONIT_PROVISION_DESTINATION) ? jsh.file.Pathname(jsh.shell.environment.INONIT_PROVISION_DESTINATION) : jsh.shell.HOME.getRelativePath("applications/pong");
-jsh.tools.provision.clone({
+jsh.tools.provision.bitbucket.hg.clone({
 	destination: destination,
 	user: "user",
 	repository: "repository"
@@ -132,6 +213,9 @@ jsh.shell.run({
 						</code></pre>
 					</div>
 				</div>
+			</div>
+			<div>
+				<h2>Local <code>bash</code>: <code>setup.bash</code></h2>
 				<div>
 					<h3>Implement the setup script using a jsh shell and script</h3>
 					<p>
@@ -147,6 +231,9 @@ jrunscript $BASE/setup/slime/rhino/jrunscript/api.js jsh $BASE/setup/main.jsh.js
 						</code></pre>
 					</div>
 				</div>
+			</div>
+			<div>
+				<h2>Local <code>jsh</code>: <code>setup/main.jsh.js</code></h2>
 				<div>
 					<h3>Implement the <code>jsh</code> script: install libraries</h3>
 					<p>
@@ -201,6 +288,10 @@ if (relaunch) {
 					executing <code>jsh.tools.provision.jdk()</code>.
 				</p>
 			</div>
+		</div>
+		<div>
+			<h1>Contributing to the provisioner</h1>
+			See <a href="test/plugin.jsh.api.html">test API</a>.
 		</div>
 	</body>
 </html>

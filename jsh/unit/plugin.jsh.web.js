@@ -68,6 +68,12 @@ $set({
 					}
 				})
 			};
+			
+			this.hg = {
+				config: {
+					"http_proxy.host": "127.0.0.1:" + tomcat.port
+				}
+			};
 
 			this.start = function() {
 				tomcat.start();

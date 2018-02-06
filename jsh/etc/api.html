@@ -359,11 +359,9 @@ END LICENSE
 				<tr>
 					<td><a href="../../jsh/tools/provision/api.html">(provisioning)</a></td>
 					<td>Description of the provisioning API.</td>
-					<!-- no tests -->
-				</tr>
-				<tr>
-					<td><a href="../../jsh/tools/provision/test/plugin.jsh.api.html">jsh.test.provision</a></td>
-					<td>Tools for provisioning a machine or application online, including tools to enable local testing.</td>
+					<script jsapi:id="jsh.tools.provision" type="application/x.jsapi#tests">
+						verify.suite($jsapi.loader.suite("../../jsh/tools/provision/api.html"));
+					</script>
 					<!-- no tests -->
 				</tr>
 			</tbody>
