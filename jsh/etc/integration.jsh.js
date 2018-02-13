@@ -117,7 +117,7 @@ var ScriptVerifier = function(o) {
 	var tokens = [o.path].concat((o.arguments) ? o.arguments : []);
 	var parent = (o.parent) ? o.parent : scenario;
 	parent.part((o.name) ? o.name : tokens.join(" "), new function() {
-		this.name = script.toString();
+		if (!o.name) this.name = script.toString();
 
 		this.execute = function(scope,verify) {
 			jsh.shell.jsh({
