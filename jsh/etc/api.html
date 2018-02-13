@@ -321,9 +321,9 @@ END LICENSE
 				</tr>
 			</thead>
 			<tbody>
-				<tr><td><a href="../../rhino/tools/plugin.jsh.api.html">jsh.java.tools</a></td><td>Developer APIs (<code>hg</code>, <code>git</code>, etc.)</td></tr>
-				<tr><td><a href="../../jsh/tools/api.html">(tools)</a></td><td>jsh Tools</td><!-- no tests --></tr>
-				<tr><td><a href="../../jsh/loader/plugin.api.html">(plugins)</a></td><td>Interface for creating plugins</td><!-- no tests --></tr>
+				<tr><td><a href="../../rhino/tools/plugin.jsh.api.html">jsh.java.tools</a></td><td>Developer APIs (<code>javac</code>)</td></tr>
+				<tr><td><a href="../../jsh/tools/api.html">(tools)</a></td><td>Tools for developing and packaging <code>jsh</code>-related software</td><!-- no tests --></tr>
+				<tr><td><a href="../../jsh/loader/plugin.api.html">(plugins)</a></td><td>Interface for creating <code>jsh</code> plugins</td><!-- no tests --></tr>
 				<tr>
 					<td><a href="../../jsh/tools/install/plugin.jsh.api.html#exports.jsh.tools.install">jsh.tools.install</a></td>
 					<td>
@@ -336,8 +336,8 @@ END LICENSE
 				<tr>
 					<td><a href="../../jsh/tools/install/plugin.jsh.api.html">jsh.tools.*</a></td>
 					<td>
-						APIs and programs for installing <code>jsh</code>-related tools (Rhino, Tomcat, <code>ncdbg</code>,
-						Mercurial, Git).
+						APIs and programs for installing <code>jsh</code> shell extensions (Rhino, Tomcat, the <code>ncdbg</code>
+						Nashorn debugger); includes APIs for installing and using external tools (Mercurial, Git)
 						<script jsapi:id="jsh.tools.install" type="application/x.jsapi#tests">
 							verify.suite($jsapi.loader.suite("../../jsh/tools/install/plugin.jsh.api.html"));
 						</script>

@@ -14,14 +14,22 @@ END LICENSE
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
 	<head>
-		<title>jsh installation APIs</title>
+		<title>jsh.tools.install, jsh.tools.*</title>
 		<link href="../../../loader/api/api.css" rel="stylesheet" type="text/css" />
 		<script src="../../../loader/api/api.js"></script>
 	</head>
 	<body>
-		<div><code>jsh</code> plugin for installing software.</div>
+		<div>Plugin which adds APIs to multiple namespaces:
+			<ul>
+				<li><code>jsh.tools.install</code>: APIs for installing software generally.</li>
+				<li><code>jsh.tools.*</code>: APIs for a specific set of externally-provided tools (Rhino, Tomcat, <code>ncdbg</code>,
+					Mercurial, Git), including installation APIs. For Mercurial and Git, APIs for using the tools are also provided.
+				</li>
+			</ul>
+		</div>
 		<div>
 			<h1><code><a id="exports.jsh.tools.install">jsh.tools.install</a></code></h1>
+			<div><code>jsh</code> plugin for installing external software.</div>
 			<div jsapi:reference="getApi('api.html').getElement('exports')">
 			</div>
 		</div>
