@@ -156,6 +156,7 @@ if (!parameters.options.notest) {
 }
 
 if (parameters.options.doc) {
+	//	TODO	this style of documentation appears near obsolete, but this is still used in jsh/etc/build.jsh.js
 	var relative = (function() {
 		if (!parameters.options.index || !parameters.options.index.file) {
 			return null;

@@ -538,6 +538,7 @@ $exports.Scenario = $api.deprecate(function(p) {
 	};
 
 	//	TODO	this may be close to obsolescence with the new documentation structure using hyperlinks and client-side processing
+	//			only usage is in jsapi.jsh.js
 	var document = function(p) {
 		var modules = p.modules;
 		var to = p.to;
