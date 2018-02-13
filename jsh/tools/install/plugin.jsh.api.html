@@ -508,6 +508,36 @@ END LICENSE
 							</div>
 						</li>
 					</ul>
+					<script type="application/x.jsapi#tests">
+						var mockjsh = jsh.js.Object.set({}, jsh);
+						mockjsh.tools = jsh.js.Object.set({}, mockjsh.tools);
+						
+						verify(mockjsh).is.not(jsh);
+						verify(mockjsh.js).is(jsh.js);
+						verify(mockjsh.tools).is.not(jsh.tools);
+						verify(mockjsh.tools.git).is(jsh.tools.git);
+						
+						var before = jsh.tools.git;
+						
+						var plugins = $jsapi.loader.plugin.mock({
+							path: "../../../rhino/tools/",
+							jsh: jsh,
+							evaluate: function(p) {
+								return p.plugins;
+							}
+						});
+						verify(plugins).is.type("object");
+
+						var plugin = $jsapi.loader.plugin.mock({
+							plugins: plugins,
+							jsh: mockjsh,
+							evaluate: function(p) {
+								return p.jsh.tools.git;
+							}
+						});
+						verify(jsh.tools.git).is(before);
+						verify(plugin).is.not(before);
+					</script>
 				</li>
 			</ul>
 		</div>

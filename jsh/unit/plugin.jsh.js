@@ -20,7 +20,8 @@ plugin({
 			mime: $jsh.mime,
 			$rhino: $jsh,
 			$coffee: $jsh.coffee,
-			java: $jsh.java
+			java: $jsh.java,
+			plugins: $jsh.plugins
 		};
 	}
 });

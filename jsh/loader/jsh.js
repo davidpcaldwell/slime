@@ -115,6 +115,12 @@ this.jsh = new function() {
 			loader: loader
 		}
 	);
+	
+	$host.plugins = {
+		mock: function(p) {
+			plugins.mock(p);
+		}
+	};
 
 	this.loader = new function() {
 		this.run = loader.run;
