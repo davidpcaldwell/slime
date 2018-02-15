@@ -18,12 +18,7 @@ plugin({
 	load: function() {
 		//	TODO	take away the adapter below and make this simpler
 		jsh.$jsapi = {
-//			$platform: $jsh.$platform,
-//			$api: $jsh.$api,
-//			mime: $jsh.mime,
 			$rhino: $jsh,
-//			$coffee: $jsh.coffee,
-//			java: $jsh.java
 		};
 		$api.deprecate(jsh,"$jsapi");
 		jsh.unit.$jsh = {};
