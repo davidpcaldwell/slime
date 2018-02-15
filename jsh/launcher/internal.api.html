@@ -220,6 +220,10 @@ END LICENSE
 				settings, which are passed to the loader as system properties. The steps involved are as follows:
 			</p>
 			<ul>
+				<li>
+					If invoked with the <code>-engines</code> argument (and that argument alone), provide a
+					list of JavaScript engines that the launcher is capable of using, as a JSON array of strings.
+				</li>
 				<li>If running an unbuilt shell, it compiles the loader classes.</li>
 				<li>
 					If running an unbuilt shell, sets the <code>jsh.shell.src</code> setting to let the Java launcher know
@@ -257,29 +261,14 @@ END LICENSE
 				</li>
 			</ul>
 		</div>
-		<div>
-			<div>
-				The bootstrap launcher will scan the arguments list for arguments with a leading dash, and interpret those as VM
-				arguments to be sent to the container running the script being invoked. If the container is a classloader, these
-				will be sent as VM arguments to the launcher VM; otherwise, they will be sent to the launcher as leading arguments
-				to be passed to the loader VM.
-			</div>
-			<!--	TODO	should download Rhino if needed	-->
-		</div>
 	</div>
 	<div>
-		<h1>Java launcher (inonit.script.jsh.launcher.Main)</h1>
+		<h1>Packaged application launcher (inonit.script.jsh.launcher.Main)</h1>
 		<div>
-			The Java launcher provides the entry point for running a <code>jsh</code> script when running inside a built shell or
-			packaged application. In theory, it could be
-			combined with the bootstrap launcher (which could be modified to detect a built shell), but providing the main jsh file
-			as an executable JAR file makes it more convenient to execute than invoking the bootstrap launcher (which is in turn
-			invoked by/requires another script).
+			The Java launcher provides the entry point for running a <code>jsh</code> script when running inside a packaged
+			application.
 		</div>
-		<div>
-			The Java launcher also can, if invoked with the <code>-engines</code> argument (and that argument alone), provide a
-			list of JavaScript engines that the launcher is capable of using.
-		</div>
+		<!--	TODO	remaining description of this launcher may be outdated (2018 Feb 15)	-->
 		<div>
 			<h2>Settings used</h2>
 			<table>
