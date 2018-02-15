@@ -280,6 +280,7 @@ try {
 			return toCompile;
 		}
 
+		//	As of this writing, used by jsh/etc/build.jsh.js, as well as shellClasspath method below
 		this.compileLoader = function(p) {
 			var rhino = (this.rhino && this.rhino.length) ? new Classpath(this.rhino) : null;
 			if (!p) p = {};
@@ -307,7 +308,6 @@ try {
 
 		this.shellClasspath = function() {
 			if (!$api.slime.src) throw new Error("Could not detect SLIME source root for unbuilt shell.")
-			var rhino = (this.rhino && this.rhino.length) ? new Classpath(this.rhino) : null;
 			var setting = $api.slime.settings.get("jsh.shell.classes");
 			var LOADER_CLASSES = (setting) ? new Packages.java.io.File(setting, "loader") : $api.io.tmpdir();
 			if (!LOADER_CLASSES.exists()) LOADER_CLASSES.mkdirs();
@@ -320,7 +320,7 @@ try {
 					});
 				}
 			} else {
-				$api.log("Looking for launcher source files under " + $api.slime.src + " ...");
+				$api.log("Looking for loader source files under " + $api.slime.src + " ...");
 				var toCompile = getLoaderSourceFiles({
 					list: function(string) {
 						return $api.slime.src.getSourceFilesUnder(string);
@@ -341,7 +341,7 @@ try {
 					files: toCompile
 				});
 			}
-			$api.debug("Returning shellClasspath");
+			$api.debug("Returning shellClasspath: " + LOADER_CLASSES.toURI().toURL());
 			return [LOADER_CLASSES.toURI().toURL()];
 		};
 	};

@@ -17,6 +17,11 @@ END LICENSE
 	<title>jsh Launcher</title>
 	<link rel="stylesheet" type="text/css" href="../../loader/api/api.css"></link>
 	<script type="text/javascript" src="../../loader/api/api.js"></script>
+	<style>
+		table#settings { border-collapse: collapse; }
+		table#settings td { border: 1px solid black; padding: 0.2em 0.5em; }
+		table#settings thead td { font-weight: bold; }
+	</style>
 </head>
 <body>
 	<div>
@@ -34,7 +39,7 @@ END LICENSE
 	</div>
 	<div>
 		<h1>Settings</h1>
-		<table>
+		<table id="settings">
 			<thead>
 				<tr>
 					<td>Name</td>
@@ -43,7 +48,7 @@ END LICENSE
 			</thead>
 			<tbody>
 				<tr>
-					<td>jsh.debug.launcher</td>
+					<td><code>jsh.debug.launcher</code></td>
 					<td>
 						Turns on debugging output in the <code>jsh</code> launcher script.
 					</td>
@@ -54,7 +59,8 @@ END LICENSE
 	<div>
 		<h1><a href="../../rhino/jrunscript/api.html"><code>rhino/jrunscript/api.js</code></a></h1>
 		<div>
-			Creates <code>$api</code> as a property of <code>this</code> (the global object).
+			Creates <code>$api</code> as a property of <code>this</code> (the global object), and then invokes the bootstrap
+			launcher at <code>jsh/launcher/main.js</code>.
 		</div>
 	</div>
 	<div>
@@ -208,47 +214,61 @@ END LICENSE
 		</div>
 		<div>
 			<h2>Responsibilities</h2>
+			<p>
+				Essentially, the bootstrap launcher creates a <code>java</code> command for running the loader, which may be run
+				either as a subprocess, or as a Java invocation in a new class loader. The launcher calculates various named
+				settings, which are passed to the loader as system properties. The steps involved are as follows:
+			</p>
 			<ul>
-				<li>If running an unbuilt shell, it compiles the launcher classes.</li>
 				<li>
-					If running on Rhino, sets the <code>jsh.engine.rhino.classpath</code> to the location from which Rhino was
-					loaded.
+					If invoked with the <code>-engines</code> argument (and that argument alone), provide a
+					list of JavaScript engines that the launcher is capable of using, as a JSON array of strings.
 				</li>
+				<li>If running an unbuilt shell, it compiles the loader classes.</li>
 				<li>
-					If running an unbuilt shell, sets the <code>jsh.shell.src</code> property to let the Java launcher know
+					If running an unbuilt shell, sets the <code>jsh.shell.src</code> setting to let the Java launcher know
 					where to find the code.
 				</li>
 				<li>
-					Selects the appropriate Java implementation to use if the <code>jsh.java.home</code> setting is specified.
+					Selects the appropriate Java implementation, and container implementation, to use if the
+					<code>jsh.java.home</code> setting is specified.
 				</li>
 				<li>
-					Sets appropriate specified VM arguments on the launcher VM, and passes appropriate specified VM arguments to
-					the launcher as arguments for the loader VM.
+					Selects the default JavaScript engine to use for executing the loader and sets it as the <code>jsh.engine</code>
+					setting on the Java command.
+				</li>
+				<li>
+					Takes <em>leading</em> arguments that begin with <code>-</code>, switches the container implementation to a VM,
+					and passes them as arguments to the loader VM.
+				</li>
+				<li>
+					If running on Rhino, sets the <code>jsh.engine.rhino.classpath</code> setting to the location from which Rhino
+					was loaded.
+				</li>
+				<li>
+					If running on Rhino and the profiler is invoked, sends the appropriate argument to the loader VM.
+				</li>
+				<li>
+					Deal with settings that must be sent to a VM container, like <code>jsh.jvm.options</code>, and both switch the
+					container to a VM and send the arguments to that VM in an argument-appropriate way.
+				</li>
+				<li>
+					Send other settings to the loader process as system properties.
+				</li>
+				<li>
+					Run the loader, using an engine-specific <code>main()</code> method, which ends up calling 
+					<code>inonit.script.jsh.Main.cli()</code>, and exit with the status returned by the loader.
 				</li>
 			</ul>
 		</div>
-		<div>
-			<div>
-				The bootstrap launcher will scan the arguments list for arguments with a leading dash, and interpret those as VM
-				arguments to be sent to the container running the script being invoked. If the container is a classloader, these
-				will be sent as VM arguments to the launcher VM; otherwise, they will be sent to the launcher as leading arguments
-				to be passed to the loader VM.
-			</div>
-			<!--	TODO	should download Rhino if needed	-->
-		</div>
 	</div>
 	<div>
-		<h1>Java launcher (inonit.script.jsh.launcher.Main)</h1>
+		<h1>Packaged application launcher (inonit.script.jsh.launcher.Main)</h1>
 		<div>
-			The Java launcher provides the normal entry point for running a <code>jsh</code> script. In theory, it could be
-			combined with the bootstrap launcher (which could be modified to detect a built shell), but providing the main jsh file
-			as an executable JAR file makes it more convenient to execute than invoking the bootstrap launcher (which is in turn
-			invoked by/requires another script).
+			The Java launcher provides the entry point for running a <code>jsh</code> script when running inside a packaged
+			application.
 		</div>
-		<div>
-			The Java launcher also can, if invoked with the <code>-engines</code> argument (and that argument alone), provide a
-			list of JavaScript engines that the launcher is capable of using.
-		</div>
+		<!--	TODO	remaining description of this launcher may be outdated (2018 Feb 15)	-->
 		<div>
 			<h2>Settings used</h2>
 			<table>
@@ -306,23 +326,6 @@ END LICENSE
 					Invoke the launcher script.
 				</li>
 			</ul>
-		</div>
-		<div>
-			<h1>Launcher script</h1>
-			<div>
-				<h2>api.js</h2>
-				<div>
-					TODO	See link
-				</div>
-			</div>
-			<div>
-				<h2>slime.js</h2>
-				<div>
-				</div>
-			</div>
-			<div>
-				<h2>launcher.js</h2>
-			</div>
 		</div>
 	</div>
 </body>
