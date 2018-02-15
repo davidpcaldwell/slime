@@ -91,7 +91,7 @@ END LICENSE
 			var io = $jsapi.loader.module("../../../rhino/io/", {
 				api: {
 					java: java,
-					mime: jsh.$jsapi.mime
+					mime: jsh.unit.$jsh.mime
 				},
 				$java: new Packages.inonit.script.runtime.io.Streams(),
 				$java: jsh.$jsapi.$rhino
@@ -225,7 +225,7 @@ END LICENSE
 					var io = $jsapi.loader.module("../../../rhino/io", {
 						api: {
 							java: java,
-							mime: jsh.$jsapi.mime
+							mime: jsh.unit.$jsh.mime
 						},
 						$java: new Packages.inonit.script.runtime.io.Streams(),
 						$rhino: jsh.$jsapi.$rhino

@@ -95,12 +95,12 @@ END LICENSE
 		var context = new function() {
 			var java = $jsapi.loader.module("../../rhino/host/", {
 				$rhino: jsh.$jsapi.$rhino,
-				$java: jsh.$jsapi.java
+				$java: jsh.unit.$jsh.java
 			});
 			var io = $jsapi.loader.module("../../rhino/io/", {
 				api: {
 					java: java,
-					mime: jsh.$jsapi.mime
+					mime: jsh.unit.$jsh.mime
 				},
 				$java: jsh.$jsapi.$rhino
 			});

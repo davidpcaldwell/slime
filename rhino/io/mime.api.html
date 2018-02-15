@@ -52,13 +52,13 @@ END LICENSE
 				this.api = {
 					io: $jsapi.loader.module("module.js", {
 						api: {
-							mime: jsh.$jsapi.mime,
+							mime: jsh.unit.$jsh.mime,
 							java: $jsapi.loader.module("../../rhino/host/", {
 								$java: jsh.$jsapi.$rhino
 							})
 						}
 					}),
-					mime: jsh.$jsapi.mime
+					mime: jsh.unit.$jsh.mime
 				}
 			}
 		</script>
