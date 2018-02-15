@@ -630,6 +630,7 @@ public class Main {
 		}
 
 		private void cli(String[] args) throws Shell.Invocation.CheckedException {
+			//	TODO	this certainly appears to force VM containers
 			shell(Shell.Container.VM, Main.configuration(args));
 		}
 	}

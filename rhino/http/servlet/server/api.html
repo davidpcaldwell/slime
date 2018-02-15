@@ -214,61 +214,63 @@ END LICENSE
 								<span>__DESCRIPTION__</span>
 							</div>
 							<script type="application/x.jsapi#tests">
-								var backend = new jsh.httpd.Tomcat();
-								backend.servlet({
-									load: function(scope) {
-										scope.$exports.handle = function(request) {
-											return {
-												status: { code: 200 },
-												body: {
-													type: "application/json",
-													string: JSON.stringify({
-														server: "backend",
-														request: {
-															path: request.path
-														}
-													})
+								if (jsh.httpd.Tomcat) {
+									var backend = new jsh.httpd.Tomcat();
+									backend.servlet({
+										load: function(scope) {
+											scope.$exports.handle = function(request) {
+												return {
+													status: { code: 200 },
+													body: {
+														type: "application/json",
+														string: JSON.stringify({
+															server: "backend",
+															request: {
+																path: request.path
+															}
+														})
+													}
 												}
-											}
-											return
-										};
-									}
-								});
-
-								var frontend = new jsh.httpd.Tomcat();
-								frontend.servlet(new function() {
-									var handler = new module.Handler.Proxy({
-										target: {
-											host: "127.0.0.1",
-											port: backend.port
+												return
+											};
 										}
 									});
-									this.load = function(scope) {
-										scope.$exports.handle = handler;
-									}
-								});
 
-								backend.start();
-								frontend.start();
-
-								var client = new jsh.http.Client();
-								var response = client.request({
-									url: "http://127.0.0.1:" + frontend.port + "/" + "path",
-									evaluate: function(response) {
-										if (response.status.code == 200) {
-											return {
-												status: response.status,
-												headers: response.headers,
-												body: JSON.parse(response.body.stream.character().asString())
-											};
-										} else {
-											throw new Error("Response code: " + response.status.code);
+									var frontend = new jsh.httpd.Tomcat();
+									frontend.servlet(new function() {
+										var handler = new module.Handler.Proxy({
+											target: {
+												host: "127.0.0.1",
+												port: backend.port
+											}
+										});
+										this.load = function(scope) {
+											scope.$exports.handle = handler;
 										}
-									}
-								});
-								verify(response).status.code.is(200);
-								verify(response).body.server.is("backend");
-								verify(response).body.request.path.is("path");
+									});
+
+									backend.start();
+									frontend.start();
+
+									var client = new jsh.http.Client();
+									var response = client.request({
+										url: "http://127.0.0.1:" + frontend.port + "/" + "path",
+										evaluate: function(response) {
+											if (response.status.code == 200) {
+												return {
+													status: response.status,
+													headers: response.headers,
+													body: JSON.parse(response.body.stream.character().asString())
+												};
+											} else {
+												throw new Error("Response code: " + response.status.code);
+											}
+										}
+									});
+									verify(response).status.code.is(200);
+									verify(response).body.server.is("backend");
+									verify(response).body.request.path.is("path");
+								}
 							</script>
 						</li>
 					</ul>

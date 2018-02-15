@@ -75,7 +75,8 @@ $api.engine.runCommand = (function(was) {
 
 //	Supply arguments whose default values are provided by the jrunscript API
 
-//	If Rhino location not specified, and we are running this script inside Rhino, we supply its classpath to the shell
+//	If Rhino location not specified, and we are running this script inside Rhino, set that to be the default Rhino location for the
+//	shell
 $api.slime.settings["default"]("jsh.engine.rhino.classpath", $api.rhino.classpath);
 
 //	If SLIME source location not specified, and we can determine it, supply it to the shell
@@ -123,6 +124,7 @@ if (!defaultEngine) {
 	Packages.java.lang.System.exit(1);
 }
 $api.slime.settings["default"]("jsh.engine", defaultEngine);
+//	TODO	is the below comment accurate? Looks like we now use the classloader launch by default in Rhino
 //	TODO	for now, we always launch a separate VM to execute the shell, but we are working using JSH_TEST_LAUNCHER_NOFORK
 //			feature flag to get classloader working under Rhino
 var fork = (function() {
@@ -212,6 +214,9 @@ if ($api.slime.settings.get("jsh.shell.classpath")) {
 $api.debug("_urls = " + _urls);
 
 var classpath = new $api.jsh.Classpath(_urls);
+//	TODO	sure appears like this property is never used in the loader, and is not used in the launcher either. Does the loader
+//			need to know the launcher classpath? And anyway, this appears to be the *loader* classpath; see the part below, where
+//			its components are sent in succession to the command. Probably safe to delete.
 command.systemProperty("jsh.launcher.classpath", classpath.local());
 var engine = $api.jsh.engines[$api.slime.settings.get("jsh.engine")];
 if (!engine) throw new Error("Specified engine not found: " + $api.slime.settings.get("jsh.engine")
@@ -219,6 +224,7 @@ if (!engine) throw new Error("Specified engine not found: " + $api.slime.setting
 	+ " jsh.engine=" + Packages.java.lang.System.getProperty("jsh.engine")
 	+ " shell=" + shell
 );
+//	TODO	jsh.launcher.main is almost certainly unused also
 command.systemProperty("jsh.launcher.main", engine.main);
 
 for (var i=0; i<classpath._urls.length; i++) {
