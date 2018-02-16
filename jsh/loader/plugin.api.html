@@ -18,6 +18,7 @@ END LICENSE
 	<script type="text/javascript" src="../../loader/api/api.js"></script>
 </head>
 <body>
+	<!--	TODO	rename this file to plugins.api.html	-->
 	<div>
 		A jsh plugin can modify a local jsh installation to add or modify existing functionality. As a matter of design philosophy,
 		the plugin architecture allows plugins enormous freedom to modify the existing installation, rather than restricting plugins
@@ -80,6 +81,14 @@ END LICENSE
 				<ul>
 					<!--	undocumented: $host	-->
 					<!--	TODO	analyze whether external plugins need ability to access $host	-->
+					<li class="value">
+						<div class="name">$slime</div>
+						<span class="type">object</span>
+						<span>
+							The SLIME Java-enabled <a href="../../loader/rhino/api.html">runtime</a> which exposes SLIME internals
+							to embeddings. Most plugins will not need to use this.
+						</span>
+					</li>
 					<li class="value">
 						<div class="name">plugins</div>
 						<span class="type">object</span>

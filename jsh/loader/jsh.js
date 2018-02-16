@@ -11,8 +11,9 @@
 //	END LICENSE
 
 this.jsh = new function() {
+	//	TODO	rename $host, which makes no sense as a name now (it is not a host object). Perhaps $slime?
 	var $host = (function($jsh) {
-		var $host = $jsh.host();
+		var $host = $jsh.runtime();
 		var configuration = $jsh.getEnvironment();
 		var invocation = $jsh.getInvocation();
 
@@ -110,7 +111,7 @@ this.jsh = new function() {
 	var plugins = $host.value(
 		$host.loader.getLoaderScript("plugins.js"),
 		{
-			$host: $host,
+			$slime: $host,
 			jsh: this,
 			loader: loader
 		}

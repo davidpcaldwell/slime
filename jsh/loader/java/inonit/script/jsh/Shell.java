@@ -137,11 +137,11 @@ public class Shell {
 
 	private Object $host;
 
-	public final void setHost(Object object) {
+	public final void setRuntime(Object object) {
 		this.$host = object;
 	}
 
-	public final Object host() {
+	public final Object runtime() {
 		return $host;
 	}
 
@@ -183,6 +183,9 @@ public class Shell {
 				System.exit(status);
 			}
 		};
+
+		//	TODO	Currently unused, but presumably intended to support a lighter-weight embedding of jsh inside something
+		//			smaller than a full VM
 
 		public static class Holder extends Container {
 			private Integer status;
@@ -426,15 +429,14 @@ public class Shell {
 		public final Integer execute() {
 			LOG.log(Level.INFO, "Executing shell with %s", this);
 			shell.setClasspath(getClasspath());
-			final Execution execution = this;
 			this.setGlobalProperty("$jsh", shell);
-			execution.setJshHostProperty();
+			this.setJshHostProperty();
 			try {
-				execution.script(shell.getJshLoader().getFile("jsh.js"));
+				this.script(shell.getJshLoader().getFile("jsh.js"));
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
-			return execution.run();
+			return this.run();
 		}
 	}
 }

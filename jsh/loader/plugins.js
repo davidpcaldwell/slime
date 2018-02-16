@@ -34,7 +34,11 @@ $set(new (function() {
 				declaration: declaration
 			});
 		}
-		scope.$jsh = $host;
+		//	TODO	rename this to $slime, for consistency?
+		scope.$slime = $slime;
+		scope.$jsh = $slime;
+		//	TODO	next line breaks Nashorn somehow
+//		$slime.$api.deprecate(scope,"$jsh");
 		scope.global = (function() { return this; })();
 		scope.jsh = jsh;
 		scope.$loader = p.$loader;
@@ -95,11 +99,11 @@ $set(new (function() {
 				var array = load({
 					plugins: plugins,
 					toString: toString(_plugins[i]),
-					$loader: new $host.Loader({ _code: _plugins[i] })
+					$loader: new $slime.Loader({ _code: _plugins[i] })
 				});
 				list.push.apply(list,array);
 			} else {
-				$host.classpath.add(_plugins[i].getClasses());
+				$slime.classpath.add(_plugins[i].getClasses());
 			}
 		}
 

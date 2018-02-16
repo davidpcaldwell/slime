@@ -10,7 +10,7 @@
 //	Contributor(s):
 //	END LICENSE
 
-$jsh.setHost((function() {
+$jsh.setRuntime((function() {
 	var rv = $rhino.script("rhino/rhino.js", $jsh.getLoaderCode("rhino/rhino.js"), { $loader: $jsh, $rhino: $rhino }, null);
 
 	rv.exit = function(status) {

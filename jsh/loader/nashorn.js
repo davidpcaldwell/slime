@@ -10,7 +10,7 @@
 //	Contributor(s):
 //	END LICENSE
 
-$jsh.setHost((function() {
+$jsh.setRuntime((function() {
 	//	TODO	the below, with scripts and rv, looks funny; does it load the same code twice? Why? Should either fix or provide
 	//			explanation
 

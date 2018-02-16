@@ -18,7 +18,6 @@ import java.util.logging.*;
 
 import org.mozilla.javascript.*;
 
-import inonit.script.runtime.io.*;
 import inonit.script.engine.*;
 import inonit.script.rhino.*;
 
