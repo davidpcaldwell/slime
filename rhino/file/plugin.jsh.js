@@ -17,14 +17,14 @@ plugin({
 	},
 	load: function() {
 		var context = {
-			$rhino: $jsh
+			$rhino: $slime
 		};
 		context.api = {
 			js: jsh.js,
 			java: jsh.java,
 			io: jsh.io
 		};
-		context.$pwd = String( $jsh.getSystemProperties().getProperty("user.dir") );
+		context.$pwd = String( $slime.getSystemProperties().getProperty("user.dir") );
 		context.addFinalizer = jsh.loader.addFinalizer;
 
 		var convert = function(value) {
@@ -33,13 +33,13 @@ plugin({
 			return String(value);
 		}
 
-		if (convert($jsh.getSystemProperties().getProperty("cygwin.root")) || convert($jsh.getSystemProperties().getProperty("cygwin.paths"))) {
+		if (convert($slime.getSystemProperties().getProperty("cygwin.root")) || convert($slime.getSystemProperties().getProperty("cygwin.paths"))) {
 			context.cygwin = {
 				root: convert( properties.cygwin.root ),
 				paths: convert( properties.cygwin.paths )
 			}
 		}
-		var environment = jsh.java.Environment($jsh.getEnvironment());
+		var environment = jsh.java.Environment($slime.getEnvironment());
 		if (environment.PATHEXT) {
 			context.pathext = environment.PATHEXT.split(";");
 		}

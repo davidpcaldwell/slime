@@ -37,8 +37,10 @@ $set(new (function() {
 		//	TODO	rename this to $slime, for consistency?
 		scope.$slime = $slime;
 		scope.$jsh = $slime;
-		//	TODO	next line breaks Nashorn somehow
-//		$slime.$api.deprecate(scope,"$jsh");
+		//	TODO	deprecating $jsh property breaks Nashorn somehow, apparently by making the global $jsh the one seen
+		if (typeof(Packages.org.mozilla.javascript.Context.getCurrentContext) == "function" && Packages.org.mozilla.javascript.Context.getCurrentContext() != null) {
+			$slime.$api.deprecate(scope,"$jsh");
+		}
 		scope.global = (function() { return this; })();
 		scope.jsh = jsh;
 		scope.$loader = p.$loader;

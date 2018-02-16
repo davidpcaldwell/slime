@@ -17,7 +17,7 @@ plugin({
 	},
 	load: function() {
 		jsh.io = $loader.module("module.js", {
-			$java: $jsh,
+			$java: $slime,
 			api: {
 				js: jsh.js,
 				java: jsh.java

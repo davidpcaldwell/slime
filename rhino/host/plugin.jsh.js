@@ -20,8 +20,8 @@ plugin({
 				get: $api.Function.singleton(function() {
 					return $loader.module("module.js", {
 						globals: true,
-						$rhino: $jsh,
-						$java: $jsh.java
+						$rhino: $slime,
+						$java: $slime.java
 					});
 				}),
 				enumerable: true
