@@ -22,7 +22,7 @@ plugin({
 		};
 		$api.deprecate(jsh,"$jsapi");
 		jsh.unit.$jsh = {};
-		["$platform","$api","mime","coffee","java"].forEach(function(property) {
+		["$platform","$api","mime","coffee","java","io","Loader"].forEach(function(property) {
 			jsh.unit.$jsh[property] = $jsh[property];
 		});
 	}

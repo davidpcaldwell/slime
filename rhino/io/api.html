@@ -60,11 +60,11 @@ END LICENSE
 	<script type="application/x.jsapi#initialize">
 		var context = new function() {
 			var java = $jsapi.loader.module("../../rhino/host/", {
-				$rhino: jsh.$jsapi.$rhino
+				$rhino: jsh.unit.$jsh
 			});
 			if (!java) throw new Error("Not found: rhino/host/");
 
-			this.$java = jsh.$jsapi.$rhino;
+			this.$java = jsh.unit.$jsh;
 
 			this.api = {
 				js:  $jsapi.loader.module("../../js/object/", { globals: true }),
