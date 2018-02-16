@@ -27,49 +27,44 @@ public class Rhino {
 
 	public static class Interface {
 		private Shell shell;
-		private Configuration rhino;
-		private Engine.Debugger debugger;
+		private Engine engine;
+		private Engine.Log log;
+
 		private ArrayList<Runnable> finalizers = new ArrayList<Runnable>();
 
-		Interface(Shell shell, Rhino.Configuration rhino) {
-			this(shell,rhino,rhino.getEngine().getDebugger());
-		}
-
-		private Interface(Shell shell, Rhino.Configuration rhino, Engine.Debugger debugger) {
+		Interface(Shell shell, Engine engine, Engine.Log log) {
 			this.shell = shell;
-			this.rhino = rhino;
-			this.debugger = debugger;
+			this.engine = engine;
+			this.log = log;
 		}
-
-		//	TODO	can this level of indirection surrounding debugger be removed?
 
 		public Scriptable script(String name, String code, Scriptable scope, Scriptable target) throws IOException {
-			return rhino.getEngine().script(name, code, scope, target);
+			return engine.script(name, code, scope, target);
 		}
 
 		public Loader.Classes.Interface getClasspath() {
-			return rhino.getEngine().getClasspath();
+			return engine.getClasspath();
 		}
 
 		public Engine.Debugger getDebugger() {
-			return debugger;
+			return engine.getDebugger();
 		}
 
 		public void exit(int status) {
-			debugger.setBreakOnExceptions(false);
+			engine.getDebugger().setBreakOnExceptions(false);
 			throw new ExitError(status);
 		}
 
 		private Interface subinterface() {
 			//	TODO	provide separate classloader for child script
-			return new Interface(shell,rhino,debugger);
+			return new Interface(shell,engine,log);
 		}
 
 		public int jsh(final Shell.Environment configuration, final Shell.Invocation invocation) throws IOException, Shell.Invocation.CheckedException {
-			boolean breakOnExceptions = debugger.isBreakOnExceptions();
+			boolean breakOnExceptions = engine.getDebugger().isBreakOnExceptions();
 			Shell subshell = shell.subshell(configuration, invocation);
-			Integer rv = Rhino.execute(subshell, this.rhino.getEngine(), this.rhino.getLog(), subinterface());
-			debugger.setBreakOnExceptions(breakOnExceptions);
+			Integer rv = Rhino.execute(subshell, engine, log, subinterface());
+			engine.getDebugger().setBreakOnExceptions(breakOnExceptions);
 			if (rv == null) return 0;
 			return rv.intValue();
 		}
@@ -84,7 +79,7 @@ public class Rhino {
 					finalizers.get(i).run();
 				} catch (Throwable t) {
 					//	TODO	log something about the exception
-					rhino.getLog().println("Error running finalizer: " + finalizers.get(i));
+					log.println("Error running finalizer: " + finalizers.get(i));
 				}
 			}
 		}
@@ -137,6 +132,25 @@ public class Rhino {
 		@Override public Integer run() {
 			engine.execute(program);
 			return null;
+		}
+	}
+
+	private static Integer execute(Shell shell, Engine rhino, Engine.Log log, Interface $rhino) throws Shell.Invocation.CheckedException {
+		try {
+			ExecutionImpl execution = new ExecutionImpl(shell, rhino, $rhino);
+			Integer ignore = execution.execute();
+			return null;
+		} catch (ExitError e) {
+			return new Integer(e.getStatus());
+		} catch (Engine.Errors e) {
+			LOG.log(Level.INFO, "Engine.Errors thrown.", e);
+			Engine.Errors.ScriptError[] errors = e.getErrors();
+			LOG.log(Level.FINER, "Engine.Errors length: %d", errors.length);
+			LOG.log(Level.FINE, "Logging errors to %s.", log);
+			e.dump(log, "[jsh] ");
+			return -1;
+		} finally {
+			$rhino.destroy();
 		}
 	}
 
@@ -231,37 +245,18 @@ public class Rhino {
 
 	private Shell shell;
 
-	private Configuration rhino;
+	private Configuration engineConfiguration;
 
 	private Rhino(Shell shell) {
 		this.shell = shell;
-		this.rhino = Configuration.main(shell.getEnvironment());
-	}
-
-	private Integer run() throws Shell.Invocation.CheckedException {
-		rhino.initialize(shell.getEnvironment());
-		return Rhino.execute(shell, rhino.getEngine(), rhino.getLog(), new Interface(shell, rhino));
+		this.engineConfiguration = Configuration.main(shell.getEnvironment());
 	}
 
 	//	TODO	try to remove dependencies on inonit.script.rhino.*;
 
-	private static Integer execute(Shell shell, Engine rhino, Engine.Log log, Interface $rhino) throws Shell.Invocation.CheckedException {
-		try {
-			ExecutionImpl execution = new ExecutionImpl(shell, rhino, $rhino);
-			Integer ignore = execution.execute();
-			return null;
-		} catch (ExitError e) {
-			return new Integer(e.getStatus());
-		} catch (Engine.Errors e) {
-			LOG.log(Level.INFO, "Engine.Errors thrown.", e);
-			Engine.Errors.ScriptError[] errors = e.getErrors();
-			LOG.log(Level.FINER, "Engine.Errors length: %d", errors.length);
-			LOG.log(Level.FINE, "Logging errors to %s.", log);
-			e.dump(log, "[jsh] ");
-			return -1;
-		} finally {
-			$rhino.destroy();
-		}
+	private Integer run() throws Shell.Invocation.CheckedException {
+		engineConfiguration.initialize(shell.getEnvironment());
+		return Rhino.execute(shell, engineConfiguration.getEngine(), engineConfiguration.getLog(), new Interface(shell, engineConfiguration.getEngine(), engineConfiguration.getLog()));
 	}
 
 	static class ExitError extends Error {
@@ -276,18 +271,16 @@ public class Rhino {
 		}
 	}
 
-	private class Run implements java.util.concurrent.Callable<Integer> {
-		public Integer call() throws Exception {
-			return Rhino.this.run();
-		}
-	}
-
 	public static class EngineImpl extends Main.Engine {
 		private static void run(Shell.Container context, Shell shell) {
-			Rhino main = new Rhino(shell);
+			final Rhino main = new Rhino(shell);
 			try {
 				java.util.concurrent.ExecutorService service = java.util.concurrent.Executors.newSingleThreadExecutor();
-				java.util.concurrent.Future<Integer> future = service.submit(main.new Run());
+				java.util.concurrent.Future<Integer> future = service.submit(new java.util.concurrent.Callable<Integer>() {
+					public Integer call() throws Exception {
+						return main.run();
+					}
+				});
 				Integer status = future.get();
 				service.shutdown();
 				LOG.log(Level.INFO, "Exiting normally with status %d.", status);
@@ -303,7 +296,7 @@ public class Rhino {
 						}
 					}
 					LOG.log(Level.INFO, "Exiting normally with status %d.", status);
-					main.rhino.getEngine().getDebugger().destroy();
+					main.engineConfiguration.getEngine().getDebugger().destroy();
 					//	JVM will exit normally when non-daemon threads complete.
 				}
 			} catch (Throwable t) {
