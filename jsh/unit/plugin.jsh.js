@@ -16,11 +16,6 @@ plugin({
 		return Boolean(jsh.unit);
 	},
 	load: function() {
-		//	TODO	take away the adapter below and make this simpler
-		jsh.$jsapi = {
-			$rhino: $jsh,
-		};
-		$api.deprecate(jsh,"$jsapi");
 		jsh.unit.$jsh = {};
 		["$platform","$api","mime","coffee","java","io","Loader"].forEach(function(property) {
 			jsh.unit.$jsh[property] = $jsh[property];
