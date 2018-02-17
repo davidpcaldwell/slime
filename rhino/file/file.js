@@ -306,6 +306,7 @@ var Pathname = function Pathname(parameters) {
 				} else if ($context.isPathname(target)) {
 					return target;
 				} else {
+					//	TODO	need better error message here
 					throw new Error();
 				}
 			})();
