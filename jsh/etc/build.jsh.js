@@ -431,13 +431,19 @@ var getTestEnvironment = jsh.js.constant(function() {
 			args.push("-doc",destination.shell.getRelativePath("doc/api"));
 			args.push("-index",SLIME.getFile("jsh/etc/api.html"));
 		}
-		console("Running jsapi.jsh.js ...");
+		console("Running unit tests ...");
 		jsh.shell.jsh({
 			shell: destination.shell,
-			script: SLIME.getFile("jsh/unit/jsapi.jsh.js"),
-			arguments: args,
+			script: destination.shell.getFile("src/jsh/etc/unit.jsh.js"),
 			environment: getTestEnvironment()
 		});
+//		console("Running jsapi.jsh.js ...");
+//		jsh.shell.jsh({
+//			shell: destination.shell,
+//			script: SLIME.getFile("jsh/unit/jsapi.jsh.js"),
+//			arguments: args,
+//			environment: getTestEnvironment()
+//		});
 	}
 	if (build.test) {
 		console("Running integration tests ...");
