@@ -420,30 +420,26 @@ var getTestEnvironment = jsh.js.constant(function() {
 });
 
 (function() {
-	if (build.unit || build.doc) {
-		var args = [];
-		if (!build.unit) args.push("-notest");
-		modules.forEach(function(module) {
-			if (module.api) args.push("-api",SLIME.getRelativePath(module.path));
-			if (module.test) args.push("-test",SLIME.getRelativePath(module.path));
-		});
-		if (!parameters.options.nodoc) {
-			args.push("-doc",destination.shell.getRelativePath("doc/api"));
-			args.push("-index",SLIME.getFile("jsh/etc/api.html"));
-		}
+	if (build.unit) {
 		console("Running unit tests ...");
 		jsh.shell.jsh({
 			shell: destination.shell,
 			script: destination.shell.getFile("src/jsh/etc/unit.jsh.js"),
 			environment: getTestEnvironment()
 		});
-//		console("Running jsapi.jsh.js ...");
-//		jsh.shell.jsh({
-//			shell: destination.shell,
-//			script: SLIME.getFile("jsh/unit/jsapi.jsh.js"),
-//			arguments: args,
-//			environment: getTestEnvironment()
-//		});
+	}
+	if (build.doc) {
+		var args = [];
+		console("Running jsapi.jsh.js to generate documentation ...");
+		args.push("-notest");
+		args.push("-doc",destination.shell.getRelativePath("doc/api"));
+		args.push("-index",SLIME.getFile("jsh/etc/api.html"));
+		jsh.shell.jsh({
+			shell: destination.shell,
+			script: SLIME.getFile("jsh/unit/jsapi.jsh.js"),
+			arguments: args,
+			environment: getTestEnvironment()
+		});
 	}
 	if (build.test) {
 		console("Running integration tests ...");
