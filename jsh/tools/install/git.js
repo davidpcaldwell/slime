@@ -13,6 +13,7 @@
 
 var GUI = $context.api.Error.Type("Please execute the graphical installer.");
 
+//	TODO	with the ability to mock the entire shell in a plugin, is this still needed?
 var resolveMocks = function(p) {
 	var rv = {
 		shell: (p && p.mock && p.mock.shell) ? p.mock.shell : $context.api.shell,

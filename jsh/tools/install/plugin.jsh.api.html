@@ -508,9 +508,77 @@ END LICENSE
 							</div>
 						</li>
 					</ul>
-					<script type="application/x.jsapi#tests">
+					<script type="application/x.jsapi#tests"><![CDATA[
 						var mockjsh = jsh.js.Object.set({}, jsh);
 						mockjsh.tools = jsh.js.Object.set({}, mockjsh.tools);
+						
+						var MockFilePlugin = function(o) {
+							if (!o) o = {};
+							if (!o.initial) o.initial = {};
+							
+							var Directory = function(o) {
+							};
+							
+							var File = function(o) {
+							};
+							
+							var getNode = function(s) {
+								var elements = s.substring(1).split("/");
+								var current = o.initial;
+								for (var i=0; i<elements.length; i++) {
+									if (current) {
+										current = current[elements[i]];
+									}
+								}
+								if (typeof(current) == "undefined") {
+									return {};
+								}
+								if (typeof(current) == "object") {
+									return new Directory(current);
+								} else {
+									return new File(current);
+								}
+							}
+							
+							this.Pathname = function(s) {
+								var rv = {};
+								Object.defineProperty(rv, "directory", {
+									get: function() {
+										var node = getNode(s);
+										if (node instanceof Directory) return node;
+										return null;
+									}
+								});
+								
+								Object.defineProperty(rv, "file", {
+									get: function() {
+										var node = getNode(s);
+										if (node instanceof File) return node;
+										return null;
+									}
+								});
+								return rv;
+							};							
+						};
+						
+						var MockShellPlugin = function(o) {
+							this.os = {
+								name: o.os.name
+							};
+							
+							this.user = {};
+							
+							this.jsh = o.jsh;
+							
+							this.java = o.java;
+							
+							this.PATH = new function() {
+								this.getCommand = function(s) {
+									if (o.getPathCommand) return o.getPathCommand(s);
+									return null;
+								};
+							};
+						};
 						
 						verify(mockjsh).is.not(jsh);
 						verify(mockjsh.js).is(jsh.js);
@@ -528,6 +596,12 @@ END LICENSE
 						});
 						verify(plugins).is.type("object");
 
+						mockjsh.file = new MockFilePlugin();
+						mockjsh.shell = new MockShellPlugin({
+							os: {
+								name: "Linux"
+							}
+						});
 						var plugin = $jsapi.loader.plugin.mock({
 							plugins: plugins,
 							jsh: mockjsh,
@@ -537,7 +611,44 @@ END LICENSE
 						});
 						verify(jsh.tools.git).is(before);
 						verify(plugin).is.not(before);
-					</script>
+						verify(plugin).evaluate.property("installation").is(void(0));
+						
+						mockjsh.file = new MockFilePlugin({
+							initial: {
+								Applications: {
+									"Xcode.app": {}
+								}
+							}
+						});
+						var d = mockjsh.file.Pathname("/Applications/Xcode.app");
+						verify(d).is.type("object");
+						verify(d).evaluate.property("directory").is.type("object");
+						mockjsh.shell = new MockShellPlugin({
+							os: {
+								name: "Mac OS X"
+							},
+							getPathCommand: function(s) {
+								if (s == "git") return {};
+							},
+							jsh: {
+								src: {
+									getRelativePath: function(r) {
+									}
+								}
+							},
+							java: {
+								jrunscript: {}
+							}
+						});
+						plugin = $jsapi.loader.plugin.mock({
+							plugins: plugins,
+							jsh: mockjsh,
+							evaluate: function(p) {
+								return p.jsh.tools.git;
+							}
+						});
+						verify(plugin).evaluate.property("installation").is.type("object");
+					]]></script>
 				</li>
 			</ul>
 		</div>
