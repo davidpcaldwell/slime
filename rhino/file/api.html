@@ -26,7 +26,7 @@ END LICENSE
 				this.pathext = jsh.shell.environment.PATHEXT.split(";");
 			}
 			this.$pwd = String(jsh.shell.properties.object.user.dir);
-			this.$rhino = jsh.unit.$jsh;
+			this.$rhino = jsh.unit.$slime;
 			this.addFinalizer = jsh.loader.addFinalizer;
 
 			if (p && p.cygwin) {
@@ -48,15 +48,15 @@ END LICENSE
 		$Context.api = new function() {
 			this.js = $jsapi.loader.module("../../js/object/");
 			var java = $jsapi.loader.module("../../rhino/host/", {
-				$rhino: jsh.unit.$jsh
+				$rhino: jsh.unit.$slime
 			});
 			this.java = java;
 			this.io = $jsapi.loader.module("../../rhino/io/", {
 				$java: new Packages.inonit.script.runtime.io.Streams()
-				,$java: jsh.unit.$jsh
+				,$java: jsh.unit.$slime
 				,api: {
 					java: java,
-					mime: jsh.unit.$jsh.mime
+					mime: jsh.unit.$slime.mime
 				}
 			});
 		}
@@ -128,7 +128,7 @@ END LICENSE
 						this.pathext = jsh.shell.environment.PATHEXT.split(";");
 					}
 					this.$pwd = String(jsh.shell.properties.object.user.dir);
-					this.$rhino = jsh.unit.$jsh;
+					this.$rhino = jsh.unit.$slime;
 					this.addFinalizer = jsh.loader.addFinalizer;
 
 					if (p && p.cygwin) {
@@ -150,15 +150,15 @@ END LICENSE
 				$Context.api = new function() {
 					this.js = $jsapi.loader.module("../../js/object/");
 					var java = $jsapi.loader.module("../../rhino/host/", {
-						$rhino: jsh.unit.$jsh
+						$rhino: jsh.unit.$slime
 					});
 					this.java = java;
 					this.io = $jsapi.loader.module("../../rhino/io/", {
 						$java: new Packages.inonit.script.runtime.io.Streams()
-						,$rhino: jsh.unit.$jsh
+						,$rhino: jsh.unit.$slime
 						,api: {
 							java: java,
-							mime: jsh.unit.$jsh.mime
+							mime: jsh.unit.$slime.mime
 						}
 					});
 				}

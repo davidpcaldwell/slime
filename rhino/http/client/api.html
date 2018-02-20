@@ -86,16 +86,16 @@ END LICENSE
 		scope.$Context = function(gae) {
 			var js = $jsapi.loader.module("../../../js/object/");
 			var java = $jsapi.loader.module("../../../rhino/host/", {
-				$rhino: jsh.unit.$jsh
+				$rhino: jsh.unit.$slime
 			});
 			var io = $jsapi.loader.module("../../../rhino/io/", {
 				api: {
 					java: java,
-					mime: jsh.unit.$jsh.mime
+					mime: jsh.unit.$slime.mime
 				},
 				//	TODO	huh? See below
 				$java: new Packages.inonit.script.runtime.io.Streams(),
-				$java: jsh.unit.$jsh
+				$java: jsh.unit.$slime
 			});
 
 			this.api = {
@@ -221,15 +221,15 @@ END LICENSE
 				scope.$Context = function(gae) {
 					var js = $jsapi.loader.module("../../../js/object/");
 					var java = $jsapi.loader.module("../../../rhino/host/", {
-						$rhino: jsh.unit.$jsh
+						$rhino: jsh.unit.$slime
 					});
 					var io = $jsapi.loader.module("../../../rhino/io", {
 						api: {
 							java: java,
-							mime: jsh.unit.$jsh.mime
+							mime: jsh.unit.$slime.mime
 						},
 						$java: new Packages.inonit.script.runtime.io.Streams(),
-						$rhino: jsh.unit.$jsh
+						$rhino: jsh.unit.$slime
 					});
 
 					this.api = {

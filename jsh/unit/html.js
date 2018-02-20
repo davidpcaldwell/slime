@@ -200,7 +200,7 @@ var Scope = function(suite,environment) {
 			return this.get(name).read(String);
 		};
 
-		delegate.coffee = jsh.unit.$jsh.coffee;
+		delegate.coffee = jsh.unit.$slime.coffee;
 
 		delegate.plugins = function(path) {
 			if (path) {
@@ -214,7 +214,7 @@ var Scope = function(suite,environment) {
 			mock: function(configuration) {
 				var $loader = (configuration.path) ? new delegate.Child(configuration.path) : delegate;
 				var plugins = (configuration.plugins) ? configuration.plugins : {};
-				jsh.unit.$jsh.plugins.mock({
+				jsh.unit.$slime.plugins.mock({
 					$loader: $loader,
 					plugins: plugins,
 					toString: configuration.toString,
@@ -267,7 +267,7 @@ var Scope = function(suite,environment) {
 			})
 		},
 		java: {
-			loader: jsh.unit.$jsh.java,
+			loader: jsh.unit.$slime.java,
 			io: {
 				newTemporaryDirectory: (function() {
 					var tmpdir;
@@ -295,8 +295,8 @@ var Scope = function(suite,environment) {
 		}
 	};
 
-	this.$platform = jsh.unit.$jsh.$platform;
-	this.$api = jsh.unit.$jsh.$api;
+	this.$platform = jsh.unit.$slime.$platform;
+	this.$api = jsh.unit.$slime.$api;
 };
 
 var PartDescriptor = function(p) {
