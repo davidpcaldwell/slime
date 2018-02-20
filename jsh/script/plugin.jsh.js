@@ -100,7 +100,7 @@ plugin({
 	},
 	load: function() {
 		var source = (function() {
-			var _script = $jsh.getInvocation().getScript();
+			var _script = $slime.getInvocation().getScript();
 			var _uri = _script.getUri();
 			var rv = {};
 			if (_uri) {
@@ -109,10 +109,10 @@ plugin({
 				}
 				rv.uri = String(_uri.normalize().toString());
 			}
-			if ($jsh.getPackaged()) {
+			if ($slime.getPackaged()) {
 				rv.packaged = {
-					file: jsh.file.filesystem.java.adapt($jsh.getPackaged().getFile()).file,
-					loader: new jsh.io.Loader({ _source: $jsh.getPackaged().getCode() })
+					file: jsh.file.filesystem.java.adapt($slime.getPackaged().getFile()).file,
+					loader: new jsh.io.Loader({ _source: $slime.getPackaged().getCode() })
 				}
 			}
 			return rv;
@@ -129,7 +129,7 @@ plugin({
 				addClasses: jsh.loader.java.add
 			},
 			directory: jsh.shell.PWD,
-			arguments: jsh.java.Array.adapt($jsh.getInvocation().getArguments()).map(function(s) { return String(s); }),
+			arguments: jsh.java.Array.adapt($slime.getInvocation().getArguments()).map(function(s) { return String(s); }),
 		}, source));
 
 		jsh.script.Application.run = function(descriptor,args) {

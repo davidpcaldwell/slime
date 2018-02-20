@@ -37,7 +37,13 @@ $set(new (function() {
 				declaration: declaration
 			});
 		}
-		scope.$jsh = $host;
+		//	TODO	rename this to $slime, for consistency?
+		scope.$slime = $slime;
+		scope.$jsh = $slime;
+		//	TODO	deprecating $jsh property breaks Nashorn somehow, apparently by making the global $jsh the one seen
+		if (typeof(Packages.org.mozilla.javascript.Context.getCurrentContext) == "function" && Packages.org.mozilla.javascript.Context.getCurrentContext() != null) {
+			$slime.$api.deprecate(scope,"$jsh");
+		}
 		scope.global = (function() { return this; })();
 		scope.jsh = (p.mock && p.mock.jsh) ? p.mock.jsh : jsh;
 		scope.$loader = p.$loader;
@@ -112,11 +118,11 @@ $set(new (function() {
 				var array = load({
 					plugins: plugins,
 					toString: toString(_plugins[i]),
-					$loader: new $host.Loader({ _code: _plugins[i] })
+					$loader: new $slime.Loader({ _code: _plugins[i] })
 				});
 				list.push.apply(list,array);
 			} else {
-				$host.classpath.add(_plugins[i].getClasses());
+				$slime.classpath.add(_plugins[i].getClasses());
 			}
 		}
 

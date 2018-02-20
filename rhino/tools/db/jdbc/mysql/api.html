@@ -30,7 +30,7 @@ END LICENSE
 			(function() {
 				var js = $jsapi.loader.module("../../../../../js/object/");
 				var java = $jsapi.loader.module("../../../../../rhino/host/", {
-					$rhino: jsh.$jsapi.$rhino
+					$rhino: jsh.unit.$jsh
 				});
 				var io = $jsapi.loader.module("../../../../../rhino/io/", {
 					api: {
@@ -40,7 +40,7 @@ END LICENSE
 							Type: {}
 						}
 					},
-					$rhino: jsh.$jsapi.$rhino
+					$rhino: jsh.unit.$jsh
 				});
 				var parentContext = new function() {
 					this.api = {

@@ -47,12 +47,6 @@ plugin({
 //					throw e;
 //				}
 			}
-
-			if (jsh.$jsapi && jsh.$jsapi.$rhino && jsh.$jsapi.$rhino.jsapi && jsh.$jsapi.$rhino.jsapi.script) {
-				this.script = function(name,code,scope) {
-					return jsh.$jsapi.$rhino.jsapi.script(name, String(code), scope);
-				}
-			}
 		});
 	}
 });

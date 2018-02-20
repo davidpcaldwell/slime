@@ -28,8 +28,8 @@ plugin({
 					}
 				}
 			},
-			_properties: $jsh.getSystemProperties(),
-			_environment: $jsh.getEnvironment()
+			_properties: $slime.getSystemProperties(),
+			_environment: $slime.getEnvironment()
 		});
 
 		var context = {};
@@ -40,30 +40,30 @@ plugin({
 			,file: jsh.file
 		}
 		context.stdio = new function() {
-			this.input = jsh.io.java.adapt($jsh.getStdio().getStandardInput());
-			this.output = jsh.io.java.adapt($jsh.getStdio().getStandardOutput());
-			this.error = jsh.io.java.adapt($jsh.getStdio().getStandardError());
+			this.input = jsh.io.java.adapt($slime.getStdio().getStandardInput());
+			this.output = jsh.io.java.adapt($slime.getStdio().getStandardOutput());
+			this.error = jsh.io.java.adapt($slime.getStdio().getStandardError());
 		}
 		//	TODO	properties methods should go away; should not be necessary now
 		context.getSystemProperty = function(name) {
-			var rv = $jsh.getSystemProperties().getProperty(name);
+			var rv = $slime.getSystemProperties().getProperty(name);
 			if (rv == null) return null;
 			return String(rv);
 		};
 		context._getSystemProperties = function() {
-			return $jsh.getSystemProperties();
+			return $slime.getSystemProperties();
 		};
 		context.exit = function(code) {
-			$jsh.exit(code);
+			$slime.exit(code);
 		};
 		context.jsh = function(configuration,script,args) {
-			var _invocation = $jsh.getInterface().invocation(
+			var _invocation = $slime.getInterface().invocation(
 				script.pathname.java.adapt(),
 				jsh.java.toJavaArray(args,Packages.java.lang.String,function(s) {
 					return new Packages.java.lang.String(s);
 				})
 			);
-			return $jsh.jsh(configuration,_invocation)
+			return $slime.jsh(configuration,_invocation)
 		};
 		$loader.run(
 			"jsh.js",

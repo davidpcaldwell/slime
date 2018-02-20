@@ -94,15 +94,15 @@ END LICENSE
 	<script type="application/x.jsapi#initialize">
 		var context = new function() {
 			var java = $jsapi.loader.module("../../rhino/host/", {
-				$rhino: jsh.$jsapi.$rhino,
-				$java: jsh.$jsapi.java
+				$rhino: jsh.unit.$jsh,
+				$java: jsh.unit.$jsh.java
 			});
 			var io = $jsapi.loader.module("../../rhino/io/", {
 				api: {
 					java: java,
-					mime: jsh.$jsapi.mime
+					mime: jsh.unit.$jsh.mime
 				},
-				$java: jsh.$jsapi.$rhino
+				$java: jsh.unit.$jsh
 			});
 			this.api = {
 				js: $jsapi.loader.module("../../js/object/"),
@@ -112,7 +112,7 @@ END LICENSE
 					if (jsh.shell.environment.PATHEXT) {
 						this.pathext = jsh.shell.environment.PATHEXT.split(";");
 					}
-					this.$rhino = jsh.$jsapi.$rhino;
+					this.$rhino = jsh.unit.$jsh;
 					this.api = {
 						io: io,
 						js: jsh.js,

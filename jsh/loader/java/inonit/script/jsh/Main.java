@@ -438,6 +438,7 @@ public class Main {
 			final List<String> args = new ArrayList<String>();
 			args.addAll(Arrays.asList(arguments));
 			final String scriptPath = args.remove(0);
+			final String[] scriptArguments = args.toArray(new String[0]);
 			if (scriptPath.startsWith("http://") || scriptPath.startsWith("https://")) {
 				try {
 					final java.net.URL url = new java.net.URL(scriptPath);
@@ -462,7 +463,7 @@ public class Main {
 						}
 
 						public String[] getArguments() {
-							return args.toArray(new String[args.size()]);
+							return scriptArguments;
 						}
 					};
 				} catch (java.net.MalformedURLException e) {
@@ -483,7 +484,7 @@ public class Main {
 					}
 
 					public String[] getArguments() {
-						return (String[]) args.toArray(new String[0]);
+						return scriptArguments;
 					}
 				};
 			}
@@ -614,6 +615,9 @@ public class Main {
 			main(context, Shell.create(shell));
 		}
 
+		//	TODO	The cli() method appears to force VM containers; the embed() method and Runner class may have been intended
+		//			to support another kind of container, but are currently unused
+
 		private class Runner extends Shell.Container.Holder.Run {
 			public void threw(Throwable t) {
 				t.printStackTrace();
@@ -630,7 +634,6 @@ public class Main {
 		}
 
 		private void cli(String[] args) throws Shell.Invocation.CheckedException {
-			//	TODO	this certainly appears to force VM containers
 			shell(Shell.Container.VM, Main.configuration(args));
 		}
 	}

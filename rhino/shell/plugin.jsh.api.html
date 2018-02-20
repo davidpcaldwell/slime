@@ -23,14 +23,14 @@ END LICENSE
 		<script type="application/x.jsapi#initialize">
 			var context = new function() {
 				var host = $jsapi.loader.module("../../rhino/host/", {
-					$rhino: jsh.$jsapi.$rhino,
-					$java: jsh.$jsapi.java
+					$rhino: jsh.unit.$jsh,
+					$java: jsh.unit.$jsh.java
 				});
 				var file = $jsapi.loader.module("../../rhino/file/", new function() {
 					if (jsh.shell.environment.PATHEXT) {
 						this.pathext = jsh.shell.environment.PATHEXT.split(";");
 					}
-					this.$rhino = jsh.$jsapi.$rhino;
+					this.$rhino = jsh.unit.$jsh;
 					this.api = {
 						io: jsh.io,
 						js: jsh.js,
@@ -93,17 +93,6 @@ END LICENSE
 				}
 
 				this.exit = function() {
-				}
-
-				this.jsh = function(configuration,script,args) {
-					var $jsh = jsh.$jsapi.$rhino;
-					var _invocation = $jsh.getInterface().invocation(
-						script.pathname.java.adapt(),
-						jsh.java.toJavaArray(args,Packages.java.lang.String,function(s) {
-							return new Packages.java.lang.String(s);
-						})
-					);
-					return jsh.$jsapi.$rhino.jsh(configuration,_invocation);
 				}
 			};
 			scope.module = $jsapi.loader.module("jsh.js", context);

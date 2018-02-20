@@ -14,7 +14,7 @@ END LICENSE
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
 <head>
-	<title>Slime Loader and Module API</title>
+	<title>SLIME Runtime</title>
 	<link rel="stylesheet" type="text/css" href="api/api.css" />
 	<script type="text/javascript" src="../loader/api/api.js"></script>
 	<style>
@@ -25,37 +25,23 @@ END LICENSE
 	<h1>Overview</h1>
 	<div>
 		<div jsapi:id="1">
-			Generally speaking, the SLIME loader is responsible for loading code into an application. The loader generally executes each
-			source file by supplying it with a <code>$context</code> object which provides whatever configuration information is
-			needed by the source file and an <code>$exports</code> object to which the code can assign properties which will be visible
-			to the application.
+			Generally speaking, the SLIME runtime is responsible for providing basic constructs to SLIME embeddings.
 		</div>
 		<div jsapi:id="2">
-			<!--
-				Previous text which refers to $platform:
-
-				Scripts loaded by the loader also have access to the <code>$platform</code> and <code>$api</code> objects described below,
-				which provide information about the underlying platform and the ability for code to provide information about its own
-				API.
-			-->
-			The SLIME loader also provides the <a href="$api.api.html"><code>$api</code></a> and <code>$platform</code> objects.
+			The SLIME runtime provides the <a href="$api.api.html"><code>$api</code></a> and <code>$platform</code> objects.
 			The <code>$api</code> provides a basic set of JavaScript utilities. The <code>$platform</code> object provides more
 			advanced JavaScript engine capabilities that depend on the underlying JavaScript engine. All code loaded by the SLIME
-			loader has access to the <code>$api</code> and <code>$platform</code> objects.
-		</div>
-		<div jsapi:id="3">
-			The loader can execute a single script using the <code>run</code> or <code>file</code> methods, or can execute a module
-			(which can consist of multiple source files) using the <code>module</code> method.
+			runtime has access to the <code>$api</code> and <code>$platform</code> objects.
 		</div>
 	</div>
 	<div>
 		<h1>Embedding</h1>
 		<p>
 			<!--	TODO	this is a misuse of the word "literal" and should be changed to "expression"	-->
-			The SLIME loader (<code>literal.js</code>) is an expression that evaluates to an object providing its capabilities to
+			The SLIME runtime (<code>literal.js</code>) is an expression that evaluates to an object providing its capabilities to
 			the embedder. The embedder must provide a <code>$slime</code> object that provides access to the installation, and can
 			add an <code>$engine</code> object in the loader's scope in order to provide engine-specific capabilities to the
-			SLIME loader.
+			runtime.
 		</p>
 		<div>
 			<h2><code>$slime</code></h2>

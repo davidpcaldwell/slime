@@ -23,7 +23,7 @@ END LICENSE
 		scope.module = $jsapi.environment.module;
 		if (!scope.module) {
 			//	Compatibility with old test structure
-			scope.module = $jsapi.loader.module("module.js", { $rhino: jsh.$jsapi.$rhino });
+			scope.module = $jsapi.loader.module("module.js", { $rhino: jsh.unit.$jsh });
 		}
 	</script>
 	<div>
@@ -35,11 +35,6 @@ END LICENSE
 				<span>If <code>true</code>, this module modifies global JavaScript objects.</span>
 			</li>
 		</ul>
-		<script type="application/x.jsapi#context">
-			new function() {
-				this.$rhino = jsh.$jsapi.$rhino;
-			}
-		</script>
 	</div>
 	<div>
 		<script type="application/x.jsapi#initialize"><![CDATA[

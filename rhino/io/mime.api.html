@@ -52,13 +52,13 @@ END LICENSE
 				this.api = {
 					io: $jsapi.loader.module("module.js", {
 						api: {
-							mime: jsh.$jsapi.mime,
+							mime: jsh.unit.$jsh.mime,
 							java: $jsapi.loader.module("../../rhino/host/", {
-								$java: jsh.$jsapi.$rhino
+								$java: jsh.unit.$jsh
 							})
 						}
 					}),
-					mime: jsh.$jsapi.mime
+					mime: jsh.unit.$jsh.mime
 				}
 			}
 		</script>
@@ -66,7 +66,7 @@ END LICENSE
 	<div>
 		<h1>Exports</h1>
 		<script type="application/x.jsapi#initialize">
-			scope.$slime = jsh.$jsapi.$rhino;
+			scope.$slime = jsh.unit.$jsh;
 		</script>
 		<div class="type">
 			<a class="type" name="types.entity">entity</a>

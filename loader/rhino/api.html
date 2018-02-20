@@ -171,7 +171,7 @@ END LICENSE
 	</div>
 	<div>
 		<script type="application/x.jsapi#initialize">
-			scope.module = jsh.$jsapi.$rhino;
+			scope.module = jsh.unit.$jsh;
 		</script>
 		<h1>Properties</h1>
 		<p>
@@ -185,7 +185,7 @@ END LICENSE
 				<span>__DESCRIPTION__</span>
 				<div class="label">has properties:</div>
 				<script type="application/x.jsapi#initialize">
-					scope.api = jsh.$jsapi.$rhino;
+					scope.api = jsh.unit.$jsh;
 				</script>
 				<ul jsapi:id="top">
 					<li class="constructor" jsapi:reference="getApi('../api.html').getElement('global/mime/Type')">
@@ -275,7 +275,7 @@ END LICENSE
 					-->
 					<div jsapi:id="tests">
 						<script type="application/x.jsapi#tests">
-							var $rhino = jsh.$jsapi.$rhino;
+							var $rhino = jsh.unit.$jsh;
 							verify($rhino,"$rhino").is.type("object");
 							verify($rhino).evaluate.property("Loader").is.type("function");
 							var tmpdir = $jsapi.file.newTemporaryDirectory();
@@ -408,7 +408,7 @@ END LICENSE
 				<div jsapi:reference="getApi('../api.html').getElement('types.Loader/tests')">
 				</div>
 				<script type="application/x.jsapi#initialize">
-					scope.api = jsh.$jsapi.$rhino;
+					scope.api = jsh.unit.$jsh;
 				</script>
 				<div jsapi:reference="getApi('../api.html').getElement('global/Loader/tests')">
 				</div>
