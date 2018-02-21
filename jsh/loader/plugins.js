@@ -12,6 +12,9 @@
 //	END LICENSE
 
 $set(new (function() {
+	//	Loads the plugin code from a specific plugin.jsh.js at the top level of a loader and returns a list of implementations
+	//	with 'declaration' properties representing the objects provided by the implementor and 'toString' methods supplied by the
+	//	caller of this function
 	var load = function(p) {
 		var scope = {};
 		//	TODO	$host is currently *automatically* in scope for these plugins, but that is probably not as it should be; see
@@ -42,7 +45,7 @@ $set(new (function() {
 			$slime.$api.deprecate(scope,"$jsh");
 		}
 		scope.global = (function() { return this; })();
-		scope.jsh = jsh;
+		scope.jsh = (p.mock && p.mock.jsh) ? p.mock.jsh : jsh;
 		scope.$loader = p.$loader;
 		scope.$loader.classpath = new function() {
 			this.add = function(pathname) {
@@ -62,6 +65,8 @@ $set(new (function() {
 	};
 	log.Level = Packages.java.util.logging.Level;
 
+	//	Given an array of plugin objects returned by load(), run all of those that are ready until all have been run or are not
+	//	ready
 	var run = function(plugins) {
 		var stop = false;
 		while(plugins.length > 0 && !stop) {
@@ -84,7 +89,19 @@ $set(new (function() {
 				});
 			}
 		}
-	}
+	};
+	
+	this.mock = function(p) {
+		var list = load({
+			plugins: (p.plugins) ? p.plugins : {},
+			toString: (p.toString) ? p.toString : function() { return "mock"; },
+			$loader: p.$loader,
+			mock: {
+				jsh: p.jsh
+			}
+		});
+		run(list);
+	};
 
 	this._load = function(_plugins) {
 		var plugins = {};

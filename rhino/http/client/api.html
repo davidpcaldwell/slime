@@ -605,13 +605,13 @@ END LICENSE
 				</div>
 				<script type="application/x.jsapi#initialize">
 					scope.Cookie = Packages.javax.servlet.http.Cookie;
-					scope.skip = function(verify) {
+					scope.skip = function(verify,message) {
 						if (typeof(verify) == "string") {
 							jsh.shell.console("DEPRECATED: skip(string) in api.html");
 							return {
 								success: true,
 								messages: {
-									success: "SKIP: " + message
+									success: "SKIP: " + verify
 								}
 							}
 						}

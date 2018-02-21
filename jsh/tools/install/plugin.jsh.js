@@ -143,10 +143,7 @@ plugin({
 					file: jsh.file
 				}
 			});
-			if (jsh.shell.PATH.getCommand("git")) {
-				jsh.tools.git.installation = new plugins.slime.tools.git.Installation({
-					program: jsh.shell.PATH.getCommand("git")
-				});
+			if (jsh.tools.git.installation) {
 				//	TODO	enable credentialHelper for built shells
 				//	TODO	investigate enabling credentialHelper for remote shells
 				if (jsh.shell.jsh.src) {
@@ -158,9 +155,13 @@ plugin({
 					].join(" ");
 					jsh.tools.git.credentialHelper.jsh = credentialHelper;
 				}
+				
+				["Repository","init"].forEach(function(name) {
+					jsh.tools.git[name] = jsh.tools.git.installation[name];					
+				});
+
 				global.git = {};
 				["Repository","init"].forEach(function(name) {
-					jsh.tools.git[name] = jsh.tools.git.installation[name];
 					global.git[name] = jsh.tools.git.installation[name];
 				});
 				$api.deprecate(global,"git");

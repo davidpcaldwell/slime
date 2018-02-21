@@ -209,6 +209,27 @@ var Scope = function(suite,environment) {
 				jsh.loader.plugins(this);
 			}
 		};
+		
+		delegate.plugin = {
+			mock: function(configuration) {
+				var $loader = (configuration.path) ? new delegate.Child(configuration.path) : delegate;
+				var plugins = (configuration.plugins) ? configuration.plugins : {};
+				jsh.unit.$slime.plugins.mock({
+					$loader: $loader,
+					plugins: plugins,
+					toString: configuration.toString,
+					jsh: configuration.jsh
+				});
+				if (configuration.evaluate) {
+					return configuration.evaluate({
+						jsh: configuration.jsh,
+						plugins: plugins
+					});
+				} else {
+					return void(0);
+				}
+			}
+		}
 
 		delegate.suite = function(path,p) {
 			var apifile = getApiHtml(suite.getRelativePath(path));
