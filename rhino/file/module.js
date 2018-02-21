@@ -225,7 +225,7 @@ $exports.Loader = function recurse(p) {
 			});
 //					length: file.resource.length,
 //					modified: file.modified,
-			return new $context.$rhino.io.Resource(data);
+			return new $context.$slime.io.Resource(data);
 		}
 		return null;
 	}

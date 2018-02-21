@@ -26,7 +26,7 @@ END LICENSE
 				this.pathext = jsh.shell.environment.PATHEXT.split(";");
 			}
 			this.$pwd = String(jsh.shell.properties.object.user.dir);
-			this.$rhino = jsh.unit.$slime;
+			this.$slime = jsh.unit.$slime;
 			this.addFinalizer = jsh.loader.addFinalizer;
 
 			if (p && p.cygwin) {
@@ -52,8 +52,7 @@ END LICENSE
 			});
 			this.java = java;
 			this.io = $jsapi.loader.module("../../rhino/io/", {
-				$java: new Packages.inonit.script.runtime.io.Streams()
-				,$java: jsh.unit.$slime
+				$slime: jsh.unit.$slime
 				,api: {
 					java: java,
 					mime: jsh.unit.$slime.mime

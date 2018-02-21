@@ -109,7 +109,7 @@ $exports.Multipart = function(p) {
 		writer.write(CRLF);
 		writer.write("--" + BOUNDARY + "--" + CRLF);
 		writer.close();
-		return new buffer.readBinary().Resource(new $context.$java.mime.Type("multipart", subtype, { boundary: BOUNDARY }));
+		return new buffer.readBinary().Resource(new $context.$slime.mime.Type("multipart", subtype, { boundary: BOUNDARY }));
 	} else {
 		var subtype = p.subtype;
 		var parts = p.parts;
@@ -159,7 +159,7 @@ $exports.Multipart = function(p) {
 		});
 
 		return new $context.api.io.Resource({
-			type: $context.$java.mime.Type.parse(String($multipart.getContentType())),
+			type: $context.$slime.mime.Type.parse(String($multipart.getContentType())),
 			read: {
 				binary: function() {
 					var buffer = new $context.api.io.Buffer();
@@ -172,13 +172,13 @@ $exports.Multipart = function(p) {
 	}
 };
 
-$exports.Type = $context.$java.mime.Type;
+$exports.Type = $context.$slime.mime.Type;
 
 $exports.Type.guess = function(p) {
 	if (p.name) {
 		var _rv = Packages.java.net.URLConnection.getFileNameMap().getContentTypeFor(p.name);
 		if (!_rv) return function(){}();
-		return $context.$java.mime.Type.parse(String(_rv));
+		return $context.$slime.mime.Type.parse(String(_rv));
 	} else {
 		throw new TypeError("argument must be a string.");
 	}

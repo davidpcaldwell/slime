@@ -20,6 +20,13 @@ this.jsh = new function() {
 		$host.getSystemProperties = function() {
 			return configuration.getSystemProperties();
 		};
+		
+		//	Could consider returning empty string for null; this seems to be the way properties are used
+		$host.getSystemProperty = function(name) {
+			var _rv = configuration.getSystemProperties().getProperty(name);
+			if (_rv === null) return null;
+			return String(_rv);
+		}
 
 		$host.getEnvironment = function() {
 			return configuration.getEnvironment();

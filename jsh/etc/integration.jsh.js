@@ -306,6 +306,7 @@ ScriptVerifier({
 
 if (CATALINA_HOME) {
 	ScriptVerifier({
+		name: "jsh.httpd",
 		path: "jsh.httpd/httpd.jsh.js",
 		execute: function(verify) {
 			verify(this).status.is(0);
@@ -313,7 +314,7 @@ if (CATALINA_HOME) {
 	});
 	if (COFFEESCRIPT) {
 		ScriptVerifier({
-			path: "jsh.httpd/httpd.jsh.js",
+			path: "jsh.httpd:coffee",
 			arguments: ["-suite", "coffee"],
 			execute: function(verify) {
 				verify(this).status.is(0);

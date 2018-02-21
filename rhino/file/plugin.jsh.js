@@ -13,36 +13,33 @@
 
 plugin({
 	isReady: function() {
-		return jsh.loader && jsh.js && jsh.java && jsh.io;
+		return jsh.loader && jsh.loader.addFinalizer && jsh.js && jsh.java && jsh.io;
 	},
 	load: function() {
 		var context = {
-			$rhino: $slime
-		};
-		context.api = {
-			js: jsh.js,
-			java: jsh.java,
-			io: jsh.io
-		};
-		context.$pwd = String( $slime.getSystemProperties().getProperty("user.dir") );
-		context.addFinalizer = jsh.loader.addFinalizer;
-
-		var convert = function(value) {
-			if ( String(value) == "undefined" ) return function(){}();
-			if ( String(value) == "null" ) return null;
-			return String(value);
-		}
-
-		if (convert($slime.getSystemProperties().getProperty("cygwin.root")) || convert($slime.getSystemProperties().getProperty("cygwin.paths"))) {
-			context.cygwin = {
-				root: convert( properties.cygwin.root ),
-				paths: convert( properties.cygwin.paths )
+			$slime: {
+				io: {
+					Resource: $slime.io.Resource
+				}
+			},
+			$pwd: $slime.getSystemProperty("user.dir"),
+			addFinalizer: jsh.loader.addFinalizer,
+			api: {
+				js: jsh.js,
+				java: jsh.java,
+				io: jsh.io
 			}
-		}
+		};
+
+		//	Windows
 		var environment = jsh.java.Environment($slime.getEnvironment());
 		if (environment.PATHEXT) {
 			context.pathext = environment.PATHEXT.split(";");
 		}
+
+		//	Cygwin
+		$loader.run("plugin.jsh.cygwin.js", { $slime: $slime, context: context });
+
 		jsh.file = $loader.module("module.js", context);
 	}
 })

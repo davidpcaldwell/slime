@@ -17,7 +17,11 @@ plugin({
 	},
 	load: function() {
 		jsh.io = $loader.module("module.js", {
-			$java: $slime,
+			$slime: {
+				io: $slime.io,
+				mime: $slime.mime,
+				Loader: $slime.Loader
+			},
 			api: {
 				js: jsh.js,
 				java: jsh.java
