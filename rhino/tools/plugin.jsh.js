@@ -11,6 +11,8 @@
 //	END LICENSE
 
 plugin({
+	//	TODO	it does not make much sense to check for jsh.shell in .isReady() and then not pass it to the plugin. Is this
+	//			method of running the compiler obsolete?
 	isReady: function() {
 		return typeof(jsh.js) != "undefined" && typeof(jsh.java) != "undefined"
 			&& (
@@ -26,20 +28,34 @@ plugin({
 				java: jsh.java
 			}
 		});
+	}
+});
 
+plugin({
+	isReady: function() {
+		return jsh.js && jsh.js.web && jsh.time && jsh.java && jsh.ip && jsh.file && jsh.shell;
+	},
+	load: function() {
 		if (!plugins.slime) plugins.slime = {};
 		if (!plugins.slime.tools) plugins.slime.tools = {};
 		plugins.slime.tools.hg = $loader.module("hg/module.js", {
 			api: {
-				file: jsh.file,
-				time: jsh.time,
 				js: jsh.js,
-				shell: jsh.shell,
+				time: jsh.time,
 				web: jsh.js.web,
 				java: jsh.java,
-				ip: jsh.ip
+				ip: jsh.ip,
+				file: jsh.file,
+				shell: jsh.shell,
 			}
 		});
-		plugins.slime.tools.git = $loader.module("git/module.js");
+		jsh.tools.git = $loader.module("git/module.js", {
+			api: {
+				js: jsh.js,
+				time: jsh.time,
+				file: jsh.file,
+				shell: jsh.shell
+			}
+		});
 	}
 })

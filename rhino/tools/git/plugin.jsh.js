@@ -10,6 +10,9 @@
 //	Contributor(s):
 //	END LICENSE
 
+//	TODO	Note that under normal circumstances this file will never be used; the plugin.jsh.js in the parent directory will
+//			be processed and stop the search for plugins. This plugin is left in place because callers might potentially attempt
+//			to locate it explicitly
 plugin({
 	isReady: function() {
 		return jsh.shell && Boolean(jsh.shell.PATH.getCommand("git"));

@@ -15,7 +15,6 @@ END LICENSE
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
 	<head>
 		<title>jsh: git</title>
-		<!--	TODO	change these to use local copies of these files at the appropriate location	-->
 		<link href="../../../loader/api/api.css" rel="stylesheet" type="text/css" />
 		<script src="../../../loader/api/api.js"></script>
 	</head>
@@ -28,8 +27,14 @@ END LICENSE
 			Run *that* askpass.bash with a prompt argument
 		-->
 		<script type="application/x.jsapi#initialize">
-			$jsapi.loader.plugins();
-			scope.module = jsh.tools.git;
+			scope.module = $jsapi.loader.module("module.js", {
+				api: {
+					js: jsh.js,
+					time: jsh.time,
+					file: jsh.file,
+					shell: jsh.shell
+				}
+			});
 		</script>
 		<div>__DESCRIPTION__</div>
 		<div>
@@ -487,7 +492,26 @@ END LICENSE
 			</div>
 			<ul>
 				<li class="constructor">
-					<div class="name">Repository</div>
+					<div class="name">__NAME__</div>
+					<span>__DESCRIPTION__</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+						</ol>
+					</div>
+					<div class="instances">
+						<div class="label">Instances</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</div>
+				</li>
+				<li class="value">
+					<div class="name">installation</div>
+					<span class="type"><a href="#types.Installation">Installation</a></span>
+					<span>An object representing the "default" installation, if one was provided when loading this module.</span>
+				</li>
+				<li class="constructor">
+					<div class="name"><a id="$exports.Repository">Repository</a></div>
 					<span>__DESCRIPTION__</span>
 					<div class="arguments">
 						<div class="label">Arguments</div>
@@ -518,7 +542,7 @@ END LICENSE
 					</div>
 				</li>
 				<li class="function">
-					<div class="name">init</div>
+					<div class="name"><a id="$exports.init">init</a></div>
 					<span>__DESCRIPTION__</span>
 					<div class="arguments">
 						<div class="label">Arguments</div>

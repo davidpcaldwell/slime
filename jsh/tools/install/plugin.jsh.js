@@ -13,7 +13,7 @@
 
 plugin({
 	isReady: function() {
-		return jsh.js && jsh.js.web && jsh.java && jsh.ip && jsh.time && jsh.file && jsh.http && jsh.shell && plugins.slime && plugins.slime.tools && plugins.slime.tools.hg;
+		return jsh.js && jsh.js.web && jsh.java && jsh.ip && jsh.time && jsh.file && jsh.http && jsh.shell && plugins.slime && plugins.slime.tools && plugins.slime.tools.hg && jsh.tools.git;
 	},
 	load: function() {
 		if (!jsh.tools) jsh.tools = {};
@@ -132,17 +132,19 @@ plugin({
 		};
 
 		var loadGit = function() {
-			jsh.tools.git = $loader.file("git.js", {
+			var installer = $loader.file("git.js", {
+				module: plugins.slime.tools.git,
 				api: {
-					Installation: plugins.slime.tools.git.Installation,
 					Events: {
+						//	TODO	convert to standard form and get rid of this
 						Function: jsh.tools.install.$api.Events.Function
 					},
 					Error: jsh.js.Error,
-					shell: jsh.shell,
-					file: jsh.file
+					shell: jsh.shell
 				}
 			});
+			jsh.tools.git.install = installer.install;
+			
 			if (jsh.tools.git.installation) {
 				//	TODO	enable credentialHelper for built shells
 				//	TODO	investigate enabling credentialHelper for remote shells
@@ -155,14 +157,11 @@ plugin({
 					].join(" ");
 					jsh.tools.git.credentialHelper.jsh = credentialHelper;
 				}
-				
-				["Repository","init"].forEach(function(name) {
-					jsh.tools.git[name] = jsh.tools.git.installation[name];					
-				});
 
 				global.git = {};
 				["Repository","init"].forEach(function(name) {
-					global.git[name] = jsh.tools.git.installation[name];
+					global.git[name] = jsh.tools.git[name];
+					$api.deprecate(global.git,name);
 				});
 				$api.deprecate(global,"git");
 			}
@@ -172,9 +171,11 @@ plugin({
 		loadGit();
 
 		jsh.java.tools.plugin = {
+			//	TODO	this can now be accomplished by simply reloading the plugin
 			hg: $api.deprecate(function() {
 				loadHg();
 			}),
+			//	TODO	this can now be accomplished by simply reloading the plugin
 			git: $api.deprecate(function() {
 				loadGit();
 			})

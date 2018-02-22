@@ -13,37 +13,15 @@
 
 var GUI = $context.api.Error.Type("Please execute the graphical installer.");
 
-//	TODO	with the ability to mock the entire shell in a plugin, is this still needed?
-var resolveMocks = function(p) {
-	var rv = {
-		shell: (p && p.mock && p.mock.shell) ? p.mock.shell : $context.api.shell,
-		file: (p && p.mock && p.mock.file) ? p.mock.file : $context.api.file
-	};
-	rv.exists = function(pathname) {
-		return Boolean(this.file.Pathname(pathname).directory);
-	};
-	return rv;
-};
-
-var find = function(api) {
-	if (!api) api = resolveMocks();
-	var rv = api.shell.PATH.getCommand("git");
-	if (api.shell.os.name == "Mac OS X" && !api.exists("/Applications/Xcode.app") && !api.exists("/Library/Developer/CommandLineTools")) {
-		rv = null;
-	}
-	return rv;
-};
-
 $exports.install = $context.api.Events.Function(function(p,events) {
-	var api = resolveMocks(p);
 	var console = function(message) {
 		events.fire("console", message);
 	};
-	if (!find(api)) {
-		if (api.shell.os.name == "Mac OS X") {
-			console("Detected OS X " + api.shell.os.version);
+	if (!$context.module.installation) {
+		if ($context.api.shell.os.name == "Mac OS X") {
+			console("Detected OS X " + $context.api.shell.os.version);
 			console("Install Apple's command line developer tools.");
-			api.shell.run({
+			$context.api.shell.run({
 				command: "/usr/bin/git",
 				evaluate: function(result) {
 					//	Do nothing; exit status will be 1
@@ -58,13 +36,3 @@ $exports.install = $context.api.Events.Function(function(p,events) {
 	}
 });
 $exports.install.GUI = GUI;
-
-$exports.credentialHelper = {};
-
-var program = find();
-
-if (program) {
-	$exports.installation = new $context.api.Installation({
-		program: program
-	});
-}

@@ -336,7 +336,13 @@ END LICENSE
 						APIs and programs for installing <code>jsh</code> shell extensions (Rhino, Tomcat, the <code>ncdbg</code>
 						Nashorn debugger); includes APIs for installing and using external tools (Mercurial, Git)
 					</td>
+					<script jsapi:id="jsh.tools.git" type="application/x.jsapi#tests">
+						verify.suite($jsapi.loader.suite("../../rhino/tools/git/api.html"));
+					</script>
 				</tr>
+				<script jsapi:id="jsh.tools" type="application/x.jsapi#tests">
+					verify.suite($jsapi.loader.suite("../../rhino/tools/plugin.jsh.api.html"));
+				</script>
 				<script jsapi:id="jsh.tools.install" type="application/x.jsapi#tests">
 					verify.suite($jsapi.loader.suite("../../jsh/tools/install/plugin.jsh.api.html"));
 				</script>

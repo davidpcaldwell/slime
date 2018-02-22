@@ -14,8 +14,8 @@
 
 var Installation = function(environment) {
 	var git = function(m) {
-		return jsh.shell.run(
-			jsh.js.Object.set({}, m, {
+		return $context.api.shell.run(
+			$context.api.js.Object.set({}, m, {
 				command: environment.program,
 				arguments: (function() {
 					var rv = [];
@@ -43,7 +43,7 @@ var Installation = function(environment) {
 				config: p.config,
 				command: "clone",
 				arguments: [o.remote,p.to.toString()],
-				environment: jsh.js.Object.set({}, jsh.shell.environment, environment)
+				environment: $context.api.js.Object.set({}, $context.api.shell.environment, environment)
 			});
 			return new LocalRepository({ local: p.to.directory });
 		}
@@ -81,10 +81,10 @@ var Installation = function(environment) {
 		},this);
 
 		var execute = function(p) {
-			return jsh.shell.run(jsh.js.Object.set({}, p, {
+			return $context.api.shell.run($context.api.js.Object.set({}, p, {
 				command: environment.program,
 				arguments: [p.command].concat( (p.arguments) ? p.arguments : [] ),
-				environment: jsh.js.Object.set({}, jsh.shell.environment, (o && o.environment) ? o.environment : {}, (p.environment) ? p.environment : {}),
+				environment: $context.api.js.Object.set({}, $context.api.shell.environment, (o && o.environment) ? o.environment : {}, (p.environment) ? p.environment : {}),
 				directory: directory
 			}));
 		};
@@ -121,7 +121,7 @@ var Installation = function(environment) {
 						},
 						committer: {
 							name: tokens[1],
-							date: (jsh.time) ? new jsh.time.When({ unix: Number(tokens[3])*1000 }) : Number(tokens[3])*1000
+							date: ($context.api.time) ? new $context.api.time.When({ unix: Number(tokens[3])*1000 }) : Number(tokens[3])*1000
 						},
 						subject: tokens[2]
 					}
@@ -173,7 +173,7 @@ var Installation = function(environment) {
 								branchName = branchName.substring(0,branchName.indexOf("..."));
 							}
 							rv.branch = { name: branchName };
-							jsh.js.Object.set(rv, self.show({ object: branchName }));
+							$context.api.js.Object.set(rv, self.show({ object: branchName }));
 						} else {
 							var match = parser.exec(line);
 							if (match) {
@@ -231,7 +231,7 @@ var Installation = function(environment) {
 			if (p.ff_only) {
 				args.push("--ff-only");
 			}
-			execute(jsh.js.Object.set({
+			execute($context.api.js.Object.set({
 				command: "merge",
 				arguments: args
 			}, (p.stdio) ? { stdio: p.stdio } : {}));
@@ -296,7 +296,7 @@ var Installation = function(environment) {
 		this.checkout = function(p) {
 			var args = [];
 			args.push(p.branch);
-			execute(jsh.js.Object.set({
+			execute($context.api.js.Object.set({
 				command: "checkout",
 				arguments: args
 			}, (p.stdio) ? { stdio: p.stdio } : {}));
@@ -357,12 +357,12 @@ var Installation = function(environment) {
 									}
 								} else {
 									var dMatch = detachedMatcher.exec(line);
-									if (dMatch) return jsh.js.Object.set({}, { branch: { current: true } }, show({ object: match[1] }));
+									if (dMatch) return $context.api.js.Object.set({}, { branch: { current: true } }, show({ object: match[1] }));
 									var bMatch = branchMatcher.exec(line.substring(2));
 									//	TODO	starting to think we need a Branch object
 									if (!bMatch) throw new Error("Does not match: [" + line + "]");
 									if (String(bMatch[1]) == "undefined") throw new Error("Line: [" + line + "]");
-									return jsh.js.Object.set({}, { name: bMatch[1] }, show({ object: bMatch[1] }));
+									return $context.api.js.Object.set({}, { name: bMatch[1] }, show({ object: bMatch[1] }));
 								}
 							}
 							return {};
@@ -388,15 +388,11 @@ var Installation = function(environment) {
 			var args = [];
 			if (p && p.repository) args.push(p.repository);
 			if (p && p.refspec) args.push(p.refspec);
-			if (true) {
-				execute({
-					command: "push",
-					arguments: args,
-					environment: p.environment
-				});
-			} else {
-				jsh.shell.echo("git push " + args.join(" "));
-			}
+			execute({
+				command: "push",
+				arguments: args,
+				environment: p.environment
+			});
 		};
 
 		this.stash = function(p) {
@@ -496,10 +492,31 @@ $exports.Installation = function(p) {
 	return new Installation(p);
 }
 
-if ($context.program) {
+$exports.credentialHelper = {};
+
+var program = (function() {
+	var find = function(api) {
+		var directoryExists = function(path) {
+			return $context.api.file.Pathname(path).directory;
+		}
+		
+		var rv = $context.api.shell.PATH.getCommand("git");
+		if ($context.api.shell.os.name == "Mac OS X" && !directoryExists("/Applications/Xcode.app") && !directoryExists("/Library/Developer/CommandLineTools")) {
+			rv = null;
+		}
+		return rv;
+	};
+	
+	if ($context.program) return $context.program;
+	return find();
+})();
+
+if (program) {
 	var installation = new Installation({
-		program: $context.program
+		program: program
 	});
+	
+	$exports.installation = installation;
 
 	$exports.Repository = function(p) {
 		return installation.Repository(p);
@@ -507,5 +524,5 @@ if ($context.program) {
 
 	$exports.init = function(p) {
 		return installation.init(p);
-	};
+	};		
 }
