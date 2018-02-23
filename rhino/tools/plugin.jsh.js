@@ -33,7 +33,7 @@ plugin({
 
 plugin({
 	isReady: function() {
-		return jsh.js && jsh.js.web && jsh.time && jsh.java && jsh.ip && jsh.file && jsh.shell;
+		return jsh.js && jsh.time && jsh.js.web && jsh.java && jsh.ip && jsh.file && jsh.shell;
 	},
 	load: function() {
 		if (!plugins.slime) plugins.slime = {};
@@ -48,14 +48,57 @@ plugin({
 				file: jsh.file,
 				shell: jsh.shell,
 			}
-		});
-		jsh.tools.git = $loader.module("git/module.js", {
-			api: {
-				js: jsh.js,
-				time: jsh.time,
-				file: jsh.file,
-				shell: jsh.shell
+		});		
+	}
+});
+
+plugin({
+	isReady: function() {
+		return jsh.js && jsh.js.web && jsh.time && jsh.java && jsh.ip && jsh.file && jsh.shell && jsh.tools && jsh.tools.install && jsh.java.tools;
+	},
+	load: function() {
+		var loadGit = function() {
+			Packages.java.lang.System.err.println("Loading jsh.tools.git...");
+			jsh.tools.git = $loader.module("git/module.js", {
+				api: {
+					js: jsh.js,
+					time: jsh.time,
+					file: jsh.file,
+					shell: jsh.shell,
+					Events: {
+						//	TODO	convert to standard form and get rid of this
+						Function: jsh.tools.install.$api.Events.Function
+					},
+					Error: jsh.js.Error
+				}
+			});
+			if (jsh.tools.git.installation) {
+				//	TODO	enable credentialHelper for built shells
+				//	TODO	investigate enabling credentialHelper for remote shells
+				if (jsh.shell.jsh.src) {
+					var credentialHelper = [
+						jsh.shell.java.jrunscript.toString(),
+						jsh.shell.jsh.src.getRelativePath("rhino/jrunscript/api.js"),
+						"jsh",
+						jsh.shell.jsh.src.getRelativePath("rhino/tools/git/credential-helper.jsh.js")
+					].join(" ");
+					jsh.tools.git.credentialHelper.jsh = credentialHelper;
+				}
+
+				global.git = {};
+				["Repository","init"].forEach(function(name) {
+					global.git[name] = jsh.tools.git[name];
+					$api.deprecate(global.git,name);
+				});
+				$api.deprecate(global,"git");
 			}
+		};
+		loadGit();
+		
+		//	TODO	provide alternate means of loading the plugin
+		if (!jsh.java.tools.plugin) jsh.java.tools.plugin = {};
+		jsh.java.tools.plugin.git = $api.deprecate(function() {
+			loadGit();
 		});
 	}
 })

@@ -526,3 +526,29 @@ if (program) {
 		return installation.init(p);
 	};		
 }
+
+var GUI = $context.api.Error.Type("Please execute the graphical installer.");
+
+$exports.install = $context.api.Events.Function(function(p,events) {
+	var console = function(message) {
+		events.fire("console", message);
+	};
+	if (!$context.module.installation) {
+		if ($context.api.shell.os.name == "Mac OS X") {
+			console("Detected OS X " + $context.api.shell.os.version);
+			console("Install Apple's command line developer tools.");
+			$context.api.shell.run({
+				command: "/usr/bin/git",
+				evaluate: function(result) {
+					//	Do nothing; exit status will be 1
+					throw new GUI();
+				}
+			});
+		} else {
+			throw new Error("Unimplemented: installation of Git for non-OS X system.");
+		}
+	} else {
+		console("Git already installed.");
+	}
+});
+$exports.install.GUI = GUI;

@@ -321,31 +321,37 @@ END LICENSE
 				</tr>
 			</thead>
 			<tbody>
-				<tr><td><a href="../../rhino/tools/plugin.jsh.api.html">jsh.java.tools</a></td><td>Developer APIs (<code>javac</code>)</td></tr>
+				<tr>
+					<td>
+						<a href="../../rhino/tools/plugin.jsh.api.html">
+							<span>jsh.java.tools</span>
+							<span>jsh.tools.git</span>
+						</a>
+					</td>
+					<td>Developer APIs (<code>javac</code>) and APIs and programs for interacting with external software; includes API for Git</td>
+					<script jsapi:id="jsh.java.tools" type="application/x.jsapi#tests">
+						//	Tests for jsh.java.tools and jsh.tools.git
+						verify.suite($jsapi.loader.suite("../../rhino/tools/plugin.jsh.api.html"));
+					</script>
+				</tr>
 				<tr><td><a href="../../jsh/tools/api.html">(tools)</a></td><td>Tools for developing and packaging <code>jsh</code>-related software</td><!-- no tests --></tr>
 				<tr><td><a href="../../jsh/loader/plugin.api.html">(plugins)</a></td><td>Interface for creating <code>jsh</code> plugins</td><!-- no tests --></tr>
 				<tr>
-					<td><a href="../../jsh/tools/install/plugin.jsh.api.html#exports.jsh.tools.install">jsh.tools.install</a></td>
 					<td>
-						APIs for installing software
+						<a href="../../jsh/tools/install/plugin.jsh.api.html#exports.jsh.tools.install">
+							<span>jsh.tools.install</span>
+							<span>jsh.shell.tools.*</span>
+						</a>
 					</td>
-				</tr>
-				<tr>
-					<td><a href="../../jsh/tools/install/plugin.jsh.api.html">jsh.tools.*</a></td>
 					<td>
-						APIs and programs for installing <code>jsh</code> shell extensions (Rhino, Tomcat, the <code>ncdbg</code>
-						Nashorn debugger); includes APIs for installing and using external tools (Mercurial, Git)
+						APIs for installing software and APIs and programs for installing <code>jsh</code> shell extensions (Rhino, 
+						Tomcat, the <code>ncdbg</code> Nashorn debugger); currently includes API for Mercurial
 					</td>
-					<script jsapi:id="jsh.tools.git" type="application/x.jsapi#tests">
-						verify.suite($jsapi.loader.suite("../../rhino/tools/git/api.html"));
+					<script jsapi:id="jsh.tools.install" type="application/x.jsapi#tests">
+						//	Tests jsh.tools.install and 
+						verify.suite($jsapi.loader.suite("../../jsh/tools/install/plugin.jsh.api.html"));
 					</script>
 				</tr>
-				<script jsapi:id="jsh.tools" type="application/x.jsapi#tests">
-					verify.suite($jsapi.loader.suite("../../rhino/tools/plugin.jsh.api.html"));
-				</script>
-				<script jsapi:id="jsh.tools.install" type="application/x.jsapi#tests">
-					verify.suite($jsapi.loader.suite("../../jsh/tools/install/plugin.jsh.api.html"));
-				</script>
 			</tbody>
 		</table>
 	</div>

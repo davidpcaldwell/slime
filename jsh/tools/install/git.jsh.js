@@ -11,6 +11,8 @@
 //	Contributor(s):
 //	END LICENSE
 
+//	TODO	re-implement in terms of plugin
+
 if (jsh.shell.os.name == "Mac OS X") {
 	if (!jsh.file.Pathname("/Applications/Xcode.app").directory && !jsh.file.Pathname("/Library/Developer/CommandLineTools")) {
 		jsh.shell.console("Install Apple's command line developer tools.");

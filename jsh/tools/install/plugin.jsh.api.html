@@ -14,7 +14,7 @@ END LICENSE
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
 	<head>
-		<title>jsh.tools.install, jsh.tools.*</title>
+		<title>jsh.tools.install, jsh.shell.tools.*</title>
 		<link href="../../../loader/api/api.css" rel="stylesheet" type="text/css" />
 		<script src="../../../loader/api/api.js"></script>
 	</head>
@@ -22,9 +22,9 @@ END LICENSE
 		<div>Plugin which adds APIs to multiple namespaces:
 			<ul>
 				<li><code>jsh.tools.install</code>: APIs for installing software generally.</li>
-				<li><code>jsh.tools.*</code>: APIs for a specific set of externally-provided tools (Rhino, Tomcat, <code>ncdbg</code>,
-					Mercurial, Git), including installation APIs. For Mercurial and Git, APIs for using the tools are also provided.
+				<li><code>jsh.shell.tools.*</code>: APIs for a specific set of externally-provided tools (Rhino, Tomcat, <code>ncdbg</code>), including installation APIs.
 				</li>
+				<li><code>jsh.tools.hg</code>: APIs for installing and using Mercurial.</li>
 			</ul>
 		</div>
 		<div>
@@ -485,38 +485,6 @@ END LICENSE
 								install("10.11","4.0.1");
 								install("10.12","4.2.2");
 							]]></script>
-						</li>
-					</ul>
-				</li>
-				<li class="object">
-					<div class="name">git</div>
-					<span>
-						Contains APIs for installing Git and obtaining the global Git installation. Also provides convenience
-						methods for using the global installation, if one is present.
-					</span>
-					<div class="label">has properties:</div>
-					<ul>
-						<li class="function">
-							<div class="name">install</div>
-							<span>__DESCRIPTION__</span>
-							<div class="arguments">
-								<div class="label">Arguments</div>
-								<ol>
-								</ol>
-							</div>
-							<div class="returns">
-								<div class="label">Returns</div>
-								<span class="type">__TYPE__</span>
-								<span>__DESCRIPTION__</span>
-							</div>
-						</li>
-						<li class="value">
-							<div class="name">installation</div>
-							<span class="type"><a href="../../../rhino/tools/git/api.html#types.Installation">Installation</a></span>
-							<span>
-								The global Git installation, as detected by searching the operating system
-								path for the <code>git</code> command.
-							</span>
 						</li>
 					</ul>
 				</li>

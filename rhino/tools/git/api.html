@@ -27,14 +27,7 @@ END LICENSE
 			Run *that* askpass.bash with a prompt argument
 		-->
 		<script type="application/x.jsapi#initialize">
-			scope.module = $jsapi.loader.module("module.js", {
-				api: {
-					js: jsh.js,
-					time: jsh.time,
-					file: jsh.file,
-					shell: jsh.shell
-				}
-			});
+			scope.module = jsh.tools.git;
 		</script>
 		<div>__DESCRIPTION__</div>
 		<div>
@@ -44,318 +37,475 @@ END LICENSE
 		</div>
 		<div>
 			<h1>Exports</h1>
-			<div class="type">
-				<a class="type" name="types.Installation">Installation</a>
-				<span>__DESCRIPTION__</span>
-				<div class="label">has properties:</div>
-				<ul>
-					<li class="function">
-						<div class="name">init</div>
-						<span>__DESCRIPTION__</span>
-						<div class="arguments">
-							<div class="label">Arguments</div>
-							<ol>
-								<li class="object">
-									<div class="name">__NAME__</div>
-									<span>__DESCRIPTION__</span>
-									<div class="label">has properties:</div>
-									<ul>
-									</ul>
-								</li>
-							</ol>
-						</div>
-						<div class="returns">
-							<div class="label">Returns</div>
-							<span class="type">__TYPE__</span>
+			<div jsapi:id="exports">
+				<div class="type">
+					<a class="type" name="types.Installation">Installation</a>
+					<span>__DESCRIPTION__</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="function">
+							<div class="name">init</div>
 							<span>__DESCRIPTION__</span>
-						</div>
-						<script type="application/x.jsapi#tests">
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="object">
+										<div class="name">__NAME__</div>
+										<span>__DESCRIPTION__</span>
+										<div class="label">has properties:</div>
+										<ul>
+										</ul>
+									</li>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</div>
+							<script type="application/x.jsapi#tests">
+								var tmpdir = jsh.shell.TMPDIR.createTemporary({ directory: true });
+								tmpdir.getRelativePath("a").write("a", { append: false });
+								var repository = module.init({
+									pathname: tmpdir.pathname
+								});
+								verify(repository).directory.pathname.toString().is(tmpdir.pathname.toString());
+								verify(repository).directory.getFile("a").is.type("object");
+							</script>
+						</li>
+					</ul>
+				</div>
+				<script type="application/x.jsapi#initialize">
+					scope.remotes = $jsapi.file.newTemporaryDirectory();
+					//	TODO	provide $jsapi accessor for this
+					var port = jsh.ip.getEphemeralPort().number;
+					var process;
+					var lock = new jsh.java.Thread.Monitor();
+					jsh.java.Thread.start(function() {
+						jsh.shell.run({
+							command: "git",
+							arguments: [
+								"daemon",
+								"--port=" + port,
+								"--base-path=" + scope.remotes,
+								"--export-all"
+							],
+							on: {
+								start: function(e) {
+									lock.Waiter({
+										until: function() {
+											return true;
+										},
+										then: function() {
+											jsh.shell.console("started process");
+											process = e;
+										}
+									})()
+								}
+							}
+						})
+					});
+					lock.Waiter({
+						until: function() {
+							return process;
+						},
+						then: function() {
+						}
+					})();
+					scope.daemon = {
+						process: process,
+						port: port
+					};
+					jsh.shell.console("daemon = " + scope.daemon);
+				</script>
+				<script type="application/x.jsapi#destroy">
+					jsh.shell.console("destroying daemon");
+					scope.daemon.process.kill();
+				</script>
+				<div class="type">
+					<a class="type" name="types.Repository">Repository</a>
+					<span>__DESCRIPTION__</span>
+					<div class="label">has properties:</div>
+					<ul>
+					</ul>
+					<script type="application/x.jsapi#tests">
+						verify("Repository").is("Repository");
+					</script>
+				</div>
+				<div class="type">
+					<a class="type" name="types.RemoteRepository">RemoteRepository</a>
+					<span>__DESCRIPTION__</span>
+					<div class="label">has properties:</div>
+					<ul>
+					</ul>
+					<script type="application/x.jsapi#initialize">
+						var dir = scope.remotes.getRelativePath("RemoteRepository").createDirectory();
+						dir.getRelativePath("a").write("a", { append: false });
+						var host = module.init({ pathname: dir.pathname });
+						host.add({ path: "a" });
+						host.commit({
+							all: true,
+							message: "RemoteRepository a"
+						});
+						var remote = new module.Repository({ remote: "git://127.0.0.1:" + scope.daemon.port + "/RemoteRepository" });
+						scope.remote = remote;
+					</script>
+					<script type="application/x.jsapi#tests">
+						var to = $jsapi.file.newTemporaryDirectory().pathname;
+						remote.clone({ to: to });
+						verify(to).directory.getFile("a").read(String).is("a");
+					</script>
+				</div>
+				<div class="type">
+					<a class="type" name="types.LocalRepository">LocalRepository</a>
+					<span>__DESCRIPTION__</span>
+					<script type="application/x.jsapi#initialize">
+						scope.newRepository = function() {
 							var tmpdir = jsh.shell.TMPDIR.createTemporary({ directory: true });
-							tmpdir.getRelativePath("a").write("a", { append: false });
 							var repository = module.init({
 								pathname: tmpdir.pathname
 							});
-							verify(repository).directory.pathname.toString().is(tmpdir.pathname.toString());
-							verify(repository).directory.getFile("a").is.type("object");
-						</script>
-					</li>
-				</ul>
-			</div>
-			<script type="application/x.jsapi#initialize">
-				scope.remotes = $jsapi.file.newTemporaryDirectory();
-				//	TODO	provide $jsapi accessor for this
-				var port = jsh.ip.getEphemeralPort().number;
-				var process;
-				var lock = new jsh.java.Thread.Monitor();
-				jsh.java.Thread.start(function() {
-					jsh.shell.run({
-						command: "git",
-						arguments: [
-							"daemon",
-							"--port=" + port,
-							"--base-path=" + scope.remotes,
-							"--export-all"
-						],
-						on: {
-							start: function(e) {
-								lock.Waiter({
-									until: function() {
-										return true;
-									},
-									then: function() {
-										jsh.shell.console("started process");
-										process = e;
-									}
-								})()
+							repository.test = {};
+							repository.test.writeFile = function(path,content) {
+								repository.directory.getRelativePath(path).write(content, { append: false });
 							}
-						}
-					})
-				});
-				lock.Waiter({
-					until: function() {
-						return process;
-					},
-					then: function() {
-					}
-				})();
-				scope.daemon = {
-					process: process,
-					port: port
-				};
-				jsh.shell.console("daemon = " + scope.daemon);
-			</script>
-			<script type="application/x.jsapi#destroy">
-				jsh.shell.console("destroying daemon");
-				scope.daemon.process.kill();
-			</script>
-			<div class="type">
-				<a class="type" name="types.Repository">Repository</a>
-				<span>__DESCRIPTION__</span>
-				<div class="label">has properties:</div>
-				<ul>
-				</ul>
-				<script type="application/x.jsapi#tests">
-					verify("Repository").is("Repository");
-				</script>
-			</div>
-			<div class="type">
-				<a class="type" name="types.RemoteRepository">RemoteRepository</a>
-				<span>__DESCRIPTION__</span>
-				<div class="label">has properties:</div>
-				<ul>
-				</ul>
-				<script type="application/x.jsapi#initialize">
-					var dir = scope.remotes.getRelativePath("RemoteRepository").createDirectory();
-					dir.getRelativePath("a").write("a", { append: false });
-					var host = module.init({ pathname: dir.pathname });
-					host.add({ path: "a" });
-					host.commit({
-						all: true,
-						message: "RemoteRepository a"
-					});
-					var remote = new module.Repository({ remote: "git://127.0.0.1:" + scope.daemon.port + "/RemoteRepository" });
-					scope.remote = remote;
-				</script>
-				<script type="application/x.jsapi#tests">
-					var to = $jsapi.file.newTemporaryDirectory().pathname;
-					remote.clone({ to: to });
-					verify(to).directory.getFile("a").read(String).is("a");
-				</script>
-			</div>
-			<div class="type">
-				<a class="type" name="types.LocalRepository">LocalRepository</a>
-				<span>__DESCRIPTION__</span>
-				<script type="application/x.jsapi#initialize">
-					scope.newRepository = function() {
+							return repository;
+						};
+						scope.writeFile = function(repository,path,content) {
+							repository.test.writeFile(path,content);
+						};
+					</script>
+					<div class="type">
+						<a class="type" name="types.commit">commit</a>
+						<span>__DESCRIPTION__</span>
+						<div class="label">has properties:</div>
+						<ul>
+							<li class="object">
+								<div class="name">commit</div>
+								<span>__DESCRIPTION__</span>
+								<div class="label">has properties:</div>
+								<ul>
+									<li class="value">
+										<div class="name">hash</div>
+										<span class="type">__TYPE__</span>
+										<span>__DESCRIPTION__</span>
+									</li>
+								</ul>
+							</li>
+							<li class="object">
+								<div class="name">author</div>
+								<span>__DESCRIPTION__</span>
+								<div class="label">has properties:</div>
+								<ul>
+									<li class="value">
+										<div class="name">name</div>
+										<span class="type">__TYPE__</span>
+										<span>__DESCRIPTION__</span>
+									</li>
+								</ul>
+							</li>
+							<li class="object">
+								<div class="name">committer</div>
+								<span>__DESCRIPTION__</span>
+								<div class="label">has properties:</div>
+								<ul>
+									<li class="value">
+										<div class="name">name</div>
+										<span class="type">__TYPE__</span>
+										<span>__DESCRIPTION__</span>
+									</li>
+									<li class="value">
+										<div class="name">date</div>
+										<span class="type">__TYPE__</span>
+										<span>__DESCRIPTION__</span>
+									</li>
+								</ul>
+							</li>
+							<li class="value">
+								<div class="name">subject</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</li>
+						</ul>
+					</div>
+					<div class="type">
+						<a class="type" name="types.branch">branch</a>
+						<span>__DESCRIPTION__</span>
+						<div class="label">has properties:</div>
+						<ul>
+							<li class="value">
+								<div class="name">name</div>
+								<span class="type">string</span>
+								<span>__DESCRIPTION__</span>
+							</li>
+						</ul>
+					</div>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="function">
+							<div class="name">status</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type"><a href="#types.commit">commit</a></span>
+								<span>The returned object has the following additional properties.</span>
+								<div class="label">has properties:</div>
+								<ul>
+									<li class="value">
+										<div class="name">branch</div>
+										<span class="type"><a href="#types.branch">branch</a></span>
+										<span>__DESCRIPTION__</span>
+									</li>
+									<li class="value">
+										<div class="name">paths</div>
+										<span class="type">object</span>
+										<span>
+											An object whose keys are string paths within the repository, and whose values are the two-letter output
+											of the <code>git status --porcelain</code> command.
+										</span>
+									</li>
+								</ul>
+							</div>
+							<script type="application/x.jsapi#tests" jsapi:id="status">
+								var repository = newRepository();
+								debugger;
+								var status = repository.status();
+								verify(repository).status().evaluate.property("paths").is(void(0));
+								repository.test.writeFile("a","a");
+								verify(repository).status().paths.a.is("??");
+								repository.add({ path: "a" });
+								repository.commit({ message: "amessage" });
+								var status = repository.status();
+								verify(status).branch.name.is("master");
+								verify(status).subject.is("amessage");
+								verify(status).names.length.is(1);
+								verify(status).names[0].is("master");
+							</script>
+						</li>
+						<li class="function">
+							<div class="name">add</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</div>
+							<script type="application/x.jsapi#tests">
+								var repository = newRepository();
+								repository.test.writeFile("a","a");
+								repository.add({ path: "a" });
+								verify(repository).status().paths.evaluate.property("a").is("A ");
+							</script>
+						</li>
+						<li class="function">
+							<div class="name">checkout</div>
+							<span>Executes the git <code>checkout</code> command to select a branch in a repository.</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="object">
+										<span>An object representing arguments to <code>git checkout</code>.</span>
+										<div class="label">has properties:</div>
+										<ul>
+											<li class="value">
+												<div class="name">branch</div>
+												<span class="type">string</span>
+												<span>Denotes a branch or commit to use with <code>git checkout</code>.</span>
+											</li>
+										</ul>
+									</li>
+								</ol>
+							</div>
+							<script type="application/x.jsapi#tests">
+								var repository = newRepository();
+
+								writeFile(repository,"start","start");
+								repository.add({ path: "start" });
+								repository.commit({ message: "start" });
+
+								repository.branch({ name: "a" });
+								repository.branch({ name: "b" });
+								repository.checkout({ branch: "a" });
+
+								var commit = repository.show();
+								verify(commit,"commit").is(commit);
+								writeFile(repository,"a","a");
+								repository.add({ path: "a" });
+								repository.commit({ message: "a" });
+
+								verify(repository).getFile("a").is.type("object");
+								repository.checkout({ branch: "b" });
+								verify(repository).getFile("a").is.type("null");
+							</script>
+						</li>
+						<li class="function">
+							<div class="name">show</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="object">
+										<div class="name">__NAME__</div>
+										<span>__DESCRIPTION__</span>
+										<div class="label">has properties:</div>
+										<ul>
+											<li class="value">
+												<div class="name">object</div>
+												<span class="type">string</span>
+												<span>__DESCRIPTION__</span>
+											</li>
+										</ul>
+									</li>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type"><a href="#types.commit">commit</a></span>
+								<span>__DESCRIPTION__</span>
+							</div>
+						</li>
+						<li class="function">
+							<div class="name">branch</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="object">
+										<div class="name">__NAME__</div>
+										<span>__DESCRIPTION__</span>
+										<div class="label">has properties:</div>
+										<ul>
+											<li class="value">
+												<div class="name">name</div>
+												<span class="type">string</span>
+												<span>The name of the branch.</span>
+											</li>
+										</ul>
+									</li>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</div>
+							<script type="application/x.jsapi#tests">
+								var repository = newRepository();
+								repository.test.writeFile("a","a");
+								repository.add({ path: "a" });
+								repository.commit({ message: "message a" });
+								repository.branch({ name: "a" });
+								repository.branch({ name: "b" });
+								var branches = repository.branch();
+								verify(branches).length.is(3);
+							</script>
+						</li>
+						<li class="function">
+							<div class="name">mergeBase</div>
+							<span>
+								Runs the <code>merge-base</code> command in order to determine the common ancestor of a set of
+								commits.
+							</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type"><a href="#types.commit">commit</a></span>
+								<span>__DESCRIPTION__</span>
+							</div>
+							<script type="application/x.jsapi#tests">
+								var repository = newRepository();
+
+								repository.test.writeFile("a","a");
+								repository.add({ path: "a" });
+								repository.commit({ message: "a" });
+								repository.branch({ name: "a" });
+
+								repository.branch({ name: "b" });
+								repository.checkout({ branch: "b" });
+								repository.test.writeFile("b","b");
+								repository.add({ path: "b" });
+								repository.commit({ message: "b" });
+
+								repository.checkout({ branch: "a" });
+								repository.branch({ name: "c" });
+								repository.checkout({ branch: "c" });
+								repository.test.writeFile("c","c");
+								repository.add({ path: "c" });
+								repository.commit({ message: "c" });
+
+								var mergeBase = repository.mergeBase({ commits: ["b","c"] });
+								var a = repository.show({ object: "a" });
+								verify(a).commit.hash.is(mergeBase.commit.hash);
+							</script>
+						</li>
+					</ul>
+					<script type="application/x.jsapi#tests">
 						var tmpdir = jsh.shell.TMPDIR.createTemporary({ directory: true });
 						var repository = module.init({
 							pathname: tmpdir.pathname
 						});
-						repository.test = {};
-						repository.test.writeFile = function(path,content) {
-							repository.directory.getRelativePath(path).write(content, { append: false });
-						}
-						return repository;
-					};
-					scope.writeFile = function(repository,path,content) {
-						repository.test.writeFile(path,content);
-					};
-				</script>
-				<div class="type">
-					<a class="type" name="types.commit">commit</a>
-					<span>__DESCRIPTION__</span>
-					<div class="label">has properties:</div>
-					<ul>
-						<li class="object">
-							<div class="name">commit</div>
-							<span>__DESCRIPTION__</span>
-							<div class="label">has properties:</div>
-							<ul>
-								<li class="value">
-									<div class="name">hash</div>
-									<span class="type">__TYPE__</span>
-									<span>__DESCRIPTION__</span>
-								</li>
-							</ul>
-						</li>
-						<li class="object">
-							<div class="name">author</div>
-							<span>__DESCRIPTION__</span>
-							<div class="label">has properties:</div>
-							<ul>
-								<li class="value">
-									<div class="name">name</div>
-									<span class="type">__TYPE__</span>
-									<span>__DESCRIPTION__</span>
-								</li>
-							</ul>
-						</li>
-						<li class="object">
-							<div class="name">committer</div>
-							<span>__DESCRIPTION__</span>
-							<div class="label">has properties:</div>
-							<ul>
-								<li class="value">
-									<div class="name">name</div>
-									<span class="type">__TYPE__</span>
-									<span>__DESCRIPTION__</span>
-								</li>
-								<li class="value">
-									<div class="name">date</div>
-									<span class="type">__TYPE__</span>
-									<span>__DESCRIPTION__</span>
-								</li>
-							</ul>
-						</li>
-						<li class="value">
-							<div class="name">subject</div>
-							<span class="type">__TYPE__</span>
-							<span>__DESCRIPTION__</span>
-						</li>
-					</ul>
+						repository.directory.getRelativePath("a").write("a", { append: false });
+						repository.add({ path: "a" });
+						repository.commit({ message: "a" });
+						repository.directory.getRelativePath("b").write("b", { append: false });
+						repository.add({ path: "b" });
+						verify(repository.stash.list()).length.is(0);
+						repository.stash();
+						repository.directory.getRelativePath("c").write("c", { append: false });
+						repository.add({ path: "c" });
+						repository.stash();
+						verify(repository.stash.list()).length.is(2);
+					</script>
+					<script type="application/x.jsapi#tests">
+						var tmpdir = jsh.shell.TMPDIR.createTemporary({ directory: true });
+						var repository = module.init({
+							pathname: tmpdir.pathname
+						});
+						repository.directory.getRelativePath("a").write("a", { append: false });
+						verify(repository.status()).paths.a.is("??");
+						repository.add({ path: "a" });
+						jsh.shell.echo(JSON.stringify(repository.status()));
+						verify(repository.status()).paths.a.is("A ");
+						repository.commit({ message: "a" });
+						verify(repository.status()).evaluate.property("paths").is(void(0));
+					</script>
 				</div>
-				<div class="type">
-					<a class="type" name="types.branch">branch</a>
-					<span>__DESCRIPTION__</span>
-					<div class="label">has properties:</div>
-					<ul>
-						<li class="value">
-							<div class="name">name</div>
-							<span class="type">string</span>
-							<span>__DESCRIPTION__</span>
-						</li>
-					</ul>
-				</div>
-				<div class="label">has properties:</div>
 				<ul>
-					<li class="function">
-						<div class="name">status</div>
+					<li class="constructor">
+						<div class="name">__NAME__</div>
 						<span>__DESCRIPTION__</span>
 						<div class="arguments">
 							<div class="label">Arguments</div>
 							<ol>
 							</ol>
 						</div>
-						<div class="returns">
-							<div class="label">Returns</div>
-							<span class="type"><a href="#types.commit">commit</a></span>
-							<span>The returned object has the following additional properties.</span>
-							<div class="label">has properties:</div>
-							<ul>
-								<li class="value">
-									<div class="name">branch</div>
-									<span class="type"><a href="#types.branch">branch</a></span>
-									<span>__DESCRIPTION__</span>
-								</li>
-								<li class="value">
-									<div class="name">paths</div>
-									<span class="type">object</span>
-									<span>
-										An object whose keys are string paths within the repository, and whose values are the two-letter output
-										of the <code>git status --porcelain</code> command.
-									</span>
-								</li>
-							</ul>
-						</div>
-						<script type="application/x.jsapi#tests" jsapi:id="status">
-							var repository = newRepository();
-							debugger;
-							var status = repository.status();
-							verify(repository).status().evaluate.property("paths").is(void(0));
-							repository.test.writeFile("a","a");
-							verify(repository).status().paths.a.is("??");
-							repository.add({ path: "a" });
-							repository.commit({ message: "amessage" });
-							var status = repository.status();
-							verify(status).branch.name.is("master");
-							verify(status).subject.is("amessage");
-							verify(status).names.length.is(1);
-							verify(status).names[0].is("master");
-						</script>
-					</li>
-					<li class="function">
-						<div class="name">add</div>
-						<span>__DESCRIPTION__</span>
-						<div class="arguments">
-							<div class="label">Arguments</div>
-							<ol>
-							</ol>
-						</div>
-						<div class="returns">
-							<div class="label">Returns</div>
+						<div class="instances">
+							<div class="label">Instances</div>
 							<span class="type">__TYPE__</span>
 							<span>__DESCRIPTION__</span>
 						</div>
-						<script type="application/x.jsapi#tests">
-							var repository = newRepository();
-							repository.test.writeFile("a","a");
-							repository.add({ path: "a" });
-							verify(repository).status().paths.evaluate.property("a").is("A ");
-						</script>
 					</li>
-					<li class="function">
-						<div class="name">checkout</div>
-						<span>Executes the git <code>checkout</code> command to select a branch in a repository.</span>
-						<div class="arguments">
-							<div class="label">Arguments</div>
-							<ol>
-								<li class="object">
-									<span>An object representing arguments to <code>git checkout</code>.</span>
-									<div class="label">has properties:</div>
-									<ul>
-										<li class="value">
-											<div class="name">branch</div>
-											<span class="type">string</span>
-											<span>Denotes a branch or commit to use with <code>git checkout</code>.</span>
-										</li>
-									</ul>
-								</li>
-							</ol>
-						</div>
-						<script type="application/x.jsapi#tests">
-							var repository = newRepository();
-
-							writeFile(repository,"start","start");
-							repository.add({ path: "start" });
-							repository.commit({ message: "start" });
-
-							repository.branch({ name: "a" });
-							repository.branch({ name: "b" });
-							repository.checkout({ branch: "a" });
-
-							var commit = repository.show();
-							verify(commit,"commit").is(commit);
-							writeFile(repository,"a","a");
-							repository.add({ path: "a" });
-							repository.commit({ message: "a" });
-
-							verify(repository).getFile("a").is.type("object");
-							repository.checkout({ branch: "b" });
-							verify(repository).getFile("a").is.type("null");
-						</script>
+					<li class="value">
+						<div class="name">installation</div>
+						<span class="type"><a href="#types.Installation">Installation</a></span>
+						<span>An object representing the "default" installation, if one was provided when loading this module.</span>
 					</li>
-					<li class="function">
-						<div class="name">show</div>
+					<li class="constructor">
+						<div class="name"><a id="$exports.Repository">Repository</a></div>
 						<span>__DESCRIPTION__</span>
 						<div class="arguments">
 							<div class="label">Arguments</div>
@@ -366,38 +516,31 @@ END LICENSE
 									<div class="label">has properties:</div>
 									<ul>
 										<li class="value">
-											<div class="name">object</div>
+											<div class="name">remote</div>
 											<span class="type">string</span>
+											<span>__DESCRIPTION__</span>
+										</li>
+										<li class="value">
+											<div class="name">directory</div>
+											<span class="type">directory</span>
 											<span>__DESCRIPTION__</span>
 										</li>
 									</ul>
 								</li>
 							</ol>
 						</div>
-						<div class="returns">
-							<div class="label">Returns</div>
-							<span class="type"><a href="#types.commit">commit</a></span>
+						<div class="instances">
+							<div class="label">Instances</div>
+							<span class="type">__TYPE__</span>
 							<span>__DESCRIPTION__</span>
 						</div>
 					</li>
 					<li class="function">
-						<div class="name">branch</div>
+						<div class="name"><a id="$exports.init">init</a></div>
 						<span>__DESCRIPTION__</span>
 						<div class="arguments">
 							<div class="label">Arguments</div>
 							<ol>
-								<li class="object">
-									<div class="name">__NAME__</div>
-									<span>__DESCRIPTION__</span>
-									<div class="label">has properties:</div>
-									<ul>
-										<li class="value">
-											<div class="name">name</div>
-											<span class="type">string</span>
-											<span>The name of the branch.</span>
-										</li>
-									</ul>
-								</li>
 							</ol>
 						</div>
 						<div class="returns">
@@ -405,157 +548,9 @@ END LICENSE
 							<span class="type">__TYPE__</span>
 							<span>__DESCRIPTION__</span>
 						</div>
-						<script type="application/x.jsapi#tests">
-							var repository = newRepository();
-							repository.test.writeFile("a","a");
-							repository.add({ path: "a" });
-							repository.commit({ message: "message a" });
-							repository.branch({ name: "a" });
-							repository.branch({ name: "b" });
-							var branches = repository.branch();
-							verify(branches).length.is(3);
-						</script>
-					</li>
-					<li class="function">
-						<div class="name">mergeBase</div>
-						<span>
-							Runs the <code>merge-base</code> command in order to determine the common ancestor of a set of
-							commits.
-						</span>
-						<div class="arguments">
-							<div class="label">Arguments</div>
-							<ol>
-							</ol>
-						</div>
-						<div class="returns">
-							<div class="label">Returns</div>
-							<span class="type"><a href="#types.commit">commit</a></span>
-							<span>__DESCRIPTION__</span>
-						</div>
-						<script type="application/x.jsapi#tests">
-							var repository = newRepository();
-
-							repository.test.writeFile("a","a");
-							repository.add({ path: "a" });
-							repository.commit({ message: "a" });
-							repository.branch({ name: "a" });
-
-							repository.branch({ name: "b" });
-							repository.checkout({ branch: "b" });
-							repository.test.writeFile("b","b");
-							repository.add({ path: "b" });
-							repository.commit({ message: "b" });
-
-							repository.checkout({ branch: "a" });
-							repository.branch({ name: "c" });
-							repository.checkout({ branch: "c" });
-							repository.test.writeFile("c","c");
-							repository.add({ path: "c" });
-							repository.commit({ message: "c" });
-
-							var mergeBase = repository.mergeBase({ commits: ["b","c"] });
-							var a = repository.show({ object: "a" });
-							verify(a).commit.hash.is(mergeBase.commit.hash);
-						</script>
 					</li>
 				</ul>
-				<script type="application/x.jsapi#tests">
-					var tmpdir = jsh.shell.TMPDIR.createTemporary({ directory: true });
-					var repository = module.init({
-						pathname: tmpdir.pathname
-					});
-					repository.directory.getRelativePath("a").write("a", { append: false });
-					repository.add({ path: "a" });
-					repository.commit({ message: "a" });
-					repository.directory.getRelativePath("b").write("b", { append: false });
-					repository.add({ path: "b" });
-					verify(repository.stash.list()).length.is(0);
-					repository.stash();
-					repository.directory.getRelativePath("c").write("c", { append: false });
-					repository.add({ path: "c" });
-					repository.stash();
-					verify(repository.stash.list()).length.is(2);
-				</script>
-				<script type="application/x.jsapi#tests">
-					var tmpdir = jsh.shell.TMPDIR.createTemporary({ directory: true });
-					var repository = module.init({
-						pathname: tmpdir.pathname
-					});
-					repository.directory.getRelativePath("a").write("a", { append: false });
-					verify(repository.status()).paths.a.is("??");
-					repository.add({ path: "a" });
-					jsh.shell.echo(JSON.stringify(repository.status()));
-					verify(repository.status()).paths.a.is("A ");
-					repository.commit({ message: "a" });
-					verify(repository.status()).evaluate.property("paths").is(void(0));
-				</script>
 			</div>
-			<ul>
-				<li class="constructor">
-					<div class="name">__NAME__</div>
-					<span>__DESCRIPTION__</span>
-					<div class="arguments">
-						<div class="label">Arguments</div>
-						<ol>
-						</ol>
-					</div>
-					<div class="instances">
-						<div class="label">Instances</div>
-						<span class="type">__TYPE__</span>
-						<span>__DESCRIPTION__</span>
-					</div>
-				</li>
-				<li class="value">
-					<div class="name">installation</div>
-					<span class="type"><a href="#types.Installation">Installation</a></span>
-					<span>An object representing the "default" installation, if one was provided when loading this module.</span>
-				</li>
-				<li class="constructor">
-					<div class="name"><a id="$exports.Repository">Repository</a></div>
-					<span>__DESCRIPTION__</span>
-					<div class="arguments">
-						<div class="label">Arguments</div>
-						<ol>
-							<li class="object">
-								<div class="name">__NAME__</div>
-								<span>__DESCRIPTION__</span>
-								<div class="label">has properties:</div>
-								<ul>
-									<li class="value">
-										<div class="name">remote</div>
-										<span class="type">string</span>
-										<span>__DESCRIPTION__</span>
-									</li>
-									<li class="value">
-										<div class="name">directory</div>
-										<span class="type">directory</span>
-										<span>__DESCRIPTION__</span>
-									</li>
-								</ul>
-							</li>
-						</ol>
-					</div>
-					<div class="instances">
-						<div class="label">Instances</div>
-						<span class="type">__TYPE__</span>
-						<span>__DESCRIPTION__</span>
-					</div>
-				</li>
-				<li class="function">
-					<div class="name"><a id="$exports.init">init</a></div>
-					<span>__DESCRIPTION__</span>
-					<div class="arguments">
-						<div class="label">Arguments</div>
-						<ol>
-						</ol>
-					</div>
-					<div class="returns">
-						<div class="label">Returns</div>
-						<span class="type">__TYPE__</span>
-						<span>__DESCRIPTION__</span>
-					</div>
-				</li>
-			</ul>
 		</div>
 	</body>
 </html>

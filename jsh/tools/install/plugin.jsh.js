@@ -13,7 +13,7 @@
 
 plugin({
 	isReady: function() {
-		return jsh.js && jsh.js.web && jsh.java && jsh.ip && jsh.time && jsh.file && jsh.http && jsh.shell && plugins.slime && plugins.slime.tools && plugins.slime.tools.hg && jsh.tools.git;
+		return jsh.js && jsh.js.web && jsh.java && jsh.ip && jsh.time && jsh.file && jsh.http && jsh.shell && plugins.slime && plugins.slime.tools && plugins.slime.tools.hg && jsh.java.tools;
 	},
 	load: function() {
 		if (!jsh.tools) jsh.tools = {};
@@ -68,20 +68,37 @@ plugin({
 				jsh.shell.console(e.detail);
 			}
 		});
-		jsh.tools.rhino = new function() {
-			this.install = installRhino;
+		
+		jsh.shell.tools = {};
+		
+		jsh.shell.tools.rhino = {
+			install: installRhino
 		};
-		jsh.tools.install.rhino = {};
-		$api.deprecate(jsh.tools.install,"rhino");
-		jsh.tools.install.rhino.install = $api.deprecate(installRhino);
+
+		(function deprecated() {
+			jsh.tools.rhino = new function() {
+				this.install = $api.deprecate(installRhino);
+			};
+			$api.deprecate(jsh.tools,"rhino");
+			jsh.tools.install.rhino = {};
+			$api.deprecate(jsh.tools.install,"rhino");
+			jsh.tools.install.rhino.install = $api.deprecate(installRhino);
+		})();
+
 
 		var tomcat = $loader.file("plugin.jsh.tomcat.js", {
 			$api: jsh.tools.install.$api
 		});
-		jsh.tools.tomcat = tomcat;
-		jsh.tools.install.tomcat = tomcat;
-
-		jsh.tools.ncdbg = new function() {
+		jsh.shell.tools.tomcat = tomcat;
+		
+		(function deprecated() {
+			jsh.tools.tomcat = tomcat;
+			$api.deprecate(jsh.tools,"tomcat");
+			jsh.tools.install.tomcat = tomcat;
+			$api.deprecate(jsh.tools.install,"tomcat");			
+		})();
+		
+		var ncdbg = new function() {
 			Object.defineProperty(this, "installed", {
 				get: function() {
 					return jsh.shell.jsh.lib.getSubdirectory("ncdbg");
@@ -104,6 +121,12 @@ plugin({
 				});
 			}
 		};
+		
+		(function deprecated() {
+			jsh.shell.tools.ncdbg = ncdbg;
+			jsh.tools.ncdbg = ncdbg;
+			$api.deprecate(jsh.tools,"ncdbg");			
+		})();
 
 		var loadHg = function() {
 			jsh.tools.hg = $loader.file("hg.js", {
@@ -131,54 +154,12 @@ plugin({
 			}
 		};
 
-		var loadGit = function() {
-			var installer = $loader.file("git.js", {
-				module: plugins.slime.tools.git,
-				api: {
-					Events: {
-						//	TODO	convert to standard form and get rid of this
-						Function: jsh.tools.install.$api.Events.Function
-					},
-					Error: jsh.js.Error,
-					shell: jsh.shell
-				}
-			});
-			jsh.tools.git.install = installer.install;
-			
-			if (jsh.tools.git.installation) {
-				//	TODO	enable credentialHelper for built shells
-				//	TODO	investigate enabling credentialHelper for remote shells
-				if (jsh.shell.jsh.src) {
-					var credentialHelper = [
-						jsh.shell.java.jrunscript.toString(),
-						jsh.shell.jsh.src.getRelativePath("rhino/jrunscript/api.js"),
-						"jsh",
-						jsh.shell.jsh.src.getRelativePath("rhino/tools/git/credential-helper.jsh.js")
-					].join(" ");
-					jsh.tools.git.credentialHelper.jsh = credentialHelper;
-				}
-
-				global.git = {};
-				["Repository","init"].forEach(function(name) {
-					global.git[name] = jsh.tools.git[name];
-					$api.deprecate(global.git,name);
-				});
-				$api.deprecate(global,"git");
-			}
-		};
 
 		loadHg();
-		loadGit();
 
-		jsh.java.tools.plugin = {
-			//	TODO	this can now be accomplished by simply reloading the plugin
-			hg: $api.deprecate(function() {
-				loadHg();
-			}),
-			//	TODO	this can now be accomplished by simply reloading the plugin
-			git: $api.deprecate(function() {
-				loadGit();
-			})
-		};
+		if (!jsh.java.tools.plugin) jsh.java.tools.plugin = {};
+		jsh.java.tools.plugin.hg = $api.deprecate(function() {
+			loadHg();
+		});
 	}
 });
