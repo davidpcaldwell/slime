@@ -18,24 +18,27 @@ plugin({
 		return jsh.shell && Boolean(jsh.shell.PATH.getCommand("git"));
 	},
 	load: function() {
-		var git = $loader.module("module.js", {
-			program: jsh.shell.PATH.getCommand("git")
-		});
-		git.jsh = {};
-		//	TODO	enable credentialHelper for built shells
-		//	TODO	investigate enabling credentialHelper for remote shells
-		if (jsh.shell.jsh.src) {
-			git.jsh.credentialHelper = [
-				jsh.shell.java.jrunscript.toString(),
-				jsh.shell.jsh.src.getRelativePath("rhino/jrunscript/api.js"),
-				"jsh",
-				jsh.shell.jsh.src.getRelativePath("rhino/tools/git/credential-helper.jsh.js")
-			].join(" ")
-		}
+		//	TODO	should be covered by parent directory jsh plugin
+		$api.deprecate(function() {
+			var git = $loader.module("module.js", {
+				program: jsh.shell.PATH.getCommand("git")
+			});
+			git.jsh = {};
+			//	TODO	enable credentialHelper for built shells
+			//	TODO	investigate enabling credentialHelper for remote shells
+			if (jsh.shell.jsh.src) {
+				git.jsh.credentialHelper = [
+					jsh.shell.java.jrunscript.toString(),
+					jsh.shell.jsh.src.getRelativePath("rhino/jrunscript/api.js"),
+					"jsh",
+					jsh.shell.jsh.src.getRelativePath("rhino/tools/git/credential-helper.jsh.js")
+				].join(" ")
+			}
 
-		if (!jsh.tools) jsh.tools = {};
-		jsh.tools.git = git;
-		global.git = git;
-		$api.deprecate(global,"git");
+			if (!jsh.tools) jsh.tools = {};
+			jsh.tools.git = git;
+			global.git = git;
+			$api.deprecate(global,"git");			
+		})();
 	}
 })

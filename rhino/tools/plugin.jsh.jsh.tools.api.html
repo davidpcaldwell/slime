@@ -1,0 +1,193 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
+	<head>
+		<title>jsh.tools.*</title>
+		<!--	TODO	change these to use local copies of these files at the appropriate location	-->
+		<!--
+			These files are specified using http: rather than https: because githack.com will redirect them to https:, but http: will
+			work when using an HTTP proxy to serve local copies of the files without needing to run https: locally
+		-->
+		<link href="http://bb.githack.com/davidpcaldwell/slime/raw/tip/loader/api/api.css" rel="stylesheet" type="text/css" />
+		<script src="http://bb.githack.com/davidpcaldwell/slime/raw/tip/loader/api/api.js"></script>
+		<script>
+			//	TODO	CORS
+			document.domain = document.domain;
+		</script>
+	</head>
+	<body>
+		<div>__DESCRIPTION__</div>
+		<div>
+			<h1><code>jsh.tools.*</code></h1>
+			<ul>
+				<li class="object">
+					<div class="name">git</div>
+					<span>
+						Contains APIs for installing Git and obtaining the global Git installation. Also provides convenience
+						methods for using the global installation, if one is present.
+					</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="function">
+							<div class="name">install</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</div>
+						</li>
+						<li class="value">
+							<div class="name">installation</div>
+							<span class="type"><a href="../../../rhino/tools/git/api.html#types.Installation">Installation</a></span>
+							<span>
+								The global Git installation, as detected by searching the operating system
+								path for the <code>git</code> command.
+							</span>
+						</li>
+						<script type="application/x.jsapi#tests"><![CDATA[
+							verify(jsh.tools.git).is.type("object");
+							var mockjsh = jsh.js.Object.set({}, jsh);
+							mockjsh.tools = jsh.js.Object.set({}, mockjsh.tools);
+
+							var MockFilePlugin = function(o) {
+								if (!o) o = {};
+								if (!o.initial) o.initial = {};
+
+								var Directory = function(o) {
+								};
+
+								var File = function(o) {
+								};
+
+								var getNode = function(s) {
+									var elements = s.substring(1).split("/");
+									var current = o.initial;
+									for (var i=0; i<elements.length; i++) {
+										if (current) {
+											current = current[elements[i]];
+										}
+									}
+									if (typeof(current) == "undefined") {
+										return {};
+									}
+									if (typeof(current) == "object") {
+										return new Directory(current);
+									} else {
+										return new File(current);
+									}
+								}
+
+								this.Pathname = function(s) {
+									var rv = {};
+									Object.defineProperty(rv, "directory", {
+										get: function() {
+											var node = getNode(s);
+											if (node instanceof Directory) return node;
+											return null;
+										}
+									});
+
+									Object.defineProperty(rv, "file", {
+										get: function() {
+											var node = getNode(s);
+											if (node instanceof File) return node;
+											return null;
+										}
+									});
+									return rv;
+								};							
+							};
+
+							var MockShellPlugin = function(o) {
+								this.os = {
+									name: o.os.name
+								};
+
+								this.user = {};
+
+								this.jsh = o.jsh;
+
+								this.java = o.java;
+
+								this.PATH = new function() {
+									this.getCommand = function(s) {
+										if (o.getPathCommand) return o.getPathCommand(s);
+										return null;
+									};
+								};
+							};
+
+							verify(mockjsh).is.not(jsh);
+							verify(mockjsh.js).is(jsh.js);
+							verify(mockjsh.tools).is.not(jsh.tools);
+							verify(mockjsh.tools.git,"mock jsh.tools.git").is(jsh.tools.git);
+
+							var before = jsh.tools.git;
+
+							$jsapi.loader.plugin.mock({
+								path: "../../jsh/tools/install/",
+								jsh: jsh
+							});
+
+							mockjsh.file = new MockFilePlugin();
+							mockjsh.shell = new MockShellPlugin({
+								os: {
+									name: "Linux"
+								}
+							});
+							var plugin = $jsapi.loader.plugin.mock({
+								jsh: mockjsh,
+								evaluate: function(p) {
+									return p.jsh.tools.git;
+								}
+							});
+							verify(jsh.tools.git,"jsh.tools.git").is(before);
+							verify(plugin).is.not(before);
+							verify(plugin).evaluate.property("installation").is(void(0));
+
+							mockjsh.file = new MockFilePlugin({
+								initial: {
+									Applications: {
+										"Xcode.app": {}
+									}
+								}
+							});
+							var d = mockjsh.file.Pathname("/Applications/Xcode.app");
+							verify(d).is.type("object");
+							verify(d).evaluate.property("directory").is.type("object");
+							mockjsh.shell = new MockShellPlugin({
+								os: {
+									name: "Mac OS X"
+								},
+								getPathCommand: function(s) {
+									if (s == "git") return {};
+								},
+								jsh: {
+									src: {
+										getRelativePath: function(r) {
+										}
+									}
+								},
+								java: {
+									jrunscript: {}
+								}
+							});
+							plugin = $jsapi.loader.plugin.mock({
+								jsh: mockjsh,
+								evaluate: function(p) {
+									return p.jsh.tools.git;
+								}
+							});
+							verify(plugin).evaluate.property("installation").is.type("object");
+						]]></script>
+					</ul>
+				</li>					
+			</ul>
+		</div>
+	</body>
+</html>

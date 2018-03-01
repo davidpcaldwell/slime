@@ -325,7 +325,6 @@ END LICENSE
 					<td>
 						<a href="../../rhino/tools/plugin.jsh.api.html">
 							<span>jsh.java.tools</span>
-							<span>jsh.tools.git</span>
 						</a>
 					</td>
 					<td>Developer APIs (<code>javac</code>) and APIs and programs for interacting with external software; includes API for Git</td>
@@ -350,6 +349,19 @@ END LICENSE
 					<script jsapi:id="jsh.tools.install" type="application/x.jsapi#tests">
 						//	Tests jsh.tools.install and 
 						verify.suite($jsapi.loader.suite("../../jsh/tools/install/plugin.jsh.api.html"));
+					</script>
+				</tr>
+				<tr>
+					<td>
+						<a href="../../rhino/tools/plugin.jsh.jsh.tools.api.html">
+							<span>jsh.tools.*</span>
+						</a>
+					</td>
+					<td>
+						Programs for interacting with external software; includes API for Git
+					</td>
+					<script jsapi:id="jsh.tools.*" type="application/x.jsapi#tests">
+						verify.suite($jsapi.loader.suite("../../rhino/tools/plugin.jsh.jsh.tools.api.html"));
 					</script>
 				</tr>
 			</tbody>
