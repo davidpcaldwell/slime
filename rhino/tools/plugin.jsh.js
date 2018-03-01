@@ -58,7 +58,6 @@ plugin({
 	},
 	load: function() {
 		var loadGit = function() {
-			Packages.java.lang.System.err.println("Loading jsh.tools.git...");
 			jsh.tools.git = $loader.module("git/module.js", {
 				api: {
 					js: jsh.js,
