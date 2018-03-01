@@ -338,13 +338,13 @@ END LICENSE
 					<td>
 						<a href="../../jsh/tools/install/plugin.jsh.api.html#exports.jsh.tools.install">
 							<span>jsh.tools.install</span>
+							<br/>
 							<span>jsh.shell.tools.*</span>
-							<span>jsh.tools.hg</span>
 						</a>
 					</td>
 					<td>
 						APIs for installing software and APIs and programs for installing <code>jsh</code> shell extensions (Rhino, 
-						Tomcat, the <code>ncdbg</code> Nashorn debugger); currently includes API for Mercurial
+						Tomcat, the <code>ncdbg</code> Nashorn debugger)
 					</td>
 					<script jsapi:id="jsh.tools.install" type="application/x.jsapi#tests">
 						//	Tests jsh.tools.install and 
@@ -358,7 +358,9 @@ END LICENSE
 						</a>
 					</td>
 					<td>
-						Programs for interacting with external software; includes API for Git
+						Programs for interacting with external software; includes
+						<code>jsh.tools.hg</code> for Mercurial, and
+						<code>jsh.tools.git</code> for Git
 					</td>
 					<script jsapi:id="jsh.tools.*" type="application/x.jsapi#tests">
 						verify.suite($jsapi.loader.suite("../../rhino/tools/plugin.jsh.jsh.tools.api.html"));

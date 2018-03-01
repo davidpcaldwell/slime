@@ -158,15 +158,15 @@ $exports.install = $context.api.Events.Function(function(p,events) {
 		}
 	} else {
 		if (installed) {
-			jsh.shell.console("hg installed: version " + installed.version);
-		} else if (jsh.shell.PATH.getCommand("apt")) {
+			$context.api.shell.console("hg installed: version " + installed.version);
+		} else if ($context.api.shell.PATH.getCommand("apt")) {
 			//	TODO	should actually detect GUI rather than assuming
 			var HAS_GUI = true;
 			if (HAS_GUI) {
-				var password = jsh.java.tools.askpass.gui({
+				var password = $context.api.java.tools.askpass.gui({
 					prompt: "Enter password for sudo:"
 				});
-				jsh.shell.run({
+				$context.api.shell.run({
 					command: "sudo",
 					arguments: ["-S", "apt", "install", "mercurial"],
 					stdio: {
@@ -178,11 +178,11 @@ $exports.install = $context.api.Events.Function(function(p,events) {
 				//	TODO	options for sudo password
 				//			*	force user to do sudo ls beforehand to cache credentials
 				//			*	figure out way to use -S flag to route password typed from console to sudo
-				jsh.shell.run({
+				$context.api.shell.run({
 					command: "sudo",
 					arguments: ["-k", "apt", "install", "mercurial"],
 					stdio: {
-						input: jsh.shell.stdio.input
+						input: $context.api.shell.stdio.input
 					}
 				});
 			}
@@ -194,3 +194,13 @@ $exports.install = $context.api.Events.Function(function(p,events) {
 $exports.install.GUI = GUI;
 
 $exports.Installation = $context.api.Installation;
+
+if ($context.api.shell.PATH.getCommand("hg")) {
+	$exports.installation = new $exports.Installation({
+		install: $context.api.shell.PATH.getCommand("hg")
+	});
+	["Repository","init"].forEach(function(name) {
+		$exports[name] = $exports.installation[name];
+	});
+}
+
