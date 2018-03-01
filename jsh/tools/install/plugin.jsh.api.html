@@ -37,7 +37,7 @@ END LICENSE
 			<script tyoe="application/x.jsapi#initialize">
 				jsh.loader.plugins($jsapi.loader);
 			</script>
-			<h1><code><a id="exports.jsh.tools">jsh.tools</a></code></h1>
+			<h1><code><a id="exports.jsh.shell.tools">jsh.shell.tools</a></code></h1>
 			<ul>
 				<li class="object">
 					<div class="name">rhino</div>
@@ -107,7 +107,7 @@ END LICENSE
 								(function alreadyInstalled() {
 									lib.getRelativePath("js.jar").write("already", { append: false });
 									var captor = new Captor();
-									jsh.tools.rhino.install({ mock: mock }, captor);
+									jsh.shell.tools.rhino.install({ mock: mock }, captor);
 									verify(captor).captured[0].type.is("console");
 									verify(captor).captured[0].detail.is("Rhino already installed at " + lib.getFile("js.jar"));
 									verify(lib).getFile("js.jar").evaluate(readFile).is("already");
@@ -120,7 +120,7 @@ END LICENSE
 									lib.getRelativePath("download").write("downloaded", { append: false });
 									mock.rhino = lib.getFile("download");
 									var captor = new Captor();
-									jsh.tools.rhino.install({ mock: mock, replace: true }, captor);
+									jsh.shell.tools.rhino.install({ mock: mock, replace: true }, captor);
 									verify(captor).captured[0].type.is("console");
 									verify(captor).captured[0].detail.is("Installing Rhino ...");
 									verify(lib).getFile("js.jar").evaluate(readFile).is("downloaded");
@@ -132,7 +132,7 @@ END LICENSE
 									lib.getRelativePath("download").write("downloaded", { append: false });
 									mock.rhino = lib.getFile("download");
 									var captor = new Captor();
-									jsh.tools.rhino.install({ mock: mock }, captor);
+									jsh.shell.tools.rhino.install({ mock: mock }, captor);
 									verify(captor).captured[0].type.is("console");
 									verify(captor).captured[0].detail.is("Installing Rhino ...");
 									verify(lib).getFile("js.jar").evaluate(readFile).is("downloaded");
@@ -203,7 +203,7 @@ END LICENSE
 									return this.toString();
 								};
 
-								var installed = jsh.tools.tomcat.installed({ mock: { notes: $jsapi.loader.get("test/data/tomcat-release-notes-7.0.70.txt") } });
+								var installed = jsh.shell.tools.tomcat.installed({ mock: { notes: $jsapi.loader.get("test/data/tomcat-release-notes-7.0.70.txt") } });
 								verify(installed).version.evaluate(toString).is("7.0.70");
 							</script>
 						</li>
@@ -299,7 +299,7 @@ END LICENSE
 								(function alreadyInstalled() {
 									var events = [];
 									mock.lib.getRelativePath("tomcat").createDirectory();
-									jsh.tools.tomcat.install({ mock: mock }, new Captor(events,["console","installed"]));
+									jsh.shell.tools.tomcat.install({ mock: mock }, new Captor(events,["console","installed"]));
 									verify(events)[0].type.is("console");
 									verify(events)[0].detail.is("Tomcat already installed at " + mock.lib.getSubdirectory("tomcat"));
 									mock.lib.getSubdirectory("tomcat").remove();
@@ -307,31 +307,31 @@ END LICENSE
 
 								(function install() {
 									var events = [];
-									jsh.tools.tomcat.install({ mock: mock }, new Captor(events,["console","installed"]));
+									jsh.shell.tools.tomcat.install({ mock: mock }, new Captor(events,["console","installed"]));
 									verify(events)[0].type.is("console");
 									verify(events)[0].evaluate(function() { return /^Unzipping to\:(.*)$/.test(this.detail); }).is(true);
 									verify(mock.lib).getSubdirectory("tomcat").getFile("a").is.type("object");
 									verify(mock.lib).getSubdirectory("tomcat").getFile("b").is.type("null");
-									var installed = jsh.tools.tomcat.installed({ home: mock.lib.getSubdirectory("tomcat") });
+									var installed = jsh.shell.tools.tomcat.installed({ home: mock.lib.getSubdirectory("tomcat") });
 									var version = installed.version.toString();
 									verify(version).is("7.0.99");
 									mock.lib.getSubdirectory("tomcat").remove();
 								})();
 
 								(function replace() {
-									jsh.tools.tomcat.install({ mock: mock, version: "7.0.98" });
-									var installed = jsh.tools.tomcat.installed({ home: mock.lib.getSubdirectory("tomcat") });
+									jsh.shell.tools.tomcat.install({ mock: mock, version: "7.0.98" });
+									var installed = jsh.shell.tools.tomcat.installed({ home: mock.lib.getSubdirectory("tomcat") });
 									verify(installed).evaluate(getVersionString).is("7.0.98");
 
 									var noreplace = [];
-									jsh.tools.tomcat.install({ mock: mock }, new Captor(noreplace,["installed"]));
-									installed = jsh.tools.tomcat.installed({ home: mock.lib.getSubdirectory("tomcat") });
+									jsh.shell.tools.tomcat.install({ mock: mock }, new Captor(noreplace,["installed"]));
+									installed = jsh.shell.tools.tomcat.installed({ home: mock.lib.getSubdirectory("tomcat") });
 									verify(installed).evaluate(getVersionString).is("7.0.98");
 									verify(noreplace).length.is(0);
 
 									var replace = [];
-									jsh.tools.tomcat.install({ mock: mock, replace: true }, new Captor(replace,["installed"]));
-									installed = jsh.tools.tomcat.installed({ home: mock.lib.getSubdirectory("tomcat") });
+									jsh.shell.tools.tomcat.install({ mock: mock, replace: true }, new Captor(replace,["installed"]));
+									installed = jsh.shell.tools.tomcat.installed({ home: mock.lib.getSubdirectory("tomcat") });
 									verify(installed).evaluate(getVersionString).is("7.0.99");
 									verify(replace).length.is(1);
 
