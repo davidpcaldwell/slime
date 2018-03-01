@@ -184,7 +184,7 @@ END LICENSE
 						}
 					});
 					jsh.shell.console("output: [" + output + "]");
-					verify(output).is(String(Packages.java.lang.String.format("Hello, World!%n")));
+					verify(output,"output of Hello.java").is(String(Packages.java.lang.String.format("Hello, World!%n")));
 				</script>
 			</li>
 		</ul>
