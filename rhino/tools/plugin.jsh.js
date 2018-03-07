@@ -12,7 +12,7 @@
 
 plugin({
 	isReady: function() {
-		return typeof(jsh.js) != "undefined" && typeof(jsh.java) != "undefined"
+		return jsh.file && jsh.time && jsh.shell && jsh.ip && typeof(jsh.js) != "undefined" && typeof(jsh.java) != "undefined" && jsh.js.web
 			&& (
 				Packages.javax.tools.ToolProvider.getSystemToolClassLoader() != null
 				|| jsh.shell && jsh.file.Searchpath([ jsh.shell.java.home.getRelativePath("bin") ]).getCommand("javac")
