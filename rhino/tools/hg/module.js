@@ -9,7 +9,7 @@
 //
 //	Contributor(s):
 //	END LICENSE
-
+if (!$context.api.file) throw new Error();
 var toNativePath = function(pathname) {
 	if ($context.api.file.filesystems.cygwin) {
 		return $context.api.file.filesystems.cygwin.toWindows(pathname).toString();
