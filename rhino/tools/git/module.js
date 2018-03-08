@@ -533,7 +533,7 @@ $exports.install = $context.api.Events.Function(function(p,events) {
 	var console = function(message) {
 		events.fire("console", message);
 	};
-	if (!$context.module.installation) {
+	if (!exports.installation) {
 		if ($context.api.shell.os.name == "Mac OS X") {
 			console("Detected OS X " + $context.api.shell.os.version);
 			console("Install Apple's command line developer tools.");
