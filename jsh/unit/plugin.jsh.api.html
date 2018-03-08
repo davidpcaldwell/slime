@@ -550,7 +550,7 @@ END LICENSE
 				<ul>
 					<!--	plugin.jsh.web.js	-->
 					<li class="constructor">
-						<div class="name">Web</div>
+						<div class="name"><a id="exports.mock.Web">Web</a></div>
 						<span>__DESCRIPTION__</span>
 						<div class="arguments">
 							<div class="label">Arguments</div>
@@ -579,6 +579,25 @@ END LICENSE
 									<div class="name">client</div>
 									<span class="type">jsh.http.Client</span>
 									<span>A client that proxies all requests through this object.</span>
+								</li>
+								<li class="function">
+									<div class="name">jrunscript</div>
+									<span>See <a href="../../rhino/shell/plugin.jsh.api.html#exports.jrunscript"><code>jsh.shell.jrunscript</code></a>.</span>
+									<div class="arguments">
+										<div class="label">Arguments</div>
+										<ol>
+											<li class="object">
+												<span>
+													An object compatible with <code>jsh.shell.jrunscript</code>. The VM executing
+													the script to use this server for satisfying requests to the Internet.
+												</span>
+											</li>
+										</ol>
+									</div>
+									<div class="returns">
+										<div class="label">Returns</div>
+										<span>See <a href="../../rhino/shell/plugin.jsh.api.html#exports.jrunscript"><code>jsh.shell.jrunscript</code></a>.</span>
+									</div>
 								</li>
 								<li class="function">
 									<div class="name">start</div>

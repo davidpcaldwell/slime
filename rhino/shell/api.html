@@ -810,21 +810,42 @@ os.resolve(function() {
 					</li>
 				</ul>
 			</li>
-			<li class="function">
-				<div class="name">jrunscript</div>
-				<span>__DESCRIPTION__</span>
+			<li class="function" jsapi:id="jrunscript">
+				<div class="name"><a id="exports.jrunscript">jrunscript</a></div>
+				<span>Launches a JavaScript script on a Java virtual machine.</span>
 				<div class="arguments">
 					<div class="label">Arguments</div>
 					<ol>
 						<li class="object">
-							<div class="name">__NAME__</div>
-							<span>__DESCRIPTION__</span>
+							<span>
+								An object based upon the argument to <a href="#exports.run">run()</a>.
+								<!--	What do we do with the 'command' property?	-->
+								The object has the following differences with that argument:
+							</span>
 							<div class="label">has properties:</div>
 							<ul>
 								<li class="value">
+									<div class="name">arguments</div>
+									<span class="type">Array of string</span>
+									<span>
+										Provides arguments to the script invocation (including the script as the first argument).
+										These arguments will be augmented by those indicated by the
+										<code>vmarguments</code> and <code>properties</code> properties below.
+									</span>
+								</li>
+								<li class="value">
 									<div class="name">vmarguments</div>
-									<span class="type">Array of String</span>
-									<span>__DESCRIPTION__</span>
+									<span class="type">Array of string</span>
+									<span>An array of arguments to pass to the virtual machine running the script.</span>
+								</li>
+								<li class="value">
+									<div class="name">properties</div>
+									<span class="type">Object</span>
+									<span>
+										A set of system properties to pass to the underlying virtual machine. Each
+										property of the object represents a system property; the property name is the system
+										property name, and the property value is the value of that system property.
+									</span>
 								</li>
 							</ul>
 						</li>
@@ -832,8 +853,8 @@ os.resolve(function() {
 				</div>
 				<div class="returns">
 					<div class="label">Returns</div>
-					<span class="type">__TYPE__</span>
-					<span>__DESCRIPTION__</span>
+					<span class="type">(any)</span>
+					<span>A value determined in the same way as that of <a href="#exports.run">run()</a>.</span>
 				</div>
 			</li>
 			<li class="object" jsapi:id="browser">
