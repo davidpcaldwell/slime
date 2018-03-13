@@ -544,8 +544,20 @@ $exports.install = $context.api.Events.Function(function(p,events) {
 					throw new GUI();
 				}
 			});
+		} else if ($context.api.shell.os.name == "Linux") {
+			console("Installing git using apt ...");
+			if ($context.api.shell.PATH.getCommand("apt")) {
+				$context.api.shell.run({
+					command: "sudo",
+					arguments: [
+						"apt", "install", "git", "-y"
+					]
+				})
+			} else {
+				throw new Error("Unimplemented: installation of Git for Linux system without 'apt'.");
+			}
 		} else {
-			throw new Error("Unimplemented: installation of Git for non-OS X system.");
+			throw new Error("Unimplemented: installation of Git for non-OS X, non-Linux system.");
 		}
 	} else {
 		console("Git already installed.");
