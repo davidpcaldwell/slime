@@ -124,9 +124,16 @@ END LICENSE
 		<h1>Exports</h1>
 		<div class="type">
 			<a class="type" id="types.Url">Url</a>
-			<span>__DESCRIPTION__</span>
+			<span>
+				An object having several properties representing parts of the URL. These properties are "live" -- they can be
+				changed, and the URL will reflect the changes.
+			</span>
 			<div class="label">has properties:</div>
 			<ul>
+				<li class="function">
+					<div class="name">toString</div>
+					<span>Converts this URL into its string form.</span>
+				</li>
 				<li class="value">
 					<div class="name">scheme</div>
 					<span class="type">__TYPE__</span>
@@ -183,6 +190,17 @@ END LICENSE
 					]]></script>
 				</li>
 			</ul>
+			<script type="application/x.jsapi#tests"><![CDATA[
+				(function liveQueryProperty() {
+					var url = module.Url.parse("http://www.example.com/path/to/page.html");
+					verify(url).toString().is("http://www.example.com/path/to/page.html");
+					url.query = module.Url.query([
+						{ name: "foo", value: "bar" },
+						{ name: "foo", value: "baz" }
+					]);
+					verify(url).toString().is("http://www.example.com/path/to/page.html?foo=bar&foo=baz");
+				})();
+			]]></script>
 		</div>
 
 		<ul>
@@ -231,7 +249,7 @@ END LICENSE
 						</div>
 						<div class="returns">
 							<div class="label">Returns</div>
-							<span class="type">__TYPE__</span>
+							<span class="type"><a href="#types.Url">Url</a></span>
 							<span>__DESCRIPTION__</span>
 						</div>
 						<script type="application/x.jsapi#tests">
