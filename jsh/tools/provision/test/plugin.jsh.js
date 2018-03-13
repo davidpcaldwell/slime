@@ -91,8 +91,9 @@ plugin({
 				if (o.bitbucket) return o.bitbucket;
 				//	TODO	publish this API and make it work for non-davidpcaldwell repositories
 				if (o.base) return getMockConfiguration(o.base);
+				return { src: {} };
 			})();
-			if (!bitbucket.src.davidpcaldwell) o.bitbucket.src.davidpcaldwell = {};
+			if (!bitbucket.src.davidpcaldwell) bitbucket.src.davidpcaldwell = {};
 			if (!bitbucket.src.davidpcaldwell.slime) {
 				bitbucket.src.davidpcaldwell.slime = {
 					directory: jsh.shell.jsh.src,
@@ -124,6 +125,7 @@ plugin({
 		}
 
 		var proxy = function(mock) {
+			//	TODO	logic duplicated to a degree in jsh/unit/plugin.jsh.web.js jsh.unit.mock.Web
 			return "export http_proxy=http://" + mock.server.host + ":" + mock.server.port;
 		}
 

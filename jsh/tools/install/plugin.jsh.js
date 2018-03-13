@@ -13,7 +13,7 @@
 
 plugin({
 	isReady: function() {
-		return jsh.js && jsh.js.web && jsh.java && jsh.ip && jsh.time && jsh.file && jsh.http && jsh.shell && plugins.slime && plugins.slime.tools && plugins.slime.tools.hg && jsh.java.tools;
+		return jsh.js && jsh.js.web && jsh.java && jsh.ip && jsh.time && jsh.file && jsh.http && jsh.shell && jsh.java.tools;
 	},
 	load: function() {
 		if (!jsh.tools) jsh.tools = {};
@@ -127,39 +127,5 @@ plugin({
 			jsh.tools.ncdbg = ncdbg;
 			$api.deprecate(jsh.tools,"ncdbg");			
 		})();
-
-		var loadHg = function() {
-			jsh.tools.hg = $loader.file("hg.js", {
-				api: {
-					Installation: plugins.slime.tools.hg.Installation,
-					shell: jsh.shell,
-					Error: jsh.js.Error,
-					install: jsh.tools.install,
-					Events: {
-						Function: jsh.tools.install.$api.Events.Function
-					}
-				}
-			});
-
-			if (jsh.shell.PATH.getCommand("hg")) {
-				jsh.tools.hg.installation = new plugins.slime.tools.hg.Installation({
-					install: jsh.shell.PATH.getCommand("hg")
-				});
-				global.hg = {};
-				["Repository","init"].forEach(function(name) {
-					jsh.tools.hg[name] = jsh.tools.hg.installation[name];
-					global.hg[name] = jsh.tools.hg.installation[name];
-				});
-				$api.deprecate(global,"hg");
-			}
-		};
-
-
-		loadHg();
-
-		if (!jsh.java.tools.plugin) jsh.java.tools.plugin = {};
-		jsh.java.tools.plugin.hg = $api.deprecate(function() {
-			loadHg();
-		});
 	}
 });

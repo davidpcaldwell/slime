@@ -13,7 +13,7 @@
 
 $set({
 	isReady: function() {
-		return jsh.httpd && jsh.http && jsh.file && jsh.io && jsh.shell;
+		return jsh.js && jsh.httpd && jsh.http && jsh.file && jsh.io && jsh.shell;
 	},
 	load: function() {
 		if (!jsh.unit) jsh.unit = {};
@@ -68,6 +68,19 @@ $set({
 			});
 			this.client.toString = function() {
 				return "Mock client for 127.0.0.1:" + tomcat.port;
+			};
+
+			this.jrunscript = function(o) {
+				var properties = {
+					"http.proxyHost": "127.0.0.1",
+					"http.proxyPort": String(tomcat.port)
+				};
+				jsh.js.Object.set(properties, (o.properties) ? o.properties : {});
+				jsh.shell.jrunscript(jsh.js.Object.set({}, o, {
+					properties: properties,
+					//	TODO	is this necessary, or can it be pushed to jrunscript method?
+					arguments: (o.arguments) ? o.arguments : []
+				}));
 			}
 
 			this.https = {
@@ -80,6 +93,10 @@ $set({
 						}
 					}
 				})
+			};
+			
+			this.environment = {
+				"http_proxy": "http://127.0.0.1:" + tomcat.port
 			};
 
 			this.hg = {

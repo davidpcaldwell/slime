@@ -27,7 +27,11 @@ fi
 REMOTE_PROVISION=$(mktemp -d 2>/dev/null || mktemp -d -t inonit-provision)
 
 download() {
-	curl -s -L -o $REMOTE_PROVISION/$1 http://bitbucket.org/davidpcaldwell/slime/raw/$INONIT_PROVISION_VERSION/jsh/tools/provision/$1
+	CURL_OPTIONS=
+	if [ -n "INONIT_PROVISION_DEBUG" ]; then
+		CURL_OPTIONS="-v"
+	fi
+	curl -s -L $CURL_OPTIONS -o $REMOTE_PROVISION/$1 http://bitbucket.org/davidpcaldwell/slime/raw/$INONIT_PROVISION_VERSION/jsh/tools/provision/$1
 	chmod +x $REMOTE_PROVISION/$1
 }
 

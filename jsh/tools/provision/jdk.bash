@@ -54,6 +54,9 @@ elif [ "$UNAME" = "Linux" ]; then
 		if [ ! -d "/tmp/jdk$VERSION" ]; then
 			tar xvf "/tmp/${NAME%.gz}" -C /tmp
 		fi
+		if [ ! -d "/usr/lib/jvm" ]; then
+			sudo mkdir /usr/lib/jvm
+		fi
 		if [ ! -d "/usr/lib/jvm/jdk$VERSION" ]; then
 			sudo mv /tmp/jdk$VERSION /usr/lib/jvm/jdk$VERSION
 		fi

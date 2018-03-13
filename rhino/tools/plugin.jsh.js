@@ -33,30 +33,55 @@ plugin({
 
 plugin({
 	isReady: function() {
-		return jsh.js && jsh.time && jsh.js.web && jsh.java && jsh.ip && jsh.file && jsh.shell;
-	},
-	load: function() {
-		if (!plugins.slime) plugins.slime = {};
-		if (!plugins.slime.tools) plugins.slime.tools = {};
-		plugins.slime.tools.hg = $loader.module("hg/module.js", {
-			api: {
-				js: jsh.js,
-				time: jsh.time,
-				web: jsh.js.web,
-				java: jsh.java,
-				ip: jsh.ip,
-				file: jsh.file,
-				shell: jsh.shell,
-			}
-		});		
-	}
-});
-
-plugin({
-	isReady: function() {
 		return jsh.js && jsh.js.web && jsh.time && jsh.java && jsh.ip && jsh.file && jsh.shell && jsh.tools && jsh.tools.install && jsh.java.tools;
 	},
 	load: function() {
+		var loadHg = function() {
+			var module = $loader.module("hg/module.js", {
+				api: {
+					js: jsh.js,
+					time: jsh.time,
+					web: jsh.js.web,
+					java: jsh.java,
+					ip: jsh.ip,
+					file: jsh.file,
+					shell: jsh.shell
+				}
+			});		
+			
+			jsh.tools.hg = $loader.file("hg/install.js", {
+				api: {
+					Installation: module.Installation,
+					shell: jsh.shell,
+					java: {
+						tools: jsh.java.tools
+					},
+					Error: jsh.js.Error,
+					install: jsh.tools.install,
+					Events: {
+						Function: jsh.tools.install.$api.Events.Function
+					}
+				}
+			});
+
+			if (jsh.tools.hg.installation) {
+				global.hg = {};
+				["Repository","init"].forEach(function(name) {
+					global.hg[name] = jsh.tools.hg[name];
+					$api.deprecate(global.hg,name);
+				});
+				$api.deprecate(global,"hg");
+			}
+		};
+
+
+		loadHg();
+
+		if (!jsh.java.tools.plugin) jsh.java.tools.plugin = {};
+		jsh.java.tools.plugin.hg = $api.deprecate(function() {
+			loadHg();
+		});
+		
 		var loadGit = function() {
 			jsh.tools.git = $loader.module("git/module.js", {
 				api: {
