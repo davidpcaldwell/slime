@@ -161,7 +161,9 @@ $exports.install = $context.api.Events.Function(function(p,events) {
 			$context.api.shell.console("hg installed: version " + installed.version);
 		} else if ($context.api.shell.PATH.getCommand("apt")) {
 			//	TODO	should actually detect GUI rather than assuming
-			var HAS_GUI = true;
+			//	TODO	GUI does not work under Nashorn because of problems with adapters, so Nashorn-based shells installing
+			//			Mercurial do not work, so moving back to non-GUI installation for now
+			var HAS_GUI = false;
 			if (HAS_GUI) {
 				var password = $context.api.java.tools.askpass.gui({
 					prompt: "Enter password for sudo:"
@@ -174,13 +176,12 @@ $exports.install = $context.api.Events.Function(function(p,events) {
 					}
 				});
 			} else {
-				throw new Error("Unsupported: Mercurial installation without GUI to input password");
 				//	TODO	options for sudo password
 				//			*	force user to do sudo ls beforehand to cache credentials
 				//			*	figure out way to use -S flag to route password typed from console to sudo
 				$context.api.shell.run({
 					command: "sudo",
-					arguments: ["-k", "apt", "install", "mercurial"],
+					arguments: ["apt", "install", "mercurial", "-y"],
 					stdio: {
 						input: $context.api.shell.stdio.input
 					}
