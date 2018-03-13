@@ -102,14 +102,14 @@ plugin({
 		}).log;
 
 
-		if ($jsh.getDebugger) {
+		if ($slime.getDebugger) {
 			$api.debugger = {};
 			Object.defineProperty($api.debugger, "breakOnExceptions", {
 				get: function() {
-					return $jsh.getDebugger().isBreakOnExceptions();
+					return $slime.getDebugger().isBreakOnExceptions();
 				},
 				set: function(v) {
-					$jsh.getDebugger().setBreakOnExceptions(v);
+					$slime.getDebugger().setBreakOnExceptions(v);
 				}
 			});
 		}

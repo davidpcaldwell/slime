@@ -81,8 +81,8 @@ plugin({
 			};
 			$api.deprecate(jsh.tools,"rhino");
 			jsh.tools.install.rhino = {};
-			$api.deprecate(jsh.tools.install,"rhino");
 			jsh.tools.install.rhino.install = $api.deprecate(installRhino);
+			$api.deprecate(jsh.tools.install,"rhino");
 		})();
 
 
