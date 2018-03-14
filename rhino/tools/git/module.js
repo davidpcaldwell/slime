@@ -13,6 +13,21 @@
 //	TODO	eliminate dependency on jsh
 
 var Installation = function(environment) {
+	var addConfigurationArgumentsTo = function(array,config) {
+		//	TODO	duplicated below, in git()
+		if (config) {
+			for (var x in config) {
+				if (config[x] instanceof Array) {
+					debugger;
+					config[x].forEach(function(value) {
+						array.push("-c", x + "=" + value);
+					});
+				} else {
+					array.push("-c", x + "=" + m.config[x]);
+				}
+			}
+		}
+	};
 	var git = function(m) {
 		return jsh.shell.run(
 			jsh.js.Object.set({}, m, {
@@ -21,7 +36,14 @@ var Installation = function(environment) {
 					var rv = [];
 					if (m.config) {
 						for (var x in m.config) {
-							rv.push("-c", x + "=" + m.config[x]);
+							if (m.config[x] instanceof Array) {
+								debugger;
+								m.config[x].forEach(function(value) {
+									rv.push("-c", x + "=" + value);
+								});
+							} else {
+								rv.push("-c", x + "=" + m.config[x]);
+							}
 						}
 					}
 					rv.push(m.command);
@@ -81,9 +103,11 @@ var Installation = function(environment) {
 		},this);
 
 		var execute = function(p) {
+			var args = [];
+			addConfigurationArgumentsTo(args,p.config);
 			return jsh.shell.run(jsh.js.Object.set({}, p, {
 				command: environment.program,
-				arguments: [p.command].concat( (p.arguments) ? p.arguments : [] ),
+				arguments: args.concat([p.command]).concat( (p.arguments) ? p.arguments : [] ),
 				environment: jsh.js.Object.set({}, jsh.shell.environment, (o && o.environment) ? o.environment : {}, (p.environment) ? p.environment : {}),
 				directory: directory
 			}));
@@ -285,6 +309,7 @@ var Installation = function(environment) {
 				args.push("--all");
 			}
 			execute({
+				config: p.config,
 				command: "fetch",
 				arguments: args,
 				stdio: {
