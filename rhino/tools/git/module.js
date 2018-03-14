@@ -470,6 +470,7 @@ var Installation = function(environment) {
 		this.submodule = function(p) {
 			if (p.command == "update") {
 				execute({
+					config: p.config,
 					command: "submodule",
 					arguments: (function() {
 						var rv = [];
@@ -485,6 +486,7 @@ var Installation = function(environment) {
 				})
 			} else if (p.command == "sync") {
 				execute({
+					config: p.config,
 					command: "submodule",
 					arguments: ["sync"]
 				});
