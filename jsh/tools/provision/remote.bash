@@ -27,11 +27,21 @@ fi
 REMOTE_PROVISION=$(mktemp -d 2>/dev/null || mktemp -d -t inonit-provision)
 
 download() {
-	CURL_OPTIONS=
-	if [ -n "INONIT_PROVISION_DEBUG" ]; then
-		CURL_OPTIONS="-v"
+	DOWNLOAD_TO=$REMOTE_PROVISION/$1
+	DOWNLOAD_FROM=http://bitbucket.org/davidpcaldwell/slime/raw/$INONIT_PROVISION_VERSION/jsh/tools/provision/$1
+	if [ $(command -v curl) ]; then
+		CURL_OPTIONS=
+		if [ -n "INONIT_PROVISION_DEBUG" ]; then
+			CURL_OPTIONS="-v"
+		fi
+		curl -s -L $CURL_OPTIONS -o $DOWNLOAD_TO $DOWNLOAD_FROM
+	elif [ $(command -v wget) ]; then
+		wget -q -O $DOWNLOAD_TO $DOWNLOAD_FROM 
+	else
+		#	TODO	try to locate package manager?
+		echo "Could not execute: no 'curl' or 'wget' command present."
+		exit 1
 	fi
-	curl -s -L $CURL_OPTIONS -o $REMOTE_PROVISION/$1 http://bitbucket.org/davidpcaldwell/slime/raw/$INONIT_PROVISION_VERSION/jsh/tools/provision/$1
 	chmod +x $REMOTE_PROVISION/$1
 }
 
