@@ -342,8 +342,23 @@ var Installation = function(environment) {
 				args.push("-a");
 			}
 			var output = !Boolean(p.name);
+			var currentBranch;
+			var DELIMITER = "|";
 			if (output) {
-				args.push("-v");
+				currentBranch = execute({
+					command: "rev-parse",
+					arguments: [
+						"--abbrev-ref", "HEAD"
+					],
+					stdio: {
+						output: String
+					},
+					evaluate: function(result) {
+						//	TODO	would this work on Windows with a two-character line terminator?
+						return result.stdio.output.substring(0,result.stdio.output.length-1);
+					}
+				});
+				args.push("--format",["%(refname)"].join(DELIMITER));
 			}
 			return execute({
 				command: "branch",
@@ -354,47 +369,14 @@ var Installation = function(environment) {
 				evaluate: function(result) {
 					if (output) {
 						var rv = result.stdio.output.split("\n").filter(function(line) { return line; }).map(function(line) {
-							if (line.indexOf("->") != -1) {
-								//	TODO	better parsing
-								//	See http://stackoverflow.com/questions/12613793/why-is-there-a-remotes-origin-head-origin-master-entry-in-my-git-branch-l
-								return { line: line };
-							} else if (line) {
-								var detachedMatcher = /\(.*?\)(?:\s+)(\S+)(?:\s+)(?:.*)/;
-								var match = detachedMatcher.exec(line.substring(2));
-								var branchMatcher = /^(\S+)(?:\s+)(\S+)(?:\s+)(?:.*)$/;
-								var current = (line.substring(0,1) == "*");
-								if (p.old) {
-									if (match) return {
-										current: current,
-										commit: {
-											hash: match[1]
-										}
-									};
-									var branchMatcher = /^(\S+)(?:\s+)(\S+)(?:\s+)(?:.*)$/;
-									match = branchMatcher.exec(line.substring(2));
-									if (!match) throw new Error("Does not match " + detachedMatcher + " or " + branchMatcher + ": " + line.substring(2));
-									return {
-										current: (line.substring(0,1) == "*"),
-										name: (match[1].substring(0,1) == "(") ? null : match[1],
-										commit: {
-											hash: match[2]
-										}
-									}
-								} else {
-									var dMatch = detachedMatcher.exec(line);
-									if (dMatch) return $context.api.js.Object.set({}, { branch: { current: true } }, show({ object: match[1] }));
-									var bMatch = branchMatcher.exec(line.substring(2));
-									//	TODO	starting to think we need a Branch object
-									if (!bMatch) throw new Error("Does not match: [" + line + "]");
-									if (String(bMatch[1]) == "undefined") throw new Error("Line: [" + line + "]");
-									return $context.api.js.Object.set({}, { name: bMatch[1] }, show({ object: bMatch[1] }));
-								}
-							}
-							return {};
-						});
-						//	Remove "remotes/origin/HEAD -> origin/master"
-						rv = rv.filter(function(branch) {
-							return !branch.line;
+							var tokens = line.split(DELIMITER);
+							var semantic = {
+								branch: tokens[0].split("/").slice(2).join("/")
+							};
+							var current = Boolean(semantic.branch == currentBranch);
+							var shown = show({ object: semantic.branch });
+							var rv = $context.api.js.Object.set({}, { name: semantic.branch, current: current }, shown);
+							return rv;
 						});
 						if (p.old && !p.all) {
 							rv = rv.filter(function(branch) {
