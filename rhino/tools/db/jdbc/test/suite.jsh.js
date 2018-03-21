@@ -39,8 +39,7 @@ var module = (function() {
 		this.api = {
 			js: jsh.js,
 			java: jsh.java,
-			io: jsh.io,
-			debug: jsh.debug
+			io: jsh.io
 		};
 	};
 	return loader.module("module.js", context);

@@ -179,7 +179,7 @@ END LICENSE
 			</li>
 		</ul>
 		<script type="application/x.jsapi#initialize">
-			scope.dir = $jsapi.file.newTemporaryDirectory();
+			scope.dir = jsh.shell.TMPDIR.createTemporary({ directory: true });
 		</script>
 		<script type="application/x.jsapi#tests">
 			var db = new module.Database(dir.getRelativePath("database").createDirectory());

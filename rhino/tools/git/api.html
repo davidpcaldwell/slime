@@ -76,7 +76,7 @@ END LICENSE
 					</ul>
 				</div>
 				<script type="application/x.jsapi#initialize">
-					scope.remotes = $jsapi.file.newTemporaryDirectory();
+					scope.remotes = jsh.shell.TMPDIR.createTemporary({ directory: true });
 					//	TODO	provide $jsapi accessor for this
 					var port = jsh.ip.getEphemeralPort().number;
 					var process;
@@ -151,7 +151,7 @@ END LICENSE
 						scope.remote = remote;
 					</script>
 					<script type="application/x.jsapi#tests">
-						var to = $jsapi.file.newTemporaryDirectory().pathname;
+						var to = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
 						remote.clone({ to: to });
 						verify(to).directory.getFile("a").read(String).is("a");
 					</script>

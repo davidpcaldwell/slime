@@ -254,7 +254,7 @@ END LICENSE
 					);
 				};
 
-				var dir = $jsapi.file.newTemporaryDirectory();
+				var dir = jsh.shell.TMPDIR.createTemporary({ directory: true });
 
 				var newFile = function(path) {
 					dir.getRelativePath(path).write(path, { append: false });

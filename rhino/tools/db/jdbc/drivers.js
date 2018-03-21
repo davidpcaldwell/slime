@@ -146,7 +146,7 @@ var types = new function() {
 			var _blob = rs.getBlob(column);
 			//	TODO	decorate with closure method that fires when input stream closed?
 			var _in = _blob.getBinaryStream();
-			return new $context.api.io.InputStream(_in);
+			return $context.api.io.java.adapt(_in);
 		};
 
 		//	TODO	should come up with a non-cast solution for large BLOBs

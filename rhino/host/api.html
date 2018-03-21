@@ -210,6 +210,9 @@ END LICENSE
 					var array = module.Array.create({ type: Packages.java.lang.Number, array: [1,2,3] });
 					verify(array).evaluate(function() { return this.length; }).is(3);
 					verify(array).evaluate(function() { return module.isJavaObject(array); }).is(true);
+					
+					var bytes = module.Array.create({ type: Packages.java.lang.Byte.TYPE, array: [1,2,3,4] });
+					verify(bytes).evaluate(function() { return this.length; }).is(4);
 				]]></script>
 			</li>
 			<li class="function">

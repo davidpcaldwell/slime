@@ -63,7 +63,7 @@ END LICENSE
 			})();
 
 			(function() {
-				var base = $jsapi.file.newTemporaryDirectory();
+				var base = jsh.shell.TMPDIR.createTemporary({ directory: true });
 				tomcat.setPort(port);
 				tomcat.setBaseDir(base);
 				var context = tomcat.addContext("/", base.pathname.java.adapt().getCanonicalPath());
@@ -198,7 +198,7 @@ END LICENSE
 					})();
 
 					(function() {
-						var base = $jsapi.file.newTemporaryDirectory();
+						var base = jsh.shell.TMPDIR.createTemporary({ directory: true });
 						tomcat.setPort(port);
 						tomcat.setBaseDir(base);
 						var context = tomcat.addContext("/", base.pathname.java.adapt().getCanonicalPath());

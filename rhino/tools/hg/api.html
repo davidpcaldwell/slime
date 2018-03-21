@@ -118,10 +118,10 @@ END LICENSE
 				}
 			};
 			var createHg = function() {
-				var rv = scope.module.init(scope.$jsapi.file.newTemporaryDirectory());
+				var rv = scope.module.init(jsh.shell.TMPDIR.createTemporary({ directory: true }));
 				scope.module.unit.Repository.call(rv);
 				return rv;
-			}
+			};
 			scope.createHg = createHg;
 		</script>
 		<script type="application/x.jsapi#initialize">
@@ -192,9 +192,9 @@ END LICENSE
 					</div>
 					<script type="application/x.jsapi#tests">
 						//	TODO	add test for pathname scenario
-						var b = a.clone($jsapi.file.newTemporaryDirectory());
-						var c = a.clone($jsapi.file.newTemporaryDirectory().pathname);
-						var to = $jsapi.file.newTemporaryDirectory().pathname;
+						var b = a.clone(jsh.shell.TMPDIR.createTemporary({ directory: true }));
+						var c = a.clone(jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname);
+						var to = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
 						to.directory.remove();
 						test(!to.directory);
 						var d = a.clone(to);
@@ -232,7 +232,7 @@ END LICENSE
 						local.directory.getRelativePath("a").write("1\n", { append: false });
 						local.commit({ addremove: true, message: "a:1" });
 						var id1 = local.identify();
-						var copy = local.clone($jsapi.file.newTemporaryDirectory());
+						var copy = local.clone(jsh.shell.TMPDIR.createTemporary({ directory: true }));
 						local.directory.getRelativePath("b").write("1\n", { append: false });
 						local.commit({ addremove: true, message: "b:1" });
 						copy.pull(local);
@@ -284,8 +284,8 @@ END LICENSE
 						<a href="#types.Repository">Repository</a> represented by the path.
 					</span>
 					<script type="application/x.jsapi#tests">
-						var repository = module.init($jsapi.file.newTemporaryDirectory());
-						var other = repository.clone($jsapi.file.newTemporaryDirectory());
+						var repository = module.init(jsh.shell.TMPDIR.createTemporary({ directory: true }));
+						var other = repository.clone(jsh.shell.TMPDIR.createTemporary({ directory: true }));
 						test(Boolean(other.paths["default"].directory));
 						test(other.paths["default"].directory.toString() == repository.directory.toString());
 					</script>
@@ -324,8 +324,8 @@ END LICENSE
 						<span>__DESCRIPTION__</span>
 					</div>
 					<script type="application/x.jsapi#tests">
-						var first = a.clone($jsapi.file.newTemporaryDirectory());
-						var second = first.clone($jsapi.file.newTemporaryDirectory());
+						var first = a.clone(jsh.shell.TMPDIR.createTemporary({ directory: true }));
+						var second = first.clone(jsh.shell.TMPDIR.createTemporary({ directory: true }));
 						test(second.outgoing(first).length == 0);
 						second.directory.getRelativePath("hello.txt").write("Hello");
 						test(second.outgoing(first).length == 0);
@@ -446,10 +446,10 @@ END LICENSE
 						<span>__DESCRIPTION__</span>
 					</div>
 					<script type="application/x.jsapi#tests">
-						var repository = module.init($jsapi.file.newTemporaryDirectory());
+						var repository = module.init(jsh.shell.TMPDIR.createTemporary({ directory: true }));
 						repository.directory.getRelativePath("baz").write("baz", { append: false });
 						repository.commit({ addremove: true, message: "baz" });
-						var other = repository.clone($jsapi.file.newTemporaryDirectory());
+						var other = repository.clone(jsh.shell.TMPDIR.createTemporary({ directory: true }));
 						repository.directory.getRelativePath("foo").write("foo", { append: false });
 						repository.commit({ addremove: true, message: "foo" });
 						other.directory.getRelativePath("bar").write("bar", { append: false });
@@ -515,7 +515,7 @@ END LICENSE
 						</span>
 					</div>
 					<script type="application/x.jsapi#tests">
-						var pathname = $jsapi.file.newTemporaryDirectory().pathname;
+						var pathname = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
 						var parent = module.init({ pathname: pathname });
 						var child = module.init({ pathname: pathname.directory.getRelativePath("child") });
 						pathname.directory.getRelativePath(".hgsub").write("child = child\n", { append: false });
@@ -715,7 +715,7 @@ END LICENSE
 						parent.bookmarks({ name: "local" });
 						parent.unit.editFile({ path: "a", content: "2" });
 						parent.commit({ message: "2" });
-						var child = parent.unit.clone($jsapi.file.newTemporaryDirectory());
+						var child = parent.unit.clone(jsh.shell.TMPDIR.createTemporary({ directory: true }));
 						test(child.unit.readFile("a") == "1");
 						//	TODO	this kind of access of bookmark by name is not documented
 						test(!child.bookmarks()["@"].active);
@@ -726,7 +726,7 @@ END LICENSE
 						parent.unit.createFile({ path: "a", content: "1", add: true });
 						parent.commit({ message: "1" });
 						parent.bookmarks({ name: "@" });
-						var child = parent.unit.clone($jsapi.file.newTemporaryDirectory());
+						var child = parent.unit.clone(jsh.shell.TMPDIR.createTemporary({ directory: true }));
 						test(Boolean(child.bookmarks()["@"]));
 						test(!child.bookmarks()["@"].active);
 						test(!Boolean(child.bookmarks()["local"]));
@@ -743,7 +743,7 @@ END LICENSE
 						parent.unit.createFile({ path: "a", content: "1", add: true });
 						parent.commit({ message: "1" });
 						parent.bookmarks({ name: "@" });
-						var child = parent.unit.clone($jsapi.file.newTemporaryDirectory());
+						var child = parent.unit.clone(jsh.shell.TMPDIR.createTemporary({ directory: true }));
 						test(Boolean(child.bookmarks()["@"]));
 						test(!child.bookmarks()["@"].active);
 						test(!Boolean(child.bookmarks()["local"]));
@@ -777,7 +777,7 @@ END LICENSE
 						var server = parent.serve({ port: 0 });
 						verify(server).is.type("object");
 						verify(server).port.is.type("number");
-						var tmpclone = $jsapi.file.newTemporaryDirectory();
+						var tmpclone = jsh.shell.TMPDIR.createTemporary({ directory: true });
 						var remote = new module.Repository({ url: "http://127.0.0.1:" + server.port + "/" });
 						var local = remote.clone(tmpclone);
 						var commits = local.log();
@@ -919,7 +919,7 @@ END LICENSE
 					<span class="type"><a href="#types.LocalRepository">LocalRepository</a></span>
 				</div>
 				<script type="application/x.jsapi#tests">
-					var init = $jsapi.file.newTemporaryDirectory();
+					var init = jsh.shell.TMPDIR.createTemporary({ directory: true });
 					init.getRelativePath("foo").write("foo", { append: false });
 					var repository = module.init({ pathname: init.pathname });
 					repository.commit({ addremove: true, message: "test" });
@@ -952,7 +952,7 @@ END LICENSE
 					<span>__DESCRIPTION__</span>
 				</div>
 				<script type="application/x.jsapi#tests"><![CDATA[
-					var dir = $jsapi.file.newTemporaryDirectory();
+					var dir = jsh.shell.TMPDIR.createTemporary({ directory: true });
 					dir.getRelativePath("1.hgrc").write($jsapi.loader.string("test/1.hgrc"), { append: false });
 					//	Can't find easy way to write enough automated tests here; maybe just laziness?
 					var hgrc = new module.Hgrc({ file: dir.getFile("1.hgrc") });

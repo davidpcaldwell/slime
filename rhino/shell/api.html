@@ -621,7 +621,7 @@ os.resolve(function() {
 									-->
 									<script type="application/x.jsapi#tests">
 										var program = getJavaProgram("Directory");
-										var dir = $jsapi.file.newTemporaryDirectory();
+										var dir = jsh.shell.TMPDIR.createTemporary({ directory: true });
 										var workdir = module.java({
 											classpath: program.classpath,
 											main: program.main,
@@ -1031,9 +1031,9 @@ os.resolve(function() {
 										</div>
 										<script type="application/x.jsapi#tests">
 											if (module.system.apple.osx.ApplicationBundle) {
-												var tmpfile = $jsapi.file.newTemporaryDirectory().getRelativePath("tmp.icns");
+												var tmpfile = jsh.shell.TMPDIR.createTemporary({ directory: true }).getRelativePath("tmp.icns");
 												tmpfile.write("ICONS", { append: false });
-												var tmp = $jsapi.file.newTemporaryDirectory().pathname;
+												var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
 												tmp.directory.remove();
 												var bundle = new module.system.apple.osx.ApplicationBundle({
 													pathname: tmp,

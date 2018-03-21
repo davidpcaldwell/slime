@@ -42,7 +42,7 @@ END LICENSE
 				var port = jsh.loader.module(jsh.shell.jsh.src.getRelativePath("rhino/ip/")).tcp.getEphemeralPortNumber();
 				jsh.shell.console("install = " + $jsapi.environment.mongo.install);
 				var server = $jsapi.loader.module("mongod.js", { install: jsh.file.Pathname($jsapi.environment.mongo.install).directory });
-				var data = $jsapi.file.newTemporaryDirectory();
+				var data = jsh.shell.TMPDIR.createTemporary({ directory: true });
 				jsh.shell.echo("Mongo install at " + $jsapi.environment.mongo.install + " starting on port " + port + " with dbpath " + data);
 				scope.mongod = new server.Server({ port: port, dbpath: data });
 				jsh.shell.console("Mongo started.");

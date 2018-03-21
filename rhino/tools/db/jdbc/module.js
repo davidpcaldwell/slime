@@ -38,12 +38,7 @@ var api = $loader.file("api.js", {
 
 var getJavaClass = $context.api.java.getClass;
 
-var disableBreakOnExceptionsFor = ($context.api && $context.api.debug && $context.api.debug.disableBreakOnExceptionsFor)
-	? $context.api.debug.disableBreakOnExceptionsFor
-	: function(f) { return f; }
-;
-
-disableBreakOnExceptionsFor(function() {
+$api.debug.disableBreakOnExceptionsFor(function() {
 	if (getJavaClass("org.apache.derby.jdbc.EmbeddedDriver")) {
 		$exports.derby = $loader.module("derby/module.js",drivers);
 	}

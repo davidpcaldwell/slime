@@ -86,7 +86,14 @@
 
 		this.toNativeClass = function(javaclass) {
 			var className = getJavaClassName(javaclass);
-			if (className == null) throw new TypeError("Not a class: " + javaclass);
+			//	TODO	this seems unacceptably brittle, but seems to work for now
+			if (className == null) {
+				try {
+					if (getNamedJavaClass("java.lang.Class").isInstance(javaclass)) return javaclass;
+				} catch (e) {
+					throw new TypeError("Not a class: " + javaclass);					
+				}
+			}
 			return getNamedJavaClass(className);
 		};
 

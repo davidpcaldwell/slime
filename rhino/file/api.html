@@ -181,7 +181,7 @@ END LICENSE
 					scope.filesystem = (module.filesystems.cygwin) ? module.filesystems.cygwin : module.filesystems.os;
 				}
 
-				//	Although this is equivalent to $jsapi.file.newTemporaryDirectory(), we use a separate copy here because we want the
+				//	Although this is equivalent to jsh.file.TMP.createTemporary({ directory: true }), we use a separate copy here because we want the
 				//	calls to go to the module being tested, not the module executing the test environment
 				this.newTemporaryDirectory = function() {
 					var $dir = scope.$jsapi.java.io.newTemporaryDirectory();
@@ -296,7 +296,7 @@ END LICENSE
 								<span>The searchpath represented by the given string.</span>
 							</div>
 							<script type="application/x.jsapi#tests">
-								var array = [$jsapi.file.newTemporaryDirectory().pathname, $jsapi.file.newTemporaryDirectory().pathname];
+								var array = [jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname,jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname];
 								var searchpath = new filesystem.Searchpath(array);
 								var searchpathstring = searchpath.toString();
 								var parsed = filesystem.Searchpath.parse(searchpathstring);
@@ -850,7 +850,7 @@ END LICENSE
 										</script>
 										<script type="application/x.jsapi#tests">
 											if (jsh.shell.PATH.getCommand("chmod")) {
-												var tmpdir = $jsapi.file.newTemporaryDirectory();
+												var tmpdir = jsh.shell.TMPDIR.createTemporary({ directory: true });
 												tmpdir.getRelativePath("a").write("", { append: false });
 												jsh.shell.run({
 													command: "chmod",
