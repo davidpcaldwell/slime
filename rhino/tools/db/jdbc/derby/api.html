@@ -25,6 +25,10 @@ END LICENSE
 		<i>catalog</i> is used to refer to a single Derby database.
 	</div>
 	<script type="application/x.jsapi#initialize">
+		var TMP = jsh.shell.TMPDIR.createTemporary({ directory: true });
+		var LOG = TMP.getRelativePath("derby.log").toString();
+		Packages.java.lang.System.setProperty("derby.stream.error.file", LOG);
+		jsh.shell.console("Derby log file: " + LOG);
 		//jsh.shell.console("scope keys " + Object.keys(scope));
 		//jsh.shell.console("$jsapi.environment keys " + Object.keys($jsapi.environment));
 		//scope.module = $jsapi.environment.module;
