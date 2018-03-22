@@ -91,6 +91,7 @@ var createDataSource = function(p,name) {
 	var _dataSource = (function() {
 		if (p._dataSource) return p._dataSource;
 		var _ds = new Packages.com.mysql.jdbc.jdbc2.optional.MysqlDataSource();
+		if (typeof(p.url) == "string") _ds.setUrl(p.url);
 		if (typeof(p.host) != "undefined") _ds.setServerName(p.host);
 		if (typeof(p.port) != "undefined") _ds.setPort(p.port);
 		_ds.setUser(p.credentials.user);

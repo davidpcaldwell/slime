@@ -25,25 +25,8 @@ if (parameters.options["mysql:jdbc"]) {
 	jsh.loader.java.add(parameters.options["mysql:jdbc"]);
 }
 
-var module = (function() {
-	if (jsh.shell.java.home.getSubdirectory("db")) {
-		jsh.loader.java.add(jsh.shell.java.home.getRelativePath("db/lib/derby.jar"));
-	} else if (jsh.shell.java.home.getRelativePath("../db")) {
-		jsh.loader.java.add(jsh.shell.java.home.getRelativePath("../db/lib/derby.jar"));
-	}
-	var context = new function() {
-		this.getJavaClass = function(name) {
-			return jsh.java.getClass(name);
-		}
-
-		this.api = {
-			js: jsh.js,
-			java: jsh.java,
-			io: jsh.io
-		};
-	};
-	return loader.module("module.js", context);
-})();
+jsh.loader.plugins(jsh.script.file.parent.parent.pathname);
+var module = jsh.db.jdbc;
 
 var suite = new jsh.unit.Suite({
 	parts: {

@@ -21,6 +21,8 @@ plugin({
 		//	Not present with Apple JDK 6
 		if (jsh.shell.java.home.getSubdirectory("db")) {
 			jsh.loader.java.add(jsh.shell.java.home.getSubdirectory("db").getRelativePath("lib/derby.jar"));
+		} else if (jsh.shell.java.home.getRelativePath("../db").directory) {
+			jsh.loader.java.add(jsh.shell.java.home.getRelativePath("../db/lib/derby.jar"));
 		}
 		//	TODO	this does not seem to be a complete list of context properties
 		jsh.db.jdbc = $loader.module("module.js", {
