@@ -150,6 +150,7 @@ $TMP_INSTALLER)
 
 										var destination = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
 										destination.directory.remove();
+										jsh.shell.console("Cloning to " + destination);
 										jsh.tools.provision.bitbucket.hg.clone({
 											mock: {
 												config: server.hg.config,
@@ -160,6 +161,7 @@ $TMP_INSTALLER)
 											repository: "slime",
 											destination: destination
 										});
+										jsh.shell.console("Cloned to " + destination);
 										verify(destination).directory.is.not(null);
 										verify(destination).directory.getSubdirectory(".hg").is.not(null);
 

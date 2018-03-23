@@ -69,11 +69,11 @@ plugin({
 					rv.push(scheme + "://" + p.user + "@bitbucket.org/" + p.owner + "/" + p.repository);
 					rv.push("-u", p.version);
 					rv.push(p.destination);
-					jsh.shell.console("Cloning to " + p.destination + " ...");
+//					Packages.java.lang.System.err.println("hg arguments:");
+//					Packages.java.lang.System.err.println(rv.join(" "));
 					return rv;
 				})()
 			});
-			jsh.shell.console("Cloned to " + p.destination);
 		};
 
 		jsh.tools.provision.clone = $api.deprecate(bitbucketHgClone);
