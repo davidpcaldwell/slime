@@ -76,6 +76,7 @@ $exports.Promise = SlimePromise;
 
 var Controllable = function(evaluator) {
 	var resolveIt;
+	var rejectIt;
 
 	this.toString = function() {
 		return "Controllable Promise: " + promise;
@@ -83,6 +84,7 @@ var Controllable = function(evaluator) {
 
 	var promise = new Promise(function(resolve,reject) {
 		resolveIt = resolve;
+		rejectIt = reject;
 	});
 
 	this.then = function() {
@@ -95,6 +97,10 @@ var Controllable = function(evaluator) {
 		}
 		window.console.log("Resolving " + this + " to " + value);
 		resolveIt(value);
+	}
+
+	this.reject = function(error) {
+		rejectIt(error);
 	}
 };
 
