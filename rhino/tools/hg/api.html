@@ -731,16 +731,19 @@ END LICENSE
 						parent.commit({ message: "1" });
 						parent.bookmarks({ name: "@" });
 						var child = parent.unit.clone(jsh.shell.TMPDIR.createTemporary({ directory: true }));
-						test(Boolean(child.bookmarks()["@"]));
+						verify(child).bookmarks().evaluate.property("@").is.type("object");
+//						test(Boolean(child.bookmarks()["@"]));
 						verify(child.bookmarks()["@"].active);
-						test(!Boolean(child.bookmarks()["local"]));
+						verify(child).bookmarks().evaluate.property("local").is.type("undefined");
+//						test(!Boolean(child.bookmarks()["local"]));
 						parent.bookmarks({ name: "local" });
 						parent.unit.editFile({ path: "a", content: "2" });
 						parent.commit({ message: "2" });
 						verify(child).unit.readFile("a").is("1");
 						child.pull({ source: parent });
 						//	When pulling locally, "new" bookmarks are pulled
-						test(Boolean(child.bookmarks()["local"]));
+						verify(child).bookmarks().evaluate.property("local").is.type("object");
+//						test(Boolean(child.bookmarks()["local"]));
 					</script>
 					<script type="application/x.jsapi#tests">
 						var parent = createHg();
@@ -748,17 +751,19 @@ END LICENSE
 						parent.commit({ message: "1" });
 						parent.bookmarks({ name: "@" });
 						var child = parent.unit.clone(jsh.shell.TMPDIR.createTemporary({ directory: true }));
-						test(Boolean(child.bookmarks()["@"]));
+						verify(child).bookmarks().evaluate.property("@").is.type("object");
+//						test(Boolean(child.bookmarks()["@"]));
 						verify(child.bookmarks()["@"].active);
-						test(!Boolean(child.bookmarks()["local"]));
+						verify(child).bookmarks().evaluate.property("local").is.type("undefined");
+//						test(!Boolean(child.bookmarks()["local"]));
 						parent.bookmarks({ name: "local" });
 						parent.unit.editFile({ path: "a", content: "2" });
 						parent.commit({ message: "2" });
 						verify(child).unit.readFile("a").is("1");
 						parent.push({ destination: child });
 						//	When pushing locally, "new" bookmarks are not pushed
-						test(!Boolean(child.bookmarks()["local"]));
-						debugger;
+						verify(child).bookmarks().evaluate.property("local").is.type("undefined");
+//						test(!Boolean(child.bookmarks()["local"]));
 					</script>
 				</li>
 				<li class="function">
