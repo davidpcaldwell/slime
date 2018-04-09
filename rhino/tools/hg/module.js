@@ -203,7 +203,7 @@ var Installation = function(environment) {
 					var magic = $context.api.js.Array.choose(bookmarks, $context.api.js.Filter.property("name", $context.api.js.Filter.equals("@")));
 					if (magic && !p.update) {
 						rv.update({
-							revision: magic.changeset.global
+							revision: "@"
 						});
 					}
 					return rv;

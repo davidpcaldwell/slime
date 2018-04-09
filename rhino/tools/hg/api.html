@@ -713,13 +713,17 @@ END LICENSE
 						parent.commit({ message: "1" });
 						parent.bookmarks({ name: "@" });
 						parent.bookmarks({ name: "local" });
+						verify(parent).bookmarks()["@"].active.is(false);
+						verify(parent).bookmarks()["local"].active.is(true);
 						parent.unit.editFile({ path: "a", content: "2" });
 						parent.commit({ message: "2" });
+						
+						//	Test that @ is current revision
 						var child = parent.unit.clone(jsh.shell.TMPDIR.createTemporary({ directory: true }));
-						test(child.unit.readFile("a") == "1");
+						verify(child).unit.readFile("a").is("1");
 						//	TODO	this kind of access of bookmark by name is not documented
-						test(!child.bookmarks()["@"].active);
-						test(!child.bookmarks()["local"].active);
+						verify(child).bookmarks()["@"].active.is(true);
+						verify(child).bookmarks()["local"].active.is(false);
 					</script>
 					<script type="application/x.jsapi#tests">
 						var parent = createHg();
@@ -728,12 +732,12 @@ END LICENSE
 						parent.bookmarks({ name: "@" });
 						var child = parent.unit.clone(jsh.shell.TMPDIR.createTemporary({ directory: true }));
 						test(Boolean(child.bookmarks()["@"]));
-						test(!child.bookmarks()["@"].active);
+						verify(child.bookmarks()["@"].active);
 						test(!Boolean(child.bookmarks()["local"]));
 						parent.bookmarks({ name: "local" });
 						parent.unit.editFile({ path: "a", content: "2" });
 						parent.commit({ message: "2" });
-						test(child.unit.readFile("a") == "1");
+						verify(child).unit.readFile("a").is("1");
 						child.pull({ source: parent });
 						//	When pulling locally, "new" bookmarks are pulled
 						test(Boolean(child.bookmarks()["local"]));
@@ -745,12 +749,12 @@ END LICENSE
 						parent.bookmarks({ name: "@" });
 						var child = parent.unit.clone(jsh.shell.TMPDIR.createTemporary({ directory: true }));
 						test(Boolean(child.bookmarks()["@"]));
-						test(!child.bookmarks()["@"].active);
+						verify(child.bookmarks()["@"].active);
 						test(!Boolean(child.bookmarks()["local"]));
 						parent.bookmarks({ name: "local" });
 						parent.unit.editFile({ path: "a", content: "2" });
 						parent.commit({ message: "2" });
-						test(child.unit.readFile("a") == "1");
+						verify(child).unit.readFile("a").is("1");
 						parent.push({ destination: child });
 						//	When pushing locally, "new" bookmarks are not pushed
 						test(!Boolean(child.bookmarks()["local"]));
