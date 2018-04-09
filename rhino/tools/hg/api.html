@@ -732,38 +732,35 @@ END LICENSE
 						parent.bookmarks({ name: "@" });
 						var child = parent.unit.clone(jsh.shell.TMPDIR.createTemporary({ directory: true }));
 						verify(child).bookmarks().evaluate.property("@").is.type("object");
-//						test(Boolean(child.bookmarks()["@"]));
-						verify(child.bookmarks()["@"].active);
+						verify(child).bookmarks()["@"].active.is(true);
 						verify(child).bookmarks().evaluate.property("local").is.type("undefined");
-//						test(!Boolean(child.bookmarks()["local"]));
+
 						parent.bookmarks({ name: "local" });
 						parent.unit.editFile({ path: "a", content: "2" });
 						parent.commit({ message: "2" });
 						verify(child).unit.readFile("a").is("1");
 						child.pull({ source: parent });
-						//	When pulling locally, "new" bookmarks are pulled
 						verify(child).bookmarks().evaluate.property("local").is.type("object");
-//						test(Boolean(child.bookmarks()["local"]));
 					</script>
 					<script type="application/x.jsapi#tests">
 						var parent = createHg();
 						parent.unit.createFile({ path: "a", content: "1", add: true });
 						parent.commit({ message: "1" });
 						parent.bookmarks({ name: "@" });
+						
 						var child = parent.unit.clone(jsh.shell.TMPDIR.createTemporary({ directory: true }));
 						verify(child).bookmarks().evaluate.property("@").is.type("object");
-//						test(Boolean(child.bookmarks()["@"]));
 						verify(child.bookmarks()["@"].active);
+						
+						verify(parent).bookmarks().evaluate.property("local").is.type("undefined");
 						verify(child).bookmarks().evaluate.property("local").is.type("undefined");
-//						test(!Boolean(child.bookmarks()["local"]));
-						parent.bookmarks({ name: "local" });
-						parent.unit.editFile({ path: "a", content: "2" });
-						parent.commit({ message: "2" });
-						verify(child).unit.readFile("a").is("1");
-						parent.push({ destination: child });
-						//	When pushing locally, "new" bookmarks are not pushed
-						verify(child).bookmarks().evaluate.property("local").is.type("undefined");
-//						test(!Boolean(child.bookmarks()["local"]));
+						child.bookmarks({ name: "local" });
+						child.unit.editFile({ path: "a", content: "2" });
+						child.commit({ message: "2" });
+						verify(parent).unit.readFile("a").is("1");
+						child.push({ destination: parent });
+						verify(parent).bookmarks().evaluate.property("local").is.type("undefined");
+						verify(child).bookmarks().evaluate.property("local").is.type("object");
 					</script>
 				</li>
 				<li class="function">
