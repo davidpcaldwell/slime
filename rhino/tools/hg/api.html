@@ -735,6 +735,17 @@ END LICENSE
 						var parent = createHg();
 						parent.unit.createFile({ path: "a", content: "1", add: true });
 						parent.commit({ message: "1" });
+						verify(parent).bookmarks.get("created").is(null);
+						parent.bookmarks({ name: "created" });
+						verify(parent).bookmarks.get("created").is.type("object");
+						verify(parent).evaluate(function() { return this.bookmarks({ delete: true }); }).threw.type(Error);
+						parent.bookmarks({ delete: true, name: "created" });
+						verify(parent).bookmarks.get("created").is(null);						
+					</script>
+					<script type="application/x.jsapi#tests">
+						var parent = createHg();
+						parent.unit.createFile({ path: "a", content: "1", add: true });
+						parent.commit({ message: "1" });
 						parent.bookmarks({ name: "@" });
 						parent.bookmarks({ name: "local" });
 						var at = parent.bookmarks.get("@");

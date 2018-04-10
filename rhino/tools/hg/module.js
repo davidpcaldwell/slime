@@ -672,64 +672,46 @@ var Installation = function(environment) {
 							};
 						})
 					;
-					rv.forEach(function(bookmark) {
-						if (isNaN(Number(bookmark.name))) {
-							rv[bookmark.name] = bookmark;
-						}
-					});
 					return rv;
 				}					
 			});
 		}).bind(this);
 		
-		this.bookmarks = function(p) {			
-			if (p && typeof(p.set) == "string") {
+		this.bookmarks = function(p) {
+			if (!p) p = {};
+			if (p.delete) {
+				if (!p.name) throw new Error();
 				shell({
 					repository: this,
 					command: "bookmarks",
-					arguments: (function(rv) {
-						if (p.inactive) rv.push("--inactive");
-						if (p.force) rv.push("--force");
-						rv.push(p.set);
-						return rv;
-					})([])
+					arguments: ["-d", p.name]
 				});
-				debugger;
 				return void(0);
-			} else if (p && typeof(p.get) == "string") {
-				var items = listBookmarks().filter(function(bookmark) {
-					return bookmark.name == p.get;
+			} else if (p.name) {
+				//	create/set bookmark
+				var revision = (p.revision) ? ["-r", p.revision] : [];
+				shell({
+					repository: this,
+					command: "bookmarks",
+					arguments: ((p.force) ? ["--force"] : []).concat((p.inactive) ? ["--inactive"] : []).concat(revision).concat([p.name])
 				});
-				return (items.length) ? items[0] : null;
-			}
-			if (p && p.name) {
-				if (p.delete) {
-					return shell({
-						repository: this,
-						command: "bookmarks",
-						arguments: ["-d", p.name]
-					});
-				} else {
-					var revision = (p.revision) ? ["-r", p.revision] : [];
-					return shell({
-						repository: this,
-						command: "bookmarks",
-						arguments: ((p.force) ? ["--force"] : []).concat((p.inactive) ? ["--inactive"] : []).concat(revision).concat([p.name])
-					});
-				}
-			} else if (p && p.name === null) {
-				var active = $context.api.js.Array.choose(this.bookmarks(), function(bookmark) {
-					return bookmark.active;
+				return void(0);
+			} else if (p.name === null) {
+				shell({
+					repository: this,
+					command: "bookmarks",
+					arguments: ["-i"]
 				});
-				if (active) {
-					return shell({
-						repository: this,
-						command: "bookmarks",
-						arguments: ["-i", active.name]
-					});
-				}
+				return void(0);
+			} else {
+				var rv = listBookmarks();
+				rv.forEach(function(bookmark) {
+					if (isNaN(Number(bookmark.name))) {
+						rv[bookmark.name] = bookmark;
+					}
+				});
+				return rv;
 			}
-			return listBookmarks();
 		};
 		this.bookmarks.get = function(p) {
 			if (typeof(p) == "string") {
