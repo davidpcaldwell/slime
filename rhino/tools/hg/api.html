@@ -742,9 +742,7 @@ END LICENSE
 						verify(at).changeset.global.is(local.changeset.global);
 						verify(at).active.is(false);
 						verify(local).active.is(true);
-						//verify(parent).bookmarks.get("foo").is(null);
-						var foo = parent.bookmarks.get("foo");
-						verify(foo).is(null);
+						verify(parent).bookmarks.get("foo").is(null);
 					</script>
 					<div>
 						<div>Tests for deprecated APIs</div>
