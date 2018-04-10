@@ -123,76 +123,85 @@ var Verify = function(scope,vars) {
 //		});
 	};
 
-	var Object = function(o,name) {
-		Value.call(this,o,name);
-		var prefix = function(x) {
+	var prefixFactory = function(name) {
+		return function(x) {
 			var isNumber = function(x) {
 				return !isNaN(Number(x));
 			};
 
 			var access = (isNumber(x)) ? "[" + x + "]" : "." + x;
 			return (name) ? (name + access) : access;
-		}
-
-		var wrap = function(o,x) {
-			if (arguments.length == 1) throw new Error();
-			var wrapped = function() {
-				var argumentToString = function(v) {
-					if (typeof(v) == "string") return "\"" + v + "\"";
-					return String(v);
-				}
-				var strings = Array.prototype.map.call(arguments,argumentToString);
-				var name = prefix(x)+"(" + strings.join() + ")";
+		};		
+	}
+	
+	var wrapMethod = function(o,x,name) {
+		if (arguments.length != 3) throw new Error();
+		var prefix = prefixFactory(name);
+		var wrapped = function() {
+			var argumentToString = function(v) {
+				if (typeof(v) == "string") return "\"" + v + "\"";
+				return String(v);
+			}
+			var strings = Array.prototype.map.call(arguments,argumentToString);
+			var name = prefix(x)+"(" + strings.join() + ")";
 //				try {
-					var returned = o[x].apply(o,arguments);
-					var value = rv(returned,name);
+				var returned = o[x].apply(o,arguments);
+				var value = rv(returned,name);
 //					value.threw = new DidNotThrow(returned,name);
-					return value;
+				return value;
 //				} catch (e) {
 //					return new DidNotReturn(e,name);
 //				}
-			};
-			return wrapped;
 		};
+//		wrapObject.call(wrapped,o[x]);
+		return wrapped;
+	};
 
-		var wrapProperty = function(o,x) {
-			if (arguments.length == 1) throw new Error("arguments[0] = " + o + " arguments[1] = " + x + " arguments.length=" + arguments.length);
-			defineProperty(this, x, {
-				get: function() {
-					return rv(o[x],prefix(x));
-				}
-			});
-		};
-
-		$api.debug.disableBreakOnExceptionsFor(function(o) {
-			for (var x in o) {
-				try {
-					var noSelection = (o.tagName == "INPUT" && (o.type == "button" || o.type == "checkbox"));
-					if (noSelection && x == "selectionDirection") continue;
-					if (noSelection && x == "selectionEnd") continue;
-					if (noSelection && x == "selectionStart") continue;
-					var value = o[x];
-					if (typeof(value) == "function") {
-						this[x] = wrap(o,x);
-					} else {
-						if (x != "is" && x != "evaluate") {
-							wrapProperty.call(this,o,x);
-						}
-					}
-				} catch (e) {
-				}
+	var wrapProperty = function(o,x,name) {
+		if (arguments.length != 3) throw new Error("arguments[0] = " + o + " arguments[1] = " + x + " arguments.length=" + arguments.length);
+		var prefix = prefixFactory(name);
+		defineProperty(this, x, {
+			get: function() {
+				return rv(o[x],prefix(x));
 			}
-		}).call(this,o);
-
+		});
+	};
+	
+	var wrapObject = $api.debug.disableBreakOnExceptionsFor(function(o,name) {
+		for (var x in o) {
+			try {
+				var noSelection = (o.tagName == "INPUT" && (o.type == "button" || o.type == "checkbox"));
+				if (noSelection && x == "selectionDirection") continue;
+				if (noSelection && x == "selectionEnd") continue;
+				if (noSelection && x == "selectionStart") continue;
+				if (typeof(o) == "function" && !o.hasOwnProperty(x)) continue;
+				var value = o[x];
+				if (typeof(value) == "function") {
+					this[x] = wrapMethod(o,x,name);
+				} else {
+					if (x != "is" && x != "evaluate") {
+						wrapProperty.call(this,o,x,name);
+					}
+				}
+			} catch (e) {
+			}
+		}
+		
 		if (o instanceof Array) {
-			wrapProperty.call(this,o,"length");
+			wrapProperty.call(this,o,"length",name);
 		}
 		if (o instanceof Date) {
-			this.getTime = wrap(o,"getTime");
+			this.getTime = wrapMethod(o,"getTime",name);
 		}
 		if (o instanceof Error && !this.message) {
-			wrapProperty.call(this,o,"message");
+			wrapProperty.call(this,o,"message",name);
 		}
+	});
+
+	var Object = function(o,name) {
+		Value.call(this,o,name);
+
+		wrapObject.call(this,o,name);
 
 		this.evaluate = function(f) {
 			var DidNotReturn = function(e,name) {
