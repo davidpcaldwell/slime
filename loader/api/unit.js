@@ -134,8 +134,9 @@ var Verify = function(scope,vars) {
 			return (name) ? (name + access) : access;
 		}
 
-		var wrap = function(x) {
-			return function() {
+		var wrap = function(o,x) {
+			if (arguments.length == 1) throw new Error();
+			var wrapped = function() {
 				var argumentToString = function(v) {
 					if (typeof(v) == "string") return "\"" + v + "\"";
 					return String(v);
@@ -150,10 +151,12 @@ var Verify = function(scope,vars) {
 //				} catch (e) {
 //					return new DidNotReturn(e,name);
 //				}
-			}
+			};
+			return wrapped;
 		};
 
-		var wrapProperty = function(x) {
+		var wrapProperty = function(o,x) {
+			if (arguments.length == 1) throw new Error("arguments[0] = " + o + " arguments[1] = " + x + " arguments.length=" + arguments.length);
 			defineProperty(this, x, {
 				get: function() {
 					return rv(o[x],prefix(x));
@@ -170,10 +173,10 @@ var Verify = function(scope,vars) {
 					if (noSelection && x == "selectionStart") continue;
 					var value = o[x];
 					if (typeof(value) == "function") {
-						this[x] = wrap(x);
+						this[x] = wrap(o,x);
 					} else {
 						if (x != "is" && x != "evaluate") {
-							wrapProperty.call(this,x);
+							wrapProperty.call(this,o,x);
 						}
 					}
 				} catch (e) {
@@ -182,13 +185,13 @@ var Verify = function(scope,vars) {
 		}).call(this,o);
 
 		if (o instanceof Array) {
-			wrapProperty.call(this,"length");
+			wrapProperty.call(this,o,"length");
 		}
 		if (o instanceof Date) {
-			this.getTime = wrap("getTime");
+			this.getTime = wrap(o,"getTime");
 		}
 		if (o instanceof Error && !this.message) {
-			wrapProperty.call(this,"message");
+			wrapProperty.call(this,o,"message");
 		}
 
 		this.evaluate = function(f) {
@@ -300,6 +303,7 @@ var Verify = function(scope,vars) {
 		if (typeof(vars[x]) == "function") {
 			rv[x] = (function(delegate,name) {
 				return function() {
+					//	TODO	this cannot be right, should not depend on Slim
 					var v = delegate.apply(inonit.slim.getDocument(),arguments);
 					//	TODO	the below does a poor job at creating the prefix to use
 					return rv(v,name);
