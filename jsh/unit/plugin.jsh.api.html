@@ -141,6 +141,36 @@ END LICENSE
 											</ul>
 										</li>
 										<li class="object">
+											<div class="name">java</div>
+											<span>__DESCRIPTION__</span>
+											<div class="label">has properties:</div>
+											<ul>
+												<li class="value">
+													<div class="name">loader</div>
+													<span class="type">__TYPE__</span>
+													<span>__DESCRIPTION__</span>
+												</li>
+												<li class="object">
+													<div class="name">io</div>
+													<span>__DESCRIPTION__</span>
+													<div class="label">has properties:</div>
+													<ul>
+														<li class="function">
+															<div class="name">newTemporaryDirectory</div>
+															<span>
+																Returns a <code>java.io.File</code> representing a new, empty directory.
+															</span>
+															<div class="returns">
+																<div class="label">Returns</div>
+																<span class="type">JavaClass java.io.File</span>
+																<span>__DESCRIPTION__</span>
+															</div>
+														</li>
+													</ul>
+												</li>
+											</ul>
+										</li>
+										<li class="object">
 											<div class="name">debug</div>
 											<span>__DESCRIPTION__</span>
 											<div class="label">has properties:</div>
@@ -148,6 +178,7 @@ END LICENSE
 												<li class="function deprecated">
 													<div class="name">disableBreakOnExceptions</div>
 													<span>
+														<b>Deprecated. <i>Use <code>$api.debug.disableBreakOnExceptionsFor</code></i>.</b>
 														Returns a function that disables the debugger's break-on-exception behavior for the duration of the
 														function.
 													</span>
@@ -176,7 +207,7 @@ END LICENSE
 												<li class="deprecated function">
 													<div class="name">newTemporaryDirectory</div>
 													<span>
-														<b>Deprecated. <i>Use <code>jsh.shell.TMPDIR.createTemporary({ directory: true })</code></i></b>
+														<b>Deprecated. <i>Use <code>jsh.shell.TMPDIR.createTemporary({ directory: true })</code></i>.</b>
 														Creates a temporary directory.
 													</span>
 													<div class="returns">
@@ -184,36 +215,6 @@ END LICENSE
 														<span class="type"><a href="../../rhino/file/api.html#types.directory">directory</a></span>
 														<span>A new temporary directory.</span>
 													</div>
-												</li>
-											</ul>
-										</li>
-										<li class="object">
-											<div class="name">java</div>
-											<span>__DESCRIPTION__</span>
-											<div class="label">has properties:</div>
-											<ul>
-												<li class="value">
-													<div class="name">loader</div>
-													<span class="type">__TYPE__</span>
-													<span>__DESCRIPTION__</span>
-												</li>
-												<li class="object">
-													<div class="name">io</div>
-													<span>__DESCRIPTION__</span>
-													<div class="label">has properties:</div>
-													<ul>
-														<li class="function">
-															<div class="name">newTemporaryDirectory</div>
-															<span>
-																Returns a <code>java.io.File</code> representing a new, empty directory.
-															</span>
-															<div class="returns">
-																<div class="label">Returns</div>
-																<span class="type">JavaClass java.io.File</span>
-																<span>__DESCRIPTION__</span>
-															</div>
-														</li>
-													</ul>
 												</li>
 											</ul>
 										</li>
@@ -257,8 +258,35 @@ END LICENSE
 						</div>
 						<div class="instances">
 							<div class="label">Instances</div>
-							<span class="type">__TYPE__</span>
-							<span>__DESCRIPTION__</span>
+							<span class="type"><a href="../../loader/api/unit.api.html#types.definition">part definition</a></span>
+							<span>Instances get the following extra properties:</span>
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="function">
+									<div class="name">getPath</div>
+									<span>__DESCRIPTION__</span>
+									<div class="arguments">
+										<div class="label">Arguments</div>
+										<ol>
+											<li class="value">
+												<span class="type">Array of string</span>
+												<span>
+													A list of <code>jsapi:id</code> values representing the path to a subsuite.
+												</span>
+											</li>
+										</ol>
+									</div>
+									<div class="returns">
+										<div class="label">Returns</div>
+										<span class="type">Array of string</span>
+										<span>
+											Returns a <i>path</i> to the subsuite suitable for use as the
+											<code>path</code> property in
+											<a href="../../loader/api/unit.api.html">Suite.run()</a>
+										</span>
+									</div>
+								</li>
+							</ul>
 						</div>
 						<script type="application/x.jsapi#initialize">
 							if (!$jsapi.environment.file) {

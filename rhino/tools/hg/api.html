@@ -679,15 +679,9 @@ END LICENSE
 				</li>
 				<li class="function" jsapi:id="bookmarks">
 					<div class="name">bookmarks</div>
-					<span>__DESCRIPTION__</span>
-					<div class="arguments">
-						<div class="label">Arguments</div>
-						<ol>
-						</ol>
-					</div>
-					<div class="returns">
-						<div class="label">Returns</div>
-						If querying the bookmarks, array of the following type:
+					<div class="type">
+						<a class="type" name="types.bookmark">bookmark</a>
+						<span>__DESCRIPTION__</span>
 						<div class="label">has properties:</div>
 						<ul>
 							<li class="value">
@@ -707,61 +701,109 @@ END LICENSE
 							</li>
 						</ul>
 					</div>
+					<span>__DESCRIPTION__</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+							<li class="object">
+								<div class="name">__NAME__</div>
+								<span>__DESCRIPTION__</span>
+								<div class="label">has properties:</div>
+								<ul>
+									<li class="value">
+										<div class="name">get</div>
+										<span class="type">__TYPE__</span>
+										<span>__DESCRIPTION__</span>
+									</li>
+									<li class="value">
+										<div class="name">set</div>
+										<span class="type">__TYPE__</span>
+										<span>__DESCRIPTION__</span>
+									</li>
+								</ul>
+							</li>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						If querying the bookmarks, array of the following type:
+						<div class="label">has properties:</div>
+						<ul>
+						</ul>
+					</div>
 					<script type="application/x.jsapi#tests">
 						var parent = createHg();
 						parent.unit.createFile({ path: "a", content: "1", add: true });
 						parent.commit({ message: "1" });
 						parent.bookmarks({ name: "@" });
 						parent.bookmarks({ name: "local" });
-						verify(parent).bookmarks()["@"].active.is(false);
-						verify(parent).bookmarks()["local"].active.is(true);
-						parent.unit.editFile({ path: "a", content: "2" });
-						parent.commit({ message: "2" });
-						
-						//	Test that @ is current revision
-						var child = parent.unit.clone(jsh.shell.TMPDIR.createTemporary({ directory: true }));
-						verify(child).unit.readFile("a").is("1");
-						//	TODO	this kind of access of bookmark by name is not documented
-						verify(child).bookmarks()["@"].active.is(true);
-						verify(child).bookmarks()["local"].active.is(false);
+						var at = parent.bookmarks.get("@");
+						var local = parent.bookmarks.get("local");
+						verify(at).changeset.global.is(local.changeset.global);
+						verify(at).active.is(false);
+						verify(local).active.is(true);
+						//verify(parent).bookmarks.get("foo").is(null);
+						var foo = parent.bookmarks.get("foo");
+						verify(foo).is(null);
 					</script>
-					<script type="application/x.jsapi#tests">
-						var parent = createHg();
-						parent.unit.createFile({ path: "a", content: "1", add: true });
-						parent.commit({ message: "1" });
-						parent.bookmarks({ name: "@" });
-						var child = parent.unit.clone(jsh.shell.TMPDIR.createTemporary({ directory: true }));
-						verify(child).bookmarks().evaluate.property("@").is.type("object");
-						verify(child).bookmarks()["@"].active.is(true);
-						verify(child).bookmarks().evaluate.property("local").is.type("undefined");
+					<div>
+						<div>Tests for deprecated APIs</div>
+						<script type="application/x.jsapi#tests">
+							var parent = createHg();
+							parent.unit.createFile({ path: "a", content: "1", add: true });
+							parent.commit({ message: "1" });
+							parent.bookmarks({ name: "@" });
+							parent.bookmarks({ name: "local" });
+							verify(parent).bookmarks()["@"].active.is(false);
+							verify(parent).bookmarks()["local"].active.is(true);
+							parent.unit.editFile({ path: "a", content: "2" });
+							parent.commit({ message: "2" });
 
-						parent.bookmarks({ name: "local" });
-						parent.unit.editFile({ path: "a", content: "2" });
-						parent.commit({ message: "2" });
-						verify(child).unit.readFile("a").is("1");
-						child.pull({ source: parent });
-						verify(child).bookmarks().evaluate.property("local").is.type("object");
-					</script>
-					<script type="application/x.jsapi#tests">
-						var parent = createHg();
-						parent.unit.createFile({ path: "a", content: "1", add: true });
-						parent.commit({ message: "1" });
-						parent.bookmarks({ name: "@" });
-						
-						var child = parent.unit.clone(jsh.shell.TMPDIR.createTemporary({ directory: true }));
-						verify(child).bookmarks().evaluate.property("@").is.type("object");
-						verify(child.bookmarks()["@"].active);
-						
-						verify(parent).bookmarks().evaluate.property("local").is.type("undefined");
-						verify(child).bookmarks().evaluate.property("local").is.type("undefined");
-						child.bookmarks({ name: "local" });
-						child.unit.editFile({ path: "a", content: "2" });
-						child.commit({ message: "2" });
-						verify(parent).unit.readFile("a").is("1");
-						child.push({ destination: parent });
-						verify(parent).bookmarks().evaluate.property("local").is.type("undefined");
-						verify(child).bookmarks().evaluate.property("local").is.type("object");
-					</script>
+							//	Test that @ is current revision
+							var child = parent.unit.clone(jsh.shell.TMPDIR.createTemporary({ directory: true }));
+							verify(child).unit.readFile("a").is("1");
+							//	TODO	this kind of access of bookmark by name is not documented
+							verify(child).bookmarks()["@"].active.is(true);
+							verify(child).bookmarks()["local"].active.is(false);
+						</script>
+						<script type="application/x.jsapi#tests">
+							var parent = createHg();
+							parent.unit.createFile({ path: "a", content: "1", add: true });
+							parent.commit({ message: "1" });
+							parent.bookmarks({ name: "@" });
+							var child = parent.unit.clone(jsh.shell.TMPDIR.createTemporary({ directory: true }));
+							verify(child).bookmarks().evaluate.property("@").is.type("object");
+							verify(child).bookmarks()["@"].active.is(true);
+							verify(child).bookmarks().evaluate.property("local").is.type("undefined");
+
+							parent.bookmarks({ name: "local" });
+							parent.unit.editFile({ path: "a", content: "2" });
+							parent.commit({ message: "2" });
+							verify(child).unit.readFile("a").is("1");
+							child.pull({ source: parent });
+							verify(child).bookmarks().evaluate.property("local").is.type("object");
+						</script>
+						<script type="application/x.jsapi#tests">
+							var parent = createHg();
+							parent.unit.createFile({ path: "a", content: "1", add: true });
+							parent.commit({ message: "1" });
+							parent.bookmarks({ name: "@" });
+
+							var child = parent.unit.clone(jsh.shell.TMPDIR.createTemporary({ directory: true }));
+							verify(child).bookmarks().evaluate.property("@").is.type("object");
+							verify(child.bookmarks()["@"].active);
+
+							verify(parent).bookmarks().evaluate.property("local").is.type("undefined");
+							verify(child).bookmarks().evaluate.property("local").is.type("undefined");
+							child.bookmarks({ name: "local" });
+							child.unit.editFile({ path: "a", content: "2" });
+							child.commit({ message: "2" });
+							verify(parent).unit.readFile("a").is("1");
+							child.push({ destination: parent });
+							verify(parent).bookmarks().evaluate.property("local").is.type("undefined");
+							verify(child).bookmarks().evaluate.property("local").is.type("object");
+						</script>
+					</div>
 				</li>
 				<li class="function">
 					<div class="name">serve</div>

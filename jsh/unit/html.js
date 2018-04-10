@@ -161,8 +161,32 @@ var Suite = function(pathname) {
 			var name = pathname.toString();
 			this.html = new $context.html.ApiHtmlTests(page,name);
 			this.getSuiteDescriptor = function(scope) {
-				return this.html.getSuiteDescriptor(scope);
-			}
+				var rv = this.html.getSuiteDescriptor(scope);
+				if (true) {
+					var find = function recurse(part,names) {
+						if (names.length == 0) return [];
+						for (var x in part.parts) {
+							var name = part.parts[x].name;
+							if (name.substring(0,1) == "<") name = null;
+							if (name == names[0]) {
+								return [x].concat(recurse(part.parts[x],names.slice(1)));
+							} else if (name) {
+								//	skip
+							} else {
+								var found = recurse(part.parts[x],names,[]);
+								if (found) return [x].concat(found);
+							}
+						}
+						return null;
+					};
+
+					rv.getPath = function(ids) {
+						return find(this,ids);
+					}
+				}
+				return rv;
+			};
+			
 		}
 
 		this.toString = function() {
@@ -307,18 +331,23 @@ var PartDescriptor = function(p) {
 
 $exports.PartDescriptor = function(p) {
 	if (p.reload) {
-		return {
+		var rv = {
 			name: p.name,
 			execute: function() {
-				var suite = new jsh.unit.Suite(new PartDescriptor(p));
+				var part = new PartDescriptor(p);
+				var suite = new jsh.unit.Suite(part);
 				var fire = (function(e) {
 					this.fire(e.type,e.detail);
 				}).bind(this);
 				suite.listeners.add("scenario",fire);
 				suite.listeners.add("test",fire);
 				suite.run();
+			},
+			getPath: function(ids) {
+				return new PartDescriptor(p).getPath(ids);
 			}
 		}
+		return rv;
 	} else {
 		return new PartDescriptor(p);
 	}

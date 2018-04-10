@@ -645,34 +645,7 @@ var Installation = function(environment) {
 			});
 		};
 
-		this.bookmarks = function(p) {
-			if (p && p.name) {
-				if (p.delete) {
-					return shell({
-						repository: this,
-						command: "bookmarks",
-						arguments: ["-d", p.name]
-					});
-				} else {
-					var revision = (p.revision) ? ["-r", p.revision] : [];
-					return shell({
-						repository: this,
-						command: "bookmarks",
-						arguments: ((p.force) ? ["--force"] : []).concat((p.inactive) ? ["--inactive"] : []).concat(revision).concat([p.name])
-					});
-				}
-			} else if (p && p.name === null) {
-				var active = $context.api.js.Array.choose(this.bookmarks(), function(bookmark) {
-					return bookmark.active;
-				});
-				if (active) {
-					return shell({
-						repository: this,
-						command: "bookmarks",
-						arguments: ["-i", active.name]
-					});
-				}
-			}
+		var listBookmarks = (function() {
 			return shell({
 				repository: this,
 				command: "bookmarks",
@@ -705,8 +678,74 @@ var Installation = function(environment) {
 						}
 					});
 					return rv;
-				}
+				}					
 			});
+		}).bind(this);
+		
+		this.bookmarks = function(p) {			
+			if (p && typeof(p.set) == "string") {
+				shell({
+					repository: this,
+					command: "bookmarks",
+					arguments: (function(rv) {
+						if (p.inactive) rv.push("--inactive");
+						if (p.force) rv.push("--force");
+						rv.push(p.set);
+						return rv;
+					})([])
+				});
+				debugger;
+				return void(0);
+			} else if (p && typeof(p.get) == "string") {
+				var items = listBookmarks().filter(function(bookmark) {
+					return bookmark.name == p.get;
+				});
+				return (items.length) ? items[0] : null;
+			}
+			if (p && p.name) {
+				if (p.delete) {
+					return shell({
+						repository: this,
+						command: "bookmarks",
+						arguments: ["-d", p.name]
+					});
+				} else {
+					var revision = (p.revision) ? ["-r", p.revision] : [];
+					return shell({
+						repository: this,
+						command: "bookmarks",
+						arguments: ((p.force) ? ["--force"] : []).concat((p.inactive) ? ["--inactive"] : []).concat(revision).concat([p.name])
+					});
+				}
+			} else if (p && p.name === null) {
+				var active = $context.api.js.Array.choose(this.bookmarks(), function(bookmark) {
+					return bookmark.active;
+				});
+				if (active) {
+					return shell({
+						repository: this,
+						command: "bookmarks",
+						arguments: ["-i", active.name]
+					});
+				}
+			}
+			return listBookmarks();
+		};
+		this.bookmarks.get = function(p) {
+			if (typeof(p) == "string") {
+				var items = listBookmarks().filter(function(bookmark) {
+					return bookmark.name == p;
+				});
+				return (items.length) ? items[0] : null;				
+			} else if (p === Array) {
+				return listBookmarks();
+			} else if (p === Object) {
+				return listBookmarks.reduce(function(rv,item) {
+					rv[item.name] = item;
+				},{});
+			} else {
+				throw new Error("Illegal argument.");
+			}
 		};
 
 		this.serve = function(p) {
