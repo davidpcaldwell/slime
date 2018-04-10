@@ -153,7 +153,7 @@ var Verify = function(scope,vars) {
 //					return new DidNotReturn(e,name);
 //				}
 		};
-//		wrapObject.call(wrapped,o[x]);
+		wrapObject.call(wrapped,o[x]);
 		return wrapped;
 	};
 
