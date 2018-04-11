@@ -102,7 +102,11 @@ var Installation = function(environment) {
 			}
 		}
 		args.push(p.command);
-		args.push.apply(args,p.arguments);
+		if (typeof(p.arguments) == "object" && p.arguments instanceof Array) {
+			args.push.apply(args,p.arguments);			
+		} else if (typeof(p.arguments) == "function") {
+			p.arguments(args);
+		}
 
 		if (p.directory) {
 			invocation.directory = p.directory;
@@ -696,19 +700,23 @@ var Installation = function(environment) {
 				shell({
 					repository: this,
 					command: "bookmarks",
-					arguments: ["--delete", p.name]
+					arguments: ["--delete",p.name]
 				});
 				return void(0);
 			} else if (p.name) {
 				//	create/set bookmark
-				var revision = (p.revision) ? ["--rev", p.revision] : [];
 				shell({
 					repository: this,
 					command: "bookmarks",
-					arguments: ((p.force) ? ["--force"] : []).concat((p.inactive) ? ["--inactive"] : []).concat(revision).concat([p.name])
+					arguments: function(array) {
+						if (p.force) array.push("--force");
+						if (p.inactive) array.push("--inactive");
+						if (p.revision) array.push("--rev", p.revision);
+						array.push(p.name);
+					}
 				});
 				return void(0);
-			} else if (p.name === null) {
+			} else if (p.name === null || (!p.name && p.inactive)) {
 				shell({
 					repository: this,
 					command: "bookmarks",

@@ -708,7 +708,6 @@ END LICENSE
 						<div class="label">Arguments</div>
 						<ol>
 							<li class="object">
-								<div class="name">__NAME__</div>
 								<span>__DESCRIPTION__</span>
 								<div class="label">has properties:</div>
 								<ul>
@@ -738,6 +737,62 @@ END LICENSE
 											A bookmark name. If <code>delete</code> is specified, the bookmark to be deleted.
 											Otherwise, the bookmark to be set.
 										</span>
+										<script type="application/x.jsapi#tests">
+											var parent = createHg();
+											parent.unit.createFile({ path: "a", content: "1", add: true });
+											parent.commit({ message: "1" });
+											verify(parent).bookmarks.get("b").is(null);
+											parent.bookmarks({ name: "b" });
+											verify(parent).bookmarks.get("b").active.is(true);
+											parent.bookmarks({ name: "other" });
+											verify(parent).bookmarks.get("b").changeset.global.is(parent.bookmarks.get("other").changeset.global);
+											verify(parent).bookmarks.get("b").active.is(false);
+											verify(parent).bookmarks.get("other").active.is(true);
+											verify(parent).bookmarks.get("foo").is(null);
+											
+											parent.bookmarks({ name: "i", inactive: true });
+											verify(parent).bookmarks.get("other").active.is(true);
+											verify(parent).bookmarks.get("i").active.is(false);
+											
+											parent.bookmarks({ name: "a" });
+											verify(parent).bookmarks.get("a").active.is(true);
+											parent.bookmarks({ inactive: true });
+											verify(parent).bookmarks.get("a").active.is(false);
+											parent.bookmarks({ name: "a" });
+											verify(parent).bookmarks.get("a").active.is(true);
+											parent.bookmarks({ name: null });
+											verify(parent).bookmarks.get("a").active.is(false);
+											
+											//	Testing with hg 4.2.2, bookmarking a revision *always* makes the bookmark inactive
+											parent.bookmarks({ name: "specific", revision: "a" });
+											verify(parent).bookmarks.get("a").active.is(false);
+											verify(parent).bookmarks.get("specific").active.is(false);
+											
+											parent.unit.createFile({ path: "b", content: "2", add: true });
+											parent.commit({ message: "2" });
+											parent.bookmarks({ name: "now" });
+											parent.bookmarks({ name: "old", inactive: true, revision: "b" });
+											verify(parent).bookmarks.get("old").active.is(false);
+											verify(parent).bookmarks.get("old").changeset.global.is(parent.bookmarks.get("old").changeset.global);
+											verify(parent).bookmarks.get("old").changeset.global.is.not(parent.bookmarks.get("now").changeset.global);
+										</script>
+									</li>
+									<li class="value">
+										<div class="name">inactive</div>
+										<span class="type">boolean</span>
+										<span>
+											When creating a bookmark, specifies whether the bookmark should be marked as
+											<dfn>inactive</dfn>. Creating an active bookmark is the default (if no revision
+											is specified; see below).
+										</span>
+									</li>
+									<li class="value">
+										<div class="name">revision</div>
+										<span class="type">string</span>
+										<span>
+											When creating a bookmark, the revision to use. Note that specifying a revision
+											(at least as of Mercurial 4.2.2) always causes the created bookmark to be inactive.
+										</span>
 									</li>
 								</ul>
 							</li>
@@ -745,10 +800,11 @@ END LICENSE
 					</div>
 					<div class="returns">
 						<div class="label">Returns</div>
-						If querying the bookmarks, array of the following type:
-						<div class="label">has properties:</div>
-						<ul>
-						</ul>
+						If no bookmark is being created, updated, or deleted:
+						<div>
+							<span class="type">Array of <a href="#types.bookmark">bookmark</a></span>
+							<span>The current bookmarks for the repository.</span>
+						</div>
 					</div>
 					<div class="label">has properties:</div>
 					<ul>
@@ -780,19 +836,6 @@ END LICENSE
 							verify(bookmarks).local.local.is(true);
 						</script>
 					</ul>
-					<script type="application/x.jsapi#tests">
-						var parent = createHg();
-						parent.unit.createFile({ path: "a", content: "1", add: true });
-						parent.commit({ message: "1" });
-						parent.bookmarks({ name: "@" });
-						parent.bookmarks({ name: "local" });
-						var at = parent.bookmarks.get("@");
-						var local = parent.bookmarks.get("local");
-						verify(at).changeset.global.is(local.changeset.global);
-						verify(at).active.is(false);
-						verify(local).active.is(true);
-						verify(parent).bookmarks.get("foo").is(null);
-					</script>
 					<div>
 						<div>Tests for deprecated APIs</div>
 						<script type="application/x.jsapi#tests">
