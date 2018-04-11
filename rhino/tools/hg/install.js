@@ -194,7 +194,9 @@ $exports.install = $context.api.Events.Function(function(p,events) {
 });
 $exports.install.GUI = GUI;
 
-$exports.Installation = $context.api.Installation;
+for (var x in $context.api.module) {
+	$exports[x] = $context.api.module[x];
+}
 
 if ($context.api.shell.PATH.getCommand("hg")) {
 	$exports.installation = new $exports.Installation({

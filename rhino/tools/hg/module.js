@@ -733,13 +733,47 @@ var Installation = function(environment) {
 			} else if (p === Array) {
 				return listBookmarks();
 			} else if (p === Object) {
-				return listBookmarks.reduce(function(rv,item) {
+				return listBookmarks().reduce(function(rv,item) {
 					rv[item.name] = item;
+					return rv;
 				},{});
 			} else {
 				throw new Error("Illegal argument.");
 			}
 		};
+		this.bookmarks.list = (function(p) {
+			if (!p) p = {};
+			var array = listBookmarks();
+			if (p.origin) {
+				var outgoing = shell({
+					repository: this,
+					command: "outgoing",
+					arguments: ["-B"],
+					evaluate: function(result) {
+						if (result.status == 1 && result.stdio.output.indexOf("no changed bookmarks found") != -1) return [];
+						var output = result.stdio.output.split("\n").map(function(line) {
+							return line.trim();
+						});
+						var names = output.slice(2,-1).map(function(line) {
+							var name = /(\S+)\s+(?:\S+)/.exec(line)[1];
+							return name;
+						});
+						return names;
+					}
+				});
+				array.forEach(function(bookmark) {
+					bookmark.local = outgoing.indexOf(bookmark.name) != -1;
+				});
+			}
+			var rv = array;
+			if (p.as == Object) {
+				rv = array.reduce(function(rv,item) {
+					rv[item.name] = item;
+					return rv;
+				},{});
+			}
+			return rv;
+		}).bind(this);
 
 		this.serve = function(p) {
 			var lock = new $context.api.java.Thread.Monitor();

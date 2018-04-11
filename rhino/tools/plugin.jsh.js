@@ -51,7 +51,7 @@ plugin({
 			
 			jsh.tools.hg = $loader.file("hg/install.js", {
 				api: {
-					Installation: module.Installation,
+					module: module,
 					shell: jsh.shell,
 					java: {
 						tools: jsh.java.tools
