@@ -701,7 +701,7 @@ END LICENSE
 							</li>
 						</ul>
 					</div>
-					<span>__DESCRIPTION__</span>
+					<span>A method that closely follows the <code>hg bookmarks</code> command.</span>
 					<div class="arguments">
 						<div class="label">Arguments</div>
 						<ol>
@@ -711,14 +711,17 @@ END LICENSE
 								<div class="label">has properties:</div>
 								<ul>
 									<li class="value">
-										<div class="name">get</div>
-										<span class="type">__TYPE__</span>
-										<span>__DESCRIPTION__</span>
+										<div class="name">delete</div>
+										<span class="type">boolean</span>
+										<span>If <code>true</code>, the <code>--delete</code> argument is used.</span>
 									</li>
 									<li class="value">
-										<div class="name">set</div>
-										<span class="type">__TYPE__</span>
-										<span>__DESCRIPTION__</span>
+										<div class="name">name</div>
+										<span class="type">string</span>
+										<span>
+											A bookmark name. If <code>delete</code> is specified, the bookmark to be deleted.
+											Otherwise, the bookmark to be set.
+										</span>
 									</li>
 								</ul>
 							</li>

@@ -677,6 +677,18 @@ var Installation = function(environment) {
 			});
 		}).bind(this);
 		
+		if (!$api.Array) $api.Array = {};
+		if (!$api.Array.element) $api.Array.element = function recurse(filter) {
+			if (filter) return recurse.call(this.filter(filter));
+			if (this.length == 0) return null;
+			if (this.length == 1) return this[0];
+			throw new Error("Array has " + this.length + " elements; .element() must be invoked on 0-length or 1-length arrays.");
+		};
+		$api.Array.global = function() {
+			Array.prototype.element = $api.Array.element;
+		};
+		$api.Array.global();
+		
 		this.bookmarks = function(p) {
 			if (!p) p = {};
 			if (p.delete) {
@@ -684,12 +696,12 @@ var Installation = function(environment) {
 				shell({
 					repository: this,
 					command: "bookmarks",
-					arguments: ["-d", p.name]
+					arguments: ["--delete", p.name]
 				});
 				return void(0);
 			} else if (p.name) {
 				//	create/set bookmark
-				var revision = (p.revision) ? ["-r", p.revision] : [];
+				var revision = (p.revision) ? ["--rev", p.revision] : [];
 				shell({
 					repository: this,
 					command: "bookmarks",
@@ -700,7 +712,7 @@ var Installation = function(environment) {
 				shell({
 					repository: this,
 					command: "bookmarks",
-					arguments: ["-i"]
+					arguments: ["--inactive"]
 				});
 				return void(0);
 			} else {
@@ -715,10 +727,9 @@ var Installation = function(environment) {
 		};
 		this.bookmarks.get = function(p) {
 			if (typeof(p) == "string") {
-				var items = listBookmarks().filter(function(bookmark) {
+				return listBookmarks().element(function(bookmark) {
 					return bookmark.name == p;
 				});
-				return (items.length) ? items[0] : null;				
 			} else if (p === Array) {
 				return listBookmarks();
 			} else if (p === Object) {
