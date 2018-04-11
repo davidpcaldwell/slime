@@ -60,7 +60,7 @@ var distributions = {
 		{
 			version: "10.12",
 			distribution: {
-				url: "https://www.mercurial-scm.org/mac/binaries/Mercurial-4.2.2-macosx10.12.pkg"
+				url: "https://www.mercurial-scm.org/mac/binaries/Mercurial-4.5.2-macosx10.12.pkg"
 			}
 		}
 	].map(function(o) {
