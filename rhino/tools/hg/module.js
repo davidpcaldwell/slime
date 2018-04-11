@@ -650,6 +650,7 @@ var Installation = function(environment) {
 		};
 
 		var listBookmarks = (function() {
+			var repository = this;
 			return shell({
 				repository: this,
 				command: "bookmarks",
@@ -672,6 +673,22 @@ var Installation = function(environment) {
 								changeset: {
 									global: match[4],
 									local: Number(match[3])
+								},
+								push: function() {
+									shell({
+										repository: repository,
+										command: "push",
+										arguments: ["-B", this.name],
+										evaluate: function(result) {
+											if (result.status != 0) {
+												if (result.status == 1 && result.stdio.output.indexOf("no changes found") != -1) {
+													return;
+												} else {
+													throw new Error();
+												}
+											}
+										}
+									});
 								}
 							};
 						})

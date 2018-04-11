@@ -203,6 +203,20 @@ END LICENSE
 						test(Boolean(to.directory));
 						test(1 == 1, "Clone succeeded");
 					</script>
+					<script type="application/x.jsapi#tests">
+						var parent = createHg();
+						parent.unit.createFile({ path: "a", content: "1", add: true });
+						parent.commit({ message: "1" });
+						parent.bookmarks({ name: "@" });
+						parent.bookmarks({ name: null });
+						parent.unit.editFile({ path: "a", content: "2" });
+						parent.commit({ message: "2" });
+
+						//	Test that @ is current revision on clone
+						var child = parent.unit.clone(jsh.shell.TMPDIR.createTemporary({ directory: true }));
+						verify(child).unit.readFile("a").is("1");
+						verify(child).bookmarks()["@"].active.is(true);
+					</script>
 				</li>
 				<li class="function">
 					<div class="name">identify</div>
@@ -701,6 +715,35 @@ END LICENSE
 								<span class="type"><a href="#types.changeset">changeset</a></span>
 								<span>__DESCRIPTION__</span>
 							</li>
+							<li class="function" jsapi:id="push">
+								<div class="name">push</div>
+								<span>__DESCRIPTION__</span>
+								<div class="arguments">
+									<div class="label">Arguments</div>
+									<ol>
+									</ol>
+								</div>
+								<div class="returns">
+									<div class="label">Returns</div>
+									<span class="type">__TYPE__</span>
+									<span>__DESCRIPTION__</span>
+								</div>
+								<script type="application/x.jsapi#tests">
+									var parent = createHg();
+									parent.unit.createFile({ path: "a", content: "1", add: true });
+									parent.commit({ message: "1" });
+									
+									var child = parent.unit.clone(jsh.shell.TMPDIR.createTemporary({ directory: true }));
+									child.bookmarks({ name: "local" });
+									
+									verify(parent).bookmarks.get("local").is(null);
+									verify(child).bookmarks.get("local").is.type("object");
+									
+									child.bookmarks.get("local").push();
+									verify(parent).bookmarks.get("local").is.type("object");
+									verify(child).bookmarks.get("local").is.type("object");									
+								</script>
+							</li>
 						</ul>
 					</div>
 					<span>A method that closely follows the <code>hg bookmarks</code> command.</span>
@@ -803,7 +846,10 @@ END LICENSE
 						If no bookmark is being created, updated, or deleted:
 						<div>
 							<span class="type">Array of <a href="#types.bookmark">bookmark</a></span>
-							<span>The current bookmarks for the repository.</span>
+							<span>
+								The current bookmarks for the repository. Properties are added to the array corresponding to each
+								bookmark name whose value is the bookmark with that name.
+							</span>
 						</div>
 					</div>
 					<div class="label">has properties:</div>
@@ -837,7 +883,6 @@ END LICENSE
 						</script>
 					</ul>
 					<div>
-						<div>Tests for deprecated APIs</div>
 						<script type="application/x.jsapi#tests">
 							var parent = createHg();
 							parent.unit.createFile({ path: "a", content: "1", add: true });
@@ -846,21 +891,15 @@ END LICENSE
 							parent.bookmarks({ name: "local" });
 							verify(parent).bookmarks()["@"].active.is(false);
 							verify(parent).bookmarks()["local"].active.is(true);
-							parent.unit.editFile({ path: "a", content: "2" });
-							parent.commit({ message: "2" });
-
-							//	Test that @ is current revision
-							var child = parent.unit.clone(jsh.shell.TMPDIR.createTemporary({ directory: true }));
-							verify(child).unit.readFile("a").is("1");
-							//	TODO	this kind of access of bookmark by name is not documented
-							verify(child).bookmarks()["@"].active.is(true);
-							verify(child).bookmarks()["local"].active.is(false);
+							verify(parent).bookmarks().length.is(2);
 						</script>
 						<script type="application/x.jsapi#tests">
+							//	Bookmarks added from upstream on pull
 							var parent = createHg();
 							parent.unit.createFile({ path: "a", content: "1", add: true });
 							parent.commit({ message: "1" });
 							parent.bookmarks({ name: "@" });
+							
 							var child = parent.unit.clone(jsh.shell.TMPDIR.createTemporary({ directory: true }));
 							verify(child).bookmarks().evaluate.property("@").is.type("object");
 							verify(child).bookmarks()["@"].active.is(true);
@@ -869,11 +908,12 @@ END LICENSE
 							parent.bookmarks({ name: "local" });
 							parent.unit.editFile({ path: "a", content: "2" });
 							parent.commit({ message: "2" });
-							verify(child).unit.readFile("a").is("1");
+							
 							child.pull({ source: parent });
 							verify(child).bookmarks().evaluate.property("local").is.type("object");
 						</script>
 						<script type="application/x.jsapi#tests">
+							//	But upstream bookmarks are not updated on push
 							var parent = createHg();
 							parent.unit.createFile({ path: "a", content: "1", add: true });
 							parent.commit({ message: "1" });
