@@ -29,7 +29,7 @@
 		var $slime = {
 			getLoaderScript: function(path) {
 				return {
-					name: "[slime]/loader/" + path,
+					name: "slime://loader/" + path,
 					code: String($javahost.getLoaderCode(path))
 				};
 			},
@@ -39,7 +39,7 @@
 				return null;
 			}
 		}
-		return $javahost.script("[slime]/loader/literal.js",String($javahost.getLoaderCode("literal.js")),{
+		return $javahost.script("slime://loader/literal.js",String($javahost.getLoaderCode("literal.js")),{
 			$engine: $engine,
 			$slime: $slime
 		},null);

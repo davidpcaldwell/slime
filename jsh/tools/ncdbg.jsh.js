@@ -25,6 +25,16 @@ var properties = {
 
 var url = "chrome-devtools://devtools/bundled/inspector.html?experiments=true&v8only=true&ws=localhost:7778/dbg";
 
+if (jsh.shell.PATH.getCommand("pbcopy")) {
+	jsh.shell.run({
+		command: "pbcopy",
+		stdio: {
+			input: url
+		}
+	});
+	jsh.shell.console("Copied " + url + " to clipboard.");
+}
+
 var lock = new jsh.java.Thread.Monitor();
 var finished;
 var browser;

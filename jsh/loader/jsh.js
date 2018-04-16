@@ -74,7 +74,7 @@ this.jsh = new function() {
 
 			this.getLoaderScript = function(path) {
 				return {
-					name: "[jsh]/" + path,
+					name: "jsh://" + path,
 					string: getLoaderCode(path)
 				};
 			};

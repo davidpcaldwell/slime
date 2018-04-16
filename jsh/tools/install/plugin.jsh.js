@@ -106,9 +106,11 @@ plugin({
 			});
 
 			this.install = function(p) {
+				if (!p) p = {};
+				if (!p.version) p.version = "0.8.0";
 				jsh.shell.console("Installing ncdbg ...");
 				jsh.tools.install.install({
-					url: "https://github.com/provegard/ncdbg/releases/download/0.6.0/ncdbg-0.6.0.zip",
+					url: "https://github.com/provegard/ncdbg/releases/download/" + p.version + "/ncdbg-" + p.version + ".zip",
 					format: jsh.tools.install.format.zip,
 					to: jsh.shell.jsh.lib.getRelativePath("ncdbg")
 				});
@@ -122,8 +124,9 @@ plugin({
 			}
 		};
 		
+		jsh.shell.tools.ncdbg = ncdbg;
+		
 		(function deprecated() {
-			jsh.shell.tools.ncdbg = ncdbg;
 			jsh.tools.ncdbg = ncdbg;
 			$api.deprecate(jsh.tools,"ncdbg");			
 		})();

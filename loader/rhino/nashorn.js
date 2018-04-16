@@ -195,7 +195,7 @@ load("nashorn:mozilla_compat.js");
 			};
 
 			this.script = function(name,code,scope,target) {
-				return script(name,code,toScope(scope),target);
+				return script("slime://loader/" + name,code,toScope(scope),target);
 			};
 
 			//	TODO	setReadOnly?
