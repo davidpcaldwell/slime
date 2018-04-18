@@ -195,7 +195,7 @@ load("nashorn:mozilla_compat.js");
 			};
 
 			this.script = function(name,code,scope,target) {
-				return script("slime://loader/" + name,code,toScope(scope),target);
+				return script(name,code,toScope(scope),target);
 			};
 
 			//	TODO	setReadOnly?
@@ -229,7 +229,7 @@ load("nashorn:mozilla_compat.js");
 			}
 		}
 
-		var rv = $javahost.script("rhino/literal.js", $getLoaderCode("rhino/literal.js"), toScope({ $javahost: $javahost, $bridge: $bridge }), null);
+		var rv = $javahost.script("slime://loader/rhino/literal.js", $getLoaderCode("rhino/literal.js"), toScope({ $javahost: $javahost, $bridge: $bridge }), null);
 
 		return rv;
 	}

@@ -13,89 +13,130 @@
 
 var parameters = jsh.script.getopts({
 	options: {
-		"chrome:instance": jsh.file.Pathname
+		"chrome:instance": jsh.file.Pathname,
+		"port:jvm": 7777,
+		"port:ncdbg": 7778,
+		"ncdbg:pause": 2000
 	},
 	unhandled: jsh.script.getopts.UNEXPECTED_OPTION_PARSER.SKIP
 });
 
-var properties = {
-	"jsh.debug.jdwp": "transport=dt_socket,address=7777,server=y,suspend=y",
-	"jsh.engine": "nashorn"
-};
-
-var url = "chrome-devtools://devtools/bundled/inspector.html?experiments=true&v8only=true&ws=localhost:7778/dbg";
-
-if (jsh.shell.PATH.getCommand("pbcopy")) {
-	jsh.shell.run({
-		command: "pbcopy",
-		stdio: {
-			input: url
-		}
-	});
-	jsh.shell.console("Copied " + url + " to clipboard.");
-}
-
 var lock = new jsh.java.Thread.Monitor();
-var finished;
+var scriptExited = false;
 var browser;
 
-var chrome = new jsh.shell.browser.chrome.Instance({
-	location: parameters.options["chrome:instance"]
-});
+var getDevtoolsUrl = function() {
+	return "chrome-devtools://devtools/bundled/inspector.html?experiments=true&v8only=true&ws=localhost:" + parameters.options["port:ncdbg"] + "/dbg";
+};
 
-jsh.java.Thread.start(function() {
-	debugger;
+var copyUrlToClipboard = function(string) {
+	var url = getDevtoolsUrl();
+	if (jsh.shell.PATH.getCommand("pbcopy")) {
+		jsh.shell.run({
+			command: "pbcopy",
+			stdio: {
+				input: url
+			}
+		});
+		jsh.shell.console("Copied " + url + " to clipboard.");
+	} else {
+		jsh.shell.console("URL to paste into Chrome:");
+		jsh.shell.console(url);
+	}	
+}
+
+var startChrome = function() {
+	var chrome = new jsh.shell.browser.chrome.Instance({
+		location: parameters.options["chrome:instance"]
+	});
+
 	chrome.run({
-		uri: url,
+		uri: getDevtoolsUrl(),
 		on: {
 			start: function(process) {
 				browser = process;
 			}
 		}
 	});
-});
+};
 
-jsh.java.Thread.start(function() {
+var startScript = function() {
+	copyUrlToClipboard();
+
 	//	TODO	ideally would detect emission of startup message
-	jsh.shell.jrunscript({
-		properties: properties,
-		arguments: [
-			jsh.shell.jsh.src.getRelativePath("rhino/jrunscript/api.js"),
-			"jsh"
-		].concat(parameters.arguments)
-	});
+	var properties = {
+		"jsh.debug.jdwp": "transport=dt_socket,address=" + parameters.options["port:jvm"] + ",server=y,suspend=y",
+		"jsh.engine": "nashorn"
+	};
+
+	try {
+		jsh.shell.jrunscript({
+			properties: properties,
+			arguments: [
+				jsh.shell.jsh.src.getRelativePath("rhino/jrunscript/api.js"),
+				"jsh"
+			].concat(parameters.arguments)
+		});
+	} catch (e) {
+		jsh.shell.console("script failed.");
+	} finally {
+		jsh.shell.console("script exited");
+	}
+	jsh.shell.console("Notifying ...");
 	lock.Waiter({
 		until: function() {
 			return true;
 		},
 		then: function() {
-			finished = true;
+			scriptExited = true;
 		}
 	})();
-});
+	jsh.shell.console("Notified listener.");
+};
 
-if (true) {
-	Packages.java.lang.Thread.currentThread().sleep(5000);
-	var JAVA_HOME = jsh.shell.java.home.parent;
-	jsh.shell.run({
-		command: jsh.shell.jsh.lib.getRelativePath("ncdbg/bin/ncdbg"),
-		directory: jsh.shell.jsh.lib.getSubdirectory("ncdbg"),
-		environment: jsh.js.Object.set({}, jsh.shell.environment, {
-			JAVA_HOME: JAVA_HOME.toString()
-		})
-	});
+var startNcdbg = function() {
+	try {
+		Packages.java.lang.Thread.currentThread().sleep(parameters.options["ncdbg:pause"]);
+		var JAVA_HOME = jsh.shell.java.home.parent;
+		jsh.shell.run({
+			command: jsh.shell.jsh.lib.getRelativePath("ncdbg/bin/ncdbg"),
+			directory: jsh.shell.jsh.lib.getSubdirectory("ncdbg"),
+			environment: jsh.js.Object.set({}, jsh.shell.environment, {
+				JAVA_HOME: JAVA_HOME.toString()
+			})
+		});
+		jsh.shell.console("ncdbg exited");
+	} catch (e) {
+		jsh.shell.console(e);
+		jsh.shell.console(e.stack);
+	}
 }
 
-lock.Waiter({
-	until: function() {
-		return finished;
-	},
-	then: function() {
-		jsh.shell.console("Finished.");
-		try {
-			browser.kill();
-		} catch (e) {
-			jsh.shell.console("Error killing browser: browser");
+if (parameters.options["chrome:instance"]) {
+	jsh.java.Thread.start(startChrome);
+}
+
+if (parameters.arguments.length) {
+	jsh.java.Thread.start(startScript);
+	
+	jsh.java.Thread.start(startNcdbg);
+	
+	lock.Waiter({
+		until: function() {
+			return scriptExited;
+		},
+		then: function() {
+			jsh.shell.console("Finished; trying to terminate browser.");
+			if (browser) {
+				try {
+					browser.kill();
+				} catch (e) {
+					jsh.shell.console("Error killing browser: browser");
+				}
+			} else {
+				jsh.shell.console("No browser in process.");
+			}
 		}
-	}
-})();
+	})();
+}
+
