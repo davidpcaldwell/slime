@@ -490,6 +490,25 @@
 			return original.toString() + " decorated with " + decorator.toString();
 		}
 		return rv;
+	};
+	$exports.Constructor.invoke = function(p) {
+		if (!p.arguments) p.arguments = [];
+		var code = "new p.constructor(" + 
+			p.arguments.map(function() {
+				return "p.arguments[" + arguments[1] + "]";
+			}).join(",")
+		+ ")";
+		//	TODO	in contexts like Nashorn, can we use a different API to execute this script? Currently, ncdbg rejects the script name created by this.
+		return eval(code);
+	};
+
+	$exports.Constructor.global = function() {
+		Function.prototype.construct = function() {
+			return $exports.Constructor.invoke({
+				constructor: this,
+				arguments: Array.prototype.slice.call(arguments)
+			});
+		}
 	}
 //	var UNDEFINED = {};
 //

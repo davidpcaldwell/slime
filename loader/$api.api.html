@@ -555,6 +555,51 @@ END LICENSE
 						verify(abc2.b).is(2);
 						verify(abc2.c).is(3);
 					</script>
+					<script type="application/x.jsapi#tests">
+						verify(api).evaluate.property("Constructor").is.not(void(0));
+						verify(api).Constructor.evaluate.property("invoke").is.not(void(0));
+
+						var A = function(a,b) {
+							this.a = a;
+							this.b = b;
+						};
+
+						var a1 = api.Constructor.invoke({
+							constructor: A,
+							arguments: [1,2]
+						});
+						verify(a1).a.is(1);
+						verify(a1).b.is(2);
+
+						var a2 = api.Constructor.invoke({
+							constructor: A,
+							arguments: [1]
+						});
+						verify(a2).a.is(1);
+						verify(a2).b.is(void(0));
+
+						var a3 = api.Constructor.invoke({
+							constructor: A,
+							arguments: []
+						});
+						verify(a3).a.is(void(0));
+						verify(a3).b.is(void(0));
+
+						(function omittedArguments() {
+							var a = api.Constructor.invoke({
+								constructor: A
+							});
+							verify(a).a.is(void(0));
+							verify(a).b.is(void(0));
+						})();
+
+						api.Constructor.global();
+						(function() {
+							var a = A.construct(1,2);
+							verify(a).a.is(1);
+							verify(a).b.is(2);
+						})();
+					</script>
 				</li>
 				<li class="function">
 					<div class="name">Key</div>
