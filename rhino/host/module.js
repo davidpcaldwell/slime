@@ -371,6 +371,7 @@ var Thread = function(p) {
 
 	var done = false;
 
+	//	TODO	replace with Java logging; currently there is no way to enable this debugging without changing this file
 	var debug = function(m) {
 		if (arguments.callee.on) {
 			Packages.java.lang.System.err.println(m);
@@ -447,6 +448,15 @@ var Thread = function(p) {
 };
 
 $exports.Thread = {};
+$exports.Thread.setContextClassLoader = function(p) {
+	if (!p) p = {};
+	if (!p._thread) p._thread = Packages.java.lang.Thread.currentThread();
+	if (p._classLoader) {
+		p._thread.setContextClassLoader(p._classLoader);
+	} else {
+		$context.$rhino.classpath.setAsThreadContextClassLoaderFor(p._thread);
+	}
+};
 $exports.Thread.start = function(p) {
 	return new Thread(p);
 }

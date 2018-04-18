@@ -80,6 +80,10 @@ public abstract class Loader {
 				this.loader = loader;
 			}
 
+			public void setAsThreadContextClassLoaderFor(Thread thread) {
+				thread.setContextClassLoader(loader);
+			}
+
 			public final void append(Code.Source code) {
 				loader.append(code);
 			}

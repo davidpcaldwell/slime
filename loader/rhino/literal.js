@@ -191,6 +191,10 @@
 	})(loader.Loader);
 
 	loader.classpath = new function() {
+		this.setAsThreadContextClassLoaderFor = function(_thread) {
+			$javahost.getClasspath().setAsThreadContextClassLoaderFor(_thread);
+		};
+
 		this.toString = function() {
 			return String($javahost.getClasspath());
 		}
