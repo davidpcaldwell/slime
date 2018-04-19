@@ -474,6 +474,10 @@ var Installation = function(environment) {
 				});
 			}
 		}
+
+		this.execute = function(p) {
+			return execute(p);
+		}
 	}
 
 	this.Repository = function(p) {
