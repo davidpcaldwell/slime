@@ -242,7 +242,8 @@ plugin({
 											servletImplementation.load(scope);
 										}
 
-										this.$java = $jsh;
+										//	TODO	should not needlessly rename this
+										this.$java = $slime;
 
 										this.server = server;
 										this.api = api;
