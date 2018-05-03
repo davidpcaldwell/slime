@@ -503,11 +503,26 @@
 	};
 
 	$exports.Constructor.global = function() {
-		Function.prototype.construct = function() {
+		var construct = function() {
 			return $exports.Constructor.invoke({
 				constructor: this,
 				arguments: Array.prototype.slice.call(arguments)
 			});
+		};
+
+		if (Object.defineProperty) {
+			Object.defineProperty(
+				Function.prototype,
+				"construct",
+				{
+					value: construct,
+					enumerable: false,
+					writable: true
+				}
+			);
+		} else {
+			//	TODO	or should we refuse to do it? Fail silently? Error?
+			Function.prototype.construct = construct;
 		}
 	}
 //	var UNDEFINED = {};
