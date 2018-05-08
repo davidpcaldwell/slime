@@ -54,5 +54,55 @@ END LICENSE
 			</ul>
 		</div>
 	</div>
+	<div>
+		<h1><code>ncdbg.jsh.js</code>: Run a script under the <code>ncdbg</code> debugger.</h1>
+		<div>
+			This program has two modes of operation (it can do both at once). It can open a DevTools window for connecting to
+			scripts, and it can run the scripts themselves. The two modes have specific command-line arguments.
+		</div>
+		<div>
+			Command-line arguments for both modes:
+			<ul>
+				<li>
+					<code>-port:ncdbg <i>number</i></code>
+					(optional; defaults to <code>ncdbg</code> default)
+					Specifies the number on which <code>ncdbg</code> will listen for DevTools connections. Used by the DevTools
+					opener to specify the correct URL to debug.
+				</li>
+			</ul>
+		</div>
+		<div>
+			<h2>DevTools opener</h2>
+			<div>
+				Command-line arguments:
+				<ul>
+					<li>
+						<code>-chrome:instance <i>pathname</i></code>:
+						Opens a browser using the given <i>pathname</i> as its user data directory. This browser may have
+						project-specific files mapped in the workspace, and so forth.
+					</li>
+				</ul>
+			</div>
+		</div>
+		<div>
+			<h2>Script runner</h2>
+			<div>
+				Command-line arguments:
+				<ul>
+					<li>
+						<code>-ncdbg:pause <i>milliseconds</i></code>:
+						(optional)
+						How long <code>ncdbg</code> should pause waiting for the script to start.
+					</li>
+					<li>
+						<code>-port:jvm <i>number</i></code>:
+						(optional; defaults to <code>ncdbg</code> default)
+						Specifies the port number on which the JVM will listen for debugger connections, and to which DevTools
+						will attempt to connect.
+					</li>
+				</ul>
+			</div>
+		</div>
+	</div>
 </body>
 </html>
