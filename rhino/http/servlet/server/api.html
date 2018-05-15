@@ -273,6 +273,57 @@ END LICENSE
 								}
 							</script>
 						</li>
+						<li class="constructor">
+							<div class="name">Loader</div>
+							<span>A <code>Handler</code> that delegates <code>GET</code> requests to a <code>Loader</code>.</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="object">
+										<div class="label">has properties:</div>
+										<ul>
+											<li class="value">
+												<div class="name">loader</div>
+												<span class="type">Loader</span>
+												<span>__DESCRIPTION__</span>
+											</li>
+										</ul>
+									</li>
+								</ol>
+							</div>
+							<div class="instances">
+								<div class="label">Instances</div>
+								<!--
+									TODO	Can we get a link to Handler to work both here and in reference in parent directory?
+								-->
+								<span class="type">Handler</span>
+							</div>
+							<script type="application/x.jsapi#tests">
+								if (jsh.httpd.Tomcat) {
+									var server = new jsh.httpd.Tomcat();
+									server.servlet(new function() {
+										this.load = function(scope) {
+											scope.$exports.handle = new module.Handler.Loader({
+												loader: $jsapi.loader
+											});
+										}
+									});
+									server.start();
+									
+									var client = new jsh.http.Client();
+									
+									var found = client.request({
+										url: "http://127.0.0.1:" + server.port + "/" + "api.html"
+									});
+									verify(found).status.code.is(200);
+									
+									var notFound = client.request({
+										url: "http://127.0.0.1:" + server.port + "/" + "nonexistent"
+									});
+									verify(notFound).status.code.is(404);
+								}
+							</script>
+						</li>
 					</ul>
 				</li>
 			</ul>

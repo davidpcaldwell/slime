@@ -332,6 +332,7 @@ plugin({
 					servlets: {
 						"/*": {
 							load: function(scope) {
+								//	TODO	convert to Handler.Loader?
 								scope.$exports.handle = function(request) {
 									var resource = loader.get(request.path);
 									if (resource) {

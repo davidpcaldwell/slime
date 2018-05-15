@@ -149,4 +149,23 @@ $exports.Handler.Proxy = function(o) {
 		});
 		return response;
 	};
+};
+$exports.Handler.Loader = function(o) {
+	return function(request) {
+		if (request.method == "GET") {
+			var resource = o.loader.get(request.path);
+			if (resource) {
+				return {
+					status: {
+						code: 200
+					},
+					headers: [],
+					body: resource
+				}
+			} else {
+				return null;
+			}
+
+		}
+	};
 }
