@@ -380,6 +380,7 @@ SLIME.getFile("jsh/etc/install.jsh.js").copy(ETC);
 		},
 		descendants: function(directory) {
 			if (directory.pathname.basename == ".hg") return false;
+			if (directory.pathname.basename == "local") return false;
 			return true;
 		},
 		type: SLIME.list.ENTRY

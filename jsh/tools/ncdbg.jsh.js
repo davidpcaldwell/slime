@@ -13,9 +13,9 @@
 
 var parameters = jsh.script.getopts({
 	options: {
-		"chrome:instance": jsh.file.Pathname,
-		"port:jvm": 7777,
-		"port:ncdbg": 7778,
+		"ncdbg:chrome:instance": jsh.file.Pathname,
+		"ncdbg:port:jvm": 7777,
+		"ncdbg:port:ncdbg": 7778,
 		"ncdbg:pause": 2000
 	},
 	unhandled: jsh.script.getopts.UNEXPECTED_OPTION_PARSER.SKIP
@@ -26,7 +26,7 @@ var scriptExited = false;
 var browser;
 
 var getDevtoolsUrl = function() {
-	return "chrome-devtools://devtools/bundled/inspector.html?experiments=true&v8only=true&ws=localhost:" + parameters.options["port:ncdbg"] + "/dbg";
+	return "chrome-devtools://devtools/bundled/inspector.html?experiments=true&v8only=true&ws=localhost:" + parameters.options["ncdbg:port:ncdbg"] + "/dbg";
 };
 
 var copyUrlToClipboard = function(string) {
@@ -47,7 +47,7 @@ var copyUrlToClipboard = function(string) {
 
 var startChrome = function() {
 	var chrome = new jsh.shell.browser.chrome.Instance({
-		location: parameters.options["chrome:instance"]
+		location: parameters.options["ncdbg:chrome:instance"]
 	});
 
 	chrome.run({
@@ -65,7 +65,7 @@ var startScript = function() {
 
 	//	TODO	ideally would detect emission of startup message
 	var properties = {
-		"jsh.debug.jdwp": "transport=dt_socket,address=" + parameters.options["port:jvm"] + ",server=y,suspend=y",
+		"jsh.debug.jdwp": "transport=dt_socket,address=" + parameters.options["ncdbg:port:jvm"] + ",server=y,suspend=y",
 		"jsh.engine": "nashorn"
 	};
 
@@ -112,7 +112,7 @@ var startNcdbg = function() {
 	}
 }
 
-if (parameters.options["chrome:instance"]) {
+if (parameters.options["ncdbg:chrome:instance"]) {
 	jsh.java.Thread.start(startChrome);
 }
 

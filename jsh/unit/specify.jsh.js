@@ -14,54 +14,39 @@
 var parameters = jsh.script.getopts({
 	options: {
 		api: jsh.file.Pathname,
-		port: Number,
-		"chrome:profile": jsh.file.Pathname,
-		debug: false,
-		"test:proxy": String
+		"chrome:instance": jsh.file.Pathname,
+		debug: false
 	}
 });
 
-var chrome = (function() {
-	var profile = (function() {
-		if (parameters.options["chrome:profile"]) {
-			return parameters.options["chrome:profile"].createDirectory({
-				ifExists: function() {
-					return false;
-				},
-				recursive: true
-			});
-		}
-		return jsh.shell.TMPDIR.createTemporary({ directory: true });
-	})();
-	profile.getRelativePath("First Run").write("", { append: false });
-	var chrome = new jsh.shell.browser.chrome.User({ directory: profile });
-	return chrome;
-})();
-
 //	TODO	undefined parameters.options.api should fail
 
-jsh.ui.browser({
-	port: parameters.options.port,
+jsh.ui.application({
 	servlet: {
-		pathname: jsh.script.file.parent.getRelativePath("specify/servlet.js")
+		file: jsh.script.file.parent.getFile("specify/servlet.js")
 	},
 	parameters: {
 		slime: jsh.script.file.parent.parent.parent,
 		api: parameters.options.api,
 		debug: parameters.options.debug
 	},
-	browser: function(p) {
-		return chrome.run({
-			arguments: (function() {
-				var rv = [];
-				if (parameters.options["test:proxy"]) {
-					rv.push("--proxy-pac-url=" + parameters.options["test:proxy"]);
-				}
-				debugger;
-				return rv;
-			})(),
-			app: p.url
-		});
+	browser: {
+		chrome: {
+			location: parameters.options["chrome:instance"]
+		}
 	},
+// 	browser: function(p) {
+// 		return chrome.run({
+// 			arguments: (function() {
+// 				var rv = [];
+// 				if (parameters.options["test:proxy"]) {
+// 					rv.push("--proxy-pac-url=" + parameters.options["test:proxy"]);
+// 				}
+// 				debugger;
+// 				return rv;
+// 			})(),
+// 			app: p.url
+// 		});
+// 	},
 	path: "slime/jsh/unit/specify/index.html"
 });
