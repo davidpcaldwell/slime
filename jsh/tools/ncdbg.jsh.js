@@ -25,25 +25,11 @@ var lock = new jsh.java.Thread.Monitor();
 var scriptExited = false;
 var browser;
 
+var CAN_OPEN_BROWSER_WITH_DEVTOOLS_URL = false;
+
 var getDevtoolsUrl = function() {
 	return "chrome-devtools://devtools/bundled/inspector.html?experiments=true&v8only=true&ws=localhost:" + parameters.options["ncdbg:port:ncdbg"] + "/dbg";
 };
-
-var copyUrlToClipboard = function(string) {
-	var url = getDevtoolsUrl();
-	if (jsh.shell.PATH.getCommand("pbcopy")) {
-		jsh.shell.run({
-			command: "pbcopy",
-			stdio: {
-				input: url
-			}
-		});
-		jsh.shell.console("Copied " + url + " to clipboard.");
-	} else {
-		jsh.shell.console("URL to paste into Chrome:");
-		jsh.shell.console(url);
-	}	
-}
 
 var startChrome = function() {
 	var chrome = new jsh.shell.browser.chrome.Instance({
@@ -51,7 +37,8 @@ var startChrome = function() {
 	});
 
 	chrome.run({
-		uri: getDevtoolsUrl(),
+		//	TODO	this currently is ignored; have not found a way to open Chrome to a DevTools URL
+		uri: (CAN_OPEN_BROWSER_WITH_DEVTOOLS_URL) ? getDevtoolsUrl() : "about:blank",
 		on: {
 			start: function(process) {
 				browser = process;
@@ -61,7 +48,22 @@ var startChrome = function() {
 };
 
 var startScript = function() {
-	copyUrlToClipboard();
+	if (!CAN_OPEN_BROWSER_WITH_DEVTOOLS_URL) {
+		(function copyUrlToClipboard(url) {
+			if (jsh.shell.PATH.getCommand("pbcopy")) {
+				jsh.shell.run({
+					command: "pbcopy",
+					stdio: {
+						input: url
+					}
+				});
+				jsh.shell.console("Copied " + url + " to clipboard.");
+			} else {
+				jsh.shell.console("URL to paste into Chrome:");
+				jsh.shell.console(url);
+			}	
+		})(getDevtoolsUrl())
+	}
 
 	//	TODO	ideally would detect emission of startup message
 	var properties = {
@@ -96,7 +98,9 @@ var startScript = function() {
 
 var startNcdbg = function() {
 	try {
-		Packages.java.lang.Thread.currentThread().sleep(parameters.options["ncdbg:pause"]);
+		//	TODO	probably need to add port:jvm here if we want this to work for all potential values
+		//	TODO	probably need to add port:ncdbg here if we want this to work for all potential values
+		Packages.java.lang.Thread.sleep(parameters.options["ncdbg:pause"]);
 		var JAVA_HOME = jsh.shell.java.home.parent;
 		jsh.shell.run({
 			command: jsh.shell.jsh.lib.getRelativePath("ncdbg/bin/ncdbg"),
