@@ -153,12 +153,18 @@ $exports.Url.query.parse = function(string) {
 		if (!string) return null;
 		var tokens = string.split("&");
 		//jsh.shell.echo("tokens: " + tokens.length + " " + tokens);
-		return tokens.map(function(pair) {
+		var rv = tokens.map(function(pair) {
 			var split = pair.split("=");
 			//jsh.shell.echo("split = " + split);
-			if (split.length != 2) throw new Error();
+			if (split.length != 2) {
+				return null;
+			}
 			return { name: decode(split[0]), value: decode(split[1]) }
 		});
+		var nulls = rv.filter(function(item) {
+			return item === null;
+		});
+		return (nulls.length) ? null : rv;
 	})(string);
 };
 
