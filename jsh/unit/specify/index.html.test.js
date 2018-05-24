@@ -14,7 +14,8 @@
 var api = $loader.file("loader/api/unit.js");
 var unit = $loader.module("loader/browser/test/module.js", {
 	api: {
-		unit: api
+		unit: api,
+		Promise: window.Promise
 	}
 });
 var ui = {
