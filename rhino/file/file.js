@@ -241,7 +241,10 @@ var Pathname = function Pathname(parameters) {
 
 		var getRelativePath = function(pathString) {
 			var directoryPath = pathname.toString() + prefix;
-			if (directoryPath.length > 0 && directoryPath.substring( directoryPath.length - 1 ) != $filesystem.separators.pathname)
+			//	TODO	the below logic is counterintuitive for / on UNIX, but it works; the empty string does not end with slash,
+			//			so a / is appended
+//			if (directoryPath.length > 0 && directoryPath.substring( directoryPath.length - 1 ) != $filesystem.separators.pathname)
+			if (directoryPath.substring( directoryPath.length - 1 ) != $filesystem.separators.pathname)
 				directoryPath += $filesystem.separators.pathname;
 			return $filesystem.newPathname( directoryPath + pathString );
 		}
