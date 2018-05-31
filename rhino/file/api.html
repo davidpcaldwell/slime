@@ -1424,6 +1424,14 @@ END LICENSE
 					}
 				}
 			]]></script>
+			<script type="application/x.jsapi#tests">
+				if (UNIX) {
+					var top = jsh.file.Pathname("/").directory;
+					var HOME = jsh.shell.HOME.toString();
+					var home = top.getSubdirectory(HOME.substring(1));
+					verify(home).is.not(null);
+				}
+			</script>
 			<script type="application/x.jsapi#tests" jsapi:id="filesystemTests"><![CDATA[
 	//			var SCOPE = this;
 
