@@ -643,13 +643,13 @@ END LICENSE
 													behavior. For example, to simply ensure that a directory exists, one can call
 													<code>createDirectory()</code> and use an <code>exists</code> function that does
 													nothing and returns <code>false</code> (the
-													<code>Pathname.createDirectory.LEAVE</code> function is provided as a
+													<code>Pathname.createDirectory.exists.LEAVE</code> function is provided as a
 													convenience).
 													Then, if the directory exists,
 													<code>createDirectory()</code> will abort early.  To create a "working" directory
 													that is empty (deleting it if it already exists), use an <code>exists</code>
 													method that removes the directory and then returns <code>true</code>
-													(the <code>Pathname.createDirectory.RECREATE</code> function is provided as a
+													(the <code>Pathname.createDirectory.exists.RECREATE</code> function is provided as a
 													convenience for this).
 												</div>
 												<div class="arguments">
