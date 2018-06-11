@@ -25,48 +25,6 @@ public abstract class Loader {
 	public abstract String getLoaderCode(String path) throws IOException;
 
 	public static abstract class Classes {
-		private static class Unpacked extends Code {
-			private String toString;
-			private Code.Source source;
-			private Code.Source classes;
-
-			Unpacked(String toString, Code.Source source, Loader.Classes loader) {
-				this.toString = toString;
-				this.source = source;
-				Code.Source compiling = Java.compiling(source, loader.getCompileDestination(), loader);
-				this.classes = compiling;
-			}
-
-			public String toString() {
-				return getClass().getName() + " [" + toString + "]";
-			}
-
-			public Source getScripts() {
-				return source;
-			}
-
-			public Source getClasses() {
-				return classes;
-			}
-		}
-
-		private static Code loadUnpacked(final File base, Loader.Classes loader) {
-			if (!base.isDirectory()) {
-				throw new IllegalArgumentException(base + " is not a directory.");
-			}
-			String path = null;
-			try {
-				path = base.getCanonicalPath();
-			} catch (IOException e) {
-				path = base.getAbsolutePath();
-			}
-			return new Unpacked("file=" + path, Code.Source.create(base), loader);
-		}
-
-		private static Code loadUnpacked(final URL base, Loader.Classes loader) {
-			return new Unpacked("url=" + base.toExternalForm(), Code.Source.create(base), loader);
-		}
-
 		public static abstract class Configuration {
 			public abstract boolean canCreateClassLoaders();
 			public abstract ClassLoader getApplicationClassLoader();
@@ -104,11 +62,11 @@ public abstract class Loader {
 			}
 
 			public final Code unpacked(File base) {
-				return Classes.this.unpacked(base);
+				return Java.compiling(base, Classes.this);
 			}
 
 			public final Code unpacked(URL base) {
-				return Classes.this.unpacked(base);
+				return Java.compiling(base, Classes.this);
 			}
 		}
 
@@ -129,14 +87,6 @@ public abstract class Loader {
 		}
 
 		abstract ClassLoader classLoader();
-
-		final Code unpacked(File base) {
-			return loadUnpacked(base, this);
-		}
-
-		final Code unpacked(URL base) {
-			return loadUnpacked(base, this);
-		}
 
 		public abstract ClassLoader getApplicationClassLoader();
 		public abstract Interface getInterface();
