@@ -49,10 +49,6 @@ this.jsh = new function() {
 		}
 
 		$host.loader = new function() {
-			this.getPlugins = function() {
-				return $jsh.getPlugins();
-			}
-
 			this.getPackagedCode = function() {
 				return configuration.getPackagedCode();
 			};
@@ -85,10 +81,6 @@ this.jsh = new function() {
 			this.getStandardError = function() {
 				return err;
 			};
-		};
-
-		$host.getPlugins = function(_file) {
-			return $jsh.getInterface().getPlugins(_file);
 		};
 
 		$host.coffee = $jsh.getLibrary("coffee-script.js");
@@ -159,14 +151,21 @@ this.jsh = new function() {
 
 		this.plugins = function(from) {
 			if (from && from.java && from.java.adapt && $host.classpath.getClass("java.io.File").isInstance(from.java.adapt())) {
-				plugins._load($host.getPlugins(from.java.adapt()));
+				//	TODO	trying to unify this with the plugins.load interface to have just one plugins search mechanism
+				plugins._load($host.getInterface().getPlugins(from.java.adapt()));
 			} else if (from && from.get) {
 				plugins.load(from);
 			}
 		};
 	};
 
-	plugins._load($host.loader.getPlugins());
+	if (true) {
+		plugins._load($host.getInterface().getPlugins());
+	} else {
+		//	TODO	this implementation in plugins.load probably does not 
+		var loader = new $host.Loader({ _source: $host.getInterface().getPluginSource() })
+		plugins.load(loader);
+	}
 
 	//	TODO	below could be turned into jsh plugin loaded at runtime by jsapi; would need to make getLibrary accessible through
 	//			$host

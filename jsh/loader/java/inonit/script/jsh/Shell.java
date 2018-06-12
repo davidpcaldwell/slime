@@ -97,7 +97,7 @@ public class Shell {
 
 	//	TODO	Used in jsh.js to retrieve CoffeeScript
 	public Code.Source.File getLibrary(String path) {
-		Code.Source plugins = configuration.getInstallation().getExtensions().getLibraries();
+		Code.Source plugins = configuration.getInstallation().getLibraries();
 		try {
 			return plugins.getFile(path);
 		} catch (IOException e) {
@@ -455,15 +455,25 @@ public class Shell {
 	}
 
 	public static class Interface {
+		private Installation installation;
 		private Loader.Classes.Interface classpath;
 
-		Interface(Loader.Classes.Interface classpath) {
+		Interface(Installation installation, Loader.Classes.Interface classpath) {
+			this.installation = installation;
 			this.classpath = classpath;
+		}
+		
+		public Code[] getPlugins() {
+			return installation.getExtensions().getPlugins(classpath).toArray(new Code[0]);
 		}
 
 		//	Called by applications to load plugins from an arbitrary source
 		public Code[] getPlugins(File file) {
 			return Extensions.create(Code.Source.create(file)).getPlugins(classpath).toArray(new Code[0]);
+		}
+		
+		public Code.Source getPluginSource() {
+			return installation.getExtensions().getLibraries();
 		}
 
 		public Invocation invocation(File script, String[] arguments) {
@@ -473,7 +483,7 @@ public class Shell {
 
 	public Interface getInterface() {
 		if (classpath == null) throw new IllegalStateException();
-		return new Interface(classpath);
+		return new Interface(configuration.getInstallation(), classpath);
 	}
 
 	public static abstract class Execution {

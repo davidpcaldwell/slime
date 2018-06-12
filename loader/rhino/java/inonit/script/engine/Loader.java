@@ -58,7 +58,7 @@ public abstract class Loader {
 			}
 
 			public final void append(Code code) {
-				append(code.getClasses());
+				loader.append(code.getClasses());
 			}
 			
 			public final Code slime(File packed) {

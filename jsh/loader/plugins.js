@@ -114,6 +114,9 @@ $set(new (function() {
 					return String(_plugin.getScripts()).replace(/\%/g, "%%")
 				};
 			};
+			//	This is a bit counterintuitive: $slime.Loader *automatically* adds classes to the classpath; if we don't end up
+			//	loading the plugin, we need to explicitly add the classes to the classpath
+			//	TODO	clean this up, but would require test coverage
 			if (_plugins[i].getScripts()) {
 				var array = load({
 					plugins: plugins,
