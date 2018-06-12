@@ -587,7 +587,12 @@ public class Java {
 	private static Code compiling(String toString, Code.Source source, Loader.Classes loader) {
 		return new Unpacked(toString, source, loader);
 	}
+	
+	static Code compiling(final Code.Source base, final Loader.Classes loader) {
+		return new Unpacked(base.toString(), base, loader);
+	}
 
+	//	TODO	remove; replaced by Code.Source version above
 	static Code compiling(final File base, Loader.Classes loader) {
 		if (!base.isDirectory()) {
 			throw new IllegalArgumentException(base + " is not a directory.");
@@ -601,6 +606,7 @@ public class Java {
 		return Java.compiling("file=" + path, Code.Source.create(base), loader);
 	}
 
+	//	TODO	remove; replaced by Code.Source version above
 	static Code compiling(final URL base, Loader.Classes loader) {
 		return Java.compiling("url=" + base.toExternalForm(), Code.Source.create(base), loader);
 	}

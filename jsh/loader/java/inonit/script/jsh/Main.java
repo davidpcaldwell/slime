@@ -76,7 +76,9 @@ public class Main {
 
 	static abstract class Plugins extends Shell.Installation.Extensions {
 		static Plugins create(File file) {
-			return new DirectoryImpl(file);
+			if (!file.exists()) return Plugins.EMPTY;
+			if (!file.isDirectory()) throw new RuntimeException();
+			return new PluginsFromCodeSource(Code.Source.create(file));
 		}
 
 		static Plugins bitbucket(URL url) {
@@ -102,84 +104,195 @@ public class Main {
 				rv.add(code);
 			}
 		}
-
-		private static class DirectoryImpl extends Plugins {
-			private File file;
-
-			DirectoryImpl(File file) {
-				this.file = file;
+		
+		private static class PluginsFromCodeSource extends Plugins {
+			private Code.Source source;
+			
+			PluginsFromCodeSource(Code.Source source) {
+				this.source = source;
 			}
 
-			static class PluginComparator implements Comparator<File> {
-				private int evaluate(File file) {
-					if (!file.isDirectory() && file.getName().endsWith(".jar")) {
+			static class PluginComparator implements Comparator<String> {
+				private int evaluate(String file) {
+					if (file.endsWith(".jar")) {
 						return -1;
 					}
 					return 0;
 				}
 
-				public int compare(File o1, File o2) {
+				public int compare(String o1, String o2) {
 					return evaluate(o1) - evaluate(o2);
 				}
 			}
-
-			private static void addPluginsTo(List<Code> rv, final File file, boolean top, Loader.Classes.Interface classpath) {
-				if (file.exists()) {
-					if (file.isDirectory()) {
-						if (new File(file, "plugin.jsh.js").exists()) {
-							//	interpret as unpacked module
-							LOG.log(Level.CONFIG, "Loading unpacked plugin from " + file + " ...");
-							rv.add(classpath.unpacked(file));
-						} else {
-							//	interpret as directory that may contain plugins
-							File[] list = file.listFiles();
-							Arrays.sort(list, new PluginComparator());
-							for (File f : list) {
-								addPluginsTo(rv, f, false, classpath);
-							}
-						}
-					} else if (!file.isDirectory() && file.getName().endsWith(".slime")) {
-						try {
-							Code p = Code.slime(file);
+			
+			private static void addPluginsTo(List<Code> rv, final Code.Source file, boolean top, Loader.Classes.Interface classpath) throws IOException {
+				if (file.getFile("plugin.jsh.js") != null) {
+					//	interpret as unpacked module
+					LOG.log(Level.CONFIG, "Loading unpacked plugin from " + file + " ...");
+					rv.add(classpath.unpacked(file));
+				} else {
+					String[] files = file.getEnumerator().list(null);
+					Arrays.sort(files, new PluginComparator());
+					for (String name : files) {
+						if (name.endsWith("/")) {
+							addPluginsTo(rv, file.child(name), false, classpath);
+//							throw new RuntimeException("Unimplemented: Code source child");
+						} else if (name.endsWith(".slime")) {
+							Code p = Code.slime(file.getFile(name));
 							if (p.getScripts().getFile("plugin.jsh.js") != null) {
 								LOG.log(Level.CONFIG, "Loading plugin from %s ...", file);
 								rv.add(p);
 							} else {
 								LOG.log(Level.WARNING, "Found .slime file, but no plugin.jsh.js: %s", file);
 							}
-						} catch (IOException e) {
-							//	TODO	probably error message or warning
+						} else if (name.endsWith(".jar")) {
+							//	TODO	write a test that ensures this works
+							LOG.log(Level.CONFIG, "Loading Java plugin from " + file + " ...");
+							rv.add(Code.jar(file.getFile(name)));						
+						} else {
+							//	If this was a top-level thing to load, and was loaded by application, print a warning
+							//	TODO	refactor to make this work
+							boolean APPLICATION = false;
+							if (top && APPLICATION) LOG.log(Level.WARNING, "Cannot load plugin from %s as it does not appear to contain a valid plugin", file);						
 						}
-					} else if (!file.isDirectory() && file.getName().endsWith(".jar")) {
-						//	TODO	write a test that ensures this works
-						LOG.log(Level.CONFIG, "Loading Java plugin from " + file + " ...");
-						rv.add(Code.jar(file));
-					} else {
-						//	If this was a top-level thing to load, and was loaded by application, print a warning
-						//	TODO	refactor to make this work
-						boolean APPLICATION = false;
-						if (top && APPLICATION) LOG.log(Level.WARNING, "Cannot load plugin from %s as it does not appear to contain a valid plugin", file);
 					}
-				} else {
-					LOG.log(Level.CONFIG, "Cannot load plugin from %s; file not found", file);
+	//				if (file.exists()) {
+	//					if (file.isDirectory()) {
+	//						if (new File(file, "plugin.jsh.js").exists()) {
+	//							//	interpret as unpacked module
+	//							LOG.log(Level.CONFIG, "Loading unpacked plugin from " + file + " ...");
+	//							rv.add(classpath.unpacked(file));
+	//						} else {
+	//							//	interpret as directory that may contain plugins
+	//							File[] list = file.listFiles();
+	//							Arrays.sort(list, new PluginComparator());
+	//							for (File f : list) {
+	//								addPluginsTo(rv, f, false, classpath);
+	//							}
+	//						}
+	//					} else if (!file.isDirectory() && file.getName().endsWith(".slime")) {
+	//						try {
+	//							Code p = Code.slime(file);
+	//							if (p.getScripts().getFile("plugin.jsh.js") != null) {
+	//								LOG.log(Level.CONFIG, "Loading plugin from %s ...", file);
+	//								rv.add(p);
+	//							} else {
+	//								LOG.log(Level.WARNING, "Found .slime file, but no plugin.jsh.js: %s", file);
+	//							}
+	//						} catch (IOException e) {
+	//							//	TODO	probably error message or warning
+	//						}
+	//					} else if (!file.isDirectory() && file.getName().endsWith(".jar")) {
+	//						//	TODO	write a test that ensures this works
+	//						LOG.log(Level.CONFIG, "Loading Java plugin from " + file + " ...");
+	//						rv.add(Code.jar(file));
+	//					} else {
+	//						//	If this was a top-level thing to load, and was loaded by application, print a warning
+	//						//	TODO	refactor to make this work
+	//						boolean APPLICATION = false;
+	//						if (top && APPLICATION) LOG.log(Level.WARNING, "Cannot load plugin from %s as it does not appear to contain a valid plugin", file);
+	//					}
+	//				} else {
+	//					LOG.log(Level.CONFIG, "Cannot load plugin from %s; file not found", file);
+	//				}
 				}
 			}
 
-			static void addPluginsTo(List<Code> rv, File file, Loader.Classes.Interface classpath) {
-				addPluginsTo(rv, file, true, classpath);
-			}
-
-			public Code.Source getLibraries() {
-				return Code.Source.create(file);
-			}
-
-			public List<Code> getPlugins(Loader.Classes.Interface classpath) {
-				LOG.log(Level.INFO, "Application: load plugins from " + file);
+			@Override public List<Code> getPlugins(Loader.Classes.Interface classpath) {
 				List<Code> rv = new ArrayList<Code>();
-				addPluginsTo(rv, file, classpath);
-				return rv;
+				try {
+					addPluginsTo(rv, source, true, classpath);
+					return rv;
+				} catch (java.io.IOException e) {
+					throw new RuntimeException(e);
+				}
+//				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 			}
+
+			@Override public Code.Source getLibraries() {
+				return source;
+//				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+			}			
 		}
+
+//		private static class DirectoryImpl extends Plugins {
+//			private File file;
+//
+//			DirectoryImpl(File file) {
+//				this.file = file;
+//			}
+//
+//			//	TODO	figure out what this does and rename it accordingly; does it sort .jar files to the front?
+//			static class PluginComparator implements Comparator<File> {
+//				private int evaluate(File file) {
+//					if (!file.isDirectory() && file.getName().endsWith(".jar")) {
+//						return -1;
+//					}
+//					return 0;
+//				}
+//
+//				public int compare(File o1, File o2) {
+//					return evaluate(o1) - evaluate(o2);
+//				}
+//			}
+//
+//			private static void addPluginsTo(List<Code> rv, final File file, boolean top, Loader.Classes.Interface classpath) {
+//				if (file.exists()) {
+//					if (file.isDirectory()) {
+//						if (new File(file, "plugin.jsh.js").exists()) {
+//							//	interpret as unpacked module
+//							LOG.log(Level.CONFIG, "Loading unpacked plugin from " + file + " ...");
+//							rv.add(classpath.unpacked(file));
+//						} else {
+//							//	interpret as directory that may contain plugins
+//							File[] list = file.listFiles();
+//							Arrays.sort(list, new PluginComparator());
+//							for (File f : list) {
+//								addPluginsTo(rv, f, false, classpath);
+//							}
+//						}
+//					} else if (!file.isDirectory() && file.getName().endsWith(".slime")) {
+//						try {
+//							Code p = Code.slime(file);
+//							if (p.getScripts().getFile("plugin.jsh.js") != null) {
+//								LOG.log(Level.CONFIG, "Loading plugin from %s ...", file);
+//								rv.add(p);
+//							} else {
+//								LOG.log(Level.WARNING, "Found .slime file, but no plugin.jsh.js: %s", file);
+//							}
+//						} catch (IOException e) {
+//							//	TODO	probably error message or warning
+//						}
+//					} else if (!file.isDirectory() && file.getName().endsWith(".jar")) {
+//						//	TODO	write a test that ensures this works
+//						LOG.log(Level.CONFIG, "Loading Java plugin from " + file + " ...");
+//						rv.add(Code.jar(file));
+//					} else {
+//						//	If this was a top-level thing to load, and was loaded by application, print a warning
+//						//	TODO	refactor to make this work
+//						boolean APPLICATION = false;
+//						if (top && APPLICATION) LOG.log(Level.WARNING, "Cannot load plugin from %s as it does not appear to contain a valid plugin", file);
+//					}
+//				} else {
+//					LOG.log(Level.CONFIG, "Cannot load plugin from %s; file not found", file);
+//				}
+//			}
+//
+//			static void addPluginsTo(List<Code> rv, File file, Loader.Classes.Interface classpath) {
+//				addPluginsTo(rv, file, true, classpath);
+//			}
+//
+//			public Code.Source getLibraries() {
+//				return Code.Source.create(file);
+//			}
+//
+//			public List<Code> getPlugins(Loader.Classes.Interface classpath) {
+//				LOG.log(Level.INFO, "Application: load plugins from " + file);
+//				List<Code> rv = new ArrayList<Code>();
+//				addPluginsTo(rv, file, classpath);
+//				return rv;
+//			}
+//		}
 
 		private static class Bitbucket extends Plugins {
 			private URL url;
@@ -188,26 +301,11 @@ public class Main {
 				this.url = url;
 			}
 
-//			private boolean hasPlugin(URL url) {
-//				try {
-//					URL target = new URL(url, "plugin.jsh.js");
-//					HttpURLConnection connection = (HttpURLConnection)target.openConnection();
-//					int status = connection.getResponseCode();
-//					if (status == 200) return true;
-//					return false;
-//				} catch (MalformedURLException e) {
-//					throw new RuntimeException(e);
-//				} catch (IOException e) {
-//					throw new RuntimeException(e);
-//				}
-//			}
-
 			private void addPlugins(List<Code> plugins, URL url, Loader.Classes.Interface classpath) {
 				ArrayList<URL> children = new ArrayList<URL>();
 				try {
 					BufferedReader lines = new BufferedReader(new InputStreamReader(url.openConnection().getInputStream()));
 					String line = null;
-					ArrayList<URL> rv = new ArrayList<URL>();
 					while( (line = lines.readLine()) != null) {
 						if (line.endsWith("/")) {
 							if (children != null) {

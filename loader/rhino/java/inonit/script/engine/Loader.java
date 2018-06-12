@@ -60,6 +60,10 @@ public abstract class Loader {
 			public final void append(Code code) {
 				append(code.getClasses());
 			}
+			
+			public final Code unpacked(Code.Source base) {
+				return Java.compiling(base, Classes.this);
+			}
 
 			public final Code unpacked(File base) {
 				return Java.compiling(base, Classes.this);

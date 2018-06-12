@@ -48,16 +48,6 @@ this.jsh = new function() {
 			return $jsh.getInterface();
 		}
 
-//		$host.getPackageFile = function() {
-//			var packaged = configuration.getPackaged();
-//			return (packaged) ? packaged.getFile() : null;
-//		}
-//
-//		$host.getPackagedCode = function() {
-//			var packaged = configuration.getPackaged();
-//			return (packaged) ? packaged.getCode() : null;
-//		};
-
 		$host.loader = new function() {
 			this.getPlugins = function() {
 				return $jsh.getPlugins();

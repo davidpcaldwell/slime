@@ -84,6 +84,10 @@ public abstract class Code {
 
 			public static File create(final java.io.File file) {
 				return new File() {
+					@Override public String toString() {
+						return file.toString();
+					}
+					
 					@Override public URI getURI() {
 						return URI.create(file);
 					}
@@ -119,6 +123,10 @@ public abstract class Code {
 				return new File() {
 					private URLConnection connection;
 
+					@Override public String toString() {
+						return url.toString();
+					}
+					
 					private String getSourceName(URL url) {
 						if (url.getProtocol().equals("file")) {
 							try {
@@ -310,15 +318,28 @@ public abstract class Code {
 		public static Source create(final java.net.URL url) {
 			return new UrlBased(url, null, null);
 		}
-
+		
 		public static Source zip(final java.io.File file) {
 			try {
-				java.util.zip.ZipInputStream in = new java.util.zip.ZipInputStream(new java.io.FileInputStream(file));
+				return zip(file.toString(), new java.io.FileInputStream(file));
+			} catch (FileNotFoundException e) {
+				throw new RuntimeException(e);
+			}
+		}
+		
+		private static Source zip(final Code.Source.File file) {
+			return zip(file.toString(), file.getInputStream());
+		}
+
+		private static Source zip(final String name, final java.io.InputStream stream) {
+			try {
+				java.util.zip.ZipInputStream in = new java.util.zip.ZipInputStream(stream);
 				java.util.zip.ZipEntry entry;
 				final HashMap<String,Source.File> files = new HashMap<String,Source.File>();
 				while( (entry = in.getNextEntry()) != null) {
 					final java.util.zip.ZipEntry ENTRY = entry;
 					final byte[] bytes = new inonit.script.runtime.io.Streams().readBytes(in, false);
+					final String entryName = entry.getName();
 					Source.File f = new Source.File() {
 						public String toString() {
 							return getClass().getName() + " length=" + bytes.length;
@@ -331,7 +352,8 @@ public abstract class Code {
 
 						@Override public String getSourceName() {
 							LOG.log(Code.Source.class, Level.FINE, "getSourceName()", null);
-							throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+							return name + "!" + entryName;
+//							throw new UnsupportedOperationException("Not supported yet in " + name + "."); //To change body of generated methods, choose Tools | Templates.
 						}
 
 						@Override public InputStream getInputStream() {
@@ -372,7 +394,7 @@ public abstract class Code {
 					}
 				};
 				return new Code.Source() {
-					@Override public String toString() { return "Code.Source zip=" + file; }
+					@Override public String toString() { return "Code.Source zip=" + name; }
 
 					@Override public File getFile(String path) throws IOException {
 						LOG.log(Code.Source.class, Level.FINE, "getFile(" + path + ")", null);
@@ -638,39 +660,78 @@ public abstract class Code {
 		};
 	}
 
-	public static Code slime(final File file) {
+//	public static Code slime(final File file) {
+//		return new Code() {
+//			public String toString() {
+//				try {
+//					String rv = getClass().getName() + ": slime=" + file.getCanonicalPath();
+//					return rv;
+//				} catch (IOException e) {
+//					return getClass().getName() + ": " + file.getAbsolutePath() + " [error getting canonical]";
+//				}
+//			}
+//			private Source source = Source.create(file);
+//
+//			public Source getScripts() {
+//				return source;
+//			}
+//
+//			public Source getClasses() {
+//				return source.child("$jvm/classes");
+//			}
+//		};
+//	}
+	
+	private static Code slime(final Code.Source zip) {
 		return new Code() {
 			public String toString() {
-				try {
-					String rv = getClass().getName() + ": slime=" + file.getCanonicalPath();
-					return rv;
-				} catch (IOException e) {
-					return getClass().getName() + ": " + file.getAbsolutePath() + " [error getting canonical]";
-				}
+				return Code.class.getName() + ": zip=" + zip;
 			}
-			private Source source = Source.create(file);
-
+			
 			public Source getScripts() {
-				return source;
+				return zip;
 			}
 
 			public Source getClasses() {
-				return source.child("$jvm/classes");
+				return zip.child("$jvm/classes");
 			}
-		};
+		};				
 	}
-
-	public static Code jar(final File jar) {
+	
+	public static Code slime(final Code.Source.File file) {
+		return slime(Source.zip(file));
+	}
+	
+	public static Code slime(final java.io.File file) {
+		return slime(Source.zip(file));
+	}
+	
+	public static Code jar(final Code.Source.File jar) {
+		final Code.Source unzipped = Source.zip(jar);
 		return new Code() {
-			public Source getScripts() {
+			@Override public Source getScripts() {
 				return null;
 			}
 
+			@Override
 			public Source getClasses() {
-				return Source.create(jar);
+				return unzipped;
 			}
 		};
 	}
+
+//	public static Code jar(final File jar) {
+//		final Code.Source unzipped = Source.zip(jar);
+//		return new Code() {
+//			public Source getScripts() {
+//				return null;
+//			}
+//
+//			public Source getClasses() {
+//				return unzipped;
+//			}
+//		};
+//	}
 
 	public abstract Source getScripts();
 	public abstract Source getClasses();
