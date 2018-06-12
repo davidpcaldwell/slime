@@ -24,140 +24,17 @@ import inonit.script.engine.*;
 public class Main {
 	private static final Logger LOG = Logger.getLogger(Main.class.getName());
 
+	//	TODO	refactor into locateCodeSource() method
 	private static abstract class Location {
-		static Location create(String string) {
+		static Code.Source create(String string) {
 			if (string.startsWith("http://") || string.startsWith("https://")) {
 				try {
-					return bitbucket(new URL(string));
+					return Code.Source.bitbucketApiVersionOne(new URL(string));
 				} catch (MalformedURLException e) {
 					throw new RuntimeException(e);
 				}
 			} else {
-				return create(new File(string));
-			}
-		}
-
-		abstract Location resolve(String path);
-		abstract Plugins plugins();
-
-		final Code.Source source() {
-			return plugins().getLibraries();
-		}
-
-		static Location create(final File file) {
-			return new Location() {
-				@Override Location resolve(String path) {
-					return Location.create(new File(file, path));
-				}
-
-				@Override Plugins plugins() {
-					return Plugins.create(file);
-				}
-			};
-		}
-
-		static Location bitbucket(final URL url) {
-			return new Location() {
-				@Override Location resolve(String path) {
-					try {
-						return bitbucket(new URL(url, path));
-					} catch (MalformedURLException e) {
-						//	TODO	possibly emit? where is this coming from?
-						throw new RuntimeException(e);
-					}
-				}
-
-				@Override Plugins plugins() {
-					return Plugins.bitbucket(url);
-				}
-			};
-		}
-	}
-
-	static class Plugins extends Shell.Installation.Extensions {
-		static Plugins create(File file) {
-			if (!file.exists()) return Plugins.EMPTY;
-			if (!file.isDirectory()) throw new RuntimeException();
-			return new Plugins(Code.Source.create(file));
-		}
-		
-		static Plugins bitbucket(URL url) {
-			return new Plugins(Code.Source.bitbucketApiVersionOne(url));
-		}
-
-		static final Plugins EMPTY = new Plugins(Code.Source.NULL);
-
-		private Code.Source source;
-		
-		Plugins(Code.Source source) {
-			this.source = source;
-		}
-		
-		static class PluginComparator implements Comparator<String> {
-			private int evaluate(String file) {
-				if (file.endsWith(".jar")) {
-					return -1;
-				}
-				return 0;
-			}
-
-			public int compare(String o1, String o2) {
-				return evaluate(o1) - evaluate(o2);
-			}
-		}
-
-		private static void addPluginsTo(List<Code> rv, final Code.Source file, boolean top, Loader.Classes.Interface classpath) throws IOException {
-			if (file.getFile("plugin.jsh.js") != null) {
-				//	interpret as unpacked module
-				LOG.log(Level.CONFIG, "Loading unpacked plugin from " + file + " ...");
-				rv.add(classpath.unpacked(file));
-			} else {
-				String[] files = file.getEnumerator().list(null);
-				Arrays.sort(files, new PluginComparator());
-				for (String name : files) {
-					if (name.endsWith("/")) {
-						addPluginsTo(rv, file.child(name), false, classpath);
-//							throw new RuntimeException("Unimplemented: Code source child");
-					} else if (name.endsWith(".slime")) {
-						Code p = Code.slime(file.getFile(name));
-						if (p.getScripts().getFile("plugin.jsh.js") != null) {
-							LOG.log(Level.CONFIG, "Loading plugin from %s ...", file);
-							rv.add(p);
-						} else {
-							LOG.log(Level.WARNING, "Found .slime file, but no plugin.jsh.js: %s", file);
-						}
-					} else if (name.endsWith(".jar")) {
-						//	TODO	write a test that ensures this works
-						LOG.log(Level.CONFIG, "Loading Java plugin from " + file + " ...");
-						rv.add(Code.jar(file.getFile(name)));						
-					} else {
-						//	If this was a top-level thing to load, and was loaded by application, print a warning
-						//	TODO	refactor to make this work
-						boolean APPLICATION = false;
-						if (top && APPLICATION) LOG.log(Level.WARNING, "Cannot load plugin from %s as it does not appear to contain a valid plugin", file);						
-					}
-				}
-			}
-		}
-
-		@Override public List<Code> getPlugins(Loader.Classes.Interface classpath) {
-			List<Code> rv = new ArrayList<Code>();
-			try {
-				addPluginsTo(rv, source, true, classpath);
-				return rv;
-			} catch (java.io.IOException e) {
-				throw new RuntimeException(e);
-			}
-		}
-
-		@Override public Code.Source getLibraries() {
-			return source;
-		}			
-
-		final void addPluginsTo(List<Code> rv, Loader.Classes.Interface classpath) {
-			List<Code> plugins = getPlugins(classpath);
-			for (Code code : plugins) {
-				rv.add(code);
+				return Code.Source.create(new File(string));
 			}
 		}
 	}
@@ -255,9 +132,9 @@ public class Main {
 		}
 
 		Shell.Installation installation() {
-			final Plugins plugins;
+			final Shell.Extensions plugins;
 			try {
-				plugins = Plugins.create(getPackagedPluginsDirectory());
+				plugins = Shell.Extensions.create(getPackagedPluginsDirectory());
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
@@ -278,7 +155,7 @@ public class Main {
 					return Code.Source.NULL;
 				}
 
-				@Override public Shell.Installation.Extensions getExtensions() {
+				@Override public Shell.Extensions getExtensions() {
 					return plugins;
 				}
 			};
@@ -301,15 +178,15 @@ public class Main {
 		abstract Code.Source getLoader();
 		abstract Code.Source getJsh();
 		abstract Code.Source getLibraries();
-		abstract Plugins getModules();
-		abstract Plugins getShellPlugins();
+		abstract Code.Source getModules();
+		abstract Code.Source getShellPlugins();
 
 		final Shell.Installation installation() throws IOException {
 			//	TODO	previously user plugins directory was not searched for libraries. Is this right?
-			final Shell.Installation.Extensions plugins = Shell.Installation.Extensions.create(new Shell.Installation.Extensions[] {
-				this.getModules(),
-				this.getShellPlugins(),
-				Plugins.create(new File(new File(System.getProperty("user.home")), ".inonit/jsh/plugins"))
+			final Shell.Extensions plugins = Shell.Extensions.create(new Shell.Extensions[] {
+				Shell.Extensions.create(this.getModules()),
+				Shell.Extensions.create(this.getShellPlugins()),
+				Shell.Extensions.create(new File(new File(System.getProperty("user.home")), ".inonit/jsh/plugins"))
 			});
 			return new Shell.Installation() {
 				@Override public Code.Source getPlatformLoader() {
@@ -324,7 +201,7 @@ public class Main {
 					return Unpackaged.this.getLibraries();
 				}
 
-				@Override public Shell.Installation.Extensions getExtensions() {
+				@Override public Shell.Extensions getExtensions() {
 					return plugins;
 				}
 			};
@@ -416,18 +293,20 @@ public class Main {
 	}
 
 	private static class Unbuilt extends Unpackaged {
-		private Location src;
+		private Code.Source src;
 
-		Unbuilt(Location src) {
+		Unbuilt(Code.Source src) {
 			this.src = src;
 		}
 
 		Code.Source getLoader() {
-			return this.src.resolve("loader/").source();
+			return this.src.child("loader/");
+//			return this.src.resolve("loader/").source();
 		}
 
 		Code.Source getJsh() {
-			return this.src.resolve("jsh/loader/").source();
+			return this.src.child("jsh/loader/");
+//			return this.src.resolve("jsh/loader/").source();
 		}
 
 		Code.Source getLibraries() {
@@ -435,15 +314,15 @@ public class Main {
 			return Code.Source.create(file);
 		}
 
-		Plugins getModules() {
-			return this.src.plugins();
+		Code.Source getModules() {
+			return this.src;
 		}
 
-		Plugins getShellPlugins() {
+		Code.Source getShellPlugins() {
 			if (System.getProperty("jsh.shell.plugins") != null) {
-				return Location.create(System.getProperty("jsh.shell.plugins")).plugins();
+				return Location.create(System.getProperty("jsh.shell.plugins"));
 			}
-			return Plugins.EMPTY;
+			return Code.Source.NULL;
 		}
 	}
 
@@ -470,12 +349,12 @@ public class Main {
 			return Code.Source.create(new File(this.home, "lib"));
 		}
 
-		Plugins getModules() {
-			return Plugins.create(new File(this.home, "modules"));
+		Code.Source getModules() {
+			return Code.Source.create(new File(this.home, "modules"));
 		}
 
-		Plugins getShellPlugins() {
-			return Plugins.create(new File(this.home, "plugins"));
+		Code.Source getShellPlugins() {
+			return Code.Source.create(new File(this.home, "plugins"));
 		}
 	}
 

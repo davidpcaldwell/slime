@@ -89,10 +89,13 @@ public class Shell {
 		return configuration.getInstallation().getJshLoader();
 	}
 
+	//	TODO	Simplify handling of CoffeeScript by collapsing the next three methods and their invocations
+	
 	public Code.Source getLibraries() {
 		return configuration.getInstallation().getLibraries();
 	}
 
+	//	TODO	Used in jsh.js to retrieve CoffeeScript
 	public Code.Source.File getLibrary(String path) {
 		Code.Source plugins = configuration.getInstallation().getExtensions().getLibraries();
 		try {
@@ -102,15 +105,16 @@ public class Shell {
 		}
 	}
 
-	public String getLoaderCode(String path) throws IOException {
-		return streams.readString(getPlatformLoader().getFile(path).getReader());
-	};
-
+	//	TODO	push back out into invoking code; appears to be used only by jsh/loader/nashorn.js
 	public String getCoffeeScript() throws IOException {
 		Code.Source.File _file = getLibraries().getFile("coffee-script.js");
 		if (_file == null) return null;
 		return streams.readString(_file.getReader());
 	}
+
+	public String getLoaderCode(String path) throws IOException {
+		return streams.readString(getPlatformLoader().getFile(path).getReader());
+	};
 
 	public final Code[] getPlugins() {
 		if (classpath == null) throw new IllegalStateException();
@@ -215,36 +219,122 @@ public class Shell {
 		public abstract void exit(int status);
 	}
 
+	public static abstract class Extensions {
+		static Extensions create(final Extensions[] array) {
+			return new Extensions() {
+				@Override public List<Code> getPlugins(Loader.Classes.Interface classpath) {
+					List<Code> rv = new ArrayList<Code>();
+					for (Extensions p : array) {
+						rv.addAll(p.getPlugins(classpath));
+					}
+					return rv;
+				}
+
+				@Override public Code.Source getLibraries() {
+					ArrayList<Code.Source> sources = new ArrayList<Code.Source>();
+					for (Extensions p : array) {
+						sources.add(p.getLibraries());
+					}
+					return Code.Source.create(sources);
+				}
+			};
+		}
+
+		static Extensions create(Code.Source source) {
+			return new Plugins(source);
+		}
+		
+		static Extensions create(File file) {
+			return create(Code.Source.create(file));
+		}
+
+		public abstract List<Code> getPlugins(Loader.Classes.Interface classpath);
+		public abstract Code.Source getLibraries();
+
+		static class Plugins extends Shell.Extensions {
+			static Plugins create(File file) {
+				if (!file.exists()) return Plugins.EMPTY;
+				if (!file.isDirectory()) throw new RuntimeException();
+				return new Plugins(Code.Source.create(file));
+			}
+
+			static final Plugins EMPTY = new Plugins(Code.Source.NULL);
+
+			private Code.Source source;
+
+			Plugins(Code.Source source) {
+				this.source = source;
+			}
+
+			static class PluginComparator implements Comparator<String> {
+				private int evaluate(String file) {
+					if (file.endsWith(".jar")) {
+						return -1;
+					}
+					return 0;
+				}
+
+				public int compare(String o1, String o2) {
+					return evaluate(o1) - evaluate(o2);
+				}
+			}
+
+			private static void addPluginsTo(List<Code> rv, final Code.Source file, boolean top, Loader.Classes.Interface classpath) throws IOException {
+				if (file.getFile("plugin.jsh.js") != null) {
+					//	interpret as unpacked module
+					LOG.log(Level.CONFIG, "Loading unpacked plugin from " + file + " ...");
+					rv.add(classpath.unpacked(file));
+				} else {
+					String[] files = file.getEnumerator().list(null);
+					if (files == null) return;
+					Arrays.sort(files, new PluginComparator());
+					for (String name : files) {
+						if (name.endsWith("/")) {
+							addPluginsTo(rv, file.child(name), false, classpath);
+	//							throw new RuntimeException("Unimplemented: Code source child");
+						} else if (name.endsWith(".slime")) {
+							Code p = Code.slime(file.getFile(name));
+							if (p.getScripts().getFile("plugin.jsh.js") != null) {
+								LOG.log(Level.CONFIG, "Loading plugin from %s ...", file);
+								rv.add(p);
+							} else {
+								LOG.log(Level.WARNING, "Found .slime file, but no plugin.jsh.js: %s", file);
+							}
+						} else if (name.endsWith(".jar")) {
+							//	TODO	write a test that ensures this works
+							LOG.log(Level.CONFIG, "Loading Java plugin from " + file + " ...");
+							rv.add(Code.jar(file.getFile(name)));						
+						} else {
+							//	If this was a top-level thing to load, and was loaded by application, print a warning
+							//	TODO	refactor to make this work
+							boolean APPLICATION = false;
+							if (top && APPLICATION) LOG.log(Level.WARNING, "Cannot load plugin from %s as it does not appear to contain a valid plugin", file);						
+						}
+					}
+				}
+			}
+
+			@Override public List<Code> getPlugins(Loader.Classes.Interface classpath) {
+				List<Code> rv = new ArrayList<Code>();
+				try {
+					addPluginsTo(rv, source, true, classpath);
+					return rv;
+				} catch (java.io.IOException e) {
+					throw new RuntimeException(e);
+				}
+			}
+
+			@Override public Code.Source getLibraries() {
+				return source;
+			}			
+		}
+	}
+
 	public static abstract class Installation {
 		public abstract Code.Source getPlatformLoader();
 		public abstract Code.Source getJshLoader();
 		public abstract Code.Source getLibraries();
 		public abstract Extensions getExtensions();
-
-		public static abstract class Extensions {
-			static Extensions create(final Extensions[] array) {
-				return new Extensions() {
-					@Override public List<Code> getPlugins(Loader.Classes.Interface classpath) {
-						List<Code> rv = new ArrayList<Code>();
-						for (Extensions p : array) {
-							rv.addAll(p.getPlugins(classpath));
-						}
-						return rv;
-					}
-
-					@Override public Code.Source getLibraries() {
-						ArrayList<Code.Source> sources = new ArrayList<Code.Source>();
-						for (Extensions p : array) {
-							sources.add(p.getLibraries());
-						}
-						return Code.Source.create(sources);
-					}
-				};
-			}
-
-			public abstract List<Code> getPlugins(Loader.Classes.Interface classpath);
-			public abstract Code.Source getLibraries();
-		}
 	}
 
 	public static abstract class Environment {
@@ -371,9 +461,9 @@ public class Shell {
 			this.classpath = classpath;
 		}
 
-		//	Called by applications to load plugins
+		//	Called by applications to load plugins from an arbitrary source
 		public Code[] getPlugins(File file) {
-			return Main.Plugins.create(file).getPlugins(classpath).toArray(new Code[0]);
+			return Extensions.create(Code.Source.create(file)).getPlugins(classpath).toArray(new Code[0]);
 		}
 
 		public Invocation invocation(File script, String[] arguments) {

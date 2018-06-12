@@ -503,7 +503,9 @@ public abstract class Code {
 			static Enumerator create(final java.io.File file) {
 				return new Enumerator() {
 					private java.io.File getDirectory(String prefix) {
-						if (prefix == null) return file;
+						if (prefix == null) {
+							return file.exists() && file.isDirectory() ? file : null;
+						}
 						java.io.File rv = new java.io.File(file, prefix);
 						if (rv.isDirectory()) {
 							return rv;
