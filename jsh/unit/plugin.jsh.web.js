@@ -378,11 +378,11 @@ $set({
 				jsh.java.Thread.start(function() {
 //					jsh.shell.console("Started output reader thread.");
 					try {
-						buffer.readText().read(function(code) {
+//						buffer.readText().read(function(code) {
 //							jsh.shell.console("hg serve character: " + String.fromCharCode(code));
-						});
+//						});
 					} catch (e) {
-						jsh.shell.console("hg serve output error: " + e);
+						jsh.shell.console("hg serve output error: " + e + " keys = " + Object.keys(buffer));
 					}
 				});
 //				jsh.shell.console("Started output reader.");

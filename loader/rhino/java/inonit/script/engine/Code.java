@@ -272,7 +272,11 @@ public abstract class Code {
 			}
 
 			public Enumerator getEnumerator() {
-				return null;
+				return new Enumerator() {
+					@Override public String[] list(String prefix) {
+						return new String[0];
+					}
+				};
 			}
 		};
 
@@ -303,7 +307,7 @@ public abstract class Code {
 			return system().child(prefix);
 		}
 
-		private static Source create(final java.net.URL url, Enumerator enumerator) {
+		static Source create(final java.net.URL url, Enumerator enumerator) {
 			return new UrlBased(url, enumerator, null);
 		}
 
@@ -317,6 +321,10 @@ public abstract class Code {
 
 		public static Source create(final java.net.URL url) {
 			return new UrlBased(url, null, null);
+		}
+		
+		public static Source bitbucketApiVersionOne(URL url) {
+			return Code.Source.create(url, Code.Source.Enumerator.bitbucketApiVersionOne(url));
 		}
 		
 		public static Source zip(final java.io.File file) {
@@ -516,6 +524,27 @@ public abstract class Code {
 					}
 				};
 			}
+			
+			static Enumerator bitbucketApiVersionOne(final URL base) {
+				return new Enumerator() {
+					@Override public String[] list(String prefix) {
+						try {
+							URL url = (prefix == null) ? base : new URL(base, prefix);
+							BufferedReader lines = new BufferedReader(new InputStreamReader(url.openConnection().getInputStream()));
+							List<String> rv = new ArrayList<String>();
+							String line;
+							while( (line = lines.readLine()) != null) {
+								rv.add(line);
+							}
+							return rv.toArray(new String[0]);
+						} catch (MalformedURLException e) {
+							throw new RuntimeException(e);
+						} catch (IOException e) {
+							throw new RuntimeException(e);
+						}
+					}
+				};
+			}
 
 			public abstract String[] list(String prefix);
 		}
@@ -578,7 +607,7 @@ public abstract class Code {
 			};
 		}
 
-		public static class UrlBased extends Source {
+		private static class UrlBased extends Source {
 			private java.net.URL url;
 			private Enumerator enumerator;
 			private HttpConnector connector;
