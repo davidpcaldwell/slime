@@ -660,29 +660,7 @@ public abstract class Code {
 		};
 	}
 
-//	public static Code slime(final File file) {
-//		return new Code() {
-//			public String toString() {
-//				try {
-//					String rv = getClass().getName() + ": slime=" + file.getCanonicalPath();
-//					return rv;
-//				} catch (IOException e) {
-//					return getClass().getName() + ": " + file.getAbsolutePath() + " [error getting canonical]";
-//				}
-//			}
-//			private Source source = Source.create(file);
-//
-//			public Source getScripts() {
-//				return source;
-//			}
-//
-//			public Source getClasses() {
-//				return source.child("$jvm/classes");
-//			}
-//		};
-//	}
-	
-	private static Code slime(final Code.Source zip) {
+	static Code slime(final Code.Source zip) {
 		return new Code() {
 			public String toString() {
 				return Code.class.getName() + ": zip=" + zip;
@@ -698,11 +676,11 @@ public abstract class Code {
 		};				
 	}
 	
-	public static Code slime(final Code.Source.File file) {
+	static Code slime(final java.io.File file) {
 		return slime(Source.zip(file));
 	}
 	
-	public static Code slime(final java.io.File file) {
+	public static Code slime(final Code.Source.File file) {
 		return slime(Source.zip(file));
 	}
 	
@@ -719,19 +697,6 @@ public abstract class Code {
 			}
 		};
 	}
-
-//	public static Code jar(final File jar) {
-//		final Code.Source unzipped = Source.zip(jar);
-//		return new Code() {
-//			public Source getScripts() {
-//				return null;
-//			}
-//
-//			public Source getClasses() {
-//				return unzipped;
-//			}
-//		};
-//	}
 
 	public abstract Source getScripts();
 	public abstract Source getClasses();

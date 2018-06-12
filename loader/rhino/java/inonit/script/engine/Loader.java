@@ -61,6 +61,10 @@ public abstract class Loader {
 				append(code.getClasses());
 			}
 			
+			public final Code slime(File packed) {
+				return Code.slime(Code.Source.zip(packed));
+			}
+			
 			public final Code unpacked(Code.Source base) {
 				return Java.compiling(base, Classes.this);
 			}

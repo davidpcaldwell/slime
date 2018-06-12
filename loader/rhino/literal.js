@@ -105,11 +105,10 @@
 		}
 
 		var rv = function(p) {
-			var Code = Packages.inonit.script.engine.Code;
 			if (p._unpacked) {
 				p._code = $javahost.getClasspath().unpacked(p._unpacked);
 			} else if (p._packed) {
-				p._code = Code.slime(p._packed);
+				p._code = $javahost.getClasspath().slime(p._packed);
 			}
 			if (p._code) {
 				$javahost.getClasspath().append(p._code);
