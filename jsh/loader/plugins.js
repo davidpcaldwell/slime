@@ -85,7 +85,12 @@ $set(new (function() {
 				stop = true;
 				//	TODO	think harder about what to do
 				plugins.forEach(function(item) {
-					log(log.Level.WARNING, "Plugin from " + item + " is disabled: " + item.declaration.disabled());
+					try {
+						log(log.Level.WARNING, "Plugin from " + item + " is disabled: " + item.declaration.disabled());
+					} catch (e) {
+						//	TODO	default value for object?!?
+						log(log.Level.WARNING, "Plugin is disabled: " + item.declaration.disabled());						
+					}
 				});
 			}
 		}
@@ -125,7 +130,7 @@ $set(new (function() {
 				});
 				list.push.apply(list,array);
 			} else {
-				$slime.classpath.add(_plugins[i].getClasses());
+				$slime.classpath.add(_plugins[i].getLocator());
 			}
 		}
 
@@ -138,13 +143,6 @@ $set(new (function() {
 			list.push({
 				loader: loader
 			});
-//			list.push.apply(list, load({
-//				plugins: plugins,
-//				toString: function() {
-//					return loader.toString();
-//				},
-//				$loader: loader
-//			}));
 		} else {
 			if (loader.list) {
 				var listed = loader.list();
@@ -152,10 +150,9 @@ $set(new (function() {
 					if (listed[i].loader) {
 						scan(listed[i].loader,list);
 					} else if (/\.slime$/.test(listed[i].path)) {
-						if (!listed[i]._file) throw new Error("No _file!");
-						list.push({ slime: listed[i] });
+						list.push({ slime: listed[i].resource });
 					} else if (/\.jar$/.test(listed[i].path)) {
-						list.push({ jar: listed[i] });
+						list.push({ jar: listed[i].resource });
 					} else {
 						//	ignore other kinds of files, presumably
 					}
@@ -177,7 +174,11 @@ $set(new (function() {
 		//	TODO	should this share with jsh loader?
 		var plugins = {};
 		var list = [];
-		sources.forEach(function(item) {
+		//	Use while loop because loop can add to the list; not sure how .forEach() works in that instance
+		//	TODO	check the above
+		var index = 0;
+		while(index < sources.length) {
+			var item = sources[index];
 			if (item.loader) {
 				$slime.classpath.addUnpacked(item.loader);
 				var array = load({
@@ -185,21 +186,24 @@ $set(new (function() {
 					toString: item.loader.toString(),
 					$loader: item.loader
 				});
+//				array.forEach(function(loaded) {
+//					if (!loaded.isReady) throw new Error("No isReady in " + "loaded" + " with keys " + Object.keys(loaded));
+//				})
 				list.push.apply(list,array);
 			} else if (item.slime) {
-				var _scripts = $slime.classpath.addSlime(item.slime);
-				var subloader = new $slime.Loader({ _source: _scripts });
+				var subloader = $slime.classpath.addSlime(item.slime);
 				//	TODO	.slime files cannot contain multiple plugin folders; we only look at the top level. Is this a good
 				//			decision?
 				if (subloader.get("plugin.jsh.js")) {
-					list.push({
+					sources.push({
 						loader: subloader
 					});
 				}
 			} else if (item.jar) {
 				throw new Error("Not implemented: .jar");
 			}
-		});
+			index++;
+		}
 		run(list);
 //		run(scan(loader));
 	}

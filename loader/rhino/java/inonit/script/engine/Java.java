@@ -550,7 +550,7 @@ public class Java {
 			return null;
 		}
 
-		@Override public Code.Classes getClasses() {
+		@Override public Code.Locator getLocator() {
 			return null;
 		}
 	}

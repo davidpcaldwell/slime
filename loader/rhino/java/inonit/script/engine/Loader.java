@@ -69,6 +69,11 @@ public abstract class Loader {
 				return Code.slime(packed);
 			}
 			
+			public final void appendUnpacked(Code.Source base) {
+				Code code = Java.compiling(base, Classes.this);
+				loader.append(code.getClasses());
+			}
+			
 			public final Code unpacked(Code.Source base) {
 				return Java.compiling(base, Classes.this);
 			}
@@ -245,7 +250,7 @@ public abstract class Loader {
 			protected URL findResource(String name) {
 				synchronized(locations) {
 					for (Code.Source source : locations) {
-						Code.Classes classes = source.getClasses();
+						Code.Locator classes = source.getLocator();
 						if (classes != null) {
 							URL url = classes.getResource(name);
 							if (url != null) {
@@ -261,7 +266,7 @@ public abstract class Loader {
 				java.util.Vector<URL> rv = new java.util.Vector<URL>();
 				synchronized(locations) {
 					for (Code.Source source : locations) {
-						Code.Classes classes = source.getClasses();
+						Code.Locator classes = source.getLocator();
 						if (classes != null) {
 							URL url = classes.getResource(name);
 							if (url != null) {

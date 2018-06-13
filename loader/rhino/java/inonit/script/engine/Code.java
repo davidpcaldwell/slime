@@ -20,7 +20,7 @@ import java.util.logging.*;
 public abstract class Code {
 	private static final inonit.system.Logging LOG = inonit.system.Logging.get();
 
-	public static abstract class Classes {
+	public static abstract class Locator {
 		public abstract URL getResource(String path);
 	}
 
@@ -267,7 +267,7 @@ public abstract class Code {
 				return null;
 			}
 
-			public Classes getClasses() {
+			public Locator getLocator() {
 				return null;
 			}
 
@@ -292,7 +292,7 @@ public abstract class Code {
 					return File.create(url);
 				}
 
-				public Classes getClasses() {
+				public Locator getLocator() {
 					return null;
 				}
 
@@ -414,7 +414,7 @@ public abstract class Code {
 						return enumerator;
 					}
 
-					@Override public Classes getClasses() {
+					@Override public Locator getLocator() {
 						LOG.log(Code.Source.class, Level.FINE, "getClasses()", null);
 						//	TODO	think about this
 						return null;
@@ -449,10 +449,10 @@ public abstract class Code {
 		}
 
 		public static Source create(final List<Source> delegates) {
-			final Classes classes = new Classes() {
+			final Locator classes = new Locator() {
 				@Override public URL getResource(String path) {
 					for (Source delegate : delegates) {
-						Classes c = delegate.getClasses();
+						Locator c = delegate.getLocator();
 						if (c != null && c.getResource(path) != null) {
 							return c.getResource(path);
 						}
@@ -488,7 +488,7 @@ public abstract class Code {
 					return null;
 				}
 
-				@Override public Classes getClasses() {
+				@Override public Locator getLocator() {
 					return classes;
 				}
 
@@ -562,7 +562,7 @@ public abstract class Code {
 
 		public abstract File getFile(String path) throws IOException;
 		public abstract Enumerator getEnumerator();
-		public abstract Classes getClasses();
+		public abstract Locator getLocator();
 
 		private String getChildPrefix(String prefix) {
 			if (prefix == null || prefix.length() == 0) return "";
@@ -581,12 +581,12 @@ public abstract class Code {
 					return Source.this.getFile(prepend + path);
 				}
 
-				public Classes getClasses() {
-					final Classes delegate = Source.this.getClasses();
+				public Locator getLocator() {
+					final Locator delegate = Source.this.getLocator();
 					if (delegate == null) {
 						return null;
 					}
-					return new Classes() {
+					return new Locator() {
 						@Override public URL getResource(String path) {
 							return delegate.getResource(prepend+path);
 						}
@@ -613,14 +613,14 @@ public abstract class Code {
 			private java.net.URL url;
 			private Enumerator enumerator;
 			private HttpConnector connector;
-			private Classes classes;
+			private Locator classes;
 
 			UrlBased(final java.net.URL url, Enumerator enumerator, HttpConnector connector) {
 				//	TODO	could this.url be replaced by calls to the created classes object?
 				this.url = url;
 				this.enumerator = enumerator;
 				this.connector = connector;
-				this.classes = new Classes() {
+				this.classes = new Locator() {
 					private java.net.URLClassLoader delegate = new java.net.URLClassLoader(new java.net.URL[] {url});
 
 					@Override public URL getResource(String path) {
@@ -643,7 +643,7 @@ public abstract class Code {
 				return enumerator;
 			}
 
-			public Classes getClasses() {
+			public Locator getLocator() {
 				return classes;
 			}
 		}
