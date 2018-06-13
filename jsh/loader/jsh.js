@@ -150,18 +150,26 @@ this.jsh = new function() {
 		};
 
 		this.plugins = function(from) {
-			if (from && from.java && from.java.adapt && $host.classpath.getClass("java.io.File").isInstance(from.java.adapt())) {
-				//	TODO	trying to unify this with the plugins.load interface to have just one plugins search mechanism
+			//	TODO	trying to unify this with the plugins.load interface to have just one plugins search mechanism
+			var isPathname = from && from.java && from.java.adapt && $host.classpath.getClass("java.io.File").isInstance(from.java.adapt());
+			var isFile = from && from.pathname && from.pathname.file;
+			var isDirectory = from && from.pathname && from.pathname.directory;
+			if (isPathname) {
 				plugins._load($host.getInterface().getPlugins(from.java.adapt()));
 			} else if (from && from.get) {
-				plugins.load(from);
+				plugins.load({ loader: from });
+			} else if (isFile) {
+				//	Should we be sending a script resource, rather than a Java file? Could expose that API in loader/rhino/literal.js
+				plugins.load({ _file: Packages.inonit.script.engine.Code.Source.File.create(from.pathname.java.adapt()) });
+			} else if (isDirectory) {
+				plugins.load({ _source: Packages.inonit.script.engine.Code.Source.create(from.pathname.java.adapt()) });				
 			}
 		};
 	};
 
 	(function loadPlugins() {
 		if (Packages.java.lang.System.getenv("JSH_TEST_PLUGINS_LOADER_SCRIPT")) {
-			plugins.load(new $host.Loader({ _source: $host.getInterface().getPluginSource() }));
+			plugins.load({ loader: new $host.Loader({ _source: $host.getInterface().getPluginSource() }) });
 			return;
 		}
 		plugins._load($host.getInterface().getPlugins());

@@ -14,30 +14,82 @@ Packages.java.lang.System.err.println("Starting addClasses");
 var parameters = jsh.script.getopts({
 	options: {
 		scenario: false,
-		classes: jsh.file.Pathname
+		part: String,
+		classes: jsh.file.Pathname,
+		jar: jsh.file.Pathname,
+		search: false
 	}
 });
 
 if (parameters.options.scenario) {
+	var parts = (function(part) {
+		var rv = {
+			classes: true,
+			jar: true,
+			jarsearch: true
+		};
+		if (part) {
+			for (var x in rv) {
+				if (x != part) rv[x] = false;
+			}
+		}
+		return rv;
+	})(parameters.options.part);
 	jsh.loader.plugins(jsh.script.file.getRelativePath("../../../rhino/tools"));
 	var destination = jsh.shell.TMPDIR.createTemporary({ directory: true });
+	var jardestination = jsh.shell.TMPDIR.createTemporary({ directory: true });
+	var jar = jardestination.createTemporary({ suffix: ".jar" }).pathname;
+	jar.file.remove();
 	jsh.java.tools.javac({
 		destination: destination.pathname,
 		arguments: [
 			jsh.script.file.getRelativePath("java/test/AddClasses.java")
 		]
 	});
-	jsh.shell.echo("Compiled to " + destination);
-	jsh.shell.jsh({
-		script: jsh.script.file,
-		arguments: ["-classes", destination],
-		evaluate: function(result) {
-			jsh.shell.echo("Status: " + result.status);
-			if (result.status != 0) {
-				throw new Error("Status from addClasses.jsh.js: " + result.status);
-			}
-		}
+	jsh.shell.console("Compiled to " + destination);
+	jsh.file.zip({
+		from: destination,
+		to: jar
 	});
+
+	if (parts.classes) {
+		jsh.shell.jsh({
+			script: jsh.script.file,
+			arguments: ["-classes", destination],
+			evaluate: function(result) {
+				jsh.shell.console("Status: " + result.status);
+				if (result.status != 0) {
+					throw new Error("Status from addClasses.jsh.js: " + result.status);
+				}
+			}
+		});
+	}
+	if (parts.jar) {
+		jsh.shell.jsh({
+			fork: true,
+			script: jsh.script.file,
+			arguments: ["-jar", jar],
+			evaluate: function(result) {
+				jsh.shell.console("Status: " + result.status);
+				if (result.status != 0) {
+					throw new Error("Status from addClasses.jsh.js: " + result.status);
+				}
+			}
+		});
+	}
+	if (parts.jarsearch) {
+		jsh.shell.jsh({
+			fork: true,
+			script: jsh.script.file,
+			arguments: ["-jar", jardestination, "-search"],
+			evaluate: function(result) {
+				jsh.shell.console("Status: " + result.status);
+				if (result.status != 0) {
+					throw new Error("Status from addClasses.jsh.js: " + result.status);
+				}
+			}
+		});
+	}
 	if (jsh.shell.jsh.home) {
 		var tmpfile = jsh.shell.TMPDIR.createTemporary({ prefix: "addClasses.", suffix: ".jar" });
 		jsh.shell.echo("Packaging ...");
@@ -67,7 +119,7 @@ if (parameters.options.scenario) {
 	jsh.shell.exit(0);
 }
 
-if (!parameters.options.classes) {
+if (!parameters.options.classes && !parameters.options.jar) {
 	jsh.shell.echo("No -classes argument.");
 	jsh.shell.exit(1);
 }
@@ -93,7 +145,16 @@ var global = (function() { return this; })();
 //	to fail, at least under Rhino 1.7R2
 //verify(typeof(Packages.test.AddClasses) == "object", "typeof(Packages.test.AddClasses) == object");
 verify(getClass("test.AddClasses") == null, "Class not found");
-jsh.loader.java.add(parameters.options.classes);
+if (parameters.options.classes) {
+	jsh.loader.java.add(parameters.options.classes);
+} else if (parameters.options.jar) {
+	if (parameters.options.search) {
+		jsh.loader.plugins(parameters.options.jar.directory);		
+	} else {
+		jsh.loader.plugins(parameters.options.jar.file);
+	}
+//	throw new Error("Unimplemented: JAR");
+}
 verify(getClass("test.AddClasses") != null, "Class found");
 verify(typeof(Packages.test.AddClasses) == "function", "typeof(Packages.test.AddClasses) == function");
 verify(new Packages.test.AddClasses().toString() == "Loaded");

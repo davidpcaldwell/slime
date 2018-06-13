@@ -70,14 +70,25 @@ scenario.part("jsh.shell.jsh", new jsh.unit.Suite.Fork({
 	arguments: ["-view","stdio"]
 }));
 
-scenario.part("jsh.loader.java", {
+//scenario.part("jsh.loader.java", {
+//	execute: function(scope,verify) {
+//		var result = jsh.shell.jsh({
+//			fork: true,
+//			script: src.getFile("jsh/test/addClasses/addClasses.jsh.js"),
+//			arguments: ["-classes",compileAddClasses()]
+//		});
+//		verify(result).status.is(0);
+//	}
+//});
+
+scenario.part("addClasses", {
 	execute: function(scope,verify) {
 		var result = jsh.shell.jsh({
 			fork: true,
 			script: src.getFile("jsh/test/addClasses/addClasses.jsh.js"),
-			arguments: ["-classes",compileAddClasses()]
+			arguments: ["-scenario"]
 		});
-		verify(result).status.is(0);
+		verify(result).status.is(0);		
 	}
 });
 

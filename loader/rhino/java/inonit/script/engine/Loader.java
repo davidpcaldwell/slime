@@ -74,6 +74,11 @@ public abstract class Loader {
 				loader.append(code.getClasses());
 			}
 			
+			public final void appendJar(Code.Source.File file) {
+				Code code = Code.jar(file);
+				loader.append(code.getClasses());
+			}
+			
 			public final Code unpacked(Code.Source base) {
 				return Java.compiling(base, Classes.this);
 			}

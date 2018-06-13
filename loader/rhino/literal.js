@@ -79,32 +79,32 @@
 		}
 	});
 
-	loader.Loader = (function(was) {
-		var getTypeFromPath = function(path) {
-			return loader.mime.Type.fromName(path);
-		}
+	var getTypeFromPath = function(path) {
+		return loader.mime.Type.fromName(path);
+	}
 
-		//	Convert a Java inonit.script.engine.Code.Source.File to a resource
-		var Resource = function(_file,path) {
-			var parameter = {
-				type: getTypeFromPath(path),
-				read: {
-					binary: function() {
-						return new loader.io.InputStream(_file.getInputStream());
-					}
+	//	Convert a Java inonit.script.engine.Code.Source.File to a resource
+	var Resource = function(_file,path) {
+		var parameter = {
+			type: getTypeFromPath(path),
+			read: {
+				binary: function() {
+					return new loader.io.InputStream(_file.getInputStream());
 				}
-			};
-			var length = _file.getLength();
-			if (typeof(length) == "object" && length !== null && length.longValue) {
-				parameter.length = Number(length.longValue());
 			}
-			loader.io.Resource.call(this,parameter);
-			this.name = String(_file.getSourceName());
-			var _modified = _file.getLastModified();
-			if (_modified) this.modified = new Date( Number(_modified.getTime()) );
-			this._file = _file;
+		};
+		var length = _file.getLength();
+		if (typeof(length) == "object" && length !== null && length.longValue) {
+			parameter.length = Number(length.longValue());
 		}
+		loader.io.Resource.call(this,parameter);
+		this.name = String(_file.getSourceName());
+		var _modified = _file.getLastModified();
+		if (_modified) this.modified = new Date( Number(_modified.getTime()) );
+		this._file = _file;
+	}
 
+	loader.Loader = (function(was) {
 		var rv = function(p) {
 			if (p._unpacked) {
 				p._code = $javahost.getClasspath().unpacked(p._unpacked);
@@ -270,6 +270,14 @@
 			var _code = $javahost.getClasspath().slime(toCodeSourceFile(resource,resource.name));
 			$javahost.getClasspath().append(_code.getClasses());
 			return new loader.Loader({ _source: _code.getScripts() });
+		}
+		
+		this.addJar = function(_file) {
+			$javahost.getClasspath().appendJar(_file);
+		};
+		
+		this.addJarResource = function(resource) {
+			$javahost.getClasspath().appendJar(toCodeSourceFile(resource,resource.name));
 		}
 		
 		this.addUnpacked = function(loader) {

@@ -161,48 +161,62 @@ $set(new (function() {
 		}
 		return list;
 	}
-
-	this.load = function(loader) {
-		var sources = scan(loader);
-		sources.sort(function(a,b) {
-			var precedence = function(item) {
-				return 0;
-			}
-			
-			return precedence(b) - precedence(a);
-		});
-		//	TODO	should this share with jsh loader?
-		var plugins = {};
+	
+	this.load = function(p) {
+		if (p._source) {
+			p.loader = new $slime.Loader({ _source: p._source });
+		}
 		var list = [];
-		//	Use while loop because loop can add to the list; not sure how .forEach() works in that instance
-		//	TODO	check the above
-		var index = 0;
-		while(index < sources.length) {
-			var item = sources[index];
-			if (item.loader) {
-				$slime.classpath.addUnpacked(item.loader);
-				var array = load({
-					plugins: plugins,
-					toString: item.loader.toString(),
-					$loader: item.loader
-				});
-//				array.forEach(function(loaded) {
-//					if (!loaded.isReady) throw new Error("No isReady in " + "loaded" + " with keys " + Object.keys(loaded));
-//				})
-				list.push.apply(list,array);
-			} else if (item.slime) {
-				var subloader = $slime.classpath.addSlime(item.slime);
-				//	TODO	.slime files cannot contain multiple plugin folders; we only look at the top level. Is this a good
-				//			decision?
-				if (subloader.get("plugin.jsh.js")) {
-					sources.push({
-						loader: subloader
-					});
+		var plugins = {};
+		if (p.loader) {
+			var sources = scan(p.loader);
+			sources.sort(function(a,b) {
+				var precedence = function(item) {
+					return 0;
 				}
-			} else if (item.jar) {
-				throw new Error("Not implemented: .jar");
+
+				return precedence(b) - precedence(a);
+			});
+			//	TODO	should this share with jsh loader?
+			//	Use while loop because loop can add to the list; not sure how .forEach() works in that instance
+			//	TODO	check the above
+			var index = 0;
+			while(index < sources.length) {
+				var item = sources[index];
+				if (item.loader) {
+					$slime.classpath.addUnpacked(item.loader);
+					var array = load({
+						plugins: plugins,
+						toString: item.loader.toString(),
+						$loader: item.loader
+					});
+	//				array.forEach(function(loaded) {
+	//					if (!loaded.isReady) throw new Error("No isReady in " + "loaded" + " with keys " + Object.keys(loaded));
+	//				})
+					list.push.apply(list,array);
+				} else if (item.slime) {
+					var subloader = $slime.classpath.addSlime(item.slime);
+					//	TODO	.slime files cannot contain multiple plugin folders; we only look at the top level. Is this a good
+					//			decision?
+					if (subloader.get("plugin.jsh.js")) {
+						sources.push({
+							loader: subloader
+						});
+					}
+				} else if (item.jar) {
+					$slime.classpath.addJarResource(item.jar);
+				}
+				index++;
 			}
-			index++;
+		} else if (p._file) {
+			var name = String(p._file.getSourceName());
+			if (/\.jar$/.test(name)) {
+				$slime.classpath.addJar(p._file);
+			} else if (/\.slime$/.test(name)) {
+				throw new Error("Deal with .slime");
+			} else {
+				throw new Error("Deal with " + name);
+			}
 		}
 		run(list);
 //		run(scan(loader));
