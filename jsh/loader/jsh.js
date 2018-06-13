@@ -159,13 +159,13 @@ this.jsh = new function() {
 		};
 	};
 
-	if (true) {
+	(function loadPlugins() {
+		if (Packages.java.lang.System.getenv("JSH_TEST_PLUGINS_LOADER_SCRIPT")) {
+			plugins.load(new $host.Loader({ _source: $host.getInterface().getPluginSource() }));
+			return;
+		}
 		plugins._load($host.getInterface().getPlugins());
-	} else {
-		//	TODO	this implementation in plugins.load probably does not 
-		var loader = new $host.Loader({ _source: $host.getInterface().getPluginSource() })
-		plugins.load(loader);
-	}
+	})();
 
 	//	TODO	below could be turned into jsh plugin loaded at runtime by jsapi; would need to make getLibrary accessible through
 	//			$host

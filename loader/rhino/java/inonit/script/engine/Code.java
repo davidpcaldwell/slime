@@ -581,7 +581,7 @@ public abstract class Code {
 					return Source.this.getFile(prepend + path);
 				}
 
-				public Code.Classes getClasses() {
+				public Classes getClasses() {
 					final Classes delegate = Source.this.getClasses();
 					if (delegate == null) {
 						return null;

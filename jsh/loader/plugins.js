@@ -132,23 +132,32 @@ $set(new (function() {
 		run(list);
 	};
 
-	var scan = function(loader,list,plugins) {
+	var scan = function(loader,list) {
 		if (!list) list = [];
-		if (!plugins) plugins = {};
 		if (loader.get("plugin.jsh.js")) {
-			list.push.apply(list, load({
-				plugins: plugins,
-				toString: function() {
-					return loader.toString();
-				},
-				$loader: loader
-			}));
+			list.push({
+				loader: loader
+			});
+//			list.push.apply(list, load({
+//				plugins: plugins,
+//				toString: function() {
+//					return loader.toString();
+//				},
+//				$loader: loader
+//			}));
 		} else {
 			if (loader.list) {
 				var listed = loader.list();
 				for (var i=0; i<listed.length; i++) {
 					if (listed[i].loader) {
-						scan(listed[i].loader,list,plugins);
+						scan(listed[i].loader,list);
+					} else if (/\.slime$/.test(listed[i].path)) {
+						if (!listed[i]._file) throw new Error("No _file!");
+						list.push({ slime: listed[i] });
+					} else if (/\.jar$/.test(listed[i].path)) {
+						list.push({ jar: listed[i] });
+					} else {
+						//	ignore other kinds of files, presumably
 					}
 				}
 			}
@@ -157,6 +166,41 @@ $set(new (function() {
 	}
 
 	this.load = function(loader) {
-		run(scan(loader));
+		var sources = scan(loader);
+		sources.sort(function(a,b) {
+			var precedence = function(item) {
+				return 0;
+			}
+			
+			return precedence(b) - precedence(a);
+		});
+		//	TODO	should this share with jsh loader?
+		var plugins = {};
+		var list = [];
+		sources.forEach(function(item) {
+			if (item.loader) {
+				$slime.classpath.addUnpacked(item.loader);
+				var array = load({
+					plugins: plugins,
+					toString: item.loader.toString(),
+					$loader: item.loader
+				});
+				list.push.apply(list,array);
+			} else if (item.slime) {
+				var _scripts = $slime.classpath.addSlime(item.slime);
+				var subloader = new $slime.Loader({ _source: _scripts });
+				//	TODO	.slime files cannot contain multiple plugin folders; we only look at the top level. Is this a good
+				//			decision?
+				if (subloader.get("plugin.jsh.js")) {
+					list.push({
+						loader: subloader
+					});
+				}
+			} else if (item.jar) {
+				throw new Error("Not implemented: .jar");
+			}
+		});
+		run(list);
+//		run(scan(loader));
 	}
 })());

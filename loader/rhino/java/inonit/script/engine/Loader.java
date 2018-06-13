@@ -65,6 +65,10 @@ public abstract class Loader {
 				return Code.slime(Code.Source.zip(packed));
 			}
 			
+			public final Code slime(Code.Source.File packed) {
+				return Code.slime(packed);
+			}
+			
 			public final Code unpacked(Code.Source base) {
 				return Java.compiling(base, Classes.this);
 			}
@@ -191,7 +195,6 @@ public abstract class Loader {
 
 			private inonit.script.runtime.io.Streams streams = new inonit.script.runtime.io.Streams();
 			private ArrayList<Code.Source> locations = new ArrayList<Code.Source>();
-			private Code.Source dependencies = Code.Source.create(locations);
 
 			private ClassLoaderImpl(ClassLoader delegate) {
 				super(delegate);

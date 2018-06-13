@@ -102,6 +102,7 @@
 			this.name = String(_file.getSourceName());
 			var _modified = _file.getLastModified();
 			if (_modified) this.modified = new Date( Number(_modified.getTime()) );
+			this._file = _file;
 		}
 
 		var rv = function(p) {
@@ -204,6 +205,76 @@
 
 		this.getClass = function(name) {
 			return $javahost.getClasspath().getClass(name);
+		};
+		
+		//	TODO	stuff below here is pretty dubious, but refactoring in progress to try to simplify Java/script sides of Java
+		//			resource/loader management
+		
+		var toCodeSourceFile = function(resource,path) {
+			if (!resource) return null;
+			//	TODO	cheat by storing Code.Source.File for resources created by this source file. Design smell that we
+			//			need to convert back and forth between Java and script versions
+			if (resource._file) return resource._file;
+			return new JavaAdapter(
+				Packages.inonit.script.engine.Code.Source.File,
+				new function() {
+					["getURI","getSourceName","getInputStream","getLength","getLastModified"].forEach(function(methodName) {
+						this[methodName] = function() {
+							throw new Error("Unimplemented: " + methodName);
+						};
+					},this);
+
+					this.getURI = function() {
+						return Packages.inonit.script.engine.Code.Source.URI.script(
+							"literal.js",
+							path
+						)
+					}
+
+					this.getSourceName = function() {
+						return (resource.name) ? resource.name : null;
+					}
+
+					this.getInputStream = function() {
+						if (!resource.read) throw new Error("Cannot read " + resource);
+						return resource.read.binary().java.adapt();
+					}
+				}
+			)
+		};
+		
+		this.addSlime = function(resource) {
+			//	TODO	since we use this method to create a Code object, might as well send it back to caller to help caller load
+			//			scripts. Dubious.
+			var _code = $javahost.getClasspath().slime(toCodeSourceFile(resource,resource.name));
+			$javahost.getClasspath().append(_code.getClasses());
+			return _code.getScripts();
+		}
+		
+		this.addUnpacked = function(loader) {
+			var toCodeSource = function(loader) {
+				
+				return new JavaAdapter(
+					Packages.inonit.script.engine.Code.Source,
+					new function() {
+						this.getFile = function(path) {
+							var resource = loader.get(path);
+							return toCodeSourceFile(resource,path);
+						};
+						
+						this.getClasses = function() {
+							throw new Error("Unimplemented: getClasses");							
+						};
+						
+						this.getEnumerator = function() {
+							throw new Error("Unimplemented: getEnumerator");
+						}
+					}
+				)
+			};
+			
+			var _code = $javahost.getClasspath().unpacked(toCodeSource(loader));
+			$javahost.getClasspath().append(_code.getClasses());
 		}
 	}
 
