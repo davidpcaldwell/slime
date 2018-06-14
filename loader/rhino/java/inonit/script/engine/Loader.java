@@ -42,10 +42,10 @@ public abstract class Loader {
 				thread.setContextClassLoader(loader);
 			}
 
-			public final void append(Code.Source code) {
+			public final void add(Code.Source code) {
 				loader.append(code);
 			}
-
+			
 			/**
 				Returns class with the given name, or <code>null</code> if there is no such class.
 			*/
@@ -57,13 +57,9 @@ public abstract class Loader {
 				}
 			}
 
-			public final void appendUnpacked(Code.Source base) {
-				loader.append(Java.compiling(base, Classes.this));
-			}			
-			
-			public final void appendJar(Code.Source.File file) {
-				loader.append(Code.Source.zip(file));
-			}			
+			public final Code.Source compiling(Code.Source base) {
+				return Java.compiling(base, Classes.this);
+			}
 		}
 
 		abstract File getLocalClassCache();

@@ -265,27 +265,26 @@
 		};
 		
 		this.add = function(_source) {
-			_classpath.append(_source);
+			_classpath.add(_source);
 		}
 
 		//	TODO	stuff below here is pretty dubious, but refactoring in progress to try to simplify Java/script sides of Java
 		//			resource/loader management
 		
 		this.addSlime = function(loader) {
-			var _source = loader.java.adapt();
-			_classpath.append(_source.child("$jvm/classes"));
+			_classpath.add(loader.java.adapt().child("$jvm/classes"));
 		};
 		
 		this.addJar = function(_file) {
-			_classpath.appendJar(_file);
+			_classpath.add(Packages.inonit.script.engine.Code.Source.zip(_file));
 		};
 		
 		this.addJarResource = function(resource) {
-			_classpath.appendJar(Resource.toCodeSourceFile(resource,resource.name));
+			_classpath.add(Packages.inonit.script.engine.Code.Source.zip(Resource.toCodeSourceFile(resource,resource.name)));
 		}
 		
 		this.addUnpacked = function(loader) {
-			_classpath.appendUnpacked(loader.java.adapt());
+			_classpath.add(_classpath.compiling(loader.java.adapt()));
 		}
 	})($javahost.getClasspath())
 
