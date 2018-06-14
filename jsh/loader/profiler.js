@@ -11,7 +11,7 @@
 //	Contributor(s):
 //	END LICENSE
 
-var _args = $host.getSystemProperties().get("inonit.tools.Profiler.args");
+var _args = _properties.get("inonit.tools.Profiler.args");
 var options = {};
 //	TODO	currently does not contemplate repeated options
 for (var i=0; i<_args.length; i++) {

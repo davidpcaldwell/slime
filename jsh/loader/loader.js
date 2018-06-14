@@ -24,7 +24,7 @@ $set((function() {
 		}
 	}
 
-	$host.$api.deprecate.warning = function(o) {
+	$slime.$api.deprecate.warning = function(o) {
 		var name = arguments.callee.javaLogName;
 		var _level = Packages.java.util.logging.Level.WARNING;
 		var _logger = Packages.java.util.logging.Logger.getLogger(name);
@@ -44,7 +44,7 @@ $set((function() {
 		}
 		debugger;
 	};
-	$host.$api.deprecate.warning.javaLogName = "inonit.script.jsh.Shell.log.$api.deprecate";
+	$slime.$api.deprecate.warning.javaLogName = "inonit.script.jsh.Shell.log.$api.deprecate";
 //	var rhinoLoader = $host;
 
 //	this.bootstrap = function(path,context) {
@@ -62,7 +62,7 @@ $set((function() {
 		//			corresponding to files ... or else what should they do if the file is not found? Maybe file could return
 		//			null or something ... but run would probably have to fail silently, which is not good unless it is
 		//			explicitly specified
-		if (code.java && code.java.adapt() && $host.classpath.getClass("java.io.File").isInstance(code.java.adapt())) {
+		if (code.java && code.java.adapt() && $slime.classpath.getClass("java.io.File").isInstance(code.java.adapt())) {
 			return {
 				name: code.toString(),
 				string: (function() {
@@ -78,15 +78,15 @@ $set((function() {
 
 	return new function() {
 		this.run = function(code,scope,target) {
-			return $host.run(getCode(code),scope,target);
+			return $slime.run(getCode(code),scope,target);
 		};
 
 		this.value = function(code,scope,target) {
-			return $host.value(getCode(code),scope,target);
+			return $slime.value(getCode(code),scope,target);
 		};
 
 		this.file = function(code,$context) {
-			return $host.file(getCode(code),$context);
+			return $slime.file(getCode(code),$context);
 		};
 
 		this.module = function(pathname) {
@@ -111,12 +111,12 @@ $set((function() {
 				p.$context = arguments[1];
 			}
 			var loader = (function(format) {
-				if (format.slime) return new $host.Loader({ _packed: format.slime });
-				if (format.base) return new $host.Loader({ _unpacked: format.base });
+				if (format.slime) return new $slime.Loader({ _packed: format.slime });
+				if (format.base) return new $slime.Loader({ _unpacked: format.base });
 				throw new TypeError("Unreachable code: format.slime and format.base null in jsh loader's module()");
 			})(format);
 			if (format.slime) {
-				$host.classpath.addSlimeFile(format.slime)
+				$slime.classpath.addSlimeFile(format.slime)
 			}
 			var args = [format.name].concat(Array.prototype.slice.call(arguments,1));
 			return loader.module.apply(loader,args);
@@ -124,20 +124,20 @@ $set((function() {
 
 		this.classpath = new function() {
 			this.toString = function() {
-				return $host.classpath.toString();
+				return $slime.classpath.toString();
 			}
 
 			this.add = function(_file) {
-				$host.classpath.add(Packages.inonit.script.engine.Code.Source.create(_file));
+				$slime.classpath.add(Packages.inonit.script.engine.Code.Source.create(_file));
 			};
 
 			this.get = function(name) {
-				return $host.classpath.getClass(name);
+				return $slime.classpath.getClass(name);
 			}
 		};
 
 		this.namespace = function(name) {
-			return $host.namespace(name);
+			return $slime.namespace(name);
 		}
 	}
 })());

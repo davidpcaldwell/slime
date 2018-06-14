@@ -161,9 +161,6 @@ $set(new (function() {
 						toString: item.loader.toString(),
 						$loader: item.loader
 					});
-	//				array.forEach(function(loaded) {
-	//					if (!loaded.isReady) throw new Error("No isReady in " + "loaded" + " with keys " + Object.keys(loaded));
-	//				})
 					list.push.apply(list,array);
 				} else if (item.slime) {
 					var subloader = $slime.classpath.addSlime(item.slime);

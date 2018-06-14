@@ -11,44 +11,43 @@
 //	END LICENSE
 
 this.jsh = new function() {
-	//	TODO	rename $host, which makes no sense as a name now (it is not a host object). Perhaps $slime?
-	var $host = (function($jsh) {
-		var $host = $jsh.runtime();
+	var $slime = (function($jsh) {
+		var $slime = $jsh.runtime();
 		var configuration = $jsh.getEnvironment();
 		var invocation = $jsh.getInvocation();
 
-		$host.getSystemProperties = function() {
+		$slime.getSystemProperties = function() {
 			return configuration.getSystemProperties();
 		};
 		
 		//	Could consider returning empty string for null; this seems to be the way properties are used
-		$host.getSystemProperty = function(name) {
+		$slime.getSystemProperty = function(name) {
 			var _rv = configuration.getSystemProperties().getProperty(name);
 			if (_rv === null) return null;
 			return String(_rv);
 		}
 
-		$host.getEnvironment = function() {
+		$slime.getEnvironment = function() {
 			return configuration.getEnvironment();
 		};
 
-		$host.getStdio = function() {
+		$slime.getStdio = function() {
 			return stdio;
 		};
 
-		$host.getInvocation = function() {
+		$slime.getInvocation = function() {
 			return invocation;
 		};
 
-		$host.getPackaged = function() {
+		$slime.getPackaged = function() {
 			return configuration.getPackaged();
 		}
 
-		$host.getInterface = function() {
+		$slime.getInterface = function() {
 			return $jsh.getInterface();
 		}
 
-		$host.loader = new function() {
+		$slime.loader = new function() {
 			this.getPackagedCode = function() {
 				return configuration.getPackagedCode();
 			};
@@ -83,30 +82,30 @@ this.jsh = new function() {
 			};
 		};
 
-		$host.coffee = $jsh.getLibrary("coffee-script.js");
+		$slime.coffee = $jsh.getLibrary("coffee-script.js");
 
-		return $host;
+		return $slime;
 	})($jsh);
 
 	//	TODO	is there a way to use the custom script executor to do these rather than eval()?
 
-	var loader = $host.value(
-		$host.loader.getLoaderScript("loader.js"),
+	var loader = $slime.value(
+		$slime.loader.getLoaderScript("loader.js"),
 		{
-			$host: $host
+			$slime: $slime
 		}
 	);
 
-	var plugins = $host.value(
-		$host.loader.getLoaderScript("plugins.js"),
+	var plugins = $slime.value(
+		$slime.loader.getLoaderScript("plugins.js"),
 		{
-			$slime: $host,
+			$slime: $slime,
 			jsh: this,
 			loader: loader
 		}
 	);
 	
-	$host.plugins = {
+	$slime.plugins = {
 		mock: function(p) {
 			plugins.mock(p);
 		}
@@ -121,7 +120,7 @@ this.jsh = new function() {
 
 		//	experimental interface and therefore currently undocumented
 		this.addFinalizer = function(f) {
-			$host.loader.addFinalizer(new JavaAdapter(
+			$slime.loader.addFinalizer(new JavaAdapter(
 				Packages.java.lang.Runnable,
 				{
 					run: function() {
@@ -151,7 +150,7 @@ this.jsh = new function() {
 
 		this.plugins = function(from) {
 			//	TODO	trying to unify this with the plugins.load interface to have just one plugins search mechanism
-			var isPathname = from && from.java && from.java.adapt && $host.classpath.getClass("java.io.File").isInstance(from.java.adapt());
+			var isPathname = from && from.java && from.java.adapt && $slime.classpath.getClass("java.io.File").isInstance(from.java.adapt());
 			var isFile = from && from.pathname && from.pathname.file;
 			var isDirectory = from && from.pathname && from.pathname.directory;
 			if (isPathname) {
@@ -174,16 +173,16 @@ this.jsh = new function() {
 	};
 
 	(function loadPlugins() {
-		plugins.load({ loader: new $host.Loader({ _source: $host.getInterface().getPluginSource() }) });
+		plugins.load({ loader: new $slime.Loader({ _source: $slime.getInterface().getPluginSource() }) });
 	})();
 
 	//	TODO	below could be turned into jsh plugin loaded at runtime by jsapi; would need to make getLibrary accessible through
-	//			$host
+	//			$slime
 
-	if ($host.getSystemProperties().get("inonit.tools.Profiler.args")) {
-		$host.run($host.loader.getLoaderScript("profiler.js"), {
+	if ($slime.getSystemProperties().get("inonit.tools.Profiler.args")) {
+		$slime.run($slime.loader.getLoaderScript("profiler.js"), {
 			jsh: this,
-			$host: $host
+			_properties: $slime.getSystemProperties()
 		});
 	}
 };
