@@ -279,32 +279,30 @@ public abstract class Code {
 				};
 			}
 		};
+		
+		private static final Source system = new Source() {
+			@Override public String toString() {
+				return "Source: system class loader";
+			}
 
-		public static Source system() {
-			return new Source() {
-				@Override public String toString() {
-					return "Source: system class loader";
-				}
+			public File getFile(String path) {
+				URL url = ClassLoader.getSystemClassLoader().getResource(path);
+				if (url == null) return null;
+				return File.create(url);
+			}
 
-				public File getFile(String path) {
-					URL url = ClassLoader.getSystemClassLoader().getResource(path);
-					if (url == null) return null;
-					return File.create(url);
-				}
+			public Locator getLocator() {
+				return null;
+			}
 
-				public Locator getLocator() {
-					return null;
-				}
-
-				public Enumerator getEnumerator() {
-					//	TODO	can this actually be implemented?
-					return null;
-				}
-			};
-		}
+			public Enumerator getEnumerator() {
+				//	TODO	can this actually be implemented?
+				return null;
+			}
+		};
 
 		public static Source system(final String prefix) {
-			return system().child(prefix);
+			return system.child(prefix);
 		}
 
 		static Source create(final java.net.URL url, Enumerator enumerator) {
@@ -335,7 +333,7 @@ public abstract class Code {
 			}
 		}
 		
-		private static Source zip(final Code.Source.File file) {
+		public static Source zip(final Code.Source.File file) {
 			return zip(file.toString(), file.getInputStream());
 		}
 
@@ -649,48 +647,6 @@ public abstract class Code {
 		}
 	}
 
-	private static Code create(final Code.Source source) {
-		return new Code() {
-			@Override public String toString() {
-				return getClass().getName() + " source=" + source;
-			}
-
-			public Source getScripts() {
-				return source;
-			}
-
-			public Source getClasses() {
-				return source.child("$jvm/classes");
-			}
-		};
-	}
-
-	public static Code system(final String prefix) {
-		final Source source = Source.system(prefix);
-		return create(source);
-	}
-
-	public static Code create(final Code.Source source, final String prefix) {
-		Code.Source s = source.child(prefix);
-		return create(s);
-	}
-
-	public static Code create(final Source js, final Source classes) {
-		return new Code() {
-			@Override public String toString() {
-				return getClass().getName() + " js=" + js + " classes=" + classes;
-			}
-
-			public Source getScripts() {
-				return js;
-			}
-
-			public Source getClasses() {
-				return classes;
-			}
-		};
-	}
-
 	static Code slime(final Code.Source zip) {
 		return new Code() {
 			public String toString() {
@@ -715,20 +671,6 @@ public abstract class Code {
 		return slime(Source.zip(file));
 	}
 	
-	public static Code jar(final Code.Source.File jar) {
-		final Code.Source unzipped = Source.zip(jar);
-		return new Code() {
-			@Override public Source getScripts() {
-				return null;
-			}
-
-			@Override
-			public Source getClasses() {
-				return unzipped;
-			}
-		};
-	}
-
 	public abstract Source getScripts();
 	public abstract Source getClasses();
 }

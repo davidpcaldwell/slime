@@ -109,7 +109,7 @@
 			if (p._unpacked) {
 				p._source = Packages.inonit.script.engine.Code.Source.create(p._unpacked);
 			} else if (p._packed) {
-				p._source = Packages.inonit.script.engine.Code.slime(p._packed).getScripts();
+				p._source = Packages.inonit.script.engine.Code.Source.zip(p._packed);
 //				p._code = $javahost.getClasspath().slime(p._packed);
 			}
 //			if (p._code) {
@@ -268,13 +268,17 @@
 		this.addSlime = function(resource) {
 			//	TODO	since we use this method to create a Code object, might as well send it back to caller to help caller load
 			//			scripts. Dubious.
-			var _code = $javahost.getClasspath().slime(toCodeSourceFile(resource,resource.name));
-			$javahost.getClasspath().append(_code.getClasses());
-			return new loader.Loader({ _source: _code.getScripts() });
+			var _source = Packages.inonit.script.engine.Code.Source.zip(toCodeSourceFile(resource,resource.name));
+//			var _code = $javahost.getClasspath().slime(toCodeSourceFile(resource,resource.name));
+			$javahost.getClasspath().append(_source.child("$jvm/classes"));
+//			$javahost.getClasspath().append(_code.getClasses());
+			return new loader.Loader({ _source: _source });
 		};
 		
 		this.addSlimeFile = function(_file) {
-			$javahost.getClasspath().appendSlime(_file);
+			var _source = Packages.inonit.script.engine.Code.Source.zip(_file);
+			$javahost.getClasspath().append(_source.child("$jvm/classes"));
+//			$javahost.getClasspath().appendSlime(_file);
 		}
 		
 		this.addJar = function(_file) {
