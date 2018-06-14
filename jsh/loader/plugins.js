@@ -108,35 +108,6 @@ $set(new (function() {
 		run(list);
 	};
 
-	this._load = function(_plugins) {
-		var plugins = {};
-
-		var list = [];
-		for (var i=0; i<_plugins.length; i++) {
-			log(log.Level.FINE, "Reading plugins from " + _plugins[i]);
-			var toString = function(_plugin) {
-				return function() {
-					return String(_plugin.getScripts()).replace(/\%/g, "%%")
-				};
-			};
-			//	This is a bit counterintuitive: $slime.Loader *automatically* adds classes to the classpath; if we don't end up
-			//	loading the plugin, we need to explicitly add the classes to the classpath
-			//	TODO	clean this up, but would require test coverage
-			if (_plugins[i].getScripts()) {
-				var array = load({
-					plugins: plugins,
-					toString: toString(_plugins[i]),
-					$loader: new $slime.Loader({ _code: _plugins[i] })
-				});
-				list.push.apply(list,array);
-			} else {
-				$slime.classpath.add(_plugins[i].getLocator());
-			}
-		}
-
-		run(list);
-	};
-
 	var scan = function(loader,list) {
 		if (!list) list = [];
 		if (loader.get("plugin.jsh.js")) {

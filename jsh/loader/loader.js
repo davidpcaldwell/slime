@@ -115,6 +115,9 @@ $set((function() {
 				if (format.base) return new $host.Loader({ _unpacked: format.base });
 				throw new TypeError("Unreachable code: format.slime and format.base null in jsh loader's module()");
 			})(format);
+			if (format.slime) {
+				$host.classpath.addSlimeFile(format.slime)
+			}
 			var args = [format.name].concat(Array.prototype.slice.call(arguments,1));
 			return loader.module.apply(loader,args);
 		}

@@ -107,14 +107,15 @@
 	loader.Loader = (function(was) {
 		var rv = function(p) {
 			if (p._unpacked) {
-				p._code = $javahost.getClasspath().unpacked(p._unpacked);
+				p._source = Packages.inonit.script.engine.Code.Source.create(p._unpacked);
 			} else if (p._packed) {
-				p._code = $javahost.getClasspath().slime(p._packed);
+				p._source = Packages.inonit.script.engine.Code.slime(p._packed).getScripts();
+//				p._code = $javahost.getClasspath().slime(p._packed);
 			}
-			if (p._code) {
-				$javahost.getClasspath().append(p._code);
-				p._source = p._code.getScripts();
-			}
+//			if (p._code) {
+//				$javahost.getClasspath().append(p._code);
+//				p._source = p._code.getScripts();
+//			}
 			if (p._source) {
 				p.get = function(path) {
 					var rv = {};
@@ -270,6 +271,10 @@
 			var _code = $javahost.getClasspath().slime(toCodeSourceFile(resource,resource.name));
 			$javahost.getClasspath().append(_code.getClasses());
 			return new loader.Loader({ _source: _code.getScripts() });
+		};
+		
+		this.addSlimeFile = function(_file) {
+			$javahost.getClasspath().appendSlime(_file);
 		}
 		
 		this.addJar = function(_file) {

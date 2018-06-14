@@ -61,24 +61,6 @@ public abstract class Loader {
 				loader.append(code.getClasses());
 			}
 			
-			public final Code slime(File packed) {
-				return Code.slime(Code.Source.zip(packed));
-			}
-			
-			public final Code slime(Code.Source.File packed) {
-				return Code.slime(packed);
-			}
-			
-			public final void appendUnpacked(Code.Source base) {
-				Code code = Java.compiling(base, Classes.this);
-				loader.append(code.getClasses());
-			}
-			
-			public final void appendJar(Code.Source.File file) {
-				Code code = Code.jar(file);
-				loader.append(code.getClasses());
-			}
-			
 			public final Code unpacked(Code.Source base) {
 				return Java.compiling(base, Classes.this);
 			}
@@ -87,8 +69,27 @@ public abstract class Loader {
 				return Java.compiling(base, Classes.this);
 			}
 
-			public final Code unpacked(URL base) {
-				return Java.compiling(base, Classes.this);
+			public final void appendUnpacked(Code.Source base) {
+				Code code = Java.compiling(base, Classes.this);
+				loader.append(code.getClasses());
+			}			
+			
+			public final void appendJar(Code.Source.File file) {
+				Code code = Code.jar(file);
+				loader.append(code.getClasses());
+			}
+			
+			public final Code slime(File packed) {
+				return Code.slime(Code.Source.zip(packed));
+			}
+			
+			public final Code slime(Code.Source.File packed) {
+				return Code.slime(packed);
+			}
+			
+			public final void appendSlime(File packed) {
+				Code code = Code.slime(packed);
+				loader.append(code.getClasses());
 			}
 		}
 

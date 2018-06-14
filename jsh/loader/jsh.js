@@ -112,8 +112,6 @@ this.jsh = new function() {
 		}
 	};
 
-	var PLUGINS_LOADER_SCRIPT = true || Packages.java.lang.System.getenv("JSH_TEST_PLUGINS_LOADER_SCRIPT");
-
 	this.loader = new function() {
 		this.run = loader.run;
 		this.file = loader.file;
@@ -157,16 +155,12 @@ this.jsh = new function() {
 			var isFile = from && from.pathname && from.pathname.file;
 			var isDirectory = from && from.pathname && from.pathname.directory;
 			if (isPathname) {
-				if (PLUGINS_LOADER_SCRIPT) {
-					if (from.file) {
-						plugins.load({ _file: Packages.inonit.script.engine.Code.Source.File.create(from.java.adapt()) });						
-					} else if (from.directory) {
-						plugins.load({ _source: Packages.inonit.script.engine.Code.Source.create(from.java.adapt()) });						
-					} else {
-						//	TODO	log a message
-					}
+				if (from.file) {
+					plugins.load({ _file: Packages.inonit.script.engine.Code.Source.File.create(from.java.adapt()) });						
+				} else if (from.directory) {
+					plugins.load({ _source: Packages.inonit.script.engine.Code.Source.create(from.java.adapt()) });						
 				} else {
-					plugins._load($host.getInterface().getPlugins(from.java.adapt()));
+					//	TODO	log a message
 				}
 			} else if (from && from.get) {
 				plugins.load({ loader: from });
@@ -180,11 +174,7 @@ this.jsh = new function() {
 	};
 
 	(function loadPlugins() {
-		if (PLUGINS_LOADER_SCRIPT) {
-			plugins.load({ loader: new $host.Loader({ _source: $host.getInterface().getPluginSource() }) });
-		} else {
-			plugins._load($host.getInterface().getPlugins());
-		}
+		plugins.load({ loader: new $host.Loader({ _source: $host.getInterface().getPluginSource() }) });
 	})();
 
 	//	TODO	below could be turned into jsh plugin loaded at runtime by jsapi; would need to make getLibrary accessible through

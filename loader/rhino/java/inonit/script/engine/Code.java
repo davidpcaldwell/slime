@@ -707,7 +707,7 @@ public abstract class Code {
 		};				
 	}
 	
-	static Code slime(final java.io.File file) {
+	public static Code slime(final java.io.File file) {
 		return slime(Source.zip(file));
 	}
 	
