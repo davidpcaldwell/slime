@@ -13,10 +13,9 @@
 
 $set({
 	isReady: function() {
-		return jsh.js && jsh.httpd && jsh.http && jsh.file && jsh.io && jsh.shell;
+		return jsh.js && jsh.httpd && jsh.http && jsh.file && jsh.io && jsh.shell && jsh.unit;
 	},
 	load: function() {
-		if (!jsh.unit) jsh.unit = {};
 		jsh.unit.mock = {};
 		jsh.unit.mock.Web = function(o) {
 			if (!o) o = {};

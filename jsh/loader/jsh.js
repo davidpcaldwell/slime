@@ -112,6 +112,8 @@ this.jsh = new function() {
 		}
 	};
 
+	var PLUGINS_LOADER_SCRIPT = true || Packages.java.lang.System.getenv("JSH_TEST_PLUGINS_LOADER_SCRIPT");
+
 	this.loader = new function() {
 		this.run = loader.run;
 		this.file = loader.file;
@@ -155,24 +157,34 @@ this.jsh = new function() {
 			var isFile = from && from.pathname && from.pathname.file;
 			var isDirectory = from && from.pathname && from.pathname.directory;
 			if (isPathname) {
-				plugins._load($host.getInterface().getPlugins(from.java.adapt()));
+				if (PLUGINS_LOADER_SCRIPT) {
+					if (from.file) {
+						plugins.load({ _file: Packages.inonit.script.engine.Code.Source.File.create(from.java.adapt()) });						
+					} else if (from.directory) {
+						plugins.load({ _source: Packages.inonit.script.engine.Code.Source.create(from.java.adapt()) });						
+					} else {
+						//	TODO	log a message
+					}
+				} else {
+					plugins._load($host.getInterface().getPlugins(from.java.adapt()));
+				}
 			} else if (from && from.get) {
 				plugins.load({ loader: from });
 			} else if (isFile) {
 				//	Should we be sending a script resource, rather than a Java file? Could expose that API in loader/rhino/literal.js
 				plugins.load({ _file: Packages.inonit.script.engine.Code.Source.File.create(from.pathname.java.adapt()) });
 			} else if (isDirectory) {
-				plugins.load({ _source: Packages.inonit.script.engine.Code.Source.create(from.pathname.java.adapt()) });				
+				plugins.load({ _source: Packages.inonit.script.engine.Code.Source.create(from.pathname.java.adapt()) });
 			}
 		};
 	};
 
 	(function loadPlugins() {
-		if (Packages.java.lang.System.getenv("JSH_TEST_PLUGINS_LOADER_SCRIPT")) {
+		if (PLUGINS_LOADER_SCRIPT) {
 			plugins.load({ loader: new $host.Loader({ _source: $host.getInterface().getPluginSource() }) });
-			return;
+		} else {
+			plugins._load($host.getInterface().getPlugins());
 		}
-		plugins._load($host.getInterface().getPlugins());
 	})();
 
 	//	TODO	below could be turned into jsh plugin loaded at runtime by jsapi; would need to make getLibrary accessible through

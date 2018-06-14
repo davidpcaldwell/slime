@@ -25,8 +25,11 @@ var parameters = jsh.script.getopts({
 	unhandled: jsh.script.getopts.UNEXPECTED_OPTION_PARSER.SKIP
 });
 
-jsh.loader.plugins(jsh.script.file.parent.parent.parent.getRelativePath("unit"));
-//jsh.loader.plugins(jsh.script.file.parent.parent.pathname);
+if (!jsh.unit || !jsh.unit.mock || !jsh.unit.mock.Web) {
+	var base = jsh.script.file.parent.parent.parent.parent;
+	jsh.loader.plugins(base.getRelativePath("loader/api"));
+	jsh.loader.plugins(base.getRelativePath("jsh/unit"));
+}
 jsh.loader.plugins(jsh.script.file.parent.pathname);
 
 var SRC = jsh.script.file.parent.parent.parent.parent;

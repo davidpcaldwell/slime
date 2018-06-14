@@ -92,7 +92,8 @@ plugin({
 		jsh.unit.part = {};
 
 		var html = $loader.file("html.js", {
-			html: jsh.unit.html
+			html: jsh.unit.html,
+			$slime: jsh.unit.$slime
 		});
 		jsh.unit.part.Html = function(p) {
 			return new html.PartDescriptor(p);

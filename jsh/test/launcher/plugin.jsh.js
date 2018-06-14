@@ -13,7 +13,7 @@
 
 plugin({
 	isReady: function() {
-		return jsh.httpd.Tomcat && jsh.http && jsh.unit.mock.Web;
+		return jsh.httpd && jsh.httpd.Tomcat && jsh.http && jsh.unit && jsh.unit.mock && jsh.unit.mock.Web;
 	},
 	load: function() {
 		if (!jsh.test) jsh.test = {};
