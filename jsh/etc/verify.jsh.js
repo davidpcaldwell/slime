@@ -21,7 +21,8 @@ var parameters = jsh.script.getopts({
 		debug: false,
 		view: "console",
 		"chrome:profile": jsh.file.Pathname,
-		port: Number
+		port: Number,
+		part: String
 	},
 	unhandled: jsh.script.getopts.UNEXPECTED_OPTION_PARSER.SKIP
 });
@@ -182,5 +183,7 @@ jsh.unit.interface.create(top, new function() {
 		};
 	} else {
 		this.view = parameters.options.view;
-	}
+	};
+	
+	this.path = (parameters.options.part) ? parameters.options.part.split("/") : void(0);
 });

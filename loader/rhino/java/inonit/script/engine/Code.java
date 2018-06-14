@@ -17,13 +17,17 @@ import java.net.*;
 import java.util.*;
 import java.util.logging.*;
 
-public abstract class Code {
+public class Code {
 	private static final inonit.system.Logging LOG = inonit.system.Logging.get();
+	
+	private Code() {
+	}
 
 	public static abstract class Locator {
 		public abstract URL getResource(String path);
 	}
 
+	//	TODO	Rename Code.Source to Code.Loader
 	public static abstract class Source {
 		public static class URI {
 			private static java.net.URI string(String s) {
@@ -69,6 +73,7 @@ public abstract class Code {
 			}
 		}
 
+		//	Rename Code.Source.File to Code.Loader.Resource
 		public static abstract class File {
 			public abstract URI getURI();
 			public abstract String getSourceName();
@@ -646,31 +651,4 @@ public abstract class Code {
 			}
 		}
 	}
-
-	static Code slime(final Code.Source zip) {
-		return new Code() {
-			public String toString() {
-				return Code.class.getName() + ": zip=" + zip;
-			}
-			
-			public Source getScripts() {
-				return zip;
-			}
-
-			public Source getClasses() {
-				return zip.child("$jvm/classes");
-			}
-		};				
-	}
-	
-	public static Code slime(final java.io.File file) {
-		return slime(Source.zip(file));
-	}
-	
-	public static Code slime(final Code.Source.File file) {
-		return slime(Source.zip(file));
-	}
-	
-	public abstract Source getScripts();
-	public abstract Source getClasses();
 }

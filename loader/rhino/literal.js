@@ -72,6 +72,7 @@
 		engine: $bridge,
 		classpath: $javahost.getClasspath()
 	});
+
 	loader.io = loader.file({ name: "slime://loader/rhino/io.js", string: String($javahost.getLoaderCode("rhino/io.js")) }, {
 		_streams: _streams,
 		api: {
@@ -84,6 +85,7 @@
 	}
 
 	//	Convert a Java inonit.script.engine.Code.Source.File to a resource
+	//	TODO	should this logic be pushed into loader.io? Probably
 	var Resource = function(_file,path) {
 		var parameter = {
 			type: getTypeFromPath(path),
@@ -101,8 +103,44 @@
 		this.name = String(_file.getSourceName());
 		var _modified = _file.getLastModified();
 		if (_modified) this.modified = new Date( Number(_modified.getTime()) );
-		this._file = _file;
-	}
+		this.java = {
+			adapt: function() {
+				return _file;
+			}
+		}
+	};
+	Resource.toCodeSourceFile = function(resource,path) {
+		if (!resource) return null;
+		//	TODO	cheat by storing Code.Source.File for resources created by this source file. Design smell that we
+		//			need to convert back and forth between Java and script versions
+		if (resource.java && resource.java.adapt) return resource.java.adapt();
+		return new JavaAdapter(
+			Packages.inonit.script.engine.Code.Source.File,
+			new function() {
+				["getURI","getSourceName","getInputStream","getLength","getLastModified"].forEach(function(methodName) {
+					this[methodName] = function() {
+						throw new Error("Unimplemented: " + methodName);
+					};
+				},this);
+
+				this.getURI = function() {
+					return Packages.inonit.script.engine.Code.Source.URI.script(
+						"literal.js",
+						path
+					)
+				}
+
+				this.getSourceName = function() {
+					return (resource.name) ? resource.name : null;
+				}
+
+				this.getInputStream = function() {
+					if (!resource.read) throw new Error("Cannot read " + resource);
+					return resource.read.binary().java.adapt();
+				}
+			}
+		)
+	};
 
 	loader.Loader = (function(was) {
 		var rv = function(p) {
@@ -110,12 +148,7 @@
 				p._source = Packages.inonit.script.engine.Code.Source.create(p._unpacked);
 			} else if (p._packed) {
 				p._source = Packages.inonit.script.engine.Code.Source.zip(p._packed);
-//				p._code = $javahost.getClasspath().slime(p._packed);
 			}
-//			if (p._code) {
-//				$javahost.getClasspath().append(p._code);
-//				p._source = p._code.getScripts();
-//			}
 			if (p._source) {
 				p.get = function(path) {
 					var rv = {};
@@ -181,118 +214,86 @@
 				})();
 			}
 			was.apply(this,arguments);
-//			if (true || p._source || p.resources) {
-//				this.resource = loader.$api.deprecate(function(path) {
-//					return p.get(path);
-//				});
-//			}
+			var source = this.source;
+			var self = this;
+			this.java = {
+				adapt: function() {
+					if (source._source) return source._source;
+					return new JavaAdapter(
+						Packages.inonit.script.engine.Code.Source,
+						new function() {
+							this.getFile = function(path) {
+								var resource = self.get(path);
+								return Resource.toCodeSourceFile(resource,path);
+							};
+
+							this.getClasses = function() {
+								throw new Error("Unimplemented: getClasses");							
+							};
+
+							this.getEnumerator = function() {
+								throw new Error("Unimplemented: getEnumerator");
+							}
+						}
+					)		
+				}
+			};
 		};
 		rv.series = was.series;
 		return rv;
 	})(loader.Loader);
+	
+	loader.Loader.Zip = function(p) {
+		var _source = (function() {
+			if (p.resource) return Packages.inonit.script.engine.Code.Source.zip(Resource.toCodeSourceFile(p.resource,p.resource.name));
+			if (p._file) return Packages.inonit.script.engine.Code.Source.zip(p._file);
+		})();
+		return new loader.Loader({ _source: _source });
+	}
 
-	loader.classpath = new function() {
-		this.setAsThreadContextClassLoaderFor = function(_thread) {
-			$javahost.getClasspath().setAsThreadContextClassLoaderFor(_thread);
+	loader.classpath = new (function(_classpath) {
+		this.toString = function() {
+			return String(_classpath);
 		};
 
-		this.toString = function() {
-			return String($javahost.getClasspath());
-		}
+		this.setAsThreadContextClassLoaderFor = function(_thread) {
+			_classpath.setAsThreadContextClassLoaderFor(_thread);
+		};
 
 		this.add = function(_source) {
-			$javahost.getClasspath().append(_source);
+			_classpath.append(_source);
 		}
 
 		this.getClass = function(name) {
-			return $javahost.getClasspath().getClass(name);
+			return _classpath.getClass(name);
 		};
 		
 		//	TODO	stuff below here is pretty dubious, but refactoring in progress to try to simplify Java/script sides of Java
 		//			resource/loader management
 		
-		var toCodeSource = function(loader) {
-			if (loader.source._source) return loader.source._source;
-			return new JavaAdapter(
-				Packages.inonit.script.engine.Code.Source,
-				new function() {
-					this.getFile = function(path) {
-						var resource = loader.get(path);
-						return toCodeSourceFile(resource,path);
-					};
-
-					this.getClasses = function() {
-						throw new Error("Unimplemented: getClasses");							
-					};
-
-					this.getEnumerator = function() {
-						throw new Error("Unimplemented: getEnumerator");
-					}
-				}
-			)
-		};
-
-		var toCodeSourceFile = function(resource,path) {
-			if (!resource) return null;
-			//	TODO	cheat by storing Code.Source.File for resources created by this source file. Design smell that we
-			//			need to convert back and forth between Java and script versions
-			if (resource._file) return resource._file;
-			return new JavaAdapter(
-				Packages.inonit.script.engine.Code.Source.File,
-				new function() {
-					["getURI","getSourceName","getInputStream","getLength","getLastModified"].forEach(function(methodName) {
-						this[methodName] = function() {
-							throw new Error("Unimplemented: " + methodName);
-						};
-					},this);
-
-					this.getURI = function() {
-						return Packages.inonit.script.engine.Code.Source.URI.script(
-							"literal.js",
-							path
-						)
-					}
-
-					this.getSourceName = function() {
-						return (resource.name) ? resource.name : null;
-					}
-
-					this.getInputStream = function() {
-						if (!resource.read) throw new Error("Cannot read " + resource);
-						return resource.read.binary().java.adapt();
-					}
-				}
-			)
-		};
-		
 		this.addSlime = function(resource) {
-			//	TODO	since we use this method to create a Code object, might as well send it back to caller to help caller load
-			//			scripts. Dubious.
-			var _source = Packages.inonit.script.engine.Code.Source.zip(toCodeSourceFile(resource,resource.name));
-//			var _code = $javahost.getClasspath().slime(toCodeSourceFile(resource,resource.name));
+			var _source = Packages.inonit.script.engine.Code.Source.zip(Resource.toCodeSourceFile(resource,resource.name));
 			$javahost.getClasspath().append(_source.child("$jvm/classes"));
-//			$javahost.getClasspath().append(_code.getClasses());
 			return new loader.Loader({ _source: _source });
 		};
 		
 		this.addSlimeFile = function(_file) {
 			var _source = Packages.inonit.script.engine.Code.Source.zip(_file);
-			$javahost.getClasspath().append(_source.child("$jvm/classes"));
-//			$javahost.getClasspath().appendSlime(_file);
+			_classpath.append(_source.child("$jvm/classes"));
 		}
 		
 		this.addJar = function(_file) {
-			$javahost.getClasspath().appendJar(_file);
+			_classpath.appendJar(_file);
 		};
 		
 		this.addJarResource = function(resource) {
-			$javahost.getClasspath().appendJar(toCodeSourceFile(resource,resource.name));
+			_classpath.appendJar(Resource.toCodeSourceFile(resource,resource.name));
 		}
 		
 		this.addUnpacked = function(loader) {
-			$javahost.getClasspath().appendUnpacked(toCodeSource(loader));
+			_classpath.appendUnpacked(loader.java.adapt());
 		}
-	}
+	})($javahost.getClasspath())
 
 	return loader;
 })()

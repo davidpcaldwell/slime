@@ -63,16 +63,7 @@ public abstract class Loader {
 			
 			public final void appendJar(Code.Source.File file) {
 				loader.append(Code.Source.zip(file));
-			}
-			
-			public final Code slime(Code.Source.File packed) {
-				return Code.slime(packed);
-			}
-//			
-//			public final void appendSlime(File packed) {
-//				Code code = Code.slime(packed);
-//				loader.append(code.getClasses());
-//			}
+			}			
 		}
 
 		abstract File getLocalClassCache();

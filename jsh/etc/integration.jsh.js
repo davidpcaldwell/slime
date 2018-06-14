@@ -127,7 +127,12 @@ var ScriptVerifier = function(o) {
 	var script = jsh.script.file.getRelativePath("../test/" + o.path).file;
 	var tokens = [o.path].concat((o.arguments) ? o.arguments : []);
 	var parent = (o.parent) ? o.parent : scenario;
-	parent.part((o.name) ? o.name : tokens.join(" "), new function() {
+	var id = (function(o) {
+		if (o.id) return o.id;
+		if (o.name) return o.name;
+		return tokens.join(" ");
+	})(o);
+	parent.part(id, new function() {
 		if (!o.name) this.name = script.toString();
 
 		this.execute = function(scope,verify) {
@@ -450,6 +455,7 @@ scenario.part("rhino.optimization", {
 
 if (CATALINA_HOME) {
 	ScriptVerifier({
+		id: "jsh.script.http",
 		path: "jsh.script/http.jsh.js",
 		execute: function(verify) {
 			verify(this).status.is(0);
