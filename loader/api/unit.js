@@ -1014,6 +1014,7 @@ $exports.Scenario = {};
 		part.create();
 	};
 
+	$exports.Scenario = Scenario;
 	$exports.Suite = Suite;
 })();
 

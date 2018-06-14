@@ -425,7 +425,23 @@ scenario.part("jsh.unit", {
 			check: function(verify) {
 				verify(this).status.is(1);
 			}
-		})
+		}),
+		suiteWithScenario: new jsh.unit.Suite.Fork({
+			run: jsh.shell.jsh,
+			shell: src,
+			script: src.getFile("jsh/unit/test/suite.jsh.js"),
+			arguments: [
+				"-view", "stdio"
+			]
+		}),
+		nakedScenario: new jsh.unit.Suite.Fork({
+			run: jsh.shell.jsh,
+			shell: src,
+			script: src.getFile("jsh/unit/test/scenario.jsh.js"),
+			arguments: [
+				"-view", "stdio"
+			]
+		}),
 	}
 });
 
