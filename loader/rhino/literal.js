@@ -255,32 +255,26 @@
 		this.toString = function() {
 			return String(_classpath);
 		};
-
+		
 		this.setAsThreadContextClassLoaderFor = function(_thread) {
 			_classpath.setAsThreadContextClassLoaderFor(_thread);
 		};
-
-		this.add = function(_source) {
-			_classpath.append(_source);
-		}
 
 		this.getClass = function(name) {
 			return _classpath.getClass(name);
 		};
 		
+		this.add = function(_source) {
+			_classpath.append(_source);
+		}
+
 		//	TODO	stuff below here is pretty dubious, but refactoring in progress to try to simplify Java/script sides of Java
 		//			resource/loader management
 		
-		this.addSlime = function(resource) {
-			var _source = Packages.inonit.script.engine.Code.Source.zip(Resource.toCodeSourceFile(resource,resource.name));
-			$javahost.getClasspath().append(_source.child("$jvm/classes"));
-			return new loader.Loader({ _source: _source });
-		};
-		
-		this.addSlimeFile = function(_file) {
-			var _source = Packages.inonit.script.engine.Code.Source.zip(_file);
+		this.addSlime = function(loader) {
+			var _source = loader.java.adapt();
 			_classpath.append(_source.child("$jvm/classes"));
-		}
+		};
 		
 		this.addJar = function(_file) {
 			_classpath.appendJar(_file);

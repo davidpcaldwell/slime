@@ -163,7 +163,8 @@ $set(new (function() {
 					});
 					list.push.apply(list,array);
 				} else if (item.slime) {
-					var subloader = $slime.classpath.addSlime(item.slime);
+					var subloader = new $slime.Loader.Zip({ resource: item.slime });
+					$slime.classpath.addSlime(subloader);
 					//	TODO	.slime files cannot contain multiple plugin folders; we only look at the top level. Is this a good
 					//			decision?
 					if (subloader.get("plugin.jsh.js")) {
