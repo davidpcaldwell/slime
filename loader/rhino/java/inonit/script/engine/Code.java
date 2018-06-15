@@ -431,8 +431,9 @@ public class Code {
 
 					@Override public File getFile(String path) throws IOException {
 						LOG.log(Code.Source.class, Level.FINE, "getFile(" + path + ")", null);
-						LOG.log(Code.Source.class, Level.FINE, String.valueOf(files.get(path)), null);
-						return files.get(path);
+						File rv = files.get(path);
+						LOG.log(Code.Source.class, Level.FINE, String.valueOf(rv), null);
+						return rv;
 					}
 
 					@Override public Enumerator getEnumerator() {
@@ -506,8 +507,9 @@ public class Code {
 
 				@Override public File getFile(String path) throws IOException {
 					for (Source delegate : delegates) {
-						if (delegate.getFile(path) != null) {
-							return delegate.getFile(path);
+						File file = delegate.getFile(path);
+						if (file != null) {
+							return file;
 						}
 					}
 					return null;

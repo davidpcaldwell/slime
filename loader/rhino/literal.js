@@ -95,14 +95,32 @@
 				}
 			}
 		};
-		var length = _file.getLength();
-		if (typeof(length) == "object" && length !== null && length.longValue) {
-			parameter.length = Number(length.longValue());
-		}
+		Object.defineProperty(
+			parameter,
+			"length",
+			new function() {
+				this.get = function() {
+					var length = _file.getLength();
+					if (typeof(length) == "object" && length !== null && length.longValue) {
+						return Number(length.longValue());
+					}				
+				};
+				this.enumerable = true;
+			}
+		);
 		loader.io.Resource.call(this,parameter);
 		this.name = String(_file.getSourceName());
-		var _modified = _file.getLastModified();
-		if (_modified) this.modified = new Date( Number(_modified.getTime()) );
+		Object.defineProperty(
+			this,
+			"modified",
+			new function() {
+				this.get = function() {
+					var _modified = _file.getLastModified();
+					if (_modified) return new Date( Number(_modified.getTime()) );					
+				};
+				this.enumerable = true;
+			}
+		)
 		this.java = {
 			adapt: function() {
 				return _file;
