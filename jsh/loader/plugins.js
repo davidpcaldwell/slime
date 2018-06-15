@@ -138,6 +138,8 @@ $set(new (function() {
 	}
 	
 	this.load = function(p) {
+		//	TODO	this interface needs improvement; the use of _source and _file (meaning zip file) is confusing. Should be
+		//			passing something different
 		if (p._source) {
 			p.loader = new $slime.Loader({ _source: p._source });
 		}
@@ -159,7 +161,7 @@ $set(new (function() {
 			while(index < sources.length) {
 				var item = sources[index];
 				if (item.loader) {
-					$slime.classpath.addUnpacked(item.loader);
+					$slime.classpath.add({ src: { loader: item.loader }});
 					var array = load({
 						plugins: plugins,
 						toString: item.loader.toString(),
@@ -168,7 +170,7 @@ $set(new (function() {
 					list.push.apply(list,array);
 				} else if (item.slime) {
 					var subloader = new $slime.Loader({ zip: { resource: item.slime } });
-					$slime.classpath.addSlime(subloader);
+					$slime.classpath.add({ slime: { loader: subloader } });
 					//	TODO	.slime files cannot contain multiple plugin folders; we only look at the top level. Is this a good
 					//			decision?
 					if (subloader.get("plugin.jsh.js")) {
@@ -177,14 +179,14 @@ $set(new (function() {
 						});
 					}
 				} else if (item.jar) {
-					$slime.classpath.addJarResource(item.jar);
+					$slime.classpath.add({ jar: { resource: item.jar }});
 				}
 				index++;
 			}
 		} else if (p._file) {
-			var name = String(p._file.getSourceName());
+			var name = String(p._file.getName());
 			if (/\.jar$/.test(name)) {
-				$slime.classpath.addJar(p._file);
+				$slime.classpath.add({ jar: { _file: p._file }});
 			} else if (/\.slime$/.test(name)) {
 				throw new Error("Deal with .slime");
 			} else {

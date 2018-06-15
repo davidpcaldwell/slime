@@ -261,31 +261,34 @@
 		};
 		
 		this.add = function(p) {
-			if (p._file) {
+			if (p._file && p._file.isDirectory()) {
 				_classpath.add(Packages.inonit.script.engine.Code.Source.create(p._file));
+			} else if (p._file && p._file.exists() && !p._file.isDirectory()) {
+				_classpath.add(Packages.inonit.script.engine.Code.Source.create(p._file));				
+			} else if (p.slime) {
+				if (p.slime.loader) {
+					_classpath.add(p.slime.loader.java.adapt().child("$jvm/classes"));
+				} else {
+					throw new Error();
+				}
+			} else if (p.jar) {
+				if (p.jar._file) {
+					_classpath.add(Packages.inonit.script.engine.Code.Source.zip(p.jar._file));
+				} else if (p.jar.resource) {
+					_classpath.add(Packages.inonit.script.engine.Code.Source.zip(Resource.toCodeSourceFile(p.jar.resource,p.jar.resource.name)));					
+				} else {
+					throw new Error();
+				}
+			} else if (p.src) {
+				if (p.src.loader) {
+					_classpath.add(_classpath.compiling(p.src.loader.java.adapt()));					
+				} else {
+					throw new Error();
+				}
 			} else {
-				throw new Error();
+				throw new Error("No relevant handler for add(" + p + ")");
 			}
-		}
-
-		//	TODO	stuff below here is pretty dubious, but refactoring in progress to try to simplify Java/script sides of Java
-		//			resource/loader management
-		
-		this.addSlime = function(loader) {
-			_classpath.add(loader.java.adapt().child("$jvm/classes"));
 		};
-		
-		this.addJar = function(_file) {
-			_classpath.add(Packages.inonit.script.engine.Code.Source.zip(_file));
-		};
-		
-		this.addJarResource = function(resource) {
-			_classpath.add(Packages.inonit.script.engine.Code.Source.zip(Resource.toCodeSourceFile(resource,resource.name)));
-		}
-		
-		this.addUnpacked = function(loader) {
-			_classpath.add(_classpath.compiling(loader.java.adapt()));
-		}
 	})($javahost.getClasspath())
 
 	return loader;

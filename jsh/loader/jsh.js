@@ -196,7 +196,7 @@ this.jsh = new function() {
 				throw new TypeError("Unreachable code: format.slime and format.base null in jsh loader's module()");
 			})(format);
 			if (format.slime) {
-				$slime.classpath.addSlime(new $slime.Loader({ zip: { _file: format.slime } }));
+				$slime.classpath.add({ slime: { loader: loader } });
 			}
 			var args = [format.name].concat(Array.prototype.slice.call(arguments,1));
 			return loader.module.apply(loader,args);
@@ -237,13 +237,12 @@ this.jsh = new function() {
 		};
 
 		this.plugins = function(from) {
-			//	TODO	trying to unify this with the plugins.load interface to have just one plugins search mechanism
 			var isPathname = from && from.java && from.java.adapt && $slime.classpath.getClass("java.io.File").isInstance(from.java.adapt());
 			var isFile = from && from.pathname && from.pathname.file;
 			var isDirectory = from && from.pathname && from.pathname.directory;
 			if (isPathname) {
 				if (from.file) {
-					plugins.load({ _file: Packages.inonit.script.engine.Code.Source.File.create(from.java.adapt()) });						
+					plugins.load({ _file: from.java.adapt() });						
 				} else if (from.directory) {
 					plugins.load({ _source: Packages.inonit.script.engine.Code.Source.create(from.java.adapt()) });						
 				} else {
@@ -253,7 +252,7 @@ this.jsh = new function() {
 				plugins.load({ loader: from });
 			} else if (isFile) {
 				//	Should we be sending a script resource, rather than a Java file? Could expose that API in loader/rhino/literal.js
-				plugins.load({ _file: Packages.inonit.script.engine.Code.Source.File.create(from.pathname.java.adapt()) });
+				plugins.load({ _file: from.pathname.java.adapt() });
 			} else if (isDirectory) {
 				plugins.load({ _source: Packages.inonit.script.engine.Code.Source.create(from.pathname.java.adapt()) });
 			}
