@@ -152,6 +152,9 @@
 				}
 			} else if (p._file && p._file.isDirectory()) {
 				p._source = Packages.inonit.script.engine.Code.Source.create(p._file);
+			} else if (p._url) {
+				//	TODO	no known test coverage
+				p._source = Packages.inonit.script.engine.Code.Source.create(p._url);
 			}
 			if (p._source) {
 				p.get = function(path) {
