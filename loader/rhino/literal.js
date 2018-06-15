@@ -144,10 +144,14 @@
 
 	loader.Loader = (function(was) {
 		var rv = function(p) {
-			if (p._unpacked) {
-				p._source = Packages.inonit.script.engine.Code.Source.create(p._unpacked);
-			} else if (p._packed) {
-				p._source = Packages.inonit.script.engine.Code.Source.zip(p._packed);
+			if (p.zip) {
+				if (p.zip._file) {
+					p._source = Packages.inonit.script.engine.Code.Source.zip(p.zip._file);
+				} else if (p.zip.resource) {
+					p._source = Packages.inonit.script.engine.Code.Source.zip(Resource.toCodeSourceFile(p.zip.resource,p.zip.resource.name));
+				}
+			} else if (p._file && p._file.isDirectory()) {
+				p._source = Packages.inonit.script.engine.Code.Source.create(p._file);
 			}
 			if (p._source) {
 				p.get = function(path) {
@@ -243,14 +247,6 @@
 		return rv;
 	})(loader.Loader);
 	
-	loader.Loader.Zip = function(p) {
-		var _source = (function() {
-			if (p.resource) return Packages.inonit.script.engine.Code.Source.zip(Resource.toCodeSourceFile(p.resource,p.resource.name));
-			if (p._file) return Packages.inonit.script.engine.Code.Source.zip(p._file);
-		})();
-		return new loader.Loader({ _source: _source });
-	}
-
 	loader.classpath = new (function(_classpath) {
 		this.toString = function() {
 			return String(_classpath);
@@ -264,8 +260,12 @@
 			return _classpath.getClass(name);
 		};
 		
-		this.add = function(_source) {
-			_classpath.add(_source);
+		this.add = function(p) {
+			if (p._file) {
+				_classpath.add(Packages.inonit.script.engine.Code.Source.create(p._file));
+			} else {
+				throw new Error();
+			}
 		}
 
 		//	TODO	stuff below here is pretty dubious, but refactoring in progress to try to simplify Java/script sides of Java

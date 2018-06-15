@@ -37,19 +37,23 @@ $set(new (function() {
 				declaration: declaration
 			});
 		}
-		//	TODO	rename this to $slime, for consistency?
+
 		scope.$slime = $slime;
-		scope.$jsh = $slime;
-		//	TODO	deprecating $jsh property breaks Nashorn somehow, apparently by making the global $jsh the one seen
-		if (typeof(Packages.org.mozilla.javascript.Context.getCurrentContext) == "function" && Packages.org.mozilla.javascript.Context.getCurrentContext() != null) {
-			$slime.$api.deprecate(scope,"$jsh");
-		}
+		
+		(function setDeprecatedProperty(object,property,value) {
+			object[property] = value;
+			//	TODO	deprecating $jsh property breaks Nashorn somehow, apparently by making the global $jsh the one seen
+			if (typeof(Packages.org.mozilla.javascript.Context.getCurrentContext) == "function" && Packages.org.mozilla.javascript.Context.getCurrentContext() != null) {
+				$slime.$api.deprecate(object,property);
+			}
+		})(scope,"$jsh",$slime);
+
 		scope.global = (function() { return this; })();
 		scope.jsh = (p.mock && p.mock.jsh) ? p.mock.jsh : jsh;
 		scope.$loader = p.$loader;
 		scope.$loader.classpath = new function() {
 			this.add = function(pathname) {
-				$slime.classpath.add(Packages.inonit.script.engine.Code.Source.create(pathname.java.adapt()));
+				$slime.classpath.add({ _file: pathname.java.adapt() });
 			}
 		};
 		scope.$loader.run("plugin.jsh.js", scope);
@@ -163,7 +167,7 @@ $set(new (function() {
 					});
 					list.push.apply(list,array);
 				} else if (item.slime) {
-					var subloader = new $slime.Loader.Zip({ resource: item.slime });
+					var subloader = new $slime.Loader({ zip: { resource: item.slime } });
 					$slime.classpath.addSlime(subloader);
 					//	TODO	.slime files cannot contain multiple plugin folders; we only look at the top level. Is this a good
 					//			decision?
@@ -188,6 +192,5 @@ $set(new (function() {
 			}
 		}
 		run(list);
-//		run(scan(loader));
 	}
 })());
