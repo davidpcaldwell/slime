@@ -49,7 +49,7 @@ $set(new (function() {
 		scope.$loader = p.$loader;
 		scope.$loader.classpath = new function() {
 			this.add = function(pathname) {
-				return loader.classpath.add(pathname.java.adapt());
+				$slime.classpath.add(Packages.inonit.script.engine.Code.Source.create(pathname.java.adapt()));
 			}
 		};
 		scope.$loader.run("plugin.jsh.js", scope);
