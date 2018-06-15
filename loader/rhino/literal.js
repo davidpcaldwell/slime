@@ -264,6 +264,9 @@
 			if (p._file && p._file.isDirectory()) {
 				_classpath.add(Packages.inonit.script.engine.Code.Source.create(p._file));
 			} else if (p._file && p._file.exists() && !p._file.isDirectory()) {
+				//	Currently can be used to add .jar directly to classpath through jsh.loader.java.add
+				//	TODO	determine whether this should be switched to jar._file; used by servlet plugin to put Tomcat classes
+				//			in classpath
 				_classpath.add(Packages.inonit.script.engine.Code.Source.create(p._file));				
 			} else if (p.slime) {
 				if (p.slime.loader) {

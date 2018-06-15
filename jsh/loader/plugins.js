@@ -138,10 +138,8 @@ $set(new (function() {
 	}
 	
 	this.load = function(p) {
-		//	TODO	this interface needs improvement; the use of _source and _file (meaning zip file) is confusing. Should be
-		//			passing something different
-		if (p._source) {
-			p.loader = new $slime.Loader({ _source: p._source });
+		if (p._file && p._file.isDirectory()) {
+			p.loader = new $slime.Loader({ _file: p._file })
 		}
 		var list = [];
 		var plugins = {};
@@ -183,10 +181,10 @@ $set(new (function() {
 				}
 				index++;
 			}
-		} else if (p._file) {
-			var name = String(p._file.getName());
+		} else if (p.zip && p.zip._file) {
+			var name = String(p.zip._file.getName());
 			if (/\.jar$/.test(name)) {
-				$slime.classpath.add({ jar: { _file: p._file }});
+				$slime.classpath.add({ jar: { _file: p.zip._file }});
 			} else if (/\.slime$/.test(name)) {
 				throw new Error("Deal with .slime");
 			} else {

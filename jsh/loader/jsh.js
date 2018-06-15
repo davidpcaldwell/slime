@@ -242,9 +242,9 @@ this.jsh = new function() {
 			var isDirectory = from && from.pathname && from.pathname.directory;
 			if (isPathname) {
 				if (from.file) {
-					plugins.load({ _file: from.java.adapt() });						
+					plugins.load({ zip: { _file: from.java.adapt() } });						
 				} else if (from.directory) {
-					plugins.load({ _source: Packages.inonit.script.engine.Code.Source.create(from.java.adapt()) });						
+					plugins.load({ _file: from.java.adapt() });						
 				} else {
 					//	TODO	log a message
 				}
@@ -252,9 +252,9 @@ this.jsh = new function() {
 				plugins.load({ loader: from });
 			} else if (isFile) {
 				//	Should we be sending a script resource, rather than a Java file? Could expose that API in loader/rhino/literal.js
-				plugins.load({ _file: from.pathname.java.adapt() });
+				plugins.load({ zip: { _file: from.pathname.java.adapt() } });
 			} else if (isDirectory) {
-				plugins.load({ _source: Packages.inonit.script.engine.Code.Source.create(from.pathname.java.adapt()) });
+				plugins.load({ _file: from.pathname.java.adapt() });
 			}
 		};
 	};
