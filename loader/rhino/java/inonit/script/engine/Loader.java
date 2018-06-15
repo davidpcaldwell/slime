@@ -31,6 +31,12 @@ public abstract class Loader {
 			public abstract File getLocalClassCache();
 		}
 
+		abstract File getLocalClassCache();
+		abstract ClassLoader getClassLoader();
+
+		public abstract ClassLoader getApplicationClassLoader();		
+		public abstract Interface getInterface();
+
 		public class Interface {
 			private ClassLoaderImpl loader;
 
@@ -51,71 +57,29 @@ public abstract class Loader {
 			*/
 			public final Class getClass(String name) {
 				try {
-					return Classes.this.classLoader().loadClass(name);
+					return Classes.this.getClassLoader().loadClass(name);
 				} catch (ClassNotFoundException e) {
 					return null;
 				}
 			}
 
-			public final Code.Source compiling(Code.Source base) {
-				return Java.compiling(base, Classes.this);
-			}
-		}
+			private Java.Store store;
 
-		abstract File getLocalClassCache();
-
-		private Java.Store store;
-
-		final Java.Store getCompileDestination() {
-			LOG.log(Loader.class, Level.FINE, "getCompileDestination", null);
-			if (store == null) {
-				if (getLocalClassCache() == null) {
-					return Java.Store.memory();
-				} else {
-					return Java.Store.file(getLocalClassCache());
-				}
-			}
-			return store;
-		}
-
-		abstract ClassLoader classLoader();
-
-		public abstract ClassLoader getApplicationClassLoader();
-		public abstract Interface getInterface();
-
-		private Code.Source parent;
-
-		private static Code.Source adapt(ClassLoader parent) {
-			if (parent instanceof URLClassLoader) {
-				List<URL> urls = Arrays.asList(((URLClassLoader)parent).getURLs());
-				List<Code.Source> sources = new ArrayList<Code.Source>();
-				for (URL url : urls) {
-					if (url.getProtocol().equals("file")) {
-						try {
-							File file = new File(url.toURI());
-							if (file.getName().endsWith(".jar")) {
-								sources.add(Code.Source.zip(file));
-							} else {
-								sources.add(Code.Source.create(file));
-							}
-						} catch (java.net.URISyntaxException e) {
-							throw new RuntimeException(e);
-						}
+			private Java.Store getCompileDestination() {
+				LOG.log(Loader.class, Level.FINE, "getCompileDestination", null);
+				if (store == null) {
+					if (getLocalClassCache() == null) {
+						return Java.Store.memory();
 					} else {
-						sources.add(Code.Source.create(url));
+						return Java.Store.file(getLocalClassCache());
 					}
 				}
-				return Code.Source.create(sources);
-			} else {
-				return null;
+				return store;
 			}
-		}
 
-		final Code.Source parent() {
-			if (parent == null) {
-				parent = adapt(classLoader().getParent());
+			public final Code.Source compiling(Code.Source base) {
+				return Java.compiling(base, getCompileDestination(), Loader.Classes.this.getClassLoader());
 			}
-			return parent;
 		}
 
 		public static Classes create(final Configuration configuration) {
@@ -133,7 +97,7 @@ public abstract class Loader {
 						return configuration.getLocalClassCache();
 					}
 
-					ClassLoader classLoader() {
+					ClassLoader getClassLoader() {
 						return loaderClasses;
 					}
 
@@ -156,7 +120,7 @@ public abstract class Loader {
 						return null;
 					}
 
-					ClassLoader classLoader() {
+					ClassLoader getClassLoader() {
 						return null;
 					}
 
@@ -168,16 +132,16 @@ public abstract class Loader {
 		}
 
 		private static class ClassLoaderImpl extends ClassLoader {
-			static ClassLoaderImpl create(ClassLoader delegate) {
-				LOGGER.log(Level.FINE, "Creating Loader.Classes: parent=%s", delegate);
-				return new ClassLoaderImpl(delegate);
+			static ClassLoaderImpl create(ClassLoader parent) {
+				LOGGER.log(Level.FINE, "Creating Loader.Classes: parent=%s", parent);
+				return new ClassLoaderImpl(parent);
 			}
 
 			private inonit.script.runtime.io.Streams streams = new inonit.script.runtime.io.Streams();
 			private ArrayList<Code.Source> locations = new ArrayList<Code.Source>();
 
-			private ClassLoaderImpl(ClassLoader delegate) {
-				super(delegate);
+			private ClassLoaderImpl(ClassLoader parent) {
+				super(parent);
 			}
 
 			public String toString() {

@@ -109,13 +109,13 @@ public class Java {
 	}
 
 	private static class Classes {
-		private static Classes create(Store store, Loader.Classes dependencies) {
+		private static Classes create(Store store, ClassLoader dependencies) {
 			return new Classes(store, dependencies);
 		}
 
 		private MyJavaFileManager jfm;
 
-		private Classes(Store store, Loader.Classes dependencies) {
+		private Classes(Store store, ClassLoader dependencies) {
 			this.jfm = new MyJavaFileManager(store, dependencies);
 		}
 
@@ -141,19 +141,22 @@ public class Java {
 		private boolean compile(Code.Source.File javaSource) {
 			return compile(new SourceFileObject(javaSource));
 		}
+		
+		final Store store() {
+			return this.jfm.store();
+		}
 
 		private static class MyJavaFileManager implements JavaFileManager {
 			private javax.tools.JavaFileManager delegate = compiler().getStandardFileManager(null, null, null);
 
 			private Java.Store store;
-			private final Loader.Classes classpath;
+			private final ClassLoader classLoader;
 
 			private Map<String,OutputClass> map = new HashMap<String,OutputClass>();
 
-			MyJavaFileManager(Java.Store store, Loader.Classes classpath) {
-				if (classpath == null) throw new IllegalArgumentException("'classpath' must not be null.");
+			MyJavaFileManager(Java.Store store, ClassLoader classLoader) {
 				this.store = store;
-				this.classpath = classpath;
+				this.classLoader = classLoader;
 			}
 
 			private void log(String message) {
@@ -164,9 +167,25 @@ public class Java {
 				LOG.log(MyJavaFileManager.class, level, message, null);
 			}
 
+			private Code.Source parent;
+
+			private Code.Source parent() {
+				if (parent == null) {
+					ClassLoader parentClassLoader = classLoader.getParent();
+					if (parentClassLoader instanceof URLClassLoader) {
+						parent = Code.Source.create( (URLClassLoader)parentClassLoader );
+					}
+				}
+				return parent;
+			}
+			
+			final Store store() {
+				return store;
+			}
+
 			public ClassLoader getClassLoader(JavaFileManager.Location location) {
 				log("getClassLoader");
-				if (location == StandardLocation.CLASS_PATH) return classpath.classLoader();
+				if (location == StandardLocation.CLASS_PATH) return classLoader;
 				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 			}
 
@@ -182,7 +201,7 @@ public class Java {
 				if (location == StandardLocation.CLASS_PATH) {
 					List<JavaFileObject> rv = new ArrayList<JavaFileObject>();
 					LOG.log(MyJavaFileManager.class, Level.FINE, "list location=" + location + " packageName=" + packageName + " kinds=" + kinds + " recurse=" + recurse, null);
-					Code.Source parent = classpath.parent();
+					Code.Source parent = parent();
 					if (parent != null) {
 						LOG.log(MyJavaFileManager.class, Level.FINE, "parent=" + parent, null);
 						String path = packageName.replaceAll("\\.","/");
@@ -483,20 +502,16 @@ public class Java {
 
 	private static class SourceDirectoryClassesSource extends Code.Source {
 		private Code.Source delegate;
-		private Store store;
 		private Java.Classes classes;
 
-		SourceDirectoryClassesSource(Code.Source delegate, Store store, Loader.Classes dependencies) {
+		SourceDirectoryClassesSource(Code.Source delegate, Store store, ClassLoader classLoader) {
 			this.delegate = delegate;
-			this.store = store;
-			this.classes = Classes.create(store, dependencies);
+			this.classes = Classes.create(store, classLoader);
 		}
 
 		public String toString() {
 			return "SourceDirectoryClassesSource: src=" + delegate;
 		}
-
-//		private Java.Classes classes = Java.Classes.create(Java.Classes.Store.memory());
 
 		private HashMap<String,Code.Source.File> cache = new HashMap<String,Code.Source.File>();
 
@@ -514,7 +529,7 @@ public class Java {
 			if (path.startsWith("javax/")) return null;
 			if (cache.get(path) == null) {
 //				LOG.log(Java.class, Level.FINE, "Reading from " + path + " in store " + store, null);
-				Code.Source.File stored = store.readAt(path);
+				Code.Source.File stored = this.classes.store().readAt(path);
 				if (stored != null) {
 					cache.put(path, stored);
 				} else {
@@ -554,13 +569,9 @@ public class Java {
 			return null;
 		}
 	}
-
-	private static Code.Source compiling(Code.Source code, Store store, Loader.Classes dependencies) {
-		return new SourceDirectoryClassesSource(code, store, dependencies);
-	}
-
-	static Code.Source compiling(final Code.Source base, final Loader.Classes loader) {
-		return Java.compiling(base, loader.getCompileDestination(), loader);
+	
+	static Code.Source compiling(final Code.Source base, final Store store, final ClassLoader dependencies) {
+		return new SourceDirectoryClassesSource(base, store, dependencies);
 	}
 
 	static abstract class Store {

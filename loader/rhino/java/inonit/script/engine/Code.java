@@ -330,6 +330,28 @@ public class Code {
 			return Code.Source.create(url, Code.Source.Enumerator.bitbucketApiVersionOne(url));
 		}
 		
+		static Source create(java.net.URLClassLoader parent) {
+			List<URL> urls = Arrays.asList(((URLClassLoader)parent).getURLs());
+			List<Code.Source> sources = new ArrayList<Code.Source>();
+			for (URL url : urls) {
+				if (url.getProtocol().equals("file")) {
+					try {
+						java.io.File file = new java.io.File(url.toURI());
+						if (file.getName().endsWith(".jar")) {
+							sources.add(Code.Source.zip(file));
+						} else {
+							sources.add(Code.Source.create(file));
+						}
+					} catch (java.net.URISyntaxException e) {
+						throw new RuntimeException(e);
+					}
+				} else {
+					sources.add(Code.Source.create(url));
+				}
+			}
+			return Code.Source.create(sources);			
+		}
+		
 		public static Source zip(final java.io.File file) {
 			try {
 				return zip(file.toString(), new java.io.FileInputStream(file));
