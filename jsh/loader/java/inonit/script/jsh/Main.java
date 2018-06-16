@@ -134,7 +134,11 @@ public class Main {
 		Shell.Installation installation() {
 			final Shell.Extensions plugins;
 			try {
-				plugins = Shell.Extensions.create(getPackagedPluginsDirectory());
+				plugins = Shell.Extensions.create(
+					new Code.Source[] {
+						Code.Source.create(getPackagedPluginsDirectory())
+					}
+				);
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
@@ -183,10 +187,10 @@ public class Main {
 
 		final Shell.Installation installation() throws IOException {
 			//	TODO	previously user plugins directory was not searched for libraries. Is this right?
-			final Shell.Extensions plugins = Shell.Extensions.create(new Shell.Extensions[] {
-				Shell.Extensions.create(this.getModules()),
-				Shell.Extensions.create(this.getShellPlugins()),
-				Shell.Extensions.create(new File(new File(System.getProperty("user.home")), ".inonit/jsh/plugins"))
+			final Shell.Extensions plugins = Shell.Extensions.create(new Code.Source[] {
+				this.getModules(),
+				this.getShellPlugins(),
+				Code.Source.create(new File(new File(System.getProperty("user.home")), ".inonit/jsh/plugins"))
 			});
 			return new Shell.Installation() {
 				@Override public Code.Source getPlatformLoader() {

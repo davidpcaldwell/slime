@@ -260,7 +260,10 @@ this.jsh = new function() {
 	};
 
 	(function loadPlugins() {
-		plugins.load({ loader: new $slime.Loader({ _source: $slime.getInterface().getPluginSource() }) });
+		var _sources = $slime.getInterface().getPluginSources();
+		for (var i=0; i<_sources.length; i++) {
+			plugins.load({ loader: new $slime.Loader({ _source: _sources[i] }) });
+		}
 	})();
 
 	//	TODO	below could be turned into jsh plugin loaded at runtime by jsapi; would need to make getLibrary accessible through

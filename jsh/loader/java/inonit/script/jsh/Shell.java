@@ -215,45 +215,45 @@ public class Shell {
 	}
 
 	public static abstract class Extensions {
-		static Extensions create(final Extensions[] array) {
-			return new Extensions() {
-				@Override public Code.Source getLibraries() {
-					ArrayList<Code.Source> sources = new ArrayList<Code.Source>();
-					for (Extensions p : array) {
-						sources.add(p.getLibraries());
-					}
-					return Code.Source.create(sources);
-				}
-			};
-		}
+//		static Extensions create(final Extensions[] array) {
+//			return new Extensions() {
+//				@Override public Code.Source getLibraries() {
+//					ArrayList<Code.Source> sources = new ArrayList<Code.Source>();
+//					for (Extensions p : array) {
+//						sources.add(p.getLibraries());
+//					}
+//					return Code.Source.create(sources);
+//				}
+//			};
+//		}
 
-		static Extensions create(Code.Source source) {
-			return new Plugins(source);
+		static Extensions create(Code.Source[] sources) {
+			return new Plugins(sources);
 		}
 		
-		static Extensions create(File file) {
-			return create(Code.Source.create(file));
-		}
+//		static Extensions create(File file) {
+//			return create(Code.Source.create(file));
+//		}
 
-		public abstract Code.Source getLibraries();
+		public abstract Code.Source[] getLibraries();
 
 		static class Plugins extends Shell.Extensions {
-			static Plugins create(File file) {
-				if (!file.exists()) return Plugins.EMPTY;
-				if (!file.isDirectory()) throw new RuntimeException();
-				return new Plugins(Code.Source.create(file));
+//			static Plugins create(File file) {
+//				if (!file.exists()) return Plugins.EMPTY;
+//				if (!file.isDirectory()) throw new RuntimeException();
+//				return new Plugins(Code.Source.create(file));
+//			}
+
+			static final Plugins EMPTY = new Plugins(new Code.Source[0]);
+
+			private Code.Source[] sources;
+
+			Plugins(Code.Source[] sources) {
+				this.sources = sources;
 			}
 
-			static final Plugins EMPTY = new Plugins(Code.Source.NULL);
-
-			private Code.Source source;
-
-			Plugins(Code.Source source) {
-				this.source = source;
-			}
-
-			@Override public Code.Source getLibraries() {
-				return source;
+			@Override public Code.Source[] getLibraries() {
+				return sources;
 			}			
 		}
 	}
@@ -389,7 +389,7 @@ public class Shell {
 			this.installation = installation;
 		}
 		
-		public Code.Source getPluginSource() {
+		public Code.Source[] getPluginSources() {
 			return installation.getExtensions().getLibraries();
 		}
 
