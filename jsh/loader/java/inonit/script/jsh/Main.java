@@ -26,15 +26,15 @@ public class Main {
 
 	//	TODO	refactor into locateCodeSource() method
 	private static abstract class Location {
-		static Code.Source create(String string) {
+		static Code.Loader create(String string) {
 			if (string.startsWith("http://") || string.startsWith("https://")) {
 				try {
-					return Code.Source.bitbucketApiVersionOne(new URL(string));
+					return Code.Loader.bitbucketApiVersionOne(new URL(string));
 				} catch (MalformedURLException e) {
 					throw new RuntimeException(e);
 				}
 			} else {
-				return Code.Source.create(new File(string));
+				return Code.Loader.create(new File(string));
 			}
 		}
 	}
@@ -135,28 +135,28 @@ public class Main {
 			final Shell.Extensions plugins;
 			try {
 				plugins = Shell.Extensions.create(
-					new Code.Source[] {
-						Code.Source.create(getPackagedPluginsDirectory())
+					new Code.Loader[] {
+						Code.Loader.create(getPackagedPluginsDirectory())
 					}
 				);
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
 			//	TODO	better hierarchy would probably be $jsh/loader/slime and $jsh/loader/jsh
-			final Code.Source platform = Code.Source.system("$jsh/loader/");
-			final Code.Source jsh = Code.Source.system("$jsh/");
+			final Code.Loader platform = Code.Loader.system("$jsh/loader/");
+			final Code.Loader jsh = Code.Loader.system("$jsh/");
 			return new Shell.Installation() {
-				@Override public Code.Source getPlatformLoader() {
+				@Override public Code.Loader getPlatformLoader() {
 					return platform;
 				}
 
-				@Override public Code.Source getJshLoader() {
+				@Override public Code.Loader getJshLoader() {
 					return jsh;
 				}
 
-				@Override public Code.Source getLibraries() {
+				@Override public Code.Loader getLibraries() {
 					//	TODO	This is obviously wrong and we ought to be able to package libraries
-					return Code.Source.NULL;
+					return Code.Loader.NULL;
 				}
 
 				@Override public Shell.Extensions getExtensions() {
@@ -166,7 +166,7 @@ public class Main {
 		}
 
 		Shell.Invocation invocation(final String[] arguments) {
-			Code.Source.File main = Code.Source.File.create(ClassLoader.getSystemResource("main.jsh.js"));
+			Code.Loader.Resource main = Code.Loader.Resource.create(ClassLoader.getSystemResource("main.jsh.js"));
 			return Shell.Invocation.create(
 				Shell.Script.create(main),
 				arguments
@@ -174,34 +174,34 @@ public class Main {
 		}
 
 		Shell.Environment.Packaged getPackaged() {
-			return Shell.Environment.Packaged.create(Code.Source.system("$packaged/"), main);
+			return Shell.Environment.Packaged.create(Code.Loader.system("$packaged/"), main);
 		}
 	}
 
 	private static abstract class Unpackaged extends Configuration {
-		abstract Code.Source getLoader();
-		abstract Code.Source getJsh();
-		abstract Code.Source getLibraries();
-		abstract Code.Source getModules();
-		abstract Code.Source getShellPlugins();
+		abstract Code.Loader getLoader();
+		abstract Code.Loader getJsh();
+		abstract Code.Loader getLibraries();
+		abstract Code.Loader getModules();
+		abstract Code.Loader getShellPlugins();
 
 		final Shell.Installation installation() throws IOException {
 			//	TODO	previously user plugins directory was not searched for libraries. Is this right?
-			final Shell.Extensions plugins = Shell.Extensions.create(new Code.Source[] {
+			final Shell.Extensions plugins = Shell.Extensions.create(new Code.Loader[] {
 				this.getModules(),
 				this.getShellPlugins(),
-				Code.Source.create(new File(new File(System.getProperty("user.home")), ".inonit/jsh/plugins"))
+				Code.Loader.create(new File(new File(System.getProperty("user.home")), ".inonit/jsh/plugins"))
 			});
 			return new Shell.Installation() {
-				@Override public Code.Source getPlatformLoader() {
+				@Override public Code.Loader getPlatformLoader() {
 					return Unpackaged.this.getLoader();
 				}
 
-				@Override public Code.Source getJshLoader() {
+				@Override public Code.Loader getJshLoader() {
 					return Unpackaged.this.getJsh();
 				}
 
-				@Override public Code.Source getLibraries() {
+				@Override public Code.Loader getLibraries() {
 					return Unpackaged.this.getLibraries();
 				}
 
@@ -211,9 +211,9 @@ public class Main {
 			};
 		}
 
-		private Code.Source.HttpConnector getHttpConnector() {
+		private Code.Loader.HttpConnector getHttpConnector() {
 			if (System.getProperty("jsh.loader.user") != null) {
-				return new Code.Source.HttpConnector() {
+				return new Code.Loader.HttpConnector() {
 					@Override public void decorate(HttpURLConnection connection) {
 						String user = System.getProperty("jsh.loader.user");
 						String password = System.getProperty("jsh.loader.password");
@@ -226,7 +226,7 @@ public class Main {
 					}
 				};
 			}
-			return Code.Source.HttpConnector.NULL;
+			return Code.Loader.HttpConnector.NULL;
 		}
 
 		Shell.Invocation invocation(String[] arguments) throws Shell.Invocation.CheckedException {
@@ -256,9 +256,9 @@ public class Main {
 									}
 								}
 
-								@Override public Code.Source.File getSource() {
-									return Code.Source.File.create(url, getHttpConnector());
-	//								return Code.Source.File.create(Code.Source.URI.create(url), scriptPath, null, null, stream);
+								@Override public Code.Loader.Resource getSource() {
+									return Code.Loader.Resource.create(url, getHttpConnector());
+	//								return Code.Loader.Resource.create(Code.Loader.URI.create(url), scriptPath, null, null, stream);
 								}
 							};
 						}
@@ -297,36 +297,36 @@ public class Main {
 	}
 
 	private static class Unbuilt extends Unpackaged {
-		private Code.Source src;
+		private Code.Loader src;
 
-		Unbuilt(Code.Source src) {
+		Unbuilt(Code.Loader src) {
 			this.src = src;
 		}
 
-		Code.Source getLoader() {
+		Code.Loader getLoader() {
 			return this.src.child("loader/");
 //			return this.src.resolve("loader/").source();
 		}
 
-		Code.Source getJsh() {
+		Code.Loader getJsh() {
 			return this.src.child("jsh/loader/");
 //			return this.src.resolve("jsh/loader/").source();
 		}
 
-		Code.Source getLibraries() {
+		Code.Loader getLibraries() {
 			File file = new java.io.File(System.getProperty("jsh.shell.lib"));
-			return Code.Source.create(file);
+			return Code.Loader.create(file);
 		}
 
-		Code.Source getModules() {
+		Code.Loader getModules() {
 			return this.src;
 		}
 
-		Code.Source getShellPlugins() {
+		Code.Loader getShellPlugins() {
 			if (System.getProperty("jsh.shell.plugins") != null) {
 				return Location.create(System.getProperty("jsh.shell.plugins"));
 			}
-			return Code.Source.NULL;
+			return Code.Loader.NULL;
 		}
 	}
 
@@ -341,24 +341,24 @@ public class Main {
 			return new File(this.home, "script");
 		}
 
-		Code.Source getLoader() {
-			return Code.Source.create(new File(getScripts(), "loader"));
+		Code.Loader getLoader() {
+			return Code.Loader.create(new File(getScripts(), "loader"));
 		}
 
-		Code.Source getJsh() {
-			return Code.Source.create(new File(getScripts(), "jsh"));
+		Code.Loader getJsh() {
+			return Code.Loader.create(new File(getScripts(), "jsh"));
 		}
 
-		Code.Source getLibraries() {
-			return Code.Source.create(new File(this.home, "lib"));
+		Code.Loader getLibraries() {
+			return Code.Loader.create(new File(this.home, "lib"));
 		}
 
-		Code.Source getModules() {
-			return Code.Source.create(new File(this.home, "modules"));
+		Code.Loader getModules() {
+			return Code.Loader.create(new File(this.home, "modules"));
 		}
 
-		Code.Source getShellPlugins() {
-			return Code.Source.create(new File(this.home, "plugins"));
+		Code.Loader getShellPlugins() {
+			return Code.Loader.create(new File(this.home, "plugins"));
 		}
 	}
 

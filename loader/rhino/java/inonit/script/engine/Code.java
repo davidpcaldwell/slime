@@ -27,8 +27,7 @@ public class Code {
 		public abstract URL getResource(String path);
 	}
 
-	//	TODO	Rename Code.Source to Code.Loader
-	public static abstract class Source {
+	public static abstract class Loader {
 		public static class URI {
 			private static java.net.URI string(String s) {
 				try {
@@ -73,8 +72,7 @@ public class Code {
 			}
 		}
 
-		//	Rename Code.Source.File to Code.Loader.Resource
-		public static abstract class File {
+		public static abstract class Resource {
 			public abstract URI getURI();
 			public abstract String getSourceName();
 			public abstract InputStream getInputStream();
@@ -87,8 +85,8 @@ public class Code {
 				return new InputStreamReader(in);
 			}
 
-			public static File create(final java.io.File file) {
-				return new File() {
+			public static Resource create(final java.io.File file) {
+				return new Resource() {
 					@Override public String toString() {
 						return file.toString();
 					}
@@ -124,8 +122,8 @@ public class Code {
 			}
 
 			//	TODO	this implementation will not respond correctly to getInputStream() being called multiple times
-			private static File create(final URL url, final URLConnection opened) {
-				return new File() {
+			private static Resource create(final URL url, final URLConnection opened) {
+				return new Resource() {
 					private URLConnection connection;
 
 					@Override public String toString() {
@@ -209,17 +207,17 @@ public class Code {
 				};
 			}
 
-			public static File create(final URL url) {
+			public static Resource create(final URL url) {
 				return create(url, (URLConnection)null);
 			}
 
-			//	Used in rhino/io to create Code.Source.File objects in resources implementation
-			public static File create(final URI uri, final String name, final Long length, final java.util.Date modified, final InputStream in) {
-				return new File() {
+			//	Used in rhino/io to create Code.Loader.Resource objects in resources implementation
+			public static Resource create(final URI uri, final String name, final Long length, final java.util.Date modified, final InputStream in) {
+				return new Resource() {
 					private byte[] bytes;
 
 					@Override public String toString() {
-						return "Code.Source.File uri=" + uri.adapt() + " name=" + name + " length=" + length + " modified=" + modified;
+						return "Code.Loader.Resource uri=" + uri.adapt() + " name=" + name + " length=" + length + " modified=" + modified;
 					}
 
 					@Override public URI getURI() {
@@ -251,7 +249,7 @@ public class Code {
 				};
 			}
 
-			public static File create(java.net.URL url, UrlBased.HttpConnector connector) {
+			public static Resource create(java.net.URL url, UrlBased.HttpConnector connector) {
 				try {
 					URLConnection connection = url.openConnection();
 					if (connector != null && connection instanceof HttpURLConnection) {
@@ -265,10 +263,10 @@ public class Code {
 			}
 		}
 
-		public static Source NULL = new Source() {
-			@Override public String toString() { return "Code.Source.NULL"; }
+		public static Loader NULL = new Loader() {
+			@Override public String toString() { return "Code.Loader.NULL"; }
 
-			public File getFile(String path) {
+			public Resource getFile(String path) {
 				return null;
 			}
 
@@ -285,15 +283,15 @@ public class Code {
 			}
 		};
 		
-		private static final Source system = new Source() {
+		private static final Loader system = new Loader() {
 			@Override public String toString() {
 				return "Source: system class loader";
 			}
 
-			public File getFile(String path) {
+			public Resource getFile(String path) {
 				URL url = ClassLoader.getSystemClassLoader().getResource(path);
 				if (url == null) return null;
-				return File.create(url);
+				return Resource.create(url);
 			}
 
 			public Locator getLocator() {
@@ -306,15 +304,15 @@ public class Code {
 			}
 		};
 
-		public static Source system(final String prefix) {
+		public static Loader system(final String prefix) {
 			return system.child(prefix);
 		}
 
-		static Source create(final java.net.URL url, Enumerator enumerator) {
+		static Loader create(final java.net.URL url, Enumerator enumerator) {
 			return new UrlBased(url, enumerator, null);
 		}
 
-		public static Source create(java.io.File file) {
+		public static Loader create(java.io.File file) {
 			try {
 				return create(file.toURI().toURL(), Enumerator.create(file));
 			} catch (java.net.MalformedURLException e) {
@@ -322,37 +320,37 @@ public class Code {
 			}
 		}
 
-		public static Source create(final java.net.URL url) {
+		public static Loader create(final java.net.URL url) {
 			return new UrlBased(url, null, null);
 		}
 		
-		public static Source bitbucketApiVersionOne(URL url) {
-			return Code.Source.create(url, Code.Source.Enumerator.bitbucketApiVersionOne(url));
+		public static Loader bitbucketApiVersionOne(URL url) {
+			return Code.Loader.create(url, Code.Loader.Enumerator.bitbucketApiVersionOne(url));
 		}
 		
-		static Source create(java.net.URLClassLoader parent) {
+		static Loader create(java.net.URLClassLoader parent) {
 			List<URL> urls = Arrays.asList(((URLClassLoader)parent).getURLs());
-			List<Code.Source> sources = new ArrayList<Code.Source>();
+			List<Code.Loader> sources = new ArrayList<Code.Loader>();
 			for (URL url : urls) {
 				if (url.getProtocol().equals("file")) {
 					try {
 						java.io.File file = new java.io.File(url.toURI());
 						if (file.getName().endsWith(".jar")) {
-							sources.add(Code.Source.zip(file));
+							sources.add(Code.Loader.zip(file));
 						} else {
-							sources.add(Code.Source.create(file));
+							sources.add(Code.Loader.create(file));
 						}
 					} catch (java.net.URISyntaxException e) {
 						throw new RuntimeException(e);
 					}
 				} else {
-					sources.add(Code.Source.create(url));
+					sources.add(Code.Loader.create(url));
 				}
 			}
-			return Code.Source.create(sources);			
+			return Code.Loader.create(sources);			
 		}
 		
-		public static Source zip(final java.io.File file) {
+		public static Loader zip(final java.io.File file) {
 			try {
 				return zip(file.toString(), new java.io.FileInputStream(file));
 			} catch (FileNotFoundException e) {
@@ -360,31 +358,31 @@ public class Code {
 			}
 		}
 		
-		public static Source zip(final Code.Source.File file) {
+		public static Loader zip(final Code.Loader.Resource file) {
 			return zip(file.toString(), file.getInputStream());
 		}
 
-		private static Source zip(final String name, final java.io.InputStream stream) {
+		private static Loader zip(final String name, final java.io.InputStream stream) {
 			try {
 				java.util.zip.ZipInputStream in = new java.util.zip.ZipInputStream(stream);
 				java.util.zip.ZipEntry entry;
-				final HashMap<String,Source.File> files = new HashMap<String,Source.File>();
+				final HashMap<String,Loader.Resource> files = new HashMap<String,Loader.Resource>();
 				while( (entry = in.getNextEntry()) != null) {
 					final java.util.zip.ZipEntry ENTRY = entry;
 					final byte[] bytes = new inonit.script.runtime.io.Streams().readBytes(in, false);
 					final String entryName = entry.getName();
-					Source.File f = new Source.File() {
+					Loader.Resource f = new Loader.Resource() {
 						public String toString() {
 							return getClass().getName() + " length=" + bytes.length;
 						}
 
 						@Override public URI getURI() {
-							LOG.log(Code.Source.class, Level.FINE, "getURI()", null);
+							LOG.log(Code.Loader.class, Level.FINE, "getURI()", null);
 							throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 						}
 
 						@Override public String getSourceName() {
-							LOG.log(Code.Source.class, Level.FINE, "getSourceName()", null);
+							LOG.log(Code.Loader.class, Level.FINE, "getSourceName()", null);
 							return name + "!" + entryName;
 //							throw new UnsupportedOperationException("Not supported yet in " + name + "."); //To change body of generated methods, choose Tools | Templates.
 						}
@@ -426,13 +424,13 @@ public class Code {
 						return rv.toArray(new String[0]);
 					}
 				};
-				return new Code.Source() {
-					@Override public String toString() { return "Code.Source zip=" + name; }
+				return new Code.Loader() {
+					@Override public String toString() { return "Code.Loader zip=" + name; }
 
-					@Override public File getFile(String path) throws IOException {
-						LOG.log(Code.Source.class, Level.FINE, "getFile(" + path + ")", null);
-						File rv = files.get(path);
-						LOG.log(Code.Source.class, Level.FINE, String.valueOf(rv), null);
+					@Override public Resource getFile(String path) throws IOException {
+						LOG.log(Code.Loader.class, Level.FINE, "getFile(" + path + ")", null);
+						Resource rv = files.get(path);
+						LOG.log(Code.Loader.class, Level.FINE, String.valueOf(rv), null);
 						return rv;
 					}
 
@@ -441,7 +439,7 @@ public class Code {
 					}
 
 					@Override public Locator getLocator() {
-						LOG.log(Code.Source.class, Level.FINE, "getClasses()", null);
+						LOG.log(Code.Loader.class, Level.FINE, "getClasses()", null);
 						//	TODO	think about this
 						return null;
 					}
@@ -451,9 +449,9 @@ public class Code {
 			}
 		}
 
-		private static Enumerator enumerator(List<Source> sources) {
+		private static Enumerator enumerator(List<Loader> sources) {
 			final List<Enumerator> enumerators = new ArrayList<Enumerator>();
-			for (Source s : sources) {
+			for (Loader s : sources) {
 				Enumerator e = s.getEnumerator();
 				if (e == null) return null;
 				enumerators.add(e);
@@ -474,10 +472,10 @@ public class Code {
 			};
 		}
 
-		public static Source create(final List<Source> delegates) {
+		public static Loader create(final List<Loader> delegates) {
 			final Locator classes = new Locator() {
 				@Override public URL getResource(String path) {
-					for (Source delegate : delegates) {
+					for (Loader delegate : delegates) {
 						Locator c = delegate.getLocator();
 						if (c != null && c.getResource(path) != null) {
 							return c.getResource(path);
@@ -489,11 +487,11 @@ public class Code {
 
 			final Enumerator enumerator = enumerator(delegates);
 
-			return new Source() {
+			return new Loader() {
 				@Override public String toString() {
-					String rv = "Code.Source: [";
+					String rv = "Code.Loader: [";
 					boolean first = true;
-					for (Source s : delegates) {
+					for (Loader s : delegates) {
 						if (!first) {
 							rv += ",";
 						} else {
@@ -505,9 +503,9 @@ public class Code {
 					return rv;
 				}
 
-				@Override public File getFile(String path) throws IOException {
-					for (Source delegate : delegates) {
-						File file = delegate.getFile(path);
+				@Override public Resource getFile(String path) throws IOException {
+					for (Loader delegate : delegates) {
+						Resource file = delegate.getFile(path);
 						if (file != null) {
 							return file;
 						}
@@ -587,7 +585,7 @@ public class Code {
 			};
 		}
 
-		public abstract File getFile(String path) throws IOException;
+		public abstract Resource getFile(String path) throws IOException;
 		public abstract Enumerator getEnumerator();
 		public abstract Locator getLocator();
 
@@ -597,19 +595,19 @@ public class Code {
 			return prefix + "/";
 		}
 
-		public final Source child(final String prefix) {
+		public final Loader child(final String prefix) {
 			final String prepend = getChildPrefix(prefix);
-			return new Code.Source() {
+			return new Code.Loader() {
 				@Override public String toString() {
-					return Code.Source.class.getName() + " source=" + Source.this + " prefix=" + prefix;
+					return Code.Loader.class.getName() + " source=" + Loader.this + " prefix=" + prefix;
 				}
 
-				public Source.File getFile(String path) throws IOException {
-					return Source.this.getFile(prepend + path);
+				public Loader.Resource getFile(String path) throws IOException {
+					return Loader.this.getFile(prepend + path);
 				}
 
 				public Locator getLocator() {
-					final Locator delegate = Source.this.getLocator();
+					final Locator delegate = Loader.this.getLocator();
 					if (delegate == null) {
 						return null;
 					}
@@ -621,7 +619,7 @@ public class Code {
 				}
 
 				public Enumerator getEnumerator() {
-					final Enumerator parent = Source.this.getEnumerator();
+					final Enumerator parent = Loader.this.getEnumerator();
 					if (parent != null) {
 						return new Enumerator() {
 							@Override public String[] list(String subprefix) {
@@ -636,7 +634,7 @@ public class Code {
 			};
 		}
 
-		private static class UrlBased extends Source {
+		private static class UrlBased extends Loader {
 			private java.net.URL url;
 			private Enumerator enumerator;
 			private HttpConnector connector;
@@ -657,13 +655,13 @@ public class Code {
 			}
 
 			@Override public String toString() {
-				return Code.Source.class.getName() + " url=" + url;
+				return Code.Loader.class.getName() + " url=" + url;
 			}
 
-			public File getFile(String path) throws IOException {
+			public Resource getFile(String path) throws IOException {
 				URL url = classes.getResource(path);
 				if (url == null) return null;
-				return File.create(url, connector);
+				return Resource.create(url, connector);
 			}
 
 			public Enumerator getEnumerator() {

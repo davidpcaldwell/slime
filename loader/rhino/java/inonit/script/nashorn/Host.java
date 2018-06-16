@@ -28,7 +28,7 @@ public class Host {
 	private ScriptEngineManager factory;
 	private ScriptEngine engine;
 	private Loader.Classes classes;
-	private List<Code.Source.File> scripts = new ArrayList<Code.Source.File>();
+	private List<Code.Loader.Resource> scripts = new ArrayList<Code.Loader.Resource>();
 
 	private Host(Loader.Classes classes) {
 		this.factory = new ScriptEngineManager();
@@ -40,7 +40,7 @@ public class Host {
 		factory.getBindings().put(name, value);
 	}
 
-	public void add(Code.Source.File script) {
+	public void add(Code.Loader.Resource script) {
 		scripts.add(script);
 	}
 
@@ -50,7 +50,7 @@ public class Host {
 
 	public Object run() throws ScriptException {
 		Object rv = null;
-		for (Code.Source.File file : scripts) {
+		for (Code.Loader.Resource file : scripts) {
 			ScriptContext c = engine.getContext();
 			c.setAttribute(ScriptEngine.FILENAME, file.getSourceName(), ScriptContext.ENGINE_SCOPE);
 			rv = engine.eval(file.getReader(), c);

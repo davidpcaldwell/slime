@@ -49,8 +49,8 @@ class Nashorn extends Servlet.ScriptContainer {
 	}
 
 	@Override void addScript(final String name, final InputStream stream) {
-		host.add(new Code.Source.File() {
-			@Override public Code.Source.URI getURI() {
+		host.add(new Code.Loader.Resource() {
+			@Override public Code.Loader.URI getURI() {
 				throw new UnsupportedOperationException();
 			}
 

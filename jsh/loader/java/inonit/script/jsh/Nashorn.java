@@ -110,7 +110,7 @@ public class Nashorn extends Main.Engine {
 			}
 		}
 
-		@Override public void script(Code.Source.File script) {
+		@Override public void script(Code.Loader.Resource script) {
 			host.add(script);
 		}
 

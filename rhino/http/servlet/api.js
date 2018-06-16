@@ -39,7 +39,7 @@ var $servlet = (function() {
 		var rv = {};
 		//	TODO	Find a way to use _url version of loader/rhino/literal.js constructor to get access to this object, probably
 		//			via the created loader's .source property
-		rv.resources = Packages.inonit.script.engine.Code.Source.create($host.getServlet().getServletConfig().getServletContext().getResource("/"));
+		rv.resources = Packages.inonit.script.engine.Code.Loader.create($host.getServlet().getServletConfig().getServletContext().getResource("/"));
 		rv.path = $host.getServlet().getServletConfig().getInitParameter("script");
 		rv.parameters = (function() {
 			var rv = {};

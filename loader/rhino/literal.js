@@ -84,7 +84,7 @@
 		return loader.mime.Type.fromName(path);
 	}
 
-	//	Convert a Java inonit.script.engine.Code.Source.File to a resource
+	//	Convert a Java inonit.script.engine.Code.Loader.Resource to a resource
 	//	TODO	should this logic be pushed into loader.io? Probably
 	var Resource = function(_file,path) {
 		var parameter = {
@@ -129,11 +129,11 @@
 	};
 	Resource.toCodeSourceFile = function(resource,path) {
 		if (!resource) return null;
-		//	TODO	cheat by storing Code.Source.File for resources created by this source file. Design smell that we
+		//	TODO	cheat by storing Code.Loader.Resource for resources created by this source file. Design smell that we
 		//			need to convert back and forth between Java and script versions
 		if (resource.java && resource.java.adapt) return resource.java.adapt();
 		return new JavaAdapter(
-			Packages.inonit.script.engine.Code.Source.File,
+			Packages.inonit.script.engine.Code.Loader.Resource,
 			new function() {
 				["getURI","getSourceName","getInputStream","getLength","getLastModified"].forEach(function(methodName) {
 					this[methodName] = function() {
@@ -142,7 +142,7 @@
 				},this);
 
 				this.getURI = function() {
-					return Packages.inonit.script.engine.Code.Source.URI.script(
+					return Packages.inonit.script.engine.Code.Loader.URI.script(
 						"literal.js",
 						path
 					)
@@ -164,15 +164,15 @@
 		var rv = function(p) {
 			if (p.zip) {
 				if (p.zip._file) {
-					p._source = Packages.inonit.script.engine.Code.Source.zip(p.zip._file);
+					p._source = Packages.inonit.script.engine.Code.Loader.zip(p.zip._file);
 				} else if (p.zip.resource) {
-					p._source = Packages.inonit.script.engine.Code.Source.zip(Resource.toCodeSourceFile(p.zip.resource,p.zip.resource.name));
+					p._source = Packages.inonit.script.engine.Code.Loader.zip(Resource.toCodeSourceFile(p.zip.resource,p.zip.resource.name));
 				}
 			} else if (p._file && p._file.isDirectory()) {
-				p._source = Packages.inonit.script.engine.Code.Source.create(p._file);
+				p._source = Packages.inonit.script.engine.Code.Loader.create(p._file);
 			} else if (p._url) {
 				//	TODO	no known test coverage
-				p._source = Packages.inonit.script.engine.Code.Source.create(p._url);
+				p._source = Packages.inonit.script.engine.Code.Loader.create(p._url);
 			}
 			if (p._source) {
 				p.get = function(path) {
@@ -245,7 +245,7 @@
 				adapt: function() {
 					if (source._source) return source._source;
 					return new JavaAdapter(
-						Packages.inonit.script.engine.Code.Source,
+						Packages.inonit.script.engine.Code.Loader,
 						new function() {
 							this.getFile = function(path) {
 								var resource = self.get(path);
@@ -283,12 +283,12 @@
 		
 		this.add = function(p) {
 			if (p._file && p._file.isDirectory()) {
-				_classpath.add(Packages.inonit.script.engine.Code.Source.create(p._file));
+				_classpath.add(Packages.inonit.script.engine.Code.Loader.create(p._file));
 			} else if (p._file && p._file.exists() && !p._file.isDirectory()) {
 				//	Currently can be used to add .jar directly to classpath through jsh.loader.java.add
 				//	TODO	determine whether this should be switched to jar._file; used by servlet plugin to put Tomcat classes
 				//			in classpath
-				_classpath.add(Packages.inonit.script.engine.Code.Source.create(p._file));				
+				_classpath.add(Packages.inonit.script.engine.Code.Loader.create(p._file));				
 			} else if (p.slime) {
 				if (p.slime.loader) {
 					_classpath.add(p.slime.loader.java.adapt().child("$jvm/classes"));
@@ -297,9 +297,9 @@
 				}
 			} else if (p.jar) {
 				if (p.jar._file) {
-					_classpath.add(Packages.inonit.script.engine.Code.Source.zip(p.jar._file));
+					_classpath.add(Packages.inonit.script.engine.Code.Loader.zip(p.jar._file));
 				} else if (p.jar.resource) {
-					_classpath.add(Packages.inonit.script.engine.Code.Source.zip(Resource.toCodeSourceFile(p.jar.resource,p.jar.resource.name)));					
+					_classpath.add(Packages.inonit.script.engine.Code.Loader.zip(Resource.toCodeSourceFile(p.jar.resource,p.jar.resource.name)));					
 				} else {
 					throw new Error();
 				}

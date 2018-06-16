@@ -36,9 +36,9 @@ public class Java {
 	private static class SourceFileObject implements JavaFileObject {
 		private inonit.script.runtime.io.Streams streams = new inonit.script.runtime.io.Streams();
 
-		private Code.Source.File delegate;
+		private Code.Loader.Resource delegate;
 
-		SourceFileObject(Code.Source.File delegate) {
+		SourceFileObject(Code.Loader.Resource delegate) {
 			this.delegate = delegate;
 		}
 
@@ -119,7 +119,7 @@ public class Java {
 			this.jfm = new MyJavaFileManager(store, dependencies);
 		}
 
-		private Code.Source.File getFile(String name) {
+		private Code.Loader.Resource getFile(String name) {
 			MyJavaFileManager.OutputClass jfo = this.jfm.getJavaFileForInput(null, name, null);
 			if (jfo == null) return null;
 			return jfo.toCodeSourceFile();
@@ -138,7 +138,7 @@ public class Java {
 			return success;
 		}
 
-		private boolean compile(Code.Source.File javaSource) {
+		private boolean compile(Code.Loader.Resource javaSource) {
 			return compile(new SourceFileObject(javaSource));
 		}
 		
@@ -167,13 +167,13 @@ public class Java {
 				LOG.log(MyJavaFileManager.class, level, message, null);
 			}
 
-			private Code.Source parent;
+			private Code.Loader parent;
 
-			private Code.Source parent() {
+			private Code.Loader parent() {
 				if (parent == null) {
 					ClassLoader parentClassLoader = classLoader.getParent();
 					if (parentClassLoader instanceof URLClassLoader) {
-						parent = Code.Source.create( (URLClassLoader)parentClassLoader );
+						parent = Code.Loader.create( (URLClassLoader)parentClassLoader );
 					}
 				}
 				return parent;
@@ -201,7 +201,7 @@ public class Java {
 				if (location == StandardLocation.CLASS_PATH) {
 					List<JavaFileObject> rv = new ArrayList<JavaFileObject>();
 					LOG.log(MyJavaFileManager.class, Level.FINE, "list location=" + location + " packageName=" + packageName + " kinds=" + kinds + " recurse=" + recurse, null);
-					Code.Source parent = parent();
+					Code.Loader parent = parent();
 					if (parent != null) {
 						LOG.log(MyJavaFileManager.class, Level.FINE, "parent=" + parent, null);
 						String path = packageName.replaceAll("\\.","/");
@@ -216,7 +216,7 @@ public class Java {
 								continue;
 							}
 							//	TODO	may not work for empty package
-							Code.Source.File file = parent.getFile(path + "/" + name);
+							Code.Loader.Resource file = parent.getFile(path + "/" + name);
 							if (name.length() < ".class".length()) {
 								throw new RuntimeException("name is " + name);
 							}
@@ -321,10 +321,10 @@ public class Java {
 			}
 
 			private static class InputClass implements JavaFileObject {
-				private Code.Source.File file;
+				private Code.Loader.Resource file;
 				private String name;
 
-				InputClass(Code.Source.File file, String name) {
+				InputClass(Code.Loader.Resource file, String name) {
 					this.file = file;
 					this.name = name;
 				}
@@ -413,11 +413,11 @@ public class Java {
 					this.name = name;
 				}
 
-				Code.Source.File toCodeSourceFile() {
+				Code.Loader.Resource toCodeSourceFile() {
 					final OutputClass compiled = this;
-					return new Code.Source.File() {
-						@Override public Code.Source.URI getURI() {
-							return Code.Source.URI.create(compiled.toUri());
+					return new Code.Loader.Resource() {
+						@Override public Code.Loader.URI getURI() {
+							return Code.Loader.URI.create(compiled.toUri());
 						}
 
 						@Override public String getSourceName() {
@@ -500,11 +500,11 @@ public class Java {
 		}
 	}
 
-	private static class SourceDirectoryClassesSource extends Code.Source {
-		private Code.Source delegate;
+	private static class SourceDirectoryClassesSource extends Code.Loader {
+		private Code.Loader delegate;
 		private Java.Classes classes;
 
-		SourceDirectoryClassesSource(Code.Source delegate, Store store, ClassLoader classLoader) {
+		SourceDirectoryClassesSource(Code.Loader delegate, Store store, ClassLoader classLoader) {
 			this.delegate = delegate;
 			this.classes = Classes.create(store, classLoader);
 		}
@@ -513,7 +513,7 @@ public class Java {
 			return "SourceDirectoryClassesSource: src=" + delegate;
 		}
 
-		private HashMap<String,Code.Source.File> cache = new HashMap<String,Code.Source.File>();
+		private HashMap<String,Code.Loader.Resource> cache = new HashMap<String,Code.Loader.Resource>();
 
 		private boolean hasClass(String name) {
 			try {
@@ -524,12 +524,12 @@ public class Java {
 			}
 		}
 
-		@Override public Code.Source.File getFile(String path) throws IOException {
+		@Override public Code.Loader.Resource getFile(String path) throws IOException {
 			if (path.startsWith("org/apache/")) return null;
 			if (path.startsWith("javax/")) return null;
 			if (cache.get(path) == null) {
 //				LOG.log(Java.class, Level.FINE, "Reading from " + path + " in store " + store, null);
-				Code.Source.File stored = this.classes.store().readAt(path);
+				Code.Loader.Resource stored = this.classes.store().readAt(path);
 				if (stored != null) {
 					cache.put(path, stored);
 				} else {
@@ -542,7 +542,7 @@ public class Java {
 						//			given that this code appears to have been working, we never load an inner class before loading
 						//			the outer class under normal Java operation
 					} else {
-						Code.Source.File sourceFile = delegate.getFile("java/" + sourceName);
+						Code.Loader.Resource sourceFile = delegate.getFile("java/" + sourceName);
 						if (sourceFile == null && hasClass("org.mozilla.javascript.Context")) {
 							sourceFile = delegate.getFile("rhino/java/" + sourceName);
 						}
@@ -570,12 +570,12 @@ public class Java {
 		}
 	}
 	
-	static Code.Source compiling(final Code.Source base, final Store store, final ClassLoader dependencies) {
+	static Code.Loader compiling(final Code.Loader base, final Store store, final ClassLoader dependencies) {
 		return new SourceDirectoryClassesSource(base, store, dependencies);
 	}
 
 	static abstract class Store {
-		private static class InMemoryWritableFile extends Code.Source.File {
+		private static class InMemoryWritableFile extends Code.Loader.Resource {
 			private MyOutputStream out;
 			private Date modified;
 
@@ -614,7 +614,7 @@ public class Java {
 				return this.out;
 			}
 
-			@Override public Code.Source.URI getURI() {
+			@Override public Code.Loader.URI getURI() {
 				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 			}
 
@@ -648,9 +648,9 @@ public class Java {
 			return createOutputStreamAt(getClassLocationString(className));
 		}
 
-		abstract Code.Source.File readAt(String name);
+		abstract Code.Loader.Resource readAt(String name);
 
-		Code.Source.File read(String className) {
+		Code.Loader.Resource read(String className) {
 			return readAt(getClassLocationString(className));
 		}
 
@@ -675,7 +675,7 @@ public class Java {
 					return create(location).createOutputStream();
 				}
 
-				@Override Code.Source.File readAt(String location) {
+				@Override Code.Loader.Resource readAt(String location) {
 					return map.get(location);
 				}
 
@@ -702,13 +702,13 @@ public class Java {
 					}
 				}
 
-				@Override Code.Source.File readAt(String location) {
+				@Override Code.Loader.Resource readAt(String location) {
 					final File source = new File(file, location);
 					//LOG.log(Java.class, Level.FINE, "Attempting to read class from " + source, null);
 					if (!source.exists()) return null;
 					if (!source.exists()) return null;
-					return new Code.Source.File() {
-						@Override public Code.Source.URI getURI() {
+					return new Code.Loader.Resource() {
+						@Override public Code.Loader.URI getURI() {
 							throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 						}
 

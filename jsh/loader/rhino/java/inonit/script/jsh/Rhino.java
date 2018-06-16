@@ -114,7 +114,7 @@ public class Rhino {
 		@Override public void setJshHostProperty() {
 			setGlobalProperty("$rhino", $rhino);
 			try {
-				Code.Source.File file = this.getJshLoader().getFile("rhino.js");
+				Code.Loader.Resource file = this.getJshLoader().getFile("rhino.js");
 				if (file == null) {
 					throw new NullPointerException("Expected file rhino.js in " + this.getJshLoader());
 				}
@@ -124,7 +124,7 @@ public class Rhino {
 			}
 		}
 
-		@Override public void script(Code.Source.File script) {
+		@Override public void script(Code.Loader.Resource script) {
 			program.add(Engine.Source.create(script));
 		}
 

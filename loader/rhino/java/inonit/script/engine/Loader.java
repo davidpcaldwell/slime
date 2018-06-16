@@ -48,7 +48,7 @@ public abstract class Loader {
 				thread.setContextClassLoader(loader);
 			}
 
-			public final void add(Code.Source code) {
+			public final void add(Code.Loader code) {
 				loader.append(code);
 			}
 			
@@ -77,7 +77,7 @@ public abstract class Loader {
 				return store;
 			}
 
-			public final Code.Source compiling(Code.Source base) {
+			public final Code.Loader compiling(Code.Loader base) {
 				return Java.compiling(base, getCompileDestination(), Loader.Classes.this.getClassLoader());
 			}
 		}
@@ -138,7 +138,7 @@ public abstract class Loader {
 			}
 
 			private inonit.script.runtime.io.Streams streams = new inonit.script.runtime.io.Streams();
-			private ArrayList<Code.Source> locations = new ArrayList<Code.Source>();
+			private ArrayList<Code.Loader> locations = new ArrayList<Code.Loader>();
 
 			private ClassLoaderImpl(ClassLoader parent) {
 				super(parent);
@@ -167,10 +167,10 @@ public abstract class Loader {
 					packageName += "." + tokens[i];
 				}
 				synchronized(locations) {
-					for (Code.Source source : locations) {
+					for (Code.Loader source : locations) {
 						try {
 							//LOGGER.log(Level.FINE, "findClass(" + name + ") using source " + source);
-							Code.Source.File in = source.getFile(path);
+							Code.Loader.Resource in = source.getFile(path);
 							if (in != null) {
 								if (getPackage(packageName) == null) {
 									definePackage(packageName,null,null,null,null,null,null,null);
@@ -188,7 +188,7 @@ public abstract class Loader {
 
 			protected URL findResource(String name) {
 				synchronized(locations) {
-					for (Code.Source source : locations) {
+					for (Code.Loader source : locations) {
 						Code.Locator classes = source.getLocator();
 						if (classes != null) {
 							URL url = classes.getResource(name);
@@ -204,7 +204,7 @@ public abstract class Loader {
 			protected Enumeration<URL> findResources(String name) {
 				java.util.Vector<URL> rv = new java.util.Vector<URL>();
 				synchronized(locations) {
-					for (Code.Source source : locations) {
+					for (Code.Loader source : locations) {
 						Code.Locator classes = source.getLocator();
 						if (classes != null) {
 							URL url = classes.getResource(name);
@@ -217,7 +217,7 @@ public abstract class Loader {
 				return rv.elements();
 			}
 
-			void append(Code.Source code) {
+			void append(Code.Loader code) {
 				synchronized(locations) {
 					locations.add(code);
 				}

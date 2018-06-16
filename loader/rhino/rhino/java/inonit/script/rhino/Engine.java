@@ -883,7 +883,7 @@ public class Engine {
 			return new ReaderSource(sourceName, new StringReader(s));
 		}
 
-		//	TODO	should look at unifying Code.Source and Engine.Source
+		//	TODO	should look at unifying Code.Loader and Engine.Source
 
 		/**
 			Creates a new <code>Source</code> using the contents of the given file.
@@ -900,7 +900,7 @@ public class Engine {
 			}
 		}
 
-		public static Source create(Code.Source.File file) {
+		public static Source create(Code.Loader.Resource file) {
 			return new ReaderSource(file.getSourceName(), file.getReader());
 		}
 

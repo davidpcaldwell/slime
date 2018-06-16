@@ -81,23 +81,23 @@ public class Shell {
 		this.classpath = classpath;
 	}
 
-	public Code.Source getPlatformLoader() {
+	public Code.Loader getPlatformLoader() {
 		return configuration.getInstallation().getPlatformLoader();
 	}
 
-	public Code.Source getJshLoader() {
+	public Code.Loader getJshLoader() {
 		return configuration.getInstallation().getJshLoader();
 	}
 
 	//	TODO	Simplify handling of CoffeeScript by collapsing the next three methods and their invocations
 	
-	public Code.Source getLibraries() {
+	public Code.Loader getLibraries() {
 		return configuration.getInstallation().getLibraries();
 	}
 
 	//	TODO	Used in jsh.js to retrieve CoffeeScript
-	public Code.Source.File getLibrary(String path) {
-		Code.Source plugins = configuration.getInstallation().getLibraries();
+	public Code.Loader.Resource getLibrary(String path) {
+		Code.Loader plugins = configuration.getInstallation().getLibraries();
 		try {
 			return plugins.getFile(path);
 		} catch (IOException e) {
@@ -107,7 +107,7 @@ public class Shell {
 
 	//	TODO	push back out into invoking code; appears to be used only by jsh/loader/nashorn.js
 	public String getCoffeeScript() throws IOException {
-		Code.Source.File _file = getLibraries().getFile("coffee-script.js");
+		Code.Loader.Resource _file = getLibraries().getFile("coffee-script.js");
 		if (_file == null) return null;
 		return streams.readString(_file.getReader());
 	}
@@ -144,9 +144,9 @@ public class Shell {
 		return $host;
 	}
 
-	//	TODO	certainly appears this can be merged with Code.Source.File, now that Code.Source.File has concept of URI
+	//	TODO	certainly appears this can be merged with Code.Loader.Resource, now that Code.Loader.Resource has concept of URI
 	public static abstract class Script {
-		private static Script create(final Code.Source.File delegate, final java.net.URI uri) {
+		private static Script create(final Code.Loader.Resource delegate, final java.net.URI uri) {
 			return new Script() {
 				@Override public String toString() {
 					return Script.class.getName() + " delegate=" + delegate + " uri=" + uri;
@@ -156,22 +156,22 @@ public class Shell {
 					return uri;
 				}
 
-				public Code.Source.File getSource() {
+				public Code.Loader.Resource getSource() {
 					return delegate;
 				}
 			};
 		}
 
 		static Script create(File file) {
-			return create(Code.Source.File.create(file), file.toURI());
+			return create(Code.Loader.Resource.create(file), file.toURI());
 		}
 
-		static Script create(Code.Source.File delegate) {
+		static Script create(Code.Loader.Resource delegate) {
 			return create(delegate, null);
 		}
 
 		public abstract java.net.URI getUri();
-		public abstract Code.Source.File getSource();
+		public abstract Code.Loader.Resource getSource();
 	}
 
 	public static abstract class Container {
@@ -217,51 +217,51 @@ public class Shell {
 	public static abstract class Extensions {
 //		static Extensions create(final Extensions[] array) {
 //			return new Extensions() {
-//				@Override public Code.Source getLibraries() {
-//					ArrayList<Code.Source> sources = new ArrayList<Code.Source>();
+//				@Override public Code.Loader getLibraries() {
+//					ArrayList<Code.Loader> sources = new ArrayList<Code.Loader>();
 //					for (Extensions p : array) {
 //						sources.add(p.getLibraries());
 //					}
-//					return Code.Source.create(sources);
+//					return Code.Loader.create(sources);
 //				}
 //			};
 //		}
 
-		static Extensions create(Code.Source[] sources) {
+		static Extensions create(Code.Loader[] sources) {
 			return new Plugins(sources);
 		}
 		
 //		static Extensions create(File file) {
-//			return create(Code.Source.create(file));
+//			return create(Code.Loader.create(file));
 //		}
 
-		public abstract Code.Source[] getLibraries();
+		public abstract Code.Loader[] getLibraries();
 
 		static class Plugins extends Shell.Extensions {
 //			static Plugins create(File file) {
 //				if (!file.exists()) return Plugins.EMPTY;
 //				if (!file.isDirectory()) throw new RuntimeException();
-//				return new Plugins(Code.Source.create(file));
+//				return new Plugins(Code.Loader.create(file));
 //			}
 
-			static final Plugins EMPTY = new Plugins(new Code.Source[0]);
+			static final Plugins EMPTY = new Plugins(new Code.Loader[0]);
 
-			private Code.Source[] sources;
+			private Code.Loader[] sources;
 
-			Plugins(Code.Source[] sources) {
+			Plugins(Code.Loader[] sources) {
 				this.sources = sources;
 			}
 
-			@Override public Code.Source[] getLibraries() {
+			@Override public Code.Loader[] getLibraries() {
 				return sources;
 			}			
 		}
 	}
 
 	public static abstract class Installation {
-		public abstract Code.Source getPlatformLoader();
-		public abstract Code.Source getJshLoader();
-		public abstract Code.Source getLibraries();
+		public abstract Code.Loader getPlatformLoader();
+		public abstract Code.Loader getJshLoader();
+		public abstract Code.Loader getLibraries();
 		public abstract Extensions getExtensions();
 	}
 
@@ -301,9 +301,9 @@ public class Shell {
 		}
 
 		public static abstract class Packaged {
-			public static Packaged create(final Code.Source code, final File file) {
+			public static Packaged create(final Code.Loader code, final File file) {
 				return new Packaged() {
-					@Override public Code.Source getCode() {
+					@Override public Code.Loader getCode() {
 						return code;
 					}
 
@@ -316,7 +316,7 @@ public class Shell {
 			 *
 			 *	@return An object capable of loading modules and scripts bundled with a script.
 			 */
-			public abstract Code.Source getCode();
+			public abstract Code.Loader getCode();
 
 			public abstract File getFile();
 		}
@@ -389,7 +389,7 @@ public class Shell {
 			this.installation = installation;
 		}
 		
-		public Code.Source[] getPluginSources() {
+		public Code.Loader[] getPluginSources() {
 			return installation.getExtensions().getLibraries();
 		}
 
@@ -412,7 +412,7 @@ public class Shell {
 
 		protected abstract Loader.Classes.Interface getClasspath();
 
-		protected final Code.Source getJshLoader() {
+		protected final Code.Loader getJshLoader() {
 			return shell.getJshLoader();
 		}
 
@@ -435,7 +435,7 @@ public class Shell {
 		 *	Executes the given script in the global scope.
 		 *	@param script The script to execute.
 		 */
-		protected abstract void script(Code.Source.File script);
+		protected abstract void script(Code.Loader.Resource script);
 
 		/**
 		 *	Executes the main script, returning its exit status.
