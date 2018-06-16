@@ -132,20 +132,24 @@ public class Main {
 		}
 
 		Shell.Installation installation() {
-			final Shell.Extensions plugins;
-			try {
-				plugins = Shell.Extensions.create(
-					new Code.Loader[] {
-						Code.Loader.create(getPackagedPluginsDirectory())
-					}
-				);
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			}
 			//	TODO	better hierarchy would probably be $jsh/loader/slime and $jsh/loader/jsh
 			final Code.Loader platform = Code.Loader.system("$jsh/loader/");
 			final Code.Loader jsh = Code.Loader.system("$jsh/");
 			return new Shell.Installation() {
+				Code.Loader[] plugins;
+				
+				{
+					try {
+						plugins = 
+							new Code.Loader[] {
+								Code.Loader.create(getPackagedPluginsDirectory())
+							}
+						;
+					} catch (IOException e) {
+						throw new RuntimeException(e);
+					}	
+				}
+				
 				@Override public Code.Loader getPlatformLoader() {
 					return platform;
 				}
@@ -159,7 +163,7 @@ public class Main {
 					return Code.Loader.NULL;
 				}
 
-				@Override public Shell.Extensions getExtensions() {
+				@Override public Code.Loader[] getExtensions() {
 					return plugins;
 				}
 			};
@@ -187,11 +191,11 @@ public class Main {
 
 		final Shell.Installation installation() throws IOException {
 			//	TODO	previously user plugins directory was not searched for libraries. Is this right?
-			final Shell.Extensions plugins = Shell.Extensions.create(new Code.Loader[] {
+			final Code.Loader[] plugins = new Code.Loader[] {
 				this.getModules(),
 				this.getShellPlugins(),
 				Code.Loader.create(new File(new File(System.getProperty("user.home")), ".inonit/jsh/plugins"))
-			});
+			};
 			return new Shell.Installation() {
 				@Override public Code.Loader getPlatformLoader() {
 					return Unpackaged.this.getLoader();
@@ -205,7 +209,7 @@ public class Main {
 					return Unpackaged.this.getLibraries();
 				}
 
-				@Override public Shell.Extensions getExtensions() {
+				@Override public Code.Loader[] getExtensions() {
 					return plugins;
 				}
 			};

@@ -214,55 +214,11 @@ public class Shell {
 		public abstract void exit(int status);
 	}
 
-	public static abstract class Extensions {
-//		static Extensions create(final Extensions[] array) {
-//			return new Extensions() {
-//				@Override public Code.Loader getLibraries() {
-//					ArrayList<Code.Loader> sources = new ArrayList<Code.Loader>();
-//					for (Extensions p : array) {
-//						sources.add(p.getLibraries());
-//					}
-//					return Code.Loader.create(sources);
-//				}
-//			};
-//		}
-
-		static Extensions create(Code.Loader[] sources) {
-			return new Plugins(sources);
-		}
-		
-//		static Extensions create(File file) {
-//			return create(Code.Loader.create(file));
-//		}
-
-		public abstract Code.Loader[] getLibraries();
-
-		static class Plugins extends Shell.Extensions {
-//			static Plugins create(File file) {
-//				if (!file.exists()) return Plugins.EMPTY;
-//				if (!file.isDirectory()) throw new RuntimeException();
-//				return new Plugins(Code.Loader.create(file));
-//			}
-
-			static final Plugins EMPTY = new Plugins(new Code.Loader[0]);
-
-			private Code.Loader[] sources;
-
-			Plugins(Code.Loader[] sources) {
-				this.sources = sources;
-			}
-
-			@Override public Code.Loader[] getLibraries() {
-				return sources;
-			}			
-		}
-	}
-
 	public static abstract class Installation {
 		public abstract Code.Loader getPlatformLoader();
 		public abstract Code.Loader getJshLoader();
 		public abstract Code.Loader getLibraries();
-		public abstract Extensions getExtensions();
+		public abstract Code.Loader[] getExtensions();
 	}
 
 	public static abstract class Environment {
@@ -390,7 +346,7 @@ public class Shell {
 		}
 		
 		public Code.Loader[] getPluginSources() {
-			return installation.getExtensions().getLibraries();
+			return installation.getExtensions();
 		}
 
 		public Invocation invocation(File script, String[] arguments) {
