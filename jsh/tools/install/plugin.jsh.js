@@ -51,7 +51,7 @@ plugin({
 					SRC,
 					{
 						load: function() {
-							jsh.shell.console("load(" + Array.prototype.slice.call(arguments) + ")");
+							//jsh.shell.console("load(" + Array.prototype.slice.call(arguments) + ")");
 						}
 					},
 					jrunscript

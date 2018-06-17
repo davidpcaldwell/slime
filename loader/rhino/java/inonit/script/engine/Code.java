@@ -23,6 +23,11 @@ public class Code {
 	private Code() {
 	}
 
+	/**
+	 *	A class provided by Loader objects so that they can be used to create class path elements. The
+	 *	{@link Locator#getResource getResource()} method has the same semantics as the <code>ClassLoader.getResource()</code>
+	 *	method.
+	 */
 	public static abstract class Locator {
 		public abstract URL getResource(String path);
 	}

@@ -21,7 +21,7 @@ var parameters = jsh.script.getopts({
 	}
 });
 
-jsh.tools.install.rhino.install({
+jsh.shell.tools.rhino.install({
 	local: (parameters.options.local) ? parameters.options.local.file : null,
 	replace: parameters.options.replace
 });

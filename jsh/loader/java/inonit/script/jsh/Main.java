@@ -79,7 +79,7 @@ public class Main {
 	}
 
 	private static class Packaged extends Configuration {
-		private static File getPackagedPluginsDirectory() throws IOException {
+		private static File createPackagedPluginsDirectory() throws IOException {
 			File tmpdir = File.createTempFile("jshplugins", null);
 			tmpdir.delete();
 			tmpdir.mkdir();
@@ -136,18 +136,14 @@ public class Main {
 			final Code.Loader platform = Code.Loader.system("$jsh/loader/");
 			final Code.Loader jsh = Code.Loader.system("$jsh/");
 			return new Shell.Installation() {
-				Code.Loader[] plugins;
+				private Code.Loader[] plugins;
 				
 				{
 					try {
-						plugins = 
-							new Code.Loader[] {
-								Code.Loader.create(getPackagedPluginsDirectory())
-							}
-						;
+						this.plugins = new Code.Loader[] { Code.Loader.create(createPackagedPluginsDirectory()) };
 					} catch (IOException e) {
 						throw new RuntimeException(e);
-					}	
+					}
 				}
 				
 				@Override public Code.Loader getPlatformLoader() {
@@ -185,16 +181,15 @@ public class Main {
 	private static abstract class Unpackaged extends Configuration {
 		abstract Code.Loader getLoader();
 		abstract Code.Loader getJsh();
-		abstract Code.Loader getLibraries();
 		abstract Code.Loader getModules();
-		abstract Code.Loader getShellPlugins();
+		abstract Code.Loader getLibraries();
+		abstract Code.Loader getPlugins();
 
 		final Shell.Installation installation() throws IOException {
 			//	TODO	previously user plugins directory was not searched for libraries. Is this right?
 			final Code.Loader[] plugins = new Code.Loader[] {
 				this.getModules(),
-				this.getShellPlugins(),
-				Code.Loader.create(new File(new File(System.getProperty("user.home")), ".inonit/jsh/plugins"))
+				this.getPlugins()
 			};
 			return new Shell.Installation() {
 				@Override public Code.Loader getPlatformLoader() {
@@ -309,28 +304,63 @@ public class Main {
 
 		Code.Loader getLoader() {
 			return this.src.child("loader/");
-//			return this.src.resolve("loader/").source();
 		}
 
 		Code.Loader getJsh() {
 			return this.src.child("jsh/loader/");
-//			return this.src.resolve("jsh/loader/").source();
+		}
+
+		Code.Loader getModules() {
+			final Code.Loader.Enumerator enumerator = new Code.Loader.Enumerator() {
+				@Override public String[] list(String prefix) {
+					String[] was = Unbuilt.this.src.getEnumerator().list(prefix);
+					if (prefix.length() != 0) return was;
+					
+					List<String> list = Arrays.asList(was);
+					ArrayList<String> rv = new ArrayList<String>();
+					for (String s : list) {
+						if (!s.equals("local/")) {
+							rv.add(s);
+						}
+					}
+					return rv.toArray(new String[0]);
+				}
+			};
+			final Code.Locator locator = new Code.Locator() {
+				@Override
+				public URL getResource(String path) {
+					if (path.startsWith("local/")) return null;
+					return Unbuilt.this.src.getLocator().getResource(path);
+				}
+			};
+			return new Code.Loader() {
+				@Override
+				public Code.Loader.Resource getFile(String path) throws IOException {
+					if (path.startsWith("local/")) return null;
+					return Unbuilt.this.src.getFile(path);
+				}
+
+				@Override
+				public Code.Loader.Enumerator getEnumerator() {
+					return enumerator;
+				}
+
+				@Override
+				public Code.Locator getLocator() {
+					return locator;
+				}
+			};
 		}
 
 		Code.Loader getLibraries() {
+			//	See jsh/launcher/main.js; this value is defined there because it is needed by launcher to start loader with Rhino
+			//	in classpath
 			File file = new java.io.File(System.getProperty("jsh.shell.lib"));
 			return Code.Loader.create(file);
 		}
 
-		Code.Loader getModules() {
-			return this.src;
-		}
-
-		Code.Loader getShellPlugins() {
-			if (System.getProperty("jsh.shell.plugins") != null) {
-				return Location.create(System.getProperty("jsh.shell.plugins"));
-			}
-			return Code.Loader.NULL;
+		Code.Loader getPlugins() {
+			return this.src.child("local/jsh/plugins");
 		}
 	}
 
@@ -353,15 +383,15 @@ public class Main {
 			return Code.Loader.create(new File(getScripts(), "jsh"));
 		}
 
-		Code.Loader getLibraries() {
-			return Code.Loader.create(new File(this.home, "lib"));
-		}
-
 		Code.Loader getModules() {
 			return Code.Loader.create(new File(this.home, "modules"));
 		}
 
-		Code.Loader getShellPlugins() {
+		Code.Loader getLibraries() {
+			return Code.Loader.create(new File(this.home, "lib"));
+		}
+
+		Code.Loader getPlugins() {
 			return Code.Loader.create(new File(this.home, "plugins"));
 		}
 	}
