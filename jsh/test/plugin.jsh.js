@@ -93,7 +93,9 @@ plugin({
 		if (!jsh.test) jsh.test = {};
 		jsh.test.requireBuiltShell = function(p) {
 			if (!jsh.shell.jsh.home) {
-				jsh.shell.echo("Building shell in which to relaunch ...");
+				jsh.shell.console("Building shell in which to relaunch " + jsh.script.file + " ...");
+				//	TODO	this probably does not make sense; why do we require callers to have exactly these on the command line,
+				//			with no prefixing or anything? Probably leftover cruft.
 				var parameters = jsh.script.getopts({
 					options: {
 						executable: false,
@@ -103,6 +105,9 @@ plugin({
 					},
 					unhandled: jsh.script.getopts.UNEXPECTED_OPTION_PARSER.SKIP
 				});
+				if (p.rhino) {
+					parameters.options.rhino = p.rhino;
+				}
 				var JSH_HOME = jsh.shell.TMPDIR.createTemporary({ directory: true });
 				//	TODO	locate jrunscript using Java home
 				//	TODO	add these APIs for properties, etc., to jsh.shell.jrunscript
@@ -148,7 +153,7 @@ plugin({
 					jsh.shell.echo("Adding Tomcat to shell ...")
 					environment.CATALINA_HOME = String(jsh.shell.jsh.lib.getSubdirectory("tomcat"));
 				}
-				jsh.shell.echo("Relaunching with arguments " + parameters.arguments);
+				jsh.shell.echo("Relaunching " + jsh.script.file + " with arguments " + parameters.arguments);
 				jsh.shell.jsh({
 					fork: true,
 					shell: JSH_HOME,

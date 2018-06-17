@@ -64,9 +64,19 @@ var packaged = {
 		var to = packaged.getRelativePath(script.pathname.basename + ".jar");
 		invocation.push("-to",to);
 		if (!RHINO_LIBRARIES) invocation.push("-norhino");
-		Packages.java.lang.System.err.println("arguments = " + invocation);
+		Packages.java.lang.System.err.println("arguments to packages.jsh.js = " + invocation);
 		//	TODO	uses jsh.shell.jsh.home; should use version that is compatible with unbuilt shell
-		var shell = (p.unbuilt) ? jsh.shell.jsh.home.getSubdirectory("src") : jsh.shell.jsh.home;
+		//	TODO	if using unbuilt shell, need to copy over libraries into local/lib
+		var shell = (function() {
+			if (!p.unbuilt) return jsh.shell.jsh.home;
+			//	Create a new shell to run as unbuilt
+			var location = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
+			location.directory.remove();
+			jsh.shell.jsh.home.getSubdirectory("src").copy(location);
+			jsh.shell.jsh.lib.getFile("js.jar").copy(location.directory.getRelativePath("local/jsh/lib/js.jar"), { recursive: true });
+			return location.directory;
+		})();
+//		var shell = (p.unbuilt) ? jsh.shell.jsh.home.getSubdirectory("src") : jsh.shell.jsh.home;
 		jsh.shell.console("Packaging using shell " + shell);
 		jsh.shell.jsh({
 			fork: true,

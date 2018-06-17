@@ -11,7 +11,14 @@
 //	END LICENSE
 
 if (!jsh.shell.jsh.home) {
-	jsh.test.requireBuiltShell();
+	var argument = {};
+	if (jsh.shell.jsh.lib.getFile("js.jar")) {
+		jsh.shell.console("Adding Rhino to arguments for building shell ...");
+		argument.rhino = jsh.shell.jsh.lib.getRelativePath("js.jar");
+	} else {
+		jsh.shell.console("Rhino not found in " + jsh.shell.jsh.lib + ".");
+	}
+	jsh.test.requireBuiltShell(argument);
 }
 
 var parameters = jsh.script.getopts({
