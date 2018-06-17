@@ -18,7 +18,7 @@ plugin({
 		var JAVAMAIL_CLASS = (function() {
 			var NAME = "javax.mail.Session";
  			var rv = jsh.java.getClass(NAME);
-			if (!rv && jsh.shell.jsh.lib.getFile("javax.mail.jar")) {
+			if (!rv && jsh.shell.jsh.lib && jsh.shell.jsh.lib.getFile("javax.mail.jar")) {
 				jsh.loader.java.add(jsh.shell.jsh.lib.getRelativePath("javax.mail.jar"));
 				rv = jsh.java.getClass(NAME);
 			}

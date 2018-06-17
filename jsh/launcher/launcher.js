@@ -225,19 +225,25 @@ try {
 			return "Unbuilt: src=" + $api.slime.src + " rhino=" + this.rhino;
 		}
 
-		var lib = new Packages.java.io.File($api.slime.settings.get("jsh.shell.lib"));
-		if (!lib.exists()) {
-			lib.mkdirs();
-		}
+		var lib = (function() {
+			var setting = $api.slime.settings.get("jsh.shell.lib");
+			if (/^http/.test(setting)) {
+				return { url: setting }
+			} else {
+				var file = new Packages.java.io.File($api.slime.settings.get("jsh.shell.lib"));
+				if (!file.exists()) file.mkdirs();
+				return { file: file };
+			}
+		})();
 
 		var rhino = (p && p.rhino) ? p.rhino : null;
 
 		if (!rhino) {
 			if ($api.slime.settings.get("jsh.engine.rhino.classpath")) {
 				rhino = [new Packages.java.io.File($api.slime.settings.get("jsh.engine.rhino.classpath")).toURI().toURL()];
-			} else if ($api.slime.settings.get("jsh.shell.lib")) {
-				if (new Packages.java.io.File(lib, "js.jar").exists()) {
-					rhino = [new Packages.java.io.File(lib, "js.jar").toURI().toURL()];
+			} else if ($api.slime.settings.get("jsh.shell.lib") && lib.file) {
+				if (new Packages.java.io.File(lib.file, "js.jar").exists()) {
+					rhino = [new Packages.java.io.File(lib.file, "js.jar").toURI().toURL()];
 				}
 			}
 		}

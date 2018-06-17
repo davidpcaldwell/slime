@@ -571,6 +571,8 @@ public class Code {
 							return rv.toArray(new String[0]);
 						} catch (MalformedURLException e) {
 							throw new RuntimeException(e);
+						} catch (FileNotFoundException e) {
+							return null;
 						} catch (IOException e) {
 							throw new RuntimeException(e);
 						}

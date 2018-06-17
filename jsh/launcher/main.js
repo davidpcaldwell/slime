@@ -95,7 +95,7 @@ var shell = (function() {
 	} else {
 		$api.slime.settings["default"](
 			"jsh.shell.lib",
-			String(new Packages.java.io.File($api.slime.src, "local/jsh/lib"))
+			$api.slime.src.getPath("local/jsh/lib")
 		);
 		return new $api.jsh.Unbuilt();
 	}

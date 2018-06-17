@@ -114,7 +114,14 @@ $api.slime = (function(was) {
 
 				this.getPath = function(path) {
 					$api.debug("getPath: " + path);
-					return $api.script.resolve("../../" + path).toString();
+					var rv = $api.script.resolve("../../" + path);
+					//	TODO	this needs simplification
+					if (rv == null) {
+						if (this.File) {
+							rv = new this.File(path).getAbsolutePath().toString()
+						}
+					}
+					return rv.toString();
 				}
 			};
 		}

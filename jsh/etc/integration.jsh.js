@@ -199,6 +199,7 @@ if (CATALINA_HOME) {
 			verify(lines.join("|")).is(lines.join("|"));
 			verify(lines)[0].is("true");
 			verify(lines)[1].is("true");
+			verify(jsh.script.file.parent.parent.parent).getSubdirectory("http:").is(null);
 		}
 	});
 }

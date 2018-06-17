@@ -313,29 +313,37 @@ public class Main {
 		Code.Loader getModules() {
 			final Code.Loader.Enumerator enumerator = new Code.Loader.Enumerator() {
 				@Override public String[] list(String prefix) {
+					//System.err.println(Unbuilt.this.src + " list(" + prefix + ")");
 					String[] was = Unbuilt.this.src.getEnumerator().list(prefix);
 					if (prefix.length() != 0) return was;
 					
 					List<String> list = Arrays.asList(was);
 					ArrayList<String> rv = new ArrayList<String>();
 					for (String s : list) {
-						if (!s.equals("local/")) {
+						if (!s.equals("local/") && !s.equals("tomcat.8080/")) {
 							rv.add(s);
 						}
 					}
+					//System.err.println(Unbuilt.this.src + " list(" + prefix + ") " + rv);
 					return rv.toArray(new String[0]);
 				}
 			};
 			final Code.Locator locator = new Code.Locator() {
 				@Override
 				public URL getResource(String path) {
+					//System.err.println(Unbuilt.this.src + " getResource(" + path + ")");
 					if (path.startsWith("local/")) return null;
 					return Unbuilt.this.src.getLocator().getResource(path);
 				}
 			};
 			return new Code.Loader() {
+				@Override public String toString() {
+					return "Code.Loader (no local/): " + Unbuilt.this.src;
+				}
+
 				@Override
 				public Code.Loader.Resource getFile(String path) throws IOException {
+					//System.err.println(Unbuilt.this.src + " getFile(" + path + ")");
 					if (path.startsWith("local/")) return null;
 					return Unbuilt.this.src.getFile(path);
 				}
@@ -355,8 +363,9 @@ public class Main {
 		Code.Loader getLibraries() {
 			//	See jsh/launcher/main.js; this value is defined there because it is needed by launcher to start loader with Rhino
 			//	in classpath
-			File file = new java.io.File(System.getProperty("jsh.shell.lib"));
-			return Code.Loader.create(file);
+			return Location.create(System.getProperty("jsh.shell.lib"));
+//			File file = new java.io.File(System.getProperty("jsh.shell.lib"));
+//			return Code.Loader.create(file);
 		}
 
 		Code.Loader getPlugins() {

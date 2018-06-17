@@ -345,6 +345,7 @@ public class Shell {
 			this.installation = installation;
 		}
 		
+		//	TODO	probably needs a better name
 		public Code.Loader[] getPluginSources() {
 			return installation.getExtensions();
 		}
