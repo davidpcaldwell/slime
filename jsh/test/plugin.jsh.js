@@ -91,6 +91,25 @@ plugin({
 	},
 	load: function() {
 		if (!jsh.test) jsh.test = {};
+		jsh.test.buildShell = function(p) {
+			if (!p) p = {};
+			if (!p.to) {
+				p.to = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
+				p.to.directory.remove();
+			}
+			jsh.shell.jsh({
+				script: jsh.shell.jsh.src.getFile("jsh/etc/build.jsh.js"),
+				arguments: (function(rv) {
+					rv.push(p.to);
+					rv.push("-notest", "-nodoc");
+					if (jsh.shell.jsh.lib.getFile("js.jar")) {
+						rv.push("-rhino",jsh.shell.jsh.lib.getFile("js.jar"));
+					}
+					return rv;
+				})([])
+			});
+			return p.to.directory;
+		}
 		jsh.test.requireBuiltShell = function(p) {
 			if (!jsh.shell.jsh.home) {
 				jsh.shell.console("Building shell in which to relaunch " + jsh.script.file + " ...");

@@ -450,17 +450,56 @@ END LICENSE
 						</li>
 					</ol>
 				</div>
+				<script type="application/x.jsapi#initialize">
+					scope.shell = {};
+					scope.shell.unbuilt = jsh.shell.jsh({
+						shell: jsh.shell.jsh.src,
+						script: $jsapi.loader.getRelativePath("test/jsh-shell-properties.jsh.js").file,
+						stdio: {
+							output: String
+						},
+						evaluate: function(result) {
+							return JSON.parse(result.stdio.output);
+						}
+					});
+					var buildTo = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
+					buildTo.directory.remove();
+					var built = jsh.test.buildShell({
+						to: buildTo
+					});
+					scope.shell.buildTo = buildTo;
+					scope.shell.built = jsh.shell.jsh({
+						shell: built,
+						script: $jsapi.loader.getRelativePath("test/jsh-shell-properties.jsh.js").file,
+						stdio: {
+							output: String
+						},
+						evaluate: function(result) {
+							return JSON.parse(result.stdio.output);
+						}						
+					});
+					//	TODO	add packaged shell
+					//	TODO	add remote shell
+				</script>
 				<div class="label">has properties:</div>
 				<ul>
 					<li class="value">
 						<div class="name">home</div>
 						<span class="type"><a href="../../rhino/file/api.html#types.directory">directory</a></span>
 						<span>__DESCRIPTION__</span>
+						<script type="application/x.jsapi#tests">
+							verify(shell).unbuilt.evaluate.property("home").is(void(0));
+							verify(shell).built.evaluate.property("home").is(shell.buildTo.directory.toString());
+						</script>
 					</li>
 					<li class="value">
 						<div class="name">src</div>
 						<span class="type"><a href="../../rhino/file/api.html#types.directory">directory</a></span>
 						<span>__DESCRIPTION__</span>
+						<script type="application/x.jsapi#tests">
+							verify(shell).unbuilt.evaluate.property("src").is(jsh.shell.jsh.src.toString());
+							verify(shell).built.evaluate.property("src").is(void(0));
+						</script>
 					</li>
 					<li class="value">
 						<div class="name">url</div>
@@ -469,6 +508,10 @@ END LICENSE
 							In a remote shell, the URL at which this remote shell is hosted.
 							<!--	TODO	otherwise?	-->
 						</span>
+						<script type="application/x.jsapi#tests">
+							verify(shell).unbuilt.evaluate.property("url").is(void(0));
+							verify(shell).built.evaluate.property("url").is(void(0));
+						</script>
 					</li>
 				</ul>
 			</li>
