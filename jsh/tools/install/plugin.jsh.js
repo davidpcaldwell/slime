@@ -108,6 +108,17 @@ plugin({
 			this.install = function(p) {
 				if (!p) p = {};
 				if (!p.version) p.version = "0.8.0";
+				if (p.replace) {
+					if (jsh.shell.jsh.lib.getSubdirectory("ncdbg")) {
+						jsh.shell.jsh.lib.getSubdirectory("ncdbg").remove();
+					}
+				} else {
+					if (jsh.shell.jsh.lib.getSubdirectory("ncdbg")) {
+						//	already installed
+						//	TODO	fire event
+						return;
+					}
+				}
 				jsh.shell.console("Installing ncdbg ...");
 				jsh.tools.install.install({
 					url: "https://github.com/provegard/ncdbg/releases/download/" + p.version + "/ncdbg-" + p.version + ".zip",
@@ -121,6 +132,12 @@ plugin({
 						jsh.shell.jsh.lib.getSubdirectory("ncdbg").getFile("bin/ncdbg")
 					]
 				});
+				if (p.version == "0.8.0") {
+					//	TODO	See https://github.com/provegard/ncdbg/issues/97
+					var launcherCode = jsh.shell.jsh.lib.getFile("ncdbg/bin/ncdbg").read(String);
+					launcherCode = launcherCode.replace(/\/\$\{JAVA_HOME\/\:\/\}/g, "${JAVA_HOME}");
+					jsh.shell.jsh.lib.getRelativePath("ncdbg/bin/ncdbg").write(launcherCode, { append: false });
+				}
 			}
 		};
 		
