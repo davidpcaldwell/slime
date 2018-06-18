@@ -105,7 +105,7 @@ plugin({
 				}
 			});
 
-			this.install = function(p) {
+			this.install = $api.Events.Function(function(p,events) {
 				if (!p) p = {};
 				if (!p.version) p.version = "0.8.0";
 				if (p.replace) {
@@ -119,12 +119,43 @@ plugin({
 						return;
 					}
 				}
-				jsh.shell.console("Installing ncdbg ...");
-				jsh.tools.install.install({
-					url: "https://github.com/provegard/ncdbg/releases/download/" + p.version + "/ncdbg-" + p.version + ".zip",
-					format: jsh.tools.install.format.zip,
-					to: jsh.shell.jsh.lib.getRelativePath("ncdbg")
-				});
+				events.fire("console", { message: "Installing ncdbg ..." });
+				if (p.version == "0.8.0") {
+					jsh.tools.install.install({
+						url: "https://github.com/provegard/ncdbg/releases/download/" + p.version + "/ncdbg-" + p.version + ".zip",
+						format: jsh.tools.install.format.zip,
+						to: jsh.shell.jsh.lib.getRelativePath("ncdbg")
+					});
+				} else if (p.version == "master") {
+					var src = jsh.shell.jsh.src.getRelativePath("local/src/ncdbg");
+					//	TODO	could do more complex state management; use fetch to update and so forth
+					if (p.replace) {
+						if (src.directory) src.directory.remove();
+					}
+					var remote = new jsh.tools.git.Repository({
+						remote: "https://github.com/davidpcaldwell/ncdbg.git"
+					});
+					var local = remote.clone({ to: src });
+					events.fire("console", { message: "Checked out source." });
+					if (src.directory && src.directory.getSubdirectory("build/distributions")) {
+						src.directory.getSubdirectory("build/distributions").remove();
+					}
+					jsh.shell.run({
+						command: local.directory.getFile("gradlew"),
+						arguments: [
+							"distZip"
+						],
+						directory: local.directory
+					});
+					var distribution = src.directory.getSubdirectory("build/distributions").list()[0];
+					jsh.tools.install.install({
+						file: distribution,
+						format: jsh.tools.install.format.zip,
+						to: jsh.shell.jsh.lib.getRelativePath("ncdbg")
+					});
+				} else {
+					throw new Error();
+				}
 				jsh.shell.run({
 					command: "chmod",
 					arguments: [
@@ -138,7 +169,7 @@ plugin({
 					launcherCode = launcherCode.replace(/\/\$\{JAVA_HOME\/\:\/\}/g, "${JAVA_HOME}");
 					jsh.shell.jsh.lib.getRelativePath("ncdbg/bin/ncdbg").write(launcherCode, { append: false });
 				}
-			}
+			});
 		};
 		
 		jsh.shell.tools.ncdbg = ncdbg;
