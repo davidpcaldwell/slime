@@ -304,6 +304,8 @@ $exports.ApiHtmlTests = function(html,name) {
 		return element.localName == "script" && element.getAttribute("type") == (SCRIPT_TYPE_PREFIX + "tests");
 	}
 
+	var elementIndex = 0;
+
 	var getPartDescriptor = function recurse(scope,element) {
 		if (!scope) throw new Error("No scope in getSuite");
 		var shared = getShared(scope);
@@ -336,7 +338,11 @@ $exports.ApiHtmlTests = function(html,name) {
 					hscope.verify = verify;
 					hscope.test = verify.test;
 					hscope.scope = hscope;
-					run(element.getContentString(),hscope);
+					run({
+						name: "jsapi://html/" + elementIndex++,
+						type: "application/javascript",
+						string: element.getContentString()
+					},hscope);
 				}
 			};
 			return rv;

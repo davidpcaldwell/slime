@@ -391,7 +391,7 @@ $set({
 				if (!started) {
 					jsh.java.Thread.start(function() {
 //						Packages.java.lang.System.err.println("Sleeping ...");
-						Packages.java.lang.Thread.currentThread().sleep(500);
+						Packages.java.lang.Thread.sleep(500);
 //						Packages.java.lang.System.err.println("Done sleeping ...");
 						started = true;
 //						Packages.java.lang.System.err.println("Executing 500 started callback ...");

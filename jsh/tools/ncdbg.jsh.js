@@ -58,6 +58,10 @@ var startScript = function() {
 					}
 				});
 				jsh.shell.console("Copied " + url + " to clipboard.");
+			} else if (jsh.shell.PATH.getCommand("xclip")) {
+				var _selection = new Packages.java.awt.datatransfer.StringSelection(url);
+				var _clipboard = Packages.java.awt.Toolkit.getDefaultToolkit().getSystemClipboard();
+				_clipboard.setContents(_selection, _selection);
 			} else {
 				jsh.shell.console("URL to paste into Chrome:");
 				jsh.shell.console(url);
