@@ -31,7 +31,10 @@ plugin({
 					array: [
 						new JavaAdapter(
 							Packages.javax.net.ssl.X509TrustManager,
-							{}
+							{
+								checkServerTrusted: function(){ return null; },
+								getAcceptedIssuers: function(){ return null; }
+							}
 						)
 					]
 				});
