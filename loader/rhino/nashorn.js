@@ -204,6 +204,7 @@ load("nashorn:mozilla_compat.js");
 
 		var $bridge = new function() {
 			var javaLangObjectArrayClass;
+			var javaLangClassNativeClass = $classpath.getClass("java.lang.Class");
 
 			var isJavaObjectArray = function(v) {
 				//	TODO	In Nashorn, this could be: Java.type("java.lang.Object[]").class;
@@ -216,6 +217,7 @@ load("nashorn:mozilla_compat.js");
 			};
 
 			this.toNativeClass = function(javaclass) {
+				if (javaLangClassNativeClass.isInstance(javaclass)) return javaclass;
 				return javaclass.class;
 			};
 

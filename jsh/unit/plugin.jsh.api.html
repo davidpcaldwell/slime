@@ -560,7 +560,16 @@ END LICENSE
 										<li class="value">
 											<div class="name">view</div>
 											<span class="type">string</span>
-											<span>__DESCRIPTION__</span>
+											Possible values:
+											<ul>
+												<li><code>console</code>: Information about test results will be output to
+													the standard error stream.
+												</li>
+												<li><code>stdio</code>: Emits information about test results to the standard output
+													stream in a way that they can be processed by the standard events protocol; see
+													<code>jsh.unit.Suite.Fork</code>.
+												</li>
+											</ul>
 										</li>
 										<li class="value">
 											<div class="name">path</div>

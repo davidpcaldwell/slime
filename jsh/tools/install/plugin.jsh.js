@@ -30,6 +30,7 @@ plugin({
 		var installRhino = jsh.tools.install.$api.Events.Function(function(p,events) {
 			if (!p) p = {};
 			var lib = (p.mock && p.mock.lib) ? p.mock.lib : jsh.shell.jsh.lib;
+			if (!jsh.shell.jsh.lib) throw new Error("Shell does not have lib");
 			if (lib.getFile("js.jar") && !p.replace) {
 				events.fire("console", "Rhino already installed at " + lib.getFile("js.jar"));
 				return;
