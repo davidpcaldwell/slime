@@ -101,9 +101,15 @@ var startNcdbg = function() {
 		//	TODO	probably need to add port:jvm here if we want this to work for all potential values
 		//	TODO	probably need to add port:ncdbg here if we want this to work for all potential values
 		Packages.java.lang.Thread.sleep(parameters.options["ncdbg:pause"]);
+		var args = [];
+		//	TODO	this is obviously ludicrous; need a first-class way to determine version
+		if (jsh.shell.jsh.lib.getFile("ncdbg/lib/ncdbg-0.8.1.jar")) {
+			args.push("--lazy");
+		}
 		var JAVA_HOME = jsh.shell.java.home.parent;
 		jsh.shell.run({
 			command: jsh.shell.jsh.lib.getRelativePath("ncdbg/bin/ncdbg"),
+			arguments: args,
 			directory: jsh.shell.jsh.lib.getSubdirectory("ncdbg"),
 			environment: jsh.js.Object.set({}, jsh.shell.environment, {
 				JAVA_HOME: JAVA_HOME.toString()

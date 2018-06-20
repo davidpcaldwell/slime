@@ -108,7 +108,7 @@ plugin({
 
 			this.install = $api.Events.Function(function(p,events) {
 				if (!p) p = {};
-				if (!p.version) p.version = "0.8.0";
+				if (!p.version) p.version = "0.8.1";
 				if (p.replace) {
 					if (jsh.shell.jsh.lib.getSubdirectory("ncdbg")) {
 						jsh.shell.jsh.lib.getSubdirectory("ncdbg").remove();
@@ -121,7 +121,7 @@ plugin({
 					}
 				}
 				events.fire("console", { message: "Installing ncdbg ..." });
-				if (p.version == "0.8.0") {
+				if (p.version == "0.8.0" || p.version == "0.8.1") {
 					jsh.tools.install.install({
 						url: "https://github.com/provegard/ncdbg/releases/download/" + p.version + "/ncdbg-" + p.version + ".zip",
 						format: jsh.tools.install.format.zip,
@@ -164,10 +164,14 @@ plugin({
 						jsh.shell.jsh.lib.getSubdirectory("ncdbg").getFile("bin/ncdbg")
 					]
 				});
-				if (p.version == "0.8.0") {
+				if (!p.nopatch) {
 					//	TODO	See https://github.com/provegard/ncdbg/issues/97
 					var launcherCode = jsh.shell.jsh.lib.getFile("ncdbg/bin/ncdbg").read(String);
-					launcherCode = launcherCode.replace(/\/\$\{JAVA_HOME\/\:\/\}/g, "${JAVA_HOME}");
+					if (p.version == "0.8.0" || p.version == "master") {
+						launcherCode = launcherCode.replace(/\/\$\{JAVA_HOME\/\:\/\}/g, "${JAVA_HOME}");
+					} else if (p.version == "0.8.1") {
+						launcherCode = launcherCode.replace("ncdbg-0.8.1.jar", "ncdbg-0.8.1.jar:${JAVA_HOME}/lib/tools.jar");						
+					}
 					jsh.shell.jsh.lib.getRelativePath("ncdbg/bin/ncdbg").write(launcherCode, { append: false });
 				}
 			});
