@@ -1096,6 +1096,7 @@
 			return rv;
 		})();
 		if ($query == "api") {
+			embed = true;
 		} else if ($query == "jsh") {
 			$api.script.resolve("../../jsh/launcher/main.js").load();
 		} else if ($query == "jsh/install") {
