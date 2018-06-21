@@ -67,8 +67,12 @@ $exports.ProxyConfiguration = function(o) {
 		response: response
 	};
 };
-$exports.ProxyConfiguration.Server = ($context.api.httpd && $context.api.httpd.Tomcat) ? function(p) {
-	var proxy = new $exports.ProxyConfiguration(p);
-	return proxy.Server();
-} : void(0);
+Object.defineProperty($exports.ProxyConfiguration,"Server",{
+	get: function() {
+		return ($context.api.httpd && $context.api.httpd.Tomcat) ? function(p) {
+			var proxy = new $exports.ProxyConfiguration(p);
+			return proxy.Server();
+		} : void(0);
+	}
+});
 
