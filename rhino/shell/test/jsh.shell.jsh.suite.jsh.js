@@ -76,7 +76,7 @@ suite.part("jdwp", {
 	}
 });
 
-suite.part("http", jsh.unit.Suite.Fork({
+if (jsh.httpd.Tomcat) suite.part("http", jsh.unit.Suite.Fork({
 	name: "http",
 	run: jsh.shell.jsh,
 	fork: true,

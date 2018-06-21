@@ -487,7 +487,7 @@ scenario.part("jsh.unit", {
 	}
 });
 
-scenario.part("rhino.optimization", {
+if (RHINO_LIBRARIES) scenario.part("rhino.optimization", {
 	execute: function(scope,verify) {
 		[-1,0,1].forEach(function(level) {
 			jsh.shell.jsh({

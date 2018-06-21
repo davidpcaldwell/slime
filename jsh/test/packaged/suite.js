@@ -73,7 +73,10 @@ var packaged = {
 			var location = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
 			location.directory.remove();
 			jsh.shell.jsh.home.getSubdirectory("src").copy(location);
-			jsh.shell.jsh.lib.getFile("js.jar").copy(location.directory.getRelativePath("local/jsh/lib/js.jar"), { recursive: true });
+			if (RHINO_LIBRARIES) {
+				//	TODO	probably should use *value* of RHINO_LIBRARIES
+				jsh.shell.jsh.lib.getFile("js.jar").copy(location.directory.getRelativePath("local/jsh/lib/js.jar"), { recursive: true });
+			}
 			return location.directory;
 		})();
 //		var shell = (p.unbuilt) ? jsh.shell.jsh.home.getSubdirectory("src") : jsh.shell.jsh.home;

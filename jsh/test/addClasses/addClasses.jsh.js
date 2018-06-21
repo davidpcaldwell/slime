@@ -96,10 +96,14 @@ if (parameters.options.scenario) {
 		jsh.shell.jsh({
 			fork: true,
 			script: jsh.shell.jsh.home.getRelativePath("tools/package.jsh.js"),
-			arguments: [
-				"-script", jsh.script.file,
-				"-to", tmpfile
-			]
+			arguments: (function(rv) {
+				rv.push("-script", jsh.script.file);
+				rv.push("-to", tmpfile);
+				if (!jsh.shell.jsh.lib.getFile("js.jar")) {
+					rv.push("-norhino");
+				}
+				return rv;
+			})([])
 		});
 		jsh.shell.echo("Packaged at " + tmpfile);
 		jsh.shell.java({
