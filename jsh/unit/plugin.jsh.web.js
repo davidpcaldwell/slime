@@ -17,7 +17,7 @@ $set({
 	},
 	load: function() {
 		jsh.unit.mock = {};
-		jsh.unit.mock.Web = function(o) {
+		if (jsh.httpd.Tomcat) jsh.unit.mock.Web = function(o) {
 			if (!o) o = {};
 			var tomcat = new jsh.httpd.Tomcat({
 				https: {}
@@ -119,8 +119,8 @@ $set({
 				tomcat.stop();
 			};
 		};
-		jsh.unit.mock.Internet = $api.deprecate(jsh.unit.mock.Web);
-		jsh.unit.mock.Web.bitbucket = function(o) {
+		if (jsh.httpd.Tomcat) jsh.unit.mock.Internet = $api.deprecate(jsh.unit.mock.Web);
+		if (jsh.unit.mock.Web) jsh.unit.mock.Web.bitbucket = function(o) {
 			var hgserve;
 
 			var startHgServer = function() {
@@ -334,7 +334,7 @@ $set({
 			};
 			return rv;
 		};
-		jsh.unit.mock.Internet.bitbucket = $api.deprecate(jsh.unit.mock.Web.bitbucket);
+		if (jsh.unit.mock.Internet) jsh.unit.mock.Internet.bitbucket = $api.deprecate(jsh.unit.mock.Web.bitbucket);
 
 		jsh.unit.mock.Hg = function() {
 		};

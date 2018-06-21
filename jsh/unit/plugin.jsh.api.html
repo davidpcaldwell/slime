@@ -684,31 +684,33 @@ END LICENSE
 							</ul>
 						</div>
 						<script type="application/x.jsapi#tests">
-							var web = new jsh.unit.mock.Web();
-							web.add(function(request) {
-								if (request.headers.value("host") == "www.foo.com") {
-									return {
-										status: { code: 200 },
-										body: {
-											type: "application/json",
-											string: JSON.stringify({ path: request.path })
+							if (jsh.unit.mock.Web) {
+								var web = new jsh.unit.mock.Web();
+								web.add(function(request) {
+									if (request.headers.value("host") == "www.foo.com") {
+										return {
+											status: { code: 200 },
+											body: {
+												type: "application/json",
+												string: JSON.stringify({ path: request.path })
+											}
 										}
 									}
-								}
-							});
-							web.start();
-							var client = web.client;
-							var response = client.request({
-								url: "http://www.foo.com/pathis",
-								evaluate: function(response) {
-									if (response.status.code != 200) {
-										throw new Error();
+								});
+								web.start();
+								var client = web.client;
+								var response = client.request({
+									url: "http://www.foo.com/pathis",
+									evaluate: function(response) {
+										if (response.status.code != 200) {
+											throw new Error();
+										}
+										return JSON.parse(response.body.stream.character().asString());
 									}
-									return JSON.parse(response.body.stream.character().asString());
-								}
-							});
-							verify(response).path.is("pathis");
-							web.stop();
+								});
+								verify(response).path.is("pathis");
+								web.stop();
+							}
 						</script>
 						<div class="label">has properties:</div>
 						<ul>
