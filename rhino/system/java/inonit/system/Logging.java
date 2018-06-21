@@ -41,6 +41,8 @@ public class Logging {
 		}
 	}
 
+	//	Commented out because, although it is desirable, it causes massive compilation confusion. The below method can be used with
+	//	a null Throwable
 //	public void log(Class logging, Level level, String mask, Object... substitutions) {
 //		Logger logger = Logger.getLogger(logging.getName());
 //		if (logger.isLoggable(level)) {

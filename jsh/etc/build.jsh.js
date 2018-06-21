@@ -34,7 +34,7 @@
 //	Policy decision to support 1.6 and up
 var JAVA_VERSION = "1.6";
 
-jsh.shell.echo("Building jsh with arguments [" + jsh.script.arguments.join(" ") + "]", { stream: jsh.shell.stdio.error });
+jsh.shell.console("Building jsh with arguments [" + jsh.script.arguments.join(" ") + "]", { stream: jsh.shell.stdio.error });
 var parameters = jsh.script.getopts({
 	options: {
 		verbose: false,
@@ -59,13 +59,14 @@ var jrunscript = (function() {
 		toString: function() { return "it"; },
 		script: (jsh.script.url) ? { url: jsh.script.url } : { file: jsh.script.file.toString() },
 		arguments: [],
+		debug: false,
 		engine: {
 			script: (jsh.script.file) ? jsh.script.file.parent.parent.getRelativePath("rhino/jrunscript/api.js").toString() : null
 		}
 	};
 	jsh.script.loader.run("rhino/jrunscript/api.js", {
 		load: function(url) {
-			jsh.shell.echo("Loading " + url);
+			jsh.shell.console("Loading " + url);
 			if (jsh.file.Pathname(url).file) {
 				jsh.loader.run(jsh.file.Pathname(url), {}, THIS);
 			}
@@ -219,6 +220,14 @@ var debug = jrunscript.$api.debug;
 
 if (parameters.options.verbose) debug.on = true;
 
+//	TODO	probably want something like this instead
+if (false) {
+	var console = jsh.shell.console;
+	var debug = function(s) {
+		if (parameters.options.verbose) jsh.shell.console(s);
+	};
+}
+	
 var destination = (function(parameters) {
 	//	TODO	should normalize Cygwin paths if Cygwin support is added
 	var rv;

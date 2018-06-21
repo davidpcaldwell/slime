@@ -57,14 +57,14 @@ var top = new jsh.unit.Suite({
 var subprocess = function(p) {
 	if (!arguments.callee.index) arguments.callee.index = 0;
 	arguments.callee.index++;
-	top.scenario("subprocess-" + arguments.callee.index, jsh.unit.Suite.Fork(p));
+	top.part("subprocess-" + arguments.callee.index, jsh.unit.Suite.Fork(p));
 }
 
 parameters.options.java.forEach(function(jre) {
 	//	TODO	Convert to jsh/test plugin API designed for this purpose
 //	jsh.shell.echo("Adding launcher suite");
 	var rhinoArgs = (jsh.shell.rhino && jsh.shell.rhino.classpath) ? ["-rhino", String(jsh.shell.rhino.classpath)] : [];
-	top.scenario("launcher", jsh.unit.Suite.Fork({
+	top.part("launcher", jsh.unit.Suite.Fork({
 		name: "Launcher tests",
 		run: jsh.shell.jsh,
 		fork: true,

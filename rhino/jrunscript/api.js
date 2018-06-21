@@ -55,6 +55,10 @@
 		if (arguments.callee.on) Packages.java.lang.System.err.println(message);
 		Packages.java.util.logging.Logger.getLogger("inonit.jrunscript").log(Packages.java.util.logging.Level.FINE, message);
 	};
+	if (this.$api && this.$api.debug) {
+		$api.debug.on = true;
+		$api.debug("Debug enabled via $api.debug");
+	}
 
 	$api.console = function(message) {
 		Packages.java.lang.System.err.println(message);
@@ -729,7 +733,7 @@
 			try {
 				_method.invoke(null,_invokeArguments);
 				$api.debug("Returned.");
-				return 0;
+				return void(0);
 			} catch (e) {
 				$api.debug("Returned with error.");
 				return 1;
@@ -801,7 +805,7 @@
 				$api.debug("Running in VM because of run(mode) ...");
 				launcher = new launchers.Vm();
 			}
-			$api.debug("launcher = " + launcher);
+			$api.debug("running in launcher = " + launcher);
 			return launcher(mode);
 		}
 	}
@@ -1078,6 +1082,7 @@
 		}
 	})();
 
+	var embed = false;
 	if ($query) {
 		var parameters = (function() {
 			//	Only allows single value for each name; surely sufficient for this purpose
@@ -1138,6 +1143,38 @@
 	} else if ($api.arguments.length) {
 		$api.Script.run({ string: $api.arguments.shift() });
 	} else {
+		embed = true;
 		//	if there are no arguments, we will settle for putting $api in the scope
+	}
+	if (!embed) {
+		$api.debug("Waiting for threads to terminate.");
+		(function preventJrunscriptTermination() {
+			//	See https://stackoverflow.com/questions/50958644/threading-in-jrunscript-vs-jjs
+			var more = true;
+			while(more) {
+				var _set = Packages.java.lang.Thread.getAllStackTraces().keySet();
+				var _i = _set.iterator();
+				var count = 0;
+				while(_i.hasNext()) {
+					var _thread = _i.next();
+					var _stack = _thread.getStackTrace();
+					if (!_thread.isDaemon()) {
+						count++;
+						if (false) $api.debug(_thread);
+						for (var i=0; i<_stack.length; i++) {
+							if (false) $api.debug(_stack[i]);
+						}
+						if (false) $api.debug("");
+					}
+				}
+				if (count == 1) {
+					more = false;
+				} else {
+					Packages.java.lang.Thread.sleep(1000);
+				}
+			}
+		})()
+	} else {
+		$api.debug("Embedded.");
 	}
 }).call(this);

@@ -249,4 +249,7 @@ for (var i=0; i<passthrough.length; i++) {
 $api.debug("command = " + command);
 var status = command.run();
 //	This basically hard-codes the exit at the VM level, meaning this script cannot be embedded.
-Packages.java.lang.System.exit(status);
+$api.debug("exit status = " + status);
+if (typeof(status) != "undefined") {
+	Packages.java.lang.System.exit(status);
+}

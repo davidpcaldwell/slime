@@ -28,7 +28,7 @@ jsh.test.integration({
 			if (jsh.shell.jsh.home)  {
 				return jsh.shell.jsh.home;
 			}
-			jsh.shell.echo("Building shell in which to run launcher tests ...");
+			jsh.shell.console("Building shell in which to run launcher tests ...");
 			var tmpdir = jsh.shell.TMPDIR.createTemporary({ directory: true });
 			var buildArguments = [];
 			if (parameters.options.rhino) {

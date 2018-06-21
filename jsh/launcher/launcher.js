@@ -494,7 +494,9 @@ try {
 		$api.debug("Running command " + command + " ...");
 		var status = command.run();
 		$api.debug("Command returned: status = " + status);
-		$api.jsh.exit(status);
+		if (typeof(status) != "undefined") {
+			$api.jsh.exit(status);
+		}
 	}
 } catch (e) {
 	if ($api.debug) {
