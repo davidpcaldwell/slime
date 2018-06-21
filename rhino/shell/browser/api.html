@@ -237,8 +237,8 @@ END LICENSE
 						<div class="label">Instances</div>
 						<span class="type"><a href="#types.ProxyConfiguration">ProxyConfiguration</a></span>
 					</div>
-					<script type="application/x.jsapi#tests">
-						if (api) {
+					<script type="application/x.jsapi#tests"><![CDATA[
+						if (api && api.ProxyConfiguration.Server) {
 							var port = jsh.ip.tcp.getEphemeralPortNumber();
 							verify(port,"port").is(port); // this is just explication for the tests
 							var proxy = new api.ProxyConfiguration.Server({ port: port });
@@ -269,7 +269,7 @@ END LICENSE
 							verify(pacProxy).code.is(code);
 							server.stop();
 						}
-					</script>
+					]]></script>
 				</li>
 				<li class="value">
 					<div class="name">chrome</div>
@@ -278,83 +278,85 @@ END LICENSE
 						(conditional)
 						The Google Chrome browser installed at the default location (currently on Mac OS X and Linux).
 					</span>
-					<script type="application/x.jsapi#tests">
-						jsh.shell.console("Creating Tomcat.");
+					<script type="application/x.jsapi#tests"><![CDATA[
+						if (api && jsh.httpd.Tomcat) {
+							jsh.shell.console("Creating Tomcat.");
 
-						var tomcat = new jsh.httpd.Tomcat();
-						var browser;
+							var tomcat = new jsh.httpd.Tomcat();
+							var browser;
 
-						var requested;
-						var lock = new jsh.java.Thread.Monitor();
+							var requested;
+							var lock = new jsh.java.Thread.Monitor();
 
-						tomcat.map({
-							path: "",
-							servlets: {
-								"/*": {
-									load: function(scope) {
-										scope.$exports.handle = function(request) {
-											jsh.shell.console("Got request");
-											requested = request;
-											jsh.shell.console("Releasing lock for request");
-											new lock.Waiter({
-												until: function() {
-													return true;
-												},
-												then: function() {
-												}
-											})();
-											jsh.shell.console("Released lock for request");
+							tomcat.map({
+								path: "",
+								servlets: {
+									"/*": {
+										load: function(scope) {
+											scope.$exports.handle = function(request) {
+												jsh.shell.console("Got request");
+												requested = request;
+												jsh.shell.console("Releasing lock for request");
+												new lock.Waiter({
+													until: function() {
+														return true;
+													},
+													then: function() {
+													}
+												})();
+												jsh.shell.console("Released lock for request");
+											}
 										}
 									}
 								}
-							}
-						});
+							});
 
-						tomcat.start();
+							tomcat.start();
 
-						var TMP = jsh.shell.TMPDIR.createTemporary({ directory: true });
-						TMP.getRelativePath("First Run").write("", { append: false });
+							var TMP = jsh.shell.TMPDIR.createTemporary({ directory: true });
+							TMP.getRelativePath("First Run").write("", { append: false });
 
-						var instance = new api.chrome.Instance({
-							directory: TMP,
-							proxy: new api.ProxyConfiguration({
-								port: tomcat.port
-							})
-						});
+							var instance = new api.chrome.Instance({
+								directory: TMP,
+								proxy: new api.ProxyConfiguration({
+									port: tomcat.port
+								})
+							});
 
-						jsh.shell.console("Launching page ...");
-						jsh.java.Thread.start(function() {
-							jsh.shell.console("Creating browser ...");
-							try {
-								instance.run({
-									uri: "http://slime-test/",
-									on: {
-										start: function(p) {
-											jsh.shell.console("Got callback for browser process");
-											browser = p;
+							jsh.shell.console("Launching page ...");
+							jsh.java.Thread.start(function() {
+								jsh.shell.console("Creating browser ...");
+								try {
+									instance.run({
+										uri: "http://slime-test/",
+										on: {
+											start: function(p) {
+												jsh.shell.console("Got callback for browser process");
+												browser = p;
+											}
 										}
-									}
-								});
-								jsh.shell.console("Browser terminated.");
-							} catch (e) {
-								jsh.shell.console("Error creating browser: " + e);
-							}
-						})
+									});
+									jsh.shell.console("Browser terminated.");
+								} catch (e) {
+									jsh.shell.console("Error creating browser: " + e);
+								}
+							})
 
-						new lock.Waiter({
-							until: function() {
-								return requested;
-							},
-							then: function() {
-								tomcat.stop();
-								browser.kill();
-							}
-						})();
+							new lock.Waiter({
+								until: function() {
+									return requested;
+								},
+								then: function() {
+									tomcat.stop();
+									browser.kill();
+								}
+							})();
 
-						verify(requested).is.type("object");
-						var headers = $api.Object({ properties: requested.headers });
-						verify(headers).host.is("slime-test");
-					</script>
+							verify(requested).is.type("object");
+							var headers = $api.Object({ properties: requested.headers });
+							verify(headers).host.is("slime-test");
+						}
+					]]></script>
 				</li>
 			</ul>
 		</div>

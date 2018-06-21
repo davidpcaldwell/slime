@@ -35,7 +35,7 @@ $exports.ProxyConfiguration = function(o) {
 	};
 
 	return {
-		Server: function() {
+		Server: ($context.api.httpd.Tomcat) ? function() {
 			//	TODO	should allow omission of empty argument
 			var pacserver = new $context.api.httpd.Tomcat({});
 			var url = "http://127.0.0.1:" + pacserver.port + "/proxy.pac";
@@ -62,12 +62,13 @@ $exports.ProxyConfiguration = function(o) {
 					pacserver.stop();
 				}
 			};
-		},
+		} : void(0),
 		code: pac,
 		response: response
 	};
 };
-$exports.ProxyConfiguration.Server = function(p) {
+$exports.ProxyConfiguration.Server = ($context.api.httpd && $context.api.httpd.Tomcat) ? function(p) {
 	var proxy = new $exports.ProxyConfiguration(p);
 	return proxy.Server();
-}
+} : void(0);
+
