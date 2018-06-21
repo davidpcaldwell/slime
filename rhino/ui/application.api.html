@@ -15,13 +15,8 @@ END LICENSE
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
 <head>
 	<title>__TITLE__</title>
-	<!--	TODO	change these to use local copies of these files at the appropriate location	-->
-	<!--
-		These files are specified using http: rather than https: because githack.com will redirect them to https:, but http: will
-		work when using an HTTP proxy to serve local copies of the files without needing to run https: locally
-	-->
-	<link href="http://bb.githack.com/davidpcaldwell/slime/raw/tip/loader/api/api.css" rel="stylesheet" type="text/css" />
-	<script src="http://bb.githack.com/davidpcaldwell/slime/raw/tip/loader/api/api.js"></script>
+	<link href="../../loader/api/api.css" rel="stylesheet" type="text/css" />
+	<script src="../../loader/api/api.js"></script>
 	<script>
 		//	TODO	CORS
 		document.domain = document.domain;
@@ -297,90 +292,93 @@ END LICENSE
 					scope.api = $jsapi.loader.module("application.js");
 				</script>
 				<script type="application/x.jsapi#tests"><![CDATA[
-					verify("hello").is("hello");
+					//	jsh.httpd.Tomcat supplies default server implementation
+					if (jsh.httpd.Tomcat) {
+						verify("hello").is("hello");
 
-					var singleRequestApplication = function(decorator) {
-						var firstRequest;
-						var slock = new jsh.java.Thread.Monitor();
+						var singleRequestApplication = function(decorator) {
+							var firstRequest;
+							var slock = new jsh.java.Thread.Monitor();
 
-						var argument = new function() {
-							this.servlet = {
-								load: function(scope) {
-									scope.$exports.handle = function(request) {
-										new slock.Waiter({
-											until: function() {
-												return true;
-											},
-											then: function() {
-												if (!firstRequest) firstRequest = request;
-											}
-										})();
+							var argument = new function() {
+								this.servlet = {
+									load: function(scope) {
+										scope.$exports.handle = function(request) {
+											new slock.Waiter({
+												until: function() {
+													return true;
+												},
+												then: function() {
+													if (!firstRequest) firstRequest = request;
+												}
+											})();
+										}
 									}
-								}
+								};
+
+								this.on = {
+									close: function() {
+										jsh.shell.console("Closed browser.");
+									}
+								};
+
+								this.browser = {
+									chrome: {}
+								};
 							};
 
-							this.on = {
-								close: function() {
-									jsh.shell.console("Closed browser.");
-								}
-							};
+							if (decorator) decorator.call(argument);
 
-							this.browser = {
-								chrome: {}
-							};
+							var application = api.Application(argument);
+
+							new slock.Waiter({
+								until: function() {
+									return firstRequest;
+								},
+								then: function() {
+									application.browser.close();
+									application.server.stop();
+								}
+							})();
+
+							return {
+								application: application,
+								request: firstRequest
+							}
 						};
 
-						if (decorator) decorator.call(argument);
-
-						var application = api.Application(argument);
-
-						new slock.Waiter({
-							until: function() {
-								return firstRequest;
-							},
-							then: function() {
-								application.browser.close();
-								application.server.stop();
-							}
-						})();
-
-						return {
-							application: application,
-							request: firstRequest
-						}
-					};
-
-					var getHeader = function(name) {
-						return function() {
-							for (var i=0; i<this.headers.length; i++) {
-								if (this.headers[i].name.toLowerCase() == name) {
-									return this.headers[i].value;
+						var getHeader = function(name) {
+							return function() {
+								for (var i=0; i<this.headers.length; i++) {
+									if (this.headers[i].name.toLowerCase() == name) {
+										return this.headers[i].value;
+									}
 								}
+								return null;
 							}
-							return null;
-						}
-					};
+						};
 
-					var first = singleRequestApplication();
-					verify(first).request.method.is("GET");
-					verify(first).request.path.is("");
-					verify(first).request.evaluate(getHeader("host")).is("127.0.0.1:" + first.application.server.port);
+						var first = singleRequestApplication();
+						verify(first).request.method.is("GET");
+						verify(first).request.path.is("");
+						verify(first).request.evaluate(getHeader("host")).is("127.0.0.1:" + first.application.server.port);
 
-					var second = singleRequestApplication(function() {
-						this.browser.host = "x";
-					});
-					verify(second).request.method.is("GET");
-					verify(second).request.path.is("");
-					verify(second).request.evaluate(getHeader("host")).is("x");
+						var second = singleRequestApplication(function() {
+							this.browser.host = "x";
+						});
+						verify(second).request.method.is("GET");
+						verify(second).request.path.is("");
+						verify(second).request.evaluate(getHeader("host")).is("x");
 
-					var invoked = false;
-					var third = singleRequestApplication(function() {
-						this.browser.proxy = function(server) {
-							invoked = true;
-							return { port: server.port };
-						}
-					});
-					verify(invoked).is(true);
+						var invoked = false;
+						var third = singleRequestApplication(function() {
+							this.browser.proxy = function(server) {
+								invoked = true;
+								return { port: server.port };
+							}
+						});
+						verify(invoked).is(true);
+					}
 				]]></script>
 			</li>
 		</ul>
