@@ -18,7 +18,8 @@ jsh.loader.plugins(SLIME.getRelativePath("jsh/unit"));
 
 var parameters = jsh.script.getopts({
 	options: {
-		view: "console"
+		view: "console",
+		part: String
 	}
 });
 
@@ -84,4 +85,4 @@ if (jsh.httpd.Tomcat) suite.part("http", jsh.unit.Suite.Fork({
 	arguments: ["-scenario","-view","stdio"]
 }));
 
-jsh.unit.interface.create(suite, { view: parameters.options.view });
+jsh.unit.interface.create(suite, { view: parameters.options.view, path: (parameters.options.part) ? parameters.options.part.split("/") : void(0) });

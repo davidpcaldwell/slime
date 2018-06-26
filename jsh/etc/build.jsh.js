@@ -425,7 +425,7 @@ var getTestEnvironment = jsh.js.constant(function() {
 	//	TODO	test whether Tomcat tests work in shells where -install tomcat is indicated
 	//	TODO	ensure that user plugins are disabled; the below probably does not work. See inonit.jsh.script.Main, which
 	//			automatically uses user plugins
-	subenv.JSH_PLUGINS = "";
+	if (typeof(subenv.JSH_PLUGINS) != "undefined") delete subenv.JSH_PLUGINS;
 	return subenv;
 });
 
@@ -455,7 +455,7 @@ var getTestEnvironment = jsh.js.constant(function() {
 		console("Running integration tests ...");
 		jsh.shell.jsh({
 			shell: destination.shell,
-			script: SLIME.getFile("jsh/test/integration.jsh.js"),
+			script: SLIME.getFile("jsh/etc/integration.jsh.js"),
 			arguments: [],
 			environment: getTestEnvironment()
 		});

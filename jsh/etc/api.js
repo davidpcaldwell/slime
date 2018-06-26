@@ -44,12 +44,13 @@
 	}
 
 	components.add("loader/", { api: true });
-	components.add("loader/api/", { api: true });
+	components.add("loader/api/", { api: true, module: true });
 	components.add("loader/api/unit.js", { test: true });
 	components.add("js/object/", { api: true, jsh: { module: true }});
 	components.add("js/object/Error.js", { test: true });
 	components.add("js/document/", { api: true, jsh: { module: true }});
 	components.add("js/web/", { browser: { api: true }, jsh: { api: false, module: true }});
+	components.add("js/time/", { api: true, module: true });
 	components.add("loader/api/test/data/1/", { api: true });
 	components.add("loader/browser/", { browser: { api: true }});
 
@@ -77,8 +78,10 @@
 	components.add("rhino/shell/plugin.jsh.api.html", { jsh: { api: true } });
 	components.add("jsh/launcher/", { jsh: { api: true } });
 	components.add("jsh/loader/plugin.api.html", { jsh: { api: true } });
-	components.add("jsh/tools/", { jsh: { api: true } });
-	components.add("jsh/unit/", { jsh: { api: true } });
+	components.add("jsh/unit/", { jsh: { api: true, module: true } });
 
+//	components.add("jsh/tools/", { jsh: { api: true } });
+	components.add("jsh/tools/install/", { jsh: { api: true, module: true } });
+	
 	return components;
 })()

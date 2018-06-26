@@ -395,5 +395,5 @@ $exports.ApiHtmlTests = function(html,name) {
 };
 
 $exports.getCode = function(path) {
-	return $loader.resource(path).read(String);
+	return $loader.get(path).read(String);
 }

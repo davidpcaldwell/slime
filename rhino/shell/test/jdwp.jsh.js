@@ -19,12 +19,8 @@ var parameters = jsh.script.getopts({
 	}
 });
 
-if (!jsh.unit) {
-	if (jsh.shell.jsh.home && !jsh.shell.jsh.src) {
-		jsh.shell.jsh.src = jsh.shell.jsh.home.getSubdirectory("src");
-	}
-	jsh.loader.plugins(jsh.shell.jsh.src.getRelativePath("loader/api"));
-	jsh.loader.plugins(jsh.shell.jsh.src.getRelativePath("jsh/unit"));
+if (jsh.shell.jsh.home && !jsh.shell.jsh.src) {
+	jsh.shell.jsh.src = jsh.shell.jsh.home.getSubdirectory("src");
 }
 
 var suite = new jsh.unit.Suite();

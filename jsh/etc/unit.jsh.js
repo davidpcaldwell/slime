@@ -11,18 +11,42 @@
 //	Contributor(s):
 //	END LICENSE
 
-if (!jsh.unit) {
-	jsh.loader.plugins(jsh.script.file.getRelativePath("../../loader/api"));
-	jsh.loader.plugins(jsh.script.file.getRelativePath("../../jsh/unit"));
-}
 var parameters = jsh.script.getopts({
 	options: {
+		built: false,
 		view: "console",
 		port: Number,
 		"chrome:profile": jsh.file.Pathname,
 		unit: String
 	}
 });
+
+if (parameters.options.built) {
+	var home = jsh.shell.TMPDIR.createTemporary({ directory: true });
+	jsh.shell.jsh({
+		shell: jsh.shell.jsh.src,
+		script: jsh.script.file.parent.getFile("build.jsh.js"),
+		arguments: [
+			home,
+			"-notest",
+			"-nodoc"
+		]
+	});
+	jsh.shell.jsh({
+		shell: home,
+		script: jsh.script.file,
+		arguments: (function(rv) {
+			rv.push("-view",parameters.options.view);
+			if (parameters.options.port) rv.push("-port",parameters.options.port);
+			if (parameters.options["-chrome:profile"]) rv.push("-chrome:profile",parameters.options["chrome:profile"]);
+			if (parameters.options.unit) rv.push("-unit",parameters.options.unit);
+			return rv;
+		})([]),
+		evaluate: function(result) {
+			jsh.shell.exit(result.status);
+		}
+	})
+}
 
 var definition = new jsh.unit.part.Html({
 	name: "jsh Unit Tests",

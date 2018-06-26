@@ -12,11 +12,7 @@
 //	END LICENSE
 
 var src = (jsh.shell.jsh.src) ? jsh.shell.jsh.src : jsh.script.file.parent.parent.parent.parent;
-if (!jsh.unit) {
-	jsh.loader.plugins(src.getRelativePath("loader/api"));
-	jsh.loader.plugins(src.getRelativePath("jsh/unit"));
-	jsh.loader.plugins(src.getRelativePath("jsh/test"));
-}
+jsh.loader.plugins(src.getRelativePath("jsh/test"));
 jsh.test.integration({
 	scenario: function(parameters) {
 		var max = Packages.java.lang.Runtime.getRuntime().maxMemory();

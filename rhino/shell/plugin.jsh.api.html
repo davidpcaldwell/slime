@@ -452,8 +452,10 @@ END LICENSE
 				</div>
 				<script type="application/x.jsapi#initialize">
 					scope.shell = {};
+					var src = (jsh.shell.jsh.src) ? jsh.shell.jsh.src : jsh.shell.jsh.home.getSubdirectory("src");
+					scope.shell.src = src;
 					scope.shell.unbuilt = jsh.shell.jsh({
-						shell: jsh.shell.jsh.src,
+						shell: src,
 						script: $jsapi.loader.getRelativePath("test/jsh-shell-properties.jsh.js").file,
 						stdio: {
 							output: String
@@ -462,14 +464,18 @@ END LICENSE
 							return JSON.parse(result.stdio.output);
 						}
 					});
-					var buildTo = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
-					buildTo.directory.remove();
-					var built = jsh.test.buildShell({
-						to: buildTo
-					});
-					scope.shell.buildTo = buildTo;
+					var home = (function() {
+						if (jsh.shell.jsh.home) return jsh.shell.jsh.home;
+						var buildTo = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
+						buildTo.directory.remove();
+						var built = jsh.test.buildShell({
+							to: buildTo
+						});
+						return built;
+					})();
+					scope.shell.home = home;
 					scope.shell.built = jsh.shell.jsh({
-						shell: built,
+						shell: home,
 						script: $jsapi.loader.getRelativePath("test/jsh-shell-properties.jsh.js").file,
 						stdio: {
 							output: String
@@ -489,7 +495,7 @@ END LICENSE
 						<span>__DESCRIPTION__</span>
 						<script type="application/x.jsapi#tests">
 							verify(shell).unbuilt.evaluate.property("home").is(void(0));
-							verify(shell).built.evaluate.property("home").is(shell.buildTo.directory.toString());
+							verify(shell).built.evaluate.property("home").is(shell.home.toString());
 						</script>
 					</li>
 					<li class="value">
@@ -497,7 +503,7 @@ END LICENSE
 						<span class="type"><a href="../../rhino/file/api.html#types.directory">directory</a></span>
 						<span>__DESCRIPTION__</span>
 						<script type="application/x.jsapi#tests">
-							verify(shell).unbuilt.evaluate.property("src").is(jsh.shell.jsh.src.toString());
+							verify(shell).unbuilt.evaluate.property("src").is(shell.src.toString());
 							verify(shell).built.evaluate.property("src").is(void(0));
 						</script>
 					</li>
