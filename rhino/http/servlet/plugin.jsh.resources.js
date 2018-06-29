@@ -213,7 +213,7 @@ var Resources = function(mapping,old) {
 					rv = rv.concat(listed);
 				} else if (under) {
 					if (rv.indexOf(under) == -1) {
-						rv.push(under);
+							rv.push((old) ? under : { path: under.substring(0,under.length-1) });
 					}
 				}
 			}
