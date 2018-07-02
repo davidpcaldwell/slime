@@ -32,7 +32,10 @@ $exports.gui = function(p) {
 			if (e.getKeyCode() == Packages.java.awt.event.KeyEvent.VK_ENTER) {
 				doneWaiter();
 			}
-		}
+		},
+		//	TODO	for now, below is necessary for Nashorn because of incompatibility surrounding JavaAdapter
+		keyTyped: function(){},
+		keyReleased: function(){}
 	}));
 	_frame.addWindowListener(new JavaAdapter(Packages.java.awt.event.WindowListener, new function() {
 		this.windowClosing = function(e) {
