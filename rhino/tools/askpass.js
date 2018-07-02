@@ -34,10 +34,15 @@ $exports.gui = function(p) {
 			}
 		}
 	}));
-	_frame.addWindowListener(new JavaAdapter(Packages.java.awt.event.WindowListener, {
-		windowClosing: function(e) {
+	_frame.addWindowListener(new JavaAdapter(Packages.java.awt.event.WindowListener, new function() {
+		this.windowClosing = function(e) {
 			doneWaiter();
-		}
+		};
+		
+		//	TODO	for now, below is necessary for Nashorn because of incompatibility surrounding JavaAdapter
+		["windowActivated","windowClosed","windowDeactivated","windowDeiconified","windowIconified","windowOpened"].forEach(function(methodName) {
+			this[methodName] = function(){};
+		},this);
 	}));
 	_frame.add(_label, BorderLayout.NORTH);
 	_frame.add(_field, BorderLayout.CENTER);
