@@ -27,6 +27,8 @@ public class Main {
 	//	TODO	refactor into locateCodeSource() method
 	private static abstract class Location {
 		static Code.Loader create(String string) {
+			//	TODO	below can happen when looking for local/jsh/lib in remote shell
+			if (string == null) return Code.Loader.NULL;
 			if (string.startsWith("http://") || string.startsWith("https://")) {
 				try {
 					return Code.Loader.bitbucketApiVersionOne(new URL(string));
