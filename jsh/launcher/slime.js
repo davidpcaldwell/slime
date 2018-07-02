@@ -119,6 +119,8 @@ $api.slime = (function(was) {
 					if (rv == null) {
 						if (this.File) {
 							rv = new this.File(path).getAbsolutePath().toString()
+						} else {
+							throw new Error("getPath is null for " + path);
 						}
 					}
 					return rv.toString();
