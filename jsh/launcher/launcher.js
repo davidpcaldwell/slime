@@ -227,6 +227,8 @@ try {
 
 		var lib = (function() {
 			var setting = $api.slime.settings.get("jsh.shell.lib");
+			//	TODO	setting can be null because $api.script.resolve() doesn't find local/jsh/lib online; should refactor
+			if (!setting) return null;
 			if (/^http/.test(setting)) {
 				return { url: setting }
 			} else {
