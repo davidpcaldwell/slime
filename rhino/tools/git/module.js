@@ -509,15 +509,16 @@ $exports.credentialHelper = {};
 
 var program = (function() {
 	var find = function(api) {
-		var directoryExists = function(path) {
-			return $context.api.file.Pathname(path).directory;
-		}
-		
-		var rv = $context.api.shell.PATH.getCommand("git");
-		if ($context.api.shell.os.name == "Mac OS X" && !directoryExists("/Applications/Xcode.app") && !directoryExists("/Library/Developer/CommandLineTools")) {
-			rv = null;
-		}
-		return rv;
+		return $context.api.shell.PATH.getCommand("git");
+// 		var directoryExists = function(path) {
+// 			return $context.api.file.Pathname(path).directory;
+// 		}
+
+// 		var rv = $context.api.shell.PATH.getCommand("git");
+// 		if ($context.api.shell.os.name == "Mac OS X" && !directoryExists("/Applications/Xcode.app") && !directoryExists("/Library/Developer/CommandLineTools")) {
+// 			rv = null;
+// 		}
+// 		return rv;
 	};
 	
 	if ($context.program) return $context.program;

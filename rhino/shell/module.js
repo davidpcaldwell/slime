@@ -406,6 +406,9 @@ $exports.os = new function() {
 
 	var system = $loader.file("os.js", {
 		PATH: $exports.PATH,
+		replacePath: function(PATH) {
+			$exports.PATH = PATH;
+		},
 		TMPDIR: $exports.TMPDIR,
 		os: this,
 		run: $exports.run,

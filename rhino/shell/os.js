@@ -253,3 +253,27 @@ if ($context.os.name == "Mac OS X") {
 } else if ($context.os.name == "Linux") {
 
 }
+
+if ($context.os.name == "Mac OS X") {
+	$context.api.file.Searchpath = (function(was) {
+		return function() {
+			var rv = was.apply(this,arguments);
+			rv.getCommand = (function(was) {
+				return function(name) {
+					var directoryExists = function(path) {
+						return $context.api.file.Pathname(path).directory;
+					}
+		
+					if (name == "git" || name == "gcc") {
+						if (!directoryExists("/Applications/Xcode.app") && !directoryExists("/Library/Developer/CommandLineTools")) {
+							return null;
+						}
+					}
+					return was.apply(this,arguments);
+				}
+			})(rv.getCommand);
+			return rv;
+		}
+	})($context.api.file.Searchpath);
+	$context.replacePath($context.api.file.Searchpath($context.PATH.pathnames));
+}

@@ -295,7 +295,15 @@ END LICENSE
 										load: function(scope) {
 											scope.$exports.handle = function(request) {
 												jsh.shell.console("Got request");
+												var headers = $api.Object({ properties: request.headers });
+												if (headers.host == "clientservices.googleapis.com") {
+													//	Chrome seems to automatically make a request on startup,
+													//	which sometimes arrives before the URL sent as a command line
+													//	argument
+													return;
+												}
 												requested = request;
+												if (requested)
 												jsh.shell.console("Releasing lock for request");
 												new lock.Waiter({
 													until: function() {
