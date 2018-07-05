@@ -124,5 +124,7 @@ plugin({
 		jsh.java.tools.plugin.git = $api.deprecate(function() {
 			loadGit();
 		});
+		
+		jsh.tools.node = $loader.module("node/module.js");
 	}
 })
