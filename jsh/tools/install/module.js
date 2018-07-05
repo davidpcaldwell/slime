@@ -122,6 +122,7 @@ var installLocalArchive = function(p,events) {
 };
 
 var get = function(p,events) {
+	//	TODO	If typeof(p.file) is undefined, probably should try to use user downloads directory with p.name if present as default value
 	if (!p.file) {
 		if (p.url) {
 			//	Apache supplies name so that url property, which is getter that hits Apache mirror list, is not invoked

@@ -182,24 +182,28 @@ END LICENSE
 									<div class="label">has properties:</div>
 									<ul>
 										<li class="object">
-											<div class="name">__NAME__</div>
-											<span>__DESCRIPTION__</span>
 											<div class="label">has properties:</div>
 											<ul>
 												<li class="value">
 													<div class="name">file</div>
-													<span class="type">__TYPE__</span>
-													<span>__DESCRIPTION__</span>
+													<span class="type"><a href="../../../rhino/file/api.html#types.file">file</a></span>
+													<span>The local copy of the installation file</span>
 												</li>
 												<li class="value">
 													<div class="name">url</div>
-													<span class="type">__TYPE__</span>
-													<span>__DESCRIPTION__</span>
+													<span class="type"><a href="../../../rhino/http/client/api.html#types.request.url">http request url</a></span>
+													<span>
+														The remote URL of the installation file. If <code>file</code> is absent or <code>null</code>, the
+														installer will be downloaded.
+													</span>
 												</li>
 												<li class="value">
 													<div class="name">name</div>
-													<span class="type">__TYPE__</span>
-													<span>__DESCRIPTION__</span>
+													<span class="type">string</span>
+													<span>
+														(optional; defaults to terminal file name of URL)
+														The filename to use if a file needs to be created when downloading this file.
+													</span>
 												</li>
 											</ul>
 										</li>
