@@ -334,7 +334,7 @@ END LICENSE
 								<span>A source that represents a child of the parent source.</span>
 							</div>
 						</li>
-						<li class="function">
+						<li class="function experimental">
 							<div class="name">list</div>
 							<span>Returns a list of the top-level entries at a particular location in this loader.</span>
 							<div class="type">
@@ -549,6 +549,81 @@ END LICENSE
 								The value the code to execute passed to <code>$set</code>, or <code>undefined</code> if
 								<code>$set</code> was not invoked.
 							</span>
+						</div>
+					</li>
+					<li class="function">
+						<div class="name">list</div>
+						<span>
+							(conditional; not present if <code>source.list()</code> not present)
+						</span>
+						<div class="type">
+							<a class="type" name="types.Loader.entry">entry</a>
+							<span>__DESCRIPTION__</span>
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="value">
+									<div class="name">path</div>
+									<span class="type">__TYPE__</span>
+									<span>__DESCRIPTION__</span>
+								</li>
+								<li class="value">
+									<div class="name">resource</div>
+									<span class="type">__TYPE__</span>
+									<span>
+										(optional; if the item at <code>path</code> is a resource)
+									</span>
+								</li>
+								<li class="value">
+									<div class="name">loader</div>
+									<span class="type">__TYPE__</span>
+									<span>
+										(optional; if the item at <code>path</code> is a loader)
+									</span>
+								</li>
+							</ul>
+						</div>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="object">
+									<div class="label">has properties:</div>
+									<ul>
+										<li class="function">
+											<div class="name">filter</div>
+											<span>__DESCRIPTION__</span>
+											<div class="arguments">
+												<div class="label">Arguments</div>
+												<ol>
+												</ol>
+											</div>
+											<div class="returns">
+												<div class="label">Returns</div>
+												<span class="type">__TYPE__</span>
+												<span>__DESCRIPTION__</span>
+											</div>
+										</li>
+										<li class="function">
+											<div class="name">descendants</div>
+											<span>__DESCRIPTION__</span>
+											<div class="arguments">
+												<div class="label">Arguments</div>
+												<ol>
+												</ol>
+											</div>
+											<div class="returns">
+												<div class="label">Returns</div>
+												<span class="type">__TYPE__</span>
+												<span>__DESCRIPTION__</span>
+											</div>
+										</li>
+									</ul>
+								</li>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
 						</div>
 					</li>
 				</ul>
