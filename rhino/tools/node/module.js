@@ -20,8 +20,9 @@ $exports.Installation = function(o) {
 	}
 	
 	this.npm = function(p) {
-		var elements = jsh.shell.PATH.pathnames.slice();
-		elements.push(o.directory.getRelativePath("bin"));
+		var DEFAULT_PATH = (p.PATH) ? p.PATH : jsh.shell.PATH;
+		var elements = DEFAULT_PATH.pathnames.slice();
+		elements.unshift(o.directory.getRelativePath("bin"));
 		var PATH = jsh.file.Searchpath(elements);
 		jsh.shell.run({
 			command: o.directory.getFile("bin/npm"),
