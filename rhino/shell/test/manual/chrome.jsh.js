@@ -59,11 +59,9 @@ jsh.script.Application.run(new function() {
 		close: {
 			getopts: {},
 			run: function(parameters) {
-				jsh.shell.echo("Testing Chrome closure detection ...");
+				jsh.shell.console("Testing Chrome closure detection ...");
 				var chrome = jsh.shell.browser.chrome;
-				var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true });
-				tmp.getRelativePath("First Run").write("", { append: false });
-				var user = new chrome.User({ directory: tmp });
+				var user = new chrome.Instance({});
 				user.run({ uri: "about:blank" });
 				jsh.shell.echo("Chrome closed.");
 			}
