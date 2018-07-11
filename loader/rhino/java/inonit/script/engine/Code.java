@@ -316,6 +316,15 @@ public class Code {
 		static Loader create(final java.net.URL url, Enumerator enumerator) {
 			return new UrlBased(url, enumerator, null);
 		}
+		
+		//	TODO	
+		static Loader jar(final File jar) throws IOException {
+			try {
+				return create(jar.toURI().toURL(), Enumerator.zip(jar.getAbsolutePath(), new FileInputStream(jar)));
+			} catch (MalformedURLException e) {
+				throw new RuntimeException(e);
+			}
+		}
 
 		public static Loader create(java.io.File file) {
 			try {
@@ -578,6 +587,70 @@ public class Code {
 						}
 					}
 				};
+			}
+			
+			static Enumerator zip(final String sourceName, InputStream stream) throws IOException {
+				java.util.zip.ZipInputStream in = new java.util.zip.ZipInputStream(stream);
+				java.util.zip.ZipEntry entry;
+				final HashMap<String,Loader.Resource> files = new HashMap<String,Loader.Resource>();
+				while( (entry = in.getNextEntry()) != null) {
+					final java.util.zip.ZipEntry ENTRY = entry;
+					final byte[] bytes = new inonit.script.runtime.io.Streams().readBytes(in, false);
+					final String entryName = entry.getName();
+					Loader.Resource f = new Loader.Resource() {
+						public String toString() {
+							return getClass().getName() + " length=" + bytes.length;
+						}
+
+						@Override public URI getURI() {
+							LOG.log(Code.Loader.class, Level.FINE, "getURI()", null);
+							throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+						}
+
+						@Override public String getSourceName() {
+							LOG.log(Code.Loader.class, Level.FINE, "getSourceName()", null);
+							return sourceName + "!" + entryName;
+//							throw new UnsupportedOperationException("Not supported yet in " + name + "."); //To change body of generated methods, choose Tools | Templates.
+						}
+
+						@Override public InputStream getInputStream() {
+							return new ByteArrayInputStream(bytes);
+						}
+
+						@Override public Long getLength() {
+							return new Long(bytes.length);
+						}
+
+						@Override public Date getLastModified() {
+							//	TODO	there is a 1.8 implementation of this in ZipEntry but we won't use it unless we drop support
+							//			for 1.7, otherwise we'll need to implement via reflection
+							return null;
+						}
+					};
+					files.put(entry.getName(), f);
+				}
+				final Enumerator enumerator = new Enumerator() {
+					@Override public String[] list(String prefix) {
+						String start = prefix + "/";
+						ArrayList<String> rv = new ArrayList<String>();
+						for (String key : files.keySet()) {
+							if (key.startsWith(start)) {
+								if (key.endsWith("/")) {
+									//	ignore
+								} else {
+									String suffix = key.substring(start.length());
+									if (suffix.indexOf("/") != -1) {
+										//	subdirectory, ignore
+									} else {
+										rv.add(suffix);
+									}
+								}
+							}
+						}
+						return rv.toArray(new String[0]);
+					}
+				};
+				return enumerator;
 			}
 
 			public abstract String[] list(String prefix);

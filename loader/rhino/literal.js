@@ -268,7 +268,7 @@
 		return rv;
 	})(loader.Loader);
 	
-	loader.classpath = new (function(_classpath) {
+	loader.classpath = new (function(_classpath /* Loader.Classes.Interface */) {
 		this.toString = function() {
 			return String(_classpath);
 		};
@@ -297,7 +297,7 @@
 				}
 			} else if (p.jar) {
 				if (p.jar._file) {
-					_classpath.add(Packages.inonit.script.engine.Code.Loader.zip(p.jar._file));
+					_classpath.addJar(p.jar._file);
 				} else if (p.jar.resource) {
 					_classpath.add(Packages.inonit.script.engine.Code.Loader.zip(Resource.toCodeSourceFile(p.jar.resource,p.jar.resource.name)));					
 				} else {
