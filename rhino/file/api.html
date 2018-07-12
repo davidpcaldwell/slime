@@ -709,6 +709,11 @@ END LICENSE
 							<div class="name">parent</div>
 							<span class="type"><a href="#types.directory">directory</a></span>
 							<span>The directory containing this node.</span>
+							<script type="application/x.jsapi#tests">
+								var file = $jsapi.loader.getRelativePath("api.html").file;
+								var parent = file.parent;
+								verify(parent,"parent").getFile("api.html").toString().is($jsapi.loader.getRelativePath("api.html").file.toString());
+							</script>
 						</li>
 						<li class="value">
 							<div class="name">pathname</div>
