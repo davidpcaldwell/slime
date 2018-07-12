@@ -23,45 +23,132 @@ var parameters = jsh.script.getopts({
 
 var environment = new function() {
 	this.jsh = new function() {
+		var getData = function(shell) {
+			return jsh.shell.jsh({
+				shell: shell,
+				script: jsh.script.file.parent.getFile("jsh-data.jsh.js"),
+				stdio: {
+					output: String
+				},
+				evaluate: function(result) {
+					return JSON.parse(result.stdio.output);
+				}
+			});
+		};
+		
+		this.src = (function() {
+			if (jsh.shell.jsh.src) return jsh.shell.jsh.src;
+			throw new Error();
+		})();
+		
+		var rhino = ((jsh.shell.jsh.lib.getFile("js.jar") && typeof(Packages.org.mozilla.javascript.Context) == "function")) ? jsh.shell.jsh.lib.getFile("js.jar") : null;
+		
+		//	TODO	we would like to memoize these functions, but what happens if a memoized function throws an error?
+		
 		var unbuilt;
 		var built;
-
-		//	TODO	we would like to memoize this function, but what happens if a memoized function throws an error?
-		Object.defineProperty(this, "built", {
-			get: function() {
-				if (!built) {
+		
+		this.built = new function() {
+			var home;
+			
+			var getHome = function() {
+				if (!home) {
 					if (jsh.shell.jsh.src) {
-						var home = jsh.shell.TMPDIR.createTemporary({ directory: true });
+						var to = jsh.shell.TMPDIR.createTemporary({ directory: true });
 						jsh.shell.jsh({
 							shell: jsh.shell.jsh.src,
 							script: jsh.script.file.parent.getFile("build.jsh.js"),
 							arguments: [
-								home,
+								to,
 								"-notest",
 								"-nodoc"
 							]
 						});
-						built = home;
+						home = to;
 					} else {
 						throw new Error();
 					}
 				}
-				return built;				
+				return home;
 			}
-		});
+			
+			Object.defineProperty(this, "home", {
+				get: function() {
+					return getHome();
+				}
+			})
+			
+			Object.defineProperty(this, "data", {
+				get: function() {
+					if (!built) {
+						built = getData(getHome());
+					}
+					return built;				
+				}
+			});
+		};
+
+		this.unbuilt = new function() {
+			Object.defineProperty(this, "data", {
+				get: function() {
+					if (!unbuilt) {
+						if (jsh.shell.jsh.src) {
+							unbuilt = getData(jsh.shell.jsh.src);
+						} else {
+							throw new Error();
+						}
+					}
+					return unbuilt;
+				}
+			});			
+		};
 		
-		Object.defineProperty(this, "unbuilt", {
-			get: function() {
-				if (!unbuilt) {
-					if (jsh.shell.jsh.src) {
-						unbuilt = jsh.shell.jsh.src;
-					} else {
-						throw new Error();
-					}
+		var packagingShell = this.built;
+		
+		this.packaged = new function() {
+			var shell;
+			var data;
+			
+			var getShell = function() {
+				if (!shell) {
+					var to = jsh.shell.TMPDIR.createTemporary({ directory: true }).getRelativePath("packaged.jar");
+					jsh.shell.jsh({
+						shell: packagingShell.home,
+						script: jsh.shell.jsh.src.getRelativePath("jsh/tools/package.jsh.js"),
+						arguments: ([
+							"-script", jsh.shell.jsh.src.getRelativePath("jsh/etc/jsh-data.jsh.js"),
+							"-to", to
+						]).concat( (!rhino) ? ["-norhino"] : [] )
+					});
+					shell = to.file;
 				}
-				return unbuilt;
-			}
-		});
+				return shell;
+			};
+			
+			Object.defineProperty(this, "jar", {
+				get: function() {
+					return getShell();
+				}
+			});
+			
+			Object.defineProperty(this, "data", {
+				get: function() {
+					if (!data) {
+						data = jsh.shell.java({
+							jar: getShell(),
+							stdio: {
+								output: String
+							},
+							evaluate: function(result) {
+								return JSON.parse(result.stdio.output);
+							}							
+						});
+						jsh.shell.console("Packaged data: " + JSON.stringify(data));
+					}
+					return data;
+				}
+			})
+		}
 	}
 }
 
