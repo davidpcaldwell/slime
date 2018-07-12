@@ -16,6 +16,9 @@
 if (!$api.slime) {
 	if ($api.script.url) {
 		//	Load as-is, I guess?
+	} else if ($api.script.file.getParentFile().getName() =="launcher") {
+		//	Graal does not currently implement java.lang.String methods on strings
+		//	Load as-is
 	} else if ($api.script.file.getParentFile().getName().equals("launcher")) {
 		//	Load as-is
 	} else {
@@ -102,7 +105,7 @@ var shell = (function() {
 })();
 $api.debug("shell detected = " + shell);
 
-if (!new javax.script.ScriptEngineManager().getEngineByName("nashorn")) {
+if (!new Packages.javax.script.ScriptEngineManager().getEngineByName("nashorn")) {
 	delete $api.jsh.engines.nashorn;
 }
 
