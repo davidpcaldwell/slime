@@ -281,13 +281,28 @@ END LICENSE
 				var list = servlet.list();
 				verify(servlet,"servlet").list().is.not.equalTo(null);
 			}
-//			verify(one).loader().list({ path: "WEB-INF/generic/inonit/script/servlet/" }).length().is(2);
-//			verify(one).loader().list({ path: "WEB-INF/generic/inonit/script/servlet/" })[0]().is("Nashorn.java");
-//			verify(one).loader().list({ path: "WEB-INF/generic/inonit/script/servlet/" })[1]().is("Servlet.java");
-//			verify(one).loader().list({ path: "WEB-INF/" }).length().is(3);
-//			verify(one).loader().list({ path: "WEB-INF/" })[0]().is("generic/");
-//			verify(one).loader().list({ path: "WEB-INF/" })[1]().is("mozilla/");
-//			verify(one).loader().list({ path: "WEB-INF/" })[2]().is("test/");
+			verify(servlet,"servlet").list().length.is(2);
+			verify(servlet,"servlet").list()[0].path.is("Nashorn.java");
+			verify(servlet,"servlet").list()[1].path.is("Servlet.java");
+			var webinf = new one.loader.Child("WEB-INF/");
+			debugger;
+			verify(webinf,"webinf").list().length.is(3);
+			var list = webinf.list();
+			if (list.length > 0) verify(webinf,"webinf").list()[0].path.is("generic");
+			if (list.length > 1) verify(webinf,"webinf").list()[1].path.is("mozilla");
+			if (list.length > 2) verify(webinf,"webinf").list()[2].path.is("test");
+			var test = webinf.list().filter(function(entry) {
+				return entry.path == "test";
+			});
+			verify(test,"test").is.not.equalTo(null);
+			verify(test,"test").length.is(1);
+			if (test) {
+				verify(test,"test")[0].loader.is.not.equalTo(null);
+				if (test) {
+					var file = test[0].loader.file("resource/1.file.js");
+					verify(file,"file").is.not.equalTo(null);
+				}
+			}
 //			verify(one).loader().file("WEB-INF/test/1.file.js").isNotEqualTo(null);
 //			verify(one).loader().resource("WEB-INF/test/1.txt").read(String).is("1");
 		</script>

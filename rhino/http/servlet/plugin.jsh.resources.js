@@ -213,7 +213,7 @@ var Resources = function(mapping,old) {
 					rv = rv.concat(listed);
 				} else if (under) {
 					if (rv.indexOf(under) == -1) {
-						rv.push(under);
+						rv.push((old) ? under : { path: under.substring(0,under.length-1), loader: true  });
 					}
 				}
 			}
@@ -281,8 +281,17 @@ var Resources = function(mapping,old) {
 			return rv;
 		};
 
+		var self = this;
+
 		p.list = function() {
-			return loader.list(p.prefix);
+			var prefix = (p.prefix) ? p.prefix : "";
+			var rv = loader.list(prefix + arguments[0]);
+			rv.forEach(function(listed) {
+				if (listed.loader && listed.loader === true) {
+					listed.loader = new self.Child(listed.path + "/");
+				}
+			},this);
+			return rv;
 		}
 
 		p.child = function(path) {

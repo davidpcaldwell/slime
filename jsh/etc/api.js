@@ -46,6 +46,7 @@
 	components.add("loader/", { api: true });
 	components.add("loader/api/", { api: true, module: true });
 	components.add("loader/api/unit.js", { test: true });
+	components.add("loader/test/data/a/", { api: false, module: true });
 	components.add("js/object/", { api: true, jsh: { module: true }});
 	components.add("js/object/Error.js", { test: true });
 	components.add("js/document/", { api: true, jsh: { module: true }});
