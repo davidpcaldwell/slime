@@ -43,12 +43,12 @@ plugin({
 				this.client = delegate.client;
 
 				this.jsh = function(o) {
-					this.jrunscript({
+					return this.jrunscript(jsh.js.Object.set({}, o, {
 						arguments: [
 							"-e", "load('http://bitbucket.org/" + "api/1.0/repositories/davidpcaldwell/slime/raw/local/rhino/jrunscript/api.js?jsh')",
 							o.script
 						].concat( (o.arguments) ? o.arguments : [] )
-					});
+					}));
 				}
 
 				this.jrunscript = function(o) {
@@ -57,7 +57,7 @@ plugin({
 						"http.proxyPort": String(delegate.port)
 					};
 					jsh.js.Object.set(properties, (o.properties) ? o.properties : {});
-					jsh.shell.jrunscript(jsh.js.Object.set({}, o, {
+					return jsh.shell.jrunscript(jsh.js.Object.set({}, o, {
 						properties: properties,
 						arguments: (o.arguments) ? o.arguments : []
 					}));

@@ -75,7 +75,8 @@ var environment = new function() {
 			Object.defineProperty(this, "home", {
 				get: function() {
 					return getHome();
-				}
+				},
+				enumerable: true
 			})
 			
 			Object.defineProperty(this, "data", {
@@ -84,7 +85,8 @@ var environment = new function() {
 						built = getData(getHome());
 					}
 					return built;				
-				}
+				},
+				enumerable: true
 			});
 		};
 
@@ -99,7 +101,8 @@ var environment = new function() {
 						}
 					}
 					return unbuilt;
-				}
+				},
+				enumerable: true
 			});			
 		};
 		
@@ -128,7 +131,8 @@ var environment = new function() {
 			Object.defineProperty(this, "jar", {
 				get: function() {
 					return getShell();
-				}
+				},
+				enumerable: true
 			});
 			
 			Object.defineProperty(this, "data", {
@@ -146,8 +150,45 @@ var environment = new function() {
 						jsh.shell.console("Packaged data: " + JSON.stringify(data));
 					}
 					return data;
-				}
+				},
+				enumerable: true
 			})
+		};
+		
+		//	TODO	requires jsh.httpd; should we just test for that here? if (jsh.httpd) this.remote = ...?
+		this.remote = new function() {
+			var data;
+			
+			Object.defineProperty(this, "data", {
+				get: function() {
+					if (!data) {
+						jsh.loader.plugins(jsh.script.file.parent.parent.parent.getRelativePath("jsh/test/launcher"));
+						var mock = new jsh.test.launcher.MockRemote({
+							src: {
+								davidpcaldwell: {
+									slime: {
+										directory: jsh.shell.jsh.src
+									}
+								}
+							},
+							trace: parameters.options["trace:server"]
+						});
+						jsh.shell.console("Mock port is " + mock.port);
+						var script = "http://bitbucket.org/" + "api/1.0/repositories/davidpcaldwell/slime/raw/local/" + "jsh/etc/jsh-data.jsh.js";
+						data = mock.jsh({
+							script: script,
+							stdio: {
+								output: String
+							},
+							evaluate: function(result) {
+								return JSON.parse(result.stdio.output);
+							}
+						});
+					}
+					return data;
+				},
+				enumerable: true
+			});
 		}
 	}
 }
