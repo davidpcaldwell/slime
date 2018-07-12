@@ -21,6 +21,50 @@ var parameters = jsh.script.getopts({
 	}
 });
 
+var environment = new function() {
+	this.jsh = new function() {
+		var unbuilt;
+		var built;
+
+		//	TODO	we would like to memoize this function, but what happens if a memoized function throws an error?
+		Object.defineProperty(this, "built", {
+			get: function() {
+				if (!built) {
+					if (jsh.shell.jsh.src) {
+						var home = jsh.shell.TMPDIR.createTemporary({ directory: true });
+						jsh.shell.jsh({
+							shell: jsh.shell.jsh.src,
+							script: jsh.script.file.parent.getFile("build.jsh.js"),
+							arguments: [
+								home,
+								"-notest",
+								"-nodoc"
+							]
+						});
+						built = home;
+					} else {
+						throw new Error();
+					}
+				}
+				return built;				
+			}
+		});
+		
+		Object.defineProperty(this, "unbuilt", {
+			get: function() {
+				if (!unbuilt) {
+					if (jsh.shell.jsh.src) {
+						unbuilt = jsh.shell.jsh.src;
+					} else {
+						throw new Error();
+					}
+				}
+				return unbuilt;
+			}
+		});
+	}
+}
+
 if (parameters.options.built) {
 	var home = jsh.shell.TMPDIR.createTemporary({ directory: true });
 	jsh.shell.jsh({
@@ -50,7 +94,8 @@ if (parameters.options.built) {
 
 var definition = new jsh.unit.part.Html({
 	name: "jsh Unit Tests",
-	pathname: jsh.script.file.parent.getRelativePath("api.html")
+	pathname: jsh.script.file.parent.getRelativePath("api.html"),
+	environment: environment
 });
 
 var find = function(definition,name,path) {
