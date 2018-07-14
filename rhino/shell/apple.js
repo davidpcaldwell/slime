@@ -122,9 +122,16 @@ if ($context.api.shell.PATH.getCommand("chmod")) {
 			info.CFBundleExecutable = name;
 		}
 
+		if (p.directory) {
+			p.pathname = p.directory.pathname;
+			p.overwrite = true;
+		}
+
 		if (p.pathname && p.info) {
-			//	TODO	allow createDirectory arguments to be configurable
 			var base = p.pathname.createDirectory({
+				exists: (p.overwrite) ? function(dir) {
+					return false;
+				} : void(0),
 		//		ifExists: function(dir) {
 		//			return false;
 		//		}
