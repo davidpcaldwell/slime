@@ -711,6 +711,15 @@ END LICENSE
 								<span>__DESCRIPTION__</span>
 							</li>
 							<li class="value">
+								<div class="name">local</div>
+								<span class="type">boolean</span>
+								<span>
+									(contingent; only present if specified when retrieving bookmark)
+									Whether this bookmark exists in the origin repository (<code>true</code>) or not
+									<code>false</code>.
+								</span>
+							</li>
+							<li class="value">
 								<div class="name">changeset</div>
 								<span class="type"><a href="#types.changeset">changeset</a></span>
 								<span>__DESCRIPTION__</span>
@@ -856,10 +865,25 @@ END LICENSE
 					<ul>
 						<li class="function">
 							<div class="name">list</div>
-							<span>__DESCRIPTION__</span>
+							<span>Returns a list of the bookmarks on this repository.</span>
 							<div class="arguments">
 								<div class="label">Arguments</div>
 								<ol>
+									<li class="object">
+										<div class="label">has properties:</div>
+										<ul>
+											<li class="value">
+												<div class="name">origin</div>
+												<span class="type">boolean</span>
+												<span>
+													(optional)
+													If <code>true</code>, bookmarks will also be checked with the origin repository
+													in order to see whether they are local-only bookmarks, and the bookmarks
+													returned will acquire the <code>local</code> property.
+												</span>
+											</li>
+										</ul>
+									</li>
 								</ol>
 							</div>
 							<div class="returns">
