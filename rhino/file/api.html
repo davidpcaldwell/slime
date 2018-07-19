@@ -1158,7 +1158,7 @@ END LICENSE
 								<ol>
 									<li class="value">
 										<span class="type">string</span>
-										<span>A relative path</span>
+										<span>A filesystem path relative to this directory</span>
 									</li>
 								</ol>
 							</div>
@@ -1166,10 +1166,18 @@ END LICENSE
 								<div class="label">Returns</div>
 								<span class="type"><a href="#types.file">file</a></span>
 								<span>
-									A file that can be found at the given location relative to this directory, or <code>null</code>
-									if no (non-directory) file exists at that location.
+									A file that can be found at the given location, or <code>null</code> if no (non-directory) file
+									exists at that location.
 								</span>
 							</div>
+							<script type="application/x.jsapi#tests">
+								var directory = $jsapi.loader.getRelativePath("api.html").file.parent;
+								verify(directory).getFile("api.html").is.type("object");
+								verify(directory).getFile("foo").is(null);
+
+								verify(directory).getSubdirectory("java").is.type("object");	//	directory
+								verify(directory).getFile("java").is(null);
+							</script>
 						</li>
 						<li class="function">
 							<div class="name">getSubdirectory</div>
