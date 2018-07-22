@@ -32,7 +32,7 @@ var parse = function(string) {
 
 $exports.Url = function(o) {
 	["scheme","path","query","fragment"].forEach(function(item) {
-		if (o[item]) {
+		if (typeof(o[item]) != "undefined") {
 			this[item] = o[item];
 		}
 	},this);
