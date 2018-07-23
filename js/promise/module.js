@@ -50,7 +50,11 @@ var SlimePromise = function Targeter(p) {
 
 	this.target = function(target) {
 		p.target = target;
-	}
+	};
+
+	this.bind = function(target) {
+		return new Targeter({ delegate: getDelegate(), target: target });
+	};
 
 	this.then = function(resolved,rejected) {
 		var args = [];
