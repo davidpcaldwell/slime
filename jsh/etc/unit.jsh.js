@@ -91,6 +91,8 @@ var environment = new function() {
 		};
 
 		this.unbuilt = new function() {
+			this.src = jsh.shell.jsh.src;
+			
 			Object.defineProperty(this, "data", {
 				get: function() {
 					if (!unbuilt) {
@@ -159,6 +161,14 @@ var environment = new function() {
 		this.remote = new function() {
 			var data;
 			
+			var url = "http://bitbucket.org/" + "api/1.0/repositories/davidpcaldwell/slime/raw/local/";
+			
+			Object.defineProperty(this, "url", {
+				get: function() {
+					return url;
+				}
+			});
+			
 			Object.defineProperty(this, "data", {
 				get: function() {
 					if (!data) {
@@ -174,7 +184,7 @@ var environment = new function() {
 							trace: parameters.options["trace:server"]
 						});
 						jsh.shell.console("Mock port is " + mock.port);
-						var script = "http://bitbucket.org/" + "api/1.0/repositories/davidpcaldwell/slime/raw/local/" + "jsh/etc/jsh-data.jsh.js";
+						var script = url + "jsh/etc/jsh-data.jsh.js";
 						data = mock.jsh({
 							script: script,
 							stdio: {
