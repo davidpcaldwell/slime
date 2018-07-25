@@ -183,7 +183,8 @@ $exports.zip = $api.deprecate(function(p,on) {
 
 var apache = $loader.file("apache.js", {
 	client: client,
-	get: $exports.get
+	get: $exports.get,
+	downloads: $context.downloads
 });
 
 $exports.apache = apache;

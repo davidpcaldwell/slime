@@ -21,7 +21,16 @@ var getMirror = function() {
 	});
 }
 
-$exports.find = function(p) {
+$exports.find = $api.Events.Function(function(p,events) {
+	var name = p.path.split("/").slice(-1)[0];
+	if ($context.downloads) {
+		if ($context.downloads.getFile(name)) {
+			events.fire("console", "Found " + name + " in " + $context.downloads + "; using local copy.");
+			return $context.get({
+				file: $context.downloads.getFile(name)
+			})
+		}
+	}
 	var mirror = (p.mirror) ? p.mirror : getMirror();
 	var argument = {
 		name: p.path.split("/").slice(-1)[0],
@@ -30,4 +39,8 @@ $exports.find = function(p) {
 		}
 	};
 	return $context.get(argument);
-}
+}, {
+	console: function(e) {
+		jsh.shell.console(e.detail);
+	}
+});
