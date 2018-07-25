@@ -13,9 +13,11 @@ $exports.Installation = function(o) {
 		jsh.shell.run({
 			command: p.project.getFile("node_modules/.bin/" + p.command),
 			arguments: p.arguments,
+			directory: p.directory,
 			environment: jsh.js.Object.set({}, jsh.shell.environment, p.environment, {
 				PATH: PATH.toString()
-			})
+			}),
+			evaluate: p.evaluate
 		});
 	}
 	
