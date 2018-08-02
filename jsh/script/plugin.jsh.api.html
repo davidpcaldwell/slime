@@ -59,8 +59,10 @@ END LICENSE
 					verify(packaged)["jsh.script.file"].string.is(jar.toString());
 					verify(packaged)["jsh.script.file"].pathname.string.is(jar.toString());
 					
-					var remote = $jsapi.environment.jsh.remote.data;
-					verify(remote).evaluate.property("jsh.script.file").is(void(0));
+					if ($jsapi.environment.jsh.remote) {
+						var remote = $jsapi.environment.jsh.remote.data;
+						verify(remote).evaluate.property("jsh.script.file").is(void(0));
+					}
 				</script>
 			</li>
 			<li class="value">
@@ -95,7 +97,9 @@ END LICENSE
 				<script type="application/x.jsapi#tests">
 					var $jsh = $jsapi.environment.jsh;
 					
-					verify($jsh).remote.data["jsh.script.url"].string.is("http://bitbucket.org/api/1.0/repositories/davidpcaldwell/slime/raw/local/jsh/etc/jsh-data.jsh.js");
+					if ($jsh.remote) {
+						verify($jsh).remote.data["jsh.script.url"].string.is("http://bitbucket.org/api/1.0/repositories/davidpcaldwell/slime/raw/local/jsh/etc/jsh-data.jsh.js");
+					}
 					//	Additional, possibly excessive, tests are in rhino/shell/test/jsh.shell.jsh.suite.jsh.js
 				</script>
 			</li>

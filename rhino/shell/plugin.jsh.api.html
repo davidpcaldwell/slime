@@ -351,6 +351,17 @@ END LICENSE
 							</span>
 							<div class="label">has properties:</div>
 							<ul>
+								<!--
+									TODO	implement this
+								<li class="value">
+									<div class="name">shell</div>
+									<span class="type">__TYPE__</span>
+									<span>
+										A directory representing the location of a built shell, or a directory representing
+										the location of an unbuilt shell.
+									</span>
+								</li>
+								-->
 								<li class="value">
 									<div class="name">script</div>
 									<span class="type"><a href="../../rhino/file/api.html#types.file">file</a></span>
@@ -468,7 +479,9 @@ END LICENSE
 							verify(shell).unbuilt.data.evaluate.property("jsh.shell.jsh.home").is(void(0));
 							verify(shell).built.data.evaluate.property("jsh.shell.jsh.home").string.is(shell.built.home.toString());
 							verify(shell).packaged.data.evaluate.property("jsh.shell.jsh.home").is(void(0));
-							verify(shell).remote.data.evaluate.property("jsh.shell.jsh.home").is(void(0));
+							if (shell.remote) {
+								verify(shell).remote.data.evaluate.property("jsh.shell.jsh.home").is(void(0));
+							}
 						</script>
 					</li>
 					<li class="value">
@@ -480,7 +493,9 @@ END LICENSE
 							verify(shell).unbuilt.data.evaluate.property("jsh.shell.jsh.src").string.is(shell.unbuilt.src.toString());
 							//verify(shell).built.data.evaluate.property("jsh.shell.jsh.src").is(void(0));
 							verify(shell).packaged.data.evaluate.property("jsh.shell.jsh.src").is(void(0));
-							verify(shell).remote.data.evaluate.property("jsh.shell.jsh.src").is(void(0));
+							if (shell.remote) {
+								verify(shell).remote.data.evaluate.property("jsh.shell.jsh.src").is(void(0));
+							}
 						</script>
 					</li>
 					<li class="value">
@@ -495,7 +510,11 @@ END LICENSE
 							verify(shell).unbuilt.data.evaluate.property("jsh.shell.jsh.url").is(void(0));
 							verify(shell).built.data.evaluate.property("jsh.shell.jsh.url").is(void(0));
 							verify(shell).packaged.data.evaluate.property("jsh.shell.jsh.url").is(void(0));
-							verify(shell).remote.data.evaluate.property("jsh.shell.jsh.url").string.is(shell.remote.url.toString());
+							if (shell.remote) {
+								verify(shell).remote.data.evaluate.property("jsh.shell.jsh.url").string.is(shell.remote.url.toString());
+								//	TODO	make sure this is of type URL
+								verify(shell).remote.data.evaluate.property("jsh.shell.jsh.url").path.is.type("string");
+							}
 						</script>
 					</li>
 				</ul>

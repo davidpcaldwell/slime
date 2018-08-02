@@ -157,8 +157,7 @@ var environment = new function() {
 			})
 		};
 		
-		//	TODO	requires jsh.httpd; should we just test for that here? if (jsh.httpd) this.remote = ...?
-		this.remote = new function() {
+		if (jsh.httpd.Tomcat) this.remote = new function() {
 			var data;
 			
 			var url = "http://bitbucket.org/" + "api/1.0/repositories/davidpcaldwell/slime/raw/local/";

@@ -35,6 +35,7 @@ jsh.shell.echo(JSON.stringify({
 	"jsh.shell.jsh.home": toJsonProperty(jsh.shell.jsh.home, formatters.directory),
 	"jsh.shell.jsh.url": toJsonProperty(jsh.shell.jsh.url, function(url) {
 		return {
+			path: url.path,
 			string: url.toString()
 		}
 	})
