@@ -14,6 +14,7 @@
 var parameters = jsh.script.getopts({
 	options: {
 		built: false,
+		"shell:built": jsh.file.Pathname,
 		view: "console",
 		port: Number,
 		"chrome:profile": jsh.file.Pathname,
@@ -53,6 +54,10 @@ var environment = new function() {
 			
 			var getHome = function() {
 				if (!home) {
+					if (parameters.options["shell:built"] && parameters.options["shell:built"].directory) {
+//						jsh.shell.console("Unit tests using built shell provided by caller at " + parameters.options["shell:built"]);
+						return parameters.options["shell:built"].directory;
+					}
 					if (jsh.shell.jsh.src) {
 						var to = jsh.shell.TMPDIR.createTemporary({ directory: true });
 						jsh.shell.jsh({

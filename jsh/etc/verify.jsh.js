@@ -60,16 +60,53 @@ var subprocess = function(p) {
 	top.part("subprocess-" + arguments.callee.index, jsh.unit.Suite.Fork(p));
 }
 
+var shells = {
+	unbuilt: (jsh.shell.jsh.home) ? jsh.shell.jsh.home.getSubdirectory("src") : jsh.shell.jsh.src,
+	built: (function() {
+		if (jsh.shell.jsh.home) return jsh.shell.jsh.home;
+		jsh.shell.console("Verify building shell to use with launcher tests ...");
+		var tmpdir = jsh.shell.TMPDIR.createTemporary({ directory: true });
+		var buildArguments = [];
+		if (jsh.shell.jsh.lib.getFile("js.jar")) {
+			buildArguments.push("-rhino", jsh.shell.jsh.lib.getFile("js.jar"));
+		}
+		jsh.shell.run({
+			command: jsh.shell.java.jrunscript,
+			arguments: [
+				jsh.shell.jsh.src.getRelativePath("rhino/jrunscript/api.js"),
+				"jsh",
+				jsh.shell.jsh.src.getRelativePath("jsh/etc/build.jsh.js"),
+				tmpdir,
+				"-notest",
+				"-nodoc"
+			].concat(buildArguments),
+			environment: jsh.js.Object.set({
+				//	TODO	next two lines duplicate logic in jsh.test plugin
+				TEMP: (jsh.shell.environment.TEMP) ? jsh.shell.environment.TEMP : "",
+				PATHEXT: (jsh.shell.environment.PATHEXT) ? jsh.shell.environment.PATHEXT : "",
+				PATH: jsh.shell.environment.PATH.toString()
+			})
+		});
+		return tmpdir;
+	})()
+}
+
 parameters.options.java.forEach(function(jre) {
 	//	TODO	Convert to jsh/test plugin API designed for this purpose
 //	jsh.shell.echo("Adding launcher suite");
-	var rhinoArgs = (jsh.shell.rhino && jsh.shell.rhino.classpath) ? ["-rhino", String(jsh.shell.rhino.classpath)] : [];
+	var rhinoArgs = (jsh.shell.jsh.lib.getFile("js.jar")) ? ["-rhino", jsh.shell.jsh.lib.getFile("js.jar")] : [];
+	
 	top.part("launcher", jsh.unit.Suite.Fork({
 		name: "Launcher tests",
 		run: jsh.shell.jsh,
 		fork: true,
 		script: jsh.script.file.getRelativePath("../test/launcher/suite.jsh.js").file,
-		arguments: ["-scenario", "-view", "stdio"].concat(rhinoArgs)
+		arguments: [
+			"-scenario",
+			"-shell:unbuilt", shells.unbuilt,
+			"-shell:built", shells.built,
+			"-view", "stdio"
+		].concat(rhinoArgs)
 	}));
 
 	parameters.options.engine.forEach(function(engine) {
@@ -107,13 +144,17 @@ parameters.options.java.forEach(function(jre) {
 							vmarguments: ["-Xms1024m"],
 							shell: SLIME,
 							script: SLIME.getFile("jsh/etc/unit.jsh.js"),
-							arguments: ["-view", "stdio"],
+							arguments: [
+								"-shell:built", shells.built,
+								"-view", "stdio"
+							],
 							environment: environment
 						}),
 						integration: jsh.unit.Suite.Fork({
 							name: "Integration tests",
 							run: jsh.shell.jsh,
-							shell: SLIME,
+							//	Right now, integration tests require built shell
+							shell: shells.built,
 							script: SLIME.getFile("jsh/etc/integration.jsh.js"),
 							arguments: (function() {
 								var rv = [];
