@@ -583,9 +583,9 @@ var Scope = function(o) {
 		}
 	};
 
-	this.checkForFailure = function(type,detail) {
-		if (typeof(detail.success) != "undefined") {
-			if (detail.success === false) {
+	this.checkForFailure = function(e) {
+		if (typeof(e.detail.success) != "undefined") {
+			if (e.detail.success === false) {
 				success = false;
 			}
 		}
@@ -593,7 +593,7 @@ var Scope = function(o) {
 
 	this.fire = function(type,detail) {
 		o.events.fire(type,detail);
-		this.checkForFailure(type,detail);
+		this.checkForFailure({ type: type, detail: detail });
 	}
 };
 $exports.Scope = Scope;
@@ -762,7 +762,7 @@ $exports.Scenario = {};
 				vscope.fail();
 			} else {
 				var checkForScopeFailure = function(e) {
-					vscope.checkForFailure(e.type,e.detail);
+					vscope.checkForFailure(e);
 				};
 				this.listeners.add("scenario", checkForScopeFailure);
 				this.listeners.add("test", checkForScopeFailure);
@@ -812,7 +812,7 @@ $exports.Scenario = {};
 				return Promise.resolve(false);
 			} else {
 				var checkForScopeFailure = function(e) {
-					vscope.checkForFailure(e.type,e.detail);
+					vscope.checkForFailure(e);
 				};
 				this.listeners.add("scenario", checkForScopeFailure);
 				this.listeners.add("test", checkForScopeFailure);
