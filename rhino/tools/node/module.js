@@ -10,8 +10,9 @@ $exports.Installation = function(o) {
 	})();
 	
 	this.run = function(p) {
+		var command = (p.command) ? p.project.getFile("node_modules/.bin/" + p.command) : o.directory.getFile("bin/node");
 		jsh.shell.run({
-			command: p.project.getFile("node_modules/.bin/" + p.command),
+			command: command,
 			arguments: p.arguments,
 			directory: p.directory,
 			environment: jsh.js.Object.set({}, jsh.shell.environment, p.environment, {
