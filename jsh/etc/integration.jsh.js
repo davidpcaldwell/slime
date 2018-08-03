@@ -309,14 +309,6 @@ if (CATALINA_HOME) {
 			verify(this).status.is(0);
 		}
 	});
-
-	ScriptVerifier({
-		parent: scenario.parts.shell,
-		path: "jsh.shell/jsh.shell.jsh.jsh.js",
-		execute: function(verify) {
-			verify(this).status.is(0);
-		}
-	});
 })();
 
 ScriptVerifier({

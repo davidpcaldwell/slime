@@ -11,6 +11,12 @@
 //	Contributor(s):
 //	END LICENSE
 
+//	this is a low-priority test -- it tests that an unbuilt shell can package applications,
+//	but really just tests the jsh.test.requireBuiltShell process (which is mostly the build process) and then the packaging process,
+//	and these two processes are already tested by the unit tests separately. And how important
+//	a use case is packaging anyway?
+var TEST_UNBUILT_PACKAGER = false;
+
 //	TODO	add feature to jsh.shell that handles JSON output automatically (like String output)
 var jsonOutput = {
 	stdio: function() {
@@ -66,13 +72,13 @@ var packaged = {
 		if (!RHINO_LIBRARIES) invocation.push("-norhino");
 		Packages.java.lang.System.err.println("arguments to packages.jsh.js = " + invocation);
 		//	TODO	uses jsh.shell.jsh.home; should use version that is compatible with unbuilt shell
-		//	TODO	if using unbuilt shell, need to copy over libraries into local/lib
 		var shell = (function() {
 			if (!p.unbuilt) return jsh.shell.jsh.home;
 			//	Create a new shell to run as unbuilt
 			var location = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
 			location.directory.remove();
 			jsh.shell.jsh.home.getSubdirectory("src").copy(location);
+			//	TODO	if using unbuilt shell, need to copy over libraries generally, not just Rhino, into local/jsh/lib
 			if (RHINO_LIBRARIES) {
 				//	TODO	probably should use *value* of RHINO_LIBRARIES
 				jsh.shell.jsh.lib.getFile("js.jar").copy(location.directory.getRelativePath("local/jsh/lib/js.jar"), { recursive: true });
@@ -157,7 +163,7 @@ $set({
 					}
 				};
 
-				this.unbuilt = {
+				if (TEST_UNBUILT_PACKAGER) this.unbuilt = {
 					execute: function(scope,verify) {
 						test(true,verify);
 					}
