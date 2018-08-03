@@ -433,9 +433,6 @@ var adaptAssertion = new function() {
 }
 
 var Scope = function(o) {
-	if (o.callback) {
-		throw new Error();
-	}
 	var success = true;
 	defineProperty(this,"success",{
 		get: function() {
@@ -455,6 +452,28 @@ var Scope = function(o) {
 	//			self.success = false;
 	//		}
 
+	
+	var runTest = function(assertion,next) {
+		assertion = adaptAssertion.assertion(assertion);
+		var result = assertion();
+		result = adaptAssertion.result(result);
+		if (!result.success) {
+			fail();
+		}
+		o.events.fire("test",result);
+		if (next) {
+			if ($context.asynchronous && $context.asynchronous.test) {
+				$context.asynchronous.test(next);
+			} else {
+				next();
+			}
+		}
+	}
+
+	this.test = function(assertion) {
+		runTest(assertion);
+	};
+
 	this.error = function(e) {
 		o.events.fire("test", {
 			success: false,
@@ -463,9 +482,6 @@ var Scope = function(o) {
 		});
 		fail();
 	}
-
-
-	var units = [];
 
 	//	TODO	can this function be removed?
 	var runScenario = function(object,next) {
@@ -489,63 +505,20 @@ var Scope = function(o) {
 			}
 		}
 
-		if (o.callback) {
-			throw new Error();
-			child.run({
-				callback: { success: function(b) {
-					if (!b) {
-						fail();
-					}
-					if (next) runNext(next);
-				}},
-				haltOnException: o.haltOnException
-			});
-		} else {
-			var result = child.run({
-				haltOnException: o.haltOnException
-			});
-			if (!result) {
-				fail();
-			}
-			if (next) runNext(next);
+		var result = child.run({
+			haltOnException: o.haltOnException
+		});
+		if (!result) {
+			fail();
 		}
+		if (next) runNext(next);
 	}
 
 	this.scenario = function(object) {
-		if (!o.callback) {
-			runScenario(object);
-		} else {
-			throw new Error();
-			units.push({ scenario: object });
-		}
+		throw new Error();
+		runScenario(object);
 	}
 	
-	var runTest = function(assertion,next) {
-		assertion = adaptAssertion.assertion(assertion);
-		var result = assertion();
-		result = adaptAssertion.result(result);
-		if (!result.success) {
-			fail();
-		}
-		o.events.fire("test",result);
-		if (next) {
-			if ($context.asynchronous && $context.asynchronous.test) {
-				$context.asynchronous.test(next);
-			} else {
-				next();
-			}
-		}
-	}
-
-	this.test = function(assertion) {
-		if (!o.callback) {
-			runTest(assertion);
-		} else {
-			throw new Error();
-			units.push({ test: assertion });
-		}
-	};
-
 	this.verify = new Verify(this);
 
 	this.start = function() {
@@ -553,31 +526,7 @@ var Scope = function(o) {
 	}
 
 	this.end = function() {
-		if (o.callback) {
-			throw new Error();
-			var runUnit = function(units,index) {
-				var recurse = arguments.callee;
-				if (index == units.length) {
-					o.events.fire("scenario", { end: o.scenario, success: this.success });
-					o.callback.success(this.success);
-				} else {
-					var next = function() {
-						recurse(units,index+1)
-					};
-					if (typeof(units[index].scenario) != "undefined") {
-						runScenario(units[index].scenario,next);
-					} else if (typeof(units[index].test) != "undefined") {
-						runTest(units[index].test,next);
-					} else {
-						throw new Error("Unreachable");
-					}
-				}
-			}
-
-			runUnit.call(this,units,0);
-		} else {
-			o.events.fire("scenario", { end: o.scenario, success: this.success });
-		}
+		o.events.fire("scenario", { end: o.scenario, success: this.success });
 	};
 
 	this.checkForFailure = function(e) {
