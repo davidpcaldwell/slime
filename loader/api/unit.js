@@ -438,11 +438,6 @@ var Scope = (function() {
 	var Scope = function(o) {
 		var success = true;
 
-		var fail = function() {
-			debugger;
-			success = false;
-		};
-
 		//	IE8-compatible implementation below
 		//		var self = this;
 		//		this.success = true;
@@ -451,24 +446,37 @@ var Scope = (function() {
 		//			self.success = false;
 		//		}
 
+		var checkForFailure = function(detail) {
+			if (typeof(detail.success) != "undefined") {
+				if (!detail.success) {
+					debugger;
+					success = false;
+				}
+			}
+		};
+		
+		var process = function(type,detail) {
+			o.events.fire(type,detail);
+			checkForFailure(detail);
+		}
 
 		this.test = function(assertion) {
-			assertion = adaptAssertion.assertion(assertion);
-			var result = assertion();
-			result = adaptAssertion.result(result);
-			if (!result.success) {
-				fail();
-			}
-			o.events.fire("test",result);
+			var getResult = function(assertion) {
+				assertion = adaptAssertion.assertion(assertion);
+				var result = assertion();
+				result = adaptAssertion.result(result);
+				return result;
+			};
+		
+			process("test",getResult(assertion));
 		};
 
 		this.error = function(e) {
-			o.events.fire("test", {
+			process("test",{
 				success: false,
 				message: "Uncaught exception: " + e,
 				error: e
 			});
-			fail();
 		}
 
 		this.verify = new Verify(this);
@@ -479,21 +487,12 @@ var Scope = (function() {
 			}
 		});
 
-		var checkForFailure = function(e) {
-			if (typeof(e.detail.success) != "undefined") {
-				if (e.detail.success === false) {
-					success = false;
-				}
-			}
-		}
-
 		this.fire = function(type,detail) {
-			o.events.fire(type,detail);
-			checkForFailure({ type: type, detail: detail });
+			process(type,detail);
 		}
 
 		this.checkForFailure = function(e) {
-			checkForFailure(e);
+			checkForFailure(e.detail);
 		}
 	};
 	
