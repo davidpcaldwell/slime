@@ -434,11 +434,6 @@ var adaptAssertion = new function() {
 
 var Scope = function(o) {
 	var success = true;
-	defineProperty(this,"success",{
-		get: function() {
-			return success;
-		}
-	});
 	var fail = function() {
 		debugger;
 		success = false;
@@ -453,7 +448,7 @@ var Scope = function(o) {
 	//		}
 
 	
-	var runTest = function(assertion,next) {
+	this.test = function(assertion) {
 		assertion = adaptAssertion.assertion(assertion);
 		var result = assertion();
 		result = adaptAssertion.result(result);
@@ -461,17 +456,6 @@ var Scope = function(o) {
 			fail();
 		}
 		o.events.fire("test",result);
-		if (next) {
-			if ($context.asynchronous && $context.asynchronous.test) {
-				$context.asynchronous.test(next);
-			} else {
-				next();
-			}
-		}
-	}
-
-	this.test = function(assertion) {
-		runTest(assertion);
 	};
 
 	this.error = function(e) {
@@ -485,15 +469,23 @@ var Scope = function(o) {
 
 	this.verify = new Verify(this);
 
+	defineProperty(this,"success",{
+		get: function() {
+			return success;
+		}
+	});
+
 	this.start = function() {
+		throw new Error();
 		o.events.fire("scenario", { start: o.scenario });
 	}
 
 	this.end = function() {
+		throw new Error();
 		o.events.fire("scenario", { end: o.scenario, success: this.success });
 	};
 
-	this.checkForFailure = function(e) {
+	var checkForFailure = function(e) {
 		if (typeof(e.detail.success) != "undefined") {
 			if (e.detail.success === false) {
 				success = false;
@@ -503,7 +495,11 @@ var Scope = function(o) {
 
 	this.fire = function(type,detail) {
 		o.events.fire(type,detail);
-		this.checkForFailure({ type: type, detail: detail });
+		checkForFailure({ type: type, detail: detail });
+	}
+	
+	this.checkForFailure = function(e) {
+		checkForFailure(e);
 	}
 };
 $exports.Scope = Scope;
