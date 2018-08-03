@@ -327,30 +327,20 @@ var Verify = function(scope,vars) {
 
 $exports.Verify = Verify;
 
-var BooleanTest = function(b) {
-	var MESSAGE = function(success) {
-		return (success) ? "Success." : "FAILED!";
+var adaptAssertion = new function() {
+	var BooleanTest = function(b) {
+		var MESSAGE = function(success) {
+			return (success) ? "Success." : "FAILED!";
+		};
+
+		return $api.deprecate(function() {
+			return {
+				success: b,
+				message: MESSAGE(b)
+			}
+		});
 	};
 
-	return $api.deprecate(function() {
-		return {
-			success: b,
-			message: MESSAGE(b)
-		}
-	});
-};
-
-var ErrorTest = function(e) {
-	return function() {
-		return {
-			success: null,
-			message: "Exception thrown: " + e,
-			error: e
-		};
-	}
-};
-
-var adaptAssertion = new function() {
 	this.assertion = function(assertion) {
 		if (typeof(assertion) == "function") return assertion;
 		if (typeof(assertion) == "boolean") {
@@ -443,6 +433,9 @@ var adaptAssertion = new function() {
 }
 
 var Scope = function(o) {
+	if (o.callback) {
+		throw new Error();
+	}
 	var success = true;
 	defineProperty(this,"success",{
 		get: function() {
@@ -497,6 +490,7 @@ var Scope = function(o) {
 		}
 
 		if (o.callback) {
+			throw new Error();
 			child.run({
 				callback: { success: function(b) {
 					if (!b) {
@@ -521,10 +515,11 @@ var Scope = function(o) {
 		if (!o.callback) {
 			runScenario(object);
 		} else {
+			throw new Error();
 			units.push({ scenario: object });
 		}
 	}
-
+	
 	var runTest = function(assertion,next) {
 		assertion = adaptAssertion.assertion(assertion);
 		var result = assertion();
@@ -546,6 +541,7 @@ var Scope = function(o) {
 		if (!o.callback) {
 			runTest(assertion);
 		} else {
+			throw new Error();
 			units.push({ test: assertion });
 		}
 	};
@@ -558,6 +554,7 @@ var Scope = function(o) {
 
 	this.end = function() {
 		if (o.callback) {
+			throw new Error();
 			var runUnit = function(units,index) {
 				var recurse = arguments.callee;
 				if (index == units.length) {
