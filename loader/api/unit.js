@@ -327,7 +327,7 @@ var Verify = function(scope,vars) {
 
 $exports.Verify = Verify;
 
-var Scope = (function() {
+var TestExecutionProcessor = (function() {
 	//	TODO	would like to move this adapter to another file, but would need to alter callers to load unit.js as module first
 
 	var adaptAssertion = new function() {
@@ -499,7 +499,11 @@ var Scope = (function() {
 	return Scope;
 })();
 
-$exports.Scope = Scope;
+$exports.TestExecutionProcessor = TestExecutionProcessor;
+if (false) {
+	$exports.Scope = TestExecutionProcessor;
+	$api;deprecate($exports,"Scope");
+}
 
 $exports.Scenario = {};
 
@@ -518,7 +522,7 @@ $exports.Scenario = {};
 			source: this,
 			parent: (context && context.events) ? context.events : null
 		});
-
+		
 		this.id = (context) ? context.id : null;
 
 		this.name = (function() {
@@ -552,6 +556,7 @@ $exports.Scenario = {};
 
 		return {
 			events: events,
+			scope: new TestExecutionProcessor({ events: events }),
 			create: (function() {
 				if (definition && definition.create) {
 					$api.deprecate(function() {
@@ -646,7 +651,7 @@ $exports.Scenario = {};
 			var local = part.before(p).scope;
 
 			//	TODO	compare below initialize with one used in part
-			var vscope = new Scope({ events: part.events });
+			var vscope = part.scope;
 
 			if (next) {
 				if (part.find("next")) {
@@ -706,7 +711,7 @@ $exports.Scenario = {};
 			var local = part.before(p).scope;
 
 			//	TODO	compare below initialize with one used in part
-			var vscope = new Scope({ events: part.events });
+			var vscope = part.scope;
 
 			var error = part.initialize(local);
 

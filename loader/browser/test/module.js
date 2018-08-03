@@ -217,7 +217,7 @@ var global = new function() {
 	var Old = function() {
 		var Tests = function() {
 			var events = $api.Events({ source: this });
-			var scope = new $context.api.unit.Scope({ events: events });
+			var scope = new $context.api.unit.TestExecutionProcessor({ events: events });
 
 			var set = new Set({ events: events, scope: scope });
 
