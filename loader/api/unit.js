@@ -483,42 +483,6 @@ var Scope = function(o) {
 		fail();
 	}
 
-	//	TODO	can this function be removed?
-	var runScenario = function(object,next) {
-		//	TODO	definite code smell here as we try to hold together the scenario public "wrapper" with the scenario
-		//			implementation; should improve this
-		var child = (function() {
-			var argument = {};
-			for (var x in object) {
-				argument[x] = object[x];
-			}
-			argument.events = o.events;
-			return new o.Scenario(argument);
-		})(object);
-//		var child = (object instanceof o.Scenario) ? object : new o.Scenario(object);
-
-		var runNext = function(next) {
-			if ($context.asynchronous && $context.asynchronous.scenario) {
-				$context.asynchronous.scenario(next);
-			} else {
-				next();
-			}
-		}
-
-		var result = child.run({
-			haltOnException: o.haltOnException
-		});
-		if (!result) {
-			fail();
-		}
-		if (next) runNext(next);
-	}
-
-	this.scenario = function(object) {
-		throw new Error();
-		runScenario(object);
-	}
-	
 	this.verify = new Verify(this);
 
 	this.start = function() {
