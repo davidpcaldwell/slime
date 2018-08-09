@@ -414,10 +414,30 @@ os.resolve(function() {
 					</li>
 					<li class="function experimental">
 						<div class="name">ping</div>
-						<span>__DESCRIPTION__</span>
+						<span>
+							Uses the underlying operating system's <code>ping</code> command to attempt to reach another host.
+						</span>
 						<div class="arguments">
 							<div class="label">Arguments</div>
 							<ol>
+								<li class="object">
+									<div class="label">has properties:</div>
+									<ul>
+										<li class="value">
+											<div class="name">host</div>
+											<span class="type">string</span>
+											<span>The host to which to send the <code>ECHO_REQUEST</code>.</span>
+										</li>
+										<li class="value">
+											<div class="name">timeout</div>
+											<span class="type">number</span>
+											<span>
+												A timeout, in seconds. Will be rounded down to a whole number of seconds. Must be
+												1 or greater.
+											</span>
+										</li>
+									</ul>
+								</li>
 							</ol>
 						</div>
 						<div class="returns">
