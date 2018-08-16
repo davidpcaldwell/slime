@@ -19,6 +19,9 @@ if ($context.api.shell) {
 		$exports[x] = $context.api.shell[x];
 	}
 }
+$exports.run.evaluate.wrap = function(result) {
+	jsh.shell.exit(result.status);
+};
 
 $exports.exit = $context.exit;
 

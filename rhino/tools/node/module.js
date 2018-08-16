@@ -10,7 +10,13 @@ $exports.Installation = function(o) {
 	})();
 	
 	this.run = function(p) {
-		var command = (p.command) ? p.project.getFile("node_modules/.bin/" + p.command) : o.directory.getFile("bin/node");
+		var command = (function() {
+			if (p.command) {
+				if (p.project) return p.project.getFile("node_modules/.bin/" + p.command);
+				return o.directory.getFile("bin/" + p.command);
+			}
+			return o.directory.getFile("bin/node");
+		});
 		jsh.shell.run({
 			command: command,
 			arguments: p.arguments,
@@ -22,7 +28,7 @@ $exports.Installation = function(o) {
 		});
 	}
 	
-	this.npm = function(p) {
+	var npm = function(p) {
 		var DEFAULT_PATH = (p.PATH) ? p.PATH : jsh.shell.PATH;
 		var elements = DEFAULT_PATH.pathnames.slice();
 		elements.unshift(o.directory.getRelativePath("bin"));
@@ -40,4 +46,30 @@ $exports.Installation = function(o) {
 			directory: p.project
 		});
 	}
+	
+	this.modules = new function() {
+		this.installed = new function() {
+			var node_modules = o.directory.getSubdirectory("lib/node_modules");
+			if (node_modules) {
+				node_modules.list().forEach(function(item) {
+					this[item.pathname.basename] = {};
+				},this);
+			}
+		};
+		
+		this.install = function(p) {
+			if (p.name) {
+				npm({
+					command: "install",
+					arguments: ["-g", p.name]
+				});
+			}
+		}
+	};
+	
+	this.npm = npm;
 };
+
+$exports.Project = function(o) {
+	throw new Error();
+}
