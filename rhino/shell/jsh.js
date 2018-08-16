@@ -494,6 +494,16 @@ $exports.jsh.command = function(p) {
 	});
 	return argument;
 }
+$exports.jsh.relaunch = function() {
+	$exports.jsh({
+		fork: true,
+		script: jsh.script.file,
+		arguments: jsh.script.arguments,
+		evaluate: function(result) {
+			$exports.exit(result.status);
+		}
+	});
+}
 
 //if (String($exports.properties.object.jsh.plugins)) {
 //	$exports.jsh.plugins = $context.api.file.filesystem.Searchpath.parse(String($exports.properties.object.jsh.plugins));
