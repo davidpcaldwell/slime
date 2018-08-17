@@ -473,6 +473,30 @@ var Installation = function(environment) {
 					arguments: ["sync"]
 				});
 			}
+		};
+		
+		this.config = function(p) {
+			if (!p) p = {};
+			return execute({
+				command: "config",
+				arguments: (function(rv) {
+					if (p.arguments) {
+						rv.push.apply(rv,p.arguments);
+					}
+					return rv;
+				})([]),
+				stdio: {
+					output: String
+				},
+				evaluate: function(result) {
+					return $api.Object({
+						properties: result.stdio.output.split("\n").map(function(line) {
+							var token = line.split("=");
+							return { name: token[0], value: token[1] }
+						})
+					});
+				}
+			});
 		}
 
 		this.execute = function(p) {
