@@ -522,6 +522,10 @@ var Installation = function(environment) {
 		return new LocalRepository({
 			directory: m.pathname.directory
 		});
+	};
+	
+	this.execute = function(m) {
+		git(m);
 	}
 };
 
@@ -555,14 +559,12 @@ if (program) {
 	});
 	
 	$exports.installation = installation;
-
-	$exports.Repository = function(p) {
-		return installation.Repository(p);
-	};
-
-	$exports.init = function(p) {
-		return installation.init(p);
-	};		
+	
+	["Repository","init","execute"].forEach(function(name) {
+		$exports[name] = function() {
+			return installation[name].apply(installation,arguments);
+		};
+	},this);
 }
 
 var GUI = $context.api.Error.Type("Please execute the graphical installer.");
