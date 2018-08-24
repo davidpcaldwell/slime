@@ -336,6 +336,9 @@ var Installation = function(environment) {
 			if (p.delete) {
 				args.push("-d");
 			}
+			if (p.remote) {
+				args.push("-r");
+			}
 			if (p.name) args.push(p.name);
 			if (p.start) args.push(p.start);
 			if (p.all) {
@@ -393,6 +396,7 @@ var Installation = function(environment) {
 
 		this.push = function(p) {
 			var args = [];
+			if (p && p.delete) args.push("--delete");
 			if (p && p.repository) args.push(p.repository);
 			if (p && p.refspec) args.push(p.refspec);
 			execute({
