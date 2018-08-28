@@ -190,6 +190,7 @@ var Chrome = function(b) {
 			$context.run({
 				command: b.program,
 				arguments: args,
+				stdio: m.stdio,
 				on: {
 					start: function(p) {
 						if ($context.os.name == "Mac OS X" && !m.nokill) {

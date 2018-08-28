@@ -16,7 +16,7 @@ $exports.Installation = function(o) {
 				return o.directory.getFile("bin/" + p.command);
 			}
 			return o.directory.getFile("bin/node");
-		});
+		})();
 		jsh.shell.run({
 			command: command,
 			arguments: p.arguments,
