@@ -247,7 +247,16 @@ public abstract class Filesystem {
 			}
 
 			public String getScriptPath() {
-				return file.getPath();
+				String rv = file.getPath();
+				if (rv.endsWith(File.separator)) {
+					if (rv.equals(File.separator)) {
+						rv = "";
+					} else {
+						//	TODO	should never happen on UNIX; maybe on Windows?
+						rv = rv.substring(0, rv.length() - File.separator.length());
+					}
+				}
+				return rv;
 			}
 
 			public Node[] list(FilenameFilter pattern) throws IOException {
