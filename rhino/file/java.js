@@ -41,7 +41,7 @@ $exports.FilesystemProvider = function(_peer) {
 	//	TODO	Build this into each separate filesystem separately
 	var isRootPath = function(string) {
 		if (separators.pathname == "/") {
-			return ( string == "/" ) || (string.substring(0,2) == "//" && string.substring(2).indexOf("/") == -1);
+			return ( string == "" || string == "/" ) || (string.substring(0,2) == "//" && string.substring(2).indexOf("/") == -1);
 		} else if (separators.pathname == "\\") {
 			if (string[1] == ":") {
 				return string.length == 3 && string[2] == "\\";

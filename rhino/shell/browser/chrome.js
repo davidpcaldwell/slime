@@ -218,7 +218,7 @@ var Chrome = function(b) {
 											}
 											running = false;
 										} else {
-											Packages.java.lang.Thread.currentThread().sleep((state) ? 1000 : 100);
+											Packages.java.lang.Thread.sleep((state) ? 1000 : 100);
 										}
 									} catch (e) {
 									}
