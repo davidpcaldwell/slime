@@ -507,6 +507,10 @@ $exports.jsh.relaunch = function() {
 		}
 	});
 }
+$exports.run.evaluate.jsh = {};
+$exports.run.evaluate.jsh.wrap = function(result) {
+	jsh.shell.exit(result.status);
+}
 
 //if (String($exports.properties.object.jsh.plugins)) {
 //	$exports.jsh.plugins = $context.api.file.filesystem.Searchpath.parse(String($exports.properties.object.jsh.plugins));
