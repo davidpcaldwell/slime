@@ -769,7 +769,7 @@
 			});
 			listeners.add();
 			try {
-				return f(p,listeners.events);
+				return f.call(this,p,listeners.events);
 			} finally {
 				listeners.remove();
 			}
