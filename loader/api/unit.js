@@ -942,31 +942,46 @@ $exports.getStructure = function getStructure(part) {
 };
 
 $exports.View = function(o) {
+	var On = function(implementation) {
+		this.scenario = function(e) {
+			if (e.detail.start) {
+				if (implementation.start) {
+					implementation.start(e.detail.start);
+				}
+			} else if (e.detail.end) {
+				if (implementation.end) {
+					implementation.end(e.detail.end, e.detail.success);
+				}
+			}
+		};
+		
+		this.test = function(e) {
+			if (implementation.test) implementation.test(e.detail);
+		}
+	};
+	
 	var addConsoleListener = function(scenario,implementation) {
 		if (typeof(implementation) == "function") {
 			scenario.listeners.add("scenario", implementation);
 			scenario.listeners.add("test", implementation);
 		} else if (implementation && typeof(implementation) == "object") {
-			scenario.listeners.add("scenario", function(e) {
-				if (e.detail.start) {
-					if (implementation.start) {
-						implementation.start(e.detail.start);
-					}
-				} else if (e.detail.end) {
-					if (implementation.end) {
-						implementation.end(e.detail.end, e.detail.success);
-					}
-				}
-			});
-
-			scenario.listeners.add("test", function(e) {
-				if (implementation.test) implementation.test(e.detail);
-			});
+			var on = new On(implementation);
+			scenario.listeners.add("scenario", on.scenario);
+			scenario.listeners.add("test", on.test);
 		}
 	};
 
 	this.listen = function(scenario) {
 		addConsoleListener(scenario,o);
+	};
+	
+	if (typeof(o) == "object") {
+		this.on = new On(o);
+	} else if (typeof(o) == "function") {
+		this.on = {
+			scenario: o,
+			test: o
+		};
 	}
 };
 
