@@ -283,6 +283,7 @@ END LICENSE
 								test(url.path == "/path");
 								verify(url).query.is("q=query");
 								test(url.fragment == "section");
+								verify(url).toString().is("scheme://user@server.com/path?q=query#section");
 							})();
 
 							(function() {

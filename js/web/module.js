@@ -119,7 +119,9 @@ $exports.Url = function(o) {
 		if (this.scheme) {
 			rv += this.scheme + "://";
 		}
-		//	TODO	userinfo
+		if (typeof(this.userinfo) != "undefined") {
+			rv += this.userinfo + "@";
+		}
 		if (this.host) {
 			rv += this.host;
 		}
