@@ -233,7 +233,7 @@ var Verify = function(scope,vars) {
 					scope.test({
 						success: function() { return false; },
 						message: function(success) {
-							return prefix + "threw " + e;
+							return name + " threw " + e;
 						}
 					});
 				}
