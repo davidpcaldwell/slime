@@ -522,12 +522,29 @@ END LICENSE
 				<li class="function" jsapi:id="subrepositories">
 					<div class="name">subrepositories</div>
 					<span>Returns a list of each of this repository's subrepositories.</span>
+					<div class="type">
+						<a class="type" name="types.subrepository">subrepository</a>
+						<span>__DESCRIPTION__</span>
+						<div class="label">has properties:</div>
+						<ul>
+							<li class="value">
+								<div class="name">repository</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</li>
+							<li class="value">
+								<div class="name">revision</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</li>
+						</ul>
+					</div>
 					<div class="returns">
 						<div class="label">Returns</div>
-						<span class="type">Array of <a href='#types.LocalRepository'>LocalRepository</a></span>
+						<span class="type">Object</span>
 						<span>
-							The subrepositories, or <code>null</code> if this repository has no <code>.hgsub</code>. If a directory
-							does not exist for a declared subrepository, an error will be thrown.
+							The keys of the object represent the relative path of each subrepository in the project, and the values
+							are of type <a href="#types.subrepository">subrepository</a>.
 						</span>
 					</div>
 					<script type="application/x.jsapi#tests">
