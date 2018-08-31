@@ -15,7 +15,11 @@ $exports.Console = function(o) {
 	var console = new function() {
 		this.println = function(s) {
 			if (typeof(s) == "undefined") s = "";
-			o.writer.write( s + "\n");
+			if (o.println) {
+				o.println(s);
+			} else {
+				o.writer.write( s + "\n");
+			}
 		};
 
 		this.print = function(s) {

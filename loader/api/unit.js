@@ -266,7 +266,7 @@ var Verify = function(scope,vars) {
 					scope.test({
 						success: function() { return false; },
 						message: function(success) {
-							return name + " did not throw; returned " + returned;
+							return name + " did not throw expected error; returned " + returned;
 						}
 					})
 				}
