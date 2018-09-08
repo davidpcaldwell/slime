@@ -43,7 +43,8 @@ $exports.Installation = function(o) {
 			environment: jsh.js.Object.set({}, jsh.shell.environment, p.environment, {
 				PATH: PATH.toString()
 			}),
-			directory: p.project
+			directory: p.project,
+			evaluate: p.evaluate
 		});
 	}
 	
