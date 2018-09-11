@@ -183,9 +183,7 @@
 					return jclass["class"];
 				},
 				graal: function() {
-					Packages.java.lang.System.err.println("graal jclass " + jclass);
 					return jclass["class"];
-//					throw new Error();
 				},
 				rhino: function() {
 					return jclass;
@@ -402,14 +400,7 @@
 				nashorn: JavaAdapter,
 				jdkrhino: JavaAdapter,
 				graal: function(type,implementation) {
-					Packages.java.lang.System.err.println("Java.extend = " + Java.extend);
-					Packages.java.lang.System.err.println("Java.type = " + Java.type);
 					return new type(implementation);
-//					var Adapted = Java.extend(
-//						type,
-//						implementation
-//					);
-					return new Adapted();
 				}
 			})
 			var t = new Packages.java.lang.Thread(
@@ -652,7 +643,6 @@
 		var implementation = function(args) {
 			var jarray = Packages.java.lang.reflect.Array.newInstance($api.java.getClass("java.lang.String"),args.length);
 			for (var i=0; i<jarray.length; i++) {
-				Packages.java.lang.System.err.println("argument: " + i + ": " + args[i]);
 				jarray[i] = new Packages.java.lang.String(args[i]);
 			}
 			var status = compiler.run(
