@@ -11,6 +11,25 @@
 //	Contributor(s):
 //	END LICENSE
 
+if (!jsh.shell.jsh.lib.getSubdirectory("ncdbg")) {
+	jsh.shell.console("Required: ncdbg installation; attempting to install ...");
+	jsh.shell.jsh({
+		script: jsh.shell.jsh.src.getFile("jsh/tools/install/ncdbg.jsh.js"),
+		evaluate: function(result) {
+			if (result.status) {
+				jsh.shell.exit(result.status);
+			}
+		}
+	});
+	jsh.shell.console("Relaunching program in ncdbg-enabled shell ...");
+	jsh.shell.jsh({
+		shell: jsh.shell.jsh.src,
+		script: jsh.script.file,
+		arguments: jsh.script.arguments,
+		evaluate: jsh.shell.run.evaluate.wrap
+	});
+}
+
 var parameters = jsh.script.getopts({
 	options: {
 		"ncdbg:chrome:instance": jsh.file.Pathname,
