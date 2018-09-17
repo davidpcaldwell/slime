@@ -80,6 +80,12 @@
 				return "Rhino";
 			}
 		}
+		
+		var Graal = function() {
+			this.toString = function() {
+				return "Graal";
+			}
+		};
 
 		var JdkRhino = function() {
 			this.toString = function() {
@@ -90,11 +96,14 @@
 		var engines = {
 			nashorn: new Nashorn(),
 			rhino: new Rhino(),
+			graal: new Graal(),
 			jdkrhino: new JdkRhino()
 		};
 
 		var name = (function() {
-			if (typeof(Packages.org.mozilla.javascript.Context.getCurrentContext) == "function" && Packages.org.mozilla.javascript.Context.getCurrentContext()) {
+			if (this.Graal) {
+				return "graal";
+			} if (typeof(Packages.org.mozilla.javascript.Context.getCurrentContext) == "function" && Packages.org.mozilla.javascript.Context.getCurrentContext()) {
 				//	TODO	untested
 				return "rhino";
 			} else if (new Packages.javax.script.ScriptEngineManager().getEngineByName("nashorn")) {
@@ -129,6 +138,25 @@
 				}
 				return null;
 			},
+			graal: function() {
+//				new Packages.java.lang.Throwable().printStackTrace();
+//				Packages.java.lang.System.err.println(new Error().stack);
+//				Packages.java.lang.System.err.println(new Packages.java.lang.Throwable().getStackTrace()[0].getFileName());
+//				Packages.java.lang.System.err.println("sun.java.command = " + Packages.java.lang.System.getProperty("sun.java.command"));
+				var command = Packages.java.lang.System.getProperty("sun.java.command");
+				var main = (function() {
+					var tokens = command.split(" ");
+					if (tokens[0] != "com.oracle.truffle.js.shell.JSLauncher") throw new Error();
+					for (var i=1; i<tokens.length; i++) {
+						var token = tokens[i];
+						if (token == "--js.nashorn-compat=true") continue;
+						return token;
+					}
+				})();
+				return main;
+//				Packages.java.lang.System.err.println("main = " + main);
+//				throw new Error("Unimplemented: script for Graal");
+			},
 			jdkrhino: function() {
 				return global[String(Packages.javax.script.ScriptEngine.FILENAME)];
 			}
@@ -154,6 +182,9 @@
 				nashorn: function() {
 					return jclass["class"];
 				},
+				graal: function() {
+					return jclass["class"];
+				},
 				rhino: function() {
 					return jclass;
 				},
@@ -175,6 +206,9 @@
 				this.echo = function(s) {
 					print(s);
 				}
+			},
+			graal: function() {
+				load("nashorn:mozilla_compat.js");
 			}
 		})();
 		return rv;
@@ -360,8 +394,17 @@
 		};
 		Spooler.start = function(_in,_out,closeOnEnd,flush,name) {
 			var s = new Spooler(_in, _out, closeOnEnd,flush);
+			//	TODO	Graal has JavaAdapter bug: https://github.com/oracle/graal/issues/541
+			var JAdapter = $engine.resolve({
+				rhino: JavaAdapter,
+				nashorn: JavaAdapter,
+				jdkrhino: JavaAdapter,
+				graal: function(type,implementation) {
+					return new type(implementation);
+				}
+			})
 			var t = new Packages.java.lang.Thread(
-				new JavaAdapter(
+				new JAdapter(
 					Packages.java.lang.Runnable,
 					s
 				)

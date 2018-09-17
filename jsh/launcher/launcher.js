@@ -303,7 +303,7 @@ try {
 			var sourceArguments = (p && p.source) ? ["-source", p.source] : [];
 			var args = [
 				"-Xlint:unchecked",
-				"-d", p.to
+				"-d", p.to.getAbsolutePath()
 			].concat(rhinoJavacArguments).concat(sourceArguments).concat(targetArguments);
 			//	TODO	we used to use .concat(toCompile) but that does not work under Nashorn 8u45, which is presumably a Nashorn
 			//			bug
