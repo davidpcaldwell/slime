@@ -55,7 +55,11 @@ var run = function() {
 			$context.run(arguments[0],arguments[1]);
 		} else {
 			with(arguments[1]) {
-				eval(arguments[0]);
+				eval((function(zero) {
+					if (typeof(zero) == "string") return zero;
+					if (typeof(zero) == "object" && zero.string) return zero.string + "//# sourceURL=" + zero.name;
+					throw new Error();
+				})(arguments[0]));
 			}
 		}
 	} catch (e) {
@@ -348,6 +352,7 @@ $exports.ApiHtmlTests = function(html,name) {
 			return rv;
 		} else if (isScript) {
 			//	do nothing
+			var breakpiont = 1;
 		} else {
 			var rv = {
 				name: getElementName(element,name),

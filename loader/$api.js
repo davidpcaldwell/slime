@@ -635,6 +635,13 @@
 		}
 		return rv;
 	};
+	$exports.Object.compose = function() {
+		var args = [{}];
+		for (var i=0; i<arguments.length; i++) {
+			args.push(arguments[i]);
+		}
+		return Object.assign.apply(Object,args);
+	};
 	$exports.Object.property = function() {
 		var rv = this;
 		for (var i=0; i<arguments.length; i++) {

@@ -762,6 +762,30 @@ END LICENSE
 								<span>__DESCRIPTION__</span>
 							</div>
 						</li>
+						<li class="function">
+							<div class="name">compose</div>
+							<span>
+								Takes a list of objects and composes them into a new object. Properties are copied from each
+								source object in succession, with values from later objects replacing those from earlier objects.
+							</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</div>
+							<script type="application/x.jsapi#tests">
+								(function() {
+									var composed = api.Object.compose({ a: 1, b: 1 }, { a: 2 });
+									verify(composed).a.is(2);
+									verify(composed).b.is(1);
+								})();
+							</script>
+						</li>
 					</ul>
 				</li>
 				<li class="object">
