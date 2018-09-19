@@ -11,6 +11,33 @@
 //	END LICENSE
 
 (function() {
+	(function polyfill() {
+		var ToObject = function(v) {
+			//	https://www.ecma-international.org/ecma-262/6.0/#sec-toobject
+			if (typeof(v) == "undefined" || v === null) throw new TypeError();
+			if (typeof(v) == "boolean") return Boolean(v);
+			if (typeof(v) == "number") return Number(v);
+			if (typeof(v) == "string") return String(v);
+			return v;
+		}
+		
+		if (!Object.assign) {
+			//	https://www.ecma-international.org/ecma-262/6.0/#sec-object.assign
+			//	TODO	currently the basics can be tested manually with loader/test/test262.jsh.js -file local/test262/test/built-ins/Object/assign/Target-Object.js
+			Object.assign = function assign(rv,firstSource /* to set function .length properly*/) {
+				var rv = ToObject(arguments[0]);
+				if (arguments.length == 1) return rv;
+				for (var i=1; i<arguments.length; i++) {
+					var source = (typeof(arguments[i]) == "undefined" || arguments[i] === null) ? {} : ToObject(arguments[i]);
+					for (var x in source) {
+						rv[x] = source[x];
+					}
+				}
+				return rv;
+			};
+		}		
+	})();
+	
 	return new function() {
 		var $platform = (function() {
 			var $exports = {};
