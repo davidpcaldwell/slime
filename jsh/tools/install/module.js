@@ -98,6 +98,13 @@ var algorithms = {
 };
 
 var installLocalArchive = function(p,events) {
+	if (!p.format) {
+		var basename = (p.url) ? p.url.toString().split("/").slice(-1)[0] : p.file.pathname.basename;
+		if (/\.tar\.gz$/.test(basename) && $exports.format.gzip) p.format = $exports.format.gzip;
+		if (/\.zip$/.test(basename)) p.format = $exports.format.zip;
+		if (/\.jar$/.test(basename)) p.format = $exports.format.zip;
+	}
+	if (!p.format) throw new TypeError("Required: 'format' property.");
 	var algorithm = p.format;
 	var untardir = $context.api.shell.TMPDIR.createTemporary({ directory: true });
 	events.fire("console", { message: "Extracting " + p.file + " to " + untardir });
@@ -113,6 +120,7 @@ var installLocalArchive = function(p,events) {
 	})();
 	events.fire("console", { message: "Assuming destination directory created was " + unzippedDestination });
 	var unzippedTo = untardir.getSubdirectory(unzippedDestination);
+	if (!unzippedTo) throw new TypeError("Expected directory " + unzippedDestination + " not found in " + untardir);
 	events.fire("console", { message: "Directory is: " + unzippedTo });
 	unzippedTo.move(p.to, {
 		overwrite: false,
