@@ -192,6 +192,7 @@ var Chrome = function(b) {
 				arguments: args,
 				stdio: m.stdio,
 				on: {
+					//	TODO	on.start is deprecated
 					start: function(p) {
 						if ($context.os.name == "Mac OS X" && !m.nokill) {
 							$context.api.java.Thread.start(function() {
