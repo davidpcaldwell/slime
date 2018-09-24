@@ -23,3 +23,15 @@ plugin({
 		});
 	}
 });
+
+plugin({
+	isReady: function() {
+		return jsh.document && jsh.shell;
+	},
+	load: function() {
+		if (jsh.shell.jsh.lib && jsh.shell.jsh.lib.getFile("jsoup.jar")) {
+			jsh.loader.plugins(jsh.shell.jsh.lib.getRelativePath("jsoup.jar"));
+			jsh.document.Document.Html.$reload();
+		}
+	}
+})
