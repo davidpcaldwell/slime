@@ -496,7 +496,7 @@ $exports.jsh.command = function(p) {
 		evaluate: evaluate
 	});
 	return argument;
-}
+};
 $exports.jsh.relaunch = function() {
 	$exports.jsh({
 		fork: true,
