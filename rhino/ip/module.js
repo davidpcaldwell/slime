@@ -28,7 +28,17 @@ $exports.Host = function(o) {
 	}
 }
 
-$exports.Port = function(number) {
+$exports.Port = function(o) {
+	if (typeof(o) == "number") o = { number: o };
+	var number = o.number;
+	
+	Object.defineProperty(this, "number", {
+		enumerable: true,
+		configurable: true,
+		value: number,
+		writable: false
+	});
+	
 	this.__defineGetter__("number", function() {
 		return number;
 	});

@@ -493,7 +493,7 @@ $exports.jsh.command = function(p) {
 		evaluate: evaluate
 	});
 	return argument;
-}
+};
 
 //if (String($exports.properties.object.jsh.plugins)) {
 //	$exports.jsh.plugins = $context.api.file.filesystem.Searchpath.parse(String($exports.properties.object.jsh.plugins));
