@@ -39,10 +39,6 @@ $exports.Port = function(o) {
 		writable: false
 	});
 	
-	this.__defineGetter__("number", function() {
-		return number;
-	});
-
 	this.isOpen = $api.debug.disableBreakOnExceptionsFor(function() {
 		var debug = function(message) {
 			//Packages.java.lang.System.err.println(message);
