@@ -707,7 +707,7 @@
 				if (!list) {
 					list = [];
 					for (var x in rv) {
-						var group = (p.codec.decode) ? p.codec.decode(x) : x;
+						var group = (p.codec && p.codec.decode) ? p.codec.decode(x) : x;
 						var element = { group: group };
 						if (p.count) {
 							element.count = rv[x];
