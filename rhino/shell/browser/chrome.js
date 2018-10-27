@@ -187,6 +187,7 @@ var Chrome = function(b) {
 				}
 			}
 			//Packages.java.lang.System.err.println("using program: args = " + JSON.stringify(args));
+			//	TODO	use events rather than on.start property
 			$context.run({
 				command: b.program,
 				arguments: args,
