@@ -133,6 +133,8 @@ var Message = function() {
 };
 
 var Session = function(p) {
+	if (!p) p = {};
+	if (!p._properties) p._properties = new Packages.java.util.Properties();
 	var _session = Packages.javax.mail.Session.getInstance(p._properties);
 
 	var _transport;
