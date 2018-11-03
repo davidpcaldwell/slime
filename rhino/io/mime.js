@@ -158,7 +158,7 @@ $exports.Multipart = function(p) {
 			$multipart.addBodyPart($part);
 		});
 
-		return new $context.api.io.Resource({
+		var rv = new $context.api.io.Resource({
 			type: $context.$slime.mime.Type.parse(String($multipart.getContentType())),
 			read: {
 				binary: function() {
@@ -169,6 +169,11 @@ $exports.Multipart = function(p) {
 				}
 			}
 		});
+		rv.java = {};
+		rv.java.adapt = function() {
+			return $multipart;
+		};
+		return rv;
 	}
 };
 

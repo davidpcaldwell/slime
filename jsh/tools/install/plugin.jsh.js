@@ -190,6 +190,18 @@ plugin({
 			}
 		};
 		
+		jsh.shell.tools.javamail = {};
+		jsh.shell.tools.javamail.install = function(p) {
+			var to = jsh.shell.jsh.lib.getRelativePath("javamail.jar");
+			if (!to.file) {
+				//	Moving to https://projects.eclipse.org/projects/ee4j.javamail for version 1.6.3
+				var response = new jsh.http.Client().request({
+					url: "https://github.com/javaee/javamail/releases/download/JAVAMAIL-1_6_2/javax.mail.jar"
+				});
+				to.write(response.body.stream, { append: false });				
+			}
+		};
+		
 		(function deprecated() {
 			jsh.tools.ncdbg = ncdbg;
 			$api.deprecate(jsh.tools,"ncdbg");			

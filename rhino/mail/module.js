@@ -153,6 +153,12 @@ var Session = function(p) {
 			//	GAE (untested)
 			//	Packages.javax.mail.Transport.send(_message);
 		}
+	};
+	
+	this.java = {
+		adapt: function() {
+			return _session;
+		}
 	}
 };
 Session._properties = {};
