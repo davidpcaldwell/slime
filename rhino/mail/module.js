@@ -157,6 +157,32 @@ var Session = function(p) {
 		}
 	};
 	
+	this.Message = function(o) {
+		var _message = new Packages.javax.mail.internet.MimeMessage(_session);
+		if (o.multipart) {
+			_message.setContent(o.multipart.java.adapt());
+		}
+		
+		this.resource = (function() {
+			jsh.shell.console("context class loader: " + Packages.java.lang.Thread.currentThread().getContextClassLoader());
+			var _baos = new Packages.java.io.ByteArrayOutputStream();
+			var before = Packages.java.lang.Thread.currentThread().getContextClassLoader();
+			Packages.java.lang.Thread.currentThread().setContextClassLoader(_message.getClass().getClassLoader());
+			_message.writeTo(_baos);
+			Packages.java.lang.Thread.currentThread().setContextClassLoader(before);
+			_baos.close();
+			var _bytes = _baos.toByteArray();
+			return new jsh.io.Resource({
+				type: "message/rfc822",
+				read: {
+					binary: function() {
+						return jsh.io.java.adapt(new Packages.java.io.ByteArrayInputStream(_bytes));
+					}
+				}
+			});			
+		})();
+	}
+	
 	this.java = {
 		adapt: function() {
 			return _session;
