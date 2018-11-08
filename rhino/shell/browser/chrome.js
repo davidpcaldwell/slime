@@ -195,7 +195,9 @@ var Chrome = function(b) {
 				on: {
 					//	TODO	on.start is deprecated
 					start: function(p) {
-						if ($context.os.name == "Mac OS X" && !m.nokill) {
+						if ($context.os.name == "Mac OS X" && m.exitOnClose) {
+							//	TODO: The exitOnClose property is currently undocumented; it is not clear that it works correctly. More
+							//	testing needed
 							$context.api.java.Thread.start(function() {
 								var state;
 								var running = true;
@@ -205,13 +207,15 @@ var Chrome = function(b) {
 										return item.parent.id == p.pid;
 									});
 									var renderers = processes.filter(function(item) {
-										return item.command.indexOf("--type=renderer") != -1;
+										return item.command.indexOf("--type=renderer") != -1 && item.command.indexOf("--extension-process") == -1;
 									});
-									if (renderers.length) {
+									//	TODO	recent change to Chrome architecture; opening window seems to cause creation of
+									//			two renderer processes, closing seems to destroy one
+									if (renderers.length > 1) {
 										state = true;
 									}
 									try {
-										if (state && renderers.length == 0) {
+										if (state && renderers.length <= 1) {
 											//	TODO	check to see whether it is still running
 											try {
 												p.kill();

@@ -56,24 +56,16 @@ jsh.script.Application.run(new function() {
 				jsh.shell.echo("Opened.");
 			}
 		},
-		close: {
-			getopts: {},
-			run: function(parameters) {
-				jsh.shell.console("Testing Chrome closure detection ...");
-				var chrome = jsh.shell.browser.chrome;
-				var user = new chrome.Instance({});
-				user.run({ uri: "about:blank" });
-				jsh.shell.echo("Chrome closed.");
-			}
-		},
-		open: {
+		app: {
 			getopts: {
-				name: String,
-				url: String,
-				width: Number,
-				height: Number,
-				x: Number,
-				y: Number
+				options: {
+					name: String,
+					url: String,
+					width: Number,
+					height: Number,
+					x: Number,
+					y: Number
+				}
 			},
 			run: function(parameters) {
 				var chrome = jsh.shell.browser.chrome;
@@ -85,6 +77,24 @@ jsh.script.Application.run(new function() {
 					position: { x: parameters.options.x, y: parameters.options.y },
 					size: { width: parameters.options.width, height: parameters.options.height }
 				});
+				jsh.shell.console("open() returned.");
+			}
+		},
+		close: {
+			getopts: {
+				options: {
+					exitOnCLose: false
+				}
+			},
+			run: function(parameters) {
+				jsh.shell.console("Testing Chrome closure detection ...");
+				var chrome = jsh.shell.browser.chrome;
+				var user = new chrome.Instance({});
+				user.run({ 
+					uri: "about:blank",
+				 	exitOnClose: parameters.options.exitOnClose
+				});
+				jsh.shell.console("Chrome closure detected.");
 			}
 		}
 	}
