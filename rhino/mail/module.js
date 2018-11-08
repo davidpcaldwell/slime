@@ -159,6 +159,34 @@ var Session = function(p) {
 	
 	this.Message = function(o) {
 		var _message = new Packages.javax.mail.internet.MimeMessage(_session);
+		
+		if (o.to) {
+			if (typeof(o.to) == "object" && (!(o.to instanceof Array))) {
+				o.to = [o.to];
+			}
+			o.to.forEach(function(recipient) {
+				var _address = (function() {
+					if (recipient.address && recipient.name) {
+						return new Packages.javax.mail.internet.InternetAddress(
+							recipient.address,
+							recipient.name
+						)
+					}
+					throw new Error();
+				})();
+				_message.setRecipients(Packages.javax.mail.Message.RecipientType.TO, jsh.java.Array.create({
+					type: Packages.javax.mail.Address,
+					array: [
+						_address
+					]
+				}))
+			});
+		}
+		
+		if (o.subject) {
+			_message.setSubject(o.subject);
+		}
+		
 		if (o.multipart) {
 			_message.setContent(o.multipart.java.adapt());
 		}
