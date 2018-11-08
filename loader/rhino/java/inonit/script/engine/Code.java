@@ -19,7 +19,7 @@ import java.util.logging.*;
 
 public class Code {
 	private static final inonit.system.Logging LOG = inonit.system.Logging.get();
-	
+
 	private Code() {
 	}
 
@@ -95,7 +95,7 @@ public class Code {
 					@Override public String toString() {
 						return file.toString();
 					}
-					
+
 					@Override public URI getURI() {
 						return URI.create(file);
 					}
@@ -134,7 +134,7 @@ public class Code {
 					@Override public String toString() {
 						return url.toString();
 					}
-					
+
 					private String getSourceName(URL url) {
 						if (url.getProtocol().equals("file")) {
 							try {
@@ -287,7 +287,7 @@ public class Code {
 				};
 			}
 		};
-		
+
 		private static final Loader system = new Loader() {
 			@Override public String toString() {
 				return "Source: system class loader";
@@ -316,8 +316,8 @@ public class Code {
 		static Loader create(final java.net.URL url, Enumerator enumerator) {
 			return new UrlBased(url, enumerator, null);
 		}
-		
-		//	TODO	
+
+		//	TODO
 		static Loader jar(final File jar) throws IOException {
 			try {
 				return create(jar.toURI().toURL(), Enumerator.zip(jar.getAbsolutePath(), new FileInputStream(jar)));
@@ -337,11 +337,11 @@ public class Code {
 		public static Loader create(final java.net.URL url) {
 			return new UrlBased(url, null, null);
 		}
-		
+
 		public static Loader bitbucketApiVersionOne(URL url) {
 			return Code.Loader.create(url, Code.Loader.Enumerator.bitbucketApiVersionOne(url));
 		}
-		
+
 		static Loader create(java.net.URLClassLoader parent) {
 			List<URL> urls = Arrays.asList(((URLClassLoader)parent).getURLs());
 			List<Code.Loader> sources = new ArrayList<Code.Loader>();
@@ -361,9 +361,9 @@ public class Code {
 					sources.add(Code.Loader.create(url));
 				}
 			}
-			return Code.Loader.create(sources);			
+			return Code.Loader.create(sources);
 		}
-		
+
 		public static Loader zip(final java.io.File file) {
 			try {
 				return zip(file.toString(), new java.io.FileInputStream(file));
@@ -371,7 +371,7 @@ public class Code {
 				throw new RuntimeException(e);
 			}
 		}
-		
+
 		public static Loader zip(final Code.Loader.Resource file) {
 			return zip(file.toString(), file.getInputStream());
 		}
@@ -565,7 +565,7 @@ public class Code {
 					}
 				};
 			}
-			
+
 			static Enumerator bitbucketApiVersionOne(final URL base) {
 				return new Enumerator() {
 					@Override public String[] list(String prefix) {
@@ -588,7 +588,7 @@ public class Code {
 					}
 				};
 			}
-			
+
 			static Enumerator zip(final String sourceName, InputStream stream) throws IOException {
 				java.util.zip.ZipInputStream in = new java.util.zip.ZipInputStream(stream);
 				java.util.zip.ZipEntry entry;

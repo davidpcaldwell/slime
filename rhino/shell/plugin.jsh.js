@@ -100,11 +100,11 @@ plugin({
 
 			//	TODO	probably want to build these arguments better so that other jsh.shell.jsh arguments like stdio and
 			//			environment can also be used and still work
-			
+
 			var evaluate = function(result) {
 				jsh.shell.exit(result.status);
 			};
-			
+
 			if (isRhino) {
 				jsh.shell.jsh({
 					script: jsh.script.file,

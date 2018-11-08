@@ -139,7 +139,7 @@ public class Main {
 			final Code.Loader jsh = Code.Loader.system("$jsh/");
 			return new Shell.Installation() {
 				private Code.Loader[] plugins;
-				
+
 				{
 					try {
 						this.plugins = new Code.Loader[] { Code.Loader.create(createPackagedPluginsDirectory()) };
@@ -147,7 +147,7 @@ public class Main {
 						throw new RuntimeException(e);
 					}
 				}
-				
+
 				@Override public Code.Loader getPlatformLoader() {
 					return platform;
 				}
@@ -318,7 +318,7 @@ public class Main {
 					//System.err.println(Unbuilt.this.src + " list(" + prefix + ")");
 					String[] was = Unbuilt.this.src.getEnumerator().list(prefix);
 					if (prefix.length() != 0) return was;
-					
+
 					List<String> list = Arrays.asList(was);
 					ArrayList<String> rv = new ArrayList<String>();
 					for (String s : list) {
@@ -331,8 +331,7 @@ public class Main {
 				}
 			};
 			final Code.Locator locator = new Code.Locator() {
-				@Override
-				public URL getResource(String path) {
+				@Override public URL getResource(String path) {
 					//System.err.println(Unbuilt.this.src + " getResource(" + path + ")");
 					if (path.startsWith("local/")) return null;
 					return Unbuilt.this.src.getLocator().getResource(path);
@@ -343,20 +342,17 @@ public class Main {
 					return "Code.Loader (no local/): " + Unbuilt.this.src;
 				}
 
-				@Override
-				public Code.Loader.Resource getFile(String path) throws IOException {
+				@Override public Code.Loader.Resource getFile(String path) throws IOException {
 					//System.err.println(Unbuilt.this.src + " getFile(" + path + ")");
 					if (path.startsWith("local/")) return null;
 					return Unbuilt.this.src.getFile(path);
 				}
 
-				@Override
-				public Code.Loader.Enumerator getEnumerator() {
+				@Override public Code.Loader.Enumerator getEnumerator() {
 					return enumerator;
 				}
 
-				@Override
-				public Code.Locator getLocator() {
+				@Override public Code.Locator getLocator() {
 					return locator;
 				}
 			};

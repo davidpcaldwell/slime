@@ -69,9 +69,9 @@ plugin({
 				jsh.shell.console(e.detail);
 			}
 		});
-		
+
 		jsh.shell.tools = {};
-		
+
 		jsh.shell.tools.rhino = {
 			install: installRhino
 		};
@@ -91,14 +91,14 @@ plugin({
 			$api: jsh.tools.install.$api
 		});
 		jsh.shell.tools.tomcat = tomcat;
-		
+
 		(function deprecated() {
 			jsh.tools.tomcat = tomcat;
 			$api.deprecate(jsh.tools,"tomcat");
 			jsh.tools.install.tomcat = tomcat;
-			$api.deprecate(jsh.tools.install,"tomcat");			
+			$api.deprecate(jsh.tools.install,"tomcat");
 		})();
-		
+
 		var ncdbg = new function() {
 			Object.defineProperty(this, "installed", {
 				get: function() {
@@ -170,15 +170,15 @@ plugin({
 					if (p.version == "0.8.0" || p.version == "master") {
 						launcherCode = launcherCode.replace(/\/\$\{JAVA_HOME\/\:\/\}/g, "${JAVA_HOME}");
 					} else if (p.version == "0.8.1") {
-						launcherCode = launcherCode.replace("ncdbg-0.8.1.jar", "ncdbg-0.8.1.jar:${JAVA_HOME}/lib/tools.jar");						
+						launcherCode = launcherCode.replace("ncdbg-0.8.1.jar", "ncdbg-0.8.1.jar:${JAVA_HOME}/lib/tools.jar");
 					}
 					jsh.shell.jsh.lib.getRelativePath("ncdbg/bin/ncdbg").write(launcherCode, { append: false });
 				}
 			});
 		};
-		
+
 		jsh.shell.tools.ncdbg = ncdbg;
-		
+
 		jsh.shell.tools.jsoup = {};
 		jsh.shell.tools.jsoup.install = function(p) {
 			var to = jsh.shell.jsh.lib.getRelativePath("jsoup.jar");
@@ -189,7 +189,7 @@ plugin({
 				to.write(response.body.stream, { append: false });
 			}
 		};
-		
+
 		jsh.shell.tools.javamail = {};
 		jsh.shell.tools.javamail.install = function(p) {
 			var to = jsh.shell.jsh.lib.getRelativePath("javamail.jar");
@@ -198,13 +198,13 @@ plugin({
 				var response = new jsh.http.Client().request({
 					url: "https://github.com/javaee/javamail/releases/download/JAVAMAIL-1_6_2/javax.mail.jar"
 				});
-				to.write(response.body.stream, { append: false });				
+				to.write(response.body.stream, { append: false });
 			}
 		};
-		
+
 		(function deprecated() {
 			jsh.tools.ncdbg = ncdbg;
-			$api.deprecate(jsh.tools,"ncdbg");			
+			$api.deprecate(jsh.tools,"ncdbg");
 		})();
 	}
 });

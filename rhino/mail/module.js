@@ -156,10 +156,10 @@ var Session = function(p) {
 			//	Packages.javax.mail.Transport.send(_message);
 		}
 	};
-	
+
 	this.Message = function(o) {
 		var _message = new Packages.javax.mail.internet.MimeMessage(_session);
-		
+
 		if (o.to) {
 			if (typeof(o.to) == "object" && (!(o.to instanceof Array))) {
 				o.to = [o.to];
@@ -182,15 +182,15 @@ var Session = function(p) {
 				}))
 			});
 		}
-		
+
 		if (o.subject) {
 			_message.setSubject(o.subject);
 		}
-		
+
 		if (o.multipart) {
 			_message.setContent(o.multipart.java.adapt());
 		}
-		
+
 		this.resource = (function() {
 			jsh.shell.console("context class loader: " + Packages.java.lang.Thread.currentThread().getContextClassLoader());
 			var _baos = new Packages.java.io.ByteArrayOutputStream();
@@ -207,10 +207,10 @@ var Session = function(p) {
 						return jsh.io.java.adapt(new Packages.java.io.ByteArrayInputStream(_bytes));
 					}
 				}
-			});			
+			});
 		})();
 	}
-	
+
 	this.java = {
 		adapt: function() {
 			return _session;

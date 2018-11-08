@@ -103,7 +103,7 @@ var Installation = function(environment) {
 		}
 		args.push(p.command);
 		if (typeof(p.arguments) == "object" && p.arguments instanceof Array) {
-			args.push.apply(args,p.arguments);			
+			args.push.apply(args,p.arguments);
 		} else if (typeof(p.arguments) == "function") {
 			p.arguments(args);
 		}
@@ -694,10 +694,10 @@ var Installation = function(environment) {
 						})
 					;
 					return rv;
-				}					
+				}
 			});
 		}).bind(this);
-		
+
 		if (!$api.Array) $api.Array = {};
 		if (!$api.Array.element) $api.Array.element = function recurse(filter) {
 			if (filter) return recurse.call(this.filter(filter));
@@ -709,7 +709,7 @@ var Installation = function(environment) {
 			Array.prototype.element = $api.Array.element;
 		};
 		$api.Array.global();
-		
+
 		this.bookmarks = function(p) {
 			if (!p) p = {};
 			if (p.delete) {

@@ -478,7 +478,7 @@ var Installation = function(environment) {
 				});
 			}
 		};
-		
+
 		this.config = function(p) {
 			if (!p) p = {};
 			return execute({
@@ -527,7 +527,7 @@ var Installation = function(environment) {
 			directory: m.pathname.directory
 		});
 	};
-	
+
 	this.execute = function(m) {
 		git(m);
 	}
@@ -552,7 +552,7 @@ var program = (function() {
 // 		}
 // 		return rv;
 	};
-	
+
 	if ($context.program) return $context.program;
 	return find();
 })();
@@ -561,9 +561,9 @@ if (program) {
 	var installation = new Installation({
 		program: program
 	});
-	
+
 	$exports.installation = installation;
-	
+
 	["Repository","init","execute"].forEach(function(name) {
 		$exports[name] = function() {
 			return installation[name].apply(installation,arguments);

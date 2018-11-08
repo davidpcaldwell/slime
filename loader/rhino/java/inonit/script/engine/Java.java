@@ -141,7 +141,7 @@ public class Java {
 		private boolean compile(Code.Loader.Resource javaSource) {
 			return compile(new SourceFileObject(javaSource));
 		}
-		
+
 		final Store store() {
 			return this.jfm.store();
 		}
@@ -178,7 +178,7 @@ public class Java {
 				}
 				return parent;
 			}
-			
+
 			final Store store() {
 				return store;
 			}
@@ -569,7 +569,7 @@ public class Java {
 			return null;
 		}
 	}
-	
+
 	static Code.Loader compiling(final Code.Loader base, final Store store, final ClassLoader dependencies) {
 		return new SourceDirectoryClassesSource(base, store, dependencies);
 	}

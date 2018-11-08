@@ -494,7 +494,22 @@ var Pathname = function Pathname(parameters) {
 			};
 
 			var rv;
-			if (mode.recursive) {
+			if (typeof(mode.descendants) != "undefined") {
+				rv = [];
+				var add = function(dir) {
+					var items = dir.list();
+					items.forEach(function(item) {
+						 if (filter(item)) {
+							rv.push(item);
+						 }
+						 if (item.directory && mode.descendants(item)) {
+							 add(item);
+						 }
+					})
+				};
+				add(this);
+				return toReturn(rv);
+			} else if (mode.recursive) {
 				return $api.deprecate(function() {
 					rv = [];
 					var add = function(dir) {
@@ -522,21 +537,6 @@ var Pathname = function Pathname(parameters) {
 
 					return toReturn(rv);
 				}).call(this);
-			} else if (typeof(mode.descendants) != "undefined") {
-				rv = [];
-				var add = function(dir) {
-					var items = dir.list();
-					items.forEach(function(item) {
-						 if (filter(item)) {
-							rv.push(item);
-						 }
-						 if (item.directory && mode.descendants(item)) {
-							 add(item);
-						 }
-					})
-				};
-				add(this);
-				return toReturn(rv);
 			} else {
 				var createNodesFromPeers = function(peers) {
 					//	This function is written with this kind of for loop to allow accessing a Java array directly

@@ -38,7 +38,7 @@ plugin({
 			if (!jsh.tools) jsh.tools = {};
 			jsh.tools.git = git;
 			global.git = git;
-			$api.deprecate(global,"git");			
+			$api.deprecate(global,"git");
 		})();
 	}
 })

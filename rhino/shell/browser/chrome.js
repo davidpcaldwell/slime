@@ -278,7 +278,7 @@ var Chrome = function(b) {
 			this.name = data.data.name;
 
 			this.bookmarks = data.read("Bookmarks");
-			
+
 			this.preferences = data.read("Preferences");
 
 			if (u.install) {

@@ -103,7 +103,7 @@
 					var length = _file.getLength();
 					if (typeof(length) == "object" && length !== null && length.longValue) {
 						return Number(length.longValue());
-					}				
+					}
 				};
 				this.enumerable = true;
 			}
@@ -116,7 +116,7 @@
 			new function() {
 				this.get = function() {
 					var _modified = _file.getLastModified();
-					if (_modified) return new Date( Number(_modified.getTime()) );					
+					if (_modified) return new Date( Number(_modified.getTime()) );
 				};
 				this.enumerable = true;
 			}
@@ -253,26 +253,26 @@
 							};
 
 							this.getClasses = function() {
-								throw new Error("Unimplemented: getClasses");							
+								throw new Error("Unimplemented: getClasses");
 							};
 
 							this.getEnumerator = function() {
 								throw new Error("Unimplemented: getEnumerator");
 							}
 						}
-					)		
+					)
 				}
 			};
 		};
 		rv.series = was.series;
 		return rv;
 	})(loader.Loader);
-	
+
 	loader.classpath = new (function(_classpath /* Loader.Classes.Interface */) {
 		this.toString = function() {
 			return String(_classpath);
 		};
-		
+
 		this.setAsThreadContextClassLoaderFor = function(_thread) {
 			_classpath.setAsThreadContextClassLoaderFor(_thread);
 		};
@@ -280,7 +280,7 @@
 		this.getClass = function(name) {
 			return _classpath.getClass(name);
 		};
-		
+
 		this.add = function(p) {
 			if (p._file && p._file.isDirectory()) {
 				_classpath.add(Packages.inonit.script.engine.Code.Loader.create(p._file));
@@ -288,7 +288,7 @@
 				//	Currently can be used to add .jar directly to classpath through jsh.loader.java.add
 				//	TODO	determine whether this should be switched to jar._file; used by servlet plugin to put Tomcat classes
 				//			in classpath
-				_classpath.add(Packages.inonit.script.engine.Code.Loader.create(p._file));				
+				_classpath.add(Packages.inonit.script.engine.Code.Loader.create(p._file));
 			} else if (p.slime) {
 				if (p.slime.loader) {
 					_classpath.add(p.slime.loader.java.adapt().child("$jvm/classes"));
@@ -299,13 +299,13 @@
 				if (p.jar._file) {
 					_classpath.addJar(p.jar._file);
 				} else if (p.jar.resource) {
-					_classpath.add(Packages.inonit.script.engine.Code.Loader.zip(Resource.toCodeSourceFile(p.jar.resource,p.jar.resource.name)));					
+					_classpath.add(Packages.inonit.script.engine.Code.Loader.zip(Resource.toCodeSourceFile(p.jar.resource,p.jar.resource.name)));
 				} else {
 					throw new Error();
 				}
 			} else if (p.src) {
 				if (p.src.loader) {
-					_classpath.add(_classpath.compiling(p.src.loader.java.adapt()));					
+					_classpath.add(_classpath.compiling(p.src.loader.java.adapt()));
 				} else {
 					throw new Error();
 				}

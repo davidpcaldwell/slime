@@ -90,7 +90,7 @@ jsh.script.Application.run(new function() {
 				jsh.shell.console("Testing Chrome closure detection ...");
 				var chrome = jsh.shell.browser.chrome;
 				var user = new chrome.Instance({});
-				user.run({ 
+				user.run({
 					uri: "about:blank",
 				 	exitOnClose: parameters.options.exitOnClose
 				});

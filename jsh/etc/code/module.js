@@ -37,12 +37,13 @@ $exports.source = new function() {
 $exports.files = new function() {
 	//	TODO	probably need way to override these default excludes
 	this.filter = function(node) {
+		jsh.shell.console("Checking: " + node);
 		if (node.pathname.basename == ".hg") return false;
 		if (node.pathname.basename == ".hgtags") return false;
 		if (node.pathname.basename == ".svn") return false;
 		if (node.pathname.basename == "target") return false;
 		//	TODO	next line breaks encapsulation of rhino/file/
-		if (node.directory) return { contents: true };
+		if (node.directory) return false;
 		return true;
 	}
 
@@ -72,8 +73,12 @@ $exports.files = new function() {
 	this.forEachTextEntry = function(p) {
 		if (!p.base) throw new Error("Required: base, specifying directory.");
 		var entries = p.base.list({
-			recursive: true,
+//			recursive: true,
 			filter: this.filter,
+			descendants: function(directory) {
+				jsh.shell.console("Checking directory: " + directory);
+				return directory.pathname.basename != "local" && directory.pathname.basename != ".hg";
+			},
 			type: p.base.list.ENTRY
 		});
 		var isText = (p.isText) ? p.isText : arguments.callee.isText.extension;

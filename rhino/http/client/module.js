@@ -517,7 +517,7 @@ $exports.Body = new function() {
 			string: QueryString.encode(new UrlQuery(p))
 		};
 	};
-	
+
 	this.Json = function(p) {
 		return {
 			type: "application/json",

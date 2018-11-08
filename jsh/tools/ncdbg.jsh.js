@@ -84,7 +84,7 @@ var startScript = function() {
 			} else {
 				jsh.shell.console("URL to paste into Chrome:");
 				jsh.shell.console(url);
-			}	
+			}
 		})(getDevtoolsUrl())
 	}
 
@@ -151,9 +151,9 @@ if (parameters.options["ncdbg:chrome:instance"]) {
 
 if (parameters.arguments.length) {
 	jsh.java.Thread.start(startScript);
-	
+
 	jsh.java.Thread.start(startNcdbg);
-	
+
 	lock.Waiter({
 		until: function() {
 			return scriptExited;

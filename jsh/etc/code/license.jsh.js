@@ -46,9 +46,11 @@ var licenses = $loader.file("license.js", {
 //	TODO	could use sdk/core here
 var files = BASE.list({
 	filter: function(n) {
-		return (!n.directory && n.pathname.basename.substring(0,3) != ".hg") || (n.directory && n.pathname.basename != ".hg");
+		return (!n.directory && n.pathname.basename.substring(0,3) != ".hg");
 	},
-	recursive: true,
+	directory: function(dir) {
+		return dir.pathname.basename != "local" && dir.pathname.basename != ".hg";
+	},
 	type: BASE.list.ENTRY
 }).filter( function(n) { return !n.node.directory } )
 .filter(function(n) {

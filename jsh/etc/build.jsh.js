@@ -227,7 +227,7 @@ if (false) {
 		if (parameters.options.verbose) jsh.shell.console(s);
 	};
 }
-	
+
 var destination = (function(parameters) {
 	//	TODO	should normalize Cygwin paths if Cygwin support is added
 	var rv;

@@ -191,7 +191,7 @@ $exports.run = $api.Events.Function(function(p,events) {
 	if (true || p.on && p.on.start) {
 		//	TODO	could throw exception on launch; should deal with it
 		var _subprocess = Packages.inonit.system.OperatingSystem.get().start(context, configuration);
-		
+
 		var handle = new function() {
 			Object.defineProperty(this, "pid", {
 				get: function() {

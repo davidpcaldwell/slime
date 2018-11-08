@@ -2,13 +2,13 @@ $exports.Installation = function(o) {
 	this.toString = function() {
 		return "Node installation at " + o.directory;
 	};
-	
+
 	var PATH = (function() {
 		var elements = jsh.shell.PATH.pathnames.slice();
 		elements.push(o.directory.getRelativePath("bin"));
-		return jsh.file.Searchpath(elements);		
+		return jsh.file.Searchpath(elements);
 	})();
-	
+
 	this.run = function(p) {
 		var command = (function() {
 			if (p.command) {
@@ -27,7 +27,7 @@ $exports.Installation = function(o) {
 			evaluate: p.evaluate
 		});
 	}
-	
+
 	var npm = function(p) {
 		var DEFAULT_PATH = (p.PATH) ? p.PATH : jsh.shell.PATH;
 		var elements = DEFAULT_PATH.pathnames.slice();
@@ -47,7 +47,7 @@ $exports.Installation = function(o) {
 			evaluate: p.evaluate
 		});
 	}
-	
+
 	this.modules = new function() {
 		this.installed = new function() {
 			var node_modules = o.directory.getSubdirectory("lib/node_modules");
@@ -57,7 +57,7 @@ $exports.Installation = function(o) {
 				},this);
 			}
 		};
-		
+
 		this.install = function(p) {
 			if (p.name) {
 				npm({
@@ -67,7 +67,7 @@ $exports.Installation = function(o) {
 			}
 		}
 	};
-	
+
 	this.npm = npm;
 };
 

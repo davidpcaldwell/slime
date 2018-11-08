@@ -36,22 +36,22 @@ var environment = new function() {
 				}
 			});
 		};
-		
+
 		this.src = (function() {
 			if (jsh.shell.jsh.src) return jsh.shell.jsh.src;
 			throw new Error();
 		})();
-		
+
 		var rhino = ((jsh.shell.jsh.lib.getFile("js.jar") && typeof(Packages.org.mozilla.javascript.Context) == "function")) ? jsh.shell.jsh.lib.getFile("js.jar") : null;
-		
+
 		//	TODO	we would like to memoize these functions, but what happens if a memoized function throws an error?
-		
+
 		var unbuilt;
 		var built;
-		
+
 		this.built = new function() {
 			var home;
-			
+
 			var getHome = function() {
 				if (!home) {
 					if (parameters.options["shell:built"] && parameters.options["shell:built"].directory) {
@@ -76,20 +76,20 @@ var environment = new function() {
 				}
 				return home;
 			}
-			
+
 			Object.defineProperty(this, "home", {
 				get: function() {
 					return getHome();
 				},
 				enumerable: true
 			})
-			
+
 			Object.defineProperty(this, "data", {
 				get: function() {
 					if (!built) {
 						built = getData(getHome());
 					}
-					return built;				
+					return built;
 				},
 				enumerable: true
 			});
@@ -97,7 +97,7 @@ var environment = new function() {
 
 		this.unbuilt = new function() {
 			this.src = jsh.shell.jsh.src;
-			
+
 			Object.defineProperty(this, "data", {
 				get: function() {
 					if (!unbuilt) {
@@ -110,15 +110,15 @@ var environment = new function() {
 					return unbuilt;
 				},
 				enumerable: true
-			});			
+			});
 		};
-		
+
 		var packagingShell = this.built;
-		
+
 		this.packaged = new function() {
 			var shell;
 			var data;
-			
+
 			var getShell = function() {
 				if (!shell) {
 					var to = jsh.shell.TMPDIR.createTemporary({ directory: true }).getRelativePath("packaged.jar");
@@ -134,14 +134,14 @@ var environment = new function() {
 				}
 				return shell;
 			};
-			
+
 			Object.defineProperty(this, "jar", {
 				get: function() {
 					return getShell();
 				},
 				enumerable: true
 			});
-			
+
 			Object.defineProperty(this, "data", {
 				get: function() {
 					if (!data) {
@@ -152,7 +152,7 @@ var environment = new function() {
 							},
 							evaluate: function(result) {
 								return JSON.parse(result.stdio.output);
-							}							
+							}
 						});
 						jsh.shell.console("Packaged data: " + JSON.stringify(data));
 					}
@@ -161,18 +161,18 @@ var environment = new function() {
 				enumerable: true
 			})
 		};
-		
+
 		if (jsh.httpd.Tomcat) this.remote = new function() {
 			var data;
-			
+
 			var url = "http://bitbucket.org/" + "api/1.0/repositories/davidpcaldwell/slime/raw/local/";
-			
+
 			Object.defineProperty(this, "url", {
 				get: function() {
 					return url;
 				}
 			});
-			
+
 			Object.defineProperty(this, "data", {
 				get: function() {
 					if (!data) {

@@ -34,7 +34,7 @@ public abstract class Loader {
 		abstract File getLocalClassCache();
 		abstract ClassLoader getClassLoader();
 
-		public abstract ClassLoader getApplicationClassLoader();		
+		public abstract ClassLoader getApplicationClassLoader();
 		public abstract Interface getInterface();
 
 		public class Interface {
@@ -51,14 +51,14 @@ public abstract class Loader {
 			public final void add(Code.Loader code) {
 				loader.append(code);
 			}
-			
+
 			//	TODO	this special method is necessary because other Code.Loader implementations do not work with
 			//			java.util.ServiceLoader. There is currently no test case for this so, until that changes, it will be hard to
 			//			change or debug.
 			public final void addJar(File file) throws IOException {
 				loader.append(Code.Loader.jar(file));
 			}
-			
+
 			/**
 				Returns class with the given name, or <code>null</code> if there is no such class.
 			*/

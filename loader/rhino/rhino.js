@@ -91,7 +91,7 @@
 				try {
 					if (getNamedJavaClass("java.lang.Class").isInstance(javaclass)) return javaclass;
 				} catch (e) {
-					throw new TypeError("Not a class: " + javaclass);					
+					throw new TypeError("Not a class: " + javaclass);
 				}
 			}
 			return getNamedJavaClass(className);

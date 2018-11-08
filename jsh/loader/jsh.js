@@ -19,7 +19,7 @@ this.jsh = new function() {
 		$slime.getSystemProperties = function() {
 			return configuration.getSystemProperties();
 		};
-		
+
 		//	Could consider returning empty string for null; this seems to be the way properties are used
 		$slime.getSystemProperty = function(name) {
 			var _rv = configuration.getSystemProperties().getProperty(name);
@@ -117,9 +117,9 @@ this.jsh = new function() {
 			}
 			debugger;
 		};
-		$slime.$api.deprecate.warning.javaLogName = "inonit.script.jsh.Shell.log.$api.deprecate";		
+		$slime.$api.deprecate.warning.javaLogName = "inonit.script.jsh.Shell.log.$api.deprecate";
 	})();
-	
+
 	var plugins = $slime.value(
 		$slime.loader.getLoaderScript("plugins.js"),
 		{
@@ -127,7 +127,7 @@ this.jsh = new function() {
 			jsh: this
 		}
 	);
-	
+
 	$slime.plugins = {
 		mock: function(p) {
 			plugins.mock(p);
@@ -168,7 +168,7 @@ this.jsh = new function() {
 		this.file = function(code,$context) {
 			return $slime.file(getCode(code),$context);
 		};
-		
+
 		this.module = function(pathname) {
 			var format = {};
 			if (pathname.directory) {
@@ -242,9 +242,9 @@ this.jsh = new function() {
 			var isDirectory = from && from.pathname && from.pathname.directory;
 			if (isPathname) {
 				if (from.file) {
-					plugins.load({ zip: { _file: from.java.adapt() } });						
+					plugins.load({ zip: { _file: from.java.adapt() } });
 				} else if (from.directory) {
-					plugins.load({ _file: from.java.adapt() });						
+					plugins.load({ _file: from.java.adapt() });
 				} else {
 					//	TODO	log a message
 				}

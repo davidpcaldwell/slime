@@ -83,6 +83,6 @@
 
 //	components.add("jsh/tools/", { jsh: { api: true } });
 	components.add("jsh/tools/install/", { jsh: { api: true, module: true } });
-	
+
 	return components;
 })()

@@ -493,7 +493,7 @@
 	};
 	$exports.Constructor.invoke = function(p) {
 		if (!p.arguments) p.arguments = [];
-		var code = "new p.constructor(" + 
+		var code = "new p.constructor(" +
 			p.arguments.map(function() {
 				return "p.arguments[" + arguments[1] + "]";
 			}).join(",")
@@ -618,14 +618,14 @@
 				rv[key].push(value);
 			}
 		};
-		
+
 		var toStringKey = function(key) {
 			if (p.codec) {
 				key = p.codec.encode(key);
 			}
 			return key;
 		}
-		
+
 		if (p.keys) {
 			p.keys.forEach(function(key) {
 				create(toStringKey(key));
@@ -662,13 +662,13 @@
 				throw new Error("Unimplemented: iterator for " + p);
 			}
 		})(p);
-		
+
 		var rv = {};
-		
+
 		var create = function(key) {
 			rv[key] = (p.count) ? 0 : [];
 		};
-		
+
 		var add = function(key,value) {
 			if (typeof(rv[key]) == "undefined") create(key);
 			if (p.count) {
@@ -684,13 +684,13 @@
 			}
 			return group;
 		};
-		
+
 		if (p.groups) {
 			p.groups.forEach(function(group) {
 				create(toStringKey(group));
 			});
 		}
-		
+
 		var next = iterator.next();
 		while(!next.done) {
 			var element = next.value;
@@ -699,10 +699,10 @@
 			add(key,element);
 			next = iterator.next();
 		}
-		
+
 		return new function() {
 			var list;
-			
+
 			this.array = function() {
 				if (!list) {
 					list = [];

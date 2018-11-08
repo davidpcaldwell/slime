@@ -758,16 +758,16 @@ END LICENSE
 									var parent = createHg();
 									parent.unit.createFile({ path: "a", content: "1", add: true });
 									parent.commit({ message: "1" });
-									
+
 									var child = parent.unit.clone(jsh.shell.TMPDIR.createTemporary({ directory: true }));
 									child.bookmarks({ name: "local" });
-									
+
 									verify(parent).bookmarks.get("local").is(null);
 									verify(child).bookmarks.get("local").is.type("object");
-									
+
 									child.bookmarks.get("local").push();
 									verify(parent).bookmarks.get("local").is.type("object");
-									verify(child).bookmarks.get("local").is.type("object");									
+									verify(child).bookmarks.get("local").is.type("object");
 								</script>
 							</li>
 						</ul>
@@ -793,10 +793,10 @@ END LICENSE
 											verify(parent).bookmarks.get("created").is.type("object");
 											//	TODO	can the debugging breakpoint handling be built into the framework?
 											$api.debug.disableBreakOnExceptionsFor(function() {
-												verify(parent).evaluate(function() { return this.bookmarks({ delete: true }); }).threw.type(Error);												
+												verify(parent).evaluate(function() { return this.bookmarks({ delete: true }); }).threw.type(Error);
 											})();
 											parent.bookmarks({ delete: true, name: "created" });
-											verify(parent).bookmarks.get("created").is(null);						
+											verify(parent).bookmarks.get("created").is(null);
 										</script>
 									</li>
 									<li class="value">
@@ -818,11 +818,11 @@ END LICENSE
 											verify(parent).bookmarks.get("b").active.is(false);
 											verify(parent).bookmarks.get("other").active.is(true);
 											verify(parent).bookmarks.get("foo").is(null);
-											
+
 											parent.bookmarks({ name: "i", inactive: true });
 											verify(parent).bookmarks.get("other").active.is(true);
 											verify(parent).bookmarks.get("i").active.is(false);
-											
+
 											parent.bookmarks({ name: "a" });
 											verify(parent).bookmarks.get("a").active.is(true);
 											parent.bookmarks({ inactive: true });
@@ -831,12 +831,12 @@ END LICENSE
 											verify(parent).bookmarks.get("a").active.is(true);
 											parent.bookmarks({ name: null });
 											verify(parent).bookmarks.get("a").active.is(false);
-											
+
 											//	Testing with hg 4.2.2, bookmarking a revision *always* makes the bookmark inactive
 											parent.bookmarks({ name: "specific", revision: "a" });
 											verify(parent).bookmarks.get("a").active.is(false);
 											verify(parent).bookmarks.get("specific").active.is(false);
-											
+
 											parent.unit.createFile({ path: "b", content: "2", add: true });
 											parent.commit({ message: "2" });
 											parent.bookmarks({ name: "now" });
@@ -940,7 +940,7 @@ END LICENSE
 							parent.unit.createFile({ path: "a", content: "1", add: true });
 							parent.commit({ message: "1" });
 							parent.bookmarks({ name: "@" });
-							
+
 							var child = parent.unit.clone(jsh.shell.TMPDIR.createTemporary({ directory: true }));
 							verify(child).bookmarks().evaluate.property("@").is.type("object");
 							verify(child).bookmarks()["@"].active.is(true);
@@ -949,7 +949,7 @@ END LICENSE
 							parent.bookmarks({ name: "local" });
 							parent.unit.editFile({ path: "a", content: "2" });
 							parent.commit({ message: "2" });
-							
+
 							child.pull({ source: parent });
 							verify(child).bookmarks().evaluate.property("local").is.type("object");
 						</script>

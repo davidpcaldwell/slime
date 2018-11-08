@@ -127,7 +127,7 @@ var Reader = function(peer) {
 		}
 		return result;
 	};
-//	
+//
 //	this.read = function(callback,mode) {
 //		if (!mode) mode = {};
 //		if (!mode.onEnd) mode.onEnd = function() { peer.close(); };

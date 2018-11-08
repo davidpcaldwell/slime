@@ -186,7 +186,7 @@ var Suite = function(pathname) {
 				}
 				return rv;
 			};
-			
+
 		}
 
 		this.toString = function() {
@@ -233,7 +233,7 @@ var Scope = function(suite,environment) {
 				jsh.loader.plugins(this);
 			}
 		};
-		
+
 		delegate.plugin = {
 			mock: function(configuration) {
 				var $loader = (configuration.path) ? new delegate.Child(configuration.path) : delegate;

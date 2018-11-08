@@ -90,7 +90,7 @@ public class Shell {
 	}
 
 	//	TODO	Simplify handling of CoffeeScript by collapsing the next three methods and their invocations
-	
+
 	public Code.Loader getLibraries() {
 		return configuration.getInstallation().getLibraries();
 	}
@@ -344,7 +344,7 @@ public class Shell {
 		Interface(Installation installation, Loader.Classes.Interface classpath) {
 			this.installation = installation;
 		}
-		
+
 		//	TODO	probably needs a better name
 		public Code.Loader[] getPluginSources() {
 			return installation.getExtensions();

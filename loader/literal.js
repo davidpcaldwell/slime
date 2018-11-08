@@ -20,7 +20,7 @@
 			if (typeof(v) == "string") return String(v);
 			return v;
 		}
-		
+
 		if (!Object.assign) {
 			//	https://www.ecma-international.org/ecma-262/6.0/#sec-object.assign
 			//	TODO	currently the basics can be tested manually with loader/test/test262.jsh.js -file local/test262/test/built-ins/Object/assign/Target-Object.js
@@ -35,9 +35,9 @@
 				}
 				return rv;
 			};
-		}		
+		}
 	})();
-	
+
 	return new function() {
 		var $platform = (function() {
 			var $exports = {};

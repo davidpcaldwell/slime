@@ -129,7 +129,7 @@ scenario.part("addClasses", {
 			script: src.getFile("jsh/test/addClasses/addClasses.jsh.js"),
 			arguments: ["-scenario"]
 		});
-		verify(result).status.is(0);		
+		verify(result).status.is(0);
 	}
 });
 

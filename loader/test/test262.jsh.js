@@ -55,7 +55,7 @@ if (parameters.options.suite) {
 		jsh.shell.console(s);
 	}
 	try {
-		eval(locations.test262.directory.getFile("harness/assert.js").read(String));		
+		eval(locations.test262.directory.getFile("harness/assert.js").read(String));
 		eval(locations.test262.directory.getFile("harness/sta.js").read(String));
 		var code = parameters.options.test.file.read(String);
 		var yamlDelimiters = ["/*---","---*/"];

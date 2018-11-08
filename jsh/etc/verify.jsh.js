@@ -95,7 +95,7 @@ parameters.options.java.forEach(function(jre) {
 	//	TODO	Convert to jsh/test plugin API designed for this purpose
 //	jsh.shell.echo("Adding launcher suite");
 	var rhinoArgs = (jsh.shell.jsh.lib.getFile("js.jar")) ? ["-rhino", jsh.shell.jsh.lib.getFile("js.jar")] : [];
-	
+
 	top.part("launcher", jsh.unit.Suite.Fork({
 		name: "Launcher tests",
 		run: jsh.shell.jsh,
@@ -225,6 +225,6 @@ jsh.unit.interface.create(top, new function() {
 	} else {
 		this.view = parameters.options.view;
 	};
-	
+
 	this.path = (parameters.options.part) ? parameters.options.part.split("/") : void(0);
 });
