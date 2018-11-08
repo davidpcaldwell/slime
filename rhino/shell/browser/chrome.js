@@ -192,7 +192,9 @@ var Chrome = function(b) {
 				arguments: args,
 				on: {
 					start: function(p) {
-						if ($context.os.name == "Mac OS X" && !m.nokill) {
+						if ($context.os.name == "Mac OS X" && m.exitOnClose) {
+							//	TODO: The exitOnClose property is currently undocumented; it is not clear that it works correctly. More
+							//	testing needed
 							$context.api.java.Thread.start(function() {
 								var state;
 								var running = true;
