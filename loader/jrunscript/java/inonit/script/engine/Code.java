@@ -216,7 +216,7 @@ public class Code {
 				return create(url, (URLConnection)null);
 			}
 
-			//	Used in rhino/io to create Code.Loader.Resource objects in resources implementation
+			//	Used in jrunscript/io to create Code.Loader.Resource objects in resources implementation
 			public static Resource create(final URI uri, final String name, final Long length, final java.util.Date modified, final InputStream in) {
 				return new Resource() {
 					private byte[] bytes;

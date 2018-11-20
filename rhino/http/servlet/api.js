@@ -91,7 +91,7 @@ var bootstrap = (function() {
 				java: rv.java
 			}
 		}).log;
-		rv.io = loader.module("WEB-INF/slime/rhino/io/", {
+		rv.io = loader.module("WEB-INF/slime/jrunscript/io/", {
 			$slime: $java,
 			api: {
 				js: rv.js,

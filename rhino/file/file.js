@@ -130,7 +130,7 @@ var Pathname = function Pathname(parameters) {
 
 		var append = Boolean(mode.append);
 
-		//	TODO	adapt to use rhino/io Resource write method
+		//	TODO	adapt to use jrunscript/io Resource write method
 		var poorResource = new $context.Resource({
 			write: {
 				binary: function(mode) {

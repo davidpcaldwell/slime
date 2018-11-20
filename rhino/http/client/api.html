@@ -88,7 +88,7 @@ END LICENSE
 			var java = $jsapi.loader.module("../../../jrunscript/host/", {
 				$rhino: jsh.unit.$slime
 			});
-			var io = $jsapi.loader.module("../../../rhino/io/", {
+			var io = $jsapi.loader.module("../../../jrunscript/io/", {
 				api: {
 					java: java,
 					mime: jsh.unit.$slime.mime
@@ -151,7 +151,7 @@ END LICENSE
 					</li>
 					<li class="value">
 						<div class="name">io</div>
-						<span>The <a href="../../../rhino/io/">rhino/io</a> module.</span>
+						<span>The <a href="../../../jrunscript/io/">jrunscript/io</a> module.</span>
 					</li>
 					<li class="value">
 						<div class="name">web</div>
@@ -223,7 +223,7 @@ END LICENSE
 					var java = $jsapi.loader.module("../../../jrunscript/host/", {
 						$rhino: jsh.unit.$slime
 					});
-					var io = $jsapi.loader.module("../../../rhino/io", {
+					var io = $jsapi.loader.module("../../../jrunscript/io", {
 						api: {
 							java: java,
 							mime: jsh.unit.$slime.mime
@@ -494,7 +494,7 @@ END LICENSE
 													return function(p) {
 														var buffer = new context.io.Buffer();
 														//	TODO	below was buffer.writeText("Hello, Dude!"), which counterintuitively, silently
-														//			failed; consider alternatives for rhino/io
+														//			failed; consider alternatives for jrunscript/io
 														buffer.writeText().write("Hello, Dude!");
 														buffer.close();
 														return {
@@ -522,7 +522,7 @@ END LICENSE
 													return response;
 												}
 											});
-											//	TODO	add rhino/io Resource capability
+											//	TODO	add jrunscript/io Resource capability
 											verify(response.body.stream.character().asString()).is("Hello, Dude!");
 										} else {
 											test(skip("No Tomcat"));
