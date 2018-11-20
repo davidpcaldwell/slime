@@ -60,7 +60,7 @@ slime.build.rhino = function(from,build,api,javac) {
 			process(rhinoDirectory);
 		}
 
-		//	TODO	Not DRY: $jvm/classes repeated in loader/rhino/literal.js
+		//	TODO	Not DRY: $jvm/classes repeated in loader/rhino/expression.js
 		var to = new Packages.java.io.File(build,"$jvm/classes");
 		to.mkdirs();
 		var args = ["-d", String(to.getCanonicalPath())];

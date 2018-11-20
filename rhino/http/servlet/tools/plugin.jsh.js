@@ -114,13 +114,13 @@ plugin({
 
 			(function copySlimeCodeToWebapp() {
 				SLIME.getSubdirectory("loader").list().forEach(function(node) {
-					//	TODO	dangerous as we move more code into the loader; was just literal.js and api.js
+					//	TODO	dangerous as we move more code into the loader; was just expression.js and api.js
 					if (!node.directory) {
 						node.copy(WEBAPP.getRelativePath("WEB-INF/loader/" + node.pathname.basename), { recursive: true });
 					}
 				});
 				SLIME.getSubdirectory("loader/rhino").list().forEach(function(node) {
-					//	Was just literal.js
+					//	Was just expression.js
 					if (/\.js$/.test(node.pathname.basename)) {
 						node.copy(WEBAPP.getRelativePath("WEB-INF/loader/rhino/" + node.pathname.basename), { recursive: true });
 					}

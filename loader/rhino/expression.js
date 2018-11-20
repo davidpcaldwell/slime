@@ -142,8 +142,9 @@
 				},this);
 
 				this.getURI = function() {
+					// TODO: Unclear what this is doing; does this object represent just one file? Seems like no
 					return Packages.inonit.script.engine.Code.Loader.URI.script(
-						"literal.js",
+						"expression.js",
 						path
 					)
 				}

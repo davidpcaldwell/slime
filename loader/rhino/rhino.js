@@ -104,7 +104,7 @@
 		this.test = {};
 	};
 
-	var rv = $rhino.script("rhino/literal.js", $loader.getLoaderCode("rhino/literal.js"), { $javahost: $javahost, $bridge: $bridge }, null);
+	var rv = $rhino.script("rhino/expression.js", $loader.getLoaderCode("rhino/expression.js"), { $javahost: $javahost, $bridge: $bridge }, null);
 
 	rv.getDebugger = function() {
 		return $rhino.getDebugger();
