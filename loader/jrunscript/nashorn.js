@@ -231,7 +231,7 @@ load("nashorn:mozilla_compat.js");
 			}
 		}
 
-		var rv = $javahost.script("slime://loader/rhino/expression.js", $getLoaderCode("rhino/expression.js"), toScope({ $javahost: $javahost, $bridge: $bridge }), null);
+		var rv = $javahost.script("slime://loader/jrunscript/expression.js", $getLoaderCode("jrunscript/expression.js"), toScope({ $javahost: $javahost, $bridge: $bridge }), null);
 
 		return rv;
 	}
