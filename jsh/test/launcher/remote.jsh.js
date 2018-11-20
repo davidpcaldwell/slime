@@ -128,7 +128,7 @@ if (parameters.options.jrunscript.length) {
 		if (false) {
 			var string = client.request({
 				proxy: proxy,
-				url: "http://bitbucket.org/api/1.0/repositories/davidpcaldwell/slime/raw/local/loader/rhino/inonit/",
+				url: "http://bitbucket.org/api/1.0/repositories/davidpcaldwell/slime/raw/local/loader/jrunscript/inonit/",
 				evaluate: function(response) {
 					return response.body.stream.character().asString();
 				}

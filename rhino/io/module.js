@@ -22,7 +22,7 @@ var InputStream = function(peer) {
 		return $context.api.java.Properties.adapt(properties);
 	}
 
-	//	TODO	push back into loader/rhino
+	//	TODO	push back into loader/jrunscript
 	this.Resource = function(type) {
 		var _bytes = _readBytes();
 		return new $context.$slime.io.Resource(new function() {

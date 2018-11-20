@@ -37,7 +37,7 @@ var $java = (function() {
 var $servlet = (function() {
 	if ($host.getServlet) {
 		var rv = {};
-		//	TODO	Find a way to use _url version of loader/rhino/expression.js constructor to get access to this object, probably
+		//	TODO	Find a way to use _url version of loader/jrunscript/expression.js constructor to get access to this object, probably
 		//			via the created loader's .source property
 		rv.resources = Packages.inonit.script.engine.Code.Loader.create($host.getServlet().getServletConfig().getServletContext().getResource("/"));
 		rv.path = $host.getServlet().getServletConfig().getInitParameter("script");

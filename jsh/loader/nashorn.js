@@ -14,11 +14,11 @@ $jsh.setRuntime((function() {
 	//	TODO	the below, with scripts and rv, looks funny; does it load the same code twice? Why? Should either fix or provide
 	//			explanation
 
-	var scripts = eval($jsh.getLoaderCode("rhino/nashorn.js"));
+	var scripts = eval($jsh.getLoaderCode("jrunscript/nashorn.js"));
 
 	var rv = scripts.script(
-		"rhino/nashorn.js",
-		$jsh.getLoaderCode("rhino/nashorn.js"),
+		"jrunscript/nashorn.js",
+		$jsh.getLoaderCode("jrunscript/nashorn.js"),
 		{
 			Java: Java,
 			Packages: Packages,

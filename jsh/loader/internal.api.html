@@ -63,12 +63,12 @@ END LICENSE
 						<ul>
 							<li>
 								Each of these scripts, in turn, runs an engine-specific engine embedding script to set up the engine. Rhino runs
-								<code>loader/rhino/rhino.js</code>, and Nashorn runs <code>loader/rhino/nashorn.js</code>. These
+								<code>loader/jrunscript/rhino.js</code>, and Nashorn runs <code>loader/jrunscript/nashorn.js</code>. These
 								scripts create engine-specific implementations of <code>$javahost</code> and <code>$bridge</code>
 								objects.
 							</li>
 							<li>
-								Then the generic container interface script <code>loader/rhino/expression.js</code> is evaluated,
+								Then the generic container interface script <code>loader/jrunscript/expression.js</code> is evaluated,
 								using the <code>$javahost</code> and <code>$bridge</code> objects in scope.
 								<ul>
 									<li>
@@ -78,7 +78,7 @@ END LICENSE
 									</li>
 									<li>
 										It then post-processes the SLIME runtime to provide additional
-										<a href="../../loader/rhino/api.html">Java-specific</a> interfaces.
+										<a href="../../loader/jrunscript/api.html">Java-specific</a> interfaces.
 									</li>
 								</ul>
 							</li>

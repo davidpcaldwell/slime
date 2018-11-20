@@ -251,7 +251,7 @@ this.jsh = new function() {
 			} else if (from && from.get) {
 				plugins.load({ loader: from });
 			} else if (isFile) {
-				//	Should we be sending a script resource, rather than a Java file? Could expose that API in loader/rhino/expression.js
+				//	Should we be sending a script resource, rather than a Java file? Could expose that API in loader/jrunscript/expression.js
 				plugins.load({ zip: { _file: from.pathname.java.adapt() } });
 			} else if (isDirectory) {
 				plugins.load({ _file: from.pathname.java.adapt() });

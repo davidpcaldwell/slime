@@ -170,7 +170,7 @@ load("nashorn:mozilla_compat.js");
 
 	if (typeof($classpath) == "undefined") {
 		return {
-			script: script,//(script) ? script : Java.type("java.lang.System").getProperties().get("slime/loader/jrunscript/nashorn.js:script"),
+			script: script,//(script) ? script : Java.type("java.lang.System").getProperties().get("slime/loader/rhino/nashorn.js:script"),
 			subshell: function(f) {
 				var global = (function() { return this; })();
 				var subglobal = Context.getContext().createGlobal();
@@ -231,7 +231,7 @@ load("nashorn:mozilla_compat.js");
 			}
 		}
 
-		var rv = $javahost.script("slime://loader/jrunscript/expression.js", $getLoaderCode("jrunscript/expression.js"), toScope({ $javahost: $javahost, $bridge: $bridge }), null);
+		var rv = $javahost.script("slime://loader/rhino/expression.js", $getLoaderCode("rhino/expression.js"), toScope({ $javahost: $javahost, $bridge: $bridge }), null);
 
 		return rv;
 	}

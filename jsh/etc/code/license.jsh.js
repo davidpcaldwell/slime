@@ -150,8 +150,8 @@ for (var i=0; i<files.length; i++) {
 			original = "the js/time SLIME module";
 		} else if (startsWith("js/web/")(relative)) {
 			original = "the js/web SLIME module";
-		} else if (startsWith("loader/rhino/")(relative)) {
-			original = "the SLIME loader for rhino";
+		} else if (startsWith("loader/jrunscript/")(relative)) {
+			original = "the SLIME loader for Java";
 		} else if (startsWith("loader/browser/")(relative)) {
 			original = "the SLIME loader for web browsers";
 		} else if (startsWith("loader/")(relative)) {

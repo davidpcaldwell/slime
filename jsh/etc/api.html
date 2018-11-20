@@ -51,16 +51,16 @@ END LICENSE
 				<!--	Internal tests	-->
 				<div jsapi:id="internal">
 					<script type="application/x.jsapi#tests" jsapi:id="slime">
-						//	Functionality used internally or accessed through loader/rhino (although untested by loader/rhino)
+						//	Functionality used internally or accessed through loader/jrunscript (although untested by loader/jrunscript)
 						verify.suite($jsapi.loader.suite("../../loader/api.html"));
 					</script>
 					<script type="application/x.jsapi#tests" jsapi:id="slime">
 						//	Test cases of loader implementation
-						verify.suite($jsapi.loader.suite("../../loader/rhino/api.html"));
+						verify.suite($jsapi.loader.suite("../../loader/jrunscript/api.html"));
 					</script>
 					<script type="application/x.jsapi#tests" jsapi:id="other">
-						//	TODO	loader/rhino/java has some tests
-						//	TODO	loader/rhino/test/data/2/ has some tests but they require some classes in classpath
+						//	TODO	loader/jrunscript/java has some tests
+						//	TODO	loader/jrunscript/test/data/2/ has some tests but they require some classes in classpath
 
 						//	Test cases involving the HTML test runner itself
 						verify.suite($jsapi.loader.suite("../../loader/api/test/data/1/api.html"));
