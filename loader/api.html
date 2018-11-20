@@ -201,7 +201,6 @@ END LICENSE
 					return $jsapi.loader.module(path,context);
 				}
 			</script>
-			<div class="label">has properties:</div>
 			<div class="type">
 				<a class="type" name="types.script">script</a>
 				<span>A type of resource that can be executed.</span>
@@ -709,110 +708,12 @@ END LICENSE
 					]]></script>
 				</div>
 			</div>
+			<div class="label">has properties:</div>
 			<ul jsapi:id="global">
-				<li class="object" jsapi:id="mime">
+				<li class="value">
 					<div class="name">mime</div>
+					<span class="type"><a href="mime.api.html">SLIME MIME API</a></span>
 					<span>__DESCRIPTION__</span>
-					<div class="type">
-						<a class="type" name="types.mime.Type">mime.Type</a>
-						<span>__DESCRIPTION__</span>
-						<div class="label">has properties:</div>
-						<ul>
-							<li class="function">
-								<div class="name">getMedia</div>
-								<span>__DESCRIPTION__</span>
-								<div class="arguments">
-									<div class="label">Arguments</div>
-									<ol>
-									</ol>
-								</div>
-								<div class="returns">
-									<div class="label">Returns</div>
-									<span class="type">__TYPE__</span>
-									<span>__DESCRIPTION__</span>
-								</div>
-							</li>
-							<li class="function">
-								<div class="name">getSubtype</div>
-								<span>__DESCRIPTION__</span>
-								<div class="arguments">
-									<div class="label">Arguments</div>
-									<ol>
-									</ol>
-								</div>
-								<div class="returns">
-									<div class="label">Returns</div>
-									<span class="type">__TYPE__</span>
-									<span>__DESCRIPTION__</span>
-								</div>
-							</li>
-							<li class="function">
-								<div class="name">getParameters</div>
-								<span>__DESCRIPTION__</span>
-								<div class="arguments">
-									<div class="label">Arguments</div>
-									<ol>
-									</ol>
-								</div>
-								<div class="returns">
-									<div class="label">Returns</div>
-									<span class="type">__TYPE__</span>
-									<span>__DESCRIPTION__</span>
-								</div>
-							</li>
-						</ul>
-					</div>
-					<div class="label">has properties:</div>
-					<ul>
-						<li class="constructor" jsapi:id="Type">
-							<div class="name">Type</div>
-							<span>__DESCRIPTION__</span>
-							<div class="arguments">
-								<div class="label">Arguments</div>
-								<ol>
-								</ol>
-							</div>
-							<div class="instances">
-								<div class="label">Instances</div>
-								<span class="type"><a href="#types.mime.Type">mime.Type</a></span>
-								<span>__DESCRIPTION__</span>
-							</div>
-							<div class="label">has properties:</div>
-							<ul>
-								<li class="function">
-									<div class="name">parse</div>
-									<span>__DESCRIPTION__</span>
-									<div class="arguments">
-										<div class="label">Arguments</div>
-										<ol>
-										</ol>
-									</div>
-									<div class="returns">
-										<div class="label">Returns</div>
-										<span class="type">__TYPE__</span>
-										<span>__DESCRIPTION__</span>
-									</div>
-								</li>
-								<li class="function">
-									<div class="name">fromName</div>
-									<span>__DESCRIPTION__</span>
-									<div class="arguments">
-										<div class="label">Arguments</div>
-										<ol>
-										</ol>
-									</div>
-									<div class="returns">
-										<div class="label">Returns</div>
-										<span class="type">__TYPE__</span>
-										<span>__DESCRIPTION__</span>
-									</div>
-									<script type="application/x.jsapi#tests">
-										verify(api.mime.Type.fromName("foo.js").toString()).is("application/javascript");
-									</script>
-								</li>
-							</ul>
-						</li>
-					</ul>
 				</li>
 				<li class="function" jsapi:id="run">
 					<div class="name"><a id="exports.run">run</a></div>

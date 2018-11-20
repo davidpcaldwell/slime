@@ -54,7 +54,10 @@ END LICENSE
 						//	Functionality used internally or accessed through loader/jrunscript (although untested by loader/jrunscript)
 						verify.suite($jsapi.loader.suite("../../loader/api.html"));
 					</script>
-					<script type="application/x.jsapi#tests" jsapi:id="slime">
+					<script type="application/x.jsapi#tests" jsapi:id="mime">
+						verify.suite($jsapi.loader.suite("../../loader/mime.api.html"));
+					</script>
+					<script type="application/x.jsapi#tests" jsapi:id="jrunscript">
 						//	Test cases of loader implementation
 						verify.suite($jsapi.loader.suite("../../loader/jrunscript/api.html"));
 					</script>
@@ -64,9 +67,6 @@ END LICENSE
 
 						//	Test cases involving the HTML test runner itself
 						verify.suite($jsapi.loader.suite("../../loader/api/test/data/1/api.html"));
-
-						//	Functionality that ends up contributing to jsh.io.mime
-						verify.suite($jsapi.loader.suite("../../loader/mime.api.html"));
 					</script>
 				</div>
 				<tr>

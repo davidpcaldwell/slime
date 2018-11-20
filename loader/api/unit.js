@@ -273,7 +273,7 @@ var Verify = function(scope,vars) {
 			};
 
 			try {
-				var mapped = f.call(o);
+				var mapped = f.call(o,o);
 				var value = rv(mapped,((name) ? name : "")+"{" + f + "}");
 				value.threw = new DidNotThrow(mapped,"{" + f + "}");
 				return value;

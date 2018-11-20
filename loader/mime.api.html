@@ -14,14 +14,13 @@ END LICENSE
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
 <head>
-	<title>Portable MIME implementation</title>
-	<!--	TODO	change these to use local copies of these files at the appropriate location	-->
-	<link rel="stylesheet" type="text/css" href="../../loader/api/api.css" />
-	<script src="../../loader/api/api.js"></script>
+	<title>SLIME MIME</title>
+	<link rel="stylesheet" type="text/css" href="../loader/api/api.css" />
+	<script src="../loader/api/api.js"></script>
 </head>
 <body>
 	<script type="application/x.jsapi#initialize">
-		scope.module = jsh.unit.$slime.mime;
+		scope.api = jsh.unit.$slime;
 	</script>
 	<div>A simple set of constructs that pertain to MIME that can run on any JavaScript engine.</div>
 	<div>
@@ -30,7 +29,7 @@ END LICENSE
 		</ul>
 	</div>
 	<div>
-		<div class="type">
+		<div class="type" jsapi:id="type">
 			<a class="type" name="types.type">type</a>
 			<span>A MIME type.</span>
 			<div class="label">has properties:</div>
@@ -75,7 +74,7 @@ END LICENSE
 		</div>
 		<h1>Exports</h1>
 		<ul>
-			<li class="constructor">
+			<li class="constructor" jsapi:id="exports.Type">
 				<div class="name"><a name="$exports.Type">Type</a></div>
 				<span>Creates a MIME type from its parsed components.</span>
 				<div class="arguments">
@@ -103,6 +102,58 @@ END LICENSE
 					<div class="label">Instances</div>
 					<span class="type"><a href="#types.type">type</a></span>
 				</div>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="function">
+						<div class="name">parse</div>
+						<span>Parses the given string, returning the appropriate MIME type object.</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="value">
+									<span class="type">string</span>
+									<span>A MIME type.</span>
+								</li>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type"><a href="#types.type">type</a></span>
+						</div>
+						<script type="application/x.jsapi#tests">
+							(function() {
+								var string = "text/plain";
+								var type = api.mime.Type.parse(string);
+								verify(type).getMedia().is("text");
+								verify(type).getSubtype().is("plain");
+								verify(type).getParameters().is.type("object");
+								verify(type).getParameters().evaluate(function(p) { return Object.keys(p); }).length.is(0);
+							})();
+						</script>
+					</li>
+					<li class="function">
+						<div class="name">fromName</div>
+						<span>Attempts to determine the MIME type of a resource given its name.</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="value">
+									<span class="type">string</span>
+									<span>A resource name.</span>
+								</li>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type"><a href="#types.type">type</a></span>
+							<span>The type determined from the name, or <code>undefined</code> if the type cannot be determined.</span>
+						</div>
+						<script type="application/x.jsapi#tests">
+							verify(api.mime).Type.fromName("foo.js").toString().is("application/javascript");
+							verify(api.mime).Type.fromName("foo.f").is(void(0));
+						</script>
+					</li>
+				</ul>
 				<script type="application/x.jsapi#tests"><![CDATA[
 					var throwsError = function(b,f,message) {
 						if ($jsapi.debug && $jsapi.debug.disableBreakOnExceptions) {
@@ -129,24 +180,24 @@ END LICENSE
 					var b = null;
 
 					test(throwsError(true, function() {
-						new module.Type(a, "plain");
+						new api.mime.Type(a, "plain");
 					}, "First argument undefined"));
 					test(throwsError(true, function() {
-						new module.Type(b, "plain");
+						new api.mime.Type(b, "plain");
 					}, "First argument null"));
 					test(throwsError(true, function() {
-						new module.Type("text", a);
+						new api.mime.Type("text", a);
 					}, "Second argument undefined"));
 					test(throwsError(true, function() {
-						new module.Type("text", b);
+						new api.mime.Type("text", b);
 					}, "Second argument null"));
 					test(throwsError(true, function() {
-						new module.Type("text", "plain", 2);
+						new api.mime.Type("text", "plain", 2);
 					}, "Arguments contain number."));
 					test(throwsError(false, function() {
-						new module.Type("text", "plain");
+						new api.mime.Type("text", "plain");
 					}, "Arguments valid."));
-					test(new module.Type("text", "plain").toString() == "text/plain");
+					test(new api.mime.Type("text", "plain").toString() == "text/plain");
 				]]></script>
 			</li>
 		</ul>

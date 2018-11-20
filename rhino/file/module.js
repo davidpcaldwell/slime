@@ -223,8 +223,6 @@ $exports.Loader = function recurse(p) {
 					return file.modified;
 				}
 			});
-//					length: file.resource.length,
-//					modified: file.modified,
 			return new $context.$slime.io.Resource(data);
 		}
 		return null;

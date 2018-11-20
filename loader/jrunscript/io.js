@@ -279,10 +279,6 @@ var Resource = function Resource(p) {
 		});
 	}
 
-//	if (p.type) {
-//		this.type = p.type;
-//	}
-
 	if (p.name) {
 		this.name = p.name;
 	}
