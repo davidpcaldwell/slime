@@ -62,7 +62,7 @@
 	//	TODO	loader/jrunscript/test/data/2/ has some tests but they require some classes in classpath
 	//	TODO	rhino/io/mime.api.html has some tests
 
-	components.add("rhino/host/", { jsh: { api: true, module: { javac: true }}});
+	components.add("jrunscript/host/", { jsh: { api: true, module: { javac: true }}});
 	components.add("rhino/file/", { jsh: { api: true, module: { javac: true }}});
 	//	Servlet module has Java classes but we do not compile them here
 	//	servlet classes are provided by webapp.jsh.js when building a webapp, and classpath with servlet API is supplied by invoker

@@ -77,9 +77,9 @@ plugin({
 				sourcepath.pathnames.push(SLIME.getRelativePath("rhino/system/java"));
 				sourcepath.pathnames.push(SLIME.getRelativePath("loader/jrunscript/java"));
 				sourcepath.pathnames.push(SLIME.getRelativePath("loader/jrunscript/rhino/java"));
-				sourcepath.pathnames.push(SLIME.getRelativePath("rhino/host/java"));
+				sourcepath.pathnames.push(SLIME.getRelativePath("jrunscript/host/java"));
 				if (p.rhino) {
-					sourcepath.pathnames.push(SLIME.getRelativePath("rhino/host/rhino/java"));
+					sourcepath.pathnames.push(SLIME.getRelativePath("jrunscript/host/rhino/java"));
 				}
 				sourcepath.pathnames.push(SLIME.getRelativePath("rhino/http/servlet/java"));
 				if (p.rhino) {
@@ -129,7 +129,7 @@ plugin({
 				SLIME.getFile("rhino/http/servlet/server.js").copy(WEBAPP.getRelativePath("WEB-INF/server.js"));
 				SLIME.getFile("rhino/http/servlet/upload.js").copy(WEBAPP.getRelativePath("WEB-INF/upload.js"));
 
-				["js/debug","js/object","js/web","rhino/host","rhino/io","rhino/http/servlet/server"].forEach(function(path) {
+				["js/debug","js/object","js/web","jrunscript/host","rhino/io","rhino/http/servlet/server"].forEach(function(path) {
 					SLIME.getSubdirectory(path).copy(WEBAPP.getRelativePath("WEB-INF/slime/" + path), { recursive: true });
 				});
 			})();

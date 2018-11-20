@@ -85,7 +85,7 @@ END LICENSE
 
 		scope.$Context = function(gae) {
 			var js = $jsapi.loader.module("../../../js/object/");
-			var java = $jsapi.loader.module("../../../rhino/host/", {
+			var java = $jsapi.loader.module("../../../jrunscript/host/", {
 				$rhino: jsh.unit.$slime
 			});
 			var io = $jsapi.loader.module("../../../rhino/io/", {
@@ -220,7 +220,7 @@ END LICENSE
 
 				scope.$Context = function(gae) {
 					var js = $jsapi.loader.module("../../../js/object/");
-					var java = $jsapi.loader.module("../../../rhino/host/", {
+					var java = $jsapi.loader.module("../../../jrunscript/host/", {
 						$rhino: jsh.unit.$slime
 					});
 					var io = $jsapi.loader.module("../../../rhino/io", {

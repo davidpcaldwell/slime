@@ -47,7 +47,7 @@ END LICENSE
 		}
 		$Context.api = new function() {
 			this.js = $jsapi.loader.module("../../js/object/");
-			var java = $jsapi.loader.module("../../rhino/host/", {
+			var java = $jsapi.loader.module("../../jrunscript/host/", {
 				$rhino: jsh.unit.$slime
 			});
 			this.java = java;
@@ -82,7 +82,7 @@ END LICENSE
 					</li>
 					<li class="value">
 						<div class="name">java</div>
-						<span>The rhino/host module.</span>
+						<span>The jrunscript/host module.</span>
 					</li>
 					<li class="value">
 						<div class="name">io</div>
@@ -148,7 +148,7 @@ END LICENSE
 				}
 				$Context.api = new function() {
 					this.js = $jsapi.loader.module("../../js/object/");
-					var java = $jsapi.loader.module("../../rhino/host/", {
+					var java = $jsapi.loader.module("../../jrunscript/host/", {
 						$rhino: jsh.unit.$slime
 					});
 					this.java = java;

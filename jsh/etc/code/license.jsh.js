@@ -164,8 +164,8 @@ for (var i=0; i<files.length; i++) {
 			original = "the SLIME JavaMail interface";
 		} else if (startsWith("rhino/file/")(relative)) {
 			original = "the rhino/file SLIME module";
-		} else if (startsWith("rhino/host/")(relative)) {
-			original = "the rhino/host SLIME module";
+		} else if (startsWith("jrunscript/host/")(relative)) {
+			original = "the jrunscript/host SLIME module";
 		} else if (startsWith("rhino/ip/")(relative)) {
 			original = "the rhino/ip SLIME module";
 		} else if (startsWith("rhino/shell/")(relative)) {

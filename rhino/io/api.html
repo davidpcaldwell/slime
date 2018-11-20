@@ -46,7 +46,7 @@ END LICENSE
 					</li>
 					<li class="value">
 						<div class="name">java</div>
-						<span>A rhino/host-compatible module.</span>
+						<span>A jrunscript/host-compatible module.</span>
 					</li>
 				</ul>
 			</li>
@@ -59,10 +59,10 @@ END LICENSE
 	</div>
 	<script type="application/x.jsapi#initialize">
 		var context = new function() {
-			var java = $jsapi.loader.module("../../rhino/host/", {
+			var java = $jsapi.loader.module("../../jrunscript/host/", {
 				$rhino: jsh.unit.$slime
 			});
-			if (!java) throw new Error("Not found: rhino/host/");
+			if (!java) throw new Error("Not found: jrunscript/host/");
 
 			this.$slime = jsh.unit.$slime;
 
