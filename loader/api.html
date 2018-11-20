@@ -37,8 +37,7 @@ END LICENSE
 	<div>
 		<h1>Embedding</h1>
 		<p>
-			<!--	TODO	this is a misuse of the word "literal" and should be changed to "expression"	-->
-			The SLIME runtime (<code>literal.js</code>) is an expression that evaluates to an object providing its capabilities to
+			The SLIME runtime (<code>expression.js</code>) is an expression that evaluates to an object providing its capabilities to
 			the embedder. The embedder must provide a <code>$slime</code> object that provides access to the installation, and can
 			add an <code>$engine</code> object in the loader's scope in order to provide engine-specific capabilities to the
 			runtime.
@@ -184,7 +183,7 @@ END LICENSE
 				<code>Loader</code>.
 			</p>
 			<script type="application/x.jsapi#initialize">
-				scope.api = $jsapi.loader.eval("literal.js", {
+				scope.api = $jsapi.loader.eval("expression.js", {
 					$slime: {
 						getLoaderScript: function(path) {
 							return {

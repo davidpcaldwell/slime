@@ -175,7 +175,7 @@
 					return (window.CoffeeScript) ? { object: window.CoffeeScript } : null;
 				}
 			};
-			return eval(fetcher.getCode(bootstrap.getRelativePath("literal.js")));
+			return eval(fetcher.getCode(bootstrap.getRelativePath("expression.js")));
 		})();
 		platform.$api.deprecate.warning = function(access) {
 			debugger;

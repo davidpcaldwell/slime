@@ -14,19 +14,19 @@ END LICENSE
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
 <head>
-	<title>Java SLIME loader</title>
+	<title>SLIME Java Runtime</title>
 	<link rel="stylesheet" type="text/css" href="../../loader/api/api.css"></link>
 	<script type="text/javascript" src="../../loader/api/api.js"></script>
 </head>
 <body>
 	<h1>Overview</h1>
 	<p>
-		The Java SLIME loader supports a Java-based SLIME embedding, and extends the loader to support Java-specific functions.
+		The SLIME Java runtime supports a Java-based SLIME embedding, and extends the runtime to support Java-specific functions.
 	</p>
 	<div>
 		<h2>Embedding</h2>
 		<p>
-			The Java SLIME loader comes with two embeddings: one for the Rhino JavaScript engine provided by Mozilla, and one for
+			The SLIME Java runtime comes with two embeddings: one for the Rhino JavaScript engine provided by Mozilla, and one for
 			the Nashorn engine included with Java 8 and up. The embeddings are expressions that evaluate to an object. They provide
 			different scope variables for implementing the embedding.
 		</p>
@@ -175,7 +175,7 @@ END LICENSE
 		</script>
 		<h1>Properties</h1>
 		<p>
-			The embedding for either engine creates an object which consists of the <a href="../api.html">SLIME loader</a>
+			The embedding for either engine creates an object which consists of the <a href="../api.html">SLIME runtime</a>
 			augmented by a common set of Java-specific properties. The Java properties added are:
 		</p>
 		<div class="label">has properties:</div>
@@ -188,8 +188,6 @@ END LICENSE
 					scope.api = jsh.unit.$slime;
 				</script>
 				<ul jsapi:id="top">
-					<li class="constructor" jsapi:reference="getApi('../api.html').getElement('global/mime/Type')">
-					</li>
 					<li class="function">
 						<div class="name">Type.java.URLConnection</div>
 						<span>__DESCRIPTION__</span>

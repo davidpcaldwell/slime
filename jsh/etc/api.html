@@ -49,20 +49,26 @@ END LICENSE
 					TODO	rhino/ui is currently undocumented
 				-->
 				<!--	Internal tests	-->
-				<script type="application/x.jsapi#tests" jsapi:id="internal">
-					//	Functionality used internally or accessed through loader/rhino (although untested by loader/rhino)
-					verify.suite($jsapi.loader.suite("../../loader/api.html"));
-					//	Test cases of loader implementation
-					verify.suite($jsapi.loader.suite("../../loader/rhino/api.html"));
-					//	TODO	loader/rhino/java has some tests
-					//	TODO	loader/rhino/test/data/2/ has some tests but they require some classes in classpath
+				<div jsapi:id="internal">
+					<script type="application/x.jsapi#tests" jsapi:id="slime">
+						//	Functionality used internally or accessed through loader/rhino (although untested by loader/rhino)
+						verify.suite($jsapi.loader.suite("../../loader/api.html"));
+					</script>
+					<script type="application/x.jsapi#tests" jsapi:id="slime">
+						//	Test cases of loader implementation
+						verify.suite($jsapi.loader.suite("../../loader/rhino/api.html"));
+					</script>
+					<script type="application/x.jsapi#tests" jsapi:id="other">
+						//	TODO	loader/rhino/java has some tests
+						//	TODO	loader/rhino/test/data/2/ has some tests but they require some classes in classpath
 
-					//	Test cases involving the HTML test runner itself
-					verify.suite($jsapi.loader.suite("../../loader/api/test/data/1/api.html"));
+						//	Test cases involving the HTML test runner itself
+						verify.suite($jsapi.loader.suite("../../loader/api/test/data/1/api.html"));
 
-					//	Functionality that ends up contributing to jsh.io.mime
-					verify.suite($jsapi.loader.suite("../../loader/mime.api.html"));
-				</script>
+						//	Functionality that ends up contributing to jsh.io.mime
+						verify.suite($jsapi.loader.suite("../../loader/mime.api.html"));
+					</script>
+				</div>
 				<tr>
 					<td><a href="../../loader/$api.api.html">$api</a></td>
 					<td>
