@@ -11,14 +11,15 @@
 //	END LICENSE
 
 var $java = (function() {
+	// TODO: there is no test coverage for the below; when the rhino/ directory was renamed to jrunscript/, the test suite still passed
 	if ($host.getLoader && $host.getEngine) {
-		return $host.getEngine().script("rhino/rhino.js", $host.getLoader().getLoaderCode("rhino/rhino.js"), { $loader: $host.getLoader(), $rhino: $host.getEngine() }, null);
+		return $host.getEngine().script("jrunscript/rhino.js", $host.getLoader().getLoaderCode("jrunscript/rhino.js"), { $loader: $host.getLoader(), $rhino: $host.getEngine() }, null);
 	} else if ($host.getLoader && $host.getClasspath) {
-		var scripts = eval($host.getLoader().getLoaderCode("rhino/nashorn.js"));
+		var scripts = eval($host.getLoader().getLoaderCode("jrunscript/nashorn.js"));
 
 		var rv = scripts.script(
-			"rhino/nashorn.js",
-			$host.getLoader().getLoaderCode("rhino/nashorn.js"),
+			"jrunscript/nashorn.js",
+			$host.getLoader().getLoaderCode("jrunscript/nashorn.js"),
 			{
 				$getLoaderCode: function(path) {
 					return $host.getLoader().getLoaderCode(path);
