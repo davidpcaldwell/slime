@@ -31,7 +31,7 @@ var getApiHtml = function(moduleMainPathname) {
 	}
 }
 
-var Jsdom = function(base,dom) {
+var JsapiHtml = function(base,dom) {
 	this.toString = function() {
 		return "Jsdom: base=" + base + " dom=" + dom;
 	}
@@ -139,12 +139,19 @@ var loadApiHtml = function(file) {
 			var doc = new jsh.document.Document({
 				stream: file.read(jsh.io.Streams.binary)
 			});
-			return new Jsdom(file.parent,doc);
+			return new JsapiHtml(file.parent,doc);
 		})();
 	} else {
 		jsh.shell.console("Returning cached api.html: " + file.pathname);
 	}
 	return arguments.callee.cache[file.pathname.toString()];
+}
+
+if ($context.test) {
+	$exports.test = {};
+	$exports.test.loadApiHtml = function(file) {
+		return loadApiHtml(file);
+	}
 }
 
 var Suite = function(pathname) {
@@ -159,7 +166,10 @@ var Suite = function(pathname) {
 			var page = loadApiHtml(apiHtmlFile);
 
 			var name = pathname.toString();
+
+			// TODO: why is this a public property?
 			this.html = new $context.html.ApiHtmlTests(page,name);
+
 			this.getSuiteDescriptor = function(scope) {
 				var rv = this.html.getSuiteDescriptor(scope);
 				if (true) {

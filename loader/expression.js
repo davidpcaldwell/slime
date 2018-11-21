@@ -263,13 +263,27 @@
 					this.name = o.name;
 				}
 				
-				if (typeof(o.string) == "string") {
-					this.read = (function(string) {
-						return function(v) {
-							if ( (typeof(o.string) != "undefined") && v === String) return string;
-							if (v === JSON) return JSON.parse(this.read(String));
-						}
-					})(o.string);
+				var readString = function(string) {
+					return function(v) {
+						if (v === String) return string;
+						if (v === JSON) return JSON.parse(this.read(String));
+					}					
+				}
+				
+				var readString = (function() {
+					if (o.read && o.read.string) return o.read.string;
+					if (typeof(o.string) == "string") {
+						return function() {
+							return o.string;
+						};
+					}
+				})();
+				
+				if (readString) {
+					this.read = function(v) {
+						if (v === String) return readString();
+						if (v === JSON) return JSON.parse(this.read(String));						
+					}
 				}
 			}
 

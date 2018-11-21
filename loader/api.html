@@ -202,613 +202,204 @@ END LICENSE
 					return $jsapi.loader.module(path,context);
 				}
 			</script>
-			<div class="type">
-				<a class="type" name="types.script">script</a>
-				<span>A type of resource that can be executed.</span>
-				<div class="label">has properties:</div>
-				<ul>
-					<li class="value">
-						<div class="name">type</div>
-						<span class="type">mime.Type</span>
-						<span>
-							(optional; if omitted and <code>name</code> is present, uses <code>mime.Type.fromName</code>
-							to determine; if omitted and <code>name</code> is absent, defaults to
-							<code>application/javascript</code>) The type of this script.
-							<code>application/javascript</code> scripts will be executed as
-							JavaScript. <code>application/vnd.coffeescript</code> will be interpreted as CoffeeScript.
-						</span>
-					</li>
-					<li class="value">
-						<div class="name">name</div>
-						<span class="type">string</span>
-						<span>
-							(optional) The name of the script. May be
-							used by the underlying JavaScript engine when evaluating the resource as code (for display in tools,
-							for example).
-						</span>
-					</li>
-					<li class="value">
-						<div class="name">string</div>
-						<span class="type">string</span>
-						<span>The content of this script as a string.</span>
-					</li>
-				</ul>
-			</div>
-			<div class="type">
-				<a class="type" name="types.Resource">Resource</a>
-				<span>__DESCRIPTION__</span>
-				<div class="label">has properties:</div>
-				<ul>
-					<li class="value">
-						<div class="name">type</div>
-						<span class="type"><a href="mime.api.html#types.type">mime.Type</a></span>
-						<span>The type of the resource, or <code>null</code> if the type cannot be determined.</span>
-						<script type="application/x.jsapi#tests">
-							(function() {
-								var resource = new api.Resource({});
-								verify(resource).type.is(null);
-							})();
-							(function() {
-								var resource = new api.Resource({
-									type: api.mime.Type.parse("application/json")
-								});
-								verify(resource).type.toString().is("application/json");
-							})();
-							(function() {
-								var resource = new api.Resource({
-									name: "foo.js"
-								});
-								verify(resource).type.toString().is("application/javascript");
-							})();
-							(function() {
-								var resource = new api.Resource({
-									name: "foo.x"
-								});
-								verify(resource).type.is(null);
-							})();
-						</script>
-					</li>
-					<li class="value">
-						<div class="name">name</div>
-						<span class="type">string</span>
-						<span>
-							(conditional)
-							The name of the resource, if available.
-						</span>
-						<script type="application/x.jsapi#tests">
-							(function() {
-								var resource = new api.Resource({
-									name: "foo"
-								});
-								verify(resource).name.is("foo");
-							})();
-							(function() {
-								var resource = new api.Resource({});
-								verify(resource).evaluate.property("name").is(void(0));
-							})();
-						</script>
-					</li>
-					<li class="function">
-						<div class="name">read</div>
-						<span>Provides the content of this resource in a format specified by its argument.</span>
-						<div class="arguments">
-							<div class="label">Arguments</div>
-							<ol>
-								<li class="value">
-									<span class="type">The String function, the JSON function <span class="deprecated">, or the XML function</span>.</span>
-									<span>A constant value indicating the type desired.</span>
-								</li>
-							</ol>
-						</div>
-						<div class="returns">
-							<div class="label">Returns</div>
-							<span class="type">String</span>,
-							<span class="type">object</span>,
-							<span class="deprecated">or <span class="type">XML</span></span>
-							<span>Depending on the type argument given, returns the content of the resource in the given format.</span>
-						</div>
-						<script type="application/x.jsapi#tests">
-							(function() {
-								var resource = new api.Resource({
-									string: "foo" 
-								});
-								verify(resource).read(String).is("foo");
-							})();
-							
-							(function() {
-								var resource = new api.Resource({
-									string: JSON.stringify({ foo: "bar" })
-								});
-								var json = resource.read(JSON);
-								verify(json).foo.is("bar");
-								verify(json).evaluate.property("baz").is(void(0));
-							})();
-						</script>
-					</li>
-				</ul>
-			</div>
-			<div class="type" jsapi:id="types.Loader">
-				<a class="type" name="types.Loader">Loader</a>
-				<span jsapi:id="topdescription">A <i>Loader</i> loads and executes JavaScript code from a specific source.</span>
-				<div class="type">
-					<a class="type" name="types.Loader.resource">resource</a>
-					<span>A resource that can be loaded by a Loader.</span>
-					<div class="label">has properties:</div>
-					<ul>
-						<li class="value">
-							<div class="name">type</div>
-							<span class="type">string</span>
-							- OR -
-							<span class="type"><a href="#types.mime.Type">mime.Type</a></span>
-							<span>
-								(optional)
-								The MIME type of the resource.
-							</span>
-						</li>
-						<li class="value">
-							<!--
-									TODO	should we provide default implementation of this property that sets it to the basename
-											as determined by path? Or to the full path?
-							-->
-							<div class="name">name</div>
-							<span class="type">string</span>
-							<span>
-								(optional)
-								The name of the resource. May be used (by file extension, for example) to determine the type of the
-								file.
-							</span>
-						</li>
-						<li class="value">
-							<div class="name">string</div>
-							<span class="type">string</span>
-							<span>
-								(optional)
-								The content of the resource as a string.
-							</span>
-						</li>
-					</ul>
-				</div>
-				<div class="type">
-					<a class="type" name="types.Loader.source">source</a>
-					<span>__DESCRIPTION__</span>
-					<div class="label">has properties:</div>
-					<ul>
-						<li class="function">
-							<div class="name">toString</div>
-							<span>
-								(optional)
-								Provides the <code>toString</code> for the created Loader by default.
-							</span>
-						</li>
-						<li class="function">
-							<div class="name">get</div>
-							<span>Retrieves a resource.</span>
-							<div class="arguments">
-								<div class="label">Arguments</div>
-								<ol>
-									<li class="value">
-										<span class="type">string</span>
-										<span>The path from which to load a resource.</span>
-									</li>
-								</ol>
-							</div>
-							<div class="returns">
-								<div class="label">Returns</div>
-								<span class="type"><a href="#types.Loader.resource">resource</a></span>
-								<span>The resource at the given path, or <code>null</code> if there is none.</span>
-							</div>
-						</li>
-						<li class="function">
-							<div class="name">child</div>
-							<span>
-								(optional; if omitted, a child that delegates requests back to the parent, prepended by the
-								child's path, will be created)
-								A factory method that this loader implementation can use to create its own child implementations.
-							</span>
-							<div class="arguments">
-								<div class="label">Arguments</div>
-								<ol>
-									<li class="value">
-										<span class="type">string</span>
-										<span>
-											The path representing this child underneath the parent.
-											<span class="experimental">
-												Currently, this path can be either the empty string <code>""</code> or a string
-												ending in <code>/</code>.
-											</span>
-										</span>
-									</li>
-								</ol>
-							</div>
-							<div class="returns">
-								<div class="label">Returns</div>
-								<span class="type"><a href="">source</a></span>
-								<span>A source that represents a child of the parent source.</span>
-							</div>
-						</li>
-						<li class="function experimental">
-							<div class="name">list</div>
-							<span>Returns a list of the top-level entries at a particular location in this loader.</span>
-							<div class="type">
-								<a class="type" name="types.Loader.list.arguments[0].entry">entry</a>
-								<span>Either a resource or a child loader contained within a Loader.</span>
-								<div class="label">has properties:</div>
-								<ul>
-									<li class="value">
-										<div class="name">path</div>
-										<span class="type">string</span>
-										<span>
-											The name of this entry. It does <em>not</em> have a trailing slash for loaders.
-										</span>
-									</li>
-									<li class="value">
-										<div class="name">loader</div>
-										<span class="type">boolean</span>
-										<span>
-											Whether this entry represents a child loader (for example, a directory or
-											folder)
-										</span>
-									</li>
-									<li class="value">
-										<div class="name">resource</div>
-										<span class="type">boolean</span>
-										<span>Whether this entry represents a resource.</span>
-									</li>
-								</ul>
-							</div>
-							<div class="arguments">
-								<div class="label">Arguments</div>
-								<ol>
-									<li class="value">
-										<span class="type">string</span>
-										<span>A path under this loader to list.
-											<span class="experimental">Currently, this will either be the empty
-											string, in which case the top level should be listed, or it will be a path
-											ending in <code>/</code>.</span>
-										</span>
-									</li>
-								</ol>
-							</div>
-							<div class="returns">
-								<div class="label">Returns</div>
-								<span class="type">Array of <a href="#types.Loader.list.arguments[0].entry">entry</a></span>
-							</div>
-						</li>
-					</ul>
-				</div>
-				<div class="label">has properties:</div>
-				<ul>
-					<li class="value">
-						<div class="name">source</div>
-						<span class="type"><a href="#types.Loader.source">source</a></span>
-						<span>__DESCRIPTION__</span>
-					</li>
-					<li class="function">
-						<div class="name">get</div>
-						<span>Returns the resource associated with a given path, by invoking the <code>get</code> method of this
-							loader's <code>source</code>.
-						</span>
-						<div class="arguments">
-							<div class="label">Arguments</div>
-							<ol>
-								<li class="value">
-									<span class="type">string</span>
-									<span>A path.</span>
-								</li>
-							</ol>
-						</div>
-						<div class="returns">
-							<div class="label">Returns</div>
-							<span class="type"><a href="#types.Loader.resource">resource</a></span>
-							<span>__DESCRIPTION__</span>
-						</div>
-					</li>
-					<li class="function" jsapi:id="run">
-						<div class="name"><a name="Loader.run">run</a></div>
-						<span jsapi:id="description">
-							Executes code in a particular scope with a particular <code>this</code> value. The code will automatically
-							contain the <code>$platform</code> and <code>$api</code> objects described above in its scope.
-						</span>
-						<div class="arguments" jsapi:id="arguments">
-							<div class="label">Arguments</div>
-							<ol>
-								<li class="value">
-									<span class="type">string</span>
-									<span>The path of the code to execute.</span>
-								</li>
-								<li class="value" jsapi:id="arguments[1]">
-									<span class="type">object</span>
-									<span>The scope in which to execute the code.</span>
-								</li>
-								<li class="value" jsapi:id="arguments[2]">
-									<span class="type">object</span>
-									<span>The object to use as the <code>this</code> value when executing the code.</span>
-								</li>
-							</ol>
-						</div>
-					</li>
-					<li class="function" jsapi:id="file">
-						<div class="name"><a name="Loader.file">file</a></div>
-						<span jsapi:id="description">
-							Executes a script in a separate scope. The scope will contain the <code>$platform</code> and <code>$api</code>
-							objects described above. In addition, the script will be provided with special objects named
-							<code>$context</code> and <code>$exports</code>. The <code>$context</code> object represents an
-							application-specific context to provide to the script; the <code>$exports</code> object represents an object to
-							which the script can assign properties that will be visible outside the script.
-						</span>
-						<div class="arguments" jsapi:id="arguments">
-							<div class="label">Arguments</div>
-							<ol>
-								<li class="value">
-									<span class="type">string</span>
-									<span>The path of the code to execute.</span>
-								</li>
-								<li class="value" jsapi:id="arguments[1]">
-									<span class="type">object</span>
-									<span>
-										An object to use as the <code>$context</code> object when executing the given code. If absent, an
-										empty object will be supplied.
-										<!--	TODO	What about if it is a number, string, or boolean?	-->
-									</span>
-								</li>
-								<li class="value" jsapi:id="arguments[2]">
-									<span class="type">object</span>
-									<span>The object to use as the <code>this</code> value when executing the code.</span>
-								</li>
-							</ol>
-						</div>
-						<div class="returns" jsapi:id="returns">
-							<div class="label">Returns</div>
-							<span class="type">object</span>
-							<span>An object which contains the properties the script assigned to the <code>$exports</code> object.</span>
-						</div>
-					</li>
-					<li class="function" jsapi:id="module">
-						<div class="name">module</div>
-						<div jsapi:id="description">
-							<span jsapi:id="summary">
-								Loads a module. The module's code is specified by the first argument, and the second argument specifies
-								objects to be supplied to the module when loading it.
-							</span>
-							The module's main file will be executed with the following variables in scope:
-							<ul>
-								<li>the <code>$platform</code> and <code>$api</code> objects specified above,</li>
-								<li>the <code>$context</code> object specified by the second argument,</li>
-								<li>an <code>$exports</code> object,</li>
-								<li>
-									a <code>$loader</code> object of type <a href="#types.Loader">Loader</a> allowing other source
-									files and submodules to be loaded.
-								</li>
-							</ul>
-						</div>
-						<div class="arguments" jsapi:id="arguments">
-							<div class="label">Arguments</div>
-							<ol>
-								<li class="value">
-									<span class="type">string</span>
-									<span>The path of the code to execute.</span>
-								</li>
-								<li class="value" jsapi:id="arguments[1]">
-									<span class="type">object</span>
-									<span>
-										An object to use as the <code>$context</code> object when executing the given code. If absent, an
-										empty object will be supplied.
-										<!--	TODO	What about if it is a number, string, or boolean?	-->
-									</span>
-								</li>
-								<li class="value" jsapi:id="arguments[2]">
-									<span class="type">object</span>
-									<span>The object to use as the <code>this</code> value when executing the code.</span>
-								</li>
-							</ol>
-						</div>
-						<div class="returns" jsapi:id="returns">
-							<div class="label">Returns</div>
-							<span class="type">object</span>
-							<span>An object containing this module's exports.</span>
-						</div>
-					</li>
-					<li class="function" jsapi:id="value">
-						<div class="name"><a id="types.Loader.value">value</a></div>
-						<div jsapi:id="description">
-							Identical to <code>run</code>, except that the code to execute is supplied with a <code>$set</code>
-							function in its scope that allows it to set a value to be returned to the caller:
-							<div class="label">has properties:</div>
-							<ul>
-								<li class="function">
-									<div class="name">$set</div>
-									<span>Allows the code to return a single value to the caller.</span>
-									<div class="arguments">
-										<div class="label">Arguments</div>
-										<ol>
-											<li class="value">
-												<span class="type">(any)</span>
-												<span>The value to return.</span>
-											</li>
-										</ol>
-									</div>
-								</li>
-							</ul>
-						</div>
-						<div class="arguments" jsapi:id="arguments">
-							<div class="label">Arguments</div>
-							See <a href="#Loader.run">run</a>.
-						</div>
-						<div class="returns" jsapi:id="returns">
-							<div class="label">Returns</div>
-							<span class="type">(any)</span>
-							<span>
-								The value the code to execute passed to <code>$set</code>, or <code>undefined</code> if
-								<code>$set</code> was not invoked.
-							</span>
-						</div>
-					</li>
-					<li class="function">
-						<div class="name">list</div>
-						<span>
-							(conditional; not present if <code>source.list()</code> not present)
-						</span>
-						<div class="type">
-							<a class="type" name="types.Loader.entry">entry</a>
-							<span>__DESCRIPTION__</span>
-							<div class="label">has properties:</div>
-							<ul>
-								<li class="value">
-									<div class="name">path</div>
-									<span class="type">__TYPE__</span>
-									<span>__DESCRIPTION__</span>
-								</li>
-								<li class="value">
-									<div class="name">resource</div>
-									<span class="type">__TYPE__</span>
-									<span>
-										(optional; if the item at <code>path</code> is a resource)
-									</span>
-								</li>
-								<li class="value">
-									<div class="name">loader</div>
-									<span class="type">__TYPE__</span>
-									<span>
-										(optional; if the item at <code>path</code> is a loader)
-									</span>
-								</li>
-							</ul>
-						</div>
-						<div class="arguments">
-							<div class="label">Arguments</div>
-							<ol>
-								<li class="object">
-									<div class="label">has properties:</div>
-									<ul>
-										<li class="function">
-											<div class="name">filter</div>
-											<span>__DESCRIPTION__</span>
-											<div class="arguments">
-												<div class="label">Arguments</div>
-												<ol>
-												</ol>
-											</div>
-											<div class="returns">
-												<div class="label">Returns</div>
-												<span class="type">__TYPE__</span>
-												<span>__DESCRIPTION__</span>
-											</div>
-										</li>
-										<li class="function">
-											<div class="name">descendants</div>
-											<span>__DESCRIPTION__</span>
-											<div class="arguments">
-												<div class="label">Arguments</div>
-												<ol>
-												</ol>
-											</div>
-											<div class="returns">
-												<div class="label">Returns</div>
-												<span class="type">__TYPE__</span>
-												<span>__DESCRIPTION__</span>
-											</div>
-										</li>
-									</ul>
-								</li>
-							</ol>
-						</div>
-						<div class="returns">
-							<div class="label">Returns</div>
-							<span class="type">__TYPE__</span>
-							<span>__DESCRIPTION__</span>
-						</div>
-					</li>
-				</ul>
-				<div jsapi:id="tests">
-					<script type="application/x.jsapi#tests"><![CDATA[
-						var Tests = function(p) {
-							var a = function(scope) {
-								if (!scope.verify) throw new Error("No scope.verify; scope keys = " + Object.keys(scope));
-								if (!p.loadTestModule) throw new Error("No p.loadTestModule");
-								var module = scope.verify(p.loadTestModule("test/data/a/", {
-									d: 1970
-								}), "test/data/a");
-								module.a.is(3);
-								module.b.is(4);
-								module.c.is(5);
-								module.d.is(1970);
-								module.e.is(4);
-								module.f.is(6);
-								module.fThis.is("fThis");
-								module.mThis.is("mThis");
-								module.value.is(5);
-								module.vThis.thisName.is("vThis:4");
-							};
-
-							var b = function(scope) {
-								var module = scope.verify(p.loadTestModule("test/data/b/", {
-								}), "test/data/b");
-								module.submodule.message.is("ititit");
-							}
-
-							var c = function(scope) {
-								var module = scope.verify(p.loadTestModule("test/data/c/main.js", {
-								}), "test/data/c/main");
-								module.value.is(13);
-								module.other.is(42);
-							};
-
-							var rhino = function(scope) {
-								var module = scope.verify(p.loadTestModule("jrunscript/test/data/1/", {
-								}), "rhino/test/data/1");
-								var $java = (function() {
-									if (this.jsh && this.jsh.java && this.jsh.java.getClass) return this.jsh.java.getClass("slime.Data");
-									try {
-										Packages.java.lang.Class.forName("slime.Data");
-										return true;
-									} catch (e) {
-										return false;
-									}
-								})();
-								if ($java) {
-									module.data.is("From Java");
-								} else {
-									module.data.is("No Java");
-								}
-							};
-
-							var coffee = function(scope) {
-								//	TODO	for some reason these (at least sometimes) do not run in browser
-								if ($jsapi.loader.coffee) {
-									var loader = $jsapi.loader.module("test/data/coffee/loader.js");
-									var coffee = $jsapi.loader.module("test/data/coffee/module.coffee");
-									scope.verify(coffee,"coffee").a.is(2);
-									scope.verify(coffee,"coffee").file.b.is(3);
-									scope.verify(loader,"loader").file.b.is(3);
-									var file = $jsapi.loader.file("test/data/coffee/file.coffee");
-									scope.verify(file,"file").b.is(3);
-								} else {
-									scope.verify("No CoffeeScript").is("No CoffeeScript");
-								}
-							}
-
-							this.run = function(scope) {
-								a(scope);
-								b(scope);
-								c(scope);
-								rhino(scope);
-								coffee(scope);
-							}
-						};
-						new Tests(scope).run({
-							test: test,
-							verify: verify
-						});
-					]]></script>
-				</div>
-			</div>
 			<div class="label">has properties:</div>
-			<ul jsapi:id="global">
+			<ul>
 				<li class="value">
 					<div class="name">mime</div>
 					<span class="type"><a href="mime.api.html">SLIME MIME API</a></span>
 					<span>Provides APIs relating to MIME types.</span>
 				</li>
+				<li class="constructor">
+					<div class="name">Resource</div>
+					<span>
+						Creates a <a href="">Resource</a>.
+					</span>
+					<div class="type">
+						<a class="type" name="types.Resource.source">source</a>
+						<span>Provides the implementation for a <a href="#types.Resource">Resource</a>.</span>
+						<div class="label">has properties:</div>
+						<ul>
+							<li class="value">
+								<div class="name">type</div>
+								<span class="type">string</span>
+								- OR -
+								<span class="type"><a href="#types.mime.Type">mime.Type</a></span>
+								<span>
+									(optional)
+									The MIME type of the resource.
+								</span>
+							</li>
+							<li class="value">
+								<!--
+										TODO	should we provide default implementation of this property that sets it to the basename
+												as determined by path? Or to the full path?
+								-->
+								<div class="name">name</div>
+								<span class="type">string</span>
+								<span>
+									(optional)
+									The name of the resource. May be used (by file extension, for example) to determine the type of the
+									file.
+								</span>
+							</li>
+							<li class="value">
+								<div class="name">string</div>
+								<span class="type">string</span>
+								<span>
+									(optional)
+									The content of the resource as a string.
+								</span>
+							</li>
+							<li class="object">
+								<div class="name">read</div>
+								<span>__DESCRIPTION__</span>
+								<div class="label">has properties:</div>
+								<ul>
+									<li class="function">
+										<div class="name">string</div>
+										<span>
+											(optional)
+											Returns the content of the resource as a string.
+										</span>
+										<div class="returns">
+											<div class="label">Returns</div>
+											<span class="type">string</span>
+										</div>
+									</li>
+								</ul>
+							</li>
+						</ul>
+					</div>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+							<li class="value">
+								<span class="type"><a href="#types.Resource.source">source</a></span>
+								<span>__DESCRIPTION__</span>
+							</li>
+						</ol>
+					</div>
+					<div class="instances">
+						<div class="label">Instances</div>
+						<span>Instances conform to the following type:</span>
+						<div class="label">has properties:</div>
+						<ul>
+							<li class="value">
+								<div class="name">type</div>
+								<span class="type"><a href="mime.api.html#types.type">mime.Type</a></span>
+								<span>
+									The type of the resource, or <code>null</code> if the type cannot be determined. If no type 
+									was specified, and a name was specified, the implementation
+									will attempt to deduce the type from the name.
+								</span>
+								<script type="application/x.jsapi#tests">
+									(function() {
+										var resource = new api.Resource({});
+										verify(resource).type.is(null);
+									})();
+									(function() {
+										var resource = new api.Resource({
+											type: api.mime.Type.parse("application/json")
+										});
+										verify(resource).type.toString().is("application/json");
+									})();
+									(function() {
+										var resource = new api.Resource({
+											name: "foo.js"
+										});
+										verify(resource).type.toString().is("application/javascript");
+									})();
+									(function() {
+										var resource = new api.Resource({
+											name: "foo.x"
+										});
+										verify(resource).type.is(null);
+									})();
+								</script>
+							</li>
+							<li class="value">
+								<div class="name">name</div>
+								<span class="type">string</span>
+								<span>
+									(conditional)
+									The name of the resource, if available.
+								</span>
+								<script type="application/x.jsapi#tests">
+									(function() {
+										var resource = new api.Resource({
+											name: "foo"
+										});
+										verify(resource).name.is("foo");
+									})();
+									(function() {
+										var resource = new api.Resource({});
+										verify(resource).evaluate.property("name").is(void(0));
+									})();
+								</script>
+							</li>
+							<li class="function">
+								<div class="name">read</div>
+								<span>Provides the content of this resource in a format specified by its argument.</span>
+								<div class="arguments">
+									<div class="label">Arguments</div>
+									<ol>
+										<li class="value">
+											<span class="type">The String function, the JSON function <span class="deprecated">, or the XML function</span>.</span>
+											<span>A constant value indicating the type desired.</span>
+										</li>
+									</ol>
+								</div>
+								<div class="returns">
+									<div class="label">Returns</div>
+									<span class="type">String</span>,
+									<span class="type">object</span>,
+									<span class="deprecated">or <span class="type">XML</span></span>
+									<span>Depending on the type argument given, returns the content of the resource in the given format.</span>
+								</div>
+								<script type="application/x.jsapi#tests">
+									(function() {
+										var resource = new api.Resource({
+											string: "foo" 
+										});
+										verify(resource).read(String).is("foo");
+									})();
+									
+									(function() {
+										var resource = new api.Resource({
+											read: {
+												string: function() {
+													return "bar";
+												}
+											}
+										});
+										verify(resource).read(String).is("bar");
+									})();
+									
+									(function() {
+										var resource = new api.Resource({
+											string: JSON.stringify({ foo: "bar" })
+										});
+										var json = resource.read(JSON);
+										verify(json).foo.is("bar");
+										verify(json).evaluate.property("baz").is(void(0));
+									})();
+								</script>
+							</li>
+						</ul>
+					</div>
+				</li>
+				<div class="type">
+					<a class="type" name="types.script">script</a>
+					<span>
+						A <code>Resource.source</code> or <code>Resource</code>. If it is a <code>Resource.source</code>, it 
+						<em>must</em> have either a <code>string</code> property or a <code>read.string()</code> function.
+						If no MIME type can be determined, the type will be assumed to be <code>application/javascript</code>.
+						<code>application/javascript</code> scripts will be executed as
+						JavaScript. <code>application/vnd.coffeescript</code> will be interpreted as CoffeeScript. The 
+						<code>name</code> property, if provided, may be used by the underlying JavaScript engine when evaluating
+						the resource as code (for display in tools, for example).							
+					</span>
+				</div>
 				<li class="function" jsapi:id="run">
 					<div class="name"><a id="exports.run">run</a></div>
 					<span jsapi:id="description">
@@ -889,27 +480,117 @@ END LICENSE
 						<span>See <a href="#types.Loader.value">Loader.value()</a>.</span>
 					</div>
 				</li>
-				<li class="constructor">
-					<div class="name">Resource</div>
-					<span>Creates a <a href="">Resource</a>.</span>
-					<div class="arguments">
-						<div class="label">Arguments</div>
-						<ol>
-							<li class="value">
-								<span class="type"><a href="#types.Loader.resource">Loader.resource</a></span>
-								<span>__DESCRIPTION__</span>
-							</li>
-						</ol>
-					</div>
-					<div class="instances">
-						<div class="label">Instances</div>
-						<span class="type"><a href="#types.Resource">Resource</a></span>
-						<span>__DESCRIPTION__</span>
-					</div>
-				</li>
 				<li class="constructor" jsapi:id="Loader">
 					<div class="name"><a name="exports.Loader">Loader</a></div>
-					<span>Creates a <a href="#types.Loader">Loader</a>.</span>
+					<span>Creates a <a href="#types.Loader">Loader</a>. A <i>Loader</i> loads resources from a specified source.</span>
+					<div class="type">
+						<a class="type" name="types.Loader.source">source</a>
+						<span>__DESCRIPTION__</span>
+						<div class="label">has properties:</div>
+						<ul>
+							<li class="function">
+								<div class="name">toString</div>
+								<span>
+									(optional)
+									Provides the <code>toString</code> for the created Loader by default.
+								</span>
+							</li>
+							<li class="function">
+								<div class="name">get</div>
+								<span>Retrieves a resource.</span>
+								<div class="arguments">
+									<div class="label">Arguments</div>
+									<ol>
+										<li class="value">
+											<span class="type">string</span>
+											<span>The path from which to load a resource.</span>
+										</li>
+									</ol>
+								</div>
+								<div class="returns">
+									<div class="label">Returns</div>
+									<span class="type"><a href="#types.Loader.resource">resource</a></span>
+									<span>The resource at the given path, or <code>null</code> if there is none.</span>
+								</div>
+							</li>
+							<li class="function">
+								<div class="name">child</div>
+								<span>
+									(optional; if omitted, a child that delegates requests back to the parent, prepended by the
+									child's path, will be created)
+									A factory method that this loader implementation can use to create its own child implementations.
+								</span>
+								<div class="arguments">
+									<div class="label">Arguments</div>
+									<ol>
+										<li class="value">
+											<span class="type">string</span>
+											<span>
+												The path representing this child underneath the parent.
+												<span class="experimental">
+													Currently, this path can be either the empty string <code>""</code> or a string
+													ending in <code>/</code>.
+												</span>
+											</span>
+										</li>
+									</ol>
+								</div>
+								<div class="returns">
+									<div class="label">Returns</div>
+									<span class="type"><a href="">source</a></span>
+									<span>A source that represents a child of the parent source.</span>
+								</div>
+							</li>
+							<li class="function experimental">
+								<div class="name">list</div>
+								<span>Returns a list of the top-level entries at a particular location in this loader.</span>
+								<div class="type">
+									<a class="type" name="types.Loader.list.arguments[0].entry">entry</a>
+									<span>Either a resource or a child loader contained within a Loader.</span>
+									<div class="label">has properties:</div>
+									<ul>
+										<li class="value">
+											<div class="name">path</div>
+											<span class="type">string</span>
+											<span>
+												The name of this entry. It does <em>not</em> have a trailing slash for loaders.
+											</span>
+										</li>
+										<li class="value">
+											<div class="name">loader</div>
+											<span class="type">boolean</span>
+											<span>
+												Whether this entry represents a child loader (for example, a directory or
+												folder)
+											</span>
+										</li>
+										<li class="value">
+											<div class="name">resource</div>
+											<span class="type">boolean</span>
+											<span>Whether this entry represents a resource.</span>
+										</li>
+									</ul>
+								</div>
+								<div class="arguments">
+									<div class="label">Arguments</div>
+									<ol>
+										<li class="value">
+											<span class="type">string</span>
+											<span>A path under this loader to list.
+												<span class="experimental">Currently, this will either be the empty
+												string, in which case the top level should be listed, or it will be a path
+												ending in <code>/</code>.</span>
+											</span>
+										</li>
+									</ol>
+								</div>
+								<div class="returns">
+									<div class="label">Returns</div>
+									<span class="type">Array of <a href="#types.Loader.list.arguments[0].entry">entry</a></span>
+								</div>
+							</li>
+						</ul>
+					</div>
 					<div class="arguments">
 						<div class="label">Arguments</div>
 						<ol>
@@ -919,9 +600,333 @@ END LICENSE
 							</li>
 						</ol>
 					</div>
-					<div class="instances">
+					<div class="instances" jsapi:id="type">
 						<div class="label">Instances</div>
-						<span class="type"><a href="#types.Loader">Loader</a></span>
+						<div class="label">has properties:</div>
+						<ul>
+							<li class="value">
+								<div class="name">source</div>
+								<span class="type"><a href="#types.Loader.source">source</a></span>
+								<span>__DESCRIPTION__</span>
+							</li>
+							<li class="function">
+								<div class="name">get</div>
+								<span>Returns the resource associated with a given path, by invoking the <code>get</code> method of this
+									loader's <code>source</code>.
+								</span>
+								<div class="arguments">
+									<div class="label">Arguments</div>
+									<ol>
+										<li class="value">
+											<span class="type">string</span>
+											<span>A path.</span>
+										</li>
+									</ol>
+								</div>
+								<div class="returns">
+									<div class="label">Returns</div>
+									<span class="type"><a href="#types.Loader.resource">resource</a></span>
+									<span>__DESCRIPTION__</span>
+								</div>
+							</li>
+							<li class="function" jsapi:id="run">
+								<div class="name"><a name="Loader.run">run</a></div>
+								<span jsapi:id="description">
+									Executes code in a particular scope with a particular <code>this</code> value. The code will automatically
+									contain the <code>$platform</code> and <code>$api</code> objects described above in its scope.
+								</span>
+								<div class="arguments" jsapi:id="arguments">
+									<div class="label">Arguments</div>
+									<ol>
+										<li class="value">
+											<span class="type">string</span>
+											<span>The path of the code to execute.</span>
+										</li>
+										<li class="value" jsapi:id="arguments[1]">
+											<span class="type">object</span>
+											<span>The scope in which to execute the code.</span>
+										</li>
+										<li class="value" jsapi:id="arguments[2]">
+											<span class="type">object</span>
+											<span>The object to use as the <code>this</code> value when executing the code.</span>
+										</li>
+									</ol>
+								</div>
+							</li>
+							<li class="function" jsapi:id="file">
+								<div class="name"><a name="Loader.file">file</a></div>
+								<span jsapi:id="description">
+									Executes a script in a separate scope. The scope will contain the <code>$platform</code> and <code>$api</code>
+									objects described above. In addition, the script will be provided with special objects named
+									<code>$context</code> and <code>$exports</code>. The <code>$context</code> object represents an
+									application-specific context to provide to the script; the <code>$exports</code> object represents an object to
+									which the script can assign properties that will be visible outside the script.
+								</span>
+								<div class="arguments" jsapi:id="arguments">
+									<div class="label">Arguments</div>
+									<ol>
+										<li class="value">
+											<span class="type">string</span>
+											<span>The path of the code to execute.</span>
+										</li>
+										<li class="value" jsapi:id="arguments[1]">
+											<span class="type">object</span>
+											<span>
+												An object to use as the <code>$context</code> object when executing the given code. If absent, an
+												empty object will be supplied.
+												<!--	TODO	What about if it is a number, string, or boolean?	-->
+											</span>
+										</li>
+										<li class="value" jsapi:id="arguments[2]">
+											<span class="type">object</span>
+											<span>The object to use as the <code>this</code> value when executing the code.</span>
+										</li>
+									</ol>
+								</div>
+								<div class="returns" jsapi:id="returns">
+									<div class="label">Returns</div>
+									<span class="type">object</span>
+									<span>An object which contains the properties the script assigned to the <code>$exports</code> object.</span>
+								</div>
+							</li>
+							<li class="function" jsapi:id="module">
+								<div class="name">module</div>
+								<div jsapi:id="description">
+									<span jsapi:id="summary">
+										Loads a module. The module's code is specified by the first argument, and the second argument specifies
+										objects to be supplied to the module when loading it.
+									</span>
+									The module's main file will be executed with the following variables in scope:
+									<ul>
+										<li>the <code>$platform</code> and <code>$api</code> objects specified above,</li>
+										<li>the <code>$context</code> object specified by the second argument,</li>
+										<li>an <code>$exports</code> object,</li>
+										<li>
+											a <code>$loader</code> object of type <a href="#types.Loader">Loader</a> allowing other source
+											files and submodules to be loaded.
+										</li>
+									</ul>
+								</div>
+								<div class="arguments" jsapi:id="arguments">
+									<div class="label">Arguments</div>
+									<ol>
+										<li class="value">
+											<span class="type">string</span>
+											<span>The path of the code to execute.</span>
+										</li>
+										<li class="value" jsapi:id="arguments[1]">
+											<span class="type">object</span>
+											<span>
+												An object to use as the <code>$context</code> object when executing the given code. If absent, an
+												empty object will be supplied.
+												<!--	TODO	What about if it is a number, string, or boolean?	-->
+											</span>
+										</li>
+										<li class="value" jsapi:id="arguments[2]">
+											<span class="type">object</span>
+											<span>The object to use as the <code>this</code> value when executing the code.</span>
+										</li>
+									</ol>
+								</div>
+								<div class="returns" jsapi:id="returns">
+									<div class="label">Returns</div>
+									<span class="type">object</span>
+									<span>An object containing this module's exports.</span>
+								</div>
+							</li>
+							<li class="function" jsapi:id="value">
+								<div class="name"><a id="types.Loader.value">value</a></div>
+								<div jsapi:id="description">
+									Identical to <code>run</code>, except that the code to execute is supplied with a <code>$set</code>
+									function in its scope that allows it to set a value to be returned to the caller:
+									<div class="label">has properties:</div>
+									<ul>
+										<li class="function">
+											<div class="name">$set</div>
+											<span>Allows the code to return a single value to the caller.</span>
+											<div class="arguments">
+												<div class="label">Arguments</div>
+												<ol>
+													<li class="value">
+														<span class="type">(any)</span>
+														<span>The value to return.</span>
+													</li>
+												</ol>
+											</div>
+										</li>
+									</ul>
+								</div>
+								<div class="arguments" jsapi:id="arguments">
+									<div class="label">Arguments</div>
+									See <a href="#Loader.run">run</a>.
+								</div>
+								<div class="returns" jsapi:id="returns">
+									<div class="label">Returns</div>
+									<span class="type">(any)</span>
+									<span>
+										The value the code to execute passed to <code>$set</code>, or <code>undefined</code> if
+										<code>$set</code> was not invoked.
+									</span>
+								</div>
+							</li>
+							<li class="function">
+								<div class="name">list</div>
+								<span>
+									(conditional; not present if <code>source.list()</code> not present)
+								</span>
+								<div class="type">
+									<a class="type" name="types.Loader.entry">entry</a>
+									<span>__DESCRIPTION__</span>
+									<div class="label">has properties:</div>
+									<ul>
+										<li class="value">
+											<div class="name">path</div>
+											<span class="type">__TYPE__</span>
+											<span>__DESCRIPTION__</span>
+										</li>
+										<li class="value">
+											<div class="name">resource</div>
+											<span class="type">__TYPE__</span>
+											<span>
+												(optional; if the item at <code>path</code> is a resource)
+											</span>
+										</li>
+										<li class="value">
+											<div class="name">loader</div>
+											<span class="type">__TYPE__</span>
+											<span>
+												(optional; if the item at <code>path</code> is a loader)
+											</span>
+										</li>
+									</ul>
+								</div>
+								<div class="arguments">
+									<div class="label">Arguments</div>
+									<ol>
+										<li class="object">
+											<div class="label">has properties:</div>
+											<ul>
+												<li class="function">
+													<div class="name">filter</div>
+													<span>__DESCRIPTION__</span>
+													<div class="arguments">
+														<div class="label">Arguments</div>
+														<ol>
+														</ol>
+													</div>
+													<div class="returns">
+														<div class="label">Returns</div>
+														<span class="type">__TYPE__</span>
+														<span>__DESCRIPTION__</span>
+													</div>
+												</li>
+												<li class="function">
+													<div class="name">descendants</div>
+													<span>__DESCRIPTION__</span>
+													<div class="arguments">
+														<div class="label">Arguments</div>
+														<ol>
+														</ol>
+													</div>
+													<div class="returns">
+														<div class="label">Returns</div>
+														<span class="type">__TYPE__</span>
+														<span>__DESCRIPTION__</span>
+													</div>
+												</li>
+											</ul>
+										</li>
+									</ol>
+								</div>
+								<div class="returns">
+									<div class="label">Returns</div>
+									<span class="type">__TYPE__</span>
+									<span>__DESCRIPTION__</span>
+								</div>
+							</li>
+							<div jsapi:id="tests">
+								<script type="application/x.jsapi#tests"><![CDATA[
+									var Tests = function(p) {
+										var a = function(scope) {
+											if (!scope.verify) throw new Error("No scope.verify; scope keys = " + Object.keys(scope));
+											if (!p.loadTestModule) throw new Error("No p.loadTestModule");
+											var module = scope.verify(p.loadTestModule("test/data/a/", {
+												d: 1970
+											}), "test/data/a");
+											module.a.is(3);
+											module.b.is(4);
+											module.c.is(5);
+											module.d.is(1970);
+											module.e.is(4);
+											module.f.is(6);
+											module.fThis.is("fThis");
+											module.mThis.is("mThis");
+											module.value.is(5);
+											module.vThis.thisName.is("vThis:4");
+										};
+
+										var b = function(scope) {
+											var module = scope.verify(p.loadTestModule("test/data/b/", {
+											}), "test/data/b");
+											module.submodule.message.is("ititit");
+										}
+
+										var c = function(scope) {
+											var module = scope.verify(p.loadTestModule("test/data/c/main.js", {
+											}), "test/data/c/main");
+											module.value.is(13);
+											module.other.is(42);
+										};
+
+										var rhino = function(scope) {
+											var module = scope.verify(p.loadTestModule("jrunscript/test/data/1/", {
+											}), "rhino/test/data/1");
+											var $java = (function() {
+												if (this.jsh && this.jsh.java && this.jsh.java.getClass) return this.jsh.java.getClass("slime.Data");
+												try {
+													Packages.java.lang.Class.forName("slime.Data");
+													return true;
+												} catch (e) {
+													return false;
+												}
+											})();
+											if ($java) {
+												module.data.is("From Java");
+											} else {
+												module.data.is("No Java");
+											}
+										};
+
+										var coffee = function(scope) {
+											//	TODO	for some reason these (at least sometimes) do not run in browser
+											if ($jsapi.loader.coffee) {
+												var loader = $jsapi.loader.module("test/data/coffee/loader.js");
+												var coffee = $jsapi.loader.module("test/data/coffee/module.coffee");
+												scope.verify(coffee,"coffee").a.is(2);
+												scope.verify(coffee,"coffee").file.b.is(3);
+												scope.verify(loader,"loader").file.b.is(3);
+												var file = $jsapi.loader.file("test/data/coffee/file.coffee");
+												scope.verify(file,"file").b.is(3);
+											} else {
+												scope.verify("No CoffeeScript").is("No CoffeeScript");
+											}
+										}
+
+										this.run = function(scope) {
+											a(scope);
+											b(scope);
+											c(scope);
+											rhino(scope);
+											coffee(scope);
+										}
+									};
+									new Tests(scope).run({
+										test: test,
+										verify: verify
+									});
+								]]></script>
+							</div>
+						</ul>
 					</div>
 					<div class="label">has properties:</div>
 					<ul>
