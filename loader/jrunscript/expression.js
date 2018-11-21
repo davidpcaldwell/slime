@@ -76,7 +76,8 @@
 	loader.io = loader.file({ name: "slime://loader/jrunscript/io.js", string: String($javahost.getLoaderCode("jrunscript/io.js")) }, {
 		_streams: _streams,
 		api: {
-			java: loader.java
+			java: loader.java,
+			Resource: loader.Resource
 		}
 	});
 
@@ -108,10 +109,10 @@
 				this.enumerable = true;
 			}
 		);
-		loader.io.Resource.call(this,parameter);
-		this.name = String(_file.getSourceName());
+		var rv = loader.io.Resource.call(this,parameter);
+		rv.name = String(_file.getSourceName());
 		Object.defineProperty(
-			this,
+			rv,
 			"modified",
 			new function() {
 				this.get = function() {
@@ -121,11 +122,12 @@
 				this.enumerable = true;
 			}
 		)
-		this.java = {
+		rv.java = {
 			adapt: function() {
 				return _file;
 			}
 		}
+		return rv;
 	};
 	Resource.toCodeSourceFile = function(resource,path) {
 		if (!resource) return null;

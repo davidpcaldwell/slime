@@ -268,67 +268,82 @@ var Resource = function Resource(p) {
 			}
 		}
 	})();
-
-	if (p.hasOwnProperty("type")) {
-		//	TODO	may want to do some sort of "cast" here
-		Object.defineProperty(this, "type", {
-			get: $api.Function.singleton(function() {
-				return p.type;
-			}),
-			enumerable: true
-		});
+	
+	if (this.type) {
+		//	Go ahead and make it immutable; in Java we know we have Object.defineProperty
+		(function(type) {
+			Object.defineProperty(this, "type", {
+				get: function() {
+					return type;
+				},
+				enumerable: true
+			})			
+		}).call(this,this.type);
 	}
-
-	if (p.name) {
-		this.name = p.name;
+	
+	if (this.name) {
+		//	Go ahead and make it immutable; in Java we know we have Object.defineProperty
+		(function(name) {
+			Object.defineProperty(this, "name", {
+				get: function() {
+					return name;
+				},
+				enumerable: true
+			})			
+		}).call(this,this.name);		
 	}
 
 	var global = (function() { return this; })();
 
 	Object.defineProperty(this, "string", {
-		get: function() {
+		get: $api.deprecate(function() {
 			//	TODO	use something from $api
 			if (!arguments.callee.called) {
 				arguments.callee.called = { returns: text().asString() };
 			}
 			return arguments.callee.called.returns;
-		}
+		})
 	});
 
-	this.read = function(mode) {
-		var _properties = function(peer) {
-			//	peer can be Packages.java.io.InputStream or Packages.java.io.Reader
-			var properties = new Packages.java.util.Properties();
-			properties.load( peer );
-			peer.close();
-			return properties;
-		}
-
-		if (binary) {
-			if (mode == Streams.binary) return binary();
-			if (mode == Packages.java.util.Properties) return _properties(binary().java.adapt());
-		}
-		if (text) {
-			if (mode == Streams.text) return text();
-			if (mode == String) return text().asString();
-			if (mode == Packages.java.util.Properties) return _properties(text().java.adapt());
-			if (typeof(global.XML) != "undefined") {
-				if (mode == XML) return text().asXml();
-				if (/^function XML\(\)/.test(String(mode))) return text().asXml();
+	this.read = (function(was) {
+		return function(mode) {
+			var rv = (was) ? was.apply(this,arguments) : void(0);
+			if (typeof(rv) != "undefined") return rv;
+			
+			var _properties = function(peer) {
+				//	peer can be Packages.java.io.InputStream or Packages.java.io.Reader
+				var properties = new Packages.java.util.Properties();
+				properties.load( peer );
+				peer.close();
+				return properties;
 			}
-		}
-		var parameters = (function() {
-			if (!p) return String(p);
-			if (typeof(p) == "object") return String(p) + " with keys: " + Object.keys(p);
-			return String(p);
-		})();
-		throw new TypeError("No compatible read() mode specified: parameters = " + parameters + " binary=" + binary + " text=" + text + " argument was " + mode
-			+ " Streams.binary " + (mode == Streams.binary)
-			+ " Streams.text " + (mode == Streams.text)
-			+ " XML " + (mode == global.XML)
-			+ " String " + (mode == String)
-		);
-	}
+
+			if (binary) {
+				if (mode == Streams.binary) return binary();
+				if (mode == Packages.java.util.Properties) return _properties(binary().java.adapt());
+			}
+			if (text) {
+				if (mode == Streams.text) return text();
+				if (mode == String) return text().asString();
+				if (mode == Packages.java.util.Properties) return _properties(text().java.adapt());
+				if (typeof(global.XML) != "undefined") {
+					if (mode == XML) return text().asXml();
+					if (/^function XML\(\)/.test(String(mode))) return text().asXml();
+				}
+			}
+			var parameters = (function() {
+				if (!p) return String(p);
+				if (typeof(p) == "object") return String(p) + " with keys: " + Object.keys(p);
+				return String(p);
+			})();
+			throw new TypeError("No compatible read() mode specified: parameters = " + parameters + " binary=" + binary + " text=" + text + " argument was " + mode
+				+ " Streams.binary " + (mode == Streams.binary)
+				+ " Streams.text " + (mode == Streams.text)
+				+ " XML " + (mode == global.XML)
+				+ " String " + (mode == String)
+			);
+		};
+	})(this.read);
 
 	//	We provide the optional operations read.binary and read.text, even though they are semantically equivalent to read(),
 	//	for two reasons. First, they
@@ -453,4 +468,9 @@ $exports.InputStream = InputStream;
 $exports.Reader = Reader;
 $exports.Buffer = Buffer;
 $exports.Streams = Streams;
-$exports.Resource = Resource;
+$exports.Resource = function(p) {
+	//	This structure ensures rv is instanceof SLIME runtime Resource. May be better ways in future.
+	var rv = new $context.api.Resource(p);
+	Resource.call(rv,p);
+	return rv;
+};

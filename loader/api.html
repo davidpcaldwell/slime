@@ -176,9 +176,10 @@ END LICENSE
 				application code as needed.
 			</p>
 			<p>
-				Note that although there are global <code>run()</code> and <code>file()</code> methods that can be used to execute code,
-				there is no global <code>module()</code> method. Since modules themselves load code, in order to create a module, code
-				loading capability is needed. For this reason, the loader API exposes the ability to load modules via first creating a
+				Note that although there are global <code>run()</code>, <code>file()</code>, and <code>value()</code> methods that
+				can be used to execute code, there is no global <code>module()</code> method. Since modules themselves load code, in
+				order to create a module, code loading capability is needed. For this reason, the loader API exposes the ability to 
+				load modules via first creating a
 				<a href="#types.Loader">Loader</a> implementation and then using the <code>module()</code> method of the
 				<code>Loader</code>.
 			</p>
@@ -230,6 +231,99 @@ END LICENSE
 						<div class="name">string</div>
 						<span class="type">string</span>
 						<span>The content of this script as a string.</span>
+					</li>
+				</ul>
+			</div>
+			<div class="type">
+				<a class="type" name="types.Resource">Resource</a>
+				<span>__DESCRIPTION__</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="value">
+						<div class="name">type</div>
+						<span class="type"><a href="mime.api.html#types.type">mime.Type</a></span>
+						<span>The type of the resource, or <code>null</code> if the type cannot be determined.</span>
+						<script type="application/x.jsapi#tests">
+							(function() {
+								var resource = new api.Resource({});
+								verify(resource).type.is(null);
+							})();
+							(function() {
+								var resource = new api.Resource({
+									type: api.mime.Type.parse("application/json")
+								});
+								verify(resource).type.toString().is("application/json");
+							})();
+							(function() {
+								var resource = new api.Resource({
+									name: "foo.js"
+								});
+								verify(resource).type.toString().is("application/javascript");
+							})();
+							(function() {
+								var resource = new api.Resource({
+									name: "foo.x"
+								});
+								verify(resource).type.is(null);
+							})();
+						</script>
+					</li>
+					<li class="value">
+						<div class="name">name</div>
+						<span class="type">string</span>
+						<span>
+							(conditional)
+							The name of the resource, if available.
+						</span>
+						<script type="application/x.jsapi#tests">
+							(function() {
+								var resource = new api.Resource({
+									name: "foo"
+								});
+								verify(resource).name.is("foo");
+							})();
+							(function() {
+								var resource = new api.Resource({});
+								verify(resource).evaluate.property("name").is(void(0));
+							})();
+						</script>
+					</li>
+					<li class="function">
+						<div class="name">read</div>
+						<span>Provides the content of this resource in a format specified by its argument.</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="value">
+									<span class="type">The String function, the JSON function <span class="deprecated">, or the XML function</span>.</span>
+									<span>A constant value indicating the type desired.</span>
+								</li>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">String</span>,
+							<span class="type">object</span>,
+							<span class="deprecated">or <span class="type">XML</span></span>
+							<span>Depending on the type argument given, returns the content of the resource in the given format.</span>
+						</div>
+						<script type="application/x.jsapi#tests">
+							(function() {
+								var resource = new api.Resource({
+									string: "foo" 
+								});
+								verify(resource).read(String).is("foo");
+							})();
+							
+							(function() {
+								var resource = new api.Resource({
+									string: JSON.stringify({ foo: "bar" })
+								});
+								var json = resource.read(JSON);
+								verify(json).foo.is("bar");
+								verify(json).evaluate.property("baz").is(void(0));
+							})();
+						</script>
 					</li>
 				</ul>
 			</div>
@@ -713,7 +807,7 @@ END LICENSE
 				<li class="value">
 					<div class="name">mime</div>
 					<span class="type"><a href="mime.api.html">SLIME MIME API</a></span>
-					<span>__DESCRIPTION__</span>
+					<span>Provides APIs relating to MIME types.</span>
 				</li>
 				<li class="function" jsapi:id="run">
 					<div class="name"><a id="exports.run">run</a></div>
@@ -795,6 +889,24 @@ END LICENSE
 						<span>See <a href="#types.Loader.value">Loader.value()</a>.</span>
 					</div>
 				</li>
+				<li class="constructor">
+					<div class="name">Resource</div>
+					<span>Creates a <a href="">Resource</a>.</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+							<li class="value">
+								<span class="type"><a href="#types.Loader.resource">Loader.resource</a></span>
+								<span>__DESCRIPTION__</span>
+							</li>
+						</ol>
+					</div>
+					<div class="instances">
+						<div class="label">Instances</div>
+						<span class="type"><a href="#types.Resource">Resource</a></span>
+						<span>__DESCRIPTION__</span>
+					</div>
+				</li>
 				<li class="constructor" jsapi:id="Loader">
 					<div class="name"><a name="exports.Loader">Loader</a></div>
 					<span>Creates a <a href="#types.Loader">Loader</a>.</span>
@@ -819,17 +931,21 @@ END LICENSE
 							<div class="label">has properties:</div>
 							<ul>
 								<li class="constructor">
-									<div class="name">Memory</div>
-									<span>Creates an in-memory loader source.</span>
+									<!-- TODO: should this be a constructor or a function? Should it be capitalized? -->
+									<div class="name">object</div>
+									<span>Creates an loader source defined by a single JavaScript object.</span>
 									<div class="arguments">
 										<div class="label">Arguments</div>
 										<ol>
+											<li class="value">
+												<span class="type">object</span>
+												<span>__DESCRIPTION__</span>
+											</li>
 										</ol>
 									</div>
 									<div class="instances">
 										<div class="label">Instances</div>
-										<span class="type">__TYPE__</span>
-										<span>__DESCRIPTION__</span>
+										<span class="type"><a href="#types.Loader.source">source</a></span>
 									</div>
 									<script type="application/x.jsapi#tests">
 										verify(api).evaluate(function() { return this.Loader.source.object; }).is.type("function");

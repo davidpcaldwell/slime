@@ -242,34 +242,65 @@
 
 			var methods = {};
 
+			var Resource = function(o) {
+				if (!this.type) this.type = (function(type,name) {
+					if (typeof(type) == "string") return mime.Type.parse(type);
+					if (type instanceof mime.Type) return type;
+					if (!type && name) {
+						var fromName = mime.Type.fromName(name);
+						if (fromName) return fromName;
+					}
+					if (!type) return null;
+					throw new TypeError("Resource 'type' property must be a MIME type or string.");
+				})(o.type,o.name);
+				
+				if (!this.type && o.name) {
+					var nameType = mime.Type.fromName(o.name);
+					if (nameType) this.type = nameType;
+				}
+
+				if (o.name) {
+					this.name = o.name;
+				}
+				
+				if (typeof(o.string) == "string") {
+					this.read = (function(string) {
+						return function(v) {
+							if ( (typeof(o.string) != "undefined") && v === String) return string;
+							if (v === JSON) return JSON.parse(this.read(String));
+						}
+					})(o.string);
+				}
+			}
+
 			//	resource.type: optional, but if it is not a recognized type, this method will error
 			//	resource.name: optional, but used to determine default type if type is absent, and used for resource.js.name
 			//	resource.string: optional, but used to determine code
 			//	resource.js { name, code }: forcibly set based on other properties
 			//	TODO	re-work resource.js
-			methods.run = function(resource,scope) {
-				if (!resource || typeof(resource) != "object") throw new TypeError("'resource' must be an object, not " + resource);
-				var type = (function(v) {
-					if (typeof(v) == "string") return mime.Type.parse(v);
-					if (v instanceof mime.Type) return v;
-					if (!v) return null;
-					throw new TypeError("Resource 'type' property must be a MIME type or string.");
-				})(resource.type);
-				if (!type) {
-					type = mime.Type.fromName(resource.name);
-					if (!type) {
-						type = mime.Type.parse("application/javascript");
+			methods.run = function(object,scope) {
+				if (!object || typeof(object) != "object") throw new TypeError("'object' must be an object, not " + object);
+				var resource = (object instanceof Resource) ? object : new Resource(object);
+				var type = resource.type;
+				if (!type) type = mime.Type.parse("application/javascript");
+				var string = (function() {
+					if (resource.read) {
+						var rv = resource.read(String);
+						if (typeof(rv) == "string") return rv;
 					}
+				})();
+				if (!string) {
+					throw new TypeError("Resource: " + resource.name + " is not convertible to string, so cannot be executed.");
 				}
 				if (type && type.is("application/vnd.coffeescript")) {
 					resource.js = {
 						name: resource.name,
-						code: $coffee.compile(resource.string)
+						code: $coffee.compile(string)
 					};
 				} else if (type && type.is("application/javascript")) {
 					resource.js = {
 						name: resource.name,
-						code: resource.string
+						code: string
 					}
 				};
 				if (!resource.js) {
@@ -311,7 +342,7 @@
 				methods.run.call(this,code,scope);
 				return rv;
 			}
-
+			
 			var Loader = function(p) {
 				if (!p.get) {
 					throw new Error("Loader argument must have a 'get' property.");
@@ -446,6 +477,8 @@
 			addTopMethod.call(this,"file");
 
 			addTopMethod.call(this,"value");
+			
+			this.Resource = Resource;
 
 			this.Loader = Loader;
 			this.Loader.source = {};
