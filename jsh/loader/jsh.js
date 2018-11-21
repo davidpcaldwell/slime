@@ -12,6 +12,7 @@
 
 this.jsh = new function() {
 	var $slime = (function($jsh) {
+		// TODO: What type is $slime?
 		var $slime = $jsh.runtime();
 		var configuration = $jsh.getEnvironment();
 		var invocation = $jsh.getInvocation();
@@ -58,10 +59,10 @@ this.jsh = new function() {
 			};
 
 			this.getLoaderScript = function(path) {
-				return {
+				return new $slime.Resource({
 					name: "jsh://" + path,
 					string: getLoaderCode(path)
-				};
+				});
 			};
 		};
 
@@ -144,16 +145,17 @@ this.jsh = new function() {
 			//			null or something ... but run would probably have to fail silently, which is not good unless it is
 			//			explicitly specified
 			if (code.java && code.java.adapt() && $slime.classpath.getClass("java.io.File").isInstance(code.java.adapt())) {
-				return {
+				return new $slime.Resource({
 					name: code.toString(),
 					string: (function() {
 						var _in = new Packages.java.io.FileInputStream(code.java.adapt());
 						var rv = String(new Packages.inonit.script.runtime.io.Streams().readString(_in));
 						return rv;
 					})()
-				};
+				});
 			} else {
-				return code;
+				if (typeof(code.read) == "function") return code;
+				return new $slime.Resource(code);
 			}
 		}
 

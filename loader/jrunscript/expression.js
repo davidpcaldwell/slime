@@ -37,8 +37,9 @@
 				var _code = $javahost.getCoffeeScript();
 				if (_code) return { code: String(_code) };
 				return null;
-			}
-		}
+			},
+			LOADER_REJECT_RESOURCE_SOURCES: Packages.java.lang.System.getenv("SLIME_LOADER_REJECT_RESOURCE_SOURCES")
+		};
 		return $javahost.script("slime://loader/expression.js",String($javahost.getLoaderCode("expression.js")),{
 			$engine: $engine,
 			$slime: $slime
@@ -68,12 +69,12 @@
 		return was;
 	})(loader.mime);
 
-	loader.java = loader.file({ name: "slime://loader/jrunscript/java.js", string: String($javahost.getLoaderCode("jrunscript/java.js")) }, {
+	loader.java = loader.file(new loader.Resource({ name: "slime://loader/jrunscript/java.js", string: String($javahost.getLoaderCode("jrunscript/java.js")) }), {
 		engine: $bridge,
 		classpath: $javahost.getClasspath()
 	});
 
-	loader.io = loader.file({ name: "slime://loader/jrunscript/io.js", string: String($javahost.getLoaderCode("jrunscript/io.js")) }, {
+	loader.io = loader.file(new loader.Resource({ name: "slime://loader/jrunscript/io.js", string: String($javahost.getLoaderCode("jrunscript/io.js")) }), {
 		_streams: _streams,
 		api: {
 			java: loader.java,
@@ -241,6 +242,7 @@
 					};
 				})();
 			}
+			p.Resource = loader.io.Resource;
 			was.apply(this,arguments);
 			var source = this.source;
 			var self = this;

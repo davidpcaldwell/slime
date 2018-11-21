@@ -285,6 +285,11 @@
 						if (v === JSON) return JSON.parse(this.read(String));						
 					}
 				}
+
+				//	TODO	temporary measure; some tests assume loader.get() returns resource source and so we increase compatibility between resource and its source
+				if (typeof(o.string) == "string") {
+					this.string = o.string;
+				}
 			}
 
 			//	resource.type: optional, but if it is not a recognized type, this method will error
@@ -292,8 +297,12 @@
 			//	resource.string: optional, but used to determine code
 			//	resource.js { name, code }: forcibly set based on other properties
 			//	TODO	re-work resource.js
+			
+			//$slime.LOADER_REJECT_RESOURCE_SOURCES = true;
+			
 			methods.run = function(object,scope) {
 				if (!object || typeof(object) != "object") throw new TypeError("'object' must be an object, not " + object);
+				if ($slime.LOADER_REJECT_RESOURCE_SOURCES && typeof(object.read) != "function") throw new Error("Not resource.");
 				var resource = (object instanceof Resource) ? object : new Resource(object);
 				var type = resource.type;
 				if (!type) type = mime.Type.parse("application/javascript");
@@ -358,6 +367,7 @@
 			}
 			
 			var Loader = function(p) {
+				if (!p.Resource) p.Resource = Resource;
 				if (!p.get) {
 					throw new Error("Loader argument must have a 'get' property.");
 				}
@@ -368,12 +378,19 @@
 				this.source = p;
 
 				this.get = function(path) {
-					return this.source.get(path);
+					var rsource = this.source.get(path);
+					if ($slime.LOADER_REJECT_RESOURCE_SOURCES) {
+						if (!rsource) return rsource;
+						return new p.Resource(rsource);
+					} else {
+						return rsource;
+					}
 				};
 
 				var declare = function(name) {
 					this[name] = function(path,scope,target) {
-						return methods[name].call(target,p.get(path),scope);
+//						return methods[name].call(target,p.get(path),scope);
+						return methods[name].call(target,this.get(path),scope);
 					};
 				};
 
@@ -399,7 +416,7 @@
 
 					var inner = createFileScope(scope);
 					inner.$loader = new Child(locations.prefix);
-					var script = p.get(locations.main);
+					var script = this.get(locations.main);
 					//	TODO	generalize error handling strategy; add to file, run, value
 					if (!script) throw new Error("Module not found at " + locations.main);
 					methods.run.call(target,script,inner);
