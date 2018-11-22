@@ -20,7 +20,8 @@ plugin({
 			$slime: {
 				io: $slime.io,
 				mime: $slime.mime,
-				Loader: $slime.Loader
+				Loader: $slime.Loader,
+				Resource: $slime.Resource
 			},
 			api: {
 				js: jsh.js,

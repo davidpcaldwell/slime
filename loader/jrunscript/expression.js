@@ -81,6 +81,231 @@
 			Resource: loader.Resource
 		}
 	});
+	
+	loader.Resource = (function(was) {
+		//	TODO	probably should allow name property to be passed in and then passed through
+		var decorator = function Resource(p) {
+			var binary = (function() {
+				if (p.read && p.read.binary) {
+					return function() {
+						return p.read.binary();
+					}
+				}
+			})();
+
+			var text = (function() {
+				if (p.read && p.read.text) {
+					return function() {
+						return p.read.text();
+					}
+				}
+				if (p.read && p.read.binary) {
+					return function() {
+						return p.read.binary().character();
+					}
+				}
+			})();
+			
+			if (this.type) {
+				//	Go ahead and make it immutable; in Java we know we have Object.defineProperty
+				(function(type) {
+					Object.defineProperty(this, "type", {
+						get: function() {
+							return type;
+						},
+						enumerable: true
+					})			
+				}).call(this,this.type);
+			}
+			
+			if (this.name) {
+				//	Go ahead and make it immutable; in Java we know we have Object.defineProperty
+				(function(name) {
+					Object.defineProperty(this, "name", {
+						get: function() {
+							return name;
+						},
+						enumerable: true
+					})			
+				}).call(this,this.name);		
+			}
+
+			var global = (function() { return this; })();
+
+			if (typeof(this.string) == "undefined") Object.defineProperty(this, "string", {
+				get: loader.$api.deprecate(function() {
+					//	TODO	use something from $api
+					if (!arguments.callee.called) {
+						arguments.callee.called = { returns: text().asString() };
+					}
+					return arguments.callee.called.returns;
+				})
+			});
+
+			this.read = (function(was) {
+				return function(mode) {
+					var rv = (was) ? was.apply(this,arguments) : void(0);
+					if (typeof(rv) != "undefined") return rv;
+					
+					var _properties = function(peer) {
+						//	peer can be Packages.java.io.InputStream or Packages.java.io.Reader
+						var properties = new Packages.java.util.Properties();
+						properties.load( peer );
+						peer.close();
+						return properties;
+					}
+
+					if (binary) {
+						if (mode == loader.io.Streams.binary) return binary();
+						if (mode == Packages.java.util.Properties) return _properties(binary().java.adapt());
+					}
+					if (text) {
+						if (mode == loader.io.Streams.text) return text();
+						if (mode == String) return text().asString();
+						if (mode == Packages.java.util.Properties) return _properties(text().java.adapt());
+						if (typeof(global.XML) != "undefined") {
+							if (mode == XML) return text().asXml();
+							if (/^function XML\(\)/.test(String(mode))) return text().asXml();
+						}
+					}
+					var parameters = (function() {
+						if (!p) return String(p);
+						if (typeof(p) == "object") return String(p) + " with keys: " + Object.keys(p);
+						return String(p);
+					})();
+					throw new TypeError("No compatible read() mode specified: parameters = " + parameters + " binary=" + binary + " text=" + text + " argument was " + mode
+						+ " Streams.binary " + (mode == loader.io.Streams.binary)
+						+ " Streams.text " + (mode == loader.io.Streams.text)
+						+ " XML " + (mode == global.XML)
+						+ " String " + (mode == String)
+					);
+				};
+			})(this.read);
+
+			//	We provide the optional operations read.binary and read.text, even though they are semantically equivalent to read(),
+			//	for two reasons. First, they
+			//	allow callers to use object detection to determine the capabilities of this resource. Second, they make it possible for
+			//	callers to use these methods without having access to the module Streams object (which would be used as an argument to
+			//	read()). This is why we do not provide the same sort of API for String and XML, because those global objects will be
+			//	accessible to every caller.
+
+			if (binary) {
+				this.read.binary = function() {
+					return binary();
+				}
+			}
+
+			if (text) {
+				this.read.text = function() {
+					return text();
+				};
+
+				this.read.lines = function() {
+					var stream = text();
+					return stream.readLines.apply(stream,arguments);
+				};
+			}
+
+			if (p.hasOwnProperty("length")) {
+				Object.defineProperty(this,"length",{
+					get: loader.$api.Function.singleton(function() {
+						if (typeof(p.length) == "number") {
+							return p.length;
+						} else if (typeof(p.length) == "undefined" && binary) {
+							return _java.readBytes(binary().java.adapt()).length;
+						}
+					}),
+					enumerable: true
+				})
+			}
+		//	if (typeof(p.length) == "number") {
+		//		this.length = p.length;
+		//	} else if (typeof(p.length) == "undefined" && binary) {
+		//		Object.defineProperty(this, "length", {
+		//			get: function() {
+		//				//	TODO	use something from $api
+		//				if (!arguments.callee.called) {
+		//					arguments.callee.called = { returns: _java.readBytes(binary().java.adapt()).length };
+		//				}
+		//				return arguments.callee.called.returns;
+		//			},
+		//			enumerable: true
+		//		});
+		//	}
+
+		//	if (typeof(p.modified) == "object") {
+		//		this.modified = p.modified;
+		//	}
+			if (p.hasOwnProperty("modified")) {
+				Object.defineProperty(this,"modified",{
+					get: loader.$api.Function.singleton(function() {
+						return p.modified;
+					}),
+					enumerable: true
+				});
+			}
+
+			if (p.write) {
+				var writeBinary = (function() {
+					if (p.write.binary) {
+						return function(mode) {
+							return p.write.binary(mode);
+						}
+					}
+				})();
+
+				var writeText = (function() {
+					if (p.write.text) {
+						return function(mode) {
+							return p.write.text(mode);
+						};
+					} else if (p.write.binary) {
+						return function(mode) {
+							return p.write.binary(mode).character();
+						};
+					}
+				})();
+
+				this.write = function(dataOrType,mode) {
+					if (!mode) mode = {};
+					if (dataOrType == loader.io.Streams.binary && writeBinary) {
+						return writeBinary(mode);
+					} else if (dataOrType == loader.io.Streams.text && writeText) {
+						return writeText(mode);
+					} else if (dataOrType.java && dataOrType.java.adapt && loader.java.isJavaType(Packages.java.io.InputStream)(dataOrType.java.adapt())) {
+						var stream = writeBinary(mode);
+						loader.io.Streams.binary.copy(dataOrType,stream);
+						stream.close();
+					} else if (dataOrType.java && dataOrType.java.adapt && loader.java.isJavaType(Packages.java.io.Reader)(dataOrType.java.adapt())) {
+						stream = writeText(mode);
+						loader.io.Streams.text.copy(dataOrType,stream);
+						stream.close();
+					} else if (typeof(dataOrType) == "string" && writeText) {
+						var writer = writeText(mode);
+						writer.write(dataOrType);
+						writer.close();
+					} else if (typeof(dataOrType) == "object" && loader.java.isJavaType(Packages.java.util.Properties)(dataOrType)) {
+						var writer = writeText(mode);
+						dataOrType.store(writer.java.adapt(), null);
+						writer.close();
+					} else if (typeof(dataOrType) == "xml" && writeText) {
+						var writer = writeText(mode);
+						writer.write(dataOrType.toXMLString());
+						writer.close();
+					} else {
+						throw new TypeError("No compatible write mode, trying to write: " + dataOrType);
+					}
+				}
+			}
+		};
+
+		// TODO: For now, we still ensure Resource is instanceof SLIME runtine Resource while we continue to transition that API
+		return function(p) {
+			var rv = new was(p);
+			decorator.call(rv,p);
+			return rv;
+		};
+	})(loader.Resource);
 
 	var getTypeFromPath = function(path) {
 		return loader.mime.Type.fromName(path);
@@ -110,7 +335,7 @@
 				this.enumerable = true;
 			}
 		);
-		var rv = loader.io.Resource.call(this,parameter);
+		var rv = loader.Resource.call(this,parameter);
 		rv.name = String(_file.getSourceName());
 		Object.defineProperty(
 			rv,

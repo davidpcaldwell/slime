@@ -10,6 +10,8 @@
 //	Contributor(s):
 //	END LICENSE
 
+if (!$context.Resource) throw new Error();
+
 var defined = $context.defined;
 var constant = $context.constant;
 var fail = $context.fail;

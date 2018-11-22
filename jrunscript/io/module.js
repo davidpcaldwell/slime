@@ -25,7 +25,7 @@ var InputStream = function(peer) {
 	//	TODO	push back into loader/jrunscript
 	this.Resource = function(type) {
 		var _bytes = _readBytes();
-		return new $context.$slime.io.Resource(new function() {
+		return new $context.$slime.Resource(new function() {
 			this.type = type;
 
 			this.read = new function() {
@@ -54,7 +54,7 @@ $exports.Buffer = function() {
 	})(this.readBinary);
 };
 
-$exports.Resource = $context.$slime.io.Resource;
+$exports.Resource = $context.$slime.Resource;
 
 $exports.Loader = $context.$slime.Loader;
 
