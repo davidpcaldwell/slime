@@ -85,27 +85,6 @@
 	loader.Resource = (function(was) {
 		//	TODO	probably should allow name property to be passed in and then passed through
 		var decorator = function Resource(p) {
-			var binary = (function() {
-				if (p.read && p.read.binary) {
-					return function() {
-						return p.read.binary();
-					}
-				}
-			})();
-
-			var text = (function() {
-				if (p.read && p.read.text) {
-					return function() {
-						return p.read.text();
-					}
-				}
-				if (p.read && p.read.binary) {
-					return function() {
-						return p.read.binary().character();
-					}
-				}
-			})();
-			
 			if (this.type) {
 				//	Go ahead and make it immutable; in Java we know we have Object.defineProperty
 				(function(type) {
@@ -130,8 +109,28 @@
 				}).call(this,this.name);		
 			}
 
-			var global = (function() { return this; })();
+			var binary = (function() {
+				if (p.read && p.read.binary) {
+					return function() {
+						return p.read.binary();
+					}
+				}
+			})();
 
+			// TODO: Probably should implement this method if the argument provides a string or read.string also
+			var text = (function() {
+				if (p.read && p.read.text) {
+					return function() {
+						return p.read.text();
+					}
+				}
+				if (p.read && p.read.binary) {
+					return function() {
+						return p.read.binary().character();
+					}
+				}
+			})();
+			
 			if (typeof(this.string) == "undefined") Object.defineProperty(this, "string", {
 				get: loader.$api.deprecate(function() {
 					//	TODO	use something from $api
@@ -142,7 +141,7 @@
 				})
 			});
 
-			this.read = (function(was) {
+			this.read = (function(was,global) {
 				return function(mode) {
 					var rv = (was) ? was.apply(this,arguments) : void(0);
 					if (typeof(rv) != "undefined") return rv;
@@ -180,7 +179,7 @@
 						+ " String " + (mode == String)
 					);
 				};
-			})(this.read);
+			})(this.read, function() { return this; });
 
 			//	We provide the optional operations read.binary and read.text, even though they are semantically equivalent to read(),
 			//	for two reasons. First, they
@@ -206,6 +205,8 @@
 				};
 			}
 
+			// TODO: Resources are not really conceptually immuntable, since they can be written, so they should probably not
+			// cache length and modified
 			if (p.hasOwnProperty("length")) {
 				Object.defineProperty(this,"length",{
 					get: loader.$api.Function.singleton(function() {
@@ -295,6 +296,38 @@
 					} else {
 						throw new TypeError("No compatible write mode, trying to write: " + dataOrType);
 					}
+				};
+
+				if (!this.java) this.java = {};
+				var self = this;
+				if (!this.java.adapt) this.java.adapt = function(path) {
+					return new JavaAdapter(
+						Packages.inonit.script.engine.Code.Loader.Resource,
+						new function() {
+							["getURI","getSourceName","getInputStream","getLength","getLastModified"].forEach(function(methodName) {
+								this[methodName] = function() {
+									throw new Error("Unimplemented: " + methodName);
+								};
+							},this);
+
+							this.getURI = function() {
+								// TODO: Unclear what this is doing; does this object represent just one file? Seems like no
+								return Packages.inonit.script.engine.Code.Loader.URI.script(
+									"expression.js",
+									path
+								)
+							}
+
+							this.getSourceName = function() {
+								return (self.name) ? self.name : null;
+							}
+
+							this.getInputStream = function() {
+								if (!self.read || !self.read.binary) throw new Error("Cannot read " + resource);
+								return self.read.binary().java.adapt();
+							}
+						}
+					);
 				}
 			}
 		};
@@ -313,7 +346,7 @@
 
 	//	Convert a Java inonit.script.engine.Code.Loader.Resource to a resource
 	//	TODO	should this logic be pushed into loader.io? Probably
-	var Resource = function(_file,path) {
+	var JavaResource = function(_file,path) {
 		var parameter = {
 			type: getTypeFromPath(path),
 			read: {
@@ -355,39 +388,39 @@
 		}
 		return rv;
 	};
-	Resource.toCodeSourceFile = function(resource,path) {
-		if (!resource) return null;
-		//	TODO	cheat by storing Code.Loader.Resource for resources created by this source file. Design smell that we
-		//			need to convert back and forth between Java and script versions
-		if (resource.java && resource.java.adapt) return resource.java.adapt();
-		return new JavaAdapter(
-			Packages.inonit.script.engine.Code.Loader.Resource,
-			new function() {
-				["getURI","getSourceName","getInputStream","getLength","getLastModified"].forEach(function(methodName) {
-					this[methodName] = function() {
-						throw new Error("Unimplemented: " + methodName);
-					};
-				},this);
-
-				this.getURI = function() {
-					// TODO: Unclear what this is doing; does this object represent just one file? Seems like no
-					return Packages.inonit.script.engine.Code.Loader.URI.script(
-						"expression.js",
-						path
-					)
-				}
-
-				this.getSourceName = function() {
-					return (resource.name) ? resource.name : null;
-				}
-
-				this.getInputStream = function() {
-					if (!resource.read) throw new Error("Cannot read " + resource);
-					return resource.read.binary().java.adapt();
-				}
-			}
-		)
-	};
+	// Resource.toJavaResource = function(resource,path) {
+	// 	if (!resource) return null;
+	// 	//	TODO	cheat by storing Code.Loader.Resource for resources created by this source file. Design smell that we
+	// 	//			need to convert back and forth between Java and script versions
+	// 	if (resource.java && resource.java.adapt) return resource.java.adapt();
+	// 	return new JavaAdapter(
+	// 		Packages.inonit.script.engine.Code.Loader.Resource,
+	// 		new function() {
+	// 			["getURI","getSourceName","getInputStream","getLength","getLastModified"].forEach(function(methodName) {
+	// 				this[methodName] = function() {
+	// 					throw new Error("Unimplemented: " + methodName);
+	// 				};
+	// 			},this);
+	// 
+	// 			this.getURI = function() {
+	// 				// TODO: Unclear what this is doing; does this object represent just one file? Seems like no
+	// 				return Packages.inonit.script.engine.Code.Loader.URI.script(
+	// 					"expression.js",
+	// 					path
+	// 				)
+	// 			}
+	// 
+	// 			this.getSourceName = function() {
+	// 				return (resource.name) ? resource.name : null;
+	// 			}
+	// 
+	// 			this.getInputStream = function() {
+	// 				if (!resource.read) throw new Error("Cannot read " + resource);
+	// 				return resource.read.binary().java.adapt();
+	// 			}
+	// 		}
+	// 	)
+	// };
 
 	loader.Loader = (function(was) {
 		var rv = function(p) {
@@ -395,7 +428,7 @@
 				if (p.zip._file) {
 					p._source = Packages.inonit.script.engine.Code.Loader.zip(p.zip._file);
 				} else if (p.zip.resource) {
-					p._source = Packages.inonit.script.engine.Code.Loader.zip(Resource.toCodeSourceFile(p.zip.resource,p.zip.resource.name));
+					p._source = Packages.inonit.script.engine.Code.Loader.zip(p.zip.resource.java.adapt(p.zip.resource.name));
 				}
 			} else if (p._file && p._file.isDirectory()) {
 				p._source = Packages.inonit.script.engine.Code.Loader.create(p._file);
@@ -408,7 +441,7 @@
 					var rv = {};
 					var _file = p._source.getFile(path);
 					if (!_file) return null;
-					return new Resource(_file,path);
+					return new JavaResource(_file,path);
 				};
 				p.child = function(prefix) {
 					return {
@@ -479,7 +512,9 @@
 						new function() {
 							this.getFile = function(path) {
 								var resource = self.get(path);
-								return Resource.toCodeSourceFile(resource,path);
+								// TODO: Below inserted hastily, not sure whether it makes sense
+								if (!resource) return null;
+								return resource.java.adapt(path);
 							};
 
 							this.getClasses = function() {
@@ -529,7 +564,7 @@
 				if (p.jar._file) {
 					_classpath.addJar(p.jar._file);
 				} else if (p.jar.resource) {
-					_classpath.add(Packages.inonit.script.engine.Code.Loader.zip(Resource.toCodeSourceFile(p.jar.resource,p.jar.resource.name)));
+					_classpath.add(Packages.inonit.script.engine.Code.Loader.zip(p.jar.resource.java.adapt(p.jar.resource.name)));
 				} else {
 					throw new Error();
 				}
