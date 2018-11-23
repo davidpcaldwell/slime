@@ -93,7 +93,10 @@ var Mapping = function(p) {
 					if (item.loader) {
 						recurse(item.loader, directory.getRelativePath(item.path));
 					} else {
-						directory.getRelativePath(item.path).write(item.resource.read(jsh.io.Streams.binary), {
+						// TODO: this used to be item.resource.read(jsh.io.Streams.binary); not sure which it should be right now.
+						// seems to be mismatch between Resource and Resource.source
+						var resource = item.resource;
+						directory.getRelativePath(item.path).write(resource.read(jsh.io.Streams.binary), {
 							append: false
 						});
 					}
@@ -126,7 +129,7 @@ var OldMapping = function(p) {
 				return null;
 			}
 			var file = p.pathname.directory.getFile(subpath);
-			return (file) ? new jsh.io.Resource({
+			return (file) ? /*new jsh.io.Resource(*/{
 				type: $context.getMimeType(file),
 				length: file.resource.length,
 				read: {
@@ -134,7 +137,7 @@ var OldMapping = function(p) {
 						return file.read(jsh.io.Streams.binary)
 					}
 				}
-			}) : null;
+			}/*)*/ : null;
 		}
 		return null;
 	};

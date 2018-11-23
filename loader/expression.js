@@ -496,7 +496,7 @@
 							} else if (entry.resource) {
 								var gotten = p.get(entry.path);
 								if (!gotten) throw new Error("Unexpected error: resource is " + entry.resource + " path is " + entry.path + " p is " + p);
-								rv.push({ path: entry.path, resource: p.get(entry.path) });
+								rv.push({ path: entry.path, resource: new p.Resource(p.get(entry.path)) });
 							}
 						});
 						return rv;

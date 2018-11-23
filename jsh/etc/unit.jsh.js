@@ -39,7 +39,7 @@ var environment = new function() {
 
 		this.src = (function() {
 			if (jsh.shell.jsh.src) return jsh.shell.jsh.src;
-			throw new Error();
+			throw new Error("Currently can only run unit tests in unbuilt shell.");
 		})();
 
 		var rhino = ((jsh.shell.jsh.lib.getFile("js.jar") && typeof(Packages.org.mozilla.javascript.Context) == "function")) ? jsh.shell.jsh.lib.getFile("js.jar") : null;

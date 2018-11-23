@@ -472,12 +472,12 @@
 					var rv = {};
 					var _file = p._source.getFile(path);
 					if (!_file) return null;
-					return new loader.Resource({
+					return {
 						_loaded: {
 							resource: _file,
 							path: path
 						}
-					});
+					};
 				};
 				p.child = function(prefix) {
 					return {

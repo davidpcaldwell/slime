@@ -131,6 +131,9 @@ var Loader = (function() {
 				get: function(path) {
 					var delegate = new bootstrap.io.Loader(pp);
 					var dResource = delegate.source.get(path);
+					dResource = new bootstrap.io.Resource(dResource);
+					// TODO: this is now a mess; the below TODO comment is probably obsolete, and it's quite possible this could be
+					// vastly simplified
 					if (dResource && !dResource.type) {
 						//	TODO	all of this is necessary because we cannot alter the type of a resource, because it is cached.
 						//			as such, this is tightly coupled with the rhino io.js source code
