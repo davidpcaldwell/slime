@@ -86,8 +86,9 @@
 	}
 
 	loader.Resource = (function(was) {
-		//	TODO	probably should allow name property to be passed in and then passed through
-		var decorator = function Resource(p) {
+		return function(p) {
+			was.apply(this,arguments);
+			//	TODO	probably should allow name property to be passed in and then passed through
 			if (p._loaded) {
 				if (!this.type) {
 					this.type = loader.mime.Type.fromName(p._loaded.path);
@@ -377,14 +378,7 @@
 					);
 				}
 			}
-		};
-
-		// TODO: For now, we still ensure Resource is instanceof SLIME runtine Resource while we continue to transition that API
-		return function(p) {
-			var rv = new was(p);
-			decorator.call(rv,p);
-			return rv;
-		};
+		}
 	})(loader.Resource);
 
 	// //	Convert a Java inonit.script.engine.Code.Loader.Resource to a resource
