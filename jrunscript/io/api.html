@@ -338,7 +338,11 @@ END LICENSE
 			var buffer = new module.Buffer();
 			buffer.writeBinary().character().write(string);
 			buffer.close();
-			var resource = buffer.readBinary().cache();
+			var resource = new module.Resource({ 
+				stream: {
+					binary: buffer.readBinary() 
+				}
+			});
 			var lines = [];
 			resource.read.lines(function(item) {
 				lines.push(item);
@@ -351,9 +355,13 @@ END LICENSE
 			var writer = buffer.writeText();
 			writer.write("Buffer");
 			buffer.close();
-			var resource = buffer.readBinary().cache();
-			test(resource.read(String) == "Buffer");
-			test(resource.read(String) == "Buffer");
+			var resource = new module.Resource({ 
+				stream: {
+					binary: buffer.readBinary() 
+				}
+			});
+			verify(resource).read(String).is("Buffer");
+			verify(resource).read(String).is("Buffer");
 		</script>
 	</div>
 </body>

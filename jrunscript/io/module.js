@@ -10,42 +10,9 @@
 //	Contributor(s):
 //	END LICENSE
 
-var InputStream = function(peer) {
-	$context.$slime.io.InputStream.apply(this,arguments);
-
-	var _readBytes = this.java.array;
-
-	//	TODO	push back into loader/jrunscript
-	this.Resource = function(type) {
-		var _bytes = _readBytes();
-		return new $context.$slime.Resource(new function() {
-			this.type = type;
-
-			this.read = new function() {
-				this.binary = function() {
-					return new InputStream(new Packages.java.io.ByteArrayInputStream(_bytes));
-				}
-			}
-		});
-	};
-
-	this.cache = $api.deprecate(function() {
-		return new this.Resource();
-	});
-};
-
 $exports.Streams = $context.$slime.io.Streams;
 
-$exports.Buffer = function() {
-	$context.$slime.io.Buffer.apply(this,arguments);
-
-	this.readBinary = (function(was) {
-		return function() {
-			var underlying = was.apply(this,arguments);
-			return new InputStream(underlying.java.adapt());
-		};
-	})(this.readBinary);
-};
+$exports.Buffer = $context.$slime.io.Buffer;
 
 $exports.Resource = $context.$slime.Resource;
 
@@ -55,7 +22,7 @@ $exports.java = new function() {
 	this.adapt = function(object) {
 		if (false) {
 		} else if ($context.api.java.isJavaObject(object) && $context.api.java.isJavaType(Packages.java.io.InputStream)(object)) {
-			return new InputStream(object);
+			return new $context.$slime.io.InputStream(object);
 		} else if ($context.api.java.isJavaObject(object) && $context.api.java.isJavaType(Packages.java.io.OutputStream)(object)) {
 			return new $context.$slime.io.OutputStream(object);
 		} else if ($context.api.java.isJavaObject(object) && $context.api.java.isJavaType(Packages.java.io.Reader)(object)) {
@@ -93,7 +60,7 @@ $exports.mime = $loader.file("mime.js", {
 
 $exports.archive = {
 	zip: $loader.file("zip.js", {
-		InputStream: InputStream,
+		InputStream: $context.$slime.io.InputStream,
 		Streams: $context.$slime.io.Streams
 	})
 };

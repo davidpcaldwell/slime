@@ -89,6 +89,19 @@
 		return function(p) {
 			was.apply(this,arguments);
 			//	TODO	probably should allow name property to be passed in and then passed through
+			if (p.stream && p.stream.binary) {
+				if (!p.read) p.read = {};
+				p.read.binary = (function(stream) {
+					var _bytes;
+
+					return function() {
+						if (!_bytes) {
+							_bytes = stream.java.array();
+						}
+						return new loader.io.InputStream(new Packages.java.io.ByteArrayInputStream(_bytes));
+					}
+				})(p.stream.binary);
+			}
 			if (p._loaded) {
 				if (!this.type) {
 					this.type = loader.mime.Type.fromName(p._loaded.path);

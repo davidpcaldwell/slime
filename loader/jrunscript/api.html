@@ -256,7 +256,11 @@ END LICENSE
 									<ul>
 										<li class="function">
 											<div class="name">binary</div>
-											<span>Returns a byte stream representing this resource.</span>
+											<span>
+												Returns a byte stream representing this resource. This call should be idempotent;
+												repeated calls should return new byte streams pointing to the beginning of the
+												Resource's data.
+											</span>
 											<div class="returns">
 												<div class="label">Returns</div>
 												<span class="type"><a href="#types.binput">byte input stream</a></span>
@@ -265,7 +269,11 @@ END LICENSE
 										</li>
 										<li class="function">
 											<div class="name">text</div>
-											<span>Returns a character stream representing this resource.</span>
+											<span>
+												Returns a character stream representing this resource. This call should be idempotent;
+												repeated calls should return new character streams pointing to the beginning of the
+												Resource's data.
+											</span>
 											<div class="returns">
 												<div class="label">Returns</div>
 												<span class="type"><a href="#types.cinput">character input stream</a></span>
