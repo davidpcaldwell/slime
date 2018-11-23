@@ -82,9 +82,56 @@
 		}
 	});
 	
+	var getTypeFromPath = function(path) {
+		return loader.mime.Type.fromName(path);
+	}
+
 	loader.Resource = (function(was) {
 		//	TODO	probably should allow name property to be passed in and then passed through
 		var decorator = function Resource(p) {
+			if (p.java) {
+				if (!this.type) {
+					this.type = loader.mime.Type.fromName(p.java.path);
+				}
+				
+				if (!p.read) p.read = {};
+				p.read.binary = function() {
+					return new loader.io.InputStream(p.java.resource.getInputStream());					
+				}
+
+				Object.defineProperty(
+					p,
+					"length",
+					new function() {
+						this.get = function() {
+							var length = p.java.resource.getLength();
+							if (typeof(length) == "object" && length !== null && length.longValue) {
+								return Number(length.longValue());
+							}
+						};
+						this.enumerable = true;
+					}
+				);
+				
+				this.name = String(p.java.resource.getSourceName());
+				Object.defineProperty(
+					this,
+					"modified",
+					new function() {
+						this.get = function() {
+							var _modified = p.java.resource.getLastModified();
+							if (_modified) return new Date( Number(_modified.getTime()) );
+						};
+						this.enumerable = true;
+					}
+				)
+				this.java = {
+					adapt: function() {
+						return p.java.resource;
+					}
+				}
+			}
+			
 			if (this.type) {
 				//	Go ahead and make it immutable; in Java we know we have Object.defineProperty
 				(function(type) {
@@ -340,54 +387,29 @@
 		};
 	})(loader.Resource);
 
-	var getTypeFromPath = function(path) {
-		return loader.mime.Type.fromName(path);
-	}
-
-	//	Convert a Java inonit.script.engine.Code.Loader.Resource to a resource
-	//	TODO	should this logic be pushed into loader.io? Probably
-	var JavaResource = function(_file,path) {
-		var parameter = {
-			type: getTypeFromPath(path),
-			read: {
-				binary: function() {
-					return new loader.io.InputStream(_file.getInputStream());
-				}
-			}
-		};
-		Object.defineProperty(
-			parameter,
-			"length",
-			new function() {
-				this.get = function() {
-					var length = _file.getLength();
-					if (typeof(length) == "object" && length !== null && length.longValue) {
-						return Number(length.longValue());
-					}
-				};
-				this.enumerable = true;
-			}
-		);
-		var rv = loader.Resource.call(this,parameter);
-		rv.name = String(_file.getSourceName());
-		Object.defineProperty(
-			rv,
-			"modified",
-			new function() {
-				this.get = function() {
-					var _modified = _file.getLastModified();
-					if (_modified) return new Date( Number(_modified.getTime()) );
-				};
-				this.enumerable = true;
-			}
-		)
-		rv.java = {
-			adapt: function() {
-				return _file;
-			}
-		}
-		return rv;
-	};
+	// //	Convert a Java inonit.script.engine.Code.Loader.Resource to a resource
+	// //	TODO	should this logic be pushed into loader.io? Probably
+	// var JavaResource = function(_file,path) {
+	// 	var rv = loader.Resource.call(this,parameter);
+	// 	rv.name = String(_file.getSourceName());
+	// 	Object.defineProperty(
+	// 		rv,
+	// 		"modified",
+	// 		new function() {
+	// 			this.get = function() {
+	// 				var _modified = _file.getLastModified();
+	// 				if (_modified) return new Date( Number(_modified.getTime()) );
+	// 			};
+	// 			this.enumerable = true;
+	// 		}
+	// 	)
+	// 	rv.java = {
+	// 		adapt: function() {
+	// 			return _file;
+	// 		}
+	// 	}
+	// 	return rv;
+	// };
 	// Resource.toJavaResource = function(resource,path) {
 	// 	if (!resource) return null;
 	// 	//	TODO	cheat by storing Code.Loader.Resource for resources created by this source file. Design smell that we
@@ -441,7 +463,12 @@
 					var rv = {};
 					var _file = p._source.getFile(path);
 					if (!_file) return null;
-					return new JavaResource(_file,path);
+					return new loader.Resource({
+						java: {
+							resource: _file,
+							path: path
+						}
+					});
 				};
 				p.child = function(prefix) {
 					return {
