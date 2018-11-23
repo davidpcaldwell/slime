@@ -415,6 +415,7 @@ var Pathname = function Pathname(parameters) {
 				}
 			}
 		};
+
 		Object.defineProperty(rdata,"length",{
 			get: function() {
 				var length = pathname.java.adapt().length();
@@ -425,23 +426,32 @@ var Pathname = function Pathname(parameters) {
 				return length;
 			}
 		});
-		var resource = new $context.Resource(rdata);
 
-		Object.defineProperty(this,"length",{
-			get: function() {
-				return rdata.length;
-			}
+		$context.Resource.call(this,rdata);
+		// var resource = new $context.Resource(rdata);
+
+		// Object.defineProperty(this,"length",{
+		// 	get: function() {
+		// 		return rdata.length;
+		// 	}
+		// });
+
+		Object.defineProperty(this, "resource", {
+			get: $api.deprecate((function() {
+				return this;
+			}).bind(this)),
+			enumerable: false
 		});
+		
+		//this.resource = resource;
 
-		this.resource = resource;
+		// this.read = function(mode) {
+		// 	return resource.read(mode);
+		// }
 
-		this.read = function(mode) {
-			return resource.read(mode);
-		}
-
-		this.readLines = function() {
-			return resource.read.lines.apply(resource,arguments);
-		}
+		this.readLines = $api.deprecate(function() {
+			return this.read.lines.apply(this,arguments);
+		});
 	}
 //	File.prototype = new Node(this,$filesystem.separators.pathname + ".." + $filesystem.separators.pathname);
 

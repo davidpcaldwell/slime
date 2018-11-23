@@ -251,5 +251,35 @@ $exports.OutputStream = OutputStream;
 $exports.Writer = Writer;
 $exports.InputStream = InputStream;
 $exports.Reader = Reader;
+
+$exports.java = new function() {
+	this.adapt = function(object) {
+		if (false) {
+		} else if ($context.api.java.isJavaObject(object) && $context.api.java.isJavaType(Packages.java.io.InputStream)(object)) {
+			return new InputStream(object);
+		} else if ($context.api.java.isJavaObject(object) && $context.api.java.isJavaType(Packages.java.io.OutputStream)(object)) {
+			return new OutputStream(object);
+		} else if ($context.api.java.isJavaObject(object) && $context.api.java.isJavaType(Packages.java.io.Reader)(object)) {
+			return new Reader(object);
+		} else if ($context.api.java.isJavaObject(object) && $context.api.java.isJavaType(Packages.java.io.Writer)(object)) {
+			return new Writer(object);
+		} else {
+			var type = (function() {
+				if (object.getClass) {
+					return " (Java class: " + object.getClass().getName() + ")";
+				}
+				var rv = " typeof=" + typeof(object);
+				var props = [];
+				for (var x in object) {
+					props.push(x);
+				}
+				rv += " properties=" + props.join(",");
+				return rv;
+			})();
+			throw new Error("Unimplemented java.adapt: " + type + object);
+		}
+	};
+};
+
 $exports.Buffer = Buffer;
 $exports.Streams = Streams;

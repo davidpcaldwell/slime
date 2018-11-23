@@ -18,33 +18,8 @@ $exports.Resource = $context.$slime.Resource;
 
 $exports.Loader = $context.$slime.Loader;
 
-$exports.java = new function() {
-	this.adapt = function(object) {
-		if (false) {
-		} else if ($context.api.java.isJavaObject(object) && $context.api.java.isJavaType(Packages.java.io.InputStream)(object)) {
-			return new $context.$slime.io.InputStream(object);
-		} else if ($context.api.java.isJavaObject(object) && $context.api.java.isJavaType(Packages.java.io.OutputStream)(object)) {
-			return new $context.$slime.io.OutputStream(object);
-		} else if ($context.api.java.isJavaObject(object) && $context.api.java.isJavaType(Packages.java.io.Reader)(object)) {
-			return new $context.$slime.io.Reader(object);
-		} else if ($context.api.java.isJavaObject(object) && $context.api.java.isJavaType(Packages.java.io.Writer)(object)) {
-			return new $context.$slime.io.Writer(object);
-		} else {
-			var type = (function() {
-				if (object.getClass) {
-					return " (Java class: " + object.getClass().getName() + ")";
-				}
-				var rv = " typeof=" + typeof(object);
-				var props = [];
-				for (var x in object) {
-					props.push(x);
-				}
-				rv += " properties=" + props.join(",");
-				return rv;
-			})();
-			throw new Error("Unimplemented java.adapt: " + type + object);
-		}
-	};
+$exports.java = {
+	adapt: $context.$slime.io.java.adapt
 };
 
 $exports.mime = $loader.file("mime.js", {
