@@ -37,8 +37,7 @@
 				var _code = $javahost.getCoffeeScript();
 				if (_code) return { code: String(_code) };
 				return null;
-			},
-			LOADER_REJECT_RESOURCE_SOURCES: Packages.java.lang.System.getenv("SLIME_LOADER_REJECT_RESOURCE_SOURCES")
+			}
 		};
 		return $javahost.script("slime://loader/expression.js",String($javahost.getLoaderCode("expression.js")),{
 			$engine: $engine,

@@ -298,12 +298,10 @@
 			//	resource.js { name, code }: forcibly set based on other properties
 			//	TODO	re-work resource.js
 			
-			$slime.LOADER_REJECT_RESOURCE_SOURCES = true;
-			
 			methods.run = function(object,scope) {
 				if (!object || typeof(object) != "object") throw new TypeError("'object' must be an object, not " + object);
-				if ($slime.LOADER_REJECT_RESOURCE_SOURCES && typeof(object.read) != "function") throw new Error("Not resource.");
-				var resource = (object instanceof Resource) ? object : new Resource(object);
+				if (typeof(object.read) != "function") throw new Error("Not resource.");
+				var resource = object;
 				var type = resource.type;
 				if (!type) type = mime.Type.parse("application/javascript");
 				var string = (function() {
@@ -379,12 +377,8 @@
 
 				this.get = function(path) {
 					var rsource = this.source.get(path);
-					if ($slime.LOADER_REJECT_RESOURCE_SOURCES) {
-						if (!rsource) return rsource;
-						return new p.Resource(rsource);
-					} else {
-						return rsource;
-					}
+					if (!rsource) return rsource;
+					return new p.Resource(rsource);
 				};
 
 				var declare = function(name) {

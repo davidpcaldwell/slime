@@ -173,8 +173,7 @@
 				},
 				getCoffeeScript: function() {
 					return (window.CoffeeScript) ? { object: window.CoffeeScript } : null;
-				},
-				LOADER_REJECT_RESOURCE_SOURCES: window.request && window.request.query().LOADER_REJECT_RESOURCE_SOURCES
+				}
 			};
 			return eval(fetcher.getCode(bootstrap.getRelativePath("expression.js")));
 		})();
