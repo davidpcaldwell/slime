@@ -210,10 +210,6 @@
 						if (mode == loader.io.Streams.text) return text();
 						if (mode == String) return text().asString();
 						if (mode == Packages.java.util.Properties) return _properties(text().java.adapt());
-						if (typeof(global.XML) != "undefined") {
-							if (mode == XML) return text().asXml();
-							if (/^function XML\(\)/.test(String(mode))) return text().asXml();
-						}
 					}
 					var parameters = (function() {
 						if (!p) return String(p);

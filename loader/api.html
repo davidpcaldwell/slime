@@ -212,7 +212,7 @@ END LICENSE
 				<li class="constructor">
 					<div class="name">Resource</div>
 					<span>
-						Creates a <a href="">Resource</a>.
+						Creates a <code>Resource</code>.
 					</span>
 					<div class="type">
 						<a class="type" name="types.Resource.source">source</a>
@@ -356,7 +356,7 @@ END LICENSE
 									<span class="deprecated">or <span class="type">XML</span></span>
 									<span>Depending on the type argument given, returns the content of the resource in the given format.</span>
 								</div>
-								<script type="application/x.jsapi#tests">
+								<script type="application/x.jsapi#tests"><![CDATA[
 									(function() {
 										var resource = new api.Resource({
 											string: "foo" 
@@ -383,7 +383,19 @@ END LICENSE
 										verify(json).foo.is("bar");
 										verify(json).evaluate.property("baz").is(void(0));
 									})();
-								</script>
+									
+									if ($platform.e4x) {
+										var resource = new api.Resource({
+											string: "<a><b/></a>"
+										});
+										var xml = resource.read(XML);
+										verify(xml).is.type("xml");
+										
+										var list = { list: resource.read(XMLList) };
+										verify(list).list.is.type("xml");
+										verify(list).evaluate(function(v) { return v.list.length(); }).is(1);
+									}
+								]]></script>
 							</li>
 						</ul>
 					</div>

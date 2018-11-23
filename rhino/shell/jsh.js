@@ -26,6 +26,8 @@ $exports.run.evaluate.wrap = function(result) {
 $exports.exit = $context.exit;
 
 $exports.stdio = $context.stdio;
+// TODO: Can these methods below be replaced by using a Resource created from the InputStream? Are they documented anywhere? Can
+// they be eliminated? They are the last SLIME usage of the asXml() method
 ["readLines", "asString", "asXml"].forEach(function(method) {
 	$exports.stdio.input[method] = function(p) {
 		return this.character()[method].apply(this.character(), arguments);

@@ -162,12 +162,13 @@ var Reader = function(peer) {
 		return String( buffer.toString() );
 	}
 
-	this.asXml = function() {
-		//	First, read the string into a variable so that we still have it in case of error (stream may not be re-readable).
-		var string = this.asString();
-		string = string.replace(/\<\?xml.*\?\>/, "");
-		string = string.replace(/\<\!DOCTYPE.*?\>/, "");
-		return XMLList( string );
+	if ($platform.e4x) {
+		this.asXml = function() {
+			var resource = new $context.api.Resource({
+				string: this.asString()
+			});
+			return resource.read(XMLList);
+		}
 	}
 
 	this.java = new function() {

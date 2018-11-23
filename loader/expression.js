@@ -49,6 +49,13 @@
 				if (!$exports.Object.defineProperty) $exports.Object.defineProperty = {};
 				$exports.Object.defineProperty.accessor = true;
 			}
+			
+			var global = (function() { return this; })();
+			if (global.XML && global.XMLList) {
+				$exports.e4x = {};
+				$exports.e4x.XML = global.XML;
+				$exports.e4x.XMLList = global.XMLList;
+			}
 
 			$exports.execute = (function() {
 				if (typeof($engine) != "undefined" && $engine.execute) return $engine.execute;
@@ -282,7 +289,18 @@
 				if (readString) {
 					this.read = function(v) {
 						if (v === String) return readString();
-						if (v === JSON) return JSON.parse(this.read(String));						
+						if (v === JSON) return JSON.parse(this.read(String));
+						if ($platform.e4x && v == $platform.e4x.XML) {
+							var string = this.read(String);
+							string = string.replace(/\<\?xml.*\?\>/, "");
+							string = string.replace(/\<\!DOCTYPE.*?\>/, "");
+							return $platform.e4x.XML( string );
+						} else if ($platform.e4x && v == $platform.e4x.XMLList) {
+							var string = this.read(String);
+							string = string.replace(/\<\?xml.*\?\>/, "");
+							string = string.replace(/\<\!DOCTYPE.*?\>/, "");
+							return $platform.e4x.XMLList( string );							
+						}
 					}
 				}
 
