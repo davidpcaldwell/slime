@@ -240,16 +240,6 @@ var definition = new jsh.unit.part.Html({
 	environment: environment
 });
 
-var find = function(definition,name,path) {
-	if (!path) path = [];
-	if (definition.name == name) return path;
-	for (var x in definition.parts) {
-		var found = find(definition.parts[x],name,path.concat([x]));
-		if (found) return found;
-	}
-	return null;
-}
-
 var suite = new jsh.unit.Suite(definition);
 
 jsh.unit.interface.create(suite, new function() {
@@ -262,6 +252,6 @@ jsh.unit.interface.create(suite, new function() {
 		this.view = parameters.options.view;
 	}
 	if (parameters.options.unit) {
-		this.path = find(definition,parameters.options.unit);
+		this.path = definition.getPath(parameters.options.unit.split("/"))
 	}
 });
