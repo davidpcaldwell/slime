@@ -175,6 +175,7 @@
 					return (window.CoffeeScript) ? { object: window.CoffeeScript } : null;
 				}
 			};
+			if ($context.$slime) $slime.flags = $context.$slime.flags;
 			return eval(fetcher.getCode(bootstrap.getRelativePath("expression.js")));
 		})();
 		platform.$api.deprecate.warning = function(access) {

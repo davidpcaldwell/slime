@@ -1048,7 +1048,7 @@ END LICENSE
 											return (contents[path]) ? contents[path].resource : null;
 										} else {
 											if (contents[tokens[0]]) {
-												var loader = contents[tokens[0]].child.loader;
+												var loader = contents[tokens[0]].child.loader.source;
 												if (!loader) {
 													throw new Error("No loader at " + tokens[0] + " for " + path);
 												}

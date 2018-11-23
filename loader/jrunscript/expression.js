@@ -37,8 +37,20 @@
 				var _code = $javahost.getCoffeeScript();
 				if (_code) return { code: String(_code) };
 				return null;
-			}
+			},
+			flags: {}
 		};
+		var flagPattern = /^SLIME_(.*)$/;
+		var _entries = Packages.java.lang.System.getenv().entrySet().iterator();
+		while(_entries.hasNext()) {
+			var _entry = _entries.next();
+			var name = String(_entry.getKey());
+			var value = String(_entry.getValue());
+			var match = flagPattern.exec(name);
+			if (match) {
+				$slime.flags[match[1]] = value;
+			}
+		}
 		return $javahost.script("slime://loader/expression.js",String($javahost.getLoaderCode("expression.js")),{
 			$engine: $engine,
 			$slime: $slime
