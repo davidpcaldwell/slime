@@ -33,7 +33,7 @@ END LICENSE
 					scope.module = scope.module.io;
 				</script>
 				<ul>
-					<li class="constructor">
+					<li class="constructor" jsapi:id="Buffer">
 						<div class="name">Buffer</div>
 						<span>Creates a buffer to which bytes can be written, and later read.</span>
 						<div class="instances">
@@ -401,6 +401,46 @@ END LICENSE
 												</li>
 											</ul>
 										</div>
+									</li>
+								</ul>
+							</li>
+							<li class="object">
+								<div class="name">java</div>
+								<span>__DESCRIPTION__</span>
+								<div class="label">has properties:</div>
+								<ul>
+									<li class="function">
+										<div class="name">adapt</div>
+										<span>Converts a Java object to a corresponding type from this package.</span>
+										<div class="arguments">
+											<div class="label">Arguments</div>
+											<ol>
+												<li class="value">
+													<span class="type">JavaClass java.io.InputStream</span>,
+													<span class="type">JavaClass java.io.Reader</span>,
+													<span class="type">JavaClass java.io.OutputStream</span>,
+													or
+													<span class="type">JavaClass java.io.Writer</span>
+													<span>A Java object to convert.</span>
+												</li>
+											</ol>
+										</div>
+										<div class="returns">
+											<div class="label">Returns</div>
+											<span class="type"><a href="#types.binput">byte input stream</a></span>,
+											if the argument was a Java <code>java.io.InputStream</code>,
+											<span class="type"><a href="#types.boutput">byte output stream</a></span>, if the
+											argument was a Java <code>java.io.OutputStream</code>.
+											<span class="type"><a href="#types.cinput">character input stream</a></span>, if the
+											argument was a Java <code>java.io.Reader</code>.
+											<span class="type"><a href="#types.coutput">character output stream</a></span>, if the
+											argument was a Java <code>java.io.Writer</code>.
+										</div>
+										<script type="application/x.jsapi#tests">
+											var _out = new Packages.java.io.ByteArrayOutputStream();
+											var out = module.Streams.java.adapt(_out);
+											verify(out).is.type("object");
+										</script>
 									</li>
 								</ul>
 							</li>

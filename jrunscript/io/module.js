@@ -19,7 +19,7 @@ $exports.Resource = $context.$slime.Resource;
 $exports.Loader = $context.$slime.Loader;
 
 $exports.java = {
-	adapt: $context.$slime.io.java.adapt
+	adapt: $api.deprecate($context.$slime.io.Streams.java.adapt)
 };
 
 $exports.mime = $loader.file("mime.js", {

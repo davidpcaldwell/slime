@@ -20,10 +20,10 @@ END LICENSE
 </head>
 <body>
 	<div>
-		Much of the content of the <code>jrunscript/io</code> module has been moved to the
-		<a href="../../loader/jrunscript/api.html">Java SLIME loader</a>, which supplies the
-		<code>Reader</code>, <code>Writer</code>, <code>OutputStream</code>, <code>Resource</code>, and <code>Loader</code>
-		exports.
+		Much of the content of the <code>jrunscript/io</code> module is provided by the
+		<a href="../../loader/jrunscript/api.html">Java SLIME runtime</a>, which supplies the
+		<code>Resource</code>, and <code>Loader</code> exports, and whose <code>io</code> property supplies the <code>Streams</code>
+		and <code>Buffer</code> exports.
 		<!--	TODO	clean up the linking	-->
 	</div>
 	<div>
@@ -73,149 +73,27 @@ END LICENSE
 		};
 		scope.context = context;
 		scope.module = $jsapi.loader.module("module.js", context);
+		scope.module.io = {};
+		scope.module.io.Buffer = scope.module.Buffer;
 	</script>
 	<div>
 		<h1>Exports</h1>
-		<div class="type">
-			<a class="type" id="types.InputStream">InputStream</a>
-			<span class="type">supports <a href="../../loader/jrunscript/io.api.html">InputStream</a></span>
-			<div class="label">has properties:</div>
-			<ul>
-				<li class="constructor">
-					<div class="name">Resource</div>
-					<span>__DESCRIPTION__</span>
-					<div class="arguments">
-						<div class="label">Arguments</div>
-						<ol>
-						</ol>
-					</div>
-					<div class="instances">
-						<div class="label">Instances</div>
-						<span class="type">__TYPE__</span>
-						<span>__DESCRIPTION__</span>
-					</div>
-				</li>
-			</ul>
-		</div>
-
 		<ul>
 			<li class="object" jsapi:reference="getApi('../../loader/jrunscript/io.api.html').getElement('exports/Streams')">
 			</li>
-			<li class="constructor">
-				<div class="name">Buffer</div>
-				<span>
-					Extends the Java SLIME loader <a href="../../loader/jrunscript/io.api.html">Buffer</a> constructor to produce
-					<code>Buffer</code> objects that use <code>InputStream</code> objects from this module.
-				</span>
+			<li class="constructor" jsapi:reference="getApi('../../loader/jrunscript/io.api.html').getElement('exports/Buffer')">
 			</li>
 			<li class="constructor" jsapi:reference="getApi('../../loader/jrunscript/api.html').getElement('Resource')">
 			</li>
-			<li class="constructor">
-				<div class="name">Loader</div>
-				<span>
-					Invokes the Java SLIME loader <a href="../../loader/jrunscript/api.html#exports.Loader">Loader</a> constructor.
-				</span>
-				<div jsapi:reference="getApi('../../loader/jrunscript/api.html').getElement('Loader/type/tests')">
-				</div>
-				<script type="application/x.jsapi#tests">
-					if (false) {
-						var loader = new module.Loader({
-							resources: {
-								get: function(path) {
-									var file = $jsapi.loader.getRelativePath(path).file;
-									if (!file) return null;
-									var type = (function() {
-										if (/\.jsh\.js$/.test(path)) {
-											return new module.mime.Type("application", "x.jsh");
-										} else if (/\.js$/.test(path)) {
-											return new module.mime.Type("application", "javascript");
-										} else if (/\.html$/.test(path)) {
-											return new module.mime.Type("text", "html");
-										} else {
-											return new module.mime.Type("application", "octet-stream");
-										}
-									})();
-									return {
-										type: type,
-										read: {
-											binary: function() {
-												return file.read(jsh.io.Streams.binary);
-											}
-										}
-									};
-								}
-							}
-						});
-						var api = loader.get("api.html");
-						test(api.type.toString() == "text/html");
-
-						var loaderModule = loader.module("test/Loader.js");
-						test(loaderModule.file.foo == "bar");
-						test(loaderModule.resource("Loader.js") != null);
-						test(loaderModule.resource("test/Loader.js") == null);
-						test(loaderModule.grandchildResource("file.js") != null);
-						test(loaderModule.grandchildResource("Loader/file.js") == null);
-						test(loaderModule.grandchildResource("test/Loader/file.js") == null);
-					}
-				</script>
-				<script type="application/x.jsapi#tests">
-					var sources = new function() {
-						var code = {
-
-						};
-
-						this.get = function(path) {
-							return null;
-						};
-
-						this.Loader = function(prefix) {
-							this.list = function() {
-								return [];
-							}
-						}
-					}
-					var loader = new module.Loader(sources);
-					verify(loader).evaluate(function() { return this.run; }).is.not.equalTo(null);
-					var child = new loader.Child("prefix/");
-					verify(child).evaluate(function() { return this.run; }).is.not.equalTo(null);
-				</script>
+			<li class="constructor" jsapi:reference="getApi('../../loader/jrunscript/api.html').getElement('Loader')">
 			</li>
 			<li class="object">
 				<div class="name">java</div>
 				<div class="label">has properties:</div>
 				<ul>
-					<li class="function">
+					<li class="function deprecated">
 						<div class="name">adapt</div>
-						<span>Converts a Java object to a corresponding type from this package.</span>
-						<div class="arguments">
-							<div class="label">Arguments</div>
-							<ol>
-								<li class="value">
-									<span class="type">JavaClass java.io.InputStream</span>,
-									<span class="type">JavaClass java.io.Reader</span>,
-									<span class="type">JavaClass java.io.OutputStream</span>,
-									or
-									<span class="type">JavaClass java.io.Writer</span>
-									<span>A Java object to convert.</span>
-								</li>
-							</ol>
-						</div>
-						<div class="returns">
-							<div class="label">Returns</div>
-							<span class="type"><a href="#types.binput">byte input stream</a></span>,
-							if the argument was a Java <code>java.io.InputStream</code>,
-							<span class="type"><a href="#types.boutput">byte output stream</a></span>, if the
-							argument was a Java <code>java.io.OutputStream</code>.
-							<span class="type"><a href="#types.cinput">character input stream</a></span>, if the
-							argument was a Java <code>java.io.Reader</code>.
-							<span class="type"><a href="#types.coutput">character output stream</a></span>, if the
-							argument was a Java <code>java.io.Writer</code>.
-						</div>
-						<script type="application/x.jsapi#tests">
-							var $out = new Packages.java.io.ByteArrayOutputStream();
-							var out = module.java.adapt($out);
-							test(out != null);
-						</script>
+						<span>Invokes the <a href="../../loader/jrunscript/io.api.html"><code>Streams.java.adapt()</code></a> function.</span>
 					</li>
 				</ul>
 			</li>
@@ -332,37 +210,6 @@ END LICENSE
 				</ul>
 			</li>
 		</ul>
-		<!--	TODO	below tests are intertwined with this module despite mostly pertaining to Java SLIME loader; refactor	-->
-		<script type="application/x.jsapi#tests">
-			var string = "Hello\nWorld";
-			var buffer = new module.Buffer();
-			buffer.writeBinary().character().write(string);
-			buffer.close();
-			var resource = new module.Resource({ 
-				stream: {
-					binary: buffer.readBinary() 
-				}
-			});
-			var lines = [];
-			resource.read.lines(function(item) {
-				lines.push(item);
-			}, { ending: "\n" });
-			test(lines[0] == "Hello");
-			test(lines[1] == "World");
-		</script>
-		<script type="application/x.jsapi#tests" jsapi:id="Buffer">
-			var buffer = new module.Buffer();
-			var writer = buffer.writeText();
-			writer.write("Buffer");
-			buffer.close();
-			var resource = new module.Resource({ 
-				stream: {
-					binary: buffer.readBinary() 
-				}
-			});
-			verify(resource).read(String).is("Buffer");
-			verify(resource).read(String).is("Buffer");
-		</script>
 	</div>
 </body>
 </html>
