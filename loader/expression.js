@@ -241,7 +241,6 @@
 		})({});
 		
 		if (!$slime.flags) $slime.flags = {};
-		$slime.flags.RESOURCE_REJECT_RESOURCE_ARGUMENT = true;
 
 		(function() {
 			mime.Type.fromName = function(path) {
@@ -253,7 +252,7 @@
 			var methods = {};
 
 			var Resource = function(o) {
-				if ($slime.flags.RESOURCE_REJECT_RESOURCE_ARGUMENT && typeof(o.read) == "function") throw new Error();
+				if (typeof(o.read) == "function") throw new Error();
 				if (!this.type) this.type = (function(type,name) {
 					if (typeof(type) == "string") return mime.Type.parse(type);
 					if (type instanceof mime.Type) return type;
