@@ -51,7 +51,7 @@ var Mapping = function(p) {
 	this.get = function(path) {
 		if (path.substring(0,p.prefix.length) == p.prefix) {
 			var subpath = path.substring(p.prefix.length);
-			return p.loader.get(subpath);
+			return p.loader.source.get(subpath);
 		}
 		return null;
 	};

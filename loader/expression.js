@@ -241,7 +241,7 @@
 		})({});
 		
 		if (!$slime.flags) $slime.flags = {};
-		//$slime.flags.RESOURCE_REJECT_RESOURCE_ARGUMENT = true;
+		$slime.flags.RESOURCE_REJECT_RESOURCE_ARGUMENT = true;
 
 		(function() {
 			mime.Type.fromName = function(path) {
