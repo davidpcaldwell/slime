@@ -89,22 +89,22 @@
 	loader.Resource = (function(was) {
 		//	TODO	probably should allow name property to be passed in and then passed through
 		var decorator = function Resource(p) {
-			if (p.java) {
+			if (p._loaded) {
 				if (!this.type) {
-					this.type = loader.mime.Type.fromName(p.java.path);
+					this.type = loader.mime.Type.fromName(p._loaded.path);
 				}
 				
 				if (!p.read) p.read = {};
 				p.read.binary = function() {
-					return new loader.io.InputStream(p.java.resource.getInputStream());					
+					return new loader.io.InputStream(p._loaded.resource.getInputStream());					
 				}
 
-				Object.defineProperty(
+				if (typeof(p.length) == "undefined") Object.defineProperty(
 					p,
 					"length",
 					new function() {
 						this.get = function() {
-							var length = p.java.resource.getLength();
+							var length = p._loaded.resource.getLength();
 							if (typeof(length) == "object" && length !== null && length.longValue) {
 								return Number(length.longValue());
 							}
@@ -113,13 +113,14 @@
 					}
 				);
 				
-				this.name = String(p.java.resource.getSourceName());
+				this.name = String(p._loaded.resource.getSourceName());
+
 				Object.defineProperty(
 					this,
 					"modified",
 					new function() {
 						this.get = function() {
-							var _modified = p.java.resource.getLastModified();
+							var _modified = p._loaded.resource.getLastModified();
 							if (_modified) return new Date( Number(_modified.getTime()) );
 						};
 						this.enumerable = true;
@@ -127,7 +128,7 @@
 				)
 				this.java = {
 					adapt: function() {
-						return p.java.resource;
+						return p._loaded.resource;
 					}
 				}
 			}
@@ -464,7 +465,7 @@
 					var _file = p._source.getFile(path);
 					if (!_file) return null;
 					return new loader.Resource({
-						java: {
+						_loaded: {
 							resource: _file,
 							path: path
 						}
@@ -527,7 +528,7 @@
 					};
 				})();
 			}
-			p.Resource = loader.io.Resource;
+			p.Resource = loader.Resource;
 			was.apply(this,arguments);
 			var source = this.source;
 			var self = this;

@@ -298,7 +298,7 @@
 			//	resource.js { name, code }: forcibly set based on other properties
 			//	TODO	re-work resource.js
 			
-			//$slime.LOADER_REJECT_RESOURCE_SOURCES = true;
+			$slime.LOADER_REJECT_RESOURCE_SOURCES = true;
 			
 			methods.run = function(object,scope) {
 				if (!object || typeof(object) != "object") throw new TypeError("'object' must be an object, not " + object);
