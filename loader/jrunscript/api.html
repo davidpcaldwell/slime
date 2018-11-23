@@ -336,24 +336,41 @@ END LICENSE
 					<ul>
 						<li class="function">
 							<div class="name">read</div>
-							<span>Provides the content of this resource, or a stream from which to read it.</span>
+							<span>
+								Provides the content of this resource, or a stream from which to read it. Extends the standard
+								<code>read()</code> implementation from the SLIME runtime Resource.
+								<!-- TODO: hyperlink the read() implementation -->
+							</span>
 							<div class="arguments">
 								<div class="label">Arguments</div>
 								<ol>
 									<li class="value">
-										<span class="type">Streams.binary, Streams.text, the String function, or the XML function</span>
+										<span class="type">Standard read() type OR Packages.java.util.Properties OR Streams.binary OR Streams.text</span>
 										<span>A constant value indicating the type desired.</span>
 									</li>
 								</ol>
 							</div>
 							<div class="returns">
 								<div class="label">Returns</div>
+								A standard <code>read()</code> type, or:
+								<span class="type">Packages.java.util.Properties</span>,
 								<span class="type"><a href="#types.binput">byte input stream</a></span>,
-								<span class="type"><a href="#types.binput">character input stream</a></span>,
-								<span class="type">String</span>,
-								or <span class="type">XML</span>
+								<span class="type"><a href="#types.binput">character input stream</a></span>
 								<span>Depending on the type argument given, returns the content of the resource in the given format.</span>
 							</div>
+							<script type="application/x.jsapi#tests">
+								var lines = [
+									"foo.bar=baz"
+								];
+								var resource = new module.Resource({
+									string: lines.join("\n")
+								});
+								var _properties = resource.read(Packages.java.util.Properties);
+								verify(_properties).getProperty("foo.bar").evaluate( function(p) { return String(p); }).is("baz");
+								verify(_properties).getProperty("foo.baz").is(null);
+								// TODO: write test that specifies resource by string and then reads it as character stream and
+								// gets same string
+							</script>
 							<div class="label">has properties:</div>
 							<ul>
 								<li class="function">

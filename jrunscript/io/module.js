@@ -15,13 +15,6 @@ var InputStream = function(peer) {
 
 	var _readBytes = this.java.array;
 
-	this.asProperties = function() {
-		var properties = new Packages.java.util.Properties();
-		properties.load( peer );
-		peer.close();
-		return $context.api.java.Properties.adapt(properties);
-	}
-
 	//	TODO	push back into loader/jrunscript
 	this.Resource = function(type) {
 		var _bytes = _readBytes();
@@ -82,7 +75,7 @@ $exports.java = new function() {
 				rv += " properties=" + props.join(",");
 				return rv;
 			})();
-			throw "Unimplemented java.adapt: " + type + object;
+			throw new Error("Unimplemented java.adapt: " + type + object);
 		}
 	};
 };

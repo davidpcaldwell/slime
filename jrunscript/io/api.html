@@ -81,20 +81,6 @@ END LICENSE
 			<span class="type">supports <a href="../../loader/jrunscript/io.api.html">InputStream</a></span>
 			<div class="label">has properties:</div>
 			<ul>
-				<li class="function">
-					<div class="name">asProperties</div>
-					<span>__DESCRIPTION__</span>
-					<div class="arguments">
-						<div class="label">Arguments</div>
-						<ol>
-						</ol>
-					</div>
-					<div class="returns">
-						<div class="label">Returns</div>
-						<span class="type">__TYPE__</span>
-						<span>__DESCRIPTION__</span>
-					</div>
-				</li>
 				<li class="constructor">
 					<div class="name">Resource</div>
 					<span>__DESCRIPTION__</span>
@@ -368,40 +354,6 @@ END LICENSE
 			var resource = buffer.readBinary().cache();
 			test(resource.read(String) == "Buffer");
 			test(resource.read(String) == "Buffer");
-		</script>
-		<script type="application/x.jsapi#initialize">
-			var p = new Packages.java.util.Properties();
-			buffer = new scope.module.Buffer();
-			p.put("yes", "i do");
-			p.put("laptop", "inonit");
-			p.put("laptop.manufacturer", "dell");
-			p.store(buffer.writeBinary().java.adapt(), "No comment!");
-			buffer.close();
-			scope.buffer = buffer;
-		</script>
-		<script type="application/x.jsapi#tests" jsapi:id="Properties">
-			var props = buffer.readBinary().asProperties();
-			test( props.yes == "i do" );
-			test( props.laptop == "inonit" );
-			test( props.laptop.manufacturer == "dell" );
-		</script>
-		<!--	TODO	document the below ability	-->
-		<script type="application/x.jsapi#tests" jsapi:id="java.util.Properties">
-			var buffer = new module.Buffer();
-
-			var p = new Packages.java.util.Properties();
-			p.put("yes", "i do");
-			p.put("laptop", "inonit");
-			p.put("laptop.manufacturer", "dell");
-			p.store(buffer.writeBinary().java.adapt(), "No comment!");
-			buffer.close();
-
-			var resource = new (buffer.readBinary()).Resource(new context.$slime.mime.Type("text","plain"));
-
-			var props = resource.read(Packages.java.util.Properties);
-			test( props.get("yes") == "i do" );
-			test( props.get("laptop") == "inonit" );
-			test( props.get("laptop.manufacturer") == "dell" );
 		</script>
 	</div>
 </body>

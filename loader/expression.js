@@ -277,18 +277,16 @@
 					}					
 				}
 				
-				var readString = (function() {
-					if (o.read && o.read.string) return o.read.string;
-					if (typeof(o.string) == "string") {
-						return function() {
-							return o.string;
-						};
-					}
-				})();
+				if ( (!o.read || !o.read.string) && typeof(o.string) == "string") {
+					if (!o.read) o.read = {};
+					o.read.string = function() {
+						return o.string;
+					};
+				}
 				
-				if (readString) {
+				if (o.read && o.read.string) {
 					this.read = function(v) {
-						if (v === String) return readString();
+						if (v === String) return o.read.string();
 						if (v === JSON) return JSON.parse(this.read(String));
 						if ($platform.e4x && v == $platform.e4x.XML) {
 							var string = this.read(String);

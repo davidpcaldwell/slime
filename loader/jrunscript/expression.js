@@ -125,7 +125,8 @@
 						};
 						this.enumerable = true;
 					}
-				)
+				);
+
 				this.java = {
 					adapt: function() {
 						return p._loaded.resource;
@@ -170,6 +171,11 @@
 				if (p.read && p.read.text) {
 					return function() {
 						return p.read.text();
+					}
+				}
+				if (p.read && p.read.string) {
+					return function() {
+						return new loader.io.Reader(new Packages.java.io.StringReader(p.read.string()));
 					}
 				}
 				if (p.read && p.read.binary) {
