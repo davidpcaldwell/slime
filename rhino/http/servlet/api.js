@@ -130,42 +130,45 @@ var Loader = (function() {
 			var source = {
 				get: function(path) {
 					var delegate = new bootstrap.io.Loader(pp);
-					var dResource = delegate.source.get(path);
-					dResource = new bootstrap.io.Resource(dResource);
-					// TODO: this is now a mess; the below TODO comment is probably obsolete, and it's quite possible this could be
-					// vastly simplified
-					if (dResource && !dResource.type) {
-						//	TODO	all of this is necessary because we cannot alter the type of a resource, because it is cached.
-						//			as such, this is tightly coupled with the rhino io.js source code
-						var newtype = pp.type(path);
-						var delegate = {};
-						delegate.read = {};
-						delegate.read.binary = dResource.read.binary;
-						delegate.type = newtype;
-						delegate.name = dResource.name;
-						if (dResource.hasOwnProperty("length")) {
-							Object.defineProperty(delegate,"length",{
-								get: function() {
-									return dResource.length;
-								}
-							});
-						}
-						if (dResource.hasOwnProperty("modified")) {
-							Object.defineProperty(delegate,"modified",{
-								get: function() {
-									return dResource.modified;
-								}
-							});
-						}
-						return new bootstrap.io.Resource(delegate)
+					var delegated = delegate.source.get(path);
+					return bootstrap.js.Object.set({}, delegated, {
+						type: pp.type(path)
+					});
+					// dResource = new bootstrap.io.Resource(dResource);
+					// // TODO: this is now a mess; the below TODO comment is probably obsolete, and it's quite possible this could be
+					// // vastly simplified
+					// if (dResource && !dResource.type) {
+					// 	//	TODO	all of this is necessary because we cannot alter the type of a resource, because it is cached.
+					// 	//			as such, this is tightly coupled with the rhino io.js source code
+					// 	var newtype = pp.type(path);
+					// 	var delegate = {};
+					// 	delegate.read = {};
+					// 	delegate.read.binary = dResource.read.binary;
+					// 	delegate.type = newtype;
+					// 	delegate.name = dResource.name;
+					// 	if (dResource.hasOwnProperty("length")) {
+					// 		Object.defineProperty(delegate,"length",{
+					// 			get: function() {
+					// 				return dResource.length;
+					// 			}
+					// 		});
+					// 	}
+					// 	if (dResource.hasOwnProperty("modified")) {
+					// 		Object.defineProperty(delegate,"modified",{
+					// 			get: function() {
+					// 				return dResource.modified;
+					// 			}
+					// 		});
+					// 	}
+					// 	return new bootstrap.io.Resource(delegate)
 //						if (newtype) {
 //							var rv = {};
 //						}
 //						Packages.java.lang.System.err.println("newtype = " + path + " " + newtype);
 //						dResource.type = newtype;
 //						Packages.java.lang.System.err.println("dResource = " + path + " pp.type=" + dResource.type);
-					}
-					return dResource;
+//					}
+//					return dResource;
 				}
 			}
 //			var rv = new bootstrap.io.Loader(pp);
