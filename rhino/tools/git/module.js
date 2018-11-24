@@ -596,7 +596,7 @@ $exports.install = $context.api.Events.Function(function(p,events) {
 					arguments: [
 						"apt", "install", "git", "-y"
 					]
-				})
+				});
 			} else {
 				throw new Error("Unimplemented: installation of Git for Linux system without 'apt'.");
 			}
