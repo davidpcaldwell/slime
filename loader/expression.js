@@ -329,7 +329,7 @@
 						if (typeof(rv) == "string") return rv;
 					}
 				})();
-				if (!string) {
+				if (typeof(string) != "string") {
 					throw new TypeError("Resource: " + resource.name + " is not convertible to string, so cannot be executed.");
 				}
 				if (type && type.is("application/vnd.coffeescript")) {

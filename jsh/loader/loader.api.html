@@ -230,6 +230,8 @@ END LICENSE
 						<li class="value">
 							<span class="type"><a href="../../rhino/file/api.html#types.Pathname">Pathname</a></span>
 							-or-
+							<span class="type"><a href="../../rhino/file/api.html#types.Directory">directory</a></span>
+							-or-
 							<span class="type"><a href="../../loader/api.html#types.Loader">Loader</a></span>
 							<div>
 								A source, interpreted
@@ -239,10 +241,10 @@ END LICENSE
 										If the pathname does not represent a directory or file which exists, do nothing.
 									</li>
 									<li>
-										If the pathname is a directory,
+										If a directory, or a pathname which is a directory, is specified,
 										<ul>
 											<li>
-												and has a <code>plugin.jsh.js</code> file, load the
+												and the directory has a <code>plugin.jsh.js</code> file, load the
 												plugin from the directory.
 											</li>
 											<li>
@@ -276,6 +278,15 @@ END LICENSE
 						</li>
 					</ol>
 				</div>
+				<script type="application/x.jsapi#tests">
+					var global = (function() { return this; })();
+					verify(global).evaluate.property("issue249").is(void(0));
+					var directory = $jsapi.loader.getRelativePath("test/plugin").directory;
+					verify(directory).directory.is(true);
+					verify(directory).pathname.is.type("object");
+					jsh.loader.plugins(directory);
+					verify(global).evaluate.property("issue249").is.type("object");
+				</script>
 			</li>
 		</ul>
 	</div>
