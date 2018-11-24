@@ -171,8 +171,11 @@ END LICENSE
 					<li class="function">
 						<div class="name">get</div>
 						<span>
-							Provides a file containing an installer. The source of the file is specified by the argument passed to
-							the method.
+							Returns a file containing an installer, either using a specified local file or a specified URL.
+							If <code>file</code> is absent or 
+							<code>null</code>, the method will attempt to locate it in the
+							<code>$context.downloads</code> directory by <code>name</code>. If it is
+							not found, and the <code>url</code> property is provided, the file will be downloaded.							
 						</span>
 						<div class="arguments">
 							<div class="label">Arguments</div>
@@ -187,14 +190,16 @@ END LICENSE
 												<li class="value">
 													<div class="name">file</div>
 													<span class="type"><a href="../../../rhino/file/api.html#types.file">file</a></span>
-													<span>The local copy of the installation file</span>
+													<span>
+														(optional)
+														The local copy of the installation file.
+													</span>
 												</li>
 												<li class="value">
 													<div class="name">url</div>
 													<span class="type"><a href="../../../rhino/http/client/api.html#types.request.url">http request url</a></span>
 													<span>
-														The remote URL of the installation file. If <code>file</code> is absent or <code>null</code>, the
-														installer will be downloaded.
+														The remote URL of the installation file.
 													</span>
 												</li>
 												<li class="value">
@@ -248,7 +253,7 @@ END LICENSE
 								};
 								var messageStartsWith = function(string) {
 									return function() {
-										return Boolean(this.detail.message.substring(0,string.length) == string);
+										return Boolean(this.detail.substring(0,string.length) == string);
 									}
 								};
 								verify(file).is.type("object");
@@ -321,8 +326,12 @@ END LICENSE
 										</li>
 										<li class="value">
 											<div class="name">format</div>
-											<span class="type">__TYPE__</span>
-											<span>One of the values from <a href="$exports.format"><code>format</code></a>.</span>
+											<span class="type">(unspecified)</span>
+											<span>
+												(optional; if omitted, the implementation will attempt to determine it from
+												<code>url</code> and <code>file</code>)
+												One of the values from <a href="$exports.format"><code>format</code></a>.
+											</span>
 										</li>
 										<li class="value">
 											<div class="name">to</div>

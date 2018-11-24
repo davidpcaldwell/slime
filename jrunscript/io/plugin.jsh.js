@@ -30,3 +30,26 @@ plugin({
 		})
 	}
 });
+
+plugin({
+	isReady: function() {
+		return jsh.shell;		
+	},
+	load: function() {
+		//	Load POI if it is present
+		var POI = jsh.shell.jsh.lib && jsh.shell.jsh.lib.getSubdirectory("poi");
+		if (POI) {
+			var addLibDirectory = function(dir) {
+				dir.list().forEach(function(node) {
+					if (/\.jar$/.test(node.pathname.basename)) {
+						jsh.loader.plugins(node.pathname);
+					}
+				})
+			};
+
+			addLibDirectory(POI.getSubdirectory("lib"));
+			addLibDirectory(POI.getSubdirectory("ooxml-lib"));
+			addLibDirectory(POI);
+		}		
+	}
+});
