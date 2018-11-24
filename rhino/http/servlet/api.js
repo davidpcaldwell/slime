@@ -124,9 +124,9 @@ var Loader = (function() {
 				if (_type) return bootstrap.io.mime.Type.parse(String(_type));
 				return null;
 			};
-			pp.Loader = function(sub) {
-				return new Loader(p,prefix+sub);
-			}
+			// pp.Loader = function(sub) {
+			// 	return new Loader(p,prefix+sub);
+			// }
 			var source = {
 				get: function(path) {
 					var delegate = new bootstrap.io.Loader(pp);

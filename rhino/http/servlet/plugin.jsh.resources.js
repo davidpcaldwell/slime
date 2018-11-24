@@ -302,7 +302,7 @@ var Resources = function(mapping,old) {
 		}
 		jsh.io.Loader.apply(this,[p]);
 		this.resource = function(path) {
-			return this.source.get(path);
+			return this.get(path);
 		};
 		//	TODO	why is list necessary for children but apparently not for parent? assuming it was a bug; adding
 		this.toString = function() {
