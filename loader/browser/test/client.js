@@ -198,6 +198,13 @@ window.callbacks.push(function() {
 									context
 								);
 							};
+							this.run = function(path,scope,target) {
+								return inonit.loader.run(
+									inonit.loader.nugget.page.relative(base+path),
+									scope,
+									target
+								);
+							}
 							//	TODO	can the below eval and string be replaced by a form of loader.get() or something?
 							this.eval = function(path,scope) {
 								if (!scope) scope = {};
