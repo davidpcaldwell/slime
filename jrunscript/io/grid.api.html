@@ -13,7 +13,7 @@ END LICENSE
 --><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
 <head>
-	<title>__TITLE__</title>
+	<title>SLIME jrunscript/io grid</title>
 	<!--	TODO	change these to use local copies of these files at the appropriate location	-->
 	<!--
 		These files are specified using http: rather than https: because githack.com will redirect them to https:, but http: will
@@ -29,13 +29,57 @@ END LICENSE
 <body>
 	<div>__DESCRIPTION__</div>
 	<div>
-		<h1>Context</h1>
-		<ul>
-		</ul>
-	</div>
-	<div>
+		<script type="application/x.jsapi#initialize">
+			scope.api = jsh.io.grid;
+			if (scope.api.excel) scope.excel = scope.api.excel;
+		</script>
+		<script type="application/x.jsapi#tests">
+			verify(api).is.type("object");
+			if (excel) {
+				verify(excel).is.type("object");
+			}
+		</script>
 		<h1>Exports</h1>
 		<ul>
+			<li class="object">
+				<div class="name">excel</div>
+				<span>__DESCRIPTION__</span>
+				<script type="application/x.jsapi#initialize">
+					if (scope.api.excel) {
+						scope.excel = scope.api.excel; 
+					}
+				</script>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="constructor">
+						<div class="name">Workbook</div>
+						<span>__DESCRIPTION__</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+							</ol>
+						</div>
+						<div class="instances">
+							<div class="label">Instances</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</div>
+						<script type="application/x.jsapi#tests">
+							jsh.shell.console(Object.keys(excel));
+							verify(excel).evaluate(function(p) { return p.Workbook; }).is.type("function");
+							
+							var getFile = function(name) {
+								return $jsapi.loader.getRelativePath("test/grid/" + name).file;
+							};
+							
+							(function() {
+								var workbook = new excel.Workbook({ resource: getFile("1.xlsx") });
+								verify(workbook).is.type("object");
+							})();
+						</script>
+					</li>
+				</ul>
+			</li>
 		</ul>
 	</div>
 </body>

@@ -43,5 +43,6 @@ $exports.archive = {
 $exports.grid = $loader.file("grid.js", {
 	getClass: function(name) {
 		return $context.api.java.getClass(name);
-	}
+	},
+	Streams: $context.$slime.io.Streams
 });

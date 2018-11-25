@@ -406,6 +406,7 @@ var Pathname = function Pathname(parameters) {
 		this.directory = false;
 
 		var rdata = {
+			name: pathname.toString(),
 			read: {
 				binary: function() {
 					return $filesystem.read.binary(peer);
