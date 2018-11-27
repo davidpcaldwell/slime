@@ -334,17 +334,22 @@ END LICENSE
 												</li>
 												<li class="function">
 													<div class="name">asXml</div>
+													<span>
+														(conditional; available only if E4X is available)
+													</span>
 													<div class="returns">
 														<div class="label">Returns</div>
 														<span class="type">XMLList</span>
 														<span>The entire content of this stream as a single <code>XMLList</code>.</span>
 													</div>
 													<script type="application/x.jsapi#tests"><![CDATA[
-														var buffer = new module.Buffer();
-														buffer.writeBinary().character().write("<a><b/></a>");
-														buffer.writeBinary().close();
-														var xml = { list: buffer.readText().asXml() };
-														verify(xml).evaluate(function(p) { return p.list.length(); }).is(1);
+														if ($platform.e4x) {
+															var buffer = new module.Buffer();
+															buffer.writeBinary().character().write("<a><b/></a>");
+															buffer.writeBinary().close();
+															var xml = { list: buffer.readText().asXml() };
+															verify(xml).evaluate(function(p) { return p.list.length(); }).is(1);
+														}
 													]]></script>
 												</li>
 												<li class="object">

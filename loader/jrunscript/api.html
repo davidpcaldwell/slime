@@ -403,8 +403,15 @@ END LICENSE
 									string: lines.join("\n")
 								});
 								var _properties = resource.read(Packages.java.util.Properties);
-								verify(_properties).getProperty("foo.bar").evaluate( function(p) { return String(p); }).is("baz");
-								verify(_properties).getProperty("foo.baz").is(null);
+								var properties = new function() {
+									this.getProperty = function(name) {
+										var rv = _properties.getProperty(name);
+										if (rv === null) return null;
+										return String(rv);
+									}
+								};
+								verify(properties).getProperty("foo.bar").is("baz");
+								verify(properties).getProperty("foo.baz").is(null);
 								// TODO: write test that specifies resource by string and then reads it as character stream and
 								// gets same string
 							</script>
