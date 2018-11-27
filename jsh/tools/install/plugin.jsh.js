@@ -179,6 +179,17 @@ plugin({
 		
 		jsh.shell.tools.ncdbg = ncdbg;
 		
+		jsh.shell.tools.jsoup = {};
+		jsh.shell.tools.jsoup.install = function(p) {
+			var to = jsh.shell.jsh.lib.getRelativePath("jsoup.jar");
+			if (!to.file) {
+				var response = new jsh.http.Client().request({
+					url: "https://jsoup.org/packages/jsoup-1.11.3.jar"
+				});
+				to.write(response.body.stream, { append: false });
+			}
+		};
+		
 		(function deprecated() {
 			jsh.tools.ncdbg = ncdbg;
 			$api.deprecate(jsh.tools,"ncdbg");			

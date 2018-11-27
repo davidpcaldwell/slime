@@ -132,9 +132,6 @@ if ($context.api.shell.PATH.getCommand("chmod")) {
 				exists: (p.overwrite) ? function(dir) {
 					return false;
 				} : void(0),
-		//		ifExists: function(dir) {
-		//			return false;
-		//		}
 				recursive: true
 			});
 

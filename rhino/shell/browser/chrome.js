@@ -187,11 +187,13 @@ var Chrome = function(b) {
 				}
 			}
 			//Packages.java.lang.System.err.println("using program: args = " + JSON.stringify(args));
+			//	TODO	use events rather than on.start property
 			$context.run({
 				command: b.program,
 				arguments: args,
 				stdio: m.stdio,
 				on: {
+					//	TODO	on.start is deprecated
 					start: function(p) {
 						if ($context.os.name == "Mac OS X" && !m.nokill) {
 							$context.api.java.Thread.start(function() {
