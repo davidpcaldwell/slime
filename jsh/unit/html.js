@@ -28,6 +28,8 @@ var getApiHtml = function(moduleMainPathname) {
 		} else {
 			return directory.getFile(basename+".api.html");
 		}
+	} else {
+		throw new Error("Not file or directory: " + moduleMainPathname);
 	}
 }
 

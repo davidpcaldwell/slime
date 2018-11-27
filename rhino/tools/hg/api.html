@@ -989,7 +989,7 @@ END LICENSE
 						<span class="type">__TYPE__</span>
 						<span>__DESCRIPTION__</span>
 					</div>
-					<script type="application/x.jsapi#tests">
+					<script type="application/x.jsapi#tests"><![CDATA[
 						var parent = createHg();
 						parent.unit.createFile({ path: "a", content: "a", add: true });
 						parent.commit({ message: "a" });
@@ -998,12 +998,27 @@ END LICENSE
 						verify(server).port.is.type("number");
 						var tmpclone = jsh.shell.TMPDIR.createTemporary({ directory: true });
 						var remote = new module.Repository({ url: "http://127.0.0.1:" + server.port + "/" });
-						var local = remote.clone(tmpclone);
+						
+						var local = (function cloneWithRetries() {
+							for (var i=0; i<3; i++) {
+								try {
+									return remote.clone(tmpclone);
+								} catch (e) {
+									if (/Connection refused/.test(e.message)) {
+										jsh.shell.console("Connection refused; sleeping for retry ...");
+										Packages.java.lang.Thread.sleep(500);
+									} else {
+										throw e;
+									}
+								}
+							}
+						})();
+
 						var commits = local.log();
 						verify(commits).length.is(1);
 						server.kill();
 						verify("killed").is("killed");
-					</script>
+					]]></script>
 				</li>
 				<li class="function">
 					<div class="name">shell</div>
