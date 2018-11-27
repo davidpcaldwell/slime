@@ -135,10 +135,15 @@
 				req.open("GET", path, false);
 				req.send(null);
 				//	TODO	throw actual error object
-				if (req.status >= 400) throw {
-					code: req.status,
-					message: req.statusText,
-					toString: function() { return String(req.status) + " " + req.statusText }
+				if (req.status >= 400) {
+					var error = new Error("Status: " + req.status);
+					error.code = req.status;
+					error.message = req.statusText;
+					error.page = req.responseText;
+					error.toString = function() {
+						return String(req.status) + " " + req.statusText
+					};
+					throw error;
 				};
 				return req.responseText;
 			}
@@ -163,6 +168,7 @@
 			this.getCode.preprocessors = [];
 		}
 
+		// TODO: with the reorganization of the platform, 'runtime' is probably the best name for this object now
 		var platform = (function() {
 			var $slime = {
 				getLoaderScript: function(path) {
