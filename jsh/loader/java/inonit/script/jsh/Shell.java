@@ -89,11 +89,7 @@ public class Shell {
 		return configuration.getInstallation().getJshLoader();
 	}
 
-	//	TODO	Simplify handling of CoffeeScript by collapsing the next three methods and their invocations
-
-	public Code.Loader getLibraries() {
-		return configuration.getInstallation().getLibraries();
-	}
+	//	TODO	Simplify handling of CoffeeScript by collapsing the next two methods and their invocations
 
 	//	TODO	Used in jsh.js to retrieve CoffeeScript
 	public Code.Loader.Resource getLibrary(String path) {
@@ -107,7 +103,7 @@ public class Shell {
 
 	//	TODO	push back out into invoking code; appears to be used only by jsh/loader/nashorn.js
 	public String getCoffeeScript() throws IOException {
-		Code.Loader.Resource _file = getLibraries().getFile("coffee-script.js");
+		Code.Loader.Resource _file = configuration.getInstallation().getLibraries().getFile("coffee-script.js");
 		if (_file == null) return null;
 		return streams.readString(_file.getReader());
 	}
