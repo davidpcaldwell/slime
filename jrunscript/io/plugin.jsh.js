@@ -16,40 +16,33 @@ plugin({
 		return jsh.js && jsh.java;
 	},
 	load: function() {
+		var poi = $slime.getLibraryFile("poi");
+		if (poi) {
+			var addLibDirectory = function(dir) {
+				jsh.java.Array.adapt(dir.listFiles()).forEach(function(_file) {
+					if (_file.getName().endsWith(".jar")) {
+						$slime.classpath.add({ jar: { _file: _file }});
+					}
+				});
+			};
+
+			addLibDirectory(new Packages.java.io.File(poi, "lib"));
+			addLibDirectory(new Packages.java.io.File(poi, "ooxml-lib"));
+			addLibDirectory(poi);			
+		}
+
 		jsh.io = $loader.module("module.js", {
 			$slime: {
 				io: $slime.io,
 				mime: $slime.mime,
 				Loader: $slime.Loader,
-				Resource: $slime.Resource
+				Resource: $slime.Resource,
+				getLibraryFile: $slime.getLibraryFile
 			},
 			api: {
 				js: jsh.js,
 				java: jsh.java
 			}
 		})
-	}
-});
-
-plugin({
-	isReady: function() {
-		return jsh.shell;		
-	},
-	load: function() {
-		//	Load POI if it is present
-		var POI = jsh.shell.jsh.lib && jsh.shell.jsh.lib.getSubdirectory("poi");
-		if (POI) {
-			var addLibDirectory = function(dir) {
-				dir.list().forEach(function(node) {
-					if (/\.jar$/.test(node.pathname.basename)) {
-						jsh.loader.plugins(node.pathname);
-					}
-				})
-			};
-
-			addLibDirectory(POI.getSubdirectory("lib"));
-			addLibDirectory(POI.getSubdirectory("ooxml-lib"));
-			addLibDirectory(POI);
-		}		
 	}
 });

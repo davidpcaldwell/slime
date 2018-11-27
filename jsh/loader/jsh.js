@@ -12,8 +12,11 @@
 
 this.jsh = new function() {
 	var $slime = (function($jsh) {
-		// TODO: What type is $slime?
+		//	$jsh is a inonit.script.jsh.Shell Java object
+		
+		//	$slime is essentially a SLIME Java runtime object, augmented by jsh/loader/rhino.js or jsh/loader/nashorn.js
 		var $slime = $jsh.runtime();
+		
 		var configuration = $jsh.getEnvironment();
 		var invocation = $jsh.getInvocation();
 
@@ -47,6 +50,10 @@ this.jsh = new function() {
 		$slime.getInterface = function() {
 			return $jsh.getInterface();
 		}
+		
+		$slime.getLibraryFile = function(path) {
+			return $jsh.getLibraryFile(path);
+		};
 
 		$slime.loader = new function() {
 			this.getPackagedCode = function() {

@@ -81,10 +81,6 @@ public class Shell {
 		this.classpath = classpath;
 	}
 
-	public Code.Loader getPlatformLoader() {
-		return configuration.getInstallation().getPlatformLoader();
-	}
-
 	public Code.Loader getJshLoader() {
 		return configuration.getInstallation().getJshLoader();
 	}
@@ -100,6 +96,13 @@ public class Shell {
 			throw new RuntimeException(e);
 		}
 	}
+	
+	//	TODO	this is necessary still because of the fact that Code.Loader-based .jar files do not correctly implement
+	//			java.util.ServiceLoader, so JAR files must be added to the classpath using a special API, so they must be added
+	//			as java.io.File objects.
+	public File getLibraryFile(String path) {
+		return configuration.getInstallation().getLibraryFile(path);
+	}
 
 	//	TODO	push back out into invoking code; appears to be used only by jsh/loader/nashorn.js
 	public String getCoffeeScript() throws IOException {
@@ -109,7 +112,7 @@ public class Shell {
 	}
 
 	public String getLoaderCode(String path) throws IOException {
-		return streams.readString(getPlatformLoader().getFile(path).getReader());
+		return streams.readString(configuration.getInstallation().getPlatformLoader().getFile(path).getReader());
 	};
 
 	private Streams streams = new Streams();
@@ -214,6 +217,7 @@ public class Shell {
 		public abstract Code.Loader getPlatformLoader();
 		public abstract Code.Loader getJshLoader();
 		public abstract Code.Loader getLibraries();
+		public abstract File getLibraryFile(String file);
 		public abstract Code.Loader[] getExtensions();
 	}
 
