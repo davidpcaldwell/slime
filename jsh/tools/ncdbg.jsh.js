@@ -84,7 +84,7 @@ var startScript = function() {
 			} else {
 				jsh.shell.console("URL to paste into Chrome:");
 				jsh.shell.console(url);
-			}	
+			}
 		})(getDevtoolsUrl())
 	}
 
@@ -126,7 +126,7 @@ var startNcdbg = function() {
 		Packages.java.lang.Thread.sleep(parameters.options["ncdbg:pause"]);
 		var args = [];
 		//	TODO	this is obviously ludicrous; need a first-class way to determine version
-		if (jsh.shell.jsh.lib.getFile("ncdbg/lib/ncdbg-0.8.1.jar")) {
+		if (jsh.shell.jsh.lib.getFile("ncdbg/lib/ncdbg-0.8.1.jar") || jsh.shell.jsh.lib.getFile("ncdbg/lib/ncdbg-0.8.2.jar") || jsh.shell.jsh.lib.getFile("ncdbg/lib/ncdbg-0.8.3.jar")) {
 			args.push("--lazy");
 		}
 		var JAVA_HOME = jsh.shell.java.home.parent;
@@ -151,9 +151,9 @@ if (parameters.options["ncdbg:chrome:instance"]) {
 
 if (parameters.arguments.length) {
 	jsh.java.Thread.start(startScript);
-	
+
 	jsh.java.Thread.start(startNcdbg);
-	
+
 	lock.Waiter({
 		until: function() {
 			return scriptExited;

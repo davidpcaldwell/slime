@@ -161,7 +161,7 @@ if (parameters.options.classes) {
 	jsh.loader.java.add(parameters.options.classes);
 } else if (parameters.options.jar) {
 	if (parameters.options.search) {
-		jsh.loader.plugins(parameters.options.jar.directory);		
+		jsh.loader.plugins(parameters.options.jar.directory);
 	} else {
 		jsh.loader.plugins(parameters.options.jar.file);
 	}

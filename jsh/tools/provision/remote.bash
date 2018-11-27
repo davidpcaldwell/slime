@@ -36,7 +36,7 @@ download() {
 		fi
 		curl -s -L $CURL_OPTIONS -o $DOWNLOAD_TO $DOWNLOAD_FROM
 	elif [ $(command -v wget) ]; then
-		wget -q -O $DOWNLOAD_TO $DOWNLOAD_FROM 
+		wget -q -O $DOWNLOAD_TO $DOWNLOAD_FROM
 	else
 		#	TODO	try to locate package manager?
 		echo "Could not execute: no 'curl' or 'wget' command present."

@@ -146,7 +146,7 @@ $exports.Searchpath.createEmpty = function() {
 $api.deprecate($exports.Searchpath,"createEmpty");
 $exports.Searchpath.prototype = prototypes.Searchpath;
 
-////	TODO	this implementation would be much simpler if we could use a normal loader/rhino loader with a _source, but
+////	TODO	this implementation would be much simpler if we could use a normal loader/jrunscript loader with a _source, but
 ////			right now this would cause Cygwin loaders to fail, probably
 //$context.$rhino.Loader.spi(function(underlying) {
 //	return function(p) {
@@ -223,9 +223,7 @@ $exports.Loader = function recurse(p) {
 					return file.modified;
 				}
 			});
-//					length: file.resource.length,
-//					modified: file.modified,
-			return new $context.$slime.io.Resource(data);
+			return data;
 		}
 		return null;
 	}

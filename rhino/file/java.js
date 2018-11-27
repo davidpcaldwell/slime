@@ -113,25 +113,25 @@ $exports.FilesystemProvider = function(_peer) {
 
 	this.read = new function() {
 		this.binary = function(peer) {
-			return $context.api.io.java.adapt(peer.readBinary());
+			return $context.api.io.Streams.java.adapt(peer.readBinary());
 		}
 
 		this.character = function(peer) {
-			return $context.api.io.java.adapt(peer.readText()/*, {LINE_SEPARATOR: separators.line}*/);
+			return $context.api.io.Streams.java.adapt(peer.readText()/*, {LINE_SEPARATOR: separators.line}*/);
 		}
 	}
 
 	this.write = new function() {
 		this.binary = function(peer,append) {
-			return $context.api.io.java.adapt(peer.writeBinary(append));
+			return $context.api.io.Streams.java.adapt(peer.writeBinary(append));
 		}
 
 		this.character = function(peer,append) {
-			return $context.api.io.java.adapt(peer.writeText(append));
+			return $context.api.io.Streams.java.adapt(peer.writeText(append));
 		}
 
 		this.string = function(peer,append,string) {
-			var stream = $context.api.io.java.adapt(peer.writeText(append));
+			var stream = $context.api.io.Streams.java.adapt(peer.writeText(append));
 			stream.write(string);
 			stream.close();
 		}

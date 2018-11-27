@@ -159,9 +159,6 @@
 							]]></script>
 						</li>
 					</ul>
-					<script type="application/x.jsapi#tests">
-						verify.suite($jsapi.loader.suite("hg/api.html"));
-					</script>
 				</li>
 				<li class="object">
 					<div class="name">git</div>
@@ -174,17 +171,39 @@
 					<ul>
 						<li class="function">
 							<div class="name">install</div>
-							<span>__DESCRIPTION__</span>
+							<span>
+								Installs <code>git</code> globally if it is not detected. In the event that a GUI installation is
+								needed, it will be launched and an error will be thrown; see the <code>GUI</code> property below.
+							</span>
 							<div class="arguments">
 								<div class="label">Arguments</div>
 								<ol>
+									<li class="object">
+										<span>Currently unused.</span>
+										<div class="label">has properties:</div>
+										<ul>
+										</ul>
+									</li>
+									<li class="object">
+										<span>An event handler.</span>
+										<div class="label">has properties:</div>
+										<ul>
+											<li class="function">
+												<div class="name">console</div>
+												<span><code>detail</code> is a string suitable for display on a console.</span>
+											</li>
+										</ul>
+									</li>
 								</ol>
 							</div>
-							<div class="returns">
-								<div class="label">Returns</div>
-								<span class="type">__TYPE__</span>
-								<span>__DESCRIPTION__</span>
-							</div>
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="value">
+									<div class="name">GUI</div>
+									<span class="type">Error</span>
+									<span>An error that will be thrown if a GUI installation is needed.</span>
+								</li>
+							</ul>
 						</li>
 						<li class="object">
 							<div class="name">credentialHelper</div>
@@ -252,7 +271,7 @@
 										}
 									});
 									return rv;
-								};							
+								};
 							};
 
 							var MockShellPlugin = function(o) {
@@ -338,7 +357,7 @@
 							verify(plugin).evaluate.property("installation").is.type("object");
 						]]></script>
 					</ul>
-				</li>					
+				</li>
 			</ul>
 		</div>
 	</body>

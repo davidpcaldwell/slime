@@ -47,11 +47,11 @@ END LICENSE
 		}
 		$Context.api = new function() {
 			this.js = $jsapi.loader.module("../../js/object/");
-			var java = $jsapi.loader.module("../../rhino/host/", {
+			var java = $jsapi.loader.module("../../jrunscript/host/", {
 				$rhino: jsh.unit.$slime
 			});
 			this.java = java;
-			this.io = $jsapi.loader.module("../../rhino/io/", {
+			this.io = $jsapi.loader.module("../../jrunscript/io/", {
 				$slime: jsh.unit.$slime
 				,api: {
 					java: java,
@@ -82,11 +82,11 @@ END LICENSE
 					</li>
 					<li class="value">
 						<div class="name">java</div>
-						<span>The rhino/host module.</span>
+						<span>The jrunscript/host module.</span>
 					</li>
 					<li class="value">
 						<div class="name">io</div>
-						<span>The rhino/io module.</span>
+						<span>The jrunscript/io module.</span>
 					</li>
 				</ul>
 			</li>
@@ -148,11 +148,11 @@ END LICENSE
 				}
 				$Context.api = new function() {
 					this.js = $jsapi.loader.module("../../js/object/");
-					var java = $jsapi.loader.module("../../rhino/host/", {
+					var java = $jsapi.loader.module("../../jrunscript/host/", {
 						$rhino: jsh.unit.$slime
 					});
 					this.java = java;
-					this.io = $jsapi.loader.module("../../rhino/io/", {
+					this.io = $jsapi.loader.module("../../jrunscript/io/", {
 						$java: new Packages.inonit.script.runtime.io.Streams()
 						,$rhino: jsh.unit.$slime
 						,api: {
@@ -1106,12 +1106,12 @@ END LICENSE
 											<ul>
 												<li>
 													<code>Streams.binary</code>, <code>read</code> will return a
-													<code>rhino/io</code> <i>binary input stream</i> which can be used to read the
+													<code>jrunscript/io</code> <i>binary input stream</i> which can be used to read the
 													file.
 												</li>
 												<li>
 													<code>Streams.text</code>, <code>read</code> will return a
-													<code>rhino/io</code> <i>character input stream</i> which can be used to read the
+													<code>jrunscript/io</code> <i>character input stream</i> which can be used to read the
 													file.
 												</li>
 												<li>

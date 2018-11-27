@@ -23,7 +23,7 @@ END LICENSE
 			<ul>
 				<li><code>jsh.tools.install</code>: APIs for installing software generally.</li>
 				<li>
-					<code>jsh.shell.tools.*</code>: APIs for a specific set of externally-provided tools (Rhino, Tomcat, 
+					<code>jsh.shell.tools.*</code>: APIs for a specific set of externally-provided tools (Rhino, Tomcat,
 					<code>ncdbg</code>), including installation APIs.
 				</li>
 			</ul>
@@ -349,6 +349,35 @@ END LICENSE
 					<div class="label">has properties:</div>
 					<ul>
 					</ul>
+				</li>
+				<li class="object">
+					<div class="name">jsoup</div>
+					<span>__DESCRIPTION__</span>
+					<div class="label">has properties:</div>
+					<ul>
+					</ul>
+				</li>
+				<li class="object">
+					<div class="name">javamail</div>
+					<span>__DESCRIPTION__</span>
+					<div class="label">has properties:</div>
+					<ul>
+					</ul>
+				</li>
+				<li class="object">
+					<div class="name">poi</div>
+					<span>__DESCRIPTION__</span>
+					<div class="label">has properties:</div>
+					<ul>
+					</ul>
+					<script type="application/x.jsapi#tests">
+						var poi = jsh.shell.jsh.lib.getSubdirectory("poi");
+						if (poi) {
+							verify(jsh).io.grid.excel.is.type("object");
+						} else {
+							verify(jsh).io.grid.evaluate.property("excel").is(void(0));
+						}
+					</script>
 				</li>
 			</ul>
 		</div>

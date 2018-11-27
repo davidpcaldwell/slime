@@ -309,14 +309,14 @@ END LICENSE
 										}
 									});
 									server.start();
-									
+
 									var client = new jsh.http.Client();
-									
+
 									var found = client.request({
 										url: "http://127.0.0.1:" + server.port + "/" + "api.html"
 									});
 									verify(found).status.code.is(200);
-									
+
 									var notFound = client.request({
 										url: "http://127.0.0.1:" + server.port + "/" + "nonexistent"
 									});

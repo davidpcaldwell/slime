@@ -129,7 +129,7 @@ scenario.part("addClasses", {
 			script: src.getFile("jsh/test/addClasses/addClasses.jsh.js"),
 			arguments: ["-scenario"]
 		});
-		verify(result).status.is(0);		
+		verify(result).status.is(0);
 	}
 });
 
@@ -378,7 +378,7 @@ if (CATALINA_HOME) {
 //		var tmp = platform.io.createTemporaryDirectory();
 //		run(LAUNCHER_COMMAND.concat([
 //			getSourceFilePath("jsh/tools/slime.jsh.js"),
-//			"-from", getPath(SLIME_SRC,"loader/rhino/test/data/1"),
+//			"-from", getPath(SLIME_SRC,"loader/jrunscript/test/data/1"),
 //			"-to", getPath(tmp,"1.slime"),
 //			//	TODO	the below should match the version from the build
 //			"-version", "1.6"
@@ -391,7 +391,7 @@ scenario.part(".slime", {
 			fork: true,
 			script: src.getFile("jsh/tools/slime.jsh.js"),
 			arguments: [
-				"-from", src.getRelativePath("loader/rhino/test/data/1"),
+				"-from", src.getRelativePath("loader/jrunscript/test/data/1"),
 				"-to", tmp.getRelativePath("1.slime"),
 				"-version", "1.6"
 			]

@@ -47,8 +47,8 @@ plugin({
 					file: jsh.file,
 					shell: jsh.shell
 				}
-			});		
-			
+			});
+
 			jsh.tools.hg = $loader.file("hg/install.js", {
 				api: {
 					module: module,
@@ -81,7 +81,7 @@ plugin({
 		jsh.java.tools.plugin.hg = $api.deprecate(function() {
 			loadHg();
 		});
-		
+
 		var loadGit = function() {
 			jsh.tools.git = $loader.module("git/module.js", {
 				api: {
@@ -118,13 +118,13 @@ plugin({
 			}
 		};
 		loadGit();
-		
+
 		//	TODO	provide alternate means of loading the plugin
 		if (!jsh.java.tools.plugin) jsh.java.tools.plugin = {};
 		jsh.java.tools.plugin.git = $api.deprecate(function() {
 			loadGit();
 		});
-		
+
 		jsh.tools.node = $loader.module("node/module.js");
 	}
 })

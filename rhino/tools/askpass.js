@@ -41,7 +41,7 @@ $exports.gui = function(p) {
 		this.windowClosing = function(e) {
 			doneWaiter();
 		};
-		
+
 		//	TODO	for now, below is necessary for Nashorn because of incompatibility surrounding JavaAdapter
 		["windowActivated","windowClosed","windowDeactivated","windowDeiconified","windowIconified","windowOpened"].forEach(function(methodName) {
 			this[methodName] = function(){};

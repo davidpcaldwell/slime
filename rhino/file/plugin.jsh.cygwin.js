@@ -4,4 +4,4 @@ if ($slime.getSystemProperty("cygwin.root") || $slime.getSystemProperty("cygwin.
 		root: $slime.getSystemProperty("cygwin.root"),
 		paths: $slime.getSystemProperty("cygwin.paths")
 	}
-}			
+}

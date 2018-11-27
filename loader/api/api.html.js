@@ -98,6 +98,22 @@ var getDescendants = function(element) {
 	return rv;
 }
 
+var getChildren = function(element) {
+	var addChildren = function recurse(list,children) {
+		for (var i=0; i<children.length; i++) {
+			if (children[i].getJsapiAttribute("id")) {
+				list.push(children[i]);
+			} else {
+				recurse(list, children[i].getChildren());
+			}
+		}
+	};
+	
+	var rv = [];
+	addChildren(rv,element.getChildren());
+	return rv;
+}
+
 var filter = function(array,f) {
 	var rv = [];
 	for (var i=0; i<array.length; i++) {
@@ -120,7 +136,7 @@ var select = function(array,f) {
 var getElement = function(root,path) {
 	var tokens = path.split("/");
 	var rv = root;
-
+	
 	var hasJsapiId = function(id) {
 		var rv = function(e) {
 			return e.getJsapiAttribute("id") == id;
@@ -132,12 +148,13 @@ var getElement = function(root,path) {
 	}
 
 	for (var i=0; i<tokens.length; i++) {
-		rv = select(getDescendants(rv), hasJsapiId(tokens[i]));
-		if (typeof(rv) == "undefined") {
-			return null;
-		} else if (rv === null) {
-			throw new Error("Could not locate element: path = " + path);
-		}
+		rv = select(getChildren(rv), hasJsapiId(tokens[i]));
+		if (rv == null) return null;
+		// if (typeof(rv) == "undefined") {
+		// 	return null;
+		// } else if (rv === null) {
+		// 	throw new Error("Could not locate element: path = " + path);
+		// }
 	}
 	return rv;
 };
@@ -162,10 +179,14 @@ $exports.ApiHtmlTests = function(html,name) {
 
 	var referenceScope = new function() {
 		this.getApi = function(path) {
+			var apipath = path;
 			var otherhtml = html.load(path);
 			var rv = new $exports.ApiHtmlTests(otherhtml,name+":"+path);
 			rv.getElement = function(path) {
 				var rv = getElement(otherhtml.top,path);
+				if (rv == null) {
+					throw new Error("Could not locate path " + path + " in " + apipath);
+				}
 //				if (!otherhtml.getRelativePath) throw new Error("html " + otherhtml + " does not have getRelativePath");
 //				rv.getRelativePath = function(path) {
 //					return otherhtml.getRelativePath(path);
@@ -287,6 +308,7 @@ $exports.ApiHtmlTests = function(html,name) {
 	};
 
 	var getElementName = function(element,name) {
+		// TODO: Believe element == html.top would work below and then parent could be removed from JsapiHtml implementations
 		if (element.parent == null) {
 			return name;
 		} else if (element.getJsapiAttribute("id")) {
@@ -397,8 +419,15 @@ $exports.ApiHtmlTests = function(html,name) {
 	};
 
 	this.getSuite = $api.deprecate(this.getSuiteDescriptor);
+	
+	if ($context.test) {
+		this.getElement = function(path) {
+			return getElement(html.top, path);
+		}
+	}
 };
 
+// TODO: What is this used for? May be used for (obsolete?) building of documentation bundles
 $exports.getCode = function(path) {
 	return $loader.get(path).read(String);
-}
+};

@@ -73,26 +73,26 @@ END LICENSE
 		<ul>
 			<li class="function" jsapi:id="run">
 				<div class="name"><a id="exports.run">run</a></div>
-				<span jsapi:reference="getApi('../../loader/api.html').getElement('types.Loader/run/description')">See the <a href="../../loader/api.html">platform loader</a> for details.</span>
+				<span jsapi:reference="getApi('../../loader/api.html').getElement('Loader/type/run/description')">See the <a href="../../loader/api.html">platform loader</a> for details.</span>
 				<span>
 					Note that the first argument will be interpreted relative to the current page.
 				</span>
-				<div class="arguments" jsapi:reference="getApi('../../loader/api.html').getElement('types.Loader/run/arguments')">
+				<div class="arguments" jsapi:reference="getApi('../../loader/api.html').getElement('Loader/type/run/arguments')">
 					<div class="label">Arguments</div>
 					See the SLIME loader <a href="../../loader/api.html#types.Loader">run</a> method.
 				</div>
 			</li>
 			<li class="function" jsapi:id="file">
 				<div class="name"><a id="exports.file">file</a></div>
-				<span jsapi:reference="getApi('../../loader/api.html').getElement('types.Loader/file/description')">See the <a href="../../loader/api.html">platform loader</a> for details.</span>
+				<span jsapi:reference="getApi('../../loader/api.html').getElement('Loader/type/file/description')">See the <a href="../../loader/api.html">platform loader</a> for details.</span>
 				<span>
 					Note that the first argument will be interpreted relative to the current page.
 				</span>
-				<div class="arguments" jsapi:reference="getApi('../../loader/api.html').getElement('types.Loader/file/arguments')">
+				<div class="arguments" jsapi:reference="getApi('../../loader/api.html').getElement('Loader/type/file/arguments')">
 					<div class="label">Arguments</div>
 					See the platform loader's <a href="../../loader/api.html#types.Loader">file</a> method.
 				</div>
-				<div class="returns" jsapi:id="returns" jsapi:reference="getApi('../../loader/api.html').getElement('types.Loader/file/returns')">
+				<div class="returns" jsapi:id="returns" jsapi:reference="getApi('../../loader/api.html').getElement('Loader/type/file/returns')">
 					<div class="label">Returns</div>
 					See the platform loader's <a href="../../loader/api.html#types.Loader">file</a> method.
 				</div>
@@ -100,34 +100,34 @@ END LICENSE
 			<li class="function">
 				<div class="name">module</div>
 				<!--	TODO	There is a link in the target description that does not work when the content is copied.	-->
-				<span jsapi:reference="getApi('../../loader/api.html').getElement('types.Loader/module/description')">
+				<span jsapi:reference="getApi('../../loader/api.html').getElement('Loader/type/module/description')">
 					See the platform loader's <a href="../../loader/api.html#module">module</a> method.
 				</span>
 				<span>
 					Note that the first argument will be interpreted relative to the current page.
 				</span>
-				<div class="arguments" jsapi:reference="getApi('../../loader/api.html').getElement('types.Loader/module/arguments')">
+				<div class="arguments" jsapi:reference="getApi('../../loader/api.html').getElement('Loader/type/module/arguments')">
 					<div class="label">Arguments</div>
 					See the platform loader's <a href="../../loader/api.html#types.Loader">module</a> method.
 				</div>
-				<div class="returns" jsapi:id="returns" jsapi:reference="getApi('../../loader/api.html').getElement('types.Loader/module/returns')">
+				<div class="returns" jsapi:id="returns" jsapi:reference="getApi('../../loader/api.html').getElement('Loader/type/module/returns')">
 					<div class="label">Returns</div>
 					See the platform loader's <a href="../../loader/api.html#types.Loader">module</a> method.
 				</div>
 			</li>
 			<li class="function">
 				<div class="name">value</div>
-				<span jsapi:reference="getApi('../../loader/api.html').getElement('types.Loader/value/description')">
+				<span jsapi:reference="getApi('../../loader/api.html').getElement('Loader/type/value/description')">
 					See the platform loader's <a href="../../loader/api.html#types.Loader.value">value</a> method.
 				</span>
 				<span>
 					Note that the first argument will be interpreted relative to the current page.
 				</span>
-				<div class="arguments" jsapi:reference="getApi('../../loader/api.html').getElement('types.Loader/value/arguments')">
+				<div class="arguments" jsapi:reference="getApi('../../loader/api.html').getElement('Loader/type/value/arguments')">
 					<div class="label">Arguments</div>
 					See the platform loader's <a href="../../loader/api.html#types.Loader.value">value</a> method.
 				</div>
-				<div class="returns" jsapi:id="returns" jsapi:reference="getApi('../../loader/api.html').getElement('types.Loader/value/returns')">
+				<div class="returns" jsapi:id="returns" jsapi:reference="getApi('../../loader/api.html').getElement('Loader/type/value/returns')">
 					<div class="label">Returns</div>
 					See the platform loader's <a href="../../loader/api.html#types.Loader.value">value</a> method.
 				</div>
@@ -194,7 +194,7 @@ END LICENSE
 				<script type="application/x.jsapi#initialize">
 					scope.api = inonit.loader;
 				</script>
-				<div jsapi:reference="getApi('../api.html').getElement('global/Loader/tests')"
+				<div jsapi:reference="getApi('../api.html').getElement('Loader/tests')"
 			</li>
 			<li class="function">
 				<div class="name">namespace</div>
@@ -260,7 +260,10 @@ END LICENSE
 					return $jsapi.loader.module("../" + path, context);
 				}
 			</script>
-			<div jsapi:id="types.Loader" jsapi:reference="getApi('../api.html').getElement('types.Loader/tests')">
+			<script type="application/x.jsapi#initialize">
+				scope.api = inonit.loader;
+			</script>
+			<div jsapi:id="types.Loader" jsapi:reference="getApi('../api.html').getElement('Loader/tests')">
 			</div>
 			<!--
 			<li class="value">

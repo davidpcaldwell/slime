@@ -131,9 +131,9 @@ var Verify = function(scope,vars) {
 
 			var access = (isNumber(x)) ? "[" + x + "]" : "." + x;
 			return (name) ? (name + access) : access;
-		};		
+		};
 	}
-	
+
 	var wrapMethod = function(o,x,name) {
 		if (arguments.length != 3) throw new Error();
 		var prefix = prefixFactory(name);
@@ -166,7 +166,7 @@ var Verify = function(scope,vars) {
 			}
 		});
 	};
-	
+
 	var wrapObject = $api.debug.disableBreakOnExceptionsFor(function(o,name) {
 		for (var x in o) {
 			try {
@@ -186,7 +186,7 @@ var Verify = function(scope,vars) {
 			} catch (e) {
 			}
 		}
-		
+
 		if (o instanceof Array) {
 			wrapProperty.call(this,o,"length",name);
 		}
@@ -273,7 +273,7 @@ var Verify = function(scope,vars) {
 			};
 
 			try {
-				var mapped = f.call(o);
+				var mapped = f.call(o,o);
 				var value = rv(mapped,((name) ? name : "")+"{" + f + "}");
 				value.threw = new DidNotThrow(mapped,"{" + f + "}");
 				return value;
@@ -434,7 +434,7 @@ var TestExecutionProcessor = (function() {
 			return result;
 		}
 	};
-	
+
 	var Scope = function(o) {
 		var success = true;
 
@@ -454,7 +454,7 @@ var TestExecutionProcessor = (function() {
 				}
 			}
 		};
-		
+
 		var process = function(type,detail) {
 			o.events.fire(type,detail);
 			checkForFailure(detail);
@@ -467,7 +467,7 @@ var TestExecutionProcessor = (function() {
 				result = adaptAssertion.result(result);
 				return result;
 			};
-		
+
 			process("test",getResult(assertion));
 		};
 
@@ -495,7 +495,7 @@ var TestExecutionProcessor = (function() {
 			checkForFailure(e.detail);
 		}
 	};
-	
+
 	return Scope;
 })();
 
@@ -522,7 +522,7 @@ $exports.Scenario = {};
 			source: this,
 			parent: (context && context.events) ? context.events : null
 		});
-		
+
 		this.id = (context) ? context.id : null;
 
 		this.name = (function() {
@@ -954,12 +954,12 @@ $exports.View = function(o) {
 				}
 			}
 		};
-		
+
 		this.test = function(e) {
 			if (implementation.test) implementation.test(e.detail);
 		}
 	};
-	
+
 	var addConsoleListener = function(scenario,implementation) {
 		if (typeof(implementation) == "function") {
 			scenario.listeners.add("scenario", implementation);
@@ -974,7 +974,7 @@ $exports.View = function(o) {
 	this.listen = function(scenario) {
 		addConsoleListener(scenario,o);
 	};
-	
+
 	if (typeof(o) == "object") {
 		this.on = new On(o);
 	} else if (typeof(o) == "function") {

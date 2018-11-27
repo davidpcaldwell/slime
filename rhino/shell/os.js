@@ -263,7 +263,7 @@ if ($context.os.name == "Mac OS X") {
 					var directoryExists = function(path) {
 						return $context.api.file.Pathname(path).directory;
 					}
-		
+
 					if (name == "git" || name == "gcc" || name == "clang++") {
 						if (!directoryExists("/Applications/Xcode.app") && !directoryExists("/Library/Developer/CommandLineTools")) {
 							return null;

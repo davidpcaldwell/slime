@@ -1,0 +1,49 @@
+<html>
+	<head>
+		<!--	TODO	../../client.js does not work	-->
+		<script src="../../../../loader/browser/client.js"></script>
+		<script>
+			window.onload = function() {
+				var testing = new inonit.loader.Loader(inonit.loader.base).value("api/ui/loader.js")();
+				var suite = new testing.api.Suite();
+				var pass = new testing.unit.Scenario();
+				pass.test({
+					after: function(verify) {
+						verify(1).is(1);
+					}
+				});
+				var fail = new testing.unit.Scenario();
+				fail.test({
+					after: function(verify) {
+						verify(1).is(1);
+						verify(1).is(2);
+					}
+				});
+				suite.part("1", {
+					parts: {
+						scenario: pass
+					}
+				});
+				suite.part("2", {
+					parts: {
+						scenario: fail
+					}
+				});
+
+				testing.suite(suite);
+
+				var result = testing.unit.run({
+					event: function(e) {
+						console.log(e);
+					},
+					end: function(success) {
+						console.log("success",success);
+					}
+				});
+				console.log("result", result);
+			}
+		</script>
+	</head>
+	<body>
+	</body>
+</html>

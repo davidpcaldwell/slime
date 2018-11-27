@@ -11,47 +11,45 @@
 //	Contributor(s):
 //	END LICENSE
 
-//	TODO	replace the below with $api.Events.Function
-var listening = function(f,defaultOn) {
-	var Listeners = function(p) {
-		var source = {};
-		var events = $api.Events({ source: source });
-
-		this.add = function() {
-			for (var x in p.on) {
-				source.listeners.add(x,p.on[x]);
-			}
-		};
-
-		this.remove = function() {
-			for (var x in p.on) {
-				source.listeners.remove(x,p.on[x]);
-			}
-		};
-
-		this.events = events;
-	};
-
-	return function(p,on) {
-		var listeners = new Listeners({
-			on: $api.Function.evaluator(
-				function() { return on; },
-				function() { return defaultOn; },
-				function() { return {}; }
-			)()
-		});
-		listeners.add();
-		try {
-			return f(p,listeners.events);
-		} finally {
-			listeners.remove();
-		}
-	}
-};
-
+// TODO: Find any remaining uses of this and eliminate them
 $exports.$api = {
 	Events: {
-		Function: listening
+		Function: function(f,defaultOn) {
+			var Listeners = function(p) {
+				var source = {};
+				var events = $api.Events({ source: source });
+
+				this.add = function() {
+					for (var x in p.on) {
+						source.listeners.add(x,p.on[x]);
+					}
+				};
+
+				this.remove = function() {
+					for (var x in p.on) {
+						source.listeners.remove(x,p.on[x]);
+					}
+				};
+
+				this.events = events;
+			};
+
+			return function(p,on) {
+				var listeners = new Listeners({
+					on: $api.Function.evaluator(
+						function() { return on; },
+						function() { return defaultOn; },
+						function() { return {}; }
+					)()
+				});
+				listeners.add();
+				try {
+					return f(p,listeners.events);
+				} finally {
+					listeners.remove();
+				}
+			}
+		}
 	}
 };
 
@@ -107,7 +105,7 @@ var installLocalArchive = function(p,events) {
 	if (!p.format) throw new TypeError("Required: 'format' property.");
 	var algorithm = p.format;
 	var untardir = $context.api.shell.TMPDIR.createTemporary({ directory: true });
-	events.fire("console", { message: "Extracting " + p.file + " to " + untardir });
+	events.fire("console", "Extracting " + p.file + " to " + untardir);
 	algorithm.extract(p.file,untardir);
 	var unzippedDestination = (function() {
 		if (p.getDestinationPath) {
@@ -118,10 +116,10 @@ var installLocalArchive = function(p,events) {
 		//	TODO	list directory and take only option if there is only one and it is a directory?
 		throw new Error("Cannot determine destination path for " + p.file);
 	})();
-	events.fire("console", { message: "Assuming destination directory created was " + unzippedDestination });
+	events.fire("console", "Assuming destination directory created was " + unzippedDestination);
 	var unzippedTo = untardir.getSubdirectory(unzippedDestination);
 	if (!unzippedTo) throw new TypeError("Expected directory " + unzippedDestination + " not found in " + untardir);
-	events.fire("console", { message: "Directory is: " + unzippedTo });
+	events.fire("console", "Directory is: " + unzippedTo);
 	unzippedTo.move(p.to, {
 		overwrite: false,
 		recursive: true
@@ -140,14 +138,14 @@ var get = function(p,events) {
 			if (!pathname.file) {
 				//	TODO	we could check to make sure this URL is http
 				//	Only access url property once because in Apache case it is actually a getter that can return different values
-				events.fire("console", { message: "Downloading from " + find() + " to: " + $context.downloads });
+				events.fire("console", "Downloading from " + find() + " to: " + $context.downloads);
 				var response = client.request({
 					url: find()
 				});
 				pathname.write(response.body.stream, { append: false });
-				events.fire("console", { message: "Wrote to: " + $context.downloads });
+				events.fire("console", "Wrote to: " + $context.downloads);
 			} else {
-				events.fire("console", { message: "Found " + pathname.file + "; using cached version." });
+				events.fire("console", "Found " + pathname.file + "; using cached version.");
 			}
 			p.file = pathname.file;
 		}
@@ -160,7 +158,7 @@ var install = function(p,events) {
 	return installLocalArchive(p,events);
 };
 
-$exports.get = listening(function(p,events) {
+$exports.get = $api.Events.Function(function(p,events) {
 	get(p,events);
 	return p.file;
 });
@@ -173,7 +171,7 @@ if (algorithms.gzip.extract) {
 	$exports.format.gzip = algorithms.gzip;
 }
 
-$exports.install = listening(function(p,events) {
+$exports.install = $api.Events.Function(function(p,events) {
 	return install(p,events);
 });
 

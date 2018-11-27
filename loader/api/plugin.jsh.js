@@ -20,6 +20,7 @@ plugin({
 		});
 		jsh.unit.html = $loader.module("api.html.js", new function() {
 			this.api = new function() {
+				// TODO: Should be able to switch to Object.assign
 				this.assign = jsh.js.Object.set;
 			}
 

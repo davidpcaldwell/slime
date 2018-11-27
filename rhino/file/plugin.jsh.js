@@ -18,9 +18,7 @@ plugin({
 	load: function() {
 		var context = {
 			$slime: {
-				io: {
-					Resource: $slime.io.Resource
-				}
+				Resource: $slime.Resource
 			},
 			$pwd: $slime.getSystemProperty("user.dir"),
 			addFinalizer: jsh.loader.addFinalizer,

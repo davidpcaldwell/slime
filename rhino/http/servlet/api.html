@@ -47,16 +47,16 @@ END LICENSE
 							<td>JavaScript utilities.</td>
 						</tr>
 						<tr>
-							<td><code><a href="../../../js/object/">httpd.js</a></code></td>
+							<td><code><a href="../../../js/object/api.html">httpd.js</a></code></td>
 							<td>The <code>js/object</code> API.</td>
 						</tr>
 						<tr>
-							<td><code><a href="../../../rhino/java/">httpd.java</a></code></td>
+							<td><code><a href="../../../jrunscript/host/api.html">httpd.java</a></code></td>
 							<td>The <code>rhino/java</code> API.</td>
 						</tr>
 						<tr>
-							<td><code><a href="../../../rhino/io/">httpd.io</a></code></td>
-							<td>The <code>rhino/io</code> API.</td>
+							<td><code><a href="../../../jrunscript/io/api.html">httpd.io</a></code></td>
+							<td>The <code>jrunscript/io</code> API.</td>
 						</tr>
 					</tbody>
 				</table>
@@ -207,7 +207,7 @@ END LICENSE
 							</li>
 							<li class="value">
 								<div class="name">stream</div>
-								<span class="type"><a href="../../../rhino/io/api.html#types.binput">byte input stream</a></span>
+								<span class="type"><a href="../../../jrunscript/io/api.html#types.binput">byte input stream</a></span>
 								<span>A stream from which the request body can be read.</span>
 							</li>
 						</ul>
@@ -308,7 +308,7 @@ END LICENSE
 				<p>A response to be sent to a client in response to a request.</p>
 				<p>
 					The content of the body must be specified in some way. Using a resource causes the type and content to be
-					specified; note that using a Java <a href="../../../loader/rhino/api.html#types.resource">resource</a>
+					specified; note that using a Java <a href="../../../loader/jrunscript/api.html#types.resource">resource</a>
 					automatically provides other capabilities (<code>Last-Modified</code> and <code>Content-Length</code>
 					headers).
 				</p>
@@ -346,7 +346,7 @@ END LICENSE
 						</li>
 						<li class="value">
 							<div class="name">stream</div>
-							<span class="type"><a href="../../../rhino/io/api.html#types.binput">binary input stream</a></span>
+							<span class="type"><a href="../../../jrunscript/io/api.html#types.binput">binary input stream</a></span>
 							<span>
 								(optional; ignored if <code>string</code> is present)
 								A stream from which the message body to send to the client may be read.
@@ -407,7 +407,7 @@ END LICENSE
 			<ul>
 				<li class="value">
 					<div class="name">httpd.loader</div>
-					<span class="type"><a href="../../../rhino/io/api.html#types.Loader">Loader</a></span>
+					<span class="type"><a href="../../../jrunscript/io/api.html#types.Loader">Loader</a></span>
 					<span>
 						<span>(conditional: not present if no resources specified when mapping the servlet)</span>
 						Loads code (and potentially other resources) from the servlet resource loader. Note that unlike Java
@@ -471,7 +471,7 @@ END LICENSE
 		</div>
 		<div>
 			<h2>$loader</h2>
-			The <code>$loader</code> object is a <em>servlet-specific</em> <a href="../../../rhino/io/api.html#Loader">Loader</a>
+			The <code>$loader</code> object is a <em>servlet-specific</em> <a href="../../../jrunscript/io/api.html#Loader">Loader</a>
 			that loads resources <em>relative to the servlet's path</em>. The <code>httpd.loader</code> object loads them
 			from the application path. So if a servlet is located at <code>/WEB-INF/myapp/servlet.js</code>, it can load a
 			JavaScript file at <code>/WEB-INF/myapp/code.js</code> via:

@@ -1,0 +1,215 @@
+<!--
+LICENSE
+This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+The Original Code is the jrunscript/io SLIME module.
+
+The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+Portions created by the Initial Developer are Copyright (C) 2010-2013 the Initial Developer. All Rights Reserved.
+
+Contributor(s):
+END LICENSE
+-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
+<head>
+	<title>SLIME Java I/O</title>
+	<link rel="stylesheet" type="text/css" href="../../loader/api/api.css"></link>
+	<script type="text/javascript" src="../../loader/api/api.js"></script>
+</head>
+<body>
+	<div>
+		Much of the content of the <code>jrunscript/io</code> module is provided by the
+		<a href="../../loader/jrunscript/api.html">Java SLIME runtime</a>, which supplies the
+		<code>Resource</code>, and <code>Loader</code> exports, and whose <code>io</code> property supplies the <code>Streams</code>
+		and <code>Buffer</code> exports.
+		<!--	TODO	clean up the linking	-->
+	</div>
+	<div>
+		<h1>Context</h1>
+		<div class="label">has properties:</div>
+		<ul>
+			<li class="value">
+				<div class="name">$rhino</div>
+				<span class="type">__TYPE__</span>
+				<span>__DESCRIPTION__</span>
+			</li>
+			<li class="object">
+				<div class="name">api</div>
+				<span>__DESCRIPTION__</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="value">
+						<div class="name">js</div>
+						<span>A js/object-compatible module.</span>
+					</li>
+					<li class="value">
+						<div class="name">java</div>
+						<span>A jrunscript/host-compatible module.</span>
+					</li>
+				</ul>
+			</li>
+			<li class="value">
+				<div class="name">nojavamail</div>
+				<span class="type">boolean</span>
+				<span>__DESCRIPTION__</span>
+			</li>
+		</ul>
+	</div>
+	<script type="application/x.jsapi#initialize">
+		var context = new function() {
+			var java = $jsapi.loader.module("../../jrunscript/host/", {
+				$rhino: jsh.unit.$slime
+			});
+			if (!java) throw new Error("Not found: jrunscript/host/");
+
+			this.$slime = jsh.unit.$slime;
+
+			this.api = {
+				js:  $jsapi.loader.module("../../js/object/", { globals: true }),
+				java: java
+			};
+		};
+		scope.context = context;
+		scope.module = $jsapi.loader.module("module.js", context);
+		scope.module.io = {};
+		scope.module.io.Buffer = scope.module.Buffer;
+	</script>
+	<div>
+		<h1>Exports</h1>
+		<ul>
+			<li class="object" jsapi:reference="getApi('../../loader/jrunscript/io.api.html').getElement('exports/Streams')">
+			</li>
+			<li class="constructor" jsapi:reference="getApi('../../loader/jrunscript/io.api.html').getElement('exports/Buffer')">
+			</li>
+			<li class="constructor" jsapi:reference="getApi('../../loader/jrunscript/api.html').getElement('Resource')">
+			</li>
+			<li class="constructor" jsapi:reference="getApi('../../loader/jrunscript/api.html').getElement('Loader')">
+			</li>
+			<li class="object">
+				<div class="name">java</div>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="function deprecated">
+						<div class="name">adapt</div>
+						<span>Invokes the <a href="../../loader/jrunscript/io.api.html"><code>Streams.java.adapt()</code></a> function.</span>
+					</li>
+				</ul>
+			</li>
+			<li class="value">
+				<div class="name">mime</div>
+				<span class="type">object</span>
+				<span>See <a href="mime.api.html">detailed documentation</a>.</span>
+			</li>
+			<li class="object">
+				<div class="name">archive</div>
+				<span>
+					An <dfn>archive</dfn> format is a format that can encode a series of resources with paths (like a directory
+					structure) as a single stream, and decode that stream into a series of resources with paths.
+				</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="object">
+						<script type="application/x.jsapi#initialize">
+							scope.readFile = function() {
+								return this.read(String);
+							};
+						</script>
+						<div class="name">zip</div>
+						<span>__DESCRIPTION__</span>
+						<div class="label">has properties:</div>
+						<ul>
+							<li class="function">
+								<div class="name">encode</div>
+								<span>__DESCRIPTION__</span>
+								<div class="arguments">
+									<div class="label">Arguments</div>
+									<ol>
+									</ol>
+								</div>
+								<div class="returns">
+									<div class="label">Returns</div>
+									<span class="type">__TYPE__</span>
+									<span>__DESCRIPTION__</span>
+								</div>
+								<script type="application/x.jsapi#tests">
+									var expanded = jsh.shell.TMPDIR.createTemporary({ directory: true });
+									expanded.getRelativePath("a").write("aa", { append: false });
+									expanded.getRelativePath("b/c").write("cc", { append: false, recursive: true });
+									var zip = jsh.shell.TMPDIR.createTemporary({ suffix: ".zip" }).pathname;
+									zip.file.remove();
+									var unzip = jsh.shell.TMPDIR.createTemporary({ directory: true });
+									module.archive.zip.encode({
+										stream: zip.write(jsh.io.Streams.binary),
+										entries: [
+											{ path: "a", resource: expanded.getFile("a") },
+											{ path: "b/c", resource: expanded.getFile("b/c") }
+										]
+									});
+									module.archive.zip.decode({
+										stream: zip.file.read(jsh.io.Streams.binary),
+										output: {
+											directory: function(p) {
+												unzip.getRelativePath(p.path).createDirectory();
+											},
+											file: function(p) {
+												return unzip.getRelativePath(p.path).write(jsh.io.Streams.binary, { append: false });
+											}
+										}
+									});
+									verify(unzip).getFile("a").evaluate(readFile).is("aa");
+									verify(unzip).getFile("b/c").evaluate(readFile).is("cc");
+								</script>
+							</li>
+							<li class="function">
+								<div class="name">decode</div>
+								<span>__DESCRIPTION__</span>
+								<div class="arguments">
+									<div class="label">Arguments</div>
+									<ol>
+									</ol>
+								</div>
+								<div class="returns">
+									<div class="label">Returns</div>
+									<span class="type">__TYPE__</span>
+									<span>__DESCRIPTION__</span>
+								</div>
+								<script type="application/x.jsapi#tests">
+									var expanded = jsh.shell.TMPDIR.createTemporary({ directory: true });
+									expanded.getRelativePath("a").write("a", { append: false });
+									expanded.getRelativePath("b/c").write("c", { append: false, recursive: true });
+									var zipped = jsh.shell.TMPDIR.createTemporary({ suffix: ".zip" }).pathname;
+									zipped.file.remove();
+									var to = jsh.shell.TMPDIR.createTemporary({ directory: true });
+									var path = jsh.file.Searchpath([jsh.shell.java.home.getRelativePath("bin"),jsh.shell.java.home.parent.getRelativePath("bin")]);
+									jsh.shell.run({
+										command: path.getCommand("jar"),
+										arguments: ["cf", zipped, "a", "b"],
+										directory: expanded
+									});
+									module.archive.zip.decode(
+										{
+											stream: zipped.file.read(jsh.io.Streams.binary),
+											output: {
+												directory: function(p) {
+													to.getRelativePath(p.path).createDirectory();
+												},
+												file: function(p) {
+													return to.getRelativePath(p.path).write(jsh.io.Streams.binary, { append: false });
+												}
+											}
+										}
+									);
+									verify(to).getFile("a").is.type("object");
+									verify(to).getFile("aa").is.type("null");
+								</script>
+							</li>
+						</ul>
+					</li>
+				</ul>
+			</li>
+		</ul>
+	</div>
+</body>
+</html>

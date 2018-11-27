@@ -68,6 +68,19 @@ END LICENSE
 			for (var i=0; i<parameters.module.length; i++) {
 				parameters.module[i] = unescape(parameters.module[i]);
 			}
+			if (!window.inonit) window.inonit = {};
+			if (!inonit.loader) inonit.loader = {};
+			if (!inonit.loader.$slime) inonit.loader.$slime = {};
+			if (!inonit.loader.$slime.flags) inonit.loader.$slime.flags = {};
+			var flagPattern = /^SLIME_(.*)$/;
+			for (var x in parameters) {
+				var match = flagPattern.exec(x);
+				if (match) {
+					var name = match[1];
+					var value = parameters[x];
+					inonit.loader.$slime.flags[name] = value;
+				}
+			}
 		}
 	</script>
 	<script type="text/javascript">
@@ -86,16 +99,14 @@ END LICENSE
 				this(this.buffer[i]);
 			}
 		}
-		var inonit = {
-			loader: {
-				debug: debug,
-				modes: {
-					module: (parameters) ? parameters["modes.module"] : null,
-					execute: (parameters) ? parameters["modes.execute"] : null
-				},
-				url: (parameters && parameters.platform) ? parameters.platform : "../../../loader/"
-			}
+		if (!window.inonit) window.inonit = {};
+		if (!inonit.loader) inonit.loader = {};
+		inonit.loader.debug = debug;
+		inonit.loader.modes = {
+			module: (parameters) ? parameters["modes.module"] : null,
+			execute: (parameters) ? parameters["modes.execute"] : null			
 		};
+		inonit.loader.url = (parameters && parameters.platform) ? parameters.platform : "../../../loader/";
 		var log = debug;
 	</script>
 	<script type="text/javascript">

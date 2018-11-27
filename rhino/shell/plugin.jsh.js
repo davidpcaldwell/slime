@@ -40,9 +40,9 @@ plugin({
 			,file: jsh.file
 		}
 		context.stdio = new function() {
-			this.input = jsh.io.java.adapt($slime.getStdio().getStandardInput());
-			this.output = jsh.io.java.adapt($slime.getStdio().getStandardOutput());
-			this.error = jsh.io.java.adapt($slime.getStdio().getStandardError());
+			this.input = jsh.io.Streams.java.adapt($slime.getStdio().getStandardInput());
+			this.output = jsh.io.Streams.java.adapt($slime.getStdio().getStandardOutput());
+			this.error = jsh.io.Streams.java.adapt($slime.getStdio().getStandardError());
 		}
 		//	TODO	properties methods should go away; should not be necessary now
 		context.getSystemProperty = function(name) {
@@ -100,11 +100,11 @@ plugin({
 
 			//	TODO	probably want to build these arguments better so that other jsh.shell.jsh arguments like stdio and
 			//			environment can also be used and still work
-			
+
 			var evaluate = function(result) {
 				jsh.shell.exit(result.status);
 			};
-			
+
 			if (isRhino) {
 				jsh.shell.jsh({
 					script: jsh.script.file,

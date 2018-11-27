@@ -34,14 +34,14 @@ $set(function(module) {
 			}
 		}
 	};
-	
+
 	module.Repository = (function(was) {
 		return function() {
 			was.apply(this,arguments);
 			Repository.apply(this,arguments);
 		}
 	})(module.Repository);
-	
+
 	module.init = (function(was) {
 		return function() {
 			var rv = was.apply(this,arguments);

@@ -81,19 +81,11 @@ public class Shell {
 		this.classpath = classpath;
 	}
 
-	public Code.Loader getPlatformLoader() {
-		return configuration.getInstallation().getPlatformLoader();
-	}
-
 	public Code.Loader getJshLoader() {
 		return configuration.getInstallation().getJshLoader();
 	}
 
-	//	TODO	Simplify handling of CoffeeScript by collapsing the next three methods and their invocations
-	
-	public Code.Loader getLibraries() {
-		return configuration.getInstallation().getLibraries();
-	}
+	//	TODO	Simplify handling of CoffeeScript by collapsing the next two methods and their invocations
 
 	//	TODO	Used in jsh.js to retrieve CoffeeScript
 	public Code.Loader.Resource getLibrary(String path) {
@@ -104,16 +96,23 @@ public class Shell {
 			throw new RuntimeException(e);
 		}
 	}
+	
+	//	TODO	this is necessary still because of the fact that Code.Loader-based .jar files do not correctly implement
+	//			java.util.ServiceLoader, so JAR files must be added to the classpath using a special API, so they must be added
+	//			as java.io.File objects.
+	public File getLibraryFile(String path) {
+		return configuration.getInstallation().getLibraryFile(path);
+	}
 
 	//	TODO	push back out into invoking code; appears to be used only by jsh/loader/nashorn.js
 	public String getCoffeeScript() throws IOException {
-		Code.Loader.Resource _file = getLibraries().getFile("coffee-script.js");
+		Code.Loader.Resource _file = configuration.getInstallation().getLibraries().getFile("coffee-script.js");
 		if (_file == null) return null;
 		return streams.readString(_file.getReader());
 	}
 
 	public String getLoaderCode(String path) throws IOException {
-		return streams.readString(getPlatformLoader().getFile(path).getReader());
+		return streams.readString(configuration.getInstallation().getPlatformLoader().getFile(path).getReader());
 	};
 
 	private Streams streams = new Streams();
@@ -218,6 +217,7 @@ public class Shell {
 		public abstract Code.Loader getPlatformLoader();
 		public abstract Code.Loader getJshLoader();
 		public abstract Code.Loader getLibraries();
+		public abstract File getLibraryFile(String file);
 		public abstract Code.Loader[] getExtensions();
 	}
 
@@ -344,7 +344,7 @@ public class Shell {
 		Interface(Installation installation, Loader.Classes.Interface classpath) {
 			this.installation = installation;
 		}
-		
+
 		//	TODO	probably needs a better name
 		public Code.Loader[] getPluginSources() {
 			return installation.getExtensions();

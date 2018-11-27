@@ -12,5 +12,5 @@
 //	END LICENSE
 
 var BASE = jsh.script.file.parent.parent.parent.parent.parent;
-var HOST = BASE.getRelativePath("rhino/host/");
+var HOST = BASE.getRelativePath("jrunscript/host/");
 jsh.shell.echo("BASE = " + BASE + " HOST = " + HOST);
