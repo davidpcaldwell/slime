@@ -86,7 +86,6 @@ plugin({
 			$api.deprecate(jsh.tools.install,"rhino");
 		})();
 
-
 		var tomcat = $loader.file("plugin.jsh.tomcat.js", {
 			$api: jsh.tools.install.$api
 		});
@@ -108,7 +107,7 @@ plugin({
 
 			this.install = $api.Events.Function(function(p,events) {
 				if (!p) p = {};
-				if (!p.version) p.version = "0.8.1";
+				if (!p.version) p.version = "0.8.3";
 				if (p.replace) {
 					if (jsh.shell.jsh.lib.getSubdirectory("ncdbg")) {
 						jsh.shell.jsh.lib.getSubdirectory("ncdbg").remove();
@@ -121,7 +120,10 @@ plugin({
 					}
 				}
 				events.fire("console", { message: "Installing ncdbg ..." });
-				if (p.version == "0.8.0" || p.version == "0.8.1") {
+				var isReleasedVersion = ["0.8.0","0.8.1","0.8.2","0.8.3"].some(function(version) {
+					return p.version == version;
+				});
+				if (isReleasedVersion) {
 					jsh.tools.install.install({
 						url: "https://github.com/provegard/ncdbg/releases/download/" + p.version + "/ncdbg-" + p.version + ".zip",
 						format: jsh.tools.install.format.zip,

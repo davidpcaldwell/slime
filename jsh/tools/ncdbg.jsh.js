@@ -126,7 +126,7 @@ var startNcdbg = function() {
 		Packages.java.lang.Thread.sleep(parameters.options["ncdbg:pause"]);
 		var args = [];
 		//	TODO	this is obviously ludicrous; need a first-class way to determine version
-		if (jsh.shell.jsh.lib.getFile("ncdbg/lib/ncdbg-0.8.1.jar")) {
+		if (jsh.shell.jsh.lib.getFile("ncdbg/lib/ncdbg-0.8.1.jar") || jsh.shell.jsh.lib.getFile("ncdbg/lib/ncdbg-0.8.2.jar") || jsh.shell.jsh.lib.getFile("ncdbg/lib/ncdbg-0.8.3.jar")) {
 			args.push("--lazy");
 		}
 		var JAVA_HOME = jsh.shell.java.home.parent;
