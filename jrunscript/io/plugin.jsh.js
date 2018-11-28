@@ -36,8 +36,7 @@ plugin({
 				io: $slime.io,
 				mime: $slime.mime,
 				Loader: $slime.Loader,
-				Resource: $slime.Resource,
-				getLibraryFile: $slime.getLibraryFile
+				Resource: $slime.Resource
 			},
 			api: {
 				js: jsh.js,

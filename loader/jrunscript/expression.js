@@ -610,7 +610,14 @@
 				}
 			} else if (p.jar) {
 				if (p.jar._file) {
-					_classpath.addJar(p.jar._file);
+					if (Packages.java.lang.System.getenv("SLIME_JAVA_SERVICELOADER_WORKS")) {
+						_classpath.add(Packages.inonit.script.engine.Code.Loader.zip(
+							Packages.inonit.script.engine.Code.Loader.Resource.create(p.jar._file)
+						));
+//						_classpath.add(Packages.inonit.script.engine.Code.Loader.create(p.jar._file));						
+					} else {
+						_classpath.addJar(p.jar._file);
+					}
 				} else if (p.jar.resource) {
 					_classpath.add(Packages.inonit.script.engine.Code.Loader.zip(p.jar.resource.java.adapt(p.jar.resource.name)));
 				} else {
