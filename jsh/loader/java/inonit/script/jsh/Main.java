@@ -532,6 +532,11 @@ public class Main {
 		for (int i=0; i<args.length; i++) {
 			LOG.log(Level.INFO, "Argument " + i + " is: " + args[i]);
 		}
-		engine.cli(args);
+		try {
+			engine.cli(args);
+		} catch (Throwable t) {
+			t.printStackTrace();
+			System.exit(255);
+		}
 	}
 }
