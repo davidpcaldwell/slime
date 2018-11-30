@@ -146,11 +146,6 @@ public class Nashorn extends Main.Engine {
 	}
 
 	public static void main(final String[] args) throws Shell.Invocation.CheckedException {
-		try {
-			Main.cli(new Nashorn(), args);
-		} catch (Throwable t) {
-			t.printStackTrace();
-			System.exit(255);
-		}
+		Main.cli(new Nashorn(), args);
 	}
 }
