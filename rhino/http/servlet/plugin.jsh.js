@@ -99,7 +99,6 @@ plugin({
 
 			if (servlet.load) {
 				return returning({
-					$loader: servlet.$loader,
 					load: servlet.load
 				});
 //			} else if (servlet.$loader && servlet.path) {

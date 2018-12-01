@@ -531,8 +531,14 @@ END LICENSE
 	<div>
 		<h1><a id="deployment">Deployment</a></h1>
 		<div>
-			SLIME servlets may be built into ordinary Java web applications using the <code>webapp.jsh.js</code> tool included with
-			SLIME in the <code>rhino/http/servlet/tools</code> directory.
+			SLIME servlets may be built into ordinary Java web applications, via either the <code>jsh.httpd.tools</code> API or
+			via the <code>rhino/http/servlet/tools/webapp.jsh.js</code> script.
+		</div>
+		<div>
+			See the documentation for <a href="tools/plugin.jsh.api.html">jsh.httpd.tools</a> for how to use the API to build
+			a standard Java webapp.
+		</div>
+		<div>
 			The <code>webapp.jsh.js</code> script is a <code>jsh</code> script, and takes the following command-line arguments:
 			<ul>
 				<li>
