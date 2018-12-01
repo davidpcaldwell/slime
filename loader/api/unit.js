@@ -20,6 +20,10 @@ var defineProperty = (function() { return this.Object.defineProperty; })();
 var Verify = function(scope,vars) {
 	var Value = function(v,name) {
 		var prefix = (name) ? (name + " ") : "";
+		
+		this.toString = function() {
+			return "Verify(" + v + ")";
+		}
 
 		if (typeof(v) != "object" || !v) {
 			this.name = name;

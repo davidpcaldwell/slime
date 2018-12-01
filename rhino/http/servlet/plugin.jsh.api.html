@@ -191,6 +191,46 @@ END LICENSE
 		</div>
 
 		<ul>
+			<li class="object">
+				<div class="name">nugget</div>
+				<span>Re-usable methods exported by this module which may be helpful in unrelated code.</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="function">
+						<div class="name">getMimeType</div>
+						<span>
+							Attempts to determine the MIME type of a file object. Current implementation uses both the Java
+							<code>jrunscript/io mime.Type.guess</code> method and the <code>jrunscript/io mime.Type.fromName</code>
+							method.
+						</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="value">
+									<span class="type">file</span>
+									<span>A file object.</span>
+								</li>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">mime.Type</span>
+							<span>A MIME type guessed for the file, or <code>undefined</code> if no type could be guessed.</span>
+						</div>
+					</li>
+					<script type="application/x.jsapi#tests">
+						var type = jsh.httpd.nugget.getMimeType($jsapi.loader.getRelativePath("api.js").file);
+						verify(type).getMedia().is("application");
+						verify(type).getSubtype().is("javascript");
+						
+						(function html() {
+							var type = jsh.httpd.nugget.getMimeType($jsapi.loader.getRelativePath("api.html").file);
+							verify(type).getMedia().is("text");
+							verify(type).getSubtype().is("html");							
+						})();
+					</script>
+				</ul>
+			</li>
 			<li class="constructor">
 				<div class="name">Resources</div>
 				See <a href="plugin.jsh.resources.api.html">detailed documentation</a>.
