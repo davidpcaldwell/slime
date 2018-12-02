@@ -11,6 +11,26 @@
 //	Contributor(s):
 //	END LICENSE
 
+// TODO: Remove or document (probably by renaming file) dependency on jsh
+
+var webviewDecorated = function(was) {
+	return function(request) {
+		if (request.path == "webview.initialize.js") {
+			var code = $loader.get("webview.initialize.js").read(String);
+			return {
+				status: {
+					code: 200
+				},
+				body: {
+					type: "text/javascript",
+					string: code
+				}
+			}
+		}
+		return was.apply(this,arguments);
+	}	
+};
+
 var Server = function(p) {
 	var server = new jsh.httpd.Tomcat({
 		port: (p.port) ? p.port : void(0)
@@ -24,23 +44,7 @@ var Server = function(p) {
 				load: function(scope) {
 					scope.$loader = servlet.$loader;
 					servlet.load.apply(this,arguments);
-					scope.$exports.handle = (function(declared) {
-						return function(request) {
-							if (request.path == "webview.initialize.js") {
-								var code = $loader.get("webview.initialize.js").read(String);
-								return {
-									status: {
-										code: 200
-									},
-									body: {
-										type: "text/javascript",
-										string: code
-									}
-								}
-							}
-							return declared.apply(this,arguments);
-						}
-					})(scope.$exports.handle);
+					scope.$exports.handle = webviewDecorated(scope.$exports.handle);
 				}
 			}
 		},
