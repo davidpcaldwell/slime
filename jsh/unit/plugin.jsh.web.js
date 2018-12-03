@@ -40,8 +40,12 @@ $set({
 									Packages.java.lang.System.err.println("Request: " + request.method + " " + request.headers.value("host") + " " + request.path);
 								}
 								for (var i=0; i<handlers.length; i++) {
-									var rv = handlers[i](request);
-									if (typeof(rv) != "undefined") return rv;
+									try {
+										var rv = handlers[i](request);
+										if (typeof(rv) != "undefined") return rv;
+									} catch (e) {
+										//	if a handler throws an exception, just ignore it
+									}
 								}
 								//	TODO	convert to appropriate 4xx or 5xx response (have not decided)
 								throw new Error("Unhandled: request: host=" + request.headers.value("host") + " path = " + request.path);
