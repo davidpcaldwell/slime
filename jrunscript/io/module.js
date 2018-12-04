@@ -25,7 +25,8 @@ $exports.java = {
 $exports.mime = $loader.file("mime.js", {
 	nojavamail: $context.nojavamail,
 	$slime: {
-		mime: $context.$slime.mime
+		mime: $context.$slime.mime,
+		Resource: $context.$slime.Resource
 	},
 	api: {
 		java: $context.api.java,

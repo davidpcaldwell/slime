@@ -109,7 +109,13 @@ $exports.Multipart = function(p) {
 		writer.write(CRLF);
 		writer.write("--" + BOUNDARY + "--" + CRLF);
 		writer.close();
-		return new buffer.readBinary().Resource(new $context.$slime.mime.Type("multipart", subtype, { boundary: BOUNDARY }));
+		var stream = buffer.readBinary();
+		return new $context.$slime.Resource({
+			stream: {
+				binary: stream
+			},
+			type: new $context.$slime.mime.Type("multipart", subtype, { boundary: BOUNDARY })
+		});
 	} else {
 		var subtype = p.subtype;
 		var parts = p.parts;
