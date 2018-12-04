@@ -116,7 +116,11 @@ var Request = function(_request) {
 			}
 			this.parts = multipartParser(_request,this);
 		} else {
-			this.stream = $context.api.io.java.adapt(_request.getInputStream());
+			this.stream = $context.api.io.Streams.java.adapt(_request.getInputStream());
+		}
+		
+		this.form = function() {
+			return new $context.api.web.Form({ urlencoded: this.stream.character().asString() });
 		}
 	}
 	log.FINE("Created request body.");
