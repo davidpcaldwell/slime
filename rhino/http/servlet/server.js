@@ -38,6 +38,7 @@ var Request = function(_request) {
 		this.query = new function() {
 			this.string = String(_query);
 
+			// TODO: how to migrate this to be Form object?
 			this.form = function() {
 				return new $context.api.web.Form({ urlencoded: this.string }).controls;
 			}
