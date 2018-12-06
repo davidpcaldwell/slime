@@ -36,10 +36,23 @@ var Request = function(_request) {
 	var _query = _request.getQueryString();
 	if (_query) {
 		this.query = new function() {
-			this.string = String(_query);
+			var string = String(_query);
+			this.string = string;
 
 			this.form = function() {
-				return new $context.api.web.Form({ urlencoded: this.string }).controls;
+				//	Temporarily use argument to help with transitional period from list of controls to full form object
+				if (arguments[0] == Object) {
+					return new $context.api.web.Form({ urlencoded: this.string });
+				} else if (arguments[0] == Array) {
+					return $api.deprecate(function() {
+						return new $context.api.web.Form({ urlencoded: string }).controls;											
+					})();
+				} else {
+					//	may need transitional period in which this throws Error
+					return $api.deprecate(function() {
+						return new $context.api.web.Form({ urlencoded: string }).controls;						
+					})();
+				}
 			}
 		}
 

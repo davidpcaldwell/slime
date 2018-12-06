@@ -101,6 +101,8 @@ var bootstrap = (function() {
 		});
 		var web = loader.module("WEB-INF/slime/js/web/", loader.file("WEB-INF/slime/js/web/context.java.js"));
 		rv.js.web = web;
+		// TODO: Deprecate rv.js.web, after figuring out how to access $api; is it loader.$api? Available only in servlet
+		// implementation
 		rv.web = web;
 		rv.loader = {
 			paths: function(prefix) {
