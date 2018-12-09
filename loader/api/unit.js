@@ -504,12 +504,6 @@ var TestExecutionProcessor = (function() {
 })();
 
 $exports.TestExecutionProcessor = TestExecutionProcessor;
-if (false) {
-	$exports.Scope = TestExecutionProcessor;
-	$api;deprecate($exports,"Scope");
-}
-
-$exports.Scenario = {};
 
 (function() {
 	var copy = function(o) {
@@ -915,12 +909,10 @@ $exports.Scenario = {};
 
 		this.scenario = $api.deprecate(function(id,p) {
 			addPart(id,p);
-//			addPart(id,Scenario,p,{ id: id, events: events });
 		});
 
 		this.suite = $api.deprecate(function(id,p) {
 			addPart(id,p);
-//			addPart(id,Suite,p,{ id: id, events: events });
 		});
 
 		part.create();

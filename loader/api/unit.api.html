@@ -553,6 +553,26 @@ END LICENSE
 				</ul>
 			</div>
 			<ul>
+				<!-- TODO: Verify -->
+				<!-- TODO: TextExecutionProcessor -->
+				<li class="constructor">
+					<div class="name">Scenario</div>
+					<span>A single <code>Scenario</code> can also be run under some circumstances.</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+							<li class="value">
+								<span class="type"><a href="#types.Scenario.definition">Scenario.definition</a></span>
+								<span>__DESCRIPTION__</span>
+							</li>
+						</ol>
+					</div>
+					<div class="instances">
+						<div class="label">Instances</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</div>
+				</li>
 				<li class="constructor">
 					<div class="name">Suite</div>
 					<span>__DESCRIPTION__</span>
@@ -571,16 +591,13 @@ END LICENSE
 						<span>__DESCRIPTION__</span>
 					</div>
 				</li>
-				<li class="constructor">
-					<div class="name">Scenario</div>
-					<span>A single <code>Scenario</code> can also be run under some circumstances.</span>
+				<!-- TODO: getStructure -->
+				<li class="constructor experimental">
+					<div class="name">View</div>
+					<span>__DESCRIPTION__</span>
 					<div class="arguments">
 						<div class="label">Arguments</div>
 						<ol>
-							<li class="value">
-								<span class="type"><a href="#types.Scenario.definition">Scenario.definition</a></span>
-								<span>__DESCRIPTION__</span>
-							</li>
 						</ol>
 					</div>
 					<div class="instances">
@@ -588,6 +605,41 @@ END LICENSE
 						<span class="type">__TYPE__</span>
 						<span>__DESCRIPTION__</span>
 					</div>
+				</li>
+				<li class="object">
+					<div class="name">JSON</div>
+					<span>__DESCRIPTION__</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="constructor">
+							<div class="name">Encoder</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+								</ol>
+							</div>
+							<div class="instances">
+								<div class="label">Instances</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</div>
+						</li>
+						<li class="constructor">
+							<div class="name">Decoder</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+								</ol>
+							</div>
+							<div class="instances">
+								<div class="label">Instances</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</div>
+						</li>
+					</ul>
 				</li>
 			</ul>
 			<script type="application/x.jsapi#tests">
@@ -663,6 +715,7 @@ END LICENSE
 				top.run();
 				verify(starts).length.is(2);
 			</script>
+			
 		</div>
 	</body>
 </html>
