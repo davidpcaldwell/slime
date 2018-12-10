@@ -610,6 +610,30 @@ $exports.fire = new function() {
 		var v = new KeyEvent("keyup",true,true);
 		v.set(p);
 		element.dispatchEvent(v.create());		
+	};
+	
+	this.focus = function(element,p) {
+		if (element.disabled) debugger;
+		// TODO: no support for Internet Explorer here
+		element.dispatchEvent(new FocusEvent("focus", p));
+	}
+	
+	this.blur = function(element,p) {
+		if (element.disabled) debugger;
+		// TODO: no support for Internet Explorer here
+		element.dispatchEvent(new FocusEvent("blur", p));
+	}
+	
+	this.focusin = function(element,p) {
+		if (element.disabled) debugger;
+		// TODO: no support for Internet Explorer here
+		element.dispatchEvent(new FocusEvent("focusin", p));
+	}
+	
+	this.focusout = function(element,p) {
+		if (element.disabled) debugger;
+		// TODO: no support for Internet Explorer here
+		element.dispatchEvent(new FocusEvent("focusout", p));
 	}
 };
 
