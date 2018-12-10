@@ -604,6 +604,13 @@ $exports.fire = new function() {
 		v.set(p);
 		element.dispatchEvent(v.create());
 	};
+	
+	this.keyup = function(element,p) {
+		if (element.disabled) debugger;
+		var v = new KeyEvent("keyup",true,true);
+		v.set(p);
+		element.dispatchEvent(v.create());		
+	}
 };
 
 //	currently undocumented
