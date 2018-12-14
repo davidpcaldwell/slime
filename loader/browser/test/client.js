@@ -164,69 +164,6 @@ window.callbacks.push(function() {
 			})();
 
 			(function() {
-				var Scope = function(base) {
-					var self = this;
-					var Self = arguments.callee;
-
-					//	TODO	obsolete?
-					this.top = "";
-
-					this.$relative = function(getRelativePath) {
-						//	TODO	since this ignores getRelativePath, it almost certainly does not work
-						return new Self(base + this.top);
-					};
-
-					this.$jsapi = new function() {
-						this.api = {
-							browser: browser,
-							unit: jsapi
-						};
-
-						this.loader = new function() {
-							this.module = function(path,context) {
-								//	TODO	probable bug here; probably works when module path ends in /, but for module path
-								//			that has a terminal file name, probably needs to strip that file name to find the
-								//			base from which to load the module at 'path'
-								return inonit.loader.module(
-									inonit.loader.nugget.page.relative(base+path),
-									context
-								);
-							};
-							this.file = function(path,context) {
-								return inonit.loader.file(
-									inonit.loader.nugget.page.relative(base+path),
-									context
-								);
-							};
-							this.run = function(path,scope,target) {
-								return inonit.loader.run(
-									inonit.loader.nugget.page.relative(base+path),
-									scope,
-									target
-								);
-							}
-							//	TODO	can the below eval and string be replaced by a form of loader.get() or something?
-							this.eval = function(path,scope) {
-								if (!scope) scope = {};
-								with(scope) {
-									return eval(inonit.loader.Loader.getCode(base + self.top + path));
-								}
-							};
-							this.string = function(path) {
-								return inonit.loader.Loader.getCode(base + self.top + path);
-							};
-							this.coffee = window.CoffeeScript;
-
-							//	TODO	add this.scenario; see jsh/unit/jsapi.js
-						};
-
-						this.environment = {};
-					};
-
-					this.$platform = inonit.loader.$sdk.platform;
-					this.$api = inonit.loader.$sdk.api;
-				}
-
 				var extracted = inonit.loader.loader.file("api.js", {
 					api: {
 						browser: browser,
