@@ -15,8 +15,6 @@ var log = ($context.log) ? $context.log : function(){};
 //	We have an object called Object in this file, so this
 var defineProperty = (function() { return this.Object.defineProperty; })();
 
-//	TODO	it appears that $context.asynchronous is unused
-
 var Verify = function(scope,vars) {
 	var Value = function(v,name) {
 		var prefix = (name) ? (name + " ") : "";

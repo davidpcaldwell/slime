@@ -155,7 +155,9 @@ var Scope = function(base) {
 	this.$jsapi = new function() {
 		// TODO: are these needed? and if so, what are they?
 		this.api = {
+			//	loader/browser/test/module.js
 			browser: $context.api.browser,
+			//	loader/api/unit.js
 			unit: $context.api.jsapi
 		};
 

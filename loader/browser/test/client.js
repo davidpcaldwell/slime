@@ -50,14 +50,6 @@ window.callbacks.push(function() {
 						return constant;
 					};
 				})(window.Promise)
-			},
-			asynchronous: {
-				scenario: function(next) {
-					window.setTimeout(next,1);
-				}
-				,test: function(next) {
-					window.setTimeout(next,1);
-				}
 			}
 		});
 		var browser = inonit.loader.loader.module("module.js", {
