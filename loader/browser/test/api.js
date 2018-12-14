@@ -1,3 +1,7 @@
+// TODO: The "loader/api DOM," as it is termed here, is undocumented, and should be documented, at least at the contributor level.
+// it is essentially an adapter layer that translates both browser DOMs and other document formats into a common representation
+// for processing by the test execution framework
+
 var getLoaderApiDom = function(location) {
 	var DOM = function(base,root) {
 		var getCode = function(e) {

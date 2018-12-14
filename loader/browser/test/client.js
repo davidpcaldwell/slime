@@ -144,7 +144,7 @@ window.callbacks.push(function() {
 					};
 				}
 			})();
-			var documentation = (function() {
+			var definition = (function() {
 				if (!location.main) return location.base + "api.html";
 				var jsName = /(.*)\.js$/.exec(location.main);
 				if (jsName) {
@@ -164,7 +164,7 @@ window.callbacks.push(function() {
 				});
 				var getLoaderApiDom = extracted.getLoaderApiDom;
 
-				var loaderApiDom = getLoaderApiDom(documentation);
+				var loaderApiDom = getLoaderApiDom(definition);
 				var apiHtml = new apiHtmlScript.ApiHtmlTests(loaderApiDom,module);
 				var base = (function() {
 					var tokens = module.split("/");
