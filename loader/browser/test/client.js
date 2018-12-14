@@ -221,29 +221,19 @@ window.callbacks.push(function() {
 						};
 
 						this.environment = {};
-						for (var x in parameters) {
-							var pattern = /^environment\.(.*)/;
-							var match = pattern.exec(x);;
-							if (match) {
-								var tokens = match[1].split(".");
-								var target = this.environment;
-								for (var i=0; i<tokens.length; i++) {
-									if (i < tokens.length-1) {
-										target[tokens[i]] = {};
-										target = target[tokens[i]];
-									} else {
-										target[tokens[i]] = parameters[x];
-									}
-								}
-							}
-						}
 					};
 
 					this.$platform = inonit.loader.$sdk.platform;
 					this.$api = inonit.loader.$sdk.api;
 				}
 
-				var getLoaderApiDom = inonit.loader.loader.value("getLoaderApiDom.js");
+				var extracted = inonit.loader.loader.file("api.js", {
+					api: {
+						browser: browser,
+						jsapi: jsapi
+					}
+				});
+				var getLoaderApiDom = extracted.getLoaderApiDom;
 
 				var loaderApiDom = getLoaderApiDom(documentation);
 				var apiHtml = new apiHtmlScript.ApiHtmlTests(loaderApiDom,module);
@@ -252,7 +242,23 @@ window.callbacks.push(function() {
 					if (tokens[tokens.length-1].length == 0) return tokens.join("/");
 					return tokens.slice(0,tokens.length-1).join("/") + "/";
 				})();
-				var scope = new Scope(base);
+				var scope = new extracted.Scope(base);
+				for (var x in parameters) {
+					var pattern = /^environment\.(.*)/;
+					var match = pattern.exec(x);;
+					if (match) {
+						var tokens = match[1].split(".");
+						var target = scope.$jsapi.environment;
+						for (var i=0; i<tokens.length; i++) {
+							if (i < tokens.length-1) {
+								target[tokens[i]] = {};
+								target = target[tokens[i]];
+							} else {
+								target[tokens[i]] = parameters[x];
+							}
+						}
+					}
+				}
 				scope.top = (function() {
 					//	TODO	it could be that this jsapi:top capability is obsolete, and therefore the $dom member
 					//			of DOM is obsolete; possibly this was used before relative paths were used to find
