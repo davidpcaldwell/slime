@@ -6,7 +6,5 @@ window.addEventListener("load", function() {
 			apiHtmlScript: loader.file("api/api.html.js")
 		}
 	});
-	var suite = new api.Suite();
-	suite.part("$api", api.getPartDescriptor("../../../../loader/$api.api.html",{},void(0)));
-	api.suite(suite);
+	api.suite.part("$api", api.getPartDescriptor("../../../../loader/$api.api.html",{},void(0)));
 });

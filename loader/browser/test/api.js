@@ -249,5 +249,9 @@ var getPartDescriptor = function(definition,environment,path) {
 };
 
 $exports.getPartDescriptor = getPartDescriptor;
-$exports.Suite = api.ui.api.Suite;
-$exports.suite = api.ui.suite;
+
+if (!$context.old) {
+	var suite = new api.ui.api.Suite();
+	api.ui.suite(suite);
+	$exports.suite = suite;
+}

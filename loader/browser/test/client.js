@@ -126,7 +126,8 @@ window.callbacks.push(function() {
 					api: jsapi
 				},
 				apiHtmlScript: apiHtmlScript
-			}
+			},
+			old: true
 		});
 		for (var i=0; i<parameters.module.length; i++) {
 			var part = (function() {
