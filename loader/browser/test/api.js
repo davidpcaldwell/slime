@@ -2,6 +2,27 @@
 // it is essentially an adapter layer that translates both browser DOMs and other document formats into a common representation
 // for processing by the test execution framework
 
+var api = new function() {
+	var loader;
+	
+	var getLoader = function() {
+		if (!loader) {
+			loader = new inonit.loader.Loader(inonit.loader.base);
+		}
+		return loader;
+	};
+	
+	this.ui = (function() {
+		if ($context.api.ui) return $context.api.ui;
+		return getLoader().value("api/ui/loader.js")();
+	})();
+	
+	this.apiHtmlScript = (function() {
+		if ($context.api.apiHtmlScript) return $context.api.apiHtmlScript;
+		return getLoader().file("api/api.html.js");
+	})();
+};
+
 var DOM = function(base,root) {
 	var getCode = function(e) {
 		var rv = "";
@@ -146,7 +167,7 @@ var getLoaderApiDom = function(location) {
 
 var getApiHtmlTests = function(definitionLocation) {
 	var loaderApiDom = getLoaderApiDom(definitionLocation);
-	return new $context.api.apiHtmlScript.ApiHtmlTests(loaderApiDom,definitionLocation);
+	return new api.apiHtmlScript.ApiHtmlTests(loaderApiDom,definitionLocation);
 };
 
 var Scope = function(definition,environment) {
@@ -169,9 +190,9 @@ var Scope = function(definition,environment) {
 		// TODO: are these needed? and if so, what are they?
 		this.api = {
 			//	loader/browser/test/module.js
-			browser: $context.api.ui.unit,
+			browser: api.ui.unit,
 			//	loader/api/unit.js
-			unit: $context.api.ui.api
+			unit: api.ui.api
 		};
 
 		this.loader = new function() {
@@ -228,5 +249,5 @@ var getPartDescriptor = function(definition,environment,path) {
 };
 
 $exports.getPartDescriptor = getPartDescriptor;
-$exports.Suite = $context.api.ui.api.Suite;
-$exports.suite = $context.api.ui.suite;
+$exports.Suite = api.ui.api.Suite;
+$exports.suite = api.ui.suite;
