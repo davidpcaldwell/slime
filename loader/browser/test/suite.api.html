@@ -13,19 +13,20 @@ END LICENSE
 --><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
 <head>
-	<title>__TITLE__</title>
+	<title>Test Suite Runner</title>
+	<!-- TODO: is the api.css and api.js stuff necessary now? -->
 	<!--	TODO	change these to use local copies of these files at the appropriate location	-->
 	<!--
 		These files are specified using http: rather than https: because githack.com will redirect them to https:, but http: will
 		work when using an HTTP proxy to serve local copies of the files without needing to run https: locally
 	-->
-	<link href="../../../../loader/api/api.css" rel="stylesheet" type="text/css" />
-	<script src="../../../..//loader/api/api.js"></script>
+	<link href="../../../loader/api/api.css" rel="stylesheet" type="text/css" />
+	<script src="../../../loader/api/api.js"></script>
 	<script>
 		//	TODO	CORS
 		document.domain = document.domain;
 	</script>
-	<script src="../../../../loader/browser/client.js"></script>
+	<script src="../../../loader/browser/client.js"></script>
 	<script src="suite.js"></script>
 </head>
 <body>
