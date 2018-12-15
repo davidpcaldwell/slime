@@ -120,38 +120,43 @@ window.callbacks.push(function() {
 
 		var scenarios = [];
 		for (var i=0; i<parameters.module.length; i++) {
-			var test = (function() {
-				var string = parameters.module[i];
-				if (string.indexOf(":") == -1) {
-					return { module: string };
-				} else {
-					var tokens = string.split(":");
-					return { module: tokens[0], path: tokens[1] };
-				}
-			})();
-			var module = test.module;
-			var location = (function() {
-				if (module.substring(module.length-1) == "/") {
-					return {
-						base: module,
-						path: module
-					};
-				} else {
-					return {
-						base: module.split("/").slice(0,-1).join("/") + "/",
-						main: module.split("/").slice(-1),
-						path: module
-					};
-				}
-			})();
-			var definition = (function() {
-				if (!location.main) return location.base + "api.html";
-				var jsName = /(.*)\.js$/.exec(location.main);
-				if (jsName) {
-					return location.base + jsName[1] + ".api.html";
-				} else {
-					//	untested
-					return location.base + location.main + ".api.html";
+			var part = (function() {
+				var test = (function() {
+					var string = parameters.module[i];
+					if (string.indexOf(":") == -1) {
+						return { module: string };
+					} else {
+						var tokens = string.split(":");
+						return { module: tokens[0], path: tokens[1] };
+					}
+				})();
+				var module = test.module;
+				var location = (function() {
+					if (module.substring(module.length-1) == "/") {
+						return {
+							base: module
+						};
+					} else {
+						return {
+							base: module.split("/").slice(0,-1).join("/") + "/",
+							main: module.split("/").slice(-1)
+						};
+					}
+				})();
+				var definition = (function() {
+					if (!location.main) return location.base + "api.html";
+					var jsName = /(.*)\.js$/.exec(location.main);
+					if (jsName) {
+						return location.base + jsName[1] + ".api.html";
+					} else {
+						//	untested
+						return location.base + location.main + ".api.html";
+					}
+				})();
+				return {
+					definition: definition,
+					path: test.path,
+					module: module
 				}
 			})();
 
@@ -162,12 +167,10 @@ window.callbacks.push(function() {
 						jsapi: jsapi
 					}
 				});
-				var getLoaderApiDom = extracted.getLoaderApiDom;
-
-				var loaderApiDom = getLoaderApiDom(definition);
-				var apiHtml = new apiHtmlScript.ApiHtmlTests(loaderApiDom,module);
+				var loaderApiDom = extracted.getLoaderApiDom(part.definition);
+				var apiHtml = new apiHtmlScript.ApiHtmlTests(loaderApiDom,part.module);
 				var base = (function() {
-					var tokens = module.split("/");
+					var tokens = part.module.split("/");
 					if (tokens[tokens.length-1].length == 0) return tokens.join("/");
 					return tokens.slice(0,tokens.length-1).join("/") + "/";
 				})();
@@ -209,8 +212,8 @@ window.callbacks.push(function() {
 					if (declaration) return declaration.getAttribute("path");
 					return "";
 				})();
-				var moduleScenario = apiHtml.getSuiteDescriptor(scope,test.path);
-				moduleScenario.name = (test.path) ? (module + ":" + test.path) : module;
+				var moduleScenario = apiHtml.getSuiteDescriptor(scope,part.path);
+				moduleScenario.name = (part.path) ? (module + ":" + part.path) : module;
 				scenarios.push(moduleScenario);
 			})();
 		}
