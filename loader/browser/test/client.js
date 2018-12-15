@@ -167,7 +167,6 @@ window.callbacks.push(function() {
 						apiHtmlScript: apiHtmlScript
 					}
 				});
-				var apiHtml = extracted.getApiHtmlTests(part.definition);
 				var environment = (function() {
 					var environment = {};
 					for (var x in parameters) {
@@ -188,10 +187,8 @@ window.callbacks.push(function() {
 					}
 					return environment;
 				})();
-				var scope = new extracted.Scope(part.definition,environment);
-				var moduleScenario = apiHtml.getSuiteDescriptor(scope,part.path);
-				moduleScenario.name = (part.path) ? (part.definition + ":" + part.path) : module;
-				scenarios.push(moduleScenario);
+				var descriptor = extracted.getPartDescriptor(part.definition,environment,part.path);
+				scenarios.push(descriptor);
 			})();
 		}
 

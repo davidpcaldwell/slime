@@ -219,5 +219,12 @@ var Scope = function(definition,environment) {
 	this.$api = inonit.loader.$sdk.api;
 };
 
-$exports.getApiHtmlTests = getApiHtmlTests;
-$exports.Scope = Scope;
+var getPartDescriptor = function(definition,environment,path) {
+	var apiHtml = getApiHtmlTests(definition);
+	var scope = new Scope(definition,environment);
+	var moduleScenario = apiHtml.getSuiteDescriptor(scope,path);
+	moduleScenario.name = (path) ? (definition + ":" + path) : definition;
+	return moduleScenario;
+};
+
+$exports.getPartDescriptor = getPartDescriptor;

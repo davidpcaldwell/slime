@@ -1,5 +1,12 @@
 window.addEventListener("load", function() {
-	var ui = new inonit.loader.Loader(inonit.loader.base).value("api/ui/loader.js")();
+	var loader = new inonit.loader.Loader(inonit.loader.base);
+	var ui = loader.value("api/ui/loader.js")();
+	var suite = new ui.api.Suite();
+	var api = loader.file("browser/test/api.js", {
+		api: {
+			browser: 
+		}
+	})
 	var suite = new ui.api.Suite({
 		parts: {
 			scenario: {
