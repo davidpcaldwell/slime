@@ -119,6 +119,13 @@ window.callbacks.push(function() {
 		}
 
 		var scenarios = [];
+		var extracted = inonit.loader.loader.file("api.js", {
+			api: {
+				browser: browser,
+				jsapi: jsapi,
+				apiHtmlScript: apiHtmlScript
+			}
+		});
 		for (var i=0; i<parameters.module.length; i++) {
 			var part = (function() {
 				var test = (function() {
@@ -160,13 +167,6 @@ window.callbacks.push(function() {
 			})();
 
 			(function() {
-				var extracted = inonit.loader.loader.file("api.js", {
-					api: {
-						browser: browser,
-						jsapi: jsapi,
-						apiHtmlScript: apiHtmlScript
-					}
-				});
 				var environment = (function() {
 					var environment = {};
 					for (var x in parameters) {
