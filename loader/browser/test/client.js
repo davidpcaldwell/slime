@@ -195,27 +195,6 @@ window.callbacks.push(function() {
 					return environment;
 				})();
 				var scope = new extracted.Scope(part.base,environment);
-				scope.top = (function() {
-					//	TODO	it could be that this jsapi:top capability is obsolete, and therefore the $dom member
-					//			of DOM is obsolete; possibly this was used before relative paths were used to find
-					//			modules being loaded. This would also obsolete the 'top' attribute of scope, which means
-					//			Scope would be modified above.
-					var find = function(element) {
-						var recurse = arguments.callee;
-						if (element.tagName && element.tagName.toLowerCase() == "jsapi:top") return element;
-						//	IE
-						if (element.tagName && element.tagName.toLowerCase() == "top" && element.tagUrn == "http://www.inonit.com/jsapi") return element;
-						for (var i=0; i<element.childNodes.length; i++) {
-							if (recurse(element.childNodes[i])) {
-								return element.childNodes[i];
-							}
-						}
-					};
-
-					var declaration = find(loaderApiDom.$dom.root);
-					if (declaration) return declaration.getAttribute("path");
-					return "";
-				})();
 				var moduleScenario = apiHtml.getSuiteDescriptor(scope,part.path);
 				moduleScenario.name = (part.path) ? (part.definition + ":" + part.path) : module;
 				scenarios.push(moduleScenario);

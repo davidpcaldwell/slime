@@ -148,12 +148,10 @@ var Scope = function(base,environment) {
 	var self = this;
 	var Self = arguments.callee;
 
-	//	TODO	obsolete?
-	this.top = "";
-
 	this.$relative = function(getRelativePath) {
-		//	TODO	since this ignores getRelativePath, it almost certainly does not work
-		return new Self(base + this.top);
+		//	TODO	since this ignores getRelativePath, it almost certainly does not work. It is currently used somewhere;
+		//			tests fail without it as of 2018 Dec 14
+		return new Self(base,environment);
 	};
 
 	this.$jsapi = new function() {
@@ -192,11 +190,11 @@ var Scope = function(base,environment) {
 			this.eval = function(path,scope) {
 				if (!scope) scope = {};
 				with(scope) {
-					return eval(inonit.loader.Loader.getCode(base + self.top + path));
+					return eval(inonit.loader.Loader.getCode(base + path));
 				}
 			};
 			this.string = function(path) {
-				return inonit.loader.Loader.getCode(base + self.top + path);
+				return inonit.loader.Loader.getCode(base + path);
 			};
 			this.coffee = window.CoffeeScript;
 
