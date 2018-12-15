@@ -13,12 +13,12 @@ var api = new function() {
 	};
 	
 	this.ui = (function() {
-		if ($context.api.ui) return $context.api.ui;
+		if ($context.api && $context.api.ui) return $context.api.ui;
 		return getLoader().value("api/ui/loader.js")();
 	})();
 	
 	this.apiHtmlScript = (function() {
-		if ($context.api.apiHtmlScript) return $context.api.apiHtmlScript;
+		if ($context.api && $context.api.apiHtmlScript) return $context.api.apiHtmlScript;
 		return getLoader().file("api/api.html.js");
 	})();
 };
