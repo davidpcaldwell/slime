@@ -1,5 +1,4 @@
 window.addEventListener("load", function() {
-	var loader = new inonit.loader.Loader(inonit.loader.base);
-	var api = loader.file("browser/test/api.js");
+	var api = inonit.loader.loader.file("../api.js");
 	api.suite.part("$api", api.getPartDescriptor("../../../../loader/$api.api.html",{},void(0)));
 });
