@@ -106,7 +106,7 @@ END LICENSE
 			module: (parameters) ? parameters["modes.module"] : null,
 			execute: (parameters) ? parameters["modes.execute"] : null			
 		};
-		inonit.loader.url = (parameters && parameters.platform) ? parameters.platform : "../../../loader/";
+		inonit.loader.url = (parameters && parameters.platform) ? parameters.platform : window.location.protocol + "//" + window.location.host + window.location.pathname + "/../../../../loader/";
 		var log = debug;
 	</script>
 	<script type="text/javascript">
@@ -182,8 +182,7 @@ END LICENSE
 			};
 		});
 	</script>
-	<script type="text/javascript" src="client.js">
-	</script>
+	<script type="text/javascript" src="client.js"></script>
 	<script type="text/javascript">
 		var html = new function() {
 			var isInputNamed = function(name) {
