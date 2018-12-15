@@ -153,15 +153,9 @@ window.callbacks.push(function() {
 						return location.base + location.main + ".api.html";
 					}
 				})();
-				var base = (function() {
-					var tokens = test.module.split("/");
-					if (tokens[tokens.length-1].length == 0) return tokens.join("/");
-					return tokens.slice(0,tokens.length-1).join("/") + "/";
-				})();
 				return {
 					definition: definition,
-					path: test.path,
-					base: base
+					path: test.path
 				}
 			})();
 
@@ -194,7 +188,7 @@ window.callbacks.push(function() {
 					}
 					return environment;
 				})();
-				var scope = new extracted.Scope(part.base,environment);
+				var scope = new extracted.Scope(part.definition,environment);
 				var moduleScenario = apiHtml.getSuiteDescriptor(scope,part.path);
 				moduleScenario.name = (part.path) ? (part.definition + ":" + part.path) : module;
 				scenarios.push(moduleScenario);

@@ -149,7 +149,13 @@ var getApiHtmlTests = function(definitionLocation) {
 	return new $context.api.apiHtmlScript.ApiHtmlTests(loaderApiDom,definitionLocation);
 };
 
-var Scope = function(base,environment) {
+var Scope = function(definition,environment) {
+	var base = (function() {
+		var tokens = definition.split("/");
+		if (tokens[tokens.length-1].length == 0) return tokens.join("/");
+		return tokens.slice(0,tokens.length-1).join("/") + "/";
+	})();
+	
 	var self = this;
 	var Self = arguments.callee;
 
