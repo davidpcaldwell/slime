@@ -45,7 +45,7 @@ var DOM = function(base,root) {
 
 		this.getChildren = function() {
 			var rv = [];
-			var children = dom.getChildren(node,function(node) {
+			var children = Array.prototype.slice.call(node.children).filter(function(node) {
 				return node.nodeType == node.ELEMENT_NODE || node.nodeType == 1;
 			});
 			for (var i=0; i<children.length; i++) {

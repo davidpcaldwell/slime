@@ -13,7 +13,7 @@
 //	Shared code for unit test harnesses
 
 var assign = (function() {
-	if ($context.api.assign) return $context.api.assign;
+	if ($context.api && $context.api.assign) return $context.api.assign;
 	if (Object.assign) return Object.assign;
 	throw new Error();
 })();

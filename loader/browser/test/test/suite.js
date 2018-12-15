@@ -4,16 +4,14 @@ window.addEventListener("load", function() {
 	var suite = new ui.api.Suite();
 	var api = loader.file("browser/test/api.js", {
 		api: {
-			browser: 
+			browser: ui.unit,
+			unit: ui.api,
+			apiHtmlScript: loader.file("api/api.html.js")
 		}
-	})
+	});
 	var suite = new ui.api.Suite({
 		parts: {
-			scenario: {
-				execute: function(scope,verify) {
-					verify(1).is(3);
-				}
-			}
+			$api: api.getPartDescriptor("../../../../loader/$api.api.html",{},void(0))
 		}
 	});
 	ui.suite(suite);
