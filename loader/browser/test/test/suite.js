@@ -4,8 +4,7 @@ window.addEventListener("load", function() {
 	var suite = new ui.api.Suite();
 	var api = loader.file("browser/test/api.js", {
 		api: {
-			browser: ui.unit,
-			unit: ui.api,
+			ui: ui,
 			apiHtmlScript: loader.file("api/api.html.js")
 		}
 	});

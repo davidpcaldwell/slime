@@ -169,9 +169,9 @@ var Scope = function(definition,environment) {
 		// TODO: are these needed? and if so, what are they?
 		this.api = {
 			//	loader/browser/test/module.js
-			browser: $context.api.browser,
+			browser: $context.api.ui.unit,
 			//	loader/api/unit.js
-			unit: $context.api.jsapi
+			unit: $context.api.ui.api
 		};
 
 		this.loader = new function() {

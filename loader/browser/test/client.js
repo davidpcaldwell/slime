@@ -121,8 +121,10 @@ window.callbacks.push(function() {
 		var scenarios = [];
 		var extracted = inonit.loader.loader.file("api.js", {
 			api: {
-				browser: browser,
-				jsapi: jsapi,
+				ui: {
+					unit: browser,
+					api: jsapi
+				},
 				apiHtmlScript: apiHtmlScript
 			}
 		});
