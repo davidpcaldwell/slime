@@ -153,10 +153,15 @@ window.callbacks.push(function() {
 						return location.base + location.main + ".api.html";
 					}
 				})();
+				var base = (function() {
+					var tokens = test.module.split("/");
+					if (tokens[tokens.length-1].length == 0) return tokens.join("/");
+					return tokens.slice(0,tokens.length-1).join("/") + "/";
+				})();
 				return {
 					definition: definition,
 					path: test.path,
-					module: module
+					base: base
 				}
 			})();
 
@@ -168,13 +173,8 @@ window.callbacks.push(function() {
 					}
 				});
 				var loaderApiDom = extracted.getLoaderApiDom(part.definition);
-				var apiHtml = new apiHtmlScript.ApiHtmlTests(loaderApiDom,part.module);
-				var base = (function() {
-					var tokens = part.module.split("/");
-					if (tokens[tokens.length-1].length == 0) return tokens.join("/");
-					return tokens.slice(0,tokens.length-1).join("/") + "/";
-				})();
-				var scope = new extracted.Scope(base);
+				var apiHtml = new apiHtmlScript.ApiHtmlTests(loaderApiDom,part.definition);
+				var scope = new extracted.Scope(part.base);
 				for (var x in parameters) {
 					var pattern = /^environment\.(.*)/;
 					var match = pattern.exec(x);;
@@ -213,7 +213,7 @@ window.callbacks.push(function() {
 					return "";
 				})();
 				var moduleScenario = apiHtml.getSuiteDescriptor(scope,part.path);
-				moduleScenario.name = (part.path) ? (module + ":" + part.path) : module;
+				moduleScenario.name = (part.path) ? (part.definition + ":" + part.path) : module;
 				scenarios.push(moduleScenario);
 			})();
 		}
