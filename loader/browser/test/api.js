@@ -144,6 +144,11 @@ var getLoaderApiDom = function(location) {
 	return new DOM(base,root);
 };
 
+var getApiHtmlTests = function(definitionLocation) {
+	var loaderApiDom = getLoaderApiDom(definitionLocation);
+	return new $context.api.apiHtmlScript.ApiHtmlTests(loaderApiDom,definitionLocation);
+};
+
 var Scope = function(base,environment) {
 	var self = this;
 	var Self = arguments.callee;
@@ -208,5 +213,5 @@ var Scope = function(base,environment) {
 	this.$api = inonit.loader.$sdk.api;
 };
 
-$exports.getLoaderApiDom = getLoaderApiDom;
+$exports.getApiHtmlTests = getApiHtmlTests;
 $exports.Scope = Scope;

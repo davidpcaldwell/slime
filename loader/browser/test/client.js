@@ -169,11 +169,11 @@ window.callbacks.push(function() {
 				var extracted = inonit.loader.loader.file("api.js", {
 					api: {
 						browser: browser,
-						jsapi: jsapi
+						jsapi: jsapi,
+						apiHtmlScript: apiHtmlScript
 					}
 				});
-				var loaderApiDom = extracted.getLoaderApiDom(part.definition);
-				var apiHtml = new apiHtmlScript.ApiHtmlTests(loaderApiDom,part.definition);
+				var apiHtml = extracted.getApiHtmlTests(part.definition);
 				var environment = (function() {
 					var environment = {};
 					for (var x in parameters) {
