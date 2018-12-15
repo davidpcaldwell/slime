@@ -102,10 +102,6 @@ END LICENSE
 		if (!window.inonit) window.inonit = {};
 		if (!inonit.loader) inonit.loader = {};
 		inonit.loader.debug = debug;
-		inonit.loader.modes = {
-			module: (parameters) ? parameters["modes.module"] : null,
-			execute: (parameters) ? parameters["modes.execute"] : null			
-		};
 		inonit.loader.url = (parameters && parameters.platform) ? parameters.platform : window.location.protocol + "//" + window.location.host + window.location.pathname + "/../../../../loader/";
 		var log = debug;
 	</script>
@@ -139,19 +135,9 @@ END LICENSE
 					loaded.go();
 				}
 			});
-			var script = document.createElement("script");
-			script.src = (function() {
-				if (parameters && parameters.platform) return parameters.platform + "browser/client.js";
-				return "../client.js";
-			})();
-			if (document.head) {
-				document.head.appendChild(script);
-			} else {
-				//	IE
-				document.getElementsByTagName("head")[0].appendChild(script);
-			}
 		})()
 	</script>
+	<script type="text/javascript" src="../client.js"></script>
 	<script type="text/javascript">
 		callbacks.push(function() {
 			dom = new function() {
