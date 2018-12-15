@@ -144,7 +144,7 @@ var getLoaderApiDom = function(location) {
 	return new DOM(base,root);
 };
 
-var Scope = function(base) {
+var Scope = function(base,environment) {
 	var self = this;
 	var Self = arguments.callee;
 
@@ -203,7 +203,7 @@ var Scope = function(base) {
 			//	TODO	add this.scenario; see jsh/unit/jsapi.js
 		};
 
-		this.environment = {};
+		this.environment = environment;
 	};
 
 	this.$platform = inonit.loader.$sdk.platform;

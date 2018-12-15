@@ -174,23 +174,27 @@ window.callbacks.push(function() {
 				});
 				var loaderApiDom = extracted.getLoaderApiDom(part.definition);
 				var apiHtml = new apiHtmlScript.ApiHtmlTests(loaderApiDom,part.definition);
-				var scope = new extracted.Scope(part.base);
-				for (var x in parameters) {
-					var pattern = /^environment\.(.*)/;
-					var match = pattern.exec(x);;
-					if (match) {
-						var tokens = match[1].split(".");
-						var target = scope.$jsapi.environment;
-						for (var i=0; i<tokens.length; i++) {
-							if (i < tokens.length-1) {
-								target[tokens[i]] = {};
-								target = target[tokens[i]];
-							} else {
-								target[tokens[i]] = parameters[x];
+				var environment = (function() {
+					var environment = {};
+					for (var x in parameters) {
+						var pattern = /^environment\.(.*)/;
+						var match = pattern.exec(x);;
+						if (match) {
+							var tokens = match[1].split(".");
+							var target = environment;
+							for (var i=0; i<tokens.length; i++) {
+								if (i < tokens.length-1) {
+									target[tokens[i]] = {};
+									target = target[tokens[i]];
+								} else {
+									target[tokens[i]] = parameters[x];
+								}
 							}
 						}
 					}
-				}
+					return environment;
+				})();
+				var scope = new extracted.Scope(part.base,environment);
 				scope.top = (function() {
 					//	TODO	it could be that this jsapi:top capability is obsolete, and therefore the $dom member
 					//			of DOM is obsolete; possibly this was used before relative paths were used to find
