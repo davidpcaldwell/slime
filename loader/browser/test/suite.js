@@ -1,4 +1,8 @@
 window.addEventListener("load", function() {
+	// TODO: Figure out what to do with deprecation longer-term; right now, just trying to debug browser test runner
+	inonit.loader.$api.deprecate.warning = function() {
+	}
+	
 	var parameters = (function() {
 		if (window.location.search && window.location.search.length > 1) {
 			var web = inonit.loader.loader.module("../../../js/web/", {
@@ -14,7 +18,12 @@ window.addEventListener("load", function() {
 					if (controls[i].name == "suite") return controls[i].value;
 				}
 			})(form.controls);
-			return { form: form, suite: script };
+			var command = (function(controls) {
+				for (var i=0; i<controls.length; i++) {
+					if (controls[i].name == "command") return controls[i].value;
+				}
+			})(form.controls);
+			return { form: form, command: command, suite: script };
 		}
 	})();
 	if (parameters.suite) {
@@ -32,5 +41,9 @@ window.addEventListener("load", function() {
 				return api.getPartDescriptor(base + string);
 			}
 		});
+	}
+	if (parameters.command == "run") {
+		var event = new Event("click");
+		document.getElementById("run").dispatchEvent(event);		
 	}
 });

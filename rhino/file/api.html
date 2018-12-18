@@ -1207,6 +1207,27 @@ END LICENSE
 					</ul>
 				</div>
 			</li>
+			<!-- TODO: below replaced by experimental navigate() -->
+			<!-- <li class="function">
+				<div class="name">getRelativePathTo</div>
+				<span>__DESCRIPTION__</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+					</ol>
+				</div>
+				<div class="returns">
+					<div class="label">Returns</div>
+					<span class="type">__TYPE__</span>
+					<span>__DESCRIPTION__</span>
+				</div>
+				<script type="application/x.jsapi#tests" jsapi:id="getRelativePath">
+					var relative = module.getRelativePathTo(
+						jsh.shell.jsh.src.getFile("loader/expression.js")
+					)(jsh.shell.jsh.src.getFile("rhino/file/api.html"));
+					verify(relative).is("../../loader/expression.js");
+				</script>
+			</li> -->
 			<li class="function" jsapi:id="Searchpath" jsapi:reference="getApi('api.Searchpath.html').getElement('main')">
 				<div class="name">Searchpath</div>
 				See <a href="api.Searchpath.html">detailed documentation</a>.
