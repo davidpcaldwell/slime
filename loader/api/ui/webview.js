@@ -223,7 +223,7 @@
 			var elapsed = ((e.timestamp - view.started) / 1000).toFixed(3);
 			view.result.innerHTML = ( (success) ? "Passed (" + elapsed + ")" : "Failed" ) + " at " + new Date(e.timestamp);
 			colorCode(view.element,success);
-		}
+		};
 
 		this.dispatch = function(path,e) {
 			if (path.length == 0) {

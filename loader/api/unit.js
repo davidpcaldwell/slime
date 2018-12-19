@@ -799,18 +799,18 @@ $exports.TestExecutionProcessor = TestExecutionProcessor;
 						for (var x in parts) {
 							keys.push(x);
 						}
-						var createPartPromise = function(x) {
-							return function() {
-								return new $context.api.Promise(function(resolve,reject) {
-									var subscope = copy(scope);
-									resolve(parts[x].run({
-										scope: subscope,
-										path: []
-									}));
-								});
-							};
-						}
 						if ($context.api && $context.api.Promise) {
+							var createPartPromise = function(x) {
+								return function() {
+									return new $context.api.Promise(function(resolve,reject) {
+										var subscope = copy(scope);
+										resolve(parts[x].run({
+											scope: subscope,
+											path: []
+										}));
+									});
+								};
+							};
 							var promise = $context.api.Promise.resolve();
 							for (var i=0; i<keys.length; i++) {
 								promise = promise.then(createPartPromise(keys[i])).then(function(result) {
@@ -825,9 +825,9 @@ $exports.TestExecutionProcessor = TestExecutionProcessor;
 						} else {
 							var index = 0;
 							var proceed = function recurse(result) {
+								if (result === false) success = false;
 								if (index == keys.length) {
-									if (!result) success = false;
-									next(result);
+									next(success);
 								} else {
 									var x = keys[index++];
 									var subscope = copy(scope);
@@ -835,6 +835,8 @@ $exports.TestExecutionProcessor = TestExecutionProcessor;
 										scope: subscope,
 										path: []
 									},recurse);
+									//	TODO	just guessing about subscope; passing it in to destroy it
+									part.after(success,subscope);
 								}
 							};
 							proceed();

@@ -100,8 +100,6 @@ jsh.java.Thread.start(function() {
 	});
 });
 
-// TODO: Failed test does not actually cause failure
-
 if (!parameters.options.interactive) {
 	jsh.shell.console("Requesting result.");
 	var result = new jsh.http.Client().request({
@@ -116,5 +114,4 @@ if (!parameters.options.interactive) {
 	kill();
 	jsh.shell.console("Got result: " + result);
 	jsh.shell.exit( (result) ? 0 : 1 );
-	// TODO: (BLOCKED: cannot fail tests right now) verify exit status correct
 }

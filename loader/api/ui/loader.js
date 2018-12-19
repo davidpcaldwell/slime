@@ -51,12 +51,16 @@ $set(function() {
         section: new function() {
             var onclick;
 
-            this.initialize = function(initializer,handler) {
+            this.initialize = function(initializer) {
+                //  webview.js invokes this and provides an initializer that, when executed, initializes the UI and provides an onclick
+                //  handler that can be added to a button outside the UI
                 document.getElementById("run").addEventListener("click", function(e) {
                     if (!onclick) {
-                        initializer({ onclick: function(f) {
-                            onclick = f;
-                        }});
+                        initializer({ 
+                            onclick: function(f) {
+                                onclick = f;
+                            }
+                        });
                     }
                     onclick(e);
                 });
@@ -70,11 +74,15 @@ $set(function() {
             };
 
             this.listen = function() {
+                //  webview.js provides a View object for the suite, which consists of a bunch of nested View objects.
                 view = arguments[0];
             };
 
 
             this.run = function() {
+                //  the loader/browser/test/module.js implementation of run() adds appropriate listeners to the global suite and then runs it,
+                //  issuing callbacks for each event delivered to those listeners. We then dispatch those events to the top-level view, which
+                //  dispatches them to the nested views
                 unit.run(new function() {
                     this.log = function(b,message) {
                         console.log(b,message);

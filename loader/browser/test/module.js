@@ -308,18 +308,18 @@ var global = new function() {
 				console.log("success = " + success);
 				_callbacks.end(success);
 				//	TODO	this should not have to be hacked in manually
-				_callbacks.event({
-					type: "scenario",
-					detail: {
-						end: {
-							id: suite.id,
-							name: suite.name
-						},
-						success: success
-					},
-					path: [],
-					timestamp: new Date()
-				});
+// 				_callbacks.event({
+// 					type: "scenario",
+// 					detail: {
+// 						end: {
+// 							id: suite.id,
+// 							name: suite.name
+// 						},
+// 						success: success
+// 					},
+// 					path: [],
+// 					timestamp: new Date()
+// 				});
 				//	Stop asynchronous events from being delivered
 				asynchrony.next(null);
 			});
