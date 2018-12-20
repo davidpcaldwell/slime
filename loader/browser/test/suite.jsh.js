@@ -4,9 +4,16 @@ var parameters = jsh.script.getopts({
 		parameter: jsh.script.getopts.ARRAY(String),
 		interactive: false,
 		"chrome:instance": jsh.file.Pathname,
-		view: "console"
+		view: "console",
+		"experimental:suite": false
 	}
 });
+
+if (parameters.options.view == "chrome") {
+	// TODO: For some reason "chrome" does not work; not that it would be useful, since tests are already being run in a browser
+	jsh.shell.console("Unsupported: -view chrome [use 'console' or 'stdio']");
+	jsh.shell.exit(1);
+}
 
 //	We need to serve from the common ancestor of:
 //	* the suite
@@ -116,32 +123,35 @@ if (!parameters.options.interactive) {
 			return json;
 		}
 	});
-	var SUITE = false;
-	if (SUITE) {
-		// TODO: This does not work because jsh.unit.Scenario.Events appears to be broken; it expects a 'scenario' property in
-		// the execute() scope that is not there.
-		// var suite = new jsh.unit.Suite({
-		// 	parts: {
-		// 		scenario: new jsh.unit.Scenario.Events({
-		// 			events: result.events
-		// 		})
-		// 	}
-		// });
-		var suite = new jsh.unit.Scenario.Events({
-			events: result.events
-		});
-		jsh.unit.interface.create(suite, {
-			view: parameters.options.view
-		});
-	} else {
-		// TODO: other view values like console not supported
-		if (parameters.options.view == "stdio") {
+	// TODO: This does not work because jsh.unit.Scenario.Events appears to be broken; it expects a 'scenario' property in
+	// the execute() scope that is not there.
+	// var suite = new jsh.unit.Suite({
+	// 	parts: {
+	// 		scenario: new jsh.unit.Scenario.Events({
+	// 			events: result.events
+	// 		})
+	// 	}
+	// });
+	// var suite = new jsh.unit.Scenario.Events({
+	// 	events: result.events
+	// });
+	var decoder = new jsh.unit.JSON.Decoder();
+	var scenario = {
+		name: jsh.script.file.pathname.toString(),
+		execute: function(scope,verify) {
 			result.events.forEach(function(event) {
-				jsh.shell.echo(JSON.stringify(event));
+				// TODO: there is no documentation that verify.fire works and it is not obvious why it does
+				verify.fire(event.type,event.detail);
 			});
 		}
 	}
+	var suite = new jsh.unit.Suite({
+		parts: {
+			scenario: scenario
+		}
+	});
 	kill();
-	jsh.shell.console("Success: " + result.success);
-	jsh.shell.exit( (result.success) ? 0 : 1 );
+	jsh.unit.interface.create(suite, {
+		view: parameters.options.view
+	});
 }
