@@ -827,6 +827,7 @@ $exports.TestExecutionProcessor = TestExecutionProcessor;
 							var proceed = function recurse(result) {
 								if (result === false) success = false;
 								if (index == keys.length) {
+									part.after(success,scope);
 									next(success);
 								} else {
 									var x = keys[index++];
@@ -835,8 +836,6 @@ $exports.TestExecutionProcessor = TestExecutionProcessor;
 										scope: subscope,
 										path: []
 									},recurse);
-									//	TODO	just guessing about subscope; passing it in to destroy it
-									part.after(success,subscope);
 								}
 							};
 							proceed();

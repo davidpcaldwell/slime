@@ -146,6 +146,7 @@ if (!parameters.options.interactive) {
 		var output = jsh.shell.echo;
 
 		result.events.forEach(function(event) {
+			// TODO: option was for debugging so can probably be removed
 			if (parameters.options["verbose:events"]) {
 				if (event.type == "scenario") {
 					if (event.detail.start) {
@@ -154,12 +155,15 @@ if (!parameters.options.interactive) {
 						jsh.shell.console("end: " + event.detail.end.name);						
 					}
 				} else {
+					jsh.shell.console("test: " + event.detail.success + " " + event.detail.message);
 				}
 			}
+			
 			// jsh.shell.console("");
-			// TODO: below cribbed from loader/api/unit.js
 			if (parameters.options.view == "stdio") {
 				if (FORMAT) {
+					// TODO: below cribbed from loader/api/unit.js; can this be recombined somehow to use the more standard
+					// test event constructs?
 					if (event.type == "scenario" && event.detail.start) {
 						output(
 							JSON.stringify({ 
@@ -178,9 +182,9 @@ if (!parameters.options.interactive) {
 						output(JSON.stringify({
 							type: "test",
 							detail: {
-								success: event.success,
-								message: event.message,
-								error: jsonError(event.error)
+								success: event.detail.success,
+								message: event.detail.message,
+								error: jsonError(event.detail.error)
 							}					
 						}));
 					} else {

@@ -78,14 +78,13 @@ $set(function(p) {
                 view = arguments[0];
             };
 
-
             this.run = function() {
                 //  the loader/browser/test/module.js implementation of run() adds appropriate listeners to the global suite and then runs it,
                 //  issuing callbacks for each event delivered to those listeners. We then dispatch those events to the top-level view, which
                 //  dispatches them to the nested views
-				var events = [];
-				
                 unit.run(new function() {
+					var events = [];
+
                     this.log = function(b,message) {
                         console.log(b,message);
                     };

@@ -136,6 +136,7 @@ $exports.Console = function(o) {
 		var success = test.success;
 		var old = false;
 		if (old) {
+			// TODO: remove
 			if (!success) {
 				if (!dots) {
 					console.print(indent());
@@ -146,7 +147,7 @@ $exports.Console = function(o) {
 				if (test.error) {
 					printError(test.error);
 				} else if (success == null) {
-					console.println("No error property provided for test.")
+					console.println("success == null and no error property provided for test.")
 				}
 				stack[stack.length-1].success = false;
 			} else {
@@ -170,7 +171,7 @@ $exports.Console = function(o) {
 				if (test.error) {
 					printError(test.error);
 				} else if (success == null) {
-					console.println("No error property provided for test.")
+					console.println("success = " + success + " and no error property provided for test.")
 				}
 				stack[stack.length-1].success = false;
 			} else {
