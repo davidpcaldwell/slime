@@ -1,8 +1,11 @@
 var parameters = jsh.script.getopts({
 	options: {
 		suite: jsh.file.Pathname,
+		parameter: jsh.script.getopts.ARRAY(String),
 		interactive: false,
-		"chrome:instance": jsh.file.Pathname
+		"chrome:instance": jsh.file.Pathname,
+		view: String,
+		"verbose:events": false
 	}
 });
 
@@ -88,8 +91,12 @@ var command = (parameters.options.interactive) ? "" : "&command=run";
 jsh.java.Thread.start(function() {
 	// TODO: query string by string concatenation is sloppy
 	// TODO: probably should just be suite.html, not suite.api.html
+	var uri = "http://127.0.0.1:" + tomcat.port + "/" + "loader/browser/test/suite.html" + "?suite=" + toSuite.relative + command;
+	parameters.options.parameter.forEach(function(argument) {
+		uri += "&" + argument;
+	});
 	chrome.run({
-		uri: "http://127.0.0.1:" + tomcat.port + "/" + "loader/browser/test/suite.api.html" + "?suite=" + toSuite.relative + command,
+		uri: uri,
 		on: {
 			start: function(p) {
 				kill = function() {
@@ -106,12 +113,87 @@ if (!parameters.options.interactive) {
 		url: "http://127.0.0.1:" + tomcat.port + "/" + url,
 		evaluate: function(response) {
 			var string = response.body.stream.character().asString();
-			if (string == "true") return true;
-			if (string == "false") return false;
-			throw new Error("Got [" + string + "]");
+			var json = JSON.parse(string);
+			return json;
 		}
 	});
+	var SUITE = false;
+	var FORMAT = true;
+	if (SUITE) {
+		var suite = new jsh.unit.Suite({
+			parts: {
+				scenario: new jsh.unit.Scenario.Events({
+					events: result.events
+				})
+			}
+		});
+		jsh.unit.interface.create(suite, {
+			view: "stdio"
+		});
+	} else {
+		var jsonError = function(error) {
+			if (error) {
+				return {
+					type: error.type,
+					message: error.message,
+					stack: error.stack
+				}
+			} else {
+				return void(0);
+			}
+		};
+		
+		var output = jsh.shell.echo;
+
+		result.events.forEach(function(event) {
+			if (parameters.options["verbose:events"]) {
+				if (event.type == "scenario") {
+					if (event.detail.start) {
+						jsh.shell.console("start: " + event.detail.start.name);
+					} else if (event.detail.end) {
+						jsh.shell.console("end: " + event.detail.end.name);						
+					}
+				} else {
+				}
+			}
+			// jsh.shell.console("");
+			// TODO: below cribbed from loader/api/unit.js
+			if (parameters.options.view == "stdio") {
+				if (FORMAT) {
+					if (event.type == "scenario" && event.detail.start) {
+						output(
+							JSON.stringify({ 
+								type: "scenario", 
+								detail: { start: { name: event.detail.start.name } } 
+							})
+						);
+					} else if (event.type == "scenario" && event.detail.end) {
+						output(
+							JSON.stringify({
+								type: "scenario",
+								detail: { end: { name: event.detail.end.name }, success: event.detail.success }
+							})					
+						)
+					} else if (event.type == "test") {
+						output(JSON.stringify({
+							type: "test",
+							detail: {
+								success: event.success,
+								message: event.message,
+								error: jsonError(event.error)
+							}					
+						}));
+					} else {
+						throw new Error();
+					}
+				} else {
+					//			jsh.shell.echo(JSON.stringify(event));					
+				}
+			}
+		});
+	}
 	kill();
 	jsh.shell.console("Got result: " + result);
-	jsh.shell.exit( (result) ? 0 : 1 );
+	jsh.shell.console("Got success: " + result.success);
+	jsh.shell.exit( (result.success) ? 0 : 1 );
 }

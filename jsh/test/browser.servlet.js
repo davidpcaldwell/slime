@@ -70,15 +70,15 @@ $exports.handle = function(request) {
 					debugger;
 					var string = request.body.stream.character().asString();
 					if (string == "true") {
-						success = true;
+						success = string;
 					} else if (string == "false") {
-						success = false;
+						success = string;
 					} else if (string.length == 0) {
-						success = null;
+						success = "null";
 					} else {
-						throw new Error("success = " + string);
+						success = string;
 					}
-					jsh.shell.echo("server side success = " + success + "; returning 200 for POST and unblocking on " + lock);
+//					jsh.shell.echo("server side success = " + success + "; returning 200 for POST and unblocking on " + lock);
 					return {
 						status: {
 							code: 200
@@ -100,7 +100,7 @@ $exports.handle = function(request) {
 						},
 						body: {
 							type: "application/json",
-							string: String(success)
+							string: success
 						}
 					};
 				}

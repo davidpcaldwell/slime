@@ -11,7 +11,7 @@
 //	Contributor(s):
 //	END LICENSE
 
-$set(function() {
+$set(function(p) {
     var $loader = new inonit.loader.Loader(inonit.loader.base + "../");
     var api = $loader.file("loader/api/unit.js");
     var unit = $loader.module("loader/browser/test/module.js", {
@@ -83,6 +83,8 @@ $set(function() {
                 //  the loader/browser/test/module.js implementation of run() adds appropriate listeners to the global suite and then runs it,
                 //  issuing callbacks for each event delivered to those listeners. We then dispatch those events to the top-level view, which
                 //  dispatches them to the nested views
+				var events = [];
+				
                 unit.run(new function() {
                     this.log = function(b,message) {
                         console.log(b,message);
@@ -90,12 +92,15 @@ $set(function() {
 
                     this.event = function(e) {
                         console.log(e);
+						events.push(e);
                         view.dispatch(e.path,e);
                         if (!e.path.length && e.detail.end) {
                             var xhr = new XMLHttpRequest();
                             xhr.open("POST","result",false);
-                            xhr.send(e.detail.success);
-                        }
+                            xhr.send(
+								(p && p.events) ? JSON.stringify({ events: events, success: e.detail.success }) : e.detail.success
+							);
+						}
                     };
 
                     this.end = function(b) {

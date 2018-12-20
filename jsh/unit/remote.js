@@ -46,6 +46,7 @@ $exports.Events = function(o) {
 						var e = queue.shift();
 						//Packages.java.lang.System.out.println("Processing: " + JSON.stringify(e));
 						if (e.type == "scenario" && e.detail.start) {
+							if (!scope.scenario) throw new Error("keys = " + Object.keys(scope));
 							scope.scenario(new Scenario(e.detail));
 						} else if (e.type == "scenario" && e.detail.end) {
 							rv = e.detail.success;

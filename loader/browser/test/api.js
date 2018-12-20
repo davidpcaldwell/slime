@@ -14,7 +14,7 @@ var api = new function() {
 	
 	this.ui = (function() {
 		if ($context.api && $context.api.ui) return $context.api.ui;
-		return getLoader().value("api/ui/loader.js")();
+		return getLoader().value("api/ui/loader.js")({ events: true });
 	})();
 	
 	this.apiHtmlScript = (function() {
