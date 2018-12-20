@@ -4,8 +4,7 @@ var parameters = jsh.script.getopts({
 		parameter: jsh.script.getopts.ARRAY(String),
 		interactive: false,
 		"chrome:instance": jsh.file.Pathname,
-		view: String,
-		"verbose:events": false
+		view: String
 	}
 });
 
@@ -118,8 +117,9 @@ if (!parameters.options.interactive) {
 		}
 	});
 	var SUITE = false;
-	var FORMAT = true;
 	if (SUITE) {
+		// TODO: This does not work because jsh.unit.Scenario.Events appears to be broken; it expects a 'scenario' property in
+		// the execute() scope that is not there.
 		var suite = new jsh.unit.Suite({
 			parts: {
 				scenario: new jsh.unit.Scenario.Events({
@@ -128,76 +128,17 @@ if (!parameters.options.interactive) {
 			}
 		});
 		jsh.unit.interface.create(suite, {
-			view: "stdio"
+			view: parameters.options.view
 		});
 	} else {
-		var jsonError = function(error) {
-			if (error) {
-				return {
-					type: error.type,
-					message: error.message,
-					stack: error.stack
-				}
-			} else {
-				return void(0);
-			}
-		};
-		
-		var output = jsh.shell.echo;
-
-		result.events.forEach(function(event) {
-			// TODO: option was for debugging so can probably be removed
-			if (parameters.options["verbose:events"]) {
-				if (event.type == "scenario") {
-					if (event.detail.start) {
-						jsh.shell.console("start: " + event.detail.start.name);
-					} else if (event.detail.end) {
-						jsh.shell.console("end: " + event.detail.end.name);						
-					}
-				} else {
-					jsh.shell.console("test: " + event.detail.success + " " + event.detail.message);
-				}
-			}
-			
-			// jsh.shell.console("");
-			if (parameters.options.view == "stdio") {
-				if (FORMAT) {
-					// TODO: below cribbed from loader/api/unit.js; can this be recombined somehow to use the more standard
-					// test event constructs?
-					if (event.type == "scenario" && event.detail.start) {
-						output(
-							JSON.stringify({ 
-								type: "scenario", 
-								detail: { start: { name: event.detail.start.name } } 
-							})
-						);
-					} else if (event.type == "scenario" && event.detail.end) {
-						output(
-							JSON.stringify({
-								type: "scenario",
-								detail: { end: { name: event.detail.end.name }, success: event.detail.success }
-							})					
-						)
-					} else if (event.type == "test") {
-						output(JSON.stringify({
-							type: "test",
-							detail: {
-								success: event.detail.success,
-								message: event.detail.message,
-								error: jsonError(event.detail.error)
-							}					
-						}));
-					} else {
-						throw new Error();
-					}
-				} else {
-					//			jsh.shell.echo(JSON.stringify(event));					
-				}
-			}
-		});
+		// TODO: other view values like console not supported
+		if (parameters.options.view == "stdio") {
+			result.events.forEach(function(event) {
+				jsh.shell.echo(JSON.stringify(event));
+			});
+		}
 	}
 	kill();
-	jsh.shell.console("Got result: " + result);
-	jsh.shell.console("Got success: " + result.success);
+	jsh.shell.console("Success: " + result.success);
 	jsh.shell.exit( (result.success) ? 0 : 1 );
 }
