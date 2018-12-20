@@ -245,6 +245,8 @@ var Browser = function(p) {
 		});
 		return returner();
 	};
+	
+	this.delegate = p;
 };
 
 $exports.Browser = Browser;
