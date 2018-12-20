@@ -4,7 +4,7 @@ var parameters = jsh.script.getopts({
 		parameter: jsh.script.getopts.ARRAY(String),
 		interactive: false,
 		"chrome:instance": jsh.file.Pathname,
-		view: String
+		view: "console"
 	}
 });
 
@@ -120,12 +120,15 @@ if (!parameters.options.interactive) {
 	if (SUITE) {
 		// TODO: This does not work because jsh.unit.Scenario.Events appears to be broken; it expects a 'scenario' property in
 		// the execute() scope that is not there.
-		var suite = new jsh.unit.Suite({
-			parts: {
-				scenario: new jsh.unit.Scenario.Events({
-					events: result.events
-				})
-			}
+		// var suite = new jsh.unit.Suite({
+		// 	parts: {
+		// 		scenario: new jsh.unit.Scenario.Events({
+		// 			events: result.events
+		// 		})
+		// 	}
+		// });
+		var suite = new jsh.unit.Scenario.Events({
+			events: result.events
 		});
 		jsh.unit.interface.create(suite, {
 			view: parameters.options.view
