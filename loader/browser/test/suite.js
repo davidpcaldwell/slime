@@ -30,15 +30,18 @@ window.addEventListener("load", function() {
 		document.getElementById("nosuite").style.display = "none";
 		var api = inonit.loader.loader.file("api.js");
 		inonit.loader.loader.run(parameters.suite, {
-			parameters: parameters.form,
+			parameters: {
+				form: parameters.form
+			},
 			suite: api.suite,
-			getPartDescriptor: function(string) {
+			getPartDescriptor: function(definition,environment,part) {
 				var base = (function(path) {
 					var tokens = path.split("/");
 					if (tokens.length == 1) return "";
 					return tokens.slice(0,-1).join("/") + "/";
 				})(parameters.suite);
-				return api.getPartDescriptor(base + string);
+				if (!environment) environment = {};
+				return api.getPartDescriptor(base + definition,environment,part);
 			}
 		});
 	}

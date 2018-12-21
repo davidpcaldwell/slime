@@ -1,7 +1,9 @@
 var failure = false;
-for (var i=0; i<parameters.controls.length; i++) {
-	if (parameters.controls[i].name == "failure") {
-		failure = true;
+if (parameters.form) {
+	for (var i=0; i<parameters.form.controls.length; i++) {
+		if (parameters.form.controls[i].name == "failure") {
+			failure = true;
+		}
 	}
 }
 suite.part("try", {

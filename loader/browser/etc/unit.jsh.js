@@ -12,24 +12,23 @@
 //	END LICENSE
 
 var apis = [
-	//	TODO	loader/browser/ has zero tests
-	"loader/browser/",
-	"loader/browser/client.js",
+	"loader/browser/", // zero tests
+	"loader/browser/client.js", // migrated
 
-	"loader/api/unit.js",
-	"loader/api/",
-	"loader/api/test/data/1/",
+	"loader/api/unit.js", // migrated
+	"loader/api/", // migrated
+	"loader/api/test/data/1/", // migrated
 
-	"loader/browser/test/",
+	"loader/browser/test/", // migrated, unsuccessfully
 
-	"loader/$api.js",
-	"js/object/",
-	"js/object/Error.js",
-	"js/document/",
-	"js/web/",
-	"js/time/",
+	"loader/$api.js", // migrated
+	"js/object/", // migrated
+	"js/object/Error.js", // migrated
+	"js/document/", // migrated
+	"js/web/", // migrated
+	"js/time/", // migrated
 
-	"js/promise/"
+	"js/promise/" // migrated
 ];
 
 var SRC = jsh.script.file.parent.parent.parent.parent;
