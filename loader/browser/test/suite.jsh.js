@@ -1,11 +1,16 @@
 var parameters = jsh.script.getopts({
 	options: {
 		suite: jsh.file.Pathname,
+
 		parameter: jsh.script.getopts.ARRAY(String),
+
 		interactive: false,
 		"chrome:instance": jsh.file.Pathname,
-		view: "console",
-		"experimental:suite": false
+		
+		//	Run tests in default browser only, rather than all browsers
+		"default": false,
+		
+		view: "console"
 	}
 });
 
@@ -41,8 +46,6 @@ var url = toResult.relative.replace(/suite\.js/g, "result");
 // rhino/jrunscript/api.js
 // loader/browser/test/test/sample-suite.
 // $HOME/.bash_profile
-
-//var url = "foo";
 
 var resultServletFile = jsh.shell.jsh.src.getFile("jsh/test/browser.servlet.js");
 
@@ -174,11 +177,14 @@ if (jsh.shell.browser.chrome) {
 	}
 });
 
-var browser = browsers[0];
-// TODO: allow browser to be specified on command line
+// TODO: allow set of browsers to be specified on command line
+
+if (parameters.options["default"]) {
+	browsers = browsers.slice(0,1);
+}
 
 if (parameters.options.interactive) {
-	run(browser);
+	run(browsers[0]);
 } else {
 	var suite = new jsh.unit.Suite();
 	browsers.forEach(function(browser) {

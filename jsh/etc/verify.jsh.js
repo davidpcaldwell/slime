@@ -214,6 +214,17 @@ if (parameters.options.browser) {
 			)
 		});
 	}
+	top.part("tools", {
+		parts: {
+			browser: {
+				parts: {
+					suite: new jsh.unit.part.Html({
+						pathname: jsh.shell.jsh.src.getRelativePath("loader/browser/test/suite.jsh.api.html")
+					})
+				}
+			}
+		}
+	});
 }
 
 jsh.unit.interface.create(top, new function() {
