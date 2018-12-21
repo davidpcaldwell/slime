@@ -200,12 +200,9 @@ if (parameters.options.browser) {
 	} else {
 		subprocess({
 			run: jsh.shell.jsh,
-			name: "Browser tests",
-	//		command: jsh.shell.java.jrunscript,
-			script: parameters.options.slime.directory.getFile("loader/browser/etc/unit.jsh.js"),
+			name: "Browser suites",
+			script: parameters.options.slime.directory.getFile("loader/browser/suite.jsh.js"),
 			arguments: [
-	//			jsh.shell.jsh.home.getRelativePath("jsh.js"),
-//				parameters.options.slime.directory.getRelativePath("jsh/test/browser.jsh.js").toString(),
 				"-view", "stdio"
 			].concat(parameters.arguments),
 			directory: parameters.options.slime.directory,
