@@ -32,7 +32,7 @@ END LICENSE
 		</div>
 		-->
 		<div>
-			<script type="application/x.jsapi#initialize">
+			<script type="application/x.jsapi#initialize"><![CDATA[
 				scope.a = new module.Suite({
 					name: "a",
 					parts: {
@@ -55,7 +55,12 @@ END LICENSE
 						}
 					}
 				});
-			</script>
+				
+				scope.form = ($jsapi.environment.parameters && $jsapi.environment.parameters.form) 
+					? $api.Object({ properties: $jsapi.environment.parameters.form.controls }) 
+					: void(0)
+				;
+			]]></script>
 			<h1>Exports</h1>
 			<div class="type">
 				<a class="type" name="types.Verify">Verify</a>
@@ -89,6 +94,18 @@ END LICENSE
 					v(methodThrows).evaluate(function() { return this.method(); }).threw.message.is("Wrong again, knave!");
 					v(methodThrows).evaluate(function() { return this.works(); }).threw.nothing();
 				</script>
+				<script type="application/x.jsapi#tests" jsapi:id="issue290"><![CDATA[
+					var object = {
+						method: function() {
+						}
+					};
+					var v = new module.Verify({
+						test: function() {
+							test.apply(scope,arguments);
+						}
+					});
+					if (form && form.issue290) v(object).method.is.type("function");
+				]]></script>
 			</div>
 			<div class="type">
 				<a class="type" name="types.definition">definition</a>
