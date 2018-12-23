@@ -3,5 +3,6 @@ suite.part("definition", getPartDescriptor({
 	definition: form.definition,
 	environment: {
 		parameters: parameters
-	}
+	},
+	part: form.part
 }));

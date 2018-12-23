@@ -2,8 +2,10 @@ var parameters = jsh.script.getopts({
 	options: {
 		suite: jsh.file.Pathname,
 		definition: jsh.file.Pathname,
-
+		part: String,
+		
 		parameter: jsh.script.getopts.ARRAY(String),
+		
 
 		interactive: false,
 		"chrome:instance": jsh.file.Pathname,
@@ -109,6 +111,9 @@ var run = function(browser) {
 				to: parameters.options.definition.file
 			});
 			uri += "&definition=" + toDefinition.relative
+			if (parameters.options.part) {
+				uri += "&part=" + parameters.options.part;
+			}
 		}
 		parameters.options.parameter.forEach(function(argument) {
 			uri += "&" + argument;
