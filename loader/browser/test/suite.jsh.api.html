@@ -13,20 +13,45 @@ END LICENSE
 --><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
 <head>
-	<title>__TITLE__</title>
+	<title>suite.jsh.js: Browser test suite runner</title>
 	<!--	TODO	change these to use local copies of these files at the appropriate location	-->
 	<!--
 		These files are specified using http: rather than https: because githack.com will redirect them to https:, but http: will
 		work when using an HTTP proxy to serve local copies of the files without needing to run https: locally
 	-->
-	<link href="http://bb.githack.com/davidpcaldwell/slime/raw/tip/loader/api/api.css" rel="stylesheet" type="text/css" />
-	<script src="http://bb.githack.com/davidpcaldwell/slime/raw/tip/loader/api/api.js"></script>
+	<link href="../../../loader/api/api.css" rel="stylesheet" type="text/css" />
+	<script src="../../..//loader/api/api.js"></script>
 	<script>
 		//	TODO	CORS
 		document.domain = document.domain;
 	</script>
 </head>
 <body>
+	<div><code>suite.jsh.js</code> executes a <a href="api.html">browser test suite</a>.</div>
+	<div>
+		<h1>Arguments</h1>
+		<ul>
+			<li><code>-suite <i>file</i></code>: A suite to run.</li>
+			<li><code>-parameter <i>name=value</i></code>: A query parameter to send to the suite.</li>
+			<li>
+				<code>-interactive</code>: Whether to run the test suite interactively. The suite will only be run in one browser,
+				which will stay open after running so that the page may be refreshed and the suite run again.
+			</li>
+			<li>
+				<code>-chrome:instance <i>pathname</i></code>: Specifies the user data directory that will be used for Google Chrome
+				if Chrome is one of the browser running the tests.
+			</li>
+			<li>
+				<code>-default</code>: Specifies that the tests should be run only in the default browser. If this option is not
+				specified, the tests will be executed in every detected browser.
+			</li>
+			<li>
+				<code>-view <i>view</i></code>: If <code>console</code>, the results of the test suite will be emitted to the
+				<code>jsh</code> console. If <code>stdio</code>, the results of the test suite will be written to the standard
+				output stream in such a way that they can be consumed by <code>jsh.unit.Suite.Fork</code>.
+			</li>
+		</ul>
+	</div>
 	<div jsapi:id="issue300">
 		<script type="application/x.jsapi#tests" jsapi:id="success">
 			jsh.shell.jsh({
@@ -56,7 +81,6 @@ END LICENSE
 			})
 		</script>
 	</div>
-	<div>__DESCRIPTION__</div>
 	<div>
 		<h1>Context</h1>
 		<ul>

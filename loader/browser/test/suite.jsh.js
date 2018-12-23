@@ -1,6 +1,7 @@
 var parameters = jsh.script.getopts({
 	options: {
 		suite: jsh.file.Pathname,
+		definition: jsh.file.Pathname,
 
 		parameter: jsh.script.getopts.ARRAY(String),
 
@@ -24,6 +25,10 @@ if (parameters.options.view == "chrome") {
 //	* the suite
 //	* the launching page
 //	* the SLIME installation that will load the page and run it
+
+if (parameters.options.definition && !parameters.options.suite) {
+	parameters.options.suite = jsh.script.file.parent.getRelativePath("definition.suite.js");
+}
 
 var toSuite = jsh.file.navigate({
 	from: jsh.shell.jsh.src.getFile("loader/browser/test/suite.js"),
@@ -98,6 +103,13 @@ var run = function(browser) {
 		// TODO: query string by string concatenation is sloppy
 		// TODO: probably should just be suite.html, not suite.api.html
 		var uri = "http://127.0.0.1:" + tomcat.port + "/" + "loader/browser/test/suite.html" + "?suite=" + toSuite.relative + command;
+		if (parameters.options.definition) {
+			var toDefinition = jsh.file.navigate({
+				from: parameters.options.suite.file,
+				to: parameters.options.definition.file
+			});
+			uri += "&definition=" + toDefinition.relative
+		}
 		parameters.options.parameter.forEach(function(argument) {
 			uri += "&" + argument;
 		});

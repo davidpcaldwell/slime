@@ -34,7 +34,10 @@ window.addEventListener("load", function() {
 				form: parameters.form
 			},
 			suite: api.suite,
-			getPartDescriptor: function(definition,environment,part) {
+			getPartDescriptor: function(p) {
+				var definition = p.definition;
+				var environment = p.environment;
+				var part = p.part;
 				var base = (function(path) {
 					var tokens = path.split("/");
 					if (tokens.length == 1) return "";
