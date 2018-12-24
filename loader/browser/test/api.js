@@ -240,11 +240,11 @@ var Scope = function(definition,environment) {
 	this.$api = inonit.loader.$sdk.api;
 };
 
-var getPartDescriptor = function(definition,environment,path) {
+var getPartDescriptor = function(definition,environment) {
 	var apiHtml = getApiHtmlTests(definition);
 	var scope = new Scope(definition,environment);
-	var moduleScenario = apiHtml.getSuiteDescriptor(scope,path);
-	moduleScenario.name = (path) ? (definition + ":" + path) : definition;
+	var moduleScenario = apiHtml.getSuiteDescriptor(scope);
+	moduleScenario.name = definition;
 	return moduleScenario;
 };
 
@@ -254,4 +254,8 @@ if (!$context.old) {
 	var suite = new api.ui.api.Suite();
 	api.ui.suite(suite);
 	$exports.suite = suite;
+
+	$exports.setPath = function(path) {
+		api.ui.setPath(path);
+	}
 }

@@ -37,14 +37,16 @@ window.addEventListener("load", function() {
 			getPartDescriptor: function(p) {
 				var definition = p.definition;
 				var environment = p.environment;
-				var part = p.part;
 				var base = (function(path) {
 					var tokens = path.split("/");
 					if (tokens.length == 1) return "";
 					return tokens.slice(0,-1).join("/") + "/";
 				})(parameters.suite);
 				if (!environment) environment = {};
-				return api.getPartDescriptor(base + definition,environment,part);
+				return api.getPartDescriptor(base + definition,environment);
+			},
+			setPath: function(path) {
+				api.setPath(path);
 			}
 		});
 	}

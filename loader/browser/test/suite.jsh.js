@@ -17,6 +17,12 @@ var parameters = jsh.script.getopts({
 	}
 });
 
+if (parameters.options.part) {
+	// TODO: Currently with the way the unit testing for paths is duct-taped together, non-interactively running part of a browser
+	// suite does not work -- the browser does not exit -- for unknown reasons. Not really an important use case.
+	parameters.options.interactive = true;
+}
+
 if (parameters.options.view == "chrome") {
 	// TODO: For some reason "chrome" does not work; not that it would be useful, since tests are already being run in a browser
 	jsh.shell.console("Unsupported: -view chrome [use 'console' or 'stdio']");

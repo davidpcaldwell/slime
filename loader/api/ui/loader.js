@@ -119,6 +119,9 @@ $set(function(p) {
                 var event = new Event("click");
                 document.getElementById("run").dispatchEvent(event);
             }
+        },
+        setPath: function(path) {
+        	unit.setPath(path);
         }
     };
 });

@@ -32,7 +32,9 @@ END LICENSE
 		<h1>Arguments</h1>
 		<ul>
 			<li><code>-suite <i>file</i></code>: A suite to run.</li>
-			<li><code>-parameter <i>name=value</i></code>: A query parameter to send to the suite.</li>
+			<li><code>-definition <i>file</i></code>: A definition to run.</li>
+			<li><code>-part <i>part</i></code>: What part of the definition to run. Implies <code>-interactive</code>.</li> 
+			<li><code>-parameter <i>name=value</i></code>: A query parameter to send to the suite or definition.</li>
 			<li>
 				<code>-interactive</code>: Whether to run the test suite interactively. The suite will only be run in one browser,
 				which will stay open after running so that the page may be refreshed and the suite run again.

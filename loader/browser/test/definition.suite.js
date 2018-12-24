@@ -3,7 +3,10 @@ var part = getPartDescriptor({
 	definition: form.definition,
 	environment: {
 		parameters: parameters
-	},
-	part: form.part
+	}
 });
 suite.part("definition", part);
+if (form.part) {
+	var path = part.getPath(form.part.split("/"));
+	setPath(["definition"].concat(path));
+}
