@@ -37,8 +37,18 @@ var toSuite = jsh.file.navigate({
 	to: parameters.options.suite.file
 });
 
+var testBase = toSuite.base;
+
+if (parameters.options.definition) {
+	var toDefinition = jsh.file.navigate({
+		from: testBase,
+		to: parameters.options.definition.file
+	});
+	testBase = toDefinition.base;
+}
+
 var toShell = jsh.file.navigate({
-	from: toSuite.base,
+	from: testBase,
 	to: jsh.shell.jsh.src
 });
 
@@ -46,6 +56,13 @@ var toResult = jsh.file.navigate({
 	from: toShell.base,
 	to: jsh.shell.jsh.src.getFile("loader/browser/test/suite.js"),
 });
+
+var toSuiteHtml = jsh.file.navigate({
+	from: toResult.base,
+	to: jsh.shell.jsh.src.getRelativePath("loader/browser/test/suite.html")
+});
+
+debugger;
 
 var url = toResult.relative.replace(/suite\.js/g, "result");
 
@@ -89,7 +106,7 @@ var run = function(browser) {
 						},
 						new scope.httpd.Handler.Loader({
 							loader: new jsh.file.Loader({
-								directory: toShell.base
+								directory: toResult.base
 							})
 						})
 					)
@@ -104,7 +121,7 @@ var run = function(browser) {
 	jsh.java.Thread.start(function() {
 		// TODO: query string by string concatenation is sloppy
 		// TODO: probably should just be suite.html, not suite.api.html
-		var uri = "http://127.0.0.1:" + tomcat.port + "/" + "loader/browser/test/suite.html" + "?suite=" + toSuite.relative + command;
+		var uri = "http://127.0.0.1:" + tomcat.port + "/" + toSuiteHtml.relative + "?suite=" + toSuite.relative + command;
 		if (parameters.options.definition) {
 			var toDefinition = jsh.file.navigate({
 				from: parameters.options.suite.file,

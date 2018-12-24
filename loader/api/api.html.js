@@ -94,7 +94,8 @@ var getDescendants = function(element) {
 	};
 
 	var rv = [];
-	addChildren(rv,element.getChildren());
+	var children = element.getChildren();
+	addChildren(rv,children);
 	return rv;
 }
 
