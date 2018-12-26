@@ -13,7 +13,7 @@
 
 . $(dirname $0)/rc.bash
 UNAME=$(uname)
-JDK8_UPDATE=172
+JDK8_UPDATE=192
 VERSION=1.8.0_$JDK8_UPDATE
 RELEASE=8u$JDK8_UPDATE
 if [ "$UNAME" = "Darwin" ]; then

@@ -22,7 +22,8 @@ var parameters = jsh.script.getopts({
 		view: "console",
 		"chrome:profile": jsh.file.Pathname,
 		port: Number,
-		part: String
+		part: String,
+		noselfping: false
 	},
 	unhandled: jsh.script.getopts.UNEXPECTED_OPTION_PARSER.SKIP
 });
@@ -147,7 +148,9 @@ parameters.options.java.forEach(function(jre) {
 							arguments: [
 								"-shell:built", shells.built,
 								"-view", "stdio"
-							],
+							].concat(
+								(parameters.options.noselfping) ? ["-noselfping"] : []
+							),
 							environment: environment
 						}),
 						integration: jsh.unit.Suite.Fork({
@@ -217,10 +220,21 @@ if (parameters.options.browser) {
 	top.part("tools", {
 		parts: {
 			browser: {
-				parts: {
-					suite: new jsh.unit.part.Html({
-						pathname: jsh.shell.jsh.src.getRelativePath("loader/browser/test/suite.jsh.api.html")
-					})
+				parts: new function() {
+					if (parameters.options.browser) {
+						if (jsh.shell.jsh.lib.getSubdirectory("tomcat")) {
+							this.suite = new jsh.unit.part.Html({
+								pathname: jsh.shell.jsh.src.getRelativePath("loader/browser/test/suite.jsh.api.html")
+							})
+						} else {
+							this.skip = {
+								execute: function(scope,verify) {
+									var MESSAGE = "Skipping browser test suite tests; no Tomcat to serve files.";
+									verify(MESSAGE).is(MESSAGE);
+								}
+							}
+						}
+					}
 				}
 			}
 		}
