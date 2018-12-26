@@ -1246,6 +1246,8 @@ $exports.Hgrc = function(p) {
 	this.unit = {
 		parse: parse
 	};
+
+	// TODO: Object.defineProperty
 	this.unit.__defineGetter__("lines", function() {
 		return lines;
 	});
