@@ -18,7 +18,8 @@ var parameters = jsh.script.getopts({
 		view: "console",
 		port: Number,
 		"chrome:profile": jsh.file.Pathname,
-		unit: String
+		unit: String,
+		noselfping: false
 	}
 });
 
@@ -205,6 +206,8 @@ var environment = new function() {
 			});
 		}
 	}
+
+	this.noselfping = parameters.options.noselfping;
 }
 
 if (parameters.options.built) {

@@ -311,7 +311,7 @@ END LICENSE
 									jsh.shell.tools.tomcat.install({ mock: mock }, new Captor(events,["console","installed"]));
 									verify(events)[0].type.is("console");
 									jsh.shell.console(events[0].detail);
-									verify(events)[0].evaluate(function() { return /^Unzipping (?:[a-zA-Z0-9\/\.]+) to\:(.*)$/.test(this.detail); }).is(true);
+									verify(events)[0].evaluate(function() { return /^Unzipping (?:[a-zA-Z0-9\/\._]+) to\:(.*)$/.test(this.detail); }).is(true);
 									verify(mock.lib).getSubdirectory("tomcat").getFile("a").is.type("object");
 									verify(mock.lib).getSubdirectory("tomcat").getFile("b").is.type("null");
 									var installed = jsh.shell.tools.tomcat.installed({ home: mock.lib.getSubdirectory("tomcat") });
