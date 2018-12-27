@@ -24,9 +24,10 @@ plugin({
 			var pathname = jsh.shell.HOME.getRelativePath(".inonit/jsh/etc/keystore");
 			if (!pathname.file) {
 				pathname.parent.createDirectory({
-					ifExists: function(dir) {
+					exists: function(dir) {
 						return false;
-					}
+					},
+					recursive: true
 				});
 				if (!p) p = {};
 				if (!p.dname) p.dname = {};
