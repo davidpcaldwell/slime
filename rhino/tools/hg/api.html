@@ -998,7 +998,7 @@ END LICENSE
 						verify(server).port.is.type("number");
 						var tmpclone = jsh.shell.TMPDIR.createTemporary({ directory: true });
 						var remote = new module.Repository({ url: "http://127.0.0.1:" + server.port + "/" });
-						
+
 						var local = (function cloneWithRetries() {
 							for (var i=0; i<3; i++) {
 								try {
@@ -1183,7 +1183,68 @@ END LICENSE
 				<div class="instances">
 					<div class="label">Instances</div>
 					<span class="type">__TYPE__</span>
-					<span>__DESCRIPTION__</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="function">
+							<div class="name">set</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="value">
+										<span class="type">string</span>
+										<span>The section of the file.</span>
+									</li>
+									<li class="value">
+										<span class="type">string</span>
+										<span>name</span>
+									</li>
+									<li class="value">
+										<span class="type">string</span>
+										<span>value</span>
+									</li>
+								</ol>
+							</div>
+						</li>
+						<li class="function">
+							<div class="name">get</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="value">
+										<span class="type">string</span>
+										<span>The name of a setting to retrieve.</span>
+									</li>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">string</span>
+								<span>
+									The value of that property, or <code>null</code> if it is
+									absent.
+								</span>
+							</div>
+						</li>
+						<li class="function">
+							<div class="name">get</div>
+							<span>__DESCRIPTION__</span>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">object</span>
+								<span>
+									An object which has a property for each setting, whose name
+									is the name of the setting and whose value is the value of
+									that setting.
+								</span>
+							</div>
+						</li>
+						<li class="function">
+							<div class="name">write</div>
+							<span>Writes out the current file.</span>
+						</li>
+					</ul>
 				</div>
 				<script type="application/x.jsapi#tests"><![CDATA[
 					var dir = jsh.shell.TMPDIR.createTemporary({ directory: true });
