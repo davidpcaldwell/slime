@@ -217,6 +217,13 @@ var Scope = function(definition,environment) {
 					scope,
 					target
 				);
+			};
+			this.value = function(path,scope,target) {
+				return inonit.loader.value(
+					inonit.loader.nugget.page.relative(base+path),
+					scope,
+					target
+				);
 			}
 			//	TODO	can the below eval and string be replaced by a form of loader.get() or something?
 			this.eval = function(path,scope) {
