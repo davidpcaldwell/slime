@@ -337,7 +337,7 @@
 						name: resource.name,
 						code: $coffee.compile(string)
 					};
-				} else if (type && type.is("application/javascript")) {
+				} else if (type && type.is("application/javascript") || type && type.is("application/x-javascript")) {
 					resource.js = {
 						name: resource.name,
 						code: string
