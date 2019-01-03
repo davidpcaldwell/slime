@@ -518,10 +518,12 @@ $exports.run.evaluate.jsh.wrap = function(result) {
 //	$exports.jsh.plugins = $context.api.file.filesystem.Searchpath.parse(String($exports.properties.object.jsh.plugins));
 //}
 
-if ($exports.properties.object.jsh.shell && $exports.properties.object.jsh.shell.home) {
+// Packages.java.lang.System.err.println(String(Packages.java.lang.System.getProperties()));
+// Packages.java.lang.System.err.println(JSON.stringify($exports.properties.object,void(0),"    "));
+if ($exports.properties.object.jsh && $exports.properties.object.jsh.shell && $exports.properties.object.jsh.shell.home) {
 	$exports.jsh.home = $context.api.file.Pathname($exports.properties.object.jsh.shell.home).directory
 }
-if ($exports.properties.object.jsh.shell && $exports.properties.object.jsh.shell.src) {
+if ($exports.properties.object.jsh && $exports.properties.object.jsh.shell && $exports.properties.object.jsh.shell.src) {
 	(function() {
 		var src = String($exports.properties.object.jsh.shell.src);
 		if ($context.api.file.Pathname(src).directory) {
@@ -531,7 +533,7 @@ if ($exports.properties.object.jsh.shell && $exports.properties.object.jsh.shell
 		}
 	})();
 }
-if ($exports.properties.object.jsh.shell && $exports.properties.object.jsh.shell.lib) {
+if ($exports.properties.object.jsh && $exports.properties.object.jsh.shell && $exports.properties.object.jsh.shell.lib) {
 	$exports.jsh.lib = $context.api.file.Pathname($exports.properties.object.jsh.shell.lib).directory;
 } else if ($exports.jsh.home) {
 	$exports.jsh.lib = $exports.jsh.home.getSubdirectory("lib");
