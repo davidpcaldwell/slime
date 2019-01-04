@@ -64,8 +64,13 @@ END LICENSE
 							Sets up a debugger to debug scripts.
 						</div>
 						<div>
-							If the value is <code>rhino</code>, and the shell is using Rhino as
+							If the value is <code>rhino</code>, and the shell can use Rhino as
 							its JavaScript engine, the Rhino debugger will be launched to debug the script.
+						</div>
+						<div>
+							If the value is <code>ncdbg</code>, and the shell can use Nashorn as its JavaScript engine, the
+							<code>ncdbg</code> debugger will be used to execute the script.
+							<!-- TODO: hyperlink to ncdbg -->
 						</div>
 						<div>
 							If set to <code>profiler</code> or a value starting with <code>profiler:</code>,

@@ -194,8 +194,10 @@ if ( profilerMatcher.test(scriptDebugger)) {
 	$api.slime.settings.set("jsh.engine", "rhino");
 } else if (scriptDebugger == "ncdbg") {
 	$api.slime.settings.set("jsh.engine", "nashorn");
+	var ncdbg = new $api.slime.src.File("jsh/tools/ncdbg.jsh.js");
 	// TODO: command.argument(.../ncdbg.jsh.js)
-	throw new Error("ncdbg jsh.debug.script not implemented");
+	command.argument(String(ncdbg.getAbsolutePath()));
+//	throw new Error("ncdbg jsh.debug.script not implemented");
 }
 
 (function() {
