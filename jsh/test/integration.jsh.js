@@ -312,13 +312,6 @@ if (CATALINA_HOME) {
 })();
 
 ScriptVerifier({
-	path: "$api-deprecate-properties.jsh.js",
-	execute: function(verify) {
-		verify(this.stdio.output.split(LINE_SEPARATOR))[0].is("o.f.property = foo");
-	}
-});
-
-ScriptVerifier({
 	path: "jsh.shell/jsh.home.jsh.js",
 	execute: function(verify) {
 		var JSH_HOME = jsh.shell.jsh.home.pathname.java.adapt();

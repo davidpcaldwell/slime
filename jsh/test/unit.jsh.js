@@ -243,7 +243,33 @@ var definition = new jsh.unit.part.Html({
 	environment: environment
 });
 
-var suite = new jsh.unit.Suite(definition);
+var suite = new jsh.unit.Suite();
+
+var parts = {
+	"$api": new jsh.unit.part.Html({
+		pathname: jsh.script.file.parent.parent.parent.getRelativePath("loader/$api.api.html")
+	})
+}
+
+// TODO: remove this from 'old'
+suite.part("$api", parts.$api);
+suite.part("old", definition);
+
+var suitepath;
+if (parameters.options.unit) {
+	var tokens = parameters.options.unit.split(":");
+	var partname = tokens[0];
+	var partpath = (tokens.length > 1) ? tokens[1].split("/") : void(0);
+	var partpage = parts[partname];
+	if (partpage) {
+		suitepath = partname.split("/");
+		if (partpath) {
+			suitepath = suitepath.concat(partpage.getPath(partpath));
+		}
+	} else {
+		suitepath = ["old"].concat(definition.getPath(parameters.options.unit.split("/")));
+	}
+}
 
 jsh.unit.interface.create(suite, new function() {
 	if (parameters.options.view == "chrome") {
@@ -254,7 +280,5 @@ jsh.unit.interface.create(suite, new function() {
 	} else {
 		this.view = parameters.options.view;
 	}
-	if (parameters.options.unit) {
-		this.path = definition.getPath(parameters.options.unit.split("/"))
-	}
+	this.path = suitepath;
 });
