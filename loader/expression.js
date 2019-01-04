@@ -252,7 +252,11 @@
 			var methods = {};
 
 			var Resource = function(o) {
-				if (typeof(o.read) == "function") throw new Error();
+				if (typeof(o.read) == "function") {
+					// TODO: ncdbg conditional breakpoint with above condition does not appear to work
+					debugger;
+					throw new Error();
+				}
 				if (!this.type) this.type = (function(type,name) {
 					if (typeof(type) == "string") return mime.Type.parse(type);
 					if (type instanceof mime.Type) return type;
@@ -395,6 +399,9 @@
 				this.source = p;
 
 				this.get = function(path) {
+					if (path == "loader/test/data/b/module.js") {
+						debugger;
+					}
 					var rsource = this.source.get(path);
 					if (!rsource) return rsource;
 					return new p.Resource(rsource);

@@ -131,63 +131,45 @@ parameters.options.java.forEach(function(jre) {
 		} else {
 			jsh.shell.echo("Running " + jsh.shell.jsh.home + " with Java " + launcher + " and engine " + engine + " ...");
 
-			if (true) {
-				var environment = jsh.js.Object.set({}, jsh.shell.environment
-					, (parameters.options.tomcat) ? { CATALINA_HOME: parameters.options.tomcat.toString() } : {}
-					, (engine) ? { JSH_ENGINE: engine.toLowerCase() } : {}
-					, (jsh.shell.rhino && jsh.shell.rhino.classpath) ? { JSH_ENGINE_RHINO_CLASSPATH: String(jsh.shell.rhino.classpath) } : ""
-				);
-				top.part("Java tests: engine [" + engine + "]; launcher " + launcher, {
-					parts: {
-						unit: jsh.unit.Suite.Fork({
-							name: "Unit tests",
-							run: jsh.shell.jsh,
-							vmarguments: ["-Xms1024m"],
-							shell: SLIME,
-							script: SLIME.getFile("jsh/etc/unit.jsh.js"),
-							arguments: [
-								"-shell:built", shells.built,
-								"-view", "stdio"
-							].concat(
-								(parameters.options.noselfping) ? ["-noselfping"] : []
-							),
-							environment: environment
-						}),
-						integration: jsh.unit.Suite.Fork({
-							name: "Integration tests",
-							run: jsh.shell.jsh,
-							//	Right now, integration tests require built shell
-							shell: shells.built,
-							script: SLIME.getFile("jsh/etc/integration.jsh.js"),
-							arguments: (function() {
-								var rv = [];
-								if (jsh.shell.os.name == "Mac OS X") {
-									rv.push("-executable");
-								}
-								rv.push("-view","stdio");
-								return rv;
-							})(),
-							environment: environment
-						})
-					}
-				});
-			} else {
-				subprocess({
-					name: "Java tests: engine [" + engine + "]; launcher " + launcher,
-					run: jsh.shell.run,
-					command: launcher,
-					arguments: launch.concat([
-						parameters.options.slime.directory.getRelativePath("jsh/etc/suite.jsh.js").toString(),
-						"-view", "stdio"
-					]),
-					directory: parameters.options.slime.directory,
-					environment: jsh.js.Object.set({}, jsh.shell.environment
-						, (parameters.options.tomcat) ? { CATALINA_HOME: parameters.options.tomcat.toString() } : {}
-						, (engine) ? { JSH_ENGINE: engine.toLowerCase() } : {}
-						, (jsh.shell.rhino && jsh.shell.rhino.classpath) ? { JSH_ENGINE_RHINO_CLASSPATH: String(jsh.shell.rhino.classpath) } : ""
-					)
-				});
-			}
+			var environment = jsh.js.Object.set({}, jsh.shell.environment
+				, (parameters.options.tomcat) ? { CATALINA_HOME: parameters.options.tomcat.toString() } : {}
+				, (engine) ? { JSH_ENGINE: engine.toLowerCase() } : {}
+				, (jsh.shell.rhino && jsh.shell.rhino.classpath) ? { JSH_ENGINE_RHINO_CLASSPATH: String(jsh.shell.rhino.classpath) } : ""
+			);
+			top.part("Java tests: engine [" + engine + "]; launcher " + launcher, {
+				parts: {
+					unit: jsh.unit.Suite.Fork({
+						name: "Unit tests",
+						run: jsh.shell.jsh,
+						vmarguments: ["-Xms1024m"],
+						shell: SLIME,
+						script: jsh.script.file.parent.getFile("unit.jsh.js"),
+						arguments: [
+							"-shell:built", shells.built,
+							"-view", "stdio"
+						].concat(
+							(parameters.options.noselfping) ? ["-noselfping"] : []
+						),
+						environment: environment
+					}),
+					integration: jsh.unit.Suite.Fork({
+						name: "Integration tests",
+						run: jsh.shell.jsh,
+						//	Right now, integration tests require built shell
+						shell: shells.built,
+						script: jsh.script.file.parent.getFile("integration.jsh.js"),
+						arguments: (function() {
+							var rv = [];
+							if (jsh.shell.os.name == "Mac OS X") {
+								rv.push("-executable");
+							}
+							rv.push("-view","stdio");
+							return rv;
+						})(),
+						environment: environment
+					})
+				}
+			});
 		}
 	});
 });

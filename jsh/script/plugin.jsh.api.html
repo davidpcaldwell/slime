@@ -47,12 +47,12 @@ END LICENSE
 				</span>
 				<script type="application/x.jsapi#tests">
 					var unbuilt = $jsapi.environment.jsh.unbuilt.data;
-					verify(unbuilt)["jsh.script.file"].string.is($jsapi.environment.jsh.src.getRelativePath("jsh/etc/jsh-data.jsh.js").toString());
-					verify(unbuilt)["jsh.script.file"].pathname.string.is($jsapi.environment.jsh.src.getRelativePath("jsh/etc/jsh-data.jsh.js").toString());
+					verify(unbuilt)["jsh.script.file"].string.is($jsapi.environment.jsh.src.getRelativePath("jsh/test/jsh-data.jsh.js").toString());
+					verify(unbuilt)["jsh.script.file"].pathname.string.is($jsapi.environment.jsh.src.getRelativePath("jsh/test/jsh-data.jsh.js").toString());
 
 					var built = $jsapi.environment.jsh.built.data;
-					verify(built)["jsh.script.file"].string.is($jsapi.environment.jsh.src.getRelativePath("jsh/etc/jsh-data.jsh.js").toString());
-					verify(built)["jsh.script.file"].pathname.string.is($jsapi.environment.jsh.src.getRelativePath("jsh/etc/jsh-data.jsh.js").toString());
+					verify(built)["jsh.script.file"].string.is($jsapi.environment.jsh.src.getRelativePath("jsh/test/jsh-data.jsh.js").toString());
+					verify(built)["jsh.script.file"].pathname.string.is($jsapi.environment.jsh.src.getRelativePath("jsh/test/jsh-data.jsh.js").toString());
 
 					var packaged = $jsapi.environment.jsh.packaged.data;
 					var jar = $jsapi.environment.jsh.packaged.jar;
@@ -76,7 +76,7 @@ END LICENSE
 				</span>
 				<script type="application/x.jsapi#tests">
 					var $jsh = $jsapi.environment.jsh;
-					var src = $jsh.src.getRelativePath("jsh/etc/jsh-data.jsh.js").toString();
+					var src = $jsh.src.getRelativePath("jsh/test/jsh-data.jsh.js").toString();
 
 					verify($jsh).unbuilt.data["jsh.script.script"].string.is(src);
 					verify($jsh).unbuilt.data["jsh.script.script"].pathname.string.is(src);
@@ -98,7 +98,7 @@ END LICENSE
 					var $jsh = $jsapi.environment.jsh;
 
 					if ($jsh.remote) {
-						verify($jsh).remote.data["jsh.script.url"].string.is("http://bitbucket.org/api/1.0/repositories/davidpcaldwell/slime/raw/local/jsh/etc/jsh-data.jsh.js");
+						verify($jsh).remote.data["jsh.script.url"].string.is("http://bitbucket.org/api/1.0/repositories/davidpcaldwell/slime/raw/local/jsh/test/jsh-data.jsh.js");
 					}
 					//	Additional, possibly excessive, tests are in rhino/shell/test/jsh.shell.jsh.suite.jsh.js
 				</script>

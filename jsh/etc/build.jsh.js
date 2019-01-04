@@ -434,7 +434,7 @@ var getTestEnvironment = jsh.js.constant(function() {
 		console("Running unit tests ...");
 		jsh.shell.jsh({
 			shell: destination.shell,
-			script: destination.shell.getFile("src/jsh/etc/unit.jsh.js"),
+			script: destination.shell.getFile("src/jsh/test/unit.jsh.js"),
 			environment: getTestEnvironment()
 		});
 	}
@@ -455,7 +455,7 @@ var getTestEnvironment = jsh.js.constant(function() {
 		console("Running integration tests ...");
 		jsh.shell.jsh({
 			shell: destination.shell,
-			script: SLIME.getFile("jsh/etc/integration.jsh.js"),
+			script: SLIME.getFile("jsh/test/integration.jsh.js"),
 			arguments: [],
 			environment: getTestEnvironment()
 		});

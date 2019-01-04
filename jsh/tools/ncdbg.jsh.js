@@ -11,10 +11,30 @@
 //	Contributor(s):
 //	END LICENSE
 
+var result;
+
+var locations = (function() {
+	if (jsh.shell.jsh.src) return {
+		src: jsh.shell.jsh.src,
+		shell: jsh.shell.jsh.src,
+		launcher: [
+			jsh.shell.jsh.src.getRelativePath("rhino/jrunscript/api.js"),
+			"jsh"
+		]
+	};
+	if (jsh.shell.jsh.home) return {
+		src: jsh.shell.jsh.home.getSubdirectory("src"),
+		shell: jsh.shell.jsh.home,
+		launcher: [
+			jsh.shell.jsh.home.getRelativePath("jsh.js")
+		]
+	};
+})();
+
 if (!jsh.shell.jsh.lib.getSubdirectory("ncdbg")) {
 	jsh.shell.console("Required: ncdbg installation; attempting to install ...");
 	jsh.shell.jsh({
-		script: jsh.shell.jsh.src.getFile("jsh/tools/install/ncdbg.jsh.js"),
+		script: locations.src.getFile("jsh/tools/install/ncdbg.jsh.js"),
 		evaluate: function(result) {
 			if (result.status) {
 				jsh.shell.exit(result.status);
@@ -23,7 +43,7 @@ if (!jsh.shell.jsh.lib.getSubdirectory("ncdbg")) {
 	});
 	jsh.shell.console("Relaunching program in ncdbg-enabled shell ...");
 	jsh.shell.jsh({
-		shell: jsh.shell.jsh.src,
+		shell: locations.shell,
 		script: jsh.script.file,
 		arguments: jsh.script.arguments,
 		evaluate: jsh.shell.run.evaluate.wrap
@@ -66,8 +86,6 @@ var startChrome = function() {
 	});
 };
 
-var result;
-
 var startScript = function() {
 	if (!CAN_OPEN_BROWSER_WITH_DEVTOOLS_URL) {
 		(function copyUrlToClipboard(url) {
@@ -99,10 +117,7 @@ var startScript = function() {
 	try {
 		jsh.shell.jrunscript({
 			properties: properties,
-			arguments: [
-				jsh.shell.jsh.src.getRelativePath("rhino/jrunscript/api.js"),
-				"jsh"
-			].concat(parameters.arguments),
+			arguments: locations.launcher.concat(parameters.arguments),
 			environment: (function() {
 				var rv = Object.assign({}, jsh.shell.environment);
 				delete rv.JSH_DEBUG_SCRIPT;
@@ -114,6 +129,7 @@ var startScript = function() {
 		});
 	} catch (e) {
 		jsh.shell.console("script failed.");
+		result = { status: 127 };
 	} finally {
 		jsh.shell.console("script exited");
 	}

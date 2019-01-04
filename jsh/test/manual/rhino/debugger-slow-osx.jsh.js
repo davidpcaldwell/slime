@@ -15,7 +15,7 @@
 //	JSH_JVM_OPTIONS="-agentpath:/Users/dcaldwell/.inonit/tool/lib/netbeans.app/Contents/distribution/profiler/lib/deployed/jdk16/mac/libprofilerinterface.jnilib=/Users/dcaldwell/.inonit/tool/lib/netbeans.app/Contents/distribution/profiler/lib,5140"
 //	JSH_DEBUG_SCRIPT=rhino
 //	jrunscript
-//	rhino/jrunscript/api.js jsh jsh/etc/unit.jsh.js -unit jsh.file
+//	rhino/jrunscript/api.js jsh jsh/test/unit.jsh.js -unit jsh.file
 var parameters = jsh.script.getopts({
 	options: {
 		netbeans: jsh.file.Pathname,
@@ -41,6 +41,6 @@ jsh.shell.jsh({
 		JSH_DEBUG_SCRIPT: "rhino"
 	}),
 	properties: properties,
-	script: base.getFile("jsh/etc/unit.jsh.js"),
+	script: base.getFile("jsh/test/unit.jsh.js"),
 	arguments: ["-unit", "jsh.file"]
 });

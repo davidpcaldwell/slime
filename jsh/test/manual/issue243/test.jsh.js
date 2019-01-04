@@ -36,7 +36,7 @@ var environment = (parameters.options.debug) ? { JSH_DEBUG_SCRIPT: "rhino" } : {
 jsh.shell.console("Running unit tests with arguments " + parameters.arguments.join(" ") + " and environment " + JSON.stringify(environment));
 jsh.shell.jsh({
 	shell: built,
-	script: built.getFile("src/jsh/etc/unit.jsh.js"),
+	script: built.getFile("src/jsh/test/unit.jsh.js"),
 	arguments: parameters.arguments,
 	environment: jsh.js.Object.set({}, jsh.shell.environment, environment)
 });

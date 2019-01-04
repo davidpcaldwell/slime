@@ -63,7 +63,7 @@ var environment = new function() {
 						var to = jsh.shell.TMPDIR.createTemporary({ directory: true });
 						jsh.shell.jsh({
 							shell: jsh.shell.jsh.src,
-							script: jsh.script.file.parent.getFile("build.jsh.js"),
+							script: jsh.script.file.parent.parent.parent.getFile("jsh/etc/build.jsh.js"),
 							arguments: [
 								to,
 								"-notest",
@@ -127,7 +127,7 @@ var environment = new function() {
 						shell: packagingShell.home,
 						script: jsh.shell.jsh.src.getRelativePath("jsh/tools/package.jsh.js"),
 						arguments: ([
-							"-script", jsh.shell.jsh.src.getRelativePath("jsh/etc/jsh-data.jsh.js"),
+							"-script", jsh.shell.jsh.src.getRelativePath("jsh/test/jsh-data.jsh.js"),
 							"-to", to
 						]).concat( (!rhino) ? ["-norhino"] : [] )
 					});
@@ -189,7 +189,7 @@ var environment = new function() {
 							trace: parameters.options["trace:server"]
 						});
 						jsh.shell.console("Mock port is " + mock.port);
-						var script = url + "jsh/etc/jsh-data.jsh.js";
+						var script = url + "jsh/test/jsh-data.jsh.js";
 						data = mock.jsh({
 							script: script,
 							stdio: {
@@ -239,7 +239,7 @@ if (parameters.options.built) {
 
 var definition = new jsh.unit.part.Html({
 	name: "jsh Unit Tests",
-	pathname: jsh.script.file.parent.getRelativePath("api.html"),
+	pathname: jsh.script.file.parent.parent.parent.getRelativePath("jsh/etc/api.html"),
 	environment: environment
 });
 

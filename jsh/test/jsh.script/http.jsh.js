@@ -48,7 +48,7 @@ jsh.shell.jsh({
 	shell: jsh.shell.jsh.home,
 	script: url,
 	environment: jsh.js.Object.set({}, jsh.shell.environment, {
-		JSH_SCRIPT_DEBUGGER: (parameters.options.debug) ? "rhino" : "none"
+		JSH_DEBUG_SCRIPT: (parameters.options.debug) ? "rhino" : "none"
 	})
 });
 jsh.shell.echo("Success launching URL script: " + url);
