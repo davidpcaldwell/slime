@@ -28,7 +28,16 @@ var formatters = {
 	}
 };
 
+var engines = {};
+if (jsh.java.getClass("org.mozilla.javascript.Context")) {
+	engines.rhino = true;
+	if (Packages.org.mozilla.javascript.Context.getCurrentContext()) {
+		engines.current = "rhino";
+	}
+}
+
 jsh.shell.echo(JSON.stringify({
+	engines: engines,
 	"jsh.script.file": (typeof(jsh.script.file) != "undefined") ? {
 		string: jsh.script.file.toString(),
 		pathname: {
