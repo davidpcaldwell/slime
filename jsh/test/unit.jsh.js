@@ -245,14 +245,23 @@ var definition = new jsh.unit.part.Html({
 
 var suite = new jsh.unit.Suite();
 
+var SRC = jsh.script.file.parent.parent.parent;
 var parts = {
 	"$api": new jsh.unit.part.Html({
-		pathname: jsh.script.file.parent.parent.parent.getRelativePath("loader/$api.api.html")
+		pathname: SRC.getRelativePath("loader/$api.api.html")
+	}),
+	"jsh.file/Searchpath": new jsh.unit.part.Html({
+		pathname: SRC.getRelativePath("rhino/file/api.Searchpath.html")
 	})
 }
 
 // TODO: remove this from 'old'
 suite.part("$api", parts.$api);
+suite.part("jsh.file", {
+	parts: {
+		Searchpath: parts["jsh.file/Searchpath"]
+	}
+});
 suite.part("old", definition);
 
 var suitepath;

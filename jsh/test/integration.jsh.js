@@ -402,13 +402,6 @@ scenario.part(".slime", {
 	}
 });
 
-ScriptVerifier({
-	path: "jsh.file/Searchpath.jsh.js",
-	execute: function(verify) {
-		verify(this).status.is(0);
-	}
-});
-
 //	jsh.shell.run({
 //		command: LAUNCHER_COMMAND[0],
 //		arguments: LAUNCHER_COMMAND.slice(1).concat(jsh.script.file.getRelativePath("jsh.shell/jsh.shell.jsh.jsh.js"))
