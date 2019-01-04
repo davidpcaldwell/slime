@@ -230,11 +230,6 @@ $api.debug("_urls = " + _urls);
 
 var classpath = new $api.jsh.Classpath(_urls);
 
-//	TODO	sure appears like this property is never used in the loader, and is not used in the launcher either. Does the loader
-//			need to know the launcher classpath? And anyway, this appears to be the *loader* classpath; see the part below, where
-//			its components are sent in succession to the command. Probably safe to delete.
-//command.systemProperty("jsh.launcher.classpath", classpath.local());
-
 var engine = $api.jsh.engines[$api.slime.settings.get("jsh.engine")];
 if (!engine) throw new Error("Specified engine not found: " + $api.slime.settings.get("jsh.engine")
 	+ " JSH_ENGINE=" + $api.shell.environment.JSH_ENGINE

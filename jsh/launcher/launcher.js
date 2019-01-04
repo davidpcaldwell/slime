@@ -473,9 +473,6 @@ try {
 			return rv;
 		})();
 
-		//	Make the launcher classpath available to help with launching subshells
-		//$api.slime.settings.set("jsh.launcher.classpath", String(Packages.java.lang.System.getProperty("java.class.path")));
-
 		//	Describe the shell
 		if ($api.jsh.shell.rhino) $api.slime.settings.set("jsh.engine.rhino.classpath", $api.jsh.shell.rhino);
 

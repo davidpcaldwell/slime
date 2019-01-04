@@ -231,7 +231,6 @@ $api.slime = (function(was) {
 //		map("jsh.user.plugins", BOTH);
 
 		//	Undocumented so far
-		//	map("jsh.launcher.classpath", BOTH);
 		map("jsh.launcher.script.api", BOTH);
 		map("jsh.launcher.script.main", BOTH);
 
@@ -247,9 +246,6 @@ $api.slime = (function(was) {
 		//	TODO	Seem to be used in loader:
 		//	Main.java:
 		//	jsh.shell.packaged
-		//
-		//	rhino/shell/jsh.js:
-		//	jsh.launcher.classpath
 
 		this.set = function(name,value) {
 			if (!all[name]) throw new Error("Not defined: " + name);
