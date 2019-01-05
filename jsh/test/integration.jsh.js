@@ -314,15 +314,6 @@ ScriptVerifier({
 	}
 });
 
-ScriptVerifier({
-	path: "loader/issue32.jsh.js",
-	execute: function(verify) {
-		var json = JSON.parse(this.stdio.output);
-		verify(json).length.is(1);
-		verify(json)[0].is("jsh");
-	}
-});
-
 if (CATALINA_HOME) {
 	ScriptVerifier({
 		name: "jsh.httpd",

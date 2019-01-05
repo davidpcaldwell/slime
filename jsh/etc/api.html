@@ -223,6 +223,38 @@ END LICENSE
 				</tr>
 			</tbody>
 		</table>
+		<script jsapi:id="issue32" type="application/x.jsapi#tests">
+			if (jsh.shell.environment.SLIME_TEST_ISSUE_307) {
+				(function() {
+					var output = jsh.shell.jsh({
+						shell: $jsapi.environment.jsh.unbuilt.src,
+						// TODO: move to jsh/loader/test
+						script: $jsapi.environment.jsh.unbuilt.src.getFile("jsh/loader/test/issue32.jsh.js"),
+						stdio: {
+							output: String
+						},
+						evaluate: function(result) {
+							return JSON.parse(result.stdio.output);
+						}
+					});
+					verify(output).length.is(1);
+					verify(output)[0].is("jsh");					
+				})();
+			}
+			var output = jsh.shell.jsh({
+				shell: $jsapi.environment.jsh.built.home,
+				// TODO: move to jsh/loader/test
+				script: $jsapi.environment.jsh.src.getFile("jsh/loader/test/issue32.jsh.js"),
+				stdio: {
+					output: String
+				},
+				evaluate: function(result) {
+					return JSON.parse(result.stdio.output);
+				}
+			});
+			verify(output).length.is(1);
+			verify(output)[0].is("jsh");
+		</script>
 	</div>
 	<div>
 		<h1>HTTP server</h1>
