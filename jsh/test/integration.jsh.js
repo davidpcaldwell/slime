@@ -67,44 +67,6 @@ var scenario = new jsh.unit.Suite({
 	name: "jsh Integration Tests"
 });
 
-scenario.part("unbuilt-shell-plugins", {
-	execute: function(scope,verify) {
-		//	TODO	this dance should be covered by a jsh.test API
-		var copied = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
-		copied.directory.remove();
-		src.copy(copied,{
-			filter: function(p) {
-				if (p.entry.path == "local/") return false;
-				return true;
-			}
-		});
-		src.getFile("jsh/test/unbuilt-shell-plugins/copy-as-plugin.jsh.js").copy(copied.directory.getRelativePath("foo/plugin.jsh.js"), { recursive: true });
-		var evaluate = function(result) {
-			jsh.shell.console("string = " + result.stdio.output);
-			return JSON.parse(result.stdio.output);
-		};
-		var shouldLoad = jsh.shell.jsh({
-			shell: copied.directory,
-			script: copied.directory.getFile("jsh/test/unbuilt-shell-plugins/output-plugin.jsh.js"),
-			stdio: {
-				output: String
-			},
-			evaluate: evaluate
-		});
-		verify(shouldLoad).evaluate.property("unbuilt-shell-plugins").is(true);
-		copied.directory.getFile("foo/plugin.jsh.js").move(copied.directory.getRelativePath("local/foo/plugin.jsh.js"), { recursive: true });
-		var shouldNotLoad = jsh.shell.jsh({
-			shell: copied.directory,
-			script: copied.directory.getFile("jsh/test/unbuilt-shell-plugins/output-plugin.jsh.js"),
-			stdio: {
-				output: String
-			},
-			evaluate: evaluate
-		});
-		verify(shouldNotLoad).evaluate.property("unbuilt-shell-plugins").is(void(0));
-	}
-});
-
 scenario.part("jsh.shell.jsh", new jsh.unit.Suite.Fork({
 	run: jsh.shell.jsh,
 	script: src.getFile("rhino/shell/test/jsh.shell.jsh.suite.jsh.js"),

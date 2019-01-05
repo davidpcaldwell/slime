@@ -260,7 +260,11 @@ var parts = {
 	}),
 	"jsh.file/Searchpath": new jsh.unit.part.Html({
 		pathname: SRC.getRelativePath("rhino/file/api.Searchpath.html")
-	})
+	}),
+	"loader": new jsh.unit.part.Html({
+		pathname: SRC.getRelativePath("jsh/loader/internal.api.html"),
+		environment: environment				
+	}),
 }
 
 // TODO: remove this from 'old'
@@ -272,6 +276,7 @@ suite.part("jsh.file", {
 	}
 });
 suite.part("jsh.shell", parts["jsh.shell"]);
+suite.part("loader", parts.loader);
 suite.part("old", definition);
 
 var suitepath;
