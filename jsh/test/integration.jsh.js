@@ -285,34 +285,6 @@ ScriptVerifier({
 	}
 });
 
-scenario.part("jsh.unit", {
-	parts: {
-		htmlReload: new ScriptPart({
-			shell: src,
-			script: src.getFile("jsh/unit/test/fail.jsh.js"),
-			check: function(verify) {
-				verify(this).status.is(1);
-			}
-		}),
-		suiteWithScenario: new jsh.unit.Suite.Fork({
-			run: jsh.shell.jsh,
-			shell: src,
-			script: src.getFile("jsh/unit/test/suite.jsh.js"),
-			arguments: [
-				"-view", "stdio"
-			]
-		}),
-		nakedScenario: new jsh.unit.Suite.Fork({
-			run: jsh.shell.jsh,
-			shell: src,
-			script: src.getFile("jsh/unit/test/scenario.jsh.js"),
-			arguments: [
-				"-view", "stdio"
-			]
-		}),
-	}
-});
-
 if (RHINO_LIBRARIES) scenario.part("rhino.optimization", {
 	execute: function(scope,verify) {
 		[-1,0,1].forEach(function(level) {

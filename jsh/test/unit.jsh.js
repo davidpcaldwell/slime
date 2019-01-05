@@ -285,6 +285,46 @@ suite.part("jsh.shell.jsh", new jsh.unit.Suite.Fork({
 	arguments: ["-view","stdio"]
 }));
 suite.part("loader", parts.loader);
+suite.part("jsh.unit", new function() {
+	var src = SRC;
+	this.parts = {
+		htmlReload: {
+			execute: function(scope,verify) {
+				var result = jsh.shell.jsh({
+					shell: src,
+					script: src.getFile("jsh/unit/test/fail.jsh.js"),
+					evaluate: function(result) {
+						return result;
+					}
+				});
+				verify(result).status.is(1);
+			}
+		},
+		// htmlReload: new ScriptPart({
+		// 	shell: src,
+		// 	script: src.getFile("jsh/unit/test/fail.jsh.js"),
+		// 	check: function(verify) {
+		// 		verify(this).status.is(1);
+		// 	}
+		// }),
+		suiteWithScenario: new jsh.unit.Suite.Fork({
+			run: jsh.shell.jsh,
+			shell: src,
+			script: src.getFile("jsh/unit/test/suite.jsh.js"),
+			arguments: [
+				"-view", "stdio"
+			]
+		}),
+		nakedScenario: new jsh.unit.Suite.Fork({
+			run: jsh.shell.jsh,
+			shell: src,
+			script: src.getFile("jsh/unit/test/scenario.jsh.js"),
+			arguments: [
+				"-view", "stdio"
+			]
+		}),
+	}
+});
 suite.part("old", definition);
 
 var suitepath;
