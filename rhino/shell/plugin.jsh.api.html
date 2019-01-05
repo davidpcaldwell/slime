@@ -255,6 +255,17 @@ END LICENSE
 						</li>
 					</ol>
 				</div>
+				<script type="application/x.jsapi#tests" jsapi:id="exit">
+					// TODO: using home shell to replicate previous test, not thinking about it
+					var result = jsh.shell.jsh({
+						shell: $jsapi.environment.jsh.built.home,
+						script: $jsapi.environment.jsh.src.getFile("rhino/shell/test/exit.jsh.js"),
+						evaluate: function(result) {
+							return result;
+						}
+					});
+					verify(result).status.is(3);
+				</script>
 			</li>
 			<li class="function">
 				<div class="name">echo</div>

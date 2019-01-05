@@ -173,14 +173,6 @@ if (CATALINA_HOME) {
 			verify(output)[0].is("Passed.");
 		}
 	});
-
-	ScriptVerifier({
-		parent: scenario.parts.shell,
-		path: "jsh.shell/exit.jsh.js",
-		execute: function(verify) {
-			verify(this).status.is(0);
-		}
-	});
 })();
 
 ScriptVerifier({
