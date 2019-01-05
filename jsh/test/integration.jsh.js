@@ -323,13 +323,6 @@ ScriptVerifier({
 	}
 });
 
-ScriptVerifier({
-	path: "loader/child.jsh.js",
-	execute: function(verify) {
-		verify(this).status.is(0);
-	}
-});
-
 if (CATALINA_HOME) {
 	ScriptVerifier({
 		name: "jsh.httpd",

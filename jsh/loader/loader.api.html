@@ -139,6 +139,13 @@ END LICENSE
 					<div class="label">Returns</div>
 					<span>The return value of the Rhino loader's <code>module</code> method.</span>
 				</div>
+				<script type="application/x.jsapi#tests" jsapi:id="child">
+					// TODO: Unclear what this is really testing, but adapted from previous (inefficient) integration test
+					var loader = new jsh.file.Loader({ directory: $jsapi.environment.jsh.src.getSubdirectory("jsh/loader/test/module-loader") });
+					var module = loader.module("module.js");
+					var method = module.$loader.get;
+					verify(module).$loader.evaluate.property("get").is.type("function");
+				</script>
 			</li>
 			<li class="function">
 				<div class="name">value</div>
@@ -286,6 +293,7 @@ END LICENSE
 					verify(directory).pathname.is.type("object");
 					jsh.loader.plugins(directory);
 					verify(global).evaluate.property("issue249").is.type("object");
+					delete global.issue249;
 				</script>
 			</li>
 		</ul>
