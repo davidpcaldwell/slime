@@ -45,56 +45,15 @@ if (!COFFEESCRIPT) {
 }
 
 var src = parameters.options.src.directory;
-var LOADER = new jsh.file.Loader({ directory: jsh.script.file.parent.parent.parent });
 
 var RHINO_LIBRARIES = (jsh.shell.jsh.lib.getFile("js.jar") && typeof(Packages.org.mozilla.javascript.Context) == "function") ? [jsh.shell.jsh.lib.getRelativePath("js.jar").java.adapt()] : null;
 
 //	TODO	there is an undocumented API for this now
 var LINE_SEPARATOR = String(Packages.java.lang.System.getProperty("line.separator"));
 
-var compileAddClasses = jsh.js.constant(function() {
-	var classes = jsh.shell.TMPDIR.createTemporary({ directory: true });
-	jsh.shell.console("Compiling AddClasses ...");
-	jsh.java.tools.javac({
-		destination: classes.pathname,
-		sourcepath: jsh.file.Searchpath([src.getRelativePath("jsh/test/addClasses/java")]),
-		arguments: [src.getRelativePath("jsh/test/addClasses/java/test/AddClasses.java")]
-	});
-	return classes;
-});
-
 var scenario = new jsh.unit.Suite({
 	name: "jsh Integration Tests"
 });
-
-//scenario.part("jsh.loader.java", {
-//	execute: function(scope,verify) {
-//		var result = jsh.shell.jsh({
-//			fork: true,
-//			script: src.getFile("jsh/test/addClasses/addClasses.jsh.js"),
-//			arguments: ["-classes",compileAddClasses()]
-//		});
-//		verify(result).status.is(0);
-//	}
-//});
-
-scenario.part("addClasses", {
-	execute: function(scope,verify) {
-		var result = jsh.shell.jsh({
-			fork: true,
-			script: src.getFile("jsh/test/addClasses/addClasses.jsh.js"),
-			arguments: ["-scenario"]
-		});
-		verify(result).status.is(0);
-	}
-});
-
-scenario.part("packaged", LOADER.value("jsh/test/packaged/suite.js", {
-	src: src,
-	RHINO_LIBRARIES: RHINO_LIBRARIES,
-	LINE_SEPARATOR: LINE_SEPARATOR,
-	getClasses: compileAddClasses
-}));
 
 var ScriptPart = function(o) {
 	return new function() {
@@ -212,20 +171,6 @@ if (CATALINA_HOME) {
 		execute: function(verify) {
 			var output = this.stdio.output.split(LINE_SEPARATOR);
 			verify(output)[0].is("Passed.");
-		}
-	});
-
-
-	//	testCommandOutput("jsh.shell/stdio.1.jsh.js", function(options) {
-	//		return options.output == "Hello, World!" && options.err == "Hello, tty!";
-	//	});
-	ScriptVerifier({
-		parent: scenario.parts.shell,
-		path: "jsh.shell/stdio.1.jsh.js",
-		error: String,
-		execute: function(verify) {
-			verify(this).stdio.output.is("Hello, World!");
-			verify(this).stdio.error.is("Hello, tty!");
 		}
 	});
 
@@ -536,6 +481,49 @@ scenario.part("executable", new function() {
 		}
 	}
 });
+
+(function addClasses() {
+	var LOADER = new jsh.file.Loader({ directory: jsh.script.file.parent.parent.parent });
+	
+	var compileAddClasses = jsh.js.constant(function() {
+		var classes = jsh.shell.TMPDIR.createTemporary({ directory: true });
+		jsh.shell.console("Compiling AddClasses ...");
+		jsh.java.tools.javac({
+			destination: classes.pathname,
+			sourcepath: jsh.file.Searchpath([src.getRelativePath("jsh/test/addClasses/java")]),
+			arguments: [src.getRelativePath("jsh/test/addClasses/java/test/AddClasses.java")]
+		});
+		return classes;
+	});
+
+	scenario.part("addClasses", {
+		execute: function(scope,verify) {
+			var result = jsh.shell.jsh({
+				fork: true,
+				script: src.getFile("jsh/test/addClasses/addClasses.jsh.js"),
+				arguments: ["-scenario"]
+			});
+			verify(result).status.is(0);
+		}
+	});
+	//scenario.part("jsh.loader.java", {
+	//	execute: function(scope,verify) {
+	//		var result = jsh.shell.jsh({
+	//			fork: true,
+	//			script: src.getFile("jsh/test/addClasses/addClasses.jsh.js"),
+	//			arguments: ["-classes",compileAddClasses()]
+	//		});
+	//		verify(result).status.is(0);
+	//	}
+	//});
+
+	scenario.part("packaged", LOADER.value("jsh/test/packaged/suite.js", {
+		src: src,
+		RHINO_LIBRARIES: RHINO_LIBRARIES,
+		LINE_SEPARATOR: LINE_SEPARATOR,
+		getClasses: compileAddClasses
+	}));	
+})()
 
 //if (parameters.options.part) {
 //	//	TODO	this should probably be pushed farther down into the loader/api implementation
