@@ -174,26 +174,6 @@ if (CATALINA_HOME) {
 		}
 	});
 
-	(function() {
-		var input_abcdefghij = "ABCDEFGHIJ";
-		ScriptVerifier({
-			parent: scenario.parts.shell,
-			path: "jsh.shell/stdio.2.jsh.js",
-			input: input_abcdefghij,
-			execute: function(verify) {
-				verify(this.stdio.output).is(input_abcdefghij);
-			}
-		});
-		ScriptVerifier({
-			parent: scenario.parts.shell,
-			path: "jsh.shell/stdio.3.jsh.js",
-			input: input_abcdefghij,
-			execute: function(verify) {
-				verify(this.stdio.output).is(input_abcdefghij);
-			}
-		});
-	})();
-
 	ScriptVerifier({
 		parent: scenario.parts.shell,
 		path: "jsh.shell/exit.jsh.js",

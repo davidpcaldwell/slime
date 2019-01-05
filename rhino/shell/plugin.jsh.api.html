@@ -153,7 +153,7 @@ END LICENSE
 				<script type="application/x.jsapi#tests" jsapi:id="1">
 					var one = jsh.shell.jsh({
 						shell: $jsapi.environment.jsh.built.home,
-						script: $jsapi.environment.jsh.src.getFile("jsh/test/jsh.shell/stdio.1.jsh.js"),
+						script: $jsapi.environment.jsh.src.getFile("rhino/shell/test/stdio.1.jsh.js"),
 						stdio: {
 							output: String,
 							error: String
@@ -164,6 +164,36 @@ END LICENSE
 					});
 					verify(one).output.is("Hello, World!");
 					verify(one).error.is("Hello, tty!");
+				</script>
+				<script type="application/x.jsapi#initialize">
+					scope.input_abcdefghij = "ABCDEFGHIJ";
+					scope.getScriptOutput = function(p) {
+						return jsh.shell.jsh({
+							shell: $jsapi.environment.jsh.built.home,
+							script: $jsapi.environment.jsh.src.getFile("rhino/shell/test/" + p.script),
+							stdio: {
+								input: p.input,
+								output: String
+							},
+							evaluate: function(result) {
+								return result.stdio.output;
+							}							
+						})
+					};
+				</script>
+				<script type="application/x.jsapi#tests" jsapi:id="2">
+					var output = getScriptOutput({
+						script: "stdio.2.jsh.js",
+						input: input_abcdefghij
+					});
+					verify(output).is(input_abcdefghij);
+				</script>
+				<script type="application/x.jsapi#tests" jsapi:id="3">
+					var output = getScriptOutput({
+						script: "stdio.3.jsh.js",
+						input: input_abcdefghij
+					});
+					verify(output).is(input_abcdefghij);
 				</script>
 			</li>
 			<li class="value deprecated">
