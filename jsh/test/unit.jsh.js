@@ -250,6 +250,10 @@ var parts = {
 	"$api": new jsh.unit.part.Html({
 		pathname: SRC.getRelativePath("loader/$api.api.html")
 	}),
+	"jsh.shell": new jsh.unit.part.Html({
+		pathname: SRC.getRelativePath("rhino/shell/plugin.jsh.api.html"),
+		environment: environment
+	}),
 	"jsh.file/Searchpath": new jsh.unit.part.Html({
 		pathname: SRC.getRelativePath("rhino/file/api.Searchpath.html")
 	})
@@ -262,6 +266,7 @@ suite.part("jsh.file", {
 		Searchpath: parts["jsh.file/Searchpath"]
 	}
 });
+suite.part("jsh.shell", parts["jsh.shell"]);
 suite.part("old", definition);
 
 var suitepath;

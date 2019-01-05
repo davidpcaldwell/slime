@@ -11,6 +11,9 @@
 //	Contributor(s):
 //	END LICENSE
 
+jsh.shell.console("File has been invalidated by removal of echo.jsh.js and other changes to unit testing.");
+jsh.shell.exit(1);
+
 var SLIME = jsh.script.file.parent.parent.parent.parent;
 jsh.loader.plugins(SLIME.getRelativePath("loader/api"));
 jsh.loader.plugins(SLIME.getRelativePath("jsh/unit"));

@@ -149,7 +149,7 @@ if (parameters.options.jrunscript.length) {
 	if (tests.file) {
 		jsh.shell.console("Executing file test ...");
 		mock.jsh({
-			script: SRC.getRelativePath("jsh/test/jsh.shell/echo.jsh.js"),
+			script: SRC.getRelativePath("jsh/test/jsh.shell/properties.jsh.js"),
 			properties: properties
 		});
 	}
@@ -157,7 +157,7 @@ if (parameters.options.jrunscript.length) {
 	if (tests.url) {
 		jsh.shell.console("Executing url test ...", { stream: jsh.shell.stdio.error });
 		mock.jsh({
-			script: "http://bitbucket.org/" + "api/1.0/repositories/davidpcaldwell/slime/raw/local/" + "jsh/test/jsh.shell/echo.jsh.js"
+			script: "http://bitbucket.org/" + "api/1.0/repositories/davidpcaldwell/slime/raw/local/" + "jsh/test/jsh.shell/properties.jsh.js"
 		});
 	}
 

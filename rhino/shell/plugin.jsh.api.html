@@ -252,6 +252,39 @@ END LICENSE
 						</li>
 					</ol>
 				</div>
+				<script type="application/x.jsapi#tests" jsapi:id="echo">
+					var buffer = new jsh.io.Buffer();
+					var stream = buffer.writeText();
+
+					module.echo(true, { stream: stream });
+					
+					buffer.close();
+					// TODO: hard-coded line terminator below
+					var buffered = buffer.readText().asString().split("\n");
+					verify(buffered).length.is(2);
+					verify(buffered)[0].is("true");
+					verify(buffered)[1].is("");
+					
+					var console = new function() {
+						var lines = [];
+
+						this.line = function(s) {
+							lines.push(s);
+						}
+
+						this.getLines = function() {
+							return lines;
+						}
+					}
+
+					module.echo("A", { console: console.line });
+					module.echo("B", { console: console.line });
+
+					var captured = console.getLines();
+					verify(captured).length.is(2);
+					verify(captured)[0].is("A");
+					verify(captured)[1].is("B");
+				</script>
 			</li>
 			<li class="function">
 				<div class="name">console</div>

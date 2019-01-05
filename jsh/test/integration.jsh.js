@@ -252,15 +252,6 @@ if (CATALINA_HOME) {
 
 	ScriptVerifier({
 		parent: scenario.parts.shell,
-		path: "jsh.shell/echo.jsh.js",
-		execute: function(verify) {
-			var output = this.stdio.output.split(LINE_SEPARATOR);
-			verify(output)[0].is("true");
-		}
-	});
-
-	ScriptVerifier({
-		parent: scenario.parts.shell,
 		path: "jsh.shell/properties.jsh.js",
 		execute: function(verify) {
 			var output = this.stdio.output.split(LINE_SEPARATOR);
@@ -546,21 +537,31 @@ scenario.part("coffeescript", {
 scenario.part("executable", new function() {
 	var executable = (jsh.shell.jsh.home) ? jsh.file.Searchpath([jsh.shell.jsh.home.pathname]).getCommand("jsh") : null;
 	if (executable) {
+		// TODO: below is untested
 		this.parts = new function() {
-			var echo = src.getRelativePath("jsh/test/jsh.shell/echo.jsh.js");
-			var output = ["true",""].join(String(Packages.java.lang.System.getProperty("line.separator")));
+			var echo = src.getRelativePath("jsh/test/jsh.shell/jsh-data.jsh.js");
+			
+			var stdio = {
+				output: String
+			};
+			
+			var evaluate = function(result) {
+				return {
+					status: result.status,
+					output: JSON.parse(result.stdio.output)
+				};
+			};
 
 			this.absolute = {
 				execute: function(scope,verify) {
 					var result = jsh.shell.run({
 						command: executable,
 						arguments: [echo],
-						stdio: {
-							output: String
-						}
+						stdio: stdio,
+						evaluate: evaluate
 					});
 					verify(result).status.is(0);
-					verify(result).stdio.output.is(output);
+					verify(result).output.is.type("object");
 				}
 			};
 
@@ -569,13 +570,12 @@ scenario.part("executable", new function() {
 					var result = jsh.shell.run({
 						command: "./jsh",
 						arguments: [echo],
-						stdio: {
-							output: String
-						},
-						directory: jsh.shell.jsh.home
+						stdio: stdio,
+						directory: jsh.shell.jsh.home,
+						evaluate: evaluate
 					});
 					verify(result).status.is(0);
-					verify(result).stdio.output.is(output);
+					verify(result).output.is.type("object");
 				}
 			};
 
@@ -590,12 +590,11 @@ scenario.part("executable", new function() {
 					var result = jsh.shell.run({
 						command: "env",
 						arguments: ["PATH=" + PATH, "jsh", echo],
-						stdio: {
-							output: String
-						}
+						stdio: stdio,
+						evaluate: evaluate
 					});
 					verify(result).status.is(0);
-					verify(result).stdio.output.is(output);
+					verify(result).output.is.type("object");
 				}
 			}
 		}
