@@ -303,14 +303,6 @@ if (CATALINA_HOME) {
 })();
 
 ScriptVerifier({
-	path: "jsh.shell/jsh.home.jsh.js",
-	execute: function(verify) {
-		var JSH_HOME = jsh.shell.jsh.home.pathname.java.adapt();
-		verify(this.stdio.output.split(LINE_SEPARATOR))[0].is("jsh.home=" + JSH_HOME.getCanonicalPath() + Packages.java.io.File.separator);
-	}
-});
-
-ScriptVerifier({
 	path: "jsh.script/Application.jsh.js",
 	arguments: ["-gstring", "gvalue", "-gboolean", "doIt", "-lboolean"],
 	execute: function(verify) {
