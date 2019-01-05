@@ -67,12 +67,6 @@ var scenario = new jsh.unit.Suite({
 	name: "jsh Integration Tests"
 });
 
-scenario.part("jsh.shell.jsh", new jsh.unit.Suite.Fork({
-	run: jsh.shell.jsh,
-	script: src.getFile("rhino/shell/test/jsh.shell.jsh.suite.jsh.js"),
-	arguments: ["-view","stdio"]
-}));
-
 //scenario.part("jsh.loader.java", {
 //	execute: function(scope,verify) {
 //		var result = jsh.shell.jsh({

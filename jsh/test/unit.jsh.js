@@ -276,6 +276,14 @@ suite.part("jsh.file", {
 	}
 });
 suite.part("jsh.shell", parts["jsh.shell"]);
+suite.part("jsh.shell.jsh", new jsh.unit.Suite.Fork({
+	// TODO: moved this from integration tests and reproduced current test without much thought; could be that we should not be
+	// using the built shell, or should be using more shells
+	run: jsh.shell.jsh,
+	shell: environment.jsh.built.home,
+	script: SRC.getFile("rhino/shell/test/jsh.shell.jsh.suite.jsh.js"),
+	arguments: ["-view","stdio"]
+}));
 suite.part("loader", parts.loader);
 suite.part("old", definition);
 
@@ -290,6 +298,8 @@ if (parameters.options.unit) {
 		if (partpath) {
 			suitepath = suitepath.concat(partpage.getPath(partpath));
 		}
+	} else if (suite.parts[partname]) {
+		suitepath = [partname];
 	} else {
 		suitepath = ["old"].concat(definition.getPath(parameters.options.unit.split("/")));
 	}
