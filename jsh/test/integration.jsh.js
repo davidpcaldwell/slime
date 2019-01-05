@@ -55,30 +55,6 @@ var scenario = new jsh.unit.Suite({
 	name: "jsh Integration Tests"
 });
 
-var ScriptPart = function(o) {
-	return new function() {
-		this.name = o.script.toString();
-
-		this.execute = function(scope,verify) {
-			jsh.shell.jsh({
-				fork: true,
-				shell: o.shell,
-				script: o.script,
-				arguments: (o.arguments) ? o.arguments : [],
-				stdio: {
-					output: String,
-					error: o.error,
-					input: (o.input) ? o.input : null
-				},
-				environment: (o.environment) ? o.environment : jsh.shell.environment,
-				evaluate: function(result) {
-					o.check.call(result,verify);
-				}
-			});
-		}
-	};
-}
-
 var ScriptVerifier = function(o) {
 	var script = jsh.script.file.getRelativePath("../test/" + o.path).file;
 	var tokens = [o.path].concat((o.arguments) ? o.arguments : []);
