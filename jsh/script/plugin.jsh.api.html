@@ -141,6 +141,19 @@ END LICENSE
 					modules and files relative to the directory from which the script was run (although a script can replace this
 					property; see <code><a href="#exports.Loader">Loader</a></code>).
 				</span>
+				<script type="application/x.jsapi#tests" jsapi:id="loader">
+					var a = jsh.shell.jsh({
+						shell: $jsapi.environment.jsh.built.home,
+						script: $jsapi.environment.jsh.src.getFile("jsh/script/test/loader.jsh.js"),
+						stdio: {
+							output: String
+						},
+						evaluate: function(result) {
+							return JSON.parse(result.stdio.output);
+						}
+					});
+					verify(a).submodule.message.is("ititit");
+				</script>
 			</li>
 			<li class="function" jsapi:id="getopts">
 				<div class="name"><a id="properties.getopts">getopts</a></div>

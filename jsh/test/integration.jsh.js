@@ -246,13 +246,6 @@ scenario.part(".slime", {
 //	});
 //
 
-ScriptVerifier({
-	path: "jsh.script/loader.jsh.js",
-	execute: function(verify) {
-		verify(this).status.is(0);
-	}
-});
-
 if (RHINO_LIBRARIES) scenario.part("rhino.optimization", {
 	execute: function(scope,verify) {
 		[-1,0,1].forEach(function(level) {

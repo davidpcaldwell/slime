@@ -258,6 +258,10 @@ var parts = {
 		pathname: SRC.getRelativePath("rhino/shell/plugin.jsh.api.html"),
 		environment: environment
 	}),
+	"jsh.script": new jsh.unit.part.Html({
+		pathname: SRC.getRelativePath("jsh/script/plugin.jsh.api.html"),
+		environment: environment
+	}),
 	"jsh.file/Searchpath": new jsh.unit.part.Html({
 		pathname: SRC.getRelativePath("rhino/file/api.Searchpath.html")
 	}),
@@ -284,6 +288,7 @@ suite.part("jsh.shell.jsh", new jsh.unit.Suite.Fork({
 	script: SRC.getFile("rhino/shell/test/jsh.shell.jsh.suite.jsh.js"),
 	arguments: ["-view","stdio"]
 }));
+suite.part("jsh.script", parts["jsh.script"]);
 suite.part("loader", parts.loader);
 suite.part("jsh.unit", new function() {
 	var src = SRC;
