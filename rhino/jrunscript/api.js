@@ -409,21 +409,30 @@
 					s
 				)
 			);
+			$api.debug("Constructed (Spooler.start): " + name);
 			t.setName(t.getName() + ":" + name);
+			$api.debug("Starting (Spooler.start): " + name);
 			t.start();
+			$api.debug("Started (Spooler.start): " + name);
 			return t;
 		};
 		var spoolName = Array.prototype.join.call(arguments, ",");
-//		Packages.java.lang.System.err.println("Forking a command ... " + Array.prototype.slice.call(arguments).join(" "));
+		$api.debug("Forking a command ... " + Array.prototype.slice.call(arguments).join(" "));
 		var delegate = _builder.start();
+		$api.debug("Started.");
 		var hasConsole = Packages.java.lang.System.console();
+		$api.debug("hasConsole = " + Boolean(hasConsole));
 		var _in = Spooler.start(delegate.getInputStream(), context.getStandardOutput(), false, !hasConsole, "stdout: " + spoolName);
+		$api.debug("Started spooler for " + _in);
 		var _err = Spooler.start(delegate.getErrorStream(), context.getStandardError(), false, !hasConsole, "stderr: " + spoolName);
+		$api.debug("Started spoolers.");
 		var _stdin = context.getStandardInput();
 		var _out = Spooler.start(_stdin, delegate.getOutputStream(), true, true, "stdin from " + _stdin + ": " + spoolName);
 		var rv = delegate.waitFor();
+		$api.debug("Started; before join()");
 		_in.join();
 		_err.join();
+		$api.debug("Started; after join(): alive _in=" + _in.isAlive() + " err=" + _err.isAlive());
 		context.finish();
 		return rv;
 	};
