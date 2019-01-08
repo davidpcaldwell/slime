@@ -75,7 +75,7 @@ plugin({
 		jsh.shell.tools.rhino = {
 			install: installRhino
 		};
-
+		
 		(function deprecated() {
 			jsh.tools.rhino = new function() {
 				this.install = $api.deprecate(installRhino);
@@ -85,6 +85,28 @@ plugin({
 			jsh.tools.install.rhino.install = $api.deprecate(installRhino);
 			$api.deprecate(jsh.tools.install,"rhino");
 		})();
+
+		var graal = new function() {
+			var VERSION = {
+				number: "1.0.0-rc10",
+				edition: "ce"				
+			};
+			this.install = $api.Events.Function(function(p,events) {
+				if (jsh.shell.os.name == "Mac OS X") {
+					jsh.tools.install.install({
+						url: "https://github.com/oracle/graal/releases/download/vm-" + VERSION.number + "/" + "graalvm-" + VERSION.edition + "-" + VERSION.number + "-macos-amd64.tar.gz",
+						getDestinationPath: function(file) {
+							return "graalvm-" + VERSION.edition + "-" + VERSION.number + "/Contents/Home";
+						},
+						to: jsh.shell.jsh.lib.getRelativePath("graal")
+					});
+				} else {
+					throw new Error("Unsupported: os " + jsh.shell.os.name);
+				}				
+			});
+		};
+		
+		jsh.shell.tools.graal = graal;
 
 		var tomcat = $loader.file("plugin.jsh.tomcat.js", {
 			$api: jsh.tools.install.$api
