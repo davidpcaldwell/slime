@@ -430,8 +430,19 @@
 		var _out = Spooler.start(_stdin, delegate.getOutputStream(), true, true, "stdin from " + _stdin + ": " + spoolName);
 		var rv = delegate.waitFor();
 		$api.debug("Started; before join()");
-		_in.join();
-		_err.join();
+		var join = function() {
+			_in.join();
+			_err.join();
+		};
+		$engine.resolve({
+			rhino: join,
+			jdkrhino: join,
+			nashorn: join,
+			graal: function() {
+			}
+		})();
+		// _in.join();
+		// _err.join();
 		$api.debug("Started; after join(): alive _in=" + _in.isAlive() + " err=" + _err.isAlive());
 		context.finish();
 		return rv;
@@ -1223,7 +1234,7 @@
 				if (count == 1) {
 					more = false;
 				} else {
-					Packages.java.lang.Thread.sleep(1000);
+					Packages.java.lang.Thread.sleep(100);
 				}
 			}
 		})()
