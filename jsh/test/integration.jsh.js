@@ -129,8 +129,8 @@ if (CATALINA_HOME) {
 		execute: function(verify) {
 			var lines = this.stdio.output.split(LINE_SEPARATOR);
 			verify(lines.join("|")).is(lines.join("|"));
-			verify(lines)[0].is("true");
-			verify(lines)[1].is("true");
+			verify(lines)[0].is("Completed.");
+			verify(lines)[1].is("Completed.");
 			verify(jsh.script.file.parent.parent.parent).getSubdirectory("http:").is(null);
 		}
 	});
@@ -146,7 +146,7 @@ if (CATALINA_HOME) {
 		path: "jsh.shell/properties.jsh.js",
 		execute: function(verify) {
 			var output = this.stdio.output.split(LINE_SEPARATOR);
-			verify(output)[0].is("Passed.");
+			verify(output)[0].is("Completed.");
 		}
 	});
 })();
