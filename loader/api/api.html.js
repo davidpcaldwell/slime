@@ -13,7 +13,7 @@
 //	Shared code for unit test harnesses
 
 var assign = (function() {
-	if ($context.api.assign) return $context.api.assign;
+	if ($context.api && $context.api.assign) return $context.api.assign;
 	if (Object.assign) return Object.assign;
 	throw new Error();
 })();
@@ -55,7 +55,11 @@ var run = function() {
 			$context.run(arguments[0],arguments[1]);
 		} else {
 			with(arguments[1]) {
-				eval(arguments[0]);
+				eval((function(zero) {
+					if (typeof(zero) == "string") return zero;
+					if (typeof(zero) == "object" && zero.string) return zero.string + "//# sourceURL=" + zero.name;
+					throw new Error();
+				})(arguments[0]));
 			}
 		}
 	} catch (e) {
@@ -90,6 +94,23 @@ var getDescendants = function(element) {
 	};
 
 	var rv = [];
+	var children = element.getChildren();
+	addChildren(rv,children);
+	return rv;
+}
+
+var getChildren = function(element) {
+	var addChildren = function recurse(list,children) {
+		for (var i=0; i<children.length; i++) {
+			if (children[i].getJsapiAttribute("id")) {
+				list.push(children[i]);
+			} else {
+				recurse(list, children[i].getChildren());
+			}
+		}
+	};
+	
+	var rv = [];
 	addChildren(rv,element.getChildren());
 	return rv;
 }
@@ -116,7 +137,7 @@ var select = function(array,f) {
 var getElement = function(root,path) {
 	var tokens = path.split("/");
 	var rv = root;
-
+	
 	var hasJsapiId = function(id) {
 		var rv = function(e) {
 			return e.getJsapiAttribute("id") == id;
@@ -128,12 +149,13 @@ var getElement = function(root,path) {
 	}
 
 	for (var i=0; i<tokens.length; i++) {
-		rv = select(getDescendants(rv), hasJsapiId(tokens[i]));
-		if (typeof(rv) == "undefined") {
-			return null;
-		} else if (rv === null) {
-			throw new Error("Could not locate element: path = " + path);
-		}
+		rv = select(getChildren(rv), hasJsapiId(tokens[i]));
+		if (rv == null) return null;
+		// if (typeof(rv) == "undefined") {
+		// 	return null;
+		// } else if (rv === null) {
+		// 	throw new Error("Could not locate element: path = " + path);
+		// }
 	}
 	return rv;
 };
@@ -158,10 +180,14 @@ $exports.ApiHtmlTests = function(html,name) {
 
 	var referenceScope = new function() {
 		this.getApi = function(path) {
+			var apipath = path;
 			var otherhtml = html.load(path);
 			var rv = new $exports.ApiHtmlTests(otherhtml,name+":"+path);
 			rv.getElement = function(path) {
 				var rv = getElement(otherhtml.top,path);
+				if (rv == null) {
+					throw new Error("Could not locate path " + path + " in " + apipath);
+				}
 //				if (!otherhtml.getRelativePath) throw new Error("html " + otherhtml + " does not have getRelativePath");
 //				rv.getRelativePath = function(path) {
 //					return otherhtml.getRelativePath(path);
@@ -283,6 +309,7 @@ $exports.ApiHtmlTests = function(html,name) {
 	};
 
 	var getElementName = function(element,name) {
+		// TODO: Believe element == html.top would work below and then parent could be removed from JsapiHtml implementations
 		if (element.parent == null) {
 			return name;
 		} else if (element.getJsapiAttribute("id")) {
@@ -348,6 +375,7 @@ $exports.ApiHtmlTests = function(html,name) {
 			return rv;
 		} else if (isScript) {
 			//	do nothing
+			var breakpiont = 1;
 		} else {
 			var rv = {
 				name: getElementName(element,name),
@@ -388,12 +416,42 @@ $exports.ApiHtmlTests = function(html,name) {
 	}
 
 	this.getSuiteDescriptor = function(scope) {
-		return getPartDescriptor(scope,html.top);
+		var rv = getPartDescriptor(scope,html.top);
+
+		var find = function recurse(part,names) {
+			if (names.length == 0) return [];
+			for (var x in part.parts) {
+				var name = part.parts[x].name;
+				if (name.substring(0,1) == "<") name = null;
+				if (name == names[0]) {
+					return [x].concat(recurse(part.parts[x],names.slice(1)));
+				} else if (name) {
+					//	skip
+				} else {
+					var found = recurse(part.parts[x],names,[]);
+					if (found) return [x].concat(found);
+				}
+			}
+			return null;
+		};
+
+		rv.getPath = function(ids) {
+			return find(this,ids);
+		};
+		
+		return rv;
 	};
 
 	this.getSuite = $api.deprecate(this.getSuiteDescriptor);
+	
+	if ($context.test) {
+		this.getElement = function(path) {
+			return getElement(html.top, path);
+		}
+	}
 };
 
+// TODO: What is this used for? May be used for (obsolete?) building of documentation bundles
 $exports.getCode = function(path) {
 	return $loader.get(path).read(String);
-}
+};

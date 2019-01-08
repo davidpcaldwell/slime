@@ -395,6 +395,15 @@ var Client = function(configuration) {
 			return (callback.next) ? arguments.callee(callback.next) : response;
 		} else {
 			var parser = (function() {
+				if (p.evaluate === JSON) {
+					return function(response) {
+						if (response.status.code >= 200 && response.status.code <= 299) {
+							return JSON.parse(response.body.stream.character().asString());
+						} else {
+							throw new Error("Status code " + response.status.code);
+						}
+					}
+				}
 				if (p.evaluate) return p.evaluate;
 				if (p.parse) return $api.deprecate(p.parse);
 				return function(response) {
@@ -507,7 +516,14 @@ $exports.Body = new function() {
 			type: "application/x-www-form-urlencoded",
 			string: QueryString.encode(new UrlQuery(p))
 		};
-	}
+	};
+
+	this.Json = function(p) {
+		return {
+			type: "application/json",
+			string: JSON.stringify(p)
+		}
+	};
 }
 
 $exports.Parser = new function() {

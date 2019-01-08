@@ -46,9 +46,11 @@ var licenses = $loader.file("license.js", {
 //	TODO	could use sdk/core here
 var files = BASE.list({
 	filter: function(n) {
-		return (!n.directory && n.pathname.basename.substring(0,3) != ".hg") || (n.directory && n.pathname.basename != ".hg");
+		return (!n.directory && n.pathname.basename.substring(0,3) != ".hg");
 	},
-	recursive: true,
+	directory: function(dir) {
+		return dir.pathname.basename != "local" && dir.pathname.basename != ".hg";
+	},
 	type: BASE.list.ENTRY
 }).filter( function(n) { return !n.node.directory } )
 .filter(function(n) {
@@ -148,22 +150,22 @@ for (var i=0; i<files.length; i++) {
 			original = "the js/time SLIME module";
 		} else if (startsWith("js/web/")(relative)) {
 			original = "the js/web SLIME module";
-		} else if (startsWith("loader/rhino/")(relative)) {
-			original = "the SLIME loader for rhino";
+		} else if (startsWith("loader/jrunscript/")(relative)) {
+			original = "the SLIME loader for Java";
 		} else if (startsWith("loader/browser/")(relative)) {
 			original = "the SLIME loader for web browsers";
 		} else if (startsWith("loader/")(relative)) {
 			original = "the SLIME loader infrastructure";
-		} else if (startsWith("rhino/io/")(relative)) {
-			original = "the rhino/io SLIME module";
+		} else if (startsWith("jrunscript/io/")(relative)) {
+			original = "the jrunscript/io SLIME module";
 		} else if (startsWith("rhino/document/")(relative)) {
 			original = "the SLIME Java Document API";
 		} else if (startsWith("rhino/mail/")(relative)) {
 			original = "the SLIME JavaMail interface";
 		} else if (startsWith("rhino/file/")(relative)) {
 			original = "the rhino/file SLIME module";
-		} else if (startsWith("rhino/host/")(relative)) {
-			original = "the rhino/host SLIME module";
+		} else if (startsWith("jrunscript/host/")(relative)) {
+			original = "the jrunscript/host SLIME module";
 		} else if (startsWith("rhino/ip/")(relative)) {
 			original = "the rhino/ip SLIME module";
 		} else if (startsWith("rhino/shell/")(relative)) {

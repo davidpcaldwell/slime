@@ -170,6 +170,7 @@ if (shell.rhino) {
 	}
 }
 
+// TODO: currently there is no strategy for handling these options jsh.engine and jsh.debug.script if they conflict
 var scriptDebugger = $api.slime.settings.get("jsh.debug.script");
 var profilerMatcher =  /^profiler(?:\:(.*))?$/;
 if ( profilerMatcher.test(scriptDebugger)) {
@@ -189,6 +190,17 @@ if ( profilerMatcher.test(scriptDebugger)) {
 		Packages.java.lang.System.err.println("Could not find profiler.");
 		Packages.java.lang.System.exit(1);
 	}
+} else if (scriptDebugger == "rhino") {
+	$api.slime.settings.set("jsh.engine", "rhino");
+} else if (scriptDebugger == "ncdbg") {
+	$api.slime.settings.set("jsh.engine", "nashorn");
+	var ncdbg = (function() {
+		if ($api.slime.src) return new $api.slime.src.File("jsh/tools/ncdbg.jsh.js");
+		if ($api.slime.home) return new Packages.java.io.File($api.slime.home, "src/jsh/tools/ncdbg.jsh.js");
+	})();
+	// TODO: command.argument(.../ncdbg.jsh.js)
+	command.argument(String(ncdbg.getAbsolutePath()));
+//	throw new Error("ncdbg jsh.debug.script not implemented");
 }
 
 (function() {
@@ -217,10 +229,7 @@ if ($api.slime.settings.get("jsh.shell.classpath")) {
 $api.debug("_urls = " + _urls);
 
 var classpath = new $api.jsh.Classpath(_urls);
-//	TODO	sure appears like this property is never used in the loader, and is not used in the launcher either. Does the loader
-//			need to know the launcher classpath? And anyway, this appears to be the *loader* classpath; see the part below, where
-//			its components are sent in succession to the command. Probably safe to delete.
-command.systemProperty("jsh.launcher.classpath", classpath.local());
+
 var engine = $api.jsh.engines[$api.slime.settings.get("jsh.engine")];
 if (!engine) throw new Error("Specified engine not found: " + $api.slime.settings.get("jsh.engine")
 	+ " JSH_ENGINE=" + $api.shell.environment.JSH_ENGINE

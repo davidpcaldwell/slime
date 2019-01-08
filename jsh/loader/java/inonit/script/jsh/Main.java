@@ -139,7 +139,7 @@ public class Main {
 			final Code.Loader jsh = Code.Loader.system("$jsh/");
 			return new Shell.Installation() {
 				private Code.Loader[] plugins;
-				
+
 				{
 					try {
 						this.plugins = new Code.Loader[] { Code.Loader.create(createPackagedPluginsDirectory()) };
@@ -147,7 +147,7 @@ public class Main {
 						throw new RuntimeException(e);
 					}
 				}
-				
+
 				@Override public Code.Loader getPlatformLoader() {
 					return platform;
 				}
@@ -159,6 +159,11 @@ public class Main {
 				@Override public Code.Loader getLibraries() {
 					//	TODO	This is obviously wrong and we ought to be able to package libraries
 					return Code.Loader.NULL;
+				}
+				
+				@Override public File getLibraryFile(String path) {
+					//	TODO	This is obviously wrong and we ought to be able to package libraries
+					return null;
 				}
 
 				@Override public Code.Loader[] getExtensions() {
@@ -185,6 +190,22 @@ public class Main {
 		abstract Code.Loader getJsh();
 		abstract Code.Loader getModules();
 		abstract Code.Loader getLibraries();
+		
+		private File lib;
+		
+		abstract File getLibraryDirectory();
+
+		final File getLibraryFile(String path) {
+			if (lib == null) {
+				lib = getLibraryDirectory();
+			}
+			if (lib != null) {
+				File rv = new File(lib, path);
+				if (rv.exists()) return rv;
+			}
+			return null;
+		}
+		
 		abstract Code.Loader getPlugins();
 
 		final Shell.Installation installation() throws IOException {
@@ -204,6 +225,10 @@ public class Main {
 
 				@Override public Code.Loader getLibraries() {
 					return Unpackaged.this.getLibraries();
+				}
+				
+				@Override public File getLibraryFile(String path) {
+					return Unpackaged.this.getLibraryFile(path);
 				}
 
 				@Override public Code.Loader[] getExtensions() {
@@ -318,7 +343,7 @@ public class Main {
 					//System.err.println(Unbuilt.this.src + " list(" + prefix + ")");
 					String[] was = Unbuilt.this.src.getEnumerator().list(prefix);
 					if (prefix.length() != 0) return was;
-					
+
 					List<String> list = Arrays.asList(was);
 					ArrayList<String> rv = new ArrayList<String>();
 					for (String s : list) {
@@ -331,8 +356,7 @@ public class Main {
 				}
 			};
 			final Code.Locator locator = new Code.Locator() {
-				@Override
-				public URL getResource(String path) {
+				@Override public URL getResource(String path) {
 					//System.err.println(Unbuilt.this.src + " getResource(" + path + ")");
 					if (path.startsWith("local/")) return null;
 					return Unbuilt.this.src.getLocator().getResource(path);
@@ -343,20 +367,17 @@ public class Main {
 					return "Code.Loader (no local/): " + Unbuilt.this.src;
 				}
 
-				@Override
-				public Code.Loader.Resource getFile(String path) throws IOException {
+				@Override public Code.Loader.Resource getFile(String path) throws IOException {
 					//System.err.println(Unbuilt.this.src + " getFile(" + path + ")");
 					if (path.startsWith("local/")) return null;
 					return Unbuilt.this.src.getFile(path);
 				}
 
-				@Override
-				public Code.Loader.Enumerator getEnumerator() {
+				@Override public Code.Loader.Enumerator getEnumerator() {
 					return enumerator;
 				}
 
-				@Override
-				public Code.Locator getLocator() {
+				@Override public Code.Locator getLocator() {
 					return locator;
 				}
 			};
@@ -369,7 +390,18 @@ public class Main {
 //			File file = new java.io.File(System.getProperty("jsh.shell.lib"));
 //			return Code.Loader.create(file);
 		}
-
+		
+		final File getLibraryDirectory() {
+			String string = System.getProperty("jsh.shell.lib");
+			if (string == null) {
+				return null;
+			} else if (string.startsWith("http://") || string.startsWith("https://")) {
+				return null;
+			} else {
+				return new File(string);
+			}
+		}
+		
 		Code.Loader getPlugins() {
 			return this.src.child("local/jsh/plugins");
 		}
@@ -377,9 +409,11 @@ public class Main {
 
 	private static class Built extends Unpackaged {
 		private File home;
+		private File lib;
 
 		Built(File home) {
 			this.home = home;
+			this.lib = new File(this.home, "lib");
 		}
 
 		private File getScripts() {
@@ -397,9 +431,13 @@ public class Main {
 		Code.Loader getModules() {
 			return Code.Loader.create(new File(this.home, "modules"));
 		}
-
+		
 		Code.Loader getLibraries() {
-			return Code.Loader.create(new File(this.home, "lib"));
+			return Code.Loader.create(this.lib);
+		}
+		
+		File getLibraryDirectory() {
+			return this.lib;
 		}
 
 		Code.Loader getPlugins() {
@@ -494,6 +532,11 @@ public class Main {
 		for (int i=0; i<args.length; i++) {
 			LOG.log(Level.INFO, "Argument " + i + " is: " + args[i]);
 		}
-		engine.cli(args);
+		try {
+			engine.cli(args);
+		} catch (Throwable t) {
+			t.printStackTrace();
+			System.exit(255);
+		}
 	}
 }

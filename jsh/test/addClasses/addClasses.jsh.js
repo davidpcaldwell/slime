@@ -17,7 +17,8 @@ var parameters = jsh.script.getopts({
 		part: String,
 		classes: jsh.file.Pathname,
 		jar: jsh.file.Pathname,
-		search: false
+		search: false,
+		"test:issue281": false
 	}
 });
 
@@ -35,6 +36,7 @@ if (parameters.options.scenario) {
 		}
 		return rv;
 	})(parameters.options.part);
+	var issue281 = (parameters.options["test:issue281"]) ? ["-test:issue281"] : [];
 	jsh.loader.plugins(jsh.script.file.getRelativePath("../../../rhino/tools"));
 	var destination = jsh.shell.TMPDIR.createTemporary({ directory: true });
 	var jardestination = jsh.shell.TMPDIR.createTemporary({ directory: true });
@@ -55,7 +57,7 @@ if (parameters.options.scenario) {
 	if (parts.classes) {
 		jsh.shell.jsh({
 			script: jsh.script.file,
-			arguments: ["-classes", destination],
+			arguments: ["-classes", destination].concat(issue281),
 			evaluate: function(result) {
 				jsh.shell.console("Status: " + result.status);
 				if (result.status != 0) {
@@ -68,7 +70,7 @@ if (parameters.options.scenario) {
 		jsh.shell.jsh({
 			fork: true,
 			script: jsh.script.file,
-			arguments: ["-jar", jar],
+			arguments: ["-jar", jar].concat(issue281),
 			evaluate: function(result) {
 				jsh.shell.console("Status: " + result.status);
 				if (result.status != 0) {
@@ -81,7 +83,7 @@ if (parameters.options.scenario) {
 		jsh.shell.jsh({
 			fork: true,
 			script: jsh.script.file,
-			arguments: ["-jar", jardestination, "-search"],
+			arguments: ["-jar", jardestination, "-search"].concat(issue281),
 			evaluate: function(result) {
 				jsh.shell.console("Status: " + result.status);
 				if (result.status != 0) {
@@ -124,9 +126,15 @@ if (parameters.options.scenario) {
 }
 
 if (!parameters.options.classes && !parameters.options.jar) {
-	jsh.shell.echo("No -classes argument.");
+	jsh.shell.console("No -classes or -jar argument.");
 	jsh.shell.exit(1);
 }
+
+jsh.shell.echo("Rhino: " + ((jsh.shell.rhino) ? jsh.shell.rhino.classpath : null));
+if (jsh.java.getClass("org.mozilla.javascript.Context")) {
+	jsh.shell.echo("Rhino context: " + Packages.org.mozilla.javascript.Context.getCurrentContext());
+}
+jsh.shell.echo("Classes: " + parameters.options.classes);
 
 var pass = true;
 
@@ -147,21 +155,24 @@ var global = (function() { return this; })();
 
 //	The below line causes the caching behavior of Packages to kick in, which makes the final verification (after adding the class)
 //	to fail, at least under Rhino 1.7R2
-//verify(typeof(Packages.test.AddClasses) == "object", "typeof(Packages.test.AddClasses) == object");
+verify(typeof(Packages.test.AddClasses) == "object", "typeof(Packages.test.AddClasses) == object");
 verify(getClass("test.AddClasses") == null, "Class not found");
 if (parameters.options.classes) {
 	jsh.loader.java.add(parameters.options.classes);
 } else if (parameters.options.jar) {
 	if (parameters.options.search) {
-		jsh.loader.plugins(parameters.options.jar.directory);		
+		jsh.loader.plugins(parameters.options.jar.directory);
 	} else {
 		jsh.loader.plugins(parameters.options.jar.file);
 	}
 //	throw new Error("Unimplemented: JAR");
 }
 verify(getClass("test.AddClasses") != null, "Class found");
-verify(typeof(Packages.test.AddClasses) == "function", "typeof(Packages.test.AddClasses) == function");
-verify(new Packages.test.AddClasses().toString() == "Loaded");
+if (parameters.options["test:issue281"]) {
+	jsh.shell.console("Running issue 281 tests ...");
+	verify(typeof(Packages.test.AddClasses) == "function", "typeof(Packages.test.AddClasses) == function");
+	verify(new Packages.test.AddClasses().toString() == "Loaded");
+}
 if (pass) {
 	jsh.shell.exit(0);
 } else {

@@ -47,15 +47,17 @@ var getLatestVersion = function() {
 				}
 
 				local.forEach(function(node) {
-					jsh.shell.console("Found version " + getVersionString(node));
+					jsh.shell.console("Found local version " + getVersionString(node));
 				})
 
 				local.sort(function(a,b) {
 					return getVersion(b) - getVersion(a);
 				});
 
-				jsh.shell.console("Latest version is " + getVersionString(local[0]));
-				return getVersionString(local[0]);
+				jsh.shell.console("Latest local version is " + getVersionString(local[0]));
+				var error = new Error("Obtained latest local version: " + getVersionString(local[0]));
+				error.version = getVersionString(local[0]);
+				throw error;
 			}
 		}
 	}
@@ -107,25 +109,31 @@ $exports.install = $context.$api.Events.Function(function(p,events) {
 	}
 
 	if (!p.local) {
-		var mirror;
+		var mirror = (p.version) ? "https://archive.apache.org/dist/" : void(0);
 		if (!p.version) {
-			//	Check tomcat.apache.org; if unreachable, use latest version in downloads directory
-			p.version = getLatest();
-			if (!p.version) {
-				throw new Error("Could not determine latest Tomcat 7 version; not installing.");
+			//	Check tomcat.apache.org; if unreachable, assume latest version is latest in downloads directory
+			try {
+				p.version = getLatest();
+				if (!p.version) {
+					throw new Error("Could not determine latest Tomcat 7 version; not installing.");
+				}
+			} catch (e) {
+				if (e.version) {
+					p.version = e.version;
+				} else {
+					throw e;
+				}
 			}
 		} else {
 			events.fire("console","Installing specified version " + p.version);
-			mirror = "https://archive.apache.org/dist/";
 		}
-
-		var zip = findApache({
+		p.local = findApache({
 			mirror: mirror,
 			path: "tomcat/tomcat-7/v" + p.version + "/bin/apache-tomcat-" + p.version + ".zip"
 		});
-		p.local = zip;
 	} else {
 		if (!p.version) {
+			//	TODO	we do not check to see whether this file actually is the desired version
 			var match = getLatestVersion.pattern.exec(p.local.pathname.basename);
 			if (match) {
 				p.version = match[1] + "." + match[2] + "." + match[3];
@@ -136,7 +144,7 @@ $exports.install = $context.$api.Events.Function(function(p,events) {
 		}
 	}
 	var to = jsh.shell.TMPDIR.createTemporary({ directory: true });
-	events.fire("console","Unzipping to: " + to);
+	events.fire("console","Unzipping " + p.local + " to: " + to);
 	jsh.file.unzip({
 		zip: p.local,
 		to: to

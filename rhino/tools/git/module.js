@@ -336,6 +336,9 @@ var Installation = function(environment) {
 			if (p.delete) {
 				args.push("-d");
 			}
+			if (p.remote) {
+				args.push("-r");
+			}
 			if (p.name) args.push(p.name);
 			if (p.start) args.push(p.start);
 			if (p.all) {
@@ -393,6 +396,7 @@ var Installation = function(environment) {
 
 		this.push = function(p) {
 			var args = [];
+			if (p && p.delete) args.push("--delete");
 			if (p && p.repository) args.push(p.repository);
 			if (p && p.refspec) args.push(p.refspec);
 			execute({
@@ -473,6 +477,30 @@ var Installation = function(environment) {
 					arguments: ["sync"]
 				});
 			}
+		};
+
+		this.config = function(p) {
+			if (!p) p = {};
+			return execute({
+				command: "config",
+				arguments: (function(rv) {
+					if (p.arguments) {
+						rv.push.apply(rv,p.arguments);
+					}
+					return rv;
+				})([]),
+				stdio: {
+					output: String
+				},
+				evaluate: function(result) {
+					return $api.Object({
+						properties: result.stdio.output.split("\n").map(function(line) {
+							var token = line.split("=");
+							return { name: token[0], value: token[1] }
+						})
+					});
+				}
+			});
 		}
 
 		this.execute = function(p) {
@@ -498,6 +526,10 @@ var Installation = function(environment) {
 		return new LocalRepository({
 			directory: m.pathname.directory
 		});
+	};
+
+	this.execute = function(m) {
+		git(m);
 	}
 };
 
@@ -520,7 +552,7 @@ var program = (function() {
 // 		}
 // 		return rv;
 	};
-	
+
 	if ($context.program) return $context.program;
 	return find();
 })();
@@ -529,16 +561,14 @@ if (program) {
 	var installation = new Installation({
 		program: program
 	});
-	
+
 	$exports.installation = installation;
 
-	$exports.Repository = function(p) {
-		return installation.Repository(p);
-	};
-
-	$exports.init = function(p) {
-		return installation.init(p);
-	};		
+	["Repository","init","execute"].forEach(function(name) {
+		$exports[name] = function() {
+			return installation[name].apply(installation,arguments);
+		};
+	},this);
 }
 
 var GUI = $context.api.Error.Type("Please execute the graphical installer.");
@@ -566,7 +596,7 @@ $exports.install = $context.api.Events.Function(function(p,events) {
 					arguments: [
 						"apt", "install", "git", "-y"
 					]
-				})
+				});
 			} else {
 				throw new Error("Unimplemented: installation of Git for Linux system without 'apt'.");
 			}

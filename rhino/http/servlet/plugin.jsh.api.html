@@ -191,6 +191,124 @@ END LICENSE
 		</div>
 
 		<ul>
+			<li class="object">
+				<div class="name">nugget</div>
+				<span>Re-usable methods exported by this module which may be helpful in unrelated code.</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="function">
+						<div class="name">getMimeType</div>
+						<span>
+							Attempts to determine the MIME type of a file object. Current implementation uses both the Java
+							<code>jrunscript/io mime.Type.guess</code> method and the <code>jrunscript/io mime.Type.fromName</code>
+							method.
+						</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="value">
+									<span class="type">file</span>
+									<span>A file object.</span>
+								</li>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">mime.Type</span>
+							<span>A MIME type guessed for the file, or <code>undefined</code> if no type could be guessed.</span>
+						</div>
+					</li>
+					<script type="application/x.jsapi#tests">
+						var type = jsh.httpd.nugget.getMimeType($jsapi.loader.getRelativePath("api.js").file);
+						verify(type).getMedia().is("application");
+						verify(type).getSubtype().is("javascript");
+						
+						(function html() {
+							var type = jsh.httpd.nugget.getMimeType($jsapi.loader.getRelativePath("api.html").file);
+							verify(type).getMedia().is("text");
+							verify(type).getSubtype().is("html");							
+						})();
+					</script>
+				</ul>
+			</li>
+			<li class="object">
+				<div class="name">spi</div>
+				<span>__DESCRIPTION__</span>
+				<div class="label">has properties:</div>
+				<div class="type">
+					<a class="type" name="types.servlet.implementation">servlet implementation</a>
+					<span>__DESCRIPTION__</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="value">
+							<div class="name">$loader</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</li>
+						<li class="function">
+							<div class="name">load</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</div>
+						</li>
+						<li class="value">
+							<div class="name">resources</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</li>
+					</ul>
+				</div>
+				<ul>
+					<li class="function">
+						<div class="name">argument</div>
+						<span>__DESCRIPTION__</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="value">
+									<span class="type">Loader</span>
+									<span>The servlet container resource loader to use when implementing the servlet.</span>
+								</li>
+								<li class="object">
+									<div class="name">__NAME__</div>
+									<span>__DESCRIPTION__</span>
+									<div class="label">has properties:</div>
+									<ul>
+										<li class="value">
+											<div class="name">load</div>
+											<span class="type">rhino/http/servlet servlet.load()</span>
+											<span>__DESCRIPTION__</span>
+										</li>
+										<li class="value">
+											<div class="name">file</div>
+											<span class="type">file</span>
+											<span>__DESCRIPTION__</span>
+										</li>
+										<li class="value">
+											<div class="name">resource</div>
+											<span class="type">string</span>
+											<span>__DESCRIPTION__</span>
+										</li>
+									</ul>
+								</li>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</div>
+					</li>
+				</ul>
+			</li>
 			<li class="constructor">
 				<div class="name">Resources</div>
 				See <a href="plugin.jsh.resources.api.html">detailed documentation</a>.
@@ -206,6 +324,9 @@ END LICENSE
 			<li class="constructor">
 				<div class="name"><a id="$exports.Tomcat">jsh.httpd.Tomcat</a><!-- TODO rename to exports.Tomcat --></div>
 				<span>
+					(contingent; present only if Tomcat is present in the shell. See installation
+					<a href="../../../jsh/tools/install/plugin.jsh.api.html#exports.jsh.tools.install">API</a>
+					and <a href="../../../jsh/tools/install/cli.api.html">tools</a>.)
 					Creates an embedded Tomcat server that can run script-based web applications. The server must have at least one
 					application added via <code>map</code> before it will function.
 				</span>
@@ -306,6 +427,14 @@ END LICENSE
 						<span>Loads the <a href="tools/plugin.jsh.api.html"><code>jsh.httpd.tools</code></a> plugin.</span>
 					</li>
 				</ul>
+			</li>
+			<li class="value">
+				<div class="name">tools</div>
+				<span class="type"><code>jsh.httpd.tools</code></span>
+				<span>
+					A module allowing for, among other things, servlet applications to be compiled into <code>.war</code> files.
+					See <a href="tools/plugin.jsh.api.html">detailed documentation</a>.
+				</span>
 			</li>
 		</ul>
 	</div>

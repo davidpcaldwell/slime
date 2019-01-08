@@ -131,6 +131,27 @@ END LICENSE
 									</span>
 								</div>
 							</li>
+							<li class="object">
+								<div class="name">settings</div>
+								<span>__DESCRIPTION__</span>
+								<div class="label">has properties:</div>
+								<ul>
+									<li class="function">
+										<div class="name">get</div>
+										<span>Returns the effective value for a given setting.</span>
+										<div class="arguments">
+											<div class="label">Arguments</div>
+											<ol>
+											</ol>
+										</div>
+										<div class="returns">
+											<div class="label">Returns</div>
+											<span class="type">__TYPE__</span>
+											<span>__DESCRIPTION__</span>
+										</div>
+									</li>
+								</ul>
+							</li>
 						</ul>
 					</li>
 				</ul>
@@ -256,7 +277,7 @@ END LICENSE
 					Send other settings to the loader process as system properties.
 				</li>
 				<li>
-					Run the <a href="../loader/internal.api.html">loader</a>, using an engine-specific <code>main()</code> method, which ends up calling 
+					Run the <a href="../loader/internal.api.html">loader</a>, using an engine-specific <code>main()</code> method, which ends up calling
 					<code>inonit.script.jsh.Main.cli()</code>, and exit with the status returned by the loader.
 				</li>
 			</ul>

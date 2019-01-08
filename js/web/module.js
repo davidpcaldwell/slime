@@ -32,7 +32,7 @@ var parse = function(string) {
 
 $exports.Url = function(o) {
 	["scheme","path","query","fragment"].forEach(function(item) {
-		if (o[item]) {
+		if (typeof(o[item]) != "undefined") {
 			this[item] = o[item];
 		}
 	},this);
@@ -119,7 +119,9 @@ $exports.Url = function(o) {
 		if (this.scheme) {
 			rv += this.scheme + "://";
 		}
-		//	TODO	userinfo
+		if (typeof(this.userinfo) != "undefined") {
+			rv += this.userinfo + "@";
+		}
 		if (this.host) {
 			rv += this.host;
 		}

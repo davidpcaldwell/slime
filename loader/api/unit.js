@@ -15,11 +15,13 @@ var log = ($context.log) ? $context.log : function(){};
 //	We have an object called Object in this file, so this
 var defineProperty = (function() { return this.Object.defineProperty; })();
 
-//	TODO	it appears that $context.asynchronous is unused
-
 var Verify = function(scope,vars) {
 	var Value = function(v,name) {
 		var prefix = (name) ? (name + " ") : "";
+		
+		this.toString = function() {
+			return "Verify(" + v + ")";
+		}
 
 		if (typeof(v) != "object" || !v) {
 			this.name = name;
@@ -131,9 +133,9 @@ var Verify = function(scope,vars) {
 
 			var access = (isNumber(x)) ? "[" + x + "]" : "." + x;
 			return (name) ? (name + access) : access;
-		};		
+		};
 	}
-	
+
 	var wrapMethod = function(o,x,name) {
 		if (arguments.length != 3) throw new Error();
 		var prefix = prefixFactory(name);
@@ -166,7 +168,7 @@ var Verify = function(scope,vars) {
 			}
 		});
 	};
-	
+
 	var wrapObject = $api.debug.disableBreakOnExceptionsFor(function(o,name) {
 		for (var x in o) {
 			try {
@@ -186,7 +188,7 @@ var Verify = function(scope,vars) {
 			} catch (e) {
 			}
 		}
-		
+
 		if (o instanceof Array) {
 			wrapProperty.call(this,o,"length",name);
 		}
@@ -233,7 +235,7 @@ var Verify = function(scope,vars) {
 					scope.test({
 						success: function() { return false; },
 						message: function(success) {
-							return prefix + "threw " + e;
+							return name + " threw " + e;
 						}
 					});
 				}
@@ -266,14 +268,14 @@ var Verify = function(scope,vars) {
 					scope.test({
 						success: function() { return false; },
 						message: function(success) {
-							return name + " did not throw; returned " + returned;
+							return name + " did not throw expected error; returned " + returned;
 						}
 					})
 				}
 			};
 
 			try {
-				var mapped = f.call(o);
+				var mapped = f.call(o,o);
 				var value = rv(mapped,((name) ? name : "")+"{" + f + "}");
 				value.threw = new DidNotThrow(mapped,"{" + f + "}");
 				return value;
@@ -327,278 +329,179 @@ var Verify = function(scope,vars) {
 
 $exports.Verify = Verify;
 
-var BooleanTest = function(b) {
-	var MESSAGE = function(success) {
-		return (success) ? "Success." : "FAILED!";
-	};
+var TestExecutionProcessor = (function() {
+	//	TODO	would like to move this adapter to another file, but would need to alter callers to load unit.js as module first
 
-	return $api.deprecate(function() {
-		return {
-			success: b,
-			message: MESSAGE(b)
-		}
-	});
-};
+	var adaptAssertion = new function() {
+		var BooleanTest = function(b) {
+			var MESSAGE = function(success) {
+				return (success) ? "Success." : "FAILED!";
+			};
 
-var ErrorTest = function(e) {
-	return function() {
-		return {
-			success: null,
-			message: "Exception thrown: " + e,
-			error: e
-		};
-	}
-};
-
-var adaptAssertion = new function() {
-	this.assertion = function(assertion) {
-		if (typeof(assertion) == "function") return assertion;
-		if (typeof(assertion) == "boolean") {
-			return BooleanTest(assertion);
-		} else if (typeof(assertion) == "undefined") {
-			throw new TypeError("Assertion is undefined.");
-		} else if (assertion === null) {
-			return BooleanTest(assertion);
-		} else if (
-				(typeof(assertion) == "object" && assertion != null && typeof(assertion.success) == "boolean")
-				|| (typeof(assertion) == "object" && assertion != null && assertion.success === null)
-			) {
-			return (function(object) {
-				var MESSAGE_FOR_MESSAGES = function(assertion_messages) {
-					return function(success) {
-						var messages = {
-							success: assertion_messages.success,
-							failure: assertion_messages.failure
-						};
-						if (messages && typeof(messages.success) == "string") {
-							messages.success = (function(value) {
-								return function() {
-									return value;
-								}
-							})(messages.success)
-						}
-						if (messages && typeof(messages.failure) == "string") {
-							messages.failure = (function(value) {
-								return function() {
-									return value;
-								}
-							})(messages.failure)
-						}
-						return (success) ? messages.success() : messages.failure();
-					}
-				};
-				return $api.deprecate(function() {
-					return {
-						success: object.success,
-						error: object.error,
-						message: MESSAGE_FOR_MESSAGES(object.messages)(object.success)
-					}
-				});
-			})(assertion);
-		} else if (typeof(assertion) == "object" && typeof(assertion.success) == "function") {
-			if (typeof(assertion.message) == "function") {
-				return (function(was) {
-					return $api.deprecate(function() {
-						var success = was.success();
-						var message = was.message(success);
-						return {
-							success: success,
-							message: message,
-							error: was.error
-						};
-					})
-				})(assertion);
-			} else if (typeof(assertion.messages) == "object") {
-				return (function(was) {
-					return $api.deprecate(function() {
-						var success = was.success();
-						return {
-							success: success,
-							message: (success) ? was.messages.success() : was.messages.failure(),
-							error: was.error
-						};
-					});
-				})(assertion);
-			} else {
-				throw new TypeError("Assertion object with success but no messages: " + Object.keys(assertion));
-			}
-		} else if (true || typeof(assertion) != "object" || typeof(assertion.success) != "function") {
-			var error = new TypeError("Assertion is not valid format; see this error's 'assertion' property for incorrect value");
-			error.assertion = assertion;
-			throw error;
-		}
-	};
-
-	this.result = function(result) {
-		if (typeof(result) == "boolean") {
-			return $api.deprecate((function(b) {
+			return $api.deprecate(function() {
 				return {
 					success: b,
-					message: (b) ? "Success." : "FAILED!"
-				};
-			}))(result);
-		}
-		return result;
-	}
-}
-
-var Scope = function(o) {
-	var success = true;
-	defineProperty(this,"success",{
-		get: function() {
-			return success;
-		}
-	});
-	var fail = function() {
-		debugger;
-		success = false;
-	};
-
-	//	IE8-compatible implementation below
-	//		var self = this;
-	//		this.success = true;
-	//		var fail = function() {
-	//			debugger;
-	//			self.success = false;
-	//		}
-
-	this.error = function(e) {
-		o.events.fire("test", {
-			success: false,
-			message: "Uncaught exception: " + e,
-			error: e
-		});
-		fail();
-	}
-
-
-	var units = [];
-
-	//	TODO	can this function be removed?
-	var runScenario = function(object,next) {
-		//	TODO	definite code smell here as we try to hold together the scenario public "wrapper" with the scenario
-		//			implementation; should improve this
-		var child = (function() {
-			var argument = {};
-			for (var x in object) {
-				argument[x] = object[x];
-			}
-			argument.events = o.events;
-			return new o.Scenario(argument);
-		})(object);
-//		var child = (object instanceof o.Scenario) ? object : new o.Scenario(object);
-
-		var runNext = function(next) {
-			if ($context.asynchronous && $context.asynchronous.scenario) {
-				$context.asynchronous.scenario(next);
-			} else {
-				next();
-			}
-		}
-
-		if (o.callback) {
-			child.run({
-				callback: { success: function(b) {
-					if (!b) {
-						fail();
-					}
-					if (next) runNext(next);
-				}},
-				haltOnException: o.haltOnException
+					message: MESSAGE(b)
+				}
 			});
-		} else {
-			var result = child.run({
-				haltOnException: o.haltOnException
-			});
-			if (!result) {
-				fail();
-			}
-			if (next) runNext(next);
-		}
-	}
+		};
 
-	this.scenario = function(object) {
-		if (!o.callback) {
-			runScenario(object);
-		} else {
-			units.push({ scenario: object });
-		}
-	}
-
-	var runTest = function(assertion,next) {
-		assertion = adaptAssertion.assertion(assertion);
-		var result = assertion();
-		result = adaptAssertion.result(result);
-		if (!result.success) {
-			fail();
-		}
-		o.events.fire("test",result);
-		if (next) {
-			if ($context.asynchronous && $context.asynchronous.test) {
-				$context.asynchronous.test(next);
-			} else {
-				next();
-			}
-		}
-	}
-
-	this.test = function(assertion) {
-		if (!o.callback) {
-			runTest(assertion);
-		} else {
-			units.push({ test: assertion });
-		}
-	};
-
-	this.verify = new Verify(this);
-
-	this.start = function() {
-		o.events.fire("scenario", { start: o.scenario });
-	}
-
-	this.end = function() {
-		if (o.callback) {
-			var runUnit = function(units,index) {
-				var recurse = arguments.callee;
-				if (index == units.length) {
-					o.events.fire("scenario", { end: o.scenario, success: this.success });
-					o.callback.success(this.success);
-				} else {
-					var next = function() {
-						recurse(units,index+1)
+		this.assertion = function(assertion) {
+			if (typeof(assertion) == "function") return assertion;
+			if (typeof(assertion) == "boolean") {
+				return BooleanTest(assertion);
+			} else if (typeof(assertion) == "undefined") {
+				throw new TypeError("Assertion is undefined.");
+			} else if (assertion === null) {
+				return BooleanTest(assertion);
+			} else if (
+					(typeof(assertion) == "object" && assertion != null && typeof(assertion.success) == "boolean")
+					|| (typeof(assertion) == "object" && assertion != null && assertion.success === null)
+				) {
+				return (function(object) {
+					var MESSAGE_FOR_MESSAGES = function(assertion_messages) {
+						return function(success) {
+							var messages = {
+								success: assertion_messages.success,
+								failure: assertion_messages.failure
+							};
+							if (messages && typeof(messages.success) == "string") {
+								messages.success = (function(value) {
+									return function() {
+										return value;
+									}
+								})(messages.success)
+							}
+							if (messages && typeof(messages.failure) == "string") {
+								messages.failure = (function(value) {
+									return function() {
+										return value;
+									}
+								})(messages.failure)
+							}
+							return (success) ? messages.success() : messages.failure();
+						}
 					};
-					if (typeof(units[index].scenario) != "undefined") {
-						runScenario(units[index].scenario,next);
-					} else if (typeof(units[index].test) != "undefined") {
-						runTest(units[index].test,next);
-					} else {
-						throw new Error("Unreachable");
-					}
+					return $api.deprecate(function() {
+						return {
+							success: object.success,
+							error: object.error,
+							message: MESSAGE_FOR_MESSAGES(object.messages)(object.success)
+						}
+					});
+				})(assertion);
+			} else if (typeof(assertion) == "object" && typeof(assertion.success) == "function") {
+				if (typeof(assertion.message) == "function") {
+					return (function(was) {
+						return $api.deprecate(function() {
+							var success = was.success();
+							var message = was.message(success);
+							return {
+								success: success,
+								message: message,
+								error: was.error
+							};
+						})
+					})(assertion);
+				} else if (typeof(assertion.messages) == "object") {
+					return (function(was) {
+						return $api.deprecate(function() {
+							var success = was.success();
+							return {
+								success: success,
+								message: (success) ? was.messages.success() : was.messages.failure(),
+								error: was.error
+							};
+						});
+					})(assertion);
+				} else {
+					throw new TypeError("Assertion object with success but no messages: " + Object.keys(assertion));
+				}
+			} else if (true || typeof(assertion) != "object" || typeof(assertion.success) != "function") {
+				var error = new TypeError("Assertion is not valid format; see this error's 'assertion' property for incorrect value");
+				error.assertion = assertion;
+				throw error;
+			}
+		};
+
+		this.result = function(result) {
+			if (typeof(result) == "boolean") {
+				return $api.deprecate((function(b) {
+					return {
+						success: b,
+						message: (b) ? "Success." : "FAILED!"
+					};
+				}))(result);
+			}
+			return result;
+		}
+	};
+
+	var Scope = function(o) {
+		var success = true;
+
+		//	IE8-compatible implementation below
+		//		var self = this;
+		//		this.success = true;
+		//		var fail = function() {
+		//			debugger;
+		//			self.success = false;
+		//		}
+
+		var checkForFailure = function(detail) {
+			if (typeof(detail.success) != "undefined") {
+				if (!detail.success) {
+					debugger;
+					success = false;
 				}
 			}
+		};
 
-			runUnit.call(this,units,0);
-		} else {
-			o.events.fire("scenario", { end: o.scenario, success: this.success });
+		var process = function(type,detail) {
+			o.events.fire(type,detail);
+			checkForFailure(detail);
+		}
+
+		this.test = function(assertion) {
+			var getResult = function(assertion) {
+				assertion = adaptAssertion.assertion(assertion);
+				var result = assertion();
+				result = adaptAssertion.result(result);
+				return result;
+			};
+
+			process("test",getResult(assertion));
+		};
+
+		this.error = function(e) {
+			process("test",{
+				success: false,
+				message: "Uncaught exception: " + e,
+				error: e
+			});
+		}
+
+		this.verify = new Verify(this);
+
+		defineProperty(this,"success",{
+			get: function() {
+				return success;
+			}
+		});
+
+		this.fire = function(type,detail) {
+			process(type,detail);
+		}
+
+		this.checkForFailure = function(e) {
+			checkForFailure(e.detail);
 		}
 	};
 
-	this.checkForFailure = function(type,detail) {
-		if (typeof(detail.success) != "undefined") {
-			if (detail.success === false) {
-				success = false;
-			}
-		}
-	}
+	return Scope;
+})();
 
-	this.fire = function(type,detail) {
-		o.events.fire(type,detail);
-		this.checkForFailure(type,detail);
-	}
-};
-$exports.Scope = Scope;
-
-$exports.Scenario = {};
+$exports.TestExecutionProcessor = TestExecutionProcessor;
 
 (function() {
 	var copy = function(o) {
@@ -649,6 +552,7 @@ $exports.Scenario = {};
 
 		return {
 			events: events,
+			scope: new TestExecutionProcessor({ events: events }),
 			create: (function() {
 				if (definition && definition.create) {
 					$api.deprecate(function() {
@@ -743,7 +647,7 @@ $exports.Scenario = {};
 			var local = part.before(p).scope;
 
 			//	TODO	compare below initialize with one used in part
-			var vscope = new Scope({ events: part.events });
+			var vscope = part.scope;
 
 			if (next) {
 				if (part.find("next")) {
@@ -762,7 +666,7 @@ $exports.Scenario = {};
 				vscope.fail();
 			} else {
 				var checkForScopeFailure = function(e) {
-					vscope.checkForFailure(e.type,e.detail);
+					vscope.checkForFailure(e);
 				};
 				this.listeners.add("scenario", checkForScopeFailure);
 				this.listeners.add("test", checkForScopeFailure);
@@ -803,7 +707,7 @@ $exports.Scenario = {};
 			var local = part.before(p).scope;
 
 			//	TODO	compare below initialize with one used in part
-			var vscope = new Scope({ events: part.events });
+			var vscope = part.scope;
 
 			var error = part.initialize(local);
 
@@ -812,7 +716,7 @@ $exports.Scenario = {};
 				return Promise.resolve(false);
 			} else {
 				var checkForScopeFailure = function(e) {
-					vscope.checkForFailure(e.type,e.detail);
+					vscope.checkForFailure(e);
 				};
 				this.listeners.add("scenario", checkForScopeFailure);
 				this.listeners.add("test", checkForScopeFailure);
@@ -895,18 +799,18 @@ $exports.Scenario = {};
 						for (var x in parts) {
 							keys.push(x);
 						}
-						var createPartPromise = function(x) {
-							return function() {
-								return new $context.api.Promise(function(resolve,reject) {
-									var subscope = copy(scope);
-									resolve(parts[x].run({
-										scope: subscope,
-										path: []
-									}));
-								});
-							};
-						}
 						if ($context.api && $context.api.Promise) {
+							var createPartPromise = function(x) {
+								return function() {
+									return new $context.api.Promise(function(resolve,reject) {
+										var subscope = copy(scope);
+										resolve(parts[x].run({
+											scope: subscope,
+											path: []
+										}));
+									});
+								};
+							};
 							var promise = $context.api.Promise.resolve();
 							for (var i=0; i<keys.length; i++) {
 								promise = promise.then(createPartPromise(keys[i])).then(function(result) {
@@ -921,9 +825,10 @@ $exports.Scenario = {};
 						} else {
 							var index = 0;
 							var proceed = function recurse(result) {
+								if (result === false) success = false;
 								if (index == keys.length) {
-									if (!result) success = false;
-									next(result);
+									part.after(success,scope);
+									next(success);
 								} else {
 									var x = keys[index++];
 									var subscope = copy(scope);
@@ -1003,12 +908,10 @@ $exports.Scenario = {};
 
 		this.scenario = $api.deprecate(function(id,p) {
 			addPart(id,p);
-//			addPart(id,Scenario,p,{ id: id, events: events });
 		});
 
 		this.suite = $api.deprecate(function(id,p) {
 			addPart(id,p);
-//			addPart(id,Suite,p,{ id: id, events: events });
 		});
 
 		part.create();
@@ -1034,31 +937,46 @@ $exports.getStructure = function getStructure(part) {
 };
 
 $exports.View = function(o) {
+	var On = function(implementation) {
+		this.scenario = function(e) {
+			if (e.detail.start) {
+				if (implementation.start) {
+					implementation.start(e.detail.start);
+				}
+			} else if (e.detail.end) {
+				if (implementation.end) {
+					implementation.end(e.detail.end, e.detail.success);
+				}
+			}
+		};
+
+		this.test = function(e) {
+			if (implementation.test) implementation.test(e.detail);
+		}
+	};
+
 	var addConsoleListener = function(scenario,implementation) {
 		if (typeof(implementation) == "function") {
 			scenario.listeners.add("scenario", implementation);
 			scenario.listeners.add("test", implementation);
 		} else if (implementation && typeof(implementation) == "object") {
-			scenario.listeners.add("scenario", function(e) {
-				if (e.detail.start) {
-					if (implementation.start) {
-						implementation.start(e.detail.start);
-					}
-				} else if (e.detail.end) {
-					if (implementation.end) {
-						implementation.end(e.detail.end, e.detail.success);
-					}
-				}
-			});
-
-			scenario.listeners.add("test", function(e) {
-				if (implementation.test) implementation.test(e.detail);
-			});
+			var on = new On(implementation);
+			scenario.listeners.add("scenario", on.scenario);
+			scenario.listeners.add("test", on.test);
 		}
 	};
 
 	this.listen = function(scenario) {
 		addConsoleListener(scenario,o);
+	};
+
+	if (typeof(o) == "object") {
+		this.on = new On(o);
+	} else if (typeof(o) == "function") {
+		this.on = {
+			scenario: o,
+			test: o
+		};
 	}
 };
 

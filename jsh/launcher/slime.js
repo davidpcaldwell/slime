@@ -36,7 +36,9 @@ $api.slime = (function(was) {
 			this.getClasses = function() {
 				return new Packages.java.io.File($api.script.file.getParentFile(), "jsh.jar");
 			};
-		}
+		};
+		
+		rv.home = $api.script.file.getParentFile();
 	} else {
 		rv = {};
 
@@ -172,13 +174,12 @@ $api.slime = (function(was) {
 		var BOTH = {};
 
 		var map = function(name,type) {
-			var specified = (rv.setting(name) === null) ? void(0) : rv.setting(name);
+			//	If 'type' has a container property, it will be invoked with the setting effective value to get an array of
+			//	string arguments to pass to the container/loader VM.
 			all[name] = {
-				type: type,
-				specified: specified
+				type: type
 			};
 		};
-
 
 		map("jsh.debug.jdwp", {
 			container: function(value) {
@@ -230,7 +231,6 @@ $api.slime = (function(was) {
 //		map("jsh.user.plugins", BOTH);
 
 		//	Undocumented so far
-		map("jsh.launcher.classpath", BOTH);
 		map("jsh.launcher.script.api", BOTH);
 		map("jsh.launcher.script.main", BOTH);
 
@@ -246,24 +246,6 @@ $api.slime = (function(was) {
 		//	TODO	Seem to be used in loader:
 		//	Main.java:
 		//	jsh.shell.packaged
-		//
-		//	rhino/shell/jsh.js:
-		//	jsh.launcher.classpath
-
-		this.get = function(name) {
-			if (!all[name]) {
-				throw new Error("Cannot read: " + name);
-			}
-			if (typeof(all[name].specified) != "undefined") {
-				return all[name].specified;
-			}
-			if (typeof(all[name].value) != "undefined") {
-				return all[name].value;
-			}
-			if (all[name]["default"]) {
-				return all[name]["default"]();
-			}
-		}
 
 		this.set = function(name,value) {
 			if (!all[name]) throw new Error("Not defined: " + name);
@@ -280,6 +262,27 @@ $api.slime = (function(was) {
 				})(value);
 			}
 			all[name]["default"] = value;
+		};
+
+		var get = function(name) {
+			var value = rv.setting(name);
+			return (value === null) ? void(0) : value;
+		};
+
+		this.get = function(name) {
+			if (!all[name]) {
+				throw new Error("Cannot read: " + name);
+			}
+			var specified = get(name);
+			if (typeof(specified) != "undefined") {
+				return specified;
+			}
+			if (all[name] && typeof(all[name].value) != "undefined") {
+				return all[name].value;
+			}
+			if (all[name] && all[name]["default"]) {
+				return all[name]["default"]();
+			}
 		}
 
 		//	Added to VM arguments for loader VM

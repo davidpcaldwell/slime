@@ -41,7 +41,7 @@ $exports.FilesystemProvider = function(_peer) {
 	//	TODO	Build this into each separate filesystem separately
 	var isRootPath = function(string) {
 		if (separators.pathname == "/") {
-			return ( string == "/" ) || (string.substring(0,2) == "//" && string.substring(2).indexOf("/") == -1);
+			return ( string == "" || string == "/" ) || (string.substring(0,2) == "//" && string.substring(2).indexOf("/") == -1);
 		} else if (separators.pathname == "\\") {
 			if (string[1] == ":") {
 				return string.length == 3 && string[2] == "\\";
@@ -113,25 +113,25 @@ $exports.FilesystemProvider = function(_peer) {
 
 	this.read = new function() {
 		this.binary = function(peer) {
-			return $context.api.io.java.adapt(peer.readBinary());
+			return $context.api.io.Streams.java.adapt(peer.readBinary());
 		}
 
 		this.character = function(peer) {
-			return $context.api.io.java.adapt(peer.readText()/*, {LINE_SEPARATOR: separators.line}*/);
+			return $context.api.io.Streams.java.adapt(peer.readText()/*, {LINE_SEPARATOR: separators.line}*/);
 		}
 	}
 
 	this.write = new function() {
 		this.binary = function(peer,append) {
-			return $context.api.io.java.adapt(peer.writeBinary(append));
+			return $context.api.io.Streams.java.adapt(peer.writeBinary(append));
 		}
 
 		this.character = function(peer,append) {
-			return $context.api.io.java.adapt(peer.writeText(append));
+			return $context.api.io.Streams.java.adapt(peer.writeText(append));
 		}
 
 		this.string = function(peer,append,string) {
-			var stream = $context.api.io.java.adapt(peer.writeText(append));
+			var stream = $context.api.io.Streams.java.adapt(peer.writeText(append));
 			stream.write(string);
 			stream.close();
 		}

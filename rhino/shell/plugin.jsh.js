@@ -40,9 +40,9 @@ plugin({
 			,file: jsh.file
 		}
 		context.stdio = new function() {
-			this.input = jsh.io.java.adapt($slime.getStdio().getStandardInput());
-			this.output = jsh.io.java.adapt($slime.getStdio().getStandardOutput());
-			this.error = jsh.io.java.adapt($slime.getStdio().getStandardError());
+			this.input = jsh.io.Streams.java.adapt($slime.getStdio().getStandardInput());
+			this.output = jsh.io.Streams.java.adapt($slime.getStdio().getStandardOutput());
+			this.error = jsh.io.Streams.java.adapt($slime.getStdio().getStandardError());
 		}
 		//	TODO	properties methods should go away; should not be necessary now
 		context.getSystemProperty = function(name) {
@@ -82,5 +82,45 @@ plugin({
 	},
 	load: function() {
 		jsh.shell.browser.inject({ httpd: jsh.httpd });
+	}
+});
+
+plugin({
+	isReady: function() {
+		return jsh.js && jsh.shell && jsh.shell.jsh && jsh.script
+	},
+	load: function() {
+		jsh.shell.jsh.debug = function(p) {
+			var isRhino = (function() {
+				//	TODO	probably a way to get this from rhino/jrunscript/api.js
+				if (!jsh.java.getClass("org.mozilla.javascript.Context")) return false;
+				if (!Packages.org.mozilla.javascript.Context.getCurrentContext()) return false;
+				return true;
+			})();
+
+			//	TODO	probably want to build these arguments better so that other jsh.shell.jsh arguments like stdio and
+			//			environment can also be used and still work
+
+			var evaluate = function(result) {
+				jsh.shell.exit(result.status);
+			};
+
+			if (isRhino) {
+				jsh.shell.jsh({
+					script: jsh.script.file,
+					arguments: jsh.script.arguments,
+					environment: jsh.js.Object.set({}, jsh.shell.environment, {
+						JSH_DEBUG_SCRIPT: "rhino"
+					}),
+					evaluate: evaluate
+				})
+			} else {
+				jsh.shell.jsh({
+					script: jsh.shell.jsh.src.getFile("jsh/tools/ncdbg.jsh.js"),
+					arguments: [jsh.script.file.toString()].concat(jsh.script.arguments),
+					evaluate: evaluate
+				});
+			}
+		}
 	}
 })

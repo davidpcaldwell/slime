@@ -39,7 +39,7 @@ $set(new (function() {
 		}
 
 		scope.$slime = $slime;
-		
+
 		(function setDeprecatedProperty(object,property,value) {
 			object[property] = value;
 			//	TODO	deprecating $jsh property breaks Nashorn somehow, apparently by making the global $jsh the one seen
@@ -93,13 +93,13 @@ $set(new (function() {
 						log(log.Level.WARNING, "Plugin from " + item + " is disabled: " + item.declaration.disabled());
 					} catch (e) {
 						//	TODO	default value for object?!?
-						log(log.Level.WARNING, "Plugin is disabled: " + item.declaration.disabled());						
+						log(log.Level.WARNING, "Plugin is disabled: " + item.declaration.disabled());
 					}
 				});
 			}
 		}
 	};
-	
+
 	this.mock = function(p) {
 		var list = load({
 			plugins: (p.plugins) ? p.plugins : {},
@@ -136,7 +136,7 @@ $set(new (function() {
 		}
 		return list;
 	}
-	
+
 	this.load = function(p) {
 		if (p._file && p._file.isDirectory()) {
 			p.loader = new $slime.Loader({ _file: p._file })

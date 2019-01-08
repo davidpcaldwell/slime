@@ -1,0 +1,191 @@
+<!--
+LICENSE
+This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+The Original Code is the jrunscript/io SLIME module.
+
+The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+Portions created by the Initial Developer are Copyright (C) 2013 the Initial Developer. All Rights Reserved.
+
+Contributor(s):
+END LICENSE
+-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
+<head>
+	<title>Java MIME implementation</title>
+	<link rel="stylesheet" type="text/css" href="../../loader/api/api.css" />
+	<script src="../../loader/api/api.js"></script>
+</head>
+<body>
+	<div>Uses the Java runtime to provide MIME-related facilities.</div>
+	<div>
+		<h1>Context</h1>
+		<ul>
+			<li class="value">
+				<div class="name">nojavamail</div>
+				<span class="type">boolean</span>
+				<span>
+					If <code>true</code>, causes the SLIME implementation (rather than the JavaMail implementation) to be used for creating
+					multipart messages.
+				</span>
+			</li>
+			<li class="object">
+				<div class="name">api</div>
+				<span>Module dependencies.</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="value">
+						<div class="name">io</div>
+						<span>The jrunscript/io module.</span>
+					</li>
+					<li class="value">
+						<div class="name">mime</div>
+						<span>The SLIME MIME API.</span>
+					</li>
+				</ul>
+			</li>
+		</ul>
+		<script type="application/x.jsapi#context">
+			new function() {
+				this.api = {
+					io: $jsapi.loader.module("module.js", {
+						api: {
+							mime: jsh.unit.$slime.mime,
+							java: $jsapi.loader.module("../../jrunscript/host/", {
+								$java: jsh.unit.$slime
+							})
+						}
+					}),
+					mime: jsh.unit.$slime.mime
+				}
+			}
+		</script>
+	</div>
+	<div>
+		<h1>Exports</h1>
+		<script type="application/x.jsapi#initialize">
+			scope.$slime = jsh.unit.$slime;
+		</script>
+		<div class="type">
+			<a class="type" name="types.entity">entity</a>
+			<span>A MIME entity, as defined by <a href="http://tools.ietf.org/html/rfc2045#section-2.4">RFC 2045 section 2.4</a>.</span>
+			<div class="label">has properties:</div>
+			<ul>
+				<li class="value">
+					<div class="name">type</div>
+					<span class="type"><a href="../../loader/mime.api.html#types.type">type</a></span>
+					<span>The MIME type represented by this entity.</span>
+				</li>
+				<li class="value">
+					<div class="name">stream</div>
+					<span class="type"><a href="api.html#types.binput">byte input stream</a></span>
+					<span>
+						(optional; <code>stream</code> or <code>string</code> must be defined)
+						A stream from which the content of this entity may be read.
+					</span>
+				</li>
+				<li class="value">
+					<div class="name">string</div>
+					<span class="type">string</span>
+					<span>
+						(optional; <code>stream</code> or <code>string</code> must be defined)
+						A string containing the content of this entity.
+					</span>
+				</li>
+			</ul>
+		</div>
+		<div class="type">
+			<a class="type" name="types.part">part</a>
+			<!--	TODO	allow a resource to be used as a part somehow	-->
+			<span class="type">supports <a href="#types.entity">entity</a></span>
+			<span>A MIME entity that can be used as part of a MIME message.</span>
+			<div class="label">has properties:</div>
+			<ul>
+				<li class="value">
+					<div class="name">disposition</div>
+					<span class="type">string</span>
+					<span>
+						The <code>Content-Disposition</code> (see <a href="http://tools.ietf.org/html/rfc2183">RFC 2183</a>) to use for this part; for
+						example, <code>attachment</code> or <code>inline</code>.
+					</span>
+				</li>
+				<li class="value">
+					<div class="name">filename</div>
+					<span class="type">string</span>
+					<span>The name of this part.</span>
+				</li>
+			</ul>
+		</div>
+		<script type="application/x.jsapi#initialize">
+			scope.api = jsh.io;
+		</script>
+		<ul jsapi:reference="getApi('../../loader/jrunscript/api.html').getElement('mime/top')">
+		</ul>
+		<ul>
+			<li class="constructor">
+				<div class="name">Multipart</div>
+				<span>Creates a <a href="api.html#types.Resource">Resource</a> representing a MIME multipart message.</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="object">
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="value">
+									<div class="name">subtype</div>
+									<span class="type">string</span>
+									<span>The MIME multipart subtype to use; e.g., <code>alternative</code>, <code>mixed</code>, or another type.</span>
+								</li>
+								<li class="value">
+									<div class="name">parts</div>
+									<span class="type">Array of <a href="#types.part">part</a></span>
+									<span>The parts of this message.</span>
+								</li>
+							</ul>
+						</li>
+					</ol>
+				</div>
+				<div class="instances">
+					<div class="label">Instances</div>
+					<span class="type"><a href="api.html#types.Resource">Resource</a></span>
+				</div>
+			</li>
+			<li class="constructor">
+				<div class="name">Type</div>
+				<span>A constructor that is equivalent to the <a href="../../loader/mime.api.html#$exports.Type">portable MIME Type constructor</a>.</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="function">
+						<div class="name">guess</div>
+						<span>Attempts to deduce the MIME type for an object.</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="object">
+									<span>A set of properties describing the object.</span>
+									<div class="label">has properties:</div>
+									<ul>
+										<li class="value">
+											<div class="name">name</div>
+											<span class="type">string</span>
+											<span>A filename.</span>
+										</li>
+									</ul>
+								</li>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type"><a href="../../loader/mime.api.html#types.type">type</a></span>
+							<span>A MIME type that corresponds to the given object.</span>
+						</div>
+					</li>
+				</ul>
+
+			</li>
+		</ul>
+	</div>
+</body>
+</html>

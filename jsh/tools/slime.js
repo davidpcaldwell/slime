@@ -15,6 +15,7 @@ if (!slime) slime = {};
 slime.build = {};
 
 //	Build using Rhino shell; used by jsh build
+// TODO: is this still used? May have been replaced by build script which runs in unbuilt shell
 slime.build.rhino = function(from,build,api,javac) {
 	//	copy everything except 'java' directory
 	api.copyFile(from,build,[
@@ -60,7 +61,7 @@ slime.build.rhino = function(from,build,api,javac) {
 			process(rhinoDirectory);
 		}
 
-		//	TODO	Not DRY: $jvm/classes repeated in loader/rhino/literal.js
+		//	TODO	Not DRY: $jvm/classes repeated in loader/jrunscript/expression.js
 		var to = new Packages.java.io.File(build,"$jvm/classes");
 		to.mkdirs();
 		var args = ["-d", String(to.getCanonicalPath())];

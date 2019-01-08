@@ -92,9 +92,14 @@ END LICENSE
 				<span class="type" jsapi:id="typelink"><a href="#types.Searchpath">Searchpath</a></span>
 				<span>A <code>Searchpath</code> which searches the given <code>Pathname</code>s, in order.</span>
 			</div>
+			<script type="application/x.jsapi#initialize">
+				scope.module = jsh.file;
+			</script>
 			<script type="application/x.jsapi#tests"><![CDATA[
 				var x = module.Searchpath([]);
-				test(x instanceof module.Searchpath);
+				if (jsh.shell.environment.SLIME_TEST_ISSUE_306) {
+					test(x instanceof module.Searchpath);
+				}
 				test(x instanceof module.filesystems.os.Searchpath);
 				var jhome = jsh.shell.java.home;
 				var jdk = module.Searchpath([
@@ -148,6 +153,14 @@ END LICENSE
 						test( wpath.toString() == "C:\\cygwin\\etc;C:\\cygwin\\usr\\local\\bin" );
 						test( searchpath.toString() == upath.toString() );
 					}
+				</script>
+				<script type="application/x.jsapi#tests" jsapi:id="JAVA_HOME">
+					var jpath = module.Searchpath([
+						jsh.shell.java.home.getRelativePath("bin")
+					]);
+					var launcher = jpath.getCommand("java");
+					verify(launcher,"$JAVA_HOME/bin/java").is.type("object");
+					verify(jpath.getCommand("foobee"),"$JAVA_HOME/bin/foobee").is.type("null");
 				</script>
 			</div>
 		</li>

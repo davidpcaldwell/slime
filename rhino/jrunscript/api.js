@@ -80,7 +80,7 @@
 				return "Rhino";
 			}
 		}
-		
+
 		var Graal = function() {
 			this.toString = function() {
 				return "Graal";

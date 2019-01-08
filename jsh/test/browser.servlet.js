@@ -12,10 +12,11 @@
 
 //	TODO	remove direct jsh references from this file
 
+jsh.shell.console("Loading browser servlet ...");
 var lock = new jsh.java.Thread.Monitor();
 var success;
 
-var delegate = (function() {
+var delegate = ($parameters.delegate) ? (function() {
 	var scope = {
 		$exports: {},
 		httpd: httpd,
@@ -25,7 +26,7 @@ var delegate = (function() {
 				var prefix = $parameters.delegate.split("/").slice(0,-1).join("/") + "/";
 
 				this.get = function(path) {
-					return httpd.loader.resource(prefix + path);
+					return httpd.loader.get(prefix + path);
 				}
 			}
 		})
@@ -33,7 +34,7 @@ var delegate = (function() {
 	jsh.shell.echo("Running: " + $parameters.delegate);
 	httpd.loader.run($parameters.delegate, scope);
 	return scope.$exports;
-})();
+})() : void(0);
 
 $exports.handle = function(request) {
 	//	This disables reloading for unit tests; should find a better way to do this rather than just ripping out the method
@@ -69,15 +70,15 @@ $exports.handle = function(request) {
 					debugger;
 					var string = request.body.stream.character().asString();
 					if (string == "true") {
-						success = true;
+						success = string;
 					} else if (string == "false") {
-						success = false;
+						success = string;
 					} else if (string.length == 0) {
-						success = null;
+						success = "null";
 					} else {
-						throw new Error("success = " + string);
+						success = string;
 					}
-					jsh.shell.echo("server side success = " + success + "; returning 200 for POST and unblocking on " + lock);
+//					jsh.shell.echo("server side success = " + success + "; returning 200 for POST and unblocking on " + lock);
 					return {
 						status: {
 							code: 200
@@ -99,7 +100,7 @@ $exports.handle = function(request) {
 						},
 						body: {
 							type: "application/json",
-							string: String(success)
+							string: success
 						}
 					};
 				}
@@ -108,9 +109,9 @@ $exports.handle = function(request) {
 		}
 	};
 
-	return delegate.handle(request);
+	if (delegate) return delegate.handle(request);
 };
 
 $exports.destroy = function() {
-	if (delegate.destroy) delegate.destroy();
+	if (delegate && delegate.destroy) delegate.destroy();
 }

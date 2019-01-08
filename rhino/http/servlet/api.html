@@ -47,16 +47,20 @@ END LICENSE
 							<td>JavaScript utilities.</td>
 						</tr>
 						<tr>
-							<td><code><a href="../../../js/object/">httpd.js</a></code></td>
+							<td><code><a href="../../../js/object/api.html">httpd.js</a></code></td>
 							<td>The <code>js/object</code> API.</td>
 						</tr>
 						<tr>
-							<td><code><a href="../../../rhino/java/">httpd.java</a></code></td>
-							<td>The <code>rhino/java</code> API.</td>
+							<td><code><a href="../../../js/web/api.html">httpd.web</a></code></td>
+							<td>The <code>js/web</code> API.</td>
 						</tr>
 						<tr>
-							<td><code><a href="../../../rhino/io/">httpd.io</a></code></td>
-							<td>The <code>rhino/io</code> API.</td>
+							<td><code><a href="../../../jrunscript/host/api.html">httpd.java</a></code></td>
+							<td>The <code>jrunscript/host</code> API.</td>
+						</tr>
+						<tr>
+							<td><code><a href="../../../jrunscript/io/api.html">httpd.io</a></code></td>
+							<td>The <code>jrunscript/io</code> API.</td>
 						</tr>
 					</tbody>
 				</table>
@@ -131,7 +135,9 @@ END LICENSE
 					</li>
 					<li class="object">
 						<div class="name">query</div>
-						<span>__DESCRIPTION__</span>
+						<span>
+							(conditional; present if requested URL had a query string)
+						</span>
 						<div class="label">has properties:</div>
 						<ul>
 							<li class="value">
@@ -195,6 +201,18 @@ END LICENSE
 							</li>
 						</ul>
 					</li>
+					<li class="object experimental">
+						<div class="name">user</div>
+						<span>Represents a user; see <code><a href="https://docs.oracle.com/javaee/7/api/javax/servlet/http/HttpServletRequest.html#getUserPrincipal--">getUserPrincipal()</a></code>.</span>
+						<div class="label">has properties:</div>
+						<ul>
+							<li class="value">
+								<div class="name">name</div>
+								<span class="type">string</span>
+								<span>Represents the name of the user; see <code><a href="https://docs.oracle.com/javase/8/docs/api/java/security/Principal.html">getUserPrincipal().getName()</a></code></span>
+							</li>
+						</ul>
+					</li>
 					<li class="object">
 						<div class="name">body</div>
 						<span>The body of the request.</span>
@@ -207,7 +225,7 @@ END LICENSE
 							</li>
 							<li class="value">
 								<div class="name">stream</div>
-								<span class="type"><a href="../../../rhino/io/api.html#types.binput">byte input stream</a></span>
+								<span class="type"><a href="../../../jrunscript/io/api.html#types.binput">byte input stream</a></span>
 								<span>A stream from which the request body can be read.</span>
 							</li>
 						</ul>
@@ -308,7 +326,7 @@ END LICENSE
 				<p>A response to be sent to a client in response to a request.</p>
 				<p>
 					The content of the body must be specified in some way. Using a resource causes the type and content to be
-					specified; note that using a Java <a href="../../../loader/rhino/api.html#types.resource">resource</a>
+					specified; note that using a Java <a href="../../../loader/jrunscript/api.html#types.resource">resource</a>
 					automatically provides other capabilities (<code>Last-Modified</code> and <code>Content-Length</code>
 					headers).
 				</p>
@@ -346,7 +364,7 @@ END LICENSE
 						</li>
 						<li class="value">
 							<div class="name">stream</div>
-							<span class="type"><a href="../../../rhino/io/api.html#types.binput">binary input stream</a></span>
+							<span class="type"><a href="../../../jrunscript/io/api.html#types.binput">binary input stream</a></span>
 							<span>
 								(optional; ignored if <code>string</code> is present)
 								A stream from which the message body to send to the client may be read.
@@ -407,7 +425,7 @@ END LICENSE
 			<ul>
 				<li class="value">
 					<div class="name">httpd.loader</div>
-					<span class="type"><a href="../../../rhino/io/api.html#types.Loader">Loader</a></span>
+					<span class="type"><a href="../../../jrunscript/io/api.html#types.Loader">Loader</a></span>
 					<span>
 						<span>(conditional: not present if no resources specified when mapping the servlet)</span>
 						Loads code (and potentially other resources) from the servlet resource loader. Note that unlike Java
@@ -471,7 +489,7 @@ END LICENSE
 		</div>
 		<div>
 			<h2>$loader</h2>
-			The <code>$loader</code> object is a <em>servlet-specific</em> <a href="../../../rhino/io/api.html#Loader">Loader</a>
+			The <code>$loader</code> object is a <em>servlet-specific</em> <a href="../../../jrunscript/io/api.html#Loader">Loader</a>
 			that loads resources <em>relative to the servlet's path</em>. The <code>httpd.loader</code> object loads them
 			from the application path. So if a servlet is located at <code>/WEB-INF/myapp/servlet.js</code>, it can load a
 			JavaScript file at <code>/WEB-INF/myapp/code.js</code> via:
@@ -531,8 +549,14 @@ END LICENSE
 	<div>
 		<h1><a id="deployment">Deployment</a></h1>
 		<div>
-			SLIME servlets may be built into ordinary Java web applications using the <code>webapp.jsh.js</code> tool included with
-			SLIME in the <code>rhino/http/servlet/tools</code> directory.
+			SLIME servlets may be built into ordinary Java web applications, via either the <code>jsh.httpd.tools</code> API or
+			via the <code>rhino/http/servlet/tools/webapp.jsh.js</code> script.
+		</div>
+		<div>
+			See the documentation for <a href="tools/plugin.jsh.api.html">jsh.httpd.tools</a> for how to use the API to build
+			a standard Java webapp.
+		</div>
+		<div>
 			The <code>webapp.jsh.js</code> script is a <code>jsh</code> script, and takes the following command-line arguments:
 			<ul>
 				<li>

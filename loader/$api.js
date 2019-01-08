@@ -493,7 +493,7 @@
 	};
 	$exports.Constructor.invoke = function(p) {
 		if (!p.arguments) p.arguments = [];
-		var code = "new p.constructor(" + 
+		var code = "new p.constructor(" +
 			p.arguments.map(function() {
 				return "p.arguments[" + arguments[1] + "]";
 			}).join(",")
@@ -618,13 +618,108 @@
 				rv[key].push(value);
 			}
 		};
-		if (p.keys) p.keys.forEach(create);
+
+		var toStringKey = function(key) {
+			if (p.codec) {
+				key = p.codec.encode(key);
+			}
+			return key;
+		}
+
+		if (p.keys) {
+			p.keys.forEach(function(key) {
+				create(toStringKey(key));
+			});
+		}
 		p.array.forEach(function(element) {
-			var key = p.key(element);
+			var key = toStringKey(p.key(element));
 			if (!rv[key]) create(key);
 			add(key,element);
 		});
 		return rv;
+	};
+	$exports.Iterable = {};
+	$exports.Iterable.groupBy = function(p) {
+		var iterator = (function(p) {
+			if (p.array) {
+				return new function() {
+					var index = 0;
+
+					this.next = function() {
+						if (index < p.array.length) {
+							return {
+								value: p.array[index++],
+								done: false
+							};
+						} else {
+							return {
+								done: true
+							};
+						}
+					};
+				}
+			} else {
+				throw new Error("Unimplemented: iterator for " + p);
+			}
+		})(p);
+
+		var rv = {};
+
+		var create = function(key) {
+			rv[key] = (p.count) ? 0 : [];
+		};
+
+		var add = function(key,value) {
+			if (typeof(rv[key]) == "undefined") create(key);
+			if (p.count) {
+				rv[key]++;
+			} else {
+				rv[key].push(value);
+			}
+		};
+
+		var toStringKey = function(group) {
+			if (p.codec) {
+				group = p.codec.encode(group);
+			}
+			return group;
+		};
+
+		if (p.groups) {
+			p.groups.forEach(function(group) {
+				create(toStringKey(group));
+			});
+		}
+
+		var next = iterator.next();
+		while(!next.done) {
+			var element = next.value;
+			var group = p.group(element);
+			var key = toStringKey(group);
+			add(key,element);
+			next = iterator.next();
+		}
+
+		return new function() {
+			var list;
+
+			this.array = function() {
+				if (!list) {
+					list = [];
+					for (var x in rv) {
+						var group = (p.codec && p.codec.decode) ? p.codec.decode(x) : x;
+						var element = { group: group };
+						if (p.count) {
+							element.count = rv[x];
+						} else {
+							element.array = rv[x];
+						}
+						list.push(element);
+					}
+					return list;
+				}
+			}
+		}
 	}
 	$exports.Object = function(p) {
 		var rv = {};
@@ -634,6 +729,13 @@
 			}
 		}
 		return rv;
+	};
+	$exports.Object.compose = function() {
+		var args = [{}];
+		for (var i=0; i<arguments.length; i++) {
+			args.push(arguments[i]);
+		}
+		return Object.assign.apply(Object,args);
 	};
 	$exports.Object.property = function() {
 		var rv = this;
@@ -769,7 +871,7 @@
 			});
 			listeners.add();
 			try {
-				return f(p,listeners.events);
+				return f.call(this,p,listeners.events);
 			} finally {
 				listeners.remove();
 			}

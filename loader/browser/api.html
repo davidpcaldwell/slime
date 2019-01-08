@@ -17,6 +17,10 @@ END LICENSE
 		<title>SLIME: browser</title>
 		<link href="../../loader/api/api.css" rel="stylesheet" type="text/css" />
 		<script src="../../loader/api/api.js"></script>
+		<style>
+			table { border-collapse: collapse; }
+			th, td { padding: 0.2em 0.5em; border: 1px solid black; }
+		</style>
 	</head>
 	<body>
 		<div>__DESCRIPTION__</div>
@@ -116,26 +120,18 @@ END LICENSE
 						</td>
 					</tr>
 					<tr>
-						<td>jsh/unit/browser.jsh.js</td>
 						<td>
-							A <code>jsh</code> script that allows running multiple definition files in a browser.
-							Usage:
-							<ul>
-								<li><code>-interactive</code>: Do not close browser on exit.</li>
-								<!--	-view	-->
-								<!--	-port	-->
-								<li><code>-ie</code>, <code>-safari</code>, <code>-firefox</code>, <code>-chrome</code>: Run
-									tests in specified browser. If no browsers are specified, all detected browsers will be run.</li>
-								<li><code>-chrome:instance</code> <i>pathname</i>: Use the specified location for storing Chrome's
-									user profiles; useful for having multiple Chrome environments configured for local development.</li>
-								<li><code>-browser <i>name</i>=<i>pathname</i></code></li>
-								<!--	coffeescript	-->
-								<li>
-									<code>path/</code> or <code>path/script.js</code>
-									(<strong>not</strong> <code>path/api.html</code> or <code>path/script.api.html</code>)
-								</li>
-							</ul>
+							<a href="../../jsh/unit/plugin.jsh.browser.js">jsh/unit/plugin.jsh.browser.js</a>
 						</td>
+						<td>
+							Implements currently undocumented API that allows definition files to be executed
+							in a browser.
+						</td>
+					</tr>
+					<tr>
+						<!-- TODO: document on api.html rather than linking directly to script -->
+						<td><a href="test/suite.jsh.api.html">loader/browser/test/suite.jsh.js</a></td>
+						<td><code>jsh</code> script that launches a browser test suite.</td>
 					</tr>
 				</tbody>
 			</table>

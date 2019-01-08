@@ -53,7 +53,7 @@ server.start();
 if (parameters.options.serve) {
 	var httpProxy = "-Dhttp.proxyHost=127.0.0.1 -Dhttp.proxyPort=" + server.port;
 	var httpsProxy = "-Dhttps.proxyHost=127.0.0.1 -Dhttps.proxyPort=" + server.https.port;
-	jsh.shell.console("jrunscript " + httpProxy +  + " rhino/jrunscript/api.js jsh https://bitbucket.org/api/1.0/repositories/davidpcaldwell/slime/raw/local/jsh/test/jsh.shell/echo.jsh.js");
+	jsh.shell.console("jrunscript " + httpProxy +  + " rhino/jrunscript/api.js jsh https://bitbucket.org/api/1.0/repositories/davidpcaldwell/slime/raw/local/jsh/test/jsh.shell/properties.jsh.js");
 	jsh.shell.console("");
 	jsh.shell.console("hg --config http_proxy.host=127.0.0.1:" + server.port);
 	server.run();

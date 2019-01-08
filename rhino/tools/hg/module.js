@@ -103,7 +103,7 @@ var Installation = function(environment) {
 		}
 		args.push(p.command);
 		if (typeof(p.arguments) == "object" && p.arguments instanceof Array) {
-			args.push.apply(args,p.arguments);			
+			args.push.apply(args,p.arguments);
 		} else if (typeof(p.arguments) == "function") {
 			p.arguments(args);
 		}
@@ -198,7 +198,7 @@ var Installation = function(environment) {
 					//Packages.java.lang.System.err.println("result.status = " + result.status);
 					if (result.status != 0) {
 						//	TODO	develop test for clone error and then switch this to use newer API
-						throw new Error("err=" + result.err + "\n" + "out=" + result.out + "\n" + "args=" + result.arguments.join(","));
+						throw new Error("stderr=" + result.stdio.error + "\n" + "stdout=" + result.stdio.output + "\n" + "args=" + result.arguments.join(","));
 					}
 					var rv = new LocalRepository(todir);
 					//	Manually emulate hg 2.4+ behavior of updating to the @ bookmark. Should be merely redundant if hg client
@@ -694,10 +694,10 @@ var Installation = function(environment) {
 						})
 					;
 					return rv;
-				}					
+				}
 			});
 		}).bind(this);
-		
+
 		if (!$api.Array) $api.Array = {};
 		if (!$api.Array.element) $api.Array.element = function recurse(filter) {
 			if (filter) return recurse.call(this.filter(filter));
@@ -709,7 +709,7 @@ var Installation = function(environment) {
 			Array.prototype.element = $api.Array.element;
 		};
 		$api.Array.global();
-		
+
 		this.bookmarks = function(p) {
 			if (!p) p = {};
 			if (p.delete) {
@@ -1246,6 +1246,8 @@ $exports.Hgrc = function(p) {
 	this.unit = {
 		parse: parse
 	};
+
+	// TODO: Object.defineProperty
 	this.unit.__defineGetter__("lines", function() {
 		return lines;
 	});

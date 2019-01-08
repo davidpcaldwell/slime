@@ -17,7 +17,7 @@ plugin({
 	},
 	load: function() {
 		jsh.unit.$slime = {};
-		["$platform","$api","mime","coffee","java","io","Loader","plugins"].forEach(function(property) {
+		["$platform","$api","mime","coffee","java","io","Loader","Resource","plugins"].forEach(function(property) {
 			jsh.unit.$slime[property] = $slime[property];
 		});
 	}

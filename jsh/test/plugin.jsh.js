@@ -183,7 +183,6 @@ plugin({
 						jsh.shell.exit(result.status);
 					}
 				});
-
 			}
 		}
 	}

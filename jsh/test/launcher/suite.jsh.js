@@ -16,11 +16,18 @@ jsh.loader.plugins(src.getRelativePath("jsh/test"));
 jsh.test.integration({
 	getopts: {
 		options: {
-			rhino: jsh.file.Pathname
+			rhino: jsh.file.Pathname,
+			"shell:built": jsh.file.Pathname,
+			//	TODO	unused
+			"shell:unbuilt": jsh.file.Pathname
 		}
 	},
 	scenario: function(parameters) {
 		var home = (function() {
+			if (parameters.options["shell:built"] && parameters.options["shell:built"].directory) {
+				jsh.shell.console("Launcher tests using supplied built shell at " + parameters.options["shell:built"] + " ...");
+				return parameters.options["shell:built"].directory;
+			}
 			if (jsh.shell.jsh.home)  {
 				return jsh.shell.jsh.home;
 			}

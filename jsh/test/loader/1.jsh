@@ -36,7 +36,7 @@ if (!parameters.options.modules) {
 debugger;
 var slime = jsh.loader.module(parameters.options.modules.directory.getRelativePath("1.slime"), {
 	//	TODO	load slime module with reference to application class loader to work around bug in jsh.shell.jsh subshells;
-	//			see loader/rhino/test/data/1/module.js for more information.
+	//			see loader/jrunscript/test/data/1/module.js for more information.
 	java: {
 		getClass: function(name) {
 			return jsh.loader.$getClass(name);

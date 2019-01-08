@@ -24,9 +24,10 @@ plugin({
 			var pathname = jsh.shell.HOME.getRelativePath(".inonit/jsh/etc/keystore");
 			if (!pathname.file) {
 				pathname.parent.createDirectory({
-					ifExists: function(dir) {
+					exists: function(dir) {
 						return false;
-					}
+					},
+					recursive: true
 				});
 				if (!p) p = {};
 				if (!p.dname) p.dname = {};
@@ -58,13 +59,12 @@ plugin({
 		}
 
 		var getMimeType = function(file) {
-			var type = jsh.io.mime.Type.guess({
+			var type = jsh.io.mime.Type.fromName(file.pathname.basename);
+			if (type) return type;
+			type = jsh.io.mime.Type.guess({
 				name: file.pathname.basename
 			});
-			if (!type && /\.js$/.test(file.pathname.basename)) {
-				type = new jsh.io.mime.Type("application", "javascript");
-			}
-			return type;
+			if (type) return type;
 		};
 
 		jsh.httpd.nugget = {};
@@ -100,7 +100,6 @@ plugin({
 
 			if (servlet.load) {
 				return returning({
-					$loader: servlet.$loader,
 					load: servlet.load
 				});
 //			} else if (servlet.$loader && servlet.path) {

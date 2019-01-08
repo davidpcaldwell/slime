@@ -47,11 +47,11 @@ END LICENSE
 		}
 		$Context.api = new function() {
 			this.js = $jsapi.loader.module("../../js/object/");
-			var java = $jsapi.loader.module("../../rhino/host/", {
+			var java = $jsapi.loader.module("../../jrunscript/host/", {
 				$rhino: jsh.unit.$slime
 			});
 			this.java = java;
-			this.io = $jsapi.loader.module("../../rhino/io/", {
+			this.io = $jsapi.loader.module("../../jrunscript/io/", {
 				$slime: jsh.unit.$slime
 				,api: {
 					java: java,
@@ -82,11 +82,11 @@ END LICENSE
 					</li>
 					<li class="value">
 						<div class="name">java</div>
-						<span>The rhino/host module.</span>
+						<span>The jrunscript/host module.</span>
 					</li>
 					<li class="value">
 						<div class="name">io</div>
-						<span>The rhino/io module.</span>
+						<span>The jrunscript/io module.</span>
 					</li>
 				</ul>
 			</li>
@@ -148,11 +148,11 @@ END LICENSE
 				}
 				$Context.api = new function() {
 					this.js = $jsapi.loader.module("../../js/object/");
-					var java = $jsapi.loader.module("../../rhino/host/", {
+					var java = $jsapi.loader.module("../../jrunscript/host/", {
 						$rhino: jsh.unit.$slime
 					});
 					this.java = java;
-					this.io = $jsapi.loader.module("../../rhino/io/", {
+					this.io = $jsapi.loader.module("../../jrunscript/io/", {
 						$java: new Packages.inonit.script.runtime.io.Streams()
 						,$rhino: jsh.unit.$slime
 						,api: {
@@ -709,6 +709,11 @@ END LICENSE
 							<div class="name">parent</div>
 							<span class="type"><a href="#types.directory">directory</a></span>
 							<span>The directory containing this node.</span>
+							<script type="application/x.jsapi#tests">
+								var file = $jsapi.loader.getRelativePath("api.html").file;
+								var parent = file.parent;
+								verify(parent,"parent").getFile("api.html").toString().is($jsapi.loader.getRelativePath("api.html").file.toString());
+							</script>
 						</li>
 						<li class="value">
 							<div class="name">pathname</div>
@@ -1101,12 +1106,12 @@ END LICENSE
 											<ul>
 												<li>
 													<code>Streams.binary</code>, <code>read</code> will return a
-													<code>rhino/io</code> <i>binary input stream</i> which can be used to read the
+													<code>jrunscript/io</code> <i>binary input stream</i> which can be used to read the
 													file.
 												</li>
 												<li>
 													<code>Streams.text</code>, <code>read</code> will return a
-													<code>rhino/io</code> <i>character input stream</i> which can be used to read the
+													<code>jrunscript/io</code> <i>character input stream</i> which can be used to read the
 													file.
 												</li>
 												<li>
@@ -1153,7 +1158,7 @@ END LICENSE
 								<ol>
 									<li class="value">
 										<span class="type">string</span>
-										<span>A relative path</span>
+										<span>A filesystem path relative to this directory</span>
 									</li>
 								</ol>
 							</div>
@@ -1161,10 +1166,18 @@ END LICENSE
 								<div class="label">Returns</div>
 								<span class="type"><a href="#types.file">file</a></span>
 								<span>
-									A file that can be found at the given location relative to this directory, or <code>null</code>
-									if no (non-directory) file exists at that location.
+									A file that can be found at the given location, or <code>null</code> if no (non-directory) file
+									exists at that location.
 								</span>
 							</div>
+							<script type="application/x.jsapi#tests">
+								var directory = $jsapi.loader.getRelativePath("api.html").file.parent;
+								verify(directory).getFile("api.html").is.type("object");
+								verify(directory).getFile("foo").is(null);
+
+								verify(directory).getSubdirectory("java").is.type("object");	//	directory
+								verify(directory).getFile("java").is(null);
+							</script>
 						</li>
 						<li class="function">
 							<div class="name">getSubdirectory</div>
@@ -1194,6 +1207,27 @@ END LICENSE
 					</ul>
 				</div>
 			</li>
+			<!-- TODO: below replaced by experimental navigate() -->
+			<!-- <li class="function">
+				<div class="name">getRelativePathTo</div>
+				<span>__DESCRIPTION__</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+					</ol>
+				</div>
+				<div class="returns">
+					<div class="label">Returns</div>
+					<span class="type">__TYPE__</span>
+					<span>__DESCRIPTION__</span>
+				</div>
+				<script type="application/x.jsapi#tests" jsapi:id="getRelativePath">
+					var relative = module.getRelativePathTo(
+						jsh.shell.jsh.src.getFile("loader/expression.js")
+					)(jsh.shell.jsh.src.getFile("rhino/file/api.html"));
+					verify(relative).is("../../loader/expression.js");
+				</script>
+			</li> -->
 			<li class="function" jsapi:id="Searchpath" jsapi:reference="getApi('api.Searchpath.html').getElement('main')">
 				<div class="name">Searchpath</div>
 				See <a href="api.Searchpath.html">detailed documentation</a>.

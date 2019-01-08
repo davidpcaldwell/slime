@@ -12,14 +12,18 @@
 
 this.jsh = new function() {
 	var $slime = (function($jsh) {
+		//	$jsh is a inonit.script.jsh.Shell Java object
+		
+		//	$slime is essentially a SLIME Java runtime object, augmented by jsh/loader/rhino.js or jsh/loader/nashorn.js
 		var $slime = $jsh.runtime();
+		
 		var configuration = $jsh.getEnvironment();
 		var invocation = $jsh.getInvocation();
 
 		$slime.getSystemProperties = function() {
 			return configuration.getSystemProperties();
 		};
-		
+
 		//	Could consider returning empty string for null; this seems to be the way properties are used
 		$slime.getSystemProperty = function(name) {
 			var _rv = configuration.getSystemProperties().getProperty(name);
@@ -46,6 +50,10 @@ this.jsh = new function() {
 		$slime.getInterface = function() {
 			return $jsh.getInterface();
 		}
+		
+		$slime.getLibraryFile = function(path) {
+			return $jsh.getLibraryFile(path);
+		};
 
 		$slime.loader = new function() {
 			this.getPackagedCode = function() {
@@ -58,10 +66,10 @@ this.jsh = new function() {
 			};
 
 			this.getLoaderScript = function(path) {
-				return {
+				return new $slime.Resource({
 					name: "jsh://" + path,
 					string: getLoaderCode(path)
-				};
+				});
 			};
 		};
 
@@ -117,9 +125,9 @@ this.jsh = new function() {
 			}
 			debugger;
 		};
-		$slime.$api.deprecate.warning.javaLogName = "inonit.script.jsh.Shell.log.$api.deprecate";		
+		$slime.$api.deprecate.warning.javaLogName = "inonit.script.jsh.Shell.log.$api.deprecate";
 	})();
-	
+
 	var plugins = $slime.value(
 		$slime.loader.getLoaderScript("plugins.js"),
 		{
@@ -127,7 +135,7 @@ this.jsh = new function() {
 			jsh: this
 		}
 	);
-	
+
 	$slime.plugins = {
 		mock: function(p) {
 			plugins.mock(p);
@@ -144,16 +152,17 @@ this.jsh = new function() {
 			//			null or something ... but run would probably have to fail silently, which is not good unless it is
 			//			explicitly specified
 			if (code.java && code.java.adapt() && $slime.classpath.getClass("java.io.File").isInstance(code.java.adapt())) {
-				return {
+				return new $slime.Resource({
 					name: code.toString(),
 					string: (function() {
 						var _in = new Packages.java.io.FileInputStream(code.java.adapt());
 						var rv = String(new Packages.inonit.script.runtime.io.Streams().readString(_in));
 						return rv;
 					})()
-				};
+				});
 			} else {
-				return code;
+				if (typeof(code.read) == "function") return code;
+				return new $slime.Resource(code);
 			}
 		}
 
@@ -168,7 +177,7 @@ this.jsh = new function() {
 		this.file = function(code,$context) {
 			return $slime.file(getCode(code),$context);
 		};
-		
+
 		this.module = function(pathname) {
 			var format = {};
 			if (pathname.directory) {
@@ -242,16 +251,16 @@ this.jsh = new function() {
 			var isDirectory = from && from.pathname && from.pathname.directory;
 			if (isPathname) {
 				if (from.file) {
-					plugins.load({ zip: { _file: from.java.adapt() } });						
+					plugins.load({ zip: { _file: from.java.adapt() } });
 				} else if (from.directory) {
-					plugins.load({ _file: from.java.adapt() });						
+					plugins.load({ _file: from.java.adapt() });
 				} else {
 					//	TODO	log a message
 				}
 			} else if (from && from.get) {
 				plugins.load({ loader: from });
 			} else if (isFile) {
-				//	Should we be sending a script resource, rather than a Java file? Could expose that API in loader/rhino/literal.js
+				//	Should we be sending a script resource, rather than a Java file? Could expose that API in loader/jrunscript/expression.js
 				plugins.load({ zip: { _file: from.pathname.java.adapt() } });
 			} else if (isDirectory) {
 				plugins.load({ _file: from.pathname.java.adapt() });

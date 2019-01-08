@@ -63,22 +63,22 @@ END LICENSE
 						<ul>
 							<li>
 								Each of these scripts, in turn, runs an engine-specific engine embedding script to set up the engine. Rhino runs
-								<code>loader/rhino/rhino.js</code>, and Nashorn runs <code>loader/rhino/nashorn.js</code>. These
+								<code>loader/jrunscript/rhino.js</code>, and Nashorn runs <code>loader/jrunscript/nashorn.js</code>. These
 								scripts create engine-specific implementations of <code>$javahost</code> and <code>$bridge</code>
 								objects.
 							</li>
 							<li>
-								Then the generic container interface script <code>loader/rhino/literal.js</code> is evaluated,
+								Then the generic container interface script <code>loader/jrunscript/expression.js</code> is evaluated,
 								using the <code>$javahost</code> and <code>$bridge</code> objects in scope.
 								<ul>
 									<li>
-										It first invokes <code>loader/literal.js</code>, providing appropriate implementations of
+										It first invokes <code>loader/expression.js</code>, providing appropriate implementations of
 										<code>$slime</code> and <code>$engine</code>,
 										to create the <a href="../../loader/api.html">SLIME runtime</a>.
 									</li>
 									<li>
 										It then post-processes the SLIME runtime to provide additional
-										<a href="../../loader/rhino/api.html">Java-specific</a> interfaces.
+										<a href="../../loader/jrunscript/api.html">Java-specific</a> interfaces.
 									</li>
 								</ul>
 							</li>
@@ -109,6 +109,42 @@ END LICENSE
 				</ul>
 			</div>
 		</div>
+		<script type="application/x.jsapi#tests" jsapi:id="unbuilt-shell-plugins">
+			//	TODO	this dance should be covered by a jsh.test API
+			var src = $jsapi.environment.jsh.src;
+			var copied = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
+			copied.directory.remove();
+			src.copy(copied,{
+				filter: function(p) {
+					if (p.entry.path == "local/") return false;
+					return true;
+				}
+			});
+			src.getFile("jsh/test/unbuilt-shell-plugins/copy-as-plugin.jsh.js").copy(copied.directory.getRelativePath("foo/plugin.jsh.js"), { recursive: true });
+			var evaluate = function(result) {
+				jsh.shell.console("string = " + result.stdio.output);
+				return JSON.parse(result.stdio.output);
+			};
+			var shouldLoad = jsh.shell.jsh({
+				shell: copied.directory,
+				script: copied.directory.getFile("jsh/test/unbuilt-shell-plugins/output-plugin.jsh.js"),
+				stdio: {
+					output: String
+				},
+				evaluate: evaluate
+			});
+			verify(shouldLoad).evaluate.property("unbuilt-shell-plugins").is(true);
+			copied.directory.getFile("foo/plugin.jsh.js").move(copied.directory.getRelativePath("local/foo/plugin.jsh.js"), { recursive: true });
+			var shouldNotLoad = jsh.shell.jsh({
+				shell: copied.directory,
+				script: copied.directory.getFile("jsh/test/unbuilt-shell-plugins/output-plugin.jsh.js"),
+				stdio: {
+					output: String
+				},
+				evaluate: evaluate
+			});
+			verify(shouldNotLoad).evaluate.property("unbuilt-shell-plugins").is(void(0));
+		</script>
 		<div>
 			<h1>Rhino</h1>
 		</div>

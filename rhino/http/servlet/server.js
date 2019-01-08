@@ -36,10 +36,24 @@ var Request = function(_request) {
 	var _query = _request.getQueryString();
 	if (_query) {
 		this.query = new function() {
-			this.string = String(_query);
+			var string = String(_query);
+			this.string = string;
 
+			// TODO: how to migrate this to be Form object?
 			this.form = function() {
-				return new $context.api.web.Form({ urlencoded: this.string }).controls;
+				//	Temporarily use argument to help with transitional period from list of controls to full form object
+				if (arguments[0] == Object) {
+					return new $context.api.web.Form({ urlencoded: this.string });
+				} else if (arguments[0] == Array) {
+					return $api.deprecate(function() {
+						return new $context.api.web.Form({ urlencoded: string }).controls;											
+					})();
+				} else {
+					//	may need transitional period in which this throws Error
+					return $api.deprecate(function() {
+						return new $context.api.web.Form({ urlencoded: string }).controls;						
+					})();
+				}
 			}
 		}
 
@@ -116,7 +130,11 @@ var Request = function(_request) {
 			}
 			this.parts = multipartParser(_request,this);
 		} else {
-			this.stream = $context.api.io.java.adapt(_request.getInputStream());
+			this.stream = $context.api.io.Streams.java.adapt(_request.getInputStream());
+		}
+		
+		this.form = function() {
+			return new $context.api.web.Form({ urlencoded: this.stream.character().asString() });
 		}
 	}
 	log.FINE("Created request body.");

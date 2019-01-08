@@ -522,12 +522,29 @@ END LICENSE
 				<li class="function" jsapi:id="subrepositories">
 					<div class="name">subrepositories</div>
 					<span>Returns a list of each of this repository's subrepositories.</span>
+					<div class="type">
+						<a class="type" name="types.subrepository">subrepository</a>
+						<span>__DESCRIPTION__</span>
+						<div class="label">has properties:</div>
+						<ul>
+							<li class="value">
+								<div class="name">repository</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</li>
+							<li class="value">
+								<div class="name">revision</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</li>
+						</ul>
+					</div>
 					<div class="returns">
 						<div class="label">Returns</div>
-						<span class="type">Array of <a href='#types.LocalRepository'>LocalRepository</a></span>
+						<span class="type">Object</span>
 						<span>
-							The subrepositories, or <code>null</code> if this repository has no <code>.hgsub</code>. If a directory
-							does not exist for a declared subrepository, an error will be thrown.
+							The keys of the object represent the relative path of each subrepository in the project, and the values
+							are of type <a href="#types.subrepository">subrepository</a>.
 						</span>
 					</div>
 					<script type="application/x.jsapi#tests">
@@ -711,6 +728,15 @@ END LICENSE
 								<span>__DESCRIPTION__</span>
 							</li>
 							<li class="value">
+								<div class="name">local</div>
+								<span class="type">boolean</span>
+								<span>
+									(contingent; only present if specified when retrieving bookmark)
+									Whether this bookmark exists in the origin repository (<code>true</code>) or not
+									<code>false</code>.
+								</span>
+							</li>
+							<li class="value">
 								<div class="name">changeset</div>
 								<span class="type"><a href="#types.changeset">changeset</a></span>
 								<span>__DESCRIPTION__</span>
@@ -732,16 +758,16 @@ END LICENSE
 									var parent = createHg();
 									parent.unit.createFile({ path: "a", content: "1", add: true });
 									parent.commit({ message: "1" });
-									
+
 									var child = parent.unit.clone(jsh.shell.TMPDIR.createTemporary({ directory: true }));
 									child.bookmarks({ name: "local" });
-									
+
 									verify(parent).bookmarks.get("local").is(null);
 									verify(child).bookmarks.get("local").is.type("object");
-									
+
 									child.bookmarks.get("local").push();
 									verify(parent).bookmarks.get("local").is.type("object");
-									verify(child).bookmarks.get("local").is.type("object");									
+									verify(child).bookmarks.get("local").is.type("object");
 								</script>
 							</li>
 						</ul>
@@ -767,10 +793,10 @@ END LICENSE
 											verify(parent).bookmarks.get("created").is.type("object");
 											//	TODO	can the debugging breakpoint handling be built into the framework?
 											$api.debug.disableBreakOnExceptionsFor(function() {
-												verify(parent).evaluate(function() { return this.bookmarks({ delete: true }); }).threw.type(Error);												
+												verify(parent).evaluate(function() { return this.bookmarks({ delete: true }); }).threw.type(Error);
 											})();
 											parent.bookmarks({ delete: true, name: "created" });
-											verify(parent).bookmarks.get("created").is(null);						
+											verify(parent).bookmarks.get("created").is(null);
 										</script>
 									</li>
 									<li class="value">
@@ -792,11 +818,11 @@ END LICENSE
 											verify(parent).bookmarks.get("b").active.is(false);
 											verify(parent).bookmarks.get("other").active.is(true);
 											verify(parent).bookmarks.get("foo").is(null);
-											
+
 											parent.bookmarks({ name: "i", inactive: true });
 											verify(parent).bookmarks.get("other").active.is(true);
 											verify(parent).bookmarks.get("i").active.is(false);
-											
+
 											parent.bookmarks({ name: "a" });
 											verify(parent).bookmarks.get("a").active.is(true);
 											parent.bookmarks({ inactive: true });
@@ -805,12 +831,12 @@ END LICENSE
 											verify(parent).bookmarks.get("a").active.is(true);
 											parent.bookmarks({ name: null });
 											verify(parent).bookmarks.get("a").active.is(false);
-											
+
 											//	Testing with hg 4.2.2, bookmarking a revision *always* makes the bookmark inactive
 											parent.bookmarks({ name: "specific", revision: "a" });
 											verify(parent).bookmarks.get("a").active.is(false);
 											verify(parent).bookmarks.get("specific").active.is(false);
-											
+
 											parent.unit.createFile({ path: "b", content: "2", add: true });
 											parent.commit({ message: "2" });
 											parent.bookmarks({ name: "now" });
@@ -856,10 +882,25 @@ END LICENSE
 					<ul>
 						<li class="function">
 							<div class="name">list</div>
-							<span>__DESCRIPTION__</span>
+							<span>Returns a list of the bookmarks on this repository.</span>
 							<div class="arguments">
 								<div class="label">Arguments</div>
 								<ol>
+									<li class="object">
+										<div class="label">has properties:</div>
+										<ul>
+											<li class="value">
+												<div class="name">origin</div>
+												<span class="type">boolean</span>
+												<span>
+													(optional)
+													If <code>true</code>, bookmarks will also be checked with the origin repository
+													in order to see whether they are local-only bookmarks, and the bookmarks
+													returned will acquire the <code>local</code> property.
+												</span>
+											</li>
+										</ul>
+									</li>
 								</ol>
 							</div>
 							<div class="returns">
@@ -899,7 +940,7 @@ END LICENSE
 							parent.unit.createFile({ path: "a", content: "1", add: true });
 							parent.commit({ message: "1" });
 							parent.bookmarks({ name: "@" });
-							
+
 							var child = parent.unit.clone(jsh.shell.TMPDIR.createTemporary({ directory: true }));
 							verify(child).bookmarks().evaluate.property("@").is.type("object");
 							verify(child).bookmarks()["@"].active.is(true);
@@ -908,7 +949,7 @@ END LICENSE
 							parent.bookmarks({ name: "local" });
 							parent.unit.editFile({ path: "a", content: "2" });
 							parent.commit({ message: "2" });
-							
+
 							child.pull({ source: parent });
 							verify(child).bookmarks().evaluate.property("local").is.type("object");
 						</script>
@@ -948,7 +989,7 @@ END LICENSE
 						<span class="type">__TYPE__</span>
 						<span>__DESCRIPTION__</span>
 					</div>
-					<script type="application/x.jsapi#tests">
+					<script type="application/x.jsapi#tests"><![CDATA[
 						var parent = createHg();
 						parent.unit.createFile({ path: "a", content: "a", add: true });
 						parent.commit({ message: "a" });
@@ -957,12 +998,27 @@ END LICENSE
 						verify(server).port.is.type("number");
 						var tmpclone = jsh.shell.TMPDIR.createTemporary({ directory: true });
 						var remote = new module.Repository({ url: "http://127.0.0.1:" + server.port + "/" });
-						var local = remote.clone(tmpclone);
+
+						var local = (function cloneWithRetries() {
+							for (var i=0; i<3; i++) {
+								try {
+									return remote.clone(tmpclone);
+								} catch (e) {
+									if (/Connection refused/.test(e.message)) {
+										jsh.shell.console("Connection refused; sleeping for retry ...");
+										Packages.java.lang.Thread.sleep(500);
+									} else {
+										throw e;
+									}
+								}
+							}
+						})();
+
 						var commits = local.log();
 						verify(commits).length.is(1);
 						server.kill();
 						verify("killed").is("killed");
-					</script>
+					]]></script>
 				</li>
 				<li class="function">
 					<div class="name">shell</div>
@@ -1127,7 +1183,68 @@ END LICENSE
 				<div class="instances">
 					<div class="label">Instances</div>
 					<span class="type">__TYPE__</span>
-					<span>__DESCRIPTION__</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="function">
+							<div class="name">set</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="value">
+										<span class="type">string</span>
+										<span>The section of the file.</span>
+									</li>
+									<li class="value">
+										<span class="type">string</span>
+										<span>name</span>
+									</li>
+									<li class="value">
+										<span class="type">string</span>
+										<span>value</span>
+									</li>
+								</ol>
+							</div>
+						</li>
+						<li class="function">
+							<div class="name">get</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="value">
+										<span class="type">string</span>
+										<span>The name of a setting to retrieve.</span>
+									</li>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">string</span>
+								<span>
+									The value of that property, or <code>null</code> if it is
+									absent.
+								</span>
+							</div>
+						</li>
+						<li class="function">
+							<div class="name">get</div>
+							<span>__DESCRIPTION__</span>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">object</span>
+								<span>
+									An object which has a property for each setting, whose name
+									is the name of the setting and whose value is the value of
+									that setting.
+								</span>
+							</div>
+						</li>
+						<li class="function">
+							<div class="name">write</div>
+							<span>Writes out the current file.</span>
+						</li>
+					</ul>
 				</div>
 				<script type="application/x.jsapi#tests"><![CDATA[
 					var dir = jsh.shell.TMPDIR.createTemporary({ directory: true });

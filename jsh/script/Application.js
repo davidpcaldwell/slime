@@ -66,7 +66,12 @@ $exports.Application = function(o) {
 		}
 
 		var command = globals.arguments.shift();
-		var object = eval("o.commands." + command);
+		var tokens = command.split(".");
+		var target = o.commands;
+		for (var i=0; i<tokens.length; i++) {
+			target = target[tokens[i]];
+		}
+		var object = target;
 		if (typeof(object) != "object" || !object) {
 			throw newError({ commandNotFound: command });
 		}

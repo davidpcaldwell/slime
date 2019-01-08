@@ -14,7 +14,7 @@ END LICENSE
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
 <head>
-	<title>js/document (Java)</title>
+	<title>Java js/document</title>
 	<!--	TODO	change these to use local copies of these files at the appropriate location	-->
 	<link rel="stylesheet" type="text/css" href="../../loader/api/api.css" />
 	<script src="../../loader/api/api.js"></script>
@@ -32,7 +32,7 @@ END LICENSE
 		<script type="application/x.jsapi#context">
 			new function() {
 				this.pure = $jsapi.loader.module("../../js/document");
-				this.java = $jsapi.loader.module("../../rhino/host");
+				this.java = $jsapi.loader.module("../../jrunscript/host");
 			}
 		</script>
 	</div>
@@ -51,7 +51,7 @@ END LICENSE
 							<ul>
 								<li class="value">
 									<div class="name">stream</div>
-									<span class="type"><a href="../../rhino/io/api.html#binput">byte input stream</a></span>
+									<span class="type"><a href="../../jrunscript/io/api.html#binput">byte input stream</a></span>
 									<span>
 										A stream from which to read the document.
 									</span>

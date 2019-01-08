@@ -217,7 +217,7 @@ var global = new function() {
 	var Old = function() {
 		var Tests = function() {
 			var events = $api.Events({ source: this });
-			var scope = new $context.api.unit.Scope({ events: events });
+			var scope = new $context.api.unit.TestExecutionProcessor({ events: events });
 
 			var set = new Set({ events: events, scope: scope });
 
@@ -293,6 +293,12 @@ var global = new function() {
 			return getStructure(suite);
 		};
 
+		var path;
+
+		this.path = function() {
+			path = arguments[0];
+		}
+
 		this.run = function(_callbacks) {
 			suite.listeners.add("scenario", function(e) {
 	//				_callbacks.fire(e);
@@ -304,22 +310,22 @@ var global = new function() {
 	//				_callbacks.fire(e);
 				_callbacks.event(e);
 			});
-			suite.run({},function(success) {
+			suite.run({ path: path },function(success) {
 				console.log("success = " + success);
 				_callbacks.end(success);
 				//	TODO	this should not have to be hacked in manually
-				_callbacks.event({
-					type: "scenario",
-					detail: {
-						end: {
-							id: suite.id,
-							name: suite.name
-						},
-						success: success
-					},
-					path: [],
-					timestamp: new Date()
-				});
+// 				_callbacks.event({
+// 					type: "scenario",
+// 					detail: {
+// 						end: {
+// 							id: suite.id,
+// 							name: suite.name
+// 						},
+// 						success: success
+// 					},
+// 					path: [],
+// 					timestamp: new Date()
+// 				});
 				//	Stop asynchronous events from being delivered
 				asynchrony.next(null);
 			});
@@ -344,6 +350,10 @@ var global = new function() {
 	this.suite = function() {
 		delegate = new New(arguments[0]);
 	};
+
+	this.path = function(path) {
+		delegate.path(path);
+	}
 
 	this.structure = function() {
 		return delegate.structure();
@@ -418,6 +428,10 @@ $exports.structure = function() {
 
 $exports.suite = function() {
 	global.suite(arguments[0]);
+}
+
+$exports.setPath = function() {
+	global.path(arguments[0]);
 }
 
 $exports.test = $api.deprecate(function(test) {
@@ -604,6 +618,37 @@ $exports.fire = new function() {
 		v.set(p);
 		element.dispatchEvent(v.create());
 	};
+	
+	this.keyup = function(element,p) {
+		if (element.disabled) debugger;
+		var v = new KeyEvent("keyup",true,true);
+		v.set(p);
+		element.dispatchEvent(v.create());		
+	};
+	
+	this.focus = function(element,p) {
+		if (element.disabled) debugger;
+		// TODO: no support for Internet Explorer here
+		element.dispatchEvent(new FocusEvent("focus", p));
+	}
+	
+	this.blur = function(element,p) {
+		if (element.disabled) debugger;
+		// TODO: no support for Internet Explorer here
+		element.dispatchEvent(new FocusEvent("blur", p));
+	}
+	
+	this.focusin = function(element,p) {
+		if (element.disabled) debugger;
+		// TODO: no support for Internet Explorer here
+		element.dispatchEvent(new FocusEvent("focusin", p));
+	}
+	
+	this.focusout = function(element,p) {
+		if (element.disabled) debugger;
+		// TODO: no support for Internet Explorer here
+		element.dispatchEvent(new FocusEvent("focusout", p));
+	}
 };
 
 //	currently undocumented

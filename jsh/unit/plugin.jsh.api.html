@@ -39,9 +39,8 @@ END LICENSE
 				<ul>
 					<li class="constructor">
 						<div class="name">Html</div>
-						<span>__DESCRIPTION__</span>
+						<span>Creates a SLIME test part which executes the page, with the following added to the scope:</span>
 						<div>
-							Executes the page, with the following added to the scope:
 							<div class="label">has properties:</div>
 							<ul>
 								<li class="object">
@@ -250,7 +249,11 @@ END LICENSE
 										<li class="value">
 											<div class="name">reload</div>
 											<span class="type">boolean</span>
-											<span>__DESCRIPTION__</span>
+											<span>
+												Defers parsing of this page until it is executed, converting the page into a
+												scenario rather than a suite. (Note that this removes the ability to run only
+												part of the suite.)
+											</span>
 										</li>
 									</ul>
 								</li>
@@ -353,7 +356,7 @@ END LICENSE
 										</li>
 										<li class="value">
 											<div class="name">stream</div>
-											<span class="type"><a href="../../rhino/io/api.html#types.binput">byte input stream</a></span>
+											<span class="type"><a href="../../jrunscript/io/api.html#types.binput">byte input stream</a></span>
 											<span>A stream broadcasting events using the <code>jsh.unit.view.Events</code> protocol.</span>
 										</li>
 									</ul>
@@ -369,7 +372,7 @@ END LICENSE
 							-->
 						</div>
 					</li>
-					<li class="constructor">
+					<li class="constructor deprecated">
 						<div class="name">Html</div>
 						<span>__DESCRIPTION__</span>
 						<div class="arguments">
@@ -750,6 +753,42 @@ END LICENSE
 									<span class="type">handler</span>
 									<span>__DESCRIPTION__</span>
 								</div>
+							</li>
+						</ul>
+					</li>
+				</ul>
+			</div>
+			<div>
+				<h2><code>jsh.unit.browser</code></h2>
+				<span>__DESCRIPTION__</span>
+				<div class="type">
+					<a class="type" name="types.browser">browser</a>
+					<span>__DESCRIPTION__</span>
+					<div class="label">has properties:</div>
+					<ul>
+					</ul>
+				</div>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="object">
+						<div class="name">installed</div>
+						<span>__DESCRIPTION__</span>
+						<div class="label">has properties:</div>
+						<ul>
+							<li class="value">
+								<div class="name">ie</div>
+								<span class="type"><a href="#types.browser">browser</a></span>
+								<span>__DESCRIPTION__</span>
+							</li>
+							<li class="value">
+								<div class="name">firefox</div>
+								<span class="type"><a href="#types.browser">browser</a></span>
+								<span>__DESCRIPTION__</span>
+							</li>
+							<li class="value">
+								<div class="name">safari</div>
+								<span class="type"><a href="#types.browser">browser</a></span>
+								<span>__DESCRIPTION__</span>
 							</li>
 						</ul>
 					</li>

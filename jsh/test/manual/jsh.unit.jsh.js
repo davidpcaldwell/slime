@@ -24,6 +24,7 @@ jsh.shell.jsh({
 	fork: true,
 	script: jsh.script.file.getRelativePath("../unit.jsh.js")
 });
+throw new Error("The below code is gone, and there is currently no equivalent.");
 jsh.shell.jsh({
 	fork: true,
 	script: jsh.script.file.getRelativePath("../../unit/browser.jsh.js"),

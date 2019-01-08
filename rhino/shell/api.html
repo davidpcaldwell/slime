@@ -32,11 +32,11 @@ END LICENSE
 					</li>
 					<li class="value">
 						<div class="name">java</div>
-						<span>The <a href="../host/api.html">rhino/host</a> module.</span>
+						<span>The <a href="../../jrunscript/host/api.html">jrunscript/host</a> module.</span>
 					</li>
 					<li class="value">
 						<div class="name">io</div>
-						<span>The <a href="../io/api.html">rhino/io</a> module.</span>
+						<span>The <a href="../io/api.html">jrunscript/io</a> module.</span>
 					</li>
 					<li class="value">
 						<div class="name">file</div>
@@ -93,11 +93,11 @@ END LICENSE
 	</div>
 	<script type="application/x.jsapi#initialize">
 		var context = new function() {
-			var java = $jsapi.loader.module("../../rhino/host/", {
+			var java = $jsapi.loader.module("../../jrunscript/host/", {
 				$rhino: jsh.unit.$slime,
 				$java: jsh.unit.$slime.java
 			});
-			var io = $jsapi.loader.module("../../rhino/io/", {
+			var io = $jsapi.loader.module("../../jrunscript/io/", {
 				api: {
 					java: java,
 					mime: jsh.unit.$slime.mime
@@ -414,10 +414,30 @@ os.resolve(function() {
 					</li>
 					<li class="function experimental">
 						<div class="name">ping</div>
-						<span>__DESCRIPTION__</span>
+						<span>
+							Uses the underlying operating system's <code>ping</code> command to attempt to reach another host.
+						</span>
 						<div class="arguments">
 							<div class="label">Arguments</div>
 							<ol>
+								<li class="object">
+									<div class="label">has properties:</div>
+									<ul>
+										<li class="value">
+											<div class="name">host</div>
+											<span class="type">string</span>
+											<span>The host to which to send the <code>ECHO_REQUEST</code>.</span>
+										</li>
+										<li class="value">
+											<div class="name">timeout</div>
+											<span class="type">number</span>
+											<span>
+												A timeout, in seconds. Will be rounded down to a whole number of seconds. Must be
+												1 or greater.
+											</span>
+										</li>
+									</ul>
+								</li>
 							</ol>
 						</div>
 						<div class="returns">
@@ -428,11 +448,13 @@ os.resolve(function() {
 						<script type="application/x.jsapi#tests">
 							if (module.os.name == "Mac OS X") {
 								verify(module).os.evaluate.property("ping").is.type("function");
-								var local = module.os.ping({ host: "127.0.0.1" });
-								verify(local).status.is(0);
-								verify(local).output.is.type("object");
-								verify(local).output[0].is.type("string");
-								verify(local).success.is.type("number");
+								if (!$jsapi.environment.noselfping) {
+									var local = module.os.ping({ host: "127.0.0.1" });
+									verify(local).status.is(0);
+									verify(local).output.is.type("object");
+									verify(local).output[0].is.type("string");
+									verify(local).success.is.type("number");
+								}
 
 								var fake = module.os.ping({ host: "198.51.100.0", timeout: 1 });
 								verify(fake).status.is(2);

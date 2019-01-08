@@ -14,13 +14,13 @@ if (!$context.api.io) {
 	throw new Error("Missing: $context.api.io");
 }
 
-$exports.run = function(p) {
+$exports.run = $api.Events.Function(function(p,events) {
 	var as;
 	if (p.as) {
 		as = p.as;
 	}
-	var stdio = arguments.callee.stdio(p);
-	var directory = arguments.callee.directory(p);
+	var stdio = $exports.run.stdio(p);
+	var directory = $exports.run.directory(p);
 	var context = new JavaAdapter(
 		Packages.inonit.system.Command.Context,
 		new function() {
@@ -188,10 +188,11 @@ $exports.run = function(p) {
 		}
 	}
 
-	if (p.on && p.on.start) {
+	if (true || p.on && p.on.start) {
 		//	TODO	could throw exception on launch; should deal with it
 		var _subprocess = Packages.inonit.system.OperatingSystem.get().start(context, configuration);
-		p.on.start.call({}, new function() {
+
+		var handle = new function() {
 			Object.defineProperty(this, "pid", {
 				get: function() {
 					return _subprocess.getPid();
@@ -202,7 +203,13 @@ $exports.run = function(p) {
 			this.kill = function() {
 				_subprocess.terminate();
 			}
-		});
+		};
+		if (p.on && p.on.start) {
+			$api.deprecate(function() {
+				p.on.start.call({}, handle);
+			})();
+		}
+		events.fire("start", handle);
 		var listener = new function() {
 			this.finished = function(status) {
 				this.status = status;
@@ -220,6 +227,7 @@ $exports.run = function(p) {
 		));
 		result.status = listener.status;
 	} else {
+		throw new Error();
 		//Packages.java.lang.System.err.println("Launching context/configuration: " + context + " " + configuration);
 		var _listener = Packages.inonit.system.OperatingSystem.get().run( context, configuration );
 		//Packages.java.lang.System.err.println("Finished.");
@@ -238,9 +246,9 @@ $exports.run = function(p) {
 			result.stdio[stream] = stdio[stream];
 		}
 	});
-	var evaluate = (p.evaluate) ? p.evaluate : arguments.callee.evaluate;
+	var evaluate = (p.evaluate) ? p.evaluate : $exports.run.evaluate;
 	return evaluate(result);
-};
+});
 $exports.run.evaluate = function(result) {
 	if (result.error) throw result.error;
 	if (result.status != 0) throw new Error("Exit code: " + result.status + " executing " + result.command + ((result.arguments && result.arguments.length) ? " " + result.arguments.join(" ") : ""));

@@ -22,7 +22,7 @@ END LICENSE
 	<div>
 		<script type="application/x.jsapi#initialize">
 			var context = new function() {
-				var host = $jsapi.loader.module("../../rhino/host/", {
+				var host = $jsapi.loader.module("../../jrunscript/host/", {
 					$rhino: jsh.unit.$slime,
 					$java: jsh.unit.$slime.java
 				});
@@ -103,13 +103,13 @@ END LICENSE
 		</script>
 		<div class="type">
 			<a class="type" name="types.consolei">console input</a>
-			<span class="type">supports <a href="../../rhino/io/api.html#types.binput">byte input stream</a></span>
-			<span class="type">supports <a href="../../rhino/io/api.html#types.cinput">character input stream</a></span>
+			<span class="type">supports <a href="../../jrunscript/io/api.html#types.binput">byte input stream</a></span>
+			<span class="type">supports <a href="../../jrunscript/io/api.html#types.cinput">character input stream</a></span>
 		</div>
 		<div class="type">
 			<a class="type" name="types.consoleo">console output</a>
-			<span class="type">supports <a href="../../rhino/io/api.html#types.boutput">byte output stream</a></span>
-			<span class="type">supports <a href="../../rhino/io/api.html#types.coutput">character output stream</a></span>
+			<span class="type">supports <a href="../../jrunscript/io/api.html#types.boutput">byte output stream</a></span>
+			<span class="type">supports <a href="../../jrunscript/io/api.html#types.coutput">character output stream</a></span>
 		</div>
 		<!--
 			TODO	the below does not work for unknown reason
@@ -138,7 +138,7 @@ END LICENSE
 			</li>
 			<li class="value" jsapi:reference="getApi('api.html').getElement('user')">
 			</li>
-			<li class="value">
+			<li class="value" jsapi:id="stdio">
 				<div class="name">stdio</div>
 				<span class="type"><a href="api.html#types.stdio">stdio</a></span>
 				<span>The standard I/O streams for this shell.</span>
@@ -149,6 +149,51 @@ END LICENSE
 				<script type="application/x.jsapi#tests">
 					test(typeof(module.stdio.error.write) == "function");
 					test(typeof(module.stdio.error.close) == "function");
+				</script>
+				<script type="application/x.jsapi#tests" jsapi:id="1">
+					var one = jsh.shell.jsh({
+						shell: $jsapi.environment.jsh.built.home,
+						script: $jsapi.environment.jsh.src.getFile("rhino/shell/test/stdio.1.jsh.js"),
+						stdio: {
+							output: String,
+							error: String
+						},
+						evaluate: function(result) {
+							return result.stdio;
+						}
+					});
+					verify(one).output.is("Hello, World!");
+					verify(one).error.is("Hello, tty!");
+				</script>
+				<script type="application/x.jsapi#initialize">
+					scope.input_abcdefghij = "ABCDEFGHIJ";
+					scope.getScriptOutput = function(p) {
+						return jsh.shell.jsh({
+							shell: $jsapi.environment.jsh.built.home,
+							script: $jsapi.environment.jsh.src.getFile("rhino/shell/test/" + p.script),
+							stdio: {
+								input: p.input,
+								output: String
+							},
+							evaluate: function(result) {
+								return result.stdio.output;
+							}							
+						})
+					};
+				</script>
+				<script type="application/x.jsapi#tests" jsapi:id="2">
+					var output = getScriptOutput({
+						script: "stdio.2.jsh.js",
+						input: input_abcdefghij
+					});
+					verify(output).is(input_abcdefghij);
+				</script>
+				<script type="application/x.jsapi#tests" jsapi:id="3">
+					var output = getScriptOutput({
+						script: "stdio.3.jsh.js",
+						input: input_abcdefghij
+					});
+					verify(output).is(input_abcdefghij);
 				</script>
 			</li>
 			<li class="value deprecated">
@@ -210,6 +255,17 @@ END LICENSE
 						</li>
 					</ol>
 				</div>
+				<script type="application/x.jsapi#tests" jsapi:id="exit">
+					// TODO: using home shell to replicate previous test, not thinking about it
+					var result = jsh.shell.jsh({
+						shell: $jsapi.environment.jsh.built.home,
+						script: $jsapi.environment.jsh.src.getFile("rhino/shell/test/exit.jsh.js"),
+						evaluate: function(result) {
+							return result;
+						}
+					});
+					verify(result).status.is(3);
+				</script>
 			</li>
 			<li class="function">
 				<div class="name">echo</div>
@@ -245,13 +301,46 @@ END LICENSE
 								</li>
 								<li class="value">
 									<div class="name">stream</div>
-									<span class="type"><a href="../../rhino/io/api.html#types.coutput">character output stream</a></span>
+									<span class="type"><a href="../../jrunscript/io/api.html#types.coutput">character output stream</a></span>
 									<span>(optional) A destination stream for messages.</span>
 								</li>
 							</ul>
 						</li>
 					</ol>
 				</div>
+				<script type="application/x.jsapi#tests" jsapi:id="echo">
+					var buffer = new jsh.io.Buffer();
+					var stream = buffer.writeText();
+
+					module.echo(true, { stream: stream });
+					
+					buffer.close();
+					// TODO: hard-coded line terminator below
+					var buffered = buffer.readText().asString().split("\n");
+					verify(buffered).length.is(2);
+					verify(buffered)[0].is("true");
+					verify(buffered)[1].is("");
+					
+					var console = new function() {
+						var lines = [];
+
+						this.line = function(s) {
+							lines.push(s);
+						}
+
+						this.getLines = function() {
+							return lines;
+						}
+					}
+
+					module.echo("A", { console: console.line });
+					module.echo("B", { console: console.line });
+
+					var captured = console.getLines();
+					verify(captured).length.is(2);
+					verify(captured)[0].is("A");
+					verify(captured)[1].is("B");
+				</script>
 			</li>
 			<li class="function">
 				<div class="name">console</div>
@@ -351,6 +440,17 @@ END LICENSE
 							</span>
 							<div class="label">has properties:</div>
 							<ul>
+								<!--
+									TODO	implement this
+								<li class="value">
+									<div class="name">shell</div>
+									<span class="type">__TYPE__</span>
+									<span>
+										A directory representing the location of a built shell, or a directory representing
+										the location of an unbuilt shell.
+									</span>
+								</li>
+								-->
 								<li class="value">
 									<div class="name">script</div>
 									<span class="type"><a href="../../rhino/file/api.html#types.file">file</a></span>
@@ -451,39 +551,6 @@ END LICENSE
 					</ol>
 				</div>
 				<script type="application/x.jsapi#initialize">
-					scope.shell = {};
-					var src = (jsh.shell.jsh.src) ? jsh.shell.jsh.src : jsh.shell.jsh.home.getSubdirectory("src");
-					scope.shell.src = src;
-					scope.shell.unbuilt = jsh.shell.jsh({
-						shell: src,
-						script: $jsapi.loader.getRelativePath("test/jsh-shell-properties.jsh.js").file,
-						stdio: {
-							output: String
-						},
-						evaluate: function(result) {
-							return JSON.parse(result.stdio.output);
-						}
-					});
-					var home = (function() {
-						if (jsh.shell.jsh.home) return jsh.shell.jsh.home;
-						var buildTo = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
-						buildTo.directory.remove();
-						var built = jsh.test.buildShell({
-							to: buildTo
-						});
-						return built;
-					})();
-					scope.shell.home = home;
-					scope.shell.built = jsh.shell.jsh({
-						shell: home,
-						script: $jsapi.loader.getRelativePath("test/jsh-shell-properties.jsh.js").file,
-						stdio: {
-							output: String
-						},
-						evaluate: function(result) {
-							return JSON.parse(result.stdio.output);
-						}						
-					});
 					//	TODO	add packaged shell
 					//	TODO	add remote shell
 				</script>
@@ -492,19 +559,32 @@ END LICENSE
 					<li class="value">
 						<div class="name">home</div>
 						<span class="type"><a href="../../rhino/file/api.html#types.directory">directory</a></span>
-						<span>__DESCRIPTION__</span>
+						<span>
+							(contingent; only present for built shells)
+							The home directory of the installed shell.
+						</span>
 						<script type="application/x.jsapi#tests">
-							verify(shell).unbuilt.evaluate.property("home").is(void(0));
-							verify(shell).built.evaluate.property("home").is(shell.home.toString());
+							var shell = $jsapi.environment.jsh;
+							verify(shell).unbuilt.data.evaluate.property("jsh.shell.jsh.home").is(void(0));
+							verify(shell).built.data.evaluate.property("jsh.shell.jsh.home").string.is(shell.built.home.toString());
+							verify(shell).packaged.data.evaluate.property("jsh.shell.jsh.home").is(void(0));
+							if (shell.remote) {
+								verify(shell).remote.data.evaluate.property("jsh.shell.jsh.home").is(void(0));
+							}
 						</script>
 					</li>
 					<li class="value">
 						<div class="name">src</div>
 						<span class="type"><a href="../../rhino/file/api.html#types.directory">directory</a></span>
-						<span>__DESCRIPTION__</span>
+						<span>The directory at which the source code for the shell can be found locally, if one exists.</span>
 						<script type="application/x.jsapi#tests">
-							verify(shell).unbuilt.evaluate.property("src").is(shell.src.toString());
-							verify(shell).built.evaluate.property("src").is(void(0));
+							var shell = $jsapi.environment.jsh;
+							verify(shell).unbuilt.data.evaluate.property("jsh.shell.jsh.src").string.is(shell.unbuilt.src.toString());
+							//verify(shell).built.data.evaluate.property("jsh.shell.jsh.src").is(void(0));
+							verify(shell).packaged.data.evaluate.property("jsh.shell.jsh.src").is(void(0));
+							if (shell.remote) {
+								verify(shell).remote.data.evaluate.property("jsh.shell.jsh.src").is(void(0));
+							}
 						</script>
 					</li>
 					<li class="value">
@@ -515,8 +595,15 @@ END LICENSE
 							<!--	TODO	otherwise?	-->
 						</span>
 						<script type="application/x.jsapi#tests">
-							verify(shell).unbuilt.evaluate.property("url").is(void(0));
-							verify(shell).built.evaluate.property("url").is(void(0));
+							var shell = $jsapi.environment.jsh;
+							verify(shell).unbuilt.data.evaluate.property("jsh.shell.jsh.url").is(void(0));
+							verify(shell).built.data.evaluate.property("jsh.shell.jsh.url").is(void(0));
+							verify(shell).packaged.data.evaluate.property("jsh.shell.jsh.url").is(void(0));
+							if (shell.remote) {
+								verify(shell).remote.data.evaluate.property("jsh.shell.jsh.url").string.is(shell.remote.url.toString());
+								//	TODO	make sure this is of type URL
+								verify(shell).remote.data.evaluate.property("jsh.shell.jsh.url").path.is.type("string");
+							}
 						</script>
 					</li>
 				</ul>

@@ -40,8 +40,12 @@ $set({
 									Packages.java.lang.System.err.println("Request: " + request.method + " " + request.headers.value("host") + " " + request.path);
 								}
 								for (var i=0; i<handlers.length; i++) {
-									var rv = handlers[i](request);
-									if (typeof(rv) != "undefined") return rv;
+									try {
+										var rv = handlers[i](request);
+										if (typeof(rv) != "undefined") return rv;
+									} catch (e) {
+										//	if a handler throws an exception, just ignore it
+									}
 								}
 								//	TODO	convert to appropriate 4xx or 5xx response (have not decided)
 								throw new Error("Unhandled: request: host=" + request.headers.value("host") + " path = " + request.path);
@@ -93,7 +97,7 @@ $set({
 					}
 				})
 			};
-			
+
 			this.environment = {
 				"http_proxy": "http://127.0.0.1:" + tomcat.port
 			};
@@ -152,7 +156,7 @@ $set({
 				})
 				: void(0)
 			;
-			
+
 			var hgserver = (getHgServerProxy) ? getHgServerProxy() : void(0);
 
 			var rv = function(request) {
@@ -364,7 +368,7 @@ $set({
 							started = true;
 							on.started();
 						}
-					}					
+					}
 				};
 				var error = {
 					line: function(line) {
@@ -396,7 +400,7 @@ $set({
 						started = true;
 //						Packages.java.lang.System.err.println("Executing 500 started callback ...");
 						on.started();
-//						Packages.java.lang.System.err.println("Assuming started.");						
+//						Packages.java.lang.System.err.println("Assuming started.");
 					});
 				}
 				jsh.shell.run({

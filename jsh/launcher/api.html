@@ -24,6 +24,12 @@ END LICENSE
 </head>
 <body>
 	<div>
+		The easiest way to run <code>jsh</code> is via the top-level <code>jsh.bash</code> script:
+		<div>
+			<code>./jsh.bash [-<i>vmargument</i> [...-<i>vmargument</i>]] &lt;path-to-script> [arguments]</code>
+		</div>
+	</div>
+	<div>
 		<h1>Settings</h1>
 		<table>
 			<thead>
@@ -47,6 +53,7 @@ END LICENSE
 					</td>
 				</tr>
 				<tr>
+					<!-- TODO: below test for echo.jsh.js invalidated by removal of that file -->
 					<!--
 						Tested manually
 						env JSH_DEBUG_SCRIPT=rhino JSH_ENGINE_RHINO_CLASSPATH=$HOME/Downloads/rhino-1.7R3.jar jrunscript rhino/jrunscript/api.js jsh/launcher/main.js jsh/test/jsh.shell/properties.jsh.js
@@ -58,8 +65,13 @@ END LICENSE
 							Sets up a debugger to debug scripts.
 						</div>
 						<div>
-							If the value is <code>rhino</code>, and the shell is using Rhino as
+							If the value is <code>rhino</code>, and the shell can use Rhino as
 							its JavaScript engine, the Rhino debugger will be launched to debug the script.
+						</div>
+						<div>
+							If the value is <code>ncdbg</code>, and the shell can use Nashorn as its JavaScript engine, the
+							<code>ncdbg</code> debugger will be used to execute the script.
+							<!-- TODO: hyperlink to ncdbg -->
 						</div>
 						<div>
 							If set to <code>profiler</code> or a value starting with <code>profiler:</code>,
@@ -115,6 +127,17 @@ END LICENSE
 					</td>
 				</tr>
 				<tr>
+					<td>jsh.shell.lib</td>
+					<!-- 
+						TODO: untested; could be tested using jsh/test/jsh-data.jsh.js if it emitted jsh.shell.jsh.lib. Could also
+						check for executing engine if Rhino were installed in default shell
+					-->
+					<td>
+						Sets an alternate location for the <code>lib/</code> directory. Can be used to configure a shell with a
+						different set of libraries.
+					</td>
+				</tr>
+				<tr>
 					<!--	Tested in jsh/test/launcher/suite.jsh.js	-->
 					<td>jsh.engine.rhino.classpath</td>
 					<td>
@@ -132,9 +155,6 @@ END LICENSE
 				</tr>
 			</tbody>
 		</table>
-	</div>
-	<div>
-		<h1><a href="internal.api.html">Implementation</a></h1>
 	</div>
 	<!--
 	<div>

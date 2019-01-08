@@ -11,14 +11,15 @@
 //	END LICENSE
 
 var $java = (function() {
+	// TODO: there is no test coverage for the below; when the rhino/ directory was renamed to jrunscript/, the test suite still passed
 	if ($host.getLoader && $host.getEngine) {
-		return $host.getEngine().script("rhino/rhino.js", $host.getLoader().getLoaderCode("rhino/rhino.js"), { $loader: $host.getLoader(), $rhino: $host.getEngine() }, null);
+		return $host.getEngine().script("jrunscript/rhino.js", $host.getLoader().getLoaderCode("jrunscript/rhino.js"), { $loader: $host.getLoader(), $rhino: $host.getEngine() }, null);
 	} else if ($host.getLoader && $host.getClasspath) {
-		var scripts = eval($host.getLoader().getLoaderCode("rhino/nashorn.js"));
+		var scripts = eval($host.getLoader().getLoaderCode("jrunscript/nashorn.js"));
 
 		var rv = scripts.script(
-			"rhino/nashorn.js",
-			$host.getLoader().getLoaderCode("rhino/nashorn.js"),
+			"jrunscript/nashorn.js",
+			$host.getLoader().getLoaderCode("jrunscript/nashorn.js"),
 			{
 				$getLoaderCode: function(path) {
 					return $host.getLoader().getLoaderCode(path);
@@ -37,7 +38,7 @@ var $java = (function() {
 var $servlet = (function() {
 	if ($host.getServlet) {
 		var rv = {};
-		//	TODO	Find a way to use _url version of loader/rhino/literal.js constructor to get access to this object, probably
+		//	TODO	Find a way to use _url version of loader/jrunscript/expression.js constructor to get access to this object, probably
 		//			via the created loader's .source property
 		rv.resources = Packages.inonit.script.engine.Code.Loader.create($host.getServlet().getServletConfig().getServletContext().getResource("/"));
 		rv.path = $host.getServlet().getServletConfig().getInitParameter("script");
@@ -79,7 +80,7 @@ var bootstrap = (function() {
 		rv.js = loader.module("WEB-INF/slime/js/object/", {
 			globals: true
 		});
-		rv.java = loader.module("WEB-INF/slime/rhino/host/", {
+		rv.java = loader.module("WEB-INF/slime/jrunscript/host/", {
 			globals: true,
 			$rhino: $java,
 			$java: $java.java
@@ -90,7 +91,7 @@ var bootstrap = (function() {
 				java: rv.java
 			}
 		}).log;
-		rv.io = loader.module("WEB-INF/slime/rhino/io/", {
+		rv.io = loader.module("WEB-INF/slime/jrunscript/io/", {
 			$slime: $java,
 			api: {
 				js: rv.js,
@@ -100,6 +101,8 @@ var bootstrap = (function() {
 		});
 		var web = loader.module("WEB-INF/slime/js/web/", loader.file("WEB-INF/slime/js/web/context.java.js"));
 		rv.js.web = web;
+		// TODO: Deprecate rv.js.web, after figuring out how to access $api; is it loader.$api? Available only in servlet
+		// implementation
 		rv.web = web;
 		rv.loader = {
 			paths: function(prefix) {
@@ -123,45 +126,51 @@ var Loader = (function() {
 				if (_type) return bootstrap.io.mime.Type.parse(String(_type));
 				return null;
 			};
-			pp.Loader = function(sub) {
-				return new Loader(p,prefix+sub);
-			}
+			// pp.Loader = function(sub) {
+			// 	return new Loader(p,prefix+sub);
+			// }
 			var source = {
 				get: function(path) {
 					var delegate = new bootstrap.io.Loader(pp);
-					var dResource = delegate.source.get(path);
-					if (dResource && !dResource.type) {
-						//	TODO	all of this is necessary because we cannot alter the type of a resource, because it is cached.
-						//			as such, this is tightly coupled with the rhino io.js source code
-						var newtype = pp.type(path);
-						var delegate = {};
-						delegate.read = {};
-						delegate.read.binary = dResource.read.binary;
-						delegate.type = newtype;
-						delegate.name = dResource.name;
-						if (dResource.hasOwnProperty("length")) {
-							Object.defineProperty(delegate,"length",{
-								get: function() {
-									return dResource.length;
-								}
-							});
-						}
-						if (dResource.hasOwnProperty("modified")) {
-							Object.defineProperty(delegate,"modified",{
-								get: function() {
-									return dResource.modified;
-								}
-							});
-						}
-						return new bootstrap.io.Resource(delegate)
+					var delegated = delegate.source.get(path);
+					return bootstrap.js.Object.set({}, delegated, {
+						type: pp.type(path)
+					});
+					// dResource = new bootstrap.io.Resource(dResource);
+					// // TODO: this is now a mess; the below TODO comment is probably obsolete, and it's quite possible this could be
+					// // vastly simplified
+					// if (dResource && !dResource.type) {
+					// 	//	TODO	all of this is necessary because we cannot alter the type of a resource, because it is cached.
+					// 	//			as such, this is tightly coupled with the rhino io.js source code
+					// 	var newtype = pp.type(path);
+					// 	var delegate = {};
+					// 	delegate.read = {};
+					// 	delegate.read.binary = dResource.read.binary;
+					// 	delegate.type = newtype;
+					// 	delegate.name = dResource.name;
+					// 	if (dResource.hasOwnProperty("length")) {
+					// 		Object.defineProperty(delegate,"length",{
+					// 			get: function() {
+					// 				return dResource.length;
+					// 			}
+					// 		});
+					// 	}
+					// 	if (dResource.hasOwnProperty("modified")) {
+					// 		Object.defineProperty(delegate,"modified",{
+					// 			get: function() {
+					// 				return dResource.modified;
+					// 			}
+					// 		});
+					// 	}
+					// 	return new bootstrap.io.Resource(delegate)
 //						if (newtype) {
 //							var rv = {};
 //						}
 //						Packages.java.lang.System.err.println("newtype = " + path + " " + newtype);
 //						dResource.type = newtype;
 //						Packages.java.lang.System.err.println("dResource = " + path + " pp.type=" + dResource.type);
-					}
-					return dResource;
+//					}
+//					return dResource;
 				}
 			}
 //			var rv = new bootstrap.io.Loader(pp);

@@ -11,7 +11,7 @@
 //	Contributor(s):
 //	END LICENSE
 
-var slime = new jsh.file.Loader({ 
+var slime = new jsh.file.Loader({
 	directory: $mapping.getRelativePath("../../../../..").directory
 });
 
@@ -39,6 +39,6 @@ var NoLocalSource = function(was) {
 var loader = new jsh.io.Loader(new NoLocalSource(slime.source));
 
 add({
-	prefix: "WEB-INF/slime/", 
+	prefix: "WEB-INF/slime/",
 	loader: loader
 });

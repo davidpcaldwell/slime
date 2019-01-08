@@ -262,8 +262,8 @@ try {
 
 		var getLoaderSourceFiles = function(p) {
 			var directories = [];
-			directories.push("loader/rhino/java/");
-			if (p.rhino) directories.push("loader/rhino/rhino/");
+			directories.push("loader/jrunscript/java/");
+			if (p.rhino) directories.push("loader/jrunscript/rhino/");
 			directories.push("rhino/system/java/");
 			directories.push("jsh/loader/java/");
 			if (p.rhino) directories.push("jsh/loader/rhino/");
@@ -293,8 +293,8 @@ try {
 			var rhino = (this.rhino && this.rhino.length) ? new Classpath(this.rhino) : null;
 			if (!p) p = {};
 			if (!p.to) p.to = $api.io.tmpdir();
-			var toCompile = $api.slime.src.getSourceFilesUnder(new $api.slime.src.File("loader/rhino/java"));
-			if (rhino) toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("loader/rhino/rhino")));
+			var toCompile = $api.slime.src.getSourceFilesUnder(new $api.slime.src.File("loader/jrunscript/java"));
+			if (rhino) toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("loader/jrunscript/rhino")));
 			toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("rhino/system/java")));
 			toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("jsh/loader/java")));
 			if (rhino) toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("jsh/loader/rhino")));
@@ -472,9 +472,6 @@ try {
 			}
 			return rv;
 		})();
-
-		//	Make the launcher classpath available to help with launching subshells
-		$api.slime.settings.set("jsh.launcher.classpath", String(Packages.java.lang.System.getProperty("java.class.path")));
 
 		//	Describe the shell
 		if ($api.jsh.shell.rhino) $api.slime.settings.set("jsh.engine.rhino.classpath", $api.jsh.shell.rhino);

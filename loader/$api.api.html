@@ -214,6 +214,38 @@ END LICENSE
 						verify(warnings).length.is(2);
 						//	TODO	test content of warnings
 					]]></script>
+					<script jsapi:id="deprecate.properties" type="application/x.jsapi#tests"><![CDATA[
+						var f = function() {
+							return 8;
+						};
+						f.property = "foo";
+						
+						var o = new function() {
+							this.f = f;
+						};
+						api.deprecate(o, "f");
+						
+						var Flagged = function() {
+							var warnings = [];
+							
+							var callback = function(warning) {
+								warnings.push(warning);
+							}
+							
+							api.deprecate.warning = callback;
+							
+							this.warnings = warnings;
+						};
+						
+						// TODO: right now mere property access to a method does *not* trigger a warning; only invocation does
+						verify(f == o.f).is(false);
+						var flagged = new Flagged();
+						verify(flagged).warnings.length.is(0);
+						verify(o).f().is(8);
+						verify(flagged).warnings.length.is(1);
+						verify(f.property).is("foo");
+						verify(o.f.property).is("foo");
+					]]></script>
 					<script type="application/x.jsapi#tests"><![CDATA[
 						var deprecate = api.deprecate;
 
@@ -672,6 +704,72 @@ END LICENSE
 						</li>
 					</ul>
 				</li>
+				<li class="object">
+					<div class="name">Iterable</div>
+					<span>__DESCRIPTION__</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="function">
+							<div class="name">groupBy</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="object">
+										<div class="name">__NAME__</div>
+										<span>__DESCRIPTION__</span>
+										<div class="label">has properties:</div>
+										<ul>
+											<li class="function">
+												<div class="name">group</div>
+												<span>__DESCRIPTION__</span>
+												<div class="arguments">
+													<div class="label">Arguments</div>
+													<ol>
+													</ol>
+												</div>
+												<div class="returns">
+													<div class="label">Returns</div>
+													<span class="type">__TYPE__</span>
+													<span>__DESCRIPTION__</span>
+												</div>
+											</li>
+											<li class="value">
+												<div class="name">groups</div>
+												<span class="type">__TYPE__</span>
+												<span>__DESCRIPTION__</span>
+											</li>
+											<li class="object">
+												<div class="name">codec</div>
+												<span>__DESCRIPTION__</span>
+												<div class="label">has properties:</div>
+												<ul>
+												</ul>
+											</li>
+											<li class="value">
+												<div class="name">array</div>
+												<span class="type">__TYPE__</span>
+												<span>__DESCRIPTION__</span>
+											</li>
+											<li class="value">
+												<div class="name">count</div>
+												<span class="type">__TYPE__</span>
+												<span>__DESCRIPTION__</span>
+											</li>
+										</ul>
+									</li>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span>__DESCRIPTION__</span>
+								<div class="label">has properties:</div>
+								<ul>
+								</ul>
+							</div>
+						</li>
+					</ul>
+				</li>
 				<li class="function">
 					<div class="name">Object</div>
 					<span>__DESCRIPTION__</span>
@@ -761,6 +859,30 @@ END LICENSE
 								<span class="type">Array of <a href="#types.property">property</a></span>
 								<span>__DESCRIPTION__</span>
 							</div>
+						</li>
+						<li class="function">
+							<div class="name">compose</div>
+							<span>
+								Takes a list of objects and composes them into a new object. Properties are copied from each
+								source object in succession, with values from later objects replacing those from earlier objects.
+							</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</div>
+							<script type="application/x.jsapi#tests">
+								(function() {
+									var composed = api.Object.compose({ a: 1, b: 1 }, { a: 2 });
+									verify(composed).a.is(2);
+									verify(composed).b.is(1);
+								})();
+							</script>
 						</li>
 					</ul>
 				</li>

@@ -28,9 +28,15 @@ $exports.Host = function(o) {
 	}
 }
 
-$exports.Port = function(number) {
-	this.__defineGetter__("number", function() {
-		return number;
+$exports.Port = function(o) {
+	if (typeof(o) == "number") o = { number: o };
+	var number = o.number;
+
+	Object.defineProperty(this, "number", {
+		enumerable: true,
+		configurable: true,
+		value: number,
+		writable: false
 	});
 
 	this.isOpen = $api.debug.disableBreakOnExceptionsFor(function() {

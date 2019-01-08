@@ -1,0 +1,812 @@
+<!--
+LICENSE
+This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+The Original Code is the SLIME loader for rhino.
+
+The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+Portions created by the Initial Developer are Copyright (C) 2010-2013 the Initial Developer. All Rights Reserved.
+
+Contributor(s):
+END LICENSE
+-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
+<head>
+	<title>SLIME Java Runtime</title>
+	<link rel="stylesheet" type="text/css" href="../../loader/api/api.css"></link>
+	<script type="text/javascript" src="../../loader/api/api.js"></script>
+</head>
+<body>
+	<h1>Overview</h1>
+	<p>
+		The SLIME Java runtime supports a Java-based SLIME embedding, and extends the <a href="../api.html">SLIME runtime</a> to support Java-specific functions.
+	</p>
+	<div>
+		<h2>Embedding</h2>
+		<p>
+			The SLIME Java runtime comes with two embeddings: one for the Rhino JavaScript engine provided by Mozilla, and one for
+			the Nashorn engine included with Java 8 and up. The embeddings are expressions that evaluate to an object. They provide
+			different scope variables for implementing the embedding.
+		</p>
+		<div>
+			<h3>Rhino</h3>
+			<p>
+				The following scope variables provide the interface to the Rhino embedding:
+			</p>
+			<div class="label">has properties:</div>
+			<ul>
+				<li class="object">
+					<div class="name">$loader</div>
+					<span>__DESCRIPTION__</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="function">
+							<div class="name">getLoaderCode</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="value">
+										<span class="type">string</span>
+										<span>The path, relative to <code>loader/</code>, to source files from the SLIME loader.</span>
+									</li>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">string</span>
+								<span>The source code at the given location.</span>
+							</div>
+						</li>
+						<li class="function">
+							<div class="name">getCoffeeScript</div>
+							<span>A function that provides access to CoffeeScript, if available.</span>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">string</span>
+								<span>The source code for CoffeeScript, or <code>null</code> if it is not present.</span>
+							</div>
+						</li>
+					</ul>
+				</li>
+				<li class="object">
+					<div class="name">$rhino</div>
+					<span>__DESCRIPTION__</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="function">
+							<div class="name">script</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</div>
+						</li>
+						<li class="function">
+							<div class="name">getClasspath</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">JavaClass inonit.script.engine.Loader.Classes.Interface</span>
+								<span>__DESCRIPTION__</span>
+							</div>
+						</li>
+						<li class="function">
+							<div class="name">getDebugger</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</div>
+						</li>
+					</ul>
+				</li>
+			</ul>
+		</div>
+		<div>
+			<h3>Nashorn</h3>
+			<p>
+				The following scope variables provide the interface to the Nashorn embedding:
+			</p>
+			<div class="label">has properties:</div>
+			<ul>
+				<li class="value">
+					<div class="name">$classpath</div>
+					<span class="type">JavaClass inonit.script.engine.Loader.Classes.Interface</span>
+					<span>__DESCRIPTION__</span>
+				</li>
+				<li class="experimental function">
+					<div class="name">$getLoaderCode</div>
+					<span>__DESCRIPTION__</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</div>
+				</li>
+				<li class="experimental function">
+					<div class="name">$getCoffeeScript</div>
+					<span>__DESCRIPTION__</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</div>
+				</li>
+			</ul>
+			<p>
+				The embedder currently must also provide the Nashorn global values <code>Java</code>, <code>Packages</code> and
+				<code>load</code> in the scope.
+			</p>
+		</div>
+	</div>
+	<div>
+		<script type="application/x.jsapi#initialize">
+			scope.module = jsh.unit.$slime;
+		</script>
+		<h1>Properties</h1>
+		<p>
+			The embedding for either engine creates an object which consists of the <a href="../api.html">SLIME runtime</a>
+			augmented by a common set of Java-specific properties. The Java properties added are:
+		</p>
+		<div class="label">has properties:</div>
+		<ul>
+			<li class="object" jsapi:id="mime">
+				<div class="name">mime</div>
+				<span>__DESCRIPTION__</span>
+				<div class="label">has properties:</div>
+				<script type="application/x.jsapi#initialize">
+					scope.api = jsh.unit.$slime;
+				</script>
+				<ul jsapi:id="top">
+					<li class="function">
+						<div class="name">Type.java.URLConnection</div>
+						<span>__DESCRIPTION__</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="object">
+									<div class="name">__NAME__</div>
+									<span>__DESCRIPTION__</span>
+									<div class="label">has properties:</div>
+									<ul>
+										<li class="value">
+											<div class="name">name</div>
+											<span class="type">string</span>
+											<span>__DESCRIPTION__</span>
+										</li>
+									</ul>
+								</li>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</div>
+						<script type="application/x.jsapi#tests">
+							var xmlType = api.mime.Type.fromName({ name: "foo.xml" });
+							verify(xmlType).evaluate(function() { return this.is("application/xml"); }).is(true);
+						</script>
+					</li>
+				</ul>
+			</li>
+			<li class="object">
+				<div class="name">java</div>
+				<script type="application/x.jsapi#initialize">
+					scope.api = scope.module;
+				</script>
+				<div jsapi:reference="getApi('java.api.html').getElement('exports')">
+					<span>See <a href="java.api.html">detailed documentation</a>.</span>
+				</div>
+			</li>
+			<li class="object" jsapi:id="io.api.html">
+				<div class="name">io</div>
+				<div jsapi:reference="getApi('io.api.html').getElement('exports')">
+					<span>See <a href="io.api.html">detailed documentation</a>.</span>
+				</div>
+			</li>
+			<li class="constructor" jsapi:id="Resource">
+				<div class="name">Resource</div>
+				<span>Creates a <code>Resource</code> which has additional capabilities beyond the SLIME runtime <code>Resource</code>.</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="object">
+							<!-- TODO: The below link gets broken when included from other pages. -->
+							<span class="type">supports SLIME <a href="../api.html#types.Resource.source">Resource.source</a></span>
+							<span>An object that implements this resource, adding additional properties to the SLIME runtime definition.</span>
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="object">
+									<div class="name">stream</div>
+									<span>__DESCRIPTION__</span>
+									<div class="label">has properties:</div>
+									<ul>
+										<li class="value">
+											<div class="name">binary</div>
+											<span class="type">byte input stream</span>
+											<span>
+												A stream that can provide the source data for this resource. Note that the stream
+												will be read and cached so that repeated calls to <code>read()</code> will return
+												the same data.
+											</span>
+										</li>
+									</ul>
+									<script type="application/x.jsapi#tests">
+										var buffer = new module.io.Buffer();
+										var writer = buffer.writeText();
+										writer.write("Buffer");
+										buffer.close();
+										var resource = new module.Resource({ 
+											stream: {
+												binary: buffer.readBinary() 
+											}
+										});
+										verify(resource).read(String).is("Buffer");
+										verify(resource).read(String).is("Buffer");
+									</script>
+								</li>
+								<li class="object">
+									<div class="name">read</div>
+									<span>
+										An object providing implementations for reading this resource. Adds the following two
+										properties to the SLIME runtime definition.
+									</span>
+									<div class="label">has properties:</div>
+									<ul>
+										<li class="function">
+											<div class="name">binary</div>
+											<span>
+												Returns a byte stream representing this resource. This call should be idempotent;
+												repeated calls should return new byte streams pointing to the beginning of the
+												Resource's data.
+											</span>
+											<div class="returns">
+												<div class="label">Returns</div>
+												<span class="type"><a href="#types.binput">byte input stream</a></span>
+												<span>A stream for reading this resource.</span>
+											</div>
+										</li>
+										<li class="function">
+											<div class="name">text</div>
+											<span>
+												Returns a character stream representing this resource. This call should be idempotent;
+												repeated calls should return new character streams pointing to the beginning of the
+												Resource's data.
+											</span>
+											<div class="returns">
+												<div class="label">Returns</div>
+												<span class="type"><a href="#types.cinput">character input stream</a></span>
+												<span>A stream for reading this resource.</span>
+											</div>
+										</li>
+									</ul>
+								</li>
+								<li class="object">
+									<div class="name">write</div>
+									<span>An object providing an implementation for writing to this resource.</span>
+									<div class="label">has properties:</div>
+									<ul>
+										<li class="function">
+											<div class="name">binary</div>
+											<span>Returns a byte stream for writing to this resource.</span>
+											<div class="arguments">
+												<div class="label">Arguments</div>
+												<ol>
+													<li class="value">
+														<span class="type">object</span>
+														<span>
+															See <a href="#Resource.write.arguments[1]">the second argument</a> to
+															Resource.write().
+														</span>
+													</li>
+												</ol>
+											</div>
+											<div class="returns">
+												<div class="label">Returns</div>
+												<span class="type"><a href="#types.boutput">byte output stream</a></span>
+											</div>
+										</li>
+										<li class="function">
+											<div class="name">text</div>
+											<span>Returns a character stream for writing to this resource.</span>
+											<div class="arguments">
+												<div class="label">Arguments</div>
+												<ol>
+													<li class="value">
+														<span class="type">object</span>
+														<span>
+															See <a href="#Resource.write.arguments[1]">the second argument</a> to
+															Resource.write().
+														</span>
+													</li>
+												</ol>
+											</div>
+											<div class="returns">
+												<div class="label">Returns</div>
+												<span class="type"><a href="#types.coutput">character output stream</a></span>
+											</div>
+										</li>
+
+									</ul>
+								</li>
+							</ul>
+						</li>
+					</ol>
+				</div>
+				<div class="instances">
+					<div class="label">Instances</div>
+					<span class="type">supports SLIME <a href="../api.html#types.Loader.resource">resource</a></span>
+					<span>
+						An object describing a resource, which adds additional properties to the SLIME loader definition of the type.
+					</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="function">
+							<div class="name">read</div>
+							<span>
+								Provides the content of this resource, or a stream from which to read it. Extends the standard
+								<code>read()</code> implementation from the SLIME runtime Resource.
+								<!-- TODO: hyperlink the read() implementation -->
+							</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="value">
+										<span class="type">Standard read() type OR Packages.java.util.Properties OR Streams.binary OR Streams.text</span>
+										<span>A constant value indicating the type desired.</span>
+									</li>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								A standard <code>read()</code> type, or:
+								<span class="type">Packages.java.util.Properties</span>,
+								<span class="type"><a href="#types.binput">byte input stream</a></span>,
+								<span class="type"><a href="#types.binput">character input stream</a></span>
+								<span>Depending on the type argument given, returns the content of the resource in the given format.</span>
+							</div>
+							<script type="application/x.jsapi#tests">
+								var lines = [
+									"foo.bar=baz"
+								];
+								var resource = new module.Resource({
+									string: lines.join("\n")
+								});
+								var _properties = resource.read(Packages.java.util.Properties);
+								var properties = new function() {
+									this.getProperty = function(name) {
+										var rv = _properties.getProperty(name);
+										if (rv === null) return null;
+										return String(rv);
+									}
+								};
+								verify(properties).getProperty("foo.bar").is("baz");
+								verify(properties).getProperty("foo.baz").is(null);
+								// TODO: write test that specifies resource by string and then reads it as character stream and
+								// gets same string
+							</script>
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="function">
+									<div class="name">binary</div>
+									<span>
+										(if content can be read as a byte stream)
+										Reads the content of this resource as a byte stream.
+									</span>
+									<div class="returns">
+										<div class="label">Returns</div>
+										<span class="type"><a href="#types.binput">byte input stream</a></span>
+										<span>A stream that can provide the content of this resource.</span>
+									</div>
+								</li>
+								<li class="function">
+									<div class="name">text</div>
+									<span>
+										(if content can be read as a character stream)
+										Reads the content of this resource as a character stream.
+									</span>
+									<div class="returns">
+										<div class="label">Returns</div>
+										<span class="type"><a href="#types.cinput">character input stream</a></span>
+										<span>A stream that can provide the content of this resource.</span>
+									</div>
+								</li>
+								<li class="function">
+									<div class="name">lines</div>
+									<span>
+										(if content can be read as a character stream)
+										Iterates through the lines in this stream, with semantics equivalent to the
+										<code>readLines</code> method defined by
+										<a href="#types.cinput">character input stream</a>.
+									</span>
+									<script type="application/x.jsapi#tests">
+										var string = "Hello\nWorld";
+										var buffer = new module.io.Buffer();
+										// TODO: writeText() below?
+										buffer.writeBinary().character().write(string);
+										buffer.close();
+										var resource = new module.Resource({ 
+											stream: {
+												binary: buffer.readBinary() 
+											}
+										});
+										var lines = [];
+										resource.read.lines(function(item) {
+											lines.push(item);
+										}, { ending: "\n" });
+										test(lines[0] == "Hello");
+										test(lines[1] == "World");
+									</script>
+								</li>
+							</ul>
+						</li>
+						<li class="value">
+							<div class="name">length</div>
+							<span class="type">number</span>
+							<span>
+								(conditional)
+								The length of this resource, in bytes.
+							</span>
+						</li>
+						<li class="value experimental">
+							<div class="name">modified</div>
+							<!--	TODO	is this a Date? Actually, looks like a number (a Java long presumably typecast) -->
+							<span class="type">Date</span>
+							<span>The modification time of this resource. Datatype may change in future releases.</span>
+						</li>
+						<li class="function">
+							<div class="name">write</div>
+							<span>
+								(optional: if resource is writable)
+								Writes content to this resource, or returns a stream to which content can be written to write content to
+								this resource.
+							</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="value">
+										<span class="type">Streams.binary or Streams.text</span>,
+										<span class="type">string</span>,
+										or <span class="type">xml</span>
+										<span>
+											If the given value is a <code>string</code> or <code>xml</code>, writes the given value
+											to the resource. If the given value is <code>Streams.binary</code> or
+											<code>Streams.text</code>, opens a stream of the appropriate type for writing to the given
+											resource.
+										</span>
+									</li>
+									<li class="value">
+										<span class="type">object</span>
+										<span><a name="Resource.write.arguments[1]">
+											An argument that can be used to configure the write operation; its semantics depend on
+											the underlying implementation.
+										</a></span>
+									</li>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">(varies)</span>
+								<span>
+									If <code>arguments[0]</code> specifies a stream to open, returns that stream; otherwise, returns
+									<code>undefined</code>.
+								</span>
+							</div>
+						</li>
+					</ul>
+				</div>
+			</li>
+			<li jsapi:id="Loader" class="constructor">
+				<div jsapi:id="type" class="type">
+					<a class="type" name="types.Loader">Loader</a>
+					<span class="type">supports SLIME <a href="../api.html#types.Loader">Loader</a></span>
+					<!--	TODO	not actually a separate type; tests should be collapsed into Loader constructor	-->
+					<span>A SLIME Loader that additionally supports retrieving Java byte streams for resources.</span>
+					<div class="label">has properties:</div>
+					<!--
+					<ul>
+						<li class="function">
+							<div class="name">_stream</div>
+							<span>Opens a Java stream that reads the contents of a resource.</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="value">
+										<span class="type">string</span>
+										<span>A path at which the resource can be found.</span>
+									</li>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">JavaClass java.io.InputStream</span>
+								<span>
+									A stream that reads from the given resource, or <code>null</code> if there is no resource
+									corresponding to the path.
+								</span>
+							</div>
+						</li>
+						<li class="deprecated function">
+							<div class="name">resource</div>
+							<span>Equivalent to <code>get()</code>.</span>
+						</li>
+					</ul>
+					-->
+					<div jsapi:id="tests">
+						<script type="application/x.jsapi#tests">
+							var $rhino = jsh.unit.$slime;
+							verify($rhino,"$rhino").is.type("object");
+							verify($rhino).evaluate.property("Loader").is.type("function");
+							var tmpdir = $jsapi.file.newTemporaryDirectory();
+							tmpdir.getRelativePath("dir").createDirectory();
+							tmpdir.getRelativePath("file").write("contents", { append: false });
+							tmpdir.getRelativePath("dir/under").write("inside", { append: false });
+
+							var _source = Packages.inonit.script.engine.Code.Loader.create(tmpdir.pathname.java.adapt());
+							var loader = new $rhino.Loader({
+								_source: _source
+							});
+							verify(loader).get("file").is.not(null);
+							var file = loader.get("file");
+							verify(file).modified.is.type("object");
+							verify(file).modified.evaluate(function() { return this instanceof Date; }).is(true);
+							verify(loader).get("dir/under").is.not(null);
+							verify(loader).get("foo").is(null);
+							verify(loader).evaluate.property("list").is.type("function");
+
+							var list = loader.list();
+							verify(loader).list().length.is(2);
+							var child = new loader.Child("dir/");
+							verify(child).evaluate.property("list").is.type("function");
+							verify(child).list().length.is(1);
+						</script>
+					</div>
+				</div>
+				<div class="name"><a name="exports.Loader">Loader</a></div>
+				<div>
+					<span>
+						Extends the SLIME <a href="../api.html#types.Loader">Loader</a> constructor to allow additional types.
+					</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+							<li class="object">
+								<div class="label">has properties:</div>
+								<ul>
+									<li class="value">
+										<div class="name">_source</div>
+										<span class="type">JavaClass inonit.script.engine.Code.Loader</span>
+										<span>An object representing resources that can be loaded by this Loader.</span>
+									</li>
+								</ul>
+								-OR-
+								<div class="label">has properties:</div>
+								<ul>
+									<li class="value">
+										<div class="name">_code</div>
+										<span class="type">JavaClass inonit.script.engine.Code</span>
+										<span>
+											An object representing resources and Java classes that can be loaded by this
+											Loader.
+										</span>
+									</li>
+								</ul>
+								-OR-
+								<span>An object that can return resources given paths.</span>
+								<div class="label">has properties:</div>
+								<ul>
+									<li class="object">
+										<div class="name">resources</div>
+										<div class="label">has properties:</div>
+										<ul>
+											<li class="function">
+												<div class="name">get</div>
+												<span>
+													Returns an implementation for a resource at the given path.
+												</span>
+												<div class="arguments">
+													<div class="label">Arguments</div>
+													<ol>
+														<li class="value">
+															<span class="type">string</span>
+															<span>A path.</span>
+														</li>
+
+													</ol>
+												</div>
+												<div class="returns">
+													<div class="label">Returns</div>
+													<span class="type"><a href="#types.resource">resource</a></span>
+													<span>
+														An argument for the <code>Resource</code> constructor that implements the
+														resource at the given path, or <code>null</code> if no resource is
+														located at the given path.
+													</span>
+												</div>
+											</li>
+										</ul>
+									</li>
+									<li class="function">
+										<div class="name">type</div>
+										<span>
+											(optional)
+											A method that will be invoked (with the loader itself as <code>this</code>) to
+											supply a MIME type for resources loaded by this loader.
+										</span>
+										<div class="arguments">
+											<div class="label">Arguments</div>
+											<ol>
+												<li class="value">
+													<span class="type">string</span>
+													<span>A path.</span>
+												</li>
+											</ol>
+										</div>
+										<div class="returns">
+											<div class="label">Returns</div>
+											<span class="type">MIME <a href="../../loader/api.html#types.mime.Type">type</a></span>
+											<span>A MIME type to use for the resource given at the given path.</span>
+										</div>
+									</li>
+								</ul>
+							</li>
+						</ol>
+					</div>
+				</div>
+				<div class="instances">
+					<div class="label">Instances</div>
+					<span>
+						<span class="type">SLIME <a href="#types.Loader">Loader</a></span>
+					</span>
+				</div>
+				<script type="application/x.jsapi#initialize">
+					scope.loadTestModule = function(path,context) {
+						return $jsapi.loader.module("../" + path, context);
+					}
+				</script>
+				<div jsapi:reference="getApi('../api.html').getElement('Loader/type/tests')">
+				</div>
+				<script type="application/x.jsapi#initialize">
+					scope.api = jsh.unit.$slime;
+				</script>
+				<div jsapi:reference="getApi('../api.html').getElement('Loader/tests')">
+				</div>
+				<script type="application/x.jsapi#tests">
+					// TODO: Moved from jrunscript/io, complete with if (false); what is this for?
+					if (false) {
+						var loader = new module.Loader({
+							resources: {
+								get: function(path) {
+									var file = $jsapi.loader.getRelativePath(path).file;
+									if (!file) return null;
+									var type = (function() {
+										if (/\.jsh\.js$/.test(path)) {
+											return new module.mime.Type("application", "x.jsh");
+										} else if (/\.js$/.test(path)) {
+											return new module.mime.Type("application", "javascript");
+										} else if (/\.html$/.test(path)) {
+											return new module.mime.Type("text", "html");
+										} else {
+											return new module.mime.Type("application", "octet-stream");
+										}
+									})();
+									return {
+										type: type,
+										read: {
+											binary: function() {
+												return file.read(jsh.io.Streams.binary);
+											}
+										}
+									};
+								}
+							}
+						});
+						var api = loader.get("api.html");
+						test(api.type.toString() == "text/html");
+
+						var loaderModule = loader.module("test/Loader.js");
+						test(loaderModule.file.foo == "bar");
+						test(loaderModule.resource("Loader.js") != null);
+						test(loaderModule.resource("test/Loader.js") == null);
+						test(loaderModule.grandchildResource("file.js") != null);
+						test(loaderModule.grandchildResource("Loader/file.js") == null);
+						test(loaderModule.grandchildResource("test/Loader/file.js") == null);
+					}
+				</script>
+				<script type="application/x.jsapi#tests">
+					var sources = new function() {
+						var code = {
+
+						};
+
+						this.get = function(path) {
+							return null;
+						};
+
+						this.Loader = function(prefix) {
+							this.list = function() {
+								return [];
+							}
+						}
+					}
+					var loader = new module.Loader(sources);
+					verify(loader).evaluate(function() { return this.run; }).is.not.equalTo(null);
+					var child = new loader.Child("prefix/");
+					verify(child).evaluate(function() { return this.run; }).is.not.equalTo(null);
+				</script>
+			</li>
+			<li class="object">
+				<div class="name">classpath</div>
+				<span>__DESCRIPTION__</span>
+				<div class="label">has properties:</div>
+				<ul>
+				</ul>
+			</li>
+			<li class="function" jsapi:id="namespace" jsapi:reference="getApi('../api.html').getElement('namespace')">
+				<div class="name">namespace</div>
+				<span>The platform loader's <a href="../api.html#exports.namespace"><code>namespace</code></a> method.</span>
+			</li>
+			<li class="function" jsapi:id="run">
+				<div class="name">run</div>
+				<span jsapi:id="description">
+					The platform loader's <a href="../api.html#exports.run"><code>run</code></a> method. Note that this version
+					accepts Java <a href="#types.script">script</a> instances as well as SLIME scripts.
+				</span>
+			</li>
+			<li class="function" jsapi:id="file">
+				<div class="name">file</div>
+				<span>
+					The platform loader's <a href="../api.html#exports.file"><code>file</code></a> method.  Note that this version
+					accepts Java <a href="#types.script">script</a> instances as well as SLIME scripts.
+				</span>
+			</li>
+		</ul>
+		<div>
+			If the underlying engine is Rhino, the following additional properties are added:
+			<div class="label">has properties:</div>
+			<ul>
+				<li class="function">
+					<div class="name">getDebugger</div>
+					<span>__DESCRIPTION__</span>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</div>
+				</li>
+			</ul>
+		</div>
+	</div>
+</body>
+</html>

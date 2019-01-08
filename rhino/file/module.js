@@ -128,6 +128,50 @@ $exports.Pathname.createDirectory.exists.RECREATE = function(dir) {
 	return true;
 };
 
+$exports.navigate = function(p) {
+	var from = p.from;
+	var to = p.to;
+	if (from.pathname && !from.pathname.directory && from.parent) {
+		from = from.parent;
+	}
+	var startsWith = function(start,under) {
+		return under.toString().substring(0,start.toString().length) == start.toString();
+	};
+	var common = from;
+	var up = 0;
+	while(!startsWith(common,to)) {
+		var basename = common.pathname.basename;
+		up++;
+		common = common.parent;
+	}
+	var remaining = to.toString().substring(common.toString().length);
+	return {
+		base: common,
+		relative: new Array(up+1).join("../") + remaining
+	};
+};
+
+// $exports.getRelativePathTo = function(to) {
+// 	// TODO: no test coverage
+// 	return function(from) {
+// 		if (from.pathname && !from.pathname.directory && from.parent) {
+// 			from = from.parent;
+// 		}
+// 		var startsWith = function(start,under) {
+// 			return under.toString().substring(0,start.toString().length) == start.toString();
+// 		};
+// 		var common = from;
+// 		var up = 0;
+// 		while(!startsWith(common,to)) {
+// 			var basename = common.pathname.basename;
+// 			up++;
+// 			common = common.parent;
+// 		}
+// 		var remaining = to.toString().substring(common.toString().length);
+// 		return new Array(up+1).join("../") + remaining;
+// 	}
+// }
+
 //	TODO	Searchpath implementation has multiple layers: in os.js, file.js, here ... consolidate and refactor
 $exports.Searchpath = function(parameters) {
 	if (this.constructor != arguments.callee) {
@@ -146,7 +190,7 @@ $exports.Searchpath.createEmpty = function() {
 $api.deprecate($exports.Searchpath,"createEmpty");
 $exports.Searchpath.prototype = prototypes.Searchpath;
 
-////	TODO	this implementation would be much simpler if we could use a normal loader/rhino loader with a _source, but
+////	TODO	this implementation would be much simpler if we could use a normal loader/jrunscript loader with a _source, but
 ////			right now this would cause Cygwin loaders to fail, probably
 //$context.$rhino.Loader.spi(function(underlying) {
 //	return function(p) {
@@ -223,9 +267,7 @@ $exports.Loader = function recurse(p) {
 					return file.modified;
 				}
 			});
-//					length: file.resource.length,
-//					modified: file.modified,
-			return new $context.$slime.io.Resource(data);
+			return data;
 		}
 		return null;
 	}

@@ -75,11 +75,11 @@ plugin({
 				classpath.pathnames.push(CATALINA_HOME.getRelativePath("lib/servlet-api.jar"));
 				var sourcepath = jsh.file.Searchpath([]);
 				sourcepath.pathnames.push(SLIME.getRelativePath("rhino/system/java"));
-				sourcepath.pathnames.push(SLIME.getRelativePath("loader/rhino/java"));
-				sourcepath.pathnames.push(SLIME.getRelativePath("loader/rhino/rhino/java"));
-				sourcepath.pathnames.push(SLIME.getRelativePath("rhino/host/java"));
+				sourcepath.pathnames.push(SLIME.getRelativePath("loader/jrunscript/java"));
+				sourcepath.pathnames.push(SLIME.getRelativePath("loader/jrunscript/rhino/java"));
+				sourcepath.pathnames.push(SLIME.getRelativePath("jrunscript/host/java"));
 				if (p.rhino) {
-					sourcepath.pathnames.push(SLIME.getRelativePath("rhino/host/rhino/java"));
+					sourcepath.pathnames.push(SLIME.getRelativePath("jrunscript/host/rhino/java"));
 				}
 				sourcepath.pathnames.push(SLIME.getRelativePath("rhino/http/servlet/java"));
 				if (p.rhino) {
@@ -114,22 +114,22 @@ plugin({
 
 			(function copySlimeCodeToWebapp() {
 				SLIME.getSubdirectory("loader").list().forEach(function(node) {
-					//	TODO	dangerous as we move more code into the loader; was just literal.js and api.js
+					//	TODO	dangerous as we move more code into the loader; was just expression.js and api.js
 					if (!node.directory) {
 						node.copy(WEBAPP.getRelativePath("WEB-INF/loader/" + node.pathname.basename), { recursive: true });
 					}
 				});
-				SLIME.getSubdirectory("loader/rhino").list().forEach(function(node) {
-					//	Was just literal.js
+				SLIME.getSubdirectory("loader/jrunscript").list().forEach(function(node) {
+					//	Was just expression.js
 					if (/\.js$/.test(node.pathname.basename)) {
-						node.copy(WEBAPP.getRelativePath("WEB-INF/loader/rhino/" + node.pathname.basename), { recursive: true });
+						node.copy(WEBAPP.getRelativePath("WEB-INF/loader/jrunscript/" + node.pathname.basename), { recursive: true });
 					}
 				});
 				SLIME.getFile("rhino/http/servlet/api.js").copy(WEBAPP.getRelativePath("WEB-INF/api.js"));
 				SLIME.getFile("rhino/http/servlet/server.js").copy(WEBAPP.getRelativePath("WEB-INF/server.js"));
 				SLIME.getFile("rhino/http/servlet/upload.js").copy(WEBAPP.getRelativePath("WEB-INF/upload.js"));
 
-				["js/debug","js/object","js/web","rhino/host","rhino/io","rhino/http/servlet/server"].forEach(function(path) {
+				["js/debug","js/object","js/web","jrunscript/host","jrunscript/io","rhino/http/servlet/server"].forEach(function(path) {
 					SLIME.getSubdirectory(path).copy(WEBAPP.getRelativePath("WEB-INF/slime/" + path), { recursive: true });
 				});
 			})();
