@@ -87,37 +87,6 @@ var ScriptVerifier = function(o) {
 };
 
 if (CATALINA_HOME) {
-	scenario.part("unit.browser", {
-		name: "loader/browser/test",
-		parts: {
-			failure: {
-				execute: function(scope,verify) {
-					jsh.shell.jsh({
-						fork: true,
-						script: src.getFile("loader/api/ui/test/browser.jsh.js"),
-						evaluate: function(result) {
-							verify(result).status.is(0);
-						}
-					})
-				}
-			},
-			success: {
-				execute: function(scope,verify) {
-					jsh.shell.jsh({
-						fork: true,
-						script: src.getFile("loader/api/ui/test/browser.jsh.js"),
-						arguments: ["-success"],
-						evaluate: function(result) {
-							verify(result).status.is(0);
-						}
-					})
-				}
-			}
-		}
-	});
-}
-
-if (CATALINA_HOME) {
 	ScriptVerifier({
 		name: "remote",
 		path: "launcher/remote.jsh.js",
