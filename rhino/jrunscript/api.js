@@ -653,47 +653,48 @@
 			if (new File(home, "../bin/jrunscript").exists()) return new File(home, "../bin/jrunscript");
 			if (new File(home, "../bin/jrunscript.exe").exists()) return new File(home, "../bin/jrunscript.exe");
 		})();
+		
+		(function addCompileMethod() {
+			var tried = false;
+			var compiler;
+
+			var implementation = function(args) {
+				var jarray = Packages.java.lang.reflect.Array.newInstance($api.java.getClass("java.lang.String"),args.length);
+				for (var i=0; i<jarray.length; i++) {
+					jarray[i] = new Packages.java.lang.String(args[i]);
+				}
+				var status = compiler.run(
+					Packages.java.lang.System["in"],
+					Packages.java.lang.System.out,
+					Packages.java.lang.System.err,
+					jarray
+				);
+				if (status) {
+					throw new Error("Compiler exited with status " + status + " with inputs " + args.join(","));
+				}
+			};
+
+			//	TODO	refactor into making the getter a separate function and reusing it: as getting in if and invoked in else
+			if (Object.defineProperty) {
+				Object.defineProperty(this, "compile", {
+					get: function() {
+						if (!tried) {
+							compiler = Packages.javax.tools.ToolProvider.getSystemJavaCompiler();
+							tried = true;
+						}
+						if (compiler) {
+							return implementation;
+						}
+					}
+				});
+			} else {
+				compiler = Packages.javax.tools.ToolProvider.getSystemJavaCompiler();
+				this.compile = implementation;
+			}
+		}).call(this);
 	};
 
 	$api.java.install = new $api.java.Install(new Packages.java.io.File(Packages.java.lang.System.getProperty("java.home")));
-	(function() {
-		var tried = false;
-		var compiler;
-
-		var implementation = function(args) {
-			var jarray = Packages.java.lang.reflect.Array.newInstance($api.java.getClass("java.lang.String"),args.length);
-			for (var i=0; i<jarray.length; i++) {
-				jarray[i] = new Packages.java.lang.String(args[i]);
-			}
-			var status = compiler.run(
-				Packages.java.lang.System["in"],
-				Packages.java.lang.System.out,
-				Packages.java.lang.System.err,
-				jarray
-			);
-			if (status) {
-				throw new Error("Compiler exited with status " + status + " with inputs " + args.join(","));
-			}
-		};
-
-		//	TODO	refactor into making the getter a separate function and reusing it: as getting in if and invoked in else
-		if (Object.defineProperty) {
-			Object.defineProperty($api.java.install, "compile", {
-				get: function() {
-					if (!tried) {
-						compiler = Packages.javax.tools.ToolProvider.getSystemJavaCompiler();
-						tried = true;
-					}
-					if (compiler) {
-						return implementation;
-					}
-				}
-			});
-		} else {
-			compiler = Packages.javax.tools.ToolProvider.getSystemJavaCompiler();
-			$api.java.install.compile = implementation;
-		}
-	})();
 	$api.java.getClass = function(name) {
 		return $engine.getClass(name);
 	}

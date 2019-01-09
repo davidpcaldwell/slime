@@ -142,7 +142,7 @@ try {
 			}
 		}
 	});
-
+	
 	$api.jsh.engines = {
 		rhino: {
 			main: "inonit.script.jsh.Rhino",
@@ -154,6 +154,12 @@ try {
 			main: "inonit.script.jsh.Nashorn",
 			resolve: function(o) {
 				return o.nashorn;
+			}
+		},
+		graal: {
+			main: "inonit.script.jsh.Graal",
+			resolve: function(o) {
+				return o.graal;
 			}
 		}
 	};
@@ -220,11 +226,14 @@ try {
 	$api.script.resolve("javac.js").load();
 
 	$api.jsh.Unbuilt = function(p) {
+		var File = Packages.java.io.File;
+		
 		//	TODO	p.rhino argument is supplied by jsh/etc/build.jsh.js and is dubious
 		this.toString = function() {
 			return "Unbuilt: src=" + $api.slime.src + " rhino=" + this.rhino;
 		}
 
+		// TODO: this same approach for locating the lib directory should be used in $api.jsh.Built, no?
 		var lib = (function() {
 			var setting = $api.slime.settings.get("jsh.shell.lib");
 			//	TODO	setting can be null because $api.script.resolve() doesn't find local/jsh/lib online; should refactor
@@ -240,6 +249,7 @@ try {
 
 		var rhino = (p && p.rhino) ? p.rhino : null;
 
+		// TODO: do we still need jsh.engine.rhino.classpath? Maybe if working with a local Rhino build?
 		if (!rhino) {
 			if ($api.slime.settings.get("jsh.engine.rhino.classpath")) {
 				rhino = [new Packages.java.io.File($api.slime.settings.get("jsh.engine.rhino.classpath")).toURI().toURL()];
@@ -251,8 +261,10 @@ try {
 		}
 
 		this.rhino = rhino;
-
-		var rhinoClasspath = (rhino && rhino.length) ? new Classpath(rhino) : null;
+		
+		if (lib && lib.file && new File(lib.file, "graal")) {
+			this.graal = new File(lib.file, "graal");
+		}
 
 		this.profiler = (function() {
 			if ($api.slime.settings.get("jsh.shell.profiler")) {
@@ -291,13 +303,18 @@ try {
 		//	As of this writing, used by jsh/etc/build.jsh.js, as well as shellClasspath method below
 		this.compileLoader = function(p) {
 			var rhino = (this.rhino && this.rhino.length) ? new Classpath(this.rhino) : null;
+			// TODO: below will probably eventually be a classpath, but it may be more complex if graal javac is required to compile
+			// graal classes
+			// TODO: should we be compiling classes for engines we are not using?
+			var graal = this.graal;
 			if (!p) p = {};
 			if (!p.to) p.to = $api.io.tmpdir();
 			var toCompile = $api.slime.src.getSourceFilesUnder(new $api.slime.src.File("loader/jrunscript/java"));
 			if (rhino) toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("loader/jrunscript/rhino")));
 			toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("rhino/system/java")));
 			toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("jsh/loader/java")));
-			if (rhino) toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("jsh/loader/rhino")));
+			if (rhino) toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("jsh/loader/rhino/java")));
+			if (graal) toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("jsh/loader/graal/java")));
 			var rhinoJavacArguments = (rhino) ? ["-classpath", rhino.local()] : [];
 			var targetArguments = (p && p.target) ? ["-target", p.target] : [];
 			var sourceArguments = (p && p.source) ? ["-source", p.source] : [];
@@ -315,6 +332,8 @@ try {
 		};
 
 		this.shellClasspath = function() {
+			var rhinoClasspath = (rhino && rhino.length) ? new Classpath(rhino) : null;
+			
 			if (!$api.slime.src) throw new Error("Could not detect SLIME source root for unbuilt shell.")
 			var setting = $api.slime.settings.get("jsh.shell.classes");
 			var LOADER_CLASSES = (setting) ? new Packages.java.io.File(setting, "loader") : $api.io.tmpdir();
@@ -364,6 +383,10 @@ try {
 
 		if (new Packages.java.io.File(home, "lib/js.jar").exists()) {
 			this.rhino = [new Packages.java.io.File(home, "lib/js.jar").toURI().toURL()];
+		}
+		
+		if (new Packages.java.io.File(home, "lib/graal").exists()) {
+			this.graal = new Packages.java.io.File(home, "lib/graal");
 		}
 
 		if (new Packages.java.io.File(home, "tools/profiler.jar").exists()) {
