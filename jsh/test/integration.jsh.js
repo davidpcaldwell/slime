@@ -278,6 +278,13 @@ if (CATALINA_HOME) {
 			verify(this).status.is(0);
 		}
 	});
+} else {
+	scenario.part("jsh.script.http", {
+		execute: function(scope,verify) {
+			var message = "Skipping jsh.script.http; no Tomcat";
+			verify(message).is(message);
+		}
+	})
 }
 
 scenario.part("coffeescript", {

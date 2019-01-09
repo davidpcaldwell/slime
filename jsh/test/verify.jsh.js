@@ -88,6 +88,11 @@ var shells = {
 				PATH: jsh.shell.environment.PATH.toString()
 			})
 		});
+		jsh.shell.console("Installing Tomcat into built shell ...");
+		jsh.shell.jsh({
+			shell: tmpdir,
+			script: tmpdir.getFile("src/jsh/tools/install/tomcat.jsh.js")
+		});
 		return tmpdir;
 	})()
 }
