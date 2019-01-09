@@ -36,8 +36,6 @@ $api.debug("Source: " + $api.slime.src);
 $api.debug("Bootstrap script: " + $api.script);
 
 
-var command = new $api.java.Command();
-
 //var container = new function() {
 //	//	TODO	jsh.tmpdir is not correctly passed to launcher in the forking scenario
 //
@@ -85,10 +83,6 @@ $api.slime.settings["default"]("jsh.engine.rhino.classpath", $api.rhino.classpat
 //	If SLIME source location not specified, and we can determine it, supply it to the shell
 $api.slime.settings["default"]("jsh.shell.src", ($api.slime.src) ? String($api.slime.src) : null);
 
-if ($api.slime.settings.get("jsh.java.home")) {
-	command.home(new $api.java.Install(new Packages.java.io.File($api.slime.settings.get("jsh.java.home"))));
-}
-
 $api.script.resolve("launcher.js").load();
 
 //	If we have a sibling named jsh.jar, we are a built shell
@@ -108,6 +102,7 @@ $api.debug("shell detected = " + shell);
 if (!new Packages.javax.script.ScriptEngineManager().getEngineByName("nashorn")) {
 	delete $api.jsh.engines.nashorn;
 }
+// TODO: delete Graal if it is not available
 
 var defaultEngine = (function() {
 	if (shell.rhino) return "rhino";
@@ -127,25 +122,24 @@ if (!defaultEngine) {
 	Packages.java.lang.System.exit(1);
 }
 $api.slime.settings["default"]("jsh.engine", defaultEngine);
-//	TODO	is the below comment accurate? Looks like we now use the classloader launch by default in Rhino
-//	TODO	for now, we always launch a separate VM to execute the shell, but we are working using JSH_TEST_LAUNCHER_NOFORK
-//			feature flag to get classloader working under Rhino
-var fork = (function() {
-	if (!$api.script.file) return true;
-	return $api.jsh.engines[defaultEngine].resolve({
-		rhino: false,
-		nashorn: true
-	});
-})();
-//if ($api.shell.environment.JSH_TEST_LAUNCHER_NOFORK) {
-//	$api.debug("Checking fork because of feature flag.");
-//	fork = $api.jsh.engines[defaultEngine].resolve({
-//		rhino: false,
-//		nashorn: true
-//	});
-$api.debug("Fork = " + fork);
-//}
-if (fork) command.fork();
+
+if ($api.slime.settings.get("jsh.engine") == "graal") {
+	$api.debug("Engine is Graal.js");
+	var lib = $api.slime.settings.get("jsh.shell.lib");
+	if (new Packages.java.io.File(lib, "graal").exists()) {
+		$api.slime.settings.set("jsh.java.home", String(new Packages.java.io.File(lib, "graal")));
+	} else {
+		Packages.java.lang.System.err.println("Graal.js specified as engine but not found.");
+		Packages.java.lang.System.exit(1);
+	}
+}
+
+var command = new $api.java.Command();
+
+if ($api.slime.settings.get("jsh.java.home")) {
+	$api.debug("setting jsh.java.home = " + $api.slime.settings.get("jsh.java.home"));
+	command.home(new $api.java.Install(new Packages.java.io.File($api.slime.settings.get("jsh.java.home"))));
+}
 
 if ($api.arguments[0] == "-engines") {
 	var engines = [];
@@ -201,12 +195,16 @@ if ( profilerMatcher.test(scriptDebugger)) {
 	// TODO: command.argument(.../ncdbg.jsh.js)
 	command.argument(String(ncdbg.getAbsolutePath()));
 //	throw new Error("ncdbg jsh.debug.script not implemented");
+} else if (scriptDebugger == "graal") {
+	$api.slime.settings.set("jsh.engine", "graal");
+	command.argument("--inspect");
 }
 
 (function() {
 	var container = $api.slime.settings.getContainerArguments();
 	for (var i=0; i<container.length; i++) {
 		$api.debug("container " + container[i]);
+		// TODO: test whether this works for Graal
 		command.vm(container[i]);
 	}
 })();
@@ -236,8 +234,16 @@ if (!engine) throw new Error("Specified engine not found: " + $api.slime.setting
 	+ " jsh.engine=" + Packages.java.lang.System.getProperty("jsh.engine")
 	+ " shell=" + shell
 );
-//	TODO	jsh.launcher.main is almost certainly unused also
-command.systemProperty("jsh.launcher.main", engine.main);
+
+//	TODO	Are we really using classloader launch under Rhino?
+var fork = engine.resolve({
+	rhino: false,
+	nashorn: true,
+	graal: true
+});
+$api.debug("Fork = " + fork);
+
+if (fork) command.fork();
 
 for (var i=0; i<classpath._urls.length; i++) {
 	command.classpath(classpath._urls[i]);
