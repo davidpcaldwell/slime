@@ -136,12 +136,9 @@ if ($api.slime.settings.get("jsh.engine") == "graal") {
 
 var command = new $api.java.Command();
 
-$api.debug("jsh.java.home = " + $api.slime.settings.get("jsh.java.home"));
 if ($api.slime.settings.get("jsh.java.home")) {
-	Packages.java.lang.System.err.println("setting jsh.java.home = " + $api.slime.settings.get("jsh.java.home"));
-	$api.debug(String(command));
+	$api.debug("setting jsh.java.home = " + $api.slime.settings.get("jsh.java.home"));
 	command.home(new $api.java.Install(new Packages.java.io.File($api.slime.settings.get("jsh.java.home"))));
-	$api.debug(String(command));
 }
 
 if ($api.arguments[0] == "-engines") {
