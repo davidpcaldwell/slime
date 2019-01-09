@@ -102,6 +102,7 @@ $api.debug("shell detected = " + shell);
 if (!new Packages.javax.script.ScriptEngineManager().getEngineByName("nashorn")) {
 	delete $api.jsh.engines.nashorn;
 }
+// TODO: delete Graal if it is not available
 
 var defaultEngine = (function() {
 	if (shell.rhino) return "rhino";
@@ -122,10 +123,25 @@ if (!defaultEngine) {
 }
 $api.slime.settings["default"]("jsh.engine", defaultEngine);
 
+if ($api.slime.settings.get("jsh.engine") == "graal") {
+	$api.debug("Engine is Graal.js");
+	var lib = $api.slime.settings.get("jsh.shell.lib");
+	if (new Packages.java.io.File(lib, "graal").exists()) {
+		$api.slime.settings.set("jsh.java.home", String(new Packages.java.io.File(lib, "graal")));
+	} else {
+		Packages.java.lang.System.err.println("Graal.js specified as engine but not found.");
+		Packages.java.lang.System.exit(1);
+	}
+}
+
 var command = new $api.java.Command();
 
+$api.debug("jsh.java.home = " + $api.slime.settings.get("jsh.java.home"));
 if ($api.slime.settings.get("jsh.java.home")) {
+	Packages.java.lang.System.err.println("setting jsh.java.home = " + $api.slime.settings.get("jsh.java.home"));
+	$api.debug(String(command));
 	command.home(new $api.java.Install(new Packages.java.io.File($api.slime.settings.get("jsh.java.home"))));
+	$api.debug(String(command));
 }
 
 if ($api.arguments[0] == "-engines") {

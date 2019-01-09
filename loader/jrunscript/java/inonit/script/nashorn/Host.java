@@ -22,7 +22,13 @@ public class Host {
 	public static Host create(Loader.Classes.Configuration configuration) {
 		Loader.Classes classes = Loader.Classes.create(configuration);
 		Thread.currentThread().setContextClassLoader(classes.getApplicationClassLoader());
-		return new Host(classes);
+		return new Host(classes, "nashorn");
+	}
+
+	public static Host graal(Loader.Classes.Configuration configuration) {
+		Loader.Classes classes = Loader.Classes.create(configuration);
+		Thread.currentThread().setContextClassLoader(classes.getApplicationClassLoader());
+		return new Host(classes, "Graal.js");
 	}
 
 	private ScriptEngineManager factory;
@@ -30,9 +36,9 @@ public class Host {
 	private Loader.Classes classes;
 	private List<Code.Loader.Resource> scripts = new ArrayList<Code.Loader.Resource>();
 
-	private Host(Loader.Classes classes) {
+	private Host(Loader.Classes classes, String engineName) {
 		this.factory = new ScriptEngineManager();
-		this.engine = factory.getEngineByName("nashorn");
+		this.engine = factory.getEngineByName(engineName);
 		this.classes = classes;
 	}
 

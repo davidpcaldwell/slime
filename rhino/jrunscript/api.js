@@ -714,7 +714,7 @@
 			return function(mode) {
 				if (!mode) mode = {};
 				if (!mode.input) mode.input = Packages.java.lang.System["in"];
-				$api.debug("Invoking launcher");
+				$api.debug("Invoking launcher: " + home.launcher);
 				var tokens = [home.launcher];
 				tokens.push.apply(tokens,vmArguments);
 				for (var x in properties) {
@@ -827,6 +827,13 @@
 			].join(" ");
 		}
 
+		this.fork = function() {
+			if (launcher == launchers.ClassLoader) {
+				$api.debug("Running in VM because of fork() ...");
+				launcher = new launchers.Vm();
+			}
+		}
+
 		this.home = function(home) {
 			$api.debug("Running in VM because of home() ...");
 			launcher = new launchers.Vm(home);
@@ -856,11 +863,6 @@
 
 		this.argument = function() {
 			mainArguments.push(arguments[0]);
-		}
-
-		this.fork = function() {
-			$api.debug("Running in VM because of fork() ...");
-			launcher = new launchers.Vm();
 		}
 
 		this.run = function(mode) {
