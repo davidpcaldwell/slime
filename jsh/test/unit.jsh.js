@@ -173,22 +173,27 @@ var environment = new function() {
 					return url;
 				}
 			});
+			
+			var getMock = jsh.js.constant(function() {
+				jsh.loader.plugins(jsh.script.file.parent.parent.parent.getRelativePath("jsh/test/launcher"));
+				var mock = new jsh.test.launcher.MockRemote({
+					src: {
+						davidpcaldwell: {
+							slime: {
+								directory: jsh.shell.jsh.src
+							}
+						}
+					},
+					trace: parameters.options["trace:server"]
+				});
+				jsh.shell.console("Mock port is " + mock.port);
+				return mock;
+			});
 
 			Object.defineProperty(this, "data", {
 				get: function() {
 					if (!data) {
-						jsh.loader.plugins(jsh.script.file.parent.parent.parent.getRelativePath("jsh/test/launcher"));
-						var mock = new jsh.test.launcher.MockRemote({
-							src: {
-								davidpcaldwell: {
-									slime: {
-										directory: jsh.shell.jsh.src
-									}
-								}
-							},
-							trace: parameters.options["trace:server"]
-						});
-						jsh.shell.console("Mock port is " + mock.port);
+						var mock = getMock();
 						var script = url + "jsh/test/jsh-data.jsh.js";
 						data = mock.jsh({
 							script: script,
@@ -204,6 +209,10 @@ var environment = new function() {
 				},
 				enumerable: true
 			});
+			
+			this.jsh = function(p) {
+				return getMock().jsh(p);
+			}
 		}
 	}
 
@@ -269,6 +278,10 @@ var parts = {
 		pathname: SRC.getRelativePath("jsh/loader/internal.api.html"),
 		environment: environment				
 	}),
+	launcher: new jsh.unit.part.Html({
+		pathname: SRC.getRelativePath("jsh/launcher/internal.api.html"),
+		environment: environment
+	})
 }
 
 // TODO: remove this from 'old'
@@ -290,6 +303,7 @@ suite.part("jsh.shell.jsh", new jsh.unit.Suite.Fork({
 }));
 suite.part("jsh.script", parts["jsh.script"]);
 suite.part("loader", parts.loader);
+suite.part("launcher", parts.launcher);
 suite.part("jsh.unit", new function() {
 	var src = SRC;
 	this.parts = {

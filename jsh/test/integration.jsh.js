@@ -86,25 +86,6 @@ var ScriptVerifier = function(o) {
 	});
 };
 
-if (CATALINA_HOME) {
-	ScriptVerifier({
-		name: "remote",
-		path: "launcher/remote.jsh.js",
-		arguments: ["-trace:server"],
-		environment: jsh.js.Object.set({}, jsh.shell.environment, (false) ? {
-			JSH_DEBUG_SCRIPT: "rhino"
-		} : {}),
-//		error: null,
-		execute: function(verify) {
-			var lines = this.stdio.output.split(LINE_SEPARATOR);
-			verify(lines.join("|")).is(lines.join("|"));
-			verify(lines)[0].is("Completed.");
-			verify(lines)[1].is("Completed.");
-			verify(jsh.script.file.parent.parent.parent).getSubdirectory("http:").is(null);
-		}
-	});
-}
-
 (function() {
 	scenario.part("shell", {
 		parts: {}

@@ -402,5 +402,32 @@ END LICENSE
 			</ul>
 		</div>
 	</div>
+	<div>
+		<h1>Tests</h1>
+		<script type="application/x.jsapi#tests">
+			// TODO: substitute jsh-data.jsh.js here and read some substantive values?
+			var remote = $jsapi.environment.jsh.remote;
+			var fileTestOutputLines = remote.jsh({
+				script: $jsapi.environment.jsh.src.getFile("jsh/test/jsh.shell/properties.jsh.js"),
+				stdio: {
+					output: String
+				},
+				evaluate: function(result) {
+					return result.stdio.output.split("\n");
+				}
+			});
+			verify(fileTestOutputLines)[0].is("Completed.");
+			var urlTestOutputLines = remote.jsh({
+				script: remote.url + "jsh/test/jsh.shell/properties.jsh.js",
+				stdio: {
+					output: String
+				},
+				evaluate: function(result) {
+					return result.stdio.output.split("\n");
+				}
+			});
+			verify(fileTestOutputLines)[0].is("Completed.");
+		</script>
+	</div>
 </body>
 </html>
