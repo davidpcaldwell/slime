@@ -36,6 +36,14 @@ if (jsh.java.getClass("org.mozilla.javascript.Context")) {
 	}
 }
 
+var properties = {};
+var _properties = Packages.java.lang.System.getProperties();
+var _names = _properties.propertyNames();
+while(_names.hasMoreElements()) {
+	var _name = _names.nextElement();
+	properties[String(_name)] = String(_properties.get(_name));
+}
+
 jsh.shell.echo(JSON.stringify({
 	engines: engines,
 	"jsh.script.file": (typeof(jsh.script.file) != "undefined") ? {
@@ -60,5 +68,6 @@ jsh.shell.echo(JSON.stringify({
 			path: url.path,
 			string: url.toString()
 		}
-	})
+	}),
+	properties: properties
 }));

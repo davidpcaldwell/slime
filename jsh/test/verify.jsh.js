@@ -92,6 +92,45 @@ var shells = {
 	})()
 }
 
+var engines = (function() {
+	var rv = [];
+	if (jsh.shell.jsh.lib.getFile("js.jar")) rv.push("rhino");
+	if (new Packages.javax.script.ScriptEngineManager().getEngineByName("nashorn")) rv.push("nashorn");
+	if (jsh.shell.jsh.lib.getSubdirectory("graal")) rv.push("graal");
+	return rv;
+})();
+
+var jshPart = {
+	parts: {}
+};
+
+engines.forEach(function(engine) {
+	// TODO: add a part for an engine not present? Automatically install all engines when script is run?
+	jshPart.parts[engine] = {
+		execute: function(scope,verify) {
+			// TODO: tests unbuilt shells only because built shells would not necessarily have the same libraries (Rhino/Graal).
+			// will need to revisit this.
+			// TODO: consider migrating to and combining with jsh/launcher/internal.api.html
+			var output = jsh.shell.jsh({
+				shell: shells.unbuilt,
+				script: SLIME.getFile("jsh/test/jsh-data.jsh.js"),
+				environment: Object.assign({}, jsh.shell.environment, {
+					JSH_ENGINE: engine
+				}),
+				stdio: {
+					output: String
+				},
+				evaluate: function(result) {
+					return JSON.parse(result.stdio.output);
+				}
+			});
+			verify(output).properties["jsh.engine"].is(engine);
+		}
+	}
+});
+
+top.part("jsh", jshPart);
+
 parameters.options.java.forEach(function(jre) {
 	//	TODO	Convert to jsh/test plugin API designed for this purpose
 //	jsh.shell.echo("Adding launcher suite");
