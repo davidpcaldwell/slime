@@ -167,11 +167,11 @@ plugin({
 				for (var x in jsh.shell.environment) {
 					environment[x] = jsh.shell.environment[x];
 				}
-				//	TODO	probably not necessary; just relaunching should do this
-				if (jsh.shell.jsh.lib.getSubdirectory("tomcat")) {
-					jsh.shell.echo("Adding Tomcat to shell ...")
-					environment.CATALINA_HOME = String(jsh.shell.jsh.lib.getSubdirectory("tomcat"));
-				}
+				// //	TODO	probably not necessary; just relaunching should do this
+				// if (jsh.shell.jsh.lib.getSubdirectory("tomcat")) {
+				// 	jsh.shell.echo("Adding Tomcat to shell ...")
+				// 	environment.CATALINA_HOME = String(jsh.shell.jsh.lib.getSubdirectory("tomcat"));
+				// }
 				jsh.shell.echo("Relaunching " + jsh.script.file + " with arguments " + parameters.arguments);
 				jsh.shell.jsh({
 					fork: true,

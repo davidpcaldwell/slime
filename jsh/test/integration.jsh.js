@@ -26,6 +26,7 @@ if (jsh.test && jsh.test.requireBuiltShell && !parameters.options["test:unbuilt"
 	});
 }
 
+
 (function() {
 	//	Built shells do not contain these plugins
 	var SLIME = jsh.script.file.parent.parent.parent;
@@ -86,56 +87,6 @@ var ScriptVerifier = function(o) {
 	});
 };
 
-if (CATALINA_HOME) {
-	scenario.part("unit.browser", {
-		name: "loader/browser/test",
-		parts: {
-			failure: {
-				execute: function(scope,verify) {
-					jsh.shell.jsh({
-						fork: true,
-						script: src.getFile("loader/api/ui/test/browser.jsh.js"),
-						evaluate: function(result) {
-							verify(result).status.is(0);
-						}
-					})
-				}
-			},
-			success: {
-				execute: function(scope,verify) {
-					jsh.shell.jsh({
-						fork: true,
-						script: src.getFile("loader/api/ui/test/browser.jsh.js"),
-						arguments: ["-success"],
-						evaluate: function(result) {
-							verify(result).status.is(0);
-						}
-					})
-				}
-			}
-		}
-	});
-}
-
-if (CATALINA_HOME) {
-	ScriptVerifier({
-		name: "remote",
-		path: "launcher/remote.jsh.js",
-		arguments: ["-trace:server"],
-		environment: jsh.js.Object.set({}, jsh.shell.environment, (false) ? {
-			JSH_DEBUG_SCRIPT: "rhino"
-		} : {}),
-//		error: null,
-		execute: function(verify) {
-			var lines = this.stdio.output.split(LINE_SEPARATOR);
-			verify(lines.join("|")).is(lines.join("|"));
-			verify(lines)[0].is("true");
-			verify(lines)[1].is("true");
-			verify(jsh.script.file.parent.parent.parent).getSubdirectory("http:").is(null);
-		}
-	});
-}
-
 (function() {
 	scenario.part("shell", {
 		parts: {}
@@ -146,7 +97,7 @@ if (CATALINA_HOME) {
 		path: "jsh.shell/properties.jsh.js",
 		execute: function(verify) {
 			var output = this.stdio.output.split(LINE_SEPARATOR);
-			verify(output)[0].is("Passed.");
+			verify(output)[0].is("Completed.");
 		}
 	});
 })();
@@ -278,6 +229,13 @@ if (CATALINA_HOME) {
 			verify(this).status.is(0);
 		}
 	});
+} else {
+	scenario.part("jsh.script.http", {
+		execute: function(scope,verify) {
+			var message = "Skipping jsh.script.http; no Tomcat";
+			verify(message).is(message);
+		}
+	})
 }
 
 scenario.part("coffeescript", {

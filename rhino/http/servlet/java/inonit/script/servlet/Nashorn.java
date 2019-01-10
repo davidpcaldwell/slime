@@ -21,11 +21,11 @@ import inonit.script.nashorn.*;
 
 class Nashorn extends Servlet.ScriptContainer {
 	private Servlet servlet;
-	private Host host;
+	private inonit.script.engine.Host host;
 
 	@Override void initialize(Servlet servlet) {
 		this.servlet = servlet;
-		this.host = Host.create(new Loader.Classes.Configuration() {
+		this.host = inonit.script.nashorn.Host.create(new Loader.Classes.Configuration() {
 			@Override public boolean canCreateClassLoaders() {
 				return true;
 			}
@@ -84,9 +84,9 @@ class Nashorn extends Servlet.ScriptContainer {
 
 	//	TODO	could be removed and superclass could be made concrete
 	public static class HostObject extends Servlet.HostObject {
-		private Host host;
+		private inonit.script.engine.Host host;
 
-		HostObject(Servlet servlet, Host host) {
+		HostObject(Servlet servlet, inonit.script.engine.Host host) {
 			super(servlet);
 			this.host = host;
 		}

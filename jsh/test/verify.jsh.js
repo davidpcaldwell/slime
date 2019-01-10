@@ -88,6 +88,11 @@ var shells = {
 				PATH: jsh.shell.environment.PATH.toString()
 			})
 		});
+		jsh.shell.console("Installing Tomcat into built shell ...");
+		jsh.shell.jsh({
+			shell: tmpdir,
+			script: tmpdir.getFile("src/jsh/tools/install/tomcat.jsh.js")
+		});
 		return tmpdir;
 	})()
 }
@@ -131,24 +136,33 @@ engines.forEach(function(engine) {
 
 top.part("jsh", jshPart);
 
+var javaPart = {
+	parts: {}
+};
+var rhinoArgs = (jsh.shell.jsh.lib.getFile("js.jar")) ? ["-rhino", jsh.shell.jsh.lib.getFile("js.jar")] : [];
+
+// TODO: this was intended to be used for each JRE, but was not implemented, so moving it outside the java loop for now
+javaPart.parts.launcher = jsh.unit.Suite.Fork({
+	name: "Launcher tests",
+	run: jsh.shell.jsh,
+	fork: true,
+	script: jsh.script.file.getRelativePath("../test/launcher/suite.jsh.js").file,
+	arguments: [
+		"-scenario",
+		"-shell:unbuilt", shells.unbuilt,
+		"-shell:built", shells.built,
+		"-view", "stdio"
+	].concat(rhinoArgs)
+});
+
 parameters.options.java.forEach(function(jre) {
+	var jrePart = {
+		parts: {}
+	};
+	javaPart.parts[jre.toString()] = jrePart;
+	
 	//	TODO	Convert to jsh/test plugin API designed for this purpose
 //	jsh.shell.echo("Adding launcher suite");
-	var rhinoArgs = (jsh.shell.jsh.lib.getFile("js.jar")) ? ["-rhino", jsh.shell.jsh.lib.getFile("js.jar")] : [];
-
-	top.part("launcher", jsh.unit.Suite.Fork({
-		name: "Launcher tests",
-		run: jsh.shell.jsh,
-		fork: true,
-		script: jsh.script.file.getRelativePath("../test/launcher/suite.jsh.js").file,
-		arguments: [
-			"-scenario",
-			"-shell:unbuilt", shells.unbuilt,
-			"-shell:built", shells.built,
-			"-view", "stdio"
-		].concat(rhinoArgs)
-	}));
-
 	parameters.options.engine.forEach(function(engine) {
 		var searchpath = jsh.file.Searchpath([jre.directory.getRelativePath("bin"),jre.directory.getRelativePath("../bin")]);
 
@@ -175,7 +189,7 @@ parameters.options.java.forEach(function(jre) {
 				, (engine) ? { JSH_ENGINE: engine.toLowerCase() } : {}
 				, (jsh.shell.rhino && jsh.shell.rhino.classpath) ? { JSH_ENGINE_RHINO_CLASSPATH: String(jsh.shell.rhino.classpath) } : ""
 			);
-			top.part("Java tests: engine [" + engine + "]; launcher " + launcher, {
+			jrePart.parts[engine] = {
 				parts: {
 					unit: jsh.unit.Suite.Fork({
 						name: "Unit tests",
@@ -208,10 +222,12 @@ parameters.options.java.forEach(function(jre) {
 						environment: environment
 					})
 				}
-			});
+			};
 		}
 	});
 });
+
+top.part("jrunscript", javaPart);
 
 if (parameters.options.browser) {
 	var tomcat = (function() {
@@ -235,29 +251,57 @@ if (parameters.options.browser) {
 			)
 		});
 	}
-	top.part("tools", {
-		parts: {
-			browser: {
-				parts: new function() {
-					if (parameters.options.browser) {
-						if (jsh.shell.jsh.lib.getSubdirectory("tomcat")) {
-							this.suite = new jsh.unit.part.Html({
-								pathname: jsh.shell.jsh.src.getRelativePath("loader/browser/test/suite.jsh.api.html")
-							})
-						} else {
-							this.skip = {
+}
+
+top.part("tools", {
+	parts: {
+		browser: {
+			parts: new function() {
+				if (jsh.shell.jsh.lib.getSubdirectory("tomcat")) {
+					var src = SLIME;
+					this.api = {
+						parts: {
+							failure: {
 								execute: function(scope,verify) {
-									var MESSAGE = "Skipping browser test suite tests; no Tomcat to serve files.";
-									verify(MESSAGE).is(MESSAGE);
+									jsh.shell.jsh({
+										fork: true,
+										script: src.getFile("loader/api/ui/test/browser.jsh.js"),
+										evaluate: function(result) {
+											verify(result).status.is(0);
+										}
+									})
+								}
+							},
+							success: {
+								execute: function(scope,verify) {
+									jsh.shell.jsh({
+										fork: true,
+										script: src.getFile("loader/api/ui/test/browser.jsh.js"),
+										arguments: ["-success"],
+										evaluate: function(result) {
+											verify(result).status.is(0);
+										}
+									})
 								}
 							}
+						}
+					}
+					
+					this.suite = new jsh.unit.part.Html({
+						pathname: jsh.shell.jsh.src.getRelativePath("loader/browser/test/suite.jsh.api.html")
+					});
+				} else {
+					this.skip = {
+						execute: function(scope,verify) {
+							var MESSAGE = "Skipping browser test suite tests; no Tomcat to serve files.";
+							verify(MESSAGE).is(MESSAGE);
 						}
 					}
 				}
 			}
 		}
-	});
-}
+	}
+});
 
 jsh.unit.interface.create(top, new function() {
 	if (parameters.options.view == "chrome") {

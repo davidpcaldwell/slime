@@ -85,4 +85,4 @@ ordered.sort(function(a,b) {
 ordered.forEach(function(item) {
 	log(item.name + "=" + item.value);
 });
-jsh.shell.echo("Passed.");
+jsh.shell.echo("Completed.");
