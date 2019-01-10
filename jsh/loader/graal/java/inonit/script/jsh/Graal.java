@@ -6,12 +6,12 @@ import inonit.script.engine.*;
 
 public class Graal extends Main.Engine {
 	private static class ExecutionImpl extends Shell.Execution {
-		private inonit.script.nashorn.Host host;
+		private inonit.script.engine.Host host;
 		private boolean top;
 
 		ExecutionImpl(final Shell shell, boolean top) {
 			super(shell);
-			this.host = inonit.script.nashorn.Host.graal(new Loader.Classes.Configuration() {
+			this.host = inonit.script.graal.Host.create(new Loader.Classes.Configuration() {
 				@Override public boolean canCreateClassLoaders() {
 					return true;
 				}

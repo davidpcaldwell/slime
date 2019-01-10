@@ -310,7 +310,8 @@ try {
 			if (!p) p = {};
 			if (!p.to) p.to = $api.io.tmpdir();
 			var toCompile = $api.slime.src.getSourceFilesUnder(new $api.slime.src.File("loader/jrunscript/java"));
-			if (rhino) toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("loader/jrunscript/rhino")));
+			if (rhino) toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("loader/jrunscript/rhino/java")));
+			if (graal) toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("loader/jrunscript/graal/java")));
 			toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("rhino/system/java")));
 			toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("jsh/loader/java")));
 			if (rhino) toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("jsh/loader/rhino/java")));

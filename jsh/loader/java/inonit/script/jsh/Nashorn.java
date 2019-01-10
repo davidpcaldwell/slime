@@ -60,7 +60,7 @@ public class Nashorn extends Main.Engine {
 	}
 
 	private static class ExecutionImpl extends Shell.Execution {
-		private inonit.script.nashorn.Host host;
+		private inonit.script.engine.Host host;
 		private boolean top;
 
 		ExecutionImpl(final Shell shell, boolean top) {
