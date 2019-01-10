@@ -602,6 +602,23 @@ END LICENSE
 						</div>
 					</li>
 				</ul>
+				<script type="application/x.jsapi#tests" jsapi:id="Application">
+					var json = jsh.shell.jsh({
+						shell: $jsapi.environment.jsh.built.home,
+						script: $jsapi.environment.jsh.src.getFile("jsh/test/jsh.script/Application.jsh.js"),
+						arguments: ["-gstring", "gvalue", "-gboolean", "doIt", "-lboolean"],
+						stdio: {
+							output: String
+						},
+						evaluate: function(result) {
+							return JSON.parse(result.stdio.output);
+						}
+					});
+					verify(json).global.gstring.is("gvalue");
+					verify(json).global.gboolean.is(true);
+					verify(json).options.lboolean.is(true);
+					verify(json).options.lstring.is("foo");					
+				</script>
 			</li>
 		</ul>
 	</div>

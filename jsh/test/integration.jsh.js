@@ -87,33 +87,6 @@ var ScriptVerifier = function(o) {
 	});
 };
 
-(function() {
-	scenario.part("shell", {
-		parts: {}
-	});
-
-	ScriptVerifier({
-		parent: scenario.parts.shell,
-		path: "jsh.shell/properties.jsh.js",
-		execute: function(verify) {
-			var output = this.stdio.output.split(LINE_SEPARATOR);
-			verify(output)[0].is("Completed.");
-		}
-	});
-})();
-
-ScriptVerifier({
-	path: "jsh.script/Application.jsh.js",
-	arguments: ["-gstring", "gvalue", "-gboolean", "doIt", "-lboolean"],
-	execute: function(verify) {
-		var json = JSON.parse(this.stdio.output);
-		verify(json).global.gstring.is("gvalue");
-		verify(json).global.gboolean.is(true);
-		verify(json).options.lboolean.is(true);
-		verify(json).options.lstring.is("foo");
-	}
-});
-
 if (CATALINA_HOME) {
 	ScriptVerifier({
 		name: "jsh.httpd",

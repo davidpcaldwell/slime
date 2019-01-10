@@ -404,12 +404,10 @@ END LICENSE
 	</div>
 	<div>
 		<h1>Tests</h1>
-		<script type="application/x.jsapi#tests">
-			// TODO: substitute jsh-data.jsh.js here and read some substantive values?
-			if ($jsapi.environment.jsh.remote) {
-				var remote = $jsapi.environment.jsh.remote;
-				if (!remote) throw new Error("No remote shell!");
-				var fileTestOutputLines = remote.jsh({
+		<div jsapi:id="hello">
+			<script type="application/x.jsapi#tests" jsapi:id="home">
+				var outputLines = jsh.shell.jsh({
+					shell: $jsapi.environment.jsh.built.home,
 					script: $jsapi.environment.jsh.src.getFile("jsh/test/jsh.shell/properties.jsh.js"),
 					stdio: {
 						output: String
@@ -418,19 +416,36 @@ END LICENSE
 						return result.stdio.output.split("\n");
 					}
 				});
-				verify(fileTestOutputLines)[0].is("Completed.");
-				var urlTestOutputLines = remote.jsh({
-					script: remote.url + "jsh/test/jsh.shell/properties.jsh.js",
-					stdio: {
-						output: String
-					},
-					evaluate: function(result) {
-						return result.stdio.output.split("\n");
-					}
-				});
-				verify(fileTestOutputLines)[0].is("Completed.");
-			}
-		</script>
+				verify(outputLines)[0].is("Completed.");
+			</script>
+			<script type="application/x.jsapi#tests">
+				// TODO: substitute jsh-data.jsh.js here and read some substantive values?
+				if ($jsapi.environment.jsh.remote) {
+					var remote = $jsapi.environment.jsh.remote;
+					if (!remote) throw new Error("No remote shell!");
+					var fileTestOutputLines = remote.jsh({
+						script: $jsapi.environment.jsh.src.getFile("jsh/test/jsh.shell/properties.jsh.js"),
+						stdio: {
+							output: String
+						},
+						evaluate: function(result) {
+							return result.stdio.output.split("\n");
+						}
+					});
+					verify(fileTestOutputLines)[0].is("Completed.");
+					var urlTestOutputLines = remote.jsh({
+						script: remote.url + "jsh/test/jsh.shell/properties.jsh.js",
+						stdio: {
+							output: String
+						},
+						evaluate: function(result) {
+							return result.stdio.output.split("\n");
+						}
+					});
+					verify(fileTestOutputLines)[0].is("Completed.");
+				}
+			</script>
+		</div>
 	</div>
 </body>
 </html>
