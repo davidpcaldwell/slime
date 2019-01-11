@@ -56,37 +56,6 @@ var scenario = new jsh.unit.Suite({
 	name: "jsh Integration Tests"
 });
 
-var ScriptVerifier = function(o) {
-	var script = jsh.script.file.getRelativePath("../test/" + o.path).file;
-	var tokens = [o.path].concat((o.arguments) ? o.arguments : []);
-	var parent = (o.parent) ? o.parent : scenario;
-	var id = (function(o) {
-		if (o.id) return o.id;
-		if (o.name) return o.name;
-		return tokens.join(" ");
-	})(o);
-	parent.part(id, new function() {
-		if (!o.name) this.name = script.toString();
-
-		this.execute = function(scope,verify) {
-			jsh.shell.jsh({
-				fork: true,
-				script: script,
-				arguments: (o.arguments) ? o.arguments : [],
-				stdio: {
-					output: String,
-					error: o.error,
-					input: (o.input) ? o.input : null
-				},
-				environment: (o.environment) ? o.environment : jsh.shell.environment,
-				evaluate: function(result) {
-					o.execute.call(result,verify);
-				}
-			});
-		}
-	});
-};
-
 //		var tmp = platform.io.createTemporaryDirectory();
 //		run(LAUNCHER_COMMAND.concat([
 //			getSourceFilePath("jsh/tools/slime.jsh.js"),
