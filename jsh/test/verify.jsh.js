@@ -132,6 +132,27 @@ engines.forEach(function(engine) {
 				}
 			});
 			verify(output).properties["jsh.engine"].is(engine);
+			
+			if (engine == "rhino") {
+				[-1,0,1].forEach(function(level) {
+					var result = jsh.shell.jsh({
+						shell: shells.unbuilt,
+						script: SLIME.getFile("jsh/test/jsh-data.jsh.js"),
+						environment: jsh.js.Object.set({}, jsh.shell.environment, {
+							JSH_ENGINE: "rhino",
+							JSH_ENGINE_RHINO_OPTIMIZATION: String(level)
+						}),
+						stdio: {
+							output: String
+						},
+						evaluate: function(result) {
+							return JSON.parse(result.stdio.output);
+						}
+					});
+					verify(result).engines.current.name.is("rhino");
+					verify(result).engines.current.optimization.is(level);
+				});
+			}
 		}
 	}
 });

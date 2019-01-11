@@ -93,30 +93,6 @@ var scenario = new jsh.unit.Suite({
 //	});
 //
 
-if (RHINO_LIBRARIES) scenario.part("rhino.optimization", {
-	execute: function(scope,verify) {
-		[-1,0,1].forEach(function(level) {
-			jsh.shell.jsh({
-				fork: true,
-				script: src.getFile("jsh/test/rhino-optimization.jsh.js"),
-				stdio: {
-					output: String
-				},
-				environment: jsh.js.Object.set({}, jsh.shell.environment, {
-					JSH_ENGINE: "rhino",
-					JSH_ENGINE_RHINO_OPTIMIZATION: String(level)
-				}),
-				evaluate: function(result) {
-					jsh.shell.echo("Output: [" + result.stdio.output + "]");
-					var optimization = Number(result.stdio.output);
-					verify(result).status.is(0);
-					verify(optimization).is(level);
-				}
-			});
-		});
-	}
-});
-
 scenario.part("coffeescript", {
 	execute: function(scope,verify) {
 		if (COFFEESCRIPT) {
