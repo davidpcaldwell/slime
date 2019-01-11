@@ -87,27 +87,6 @@ var ScriptVerifier = function(o) {
 	});
 };
 
-if (CATALINA_HOME) {
-	ScriptVerifier({
-		name: "jsh.httpd",
-		path: "jsh.httpd/httpd.jsh.js",
-		execute: function(verify) {
-			verify(this).status.is(0);
-		}
-	});
-	if (COFFEESCRIPT) {
-		ScriptVerifier({
-			path: "jsh.httpd:coffee",
-			arguments: ["-suite", "coffee"],
-			execute: function(verify) {
-				verify(this).status.is(0);
-			}
-		});
-	}
-} else {
-	jsh.shell.console("No CATALINA_HOME: not running httpd integration tests.");
-}
-
 //		var tmp = platform.io.createTemporaryDirectory();
 //		run(LAUNCHER_COMMAND.concat([
 //			getSourceFilePath("jsh/tools/slime.jsh.js"),
@@ -116,31 +95,6 @@ if (CATALINA_HOME) {
 //			//	TODO	the below should match the version from the build
 //			"-version", "1.6"
 //		]));
-
-scenario.part(".slime", {
-	execute: function(scope,verify) {
-		var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true });
-		var builder = jsh.shell.jsh({
-			fork: true,
-			script: src.getFile("jsh/tools/slime.jsh.js"),
-			arguments: [
-				"-from", src.getRelativePath("loader/jrunscript/test/data/1"),
-				"-to", tmp.getRelativePath("1.slime"),
-				"-version", "1.6"
-			]
-		});
-		verify(builder).status.is(0);
-		var loader = jsh.shell.jsh({
-			fork: true,
-			script: src.getFile("jsh/test/loader/2.jsh.js"),
-			environment: {
-				MODULES: tmp.toString(),
-				PATH: jsh.shell.environment.PATH
-			}
-		});
-		verify(loader).status.is(0);
-	}
-});
 
 //	jsh.shell.run({
 //		command: LAUNCHER_COMMAND[0],

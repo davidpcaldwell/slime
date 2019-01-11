@@ -281,6 +281,10 @@ var parts = {
 	launcher: new jsh.unit.part.Html({
 		pathname: SRC.getRelativePath("jsh/launcher/internal.api.html"),
 		environment: environment
+	}),
+	"jsh-tools": new jsh.unit.part.Html({
+		pathname: SRC.getRelativePath("jsh/tools/internal.api.html"),
+		environment: environment		
 	})
 }
 
@@ -304,6 +308,7 @@ suite.part("jsh.shell.jsh", new jsh.unit.Suite.Fork({
 suite.part("jsh.script", parts["jsh.script"]);
 suite.part("loader", parts.loader);
 suite.part("launcher", parts.launcher);
+suite.part("jsh-tools", parts["jsh-tools"]);
 suite.part("jsh.unit", new function() {
 	var src = SRC;
 	this.parts = {
