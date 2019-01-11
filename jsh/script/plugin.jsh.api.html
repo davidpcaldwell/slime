@@ -153,6 +153,22 @@ END LICENSE
 						}
 					});
 					verify(a).submodule.message.is("ititit");
+					
+					var started = jsh.httpd.Tomcat.serve({
+						directory: $jsapi.environment.jsh.src
+					});
+					
+					var b = jsh.shell.jsh({
+						shell: $jsapi.environment.jsh.built.home,
+						script: "http://127.0.0.1:" + started.port + "/" + "jsh/script/test/loader.jsh.js",
+						stdio: {
+							output: String
+						},
+						evaluate: function(result) {
+							return JSON.parse(result.stdio.output);							
+						}
+					});
+					verify(b).submodule.message.is("ititit");					
 				</script>
 			</li>
 			<li class="function" jsapi:id="getopts">

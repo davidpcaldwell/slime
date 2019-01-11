@@ -148,23 +148,6 @@ if (RHINO_LIBRARIES) scenario.part("rhino.optimization", {
 	}
 });
 
-if (CATALINA_HOME) {
-	ScriptVerifier({
-		id: "jsh.script.http",
-		path: "jsh.script/http.jsh.js",
-		execute: function(verify) {
-			verify(this).status.is(0);
-		}
-	});
-} else {
-	scenario.part("jsh.script.http", {
-		execute: function(scope,verify) {
-			var message = "Skipping jsh.script.http; no Tomcat";
-			verify(message).is(message);
-		}
-	})
-}
-
 scenario.part("coffeescript", {
 	execute: function(scope,verify) {
 		if (COFFEESCRIPT) {

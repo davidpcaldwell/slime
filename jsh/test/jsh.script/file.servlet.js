@@ -10,6 +10,7 @@
 //	Contributor(s):
 //	END LICENSE
 
+// TODO: may be unused; was used by a deleted script
 var base = jsh.file.Pathname($parameters.base).directory;
 var resources = new jsh.file.Loader({ directory: base });
 $exports.handle = function(request) {
