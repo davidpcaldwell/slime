@@ -11,7 +11,7 @@ public class Graal extends Main.Engine {
 
 		ExecutionImpl(final Shell shell, boolean top) {
 			super(shell);
-			this.host = inonit.script.graal.Host.create(new Loader.Classes.Configuration() {
+			this.host = inonit.script.graal.HostFactory.create(new Loader.Classes.Configuration() {
 				@Override public boolean canCreateClassLoaders() {
 					return true;
 				}

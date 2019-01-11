@@ -65,7 +65,7 @@ public class Nashorn extends Main.Engine {
 
 		ExecutionImpl(final Shell shell, boolean top) {
 			super(shell);
-			this.host = inonit.script.nashorn.Host.create(new Loader.Classes.Configuration() {
+			this.host = inonit.script.engine.Host.create(inonit.script.engine.Host.Factory.engine("nashorn"), new Loader.Classes.Configuration() {
 				@Override public boolean canCreateClassLoaders() {
 					return true;
 				}

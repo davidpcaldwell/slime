@@ -17,7 +17,6 @@ import java.io.*;
 import javax.script.*;
 
 import inonit.script.engine.*;
-import inonit.script.nashorn.*;
 
 class Nashorn extends Servlet.ScriptContainer {
 	private Servlet servlet;
@@ -25,7 +24,7 @@ class Nashorn extends Servlet.ScriptContainer {
 
 	@Override void initialize(Servlet servlet) {
 		this.servlet = servlet;
-		this.host = inonit.script.nashorn.Host.create(new Loader.Classes.Configuration() {
+		this.host = inonit.script.engine.Host.create(inonit.script.engine.Host.Factory.engine("nashorn"), new Loader.Classes.Configuration() {
 			@Override public boolean canCreateClassLoaders() {
 				return true;
 			}

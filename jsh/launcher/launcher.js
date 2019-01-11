@@ -262,7 +262,7 @@ try {
 
 		this.rhino = rhino;
 		
-		if (lib && lib.file && new File(lib.file, "graal")) {
+		if (lib && lib.file && new File(lib.file, "graal").exists()) {
 			this.graal = new File(lib.file, "graal");
 		}
 
@@ -302,6 +302,11 @@ try {
 
 		//	As of this writing, used by jsh/etc/build.jsh.js, as well as shellClasspath method below
 		this.compileLoader = function(p) {
+			var classpath = new Classpath();
+			if (this.rhino && this.rhino.length) classpath.append(new Classpath(this.rhino));
+			if (this.graal) classpath.append(new Classpath([new Packages.java.io.File(this.graal, "jre/lib/boot/graal-sdk.jar").toURI().toURL()]));
+			if (classpath._urls.length == 0) classpath = null;
+			
 			var rhino = (this.rhino && this.rhino.length) ? new Classpath(this.rhino) : null;
 			// TODO: below will probably eventually be a classpath, but it may be more complex if graal javac is required to compile
 			// graal classes
@@ -316,13 +321,13 @@ try {
 			toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("jsh/loader/java")));
 			if (rhino) toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("jsh/loader/rhino/java")));
 			if (graal) toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("jsh/loader/graal/java")));
-			var rhinoJavacArguments = (rhino) ? ["-classpath", rhino.local()] : [];
+			var classpathArguments = (classpath) ? ["-classpath", classpath.local()] : [];
 			var targetArguments = (p && p.target) ? ["-target", p.target] : [];
 			var sourceArguments = (p && p.source) ? ["-source", p.source] : [];
 			var args = [
 				"-Xlint:unchecked",
 				"-d", p.to.getAbsolutePath()
-			].concat(rhinoJavacArguments).concat(sourceArguments).concat(targetArguments);
+			].concat(classpathArguments).concat(sourceArguments).concat(targetArguments);
 			//	TODO	we used to use .concat(toCompile) but that does not work under Nashorn 8u45, which is presumably a Nashorn
 			//			bug
 			for (var i=0; i<toCompile.length; i++) {

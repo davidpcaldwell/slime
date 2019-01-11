@@ -68,7 +68,7 @@ public class Code {
 				this.delegate = delegate;
 			}
 
-			java.net.URI adapt() {
+			public java.net.URI adapt() {
 				return delegate;
 			}
 
