@@ -103,7 +103,7 @@ var engines = (function() {
 	var rv = [];
 	if (jsh.shell.jsh.lib.getFile("js.jar")) rv.push("rhino");
 	if (new Packages.javax.script.ScriptEngineManager().getEngineByName("nashorn")) rv.push("nashorn");
-	if (jsh.shell.jsh.lib.getSubdirectory("graal")) rv.push("graal");
+	if (jsh.shell.jsh.lib.getSubdirectory("graal") && jsh.shell.environment.JSH_TEST_ISSUE_312) rv.push("graal");
 	return rv;
 })();
 

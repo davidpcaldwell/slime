@@ -35,6 +35,12 @@ if (jsh.java.getClass("org.mozilla.javascript.Context")) {
 		engines.current = "rhino";
 	}
 }
+if (new Packages.javax.script.ScriptEngineManager().getEngineByName("nashorn")) {
+	engines.nashorn = true;
+}
+if (jsh.shell.jsh.lib && jsh.shell.jsh.lib.getSubdirectory("graal")) {
+	engines.graal = true;
+}
 
 var properties = {};
 var _properties = Packages.java.lang.System.getProperties();
@@ -70,4 +76,4 @@ jsh.shell.echo(JSON.stringify({
 		}
 	}),
 	properties: properties
-}));
+}, void(0), "    "));
