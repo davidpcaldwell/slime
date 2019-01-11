@@ -5,12 +5,28 @@ import java.util.*;
 import javax.script.*;
 
 public abstract class Host {
-	public static Host create(Loader.Classes.Configuration configuration, String engineName) {
+	public static abstract class Factory {
+		public abstract Host create();
+		
+		public static Factory engine(final String name) {
+			return new Factory() {
+				public Host create() {
+					return new HostImpl(name);
+				}
+			};
+		}
+	}
+	
+	public static Host create(Factory factory, Loader.Classes.Configuration configuration) {
 		Loader.Classes classes = Loader.Classes.create(configuration);
 		Thread.currentThread().setContextClassLoader(classes.getApplicationClassLoader());
-		HostImpl rv = new HostImpl(engineName);
+		Host rv = factory.create();
 		rv.initialize(classes);
 		return rv;
+	}
+
+	@Deprecated public static Host create(Loader.Classes.Configuration configuration, String engineName) {
+		return create(Factory.engine(engineName), configuration);
 	}
 
 	private Loader.Classes classes;
@@ -19,7 +35,7 @@ public abstract class Host {
 	private Host() {
 	}
 	
-	public final void initialize(Loader.Classes classes) {
+	final void initialize(Loader.Classes classes) {
 		this.classes = classes;
 	}
 
