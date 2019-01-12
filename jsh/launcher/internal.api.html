@@ -445,6 +445,95 @@ END LICENSE
 					verify(fileTestOutputLines)[0].is("Completed.");
 				}
 			</script>
+			<script type="application/x.jsapi#tests" jsapi:id="executable">
+				if ($jsapi.environment.jsh.built.home.getFile("jsh")) {
+					var output = jsh.shell.run({
+						command: $jsapi.environment.jsh.built.home.getFile("jsh"),
+						arguments: [$jsapi.environment.jsh.built.home.getFile("src/jsh/test/jsh-data.jsh.js")],
+						stdio: {
+							output: String
+						},
+						evaluate: function(result) {
+							return JSON.parse(result.stdio.output);
+						}
+					});
+					verify(output)["jsh.shell.jsh.home"].string.is($jsapi.environment.jsh.built.home.toString());
+					
+					(function absolute() {
+						var output = jsh.shell.run({
+							command: $jsapi.environment.jsh.built.home.getFile("jsh").toString(),
+							arguments: [$jsapi.environment.jsh.built.home.getFile("src/jsh/test/jsh-data.jsh.js")],
+							stdio: {
+								output: String
+							},
+							evaluate: function(result) {
+								return JSON.parse(result.stdio.output);
+							}
+						});
+						verify(output)["jsh.shell.jsh.home"].string.is($jsapi.environment.jsh.built.home.toString());						
+					})();
+					
+					var shellCommand = function(p) {
+						var lines = [];
+						if (p.directory) {
+							lines.push("cd " + p.directory);
+						}
+						if (p.PATH) {
+							lines.push("export PATH=" + p.PATH);
+						}
+						lines.push(p.command + " " + p.arguments.join(" "));
+						var file = jsh.shell.TMPDIR.createTemporary({ suffix: ".bash" });
+						file.pathname.write(lines.join("\n"), { append: false });
+						//jsh.shell.console(file + "\n" + file.read(String) + "\n\n");
+						return jsh.shell.run({
+							command: "bash",
+							arguments: [file].concat(p.arguments),
+							directory: file.parent,
+							stdio: {
+								output: String
+							},
+							evaluate: function(result) {
+								return JSON.parse(result.stdio.output);
+							}
+						});
+					};
+					
+					(function relative() {
+						var basedir = $jsapi.environment.jsh.built.home.pathname.basename;
+						var parent = $jsapi.environment.jsh.built.home.parent;
+						var output = shellCommand({
+							command: basedir + "/" + "jsh",
+							arguments: [$jsapi.environment.jsh.built.home.getFile("src/jsh/test/jsh-data.jsh.js")],
+							directory: parent,
+							stdio: {
+								output: String
+							},
+							evaluate: function(result) {
+								return JSON.parse(result.stdio.output);
+							}
+						});
+						verify(output)["jsh.shell.jsh.home"].string.is($jsapi.environment.jsh.built.home.toString());						
+					})();
+					
+					(function inPath() {
+						var directory = $jsapi.environment.jsh.built.home;
+						var PATH = jsh.file.Searchpath([directory.pathname].concat(jsh.shell.PATH.pathnames));
+						var output = shellCommand({
+							command: "jsh",
+							PATH: PATH,
+							arguments: [$jsapi.environment.jsh.built.home.getFile("src/jsh/test/jsh-data.jsh.js")],
+							directory: jsh.shell.HOME,
+							stdio: {
+								output: String
+							},
+							evaluate: function(result) {
+								return JSON.parse(result.stdio.output);
+							}
+						});
+						verify(output)["jsh.shell.jsh.home"].string.is($jsapi.environment.jsh.built.home.toString());						
+					})();
+				}
+			</script>
 		</div>
 	</div>
 </body>

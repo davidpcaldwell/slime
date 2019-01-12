@@ -67,7 +67,8 @@ var environment = new function() {
 							arguments: [
 								to,
 								"-notest",
-								"-nodoc"
+								"-nodoc",
+								"-executable"
 							]
 						});
 						home = to;

@@ -137,77 +137,6 @@ scenario.part("coffeescript", {
 	}
 });
 
-scenario.part("executable", new function() {
-	var executable = (jsh.shell.jsh.home) ? jsh.file.Searchpath([jsh.shell.jsh.home.pathname]).getCommand("jsh") : null;
-	if (executable) {
-		// TODO: below is untested
-		this.parts = new function() {
-			var echo = src.getRelativePath("jsh/test/jsh.shell/jsh-data.jsh.js");
-			
-			var stdio = {
-				output: String
-			};
-			
-			var evaluate = function(result) {
-				return {
-					status: result.status,
-					output: JSON.parse(result.stdio.output)
-				};
-			};
-
-			this.absolute = {
-				execute: function(scope,verify) {
-					var result = jsh.shell.run({
-						command: executable,
-						arguments: [echo],
-						stdio: stdio,
-						evaluate: evaluate
-					});
-					verify(result).status.is(0);
-					verify(result).output.is.type("object");
-				}
-			};
-
-			this.relative = {
-				execute: function(scope,verify) {
-					var result = jsh.shell.run({
-						command: "./jsh",
-						arguments: [echo],
-						stdio: stdio,
-						directory: jsh.shell.jsh.home,
-						evaluate: evaluate
-					});
-					verify(result).status.is(0);
-					verify(result).output.is.type("object");
-				}
-			};
-
-			this.PATH = {
-				execute: function(scope,verify) {
-					var PATH = (function() {
-						var rv = jsh.file.Searchpath(jsh.shell.PATH.pathnames);
-						rv.pathnames.push(jsh.shell.jsh.home.pathname);
-						jsh.shell.console("PATH=" + rv);
-						return rv.toString();
-					})();
-					var result = jsh.shell.run({
-						command: "env",
-						arguments: ["PATH=" + PATH, "jsh", echo],
-						stdio: stdio,
-						evaluate: evaluate
-					});
-					verify(result).status.is(0);
-					verify(result).output.is.type("object");
-				}
-			}
-		}
-	} else {
-		this.execute = function(scope,verify) {
-			verify("No executable").is("No executable");
-		}
-	}
-});
-
 (function addClasses() {
 	var LOADER = new jsh.file.Loader({ directory: jsh.script.file.parent.parent.parent });
 	
@@ -250,17 +179,6 @@ scenario.part("executable", new function() {
 		getClasses: compileAddClasses
 	}));	
 })()
-
-//if (parameters.options.part) {
-//	//	TODO	this should probably be pushed farther down into the loader/api implementation
-//	scenario = (function recurse(scenario,path) {
-//		if (path.length) {
-//			var child = path.shift();
-//			return recurse(scenario.getParts()[child], path);
-//		}
-//		return scenario;
-//	})(scenario,parameters.options.part.split("/"));
-//}
 
 jsh.unit.interface.create(scenario, new function() {
 	if (parameters.options.view == "chrome") {
