@@ -56,29 +56,6 @@ var scenario = new jsh.unit.Suite({
 	name: "jsh Integration Tests"
 });
 
-//	jsh.shell.run({
-//		command: LAUNCHER_COMMAND[0],
-//		arguments: LAUNCHER_COMMAND.slice(1).concat(jsh.script.file.getRelativePath("jsh.shell/exit.jsh.js"))
-//	});
-
-
-//	jsh.shell.run({
-//		command: LAUNCHER_COMMAND[0],
-//		arguments: LAUNCHER_COMMAND.slice(1).concat(jsh.script.file.getRelativePath("jsh.script/loader.jsh.js")),
-//		stdio: {
-//			output: String
-//		},
-//		evaluate: function(result) {
-//			if (result.status == 0) {
-//				jsh.shell.echo("Passed: " + result.command + " " + result.arguments.join(" "));
-//				jsh.shell.echo();
-//			} else {
-//				throw new Error("Status: " + result.status);
-//			}
-//		}
-//	});
-//
-
 scenario.part("coffeescript", {
 	execute: function(scope,verify) {
 		if (COFFEESCRIPT) {
