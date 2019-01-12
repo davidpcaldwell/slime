@@ -56,15 +56,6 @@ var scenario = new jsh.unit.Suite({
 	name: "jsh Integration Tests"
 });
 
-//		var tmp = platform.io.createTemporaryDirectory();
-//		run(LAUNCHER_COMMAND.concat([
-//			getSourceFilePath("jsh/tools/slime.jsh.js"),
-//			"-from", getPath(SLIME_SRC,"loader/jrunscript/test/data/1"),
-//			"-to", getPath(tmp,"1.slime"),
-//			//	TODO	the below should match the version from the build
-//			"-version", "1.6"
-//		]));
-
 //	jsh.shell.run({
 //		command: LAUNCHER_COMMAND[0],
 //		arguments: LAUNCHER_COMMAND.slice(1).concat(jsh.script.file.getRelativePath("jsh.shell/exit.jsh.js"))
