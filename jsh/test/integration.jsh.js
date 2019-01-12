@@ -67,11 +67,6 @@ var scenario = new jsh.unit.Suite({
 
 //	jsh.shell.run({
 //		command: LAUNCHER_COMMAND[0],
-//		arguments: LAUNCHER_COMMAND.slice(1).concat(jsh.script.file.getRelativePath("jsh.shell/jsh.shell.jsh.jsh.js"))
-//	});
-//
-//	jsh.shell.run({
-//		command: LAUNCHER_COMMAND[0],
 //		arguments: LAUNCHER_COMMAND.slice(1).concat(jsh.script.file.getRelativePath("jsh.shell/exit.jsh.js"))
 //	});
 

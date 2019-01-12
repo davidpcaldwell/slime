@@ -405,6 +405,19 @@ END LICENSE
 	<div>
 		<h1>Tests</h1>
 		<div jsapi:id="hello">
+			<script type="application/x.jsapi#tests" jsapi:id="src">
+				var outputLines = jsh.shell.jsh({
+					shell: $jsapi.environment.jsh.unbuilt.src,
+					script: $jsapi.environment.jsh.src.getFile("jsh/test/jsh.shell/properties.jsh.js"),
+					stdio: {
+						output: String
+					},
+					evaluate: function(result) {
+						return result.stdio.output.split("\n");
+					}
+				});
+				verify(outputLines)[0].is("Completed.");
+			</script>
 			<script type="application/x.jsapi#tests" jsapi:id="home">
 				var outputLines = jsh.shell.jsh({
 					shell: $jsapi.environment.jsh.built.home,
