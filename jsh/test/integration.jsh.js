@@ -108,8 +108,8 @@ scenario.part("coffeescript", {
 		jsh.shell.console("Compiling AddClasses ...");
 		jsh.java.tools.javac({
 			destination: classes.pathname,
-			sourcepath: jsh.file.Searchpath([src.getRelativePath("jsh/test/addClasses/java")]),
-			arguments: [src.getRelativePath("jsh/test/addClasses/java/test/AddClasses.java")]
+			sourcepath: jsh.file.Searchpath([src.getRelativePath("jsh/loader/test/addClasses/java")]),
+			arguments: [src.getRelativePath("jsh/loader/test/addClasses/java/test/AddClasses.java")]
 		});
 		return classes;
 	});
@@ -118,7 +118,7 @@ scenario.part("coffeescript", {
 		execute: function(scope,verify) {
 			var result = jsh.shell.jsh({
 				fork: true,
-				script: src.getFile("jsh/test/addClasses/addClasses.jsh.js"),
+				script: src.getFile("jsh/loader/test/addClasses/addClasses.jsh.js"),
 				arguments: ["-scenario"]
 			});
 			verify(result).status.is(0);
@@ -128,7 +128,7 @@ scenario.part("coffeescript", {
 	//	execute: function(scope,verify) {
 	//		var result = jsh.shell.jsh({
 	//			fork: true,
-	//			script: src.getFile("jsh/test/addClasses/addClasses.jsh.js"),
+	//			script: src.getFile("jsh/loader/test/addClasses/addClasses.jsh.js"),
 	//			arguments: ["-classes",compileAddClasses()]
 	//		});
 	//		verify(result).status.is(0);
