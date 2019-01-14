@@ -40,9 +40,9 @@ load("nashorn:mozilla_compat.js");
 				}
 			}).call(target);
 		};
+		
 		//	Try to use public javax.script APIs with source rewriting; not very thought through and did not work in current form
 		this.eval = function(name,code,scope,target) {
-			throw new Error("Unimplemented.");
 			//	$interface was nested class of inonit.script.nashorn.Host:
 			//	public class Interface {
 			//		public Object eval(String name, String code, Bindings bindings) throws ScriptException {
@@ -61,9 +61,9 @@ load("nashorn:mozilla_compat.js");
 				_bindings.put(x,scope[x]);
 			}
 			_bindings.put("$$this",target);
-			return $interface.eval(name, targeted, _bindings);
-		};
-
+			return $interface.eval(name, targeted, _bindings);			
+		}
+		
 		//	Attempt to leverage Nashorn/Graal shell APIs.
 		this.load = function(name,code,scope,target) {
 			if (!$graal) throw new Error("Would never work with current Nashorn design.");
@@ -134,9 +134,23 @@ load("nashorn:mozilla_compat.js");
 	};
 	
 	var graal = new function() {
+		//	Does not work; results in complaints about cross-context access
+		var context = function(name,code,scope,target) {
+			var interpret = "(function() { " + code + "}).call($$this)";
+			if (false) {
+				throw new Error("Unimplemented.");
+			}
+			var _context = Packages.org.graalvm.polyglot.Context.newBuilder("js").allowHostAccess(true).option("js.nashorn-compat","true").build();
+			for (var x in scope) {
+				_context.getBindings("js").putMember(x, scope[x]);
+			}
+			_context.getBindings("js").putMember("$$this", target);
+			var _source = Packages.org.graalvm.polyglot.Source.newBuilder("js", interpret, name);
+			return _context.eval(_source);
+		};
+		
 		this.script = function(name,code,scope,target) {
-			var implementation = loaders.js;
-			return implementation(name,code,scope,target);
+			return loaders.js(name,code,scope,target);
 		};
 		
 		this.subshell = function(f) {
