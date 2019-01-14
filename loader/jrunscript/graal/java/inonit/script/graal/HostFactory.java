@@ -6,7 +6,11 @@ public class HostFactory extends inonit.script.engine.Host.Factory {
 	@Override
 	public inonit.script.engine.Host.Executor create() {
 		//System.err.println("HostFactory.this.create()");
-		final org.graalvm.polyglot.Context context = org.graalvm.polyglot.Context.newBuilder("js").option("js.nashorn-compat", "true").build();
+		final org.graalvm.polyglot.Context context = org.graalvm.polyglot.Context.newBuilder("js")
+			.option("js.nashorn-compat", "true")
+			.allowHostAccess(true)
+			.build()
+		;
 
 		inonit.script.engine.Host.Executor executor = new inonit.script.engine.Host.Executor() {
 			@Override public void set(String name, Object value) {

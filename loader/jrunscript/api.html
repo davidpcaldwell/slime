@@ -214,7 +214,7 @@ END LICENSE
 							<span>__DESCRIPTION__</span>
 						</div>
 						<script type="application/x.jsapi#tests">
-							var xmlType = api.mime.Type.fromName({ name: "foo.xml" });
+							var xmlType = api.mime.Type.fromName("foo.xml");
 							verify(xmlType).evaluate(function() { return this.is("application/xml"); }).is(true);
 						</script>
 					</li>

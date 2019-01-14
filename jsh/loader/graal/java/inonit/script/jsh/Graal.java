@@ -5,6 +5,9 @@ import javax.script.*;
 import inonit.script.engine.*;
 
 public class Graal extends Main.Engine {
+	public static abstract class Host {
+	}
+
 	private static class ExecutionImpl extends Shell.Execution {
 		private inonit.script.engine.Host host;
 		private boolean top;
@@ -97,6 +100,8 @@ public class Graal extends Main.Engine {
 				@Override public void exit(int status) {
 					throw new ExitException(status);
 				}
+			});
+			setGlobalProperty("$graal", new Host() {
 			});
 			try {
 				host.add(this.getJshLoader().getFile("nashorn.js"));

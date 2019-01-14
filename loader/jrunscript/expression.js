@@ -68,7 +68,7 @@
 			var rv = function(p) {
 				var rv = was.apply(this,arguments);
 				if (typeof(rv) != "undefined") return rv;
-				rv = guess_URLConnection(p);
+				rv = guess_URLConnection({ name: p });
 				return rv;
 			};
 			rv.slime = was;

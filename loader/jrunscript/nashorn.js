@@ -157,31 +157,46 @@ load("nashorn:mozilla_compat.js");
 		};
 	}
 
-	var script = function(name,code,scope,target) {
-		var notNull = function(o) {
-			return (o) ? o : {};
-		};
-		var fixedScope = toScope(notNull(scope));
-		var fixedTarget = notNull(target);
-		var implementation = loaders.compile;
-		if (!implementation) throw new Error("Unknown mode: " + implementation);
-		return implementation(name,code,fixedScope,fixedTarget);
-	};
+	var script = ($graal) 
+		? function(name,code,scope,target) {
+			var implementation = loaders.js;
+			return implementation(name,code,scope,target);
+		}
+		: function(name,code,scope,target) {
+			var notNull = function(o) {
+				return (o) ? o : {};
+			};
+			var fixedScope = toScope(notNull(scope));
+			var fixedTarget = notNull(target);
+			var implementation = loaders.compile;
+			if (!implementation) throw new Error("Unknown mode: " + implementation);
+			return implementation(name,code,fixedScope,fixedTarget);
+		}
+	;
 
 	if (typeof($classpath) == "undefined") {
-		return {
-			script: script,//(script) ? script : Java.type("java.lang.System").getProperties().get("slime/loader/rhino/nashorn.js:script"),
-			subshell: function(f) {
-				var global = (function() { return this; })();
-				var subglobal = Context.getContext().createGlobal();
-				Context.setGlobal(subglobal);
-				try {
-					return f.apply(this,arguments);
-				} finally {
-					Context.setGlobal(global);
+		if ($graal) {
+			return {
+				script: script,
+				subshell: function(f) {
+					throw new Error("Graal subshell not implemented.");
 				}
-			}
-		};
+			};
+		} else {
+			return {
+				script: script,//(script) ? script : Java.type("java.lang.System").getProperties().get("slime/loader/rhino/nashorn.js:script"),
+				subshell: function(f) {
+					var global = (function() { return this; })();
+					var subglobal = Context.getContext().createGlobal();
+					Context.setGlobal(subglobal);
+					try {
+						return f.apply(this,arguments);
+					} finally {
+						Context.setGlobal(global);
+					}
+				}
+			};
+		}
 	} else {
 		var $javahost = new function() {
 			this.getLoaderCode = $getLoaderCode;
@@ -217,6 +232,7 @@ load("nashorn:mozilla_compat.js");
 			};
 
 			this.toNativeClass = function(javaclass) {
+				if ($graal) return javaclass.class;
 				if (javaLangClassNativeClass.isInstance(javaclass)) return javaclass;
 				return javaclass.class;
 			};
