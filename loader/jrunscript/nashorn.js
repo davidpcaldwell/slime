@@ -13,66 +13,19 @@
 load("nashorn:mozilla_compat.js");
 
 (function() {
-	//	TODO	replace $getLoaderCode and $getCoffeeScript with $loader.getLoaderCode and $loader.getCoffeeScript to match
-	//			Rhino embedding and remove pointless transformation
-	var hasNashornErrorHack = (function() {
-		if (Packages.java.lang.System.getenv("DISABLE_NASHORN_ERROR_HACK")) return false;
-		//	TODO	this flaw has apparently been fixed in post-8u40 versions of Nashorn
-		return false;
-		this.Error = function(message) {
-			this.name = "Error";
-			this.message = message;
-			this.stack = (function() {
-				var frames = new Packages.java.lang.Throwable().getStackTrace();
-				var rv = "";
-				for (var i=2; i<frames.length; i++) {
-					if (frames[i].getFileName() && !/\.java$/.test(frames[i].getFileName())) {
-						rv += "\tat " + frames[i].getFileName() + ":" + frames[i].getLineNumber() + "\n";
-					}
-				}
-				return rv;
-			})();
-			var _jlogging = Packages.java.util.logging;
-			_jlogging.Logger.getLogger("inonit.script.nashorn.Host.script").log(_jlogging.Level.INFO, this.message);
-			_jlogging.Logger.getLogger("inonit.script.nashorn.Host.script").log(_jlogging.Level.INFO, this.stack);
-		};
-		this.Error.prototype.toString = function() {
-			return this.name + ": " + this.message;
-		};
-
-		var Subtype = function(Error,name) {
-			var rv = function() {
-				Error.apply(this,arguments);
-				this.name = name;
-			};
-			rv.prototype = new Error();
-			return rv;
-		};
-		this.TypeError = new Subtype(this.Error,"TypeError");
-		return true;
-	})();
-
 	var toScope = function(scope) {
 		var global = (function() { return this; })();
-		if (false) {
-			var rv = {};
-			for (var x in global) {
-				rv[x] = global[x];
-			}
-			for (var x in scope) {
-				rv[x] = scope[x];
-			}
-			return rv;
-		} else if (false) {
-			scope.__proto__ = global;
-			return scope;
-		} else {
-			var rv = Object.create(global);
-			for (var x in scope) {
-				rv[x] = scope[x];
-			}
-			return rv;
+		// var rv = {};
+		// for (var x in global) {
+		// 	rv[x] = global[x];
+		// }
+		// rv.__proto__ = global
+		// scope.__proto__ = global
+		var rv = Object.create(global);
+		for (var x in scope) {
+			rv[x] = scope[x];
 		}
+		return rv;
 	};
 
 	var Context = Java.type("jdk.nashorn.internal.runtime.Context");
@@ -146,7 +99,7 @@ load("nashorn:mozilla_compat.js");
 
 		//	Attempt to leverage Nashorn script APIs.
 		this.load = function(name,code,scope,target) {
-			throw new Error("Would never work with current Nashorn design.");
+			if (!$graal) throw new Error("Would never work with current Nashorn design.");
 			//	The "with" statement does not affect load(); load is always executed in global scope. See nashorn-dev thread
 			//	"Scopes and load()": http://mail.openjdk.java.net/pipermail/nashorn-dev/2014-September/003372.html
 			return (function() {
@@ -241,10 +194,6 @@ load("nashorn:mozilla_compat.js");
 				if (isJavaObjectArray(object)) return true;
 				return typeof(object.getClass) == "function" && object.getClass() == Java.type(object.getClass().getName()).class;
 			};
-
-			this.test = {
-				HAS_NASHORN_ERROR_HACK: hasNashornErrorHack
-			}
 		}
 
 		var rv = $javahost.script("slime://loader/jrunscript/expression.js", $getLoaderCode("jrunscript/expression.js"), toScope({ $javahost: $javahost, $bridge: $bridge }), null);
