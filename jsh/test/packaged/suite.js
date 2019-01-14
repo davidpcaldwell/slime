@@ -226,7 +226,7 @@ $set({
 		classpath: {
 			execute: function(scope,verify) {
 				var jar = packaged.build({
-					script: "../addClasses/addClasses.jsh.js"
+					script: "../../loader/test/addClasses/addClasses.jsh.js"
 				});
 				var result = jsh.shell.java({
 					jar: jar.jar,

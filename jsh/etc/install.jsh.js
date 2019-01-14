@@ -29,7 +29,6 @@ var parameters = jsh.script.getopts({
 		//	TODO	-unix and -cygwin cannot be turned off currently; if unspecified and autodetected, they will be added anyway
 		unix: false,
 		cygwin: false,
-		executable: false,
 		install: jsh.script.getopts.ARRAY(String)
 	}
 });
@@ -173,71 +172,6 @@ if (parameters.options.cygwin) {
 		jsh.shell.echo("g++ not found; not building Cygwin paths helper.");
 	}
 }
-
-var ISSUE_201_FIXED = true;
-
-//	Build native launcher
-//	TODO	re-enable native launcher for new jrunscript launcher
-if (ISSUE_201_FIXED && parameters.options.executable) {
-	if (parameters.options.cygwin) {
-		//	TODO	use LoadLibrary call to locate jvm.dll
-		//			embed path of jvm.dll in C program, possibly, or load from registry, or ...
-		var bash = which("bash");
-		if (bash) {
-			var env = jsh.js.Object.set({}, jsh.shell.environment, {
-				//	We assume we are running in a JDK, so the java.home is [jdk]/jre, so we look at parent
-				//	TODO	improve this check
-				JAVA_HOME: jsh.shell.java.home.parent.pathname.toString(),
-				LIB_TMP: jsh.shell.TMPDIR.pathname.toString(),
-				TO: install.pathname.toString()
-			});
-			jsh.shell.echo("Building Cygwin native launcher with environment " + jsh.js.toLiteral(env));
-			jsh.shell.shell(
-				bash,
-				[
-					src.getRelativePath("jsh/launcher/native/win32/cygwin.bash")
-				],
-				{
-					environment: env
-				}
-			);
-		} else {
-			jsh.shell.echo("bash not found on Cygwin; not building native launcher.");
-		}
-	} else if (parameters.options.unix) {
-		var gcc = which("gcc");
-		if (!gcc) {
-			jsh.shell.echo("Cannot find gcc in PATH; not building native launcher.");
-		}
-		if (gcc) {
-			var args = ["-o", "jsh"];
-			args.push(src.getRelativePath("jsh/launcher/native/jsh.c"));
-			jsh.shell.echo("Invoking gcc " + args.join(" ") + " ...");
-			jsh.shell.shell(
-				gcc,
-				args,
-				{
-					workingDirectory: install,
-					onExit: function(result) {
-						if (result.status == 0) {
-							jsh.shell.echo("Built native launcher to " + install.getRelativePath("jsh"));
-						} else {
-							throw new Error("Failed to build native launcher.");
-						}
-					}
-				}
-			);
-		}
-	} else {
-		jsh.shell.echo("Did not detect UNIX-like operating system (detected " + jsh.shell.os.name + "); not building native launcher.");
-		jsh.shell.exit(1);
-	}
-} else if (parameters.options.executable) {
-	jsh.shell.echo("Creation of native launcher disabled; see https://bitbucket.org/davidpcaldwell/slime/issues/201");
-	jsh.shell.exit(1);
-}
-
-//	TODO	run test cases given in jsh.c
 
 //	TODO	if on UNIX-based system, could do more to build convenience scripts that either include shebangs or launch with bash
 if (which("chmod")) {

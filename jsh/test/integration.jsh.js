@@ -56,67 +56,6 @@ var scenario = new jsh.unit.Suite({
 	name: "jsh Integration Tests"
 });
 
-//		var tmp = platform.io.createTemporaryDirectory();
-//		run(LAUNCHER_COMMAND.concat([
-//			getSourceFilePath("jsh/tools/slime.jsh.js"),
-//			"-from", getPath(SLIME_SRC,"loader/jrunscript/test/data/1"),
-//			"-to", getPath(tmp,"1.slime"),
-//			//	TODO	the below should match the version from the build
-//			"-version", "1.6"
-//		]));
-
-//	jsh.shell.run({
-//		command: LAUNCHER_COMMAND[0],
-//		arguments: LAUNCHER_COMMAND.slice(1).concat(jsh.script.file.getRelativePath("jsh.shell/jsh.shell.jsh.jsh.js"))
-//	});
-//
-//	jsh.shell.run({
-//		command: LAUNCHER_COMMAND[0],
-//		arguments: LAUNCHER_COMMAND.slice(1).concat(jsh.script.file.getRelativePath("jsh.shell/exit.jsh.js"))
-//	});
-
-
-//	jsh.shell.run({
-//		command: LAUNCHER_COMMAND[0],
-//		arguments: LAUNCHER_COMMAND.slice(1).concat(jsh.script.file.getRelativePath("jsh.script/loader.jsh.js")),
-//		stdio: {
-//			output: String
-//		},
-//		evaluate: function(result) {
-//			if (result.status == 0) {
-//				jsh.shell.echo("Passed: " + result.command + " " + result.arguments.join(" "));
-//				jsh.shell.echo();
-//			} else {
-//				throw new Error("Status: " + result.status);
-//			}
-//		}
-//	});
-//
-
-if (RHINO_LIBRARIES) scenario.part("rhino.optimization", {
-	execute: function(scope,verify) {
-		[-1,0,1].forEach(function(level) {
-			jsh.shell.jsh({
-				fork: true,
-				script: src.getFile("jsh/test/rhino-optimization.jsh.js"),
-				stdio: {
-					output: String
-				},
-				environment: jsh.js.Object.set({}, jsh.shell.environment, {
-					JSH_ENGINE: "rhino",
-					JSH_ENGINE_RHINO_OPTIMIZATION: String(level)
-				}),
-				evaluate: function(result) {
-					jsh.shell.echo("Output: [" + result.stdio.output + "]");
-					var optimization = Number(result.stdio.output);
-					verify(result).status.is(0);
-					verify(optimization).is(level);
-				}
-			});
-		});
-	}
-});
-
 scenario.part("coffeescript", {
 	execute: function(scope,verify) {
 		if (COFFEESCRIPT) {
@@ -161,77 +100,6 @@ scenario.part("coffeescript", {
 	}
 });
 
-scenario.part("executable", new function() {
-	var executable = (jsh.shell.jsh.home) ? jsh.file.Searchpath([jsh.shell.jsh.home.pathname]).getCommand("jsh") : null;
-	if (executable) {
-		// TODO: below is untested
-		this.parts = new function() {
-			var echo = src.getRelativePath("jsh/test/jsh.shell/jsh-data.jsh.js");
-			
-			var stdio = {
-				output: String
-			};
-			
-			var evaluate = function(result) {
-				return {
-					status: result.status,
-					output: JSON.parse(result.stdio.output)
-				};
-			};
-
-			this.absolute = {
-				execute: function(scope,verify) {
-					var result = jsh.shell.run({
-						command: executable,
-						arguments: [echo],
-						stdio: stdio,
-						evaluate: evaluate
-					});
-					verify(result).status.is(0);
-					verify(result).output.is.type("object");
-				}
-			};
-
-			this.relative = {
-				execute: function(scope,verify) {
-					var result = jsh.shell.run({
-						command: "./jsh",
-						arguments: [echo],
-						stdio: stdio,
-						directory: jsh.shell.jsh.home,
-						evaluate: evaluate
-					});
-					verify(result).status.is(0);
-					verify(result).output.is.type("object");
-				}
-			};
-
-			this.PATH = {
-				execute: function(scope,verify) {
-					var PATH = (function() {
-						var rv = jsh.file.Searchpath(jsh.shell.PATH.pathnames);
-						rv.pathnames.push(jsh.shell.jsh.home.pathname);
-						jsh.shell.console("PATH=" + rv);
-						return rv.toString();
-					})();
-					var result = jsh.shell.run({
-						command: "env",
-						arguments: ["PATH=" + PATH, "jsh", echo],
-						stdio: stdio,
-						evaluate: evaluate
-					});
-					verify(result).status.is(0);
-					verify(result).output.is.type("object");
-				}
-			}
-		}
-	} else {
-		this.execute = function(scope,verify) {
-			verify("No executable").is("No executable");
-		}
-	}
-});
-
 (function addClasses() {
 	var LOADER = new jsh.file.Loader({ directory: jsh.script.file.parent.parent.parent });
 	
@@ -240,8 +108,8 @@ scenario.part("executable", new function() {
 		jsh.shell.console("Compiling AddClasses ...");
 		jsh.java.tools.javac({
 			destination: classes.pathname,
-			sourcepath: jsh.file.Searchpath([src.getRelativePath("jsh/test/addClasses/java")]),
-			arguments: [src.getRelativePath("jsh/test/addClasses/java/test/AddClasses.java")]
+			sourcepath: jsh.file.Searchpath([src.getRelativePath("jsh/loader/test/addClasses/java")]),
+			arguments: [src.getRelativePath("jsh/loader/test/addClasses/java/test/AddClasses.java")]
 		});
 		return classes;
 	});
@@ -250,7 +118,7 @@ scenario.part("executable", new function() {
 		execute: function(scope,verify) {
 			var result = jsh.shell.jsh({
 				fork: true,
-				script: src.getFile("jsh/test/addClasses/addClasses.jsh.js"),
+				script: src.getFile("jsh/loader/test/addClasses/addClasses.jsh.js"),
 				arguments: ["-scenario"]
 			});
 			verify(result).status.is(0);
@@ -260,7 +128,7 @@ scenario.part("executable", new function() {
 	//	execute: function(scope,verify) {
 	//		var result = jsh.shell.jsh({
 	//			fork: true,
-	//			script: src.getFile("jsh/test/addClasses/addClasses.jsh.js"),
+	//			script: src.getFile("jsh/loader/test/addClasses/addClasses.jsh.js"),
 	//			arguments: ["-classes",compileAddClasses()]
 	//		});
 	//		verify(result).status.is(0);
@@ -274,17 +142,6 @@ scenario.part("executable", new function() {
 		getClasses: compileAddClasses
 	}));	
 })()
-
-//if (parameters.options.part) {
-//	//	TODO	this should probably be pushed farther down into the loader/api implementation
-//	scenario = (function recurse(scenario,path) {
-//		if (path.length) {
-//			var child = path.shift();
-//			return recurse(scenario.getParts()[child], path);
-//		}
-//		return scenario;
-//	})(scenario,parameters.options.part.split("/"));
-//}
 
 jsh.unit.interface.create(scenario, new function() {
 	if (parameters.options.view == "chrome") {

@@ -32,7 +32,10 @@ var engines = {};
 if (jsh.java.getClass("org.mozilla.javascript.Context")) {
 	engines.rhino = true;
 	if (Packages.org.mozilla.javascript.Context.getCurrentContext()) {
-		engines.current = "rhino";
+		engines.current = { 
+			name: "rhino",
+			optimization: Packages.org.mozilla.javascript.Context.getCurrentContext().getOptimizationLevel()
+		};
 	}
 }
 if (new Packages.javax.script.ScriptEngineManager().getEngineByName("nashorn")) {

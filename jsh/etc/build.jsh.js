@@ -45,6 +45,7 @@ var parameters = jsh.script.getopts({
 		nodoc: false,
 		rhino: jsh.file.Pathname,
 		norhino: false,
+		executable: false,
 		installer: jsh.file.Pathname
 	},
 	unhandled: jsh.script.getopts.UNEXPECTED_OPTION_PARSER.SKIP
@@ -400,6 +401,9 @@ SLIME.getFile("jsh/etc/install.jsh.js").copy(ETC);
 })();
 
 if (!destination.installer) {
+	//	Decision as of now is not to build these platform-specific components if building an installer
+
+	// TODO: probably should just move this functionality into this file
 	(function postInstaller() {
 		console("Running post-installer with arguments [" + destination.arguments.join(" ") + "] ... ");
 		var properties = {};
@@ -413,6 +417,90 @@ if (!destination.installer) {
 			arguments: destination.arguments
 		});
 	})();
+	
+	//	Build native launcher
+	//	TODO	re-enable native launcher for new jrunscript launcher
+	if (parameters.options.executable) {
+		var which = function(command) {
+			return jsh.shell.PATH.getCommand(command);
+		};
+		
+		var CYGWIN = false;
+		var UNIX = false;
+
+		var uname = which("uname");
+		if (uname) {
+			jsh.shell.console("Detected UNIX-like operating system.");
+			UNIX = true;
+			//	Re-use the detection logic that jsh uses for Cygwin, although this leaves it opaque in this script exactly how we are doing
+			//	it; we could run the uname we just found, or even check for its .exe extension
+			if (jsh.file.filesystems.cygwin) {
+				jsh.shell.console("Detected Cygwin.");
+				CYGWIN = true;
+			}
+		} else {
+			parameters.options.unix = false;
+			parameters.options.cygwin = false;
+			jsh.shell.console("Did not detect UNIX-like operating system using PATH: " + jsh.shell.PATH);
+		}
+		
+		if (CYGWIN) {
+			//	TODO	use LoadLibrary call to locate jvm.dll
+			//			embed path of jvm.dll in C program, possibly, or load from registry, or ...
+			var bash = which("bash");
+			if (bash) {
+				var env = jsh.js.Object.set({}, jsh.shell.environment, {
+					//	We assume we are running in a JDK, so the java.home is [jdk]/jre, so we look at parent
+					//	TODO	improve this check
+					JAVA_HOME: jsh.shell.java.home.parent.pathname.toString(),
+					LIB_TMP: jsh.shell.TMPDIR.pathname.toString(),
+					TO: install.pathname.toString()
+				});
+				jsh.shell.console("Building Cygwin native launcher with environment " + jsh.js.toLiteral(env));
+				jsh.shell.shell(
+					bash,
+					[
+						src.getRelativePath("jsh/launcher/native/win32/cygwin.bash")
+					],
+					{
+						environment: env
+					}
+				);
+			} else {
+				jsh.shell.echo("bash not found on Cygwin; not building native launcher.");
+			}
+		} else if (UNIX) {
+			var gcc = which("gcc");
+			if (!gcc) {
+				jsh.shell.console("Cannot find gcc in PATH; not building native launcher.");
+				return;
+			}
+			var args = ["-o", "jsh"];
+			args.push(SLIME.getRelativePath("jsh/launcher/native/jsh.c"));
+			jsh.shell.console("Invoking gcc " + args.join(" ") + " ...");
+			jsh.shell.shell(
+				gcc,
+				args,
+				{
+					workingDirectory: destination.shell,
+					onExit: function(result) {
+						if (result.status == 0) {
+							jsh.shell.console("Built native launcher to " + destination.shell.getRelativePath("jsh"));
+						} else {
+							throw new Error("Failed to build native launcher.");
+						}
+					}
+				}
+			);
+		} else {
+			jsh.shell.console("Did not detect UNIX-like operating system (detected " + jsh.shell.os.name + "); not building native launcher.");
+			jsh.shell.exit(1);
+		}
+	} else if (parameters.options.executable) {
+		jsh.shell.console("No -executable argument; skipping native launcher");
+	}
+
+	//	TODO	run test cases given in jsh.c
 }
 
 var getTestEnvironment = jsh.js.constant(function() {
