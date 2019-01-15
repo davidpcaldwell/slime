@@ -51,7 +51,7 @@
 				$slime.flags[match[1]] = value;
 			}
 		}
-		return $javahost.script("slime://loader/expression.js",String($javahost.getLoaderCode("expression.js")),{
+		return $javahost.eval("slime://loader/expression.js",String($javahost.getLoaderCode("expression.js")),{
 			$engine: $engine,
 			$slime: $slime
 		},null);

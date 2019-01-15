@@ -134,24 +134,51 @@ load("nashorn:mozilla_compat.js");
 	};
 	
 	var graal = new function() {
-		//	Does not work; results in complaints about cross-context access
+		//	Creating new context does not work; results in complaints about cross-context access:
+		//	var _context = Packages.org.graalvm.polyglot.Context.newBuilder("js").allowHostAccess(true).option("js.nashorn-compat","true").build();
+		//	Getting bindings and using getMember/putMember does not appear to work; failed with some kind of foreign INVOKE error; could retest
 		var context = function(name,code,scope,target) {
-			var interpret = "(function() { " + code + "}).call($$this)";
-			if (false) {
-				throw new Error("Unimplemented.");
-			}
-			var _context = Packages.org.graalvm.polyglot.Context.newBuilder("js").allowHostAccess(true).option("js.nashorn-compat","true").build();
+			var bindings = [];
 			for (var x in scope) {
-				_context.getBindings("js").putMember(x, scope[x]);
+				bindings.push({ name: x, value: scope[x] });
 			}
-			_context.getBindings("js").putMember("$$this", target);
-			var _source = Packages.org.graalvm.polyglot.Source.newBuilder("js", interpret, name);
-			return _context.eval(_source);
+			var args = bindings.map(function(binding) {
+				return binding.name;
+			}).join(",");
+			var interpret = "(function(" + args + ") { " + code + "}).call($$this," + args + ")";
+			var _context = Packages.org.graalvm.polyglot.Context.getCurrent();
+			var was = {};
+			for (var x in scope) {
+				was[x] = $graal.getMember(x);
+				$graal.putMember(x, scope[x]);
+			}
+			$graal.putMember("$$this", target);
+			var _source = Packages.org.graalvm.polyglot.Source.newBuilder("js", interpret, name).build();
+			var rv = _context.eval(_source);
+			for (var x in scope) {
+				$graal.putMember(x, was[x]);
+			}
+			$graal.putMember("$$this", null);
+			return rv;
+		};
+		
+		this.eval = function(name,code,scope,target) {
+			var implementation = loaders.js;
+			return implementation(name,code,scope,target);
 		};
 		
 		this.script = function(name,code,scope,target) {
-			return loaders.js(name,code,scope,target);
-		};
+			var implementation = context;
+			//Packages.java.lang.System.err.println("name = " + name);
+			if (name == "slime://loader/jrunscript/expression.js") implementation = loaders.js;
+			if (name == "slime://loader/jrunscript/nashorn.js") implementation = loaders.js;
+			if (name == "slime://loader/$api.js") implementation = loaders.js;
+			var rv = implementation(name,code,scope,target);
+			if (implementation == loaders.js) {
+				//Packages.java.lang.System.err.println("evaluated " + name + ": " + rv);
+			}
+			return rv;
+		}
 		
 		this.subshell = function(f) {
 			throw new Error("Graal subshell not implemented.");
@@ -173,6 +200,14 @@ load("nashorn:mozilla_compat.js");
 			this.getClasspath = function() {
 				return $classpath;
 			};
+			
+			this.eval = function(name,code,scope,target) {
+				if (engine.eval) {
+					return engine.eval(name,code,toScope(scope),target);
+				} else {
+					return engine.script(name,code,toScope(scope),target);
+				}
+			}
 
 			this.script = function(name,code,scope,target) {
 				return engine.script(name,code,toScope(scope),target);

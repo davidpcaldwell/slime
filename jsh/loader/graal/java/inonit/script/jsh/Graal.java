@@ -6,6 +6,13 @@ import inonit.script.engine.*;
 
 public class Graal extends Main.Engine {
 	public static abstract class Host {
+		public final void putMember(String name, Object value) {
+			org.graalvm.polyglot.Context.getCurrent().getBindings("js").putMember(name, value);
+		}
+		
+		public final Object getMember(String name) {
+			return org.graalvm.polyglot.Context.getCurrent().getBindings("js").getMember(name);
+		}
 	}
 
 	private static class ExecutionImpl extends Shell.Execution {

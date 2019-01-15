@@ -18,7 +18,7 @@ $jsh.setRuntime((function() {
 	var scripts = eval($jsh.getLoaderCode("jrunscript/nashorn.js"));
 
 	var rv = scripts.script(
-		"jrunscript/nashorn.js",
+		"slime://loader/jrunscript/nashorn.js",
 		$jsh.getLoaderCode("jrunscript/nashorn.js"),
 		{
 			$graal: $graal,
