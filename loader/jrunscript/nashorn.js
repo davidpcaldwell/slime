@@ -168,6 +168,9 @@ load("nashorn:mozilla_compat.js");
 		};
 		
 		this.script = function(name,code,scope,target) {
+			// TODO: another approach to try: create a function, set it as a magic member on the Value, then invoke that member
+			// using invokeMember on the value. May need to use new Function
+			// to parse it, perhaps may still need to use scope arguments, or scope bindings
 			var implementation = context;
 			//Packages.java.lang.System.err.println("name = " + name);
 			if (name == "slime://loader/jrunscript/expression.js") implementation = loaders.js;
