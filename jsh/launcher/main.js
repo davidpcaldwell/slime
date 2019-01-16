@@ -164,6 +164,12 @@ if (shell.rhino) {
 	}
 }
 
+// if ($api.slime.settings.get("jsh.engine") == "graal") {
+// 	var lib = $api.slime.settings.get("jsh.shell.lib");
+// 	_urls.push(new Packages.java.io.File(lib, "graal/jre/lib/truffle/truffle-api.jar").toURI().toURL());
+// //	_urls.push(new Packages.java.io.File(lib, "graal/jre/languages/js/graaljs.jar").toURI().toURL());
+// }
+
 // TODO: currently there is no strategy for handling these options jsh.engine and jsh.debug.script if they conflict
 var scriptDebugger = $api.slime.settings.get("jsh.debug.script");
 var profilerMatcher =  /^profiler(?:\:(.*))?$/;

@@ -304,7 +304,11 @@ try {
 		this.compileLoader = function(p) {
 			var classpath = new Classpath();
 			if (this.rhino && this.rhino.length) classpath.append(new Classpath(this.rhino));
-			if (this.graal) classpath.append(new Classpath([new Packages.java.io.File(this.graal, "jre/lib/boot/graal-sdk.jar").toURI().toURL()]));
+			if (this.graal) classpath.append(new Classpath([
+				new Packages.java.io.File(this.graal, "jre/lib/boot/graal-sdk.jar").toURI().toURL()
+				// ,new Packages.java.io.File(this.graal, "jre/lib/truffle/truffle-api.jar").toURI().toURL()
+				// ,new Packages.java.io.File(this.graal, "jre/languages/js/graaljs.jar").toURI().toURL()
+			]));
 			if (classpath._urls.length == 0) classpath = null;
 			
 			var rhino = (this.rhino && this.rhino.length) ? new Classpath(this.rhino) : null;

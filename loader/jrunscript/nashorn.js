@@ -136,7 +136,7 @@ load("nashorn:mozilla_compat.js");
 	var graal = new function() {
 		//	Creating new context does not work; results in complaints about cross-context access:
 		//	var _context = Packages.org.graalvm.polyglot.Context.newBuilder("js").allowHostAccess(true).option("js.nashorn-compat","true").build();
-		//	Getting bindings and using getMember/putMember does not appear to work; failed with some kind of foreign INVOKE error; could retest
+		//	Getting bindings and using getMember/putMember in script code does not appear to work; failed with some kind of foreign INVOKE error; could retest
 		var context = function(name,code,scope,target) {
 			var bindings = [];
 			for (var x in scope) {
@@ -172,7 +172,9 @@ load("nashorn:mozilla_compat.js");
 			// using invokeMember on the value. May need to use new Function
 			// to parse it, perhaps may still need to use scope arguments, or scope bindings
 			var implementation = context;
-			//Packages.java.lang.System.err.println("name = " + name);
+			// var implementation = function(name,code,scope,target) {
+			// 	return $graal.run(name,code,scope,target);
+			// }
 			if (name == "slime://loader/jrunscript/expression.js") implementation = loaders.js;
 			if (name == "slime://loader/jrunscript/nashorn.js") implementation = loaders.js;
 			if (name == "slime://loader/$api.js") implementation = loaders.js;
