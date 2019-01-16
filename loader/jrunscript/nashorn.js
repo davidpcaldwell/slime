@@ -36,7 +36,7 @@ load("nashorn:mozilla_compat.js");
 			//	debug because of the wall of evals in the resulting stack trace
 			return (function() {
 				with(scope) {
-					return eval(code);
+					return eval(code + "//# sourceURL=" + name);
 				}
 			}).call(target);
 		};
@@ -197,7 +197,7 @@ load("nashorn:mozilla_compat.js");
 			// TODO: another approach to try: create a function, set it as a magic member on the Value, then invoke that member
 			// using invokeMember on the value. May need to use new Function
 			// to parse it, perhaps may still need to use scope arguments, or scope bindings
-			var implementation = context;
+			var implementation = loaders.js;
 			// var implementation = function(name,code,scope,target) {
 			// 	return $graal.run(name,code,scope,target);
 			// }

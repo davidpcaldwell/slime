@@ -50,7 +50,7 @@ var environment = new function() {
 		var unbuilt;
 		var built;
 
-		this.built = new function() {
+		if (!jsh.shell.environment.SLIME_UNIT_JSH_UNBUILT_ONLY) this.built = new function() {
 			var home;
 
 			var getHome = function() {
@@ -302,7 +302,7 @@ suite.part("jsh.shell.jsh", new jsh.unit.Suite.Fork({
 	// TODO: moved this from integration tests and reproduced current test without much thought; could be that we should not be
 	// using the built shell, or should be using more shells
 	run: jsh.shell.jsh,
-	shell: environment.jsh.built.home,
+	shell: (environment.jsh.built) ? environment.jsh.built.home : environment.jsh.unbuilt.src,
 	script: SRC.getFile("rhino/shell/test/jsh.shell.jsh.suite.jsh.js"),
 	arguments: ["-view","stdio"]
 }));
