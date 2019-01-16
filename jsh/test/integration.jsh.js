@@ -100,49 +100,6 @@ scenario.part("coffeescript", {
 	}
 });
 
-(function addClasses() {
-	var LOADER = new jsh.file.Loader({ directory: jsh.script.file.parent.parent.parent });
-	
-	var compileAddClasses = jsh.js.constant(function() {
-		var classes = jsh.shell.TMPDIR.createTemporary({ directory: true });
-		jsh.shell.console("Compiling AddClasses ...");
-		jsh.java.tools.javac({
-			destination: classes.pathname,
-			sourcepath: jsh.file.Searchpath([src.getRelativePath("jsh/loader/test/addClasses/java")]),
-			arguments: [src.getRelativePath("jsh/loader/test/addClasses/java/test/AddClasses.java")]
-		});
-		return classes;
-	});
-
-	scenario.part("addClasses", {
-		execute: function(scope,verify) {
-			var result = jsh.shell.jsh({
-				fork: true,
-				script: src.getFile("jsh/loader/test/addClasses/addClasses.jsh.js"),
-				arguments: ["-scenario"]
-			});
-			verify(result).status.is(0);
-		}
-	});
-	//scenario.part("jsh.loader.java", {
-	//	execute: function(scope,verify) {
-	//		var result = jsh.shell.jsh({
-	//			fork: true,
-	//			script: src.getFile("jsh/loader/test/addClasses/addClasses.jsh.js"),
-	//			arguments: ["-classes",compileAddClasses()]
-	//		});
-	//		verify(result).status.is(0);
-	//	}
-	//});
-
-	scenario.part("packaged", LOADER.value("jsh/test/packaged/suite.js", {
-		src: src,
-		RHINO_LIBRARIES: RHINO_LIBRARIES,
-		LINE_SEPARATOR: LINE_SEPARATOR,
-		getClasses: compileAddClasses
-	}));	
-})()
-
 jsh.unit.interface.create(scenario, new function() {
 	if (parameters.options.view == "chrome") {
 		this.chrome = {

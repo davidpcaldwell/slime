@@ -225,6 +225,45 @@ END LICENSE
 								</li>
 							</ol>
 						</div>
+						<div jsapi:id="java.add">
+							<script type="application/x.jsapi#initialize">
+								scope.compileAddClasses = jsh.js.constant(function() {
+									var classes = jsh.shell.TMPDIR.createTemporary({ directory: true });
+									jsh.shell.console("Compiling AddClasses ...");
+									jsh.java.tools.javac({
+										destination: classes.pathname,
+										sourcepath: jsh.file.Searchpath([$jsapi.environment.jsh.unbuilt.src.getRelativePath("jsh/loader/test/addClasses/java")]),
+										arguments: [$jsapi.environment.jsh.unbuilt.src.getRelativePath("jsh/loader/test/addClasses/java/test/AddClasses.java")]
+									});
+									return classes;
+								});
+							</script>
+							<script type="application/x.jsapi#tests" jsapi:id="addClasses">
+								var result = jsh.shell.jsh({
+									shell: $jsapi.environment.jsh.built.home,
+									script: $jsapi.environment.jsh.unbuilt.src.getFile("jsh/loader/test/addClasses/addClasses.jsh.js"),
+									arguments: ["-scenario"]
+								});
+								verify(result).status.is(0);
+							</script>
+							<script type="application/x.jsapi#tests" jsapi:id="jsh.loader.java">
+								var result = jsh.shell.jsh({
+									shell: $jsapi.environment.jsh.built.home,
+									script: $jsapi.environment.jsh.unbuilt.src.getFile("jsh/loader/test/addClasses/addClasses.jsh.js"),
+									arguments: ["-classes",compileAddClasses()]
+								});
+								verify(result).status.is(0);
+							</script>
+							<script type="application/x.jsapi#tests" jsapi:id="packaged">
+								// TODO: is Rhino a part of 
+								var result = jsh.shell.jsh({
+									shell: $jsapi.environment.jsh.built.home,
+									script: $jsapi.environment.jsh.src.getFile("jsh/loader/test/packaged/suite.jsh.js"),
+									arguments: ["-classes",compileAddClasses()]
+								});
+								verify(result).status.is(0);
+							</script>
+						</div>
 					</li>
 				</ul>
 			</li>

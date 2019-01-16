@@ -61,6 +61,7 @@ var environment = new function() {
 					}
 					if (jsh.shell.jsh.src) {
 						var to = jsh.shell.TMPDIR.createTemporary({ directory: true });
+						// TODO: So is this Rhino-only shell?
 						jsh.shell.jsh({
 							shell: jsh.shell.jsh.src,
 							script: jsh.script.file.parent.parent.parent.getFile("jsh/etc/build.jsh.js"),

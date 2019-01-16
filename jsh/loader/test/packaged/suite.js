@@ -38,10 +38,11 @@ var jsonOutput = {
 
 var packaged = {
 	build: function(p) {
-		var TEST = src.getSubdirectory("jsh/test/packaged");
+		var TEST = src.getSubdirectory("jsh/loader/test/packaged");
 		var invocation = [];
 	//	var invocation = [ getJshPathname(new File(JSH_HOME,"tools/package.jsh.js")) ];
 		var script = (typeof(p.script) == "string") ? TEST.getFile(p.script) : p.script;
+		if (!script) throw new Error("No script at " + p.script + " for " + TEST);
 		invocation.push("-script",script);
 		if (p.modules) {
 			p.modules.forEach(function(module) {
@@ -121,7 +122,7 @@ $set({
 			parts: new function() {
 				this.compatibility = {
 					execute: function(scope,verify) {
-						var script = src.getFile("jsh/test/packaged/loader.jsh.js");
+						var script = src.getFile("jsh/loader/test/packaged/loader.jsh.js");
 						var result = jsh.shell.jsh({
 							fork: true,
 							script: script,
@@ -183,7 +184,7 @@ $set({
 					execute: function(scope,verify) {
 						var result = jsh.shell.jsh({
 							fork: true,
-							script: src.getFile("jsh/test/packaged/plugins.jsh.js"),
+							script: src.getFile("jsh/loader/test/packaged/plugins.jsh.js"),
 							environment: {
 								LOAD_JSH_PLUGIN_TEST_PLUGIN: "true"
 							},
@@ -226,7 +227,7 @@ $set({
 		classpath: {
 			execute: function(scope,verify) {
 				var jar = packaged.build({
-					script: "../../loader/test/addClasses/addClasses.jsh.js"
+					script: "../addClasses/addClasses.jsh.js"
 				});
 				var result = jsh.shell.java({
 					jar: jar.jar,

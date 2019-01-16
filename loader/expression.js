@@ -321,7 +321,7 @@
 			//	resource.js { name, code }: forcibly set based on other properties
 			//	TODO	re-work resource.js
 			
-			methods.run = function(object,scope) {
+			methods.run = function run(object,scope) {
 				if (!object || typeof(object) != "object") throw new TypeError("'object' must be an object, not " + object);
 				if (typeof(object.read) != "function") throw new Error("Not resource.");
 				var resource = object;
@@ -377,7 +377,7 @@
 				return inner.$exports;
 			};
 
-			methods.value = function(code,scope) {
+			methods.value = function value(code,scope) {
 				var rv;
 				if (!scope) scope = {};
 				scope.$set = function(v) {
@@ -408,7 +408,7 @@
 				};
 
 				var declare = function(name) {
-					this[name] = function(path,scope,target) {
+					this[name] = function retarget(path,scope,target) {
 //						return methods[name].call(target,p.get(path),scope);
 						return methods[name].call(target,this.get(path),scope);
 					};
