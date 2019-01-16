@@ -136,11 +136,24 @@ load("nashorn:mozilla_compat.js");
 	var graal = new function() {
 		//	Creating new context does not work; results in complaints about cross-context access:
 		//	var _context = Packages.org.graalvm.polyglot.Context.newBuilder("js").allowHostAccess(true).option("js.nashorn-compat","true").build();
+
 		//	Getting bindings and using getMember/putMember in script code does not appear to work; failed with some kind of foreign INVOKE error; could retest
+		
+		//	Source transform apparently is needed to implement scope because otherwise, since we are re-using a single context,
+		//	entering a new script overwrites/changes the bindings, so we also pass scope as function arguments
+		
+		//	Source transform is needed to implement 'this' targeting, as in Rhino; no straightforward way to change target as of
+		//	now. Could use a magic Value member (see comment with 'script' below) but since we have to use a source transform
+		//	anyway (see scope comment above), no real benefit to doing that right now.
 		var context = function(name,code,scope,target) {
 			var bindings = [];
+			// TODO: No idea why this does not work if this value is true; that implementation seems cleaner and would love to
+			// switch to it
+			var USE_BINDINGS_FOR_CREATING_SCOPE = false;
 			for (var x in scope) {
-				bindings.push({ name: x, value: scope[x] });
+				if (x != "$$this") {
+					bindings.push({ name: x, value: scope[x] });
+				}
 			}
 			var args = bindings.map(function(binding) {
 				return binding.name;
@@ -148,15 +161,28 @@ load("nashorn:mozilla_compat.js");
 			code = "(function(" + args + ") { " + code + "}).call($$this," + args + ")";
 			var _context = Packages.org.graalvm.polyglot.Context.getCurrent();
 			var was = {};
-			for (var x in scope) {
-				was[x] = $graal.getMember(x);
-				$graal.putMember(x, scope[x]);
+			if (USE_BINDINGS_FOR_CREATING_SCOPE) {
+				bindings.forEach(function(binding) {
+					was[x] = $graal.getMember(binding.name);
+					$graal.putMember(binding.name, binding.value);
+				})				
+			} else {
+				for (var x in scope) {
+					was[x] = $graal.getMember(x);
+					$graal.putMember(x, scope[x]);
+				}
 			}
 			$graal.putMember("$$this", target);
 			var _source = Packages.org.graalvm.polyglot.Source.newBuilder("js", code, name).build();
 			var rv = _context.eval(_source);
-			for (var x in scope) {
-				$graal.putMember(x, was[x]);
+			if (USE_BINDINGS_FOR_CREATING_SCOPE) {
+				bindings.forEach(function(binding) {
+					$graal.putMember(binding.name, was[binding.name]);				
+				});
+			} else {
+				for (var x in scope) {
+					$graal.putMember(x, was[x]);
+				}				
 			}
 			$graal.putMember("$$this", null);
 			return rv;

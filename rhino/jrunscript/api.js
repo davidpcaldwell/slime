@@ -255,8 +255,8 @@
 	//			dependent only on Rhino, which apparently has a bug(?) making its own runCommand() not work correctly in this
 	//			scenario when an InputStream is provided: even when underlying process terminates, command does not return
 	//	TODO	this has the potential to run really slowly when written in JavaScript
+	//	TODO	Graal cannot correctly run this function because of the multithreading involved; see https://github.com/graalvm/graaljs/issues/30
 	$api.engine.runCommand = function() {
-//		Packages.java.lang.System.err.println("Running a command ...");
 		var Buffer = function(initial) {
 			var _bytes = new Packages.java.io.ByteArrayOutputStream();
 
