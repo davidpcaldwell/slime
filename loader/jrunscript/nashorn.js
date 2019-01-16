@@ -145,7 +145,7 @@ load("nashorn:mozilla_compat.js");
 			var args = bindings.map(function(binding) {
 				return binding.name;
 			}).join(",");
-			var interpret = "(function(" + args + ") { " + code + "}).call($$this," + args + ")";
+			code = "(function(" + args + ") { " + code + "}).call($$this," + args + ")";
 			var _context = Packages.org.graalvm.polyglot.Context.getCurrent();
 			var was = {};
 			for (var x in scope) {
@@ -153,7 +153,7 @@ load("nashorn:mozilla_compat.js");
 				$graal.putMember(x, scope[x]);
 			}
 			$graal.putMember("$$this", target);
-			var _source = Packages.org.graalvm.polyglot.Source.newBuilder("js", interpret, name).build();
+			var _source = Packages.org.graalvm.polyglot.Source.newBuilder("js", code, name).build();
 			var rv = _context.eval(_source);
 			for (var x in scope) {
 				$graal.putMember(x, was[x]);
