@@ -48,35 +48,10 @@ END LICENSE
 					TODO	rhino/tools builds a module, but it is not API at the moment
 					TODO	rhino/ui is currently undocumented
 				-->
-				<!--	Internal tests	-->
-				<div jsapi:id="internal">
-					<script type="application/x.jsapi#tests" jsapi:id="slime">
-						//	Functionality used internally or accessed through loader/jrunscript (although untested by loader/jrunscript)
-						verify.suite($jsapi.loader.suite("../../loader/api.html"));
-					</script>
-					<script type="application/x.jsapi#tests" jsapi:id="mime">
-						verify.suite($jsapi.loader.suite("../../loader/mime.api.html"));
-					</script>
-					<script type="application/x.jsapi#tests" jsapi:id="jrunscript">
-						//	Test cases of loader implementation
-						verify.suite($jsapi.loader.suite("../../loader/jrunscript/api.html"));
-					</script>
-					<script type="application/x.jsapi#tests" jsapi:id="other">
-						//	TODO	loader/jrunscript/java has some tests
-						//	TODO	loader/jrunscript/test/data/2/ has some tests but they require some classes in classpath
-
-						//	Test cases involving the HTML test runner itself
-						verify.suite($jsapi.loader.suite("../../loader/api/test/data/1/api.html"));
-					</script>
-				</div>
 				<tr>
 					<td><a href="../../loader/$api.api.html">$api</a></td>
 					<td>
 						JavaScript utilities
-						<script jsapi:id="$api" type="application/x.jsapi#tests">
-							verify.suite($jsapi.loader.suite("../../loader/$api.api.html"));
-						</script>
-						<!--	testing is covered by loader/api.html	-->
 					</td>
 				</tr>
 				<tr>

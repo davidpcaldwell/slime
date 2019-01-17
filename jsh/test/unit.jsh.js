@@ -257,6 +257,7 @@ var definition = new jsh.unit.part.Html({
 var suite = new jsh.unit.Suite();
 
 var SRC = jsh.script.file.parent.parent.parent;
+
 var parts = {
 	"$api": new jsh.unit.part.Html({
 		pathname: SRC.getRelativePath("loader/$api.api.html")
@@ -292,9 +293,32 @@ var parts = {
 		pathname: SRC.getRelativePath("jsh/tools/internal.api.html"),
 		environment: environment		
 	})
-}
+};
 
-// TODO: remove this from 'old'
+var internal = {
+	parts: {
+		slime: new jsh.unit.part.Html({
+			//	Functionality used internally or accessed through loader/jrunscript (although untested by loader/jrunscript)
+			pathname: SRC.getRelativePath("loader/api.html")
+		}),
+		mime: new jsh.unit.part.Html({
+			pathname: SRC.getRelativePath("loader/mime.api.html")
+		}),
+		jrunscript: new jsh.unit.part.Html({
+			//	Test cases of loader implementation
+			pathname: SRC.getRelativePath("loader/jrunscript/api.html")
+		}),
+		other: new jsh.unit.part.Html({
+			//	Test cases involving the HTML test runner itself
+			pathname: SRC.getRelativePath("loader/api/test/data/1/api.html")
+		})
+		//	TODO	loader/jrunscript/java has some tests
+		//	TODO	loader/jrunscript/test/data/2/ has some tests but they require some classes in classpath
+	}
+};
+
+suite.part("internal", internal);
+
 suite.part("$api", parts.$api);
 suite.part("jsh.loader", parts["jsh.loader"]);
 suite.part("jsh.io", parts["jsh.io"]);
