@@ -225,6 +225,7 @@ END LICENSE
 								</li>
 							</ol>
 						</div>
+						<!-- TODO: cannot target this test from command line for some reason -->
 						<div jsapi:id="java.add">
 							<script type="application/x.jsapi#initialize">
 								scope.compileAddClasses = jsh.js.constant(function() {
@@ -337,5 +338,26 @@ END LICENSE
 			</li>
 		</ul>
 	</div>
+	<script type="application/x.jsapi#tests" jsapi:id="coffee">
+		if (jsh.shell.jsh.lib.getFile("coffee-script.js")) {
+			var hello = jsh.shell.jsh({
+				shell: $jsapi.environment.jsh.unbuilt.src,
+				script: $jsapi.environment.jsh.unbuilt.src.getRelativePath("jsh/test/coffee/hello.jsh.coffee").file,
+				stdio: {
+					output: String
+				}
+			});
+			verify(hello).status.is(0);
+			verify(hello).stdio.output.is(["hello coffeescript world",""].join(String(Packages.java.lang.System.getProperty("line.separator"))));
+			var loader = jsh.shell.jsh({
+				fork: true,
+				script: jsh.script.file.getRelativePath("../test/coffee/loader.jsh.js").file
+			});
+			verify(loader).status.is(0);
+		} else {
+			var MESSAGE = "No CoffeeScript.";
+			verify(MESSAGE).is(MESSAGE);
+		}
+	</script>
 </body>
 </html>

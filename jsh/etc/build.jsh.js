@@ -518,7 +518,9 @@ var getTestEnvironment = jsh.js.constant(function() {
 });
 
 (function() {
-	if (build.unit) {
+	// TODO: unit and integration tests used to be separate, and could again be; right now integration tests are embedded in unit
+	// tests
+	if (build.unit || build.test) {
 		console("Running unit tests ...");
 		jsh.shell.jsh({
 			shell: destination.shell,
@@ -536,15 +538,6 @@ var getTestEnvironment = jsh.js.constant(function() {
 			shell: destination.shell,
 			script: SLIME.getFile("jsh/unit/jsapi.jsh.js"),
 			arguments: args,
-			environment: getTestEnvironment()
-		});
-	}
-	if (build.test) {
-		console("Running integration tests ...");
-		jsh.shell.jsh({
-			shell: destination.shell,
-			script: SLIME.getFile("jsh/test/integration.jsh.js"),
-			arguments: [],
 			environment: getTestEnvironment()
 		});
 	}

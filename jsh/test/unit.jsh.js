@@ -265,6 +265,10 @@ var parts = {
 		pathname: SRC.getRelativePath("jsh/loader/loader.api.html"),
 		environment: environment		
 	}),
+	"jsh.io": new jsh.unit.part.Html({
+		pathname: SRC.getRelativePath("jrunscript/io/api.html"),
+		environment: environment
+	}),
 	"jsh.shell": new jsh.unit.part.Html({
 		pathname: SRC.getRelativePath("rhino/shell/plugin.jsh.api.html"),
 		environment: environment
@@ -293,6 +297,7 @@ var parts = {
 // TODO: remove this from 'old'
 suite.part("$api", parts.$api);
 suite.part("jsh.loader", parts["jsh.loader"]);
+suite.part("jsh.io", parts["jsh.io"]);
 suite.part("jsh.file", {
 	parts: {
 		Searchpath: parts["jsh.file/Searchpath"]

@@ -135,6 +135,11 @@ engines.forEach(function(engine) {
 			
 			if (engine == "rhino") {
 				[-1,0,1].forEach(function(level) {
+					if (shells.unbuilt.getFile("local/jsh/lib/coffee-script.js")) {
+						// TODO: If CoffeeScript is present, jsh should completely ignore optimization level
+						jsh.shell.console("Skipping Rhino optimization tests for level " + level + "; CoffeeScript present.");
+						return;
+					}
 					var result = jsh.shell.jsh({
 						shell: shells.unbuilt,
 						script: SLIME.getFile("jsh/test/jsh-data.jsh.js"),
@@ -242,40 +247,20 @@ parameters.options.java.forEach(function(jre) {
 				, (engine) ? { JSH_ENGINE: engine.toLowerCase() } : {}
 				, (jsh.shell.rhino && jsh.shell.rhino.classpath) ? { JSH_ENGINE_RHINO_CLASSPATH: String(jsh.shell.rhino.classpath) } : ""
 			);
-			jrePart.parts[engine] = {
-				parts: {
-					unit: jsh.unit.Suite.Fork({
-						name: "Unit tests",
-						run: jsh.shell.jsh,
-						vmarguments: ["-Xms1024m"],
-						shell: SLIME,
-						script: jsh.script.file.parent.getFile("unit.jsh.js"),
-						arguments: [
-							"-shell:built", shells.built,
-							"-view", "stdio"
-						].concat(
-							(parameters.options.noselfping) ? ["-noselfping"] : []
-						),
-						environment: environment
-					}),
-					integration: jsh.unit.Suite.Fork({
-						name: "Integration tests",
-						run: jsh.shell.jsh,
-						//	Right now, integration tests require built shell
-						shell: shells.built,
-						script: jsh.script.file.parent.getFile("integration.jsh.js"),
-						arguments: (function() {
-							var rv = [];
-							if (jsh.shell.os.name == "Mac OS X") {
-								rv.push("-executable");
-							}
-							rv.push("-view","stdio");
-							return rv;
-						})(),
-						environment: environment
-					})
-				}
-			};
+			jrePart.parts[engine] = jsh.unit.Suite.Fork({
+				name: "Java tests",
+				run: jsh.shell.jsh,
+				vmarguments: ["-Xms1024m"],
+				shell: SLIME,
+				script: jsh.script.file.parent.getFile("unit.jsh.js"),
+				arguments: [
+					"-shell:built", shells.built,
+					"-view", "stdio"
+				].concat(
+					(parameters.options.noselfping) ? ["-noselfping"] : []
+				),
+				environment: environment
+			})
 		}
 	});
 });

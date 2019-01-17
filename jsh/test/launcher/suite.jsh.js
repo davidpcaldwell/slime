@@ -101,6 +101,7 @@ jsh.test.integration({
 				]
 			}));
 		};
+		unbuilt.coffeescript = src.getFile("local/jsh/lib/coffee-script.js");
 
 		var built = function(p) {
 			//	TODO	could we use built shell if we are running in built shell?
@@ -109,7 +110,8 @@ jsh.test.integration({
 					home.getRelativePath("jsh.js")
 				]
 			}));
-		}
+		};
+		built.coffeescript = home.getFile("lib/coffee-script.js");
 
 		var addScenario = (function(o) {
 			if (!arguments.callee.index) arguments.callee.index = 0;
@@ -155,7 +157,8 @@ jsh.test.integration({
 		},this);
 
 		engines.forEach(function(engine) {
-			this.scenario(engine, jsh.test.Suite({
+			var UNSUPPORTED = (this.engine == "rhino" && built.coffeescript);
+			if (!UNSUPPORTED) this.scenario(engine, jsh.test.Suite({
 				shell: home,
 				script: jsh.script.file.getRelativePath("packaged.jsh.js").file,
 				environment: {
@@ -181,7 +184,8 @@ jsh.test.integration({
 //			}) });
 
 			[unbuilt,built].forEach(function(shell) {
-				addScenario(new function() {
+				var UNSUPPORTED = (engine == "rhino" && shell.coffeescript);
+				if (!UNSUPPORTED) addScenario(new function() {
 					var type = (shell == unbuilt) ? "unbuilt" : "built";
 					this.name = engine + " " + type;
 

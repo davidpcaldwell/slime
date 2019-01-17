@@ -126,18 +126,6 @@
 
 		var $api = $platform.execute( $slime.getLoaderScript("$api.js"), { $platform: $platform, $slime: $slime }, null);
 
-		var $coffee = (function() {
-			var coffeeScript = $slime.getCoffeeScript();
-			if (!coffeeScript) return null;
-			if (coffeeScript.code) {
-				var target = {};
-				execute({ code: String(coffeeScript.code) }, {}, target);
-				return target.CoffeeScript;
-			} else if (coffeeScript.object) {
-				return coffeeScript.object;
-			}
-		})();
-
 		var mime = (function($exports) {
 			$exports.Type = function(media,subtype,parameters) {
 				$api.Function.argument.isString({ index: 0, name: "media" }).apply(this,arguments);
@@ -321,6 +309,18 @@
 			//	resource.js { name, code }: forcibly set based on other properties
 			//	TODO	re-work resource.js
 			
+			var $coffee = (function() {
+				var coffeeScript = $slime.getCoffeeScript();
+				if (!coffeeScript) return null;
+				if (coffeeScript.code) {
+					var target = {};
+					$platform.execute({ name: "coffee-script.js", code: String(coffeeScript.code) }, {}, target);
+					return target.CoffeeScript;
+				} else if (coffeeScript.object) {
+					return coffeeScript.object;
+				}
+			})();
+
 			methods.run = function run(object,scope) {
 				if (!object || typeof(object) != "object") throw new TypeError("'object' must be an object, not " + object);
 				if (typeof(object.read) != "function") throw new Error("Not resource.");
