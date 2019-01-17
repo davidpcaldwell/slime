@@ -399,9 +399,6 @@
 				this.source = p;
 
 				this.get = function(path) {
-					if (path == "loader/test/data/b/module.js") {
-						debugger;
-					}
 					var rsource = this.source.get(path);
 					if (!rsource) return rsource;
 					return new p.Resource(rsource);
