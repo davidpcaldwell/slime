@@ -416,18 +416,22 @@ suite.add("jsh.unit", new function() {
 	}
 });
 
+var requireTomcat = function() {
+	if (!environment.jsh.built.home.getSubdirectory("lib/tomcat")) {
+		jsh.shell.jsh({
+			shell: environment.jsh.built.home,
+			script: environment.jsh.src.getFile("jsh/tools/install/tomcat.jsh.js")
+		})
+	}
+}
+
 // TODO: move to rhino/http/servlet, creating internal.api.html?
 var servletPart = new function() {
 	// TODO: enable
 	var COFFEESCRIPT = false;
 	
 	this.initialize = function() {
-		if (!environment.jsh.built.home.getSubdirectory("lib/tomcat")) {
-			jsh.shell.jsh({
-				shell: environment.jsh.built.home,
-				script: environment.jsh.src.getFile("jsh/tools/install/tomcat.jsh.js")
-			})
-		}		
+		requireTomcat();
 	};
 
 	this.parts = {};
@@ -456,6 +460,22 @@ var servletPart = new function() {
 	}
 };
 suite.add("servlet", servletPart);
+
+// TODO: would be nice to add this to an initialize() method of browser test suite, but need to figure out how that would work.
+requireTomcat();
+
+var browserPart = jsh.unit.Suite.Fork({
+	name: "Browser suites",
+	run: jsh.shell.jsh,
+	shell: environment.jsh.home,
+	script: environment.jsh.src.getFile("loader/browser/suite.jsh.js"),
+	arguments: [
+		"-view", "stdio"
+	].concat(parameters.arguments),
+	// TODO: is setting the working directory necessary?
+	directory: environment.jsh.src
+});
+suite.add("browser", browserPart);
 
 var suitepath;
 if (parameters.options.unit) {

@@ -17,6 +17,7 @@ var parameters = jsh.script.getopts({
 		//	TODO	this parameter conflicts with the SLIME variable and both are used, so should resolve that
 		slime: jsh.script.file.parent.parent.parent.pathname,
 		tomcat: jsh.file.Pathname,
+		// TODO: browser argument obsolete; now included in unit.jsh.js test suite
 		browser: false,
 		debug: false,
 		view: "console",
@@ -237,30 +238,6 @@ parameters.options.java.forEach(function(jre) {
 });
 
 top.part("jrunscript", javaPart);
-
-if (parameters.options.browser) {
-	var tomcat = (function() {
-		if (jsh.shell.jsh.lib.getSubdirectory("tomcat")) return jsh.shell.jsh.lib.getRelativePath("tomcat");
-		if (parameters.options.tomcat) return parameters.options.tomcat;
-		if (jsh.shell.environment.CATALINA_HOME) return jsh.file.Pathname(jsh.shell.environment.CATALINA_HOME);
-	})();
-	if (!tomcat) {
-		jsh.shell.echo("Skipping browser tests: Tomcat not found.");
-	} else {
-		subprocess({
-			run: jsh.shell.jsh,
-			name: "Browser suites",
-			script: parameters.options.slime.directory.getFile("loader/browser/suite.jsh.js"),
-			arguments: [
-				"-view", "stdio"
-			].concat(parameters.arguments),
-			directory: parameters.options.slime.directory,
-			environment: jsh.js.Object.set({}, jsh.shell.environment
-				,{ CATALINA_HOME: tomcat }
-			)
-		});
-	}
-}
 
 top.part("tools", {
 	parts: {
