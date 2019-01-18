@@ -94,90 +94,9 @@ var shells = {
 	})()
 }
 
-var engines = (function() {
-	var rv = [];
-	if (jsh.shell.jsh.lib.getFile("js.jar")) rv.push("rhino");
-	if (new Packages.javax.script.ScriptEngineManager().getEngineByName("nashorn")) rv.push("nashorn");
-	if (jsh.shell.jsh.lib.getSubdirectory("graal")) rv.push("graal");
-	return rv;
-})();
-
-var jshPart = {
-	parts: {}
-};
-
-engines.forEach(function(engine) {
-	// TODO: add a part for an engine not present? Automatically install all engines when script is run?
-	jshPart.parts[engine] = {
-		execute: function(scope,verify) {
-			// TODO: tests unbuilt shells only because built shells would not necessarily have the same libraries (Rhino/Graal).
-			// will need to revisit this.
-			// TODO: consider migrating to and combining with jsh/launcher/internal.api.html
-			var output = jsh.shell.jsh({
-				shell: shells.unbuilt,
-				script: SLIME.getFile("jsh/test/jsh-data.jsh.js"),
-				environment: Object.assign({}, jsh.shell.environment, {
-					JSH_ENGINE: engine
-				}),
-				stdio: {
-					output: String
-				},
-				evaluate: function(result) {
-					return JSON.parse(result.stdio.output);
-				}
-			});
-			verify(output).properties["jsh.engine"].is(engine);
-			
-			if (engine == "rhino") {
-				[-1,0,1].forEach(function(level) {
-					if (shells.unbuilt.getFile("local/jsh/lib/coffee-script.js")) {
-						// TODO: If CoffeeScript is present, jsh should completely ignore optimization level
-						jsh.shell.console("Skipping Rhino optimization tests for level " + level + "; CoffeeScript present.");
-						return;
-					}
-					var result = jsh.shell.jsh({
-						shell: shells.unbuilt,
-						script: SLIME.getFile("jsh/test/jsh-data.jsh.js"),
-						environment: jsh.js.Object.set({}, jsh.shell.environment, {
-							JSH_ENGINE: "rhino",
-							JSH_ENGINE_RHINO_OPTIMIZATION: String(level)
-						}),
-						stdio: {
-							output: String
-						},
-						evaluate: function(result) {
-							return JSON.parse(result.stdio.output);
-						}
-					});
-					verify(result).engines.current.name.is("rhino");
-					verify(result).engines.current.optimization.is(level);
-				});
-			}
-		}
-	}
-});
-
-top.part("jsh", jshPart);
-
 var javaPart = {
 	parts: {}
 };
-var rhinoArgs = (jsh.shell.jsh.lib.getFile("js.jar")) ? ["-rhino", jsh.shell.jsh.lib.getFile("js.jar")] : [];
-
-// TODO: this was intended to be used for each JRE, but was not implemented, so moving it outside the java loop for now
-javaPart.parts.launcher = jsh.unit.Suite.Fork({
-	name: "Launcher tests",
-	run: jsh.shell.jsh,
-	fork: true,
-	script: jsh.script.file.getRelativePath("../test/launcher/suite.jsh.js").file,
-	arguments: [
-		"-scenario",
-		"-shell:unbuilt", shells.unbuilt,
-		"-shell:built", shells.built,
-		"-view", "stdio"
-	].concat(rhinoArgs)
-});
-
 
 parameters.options.java.forEach(function(jre) {
 	var jrePart = {

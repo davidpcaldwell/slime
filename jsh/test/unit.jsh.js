@@ -316,10 +316,97 @@ suite.add("internal/other", new jsh.unit.part.Html({
 	//	TODO	loader/jrunscript/test/data/2/ has some tests but they require some classes in classpath	
 }));
 
-suite.add("launcher", new jsh.unit.part.Html({
+suite.add("launcher/internal.api.html", new jsh.unit.part.Html({
 	pathname: SRC.getRelativePath("jsh/launcher/internal.api.html"),
 	environment: environment
 }));
+
+(function() {
+	var engines = (function() {
+		var rv = [];
+		if (jsh.shell.jsh.lib.getFile("js.jar")) rv.push("rhino");
+		if (new Packages.javax.script.ScriptEngineManager().getEngineByName("nashorn")) rv.push("nashorn");
+		if (jsh.shell.jsh.lib.getSubdirectory("graal")) rv.push("graal");
+		return rv;
+	})();
+
+	var jshPart = {
+		parts: {}
+	};
+
+	engines.forEach(function(engine) {
+		// TODO: add a part for an engine not present? Automatically install all engines when script is run?
+		jshPart.parts[engine] = {
+			execute: function(scope,verify) {
+				// TODO: tests unbuilt shells only because built shells would not necessarily have the same libraries (Rhino/Graal).
+				// will need to revisit this.
+				// TODO: consider migrating to and combining with jsh/launcher/internal.api.html
+				var output = jsh.shell.jsh({
+					shell: environment.jsh.unbuilt.src,
+					script: environment.jsh.src.getFile("jsh/test/jsh-data.jsh.js"),
+					environment: Object.assign({}, jsh.shell.environment, {
+						JSH_ENGINE: engine
+					}),
+					stdio: {
+						output: String
+					},
+					evaluate: function(result) {
+						return JSON.parse(result.stdio.output);
+					}
+				});
+				verify(output).properties["jsh.engine"].is(engine);
+				
+				if (engine == "rhino") {
+					[-1,0,1].forEach(function(level) {
+						if (environment.jsh.unbuilt.src.getFile("local/jsh/lib/coffee-script.js")) {
+							// TODO: If CoffeeScript is present, jsh should completely ignore optimization level
+							jsh.shell.console("Skipping Rhino optimization tests for level " + level + "; CoffeeScript present.");
+							return;
+						}
+						var result = jsh.shell.jsh({
+							shell: environment.jsh.unbuilt.src,
+							script: environment.jsh.src.getFile("jsh/test/jsh-data.jsh.js"),
+							environment: jsh.js.Object.set({}, jsh.shell.environment, {
+								JSH_ENGINE: "rhino",
+								JSH_ENGINE_RHINO_OPTIMIZATION: String(level)
+							}),
+							stdio: {
+								output: String
+							},
+							evaluate: function(result) {
+								return JSON.parse(result.stdio.output);
+							}
+						});
+						verify(result).engines.current.name.is("rhino");
+						verify(result).engines.current.optimization.is(level);
+					});
+				}
+			}
+		}
+	});
+
+	suite.add("launcher/engines", jshPart);	
+})();
+
+(function() {
+	var rhinoArgs = (jsh.shell.jsh.lib.getFile("js.jar")) ? ["-rhino", jsh.shell.jsh.lib.getFile("js.jar")] : [];
+
+	// TODO: this was intended to be used for each JRE, but was not implemented, so moving it outside the java loop for now
+	var part = jsh.unit.Suite.Fork({
+		name: "Launcher tests",
+		run: jsh.shell.jsh,
+		shell: environment.jsh.built.home,
+		script: jsh.script.file.parent.getFile("launcher/suite.jsh.js"),
+		arguments: [
+			"-scenario",
+			"-shell:unbuilt", environment.jsh.unbuilt.src,
+			"-shell:built", environment.jsh.built.home,
+			"-view", "stdio"
+		].concat(rhinoArgs)
+	});
+	
+	suite.add("launcher/suite", part);
+})();
 
 suite.add("$api", new jsh.unit.part.Html({
 	pathname: SRC.getRelativePath("loader/$api.api.html")	
