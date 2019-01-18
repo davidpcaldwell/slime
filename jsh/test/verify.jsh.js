@@ -58,12 +58,6 @@ var top = new jsh.unit.Suite({
 	name: "SLIME verification suite: " + SLIME
 });
 
-var subprocess = function(p) {
-	if (!arguments.callee.index) arguments.callee.index = 0;
-	arguments.callee.index++;
-	top.part("subprocess-" + arguments.callee.index, jsh.unit.Suite.Fork(p));
-}
-
 var shells = {
 	unbuilt: (jsh.shell.jsh.home) ? jsh.shell.jsh.home.getSubdirectory("src") : jsh.shell.jsh.src,
 	built: (function() {
@@ -238,56 +232,6 @@ parameters.options.java.forEach(function(jre) {
 });
 
 top.part("jrunscript", javaPart);
-
-top.part("tools", {
-	parts: {
-		browser: {
-			parts: new function() {
-				if (jsh.shell.jsh.lib.getSubdirectory("tomcat")) {
-					var src = SLIME;
-					this.api = {
-						parts: {
-							failure: {
-								execute: function(scope,verify) {
-									jsh.shell.jsh({
-										fork: true,
-										script: src.getFile("loader/api/ui/test/browser.jsh.js"),
-										evaluate: function(result) {
-											verify(result).status.is(0);
-										}
-									})
-								}
-							},
-							success: {
-								execute: function(scope,verify) {
-									jsh.shell.jsh({
-										fork: true,
-										script: src.getFile("loader/api/ui/test/browser.jsh.js"),
-										arguments: ["-success"],
-										evaluate: function(result) {
-											verify(result).status.is(0);
-										}
-									})
-								}
-							}
-						}
-					}
-					
-					this.suite = new jsh.unit.part.Html({
-						pathname: jsh.shell.jsh.src.getRelativePath("loader/browser/test/suite.jsh.api.html")
-					});
-				} else {
-					this.skip = {
-						execute: function(scope,verify) {
-							var MESSAGE = "Skipping browser test suite tests; no Tomcat to serve files.";
-							verify(MESSAGE).is(MESSAGE);
-						}
-					}
-				}
-			}
-		}
-	}
-});
 
 jsh.unit.interface.create(top, new function() {
 	if (parameters.options.view == "chrome") {

@@ -477,6 +477,49 @@ var browserPart = jsh.unit.Suite.Fork({
 });
 suite.add("browser", browserPart);
 
+suite.add("tools", {
+	initialize: function() {
+		requireTomcat();
+	},
+	parts: {
+		browser: {
+			parts: new function() {
+				this.api = {
+					parts: {
+						failure: {
+							execute: function(scope,verify) {
+								jsh.shell.jsh({
+									shell: environment.jsh.built.home,
+									script: environment.jsh.src.getFile("loader/api/ui/test/browser.jsh.js"),
+									evaluate: function(result) {
+										verify(result).status.is(0);
+									}
+								})
+							}
+						},
+						success: {
+							execute: function(scope,verify) {
+								jsh.shell.jsh({
+									shell: environment.jsh.built.home,
+									script: environment.jsh.src.getFile("loader/api/ui/test/browser.jsh.js"),
+									arguments: ["-success"],
+									evaluate: function(result) {
+										verify(result).status.is(0);
+									}
+								})
+							}
+						}
+					}
+				}
+				
+				this.suite = new jsh.unit.part.Html({
+					pathname: jsh.shell.jsh.src.getRelativePath("loader/browser/test/suite.jsh.api.html")
+				});
+			}
+		}
+	}
+});
+
 var suitepath;
 if (parameters.options.unit) {
 	var tokens = parameters.options.unit.split(":");
