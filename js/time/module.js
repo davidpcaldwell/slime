@@ -814,6 +814,7 @@ if ($context.java) {
 }
 //exports.Time = Time;
 //exports.Period = Period;
+// TODO: this is dumb and should be removed
 $exports.install = function() {
 	if (!arguments.callee.called) {
 		var oldDate = Date;
@@ -841,14 +842,15 @@ $exports.install = function() {
 					} else if (arguments.length == 0) {
 						return new oldDate();
 					} else if (arguments.length > 7) {
-						throw "Illegal number of arguments to new Date(...); see ECMA-262 15.9.3";
+						throw new TypeError("Illegal number of arguments to new Date(...); see ECMA-262 15.9.3");
 					}
 				}
 				return function(){}();
 			} else {
 				return oldDate.apply(this, arguments);
 			}
-		}
+		};
+		Date.was = oldDate;
 		var members = [];
 		members.push("UTC");
 		for (var x in oldDate) {

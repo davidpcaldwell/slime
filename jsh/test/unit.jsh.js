@@ -248,99 +248,127 @@ if (parameters.options.built) {
 	})
 }
 
-var definition = new jsh.unit.part.Html({
-	name: "jsh Unit Tests",
+//var suite = new jsh.unit.Suite();
+
+var old = new jsh.unit.part.Html({
+	name: "jsh/etc/api.html tests",
 	pathname: jsh.script.file.parent.parent.parent.getRelativePath("jsh/etc/api.html"),
 	environment: environment
 });
 
-var suite = new jsh.unit.Suite();
+var Suite = function() {
+	var byName = {};
+	
+	var definition = {
+		parts: {
+			old: old
+		}
+	};
+	
+	this.add = function(path,part) {
+		byName[path] = part;
+		var tokens = path.split("/");
+		var target = definition;
+		for (var i=0; i<tokens.length; i++) {
+			if (i == tokens.length-1) {
+				target.parts[tokens[i]] = part;
+			} else {
+				if (!target.parts[tokens[i]]) {
+					target.parts[tokens[i]] = {
+						parts: {}
+					}
+				}
+				target = target.parts[tokens[i]];
+			}
+		}
+	};
+	
+	this.part = function(name) {
+		return byName[name];
+	};
+	
+	this.parts = definition.parts;
+	
+	this.build = function() {
+		return new jsh.unit.Suite(definition);
+	}
+}
+
+var suite = new Suite();
 
 var SRC = jsh.script.file.parent.parent.parent;
 
-var parts = {
-	"$api": new jsh.unit.part.Html({
-		pathname: SRC.getRelativePath("loader/$api.api.html")
-	}),
-	"jsh.loader": new jsh.unit.part.Html({
-		pathname: SRC.getRelativePath("jsh/loader/loader.api.html"),
-		environment: environment		
-	}),
-	"jsh.io": new jsh.unit.part.Html({
-		pathname: SRC.getRelativePath("jrunscript/io/api.html"),
-		environment: environment
-	}),
-	"jsh.shell": new jsh.unit.part.Html({
-		pathname: SRC.getRelativePath("rhino/shell/plugin.jsh.api.html"),
-		environment: environment
-	}),
-	"jsh.script": new jsh.unit.part.Html({
-		pathname: SRC.getRelativePath("jsh/script/plugin.jsh.api.html"),
-		environment: environment
-	}),
-	"jsh.file/Searchpath": new jsh.unit.part.Html({
-		pathname: SRC.getRelativePath("rhino/file/api.Searchpath.html")
-	}),
-	"loader": new jsh.unit.part.Html({
-		pathname: SRC.getRelativePath("jsh/loader/internal.api.html"),
-		environment: environment				
-	}),
-	launcher: new jsh.unit.part.Html({
-		pathname: SRC.getRelativePath("jsh/launcher/internal.api.html"),
-		environment: environment
-	}),
-	"jsh-tools": new jsh.unit.part.Html({
-		pathname: SRC.getRelativePath("jsh/tools/internal.api.html"),
-		environment: environment		
-	})
-};
+suite.add("internal/slime", new jsh.unit.part.Html({
+		//	Functionality used internally or accessed through loader/jrunscript (although untested by loader/jrunscript)
+	pathname: SRC.getRelativePath("loader/api.html")
+}));
+suite.add("internal/mime", new jsh.unit.part.Html({
+	pathname: SRC.getRelativePath("loader/mime.api.html")	
+}));
+suite.add("internal/jrunscript", new jsh.unit.part.Html({
+	//	Test cases of loader implementation
+	pathname: SRC.getRelativePath("loader/jrunscript/api.html")
+}));
+suite.add("internal/other", new jsh.unit.part.Html({
+	//	Test cases involving the HTML test runner itself
+	pathname: SRC.getRelativePath("loader/api/test/data/1/api.html")
+	//	TODO	loader/jrunscript/java has some tests
+	//	TODO	loader/jrunscript/test/data/2/ has some tests but they require some classes in classpath	
+}));
 
-var internal = {
-	parts: {
-		slime: new jsh.unit.part.Html({
-			//	Functionality used internally or accessed through loader/jrunscript (although untested by loader/jrunscript)
-			pathname: SRC.getRelativePath("loader/api.html")
-		}),
-		mime: new jsh.unit.part.Html({
-			pathname: SRC.getRelativePath("loader/mime.api.html")
-		}),
-		jrunscript: new jsh.unit.part.Html({
-			//	Test cases of loader implementation
-			pathname: SRC.getRelativePath("loader/jrunscript/api.html")
-		}),
-		other: new jsh.unit.part.Html({
-			//	Test cases involving the HTML test runner itself
-			pathname: SRC.getRelativePath("loader/api/test/data/1/api.html")
-		})
-		//	TODO	loader/jrunscript/java has some tests
-		//	TODO	loader/jrunscript/test/data/2/ has some tests but they require some classes in classpath
-	}
-};
+suite.add("launcher", new jsh.unit.part.Html({
+	pathname: SRC.getRelativePath("jsh/launcher/internal.api.html"),
+	environment: environment
+}));
 
-suite.part("internal", internal);
+suite.add("$api", new jsh.unit.part.Html({
+	pathname: SRC.getRelativePath("loader/$api.api.html")	
+}));
 
-suite.part("$api", parts.$api);
-suite.part("jsh.loader", parts["jsh.loader"]);
-suite.part("jsh.io", parts["jsh.io"]);
-suite.part("jsh.file", {
-	parts: {
-		Searchpath: parts["jsh.file/Searchpath"]
-	}
-});
-suite.part("jsh.shell", parts["jsh.shell"]);
-suite.part("jsh.shell.jsh", new jsh.unit.Suite.Fork({
+suite.add("jsh.loader", new jsh.unit.part.Html({
+	pathname: SRC.getRelativePath("jsh/loader/loader.api.html"),
+	environment: environment	
+}));
+
+suite.add("jsh.io", new jsh.unit.part.Html({
+	pathname: SRC.getRelativePath("jrunscript/io/api.html"),
+	environment: environment	
+}));
+
+suite.add("jsh.shell", new jsh.unit.part.Html({
+	pathname: SRC.getRelativePath("rhino/shell/plugin.jsh.api.html"),
+	environment: environment	
+}));
+
+suite.add("jsh.script", new jsh.unit.part.Html({
+	pathname: SRC.getRelativePath("jsh/script/plugin.jsh.api.html"),
+	environment: environment	
+}));
+
+suite.add("jsh.file/Searchpath", new jsh.unit.part.Html({
+	pathname: SRC.getRelativePath("rhino/file/api.Searchpath.html")	
+}));
+
+suite.add("loader", new jsh.unit.part.Html({
+	pathname: SRC.getRelativePath("jsh/loader/internal.api.html"),
+	environment: environment
+}));
+
+suite.add("jsh-tools", new jsh.unit.part.Html({
+	pathname: SRC.getRelativePath("jsh/tools/internal.api.html"),
+	environment: environment
+}));
+
+suite.add("jsh.shell.jsh", new jsh.unit.Suite.Fork({
 	// TODO: moved this from integration tests and reproduced current test without much thought; could be that we should not be
 	// using the built shell, or should be using more shells
 	run: jsh.shell.jsh,
 	shell: (environment.jsh.built) ? environment.jsh.built.home : environment.jsh.unbuilt.src,
 	script: SRC.getFile("rhino/shell/test/jsh.shell.jsh.suite.jsh.js"),
-	arguments: ["-view","stdio"]
+	arguments: ["-view","stdio"]	
 }));
-suite.part("jsh.script", parts["jsh.script"]);
-suite.part("loader", parts.loader);
-suite.part("launcher", parts.launcher);
-suite.part("jsh-tools", parts["jsh-tools"]);
-suite.part("jsh.unit", new function() {
+
+suite.add("jsh.unit", new function() {
 	var src = SRC;
 	this.parts = {
 		htmlReload: {
@@ -380,14 +408,13 @@ suite.part("jsh.unit", new function() {
 		}),
 	}
 });
-suite.part("old", definition);
 
 var suitepath;
 if (parameters.options.unit) {
 	var tokens = parameters.options.unit.split(":");
 	var partname = tokens[0];
 	var partpath = (tokens.length > 1) ? tokens[1].split("/") : void(0);
-	var partpage = parts[partname];
+	var partpage = suite.part(partname);
 	if (partpage) {
 		suitepath = partname.split("/");
 		if (partpath) {
@@ -396,11 +423,11 @@ if (parameters.options.unit) {
 	} else if (suite.parts[partname]) {
 		suitepath = [partname];
 	} else {
-		suitepath = ["old"].concat(definition.getPath(parameters.options.unit.split("/")));
+		suitepath = ["old"].concat(old.getPath(parameters.options.unit.split("/")));
 	}
 }
 
-jsh.unit.interface.create(suite, new function() {
+jsh.unit.interface.create(suite.build(), new function() {
 	if (parameters.options.view == "chrome") {
 		this.chrome = {
 			profile: parameters.options["chrome:profile"],
