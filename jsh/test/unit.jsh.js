@@ -330,6 +330,13 @@ suite.add("jsh.loader", new jsh.unit.part.Html({
 	environment: environment	
 }));
 
+suite.add("jsh.js/other", new jsh.unit.part.Html({
+	pathname: SRC.getRelativePath("js/object/api.html")	
+}));
+suite.add("jsh.js/Error", new jsh.unit.part.Html({
+	pathname: SRC.getRelativePath("js/object/Error.api.html")
+}));
+
 suite.add("jsh.io", new jsh.unit.part.Html({
 	pathname: SRC.getRelativePath("jrunscript/io/api.html"),
 	environment: environment	
