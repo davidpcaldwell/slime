@@ -184,35 +184,6 @@ javaPart.parts.launcher = jsh.unit.Suite.Fork({
 });
 
 
-// TODO: move to rhino/http/servlet, creating internal.api.html?
-var servletPart = new function() {
-	this.parts = {};
-	 
-	this.parts.suite = {
-		execute: function(scope,verify) {
-			var result = jsh.shell.jsh({
-				shell: shells.built,
-				script: SLIME.getFile("jsh/test/jsh.httpd/httpd.jsh.js")
-			});
-			verify(result).status.is(0);
-		}
-	};
-	
-	if (COFFEESCRIPT) {
-		this.parts.coffee = {
-			execute: function(scope,verify) {
-				var result = jsh.shell.jsh({
-					shell: shells.built,
-					script: SLIME.getFile("jsh/test/jsh.httpd/httpd.jsh.js"),
-					arguments: ["-suite", "coffee"]
-				});
-				verify(result).status.is(0);
-			}			
-		}
-	}
-};
-top.part("servlet", servletPart);
-
 parameters.options.java.forEach(function(jre) {
 	var jrePart = {
 		parts: {}

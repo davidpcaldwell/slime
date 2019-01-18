@@ -416,6 +416,47 @@ suite.add("jsh.unit", new function() {
 	}
 });
 
+// TODO: move to rhino/http/servlet, creating internal.api.html?
+var servletPart = new function() {
+	// TODO: enable
+	var COFFEESCRIPT = false;
+	
+	this.initialize = function() {
+		if (!environment.jsh.built.home.getSubdirectory("lib/tomcat")) {
+			jsh.shell.jsh({
+				shell: environment.jsh.built.home,
+				script: environment.jsh.src.getFile("jsh/tools/install/tomcat.jsh.js")
+			})
+		}		
+	};
+
+	this.parts = {};
+	 
+	this.parts.suite = {
+		execute: function(scope,verify) {
+			var result = jsh.shell.jsh({
+				shell: environment.jsh.built.home,
+				script: environment.jsh.src.getFile("jsh/test/jsh.httpd/httpd.jsh.js")
+			});
+			verify(result).status.is(0);
+		}
+	};
+	
+	if (COFFEESCRIPT) {
+		this.parts.coffee = {
+			execute: function(scope,verify) {
+				var result = jsh.shell.jsh({
+					shell: environment.jsh.built.home,
+					script: environment.jsh.src.getFile("jsh/test/jsh.httpd/httpd.jsh.js"),
+					arguments: ["-suite", "coffee"]
+				});
+				verify(result).status.is(0);
+			}			
+		}
+	}
+};
+suite.add("servlet", servletPart);
+
 var suitepath;
 if (parameters.options.unit) {
 	var tokens = parameters.options.unit.split(":");
