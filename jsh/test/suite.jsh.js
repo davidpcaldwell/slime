@@ -171,7 +171,7 @@ parameters.options.java.forEach(function(jre,index,jres) {
 				run: jsh.shell.jsh,
 				vmarguments: ["-Xms1024m"],
 				shell: environment.jsh.src,
-				script: jsh.script.file.parent.getFile("jrunscript-suite.jsh.js"),
+				script: jsh.script.file.parent.getFile("jrunscript.jsh.js"),
 				arguments: [
 					"-shell:built", environment.jsh.built.location,
 					"-view", "stdio"

@@ -42,11 +42,6 @@ var suite = new project.Suite({
 
 var SRC = jsh.script.file.parent.parent.parent;
 
-suite.add("loader", new jsh.unit.part.Html({
-	pathname: SRC.getRelativePath("jsh/loader/internal.api.html"),
-	environment: environment
-}));
-
 suite.add("internal/slime", new jsh.unit.part.Html({
 		//	Functionality used internally or accessed through loader/jrunscript (although untested by loader/jrunscript)
 	pathname: SRC.getRelativePath("loader/api.html")
@@ -69,35 +64,73 @@ suite.add("$api", new jsh.unit.part.Html({
 	pathname: SRC.getRelativePath("loader/$api.api.html")	
 }));
 
-suite.add("jsh.loader", new jsh.unit.part.Html({
+suite.add("js/web", new jsh.unit.part.Html({
+	pathname: SRC.getRelativePath("js/web/api.html")
+}));
+
+suite.add("js/object/other", new jsh.unit.part.Html({
+	pathname: SRC.getRelativePath("js/object/api.html")	
+}));
+suite.add("js/object/Error", new jsh.unit.part.Html({
+	pathname: SRC.getRelativePath("js/object/Error.api.html")
+}));
+
+suite.add("js/document", new jsh.unit.part.Html({
+	pathname: SRC.getRelativePath("js/document/api.html")
+}));
+
+suite.add("jrunscript/host", new jsh.unit.part.Html({
+	pathname: SRC.getRelativePath("jrunscript/io/api.html"),
+	// TODO: why is supplying the module this way necessary?
+	environment: Object.assign({}, environment, { module: jsh.java })
+}));
+
+suite.add("jrunscript/io/main", new jsh.unit.part.Html({
+	pathname: SRC.getRelativePath("jrunscript/io/api.html")
+}));
+
+suite.add("jrunscript/io/mime", new jsh.unit.part.Html({
+	pathname: SRC.getRelativePath("jrunscript/io/mime.api.html")
+}));
+
+suite.add("jrunscript/io/grid", new jsh.unit.part.Html({
+	pathname: SRC.getRelativePath("jrunscript/io/grid.api.html")
+}));
+
+suite.add("jrunscript/file/main", new jsh.unit.part.Html({
+	pathname: SRC.getRelativePath("rhino/file/api.html")	
+}));
+
+suite.add("jrunscript/file/Searchpath", new jsh.unit.part.Html({
+	pathname: SRC.getRelativePath("rhino/file/api.Searchpath.html")	
+}));
+
+suite.add("jrunscript/tools", new jsh.unit.part.Html({
+	pathname: SRC.getRelativePath("rhino/tools/plugin.jsh.api.html")
+}));
+
+suite.add("jsh/loader", new jsh.unit.part.Html({
+	pathname: SRC.getRelativePath("jsh/loader/internal.api.html"),
+	environment: environment
+}));
+
+suite.add("jsh/jsh.tools.install", new jsh.unit.part.Html({
+	pathname: SRC.getRelativePath("jsh/tools/install/plugin.jsh.api.html")
+}));
+
+suite.add("jsh/jsh.loader", new jsh.unit.part.Html({
 	pathname: SRC.getRelativePath("jsh/loader/loader.api.html"),
 	environment: environment	
 }));
 
-suite.add("jsh.js/other", new jsh.unit.part.Html({
-	pathname: SRC.getRelativePath("js/object/api.html")	
-}));
-suite.add("jsh.js/Error", new jsh.unit.part.Html({
-	pathname: SRC.getRelativePath("js/object/Error.api.html")
-}));
-
-suite.add("jsh.io", new jsh.unit.part.Html({
-	pathname: SRC.getRelativePath("jrunscript/io/api.html"),
-	environment: environment	
-}));
-
-suite.add("jsh.shell", new jsh.unit.part.Html({
+suite.add("jsh/jsh.shell", new jsh.unit.part.Html({
 	pathname: SRC.getRelativePath("rhino/shell/plugin.jsh.api.html"),
 	environment: environment	
 }));
 
-suite.add("jsh.script", new jsh.unit.part.Html({
+suite.add("jsh/jsh.script", new jsh.unit.part.Html({
 	pathname: SRC.getRelativePath("jsh/script/plugin.jsh.api.html"),
 	environment: environment	
-}));
-
-suite.add("jsh.file/Searchpath", new jsh.unit.part.Html({
-	pathname: SRC.getRelativePath("rhino/file/api.Searchpath.html")	
 }));
 
 suite.add("jsh-tools", new jsh.unit.part.Html({
@@ -200,6 +233,10 @@ var servletPart = new function() {
 	}
 };
 suite.add("servlet", servletPart);
+
+suite.add("provision", new jsh.unit.part.Html({
+	pathname: SRC.getRelativePath("jsh/tools/provision/api.html")
+}));
 
 var suitepath;
 if (parameters.options.unit) {
