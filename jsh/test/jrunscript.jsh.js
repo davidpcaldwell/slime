@@ -79,6 +79,10 @@ suite.add("js/document", new jsh.unit.part.Html({
 	pathname: SRC.getRelativePath("js/document/api.html")
 }));
 
+suite.add("js/time", new jsh.unit.part.Html({
+	pathname: SRC.getRelativePath("js/time/api.html")
+}));
+
 suite.add("jrunscript/host", new jsh.unit.part.Html({
 	pathname: SRC.getRelativePath("jrunscript/io/api.html"),
 	// TODO: why is supplying the module this way necessary?
@@ -108,6 +112,14 @@ suite.add("jrunscript/file/Searchpath", new jsh.unit.part.Html({
 suite.add("jrunscript/ip", new jsh.unit.part.Html({
 	pathname: SRC.getRelativePath("rhino/ip/api.html"),
 	environment: { noselfping: parameters.options.noselfping }	
+}));
+
+suite.add("jrunscript/http", new jsh.unit.part.Html({
+	pathname: SRC.getRelativePath("rhino/http/client/api.html")
+}));
+
+suite.add("jrunscript/document", new jsh.unit.part.Html({
+	pathname: SRC.getRelativePath("rhino/document/api.html")
 }));
 
 suite.add("jrunscript/shell/main", new jsh.unit.part.Html({
