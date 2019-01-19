@@ -105,6 +105,19 @@ suite.add("jrunscript/file/Searchpath", new jsh.unit.part.Html({
 	pathname: SRC.getRelativePath("rhino/file/api.Searchpath.html")	
 }));
 
+suite.add("jrunscript/ip", new jsh.unit.part.Html({
+	pathname: SRC.getRelativePath("rhino/ip/api.html"),
+	environment: { noselfping: parameters.options.noselfping }	
+}));
+
+suite.add("jrunscript/shell/main", new jsh.unit.part.Html({
+	pathname: SRC.getRelativePath("rhino/shell/api.html"),
+	environment: { noselfping: parameters.options.noselfping }
+}));
+suite.add("jrunscript/shell/browser", new jsh.unit.part.Html({
+	pathname: SRC.getRelativePath("rhino/shell/browser/api.html")
+}));
+
 suite.add("jrunscript/tools", new jsh.unit.part.Html({
 	pathname: SRC.getRelativePath("rhino/tools/plugin.jsh.api.html")
 }));
@@ -125,7 +138,9 @@ suite.add("jsh/jsh.loader", new jsh.unit.part.Html({
 
 suite.add("jsh/jsh.shell", new jsh.unit.part.Html({
 	pathname: SRC.getRelativePath("rhino/shell/plugin.jsh.api.html"),
-	environment: environment	
+	// TODO: do we actually need environment here?
+	// TODO: do we actually need noselfping here?
+	environment: Object.assign({}, environment, { noselfping: parameters.options.noselfping })
 }));
 
 suite.add("jsh/jsh.script", new jsh.unit.part.Html({
