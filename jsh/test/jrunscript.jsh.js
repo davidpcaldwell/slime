@@ -249,6 +249,10 @@ suite.add("jsh/jsh.httpd", new jsh.unit.part.Html({
 	pathname: SRC.getRelativePath("rhino/http/servlet/plugin.jsh.api.html")	
 }));
 
+suite.add("jsh/jsh.ui", new jsh.unit.part.Html({
+	pathname: SRC.getRelativePath("rhino/ui/plugin.jsh.api.html")
+}));
+
 // TODO: requires Tomvcat, right?
 // TODO: move to rhino/http/servlet, creating internal.api.html?
 var servletPart = new function() {
