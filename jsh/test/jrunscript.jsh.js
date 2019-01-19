@@ -241,6 +241,14 @@ var requireTomcat = function() {
 	}
 }
 
+suite.add("servlet/api", new jsh.unit.part.Html({
+	pathname: SRC.getRelativePath("rhino/http/servlet/api.html")	
+}));
+
+suite.add("jsh/jsh.httpd", new jsh.unit.part.Html({
+	pathname: SRC.getRelativePath("rhino/http/servlet/plugin.jsh.api.html")	
+}));
+
 // TODO: requires Tomvcat, right?
 // TODO: move to rhino/http/servlet, creating internal.api.html?
 var servletPart = new function() {
@@ -276,7 +284,7 @@ var servletPart = new function() {
 		}
 	}
 };
-suite.add("servlet", servletPart);
+suite.add("servlet/suite", servletPart);
 
 suite.add("provision", new jsh.unit.part.Html({
 	pathname: SRC.getRelativePath("jsh/tools/provision/api.html")
