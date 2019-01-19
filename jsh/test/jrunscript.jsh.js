@@ -174,7 +174,16 @@ suite.add("jsh.shell.jsh", new jsh.unit.Suite.Fork({
 	arguments: ["-view","stdio"]	
 }));
 
-suite.add("jsh.unit", new function() {
+suite.add("testing/constructs", new jsh.unit.part.Html({
+	pathname: SRC.getRelativePath("loader/api/unit.api.html")
+}));
+suite.add("testing/html", new jsh.unit.part.Html({
+	pathname: SRC.getRelativePath("loader/api/api.html")
+}));
+suite.add("testing/jsh.unit", new jsh.unit.part.Html({
+	pathname: SRC.getRelativePath("jsh/unit/plugin.jsh.api.html")
+}));
+suite.add("testing/integration", new function() {
 	var src = SRC;
 	this.parts = {
 		htmlReload: {
