@@ -130,8 +130,12 @@ suite.add("jrunscript/shell/browser", new jsh.unit.part.Html({
 	pathname: SRC.getRelativePath("rhino/shell/browser/api.html")
 }));
 
-suite.add("jrunscript/tools", new jsh.unit.part.Html({
+suite.add("jrunscript/tools/main", new jsh.unit.part.Html({
 	pathname: SRC.getRelativePath("rhino/tools/plugin.jsh.api.html")
+}));
+// TODO: does this require hg be installed?
+suite.add("jrunscript/tools/hg", new jsh.unit.part.Html({
+	pathname: SRC.getRelativePath("rhino/tools/hg/api.html")
 }));
 
 suite.add("jsh/loader", new jsh.unit.part.Html({
@@ -158,6 +162,10 @@ suite.add("jsh/jsh.shell", new jsh.unit.part.Html({
 suite.add("jsh/jsh.script", new jsh.unit.part.Html({
 	pathname: SRC.getRelativePath("jsh/script/plugin.jsh.api.html"),
 	environment: environment	
+}));
+
+suite.add("jsh/jsh.tools", new jsh.unit.part.Html({
+	pathname: SRC.getRelativePath("rhino/tools/plugin.jsh.jsh.tools.api.html")
 }));
 
 suite.add("jsh-tools", new jsh.unit.part.Html({
