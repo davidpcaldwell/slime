@@ -36,16 +36,16 @@ END LICENSE
 			<li><code>-part <i>part</i></code>: What part of the definition to run. Implies <code>-interactive</code>.</li> 
 			<li><code>-parameter <i>name=value</i></code>: A query parameter to send to the suite or definition.</li>
 			<li>
+				<code>-browser</code>: Specifies that the tests should be run only in the default browser. If this option is not
+				specified, the tests will be executed in every detected browser.
+			</li>
+			<li>
 				<code>-interactive</code>: Whether to run the test suite interactively. The suite will only be run in one browser,
 				which will stay open after running so that the page may be refreshed and the suite run again.
 			</li>
 			<li>
 				<code>-chrome:instance <i>pathname</i></code>: Specifies the user data directory that will be used for Google Chrome
 				if Chrome is one of the browser running the tests.
-			</li>
-			<li>
-				<code>-default</code>: Specifies that the tests should be run only in the default browser. If this option is not
-				specified, the tests will be executed in every detected browser.
 			</li>
 			<li>
 				<code>-view <i>view</i></code>: If <code>console</code>, the results of the test suite will be emitted to the
@@ -61,7 +61,7 @@ END LICENSE
 				script: jsh.shell.jsh.src.getFile("loader/browser/test/suite.jsh.js"),
 				arguments: [
 					"-suite", jsh.shell.jsh.src.getFile("loader/browser/test/test/issue300.suite.js"),
-					"-default"
+					"-browser", "chrome"
 				],
 				evaluate: function(result) {
 					verify(result).status.is(0);
@@ -74,7 +74,7 @@ END LICENSE
 				script: jsh.shell.jsh.src.getFile("loader/browser/test/suite.jsh.js"),
 				arguments: [
 					"-suite", jsh.shell.jsh.src.getFile("loader/browser/test/test/issue300.suite.js"),
-					"-default",
+					"-browser", "chrome",
 					"-parameter", "failure=true"
 				],
 				evaluate: function(result) {

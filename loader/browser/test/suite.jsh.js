@@ -5,13 +5,10 @@ var parameters = jsh.script.getopts({
 		part: String,
 		
 		parameter: jsh.script.getopts.ARRAY(String),
-		
 
+		browser: String,
 		interactive: false,
 		"chrome:instance": jsh.file.Pathname,
-		
-		//	Run tests in default browser only, rather than all browsers
-		"default": false,
 		
 		view: "console"
 	}
@@ -199,58 +196,63 @@ var Chrome = function(o) {
 	}
 };
 
-//	Browsers in precedence order: whichever is first in the array will be used if only one is being used
-var browsers = [];
-
-if (jsh.shell.browser.chrome) {
-	browsers.push(new Chrome({
-		location: parameters.options["chrome:instance"]		
-	}));
-}
-
-["IE","Firefox","Safari"].forEach(function(name) {
-	var browser = jsh.unit.browser.installed[name.toLowerCase()];
-	if (browser) {
-		var b = new Browser(browser.delegate);
-		b.name = name;
-		browsers.push(b);
+var browser = (function(argument) {
+	if (argument == "chrome") {
+		return new Chrome({
+			location: parameters.options["chrome:instance"]
+		});
 	}
-});
+	var browsers = ["ie","firefox","safari"];
+	for (var i=0; i<browsers.length; i++) {
+		if (argument == browsers[i]) {
+			var rv = new Browser(jsh.unit.browser.installed[argument].delegate);
+			rv.name = argument;
+			return rv;
+		}
+	}
+})(parameters.options.browser);
 
-// TODO: allow set of browsers to be specified on command line
-
-if (parameters.options["default"]) {
-	browsers = browsers.slice(0,1);
-}
+// if (jsh.shell.browser.chrome) {
+// 	browsers.push(new Chrome({
+// 		location: parameters.options["chrome:instance"]		
+// 	}));
+// }
+// 
+// ["IE","Firefox","Safari"].forEach(function(name) {
+// 	var browser = jsh.unit.browser.installed[name.toLowerCase()];
+// 	if (browser) {
+// 		var b = new Browser(browser.delegate);
+// 		b.name = name;
+// 		browsers.push(b);
+// 	}
+// });
 
 if (parameters.options.interactive) {
-	run(browsers[0]);
+	run(browser);
 } else {
 	var suite = new jsh.unit.Suite();
-	browsers.forEach(function(browser) {
-		jsh.shell.console("Requesting result.");
-		var running = run(browser);
-		var result = new jsh.http.Client().request({
-			url: "http://127.0.0.1:" + running.port + "/" + url,
-			evaluate: function(response) {
-				var string = response.body.stream.character().asString();
-				var json = JSON.parse(string);
-				return json;
-			}
-		});
-		var decoder = new jsh.unit.JSON.Decoder();
-		var scenario = {
-			name: browser.name,
-			execute: function(scope,verify) {
-				result.events.forEach(function(event) {
-					// TODO: there is no documentation that verify.fire works and it is not obvious why it does
-					verify.fire(event.type,event.detail);
-				});
-			}
+	jsh.shell.console("Requesting result.");
+	var running = run(browser);
+	var result = new jsh.http.Client().request({
+		url: "http://127.0.0.1:" + running.port + "/" + url,
+		evaluate: function(response) {
+			var string = response.body.stream.character().asString();
+			var json = JSON.parse(string);
+			return json;
 		}
-		suite.part(browser.name, scenario);
-		browser.kill();
 	});
+	var decoder = new jsh.unit.JSON.Decoder();
+	var scenario = {
+		name: browser.name,
+		execute: function(scope,verify) {
+			result.events.forEach(function(event) {
+				// TODO: there is no documentation that verify.fire works and it is not obvious why it does
+				verify.fire(event.type,event.detail);
+			});
+		}
+	}
+	suite.part(browser.name, scenario);
+	browser.kill();
 	jsh.unit.interface.create(suite, {
 		view: parameters.options.view
 	});
