@@ -31,14 +31,7 @@ var environment = new project.Environment({
 	noselfping: parameters.options.noselfping,
 	executable: parameters.options.executable
 });
-var old = new jsh.unit.part.Html({
-	name: "jsh/etc/api.html tests",
-	pathname: jsh.script.file.parent.parent.parent.getRelativePath("jsh/etc/api.html"),
-	environment: environment
-});
-var suite = new project.Suite({
-	old: old	
-});
+var suite = new project.Suite();
 
 var SRC = jsh.script.file.parent.parent.parent;
 
@@ -83,8 +76,8 @@ suite.add("js/time", new jsh.unit.part.Html({
 	pathname: SRC.getRelativePath("js/time/api.html")
 }));
 
-suite.add("jrunscript/host", new jsh.unit.part.Html({
-	pathname: SRC.getRelativePath("jrunscript/io/api.html"),
+suite.add("jrunscript/java/host", new jsh.unit.part.Html({
+	pathname: SRC.getRelativePath("jrunscript/host/api.html"),
 	// TODO: why is supplying the module this way necessary?
 	environment: Object.assign({}, environment, { module: jsh.java })
 }));
@@ -130,7 +123,10 @@ suite.add("jrunscript/shell/browser", new jsh.unit.part.Html({
 	pathname: SRC.getRelativePath("rhino/shell/browser/api.html")
 }));
 
-suite.add("jrunscript/tools/main", new jsh.unit.part.Html({
+suite.add("jrunscript/java/tools/api", new jsh.unit.part.Html({
+	pathname: SRC.getRelativePath("rhino/tools/api.html")
+}));
+suite.add("jrunscript/java/tools/jsh", new jsh.unit.part.Html({
 	pathname: SRC.getRelativePath("rhino/tools/plugin.jsh.api.html")
 }));
 // TODO: does this require hg be installed?
@@ -305,10 +301,8 @@ if (parameters.options.unit) {
 		if (partpath) {
 			suitepath = suitepath.concat(partpage.getPath(partpath));
 		}
-	} else if (suite.parts[partname]) {
-		suitepath = [partname];
 	} else {
-		suitepath = ["old"].concat(old.getPath(parameters.options.unit.split("/")));
+		suitepath = partname.split("/");
 	}
 }
 

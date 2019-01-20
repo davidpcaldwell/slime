@@ -5,9 +5,6 @@ var Suite = function(p) {
 		parts: {
 		}
 	};
-	if (p && p.old) {
-		definition.parts.old = p.old;
-	}
 	
 	this.add = function(path,part) {
 		byName[path] = part;

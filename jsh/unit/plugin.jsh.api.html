@@ -103,11 +103,87 @@ END LICENSE
 																<span class="type">string</span>
 																<span>
 																	(optional; defaults to the location of the current page)
-																	A path relative to the definition page
+																	A path relative to the definition page from which to load plugins.
 																</span>
 															</li>
 														</ol>
 													</div>
+												</li>
+												<li class="object">
+													<div class="name">plugin</div>
+													<span>__DESCRIPTION__</span>
+													<div class="label">has properties:</div>
+													<ul>
+														<li class="function">
+															<div class="name">mock</div>
+															<span>A function allowing <code>jsh</code> plugins to be loaded into a container other than the executing shell.</span>
+															<div class="arguments">
+																<div class="label">Arguments</div>
+																<ol>
+																	<li class="object">
+																		<div class="label">has properties:</div>
+																		<ul>
+																			<li class="value">
+																				<div class="name">path</div>
+																				<span class="type">string</span>
+																				<span>
+																					(optional) The path, relative to the definition page, from which to load plugins.
+																				</span>
+																			</li>
+																			<li class="value">
+																				<div class="name">jsh</div>
+																				<span class="type">object</span>
+																				<span>A mock for the global <code>jsh</code> object.</span>
+																			</li>
+																			<li class="value">
+																				<div class="name">plugins</div>
+																				<span class="type">object</span>
+																				<span>
+																					(optional) The object to use as the <code><a href="../../jsh/loader/plugin.api.html">plugins</a></code> object
+																					when loading the plugins.
+																				</span>
+																			</li>
+																			<!-- TODO: Undocumented: toString -->
+																			<li class="function">
+																				<div class="name">evaluate</div>
+																				<span>A function specifying what is returned to the caller.</span>
+																				<div class="arguments">
+																					<div class="label">Arguments</div>
+																					<ol>
+																						<li class="object">
+																							<div class="label">has properties:</div>
+																							<ul>
+																								<li class="value">
+																									<div class="name">jsh</div>
+																									<span class="type"></span>
+																									<span>The mock <code>jsh</code> object after loading the plugins.</span>
+																								</li>
+																								<li class="value">
+																									<div class="name">plugins</div>
+																									<span class="type">__TYPE__</span>
+																									<span>The mock <code>plugins</code> object after loading the plugins.</span>
+																								</li>																								
+																							</ul>
+																						</li>
+																					</ol>
+																				</div>
+																				<div class="returns">
+																					<div class="label">Returns</div>
+																					<span class="type">(any)</span>
+																					<span>The return value to return to the caller of <code>mock</code>.</span>
+																				</div>
+																			</li>
+																		</ul>
+																	</li>
+																</ol>
+															</div>
+															<div class="returns">
+																<div class="label">Returns</div>
+																<span class="type">__TYPE__</span>
+																<span>__DESCRIPTION__</span>
+															</div>
+														</li>
+													</ul>
 												</li>
 												<li class="function">
 													<div class="name">suite</div>
