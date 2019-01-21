@@ -13,14 +13,17 @@
 
 var parameters = jsh.script.getopts({
 	options: {
-		built: false,
+		//	undocumented; used by suite.jsh.js
 		"shell:built": jsh.file.Pathname,
-		view: "console",
-		port: Number,
-		"chrome:profile": jsh.file.Pathname,
-		unit: String,
+		
 		noselfping: false,
-		executable: false
+		executable: false,
+		
+		unit: String,
+		view: "console",
+		
+		// TODO: does this work? Is it necessary?
+		"chrome:profile": jsh.file.Pathname
 	}
 });
 
@@ -307,10 +310,10 @@ if (parameters.options.unit) {
 }
 
 jsh.unit.interface.create(suite.build(), new function() {
+	// TODO: is this redundant? Value of "chrome" should just work, right? Or is it because we want to specify instance?
 	if (parameters.options.view == "chrome") {
 		this.chrome = {
-			profile: parameters.options["chrome:profile"],
-			port: parameters.options.port
+			profile: parameters.options["chrome:profile"]
 		};
 	} else {
 		this.view = parameters.options.view;
