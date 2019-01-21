@@ -189,18 +189,41 @@ suite.add("jsh/launcher/internal", new jsh.unit.part.Html({
 	environment: environment
 }));
 
-var browserPart = jsh.unit.Suite.Fork({
-	name: "Browser suites",
-	run: jsh.shell.jsh,
-	shell: environment.jsh.home,
-	script: environment.jsh.src.getFile("loader/browser/suite.jsh.js"),
-	arguments: [
-		"-view", "stdio"
-	].concat(parameters.arguments),
-	// TODO: is setting the working directory necessary?
-	directory: environment.jsh.src
+//	Browsers in precedence order: whichever is first in the array will be used if only one is being used
+var browsers = jsh.unit.browser.installed;
+suite.add("browsers", new function() {
+	this.name = "Browser tests";
+	
+	this.parts = new function() {
+		jsh.unit.browser.installed.forEach(function(browser) {
+			this[browser.id] = jsh.unit.Suite.Fork({
+				name: browser.name,
+				run: jsh.shell.jsh,
+				shell: environment.jsh.home,
+				script: environment.jsh.src.getFile("loader/browser/test/suite.jsh.js"),
+				arguments: [
+					"-suite", environment.jsh.src.getFile("loader/browser/suite.js"),
+					"-browser", browser.id,
+					"-view", "stdio"
+				].concat(parameters.arguments),
+				// TODO: is setting the working directory necessary?
+				directory: environment.jsh.src
+			})
+		},this);
+	}
 });
-suite.add("browser", browserPart);
+// var browserPart = jsh.unit.Suite.Fork({
+// 	name: "Browser suites",
+// 	run: jsh.shell.jsh,
+// 	shell: environment.jsh.home,
+// 	script: environment.jsh.src.getFile("loader/browser/suite.jsh.js"),
+// 	arguments: [
+// 		"-view", "stdio"
+// 	].concat(parameters.arguments),
+// 	// TODO: is setting the working directory necessary?
+// 	directory: environment.jsh.src
+// });
+// suite.add("browser", browserPart);
 
 suite.add("tools", {
 	initialize: function() {

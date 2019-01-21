@@ -14,6 +14,12 @@ var parameters = jsh.script.getopts({
 	}
 });
 
+if (!parameters.options.browser) {
+	parameters.options.browser = [
+		jsh.unit.browser.installed[0].id
+	];
+}
+
 if (parameters.options.part) {
 	// TODO: Currently with the way the unit testing for paths is duct-taped together, non-interactively running part of a browser
 	// suite does not work -- the browser does not exit -- for unknown reasons. Not really an important use case.
@@ -64,8 +70,6 @@ var toSuiteHtml = jsh.file.navigate({
 	from: toResult.base,
 	to: jsh.shell.jsh.src.getRelativePath("loader/browser/test/suite.html")
 });
-
-debugger;
 
 var url = toResult.relative.replace(/suite\.js/g, "result");
 
@@ -196,36 +200,23 @@ var Chrome = function(o) {
 	}
 };
 
-var browser = (function(argument) {
+var toBrowser = function(argument) {
 	if (argument == "chrome") {
 		return new Chrome({
 			location: parameters.options["chrome:instance"]
 		});
 	}
-	var browsers = ["ie","firefox","safari"];
+	var browsers = ["IE","Firefox","Safari"];
 	for (var i=0; i<browsers.length; i++) {
-		if (argument == browsers[i]) {
+		if (argument == browsers[i].toLowerCase()) {
 			var rv = new Browser(jsh.unit.browser.installed[argument].delegate);
-			rv.name = argument;
+			rv.name = browsers[i];
 			return rv;
 		}
 	}
-})(parameters.options.browser);
+};
 
-// if (jsh.shell.browser.chrome) {
-// 	browsers.push(new Chrome({
-// 		location: parameters.options["chrome:instance"]		
-// 	}));
-// }
-// 
-// ["IE","Firefox","Safari"].forEach(function(name) {
-// 	var browser = jsh.unit.browser.installed[name.toLowerCase()];
-// 	if (browser) {
-// 		var b = new Browser(browser.delegate);
-// 		b.name = name;
-// 		browsers.push(b);
-// 	}
-// });
+var browser = toBrowser(parameters.options.browser);
 
 if (parameters.options.interactive) {
 	run(browser);
@@ -252,7 +243,7 @@ if (parameters.options.interactive) {
 		}
 	}
 	suite.part(browser.name, scenario);
-	browser.kill();
+	browser.kill();		
 	jsh.unit.interface.create(suite, {
 		view: parameters.options.view
 	});
