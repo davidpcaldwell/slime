@@ -57,7 +57,7 @@ if (parameters.options.jrunscript.length) {
 } else {
 	var properties = {};
 	if (parameters.options.log) {
-		properties["java.util.logging.config.file"] = jsh.script.file.parent.parent.getRelativePath("http.logging.properties");
+		properties["java.util.logging.config.file"] = jsh.script.file.parent.getRelativePath("http.logging.properties");
 	}
 	var mock = new jsh.test.launcher.MockRemote({
 		src: {
@@ -74,7 +74,7 @@ if (parameters.options.jrunscript.length) {
 		var environment = jsh.js.Object.set(
 			{},
 			jsh.shell.environment,
-			(parameters.options.log) ? { JSH_LOG_JAVA_PROPERTIES: jsh.script.file.parent.parent.getRelativePath("http.logging.properties").toString() } : {}
+			(parameters.options.log) ? { JSH_LOG_JAVA_PROPERTIES: jsh.script.file.parent.getRelativePath("http.logging.properties").toString() } : {}
 		);
 		mock.jsh({
 			properties: properties,

@@ -38,6 +38,9 @@ var Suite = function(p) {
 $exports.Suite = Suite;
 
 var Environment = function(p) {
+	if (!p.src.getSubdirectory("contributor")) {
+		throw new Error("p.src is " + p.src);
+	}
 	//	p.src (directory): source code of shell
 	//	p.home (Pathname): location of built shell
 	//	p.noselfping (boolean): if true, host cannot ping itself
@@ -79,7 +82,7 @@ var Environment = function(p) {
 				if (!p.home.directory) {
 					jsh.shell.jsh({
 						shell: jsh.shell.jsh.src,
-						script: jsh.script.file.parent.parent.parent.getFile("jsh/etc/build.jsh.js"),
+						script: p.src.getFile("jsh/etc/build.jsh.js"),
 						arguments: [
 							p.home,
 							"-notest",
@@ -222,7 +225,7 @@ var Environment = function(p) {
 			var TRACE = false;
 			
 			var getMock = jsh.js.constant(function() {
-				jsh.loader.plugins(jsh.script.file.parent.parent.parent.getRelativePath("jsh/test/launcher"));
+				jsh.loader.plugins(p.src.getRelativePath("jsh/test/launcher"));
 				var mock = new jsh.test.launcher.MockRemote({
 					src: {
 						davidpcaldwell: {

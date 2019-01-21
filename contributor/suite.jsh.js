@@ -14,15 +14,14 @@ var parameters = jsh.script.getopts({
 	options: {
 		java: jsh.script.getopts.ARRAY(jsh.file.Pathname),
 		engine: jsh.script.getopts.ARRAY(String),
+		part: String,
+		noselfping: false,
+		// TODO: review below arguments
 		tomcat: jsh.file.Pathname,
-		// TODO: browser argument obsolete; now included in unit.jsh.js test suite
-		browser: false,
 		debug: false,
 		view: "console",
 		"chrome:profile": jsh.file.Pathname,
-		port: Number,
-		part: String,
-		noselfping: false
+		port: Number
 	},
 	unhandled: jsh.script.getopts.UNEXPECTED_OPTION_PARSER.SKIP
 });
@@ -42,7 +41,7 @@ var project = jsh.script.loader.file("suite.js");
 var suite = new project.Suite();
 
 var environment = new project.Environment({
-	src: jsh.script.file.parent.parent.parent,
+	src: jsh.script.file.parent.parent,
 	noselfping: parameters.options.noselfping,
 	tomcat: true,
 	executable: true
@@ -123,7 +122,7 @@ var environment = new project.Environment({
 		name: "Launcher tests",
 		run: jsh.shell.jsh,
 		shell: environment.jsh.built.home,
-		script: jsh.script.file.parent.getFile("launcher/suite.jsh.js"),
+		script: environment.jsh.src.getFile("jsh/test/launcher/suite.jsh.js"),
 		arguments: [
 			"-scenario",
 			"-shell:unbuilt", environment.jsh.unbuilt.src,

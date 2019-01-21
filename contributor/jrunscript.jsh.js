@@ -29,14 +29,14 @@ var parameters = jsh.script.getopts({
 
 var project = jsh.script.loader.file("suite.js");
 var environment = new project.Environment({
-	src: jsh.script.file.parent.parent.parent,
+	src: jsh.script.file.parent.parent,
 	home: parameters.options["shell:built"],
 	noselfping: parameters.options.noselfping,
 	executable: parameters.options.executable
 });
 var suite = new project.Suite();
 
-var SRC = jsh.script.file.parent.parent.parent;
+var SRC = jsh.script.file.parent.parent;
 
 suite.add("internal/slime", new jsh.unit.part.Html({
 		//	Functionality used internally or accessed through loader/jrunscript (although untested by loader/jrunscript)

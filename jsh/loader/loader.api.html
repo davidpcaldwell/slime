@@ -351,7 +351,7 @@ END LICENSE
 			verify(hello).stdio.output.is(["hello coffeescript world",""].join(String(Packages.java.lang.System.getProperty("line.separator"))));
 			var loader = jsh.shell.jsh({
 				fork: true,
-				script: jsh.script.file.getRelativePath("../test/coffee/loader.jsh.js").file
+				script: $jsapi.environment.jsh.unbuilt.src.getFile("jsh/test/coffee/loader.jsh.js")
 			});
 			verify(loader).status.is(0);
 		} else {
