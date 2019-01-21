@@ -10,7 +10,7 @@
 //	Contributor(s):
 //	END LICENSE
 
-jsh.script.loader = new jsh.script.Loader("../../../loader/test/data/coffee/");
+jsh.script.loader = new jsh.script.Loader("../../../../loader/test/data/coffee/");
 var module = jsh.script.loader.module("module.coffee");
 if (module.a != 2) {
 	throw new Error("Failed.");

@@ -342,7 +342,7 @@ END LICENSE
 		if (jsh.shell.jsh.lib.getFile("coffee-script.js")) {
 			var hello = jsh.shell.jsh({
 				shell: $jsapi.environment.jsh.unbuilt.src,
-				script: $jsapi.environment.jsh.unbuilt.src.getRelativePath("jsh/test/coffee/hello.jsh.coffee").file,
+				script: $jsapi.environment.jsh.unbuilt.src.getRelativePath("jsh/loader/test/coffee/hello.jsh.coffee").file,
 				stdio: {
 					output: String
 				}
@@ -351,7 +351,7 @@ END LICENSE
 			verify(hello).stdio.output.is(["hello coffeescript world",""].join(String(Packages.java.lang.System.getProperty("line.separator"))));
 			var loader = jsh.shell.jsh({
 				fork: true,
-				script: $jsapi.environment.jsh.unbuilt.src.getFile("jsh/test/coffee/loader.jsh.js")
+				script: $jsapi.environment.jsh.unbuilt.src.getFile("jsh/loader/test/coffee/loader.jsh.js")
 			});
 			verify(loader).status.is(0);
 		} else {
