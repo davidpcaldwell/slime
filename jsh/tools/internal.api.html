@@ -52,7 +52,7 @@ END LICENSE
 		verify(builder).status.is(0);
 		var loader = jsh.shell.jsh({
 			shell: $jsapi.environment.jsh.built.home,
-			script: $jsapi.environment.jsh.src.getFile("jsh/test/loader/2.jsh.js"),
+			script: $jsapi.environment.jsh.src.getFile("jsh/loader/test/1/2.jsh.js"),
 			environment: {
 				MODULES: tmp.toString(),
 				PATH: jsh.shell.environment.PATH
