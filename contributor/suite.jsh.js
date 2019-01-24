@@ -122,7 +122,7 @@ var environment = new project.Environment({
 		name: "Launcher tests",
 		run: jsh.shell.jsh,
 		shell: environment.jsh.built.home,
-		script: environment.jsh.src.getFile("jsh/test/launcher/suite.jsh.js"),
+		script: environment.jsh.src.getFile("jsh/launcher/test/suite.jsh.js"),
 		arguments: [
 			"-scenario",
 			"-shell:unbuilt", environment.jsh.unbuilt.src,
