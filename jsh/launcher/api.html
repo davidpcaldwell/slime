@@ -42,7 +42,7 @@ END LICENSE
 				<tr>
 					<!--
 						Tested manually
-						env JSH_DEBUG_JDWP=transport=dt_socket,address=8000,server=y,suspend=y jrunscript rhino/jrunscript/api.js jsh/launcher/main.js jsh/test/jsh.shell/properties.jsh.js
+						env JSH_DEBUG_JDWP=transport=dt_socket,address=8000,server=y,suspend=y jrunscript rhino/jrunscript/api.js jsh/launcher/main.js jsh/test/jsh-data.jsh.js
 					-->
 					<td>jsh.debug.jdwp</td>
 					<td>
@@ -56,7 +56,7 @@ END LICENSE
 					<!-- TODO: below test for echo.jsh.js invalidated by removal of that file -->
 					<!--
 						Tested manually
-						env JSH_DEBUG_SCRIPT=rhino JSH_ENGINE_RHINO_CLASSPATH=$HOME/Downloads/rhino-1.7R3.jar jrunscript rhino/jrunscript/api.js jsh/launcher/main.js jsh/test/jsh.shell/properties.jsh.js
+						env JSH_DEBUG_SCRIPT=rhino JSH_ENGINE_RHINO_CLASSPATH=$HOME/Downloads/rhino-1.7R3.jar jrunscript rhino/jrunscript/api.js jsh/launcher/main.js jsh/test/jsh-data.jsh.js
 						jrunscript -Djsh.build.rhino.jar=$HOME/Downloads/rhino-1.7R3.jar rhino/jrunscript/api.js jsh/etc/unbuilt.rhino.js build $HOME/tmp/jsh/profile -install profiler && jrunscript -Djsh.debug.script=profiler:output=$HOME/tmp/echo.html,exclude=inonit.script.jsh,exclude=inonit.script.rhino $HOME/tmp/jsh/profile/jsh.js jsh/test/jsh.shell/echo.jsh.js
 					-->
 					<td>jsh.debug.script</td>

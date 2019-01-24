@@ -43,7 +43,7 @@ jsh.test.integration({
 					verify(1).is(1);
 					var args = [];
 					args.push(JSH.getFile("jsh.js"));
-					args.push(SLIME.getFile("jsh/test/jsh.shell/properties.jsh.js"));
+					args.push(SLIME.getFile("jsh/test/jsh-data.jsh.js"));
 					jsh.shell.run({
 						command: jsh.file.Searchpath([parameters.options.jdk.directory.getRelativePath("bin")]).getCommand("jrunscript"),
 						arguments: args,
