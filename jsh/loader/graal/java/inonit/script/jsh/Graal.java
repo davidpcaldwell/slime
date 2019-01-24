@@ -99,19 +99,31 @@ public class Graal extends Main.Engine {
 
 		ExecutionImpl(final Shell shell, boolean top) {
 			super(shell);
-			this.host = inonit.script.graal.HostFactory.create(new Loader.Classes.Configuration() {
-				@Override public boolean canCreateClassLoaders() {
-					return true;
-				}
+			this.host = inonit.script.graal.HostFactory.create(
+				new inonit.script.graal.HostFactory.Configuration() {
+					public inonit.script.graal.HostFactory.Configuration.Inspect inspect() {
+						String setting = System.getProperty("jsh.debug.script");
+						if (setting != null && setting.equals("graal")) {
+							return inonit.script.graal.HostFactory.Configuration.Inspect.SLIME;
+						} else {
+							return null;
+						}
+					}
+				},
+				new Loader.Classes.Configuration() {
+					@Override public boolean canCreateClassLoaders() {
+						return true;
+					}
 
-				@Override public ClassLoader getApplicationClassLoader() {
-					return Nashorn.class.getClassLoader();
-				}
+					@Override public ClassLoader getApplicationClassLoader() {
+						return Nashorn.class.getClassLoader();
+					}
 
-				@Override public java.io.File getLocalClassCache() {
-					return shell.getEnvironment().getClassCache();
+					@Override public java.io.File getLocalClassCache() {
+						return shell.getEnvironment().getClassCache();
+					}
 				}
-			});
+			);
 			this.top = top;
 		}
 		
