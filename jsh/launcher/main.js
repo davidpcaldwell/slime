@@ -203,7 +203,7 @@ if ( profilerMatcher.test(scriptDebugger)) {
 //	throw new Error("ncdbg jsh.debug.script not implemented");
 } else if (scriptDebugger == "graal") {
 	$api.slime.settings.set("jsh.engine", "graal");
-	command.vm("-Dpolyglot.inspect=true");
+//	command.vm("-Dpolyglot.inspect=true");
 //	command.argument("--inspect");
 }
 
