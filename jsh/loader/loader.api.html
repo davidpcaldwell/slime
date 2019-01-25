@@ -359,5 +359,19 @@ END LICENSE
 			verify(MESSAGE).is(MESSAGE);
 		}
 	</script>
+	<script type="application/x.jsapi#tests" jsapi:id="global">
+		var output = jsh.shell.jsh({
+			shell: $jsapi.environment.jsh.unbuilt.src,
+			script: $jsapi.environment.jsh.src.getFile("jsh/loader/test/issue32.jsh.js"),
+			stdio: {
+				output: String
+			},
+			evaluate: function(result) {
+				return JSON.parse(result.stdio.output);
+			}
+		});
+		verify(output).length.is(1);
+		verify(output)[0].is("jsh");
+	</script>
 </body>
 </html>
