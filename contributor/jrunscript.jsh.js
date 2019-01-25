@@ -187,8 +187,14 @@ suite.add("testing/constructs", new jsh.unit.part.Html({
 suite.add("testing/html", new jsh.unit.part.Html({
 	pathname: SRC.getRelativePath("loader/api/api.html")
 }));
-suite.add("testing/jsh.unit", new jsh.unit.part.Html({
+suite.add("testing/jsh.unit/definition", new jsh.unit.part.Html({
 	pathname: SRC.getRelativePath("jsh/unit/plugin.jsh.api.html")
+}));
+suite.add("testing/jsh.unit/bitbucket", new jsh.unit.Suite.Fork({
+	run: jsh.shell.jsh,
+	shell: (environment.jsh.built) ? environment.jsh.built.homne : environment.jsh.unbuilt.src,
+	script: SRC.getFile("jsh/unit/test/bitbucket.jsh.js"),
+	arguments: ["-view", "stdio"]
 }));
 suite.add("testing/integration", new function() {
 	var src = SRC;
