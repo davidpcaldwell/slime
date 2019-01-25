@@ -78,7 +78,7 @@ var url = toResult.relative.replace(/suite\.js/g, "result");
 // loader/browser/test/test/sample-suite.
 // $HOME/.bash_profile
 
-var resultServletFile = jsh.shell.jsh.src.getFile("jsh/test/browser.servlet.js");
+var resultServletFile = jsh.shell.jsh.src.getFile("loader/browser/test/browser.servlet.js");
 
 var run = function(browser) {
 	var tomcat = new jsh.httpd.Tomcat();
