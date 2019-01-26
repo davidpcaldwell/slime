@@ -15,13 +15,17 @@
 //			to locate it explicitly
 plugin({
 	isReady: function() {
-		return jsh.shell && Boolean(jsh.shell.PATH.getCommand("git"));
+		return jsh.js && jsh.shell && Boolean(jsh.shell.PATH.getCommand("git"));
 	},
 	load: function() {
 		//	TODO	should be covered by parent directory jsh plugin
 		$api.deprecate(function() {
 			var git = $loader.module("module.js", {
-				program: jsh.shell.PATH.getCommand("git")
+				program: jsh.shell.PATH.getCommand("git"),
+				api: {
+					Error: jsh.js.Error,
+					Events: $api.Events
+				}
 			});
 			git.jsh = {};
 			//	TODO	enable credentialHelper for built shells
