@@ -24,6 +24,12 @@ END LICENSE
 </head>
 <body>
 	<div>
+		The easiest way to run <code>jsh</code> is via the top-level <code>jsh.bash</code> script:
+		<div>
+			<code>./jsh.bash [-<i>vmargument</i> [...-<i>vmargument</i>]] &lt;path-to-script> [arguments]</code>
+		</div>
+	</div>
+	<div>
 		<h1>Settings</h1>
 		<table>
 			<thead>
@@ -36,7 +42,7 @@ END LICENSE
 				<tr>
 					<!--
 						Tested manually
-						env JSH_DEBUG_JDWP=transport=dt_socket,address=8000,server=y,suspend=y jrunscript rhino/jrunscript/api.js jsh/launcher/main.js jsh/test/jsh.shell/properties.jsh.js
+						env JSH_DEBUG_JDWP=transport=dt_socket,address=8000,server=y,suspend=y jrunscript rhino/jrunscript/api.js jsh/launcher/main.js jsh/test/jsh-data.jsh.js
 					-->
 					<td>jsh.debug.jdwp</td>
 					<td>
@@ -47,9 +53,10 @@ END LICENSE
 					</td>
 				</tr>
 				<tr>
+					<!-- TODO: below test for echo.jsh.js invalidated by removal of that file -->
 					<!--
 						Tested manually
-						env JSH_DEBUG_SCRIPT=rhino JSH_ENGINE_RHINO_CLASSPATH=$HOME/Downloads/rhino-1.7R3.jar jrunscript rhino/jrunscript/api.js jsh/launcher/main.js jsh/test/jsh.shell/properties.jsh.js
+						env JSH_DEBUG_SCRIPT=rhino JSH_ENGINE_RHINO_CLASSPATH=$HOME/Downloads/rhino-1.7R3.jar jrunscript rhino/jrunscript/api.js jsh/launcher/main.js jsh/test/jsh-data.jsh.js
 						jrunscript -Djsh.build.rhino.jar=$HOME/Downloads/rhino-1.7R3.jar rhino/jrunscript/api.js jsh/etc/unbuilt.rhino.js build $HOME/tmp/jsh/profile -install profiler && jrunscript -Djsh.debug.script=profiler:output=$HOME/tmp/echo.html,exclude=inonit.script.jsh,exclude=inonit.script.rhino $HOME/tmp/jsh/profile/jsh.js jsh/test/jsh.shell/echo.jsh.js
 					-->
 					<td>jsh.debug.script</td>
@@ -58,8 +65,13 @@ END LICENSE
 							Sets up a debugger to debug scripts.
 						</div>
 						<div>
-							If the value is <code>rhino</code>, and the shell is using Rhino as
+							If the value is <code>rhino</code>, and the shell can use Rhino as
 							its JavaScript engine, the Rhino debugger will be launched to debug the script.
+						</div>
+						<div>
+							If the value is <code>ncdbg</code>, and the shell can use Nashorn as its JavaScript engine, the
+							<code>ncdbg</code> debugger will be used to execute the script.
+							<!-- TODO: hyperlink to ncdbg -->
 						</div>
 						<div>
 							If set to <code>profiler</code> or a value starting with <code>profiler:</code>,
@@ -81,7 +93,7 @@ END LICENSE
 					</td>
 				</tr>
 				<tr>
-					<!--	Tested in jsh/test/launcher/suite.jsh.js	-->
+					<!--	Tested in jsh/launcher/test/suite.jsh.js	-->
 					<td>jsh.jvm.options</td>
 					<td>
 						A set of space-delimited literal options to be passed to the Java launcher when starting the Java virtual
@@ -89,7 +101,7 @@ END LICENSE
 					</td>
 				</tr>
 				<tr>
-					<!--	Tested in jsh/test/launcher/suite.jsh.js	-->
+					<!--	Tested in jsh/launcher/test/suite.jsh.js	-->
 					<td>jsh.log.java.properties</td>
 					<td>
 						Specifies the location of a <code>java.util.logging</code> properties file to use in configuring logging
@@ -98,7 +110,7 @@ END LICENSE
 					</td>
 				</tr>
 				<tr>
-					<!--	Used in jsh/test/launcher/suite.jsh.js	-->
+					<!--	Used in jsh/launcher/test/suite.jsh.js	-->
 					<td>jsh.shell.tmpdir</td>
 					<td>
 						Specifies the location the shell should use for creating temporary files. This setting is used to set the
@@ -106,7 +118,7 @@ END LICENSE
 					</td>
 				</tr>
 				<tr>
-					<!--	Used in jsh/test/launcher/suite.jsh.js	-->
+					<!--	Used in jsh/launcher/test/suite.jsh.js	-->
 					<td>jsh.engine</td>
 					<td>
 						If set to <code>rhino</code>, the shell will be run using Rhino as the JavaScript engine. If set to
@@ -115,7 +127,18 @@ END LICENSE
 					</td>
 				</tr>
 				<tr>
-					<!--	Tested in jsh/test/launcher/suite.jsh.js	-->
+					<td>jsh.shell.lib</td>
+					<!-- 
+						TODO: untested; could be tested using jsh/test/jsh-data.jsh.js if it emitted jsh.shell.jsh.lib. Could also
+						check for executing engine if Rhino were installed in default shell
+					-->
+					<td>
+						Sets an alternate location for the <code>lib/</code> directory. Can be used to configure a shell with a
+						different set of libraries.
+					</td>
+				</tr>
+				<tr>
+					<!--	Tested in jsh/launcher/test/suite.jsh.js	-->
 					<td>jsh.engine.rhino.classpath</td>
 					<td>
 						Specifies the location of Rhino when running a runtime shell.
@@ -123,7 +146,7 @@ END LICENSE
 					</td>
 				</tr>
 				<tr>
-					<!--	Tested in jsh/test/launcher/suite.jsh.js	-->
+					<!--	Tested in jsh/launcher/test/suite.jsh.js	-->
 					<td>jsh.engine.rhino.optimization</td>
 					<td>
 						Sets the Rhino optimization level to be used for running the shell.
@@ -132,9 +155,6 @@ END LICENSE
 				</tr>
 			</tbody>
 		</table>
-	</div>
-	<div>
-		<h1><a href="internal.api.html">Implementation</a></h1>
 	</div>
 	<!--
 	<div>

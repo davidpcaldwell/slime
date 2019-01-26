@@ -14,12 +14,14 @@ $jsh.setRuntime((function() {
 	//	TODO	the below, with scripts and rv, looks funny; does it load the same code twice? Why? Should either fix or provide
 	//			explanation
 
+	var $graal = this.$graal;
 	var scripts = eval($jsh.getLoaderCode("jrunscript/nashorn.js"));
 
 	var rv = scripts.script(
-		"jrunscript/nashorn.js",
+		"slime://loader/jrunscript/nashorn.js",
 		$jsh.getLoaderCode("jrunscript/nashorn.js"),
 		{
+			$graal: $graal,
 			Java: Java,
 			Packages: Packages,
 			load: load,
@@ -68,4 +70,4 @@ $jsh.setRuntime((function() {
 	}
 
 	return rv;
-})());
+}).call(this));

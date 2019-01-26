@@ -135,31 +135,9 @@ $exports.Console = function(o) {
 	this.test = function(test) {
 		var success = test.success;
 		var old = false;
-		if (old) {
-			if (!success) {
-				if (!dots) {
-					console.print(indent());
-					dots = true;
-				}
-				var code = (success == null) ? "*" : "X";
-				console.print(code);
-				if (test.error) {
-					printError(test.error);
-				} else if (success == null) {
-					console.println("No error property provided for test.")
-				}
-				stack[stack.length-1].success = false;
-			} else {
-				if (!dots) {
-					console.print(indent());
-					dots = true;
-				}
-				console.print(".");
-			}
-		} else {
-			console.print(indent());
-			console.println(test.message);
-			if (!success) {
+		console.print(indent());
+		console.println(test.message);
+		if (!success) {
 //				if (!dots) {
 //					$context.console.print(indent());
 //					dots = true;
@@ -167,21 +145,19 @@ $exports.Console = function(o) {
 //				var code = (success == null) ? "*" : "X";
 //				$context.console.print(code);
 //				$context.console.println(test.message(success));
-				if (test.error) {
-					printError(test.error);
-				} else if (success == null) {
-					console.println("No error property provided for test.")
-				}
-				stack[stack.length-1].success = false;
-			} else {
+			if (test.error) {
+				printError(test.error);
+			} else if (success == null) {
+				console.println("success = " + success + " and no error property provided for test.")
+			}
+			stack[stack.length-1].success = false;
+		} else {
 //				if (!dots) {
 //					$context.console.print(indent());
 //					dots = true;
 //				}
 //				$context.console.println(test.message(success));
 //				$context.console.print(".");
-			}
-
 		}
 	}
 

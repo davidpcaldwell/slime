@@ -194,7 +194,43 @@ END LICENSE
 				<script type="application/x.jsapi#initialize">
 					scope.api = inonit.loader;
 				</script>
-				<div jsapi:reference="getApi('../api.html').getElement('Loader/tests')"
+				<div jsapi:reference="getApi('../api.html').getElement('Loader/tests')"></div>
+				<script type="application/x.jsapi#tests" jsapi:id="issue296">
+					var hasSourceUrl = function(p) {
+						return p.string.indexOf("sourceURL") != -1;
+					};
+
+					var loader = new inonit.loader.Loader(inonit.loader.base + "../");
+
+					var resource = function(path) {
+						var resource = loader.get(path);
+						return {
+							type: resource.type,
+							string: resource.read(String)
+						};
+					}
+
+					verify(inonit).loader.base.is(inonit.loader.base);
+					var js = resource("loader/expression.js");
+					var css = resource("loader/api/api.css");
+					var html = resource("api.html");
+					verify(js,"js").evaluate(hasSourceUrl).is(true);
+					verify(js).type.getMedia().is("application");
+					verify(js).type.getSubtype().is("javascript");
+					verify(css,"css").evaluate(hasSourceUrl).is(false);
+					verify(css,"css").type.is.type("null");
+					if (css.type) {
+						verify(css).type.getMedia().is("text");
+						verify(css).type.getSubtype().is("css");
+					}
+					verify(html,"html").evaluate(hasSourceUrl).is(false);
+					// TODO: Unclear why the below construct does not work; is it because of the property named 'type'?
+			//		verify(html,"html").type.is.type("object");
+					if (html.type) {
+						verify(html).type.getMedia().is("text");
+						verify(html).type.getSubtype().is("html");
+					}
+				</script>
 			</li>
 			<li class="function">
 				<div class="name">namespace</div>

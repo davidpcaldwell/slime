@@ -18,7 +18,6 @@ END LICENSE
 	<link rel="stylesheet" type="text/css" href="api/api.css" />
 	<script type="text/javascript" src="../loader/api/api.js"></script>
 	<style>
-		[jsapi\:id="$api"] { display: none; }
 	</style>
 </head>
 <body>
@@ -912,12 +911,17 @@ END LICENSE
 										var coffee = function(scope) {
 											//	TODO	for some reason these (at least sometimes) do not run in browser
 											if ($jsapi.loader.coffee) {
-												var loader = $jsapi.loader.module("test/data/coffee/loader.js");
-												var coffee = $jsapi.loader.module("test/data/coffee/module.coffee");
+												// TODO: Below works around issue with relative path being incorrect when this file
+												// is invoked from a file which in turn is invoked from another file; happens in
+												// test suite currently. Should be refactored out as we work to run tests directly
+												// rather than via includes
+												var PREFIX = ($jsapi.loader.getRelativePath && $jsapi.loader.getRelativePath(".").basename == "jrunscript") ? "../" : "";
+												var loader = $jsapi.loader.module(PREFIX + "test/data/coffee/loader.js");
+												var coffee = $jsapi.loader.module(PREFIX + "test/data/coffee/module.coffee");
 												scope.verify(coffee,"coffee").a.is(2);
 												scope.verify(coffee,"coffee").file.b.is(3);
 												scope.verify(loader,"loader").file.b.is(3);
-												var file = $jsapi.loader.file("test/data/coffee/file.coffee");
+												var file = $jsapi.loader.file(PREFIX + "test/data/coffee/file.coffee");
 												scope.verify(file,"file").b.is(3);
 											} else {
 												scope.verify("No CoffeeScript").is("No CoffeeScript");
@@ -1182,7 +1186,7 @@ END LICENSE
 				<li class="object">
 					<div class="name">$api</div>
 					<span>An additional way for embedding environments to access the <a href="$api.api.html">$api</a> object.</span>
-					<span jsapi:id="$api" jsapi:reference="getApi('$api.api.html').getElement('top')">See <a href="$api.api.html">detailed documentation</a>.</span>
+					<span jsapi:id="$api">See <a href="$api.api.html">detailed documentation</a>.</span>
 				</li>
 			</ul>
 		</div>

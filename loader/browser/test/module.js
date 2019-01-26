@@ -293,6 +293,12 @@ var global = new function() {
 			return getStructure(suite);
 		};
 
+		var path;
+
+		this.path = function() {
+			path = arguments[0];
+		}
+
 		this.run = function(_callbacks) {
 			suite.listeners.add("scenario", function(e) {
 	//				_callbacks.fire(e);
@@ -304,22 +310,22 @@ var global = new function() {
 	//				_callbacks.fire(e);
 				_callbacks.event(e);
 			});
-			suite.run({},function(success) {
+			suite.run({ path: path },function(success) {
 				console.log("success = " + success);
 				_callbacks.end(success);
 				//	TODO	this should not have to be hacked in manually
-				_callbacks.event({
-					type: "scenario",
-					detail: {
-						end: {
-							id: suite.id,
-							name: suite.name
-						},
-						success: success
-					},
-					path: [],
-					timestamp: new Date()
-				});
+// 				_callbacks.event({
+// 					type: "scenario",
+// 					detail: {
+// 						end: {
+// 							id: suite.id,
+// 							name: suite.name
+// 						},
+// 						success: success
+// 					},
+// 					path: [],
+// 					timestamp: new Date()
+// 				});
 				//	Stop asynchronous events from being delivered
 				asynchrony.next(null);
 			});
@@ -344,6 +350,10 @@ var global = new function() {
 	this.suite = function() {
 		delegate = new New(arguments[0]);
 	};
+
+	this.path = function(path) {
+		delegate.path(path);
+	}
 
 	this.structure = function() {
 		return delegate.structure();
@@ -418,6 +428,10 @@ $exports.structure = function() {
 
 $exports.suite = function() {
 	global.suite(arguments[0]);
+}
+
+$exports.setPath = function() {
+	global.path(arguments[0]);
 }
 
 $exports.test = $api.deprecate(function(test) {

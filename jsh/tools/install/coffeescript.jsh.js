@@ -13,15 +13,15 @@
 
 var parameters = jsh.script.getopts({
 	options: {
-		url: "http://coffeescript.org/extras/coffee-script.js"
+		url: "https://coffeescript.org/v2/browser-compiler/coffeescript.js"
 	}
 });
 
-var api = jsh.script.loader.file("api.js");
-
-var destination = jsh.shell.jsh.home.getRelativePath("plugins/coffee-script.js");
-var code = api.download({
+var file = jsh.tools.install.get({
 	url: parameters.options.url
 });
-jsh.shell.echo("Writing CoffeeScript to " + destination + " ...");
-destination.write(code.read(jsh.io.Streams.binary), { append: false });
+
+var destination = jsh.shell.jsh.lib.getRelativePath("coffee-script.js");
+
+jsh.shell.console("Writing CoffeeScript to " + destination + " ...");
+file.copy(destination);

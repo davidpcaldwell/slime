@@ -83,7 +83,7 @@ var install = function(p) {
 	});
 	jsh.shell.run({
 		command: jsh.shell.java.launcher,
-		arguments: ["-jar", TMP.getRelativePath("jsh.jar"), TMP.getRelativePath("src/jsh/test/jsh.shell/properties.jsh.js")]
+		arguments: ["-jar", TMP.getRelativePath("jsh.jar"), TMP.getRelativePath("src/jsh/test/jsh-data.jsh.js")]
 	});
 }
 

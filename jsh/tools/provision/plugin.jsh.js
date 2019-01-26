@@ -18,7 +18,7 @@ plugin({
 	load: function() {
 		if (!jsh.tools) jsh.tools = {};
 		if (!jsh.tools.provision) jsh.tools.provision = {};
-		bitbucketHgClone = function(p) {
+		var bitbucketHgClone = function(p) {
 			if (!p.owner) p.owner = p.user;
 			if (!p.version) p.version = "tip";
 			p.destination.parent.createDirectory({

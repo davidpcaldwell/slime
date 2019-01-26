@@ -11,7 +11,7 @@
 //	Contributor(s):
 //	END LICENSE
 
-$set(function() {
+$set(function(p) {
     var $loader = new inonit.loader.Loader(inonit.loader.base + "../");
     var api = $loader.file("loader/api/unit.js");
     var unit = $loader.module("loader/browser/test/module.js", {
@@ -51,12 +51,16 @@ $set(function() {
         section: new function() {
             var onclick;
 
-            this.initialize = function(initializer,handler) {
+            this.initialize = function(initializer) {
+                //  webview.js invokes this and provides an initializer that, when executed, initializes the UI and provides an onclick
+                //  handler that can be added to a button outside the UI
                 document.getElementById("run").addEventListener("click", function(e) {
                     if (!onclick) {
-                        initializer({ onclick: function(f) {
-                            onclick = f;
-                        }});
+                        initializer({ 
+                            onclick: function(f) {
+                                onclick = f;
+                            }
+                        });
                     }
                     onclick(e);
                 });
@@ -70,24 +74,32 @@ $set(function() {
             };
 
             this.listen = function() {
+                //  webview.js provides a View object for the suite, which consists of a bunch of nested View objects.
                 view = arguments[0];
             };
 
-
             this.run = function() {
+                //  the loader/browser/test/module.js implementation of run() adds appropriate listeners to the global suite and then runs it,
+                //  issuing callbacks for each event delivered to those listeners. We then dispatch those events to the top-level view, which
+                //  dispatches them to the nested views
                 unit.run(new function() {
+					var events = [];
+
                     this.log = function(b,message) {
                         console.log(b,message);
                     };
 
                     this.event = function(e) {
                         console.log(e);
+						events.push(e);
                         view.dispatch(e.path,e);
                         if (!e.path.length && e.detail.end) {
                             var xhr = new XMLHttpRequest();
                             xhr.open("POST","result",false);
-                            xhr.send(e.detail.success);
-                        }
+                            xhr.send(
+								(p && p.events) ? JSON.stringify({ events: events, success: e.detail.success }) : e.detail.success
+							);
+						}
                     };
 
                     this.end = function(b) {
@@ -107,6 +119,9 @@ $set(function() {
                 var event = new Event("click");
                 document.getElementById("run").dispatchEvent(event);
             }
+        },
+        setPath: function(path) {
+        	unit.setPath(path);
         }
     };
 });

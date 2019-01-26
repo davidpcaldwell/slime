@@ -135,7 +135,7 @@ if (parameters.options.tests == "script" || parameters.options.tests == "all") {
 			vmarguments: (launcher == "classloader") ? vmarguments : [],
 			jar: jsh.shell.jsh.home.getRelativePath("jsh.jar"),
 			arguments: [
-				jsh.script.file.getRelativePath("../../../../jsh/test/jsh.shell/properties.jsh.js")
+				jsh.script.file.getRelativePath("../../../../jsh/test/jsh-data.jsh.js")
 			],
 			environment: jsh.js.Object.set({}, jsh.shell.environment, {
 				JSH_SHELL_CONTAINER: launcher,

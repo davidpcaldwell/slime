@@ -78,13 +78,66 @@ END LICENSE
 						<div class="name">$api.slime</div>
 						<span>__DESCRIPTION__</span>
 						<div class="label">has properties:</div>
+						<div class="type">
+							<a class="type" name="types.source">source</a>
+							<span>__DESCRIPTION__</span>
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="constructor">
+									<div class="name">File</div>
+									<span>
+										(conditional; if underlying source root is a directory rather than a URL)
+									</span>
+									<div class="arguments">
+										<div class="label">Arguments</div>
+										<ol>
+										</ol>
+									</div>
+									<div class="instances">
+										<div class="label">Instances</div>
+										<span class="type">__TYPE__</span>
+										<span>__DESCRIPTION__</span>
+									</div>
+								</li>
+								<li class="function">
+									<div class="name">getFile</div>
+									<span>
+										(conditional; if underlying source root is a directory rather than a URL)
+									</span>
+									<div class="arguments">
+										<div class="label">Arguments</div>
+										<ol>
+										</ol>
+									</div>
+									<div class="returns">
+										<div class="label">Returns</div>
+										<span class="type">__TYPE__</span>
+										<span>__DESCRIPTION__</span>
+									</div>
+								</li>
+								<li class="function">
+									<div class="name">getSourceFilesUnder</div>
+									<span>__DESCRIPTION__</span>
+									<div class="arguments">
+										<div class="label">Arguments</div>
+										<ol>
+										</ol>
+									</div>
+									<div class="returns">
+										<div class="label">Returns</div>
+										<span class="type">__TYPE__</span>
+										<span>__DESCRIPTION__</span>
+									</div>
+								</li>
+							</ul>
+						</div>
 						<ul>
-							<li class="object">
+							<li class="value">
 								<div class="name">src</div>
-								<span>__DESCRIPTION__</span>
-								<div class="label">has properties:</div>
-								<ul>
-								</ul>
+								<span class="type"><a href="#types.source">source</a></span>
+								<span>
+									(conditional; if this is an unbuilt local or remote shell)
+								</span>
 							</li>
 							<li class="object">
 								<div class="name">launcher</div>
@@ -130,6 +183,27 @@ END LICENSE
 										provided.
 									</span>
 								</div>
+							</li>
+							<li class="object">
+								<div class="name">settings</div>
+								<span>__DESCRIPTION__</span>
+								<div class="label">has properties:</div>
+								<ul>
+									<li class="function">
+										<div class="name">get</div>
+										<span>Returns the effective value for a given setting.</span>
+										<div class="arguments">
+											<div class="label">Arguments</div>
+											<ol>
+											</ol>
+										</div>
+										<div class="returns">
+											<div class="label">Returns</div>
+											<span class="type">__TYPE__</span>
+											<span>__DESCRIPTION__</span>
+										</div>
+									</li>
+								</ul>
 							</li>
 						</ul>
 					</li>
@@ -326,6 +400,153 @@ END LICENSE
 					Invoke the launcher script.
 				</li>
 			</ul>
+		</div>
+	</div>
+	<div>
+		<h1>Tests</h1>
+		<div jsapi:id="hello">
+			<script type="application/x.jsapi#tests" jsapi:id="src">
+				var outputLines = jsh.shell.jsh({
+					shell: $jsapi.environment.jsh.unbuilt.src,
+					script: $jsapi.environment.jsh.src.getFile("jsh/test/jsh.shell/properties.jsh.js"),
+					stdio: {
+						output: String
+					},
+					evaluate: function(result) {
+						return result.stdio.output.split("\n");
+					}
+				});
+				verify(outputLines)[0].is("Completed.");
+			</script>
+			<script type="application/x.jsapi#tests" jsapi:id="home">
+				var outputLines = jsh.shell.jsh({
+					shell: $jsapi.environment.jsh.built.home,
+					script: $jsapi.environment.jsh.src.getFile("jsh/test/jsh.shell/properties.jsh.js"),
+					stdio: {
+						output: String
+					},
+					evaluate: function(result) {
+						return result.stdio.output.split("\n");
+					}
+				});
+				verify(outputLines)[0].is("Completed.");
+			</script>
+			<script type="application/x.jsapi#tests">
+				// TODO: substitute jsh-data.jsh.js here and read some substantive values?
+				if ($jsapi.environment.jsh.remote) {
+					var remote = $jsapi.environment.jsh.remote;
+					if (!remote) throw new Error("No remote shell!");
+					var fileTestOutputLines = remote.jsh({
+						script: $jsapi.environment.jsh.src.getFile("jsh/test/jsh.shell/properties.jsh.js"),
+						stdio: {
+							output: String
+						},
+						evaluate: function(result) {
+							return result.stdio.output.split("\n");
+						}
+					});
+					verify(fileTestOutputLines)[0].is("Completed.");
+					var urlTestOutputLines = remote.jsh({
+						script: remote.url + "jsh/test/jsh.shell/properties.jsh.js",
+						stdio: {
+							output: String
+						},
+						evaluate: function(result) {
+							return result.stdio.output.split("\n");
+						}
+					});
+					verify(fileTestOutputLines)[0].is("Completed.");
+				}
+			</script>
+			<script type="application/x.jsapi#tests" jsapi:id="executable">
+				if ($jsapi.environment.jsh.built.home.getFile("jsh")) {
+					var output = jsh.shell.run({
+						command: $jsapi.environment.jsh.built.home.getFile("jsh"),
+						arguments: [$jsapi.environment.jsh.built.home.getFile("src/jsh/test/jsh-data.jsh.js")],
+						stdio: {
+							output: String
+						},
+						evaluate: function(result) {
+							return JSON.parse(result.stdio.output);
+						}
+					});
+					verify(output)["jsh.shell.jsh.home"].string.is($jsapi.environment.jsh.built.home.toString());
+					
+					(function absolute() {
+						var output = jsh.shell.run({
+							command: $jsapi.environment.jsh.built.home.getFile("jsh").toString(),
+							arguments: [$jsapi.environment.jsh.built.home.getFile("src/jsh/test/jsh-data.jsh.js")],
+							stdio: {
+								output: String
+							},
+							evaluate: function(result) {
+								return JSON.parse(result.stdio.output);
+							}
+						});
+						verify(output)["jsh.shell.jsh.home"].string.is($jsapi.environment.jsh.built.home.toString());						
+					})();
+					
+					var shellCommand = function(p) {
+						var lines = [];
+						if (p.directory) {
+							lines.push("cd " + p.directory);
+						}
+						if (p.PATH) {
+							lines.push("export PATH=" + p.PATH);
+						}
+						lines.push(p.command + " " + p.arguments.join(" "));
+						var file = jsh.shell.TMPDIR.createTemporary({ suffix: ".bash" });
+						file.pathname.write(lines.join("\n"), { append: false });
+						//jsh.shell.console(file + "\n" + file.read(String) + "\n\n");
+						return jsh.shell.run({
+							command: "bash",
+							arguments: [file].concat(p.arguments),
+							directory: file.parent,
+							stdio: {
+								output: String
+							},
+							evaluate: function(result) {
+								return JSON.parse(result.stdio.output);
+							}
+						});
+					};
+					
+					(function relative() {
+						var basedir = $jsapi.environment.jsh.built.home.pathname.basename;
+						var parent = $jsapi.environment.jsh.built.home.parent;
+						var output = shellCommand({
+							command: basedir + "/" + "jsh",
+							arguments: [$jsapi.environment.jsh.built.home.getFile("src/jsh/test/jsh-data.jsh.js")],
+							directory: parent,
+							stdio: {
+								output: String
+							},
+							evaluate: function(result) {
+								return JSON.parse(result.stdio.output);
+							}
+						});
+						verify(output)["jsh.shell.jsh.home"].string.is($jsapi.environment.jsh.built.home.toString());						
+					})();
+					
+					(function inPath() {
+						var directory = $jsapi.environment.jsh.built.home;
+						var PATH = jsh.file.Searchpath([directory.pathname].concat(jsh.shell.PATH.pathnames));
+						var output = shellCommand({
+							command: "jsh",
+							PATH: PATH,
+							arguments: [$jsapi.environment.jsh.built.home.getFile("src/jsh/test/jsh-data.jsh.js")],
+							directory: jsh.shell.HOME,
+							stdio: {
+								output: String
+							},
+							evaluate: function(result) {
+								return JSON.parse(result.stdio.output);
+							}
+						});
+						verify(output)["jsh.shell.jsh.home"].string.is($jsapi.environment.jsh.built.home.toString());						
+					})();
+				}
+			</script>
 		</div>
 	</div>
 </body>

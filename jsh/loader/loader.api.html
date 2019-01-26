@@ -139,6 +139,13 @@ END LICENSE
 					<div class="label">Returns</div>
 					<span>The return value of the Rhino loader's <code>module</code> method.</span>
 				</div>
+				<script type="application/x.jsapi#tests" jsapi:id="child">
+					// TODO: Unclear what this is really testing, but adapted from previous (inefficient) integration test
+					var loader = new jsh.file.Loader({ directory: $jsapi.environment.jsh.src.getSubdirectory("jsh/loader/test/module-loader") });
+					var module = loader.module("module.js");
+					var method = module.$loader.get;
+					verify(module).$loader.evaluate.property("get").is.type("function");
+				</script>
 			</li>
 			<li class="function">
 				<div class="name">value</div>
@@ -218,6 +225,46 @@ END LICENSE
 								</li>
 							</ol>
 						</div>
+						<!-- TODO: cannot target this test from command line for some reason -->
+						<div jsapi:id="java.add">
+							<script type="application/x.jsapi#initialize">
+								scope.compileAddClasses = jsh.js.constant(function() {
+									var classes = jsh.shell.TMPDIR.createTemporary({ directory: true });
+									jsh.shell.console("Compiling AddClasses ...");
+									jsh.java.tools.javac({
+										destination: classes.pathname,
+										sourcepath: jsh.file.Searchpath([$jsapi.environment.jsh.unbuilt.src.getRelativePath("jsh/loader/test/addClasses/java")]),
+										arguments: [$jsapi.environment.jsh.unbuilt.src.getRelativePath("jsh/loader/test/addClasses/java/test/AddClasses.java")]
+									});
+									return classes;
+								});
+							</script>
+							<script type="application/x.jsapi#tests" jsapi:id="addClasses">
+								var result = jsh.shell.jsh({
+									shell: $jsapi.environment.jsh.built.home,
+									script: $jsapi.environment.jsh.unbuilt.src.getFile("jsh/loader/test/addClasses/addClasses.jsh.js"),
+									arguments: ["-scenario"]
+								});
+								verify(result).status.is(0);
+							</script>
+							<script type="application/x.jsapi#tests" jsapi:id="jsh.loader.java">
+								var result = jsh.shell.jsh({
+									shell: $jsapi.environment.jsh.built.home,
+									script: $jsapi.environment.jsh.unbuilt.src.getFile("jsh/loader/test/addClasses/addClasses.jsh.js"),
+									arguments: ["-classes",compileAddClasses()]
+								});
+								verify(result).status.is(0);
+							</script>
+							<script type="application/x.jsapi#tests" jsapi:id="packaged">
+								// TODO: is Rhino a part of 
+								var result = jsh.shell.jsh({
+									shell: $jsapi.environment.jsh.built.home,
+									script: $jsapi.environment.jsh.src.getFile("jsh/loader/test/packaged/suite.jsh.js"),
+									arguments: ["-classes",compileAddClasses()]
+								});
+								verify(result).status.is(0);
+							</script>
+						</div>
 					</li>
 				</ul>
 			</li>
@@ -286,9 +333,45 @@ END LICENSE
 					verify(directory).pathname.is.type("object");
 					jsh.loader.plugins(directory);
 					verify(global).evaluate.property("issue249").is.type("object");
+					delete global.issue249;
 				</script>
 			</li>
 		</ul>
 	</div>
+	<script type="application/x.jsapi#tests" jsapi:id="coffee">
+		if (jsh.shell.jsh.lib.getFile("coffee-script.js")) {
+			var hello = jsh.shell.jsh({
+				shell: $jsapi.environment.jsh.unbuilt.src,
+				script: $jsapi.environment.jsh.unbuilt.src.getRelativePath("jsh/loader/test/coffee/hello.jsh.coffee").file,
+				stdio: {
+					output: String
+				}
+			});
+			verify(hello).status.is(0);
+			verify(hello).stdio.output.is(["hello coffeescript world",""].join(String(Packages.java.lang.System.getProperty("line.separator"))));
+			var loader = jsh.shell.jsh({
+				fork: true,
+				script: $jsapi.environment.jsh.unbuilt.src.getFile("jsh/loader/test/coffee/loader.jsh.js")
+			});
+			verify(loader).status.is(0);
+		} else {
+			var MESSAGE = "No CoffeeScript.";
+			verify(MESSAGE).is(MESSAGE);
+		}
+	</script>
+	<script type="application/x.jsapi#tests" jsapi:id="global">
+		var output = jsh.shell.jsh({
+			shell: $jsapi.environment.jsh.unbuilt.src,
+			script: $jsapi.environment.jsh.src.getFile("jsh/loader/test/issue32.jsh.js"),
+			stdio: {
+				output: String
+			},
+			evaluate: function(result) {
+				return JSON.parse(result.stdio.output);
+			}
+		});
+		verify(output).length.is(1);
+		verify(output)[0].is("jsh");
+	</script>
 </body>
 </html>

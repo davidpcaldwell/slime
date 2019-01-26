@@ -36,7 +36,7 @@ jsh.shell.jsh({
 jsh.shell.run({
 	command: SHELL.directory.getFile("jsh"),
 	arguments: [
-		SRC.getRelativePath("jsh/test/jsh.shell/properties.jsh.js"),
+		SRC.getRelativePath("jsh/test/jsh-data.jsh.js"),
 		"a", "b"
 	],
 	environment: jsh.js.Object.set({}, jsh.shell.environment, {

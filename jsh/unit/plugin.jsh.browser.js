@@ -245,6 +245,8 @@ var Browser = function(p) {
 		});
 		return returner();
 	};
+	
+	this.delegate = p;
 };
 
 $exports.Browser = Browser;
@@ -367,14 +369,24 @@ $exports.Chrome = function(p) {
 	};
 };
 
-$exports.installed = {};
+$exports.installed = [];
+
+var addBrowser = function(id,value) {
+	$exports.installed.push(value);
+	value.id = id;
+	$exports.installed[id] = value;
+}
+
+if (jsh.shell.browser.chrome) {
+	addBrowser("chrome", new $exports.Chrome());
+}
 
 var add = function(name,program) {
 	var constructor = $exports[name];
 	if (jsh.file.Pathname(program).file && constructor) {
-		$exports.installed[name.toLowerCase()] = new constructor({ program: jsh.file.Pathname(program).file })
+		addBrowser(name.toLowerCase(), new constructor({ program: jsh.file.Pathname(program).file }));
 	}
-}
+};
 
 //	Windows
 add("IE","C:\\Program Files\\Internet Explorer\\iexplore.exe");
@@ -385,7 +397,3 @@ add("Firefox","/Applications/Firefox.app/Contents/MacOS/firefox");
 
 //	Linux
 add("Firefox", "/usr/bin/firefox");
-
-if (jsh.shell.browser.chrome) {
-	$exports.installed.chrome = new $exports.Chrome();
-}

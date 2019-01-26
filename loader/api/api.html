@@ -25,7 +25,7 @@ END LICENSE
 
 		div.template span.heading {
 			font-weight: bold
-		}
+		}		
 	</style>
 	<script>//<![CDATA[
 		debugger;
@@ -348,23 +348,6 @@ END LICENSE
 			<div>
 				Unit tests are implemented using special <code>&lt;script></code> elements with <code>type</code> attributes beginning
 				with <code>application/x.jsapi</code> and a qualifier indicating when they should be executed.
-			</div>
-			<div>
-				<h3>Context</h3>
-				<div>
-					Each <code>&lt;script></code> element with <code>type="application/x.jsapi#context"</code> specifies a configuration
-					with which the declared tests should be run. The content of the element is a literal that either evaluates to an
-					object or an array (or <code>null</code> or <code>undefined</code>). If the literal evaluates to an object, it is
-					used as the <code>$context</code> for instantiating the module being tested. If the literal evaluates to an array,
-					each element of that array is used a a <code>$context</code> for instantiating the module.
-				</div>
-				<div>
-					For each declared context, the module is instantiated with that context and the tests are run with the resulting
-					module. If no contexts are declared, a single, empty context will be supplied.
-				</div>
-				<div>
-					Context scripts can use elements placed in the scope by <code>initialize</code> scripts; see below.
-				</div>
 			</div>
 			<div>
 				<h3>Initialization</h3>

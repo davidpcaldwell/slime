@@ -51,7 +51,7 @@
 				$slime.flags[match[1]] = value;
 			}
 		}
-		return $javahost.script("slime://loader/expression.js",String($javahost.getLoaderCode("expression.js")),{
+		return $javahost.eval("slime://loader/expression.js",String($javahost.getLoaderCode("expression.js")),{
 			$engine: $engine,
 			$slime: $slime
 		},null);
@@ -68,7 +68,7 @@
 			var rv = function(p) {
 				var rv = was.apply(this,arguments);
 				if (typeof(rv) != "undefined") return rv;
-				rv = guess_URLConnection(p);
+				rv = guess_URLConnection({ name: p });
 				return rv;
 			};
 			rv.slime = was;
@@ -522,7 +522,17 @@
 					p.get = function(path) {
 						var resource = p.resources.get(String(path));
 						if (!resource) return null;
-						var rv = new loader.io.Resource(resource);
+						var rv = {};
+						if (typeof(resource.length) != "undefined") rv.length = resource.length;
+						if (typeof(resource.name) != "undefined") rv.name = resource.name;
+						if (typeof(resource.string) != "undefined") rv.string = resource.string;
+						if (typeof(resource.type) != "undefined") rv.type = resource.type;
+						if (typeof(resource.read) == "function") {
+							rv.read = {
+								binary: resource.read.binary
+							}
+						}
+						//var rv = new loader.Resource(resource);
 						if (!rv.name) {
 							rv.name = p.resources.toString() + "!" + String(path);
 						}

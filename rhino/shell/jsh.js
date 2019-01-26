@@ -518,10 +518,12 @@ $exports.run.evaluate.jsh.wrap = function(result) {
 //	$exports.jsh.plugins = $context.api.file.filesystem.Searchpath.parse(String($exports.properties.object.jsh.plugins));
 //}
 
-if ($exports.properties.object.jsh.shell && $exports.properties.object.jsh.shell.home) {
+// Packages.java.lang.System.err.println(String(Packages.java.lang.System.getProperties()));
+// Packages.java.lang.System.err.println(JSON.stringify($exports.properties.object,void(0),"    "));
+if ($exports.properties.object.jsh && $exports.properties.object.jsh.shell && $exports.properties.object.jsh.shell.home) {
 	$exports.jsh.home = $context.api.file.Pathname($exports.properties.object.jsh.shell.home).directory
 }
-if ($exports.properties.object.jsh.shell && $exports.properties.object.jsh.shell.src) {
+if ($exports.properties.object.jsh && $exports.properties.object.jsh.shell && $exports.properties.object.jsh.shell.src) {
 	(function() {
 		var src = String($exports.properties.object.jsh.shell.src);
 		if ($context.api.file.Pathname(src).directory) {
@@ -531,20 +533,8 @@ if ($exports.properties.object.jsh.shell && $exports.properties.object.jsh.shell
 		}
 	})();
 }
-if ($exports.properties.object.jsh.shell && $exports.properties.object.jsh.shell.lib) {
+if ($exports.properties.object.jsh && $exports.properties.object.jsh.shell && $exports.properties.object.jsh.shell.lib) {
 	$exports.jsh.lib = $context.api.file.Pathname($exports.properties.object.jsh.shell.lib).directory;
 } else if ($exports.jsh.home) {
 	$exports.jsh.lib = $exports.jsh.home.getSubdirectory("lib");
 }
-//var launcherClasspath = $context.api.file.filesystem.Searchpath.parse(String($exports.properties.object.jsh.launcher.classpath));
-////	TODO	this is fragile. The above property is, in a built shell:
-////			*	supplied by the Java launcher class using the launcher java.class.path property as jsh.launcher.classpath
-////			*	supplied by the script launcher to the underlying process as is
-////			In the case in which the *launcher* is being profiled, apparently the -javaagent: is *appended* to its java.class.path,
-////			so jsh.jar is still first. An earlier implementation made sure the launcher classpath length was 1 also, but that is no
-////			longer true in the profiling case.
-//if (launcherClasspath.pathnames[0] && launcherClasspath.pathnames[0].basename == "jsh.jar") {
-//	//	TODO	find better way to get this value; if using global, should use jsh.home system property, but should actually find
-//	//			a way to pass it through the shell instantiation process
-//	$exports.jsh.home = launcherClasspath.pathnames[0].file.parent;
-//}

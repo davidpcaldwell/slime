@@ -47,12 +47,12 @@ END LICENSE
 				</span>
 				<script type="application/x.jsapi#tests">
 					var unbuilt = $jsapi.environment.jsh.unbuilt.data;
-					verify(unbuilt)["jsh.script.file"].string.is($jsapi.environment.jsh.src.getRelativePath("jsh/etc/jsh-data.jsh.js").toString());
-					verify(unbuilt)["jsh.script.file"].pathname.string.is($jsapi.environment.jsh.src.getRelativePath("jsh/etc/jsh-data.jsh.js").toString());
+					verify(unbuilt)["jsh.script.file"].string.is($jsapi.environment.jsh.src.getRelativePath("jsh/test/jsh-data.jsh.js").toString());
+					verify(unbuilt)["jsh.script.file"].pathname.string.is($jsapi.environment.jsh.src.getRelativePath("jsh/test/jsh-data.jsh.js").toString());
 
 					var built = $jsapi.environment.jsh.built.data;
-					verify(built)["jsh.script.file"].string.is($jsapi.environment.jsh.src.getRelativePath("jsh/etc/jsh-data.jsh.js").toString());
-					verify(built)["jsh.script.file"].pathname.string.is($jsapi.environment.jsh.src.getRelativePath("jsh/etc/jsh-data.jsh.js").toString());
+					verify(built)["jsh.script.file"].string.is($jsapi.environment.jsh.src.getRelativePath("jsh/test/jsh-data.jsh.js").toString());
+					verify(built)["jsh.script.file"].pathname.string.is($jsapi.environment.jsh.src.getRelativePath("jsh/test/jsh-data.jsh.js").toString());
 
 					var packaged = $jsapi.environment.jsh.packaged.data;
 					var jar = $jsapi.environment.jsh.packaged.jar;
@@ -76,7 +76,7 @@ END LICENSE
 				</span>
 				<script type="application/x.jsapi#tests">
 					var $jsh = $jsapi.environment.jsh;
-					var src = $jsh.src.getRelativePath("jsh/etc/jsh-data.jsh.js").toString();
+					var src = $jsh.src.getRelativePath("jsh/test/jsh-data.jsh.js").toString();
 
 					verify($jsh).unbuilt.data["jsh.script.script"].string.is(src);
 					verify($jsh).unbuilt.data["jsh.script.script"].pathname.string.is(src);
@@ -98,7 +98,7 @@ END LICENSE
 					var $jsh = $jsapi.environment.jsh;
 
 					if ($jsh.remote) {
-						verify($jsh).remote.data["jsh.script.url"].string.is("http://bitbucket.org/api/1.0/repositories/davidpcaldwell/slime/raw/local/jsh/etc/jsh-data.jsh.js");
+						verify($jsh).remote.data["jsh.script.url"].string.is("http://bitbucket.org/api/1.0/repositories/davidpcaldwell/slime/raw/local/jsh/test/jsh-data.jsh.js");
 					}
 					//	Additional, possibly excessive, tests are in rhino/shell/test/jsh.shell.jsh.suite.jsh.js
 				</script>
@@ -141,6 +141,35 @@ END LICENSE
 					modules and files relative to the directory from which the script was run (although a script can replace this
 					property; see <code><a href="#exports.Loader">Loader</a></code>).
 				</span>
+				<script type="application/x.jsapi#tests" jsapi:id="loader">
+					var a = jsh.shell.jsh({
+						shell: $jsapi.environment.jsh.built.home,
+						script: $jsapi.environment.jsh.src.getFile("jsh/script/test/loader.jsh.js"),
+						stdio: {
+							output: String
+						},
+						evaluate: function(result) {
+							return JSON.parse(result.stdio.output);
+						}
+					});
+					verify(a).submodule.message.is("ititit");
+					
+					var started = jsh.httpd.Tomcat.serve({
+						directory: $jsapi.environment.jsh.src
+					});
+					
+					var b = jsh.shell.jsh({
+						shell: $jsapi.environment.jsh.built.home,
+						script: "http://127.0.0.1:" + started.port + "/" + "jsh/script/test/loader.jsh.js",
+						stdio: {
+							output: String
+						},
+						evaluate: function(result) {
+							return JSON.parse(result.stdio.output);							
+						}
+					});
+					verify(b).submodule.message.is("ititit");					
+				</script>
 			</li>
 			<li class="function" jsapi:id="getopts">
 				<div class="name"><a id="properties.getopts">getopts</a></div>
@@ -589,6 +618,23 @@ END LICENSE
 						</div>
 					</li>
 				</ul>
+				<script type="application/x.jsapi#tests" jsapi:id="Application">
+					var json = jsh.shell.jsh({
+						shell: $jsapi.environment.jsh.built.home,
+						script: $jsapi.environment.jsh.src.getFile("jsh/script/test/Application.jsh.js"),
+						arguments: ["-gstring", "gvalue", "-gboolean", "doIt", "-lboolean"],
+						stdio: {
+							output: String
+						},
+						evaluate: function(result) {
+							return JSON.parse(result.stdio.output);
+						}
+					});
+					verify(json).global.gstring.is("gvalue");
+					verify(json).global.gboolean.is(true);
+					verify(json).options.lboolean.is(true);
+					verify(json).options.lstring.is("foo");					
+				</script>
 			</li>
 		</ul>
 	</div>

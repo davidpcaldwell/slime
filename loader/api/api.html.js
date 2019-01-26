@@ -13,7 +13,7 @@
 //	Shared code for unit test harnesses
 
 var assign = (function() {
-	if ($context.api.assign) return $context.api.assign;
+	if ($context.api && $context.api.assign) return $context.api.assign;
 	if (Object.assign) return Object.assign;
 	throw new Error();
 })();
@@ -94,7 +94,8 @@ var getDescendants = function(element) {
 	};
 
 	var rv = [];
-	addChildren(rv,element.getChildren());
+	var children = element.getChildren();
+	addChildren(rv,children);
 	return rv;
 }
 
@@ -415,7 +416,30 @@ $exports.ApiHtmlTests = function(html,name) {
 	}
 
 	this.getSuiteDescriptor = function(scope) {
-		return getPartDescriptor(scope,html.top);
+		var rv = getPartDescriptor(scope,html.top);
+
+		var find = function recurse(part,names) {
+			if (names.length == 0) return [];
+			for (var x in part.parts) {
+				var name = part.parts[x].name;
+				if (name.substring(0,1) == "<") name = null;
+				if (name == names[0]) {
+					return [x].concat(recurse(part.parts[x],names.slice(1)));
+				} else if (name) {
+					//	skip
+				} else {
+					var found = recurse(part.parts[x],names,[]);
+					if (found) return [x].concat(found);
+				}
+			}
+			return null;
+		};
+
+		rv.getPath = function(ids) {
+			return find(this,ids);
+		};
+		
+		return rv;
 	};
 
 	this.getSuite = $api.deprecate(this.getSuiteDescriptor);

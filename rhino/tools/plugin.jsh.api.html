@@ -32,15 +32,17 @@ END LICENSE
 		<div>__DESCRIPTION__</div>
 		<div>
 			<script type="application/x.jsapi#initialize">
-				scope.module = $jsapi.loader.module("module.js", {
-					api: {
+				scope.module = $jsapi.loader.plugin.mock({
+					jsh: {
 						js: jsh.js,
 						java: jsh.java
+					},
+					evaluate: function(p) {
+						return p.jsh.java.tools;
 					}
 				});
-//				$jsapi.loader.plugins();
 			</script>
-			<h1>API</h1>
+			<h1><code>jsh.java.tools</code></h1>
 			<ul jsapi:reference="getApi('api.html').getElement('exports')">
 			</ul>
 		</div>

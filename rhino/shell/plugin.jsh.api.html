@@ -138,7 +138,7 @@ END LICENSE
 			</li>
 			<li class="value" jsapi:reference="getApi('api.html').getElement('user')">
 			</li>
-			<li class="value">
+			<li class="value" jsapi:id="stdio">
 				<div class="name">stdio</div>
 				<span class="type"><a href="api.html#types.stdio">stdio</a></span>
 				<span>The standard I/O streams for this shell.</span>
@@ -149,6 +149,51 @@ END LICENSE
 				<script type="application/x.jsapi#tests">
 					test(typeof(module.stdio.error.write) == "function");
 					test(typeof(module.stdio.error.close) == "function");
+				</script>
+				<script type="application/x.jsapi#tests" jsapi:id="1">
+					var one = jsh.shell.jsh({
+						shell: $jsapi.environment.jsh.built.home,
+						script: $jsapi.environment.jsh.src.getFile("rhino/shell/test/stdio.1.jsh.js"),
+						stdio: {
+							output: String,
+							error: String
+						},
+						evaluate: function(result) {
+							return result.stdio;
+						}
+					});
+					verify(one).output.is("Hello, World!");
+					verify(one).error.is("Hello, tty!");
+				</script>
+				<script type="application/x.jsapi#initialize">
+					scope.input_abcdefghij = "ABCDEFGHIJ";
+					scope.getScriptOutput = function(p) {
+						return jsh.shell.jsh({
+							shell: $jsapi.environment.jsh.built.home,
+							script: $jsapi.environment.jsh.src.getFile("rhino/shell/test/" + p.script),
+							stdio: {
+								input: p.input,
+								output: String
+							},
+							evaluate: function(result) {
+								return result.stdio.output;
+							}							
+						})
+					};
+				</script>
+				<script type="application/x.jsapi#tests" jsapi:id="2">
+					var output = getScriptOutput({
+						script: "stdio.2.jsh.js",
+						input: input_abcdefghij
+					});
+					verify(output).is(input_abcdefghij);
+				</script>
+				<script type="application/x.jsapi#tests" jsapi:id="3">
+					var output = getScriptOutput({
+						script: "stdio.3.jsh.js",
+						input: input_abcdefghij
+					});
+					verify(output).is(input_abcdefghij);
 				</script>
 			</li>
 			<li class="value deprecated">
@@ -210,6 +255,17 @@ END LICENSE
 						</li>
 					</ol>
 				</div>
+				<script type="application/x.jsapi#tests" jsapi:id="exit">
+					// TODO: using home shell to replicate previous test, not thinking about it
+					var result = jsh.shell.jsh({
+						shell: $jsapi.environment.jsh.built.home,
+						script: $jsapi.environment.jsh.src.getFile("rhino/shell/test/exit.jsh.js"),
+						evaluate: function(result) {
+							return result;
+						}
+					});
+					verify(result).status.is(3);
+				</script>
 			</li>
 			<li class="function">
 				<div class="name">echo</div>
@@ -252,6 +308,39 @@ END LICENSE
 						</li>
 					</ol>
 				</div>
+				<script type="application/x.jsapi#tests" jsapi:id="echo">
+					var buffer = new jsh.io.Buffer();
+					var stream = buffer.writeText();
+
+					module.echo(true, { stream: stream });
+					
+					buffer.close();
+					// TODO: hard-coded line terminator below
+					var buffered = buffer.readText().asString().split("\n");
+					verify(buffered).length.is(2);
+					verify(buffered)[0].is("true");
+					verify(buffered)[1].is("");
+					
+					var console = new function() {
+						var lines = [];
+
+						this.line = function(s) {
+							lines.push(s);
+						}
+
+						this.getLines = function() {
+							return lines;
+						}
+					}
+
+					module.echo("A", { console: console.line });
+					module.echo("B", { console: console.line });
+
+					var captured = console.getLines();
+					verify(captured).length.is(2);
+					verify(captured)[0].is("A");
+					verify(captured)[1].is("B");
+				</script>
 			</li>
 			<li class="function">
 				<div class="name">console</div>

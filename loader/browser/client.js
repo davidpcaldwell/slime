@@ -121,8 +121,8 @@
 
 		var fetcher = new function() {
 			var downloads = {};
-
-			var fetch = function(path) {
+			
+			var get = function(path) {
 				$context.debug("Fetching: " + path);
 				var req = new XMLHttpRequest();
 				if (arguments.callee.loader && arguments.callee.loader.mapping) {
@@ -145,27 +145,30 @@
 					};
 					throw error;
 				};
-				return req.responseText;
+				return {
+					contentType: req.getResponseHeader("Content-Type"),
+					responseText: req.responseText
+				};
+			};
+			
+			this.get = get;
+
+			var fetch = function(path) {
+				var got = get(path);
+				return got.responseText;
 			}
 
 			this.fetch = fetch;
 
 			var getCode = function(path) {
 				if (!downloads[path]) {
-					downloads[path] = fetch(path);
+					downloads[path] = get(path);
 				}
-				return downloads[path];
+				return downloads[path].responseText;
 			}
 
-			this.getCode = function(path) {
-				var code = getCode(path);
-				for (var i=0; i<arguments.callee.preprocessors.length; i++) {
-					code = arguments.callee.preprocessors[i](code);
-				}
-				//	TODO	probably should reorganize so that sourceURL can be added for CoffeeScript after compilation
-				return code;
-			}
-			this.getCode.preprocessors = [];
+			//	TODO	probably should reorganize so that sourceURL can be added for CoffeeScript after compilation
+			this.getCode = getCode;
 		}
 
 		// TODO: with the reorganization of the platform, 'runtime' is probably the best name for this object now
@@ -198,12 +201,13 @@
 				p = (function(prefix) {
 					return {
 						get: function(path) {
-							var code = fetcher.getCode(prefix+path);
-							if (!/\.coffee$/.test(path)) {
+							var code = fetcher.get(prefix+path);
+							if (code.contentType == "application/javascript") {
 								//	Add sourceURL for JavaScript debuggers
-								code = code + "\n//# sourceURL=" + prefix+path;
+								code.responseText += "\n//# sourceURL=" + prefix+path;
 							}
-							return { name: path, path: prefix+path, string: code };
+							// TODO: is 'path' used?
+							return { type: code.contentType, name: path, string: code.responseText, path: prefix+path };
 						},
 						toString: function() {
 							return "Browser loader: prefix=[" + prefix + "]";

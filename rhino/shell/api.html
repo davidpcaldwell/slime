@@ -448,11 +448,13 @@ os.resolve(function() {
 						<script type="application/x.jsapi#tests">
 							if (module.os.name == "Mac OS X") {
 								verify(module).os.evaluate.property("ping").is.type("function");
-								var local = module.os.ping({ host: "127.0.0.1" });
-								verify(local).status.is(0);
-								verify(local).output.is.type("object");
-								verify(local).output[0].is.type("string");
-								verify(local).success.is.type("number");
+								if (!$jsapi.environment.noselfping) {
+									var local = module.os.ping({ host: "127.0.0.1" });
+									verify(local).status.is(0);
+									verify(local).output.is.type("object");
+									verify(local).output[0].is.type("string");
+									verify(local).success.is.type("number");
+								}
 
 								var fake = module.os.ping({ host: "198.51.100.0", timeout: 1 });
 								verify(fake).status.is(2);

@@ -1,0 +1,100 @@
+<!--
+LICENSE
+This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+
+The Original Code is the SLIME project.
+
+The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+Portions created by the Initial Developer are Copyright (C) 2018 the Initial Developer. All Rights Reserved.
+
+Contributor(s):
+END LICENSE
+-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
+	<head>
+		<title>SLIME: development</title>
+		<link href="loader/api/api.css" rel="stylesheet" type="text/css" />
+		<script src="loader/api/api.js"></script>
+		<script>
+			//	TODO	CORS
+			document.domain = document.domain;
+		</script>
+	</head>
+	<body>
+		<div>This page contains resources for developing SLIME itself.</div>
+		<div>
+			<h1><code>jsh</code></h1>
+			<div>
+				<h2><a href="jsh/launcher/internal.api.html">Launcher</a> documentation</h2>
+			</div>
+			<div>
+				<h2><a href="jsh/loader/internal.api.html">Loader</a> documentation</h2>
+			</div>
+		</div>
+		<div>
+			<h1>Tests</h1>
+			<ul>
+				<li>
+					Java tests: <code>jsh/test/jrunscript.jsh.js [-view <i>view</i>][-unit <i>suitepath[:pagepath]</i>] [-noselfping] [-executable]</code>
+				</li>
+				<li>
+					Browser suite:
+					<code><a href="loader/browser/test/suite.jsh.api.html">loader/browser/test/suite.jsh.js</a> -suite loader/browser.suite.js</code>
+				</li>
+			</ul>
+		</div>
+		<div>
+			<h1>Features</h1>
+			<div>
+				<h2>Built <code>jsh</code> shells</h2>
+				<div>
+					<code>./jsh.bash jsh/test/tools/run-in-built-shell.jsh.js <i>script</i> [<i>arguments</i>]</code>.
+				</div>
+			</div>
+			<div>
+				<h2>Remote <code>jsh</code> shells</h2>
+				<div>
+					See <a href="jsh/tools/provision/test/plugin.jsh.api.html"><code>jsh.test.provision</code></a>.
+				</div>
+			</div>
+		</div>
+		<div>
+			<h1>Manual testing required</h1>
+			<div>
+				<h2>Provisioning</h2>
+				<div>
+					<code>jrunscript rhino/jrunscript/api.js jsh jsh/tools/provision/test/server.jsh.js</code>
+				</div>
+				<div>
+					Test: copy and paste the <samp>Testing (standard)</samp> output and make sure it produces a Hello, World message.
+				</div>
+				<div>
+					Testing private repositories requires the private <code>slime-kit</code> repository, and can be invoked as
+					follows:
+					<div>
+						<code>-repository:name slime-kit -repository:location <i>directory where slime-kit is located</i> -repository:script test/provision-script.jsh.js -password <i>password for server to use for davidpcaldwell</i></code>
+					</div>
+				</div>
+			</div>
+			<div>
+				<h2>Google Chrome integration</h2>
+				<div>
+					<code>rhino/shell/test/manual/chrome.jsh.js</code>
+					<ul>
+						<li><code>profile</code></li>
+						<li><code>app</code></li>
+						<li><code>close [-exitOnClose]</code>: allows testing the detection of Google Chrome closing. On OS X, the
+							<code>-exitOnClose</code> flag will attempt to terminate Chrome when the last window for the
+							user data directory closes. Upon closure, a message will be printed to the console announcing Chrome
+							has closed.
+						</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>
+

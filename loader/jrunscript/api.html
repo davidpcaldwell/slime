@@ -214,7 +214,7 @@ END LICENSE
 							<span>__DESCRIPTION__</span>
 						</div>
 						<script type="application/x.jsapi#tests">
-							var xmlType = api.mime.Type.fromName({ name: "foo.xml" });
+							var xmlType = api.mime.Type.fromName("foo.xml");
 							verify(xmlType).evaluate(function() { return this.is("application/xml"); }).is(true);
 						</script>
 					</li>
@@ -580,7 +580,15 @@ END LICENSE
 							verify(loader).get("file").is.not(null);
 							var file = loader.get("file");
 							verify(file).modified.is.type("object");
-							verify(file).modified.evaluate(function() { return this instanceof Date; }).is(true);
+							verify(file).modified.evaluate(function(p) {
+								var dateType = (Date.was) ? Date.was : Date;
+								if (!(p instanceof dateType)) {
+									Packages.java.lang.System.err.println("modified = " + p);
+									Packages.java.lang.System.err.println("modified.constructor = " + p.constructor);
+									Packages.java.lang.System.err.println("Date = " + dateType);
+								}
+								return p instanceof dateType; 
+							}).is(true);
 							verify(loader).get("dir/under").is.not(null);
 							verify(loader).get("foo").is(null);
 							verify(loader).evaluate.property("list").is.type("function");

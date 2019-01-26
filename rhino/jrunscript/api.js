@@ -255,8 +255,8 @@
 	//			dependent only on Rhino, which apparently has a bug(?) making its own runCommand() not work correctly in this
 	//			scenario when an InputStream is provided: even when underlying process terminates, command does not return
 	//	TODO	this has the potential to run really slowly when written in JavaScript
+	//	TODO	Graal cannot correctly run this function because of the multithreading involved; see https://github.com/graalvm/graaljs/issues/30
 	$api.engine.runCommand = function() {
-//		Packages.java.lang.System.err.println("Running a command ...");
 		var Buffer = function(initial) {
 			var _bytes = new Packages.java.io.ByteArrayOutputStream();
 
@@ -409,21 +409,41 @@
 					s
 				)
 			);
+			$api.debug("Constructed (Spooler.start): " + name);
 			t.setName(t.getName() + ":" + name);
+			$api.debug("Starting (Spooler.start): " + name);
 			t.start();
+			$api.debug("Started (Spooler.start): " + name);
 			return t;
 		};
 		var spoolName = Array.prototype.join.call(arguments, ",");
-//		Packages.java.lang.System.err.println("Forking a command ... " + Array.prototype.slice.call(arguments).join(" "));
+		$api.debug("Forking a command ... " + Array.prototype.slice.call(arguments).join(" "));
 		var delegate = _builder.start();
+		$api.debug("Started.");
 		var hasConsole = Packages.java.lang.System.console();
+		$api.debug("hasConsole = " + Boolean(hasConsole));
 		var _in = Spooler.start(delegate.getInputStream(), context.getStandardOutput(), false, !hasConsole, "stdout: " + spoolName);
+		$api.debug("Started spooler for " + _in);
 		var _err = Spooler.start(delegate.getErrorStream(), context.getStandardError(), false, !hasConsole, "stderr: " + spoolName);
+		$api.debug("Started spoolers.");
 		var _stdin = context.getStandardInput();
 		var _out = Spooler.start(_stdin, delegate.getOutputStream(), true, true, "stdin from " + _stdin + ": " + spoolName);
 		var rv = delegate.waitFor();
-		_in.join();
-		_err.join();
+		$api.debug("Started; before join()");
+		var join = function() {
+			_in.join();
+			_err.join();
+		};
+		$engine.resolve({
+			rhino: join,
+			jdkrhino: join,
+			nashorn: join,
+			graal: function() {
+			}
+		})();
+		// _in.join();
+		// _err.join();
+		$api.debug("Started; after join(): alive _in=" + _in.isAlive() + " err=" + _err.isAlive());
 		context.finish();
 		return rv;
 	};
@@ -633,47 +653,48 @@
 			if (new File(home, "../bin/jrunscript").exists()) return new File(home, "../bin/jrunscript");
 			if (new File(home, "../bin/jrunscript.exe").exists()) return new File(home, "../bin/jrunscript.exe");
 		})();
+		
+		(function addCompileMethod() {
+			var tried = false;
+			var compiler;
+
+			var implementation = function(args) {
+				var jarray = Packages.java.lang.reflect.Array.newInstance($api.java.getClass("java.lang.String"),args.length);
+				for (var i=0; i<jarray.length; i++) {
+					jarray[i] = new Packages.java.lang.String(args[i]);
+				}
+				var status = compiler.run(
+					Packages.java.lang.System["in"],
+					Packages.java.lang.System.out,
+					Packages.java.lang.System.err,
+					jarray
+				);
+				if (status) {
+					throw new Error("Compiler exited with status " + status + " with inputs " + args.join(","));
+				}
+			};
+
+			//	TODO	refactor into making the getter a separate function and reusing it: as getting in if and invoked in else
+			if (Object.defineProperty) {
+				Object.defineProperty(this, "compile", {
+					get: function() {
+						if (!tried) {
+							compiler = Packages.javax.tools.ToolProvider.getSystemJavaCompiler();
+							tried = true;
+						}
+						if (compiler) {
+							return implementation;
+						}
+					}
+				});
+			} else {
+				compiler = Packages.javax.tools.ToolProvider.getSystemJavaCompiler();
+				this.compile = implementation;
+			}
+		}).call(this);
 	};
 
 	$api.java.install = new $api.java.Install(new Packages.java.io.File(Packages.java.lang.System.getProperty("java.home")));
-	(function() {
-		var tried = false;
-		var compiler;
-
-		var implementation = function(args) {
-			var jarray = Packages.java.lang.reflect.Array.newInstance($api.java.getClass("java.lang.String"),args.length);
-			for (var i=0; i<jarray.length; i++) {
-				jarray[i] = new Packages.java.lang.String(args[i]);
-			}
-			var status = compiler.run(
-				Packages.java.lang.System["in"],
-				Packages.java.lang.System.out,
-				Packages.java.lang.System.err,
-				jarray
-			);
-			if (status) {
-				throw new Error("Compiler exited with status " + status + " with inputs " + args.join(","));
-			}
-		};
-
-		//	TODO	refactor into making the getter a separate function and reusing it: as getting in if and invoked in else
-		if (Object.defineProperty) {
-			Object.defineProperty($api.java.install, "compile", {
-				get: function() {
-					if (!tried) {
-						compiler = Packages.javax.tools.ToolProvider.getSystemJavaCompiler();
-						tried = true;
-					}
-					if (compiler) {
-						return implementation;
-					}
-				}
-			});
-		} else {
-			compiler = Packages.javax.tools.ToolProvider.getSystemJavaCompiler();
-			$api.java.install.compile = implementation;
-		}
-	})();
 	$api.java.getClass = function(name) {
 		return $engine.getClass(name);
 	}
@@ -693,7 +714,7 @@
 			return function(mode) {
 				if (!mode) mode = {};
 				if (!mode.input) mode.input = Packages.java.lang.System["in"];
-				$api.debug("Invoking launcher");
+				$api.debug("Invoking launcher: " + home.launcher);
 				var tokens = [home.launcher];
 				tokens.push.apply(tokens,vmArguments);
 				for (var x in properties) {
@@ -806,6 +827,13 @@
 			].join(" ");
 		}
 
+		this.fork = function() {
+			if (launcher == launchers.ClassLoader) {
+				$api.debug("Running in VM because of fork() ...");
+				launcher = new launchers.Vm();
+			}
+		}
+
 		this.home = function(home) {
 			$api.debug("Running in VM because of home() ...");
 			launcher = new launchers.Vm(home);
@@ -835,11 +863,6 @@
 
 		this.argument = function() {
 			mainArguments.push(arguments[0]);
-		}
-
-		this.fork = function() {
-			$api.debug("Running in VM because of fork() ...");
-			launcher = new launchers.Vm();
 		}
 
 		this.run = function(mode) {
@@ -1214,7 +1237,7 @@
 				if (count == 1) {
 					more = false;
 				} else {
-					Packages.java.lang.Thread.sleep(1000);
+					Packages.java.lang.Thread.sleep(100);
 				}
 			}
 		})()

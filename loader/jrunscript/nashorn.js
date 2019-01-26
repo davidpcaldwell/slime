@@ -13,77 +13,22 @@
 load("nashorn:mozilla_compat.js");
 
 (function() {
-	//	TODO	replace $getLoaderCode and $getCoffeeScript with $loader.getLoaderCode and $loader.getCoffeeScript to match
-	//			Rhino embedding and remove pointless transformation
-	var hasNashornErrorHack = (function() {
-		if (Packages.java.lang.System.getenv("DISABLE_NASHORN_ERROR_HACK")) return false;
-		//	TODO	this flaw has apparently been fixed in post-8u40 versions of Nashorn
-		return false;
-		this.Error = function(message) {
-			this.name = "Error";
-			this.message = message;
-			this.stack = (function() {
-				var frames = new Packages.java.lang.Throwable().getStackTrace();
-				var rv = "";
-				for (var i=2; i<frames.length; i++) {
-					if (frames[i].getFileName() && !/\.java$/.test(frames[i].getFileName())) {
-						rv += "\tat " + frames[i].getFileName() + ":" + frames[i].getLineNumber() + "\n";
-					}
-				}
-				return rv;
-			})();
-			var _jlogging = Packages.java.util.logging;
-			_jlogging.Logger.getLogger("inonit.script.nashorn.Host.script").log(_jlogging.Level.INFO, this.message);
-			_jlogging.Logger.getLogger("inonit.script.nashorn.Host.script").log(_jlogging.Level.INFO, this.stack);
-		};
-		this.Error.prototype.toString = function() {
-			return this.name + ": " + this.message;
-		};
-
-		var Subtype = function(Error,name) {
-			var rv = function() {
-				Error.apply(this,arguments);
-				this.name = name;
-			};
-			rv.prototype = new Error();
-			return rv;
-		};
-		this.TypeError = new Subtype(this.Error,"TypeError");
-		return true;
-	})();
-
 	var toScope = function(scope) {
 		var global = (function() { return this; })();
-		if (false) {
-			var rv = {};
-			for (var x in global) {
-				rv[x] = global[x];
-			}
-			for (var x in scope) {
-				rv[x] = scope[x];
-			}
-			return rv;
-		} else if (false) {
-			scope.__proto__ = global;
-			return scope;
-		} else {
-			var rv = Object.create(global);
-			for (var x in scope) {
-				rv[x] = scope[x];
-			}
-			return rv;
+		// var rv = {};
+		// for (var x in global) {
+		// 	rv[x] = global[x];
+		// }
+		// rv.__proto__ = global
+		// scope.__proto__ = global
+		var rv = Object.create(global);
+		for (var x in scope) {
+			rv[x] = scope[x];
 		}
+		return rv;
 	};
-
-	var Context = Java.type("jdk.nashorn.internal.runtime.Context");
-
+	
 	var loaders = new function() {
-		var toSource = function(name,code) {
-			var Source = Java.type("jdk.nashorn.internal.runtime.Source");
-			if (Source.sourceFor) return Source.sourceFor(name,code);
-			return new Source(name,code);
-		};
-
 		//	Attempt to use pure JavaScript to implement (ignoring name, which perhaps could be attached using a sourceURL-like
 		//	hack)
 		this.js = function(name,code,scope,target) {
@@ -91,14 +36,13 @@ load("nashorn:mozilla_compat.js");
 			//	debug because of the wall of evals in the resulting stack trace
 			return (function() {
 				with(scope) {
-					return eval(code);
+					return eval(code + "//# sourceURL=" + name);
 				}
 			}).call(target);
 		};
-
+		
 		//	Try to use public javax.script APIs with source rewriting; not very thought through and did not work in current form
 		this.eval = function(name,code,scope,target) {
-			throw new Error("Unimplemented.");
 			//	$interface was nested class of inonit.script.nashorn.Host:
 			//	public class Interface {
 			//		public Object eval(String name, String code, Bindings bindings) throws ScriptException {
@@ -117,13 +61,35 @@ load("nashorn:mozilla_compat.js");
 				_bindings.put(x,scope[x]);
 			}
 			_bindings.put("$$this",target);
-			return $interface.eval(name, targeted, _bindings);
+			return $interface.eval(name, targeted, _bindings);			
+		}
+		
+		//	Attempt to leverage Nashorn/Graal shell APIs.
+		this.load = function(name,code,scope,target) {
+			if (!$graal) throw new Error("Would never work with current Nashorn design.");
+			//	The "with" statement does not affect load(); load is always executed in global scope. See nashorn-dev thread
+			//	"Scopes and load()": http://mail.openjdk.java.net/pipermail/nashorn-dev/2014-September/003372.html
+			return (function() {
+				with(scope) {
+					return load({ name: name, script: code });
+				}
+			}).call(target);
+		};		
+	}
+
+	var nashorn = new function() {
+		var Context = Java.type("jdk.nashorn.internal.runtime.Context");
+
+		var toSource = function(name,code) {
+			var Source = Java.type("jdk.nashorn.internal.runtime.Source");
+			if (Source.sourceFor) return Source.sourceFor(name,code);
+			return new Source(name,code);
 		};
 
 		//	Use Nashorn classes directly. Uses undocumented, non-public classes. Replaces 'old' implementation because 'old' relies
 		//	on private meethods of undocumented classes. Should test whether this affects some of the "scope loss" bugs; however,
 		//	those may have been caused by loading multiple scripts with the same name, so should also test that possibility.
-		this.compile = function(name,code,scope,target) {
+		var compile = function(name,code,scope,target) {
 			var compiled = Context.getContext().compileScript(toSource(name,code),scope);
 			return Packages.jdk.nashorn.internal.runtime.ScriptRuntime.apply(compiled,target);
 		};
@@ -131,7 +97,7 @@ load("nashorn:mozilla_compat.js");
 		//	Initial working implementation, that nevertheless can fail in complicated scoping scenarios because sometimes scope
 		//	chain is wrong. May be caused by incorrect use of private APIs, or perhaps by name collisions between multiple copies
 		//	of the "same" script (script with same name) that could be solved by adding unambiguous names.
-		this.old = function(name,code,scope,target) {
+		var old = function(name,code,scope,target) {
 			if (!arguments.callee.evaluateSource) {
 				var evaluateSourceSignature = new (Java.type("java.lang.Class[]"))(3);
 				var ScriptObject = Java.type("jdk.nashorn.internal.runtime.ScriptObject");
@@ -144,45 +110,117 @@ load("nashorn:mozilla_compat.js");
 			return arguments.callee.evaluateSource.invoke(Context.getContext(), toSource(name,code), scope, target);
 		};
 
-		//	Attempt to leverage Nashorn script APIs.
-		this.load = function(name,code,scope,target) {
-			throw new Error("Would never work with current Nashorn design.");
-			//	The "with" statement does not affect load(); load is always executed in global scope. See nashorn-dev thread
-			//	"Scopes and load()": http://mail.openjdk.java.net/pipermail/nashorn-dev/2014-September/003372.html
-			return (function() {
-				with(scope) {
-					return load({ name: name, script: code });
-				}
-			}).call(target);
+		this.script = function(name,code,scope,target) {
+			var notNull = function(o) {
+				return (o) ? o : {};
+			};
+			var fixedScope = toScope(notNull(scope));
+			var fixedTarget = notNull(target);
+			var implementation = compile;
+			if (!implementation) throw new Error("Unknown mode: " + implementation);
+			return implementation(name,code,fixedScope,fixedTarget);				
+		}
+		
+		this.subshell = function(f) {
+			var global = (function() { return this; })();
+			var subglobal = Context.getContext().createGlobal();
+			Context.setGlobal(subglobal);
+			try {
+				return f.apply(this,arguments);
+			} finally {
+				Context.setGlobal(global);
+			}				
 		};
-	}
-
-	var script = function(name,code,scope,target) {
-		var notNull = function(o) {
-			return (o) ? o : {};
-		};
-		var fixedScope = toScope(notNull(scope));
-		var fixedTarget = notNull(target);
-		var implementation = loaders.compile;
-		if (!implementation) throw new Error("Unknown mode: " + implementation);
-		return implementation(name,code,fixedScope,fixedTarget);
 	};
+	
+	var graal = new function() {
+		//	Creating new context does not work; results in complaints about cross-context access:
+		//	var _context = Packages.org.graalvm.polyglot.Context.newBuilder("js").allowHostAccess(true).option("js.nashorn-compat","true").build();
 
-	if (typeof($classpath) == "undefined") {
-		return {
-			script: script,//(script) ? script : Java.type("java.lang.System").getProperties().get("slime/loader/rhino/nashorn.js:script"),
-			subshell: function(f) {
-				var global = (function() { return this; })();
-				var subglobal = Context.getContext().createGlobal();
-				Context.setGlobal(subglobal);
-				try {
-					return f.apply(this,arguments);
-				} finally {
-					Context.setGlobal(global);
+		//	Getting bindings and using getMember/putMember in script code does not appear to work; failed with some kind of foreign INVOKE error; could retest
+		
+		//	Source transform apparently is needed to implement scope because otherwise, since we are re-using a single context,
+		//	entering a new script overwrites/changes the bindings, so we also pass scope as function arguments
+		
+		//	Source transform is needed to implement 'this' targeting, as in Rhino; no straightforward way to change target as of
+		//	now. Could use a magic Value member (see comment with 'script' below) but since we have to use a source transform
+		//	anyway (see scope comment above), no real benefit to doing that right now.
+		var context = function(name,code,scope,target) {
+			var bindings = [];
+			// TODO: No idea why this does not work if this value is true; that implementation seems cleaner and would love to
+			// switch to it
+			var USE_BINDINGS_FOR_CREATING_SCOPE = false;
+			for (var x in scope) {
+				if (x != "$$this") {
+					bindings.push({ name: x, value: scope[x] });
 				}
 			}
+			var args = bindings.map(function(binding) {
+				return binding.name;
+			}).join(",");
+			code = "(function(" + args + ") { " + code + "}).call($$this," + args + ")";
+			var _context = Packages.org.graalvm.polyglot.Context.getCurrent();
+			var was = {};
+			if (USE_BINDINGS_FOR_CREATING_SCOPE) {
+				bindings.forEach(function(binding) {
+					was[x] = $graal.getMember(binding.name);
+					$graal.putMember(binding.name, binding.value);
+				})				
+			} else {
+				for (var x in scope) {
+					was[x] = $graal.getMember(x);
+					$graal.putMember(x, scope[x]);
+				}
+			}
+			$graal.putMember("$$this", target);
+			var _source = Packages.org.graalvm.polyglot.Source.newBuilder("js", code, name).build();
+			var rv = _context.eval(_source);
+			if (USE_BINDINGS_FOR_CREATING_SCOPE) {
+				bindings.forEach(function(binding) {
+					$graal.putMember(binding.name, was[binding.name]);				
+				});
+			} else {
+				for (var x in scope) {
+					$graal.putMember(x, was[x]);
+				}				
+			}
+			$graal.putMember("$$this", null);
+			return rv;
 		};
+		
+		this.eval = function(name,code,scope,target) {
+			var implementation = loaders.js;
+			return implementation(name,code,scope,target);
+		};
+		
+		this.script = function(name,code,scope,target) {
+			// TODO: another approach to try: create a function, set it as a magic member on the Value, then invoke that member
+			// using invokeMember on the value. May need to use new Function
+			// to parse it, perhaps may still need to use scope arguments, or scope bindings
+			var implementation = loaders.js;
+			// var implementation = function(name,code,scope,target) {
+			// 	return $graal.run(name,code,scope,target);
+			// }
+			if (name == "slime://loader/jrunscript/expression.js") implementation = loaders.js;
+			if (name == "slime://loader/jrunscript/nashorn.js") implementation = loaders.js;
+			if (name == "slime://loader/$api.js") implementation = loaders.js;
+			var rv = implementation(name,code,scope,target);
+			if (implementation == loaders.js) {
+				//Packages.java.lang.System.err.println("evaluated " + name + ": " + rv);
+			}
+			return rv;
+		}
+		
+		this.subshell = function(f) {
+			throw new Error("Graal subshell not implemented.");
+		};
+	};
+	
+	if (typeof($classpath) == "undefined") {
+		return ($graal) ? graal : nashorn;
 	} else {
+		var engine = ($graal) ? graal : nashorn;
+		
 		var $javahost = new function() {
 			this.getLoaderCode = $getLoaderCode;
 
@@ -193,9 +231,17 @@ load("nashorn:mozilla_compat.js");
 			this.getClasspath = function() {
 				return $classpath;
 			};
+			
+			this.eval = function(name,code,scope,target) {
+				if (engine.eval) {
+					return engine.eval(name,code,toScope(scope),target);
+				} else {
+					return engine.script(name,code,toScope(scope),target);
+				}
+			}
 
 			this.script = function(name,code,scope,target) {
-				return script(name,code,toScope(scope),target);
+				return engine.script(name,code,toScope(scope),target);
 			};
 
 			//	TODO	setReadOnly?
@@ -217,6 +263,7 @@ load("nashorn:mozilla_compat.js");
 			};
 
 			this.toNativeClass = function(javaclass) {
+				if ($graal) return javaclass.class;
 				if (javaLangClassNativeClass.isInstance(javaclass)) return javaclass;
 				return javaclass.class;
 			};
@@ -225,10 +272,6 @@ load("nashorn:mozilla_compat.js");
 				if (isJavaObjectArray(object)) return true;
 				return typeof(object.getClass) == "function" && object.getClass() == Java.type(object.getClass().getName()).class;
 			};
-
-			this.test = {
-				HAS_NASHORN_ERROR_HACK: hasNashornErrorHack
-			}
 		}
 
 		var rv = $javahost.script("slime://loader/jrunscript/expression.js", $getLoaderCode("jrunscript/expression.js"), toScope({ $javahost: $javahost, $bridge: $bridge }), null);

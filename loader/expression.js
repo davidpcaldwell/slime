@@ -126,18 +126,6 @@
 
 		var $api = $platform.execute( $slime.getLoaderScript("$api.js"), { $platform: $platform, $slime: $slime }, null);
 
-		var $coffee = (function() {
-			var coffeeScript = $slime.getCoffeeScript();
-			if (!coffeeScript) return null;
-			if (coffeeScript.code) {
-				var target = {};
-				execute({ code: String(coffeeScript.code) }, {}, target);
-				return target.CoffeeScript;
-			} else if (coffeeScript.object) {
-				return coffeeScript.object;
-			}
-		})();
-
 		var mime = (function($exports) {
 			$exports.Type = function(media,subtype,parameters) {
 				$api.Function.argument.isString({ index: 0, name: "media" }).apply(this,arguments);
@@ -252,7 +240,11 @@
 			var methods = {};
 
 			var Resource = function(o) {
-				if (typeof(o.read) == "function") throw new Error();
+				if (typeof(o.read) == "function") {
+					// TODO: ncdbg conditional breakpoint with above condition does not appear to work
+					debugger;
+					throw new Error();
+				}
 				if (!this.type) this.type = (function(type,name) {
 					if (typeof(type) == "string") return mime.Type.parse(type);
 					if (type instanceof mime.Type) return type;
@@ -317,7 +309,19 @@
 			//	resource.js { name, code }: forcibly set based on other properties
 			//	TODO	re-work resource.js
 			
-			methods.run = function(object,scope) {
+			var $coffee = (function() {
+				var coffeeScript = $slime.getCoffeeScript();
+				if (!coffeeScript) return null;
+				if (coffeeScript.code) {
+					var target = {};
+					$platform.execute({ name: "coffee-script.js", code: String(coffeeScript.code) }, {}, target);
+					return target.CoffeeScript;
+				} else if (coffeeScript.object) {
+					return coffeeScript.object;
+				}
+			})();
+
+			methods.run = function run(object,scope) {
 				if (!object || typeof(object) != "object") throw new TypeError("'object' must be an object, not " + object);
 				if (typeof(object.read) != "function") throw new Error("Not resource.");
 				var resource = object;
@@ -337,7 +341,7 @@
 						name: resource.name,
 						code: $coffee.compile(string)
 					};
-				} else if (type && type.is("application/javascript")) {
+				} else if (type && type.is("application/javascript") || type && type.is("application/x-javascript")) {
 					resource.js = {
 						name: resource.name,
 						code: string
@@ -373,7 +377,7 @@
 				return inner.$exports;
 			};
 
-			methods.value = function(code,scope) {
+			methods.value = function value(code,scope) {
 				var rv;
 				if (!scope) scope = {};
 				scope.$set = function(v) {
@@ -401,7 +405,7 @@
 				};
 
 				var declare = function(name) {
-					this[name] = function(path,scope,target) {
+					this[name] = function retarget(path,scope,target) {
 //						return methods[name].call(target,p.get(path),scope);
 						return methods[name].call(target,this.get(path),scope);
 					};
