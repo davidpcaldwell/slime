@@ -48,6 +48,12 @@ $exports.Url = function(o) {
 		this.query = $exports.Url.query(this.query);
 	}
 
+	this.form = function() {
+		if (typeof(this.query) == "undefined") return null;
+		var form = new $exports.Form({ urlencoded: this.query });
+		return form;
+	}
+
 	this.resolve = function(reference) {
 		//	See http://tools.ietf.org/html/rfc3986#section-5.2
 		//	particularly 5.2.2 for this pseudocode
@@ -194,3 +200,11 @@ $exports.Form = function(p) {
 		}).join("&");
 	}
 };
+
+if ($context.window) {
+	$exports.window = new function() {
+		this.url = function() {
+			return $exports.Url.parse($context.window.location.href);
+		}
+	}
+}
