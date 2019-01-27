@@ -10,6 +10,21 @@
 //	Contributor(s):
 //	END LICENSE
 
+if (!jsh.httpd.Tomcat) {
+	jsh.shell.console("Installing Tomcat into " + jsh.script.file + " shell ...");
+	jsh.shell.jsh({
+		script: jsh.script.file.parent.parent.getFile("jsh/tools/install/tomcat.jsh.js")
+	});
+	jsh.shell.jsh({
+		fork: true,
+		script: jsh.script.file,
+		arguments: jsh.script.arguments,
+		evaluate: function(result) {
+			jsh.shell.exit(result.status);
+		}
+	});
+}
+
 var parameters = jsh.script.getopts({
 	options: {
 		java: jsh.script.getopts.ARRAY(jsh.file.Pathname),
