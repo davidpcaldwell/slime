@@ -62,8 +62,10 @@ var algorithms = {
 		this.getDestinationPath = function(basename) {
 			var TGZ = /(.*)\.tgz$/;
 			var TARGZ = /(.*)\.tar\.gz$/;
+			var TARXZ = /(.*)\.tar\.xz$/;
 			if (TGZ.test(basename)) return TGZ.exec(basename)[1];
 			if (TARGZ.test(basename)) return TARGZ.exec(basename)[1];
+			if (TARXZ.test(basename)) return TARXZ.exec(basename)[1];
 			//	TODO	list directory and take only option if there is only one and it is a directory?
 			throw new Error("Cannot determine destination path for " + basename);
 		};
@@ -98,6 +100,7 @@ var algorithms = {
 var installLocalArchive = function(p,events) {
 	if (!p.format) {
 		var basename = (p.url) ? p.url.toString().split("/").slice(-1)[0] : p.file.pathname.basename;
+		if (/\.tar\.xz$/.test(basename) && $exports.format.gzip) p.format = $exports.format.gzip;
 		if (/\.tar\.gz$/.test(basename) && $exports.format.gzip) p.format = $exports.format.gzip;
 		if (/\.zip$/.test(basename)) p.format = $exports.format.zip;
 		if (/\.jar$/.test(basename)) p.format = $exports.format.zip;

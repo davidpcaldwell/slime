@@ -473,7 +473,8 @@ if (!destination.installer) {
 			var gcc = which("gcc");
 			if (!gcc) {
 				jsh.shell.console("Cannot find gcc in PATH; not building native launcher.");
-				return;
+				jsh.shell.exit(1);
+//				return;
 			}
 			var args = ["-o", "jsh"];
 			args.push(SLIME.getRelativePath("jsh/launcher/native/jsh.c"));
