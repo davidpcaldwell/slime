@@ -147,6 +147,6 @@ Object.defineProperty(
 	}
 );
 
-["Doctype","Element","Text","Cdata","Comment","filter"].forEach(function(name) {
+["namespace","Doctype","Element","Text","Cdata","Comment","filter"].forEach(function(name) {
 	$exports[name] = $context.pure[name]
 });

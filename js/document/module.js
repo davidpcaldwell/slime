@@ -10,6 +10,10 @@
 //	Contributor(s):
 //	END LICENSE
 
+var namespaces = {
+	XHTML: "http://www.w3.org/1999/xhtml"
+};
+
 var choose = function(rv,filter) {
 	if (filter) rv = rv.filter(filter);
 	if (rv.length > 1) {
@@ -514,6 +518,8 @@ var Document = function(p) {
 		return this.children.map(function(child) { return child.serialize(parameters); }).join("");
 	}
 };
+
+$exports.namespace = namespaces;
 
 $exports.Document = Document;
 $exports.Doctype = Doctype;
