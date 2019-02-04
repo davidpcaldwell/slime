@@ -68,10 +68,10 @@ document.domain = document.domain;
 		var controlled = [];
 
 		this.finished = function(process) {
-			console.log("Finished: " + process);
+			console.log("Finished:", process);
 			pending.splice(pending.indexOf(process),1);
-			console.log("still pending = " + pending.length);
-			console.log(pending.join("\n"));
+			console.log("still pending", pending.length);
+			console.log(pending);
 			if (pending.length == 0) {
 				if (next) next();
 				while(controlled.length) {
@@ -303,6 +303,7 @@ document.domain = document.domain;
 					return value;
 				}, function onRejected() {
 					//	TODO	read the spec, how does this work?
+					var implementation = executor;
 					debugger;
 					end();
 				});

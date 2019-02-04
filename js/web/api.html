@@ -19,13 +19,19 @@ END LICENSE
 	<script src="../../loader/api/api.js"></script>
 </head>
 <body>
-	<script type="application/x.jsapi#initialize">
+	<script type="application/x.jsapi#initialize"><![CDATA[
 		var context = (function() {
 			var global = (function() {
 				return this;
 			})();
 			if (global == global.window) {
+				scope.href = "http://name.tld/page?one=1&amp;two=2";
 				return {
+					window: {
+						location: {
+							href: scope.href
+						}
+					},
 					escaper: {
 						encode: window.escape,
 						decode: window.unescape
@@ -36,9 +42,10 @@ END LICENSE
 				return $jsapi.loader.file("context.java.js");
 			}
 		})();
-
+		
+		scope.context = context;
 		scope.module = $jsapi.loader.module("module.js", context);
-	</script>
+	]]></script>
 	<div>__DESCRIPTION__</div>
 	<div class="type">
 		<a class="type" name="types.pair">pair</a>
@@ -158,6 +165,15 @@ END LICENSE
 					<div class="name">query</div>
 					<span class="type">string</span>
 					<span>The query portion of this URL (with no preceding <code>?</code>).</span>
+				</li>
+				<li class="function">
+					<div class="name">form</div>
+					<span>__DESCRIPTION__</span>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</div>
 				</li>
 				<li class="value">
 					<div class="name">fragment</div>
@@ -291,6 +307,16 @@ END LICENSE
 								test(url.path == "hello.html");
 								verify(url).evaluate.property("query").is(void(0));
 							})();
+
+							(function emptyQuery() {
+								var url = module.Url.parse("scheme://server.tld/page?");
+								verify(url).query.is("");
+							})();
+
+							(function noQuery() {
+								var url = module.Url.parse("scheme://server.tld/page");
+								verify(url).evaluate.property("query").is(void(0));
+							})();
 						</script>
 					</li>
 					<li class="function">
@@ -314,6 +340,41 @@ END LICENSE
 							var array = [ { name: "foo", value: "bar" }, { name: "foo", value: "baz" } ];
 							verify(module.Url.query(array)).is("foo=bar&foo=baz");
 						]]></script>
+					</li>
+				</ul>
+			</li>
+			<li class="object">
+				<div class="name">window</div>
+				<span>
+					(conditional: if $context.window supplied)
+					An object representing the current browser window.
+				</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="function">
+						<div class="name">url</div>
+						<span>__DESCRIPTION__</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</div>
+						<script type="application/x.jsapi#tests">
+							if (context.window) {
+								var url = module.window.url();
+								var form = url.form();
+								verify(form).controls.length.is(2);
+								verify(form).controls[0].name.is("one");
+								verify(form).controls[0].value.is("1");
+								verify(form).controls[1].name.is("two");
+								verify(form).controls[1].value.is("2");
+							}
+						</script>
 					</li>
 				</ul>
 			</li>
