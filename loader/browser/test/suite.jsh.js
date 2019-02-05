@@ -3,13 +3,13 @@ var parameters = jsh.script.getopts({
 		suite: jsh.file.Pathname,
 		definition: jsh.file.Pathname,
 		part: String,
-		
+
 		parameter: jsh.script.getopts.ARRAY(String),
 
 		browser: String,
 		interactive: false,
 		"chrome:instance": jsh.file.Pathname,
-		
+
 		view: "console"
 	}
 });
@@ -153,7 +153,7 @@ var run = function(browser) {
 
 var Browser = function(o) {
 	var process;
-	
+
 	if (!o.open) {
 		throw new Error("keys = " + Object.keys(o));
 	}
@@ -162,11 +162,11 @@ var Browser = function(o) {
 			process = p;
 		}
 	});
-	
+
 	this.start = function(p) {
 		open(p.uri);
 	};
-	
+
 	this.kill = function() {
 		jsh.shell.console("Killing " + o);
 		process.kill();
@@ -179,7 +179,7 @@ var Chrome = function(o) {
 	});
 
 	var kill;
-	
+
 	this.name = "Google Chrome";
 
 	this.start = function(p) {
@@ -192,9 +192,9 @@ var Chrome = function(o) {
 					}
 				}
 			}
-		});		
+		});
 	};
-	
+
 	this.kill = function() {
 		kill();
 	}
@@ -243,7 +243,7 @@ if (parameters.options.interactive) {
 		}
 	}
 	suite.part(browser.name, scenario);
-	browser.kill();		
+	browser.kill();
 	jsh.unit.interface.create(suite, {
 		view: parameters.options.view
 	});

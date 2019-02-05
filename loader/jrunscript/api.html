@@ -267,9 +267,9 @@ END LICENSE
 										var writer = buffer.writeText();
 										writer.write("Buffer");
 										buffer.close();
-										var resource = new module.Resource({ 
+										var resource = new module.Resource({
 											stream: {
-												binary: buffer.readBinary() 
+												binary: buffer.readBinary()
 											}
 										});
 										verify(resource).read(String).is("Buffer");
@@ -456,9 +456,9 @@ END LICENSE
 										// TODO: writeText() below?
 										buffer.writeBinary().character().write(string);
 										buffer.close();
-										var resource = new module.Resource({ 
+										var resource = new module.Resource({
 											stream: {
-												binary: buffer.readBinary() 
+												binary: buffer.readBinary()
 											}
 										});
 										var lines = [];
@@ -587,7 +587,7 @@ END LICENSE
 									Packages.java.lang.System.err.println("modified.constructor = " + p.constructor);
 									Packages.java.lang.System.err.println("Date = " + dateType);
 								}
-								return p instanceof dateType; 
+								return p instanceof dateType;
 							}).is(true);
 							verify(loader).get("dir/under").is.not(null);
 							verify(loader).get("foo").is(null);

@@ -653,7 +653,7 @@
 			if (new File(home, "../bin/jrunscript").exists()) return new File(home, "../bin/jrunscript");
 			if (new File(home, "../bin/jrunscript.exe").exists()) return new File(home, "../bin/jrunscript.exe");
 		})();
-		
+
 		(function addCompileMethod() {
 			var tried = false;
 			var compiler;

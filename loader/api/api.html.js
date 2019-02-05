@@ -109,7 +109,7 @@ var getChildren = function(element) {
 			}
 		}
 	};
-	
+
 	var rv = [];
 	addChildren(rv,element.getChildren());
 	return rv;
@@ -137,7 +137,7 @@ var select = function(array,f) {
 var getElement = function(root,path) {
 	var tokens = path.split("/");
 	var rv = root;
-	
+
 	var hasJsapiId = function(id) {
 		var rv = function(e) {
 			return e.getJsapiAttribute("id") == id;
@@ -438,12 +438,12 @@ $exports.ApiHtmlTests = function(html,name) {
 		rv.getPath = function(ids) {
 			return find(this,ids);
 		};
-		
+
 		return rv;
 	};
 
 	this.getSuite = $api.deprecate(this.getSuiteDescriptor);
-	
+
 	if ($context.test) {
 		this.getElement = function(path) {
 			return getElement(html.top, path);

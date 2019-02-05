@@ -191,7 +191,7 @@ var Suite = function(pathname) {
 				// 		}
 				// 		return null;
 				// 	};
-				// 
+				//
 				// 	rv.getPath = function(ids) {
 				// 		return find(this,ids);
 				// 	}

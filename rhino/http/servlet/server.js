@@ -46,12 +46,12 @@ var Request = function(_request) {
 					return new $context.api.web.Form({ urlencoded: this.string });
 				} else if (arguments[0] == Array) {
 					return $api.deprecate(function() {
-						return new $context.api.web.Form({ urlencoded: string }).controls;											
+						return new $context.api.web.Form({ urlencoded: string }).controls;
 					})();
 				} else {
 					//	may need transitional period in which this throws Error
 					return $api.deprecate(function() {
-						return new $context.api.web.Form({ urlencoded: string }).controls;						
+						return new $context.api.web.Form({ urlencoded: string }).controls;
 					})();
 				}
 			}
@@ -132,7 +132,7 @@ var Request = function(_request) {
 		} else {
 			this.stream = $context.api.io.Streams.java.adapt(_request.getInputStream());
 		}
-		
+
 		this.form = function() {
 			return new $context.api.web.Form({ urlencoded: this.stream.character().asString() });
 		}

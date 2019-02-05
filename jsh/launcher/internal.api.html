@@ -476,7 +476,7 @@ END LICENSE
 						}
 					});
 					verify(output)["jsh.shell.jsh.home"].string.is($jsapi.environment.jsh.built.home.toString());
-					
+
 					(function absolute() {
 						var output = jsh.shell.run({
 							command: $jsapi.environment.jsh.built.home.getFile("jsh").toString(),
@@ -488,9 +488,9 @@ END LICENSE
 								return JSON.parse(result.stdio.output);
 							}
 						});
-						verify(output)["jsh.shell.jsh.home"].string.is($jsapi.environment.jsh.built.home.toString());						
+						verify(output)["jsh.shell.jsh.home"].string.is($jsapi.environment.jsh.built.home.toString());
 					})();
-					
+
 					var shellCommand = function(p) {
 						var lines = [];
 						if (p.directory) {
@@ -515,7 +515,7 @@ END LICENSE
 							}
 						});
 					};
-					
+
 					(function relative() {
 						var basedir = $jsapi.environment.jsh.built.home.pathname.basename;
 						var parent = $jsapi.environment.jsh.built.home.parent;
@@ -530,9 +530,9 @@ END LICENSE
 								return JSON.parse(result.stdio.output);
 							}
 						});
-						verify(output)["jsh.shell.jsh.home"].string.is($jsapi.environment.jsh.built.home.toString());						
+						verify(output)["jsh.shell.jsh.home"].string.is($jsapi.environment.jsh.built.home.toString());
 					})();
-					
+
 					(function inPath() {
 						var directory = $jsapi.environment.jsh.built.home;
 						var PATH = jsh.file.Searchpath([directory.pathname].concat(jsh.shell.PATH.pathnames));
@@ -548,7 +548,7 @@ END LICENSE
 								return JSON.parse(result.stdio.output);
 							}
 						});
-						verify(output)["jsh.shell.jsh.home"].string.is($jsapi.environment.jsh.built.home.toString());						
+						verify(output)["jsh.shell.jsh.home"].string.is($jsapi.environment.jsh.built.home.toString());
 					})();
 				}
 			</script>

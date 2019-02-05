@@ -23,7 +23,7 @@ var RHINO_LIBRARIES = (jsh.shell.jsh.lib.getFile("js.jar") && typeof(Packages.or
 
 //	TODO	there is an undocumented API for this now
 var LINE_SEPARATOR = String(Packages.java.lang.System.getProperty("line.separator"));
- 
+
 jsh.shell.console("src = " + src);
 var definition = jsh.script.loader.value("suite.js", {
 	src: src,

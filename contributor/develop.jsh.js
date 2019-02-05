@@ -11,10 +11,10 @@
 //	Contributor(s):
 //	END LICENSE
 
-jsh.loader.plugins(jsh.script.file.getRelativePath("../../rhino/tools/hg"));
+jsh.loader.plugins(jsh.script.file.getRelativePath("../rhino/tools/hg"));
 
 if (jsh.script.arguments.length == 0) {
-	var hgrc = jsh.script.file.getRelativePath("../../.hg/hgrc");
+	var hgrc = jsh.script.file.getRelativePath("../.hg/hgrc");
 	if (!hgrc.file) {
 		jsh.shell.echo("Not found: " + hgrc);
 		jsh.shell.exit(1);
@@ -42,7 +42,7 @@ if (jsh.script.arguments.length == 0) {
 		}
 	})();
 	settings.set("hooks","precommit.slime",runscript.concat([
-		"jsh/etc/develop.jsh.js",
+		"contributor/develop.jsh.js",
 		"commit"
 	]).join(" "));
 	settings.normalize();
@@ -51,7 +51,7 @@ if (jsh.script.arguments.length == 0) {
 	var code = jsh.script.loader.module("code/module.js");
 	var failed = false;
 	code.files.trailingWhitespace({
-		base: jsh.script.file.parent.parent.parent,
+		base: jsh.script.file.parent.parent,
 		isText: function(entry) {
 			if (/\.def$/.test(entry.path)) {
 				return true;
@@ -82,7 +82,7 @@ if (jsh.script.arguments.length == 0) {
 	jsh.script.loader.run("code/license.jsh.js", {
 		parameters: {
 			options: {
-				base: jsh.script.file.parent.parent.parent.pathname
+				base: jsh.script.file.parent.parent.pathname
 			}
 		},
 		$loader: new jsh.file.Loader({ directory: licenseBase }),

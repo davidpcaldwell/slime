@@ -222,11 +222,11 @@ END LICENSE
 						var type = jsh.httpd.nugget.getMimeType($jsapi.loader.getRelativePath("api.js").file);
 						verify(type).getMedia().is("application");
 						verify(type).getSubtype().is("javascript");
-						
+
 						(function html() {
 							var type = jsh.httpd.nugget.getMimeType($jsapi.loader.getRelativePath("api.html").file);
 							verify(type).getMedia().is("text");
-							verify(type).getSubtype().is("html");							
+							verify(type).getSubtype().is("html");
 						})();
 					</script>
 				</ul>

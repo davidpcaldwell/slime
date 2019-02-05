@@ -46,7 +46,7 @@ END LICENSE
 				<span>__DESCRIPTION__</span>
 				<script type="application/x.jsapi#initialize">
 					if (scope.api.excel) {
-						scope.excel = scope.api.excel; 
+						scope.excel = scope.api.excel;
 					}
 				</script>
 				<div class="label">has properties:</div>
@@ -68,11 +68,11 @@ END LICENSE
 							if (api.excel) {
 								jsh.shell.console(Object.keys(excel));
 								verify(excel).evaluate(function(p) { return p.Workbook; }).is.type("function");
-								
+
 								var getFile = function(name) {
 									return $jsapi.loader.getRelativePath("test/grid/" + name).file;
 								};
-								
+
 								(function() {
 									var workbook = new excel.Workbook({ resource: getFile("1.xlsx") });
 									verify(workbook).is.type("object");

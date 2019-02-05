@@ -17,11 +17,11 @@ public class Graal extends Main.Engine {
 		public final void putMember(String name, Object value) {
 			org.graalvm.polyglot.Context.getCurrent().getBindings("js").putMember(name, value);
 		}
-		
+
 		public final Object getMember(String name) {
 			return org.graalvm.polyglot.Context.getCurrent().getBindings("js").getMember(name);
 		}
-		
+
 		//	Doesn't work; can't pass things across contexts
 		// public final Object run(String name, String code, java.util.Map scope, Object target) throws java.io.IOException {
 		// 	Context context = Context.newBuilder().option("js.nashorn-compat", "true").allowHostAccess(true).build();
@@ -39,28 +39,28 @@ public class Graal extends Main.Engine {
 		// }
 
 		//		private static class SlimeLoad extends JSLoadOperation {}
-				
+
 		// private void printClasses(Object object) {
 		// 	Class current = object.getClass();
 		// 	while(current != null) {
 		// 		System.err.println(current);
 		// 		current = current.getSuperclass();
-		// 	}			
+		// 	}
 		// }
 
 		// 		private JSContext getContext(DynamicObject thisObj) {
 		// 			return JSObject.getJSContext(thisObj);
 		// //			return Context.getCurrent();
 		// 		}
-		// 
+		//
 		// 		// private JSRealm createRealm(DynamicObject thisObj) {
 		//         //     return getContext(thisObj).getRealm().createChildRealm();
 		//         // }
-		// 
+		//
 		// 		private ScriptNode loadStringImpl(JSContext ctxt, String name, String script) {
 		// 			return ((NodeEvaluator) ctxt.getEvaluator()).evalCompile(ctxt, script, name);
 		// 		}
-		// 
+		//
 		// 		public final Object run(String name, String script, Object scope, DynamicObject target) {
 		// 			Object[] args = new Object[0];
 		// 			JSContext context = getContext(target);
@@ -73,7 +73,7 @@ public class Graal extends Main.Engine {
 		//             }
 		//             return scriptNode.run(JSArguments.create(globalObject, JSFunction.create(childRealm, scriptNode.getFunctionData()), args));
 		// 		}
-		// 
+		//
 		// 		public final Object run(Code.Loader.Resource script) {
 		// 			throw new UnsupportedOperationException();
 		// 		}
@@ -126,7 +126,7 @@ public class Graal extends Main.Engine {
 			);
 			this.top = top;
 		}
-		
+
 		//	TODO	completely copy-pasted from Nashorn.java
 		private static class ExitException extends RuntimeException {
 			private int status;
@@ -144,11 +144,11 @@ public class Graal extends Main.Engine {
 		@Override protected Loader.Classes.Interface getClasspath() {
 			return host.getClasspath();
 		}
-		
+
 		@Override public void setGlobalProperty(String name, Object value) {
 			host.set(name, value);
 		}
-		
+
 		@Override public void script(Code.Loader.Resource script) {
 			host.add(script);
 		}
@@ -183,7 +183,7 @@ public class Graal extends Main.Engine {
 				throw new Nashorn.UncaughtException(e);
 			}
 		}
-		
+
 		@Override public void setJshHostProperty() {
 			setGlobalProperty("$nashorn", new Nashorn.Host() {
 				@Override public Loader.Classes.Interface getClasspath() {
@@ -207,7 +207,7 @@ public class Graal extends Main.Engine {
 			}
 		}
 	}
-	
+
 	public void main(Shell.Container context, Shell shell) throws Shell.Invocation.CheckedException {
 		Shell.Execution execution = new ExecutionImpl(shell, true);
 		Integer rv = execution.execute();

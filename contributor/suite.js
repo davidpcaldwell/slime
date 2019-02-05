@@ -1,11 +1,11 @@
 var Suite = function(p) {
 	var byName = {};
-	
+
 	var definition = {
 		parts: {
 		}
 	};
-	
+
 	this.add = function(path,part) {
 		byName[path] = part;
 		var tokens = path.split("/");
@@ -23,13 +23,13 @@ var Suite = function(p) {
 			}
 		}
 	};
-	
+
 	this.part = function(name) {
 		return byName[name];
 	};
-	
+
 	this.parts = definition.parts;
-	
+
 	this.build = function() {
 		return new jsh.unit.Suite(definition);
 	}
@@ -72,11 +72,11 @@ var Environment = function(p) {
 				if (!p.home) {
 					var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true });
 					p.home = tmp.pathname;
-					tmp.remove(); 
+					tmp.remove();
 				}
 				return p.home;
 			}
-			
+
 			var getHome = function() {
 				getLocation();
 				if (!p.home.directory) {
@@ -89,7 +89,7 @@ var Environment = function(p) {
 							"-nodoc",
 							// TODO: use command-line argument rather than hard-coding?
 							"-executable"
-						].concat( 
+						].concat(
 							(jsh.shell.jsh.lib.getFile("js.jar")) ? ["-rhino", jsh.shell.jsh.lib.getFile("js.jar")] : []
 						).concat(
 							(p.executable) ? ["-executable"] : []
@@ -112,7 +112,7 @@ var Environment = function(p) {
 				}
 				return p.home.directory;
 			}
-			
+
 			Object.defineProperty(this, "location", {
 				get: function() {
 					return getLocation();
@@ -136,7 +136,7 @@ var Environment = function(p) {
 				},
 				enumerable: true
 			});
-			
+
 			this.requireTomcat = function() {
 				if (!this.home.getSubdirectory("lib/tomcat")) {
 					jsh.shell.jsh({
@@ -220,10 +220,10 @@ var Environment = function(p) {
 					return url;
 				}
 			});
-			
+
 			// TODO: should this be allowed?
 			var TRACE = false;
-			
+
 			var getMock = jsh.js.constant(function() {
 				jsh.loader.plugins(p.src.getRelativePath("jsh/test/launcher"));
 				var mock = new jsh.test.launcher.MockRemote({
@@ -259,7 +259,7 @@ var Environment = function(p) {
 				},
 				enumerable: true
 			});
-			
+
 			this.jsh = function(p) {
 				return getMock().jsh(p);
 			}

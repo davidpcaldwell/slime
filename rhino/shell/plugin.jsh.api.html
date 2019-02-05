@@ -177,7 +177,7 @@ END LICENSE
 							},
 							evaluate: function(result) {
 								return result.stdio.output;
-							}							
+							}
 						})
 					};
 				</script>
@@ -313,14 +313,14 @@ END LICENSE
 					var stream = buffer.writeText();
 
 					module.echo(true, { stream: stream });
-					
+
 					buffer.close();
 					// TODO: hard-coded line terminator below
 					var buffered = buffer.readText().asString().split("\n");
 					verify(buffered).length.is(2);
 					verify(buffered)[0].is("true");
 					verify(buffered)[1].is("");
-					
+
 					var console = new function() {
 						var lines = [];
 

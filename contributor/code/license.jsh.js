@@ -184,7 +184,7 @@ for (var i=0; i<files.length; i++) {
 			original = "the SLIME JDK interface";
 		} else if (startsWith("rhino/jrunscript/")(relative)) {
 			original = "the InOnIt jrunscript API";
-		} else if (relative == "api.html" || relative == "internal.api.html") {
+		} else if (relative == "api.html" || relative == "internal.api.html" || relative == "jsh.bash") {
 			original = "the SLIME project";
 		} else {
 			throw new Error("Unimplemented: " + relative);

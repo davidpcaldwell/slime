@@ -55,9 +55,9 @@ END LICENSE
 						}
 					}
 				});
-				
-				scope.form = ($jsapi.environment.parameters && $jsapi.environment.parameters.form) 
-					? $api.Object({ properties: $jsapi.environment.parameters.form.controls }) 
+
+				scope.form = ($jsapi.environment.parameters && $jsapi.environment.parameters.form)
+					? $api.Object({ properties: $jsapi.environment.parameters.form.controls })
 					: void(0)
 				;
 			]]></script>
@@ -732,7 +732,7 @@ END LICENSE
 				top.run();
 				verify(starts).length.is(2);
 			</script>
-			
+
 		</div>
 	</body>
 </html>

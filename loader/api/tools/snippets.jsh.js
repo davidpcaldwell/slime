@@ -54,6 +54,7 @@ if (parameters.options.format == "vscode") {
         var lines = element.split("\n");
 
         if (lines[0]) {
+            if (lines[0])
             throw new Error(JSON.stringify(lines));
         } else {
             lines = lines.slice(1);

@@ -153,11 +153,11 @@ END LICENSE
 						}
 					});
 					verify(a).submodule.message.is("ititit");
-					
+
 					var started = jsh.httpd.Tomcat.serve({
 						directory: $jsapi.environment.jsh.src
 					});
-					
+
 					var b = jsh.shell.jsh({
 						shell: $jsapi.environment.jsh.built.home,
 						script: "http://127.0.0.1:" + started.port + "/" + "jsh/script/test/loader.jsh.js",
@@ -165,10 +165,10 @@ END LICENSE
 							output: String
 						},
 						evaluate: function(result) {
-							return JSON.parse(result.stdio.output);							
+							return JSON.parse(result.stdio.output);
 						}
 					});
-					verify(b).submodule.message.is("ititit");					
+					verify(b).submodule.message.is("ititit");
 				</script>
 			</li>
 			<li class="function" jsapi:id="getopts">
@@ -633,7 +633,7 @@ END LICENSE
 					verify(json).global.gstring.is("gvalue");
 					verify(json).global.gboolean.is(true);
 					verify(json).options.lboolean.is(true);
-					verify(json).options.lstring.is("foo");					
+					verify(json).options.lstring.is("foo");
 				</script>
 			</li>
 		</ul>

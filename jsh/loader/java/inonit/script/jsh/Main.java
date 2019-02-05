@@ -160,7 +160,7 @@ public class Main {
 					//	TODO	This is obviously wrong and we ought to be able to package libraries
 					return Code.Loader.NULL;
 				}
-				
+
 				@Override public File getLibraryFile(String path) {
 					//	TODO	This is obviously wrong and we ought to be able to package libraries
 					return null;
@@ -190,9 +190,9 @@ public class Main {
 		abstract Code.Loader getJsh();
 		abstract Code.Loader getModules();
 		abstract Code.Loader getLibraries();
-		
+
 		private File lib;
-		
+
 		abstract File getLibraryDirectory();
 
 		final File getLibraryFile(String path) {
@@ -205,7 +205,7 @@ public class Main {
 			}
 			return null;
 		}
-		
+
 		abstract Code.Loader getPlugins();
 
 		final Shell.Installation installation() throws IOException {
@@ -226,7 +226,7 @@ public class Main {
 				@Override public Code.Loader getLibraries() {
 					return Unpackaged.this.getLibraries();
 				}
-				
+
 				@Override public File getLibraryFile(String path) {
 					return Unpackaged.this.getLibraryFile(path);
 				}
@@ -390,7 +390,7 @@ public class Main {
 //			File file = new java.io.File(System.getProperty("jsh.shell.lib"));
 //			return Code.Loader.create(file);
 		}
-		
+
 		final File getLibraryDirectory() {
 			String string = System.getProperty("jsh.shell.lib");
 			if (string == null) {
@@ -401,7 +401,7 @@ public class Main {
 				return new File(string);
 			}
 		}
-		
+
 		Code.Loader getPlugins() {
 			return this.src.child("local/jsh/plugins");
 		}
@@ -431,11 +431,11 @@ public class Main {
 		Code.Loader getModules() {
 			return Code.Loader.create(new File(this.home, "modules"));
 		}
-		
+
 		Code.Loader getLibraries() {
 			return Code.Loader.create(this.lib);
 		}
-		
+
 		File getLibraryDirectory() {
 			return this.lib;
 		}

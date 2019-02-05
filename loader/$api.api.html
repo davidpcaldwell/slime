@@ -219,24 +219,24 @@ END LICENSE
 							return 8;
 						};
 						f.property = "foo";
-						
+
 						var o = new function() {
 							this.f = f;
 						};
 						api.deprecate(o, "f");
-						
+
 						var Flagged = function() {
 							var warnings = [];
-							
+
 							var callback = function(warning) {
 								warnings.push(warning);
 							}
-							
+
 							api.deprecate.warning = callback;
-							
+
 							this.warnings = warnings;
 						};
-						
+
 						// TODO: right now mere property access to a method does *not* trigger a warning; only invocation does
 						verify(f == o.f).is(false);
 						var flagged = new Flagged();

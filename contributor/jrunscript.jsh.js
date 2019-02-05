@@ -15,13 +15,13 @@ var parameters = jsh.script.getopts({
 	options: {
 		//	undocumented; used by suite.jsh.js
 		"shell:built": jsh.file.Pathname,
-		
+
 		noselfping: false,
 		executable: false,
-		
+
 		unit: String,
 		view: "console",
-		
+
 		// TODO: does this work? Is it necessary?
 		"chrome:profile": jsh.file.Pathname
 	}
@@ -43,7 +43,7 @@ suite.add("internal/slime", new jsh.unit.part.Html({
 	pathname: SRC.getRelativePath("loader/api.html")
 }));
 suite.add("internal/mime", new jsh.unit.part.Html({
-	pathname: SRC.getRelativePath("loader/mime.api.html")	
+	pathname: SRC.getRelativePath("loader/mime.api.html")
 }));
 suite.add("internal/jrunscript", new jsh.unit.part.Html({
 	//	Test cases of loader implementation
@@ -53,11 +53,11 @@ suite.add("internal/other", new jsh.unit.part.Html({
 	//	Test cases involving the HTML test runner itself
 	pathname: SRC.getRelativePath("loader/api/test/data/1/api.html")
 	//	TODO	loader/jrunscript/java has some tests
-	//	TODO	loader/jrunscript/test/data/2/ has some tests but they require some classes in classpath	
+	//	TODO	loader/jrunscript/test/data/2/ has some tests but they require some classes in classpath
 }));
 
 suite.add("$api", new jsh.unit.part.Html({
-	pathname: SRC.getRelativePath("loader/$api.api.html")	
+	pathname: SRC.getRelativePath("loader/$api.api.html")
 }));
 
 suite.add("js/web", new jsh.unit.part.Html({
@@ -65,7 +65,7 @@ suite.add("js/web", new jsh.unit.part.Html({
 }));
 
 suite.add("js/object/other", new jsh.unit.part.Html({
-	pathname: SRC.getRelativePath("js/object/api.html")	
+	pathname: SRC.getRelativePath("js/object/api.html")
 }));
 suite.add("js/object/Error", new jsh.unit.part.Html({
 	pathname: SRC.getRelativePath("js/object/Error.api.html")
@@ -98,16 +98,16 @@ suite.add("jrunscript/io/grid", new jsh.unit.part.Html({
 }));
 
 suite.add("jrunscript/file/main", new jsh.unit.part.Html({
-	pathname: SRC.getRelativePath("rhino/file/api.html")	
+	pathname: SRC.getRelativePath("rhino/file/api.html")
 }));
 
 suite.add("jrunscript/file/Searchpath", new jsh.unit.part.Html({
-	pathname: SRC.getRelativePath("rhino/file/api.Searchpath.html")	
+	pathname: SRC.getRelativePath("rhino/file/api.Searchpath.html")
 }));
 
 suite.add("jrunscript/ip", new jsh.unit.part.Html({
 	pathname: SRC.getRelativePath("rhino/ip/api.html"),
-	environment: { noselfping: parameters.options.noselfping }	
+	environment: { noselfping: parameters.options.noselfping }
 }));
 
 suite.add("jrunscript/http", new jsh.unit.part.Html({
@@ -148,7 +148,7 @@ suite.add("jsh/jsh.tools.install", new jsh.unit.part.Html({
 
 suite.add("jsh/jsh.loader", new jsh.unit.part.Html({
 	pathname: SRC.getRelativePath("jsh/loader/loader.api.html"),
-	environment: environment	
+	environment: environment
 }));
 
 suite.add("jsh/jsh.shell", new jsh.unit.part.Html({
@@ -160,7 +160,7 @@ suite.add("jsh/jsh.shell", new jsh.unit.part.Html({
 
 suite.add("jsh/jsh.script", new jsh.unit.part.Html({
 	pathname: SRC.getRelativePath("jsh/script/plugin.jsh.api.html"),
-	environment: environment	
+	environment: environment
 }));
 
 suite.add("jsh/jsh.tools", new jsh.unit.part.Html({
@@ -178,7 +178,7 @@ suite.add("jsh.shell.jsh", new jsh.unit.Suite.Fork({
 	run: jsh.shell.jsh,
 	shell: (environment.jsh.built) ? environment.jsh.built.home : environment.jsh.unbuilt.src,
 	script: SRC.getFile("rhino/shell/test/jsh.shell.jsh.suite.jsh.js"),
-	arguments: ["-view","stdio"]	
+	arguments: ["-view","stdio"]
 }));
 
 suite.add("testing/constructs", new jsh.unit.part.Html({
@@ -247,11 +247,11 @@ var requireTomcat = function() {
 }
 
 suite.add("servlet/api", new jsh.unit.part.Html({
-	pathname: SRC.getRelativePath("rhino/http/servlet/api.html")	
+	pathname: SRC.getRelativePath("rhino/http/servlet/api.html")
 }));
 
 suite.add("jsh/jsh.httpd", new jsh.unit.part.Html({
-	pathname: SRC.getRelativePath("rhino/http/servlet/plugin.jsh.api.html")	
+	pathname: SRC.getRelativePath("rhino/http/servlet/plugin.jsh.api.html")
 }));
 
 suite.add("jsh/jsh.ui", new jsh.unit.part.Html({
@@ -263,13 +263,13 @@ suite.add("jsh/jsh.ui", new jsh.unit.part.Html({
 var servletPart = new function() {
 	// TODO: enable
 	var COFFEESCRIPT = false;
-	
+
 	this.initialize = function() {
 		environment.jsh.built.requireTomcat();
 	};
 
 	this.parts = {};
-	 
+
 	this.parts.suite = {
 		execute: function(scope,verify) {
 			var result = jsh.shell.jsh({
@@ -279,7 +279,7 @@ var servletPart = new function() {
 			verify(result).status.is(0);
 		}
 	};
-	
+
 	if (COFFEESCRIPT) {
 		this.parts.coffee = {
 			execute: function(scope,verify) {
@@ -289,7 +289,7 @@ var servletPart = new function() {
 					arguments: ["-suite", "coffee"]
 				});
 				verify(result).status.is(0);
-			}			
+			}
 		}
 	}
 };

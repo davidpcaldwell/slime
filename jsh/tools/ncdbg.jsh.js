@@ -176,7 +176,7 @@ if (parameters.options["ncdbg:chrome:instance"]) {
 
 if (parameters.arguments.length) {
 	jsh.java.Thread.start(startScript);
-	Packages.java.lang.Thread.sleep(parameters.options["ncdbg:pause"]);	
+	Packages.java.lang.Thread.sleep(parameters.options["ncdbg:pause"]);
 	jsh.java.Thread.start(startNcdbg);
 
 	lock.Waiter({

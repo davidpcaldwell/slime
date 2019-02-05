@@ -443,7 +443,7 @@ var Pathname = function Pathname(parameters) {
 			}).bind(this)),
 			enumerable: false
 		});
-		
+
 		//this.resource = resource;
 
 		// this.read = function(mode) {

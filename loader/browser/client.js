@@ -121,7 +121,7 @@
 
 		var fetcher = new function() {
 			var downloads = {};
-			
+
 			var get = function(path) {
 				$context.debug("Fetching: " + path);
 				var req = new XMLHttpRequest();
@@ -150,7 +150,7 @@
 					responseText: req.responseText
 				};
 			};
-			
+
 			this.get = get;
 
 			var fetch = function(path) {
