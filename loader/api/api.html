@@ -132,7 +132,7 @@ END LICENSE
 			elements with an appropriate <code>h1</code> element containing the word "Context" or "Exports." After this
 			information, they can commence with the <code>ul</code> described below containing their properties.
 			<div id="template.body" class="template">
-				<div>${cursor}__DESCRIPTION__</div>
+				<div>${1:__DESCRIPTION__}</div>
 				<div>
 					<h1>Context</h1>
 					<ul>
@@ -168,23 +168,27 @@ END LICENSE
 			properties, a description of the conditions under which the property will be included/omitted can be included.
 		</div>
 		<div><div class="template" id="template.value">
-			<ul><li class="value">
-				<div class="name">${cursor}__NAME__</div>
-				<span class="type">__TYPE__</span>
-				<span>__DESCRIPTION__</span>
-			</li></ul>
+			<ul>
+				<li class="value">
+					<div class="name">${1:__NAME__}</div>
+					<span class="type">${2:__TYPE__}</span>
+					<span>${3:__DESCRIPTION__}</span>
+				</li>
+			</ul>
 		</div></div>
 		<div>
 			<code>li.object</code> elements should contain a <code>div.label</code> containing
 			the text "has properties." This will cause the description of that object to display comprehensibly.
 			<div class="template" id="template.object">
-				<ul><li class="object">
-					<div class="name">${cursor}__NAME__</div>
-					<span>__DESCRIPTION__</span>
-					<div class="label">has properties:</div>
-					<ul>
-					</ul>
-				</li></ul>
+				<ul>
+					<li class="object">
+						<div class="name">${1:__NAME__}</div>
+						<span>${2:__DESCRIPTION__}</span>
+						<div class="label">has properties:</div>
+						<ul>
+						</ul>
+					</li>
+				</ul>
 			</div>
 		</div>
 		<div>
@@ -206,36 +210,40 @@ END LICENSE
 				describing the return value(s) expected and the circumstances under which each value might be expected.
 			</p>
 			<div class="template" id="template.function">
-				<ul><li class="function">
-					<div class="name">${cursor}__NAME__</div>
-					<span>__DESCRIPTION__</span>
-					<div class="arguments">
-						<div class="label">Arguments</div>
-						<ol>
-						</ol>
-					</div>
-					<div class="returns">
-						<div class="label">Returns</div>
-						<span class="type">__TYPE__</span>
-						<span>__DESCRIPTION__</span>
-					</div>
-				</li></ul>
+				<ul>
+					<li class="function">
+						<div class="name">${1:__NAME__}</div>
+						<span>${2:__DESCRIPTION__}</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</div>
+					</li>
+				</ul>
 			</div>
 			<div class="template" id="template.constructor">
-				<ul><li class="constructor">
-					<div class="name">${cursor}__NAME__</div>
-					<span>__DESCRIPTION__</span>
-					<div class="arguments">
-						<div class="label">Arguments</div>
-						<ol>
-						</ol>
-					</div>
-					<div class="instances">
-						<div class="label">Instances</div>
-						<span class="type">__TYPE__</span>
-						<span>__DESCRIPTION__</span>
-					</div>
-				</li></ul>
+				<ul>
+					<li class="constructor">
+						<div class="name">${1:__NAME__}</div>
+						<span>${2:__DESCRIPTION__}</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+							</ol>
+						</div>
+						<div class="instances">
+							<div class="label">Instances</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</div>
+					</li>
+				</ul>
 			</div>
 			<p>
 				<!--	TODO	Add div.prototype?, "serves as extra stuff for new." I believe this meant that this would further
@@ -253,7 +261,7 @@ END LICENSE
 			</div>
 			<div><div class="template" id="template.type">
 				<div class="type">
-					<a class="type" name="types.__NAME__">__NAME__</a>
+					<a class="type" name="types.${1:__NAME__}">${2:__NAME__}</a>
 					<span>__DESCRIPTION__</span>
 					<div class="label">has properties:</div>
 					<ul>
@@ -262,8 +270,8 @@ END LICENSE
 			</div></div>
 			<div>
 				An object can indicate it supports a given type with:
-				<div class="template">
-					<span class="type">supports <a href="../path/to/reference.api.html#types.__NAME__">__NAME__</a></span>
+				<div class="template" id="template.supports">
+					<span class="type">supports <a href="../path/to/reference.api.html#types.${1:__NAME__}">${2:__NAME__}</a></span>
 				</div>
 			</div>
 		</div>
