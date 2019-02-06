@@ -79,44 +79,16 @@ END LICENSE
 					scope.remotes = jsh.shell.TMPDIR.createTemporary({ directory: true });
 					//	TODO	provide $jsapi accessor for this
 					var port = jsh.ip.getEphemeralPort().number;
-					var process;
-					var lock = new jsh.java.Thread.Monitor();
-					jsh.java.Thread.start(function() {
-						jsh.shell.run({
-							command: "git",
-							arguments: [
-								"daemon",
-								"--port=" + port,
-								"--base-path=" + scope.remotes,
-								"--export-all"
-							],
-							on: {
-								start: function(e) {
-									lock.Waiter({
-										until: function() {
-											return true;
-										},
-										then: function() {
-											jsh.shell.console("started process");
-											process = e;
-										}
-									})()
-								}
-							}
-						})
+					var daemon = module.daemon({
+						port: port,
+						basePath: scope.remotes,
+						exportAll: true
 					});
-					lock.Waiter({
-						until: function() {
-							return process;
-						},
-						then: function() {
-						}
-					})();
 					scope.daemon = {
-						process: process,
+						process: daemon,
 						port: port
 					};
-					jsh.shell.console("daemon = " + scope.daemon);
+					jsh.shell.console("new daemon = " + scope.daemon);
 				</script>
 				<script type="application/x.jsapi#destroy">
 					jsh.shell.console("destroying daemon");

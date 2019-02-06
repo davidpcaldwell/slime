@@ -506,6 +506,46 @@ var Installation = function(environment) {
 		this.execute = function(p) {
 			return execute(p);
 		}
+	};
+
+	this.daemon = function(p) {
+		var args = [];
+		if (typeof(p.port) == "number") args.push("--port=" + p.port);
+		if (p.basePath) args.push("--base-path=" + p.basePath);
+		if (p.exportAll) args.push("--export-all");
+		var lock = new $context.api.java.Thread.Monitor();
+		var process;
+		$context.api.java.Thread.start(function() {
+			git({
+				command: "daemon",
+				arguments: args,
+				on: {
+					start: function(e) {
+						lock.Waiter({
+							until: function() {
+								return true;
+							},
+							then: function() {
+								//jsh.shell.console("started process");
+								process = e;
+							}
+						})()
+					}
+				}
+			});
+		});
+		lock.Waiter({
+			until: function() {
+				return process;
+			},
+			then: function() {
+			}
+		})();
+		return new function() {
+			this.kill = function() {
+				process.kill();
+			}
+		}
 	}
 
 	this.Repository = function(p) {
@@ -564,7 +604,7 @@ if (program) {
 
 	$exports.installation = installation;
 
-	["Repository","init","execute"].forEach(function(name) {
+	["daemon","Repository","init","execute"].forEach(function(name) {
 		$exports[name] = function() {
 			return installation[name].apply(installation,arguments);
 		};

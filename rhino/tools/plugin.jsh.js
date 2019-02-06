@@ -86,9 +86,13 @@ plugin({
 			jsh.tools.git = $loader.module("git/module.js", {
 				api: {
 					js: jsh.js,
+					java: {
+						Thread: jsh.java.Thread
+					},
 					time: jsh.time,
 					file: jsh.file,
 					shell: jsh.shell,
+					ip: jsh.ip,
 					Events: {
 						//	TODO	convert to standard form and get rid of this
 						Function: jsh.tools.install.$api.Events.Function
