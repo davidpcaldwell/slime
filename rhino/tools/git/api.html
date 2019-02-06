@@ -238,6 +238,11 @@ END LICENSE
 					</div>
 					<div class="label">has properties:</div>
 					<ul>
+						<li class="value">
+							<div class="name">directory</div>
+							<span class="type">directory</span>
+							<span>The local directory containing this repository.</span>
+						</li>
 						<li class="function">
 							<div class="name">status</div>
 							<span>__DESCRIPTION__</span>
@@ -448,6 +453,42 @@ END LICENSE
 								verify(a).commit.hash.is(mergeBase.commit.hash);
 							</script>
 						</li>
+						<li class="function">
+							<div class="name">commit</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="object">
+										<div class="name">__NAME__</div>
+										<span>__DESCRIPTION__</span>
+										<div class="label">has properties:</div>
+										<ul>
+											<li class="value">
+												<div class="name">message</div>
+												<span class="type">__TYPE__</span>
+												<span>__DESCRIPTION__</span>
+											</li>
+											<li class="value">
+												<div class="name">author</div>
+												<span class="type">__TYPE__</span>
+												<span>__DESCRIPTION__</span>
+											</li>
+											<li class="value">
+												<div class="name">all</div>
+												<span class="type">__TYPE__</span>
+												<span>__DESCRIPTION__</span>
+											</li>
+										</ul>
+									</li>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</div>
+						</li>
 					</ul>
 					<script type="application/x.jsapi#tests">
 						var tmpdir = jsh.shell.TMPDIR.createTemporary({ directory: true });
@@ -542,16 +583,27 @@ END LICENSE
 					</li>
 					<li class="function">
 						<div class="name"><a id="$exports.init">init</a></div>
-						<span>__DESCRIPTION__</span>
+						<span>Creates a new repository at the given location (see <code>git init</code>).</span>
 						<div class="arguments">
 							<div class="label">Arguments</div>
 							<ol>
+								<li class="object">
+									<span>__DESCRIPTION__</span>
+									<div class="label">has properties:</div>
+									<ul>
+										<li class="value">
+											<div class="name">pathname</div>
+											<span class="type">Pathname</span>
+											<span>A location at which to create an empty repository.</span>
+										</li>
+									</ul>
+								</li>
 							</ol>
 						</div>
 						<div class="returns">
 							<div class="label">Returns</div>
-							<span class="type">__TYPE__</span>
-							<span>__DESCRIPTION__</span>
+							<span class="type">Repository</span>
+							<span>The local repository created.</span>
 						</div>
 					</li>
 					<li class="function">
