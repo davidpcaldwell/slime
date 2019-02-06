@@ -136,6 +136,10 @@ suite.add("jrunscript/java/tools/jsh", new jsh.unit.part.Html({
 suite.add("jrunscript/tools/hg", new jsh.unit.part.Html({
 	pathname: SRC.getRelativePath("rhino/tools/hg/api.html")
 }));
+// TODO: does this require git be installed?
+suite.add("jrunscript/tools/git", new jsh.unit.part.Html({
+	pathname: SRC.getRelativePath("rhino/tools/git/api.html")
+}));
 
 suite.add("jsh/loader", new jsh.unit.part.Html({
 	pathname: SRC.getRelativePath("jsh/loader/internal.api.html"),
