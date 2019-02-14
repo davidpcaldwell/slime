@@ -13,30 +13,26 @@
 		<div>__DESCRIPTION__</div>
 		<div>
 			<h1><code>jsh.tools.*</code></h1>
-			<ul>
+			<script type="application/x.jsapi#initialize">
+				scope.api = jsh.tools;
+			</script>
+			<script type="application/x.jsapi#tests">
+				verify(1).is(1);
+				verify(scope).api.hg.is.type("object");
+
+				var distribution = scope.api.hg.distribution.osx({ os: "10.9.2" });
+				verify(distribution).distribution.url.is("https://www.mercurial-scm.org/mac/binaries/Mercurial-3.4.2-py2.7-macosx10.9.zip");
+
+				verify(scope.api.hg).evaluate(function() { return this.distribution.osx({ os: "10.3.2" }) }).threw.type(Error);
+
+				verify(scope.api.hg).distribution.osx({ os: "10.13.1" }).distribution.url.is("https://www.mercurial-scm.org/mac/binaries/Mercurial-4.5.2-macosx10.12.pkg");
+			</script>
+	<ul>
 				<li class="object">
-					<div class="name">hg</div>
+					<div class="name">jsh.tools.hg</div>
 					<span>
-						<strong>
-							Note: documentation has not been fully integrated from <a href="../../rhino/tools/hg/api.html">the
-							<code>hg</code> module</a>.
-							Documentation for additional <code>jsh.tools.hg</code> properties can be found there.
-						</strong>
+						Wraps the <a href="../../rhino/tools/hg/api.html">hg</a> module, adding the following properties:
 					</span>
-					<script type="application/x.jsapi#initialize">
-						scope.api = jsh.tools;
-					</script>
-					<script type="application/x.jsapi#tests">
-						verify(1).is(1);
-						verify(scope).api.hg.is.type("object");
-
-						var distribution = scope.api.hg.distribution.osx({ os: "10.9.2" });
-						verify(distribution).distribution.url.is("https://www.mercurial-scm.org/mac/binaries/Mercurial-3.4.2-py2.7-macosx10.9.zip");
-
-						verify(scope.api.hg).evaluate(function() { return this.distribution.osx({ os: "10.3.2" }) }).threw.type(Error);
-
-						verify(scope.api.hg).distribution.osx({ os: "10.13.1" }).distribution.url.is("https://www.mercurial-scm.org/mac/binaries/Mercurial-4.5.2-macosx10.12.pkg");
-					</script>
 					<div class="label">has properties:</div>
 					<ul>
 						<li class="function">
