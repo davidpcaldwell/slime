@@ -1,3 +1,4 @@
+//	TODO	move to jsh.unit.html.Suite in loader/api/plugin.jsh.js?
 var Suite = function(p) {
 	var byName = {};
 
@@ -149,6 +150,12 @@ var Environment = function(p) {
 
 		this.unbuilt = new function() {
 			this.src = p.src;
+
+			this.lib = p.src.getRelativePath("local/jsh/lib").createDirectory({
+				exists: function(dir) {
+					return false;
+				}
+			});
 
 			Object.defineProperty(this, "data", {
 				get: function() {

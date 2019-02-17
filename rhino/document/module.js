@@ -146,6 +146,15 @@ Object.defineProperty(
 		}
 	}
 );
+Object.defineProperty(
+	$exports.Document.Html,
+	"parser",
+	{
+		get: function() {
+			return html.xhtml.id;
+		}
+	}
+);
 
 ["namespace","Doctype","Element","Text","Cdata","Comment","filter"].forEach(function(name) {
 	$exports[name] = $context.pure[name]

@@ -114,8 +114,12 @@ suite.add("jrunscript/http", new jsh.unit.part.Html({
 	pathname: SRC.getRelativePath("rhino/http/client/api.html")
 }));
 
-suite.add("jrunscript/document", new jsh.unit.part.Html({
+suite.add("jrunscript/document/module", new jsh.unit.part.Html({
 	pathname: SRC.getRelativePath("rhino/document/api.html")
+}));
+suite.add("jrunscript/document/jsh", new jsh.unit.part.Html({
+	pathname: SRC.getRelativePath("rhino/document/plugin.jsh.api.html"),
+	environment: environment
 }));
 
 suite.add("jrunscript/shell/main", new jsh.unit.part.Html({

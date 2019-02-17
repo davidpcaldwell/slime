@@ -211,6 +211,11 @@ plugin({
 					url: "https://jsoup.org/packages/jsoup-1.11.3.jar"
 				});
 				to.write(response.body.stream, { append: false });
+				//	TODO	the below code isn't very DRY; hits a special API for reloading rather than just reloading the plugin; at least this works for both
+				//			unbuilt and built shells
+				//	TODO	it is also untested
+				jsh.loader.plugins(to);
+				jsh.document.Document.Html.$reload();
 			}
 		};
 
