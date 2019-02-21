@@ -34,7 +34,7 @@ var environment = new project.Environment({
 	noselfping: parameters.options.noselfping,
 	executable: parameters.options.executable
 });
-var suite = new project.Suite();
+var suite = new jsh.unit.html.Suite();
 
 var SRC = jsh.script.file.parent.parent;
 
@@ -307,21 +307,6 @@ suite.add("provision", new jsh.unit.part.Html({
 	pathname: SRC.getRelativePath("jsh/tools/provision/api.html")
 }));
 
-var suitepath;
-if (parameters.options.unit) {
-	var tokens = parameters.options.unit.split(":");
-	var partname = tokens[0];
-	var partpath = (tokens.length > 1) ? tokens[1].split("/") : void(0);
-	var partpage = suite.part(partname);
-	if (partpage) {
-		suitepath = partname.split("/");
-		if (partpath) {
-			suitepath = suitepath.concat(partpage.getPath(partpath));
-		}
-	} else {
-		suitepath = partname.split("/");
-	}
-}
 
 jsh.unit.interface.create(suite.build(), new function() {
 	// TODO: is this redundant? Value of "chrome" should just work, right? Or is it because we want to specify instance?
@@ -332,5 +317,11 @@ jsh.unit.interface.create(suite.build(), new function() {
 	} else {
 		this.view = parameters.options.view;
 	}
-	this.path = suitepath;
+	if (parameters.options.unit) {
+		var tokens = parameters.options.unit.split(":");
+		this.path = suite.getPath({
+			part: tokens[0],
+			element: tokens[1]
+		});
+	}
 });

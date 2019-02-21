@@ -53,7 +53,7 @@ if (!parameters.options.engine.length) {
 
 var project = jsh.script.loader.file("suite.js");
 
-var suite = new project.Suite();
+var suite = new jsh.unit.html.Suite();
 
 var environment = new project.Environment({
 	src: jsh.script.file.parent.parent,
