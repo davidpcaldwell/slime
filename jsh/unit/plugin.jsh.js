@@ -94,7 +94,7 @@ plugin({
 	
 				if (p.part) {
 					var tokens = p.part.split(":");
-					this.path = suite.getPath({
+					this.path = p.suite.getPath({
 						part: tokens[0],
 						element: tokens[1]
 					});
