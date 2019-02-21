@@ -483,11 +483,11 @@ var Suite = function(p) {
 		}
 	};
 
-	this.part = function(name) {
-		return byName[name];
-	};
+	// this.part = function(name) {
+	// 	return byName[name];
+	// };
 
-	this.parts = definition.parts;
+	// this.parts = definition.parts;
 
 	this.getPath = function(p) {
 		var exact = byName[p.part];
@@ -502,7 +502,7 @@ var Suite = function(p) {
 
 	this.build = function() {
 		return new $context.Suite(definition);
-	}
+	};
 };
 
 $exports.Suite = Suite;

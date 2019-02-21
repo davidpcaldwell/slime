@@ -85,7 +85,22 @@ plugin({
 			} else {
 				jsh.shell.exit( (success) ? 0 : 1 );
 			}
-	};
+		};
+
+		jsh.unit.html.cli = function(p) {
+			jsh.unit.interface.create(p.suite.build(), new function() {
+				// TODO: is this redundant? Value of "chrome" should just work, right? Or is it because we want to specify instance?
+				this.view = p.view;
+	
+				if (p.part) {
+					var tokens = p.part.split(":");
+					this.path = suite.getPath({
+						part: tokens[0],
+						element: tokens[1]
+					});
+				}
+			});	
+		}
 
 		//	TODO	probably will move to loader/api
 		jsh.unit.part = {};
