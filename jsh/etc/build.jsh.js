@@ -417,14 +417,14 @@ if (!destination.installer) {
 			arguments: destination.arguments
 		});
 	})();
-	
+
 	//	Build native launcher
 	//	TODO	re-enable native launcher for new jrunscript launcher
 	if (parameters.options.executable) {
 		var which = function(command) {
 			return jsh.shell.PATH.getCommand(command);
 		};
-		
+
 		var CYGWIN = false;
 		var UNIX = false;
 
@@ -443,7 +443,7 @@ if (!destination.installer) {
 			parameters.options.cygwin = false;
 			jsh.shell.console("Did not detect UNIX-like operating system using PATH: " + jsh.shell.PATH);
 		}
-		
+
 		if (CYGWIN) {
 			//	TODO	use LoadLibrary call to locate jvm.dll
 			//			embed path of jvm.dll in C program, possibly, or load from registry, or ...

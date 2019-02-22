@@ -28,7 +28,7 @@ plugin({
 
 			addLibDirectory(new Packages.java.io.File(poi, "lib"));
 			addLibDirectory(new Packages.java.io.File(poi, "ooxml-lib"));
-			addLibDirectory(poi);			
+			addLibDirectory(poi);
 		}
 
 		jsh.io = $loader.module("module.js", {

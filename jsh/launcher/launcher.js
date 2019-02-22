@@ -142,7 +142,7 @@ try {
 			}
 		}
 	});
-	
+
 	$api.jsh.engines = {
 		rhino: {
 			main: "inonit.script.jsh.Rhino",
@@ -227,7 +227,7 @@ try {
 
 	$api.jsh.Unbuilt = function(p) {
 		var File = Packages.java.io.File;
-		
+
 		//	TODO	p.rhino argument is supplied by jsh/etc/build.jsh.js and is dubious
 		this.toString = function() {
 			return "Unbuilt: src=" + $api.slime.src + " rhino=" + this.rhino;
@@ -261,7 +261,7 @@ try {
 		}
 
 		this.rhino = rhino;
-		
+
 		if (lib && lib.file && new File(lib.file, "graal").exists()) {
 			this.graal = new File(lib.file, "graal");
 		}
@@ -310,7 +310,7 @@ try {
 				// ,new Packages.java.io.File(this.graal, "jre/languages/js/graaljs.jar").toURI().toURL()
 			]));
 			if (classpath._urls.length == 0) classpath = null;
-			
+
 			var rhino = (this.rhino && this.rhino.length) ? new Classpath(this.rhino) : null;
 			// TODO: below will probably eventually be a classpath, but it may be more complex if graal javac is required to compile
 			// graal classes
@@ -343,7 +343,7 @@ try {
 
 		this.shellClasspath = function() {
 			var rhinoClasspath = (rhino && rhino.length) ? new Classpath(rhino) : null;
-			
+
 			if (!$api.slime.src) throw new Error("Could not detect SLIME source root for unbuilt shell.")
 			var setting = $api.slime.settings.get("jsh.shell.classes");
 			var LOADER_CLASSES = (setting) ? new Packages.java.io.File(setting, "loader") : $api.io.tmpdir();
@@ -394,7 +394,7 @@ try {
 		if (new Packages.java.io.File(home, "lib/js.jar").exists()) {
 			this.rhino = [new Packages.java.io.File(home, "lib/js.jar").toURI().toURL()];
 		}
-		
+
 		if (new Packages.java.io.File(home, "lib/graal").exists()) {
 			this.graal = new Packages.java.io.File(home, "lib/graal");
 		}

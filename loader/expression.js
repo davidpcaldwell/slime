@@ -49,7 +49,7 @@
 				if (!$exports.Object.defineProperty) $exports.Object.defineProperty = {};
 				$exports.Object.defineProperty.accessor = true;
 			}
-			
+
 			var global = (function() { return this; })();
 			if (global.XML && global.XMLList) {
 				$exports.e4x = {};
@@ -227,7 +227,7 @@
 			}
 			return $exports;
 		})({});
-		
+
 		if (!$slime.flags) $slime.flags = {};
 
 		(function() {
@@ -255,7 +255,7 @@
 					if (!type) return null;
 					throw new TypeError("Resource 'type' property must be a MIME type or string.");
 				})(o.type,o.name);
-				
+
 				if (!this.type && o.name) {
 					var nameType = mime.Type.fromName(o.name);
 					if (nameType) this.type = nameType;
@@ -264,21 +264,21 @@
 				if (o.name) {
 					this.name = o.name;
 				}
-				
+
 				var readString = function(string) {
 					return function(v) {
 						if (v === String) return string;
 						if (v === JSON) return JSON.parse(this.read(String));
-					}					
+					}
 				}
-				
+
 				if ( (!o.read || !o.read.string) && typeof(o.string) == "string") {
 					if (!o.read) o.read = {};
 					o.read.string = function() {
 						return o.string;
 					};
 				}
-				
+
 				if (o.read && o.read.string) {
 					this.read = function(v) {
 						if (v === String) return o.read.string();
@@ -292,7 +292,7 @@
 							var string = this.read(String);
 							string = string.replace(/\<\?xml.*\?\>/, "");
 							string = string.replace(/\<\!DOCTYPE.*?\>/, "");
-							return $platform.e4x.XMLList( string );							
+							return $platform.e4x.XMLList( string );
 						}
 					}
 				}
@@ -308,7 +308,7 @@
 			//	resource.string: optional, but used to determine code
 			//	resource.js { name, code }: forcibly set based on other properties
 			//	TODO	re-work resource.js
-			
+
 			var $coffee = (function() {
 				var coffeeScript = $slime.getCoffeeScript();
 				if (!coffeeScript) return null;
@@ -386,7 +386,7 @@
 				methods.run.call(this,code,scope);
 				return rv;
 			}
-			
+
 			var Loader = function(p) {
 				if (!p.Resource) p.Resource = Resource;
 				if (!p.get) {
@@ -525,7 +525,7 @@
 			addTopMethod.call(this,"file");
 
 			addTopMethod.call(this,"value");
-			
+
 			this.Resource = Resource;
 
 			this.Loader = Loader;

@@ -56,7 +56,7 @@ $set(function(p) {
                 //  handler that can be added to a button outside the UI
                 document.getElementById("run").addEventListener("click", function(e) {
                     if (!onclick) {
-                        initializer({ 
+                        initializer({
                             onclick: function(f) {
                                 onclick = f;
                             }

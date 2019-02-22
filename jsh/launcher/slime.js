@@ -37,7 +37,7 @@ $api.slime = (function(was) {
 				return new Packages.java.io.File($api.script.file.getParentFile(), "jsh.jar");
 			};
 		};
-		
+
 		rv.home = $api.script.file.getParentFile();
 	} else {
 		rv = {};

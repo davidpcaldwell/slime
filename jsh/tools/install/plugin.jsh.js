@@ -75,7 +75,7 @@ plugin({
 		jsh.shell.tools.rhino = {
 			install: installRhino
 		};
-		
+
 		(function deprecated() {
 			jsh.tools.rhino = new function() {
 				this.install = $api.deprecate(installRhino);
@@ -89,7 +89,7 @@ plugin({
 		var graal = new function() {
 			var VERSION = {
 				number: "1.0.0-rc10",
-				edition: "ce"				
+				edition: "ce"
 			};
 			this.install = $api.Events.Function(function(p,events) {
 				if (jsh.shell.os.name == "Mac OS X") {
@@ -102,10 +102,10 @@ plugin({
 					});
 				} else {
 					throw new Error("Unsupported: os " + jsh.shell.os.name);
-				}				
+				}
 			});
 		};
-		
+
 		jsh.shell.tools.graal = graal;
 
 		var tomcat = $loader.file("plugin.jsh.tomcat.js", {

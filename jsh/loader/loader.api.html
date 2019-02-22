@@ -20,7 +20,7 @@ END LICENSE
 </head>
 <body>
 	<div>
-		The <code>jsh</code> loader, exposed to scripts as <code>jsh.loader</code>, augments the 
+		The <code>jsh</code> loader, exposed to scripts as <code>jsh.loader</code>, augments the
 		<a href="../../loader/jrunscript/api.html">SLIME Java runtime</a> loader, which in turn augments the
 		<a href="../../loader/api.html">SLIME runtime</a> loader.
 	</div>
@@ -256,7 +256,7 @@ END LICENSE
 								verify(result).status.is(0);
 							</script>
 							<script type="application/x.jsapi#tests" jsapi:id="packaged">
-								// TODO: is Rhino a part of 
+								// TODO: is Rhino a part of
 								var result = jsh.shell.jsh({
 									shell: $jsapi.environment.jsh.built.home,
 									script: $jsapi.environment.jsh.src.getFile("jsh/loader/test/packaged/suite.jsh.js"),

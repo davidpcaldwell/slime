@@ -34,7 +34,7 @@ for (var x in VERSIONS) {
 
 var VERSION = VERSIONS[parameters.options.version];
 
-jsh.tools.install.install({ 
+jsh.tools.install.install({
 	url: VERSION.url,
 	to: jsh.shell.jsh.lib.getRelativePath("poi"),
 	getDestinationPath: function(file) {

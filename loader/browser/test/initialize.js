@@ -303,6 +303,7 @@ document.domain = document.domain;
 					return value;
 				}, function onRejected() {
 					//	TODO	read the spec, how does this work?
+					var implementation = executor;
 					debugger;
 					end();
 				});

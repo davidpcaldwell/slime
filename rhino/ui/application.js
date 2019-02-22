@@ -28,7 +28,7 @@ var webviewDecorated = function(was) {
 			}
 		}
 		return was.apply(this,arguments);
-	}	
+	}
 };
 
 var Server = function(p) {

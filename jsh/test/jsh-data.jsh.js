@@ -32,7 +32,7 @@ var engines = {};
 if (jsh.java.getClass("org.mozilla.javascript.Context")) {
 	engines.rhino = true;
 	if (Packages.org.mozilla.javascript.Context.getCurrentContext()) {
-		engines.current = { 
+		engines.current = {
 			name: "rhino",
 			optimization: Packages.org.mozilla.javascript.Context.getCurrentContext().getOptimizationLevel()
 		};

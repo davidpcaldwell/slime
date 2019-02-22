@@ -10,6 +10,21 @@
 //	Contributor(s):
 //	END LICENSE
 
+if (!jsh.httpd.Tomcat) {
+	jsh.shell.console("Installing Tomcat into " + jsh.script.file + " shell ...");
+	jsh.shell.jsh({
+		script: jsh.script.file.parent.parent.getFile("jsh/tools/install/tomcat.jsh.js")
+	});
+	jsh.shell.jsh({
+		fork: true,
+		script: jsh.script.file,
+		arguments: jsh.script.arguments,
+		evaluate: function(result) {
+			jsh.shell.exit(result.status);
+		}
+	});
+}
+
 var parameters = jsh.script.getopts({
 	options: {
 		java: jsh.script.getopts.ARRAY(jsh.file.Pathname),
@@ -81,7 +96,7 @@ var environment = new project.Environment({
 					}
 				});
 				verify(output).properties["jsh.engine"].is(engine);
-				
+
 				if (engine == "rhino") {
 					[-1,0,1].forEach(function(level) {
 						if (environment.jsh.unbuilt.src.getFile("local/jsh/lib/coffee-script.js")) {
@@ -111,7 +126,7 @@ var environment = new project.Environment({
 		}
 	});
 
-	suite.add("launcher/engines", jshPart);	
+	suite.add("launcher/engines", jshPart);
 })();
 
 (function() {
@@ -130,7 +145,7 @@ var environment = new project.Environment({
 			"-view", "stdio"
 		].concat(rhinoArgs)
 	});
-	
+
 	suite.add("launcher/suite", part);
 })();
 
@@ -192,7 +207,7 @@ suite.add("jsh/launcher/internal", new jsh.unit.part.Html({
 var browsers = jsh.unit.browser.installed;
 suite.add("browsers", new function() {
 	this.name = "Browser tests";
-	
+
 	this.parts = new function() {
 		jsh.unit.browser.installed.forEach(function(browser) {
 			this[browser.id] = jsh.unit.Suite.Fork({
@@ -258,7 +273,7 @@ suite.add("tools", {
 						}
 					}
 				}
-				
+
 				this.suite = new jsh.unit.part.Html({
 					pathname: jsh.shell.jsh.src.getRelativePath("loader/browser/test/suite.jsh.api.html")
 				});

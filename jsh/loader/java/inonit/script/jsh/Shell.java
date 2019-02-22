@@ -96,7 +96,7 @@ public class Shell {
 			throw new RuntimeException(e);
 		}
 	}
-	
+
 	//	TODO	this is necessary still because of the fact that Code.Loader-based .jar files do not correctly implement
 	//			java.util.ServiceLoader, so JAR files must be added to the classpath using a special API, so they must be added
 	//			as java.io.File objects.

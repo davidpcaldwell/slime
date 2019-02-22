@@ -71,22 +71,21 @@ plugin({
 		}
 		jsh.unit.interface = {};
 		jsh.unit.interface.create = function(suite,o) {
-			//	TODO	argument checking
-			if (o.view) {
-				if (o.view == "structure") {
-					jsh.shell.echo(JSON.stringify(jsh.unit.getStructure(suite)));
-					jsh.shell.exit(0);
-				}
-				var view = jsh.unit.view.options.select(o.view);
-				view.listen(suite);
-				var success = suite.run({ path: o.path });
-				if (o.view == "stdio") {
-					jsh.shell.exit(0);
-				} else {
-					jsh.shell.exit( (success) ? 0 : 1 );
-				}
+			if (!o.view) throw new Error("Required: 'view' property representing view to which test results should be sent.");
+			//	TODO	argument checking for valid values of view
+			if (o.view == "structure") {
+				jsh.shell.echo(JSON.stringify(jsh.unit.getStructure(suite)));
+				jsh.shell.exit(0);
 			}
-		};
+			var view = jsh.unit.view.options.select(o.view);
+			view.listen(suite);
+			var success = suite.run({ path: o.path });
+			if (o.view == "stdio") {
+				jsh.shell.exit(0);
+			} else {
+				jsh.shell.exit( (success) ? 0 : 1 );
+			}
+	};
 
 		//	TODO	probably will move to loader/api
 		jsh.unit.part = {};

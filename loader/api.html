@@ -177,7 +177,7 @@ END LICENSE
 			<p>
 				Note that although there are global <code>run()</code>, <code>file()</code>, and <code>value()</code> methods that
 				can be used to execute code, there is no global <code>module()</code> method. Since modules themselves load code, in
-				order to create a module, code loading capability is needed. For this reason, the loader API exposes the ability to 
+				order to create a module, code loading capability is needed. For this reason, the loader API exposes the ability to
 				load modules via first creating a
 				<a href="#types.Loader">Loader</a> implementation and then using the <code>module()</code> method of the
 				<code>Loader</code>.
@@ -287,7 +287,7 @@ END LICENSE
 								<div class="name">type</div>
 								<span class="type"><a href="mime.api.html#types.type">mime.Type</a></span>
 								<span>
-									The type of the resource, or <code>null</code> if the type cannot be determined. If no type 
+									The type of the resource, or <code>null</code> if the type cannot be determined. If no type
 									was specified, and a name was specified, the implementation
 									will attempt to deduce the type from the name.
 								</span>
@@ -358,11 +358,11 @@ END LICENSE
 								<script type="application/x.jsapi#tests"><![CDATA[
 									(function() {
 										var resource = new api.Resource({
-											string: "foo" 
+											string: "foo"
 										});
 										verify(resource).read(String).is("foo");
 									})();
-									
+
 									(function() {
 										var resource = new api.Resource({
 											read: {
@@ -373,7 +373,7 @@ END LICENSE
 										});
 										verify(resource).read(String).is("bar");
 									})();
-									
+
 									(function() {
 										var resource = new api.Resource({
 											string: JSON.stringify({ foo: "bar" })
@@ -382,14 +382,14 @@ END LICENSE
 										verify(json).foo.is("bar");
 										verify(json).evaluate.property("baz").is(void(0));
 									})();
-									
+
 									if ($platform.e4x) {
 										var resource = new api.Resource({
 											string: "<a><b/></a>"
 										});
 										var xml = resource.read(XML);
 										verify(xml).is.type("xml");
-										
+
 										var list = { list: resource.read(XMLList) };
 										verify(list).list.is.type("xml");
 										verify(list).evaluate(function(v) { return v.list.length(); }).is(1);
@@ -402,13 +402,13 @@ END LICENSE
 				<div class="type">
 					<a class="type" name="types.script">script</a>
 					<span>
-						A <code>Resource.source</code> or <code>Resource</code>. If it is a <code>Resource.source</code>, it 
+						A <code>Resource.source</code> or <code>Resource</code>. If it is a <code>Resource.source</code>, it
 						<em>must</em> have either a <code>string</code> property or a <code>read.string()</code> function.
 						If no MIME type can be determined, the type will be assumed to be <code>application/javascript</code>.
 						<code>application/javascript</code> scripts will be executed as
-						JavaScript. <code>application/vnd.coffeescript</code> will be interpreted as CoffeeScript. The 
+						JavaScript. <code>application/vnd.coffeescript</code> will be interpreted as CoffeeScript. The
 						<code>name</code> property, if provided, may be used by the underlying JavaScript engine when evaluating
-						the resource as code (for display in tools, for example).							
+						the resource as code (for display in tools, for example).
 					</span>
 				</div>
 				<li class="function" jsapi:id="run">

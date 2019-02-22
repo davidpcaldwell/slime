@@ -92,7 +92,7 @@
 			Resource: loader.Resource
 		}
 	});
-	
+
 	var getTypeFromPath = function(path) {
 		return loader.mime.Type.fromName(path);
 	}
@@ -118,10 +118,10 @@
 				if (!this.type) {
 					this.type = loader.mime.Type.fromName(p._loaded.path);
 				}
-				
+
 				if (!p.read) p.read = {};
 				p.read.binary = function() {
-					return new loader.io.InputStream(p._loaded.resource.getInputStream());					
+					return new loader.io.InputStream(p._loaded.resource.getInputStream());
 				}
 
 				if (typeof(p.length) == "undefined") Object.defineProperty(
@@ -137,7 +137,7 @@
 						this.enumerable = true;
 					}
 				);
-				
+
 				this.name = String(p._loaded.resource.getSourceName());
 
 				Object.defineProperty(
@@ -158,7 +158,7 @@
 					}
 				}
 			}
-			
+
 			if (this.type) {
 				//	Go ahead and make it immutable; in Java we know we have Object.defineProperty
 				(function(type) {
@@ -167,10 +167,10 @@
 							return type;
 						},
 						enumerable: true
-					})			
+					})
 				}).call(this,this.type);
 			}
-			
+
 			if (this.name) {
 				//	Go ahead and make it immutable; in Java we know we have Object.defineProperty
 				(function(name) {
@@ -179,8 +179,8 @@
 							return name;
 						},
 						enumerable: true
-					})			
-				}).call(this,this.name);		
+					})
+				}).call(this,this.name);
 			}
 
 			var binary = (function() {
@@ -209,7 +209,7 @@
 					}
 				}
 			})();
-			
+
 			if (typeof(this.string) == "undefined") Object.defineProperty(this, "string", {
 				get: loader.$api.deprecate(function() {
 					//	TODO	use something from $api
@@ -224,7 +224,7 @@
 				return function(mode) {
 					var rv = (was) ? was.apply(this,arguments) : void(0);
 					if (typeof(rv) != "undefined") return rv;
-					
+
 					var _properties = function(peer) {
 						//	peer can be Packages.java.io.InputStream or Packages.java.io.Reader
 						var properties = new Packages.java.util.Properties();
@@ -444,7 +444,7 @@
 	// 					throw new Error("Unimplemented: " + methodName);
 	// 				};
 	// 			},this);
-	// 
+	//
 	// 			this.getURI = function() {
 	// 				// TODO: Unclear what this is doing; does this object represent just one file? Seems like no
 	// 				return Packages.inonit.script.engine.Code.Loader.URI.script(
@@ -452,11 +452,11 @@
 	// 					path
 	// 				)
 	// 			}
-	// 
+	//
 	// 			this.getSourceName = function() {
 	// 				return (resource.name) ? resource.name : null;
 	// 			}
-	// 
+	//
 	// 			this.getInputStream = function() {
 	// 				if (!resource.read) throw new Error("Cannot read " + resource);
 	// 				return resource.read.binary().java.adapt();
@@ -624,7 +624,7 @@
 						_classpath.add(Packages.inonit.script.engine.Code.Loader.zip(
 							Packages.inonit.script.engine.Code.Loader.Resource.create(p.jar._file)
 						));
-//						_classpath.add(Packages.inonit.script.engine.Code.Loader.create(p.jar._file));						
+//						_classpath.add(Packages.inonit.script.engine.Code.Loader.create(p.jar._file));
 					} else {
 						_classpath.addJar(p.jar._file);
 					}

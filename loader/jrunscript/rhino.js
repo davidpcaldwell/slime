@@ -59,7 +59,7 @@
 //				throw e;
 //			}
 		};
-		
+
 		this.eval = this.script;
 
 		this.getClasspath = function() {

@@ -405,18 +405,23 @@ END LICENSE
 	<div>
 		<h1>Tests</h1>
 		<div jsapi:id="hello">
+			<script type="application/x.jsapi#initialize">
+				scope.evaluateJson = function(result) {
+					return JSON.parse(result.stdio.output);
+				}
+			</script>
 			<script type="application/x.jsapi#tests" jsapi:id="src">
-				var outputLines = jsh.shell.jsh({
+				var output = jsh.shell.jsh({
 					shell: $jsapi.environment.jsh.unbuilt.src,
-					script: $jsapi.environment.jsh.src.getFile("jsh/test/jsh.shell/properties.jsh.js"),
+					script: $jsapi.environment.jsh.src.getFile("jsh/test/jsh-data.jsh.js"),
 					stdio: {
 						output: String
 					},
-					evaluate: function(result) {
-						return result.stdio.output.split("\n");
-					}
+					evaluate: evaluateJson
 				});
-				verify(outputLines)[0].is("Completed.");
+				verify(output).evaluate.property("jsh.shell.jsh.src").string.is.type("string");
+//				verify(outputLines)[0].is("Completed.");
+//				verify(false).is(true);
 			</script>
 			<script type="application/x.jsapi#tests" jsapi:id="home">
 				var outputLines = jsh.shell.jsh({
@@ -471,7 +476,7 @@ END LICENSE
 						}
 					});
 					verify(output)["jsh.shell.jsh.home"].string.is($jsapi.environment.jsh.built.home.toString());
-					
+
 					(function absolute() {
 						var output = jsh.shell.run({
 							command: $jsapi.environment.jsh.built.home.getFile("jsh").toString(),
@@ -483,9 +488,9 @@ END LICENSE
 								return JSON.parse(result.stdio.output);
 							}
 						});
-						verify(output)["jsh.shell.jsh.home"].string.is($jsapi.environment.jsh.built.home.toString());						
+						verify(output)["jsh.shell.jsh.home"].string.is($jsapi.environment.jsh.built.home.toString());
 					})();
-					
+
 					var shellCommand = function(p) {
 						var lines = [];
 						if (p.directory) {
@@ -510,7 +515,7 @@ END LICENSE
 							}
 						});
 					};
-					
+
 					(function relative() {
 						var basedir = $jsapi.environment.jsh.built.home.pathname.basename;
 						var parent = $jsapi.environment.jsh.built.home.parent;
@@ -525,9 +530,9 @@ END LICENSE
 								return JSON.parse(result.stdio.output);
 							}
 						});
-						verify(output)["jsh.shell.jsh.home"].string.is($jsapi.environment.jsh.built.home.toString());						
+						verify(output)["jsh.shell.jsh.home"].string.is($jsapi.environment.jsh.built.home.toString());
 					})();
-					
+
 					(function inPath() {
 						var directory = $jsapi.environment.jsh.built.home;
 						var PATH = jsh.file.Searchpath([directory.pathname].concat(jsh.shell.PATH.pathnames));
@@ -543,7 +548,7 @@ END LICENSE
 								return JSON.parse(result.stdio.output);
 							}
 						});
-						verify(output)["jsh.shell.jsh.home"].string.is($jsapi.environment.jsh.built.home.toString());						
+						verify(output)["jsh.shell.jsh.home"].string.is($jsapi.environment.jsh.built.home.toString());
 					})();
 				}
 			</script>

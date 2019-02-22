@@ -245,7 +245,7 @@ var Browser = function(p) {
 		});
 		return returner();
 	};
-	
+
 	this.delegate = p;
 };
 

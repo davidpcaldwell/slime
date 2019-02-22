@@ -25,6 +25,7 @@ plugin({
 });
 
 plugin({
+	//	TODO	add plugin.jsh.api.html that documents this
 	isReady: function() {
 		return jsh.document && jsh.shell;
 	},

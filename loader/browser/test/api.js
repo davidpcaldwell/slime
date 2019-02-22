@@ -4,19 +4,19 @@
 
 var api = new function() {
 	var loader;
-	
+
 	var getLoader = function() {
 		if (!loader) {
 			loader = new inonit.loader.Loader(inonit.loader.base);
 		}
 		return loader;
 	};
-	
+
 	this.ui = (function() {
 		if ($context.api && $context.api.ui) return $context.api.ui;
 		return getLoader().value("api/ui/loader.js")({ events: true });
 	})();
-	
+
 	this.apiHtmlScript = (function() {
 		if ($context.api && $context.api.apiHtmlScript) return $context.api.apiHtmlScript;
 		return getLoader().file("api/api.html.js");
@@ -176,7 +176,7 @@ var Scope = function(definition,environment) {
 		if (tokens[tokens.length-1].length == 0) return tokens.join("/");
 		return tokens.slice(0,tokens.length-1).join("/") + "/";
 	})();
-	
+
 	var self = this;
 	var Self = arguments.callee;
 
