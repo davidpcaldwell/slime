@@ -359,7 +359,33 @@
 			var b = Boolean(f(v));
 			return !b;
 		}
-	}
+	};
+	$exports.Filter.property = {
+		is: function(name,value) {
+			return function(v) {
+				return v[name] === value;
+			}
+		},
+		equals: function(name,value) {
+			return function(v) {
+				return v[name] == value;
+			}
+		}
+	};
+
+	$exports.Map = {};
+	$exports.Map.property = function(name) {
+		return function(v) {
+			return v[name];
+		};
+	};
+
+	$exports.Reduce = {};
+	$exports.Reduce.sum = function(array,map) {
+		return array.reduce(function(sum,element) {
+			return sum + map(element);
+		},0);
+	};
 
 	$exports.Method = {};
 	$exports.Method.property = function() {
