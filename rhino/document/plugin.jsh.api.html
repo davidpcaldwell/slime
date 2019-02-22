@@ -1,0 +1,74 @@
+<!--
+LICENSE
+This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+The Original Code is the SLIME loader infrastructure.
+
+The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+Portions created by the Initial Developer are Copyright (C) 2013 the Initial Developer. All Rights Reserved.
+
+Contributor(s):
+END LICENSE
+--><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
+<head>
+	<title>__TITLE__</title>
+	<!--	TODO	change these to use local copies of these files at the appropriate location	-->
+	<!--
+		These files are specified using http: rather than https: because githack.com will redirect them to https:, but http: will
+		work when using an HTTP proxy to serve local copies of the files without needing to run https: locally
+	-->
+	<link href="http://bb.githack.com/davidpcaldwell/slime/raw/tip/loader/api/api.css" rel="stylesheet" type="text/css" />
+	<script src="http://bb.githack.com/davidpcaldwell/slime/raw/tip/loader/api/api.js"></script>
+	<script>
+		//	TODO	CORS
+		document.domain = document.domain;
+	</script>
+</head>
+<body>
+	<div>__DESCRIPTION__</div>
+	<div>
+		<h1>Context</h1>
+		<ul>
+		</ul>
+	</div>
+	<div>
+		<h1>Exports</h1>
+		<ul>
+		</ul>
+	</div>
+	<script type="application/x.jsapi#tests"><![CDATA[
+		var stdio = function() {
+			return {
+				output: String
+			};
+		};
+
+		var evaluate = function(result) {
+			verify(result).status.is(0);
+			return JSON.parse(result.stdio.output);
+		}
+
+		if (true && $jsapi.environment.jsh.unbuilt.lib.getFile("jsoup.jar")) {
+			var jsoup = jsh.shell.jsh({
+				shell: $jsapi.environment.jsh.unbuilt.src,
+				script: $jsapi.loader.getRelativePath("test/html-parser.jsh.js").file,
+				stdio: stdio(),
+				evaluate: evaluate
+			});
+			verify(jsoup).parser.is("jsoup");	
+		}
+
+		var EMPTY = jsh.shell.TMPDIR.createTemporary({ directory: true });
+		var javafx = jsh.shell.jsh({
+			shell: $jsapi.environment.jsh.unbuilt.src,
+			script: $jsapi.loader.getRelativePath("test/html-parser.jsh.js").file,
+			environment: Object.assign({}, jsh.shell.environment, { JSH_SHELL_LIB: EMPTY.toString() }),
+			stdio: stdio(),
+			evaluate: evaluate
+		});
+		verify(javafx).parser.is("javafx");
+	]]></script>
+</body>
+</html>

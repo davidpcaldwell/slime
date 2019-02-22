@@ -131,7 +131,7 @@ var OldMapping = function(p) {
 			var file = p.pathname.directory.getFile(subpath);
 			return (file) ? /*new jsh.io.Resource(*/{
 				type: $context.getMimeType(file),
-				length: file.resource.length,
+				length: file.length,
 				read: {
 					binary: function() {
 						return file.read(jsh.io.Streams.binary)

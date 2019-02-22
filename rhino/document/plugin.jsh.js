@@ -15,6 +15,14 @@ plugin({
 		return jsh.js && jsh.js.document && jsh.java;
 	},
 	load: function() {
+		//	TODO	seems to be undocumented that $slime returns null for absent files
+		if ($slime.getLibraryFile("jsoup.jar") && $slime.getLibraryFile("jsoup.jar").exists()) {
+			$slime.classpath.add({
+				jar: {
+					_file: $slime.getLibraryFile("jsoup.jar")
+				}
+			})
+		}
 		jsh.document = $loader.module("module.js", {
 			pure: jsh.js.document,
 			api: {
@@ -23,16 +31,3 @@ plugin({
 		});
 	}
 });
-
-plugin({
-	//	TODO	add plugin.jsh.api.html that documents this
-	isReady: function() {
-		return jsh.document && jsh.shell;
-	},
-	load: function() {
-		if (jsh.shell.jsh.lib && jsh.shell.jsh.lib.getFile("jsoup.jar")) {
-			jsh.loader.plugins(jsh.shell.jsh.lib.getRelativePath("jsoup.jar"));
-			jsh.document.Document.Html.$reload();
-		}
-	}
-})

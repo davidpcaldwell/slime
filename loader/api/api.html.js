@@ -455,3 +455,54 @@ $exports.ApiHtmlTests = function(html,name) {
 $exports.getCode = function(path) {
 	return $loader.get(path).read(String);
 };
+
+
+var Suite = function(p) {
+	var byName = {};
+
+	var definition = {
+		parts: {
+		}
+	};
+
+	this.add = function(path,part) {
+		byName[path] = part;
+		var tokens = path.split("/");
+		var target = definition;
+		for (var i=0; i<tokens.length; i++) {
+			if (i == tokens.length-1) {
+				target.parts[tokens[i]] = part;
+			} else {
+				if (!target.parts[tokens[i]]) {
+					target.parts[tokens[i]] = {
+						parts: {}
+					}
+				}
+				target = target.parts[tokens[i]];
+			}
+		}
+	};
+
+	// this.part = function(name) {
+	// 	return byName[name];
+	// };
+
+	// this.parts = definition.parts;
+
+	this.getPath = function(p) {
+		var exact = byName[p.part];
+		if (!exact && p.element) {
+			throw new TypeError();
+		} else if (exact && p.element) {
+			return p.part.split("/").concat(exact.getPath(p.element.split("/")));
+		} else {
+			return p.part.split("/");
+		}
+	};
+
+	this.build = function() {
+		return new $context.Suite(definition);
+	};
+};
+
+$exports.Suite = Suite;

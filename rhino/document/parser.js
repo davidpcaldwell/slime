@@ -24,7 +24,8 @@ var Jsoup = function(p) {
 	//	TODO	technically this is not XHTML because the DOCTYPE is wrong
 	var rv = String(_doc.toString());
 	return rv;
-}
+};
+Jsoup.id = "jsoup";
 
 var load = function() {
 	if ($context.api.java.getClass("org.jsoup.Jsoup")) {
@@ -75,7 +76,8 @@ var load = function() {
 				}
 			})();
 		};
-	}
+		$exports.xhtml.id = "javafx";
+	};
 };
 
 load();

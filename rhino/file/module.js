@@ -259,7 +259,7 @@ $exports.Loader = function recurse(p) {
 			};
 			Object.defineProperty(data,"length",{
 				get: function() {
-					return file.resource.length;
+					return file.length;
 				}
 			});
 			Object.defineProperty(data,"modified",{

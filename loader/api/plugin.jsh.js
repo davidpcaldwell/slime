@@ -27,6 +27,7 @@ plugin({
 			var seq = 0;
 
 			this.Verify = jsh.unit.Verify;
+			this.Suite = jsh.unit.Suite;
 
 			this.run = function(code,scope) {
 				var source = code;
