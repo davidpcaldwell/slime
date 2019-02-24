@@ -492,7 +492,7 @@ var Suite = function(p) {
 	this.getPath = function(p) {
 		var exact = byName[p.part];
 		if (!exact && p.element) {
-			throw new TypeError();
+			throw new TypeError("Part not found: " + p.part);
 		} else if (exact && p.element) {
 			return p.part.split("/").concat(exact.getPath(p.element.split("/")));
 		} else {
