@@ -241,6 +241,9 @@
 						if (mode == loader.io.Streams.text) return text();
 						if (mode == String) return text().asString();
 						if (mode == Packages.java.util.Properties) return _properties(text().java.adapt());
+						if (mode == global.XML) return loader.$api.deprecate(function() {
+							return XML(text().asString())
+						})();
 					}
 					var parameters = (function() {
 						if (!p) return String(p);
@@ -254,7 +257,7 @@
 						+ " String " + (mode == String)
 					);
 				};
-			})(this.read, function() { return this; });
+			})(this.read, function() { return this; }());
 
 			//	We provide the optional operations read.binary and read.text, even though they are semantically equivalent to read(),
 			//	for two reasons. First, they
