@@ -193,6 +193,14 @@ $exports.run = $api.Events.Function(function(p,events) {
 		var _subprocess = Packages.inonit.system.OperatingSystem.get().start(context, configuration);
 
 		var handle = new function() {
+			this.command = result.command;
+			this.arguments = result.arguments;
+
+			//	TODO	consider what to do if no environment specified
+			this.environment = (result.environment) ? result.environment : $exports.environment;
+
+			this.directory = result.directory;
+
 			Object.defineProperty(this, "pid", {
 				get: function() {
 					return _subprocess.getPid();
