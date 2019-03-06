@@ -14,6 +14,12 @@ if (!$context.api.io) {
 	throw new Error("Missing: $context.api.io");
 }
 
+var module = {
+	events: $api.Events({ source: $exports })
+};
+
+$exports.listeners = module.events.listeners;
+
 $exports.run = $api.Events.Function(function(p,events) {
 	var as;
 	if (p.as) {
@@ -217,6 +223,7 @@ $exports.run = $api.Events.Function(function(p,events) {
 				p.on.start.call({}, handle);
 			})();
 		}
+		module.events.fire("run.start", handle);
 		events.fire("start", handle);
 		var listener = new function() {
 			this.finished = function(status) {
