@@ -91,7 +91,7 @@ plugin({
 			jsh.unit.interface.create(p.suite.build(), new function() {
 				// TODO: is this redundant? Value of "chrome" should just work, right? Or is it because we want to specify instance?
 				this.view = p.view;
-	
+
 				if (p.part) {
 					var tokens = p.part.split(":");
 					this.path = p.suite.getPath({
@@ -99,7 +99,7 @@ plugin({
 						element: tokens[1]
 					});
 				}
-			});	
+			});
 		}
 
 		//	TODO	probably will move to loader/api

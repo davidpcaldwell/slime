@@ -51,11 +51,11 @@ if (!parameters.options.engine.length) {
 	parameters.options.engine = [""];
 }
 
-var project = jsh.script.loader.file("suite.js");
+var Environment = jsh.script.loader.file("jrunscript-environment.js").Environment;
 
 var suite = new jsh.unit.html.Suite();
 
-var environment = new project.Environment({
+var environment = new Environment({
 	src: jsh.script.file.parent.parent,
 	noselfping: parameters.options.noselfping,
 	tomcat: true,

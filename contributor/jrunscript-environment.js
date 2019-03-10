@@ -39,6 +39,7 @@ var Environment = function(p) {
 			}
 
 			var getHome = function() {
+				debugger;
 				getLocation();
 				if (!p.home.directory) {
 					jsh.shell.jsh({

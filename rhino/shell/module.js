@@ -14,6 +14,12 @@ if (!$context.api.io) {
 	throw new Error("Missing: $context.api.io");
 }
 
+var module = {
+	events: $api.Events({ source: $exports })
+};
+
+$exports.listeners = module.events.listeners;
+
 $exports.run = $api.Events.Function(function(p,events) {
 	var as;
 	if (p.as) {
@@ -193,6 +199,14 @@ $exports.run = $api.Events.Function(function(p,events) {
 		var _subprocess = Packages.inonit.system.OperatingSystem.get().start(context, configuration);
 
 		var handle = new function() {
+			this.command = result.command;
+			this.arguments = result.arguments;
+
+			//	TODO	consider what to do if no environment specified
+			this.environment = (result.environment) ? result.environment : $exports.environment;
+
+			this.directory = result.directory;
+
 			Object.defineProperty(this, "pid", {
 				get: function() {
 					return _subprocess.getPid();
@@ -209,6 +223,7 @@ $exports.run = $api.Events.Function(function(p,events) {
 				p.on.start.call({}, handle);
 			})();
 		}
+		module.events.fire("run.start", handle);
 		events.fire("start", handle);
 		var listener = new function() {
 			this.finished = function(status) {

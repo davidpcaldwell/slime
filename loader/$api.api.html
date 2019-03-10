@@ -934,33 +934,311 @@ END LICENSE
 						</li>
 					</ul>
 				</li>
-				<li class="function">
+				<li jsapi:id="Events" class="function">
 					<div class="name">Events</div>
-					<span>__DESCRIPTION__</span>
+					<span>Creates an event emitter that can be used to fire events to a set of listeners. Event emitters can be arranged in a hierarchy.</span>
 					<div class="type">
 						<a class="type" name="types.Event">Event</a>
-						<span>__DESCRIPTION__</span>
+						<span>An event fired by an event source.</span>
 						<div class="label">has properties:</div>
 						<ul>
 							<li class="value">
 								<div class="name">type</div>
-								<span class="type">__TYPE__</span>
-								<span>__DESCRIPTION__</span>
+								<span class="type">string</span>
+								<span>An event <dfn>type</dfn>. Event sources may define arbitrary types.</span>
+								<script type="application/x.jsapi#tests">
+									var emitter = api.Events();
+
+									var event;
+
+									emitter.listeners.add("aType", function(e) {
+										event = e;
+									});
+
+									emitter.fire("aType");
+
+									verify(event).type.is("aType");
+								</script>
 							</li>
 							<li class="value">
 								<div class="name">source</div>
-								<span class="type">__TYPE__</span>
-								<span>__DESCRIPTION__</span>
+								<span class="type">object</span>
+								<span>
+									An event <dfn>source</dfn>. This object may be the <code>Events</code> itself, or an arbitrary object specified as the logical
+									event source.
+								</span>
+								<script type="application/x.jsapi#tests">
+									var emitter = api.Events();
+
+									var event;
+
+									emitter.listeners.add("aType", function(e) {
+										event = e;
+									});
+
+									emitter.fire("aType");
+
+									verify(event).source.is(emitter);
+								</script>
+								<script type="application/x.jsapi#tests">
+									var parent = api.Events();
+									var child = api.Events({ parent: parent });
+
+									var last;
+
+									parent.listeners.add("aType", function(e) {
+										last = e;
+									});
+
+									parent.fire("aType");
+									verify(last).source.is(parent);
+									child.fire("aType");
+									verify(last).source.is(child);
+								</script>
+							</li>
+							<li class="value">
+								<div class="name">path</div>
+								<span class="type">Array of emitter</span>
+								<span>
+									When accessed in an event handler, will be set to the current <dfn>path</dfn> in the emitter hierarchy from which
+									this event was fired.
+								</span>
+								<script type="application/x.jsapi#tests">
+									var parent = api.Events();
+									var child = api.Events({ parent: parent });
+
+									var received = {
+									};
+
+									var receive = function(name) {
+										return function(e) {
+											received[name] = { source: e.source, path: e.path.slice() };
+										};
+									};
+
+									parent.listeners.add("aType", receive("parent"));
+									child.listeners.add("aType", receive("child"));
+
+									child.fire("aType");
+			
+									verify(received).parent.path.length.is(1);
+									verify(received).parent.path[0].is(child);					
+									verify(received).child.path.length.is(0);
+								</script>
 							</li>
 							<li class="value">
 								<div class="name">timestamp</div>
 								<span class="type">number</span>
-								<span>__DESCRIPTION__</span>
+								<span>
+									The time at which the event was fired, in the same format as used by the <code>Date</code> constructor.
+								</span>
+								<script type="application/x.jsapi#tests">
+									//	TODO	mock Date to allow testing value below?
+
+									var emitter = api.Events();
+
+									var event;
+
+									emitter.listeners.add("aType", function(e) {
+										event = e;
+									});
+
+									emitter.fire("aType");
+
+									verify(event).timestamp.is.type("number");
+								</script>
 							</li>
 							<li class="value">
 								<div class="name">detail</div>
-								<span class="type">__TYPE__</span>
+								<span class="type">(any)</span>
+								<span>An arbitrary value attached to the event when it is fired containing additional information.</span>
+								<script type="application/x.jsapi#tests">
+									var emitter = api.Events();
+
+									var events = [];;
+
+									emitter.listeners.add("aType", function(e) {
+										events.push(e);
+									});
+
+									emitter.fire("aType");
+									emitter.fire("aType", void(0));
+									emitter.fire("aType", null);
+									emitter.fire("aType", true);
+									emitter.fire("aType", 2);
+									emitter.fire("aType", "aString");
+									emitter.fire("aType", { property: "value" });
+
+									verify(events)[0].detail.is(void(0));
+									verify(events)[1].detail.is(void(0));
+									verify(events)[2].detail.is(null);
+									verify(events)[3].detail.is(true);
+									verify(events)[4].detail.is(2);
+									verify(events)[5].detail.is("aString");
+									verify(events)[6].detail.property.is("value");
+								</script>
+							</li>
+						</ul>
+					</div>
+					<div class="type">
+						<a class="type" name="types.emitter">emitter</a>
+						<span>__DESCRIPTION__</span>
+						<div class="label">has properties:</div>
+						<ul>
+							<li class="object">
+								<div class="name">listeners</div>
 								<span>__DESCRIPTION__</span>
+								<div class="label">has properties:</div>
+								<ul>
+									<li class="function">
+										<div class="name">add</div>
+										<span>Adds an event listener that will be notified about a particular <dfn>type</dfn> of events.</span>
+										<div class="arguments">
+											<div class="label">Arguments</div>
+											<ol>
+												<li class="value">
+													<span class="type">string</span>
+													<span>An event <dfn>type</dfn>.</span>
+												</li>
+												<li class="function">
+													<span>
+														A listener function that will be invoked when the event occurs, with <code>this</code> set to the emitter's event source.
+													</span>
+													<div class="arguments">
+														<div class="label">Arguments</div>
+														<ol>
+															<li class="value">
+																<span class="type">Event</span>
+																<span>An event of the specified type.</span>
+															</li>
+														</ol>
+													</div>
+												</li>
+											</ol>
+										</div>
+										<script type="application/x.jsapi#tests">
+											var emitter = api.Events();
+	
+											var called = false;
+	
+											emitter.listeners.add("aType", function() {
+												verify(this).is(emitter);
+												called = true;
+											});
+	
+											emitter.fire("aType");
+											verify(called).is(true);
+										</script>
+										<script type="application/x.jsapi#tests">
+											var source = {};
+											var emitter = api.Events({ source: source });
+	
+											var called = false;
+	
+											emitter.listeners.add("aType", function() {
+												verify(this).is(source);
+												called = true;
+											});
+	
+											emitter.fire("aType");
+											verify(called).is(true);
+										</script>
+										<script type="application/x.jsapi#tests">
+											var parent = {};
+											var child = {};
+											var emitters = {};
+											emitters.parent = api.Events({ source: parent });
+											emitters.child = api.Events({ source: child, parent: emitters.parent });
+	
+											var called = {
+												parent: false,
+												child: false
+											};
+	
+											emitters.parent.listeners.add("aType", function(e) {
+												verify(this).is(parent);
+												verify(e).source.is(child);
+												called.parent = true;
+											});
+	
+											emitters.child.listeners.add("aType", function(e) {
+												verify(this).is(child);
+												verify(e).source.is(child);
+												called.child = true;
+											});
+	
+											emitters.child.fire("aType");
+											verify(called).parent.is(true);
+											verify(called).child.is(true);
+										</script>
+									</li>
+									<li class="function">
+										<div class="name">remove</div>
+										<span>Removes an event listener.</span>
+										<div class="arguments">
+											<div class="label">Arguments</div>
+											<ol>
+												<li class="value">
+													<span class="type">string</span>
+													<span>An event <dfn>type</dfn>.</span>
+												</li>
+												<li class="value">
+													<span class="type">function</span>
+													<span>A listener function.</span>
+												</li>
+											</ol>
+										</div>
+									</li>
+									<script type="application/x.jsapi#tests">
+										var source = new function() {
+											var events = api.Events({ source: this });
+				
+											this.doIt = function(p) {
+												events.fire("done", p);
+											};
+										};
+				
+										var received = [];
+										var counter = function(e) {
+											received.push(e);
+										};
+				
+										verify(received).length.is(0);
+										source.doIt();
+										verify(received).length.is(0);
+										source.listeners.add("other", counter);
+										verify(received).length.is(0);
+										source.doIt();
+										verify(received).length.is(0);
+										source.listeners.add("done", counter);
+										source.doIt();
+										verify(received).length.is(1);
+										verify(received)[0].source.is(source);
+										source.listeners.remove("done", counter);
+										source.doIt();
+										verify(received).length.is(1);
+									</script>
+								</ul>
+							</li>
+							<li class="function">
+								<div class="name">fire</div>
+								<span>Causes this object to fire an event to its listeners.</span>
+								<div class="arguments">
+									<div class="label">Arguments</div>
+									<ol>
+										<li class="value">
+											<span class="type">string</span>
+											<span>An event type.</span>
+										</li>
+										<li class="value">
+											<span class="type">(any)</span>
+											<span>
+												An event <dfn>detail</dfn>, which can be any type, and will be used as the
+												<code>detail</code> property of the created event.
+											</span>
+										</li>
+									</ol>
+								</div>
 							</li>
 						</ul>
 					</div>
@@ -977,104 +1255,47 @@ END LICENSE
 										<span class="type">__TYPE__</span>
 										<span>__DESCRIPTION__</span>
 									</li>
-									<li class="function">
-										<div class="name">fire</div>
-										<span>Causes this object to fire an event to its listeners.</span>
-										<div class="arguments">
-											<div class="label">Arguments</div>
-											<ol>
-												<li class="value">
-													<span class="type">string</span>
-													<span>An event type</span>
-												</li>
-												<li class="value">
-													<span class="type">(any)</span>
-													<span>
-														An event <dfn>detail</dfn>, which can be any type, and will be used as the
-														<code>detail</code> property of the created event.
-													</span>
-												</li>
-											</ol>
-										</div>
+									<li class="value">
+										<div class="name">parent</div>
+										<span class="type">__TYPE__</span>
+										<span>__DESCRIPTION__</span>
+										<script type="application/x.jsapi#tests">
+											var parent = api.Events();
+											var child = api.Events({ parent: parent });
+
+											var received = {
+												parent: [],
+												child: []
+											};
+
+											var receive = function(name) {
+												return function(e) {
+													received[name].push({ source: e.source, path: e.path.slice() });
+												};
+											};
+
+											parent.listeners.add("aType", receive("parent"));
+											child.listeners.add("aType", receive("child"));
+
+											parent.fire("aType");
+											verify(received).parent.length.is(1);
+											verify(received).child.length.is(0);
+					
+											child.fire("aType");
+											verify(received).parent.length.is(2);
+											verify(received).child.length.is(1);
+										</script>
 									</li>
 								</ul>
 							</li>
 						</ol>
 					</div>
+
 					<div class="returns">
 						<div class="label">Returns</div>
 						<span class="type">__TYPE__</span>
 						<span>__DESCRIPTION__</span>
 					</div>
-					<script type="application/x.jsapi#tests">
-						var source = new function() {
-							var events = api.Events({ source: this });
-
-							this.doIt = function(p) {
-								events.fire("done", p);
-							};
-						};
-
-						var received = [];
-						var counter = function(e) {
-							received.push(e);
-						};
-
-						verify(received).length.is(0);
-						source.doIt();
-						verify(received).length.is(0);
-						source.listeners.add("other", counter);
-						verify(received).length.is(0);
-						source.doIt();
-						verify(received).length.is(0);
-						source.listeners.add("done", counter);
-						source.doIt();
-						verify(received).length.is(1);
-						source.listeners.remove("done", counter);
-						source.doIt();
-						verify(received).length.is(1);
-					</script>
-					<script type="application/x.jsapi#tests">
-						var Child = function(parentEvents) {
-							var events = api.Events({ source: this, parent: parentEvents });
-
-							this.doIt = function() {
-								events.fire("a", { hello: "world" });
-							}
-						};
-
-						var Parent = function() {
-							var events = api.Events({ source: this });
-
-							this.addChild = function() {
-								return new Child(events);
-							}
-
-							this.doIt = function() {
-								events.fire("a", { hello: "world" });
-							}
-						};
-
-						var parent = new Parent();
-						var child = parent.addChild();
-
-						var parentEvents = 0;
-						var childEvents = 0;
-						parent.listeners.add("a", function() {
-							parentEvents++;
-						});
-						child.listeners.add("a", function() {
-							childEvents++;
-						});
-
-						parent.doIt();
-						verify(parentEvents).is(1);
-						verify(childEvents).is(0);
-
-						child.doIt();
-						verify(parentEvents).is(2);
-						verify(childEvents).is(1);
-					</script>
 					<div class="label">has properties:</div>
 					<ul>
 						<li class="function">

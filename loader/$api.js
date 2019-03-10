@@ -359,7 +359,33 @@
 			var b = Boolean(f(v));
 			return !b;
 		}
-	}
+	};
+	$exports.Filter.property = {
+		is: function(name,value) {
+			return function(v) {
+				return v[name] === value;
+			}
+		},
+		equals: function(name,value) {
+			return function(v) {
+				return v[name] == value;
+			}
+		}
+	};
+
+	$exports.Map = {};
+	$exports.Map.property = function(name) {
+		return function(v) {
+			return v[name];
+		};
+	};
+
+	$exports.Reduce = {};
+	$exports.Reduce.sum = function(array,map) {
+		return array.reduce(function(sum,element) {
+			return sum + map(element);
+		},0);
+	};
 
 	$exports.Method = {};
 	$exports.Method.property = function() {
@@ -773,8 +799,9 @@
 	};
 
 	$exports.Events = function(p) {
-		var source = (p.source) ? p.source : {};
-		var rv = new function() {
+		if (!p) p = {};
+		return new function() {
+			var source = (p.source) ? p.source : this;
 			var getParent = function() {
 				if (p.parent) return p.parent;
 				if (p.getParent) return p.getParent();
@@ -792,7 +819,7 @@
 				//	http://www.w3.org/TR/2000/REC-DOM-Level-2-Events-20001113/events.html#Events-interface
 			};
 
-			source.listeners = new function() {
+			var listeners = new function() {
 				this.add = function(name,handler) {
 					if (!byType[name]) {
 						byType[name] = [];
@@ -809,6 +836,27 @@
 					}
 				};
 			};
+
+			//	TODO	capability is undocumented. Document? Deprecate? Remove?
+			for (var x in p.on) {
+				listeners.add(x,p.on[x]);
+			}
+
+			this.listeners = listeners;
+
+			//	TODO	roadmap: after some uses of this have been removed, add an optional 'old' property to allow this behavior
+			//			but overall we should not be adding arbitrary properties to an object just because it is an event emitter
+			if (p.source) {
+				p.source.listeners = new function() {
+					this.add = $exports.deprecate(function(name,handler) {
+						listeners.add(name, handler);
+					});
+
+					this.remove = $exports.deprecate(function(name,handler) {
+						listeners.remove(name, handler);
+					})
+				};
+			}
 
 			var handle = function(event) {
 				if (byType[event.type]) {
@@ -827,6 +875,8 @@
 				}
 			}
 
+			//	Private method; used by children to send an event up the chain.
+			//	TODO	switch to Object.defineProperty and make non-enumerable
 			this.bubble = function(event) {
 				handle(event);
 			}
@@ -835,10 +885,6 @@
 				handle(new Event(type,detail));
 			}
 		};
-		for (var x in p.on) {
-			source.listeners.add(x,p.on[x]);
-		}
-		return rv;
 	};
 
 	var listening = function(f,defaultOn) {

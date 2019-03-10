@@ -19,7 +19,7 @@ var parameters = jsh.script.getopts({
 		noselfping: false,
 		executable: false,
 
-		unit: String,
+		part: String,
 		view: "console",
 
 		// TODO: does this work? Is it necessary?
@@ -27,13 +27,15 @@ var parameters = jsh.script.getopts({
 	}
 });
 
-var project = jsh.script.loader.file("suite.js");
-var environment = new project.Environment({
+var Environment = jsh.script.loader.file("jrunscript-environment.js").Environment;
+
+var environment = new Environment({
 	src: jsh.script.file.parent.parent,
 	home: parameters.options["shell:built"],
 	noselfping: parameters.options.noselfping,
 	executable: parameters.options.executable
 });
+
 var suite = new jsh.unit.html.Suite();
 
 var SRC = jsh.script.file.parent.parent;
@@ -180,14 +182,22 @@ suite.add("jsh-tools", new jsh.unit.part.Html({
 	environment: environment
 }));
 
-suite.add("jsh.shell.jsh", new jsh.unit.Suite.Fork({
+var withShell = function(p) {
 	// TODO: moved this from integration tests and reproduced current test without much thought; could be that we should not be
 	// using the built shell, or should be using more shells
+	Object.defineProperty(p, "shell", {
+		get: function() {
+			return (environment.jsh.built) ? environment.jsh.built.home : environment.jsh.unbuilt.src;
+		}
+	});
+	return p;
+};
+
+suite.add("jsh.shell.jsh", new jsh.unit.Suite.Fork(withShell({
 	run: jsh.shell.jsh,
-	shell: (environment.jsh.built) ? environment.jsh.built.home : environment.jsh.unbuilt.src,
 	script: SRC.getFile("rhino/shell/test/jsh.shell.jsh.suite.jsh.js"),
 	arguments: ["-view","stdio"]
-}));
+})));
 
 suite.add("testing/constructs", new jsh.unit.part.Html({
 	pathname: SRC.getRelativePath("loader/api/unit.api.html")
@@ -307,21 +317,8 @@ suite.add("provision", new jsh.unit.part.Html({
 	pathname: SRC.getRelativePath("jsh/tools/provision/api.html")
 }));
 
-
-jsh.unit.interface.create(suite.build(), new function() {
-	// TODO: is this redundant? Value of "chrome" should just work, right? Or is it because we want to specify instance?
-	if (parameters.options.view == "chrome") {
-		this.chrome = {
-			profile: parameters.options["chrome:profile"]
-		};
-	} else {
-		this.view = parameters.options.view;
-	}
-	if (parameters.options.unit) {
-		var tokens = parameters.options.unit.split(":");
-		this.path = suite.getPath({
-			part: tokens[0],
-			element: tokens[1]
-		});
-	}
+jsh.unit.html.cli({
+	suite: suite,
+	view: parameters.options.view,
+	part: parameters.options.part
 });

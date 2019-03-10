@@ -673,6 +673,31 @@ END LICENSE
 				Scripts that are in the <code>tools/</code> folder that perform specific HTML definition functions.
 			</div>
 			<div>
+				<h3><code>definition.jsh.js</code></h3>
+				<div>
+					The <code>definition.jsh.js</code> tool provides the ability to emit an empty <code>api.html</code> file to a
+					given location.
+				</div>
+				<div>
+					<h4>Command-line arguments</h4>
+					<ul>
+						<li><code>-to <i>destination</i></code></li>
+					</ul>
+				</div>
+			</div>
+			<div>
+				<h3><code>snippets.jsh.js</code></h3>
+				<div>
+					Emits code snippets to support the <code>api.html</code> format to the standard output stream.
+				</div>
+				<div>
+					<h4>Command-line arguments</h4>
+					<ul>
+						<li><code>-format</code> <i>vscode</i>: indicates that a Visual Studio Code snippets file should be emitted.</li>
+					</ul>
+				</div>
+			</div>
+			<div>
 				<h3><code>update.jsh.js</code></h3>
 				<div>
 					The <code>update.jsh.js</code> tool provides the ability to inline a version of these associated files. It scans
@@ -685,19 +710,6 @@ END LICENSE
 						<li><code>-base <i>pathname</i></code> (optional; defaults to the working directory)</li>
 						<li><code>-list</code>: Lists the files that are detected as definition files.</li>
 						<li><code>-preview</code>: Emits information to the console rather than writing it to the filesystem.</li>
-					</ul>
-				</div>
-			</div>
-			<div>
-				<h3><code>definition.jsh.js</code></h3>
-				<div>
-					The <code>definition.jsh.js</code> tool provides the ability to emit an empty <code>api.html</code> file to a
-					given location.
-				</div>
-				<div>
-					<h4>Command-line arguments</h4>
-					<ul>
-						<li><code>-to <i>destination</i></code></li>
 					</ul>
 				</div>
 			</div>
