@@ -231,6 +231,35 @@ plugin({
 			}
 		};
 
+		//	TODO	probably want to create a jrunscript/io version of this also, or even a loader/ version given that this
+		//			is pure JavaScript
+		jsh.shell.tools.jsyaml = new function() {
+			var location = (jsh.shell.jsh.lib) ? jsh.shell.jsh.lib.getRelativePath("js-yaml.js") : null;
+
+			var fetchCode = function() {
+				return new jsh.http.Client().request({
+					url: "https://raw.githubusercontent.com/nodeca/js-yaml/master/dist/js-yaml.js",
+					evaluate: function(response) {
+						return response.body.stream.character().asString();
+					}
+				});
+			}
+
+			this.initialize = function() {
+				if (!location) throw new Error("Cannot install js-yaml into this shell.");
+				location.write(fetchCode(), { append: false });				
+			};
+
+			this.load = function() {
+				var code = (location && location.file) ? location.file.read(String) : fetchCode();
+				return (function() {
+					var global = {};
+					var rv = eval(code);
+					return global.jsyaml;
+				})();
+			}
+		};
+
 		(function deprecated() {
 			jsh.tools.ncdbg = ncdbg;
 			$api.deprecate(jsh.tools,"ncdbg");
