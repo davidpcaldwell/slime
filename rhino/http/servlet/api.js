@@ -133,6 +133,7 @@ var Loader = (function() {
 				get: function(path) {
 					var delegate = new bootstrap.io.Loader(pp);
 					var delegated = delegate.source.get(path);
+					if (!delegated) return null;
 					return bootstrap.js.Object.set({}, delegated, {
 						type: pp.type(path)
 					});
