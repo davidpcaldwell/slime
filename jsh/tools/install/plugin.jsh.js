@@ -245,7 +245,7 @@ plugin({
 				});
 			}
 
-			this.initialize = function() {
+			this.install = function() {
 				if (!location) throw new Error("Cannot install js-yaml into this shell.");
 				location.write(fetchCode(), { append: false });				
 			};
