@@ -512,6 +512,13 @@ $exports.Body = new function() {
 	}
 
 	this.Form = function(p) {
+		var TYPE = "application/x-www-form-urlencoded";
+		if (p.form) {
+			return {
+				type: TYPE,
+				string: p.form.getUrlencoded()
+			}
+		}
 		return {
 			type: "application/x-www-form-urlencoded",
 			string: QueryString.encode(new UrlQuery(p))
