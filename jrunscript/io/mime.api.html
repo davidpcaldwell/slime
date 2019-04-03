@@ -108,13 +108,18 @@ END LICENSE
 					<span class="type">string</span>
 					<span>
 						The <code>Content-Disposition</code> (see <a href="http://tools.ietf.org/html/rfc2183">RFC 2183</a>) to use for this part; for
-						example, <code>attachment</code> or <code>inline</code>.
+						example, <code>attachment</code> or <code>inline</code>. Can be omitted for <code>multipart/form-data</code>.
 					</span>
+				</li>
+				<li class="value">
+					<div class="name">name</div>
+					<span class="type">string</span>
+					<span>The name of this part; see <a href="https://tools.ietf.org/html/rfc1867">RFC 1867</a>.</span>
 				</li>
 				<li class="value">
 					<div class="name">filename</div>
 					<span class="type">string</span>
-					<span>The name of this part.</span>
+					<span>The filename of this part.</span>
 				</li>
 			</ul>
 		</div>
