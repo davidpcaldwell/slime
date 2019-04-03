@@ -45,3 +45,30 @@ plugin({
 		})
 	}
 });
+
+plugin({
+	isReady: function() {
+		return jsh.js && jsh.js.web && jsh.io && jsh.io.mime;
+	},
+	load: function() {
+		jsh.js.web.Form.Multipart = function(o) {
+			var parts = o.controls.map(function(control) {
+				if (typeof(control.value) == "string") {
+					return { name: control.name, string: control.value };
+				} else {
+					return {
+						name: control.name,
+						filename: control.value.filename,
+						type: control.value.type,
+						stream: control.value.stream
+					}
+				}
+			});
+
+			return new jsh.io.mime.Multipart({
+				subtype: "form-data",
+				parts: parts
+			});
+		}
+	}
+})
