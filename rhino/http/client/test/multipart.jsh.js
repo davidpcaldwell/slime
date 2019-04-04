@@ -21,9 +21,24 @@ var parts = [
     }
 ];
 
-var multipart = new jsh.io.mime.Multipart({
-    subtype: "form-data",
-    parts: parts
+var TMP = jsh.shell.TMPDIR.createTemporary({ directory: true });
+var me = jsh.script.file.copy(TMP);
+
+var multipart = new jsh.js.web.Form.Multipart({
+    controls: [
+        {
+            name: "bytes",
+            value: {
+                filename: "filename",
+                type: "application/octet-stream",
+                stream: jsh.io.java.adapt(_input)
+            }
+        },
+        {
+            name: "me",
+            value: me
+        }
+    ]
 });
 
 jsh.shell.jsh.src.getRelativePath("local/test/rhino/http/client/multipart").write(
@@ -41,7 +56,7 @@ var echo = new jsh.http.Client().request({
     }
 });
 
-jsh.shell.jsh.src.getRelativePath("local/test/rhino/http/client/multipart.json").write(JSON.stringify(echo), { append: false, recursive: true });
+jsh.shell.jsh.src.getRelativePath("local/test/rhino/http/client/multipart.json").write(JSON.stringify(echo, void(0), "    "), { append: false, recursive: true });
 var file = echo.files.filename;
 file = file.substring(file.indexOf(",")+1);
 var _decoder = Packages.java.util.Base64.getDecoder();

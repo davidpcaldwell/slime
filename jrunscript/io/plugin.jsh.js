@@ -55,13 +55,20 @@ plugin({
 			var parts = o.controls.map(function(control) {
 				if (typeof(control.value) == "string") {
 					return { name: control.name, string: control.value };
+				} else if (control.value && control.value.pathname) {
+					return { 
+						name: control.name, 
+						filename: control.value.pathname.basename, 
+						type: control.value.type.toString(), 
+						stream: control.value.read.binary()
+					};
 				} else {
 					return {
 						name: control.name,
 						filename: control.value.filename,
 						type: control.value.type,
 						stream: control.value.stream
-					}
+					};
 				}
 			});
 
