@@ -143,6 +143,13 @@ $exports.run = $api.Events.Function(function(p,events) {
 			rv.result.arguments = p.arguments;
 			rv.result.as = p.as;
 			rv.configuration.command = toCommandToken(rv.result)(p.command);
+			if (typeof(p.arguments) == "function") {
+				p.arguments = (function(f) {
+					var rv = [];
+					f(rv);
+					return rv;
+				})(p.arguments);
+			}
 			rv.configuration.arguments = (p.arguments) ? p.arguments.map(toCommandToken(rv.result)) : [];
 			return rv;
 		} else {
