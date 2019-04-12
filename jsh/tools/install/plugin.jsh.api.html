@@ -370,6 +370,51 @@ END LICENSE
 					<div class="label">has properties:</div>
 					<ul>
 					</ul>
+				</li>
+				<li class="object">
+					<div class="name">jsyaml</div>
+					<span>__DESCRIPTION__</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="function">
+							<div class="name">install</div>
+							<span>Installs <code>js-yaml</code> into the shell so that it can be loaded by <code>load()</code></span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</div>
+						</li>
+						<li class="function">
+							<div class="name">load</div>
+							<span>Loads the API and returns it, retrieving it online if necessary.</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</div>
+						</li>
+					</ul>
+				</li>
+			</ul>
+		</div>
+		<div>
+			<h1>Other tools</h1>
+			<div>
+				<h2>POI</h2>
+				<div>
+					POI can be installed using <code>jsh/tools/install/poi.jsh.js</code>. This will add an Excel-based grid
+					implementation to <code>jrunscript/io</code>.
 					<script type="application/x.jsapi#tests">
 						var poi = jsh.shell.jsh.lib.getSubdirectory("poi");
 						if (poi) {
@@ -378,8 +423,8 @@ END LICENSE
 							verify(jsh).io.grid.evaluate.property("excel").is(void(0));
 						}
 					</script>
-				</li>
-			</ul>
+				</div>
+			</div>
 		</div>
 	</body>
 </html>

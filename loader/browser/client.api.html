@@ -218,14 +218,15 @@ END LICENSE
 					verify(js).type.getMedia().is("application");
 					verify(js).type.getSubtype().is("javascript");
 					verify(css,"css").evaluate(hasSourceUrl).is(false);
-					verify(css,"css").type.is.type("null");
+					//verify(css,"css").type.is.type("text/css");
 					if (css.type) {
 						verify(css).type.getMedia().is("text");
 						verify(css).type.getSubtype().is("css");
 					}
 					verify(html,"html").evaluate(hasSourceUrl).is(false);
-					// TODO: Unclear why the below construct does not work; is it because of the property named 'type'?
-			//		verify(html,"html").type.is.type("object");
+					//	TODO: Unclear why the below construct does not work; is it because of the property named 'type', or maybe
+					//	the 'is' method?
+					// verify(html,"html").type.is.type("object");
 					if (html.type) {
 						verify(html).type.getMedia().is("text");
 						verify(html).type.getSubtype().is("html");
