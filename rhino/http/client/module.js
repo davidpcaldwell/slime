@@ -239,6 +239,9 @@ var spi = function(p) {
 		} else if (p.body.stream) {
 			$context.api.io.Streams.binary.copy(p.body.stream,$urlConnection.getOutputStream());
 			$urlConnection.getOutputStream().close();
+		} else if (p.body.read && p.body.read.binary) {
+			$context.api.io.Streams.binary.copy(p.body.read.binary(),$urlConnection.getOutputStream());
+			$urlConnection.getOutputStream().close();
 		} else if (typeof(p.body.string) != "undefined") {
 			var writer = $context.api.io.java.adapt($urlConnection.getOutputStream()).character();
 			writer.write(p.body.string);
@@ -512,6 +515,13 @@ $exports.Body = new function() {
 	}
 
 	this.Form = function(p) {
+		var TYPE = "application/x-www-form-urlencoded";
+		if (p.form) {
+			return {
+				type: TYPE,
+				string: p.form.getUrlencoded()
+			}
+		}
 		return {
 			type: "application/x-www-form-urlencoded",
 			string: QueryString.encode(new UrlQuery(p))

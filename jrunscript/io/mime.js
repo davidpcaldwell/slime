@@ -49,7 +49,7 @@ $exports.Multipart = function(p) {
 			if (attributes.length) {
 				attributes.unshift({});
 			}
-			var attributesString = attributes.map(function(attribute) { if (!attribute.name) return ""; return attribute.name + "=" + attribute.value }).join("; ");
+			var attributesString = attributes.map(function(attribute) { if (!attribute.name) return ""; return attribute.name + "=" + "\"" + attribute.value + "\"" }).join("; ");
 			return part.disposition + attributesString;
 		}
 	};
@@ -71,11 +71,14 @@ $exports.Multipart = function(p) {
 				writer.write(CRLF);
 			}
 			writer.write("--" + BOUNDARY + CRLF);
+			//	TODO	test filename present and absent
+			var disposition = getDisposition(part);
+			if (disposition) {
+				writer.write("Content-Disposition: " + disposition + CRLF);
+			}
 			if (part.type) {
 				writer.write("Content-Type: " + part.type + CRLF);
 			}
-			//	TODO	test filename present and absent
-			var disposition = getDisposition(part);
 //			if (!part.disposition && subtype == "form-data") {
 //				part.disposition = "form-data";
 //			}
@@ -95,9 +98,6 @@ $exports.Multipart = function(p) {
 //				jsh.shell.echo(header);
 //				writer.write(header);
 //			}
-			if (disposition) {
-				writer.write("Content-Disposition: " + disposition + CRLF);
-			}
 			writer.write(CRLF);
 			if (typeof(part.string) == "string") {
 				writer.write(part.string);
