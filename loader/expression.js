@@ -251,6 +251,7 @@
 			mime.Type.fromName = function(path) {
 				if (/\.js$/.test(path)) return mime.Type.parse("application/javascript");
 				if (/\.coffee$/.test(path)) return mime.Type.parse("application/vnd.coffeescript");
+				if (/\.css$/.test(path)) return mime.Type.parse("text/css");
 				if (/\.csv$/.test(path)) return mime.Type.parse("text/csv");
 			};
 
