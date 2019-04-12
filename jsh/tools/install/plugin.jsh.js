@@ -243,20 +243,26 @@ plugin({
 						return response.body.stream.character().asString();
 					}
 				});
-			}
-
-			this.install = function() {
-				if (!location) throw new Error("Cannot install js-yaml into this shell.");
-				location.write(fetchCode(), { append: false });				
 			};
 
-			this.load = function() {
-				var code = (location && location.file) ? location.file.read(String) : fetchCode();
+			var load = function(code) {
 				return (function() {
 					var global = {};
 					var rv = eval(code);
 					return global.jsyaml;
 				})();
+			}
+
+			this.install = function() {
+				if (!location) throw new Error("Cannot install js-yaml into this shell.");
+				var code = fetchCode();
+				location.write(code, { append: false });
+				return load(code);
+			};
+
+			this.load = function() {
+				var code = (location && location.file) ? location.file.read(String) : fetchCode();
+				return load(code);
 			}
 		};
 
