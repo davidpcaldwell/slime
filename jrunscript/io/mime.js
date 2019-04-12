@@ -28,6 +28,7 @@ if ($context.gae) {
 	})();
 }
 
+//	TODO	this should not be jsh-specific, but should move to SLIME Java runtime.
 //	TODO	validate subtype and parts using new validation framework, and share the validation between these implementations
 $exports.Multipart = function(p) {
 	//	Defer the check for the MimeMultipart class until after this is invoked, which hopefully will be after all plugins load, due to Rhino bug(?) in
@@ -185,7 +186,7 @@ $exports.Multipart = function(p) {
 
 $exports.Type = $context.$slime.mime.Type;
 
-$exports.Type.guess = function(p) {
+$exports.Type.guess = $api.deprecate(function(p) {
 	if (p.name) {
 		var _rv = Packages.java.net.URLConnection.getFileNameMap().getContentTypeFor(p.name);
 		if (!_rv) return function(){}();
@@ -193,4 +194,4 @@ $exports.Type.guess = function(p) {
 	} else {
 		throw new TypeError("argument must be a string.");
 	}
-}
+});
