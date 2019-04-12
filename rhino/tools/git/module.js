@@ -335,6 +335,9 @@ var Installation = function(environment) {
 			}
 			if (p.delete) {
 				args.push("-d");
+				if (typeof(p.delete) == "string") {
+					args.push(p.delete);
+				}
 			}
 			if (p.remote) {
 				args.push("-r");

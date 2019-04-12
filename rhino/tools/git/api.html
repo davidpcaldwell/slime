@@ -377,7 +377,10 @@ END LICENSE
 						</li>
 						<li class="function">
 							<div class="name">branch</div>
-							<span>__DESCRIPTION__</span>
+							<span>
+								Analogous to the <code>git branch</code> command. Returns a set of branches if invoked without
+								a specified branch; otherwise, creates a branch.
+							</span>
 							<div class="arguments">
 								<div class="label">Arguments</div>
 								<ol>
@@ -387,9 +390,17 @@ END LICENSE
 										<div class="label">has properties:</div>
 										<ul>
 											<li class="value">
+												<div class="name">all</div>
+												<span class="type">__TYPE__</span>
+												<span>
+													Specifies that all branches (rather than just local branches) should be
+													returned.
+												</span>
+											</li>
+											<li class="value">
 												<div class="name">name</div>
 												<span class="type">string</span>
-												<span>The name of the branch.</span>
+												<span>The name of the branch to create.</span>
 											</li>
 										</ul>
 									</li>
