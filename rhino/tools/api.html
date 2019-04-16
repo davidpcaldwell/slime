@@ -187,6 +187,49 @@ END LICENSE
 					verify(output,"output of Hello.java").is(String(Packages.java.lang.String.format("Hello, World!%n")));
 				</script>
 			</li>
+			<li jsapi:id="Jar" class="constructor">
+				<div class="name">Jar</div>
+				<span>__DESCRIPTION__</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+					</ol>
+				</div>
+				<div class="instances">
+					<div class="label">Instances</div>
+					<span class="type">__TYPE__</span>
+					<span>__DESCRIPTION__</span>
+				</div>
+				<script type="application/x.jsapi#tests">
+					var jar = jsh.file.Searchpath([
+						jsh.shell.java.home.getRelativePath("bin"),
+						jsh.shell.java.home.parent.getRelativePath("bin")
+					]).getCommand("jar");
+
+					var TMP = jsh.shell.TMPDIR.createTemporary({ directory: true });
+					jsh.shell.run({
+						command: jar,
+						arguments: [
+							"cfm", 
+							TMP.getRelativePath("foo.jar"),
+							//	https://docs.oracle.com/javase/8/docs/technotes/guides/jar/jar.html#Manifest-Overview
+							$jsapi.loader.getRelativePath("test/manifest.txt"),
+							"java"
+						],
+						directory: $jsapi.loader.getRelativePath("test").directory
+					});
+					jsh.shell.console("Created to: " + TMP);
+
+					var file = new module.Jar({
+						file: TMP.getFile("foo.jar")
+					});
+
+					jsh.shell.console(JSON.stringify(file.manifest));
+
+					verify(file).manifest.main.Foo.is("Bar");
+
+				</script>
+			</li>
 		</ul>
 	</div>
 </body>

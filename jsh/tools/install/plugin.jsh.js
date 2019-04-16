@@ -231,6 +231,21 @@ plugin({
 			}
 		};
 
+		jsh.shell.tools.postgresql = {
+			jdbc: {
+				install: function() {
+					var to = jsh.shell.jsh.lib.getRelativePath("postgresql.jar");
+					if (!to.file) {
+						var response = new jsh.http.Client().request({
+							//	Requires Java 8
+							url: "https://jdbc.postgresql.org/download/postgresql-42.2.5.jar"
+						});
+						to.write(response.body.stream, { append: false });
+					}					
+				}
+			}
+		}
+
 		//	TODO	probably want to create a jrunscript/io version of this also, or even a loader/ version given that this
 		//			is pure JavaScript
 		jsh.shell.tools.jsyaml = new function() {
