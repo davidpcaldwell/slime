@@ -274,6 +274,7 @@ var NamingAlgorithmSelector = function() {
 };
 
 var Mapper = function(o) {
+	if (!o.types.getCodec) throw new Error("No types.getCodec; types keys = " + Object.keys(o.types));
 	var delegate;
 
 	var array = function(types,columns) {
@@ -355,6 +356,7 @@ var DataSource = function(c) {
 	if (!c.peer) {
 		throw new Error("No 'peer' supplied to DataSource.");
 	}
+	var mapper = new Mapper({ types: c.types });
 	var log = $context.log;
 	//	Creates a function that calls the Query constructor with the return value of the first argument (which is a function)
 	var createQueryFactory = function(Query,argumentsFactoryMethod) {
@@ -546,6 +548,8 @@ var DataSource = function(c) {
 			connection.executeDdl({ sql: ddl });
 			connection.commit();
 		} catch (e) {
+			Packages.java.lang.System.err.println(e);
+			Packages.java.lang.System.err.println(e.stack);
 			connection.rollback();
 		} finally {
 			connection.close();
@@ -555,7 +559,7 @@ var DataSource = function(c) {
 	this.executeStandalone = function(ddl) {
 		try {
 			var connection = new Connection(c.peer.getConnection(), { standalone: true });
-			connection.execute(ddl);
+			connection.execute({ sql: ddl });
 		} finally {
 			connection.close();
 		}
@@ -762,8 +766,10 @@ var Database = function(Catalog) {
 		var name = new Identifier(p.name);
 		if (this.getCatalogs) {
 			//	check for existence
-			var catalogs = this.getCatalogs();
-			return (catalogs.some( function(item) { return item.name.toString() == name.toString() } )) ? new Catalog(name) : null;
+			var catalogs = this.getCatalogs().map(function(name) {
+				return new Identifier(name);
+			});
+			return (catalogs.some( function(item) { return item.toString() == name.toString() } )) ? new Catalog(name) : null;
 		} else {
 			//	cannot check, so just go ahead
 			return new Catalog(name);

@@ -39,7 +39,7 @@ var VARCHAR = function(precision) {
 		this.string = "VARCHAR(" + precision + ")";
 
 		this.decode = function(rs,index) {
-			return String( rs.getString(index+1) );
+			return String( rs.getString(index) );
 		}
 
 		this.cast = function(value) {
@@ -266,7 +266,7 @@ var getDataSource = function(host,port,db,user,password,pool) {
 		ds.password = password;
 		dataSources[dbid] = new $context.DataSource({
 			peer: ds,
-			types: $context.Query(IMPLEMENTATION.TYPES)
+			types: IMPLEMENTATION.TYPES
 		});
 	}
 	return dataSources[dbid];
@@ -560,13 +560,9 @@ var Catalog = function(dbstring,dbsettings) {
 }
 
 var Database = function(p) {
-	if (!p) p = {};
-	if (!p.admin) {
-		p.admin = {
-			user: "postgres",
-			password: "postgres"
-		};
-	}
+	if (!p.host) p.host = "localhost";
+	if (!p.port) p.port = 5432;
+	
 	this.toString = function() {
 		return "PostgreSQL: host=" + p.host + " port=" + p.port;
 	}
@@ -575,22 +571,43 @@ var Database = function(p) {
 		//	TODO	template1? template0?
 		var bootstrapDatasource = getDataSource(p.host,p.port,"postgres",p.admin.user,p.admin.password,false);
 
-		//	TODO	presumably does not work with Catalog update
 		this.getCatalogs = function() {
-			var query = bootstrapDatasource.createMetadataQuery(function(metadata) {
-				return metadata.getCatalogs();
+			//	TODO	the pure JDBC implementation below does not work; JDBC connections are not aware
+			//			of other databases; see https://jdbc.postgresql.org/development/privateapi/org/postgresql/jdbc/PgDatabaseMetaData.html#getCatalogs--
+			// var query = bootstrapDatasource.createMetadataQuery(function(metadata) {
+			// 	return metadata.getCatalogs();
+			// });
+			// var array = query.toArray();
+			// return array.map( function(item) { return new Catalog(item.table_cat); } );
+			var rs = bootstrapDatasource.createQuery("SELECT datname FROM pg_database");
+			var array = rs.toArray();
+			return array.map(function(item) {
+				return { 
+					string: item.datname
+				};
 			});
-			return query.toArray().map( function(item) { return new Catalog(item[0]); } );
 		}
 	}
 
 	var jdbcDatabase = new $context.Database(Catalog(this.toString(),p))
 
-	this.getCatalog = jdbcDatabase.getCatalog;
+	this.getCatalog = function(p) {
+		var parameter = {
+			name: {
+				string: p.name
+			}
+		};
+		return jdbcDatabase.getCatalog.call(this,parameter);
+	};
 
 	this.createCatalog = function(name) {
-		throw new Error("Unimplemented");
-	}
+		//	using standalone because CREATE DATABASE cannot run inside transaction
+		bootstrapDatasource.executeStandalone("CREATE DATABASE " + name);
+	};
+
+	this.dropCatalog = function(name) {
+		bootstrapDatasource.executeStandalone("DROP DATABASE " + name);
+	};
 }
 
 $exports.Database = Database;
