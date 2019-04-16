@@ -11,7 +11,8 @@
 //	Contributor(s):
 //	END LICENSE
 
-var $js = $context.$js;
+var driver = $context.base();
+
 var log = $context.log;
 
 var toValue = function(array) {
@@ -257,14 +258,14 @@ var getDataSource = function(host,port,db,user,password,pool) {
 		//	was for 8.2
 		//	var driver = (pool) ? "Jdbc3PoolingDataSource" : "Jdbc3SimpleDataSource";
 		//	var ds = new Packages.org.postgresql.jdbc3[driver];
-		var driver = (pool) ? "PGPoolingDataSource" : "PGSimpleDataSource";
-		var ds = new Packages.org.postgresql.ds[driver];
+		var driverName = (pool) ? "PGPoolingDataSource" : "PGSimpleDataSource";
+		var ds = new Packages.org.postgresql.ds[driverName];
 		ds.serverName = host;
 		ds.databaseName = db;
 		ds.portNumber = Number($context.api.js.defined(port,5432));
 		ds.user = user;
 		ds.password = password;
-		dataSources[dbid] = new $context.DataSource({
+		dataSources[dbid] = new driver.DataSource({
 			peer: ds,
 			types: IMPLEMENTATION.TYPES
 		});
@@ -590,7 +591,7 @@ var Database = function(p) {
 		}
 	}
 
-	var jdbcDatabase = new $context.Database(Catalog(this.toString(),p))
+	var jdbcDatabase = new driver.Database(Catalog(this.toString(),p))
 
 	this.getCatalog = function(p) {
 		var parameter = {

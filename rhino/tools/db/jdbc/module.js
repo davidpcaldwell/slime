@@ -44,7 +44,13 @@ $api.debug.disableBreakOnExceptionsFor(function() {
 	}
 
 	if (getJavaClass("org.postgresql.ds.PGSimpleDataSource")) {
-		$exports.postgresql = $loader.module("postgresql/module.js",drivers);
+		$exports.postgresql = $loader.module("postgresql/module.js", {
+			api: $context.api,
+			base: function(configuration) {
+				var api = Object.assign({}, $context.api, { core: core });
+				return $loader.file("drivers.js", Object.assign({}, { api: api }, configuration));
+			},
+		});
 	}
 
 	if (getJavaClass("com.mysql.jdbc.Driver")) {
