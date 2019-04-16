@@ -221,7 +221,6 @@ var IMPLEMENTATION = new function() {
 	this.Database = function(dbsettings) {
 		var bootstrapDatasource = getDataSource("postgres", dbsettings.user, dbsettings.password, false);
 
-
 		this.getCatalogs = function() {
 			var query = bootstrapDatasource.createQuery("SELECT datname FROM pg_catalog.pg_database");
 			return query.toArray().map( function(item) { return new Catalog(item[0]); } );
@@ -265,7 +264,10 @@ var getDataSource = function(host,port,db,user,password,pool) {
 		ds.portNumber = Number($context.api.js.defined(port,5432));
 		ds.user = user;
 		ds.password = password;
-		dataSources[dbid] = new $context.DataSource(ds,$context.Query(IMPLEMENTATION.TYPES));
+		dataSources[dbid] = new $context.DataSource({
+			peer: ds,
+			types: $context.Query(IMPLEMENTATION.TYPES)
+		});
 	}
 	return dataSources[dbid];
 }
@@ -558,13 +560,20 @@ var Catalog = function(dbstring,dbsettings) {
 }
 
 var Database = function(p) {
+	if (!p) p = {};
+	if (!p.admin) {
+		p.admin = {
+			user: "postgres",
+			password: "postgres"
+		};
+	}
 	this.toString = function() {
 		return "PostgreSQL: host=" + p.host + " port=" + p.port;
 	}
 
 	if (p.admin) {
 		//	TODO	template1? template0?
-		var bootstrapDatasource = getDataSource(p.host,p.port,"postgres", p.admin.user, p.admin.password, false);
+		var bootstrapDatasource = getDataSource(p.host,p.port,"postgres",p.admin.user,p.admin.password,false);
 
 		//	TODO	presumably does not work with Catalog update
 		this.getCatalogs = function() {

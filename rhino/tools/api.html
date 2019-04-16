@@ -189,16 +189,39 @@ END LICENSE
 			</li>
 			<li jsapi:id="Jar" class="constructor">
 				<div class="name">Jar</div>
-				<span>__DESCRIPTION__</span>
+				<span>Creates an object representing a <a href="https://docs.oracle.com/javase/8/docs/technotes/guides/jar/index.html">JAR file</a>.</span>
 				<div class="arguments">
 					<div class="label">Arguments</div>
 					<ol>
+						<li class="object">
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="value">
+									<div class="name">file</div>
+									<span class="type"><a href="../../rhino/file/api.html">file</a></span>
+									<span>A <a href="https://docs.oracle.com/javase/8/docs/technotes/guides/jar/jar.html">JAR file</a>.</span>
+								</li>
+							</ul>
+						</li>
 					</ol>
 				</div>
 				<div class="instances">
 					<div class="label">Instances</div>
-					<span class="type">__TYPE__</span>
-					<span>__DESCRIPTION__</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="object">
+							<div class="name">manifest</div>
+							<span>The JAR's <a href="https://docs.oracle.com/javase/8/docs/technotes/guides/jar/jar.html#Manifest-Overview">manifest</a>.</span>
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="value">
+									<div class="name">main</div>
+									<span class="type">object</span>
+									<span>A set of name-value pairs representing the main properties in the manifest.</span>
+								</li>
+							</ul>
+						</li>
+					</ul>
 				</div>
 				<script type="application/x.jsapi#tests">
 					var jar = jsh.file.Searchpath([
@@ -218,7 +241,6 @@ END LICENSE
 						],
 						directory: $jsapi.loader.getRelativePath("test").directory
 					});
-					jsh.shell.console("Created to: " + TMP);
 
 					var file = new module.Jar({
 						file: TMP.getFile("foo.jar")
@@ -227,7 +249,6 @@ END LICENSE
 					jsh.shell.console(JSON.stringify(file.manifest));
 
 					verify(file).manifest.main.Foo.is("Bar");
-
 				</script>
 			</li>
 		</ul>

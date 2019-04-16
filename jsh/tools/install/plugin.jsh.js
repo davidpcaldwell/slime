@@ -232,17 +232,30 @@ plugin({
 		};
 
 		jsh.shell.tools.postgresql = {
-			jdbc: {
-				install: function() {
-					var to = jsh.shell.jsh.lib.getRelativePath("postgresql.jar");
-					if (!to.file) {
+			jdbc: new function() {
+				var location = jsh.shell.jsh.lib && jsh.shell.jsh.lib.getRelativePath("postgresql.jar");
+
+				if (location) this.install = function() {
+					if (!this.installed || this.installed.version != "42.2.5") {
 						var response = new jsh.http.Client().request({
 							//	Requires Java 8
 							url: "https://jdbc.postgresql.org/download/postgresql-42.2.5.jar"
 						});
-						to.write(response.body.stream, { append: false });
+						location.write(response.body.stream, { append: false });
 					}					
-				}
+				};
+
+				Object.defineProperty(this, "installed", {
+					get: function() {
+						if (location && location.file) {
+							var jar = new jsh.java.tools.Jar({ file: location.file });
+							var manifest = jar.manifest;
+							return {
+								version: manifest.main["Implementation-Version"]
+							};
+						}
+					}
+				})
 			}
 		}
 

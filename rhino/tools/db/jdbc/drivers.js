@@ -293,6 +293,7 @@ var Mapper = function(o) {
 		}
 		return selector.select({
 			insensitive: function(types,columns) {
+				if (!types.getCodec) throw new Error("No types.getCodec");
 				return function(rs) {
 					var row = {};
 					columns.forEach( function(column,index) {
@@ -351,6 +352,9 @@ var Query = function(o) {
 };
 
 var DataSource = function(c) {
+	if (!c.peer) {
+		throw new Error("No 'peer' supplied to DataSource.");
+	}
 	var log = $context.log;
 	//	Creates a function that calls the Query constructor with the return value of the first argument (which is a function)
 	var createQueryFactory = function(Query,argumentsFactoryMethod) {
@@ -784,7 +788,7 @@ var Identifier = function(p) {
 			return "\"" + p.string + "\"";
 		};
 	} else {
-		throw new Error("Unimplemented: typeof(p) == " + typeof(p));
+		throw new Error("Unimplemented: Identifier with typeof(p) == " + typeof(p));
 	}
 }
 
