@@ -291,9 +291,9 @@ var Catalog = function(dbstring,dbsettings) {
 
 		var getSchemas = function(connection) {
 			return connection.createMetadataQuery( function(metadata) { return metadata.getSchemas() }).toArray()
-				//	postgres violates JDBC standard by omitting second column here
-				.filter( function(item) { return item[1] == name || typeof(item[1] == "undefined") } )
-				.map( function(item) { return new Schema(item[0]) });
+				//	TODO	PostgreSQL returns null for table_catalog; may need to revisit when generalizing to other JDBCs
+				.filter( function(item) { return item.table_catalog == name || typeof(item.table_catalog === null) } )
+				.map( function(item) { return new Schema(item.table_schem) });
 		}
 
 		var getSchema = function(connection,name) {
@@ -513,6 +513,7 @@ var Catalog = function(dbstring,dbsettings) {
 		}
 
 		var Schema = function(name) {
+			if (!name) throw new Error("No name for schema.");
 			this.toString = function() {
 				return name + " in " + catalogToString();
 			}
@@ -603,6 +604,7 @@ var Database = function(p) {
 	this.createCatalog = function(name) {
 		//	using standalone because CREATE DATABASE cannot run inside transaction
 		bootstrapDatasource.executeStandalone("CREATE DATABASE " + name);
+		return this.getCatalog({ name: name });
 	};
 
 	this.dropCatalog = function(name) {

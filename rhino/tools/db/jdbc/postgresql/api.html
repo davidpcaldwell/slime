@@ -41,20 +41,38 @@ END LICENSE
 	<script type="application/x.jsapi#initialize">
 		scope.api = jsh.db.jdbc.postgresql;
 		scope.database = new api.Database({
-			admin: $jsapi.environment.server.admin
+			admin: $jsapi.environment.server.admin,
+			user: $jsapi.environment.server.admin.user,
+			password: $jsapi.environment.server.admin.password
 		});
-		var catalog = scope.database.getCatalog({ name: "slime" });
-		if (catalog) {
-			database.dropCatalog(catalog.name);
+		scope.noCatalog = function() {
+			var catalog = scope.database.getCatalog({ name: "slime" });
+			if (catalog) {
+				database.dropCatalog(catalog.name);
+			}
+		};
+		scope.newCatalog = function() {
+			scope.noCatalog();
+			return scope.database.createCatalog("slime");
 		}
 	</script>
-	<script type="application/x.jsapi#tests">
+	<script jsapi:id="catalog" type="application/x.jsapi#tests">
+		noCatalog();
 		verify(database).getCatalog({ name: "foo" }).is.type("null");
 		verify(database).getCatalog({ name: "slime" }).is.type("null");
 		catalog = database.createCatalog("slime");
 		verify(database).getCatalog({ name: "slime" }).is.type("object");
 		database.dropCatalog("slime");
 		verify(database).getCatalog({ name: "slime" }).is.type("null");
+	</script>
+	<script jsapi:id="schema" type="application/x.jsapi#tests">
+		var catalog = newCatalog();
+		var schemas = catalog.getSchemas();
+		schemas.forEach(function(schema) {
+			jsh.shell.console("Schema: " + schema);
+		});
+		var schema = catalog.getSchema("public");
+		verify(schema).is.type("object");
 	</script>
 </body>
 </html>
