@@ -626,6 +626,18 @@ var DataSource = function(c) {
 }
 
 var Context = function(p) {
+	if (p.ds && !p.connections) {
+		p.connections = new function() {
+			this.get = function() {
+				return p.ds.getConnection();
+			};
+
+			this.release = function(connection) {
+				connection.close();
+			}
+		}		
+	}
+
 	var connection = p.connections.get();
 //	var connection = createConnection();
 //	if (!schema) {
@@ -829,7 +841,7 @@ var Catalog = function(c) {
 		return query.map( function(row) {
 			//	TODO	should parameterize Identifier constructor
 			//	should this filter by table_catalog?
-			return new Schema({ name: row.table_schem });
+			return new Schema({ name: row.table_schem, ds: c.dataSource });
 		}).toArray();
 	};
 
@@ -893,7 +905,7 @@ var Table = function(c) {
 	});
 
 	this.toString = function() {
-		return "Table: " + c.name.toString();
+		return "Table: " + c.name.toString() + " (" + c.type + ")";
 	}
 
 	this.name = c.name.toString();
@@ -960,30 +972,39 @@ var Schema = function(c) {
 
 	this.perform = function(transaction) {
 //		var context = new p.dataSource.SchemaContext(p.name.sql);
-		var context = new c.Context();
+		var context = new Context({ ds: c.ds });
 		return Context.perform(context,transaction);
 	};
 
+	var newTable = (function(row) {
+		return new Table({
+			schema: this,
+			dataSource: c.ds,
+			name: row.table_name,
+			type: row.table_type
+		});
+	}).bind(this)
+
 	this.getTables = function() {
-		return c.dataSource.createMetadataQuery( function(metadata) {
+		return c.ds.createMetadataQuery( function(metadata) {
 			//	TODO	this would not work in a multi-catalog database; would need to also filter on catalog
 			return metadata.getTables(null,c.name.toString(),null,null)
 		} ).map( function(row) {
-			return new c.Table({ schema: this, dataSource: c.dataSource, name: new Identifier({ string: row.table_name })});
+			return newTable(row);
 		}, this ).toArray();
 	};
 
 	this.getTable = function(p) {
 //		var tables = this.getTables();
 		var name = new Identifier(p.name);
-		var candidateTables = c.dataSource.createMetadataQuery( function(metadata) {
+		var candidateTables = c.ds.createMetadataQuery( function(metadata) {
 			//	TODO	this would not work in a multi-catalog database; would need to also filter on catalog
 			return metadata.getTables(null,c.name.toString(),name.toString(),null)
 		} ).toArray();
 		var row = $context.api.js.Array(candidateTables).one(function() {
 			return this.table_name == name.toString();
 		});
-		return (row) ? new c.Table({ schema: this, dataSource: c.dataSource, name: new Identifier({ string: row.table_name })}) : null;
+		return (row) ? new c.Table({ schema: this, dataSource: c.ds, name: row.table_name }) : null;
 //		return new c.Table({ schema: this, dataSource: c.dataSource, name: )
 //		.one( function() {
 //			return row.table_name == name.toString();

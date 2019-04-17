@@ -45,7 +45,7 @@ var TIMESTAMP = new function() {
 	this.string = "TIMESTAMP";
 
 	this.decode = function(rs,index) {
-		return new Date( rs.getTimestamp(index+1).getTime() );
+		return new Date( rs.getTimestamp(index).getTime() );
 	}
 
 	this.cast = function(value) {
@@ -75,7 +75,7 @@ var DATE = new function() {
 	this.string = "DATE";
 
 	this.decode = function(rs,index) {
-		return new Date( rs.getTimestamp(index+1).getTime() );
+		return new Date( rs.getTimestamp(index).getTime() );
 	}
 
 	var toUtc = function(value) {
@@ -93,7 +93,7 @@ var SMALLINT = new function() {
 	this.string = "SMALLINT";
 
 	this.decode = function(rs,index) {
-		return Number( rs.getInt(index+1) );
+		return Number( rs.getInt(index) );
 	}
 
 	this.cast = function(value) {
@@ -105,7 +105,7 @@ var INTEGER = new function() {
 	this.string = "INTEGER";
 
 	this.decode = function(rs,index) {
-		return Number( rs.getInt(index+1) );
+		return Number( rs.getInt(index) );
 	}
 
 	this.cast = function(value) {
@@ -117,7 +117,7 @@ var BIGINT = new function() {
 	this.string = "BIGINT";
 
 	this.decode = function(rs,index) {
-		return Number( rs.getLong(index+1) );
+		return Number( rs.getLong(index) );
 	}
 
 	this.cast = function(value) {
@@ -129,7 +129,7 @@ var DOUBLE = new function() {
 	this.string = "DOUBLE";
 
 	this.decode = function(rs,index) {
-		return Number( rs.getDouble(index+1) );
+		return Number( rs.getDouble(index) );
 	}
 
 	this.cast = function(value) {
@@ -141,7 +141,7 @@ var BOOLEAN = new function() {
 	this.string = "BOOLEAN";
 
 	this.decode = function(rs,index) {
-		return rs.getBoolean(index+1);
+		return rs.getBoolean(index);
 	}
 
 	this.cast = function(value) {
@@ -206,7 +206,7 @@ var IMPLEMENTATION = new function() {
 			} else {
 				return new function() {
 					this.decode = function(rs,index) {
-						return rs.getObject(index+1);
+						return rs.getObject(index);
 					}
 				}
 			}

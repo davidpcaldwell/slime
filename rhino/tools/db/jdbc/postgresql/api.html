@@ -65,14 +65,34 @@ END LICENSE
 		database.dropCatalog("slime");
 		verify(database).getCatalog({ name: "slime" }).is.type("null");
 	</script>
-	<script jsapi:id="schema" type="application/x.jsapi#tests">
-		var catalog = newCatalog();
-		var schemas = catalog.getSchemas();
-		schemas.forEach(function(schema) {
-			jsh.shell.console("Schema: " + schema);
-		});
-		var schema = catalog.getSchema({ name: "public" });
-		verify(schema).is.type("object");
-	</script>
+	<div jsapi:id="schema">
+		<script type="application/x.jsapi#initialize">
+			//	TODO	have to share a catalog, as dropping and re-creating currently leaves connections open. Fix.
+			scope.catalog = newCatalog();
+		</script>
+		<script jsapi:id="admin" type="application/x.jsapi#tests">
+			var schema = catalog.getSchema({ name: "public" });
+			verify(schema).is.type("object");
+			var no = catalog.getSchema({ name: "foo" });
+			verify(no).is(null);
+			//	TODO	create schema
+			//	TODO	drop schema
+		</script>
+		<script jsapi:id="tables" type="application/x.jsapi#tests">
+			catalog.getSchemas().forEach(function(schema) {
+				jsh.shell.console("Schema: " + schema.name);
+			});
+			var pg = catalog.getSchema({ name: "pg_catalog" });
+			var info = catalog.getSchema({ name: "information_schema" });
+			var tables = pg.getTables();
+			tables.forEach(function(table) {
+				jsh.shell.console(table);
+			})
+	//		var schema = catalog.getSchema({ name: "public" });
+	//		verify(schema).is.type("object");
+			//	TODO	create schema
+			//	TODO	drop schema
+		</script>		
+	</div>
 </body>
 </html>
