@@ -11,7 +11,27 @@
 //	Contributor(s):
 //	END LICENSE
 
-var driver = $context.base();
+var driver = $context.base({
+	Identifier: function(p) {
+		if (typeof(p) == "string") {
+			this.toString = function() {
+				return p.toLowerCase();
+			};
+			this.sql = function() {
+				return p;
+			};
+		} else if (typeof(p) == "object" && p.string) {
+			this.toString = function() {
+				return p.string;
+			};
+			this.sql = function() {
+				return "\"" + p.string + "\"";
+			};
+		} else {
+			throw new Error("Unimplemented: Identifier with typeof(p) == " + typeof(p));
+		}		
+	}
+});
 
 var log = $context.log;
 
@@ -561,56 +581,51 @@ var Catalog = function(dbstring,dbsettings) {
 	};
 }
 
-var Database = function(p) {
-	if (!p.host) p.host = "localhost";
-	if (!p.port) p.port = 5432;
+var Database = function(o) {
+	if (!o.host) o.host = "localhost";
+	if (!o.port) o.port = 5432;
 	
 	this.toString = function() {
-		return "PostgreSQL: host=" + p.host + " port=" + p.port;
+		return "PostgreSQL: host=" + o.host + " port=" + o.port;
 	}
 
-	if (p.admin) {
+	if (o.admin) {
 		//	TODO	template1? template0?
-		var bootstrapDatasource = getDataSource(p.host,p.port,"postgres",p.admin.user,p.admin.password,false);
-
-		this.getCatalogs = function() {
-			//	TODO	the pure JDBC implementation below does not work; JDBC connections are not aware
-			//			of other databases; see https://jdbc.postgresql.org/development/privateapi/org/postgresql/jdbc/PgDatabaseMetaData.html#getCatalogs--
-			// var query = bootstrapDatasource.createMetadataQuery(function(metadata) {
-			// 	return metadata.getCatalogs();
-			// });
-			// var array = query.toArray();
-			// return array.map( function(item) { return new Catalog(item.table_cat); } );
-			var rs = bootstrapDatasource.createQuery("SELECT datname FROM pg_database");
-			var array = rs.toArray();
-			return array.map(function(item) {
-				return { 
-					string: item.datname
-				};
-			});
-		}
+		var bootstrapDatasource = getDataSource(o.host,o.port,"postgres",o.admin.user,o.admin.password,false);
 	}
 
-	var jdbcDatabase = new driver.Database(Catalog(this.toString(),p))
+	driver.Database.call(this, new function() {
+		this.catalogs = new function() {
+			this.list = function() {
+				//	TODO	the pure JDBC implementation below does not work; JDBC connections are not aware
+				//			of other databases; see https://jdbc.postgresql.org/development/privateapi/org/postgresql/jdbc/PgDatabaseMetaData.html#getCatalogs--
+				// var query = bootstrapDatasource.createMetadataQuery(function(metadata) {
+				// 	return metadata.getCatalogs();
+				// });
+				// var array = query.toArray();
+				// return array.map( function(item) { return new Catalog(item.table_cat); } );
+				var rs = bootstrapDatasource.createQuery("SELECT datname FROM pg_database");
+				var array = rs.toArray();
+				return array.map(function(item) {
+					return { 
+						name: item.datname
+					};
+				});
+			};
 
-	this.getCatalog = function(p) {
-		var parameter = {
-			name: {
-				string: p.name
+			this.create = function(name) {
+				bootstrapDatasource.executeStandalone("CREATE DATABASE " + name.sql());
+			};
+
+			this.drop = function(name) {
+				bootstrapDatasource.executeStandalone("DROP DATABASE " + name.sql());
 			}
-		};
-		return jdbcDatabase.getCatalog.call(this,parameter);
-	};
 
-	this.createCatalog = function(name) {
-		//	using standalone because CREATE DATABASE cannot run inside transaction
-		bootstrapDatasource.executeStandalone("CREATE DATABASE " + name);
-		return this.getCatalog({ name: name });
-	};
-
-	this.dropCatalog = function(name) {
-		bootstrapDatasource.executeStandalone("DROP DATABASE " + name);
-	};
+			this.DataSource = function(p) {
+				return getDataSource(o.host,o.port,p,o.user,o.password,true);
+			}
+		}
+	});
 }
 
 $exports.Database = Database;

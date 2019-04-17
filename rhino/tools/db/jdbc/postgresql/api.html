@@ -71,7 +71,7 @@ END LICENSE
 		schemas.forEach(function(schema) {
 			jsh.shell.console("Schema: " + schema);
 		});
-		var schema = catalog.getSchema("public");
+		var schema = catalog.getSchema({ name: "public" });
 		verify(schema).is.type("object");
 	</script>
 </body>

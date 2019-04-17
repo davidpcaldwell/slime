@@ -761,23 +761,44 @@ Context.perform = function(context,transaction) {
 
 //	Database methods
 
-var Database = function(Catalog) {
+var Database = function(o) {
+	var newCatalog = function(p) {
+		return new Catalog({
+			name: p.name,
+			dataSource: new o.catalogs.DataSource(p.name)
+		});
+	}
 	this.getCatalog = function(p) {
 		var name = new Identifier(p.name);
-		if (this.getCatalogs) {
+		if (o.catalogs && o.catalogs.list) {
 			//	check for existence
-			var catalogs = this.getCatalogs().map(function(name) {
-				return new Identifier(name);
-			});
-			return (catalogs.some( function(item) { return item.toString() == name.toString() } )) ? new Catalog(name) : null;
+			var catalogs = o.catalogs.list();
+			return (catalogs.some( function(item) { return item.name == name.toString() } )) ? new Catalog({ name: name.toString() }) : null;
 		} else {
 			//	cannot check, so just go ahead
-			return new Catalog(name);
+			return newCatalog({ name: name.toString() });
 		}
 	};
+
+	this.getCatalogs = function() {
+		return o.catalogs.list().map(function(row) {
+			return newCatalog({ name: row.name });
+		});
+	};
+
+	this.createCatalog = function(name) {
+		var identifier = new Identifier(name);
+		o.catalogs.create(identifier);
+		return newCatalog({ name: identifier.toString() });
+	};
+
+	this.dropCatalog = function(name) {
+		var identifier = new Identifier(name);
+		o.catalogs.drop(identifier);
+	}
 };
 
-var Identifier = function(p) {
+var Identifier = ($context.Identifier) ? $context.Identifier : function(p) {
 	if (typeof(p) == "string") {
 		//	TODO	enforce constraints: must begin with a letter and contain only letters, underscore characters (_), and digits
 		this.toString = function() {
@@ -799,13 +820,16 @@ var Identifier = function(p) {
 }
 
 var Catalog = function(c) {
+	this.name = c.name;
+
 	this.getSchemas = function() {
 		var query = c.dataSource.createMetadataQuery(function(_metadata) {
 			return _metadata.getSchemas();
 		});
 		return query.map( function(row) {
 			//	TODO	should parameterize Identifier constructor
-			return new c.Schema({ name: new Identifier({ string: row.table_schem }) });
+			//	should this filter by table_catalog?
+			return new Schema({ name: row.table_schem });
 		}).toArray();
 	};
 
