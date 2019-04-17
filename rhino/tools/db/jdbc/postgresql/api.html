@@ -85,14 +85,22 @@ END LICENSE
 			var pg = catalog.getSchema({ name: "pg_catalog" });
 			var info = catalog.getSchema({ name: "information_schema" });
 			var tables = pg.getTables();
+			verify(tables).length.is.type("number");
 			tables.forEach(function(table) {
 				jsh.shell.console(table);
-			})
-	//		var schema = catalog.getSchema({ name: "public" });
-	//		verify(schema).is.type("object");
-			//	TODO	create schema
-			//	TODO	drop schema
-		</script>		
+			});
+
+			var pg_tables = pg.getTable({ name: "pg_tables" });
+			var columns = pg_tables.getColumns();
+			columns.forEach(function(column) {
+				jsh.shell.console(JSON.stringify(column));
+			});
+
+			var column = pg_tables.getColumn({ name: "tablename" });
+			verify(column).is.type("object");
+			var noColumn = pg_tables.getColumn({ name: "foo" });
+			verify(noColumn).is(null);
+		</script>
 	</div>
 </body>
 </html>

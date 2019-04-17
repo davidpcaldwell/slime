@@ -867,8 +867,6 @@ var Catalog = function(c) {
 
 var Table = function(c) {
 	var columns = {
-		insensitive: {},
-		sensitive: {},
 		array: [],
 		autoincrement: null
 	};
@@ -888,19 +886,37 @@ var Table = function(c) {
 			if (s == "NO") return false;
 		}
 
-		var column = { name: row.column_name, type: type, generated: yesno(row.is_generatedcolumn), autoincrement: yesno(row.is_autoincrement) };
+		var column = { 
+			//	https://docs.oracle.com/javase/8/docs/api/java/sql/DatabaseMetaData.html#getColumns-java.lang.String-java.lang.String-java.lang.String-java.lang.String-
+			//	table_cat
+			//	table_schem
+			//	table_name
+			name: row.column_name, 
+			type: type,
+			//	type_name
+			size: row.column_size,
+			//	buffer_length: unused by JDBC
+			//	digits: row.decimal_digits,
+			//	num_prec_radix
+			//	nullable
+			//	remarks
+			//	column_def: default
+			//	sql_data_type: unused by JDBC
+			//	sql_datetime_sub: unused by JDBC
+			//	char_octet_length
+			//	ordinal_position
+			//	is_nullable
+			//	scope_catalog
+			//	scope_schema
+			//	scope_table
+			//	source_data_type
+			autoincrement: yesno(row.is_autoincrement),
+			generated: yesno(row.is_generatedcolumn)
+		};
+
 		if (column.autoincrement) {
 			columns.autoincrement = column;
 		}
-		if (columns.insensitive) {
-			var lower = row.column_name.toLowerCase();
-			if (!columns.insensitive[lower]) {
-				columns.insensitive[lower] = column;
-			} else {
-				columns.insensitive = null;
-			}
-		}
-		columns.sensitive[row.column_name] = column;
 		columns.array.push(column);
 	});
 
@@ -915,7 +931,13 @@ var Table = function(c) {
 	};
 
 	this.getColumn = function(p) {
-		return columns.sensitive[p.name];
+		var identifier = new Identifier(p.name);
+		for (var i=0; i<columns.array.length; i++) {
+			if (columns.array[i].name == identifier.toString()) {
+				return columns.array[i];
+			}
+		}
+		return null;
 	};
 
 	this.insert = function(data) {
@@ -1004,7 +1026,7 @@ var Schema = function(c) {
 		var row = $context.api.js.Array(candidateTables).one(function() {
 			return this.table_name == name.toString();
 		});
-		return (row) ? new c.Table({ schema: this, dataSource: c.ds, name: row.table_name }) : null;
+		return (row) ? newTable(row) : null;
 //		return new c.Table({ schema: this, dataSource: c.dataSource, name: )
 //		.one( function() {
 //			return row.table_name == name.toString();
