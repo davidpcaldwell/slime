@@ -11,26 +11,28 @@
 //	Contributor(s):
 //	END LICENSE
 
+var Identifier = function(p) {
+	if (typeof(p) == "string") {
+		this.toString = function() {
+			return p.toLowerCase();
+		};
+		this.sql = function() {
+			return p;
+		};
+	} else if (typeof(p) == "object" && p.string) {
+		this.toString = function() {
+			return p.string;
+		};
+		this.sql = function() {
+			return "\"" + p.string + "\"";
+		};
+	} else {
+		throw new Error("Unimplemented: Identifier with typeof(p) == " + typeof(p));
+	}		
+};
+
 var driver = $context.base({
-	Identifier: function(p) {
-		if (typeof(p) == "string") {
-			this.toString = function() {
-				return p.toLowerCase();
-			};
-			this.sql = function() {
-				return p;
-			};
-		} else if (typeof(p) == "object" && p.string) {
-			this.toString = function() {
-				return p.string;
-			};
-			this.sql = function() {
-				return "\"" + p.string + "\"";
-			};
-		} else {
-			throw new Error("Unimplemented: Identifier with typeof(p) == " + typeof(p));
-		}		
-	}
+	Identifier: Identifier
 });
 
 var log = $context.log;
@@ -615,12 +617,12 @@ var Database = function(o) {
 				});
 			};
 
-			this.create = function(name) {
-				bootstrapDatasource.executeStandalone("CREATE DATABASE " + name.sql());
+			this.create = function(p) {
+				bootstrapDatasource.executeStandalone("CREATE DATABASE " + p.name.sql());
 			};
 
-			this.drop = function(name) {
-				bootstrapDatasource.executeStandalone("DROP DATABASE " + name.sql());
+			this.drop = function(p) {
+				bootstrapDatasource.executeStandalone("DROP DATABASE " + p.name.sql());
 			}
 
 			this.DataSource = function(p) {

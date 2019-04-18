@@ -773,43 +773,6 @@ Context.perform = function(context,transaction) {
 
 //	Database methods
 
-var Database = function(o) {
-	var newCatalog = function(p) {
-		return new Catalog({
-			name: p.name,
-			dataSource: new o.catalogs.DataSource(p.name)
-		});
-	}
-	this.getCatalog = function(p) {
-		var name = new Identifier(p.name);
-		if (o.catalogs && o.catalogs.list) {
-			//	check for existence
-			var catalogs = o.catalogs.list();
-			return (catalogs.some( function(item) { return item.name == name.toString() } )) ? newCatalog({ name: name.toString() }) : null;
-		} else {
-			//	cannot check, so just go ahead
-			return newCatalog({ name: name.toString() });
-		}
-	};
-
-	this.getCatalogs = function() {
-		return o.catalogs.list().map(function(row) {
-			return newCatalog({ name: row.name });
-		});
-	};
-
-	this.createCatalog = function(name) {
-		var identifier = new Identifier(name);
-		o.catalogs.create(identifier);
-		return newCatalog({ name: identifier.toString() });
-	};
-
-	this.dropCatalog = function(name) {
-		var identifier = new Identifier(name);
-		o.catalogs.drop(identifier);
-	}
-};
-
 var Identifier = ($context.Identifier) ? $context.Identifier : function(p) {
 	if (typeof(p) == "string") {
 		//	TODO	enforce constraints: must begin with a letter and contain only letters, underscore characters (_), and digits
@@ -830,54 +793,6 @@ var Identifier = ($context.Identifier) ? $context.Identifier : function(p) {
 		throw new Error("Unimplemented: Identifier with typeof(p) == " + typeof(p));
 	}
 }
-
-var Catalog = function(c) {
-	if (!c.dataSource) {
-		throw new TypeError("Missing dataSource property");
-	}
-	this.name = c.name;
-
-	this.getSchemas = function() {
-		var query = c.dataSource.createMetadataQuery(function(_metadata) {
-			return _metadata.getSchemas();
-		});
-		return query.map( function(row) {
-			//	TODO	should parameterize Identifier constructor
-			//	should this filter by table_catalog?
-			return new Schema({ name: row.table_schem, ds: c.dataSource });
-		}).toArray();
-	};
-
-	this.getSchema = function(p) {
-		var name = new Identifier(p.name);
-		var rv = $context.api.js.Array.choose(this.getSchemas(), function(schema) {
-			return schema.name == name.toString();
-		});
-		if (p.descriptor) {
-			if (!rv) {
-				rv = this.createSchema(p);
-			}
-			p.descriptor.forEach(function(update) {
-				if (!update.applied(rv)) {
-					rv.perform(update.apply);
-				}
-			});
-		}
-		if (!rv) return null;
-		return rv;
-	};
-
-	this.createSchema = function(p) {
-		var name = new Identifier(p.name);
-		c.dataSource.executeDdl("CREATE SCHEMA " + name.sql());
-		return this.getSchema({ name: p.name });
-	};
-
-	this.dropSchema = function(p) {
-		var name = new Identifier(p.name);
-		c.dataSource.executeDdl("DROP SCHEMA " + name.sql() + " CASCADE");
-	}
-};
 
 var Table = function(c) {
 	var columns = {
@@ -1073,6 +988,92 @@ var Schema = function(c) {
 //		return (rv) ? rv : null;
 	}
 }
+
+var Catalog = function(c) {
+	if (!c.dataSource) {
+		throw new TypeError("Missing dataSource property");
+	}
+	this.name = c.name;
+
+	this.getSchemas = function() {
+		var query = c.dataSource.createMetadataQuery(function(_metadata) {
+			return _metadata.getSchemas();
+		});
+		return query.map( function(row) {
+			//	TODO	should parameterize Identifier constructor
+			//	should this filter by table_catalog?
+			return new Schema({ name: row.table_schem, ds: c.dataSource });
+		}).toArray();
+	};
+
+	this.getSchema = function(p) {
+		var name = new Identifier(p.name);
+		var rv = $context.api.js.Array.choose(this.getSchemas(), function(schema) {
+			return schema.name == name.toString();
+		});
+		if (p.descriptor) {
+			if (!rv) {
+				rv = this.createSchema(p);
+			}
+			p.descriptor.forEach(function(update) {
+				if (!update.applied(rv)) {
+					rv.perform(update.apply);
+				}
+			});
+		}
+		if (!rv) return null;
+		return rv;
+	};
+
+	this.createSchema = function(p) {
+		var name = new Identifier(p.name);
+		c.dataSource.executeDdl("CREATE SCHEMA " + name.sql());
+		return this.getSchema({ name: p.name });
+	};
+
+	this.dropSchema = function(p) {
+		var name = new Identifier(p.name);
+		c.dataSource.executeDdl("DROP SCHEMA " + name.sql() + " CASCADE");
+	}
+};
+
+var Database = function(o) {
+	var newCatalog = function(p) {
+		return new Catalog({
+			name: p.name,
+			dataSource: new o.catalogs.DataSource(p.name)
+		});
+	};
+
+	this.getCatalog = function(p) {
+		var name = new Identifier(p.name);
+		if (o.catalogs && o.catalogs.list) {
+			//	check for existence
+			var catalogs = o.catalogs.list();
+			return (catalogs.some( function(item) { return item.name == name.toString() } )) ? newCatalog({ name: name.toString() }) : null;
+		} else {
+			//	cannot check, so just go ahead
+			return newCatalog({ name: name.toString() });
+		}
+	};
+
+	this.getCatalogs = function() {
+		return o.catalogs.list().map(function(row) {
+			return newCatalog({ name: row.name });
+		});
+	};
+
+	this.createCatalog = function(p) {
+		var identifier = new Identifier(p.name);
+		o.catalogs.create({ name: identifier });
+		return newCatalog({ name: identifier.toString() });
+	};
+
+	this.dropCatalog = function(p) {
+		var identifier = new Identifier(p.name);
+		o.catalogs.drop({ name: identifier });
+	}
+};
 
 $exports.api = $context.api;
 $exports.types = types;

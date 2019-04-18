@@ -46,12 +46,12 @@ END LICENSE
 		scope.noCatalog = function() {
 			var catalog = scope.database.getCatalog({ name: "slime" });
 			if (catalog) {
-				database.dropCatalog(catalog.name);
+				database.dropCatalog({ name: catalog.name });
 			}
 		};
 		scope.newCatalog = function() {
 			scope.noCatalog();
-			return scope.database.createCatalog("slime");
+			return scope.database.createCatalog({ name: "slime" });
 		}
 	</script>
 	<script jsapi:id="catalog" type="application/x.jsapi#tests">
@@ -59,9 +59,9 @@ END LICENSE
 		verify(database).getCatalog({ name: "foo" }).is.type("null");
 		verify(database).getCatalog({ name: "slime" }).is.type("null");
 		//	TODO	argument should be object
-		catalog = database.createCatalog("slime");
+		catalog = database.createCatalog({ name: "slime" });
 		verify(database).getCatalog({ name: "slime" }).is.type("object");
-		database.dropCatalog("slime");
+		database.dropCatalog({ name: "slime" });
 		verify(database).getCatalog({ name: "slime" }).is.type("null");
 	</script>
 	<div jsapi:id="schema">
