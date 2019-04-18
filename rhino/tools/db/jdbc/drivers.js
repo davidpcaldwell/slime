@@ -881,7 +881,7 @@ var Table = function(c) {
 		return metadata.getPrimaryKeys(null,c.schema.name,c.name);
 	}).toArray().sort(function(a,b) {
 		return a.key_seq - b.key_seq;
-	}).forEach(function(row) {
+	}).map(function(row) {
 		//	table_cat
 		//	table_schem
 		//	table_name

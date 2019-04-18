@@ -136,7 +136,7 @@ plugin({
 plugin({
 	isReady: function() {
 		//	TODO	cannot load postgresql driver under Nashorn presently; uses E4X
-		return jsh.shell && jsh.shell.jsh && jsh.shell.jsh.lib && String(Packages.java.lang.System.getProperty("jsh.engine")) == "rhino";
+		return jsh.shell && jsh.shell.jsh && jsh.shell.jsh.lib /*&& String(Packages.java.lang.System.getProperty("jsh.engine")) == "rhino"*/;
 	},
 	load: function() {
 		var postgresql = jsh.shell.jsh.lib.getRelativePath("postgresql.jar");
