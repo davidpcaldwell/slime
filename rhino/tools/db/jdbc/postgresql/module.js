@@ -592,6 +592,8 @@ var Database = function(o) {
 	if (o.admin) {
 		//	TODO	template1? template0?
 		var bootstrapDatasource = getDataSource(o.host,o.port,"postgres",o.admin.user,o.admin.password,false);
+		if (!o.user) o.user = o.admin.user;
+		if (!o.password) o.password = o.admin.password;
 	}
 
 	driver.Database.call(this, new function() {

@@ -785,7 +785,7 @@ var Database = function(o) {
 		if (o.catalogs && o.catalogs.list) {
 			//	check for existence
 			var catalogs = o.catalogs.list();
-			return (catalogs.some( function(item) { return item.name == name.toString() } )) ? new Catalog({ name: name.toString() }) : null;
+			return (catalogs.some( function(item) { return item.name == name.toString() } )) ? newCatalog({ name: name.toString() }) : null;
 		} else {
 			//	cannot check, so just go ahead
 			return newCatalog({ name: name.toString() });
@@ -832,6 +832,9 @@ var Identifier = ($context.Identifier) ? $context.Identifier : function(p) {
 }
 
 var Catalog = function(c) {
+	if (!c.dataSource) {
+		throw new TypeError("Missing dataSource property");
+	}
 	this.name = c.name;
 
 	this.getSchemas = function() {
@@ -863,6 +866,17 @@ var Catalog = function(c) {
 		if (!rv) return null;
 		return rv;
 	};
+
+	this.createSchema = function(p) {
+		var name = new Identifier(p.name);
+		c.dataSource.executeDdl("CREATE SCHEMA " + name.sql());
+		return this.getSchema({ name: p.name });
+	};
+
+	this.dropSchema = function(p) {
+		var name = new Identifier(p.name);
+		c.dataSource.executeDdl("DROP SCHEMA " + name.sql() + " CASCADE");
+	}
 };
 
 var Table = function(c) {
@@ -898,14 +912,17 @@ var Table = function(c) {
 			//	buffer_length: unused by JDBC
 			//	digits: row.decimal_digits,
 			//	num_prec_radix
-			//	nullable
+			//	nullable (see is_nullable)
 			//	remarks
 			//	column_def: default
 			//	sql_data_type: unused by JDBC
 			//	sql_datetime_sub: unused by JDBC
 			//	char_octet_length
 			//	ordinal_position
-			//	is_nullable
+			nullable: (function(value) {
+				if (value == "YES") return true;
+				if (value == "NO") return false;
+			})(row.is_nullable),
 			//	scope_catalog
 			//	scope_schema
 			//	scope_table
@@ -913,6 +930,11 @@ var Table = function(c) {
 			autoincrement: yesno(row.is_autoincrement),
 			generated: yesno(row.is_generatedcolumn)
 		};
+
+		column.toString = function() {
+			var nullable = (this.nullable) ? " NULL" : " NOT NULL";
+			return this.name + " " + this.type.string + nullable;
+		}
 
 		if (column.autoincrement) {
 			columns.autoincrement = column;
@@ -939,6 +961,19 @@ var Table = function(c) {
 		}
 		return null;
 	};
+
+	this.primaryKey = c.dataSource.createMetadataQuery(function(metadata) {
+		return metadata.getPrimaryKeys(null,c.schema.name,c.name);
+	}).toArray().sort(function(a,b) {
+		return a.key_seq - b.key_seq;
+	}).forEach(function(row) {
+		//	table_cat
+		//	table_schem
+		//	table_name
+		return this.getColumn({ name: row.column_name });
+		//	key_seq: used to order key
+		//	pk_name
+	},this);
 
 	this.insert = function(data) {
 		//	TODO	what should be done if property values are undefined?

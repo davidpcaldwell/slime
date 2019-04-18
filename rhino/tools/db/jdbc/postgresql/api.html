@@ -41,9 +41,7 @@ END LICENSE
 	<script type="application/x.jsapi#initialize">
 		scope.api = jsh.db.jdbc.postgresql;
 		scope.database = new api.Database({
-			admin: $jsapi.environment.server.admin,
-			user: $jsapi.environment.server.admin.user,
-			password: $jsapi.environment.server.admin.password
+			admin: $jsapi.environment.server.admin
 		});
 		scope.noCatalog = function() {
 			var catalog = scope.database.getCatalog({ name: "slime" });
@@ -60,6 +58,7 @@ END LICENSE
 		noCatalog();
 		verify(database).getCatalog({ name: "foo" }).is.type("null");
 		verify(database).getCatalog({ name: "slime" }).is.type("null");
+		//	TODO	argument should be object
 		catalog = database.createCatalog("slime");
 		verify(database).getCatalog({ name: "slime" }).is.type("object");
 		database.dropCatalog("slime");
@@ -73,10 +72,16 @@ END LICENSE
 		<script jsapi:id="admin" type="application/x.jsapi#tests">
 			var schema = catalog.getSchema({ name: "public" });
 			verify(schema).is.type("object");
+
 			var no = catalog.getSchema({ name: "foo" });
 			verify(no).is(null);
-			//	TODO	create schema
-			//	TODO	drop schema
+
+			verify(catalog).getSchema({ name: "s" }).is(null);
+			catalog.createSchema({ name: "s" });
+			verify(catalog).getSchema({ name: "s" }).is.type("object");
+
+			catalog.dropSchema({ name: "s" });
+			verify(catalog).getSchema({ name: "s" }).is(null);			
 		</script>
 		<script jsapi:id="tables" type="application/x.jsapi#tests">
 			catalog.getSchemas().forEach(function(schema) {
@@ -101,6 +106,11 @@ END LICENSE
 			var noColumn = pg_tables.getColumn({ name: "foo" });
 			verify(noColumn).is(null);
 		</script>
+		<div jsapi:id="table">
+			<script type="application/x.jsapi#tests">
+
+			</script>
+		</div>
 	</div>
 </body>
 </html>
