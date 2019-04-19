@@ -716,7 +716,6 @@ END LICENSE
 								<div class="label">Arguments</div>
 								<ol>
 									<li class="object">
-										<div class="name">__NAME__</div>
 										<span>__DESCRIPTION__</span>
 										<div class="label">has properties:</div>
 										<ul>
@@ -726,30 +725,70 @@ END LICENSE
 												<div class="arguments">
 													<div class="label">Arguments</div>
 													<ol>
+														<li class="value">
+															<span class="type">__TYPE__</span>
+															<span>An element to group.</span>
+														</li>
 													</ol>
 												</div>
 												<div class="returns">
 													<div class="label">Returns</div>
 													<span class="type">__TYPE__</span>
-													<span>__DESCRIPTION__</span>
+													<span>A group.</span>
 												</div>
 											</li>
 											<li class="value">
 												<div class="name">groups</div>
 												<span class="type">__TYPE__</span>
-												<span>__DESCRIPTION__</span>
+												<span>
+													A set of groups to use in the output. Note that the <code>group</code> function
+													still is responsible for grouping, so if it returns groups not in this set,
+													they will be included in the output. This value is for the purpose of
+													<em>guaranteeing</em> certain elements will be returned (even with empty lists
+													or zero counts).
+												</span>
 											</li>
 											<li class="object">
 												<div class="name">codec</div>
-												<span>__DESCRIPTION__</span>
+												<span>
+													(optional)
+												</span>
 												<div class="label">has properties:</div>
 												<ul>
+													<li class="function">
+														<div class="name">encode</div>
+														<span>__DESCRIPTION__</span>
+														<div class="arguments">
+															<div class="label">Arguments</div>
+															<ol>
+															</ol>
+														</div>
+														<div class="returns">
+															<div class="label">Returns</div>
+															<span class="type">string</span>
+															<span>A distinct string identifying the given group.</span>
+														</div>
+													</li>
+													<li class="function">
+														<div class="name">decode</div>
+														<span>__DESCRIPTION__</span>
+														<div class="arguments">
+															<div class="label">Arguments</div>
+															<ol>
+															</ol>
+														</div>
+														<div class="returns">
+															<div class="label">Returns</div>
+															<span class="type">__TYPE__</span>
+															<span>__DESCRIPTION__</span>
+														</div>
+													</li>
 												</ul>
 											</li>
 											<li class="value">
 												<div class="name">array</div>
-												<span class="type">__TYPE__</span>
-												<span>__DESCRIPTION__</span>
+												<span class="type">Array</span>
+												<span>A set of elements to group.</span>
 											</li>
 											<li class="value">
 												<div class="name">count</div>
