@@ -849,6 +849,165 @@ END LICENSE
 								</ul>
 							</div>
 						</li>
+						<li class="function">
+							<div class="name">match</div>
+							<span>
+								A function that operates on two lists, called <code>left</code> and <code>right</code>, pertaining
+								to a common underlying set. Callers specify a <code>matches</code> function that can determine
+								which elements on each side <dfn>match</dfn>, or pertain to the same logical element in the set.
+								The method will identify which elements from each list match, and which from each list remain
+								unmatched after searching for matches. The results will be returned; optionally, a callback can
+								be invoked for each element based on the result for that element.
+							</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="object">
+										<div class="label">has properties:</div>
+										<ul>
+											<li class="value">
+												<div class="name">left</div>
+												<span class="type">__TYPE__</span>
+												<span>__DESCRIPTION__</span>
+											</li>
+											<li class="value">
+												<div class="name">right</div>
+												<span class="type">__TYPE__</span>
+												<span>__DESCRIPTION__</span>
+											</li>
+											<li class="function">
+												<div class="name">matches</div>
+												<span>__DESCRIPTION__</span>
+												<div class="arguments">
+													<div class="label">Arguments</div>
+													<ol>
+														<li class="value">
+															<span class="type">__TYPE__</span>
+															<span>An element from <code>left</code>.</span>
+														</li>
+														<li class="value">
+															<span class="type">__TYPE__</span>
+															<span>An element from <code>right</code>.</span>
+														</li>
+													</ol>
+												</div>
+												<div class="returns">
+													<div class="label">Returns</div>
+													<span class="type">boolean</span>
+													<span>
+														<code>true</code> if the two elements <dfn>match</dfn>, that is,
+														pertain to the same element in the underlying set.
+													</span>
+												</div>
+											</li>
+											<li class="object">
+												<div class="name">unmatched</div>
+												<span>__DESCRIPTION__</span>
+												<div class="label">has properties:</div>
+												<ul>
+													<li class="function">
+														<div class="name">left</div>
+														<span>
+															A callback invoked for each item from <code>left</code> that
+															does not match.
+														</span>
+														<div class="arguments">
+															<div class="label">Arguments</div>
+															<ol>
+																<li class="value">
+																	<span class="type">__TYPE__</span>
+																	<span>The element from <code>left</code>.</span>
+																</li>
+															</ol>
+														</div>
+													</li>
+													<li class="function">
+														<div class="name">right</div>
+														<span>
+															A callback invoked for each item from <code>right</code> that
+															does not match.
+														</span>
+														<div class="arguments">
+															<div class="label">Arguments</div>
+															<ol>
+																<li class="value">
+																	<span class="type">__TYPE__</span>
+																	<span>The element from <code>right</code>.</span>
+																</li>
+															</ol>
+														</div>
+													</li>
+												</ul>
+											</li>
+											<li class="function">
+												<div class="name">matched</div>
+												<span>A callback invoked for each pair of items that matches.</span>
+												<div class="arguments">
+													<div class="label">Arguments</div>
+													<ol>
+														<li class="value">
+															<span class="type">__TYPE__</span>
+															<span>An element from <code>left</code>.</span>
+														</li>
+														<li class="value">
+															<span class="type">__TYPE__</span>
+															<span>An element from <code>right</code>.</span>
+														</li>
+													</ol>
+												</div>
+											</li>
+										</ul>
+									</li>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+								<div class="label">has properties:</div>
+								<ul>
+								</ul>
+							</div>
+							<script type="application/x.jsapi#tests">
+								var left = ["a", "b"];
+								var right = ["B", "C"];
+								var matches = function(a,b) {
+									return a.toLowerCase() == b.toLowerCase();
+								};
+
+								var recordingFunction = function() {
+									var rv = function() {
+										arguments.callee.received.push(Array.prototype.slice.call(arguments));
+									};
+									rv.received = [];
+									return rv;
+								};
+
+								var onLeft = recordingFunction();
+								var onRight = recordingFunction();
+								var onMatch = recordingFunction();
+
+								var result = api.Iterable.match({
+									left: left,
+									right: right,
+									matches: matches,
+									unmatched: {
+										left: onLeft,
+										right: onRight
+									},
+									matched: onMatch
+								});
+								verify(result).unmatched.left.length.is(1);
+								verify(result).unmatched.right.length.is(1);
+								verify(result).matched.length.is(1);
+								verify(onLeft.received).length.is(1);
+								verify(onLeft.received)[0].length.is(1);
+								verify(onRight.received).length.is(1);
+								verify(onRight.received)[0].length.is(1);
+								verify(onMatch.received).length.is(1);
+								verify(onMatch.received)[0].length.is(2);
+							</script>
+						</li>
 					</ul>
 				</li>
 				<li class="function">
