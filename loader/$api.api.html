@@ -1005,7 +1005,9 @@ END LICENSE
 								verify(onRight.received).length.is(1);
 								verify(onRight.received)[0].length.is(1);
 								verify(onMatch.received).length.is(1);
-								verify(onMatch.received)[0].length.is(2);
+								verify(onMatch.received)[0].length.is(1);
+								verify(onMatch.received)[0][0].left.is.type("string");
+								verify(onMatch.received)[0][0].right.is.type("string");
 							</script>
 						</li>
 					</ul>

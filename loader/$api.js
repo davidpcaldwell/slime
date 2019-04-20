@@ -772,7 +772,8 @@
 				match = p.matches(first[i],secondRemain[j]);
 				if (match) {
 					pairs.push({
-						elements: [first[i],secondRemain[j]]
+						left: first[i],
+						right: secondRemain[j]
 					});
 					secondRemain.splice(j,1);
 				}
@@ -790,7 +791,7 @@
 			});
 		}
 		if (p.matched) pairs.forEach(function(pair) {
-			p.matched(pair.elements[0],pair.elements[1]);
+			p.matched(pair);
 		});
 		return {
 			unmatched: {
