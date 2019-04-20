@@ -466,6 +466,48 @@ END LICENSE
 					<span>__DESCRIPTION__</span>
 					<div class="label">has properties:</div>
 					<ul>
+						<li class="function">
+							<div class="name">memoized</div>
+							<span>
+								A function that takes a function as an argument and returns a memoized version of that function.
+								Memoized arguments currently cannot be invoked as methods (i.e., with a <code>this</code> value)
+								and also may not receive arguments.
+							</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="value">
+										<span class="type">function</span>
+										<span>A function to memoize</span>
+									</li>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">function</span>
+								<span>A memoized function.</span>
+							</div>
+							<script type="application/x.jsapi#tests">
+								var counter = function() {
+									if (typeof(arguments.callee.calls) == "undefined") arguments.callee.calls = 0;
+									arguments.callee.calls++;
+									return 42;
+								};
+
+								verify(counter.calls).is(void(0));
+								var memoized = api.Function.memoized(counter);
+								verify(counter.calls).is(void(0));
+								var result = memoized();
+								verify(result).is(42);
+								verify(counter.calls).is(1);
+								var result2 = memoized();
+								verify(result2).is(42);
+								verify(counter.calls).is(1);
+								var result3 = counter();
+								verify(result3).is(42);
+								verify(counter.calls).is(2);
+							</script>
+						</li>
 						<li class="object">
 							<div class="name">argument</div>
 							<span>__DESCRIPTION__</span>

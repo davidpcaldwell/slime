@@ -279,6 +279,19 @@
 
 		return rv;
 	};
+	$exports.Function.memoized = function(f) {
+		var returns;
+		var global = (function() { return this; });
+
+		return function() {
+			if (arguments.length > 0) throw new TypeError("Memoized functions may not have arguments.");
+			//	Ignore 'this'
+			if (!returns) {
+				returns = { value: f() };
+			}
+			return returns.value;
+		};
+	};
 	$exports.Function.Basic = function(f) {
 		return function() {
 			try {

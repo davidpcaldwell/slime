@@ -31,14 +31,15 @@ END LICENSE
 		<!-- TODO: link to loader/api/api.html describing api.html format -->
 		<div>
 			<h1>Browser test suites</h1>
-			A browser test suite is a script that adds test parts to a provided <code>suite</code> objects.
+			A browser test suite is a script that adds test parts to a provided <code>suite</code> objects. These parts can be
+			created from HTML definition files via <code>getPartDescriptor()</code>.
 			A test suite is executed with the following scope:
 			<div class="label">has properties:</div>
 			<ul>
 				<li class="value">
 					<div class="name">suite</div>
-					<span class="type">__TYPE__</span>
-					<span>__DESCRIPTION__</span>
+					<span class="type"><a href="../../../loader/api/unit.api.html">Suite</a></span>
+					<span>A <code>Suite</code> object to which this suite should add parts.</span>
 				</li>
 				<li class="object">
 					<div class="name">parameters</div>
@@ -47,30 +48,29 @@ END LICENSE
 					<ul>
 						<li class="value">
 							<div class="name">form</div>
-							<span class="type">__TYPE__</span>
-							<span>__DESCRIPTION__</span>
+							<span class="type"><a href="../../../js/web/api.html">js/web Form</a></span>
+							<span>A <code>Form</code> created using the query parameters supplied to the suite.</span>
 						</li>
 					</ul>
 				</li>
 				<li class="function">
 					<div class="name">getPartDescriptor</div>
-					<span>__DESCRIPTION__</span>
+					<span>Creates a suite descriptor from an HTML definition file, optionally with a specified environment.</span>
 					<div class="arguments">
 						<div class="label">Arguments</div>
 						<ol>
 							<li class="object">
-								<span>__DESCRIPTION__</span>
 								<div class="label">has properties:</div>
 								<ul>
 									<li class="value">
 										<div class="name">definition</div>
-										<span class="type">__TYPE__</span>
+										<span class="type">string</span>
 										<span>The path to a <a href="../../../loader/api/api.html">definition</a> file.</span>
 									</li>
 									<li class="value">
 										<div class="name">environment</div>
-										<span class="type">__TYPE__</span>
-										<span>__DESCRIPTION__</span>
+										<span class="type">object</span>
+										<span>The values available via <code>$jsapi.environment</code>.</span>
 									</li>
 									<!-- TODO: below is untested, so undocumented -->
 									<!--
@@ -86,7 +86,7 @@ END LICENSE
 					</div>
 					<div class="returns">
 						<div class="label">Returns</div>
-						<span class="type">__TYPE__</span>
+						<span class="type"><a href="../../../loader/api/unit.api.html#types.Suite.definition">Suite definition</a></span>
 						<span>__DESCRIPTION__</span>
 					</div>
 				</li>
