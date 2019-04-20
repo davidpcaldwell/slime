@@ -231,6 +231,34 @@ plugin({
 			}
 		};
 
+		jsh.shell.tools.postgresql = {
+			jdbc: new function() {
+				var location = jsh.shell.jsh.lib && jsh.shell.jsh.lib.getRelativePath("postgresql.jar");
+
+				if (location) this.install = function() {
+					if (!this.installed || this.installed.version != "42.2.5") {
+						var response = new jsh.http.Client().request({
+							//	Requires Java 8
+							url: "https://jdbc.postgresql.org/download/postgresql-42.2.5.jar"
+						});
+						location.write(response.body.stream, { append: false });
+					}					
+				};
+
+				Object.defineProperty(this, "installed", {
+					get: function() {
+						if (location && location.file) {
+							var jar = new jsh.java.tools.Jar({ file: location.file });
+							var manifest = jar.manifest;
+							return {
+								version: manifest.main["Implementation-Version"]
+							};
+						}
+					}
+				})
+			}
+		}
+
 		//	TODO	probably want to create a jrunscript/io version of this also, or even a loader/ version given that this
 		//			is pure JavaScript
 		jsh.shell.tools.jsyaml = new function() {
@@ -243,20 +271,26 @@ plugin({
 						return response.body.stream.character().asString();
 					}
 				});
-			}
-
-			this.install = function() {
-				if (!location) throw new Error("Cannot install js-yaml into this shell.");
-				location.write(fetchCode(), { append: false });				
 			};
 
-			this.load = function() {
-				var code = (location && location.file) ? location.file.read(String) : fetchCode();
+			var load = function(code) {
 				return (function() {
 					var global = {};
 					var rv = eval(code);
 					return global.jsyaml;
 				})();
+			}
+
+			this.install = function() {
+				if (!location) throw new Error("Cannot install js-yaml into this shell.");
+				var code = fetchCode();
+				location.write(code, { append: false });
+				return load(code);
+			};
+
+			this.load = function() {
+				var code = (location && location.file) ? location.file.read(String) : fetchCode();
+				return load(code);
 			}
 		};
 

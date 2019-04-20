@@ -196,8 +196,9 @@ var spi = function(p) {
 	}
 
 	var getStatus = function($urlConnection) {
-		if ($urlConnection.getResponseCode() == -1 || $urlConnection.getResponseMessage() == null) {
-			throw new Error("Response was not valid HTTP.");
+		if ($urlConnection.getResponseCode() == -1) {
+			//	used to check for response message here, but at least one extant HTTP server (Stash) omits the OK
+			throw new Error("Response was not valid HTTP: " + $urlConnection);
 		}
 		var rv = {
 			code: Number($urlConnection.getResponseCode()),
@@ -238,6 +239,9 @@ var spi = function(p) {
 		if (false) {
 		} else if (p.body.stream) {
 			$context.api.io.Streams.binary.copy(p.body.stream,$urlConnection.getOutputStream());
+			$urlConnection.getOutputStream().close();
+		} else if (p.body.read && p.body.read.binary) {
+			$context.api.io.Streams.binary.copy(p.body.read.binary(),$urlConnection.getOutputStream());
 			$urlConnection.getOutputStream().close();
 		} else if (typeof(p.body.string) != "undefined") {
 			var writer = $context.api.io.java.adapt($urlConnection.getOutputStream()).character();
@@ -512,6 +516,13 @@ $exports.Body = new function() {
 	}
 
 	this.Form = function(p) {
+		var TYPE = "application/x-www-form-urlencoded";
+		if (p.form) {
+			return {
+				type: TYPE,
+				string: p.form.getUrlencoded()
+			}
+		}
 		return {
 			type: "application/x-www-form-urlencoded",
 			string: QueryString.encode(new UrlQuery(p))
