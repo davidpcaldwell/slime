@@ -292,6 +292,29 @@
 			return returns.value;
 		};
 	};
+	$exports.Function.postprocessing = function(f,postprocessor) {
+		//	TODO	may want to think through whether to give postprocessor the ability to handle exceptions
+		var UNDEFINED = arguments.callee.UNDEFINED;
+		var rv = function() {
+			var returned = f.apply(this,arguments);
+			var rv = postprocessor({
+				target: this,
+				arguments: Array.prototype.slice.call(arguments),
+				returned: returned
+			});
+			if (typeof(rv) != "undefined") {
+				returned = (rv == UNDEFINED) ? void(0) : rv;
+			}
+			return returned;
+		};
+		for (var x in f) {
+			//  TODO    check to see what these properties are
+			rv[x] = f[x];
+		}
+		//  TODO    consider altering rv.toString()
+		return rv;
+	};
+	$exports.Function.postprocessing.UNDEFINED = {};
 	$exports.Function.Basic = function(f) {
 		return function() {
 			try {

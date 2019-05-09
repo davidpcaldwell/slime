@@ -464,6 +464,47 @@ END LICENSE
 				<li class="object">
 					<div class="name">Function</div>
 					<span>__DESCRIPTION__</span>
+					<!--	TODO	Uncommenting this block causes tests to fail in definition page for some reason
+					<div class="type">
+						<a class="type" name="types.postprocessor">postprocessor</a>
+						<span>A function that is meant to process the results of an underlying function call.</span>
+						<div class="function">
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="object">
+										<div class="name">__NAME__</div>
+										<span>__DESCRIPTION__</span>
+										<div class="label">has properties:</div>
+										<ul>
+											<li class="value">
+												<div class="name">target</div>
+												<span class="type">__TYPE__</span>
+												<span>__DESCRIPTION__</span>
+											</li>
+											<li class="value">
+												<div class="name">arguments</div>
+												<span class="type">Array</span>
+												<span>__DESCRIPTION__</span>
+											</li>
+											<li class="value">
+												<div class="name">returned</div>
+												<span class="type">__TYPE__</span>
+												<span>__DESCRIPTION__</span>
+											</li>
+										</ul>
+									</li>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">(any)</span>
+								<span>__DESCRIPTION__</span>
+							</div>
+						</ul>
+					</div>
+					-->
 					<div class="label">has properties:</div>
 					<ul>
 						<li class="function">
@@ -506,6 +547,90 @@ END LICENSE
 								var result3 = counter();
 								verify(result3).is(42);
 								verify(counter.calls).is(2);
+							</script>
+						</li>
+						<li class="function experimental" jsapi:id="postprocessing">
+							<div class="name">postprocessing</div>
+							<span>
+								Creates a function from an original function and a postprocessing function. The resulting function
+								will be implemented by invoking the original function with its <code>this</code> and arguments,
+								and then invoking the postprocessor with information about that call (including its return value).
+							</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="value">
+										<span class="type">function</span>
+										<span>The original function.</span>
+									</li>
+									<li class="value">
+										<span class="type"><a href="#types.Function.postprocessor">postprocessor</a></span>
+										<span>A postprocessing function</span>
+									</li>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">(any)</span>
+								<span>
+									A return value that will replace the original function's return value, or
+									<code>undefined</code> to leave that return value in place.
+								</span>
+							</div>
+							<script type="application/x.jsapi#tests">
+								var doubler = function(x) {
+									return 2 * x;
+								};
+
+								var fourXSquaredPlusX = api.Function.postprocessing(doubler, function(p) {
+									return p.returned * p.returned + p.arguments[0];
+								});
+
+								verify(fourXSquaredPlusX(5)).is(105);
+							</script>
+							<script type="application/x.jsapi#tests">
+								var Counter = function() {
+									var called = 0;
+
+									var rv = {};
+									rv.call = function() {
+										called++;
+									};
+									rv.called = function() {
+										return called;
+									};
+									return rv;
+								};
+
+								var foo = function() {
+									return "foo";
+								};
+
+								var counter = new Counter();
+								verify(counter).called().is(0);
+								var newFoo = api.Function.postprocessing(foo, counter.call);
+								verify(counter).called().is(0);
+								var v = newFoo();
+								verify(counter).called().is(1);
+								verify(v).is("foo");
+							</script>
+							<script type="application/x.jsapi#tests">
+								var foo = function() {
+									return "foo";
+								};
+
+								var calls = {};
+
+								calls.override = api.Function.postprocessing(foo, function(p) {
+									return api.Function.postprocessing.UNDEFINED;
+								});
+
+								calls.leave = api.Function.postprocessing(foo, function(p) {
+									return void(0);
+								});
+
+								verify(calls).override().is(void(0));
+								verify(calls).leave().is("foo");
 							</script>
 						</li>
 						<li class="object">
