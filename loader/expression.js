@@ -24,17 +24,34 @@
 		if (!Object.assign) {
 			//	https://www.ecma-international.org/ecma-262/6.0/#sec-object.assign
 			//	TODO	currently the basics can be tested manually with loader/test/test262.jsh.js -file local/test262/test/built-ins/Object/assign/Target-Object.js
-			Object.assign = function assign(rv,firstSource /* to set function .length properly*/) {
-				var rv = ToObject(arguments[0]);
-				if (arguments.length == 1) return rv;
-				for (var i=1; i<arguments.length; i++) {
-					var source = (typeof(arguments[i]) == "undefined" || arguments[i] === null) ? {} : ToObject(arguments[i]);
-					for (var x in source) {
-						rv[x] = source[x];
+			Object.defineProperty(Object, "assign", {
+				value: function assign(rv,firstSource /* to set function .length properly*/) {
+					var rv = ToObject(arguments[0]);
+					if (arguments.length == 1) return rv;
+					for (var i=1; i<arguments.length; i++) {
+						var source = (typeof(arguments[i]) == "undefined" || arguments[i] === null) ? {} : ToObject(arguments[i]);
+						for (var x in source) {
+							rv[x] = source[x];
+						}
 					}
-				}
-				return rv;
-			};
+					return rv;
+				},
+				writable: true,
+				configurable: true
+			});
+		}
+
+		if (!Array.prototype.find) {
+			Object.defineProperty(Array.prototype, "find", {
+				value: function(f, target) {
+					for (var i=0; i<this.length; i++) {
+						var match = f.call(target, this[i], i, this);
+						if (match) return this[i];
+					}
+				},
+				configurable: true,
+				writable: true
+			});
 		}
 	})();
 
@@ -234,6 +251,7 @@
 			mime.Type.fromName = function(path) {
 				if (/\.js$/.test(path)) return mime.Type.parse("application/javascript");
 				if (/\.coffee$/.test(path)) return mime.Type.parse("application/vnd.coffeescript");
+				if (/\.css$/.test(path)) return mime.Type.parse("text/css");
 				if (/\.csv$/.test(path)) return mime.Type.parse("text/csv");
 			};
 

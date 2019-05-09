@@ -15,6 +15,8 @@ var parameters = jsh.script.getopts({
 	options: {
 		"mysql:server": jsh.file.Pathname,
 		"mysql:jdbc": jsh.file.Pathname,
+		"postgresql:admin:user": String,
+		"postgresql:admin:password": String,
 		view: "console"
 	}
 });
@@ -28,18 +30,33 @@ if (parameters.options["mysql:jdbc"]) {
 jsh.loader.plugins(jsh.script.file.parent.parent.pathname);
 var module = jsh.db.jdbc;
 
-var suite = new jsh.unit.Suite({
-	parts: {
-		derby: new jsh.unit.part.Html({
-			pathname: jsh.script.file.parent.parent.getRelativePath("derby/api.html"),
-			environment: {
-				module: module.derby
+var suite = new jsh.unit.html.Suite();
+
+if (jsh.db.jdbc.postgresql) {
+	suite.add("postgresql", new jsh.unit.part.Html({
+		pathname: jsh.script.file.parent.parent.getRelativePath("postgresql/api.html"),
+		environment: {
+			server: {
+				admin: {
+					user: parameters.options["postgresql:admin:user"],
+					password: parameters.options["postgresql:admin:password"]
+				}
 			}
-		})
-	}
-});
+		}
+	}));
+}
+
+if (jsh.db.jdbc.derby) {
+	suite.add("derby", new jsh.unit.part.Html({
+		pathname: jsh.script.file.parent.parent.getRelativePath("derby/api.html"),
+		environment: {
+			module: module.derby
+		}
+	}));
+}
 
 if (parameters.options["mysql:server"]) {
+	throw new Error("Convert to new HTML test suite.");
 	//	TODO	switch to use mysql/server.js
 	var MYSQL = parameters.options["mysql:server"].directory;
 	var DATA = jsh.shell.TMPDIR.createTemporary({ directory: true });
@@ -144,6 +161,8 @@ if (parameters.options["mysql:server"]) {
 	}
 }
 
-jsh.unit.interface.create(suite, {
+jsh.unit.html.cli({
+	suite: suite,
+	part: parameters.options.part,
 	view: parameters.options.view
 });

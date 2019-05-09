@@ -405,7 +405,7 @@ END LICENSE
 				<div class="name">filesystem</div>
 				<span class="type"><a href="#types.filesystem">filesystem</a></span> The current default filesystem.
 			</li>
-			<li class="function">
+			<li class="function" jsapi:id="Pathname">
 				<div class="name">Pathname</div>
 				<span>
 					Creates objects that represent a path in the local file system; attempts to 'cast' an argument to a Pathname.
@@ -1079,10 +1079,11 @@ END LICENSE
 						</li>
 					</ul>
 				</div>
-				<div class="type">
+				<div class="type" jsapi:id="file">
 					<a class="type" name="types.file">file</a>
 					<div>
 						<span class="type">supports <a href="#types.node">node</a></span>
+						<span class="type">supports <a href="../../loader/jrunscript/api.html#$exports.Resource">Java Resource</a></span>
 					</div>
 					<div class="label">has properties:</div>
 					<ul>
@@ -1141,6 +1142,10 @@ END LICENSE
 							<span>Convenience for <code>read(Streams.text).readLines()</code>.</span>
 						</li>
 						-->
+						<script type="application/x.jsapi#tests">
+							var apiHtml = $jsapi.loader.getRelativePath("api.html").file;
+							verify(apiHtml).type.toString().is("text/html");
+						</script>
 					</ul>
 				</div>
 				<div class="type">

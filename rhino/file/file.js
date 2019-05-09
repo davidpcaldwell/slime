@@ -429,13 +429,6 @@ var Pathname = function Pathname(parameters) {
 		});
 
 		$context.Resource.call(this,rdata);
-		// var resource = new $context.Resource(rdata);
-
-		// Object.defineProperty(this,"length",{
-		// 	get: function() {
-		// 		return rdata.length;
-		// 	}
-		// });
 
 		Object.defineProperty(this, "resource", {
 			get: $api.deprecate((function() {
@@ -443,12 +436,6 @@ var Pathname = function Pathname(parameters) {
 			}).bind(this)),
 			enumerable: false
 		});
-
-		//this.resource = resource;
-
-		// this.read = function(mode) {
-		// 	return resource.read(mode);
-		// }
 
 		this.readLines = $api.deprecate(function() {
 			return this.read.lines.apply(this,arguments);

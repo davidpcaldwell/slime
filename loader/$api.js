@@ -279,6 +279,19 @@
 
 		return rv;
 	};
+	$exports.Function.memoized = function(f) {
+		var returns;
+		var global = (function() { return this; });
+
+		return function() {
+			if (arguments.length > 0) throw new TypeError("Memoized functions may not have arguments.");
+			//	Ignore 'this'
+			if (!returns) {
+				returns = { value: f() };
+			}
+			return returns.value;
+		};
+	};
 	$exports.Function.Basic = function(f) {
 		return function() {
 			try {
@@ -747,6 +760,47 @@
 			}
 		}
 	}
+	$exports.Iterable.match = function(p) {
+		var first = p.left;
+		var second = p.right;
+		var firstRemain = [];
+		var secondRemain = second.slice();
+		var pairs = [];
+		for (var i=0; i<first.length; i++) {
+			var match = null;
+			for (var j=0; j<secondRemain.length && !match; j++) {
+				match = p.matches(first[i],secondRemain[j]);
+				if (match) {
+					pairs.push({
+						left: first[i],
+						right: secondRemain[j]
+					});
+					secondRemain.splice(j,1);
+				}
+			}
+			if (!match) firstRemain.push(first[i]);
+		}
+		if (p.unmatched && p.unmatched.left) {
+			firstRemain.forEach(function(item) {
+				p.unmatched.left(item);
+			});
+		}
+		if (p.unmatched && p.unmatched.right) {
+			secondRemain.forEach(function(item) {
+				p.unmatched.right(item);
+			});
+		}
+		if (p.matched) pairs.forEach(function(pair) {
+			p.matched(pair);
+		});
+		return {
+			unmatched: {
+				left: firstRemain,
+				right: secondRemain
+			},
+			matched: pairs
+		};		
+	};
 	$exports.Object = function(p) {
 		var rv = {};
 		if (p.properties) {
