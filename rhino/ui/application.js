@@ -206,9 +206,10 @@ var javafx = function(settings) {
 	};
 }
 
-var Application = function(p) {
+var Application = function(p,events) {
 	var server = (p.server) ? p.server : Server(p);
 	server.start();
+	events.fire("started", server);
 
 	jsh.java.addShutdownHook(function() {
 		server.stop();
@@ -283,4 +284,7 @@ var hostToPort = function(name) {
 	}
 };
 
-$exports.Application = Application;
+$exports.Application = $api.Events.Function(function(p,events) {
+	Packages.java.lang.System.err.println("Application: rhino/ui");
+	return Application(p,events);
+});
