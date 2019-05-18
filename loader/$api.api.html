@@ -1711,83 +1711,132 @@ END LICENSE
 						</li>
 					</ul>
 				</li>
-				<li class="object">
-					<div class="name">steps</div>
+				<li class="object experimental">
+					<div class="name">threads</div>
 					<span>__DESCRIPTION__</span>
 					<div class="label">has properties:</div>
 					<ul>
+						<li class="object">
+							<div class="name">steps</div>
+							<span>__DESCRIPTION__</span>
+							<div class="type">
+								<a class="type" name="types.threads.step">step</a>
+								<span>__DESCRIPTION__</span>
+								<div class="label">has properties:</div>
+								<ul>
+								</ul>
+							</div>
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="function">
+									<div class="name">run</div>
+									<span>__DESCRIPTION__</span>
+									<div class="arguments">
+										<div class="label">Arguments</div>
+										<ol>
+											<li class="value">
+												<div class="name">steps</div>
+												<span class="type">Array of <a href="#types.threads.step">step</a></span>
+												<span>__DESCRIPTION__</span>
+											</li>
+											<li class="object">
+												<span>An event handler</span>
+												<div class="label">has properties:</div>
+												<ul>
+													<li class="value">
+														<div class="name">unready</div>
+														<span class="type">listener</span>
+														<span>__DESCRIPTION__</span>
+													</li>
+												</ul>
+											</li>
+										</ol>
+									</div>
+									<div class="returns">
+										<div class="label">Returns</div>
+										<div class="label">has properties:</div>
+										<ul>
+											<li class="value">
+												<div class="name">unready</div>
+												<span class="type">Array of <a href="#types.threads.step">step</a></span>
+												<span>A set of steps that never executed because they were never <code>ready()</code>.</span>
+											</li>
+										</ul>
+									</div>
+									<script type="application/x.jsapi#tests">
+										verify(api,"$api").loadedByJsapi.is(true);
+										verify(api,"$api").threads.steps.is.not.equalTo(null);
+										verify(api,"$api").threads.steps.evaluate.property("run").is.not.equalTo(null);
+				
+										var $steps = verify(api,"$api").threads.steps;
+										var $run = $steps.evaluate(function() { return this.run({ steps: [] }) });
+										$run.threw.nothing();
+				
+										var A = function(shared) {
+											this.ready = function() {
+												return true;
+											}
+				
+											this.run = function() {
+												shared.a = true;
+											}
+										};
+				
+										var B = function(shared) {
+											this.ready = function() {
+												return shared.a;
+											};
+				
+											this.run = function() {
+												shared.b = true;
+											}
+										}
+				
+										var Shared = function() {
+											this.a = false;
+											this.b = false;
+										};
+				
+										var Listener = function() {
+											var unready = [];
+				
+											this.on = {
+												unready: function(e) {
+													unready.push(e.detail);
+												}
+											}
+				
+											this.unready = unready;
+										}
+				
+										var s1 = new Shared();
+										$steps.run({
+											steps: [ new A(s1) ]
+										});
+										verify(s1).a.is(true);
+				
+										var s2 = new Shared();
+										$steps.run({
+											steps: [ new B(s2), new A(s2) ]
+										});
+										verify(s2).a.is(true);
+										verify(s2).b.is(true);
+				
+										var s3 = new Shared();
+										var b3 = new B(s3);
+										var l3 = new Listener();
+										verify(api).threads.steps.run({
+											steps: [ b3 ]
+										}, l3.on).unready.length.is(1);
+										verify(s3).a.is(false);
+										verify(s3).b.is(false);
+										verify(l3).unready.length.is(1);
+										verify(l3).unready[0].is(b3);
+									</script>
+								</li>
+							</ul>
+						</li>
 					</ul>
-					<script type="application/x.jsapi#tests">
-						verify(api,"$api").loadedByJsapi.is(true);
-						verify(api,"$api").threads.steps.is.not.equalTo(null);
-						verify(api,"$api").threads.steps.evaluate.property("run").is.not.equalTo(null);
-
-						var $steps = verify(api,"$api").threads.steps;
-						var $run = $steps.evaluate(function() { return this.run({ steps: [] }) });
-						$run.threw.nothing();
-
-						var A = function(shared) {
-							this.ready = function() {
-								return true;
-							}
-
-							this.run = function() {
-								shared.a = true;
-							}
-						};
-
-						var B = function(shared) {
-							this.ready = function() {
-								return shared.a;
-							};
-
-							this.run = function() {
-								shared.b = true;
-							}
-						}
-
-						var Shared = function() {
-							this.a = false;
-							this.b = false;
-						};
-
-						var Listener = function() {
-							var unready = [];
-
-							this.on = {
-								unready: function(e) {
-									unready.push(e.detail);
-								}
-							}
-
-							this.unready = unready;
-						}
-
-						var s1 = new Shared();
-						$steps.run({
-							steps: [ new A(s1) ]
-						});
-						verify(s1).a.is(true);
-
-						var s2 = new Shared();
-						$steps.run({
-							steps: [ new B(s2), new A(s2) ]
-						});
-						verify(s2).a.is(true);
-						verify(s2).b.is(true);
-
-						var s3 = new Shared();
-						var b3 = new B(s3);
-						var l3 = new Listener();
-						$steps.run({
-							steps: [ b3 ],
-							on: l3.on
-						});
-						verify(s3).a.is(false);
-						verify(s3).b.is(false);
-						verify(l3).unready.length.is(1);
-						verify(l3).unready[0].is(b3);
-					</script>
 				</li>
 			</ul>
 		</div>
