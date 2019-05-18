@@ -88,13 +88,16 @@ plugin({
 
 		var graal = new function() {
 			var VERSION = {
-				number: "1.0.0-rc10",
+				number: "19.0.0",
 				edition: "ce"
 			};
 			this.install = $api.Events.Function(function(p,events) {
 				if (jsh.shell.os.name == "Mac OS X") {
 					jsh.tools.install.install({
-						url: "https://github.com/oracle/graal/releases/download/vm-" + VERSION.number + "/" + "graalvm-" + VERSION.edition + "-" + VERSION.number + "-macos-amd64.tar.gz",
+						url: "https://github.com/oracle/graal/releases/download/"
+							+ "vm-" + VERSION.number + "/" 
+							+ "graalvm-" + VERSION.edition + "-" + "darwin" + "-" + "amd64" + "-" + VERSION.number + ".tar.gz"
+						,
 						getDestinationPath: function(file) {
 							return "graalvm-" + VERSION.edition + "-" + VERSION.number + "/Contents/Home";
 						},
