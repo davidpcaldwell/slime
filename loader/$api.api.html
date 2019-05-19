@@ -1288,7 +1288,7 @@ END LICENSE
 									verify(value).evaluate(function() { return this.require(); }).threw.nothing();
 									verify(value).property("foo").evaluate(function() { return this.require() }).threw.type(TypeError);
 									verify(value).property("foo").evaluate(function() { return this.require(); }).threw.message.is("one.foo is required");
-									if (!$jsapi.java || !$jsapi.java.loader.test.HAS_NASHORN_ERROR_HACK) {
+									if (!$jsapi.java || !$jsapi.java.loader || !$jsapi.java.loader.test || !$jsapi.java.loader.test.HAS_NASHORN_ERROR_HACK) {
 										verify(value).evaluate(function() { return this.property("foo","bar"); }).threw.type(TypeError);
 									}
 									verify(value).property("name").evaluate(function() { return this.require() }).threw.nothing();
