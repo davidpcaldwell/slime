@@ -21,9 +21,32 @@ $exports.Installation = function(o) {
 			command: command,
 			arguments: p.arguments,
 			directory: p.directory,
-			environment: jsh.js.Object.set({}, jsh.shell.environment, p.environment, {
-				PATH: PATH.toString()
-			}),
+			environment: (function(specified) {
+				//	TODO	this is why rhino/shell.run exposes those helper functions for its components, so that delegates can
+				//			use them. Perhaps should rebrand those as an SPI, and in any case, will need to make this implementation
+				//			handle all cases
+				if (!specified) {
+					return function(now) {
+						now.PATH = PATH.toString();
+					}
+				}
+				if (typeof(specified) == "object") {
+					specified.PATH = PATH.toString();
+				}
+				if (typeof(specified) == "function") {
+					return function(now) {
+						if (!now) throw new Error("No now in node.environment function");
+						var rv = specified(now);
+						if (typeof(rv) == "undefined") rv = now;
+						rv.PATH = PATH.toString();
+						return rv;
+					}
+				}
+				throw new Error();
+			})(p.environment),
+			// environment: jsh.js.Object.set({}, jsh.shell.environment, p.environment, {
+			// 	PATH: PATH.toString()
+			// }),
 			stdio: p.stdio,
 			evaluate: p.evaluate
 		});
