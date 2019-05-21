@@ -276,7 +276,7 @@ $exports.run.evaluate = function(result) {
 	if (result.status != 0) throw new Error("Exit code: " + result.status + " executing " + result.command + ((result.arguments && result.arguments.length) ? " " + result.arguments.join(" ") : ""));
 	return result;
 };
-$exports.run.stdio = (function(p) {
+$exports.run.stdio = function(p) {
 	var rv = (function() {
 		if (typeof(p.stdio) != "undefined") return p.stdio;
 
@@ -350,7 +350,21 @@ $exports.run.stdio = (function(p) {
 		}
 	}
 	return rv;
-});
+};
+$exports.run.stdio.LineBuffered = function(o) {
+	return Object.assign({}, o, {
+		output: {
+			line: function(line) {
+				o.stdio.output.write(line + $exports.os.newline);
+			}
+		},
+		error: {
+			line: function(line) {
+				o.stdio.error.write(line + $exports.os.newline);
+			}
+		}
+	});
+}
 $exports.run.directory = function(p) {
 	var getDirectoryProperty = function(p) {
 		if (p.directory && p.directory.pathname) {
