@@ -234,7 +234,7 @@ $exports.Loader = function recurse(p) {
 	}
 
 	if (!p.type) p.type = function(path) {
-		return $context.api.io.mime.Type.fromName({ name: path });
+		return $context.api.io.mime.Type.fromName(path);
 	}
 
 	p.toString = function() {
@@ -247,7 +247,7 @@ $exports.Loader = function recurse(p) {
 		if (file) {
 			var data = {
 				name: p.directory.toString() + path,
-				type: p.type(file),
+				type: p.type(path),
 				getInputStream: function() {
 					return file.read($context.api.io.Streams.binary).java.adapt();
 				},
