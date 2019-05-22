@@ -191,6 +191,7 @@ $api.slime = (function(was) {
 			}
 		});
 		map("jsh.debug.script", LOADER);
+		map("jsh.profiler.script", LOADER);
 
 		map("jsh.jvm.options", {
 			container: function(value) {
