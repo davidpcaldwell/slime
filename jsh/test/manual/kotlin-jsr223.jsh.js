@@ -31,7 +31,7 @@ for (var i=0; i<_factories.size(); i++) {
 var factory = new Packages.org.jetbrains.kotlin.script.jsr223.KotlinJsr223JvmLocalScriptEngineFactory();
 
 var kotlinc = factory.getScriptEngine();
-kotlinc.getBindings( Packages.javax.script.ScriptContext.ENGINE_SCOPE ).put("message", "foo");
+kotlinc.put("message", "foo");
 var result = kotlinc.eval(jsh.script.file.parent.getFile("kotlin.kts").read(String));
 jsh.shell.console("result = " + result);
 
