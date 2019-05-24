@@ -10,7 +10,14 @@
 //	Contributor(s):
 //	END LICENSE
 
-window.onload = function() {
+window.addEventListener("load", function() {
+	var settings = (window.slime && window.slime.definition && window.slime.definition.settings) ? window.slime.definition.settings : void(0);
+	if (settings.isHomePage) {
+		Array.prototype.slice.call(document.getElementsByTagName("A")).forEach(function(link) {
+			link.target = "_blank";
+		})		
+	}
+
 	//	TODO	Perhaps verify div class="object" li elements have div class="name"
 	//	TODO	verify the "has properties" after div class="object"
 
@@ -217,4 +224,4 @@ window.onload = function() {
 	};
 
 	new Markup({ node: document, base: getBase(window.location.href) }).fix();
-}
+});
