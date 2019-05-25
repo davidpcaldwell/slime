@@ -12,7 +12,7 @@
 
 window.addEventListener("load", function() {
 	var settings = (window.slime && window.slime.definition && window.slime.definition.settings) ? window.slime.definition.settings : void(0);
-	if (settings.isHomePage) {
+	if (settings && settings.isHomePage) {
 		Array.prototype.slice.call(document.getElementsByTagName("A")).forEach(function(link) {
 			link.target = "_blank";
 		})		
@@ -43,6 +43,49 @@ window.addEventListener("load", function() {
 	}
 
 	var Markup = function Markup(c) {
+		var getNamedChild = function(base,name) {
+			for (var i=0; i<base.children.length; i++) {
+				var child = base.children[i];
+				if (child.getAttribute("jsapi:id")) {
+					if (child.getAttribute("jsapi:id") == name) {
+						return child;
+					}
+				} else {
+					var sub = getNamedChild(child,name);
+					if (sub) return sub;
+				}
+			}
+			return null;
+		}
+		var scope = new function() {
+			this.getApi = function(relative) {
+				var xhr = new XMLHttpRequest();
+				xhr.open("GET", c.base + relative, false);
+				xhr.send(null);
+				var dom = document.implementation.createHTMLDocument("title");
+				dom.documentElement.innerHTML = xhr.responseText;
+				console.log("Response to " + relative + " is " + dom);
+				return {
+					document: dom,
+					getElement: function(path) {
+						var node = dom.documentElement;
+						var tokens = path.split("/");
+						for (var i=0; i<tokens.length; i++) {
+							node = getNamedChild(node,tokens[i]);
+							if (!node) break;
+						}
+						var base = getBase(canonicalize(c.base,relative));
+						return {
+							base: base,
+							node: node
+						};
+					}
+				}
+			};
+		};
+
+		this.scope = scope;
+
 		var getDescendants = function(under,filter) {
 			var rv = [];
 			var all = under.getElementsByTagName("*");
@@ -147,20 +190,6 @@ window.addEventListener("load", function() {
 		};
 
 		var resolveReferences = function() {
-			var getNamedChild = function(base,name) {
-				for (var i=0; i<base.children.length; i++) {
-					var child = base.children[i];
-					if (child.getAttribute("jsapi:id")) {
-						if (child.getAttribute("jsapi:id") == name) {
-							return child;
-						}
-					} else {
-						var sub = getNamedChild(child,name);
-						if (sub) return sub;
-					}
-				}
-				return null;
-			}
 			var references = getElements(function(e) {
 				return e.getAttribute("jsapi:reference");
 			});
@@ -174,6 +203,7 @@ window.addEventListener("load", function() {
 					dom.documentElement.innerHTML = xhr.responseText;
 					console.log("Response to " + relative + " is " + dom);
 					return {
+						document: dom,
 						getElement: function(path) {
 							var node = dom.documentElement;
 							var tokens = path.split("/");
@@ -191,9 +221,34 @@ window.addEventListener("load", function() {
 				};
 				var found = eval(code);
 				console.log("Found",found,"for",code);
-				references[i].innerHTML = found.node.innerHTML;
-				new Markup({ node: references[i], base: found.base }).fix();
-			}
+				if (found.node) {
+					references[i].innerHTML = found.node.innerHTML;
+					new Markup({ node: references[i], base: found.base }).fix();
+				}
+			};
+
+			getElements(function(e) {
+				return e.getAttribute("jsapi:replace");
+			}).forEach(function(replace) {
+				var expression = replace.getAttribute("jsapi:replace");
+				with(scope) {
+					var nodes = eval(expression);
+					if (nodes.node) nodes = nodes.node;
+					if (nodes.length) {
+						//	TODO	if nodes is a NodeList rather than Array, we're in trouble. Fix here.
+						nodes = Array.prototype.slice.call(nodes);
+						var fragment = document.createDocumentFragment();
+						for (var i=0; i<nodes.length; i++) {
+							fragment.appendChild(nodes[i]);
+						}
+						nodes = fragment;
+					}
+					replace.parentNode.replaceChild(nodes,replace);
+					//	TODO	Need recursion, equivalent of new Markup().fix() above; may also need to add node property
+					//			representing load location if it doesn't exist and iterate through all nodes adding it in
+					//			getElement
+				}
+			})
 		}
 
 		var fixCdata = function() {
@@ -223,5 +278,10 @@ window.addEventListener("load", function() {
 		}
 	};
 
-	new Markup({ node: document, base: getBase(window.location.href) }).fix();
+	var markup = new Markup({ node: document, base: getBase(window.location.href) });
+	window.definition.getApi = function() {
+		return markup.scope.getApi.apply(markup.scope,arguments);
+	}
+	markup.fix();
 });
+window.definition = {};

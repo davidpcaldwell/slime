@@ -713,4 +713,4 @@ $exports.jrunscript = function(p) {
 		command: launch.command,
 		arguments: args
 	}));
-}
+};
