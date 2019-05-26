@@ -247,7 +247,7 @@ $exports.Loader = function recurse(p) {
 		if (file) {
 			var data = {
 				name: p.directory.toString() + path,
-				type: p.type(path),
+				type: p.type(file),
 				getInputStream: function() {
 					return file.read($context.api.io.Streams.binary).java.adapt();
 				},
