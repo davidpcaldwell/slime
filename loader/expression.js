@@ -340,7 +340,9 @@
 			})();
 
 			methods.run = function run(object,scope) {
-				if (!object || typeof(object) != "object") throw new TypeError("'object' must be an object, not " + object);
+				if (!object || typeof(object) != "object") {
+					throw new TypeError("'object' must be an object, not " + object);
+				}
 				if (typeof(object.read) != "function") throw new Error("Not resource.");
 				var resource = object;
 				var type = resource.type;

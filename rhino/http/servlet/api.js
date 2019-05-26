@@ -15,12 +15,14 @@ var $java = (function() {
 	if ($host.getLoader && $host.getEngine) {
 		return $host.getEngine().script("jrunscript/rhino.js", $host.getLoader().getLoaderCode("jrunscript/rhino.js"), { $loader: $host.getLoader(), $rhino: $host.getEngine() }, null);
 	} else if ($host.getLoader && $host.getClasspath) {
+		var $graal = void(0);
 		var scripts = eval($host.getLoader().getLoaderCode("jrunscript/nashorn.js"));
 
 		var rv = scripts.script(
 			"jrunscript/nashorn.js",
 			$host.getLoader().getLoaderCode("jrunscript/nashorn.js"),
 			{
+				$graal: $graal,
 				$getLoaderCode: function(path) {
 					return $host.getLoader().getLoaderCode(path);
 				},
