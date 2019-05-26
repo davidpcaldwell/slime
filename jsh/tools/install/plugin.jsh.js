@@ -88,13 +88,16 @@ plugin({
 
 		var graal = new function() {
 			var VERSION = {
-				number: "1.0.0-rc10",
+				number: "19.0.0",
 				edition: "ce"
 			};
 			this.install = $api.Events.Function(function(p,events) {
 				if (jsh.shell.os.name == "Mac OS X") {
 					jsh.tools.install.install({
-						url: "https://github.com/oracle/graal/releases/download/vm-" + VERSION.number + "/" + "graalvm-" + VERSION.edition + "-" + VERSION.number + "-macos-amd64.tar.gz",
+						url: "https://github.com/oracle/graal/releases/download/"
+							+ "vm-" + VERSION.number + "/" 
+							+ "graalvm-" + VERSION.edition + "-" + "darwin" + "-" + "amd64" + "-" + VERSION.number + ".tar.gz"
+						,
 						getDestinationPath: function(file) {
 							return "graalvm-" + VERSION.edition + "-" + VERSION.number + "/Contents/Home";
 						},
@@ -112,6 +115,65 @@ plugin({
 			$api: jsh.tools.install.$api
 		});
 		jsh.shell.tools.tomcat = tomcat;
+
+		var kotlin = (jsh.shell.jsh.lib) ? new function() {
+			var location = jsh.shell.jsh.lib.getRelativePath("kotlin");
+
+			this.install = $api.Events.Function(function(p,events) {
+				var URL = "https://github.com/JetBrains/kotlin/releases/download/v1.3.31/kotlin-compiler-1.3.31.zip";
+
+				var existing = location.directory;
+				if (existing) {
+					if (p.replace) {
+						existing.remove();
+					} else {
+						events.fire("console", "Kotlin already installed.");
+						return void(0);
+					}
+				}
+				events.fire("console", "Installing Kotlin from " + URL + " ...");
+				
+				jsh.tools.install.install({
+					url: URL,
+					to: location,
+					getDestinationPath: function(file) {
+						return "kotlinc";
+					}
+				});
+				
+				var client = new jsh.http.Client();
+				
+				events.fire("console", "Adding jsr223.jar ...");
+				var TMP = jsh.shell.TMPDIR.createTemporary({ directory: true });
+				TMP.getRelativePath("META-INF/services/javax.script.ScriptEngineFactory").write(
+					"org.jetbrains.kotlin.script.jsr223.KotlinJsr223JvmLocalScriptEngineFactory",
+					{ append: false, recursive: true }
+				);
+				jsh.io.archive.zip.encode({
+					//  below call not easily deduced from documentation
+					stream: location.directory.getRelativePath("lib/jsr223.jar").write(jsh.io.Streams.binary),
+					//  below property not easily deduced from documentation
+					entries: TMP.list({
+						type: TMP.list.RESOURCE,
+						filter: function(node) {
+							return !node.directory;
+						},
+						descendants: function(directory) {
+							return true;
+						}
+					})
+				})
+				
+				events.fire("console", "Adding kotlin-script-util.jar ...");
+				location.directory.getRelativePath("lib/kotlin-script-util.jar").write(client.request({
+					url: "http://central.maven.org/maven2/org/jetbrains/kotlin/kotlin-script-util/1.3.31/kotlin-script-util-1.3.31.jar"
+				}).body.stream, { append: false });
+				// location.directory.getRelativePath("lib/kotlin-scripting-jvm-host.jar").write(new jsh.http.Client().request({
+				//     url: "http://central.maven.org/maven2/org/jetbrains/kotlin/kotlin-scripting-jvm-host/1.3.31/kotlin-scripting-jvm-host-1.3.31.jar"
+				// }).body.stream, { append: false });				
+			});
+		} : null;
+		jsh.shell.tools.kotlin = kotlin;
 
 		(function deprecated() {
 			jsh.tools.tomcat = tomcat;

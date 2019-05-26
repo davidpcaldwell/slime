@@ -22,5 +22,5 @@ var json = (false) ? jsh.js.toLiteral(profiles) : JSON.stringify(profiles);
 html = html.replace('<script type="text/javascript" src="profiles.js"></script>', scriptElement("var profiles = " + json));
 html = html.replace('<script type="text/javascript" src="viewer.js"></script>', scriptElement($loader.get("viewer.js").read(String)));
 
-output.write(html, { append: false });
+output.write(html, { append: false, recursive: true });
 jsh.shell.echo("Wrote profiling data to " + output, { stream: jsh.shell.stderr });

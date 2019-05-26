@@ -88,6 +88,32 @@ END LICENSE
 							The SLIME Java-enabled <a href="../../loader/jrunscript/api.html">runtime</a> which exposes SLIME internals
 							to embeddings. Most plugins will not need to use this.
 						</span>
+						<div>
+							The object has the following properties added to the SLIME runtime object:
+						</div>
+						<div class="label">has properties:</div>
+						<ul>
+							<li class="function">
+								<div class="name">getLibraryFile</div>
+								<span>
+									Returns a <code>java.io.File</code> representing a file location relative to the
+									<code>jsh</code> library location.
+								</span>
+								<div class="arguments">
+									<div class="label">Arguments</div>
+									<ol>
+										<li class="value">
+											<span class="type">string</span>
+											<span>A relative path.</span>
+										</li>
+									</ol>
+								</div>
+								<div class="returns">
+									<div class="label">Returns</div>
+									<span class="type">java.io.File</span>
+								</div>
+							</li>
+						</ul>
 					</li>
 					<li class="value">
 						<div class="name">plugins</div>

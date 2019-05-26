@@ -17,6 +17,20 @@ END LICENSE
 	<title>jsh.shell</title>
 	<link rel="stylesheet" type="text/css" href="../../loader/api/api.css"></link>
 	<script type="text/javascript" src="../../loader/api/api.js"></script>
+	<script>
+		window.definition.inherited = function() {
+			var exported = Array.prototype.slice.call(this.getApi('api.html').getElement('exports').node.children);
+			debugger;
+			var run = exported.filter(function(element) { return element.getAttribute("jsapi:id") == "run" });
+			var replacement = document.getElementById("run");
+			exported.forEach(function(li,index,array) {
+				if (li.getAttribute("jsapi:id") == "run") {
+					array[index] = replacement;
+				}
+			});
+			return exported;
+		}
+	</script>
 </head>
 <body>
 	<div>
@@ -101,6 +115,8 @@ END LICENSE
 		<script type="application/x.jsapi#initialize" jsapi:reference="getApi('api.html').getElement('script.initialize')">
 			//	see code in api.html
 		</script>
+		<div class="type" jsapi:replace="getApi('api.html').getElement('types.stdio')">
+		</div>
 		<div class="type">
 			<a class="type" name="types.consolei">console input</a>
 			<span class="type">supports <a href="../../jrunscript/io/api.html#types.binput">byte input stream</a></span>
@@ -118,25 +134,8 @@ END LICENSE
 			</div>
 		-->
 		<ul>
-			<li class="value" jsapi:reference="getApi('api.html').getElement('environment')">
-				<div class="name"><a name="$exports.environment">environment</a></div>
-				<span>The rhino/shell environment.</span>
-			</li>
-			<li class="value" jsapi:reference="getApi('api.html').getElement('properties')">
-				<div class="name"><a name="$exports.properties">properties</a></div>
-				<span>The rhino/shell properties.</span>
-			</li>
-			<li class="value" jsapi:reference="getApi('api.html').getElement('TMPDIR')">
-			</li>
-			<li class="value" jsapi:reference="getApi('api.html').getElement('HOME')">
-			</li>
-			<li class="value" jsapi:reference="getApi('api.html').getElement('PWD')">
-			</li>
-			<li class="value" jsapi:reference="getApi('api.html').getElement('PATH')">
-			</li>
-			<li class="function" jsapi:reference="getApi('api.html').getElement('os')">
-			</li>
-			<li class="value" jsapi:reference="getApi('api.html').getElement('user')">
+			<li jsapi:replace="window.definition.inherited()">
+
 			</li>
 			<li class="value" jsapi:id="stdio">
 				<div class="name">stdio</div>
@@ -211,34 +210,13 @@ END LICENSE
 				<span class="type"><a href="#types.consoleo">console output</a></span>
 				<span><b>See <code>stdio</code> for replacement.</b> The standard error stream for this shell.</span>
 			</li>
-			<li class="function">
+			<li id="run" class="function">
 				<div class="name">run</div>
-				<span jsapi:reference="getApi('api.html').getElement('run/description')">See <a href="api.html#exports.run">rhino/shell</a>.</span>
-				<div class="arguments">
-					<div class="label">Arguments</div>
-					<span>
-						The arguments are interpreted identically to those in the corresponding
-						<a href="api.html#exports.run">rhino/shell</a>
-						method except that if the stdio.output or stdio.error properties are omitted, the output from the subprocess
-						will be sent to the corresponding stream for the executing shell.
-					</span>
-					<div class="type" jsapi:reference="getApi('api.html').getElement('run/token')">
-					</div>
-					<ol jsapi:reference="getApi('api.html').getElement('run/arguments')">
-					</ol>
-				</div>
-				<div class="returns" jsapi:reference="getApi('api.html').getElement('run/returns')">
-					<div class="label">Returns</div>
-					See <a href="api.html#exports.run">rhino/shell</a>.
-				</div>
-			</li>
-			<li class="function" jsapi:reference="getApi('api.html').getElement('java')">
-			</li>
-			<li class="function" jsapi:reference="getApi('api.html').getElement('jrunscript')">
-			</li>
-			<li class="value" jsapi:reference="getApi('api.html').getElement('browser')">
-			</li>
-			<li class="value" jsapi:reference="getApi('api.html').getElement('system')">
+				<span>
+					Identical to <a href="api.html#exports.run">rhino/shell run()</a> except that if the stdio.output or 
+					stdio.error properties are omitted, the output from the subprocess will be sent to the corresponding stream for 
+					the executing shell, rather than discarded.
+				</span>
 			</li>
 			<li class="function">
 				<div class="name"><a name="$exports.exit">exit</a></div>
@@ -389,7 +367,7 @@ END LICENSE
 										into pathnames in this filesystem before the subprocess is launched.
 									</span>
 								</li>
-								<li class="value" jsapi:reference="getApi('../../rhino/shell/api.html').getElement('run/arguments/run.environment')">
+								<li class="value" jsapi:reference="getApi('../../rhino/shell/api.html').getElement('exports/run/arguments/run.environment')">
 									<div class="name">environment</div>
 									<span><a href="../../rhino/shell/api.html#run.environment">See rhino/shell</a></span>
 								</li>
@@ -398,11 +376,11 @@ END LICENSE
 									<span class="type">__TYPE__</span>
 									<span>__DESCRIPTION__</span>
 								</li>
-								<li class="value" jsapi:reference="getApi('../../rhino/shell/api.html').getElement('run/arguments/run.directory')">
+								<li class="value" jsapi:reference="getApi('../../rhino/shell/api.html').getElement('exports/run/arguments/run.directory')">
 									<div class="name">directory</div>
 									<span><a href="../../rhino/shell/api.html#run.directory">See rhino/shell</a></span>
 								</li>
-								<li class="function" jsapi:reference="getApi('../../rhino/shell/api.html').getElement('run/arguments/run.evaluate')">
+								<li class="function" jsapi:reference="getApi('../../rhino/shell/api.html').getElement('exports/run/arguments/run.evaluate')">
 									<div class="name">evaluate</div>
 									<span><a href="../../rhino/shell/api.html#run.evaluate">See rhino/shell</a></span>
 								</li>

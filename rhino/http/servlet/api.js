@@ -15,7 +15,8 @@ var $java = (function() {
 	if ($host.getLoader && $host.getEngine) {
 		return $host.getEngine().script("jrunscript/rhino.js", $host.getLoader().getLoaderCode("jrunscript/rhino.js"), { $loader: $host.getLoader(), $rhino: $host.getEngine() }, null);
 	} else if ($host.getLoader && $host.getClasspath) {
-		var $graal = void(0);
+		//	TODO	implement along with Graal servlets
+		var $graal;
 		var scripts = eval($host.getLoader().getLoaderCode("jrunscript/nashorn.js"));
 
 		var rv = scripts.script(

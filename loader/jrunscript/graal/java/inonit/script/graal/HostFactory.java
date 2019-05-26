@@ -12,6 +12,7 @@ public class HostFactory extends inonit.script.engine.Host.Factory {
 	@Override public inonit.script.engine.Host.Executor create() {
 		//System.err.println("HostFactory.this.create()");
 		final org.graalvm.polyglot.Context.Builder builder = org.graalvm.polyglot.Context.newBuilder("js")
+			.allowExperimentalOptions(true)
 			.option("js.nashorn-compat", "true")
 			.allowHostAccess(true)
 		;

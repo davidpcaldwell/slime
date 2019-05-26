@@ -292,9 +292,12 @@
 			return returns.value;
 		};
 	};
+	$exports.Function.value = {
+		UNDEFINED: {}
+	};
 	$exports.Function.postprocessing = function(f,postprocessor) {
 		//	TODO	may want to think through whether to give postprocessor the ability to handle exceptions
-		var UNDEFINED = arguments.callee.UNDEFINED;
+		var UNDEFINED = $exports.Function.value.UNDEFINED;
 		var rv = function() {
 			var returned = f.apply(this,arguments);
 			var rv = postprocessor({
@@ -314,7 +317,17 @@
 		//  TODO    consider altering rv.toString()
 		return rv;
 	};
-	$exports.Function.postprocessing.UNDEFINED = {};
+	$exports.Function.postprocessing.UNDEFINED = $exports.Function.value.UNDEFINED;
+	$exports.deprecate($exports.Function.postprocessing, "UNDEFINED");
+	$exports.Function.mutating = function(f) {
+		return function() {
+			if (arguments.length != 1) throw new Error();
+			var rv = f.apply(this,arguments);
+			if (typeof(rv) == "undefined") rv = arguments[0];
+			if (rv == $exports.Function.value.UNDEFINED) rv = void(0);
+			return rv;
+		}
+	};
 	$exports.Function.Basic = function(f) {
 		return function() {
 			try {
