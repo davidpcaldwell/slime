@@ -158,19 +158,6 @@
 	var deprecate = flag();
 	var experimental = flag();
 
-	var once = function() {
-		return (function(was) {
-			var called;
-
-			return function() {
-				if (!called) {
-					called = true;
-					return was.apply(this,arguments);
-				}
-			}
-		})(inonit.loader.$api.deprecate.warning);
-	}
-
 	$exports.warning = {
 		once: function(warning) {
 			var called;
@@ -837,6 +824,31 @@
 			matched: pairs
 		};		
 	};
+
+	var Properties = (function implementProperties() {
+		var withPropertiesResult = function(was) {
+			return function() {
+				var rv = was.apply(this,arguments);
+				decorateArray(rv);
+				return rv;
+			};
+		};
+	
+		var decorateArray = function(array) {
+			["filter"].forEach(function(name) {
+				array[name] = withPropertiesResult(Array.prototype[name]);
+			});
+			array.object = function() {
+				return $exports.Object({ properties: this });
+			};
+		};
+
+		return function(array) {
+			decorateArray(array);
+			return array;
+		}
+	})();
+
 	$exports.Object = function(p) {
 		var rv = {};
 		if (p.properties) {
@@ -871,7 +883,7 @@
 			//	TODO	could use Object.defineProperty to defer evaluation of o[x]
 			rv.push({ name: x, value: o[x] });
 		}
-		return rv;
+		return Properties(rv);
 	};
 
 	$exports.Value = function(v,name) {

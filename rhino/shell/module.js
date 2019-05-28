@@ -20,7 +20,7 @@ var module = {
 
 $exports.listeners = module.events.listeners;
 
-$exports.run = $api.Events.Function(function(p,events) {
+var run = function(p,events) {
 	var as;
 	if (p.as) {
 		as = p.as;
@@ -269,7 +269,9 @@ $exports.run = $api.Events.Function(function(p,events) {
 	});
 	var evaluate = (p.evaluate) ? p.evaluate : $exports.run.evaluate;
 	return evaluate(result);
-});
+};
+
+$exports.run = $api.Events.Function(run);
 $exports.run.evaluate = function(result) {
 	if (result.error) throw result.error;
 	if (result.status != 0) throw new Error("Exit code: " + result.status + " executing " + result.command + ((result.arguments && result.arguments.length) ? " " + result.arguments.join(" ") : ""));
@@ -714,3 +716,17 @@ $exports.jrunscript = function(p) {
 		arguments: args
 	}));
 };
+
+if ($context.kotlin) $exports.kotlin = $api.Events.Function(function(p,events) {
+	//	TODO	remove script property
+	var copy = $api.Object({ properties: $api.Object.properties(p).filter(function(property) {
+		return property.name != "script"
+	}) });
+	return run(Object.assign({}, copy, {
+		 command: $context.kotlin.compiler,
+		 arguments: function(rv) {
+			 rv.push("-script", p.script);
+			 if (p.arguments) rv.push.apply(rv,p.arguments);
+		 }
+	}), events);
+});

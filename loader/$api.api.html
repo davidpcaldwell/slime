@@ -1226,6 +1226,15 @@ END LICENSE
 								<span class="type">Array of <a href="#types.property">property</a></span>
 								<span>__DESCRIPTION__</span>
 							</div>
+							<script type="application/x.jsapi#tests">
+								var o = { a: 1, b: 2 };
+								var properties = api.Object.properties(o);
+								verify(properties).length.is(2);
+
+								var rebuilt = properties.object();
+								verify(rebuilt).a.is(1);
+								verify(rebuilt).b.is(2);
+							</script>
 						</li>
 						<li class="function">
 							<div class="name">compose</div>
