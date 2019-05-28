@@ -402,6 +402,45 @@ END LICENSE
 					test(success == "success");
 				</script>
 			</li>
+			<li class="function" jsapi:id="kotlin">
+				<div class="name">kotlin</div>
+				<span>Executes a Kotlin script in an external process.</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="object">
+							<span>
+								An argument to <code>run()</code>, but without the <code>command</code> property, and instead
+								the following properties:
+							</span>
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="value">
+									<div class="name">script</div>
+									<span class="type">file</span>
+									<span>The script (<code>.kts</code>) to run.</span>
+								</li>
+							</ul>
+						</li>
+					</ol>
+				</div>
+				<div class="returns">
+					<div class="label">Returns</div>
+					<span>See <code>run()</code>.</span>
+				</div>
+				<script type="application/x.jsapi#tests">
+					if (jsh.shell.jsh.lib.getSubdirectory("kotlin")) {
+						var result = jsh.shell.kotlin({
+							script: $jsapi.loader.getRelativePath("test/hello.kts").file,
+							stdio: {
+								error: String
+							}
+						});
+						verify(result).status.is(0);
+						verify(result).stdio.error.is("Hello from SLIME Kotlin!\n");
+					}
+				</script>
+			</li>
 			<li class="function" jsapi:id="jsh">
 				<div class="name"><a id="exports.jsh">jsh</a></div>
 				<span>

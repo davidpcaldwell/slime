@@ -168,6 +168,13 @@ plugin({
 				location.directory.getRelativePath("lib/kotlin-script-util.jar").write(client.request({
 					url: "http://central.maven.org/maven2/org/jetbrains/kotlin/kotlin-script-util/1.3.31/kotlin-script-util-1.3.31.jar"
 				}).body.stream, { append: false });
+
+				jsh.shell.run({
+					command: "chmod",
+					arguments: function(rv) {
+						rv.push("+x", location.directory.getRelativePath("bin/kotlinc"));
+					}
+				});
 				// location.directory.getRelativePath("lib/kotlin-scripting-jvm-host.jar").write(new jsh.http.Client().request({
 				//     url: "http://central.maven.org/maven2/org/jetbrains/kotlin/kotlin-scripting-jvm-host/1.3.31/kotlin-scripting-jvm-host-1.3.31.jar"
 				// }).body.stream, { append: false });				
