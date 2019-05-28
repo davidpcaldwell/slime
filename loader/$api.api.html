@@ -1234,6 +1234,12 @@ END LICENSE
 								var rebuilt = properties.object();
 								verify(rebuilt).a.is(1);
 								verify(rebuilt).b.is(2);
+
+								var filtered = api.Object.properties(o).filter(function(property) {
+									return property.name == "a";
+								}).object();
+								verify(filtered).a.is(1);
+								verify(filtered).evaluate.property("b").is(void(0));
 							</script>
 						</li>
 						<li class="function">

@@ -719,9 +719,9 @@ $exports.jrunscript = function(p) {
 
 if ($context.kotlin) $exports.kotlin = $api.Events.Function(function(p,events) {
 	//	TODO	remove script property
-	var copy = $api.Object({ properties: $api.Object.properties(p).filter(function(property) {
-		return property.name != "script"
-	}) });
+	var copy = $api.Object.properties(p).filter(function(property) {
+		return property.name != "script";
+	}).object();
 	return run(Object.assign({}, copy, {
 		 command: $context.kotlin.compiler,
 		 arguments: function(rv) {
