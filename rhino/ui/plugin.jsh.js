@@ -24,6 +24,19 @@ plugin({
 
 plugin({
 	isReady: function() {
+		return jsh.ui && jsh.java;
+	},
+	load: function() {
+		jsh.ui.askpass = $loader.file("askpass.js", {
+			api: {
+				java: jsh.java
+			}
+		});
+	}
+})
+
+plugin({
+	isReady: function() {
 		return Boolean(jsh.io && jsh.java.log && jsh.ui.javafx && jsh.java.Thread && jsh.js.document);
 	},
 	load: function() {

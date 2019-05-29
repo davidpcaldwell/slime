@@ -125,9 +125,3 @@ $exports.Jar = function(o) {
 		return rv;
 	})();
 };
-
-$exports.askpass = $loader.file("askpass.js", {
-	api: {
-		java: $context.api.java
-	}
-});

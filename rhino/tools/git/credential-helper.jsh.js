@@ -27,12 +27,12 @@ jsh.shell.stdio.input.character().readLines(function(line) {
 if (operation == "get") {
 	jsh.shell.console("Displaying GUI dialog to get git credentials ...");
 	if (!input.user) {
-		input.username = jsh.java.tools.askpass.gui({
+		input.username = jsh.ui.askpass.gui({
 			nomask: true,
 			prompt: "Enter username for " + input.host
 		});
 	}
-	input.password = jsh.java.tools.askpass.gui({
+	input.password = jsh.ui.askpass.gui({
 		prompt: "Enter password for " + input.username + "@" + input.host
 	});
 	for (var x in input) {

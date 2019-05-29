@@ -53,9 +53,7 @@ plugin({
 				api: {
 					module: module,
 					shell: jsh.shell,
-					java: {
-						tools: jsh.java.tools
-					},
+					ui: jsh.ui,
 					Error: jsh.js.Error,
 					install: jsh.tools.install,
 					Events: {

@@ -64,7 +64,7 @@ var osx = new function() {
 		if (parsed.array.indexOf("JNI") == -1) {
 			var SUDO_ASKPASS = jsh.shell.java({
 				jar: install.getFile("jsh.jar"),
-				arguments: [install.getFile("src/rhino/tools/askpass.jsh.js"), "-prompt", "Enter password to modify JDK installation"],
+				arguments: [install.getFile("src/rhino/ui/askpass.jsh.js"), "-prompt", "Enter password to modify JDK installation"],
 				stdio: {
 					output: String
 				},
@@ -76,7 +76,7 @@ var osx = new function() {
 //			SCRIPT.remove();
 //			SCRIPT.pathname.write("#!/bin/bash"
 //				+ "\n" + jsh.shell.java.launcher + " -jar " + install.getRelativePath("jsh.jar")
-//				+ " " + install.getRelativePath("src/rhino/tools/askpass.jsh.js")
+//				+ " " + install.getRelativePath("src/rhino/ui/askpass.jsh.js")
 //				+ " " + "\"Enter password to modify JDK installation\""
 //			);
 //			jsh.shell.run({

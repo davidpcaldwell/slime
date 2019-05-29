@@ -194,7 +194,7 @@ if ($context.os.name == "Mac OS X") {
 						}
 					});
 				} else {
-					var password = jsh.java.tools.askpass.gui({
+					var password = jsh.ui.askpass.gui({
 						prompt: p.askpass.prompt
 					});
 				}

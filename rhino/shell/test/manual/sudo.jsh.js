@@ -61,7 +61,7 @@ if (parameters.options.omit) {
 } else if (parameters.options.prompt) {
 	try {
 		run({ password: function() {
-			return jsh.java.tools.askpass.gui({ prompt: "Account password:" });
+			return jsh.ui.askpass.gui({ prompt: "Account password:" });
 		} });
 		jsh.shell.console("Correctly did not generate exception.");
 	} catch (e) {

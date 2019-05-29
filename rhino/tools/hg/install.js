@@ -165,7 +165,7 @@ $exports.install = $context.api.Events.Function(function(p,events) {
 			//			Mercurial do not work, so moving back to non-GUI installation for now
 			var HAS_GUI = false;
 			if (HAS_GUI) {
-				var password = $context.api.java.tools.askpass.gui({
+				var password = $context.api.ui.askpass.gui({
 					prompt: "Enter password for sudo:"
 				});
 				$context.api.shell.run({
