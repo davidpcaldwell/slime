@@ -1137,6 +1137,34 @@ END LICENSE
 						</li>
 					</ul>
 				</li>
+				<li class="function" jsapi:id="Properties">
+					<div class="name">Properties</div>
+					<span>__DESCRIPTION__</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</div>
+					<script type="application/x.jsapi#tests">
+						var empty = api.Properties();
+						verify(empty).length.is(0);
+
+						verify(api).evaluate(function(api) {
+							return api.Properties(null);
+						}).threw.type(TypeError);
+
+						verify(api).Properties({ array: [ { name: "foo", value: "bar" } ] }).length.is(1);
+
+						verify(api).Properties({ object: { foo: "bar" } }).length.is(1);
+						verify(api).Properties({ object: { foo: "bar" } })[0].name.is("foo");
+						verify(api).Properties({ object: { foo: "bar" } })[0].value.is("bar");
+					</script>
+				</li>
 				<li class="function">
 					<div class="name">Object</div>
 					<span>__DESCRIPTION__</span>

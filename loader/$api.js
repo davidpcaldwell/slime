@@ -849,6 +849,25 @@
 		}
 	})();
 
+	$exports.Properties = function() {
+		var array = (function() {
+			if (arguments.length == 0) return [];
+			if (!arguments[0]) throw new TypeError("Must be object.");
+			if (arguments[0].array) return arguments[0].array;
+			if (arguments[0].object) {
+				var rv = [];
+				for (var x in arguments[0].object) {
+					//	TODO	could use Object.defineProperty to defer evaluation of o[x]
+					rv.push({ name: x, value: arguments[0].object[x] });
+				}
+				return rv;
+			}
+			throw new Error();
+		}).apply(null, arguments);
+
+		return Properties(array);
+	};
+
 	$exports.Object = function(p) {
 		var rv = {};
 		if (p.properties) {
