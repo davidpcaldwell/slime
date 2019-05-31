@@ -891,6 +891,18 @@
 		}
 		return rv;
 	};
+	$exports.Object.optional = function(v) {
+		if (arguments.length == 0) throw new TypeError();
+		if (arguments.length == 1) throw new TypeError();
+		var rv = v;
+		for (var i=1; i<arguments.length; i++) {
+			if (rv === void(0) || rv === null) return void(0);
+			//	string, boolean, number
+			if (typeof(rv) != "object") throw new TypeError();
+			rv = rv[arguments[i]];
+		}
+		return rv;
+	};
 	$exports.Object.properties = function(o) {
 		//	Returns an array consisting of:
 		//	name:
