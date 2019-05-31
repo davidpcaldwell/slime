@@ -1,0 +1,116 @@
+<!--
+LICENSE
+This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+The Original Code is the SLIME loader infrastructure.
+
+The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+Portions created by the Initial Developer are Copyright (C) 2013 the Initial Developer. All Rights Reserved.
+
+Contributor(s):
+END LICENSE
+--><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
+<head>
+	<title>PostgreSQL JDBC</title>
+	<!--	TODO	change these to use local copies of these files at the appropriate location	-->
+	<!--
+		These files are specified using http: rather than https: because githack.com will redirect them to https:, but http: will
+		work when using an HTTP proxy to serve local copies of the files without needing to run https: locally
+	-->
+	<link href="../../../../../loader/api/api.css" rel="stylesheet" type="text/css" />
+	<script src="../../../../../loader/api/api.js"></script>
+	<script>
+		//	TODO	CORS
+		document.domain = document.domain;
+	</script>
+</head>
+<body>
+	<div>__DESCRIPTION__</div>
+	<div>
+		<h1>Context</h1>
+		<ul>
+		</ul>
+	</div>
+	<div>
+		<h1>Exports</h1>
+		<ul>
+		</ul>
+	</div>
+	<script type="application/x.jsapi#initialize">
+		scope.api = jsh.db.jdbc.postgresql;
+		scope.database = new api.Database({
+			admin: $jsapi.environment.server.admin
+		});
+		scope.noCatalog = function() {
+			var catalog = scope.database.getCatalog({ name: "slime" });
+			if (catalog) {
+				database.dropCatalog({ name: catalog.name });
+			}
+		};
+		scope.newCatalog = function() {
+			scope.noCatalog();
+			return scope.database.createCatalog({ name: "slime" });
+		}
+	</script>
+	<script jsapi:id="catalog" type="application/x.jsapi#tests">
+		noCatalog();
+		verify(database).getCatalog({ name: "foo" }).is.type("null");
+		verify(database).getCatalog({ name: "slime" }).is.type("null");
+		//	TODO	argument should be object
+		catalog = database.createCatalog({ name: "slime" });
+		verify(database).getCatalog({ name: "slime" }).is.type("object");
+		database.dropCatalog({ name: "slime" });
+		verify(database).getCatalog({ name: "slime" }).is.type("null");
+	</script>
+	<div jsapi:id="schema">
+		<script type="application/x.jsapi#initialize">
+			//	TODO	have to share a catalog, as dropping and re-creating currently leaves connections open. Fix.
+			scope.catalog = newCatalog();
+		</script>
+		<script jsapi:id="admin" type="application/x.jsapi#tests">
+			var schema = catalog.getSchema({ name: "public" });
+			verify(schema).is.type("object");
+
+			var no = catalog.getSchema({ name: "foo" });
+			verify(no).is(null);
+
+			verify(catalog).getSchema({ name: "s" }).is(null);
+			catalog.createSchema({ name: "s" });
+			verify(catalog).getSchema({ name: "s" }).is.type("object");
+
+			catalog.dropSchema({ name: "s" });
+			verify(catalog).getSchema({ name: "s" }).is(null);			
+		</script>
+		<script jsapi:id="tables" type="application/x.jsapi#tests">
+			catalog.getSchemas().forEach(function(schema) {
+				jsh.shell.console("Schema: " + schema.name);
+			});
+			var pg = catalog.getSchema({ name: "pg_catalog" });
+			var info = catalog.getSchema({ name: "information_schema" });
+			var tables = pg.getTables();
+			verify(tables).length.is.type("number");
+			tables.forEach(function(table) {
+				jsh.shell.console(table);
+			});
+
+			var pg_tables = pg.getTable({ name: "pg_tables" });
+			var columns = pg_tables.getColumns();
+			columns.forEach(function(column) {
+				jsh.shell.console(JSON.stringify(column));
+			});
+
+			var column = pg_tables.getColumn({ name: "tablename" });
+			verify(column).is.type("object");
+			var noColumn = pg_tables.getColumn({ name: "foo" });
+			verify(noColumn).is(null);
+		</script>
+		<div jsapi:id="table">
+			<script type="application/x.jsapi#tests">
+
+			</script>
+		</div>
+	</div>
+</body>
+</html>

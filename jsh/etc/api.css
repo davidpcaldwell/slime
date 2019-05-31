@@ -11,7 +11,13 @@ Portions created by the Initial Developer are Copyright (C) 2010-2013 the Initia
 Contributor(s):
 END LICENSE
 */
-body { font-family: verdana }
+body { font-family: verdana; font-size: 12pt; }
 table { border-collapse: collapse }
 th, td { border: 1px solid }
 th, td { padding: 0.2em 0.4em }
+script[type="application/x.jsapi#tests"], script[type="application/x.jsapi#initialize"] {
+    display: none;
+}
+body>div {
+    margin: 0em 0em 3em 0em;
+}

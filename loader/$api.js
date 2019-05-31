@@ -158,19 +158,6 @@
 	var deprecate = flag();
 	var experimental = flag();
 
-	var once = function() {
-		return (function(was) {
-			var called;
-
-			return function() {
-				if (!called) {
-					called = true;
-					return was.apply(this,arguments);
-				}
-			}
-		})(inonit.loader.$api.deprecate.warning);
-	}
-
 	$exports.warning = {
 		once: function(warning) {
 			var called;
@@ -278,6 +265,55 @@
 		}
 
 		return rv;
+	};
+	$exports.Function.memoized = function(f) {
+		var returns;
+		var global = (function() { return this; });
+
+		return function() {
+			if (arguments.length > 0) throw new TypeError("Memoized functions may not have arguments.");
+			//	Ignore 'this'
+			if (!returns) {
+				returns = { value: f() };
+			}
+			return returns.value;
+		};
+	};
+	$exports.Function.value = {
+		UNDEFINED: {}
+	};
+	$exports.Function.postprocessing = function(f,postprocessor) {
+		//	TODO	may want to think through whether to give postprocessor the ability to handle exceptions
+		var UNDEFINED = $exports.Function.value.UNDEFINED;
+		var rv = function() {
+			var returned = f.apply(this,arguments);
+			var rv = postprocessor({
+				target: this,
+				arguments: Array.prototype.slice.call(arguments),
+				returned: returned
+			});
+			if (typeof(rv) != "undefined") {
+				returned = (rv == UNDEFINED) ? void(0) : rv;
+			}
+			return returned;
+		};
+		for (var x in f) {
+			//  TODO    check to see what these properties are
+			rv[x] = f[x];
+		}
+		//  TODO    consider altering rv.toString()
+		return rv;
+	};
+	$exports.Function.postprocessing.UNDEFINED = $exports.Function.value.UNDEFINED;
+	$exports.deprecate($exports.Function.postprocessing, "UNDEFINED");
+	$exports.Function.mutating = function(f) {
+		return function() {
+			if (arguments.length != 1) throw new Error();
+			var rv = f.apply(this,arguments);
+			if (typeof(rv) == "undefined") rv = arguments[0];
+			if (rv == $exports.Function.value.UNDEFINED) rv = void(0);
+			return rv;
+		}
 	};
 	$exports.Function.Basic = function(f) {
 		return function() {
@@ -747,6 +783,91 @@
 			}
 		}
 	}
+	$exports.Iterable.match = function(p) {
+		var first = p.left;
+		var second = p.right;
+		var firstRemain = [];
+		var secondRemain = second.slice();
+		var pairs = [];
+		for (var i=0; i<first.length; i++) {
+			var match = null;
+			for (var j=0; j<secondRemain.length && !match; j++) {
+				match = p.matches(first[i],secondRemain[j]);
+				if (match) {
+					pairs.push({
+						left: first[i],
+						right: secondRemain[j]
+					});
+					secondRemain.splice(j,1);
+				}
+			}
+			if (!match) firstRemain.push(first[i]);
+		}
+		if (p.unmatched && p.unmatched.left) {
+			firstRemain.forEach(function(item) {
+				p.unmatched.left(item);
+			});
+		}
+		if (p.unmatched && p.unmatched.right) {
+			secondRemain.forEach(function(item) {
+				p.unmatched.right(item);
+			});
+		}
+		if (p.matched) pairs.forEach(function(pair) {
+			p.matched(pair);
+		});
+		return {
+			unmatched: {
+				left: firstRemain,
+				right: secondRemain
+			},
+			matched: pairs
+		};		
+	};
+
+	var Properties = (function implementProperties() {
+		var withPropertiesResult = function(was) {
+			return function() {
+				var rv = was.apply(this,arguments);
+				decorateArray(rv);
+				return rv;
+			};
+		};
+	
+		var decorateArray = function(array) {
+			["filter"].forEach(function(name) {
+				array[name] = withPropertiesResult(Array.prototype[name]);
+			});
+			array.object = function() {
+				return $exports.Object({ properties: this });
+			};
+		};
+
+		return function(array) {
+			decorateArray(array);
+			return array;
+		}
+	})();
+
+	$exports.Properties = function() {
+		var array = (function() {
+			if (arguments.length == 0) return [];
+			if (!arguments[0]) throw new TypeError("Must be object.");
+			if (arguments[0].array) return arguments[0].array;
+			if (arguments[0].object) {
+				var rv = [];
+				for (var x in arguments[0].object) {
+					//	TODO	could use Object.defineProperty to defer evaluation of o[x]
+					rv.push({ name: x, value: arguments[0].object[x] });
+				}
+				return rv;
+			}
+			throw new Error();
+		}).apply(null, arguments);
+
+		return Properties(array);
+	};
+
 	$exports.Object = function(p) {
 		var rv = {};
 		if (p.properties) {
@@ -770,6 +891,18 @@
 		}
 		return rv;
 	};
+	$exports.Object.optional = function(v) {
+		if (arguments.length == 0) throw new TypeError();
+		if (arguments.length == 1) throw new TypeError();
+		var rv = v;
+		for (var i=1; i<arguments.length; i++) {
+			if (rv === void(0) || rv === null) return void(0);
+			//	string, boolean, number
+			if (typeof(rv) != "object") throw new TypeError();
+			rv = rv[arguments[i]];
+		}
+		return rv;
+	};
 	$exports.Object.properties = function(o) {
 		//	Returns an array consisting of:
 		//	name:
@@ -781,7 +914,7 @@
 			//	TODO	could use Object.defineProperty to defer evaluation of o[x]
 			rv.push({ name: x, value: o[x] });
 		}
-		return rv;
+		return Properties(rv);
 	};
 
 	$exports.Value = function(v,name) {

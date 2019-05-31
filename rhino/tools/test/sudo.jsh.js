@@ -26,7 +26,7 @@ if (parameters.options.shell) {
 			force: true,
 			author: {
 				command: jsh.shell.java.launcher,
-				arguments: ["-jar",jsh.shell.jsh.home.getRelativePath("jsh.jar"),jsh.script.file.getRelativePath("../../../slime/rhino/tools/askpass.jsh.js"),"-prompt","Enter password to install ASepsis"],
+				arguments: ["-jar",jsh.shell.jsh.home.getRelativePath("jsh.jar"),jsh.script.file.getRelativePath("../../../slime/rhino/ui/askpass.jsh.js"),"-prompt","Enter password to install ASepsis"],
 			}
 		},
 		stdio: {

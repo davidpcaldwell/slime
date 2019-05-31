@@ -74,21 +74,22 @@ END LICENSE
 							<!-- TODO: hyperlink to ncdbg -->
 						</div>
 						<div>
-							If set to <code>profiler</code> or a value starting with <code>profiler:</code>,
-							and a built shell including a profiler is being run under the Rhino engine, the loader process will be
-							run under a profiler.
-							The profiler may be configured with an
-							argument like: <code>profiler:<i>name1</i>=<i>value1</i>,<i>name2</i>=<i>value2</i></code>. With no parameters,
-							the profiler will emit profiling information to stderr when the program completes.
-							<!--
-							The following parameters may
-							be used to configure it:
-							-->
-							<!--	<h2>Profiler parameters</h2>	-->
-							<div jsapi:reference="getApi('../../jsh/loader/profiler.api.html').getElement('parameters')">
+							<p>
+								If set to <code>profiler</code> or a value starting with <code>profiler:</code>,
+								and a built shell including a profiler is being run under the Rhino engine, the loader process will be
+								run under a profiler.
+								The profiler may be configured with an
+								argument like: <code>profiler:<i>name1</i>=<i>value1</i>,<i>name2</i>=<i>value2</i></code>. With no parameters,
+								the profiler will emit profiling information to stderr when the program completes.		
+							</p>
+							<p>
 								Profiler parameters are defined in the
 								<a href="../../jsh/loader/profiler.api.html">jsh profiler documentation</a>.
-							</div>
+							</p>
+							<p>
+								Note that the <a href="../../jsh/tools/api.html"><code>jsh/tools/profile.jsh.js</code></a>
+								script provides a simple command-line wrapper for profiling an underlying script.
+							</p>
 						</div>
 					</td>
 				</tr>

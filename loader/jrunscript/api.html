@@ -181,7 +181,7 @@ END LICENSE
 		<div class="label">has properties:</div>
 		<ul>
 			<li class="object" jsapi:id="mime">
-				<div class="name">mime</div>
+				<div class="name"><a id="mime">mime</a></div>
 				<span>__DESCRIPTION__</span>
 				<div class="label">has properties:</div>
 				<script type="application/x.jsapi#initialize">
@@ -189,30 +189,44 @@ END LICENSE
 				</script>
 				<ul jsapi:id="top">
 					<li class="function">
-						<div class="name">Type.java.URLConnection</div>
-						<span>__DESCRIPTION__</span>
-						<div class="arguments">
-							<div class="label">Arguments</div>
-							<ol>
-								<li class="object">
-									<div class="name">__NAME__</div>
-									<span>__DESCRIPTION__</span>
-									<div class="label">has properties:</div>
-									<ul>
-										<li class="value">
-											<div class="name">name</div>
-											<span class="type">string</span>
-											<span>__DESCRIPTION__</span>
+						<div class="name">Type.fromName</div>
+						<span>
+							Delegates to the SLIME implementation, but if SLIME cannot determine the MIME type, adds the
+							<code>java.net.URLConnection</code> implementation as a second source of MIME types. See
+							the <a href="../mime.api.html">SLIME documentation</a> for details. Also adds properties representing
+							the separate implementations, as follows.
+						</span>
+						<div class="label">has properties:</div>
+						<ul>
+							<li class="function">
+								<div class="name">slime</div>
+								<span>The original <a href="../mime.api.html">SLIME implementation</a>.</span>
+							</li>
+							<li class="function">
+								<div class="name">java.URLConnection</div>
+								<span>__DESCRIPTION__</span>
+								<div class="arguments">
+									<div class="label">Arguments</div>
+									<ol>
+										<li class="object">
+											<div class="label">has properties:</div>
+											<ul>
+												<li class="value">
+													<div class="name">name</div>
+													<span class="type">string</span>
+													<span>A filename.</span>
+												</li>
+											</ul>
 										</li>
-									</ul>
-								</li>
-							</ol>
-						</div>
-						<div class="returns">
-							<div class="label">Returns</div>
-							<span class="type">__TYPE__</span>
-							<span>__DESCRIPTION__</span>
-						</div>
+									</ol>
+								</div>
+								<div class="returns">
+									<div class="label">Returns</div>
+									<span class="type">__TYPE__</span>
+									<span>__DESCRIPTION__</span>
+								</div>
+							</li>
+						</ul>
 						<script type="application/x.jsapi#tests">
 							var xmlType = api.mime.Type.fromName("foo.xml");
 							verify(xmlType).evaluate(function() { return this.is("application/xml"); }).is(true);
@@ -236,7 +250,7 @@ END LICENSE
 				</div>
 			</li>
 			<li class="constructor" jsapi:id="Resource">
-				<div class="name">Resource</div>
+				<div class="name"><a id="$exports.Resource">Resource</a></div>
 				<span>Creates a <code>Resource</code> which has additional capabilities beyond the SLIME runtime <code>Resource</code>.</span>
 				<div class="arguments">
 					<div class="label">Arguments</div>

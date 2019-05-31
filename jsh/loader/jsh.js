@@ -266,6 +266,53 @@ this.jsh = new function() {
 				plugins.load({ _file: from.pathname.java.adapt() });
 			}
 		};
+
+		//	TODO	check semantics; maybe this returns null on non-existence, currently not documented in jsh/loader/plugin.api.html
+		if ($slime.getLibraryFile("kotlin") && $slime.getLibraryFile("kotlin").exists()) {
+			this.kotlin = (function kotlin() {
+				var KOTLIN = $slime.getLibraryFile("kotlin/lib");
+
+				var libraries = [
+					"kotlin-compiler.jar",
+					"kotlin-scripting-jvm.jar",
+					"kotlin-scripting-compiler.jar",
+					"kotlin-scripting-impl.jar",
+					"kotlin-script-util.jar",
+					"kotlin-script-runtime.jar",
+					"jsr223.jar"
+				].map(function(name) {
+					return new Packages.java.io.File(KOTLIN, name);
+				});
+
+				//	TODO	duplicates jsh.file.Searchpath; could push that logic up
+				Packages.java.lang.System.setProperty("kotlin.script.classpath", libraries.map(function(library) {
+					return String(library.getCanonicalPath());
+				}).join(String(Packages.java.io.File.pathSeparator)));
+				
+				libraries.forEach(function(library) {
+					$slime.classpath.add({ _file: library });
+				});
+
+				var factory = new Packages.org.jetbrains.kotlin.script.jsr223.KotlinJsr223JvmLocalScriptEngineFactory();
+
+				return new function() {
+					this.run = function(code,scope) {
+						var kotlinc = factory.getScriptEngine();
+	
+						for (var x in scope) {
+							if (x != "bindings") throw new TypeError("Unsupported: scope variable other than 'bindings': " + x);
+						}
+						for (var x in scope.bindings) {
+							kotlinc.put(x, scope.bindings[x]);
+						}
+						var resource = getCode(code);
+						var string = resource.read(String);
+						var result = kotlinc.eval(string);
+						return result;
+					};	
+				};
+			}).call(this);
+		}
 	};
 
 	(function loadPlugins() {

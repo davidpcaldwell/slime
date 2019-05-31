@@ -464,8 +464,175 @@ END LICENSE
 				<li class="object">
 					<div class="name">Function</div>
 					<span>__DESCRIPTION__</span>
+					<!--	TODO	Uncommenting this block causes tests to fail in definition page for some reason
+					<div class="type">
+						<a class="type" name="types.postprocessor">postprocessor</a>
+						<span>A function that is meant to process the results of an underlying function call.</span>
+						<div class="function">
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="object">
+										<div class="name">__NAME__</div>
+										<span>__DESCRIPTION__</span>
+										<div class="label">has properties:</div>
+										<ul>
+											<li class="value">
+												<div class="name">target</div>
+												<span class="type">__TYPE__</span>
+												<span>__DESCRIPTION__</span>
+											</li>
+											<li class="value">
+												<div class="name">arguments</div>
+												<span class="type">Array</span>
+												<span>__DESCRIPTION__</span>
+											</li>
+											<li class="value">
+												<div class="name">returned</div>
+												<span class="type">__TYPE__</span>
+												<span>__DESCRIPTION__</span>
+											</li>
+										</ul>
+									</li>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">(any)</span>
+								<span>__DESCRIPTION__</span>
+							</div>
+						</ul>
+					</div>
+					-->
 					<div class="label">has properties:</div>
 					<ul>
+						<li class="function">
+							<div class="name">memoized</div>
+							<span>
+								A function that takes a function as an argument and returns a memoized version of that function.
+								Memoized arguments currently cannot be invoked as methods (i.e., with a <code>this</code> value)
+								and also may not receive arguments.
+							</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="value">
+										<span class="type">function</span>
+										<span>A function to memoize</span>
+									</li>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">function</span>
+								<span>A memoized function.</span>
+							</div>
+							<script type="application/x.jsapi#tests">
+								var counter = function() {
+									if (typeof(arguments.callee.calls) == "undefined") arguments.callee.calls = 0;
+									arguments.callee.calls++;
+									return 42;
+								};
+
+								verify(counter.calls).is(void(0));
+								var memoized = api.Function.memoized(counter);
+								verify(counter.calls).is(void(0));
+								var result = memoized();
+								verify(result).is(42);
+								verify(counter.calls).is(1);
+								var result2 = memoized();
+								verify(result2).is(42);
+								verify(counter.calls).is(1);
+								var result3 = counter();
+								verify(result3).is(42);
+								verify(counter.calls).is(2);
+							</script>
+						</li>
+						<li class="function experimental" jsapi:id="postprocessing">
+							<div class="name">postprocessing</div>
+							<span>
+								Creates a function from an original function and a postprocessing function. The resulting function
+								will be implemented by invoking the original function with its <code>this</code> and arguments,
+								and then invoking the postprocessor with information about that call (including its return value).
+							</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="value">
+										<span class="type">function</span>
+										<span>The original function.</span>
+									</li>
+									<li class="value">
+										<span class="type"><a href="#types.Function.postprocessor">postprocessor</a></span>
+										<span>A postprocessing function</span>
+									</li>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">(any)</span>
+								<span>
+									A return value that will replace the original function's return value, or
+									<code>undefined</code> to leave that return value in place.
+								</span>
+							</div>
+							<script type="application/x.jsapi#tests">
+								var doubler = function(x) {
+									return 2 * x;
+								};
+
+								var fourXSquaredPlusX = api.Function.postprocessing(doubler, function(p) {
+									return p.returned * p.returned + p.arguments[0];
+								});
+
+								verify(fourXSquaredPlusX(5)).is(105);
+							</script>
+							<script type="application/x.jsapi#tests">
+								var Counter = function() {
+									var called = 0;
+
+									var rv = {};
+									rv.call = function() {
+										called++;
+									};
+									rv.called = function() {
+										return called;
+									};
+									return rv;
+								};
+
+								var foo = function() {
+									return "foo";
+								};
+
+								var counter = new Counter();
+								verify(counter).called().is(0);
+								var newFoo = api.Function.postprocessing(foo, counter.call);
+								verify(counter).called().is(0);
+								var v = newFoo();
+								verify(counter).called().is(1);
+								verify(v).is("foo");
+							</script>
+							<script type="application/x.jsapi#tests">
+								var foo = function() {
+									return "foo";
+								};
+
+								var calls = {};
+
+								calls.override = api.Function.postprocessing(foo, function(p) {
+									return api.Function.postprocessing.UNDEFINED;
+								});
+
+								calls.leave = api.Function.postprocessing(foo, function(p) {
+									return void(0);
+								});
+
+								verify(calls).override().is(void(0));
+								verify(calls).leave().is("foo");
+							</script>
+						</li>
 						<li class="object">
 							<div class="name">argument</div>
 							<span>__DESCRIPTION__</span>
@@ -716,7 +883,6 @@ END LICENSE
 								<div class="label">Arguments</div>
 								<ol>
 									<li class="object">
-										<div class="name">__NAME__</div>
 										<span>__DESCRIPTION__</span>
 										<div class="label">has properties:</div>
 										<ul>
@@ -726,30 +892,70 @@ END LICENSE
 												<div class="arguments">
 													<div class="label">Arguments</div>
 													<ol>
+														<li class="value">
+															<span class="type">__TYPE__</span>
+															<span>An element to group.</span>
+														</li>
 													</ol>
 												</div>
 												<div class="returns">
 													<div class="label">Returns</div>
 													<span class="type">__TYPE__</span>
-													<span>__DESCRIPTION__</span>
+													<span>A group.</span>
 												</div>
 											</li>
 											<li class="value">
 												<div class="name">groups</div>
 												<span class="type">__TYPE__</span>
-												<span>__DESCRIPTION__</span>
+												<span>
+													A set of groups to use in the output. Note that the <code>group</code> function
+													still is responsible for grouping, so if it returns groups not in this set,
+													they will be included in the output. This value is for the purpose of
+													<em>guaranteeing</em> certain elements will be returned (even with empty lists
+													or zero counts).
+												</span>
 											</li>
 											<li class="object">
 												<div class="name">codec</div>
-												<span>__DESCRIPTION__</span>
+												<span>
+													(optional)
+												</span>
 												<div class="label">has properties:</div>
 												<ul>
+													<li class="function">
+														<div class="name">encode</div>
+														<span>__DESCRIPTION__</span>
+														<div class="arguments">
+															<div class="label">Arguments</div>
+															<ol>
+															</ol>
+														</div>
+														<div class="returns">
+															<div class="label">Returns</div>
+															<span class="type">string</span>
+															<span>A distinct string identifying the given group.</span>
+														</div>
+													</li>
+													<li class="function">
+														<div class="name">decode</div>
+														<span>__DESCRIPTION__</span>
+														<div class="arguments">
+															<div class="label">Arguments</div>
+															<ol>
+															</ol>
+														</div>
+														<div class="returns">
+															<div class="label">Returns</div>
+															<span class="type">__TYPE__</span>
+															<span>__DESCRIPTION__</span>
+														</div>
+													</li>
 												</ul>
 											</li>
 											<li class="value">
 												<div class="name">array</div>
-												<span class="type">__TYPE__</span>
-												<span>__DESCRIPTION__</span>
+												<span class="type">Array</span>
+												<span>A set of elements to group.</span>
 											</li>
 											<li class="value">
 												<div class="name">count</div>
@@ -768,7 +974,196 @@ END LICENSE
 								</ul>
 							</div>
 						</li>
+						<li class="function">
+							<div class="name">match</div>
+							<span>
+								A function that operates on two lists, called <code>left</code> and <code>right</code>, pertaining
+								to a common underlying set. Callers specify a <code>matches</code> function that can determine
+								which elements on each side <dfn>match</dfn>, or pertain to the same logical element in the set.
+								The method will identify which elements from each list match, and which from each list remain
+								unmatched after searching for matches. The results will be returned; optionally, a callback can
+								be invoked for each element based on the result for that element.
+							</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="object">
+										<div class="label">has properties:</div>
+										<ul>
+											<li class="value">
+												<div class="name">left</div>
+												<span class="type">__TYPE__</span>
+												<span>__DESCRIPTION__</span>
+											</li>
+											<li class="value">
+												<div class="name">right</div>
+												<span class="type">__TYPE__</span>
+												<span>__DESCRIPTION__</span>
+											</li>
+											<li class="function">
+												<div class="name">matches</div>
+												<span>__DESCRIPTION__</span>
+												<div class="arguments">
+													<div class="label">Arguments</div>
+													<ol>
+														<li class="value">
+															<span class="type">__TYPE__</span>
+															<span>An element from <code>left</code>.</span>
+														</li>
+														<li class="value">
+															<span class="type">__TYPE__</span>
+															<span>An element from <code>right</code>.</span>
+														</li>
+													</ol>
+												</div>
+												<div class="returns">
+													<div class="label">Returns</div>
+													<span class="type">boolean</span>
+													<span>
+														<code>true</code> if the two elements <dfn>match</dfn>, that is,
+														pertain to the same element in the underlying set.
+													</span>
+												</div>
+											</li>
+											<li class="object">
+												<div class="name">unmatched</div>
+												<span>__DESCRIPTION__</span>
+												<div class="label">has properties:</div>
+												<ul>
+													<li class="function">
+														<div class="name">left</div>
+														<span>
+															A callback invoked for each item from <code>left</code> that
+															does not match.
+														</span>
+														<div class="arguments">
+															<div class="label">Arguments</div>
+															<ol>
+																<li class="value">
+																	<span class="type">__TYPE__</span>
+																	<span>The element from <code>left</code>.</span>
+																</li>
+															</ol>
+														</div>
+													</li>
+													<li class="function">
+														<div class="name">right</div>
+														<span>
+															A callback invoked for each item from <code>right</code> that
+															does not match.
+														</span>
+														<div class="arguments">
+															<div class="label">Arguments</div>
+															<ol>
+																<li class="value">
+																	<span class="type">__TYPE__</span>
+																	<span>The element from <code>right</code>.</span>
+																</li>
+															</ol>
+														</div>
+													</li>
+												</ul>
+											</li>
+											<li class="function">
+												<div class="name">matched</div>
+												<span>A callback invoked for each pair of items that matches.</span>
+												<div class="arguments">
+													<div class="label">Arguments</div>
+													<ol>
+														<li class="value">
+															<span class="type">__TYPE__</span>
+															<span>An element from <code>left</code>.</span>
+														</li>
+														<li class="value">
+															<span class="type">__TYPE__</span>
+															<span>An element from <code>right</code>.</span>
+														</li>
+													</ol>
+												</div>
+											</li>
+										</ul>
+									</li>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+								<div class="label">has properties:</div>
+								<ul>
+								</ul>
+							</div>
+							<script type="application/x.jsapi#tests">
+								var left = ["a", "b"];
+								var right = ["B", "C"];
+								var matches = function(a,b) {
+									return a.toLowerCase() == b.toLowerCase();
+								};
+
+								var recordingFunction = function() {
+									var rv = function() {
+										arguments.callee.received.push(Array.prototype.slice.call(arguments));
+									};
+									rv.received = [];
+									return rv;
+								};
+
+								var onLeft = recordingFunction();
+								var onRight = recordingFunction();
+								var onMatch = recordingFunction();
+
+								var result = api.Iterable.match({
+									left: left,
+									right: right,
+									matches: matches,
+									unmatched: {
+										left: onLeft,
+										right: onRight
+									},
+									matched: onMatch
+								});
+								verify(result).unmatched.left.length.is(1);
+								verify(result).unmatched.right.length.is(1);
+								verify(result).matched.length.is(1);
+								verify(onLeft.received).length.is(1);
+								verify(onLeft.received)[0].length.is(1);
+								verify(onRight.received).length.is(1);
+								verify(onRight.received)[0].length.is(1);
+								verify(onMatch.received).length.is(1);
+								verify(onMatch.received)[0].length.is(1);
+								verify(onMatch.received)[0][0].left.is.type("string");
+								verify(onMatch.received)[0][0].right.is.type("string");
+							</script>
+						</li>
 					</ul>
+				</li>
+				<li class="function" jsapi:id="Properties">
+					<div class="name">Properties</div>
+					<span>__DESCRIPTION__</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</div>
+					<script type="application/x.jsapi#tests">
+						var empty = api.Properties();
+						verify(empty).length.is(0);
+
+						verify(api).evaluate(function(api) {
+							return api.Properties(null);
+						}).threw.type(TypeError);
+
+						verify(api).Properties({ array: [ { name: "foo", value: "bar" } ] }).length.is(1);
+
+						verify(api).Properties({ object: { foo: "bar" } }).length.is(1);
+						verify(api).Properties({ object: { foo: "bar" } })[0].name.is("foo");
+						verify(api).Properties({ object: { foo: "bar" } })[0].value.is("bar");
+					</script>
 				</li>
 				<li class="function">
 					<div class="name">Object</div>
@@ -859,6 +1254,21 @@ END LICENSE
 								<span class="type">Array of <a href="#types.property">property</a></span>
 								<span>__DESCRIPTION__</span>
 							</div>
+							<script type="application/x.jsapi#tests">
+								var o = { a: 1, b: 2 };
+								var properties = api.Object.properties(o);
+								verify(properties).length.is(2);
+
+								var rebuilt = properties.object();
+								verify(rebuilt).a.is(1);
+								verify(rebuilt).b.is(2);
+
+								var filtered = api.Object.properties(o).filter(function(property) {
+									return property.name == "a";
+								}).object();
+								verify(filtered).a.is(1);
+								verify(filtered).evaluate.property("b").is(void(0));
+							</script>
 						</li>
 						<li class="function">
 							<div class="name">compose</div>
@@ -921,7 +1331,7 @@ END LICENSE
 									verify(value).evaluate(function() { return this.require(); }).threw.nothing();
 									verify(value).property("foo").evaluate(function() { return this.require() }).threw.type(TypeError);
 									verify(value).property("foo").evaluate(function() { return this.require(); }).threw.message.is("one.foo is required");
-									if (!$jsapi.java || !$jsapi.java.loader.test.HAS_NASHORN_ERROR_HACK) {
+									if (!$jsapi.java || !$jsapi.java.loader || !$jsapi.java.loader.test || !$jsapi.java.loader.test.HAS_NASHORN_ERROR_HACK) {
 										verify(value).evaluate(function() { return this.property("foo","bar"); }).threw.type(TypeError);
 									}
 									verify(value).property("name").evaluate(function() { return this.require() }).threw.nothing();
@@ -1344,83 +1754,132 @@ END LICENSE
 						</li>
 					</ul>
 				</li>
-				<li class="object">
-					<div class="name">steps</div>
+				<li class="object experimental">
+					<div class="name">threads</div>
 					<span>__DESCRIPTION__</span>
 					<div class="label">has properties:</div>
 					<ul>
+						<li class="object">
+							<div class="name">steps</div>
+							<span>__DESCRIPTION__</span>
+							<div class="type">
+								<a class="type" name="types.threads.step">step</a>
+								<span>__DESCRIPTION__</span>
+								<div class="label">has properties:</div>
+								<ul>
+								</ul>
+							</div>
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="function">
+									<div class="name">run</div>
+									<span>__DESCRIPTION__</span>
+									<div class="arguments">
+										<div class="label">Arguments</div>
+										<ol>
+											<li class="value">
+												<div class="name">steps</div>
+												<span class="type">Array of <a href="#types.threads.step">step</a></span>
+												<span>__DESCRIPTION__</span>
+											</li>
+											<li class="object">
+												<span>An event handler</span>
+												<div class="label">has properties:</div>
+												<ul>
+													<li class="value">
+														<div class="name">unready</div>
+														<span class="type">listener</span>
+														<span>__DESCRIPTION__</span>
+													</li>
+												</ul>
+											</li>
+										</ol>
+									</div>
+									<div class="returns">
+										<div class="label">Returns</div>
+										<div class="label">has properties:</div>
+										<ul>
+											<li class="value">
+												<div class="name">unready</div>
+												<span class="type">Array of <a href="#types.threads.step">step</a></span>
+												<span>A set of steps that never executed because they were never <code>ready()</code>.</span>
+											</li>
+										</ul>
+									</div>
+									<script type="application/x.jsapi#tests">
+										verify(api,"$api").loadedByJsapi.is(true);
+										verify(api,"$api").threads.steps.is.not.equalTo(null);
+										verify(api,"$api").threads.steps.evaluate.property("run").is.not.equalTo(null);
+				
+										var $steps = verify(api,"$api").threads.steps;
+										var $run = $steps.evaluate(function() { return this.run({ steps: [] }) });
+										$run.threw.nothing();
+				
+										var A = function(shared) {
+											this.ready = function() {
+												return true;
+											}
+				
+											this.run = function() {
+												shared.a = true;
+											}
+										};
+				
+										var B = function(shared) {
+											this.ready = function() {
+												return shared.a;
+											};
+				
+											this.run = function() {
+												shared.b = true;
+											}
+										}
+				
+										var Shared = function() {
+											this.a = false;
+											this.b = false;
+										};
+				
+										var Listener = function() {
+											var unready = [];
+				
+											this.on = {
+												unready: function(e) {
+													unready.push(e.detail);
+												}
+											}
+				
+											this.unready = unready;
+										}
+				
+										var s1 = new Shared();
+										$steps.run({
+											steps: [ new A(s1) ]
+										});
+										verify(s1).a.is(true);
+				
+										var s2 = new Shared();
+										$steps.run({
+											steps: [ new B(s2), new A(s2) ]
+										});
+										verify(s2).a.is(true);
+										verify(s2).b.is(true);
+				
+										var s3 = new Shared();
+										var b3 = new B(s3);
+										var l3 = new Listener();
+										verify(api).threads.steps.run({
+											steps: [ b3 ]
+										}, l3.on).unready.length.is(1);
+										verify(s3).a.is(false);
+										verify(s3).b.is(false);
+										verify(l3).unready.length.is(1);
+										verify(l3).unready[0].is(b3);
+									</script>
+								</li>
+							</ul>
+						</li>
 					</ul>
-					<script type="application/x.jsapi#tests">
-						verify(api,"$api").loadedByJsapi.is(true);
-						verify(api,"$api").threads.steps.is.not.equalTo(null);
-						verify(api,"$api").threads.steps.evaluate.property("run").is.not.equalTo(null);
-
-						var $steps = verify(api,"$api").threads.steps;
-						var $run = $steps.evaluate(function() { return this.run({ steps: [] }) });
-						$run.threw.nothing();
-
-						var A = function(shared) {
-							this.ready = function() {
-								return true;
-							}
-
-							this.run = function() {
-								shared.a = true;
-							}
-						};
-
-						var B = function(shared) {
-							this.ready = function() {
-								return shared.a;
-							};
-
-							this.run = function() {
-								shared.b = true;
-							}
-						}
-
-						var Shared = function() {
-							this.a = false;
-							this.b = false;
-						};
-
-						var Listener = function() {
-							var unready = [];
-
-							this.on = {
-								unready: function(e) {
-									unready.push(e.detail);
-								}
-							}
-
-							this.unready = unready;
-						}
-
-						var s1 = new Shared();
-						$steps.run({
-							steps: [ new A(s1) ]
-						});
-						verify(s1).a.is(true);
-
-						var s2 = new Shared();
-						$steps.run({
-							steps: [ new B(s2), new A(s2) ]
-						});
-						verify(s2).a.is(true);
-						verify(s2).b.is(true);
-
-						var s3 = new Shared();
-						var b3 = new B(s3);
-						var l3 = new Listener();
-						$steps.run({
-							steps: [ b3 ],
-							on: l3.on
-						});
-						verify(s3).a.is(false);
-						verify(s3).b.is(false);
-						verify(l3).unready.length.is(1);
-						verify(l3).unready[0].is(b3);
-					</script>
 				</li>
 			</ul>
 		</div>

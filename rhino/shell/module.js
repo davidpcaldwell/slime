@@ -20,24 +20,26 @@ var module = {
 
 $exports.listeners = module.events.listeners;
 
-$exports.run = $api.Events.Function(function(p,events) {
+var run = function(p,events) {
 	var as;
 	if (p.as) {
 		as = p.as;
 	}
 	var stdio = $exports.run.stdio(p);
 	var directory = $exports.run.directory(p);
+	var environment = (function(now,argument) {
+		if (typeof(argument) == "undefined") return now;
+		if (argument === null) return now;
+		if (typeof(argument) == "object") return argument;
+		if (typeof(argument) == "function") {
+			var rv = Object.assign({}, now);
+			return $api.Function.mutating(argument)(rv);
+		}
+	})($exports.environment,p.environment)
 	var context = new JavaAdapter(
 		Packages.inonit.system.Command.Context,
 		new function() {
 			this.toString = function() {
-				var environment = (p.environment) ? (function(e) {
-					var rv = {};
-					for (var x in e) {
-						rv[x] = String(e[x]);
-					}
-					return rv;
-				})(p.environment) : null;
 				return JSON.stringify({
 					environment: environment
 				});
@@ -68,7 +70,7 @@ $exports.run = $api.Events.Function(function(p,events) {
 					return rv;
 				}
 
-				return _hashMap( (p.environment) ? p.environment : $exports.environment );
+				return _hashMap( environment );
 			};
 
 			this.getWorkingDirectory = function() {
@@ -140,6 +142,13 @@ $exports.run = $api.Events.Function(function(p,events) {
 			})();
 		} else if (typeof(p.command) != "undefined") {
 			rv.result.command = p.command;
+			if (typeof(p.arguments) == "function") {
+				p.arguments = (function(f) {
+					var rv = [];
+					f(rv);
+					return rv;
+				})(p.arguments);
+			}
 			rv.result.arguments = p.arguments;
 			rv.result.as = p.as;
 			rv.configuration.command = toCommandToken(rv.result)(p.command);
@@ -183,9 +192,7 @@ $exports.run = $api.Events.Function(function(p,events) {
 		command: invocation.result.command,
 		arguments: invocation.result.arguments
 	};
-	if (p.environment) {
-		result.environment = p.environment;
-	}
+	result.environment = environment;
 	if (directory) {
 		if (typeof(directory) != "undefined") {
 			result.directory = directory;
@@ -202,8 +209,7 @@ $exports.run = $api.Events.Function(function(p,events) {
 			this.command = result.command;
 			this.arguments = result.arguments;
 
-			//	TODO	consider what to do if no environment specified
-			this.environment = (result.environment) ? result.environment : $exports.environment;
+			this.environment = result.environment;
 
 			this.directory = result.directory;
 
@@ -263,13 +269,15 @@ $exports.run = $api.Events.Function(function(p,events) {
 	});
 	var evaluate = (p.evaluate) ? p.evaluate : $exports.run.evaluate;
 	return evaluate(result);
-});
+};
+
+$exports.run = $api.Events.Function(run);
 $exports.run.evaluate = function(result) {
 	if (result.error) throw result.error;
 	if (result.status != 0) throw new Error("Exit code: " + result.status + " executing " + result.command + ((result.arguments && result.arguments.length) ? " " + result.arguments.join(" ") : ""));
 	return result;
 };
-$exports.run.stdio = (function(p) {
+$exports.run.stdio = function(p) {
 	var rv = (function() {
 		if (typeof(p.stdio) != "undefined") return p.stdio;
 
@@ -343,7 +351,21 @@ $exports.run.stdio = (function(p) {
 		}
 	}
 	return rv;
-});
+};
+$exports.run.stdio.LineBuffered = function(o) {
+	return Object.assign({}, o, {
+		output: {
+			line: function(line) {
+				o.stdio.output.write(line + $exports.os.newline);
+			}
+		},
+		error: {
+			line: function(line) {
+				o.stdio.error.write(line + $exports.os.newline);
+			}
+		}
+	});
+}
 $exports.run.directory = function(p) {
 	var getDirectoryProperty = function(p) {
 		if (p.directory && p.directory.pathname) {
@@ -693,4 +715,18 @@ $exports.jrunscript = function(p) {
 		command: launch.command,
 		arguments: args
 	}));
-}
+};
+
+if ($context.kotlin) $exports.kotlin = $api.Events.Function(function(p,events) {
+	//	TODO	remove script property
+	var copy = $api.Object.properties(p).filter(function(property) {
+		return property.name != "script";
+	}).object();
+	return run(Object.assign({}, copy, {
+		 command: $context.kotlin.compiler,
+		 arguments: function(rv) {
+			 rv.push("-script", p.script);
+			 if (p.arguments) rv.push.apply(rv,p.arguments);
+		 }
+	}), events);
+});

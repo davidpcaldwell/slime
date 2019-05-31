@@ -13,7 +13,7 @@
 
 plugin({
 	isReady: function() {
-		return jsh.java && jsh.java.tools && jsh.java.tools.askpass && jsh.java.tools.askpass.gui && jsh.shell;
+		return jsh.ui && jsh.ui.askpass && jsh.ui.askpass.gui && jsh.shell;
 	},
 	load: function() {
 		if (!jsh.tools) jsh.tools = {};
@@ -30,7 +30,7 @@ plugin({
 				throw new Error("Destination already exists: " + p.destination);
 			}
 
-			var password = (p.mock && p.mock.password) ? p.mock.password : jsh.java.tools.askpass.gui({
+			var password = (p.mock && p.mock.password) ? p.mock.password : jsh.ui.askpass.gui({
 				prompt: "Enter password for Bitbucket (" + p.user + ")"
 			});
 

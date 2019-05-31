@@ -19,7 +19,10 @@ END LICENSE
 		<script src="../../../../loader/api/api.js"></script>
 	</head>
 	<body>
-		<div>__DESCRIPTION__</div>
+		<div>
+			The <code>jsh.httpd.tools</code> plugin is not available by default in a <code>jsh</code> shell; it must be loaded
+			via a call to <code>jsh.httpd.plugin.tools()</code>.
+		</div>
 		<div>
 			<h1>Context</h1>
 			<ul>
@@ -116,6 +119,11 @@ END LICENSE
 											<span class="type">__TYPE__</span>
 											<span>__DESCRIPTION__</span>
 										</div>
+									</li>
+									<li class="value">
+										<div class="name">servlet</div>
+										<span class="type">string</span>
+										<span>The webapp path to the servlet</span>
 									</li>
 								</ul>
 							</li>

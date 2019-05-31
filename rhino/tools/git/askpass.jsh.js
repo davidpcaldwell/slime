@@ -54,7 +54,7 @@ if (!parameters.options.child) {
 		arguments: ["+x",parameters.options.script]
 	});
 } else {
-	var api = jsh.loader.file(jsh.script.file.parent.parent.getRelativePath("askpass.js"), {
+	var api = jsh.loader.file(jsh.script.file.parent.parent.parent.getRelativePath("ui/askpass.js"), {
 		api: {
 			java: jsh.java
 		}

@@ -43,7 +43,6 @@ $exports.__defineGetter__("javac", $api.experimental($context.api.js.constant(fu
 			}
 		}
 	})();
-//	var javac = Packages.javax.tools.ToolProvider.getSystemJavaCompiler();
 	if (!javac) return function(){}();
 	return function(p) {
 		var args = [];
@@ -103,8 +102,26 @@ $exports.__defineGetter__("javac", $api.experimental($context.api.js.constant(fu
 	};
 })));
 
-$exports.askpass = $loader.file("askpass.js", {
-	api: {
-		java: $context.api.java
-	}
-});
+$exports.Jar = function(o) {
+	var _peer = (function(o) {
+		if (o.file) {
+			return new Packages.java.util.jar.JarFile(
+				o.file.pathname.java.adapt()
+			);
+		}
+	})(o);
+
+	this.manifest = (function() {
+		var _manifest = _peer.getManifest();
+		var _main = _manifest.getMainAttributes();
+		var _entries = _main.entrySet().iterator();
+		var rv = {
+			main: {}
+		};
+		while(_entries.hasNext()) {
+			var _entry = _entries.next();
+			rv.main[String(_entry.getKey())] = String(_entry.getValue());
+		}
+		return rv;
+	})();
+};

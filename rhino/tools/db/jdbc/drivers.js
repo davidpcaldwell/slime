@@ -274,6 +274,7 @@ var NamingAlgorithmSelector = function() {
 };
 
 var Mapper = function(o) {
+	if (!o.types.getCodec) throw new Error("No types.getCodec; types keys = " + Object.keys(o.types));
 	var delegate;
 
 	var array = function(types,columns) {
@@ -293,6 +294,7 @@ var Mapper = function(o) {
 		}
 		return selector.select({
 			insensitive: function(types,columns) {
+				if (!types.getCodec) throw new Error("No types.getCodec");
 				return function(rs) {
 					var row = {};
 					columns.forEach( function(column,index) {
@@ -351,6 +353,10 @@ var Query = function(o) {
 };
 
 var DataSource = function(c) {
+	if (!c.peer) {
+		throw new Error("No 'peer' supplied to DataSource.");
+	}
+	var mapper = new Mapper({ types: c.types });
 	var log = $context.log;
 	//	Creates a function that calls the Query constructor with the return value of the first argument (which is a function)
 	var createQueryFactory = function(Query,argumentsFactoryMethod) {
@@ -542,6 +548,8 @@ var DataSource = function(c) {
 			connection.executeDdl({ sql: ddl });
 			connection.commit();
 		} catch (e) {
+			Packages.java.lang.System.err.println(e);
+			Packages.java.lang.System.err.println(e.stack);
 			connection.rollback();
 		} finally {
 			connection.close();
@@ -551,7 +559,7 @@ var DataSource = function(c) {
 	this.executeStandalone = function(ddl) {
 		try {
 			var connection = new Connection(c.peer.getConnection(), { standalone: true });
-			connection.execute(ddl);
+			connection.execute({ sql: ddl });
 		} finally {
 			connection.close();
 		}
@@ -618,6 +626,18 @@ var DataSource = function(c) {
 }
 
 var Context = function(p) {
+	if (p.ds && !p.connections) {
+		p.connections = new function() {
+			this.get = function() {
+				return p.ds.getConnection();
+			};
+
+			this.release = function(connection) {
+				connection.close();
+			}
+		}		
+	}
+
 	var connection = p.connections.get();
 //	var connection = createConnection();
 //	if (!schema) {
@@ -753,21 +773,7 @@ Context.perform = function(context,transaction) {
 
 //	Database methods
 
-var Database = function(Catalog) {
-	this.getCatalog = function(p) {
-		var name = new Identifier(p.name);
-		if (this.getCatalogs) {
-			//	check for existence
-			var catalogs = this.getCatalogs();
-			return (catalogs.some( function(item) { return item.name.toString() == name.toString() } )) ? new Catalog(name) : null;
-		} else {
-			//	cannot check, so just go ahead
-			return new Catalog(name);
-		}
-	};
-};
-
-var Identifier = function(p) {
+var Identifier = ($context.Identifier) ? $context.Identifier : function(p) {
 	if (typeof(p) == "string") {
 		//	TODO	enforce constraints: must begin with a letter and contain only letters, underscore characters (_), and digits
 		this.toString = function() {
@@ -784,45 +790,12 @@ var Identifier = function(p) {
 			return "\"" + p.string + "\"";
 		};
 	} else {
-		throw new Error("Unimplemented: typeof(p) == " + typeof(p));
+		throw new Error("Unimplemented: Identifier with typeof(p) == " + typeof(p));
 	}
 }
 
-var Catalog = function(c) {
-	this.getSchemas = function() {
-		var query = c.dataSource.createMetadataQuery(function(_metadata) {
-			return _metadata.getSchemas();
-		});
-		return query.map( function(row) {
-			//	TODO	should parameterize Identifier constructor
-			return new c.Schema({ name: new Identifier({ string: row.table_schem }) });
-		}).toArray();
-	};
-
-	this.getSchema = function(p) {
-		var name = new Identifier(p.name);
-		var rv = $context.api.js.Array.choose(this.getSchemas(), function(schema) {
-			return schema.name == name.toString();
-		});
-		if (p.descriptor) {
-			if (!rv) {
-				rv = this.createSchema(p);
-			}
-			p.descriptor.forEach(function(update) {
-				if (!update.applied(rv)) {
-					rv.perform(update.apply);
-				}
-			});
-		}
-		if (!rv) return null;
-		return rv;
-	};
-};
-
 var Table = function(c) {
 	var columns = {
-		insensitive: {},
-		sensitive: {},
 		array: [],
 		autoincrement: null
 	};
@@ -842,24 +815,50 @@ var Table = function(c) {
 			if (s == "NO") return false;
 		}
 
-		var column = { name: row.column_name, type: type, generated: yesno(row.is_generatedcolumn), autoincrement: yesno(row.is_autoincrement) };
+		var column = { 
+			//	https://docs.oracle.com/javase/8/docs/api/java/sql/DatabaseMetaData.html#getColumns-java.lang.String-java.lang.String-java.lang.String-java.lang.String-
+			//	table_cat
+			//	table_schem
+			//	table_name
+			name: row.column_name, 
+			type: type,
+			//	type_name
+			size: row.column_size,
+			//	buffer_length: unused by JDBC
+			//	digits: row.decimal_digits,
+			//	num_prec_radix
+			//	nullable (see is_nullable)
+			//	remarks
+			//	column_def: default
+			//	sql_data_type: unused by JDBC
+			//	sql_datetime_sub: unused by JDBC
+			//	char_octet_length
+			//	ordinal_position
+			nullable: (function(value) {
+				if (value == "YES") return true;
+				if (value == "NO") return false;
+			})(row.is_nullable),
+			//	scope_catalog
+			//	scope_schema
+			//	scope_table
+			//	source_data_type
+			autoincrement: yesno(row.is_autoincrement),
+			generated: yesno(row.is_generatedcolumn)
+		};
+
+		column.toString = function() {
+			var nullable = (this.nullable) ? " NULL" : " NOT NULL";
+			return this.name + " " + this.type.string + nullable;
+		}
+
 		if (column.autoincrement) {
 			columns.autoincrement = column;
 		}
-		if (columns.insensitive) {
-			var lower = row.column_name.toLowerCase();
-			if (!columns.insensitive[lower]) {
-				columns.insensitive[lower] = column;
-			} else {
-				columns.insensitive = null;
-			}
-		}
-		columns.sensitive[row.column_name] = column;
 		columns.array.push(column);
 	});
 
 	this.toString = function() {
-		return "Table: " + c.name.toString();
+		return "Table: " + c.name.toString() + " (" + c.type + ")";
 	}
 
 	this.name = c.name.toString();
@@ -869,8 +868,27 @@ var Table = function(c) {
 	};
 
 	this.getColumn = function(p) {
-		return columns.sensitive[p.name];
+		var identifier = new Identifier(p.name);
+		for (var i=0; i<columns.array.length; i++) {
+			if (columns.array[i].name == identifier.toString()) {
+				return columns.array[i];
+			}
+		}
+		return null;
 	};
+
+	this.primaryKey = c.dataSource.createMetadataQuery(function(metadata) {
+		return metadata.getPrimaryKeys(null,c.schema.name,c.name);
+	}).toArray().sort(function(a,b) {
+		return a.key_seq - b.key_seq;
+	}).map(function(row) {
+		//	table_cat
+		//	table_schem
+		//	table_name
+		return this.getColumn({ name: row.column_name });
+		//	key_seq: used to order key
+		//	pk_name
+	},this);
 
 	this.insert = function(data) {
 		//	TODO	what should be done if property values are undefined?
@@ -926,30 +944,39 @@ var Schema = function(c) {
 
 	this.perform = function(transaction) {
 //		var context = new p.dataSource.SchemaContext(p.name.sql);
-		var context = new c.Context();
+		var context = new Context({ ds: c.ds });
 		return Context.perform(context,transaction);
 	};
 
+	var newTable = (function(row) {
+		return new Table({
+			schema: this,
+			dataSource: c.ds,
+			name: row.table_name,
+			type: row.table_type
+		});
+	}).bind(this)
+
 	this.getTables = function() {
-		return c.dataSource.createMetadataQuery( function(metadata) {
+		return c.ds.createMetadataQuery( function(metadata) {
 			//	TODO	this would not work in a multi-catalog database; would need to also filter on catalog
 			return metadata.getTables(null,c.name.toString(),null,null)
 		} ).map( function(row) {
-			return new c.Table({ schema: this, dataSource: c.dataSource, name: new Identifier({ string: row.table_name })});
+			return newTable(row);
 		}, this ).toArray();
 	};
 
 	this.getTable = function(p) {
 //		var tables = this.getTables();
 		var name = new Identifier(p.name);
-		var candidateTables = c.dataSource.createMetadataQuery( function(metadata) {
+		var candidateTables = c.ds.createMetadataQuery( function(metadata) {
 			//	TODO	this would not work in a multi-catalog database; would need to also filter on catalog
 			return metadata.getTables(null,c.name.toString(),name.toString(),null)
 		} ).toArray();
 		var row = $context.api.js.Array(candidateTables).one(function() {
 			return this.table_name == name.toString();
 		});
-		return (row) ? new c.Table({ schema: this, dataSource: c.dataSource, name: new Identifier({ string: row.table_name })}) : null;
+		return (row) ? newTable(row) : null;
 //		return new c.Table({ schema: this, dataSource: c.dataSource, name: )
 //		.one( function() {
 //			return row.table_name == name.toString();
@@ -961,6 +988,92 @@ var Schema = function(c) {
 //		return (rv) ? rv : null;
 	}
 }
+
+var Catalog = function(c) {
+	if (!c.dataSource) {
+		throw new TypeError("Missing dataSource property");
+	}
+	this.name = c.name;
+
+	this.getSchemas = function() {
+		var query = c.dataSource.createMetadataQuery(function(_metadata) {
+			return _metadata.getSchemas();
+		});
+		return query.map( function(row) {
+			//	TODO	should parameterize Identifier constructor
+			//	should this filter by table_catalog?
+			return new Schema({ name: row.table_schem, ds: c.dataSource });
+		}).toArray();
+	};
+
+	this.getSchema = function(p) {
+		var name = new Identifier(p.name);
+		var rv = $context.api.js.Array.choose(this.getSchemas(), function(schema) {
+			return schema.name == name.toString();
+		});
+		if (p.descriptor) {
+			if (!rv) {
+				rv = this.createSchema(p);
+			}
+			p.descriptor.forEach(function(update) {
+				if (!update.applied(rv)) {
+					rv.perform(update.apply);
+				}
+			});
+		}
+		if (!rv) return null;
+		return rv;
+	};
+
+	this.createSchema = function(p) {
+		var name = new Identifier(p.name);
+		c.dataSource.executeDdl("CREATE SCHEMA " + name.sql());
+		return this.getSchema({ name: p.name });
+	};
+
+	this.dropSchema = function(p) {
+		var name = new Identifier(p.name);
+		c.dataSource.executeDdl("DROP SCHEMA " + name.sql() + " CASCADE");
+	}
+};
+
+var Database = function(o) {
+	var newCatalog = function(p) {
+		return new Catalog({
+			name: p.name,
+			dataSource: new o.catalogs.DataSource(p.name)
+		});
+	};
+
+	this.getCatalog = function(p) {
+		var name = new Identifier(p.name);
+		if (o.catalogs && o.catalogs.list) {
+			//	check for existence
+			var catalogs = o.catalogs.list();
+			return (catalogs.some( function(item) { return item.name == name.toString() } )) ? newCatalog({ name: name.toString() }) : null;
+		} else {
+			//	cannot check, so just go ahead
+			return newCatalog({ name: name.toString() });
+		}
+	};
+
+	this.getCatalogs = function() {
+		return o.catalogs.list().map(function(row) {
+			return newCatalog({ name: row.name });
+		});
+	};
+
+	this.createCatalog = function(p) {
+		var identifier = new Identifier(p.name);
+		o.catalogs.create({ name: identifier });
+		return newCatalog({ name: identifier.toString() });
+	};
+
+	this.dropCatalog = function(p) {
+		var identifier = new Identifier(p.name);
+		o.catalogs.drop({ name: identifier });
+	}
+};
 
 $exports.api = $context.api;
 $exports.types = types;

@@ -138,6 +138,7 @@ plugin({
 				//	Obviously using an XML parser would be beneficial here if this begins to get more complex
 
 				var xml = SLIME.getFile("rhino/http/servlet/tools/web.xml").read(String);
+				if (!p.servlet) throw new TypeError("Required: p.servlet indicating webapp path of servlet to use.");
 				xml = xml.replace(/__SCRIPT__/, p.servlet);
 				//	The below line removes the license, because Tomcat cannot parse it; this may or may not be what we want
 				xml = xml.substring(xml.indexOf("-->") + "-->".length + 1);

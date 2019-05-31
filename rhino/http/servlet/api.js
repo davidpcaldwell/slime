@@ -15,12 +15,15 @@ var $java = (function() {
 	if ($host.getLoader && $host.getEngine) {
 		return $host.getEngine().script("jrunscript/rhino.js", $host.getLoader().getLoaderCode("jrunscript/rhino.js"), { $loader: $host.getLoader(), $rhino: $host.getEngine() }, null);
 	} else if ($host.getLoader && $host.getClasspath) {
+		//	TODO	implement along with Graal servlets
+		var $graal;
 		var scripts = eval($host.getLoader().getLoaderCode("jrunscript/nashorn.js"));
 
 		var rv = scripts.script(
 			"jrunscript/nashorn.js",
 			$host.getLoader().getLoaderCode("jrunscript/nashorn.js"),
 			{
+				$graal: $graal,
 				$getLoaderCode: function(path) {
 					return $host.getLoader().getLoaderCode(path);
 				},
@@ -133,6 +136,7 @@ var Loader = (function() {
 				get: function(path) {
 					var delegate = new bootstrap.io.Loader(pp);
 					var delegated = delegate.source.get(path);
+					if (!delegated) return null;
 					return bootstrap.js.Object.set({}, delegated, {
 						type: pp.type(path)
 					});

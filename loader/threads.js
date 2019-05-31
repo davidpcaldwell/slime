@@ -13,8 +13,7 @@
 
 $exports.steps = {};
 
-$exports.steps.run = function(p) {
-	var events = (p.on) ? $context.Events(p) : $context.Events({ source: {} });
+$exports.steps.run = $context.Events.Function(function(p,events) {
 	var list = p.steps.slice();
 	var more = true;
 	while(list.length && more) {
@@ -31,7 +30,10 @@ $exports.steps.run = function(p) {
 	list.forEach(function(item) {
 		events.fire("unready", item);
 	});
-}
+	return {
+		unready: list
+	};
+});
 
 $exports.steps.Task = function(p) {
 	var list = p.steps.slice();

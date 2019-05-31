@@ -27,6 +27,13 @@ var parameters = jsh.script.getopts({
 
 if (!parameters.options["profiler:output"]) {
 	parameters.options["profiler:output"] = jsh.shell.TMPDIR.createTemporary({ directory: true }).getRelativePath("profile.html");
+} else {
+	parameters.options["profiler:output"].parent.createDirectory({
+		exists: function(dir) {
+			return false;
+		},
+		recursive: true
+	});
 }
 
 var src = jsh.script.file.parent.parent.parent;

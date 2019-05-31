@@ -86,11 +86,9 @@ $exports.Handler.Child = function(p) {
 		return function(request) {
 			var match = p.filter.exec(request.path);
 			if (match) {
-				var req = request;
-				for (var x in request) {
-					req[x] = request[x];
-				}
-				req.path = match[1];
+				var req = Object.assign({}, request, {
+					path: match[1]
+				});
 				return p.handle(req);
 			}
 		};

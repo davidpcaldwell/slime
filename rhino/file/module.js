@@ -234,7 +234,7 @@ $exports.Loader = function recurse(p) {
 	}
 
 	if (!p.type) p.type = function(path) {
-		return $context.api.io.mime.Type.fromName({ name: path });
+		return $context.api.io.mime.Type.fromName(path);
 	}
 
 	p.toString = function() {

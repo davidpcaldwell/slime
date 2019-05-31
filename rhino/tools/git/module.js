@@ -10,8 +10,6 @@
 //	Contributor(s):
 //	END LICENSE
 
-//	TODO	eliminate dependency on jsh
-
 var Installation = function(environment) {
 	var addConfigurationArgumentsTo = function(array,config) {
 		//	TODO	duplicated below, in git()
@@ -335,6 +333,9 @@ var Installation = function(environment) {
 			}
 			if (p.delete) {
 				args.push("-d");
+				if (typeof(p.delete) == "string") {
+					args.push(p.delete);
+				}
 			}
 			if (p.remote) {
 				args.push("-r");
@@ -526,7 +527,6 @@ var Installation = function(environment) {
 								return true;
 							},
 							then: function() {
-								//jsh.shell.console("started process");
 								process = e;
 							}
 						})()

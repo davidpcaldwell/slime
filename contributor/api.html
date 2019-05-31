@@ -42,11 +42,23 @@ END LICENSE
 			</div>
 			<ul>
 				<li>
-					Java tests: <code><a href="jrunscript.jsh.js">contributor/jrunscript.jsh.js</a> [-view <i>view</i>][-part <i>suitepath[:pagepath]</i>] [-noselfping] [-executable]</code>
+					Java tests:
+					<code><a href="jrunscript.jsh.js">contributor/jrunscript.jsh.js</a> 
+						[-view <i>view</i>]
+						[-part <i>suitepath[:pagepath]</i>] 
+						[-noselfping] [-executable]
+					</code>
 				</li>
 				<li>
 					Browser suite:
 					<code><a href="../loader/browser/test/suite.jsh.api.html">loader/browser/test/suite.jsh.js</a> -suite loader/browser/suite.js</code>
+				</li>
+				<li>
+					Browser definition page:
+					<code><a href="../loader/browser/test/suite.jsh.api.html">loader/browser/test/suite.jsh.js</a> 
+						-definition <i>pathname</i>
+						[-part <i>part</i>]
+					</code>
 				</li>
 			</ul>
 		</div>
@@ -98,6 +110,12 @@ END LICENSE
 					</ul>
 				</div>
 			</div>
+		</div>
+		<div>
+			<h1>Dependencies</h1>
+			<ul>
+				<li>JDK: <code>jsh/tools/provision/jdk.bash</code></li>
+			</ul>
 		</div>
 	</body>
 </html>
