@@ -64,6 +64,53 @@ END LICENSE
 						</tr>
 					</tbody>
 				</table>
+				<script type="application/x.jsapi#tests"><![CDATA[
+					var tomcat = new jsh.httpd.Tomcat();
+
+					tomcat.map({
+						path: "",
+						servlets: {
+							"/*": {
+								load: function(scope) {
+									scope.$exports.handle = function(request) {
+										return {
+											status: { code: 200 },
+											body: {
+												type: "application/json",
+												string: JSON.stringify({
+													"httpd.js": Boolean(scope.httpd.js),
+													"httpd.web": Boolean(scope.httpd.web),
+													"httpd.web.Url": Boolean(scope.httpd.web && scope.httpd.web.Url)
+												})
+											}
+										};
+									}
+								}
+							}
+						}
+					});
+
+					tomcat.start();
+					try {
+						var response = new jsh.http.Client().request({
+							url: "http://127.0.0.1:" + tomcat.port + "/",
+							evaluate: function(response) {
+								if (response.status.code != 200) {
+									jsh.shell.console(response.body.stream.character().asString());
+									throw new Error("Status code: " + response.status.code);
+								}
+								return JSON.parse(response.body.stream.character().asString());
+							}
+						});
+						verify(response,"server")["httpd.js"].is(true);
+						verify(response,"server")["httpd.web"].is(true);
+						verify(response,"server")["httpd.web.Url"].is(true);
+					} finally {
+						tomcat.stop();
+					}
+
+					//	TODO	test .war-style server
+				]]></script>
 			</div>
 			<div class="type">
 				<a class="type" name="types.header">header</a>
