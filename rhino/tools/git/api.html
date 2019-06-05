@@ -310,6 +310,41 @@ END LICENSE
 							</script>
 						</li>
 						<li class="function">
+							<div class="name">fetch</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="object">
+										<span>See <code>git help fetch</code> for additional semantics of the arguments below.</span>
+										<div class="label">has properties:</div>
+										<ul>
+											<li class="value">
+												<div class="name">repository</div>
+												<span class="type">string</span>
+												<span>A <code>git</code> remote, usually.</span>
+											</li>
+											<li class="value">
+												<div class="name">refspec</div>
+												<span class="type">string</span>
+												<span>__DESCRIPTION__</span>
+											</li>
+											<li class="value">
+												<div class="name">all</div>
+												<span class="type">boolean</span>
+												<span>__DESCRIPTION__</span>
+											</li>
+										</ul>
+									</li>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</div>
+						</li>
+						<li class="function">
 							<div class="name">checkout</div>
 							<span>Executes the git <code>checkout</code> command to select a branch in a repository.</span>
 							<div class="arguments">
@@ -563,6 +598,20 @@ END LICENSE
 							path for the <code>git</code> command.
 						</span>
 					</li>
+					<li class="function">
+						<div class="name">daemon</div>
+						<span>__DESCRIPTION__</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</div>
+					</li>
 					<li class="constructor">
 						<div class="name"><a id="$exports.Repository">Repository</a></div>
 						<span>__DESCRIPTION__</span>
@@ -616,6 +665,47 @@ END LICENSE
 							<div class="label">Returns</div>
 							<span class="type">Repository</span>
 							<span>The local repository created.</span>
+						</div>
+					</li>
+					<li class="function">
+						<div class="name">execute</div>
+						<span>__DESCRIPTION__</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="object">
+									<span>
+										An object that is compatible with <a href="../../../rhino/shell/api.html">run</a>,
+										with the following differences:
+									</span>
+									<div class="label">has properties:</div>
+									<ul>
+										<li class="value">
+											<div class="name">config</div>
+											<span class="type">__TYPE__</span>
+											<span>__DESCRIPTION__</span>
+										</li>
+										<li class="value">
+											<div class="name">command</div>
+											<span class="type">string</span>
+											<span>A <code>git</code> command.</span>
+										</li>
+										<li class="value">
+											<div class="name">arguments</div>
+											<span class="type">Array of string</span>
+											<span>
+												(optional)
+												Arguments to the <code>git</code> command.
+											</span>
+										</li>
+									</ul>
+								</li>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
 						</div>
 					</li>
 					<li class="function">

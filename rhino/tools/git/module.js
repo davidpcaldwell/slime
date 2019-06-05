@@ -26,16 +26,15 @@ var Installation = function(environment) {
 			}
 		}
 	};
+
 	var git = function(m) {
 		return $context.api.shell.run(
-			$context.api.js.Object.set({}, m, {
+			Object.assign({}, m, {
 				command: environment.program,
-				arguments: (function() {
-					var rv = [];
+				arguments: function(rv) {
 					if (m.config) {
 						for (var x in m.config) {
 							if (m.config[x] instanceof Array) {
-								debugger;
 								m.config[x].forEach(function(value) {
 									rv.push("-c", x + "=" + value);
 								});
@@ -47,7 +46,7 @@ var Installation = function(environment) {
 					rv.push(m.command);
 					rv.push.apply(rv, (m.arguments) ? m.arguments : []);
 					return rv;
-				})()
+				}
 			})
 		);
 	};
@@ -305,6 +304,9 @@ var Installation = function(environment) {
 			var args = [];
 			if (p && p.all) {
 				args.push("--all");
+			} else {
+				if (p && p.repository) args.push(p.repository);
+				if (p && p.refspec) args.push(p.refspec);
 			}
 			execute({
 				config: p.config,
