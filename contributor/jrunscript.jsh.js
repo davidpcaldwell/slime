@@ -58,7 +58,10 @@ suite.add("internal/other", new jsh.unit.part.Html({
 	//	TODO	loader/jrunscript/test/data/2/ has some tests but they require some classes in classpath
 }));
 
-suite.add("$api", new jsh.unit.part.Html({
+suite.add("$api/flag", new jsh.unit.part.Html({
+	pathname: SRC.getRelativePath("loader/$api-flag.api.html")
+}));
+suite.add("$api/main", new jsh.unit.part.Html({
 	pathname: SRC.getRelativePath("loader/$api.api.html")
 }));
 

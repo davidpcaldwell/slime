@@ -14,17 +14,40 @@ var getSlimePart = function(definition) {
 	});
 }
 
-suite.part("loader/browser/client.js", getSlimePart("loader/browser/client.api.html"));
-suite.part("$api", getSlimePart("loader/$api.api.html"));
-suite.part("js/object/", getSlimePart("js/object/api.html"));
-suite.part("js/object/Error.js", getSlimePart("js/object/Error.api.html"));
-suite.part("js/document/", getSlimePart("js/document/api.html"));
-suite.part("js/web/", getSlimePart("js/web/api.html"));
-suite.part("js/time/", getSlimePart("js/time/api.html"));
-// TODO: does js/promise have any real tests?
-suite.part("js/promise/", getSlimePart("js/promise/api.html"));
+var active = function(part) {
+	if (data.part) {
+		return data.part
+	}
+}
 
-suite.part("loader/api/unit.js", getSlimePart("loader/api/unit.api.html"));
-suite.part("loader/api/", getSlimePart("loader/api/api.html"));
-suite.part("loader/api/test/data/1/", getSlimePart("loader/api/test/data/1/api.html"));
-suite.part("loader/browser/test/", getSlimePart("loader/browser/test/api.html"));
+var data = new $api.Properties({ array: parameters.form.controls }).object();
+debugger;
+var add = function(id,part) {
+	var included = function(part) {
+		if (data.part) {
+			return id == data.part || id.substring(0,data.part.length+1) == data.part + "/";
+		} else {
+			return true;
+		}	
+	};
+
+	if (included(id)) {
+		suite.part(id, part);
+	}
+};
+
+add("loader/browser/client.js", getSlimePart("loader/browser/client.api.html"));
+add("$api/flag", getSlimePart("loader/$api-flag.api.html"));
+add("$api", getSlimePart("loader/$api.api.html"));
+add("js/object/", getSlimePart("js/object/api.html"));
+add("js/object/Error.js", getSlimePart("js/object/Error.api.html"));
+add("js/document/", getSlimePart("js/document/api.html"));
+add("js/web/", getSlimePart("js/web/api.html"));
+add("js/time/", getSlimePart("js/time/api.html"));
+// TODO: does js/promise have any real tests?
+add("js/promise/", getSlimePart("js/promise/api.html"));
+
+add("loader/api/unit.js", getSlimePart("loader/api/unit.api.html"));
+add("loader/api/", getSlimePart("loader/api/api.html"));
+add("loader/api/test/data/1/", getSlimePart("loader/api/test/data/1/api.html"));
+add("loader/browser/test/", getSlimePart("loader/browser/test/api.html"));

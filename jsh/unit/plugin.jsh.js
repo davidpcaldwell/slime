@@ -110,6 +110,7 @@ plugin({
 			$slime: jsh.unit.$slime
 		});
 		jsh.unit.part.Html = function(p) {
+			if (!p.pathname) throw new TypeError("jsh.unit.part.Html: 'pathname' property must be present")
 			return new html.PartDescriptor(p);
 		};
 		jsh.unit.Scenario.Html = $api.deprecate(function(p) {

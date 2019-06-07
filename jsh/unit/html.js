@@ -156,7 +156,7 @@ if ($context.test) {
 	}
 }
 
-var Suite = function(pathname) {
+var Suite = function Suite(pathname) {
 	return new function() {
 		this.name = pathname.toString();
 

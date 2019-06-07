@@ -1,0 +1,472 @@
+<!--
+LICENSE
+This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+The Original Code is the SLIME loader infrastructure.
+
+The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+Portions created by the Initial Developer are Copyright (C) 2013 the Initial Developer. All Rights Reserved.
+
+Contributor(s):
+END LICENSE
+--><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
+<head>
+	<title>SLIME $api: Flagging APIs</title>
+	<!--	TODO	change these to use local copies of these files at the appropriate location	-->
+	<!--
+		These files are specified using http: rather than https: because githack.com will redirect them to https:, but http: will
+		work when using an HTTP proxy to serve local copies of the files without needing to run https: locally
+	-->
+	<link href="../loader/api/api.css" rel="stylesheet" type="text/css" />
+	<script src="../loader/api/api.js"></script>
+	<script>
+		//	TODO	CORS
+		document.domain = document.domain;
+	</script>
+</head>
+<body>
+	<div>__DESCRIPTION__</div>
+	<script type="application/x.jsapi#initialize">
+		//	TODO	copy-pasted from $api.api.html
+		var $slime = {
+			getLoaderScript: function(path) {
+				return {
+					name: path,
+					code: $jsapi.loader.string(path)
+				}
+			}
+		};
+		scope.api = $jsapi.loader.eval("$api.js", { $platform: $platform, $slime: $slime });
+		scope.api.loadedByJsapi = true;
+	</script>
+	<div>
+		<h1><code>$api</code></h1>
+		<ul>
+			<li class="function" jsapi:id="deprecate">
+				<div class="name"><a name="$api.deprecate">deprecate</a></div>
+				<span>
+					A function that can be used to mark a named property on an object as a deprecated API.
+				</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="value">
+							<span class="type">function</span>
+							<span>A function to mark.</span>
+						</li>
+					</ol>
+					-or-
+					<ol>
+						<li class="value">
+							<span class="type">object</span>
+							<span>A target object whose property will be marked.</span>
+						</li>
+						<li class="value">
+							<span class="type">string</span>
+							<span>
+								(optional) The name of the property to mark. If omitted, <strong>all</strong> properties will be
+								marked.
+							</span>
+						</li>
+					</ol>
+				</div>
+				<div class="returns">
+					<div class="label">Returns</div>
+					<span class="type">function</span>
+					-or-
+					<span class="type">undefined</span>
+					<span>
+						If the argument was a function, returns a version of the function that is deprecated: that is, executes
+						the appropriate warning callback when it is executed. Otherwise, returns undefined.
+					</span>
+				</div>
+				<ul>
+					<li class="function">
+						<div class="name">warning</div>
+						<span>
+							(optional) A callback function that will be invoked when a marked property is accessed or marked
+							function is called, or when a call to <code>deprecate</code> is made with invalid arguments.
+						</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="object">
+									<span>Represents a single usage of a marked API.</span>
+									<div class="label">has properties:</div>
+									<ul>
+										<li class="value">
+											<div class="name">reason</div>
+											<span class="type">function</span>
+											<span>
+												The reason that the API was marked: in the case of deprecation, a
+												reference to the <code>deprecate</code> function itself.
+											</span>
+										</li>
+										<!--
+										TODO	Single-argument form deprecating a function
+										<li class="value">
+											<div class="name">function</div>
+											<span class="type">function</span>
+											<span>__DESCRIPTION__</span>
+										</li>
+										-->
+										<li class="value">
+											<div class="name">object</div>
+											<span class="type">object</span>
+											<span>(if object was specified) The object containing the marked property.</span>
+										</li>
+										<li class="value">
+											<div class="name">property</div>
+											<span class="type">string</span>
+											<span>(if object was specified) The name of the marked property.</span>
+										</li>
+										<li class="value">
+											<div class="name">callee</div>
+											<span class="type">function</span>
+											<span>(if deprecated item is function) A reference to the deprecated function.</span>
+										</li>
+										<li class="value">
+											<div class="name">target</div>
+											<span class="type">object</span>
+											<span>
+												(if deprecated item is function) The <code>this</code> value when the deprecated
+												function was invoked.
+											</span>
+										</li>
+
+										<li class="value">
+											<div class="name">arguments</div>
+											<span class="type">Array</span>
+											<span>
+												(if deprecated item is function) The contents of the <code>arguments</code> object
+												passed to the function; note that this object is an array, not the
+												<code>arguments</code> object.
+											</span>
+										</li>
+										<li class="value">
+											<div class="name">get</div>
+											<span>
+												(if deprecated item is non-function) The value of the marked property when it was
+												accessed, if this usage was
+												a retrieval of the value of a marked property.
+											</span>
+										</li>
+										<li class="value">
+											<div class="name">set</div>
+											<span>
+												(if deprecated item is non-function) The value to which the deprecated property was set, if this usage was an
+												assignment to a marked property.
+											</span>
+										</li>
+										<li class="value">
+											<div class="name">flag</div>
+											<span class="type">Array</span>
+											<span>
+												(when invalid arguments sent to deprecate) The arguments passed to deprecate that
+												did not identify a valid function or property to deprecate.
+											</span>
+										</li>
+									</ul>
+								</li>
+							</ol>
+						</div>
+					</li>
+				</ul>
+				<script type="application/x.jsapi#tests">
+					verify(api.loadedByJsapi,"$api.loadedByJsapi").is(true);
+				</script>
+				<script jsapi:id="deprecate.function" type="application/x.jsapi#tests"><![CDATA[
+					var called = 0;
+					var warnings = 0;
+					var f = function() {
+						called++;
+						return called;
+					};
+					var warning = function(p) {
+						verify(p.callee).is(f);
+						warnings++;
+					};
+					api.deprecate.warning = warning;
+
+					var deprecated = api.deprecate(f);
+					verify(f()).is(1);
+					verify(warnings).is(0);
+					verify(deprecated()).is(2);
+					verify(warnings).is(1);
+					verify(deprecated()).is(3);
+					verify(warnings).is(2);
+				]]></script>
+				<script jsapi:id="deprecate.object" type="application/x.jsapi#tests"><![CDATA[
+					var called = 0;
+					var warnings = [];
+					var warning = function(p) {
+						warnings.push(p);
+					}
+					api.deprecate.warning = warning;
+					var o = new function() {
+						this.p = 1;
+						this.m = function() {
+							return 2;
+						};
+					};
+					verify(api.deprecate(o)).is(void(0));
+					var p = o.p;
+					verify(p).is(1);
+					var m = o.m();
+					verify(m).is(2);
+					verify(warnings).length.is(2);
+					//	TODO	test content of warnings
+				]]></script>
+				<script jsapi:id="deprecate.properties" type="application/x.jsapi#tests"><![CDATA[
+					var f = function() {
+						return 8;
+					};
+					f.property = "foo";
+
+					var o = new function() {
+						this.f = f;
+					};
+					api.deprecate(o, "f");
+
+					var Flagged = function() {
+						var warnings = [];
+
+						var callback = function(warning) {
+							warnings.push(warning);
+						}
+
+						api.deprecate.warning = callback;
+
+						this.warnings = warnings;
+					};
+
+					// TODO: right now mere property access to a method does *not* trigger a warning; only invocation does
+					verify(f == o.f).is(false);
+					var flagged = new Flagged();
+					verify(flagged).warnings.length.is(0);
+					verify(o).f().is(8);
+					verify(flagged).warnings.length.is(1);
+					verify(f.property).is("foo");
+					verify(o.f.property).is("foo");
+				]]></script>
+				<script type="application/x.jsapi#tests"><![CDATA[
+					var deprecate = api.deprecate;
+
+					//	TODO	Add a test somewhere in here where we attempt to set a deprecated property, do not really
+					//			set it, and confirm that our callback receives the attempted (not actual) value
+					var expectWarn = function(b) {
+						var rv = function(content) {
+							if (content.reason != deprecate) throw new Error("Not expected reason.");
+							arguments.callee.actual = true;
+						}
+						rv.actual = false;
+						rv.expect = b;
+						rv.test = function() {
+							return rv.actual == rv.expect;
+						}
+						rv.evaluate = function(message) {
+							var success = this.test();
+							var m;
+							if (!message) {
+								m = (success) ? "expectWarn PASS: expect=" + rv.expect + " actual=" + rv.actual : "expectWarn FAIL: expect=" + rv.expect + " actual=" + rv.actual;
+							} else {
+								m = (success) ? message + " passed." : message + " FAILED.";
+							}
+							verify.test(function() {
+								return { success: success, message: m };
+							});
+						}
+						api.deprecate.warning = rv;
+						//$unit.context.setWarning(rv);
+						return rv;
+					}
+
+					//	Each test either uses the jsunit Tests object or uses a custom console output
+					//	Hook for execution environment to override console function
+					var Tests;
+//						var test = function(f,message) {
+//							scope.test(f);
+//						}
+
+					//
+					//	Begin tests
+					//
+
+					var x = {
+						foo: "bar",
+						toString: function() {
+							return "x1";
+						}
+					}
+
+					var accessor = $platform && $platform.Object.defineProperty && $platform.Object.defineProperty.accessor;
+					if (accessor) {
+						deprecate(x,"foo");
+						var yes = expectWarn(true);
+						var z = x.foo;
+						yes.evaluate("get x.foo");
+					}
+					//test(warning.test);
+
+					//	Should FAIL
+					//expectWarn(true);
+					//test(warning.test);
+					//
+
+					//console("x1.foo = " + x.foo);
+					if (accessor) {
+						var yes = expectWarn(true);
+						x.foo = "baz";
+						yes.evaluate();
+						verify.test(function() {
+							var success = x.foo == "baz";
+							var message = (success) ? "Value correct" : "Value " + x.foo;
+							return {
+								success: success,
+								message: message
+							}
+						});
+					}
+
+					var yes = expectWarn(false);
+					x.bar = "baz";
+					yes.evaluate();
+
+					if (accessor) {
+						//console("x1.foo = " + x.foo);
+						var x2 = new function() {
+							this.foo = "bar";
+							this.__defineSetter__("foo", function(value) {
+								this.$foo = value;
+							} );
+
+							deprecate(this, "foo");
+						}
+
+						var yes = expectWarn(true);
+						var z = x2.foo;
+						yes.evaluate();
+
+						var yes = expectWarn(true);
+						x2.foo = "BAR";
+						yes.evaluate();
+						verify(x2.foo, "foo is still").is(void(0));
+
+						var x3 = new function() {
+							this.foo = 0;
+
+							var foo = 0;
+
+							this.__defineGetter__("foo", function() {
+								return ++foo;
+							} );
+
+							deprecate(this, "foo");
+						}
+
+						var yes = expectWarn(true);
+						var z = x3.foo;
+						yes.evaluate();
+						verify(z > 0, "Getter-only value increasing").is(true);
+						verify(x3, "Getter-only value increasing").evaluate(function() { return this.foo > z; }).is(true);
+//							test(z > 0, "Getter-only value increasing.");
+//							test(x3.foo > z, "Getter-only value increasing.");
+
+						var yes = expectWarn(true);
+						x3.foo = 11;
+						yes.evaluate();
+						verify(x3).foo.is.not(11);
+//							test(x3.foo != 11, "Cannot re-set once getter defined.");
+
+						x3.__defineGetter__("foo", function() {
+							return 42;
+						});
+						var yes = expectWarn(false);
+						var z = x3.foo;
+						yes.evaluate();
+						verify(x3).foo.is(42);
+//							test(x3.foo == 42, "Value is correct when getter redefined.");
+
+						var x4 = new function() {
+							var foo = 21;
+
+							this.__defineGetter__("foo", function() {
+								return foo;
+							} );
+
+							this.__defineSetter__("foo", function(value) {
+								return (foo = value);
+							} );
+
+							deprecate(this, "foo");
+						}
+
+						var yes = expectWarn(true);
+						var z = x4.foo;
+						yes.evaluate();
+						verify(z).is(21);
+						verify(x4).foo.is(21);
+//							test(z == 21);
+//							test(x4.foo == 21);
+
+						var yes = expectWarn(true);
+						x4.foo = 14;
+						yes.evaluate();
+						verify(x4).foo.is(14);
+//							test(x4.foo == 14);
+					}
+
+					var x5 = new function() {
+						this.doIt = function() {
+						}
+
+						this.doItBetter = function() {
+						}
+
+						deprecate(this, "doIt");
+					}
+
+					var yes = expectWarn(true);
+					x5.doIt();
+					yes.evaluate();
+
+					var yes = expectWarn(false);
+					x5.doItBetter();
+					yes.evaluate();
+				]]></script>
+			</li>
+			<li class="function">
+				<div class="name">experimental</div>
+				<span>
+					A function that can be used to mark a named property on an object as an experimental API. Its interface is
+					exactly like that of <a href="#$api.deprecate"><code>deprecate</code></a>, including the presence of a
+					<code>warning</code> callback that can receive information when an experimental API is used.
+				</span>
+			</li>
+			<li class="object">
+				<div class="name">warning</div>
+				<span>__DESCRIPTION__</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="function">
+						<div class="name">once</div>
+						<span>__DESCRIPTION__</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</div>
+					</li>
+				</ul>
+			</li>
+		</ul>
+	</div>
+</body>
+</html>
