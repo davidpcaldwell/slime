@@ -21,7 +21,6 @@ var active = function(part) {
 }
 
 var data = new $api.Properties({ array: parameters.form.controls }).object();
-debugger;
 var add = function(id,part) {
 	var included = function(part) {
 		if (data.part) {
@@ -37,6 +36,7 @@ var add = function(id,part) {
 };
 
 add("loader/browser/client.js", getSlimePart("loader/browser/client.api.html"));
+add("$api/Function", getSlimePart("loader/$api-Function.api.html"));
 add("$api/flag", getSlimePart("loader/$api-flag.api.html"));
 add("$api", getSlimePart("loader/$api.api.html"));
 add("js/object/", getSlimePart("js/object/api.html"));

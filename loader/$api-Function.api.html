@@ -1,0 +1,300 @@
+<!--
+LICENSE
+This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+The Original Code is the SLIME loader infrastructure.
+
+The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+Portions created by the Initial Developer are Copyright (C) 2013 the Initial Developer. All Rights Reserved.
+
+Contributor(s):
+END LICENSE
+--><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
+<head>
+	<title>$api.Function</title>
+	<!--	TODO	change these to use local copies of these files at the appropriate location	-->
+	<!--
+		These files are specified using http: rather than https: because githack.com will redirect them to https:, but http: will
+		work when using an HTTP proxy to serve local copies of the files without needing to run https: locally
+	-->
+	<link href="http://bb.githack.com/davidpcaldwell/slime/raw/tip/loader/api/api.css" rel="stylesheet" type="text/css" />
+	<script src="http://bb.githack.com/davidpcaldwell/slime/raw/tip/loader/api/api.js"></script>
+	<script>
+		//	TODO	CORS
+		document.domain = document.domain;
+	</script>
+</head>
+<body>
+	<h1><code>$api.Function</code></h1>
+	<script type="application/x.jsapi#initialize">
+		var $slime = {
+			getLoaderScript: function(path) {
+				return {
+					name: path,
+					code: $jsapi.loader.string(path)
+				}
+			}
+		};
+		scope.api = $jsapi.loader.eval("$api.js", { $platform: $platform, $slime: $slime });
+		scope.api.loadedByJsapi = true;
+	</script>
+	<!--	
+		TODO	Uncommenting this block caused tests to fail in definition page for some reason, though this
+				file has since been refactored
+
+	<div class="type">
+		<a class="type" name="types.postprocessor">postprocessor</a>
+		<span>A function that is meant to process the results of an underlying function call.</span>
+		<div class="function">
+			<span>__DESCRIPTION__</span>
+			<div class="arguments">
+				<div class="label">Arguments</div>
+				<ol>
+					<li class="object">
+						<div class="name">__NAME__</div>
+						<span>__DESCRIPTION__</span>
+						<div class="label">has properties:</div>
+						<ul>
+							<li class="value">
+								<div class="name">target</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</li>
+							<li class="value">
+								<div class="name">arguments</div>
+								<span class="type">Array</span>
+								<span>__DESCRIPTION__</span>
+							</li>
+							<li class="value">
+								<div class="name">returned</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</li>
+						</ul>
+					</li>
+				</ol>
+			</div>
+			<div class="returns">
+				<div class="label">Returns</div>
+				<span class="type">(any)</span>
+				<span>__DESCRIPTION__</span>
+			</div>
+		</ul>
+	</div>
+	-->
+	<div class="label">has properties:</div>
+	<ul>
+		<li class="function">
+			<div class="name">memoized</div>
+			<span>
+				A function that takes a function as an argument and returns a memoized version of that function.
+				Memoized arguments currently cannot be invoked as methods (i.e., with a <code>this</code> value)
+				and also may not receive arguments.
+			</span>
+			<div class="arguments">
+				<div class="label">Arguments</div>
+				<ol>
+					<li class="value">
+						<span class="type">function</span>
+						<span>A function to memoize</span>
+					</li>
+				</ol>
+			</div>
+			<div class="returns">
+				<div class="label">Returns</div>
+				<span class="type">function</span>
+				<span>A memoized function.</span>
+			</div>
+			<script type="application/x.jsapi#tests">
+				var counter = function() {
+					if (typeof(arguments.callee.calls) == "undefined") arguments.callee.calls = 0;
+					arguments.callee.calls++;
+					return 42;
+				};
+
+				verify(counter.calls).is(void(0));
+				var memoized = api.Function.memoized(counter);
+				verify(counter.calls).is(void(0));
+				var result = memoized();
+				verify(result).is(42);
+				verify(counter.calls).is(1);
+				var result2 = memoized();
+				verify(result2).is(42);
+				verify(counter.calls).is(1);
+				var result3 = counter();
+				verify(result3).is(42);
+				verify(counter.calls).is(2);
+			</script>
+		</li>
+		<li class="function experimental" jsapi:id="postprocessing">
+			<div class="name">postprocessing</div>
+			<span>
+				Creates a function from an original function and a postprocessing function. The resulting function
+				will be implemented by invoking the original function with its <code>this</code> and arguments,
+				and then invoking the postprocessor with information about that call (including its return value).
+			</span>
+			<div class="arguments">
+				<div class="label">Arguments</div>
+				<ol>
+					<li class="value">
+						<span class="type">function</span>
+						<span>The original function.</span>
+					</li>
+					<li class="value">
+						<span class="type"><a href="#types.Function.postprocessor">postprocessor</a></span>
+						<span>A postprocessing function</span>
+					</li>
+				</ol>
+			</div>
+			<div class="returns">
+				<div class="label">Returns</div>
+				<span class="type">(any)</span>
+				<span>
+					A return value that will replace the original function's return value, or
+					<code>undefined</code> to leave that return value in place.
+				</span>
+			</div>
+			<script type="application/x.jsapi#tests">
+				var doubler = function(x) {
+					return 2 * x;
+				};
+
+				var fourXSquaredPlusX = api.Function.postprocessing(doubler, function(p) {
+					return p.returned * p.returned + p.arguments[0];
+				});
+
+				verify(fourXSquaredPlusX(5)).is(105);
+			</script>
+			<script type="application/x.jsapi#tests">
+				var Counter = function() {
+					var called = 0;
+
+					var rv = {};
+					rv.call = function() {
+						called++;
+					};
+					rv.called = function() {
+						return called;
+					};
+					return rv;
+				};
+
+				var foo = function() {
+					return "foo";
+				};
+
+				var counter = new Counter();
+				verify(counter).called().is(0);
+				var newFoo = api.Function.postprocessing(foo, counter.call);
+				verify(counter).called().is(0);
+				var v = newFoo();
+				verify(counter).called().is(1);
+				verify(v).is("foo");
+			</script>
+			<script type="application/x.jsapi#tests">
+				var foo = function() {
+					return "foo";
+				};
+
+				var calls = {};
+
+				calls.override = api.Function.postprocessing(foo, function(p) {
+					return api.Function.postprocessing.UNDEFINED;
+				});
+
+				calls.leave = api.Function.postprocessing(foo, function(p) {
+					return void(0);
+				});
+
+				verify(calls).override().is(void(0));
+				verify(calls).leave().is("foo");
+			</script>
+		</li>
+		<li class="object">
+			<div class="name">argument</div>
+			<span>__DESCRIPTION__</span>
+			<div class="label">has properties:</div>
+			<ul>
+				<li class="function">
+					<div class="name">check</div>
+					<span>Creates an argument-checking function that validates a single function argument.</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+							<li class="object">
+								<span>__DESCRIPTION__</span>
+								<div class="label">has properties:</div>
+								<ul>
+									<li class="value">
+										<div class="name">index</div>
+										<span class="type">number</span>
+										<span>
+											The index of the argument to check.
+										</span>
+									</li>
+									<li class="value">
+										<div class="name">name</div>
+										<span class="type">string</span>
+										<span>
+											The name of the argument.
+										</span>
+									</li>
+									<li class="value">
+										<div class="name">type</div>
+										<span class="type">string</span>
+										<span>
+											The expected type of the argument, as returned by the JavaScript
+											<code>typeof</code> operator. If the argument should be a string,
+											for example, the value <code>"string"</code> should be used.
+										</span>
+									</li>
+									<li class="value">
+										<div class="name">null</div>
+										<span class="type">boolean</span>
+										<span>
+											Whether the value <code>null</code> is also an acceptable value for
+											the argument.
+										</span>
+									</li>
+									<li class="value">
+										<div class="name">undefined</div>
+										<span class="type">boolean</span>
+										<span>
+											Whether the value <code>undefined</code> is also an acceptable value for
+											the argument.
+										</span>
+									</li>
+								</ul>
+							</li>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type">function</span>
+						<span>
+							A function that takes an <code>arguments</code> object and throws a
+							<code>TypeError</code> if the specified argument does not meet the specified criteria.
+						</span>
+					</div>
+					<script type="application/x.jsapi#tests">
+						var check = api.Function.argument.check;
+
+						var tester = {
+							invoke: function(argument,array) {
+								var f = check(argument);
+								return f.apply(this,array);
+							}
+						};
+
+						verify(tester).evaluate(function() { return this.invoke({ index: 0, type: "string" },[1]) }).threw.type(TypeError);
+						verify(tester).evaluate(function() { return this.invoke({ index: 0, type: "string" },[void(0)]) }).threw.type(TypeError);
+						verify(tester).evaluate(function() { return this.invoke({ index: 0, type: "string" },[null]) }).threw.type(TypeError);
+					</script>
+				</li>
+			</ul>
+		</li>
+	</ul>
+</body>
+</html>

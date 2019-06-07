@@ -61,6 +61,9 @@ suite.add("internal/other", new jsh.unit.part.Html({
 suite.add("$api/flag", new jsh.unit.part.Html({
 	pathname: SRC.getRelativePath("loader/$api-flag.api.html")
 }));
+suite.add("$api/Function", new jsh.unit.part.Html({
+	pathname: SRC.getRelativePath("loader/$api-Function.api.html")
+}));
 suite.add("$api/main", new jsh.unit.part.Html({
 	pathname: SRC.getRelativePath("loader/$api.api.html")
 }));
