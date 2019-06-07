@@ -212,6 +212,82 @@ END LICENSE
 				verify(calls).leave().is("foo");
 			</script>
 		</li>
+		<li class="function experimental">
+			<div class="name">mutating</div>
+			<div>
+				<p>
+					Creates a function that wraps a supplied mutator function for the purpose of modifying a default value. 
+					<code>mutating()</code> is designed for use by API designers who wish to provide an override mechanism for a
+					particular default value (especially an object).		
+				</p>
+				<div>
+					The provided mutator function may modify the value it is
+					given in two ways:
+					<ul>
+						<li>It may directly modify the value (if the value is mutable, like an object) in its implementation,</li>
+						<li>
+							It may <em>replace</em> the value entirely by returning a value. The special value 
+							$api.Function.value.UNDEFINED can be returned to replace the value with <code>undefined</code>.
+						</li>
+					</ul>		
+				</div>
+			</div>
+			<div class="arguments">
+				<div class="label">Arguments</div>
+				<ol>
+					<li class="value">
+						<span class="type">function</span>
+						<span>A mutator function.</span>
+					</li>
+				</ol>
+			</div>
+			<div class="returns">
+				<div class="label">Returns</div>
+				<span class="type">(any)</span>
+				<span>
+					The value specified by the mutator function, if any, or the value supplied to the mutator function (which
+					may have been modified by the mutator).
+				</span>
+			</div>
+			<script type="application/x.jsapi#tests">
+				var object = {
+					foo: "bar"
+				};
+
+				var mutator = api.Function.mutating(function(p) {
+					p.foo = "baz";
+				});
+
+				var result = mutator(object);
+				verify(result).foo.is("baz");
+				verify(result).is(object);
+
+				var swapper = api.Function.mutating(function(p) {
+					return { a: "b" }
+				});
+
+				var swap = swapper(object);
+				verify(swap).a.is("b");
+				verify(swap).is.not(object);
+
+				var voiding = api.Function.mutating(function(p) {
+					return api.Function.value.UNDEFINED;
+				});
+
+				var voided = {
+					value: voiding(object)
+				};
+				verify(voided).evaluate.property("value").is(void(0));
+
+				var dummy = {};
+				verify(dummy).evaluate(function() {
+					return mutator();
+				}).threw.type(TypeError);
+				verify(dummy).evaluate(function() {
+					return mutator({});
+				}).threw.nothing();
+			</script>
+		</li>
 		<li class="object">
 			<div class="name">argument</div>
 			<span>__DESCRIPTION__</span>

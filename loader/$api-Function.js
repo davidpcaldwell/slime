@@ -81,7 +81,22 @@ $exports.Function.memoized = function(f) {
     };
 };
 $exports.Function.value = {
-    UNDEFINED: {}
+    UNDEFINED: {
+        toString: function() {
+            return "Function.UNDEFINED";
+        }
+    }
+};
+$exports.Function.preprocessing = function(f,preprocessor) {
+    return function() {
+        var overrides = preprocessor.apply(this,arguments);
+        if (overrides && overrides.return) return overrides.return;
+        var target = this;
+        var args = arguments;
+        if (overrides && overrides.target) target = overrides.target;
+        if (overrides && overrides.arguments) args = overrides.arguments;
+        return f.apply(target,args);
+    }
 };
 $exports.Function.postprocessing = function(f,postprocessor) {
     //	TODO	may want to think through whether to give postprocessor the ability to handle exceptions
@@ -108,13 +123,16 @@ $exports.Function.postprocessing = function(f,postprocessor) {
 $exports.Function.postprocessing.UNDEFINED = $exports.Function.value.UNDEFINED;
 $context.deprecate($exports.Function.postprocessing, "UNDEFINED");
 $exports.Function.mutating = function(f) {
-    return function() {
-        if (arguments.length != 1) throw new Error();
-        var rv = f.apply(this,arguments);
-        if (typeof(rv) == "undefined") rv = arguments[0];
-        if (rv == $exports.Function.value.UNDEFINED) rv = void(0);
-        return rv;
-    }
+    //  Add preprocessor that checks that arguments.length == 1
+    return $exports.Function.preprocessing(
+        $exports.Function.postprocessing(f, function(result) {
+            if (result.returned === $exports.Function.value.UNDEFINED) return result.returned;
+            if (typeof(result.returned) == "undefined") return result.arguments[0];
+        }),
+        function() {
+            if (arguments.length != 1) throw new TypeError("mutating() must be invoked with one argument representing the value to mutate.");
+        }
+    )
 };
 $exports.Function.Basic = function(f) {
     return function() {
