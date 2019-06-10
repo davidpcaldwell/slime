@@ -45,6 +45,16 @@ END LICENSE
 					} else if (child.outerHTML) {
 						if (child.nodeName.toLowerCase() == "ul") {
 							rv += child.innerHTML;
+						} else if (child.nodeName.toLowerCase() == "script") {
+							var myIndent = (function(parent) {
+								var previous;
+								for (var i=0; i<parent.childNodes.length; i++) {
+									if (parent.childNodes[i] == child) previous = parent.childNodes[i-1];
+								}
+								return previous.data.substring("\n".length);
+							})(child.parentNode);
+							child.innerHTML = "\n" + myIndent + "\t" + child.innerHTML + "\n" + myIndent;
+							rv += child.outerHTML;
 						} else {
 							rv += child.outerHTML;
 						}
@@ -367,6 +377,11 @@ END LICENSE
 					run via a variable called <code>scope</code>. Before a test is run, all initializers that precede it as siblings are
 					run, as well as any initializers that are (direct) children of its ancestors.
 				</div>
+				<div class="template" id="template.test.initialize">
+					<script type="application/x.jsapi#initialize">
+						//${1}
+					</script>
+				</div>
 			</div>
 			<div>
 				<h3>Tests</h3>
@@ -576,6 +591,11 @@ END LICENSE
 						</li>
 					</ul>
 				</div>
+				<div class="template" id="template.test.tests">
+					<script type="application/x.jsapi#tests">
+						//${1}
+					</script>
+				</div>
 			</div>
 			<div>
 				Script elements can be given a <code>jsapi:id</code> attribute (where the <code>jsapi</code> namespace is
@@ -587,6 +607,11 @@ END LICENSE
 				Finally, we can have scripts with <code>type="application/x.jsapi#destroy"</code>. These have access to the same scope
 				in the same way as <code>type="application/x.jsapi#initialize"</code> scripts, and can be used to destroy resources
 				after tests are run.
+				<div class="template" id="template.test.destroy">
+					<script type="application/x.jsapi#destroy">
+						//${1}
+					</script>
+				</div>
 			</div>
 		</div>
 		<div>

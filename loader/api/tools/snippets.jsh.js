@@ -31,7 +31,10 @@ var snippets = {
     function: "lif",
     constructor: "lic",
     type: "divt",
-    supports: "spas"
+    supports: "spas",
+    "test.initialize": "testi",
+    "test.tests": "testt",
+    "test.destroy": "testd"
 };
 
 var namespaces = {};
