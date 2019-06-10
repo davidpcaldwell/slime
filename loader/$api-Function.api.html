@@ -220,8 +220,12 @@ END LICENSE
 					<code>mutating()</code> is designed for use by API designers who wish to provide an override mechanism for a
 					particular default value (especially an object).		
 				</p>
+			</div>
+			<div class="type">
+				<a class="type" name="types.mutator">mutator</a>
+				<span>A function intended to mutate or replace a value.</span>
 				<div>
-					The provided mutator function may modify the value it is
+					A mutator function may modify the value it is
 					given in two ways:
 					<ul>
 						<li>It may directly modify the value (if the value is mutable, like an object) in its implementation,</li>
@@ -229,14 +233,31 @@ END LICENSE
 							It may <em>replace</em> the value entirely by returning a value. The special value 
 							$api.Function.value.UNDEFINED can be returned to replace the value with <code>undefined</code>.
 						</li>
-					</ul>		
+					</ul>
+				</div>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="value">
+							<span class="type">(any)</span>
+							<span>A value to mutate or replace.</span>
+						</li>
+					</ol>
+				</div>
+				<div class="returns">
+					<div class="label">Returns</div>
+					<span class="type">(any)</span>
+					<span>
+						A replacement value, or <code>undefined</code> to indicate that the original value (which, if mutable,
+						may have been modified) should be used.
+					</span>
 				</div>
 			</div>
 			<div class="arguments">
 				<div class="label">Arguments</div>
 				<ol>
 					<li class="value">
-						<span class="type">function</span>
+						<span class="type">mutator</span>
 						<span>A mutator function which will receive a single argument (the argument to mutate or replace).</span>
 					</li>
 				</ol>

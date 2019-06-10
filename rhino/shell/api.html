@@ -616,18 +616,25 @@ os.resolve(function() {
 								</li>
 								<li class="value" jsapi:id="run.environment">
 									<div class="name">environment</div>
-									<span class="type">object</span>
-									<span>
-										(optional: If <code>null</code> or <code>undefined</code>, the module environment is used.)
-										A set of names and values that will be passed to the subprocess as its environment.
+									<div>
+										<span class="type">object</span>
+										<span>
+											(optional: If <code>null</code> or <code>undefined</code>, the module environment is used.)
+											A set of names and values that will be passed to the subprocess as its environment.
 
-										If an individual property in the object has the value <code>null</code>, the environment
-										variable is omitted from the list passed to the subprocess.
+											If an individual property in the object has the value <code>null</code>, the environment
+											variable is omitted from the list passed to the subprocess.
 
-										<!--
-											TODO	how are non-string property values handled? undefined, object, number, boolean
-										-->
-									</span>
+											<!--
+												TODO	how are non-string property values handled? undefined, object, number, boolean
+											-->
+										</span>
+									</div>
+									- OR -
+									<div>
+										<span class="type"><a href="../../loader/$api-Function.api.html#types.mutator">mutator</a></span>
+										<span>A mutator function which will receive the current process environment as its argument.</span>
+									</div>
 								</li>
 								<li class="value" jsapi:id="run.directory">
 									<div class="name">directory</div>
