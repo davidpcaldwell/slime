@@ -237,16 +237,16 @@ END LICENSE
 				<ol>
 					<li class="value">
 						<span class="type">function</span>
-						<span>A mutator function.</span>
+						<span>A mutator function which will receive a single argument (the argument to mutate or replace).</span>
 					</li>
 				</ol>
 			</div>
 			<div class="returns">
 				<div class="label">Returns</div>
-				<span class="type">(any)</span>
+				<span class="type">function</span>
 				<span>
-					The value specified by the mutator function, if any, or the value supplied to the mutator function (which
-					may have been modified by the mutator).
+					A function that can be invoked with the default value and will return the appropriate (mutated or replaced)
+					value.
 				</span>
 			</div>
 			<script type="application/x.jsapi#tests">
