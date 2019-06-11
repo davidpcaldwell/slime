@@ -13,7 +13,7 @@
 
 plugin({
 	isReady: function() {
-		return jsh.js && jsh.js.web && jsh.java && jsh.ip && jsh.time && jsh.file && jsh.http && jsh.shell && jsh.java.tools;
+		return jsh.js && jsh.js.web && jsh.java && jsh.ip && jsh.time && jsh.file && jsh.http && jsh.shell && jsh.java.tools && plugins.node;
 	},
 	load: function() {
 		if (!jsh.tools) jsh.tools = {};
@@ -366,6 +366,45 @@ plugin({
 		(function deprecated() {
 			jsh.tools.ncdbg = ncdbg;
 			$api.deprecate(jsh.tools,"ncdbg");
+		})();
+
+		var node = plugins.node.module();
+
+		jsh.tools.node = node;
+
+		(function integratedNode() {
+			if (!jsh.shell.jsh.lib) return;
+			
+			var location = jsh.shell.jsh.lib.getRelativePath("node");
+
+			if (location && location.directory) {
+				var installation = new node.Installation({
+					directory: location.directory
+				});
+				jsh.shell.tools.node = installation;
+			} else {
+				if (jsh.shell.jsh.lib) {
+					jsh.shell.tools.node = {};
+					jsh.shell.tools.node.install = $api.Events.Function(function(p,events) {
+						if (!location.directory) {
+							jsh.tools.install.install({
+								url: "https://nodejs.org/dist/v10.16.0/node-v10.16.0-darwin-x64.tar.gz",
+								to: location
+							});
+							events.fire("console", "Node installed.");
+						} else {
+							events.fire("console", "Node already installed.");
+						}
+						jsh.shell.tools.node = new node.Installation({
+							directory: location.directory
+						});
+					}, {
+						console: function(e) {
+							jsh.shell.console(e.detail);
+						}
+					});
+				}
+			}
 		})();
 	}
 });

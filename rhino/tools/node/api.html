@@ -1,0 +1,234 @@
+<!--
+LICENSE
+This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+The Original Code is the SLIME loader infrastructure.
+
+The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+Portions created by the Initial Developer are Copyright (C) 2013 the Initial Developer. All Rights Reserved.
+
+Contributor(s):
+END LICENSE
+--><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
+<head>
+	<title>SLIME Node.js</title>
+	<!--	TODO	change these to use local copies of these files at the appropriate location	-->
+	<!--
+		These files are specified using http: rather than https: because githack.com will redirect them to https:, but http: will
+		work when using an HTTP proxy to serve local copies of the files without needing to run https: locally
+	-->
+	<link href="../../../loader/api/api.css" rel="stylesheet" type="text/css" />
+	<script src="../../../loader/api/api.js"></script>
+	<script>
+		//	TODO	CORS
+		document.domain = document.domain;
+	</script>
+</head>
+<body>
+	<div>Provides the ability to invoke Node.js commands and applications.</div>
+	<div>
+		<h1>Context</h1>
+		<ul>
+			<li class="object">
+				<div class="name">module</div>
+				<span>__DESCRIPTION__</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="value">
+						<div class="name">file</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</li>
+					<li class="value">
+						<div class="name">shell</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</li>
+				</ul>
+			</li>
+		</ul>
+	</div>
+	<div>
+		<script type="application/x.jsapi#initialize">
+			if (!jsh.shell.tools.node.run) {
+				jsh.shell.tools.node.install();
+			}
+			scope.api = jsh.shell.tools.node;
+		</script>
+		<h1>Exports</h1>
+		<div class="type">
+			<a class="type" name="types.Installation">Installation</a>
+			<span>A particular local installation of Node.js</span>
+			<div class="label">has properties:</div>
+			<ul>
+				<li class="function">
+					<div class="name">run</div>
+					<span>
+						Executes a command or script using this Node.js installation.
+					</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+							<li class="object">
+								<span>
+									Invocations are largely compatible with
+									<code>rhino/shell</code> <a href="../../../rhino/shell/api.html"><code>run()</code></a>, with the following
+									differences:
+								</span>
+								<div class="label">has properties:</div>
+								<ul>
+									<li class="value">
+										<div class="name">command</div>
+										<span class="type">string</span>
+										<span>
+											(optional; default is just to run <code>node</code>)
+											The Node.js command to run (as located in the Node <code>bin</code> directory).
+										</span>
+									</li>
+								</ul>
+							</li>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span>See <code>rhino/shell</code> <a href="../../../rhino/shell/api.html"><code>run()</code></a>.</span>
+					</div>
+					<script type="application/x.jsapi#tests">
+						var result = api.run({
+							arguments: [$jsapi.loader.getRelativePath("test/hello.js")],
+							stdio: {
+								output: String
+							}
+						});
+						verify(result).stdio.output.is("Hello, World (Node.js)\n");
+					</script>
+					<!--	TODO	should not be messing with global installation below	-->
+					<script type="application/x.jsapi#initialize">
+						if (scope.api.modules["js-yaml"]) {
+							scope.api.run({
+								command: "npm",
+								arguments: ["uninstall", "-g", "js-yaml"]
+							});
+							scope.api.modules.refresh();	
+						}						
+					</script>
+					<script type="application/x.jsapi#tests">
+						verify(api).modules.installed.evaluate.property("js-yaml").is(void(0));
+						var result = api.run({
+							command: "npm",
+							arguments: ["install", "-g", "js-yaml"]
+						});
+						api.modules.refresh();
+						verify(api).modules.installed["js-yaml"].is.type("object");
+
+						api.run({
+							command: "npm",
+							arguments: ["uninstall", "-g", "js-yaml"]
+						});
+						api.modules.refresh();
+						verify(api).modules.installed.evaluate.property("js-yaml").is(void(0));
+					</script>
+				</li>
+				<li class="object">
+					<div class="name">modules</div>
+					<span>An object representing the modules installed globally in this Node installation.</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="value">
+							<div class="name">installed</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</li>
+						<li class="function">
+							<div class="name">install</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</div>
+						</li>
+						<li class="function">
+							<div class="name">uninstall</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</div>
+						</li>
+					</ul>
+					<script type="application/x.jsapi#initialize">
+						if (scope.api.modules["js-yaml"]) {
+							scope.api.modules.uninstall({
+								name: "js-yaml"
+							});
+						}						
+					</script>
+					<script type="application/x.jsapi#tests">
+						verify(api).modules.installed.evaluate.property("js-yaml").is(void(0));
+						api.modules.install({
+							name: "js-yaml"
+						});
+						verify(api).modules.installed["js-yaml"].is.type("object");
+
+						api.modules.uninstall({
+							name: "js-yaml"
+						});
+						verify(api).modules.installed.evaluate.property("js-yaml").is(void(0));						
+					</script>
+				</li>
+				<li class="object">
+					<div class="name">npm</div>
+					<span>__DESCRIPTION__</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="function">
+							<div class="name">run</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</div>
+						</li>
+					</ul>
+				</li>
+			</ul>
+		</div>
+		<ul>
+			<li class="constructor">
+				<div class="name">Installation</div>
+				<span>__DESCRIPTION__</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+					</ol>
+				</div>
+				<div class="instances">
+					<div class="label">Instances</div>
+					<span class="type">__TYPE__</span>
+					<span>__DESCRIPTION__</span>
+				</div>
+			</li>
+		</ul>
+	</div>
+</body>
+</html>

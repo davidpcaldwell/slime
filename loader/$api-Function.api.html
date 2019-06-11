@@ -218,7 +218,9 @@ END LICENSE
 				<p>
 					Creates a function that wraps a supplied mutator function for the purpose of modifying a default value. 
 					<code>mutating()</code> is designed for use by API designers who wish to provide an override mechanism for a
-					particular default value (especially an object).		
+					particular default value (especially an object). API designers may provide for a single value to be supplied
+					which can be an object to replace the default, a function which returns a value to replace the default, or
+					a value that mutates the default.
 				</p>
 			</div>
 			<div class="type">
@@ -261,6 +263,13 @@ END LICENSE
 						<span>A mutator function which will receive a single argument (the argument to mutate or replace).</span>
 					</li>
 				</ol>
+				- OR -
+				<ol>
+					<li class="value">
+						<span class="type">object</span>
+						<span>An object which will replace the argument.</span>
+					</li>
+				</ol>
 			</div>
 			<div class="returns">
 				<div class="label">Returns</div>
@@ -275,11 +284,11 @@ END LICENSE
 					foo: "bar"
 				};
 
-				var mutator = api.Function.mutating(function(p) {
+				var mutating = api.Function.mutating(function(p) {
 					p.foo = "baz";
 				});
 
-				var result = mutator(object);
+				var result = mutating(object);
 				verify(result).foo.is("baz");
 				verify(result).is(object);
 
@@ -300,12 +309,26 @@ END LICENSE
 				};
 				verify(voided).evaluate.property("value").is(void(0));
 
+				var k = { foo: "k" };
+				var valuer = $api.Function.mutating(k);
+				var valued = valuer(object);
+				verify(valued).foo.is("k");
+				verify(valued).is.not(object);
+
+				object = {
+					foo: "bar"
+				};
+				var missinger = $api.Function.mutating(void(0));
+				var missinged = missinger(object);
+				verify(missinged).foo.is("bar");
+				verify(missinged).is(object);
+
 				var dummy = {};
 				verify(dummy).evaluate(function() {
-					return mutator();
+					return mutating();
 				}).threw.type(TypeError);
 				verify(dummy).evaluate(function() {
-					return mutator({});
+					return mutating({});
 				}).threw.nothing();
 			</script>
 		</li>

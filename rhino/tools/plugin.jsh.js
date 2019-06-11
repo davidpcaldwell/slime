@@ -33,6 +33,24 @@ plugin({
 
 plugin({
 	isReady: function() {
+		return jsh.file && jsh.shell;
+	},
+	load: function() {
+		plugins.node = {
+			module: function() {
+				return $loader.module("node/module.js",{
+					module: {
+						file: jsh.file,
+						shell: jsh.shell
+					}
+				});
+			}
+		};
+	}
+})
+
+plugin({
+	isReady: function() {
 		return jsh.js && jsh.js.web && jsh.time && jsh.java && jsh.ip && jsh.file && jsh.shell && jsh.tools && jsh.tools.install && jsh.java.tools;
 	},
 	load: function() {
@@ -126,8 +144,6 @@ plugin({
 		jsh.java.tools.plugin.git = $api.deprecate(function() {
 			loadGit();
 		});
-
-		jsh.tools.node = $loader.module("node/module.js");
 	}
 });
 

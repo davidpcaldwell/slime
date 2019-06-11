@@ -122,13 +122,23 @@ $exports.Function.postprocessing = function(f,postprocessor) {
 };
 $exports.Function.postprocessing.UNDEFINED = $exports.Function.value.UNDEFINED;
 $context.deprecate($exports.Function.postprocessing, "UNDEFINED");
-$exports.Function.mutating = function(f) {
-    //  Add preprocessor that checks that arguments.length == 1
-    return $exports.Function.preprocessing(
-        $exports.Function.postprocessing(f, function(result) {
+$exports.Function.mutating = function(v) {
+    var implementation;
+    if (typeof(v) == "function") {
+        var mutator = v;
+        implementation = $exports.Function.postprocessing(mutator, function(result) {
             if (result.returned === $exports.Function.value.UNDEFINED) return result.returned;
             if (typeof(result.returned) == "undefined") return result.arguments[0];
-        }),
+        });
+    } else if (typeof(v) == "object" && v) {
+        implementation = function() {
+            return v;
+        };
+    } else if (typeof(v) == "undefined") {
+        implementation = function(v) { return v; };
+    }
+    return $exports.Function.preprocessing(
+        implementation,
         function() {
             if (arguments.length != 1) throw new TypeError("mutating() must be invoked with one argument representing the value to mutate.");
         }

@@ -152,6 +152,9 @@ suite.add("jrunscript/tools/hg", new jsh.unit.part.Html({
 suite.add("jrunscript/tools/git", new jsh.unit.part.Html({
 	pathname: SRC.getRelativePath("rhino/tools/git/api.html")
 }));
+suite.add("jrunscript/tools/node", new jsh.unit.part.Html({
+	pathname: SRC.getRelativePath("rhino/tools/node/api.html")
+}));
 
 suite.add("jsh/loader", new jsh.unit.part.Html({
 	pathname: SRC.getRelativePath("jsh/loader/internal.api.html"),

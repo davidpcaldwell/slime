@@ -1,12 +1,13 @@
+//	TODO	detach from jsh
 $exports.Installation = function(o) {
 	this.toString = function() {
 		return "Node installation at " + o.directory;
 	};
 
 	var PATH = (function() {
-		var elements = jsh.shell.PATH.pathnames.slice();
+		var elements = $context.module.shell.PATH.pathnames.slice();
 		elements.push(o.directory.getRelativePath("bin"));
-		return jsh.file.Searchpath(elements);
+		return $context.module.file.Searchpath(elements);
 	})();
 
 	this.run = function(p) {
@@ -17,83 +18,84 @@ $exports.Installation = function(o) {
 			}
 			return o.directory.getFile("bin/node");
 		})();
-		jsh.shell.run({
+		return $context.module.shell.run({
 			command: command,
 			arguments: p.arguments,
 			directory: p.directory,
-			environment: (function(specified) {
-				//	TODO	this is why rhino/shell.run exposes those helper functions for its components, so that delegates can
-				//			use them. Perhaps should rebrand those as an SPI, and in any case, will need to make this implementation
-				//			handle all cases
-				if (!specified) {
-					return function(now) {
-						now.PATH = PATH.toString();
-					}
-				}
-				if (typeof(specified) == "object") {
-					specified.PATH = PATH.toString();
-				}
-				if (typeof(specified) == "function") {
-					return function(now) {
-						if (!now) throw new Error("No now in node.environment function");
-						var rv = specified(now);
-						if (typeof(rv) == "undefined") rv = now;
-						rv.PATH = PATH.toString();
-						return rv;
-					}
-				}
-				throw new Error();
-			})(p.environment),
-			// environment: jsh.js.Object.set({}, jsh.shell.environment, p.environment, {
-			// 	PATH: PATH.toString()
-			// }),
+			environment: function(environment) {
+				//	TODO	check for other types besides object, function, falsy
+				//	TODO	can this be simplified further using mutator concept? Maybe; mutator could allow object and just return it
+				environment.PATH = PATH.toString();
+				var mutating = $api.Function.mutating(p.environment);
+				var result = mutating(environment);
+				if (!result.PATH) result.PATH = PATH.toString();
+			},
 			stdio: p.stdio,
 			evaluate: p.evaluate
 		});
 	}
 
-	var npm = function(p) {
-		var DEFAULT_PATH = (p.PATH) ? p.PATH : jsh.shell.PATH;
-		var elements = DEFAULT_PATH.pathnames.slice();
-		elements.unshift(o.directory.getRelativePath("bin"));
-		var PATH = jsh.file.Searchpath(elements);
-		jsh.shell.run({
-			command: o.directory.getFile("bin/npm"),
-			arguments: (function(rv) {
-				rv.push(p.command);
-				rv.push.apply(rv,p.arguments);
-				return rv;
-			})([]),
-			environment: jsh.js.Object.set({}, jsh.shell.environment, p.environment, {
-				PATH: PATH.toString()
-			}),
-			stdio: p.stdio,
-			directory: p.project,
-			evaluate: p.evaluate
-		});
-	}
+	var npm = (function(run) {
+		return function(p) {
+			return run($api.Object.compose(p, {
+				command: "npm",
+				arguments: function(list) {
+					list.push(p.command);
+					if (p.global) {
+						list.push("--global");
+					}
+					var mutating = $api.Function.mutating(p.arguments);
+					var npmargs = mutating([]);
+					list.push.apply(list, npmargs);
+				}
+			}));
+		};
+	})(this.run);
 
 	this.modules = new function() {
-		this.installed = new function() {
+		var Installed = function() {
 			var node_modules = o.directory.getSubdirectory("lib/node_modules");
 			if (node_modules) {
 				node_modules.list().forEach(function(item) {
 					this[item.pathname.basename] = {};
 				},this);
 			}
-		};
+		}
+
+		this.installed = new Installed();
+
+		this.refresh = function() {
+			this.installed = new Installed();
+		}
 
 		this.install = function(p) {
 			if (p.name) {
 				npm({
 					command: "install",
-					arguments: ["-g", p.name]
+					global: true,
+					arguments: [p.name]
 				});
+				this.refresh();
 			}
-		}
+		};
+
+		this.uninstall = function(p) {
+			if (p.name) {
+				npm({
+					command: "uninstall",
+					global: true,
+					arguments: [p.name]
+				});
+				this.refresh();
+			}
+		};
 	};
 
-	this.npm = npm;
+	this.npm = new function() {
+		this.run = function(p) {
+			return npm(p);
+		}
+	};
 };
 
 $exports.Project = function(o) {

@@ -409,6 +409,32 @@ END LICENSE
 						</li>
 					</ul>
 				</li>
+				<li class="object">
+					<div class="name">node</div>
+					<span>
+						(conditional; see below) APIs pertaining to the global Node.js installation for <code>jsh</code>.
+					</span>
+					<div>
+						If Node.js is installed in this installation of <code>jsh</code>, this object will be a Node.js
+						<a href="../../../rhino/tools/node/api.html">Installation</a>.
+					</div>
+					<div>
+						If Node.js is not installed in this <code>jsh</code> installation, but can be installed, it will be an
+						object with the following properties:
+					</div>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="function">
+							<div class="name">install</div>
+							<span>Creattes a global Node.js installation for <code>jsh</code>.</span>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</div>
+						</li>
+					</ul>
+				</li>
 			</ul>
 		</div>
 		<div>

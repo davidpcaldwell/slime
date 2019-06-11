@@ -142,6 +142,7 @@ var run = function(p,events) {
 			})();
 		} else if (typeof(p.command) != "undefined") {
 			rv.result.command = p.command;
+			//	TODO	switch to $api.Function.mutating
 			if (typeof(p.arguments) == "function") {
 				p.arguments = (function(f) {
 					var rv = [];
@@ -365,6 +366,16 @@ $exports.run.stdio.LineBuffered = function(o) {
 			}
 		}
 	});
+}
+$exports.run.environment = function(argument) {
+	var now = $exports.environment;
+	if (typeof(argument) == "undefined") return now;
+	if (argument === null) return now;
+	if (typeof(argument) == "object") return argument;
+	if (typeof(argument) == "function") {
+		return $api.Function.mutating(argument)($api.Object.compose(now));
+	}
+	throw new TypeError();
 }
 $exports.run.directory = function(p) {
 	var getDirectoryProperty = function(p) {
