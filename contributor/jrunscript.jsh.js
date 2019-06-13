@@ -41,6 +41,7 @@ var suite = new jsh.unit.html.Suite();
 var SRC = jsh.script.file.parent.parent;
 
 suite.add("internal/slime", new jsh.unit.part.Html({
+	//	TODO	redundant; now tested per-engine in contributor/suite.jsh.js
 		//	Functionality used internally or accessed through loader/jrunscript (although untested by loader/jrunscript)
 	pathname: SRC.getRelativePath("loader/api.html")
 }));
@@ -49,6 +50,7 @@ suite.add("internal/mime", new jsh.unit.part.Html({
 }));
 suite.add("internal/jrunscript", new jsh.unit.part.Html({
 	//	Test cases of loader implementation
+	//	TODO	redundant; now tested per-engine in contributor/suite.jsh.js
 	pathname: SRC.getRelativePath("loader/jrunscript/api.html")
 }));
 suite.add("internal/other", new jsh.unit.part.Html({
