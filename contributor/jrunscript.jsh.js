@@ -16,6 +16,10 @@ var parameters = jsh.script.getopts({
 		//	undocumented; used by suite.jsh.js
 		"shell:built": jsh.file.Pathname,
 
+		//	suite.jsh.js runs platform tests for each engine; see loader/jrunscript/test/suite.jsh.js. So when launched from suite,
+		//	we do not want to run them again in this engine
+		noplatform: false,
+
 		noselfping: false,
 		executable: false,
 
@@ -40,7 +44,7 @@ var suite = new jsh.unit.html.Suite();
 
 var SRC = jsh.script.file.parent.parent;
 
-suite.add("internal/slime", new jsh.unit.part.Html({
+if (!parameters.options.noplatform) suite.add("internal/slime", new jsh.unit.part.Html({
 	//	TODO	redundant; now tested per-engine in contributor/suite.jsh.js
 		//	Functionality used internally or accessed through loader/jrunscript (although untested by loader/jrunscript)
 	pathname: SRC.getRelativePath("loader/api.html")
@@ -48,7 +52,7 @@ suite.add("internal/slime", new jsh.unit.part.Html({
 suite.add("internal/mime", new jsh.unit.part.Html({
 	pathname: SRC.getRelativePath("loader/mime.api.html")
 }));
-suite.add("internal/jrunscript", new jsh.unit.part.Html({
+if (!parameters.options.noplatform) suite.add("internal/jrunscript", new jsh.unit.part.Html({
 	//	Test cases of loader implementation
 	//	TODO	redundant; now tested per-engine in contributor/suite.jsh.js
 	pathname: SRC.getRelativePath("loader/jrunscript/api.html")

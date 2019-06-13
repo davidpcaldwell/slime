@@ -206,6 +206,7 @@ parameters.options.java.forEach(function(jre,index,jres) {
 				shell: environment.jsh.src,
 				script: jsh.script.file.parent.getFile("jrunscript.jsh.js"),
 				arguments: [
+					"-noplatform",
 					"-shell:built", environment.jsh.built.location,
 					"-view", "stdio"
 				].concat(

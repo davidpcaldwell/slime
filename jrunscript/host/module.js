@@ -95,65 +95,58 @@ $exports.invoke = function(p) {
 	return rv;
 };
 
-if (typeof(Packages.org.mozilla.javascript.Context) == "function" && false) {
-	$exports.Properties = function($properties) {
-		return Packages.inonit.script.runtime.Properties.create($properties);
-	}
-} else {
-	var PropertyParent = function() {
-	}
-	PropertyParent.prototype.toString = function() {
-		return null;
-	}
-
-	$exports.Properties = function($properties) {
-		var nashornTrace = function(s) {
-			//Packages.java.lang.System.err.println(s);
-		}
-		nashornTrace("Properties constructor");
-		var rv = {};
-		var keys = $properties.propertyNames();
-		while(keys.hasMoreElements()) {
-			nashornTrace("key");
-			var name = String(keys.nextElement());
-			var value = String($properties.getProperty(name));
-			nashornTrace(name + "=" + value);
-			var tokens = name.split(".");
-			var target = rv;
-			for (var i=0; i<tokens.length-1; i++) {
-				if (!target[tokens[i]]) {
-					nashornTrace("token: " + tokens[i] + " is PropertyParent");
-					target[tokens[i]] = new PropertyParent();
-				} else if (typeof(target[tokens[i]]) == "string") {
-					nashornTrace("token: " + tokens[i] + " is currently string; replacing with PropertyParent");
-					var toString = (function(value) {
-						return function() {
-							return value;
-						}
-					})(target[tokens[i]]);
-					target[tokens[i]] = new PropertyParent();
-					target[tokens[i]].toString = toString;
-				} else {
-					nashornTrace("target: " + tokens[i] + " found.");
-				}
-				target = target[tokens[i]];
-			}
-			if (!target[tokens[tokens.length-1]]) {
-				nashornTrace("Last token: " + tokens[tokens.length-1] + " is string");
-				target[tokens[tokens.length-1]] = value;
-			} else {
-				nashornTrace("Last token: " + tokens[tokens.length-1] + " is toString");
-				target[tokens[tokens.length-1]].toString = (function(constant) {
-					return function() {
-						return constant;
-					}
-				})(value);
-			}
-		}
-		nashornTrace("Properties constructor returning");
-		return rv;
-	};
+var PropertyParent = function() {
 }
+PropertyParent.prototype.toString = function() {
+	return null;
+};
+$exports.Properties = function($properties) {
+	var nashornTrace = function(s) {
+		//Packages.java.lang.System.err.println(s);
+	}
+	nashornTrace("Properties constructor");
+	var rv = {};
+	var keys = $properties.propertyNames();
+	while(keys.hasMoreElements()) {
+		nashornTrace("key");
+		var name = String(keys.nextElement());
+		var value = String($properties.getProperty(name));
+		nashornTrace(name + "=" + value);
+		var tokens = name.split(".");
+		var target = rv;
+		for (var i=0; i<tokens.length-1; i++) {
+			if (!target[tokens[i]]) {
+				nashornTrace("token: " + tokens[i] + " is PropertyParent");
+				target[tokens[i]] = new PropertyParent();
+			} else if (typeof(target[tokens[i]]) == "string") {
+				nashornTrace("token: " + tokens[i] + " is currently string; replacing with PropertyParent");
+				var toString = (function(value) {
+					return function() {
+						return value;
+					}
+				})(target[tokens[i]]);
+				target[tokens[i]] = new PropertyParent();
+				target[tokens[i]].toString = toString;
+			} else {
+				nashornTrace("target: " + tokens[i] + " found.");
+			}
+			target = target[tokens[i]];
+		}
+		if (!target[tokens[tokens.length-1]]) {
+			nashornTrace("Last token: " + tokens[tokens.length-1] + " is string");
+			target[tokens[tokens.length-1]] = value;
+		} else {
+			nashornTrace("Last token: " + tokens[tokens.length-1] + " is toString");
+			target[tokens[tokens.length-1]].toString = (function(constant) {
+				return function() {
+					return constant;
+				}
+			})(value);
+		}
+	}
+	nashornTrace("Properties constructor returning");
+	return rv;
+};
 $api.experimental($exports,"Properties");
 $exports.Properties.adapt = function($properties) {
 	return new $exports.Properties($properties);
@@ -360,6 +353,7 @@ if ($context.globals && $context.globals.Array) {
 //}
 
 var Thread = function(p) {
+	//	This entire construct (synchronize, synchronize.lock) exists just to support join()
 	var synchronize = function(f) {
 		if ($exports.getClass("inonit.script.runtime.Threads") && $exports.getClass("org.mozilla.javascript.Context") && Packages.org.mozilla.javascript.Context.getCurrentContext() != null) {
 			return Packages.inonit.script.runtime.Threads.createSynchronizedFunction(arguments.callee.lock,f);

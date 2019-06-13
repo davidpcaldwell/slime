@@ -216,11 +216,10 @@ load("nashorn:mozilla_compat.js");
 		};
 	};
 
+	var engine = ($graal) ? graal : nashorn;
 	if (typeof($classpath) == "undefined") {
-		return ($graal) ? graal : nashorn;
+		return engine;
 	} else {
-		var engine = ($graal) ? graal : nashorn;
-
 		var $javahost = new function() {
 			this.getLoaderCode = $getLoaderCode;
 
