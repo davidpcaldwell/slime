@@ -16,10 +16,6 @@ var parameters = jsh.script.getopts({
 		//	undocumented; used by suite.jsh.js
 		"shell:built": jsh.file.Pathname,
 
-		//	suite.jsh.js runs platform tests for each engine; see loader/jrunscript/test/suite.jsh.js. So when launched from suite,
-		//	we do not want to run them again in this engine
-		noplatform: false,
-
 		noselfping: false,
 		executable: false,
 
@@ -52,11 +48,18 @@ if (!parameters.options.noplatform) suite.add("internal/slime", new jsh.unit.par
 suite.add("internal/mime", new jsh.unit.part.Html({
 	pathname: SRC.getRelativePath("loader/mime.api.html")
 }));
-if (!parameters.options.noplatform) suite.add("internal/jrunscript", new jsh.unit.part.Html({
-	//	Test cases of loader implementation
-	//	TODO	redundant; now tested per-engine in contributor/suite.jsh.js
-	pathname: SRC.getRelativePath("loader/jrunscript/api.html")
-}));
+if (!parameters.options.noplatform) {
+	suite.add("internal/jrunscript/main", new jsh.unit.part.Html({
+		//	Test cases of loader implementation
+		//	TODO	redundant; now tested per-engine in contributor/suite.jsh.js
+		pathname: SRC.getRelativePath("loader/jrunscript/api.html")
+	}));
+	suite.add("internal/jrunscript/java", new jsh.unit.part.Html({
+		//	Test cases of loader implementation
+		//	TODO	redundant; now tested per-engine in contributor/suite.jsh.js
+		pathname: SRC.getRelativePath("loader/jrunscript/java.api.html")
+	}));
+}
 suite.add("internal/other", new jsh.unit.part.Html({
 	//	Test cases involving the HTML test runner itself
 	pathname: SRC.getRelativePath("loader/api/test/data/1/api.html")

@@ -11,8 +11,11 @@ var suite = new jsh.unit.html.Suite();
 suite.add("slime", new jsh.unit.part.Html({
     pathname: SRC.getRelativePath("loader/api.html")
 }));
-suite.add("jrunscript", new jsh.unit.part.Html({
+suite.add("jrunscript/main", new jsh.unit.part.Html({
     pathname: SRC.getRelativePath("loader/jrunscript/api.html")
+}));
+suite.add("jrunscript/java", new jsh.unit.part.Html({
+    pathname: SRC.getRelativePath("loader/jrunscript/java.api.html")
 }));
 
 jsh.unit.html.cli({

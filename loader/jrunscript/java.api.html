@@ -14,53 +14,50 @@ END LICENSE
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
 <head>
-	<title>__TITLE__</title>
+	<title>SLIME Java runtime: Java objects</title>
 	<!--	TODO	change these to use local copies of these files at the appropriate location	-->
 	<!--
 		These files are specified using http: rather than https: because githack.com will redirect them to https:, but http: will
 		work when using an HTTP proxy to serve local copies of the files without needing to run https: locally
 	-->
-	<link href="http://bb.githack.com/davidpcaldwell/slime/raw/tip/loader/api/api.css" rel="stylesheet" type="text/css" />
-	<script src="http://bb.githack.com/davidpcaldwell/slime/raw/tip/loader/api/api.js"></script>
+	<link href="../../loader/api/api.css" rel="stylesheet" type="text/css" />
+	<script src="../../loader/api/api.js"></script>
 	<script>
 		//	TODO	CORS
 		document.domain = document.domain;
 	</script>
 </head>
 <body>
-	<div>__DESCRIPTION__</div>
-	<div>
-		<h1>Context</h1>
-		<ul>
-		</ul>
-	</div>
+	<div>Provides the ability to interact with native Java constructs.</div>
+	<script type="application/x.jsapi#initialize"><![CDATA[
+		scope.api = jsh.unit.$slime;
+
+		scope.isRhino = Boolean(typeof(Packages.org.mozilla.javascript.Context) == "function"
+			&& (Packages.org.mozilla.javascript.Context.getCurrentContext() != null))
+		;
+	]]></script>
+	<script type="application/x.jsapi#tests">
+		verify(api).is.type("object");
+		verify(api).java.is.type("object");
+
+		//	Verify and document JS engine differences
+
+		var typeofJavaInteger = (isRhino) ? "object" : "number";
+		var i = new Packages.java.lang.Integer(8);
+		verify(i.wait).is.type("function");
+		verify(i.foo).is.type("undefined");
+		verify(typeof(i)).is(typeofJavaInteger);
+
+		var javaObjectMethodTypeOnPrimitive = (isRhino) ? "undefined" : "function";
+		var n = 8;
+		verify(n.wait,"number.wait").is.type(javaObjectMethodTypeOnPrimitive);
+		var s = "string";
+		verify(s.wait,"string.wait").is.type(javaObjectMethodTypeOnPrimitive);
+	</script>
 	<div>
 		<h1>Exports</h1>
 		<div jsapi:id="exports">
 			<ul>
-				<script type="application/x.jsapi#initialize"><![CDATA[
-					scope.isRhino = Boolean(typeof(Packages.org.mozilla.javascript.Context) == "function"
-						&& (Packages.org.mozilla.javascript.Context.getCurrentContext() != null))
-					;
-				]]></script>
-				<script type="application/x.jsapi#tests">
-					verify(api).is.type("object");
-					verify(api).java.is.type("object");
-
-					//	Verify and document JS engine differences
-
-					var typeofJavaInteger = (isRhino) ? "object" : "number";
-					var i = new Packages.java.lang.Integer(8);
-					verify(i.wait).is.type("function");
-					verify(i.foo).is.type("undefined");
-					verify(typeof(i)).is(typeofJavaInteger);
-
-					var javaObjectMethodTypeOnPrimitive = (isRhino) ? "undefined" : "function";
-					var n = 8;
-					verify(n.wait,"number.wait").is.type(javaObjectMethodTypeOnPrimitive);
-					var s = "string";
-					verify(s.wait,"string.wait").is.type(javaObjectMethodTypeOnPrimitive);
-				</script>
 				<li class="function" jsapi:id="getClass">
 					<div class="name">getClass</div>
 					<span>

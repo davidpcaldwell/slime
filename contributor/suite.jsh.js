@@ -63,6 +63,8 @@ var environment = new Environment({
 });
 
 (function() {
+	//	TODO	this should move into JDK-specific suite, as Nashorn's availability is based on version. So should shell this out
+	//			by Java version somehow
 	var engines = (function() {
 		var rv = [];
 		if (jsh.shell.jsh.lib.getFile("js.jar")) rv.push("rhino");
@@ -71,13 +73,13 @@ var environment = new Environment({
 		return rv;
 	})();
 
-	var jshPart = {
+	var part = {
 		parts: {}
 	};
 
 	engines.forEach(function(engine) {
 		// TODO: add a part for an engine not present? Automatically install all engines when script is run?
-		jshPart.parts[engine] = {
+		part.parts[engine] = {
 			parts: new function() {
 				this.property = {
 					// TODO: tests unbuilt shells only because built shells would not necessarily have the same libraries (Rhino/Graal).
@@ -145,7 +147,8 @@ var environment = new Environment({
 		}
 	});
 
-	suite.add("launcher/engines", jshPart);
+	//	TODO	split this into multiple parts using suite.add("engines/jrunscript/xxx")
+	suite.add("engines/jrunscript", part);
 })();
 
 (function() {
@@ -206,7 +209,6 @@ parameters.options.java.forEach(function(jre,index,jres) {
 				shell: environment.jsh.src,
 				script: jsh.script.file.parent.getFile("jrunscript.jsh.js"),
 				arguments: [
-					"-noplatform",
 					"-shell:built", environment.jsh.built.location,
 					"-view", "stdio"
 				].concat(
