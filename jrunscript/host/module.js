@@ -497,11 +497,7 @@ $exports.Thread.run.__defineGetter__("TIMED_OUT", function() {
 $exports.Thread.thisSynchronize = function(f) {
 	//	TODO	deprecate when Rhino 1.7R3 released; use two-argument version of the Synchronizer constructor in a new method called
 	//			synchronize()
-	if ($exports.getClass("org.mozilla.javascript.Synchronizer") && Packages.org.mozilla.javascript.Context.getCurrentContext()) {
-		return new Packages.org.mozilla.javascript.Synchronizer(f);
-	} else {
-		return sync(f);
-	}
+	return $context.$slime.java.thisSynchronize(f);
 };
 $exports.Thread.Monitor = function() {
 	var lock = new Packages.java.lang.Object();
@@ -512,11 +508,7 @@ $exports.Thread.Monitor = function() {
 
 	//	TODO	repetition: this is also in Thread constructor
 	var synchronize = function(f) {
-		if ($exports.getClass("inonit.script.runtime.Threads") && $exports.getClass("org.mozilla.javascript.Context") && Packages.org.mozilla.javascript.Context.getCurrentContext() != null) {
-			return Packages.inonit.script.runtime.Threads.createSynchronizedFunction(lock, f);
-		} else {
-			return sync(f, lock);
-		}
+		return $context.$slime.java.sync(f, lock);
 	};
 
 	this.Waiter = function(c) {

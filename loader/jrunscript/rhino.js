@@ -120,5 +120,13 @@
 		}
 	};
 
+	rv.java.thisSynchronize = function(f) {
+		if (rv.java.getClass("org.mozilla.javascript.Synchronizer")) {
+			return new Packages.org.mozilla.javascript.Synchronizer(f);
+		} else {
+			return sync(f);
+		}
+	}
+
 	return rv;
 })()

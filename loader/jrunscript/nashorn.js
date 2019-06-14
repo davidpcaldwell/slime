@@ -281,6 +281,12 @@ load("nashorn:mozilla_compat.js");
 			rv.java.sync = sync;
 		}
 
+		if (engine.sync) {
+			rv.java.thisSynchronize = function(f) {
+				return sync(f);
+			};
+		}
+
 		return rv;
 	}
 })()
