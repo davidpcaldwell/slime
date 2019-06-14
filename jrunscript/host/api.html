@@ -245,11 +245,97 @@ END LICENSE
 					<span>__DESCRIPTION__</span>
 					<div class="label">has properties:</div>
 					<ul>
-						<li class="function">
+						<li class="function" jsapi:id="join">
 							<div class="name">join</div>
 							<span>Causes the calling thread to block and wait for this thread to terminate (either via the completion of the execution of the
 								function or via timing out).
 							</span>
+							<script type="application/x.jsapi#tests"><![CDATA[
+								var listener = new function() {
+									this.returned = 0;
+									this.errored = 0;
+									this.expired = 0;
+	
+									this.result = function(rv) {
+										this.returned++;
+									}
+	
+									this.error = function(e) {
+										jsh.shell.console(e);
+										jsh.shell.console(e.stack);
+										this.errored++;
+									}
+	
+									this.timeout = function() {
+										this.expired++;
+									}
+								};
+	
+								var MAX = 250;
+								var COUNT = 5;
+	
+								var rnd = new Packages.java.util.Random();
+	
+								var random = function() {
+									return rnd.nextDouble();
+								}
+	
+								verify(listener).returned.is(0);
+								verify(listener).errored.is(0);
+								verify(listener).expired.is(0);
+
+								var Thread = module.Thread;
+
+								var all = [];
+	
+								for (var i=0; i<COUNT; i++) {
+									(function(i) {
+										var t = Thread.start({
+											call: function() {
+												Packages.java.lang.Thread.sleep(MAX * random() / 2);
+												return i;
+											},
+											on: listener
+										});
+										all.push(t);	
+									})(i)
+								}
+	
+								for (var i=0; i<COUNT; i++) {
+									(function(i) {
+										var t = Thread.start({
+											call: function() {
+												Packages.java.lang.Thread.sleep(MAX * random() / 2);
+												throw new Error(String(i));
+											},
+											on: listener
+										});
+										all.push(t);									
+									})(i);
+								}
+	
+								for (var i=0; i<COUNT; i++) {
+									(function(i) {
+										var t = Thread.start({
+											call: function() {
+												Packages.java.lang.Thread.sleep(MAX + MAX + MAX * random());
+												throw new Error(String(i));
+											},
+											timeout: MAX,
+											on: listener
+										});
+										all.push(t);
+									})(i);
+								}
+
+								for (var i=0; i<all.length; i++) {
+									all[i].join();
+								}
+	
+								verify(listener).returned.is(COUNT);
+								verify(listener).errored.is(COUNT);
+								verify(listener).expired.is(COUNT);
+							]]></script>
 						</li>
 					</ul>
 				</div>
