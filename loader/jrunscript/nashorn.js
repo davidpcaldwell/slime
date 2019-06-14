@@ -131,6 +131,8 @@ load("nashorn:mozilla_compat.js");
 				Context.setGlobal(global);
 			}
 		};
+
+		this.sync = sync;
 	};
 
 	var graal = new function() {
@@ -274,6 +276,10 @@ load("nashorn:mozilla_compat.js");
 		}
 
 		var rv = $javahost.script("slime://loader/jrunscript/expression.js", $getLoaderCode("jrunscript/expression.js"), toScope({ $javahost: $javahost, $bridge: $bridge }), null);
+
+		if (engine.sync) {
+			rv.java.sync = sync;
+		}
 
 		return rv;
 	}

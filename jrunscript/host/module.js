@@ -15,13 +15,13 @@
 //$exports.getClass = $api.Function({
 //	before: $api.Function.argument.isString({ index: 0, name: "name" }),
 //	call: function(name) {
-//		if ($context.$rhino.classpath.getClass(name)) {
-//			return $context.$rhino.java.getJavaPackagesReference(name);
+//		if ($context.$slime.classpath.getClass(name)) {
+//			return $context.$slime.java.getJavaPackagesReference(name);
 //		}
 //		return null;
 //	}
 //});
-$exports.getClass = $context.$rhino.java.getClass;
+$exports.getClass = $context.$slime.java.getClass;
 
 //var isJavaObject = function(object) {
 //	if (typeof(object) == "undefined") return false;
@@ -30,22 +30,22 @@ $exports.getClass = $context.$rhino.java.getClass;
 //	if (typeof(object) == "boolean") return false;
 //	if (object == null) return false;
 //	//	TODO	Is the next line superfluous now?
-//	if ($context.$rhino.java.isJavaObjectArray(object)) return true;
-//	if ($context.$rhino.java.isJavaInstance(object)) return true;
+//	if ($context.$slime.java.isJavaObjectArray(object)) return true;
+//	if ($context.$slime.java.isJavaInstance(object)) return true;
 //	return false;
 //}
 //$exports.isJavaObject = isJavaObject;
-var isJavaObject = $context.$rhino.java.isJavaObject;
+var isJavaObject = $context.$slime.java.isJavaObject;
 $exports.isJavaObject = isJavaObject;
 
-$exports.isJavaType = $context.$rhino.java.isJavaType;
+$exports.isJavaType = $context.$slime.java.isJavaType;
 
-$exports.toNativeClass = $context.$rhino.java.toNativeClass;
+$exports.toNativeClass = $context.$slime.java.toNativeClass;
 
 var JavaArray = new function() {
 	this.create = function(p) {
 		var type = (p.type) ? p.type : Packages.java.lang.Object;
-		var rv = Packages.java.lang.reflect.Array.newInstance($context.$rhino.java.toNativeClass(type),p.array.length);
+		var rv = Packages.java.lang.reflect.Array.newInstance($context.$slime.java.toNativeClass(type),p.array.length);
 		for (var i=0; i<p.array.length; i++) {
 			rv[i] = p.array[i];
 		}
@@ -79,9 +79,9 @@ $exports.invoke = function(p) {
 	var _types = JavaArray.create({
 		type: Packages.java.lang.Class,
 		//	TODO	would be better to use Packages.xxx rather than names
-		array: parameterTypes.map($context.$rhino.java.toNativeClass)
+		array: parameterTypes.map($context.$slime.java.toNativeClass)
 	});
-	var _class = (p.method.class) ? $context.$rhino.java.toNativeClass(p.method.class) : p.target.getClass();
+	var _class = (p.method.class) ? $context.$slime.java.toNativeClass(p.method.class) : p.target.getClass();
 	var _method = _class.getDeclaredMethod(p.method.name, _types);
 	_method.setAccessible(true);
 	var rv = _method.invoke(
@@ -295,7 +295,7 @@ $exports.toJsArray = $api.deprecate(toJsArray);
 //	TODO	at least implement this in terms of $exports.Array.create
 var toJavaArray = function(jsArray,javaclass,adapter) {
 	if (!adapter) adapter = function(x) { return x; }
-	var rv = Packages.java.lang.reflect.Array.newInstance($context.$rhino.java.toNativeClass(javaclass),jsArray.length);
+	var rv = Packages.java.lang.reflect.Array.newInstance($context.$slime.java.toNativeClass(javaclass),jsArray.length);
 	for (var i=0; i<jsArray.length; i++) {
 		rv[i] = adapter(jsArray[i]);
 	}
@@ -353,15 +353,15 @@ if ($context.globals && $context.globals.Array) {
 //}
 
 var Thread = function(p) {
-	//	This entire construct (synchronize, synchronize.lock) exists just to support join()
-	var synchronize = function(f) {
-		if ($exports.getClass("inonit.script.runtime.Threads") && $exports.getClass("org.mozilla.javascript.Context") && Packages.org.mozilla.javascript.Context.getCurrentContext() != null) {
-			return Packages.inonit.script.runtime.Threads.createSynchronizedFunction(arguments.callee.lock,f);
-		} else {
-			return sync(f, arguments.callee.lock);
-		}
-	};
-	synchronize.lock = new Packages.java.lang.Object();
+	var synchronize = (function() {
+		//	This entire construct (synchronize, synchronize.lock) exists just to support join()
+		var lock = new Packages.java.lang.Object();
+		var rv = function(f) {
+			return $context.$slime.java.sync(f,lock);
+		};
+		rv.lock = lock;
+		return rv;
+	})();
 
 	var done = false;
 
@@ -448,7 +448,7 @@ $exports.Thread.setContextClassLoader = function(p) {
 	if (p._classLoader) {
 		p._thread.setContextClassLoader(p._classLoader);
 	} else {
-		$context.$rhino.classpath.setAsThreadContextClassLoaderFor(p._thread);
+		$context.$slime.classpath.setAsThreadContextClassLoaderFor(p._thread);
 	}
 };
 $exports.Thread.start = function(p) {

@@ -112,5 +112,13 @@
 		return $rhino.getDebugger();
 	};
 
+	rv.java.sync = function(f,lock) {
+		if (rv.java.getClass("inonit.script.runtime.Threads")) {
+			return Packages.inonit.script.runtime.Threads.createSynchronizedFunction(lock,f);
+		} else {
+			return sync(f,lock);
+		}
+	};
+
 	return rv;
 })()

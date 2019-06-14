@@ -85,8 +85,7 @@ var bootstrap = (function() {
 		});
 		rv.java = loader.module("WEB-INF/slime/jrunscript/host/", {
 			globals: true,
-			$rhino: $java,
-			$java: $java.java
+			$slime: $java
 		});
 		rv.java.log = loader.file("WEB-INF/slime/js/debug/logging.java.js", {
 			prefix: "slime",

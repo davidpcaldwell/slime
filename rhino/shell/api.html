@@ -94,8 +94,7 @@ END LICENSE
 	<script type="application/x.jsapi#initialize">
 		var context = new function() {
 			var java = $jsapi.loader.module("../../jrunscript/host/", {
-				$rhino: jsh.unit.$slime,
-				$java: jsh.unit.$slime.java
+				$slime: jsh.unit.$slime
 			});
 			var io = $jsapi.loader.module("../../jrunscript/io/", {
 				api: {

@@ -23,7 +23,7 @@ END LICENSE
 		scope.module = $jsapi.environment.module;
 		if (!scope.module) {
 			//	Compatibility with old test structure
-			scope.module = $jsapi.loader.module("module.js", { $rhino: jsh.unit.$slime });
+			scope.module = $jsapi.loader.module("module.js", { $slime: jsh.unit.$slime });
 		}
 	</script>
 	<div>
@@ -256,19 +256,17 @@ END LICENSE
 									this.errored = 0;
 									this.expired = 0;
 	
-									this.result = function(rv) {
+									this.result = module.Thread.thisSynchronize(function(rv) {
 										this.returned++;
-									}
+									});
 	
-									this.error = function(e) {
-										jsh.shell.console(e);
-										jsh.shell.console(e.stack);
+									this.error = module.Thread.thisSynchronize(function(e) {
 										this.errored++;
-									}
+									});
 	
-									this.timeout = function() {
+									this.timeout = module.Thread.thisSynchronize(function() {
 										this.expired++;
-									}
+									});
 								};
 	
 								var MAX = 250;
@@ -318,8 +316,8 @@ END LICENSE
 									(function(i) {
 										var t = Thread.start({
 											call: function() {
-												Packages.java.lang.Thread.sleep(MAX + MAX + MAX * random());
-												throw new Error(String(i));
+												Packages.java.lang.Thread.sleep(MAX * (3 + random()));
+												throw new Error(String("to" + i));
 											},
 											timeout: MAX,
 											on: listener
@@ -335,6 +333,8 @@ END LICENSE
 								verify(listener).returned.is(COUNT);
 								verify(listener).errored.is(COUNT);
 								verify(listener).expired.is(COUNT);
+								var engine = String(Packages.java.lang.System.getProperty("jsh.engine"));
+								verify(engine,"Engine running").is(engine);
 							]]></script>
 						</li>
 					</ul>
