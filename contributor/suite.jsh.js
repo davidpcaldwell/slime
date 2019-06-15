@@ -53,8 +53,6 @@ if (!parameters.options.engine.length) {
 
 var Environment = jsh.script.loader.file("jrunscript-environment.js").Environment;
 
-var suite = new jsh.unit.html.Suite();
-
 var environment = new Environment({
 	src: jsh.script.file.parent.parent,
 	noselfping: parameters.options.noselfping,
@@ -62,91 +60,7 @@ var environment = new Environment({
 	executable: true
 });
 
-(function() {
-	//	TODO	this should move into JDK-specific suite, as Nashorn's availability is based on version. So should shell this out
-	//			by Java version somehow
-	var engines = (function() {
-		var rv = [];
-		if (jsh.shell.jsh.lib.getFile("js.jar")) rv.push("rhino");
-		if (new Packages.javax.script.ScriptEngineManager().getEngineByName("nashorn")) rv.push("nashorn");
-		if (jsh.shell.jsh.lib.getSubdirectory("graal")) rv.push("graal");
-		return rv;
-	})();
-
-	var part = {
-		parts: {}
-	};
-
-	engines.forEach(function(engine) {
-		// TODO: add a part for an engine not present? Automatically install all engines when script is run?
-		suite.add("engines/jrunscript/" + engine, {
-			parts: new function() {
-				this.property = {
-					// TODO: tests unbuilt shells only because built shells would not necessarily have the same libraries (Rhino/Graal).
-					// will need to revisit this.
-					// TODO: consider migrating to and combining with jsh/launcher/internal.api.html
-					execute: function(scope,verify) {
-						var output = jsh.shell.jsh({
-							shell: environment.jsh.unbuilt.src,
-							script: environment.jsh.src.getFile("jsh/test/jsh-data.jsh.js"),
-							environment: Object.assign({}, jsh.shell.environment, {
-								JSH_ENGINE: engine
-							}),
-							stdio: {
-								output: String
-							},
-							evaluate: function(result) {
-								return JSON.parse(result.stdio.output);
-							}
-						});
-						verify(output).properties["jsh.engine"].is(engine);		
-					}
-				};
-
-				var SRC = environment.jsh.src;
-
-				this.runtime = jsh.unit.Suite.Fork({
-					name: "SLIME Java runtime",
-					run: jsh.shell.jsh,
-					shell: SRC,
-					script: SRC.getFile("loader/jrunscript/test/suite.jsh.js"),
-					arguments: ["-view", "stdio"],
-					environment: $api.Object.compose(jsh.shell.environment, {
-						JSH_ENGINE: engine
-					})
-				});
-
-				if (engine == "rhino") this.optimization = {
-					execute: function(scope,verify) {
-						[-1,0,1].forEach(function(level) {
-							if (environment.jsh.unbuilt.src.getFile("local/jsh/lib/coffee-script.js")) {
-								// TODO: If CoffeeScript is present, jsh should completely ignore optimization level
-								jsh.shell.console("Skipping Rhino optimization tests for level " + level + "; CoffeeScript present.");
-								return;
-							}
-							var result = jsh.shell.jsh({
-								shell: environment.jsh.unbuilt.src,
-								script: environment.jsh.src.getFile("jsh/test/jsh-data.jsh.js"),
-								environment: jsh.js.Object.set({}, jsh.shell.environment, {
-									JSH_ENGINE: "rhino",
-									JSH_ENGINE_RHINO_OPTIMIZATION: String(level)
-								}),
-								stdio: {
-									output: String
-								},
-								evaluate: function(result) {
-									return JSON.parse(result.stdio.output);
-								}
-							});
-							verify(result).engines.current.name.is("rhino");
-							verify(result).engines.current.optimization.is(level);
-						});
-					}
-				}
-			}
-		});
-	});
-})();
+var suite = new jsh.unit.html.Suite();
 
 (function() {
 	var rhinoArgs = (jsh.shell.jsh.lib.getFile("js.jar")) ? ["-rhino", jsh.shell.jsh.lib.getFile("js.jar")] : [];
@@ -170,8 +84,16 @@ var environment = new Environment({
 
 parameters.options.java.forEach(function(jre,index,jres) {
 	var JRE = (jres.length > 1) ? String(index) : "jre";
-	//	TODO	Convert to jsh/test plugin API designed for this purpose
-//	jsh.shell.echo("Adding launcher suite");
+
+	suite.add("jrunscript/" + JRE + "/engines", new jsh.unit.Suite.Fork({
+		run: jsh.shell.jsh,
+		shell: environment.jsh.built.home,
+		script: jsh.script.file.parent.getFile("jrunscript-engines.jsh.js"),
+		arguments: [
+			"-view", "stdio"
+		]
+	}));
+
 	parameters.options.engine.forEach(function(engine) {
 		var searchpath = jsh.file.Searchpath([jre.directory.getRelativePath("bin"),jre.directory.getRelativePath("../bin")]);
 
@@ -199,6 +121,7 @@ parameters.options.java.forEach(function(jre,index,jres) {
 				, (engine) ? { JSH_ENGINE: engine.toLowerCase() } : {}
 				, (jsh.shell.rhino && jsh.shell.rhino.classpath) ? { JSH_ENGINE_RHINO_CLASSPATH: String(jsh.shell.rhino.classpath) } : ""
 			);
+
 			suite.add("jrunscript/" + JRE + "/" + ENGINE, jsh.unit.Suite.Fork({
 				name: "Java tests for JRE " + JRE + " and engine " + ENGINE,
 				run: jsh.shell.jsh,
