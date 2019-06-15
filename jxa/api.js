@@ -51,7 +51,7 @@
 	}
 	
 	//  TODO    build Loader implementation on top of this
-	var platform = (function(slime) {
+	var runtime = (function(slime) {
 		var $slime = {
 			getLoaderScript: function(path) {
 				return {
@@ -114,7 +114,7 @@
 	};
 
 	var Loader = function(o) {
-		return new platform.Loader({
+		return new runtime.Loader({
 			get: function(path) {
 				var directoryPath = o.directory.pathname.toString();
 				var target = directoryPath + path;

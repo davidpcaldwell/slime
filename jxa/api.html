@@ -1,0 +1,85 @@
+<!--
+LICENSE
+This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+The Original Code is the SLIME loader infrastructure.
+
+The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+Portions created by the Initial Developer are Copyright (C) 2013 the Initial Developer. All Rights Reserved.
+
+Contributor(s):
+END LICENSE
+--><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
+<head>
+	<title>SLIME: JXA</title>
+	<!--	TODO	change these to use local copies of these files at the appropriate location	-->
+	<!--
+		These files are specified using http: rather than https: because githack.com will redirect them to https:, but http: will
+		work when using an HTTP proxy to serve local copies of the files without needing to run https: locally
+	-->
+	<link href="../loader/api/api.css" rel="stylesheet" type="text/css" />
+	<script src="../loader/api/api.js"></script>
+	<script>
+		//	TODO	CORS
+		document.domain = document.domain;
+	</script>
+</head>
+<body>
+	<div>
+		<h1>Running JXA scripts</h1>
+		<div>
+			JXA scripts can be run with the <code><a href="../jxa.bash">jxa.bash</a></code> launcher at the top level of the SLIME distribution.
+		</div>
+		<div>
+			Scripts are provided with a global <code>jxa</code> object that provides various APIs; see below.
+		</div>
+	</div>
+	<div>
+		<h1><code>jxa</code></h1>
+		<ul>
+			<li class="function">
+				<div class="name">Application</div>
+				<span>__DESCRIPTION__</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+					</ol>
+				</div>
+				<div class="returns">
+					<div class="label">Returns</div>
+					<span class="type">__TYPE__</span>
+					<span>__DESCRIPTION__</span>
+				</div>
+			</li>
+			<li class="object">
+				<div class="name">system</div>
+				<span>__DESCRIPTION__</span>
+				<div class="label">has properties:</div>
+				<ul>
+				</ul>
+			</li>
+			<li class="object">
+				<div class="name">shell</div>
+				<span>__DESCRIPTION__</span>
+				<div class="label">has properties:</div>
+				<ul>
+				</ul>
+			</li>
+			<li class="object">
+				<div class="name">script</div>
+				<span>__DESCRIPTION__</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="value">
+						<div class="name">loader</div>
+						<span class="type"><a href="../loader/api.html">Loader</a></span>
+						<span>A Loader that loads resources relative to the script's location.</span>
+					</li>
+				</ul>
+			</li>
+		</ul>
+	</div>
+</body>
+</html>
