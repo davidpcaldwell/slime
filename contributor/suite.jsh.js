@@ -62,31 +62,6 @@ var environment = new Environment({
 
 var suite = new jsh.unit.html.Suite();
 
-(function() {
-	var rhinoArgs = (jsh.shell.jsh.lib.getFile("js.jar")) ? ["-rhino", jsh.shell.jsh.lib.getFile("js.jar")] : [];
-
-	// TODO: this was intended to be used for each JRE, but was not implemented, so moving it outside the java loop for now
-	var part = jsh.unit.Suite.Fork({
-		name: "Launcher tests",
-		run: jsh.shell.jsh,
-		shell: environment.jsh.built.home,
-		script: environment.jsh.src.getFile("jsh/launcher/test/suite.jsh.js"),
-		arguments: [
-			"-scenario",
-			"-shell:unbuilt", environment.jsh.unbuilt.src,
-			"-shell:built", environment.jsh.built.home,
-			"-view", "stdio"
-		].concat(rhinoArgs)
-	});
-
-	suite.add("jsh/launcher/suite", part);
-})();
-
-suite.add("jsh/launcher/internal", new jsh.unit.part.Html({
-	pathname: environment.jsh.src.getRelativePath("jsh/launcher/internal.api.html"),
-	environment: environment
-}));
-
 parameters.options.java.forEach(function(jre,index,jres) {
 	var JRE = (jres.length > 1) ? String(index) : "jre";
 

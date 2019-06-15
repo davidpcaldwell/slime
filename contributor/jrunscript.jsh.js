@@ -165,6 +165,30 @@ suite.add("jrunscript/tools/node", new jsh.unit.part.Html({
 	pathname: SRC.getRelativePath("rhino/tools/node/api.html")
 }));
 
+(function jshLauncher() {
+	var rhinoArgs = (jsh.shell.jsh.lib.getFile("js.jar")) ? ["-rhino", jsh.shell.jsh.lib.getFile("js.jar")] : [];
+
+	var part = jsh.unit.Suite.Fork({
+		name: "Launcher tests",
+		run: jsh.shell.jsh,
+		shell: environment.jsh.built.home,
+		script: environment.jsh.src.getFile("jsh/launcher/test/suite.jsh.js"),
+		arguments: [
+			"-scenario",
+			"-shell:unbuilt", environment.jsh.unbuilt.src,
+			"-shell:built", environment.jsh.built.home,
+			"-view", "stdio"
+		].concat(rhinoArgs)
+	});
+
+	suite.add("jsh/launcher/suite", part);
+
+	suite.add("jsh/launcher/internal", new jsh.unit.part.Html({
+		pathname: environment.jsh.src.getRelativePath("jsh/launcher/internal.api.html"),
+		environment: environment
+	}));
+})();
+
 suite.add("jsh/loader", new jsh.unit.part.Html({
 	pathname: SRC.getRelativePath("jsh/loader/internal.api.html"),
 	environment: environment
