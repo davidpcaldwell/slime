@@ -401,6 +401,10 @@ END LICENSE
 				</li>
 			</ul>
 		</div>
+		<script type="application/x.jsapi#tests">
+			var classpathUri = String($jsapi.environment.jsh.packaged.jar.pathname.java.adapt().toURI().toString())
+			verify($jsapi).environment.jsh.packaged.data.shellClasspath.is(classpathUri);
+		</script>
 	</div>
 	<div>
 		<h1>Tests</h1>

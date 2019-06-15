@@ -78,5 +78,6 @@ jsh.shell.echo(JSON.stringify({
 			string: url.toString()
 		}
 	}),
-	properties: properties
+	properties: properties,
+	"shellClasspath": String(Packages.java.lang.Class.forName("inonit.script.jsh.Shell").getProtectionDomain().getCodeSource().getLocation().toString())
 }, void(0), "    "));

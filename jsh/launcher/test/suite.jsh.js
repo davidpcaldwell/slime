@@ -126,13 +126,6 @@ jsh.test.integration({
 			});
 		}).bind(this);
 
-//		//	TODO	does not appear to test packaging with Rhino when run from Nashorn
-//		this.add({
-//			scenario: new jsh.unit.Scenario.Integration({
-//				script: jsh.script.file.getRelativePath("packaged.jsh.js").file
-//			})
-//		});
-
 		var engines = [];
 		if (new Packages.javax.script.ScriptEngineManager().getEngineByName("nashorn")) {
 			engines.push("nashorn");
@@ -158,30 +151,6 @@ jsh.test.integration({
 
 		engines.forEach(function(engine) {
 			var UNSUPPORTED = (this.engine == "rhino" && built.coffeescript);
-			if (!UNSUPPORTED) this.scenario(engine, jsh.test.Suite({
-				shell: home,
-				script: jsh.script.file.getRelativePath("packaged.jsh.js").file,
-				environment: {
-					PATH: jsh.shell.environment.PATH,
-					//	TODO	below is used for Windows temporary files
-					TEMP: (jsh.shell.environment.TEMP) ? jsh.shell.environment.TEMP : "",
-					//	TODO	below is used for Windows command location
-					PATHEXT: (jsh.shell.environment.PATHEXT) ? jsh.shell.environment.PATHEXT : "",
-					JSH_ENGINE: engine
-				}
-			}));
-//			this.add({ scenario: new jsh.unit.Scenario.Integration({
-//				shell: home,
-//				script: jsh.script.file.getRelativePath("packaged.jsh.js").file,
-//				environment: {
-//					PATH: jsh.shell.environment.PATH,
-//					//	TODO	below is used for Windows temporary files
-//					TEMP: (jsh.shell.environment.TEMP) ? jsh.shell.environment.TEMP : "",
-//					//	TODO	below is used for Windows command location
-//					PATHEXT: (jsh.shell.environment.PATHEXT) ? jsh.shell.environment.PATHEXT : "",
-//					JSH_ENGINE: engine
-//				}
-//			}) });
 
 			[unbuilt,built].forEach(function(shell) {
 				var UNSUPPORTED = (engine == "rhino" && shell.coffeescript);

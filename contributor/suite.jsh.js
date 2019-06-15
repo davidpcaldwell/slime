@@ -79,8 +79,13 @@ var suite = new jsh.unit.html.Suite();
 		].concat(rhinoArgs)
 	});
 
-	suite.add("launcher/suite", part);
+	suite.add("jsh/launcher/suite", part);
 })();
+
+suite.add("jsh/launcher/internal", new jsh.unit.part.Html({
+	pathname: environment.jsh.src.getRelativePath("jsh/launcher/internal.api.html"),
+	environment: environment
+}));
 
 parameters.options.java.forEach(function(jre,index,jres) {
 	var JRE = (jres.length > 1) ? String(index) : "jre";
@@ -139,11 +144,6 @@ parameters.options.java.forEach(function(jre,index,jres) {
 		}
 	});
 });
-
-suite.add("jsh/launcher/internal", new jsh.unit.part.Html({
-	pathname: environment.jsh.src.getRelativePath("jsh/launcher/internal.api.html"),
-	environment: environment
-}));
 
 //	Browsers in precedence order: whichever is first in the array will be used if only one is being used
 var browsers = jsh.unit.browser.installed;
