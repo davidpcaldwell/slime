@@ -79,7 +79,7 @@ var environment = new Environment({
 
 	engines.forEach(function(engine) {
 		// TODO: add a part for an engine not present? Automatically install all engines when script is run?
-		part.parts[engine] = {
+		suite.add("engines/jrunscript/" + engine, {
 			parts: new function() {
 				this.property = {
 					// TODO: tests unbuilt shells only because built shells would not necessarily have the same libraries (Rhino/Graal).
@@ -144,11 +144,8 @@ var environment = new Environment({
 					}
 				}
 			}
-		}
+		});
 	});
-
-	//	TODO	split this into multiple parts using suite.add("engines/jrunscript/xxx")
-	suite.add("engines/jrunscript", part);
 })();
 
 (function() {
