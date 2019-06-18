@@ -162,7 +162,11 @@ $set(new (function() {
 					$slime.classpath.add({ src: { loader: item.loader }});
 					var array = load({
 						plugins: plugins,
-						toString: item.loader.toString(),
+						toString: (function(item) {
+							return function() {
+								return item.loader.toString();
+							};
+						})(item),
 						$loader: item.loader
 					});
 					list.push.apply(list,array);
