@@ -168,6 +168,7 @@ suite.add("jrunscript/tools/node", new jsh.unit.part.Html({
 (function jshLauncher() {
 	var rhinoArgs = (jsh.shell.jsh.lib.getFile("js.jar")) ? ["-rhino", jsh.shell.jsh.lib.getFile("js.jar")] : [];
 
+	//	TODO	Move these tests elsewhere; see issue #335
 	var part = jsh.unit.Suite.Fork({
 		name: "Launcher tests",
 		run: jsh.shell.jsh,
