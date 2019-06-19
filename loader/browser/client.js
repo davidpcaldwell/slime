@@ -201,13 +201,18 @@
 				p = (function(prefix) {
 					return {
 						get: function(path) {
-							var code = fetcher.get(prefix+path);
-							if (code.contentType == "application/javascript") {
-								//	Add sourceURL for JavaScript debuggers
-								code.responseText += "\n//# sourceURL=" + prefix+path;
+							try {
+								var code = fetcher.get(prefix+path);
+								if (code.contentType == "application/javascript") {
+									//	Add sourceURL for JavaScript debuggers
+									code.responseText += "\n//# sourceURL=" + prefix+path;
+								}
+								// TODO: is 'path' used?
+								return { type: code.contentType, name: path, string: code.responseText, path: prefix+path };
+							} catch (e) {
+								if (e.code == 404) return null;
+								throw e;
 							}
-							// TODO: is 'path' used?
-							return { type: code.contentType, name: path, string: code.responseText, path: prefix+path };
 						},
 						toString: function() {
 							return "Browser loader: prefix=[" + prefix + "]";
@@ -236,6 +241,10 @@
 		this.value = function(path,scope,target) {
 			return loader.value.apply(loader,arguments);
 		};
+
+		this.get = function(path) {
+			return loader.get.apply(loader,arguments);
+		}
 
 		var getPageBase = function() {
 			return getCurrentBase().split("/").slice(0,-1).join("/") + "/";
