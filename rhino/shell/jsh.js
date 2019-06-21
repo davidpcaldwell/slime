@@ -508,7 +508,18 @@ $exports.jsh.relaunch = function() {
 			$exports.exit(result.status);
 		}
 	});
-}
+};
+$exports.jsh.require = $api.Events.Function(function(p,events) {
+    //  TODO    should develop a strategy for preventing infinite loops
+    if (!p.satisfied()) {
+        events.fire("installing");
+        p.install();
+        events.fire("installed");
+        jsh.shell.jsh.relaunch();
+    } else {
+        events.fire("satisfied");
+    }
+});
 $exports.run.evaluate.jsh = {};
 $exports.run.evaluate.jsh.wrap = function(result) {
 	jsh.shell.exit(result.status);

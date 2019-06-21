@@ -309,7 +309,7 @@ plugin({
 			jdbc: new function() {
 				var location = jsh.shell.jsh.lib && jsh.shell.jsh.lib.getRelativePath("postgresql.jar");
 
-				if (location) this.install = function() {
+				var install = (function() {
 					if (!this.installed || this.installed.version != "42.2.5") {
 						var response = new jsh.http.Client().request({
 							//	Requires Java 8
@@ -317,7 +317,9 @@ plugin({
 						});
 						location.write(response.body.stream, { append: false });
 					}					
-				};
+				}).bind(this);
+
+				if (location) this.install = install;
 
 				Object.defineProperty(this, "installed", {
 					get: function() {
@@ -329,7 +331,14 @@ plugin({
 							};
 						}
 					}
-				})
+				});
+
+				if (location) this.require = function(p,on) {
+					jsh.shell.jsh.require({
+						satisfied: function() { return location.file; },
+						install: function() { install(); }
+					}, on);
+				}
 			}
 		}
 
