@@ -28,17 +28,34 @@ END LICENSE
 </head>
 <body>
 	<script type="application/x.jsapi#initialize">
-		scope.api = $jsapi.loader.module("module.js");
 		var isBrowser = (function() {
 			var global = this;
 			return Boolean(global.window == global)
 		})();
+		var $slime = (function() {
+			var global = this;
+			if (global.jsh) return global.jsh.unit.$slime;
+		})();
+		scope.api = $jsapi.loader.module("module.js", {
+			$slime: $slime
+		});
 	</script>
 	<script type="application/x.jsapi#tests">
 		var resource = $jsapi.loader.get("test/data/1.html");
 		verify(resource).is.type("object");
 		var missing = $jsapi.loader.get("test/data/foo.html");
 		verify(missing).is.type("null");
+	</script>
+	<script type="application/x.jsapi#tests">
+		var page = api.load({
+			loader: $jsapi.loader,
+			path: "test/data/1.html"
+		});
+		//verify(page).dom.is.type("object");
+		verify(page).children.length.is(2);
+		verify(page).children.get(0).doctype.is.type("object");
+		verify(page).children.get(0).doctype.name.is.type("string");
+		verify(page).children.get(0).doctype.name.is("html");
 	</script>
 	<div>__DESCRIPTION__</div>
 	<div>

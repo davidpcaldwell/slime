@@ -43,3 +43,9 @@ $exports.isJavaType = function(javaclass) {
 $exports.toNativeClass = $context.engine.toNativeClass;
 
 $exports.test = $context.engine.test;
+
+$exports.adapt = {};
+$exports.adapt.String = function(_s) {
+	if (_s == null) return null;
+	return String(_s);
+}

@@ -140,6 +140,7 @@ var getLoaderApiDom = function(location) {
 			return div;
 		})();
 	} else {
+		//	TODO	below copied to loader/document/module.js
 		var doc = document.implementation.createHTMLDocument("");
 		//	Added this check for Firefox, for which document.write was not doing the trick
 		var didDocWriteWork = (function(doc) {

@@ -66,6 +66,12 @@ suite.add("internal/other", new jsh.unit.part.Html({
 	//	TODO	loader/jrunscript/java has some tests
 	//	TODO	loader/jrunscript/test/data/2/ has some tests but they require some classes in classpath
 }));
+suite.add("internal/document", new jsh.unit.Suite.Fork({
+	run: jsh.shell.jsh,
+	shell: (environment.jsh.built) ? environment.jsh.built.homne : environment.jsh.unbuilt.src,
+	script: SRC.getFile("loader/document/test/suite.jsh.js"),
+	arguments: ["-view", "stdio"]
+}));
 
 suite.add("$api/flag", new jsh.unit.part.Html({
 	pathname: SRC.getRelativePath("loader/$api-flag.api.html")

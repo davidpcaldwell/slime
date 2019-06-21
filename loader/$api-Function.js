@@ -87,6 +87,16 @@ $exports.Function.value = {
         }
     }
 };
+$exports.Function.pipe = function() {
+    var items = Array.prototype.slice.call(arguments);
+    return function(v) {
+        var rv = v;
+        for (var i=0; i<items.length; i++) {
+            rv = items[i](rv);
+        }
+        return rv;
+    }
+};
 $exports.Function.preprocessing = function(f,preprocessor) {
     return function() {
         var overrides = preprocessor.apply(this,arguments);
