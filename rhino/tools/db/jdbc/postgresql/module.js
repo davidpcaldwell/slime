@@ -105,6 +105,8 @@ var types = new function() {
 		this.string = "DATE";
 	
 		this.decode = function(rs,index) {
+			var ts = rs.getTimestamp(index);
+			if (ts === null) return null;
 			return new Date( rs.getTimestamp(index).getTime() );
 		}
 	
@@ -234,8 +236,7 @@ types.get = function(columnRow) {
 var dataSources = {};
 
 var getDataSource = function(host,port,db,user,password,pool) {
-	//	below is insufficient, should also include host/port
-	var dbid = db + "/" + user;
+	var dbid = host + "/" + port + "/" + db + "/" + user;
 	if (!dataSources[dbid]) {
 		//	was for 8.2
 		//	var driver = (pool) ? "Jdbc3PoolingDataSource" : "Jdbc3SimpleDataSource";
