@@ -235,7 +235,12 @@ var Scope = function(definition,environment) {
 			this.string = function(path) {
 				return inonit.loader.Loader.getCode(base + path);
 			};
+
 			this.coffee = window.CoffeeScript;
+
+			this.get = function(path) {
+				return inonit.loader.get(inonit.loader.nugget.page.relative(base+path));
+			}
 
 			//	TODO	add this.scenario; see jsh/unit/jsapi.js
 		};
