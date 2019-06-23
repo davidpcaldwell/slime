@@ -165,6 +165,7 @@ var getElement = function(root,path) {
 //		.getScenario(scope,unit): produce a unit.js/Scenario given a scope and a test path
 //
 $exports.ApiHtmlTests = function(html,name) {
+	if (!html.top) throw new Error();
 	this.toString = function() {
 		return "ApiHtmlTests: " + name;
 	}

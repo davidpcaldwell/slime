@@ -31,13 +31,19 @@ if (global.window == global) {
 				enumerable: true
 			})
 		},this);
-	}
+	};
+
+	var Element = function(dom) {
+		this.name = dom.tagName.toLowerCase();
+	};
 
 	var Node = function(dom) {
 		this.dom = dom;
 
 		if (dom.nodeType == dom.DOCUMENT_TYPE_NODE) {
 			this.doctype = new Doctype(dom);
+		} else if (dom.nodeType == dom.ELEMENT_NODE) {
+			this.element = new Element(dom);
 		}
 	}
 
@@ -58,10 +64,29 @@ if (global.window == global) {
 	var Document = function(p) {
 		this.dom = p.dom;
 
+		Object.defineProperty(this, "document", {
+			value: new function() {
+				Object.defineProperty(this, "element", {
+					get: function() {
+						return new Node(p.dom.documentElement);
+					},
+					enumerable: true
+				});
+			},
+			enumerable: true
+		})
+
 		Object.defineProperty(this, "children", {
 			get: $api.Function.memoized(function() {
 				return new NodeList(p.dom.childNodes);
 			}),
+			enumerable: true
+		});
+
+		Object.defineProperty(this, "element", {
+			get: function() {
+				return new Node( p.dom.documentElement );
+			},
 			enumerable: true
 		});
 	};
@@ -73,10 +98,13 @@ if (global.window == global) {
 
 if ($platform.java && $platform.java.getClass("org.jsoup.Jsoup")) {
 	var isDocumentType = $context.$slime.java.isJavaType(Packages.org.jsoup.nodes.DocumentType);
+	var isElement = $context.$slime.java.isJavaType(Packages.org.jsoup.nodes.Element);
+
+	var filters = {
+		element: function(node) { return Boolean(node.element); }
+	};
 
 	var Doctype = function(p) {
-		this.jsoup = p.jsoup;
-
 		Object.defineProperty(this, "name", {
 			get: $api.Function.pipe(function() {
 				return p.jsoup.attr("name");
@@ -97,6 +125,14 @@ if ($platform.java && $platform.java.getClass("org.jsoup.Jsoup")) {
 			},
 			enumerable: true
 		});
+	};
+
+	var Element = function(p) {
+		var name = $context.$slime.java.adapt.String(p.jsoup.tagName());
+		Object.defineProperty(this, "name", {
+			value: name,
+			enumerable: true
+		});
 	}
 
 	var Node = function(p) {
@@ -104,6 +140,8 @@ if ($platform.java && $platform.java.getClass("org.jsoup.Jsoup")) {
 
 		if (isDocumentType(p.jsoup)) {
 			this.doctype = new Doctype({ jsoup: p.jsoup });
+		} else if (isElement(p.jsoup)) {
+			this.element = new Element({ jsoup: p.jsoup });
 		}
 	}
 
@@ -117,8 +155,22 @@ if ($platform.java && $platform.java.getClass("org.jsoup.Jsoup")) {
 			});
 
 			this.get = function(index) {
-				return new Node({ jsoup: p.parent.childNodes().get(index) });
+				var _jsoup = p.parent.childNodes().get(index);
+				if (!_jsoup) return null;
+				return new Node({ jsoup: _jsoup });
 			}
+
+			var array = (function() {
+				var rv = [];
+				for (var i=0; i<this.length; i++) {
+					rv[i] = this.get(i);
+				}
+				return rv;
+			}).bind(this);
+
+			this.filter = function() {
+				return Array.prototype.filter.apply(array(), arguments);
+			};
 		} else {
 			throw new Error();
 		}
@@ -132,6 +184,28 @@ if ($platform.java && $platform.java.getClass("org.jsoup.Jsoup")) {
 				get: $api.Function.memoized(function() {
 					return new NodeList({ parent: p.jsoup });
 				}),
+				enumerable: true
+			});
+
+			var document = new (function(parent) {
+				Object.defineProperty(this, "element", {
+					get: $api.Function.pipe(
+						$api.Function.returning(parent.children), 
+						function(array) {
+							return array.filter(filters.element);
+						},
+						function(array) {
+							if (array.length > 1) throw new Error();
+							if (array.length == 0) return null;
+							return array[0];
+						}
+					),
+					enumerable: true
+				})
+			})(this);
+
+			Object.defineProperty(this, "document", {
+				value: document,
 				enumerable: true
 			});
 		};

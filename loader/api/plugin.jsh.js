@@ -37,17 +37,12 @@ plugin({
 					//			created below then we would invoke jsh loader here with code = { name: ..., string: code }
 					//	TODO	it seems likely a more useful name could be used here, perhaps using name of file plus jsapi:id path
 					source = {
-						name: "<eval>:" + String(++seq),
+						name: "eval://" + String(++seq),
 						type: "application/javascript",
 						string: code
 					}
 				}
-//				try {
-					jsh.loader.run(source,scope);
-//				} catch (e) {
-//					Packages.java.lang.System.err.println("Error executing " + code);
-//					throw e;
-//				}
+				jsh.loader.run(source,scope);
 			}
 		});
 	}
