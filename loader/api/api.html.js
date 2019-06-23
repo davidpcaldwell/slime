@@ -86,6 +86,8 @@ var run = function() {
 }
 
 var getDescendants = function(element) {
+	if (!element.getChildren) throw new Error("Required: getChildren");
+	
 	var addChildren = function(list,children) {
 		for (var i=0; i<children.length; i++) {
 			list.push(children[i]);
@@ -165,7 +167,7 @@ var getElement = function(root,path) {
 //		.getScenario(scope,unit): produce a unit.js/Scenario given a scope and a test path
 //
 $exports.ApiHtmlTests = function(html,name) {
-	if (!html.top) throw new Error();
+	if (!html.top) throw new Error("'html' argument requires 'top' property representing top-level element");
 	this.toString = function() {
 		return "ApiHtmlTests: " + name;
 	}

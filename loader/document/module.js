@@ -33,6 +33,10 @@ if (global.window == global) {
 		},this);
 	};
 
+	var Parent = function(dom) {
+		
+	}
+
 	var Element = function(dom) {
 		this.name = dom.tagName.toLowerCase();
 	};
@@ -104,6 +108,15 @@ if ($platform.java && $platform.java.getClass("org.jsoup.Jsoup")) {
 		element: function(node) { return Boolean(node.element); }
 	};
 
+	var Parent = function(p) {
+		Object.defineProperty(this, "children", {
+			get: $api.Function.memoized(function() {
+				return new NodeList({ parent: p.jsoup });
+			}),
+			enumerable: true
+		});
+	}
+
 	var Doctype = function(p) {
 		Object.defineProperty(this, "name", {
 			get: $api.Function.pipe(function() {
@@ -128,7 +141,9 @@ if ($platform.java && $platform.java.getClass("org.jsoup.Jsoup")) {
 	};
 
 	var Element = function(p) {
+
 		var name = $context.$slime.java.adapt.String(p.jsoup.tagName());
+
 		Object.defineProperty(this, "name", {
 			value: name,
 			enumerable: true
@@ -141,7 +156,11 @@ if ($platform.java && $platform.java.getClass("org.jsoup.Jsoup")) {
 		if (isDocumentType(p.jsoup)) {
 			this.doctype = new Doctype({ jsoup: p.jsoup });
 		} else if (isElement(p.jsoup)) {
+			Parent.call(this,p);
 			this.element = new Element({ jsoup: p.jsoup });
+			this.toString = function() {
+				return "Element";
+			}
 		}
 	}
 
@@ -180,12 +199,7 @@ if ($platform.java && $platform.java.getClass("org.jsoup.Jsoup")) {
 		var Document = function(p) {
 			this.jsoup = p.jsoup;
 	
-			Object.defineProperty(this, "children", {
-				get: $api.Function.memoized(function() {
-					return new NodeList({ parent: p.jsoup });
-				}),
-				enumerable: true
-			});
+			Parent.call(this,p);
 
 			var document = new (function(parent) {
 				Object.defineProperty(this, "element", {

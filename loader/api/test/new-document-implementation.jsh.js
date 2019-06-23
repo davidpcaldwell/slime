@@ -2,13 +2,41 @@ var parser = jsh.loader.module(jsh.script.file.parent.parent.parent.parent.getRe
 	$slime: jsh.unit.$slime
 });
 var html = parser.load({
-	loader: jsh.script.loader,
-	path: "data/1/api.html"
+	loader: new jsh.file.Loader({ directory: jsh.shell.jsh.src }),
+	path: "loader/api/test/data/1/api.html"
 });
 jsh.shell.console(html);
 
-var adapted = new (function(html) {
-	this.top = html.document.element;
-})(html);
+var Node = function(delegate) {
+	this.toString = function() {
+		return "JSAPI Node";
+	};
 
-var tests = new jsh.unit.html.ApiHtmlTests(html, "Suite loaded using new HTML parser");
+	if (delegate.element) return new Element(delegate);
+}
+
+var Element = function(delegate) {
+	if (!delegate.children) throw new Error("delegate.children expected in " + delegate);
+	
+	this.toString = function() {
+		return "JSAPI Element " + delegate.name;
+	};
+
+	this.getChildren = function() {
+		return delegate.children.filter(function(node) { return node.element; }).map(function(node) {
+			return new Node(node);
+		});
+	}
+}
+
+var Document = function(delegate) {
+	this.toString = function() {
+		return "JSAPI Document";
+	};
+
+	this.top = new Element(html.document.element);
+}
+
+var adapted = new Document(html);
+
+var tests = new jsh.unit.html.ApiHtmlTests(adapted, "Suite loaded using new HTML parser");
