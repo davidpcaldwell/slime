@@ -137,17 +137,17 @@ plugin({
 				return new jsh.script.Application(descriptor).run.apply(null, (args) ? args : jsh.script.arguments);
 			} catch (e) {
 				if (e.usage) {
-					jsh.shell.echo("Usage: " + jsh.script.file + " <command> [arguments]");
+					jsh.shell.console("Usage: " + jsh.script.file + " <command> [arguments]");
 					jsh.shell.exit(1);
 				} else if (e.commandNotFound) {
-					jsh.shell.echo("Command not found: " + e.commandNotFound);
+					jsh.shell.console("Command not found: " + e.commandNotFound);
 					jsh.shell.exit(1);
 				} else {
-					jsh.shell.echo("Uncaught exception: " + e);
+					jsh.shell.console("Uncaught exception: " + e);
 					if (e.stack) {
-						jsh.shell.echo(e.stack);
+						jsh.shell.console(e.stack);
 					}
-					throw e;
+					jsh.shell.exit(1);
 				}
 			}
 		};

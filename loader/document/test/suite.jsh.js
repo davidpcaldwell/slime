@@ -9,6 +9,7 @@ var suite = new jsh.unit.html.Suite();
 
 var code = jsh.script.file.parent.parent;
 
+jsh.shell.tools.jsoup.install();
 suite.add("jrunscript", new jsh.unit.part.Html({
 	pathname: code.getRelativePath("api.html")
 }));
