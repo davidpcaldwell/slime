@@ -135,9 +135,9 @@ var run = function(browser) {
 				to: parameters.options.definition.file
 			});
 			uri += "&definition=" + toDefinition.relative
-			if (parameters.options.part) {
-				uri += "&part=" + parameters.options.part;
-			}
+		}
+		if (parameters.options.part) {
+			uri += "&part=" + parameters.options.part;
 		}
 		parameters.options.parameter.forEach(function(argument) {
 			uri += "&" + argument;

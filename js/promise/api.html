@@ -26,8 +26,8 @@ END LICENSE
 	<body>
 		<script type="application/x.jsapi#initialize">
 			scope.api = $jsapi.loader.file("module.js", {
-				Promise: function() {
-					return window.Promise;
+				Promise: function(executor) {
+					window.Promise.apply(this,arguments);
 				}
 			});
 		</script>
