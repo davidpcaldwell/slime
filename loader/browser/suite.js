@@ -12,7 +12,7 @@ var getSlimePart = function(definition) {
 	return getPartDescriptor({
 		definition: "../../../../" + definition
 	});
-}
+};
 
 var active = function(part) {
 	if (data.part) {

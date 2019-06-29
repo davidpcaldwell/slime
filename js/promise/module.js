@@ -13,7 +13,6 @@
 
 var SlimePromise = function Targeter(p) {
 	if (!p) p = {};
-	var Promise = $context.Promise();
 
 	if (typeof(p) == "function") {
 		p = { executor: p };
@@ -31,7 +30,7 @@ var SlimePromise = function Targeter(p) {
 	if (!delegate && !executor) throw new TypeError("Required: either 'delegate' promise or 'executor' function");
 
 	var wrap = function(v) {
-		if (typeof(v) == "object" && v instanceof Promise) {
+		if (typeof(v) == "object" && v instanceof $context.Promise) {
 			return new Targeter({ delegate: v, target: p.target });
 		} else {
 			var lineForBreakpoint = 1;
@@ -40,7 +39,7 @@ var SlimePromise = function Targeter(p) {
 	};
 
 	var getDelegate = function() {
-		if (!delegate) delegate = new Promise(executor);
+		if (!delegate) delegate = new $context.Promise(executor);
 		return delegate;
 	}
 
@@ -86,7 +85,7 @@ var Controllable = function(evaluator) {
 		return "Controllable Promise: " + promise;
 	};
 
-	var promise = new Promise(function(resolve,reject) {
+	var promise = new $context.Promise(function(resolve,reject) {
 		resolveIt = resolve;
 		rejectIt = reject;
 	});
