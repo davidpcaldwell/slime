@@ -993,13 +993,46 @@ END LICENSE
 						<div class="label">Arguments</div>
 						<ol>
 							<li class="object">
-								<span>__DESCRIPTION__</span>
+								<span>(optional)</span>
 								<div class="label">has properties:</div>
 								<ul>
 									<li class="value">
 										<div class="name">source</div>
 										<span class="type">__TYPE__</span>
-										<span>__DESCRIPTION__</span>
+										<span>
+											(optional; default is the created <a href="#types.emitter">emitter</a>)
+										</span>
+										<script type="application/x.jsapi#tests">
+											var source = {};
+
+											var noSource = $api.Events();
+											var withSource = $api.Events({ source: source });
+
+											var Captor = function() {
+												var captured = [];
+												var captor = function(e) {
+													captured.push(e);
+												}
+												return {
+													captured: captured,
+													captor: captor
+												};
+											};
+
+											var captorOne = new Captor();
+											var captorTwo = new Captor();
+
+											noSource.listeners.add("foo", captorOne.captor);
+											withSource.listeners.add("foo", captorTwo.captor);
+
+											noSource.fire("foo");
+											withSource.fire("foo");
+
+											verify(captorOne).captured.length.is(1);
+											verify(captorOne).captured[0].source.is(noSource);
+											verify(captorTwo).captured.length.is(1);
+											verify(captorTwo).captured[0].source.is(source);
+										</script>
 									</li>
 									<li class="value">
 										<div class="name">parent</div>
@@ -1039,8 +1072,15 @@ END LICENSE
 
 					<div class="returns">
 						<div class="label">Returns</div>
-						<span class="type">__TYPE__</span>
-						<span>__DESCRIPTION__</span>
+						<span class="type"><a href="#types.emitter">emitter</a></span>
+						<span>An emitter configured using the argument.</span>
+						<script type="application/x.jsapi#tests">
+							var emitter = api.Events();
+							verify(emitter).listeners.is.type("object");
+							verify(emitter).listeners.evaluate.property("add").is.type("function");
+							verify(emitter).listeners.evaluate.property("remove").is.type("function");
+							verify(emitter).evaluate.property("fire").is.type("function");
+						</script>
 					</div>
 					<div class="label">has properties:</div>
 					<ul>

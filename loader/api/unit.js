@@ -550,6 +550,10 @@ $exports.TestExecutionProcessor = TestExecutionProcessor;
 			}
 		}).bind(this);
 
+		//	Do not use old automatically-configured listeners property of event source; rather, use new listeners
+		//	property of events itself
+		this.listeners = events.listeners;
+
 		return {
 			events: events,
 			scope: new TestExecutionProcessor({ events: events }),
