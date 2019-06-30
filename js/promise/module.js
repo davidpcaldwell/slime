@@ -29,8 +29,21 @@ var SlimePromise = function Targeter(p) {
 
 	if (!delegate && !executor) throw new TypeError("Required: either 'delegate' promise or 'executor' function");
 
+	var isPromise = (function() {
+		//	TODO	this is a bit of a mess; the customization provided by browser/test/initialize.js means that it is not easy
+		//			to keep track via instanceof of types. Would need to do some more serious investigation to clean that up
+		//			(to make all promises instanceof $context.Promise), or maybe loosen rules to then-able?
+		var global = (function() { return this; })();
+		return function(v) {
+			if (typeof(v) != "object" || v === null) return false;
+			if (v instanceof $context.Promise) return true;
+			if (v instanceof global.Promise) return true;
+			return false;
+		}
+	})();
+
 	var wrap = function(v) {
-		if (typeof(v) == "object" && v instanceof $context.Promise) {
+		if (isPromise(v)) {
 			return new Targeter({ delegate: v, target: p.target });
 		} else {
 			var lineForBreakpoint = 1;
