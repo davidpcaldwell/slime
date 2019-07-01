@@ -285,6 +285,5 @@ var hostToPort = function(name) {
 };
 
 $exports.Application = $api.Events.Function(function(p,events) {
-	Packages.java.lang.System.err.println("Application: rhino/ui");
 	return Application(p,events);
 });

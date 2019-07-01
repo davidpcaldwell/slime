@@ -79,6 +79,7 @@ var Chrome = function(b) {
 			if (u.proxy) {
 				pacserver = new u.proxy.Server();
 				pacserver.start();
+				Packages.java.lang.System.err.println("Proxy: " + pacserver.url);
 				args.push("--proxy-pac-url=" + pacserver.url);
 			}
 			if (m.profile) args.push("--profile-directory=" + m.profile);
