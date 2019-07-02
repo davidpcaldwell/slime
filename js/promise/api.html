@@ -124,7 +124,7 @@ END LICENSE
 								}).then(function(n) {
 									result.resolved = n;
 								});
-							}
+							};
 
 							this.after = function(verify) {
 								verify(result).resolved.is("resolved");
@@ -235,6 +235,33 @@ END LICENSE
 								verify(error).evaluate(function() { return this instanceof TypeError; }).is(true);
 							}
 						});
+
+						targeted.test(new function() {
+							var promise;
+							var targets = [];
+							var target = {
+								foo: "bar"
+							};
+
+							this.run = function() {
+								promise = new api.Promise({
+									executor: function(resolve,reject) {
+										resolve(2);
+									},
+									target: target
+								});
+								var result = promise.then(function() {
+									targets.push(this);
+								}).then(function() {
+									targets.push(this);
+								});
+							};
+
+							this.after = function(verify) {
+								verify(targets)[0].is(target);
+								verify(targets)[1].is(target);
+							}
+						})
 
 						verify.scenario(targeted);
 					</script>
