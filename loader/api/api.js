@@ -284,4 +284,3 @@ window.addEventListener("load", function() {
 	}
 	markup.fix();
 });
-window.definition = {};
