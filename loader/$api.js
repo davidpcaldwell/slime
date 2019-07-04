@@ -424,10 +424,12 @@
 		if (arguments.length == 1) throw new TypeError();
 		var rv = v;
 		for (var i=1; i<arguments.length; i++) {
-			if (rv === void(0) || rv === null) return void(0);
-			//	string, boolean, number
-			if (typeof(rv) != "object") throw new TypeError();
 			rv = rv[arguments[i]];
+			if (i != arguments.length-1) {
+				if (rv === void(0) || rv === null) return void(0);
+				//	string, boolean, number; just fail for now, pending further definition
+				if (typeof(rv) != "object") throw new TypeError();
+			}
 		}
 		return rv;
 	};
