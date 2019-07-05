@@ -390,6 +390,35 @@ END LICENSE
 							</ul>
 						</div>
 					</li>
+					<li class="object">
+						<div class="name">codec</div>
+						<div class="label">has properties:</div>
+						<ul>
+							<li class="object">
+								<div class="name">iso8601</div>
+								<div class="label">has properties:</div>
+								<ul>
+									<li class="value">
+										<div class="name">extended</div>
+										<span class="type">codec(Day,string)</span>
+										<span>
+											Encodes Day objects into strings, and decodes them from strings, using the
+											ISO8601 extended format (YYYY-MM-DD).
+										</span>
+									</li>
+								</ul>
+							</li>
+						</ul>
+						<script type="application/x.jsapi#tests">
+							var first = new Day(2019,1,1);
+							var codec = Day.codec.iso8601.extended;
+
+							verify(codec.encode(first)).is("2019-01-01");
+							verify(codec.decode(codec.encode(first))).evaluate(function(day) {
+								return day.is(first);
+							}).is(true);
+						</script>
+					</li>
 				</ul>
 			</li>
 			<li class="constructor">
