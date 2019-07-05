@@ -247,12 +247,12 @@ $exports.jsh = function(p) {
 
 	var fork = getJshFork(p);
 
-	var environment = getJshEnvironment(p,fork);
 
 	if (fork) {
 		var argument = arguments.callee.command(p);
 		return $exports.jrunscript(argument);
 	} else {
+		var environment = getJshEnvironment(p,fork);
 		var configuration = new JavaAdapter(
 			Packages.inonit.script.jsh.Shell.Environment,
 			new function() {
@@ -501,11 +501,12 @@ $exports.jsh.command = function(p) {
 };
 $exports.jsh.relaunch = $api.experimental(function(p) {
 	if (!p) p = {};
+	var environment = $api.Function.mutating(p.environment)(jsh.shell.environment);
 	$exports.jsh({
 		fork: true,
 		script: jsh.script.file,
 		arguments: jsh.script.arguments,
-		environment: $api.mutating(p.environment)(jsh.shell.environment),
+		environment: environment,
 		evaluate: function(result) {
 			$exports.exit(result.status);
 		}
