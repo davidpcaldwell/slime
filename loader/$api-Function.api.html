@@ -255,19 +255,21 @@ END LICENSE
 					</span>
 				</div>
 			</div>
+			<div class="type">
+				<a class="type" name="types.mutation">mutation</a>
+				<span>
+					A <a href="#types.mutator">mutator</a> intended to mutate a value, or an object intended to replace the value.
+				</span>
+			</div>
 			<div class="arguments">
 				<div class="label">Arguments</div>
 				<ol>
 					<li class="value">
-						<span class="type">mutator</span>
-						<span>A mutator function which will receive a single argument (the argument to mutate or replace).</span>
-					</li>
-				</ol>
-				- OR -
-				<ol>
-					<li class="value">
-						<span class="type">object</span>
-						<span>An object which will replace the argument.</span>
+						<span class="type">mutation</span>
+						<span>
+							(optional; if <code>undefined</code>, the original value will be returned) A change to make to the
+							default.
+						</span>
 					</li>
 				</ol>
 			</div>
