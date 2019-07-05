@@ -499,16 +499,18 @@ $exports.jsh.command = function(p) {
 	});
 	return argument;
 };
-$exports.jsh.relaunch = function() {
+$exports.jsh.relaunch = $api.experimental(function(p) {
+	if (!p) p = {};
 	$exports.jsh({
 		fork: true,
 		script: jsh.script.file,
 		arguments: jsh.script.arguments,
+		environment: $api.mutating(p.environment)(jsh.shell.environment),
 		evaluate: function(result) {
 			$exports.exit(result.status);
 		}
 	});
-};
+});
 $exports.jsh.require = $api.Events.Function(function(p,events) {
     //  TODO    should develop a strategy for preventing infinite loops
     if (!p.satisfied()) {
