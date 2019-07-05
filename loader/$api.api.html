@@ -630,6 +630,37 @@ END LICENSE
 								})();
 							</script>
 						</li>
+						<li class="function">
+							<div class="name">optional</div>
+							<span>Provides an optional chaining API that seeks to be maximally compatible with the current
+								<a href="https://github.com/tc39/proposal-optional-chaining">proposal</a>.
+							</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								The first argument is an object to dereference. Further arguments are a series of properties to
+								access. If any property but the last is missing, <code>undefined</code> will be returned. Otherwise,
+								the value of the last property will be returned.
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">(any)</span>
+								<span>
+									The value of the property chain for the given object, or <code>undefined</code> if the
+									chain is incomplete.
+								</span>
+							</div>
+							<script type="application/x.jsapi#tests">
+								var a = {
+									b: {
+										c: null,
+										n: 2
+									}
+								};
+								verify($api.Object.optional(a, "b", "c")).is(null);
+								verify($api.Object.optional(a, "b", "n")).is(2);
+								verify($api.Object.optional(a, "c", "x")).is(void(0));
+							</script>
+						</li>
 					</ul>
 				</li>
 				<li class="object">

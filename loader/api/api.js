@@ -279,7 +279,9 @@ window.addEventListener("load", function() {
 	};
 
 	var markup = new Markup({ node: document, base: getBase(window.location.href) });
-	window.definition.getApi = function() {
+	if (!window.slime) window.slime = {};
+	if (!window.slime.definition) window.slime.definition = {};
+	window.slime.definition.getApi = function() {
 		return markup.scope.getApi.apply(markup.scope,arguments);
 	}
 	markup.fix();
