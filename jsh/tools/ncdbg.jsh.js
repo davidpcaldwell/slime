@@ -31,25 +31,6 @@ var locations = (function() {
 	};
 })();
 
-if (!jsh.shell.jsh.lib.getSubdirectory("ncdbg")) {
-	jsh.shell.console("Required: ncdbg installation; attempting to install ...");
-	jsh.shell.jsh({
-		script: locations.src.getFile("jsh/tools/install/ncdbg.jsh.js"),
-		evaluate: function(result) {
-			if (result.status) {
-				jsh.shell.exit(result.status);
-			}
-		}
-	});
-	jsh.shell.console("Relaunching program in ncdbg-enabled shell ...");
-	jsh.shell.jsh({
-		shell: locations.shell,
-		script: jsh.script.file,
-		arguments: jsh.script.arguments,
-		evaluate: jsh.shell.run.evaluate.wrap
-	});
-}
-
 var parameters = jsh.script.getopts({
 	options: {
 		"ncdbg:chrome:instance": jsh.file.Pathname,
@@ -175,6 +156,27 @@ if (parameters.options["ncdbg:chrome:instance"]) {
 }
 
 if (parameters.arguments.length) {
+	if (!jsh.shell.jsh.lib.getSubdirectory("ncdbg")) {
+		jsh.shell.console("Required: ncdbg installation; attempting to install ...");
+		jsh.shell.jsh({
+			script: locations.src.getFile("jsh/tools/install/ncdbg.jsh.js"),
+			evaluate: function(result) {
+				if (result.status) {
+					jsh.shell.exit(result.status);
+				}
+			}
+		});
+		jsh.shell.console("Relaunching program in ncdbg-enabled shell ...");
+		//	TODO	can jsh.shell.jsh.relaunch be used here?
+		//	TODO	should not be re-opening -ncdbg:chrome:instance if it was set
+		jsh.shell.jsh({
+			shell: locations.shell,
+			script: jsh.script.file,
+			arguments: jsh.script.arguments,
+			evaluate: jsh.shell.run.evaluate.wrap
+		});
+	}
+	
 	jsh.java.Thread.start(startScript);
 	Packages.java.lang.Thread.sleep(parameters.options["ncdbg:pause"]);
 	jsh.java.Thread.start(startNcdbg);
