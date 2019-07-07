@@ -622,18 +622,28 @@ END LICENSE
 							}
 						</script>
 					</li>
-					<li class="function">
+					<li class="function experimental">
 						<div class="name">relaunch</div>
 						<span>Forks this shell and relaunches the same program with the same arguments.</span>
 						<div class="arguments">
 							<div class="label">Arguments</div>
 							<ol>
+								<li class="object">
+									<span>(optional)</span>
+									<div class="label">has properties:</div>
+									<ul>
+										<li class="value">
+											<div class="name">environment</div>
+											<span class="type"><a href="../../loader/$api-Function.api.html#types.mutation">mutation</a></span>
+											<span>__DESCRIPTION__</span>
+										</li>
+									</ul>
+								</li>
 							</ol>
 						</div>
 						<div class="returns">
 							<div class="label">Returns</div>
-							<span class="type">__TYPE__</span>
-							<span>__DESCRIPTION__</span>
+							<span>Does not return; exits the shell with the exit status of the relaunched shell.</span>
 						</div>
 					</li>
 				</ul>
