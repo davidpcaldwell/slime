@@ -32,9 +32,7 @@ END LICENSE
 		<script type="application/x.jsapi#initialize">
 			if (jsh.httpd) {
 				scope.api = $jsapi.loader.module("module.js", {
-					os: {
-						name: jsh.shell.os.name
-					},
+					os: jsh.shell.os,
 					HOME: jsh.shell.HOME,
 					TMPDIR: jsh.shell.TMPDIR,
 					run: jsh.shell.run,

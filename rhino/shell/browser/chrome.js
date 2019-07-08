@@ -11,6 +11,10 @@
 //	Contributor(s):
 //	END LICENSE
 
+if (!$context.os) throw new Error("No $context.os");
+if (!$context.os.process) throw new Error("No $context.os.process");
+if (!$context.os.process.list) throw new Error("No $context.os.process.list");
+
 var Chrome = function(b) {
 	this.toString = function() {
 		return "Google Chrome: " + b.program + " user=" + b.user;
@@ -96,42 +100,24 @@ var Chrome = function(b) {
 			if ($context.os.name == "Mac OS X") {
 				(function startDefaultUser() {
 					var isDefaultRunning = function() {
-						return b.user.list().filter(function(node) {
-							return node.pathname.basename == "RunningChromeVersion";
-						}).length > 0;
+						//	The below file appears to have been removed in Chrome 75, at least running in a VM. Unclear. So
+						//	trying the below detection scheme
+						// return b.user.list().filter(function(node) {
+						// 	return node.pathname.basename == "RunningChromeVersion";
+						// }).length > 0;
+						var list = $context.os.process.list();
+						return list.some(function(process) {
+							return process.command == b.program.toString()
+								|| process.command == b.program.toString() + " " + "--no-startup-window"
+							;
+						});
 					}
 					if (!isDefaultRunning()) {
 						Packages.java.lang.System.err.println("Starting background Chrome ...");
-						var tmp = $context.TMPDIR.createTemporary({ directory: true });
-						var command = {
-							command: b.program,
-							arguments: ["--user-data-dir=" + b.user, "--no-startup-window"]
-						};
-						tmp.getRelativePath("chrome.bash").write(
-							(
-								[
-									"nohup",
-									command.command
-								].concat(command.arguments)
-								.concat(["&"])
-							).map(function(token) {
-								return token.toString().replace(/ /g, "\\ ");
-							}).join(" "),
-							{ append: false }
-						);
-						if (false) {
-							$context.run({
-								command: "/usr/bin/open",
-								arguments: ["-b","com.google.Chrome","--args","--no-startup-window"]
-							});
-						} else {
-							Packages.java.lang.System.err.println("script = " + tmp.getRelativePath("chrome.bash"));
-							$context.run({
-								command: "/bin/bash",
-								arguments: [tmp.getRelativePath("chrome.bash")],
-								directory: tmp
-							});
-						}
+						$context.run({
+							command: "open",
+							arguments: ["-a", "Google Chrome", "--args", "--no-startup-window"]
+						});
 						while(!isDefaultRunning()) {
 							Packages.java.lang.Thread.currentThread().sleep(100);
 						}
