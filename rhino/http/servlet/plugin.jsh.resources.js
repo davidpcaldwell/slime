@@ -378,6 +378,8 @@ var NewResources = function() {
 	}
 
 	this.map = function(prefix,pathname) {
+		//	TODO	poor workaround on next line for attempt to map a directory rather than a correctly-structured object
+		if (pathname.directory === true) pathname = pathname.pathname;
 		if (pathname.directory) {
 			mapping.push(new Mapping({
 				prefix: prefix,
