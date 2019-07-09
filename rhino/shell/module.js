@@ -443,7 +443,6 @@ if ($exports.environment.PATH) {
 	$exports.PATH = $context.api.file.Searchpath([]);
 }
 
-//	TODO	document
 $exports.os = new function() {
 	this.name = $exports.properties.get("os.name");
 	this.arch = $exports.properties.get("os.arch");
