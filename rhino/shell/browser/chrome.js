@@ -20,7 +20,13 @@ var Chrome = function(b) {
 		return "Google Chrome: " + b.program + " user=" + b.user;
 	}
 
-	//	Used to be called "User" but "Instance" seems a better name (so as not to be confused with a
+	var ps = $loader.file("chrome-process.js", {
+		os: $context.os,
+		program: b.program,
+		user: b.user
+	});
+
+		//	Used to be called "User" but "Instance" seems a better name (so as not to be confused with a
 	//	"profile" (which is called a "person" by Chrome, although it used to be called a "user"). The term "install"
 	//	wouldn't be perfect because then one Chrome codebase could be multiple "installs" (user data directories).
 	//
@@ -91,26 +97,14 @@ var Chrome = function(b) {
 		};
 
 		var isRunning = function() {
-			return u.directory.list().filter(function(node) {
-				return node.pathname.basename == "RunningChromeVersion";
-			}).length > 0;
+			return ps.isRunning(u.directory);
 		}
 
 		var launch = function(m) {
 			if ($context.os.name == "Mac OS X") {
 				(function startDefaultUser() {
 					var isDefaultRunning = function() {
-						//	The below file appears to have been removed in Chrome 75, at least running in a VM. Unclear. So
-						//	trying the below detection scheme
-						// return b.user.list().filter(function(node) {
-						// 	return node.pathname.basename == "RunningChromeVersion";
-						// }).length > 0;
-						var list = $context.os.process.list();
-						return list.some(function(process) {
-							return process.command == b.program.toString()
-								|| process.command == b.program.toString() + " " + "--no-startup-window"
-							;
-						});
+						return ps.isDefaultRunning();
 					}
 					if (!isDefaultRunning()) {
 						Packages.java.lang.System.err.println("Starting background Chrome ...");
