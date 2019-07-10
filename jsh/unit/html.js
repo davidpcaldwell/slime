@@ -156,8 +156,10 @@ if ($context.test) {
 	}
 }
 
-var Suite = function Suite(pathname) {
+var Suite = function Suite(p) {
 	return new function() {
+		var pathname = p.pathname;
+
 		this.name = pathname.toString();
 
 		if (!pathname.directory && !pathname.file) {
@@ -167,7 +169,7 @@ var Suite = function Suite(pathname) {
 		if (apiHtmlFile) {
 			var page = loadApiHtml(apiHtmlFile);
 
-			var name = pathname.toString();
+			var name = (p.name) ? p.name : pathname.toString();
 
 			// TODO: why is this a public property?
 			this.html = new $context.html.ApiHtmlTests(page,name);
@@ -254,7 +256,7 @@ var Scope = function(suite,environment) {
 			//			files. As of this writing, the only known use is to support the jsh/unit/api.html tests which test HTML
 			//			tests themselves.
 			var pageEnvironment = jsh.js.Object.set({}, environment, { file: apifile });
-			var subscope = new Scope(new Suite(suite.getRelativePath(path)),pageEnvironment);
+			var subscope = new Scope(new Suite({ pathname: suite.getRelativePath(path) }),pageEnvironment);
 			var rv = tests.getSuiteDescriptor(subscope);
 			return rv;
 		};
@@ -313,7 +315,8 @@ var Scope = function(suite,environment) {
 };
 
 var PartDescriptor = function(p) {
-	var suite = new Suite(p.pathname);
+	var suite = new Suite(p);
+	if (p.name) suite.name = p.name;
 	var scope = new Scope(suite,(p.environment) ? p.environment : {});
 	return suite.getSuiteDescriptor(scope);
 }
