@@ -18,7 +18,7 @@ END LICENSE
 	<link rel="stylesheet" type="text/css" href="../../loader/api/api.css"></link>
 	<script type="text/javascript" src="../../loader/api/api.js"></script>
 	<script>
-		window.definition.inherited = function() {
+		window.slime.definition.inherited = function() {
 			var exported = Array.prototype.slice.call(this.getApi('api.html').getElement('exports').node.children);
 			debugger;
 			var run = exported.filter(function(element) { return element.getAttribute("jsapi:id") == "run" });
@@ -133,7 +133,7 @@ END LICENSE
 			</div>
 		-->
 		<ul>
-			<li jsapi:replace="window.definition.inherited()">
+			<li jsapi:replace="window.slime.definition.inherited()">
 
 			</li>
 			<li class="value" jsapi:id="stdio">

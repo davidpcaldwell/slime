@@ -279,10 +279,10 @@ window.addEventListener("load", function() {
 	};
 
 	var markup = new Markup({ node: document, base: getBase(window.location.href) });
-	if (!window.slime) window.slime = {};
-	if (!window.slime.definition) window.slime.definition = {};
 	window.slime.definition.getApi = function() {
 		return markup.scope.getApi.apply(markup.scope,arguments);
 	}
 	markup.fix();
 });
+if (!window.slime) window.slime = {};
+if (!window.slime.definition) window.slime.definition = {};

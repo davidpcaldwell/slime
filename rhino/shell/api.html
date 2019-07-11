@@ -14,7 +14,7 @@ END LICENSE
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3c.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
 <head>
-	<title>Rhino-based interaction with shell</title>
+	<title>jrunscript-based interaction with shell</title>
 	<link rel="stylesheet" type="text/css" href="../../loader/api/api.css"></link>
 	<script type="text/javascript" src="../../loader/api/api.js"></script>
 </head>
@@ -811,40 +811,35 @@ os.resolve(function() {
 				<div class="label">has properties:</div>
 				<ul>
 					<li class="object">
-						<li class="object">
-							<span>__DESCRIPTION__</span>
-							<div class="label">has properties:</div>
-							<ul>
-								<li class="object">
-									<div class="name">stdio</div>
-									<span>__DESCRIPTION__</span>
-									<div class="label">has properties:</div>
-									<ul>
-										<li class="constructor">
-											<div class="name">LineBuffered</div>
-											<span>__DESCRIPTION__</span>
-											<div class="arguments">
-												<div class="label">Arguments</div>
-												<ol>
-													<li class="value">
-														<div class="name">stdio</div>
-														<span class="type">stdio</span>
-													</li>
-												</ol>
-											</div>
-											<div class="instances">
-												<div class="label">Instances</div>
-												<span class="type">stdio</span>
-												<span>
-													A <code>stdio</code> whose <code>output</code> and <code>error</code> streams
-													buffer by line to the original <code>output</code> and <code>error</code>.
-												</span>
-											</div>
+						<div class="name">stdio</div>
+						<span>A set of common/convenience implementations of the <code>stdio</code> argument.</span>
+						<div class="label">has properties:</div>
+						<ul>
+							<li class="constructor">
+								<div class="name">LineBuffered</div>
+								<span>
+									A <code>stdio</code> implementation which buffers the output and error streams
+									by line so they do not get mixed together (e.g., on a console).
+								</span>
+								<div class="arguments">
+									<div class="label">Arguments</div>
+									<ol>
+										<li class="value">
+											<div class="name">stdio</div>
+											<span class="type">stdio</span>
 										</li>
-									</ul>
-								</li>
-							</ul>
-						</li>
+									</ol>
+								</div>
+								<div class="instances">
+									<div class="label">Instances</div>
+									<span class="type">stdio</span>
+									<span>
+										A <code>stdio</code> whose <code>output</code> and <code>error</code> streams
+										buffer by line to the original <code>output</code> and <code>error</code>.
+									</span>
+								</div>
+							</li>
+						</ul>
 					</li>
 				</ul>
 			</li>
