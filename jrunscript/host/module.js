@@ -352,7 +352,7 @@ if ($context.globals && $context.globals.Array) {
 //	}
 //}
 
-var Thread = function(p) {
+var Thread = function(p,factory) {
 	var synchronize = (function() {
 		//	This entire construct (synchronize, synchronize.lock) exists just to support join()
 		var lock = new Packages.java.lang.Object();
@@ -402,8 +402,8 @@ var Thread = function(p) {
 		}
 	}
 
-
-	var thread = new Packages.java.lang.Thread(new JavaAdapter(Packages.java.lang.Runnable,runnable));
+	var _runnable = new JavaAdapter(Packages.java.lang.Runnable,runnable);
+	var thread = (factory) ? factory(_runnable) : new Packages.java.lang.Thread(_runnable);
 
 	thread.start();
 
@@ -451,8 +451,8 @@ $exports.Thread.setContextClassLoader = function(p) {
 		$context.$slime.classpath.setAsThreadContextClassLoaderFor(p._thread);
 	}
 };
-$exports.Thread.start = function(p) {
-	return new Thread(p);
+$exports.Thread.start = function(p,factory) {
+	return new Thread(p,factory);
 }
 $exports.Thread.run = function(p) {
 	var callee = arguments.callee;

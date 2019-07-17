@@ -90,6 +90,10 @@ plugin({
 					SERVLET.getRelativePath("java/inonit/script/servlet/Nashorn.java")
 				];
 				if (p.rhino) {
+					//	this is not explicitly referenced from Rhino servlet but is required for httpd.java.Thread
+					sources.push(
+						SLIME.getRelativePath("jrunscript/host/rhino/java/inonit/script/runtime/Threads.java")
+					);
 					sources.push(
 						SERVLET.getRelativePath("rhino/java/inonit/script/servlet/Rhino.java")
 					);
