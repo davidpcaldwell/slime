@@ -512,6 +512,15 @@ $exports.Thread.Monitor = function() {
 	};
 
 	this.Waiter = function(c) {
+		if (!c.until) {
+			c.until = function() {
+				return true;
+			};
+		}
+		if (!c.then) {
+			c.then = function() {
+			};
+		}
 		return synchronize(function() {
 			while(!c.until.apply(this,arguments)) {
 				lock.wait();
