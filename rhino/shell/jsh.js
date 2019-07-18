@@ -234,9 +234,9 @@ $exports.jsh = function(p) {
 	if (!p.script) {
 		throw new TypeError("Required: script property indicating script to run.");
 	}
-	if (!p.arguments) {
-		p.arguments = [];
-	}
+	var argumentsFactory = $api.Function.mutating(p.arguments);
+	p.arguments = argumentsFactory([]);
+	
 	if (p.script.file && !p.script.pathname) {
 		$api.deprecate(function() {
 			//	User supplied Pathname; should have supplied file
