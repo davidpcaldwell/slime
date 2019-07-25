@@ -92,7 +92,7 @@ $exports.Function.pipe = function() {
     return function(v) {
         var rv = v;
         for (var i=0; i<items.length; i++) {
-            rv = items[i](rv);
+            rv = items[i].call(this,rv);
         }
         return rv;
     }
