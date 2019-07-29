@@ -659,6 +659,8 @@ END LICENSE
 								verify($api.Object.optional(a, "b", "c")).is(null);
 								verify($api.Object.optional(a, "b", "n")).is(2);
 								verify($api.Object.optional(a, "c", "x")).is(void(0));
+
+								verify($api.Object.optional(null, "x")).is(void(0));
 							</script>
 						</li>
 					</ul>
