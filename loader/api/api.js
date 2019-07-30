@@ -130,7 +130,7 @@ window.addEventListener("load", function() {
 
 		var fixScriptElements = function() {
 			var matchingScriptElements = getElements(function(e) {
-				return e.tagName.toLowerCase() == "script" && /^application\/x.jsapi\#/.test(e.type);
+				return e.tagName.toLowerCase() == "script" && /^application\/x.jsapi\#/.test(e.type) || e.getAttribute("data-jsapi") == "show";
 			});
 			matchingScriptElements.forEach(function(element) {
 				console.log(element);
