@@ -279,10 +279,11 @@ plugin({
 
 		jsh.shell.tools.jsoup = {};
 		jsh.shell.tools.jsoup.install = function(p) {
+			if (!p) p = {};
 			var to = jsh.shell.jsh.lib.getRelativePath("jsoup.jar");
-			if (!to.file) {
+			if (!to.file || p.upgrade) {
 				var response = new jsh.http.Client().request({
-					url: "https://jsoup.org/packages/jsoup-1.11.3.jar"
+					url: "https://jsoup.org/packages/jsoup-1.12.1.jar"
 				});
 				to.write(response.body.stream, { append: false });
 				//	TODO	the below code isn't very DRY; hits a special API for reloading rather than just reloading the plugin; at least this works for both

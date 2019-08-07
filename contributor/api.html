@@ -16,8 +16,17 @@ END LICENSE
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
 	<head>
 		<title>SLIME: development</title>
-		<link href="loader/api/api.css" rel="stylesheet" type="text/css" />
-		<script src="loader/api/api.js"></script>
+		<link href="../loader/api/api.css" rel="stylesheet" type="text/css" />
+		<script>
+			window.slime = {
+				definition: {
+					settings: {
+						isHomePage: true
+					}
+				}
+			}
+		</script>
+		<script src="../loader/api/api.js"></script>
 		<script>
 			//	TODO	CORS
 			document.domain = document.domain;
@@ -130,6 +139,16 @@ END LICENSE
 			<ul>
 				<li>JDK: <code>jsh/tools/provision/jdk.bash</code></li>
 			</ul>
+		</div>
+		<div>
+			<h1>Modules</h1>
+			<div>
+				<h2>loader/document (HTML parsing)</h2>
+				<div>
+					<h3><a href="https://jsoup.org/">JSoup</a></h3>
+					<a href="https://jsoup.org/apidocs/overview-summary.html">API</a>
+				</div>
+			</div>
 		</div>
 	</body>
 </html>

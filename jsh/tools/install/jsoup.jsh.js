@@ -11,4 +11,12 @@
 //	Contributor(s):
 //	END LICENSE
 
-jsh.shell.tools.jsoup.install();
+var parameters = jsh.script.getopts({
+	options: {
+		upgrade: false
+	}
+});
+
+jsh.shell.tools.jsoup.install({
+	upgrade: parameters.options.upgrade
+});

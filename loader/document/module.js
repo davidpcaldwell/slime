@@ -225,8 +225,7 @@ if ($platform.java && $platform.java.getClass("org.jsoup.Jsoup")) {
 		};
 
 		return function(html) {
-			return new Document({ jsoup: Packages.org.jsoup.Jsoup.parse(html) })
-			throw new Error("JSoup!");
+			return new Document({ jsoup: Packages.org.jsoup.Jsoup.parse(html) });
 		};
 	})();
 }
