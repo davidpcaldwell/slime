@@ -61,6 +61,19 @@ END LICENSE
 		verify(page).document.element.is.type("object");
 		verify(page).document.element.element.name.is("html");
 	</script>
+	<script type="application/x.jsapi#tests">
+		var page = api.load({
+			loader: $jsapi.loader,
+			path: "test/data/1.html"
+		});
+		var string = page.serialize();
+		//	TODO	below does not work in JSoup 1.12.1, which messes up some pieces of whitespace
+		//	TODO	below does not work in browser, either
+		//	See https://stackoverflow.com/questions/57394776/why-does-domparser-alter-whitespace
+		if (false) {
+			verify(string).is($jsapi.loader.string("test/data/1.html"));
+		}
+	</script>
 	<div>__DESCRIPTION__</div>
 	<div>
 		<h1>Context</h1>

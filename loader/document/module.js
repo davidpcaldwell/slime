@@ -4,6 +4,8 @@ var global = (function() { return this; })();
 
 if (global.window == global) {
 	var parseDom = function(unparsed) {
+		if (window.DOMParser) return new DOMParser().parseFromString(unparsed, "text/html");
+		
 		var doc = document.implementation.createHTMLDocument("");
 		//	Added this check for Firefox, for which document.write was not doing the trick
 		var didDocWriteWork = (function(doc) {
@@ -93,6 +95,13 @@ if (global.window == global) {
 			},
 			enumerable: true
 		});
+
+		this.serialize = function() {
+			return Array.prototype.slice.call(p.dom.childNodes).map(function(node) {
+				if (node.outerHTML) return node.outerHTML;
+				return "";
+			}).join("");
+		}
 	};
 
 	parsers.browser = function(html) {
@@ -222,6 +231,13 @@ if ($platform.java && $platform.java.getClass("org.jsoup.Jsoup")) {
 				value: document,
 				enumerable: true
 			});
+
+			this.serialize = function() {
+				this.jsoup.outputSettings(
+					new Packages.org.jsoup.nodes.Document.OutputSettings().prettyPrint(false)
+				);
+				return this.jsoup.outerHtml();
+			};
 		};
 
 		return function(html) {
