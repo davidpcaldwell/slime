@@ -102,6 +102,7 @@ var installLocalArchive = function(p,events) {
 		var basename = (p.url) ? p.url.toString().split("/").slice(-1)[0] : p.file.pathname.basename;
 		if (/\.tar\.xz$/.test(basename) && $exports.format.gzip) p.format = $exports.format.gzip;
 		if (/\.tar\.gz$/.test(basename) && $exports.format.gzip) p.format = $exports.format.gzip;
+		if (/\.tgz$/.test(basename) && $exports.format.gzip) p.format = $exports.format.gzip;
 		if (/\.zip$/.test(basename)) p.format = $exports.format.zip;
 		if (/\.jar$/.test(basename)) p.format = $exports.format.zip;
 	}
