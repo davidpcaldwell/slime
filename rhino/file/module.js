@@ -128,11 +128,13 @@ $exports.Pathname.createDirectory.exists.RECREATE = function(dir) {
 	return true;
 };
 
-$exports.navigate = function(p) {
+$exports.navigate = $api.experimental(function(p) {
 	var from = p.from;
 	var to = p.to;
 	if (from.pathname && !from.pathname.directory && from.parent) {
 		from = from.parent;
+	} else if (!from.pathname && from.parent) {
+		from = from.parent.directory;
 	}
 	var startsWith = function(start,under) {
 		return under.toString().substring(0,start.toString().length) == start.toString();
@@ -140,7 +142,6 @@ $exports.navigate = function(p) {
 	var common = from;
 	var up = 0;
 	while(!startsWith(common,to)) {
-		var basename = common.pathname.basename;
 		up++;
 		common = common.parent;
 	}
@@ -149,7 +150,7 @@ $exports.navigate = function(p) {
 		base: common,
 		relative: new Array(up+1).join("../") + remaining
 	};
-};
+});
 
 // $exports.getRelativePathTo = function(to) {
 // 	// TODO: no test coverage
