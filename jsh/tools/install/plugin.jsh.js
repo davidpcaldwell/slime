@@ -277,6 +277,21 @@ plugin({
 		} : null;
 		jsh.shell.tools.kotlin = kotlin;
 
+		var scala = (jsh.shell.jsh.lib) ? new function() {
+			var location = jsh.shell.jsh.lib.getRelativePath("scala");
+
+			this.install = function() {
+				if (location.directory) {
+					location.directory.remove();
+				}
+				jsh.tools.install.install({
+					url: "https://downloads.lightbend.com/scala/2.13.0/scala-2.13.0.tgz",
+					to: location
+				})
+			};
+		} : null;
+		jsh.shell.tools.scala = scala;
+
 		jsh.shell.tools.jsoup = {};
 		jsh.shell.tools.jsoup.install = function(p) {
 			if (!p) p = {};
