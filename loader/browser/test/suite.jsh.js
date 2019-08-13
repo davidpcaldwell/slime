@@ -1,3 +1,12 @@
+jsh.shell.jsh.require({
+	satisfied: function() {
+		return Boolean(jsh.httpd.Tomcat);
+	},
+	install: function() {
+		jsh.shell.tools.tomcat.install();
+	}
+});
+
 var parameters = jsh.script.getopts({
 	options: {
 		suite: jsh.file.Pathname,

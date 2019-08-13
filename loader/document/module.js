@@ -259,3 +259,9 @@ $exports.load = function(p) {
 		throw new TypeError();
 	}
 }
+
+var source = $loader.file("source.js");
+
+$exports.parse = function(p) {
+	return source.parse(p.string);
+}

@@ -74,6 +74,14 @@ END LICENSE
 			verify(string).is($jsapi.loader.string("test/data/1.html"));
 		}
 	</script>
+	<script jsapi:id="source" type="application/x.jsapi#tests">
+		var input = $jsapi.loader.string("test/data/1.html");
+		var page = api.parse({
+			string: input
+		});
+		var serialized = page.serialize();
+		if (false) verify(serialized).is(input);
+	</script>
 	<div>__DESCRIPTION__</div>
 	<div>
 		<h1>Context</h1>
