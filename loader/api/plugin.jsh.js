@@ -47,26 +47,3 @@ plugin({
 		});
 	}
 });
-
-plugin({
-	isReady: function() {
-		return jsh.shell && jsh.shell.jsh && jsh.shell.jsh.src;
-	},
-	load: function() {
-		//	TODO	can rely on jsh plugin when it is implemented, and not worry about source shell
-		var library = {
-			document: jsh.loader.module(
-				jsh.shell.jsh.src.getRelativePath("loader/document"),
-				{ $slime: $slime }
-			)
-		};
-
-		jsh.definition = {};
-		jsh.definition.Html = function(o) {
-			var document = library.document.parse({
-				loader: $loader,
-				path: "api.template.html"
-			});
-		}
-	}
-});
