@@ -20,7 +20,12 @@
 	};
 
 	Object.assign($exports, load("$api-flag.js"));
-	Object.assign($exports, load("$api-Function.js", { deprecate: $exports.deprecate }));
+
+	(function() {
+		var old = {};
+		Object.assign(old, load("$api-Function-old.js", { deprecate: $exports.deprecate }));
+		Object.assign($exports, load("$api-Function.js", { old: old, deprecate: $exports.deprecate }));
+	})();
 
 	$exports.debug = {
 		disableBreakOnExceptionsFor: function(f) {

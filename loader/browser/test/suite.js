@@ -26,6 +26,7 @@ window.addEventListener("load", function() {
 			return { form: form, command: command, suite: script };
 		}
 	})();
+
 	if (parameters.suite) {
 		document.getElementById("nosuite").style.display = "none";
 		var api = inonit.loader.loader.file("api.js");
@@ -50,6 +51,7 @@ window.addEventListener("load", function() {
 			}
 		});
 	}
+	
 	if (parameters.command == "run") {
 		var event = new Event("click");
 		document.getElementById("run").dispatchEvent(event);

@@ -9,7 +9,10 @@ jsh.shell.jsh.require({
 
 var parameters = jsh.script.getopts({
 	options: {
+		//	Runs a series of definitions
 		suite: jsh.file.Pathname,
+
+		//	Runs a single definition; optionally just a single part of that definition
 		definition: jsh.file.Pathname,
 		part: String,
 
@@ -136,7 +139,6 @@ var run = function(browser) {
 	var command = (parameters.options.interactive) ? "" : "&command=run";
 	jsh.java.Thread.start(function() {
 		// TODO: query string by string concatenation is sloppy
-		// TODO: probably should just be suite.html, not suite.api.html
 		var uri = "http://127.0.0.1:" + tomcat.port + "/" + toSuiteHtml.relative + "?suite=" + toSuite.relative + command;
 		if (parameters.options.definition) {
 			var toDefinition = jsh.file.navigate({
@@ -149,6 +151,7 @@ var run = function(browser) {
 			uri += "&part=" + parameters.options.part;
 		}
 		parameters.options.parameter.forEach(function(argument) {
+			//	TODO	url-encode the below
 			uri += "&" + argument;
 		});
 		browser.start({

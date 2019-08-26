@@ -14,25 +14,9 @@ var getSlimePart = function(definition) {
 	});
 };
 
-var active = function(part) {
-	if (data.part) {
-		return data.part
-	}
-}
-
 var data = new $api.Properties({ array: parameters.form.controls }).object();
 var add = function(id,part) {
-	var included = function(part) {
-		if (data.part) {
-			return id == data.part || id.substring(0,data.part.length+1) == data.part + "/";
-		} else {
-			return true;
-		}	
-	};
-
-	if (included(id)) {
-		suite.part(id, part);
-	}
+	suite.part(id, part);
 };
 
 add("loader/browser/client.js", getSlimePart("loader/browser/client.api.html"));
