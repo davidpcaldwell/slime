@@ -28,6 +28,22 @@ END LICENSE
 		-->
 		<script type="application/x.jsapi#initialize">
 			scope.module = jsh.tools.git;
+			scope.init = function(p) {
+				var rv = scope.module.init(p);
+				rv.execute({
+					command: "config",
+					arguments: [
+						"user.email", "slime@davidpcaldwell.com"
+					]
+				});
+				rv.execute({
+					command: "config",
+					arguments: [
+						"user.name", "David P. Caldwell"
+					]
+				});
+				return rv;
+			}
 		</script>
 		<div>__DESCRIPTION__</div>
 		<div>
@@ -66,7 +82,7 @@ END LICENSE
 							<script type="application/x.jsapi#tests">
 								var tmpdir = jsh.shell.TMPDIR.createTemporary({ directory: true });
 								tmpdir.getRelativePath("a").write("a", { append: false });
-								var repository = module.init({
+								var repository = init({
 									pathname: tmpdir.pathname
 								});
 								verify(repository).directory.pathname.toString().is(tmpdir.pathname.toString());
@@ -137,7 +153,7 @@ END LICENSE
 					<script type="application/x.jsapi#initialize">
 						var dir = scope.remotes.getRelativePath("RemoteRepository").createDirectory();
 						dir.getRelativePath("a").write("a", { append: false });
-						var host = module.init({ pathname: dir.pathname });
+						var host = init({ pathname: dir.pathname });
 						host.add({ path: "a" });
 						host.commit({
 							all: true,
@@ -158,7 +174,7 @@ END LICENSE
 					<script type="application/x.jsapi#initialize">
 						scope.newRepository = function() {
 							var tmpdir = jsh.shell.TMPDIR.createTemporary({ directory: true });
-							var repository = module.init({
+							var repository = init({
 								pathname: tmpdir.pathname
 							});
 							repository.test = {};
@@ -539,7 +555,7 @@ END LICENSE
 					</ul>
 					<script type="application/x.jsapi#tests">
 						var tmpdir = jsh.shell.TMPDIR.createTemporary({ directory: true });
-						var repository = module.init({
+						var repository = init({
 							pathname: tmpdir.pathname
 						});
 						repository.directory.getRelativePath("a").write("a", { append: false });
@@ -556,7 +572,7 @@ END LICENSE
 					</script>
 					<script type="application/x.jsapi#tests">
 						var tmpdir = jsh.shell.TMPDIR.createTemporary({ directory: true });
-						var repository = module.init({
+						var repository = init({
 							pathname: tmpdir.pathname
 						});
 						repository.directory.getRelativePath("a").write("a", { append: false });
