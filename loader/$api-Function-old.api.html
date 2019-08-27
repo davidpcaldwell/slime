@@ -1,0 +1,248 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
+<head>
+	<title>__TITLE__</title>
+	<!--	TODO	change these to use local copies of these files at the appropriate location	-->
+	<!--
+		These files are specified using http: rather than https: because githack.com will redirect them to https:, but http: will
+		work when using an HTTP proxy to serve local copies of the files without needing to run https: locally
+	-->
+	<link href="../loader/api/api.css" rel="stylesheet" type="text/css" />
+	<script src="../loader/api/api.js"></script>
+	<script>
+		//	TODO	CORS
+		document.domain = document.domain;
+	</script>
+</head>
+<body>
+	<div>__DESCRIPTION__</div>
+	<script type="application/x.jsapi#initialize">
+		var $slime = {
+			getLoaderScript: function(path) {
+				return {
+					name: path,
+					code: $jsapi.loader.string(path)
+				}
+			}
+		};
+		scope.api = $jsapi.loader.eval("$api.js", { $platform: $platform, $slime: $slime });
+		scope.api.loadedByJsapi = true;
+	</script>
+	<div>
+		<h1>Context</h1>
+		<ul>
+		</ul>
+	</div>
+	<div>
+		<h1>Exports</h1>
+		<ul>
+			<li class="function experimental" jsapi:id="postprocessing">
+				<div class="name">postprocessing</div>
+				<span>
+					Creates a function from an original function and a postprocessing function. The resulting function
+					will be implemented by invoking the original function with its <code>this</code> and arguments,
+					and then invoking the postprocessor with information about that call (including its return value).
+				</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="value">
+							<span class="type">function</span>
+							<span>The original function.</span>
+						</li>
+						<li class="value">
+							<span class="type"><a href="#types.Function.postprocessor">postprocessor</a></span>
+							<span>A postprocessing function</span>
+						</li>
+					</ol>
+				</div>
+				<div class="returns">
+					<div class="label">Returns</div>
+					<span class="type">(any)</span>
+					<span>
+						A return value that will replace the original function's return value, or
+						<code>undefined</code> to leave that return value in place.
+					</span>
+				</div>
+				<script type="application/x.jsapi#tests">
+					var doubler = function(x) {
+						return 2 * x;
+					};
+	
+					var fourXSquaredPlusX = api.Function.postprocessing(doubler, function(p) {
+						return p.returned * p.returned + p.arguments[0];
+					});
+	
+					verify(fourXSquaredPlusX(5)).is(105);
+				</script>
+				<script type="application/x.jsapi#tests">
+					var Counter = function() {
+						var called = 0;
+	
+						var rv = {};
+						rv.call = function() {
+							called++;
+						};
+						rv.called = function() {
+							return called;
+						};
+						return rv;
+					};
+	
+					var foo = function() {
+						return "foo";
+					};
+	
+					var counter = new Counter();
+					verify(counter).called().is(0);
+					var newFoo = api.Function.postprocessing(foo, counter.call);
+					verify(counter).called().is(0);
+					var v = newFoo();
+					verify(counter).called().is(1);
+					verify(v).is("foo");
+				</script>
+				<script type="application/x.jsapi#tests">
+					var foo = function() {
+						return "foo";
+					};
+	
+					var calls = {};
+	
+					calls.override = api.Function.postprocessing(foo, function(p) {
+						return api.Function.postprocessing.UNDEFINED;
+					});
+	
+					calls.leave = api.Function.postprocessing(foo, function(p) {
+						return void(0);
+					});
+	
+					verify(calls).override().is(void(0));
+					verify(calls).leave().is("foo");
+				</script>
+			</li>
+			<li class="function experimental">
+				<div class="name">mutating</div>
+				<div>
+					<p>
+						Creates a function that wraps a supplied mutator function for the purpose of modifying a default value. 
+						<code>mutating()</code> is designed for use by API designers who wish to provide an override mechanism for a
+						particular default value (especially an object). API designers may provide for a single value to be supplied
+						which can be an object to replace the default, a function which returns a value to replace the default, or
+						a value that mutates the default.
+					</p>
+				</div>
+				<div class="type">
+					<a class="type" name="types.mutator">mutator</a>
+					<span>A function intended to mutate or replace a value.</span>
+					<div>
+						A mutator function may modify the value it is
+						given in two ways:
+						<ul>
+							<li>It may directly modify the value (if the value is mutable, like an object) in its implementation,</li>
+							<li>
+								It may <em>replace</em> the value entirely by returning a value. The special value 
+								$api.Function.value.UNDEFINED can be returned to replace the value with <code>undefined</code>.
+							</li>
+						</ul>
+					</div>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+							<li class="value">
+								<span class="type">(any)</span>
+								<span>A value to mutate or replace.</span>
+							</li>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type">(any)</span>
+						<span>
+							A replacement value, or <code>undefined</code> to indicate that the original value (which, if mutable,
+							may have been modified) should be used.
+						</span>
+					</div>
+				</div>
+				<div class="type">
+					<a class="type" name="types.mutation">mutation</a>
+					<span>
+						A <a href="#types.mutator">mutator</a> intended to mutate a value, or an object intended to replace the value.
+					</span>
+				</div>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="value">
+							<span class="type">mutation</span>
+							<span>
+								(optional; if <code>undefined</code>, the original value will be returned) A change to make to the
+								default.
+							</span>
+						</li>
+					</ol>
+				</div>
+				<div class="returns">
+					<div class="label">Returns</div>
+					<span class="type">function</span>
+					<span>
+						A function that can be invoked with the default value and will return the appropriate (mutated or replaced)
+						value.
+					</span>
+				</div>
+				<script type="application/x.jsapi#tests">
+					var object = {
+						foo: "bar"
+					};
+	
+					var mutating = api.Function.mutating(function(p) {
+						p.foo = "baz";
+					});
+	
+					var result = mutating(object);
+					verify(result).foo.is("baz");
+					verify(result).is(object);
+	
+					var swapper = api.Function.mutating(function(p) {
+						return { a: "b" }
+					});
+	
+					var swap = swapper(object);
+					verify(swap).a.is("b");
+					verify(swap).is.not(object);
+	
+					var voiding = api.Function.mutating(function(p) {
+						return api.Function.value.UNDEFINED;
+					});
+	
+					var voided = {
+						value: voiding(object)
+					};
+					verify(voided).evaluate.property("value").is(void(0));
+	
+					var k = { foo: "k" };
+					var valuer = $api.Function.mutating(k);
+					var valued = valuer(object);
+					verify(valued).foo.is("k");
+					verify(valued).is.not(object);
+	
+					object = {
+						foo: "bar"
+					};
+					var missinger = $api.Function.mutating(void(0));
+					var missinged = missinger(object);
+					verify(missinged).foo.is("bar");
+					verify(missinged).is(object);
+	
+					var dummy = {};
+					verify(dummy).evaluate(function() {
+						return mutating();
+					}).threw.type(TypeError);
+					verify(dummy).evaluate(function() {
+						return mutating({});
+					}).threw.nothing();
+				</script>
+			</li>
+		</ul>
+	</div>
+</body>
+</html>
