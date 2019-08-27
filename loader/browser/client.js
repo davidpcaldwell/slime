@@ -33,8 +33,10 @@
 			return req;
 		}
 	}
-	//	Undocumented for now; seemingly unused
+
+	//	TODO	Undocumented for now; seemingly unused
 	if (!$context.url) $context.url = void(0);
+
 	if (!$context.callback) $context.callback = function(){};
 
 	var $exports = (function() {
@@ -55,6 +57,7 @@
 	}
 
 	var getCurrentScriptElement = function() {
+		//	TODO	Undocumented
 		if ($context.script) return $context.script;
 		var scripts = document.getElementsByTagName("script");
 		return scripts[scripts.length-1];
@@ -109,11 +112,10 @@
 
 	var bootstrap = (function() {
 		if ($context.url) return new Bootstrap($context.url);
+		//	TODO	Undocumented
 		if ($context.base) return new Bootstrap(getCurrent($context.base));
 		return getCurrentScript();
 	})();
-
-	var callback = (inonit.loader && inonit.loader.callback) ? inonit.loader.callback : function(){};
 
 	//	Now even if the object existed before, we have obtained the specified properties and we replace the existing object with
 	//	this one
@@ -184,6 +186,7 @@
 					return (window.CoffeeScript) ? { object: window.CoffeeScript } : null;
 				}
 			};
+			//	TODO	document
 			if ($context.$slime) $slime.flags = $context.$slime.flags;
 			return eval(fetcher.getCode(bootstrap.getRelativePath("expression.js")));
 		})();

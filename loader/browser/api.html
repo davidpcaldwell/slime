@@ -34,7 +34,7 @@ END LICENSE
 	<body>
 		<div>__DESCRIPTION__</div>
 		<!--
-			TODO	APIs listed here should also be listed in browser/etc/unit.jsh.js
+			TODO	APIs listed here should also be listed in loader/browser/suite.js
 					Currently we have no DRY way to do that
 		-->
 		<div>
@@ -51,6 +51,13 @@ END LICENSE
 						<td><a href="client.api.html">loader/browser/client.js</a></td>
 						<td>A script usable in a &lt;script> tag that bootstraps the SLIME loader system
 							as <code>inonit.loader</code>
+						</td>
+					</tr>
+					<tr>
+						<td><a href="../../loader/$api.api.html"><code>$api</code></a></td>
+						<td>
+							(Provided by the name <code>$api</code> to all code loaded by <code>inonit.loader</code>.)
+							JavaScript language constructs.
 						</td>
 					</tr>
 				</tbody>
@@ -70,13 +77,6 @@ END LICENSE
 					</tr>
 				</thead>
 				<tbody>
-					<tr>
-						<td><a href="../../loader/$api.api.html"><code>$api</code></a></td>
-						<td>
-							(Provided by the name <code>$api</code> to all code loaded by <code>inonit.loader</code>.)
-							JavaScript language constructs.
-						</td>
-					</tr>
 					<tr>
 						<td><a href="../../js/object/api.html">js/object/</a></td>
 						<td>Further JavaScript language constructs.</td>
