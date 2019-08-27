@@ -13,7 +13,11 @@
 
 var parameters = jsh.script.getopts({
 	options: {
-		to: jsh.file.Pathname
+		//	Path to which to emit the file
+		to: jsh.file.Pathname,
+
+		//	If true, links to CSS and JS resources in this SLIME distribution, rather than linking to online copies
+		link: false
 	}
 });
 
@@ -22,8 +26,34 @@ if (!parameters.options.to) {
 	jsh.shell.exit(1);
 }
 
+var templateXml = (function() {
+	var slime = jsh.script.file.parent.parent.parent.parent;
+	var template = slime.getFile("loader/api/api.template.html").read(String);
+
+	if (parameters.options.link) {
+		(function() {
+			var slimepath = "http://bb.githack.com/davidpcaldwell/slime/raw/tip/";
+			var to = {
+				slime: jsh.file.navigate({
+					from: parameters.options.to,
+					to: slime
+				})
+			};
+			
+			while(template.indexOf(slimepath) != -1) {
+				template = template.replace(slimepath, to.slime.relative);
+			}		
+		})();
+	}
+	return template;
+})();
+
 var document = new jsh.document.Document({
-	string: jsh.script.file.parent.parent.getFile("api.template.html").read(String)
+	string: templateXml
 });
 
-parameters.options.to.write(document.toString());
+(function removeLicense() {
+	document.children.splice(0,1);
+})();
+
+parameters.options.to.write(document.toString(), { append: false });
