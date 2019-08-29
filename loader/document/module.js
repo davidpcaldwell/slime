@@ -99,6 +99,10 @@ if (global.window == global) {
 		this.serialize = function() {
 			return Array.prototype.slice.call(p.dom.childNodes).map(function(node) {
 				if (node.outerHTML) return node.outerHTML;
+				if (node.nodeType == node.DOCUMENT_TYPE_NODE) {
+					//	TODO	will need public ID and system ID
+					return "<!DOCTYPE " + node.name + ">";
+				}
 				return "";
 			}).join("");
 		}
@@ -150,7 +154,6 @@ if ($platform.java && $platform.java.getClass("org.jsoup.Jsoup")) {
 	};
 
 	var Element = function(p) {
-
 		var name = $context.$slime.java.adapt.String(p.jsoup.tagName());
 
 		Object.defineProperty(this, "name", {
@@ -255,6 +258,8 @@ $exports.load = function(p) {
 	if (p.loader && p.path) {
 		var html = p.loader.get(p.path).read(String);
 		return parser(html);
+	} else if (p.string) {
+		return parser(p.string);
 	} else {
 		throw new TypeError();
 	}
