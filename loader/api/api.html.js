@@ -326,10 +326,6 @@ $exports.ApiHtmlTests = function(html,name) {
 		}
 	}
 
-	var getTestElement = function() {
-		return html.top;
-	}
-
 	var isScenario = function(element) {
 		return element.localName == "script" && element.getAttribute("type") == (SCRIPT_TYPE_PREFIX + "tests");
 	}
