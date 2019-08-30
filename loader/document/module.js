@@ -41,6 +41,16 @@ if (global.window == global) {
 
 	var Element = function(dom) {
 		this.name = dom.tagName.toLowerCase();
+
+		this.attributes = new function() {
+			this.get = function(p) {
+				if (typeof(p) == "string") {
+					return dom.getAttribute(p);
+				} else {
+					throw new TypeError("Unsupported: attribute specifier other than string");
+				}
+			}
+		}
 	};
 
 	var Node = function(dom) {
@@ -154,12 +164,24 @@ if ($platform.java && $platform.java.getClass("org.jsoup.Jsoup")) {
 	};
 
 	var Element = function(p) {
-		var name = $context.$slime.java.adapt.String(p.jsoup.tagName());
+		var jsoup = p.jsoup;
+		var name = $context.$slime.java.adapt.String(jsoup.tagName());
 
 		Object.defineProperty(this, "name", {
 			value: name,
 			enumerable: true
 		});
+
+		this.attributes = new function() {
+			this.get = function(p) {
+				if (typeof(p) == "string") {
+					if (!jsoup.hasAttr(p)) return null;
+					return String(jsoup.attr(p));
+				} else {
+					throw new TypeError("Unsupported: attribute specifier other than string");
+				}
+			}
+		}
 	}
 
 	var Node = function(p) {

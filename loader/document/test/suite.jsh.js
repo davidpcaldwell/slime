@@ -1,7 +1,8 @@
 var parameters = jsh.script.getopts({
 	options: {
 		part: String,
-		view: "console"
+		view: "console",
+		experimental: false
 	}
 });
 
@@ -27,6 +28,13 @@ suite.add("browser", jsh.unit.Suite.Fork({
 	// TODO: is setting the working directory necessary?
 //	directory: environment.jsh.src
 }));
+
+if (parameters.options.experimental) {
+	suite.add("document", new jsh.unit.part.Html({
+		document: true,
+		pathname: code.getRelativePath("api.html")
+	}))
+}
 
 jsh.unit.html.cli({
 	suite: suite,
