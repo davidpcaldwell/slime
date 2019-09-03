@@ -289,6 +289,47 @@ plugin({
 					to: location
 				})
 			};
+
+			var Installation = function(o) {
+				this.compile = function(p) {
+					if (p.destination) p.destination.createDirectory({
+						exists: function() {
+							return false;
+						}
+					});
+					return jsh.shell.run({
+						command: o.directory.getFile("bin/scalac"),
+						arguments: function(list) {
+							if (p.deprecation) list.push("-deprecation");
+							if (p.destination) list.push("-d", p.destination);
+							list.push.apply(list,p.files);
+						}
+					})
+				};
+
+				this.run = function(p) {
+					//	TODO	possibly could just use java command with location.directory.getRelativePath("lib/scala-library.jar")
+					//			in classpath
+					return jsh.shell.run({
+						command: o.directory.getFile("bin/scala"),
+						arguments: function(list) {
+							if (p.classpath) list.push("-classpath", p.classpath);
+							if (p.deprecation) list.push("-deprecation");
+							list.push(p.main);
+						}
+					});
+				}
+			};
+
+			Object.defineProperty(this, "installation", {
+				get: function() {
+					if (location.directory) {
+						return new Installation({
+							directory: location.directory
+						});
+					}
+				}
+			})
 		} : null;
 		jsh.shell.tools.scala = scala;
 
