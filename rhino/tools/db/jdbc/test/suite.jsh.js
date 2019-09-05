@@ -15,6 +15,8 @@ var parameters = jsh.script.getopts({
 	options: {
 		"mysql:server": jsh.file.Pathname,
 		"mysql:jdbc": jsh.file.Pathname,
+		"postgresql:user": String,
+		"postgresql:password": String,
 		"postgresql:admin:user": String,
 		"postgresql:admin:password": String,
 		view: "console"
@@ -37,6 +39,8 @@ if (jsh.db.jdbc.postgresql) {
 		pathname: jsh.script.file.parent.parent.getRelativePath("postgresql/api.html"),
 		environment: {
 			server: {
+				user: parameters.options["postgresql:user"],
+				password: parameters.options["postgresql:password"],
 				admin: {
 					user: parameters.options["postgresql:admin:user"],
 					password: parameters.options["postgresql:admin:password"]

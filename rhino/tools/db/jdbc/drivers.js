@@ -1057,19 +1057,19 @@ var Database = function(o) {
 		}
 	};
 
-	this.getCatalogs = function() {
+	if (o.catalogs && o.catalogs.list) this.getCatalogs = function() {
 		return o.catalogs.list().map(function(row) {
 			return newCatalog({ name: row.name });
 		});
 	};
 
-	this.createCatalog = function(p) {
+	if (o.catalogs && o.catalogs.create) this.createCatalog = function(p) {
 		var identifier = new Identifier(p.name);
 		o.catalogs.create({ name: identifier });
 		return newCatalog({ name: identifier.toString() });
 	};
 
-	this.dropCatalog = function(p) {
+	if (o.catalogs && o.catalogs.drop) this.dropCatalog = function(p) {
 		var identifier = new Identifier(p.name);
 		o.catalogs.drop({ name: identifier });
 	}
