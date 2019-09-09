@@ -524,18 +524,21 @@ END LICENSE
 					<span>Returns a list of each of this repository's subrepositories.</span>
 					<div class="type">
 						<a class="type" name="types.subrepository">subrepository</a>
-						<span>__DESCRIPTION__</span>
+						<span>Represents a <a href="https://www.mercurial-scm.org/wiki/Subrepository">subrepository</a> of a given repository.</span>
 						<div class="label">has properties:</div>
 						<ul>
 							<li class="value">
 								<div class="name">repository</div>
-								<span class="type">__TYPE__</span>
-								<span>__DESCRIPTION__</span>
+								<span class="type"><a href="#types.LocalRepository">LocalRepository</a></span>
+								<span>A repository object representing the subrepository.</span>
 							</li>
 							<li class="value">
 								<div class="name">revision</div>
-								<span class="type">__TYPE__</span>
-								<span>__DESCRIPTION__</span>
+								<span class="type">string</span>
+								<span>
+									The changeset ID, or global changeset identifier, of the subrepository corresponding to the
+									current parent repository version.
+								</span>
 							</li>
 						</ul>
 					</div>
