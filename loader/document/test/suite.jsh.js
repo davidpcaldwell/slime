@@ -1,10 +1,7 @@
-
-
 var parameters = jsh.script.getopts({
 	options: {
 		part: String,
-		view: "console",
-		experimental: false
+		view: "console"
 	}
 });
 
@@ -12,7 +9,7 @@ var suite = new jsh.unit.html.Suite();
 
 var code = jsh.script.file.parent.parent;
 
-suite.add("jrunscript", new jsh.unit.part.Html({
+if (jsh.shell.tools.jsoup.installed) suite.add("jrunscript", new jsh.unit.part.Html({
 	pathname: code.getRelativePath("api.html")
 }));
 
@@ -29,18 +26,6 @@ suite.add("browser", jsh.unit.Suite.Fork({
 	// TODO: is setting the working directory necessary?
 //	directory: environment.jsh.src
 }));
-
-if (parameters.options.experimental) {
-	jsh.shell.jsh.require({
-		satisfied: function() { return jsh.shell.tools.jsoup.installed; },
-		install: function() { jsh.shell.tools.jsoup.install(); }
-	});
-
-	suite.add("document", new jsh.unit.part.Html({
-		document: true,
-		pathname: code.getRelativePath("api.html")
-	}))
-}
 
 jsh.unit.html.cli({
 	suite: suite,
