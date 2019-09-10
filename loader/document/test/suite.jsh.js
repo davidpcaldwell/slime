@@ -1,3 +1,5 @@
+
+
 var parameters = jsh.script.getopts({
 	options: {
 		part: String,
@@ -10,7 +12,6 @@ var suite = new jsh.unit.html.Suite();
 
 var code = jsh.script.file.parent.parent;
 
-jsh.shell.tools.jsoup.install();
 suite.add("jrunscript", new jsh.unit.part.Html({
 	pathname: code.getRelativePath("api.html")
 }));
@@ -30,6 +31,11 @@ suite.add("browser", jsh.unit.Suite.Fork({
 }));
 
 if (parameters.options.experimental) {
+	jsh.shell.jsh.require({
+		satisfied: function() { return jsh.shell.tools.jsoup.installed; },
+		install: function() { jsh.shell.tools.jsoup.install(); }
+	});
+
 	suite.add("document", new jsh.unit.part.Html({
 		document: true,
 		pathname: code.getRelativePath("api.html")

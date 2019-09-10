@@ -277,6 +277,7 @@ var parser = (function() {
 })();
 
 $exports.load = function(p) {
+	if (!parser) throw new Error("Parser not found.");
 	if (p.loader && p.path) {
 		var html = p.loader.get(p.path).read(String);
 		return parser(html);

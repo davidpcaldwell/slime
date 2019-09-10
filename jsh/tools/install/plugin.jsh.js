@@ -333,22 +333,37 @@ plugin({
 		} : null;
 		jsh.shell.tools.scala = scala;
 
-		jsh.shell.tools.jsoup = {};
-		jsh.shell.tools.jsoup.install = function(p) {
-			if (!p) p = {};
-			var to = jsh.shell.jsh.lib.getRelativePath("jsoup.jar");
-			if (!to.file || p.upgrade) {
-				var response = new jsh.http.Client().request({
-					url: "https://jsoup.org/packages/jsoup-1.12.1.jar"
-				});
-				to.write(response.body.stream, { append: false });
-				//	TODO	the below code isn't very DRY; hits a special API for reloading rather than just reloading the plugin; at least this works for both
-				//			unbuilt and built shells
-				//	TODO	it is also untested
-				jsh.loader.plugins(to);
-				jsh.document.Document.Html.$reload();
-			}
-		};
+		jsh.shell.tools.jsoup = (function() {
+			var rv = {};
+
+			var location = (jsh.shell.jsh.lib) ? jsh.shell.jsh.lib.getRelativePath("jsoup.jar") : void(0);
+
+			if (location) rv.install = function(p) {
+				var to = location;
+				if (!p) p = {};
+				if (!to.file || p.upgrade) {
+					var response = new jsh.http.Client().request({
+						url: "https://jsoup.org/packages/jsoup-1.12.1.jar"
+					});
+					to.write(response.body.stream, { append: false });
+					//	TODO	the below code isn't very DRY; hits a special API for reloading rather than just reloading the plugin; at least this works for both
+					//			unbuilt and built shells
+					//	TODO	it is also untested
+					jsh.loader.plugins(to);
+					jsh.document.Document.Html.$reload();
+				}
+			};
+
+			Object.defineProperty(rv, "installed", {
+				get: function() {
+					if (!location) return null;
+					if (location.file) return {};
+					return null;
+				}
+			});
+
+			return rv;
+		})();
 
 		jsh.shell.tools.javamail = {};
 		jsh.shell.tools.javamail.install = function(p) {
