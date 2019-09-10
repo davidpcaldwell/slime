@@ -543,7 +543,7 @@ var Installation = function(environment) {
 				});
 			}
 
-			var rv = (p.array) ? [] : {};
+			var rv = (p.array) ? $api.deprecate(function() { return []; })() : {};
 			for (var x in list) {
 				if (/^subpaths\./.test(x)) {
 				} else {
