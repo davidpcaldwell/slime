@@ -456,7 +456,7 @@ $exports.getCode = function(path) {
 };
 
 
-var Suite = function(p) {
+var Suite = function() {
 	var byName = {};
 
 	var definition = {

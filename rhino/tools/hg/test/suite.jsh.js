@@ -18,7 +18,7 @@ var parameters = jsh.script.getopts({
 	}
 });
 
-var page = new jsh.unit.part.Html({
+var page = new jsh.unit.html.Part({
 	name: "module",
 	pathname: jsh.script.file.parent.parent.getRelativePath("api.html"),
 	environment: {}

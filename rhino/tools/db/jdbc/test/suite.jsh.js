@@ -35,7 +35,7 @@ var module = jsh.db.jdbc;
 var suite = new jsh.unit.html.Suite();
 
 if (jsh.db.jdbc.postgresql) {
-	suite.add("postgresql", new jsh.unit.part.Html({
+	suite.add("postgresql", new jsh.unit.html.Part({
 		pathname: jsh.script.file.parent.parent.getRelativePath("postgresql/api.html"),
 		environment: {
 			server: {
@@ -51,7 +51,7 @@ if (jsh.db.jdbc.postgresql) {
 }
 
 if (jsh.db.jdbc.derby) {
-	suite.add("derby", new jsh.unit.part.Html({
+	suite.add("derby", new jsh.unit.html.Part({
 		pathname: jsh.script.file.parent.parent.getRelativePath("derby/api.html"),
 		environment: {
 			module: module.derby
@@ -150,7 +150,7 @@ if (parameters.options["mysql:server"]) {
 	});
 
 	if (parameters.options["mysql:jdbc"]) {
-		suite.part("mysql", new jsh.unit.part.Html({
+		suite.part("mysql", new jsh.unit.html.Part({
 			pathname: jsh.script.file.parent.parent.getRelativePath("mysql/api.html"),
 			environment: {
 				module: module.mysql,
