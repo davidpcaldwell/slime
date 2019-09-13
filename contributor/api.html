@@ -144,8 +144,27 @@ END LICENSE
 			<div>
 				<h2><a href="../loader/document/api.html">loader/document</a> (HTML parsing)</h2>
 				<div>
+					Goal would be to replace DOM in loader/browser/test/api.js and JaspiHtml in jsh/unit/html.js; this feeds into
+					loader/api/api.html.js as the <code>html</code> argument to ApiHtmlTests.
+				</div>
+				<div>
+					First step should be to build an adapter at loader/api/document-adapter.js that converts a loader/document
+					document into a JSAPI-compatible html object. An additional property can be added to jsh/unit/html.js
+					PartDescriptor argument to specify the creation of this new kind of document in loadApiHtml().
+				</div>
+				<div>
+					Test case which runs the above scenario:
+					<code>./jsh.bash loader/document/test/suite.jsh.js -experimental -part document</code>
+				</div>
+				<div>
+					An equivalent browser migration for replacing the JSAPI DOM in loader/browser/test/api.js is then needed.
+				</div>
+				<div>
 					<h3><a href="https://jsoup.org/">JSoup</a></h3>
 					<a href="https://jsoup.org/apidocs/overview-summary.html">API</a>
+				</div>
+				<div>
+					<h3><a href="../loader/document/source.api.html">Source-level parser</a></h3>
 				</div>
 			</div>
 		</div>

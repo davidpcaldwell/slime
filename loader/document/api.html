@@ -13,20 +13,29 @@ END LICENSE
 --><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
 <head>
-	<title>__TITLE__</title>
-	<!--	TODO	change these to use local copies of these files at the appropriate location	-->
-	<!--
-		These files are specified using http: rather than https: because githack.com will redirect them to https:, but http: will
-		work when using an HTTP proxy to serve local copies of the files without needing to run https: locally
-	-->
+	<title>SLIME runtime: documents</title>
 	<link href="../../loader/api/api.css" rel="stylesheet" type="text/css" />
 	<script src="../../loader/api/api.js"></script>
-	<script>
-		//	TODO	CORS
-		document.domain = document.domain;
-	</script>
 </head>
 <body>
+	<div>
+		<p>
+			The SLIME document parser is a parser and serializer that handles HTML (and XHTML/XML) documents, converting them to a
+			tree structure (which is somewhat analogous to a DOM tree).
+		</p>
+		<p>
+			The produced tree conforms to the HTML DOM specification, so (for example) whitespace may be altered when parsing.
+		</p>
+		<!--
+		<p>
+			The base document format also contains features that DOM does not, standardizing processes like referencing another
+			document and inserting content from the other document into a given document's rendering.
+		</p>
+		<p>
+			This format is used for SLIME definition files, and is also provided as an API for potential use for other purposes.
+		</p>
+		-->
+	</div>
 	<script type="application/x.jsapi#initialize">
 		var isBrowser = (function() {
 			var global = this;
@@ -41,25 +50,33 @@ END LICENSE
 		});
 	</script>
 	<script type="application/x.jsapi#tests">
+		//	This is not really a test of this module
 		var resource = $jsapi.loader.get("test/data/1.html");
 		verify(resource).is.type("object");
 		var missing = $jsapi.loader.get("test/data/foo.html");
 		verify(missing).is.type("null");
+	</script>
+	<script type="application/x.jsapi#initialize">
+		scope.testsFor1 = function(page,verify) {
+			verify(page).children.length.is(2);
+			verify(page).children.get(0).doctype.is.type("object");
+			verify(page).children.get(0).doctype.name.is.type("string");
+			verify(page).children.get(0).doctype.name.is("html");
+	
+			verify(page).children.get(1).element.is.type("object");
+			verify(page).document.element.is.type("object");
+			verify(page).document.element.element.name.is("html");	
+
+			verify(page).document.element.element.attributes.get("class").is("class1");
+			verify(page).document.element.element.attributes.get("foo").is(null);
+		};
 	</script>
 	<script type="application/x.jsapi#tests">
 		var page = api.load({
 			loader: $jsapi.loader,
 			path: "test/data/1.html"
 		});
-		//verify(page).dom.is.type("object");
-		verify(page).children.length.is(2);
-		verify(page).children.get(0).doctype.is.type("object");
-		verify(page).children.get(0).doctype.name.is.type("string");
-		verify(page).children.get(0).doctype.name.is("html");
-
-		verify(page).children.get(1).element.is.type("object");
-		verify(page).document.element.is.type("object");
-		verify(page).document.element.element.name.is("html");
+		testsFor1(page,verify);
 	</script>
 	<script type="application/x.jsapi#tests">
 		var page = api.load({
@@ -70,17 +87,13 @@ END LICENSE
 		//	TODO	below does not work in JSoup 1.12.1, which messes up some pieces of whitespace
 		//	TODO	below does not work in browser, either
 		//	See https://stackoverflow.com/questions/57394776/why-does-domparser-alter-whitespace
+		var reparsed = api.load({
+			string: string
+		});
+		testsFor1(reparsed,verify);
 		if (false) {
 			verify(string).is($jsapi.loader.string("test/data/1.html"));
 		}
-	</script>
-	<script jsapi:id="source" type="application/x.jsapi#tests">
-		var input = $jsapi.loader.string("test/data/1.html");
-		var page = api.parse({
-			string: input
-		});
-		var serialized = page.serialize();
-		if (false) verify(serialized).is(input);
 	</script>
 	<div>__DESCRIPTION__</div>
 	<div>

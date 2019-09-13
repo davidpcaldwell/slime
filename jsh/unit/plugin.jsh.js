@@ -87,6 +87,16 @@ plugin({
 			}
 		};
 
+		var html = $loader.file("html.js", {
+			html: jsh.unit.html,
+			$slime: jsh.unit.$slime
+		});
+
+		jsh.unit.html.Part = function(p) {
+			if (!p.pathname) throw new TypeError("jsh.unit.html.Part: 'pathname' property must be present")
+			return new html.PartDescriptor(p);
+		};
+
 		jsh.unit.html.cli = function(p) {
 			jsh.unit.interface.create(p.suite.build(), new function() {
 				// TODO: is this redundant? Value of "chrome" should just work, right? Or is it because we want to specify instance?
@@ -102,21 +112,15 @@ plugin({
 			});
 		}
 
+		jsh.unit.html.documentation = html.documentation;
+
 		//	TODO	probably will move to loader/api
 		jsh.unit.part = {};
-
-		var html = $loader.file("html.js", {
-			html: jsh.unit.html,
-			$slime: jsh.unit.$slime
-		});
-		jsh.unit.part.Html = function(p) {
-			if (!p.pathname) throw new TypeError("jsh.unit.part.Html: 'pathname' property must be present")
-			return new html.PartDescriptor(p);
-		};
+		$api.deprecate(jsh.unit, "part");
+		jsh.unit.part.Html = $api.deprecate(jsh.unit.html.Part);
 		jsh.unit.Scenario.Html = $api.deprecate(function(p) {
 			return new html.Scenario(p);
 		});
-		jsh.unit.html.documentation = html.documentation;
 
 		jsh.unit.Suite.Fork = function(p) {
 			return new function() {

@@ -6,7 +6,7 @@ var parameters = jsh.script.getopts({
 
 var suite = new jsh.unit.Suite();
 
-var part = new jsh.unit.part.Html({
+var part = new jsh.unit.html.Part({
 	pathname: jsh.script.file.parent.getFile("issue302.api.html").pathname,
 	part: "b"
 });

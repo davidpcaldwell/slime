@@ -15,6 +15,8 @@ var parameters = jsh.script.getopts({
 	options: {
 		"mysql:server": jsh.file.Pathname,
 		"mysql:jdbc": jsh.file.Pathname,
+		"postgresql:user": String,
+		"postgresql:password": String,
 		"postgresql:admin:user": String,
 		"postgresql:admin:password": String,
 		view: "console"
@@ -33,10 +35,12 @@ var module = jsh.db.jdbc;
 var suite = new jsh.unit.html.Suite();
 
 if (jsh.db.jdbc.postgresql) {
-	suite.add("postgresql", new jsh.unit.part.Html({
+	suite.add("postgresql", new jsh.unit.html.Part({
 		pathname: jsh.script.file.parent.parent.getRelativePath("postgresql/api.html"),
 		environment: {
 			server: {
+				user: parameters.options["postgresql:user"],
+				password: parameters.options["postgresql:password"],
 				admin: {
 					user: parameters.options["postgresql:admin:user"],
 					password: parameters.options["postgresql:admin:password"]
@@ -47,7 +51,7 @@ if (jsh.db.jdbc.postgresql) {
 }
 
 if (jsh.db.jdbc.derby) {
-	suite.add("derby", new jsh.unit.part.Html({
+	suite.add("derby", new jsh.unit.html.Part({
 		pathname: jsh.script.file.parent.parent.getRelativePath("derby/api.html"),
 		environment: {
 			module: module.derby
@@ -146,7 +150,7 @@ if (parameters.options["mysql:server"]) {
 	});
 
 	if (parameters.options["mysql:jdbc"]) {
-		suite.part("mysql", new jsh.unit.part.Html({
+		suite.part("mysql", new jsh.unit.html.Part({
 			pathname: jsh.script.file.parent.parent.getRelativePath("mysql/api.html"),
 			environment: {
 				module: module.mysql,

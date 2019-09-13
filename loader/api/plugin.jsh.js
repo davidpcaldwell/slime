@@ -47,3 +47,17 @@ plugin({
 		});
 	}
 });
+
+plugin({
+	isReady: function() {
+		return jsh.unit;
+	},
+	load: function() {
+		var JsapiHtml = $loader.value("document-adapter.js");
+
+		jsh.unit.jsapi = {};
+		jsh.unit.jsapi.Html = function(base,document) {
+			return new JsapiHtml(base,document);
+		};
+	}
+})
