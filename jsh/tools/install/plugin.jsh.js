@@ -373,7 +373,7 @@ plugin({
 			};
 
 			var load = function(code) {
-				return (function() {
+				return $api.debug.disableBreakOnExceptionsFor(function() {
 					var global = {};
 					var rv = eval(code);
 					return global.jsyaml;

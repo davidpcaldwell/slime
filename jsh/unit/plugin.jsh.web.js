@@ -143,7 +143,7 @@ $set({
 			})();
 
 			var getHgServerProxy = (httpd)
-				? $api.Function.singleton(function() {
+				? $api.Function.memoized(function() {
 //					Packages.java.lang.System.err.println("Invoke startHgServer");
 					var server = startHgServer();
 //					Packages.java.lang.System.err.println("Return httpd.Handler.Proxy");

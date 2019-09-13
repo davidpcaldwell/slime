@@ -136,7 +136,7 @@ var get = function(p,events) {
 	if (!p.file) {
 		if (p.url) {
 			//	Apache supplies name so that url property, which is getter that hits Apache mirror list, is not invoked
-			var find = (typeof(p.url) == "function") ? $api.Function.singleton(p.url) : function() { return p.url; };
+			var find = (typeof(p.url) == "function") ? $api.Function.memoized(p.url) : function() { return p.url; };
 			if (!p.name) p.name = find().split("/").slice(-1)[0];
 			var pathname = $context.downloads.getRelativePath(p.name);
 			if (!pathname.file) {
