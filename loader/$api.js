@@ -464,93 +464,98 @@
 		}
 	};
 
-	$exports.Events = function(p) {
+	var Emitter = function(p) {
 		if (!p) p = {};
-		return new function() {
-			var source = (p.source) ? p.source : this;
-			var getParent = function() {
-				if (p.parent) return p.parent;
-				if (p.getParent) return p.getParent();
-			}
-			var byType = {};
+		var source = (p.source) ? p.source : this;
+		var getParent = function() {
+			if (p.parent) return p.parent;
+			if (p.getParent) return p.getParent();
+		}
+		var byType = {};
 
-			var Event = function(type,detail) {
-				this.type = type;
-				this.source = source;
-				this.timestamp = Date.now();
-				this.detail = detail;
-				this.path = [];
+		var Event = function(type,detail) {
+			this.type = type;
+			this.source = source;
+			this.timestamp = Date.now();
+			this.detail = detail;
+			this.path = [];
 
-				//	TODO	consider greater compatibility:
-				//	http://www.w3.org/TR/2000/REC-DOM-Level-2-Events-20001113/events.html#Events-interface
-			};
-
-			var listeners = new function() {
-				this.add = function(name,handler) {
-					if (!byType[name]) {
-						byType[name] = [];
-					}
-					byType[name].push(handler);
-				};
-
-				this.remove = function(name,handler) {
-					if (byType[name]) {
-						var index = byType[name].indexOf(handler);
-						if (index != -1) {
-							byType[name].splice(index,1);
-						}
-					}
-				};
-			};
-
-			//	TODO	capability is undocumented. Document? Deprecate? Remove?
-			for (var x in p.on) {
-				listeners.add(x,p.on[x]);
-			}
-
-			this.listeners = listeners;
-
-			//	TODO	roadmap: after some uses of this have been removed, add an optional 'old' property to allow this behavior
-			//			but overall we should not be adding arbitrary properties to an object just because it is an event emitter
-			if (p.source) {
-				p.source.listeners = new function() {
-					this.add = $exports.deprecate(function(name,handler) {
-						listeners.add(name, handler);
-					});
-
-					this.remove = $exports.deprecate(function(name,handler) {
-						listeners.remove(name, handler);
-					})
-				};
-			}
-
-			var handle = function(event) {
-				if (byType[event.type]) {
-					byType[event.type].forEach(function(listener) {
-						//	In a DOM-like structure, we would need something other than 'source' to act as 'this'
-						listener.call(source,event)
-					});
-				}
-				var parent = getParent();
-				if (parent) {
-					//	TODO	this appears to be a bug; would the path not consist of the source object several times in a row,
-					//			once for each bubble? Possibly this should be event.path.unshift(this)? Should write test for path
-					//			and see
-					event.path.unshift(source);
-					parent.bubble(event);
-				}
-			}
-
-			//	Private method; used by children to send an event up the chain.
-			//	TODO	switch to Object.defineProperty and make non-enumerable
-			this.bubble = function(event) {
-				handle(event);
-			}
-
-			this.fire = function(type,detail) {
-				handle(new Event(type,detail));
-			}
+			//	TODO	consider greater compatibility:
+			//	http://www.w3.org/TR/2000/REC-DOM-Level-2-Events-20001113/events.html#Events-interface
 		};
+
+		var listeners = new function() {
+			this.add = function(name,handler) {
+				if (!byType[name]) {
+					byType[name] = [];
+				}
+				byType[name].push(handler);
+			};
+
+			this.remove = function(name,handler) {
+				if (byType[name]) {
+					var index = byType[name].indexOf(handler);
+					if (index != -1) {
+						byType[name].splice(index,1);
+					}
+				}
+			};
+		};
+
+		//	TODO	capability is undocumented. Document? Deprecate? Remove?
+		for (var x in p.on) {
+			listeners.add(x,p.on[x]);
+		}
+
+		this.listeners = listeners;
+
+		//	TODO	roadmap: after some uses of this have been removed, add an optional 'old' property to allow this behavior
+		//			but overall we should not be adding arbitrary properties to an object just because it is an event emitter
+		if (p.source) {
+			p.source.listeners = new function() {
+				this.add = $exports.deprecate(function(name,handler) {
+					listeners.add(name, handler);
+				});
+
+				this.remove = $exports.deprecate(function(name,handler) {
+					listeners.remove(name, handler);
+				})
+			};
+		}
+
+		var handle = function(event) {
+			if (byType[event.type]) {
+				byType[event.type].forEach(function(listener) {
+					//	In a DOM-like structure, we would need something other than 'source' to act as 'this'
+					listener.call(source,event)
+				});
+			}
+			var parent = getParent();
+			if (parent) {
+				//	TODO	this appears to be a bug; would the path not consist of the source object several times in a row,
+				//			once for each bubble? Possibly this should be event.path.unshift(this)? Should write test for path
+				//			and see
+				event.path.unshift(source);
+				parent.bubble(event);
+			}
+		}
+
+		//	Private method; used by children to send an event up the chain.
+		//	TODO	switch to Object.defineProperty and make non-enumerable
+		this.bubble = function(event) {
+			handle(event);
+		}
+
+		this.fire = function(type,detail) {
+			handle(new Event(type,detail));
+		}
+	};
+
+	$exports.Events = function(p) {
+		return new Emitter(p);
+	};
+	$exports.Events.instance = function(v) {
+		return v instanceof Emitter;
 	};
 
 	var listening = function(f,defaultOn) {
@@ -574,18 +579,19 @@
 		};
 
 		return function(p,on) {
-			var listeners = new Listeners({
+			var instance = $exports.Events.instance(on);
+			var listeners = (!instance) ? new Listeners({
 				on: $exports.Function.evaluator(
 					function() { return on; },
 					function() { return defaultOn; },
 					function() { return {}; }
 				)()
-			});
-			listeners.add();
+			}) : void(0);
+			if (listeners) listeners.add();
 			try {
-				return f.call(this,p,listeners.events);
+				return f.call(this,p, (listeners) ? listeners.events : on );
 			} finally {
-				listeners.remove();
+				if (listeners) listeners.remove();
 			}
 		}
 	};
