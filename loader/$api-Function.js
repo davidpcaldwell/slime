@@ -25,6 +25,13 @@ $exports.Function.pipe = function() {
     }
 };
 
+$exports.Function.property = function(name) {
+    return function(v) {
+        //  TODO    handling of undefined, null?
+        return v[name];
+    }
+};
+
 $exports.Function.returning = function(v) {
     return function() {
         return v;
