@@ -49,7 +49,12 @@ $set(new (function() {
 		})(scope,"$jsh",$slime);
 
 		scope.global = (p.mock && p.mock.global) ? p.mock.global : (function() { return this; })();
-		scope.jsh = (p.mock && p.mock.jsh) ? p.mock.jsh : jsh;
+		scope.jsh = (function() {
+			if (p.mock && p.mock.jsh) return p.mock.jsh;
+			if (p.mock && p.global && p.global.jsh) return p.global.jsh;
+			return jsh;
+		})();
+		if (typeof(scope.jsh) == "undefined") throw new Error("jsh undefined");
 		scope.$loader = p.$loader;
 		scope.$loader.classpath = new function() {
 			this.add = function(pathname) {

@@ -257,8 +257,8 @@ var Scope = function(suite,environment) {
 				});
 				if (configuration.evaluate) {
 					return configuration.evaluate({
-						global: configuration.global,
-						jsh: configuration.jsh,
+						global: scope,
+						jsh: scope.jsh,
 						plugins: plugins
 					});
 				} else {
