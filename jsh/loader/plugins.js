@@ -51,7 +51,7 @@ $set(new (function() {
 		scope.global = (p.mock && p.mock.global) ? p.mock.global : (function() { return this; })();
 		scope.jsh = (function() {
 			if (p.mock && p.mock.jsh) return p.mock.jsh;
-			if (p.mock && p.global && p.global.jsh) return p.global.jsh;
+			if (p.mock && p.mock.global && p.mock.global.jsh) return p.mock.global.jsh;
 			return jsh;
 		})();
 		if (typeof(scope.jsh) == "undefined") throw new Error("jsh undefined");
@@ -106,12 +106,13 @@ $set(new (function() {
 	};
 
 	this.mock = function(p) {
+		if (!p.global && p.jsh) p.global = { jsh: p.jsh }
 		var list = load({
 			plugins: (p.plugins) ? p.plugins : {},
 			toString: (p.toString) ? p.toString : function() { return "mock"; },
 			$loader: p.$loader,
 			mock: {
-				jsh: p.jsh
+				global: p.global
 			}
 		});
 		run(list);
