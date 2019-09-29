@@ -68,7 +68,7 @@ suite.add("internal/other", new jsh.unit.html.Part({
 }));
 suite.add("internal/document", new jsh.unit.Suite.Fork({
 	run: jsh.shell.jsh,
-	shell: (environment.jsh.built) ? environment.jsh.built.homne : environment.jsh.unbuilt.src,
+	shell: (environment.jsh.built) ? environment.jsh.built.home : environment.jsh.unbuilt.src,
 	script: SRC.getFile("loader/document/test/suite.jsh.js"),
 	arguments: ["-view", "stdio"]
 }));

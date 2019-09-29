@@ -48,7 +48,7 @@ $set(new (function() {
 			}
 		})(scope,"$jsh",$slime);
 
-		scope.global = (function() { return this; })();
+		scope.global = (p.mock && p.mock.global) ? p.mock.global : (function() { return this; })();
 		scope.jsh = (p.mock && p.mock.jsh) ? p.mock.jsh : jsh;
 		scope.$loader = p.$loader;
 		scope.$loader.classpath = new function() {

@@ -13,11 +13,13 @@ if (jsh.shell.tools.jsoup.installed) suite.add("jrunscript", new jsh.unit.html.P
 	pathname: code.getRelativePath("api.html")
 }));
 
+var src = (jsh.shell.jsh.src) ? jsh.shell.jsh.src : jsh.shell.jsh.home.getSubdirectory("src");
+
 suite.add("browser", jsh.unit.Suite.Fork({
 	name: "browser",
 	run: jsh.shell.jsh,
-	shell: jsh.shell.jsh.src,
-	script: jsh.shell.jsh.src.getFile("loader/browser/test/suite.jsh.js"),
+	shell: src,
+	script: src.getFile("loader/browser/test/suite.jsh.js"),
 	arguments: [
 		"-definition", code.getRelativePath("api.html"),
 		"-browser", "chrome",
