@@ -14,14 +14,15 @@ Packages.java.lang.System.setProperty("sun.net.http.allowRestrictedHeaders", "tr
 (function($context) {
 	$context.property("api").require();
 	$context.property("api","js").require();
-	$context.property("api","io").require();
+	$context.property("api","js").require();
+	$context.property("api","java").require();
 	$context.property("api","web").require();
 })($api.Value($context,"$context"));
 
 var allowMethods = function() {
-	var methodsField = $context.$slime.java.toNativeClass(Packages.java.net.HttpURLConnection).getDeclaredField("methods");
+	var methodsField = $context.api.java.toNativeClass(Packages.java.net.HttpURLConnection).getDeclaredField("methods");
 
-	var modifiersField = $context.$slime.java.toNativeClass(Packages.java.lang.reflect.Field).getDeclaredField("modifiers");
+	var modifiersField = $context.api.java.toNativeClass(Packages.java.lang.reflect.Field).getDeclaredField("modifiers");
 	modifiersField.setAccessible(true);
 	modifiersField.setInt(methodsField, methodsField.getModifiers() & ~Packages.java.lang.reflect.Modifier.FINAL);
 
