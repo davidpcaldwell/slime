@@ -19,14 +19,54 @@ $exports.tcp = new function() {
 	};
 };
 
-$exports.Host = function(o) {
-	this.isReachable = function(p) {
-		var ping = $context.api.shell.os.ping({
-			host: o.name
-		});
-		return ping.status == 0;
+var assert = function(test,failure) {
+    return $api.Function.conditional(
+		test, 
+		function(o) { return o; },
+		failure
+	);
+};
+
+var equals = function(value) {
+	return function(v) {
+		return v == value;
 	}
+};
+
+var mustBeType = function(type) {
+	return assert(
+		$api.Function.pipe(
+			$api.Function.type,
+			equals(type)
+		),
+		function(v) {
+			throw new TypeError("Argument must be " + type + ", not " + $api.Function.type(v));
+		}
+	);
 }
+
+$exports.Host = $api.Function.pipe(
+	mustBeType("object"),
+	assert(
+		$api.Function.pipe(
+			$api.Function.property("name"),
+			$api.Function.type,
+			equals("string")
+		),
+		function(v) {
+			throw new TypeError("name property must be string, not " + $api.Function.type(v.name));
+		}
+	),
+	function(o) {
+		this.isReachable = function(p) {
+			var ping = $context.api.shell.os.ping({
+				host: o.name,
+				timeout: (p && p.timeout) ? p.timeout : void(0)
+			});
+			return ping.status == 0;
+		}
+	}
+);
 
 $exports.Port = function(o) {
 	if (typeof(o) == "number") o = { number: o };
