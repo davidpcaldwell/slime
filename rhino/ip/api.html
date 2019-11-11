@@ -70,6 +70,13 @@ END LICENSE
 										var host = new jsh.ip.Host({ name: "127.0.0.1" });
 										verify(host).isReachable().is(true);
 									}
+									(function() {
+										//	Example IP address; see RFC 5737, apparently
+										//	https://superuser.com/a/698392
+										//	TODO	decrease timeout for this
+										var host = new jsh.ip.Host({ name: "192.0.2.1" });
+										verify(host).isReachable({ timeout: 1 }).is(false);
+									})();
 								}
 							</script>
 						</li>

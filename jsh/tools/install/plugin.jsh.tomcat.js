@@ -157,3 +157,10 @@ $exports.install = $context.$api.Events.Function(function(p,events) {
 		jsh.shell.console(e.detail);
 	}
 });
+
+$exports.require = $api.Events.Function(function(p,events) {
+	jsh.shell.jsh.require({
+		satisfied: function() { return $exports.installed(); },
+		install: function() { return $exports.install(p,events); }
+	});
+});

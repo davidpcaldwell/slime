@@ -309,10 +309,11 @@ document.domain = document.domain;
 				});
 
 				this.then = function(resolved,rejected) {
-					var raw = finished.then(function(value) {
- 						window.console.log("Resolving", executor, arguments[0]);
+					var onResolve = (resolved) ? function(value) {
+						window.console.log("Resolving", executor, arguments[0]);
 						return resolved.apply(this,arguments);
-					}, function(reason) {
+					} : resolved;
+					var raw = finished.then(onResolve, function(reason) {
 						window.console.log("Rejecting", executor, arguments[0]);
 						return rejected.apply(this,arguments);
 					});

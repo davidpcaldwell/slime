@@ -12,14 +12,15 @@
 
 plugin({
 	isReady: function() {
-		return typeof(jsh.js) != "undefined" && typeof(jsh.io) != "undefined" && typeof(jsh.js.web) != "undefined";
+		return typeof(jsh.js) != "undefined" && typeof(jsh.io) != "undefined" && typeof(jsh.js.web) != "undefined" && jsh.java;
 	},
 	load: function() {
 		jsh.http = $loader.module("module.js", {
 			api: {
-				io: jsh.io,
 				js: jsh.js,
-				web: jsh.js.web
+				java: jsh.java,
+				web: jsh.js.web,
+				io: jsh.io
 			}
 		});
 

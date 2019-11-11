@@ -239,15 +239,26 @@ var Scope = function(suite,environment) {
 			mock: function(configuration) {
 				var $loader = (configuration.path) ? new delegate.Child(configuration.path) : delegate;
 				var plugins = (configuration.plugins) ? configuration.plugins : {};
+				var scope = (function() {
+					if (!configuration.global && !configuration.jsh) return {};
+					if (configuration.global && configuration.jsh) {
+						return $api.Object.compose(configuration.global, { jsh: configuration.jsh });
+					}
+					if (configuration.global) return configuration.global;
+					if (configuration.jsh) return { jsh: configuration.jsh };
+					throw new Error("Unreachable.");
+				})();
 				$context.$slime.plugins.mock({
 					$loader: $loader,
 					plugins: plugins,
 					toString: configuration.toString,
-					jsh: configuration.jsh
+					global: scope,
+					jsh: scope.jsh
 				});
 				if (configuration.evaluate) {
 					return configuration.evaluate({
-						jsh: configuration.jsh,
+						global: scope,
+						jsh: scope.jsh,
 						plugins: plugins
 					});
 				} else {

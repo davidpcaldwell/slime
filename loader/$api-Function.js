@@ -1,5 +1,10 @@
 $exports.Function = $context.old.Function;
 
+$exports.Function.type = function(o) {
+    if (o === null) return "null";
+    return typeof(o);
+}
+
 $exports.Function.memoized = function(f) {
     var returns;
     var global = (function() { return this; });
@@ -43,7 +48,7 @@ $exports.Function.conditional = function(test,yes,no) {
         var condition = test.apply(this,arguments);
         return (condition) ? yes.apply(this,arguments) : no.apply(this,arguments);
     };
-}
+};
 
 $exports.Function.argument = {};
 $exports.Function.argument.check = function(p) {

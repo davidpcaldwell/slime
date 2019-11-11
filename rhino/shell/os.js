@@ -81,7 +81,18 @@ var ps = new function() {
 							}
 						}
 					});
+
+					var kill = function(p) {
+						$context.run({
+							command: "kill",
+							arguments: [
+								String(this.id)
+							]
+						});
+					}
+
 					rv.forEach(function(process) {
+						process.kill = kill;
 						var parent = byId[process.parent.id];
 						if (parent) {
 							process.parent = parent;

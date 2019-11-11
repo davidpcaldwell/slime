@@ -48,8 +48,13 @@ $set(new (function() {
 			}
 		})(scope,"$jsh",$slime);
 
-		scope.global = (function() { return this; })();
-		scope.jsh = (p.mock && p.mock.jsh) ? p.mock.jsh : jsh;
+		scope.global = (p.mock && p.mock.global) ? p.mock.global : (function() { return this; })();
+		scope.jsh = (function() {
+			if (p.mock && p.mock.jsh) return p.mock.jsh;
+			if (p.mock && p.mock.global && p.mock.global.jsh) return p.mock.global.jsh;
+			return jsh;
+		})();
+		if (typeof(scope.jsh) == "undefined") throw new Error("jsh undefined");
 		scope.$loader = p.$loader;
 		scope.$loader.classpath = new function() {
 			this.add = function(pathname) {
@@ -101,12 +106,13 @@ $set(new (function() {
 	};
 
 	this.mock = function(p) {
+		if (!p.global && p.jsh) p.global = { jsh: p.jsh }
 		var list = load({
 			plugins: (p.plugins) ? p.plugins : {},
 			toString: (p.toString) ? p.toString : function() { return "mock"; },
 			$loader: p.$loader,
 			mock: {
-				jsh: p.jsh
+				global: p.global
 			}
 		});
 		run(list);
