@@ -385,10 +385,10 @@ var Day = function() {
 		} else if (typeof(args.json) != "undefined") {
 			return new Day(args.json.year.value, args.json.month.index, args.json.day);
 		} else {
-			throw "Unknown arguments: " + Array.prototype.join.apply(arguments, [","]);
+			throw new Error("Unknown arguments: " + Array.prototype.join.apply(arguments, [","]));
 		}
 	} else {
-		throw "Unknown arguments: " + Array.prototype.join.apply(arguments, [","]);
+		throw new Error("Unknown arguments: " + Array.prototype.join.apply(arguments, [","]));
 	}
 
 	var toDate = function(offset) {
