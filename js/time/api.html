@@ -287,6 +287,13 @@ END LICENSE
 								<span class="type">__TYPE__</span>
 								<span>__DESCRIPTION__</span>
 							</div>
+							<script type="application/x.jsapi#tests">
+								var date = new api.Day(2019,1,15);
+								var after = date.addMonths(2);
+								verify(after).year.value.is(2019);
+								verify(after).month.id.is(api.Year.Month.MARCH);
+								verify(after).day.is(15);
+							</script>
 						</li>
 						<li class="function">
 							<div class="name">addYears</div>

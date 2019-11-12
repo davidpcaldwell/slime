@@ -59,7 +59,7 @@ var harmonize = function(y,m,d) {
 	}
 	while(new Date(y,m,d).getMonth() != m) {
 		d--;
-		if (d < 1) throw "Some problem here; " + y + "/" + m + "/" + d;
+		if (d < 1) throw new Error("Some problem here; " + y + "/" + m + "/" + d);
 	}
 	return new Date(y,m,d);
 }
@@ -407,7 +407,7 @@ var Day = function() {
 		var arg = arguments[0];
 		if (typeof(arg.year) != "undefined") {
 			year = Year.cast(arg.year);
-			month = MonthId.cast(arg.month);
+			month = new Month({ year: year, id: MonthId.cast(arg.month) });
 			day = Number(arg.day);
 		} else {
 			throw new Error("Unknown arguments: " + Array.prototype.join.apply(arguments, [","]));
@@ -420,7 +420,7 @@ var Day = function() {
 		if (typeof(offset) == "undefined") offset = 0;
 		var base = new Date(
 			year.value,
-			month.index-1,
+			month.id.index-1,
 			day,
 			0,
 			0,
@@ -433,7 +433,7 @@ var Day = function() {
 
 	//	TODO	Use getters on platforms supporting them
 	this.year = year;
-	this.month = ($context.old && $context.old.Day_month) ? month : new Month({ year: year, id: month });
+	this.month = ($context.old && $context.old.Day_month) ? month.id : month;
 	this.day = day;
 
 	this.weekday = WeekDayId.get(toDate().getDay());
@@ -444,12 +444,12 @@ var Day = function() {
 	}
 
 	this.addMonths = function(offset) {
-		var asDate = harmonize(this.year.value, this.month.index-1+offset, this.day);
+		var asDate = harmonize(this.year.value, month.id.index-1+offset, this.day);
 		return new Day({date: asDate});
 	}
 
 	this.addYears = function(offset) {
-		return new Day({date: harmonize(this.year.value+offset, this.month.index-1, this.day)});
+		return new Day({date: harmonize(this.year.value+offset, month.id.index-1, this.day)});
 	}
 
 	this.at = function(time) {
@@ -458,7 +458,7 @@ var Day = function() {
 
 	this.format = function(mask) {
 		var parser = new Parser();
-		addDayParserChecks(parser,year,month,day,toDate());
+		addDayParserChecks(parser,year,month.id,day,toDate());
 		return parser.format(mask);
 	}
 
