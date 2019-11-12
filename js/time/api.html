@@ -14,7 +14,7 @@ END LICENSE
 -->
 <html>
 <head>
-	<title>js/time Documentation</title>
+	<title>SLIME: time</title>
 	<link rel="stylesheet" type="text/css" href="../../loader/api/api.css" />
 	<script type="text/javascript" src="../../loader/api/api.js"></script>
 </head>
@@ -104,6 +104,36 @@ END LICENSE
 				scope.katemas = new api.Day(1958,7,30);
 			</script>
 			<li class="constructor">
+				<div class="name">Year</div>
+				<span>__DESCRIPTION__</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+					</ol>
+				</div>
+				<div class="type">
+					<a class="type" name="types.Year">Year</a>
+					<span>Represents a calendar year.</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="value">
+							<div class="name">value</div>
+							<span class="type">number</span>
+							<span>__DESCRIPTION__</span>
+						</li>
+					</ul>
+				</div>
+				<div class="instances">
+					<div class="label">Instances</div>
+					<span class="type"><a href="#types.Year">Year</a></span>
+					<span>__DESCRIPTION__</span>
+				</div>
+				<script type="application/x.jsapi#tests">
+					var nineteen = new api.Year(2019);
+					verify(nineteen).value.is(2019);
+				</script>
+			</li>
+			<li class="constructor">
 				<div class="name">Day</div>
 				<span>__DESCRIPTION__</span>
 				<div class="arguments">
@@ -134,7 +164,7 @@ END LICENSE
 							<span class="type">__TYPE__</span>
 							<span>__DESCRIPTION__</span>
 							<script type="application/x.jsapi#tests">
-								verify(katemas).year.value.is.type("number");
+								verify(katemas).year.value.is(1958);
 							</script>
 						</li>
 						<li class="value">
