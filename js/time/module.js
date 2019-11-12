@@ -79,7 +79,7 @@ Year.cast = function(args) {
 	if (args.constructor == Year) {
 		return args;
 	} else {
-		throw "Not Year: " + args;
+		throw new TypeError("Not Year: " + args);
 	}
 }
 
@@ -98,7 +98,7 @@ MonthId.cast = function(object) {
 	if (object.constructor == MonthId) {
 		return object;
 	} else {
-		throw "Not MonthId: " + object;
+		throw new TypeError("Not MonthId: " + object);
 	}
 }
 var months = ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"];
@@ -378,21 +378,27 @@ var Day = function() {
 			day: arguments[2]
 		});
 	}
+
+	if (typeof(arguments[0]) == "object" && arguments[0] && typeof(arguments[0].date) == "object") {
+		var arg = arguments[0];
+		return new Day(
+			arg.date.getFullYear(),
+			arg.date.getMonth()+1,
+			arg.date.getDate()
+		);
+	}
+
+	if (typeof(arguments[0]) == "object" && arguments[0] && typeof(arguments[0].json) == "object") {
+		var arg = arguments[0];
+		return new Day(arg.json.year.value, arg.json.month.index, arg.json.day);
+	}
 	
 	if (arguments.length == 1) {
-		var args = arguments[0];
-		if (typeof(args.year) != "undefined") {
-			year = Year.cast(args.year);
-			month = MonthId.cast(args.month);
-			day = Number(args.day);
-		} else if (typeof(args.date) != "undefined") {
-			return new Day(
-				args.date.getFullYear(),
-				args.date.getMonth()+1,
-				args.date.getDate()
-			);
-		} else if (typeof(args.json) != "undefined") {
-			return new Day(args.json.year.value, args.json.month.index, args.json.day);
+		var arg = arguments[0];
+		if (typeof(arg.year) != "undefined") {
+			year = Year.cast(arg.year);
+			month = MonthId.cast(arg.month);
+			day = Number(arg.day);
 		} else {
 			throw new Error("Unknown arguments: " + Array.prototype.join.apply(arguments, [","]));
 		}
