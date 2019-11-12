@@ -366,16 +366,20 @@ var Day = function() {
 	var day;
 
 	if (typeof(arguments[0]) == "number" && arguments.length == 3) {
-		var asDate = new Date(arguments[0], arguments[1]-1, arguments[2]);
-		if (asDate.getFullYear() != arguments[0] || asDate.getMonth() != (arguments[1]-1) || asDate.getDate() != arguments[2]) {
-			throw new Error("Invalid date arguments: " + Array.prototype.join.apply(arguments, [","]));
-		}
+		(function checkArguments() {
+			var asDate = new Date(arguments[0], arguments[1]-1, arguments[2]);
+			if (asDate.getFullYear() != arguments[0] || asDate.getMonth() != (arguments[1]-1) || asDate.getDate() != arguments[2]) {
+				throw new Error("Invalid date arguments: " + Array.prototype.join.apply(arguments, [","]));
+			}	
+		}).apply(this,arguments);
 		return new Day({
 			year: new Year(arguments[0]),
 			month: MonthId.get(arguments[1]),
 			day: arguments[2]
 		});
-	} else if (arguments.length == 1) {
+	}
+	
+	if (arguments.length == 1) {
 		var args = arguments[0];
 		if (typeof(args.year) != "undefined") {
 			year = Year.cast(args.year);
