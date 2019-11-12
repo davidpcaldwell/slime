@@ -153,7 +153,9 @@ var days = [
 	new WeekDayId("SATURDAY", 6, 2, 3, "A")
 ];
 
-var Month = function(args) {
+var Month = function(p) {
+	this.year = p.year;
+	this.id = p.id;
 }
 
 var Parser = function() {
@@ -408,7 +410,7 @@ var Day = function() {
 
 	//	TODO	Use getters on platforms supporting them
 	this.year = year;
-	this.month = month;
+	this.month = ($context.old && $context.old.Day_month) ? month : new Month({ year: year, id: month });
 	this.day = day;
 
 	this.weekday = WeekDayId.get(toDate().getDay());

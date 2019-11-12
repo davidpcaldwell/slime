@@ -24,11 +24,25 @@ END LICENSE
 	</div>
 	<script type="application/x.jsapi#initialize">
 		//	TODO	better way to detect Java
+		var old = {
+			Day_month: true
+		};
 		try {
 			var isJava = Packages;
-			scope.module = $jsapi.loader.module("module.js", $jsapi.loader.file("context.java.js"));
+			scope.module = $jsapi.loader.module(
+				"module.js", 
+				Object.assign(
+					$jsapi.loader.file("context.java.js"), 
+					{ old: old }
+				)
+			);
+			scope.api = $jsapi.loader.module(
+				"module.js",
+				$jsapi.loader.file("context.java.js")
+			);
 		} catch (e) {
-			scope.module = $jsapi.loader.module("module.js");
+			scope.module = $jsapi.loader.module("module.js", { old: old });
+			scope.api = $jsapi.loader.module("module.js");
 		}
 		scope.module.install();
 	</script>
@@ -79,6 +93,16 @@ END LICENSE
 			</ul>
 		</div>
 		<ul>
+			<script type="application/x.jsapi#initialize">
+				scope.Day = module.Day;
+
+				scope.leapday = new scope.Day(2008,2,29);
+
+				scope.leap09 = scope.leapday.addYears(1);
+
+				scope.oldmas = new module.Day(1958,7,30);
+				scope.katemas = new api.Day(1958,7,30);
+			</script>
 			<li class="constructor">
 				<div class="name">Day</div>
 				<span>__DESCRIPTION__</span>
@@ -109,11 +133,21 @@ END LICENSE
 							<div class="name">year</div>
 							<span class="type">__TYPE__</span>
 							<span>__DESCRIPTION__</span>
+							<script type="application/x.jsapi#tests">
+								verify(katemas).year.value.is.type("number");
+							</script>
 						</li>
 						<li class="value">
 							<div class="name">month</div>
 							<span class="type">__TYPE__</span>
 							<span>__DESCRIPTION__</span>
+							<script type="application/x.jsapi#tests">
+								verify(katemas).month.year.value.is(1958);
+								verify(katemas).month.id.is(api.Year.Month.JULY);
+								var value = oldmas.month;
+								debugger;
+								verify(oldmas).month.is(module.Year.Month.JULY);
+							</script>
 						</li>
 						<li class="value">
 							<div class="name">day</div>
@@ -242,13 +276,6 @@ END LICENSE
 						</li>
 					</ul>
 				</div>
-				<script type="application/x.jsapi#initialize">
-					scope.Day = module.Day;
-
-					scope.leapday = new scope.Day(2008,2,29);
-
-					scope.leap09 = scope.leapday.addYears(1);
-				</script>
 				<script type="application/x.jsapi#tests">
 					module.install();
 					var Day = module.Day;
