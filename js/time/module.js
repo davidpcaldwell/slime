@@ -112,6 +112,16 @@ var Month = function(p) {
 	}
 	this.year = p.year;
 	this.id = p.id;
+
+	this.day = function(p) {
+		if (typeof(p) == "number") {
+			return new Day({
+				year: this.year,
+				month: this.id,
+				day: p
+			});
+		}
+	}
 }
 
 var Week = function() {

@@ -164,6 +164,29 @@ END LICENSE
 							<span class="type">__TYPE__</span>
 							<span>__DESCRIPTION__</span>
 						</li>
+						<li class="function">
+							<div class="name">day</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="value">
+										<span class="type">number</span>
+										<span>A day of the month.</span>
+									</li>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">Day</span>
+							</div>
+							<script type="application/x.jsapi#tests">
+								var novemberSecondNineteen = new api.Month(2019,11).day(2);
+								verify(novemberSecondNineteen).year.value.is(2019);
+								verify(novemberSecondNineteen).month.id.is(api.Year.Month.NOVEMBER);
+								verify(novemberSecondNineteen).day.is(2);
+							</script>
+						</li>
 					</ul>
 				</div>
 				<div class="instances">
@@ -175,6 +198,11 @@ END LICENSE
 					var novemberNineteen = new api.Month(2019,11);
 					verify(novemberNineteen).year.value.is(2019);
 					verify(novemberNineteen).id.is(api.Year.Month.NOVEMBER);
+
+					var second = novemberNineteen.day(2);
+					verify(second).year.value.is(2019);
+					verify(second).month.id.is(api.Year.Month.NOVEMBER);
+					verify(second).day.is(2);
 				</script>
 			</li>
 			<li class="constructor">
