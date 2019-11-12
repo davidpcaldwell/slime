@@ -576,7 +576,8 @@ Day.today = function() {
 Day.codec = {};
 Day.codec.js = new function() {
 	this.encode = function(o) {
-		return { year: o.year.value, month: o.month.index, day: o.day };
+		var month = (o.month.id) ? o.month.id.index : o.month.index;
+		return { year: o.year.value, month: month, day: o.day };
 	}
 
 	this.decode = function(o) {
@@ -593,7 +594,8 @@ Day.codec.json = new function() {
 	}
 
 	this.decode = function(o) {
-		return new Day(o.year.value,o.month.index,o.day);
+		var month = (o.month.id) ? o.month.id.index : o.month.index;
+		return new Day(o.year.value,month,o.day);
 	}
 }
 Day.codec.iso8601 = new function() {
@@ -652,7 +654,7 @@ var Time = function() {
 		if (!zone) zone = zones.local;
 		var unix = zone.unix({
 			year: day.year.value,
-			month: day.month.index,
+			month: (day.month.id) ? day.month.id.index : day.month.index,
 			day: day.day,
 			hour: time.hours,
 			minute: time.minutes,
@@ -663,7 +665,8 @@ var Time = function() {
 
 	this.format = function(mask) {
 		var parser = new Parser();
-		addDayParserChecks(parser,this.day.year,this.day.month,this.day.day,ToDate(this.day));
+		var monthId = (this.day.month.id) ? this.day.month.id : this.day.month;
+		addDayParserChecks(parser,this.day.year,monthId,this.day.day,ToDate(this.day));
 		addTimeParserChecks(parser,this.time.hours,this.time.minutes,this.time.seconds);
 		return parser.format(mask);
 	}
