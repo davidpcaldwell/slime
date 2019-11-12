@@ -273,6 +273,19 @@ END LICENSE
 								<span class="type">__TYPE__</span>
 								<span>__DESCRIPTION__</span>
 							</div>
+							<script type="application/x.jsapi#tests">
+								var day = new api.Day(2019,11,1);
+								var before = day.add(-1);
+								var after = day.add(1);
+								
+								verify(before).year.value.is(2019);
+								verify(before).month.id.is(api.Year.Month.OCTOBER);
+								verify(before).day.is(31);
+
+								verify(after).year.value.is(2019);
+								verify(after).month.id.is(api.Year.Month.NOVEMBER);
+								verify(after).day.is(2);
+							</script>
 						</li>
 						<li class="function">
 							<div class="name">addMonths</div>
@@ -350,6 +363,15 @@ END LICENSE
 								<span class="type">__TYPE__</span>
 								<span>__DESCRIPTION__</span>
 							</div>
+							<script type="application/x.jsapi#tests">
+								var day = new api.Day(2019,11,2);
+								var before = day.add(-1);
+								var after = day.add(1);
+
+								verify(day).isBefore(before).is(false);
+								verify(day).isBefore(after).is(true);
+								verify(day).isBefore(day).is(false);
+							</script>
 						</li>
 						<li class="function">
 							<div class="name">isAfter</div>
