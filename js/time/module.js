@@ -106,6 +106,14 @@ months.forEach( function(name,index) {
 	new MonthId(name,index+1);
 });
 
+var Month = function(p) {
+	if (arguments.length == 2 && typeof(arguments[0]) == "number" && typeof(arguments[1]) == "number") {
+		return new Month({ year: new Year(arguments[0]), id: MonthId.get(arguments[1]) });
+	}
+	this.year = p.year;
+	this.id = p.id;
+}
+
 var Week = function() {
 }
 Week.Day = {};
@@ -152,11 +160,6 @@ var days = [
 	new WeekDayId("FRIDAY", 5, 1, 3),
 	new WeekDayId("SATURDAY", 6, 2, 3, "A")
 ];
-
-var Month = function(p) {
-	this.year = p.year;
-	this.id = p.id;
-}
 
 var Parser = function() {
 	var checks = [];
@@ -805,7 +808,7 @@ var ToDate = function() {
 
 $exports.Year = Year;
 //$exports.Year = {Month: Year.Month};
-//exports.Month = Month;
+$exports.Month = Month;
 $exports.Day = Day;
 $exports.Day.order = order;
 $exports.Time = Time;

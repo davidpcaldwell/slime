@@ -134,6 +134,50 @@ END LICENSE
 				</script>
 			</li>
 			<li class="constructor">
+				<div class="name">Month</div>
+				<span>__DESCRIPTION__</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="value">
+							<span class="type">number</span>
+							<span>A year.</span>
+						</li>
+						<li class="value">
+							<span class="type">number</span>
+							<span>A month, where 1 = January</span>
+						</li>
+					</ol>
+				</div>
+				<div class="type">
+					<a class="type" name="types.Month">Month</a>
+					<span>__DESCRIPTION__</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="value">
+							<div class="name">year</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</li>
+						<li class="value">
+							<div class="name">id</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</li>
+					</ul>
+				</div>
+				<div class="instances">
+					<div class="label">Instances</div>
+					<span class="type">__TYPE__</span>
+					<span>__DESCRIPTION__</span>
+				</div>
+				<script type="application/x.jsapi#tests">
+					var novemberNineteen = new api.Month(2019,11);
+					verify(novemberNineteen).year.value.is(2019);
+					verify(novemberNineteen).id.is(api.Year.Month.NOVEMBER);
+				</script>
+			</li>
+			<li class="constructor">
 				<div class="name">Day</div>
 				<span>__DESCRIPTION__</span>
 				<div class="arguments">
@@ -175,7 +219,6 @@ END LICENSE
 								verify(katemas).month.year.value.is(1958);
 								verify(katemas).month.id.is(api.Year.Month.JULY);
 								var value = oldmas.month;
-								debugger;
 								verify(oldmas).month.is(module.Year.Month.JULY);
 							</script>
 						</li>
@@ -669,9 +712,7 @@ END LICENSE
 				<script type="application/x.jsapi#tests">
 					var string = "2011-01-01T00:00:00Z";
 					var when = module.When.codec.rfc3339.decode(string);
-					debugger;
 					var translated = when.local(module.Time.Zone.UTC).format("yyyy-mm-dd HR:mi:sc");
-					debugger;
 					test(translated == "2011-01-01 00:00:00");
 				</script>
 			</li>
