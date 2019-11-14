@@ -14,9 +14,33 @@ Packages.java.lang.System.setProperty("sun.net.http.allowRestrictedHeaders", "tr
 (function($context) {
 	$context.property("api").require();
 	$context.property("api","js").require();
-	$context.property("api","io").require();
+	$context.property("api","js").require();
+	$context.property("api","java").require();
 	$context.property("api","web").require();
 })($api.Value($context,"$context"));
+
+var allowMethods = function() {
+	var methodsField = $context.api.java.toNativeClass(Packages.java.net.HttpURLConnection).getDeclaredField("methods");
+
+	var modifiersField = $context.api.java.toNativeClass(Packages.java.lang.reflect.Field).getDeclaredField("modifiers");
+	modifiersField.setAccessible(true);
+	modifiersField.setInt(methodsField, methodsField.getModifiers() & ~Packages.java.lang.reflect.Modifier.FINAL);
+
+	methodsField.setAccessible(true);
+
+	var oldMethods = $context.api.java.Array.adapt(methodsField.get(null));
+	var newMethods = oldMethods.concat(Array.prototype.slice.call(arguments));
+	
+	methodsField.set(
+		null, 
+		$context.api.java.Array.create({
+			type: Packages.java.lang.String, 
+			array: newMethods.map(function(s) { return new Packages.java.lang.String(s); })
+		})
+	);
+};
+
+allowMethods("PATCH");
 
 //	TODO	Pretty much all this does currently is log "Requesting:" followed by the URL being requested; should document and make
 //			this much more advanced; probably should configure at instance level, not module level

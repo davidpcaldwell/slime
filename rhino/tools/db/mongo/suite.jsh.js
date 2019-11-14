@@ -39,7 +39,7 @@ var environment = {
 
 var suite = new jsh.unit.Suite({
 	parts: {
-		api: new jsh.unit.part.Html({
+		api: new jsh.unit.html.Part({
 			name: "api",
 			pathname: jsh.script.file.parent.getRelativePath("api.html"),
 			environment: environment

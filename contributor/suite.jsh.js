@@ -191,7 +191,7 @@ suite.add("tools", {
 					}
 				}
 
-				this.suite = new jsh.unit.part.Html({
+				this.suite = new jsh.unit.html.Part({
 					pathname: jsh.shell.jsh.src.getRelativePath("loader/browser/test/suite.jsh.api.html")
 				});
 			}

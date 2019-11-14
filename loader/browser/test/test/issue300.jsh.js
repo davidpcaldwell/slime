@@ -4,7 +4,7 @@ var parameters = jsh.script.getopts({
 	}
 });
 
-var suite = new jsh.unit.Suite(new jsh.unit.part.Html({
+var suite = new jsh.unit.Suite(new jsh.unit.html.Part({
 	pathname: jsh.script.file.parent.parent.getRelativePath("suite.jsh.api.html")
 }));
 

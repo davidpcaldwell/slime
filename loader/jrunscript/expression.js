@@ -287,7 +287,7 @@
 			// cache length and modified
 			if (p.hasOwnProperty("length")) {
 				Object.defineProperty(this,"length",{
-					get: loader.$api.Function.singleton(function() {
+					get: loader.$api.Function.memoized(function() {
 						if (typeof(p.length) == "number") {
 							return p.length;
 						} else if (typeof(p.length) == "undefined" && binary) {
@@ -317,7 +317,7 @@
 		//	}
 			if (p.hasOwnProperty("modified")) {
 				Object.defineProperty(this,"modified",{
-					get: loader.$api.Function.singleton(function() {
+					get: loader.$api.Function.memoized(function() {
 						return p.modified;
 					}),
 					enumerable: true

@@ -14,7 +14,7 @@ END LICENSE
 -->
 <html>
 <head>
-	<title>js/time Documentation</title>
+	<title>SLIME: time</title>
 	<link rel="stylesheet" type="text/css" href="../../loader/api/api.css" />
 	<script type="text/javascript" src="../../loader/api/api.js"></script>
 </head>
@@ -24,11 +24,25 @@ END LICENSE
 	</div>
 	<script type="application/x.jsapi#initialize">
 		//	TODO	better way to detect Java
+		var old = {
+			Day_month: true
+		};
 		try {
 			var isJava = Packages;
-			scope.module = $jsapi.loader.module("module.js", $jsapi.loader.file("context.java.js"));
+			scope.module = $jsapi.loader.module(
+				"module.js", 
+				Object.assign(
+					$jsapi.loader.file("context.java.js"), 
+					{ old: old }
+				)
+			);
+			scope.api = $jsapi.loader.module(
+				"module.js",
+				$jsapi.loader.file("context.java.js")
+			);
 		} catch (e) {
-			scope.module = $jsapi.loader.module("module.js");
+			scope.module = $jsapi.loader.module("module.js", { old: old });
+			scope.api = $jsapi.loader.module("module.js");
 		}
 		scope.module.install();
 	</script>
@@ -79,6 +93,118 @@ END LICENSE
 			</ul>
 		</div>
 		<ul>
+			<script type="application/x.jsapi#initialize">
+				scope.Day = module.Day;
+
+				scope.leapday = new scope.Day(2008,2,29);
+
+				scope.leap09 = scope.leapday.addYears(1);
+
+				scope.oldmas = new module.Day(1958,7,30);
+				scope.katemas = new api.Day(1958,7,30);
+			</script>
+			<li class="constructor">
+				<div class="name">Year</div>
+				<span>__DESCRIPTION__</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+					</ol>
+				</div>
+				<div class="type">
+					<a class="type" name="types.Year">Year</a>
+					<span>Represents a calendar year.</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="value">
+							<div class="name">value</div>
+							<span class="type">number</span>
+							<span>__DESCRIPTION__</span>
+						</li>
+					</ul>
+				</div>
+				<div class="instances">
+					<div class="label">Instances</div>
+					<span class="type"><a href="#types.Year">Year</a></span>
+					<span>__DESCRIPTION__</span>
+				</div>
+				<script type="application/x.jsapi#tests">
+					var nineteen = new api.Year(2019);
+					verify(nineteen).value.is(2019);
+				</script>
+			</li>
+			<li class="constructor">
+				<div class="name">Month</div>
+				<span>__DESCRIPTION__</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="value">
+							<span class="type">number</span>
+							<span>A year.</span>
+						</li>
+						<li class="value">
+							<span class="type">number</span>
+							<span>A month, where 1 = January</span>
+						</li>
+					</ol>
+				</div>
+				<div class="type">
+					<a class="type" name="types.Month">Month</a>
+					<span>__DESCRIPTION__</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="value">
+							<div class="name">year</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</li>
+						<li class="value">
+							<div class="name">id</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</li>
+						<li class="function">
+							<div class="name">day</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="value">
+										<span class="type">number</span>
+										<span>A day of the month.</span>
+									</li>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">Day</span>
+							</div>
+							<script type="application/x.jsapi#tests">
+								var novemberSecondNineteen = new api.Month(2019,11).day(2);
+								verify(novemberSecondNineteen).year.value.is(2019);
+								verify(novemberSecondNineteen).month.id.is(api.Year.Month.NOVEMBER);
+								verify(novemberSecondNineteen).day.is(2);
+							</script>
+						</li>
+					</ul>
+				</div>
+				<div class="instances">
+					<div class="label">Instances</div>
+					<span class="type">__TYPE__</span>
+					<span>__DESCRIPTION__</span>
+				</div>
+				<script type="application/x.jsapi#tests">
+					var novemberNineteen = new api.Month(2019,11);
+					verify(novemberNineteen).year.value.is(2019);
+					verify(novemberNineteen).id.is(api.Year.Month.NOVEMBER);
+
+					var second = novemberNineteen.day(2);
+					verify(second).year.value.is(2019);
+					verify(second).month.id.is(api.Year.Month.NOVEMBER);
+					verify(second).day.is(2);
+				</script>
+			</li>
 			<li class="constructor">
 				<div class="name">Day</div>
 				<span>__DESCRIPTION__</span>
@@ -109,11 +235,20 @@ END LICENSE
 							<div class="name">year</div>
 							<span class="type">__TYPE__</span>
 							<span>__DESCRIPTION__</span>
+							<script type="application/x.jsapi#tests">
+								verify(katemas).year.value.is(1958);
+							</script>
 						</li>
 						<li class="value">
 							<div class="name">month</div>
 							<span class="type">__TYPE__</span>
 							<span>__DESCRIPTION__</span>
+							<script type="application/x.jsapi#tests">
+								verify(katemas).month.year.value.is(1958);
+								verify(katemas).month.id.is(api.Year.Month.JULY);
+								var value = oldmas.month;
+								verify(oldmas).month.is(module.Year.Month.JULY);
+							</script>
 						</li>
 						<li class="value">
 							<div class="name">day</div>
@@ -138,6 +273,19 @@ END LICENSE
 								<span class="type">__TYPE__</span>
 								<span>__DESCRIPTION__</span>
 							</div>
+							<script type="application/x.jsapi#tests">
+								var day = new api.Day(2019,11,1);
+								var before = day.add(-1);
+								var after = day.add(1);
+								
+								verify(before).year.value.is(2019);
+								verify(before).month.id.is(api.Year.Month.OCTOBER);
+								verify(before).day.is(31);
+
+								verify(after).year.value.is(2019);
+								verify(after).month.id.is(api.Year.Month.NOVEMBER);
+								verify(after).day.is(2);
+							</script>
 						</li>
 						<li class="function">
 							<div class="name">addMonths</div>
@@ -152,6 +300,13 @@ END LICENSE
 								<span class="type">__TYPE__</span>
 								<span>__DESCRIPTION__</span>
 							</div>
+							<script type="application/x.jsapi#tests">
+								var date = new api.Day(2019,1,15);
+								var after = date.addMonths(2);
+								verify(after).year.value.is(2019);
+								verify(after).month.id.is(api.Year.Month.MARCH);
+								verify(after).day.is(15);
+							</script>
 						</li>
 						<li class="function">
 							<div class="name">addYears</div>
@@ -208,6 +363,15 @@ END LICENSE
 								<span class="type">__TYPE__</span>
 								<span>__DESCRIPTION__</span>
 							</div>
+							<script type="application/x.jsapi#tests">
+								var day = new api.Day(2019,11,2);
+								var before = day.add(-1);
+								var after = day.add(1);
+
+								verify(day).isBefore(before).is(false);
+								verify(day).isBefore(after).is(true);
+								verify(day).isBefore(day).is(false);
+							</script>
 						</li>
 						<li class="function">
 							<div class="name">isAfter</div>
@@ -242,13 +406,6 @@ END LICENSE
 						</li>
 					</ul>
 				</div>
-				<script type="application/x.jsapi#initialize">
-					scope.Day = module.Day;
-
-					scope.leapday = new scope.Day(2008,2,29);
-
-					scope.leap09 = scope.leapday.addYears(1);
-				</script>
 				<script type="application/x.jsapi#tests">
 					module.install();
 					var Day = module.Day;
@@ -612,9 +769,7 @@ END LICENSE
 				<script type="application/x.jsapi#tests">
 					var string = "2011-01-01T00:00:00Z";
 					var when = module.When.codec.rfc3339.decode(string);
-					debugger;
 					var translated = when.local(module.Time.Zone.UTC).format("yyyy-mm-dd HR:mi:sc");
-					debugger;
 					test(translated == "2011-01-01 00:00:00");
 				</script>
 			</li>

@@ -57,7 +57,9 @@ END LICENSE
 								</li>
 								<li class="object">
 									<div class="name">admin</div>
-									<span>__DESCRIPTION__</span>
+									<span>
+										(optional) credentials for an administrative user, to support advanced operations
+									</span>
 									<div class="label">has properties:</div>
 									<ul>
 										<li class="value">
@@ -167,6 +169,19 @@ END LICENSE
 
 			</script>
 		</div>
+	</div>
+	<div jsapi:id="credentials">
+		<script type="application/x.jsapi#initialize"><![CDATA[
+			var credentials = (function() {
+				if ($jsapi.environment.server.user && $jsapi.environment.server.password) return $jsapi.environment.server;
+				if ($jsapi.environment.server.admin) return $jsapi.environment.server.admin;
+			})();
+			scope.database = new api.Database(credentials);
+		]]></script>
+		<script type="application/x.jsapi#tests">
+			verify(database).evaluate.property("getCatalog").is.type("function");
+			verify(database).evaluate.property("createCatalog").is.type("undefined");
+		</script>
 	</div>
 </body>
 </html>

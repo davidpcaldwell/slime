@@ -14,12 +14,12 @@ END LICENSE
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
 <head>
-	<title>rhino/ip</title>
+	<title>SLIME: IP (jrunscript)</title>
 	<link rel="stylesheet" type="text/css" href="../../loader/api/api.css" />
 	<script src="../../loader/api/api.js"></script>
 </head>
 <body>
-	<div>__DESCRIPTION__</div>
+	<div>Provides networking-related constructs.</div>
 	<div>
 		<h1>Context</h1>
 		<ul>
@@ -70,6 +70,13 @@ END LICENSE
 										var host = new jsh.ip.Host({ name: "127.0.0.1" });
 										verify(host).isReachable().is(true);
 									}
+									(function() {
+										//	Example IP address; see RFC 5737, apparently
+										//	https://superuser.com/a/698392
+										//	TODO	decrease timeout for this
+										var host = new jsh.ip.Host({ name: "192.0.2.1" });
+										verify(host).isReachable({ timeout: 1 }).is(false);
+									})();
 								}
 							</script>
 						</li>

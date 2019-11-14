@@ -27,375 +27,7 @@ END LICENSE
 		</div>
 		<div>(<a href="api.html">Older, semi-obsolete documentation</a>)</div>
 		<div>
-			<h1>Context</h1>
-			<ul>
-			</ul>
-		</div>
-		<div>
 			<h1>Exports</h1>
-			<div>
-				<h2><code>jsh.unit.part</code></h2>
-				<div class="label">has properties:</div>
-				<ul>
-					<li class="constructor">
-						<div class="name">Html</div>
-						<span>Creates a SLIME test part which executes the page, with the following added to the scope:</span>
-						<div>
-							<div class="label">has properties:</div>
-							<ul>
-								<li class="object">
-									<!--	This stuff is defined in html.js	-->
-									<div class="name">$jsapi</div>
-									<span>__DESCRIPTION__</span>
-									<div class="label">has properties:</div>
-									<ul>
-										<li class="value">
-											<div class="name">environment</div>
-											<span class="type">object</span>
-											<span>
-												See the <code>environment</code> property of the argument to
-												<code>jsh.unit.part.Html</code>.
-											</span>
-										</li>
-										<li class="object">
-											<div class="name">loader</div>
-											<span>
-												In addition to the <a href="../../loader/api/api.html">standard properties</a>, the
-												object supports the following interface:
-											</span>
-											<div class="label">has properties:</div>
-											<ul>
-												<li class="function">
-													<div class="name">run</div>
-													<span>__DESCRIPTION__</span>
-													<div class="arguments">
-														<div class="label">Arguments</div>
-														<ol>
-														</ol>
-													</div>
-													<div class="returns">
-														<div class="label">Returns</div>
-														<span class="type">__TYPE__</span>
-														<span>__DESCRIPTION__</span>
-													</div>
-												</li>
-												<li class="function">
-													<div class="name">get</div>
-													<span>__DESCRIPTION__</span>
-													<div class="arguments">
-														<div class="label">Arguments</div>
-														<ol>
-														</ol>
-													</div>
-													<div class="returns">
-														<div class="label">Returns</div>
-														<span class="type">__TYPE__</span>
-														<span>__DESCRIPTION__</span>
-													</div>
-												</li>
-												<li class="function">
-													<div class="name">plugins</div>
-													<span>__DESCRIPTION__</span>
-													<div class="arguments">
-														<div class="label">Arguments</div>
-														<ol>
-															<li class="value">
-																<span class="type">string</span>
-																<span>
-																	(optional; defaults to the location of the current page)
-																	A path relative to the definition page from which to load plugins.
-																</span>
-															</li>
-														</ol>
-													</div>
-												</li>
-												<li class="object">
-													<div class="name">plugin</div>
-													<span>__DESCRIPTION__</span>
-													<div class="label">has properties:</div>
-													<ul>
-														<li class="function">
-															<div class="name">mock</div>
-															<span>A function allowing <code>jsh</code> plugins to be loaded into a container other than the executing shell.</span>
-															<div class="arguments">
-																<div class="label">Arguments</div>
-																<ol>
-																	<li class="object">
-																		<div class="label">has properties:</div>
-																		<ul>
-																			<li class="value">
-																				<div class="name">path</div>
-																				<span class="type">string</span>
-																				<span>
-																					(optional) The path, relative to the definition page, from which to load plugins.
-																				</span>
-																			</li>
-																			<li class="value">
-																				<div class="name">jsh</div>
-																				<span class="type">object</span>
-																				<span>A mock for the global <code>jsh</code> object.</span>
-																			</li>
-																			<li class="value">
-																				<div class="name">plugins</div>
-																				<span class="type">object</span>
-																				<span>
-																					(optional) The object to use as the <code><a href="../../jsh/loader/plugin.api.html">plugins</a></code> object
-																					when loading the plugins.
-																				</span>
-																			</li>
-																			<!-- TODO: Undocumented: toString -->
-																			<li class="function">
-																				<div class="name">evaluate</div>
-																				<span>A function specifying what is returned to the caller.</span>
-																				<div class="arguments">
-																					<div class="label">Arguments</div>
-																					<ol>
-																						<li class="object">
-																							<div class="label">has properties:</div>
-																							<ul>
-																								<li class="value">
-																									<div class="name">jsh</div>
-																									<span class="type"></span>
-																									<span>The mock <code>jsh</code> object after loading the plugins.</span>
-																								</li>
-																								<li class="value">
-																									<div class="name">plugins</div>
-																									<span class="type">__TYPE__</span>
-																									<span>The mock <code>plugins</code> object after loading the plugins.</span>
-																								</li>
-																							</ul>
-																						</li>
-																					</ol>
-																				</div>
-																				<div class="returns">
-																					<div class="label">Returns</div>
-																					<span class="type">(any)</span>
-																					<span>The return value to return to the caller of <code>mock</code>.</span>
-																				</div>
-																			</li>
-																		</ul>
-																	</li>
-																</ol>
-															</div>
-															<div class="returns">
-																<div class="label">Returns</div>
-																<span class="type">__TYPE__</span>
-																<span>__DESCRIPTION__</span>
-															</div>
-														</li>
-													</ul>
-												</li>
-												<li class="function">
-													<div class="name">suite</div>
-													<span>__DESCRIPTION__</span>
-													<div class="arguments">
-														<div class="label">Arguments</div>
-														<ol>
-														</ol>
-													</div>
-													<div class="returns">
-														<div class="label">Returns</div>
-														<span class="type">__TYPE__</span>
-														<span>__DESCRIPTION__</span>
-													</div>
-												</li>
-												<li class="function">
-													<div class="name">getRelativePath</div>
-													<span>__DESCRIPTION__</span>
-													<div class="arguments">
-														<div class="label">Arguments</div>
-														<ol>
-														</ol>
-													</div>
-													<div class="returns">
-														<div class="label">Returns</div>
-														<span class="type">__TYPE__</span>
-														<span>__DESCRIPTION__</span>
-													</div>
-												</li>
-											</ul>
-										</li>
-										<li class="object">
-											<div class="name">java</div>
-											<span>__DESCRIPTION__</span>
-											<div class="label">has properties:</div>
-											<ul>
-												<li class="value">
-													<div class="name">loader</div>
-													<span class="type">__TYPE__</span>
-													<span>__DESCRIPTION__</span>
-												</li>
-												<li class="object">
-													<div class="name">io</div>
-													<span>__DESCRIPTION__</span>
-													<div class="label">has properties:</div>
-													<ul>
-														<li class="function">
-															<div class="name">newTemporaryDirectory</div>
-															<span>
-																Returns a <code>java.io.File</code> representing a new, empty directory.
-															</span>
-															<div class="returns">
-																<div class="label">Returns</div>
-																<span class="type">JavaClass java.io.File</span>
-																<span>__DESCRIPTION__</span>
-															</div>
-														</li>
-													</ul>
-												</li>
-											</ul>
-										</li>
-										<li class="object">
-											<div class="name">debug</div>
-											<span>__DESCRIPTION__</span>
-											<div class="label">has properties:</div>
-											<ul>
-												<li class="function deprecated">
-													<div class="name">disableBreakOnExceptions</div>
-													<span>
-														<b>Deprecated. <i>Use <code>$api.debug.disableBreakOnExceptionsFor</code></i>.</b>
-														Returns a function that disables the debugger's break-on-exception behavior for the duration of the
-														function.
-													</span>
-													<div class="arguments">
-														<div class="label">Arguments</div>
-														<ol>
-															<li class="value">
-																<span class="type">function</span>
-																<span>A function</span>
-															</li>
-														</ol>
-													</div>
-													<div class="returns">
-														<div class="label">Returns</div>
-														<span class="type">function</span>
-														<span>A function with identical behavior, except it does not break on exceptions in the debugger.</span>
-													</div>
-												</li>
-											</ul>
-										</li>
-										<li class="object">
-											<div class="name">file</div>
-											<span>__DESCRIPTION__</span>
-											<div class="label">has properties:</div>
-											<ul>
-												<li class="deprecated function">
-													<div class="name">newTemporaryDirectory</div>
-													<span>
-														<b>Deprecated. <i>Use <code>jsh.shell.TMPDIR.createTemporary({ directory: true })</code></i>.</b>
-														Creates a temporary directory.
-													</span>
-													<div class="returns">
-														<div class="label">Returns</div>
-														<span class="type"><a href="../../rhino/file/api.html#types.directory">directory</a></span>
-														<span>A new temporary directory.</span>
-													</div>
-												</li>
-											</ul>
-										</li>
-									</ul>
-								</li>
-							</ul>
-						</div>
-						<div class="arguments">
-							<div class="label">Arguments</div>
-							<ol>
-								<li class="object">
-									<div class="name">__NAME__</div>
-									<span>__DESCRIPTION__</span>
-									<div class="label">has properties:</div>
-									<ul>
-										<li class="value">
-											<div class="name">name</div>
-											<span class="type">__TYPE__</span>
-											<span>__DESCRIPTION__</span>
-										</li>
-										<li class="value">
-											<div class="name">pathname</div>
-											<span class="type">__TYPE__</span>
-											<span>__DESCRIPTION__</span>
-										</li>
-										<li class="value">
-											<div class="name">environment</div>
-											<span class="type">object</span>
-											<span>
-												An object that will be available to the page as <code>$jsapi.environment</code>.
-											</span>
-										</li>
-										<li class="value">
-											<div class="name">reload</div>
-											<span class="type">boolean</span>
-											<span>
-												Defers parsing of this page until it is executed, converting the page into a
-												scenario rather than a suite. (Note that this removes the ability to run only
-												part of the suite.)
-											</span>
-										</li>
-									</ul>
-								</li>
-							</ol>
-						</div>
-						<div class="instances">
-							<div class="label">Instances</div>
-							<span class="type"><a href="../../loader/api/unit.api.html#types.definition">part definition</a></span>
-							<span>Instances get the following extra properties:</span>
-							<div class="label">has properties:</div>
-							<ul>
-								<li class="function">
-									<div class="name">getPath</div>
-									<span>__DESCRIPTION__</span>
-									<div class="arguments">
-										<div class="label">Arguments</div>
-										<ol>
-											<li class="value">
-												<span class="type">Array of string</span>
-												<span>
-													A list of <code>jsapi:id</code> values representing the path to a subsuite.
-												</span>
-											</li>
-										</ol>
-									</div>
-									<div class="returns">
-										<div class="label">Returns</div>
-										<span class="type">Array of string</span>
-										<span>
-											Returns a <i>path</i> to the subsuite suitable for use as the
-											<code>path</code> property in
-											<a href="../../loader/api/unit.api.html">Suite.run()</a>
-										</span>
-									</div>
-								</li>
-							</ul>
-						</div>
-						<script type="application/x.jsapi#initialize">
-							if (!$jsapi.environment.file) {
-								//	TODO	this is grotesque but probably will work for now
-								$jsapi.environment.file = jsh.shell.jsh.src.getFile("jsh/unit/plugin.jsh.api.html");
-							}
-						</script>
-						<script type="application/x.jsapi#tests">
-							var suite = new jsh.unit.Suite({
-								parts: {
-									reload: new jsh.unit.part.Html({
-										reload: true,
-										pathname: $jsapi.environment.file.parent.getRelativePath("test.api.html")
-									}),
-									static: new jsh.unit.part.Html({
-										pathname: $jsapi.environment.file.parent.getRelativePath("test.api.html")
-									})
-								}
-							});
-							verify(Object.keys(suite.parts)).length.is(2);
-							var staticPart = verify(suite).evaluate(function() { return this.parts.static; });
-							var reloadPart = verify(suite).evaluate(function() { return this.parts.reload; });
-							staticPart.is.type("object");
-							staticPart.evaluate(function() { return this.parts; }).is.type("object");
-							reloadPart.evaluate(function() { return this.parts; }).is.type("undefined");
-							verify(suite).run().is(true);
-						</script>
-					</li>
-				</ul>
-			</div>
 			<div>
 				<h2><code><a href="../../loader/api/unit.api.html#exports.Scenario">jsh.unit.Scenario</a></code></h2>
 				<div class="label">has properties:</div>
@@ -620,94 +252,425 @@ END LICENSE
 				</ul>
 			</div>
 			<div>
-				<h2><code>jsh.unit.interface</code></h2>
+				<h2><code>jsh.unit.html</code></h2>
 				<div class="label">has properties:</div>
 				<ul>
-					<li class="function">
-						<div class="name">create</div>
-						<span>__DESCRIPTION__</span>
-						<div class="arguments">
-							<div class="label">Arguments</div>
-							<ol>
-								<li class="value">
-									<span class="type">suite</span>
-									<span>__DESCRIPTION__</span>
-								</li>
+					<li class="constructor">
+						<div class="name">Part</div>
+						<span>Creates a SLIME test part which executes the page, with the following added to the scope:</span>
+						<h1>Scope for tests</h1>
+						<div>
+							<div class="label">has properties:</div>
+							<ul>
 								<li class="object">
+									<!--	This stuff is defined in html.js	-->
+									<div class="name">$jsapi</div>
+									<span>__DESCRIPTION__</span>
 									<div class="label">has properties:</div>
 									<ul>
 										<li class="value">
-											<div class="name">view</div>
-											<span class="type">string</span>
-											Possible values:
+											<div class="name">environment</div>
+											<span class="type">object</span>
+											<span>
+												See the <code>environment</code> property of the argument to
+												<code>Part</code>.
+											</span>
+										</li>
+										<li class="object">
+											<div class="name">loader</div>
+											<span>
+												In addition to the <a href="../../loader/api/api.html">standard properties</a>, the
+												object supports the following interface:
+											</span>
+											<div class="label">has properties:</div>
 											<ul>
-												<li><code>console</code>: Information about test results will be output to
-													the standard error stream.
+												<li class="function">
+													<div class="name">run</div>
+													<span>__DESCRIPTION__</span>
+													<div class="arguments">
+														<div class="label">Arguments</div>
+														<ol>
+														</ol>
+													</div>
+													<div class="returns">
+														<div class="label">Returns</div>
+														<span class="type">__TYPE__</span>
+														<span>__DESCRIPTION__</span>
+													</div>
 												</li>
-												<li><code>stdio</code>: Emits information about test results to the standard output
-													stream in a way that they can be processed by the standard events protocol; see
-													<code>jsh.unit.Suite.Fork</code>.
+												<li class="function">
+													<div class="name">get</div>
+													<span>__DESCRIPTION__</span>
+													<div class="arguments">
+														<div class="label">Arguments</div>
+														<ol>
+														</ol>
+													</div>
+													<div class="returns">
+														<div class="label">Returns</div>
+														<span class="type">__TYPE__</span>
+														<span>__DESCRIPTION__</span>
+													</div>
+												</li>
+												<li class="function">
+													<div class="name">plugins</div>
+													<span>__DESCRIPTION__</span>
+													<div class="arguments">
+														<div class="label">Arguments</div>
+														<ol>
+															<li class="value">
+																<span class="type">string</span>
+																<span>
+																	(optional; defaults to the location of the current page)
+																	A path relative to the definition page from which to load plugins.
+																</span>
+															</li>
+														</ol>
+													</div>
+												</li>
+												<li class="object">
+													<div class="name">plugin</div>
+													<span>__DESCRIPTION__</span>
+													<div class="label">has properties:</div>
+													<ul>
+														<li class="function">
+															<div class="name">mock</div>
+															<span>A function allowing <code>jsh</code> plugins to be loaded into a container other than the executing shell.</span>
+															<div class="arguments">
+																<div class="label">Arguments</div>
+																<ol>
+																	<li class="object">
+																		<div class="label">has properties:</div>
+																		<ul>
+																			<li class="value">
+																				<div class="name">path</div>
+																				<span class="type">string</span>
+																				<span>
+																					(optional) The path, relative to the definition page, from which to load plugins.
+																				</span>
+																			</li>
+																			<li class="value">
+																				<div class="name">global</div>
+																				<span class="type">object</span>
+																				<span>A mock for the global object.</span>
+																			</li>
+																			<li class="value">
+																				<div class="name">jsh</div>
+																				<span class="type">object</span>
+																				<span>A mock for the global <code>jsh</code> object.</span>
+																			</li>
+																			<li class="value">
+																				<div class="name">plugins</div>
+																				<span class="type">object</span>
+																				<span>
+																					(optional) The object to use as the <code><a href="../../jsh/loader/plugin.api.html">plugins</a></code> object
+																					when loading the plugins.
+																				</span>
+																			</li>
+																			<!-- TODO: Undocumented: toString -->
+																			<li class="function">
+																				<div class="name">evaluate</div>
+																				<span>A function specifying what is returned to the caller.</span>
+																				<div class="arguments">
+																					<div class="label">Arguments</div>
+																					<ol>
+																						<li class="object">
+																							<div class="label">has properties:</div>
+																							<ul>
+																								<li class="value">
+																									<div class="name">jsh</div>
+																									<span class="type"></span>
+																									<span>The mock <code>jsh</code> object after loading the plugins.</span>
+																								</li>
+																								<li class="value">
+																									<div class="name">plugins</div>
+																									<span class="type">__TYPE__</span>
+																									<span>The mock <code>plugins</code> object after loading the plugins.</span>
+																								</li>
+																							</ul>
+																						</li>
+																					</ol>
+																				</div>
+																				<div class="returns">
+																					<div class="label">Returns</div>
+																					<span class="type">(any)</span>
+																					<span>The return value to return to the caller of <code>mock</code>.</span>
+																				</div>
+																			</li>
+																		</ul>
+																	</li>
+																</ol>
+															</div>
+															<div class="returns">
+																<div class="label">Returns</div>
+																<span class="type">__TYPE__</span>
+																<span>__DESCRIPTION__</span>
+															</div>
+														</li>
+													</ul>
+												</li>
+												<li class="function">
+													<div class="name">suite</div>
+													<span>__DESCRIPTION__</span>
+													<div class="arguments">
+														<div class="label">Arguments</div>
+														<ol>
+														</ol>
+													</div>
+													<div class="returns">
+														<div class="label">Returns</div>
+														<span class="type">__TYPE__</span>
+														<span>__DESCRIPTION__</span>
+													</div>
+												</li>
+												<li class="function">
+													<div class="name">getRelativePath</div>
+													<span>__DESCRIPTION__</span>
+													<div class="arguments">
+														<div class="label">Arguments</div>
+														<ol>
+														</ol>
+													</div>
+													<div class="returns">
+														<div class="label">Returns</div>
+														<span class="type">__TYPE__</span>
+														<span>__DESCRIPTION__</span>
+													</div>
 												</li>
 											</ul>
 										</li>
+										<li class="object">
+											<div class="name">java</div>
+											<span>__DESCRIPTION__</span>
+											<div class="label">has properties:</div>
+											<ul>
+												<li class="value">
+													<div class="name">loader</div>
+													<span class="type">__TYPE__</span>
+													<span>__DESCRIPTION__</span>
+												</li>
+												<li class="object">
+													<div class="name">io</div>
+													<span>__DESCRIPTION__</span>
+													<div class="label">has properties:</div>
+													<ul>
+														<li class="function">
+															<div class="name">newTemporaryDirectory</div>
+															<span>
+																Returns a <code>java.io.File</code> representing a new, empty directory.
+															</span>
+															<div class="returns">
+																<div class="label">Returns</div>
+																<span class="type">JavaClass java.io.File</span>
+																<span>__DESCRIPTION__</span>
+															</div>
+														</li>
+													</ul>
+												</li>
+											</ul>
+										</li>
+										<li class="object">
+											<div class="name">debug</div>
+											<span>__DESCRIPTION__</span>
+											<div class="label">has properties:</div>
+											<ul>
+												<li class="function deprecated">
+													<div class="name">disableBreakOnExceptions</div>
+													<span>
+														<b>Deprecated. <i>Use <code>$api.debug.disableBreakOnExceptionsFor</code></i>.</b>
+														Returns a function that disables the debugger's break-on-exception behavior for the duration of the
+														function.
+													</span>
+													<div class="arguments">
+														<div class="label">Arguments</div>
+														<ol>
+															<li class="value">
+																<span class="type">function</span>
+																<span>A function</span>
+															</li>
+														</ol>
+													</div>
+													<div class="returns">
+														<div class="label">Returns</div>
+														<span class="type">function</span>
+														<span>A function with identical behavior, except it does not break on exceptions in the debugger.</span>
+													</div>
+												</li>
+											</ul>
+										</li>
+										<li class="object">
+											<div class="name">file</div>
+											<span>__DESCRIPTION__</span>
+											<div class="label">has properties:</div>
+											<ul>
+												<li class="deprecated function">
+													<div class="name">newTemporaryDirectory</div>
+													<span>
+														<b>Deprecated. <i>Use <code>jsh.shell.TMPDIR.createTemporary({ directory: true })</code></i>.</b>
+														Creates a temporary directory.
+													</span>
+													<div class="returns">
+														<div class="label">Returns</div>
+														<span class="type"><a href="../../rhino/file/api.html#types.directory">directory</a></span>
+														<span>A new temporary directory.</span>
+													</div>
+												</li>
+											</ul>
+										</li>
+									</ul>
+								</li>
+							</ul>
+						</div>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="object">
+									<span>__DESCRIPTION__</span>
+									<div class="label">has properties:</div>
+									<ul>
 										<li class="value">
-											<div class="name">path</div>
-											<span class="type">Array of string</span>
+											<div class="name">name</div>
+											<span class="type">string</span>
+											<span>A name to assign to this part.</span>
+										</li>
+										<li class="value">
+											<div class="name">pathname</div>
+											<span class="type">Pathname</span>
+											<span>The location of the HTML definition file.</span>
+										</li>
+										<li class="value">
+											<div class="name">environment</div>
+											<span class="type">object</span>
 											<span>
-												See <a href="../../loader/api/unit.api.html#types.Suite">Suite</a>.run() method.
+												An object that will be available to the page as <code>$jsapi.environment</code>.
+											</span>
+										</li>
+										<li class="value">
+											<div class="name">reload</div>
+											<span class="type">boolean</span>
+											<span>
+												Defers parsing of this page until it is executed, converting the page into a
+												scenario rather than a suite. (Note that this removes the ability to run only
+												part of the suite.)
 											</span>
 										</li>
 									</ul>
 								</li>
 							</ol>
 						</div>
+						<div class="instances">
+							<div class="label">Instances</div>
+							<span class="type"><a href="../../loader/api/unit.api.html#types.definition">part definition</a></span>
+							<span>Instances get the following extra properties:</span>
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="function">
+									<div class="name">getPath</div>
+									<span>__DESCRIPTION__</span>
+									<div class="arguments">
+										<div class="label">Arguments</div>
+										<ol>
+											<li class="value">
+												<span class="type">Array of string</span>
+												<span>
+													A list of <code>jsapi:id</code> values representing the path to a subsuite.
+												</span>
+											</li>
+										</ol>
+									</div>
+									<div class="returns">
+										<div class="label">Returns</div>
+										<span class="type">Array of string</span>
+										<span>
+											Returns a <i>path</i> to the subsuite suitable for use as the
+											<code>path</code> property in
+											<a href="../../loader/api/unit.api.html">Suite.run()</a>
+										</span>
+									</div>
+								</li>
+							</ul>
+						</div>
+						<script type="application/x.jsapi#initialize">
+							if (!$jsapi.environment.file) {
+								//	TODO	this is grotesque but probably will work for now
+								$jsapi.environment.file = jsh.shell.jsh.src.getFile("jsh/unit/plugin.jsh.api.html");
+							}
+						</script>
+						<script type="application/x.jsapi#tests">
+							var suite = new jsh.unit.Suite({
+								parts: {
+									reload: new jsh.unit.html.Part({
+										reload: true,
+										pathname: $jsapi.environment.file.parent.getRelativePath("test.api.html")
+									}),
+									static: new jsh.unit.html.Part({
+										pathname: $jsapi.environment.file.parent.getRelativePath("test.api.html")
+									})
+								}
+							});
+							verify(Object.keys(suite.parts)).length.is(2);
+							var staticPart = verify(suite).evaluate(function() { return this.parts.static; });
+							var reloadPart = verify(suite).evaluate(function() { return this.parts.reload; });
+							staticPart.is.type("object");
+							staticPart.evaluate(function() { return this.parts; }).is.type("object");
+							reloadPart.evaluate(function() { return this.parts; }).is.type("undefined");
+							verify(suite).run().is(true);
+						</script>
 					</li>
-				</ul>
-			</div>
-			<div>
-				<h2><code>jsh.unit.html</code></h2>
-				<div class="label">has properties:</div>
-				<ul>
 					<li class="constructor">
 						<div class="name">Suite</div>
 						<span>
-							Creates a test suite with additional methods for running portions of HTML definitions.
-							See <a href="../../loader/api/api.html">detailed documentation</a>.
+							The SLIME HTML-specific suite, providing additional capabilities when using HTML definition files.
+							See <a href="../../loader/api/api.html">service provider documentation</a>; caller documentation is
+							below.
 						</span>
+						<div class="instances">
+							<div class="label">Instances</div>
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="function">
+									<div class="name">add</div>
+									<span>
+										Takes a path and a part and adds that part to the suite. See
+										<a href="../../loader/api/api.html">detailed documentation</a>.
+									</span>
+								</li>
+							</ul>
+						</div>
 					</li>
 					<li class="function">
 						<div class="name">cli</div>
-						<span>__DESCRIPTION__</span>
+						<span>
+							Runs a suite given string arguments specifying the part of the suite to run and a
+							view implementation to use.
+						</span>
 						<div class="arguments">
 							<div class="label">Arguments</div>
 							<ol>
 								<li class="object">
-									<span>__DESCRIPTION__</span>
 									<div class="label">has properties:</div>
 									<ul>
 										<li class="value">
 											<div class="name">suite</div>
 											<span class="type"><a href="../../loader/api/api.html">jsh.unit.html.Suite</a></span>
-											<span>__DESCRIPTION__</span>
+											<span>A suite to run.</span>
 										</li>
 										<li class="value">
 											<div class="name">part</div>
 											<span class="type">string</span>
-											<span>__DESCRIPTION__</span>
+											<span>
+												A string which specifies the part of the suite to run; optionally, it may contain
+												a colon (<code>:</code>), followed by a path within an HTML part ro run.
+											</span>
 										</li>
 										<li class="value">
 											<div class="name">view</div>
 											<span class="type">string</span>
-											<span>__DESCRIPTION__</span>
+											<span>The view to use.</span>
 										</li>
 									</ul>
 								</li>
 							</ol>
-						</div>
-						<div class="returns">
-							<div class="label">Returns</div>
-							<span class="type">__TYPE__</span>
-							<span>__DESCRIPTION__</span>
 						</div>
 					</li>
 				</ul>
@@ -915,6 +878,61 @@ END LICENSE
 								<span>__DESCRIPTION__</span>
 							</li>
 						</ul>
+					</li>
+				</ul>
+			</div>
+			<div class="deprecated">
+				<h2><code>jsh.unit.part</code></h2>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="constructor">
+						<div class="name">Html</div>
+						<span>Use <code>jsh.unit.html.Part</code>.</span>
+					</li>
+				</ul>
+			</div>
+			<div class="deprecated">
+				<h2><code>jsh.unit.interface</code></h2>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="function">
+						<div class="name">create</div>
+						<span>__DESCRIPTION__</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="value">
+									<span class="type">suite</span>
+									<span>__DESCRIPTION__</span>
+								</li>
+								<li class="object">
+									<div class="label">has properties:</div>
+									<ul>
+										<li class="value">
+											<div class="name">view</div>
+											<span class="type">string</span>
+											Possible values:
+											<ul>
+												<li><code>console</code>: Information about test results will be output to
+													the standard error stream.
+												</li>
+												<li><code>stdio</code>: Emits information about test results to the standard output
+													stream in a way that they can be processed by the standard events protocol; see
+													<code>jsh.unit.Suite.Fork</code>.
+												</li>
+											</ul>
+										</li>
+										<li class="value">
+											<div class="name">path</div>
+											<span class="type">Array of string</span>
+											<span>
+												See <a href="../../loader/api/unit.api.html#types.Suite">Suite</a>.run() method.
+											</span>
+										</li>
+									</ul>
+								</li>
+							</ol>
+						</div>
 					</li>
 				</ul>
 			</div>

@@ -507,7 +507,7 @@ Object.defineProperty(
 	$exports,
 	"browser",
 	{
-		get: $api.Function.singleton(function() {
+		get: $api.Function.memoized(function() {
 			return $loader.module("browser/module.js", {
 				os: $exports.os,
 				HOME: $exports.HOME,
@@ -530,7 +530,7 @@ Object.defineProperty(
 	$exports.system,
 	"apple",
 	{
-		get: $api.Function.singleton(function() {
+		get: $api.Function.memoized(function() {
 			return $loader.file("apple.js", {
 				api: {
 					document: $context.api.document,
@@ -547,7 +547,7 @@ Object.defineProperty(
 	$exports.system,
 	"opendesktop",
 	{
-		get: $api.Function.singleton(function() {
+		get: $api.Function.memoized(function() {
 			return $loader.file("opendesktop.js", {
 				api: {
 					js: $context.api.js,
@@ -655,7 +655,7 @@ $exports.java = function(p) {
 	Object.defineProperty(
 		this, "launcher",
 		{
-			get: $api.Function.singleton(function() {
+			get: $api.Function.memoized(function() {
 				return $context.api.file.Searchpath([self.home.getRelativePath("bin")]).getCommand("java");
 			})
 		}
@@ -665,7 +665,7 @@ $exports.java = function(p) {
 	Object.defineProperty(
 		this, "jrunscript",
 		{
-			get: $api.Function.singleton(function() {
+			get: $api.Function.memoized(function() {
 				return $context.api.file.Searchpath([self.home.getRelativePath("bin"),self.home.getRelativePath("../bin")]).getCommand("jrunscript");
 			})
 		}
@@ -674,7 +674,7 @@ $exports.java = function(p) {
 	Object.defineProperty(
 		this, "keytool",
 		{
-			get: $api.Function.singleton(function() {
+			get: $api.Function.memoized(function() {
 				return $context.api.file.Searchpath([self.home.getRelativePath("bin")]).getCommand("keytool");
 			})
 		}

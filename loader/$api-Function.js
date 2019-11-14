@@ -1,5 +1,10 @@
 $exports.Function = $context.old.Function;
 
+$exports.Function.type = function(o) {
+    if (o === null) return "null";
+    return typeof(o);
+}
+
 $exports.Function.memoized = function(f) {
     var returns;
     var global = (function() { return this; });
@@ -25,6 +30,13 @@ $exports.Function.pipe = function() {
     }
 };
 
+$exports.Function.property = function(name) {
+    return function(v) {
+        //  TODO    handling of undefined, null?
+        return v[name];
+    }
+};
+
 $exports.Function.returning = function(v) {
     return function() {
         return v;
@@ -36,7 +48,7 @@ $exports.Function.conditional = function(test,yes,no) {
         var condition = test.apply(this,arguments);
         return (condition) ? yes.apply(this,arguments) : no.apply(this,arguments);
     };
-}
+};
 
 $exports.Function.argument = {};
 $exports.Function.argument.check = function(p) {

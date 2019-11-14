@@ -17,7 +17,7 @@ plugin({
 			jsh,
 			"java",
 			{
-				get: $api.Function.singleton(function() {
+				get: $api.Function.memoized(function() {
 					return $loader.module("module.js", {
 						globals: true,
 						$slime: $slime

@@ -33,6 +33,35 @@ var getApiHtml = function(moduleMainPathname) {
 	}
 }
 
+var loadApiHtml = function(file,document) {
+	var DISABLE_CACHE = !Boolean(jsh.shell.environment.JSH_UNIT_USE_API_CACHE);
+	if (!arguments.callee.cache) {
+		arguments.callee.cache = {};
+	}
+	if (DISABLE_CACHE || !arguments.callee.cache[file.pathname.toString()]) {
+		arguments.callee.cache[file.pathname.toString()] = (function() {
+			jsh.shell.console("Loading API file: " + file.pathname);
+			if (!document) {
+				var doc = new jsh.document.Document({
+					stream: file.read(jsh.io.Streams.binary)
+				});
+				return new JsapiHtml(file.parent,doc);
+			} else {
+				var doc = (function() {
+					return jsh.document.load({
+						//	TODO	there is a loader/path version of this instead of string
+						string: file.read(String)
+					});
+				})();
+				return new jsh.unit.jsapi.Html(file.parent,doc);
+			}
+		})();
+	} else {
+		jsh.shell.console("Returning cached api.html: " + file.pathname);
+	}
+	return arguments.callee.cache[file.pathname.toString()];
+};
+
 var JsapiHtml = function(base,dom) {
 	this.toString = function() {
 		return "Jsdom: base=" + base + " dom=" + dom;
@@ -126,28 +155,9 @@ var JsapiHtml = function(base,dom) {
 		} else {
 			//jsh.shell.echo("Loading " + path + " from " + base);
 		}
-		return loadApiHtml(base.getFile(path));
+		return loadApiHtml(base.getFile(path),false);
 	}
 };
-
-var loadApiHtml = function(file) {
-	var DISABLE_CACHE = !Boolean(jsh.shell.environment.JSH_UNIT_USE_API_CACHE);
-	if (!arguments.callee.cache) {
-		arguments.callee.cache = {};
-	}
-	if (DISABLE_CACHE || !arguments.callee.cache[file.pathname.toString()]) {
-		arguments.callee.cache[file.pathname.toString()] = (function() {
-			jsh.shell.console("Loading API file: " + file.pathname);
-			var doc = new jsh.document.Document({
-				stream: file.read(jsh.io.Streams.binary)
-			});
-			return new JsapiHtml(file.parent,doc);
-		})();
-	} else {
-		jsh.shell.console("Returning cached api.html: " + file.pathname);
-	}
-	return arguments.callee.cache[file.pathname.toString()];
-}
 
 if ($context.test) {
 	$exports.test = {};
@@ -167,7 +177,7 @@ var Suite = function Suite(p) {
 		}
 		var apiHtmlFile = getApiHtml(pathname);
 		if (apiHtmlFile) {
-			var page = loadApiHtml(apiHtmlFile);
+			var page = loadApiHtml(apiHtmlFile, p.document);
 
 			var name = (p.name) ? p.name : pathname.toString();
 
@@ -229,15 +239,26 @@ var Scope = function(suite,environment) {
 			mock: function(configuration) {
 				var $loader = (configuration.path) ? new delegate.Child(configuration.path) : delegate;
 				var plugins = (configuration.plugins) ? configuration.plugins : {};
+				var scope = (function() {
+					if (!configuration.global && !configuration.jsh) return {};
+					if (configuration.global && configuration.jsh) {
+						return $api.Object.compose(configuration.global, { jsh: configuration.jsh });
+					}
+					if (configuration.global) return configuration.global;
+					if (configuration.jsh) return { jsh: configuration.jsh };
+					throw new Error("Unreachable.");
+				})();
 				$context.$slime.plugins.mock({
 					$loader: $loader,
 					plugins: plugins,
 					toString: configuration.toString,
-					jsh: configuration.jsh
+					global: scope,
+					jsh: scope.jsh
 				});
 				if (configuration.evaluate) {
 					return configuration.evaluate({
-						jsh: configuration.jsh,
+						global: scope,
+						jsh: scope.jsh,
 						plugins: plugins
 					});
 				} else {

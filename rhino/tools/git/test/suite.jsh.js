@@ -19,7 +19,7 @@ var parameters = jsh.script.getopts({
 
 var suite = new jsh.unit.Suite({
 	parts: {
-		module: new jsh.unit.part.Html({
+		module: new jsh.unit.html.Part({
 			name: "module",
 			pathname: jsh.script.file.parent.parent.getRelativePath("api.html"),
 			environment: {},

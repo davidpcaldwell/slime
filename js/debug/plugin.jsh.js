@@ -19,7 +19,7 @@ plugin({
 			jsh,
 			"debug",
 			{
-				get: $api.Function.singleton(function() {
+				get: $api.Function.memoized(function() {
 					var rv = $loader.module("module.js", $loader.file("context.java.js"));
 
 					var Dumper = function(indent,p) {

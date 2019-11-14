@@ -333,13 +333,6 @@ END LICENSE
 												One of the values from <a href="$exports.format"><code>format</code></a>.
 											</span>
 										</li>
-										<li class="value">
-											<div class="name">to</div>
-											<span class="type"><a href="../../../rhino/file/api.html#types.Pathname">Pathname</a></span>
-											<span>
-												The location to which to install the installation.
-											</span>
-										</li>
 										<li class="function">
 											<div class="name">getDestinationPath</div>
 											<span>
@@ -360,6 +353,42 @@ END LICENSE
 												<span class="type">string</span>
 												<span>A path within the archive to treat as the installation.</span>
 											</div>
+										</li>
+										<li class="value">
+											<div class="name">to</div>
+											<span class="type"><a href="../../../rhino/file/api.html#types.Pathname">Pathname</a></span>
+											<span>
+												The location to which to install the installation.
+											</span>
+										</li>
+										<li class="value">
+											<div class="name">replace</div>
+											<span class="type">boolean</span>
+											<span>
+												(optional; default: <code>false</code>)
+												If <code>true</code>, and a file or directory at the specified destination already
+												exists, it will be removed and replaced by the installation. If <code>false</code>,
+												and the specified destination already exists, an error will be thrown.
+											</span>
+											<script type="application/x.jsapi#tests">
+												var install = function(to,replace) {
+													return function(p) {
+														p.install({
+															file: harness.zip,
+															to: to,
+															replace: replace
+														});
+													}
+												};
+
+												var clean = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
+												clean.directory.remove();
+												verify(api).evaluate(install(clean)).threw.nothing();
+
+												verify(api).evaluate(install(clean,true)).threw.nothing();
+
+												verify(api).evaluate(install(clean)).threw.type(Error);
+											</script>
 										</li>
 									</ul>
 								</li>

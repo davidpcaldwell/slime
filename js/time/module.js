@@ -59,7 +59,7 @@ var harmonize = function(y,m,d) {
 	}
 	while(new Date(y,m,d).getMonth() != m) {
 		d--;
-		if (d < 1) throw "Some problem here; " + y + "/" + m + "/" + d;
+		if (d < 1) throw new Error("Some problem here; " + y + "/" + m + "/" + d);
 	}
 	return new Date(y,m,d);
 }
@@ -79,7 +79,7 @@ Year.cast = function(args) {
 	if (args.constructor == Year) {
 		return args;
 	} else {
-		throw "Not Year: " + args;
+		throw new TypeError("Not Year: " + args);
 	}
 }
 
@@ -98,13 +98,31 @@ MonthId.cast = function(object) {
 	if (object.constructor == MonthId) {
 		return object;
 	} else {
-		throw "Not MonthId: " + object;
+		throw new TypeError("Not MonthId: " + object);
 	}
 }
 var months = ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"];
 months.forEach( function(name,index) {
 	new MonthId(name,index+1);
 });
+
+var Month = function(p) {
+	if (arguments.length == 2 && typeof(arguments[0]) == "number" && typeof(arguments[1]) == "number") {
+		return new Month({ year: new Year(arguments[0]), id: MonthId.get(arguments[1]) });
+	}
+	this.year = p.year;
+	this.id = p.id;
+
+	this.day = function(p) {
+		if (typeof(p) == "number") {
+			return new Day({
+				year: this.year,
+				month: this.id,
+				day: p
+			});
+		}
+	}
+}
 
 var Week = function() {
 }
@@ -152,9 +170,6 @@ var days = [
 	new WeekDayId("FRIDAY", 5, 1, 3),
 	new WeekDayId("SATURDAY", 6, 2, 3, "A")
 ];
-
-var Month = function(args) {
-}
 
 var Parser = function() {
 	var checks = [];
@@ -361,41 +376,51 @@ var Day = function() {
 	var day;
 
 	if (typeof(arguments[0]) == "number" && arguments.length == 3) {
-		var asDate = new Date(arguments[0], arguments[1]-1, arguments[2]);
-		if (asDate.getFullYear() != arguments[0] || asDate.getMonth() != (arguments[1]-1) || asDate.getDate() != arguments[2]) {
-			throw new Error("Invalid date arguments: " + Array.prototype.join.apply(arguments, [","]));
-		}
+		(function checkArguments() {
+			var asDate = new Date(arguments[0], arguments[1]-1, arguments[2]);
+			if (asDate.getFullYear() != arguments[0] || asDate.getMonth() != (arguments[1]-1) || asDate.getDate() != arguments[2]) {
+				throw new Error("Invalid date arguments: " + Array.prototype.join.apply(arguments, [","]));
+			}	
+		}).apply(this,arguments);
 		return new Day({
 			year: new Year(arguments[0]),
 			month: MonthId.get(arguments[1]),
 			day: arguments[2]
 		});
-	} else if (arguments.length == 1) {
-		var args = arguments[0];
-		if (typeof(args.year) != "undefined") {
-			year = Year.cast(args.year);
-			month = MonthId.cast(args.month);
-			day = Number(args.day);
-		} else if (typeof(args.date) != "undefined") {
-			return new Day(
-				args.date.getFullYear(),
-				args.date.getMonth()+1,
-				args.date.getDate()
-			);
-		} else if (typeof(args.json) != "undefined") {
-			return new Day(args.json.year.value, args.json.month.index, args.json.day);
+	}
+
+	if (typeof(arguments[0]) == "object" && arguments[0] && typeof(arguments[0].date) == "object") {
+		var arg = arguments[0];
+		return new Day(
+			arg.date.getFullYear(),
+			arg.date.getMonth()+1,
+			arg.date.getDate()
+		);
+	}
+
+	if (typeof(arguments[0]) == "object" && arguments[0] && typeof(arguments[0].json) == "object") {
+		var arg = arguments[0];
+		return new Day(arg.json.year.value, arg.json.month.index, arg.json.day);
+	}
+	
+	if (arguments.length == 1) {
+		var arg = arguments[0];
+		if (typeof(arg.year) != "undefined") {
+			year = Year.cast(arg.year);
+			month = new Month({ year: year, id: MonthId.cast(arg.month) });
+			day = Number(arg.day);
 		} else {
-			throw "Unknown arguments: " + Array.prototype.join.apply(arguments, [","]);
+			throw new Error("Unknown arguments: " + Array.prototype.join.apply(arguments, [","]));
 		}
 	} else {
-		throw "Unknown arguments: " + Array.prototype.join.apply(arguments, [","]);
+		throw new Error("Unknown arguments: " + Array.prototype.join.apply(arguments, [","]));
 	}
 
 	var toDate = function(offset) {
 		if (typeof(offset) == "undefined") offset = 0;
 		var base = new Date(
 			year.value,
-			month.index-1,
+			month.id.index-1,
 			day,
 			0,
 			0,
@@ -408,7 +433,7 @@ var Day = function() {
 
 	//	TODO	Use getters on platforms supporting them
 	this.year = year;
-	this.month = month;
+	this.month = ($context.old && $context.old.Day_month) ? month.id : month;
 	this.day = day;
 
 	this.weekday = WeekDayId.get(toDate().getDay());
@@ -419,12 +444,12 @@ var Day = function() {
 	}
 
 	this.addMonths = function(offset) {
-		var asDate = harmonize(this.year.value, this.month.index-1+offset, this.day);
+		var asDate = harmonize(this.year.value, month.id.index-1+offset, this.day);
 		return new Day({date: asDate});
 	}
 
 	this.addYears = function(offset) {
-		return new Day({date: harmonize(this.year.value+offset, this.month.index-1, this.day)});
+		return new Day({date: harmonize(this.year.value+offset, month.id.index-1, this.day)});
 	}
 
 	this.at = function(time) {
@@ -433,7 +458,7 @@ var Day = function() {
 
 	this.format = function(mask) {
 		var parser = new Parser();
-		addDayParserChecks(parser,year,month,day,toDate());
+		addDayParserChecks(parser,year,month.id,day,toDate());
 		return parser.format(mask);
 	}
 
@@ -551,7 +576,8 @@ Day.today = function() {
 Day.codec = {};
 Day.codec.js = new function() {
 	this.encode = function(o) {
-		return { year: o.year.value, month: o.month.index, day: o.day };
+		var month = (o.month.id) ? o.month.id.index : o.month.index;
+		return { year: o.year.value, month: month, day: o.day };
 	}
 
 	this.decode = function(o) {
@@ -568,7 +594,8 @@ Day.codec.json = new function() {
 	}
 
 	this.decode = function(o) {
-		return new Day(o.year.value,o.month.index,o.day);
+		var month = (o.month.id) ? o.month.id.index : o.month.index;
+		return new Day(o.year.value,month,o.day);
 	}
 }
 Day.codec.iso8601 = new function() {
@@ -627,7 +654,7 @@ var Time = function() {
 		if (!zone) zone = zones.local;
 		var unix = zone.unix({
 			year: day.year.value,
-			month: day.month.index,
+			month: (day.month.id) ? day.month.id.index : day.month.index,
 			day: day.day,
 			hour: time.hours,
 			minute: time.minutes,
@@ -638,7 +665,8 @@ var Time = function() {
 
 	this.format = function(mask) {
 		var parser = new Parser();
-		addDayParserChecks(parser,this.day.year,this.day.month,this.day.day,ToDate(this.day));
+		var monthId = (this.day.month.id) ? this.day.month.id : this.day.month;
+		addDayParserChecks(parser,this.day.year,monthId,this.day.day,ToDate(this.day));
 		addTimeParserChecks(parser,this.time.hours,this.time.minutes,this.time.seconds);
 		return parser.format(mask);
 	}
@@ -791,9 +819,11 @@ var ToDate = function() {
 	};
 
 	if (arguments.length == 1 && typeof(arguments[0]) == "object" && isDay(arguments[0])) {
-		return new Date(arguments[0].year.value, arguments[0].month.index-1, arguments[0].day);
+		var monthId = (arguments[0].month.id) ? arguments[0].month.id : arguments[0].month;
+		return new Date(arguments[0].year.value, monthId.index-1, arguments[0].day);
 	} else if (arguments.length == 1 && typeof(arguments[0]) == "object" && arguments[0].constructor == When) {
-		return new Date(arguments[0].day.year.value, arguments[0].day.month.index-1,arguments[0].day.day,
+		var monthId = (arguments[0].month.id) ? arguments[0].month.id : arguments[0].month;
+		return new Date(arguments[0].day.year.value, monthId.index-1,arguments[0].day.day,
 			arguments[0].time.hours, arguments[0].time.minutes, Math.floor(arguments[0].time.seconds),
 			(arguments[0].time.seconds % 1) * 1000
 		);
@@ -801,8 +831,9 @@ var ToDate = function() {
 	return function(){}();
 }
 
-$exports.Year = {Month: Year.Month};
-//exports.Month = Month;
+$exports.Year = Year;
+//$exports.Year = {Month: Year.Month};
+$exports.Month = Month;
 $exports.Day = Day;
 $exports.Day.order = order;
 $exports.Time = Time;

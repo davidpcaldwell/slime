@@ -264,16 +264,17 @@ var Database = function(o) {
 		return "PostgreSQL: host=" + o.host + " port=" + o.port;
 	}
 
+	var bootstrapDatasource;
 	if (o.admin) {
 		//	TODO	template1? template0?
-		var bootstrapDatasource = getDataSource(o.host,o.port,"postgres",o.admin.user,o.admin.password,false);
+		bootstrapDatasource = getDataSource(o.host,o.port,"postgres",o.admin.user,o.admin.password,false);
 		if (!o.user) o.user = o.admin.user;
 		if (!o.password) o.password = o.admin.password;
 	}
 
 	driver.Database.call(this, new function() {
 		this.catalogs = new function() {
-			this.list = function() {
+			if (bootstrapDatasource) this.list = function() {
 				//	TODO	the pure JDBC implementation below does not work; JDBC connections are not aware
 				//			of other databases; see https://jdbc.postgresql.org/development/privateapi/org/postgresql/jdbc/PgDatabaseMetaData.html#getCatalogs--
 				// var query = bootstrapDatasource.createMetadataQuery(function(metadata) {
@@ -290,11 +291,11 @@ var Database = function(o) {
 				});
 			};
 
-			this.create = function(p) {
+			if (bootstrapDatasource) this.create = function(p) {
 				bootstrapDatasource.executeStandalone("CREATE DATABASE " + p.name.sql());
 			};
 
-			this.drop = function(p) {
+			if (bootstrapDatasource) this.drop = function(p) {
 				bootstrapDatasource.executeStandalone("DROP DATABASE " + p.name.sql());
 			}
 
