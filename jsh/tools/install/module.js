@@ -125,7 +125,7 @@ var installLocalArchive = function(p,events) {
 	if (!unzippedTo) throw new TypeError("Expected directory " + unzippedDestination + " not found in " + untardir);
 	events.fire("console", "Directory is: " + unzippedTo);
 	unzippedTo.move(p.to, {
-		overwrite: false,
+		overwrite: p.replace,
 		recursive: true
 	});
 	return p.to.directory;
