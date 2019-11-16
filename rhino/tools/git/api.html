@@ -28,6 +28,7 @@ END LICENSE
 		-->
 		<script type="application/x.jsapi#initialize">
 			scope.module = jsh.tools.git;
+
 			scope.init = function(p) {
 				var rv = scope.module.init(p);
 				rv.execute({
@@ -43,7 +44,39 @@ END LICENSE
 					]
 				});
 				return rv;
-			}
+			};
+
+			scope.remotes = jsh.shell.TMPDIR.createTemporary({ directory: true });
+			//	TODO	provide $jsapi accessor for this
+			var port = jsh.ip.getEphemeralPort().number;
+			var daemon = scope.module.daemon({
+				port: port,
+				basePath: scope.remotes,
+				exportAll: true
+			});
+
+			scope.daemon = {
+				process: daemon,
+				port: port
+			};
+			jsh.shell.console("new daemon = " + scope.daemon);
+
+			scope.fixture = {
+				write: function(o) {
+					var directory = (function() {
+						if (o.repository) return o.repository.directory;
+						if (o.directory) return o.directory;
+					})();
+					for (var x in o.files) {
+						//	TODO	add function form which receives string as argument
+						directory.getRelativePath(x).write(o.files[x], { append: false });
+					}
+				}
+			};
+		</script>
+		<script type="application/x.jsapi#destroy">
+			jsh.shell.console("destroying daemon");
+			scope.daemon.process.kill();
 		</script>
 		<div>__DESCRIPTION__</div>
 		<div>
@@ -56,22 +89,84 @@ END LICENSE
 			<div jsapi:id="exports">
 				<div class="type">
 					<a class="type" name="types.Installation">Installation</a>
-					<span>__DESCRIPTION__</span>
+					<span>A local installation of the <code>git</code> tool.</span>
 					<div class="label">has properties:</div>
 					<ul>
-						<li class="function">
-							<div class="name">init</div>
+						<!--	Undocumented: daemon	-->
+						<li class="constructor">
+							<div class="name"><a id="$exports.Repository">Repository</a></div>
 							<span>__DESCRIPTION__</span>
 							<div class="arguments">
 								<div class="label">Arguments</div>
 								<ol>
 									<li class="object">
-										<div class="name">__NAME__</div>
 										<span>__DESCRIPTION__</span>
 										<div class="label">has properties:</div>
 										<ul>
+											<li class="value">
+												<div class="name">remote</div>
+												<span class="type">string</span>
+												<span>A string that is compatible with the <code>git</code> command-line tool.</span>
+											</li>
+											<li class="value">
+												<div class="name">directory</div>
+												<span class="type">directory</span>
+												<span>__DESCRIPTION__</span>
+											</li>
 										</ul>
 									</li>
+								</ol>
+							</div>
+							<div class="instances">
+								<div class="label">Instances</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</div>
+						</li>
+						<li class="function">
+							<div class="name">init</div>
+							<span>Creates a new repository at the given location (see <code>git init</code>).</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="object">
+										<div class="label">has properties:</div>
+										<ul>
+											<li class="value">
+												<div class="name">pathname</div>
+												<span class="type">Pathname</span>
+												<span>A location at which to create an empty repository.</span>
+											</li>
+										</ul>
+									</li>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type"><a href="#types.LocalRepository">LocalRepository</a></span>
+								<span>The local repository created.</span>
+							</div>
+							<script type="application/x.jsapi#tests">
+								var location = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
+								fixture.write({
+									directory: location.directory,
+									files: {
+										"a": "a"
+									}
+								});
+								var repository = module.init({
+									pathname: location
+								});
+								verify(repository).is.type("object");
+								verify(repository).directory.getFile("a").is.type("object");
+							</script>
+						</li>
+						<li class="function">
+							<div class="name">execute</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
 								</ol>
 							</div>
 							<div class="returns">
@@ -79,37 +174,9 @@ END LICENSE
 								<span class="type">__TYPE__</span>
 								<span>__DESCRIPTION__</span>
 							</div>
-							<script type="application/x.jsapi#tests">
-								var tmpdir = jsh.shell.TMPDIR.createTemporary({ directory: true });
-								tmpdir.getRelativePath("a").write("a", { append: false });
-								var repository = init({
-									pathname: tmpdir.pathname
-								});
-								verify(repository).directory.pathname.toString().is(tmpdir.pathname.toString());
-								verify(repository).directory.getFile("a").is.type("object");
-							</script>
 						</li>
 					</ul>
 				</div>
-				<script type="application/x.jsapi#initialize">
-					scope.remotes = jsh.shell.TMPDIR.createTemporary({ directory: true });
-					//	TODO	provide $jsapi accessor for this
-					var port = jsh.ip.getEphemeralPort().number;
-					var daemon = module.daemon({
-						port: port,
-						basePath: scope.remotes,
-						exportAll: true
-					});
-					scope.daemon = {
-						process: daemon,
-						port: port
-					};
-					jsh.shell.console("new daemon = " + scope.daemon);
-				</script>
-				<script type="application/x.jsapi#destroy">
-					jsh.shell.console("destroying daemon");
-					scope.daemon.process.kill();
-				</script>
 				<div class="type">
 					<a class="type" name="types.Repository">Repository</a>
 					<span>__DESCRIPTION__</span>
@@ -140,12 +207,10 @@ END LICENSE
 							</div>
 						</li>
 					</ul>
-					<script type="application/x.jsapi#tests">
-						verify("Repository").is("Repository");
-					</script>
 				</div>
 				<div class="type">
 					<a class="type" name="types.RemoteRepository">RemoteRepository</a>
+					<span class="type">supports <a href="#types.Repository">Repository</a></span>
 					<span>__DESCRIPTION__</span>
 					<div class="label">has properties:</div>
 					<ul>
@@ -170,6 +235,7 @@ END LICENSE
 				</div>
 				<div class="type">
 					<a class="type" name="types.LocalRepository">LocalRepository</a>
+					<span class="type">supports <a href="#types.Repository">Repository</a></span>
 					<span>__DESCRIPTION__</span>
 					<script type="application/x.jsapi#initialize">
 						scope.newRepository = function() {
@@ -258,6 +324,13 @@ END LICENSE
 							<div class="name">directory</div>
 							<span class="type">directory</span>
 							<span>The local directory containing this repository.</span>
+							<script type="application/x.jsapi#tests">
+								var location = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
+								var repository = module.init({
+									pathname: location
+								});
+								verify(repository).directory.pathname.toString().is(location.toString());
+							</script>
 						</li>
 						<li class="function">
 							<div class="name">status</div>
@@ -517,6 +590,20 @@ END LICENSE
 							</script>
 						</li>
 						<li class="function">
+							<div class="name">config</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</div>
+						</li>
+						<li class="function">
 							<div class="name">commit</div>
 							<span>__DESCRIPTION__</span>
 							<div class="arguments">
@@ -544,6 +631,20 @@ END LICENSE
 											</li>
 										</ul>
 									</li>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</div>
+						</li>
+						<li class="function">
+							<div class="name">log</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
 								</ol>
 							</div>
 							<div class="returns">
@@ -587,16 +688,26 @@ END LICENSE
 				<ul>
 					<li class="constructor">
 						<div class="name">Installation</div>
-						<span>__DESCRIPTION__</span>
+						<span>Represents a single <code>git</code> installation on the local machine.</span>
 						<div class="arguments">
 							<div class="label">Arguments</div>
 							<ol>
+								<li class="object">
+									<div class="label">has properties:</div>
+									<ul>
+										<li class="value">
+											<div class="name">program</div>
+											<span class="type"><a href="../../../rhino/shell/api.html#types.token">command token</a></span>
+											<span>A value that can be used to invoke <code>git</code>.</span>
+										</li>
+									</ul>
+								</li>
 							</ol>
 						</div>
 						<div class="instances">
 							<div class="label">Instances</div>
-							<span class="type">__TYPE__</span>
-							<span>__DESCRIPTION__</span>
+							<span class="type"><a href="#types.Installation">Installation</a></span>
+							<span></span>
 						</div>
 					</li>
 					<!--
@@ -630,58 +741,11 @@ END LICENSE
 					</li>
 					<li class="constructor">
 						<div class="name"><a id="$exports.Repository">Repository</a></div>
-						<span>__DESCRIPTION__</span>
-						<div class="arguments">
-							<div class="label">Arguments</div>
-							<ol>
-								<li class="object">
-									<span>__DESCRIPTION__</span>
-									<div class="label">has properties:</div>
-									<ul>
-										<li class="value">
-											<div class="name">remote</div>
-											<span class="type">string</span>
-											<span>A string that is compatible with the <code>git</code> command-line tool.</span>
-										</li>
-										<li class="value">
-											<div class="name">directory</div>
-											<span class="type">directory</span>
-											<span>__DESCRIPTION__</span>
-										</li>
-									</ul>
-								</li>
-							</ol>
-						</div>
-						<div class="instances">
-							<div class="label">Instances</div>
-							<span class="type">__TYPE__</span>
-							<span>__DESCRIPTION__</span>
-						</div>
+						<span>Invokes the Repository() constrructor of the global <a href="#types.Installation">Installation</a>.</span>
 					</li>
 					<li class="function">
 						<div class="name"><a id="$exports.init">init</a></div>
-						<span>Creates a new repository at the given location (see <code>git init</code>).</span>
-						<div class="arguments">
-							<div class="label">Arguments</div>
-							<ol>
-								<li class="object">
-									<span>__DESCRIPTION__</span>
-									<div class="label">has properties:</div>
-									<ul>
-										<li class="value">
-											<div class="name">pathname</div>
-											<span class="type">Pathname</span>
-											<span>A location at which to create an empty repository.</span>
-										</li>
-									</ul>
-								</li>
-							</ol>
-						</div>
-						<div class="returns">
-							<div class="label">Returns</div>
-							<span class="type">Repository</span>
-							<span>The local repository created.</span>
-						</div>
+						<span>Invokes the init() method of the global <a href="#types.Installation">Installation</a>.</span>
 					</li>
 					<li class="function">
 						<div class="name">execute</div>

@@ -13,21 +13,22 @@
 
 var parameters = jsh.script.getopts({
 	options: {
+		part: String,
 		view: "console"
 	}
 });
 
-var suite = new jsh.unit.Suite({
-	parts: {
-		module: new jsh.unit.html.Part({
-			name: "module",
-			pathname: jsh.script.file.parent.parent.getRelativePath("api.html"),
-			environment: {},
-			reload: true
-		})
-	}
-});
+var suite = new jsh.unit.html.Suite();
 
-jsh.unit.interface.create(suite, {
+suite.add("module", new jsh.unit.html.Part({
+	name: "module",
+	pathname: jsh.script.file.parent.parent.getRelativePath("api.html"),
+	environment: {},
+	reload: true
+}));
+
+jsh.unit.html.cli({
+	suite: suite,
+	part: parameters.options.part,
 	view: parameters.options.view
 });

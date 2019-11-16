@@ -581,37 +581,30 @@ $exports.Installation = function(p) {
 
 $exports.credentialHelper = {};
 
-var program = (function() {
-	var find = function(api) {
-		return $context.api.shell.PATH.getCommand("git");
-// 		var directoryExists = function(path) {
-// 			return $context.api.file.Pathname(path).directory;
-// 		}
-
-// 		var rv = $context.api.shell.PATH.getCommand("git");
-// 		if ($context.api.shell.os.name == "Mac OS X" && !directoryExists("/Applications/Xcode.app") && !directoryExists("/Library/Developer/CommandLineTools")) {
-// 			rv = null;
-// 		}
-// 		return rv;
-	};
-
-	if ($context.program) return $context.program;
-	return find();
-})();
-
-if (program) {
-	var installation = new Installation({
-		program: program
-	});
-
-	$exports.installation = installation;
-
-	["daemon","Repository","init","execute"].forEach(function(name) {
-		$exports[name] = function() {
-			return installation[name].apply(installation,arguments);
+(function() {
+	var program = (function() {
+		var find = function(api) {
+			return $context.api.shell.PATH.getCommand("git");
 		};
-	},this);
-}
+	
+		if ($context.program) return $context.program;
+		return find();
+	})();
+	
+	if (program) {
+		var installation = new Installation({
+			program: program
+		});
+	
+		$exports.installation = installation;
+	
+		["daemon","Repository","init","execute"].forEach(function(name) {
+			$exports[name] = function() {
+				return installation[name].apply(installation,arguments);
+			};
+		},this);
+	}	
+})();
 
 var GUI = $context.api.Error.Type("Please execute the graphical installer.");
 
