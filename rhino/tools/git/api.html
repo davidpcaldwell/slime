@@ -200,6 +200,11 @@ END LICENSE
 					<span>__DESCRIPTION__</span>
 					<div class="label">has properties:</div>
 					<ul>
+						<li class="value">
+							<div class="name">reference</div>
+							<span class="type">string</span>
+							<span>__DESCRIPTION__</span>
+						</li>
 						<li class="function">
 							<div class="name">clone</div>
 							<span>__DESCRIPTION__</span>
@@ -225,7 +230,16 @@ END LICENSE
 							</div>
 						</li>
 						<script type="application/x.jsapi#tests">
-							//verify(false).is("Implemented clone tests for remote/local");
+							var paths = {
+								remote: jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname,
+								local: jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname
+							}
+							var fromRemote = remote.clone({ to: paths.remote });
+							verify(fromRemote).reference.is.type("string");
+							verify(fromRemote).getFile("a").read(String).is("a");
+							var fromLocal = fromRemote.clone({ to: paths.local });
+							verify(fromLocal).reference.is.type("string");
+							verify(fromLocal).getFile("a").read(String).is("a");
 						</script>
 					</ul>
 				</div>
@@ -236,8 +250,6 @@ END LICENSE
 					<div class="label">has properties:</div>
 					<ul>
 					</ul>
-					<script type="application/x.jsapi#initialize">
-					</script>
 					<script type="application/x.jsapi#tests">
 						var to = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
 						remote.clone({ to: to });

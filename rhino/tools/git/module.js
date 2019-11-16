@@ -61,10 +61,10 @@ var Installation = function(environment) {
 			git({
 				config: p.config,
 				command: "clone",
-				arguments: [o.remote,p.to.toString()],
+				arguments: [this.reference,p.to.toString()],
 				environment: $context.api.js.Object.set({}, $context.api.shell.environment, environment)
 			});
-			return new LocalRepository({ local: p.to.directory });
+			return new LocalRepository({ directory: p.to.directory });
 		}
 	};
 
@@ -97,6 +97,8 @@ var Installation = function(environment) {
 				return o.local;
 			})();
 		})();
+
+		this.reference = directory.pathname.toString();
 
 		this.directory = directory;
 
