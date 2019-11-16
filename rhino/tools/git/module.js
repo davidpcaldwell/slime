@@ -70,6 +70,7 @@ var Installation = function(environment) {
 
 	var RemoteRepository = function(o) {
 		Repository.call(this,o);
+
 		this.toString = function() {
 			return "git remote: " + o.remote;
 		}
@@ -77,17 +78,33 @@ var Installation = function(environment) {
 		this.reference = o.remote;
 	};
 
+	//	TODO	standardize
+	var addDeprecatedPropertyAlias = function(p) {
+		Object.defineProperty(p.target, p.name, {
+			get: function() {
+				return this[p.property];
+			},
+			enumerable: p.enumerable
+		});
+	};
+
 	var LocalRepository = function(o) {
 		Repository.call(this,o);
+
 		var directory = (function() {
 			if (o.directory) return o.directory;
 			if (o.local) return $api.deprecate(function() {
 				return o.local;
 			})();
 		})();
+
 		this.directory = directory;
-		this.base = directory;
-		$api.deprecate(this,"base");
+
+		addDeprecatedPropertyAlias({
+			target: this,
+			name: "base",
+			property: "directory"
+		});
 
 		this.toString = function() {
 			return "git local: " + directory;

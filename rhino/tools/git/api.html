@@ -61,6 +61,19 @@ END LICENSE
 			};
 			jsh.shell.console("new daemon = " + scope.daemon);
 
+			//	TODO	refactor the stuff below here to improve cohesion, especially URLs, and remove repetition
+
+			var dir = scope.remotes.getRelativePath("RemoteRepository").createDirectory();
+			dir.getRelativePath("a").write("a", { append: false });
+			var host = scope.init({ pathname: dir.pathname });
+			host.add({ path: "a" });
+			host.commit({
+				all: true,
+				message: "RemoteRepository a"
+			});
+			var remote = new scope.module.Repository({ remote: "git://127.0.0.1:" + scope.daemon.port + "/RemoteRepository" });
+			scope.remote = remote;
+
 			scope.fixture = {
 				write: function(o) {
 					var directory = (function() {
@@ -100,18 +113,23 @@ END LICENSE
 								<div class="label">Arguments</div>
 								<ol>
 									<li class="object">
-										<span>__DESCRIPTION__</span>
+										<span></span>
 										<div class="label">has properties:</div>
 										<ul>
 											<li class="value">
 												<div class="name">remote</div>
 												<span class="type">string</span>
-												<span>A string that is compatible with the <code>git</code> command-line tool.</span>
+												<span>
+													A string that is compatible with the <code>git</code> command-line tool.
+													See 
+													<a href="https://git-scm.com/docs/git-clone#_git_urls_a_id_urls_a">Git URLs</a>.
+												</span>
 											</li>
+											- OR -
 											<li class="value">
 												<div class="name">directory</div>
 												<span class="type">directory</span>
-												<span>__DESCRIPTION__</span>
+												<span>A directory containing a local Git repository.</span>
 											</li>
 										</ul>
 									</li>
@@ -119,8 +137,8 @@ END LICENSE
 							</div>
 							<div class="instances">
 								<div class="label">Instances</div>
-								<span class="type">__TYPE__</span>
-								<span>__DESCRIPTION__</span>
+								<span class="type"><a href="#types.Repository">Repository</a></span>
+								<span>A <code>Repository</code> of the appropriate subtype as determined by the argument.</span>
 							</div>
 						</li>
 						<li class="function">
@@ -206,6 +224,9 @@ END LICENSE
 								<span>The clone created by the operation.</span>
 							</div>
 						</li>
+						<script type="application/x.jsapi#tests">
+							//verify(false).is("Implemented clone tests for remote/local");
+						</script>
 					</ul>
 				</div>
 				<div class="type">
@@ -216,16 +237,6 @@ END LICENSE
 					<ul>
 					</ul>
 					<script type="application/x.jsapi#initialize">
-						var dir = scope.remotes.getRelativePath("RemoteRepository").createDirectory();
-						dir.getRelativePath("a").write("a", { append: false });
-						var host = init({ pathname: dir.pathname });
-						host.add({ path: "a" });
-						host.commit({
-							all: true,
-							message: "RemoteRepository a"
-						});
-						var remote = new module.Repository({ remote: "git://127.0.0.1:" + scope.daemon.port + "/RemoteRepository" });
-						scope.remote = remote;
 					</script>
 					<script type="application/x.jsapi#tests">
 						var to = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
