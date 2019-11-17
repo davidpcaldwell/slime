@@ -228,6 +228,7 @@ END LICENSE
 										<ul>
 											<li class="value">
 												<div class="name">to</div>
+												<!--	TODO	allow directory	-->
 												<span class="type">Pathname</span>
 												<span>A location to which to clone the repository.</span>
 											</li>
@@ -247,10 +248,8 @@ END LICENSE
 								local: jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname
 							}
 							var fromRemote = remote.clone({ to: paths.remote });
-							verify(fromRemote).reference.is.type("string");
 							verify(fromRemote).getFile("a").read(String).is("a");
 							var fromLocal = fromRemote.clone({ to: paths.local });
-							verify(fromLocal).reference.is.type("string");
 							verify(fromLocal).getFile("a").read(String).is("a");
 						</script>
 					</ul>
@@ -258,20 +257,15 @@ END LICENSE
 				<div class="type">
 					<a class="type" name="types.RemoteRepository">RemoteRepository</a>
 					<span class="type">supports <a href="#types.Repository">Repository</a></span>
-					<span>__DESCRIPTION__</span>
+					<span>A <code>Repository</code> that is not on the local machine.</span>
 					<div class="label">has properties:</div>
 					<ul>
 					</ul>
-					<script type="application/x.jsapi#tests">
-						var to = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
-						remote.clone({ to: to });
-						verify(to).directory.getFile("a").read(String).is("a");
-					</script>
 				</div>
 				<div class="type">
 					<a class="type" name="types.LocalRepository">LocalRepository</a>
 					<span class="type">supports <a href="#types.Repository">Repository</a></span>
-					<span>__DESCRIPTION__</span>
+					<span>A <code>Repository</code> stored in a local directory.</span>
 					<script type="application/x.jsapi#initialize">
 						scope.newRepository = function() {
 							var tmpdir = jsh.shell.TMPDIR.createTemporary({ directory: true });
