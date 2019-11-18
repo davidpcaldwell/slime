@@ -262,7 +262,7 @@ END LICENSE
 					<ul>
 					</ul>
 				</div>
-				<div class="type">
+				<div class="type" jsapi:id="local">
 					<a class="type" name="types.LocalRepository">LocalRepository</a>
 					<span class="type">supports <a href="#types.Repository">Repository</a></span>
 					<span>A <code>Repository</code> stored in a local directory.</span>
@@ -359,6 +359,31 @@ END LICENSE
 									pathname: location
 								});
 								verify(repository).directory.pathname.toString().is(location.toString());
+							</script>
+						</li>
+						<li class="function" jsapi:id="config">
+							<div class="name">config</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</div>
+							<script type="application/x.jsapi#tests">
+								var repository = remote.clone({ to: jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname });
+								var before = repository.config({ arguments: ["-l"] });
+								verify(before).evaluate.property("user.name").is(void(0));
+								verify(before).evaluate.property("user.email").is(void(0));
+								repository.config({ arguments: ["--add", "user.name", "Name!" ]});
+								repository.config({ arguments: ["--add", "user.email", "test@example.com" ]});
+								var after = repository.config({ arguments: ["-l"] });
+								verify(after).evaluate.property("user.name").is("Name!");
+								verify(after).evaluate.property("user.email").is("test@example.com");
 							</script>
 						</li>
 						<li class="function">
@@ -617,20 +642,6 @@ END LICENSE
 								var a = repository.show({ object: "a" });
 								verify(a).commit.hash.is(mergeBase.commit.hash);
 							</script>
-						</li>
-						<li class="function">
-							<div class="name">config</div>
-							<span>__DESCRIPTION__</span>
-							<div class="arguments">
-								<div class="label">Arguments</div>
-								<ol>
-								</ol>
-							</div>
-							<div class="returns">
-								<div class="label">Returns</div>
-								<span class="type">__TYPE__</span>
-								<span>__DESCRIPTION__</span>
-							</div>
 						</li>
 						<li class="function">
 							<div class="name">commit</div>

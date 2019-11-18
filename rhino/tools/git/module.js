@@ -11,6 +11,8 @@
 //	END LICENSE
 
 var Installation = function(environment) {
+
+	//	Setup and Config
 	var git = function(m) {
 		var addConfigurationArgumentsTo = function(array,config) {
 			//	TODO	duplicated below, in git()
@@ -42,6 +44,30 @@ var Installation = function(environment) {
 			})
 		);
 	};
+
+	var config = function(p) {
+		return git({
+			command: "config",
+			arguments: (function(rv) {
+				if (p.arguments) {
+					rv.push.apply(rv,p.arguments);
+				}
+				return rv;
+			})([]),
+			stdio: {
+				output: String
+			},
+			directory: p.directory,
+			evaluate: function(result) {
+				return $api.Object({
+					properties: result.stdio.output.split("\n").map(function(line) {
+						var token = line.split("=");
+						return { name: token[0], value: token[1] }
+					})
+				});
+			}
+		});
+	}
 
 	var Repository = function(o) {
 		var environment = (o && o.environment) ? o.environment : {};
@@ -188,28 +214,32 @@ var Installation = function(environment) {
 		//	Setup and Config
 
 		this.config = function(p) {
-			if (!p) p = {};
-			return execute({
-				command: "config",
-				arguments: (function(rv) {
-					if (p.arguments) {
-						rv.push.apply(rv,p.arguments);
-					}
-					return rv;
-				})([]),
-				stdio: {
-					output: String
-				},
-				evaluate: function(result) {
-					return $api.Object({
-						properties: result.stdio.output.split("\n").map(function(line) {
-							var token = line.split("=");
-							return { name: token[0], value: token[1] }
-						})
-					});
-				}
-			});
-		};
+			return config($api.Object.compose(p, { directory: directory }));
+		}
+
+		// this.config = function(p) {
+		// 	if (!p) p = {};
+		// 	return execute({
+		// 		command: "config",
+		// 		arguments: (function(rv) {
+		// 			if (p.arguments) {
+		// 				rv.push.apply(rv,p.arguments);
+		// 			}
+		// 			return rv;
+		// 		})([]),
+		// 		stdio: {
+		// 			output: String
+		// 		},
+		// 		evaluate: function(result) {
+		// 			return $api.Object({
+		// 				properties: result.stdio.output.split("\n").map(function(line) {
+		// 					var token = line.split("=");
+		// 					return { name: token[0], value: token[1] }
+		// 				})
+		// 			});
+		// 		}
+		// 	});
+		// };
 
 		//	Getting and Creating Projects
 
