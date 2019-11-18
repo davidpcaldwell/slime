@@ -16,7 +16,7 @@ var Installation = function(environment) {
 
 	//	Setup and Config
 
-	var git = function(m) {
+	var cli = new function() {
 		var addConfigurationArgumentsTo = function(array,config) {
 			//	TODO	duplicated below, in git()
 			if (config) {
@@ -32,45 +32,94 @@ var Installation = function(environment) {
 				}
 			}
 		};
-	
-		return $context.api.shell.run(
-			Object.assign({}, m, {
-				command: environment.program,
-				arguments: function(rv) {
-					addConfigurationArgumentsTo(rv,m.config);
-					rv.push(m.command);
-					rv.push.apply(rv, (m.arguments) ? m.arguments : []);
-					return rv;
-				},
-				environment: m.environment,
-				directory: m.directory
-			})
-		);
-	};
 
-	var config = function(p) {
-		return git({
-			command: "config",
-			arguments: (function(rv) {
-				if (p.arguments) {
-					rv.push.apply(rv,p.arguments);
+		this.old = function(m) {
+			return $context.api.shell.run(
+				Object.assign({}, m, {
+					command: environment.program,
+					arguments: function(rv) {
+						addConfigurationArgumentsTo(rv,m.config);
+						rv.push(m.command);
+						rv.push.apply(rv, (m.arguments) ? m.arguments : []);
+						return rv;
+					},
+					environment: m.environment,
+					directory: m.directory
+				})
+			);
+		};
+
+		this.command = function(m) {
+			var program = environment.program;
+			return function(p) {
+				var args = [];
+				addConfigurationArgumentsTo(args,p.config);
+				args.push(m.command);
+				if (typeof(m.arguments) == "function") m.arguments.call(args,p);
+				var environment = $api.Object.compose($context.api.shell.environment);
+				if (m.environment) {
+					var replaced = m.environment.call(environment, p);
+					if (typeof(replaced) != "undefined") environment = replaced;
 				}
-				return rv;
-			})([]),
-			stdio: {
-				output: String
-			},
-			directory: p.directory,
-			evaluate: function(result) {
-				return $api.Object({
-					properties: result.stdio.output.split("\n").map(function(line) {
-						var token = line.split("=");
-						return { name: token[0], value: token[1] }
-					})
+				var stdio;
+				if (m.stdio) stdio = m.stdio(p);
+				return $context.api.shell.run({
+					command: program,
+					arguments: args,
+					environment: environment,
+					stdio: stdio,
+					directory: p.repository,
+					evaluate: m.evaluate
 				});
 			}
-		});
+		}
 	};
+
+	var git = cli.old;
+
+	var config = cli.command({
+		command: "config",
+		arguments: function(p) {
+			this.push.apply(this,p.arguments);
+		},
+		stdio: function() {
+			return {
+				output: String
+			}
+		},
+		evaluate: function(result) {
+			return $api.Object({
+				properties: result.stdio.output.split("\n").map(function(line) {
+					var token = line.split("=");
+					return { name: token[0], value: token[1] }
+				})
+			});
+		}
+	});
+
+	// var config = function(p) {
+	// 	return git({
+	// 		command: "config",
+	// 		arguments: (function(rv) {
+	// 			if (p.arguments) {
+	// 				rv.push.apply(rv,p.arguments);
+	// 			}
+	// 			return rv;
+	// 		})([]),
+	// 		stdio: {
+	// 			output: String
+	// 		},
+	// 		directory: p.directory,
+	// 		evaluate: function(result) {
+	// 			return $api.Object({
+	// 				properties: result.stdio.output.split("\n").map(function(line) {
+	// 					var token = line.split("=");
+	// 					return { name: token[0], value: token[1] }
+	// 				})
+	// 			});
+	// 		}
+	// 	});
+	// };
 
 	//	help
 
@@ -278,7 +327,7 @@ var Installation = function(environment) {
 		//	Setup and Config
 
 		this.config = function(p) {
-			return config($api.Object.compose(p, { directory: directory }));
+			return config($api.Object.compose(p, { repository: directory }));
 		}
 
 		// this.config = function(p) {
