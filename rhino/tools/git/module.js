@@ -12,6 +12,8 @@
 
 var Installation = function(environment) {
 
+	//	Organized via https://git-scm.com/docs
+
 	//	Setup and Config
 
 	var git = function(m) {
@@ -74,22 +76,62 @@ var Installation = function(environment) {
 
 	//	Getting and Creating Projects
 
+	var init = function(m) {
+		git({
+			command: "init",
+			arguments: [m.pathname]
+		});
+		return new LocalRepository({
+			directory: m.pathname.directory
+		});
+	};
+
+	var clone = function(p) {
+		if (!p.to) {
+			throw new Error("Required: 'to' property indicating destination.");
+		}
+		git({
+			config: p.config,
+			command: "clone",
+			arguments: [p.repository,p.to.toString()],
+			environment: $context.api.js.Object.set({}, $context.api.shell.environment, environment)
+		});
+		return new LocalRepository({ directory: p.to.directory });
+	}
+
+	//	Basic Snapshotting
+
+	//	Branching and Merging
+
+	//	Sharing and Updating Projects
+
+	//	Inspection and Comparison
+
+	//	Patching
+
+	//	Debugging
+
+	//	Guides
+
+	//	Email
+
+	//	External Systems
+
+	//	Administration
+
+	//	Server Admin
+
+	//	Plumbing Commands
+
 	var Repository = function(o) {
 		var environment = (o && o.environment) ? o.environment : {};
 
 		//	Getting and Creating Projects
 
 		this.clone = function(p) {
-			if (!p.to) {
-				throw new Error("Required: 'to' property indicating destination.");
-			}
-			git({
-				config: p.config,
-				command: "clone",
-				arguments: [this.reference,p.to.toString()],
-				environment: $context.api.js.Object.set({}, $context.api.shell.environment, environment)
-			});
-			return new LocalRepository({ directory: p.to.directory });
+			return clone($api.Object.compose(p, {
+				repository: this.reference
+			}));
 		}
 	};
 
@@ -591,19 +633,7 @@ var Installation = function(environment) {
 		}
 	};
 
-	//	Organized via https://git-scm.com/docs
-
-	//	Getting and Creating Projects
-
-	this.init = function(m) {
-		git({
-			command: "init",
-			arguments: [m.pathname]
-		});
-		return new LocalRepository({
-			directory: m.pathname.directory
-		});
-	};
+	this.init = init;
 
 	//	Server Admin
 
