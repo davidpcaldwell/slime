@@ -54,6 +54,8 @@ var Installation = function(environment) {
 	var Repository = function(o) {
 		var environment = (o && o.environment) ? o.environment : {};
 
+		//	Getting and Creating Projects
+		
 		this.clone = function(p) {
 			if (!p.to) {
 				throw new Error("Required: 'to' property indicating destination.");
@@ -192,6 +194,54 @@ var Installation = function(environment) {
 				}
 			});
 		};
+		
+		//	Organization of commands mirrors organization on https://git-scm.com/docs
+
+		//	Setup and Config
+
+		this.config = function(p) {
+			if (!p) p = {};
+			return execute({
+				command: "config",
+				arguments: (function(rv) {
+					if (p.arguments) {
+						rv.push.apply(rv,p.arguments);
+					}
+					return rv;
+				})([]),
+				stdio: {
+					output: String
+				},
+				evaluate: function(result) {
+					return $api.Object({
+						properties: result.stdio.output.split("\n").map(function(line) {
+							var token = line.split("=");
+							return { name: token[0], value: token[1] }
+						})
+					});
+				}
+			});
+		};
+
+		//	Getting and Creating Projects
+
+		//	Basic Snapshotting
+
+		this.add = function(p) {
+			execute({
+				command: "add",
+				arguments: (function() {
+					var rv = [];
+					if (p.path) {
+						rv.push(p.path);
+					}
+					if (p.paths) {
+						rv.push.apply(rv,p.paths);
+					}
+					return rv;
+				})()
+			});
+		};
 
 		this.status = function(p) {
 			var self = this;
@@ -230,22 +280,6 @@ var Installation = function(environment) {
 			});
 		};
 
-		this.add = function(p) {
-			execute({
-				command: "add",
-				arguments: (function() {
-					var rv = [];
-					if (p.path) {
-						rv.push(p.path);
-					}
-					if (p.paths) {
-						rv.push.apply(rv,p.paths);
-					}
-					return rv;
-				})()
-			});
-		};
-
 		this.commit = function(p) {
 			execute({
 				command: "commit",
@@ -265,86 +299,7 @@ var Installation = function(environment) {
 			});
 		};
 
-		this.merge = function(p) {
-			var args = [];
-			args.push(p.name);
-			if (p.ff_only) {
-				args.push("--ff-only");
-			}
-			execute($context.api.js.Object.set({
-				command: "merge",
-				arguments: args
-			}, (p.stdio) ? { stdio: p.stdio } : {}));
-		};
-
-		this.log = function(p) {
-			return execute({
-				command: "log",
-				arguments: (function() {
-					var rv = [];
-					rv.push("--format=format:" + formats.log.format);
-					if (p && p.since && p.until) {
-						rv.push(p.since+".."+p.until);
-						rv.push("--");
-					} else if (p && p.since || p && p.until) {
-						throw new TypeError("Unsupported: since or until without other");
-					}
-					if (p && p.author) {
-						rv.push("--author=" + p.author);
-					}
-					if (p && p.all) {
-						rv.push("--all");
-					}
-					return rv;
-				})()
-				,stdio: {
-					output: String
-				}
-				,evaluate: function(result) {
-					if (result.status != 0) {
-						return null;
-					}
-					return result.stdio.output.split("\n").map(function(line) {
-						if (line.length == 0) return null;
-						return formats.log.parse(line);
-					}).filter(function(commit) {
-						return Boolean(commit && commit.subject);
-					});
-				}
-			});
-		};
-
-		this.show = function(p) {
-			if (!p) p = {};
-			return show(p);
-		};
-
-		this.fetch = function(p) {
-			var args = [];
-			if (p && p.all) {
-				args.push("--all");
-			} else {
-				if (p && p.repository) args.push(p.repository);
-				if (p && p.refspec) args.push(p.refspec);
-			}
-			execute({
-				config: p.config,
-				command: "fetch",
-				arguments: args,
-				stdio: {
-					output: String
-				}
-			});
-		};
-
-		this.checkout = function(p) {
-			var args = [];
-			args.push(p.branch);
-			execute($context.api.js.Object.set({
-				command: "checkout",
-				arguments: args
-			}, (p.stdio) ? { stdio: p.stdio } : {}));
-		};
+		//	Branching and Merging
 
 		this.branch = function(p) {
 			var args = [];
@@ -416,17 +371,28 @@ var Installation = function(environment) {
 			});
 		};
 
-		this.push = function(p) {
+		this.checkout = function(p) {
 			var args = [];
-			if (p && p.delete) args.push("--delete");
-			if (p && p.repository) args.push(p.repository);
-			if (p && p.refspec) args.push(p.refspec);
-			execute({
-				command: "push",
-				arguments: args,
-				environment: p.environment
-			});
+			args.push(p.branch);
+			execute($context.api.js.Object.set({
+				command: "checkout",
+				arguments: args
+			}, (p.stdio) ? { stdio: p.stdio } : {}));
 		};
+
+		this.merge = function(p) {
+			var args = [];
+			args.push(p.name);
+			if (p.ff_only) {
+				args.push("--ff-only");
+			}
+			execute($context.api.js.Object.set({
+				command: "merge",
+				arguments: args
+			}, (p.stdio) ? { stdio: p.stdio } : {}));
+		};
+
+		//	log() in "Inspection and Comparison" below
 
 		this.stash = function(p) {
 			if (!p) p = {};
@@ -451,28 +417,36 @@ var Installation = function(environment) {
 			});
 		}).bind(this);
 
-		this.mergeBase = function(p) {
+		//	Sharing and Updating Projects
+
+		this.fetch = function(p) {
 			var args = [];
-			args = args.concat(p.commits);
-			return execute({
-				command: "merge-base",
+			if (p && p.all) {
+				args.push("--all");
+			} else {
+				if (p && p.repository) args.push(p.repository);
+				if (p && p.refspec) args.push(p.refspec);
+			}
+			execute({
+				config: p.config,
+				command: "fetch",
 				arguments: args,
 				stdio: {
 					output: String
-				},
-				evaluate: function(result) {
-					if (result.status == 0) {
-						var rv = (/^(\S+)/.exec(result.stdio.output))[1];
-						if (!rv) {
-							throw new Error("No match: [" + result.stdio.output + "]");
-						}
-						return show({ object: rv });
-	//					return result.stdio.output;
-					} else {
-						throw new Error("git exited with status " + result.status);
-					}
 				}
-			})
+			});
+		};
+
+		this.push = function(p) {
+			var args = [];
+			if (p && p.delete) args.push("--delete");
+			if (p && p.repository) args.push(p.repository);
+			if (p && p.refspec) args.push(p.refspec);
+			execute({
+				command: "push",
+				arguments: args,
+				environment: p.environment
+			});
 		};
 
 		this.submodule = function(p) {
@@ -501,34 +475,114 @@ var Installation = function(environment) {
 			}
 		};
 
-		this.config = function(p) {
+		//	Inspection and Comparison
+
+		this.show = function(p) {
 			if (!p) p = {};
+			return show(p);
+		};
+
+		this.log = function(p) {
 			return execute({
-				command: "config",
-				arguments: (function(rv) {
-					if (p.arguments) {
-						rv.push.apply(rv,p.arguments);
+				command: "log",
+				arguments: (function() {
+					var rv = [];
+					rv.push("--format=format:" + formats.log.format);
+					if (p && p.since && p.until) {
+						rv.push(p.since+".."+p.until);
+						rv.push("--");
+					} else if (p && p.since || p && p.until) {
+						throw new TypeError("Unsupported: since or until without other");
+					}
+					if (p && p.author) {
+						rv.push("--author=" + p.author);
+					}
+					if (p && p.all) {
+						rv.push("--all");
 					}
 					return rv;
-				})([]),
+				})()
+				,stdio: {
+					output: String
+				}
+				,evaluate: function(result) {
+					if (result.status != 0) {
+						return null;
+					}
+					return result.stdio.output.split("\n").map(function(line) {
+						if (line.length == 0) return null;
+						return formats.log.parse(line);
+					}).filter(function(commit) {
+						return Boolean(commit && commit.subject);
+					});
+				}
+			});
+		};
+
+		//	Patching
+
+		//	Debugging
+
+		//	(Guides)
+
+		//	Email
+
+		//	External Systems
+
+		//	Administration
+
+		//	Server Admin
+
+		//	.daemon() see below
+
+		//	Plumbing Commands
+
+		this.mergeBase = function(p) {
+			var args = [];
+			args = args.concat(p.commits);
+			return execute({
+				command: "merge-base",
+				arguments: args,
 				stdio: {
 					output: String
 				},
 				evaluate: function(result) {
-					return $api.Object({
-						properties: result.stdio.output.split("\n").map(function(line) {
-							var token = line.split("=");
-							return { name: token[0], value: token[1] }
-						})
-					});
+					if (result.status == 0) {
+						var rv = (/^(\S+)/.exec(result.stdio.output))[1];
+						if (!rv) {
+							throw new Error("No match: [" + result.stdio.output + "]");
+						}
+						return show({ object: rv });
+	//					return result.stdio.output;
+					} else {
+						throw new Error("git exited with status " + result.status);
+					}
 				}
-			});
-		}
+			})
+		};
+
+		//	Interface for custom commands or commands not implemented
 
 		this.execute = function(p) {
 			return execute(p);
 		}
 	};
+
+	//	Organized via https://git-scm.com/docs
+
+	//	Getting and Creating Projects
+
+	this.init = function(m) {
+		git({
+			command: "init",
+			arguments: [m.pathname]
+		});
+		return new LocalRepository({
+			directory: m.pathname.directory
+		});
+	};
+
+	//	Server Admin
 
 	this.daemon = function(p) {
 		var args = [];
@@ -577,16 +631,6 @@ var Installation = function(environment) {
 		} else {
 			throw new TypeError("Required: .local or .remote property.");
 		}
-	};
-
-	this.init = function(m) {
-		git({
-			command: "init",
-			arguments: [m.pathname]
-		});
-		return new LocalRepository({
-			directory: m.pathname.directory
-		});
 	};
 
 	this.execute = function(m) {
