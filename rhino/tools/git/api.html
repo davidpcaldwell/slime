@@ -209,6 +209,8 @@ END LICENSE
 							</span>
 							<script type="application/x.jsapi#tests">
 								verify(remote).reference.is.type("string");
+							</script>
+							<script type="application/x.jsapi#tests">
 								var to = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
 								to.directory.remove();
 								var local = remote.clone({
