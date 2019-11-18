@@ -324,35 +324,15 @@ var Installation = function(environment) {
 		
 		//	Organization of commands mirrors organization on https://git-scm.com/docs
 
-		//	Setup and Config
-
-		this.config = function(p) {
-			return config($api.Object.compose(p, { repository: directory }));
+		var command = function(f) {
+			return function(p) {
+				return f($api.Object.compose(p, { repository: directory }));
+			}
 		}
 
-		// this.config = function(p) {
-		// 	if (!p) p = {};
-		// 	return execute({
-		// 		command: "config",
-		// 		arguments: (function(rv) {
-		// 			if (p.arguments) {
-		// 				rv.push.apply(rv,p.arguments);
-		// 			}
-		// 			return rv;
-		// 		})([]),
-		// 		stdio: {
-		// 			output: String
-		// 		},
-		// 		evaluate: function(result) {
-		// 			return $api.Object({
-		// 				properties: result.stdio.output.split("\n").map(function(line) {
-		// 					var token = line.split("=");
-		// 					return { name: token[0], value: token[1] }
-		// 				})
-		// 			});
-		// 		}
-		// 	});
-		// };
+		//	Setup and Config
+
+		this.config = command(config);
 
 		//	Getting and Creating Projects
 
