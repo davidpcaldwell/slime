@@ -13,6 +13,7 @@
 var Installation = function(environment) {
 
 	//	Setup and Config
+
 	var git = function(m) {
 		var addConfigurationArgumentsTo = function(array,config) {
 			//	TODO	duplicated below, in git()
@@ -67,7 +68,11 @@ var Installation = function(environment) {
 				});
 			}
 		});
-	}
+	};
+
+	//	help
+
+	//	Getting and Creating Projects
 
 	var Repository = function(o) {
 		var environment = (o && o.environment) ? o.environment : {};

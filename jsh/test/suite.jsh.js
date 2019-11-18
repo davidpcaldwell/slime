@@ -25,6 +25,7 @@ var getParameters = function() {
 
 if (!parameters.options.suite && parameters.options.definition) {
 	parameters.options.suite = jsh.script.file.parent.getRelativePath("definition.suite.js");
+	if (parameters.options.part) parameters.options.part = "definition:" + parameters.options.part;
 }
 
 jsh.loader.run(

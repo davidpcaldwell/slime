@@ -104,10 +104,16 @@ plugin({
 
 				if (p.part) {
 					var tokens = p.part.split(":");
-					this.path = p.suite.getPath({
+					var path = p.suite.getPath({
 						part: tokens[0],
 						element: tokens[1]
 					});
+					//	TODO	below seems like hack, probably can be more specific: part was found, but HTML path was not?
+					//	TODO	could also improve error reporting
+					if (path[1] === null) {
+						throw new Error("Not found: path " + p.part);
+					}
+					this.path = path;
 				}
 			});
 		}
