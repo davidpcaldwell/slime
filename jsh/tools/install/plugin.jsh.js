@@ -88,7 +88,7 @@ plugin({
 
 		var graal = new function() {
 			var VERSION = {
-				number: "19.0.0",
+				number: "19.2.1",
 				edition: "ce"
 			};
 			this.install = $api.Events.Function(function(p,events) {
