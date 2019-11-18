@@ -11,42 +11,34 @@
 //	END LICENSE
 
 var Installation = function(environment) {
-	var addConfigurationArgumentsTo = function(array,config) {
-		//	TODO	duplicated below, in git()
-		if (config) {
-			for (var x in config) {
-				if (config[x] instanceof Array) {
-					debugger;
-					config[x].forEach(function(value) {
-						array.push("-c", x + "=" + value);
-					});
-				} else {
-					array.push("-c", x + "=" + m.config[x]);
+	var git = function(m) {
+		var addConfigurationArgumentsTo = function(array,config) {
+			//	TODO	duplicated below, in git()
+			if (config) {
+				for (var x in config) {
+					if (config[x] instanceof Array) {
+						debugger;
+						config[x].forEach(function(value) {
+							array.push("-c", x + "=" + value);
+						});
+					} else {
+						array.push("-c", x + "=" + config[x]);
+					}
 				}
 			}
-		}
-	};
-
-	var git = function(m) {
+		};
+	
 		return $context.api.shell.run(
 			Object.assign({}, m, {
 				command: environment.program,
 				arguments: function(rv) {
-					if (m.config) {
-						for (var x in m.config) {
-							if (m.config[x] instanceof Array) {
-								m.config[x].forEach(function(value) {
-									rv.push("-c", x + "=" + value);
-								});
-							} else {
-								rv.push("-c", x + "=" + m.config[x]);
-							}
-						}
-					}
+					addConfigurationArgumentsTo(rv,m.config);
 					rv.push(m.command);
 					rv.push.apply(rv, (m.arguments) ? m.arguments : []);
 					return rv;
-				}
+				},
+				environment: m.environment,
+				directory: m.directory
 			})
 		);
 	};
@@ -55,7 +47,7 @@ var Installation = function(environment) {
 		var environment = (o && o.environment) ? o.environment : {};
 
 		//	Getting and Creating Projects
-		
+
 		this.clone = function(p) {
 			if (!p.to) {
 				throw new Error("Required: 'to' property indicating destination.");
@@ -121,11 +113,7 @@ var Installation = function(environment) {
 		},this);
 
 		var execute = function(p) {
-			var args = [];
-			addConfigurationArgumentsTo(args,p.config);
-			return $context.api.shell.run($context.api.js.Object.set({}, p, {
-				command: environment.program,
-				arguments: args.concat([p.command]).concat( (p.arguments) ? p.arguments : [] ),
+			return git($api.Object.compose(p, {
 				environment: $context.api.js.Object.set({}, $context.api.shell.environment, (o && o.environment) ? o.environment : {}, (p.environment) ? p.environment : {}),
 				directory: directory
 			}));
