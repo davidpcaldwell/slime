@@ -101,6 +101,23 @@ var Installation = function(environment) {
 
 	//	Basic Snapshotting
 
+	var add = function(p) {
+		git({
+			command: "add",
+			arguments: (function() {
+				var rv = [];
+				if (p.path) {
+					rv.push(p.path);
+				}
+				if (p.paths) {
+					rv.push.apply(rv,p.paths);
+				}
+				return rv;
+			})(),
+			directory: p.directory
+		});
+	};
+
 	//	Branching and Merging
 
 	//	Sharing and Updating Projects
@@ -293,19 +310,7 @@ var Installation = function(environment) {
 		//	Basic Snapshotting
 
 		this.add = function(p) {
-			execute({
-				command: "add",
-				arguments: (function() {
-					var rv = [];
-					if (p.path) {
-						rv.push(p.path);
-					}
-					if (p.paths) {
-						rv.push.apply(rv,p.paths);
-					}
-					return rv;
-				})()
-			});
+			add($api.Object.compose(p, { directory: directory }));
 		};
 
 		this.status = function(p) {

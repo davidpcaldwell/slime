@@ -386,6 +386,26 @@ END LICENSE
 								verify(after).evaluate.property("user.email").is("test@example.com");
 							</script>
 						</li>
+						<li class="function" jsapi:id="add">
+							<div class="name">add</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</div>
+							<script type="application/x.jsapi#tests">
+								var repository = newRepository();
+								repository.test.writeFile("a","a");
+								repository.add({ path: "a" });
+								verify(repository).status().paths.evaluate.property("a").is("A ");
+							</script>
+						</li>
 						<li class="function">
 							<div class="name">fetch</div>
 							<span>__DESCRIPTION__</span>
@@ -506,26 +526,6 @@ END LICENSE
 								verify(status).subject.is("amessage");
 								verify(status).names.length.is(1);
 								verify(status).names[0].is("master");
-							</script>
-						</li>
-						<li class="function">
-							<div class="name">add</div>
-							<span>__DESCRIPTION__</span>
-							<div class="arguments">
-								<div class="label">Arguments</div>
-								<ol>
-								</ol>
-							</div>
-							<div class="returns">
-								<div class="label">Returns</div>
-								<span class="type">__TYPE__</span>
-								<span>__DESCRIPTION__</span>
-							</div>
-							<script type="application/x.jsapi#tests">
-								var repository = newRepository();
-								repository.test.writeFile("a","a");
-								repository.add({ path: "a" });
-								verify(repository).status().paths.evaluate.property("a").is("A ");
 							</script>
 						</li>
 						<li class="function">
