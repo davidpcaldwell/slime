@@ -20,8 +20,6 @@ jsh.script.Application.run({
 					command: "tsc",
 					arguments: function(rv) {
 						rv.push("--outDir", output);
-						rv.push("--allowJs");
-						rv.push("--checkJs");
 						rv.push(jsh.script.file.parent.getFile("foo.ts"));
 					}
 				});
