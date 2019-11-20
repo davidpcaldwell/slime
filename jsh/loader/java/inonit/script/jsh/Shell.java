@@ -113,7 +113,7 @@ public class Shell {
 
 	public String getLoaderCode(String path) throws IOException {
 		return streams.readString(configuration.getInstallation().getPlatformLoader().getFile(path).getReader());
-	};
+	}
 
 	private Streams streams = new Streams();
 

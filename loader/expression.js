@@ -250,9 +250,10 @@
 		(function() {
 			mime.Type.fromName = function(path) {
 				if (/\.js$/.test(path)) return mime.Type.parse("application/javascript");
-				if (/\.coffee$/.test(path)) return mime.Type.parse("application/vnd.coffeescript");
 				if (/\.css$/.test(path)) return mime.Type.parse("text/css");
+				if (/\.ts$/.test(path)) return mime.Type.parse("application/x.typescript");
 				if (/\.csv$/.test(path)) return mime.Type.parse("text/csv");
+				if (/\.coffee$/.test(path)) return mime.Type.parse("application/vnd.coffeescript");
 			};
 
 			var methods = {};
@@ -281,13 +282,6 @@
 
 				if (o.name) {
 					this.name = o.name;
-				}
-
-				var readString = function(string) {
-					return function(v) {
-						if (v === String) return string;
-						if (v === JSON) return JSON.parse(this.read(String));
-					}
 				}
 
 				if ( (!o.read || !o.read.string) && typeof(o.string) == "string") {
@@ -328,6 +322,7 @@
 			//	TODO	re-work resource.js
 
 			var $coffee = (function() {
+				//	TODO	rename to getCoffeescript to make consistent with camel case.
 				var coffeeScript = $slime.getCoffeeScript();
 				if (!coffeeScript) return null;
 				if (coffeeScript.code) {
@@ -337,6 +332,11 @@
 				} else if (coffeeScript.object) {
 					return coffeeScript.object;
 				}
+			})();
+
+			var $typescript = (function() {
+				//	TODO	implement to somehow retrieve a TypeScript compiler
+				return null;
 			})();
 
 			methods.run = function run(object,scope) {
@@ -356,7 +356,12 @@
 				if (typeof(string) != "string") {
 					throw new TypeError("Resource: " + resource.name + " is not convertible to string, so cannot be executed.");
 				}
-				if (type && type.is("application/vnd.coffeescript")) {
+				if ($typescript && type && type.is("application/x.typescript")) {
+					resource.js = {
+						name: resource.name,
+						code: $typescript.compile(string)
+					};
+				} else if (type && type.is("application/vnd.coffeescript")) {
 					resource.js = {
 						name: resource.name,
 						code: $coffee.compile(string)

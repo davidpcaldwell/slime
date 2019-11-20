@@ -143,6 +143,10 @@ plugin({
 					jsh.shell.console("Command not found: " + e.commandNotFound);
 					jsh.shell.exit(1);
 				} else {
+					jsh.shell.console(e);
+					if (e.stack) {
+						jsh.shell.console(e.stack);
+					}
 					throw e;
 				}
 			}
