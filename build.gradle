@@ -14,11 +14,17 @@ configurations {
 dependencies {
 	rhino 'org.mozilla:rhino:1.7R3'
 	servlet 'javax.servlet:javax.servlet-api:3.0.1'
+
+	//	These lines are necessary for VSCode to properly understand the dependencies
+	implementation 'org.mozilla:rhino:1.7R3'
+	implementation 'javax.servlet:javax.servlet-api:3.0.1'
 }
 
 sourceSets {
 	//	'main' is not really the right name for this
 	main {
+		//	java.outputDir is not respected by VSCode; appears generated .classpath is wrong
+		java.outputDir = file('local/gradle/bin/main')
 		java {
 			srcDir 'rhino/system/java'
 			srcDir 'loader/jrunscript/java'
@@ -28,11 +34,11 @@ sourceSets {
 		}
 	}
 
-	foo {}
-
 	rhino {
 		compileClasspath += configurations.rhino
 		compileClasspath += sourceSets.main.output
+		//	java.outputDir is not respected by VSCode; appears generated .classpath is wrong
+		java.outputDir = file('local/gradle/bin/rhino')
 		java {
 			srcDir 'loader/jrunscript/rhino/java'
 		}
@@ -41,6 +47,8 @@ sourceSets {
 	servlet {
 		compileClasspath += configurations.servlet
 		compileClasspath += sourceSets.main.output
+		//	java.outputDir is not respected by VSCode; appears generated .classpath is wrong
+		java.outputDir = file('local/gradle/bin/servlet')
 		java {
 			srcDir 'rhino/http/servlet/java'
 		}
@@ -48,6 +56,8 @@ sourceSets {
 
 	jsh {
 		compileClasspath += sourceSets.main.output
+		//	java.outputDir is not respected by VSCode; appears generated .classpath is wrong
+		java.outputDir = file('local/gradle/bin/jsh')
 		java {
 			srcDir 'jsh/loader/java'
 		}
@@ -58,6 +68,8 @@ sourceSets {
 		compileClasspath += sourceSets.main.output
 		compileClasspath += sourceSets.rhino.output
 		compileClasspath += sourceSets.jsh.output
+		//	java.outputDir is not respected by VSCode; appears generated .classpath is wrong
+		java.outputDir = file('local/gradle/bin/jshRhino')
 		java {
 			srcDir 'jsh/loader/rhino/java'
 		}
