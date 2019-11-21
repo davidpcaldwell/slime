@@ -1,3 +1,11 @@
 ^local/
 \.DS_Store$
 \.metals
+^build/
+^bin/
+^.gradle/
+^.bloop/
+^.classpath
+^.project
+^.settings/
+^.vscode/

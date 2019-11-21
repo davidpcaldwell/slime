@@ -1,0 +1,65 @@
+plugins {
+	id 'java-library'
+}
+
+repositories {
+	mavenCentral()
+}
+
+configurations {
+	rhino
+	servlet
+}
+
+dependencies {
+	rhino 'org.mozilla:rhino:1.7R3'
+	servlet 'javax.servlet:javax.servlet-api:3.0.1'
+}
+
+sourceSets {
+	//	'main' is not really the right name for this
+	main {
+		java {
+			srcDir 'rhino/system/java'
+			srcDir 'loader/jrunscript/java'
+
+			//	modules
+			srcDir 'jrunscript/host/java'
+		}
+	}
+
+	foo {}
+
+	rhino {
+		compileClasspath += configurations.rhino
+		compileClasspath += sourceSets.main.output
+		java {
+			srcDir 'loader/jrunscript/rhino/java'
+		}
+	}
+
+	servlet {
+		compileClasspath += configurations.servlet
+		compileClasspath += sourceSets.main.output
+		java {
+			srcDir 'rhino/http/servlet/java'
+		}
+	}
+
+	jsh {
+		compileClasspath += sourceSets.main.output
+		java {
+			srcDir 'jsh/loader/java'
+		}
+	}
+
+	jshRhino {
+		compileClasspath += configurations.rhino
+		compileClasspath += sourceSets.main.output
+		compileClasspath += sourceSets.rhino.output
+		compileClasspath += sourceSets.jsh.output
+		java {
+			srcDir 'jsh/loader/rhino/java'
+		}
+	}
+}

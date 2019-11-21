@@ -123,6 +123,28 @@ plugin({
 			$api.deprecate(jsh.tools.install,"tomcat");
 		})();
 
+		var gradle = (function() {
+			var URL = "https://services.gradle.org/distributions/gradle-6.0.1-bin.zip";
+
+			return new function() {
+				this.install = function(p,events) {
+					jsh.tools.install.install({
+						url: URL,
+						format: jsh.tools.install.format.zip,
+						to: jsh.shell.jsh.lib.getRelativePath("gradle"),
+						getDestinationPath: function(file) {
+							return "gradle-6.0.1";
+						},
+						replace: true
+					}, events);
+					jsh.shell.run({
+						command: "chmod",
+						arguments: ["+x", jsh.shell.jsh.lib.getSubdirectory("gradle").getFile("bin/gradle")]
+					});
+				}
+			}
+		})();
+
 		var ncdbg = new function() {
 			Object.defineProperty(this, "installed", {
 				get: function() {
@@ -448,6 +470,8 @@ plugin({
 				return load(code);
 			}
 		};
+
+		jsh.tools.gradle = gradle;
 
 		var node = plugins.node.module();
 

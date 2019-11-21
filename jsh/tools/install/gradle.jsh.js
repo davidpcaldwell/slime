@@ -11,17 +11,8 @@
 //	Contributor(s):
 //	END LICENSE
 
-var URL = "https://services.gradle.org/distributions/gradle-4.8-bin.zip";
-
-jsh.tools.install.install({
-	url: URL,
-	format: jsh.tools.install.format.zip,
-	to: jsh.shell.jsh.lib.getRelativePath("gradle"),
-	getDestinationPath: function(file) {
-		return "gradle-4.8";
-	}
-}, {
+jsh.tools.gradle.install(void(0), {
 	console: function(e) {
-		jsh.shell.console(e.message);
+		jsh.shell.console(e.detail);
 	}
 });
