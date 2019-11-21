@@ -9,3 +9,7 @@
 ^.project
 ^.settings/
 ^.vscode/
+# Default ignored files
+# .idea/workspace.xml
+^.idea/
+\.iml$
