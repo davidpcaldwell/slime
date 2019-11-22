@@ -118,8 +118,18 @@ public class Servlet extends javax.servlet.http.HttpServlet {
 				@Override public String getLoaderCode(String path) throws IOException {
 					return streams.readString(servlet.getServletContext().getResourceAsStream("/WEB-INF/loader/" + path));
 				}
+
+				@Override public Typescript getTypescript() {
+					return null;
+				}
+
+				@Override public Loader.Classes.Interface getClasspath() {
+					return HostObject.this.getClasspath();
+				}
 			};
 		}
+
+		abstract Loader.Classes.Interface getClasspath();
 
 		public void register(Script script) {
 			LOG.log(Level.CONFIG, "Initialized servlet with script " + script);

@@ -90,7 +90,7 @@ class Nashorn extends Servlet.ScriptContainer {
 			this.host = host;
 		}
 
-		public Loader.Classes.Interface getClasspath() {
+		Loader.Classes.Interface getClasspath() {
 			return host.getClasspath();
 		}
 	}

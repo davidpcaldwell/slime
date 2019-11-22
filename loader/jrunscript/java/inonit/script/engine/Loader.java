@@ -21,8 +21,14 @@ public abstract class Loader {
 	private static final Logger LOGGER = Logger.getLogger(Loader.class.getName());
 	private static final inonit.system.Logging LOG = inonit.system.Logging.get();
 
-	public abstract String getCoffeeScript() throws IOException;
 	public abstract String getLoaderCode(String path) throws IOException;
+	public abstract Classes.Interface getClasspath();
+	public abstract String getCoffeeScript() throws IOException;
+	public abstract Typescript getTypescript();
+
+	public static abstract class Typescript {
+		public abstract String compile(String code);
+	}
 
 	public static abstract class Classes {
 		public static abstract class Configuration {

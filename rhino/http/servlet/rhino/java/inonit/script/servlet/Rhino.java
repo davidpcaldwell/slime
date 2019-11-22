@@ -14,6 +14,7 @@ package inonit.script.servlet;
 
 import java.io.*;
 
+import inonit.script.engine.*;
 import inonit.script.rhino.*;
 
 public class Rhino extends Servlet.ScriptContainer {
@@ -134,6 +135,10 @@ public class Rhino extends Servlet.ScriptContainer {
 		Host(Servlet servlet, Engine engine) {
 			super(servlet);
 			this.engine = engine;
+		}
+
+		Loader.Classes.Interface getClasspath() {
+			return engine.getClasspath();
 		}
 
 		public Engine getEngine() {

@@ -63,7 +63,7 @@
 		this.eval = this.script;
 
 		this.getClasspath = function() {
-			return $rhino.getClasspath();
+			return $loader.getClasspath();
 		};
 	};
 

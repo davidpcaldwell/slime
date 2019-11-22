@@ -117,6 +117,14 @@ public class Shell {
 		public String getLoaderCode(String path) throws IOException {
 			return streams.readString(configuration.getInstallation().getPlatformLoader().getFile(path).getReader());
 		}	
+
+		public Loader.Classes.Interface getClasspath() {
+			return Shell.this.classpath;
+		}
+
+		public Loader.Typescript getTypescript() {
+			return null;
+		}
 	};
 
 	public Loader getLoader() {

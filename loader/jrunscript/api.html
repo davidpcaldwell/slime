@@ -57,8 +57,12 @@ END LICENSE
 			</li>
 		-->
 		<div class="type">
+			<!--	
+				TODO	rename to inonit.script.engine.Runtime? Or something clearer? Maybe rename methods to 
+						getSlimeRuntimeCode() and getCoffeeScriptCode()?
+			-->
 			<a class="type" name="types.Packages.inonit.script.engine.Loader">JavaClass inonit.script.engine.Loader</a>
-			<span>__DESCRIPTION__</span>
+			<span>An object that can load the SLIME Java runtime.</span>
 			<div class="label">has properties:</div>
 			<ul>
 				<li class="function">
@@ -86,6 +90,34 @@ END LICENSE
 						<div class="label">Returns</div>
 						<span class="type">JavaClass java.lang.String</span>
 						<span>The source code for CoffeeScript, or <code>null</code> if it is not present.</span>
+					</div>
+				</li>
+				<li class="function">
+					<div class="name">getClasspath</div>
+					<span>__DESCRIPTION__</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</div>
+				</li>
+				<li class="function">
+					<div class="name">getTypescript</div>
+					<span>__DESCRIPTION__</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
 					</div>
 				</li>
 			</ul>
@@ -165,38 +197,11 @@ END LICENSE
 			</p>
 			<div class="label">has properties:</div>
 			<ul>
+				<!--	TODO	undocumented: $graal	-->
 				<li class="value">
-					<div class="name">$classpath</div>
-					<span class="type">JavaClass inonit.script.engine.Loader.Classes.Interface</span>
+					<div class="name">$loader</div>
+					<span class="type"><a href="#types.Packages.inonit.script.engine.Loader">JavaClass inonit.script.engine.Loader</a></span>
 					<span>__DESCRIPTION__</span>
-				</li>
-				<li class="experimental function">
-					<div class="name">$getLoaderCode</div>
-					<span>__DESCRIPTION__</span>
-					<div class="arguments">
-						<div class="label">Arguments</div>
-						<ol>
-						</ol>
-					</div>
-					<div class="returns">
-						<div class="label">Returns</div>
-						<span class="type">__TYPE__</span>
-						<span>__DESCRIPTION__</span>
-					</div>
-				</li>
-				<li class="experimental function">
-					<div class="name">$getCoffeeScript</div>
-					<span>__DESCRIPTION__</span>
-					<div class="arguments">
-						<div class="label">Arguments</div>
-						<ol>
-						</ol>
-					</div>
-					<div class="returns">
-						<div class="label">Returns</div>
-						<span class="type">__TYPE__</span>
-						<span>__DESCRIPTION__</span>
-					</div>
 				</li>
 			</ul>
 			<p>

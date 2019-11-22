@@ -35,8 +35,7 @@ var $java = (function() {
 			$host.getLoader().getLoaderCode("jrunscript/nashorn.js"),
 			{
 				$graal: $graal,
-				$loader: $host.getLoader(),
-				$classpath: $host.getClasspath()
+				$loader: $host.getLoader()
 			},
 			null
 		);

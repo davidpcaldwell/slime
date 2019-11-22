@@ -219,7 +219,7 @@ load("nashorn:mozilla_compat.js");
 	};
 
 	var engine = ($graal) ? graal : nashorn;
-	if (typeof($classpath) == "undefined") {
+	if (typeof($loader) == "undefined") {
 		return engine;
 	} else {
 		var $getLoaderCode = function(path) {
@@ -238,7 +238,7 @@ load("nashorn:mozilla_compat.js");
 			};
 
 			this.getClasspath = function() {
-				return $classpath;
+				return $loader.getClasspath();
 			};
 
 			this.eval = function(name,code,scope,target) {
@@ -259,7 +259,7 @@ load("nashorn:mozilla_compat.js");
 
 		var $bridge = new function() {
 			var javaLangObjectArrayClass;
-			var javaLangClassNativeClass = $classpath.getClass("java.lang.Class");
+			var javaLangClassNativeClass = $loader.getClasspath().getClass("java.lang.Class");
 
 			var isJavaObjectArray = function(v) {
 				//	TODO	In Nashorn, this could be: Java.type("java.lang.Object[]").class;
