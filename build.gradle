@@ -89,14 +89,4 @@ sourceSets {
 			srcDir 'jsh/loader/rhino/java'
 		}
 	}
-
-	jshGraal {
-		compileClasspath += sourceSets.main.output
-		compileClasspath += sourceSets.jsh.output
-		//	java.outputDir is not respected by VSCode; appears generated .classpath is wrong
-		java.outputDir = file('local/gradle/bin/jshRhino')
-		java {
-			srcDir 'jsh/loader/graal/java'
-		}
-	}
 }
