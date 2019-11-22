@@ -30,95 +30,105 @@ END LICENSE
 			the Nashorn engine included with Java 8 and up. The embeddings are expressions that evaluate to an object. They provide
 			different scope variables for implementing the embedding.
 		</p>
+		<div class="type">
+			<a class="type" name="types.Packages.inonit.script.engine.Loader">JavaClass inonit.script.engine.Loader</a>
+			<span>__DESCRIPTION__</span>
+			<div class="label">has properties:</div>
+			<ul>
+				<li class="function">
+					<div class="name">getLoaderCode</div>
+					<span>__DESCRIPTION__</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+							<li class="value">
+								<span class="type">JavaClass java.lang.String</span>
+								<span>The path, relative to <code>loader/</code>, to source files from the SLIME loader.</span>
+							</li>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type">JavaClass java.lang.String</span>
+						<span>The source code at the given location.</span>
+					</div>
+				</li>
+				<li class="function">
+					<div class="name">getCoffeeScript</div>
+					<span>A function that provides access to CoffeeScript, if available.</span>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type">JavaClass java.lang.String</span>
+						<span>The source code for CoffeeScript, or <code>null</code> if it is not present.</span>
+					</div>
+				</li>
+			</ul>
+		</div>
 		<div>
 			<h3>Rhino</h3>
 			<p>
 				The following scope variables provide the interface to the Rhino embedding:
 			</p>
 			<div class="label">has properties:</div>
+			<div class="type">
+				<a class="type" name="types.Packages.inonit.script.rhino.Engine">JavaClass inonit.script.rhino.Engine</a>
+				<span>__DESCRIPTION__</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="function">
+						<div class="name">script</div>
+						<span>__DESCRIPTION__</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</div>
+					</li>
+					<li class="function">
+						<div class="name">getClasspath</div>
+						<span>__DESCRIPTION__</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">JavaClass inonit.script.engine.Loader.Classes.Interface</span>
+							<span>__DESCRIPTION__</span>
+						</div>
+					</li>
+					<li class="function">
+						<div class="name">getDebugger</div>
+						<span>__DESCRIPTION__</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</div>
+					</li>
+				</ul>
+			</div>
 			<ul>
-				<li class="object">
+				<li class="value">
 					<div class="name">$loader</div>
+					<span class="type"><a href="#types.Packages.inonit.script.engine.Loader">JavaClass inonit.script.engine.Loader</a></span>
 					<span>__DESCRIPTION__</span>
-					<div class="label">has properties:</div>
-					<ul>
-						<li class="function">
-							<div class="name">getLoaderCode</div>
-							<span>__DESCRIPTION__</span>
-							<div class="arguments">
-								<div class="label">Arguments</div>
-								<ol>
-									<li class="value">
-										<span class="type">string</span>
-										<span>The path, relative to <code>loader/</code>, to source files from the SLIME loader.</span>
-									</li>
-								</ol>
-							</div>
-							<div class="returns">
-								<div class="label">Returns</div>
-								<span class="type">string</span>
-								<span>The source code at the given location.</span>
-							</div>
-						</li>
-						<li class="function">
-							<div class="name">getCoffeeScript</div>
-							<span>A function that provides access to CoffeeScript, if available.</span>
-							<div class="returns">
-								<div class="label">Returns</div>
-								<span class="type">string</span>
-								<span>The source code for CoffeeScript, or <code>null</code> if it is not present.</span>
-							</div>
-						</li>
-					</ul>
 				</li>
-				<li class="object">
+				<li class="value">
 					<div class="name">$rhino</div>
+					<span class="type"><a href="#types.Packages.inonit.script.rhino.Engine">JavaClass inonit.script.rhino.Engine</a></span>
 					<span>__DESCRIPTION__</span>
-					<div class="label">has properties:</div>
-					<ul>
-						<li class="function">
-							<div class="name">script</div>
-							<span>__DESCRIPTION__</span>
-							<div class="arguments">
-								<div class="label">Arguments</div>
-								<ol>
-								</ol>
-							</div>
-							<div class="returns">
-								<div class="label">Returns</div>
-								<span class="type">__TYPE__</span>
-								<span>__DESCRIPTION__</span>
-							</div>
-						</li>
-						<li class="function">
-							<div class="name">getClasspath</div>
-							<span>__DESCRIPTION__</span>
-							<div class="arguments">
-								<div class="label">Arguments</div>
-								<ol>
-								</ol>
-							</div>
-							<div class="returns">
-								<div class="label">Returns</div>
-								<span class="type">JavaClass inonit.script.engine.Loader.Classes.Interface</span>
-								<span>__DESCRIPTION__</span>
-							</div>
-						</li>
-						<li class="function">
-							<div class="name">getDebugger</div>
-							<span>__DESCRIPTION__</span>
-							<div class="arguments">
-								<div class="label">Arguments</div>
-								<ol>
-								</ol>
-							</div>
-							<div class="returns">
-								<div class="label">Returns</div>
-								<span class="type">__TYPE__</span>
-								<span>__DESCRIPTION__</span>
-							</div>
-						</li>
-					</ul>
 				</li>
 			</ul>
 		</div>

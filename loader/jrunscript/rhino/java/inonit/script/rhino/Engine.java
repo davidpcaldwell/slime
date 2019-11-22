@@ -14,11 +14,9 @@ package inonit.script.rhino;
 
 import java.io.*;
 import java.util.*;
-import java.util.logging.*;
 
 import org.mozilla.javascript.*;
 
-import inonit.system.*;
 import inonit.script.engine.*;
 
 public class Engine {

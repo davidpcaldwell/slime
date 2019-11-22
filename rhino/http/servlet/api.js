@@ -13,7 +13,18 @@
 var $java = (function() {
 	// TODO: there is no test coverage for the below; when the rhino/ directory was renamed to jrunscript/, the test suite still passed
 	if ($host.getLoader && $host.getEngine) {
-		return $host.getEngine().script("jrunscript/rhino.js", $host.getLoader().getLoaderCode("jrunscript/rhino.js"), { $loader: $host.getLoader(), $rhino: $host.getEngine() }, null);
+		//	TODO	consider pushing these details back into inonit.script.servlet.Rhino.Host
+		//			would need to construct the two-property scope object below; rest should be straightforward.
+		//			Need also to identify test case
+		return $host.getEngine().script(
+			"jrunscript/rhino.js", 
+			$host.getLoader().getLoaderCode("jrunscript/rhino.js"), 
+			{ 
+				$loader: $host.getLoader(),
+				$rhino: $host.getEngine()
+			},
+			null
+		);
 	} else if ($host.getLoader && $host.getClasspath) {
 		//	TODO	implement along with Graal servlets
 		var $graal;
