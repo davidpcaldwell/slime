@@ -11,7 +11,12 @@
 //	END LICENSE
 
 $jsh.setRuntime((function() {
-	var rv = $rhino.script("jrunscript/rhino.js", $jsh.getLoaderCode("jrunscript/rhino.js"), { $loader: $jsh, $rhino: $rhino }, null);
+	var rv = $rhino.script(
+		"jrunscript/rhino.js", 
+		$jsh.getLoader().getLoaderCode("jrunscript/rhino.js"), 
+		{ $loader: $jsh.getLoader(), $rhino: $rhino }, 
+		null
+	);
 
 	rv.exit = function(status) {
 		return $rhino.exit(status);

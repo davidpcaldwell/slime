@@ -111,7 +111,7 @@ public class Rhino {
 			program.set(variable);
 		}
 
-		@Override public void setJshHostProperty() {
+		@Override public void setJshRuntimeObject() {
 			setGlobalProperty("$rhino", $rhino);
 			try {
 				Code.Loader.Resource file = this.getJshLoader().getFile("rhino.js");

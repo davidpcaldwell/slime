@@ -15,22 +15,18 @@ $jsh.setRuntime((function() {
 	//			explanation
 
 	var $graal = this.$graal;
-	var scripts = eval($jsh.getLoaderCode("jrunscript/nashorn.js"));
+	var scripts = eval($jsh.getLoader().getLoaderCode("jrunscript/nashorn.js"));
 
 	var rv = scripts.script(
 		"slime://loader/jrunscript/nashorn.js",
-		$jsh.getLoaderCode("jrunscript/nashorn.js"),
+		$jsh.getLoader().getLoaderCode("jrunscript/nashorn.js"),
 		{
 			$graal: $graal,
+			//	TODO	can the following come from Object.create()?
 			Java: Java,
 			Packages: Packages,
 			load: load,
-			$getLoaderCode: function(path) {
-				return $jsh.getLoaderCode(path);
-			},
-			$getCoffeeScript: function() {
-				return $jsh.getCoffeeScript();
-			},
+			$loader: $jsh.getLoader(),
 			$classpath: $nashorn.getClasspath()
 		},
 		null

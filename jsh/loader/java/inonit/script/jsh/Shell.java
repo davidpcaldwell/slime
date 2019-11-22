@@ -104,21 +104,23 @@ public class Shell {
 		return configuration.getInstallation().getLibraryFile(path);
 	}
 
-	//	TODO	push back out into invoking code; appears to be used only by jsh/loader/nashorn.js
-	public String getCoffeeScript() throws IOException {
-		Code.Loader.Resource _file = configuration.getInstallation().getLibraries().getFile("coffee-script.js");
-		if (_file == null) return null;
-		return streams.readString(_file.getReader());
-	}
+	private Loader loader = new Loader() {
+		private Streams streams = new Streams();
 
-	public String getLoaderCode(String path) throws IOException {
-		return streams.readString(configuration.getInstallation().getPlatformLoader().getFile(path).getReader());
-	}
+		//	TODO	push back out into invoking code; appears to be used only by jsh/loader/nashorn.js
+		public String getCoffeeScript() throws IOException {
+			Code.Loader.Resource _file = configuration.getInstallation().getLibraries().getFile("coffee-script.js");
+			if (_file == null) return null;
+			return streams.readString(_file.getReader());
+		}
 
-	private Streams streams = new Streams();
+		public String getLoaderCode(String path) throws IOException {
+			return streams.readString(configuration.getInstallation().getPlatformLoader().getFile(path).getReader());
+		}	
+	};
 
-	public final Streams getStreams() {
-		return streams;
+	public Loader getLoader() {
+		return loader;
 	}
 
 	public Shell subshell(Environment configuration, Shell.Invocation invocation) {
@@ -386,7 +388,7 @@ public class Shell {
 		 */
 		//	TODO	not quite DRY; all implementations must invoke $jsh.setHost; would be better if this somehow eval-ed and did
 		//			that itself
-		protected abstract void setJshHostProperty();
+		protected abstract void setJshRuntimeObject();
 
 		/**
 		 *	Executes the given script in the global scope.
@@ -404,7 +406,7 @@ public class Shell {
 			LOG.log(Level.INFO, "Executing shell with %s", this);
 			shell.setClasspath(getClasspath());
 			this.setGlobalProperty("$jsh", shell);
-			this.setJshHostProperty();
+			this.setJshRuntimeObject();
 			try {
 				this.script(shell.getJshLoader().getFile("jsh.js"));
 			} catch (IOException e) {

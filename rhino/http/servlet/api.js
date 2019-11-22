@@ -35,13 +35,8 @@ var $java = (function() {
 			$host.getLoader().getLoaderCode("jrunscript/nashorn.js"),
 			{
 				$graal: $graal,
-				$getLoaderCode: function(path) {
-					return $host.getLoader().getLoaderCode(path);
-				},
-				$classpath: $host.getClasspath(),
-				$getCoffeeScript: function() {
-					return $host.getCoffeeScript();
-				}
+				$loader: $host.getLoader(),
+				$classpath: $host.getClasspath()
 			},
 			null
 		);

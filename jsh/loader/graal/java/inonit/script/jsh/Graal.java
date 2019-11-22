@@ -184,7 +184,7 @@ public class Graal extends Main.Engine {
 			}
 		}
 
-		@Override public void setJshHostProperty() {
+		@Override public void setJshRuntimeObject() {
 			setGlobalProperty("$nashorn", new Nashorn.Host() {
 				@Override public Loader.Classes.Interface getClasspath() {
 					return host.getClasspath();

@@ -41,13 +41,14 @@ END LICENSE
 				This method generally follows the following steps:
 				<ul>
 					<li>
-						Provide the engine's classpath implementation to the <code>inonit.script.jsh.Shell</code>.
+						Provides the engine's classpath implementation to the <code>inonit.script.jsh.Shell</code>.
 					</li>
 					<li>
-						Set the <code>$jsh</code> property of the global object to the <code>inonit.script.jsh.Shell</code> instance.
+						Sets the <code>$jsh</code> property of the global object to the <code>inonit.script.jsh.Shell</code> instance.
 					</li>
 					<li>
-						Set an engine-specific host property, and run an engine-specific script with that host property in scope:
+						Sets an engine-specific host property, and runs an engine-specific script with that host property in scope
+						in order to create the argument to <code>$jsh.setRuntime()</code>:
 						<ul>
 							<li>
 								For Rhino, sets a <code>$rhino</code> property which is of type <code>inonit.script.jsh.Rhino.Interface</code>.
@@ -58,42 +59,24 @@ END LICENSE
 						</ul>
 					</li>
 					<li>
-						Run an engine-specific shell embedding script; for Rhino, runs <code>jsh/loader/rhino.js</code>, and for
+						Runs an engine-specific shell embedding script; for Rhino, runs <code>jsh/loader/rhino.js</code>, and for
 						Nashorn, runs <code>jsh/loader/nashorn.js</code>.
 						<ul>
 							<li>
-								Each of these scripts, in turn, runs an engine-specific engine embedding script to set up the engine. Rhino runs
-								<code>loader/jrunscript/rhino.js</code>, and Nashorn runs <code>loader/jrunscript/nashorn.js</code>. These
-								scripts create engine-specific implementations of <code>$javahost</code> and <code>$bridge</code>
-								objects.
+								Each of these scripts, in turn, runs an engine-specific engine embedding script to set up the
+								<a href="../../loader/api.html">SLIME runtime object</a>, which is augmented with Java-specific
+								features; see documentation for the 
+								<a href="../../loader/jrunscript/api.html">Slime Java runtime</a>.
+								The shell embedding script may post-process the result as well.
 							</li>
 							<li>
-								Then the generic container interface script <code>loader/jrunscript/expression.js</code> is evaluated,
-								using the <code>$javahost</code> and <code>$bridge</code> objects in scope.
-								<ul>
-									<li>
-										It first invokes <code>loader/expression.js</code>, providing appropriate implementations of
-										<code>$slime</code> and <code>$engine</code>,
-										to create the <a href="../../loader/api.html">SLIME runtime</a>.
-									</li>
-									<li>
-										It then post-processes the SLIME runtime to provide additional
-										<a href="../../loader/jrunscript/api.html">Java-specific</a> interfaces.
-									</li>
-								</ul>
-							</li>
-							<li>
-								The SLIME runtime is possibly post-processed by
-								the engine embedding script before being returned to the shell embedding script.
-							</li>
-							<li>
-								The shell embedding script may post-process the result as well, before sending that object
-								to the <code>inonit.script.jsh.Shell</code>'s <code>setRuntime()</code> method.
+								The SLIME runtime object is sent to
+								the <code>inonit.script.jsh.Shell</code>'s <code>setRuntime()</code> method.
 							</li>
 						</ul>
 					</li>
 					<li>
-						Run the <code>jsh.js</code> script. This script:
+						Runs the <code>jsh.js</code> script. This script:
 						<ul>
 							<li>Receives the <code>inonit.script.jsh.Shell</code> object in scope as <code>$jsh</code>.</li>
 							<li>

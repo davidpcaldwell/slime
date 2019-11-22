@@ -222,6 +222,14 @@ load("nashorn:mozilla_compat.js");
 	if (typeof($classpath) == "undefined") {
 		return engine;
 	} else {
+		var $getLoaderCode = function(path) {
+			return $loader.getLoaderCode(path);
+		};
+	
+		var $getCoffeeScript = function() {
+			return $loader.getCoffeeScript();
+		};
+	
 		var $javahost = new function() {
 			this.getLoaderCode = $getLoaderCode;
 

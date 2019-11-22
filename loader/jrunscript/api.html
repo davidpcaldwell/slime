@@ -30,6 +30,32 @@ END LICENSE
 			the Nashorn engine included with Java 8 and up. The embeddings are expressions that evaluate to an object. They provide
 			different scope variables for implementing the embedding.
 		</p>
+		<!--	
+			Move to internal documentation		
+			<p>
+				Note that these are implemented by creating implementations of <code>$javahost</code> and <code>$bridge</code>
+				and invoking <code>expression.js</code>.
+			</p>
+			<li>
+				Then the generic container interface script <code>loader/jrunscript/expression.js</code> is evaluated,
+				using the <code>$javahost</code> and <code>$bridge</code> objects in scope.
+				<ul>
+					<li>
+						It first invokes <code>loader/expression.js</code>, providing appropriate implementations of
+						<code>$slime</code> and <code>$engine</code>,
+						to create the <a href="../../loader/api.html">SLIME runtime</a>.
+					</li>
+					<li>
+						It then post-processes the SLIME runtime to provide additional
+						<a href="../../loader/jrunscript/api.html">Java-specific</a> interfaces.
+					</li>
+				</ul>
+			</li>
+			<li>
+				The SLIME runtime is possibly post-processed by
+				the engine embedding script before being returned to the shell embedding script.
+			</li>
+		-->
 		<div class="type">
 			<a class="type" name="types.Packages.inonit.script.engine.Loader">JavaClass inonit.script.engine.Loader</a>
 			<span>__DESCRIPTION__</span>

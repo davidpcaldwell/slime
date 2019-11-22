@@ -89,7 +89,7 @@ public class Nashorn extends Main.Engine {
 			host.set(name, value);
 		}
 
-		@Override public void setJshHostProperty() {
+		@Override public void setJshRuntimeObject() {
 			setGlobalProperty("$nashorn", new Host() {
 				@Override public Loader.Classes.Interface getClasspath() {
 					return host.getClasspath();
