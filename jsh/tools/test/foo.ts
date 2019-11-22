@@ -1,9 +1,14 @@
-var person : string = "Foo";
+interface Context {
+	prefix: string
+}
 
 interface Exports {
 	foo: String
 }
 
-var $exports : Exports = {
-	foo: "bar"
-};
+declare var $context : Context
+declare var $exports : Exports
+
+var person : string = "Foo";
+
+$exports.foo = $context.prefix + "bar"
