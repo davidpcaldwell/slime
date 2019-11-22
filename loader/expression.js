@@ -141,7 +141,6 @@
 			return $exports;
 		})();
 
-		debugger;
 		var $api = $platform.execute( $slime.getRuntimeScript("$api.js"), { $platform: $platform, $slime: $slime }, null);
 
 		var mime = (function($exports) {
