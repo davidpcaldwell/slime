@@ -30,11 +30,11 @@
 			getRuntimeScript: function(path) {
 				return {
 					name: "slime://loader/" + path,
-					js: String($javahost.getLoaderCode(path))
+					js: String($loader.getLoaderCode(path))
 				};
 			},
 			getCoffeeScript: function(path) {
-				var _code = $javahost.getCoffeeScript();
+				var _code = $loader.getCoffeeScript();
 				if (_code) return { code: String(_code) };
 				return null;
 			},
@@ -51,7 +51,7 @@
 				$slime.flags[match[1]] = value;
 			}
 		}
-		return $javahost.eval("slime://loader/expression.js",String($javahost.getLoaderCode("expression.js")),{
+		return $javahost.eval("slime://loader/expression.js",String($loader.getLoaderCode("expression.js")),{
 			$engine: $engine,
 			$slime: $slime
 		},null);
@@ -80,12 +80,12 @@
 		return was;
 	})(loader.mime);
 
-	loader.java = loader.file(new loader.Resource({ name: "slime://loader/jrunscript/java.js", string: String($javahost.getLoaderCode("jrunscript/java.js")) }), {
+	loader.java = loader.file(new loader.Resource({ name: "slime://loader/jrunscript/java.js", string: String($loader.getLoaderCode("jrunscript/java.js")) }), {
 		engine: $bridge,
-		classpath: $javahost.getClasspath()
+		classpath: $loader.getClasspath()
 	});
 
-	loader.io = loader.file(new loader.Resource({ name: "slime://loader/jrunscript/io.js", string: String($javahost.getLoaderCode("jrunscript/io.js")) }), {
+	loader.io = loader.file(new loader.Resource({ name: "slime://loader/jrunscript/io.js", string: String($loader.getLoaderCode("jrunscript/io.js")) }), {
 		_streams: _streams,
 		api: {
 			java: loader.java,
@@ -646,7 +646,7 @@
 				throw new Error("No relevant handler for add(" + p + ")");
 			}
 		};
-	})($javahost.getClasspath())
+	})($loader.getClasspath())
 
 	return loader;
 })()

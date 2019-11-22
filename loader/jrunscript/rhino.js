@@ -26,14 +26,6 @@
 			return Packages.inonit.script.rhino.MetaObject.create(delegate,get,set);
 		};
 
-		this.getLoaderCode = function(path) {
-			return $loader.getLoaderCode(path);
-		}
-
-		this.getCoffeeScript = function() {
-			return $loader.getCoffeeScript();
-		}
-
 		this.script = function(name,code,scope,target) {
 			//	TODO	revisit whether some improved error reporting code inspired by the below can be re-enabled at some point;
 			//			currently it somehow breaks some automated tests
@@ -61,10 +53,6 @@
 		};
 
 		this.eval = this.script;
-
-		this.getClasspath = function() {
-			return $loader.getClasspath();
-		};
 	};
 
 	var $bridge = new function() {
@@ -109,7 +97,7 @@
 	var rv = $rhino.script(
 		"jrunscript/expression.js", 
 		$loader.getLoaderCode("jrunscript/expression.js"), 
-		{ $javahost: $javahost, $bridge: $bridge }, 
+		{ $loader: $loader, $javahost: $javahost, $bridge: $bridge }, 
 		null
 	);
 
