@@ -15,7 +15,11 @@
 
 	var load = function(name,$context) {
 		var $exports = {};
-		$platform.execute($slime.getLoaderScript(name), { $platform: $platform, $slime: $slime, $context: $context, $exports: $exports }, null);
+		$platform.execute(
+			$slime.getRuntimeScript(name),
+			{ $platform: $platform, $slime: $slime, $context: $context, $exports: $exports },
+			null
+		);
 		return $exports;
 	};
 
@@ -601,7 +605,7 @@
 	//	TODO	switch implementation to use load()
 	$exports.threads = (function($context) {
 		var $exports = {};
-		$platform.execute($slime.getLoaderScript("threads.js"), { $context: $context, $exports: $exports }, null);
+		$platform.execute($slime.getRuntimeScript("threads.js"), { $context: $context, $exports: $exports }, null);
 		return $exports;
 	})($exports);
 

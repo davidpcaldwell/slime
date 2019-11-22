@@ -53,10 +53,10 @@
 	//  TODO    build Loader implementation on top of this
 	var runtime = (function(slime) {
 		var $slime = {
-			getLoaderScript: function(path) {
+			getRuntimeScript: function(path) {
 				return {
 					name: path,
-					code: load(slime+"loader/" + path).code
+					js: load(slime+"loader/" + path).code
 				}
 			},
 			getCoffeeScript: function() {

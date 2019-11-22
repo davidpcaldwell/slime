@@ -31,10 +31,10 @@ END LICENSE
 	<script type="application/x.jsapi#initialize">
 		//	TODO	copy-pasted from $api.api.html
 		var $slime = {
-			getLoaderScript: function(path) {
+			getRuntimeScript: function(path) {
 				return {
 					name: path,
-					code: $jsapi.loader.string(path)
+					js: $jsapi.loader.string(path)
 				}
 			}
 		};

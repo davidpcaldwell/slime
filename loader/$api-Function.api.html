@@ -30,10 +30,10 @@ END LICENSE
 	<h1><code>$api.Function</code></h1>
 	<script type="application/x.jsapi#initialize">
 		var $slime = {
-			getLoaderScript: function(path) {
+			getRuntimeScript: function(path) {
 				return {
 					name: path,
-					code: $jsapi.loader.string(path)
+					js: $jsapi.loader.string(path)
 				}
 			}
 		};

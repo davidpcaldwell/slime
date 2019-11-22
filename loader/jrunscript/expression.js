@@ -19,7 +19,7 @@
 				defineProperty: {}
 			},
 			execute: function(script,scope,target) {
-				return $javahost.script(script.name,script.code,scope,target);
+				return $javahost.script(script.name,script.js,scope,target);
 			}
 		};
 		(function() {
@@ -27,10 +27,10 @@
 			if ($javahost.MetaObject) $engine.MetaObject = $javahost.MetaObject;
 		})();
 		var $slime = {
-			getLoaderScript: function(path) {
+			getRuntimeScript: function(path) {
 				return {
 					name: "slime://loader/" + path,
-					code: String($javahost.getLoaderCode(path))
+					js: String($javahost.getLoaderCode(path))
 				};
 			},
 			getCoffeeScript: function(path) {

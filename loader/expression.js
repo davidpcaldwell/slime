@@ -76,14 +76,14 @@
 
 			$exports.execute = (function() {
 				if (typeof($engine) != "undefined" && $engine.execute) return $engine.execute;
-				return function(/*script,scope,target*/) {
+				return function(/*script{name,code},scope,target*/) {
 					return (function() {
 						with( arguments[1] ) {
 							return eval(arguments[0]);
 						}
 					}).call(
 						arguments[2],
-						arguments[0].code, arguments[1]
+						arguments[0].js, arguments[1]
 					);
 				}
 			})();
@@ -141,7 +141,8 @@
 			return $exports;
 		})();
 
-		var $api = $platform.execute( $slime.getLoaderScript("$api.js"), { $platform: $platform, $slime: $slime }, null);
+		debugger;
+		var $api = $platform.execute( $slime.getRuntimeScript("$api.js"), { $platform: $platform, $slime: $slime }, null);
 
 		var mime = (function($exports) {
 			$exports.Type = function(media,subtype,parameters) {
@@ -327,7 +328,7 @@
 				if (!coffeeScript) return null;
 				if (coffeeScript.code) {
 					var target = {};
-					$platform.execute({ name: "coffee-script.js", code: String(coffeeScript.code) }, {}, target);
+					$platform.execute({ name: "coffee-script.js", js: String(coffeeScript.code) }, {}, target);
 					return target.CoffeeScript;
 				} else if (coffeeScript.object) {
 					return coffeeScript.object;
@@ -359,17 +360,17 @@
 				if ($typescript && type && type.is("application/x.typescript")) {
 					resource.js = {
 						name: resource.name,
-						code: $typescript.compile(string)
+						js: $typescript.compile(string)
 					};
 				} else if (type && type.is("application/vnd.coffeescript")) {
 					resource.js = {
 						name: resource.name,
-						code: $coffee.compile(string)
+						js: $coffee.compile(string)
 					};
 				} else if (type && type.is("application/javascript") || type && type.is("application/x-javascript")) {
 					resource.js = {
 						name: resource.name,
-						code: string
+						js: string
 					}
 				};
 				if (!resource.js) {
