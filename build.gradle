@@ -41,6 +41,9 @@ sourceSets {
 		java.outputDir = file('local/gradle/bin/rhino')
 		java {
 			srcDir 'loader/jrunscript/rhino/java'
+
+			//	modules
+			srcDir 'jrunscript/host/rhino/java'
 		}
 	}
 
@@ -51,6 +54,18 @@ sourceSets {
 		java.outputDir = file('local/gradle/bin/servlet')
 		java {
 			srcDir 'rhino/http/servlet/java'
+		}
+	}
+
+	rhinoServlet {
+		compileClasspath += configurations.servlet
+		compileClasspath += configurations.rhino
+		compileClasspath += sourceSets.main.output
+		compileClasspath += sourceSets.rhino.output
+		compileClasspath += sourceSets.servlet.output
+		java.outputDir = file('local/gradle/bin/rhinoServlet')
+		java {
+			srcDir 'rhino/http/servlet/rhino/java'
 		}
 	}
 
