@@ -1,0 +1,27 @@
+{
+	"ignorePatterns": "local/",
+	"extends": "eslint:recommended",
+	"rules": {
+		"quotes": ["off", "double"],
+		"no-mixed-spaces-and-tabs": "off",
+		"no-unused-vars": "off",
+		"no-constant-condition": "off",
+		"no-extra-semi": "off",
+		"no-redeclare": "off",
+		"no-useless-escape": "off",
+		"no-debugger": "off",
+		"no-unreachable": "off",
+		"no-empty": "off",
+		"no-extra-boolean-cast": "off",
+		"no-cond-assign": "off",
+		"no-self-assign": "off",
+		"no-prototype-builtins": "off",
+		"getter-return": "off",
+		"no-with": "off",
+		"valid-typeof": "off",
+		"no-shadow-restricted-names": "off",
+		"no-ex-assign": "off",
+		"no-global-assign": "off",
+		"no-undef": "off"
+	}
+}
