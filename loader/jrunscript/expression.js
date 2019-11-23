@@ -38,6 +38,7 @@
 				if (_code) return { code: String(_code) };
 				return null;
 			},
+			typescript: $loader.getTypescript(),
 			flags: {}
 		};
 		var flagPattern = /^SLIME_(.*)$/;

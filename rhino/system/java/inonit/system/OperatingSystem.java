@@ -22,12 +22,12 @@ public class OperatingSystem {
 		return singleton;
 	}
 
-	//	Used by rhino/shell module and jsh launcher redefinition of Rhino shell runCommand
+	//	Used by TypeScript implementation, rhino/shell module, and jsh launcher redefinition of Rhino shell runCommand
 	public Command.Listener run(Command.Context context, Command.Configuration configuration) {
 		return Command.create(configuration).execute(context);
 	}
 
-	//	Used by Cygwin filesystem implementation and rhino/file tests
+	//	Used by rhino/file tests and Cygwin filesystem implementation
 	public Command.Result execute(String path, String[] arguments) {
 		return Command.create(Command.Configuration.create(path, arguments)).getResult();
 	}

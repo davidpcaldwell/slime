@@ -334,11 +334,6 @@
 				}
 			})();
 
-			var $typescript = (function() {
-				//	TODO	implement to somehow retrieve a TypeScript compiler
-				return null;
-			})();
-
 			methods.run = function run(object,scope) {
 				if (!object || typeof(object) != "object") {
 					throw new TypeError("'object' must be an object, not " + object);
@@ -356,10 +351,10 @@
 				if (typeof(string) != "string") {
 					throw new TypeError("Resource: " + resource.name + " is not convertible to string, so cannot be executed.");
 				}
-				if ($typescript && type && type.is("application/x.typescript")) {
+				if ($slime.typescript && type && type.is("application/x.typescript")) {
 					resource.js = {
 						name: resource.name,
-						js: $typescript.compile(string)
+						js: $slime.typescript.compile(string)
 					};
 				} else if (type && type.is("application/vnd.coffeescript")) {
 					resource.js = {
