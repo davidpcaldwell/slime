@@ -284,7 +284,7 @@ END LICENSE
 							repository.test.writeFile(path,content);
 						};
 					</script>
-					<div class="type">
+					<div class="type" jsapi:id="commit">
 						<a class="type" name="types.commit">commit</a>
 						<span>__DESCRIPTION__</span>
 						<div class="label">has properties:</div>
@@ -296,7 +296,7 @@ END LICENSE
 								<ul>
 									<li class="value">
 										<div class="name">hash</div>
-										<span class="type">__TYPE__</span>
+										<span class="type">string</span>
 										<span>__DESCRIPTION__</span>
 									</li>
 								</ul>
@@ -308,6 +308,16 @@ END LICENSE
 								<ul>
 									<li class="value">
 										<div class="name">name</div>
+										<span class="type">string</span>
+										<span>__DESCRIPTION__</span>
+									</li>
+									<li class="value">
+										<div class="name">email</div>
+										<span class="type">string</span>
+										<span>__DESCRIPTION__</span>
+									</li>
+									<li class="value">
+										<div class="name">date</div>
 										<span class="type">__TYPE__</span>
 										<span>__DESCRIPTION__</span>
 									</li>
@@ -320,7 +330,12 @@ END LICENSE
 								<ul>
 									<li class="value">
 										<div class="name">name</div>
-										<span class="type">__TYPE__</span>
+										<span class="type">string</span>
+										<span>__DESCRIPTION__</span>
+									</li>
+									<li class="value">
+										<div class="name">email</div>
+										<span class="type">string</span>
 										<span>__DESCRIPTION__</span>
 									</li>
 									<li class="value">
@@ -332,10 +347,38 @@ END LICENSE
 							</li>
 							<li class="value">
 								<div class="name">subject</div>
-								<span class="type">__TYPE__</span>
+								<span class="type">string</span>
 								<span>__DESCRIPTION__</span>
 							</li>
 						</ul>
+						<script type="application/x.jsapi#tests">
+							var to = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
+							to.directory.remove();
+							var repository = remote.clone({
+								to: to
+							});
+							var commits = repository.log();
+							verify(commits).length.is(1);
+
+							var commit = commits[0];
+
+							var isWhen = function(p) {
+								if (typeof(p) != "object") return false;
+								if (p === null) return false;
+								return p instanceof jsh.time.When;
+							}
+
+							verify(commit).commit.hash.is.type("string");
+							verify(commit).author.name.is.type("string");
+							verify(commit).author.email.is.type("string");
+							verify(commit).author.date.evaluate.property("is").is.type("function");
+							verify(commit).author.date.evaluate(isWhen).is(true);
+							verify(commit).committer.name.is.type("string");
+							verify(commit).committer.email.is.type("string");
+							verify(commit).committer.date.evaluate.property("is").is.type("function");
+							verify(commit).committer.date.evaluate(isWhen).is(true);
+							verify(commit).subject.is.type("string");
+						</script>
 					</div>
 					<div class="type">
 						<a class="type" name="types.branch">branch</a>

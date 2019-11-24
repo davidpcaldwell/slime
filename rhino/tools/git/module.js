@@ -259,9 +259,16 @@ var Installation = function(environment) {
 		};
 
 		var formats = {
-			log: {
-				format: "%H~~%cn~~%s~~%ct~~%an~~%D",
-				parse: function(line) {
+			log: new function() {
+				//	TODO	refactor parse() to refer to fields by name by indexing fields by string
+
+				var fields = ["H", "cn", "s", "ct", "an", "D", "ae", "at", "ce"];
+
+				this.format = fields.map(function(field) {
+					return "%" + field;
+				}).join("~~");
+				
+				this.parse = function(line) {
 					var tokens = line.split("~~");
 					if (typeof(tokens[5]) == "undefined") throw new Error("No tokens[5]: [" + line + "]");
 					var refs = (function(string) {
@@ -286,10 +293,13 @@ var Installation = function(environment) {
 							hash: tokens[0]
 						},
 						author: {
-							name: tokens[4]
+							name: tokens[4],
+							email: tokens[6],
+							date: ($context.api.time) ? new $context.api.time.When({ unix: Number(tokens[7])*1000 }) : Number(tokens[7])*1000
 						},
 						committer: {
 							name: tokens[1],
+							email: tokens[8],
 							date: ($context.api.time) ? new $context.api.time.When({ unix: Number(tokens[3])*1000 }) : Number(tokens[3])*1000
 						},
 						subject: tokens[2]
