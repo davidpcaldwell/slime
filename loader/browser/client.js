@@ -176,10 +176,10 @@
 		// TODO: with the reorganization of the platform, 'runtime' is probably the best name for this object now
 		var platform = (function() {
 			var $slime = {
-				getLoaderScript: function(path) {
+				getRuntimeScript: function(path) {
 					return {
 						name: bootstrap.getRelativePath(path),
-						code: fetcher.getCode(bootstrap.getRelativePath(path))
+						js: fetcher.getCode(bootstrap.getRelativePath(path))
 					}
 				},
 				getCoffeeScript: function() {

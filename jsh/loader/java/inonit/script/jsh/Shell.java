@@ -122,7 +122,88 @@ public class Shell {
 			return Shell.this.classpath;
 		}
 
-		public Loader.Typescript getTypescript() {
+		private File getTscPath() {
+			return configuration.getInstallation().getLibraryFile("node/bin/tsc");
+		}
+
+		private File getNodeBinPath() {
+			return configuration.getInstallation().getLibraryFile("node/bin");
+		}
+
+		private File createTemporaryDirectory(String prefix) throws IOException {
+			File rv = File.createTempFile(prefix, null);
+			rv.delete();
+			rv.mkdirs();
+			return rv;
+		}
+
+		public Loader.Typescript getTypescript() throws IOException {
+			Code.Loader.Resource tsc = configuration.getInstallation().getLibraries().getFile("node/bin/tsc");
+			if (tsc != null) {
+				return new Loader.Typescript() {
+					@Override public String compile(String code) throws IOException {
+						try {
+							//	In unbuilt shell, these worked without 'final' annotation, but in test suite, they did not
+							final File tmp = createTemporaryDirectory("tsc");
+							final File ts = new File(tmp, "code.ts");
+							streams.writeString(code, new FileOutputStream(ts));
+							File js = new File(tmp, "code.js");
+							OperatingSystem.get().run(
+								new Command.Context() {
+									@Override public File getWorkingDirectory() {
+										return tmp;
+									}
+								
+									@Override public Map<String,String> getSubprocessEnvironment() {
+										Map<String,String> underlying = OperatingSystem.Environment.SYSTEM.getMap();
+										HashMap<String,String> rv = new HashMap<String,String>();
+										rv.putAll(underlying);
+										rv.put("PATH", rv.get("PATH") + File.pathSeparator + getNodeBinPath());
+										return rv;
+									}
+
+									@Override public InputStream getStandardInput() {
+										return Streams.Null.INPUT_STREAM;
+									}
+								
+									@Override public OutputStream getStandardOutput() {
+										return System.out;
+									}
+								
+									@Override public OutputStream getStandardError() {
+										return System.err;
+									}
+								},
+								new Command.Configuration() {
+									@Override public String getCommand() {
+										try {
+											return getTscPath().getCanonicalPath();
+										} catch (IOException e) {
+											throw new RuntimeException(e);
+										}
+									}
+								
+									@Override public String[] getArguments() {
+										try {
+											return new String[] { "--outDir", tmp.getCanonicalPath(), ts.getCanonicalPath() };
+										} catch (IOException e) {
+											throw new RuntimeException(e);
+										}
+									}
+								}
+							);
+							String compiled = streams.readString(new FileReader(js));
+							return compiled;
+						} catch (FileNotFoundException e) {
+							e.printStackTrace();
+							throw e;
+						} catch (NullPointerException e) {
+							e.printStackTrace();
+							throw e;
+						}
+					}
+				};
+			}
 			return null;
 		}
 	};
@@ -197,7 +278,6 @@ public class Shell {
 
 		public static class Holder extends Container {
 			private Integer status;
-			private Throwable uncaught;
 
 			@Override public void exit(int status) {
 				this.status = new Integer(status);

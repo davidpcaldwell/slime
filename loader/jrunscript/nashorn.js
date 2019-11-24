@@ -222,25 +222,7 @@ load("nashorn:mozilla_compat.js");
 	if (typeof($loader) == "undefined") {
 		return engine;
 	} else {
-		var $getLoaderCode = function(path) {
-			return $loader.getLoaderCode(path);
-		};
-	
-		var $getCoffeeScript = function() {
-			return $loader.getCoffeeScript();
-		};
-	
 		var $javahost = new function() {
-			this.getLoaderCode = $getLoaderCode;
-
-			this.getCoffeeScript = function() {
-				return $getCoffeeScript();
-			};
-
-			this.getClasspath = function() {
-				return $loader.getClasspath();
-			};
-
 			this.eval = function(name,code,scope,target) {
 				if (engine.eval) {
 					return engine.eval(name,code,toScope(scope),target);
@@ -283,7 +265,12 @@ load("nashorn:mozilla_compat.js");
 			};
 		}
 
-		var rv = $javahost.script("slime://loader/jrunscript/expression.js", $getLoaderCode("jrunscript/expression.js"), toScope({ $javahost: $javahost, $bridge: $bridge }), null);
+		var rv = $javahost.script(
+			"slime://loader/jrunscript/expression.js",
+			$loader.getLoaderCode("jrunscript/expression.js"),
+			toScope({ $loader: $loader, $javahost: $javahost, $bridge: $bridge }),
+			null
+		);
 
 		if (engine.sync) {
 			rv.java.sync = sync;

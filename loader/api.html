@@ -47,10 +47,25 @@ END LICENSE
 			<div class="label">has properties:</div>
 			<ul>
 				<li class="experimental function">
-					<div class="name">getCode</div>
+					<div class="name">getRuntimeScript</div>
 					<span>
-						Returns a component source file of the loader.
+						Returns a component source file of the runtime.
 					</span>
+					<div class="type">
+						<a class="type" name="types.$slime.code">code</a>
+						<span>An executable JavaScript script.</span>
+						<div class="label">has properties:</div>
+						<ul>
+							<li class="value">
+								<div class="name">name</div>
+								<span class="type">string</span>
+							</li>
+							<li class="value">
+								<div class="name">js</div>
+								<span class="type">string</span>
+							</li>
+						</ul>
+					</div>
 					<div class="arguments">
 						<div class="label">Arguments</div>
 						<ol>
@@ -62,12 +77,13 @@ END LICENSE
 					</div>
 					<div class="returns">
 						<div class="label">Returns</div>
-						<span class="type">string</span>
+						<span class="type"><a href="#types.$slime.code">code</a></span>
+						<!--	Note that this implies all code must be vanilla JavaScript.	-->
 						<strong>This interface may change to return an instance of the <i>script</i> type.</strong>
 						<span>The code contained in the source file.</span>
 					</div>
 				</li>
-				<li class="function">
+				<li class="experimental function">
 					<div class="name">getCoffeeScript</div>
 					<span>Returns an implementation of CoffeeScript, if one is present.</span>
 					<div class="returns">
@@ -185,10 +201,10 @@ END LICENSE
 			<script type="application/x.jsapi#initialize">
 				scope.api = $jsapi.loader.eval("expression.js", {
 					$slime: {
-						getLoaderScript: function(path) {
+						getRuntimeScript: function(path) {
 							return {
 								name: path,
-								code: $jsapi.loader.string(path)
+								js: $jsapi.loader.string(path)
 							}
 						},
 						getCoffeeScript: function() {

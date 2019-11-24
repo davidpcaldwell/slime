@@ -52,7 +52,9 @@ jsh.script.Application.run({
 				}
 			},
 			run: function(parameters) {
-				var foo = jsh.loader.file(jsh.script.file.parent.getRelativePath("foo.ts"));
+				var foo = jsh.loader.file(jsh.script.file.parent.getRelativePath("foo.ts"), {
+					prefix: "x"
+				});
 				jsh.shell.console("foo.foo = " + foo.foo);
 			}
 		}
