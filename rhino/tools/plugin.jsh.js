@@ -33,17 +33,12 @@ plugin({
 
 plugin({
 	isReady: function() {
-		return jsh.file && jsh.shell;
+		return true;
 	},
 	load: function() {
 		plugins.node = {
-			module: function() {
-				return $loader.module("node/module.js",{
-					module: {
-						file: jsh.file,
-						shell: jsh.shell
-					}
-				});
+			module: function(p) {
+				return $loader.module("node/module.js", p.context);
 			}
 		};
 	}

@@ -13,7 +13,7 @@
 
 plugin({
 	isReady: function() {
-		return jsh.js && jsh.js.web && jsh.java && jsh.ip && jsh.time && jsh.file && jsh.http && jsh.shell && jsh.java.tools && plugins.node;
+		return jsh.js && jsh.js.web && jsh.java && jsh.ip && jsh.time && jsh.file && jsh.http && jsh.shell && jsh.java.tools;
 	},
 	load: function() {
 		if (!jsh.tools) jsh.tools = {};
@@ -472,44 +472,63 @@ plugin({
 		};
 
 		jsh.tools.gradle = gradle;
+	}
+});
 
-		var node = plugins.node.module();
-
-		jsh.tools.node = node;
+plugin({
+	isReady: function() {
+		return plugins.node && jsh.file && jsh.shell && jsh.shell.tools && jsh.tools.install;
+	},
+	load: function() {
+		var node = plugins.node.module({
+			context: {
+				module: {
+					file: jsh.file,
+					shell: jsh.shell
+				},
+				library: {
+					install: jsh.tools.install
+				}
+			}
+		});
 
 		(function integratedNode() {
 			if (!jsh.shell.jsh.lib) return;
 			
 			var location = jsh.shell.jsh.lib.getRelativePath("node");
 
-			if (location && location.directory) {
-				var installation = new node.Installation({
-					directory: location.directory
-				});
-				jsh.shell.tools.node = installation;
-			} else {
-				if (jsh.shell.jsh.lib) {
-					jsh.shell.tools.node = {};
-					jsh.shell.tools.node.install = $api.Events.Function(function(p,events) {
-						if (!location.directory) {
-							jsh.tools.install.install({
-								url: "https://nodejs.org/dist/v10.16.0/node-v10.16.0-darwin-x64.tar.gz",
-								to: location
-							});
-							events.fire("console", "Node installed.");
-						} else {
-							events.fire("console", "Node already installed.");
-						}
-						jsh.shell.tools.node = new node.Installation({
-							directory: location.directory
-						});
-					}, {
-						console: function(e) {
-							jsh.shell.console(e.detail);
-						}
+			var installed = node.at({ location: location });
+
+			if (installed) {
+				//	TODO	update?
+				jsh.shell.tools.node = installed;
+
+				jsh.shell.tools.node.update = function() {
+					jsh.shell.tools.node = node.install({
+						location: location,
+						update: true
 					});
 				}
+			} else {
+				jsh.shell.tools.node = {
+					install: function(p) {
+						if (!p) p = {};
+						jsh.shell.tools.node = node.install({
+							location: location,
+							update: p.update
+						});
+					}
+				};
+				node.install({
+					location: location
+				}, {
+					console: function(e) {
+						jsh.shell.console(e.detail);
+					}
+				});
 			}
 		})();
+
+		jsh.tools.node = node;
 	}
 });

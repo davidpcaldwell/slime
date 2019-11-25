@@ -4,6 +4,27 @@ $exports.Installation = function(o) {
 		return "Node installation at " + o.directory;
 	};
 
+	Object.defineProperty(this, "version", {
+		get: function() {
+			var string = $context.module.shell.run({
+				command: o.directory.getFile("bin/node"),
+				arguments: ["--version"],
+				stdio: {
+					output: String
+				},
+				evaluate: function(result) {
+					return result.stdio.output;
+				}
+			});
+			return {
+				toString: function() {
+					return string;
+				},
+				number: string.substring(1)
+			};
+		}
+	})
+
 	var PATH = (function() {
 		var elements = $context.module.shell.PATH.pathnames.slice();
 		elements.push(o.directory.getRelativePath("bin"));
@@ -101,3 +122,40 @@ $exports.Installation = function(o) {
 $exports.Project = function(o) {
 	throw new Error();
 }
+
+var versions = {
+	"12.13.1": { url: "https://nodejs.org/dist/v12.13.1/node-v12.13.1-darwin-x64.tar.gz" }
+};
+
+$exports.at = function(p) {
+	if (!p.location) throw new TypeError("Required: 'location' property.");
+	if (!p.location.directory) return null;
+	return new $exports.Installation({
+		directory: p.location.directory
+	})
+};
+
+$exports.install = $api.Events.Function(function(p,events) {
+	if (!p) p = {};
+	if (!p.version) p.version = "12.13.1";
+	var existing = $exports.at({ location: p.location });
+	var rv;
+	if (!existing || (existing.version != p.version && p.update)) {
+		if (existing) {
+			p.location.directory.remove();
+		}
+		var version = versions[p.version];
+		$context.library.install.install({
+			url: version.url,
+			to: p.location
+		});
+		rv = new $exports.Installation({
+			directory: p.location.directory
+		});
+		events.fire("console", "Node " + rv.version + " installed.");
+	} else {
+		rv = existing;
+		events.fire("console", "Node " + existing.version + " already installed.");
+	}
+	return rv;
+});
