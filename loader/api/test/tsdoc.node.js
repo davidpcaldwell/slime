@@ -10,9 +10,6 @@ const colors = {
 const ts = require("typescript");
 const tsdoc = require("@microsoft/tsdoc");
 
-// import * as path from "path";
-// import { TSDocParser } from "@microsoft/tsdoc"
-
 var kinds = (function() {
 	const rv = {};
 	for (var x in ts.SyntaxKind) {
