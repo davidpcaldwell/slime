@@ -6,3 +6,9 @@ if (!jsh.shell.tools.node.modules.installed["typescript"]) {
 } else {
 	jsh.shell.console("TypeScript already installed.");
 }
+//	TODO	below check does not work and always re-installs
+if (!jsh.shell.tools.node.modules.installed["@microsoft/tsdoc"]) {
+	jsh.shell.tools.node.modules.install({ name: "@microsoft/tsdoc" });
+} else {
+	jsh.shell.console("tsdoc already installed.");
+}
