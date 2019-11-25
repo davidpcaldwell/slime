@@ -3,11 +3,11 @@ declare namespace $api {
 		function groupBy(
 			p: {
 				array: Array<any>,
-				group: function,
+				group: (element: any) => any,
 				groups: Array<any>,
 				codec: {
-					encode: function,
-					decode: function
+					encode: (group: any) => string,
+					decode: (string: string) => any
 				},
 				count: boolean
 			}
