@@ -237,13 +237,13 @@
 		});
 		return rv;
 	};
-	$exports.Iterable = {};
-	$exports.Iterable.groupBy = function(p) {
-		var iterator = (function(p) {
+
+	$exports.Iterable = new function() {
+		var getIterator = function(p) {
 			if (p.array) {
 				return new function() {
 					var index = 0;
-
+	
 					this.next = function() {
 						if (index < p.array.length) {
 							return {
@@ -260,106 +260,110 @@
 			} else {
 				throw new Error("Unimplemented: iterator for " + p);
 			}
-		})(p);
-
-		var rv = {};
-
-		var create = function(key) {
-			rv[key] = (p.count) ? 0 : [];
-		};
-
-		var add = function(key,value) {
-			if (typeof(rv[key]) == "undefined") create(key);
-			if (p.count) {
-				rv[key]++;
-			} else {
-				rv[key].push(value);
-			}
-		};
-
-		var toStringKey = function(group) {
-			if (p.codec) {
-				group = p.codec.encode(group);
-			}
-			return group;
-		};
-
-		if (p.groups) {
-			p.groups.forEach(function(group) {
-				create(toStringKey(group));
-			});
 		}
-
-		var next = iterator.next();
-		while(!next.done) {
-			var element = next.value;
-			var group = p.group(element);
-			var key = toStringKey(group);
-			add(key,element);
-			next = iterator.next();
-		}
-
-		return new function() {
-			var list;
-
-			this.array = function() {
-				if (!list) {
-					list = [];
-					for (var x in rv) {
-						var group = (p.codec && p.codec.decode) ? p.codec.decode(x) : x;
-						var element = { group: group };
-						if (p.count) {
-							element.count = rv[x];
-						} else {
-							element.array = rv[x];
+	
+		this.groupBy = function(p) {
+			var iterator = getIterator(p);
+	
+			var rv = {};
+	
+			var create = function(key) {
+				rv[key] = (p.count) ? 0 : [];
+			};
+	
+			var add = function(key,value) {
+				if (typeof(rv[key]) == "undefined") create(key);
+				if (p.count) {
+					rv[key]++;
+				} else {
+					rv[key].push(value);
+				}
+			};
+	
+			var toStringKey = function(group) {
+				if (p.codec) {
+					group = p.codec.encode(group);
+				}
+				return group;
+			};
+	
+			if (p.groups) {
+				p.groups.forEach(function(group) {
+					create(toStringKey(group));
+				});
+			}
+	
+			var next = iterator.next();
+			while(!next.done) {
+				var element = next.value;
+				var group = p.group(element);
+				var key = toStringKey(group);
+				add(key,element);
+				next = iterator.next();
+			}
+	
+			return new function() {
+				var list;
+	
+				this.array = function() {
+					if (!list) {
+						list = [];
+						for (var x in rv) {
+							var group = (p.codec && p.codec.decode) ? p.codec.decode(x) : x;
+							var element = { group: group };
+							if (p.count) {
+								element.count = rv[x];
+							} else {
+								element.array = rv[x];
+							}
+							list.push(element);
 						}
-						list.push(element);
+						return list;
 					}
-					return list;
 				}
 			}
 		}
-	}
-	$exports.Iterable.match = function(p) {
-		var first = p.left;
-		var second = p.right;
-		var firstRemain = [];
-		var secondRemain = second.slice();
-		var pairs = [];
-		for (var i=0; i<first.length; i++) {
-			var match = null;
-			for (var j=0; j<secondRemain.length && !match; j++) {
-				match = p.matches(first[i],secondRemain[j]);
-				if (match) {
-					pairs.push({
-						left: first[i],
-						right: secondRemain[j]
-					});
-					secondRemain.splice(j,1);
+		this.match = function(p) {
+			var first = p.left;
+			var second = p.right;
+			var firstRemain = [];
+			var secondRemain = second.slice();
+			var pairs = [];
+			for (var i=0; i<first.length; i++) {
+				var match = null;
+				for (var j=0; j<secondRemain.length && !match; j++) {
+					match = p.matches(first[i],secondRemain[j]);
+					if (match) {
+						pairs.push({
+							left: first[i],
+							right: secondRemain[j]
+						});
+						secondRemain.splice(j,1);
+					}
 				}
+				if (!match) firstRemain.push(first[i]);
 			}
-			if (!match) firstRemain.push(first[i]);
-		}
-		if (p.unmatched && p.unmatched.left) {
-			firstRemain.forEach(function(item) {
-				p.unmatched.left(item);
+			if (p.unmatched && p.unmatched.left) {
+				firstRemain.forEach(function(item) {
+					p.unmatched.left(item);
+				});
+			}
+			if (p.unmatched && p.unmatched.right) {
+				secondRemain.forEach(function(item) {
+					p.unmatched.right(item);
+				});
+			}
+			if (p.matched) pairs.forEach(function(pair) {
+				p.matched(pair);
 			});
-		}
-		if (p.unmatched && p.unmatched.right) {
-			secondRemain.forEach(function(item) {
-				p.unmatched.right(item);
-			});
-		}
-		if (p.matched) pairs.forEach(function(pair) {
-			p.matched(pair);
-		});
-		return {
-			unmatched: {
-				left: firstRemain,
-				right: secondRemain
-			},
-			matched: pairs
-		};		
+			return {
+				unmatched: {
+					left: firstRemain,
+					right: secondRemain
+				},
+				matched: pairs
+			};		
+		};	
 	};
 
 	var Properties = (function implementProperties() {
