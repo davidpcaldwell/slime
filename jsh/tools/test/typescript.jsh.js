@@ -1,4 +1,4 @@
-var compile = function(parameters,file) {
+var compile = function(parameters) {
 	var output = (parameters.options.output) 
 		? parameters.options.output.createDirectory({ 
 			exists: function(dir) {
@@ -12,7 +12,8 @@ var compile = function(parameters,file) {
 		command: "tsc",
 		arguments: function(rv) {
 			rv.push("--outDir", output);
-			rv.push(file);
+			rv.push("--module", parameters.options.module);
+			rv.push(parameters.options.input);
 		}
 	});
 
@@ -24,13 +25,20 @@ jsh.script.Application.run({
 		tsc: {
 			getopts: {
 				options: {
+					input: jsh.script.file.parent.getRelativePath("foo.ts"),
+					module: "ES6",
 					output: jsh.file.Pathname
 				}
 			},
 			run: function(parameters) {
 				jsh.shell.console("tsc");
-				var output = compile(parameters,jsh.script.file.parent.getFile("foo.ts"));
-				jsh.shell.console("output = " + output);
+				var destination = compile(parameters);
+				jsh.shell.console("output = " + destination);
+				var name = parameters.options.input.basename.replace(/\.ts$/, ".js");
+				var compiled = destination.getRelativePath(name);
+				jsh.shell.console(compiled);
+				var output = destination.getFile(name);
+				jsh.shell.console(output.read(String));
 			}
 		},
 		compile: {
