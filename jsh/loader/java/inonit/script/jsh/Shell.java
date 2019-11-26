@@ -185,7 +185,10 @@ public class Shell {
 								
 									@Override public String[] getArguments() {
 										try {
-											return new String[] { "--outDir", tmp.getCanonicalPath(), ts.getCanonicalPath() };
+											return new String[] { 
+												"--outDir", tmp.getCanonicalPath(),
+												ts.getCanonicalPath() 
+											};
 										} catch (IOException e) {
 											throw new RuntimeException(e);
 										}
