@@ -151,6 +151,21 @@ END LICENSE
 						</li>
 					</ul>
 				</li>
+				<li class="value">
+					<div class="name">user</div>
+					<span class="type">string</span>
+					<span>__DESCRIPTION__</span>
+				</li>
+				<li class="value">
+					<div class="name">summary</div>
+					<span class="type">string</span>
+					<span>__DESCRIPTION__</span>
+				</li>
+				<li class="value">
+					<div class="name">date</div>
+					<span class="type">Date</span>
+					<span>__DESCRIPTION__</span>
+				</li>
 			</ul>
 		</div>
 		<div class="type">
@@ -423,7 +438,7 @@ END LICENSE
 						<span>__DESCRIPTION__</span>
 					</div>
 				</li>
-				<li class="function">
+				<li class="function" jsapi:id="log">
 					<div class="name">log</div>
 					<span>__DESCRIPTION__</span>
 					<div class="arguments">
@@ -447,6 +462,33 @@ END LICENSE
 						<span class="type">__TYPE__</span>
 						<span>__DESCRIPTION__</span>
 					</div>
+					<script type="application/x.jsapi#tests"><![CDATA[
+						var isDate = function(p) {
+							if (p instanceof Date) return true;
+							if (Date.was && p instanceof Date.was) return true;
+							return false;
+						}
+
+						var repository = createHg();
+						repository.unit.createFile({
+							path: "a",
+							content: "a",
+							add: true
+						});
+						repository.commit({
+							message: "a"
+						});
+						var log = repository.log();
+						//	TODO	move verification to changeset type?
+						verify(log).length.is(1);
+						verify(log)[0].changeset.is.type("object");
+						verify(log)[0].user.is.type("string");
+						verify(log)[0].summary.is.type("string");
+						verify(log)[0].evaluate(isDate).is(false);
+						verify(log)[0].date.evaluate(isDate).is(true);
+						//	jsh.shell.console(JSON.stringify(log[0]));
+						//	tag
+					]]></script>
 				</li>
 				<li class="function">
 					<div class="name">heads</div>
