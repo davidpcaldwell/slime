@@ -549,9 +549,13 @@ var Installation = function(environment) {
 		this.push = function(p) {
 			var args = [];
 			if (p && p.delete) args.push("--delete");
+			jsh.shell.console("Setting upstream ...");
+			if (p && p.setUpstream) args.push("--set-upstream", p.setUpstream);
 			if (p && p.repository) args.push(p.repository);
 			if (p && p.refspec) args.push(p.refspec);
+			jsh.shell.console("push " + args.join(" "));
 			execute({
+				config: p.config,
 				command: "push",
 				arguments: args,
 				environment: p.environment
