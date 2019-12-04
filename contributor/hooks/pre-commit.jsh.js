@@ -58,10 +58,10 @@ code.files.trailingWhitespace({
 			throw new Error("Unknown file type; cannot determine whether text: " + entry.node);
 		},
 		change: function(p) {
-			jsh.shell.echo("Changed " + p.path + " at line " + p.line.number);
+			jsh.shell.console("Changed " + p.path + " at line " + p.line.number);
 		},
 		changed: function(entry) {
-			jsh.shell.echo("Modified: " + entry.node);
+			jsh.shell.console("Modified: " + entry.node);
 			failed = true;
 		},
 		unchanged: function(entry) {
@@ -73,6 +73,52 @@ if (failed) {
 	jsh.shell.console("Failing because trailing whitespace was modified.");
 	jsh.shell.exit(1);
 }
+
+//	Runs test suite
+var timestamp = jsh.time.When.now();
+var logs = jsh.script.file.parent.parent.parent.getRelativePath("local/contribute/logs").createDirectory({
+	recursive: true,
+	exists: function(dir) { return false; }
+}).getRelativePath(timestamp.local().format("yyyy.mm.dd.HR.mi.sc")).createDirectory();
+var stdio = {
+	output: logs.getRelativePath("stdout.txt").write(jsh.io.Streams.text),
+	error: logs.getRelativePath("stderr.txt").write(jsh.io.Streams.text)
+};
+jsh.shell.console("Running tests with output to " + logs + " ...");
+var TEST_GIT_ISSUE = false;
+var invocation = {
+	shell: jsh.script.file.parent.parent.parent,
+	script: jsh.script.file.parent.parent.parent.getFile("contributor/suite.jsh.js"),
+	arguments: [
+		"-issue138"
+	],
+	stdio: {
+		output: {
+			line: function(line) {
+				stdio.output.write(line + "\n");
+			}
+		},
+		error: {
+			line: function(line) {
+				stdio.error.write(line + "\n");
+			}
+		}
+	},
+	evaluate: function(result) {
+		if (result.status != 0) {
+			jsh.shell.console("Failing because tests failed.");
+			jsh.shell.console("Output directory: " + logs);
+			jsh.shell.exit(1);
+		} else {
+			jsh.shell.console("Tests passed.");
+		}
+	}
+};
+if (TEST_GIT_ISSUE) {
+	invocation.script = jsh.script.file.parent.parent.parent.getFile("contributor/jrunscript.jsh.js");
+	invocation.arguments = ["-part", "jrunscript/tools/git"]
+}
+jsh.shell.jsh(invocation);
 
 if (jsh.shell.environment.SLIME_GIT_HOOK_FAIL) {
 	jsh.shell.console("Failing due to present of environment variable SLIME_GIT_HOOK_FAIL.");

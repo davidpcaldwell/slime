@@ -30,8 +30,11 @@ var parameters = jsh.script.getopts({
 		java: jsh.script.getopts.ARRAY(jsh.file.Pathname),
 		engine: jsh.script.getopts.ARRAY(String),
 		part: String,
+		//	https://github.com/davidpcaldwell/slime/issues/138
+		issue138: false,
+		//	TODO	Remove the dubious noselfping argument
 		noselfping: false,
-		// TODO: review below arguments
+		//	TODO	review below arguments
 		tomcat: jsh.file.Pathname,
 		debug: false,
 		view: "console",
@@ -113,6 +116,8 @@ parameters.options.java.forEach(function(jre,index,jres) {
 					"-view", "stdio"
 				].concat(
 					(parameters.options.noselfping) ? ["-noselfping"] : []
+				).concat(
+					(parameters.options.issue138) ? ["-issue138"] : []
 				),
 				environment: env
 			}));

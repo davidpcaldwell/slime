@@ -37,7 +37,7 @@ $exports.source = new function() {
 $exports.files = new function() {
 	//	TODO	probably need way to override these default excludes
 	this.filter = function(node) {
-		jsh.shell.console("Checking: " + node);
+		if (false) jsh.shell.console("Checking: " + node);
 		if (node.pathname.basename == ".hg") return false;
 		if (node.pathname.basename == ".hgtags") return false;
 		if (node.pathname.basename == ".svn") return false;
@@ -85,7 +85,7 @@ $exports.files = new function() {
 //			recursive: true,
 			filter: this.filter,
 			descendants: function(directory) {
-				jsh.shell.console("Checking directory: " + directory);
+				//jsh.shell.console("Checking directory: " + directory);
 				return directory.pathname.basename != "local"
 					&& directory.pathname.basename != ".hg"
 					&& directory.pathname.basename != ".git"
