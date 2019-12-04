@@ -243,7 +243,7 @@
 			if (p.array) {
 				return new function() {
 					var index = 0;
-	
+
 					this.next = function() {
 						if (index < p.array.length) {
 							return {
@@ -261,16 +261,16 @@
 				throw new Error("Unimplemented: iterator for " + p);
 			}
 		}
-	
+
 		this.groupBy = function(p) {
 			var iterator = getIterator(p);
-	
+
 			var rv = {};
-	
+
 			var create = function(key) {
 				rv[key] = (p.count) ? 0 : [];
 			};
-	
+
 			var add = function(key,value) {
 				if (typeof(rv[key]) == "undefined") create(key);
 				if (p.count) {
@@ -279,20 +279,20 @@
 					rv[key].push(value);
 				}
 			};
-	
+
 			var toStringKey = function(group) {
 				if (p.codec) {
 					group = p.codec.encode(group);
 				}
 				return group;
 			};
-	
+
 			if (p.groups) {
 				p.groups.forEach(function(group) {
 					create(toStringKey(group));
 				});
 			}
-	
+
 			var next = iterator.next();
 			while(!next.done) {
 				var element = next.value;
@@ -301,10 +301,10 @@
 				add(key,element);
 				next = iterator.next();
 			}
-	
+
 			return new function() {
 				var list;
-	
+
 				this.array = function() {
 					if (!list) {
 						list = [];
@@ -362,8 +362,8 @@
 					right: secondRemain
 				},
 				matched: pairs
-			};		
-		};	
+			};
+		};
 	};
 
 	var Properties = (function implementProperties() {
@@ -374,7 +374,7 @@
 				return rv;
 			};
 		};
-	
+
 		var decorateArray = function(array) {
 			["filter"].forEach(function(name) {
 				array[name] = withPropertiesResult(Array.prototype[name]);

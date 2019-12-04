@@ -51,7 +51,7 @@ window.addEventListener("load", function() {
 			}
 		});
 	}
-	
+
 	if (parameters.command == "run") {
 		var event = new Event("click");
 		document.getElementById("run").dispatchEvent(event);

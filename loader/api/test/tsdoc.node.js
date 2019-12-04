@@ -32,7 +32,7 @@ function dumpTSDocTree(docNode, indent) {
 		dumpTSDocTree(child, indent + '  ');
 	}
 }
-  
+
 function parseTSDoc(sourceFile, foundComment) {
 	console.log(os.EOL + colors.green('Comment to be parsed:') + os.EOL);
 	console.log(colors.gray('<<<<<<'));
@@ -95,7 +95,7 @@ function parseTSDoc(sourceFile, foundComment) {
 
 	console.log(os.EOL + colors.green('Visiting TSDoc\'s DocNode tree') + os.EOL);
 	dumpTSDocTree(docComment, '');
-}  
+}
 
 const isDeclarationKind = function(kind) {
 	return kind === ts.SyntaxKind.ArrowFunction
@@ -162,7 +162,7 @@ function getJSDocCommentRanges(node, text) {
 		text.charCodeAt(comment.pos + 1) === 0x2A /* ts.CharacterCodes.asterisk */ &&
 		text.charCodeAt(comment.pos + 2) === 0x2A /* ts.CharacterCodes.asterisk */ &&
 		text.charCodeAt(comment.pos + 3) !== 0x2F /* ts.CharacterCodes.slash */);
-}  
+}
 
 const traverse = function(sourceFile, node, indent, rv) {
 	const buffer = sourceFile.getFullText();

@@ -28,7 +28,7 @@ var Identifier = function(p) {
 		};
 	} else {
 		throw new Error("Unimplemented: Identifier with typeof(p) == " + typeof(p));
-	}		
+	}
 };
 
 var driver = $context.base({
@@ -73,114 +73,114 @@ var types = new function() {
 
 	var TIMESTAMP = new function() {
 		this.string = "TIMESTAMP";
-	
+
 		this.decode = function(rs,index) {
 			return new Date( rs.getTimestamp(index).getTime() );
 		}
-	
+
 		this.cast = function(value) {
 			return cast("TIMESTAMP", value, function(value) {
 				return String(new Packages.java.text.SimpleDateFormat(TIMESTAMP_MASK).format( value.getTime() ));
 			} );
 		}
 	}
-	
+
 	var VARCHAR = function(precision) {
 		return new function() {
 			this.string = "VARCHAR(" + precision + ")";
-	
+
 			this.decode = function(rs,index) {
 				return String( rs.getString(index) );
 			}
-	
+
 			this.cast = function(value) {
 				return cast("VARCHAR", value, function(a) { return a; });
 			}
 		}
 	}
-	
+
 	var DATE = new function() {
 		var TimeZone = Packages.java.util.TimeZone;
-	
+
 		this.string = "DATE";
-	
+
 		this.decode = function(rs,index) {
 			var ts = rs.getTimestamp(index);
 			if (ts === null) return null;
 			return new Date( rs.getTimestamp(index).getTime() );
 		}
-	
+
 		var toUtc = function(value) {
 			var formatter = new Packages.java.text.SimpleDateFormat(DATE_MASK);
 			formatter.setTimeZone(TimeZone.getTimeZone("Universal"));
 			return String(formatter.format(value.getTime()));
 		}
-	
+
 		this.cast = function(value) {
 			return cast("DATE", value, toUtc);
 		}
 	}
-	
+
 	var SMALLINT = new function() {
 		this.string = "SMALLINT";
-	
+
 		this.decode = function(rs,index) {
 			return Number( rs.getInt(index) );
 		}
-	
+
 		this.cast = function(value) {
 			return cast("SMALLINT", value, String);
 		}
 	}
-	
+
 	var INTEGER = new function() {
 		this.string = "INTEGER";
-	
+
 		this.decode = function(rs,index) {
 			return Number( rs.getInt(index) );
 		}
-	
+
 		this.cast = function(value) {
 			return cast("INTEGER", value, String);
 		}
 	}
-	
+
 	var BIGINT = new function() {
 		this.string = "BIGINT";
-	
+
 		this.decode = function(rs,index) {
 			return Number( rs.getLong(index) );
 		}
-	
+
 		this.cast = function(value) {
 			return cast("BIGINT", value, String);
 		}
 	}
-	
+
 	var DOUBLE = new function() {
 		this.string = "DOUBLE";
-	
+
 		this.decode = function(rs,index) {
 			return Number( rs.getDouble(index) );
 		}
-	
+
 		this.cast = function(value) {
 			return cast("DOUBLE PRECISION", value, String);
 		}
 	}
-	
+
 	var BOOLEAN = new function() {
 		this.string = "BOOLEAN";
-	
+
 		this.decode = function(rs,index) {
 			return rs.getBoolean(index);
 		}
-	
+
 		this.cast = function(value) {
 			return cast("BOOLEAN", value, function(v) { return (v) ? "TRUE" : "FALSE" });
 		}
 	}
-	
+
 	var $Types = Packages.java.sql.Types;
 
 	this.getCodec = function(data) {
@@ -259,7 +259,7 @@ var getDataSource = function(host,port,db,user,password,pool) {
 var Database = function(o) {
 	if (!o.host) o.host = "localhost";
 	if (!o.port) o.port = 5432;
-	
+
 	this.toString = function() {
 		return "PostgreSQL: host=" + o.host + " port=" + o.port;
 	}
@@ -285,7 +285,7 @@ var Database = function(o) {
 				var rs = bootstrapDatasource.createQuery("SELECT datname FROM pg_database");
 				var array = rs.toArray();
 				return array.map(function(item) {
-					return { 
+					return {
 						name: item.datname
 					};
 				});

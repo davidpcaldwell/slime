@@ -39,7 +39,7 @@
 
 	var system = Application('System Events')
 	var slimePath = system.files[bootstrapPath.toString()].container().container().posixPath();
-	
+
 	function load(path) {
 		//console.log("loading " + path);
 		var handle = bootstrap.openForAccess(path);
@@ -49,7 +49,7 @@
 			code: contents.toString()
 		};
 	}
-	
+
 	//  TODO    build Loader implementation on top of this
 	var runtime = (function(slime) {
 		var $slime = {
@@ -78,7 +78,7 @@
 	})(objc.array.adapt($.NSProcessInfo.processInfo.arguments));
 
 	var environment = objc.dictionary.adapt($.NSProcessInfo.processInfo.environment);
-	
+
 	var main = (function(script,pwd) {
 		if (script.substring(0,1) == "/") {
 			return script;
@@ -89,7 +89,7 @@
 
 	var Pathname = function(o) {
 		//	TODO	would be nice to canonicalize the value of o.string
-		
+
 		Object.defineProperty(this, "directory", {
 			get: function() {
 				if (objc.filesystem.directory(o.string)) return new Directory({ pathname: this });
@@ -101,7 +101,7 @@
 			return o.string;
 		}
 	}
-	
+
 	var Directory = function(o) {
 		this.toString = function() {
 			return o.pathname.toString();
@@ -159,7 +159,7 @@
 	};
 
 	this.jxa = rv;
-	
+
 	var script = load(main);
 	eval(script.code);
 }).call(this);

@@ -5,7 +5,7 @@ var global = (function() { return this; })();
 if (global.window == global) {
 	var parseDom = function(unparsed) {
 		if (window.DOMParser) return new DOMParser().parseFromString(unparsed, "text/html");
-		
+
 		var doc = document.implementation.createHTMLDocument("");
 		//	Added this check for Firefox, for which document.write was not doing the trick
 		var didDocWriteWork = (function(doc) {
@@ -36,7 +36,7 @@ if (global.window == global) {
 	};
 
 	var Parent = function(dom) {
-		
+
 	}
 
 	var Element = function(dom) {
@@ -232,13 +232,13 @@ if ($platform.java && $platform.java.getClass("org.jsoup.Jsoup")) {
 	parsers.jsoup = (function() {
 		var Document = function(p) {
 			this.jsoup = p.jsoup;
-	
+
 			Parent.call(this,p);
 
 			var document = new (function(parent) {
 				Object.defineProperty(this, "element", {
 					get: $api.Function.pipe(
-						$api.Function.returning(parent.children), 
+						$api.Function.returning(parent.children),
 						function(array) {
 							return array.filter(filters.element);
 						},

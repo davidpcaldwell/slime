@@ -267,7 +267,7 @@ var Installation = function(environment) {
 				this.format = fields.map(function(field) {
 					return "%" + field;
 				}).join("~~");
-				
+
 				this.parse = function(line) {
 					var tokens = line.split("~~");
 					if (typeof(tokens[5]) == "undefined") throw new Error("No tokens[5]: [" + line + "]");
@@ -331,7 +331,7 @@ var Installation = function(environment) {
 				}
 			});
 		};
-		
+
 		//	Organization of commands mirrors organization on https://git-scm.com/docs
 
 		var command = function(f) {
@@ -750,24 +750,24 @@ $exports.credentialHelper = {};
 		var find = function(api) {
 			return $context.api.shell.PATH.getCommand("git");
 		};
-	
+
 		if ($context.program) return $context.program;
 		return find();
 	})();
-	
+
 	if (program) {
 		var installation = new Installation({
 			program: program
 		});
-	
+
 		$exports.installation = installation;
-	
+
 		["daemon","Repository","init","execute"].forEach(function(name) {
 			$exports[name] = function() {
 				return installation[name].apply(installation,arguments);
 			};
 		},this);
-	}	
+	}
 })();
 
 var GUI = $context.api.Error.Type("Please execute the graphical installer.");

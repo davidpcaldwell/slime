@@ -12,9 +12,9 @@
 
 $jsh.setRuntime((function() {
 	var rv = $rhino.script(
-		"jrunscript/rhino.js", 
-		$jsh.getLoader().getLoaderCode("jrunscript/rhino.js"), 
-		{ $loader: $jsh.getLoader(), $rhino: $rhino }, 
+		"jrunscript/rhino.js",
+		$jsh.getLoader().getLoaderCode("jrunscript/rhino.js"),
+		{ $loader: $jsh.getLoader(), $rhino: $rhino },
 		null
 	);
 

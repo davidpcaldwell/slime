@@ -20,7 +20,7 @@ jsh.shell.console(main);
 var ScriptCompilationConfiguration = Packages.kotlin.script.experimental.api.ScriptCompilationConfiguration;
 
 var configuration = new Packages.kotlin.script.experimental.api.ScriptCompilationConfiguration(
-    new Packages.java.util.ArrayList(), 
+    new Packages.java.util.ArrayList(),
     new JavaAdapter(
         Packages.kotlin.jvm.functions.Function1,
         new function() {

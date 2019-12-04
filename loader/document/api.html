@@ -62,10 +62,10 @@ END LICENSE
 			verify(page).children.get(0).doctype.is.type("object");
 			verify(page).children.get(0).doctype.name.is.type("string");
 			verify(page).children.get(0).doctype.name.is("html");
-	
+
 			verify(page).children.get(1).element.is.type("object");
 			verify(page).document.element.is.type("object");
-			verify(page).document.element.element.name.is("html");	
+			verify(page).document.element.element.name.is("html");
 
 			verify(page).document.element.element.attributes.get("class").is("class1");
 			verify(page).document.element.element.attributes.get("foo").is(null);

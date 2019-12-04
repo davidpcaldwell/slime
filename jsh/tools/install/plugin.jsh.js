@@ -95,7 +95,7 @@ plugin({
 				if (jsh.shell.os.name == "Mac OS X") {
 					jsh.tools.install.install({
 						url: "https://github.com/oracle/graal/releases/download/"
-							+ "vm-" + VERSION.number + "/" 
+							+ "vm-" + VERSION.number + "/"
 							+ "graalvm-" + VERSION.edition + "-" + "darwin" + "-" + "amd64" + "-" + VERSION.number + ".tar.gz"
 						,
 						getDestinationPath: function(file) {
@@ -249,7 +249,7 @@ plugin({
 					}
 				}
 				events.fire("console", "Installing Kotlin from " + URL + " ...");
-				
+
 				jsh.tools.install.install({
 					url: URL,
 					to: location,
@@ -257,9 +257,9 @@ plugin({
 						return "kotlinc";
 					}
 				});
-				
+
 				var client = new jsh.http.Client();
-				
+
 				events.fire("console", "Adding jsr223.jar ...");
 				var TMP = jsh.shell.TMPDIR.createTemporary({ directory: true });
 				TMP.getRelativePath("META-INF/services/javax.script.ScriptEngineFactory").write(
@@ -280,7 +280,7 @@ plugin({
 						}
 					})
 				})
-				
+
 				events.fire("console", "Adding kotlin-script-util.jar ...");
 				location.directory.getRelativePath("lib/kotlin-script-util.jar").write(client.request({
 					url: "http://central.maven.org/maven2/org/jetbrains/kotlin/kotlin-script-util/1.3.31/kotlin-script-util-1.3.31.jar"
@@ -294,7 +294,7 @@ plugin({
 				});
 				// location.directory.getRelativePath("lib/kotlin-scripting-jvm-host.jar").write(new jsh.http.Client().request({
 				//     url: "http://central.maven.org/maven2/org/jetbrains/kotlin/kotlin-scripting-jvm-host/1.3.31/kotlin-scripting-jvm-host-1.3.31.jar"
-				// }).body.stream, { append: false });				
+				// }).body.stream, { append: false });
 			});
 		} : null;
 		jsh.shell.tools.kotlin = kotlin;
@@ -410,7 +410,7 @@ plugin({
 							url: "https://jdbc.postgresql.org/download/postgresql-42.2.5.jar"
 						});
 						location.write(response.body.stream, { append: false });
-					}					
+					}
 				}).bind(this);
 
 				if (location) this.install = install;
@@ -494,7 +494,7 @@ plugin({
 
 		(function integratedNode() {
 			if (!jsh.shell.jsh.lib) return;
-			
+
 			var location = jsh.shell.jsh.lib.getRelativePath("node");
 
 			var installed = node.at({ location: location });

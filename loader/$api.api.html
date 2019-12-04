@@ -885,9 +885,9 @@ END LICENSE
 									child.listeners.add("aType", receive("child"));
 
 									child.fire("aType");
-			
+
 									verify(received).parent.path.length.is(1);
-									verify(received).parent.path[0].is(child);					
+									verify(received).parent.path[0].is(child);
 									verify(received).child.path.length.is(0);
 								</script>
 							</li>
@@ -983,28 +983,28 @@ END LICENSE
 										</div>
 										<script type="application/x.jsapi#tests">
 											var emitter = api.Events();
-	
+
 											var called = false;
-	
+
 											emitter.listeners.add("aType", function() {
 												verify(this).is(emitter);
 												called = true;
 											});
-	
+
 											emitter.fire("aType");
 											verify(called).is(true);
 										</script>
 										<script type="application/x.jsapi#tests">
 											var source = {};
 											var emitter = api.Events({ source: source });
-	
+
 											var called = false;
-	
+
 											emitter.listeners.add("aType", function() {
 												verify(this).is(source);
 												called = true;
 											});
-	
+
 											emitter.fire("aType");
 											verify(called).is(true);
 										</script>
@@ -1014,24 +1014,24 @@ END LICENSE
 											var emitters = {};
 											emitters.parent = api.Events({ source: parent });
 											emitters.child = api.Events({ source: child, parent: emitters.parent });
-	
+
 											var called = {
 												parent: false,
 												child: false
 											};
-	
+
 											emitters.parent.listeners.add("aType", function(e) {
 												verify(this).is(parent);
 												verify(e).source.is(child);
 												called.parent = true;
 											});
-	
+
 											emitters.child.listeners.add("aType", function(e) {
 												verify(this).is(child);
 												verify(e).source.is(child);
 												called.child = true;
 											});
-	
+
 											emitters.child.fire("aType");
 											verify(called).parent.is(true);
 											verify(called).child.is(true);
@@ -1057,17 +1057,17 @@ END LICENSE
 									<script type="application/x.jsapi#tests">
 										var source = new function() {
 											var events = api.Events({ source: this });
-				
+
 											this.doIt = function(p) {
 												events.fire("done", p);
 											};
 										};
-				
+
 										var received = [];
 										var counter = function(e) {
 											received.push(e);
 										};
-				
+
 										verify(received).length.is(0);
 										source.doIt();
 										verify(received).length.is(0);
@@ -1178,7 +1178,7 @@ END LICENSE
 											parent.fire("aType");
 											verify(received).parent.length.is(1);
 											verify(received).child.length.is(0);
-					
+
 											child.fire("aType");
 											verify(received).parent.length.is(2);
 											verify(received).child.length.is(1);
@@ -1274,7 +1274,7 @@ END LICENSE
 									source: source
 								});
 								var payload = {};
-								var received; 
+								var received;
 								events.listeners.add("a", function(e) {
 									received = e;
 								})
@@ -1341,61 +1341,61 @@ END LICENSE
 										verify(api,"$api").loadedByJsapi.is(true);
 										verify(api,"$api").threads.steps.is.not.equalTo(null);
 										verify(api,"$api").threads.steps.evaluate.property("run").is.not.equalTo(null);
-				
+
 										var $steps = verify(api,"$api").threads.steps;
 										var $run = $steps.evaluate(function() { return this.run({ steps: [] }) });
 										$run.threw.nothing();
-				
+
 										var A = function(shared) {
 											this.ready = function() {
 												return true;
 											}
-				
+
 											this.run = function() {
 												shared.a = true;
 											}
 										};
-				
+
 										var B = function(shared) {
 											this.ready = function() {
 												return shared.a;
 											};
-				
+
 											this.run = function() {
 												shared.b = true;
 											}
 										}
-				
+
 										var Shared = function() {
 											this.a = false;
 											this.b = false;
 										};
-				
+
 										var Listener = function() {
 											var unready = [];
-				
+
 											this.on = {
 												unready: function(e) {
 													unready.push(e.detail);
 												}
 											}
-				
+
 											this.unready = unready;
 										}
-				
+
 										var s1 = new Shared();
 										$steps.run({
 											steps: [ new A(s1) ]
 										});
 										verify(s1).a.is(true);
-				
+
 										var s2 = new Shared();
 										$steps.run({
 											steps: [ new B(s2), new A(s2) ]
 										});
 										verify(s2).a.is(true);
 										verify(s2).b.is(true);
-				
+
 										var s3 = new Shared();
 										var b3 = new B(s3);
 										var l3 = new Listener();

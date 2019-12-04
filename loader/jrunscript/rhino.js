@@ -95,9 +95,9 @@
 	};
 
 	var rv = $rhino.script(
-		"jrunscript/expression.js", 
-		$loader.getLoaderCode("jrunscript/expression.js"), 
-		{ $loader: $loader, $javahost: $javahost, $bridge: $bridge }, 
+		"jrunscript/expression.js",
+		$loader.getLoaderCode("jrunscript/expression.js"),
+		{ $loader: $loader, $javahost: $javahost, $bridge: $bridge },
 		null
 	);
 

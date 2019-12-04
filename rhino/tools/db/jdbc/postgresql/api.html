@@ -139,7 +139,7 @@ END LICENSE
 			verify(catalog).getSchema({ name: "s" }).is.type("object");
 
 			catalog.dropSchema({ name: "s" });
-			verify(catalog).getSchema({ name: "s" }).is(null);			
+			verify(catalog).getSchema({ name: "s" }).is(null);
 		</script>
 		<script jsapi:id="tables" type="application/x.jsapi#tests">
 			catalog.getSchemas().forEach(function(schema) {

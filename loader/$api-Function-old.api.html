@@ -68,17 +68,17 @@
 					var doubler = function(x) {
 						return 2 * x;
 					};
-	
+
 					var fourXSquaredPlusX = api.Function.postprocessing(doubler, function(p) {
 						return p.returned * p.returned + p.arguments[0];
 					});
-	
+
 					verify(fourXSquaredPlusX(5)).is(105);
 				</script>
 				<script type="application/x.jsapi#tests">
 					var Counter = function() {
 						var called = 0;
-	
+
 						var rv = {};
 						rv.call = function() {
 							called++;
@@ -88,11 +88,11 @@
 						};
 						return rv;
 					};
-	
+
 					var foo = function() {
 						return "foo";
 					};
-	
+
 					var counter = new Counter();
 					verify(counter).called().is(0);
 					var newFoo = api.Function.postprocessing(foo, counter.call);
@@ -105,17 +105,17 @@
 					var foo = function() {
 						return "foo";
 					};
-	
+
 					var calls = {};
-	
+
 					calls.override = api.Function.postprocessing(foo, function(p) {
 						return api.Function.postprocessing.UNDEFINED;
 					});
-	
+
 					calls.leave = api.Function.postprocessing(foo, function(p) {
 						return void(0);
 					});
-	
+
 					verify(calls).override().is(void(0));
 					verify(calls).leave().is("foo");
 				</script>
@@ -124,7 +124,7 @@
 				<div class="name">mutating</div>
 				<div>
 					<p>
-						Creates a function that wraps a supplied mutator function for the purpose of modifying a default value. 
+						Creates a function that wraps a supplied mutator function for the purpose of modifying a default value.
 						<code>mutating()</code> is designed for use by API designers who wish to provide an override mechanism for a
 						particular default value (especially an object). API designers may provide for a single value to be supplied
 						which can be an object to replace the default, a function which returns a value to replace the default, or
@@ -140,7 +140,7 @@
 						<ul>
 							<li>It may directly modify the value (if the value is mutable, like an object) in its implementation,</li>
 							<li>
-								It may <em>replace</em> the value entirely by returning a value. The special value 
+								It may <em>replace</em> the value entirely by returning a value. The special value
 								$api.Function.value.UNDEFINED can be returned to replace the value with <code>undefined</code>.
 							</li>
 						</ul>
@@ -193,38 +193,38 @@
 					var object = {
 						foo: "bar"
 					};
-	
+
 					var mutating = api.Function.mutating(function(p) {
 						p.foo = "baz";
 					});
-	
+
 					var result = mutating(object);
 					verify(result).foo.is("baz");
 					verify(result).is(object);
-	
+
 					var swapper = api.Function.mutating(function(p) {
 						return { a: "b" }
 					});
-	
+
 					var swap = swapper(object);
 					verify(swap).a.is("b");
 					verify(swap).is.not(object);
-	
+
 					var voiding = api.Function.mutating(function(p) {
 						return api.Function.value.UNDEFINED;
 					});
-	
+
 					var voided = {
 						value: voiding(object)
 					};
 					verify(voided).evaluate.property("value").is(void(0));
-	
+
 					var k = { foo: "k" };
 					var valuer = $api.Function.mutating(k);
 					var valued = valuer(object);
 					verify(valued).foo.is("k");
 					verify(valued).is.not(object);
-	
+
 					object = {
 						foo: "bar"
 					};
@@ -232,7 +232,7 @@
 					var missinged = missinger(object);
 					verify(missinged).foo.is("bar");
 					verify(missinged).is(object);
-	
+
 					var dummy = {};
 					verify(dummy).evaluate(function() {
 						return mutating();

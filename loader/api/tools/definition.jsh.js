@@ -39,10 +39,10 @@ var templateXml = (function() {
 					to: slime
 				})
 			};
-			
+
 			while(template.indexOf(slimepath) != -1) {
 				template = template.replace(slimepath, to.slime.relative);
-			}		
+			}
 		})();
 	}
 	return template;

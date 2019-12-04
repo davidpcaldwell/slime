@@ -124,8 +124,8 @@ END LICENSE
 								command: "npm",
 								arguments: ["uninstall", "-g", "js-yaml"]
 							});
-							scope.api.modules.refresh();	
-						}						
+							scope.api.modules.refresh();
+						}
 					</script>
 					<script type="application/x.jsapi#tests">
 						verify(api).modules.installed.evaluate.property("js-yaml").is(void(0));
@@ -188,7 +188,7 @@ END LICENSE
 							scope.api.modules.uninstall({
 								name: "js-yaml"
 							});
-						}						
+						}
 					</script>
 					<script type="application/x.jsapi#tests">
 						verify(api).modules.installed.evaluate.property("js-yaml").is(void(0));
@@ -200,7 +200,7 @@ END LICENSE
 						api.modules.uninstall({
 							name: "js-yaml"
 						});
-						verify(api).modules.installed.evaluate.property("js-yaml").is(void(0));						
+						verify(api).modules.installed.evaluate.property("js-yaml").is(void(0));
 					</script>
 				</li>
 				<li class="object">

@@ -17,9 +17,9 @@ var $java = (function() {
 		//			would need to construct the two-property scope object below; rest should be straightforward.
 		//			Need also to identify test case
 		return $host.getEngine().script(
-			"jrunscript/rhino.js", 
-			$host.getLoader().getLoaderCode("jrunscript/rhino.js"), 
-			{ 
+			"jrunscript/rhino.js",
+			$host.getLoader().getLoaderCode("jrunscript/rhino.js"),
+			{
 				$loader: $host.getLoader(),
 				$rhino: $host.getEngine()
 			},

@@ -255,29 +255,29 @@ END LICENSE
 									this.returned = 0;
 									this.errored = 0;
 									this.expired = 0;
-	
+
 									this.result = module.Thread.thisSynchronize(function(rv) {
 										this.returned++;
 									});
-	
+
 									this.error = module.Thread.thisSynchronize(function(e) {
 										this.errored++;
 									});
-	
+
 									this.timeout = module.Thread.thisSynchronize(function() {
 										this.expired++;
 									});
 								};
-	
+
 								var MAX = 250;
 								var COUNT = 5;
-	
+
 								var rnd = new Packages.java.util.Random();
-	
+
 								var random = function() {
 									return rnd.nextDouble();
 								}
-	
+
 								verify(listener).returned.is(0);
 								verify(listener).errored.is(0);
 								verify(listener).expired.is(0);
@@ -285,7 +285,7 @@ END LICENSE
 								var Thread = module.Thread;
 
 								var all = [];
-	
+
 								for (var i=0; i<COUNT; i++) {
 									(function(i) {
 										var t = Thread.start({
@@ -295,10 +295,10 @@ END LICENSE
 											},
 											on: listener
 										});
-										all.push(t);	
+										all.push(t);
 									})(i)
 								}
-	
+
 								for (var i=0; i<COUNT; i++) {
 									(function(i) {
 										var t = Thread.start({
@@ -308,10 +308,10 @@ END LICENSE
 											},
 											on: listener
 										});
-										all.push(t);									
+										all.push(t);
 									})(i);
 								}
-	
+
 								for (var i=0; i<COUNT; i++) {
 									(function(i) {
 										var t = Thread.start({
@@ -329,7 +329,7 @@ END LICENSE
 								for (var i=0; i<all.length; i++) {
 									all[i].join();
 								}
-	
+
 								verify(listener).returned.is(COUNT);
 								verify(listener).errored.is(COUNT);
 								verify(listener).expired.is(COUNT);

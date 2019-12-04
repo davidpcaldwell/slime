@@ -70,7 +70,7 @@ jsh.java.Thread.start(function() {
 		environment: Object.assign({}, jsh.shell.environment, {
 			CATALINA_BASE: CATALINA_BASE.toString()
 		})
-	});	
+	});
 });
 
 var client = new jsh.http.Client();
@@ -100,7 +100,7 @@ jsh.shell.run({
 	environment: Object.assign({}, jsh.shell.environment, {
 		CATALINA_BASE: CATALINA_BASE.toString()
 	})
-});	
+});
 
 if (response == "Requested path: []") {
 	jsh.shell.console("Got expected output; exiting with success.");

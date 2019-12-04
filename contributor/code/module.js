@@ -51,6 +51,10 @@ $exports.files = new function() {
 		var basename = node.pathname.basename;
 		if (/\.txt$/.test(basename)) return true;
 		if (/\.js$/.test(basename)) return true;
+		if (/\.ts$/.test(basename)) return true;
+		if (/\.kts$/.test(basename)) return true;
+		if (/\.json$/.test(basename)) return true;
+		if (/\.gradle$/.test(basename)) return true;
 		if (/\.pac$/.test(basename)) return true;
 		if (/\.jsh$/.test(basename)) return true;
 		if (/\.bash$/.test(basename)) return true;
@@ -82,7 +86,13 @@ $exports.files = new function() {
 			filter: this.filter,
 			descendants: function(directory) {
 				jsh.shell.console("Checking directory: " + directory);
-				return directory.pathname.basename != "local" && directory.pathname.basename != ".hg";
+				return directory.pathname.basename != "local"
+					&& directory.pathname.basename != ".hg"
+					&& directory.pathname.basename != ".git"
+					&& directory.pathname.basename != "bin"
+					&& directory.pathname.basename != "build"
+					&& directory.pathname.basename != ".settings"
+					&& directory.pathname.basename != ".gradle"
 			},
 			type: p.base.list.ENTRY
 		});

@@ -116,7 +116,7 @@ public class Shell {
 
 		public String getLoaderCode(String path) throws IOException {
 			return streams.readString(configuration.getInstallation().getPlatformLoader().getFile(path).getReader());
-		}	
+		}
 
 		public Loader.Classes.Interface getClasspath() {
 			return Shell.this.classpath;
@@ -153,7 +153,7 @@ public class Shell {
 									@Override public File getWorkingDirectory() {
 										return tmp;
 									}
-								
+
 									@Override public Map<String,String> getSubprocessEnvironment() {
 										Map<String,String> underlying = OperatingSystem.Environment.SYSTEM.getMap();
 										HashMap<String,String> rv = new HashMap<String,String>();
@@ -165,11 +165,11 @@ public class Shell {
 									@Override public InputStream getStandardInput() {
 										return Streams.Null.INPUT_STREAM;
 									}
-								
+
 									@Override public OutputStream getStandardOutput() {
 										return System.out;
 									}
-								
+
 									@Override public OutputStream getStandardError() {
 										return System.err;
 									}
@@ -182,15 +182,15 @@ public class Shell {
 											throw new RuntimeException(e);
 										}
 									}
-								
+
 									@Override public String[] getArguments() {
 										try {
-											return new String[] { 
+											return new String[] {
 												"--outDir", tmp.getCanonicalPath(),
 												//	--module ES6 basically leaves the code alone if it exports type definitions,
 												//	which is the one kind of export we want to use right now
 												"--module", "ES6",
-												ts.getCanonicalPath() 
+												ts.getCanonicalPath()
 											};
 										} catch (IOException e) {
 											throw new RuntimeException(e);

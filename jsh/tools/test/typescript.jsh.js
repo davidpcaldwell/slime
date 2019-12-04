@@ -1,6 +1,6 @@
 var compile = function(parameters) {
-	var output = (parameters.options.output) 
-		? parameters.options.output.createDirectory({ 
+	var output = (parameters.options.output)
+		? parameters.options.output.createDirectory({
 			exists: function(dir) {
 				dir.remove();
 				return true;
@@ -56,7 +56,7 @@ jsh.script.Application.run({
 		loader: {
 			getopts: {
 				optinos: {
-					output: jsh.file.Pathname					
+					output: jsh.file.Pathname
 				}
 			},
 			run: function(parameters) {

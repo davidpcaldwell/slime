@@ -18,7 +18,7 @@ jsh.script.Application.run(new function() {
 						command: chrome.command,
 						chrome: chrome.chrome
 					}
-				}),void(0),"    "));			
+				}),void(0),"    "));
 			}
 		};
 

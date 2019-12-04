@@ -21,7 +21,7 @@ $exports.tcp = new function() {
 
 var assert = function(test,failure) {
     return $api.Function.conditional(
-		test, 
+		test,
 		function(o) { return o; },
 		failure
 	);

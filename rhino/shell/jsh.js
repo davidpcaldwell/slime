@@ -236,7 +236,7 @@ $exports.jsh = function(p) {
 	}
 	var argumentsFactory = $api.Function.mutating(p.arguments);
 	p.arguments = argumentsFactory([]);
-	
+
 	if (p.script.file && !p.script.pathname) {
 		$api.deprecate(function() {
 			//	User supplied Pathname; should have supplied file

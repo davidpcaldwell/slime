@@ -380,7 +380,7 @@ var Day = function() {
 			var asDate = new Date(arguments[0], arguments[1]-1, arguments[2]);
 			if (asDate.getFullYear() != arguments[0] || asDate.getMonth() != (arguments[1]-1) || asDate.getDate() != arguments[2]) {
 				throw new Error("Invalid date arguments: " + Array.prototype.join.apply(arguments, [","]));
-			}	
+			}
 		}).apply(this,arguments);
 		return new Day({
 			year: new Year(arguments[0]),
@@ -402,7 +402,7 @@ var Day = function() {
 		var arg = arguments[0];
 		return new Day(arg.json.year.value, arg.json.month.index, arg.json.day);
 	}
-	
+
 	if (arguments.length == 1) {
 		var arg = arguments[0];
 		if (typeof(arg.year) != "undefined") {

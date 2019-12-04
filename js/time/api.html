@@ -30,9 +30,9 @@ END LICENSE
 		try {
 			var isJava = Packages;
 			scope.module = $jsapi.loader.module(
-				"module.js", 
+				"module.js",
 				Object.assign(
-					$jsapi.loader.file("context.java.js"), 
+					$jsapi.loader.file("context.java.js"),
 					{ old: old }
 				)
 			);
@@ -277,7 +277,7 @@ END LICENSE
 								var day = new api.Day(2019,11,1);
 								var before = day.add(-1);
 								var after = day.add(1);
-								
+
 								verify(before).year.value.is(2019);
 								verify(before).month.id.is(api.Year.Month.OCTOBER);
 								verify(before).day.is(31);

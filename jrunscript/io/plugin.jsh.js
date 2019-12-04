@@ -56,10 +56,10 @@ plugin({
 				if (typeof(control.value) == "string") {
 					return { name: control.name, string: control.value };
 				} else if (control.value && control.value.pathname) {
-					return { 
-						name: control.name, 
-						filename: control.value.pathname.basename, 
-						type: control.value.type.toString(), 
+					return {
+						name: control.name,
+						filename: control.value.pathname.basename,
+						type: control.value.type.toString(),
 						stream: control.value.read.binary()
 					};
 				} else {

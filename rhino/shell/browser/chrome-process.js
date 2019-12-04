@@ -9,7 +9,7 @@ var parseChromeProcess = function(program,process) {
 		};
 		var tokens = argumentString.split(" ");
 		//process.chrome.tokens = tokens;
-		
+
 		var getArgument = function(token) {
 			if (token.substring(0,2) == "--") {
 				var nv = token.substring(2).split("=");

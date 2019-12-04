@@ -45,7 +45,7 @@ engines.forEach(function(engine) {
 							return JSON.parse(result.stdio.output);
 						}
 					});
-					verify(output).properties["jsh.engine"].is(engine);		
+					verify(output).properties["jsh.engine"].is(engine);
 				}
 			};
 

@@ -635,7 +635,7 @@ var Context = function(p) {
 			this.release = function(connection) {
 				connection.close();
 			}
-		}		
+		}
 	}
 
 	var connection = p.connections.get();
@@ -815,12 +815,12 @@ var Table = function(c) {
 			if (s == "NO") return false;
 		}
 
-		var column = { 
+		var column = {
 			//	https://docs.oracle.com/javase/8/docs/api/java/sql/DatabaseMetaData.html#getColumns-java.lang.String-java.lang.String-java.lang.String-java.lang.String-
 			//	table_cat
 			//	table_schem
 			//	table_name
-			name: row.column_name, 
+			name: row.column_name,
 			type: type,
 			//	type_name
 			size: row.column_size,

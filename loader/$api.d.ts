@@ -1,10 +1,10 @@
 declare namespace $api {
 	namespace Iterable {
 		/**
-		 * Collates an iterable set of values of type V (extends any) into groups of type G (extends any) (or counts the number of 
+		 * Collates an iterable set of values of type V (extends any) into groups of type G (extends any) (or counts the number of
 		 * values in each group) based on a specified set of criteria.
-		 * 
-		 * @param p 
+		 *
+		 * @param p
 		 */
 		function groupBy(
 			p: {

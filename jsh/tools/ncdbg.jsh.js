@@ -176,7 +176,7 @@ if (parameters.arguments.length) {
 			evaluate: jsh.shell.run.evaluate.wrap
 		});
 	}
-	
+
 	jsh.java.Thread.start(startScript);
 	Packages.java.lang.Thread.sleep(parameters.options["ncdbg:pause"]);
 	jsh.java.Thread.start(startNcdbg);

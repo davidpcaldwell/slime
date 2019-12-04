@@ -75,7 +75,7 @@ var Position = function(string) {
 
 		this.finish = function() {
 			index = string.length;
-		};	
+		};
 	}
 }
 

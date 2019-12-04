@@ -15,7 +15,7 @@ window.addEventListener("load", function() {
 	if (settings && settings.isHomePage) {
 		Array.prototype.slice.call(document.getElementsByTagName("A")).forEach(function(link) {
 			link.target = "_blank";
-		})		
+		})
 	}
 
 	//	TODO	Perhaps verify div class="object" li elements have div class="name"

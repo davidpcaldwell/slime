@@ -288,7 +288,7 @@ this.jsh = new function() {
 				Packages.java.lang.System.setProperty("kotlin.script.classpath", libraries.map(function(library) {
 					return String(library.getCanonicalPath());
 				}).join(String(Packages.java.io.File.pathSeparator)));
-				
+
 				libraries.forEach(function(library) {
 					$slime.classpath.add({ _file: library });
 				});
@@ -298,7 +298,7 @@ this.jsh = new function() {
 				return new function() {
 					this.run = function(code,scope) {
 						var kotlinc = factory.getScriptEngine();
-	
+
 						for (var x in scope) {
 							if (x != "bindings") throw new TypeError("Unsupported: scope variable other than 'bindings': " + x);
 						}
@@ -309,7 +309,7 @@ this.jsh = new function() {
 						var string = resource.read(String);
 						var result = kotlinc.eval(string);
 						return result;
-					};	
+					};
 				};
 			}).call(this);
 		}

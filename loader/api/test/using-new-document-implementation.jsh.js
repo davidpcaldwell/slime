@@ -17,7 +17,7 @@ var Node = function(delegate) {
 
 var Element = function(delegate) {
 	if (!delegate.children) throw new Error("delegate.children expected in " + delegate);
-	
+
 	this.toString = function() {
 		return "JSAPI Element " + delegate.name;
 	};

@@ -87,7 +87,7 @@ var run = function() {
 
 var getDescendants = function(element) {
 	if (!element.getChildren) throw new Error("Required: getChildren");
-	
+
 	var addChildren = function(list,children) {
 		for (var i=0; i<children.length; i++) {
 			list.push(children[i]);
