@@ -1,2 +1,1 @@
-env
-exit 1
+./jsh.bash contributor/hooks/pre-commit.jsh.js
