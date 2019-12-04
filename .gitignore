@@ -1,0 +1,16 @@
+/local
+/bin
+/.gradle
+/.settings
+/.project
+/.classpath
+# Migrated from .hgignore
+#\.DS_Store$
+#\.metals
+#^build/
+#^.bloop/
+#^.vscode/
+## Default ignored files
+# .idea/workspace.xml
+#^.idea/
+#\.iml$
