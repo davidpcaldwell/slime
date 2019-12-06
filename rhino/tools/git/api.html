@@ -451,6 +451,55 @@ END LICENSE
 								verify(repository).status().paths.evaluate.property("a").is("A ");
 							</script>
 						</li>
+						<li class="function" jsapi:id="remote">
+							<div class="name">remote</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</div>
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="function">
+									<div class="name">getUrl</div>
+									<span>__DESCRIPTION__</span>
+									<div class="arguments">
+										<div class="label">Arguments</div>
+										<ol>
+											<li class="object">
+												<span>__DESCRIPTION__</span>
+												<div class="label">has properties:</div>
+												<ul>
+													<li class="value">
+														<div class="name">name</div>
+														<span class="type">string</span>
+														<span>__DESCRIPTION__</span>
+													</li>
+												</ul>
+											</li>
+										</ol>
+									</div>
+									<div class="returns">
+										<div class="label">Returns</div>
+										<span class="type">__TYPE__</span>
+										<span>__DESCRIPTION__</span>
+									</div>
+									<script type="application/x.jsapi#tests">
+										var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
+										tmp.directory.remove();
+										var local = remote.clone({ to: tmp });
+										var origin = local.remote.getUrl({ name: "origin" });
+										verify(origin).is(remote.reference);
+									</script>
+								</li>
+							</ul>
+						</li>
 						<li class="function">
 							<div class="name">fetch</div>
 							<span>__DESCRIPTION__</span>

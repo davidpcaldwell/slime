@@ -171,6 +171,23 @@ var Installation = function(environment) {
 
 	//	Sharing and Updating Projects
 
+	var remote = {};
+	remote.getUrl = cli.command({
+		command: "remote",
+		arguments: function(p) {
+			this.push("get-url");
+			this.push(p.name);
+		},
+		stdio: function(p) {
+			return {
+				output: String
+			}
+		},
+		evaluate: function(result) {
+			return result.stdio.output.split("\n")[0];
+		}
+	});
+
 	//	Inspection and Comparison
 
 	//	Patching
@@ -351,6 +368,11 @@ var Installation = function(environment) {
 		this.add = function(p) {
 			add($api.Object.compose(p, { directory: directory }));
 		};
+
+		this.remote = function() {
+			throw new Error("Unimplemented: remote");
+		};
+		this.remote.getUrl = command(remote.getUrl);
 
 		this.status = function(p) {
 			var self = this;
