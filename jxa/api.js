@@ -38,7 +38,6 @@
 	var bootstrapPath = bootstrap.pathTo(this)
 
 	var system = Application('System Events')
-	var slimePath = system.files[bootstrapPath.toString()].container().container().posixPath();
 
 	function load(path) {
 		//console.log("loading " + path);
@@ -50,6 +49,30 @@
 		};
 	}
 
+	var environment = objc.dictionary.adapt($.NSProcessInfo.processInfo.environment);
+
+	var invocation = (function processArguments(argv) {
+		var osascript = argv.shift();
+		var language = [argv.shift(), argv.shift()];
+		var me = [argv.shift()];
+		var script = argv.shift();
+		return {
+			bootstrap: me[0],
+			script: script,
+			arguments: argv
+		}
+	})(objc.array.adapt($.NSProcessInfo.processInfo.arguments));
+
+	var slimePath = (function() {
+		if (invocation.bootstrap.substring(0,1) != "/") {
+			invocation.bootstrap = environment.PWD + "/" + invocation.bootstrap;
+		}
+		var tokenized = invocation.bootstrap.split("/");
+		var directory = tokenized.slice(0,-2).join("/") + "/";
+		//	TODO	should we remove . and .. from the path? Seems to work anyway.
+		return directory;
+	})();
+	
 	//  TODO    build Loader implementation on top of this
 	var runtime = (function(slime) {
 		var $slime = {
@@ -65,19 +88,6 @@
 		};
 		return eval(load(slime+"loader/expression.js").code);
 	})(slimePath + "/");
-
-	var invocation = (function processArguments(argv) {
-		var osascript = argv.shift();
-		var language = [argv.shift(), argv.shift()];
-		var me = [argv.shift()];
-		var script = argv.shift();
-		return {
-			script: script,
-			arguments: argv
-		}
-	})(objc.array.adapt($.NSProcessInfo.processInfo.arguments));
-
-	var environment = objc.dictionary.adapt($.NSProcessInfo.processInfo.environment);
 
 	var main = (function(script,pwd) {
 		if (script.substring(0,1) == "/") {
