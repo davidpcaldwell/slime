@@ -72,7 +72,7 @@
 		//	TODO	should we remove . and .. from the path? Seems to work anyway.
 		return directory;
 	})();
-	
+
 	//  TODO    build Loader implementation on top of this
 	var runtime = (function(slime) {
 		var $slime = {
