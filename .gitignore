@@ -4,12 +4,12 @@
 /.settings
 /.project
 /.classpath
+.DS_Store
+/.vscode
 # Migrated from .hgignore
-#\.DS_Store$
 #\.metals
 #^build/
 #^.bloop/
-#^.vscode/
 ## Default ignored files
 # .idea/workspace.xml
 #^.idea/

@@ -49,6 +49,7 @@ $exports.files = new function() {
 
 	var isText = function(node) {
 		var basename = node.pathname.basename;
+		if (basename == ".DS_Store") return false;
 		if (/\.txt$/.test(basename)) return true;
 		if (/\.js$/.test(basename)) return true;
 		if (/\.ts$/.test(basename)) return true;
