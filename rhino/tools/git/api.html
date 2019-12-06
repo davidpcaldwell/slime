@@ -684,7 +684,7 @@ END LICENSE
 								<span class="type">__TYPE__</span>
 								<span>__DESCRIPTION__</span>
 							</div>
-							<script type="application/x.jsapi#tests">
+							<script type="application/x.jsapi#tests"><![CDATA[
 								var repository = newRepository();
 								repository.test.writeFile("a","a");
 								repository.add({ path: "a" });
@@ -692,8 +692,46 @@ END LICENSE
 								repository.branch({ name: "a" });
 								repository.branch({ name: "b" });
 								var branches = repository.branch();
+
 								verify(branches).length.is(3);
-							</script>
+
+								var hasBranch = function(branch) {
+									var rv = function(p) {
+										for (var i=0; i<p.length; i++) {
+											if (p[i].name == branch.name && p[i].current == branch.current) return true;
+										}
+										return false;
+									};
+									rv.toString = function() {
+										return "hasBranch: name=" + branch.name + " current=" + branch.current;
+									};
+									return rv;
+								};
+
+								verify(branches).evaluate(hasBranch({ current: false, name: "b" })).is(true);
+								verify(branches).evaluate(hasBranch({ current: false, name: "a" })).is(true);
+								verify(branches).evaluate(hasBranch({ current: true, name: "master" })).is(true);
+								verify(branches).evaluate(hasBranch({ current: false, name: "foo" })).is(false);
+
+								var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
+								tmp.directory.remove();
+								var local = remote.clone({ to: tmp });
+								var all = local.branch({ all: true });
+								verify(all).length.is(2);
+								verify(all).evaluate(hasBranch({ current: true, name: "master" })).is(true);
+								verify(all).evaluate(hasBranch({ current: false, name: "remotes/origin/master" })).is(true);
+								verify(all).evaluate(hasBranch({ current: false, name: "x" })).is(false);
+
+								var commit = repository.log()[0];
+								repository.checkout({ branch: commit.commit.hash });
+								var list = repository.branch();
+								verify(list).length.is(4);
+								verify(list).evaluate(hasBranch({ current: true, name: null })).is(true);
+								verify(list).evaluate(hasBranch({ current: false, name: "master" })).is(true);
+								verify(list).evaluate(hasBranch({ current: false, name: "a" })).is(true);
+								verify(list).evaluate(hasBranch({ current: false, name: "b" })).is(true);
+								verify(list).evaluate(hasBranch({ current: false, name: "c" })).is(false);
+							]]></script>
 						</li>
 						<li class="function">
 							<div class="name">mergeBase</div>

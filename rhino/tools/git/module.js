@@ -435,6 +435,14 @@ var Installation = function(environment) {
 		this.branch = function(p) {
 			var args = [];
 			if (!p) p = {};
+			if (p.remote) {
+				args.push("-r");
+			}
+			if (p.all) {
+				args.push("-a");
+			}
+			if (p.name) args.push(p.name);
+			if (p.start) args.push(p.start);
 			if (p.force) {
 				args.push("-f");
 			}
@@ -444,33 +452,7 @@ var Installation = function(environment) {
 					args.push(p.delete);
 				}
 			}
-			if (p.remote) {
-				args.push("-r");
-			}
-			if (p.name) args.push(p.name);
-			if (p.start) args.push(p.start);
-			if (p.all) {
-				args.push("-a");
-			}
 			var output = !Boolean(p.name);
-			var currentBranch;
-			var DELIMITER = "|";
-			if (output) {
-				currentBranch = execute({
-					command: "rev-parse",
-					arguments: [
-						"--abbrev-ref", "HEAD"
-					],
-					stdio: {
-						output: String
-					},
-					evaluate: function(result) {
-						//	TODO	would this work on Windows with a two-character line terminator?
-						return result.stdio.output.substring(0,result.stdio.output.length-1);
-					}
-				});
-				args.push("--format",["%(refname)"].join(DELIMITER));
-			}
 			return execute({
 				command: "branch",
 				arguments: args,
@@ -478,17 +460,48 @@ var Installation = function(environment) {
 					output: (output) ? String : (function() {})()
 				},
 				evaluate: function(result) {
+					var currentBranch;
+					var DELIMITER = "|";
 					if (output) {
-						var rv = result.stdio.output.split("\n").filter(function(line) { return line; }).map(function(line) {
-							var tokens = line.split(DELIMITER);
-							var semantic = {
-								branch: tokens[0].split("/").slice(2).join("/")
-							};
-							var current = Boolean(semantic.branch == currentBranch);
-							var shown = show({ object: semantic.branch });
-							var rv = $context.api.js.Object.set({}, { name: semantic.branch, current: current }, shown);
-							return rv;
+						currentBranch = execute({
+							command: "rev-parse",
+							arguments: [
+								"--abbrev-ref", "HEAD"
+							],
+							stdio: {
+								output: String
+							},
+							evaluate: function(result) {
+								//	TODO	would this work on Windows with a two-character line terminator?
+								return result.stdio.output.substring(0,result.stdio.output.length-1);
+							}
 						});
+						args.push("--format",["%(refname)"].join(DELIMITER));
+					}
+					if (output) {
+						var rv = result.stdio.output.split("\n")
+							.filter(function(line) { return line; })
+							.filter(function(line) { return line.indexOf(" -> ") == -1 })
+							.map(function(line) {
+								var status = line.substring(0,1);
+								var name = line.substring(2);
+								var detachedHeadPattern = /^\(HEAD detached at (.*)\)/;
+								if (detachedHeadPattern.test(name)) {
+									toShow = detachedHeadPattern.exec(name)[1];
+									name = null;
+								} else {
+									toShow = name;
+								}
+								return {
+									current: status == "*",
+									name: name,
+									commit: show(toShow)
+								};
+							}
+						);
+						// rv.forEach(function(entry) {
+						// 	jsh.shell.console(JSON.stringify(show(entry)));
+						// })
 						if (p.old && !p.all) {
 							rv = rv.filter(function(branch) {
 								return branch.current;
@@ -571,11 +584,11 @@ var Installation = function(environment) {
 		this.push = function(p) {
 			var args = [];
 			if (p && p.delete) args.push("--delete");
-			jsh.shell.console("Setting upstream ...");
+			//jsh.shell.console("Setting upstream ...");
 			if (p && p.setUpstream) args.push("--set-upstream", p.setUpstream);
 			if (p && p.repository) args.push(p.repository);
 			if (p && p.refspec) args.push(p.refspec);
-			jsh.shell.console("push " + args.join(" "));
+			//jsh.shell.console("push " + args.join(" "));
 			execute({
 				config: p.config,
 				command: "push",
