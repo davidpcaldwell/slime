@@ -74,6 +74,17 @@ END LICENSE
 			var remote = new scope.module.Repository({ remote: "git://127.0.0.1:" + scope.daemon.port + "/RemoteRepository" });
 			scope.remote = remote;
 
+			var child = scope.remotes.getRelativePath("child").createDirectory();
+			child.getRelativePath("b").write("b", { append: false });
+			var childRepository = scope.init({ pathname: child.pathname });
+			childRepository.add({ path: "b" });
+			childRepository.commit({
+				all: true,
+				message: "child b"
+			});
+			var childRemote = new scope.module.Repository({ remote: "git://127.0.0.1:" + scope.daemon.port + "/child" });
+			scope.child = childRemote;
+
 			scope.fixture = {
 				write: function(o) {
 					var directory = (function() {
@@ -499,6 +510,51 @@ END LICENSE
 									</script>
 								</li>
 							</ul>
+						</li>
+						<li class="function" jsapi:id="submodule">
+							<div class="name">submodule</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</div>
+							<script type="application/x.jsapi#tests">
+								var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
+								tmp.directory.remove();
+								var local = remote.clone({
+									to: tmp
+								});
+								local.execute({
+									command: "submodule",
+									arguments: [
+										"add",
+										child.reference
+									]
+								});
+								local.execute({
+									command: "submodule",
+									arguments: [
+										"update",
+										"--init", "--recursive"
+									]
+								});
+								verify(local).directory.getFile("a").is.type("object");
+								verify(local).directory.getFile("child/a").is.type("null");
+								verify(local).directory.getFile("child/b").is.type("object");
+								var submodules = local.submodule();
+								verify(submodules).length.is(1);
+								verify(submodules)[0].path.is("child");
+								verify(submodules)[0].repository.remote.getUrl({ name: "origin" }).is(child.reference);
+								verify(submodules)[0].commit.is.type("object");
+								verify(submodules)[0].commit.commit.hash.is.type("string");
+								verify(submodules)[0].commit.subject.is("child b");
+							</script>
 						</li>
 						<li class="function">
 							<div class="name">fetch</div>

@@ -188,6 +188,34 @@ var Installation = function(environment) {
 		}
 	});
 
+	var submodule = cli.command({
+		command: "submodule",
+		arguments: function(p) {
+			//	quiet, cached
+		},
+		stdio: function(p) {
+			return {
+				output: String
+			}
+		},
+		evaluate: function(result) {
+			var linePattern = /(?:\s*)(\S+)(?:\s+)(\S+)(?:\s+)\((\S+)\)/;
+			return result.stdio.output.split("\n").filter(function(line) {
+				return line;
+			}).map(function(line) {
+				var parsed = linePattern.exec(line);
+				if (!parsed) throw new Error("No match: [" + line + "]");
+				var commit = parsed[1];
+				var path = parsed[2];
+				//	parsed[3] is git describe; see https://git-scm.com/docs/git-submodule
+				return {
+					commit: commit,
+					path: path
+				}
+			})
+		}
+	});
+
 	//	Inspection and Comparison
 
 	//	Patching
@@ -598,6 +626,20 @@ var Installation = function(environment) {
 		};
 
 		this.submodule = function(p) {
+			if (!p) p = {};
+			if (!p.command) {
+				return command(submodule)(p).map(function(line) {
+					//	commit, path
+					var subdirectory = directory.getSubdirectory(line.path);
+					if (!subdirectory) throw new Error("directory=" + directory + " path=" + line.path);
+					var sub = new LocalRepository({ directory: subdirectory });
+					return {
+						path: line.path,
+						repository: sub,
+						commit: sub.show(line.commit)
+					}
+				});
+			}
 			if (p.command == "update") {
 				execute({
 					config: p.config,
