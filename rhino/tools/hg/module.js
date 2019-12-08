@@ -527,6 +527,9 @@ var Installation = function(environment) {
 			});
 		};
 
+		/**
+		 * @param { { array: boolean } } p
+		 */
 		this.subrepositories = function(p) {
 			if (!p) p = {};
 			var file = dir.getFile(".hgsub");
@@ -534,6 +537,7 @@ var Installation = function(environment) {
 			if (!file) return null;
 			var hgsub = new $exports.Hgrc({ file: file/*, section: "" */ });
 			var list = hgsub.get();
+			debugger;
 
 			var hgsubstate = {};
 			if (dir.getFile(".hgsubstate")) {
@@ -547,13 +551,20 @@ var Installation = function(environment) {
 			for (var x in list) {
 				if (/^subpaths\./.test(x)) {
 				} else {
-					var sub = dir.getSubdirectory(list[x]);
-					var repository = (sub) ? new Recurse(sub) : null;
+					//	TODO	below works in scenario where we are just self-mapping, but not for git URLs
+					var gitPattern = /^\[git\](.*)/;
+					var repository;
+					if (gitPattern.test(list[x])) {
+						repository = new $context.api.git.Repository({ remote: gitPattern.exec(list[x])[1] });
+					} else {
+						var sub = dir.getSubdirectory(list[x]);
+						repository = (sub) ? new Recurse(sub) : null;
+					}
 					if (p.array) {
 						if (!repository) throw new Error("No subdirectory " + x + " entries=" + JSON.stringify(list));
 						rv.push(repository);
 					} else {
-						rv[list[x]] = {
+						rv[x] = {
 							repository: repository,
 							revision: hgsubstate[x]
 						}
