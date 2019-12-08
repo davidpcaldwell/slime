@@ -49,50 +49,6 @@ plugin({
 		return jsh.js && jsh.js.web && jsh.time && jsh.java && jsh.ip && jsh.file && jsh.shell && jsh.tools && jsh.tools.install && jsh.java.tools;
 	},
 	load: function() {
-		var loadHg = function() {
-			var module = $loader.module("hg/module.js", {
-				api: {
-					js: jsh.js,
-					time: jsh.time,
-					web: jsh.js.web,
-					java: jsh.java,
-					ip: jsh.ip,
-					file: jsh.file,
-					shell: jsh.shell
-				}
-			});
-
-			jsh.tools.hg = $loader.file("hg/install.js", {
-				api: {
-					module: module,
-					shell: jsh.shell,
-					ui: jsh.ui,
-					Error: jsh.js.Error,
-					install: jsh.tools.install,
-					Events: {
-						Function: jsh.tools.install.$api.Events.Function
-					}
-				}
-			});
-
-			if (jsh.tools.hg.installation) {
-				global.hg = {};
-				["Repository","init"].forEach(function(name) {
-					global.hg[name] = jsh.tools.hg[name];
-					$api.deprecate(global.hg,name);
-				});
-				$api.deprecate(global,"hg");
-			}
-		};
-
-
-		loadHg();
-
-		if (!jsh.java.tools.plugin) jsh.java.tools.plugin = {};
-		jsh.java.tools.plugin.hg = $api.deprecate(function() {
-			loadHg();
-		});
-
 		var loadGit = function() {
 			jsh.tools.git = $loader.module("git/module.js", {
 				api: {
@@ -133,6 +89,51 @@ plugin({
 			}
 		};
 		loadGit();
+
+		var loadHg = function() {
+			var module = $loader.module("hg/module.js", {
+				api: {
+					js: jsh.js,
+					time: jsh.time,
+					web: jsh.js.web,
+					java: jsh.java,
+					ip: jsh.ip,
+					file: jsh.file,
+					shell: jsh.shell,
+					git: jsh.tools.git
+				}
+			});
+
+			jsh.tools.hg = $loader.file("hg/install.js", {
+				api: {
+					module: module,
+					shell: jsh.shell,
+					ui: jsh.ui,
+					Error: jsh.js.Error,
+					install: jsh.tools.install,
+					Events: {
+						Function: jsh.tools.install.$api.Events.Function
+					}
+				}
+			});
+
+			if (jsh.tools.hg.installation) {
+				global.hg = {};
+				["Repository","init"].forEach(function(name) {
+					global.hg[name] = jsh.tools.hg[name];
+					$api.deprecate(global.hg,name);
+				});
+				$api.deprecate(global,"hg");
+			}
+		};
+
+
+		loadHg();
+
+		if (!jsh.java.tools.plugin) jsh.java.tools.plugin = {};
+		jsh.java.tools.plugin.hg = $api.deprecate(function() {
+			loadHg();
+		});
 
 		//	TODO	provide alternate means of loading the plugin
 		if (!jsh.java.tools.plugin) jsh.java.tools.plugin = {};
