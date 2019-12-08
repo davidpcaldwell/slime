@@ -39,6 +39,7 @@ $exports.files = new function() {
 	this.filter = function(node) {
 		if (false) jsh.shell.console("Checking: " + node);
 		if (node.pathname.basename == ".hg") return false;
+		if (node.pathname.basename == ".git") return false;
 		if (node.pathname.basename == ".hgtags") return false;
 		if (node.pathname.basename == ".svn") return false;
 		if (node.pathname.basename == "target") return false;
