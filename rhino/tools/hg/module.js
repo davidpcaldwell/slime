@@ -555,7 +555,7 @@ var Installation = function(environment) {
 					var gitPattern = /^\[git\](.*)/;
 					var repository;
 					if (gitPattern.test(list[x])) {
-						repository = new $context.api.git.Repository({ remote: gitPattern.exec(list[x])[1] });
+						repository = new $context.api.git.Repository({ directory: dir.getSubdirectory(x) });
 					} else {
 						var sub = dir.getSubdirectory(list[x]);
 						repository = (sub) ? new Recurse(sub) : null;

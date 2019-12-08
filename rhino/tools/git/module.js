@@ -614,6 +614,7 @@ var Installation = function(environment) {
 			if (p && p.delete) args.push("--delete");
 			//jsh.shell.console("Setting upstream ...");
 			if (p && p.setUpstream) args.push("--set-upstream", p.setUpstream);
+			if (p && p.all) args.push("--all");
 			if (p && p.repository) args.push(p.repository);
 			if (p && p.refspec) args.push(p.refspec);
 			//jsh.shell.console("push " + args.join(" "));
