@@ -514,6 +514,7 @@ var Installation = function(environment) {
 								var status = line.substring(0,1);
 								var name = line.substring(2);
 								var detachedHeadPattern = /^\(HEAD detached at (.*)\)/;
+								var toShow;
 								if (detachedHeadPattern.test(name)) {
 									toShow = detachedHeadPattern.exec(name)[1];
 									name = null;
