@@ -1,4 +1,4 @@
-const base = jsh.script.file.parent.parent.parent.parent;
+var base = jsh.script.file.parent.parent.parent.parent;
 jsh.shell.console(base);
 var NODE_PATH = [base.getRelativePath("local/jsh/lib/node/lib/node_modules")];
 jsh.shell.run({

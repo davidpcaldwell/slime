@@ -10,8 +10,8 @@ declare namespace $api {
 			p: {
 				array: Array<any>,
 				group: (element: any) => any,
-				groups: Array<any>,
-				codec: {
+				groups?: Array<any>,
+				codec?: {
 					encode: (group: any) => string,
 					decode: (string: string) => any
 				},
