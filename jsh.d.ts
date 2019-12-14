@@ -4,8 +4,11 @@ interface jsh {
 	js: any,
 	file: any,
 	document: any,
-	script: any
+	script: any,
+	tools: any,
+	httpd: any
 }
 
 namespace jsh {
+	const httpd: any
 }

@@ -1,5 +1,6 @@
 namespace slime {
 	interface Loader {
-		file: any
+		file: any,
+		module: any
 	}
 }
