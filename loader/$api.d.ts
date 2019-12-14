@@ -19,4 +19,10 @@ declare namespace $api {
 			}
 		)
 	}
+
+	namespace Events {
+		function Function(f: any): any
+	}
+
+	function deprecate(a: any): any
 }
