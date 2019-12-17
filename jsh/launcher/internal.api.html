@@ -523,6 +523,7 @@ END LICENSE
 					(function relative() {
 						var basedir = $jsapi.environment.jsh.built.home.pathname.basename;
 						var parent = $jsapi.environment.jsh.built.home.parent;
+
 						var output = shellCommand({
 							command: basedir + "/" + "jsh",
 							arguments: [$jsapi.environment.jsh.built.home.getFile("src/jsh/test/jsh-data.jsh.js")],
@@ -530,6 +531,7 @@ END LICENSE
 							stdio: {
 								output: String
 							},
+							PATH: jsh.shell.PATH,
 							evaluate: function(result) {
 								return JSON.parse(result.stdio.output);
 							}
