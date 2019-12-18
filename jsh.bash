@@ -87,7 +87,7 @@ check_path() {
 			#	Mac OS X uses a default stub for jrunscript; check whether there's a real JDK
 			local macos_java_home=$(/usr/libexec/java_home 2>/dev/null)
 			if [ "${macos_java_home}" ]; then
-				echo "${macos_java_home}"
+				echo "${macos_java_home}/bin/jrunscript"
 			fi
 		else
 			echo "${path}"
