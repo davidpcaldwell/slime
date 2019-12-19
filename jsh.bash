@@ -11,6 +11,10 @@
 #	Contributor(s):
 #	END LICENSE
 
+#	Manual test case:
+#	rm -Rvf local/jdk/default; rm -Rvf ~/.slime/jdk/default; ./jsh.bash jsh/test/jsh-data.jsh.js; ./jsh.bash --install-user-jdk; rm -Rvf local/jdk/default; ./jsh.bash jsh/test/jsh-data.jsh.js
+#	check java.home of last script invoked and ensure that it is the user JDK
+
 SRC=$(dirname $0)
 
 JDK_LOCAL="${SRC}/local/jdk/default"
@@ -52,6 +56,21 @@ install_libericaopenjdk8() {
 	unzip -q ${JDK_ZIP_LOCATION} -d ${JDK_WORKDIR}
 	mv ${JDK_WORKDIR}/${JDK_ZIP_PATH} ${TO}
 }
+
+install_jdk() {
+	DESTINATION="$1"
+	URL_variable_name="URL_${JDK_provider}"
+	URL="$(echo ${!URL_variable_name})"
+	#	TODO	possibly want to expand DESTINATION to absolute path for this message
+	>&2 echo "Installing ${URL} to ${DESTINATION} ..."
+	install_${JDK_provider} ${DESTINATION}
+	JRUNSCRIPT=${DESTINATION}/bin/jrunscript
+}
+
+if [ "$1" == "--install-user-jdk" ]; then
+	install_jdk ${JDK_USER}
+	exit $?
+fi
 
 check_jdk() {
 	AT="$1"
@@ -106,12 +125,7 @@ if [ -z "${JRUNSCRIPT}" ]; then
 fi
 
 if [ -z "${JRUNSCRIPT}" ]; then
-	URL_variable_name="URL_${JDK_provider}"
-	URL="$(echo ${!URL_variable_name})"
-	#	TODO	possibly want to expand JDK_LOCAL to absolute path for this message
-	>&2 echo "Installing ${URL} to ${JDK_LOCAL} ..."
-	install_${JDK_provider} ${JDK_LOCAL}
-	JRUNSCRIPT=${JDK_LOCAL}/bin/jrunscript
+	install_jdk ${JDK_LOCAL}
 fi
 
 #	TODO	Because jsh shells invoke jrunscript by name currently, we put jrunscript in the PATH. Could be removed by having
