@@ -22,18 +22,18 @@ JDK_provider="libericaopenjdk8"
 
 install_adoptopenjdk8() {
 	TO="$1"
-	mkdir -p $(dirname $TO)
+	mkdir -p $(dirname ${TO})
 	JDK_TARBALL_URL="https://github.com/AdoptOpenJDK/openjdk8-binaries/releases/download/jdk8u232-b09/OpenJDK8U-jdk_x64_mac_hotspot_8u232b09.tar.gz"
 	JDK_TARBALL_BASENAME="OpenJDK8U-jdk_x64_mac_hotspot_8u232b09.tar.gz"
-	JDK_TARBALL_LOCATION="$HOME/Downloads/$JDK_TARBALL_BASENAME"
+	JDK_TARBALL_LOCATION="${HOME}/Downloads/${JDK_TARBALL_BASENAME}"
 	JDK_TARBALL_PATH="jdk8u232-b09"
-	if [ ! -f "$JDK_TARBALL_LOCATION" ]; then
-		echo "Downloading JDK ..."
-		curl -L -o $HOME/Downloads/$JDK_TARBALL_BASENAME $JDK_TARBALL_URL
+	if [ ! -f "${JDK_TARBALL_LOCATION}" ]; then
+		echo "Downloading ${JDK_TARBALL_URL} ..."
+		curl -L -o ${HOME}/Downloads/${JDK_TARBALL_BASENAME} ${JDK_TARBALL_URL}
 	fi
 	JDK_WORKDIR=$(mktemp -d)
-	tar xvf $JDK_TARBALL_LOCATION -C $JDK_WORKDIR
-	mv $JDK_WORKDIR/$JDK_TARBALL_PATH $TO
+	tar xvf ${JDK_TARBALL_LOCATION} -C ${JDK_WORKDIR}
+	mv ${JDK_WORKDIR}/${JDK_TARBALL_PATH} ${TO}
 	export JDK_BIN="${TO}/Contents/Home/bin"
 }
 
@@ -43,14 +43,14 @@ install_libericaopenjdk8() {
 	JDK_ZIP_URL="${URL_libericaopenjdk8}"
 	JDK_ZIP_BASENAME="bellsoft-jdk8u232+10-macos-amd64.zip"
 	JDK_ZIP_PATH="jdk8u232"
-	JDK_ZIP_LOCATION="$HOME/Downloads/$JDK_ZIP_BASENAME"
-	if [ ! -f "$JDK_ZIP_LOCATION" ]; then
-		echo "Downloading $JDK_ZIP_URL ..."
-		curl -o $HOME/Downloads/$JDK_ZIP_BASENAME $JDK_ZIP_URL
+	JDK_ZIP_LOCATION="${HOME}/Downloads/${JDK_ZIP_BASENAME}"
+	if [ ! -f "${JDK_ZIP_LOCATION}" ]; then
+		echo "Downloading ${JDK_ZIP_URL} ..."
+		curl -o ${HOME}/Downloads/${JDK_ZIP_BASENAME} ${JDK_ZIP_URL}
 	fi
 	JDK_WORKDIR=$(mktemp -d)
-	unzip -q $JDK_ZIP_LOCATION -d $JDK_WORKDIR
-	mv $JDK_WORKDIR/$JDK_ZIP_PATH $TO
+	unzip -q ${JDK_ZIP_LOCATION} -d ${JDK_WORKDIR}
+	mv ${JDK_WORKDIR}/${JDK_ZIP_PATH} ${TO}
 }
 
 check_jdk() {
