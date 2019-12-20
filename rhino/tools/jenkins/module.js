@@ -71,11 +71,11 @@ $exports.Server = function(o) {
 
 		this.builds = function() {
 			return request(client,{ fullurl: json.url + "api/json", tree: "builds[number,timestamp,id,result]" }).builds;
-//			var loaded = load();
-//			var job = this;
-//			return loaded.builds.map(function(json) {
-//				return new BuildRef(client,job,json);
-//			});
+			// var loaded = load();
+			// var job = this;
+			// return loaded.builds.map(function(json) {
+			// 	return new BuildRef(client,job,json);
+			// });
 		}
 
 		this.load = function() {
