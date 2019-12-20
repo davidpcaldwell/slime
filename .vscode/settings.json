@@ -1,0 +1,7 @@
+{
+	"eslint.enable": true,
+	"eslint.nodePath": "local/jsh/lib/node/lib/node_modules",
+	"eslint.validate": [
+		"javascript"
+	]
+}
