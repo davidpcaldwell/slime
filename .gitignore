@@ -6,11 +6,9 @@
 /.classpath
 .DS_Store
 /.vscode
+/.idea
+*.iml
 # Migrated from .hgignore
 #\.metals
 #^build/
 #^.bloop/
-## Default ignored files
-# .idea/workspace.xml
-#^.idea/
-#\.iml$
