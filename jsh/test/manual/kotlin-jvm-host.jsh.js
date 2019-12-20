@@ -20,20 +20,20 @@ jsh.shell.console(main);
 var ScriptCompilationConfiguration = Packages.kotlin.script.experimental.api.ScriptCompilationConfiguration;
 
 var configuration = new Packages.kotlin.script.experimental.api.ScriptCompilationConfiguration(
-    new Packages.java.util.ArrayList(),
-    new JavaAdapter(
-        Packages.kotlin.jvm.functions.Function1,
-        new function() {
-            this.invoke = function(argument) {
-                jsh.shell.console("argument = " + argument);
-                return argument;
-            }
-        }
-    )
+	new Packages.java.util.ArrayList(),
+	new JavaAdapter(
+		Packages.kotlin.jvm.functions.Function1,
+		new function() {
+			this.invoke = function(argument) {
+				jsh.shell.console("argument = " + argument);
+				return argument;
+			}
+		}
+	)
 );
 
 var value = host.eval(
-    new Packages.kotlin.script.experimental.host.FileScriptSource(main, null), configuration, null
+	new Packages.kotlin.script.experimental.host.FileScriptSource(main, null), configuration, null
 );
 
 jsh.shell.console("Value: " + value);

@@ -299,30 +299,30 @@ var Catalog = function(dbstring,dbsettings) {
 
 //	args are properties for data source: server,port,superuser,superpassword
 this.Database = function(dbsettings) {
-    var bootstrapDatasource = getDataSource("postgres", dbsettings.user, dbsettings.password, false);
+	var bootstrapDatasource = getDataSource("postgres", dbsettings.user, dbsettings.password, false);
 
-    this.getCatalogs = function() {
-        var query = bootstrapDatasource.createQuery("SELECT datname FROM pg_catalog.pg_database");
-        return query.toArray().map( function(item) { return new Catalog(item[0]); } );
-    }
+	this.getCatalogs = function() {
+		var query = bootstrapDatasource.createQuery("SELECT datname FROM pg_catalog.pg_database");
+		return query.toArray().map( function(item) { return new Catalog(item[0]); } );
+	}
 
-    this.getCatalog = function(name) {
-        if (this.getCatalogs) {
-            //	check for existence
-            var catalogs = this.getCatalogs();
-            return (catalogs.some( function(item) { return item.name == name } )) ? new Catalog(name) : null;
-        } else {
-            //	cannot check, so just go ahead
-            return new Catalog(name);
-        }
-    }
+	this.getCatalog = function(name) {
+		if (this.getCatalogs) {
+			//	check for existence
+			var catalogs = this.getCatalogs();
+			return (catalogs.some( function(item) { return item.name == name } )) ? new Catalog(name) : null;
+		} else {
+			//	cannot check, so just go ahead
+			return new Catalog(name);
+		}
+	}
 
-    this.createCatalog = function(name) {
-        bootstrapDatasource.executeStandalone("CREATE DATABASE " + name);
-        return this.getCatalog(name);
-    }
+	this.createCatalog = function(name) {
+		bootstrapDatasource.executeStandalone("CREATE DATABASE " + name);
+		return this.getCatalog(name);
+	}
 
-    this.dropCatalog = function(name) {
-        bootstrapDatasource.executeStandalone("DROP DATABASE " + name);
-    }
+	this.dropCatalog = function(name) {
+		bootstrapDatasource.executeStandalone("DROP DATABASE " + name);
+	}
 }
