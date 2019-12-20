@@ -526,8 +526,8 @@ var Installation = function(environment) {
 									name: name,
 									commit: show(toShow)
 								};
-							}
-						);
+							})
+						;
 						// rv.forEach(function(entry) {
 						// 	jsh.shell.console(JSON.stringify(show(entry)));
 						// })
