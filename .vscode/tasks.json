@@ -5,7 +5,15 @@
 			"label": "eslint",
 			"type": "shell",
 			"command": "./jsh.bash contributor/eslint.jsh.js",
-			"problemMatcher": []
+			"problemMatcher": [],
+			"presentation": {
+				"echo": false,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared",
+				"showReuseMessage": false,
+				"clear": true
+			}
 		},
 		{
 			"label": "documentation",
