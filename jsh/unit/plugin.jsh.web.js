@@ -129,11 +129,11 @@ $set({
 
 			var startHgServer = function() {
 				if (!hgserve) {
-//					Packages.java.lang.System.err.println("Starting mock hg server ...");
+					// Packages.java.lang.System.err.println("Starting mock hg server ...");
 					hgserve = new jsh.unit.mock.Hg.bitbucket(o);
-//					Packages.java.lang.System.err.println("Created mock hg server.");
+					// Packages.java.lang.System.err.println("Created mock hg server.");
 					hgserve.start();
-//					Packages.java.lang.System.err.println("Started mock hg server.");
+					// Packages.java.lang.System.err.println("Started mock hg server.");
 				}
 				return hgserve;
 			};
@@ -144,9 +144,9 @@ $set({
 
 			var getHgServerProxy = (httpd)
 				? $api.Function.memoized(function() {
-//					Packages.java.lang.System.err.println("Invoke startHgServer");
+					// Packages.java.lang.System.err.println("Invoke startHgServer");
 					var server = startHgServer();
-//					Packages.java.lang.System.err.println("Return httpd.Handler.Proxy");
+					// Packages.java.lang.System.err.println("Return httpd.Handler.Proxy");
 					return new httpd.Handler.Proxy({
 						target: {
 							host: "127.0.0.1",
@@ -320,10 +320,10 @@ $set({
 							}
 						}
 					} else if (getHgServerProxy && o.src[tokenized[0]] && o.src[tokenized[0]][tokenized[1]]) {
-//						Packages.java.lang.System.err.println("Forwarding hg server request: " + request.method + " " + request.path);
+						// Packages.java.lang.System.err.println("Forwarding hg server request: " + request.method + " " + request.path);
 						//	forward to delegate server
 						var delegate = hgserver;
-//						Packages.java.lang.System.err.println("Got hg server proxy");
+						// Packages.java.lang.System.err.println("Got hg server proxy");
 						return delegate(request);
 					} else {
 						jsh.shell.console("Unhandled: " + tokenized.join("/"));
@@ -343,7 +343,7 @@ $set({
 		jsh.unit.mock.Hg = function() {
 		};
 		jsh.unit.mock.Hg.bitbucket = function(o) {
-//			Packages.java.lang.System.err.println("new jsh.unit.mock.Hg.bitbucket");
+			// Packages.java.lang.System.err.println("new jsh.unit.mock.Hg.bitbucket");
 			var config = [];
 			config.push("[paths]");
 			for (var x in o.src) {
@@ -359,11 +359,11 @@ $set({
 
 			var run = function(p,on) {
 				port = jsh.ip.tcp.getEphemeralPortNumber();
-//				Packages.java.lang.System.err.println("Starting hg serve on " + port + " ...");
+				// Packages.java.lang.System.err.println("Starting hg serve on " + port + " ...");
 				var started = false;
 				var output = {
 					line: function(line) {
-//						Packages.java.lang.System.err.println("hg serve output: " + line);
+						// Packages.java.lang.System.err.println("hg serve output: " + line);
 						if (/listening at/.test(line)) {
 							started = true;
 							on.started();
@@ -372,35 +372,35 @@ $set({
 				};
 				var error = {
 					line: function(line) {
-//						Packages.java.lang.System.err.println("hg serve error: " + line);
+						// Packages.java.lang.System.err.println("hg serve error: " + line);
 					}
 				};
 				var buffer = new jsh.io.Buffer();
-//				output = buffer.writeBinary();
-//				jsh.shell.console("Starting output reader ...");
+				// output = buffer.writeBinary();
+				// jsh.shell.console("Starting output reader ...");
 				jsh.java.Thread.start(function() {
-//					jsh.shell.console("Started output reader thread.");
+					// jsh.shell.console("Started output reader thread.");
 					try {
-//						buffer.readText().read(function(code) {
-//							jsh.shell.console("hg serve character: " + String.fromCharCode(code));
-//						});
+						// buffer.readText().read(function(code) {
+						// 	jsh.shell.console("hg serve character: " + String.fromCharCode(code));
+						// });
 					} catch (e) {
 						jsh.shell.console("hg serve output error: " + e + " keys = " + Object.keys(buffer));
 					}
 				});
-//				jsh.shell.console("Started output reader.");
-//				output = void(0);
-//				error = void(0);
-//				jsh.shell.console("Running hg serve ...");
+				// jsh.shell.console("Started output reader.");
+				// output = void(0);
+				// error = void(0);
+				// jsh.shell.console("Running hg serve ...");
 				if (!started) {
 					jsh.java.Thread.start(function() {
-//						Packages.java.lang.System.err.println("Sleeping ...");
+						// Packages.java.lang.System.err.println("Sleeping ...");
 						Packages.java.lang.Thread.sleep(500);
-//						Packages.java.lang.System.err.println("Done sleeping ...");
+						// Packages.java.lang.System.err.println("Done sleeping ...");
 						started = true;
-//						Packages.java.lang.System.err.println("Executing 500 started callback ...");
+						// Packages.java.lang.System.err.println("Executing 500 started callback ...");
 						on.started();
-//						Packages.java.lang.System.err.println("Assuming started.");
+						// Packages.java.lang.System.err.println("Assuming started.");
 					});
 				}
 				jsh.shell.run({
@@ -411,7 +411,7 @@ $set({
 						//	Adding verbose output causes the server to print a message when it starts
 						rv.push("-v");
 						rv.push("--web-conf", CONFIG);
-//						jsh.shell.console("hg args = " + rv.join(" "));
+						// jsh.shell.console("hg args = " + rv.join(" "));
 						return rv;
 					})(),
 					stdio: {
@@ -420,9 +420,9 @@ $set({
 					},
 					on: {
 						start: function() {
-//							Packages.java.lang.System.err.println("on.start: " + on.start);
+							// Packages.java.lang.System.err.println("on.start: " + on.start);
 							if (on && on.start) on.start.apply(this,arguments);
-//							Packages.java.lang.System.err.println("on.start invoked");
+							// Packages.java.lang.System.err.println("on.start invoked");
 						}
 					}
 				});
@@ -433,7 +433,7 @@ $set({
 
 			Object.defineProperty(this,"port",{
 				get: function() {
-//					Packages.java.lang.System.err.println("Returning port " + port);
+					// Packages.java.lang.System.err.println("Returning port " + port);
 					return port;
 				}
 			});
@@ -446,11 +446,11 @@ $set({
 						try {
 							run(p,{
 								start: function() {
-//									Packages.java.lang.System.err.println("pid = " + arguments[0].pid);
+									// Packages.java.lang.System.err.println("pid = " + arguments[0].pid);
 									process = arguments[0];
 								},
 								started: function() {
-//									Packages.java.lang.System.err.println("Got 'started' callback for hg serve");
+									// Packages.java.lang.System.err.println("Got 'started' callback for hg serve");
 									new lock.Waiter({
 										until: function() {
 											return true;
@@ -462,7 +462,7 @@ $set({
 								}
 							})
 						} catch (e) {
-//							Packages.java.lang.System.err.println("e = " + e);
+							// Packages.java.lang.System.err.println("e = " + e);
 						}
 					});
 				}
@@ -590,7 +590,7 @@ $set({
 					while(more) {
 						var b = _in.read();
 						var c = String.fromCharCode(b);
-//						jsh.shell.console("byte: " + b + " char: " + c);
+						// jsh.shell.console("byte: " + b + " char: " + c);
 						line += c;
 						if (line.substring(line.length-2) == "\r\n") {
 							if (line.length == 2) {
