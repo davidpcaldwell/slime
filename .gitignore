@@ -5,7 +5,7 @@
 /.project
 /.classpath
 .DS_Store
-/.vscode
+/.vscode/settings.json
 /.idea
 *.iml
 # Migrated from .hgignore
