@@ -6,6 +6,12 @@
 			"type": "shell",
 			"command": "./jsh.bash contributor/eslint.jsh.js",
 			"problemMatcher": []
+		},
+		{
+			"label": "documentation",
+			"type": "shell",
+			"command": "./jsh.bash contributor/documentation.jsh.js",
+			"problemMatcher": []
 		}
 	]
 }
