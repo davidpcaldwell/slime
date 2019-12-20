@@ -3,9 +3,9 @@
 	"extends": "eslint:recommended",
 	"rules": {
 		"indent": ["warn", "tab"],
-		"quotes": ["off", "double"],
 		"no-mixed-spaces-and-tabs": "warn",
 
+		"quotes": ["off", "double"],
 		"no-unused-vars": "off",
 		"no-constant-condition": "off",
 		"no-extra-semi": "off",
