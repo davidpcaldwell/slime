@@ -661,15 +661,17 @@ var IMPLEMENTATION = new function() {
 							}
 						}
 
-						return <>
-							UPDATE {qname} SET {sets.join(", ")} WHERE {wheres(was).join(" AND ")}
-						</>;
+						throw new Error("Removing E4X below.");
+						// return <>
+						// 	UPDATE {qname} SET {sets.join(", ")} WHERE {wheres(was).join(" AND ")}
+						// </>;
 					}
 
 					this["delete"] = function(was) {
-						return <>
-							DELETE FROM {qname} WHERE {wheres(was).join(" AND ")}
-						</>;
+						throw new Error("Removing E4X below.");
+						// return <>
+						// 	DELETE FROM {qname} WHERE {wheres(was).join(" AND ")}
+						// </>;
 					}
 				}
 
@@ -687,9 +689,10 @@ var IMPLEMENTATION = new function() {
 							values.push(column.type.cast(item.value))
 						}
 					} );
-					return <>
-						INSERT INTO {qname} ({names.map(quoteIdentifier).join(", ")}) VALUES ({values.join(", ")})
-					</>;
+					throw new Error("Removing E4X below.");
+					// return <>
+					// 	INSERT INTO {qname} ({names.map(quoteIdentifier).join(", ")}) VALUES ({values.join(", ")})
+					// </>;
 				}
 			}
 
