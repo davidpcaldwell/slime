@@ -174,9 +174,9 @@ var IMPLEMENTATION = new function() {
 	}
 
 	var TYPES = new function() {
-		 var $Types = Packages.java.sql.Types;
+		var $Types = Packages.java.sql.Types;
 
-		 this.getCodec = function(data) {
+		this.getCodec = function(data) {
 			if (data.code == $Types.VARCHAR) {
 				return VARCHAR(data.precision);
 			} else if (data.code == $Types.SMALLINT) {
@@ -198,7 +198,7 @@ var IMPLEMENTATION = new function() {
 					}
 				}
 			}
-		 }
+		}
 	}
 	TYPES.get = function(columnRow) {
 		var $Types = Packages.java.sql.Types;

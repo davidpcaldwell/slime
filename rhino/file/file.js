@@ -499,12 +499,12 @@ var Pathname = function Pathname(parameters) {
 				var add = function(dir) {
 					var items = dir.list();
 					items.forEach(function(item) {
-						 if (filter(item)) {
+						if (filter(item)) {
 							rv.push(item);
-						 }
-						 if (item.directory && mode.descendants(item)) {
-							 add(item);
-						 }
+						}
+						if (item.directory && mode.descendants(item)) {
+							add(item);
+						}
 					})
 				};
 				add(this);

@@ -2,8 +2,9 @@
 	"ignorePatterns": ["local/"],
 	"extends": "eslint:recommended",
 	"rules": {
+		"no-mixed-spaces-and-tabs": "error",
+
 		"indent": ["warn", "tab"],
-		"no-mixed-spaces-and-tabs": "warn",
 
 		"quotes": ["off", "double"],
 		"no-unused-vars": "off",
