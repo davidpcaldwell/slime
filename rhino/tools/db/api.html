@@ -24,12 +24,12 @@ END LICENSE
 	<div><a href="jdbc/api.html">JDBC</a></div>
 	<!--	TODO	migrate this old code	-->
 	<!--
-var postgresql = $loader.script("js/postgresql.js", {
+var postgresql = $loader.script("jdbc/postgresql/attic/postgresql.js", {
 	$js: $context.js,
 	log: $context.log
 });
 
-var schema = $loader.script("js/schema.js", {
+var schema = $loader.script("jdbc/postgresql/attic/schema.js", {
 	Database: postgresql.IMPLEMENTATION.Database
 }, "js/schema.js");
 
