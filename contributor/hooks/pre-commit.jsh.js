@@ -74,6 +74,19 @@ if (failed) {
 	jsh.shell.exit(1);
 }
 
+jsh.shell.jsh({
+	shell: jsh.shell.jsh.src,
+	script: jsh.script.file.parent.parent.getFile("eslint.jsh.js"),
+	evaluate: function(result) {
+		if (result.status) {
+			jsh.shell.console("ESLint status: " + result.status + "; failing.");
+			jsh.shell.exit(result.status);
+		} else {
+			jsh.shell.console("ESLint passed.");
+		}
+	}
+})
+
 //	Runs test suite
 var timestamp = jsh.time.When.now();
 var logs = jsh.script.file.parent.parent.parent.getRelativePath("local/contribute/logs").createDirectory({
