@@ -314,18 +314,18 @@ var global = new function() {
 				console.log("success = " + success);
 				_callbacks.end(success);
 				//	TODO	this should not have to be hacked in manually
-// 				_callbacks.event({
-// 					type: "scenario",
-// 					detail: {
-// 						end: {
-// 							id: suite.id,
-// 							name: suite.name
-// 						},
-// 						success: success
-// 					},
-// 					path: [],
-// 					timestamp: new Date()
-// 				});
+				// _callbacks.event({
+				// 	type: "scenario",
+				// 	detail: {
+				// 		end: {
+				// 			id: suite.id,
+				// 			name: suite.name
+				// 		},
+				// 		success: success
+				// 	},
+				// 	path: [],
+				// 	timestamp: new Date()
+				// });
 				//	Stop asynchronous events from being delivered
 				asynchrony.next(null);
 			});
@@ -536,14 +536,14 @@ $exports.fire = new function() {
 		this.create = function() {
 			if (document.createEvent) {
 				var rv = new KeyboardEvent(name,this);
-//				var modifiers = [];
-//				if (this.ctrlKey) modifiers.push("Control");
-//				if (this.altKey) modifiers.push("Alt");
-//				if (this.shiftKey) modifiers.push("Shift");
-//				if (this.metaKey) modifiers.push("Meta");
-// 				rv.initKeyboardEvent(
-// 					v.name,v.canBubble,v.cancelable,v.view,v["char"],v.key,v.location,modifiers.join(" "),v.repeat,v.locale
-// 				);
+				// var modifiers = [];
+				// if (this.ctrlKey) modifiers.push("Control");
+				// if (this.altKey) modifiers.push("Alt");
+				// if (this.shiftKey) modifiers.push("Shift");
+				// if (this.metaKey) modifiers.push("Meta");
+				// rv.initKeyboardEvent(
+				// 	v.name,v.canBubble,v.cancelable,v.view,v["char"],v.key,v.location,modifiers.join(" "),v.repeat,v.locale
+				// );
 				return rv;
 			} else {
 				throw new Error("Unimplemented: browser lacks createEvent for KeyboardEvent");

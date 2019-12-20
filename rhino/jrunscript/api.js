@@ -26,26 +26,26 @@
 	//	instead a little bit chatty. A user could configure this by configuring Java logging. Alternatively, I suppose we could
 	//	provide a way to configure it by providing the ability to configure it via a URL for a logging properties file
 
-//	(function initializeLogging() {
-//		var System = Packages.java.lang.System;
-//		var set = (System.getProperty("java.util.logging.config.file") != null || System.getProperty("java.util.logging.config.class") != null);
-//		if (!set) {
-//			try {
-//				var properties = new Packages.java.util.Properties();
-//				var buffer = new Packages.java.io.ByteArrayOutputStream();
-//				properties.store(buffer, null);
-//				buffer.close();
-//				var encoded = buffer.toByteArray();
-//				var stream = new Packages.java.io.ByteArrayInputStream(encoded);
-//				Packages.java.util.logging.LogManager.getLogManager().readConfiguration(stream);
-//				stream.close();
-//			} catch (e) {
-//				Packages.java.lang.System.err.println(e);
-//				Packages.java.lang.System.err.println(e.stack);
-//				throw new Packages.java.lang.RuntimeException("Unreachable");
-//			}
-//		}
-//	})();
+	// (function initializeLogging() {
+	// 	var System = Packages.java.lang.System;
+	// 	var set = (System.getProperty("java.util.logging.config.file") != null || System.getProperty("java.util.logging.config.class") != null);
+	// 	if (!set) {
+	// 		try {
+	// 			var properties = new Packages.java.util.Properties();
+	// 			var buffer = new Packages.java.io.ByteArrayOutputStream();
+	// 			properties.store(buffer, null);
+	// 			buffer.close();
+	// 			var encoded = buffer.toByteArray();
+	// 			var stream = new Packages.java.io.ByteArrayInputStream(encoded);
+	// 			Packages.java.util.logging.LogManager.getLogManager().readConfiguration(stream);
+	// 			stream.close();
+	// 		} catch (e) {
+	// 			Packages.java.lang.System.err.println(e);
+	// 			Packages.java.lang.System.err.println(e.stack);
+	// 			throw new Packages.java.lang.RuntimeException("Unreachable");
+	// 		}
+	// 	}
+	// })();
 
 	var $script = (this.$api && this.$api.script) ? this.$api.script : null;
 	var $arguments = (this.$api && this.$api.arguments) ? this.$api.arguments : null;
@@ -459,21 +459,21 @@
 				};
 			} else {
 				try {
-//					if (string.getClass) {
-//						throw new Error("it is Java");
-//					}
-//					string = (function fix(before) {
-//						var rv = "";
-//						for (var i=0; i<before.length; i++) {
-//							if (before.substring(i,i+1) == "\\") {
-//								rv += "/";
-//							} else {
-//								rv += before.substring(i,i+1);
-//							}
-//						}
-//						return rv;
-//					})(string);
-//					string = string.replace(/\\/g, "/");
+					// if (string.getClass) {
+					// 	throw new Error("it is Java");
+					// }
+					// string = (function fix(before) {
+					// 	var rv = "";
+					// 	for (var i=0; i<before.length; i++) {
+					// 		if (before.substring(i,i+1) == "\\") {
+					// 			rv += "/";
+					// 		} else {
+					// 			rv += before.substring(i,i+1);
+					// 		}
+					// 	}
+					// 	return rv;
+					// })(string);
+					// string = string.replace(/\\/g, "/");
 					var url = new Packages.java.net.URL(string);
 				} catch (e) {
 					if (e.javaException) {
@@ -570,21 +570,21 @@
 						if (protocol == "http" || protocol == "https") {
 							$api.log("Loaded [" + p.url + "].");
 						}
-//						Packages.java.lang.System.err.println("Loading: " + this);
+						// Packages.java.lang.System.err.println("Loading: " + this);
 						var name = this.toString();
-//						Packages.java.lang.System.err.println("Loading: " + name + " code.length=" + code.length);
-//						Packages.java.lang.System.err.println("Loading: " + name + "\ncode=" + code);
-//						try {
-//							Packages.java.lang.System.err.println("load() = " + load);
-							load({
-								name: name,
-								script: code
-							});
-//							Packages.java.lang.System.err.println("Loaded: " + name);
-//						} catch (e) {
-//							Packages.java.lang.System.err.println(e.stack);
-//							Packages.java.lang.System.err.println("Failed: " + name);
-//						}
+						// Packages.java.lang.System.err.println("Loading: " + name + " code.length=" + code.length);
+						// Packages.java.lang.System.err.println("Loading: " + name + "\ncode=" + code);
+						// try {
+						// 	Packages.java.lang.System.err.println("load() = " + load);
+						load({
+							name: name,
+							script: code
+						});
+						// 	Packages.java.lang.System.err.println("Loaded: " + name);
+						// } catch (e) {
+						// 	Packages.java.lang.System.err.println(e.stack);
+						// 	Packages.java.lang.System.err.println("Failed: " + name);
+						// }
 					}
 				} else {
 					load(this.toString());
@@ -771,16 +771,16 @@
 			$api.debug("main: " + _main);
 			$api.debug("inonit.system.Logging launcher = " + Packages.inonit.system.Logging);
 			$api.debug("inonit.system.Logging loaded = " + _classloader.loadClass("inonit.system.Logging"));
-//			var _class = _classloader.loadClass(main);
-//			var _factory = _class.getMethod("engine",new $api.java.Array({ type: Packages.java.lang.Class, length: 0 }));
-//			var _engine = _factory.invoke(null,new $api.java.Array({ type: Packages.java.lang.Object, length: 0 }));
+			// var _class = _classloader.loadClass(main);
+			// var _factory = _class.getMethod("engine",new $api.java.Array({ type: Packages.java.lang.Class, length: 0 }));
+			// var _engine = _factory.invoke(null,new $api.java.Array({ type: Packages.java.lang.Object, length: 0 }));
 
 			var loaderArguments = [];
-//			if (script && typeof(script.path) != "undefined") {
-//				loaderArguments.push(script.path);
-//			} else if (script && typeof(script) == "string") {
-//				loaderArguments.push(script);
-//			}
+			// if (script && typeof(script.path) != "undefined") {
+			// 	loaderArguments.push(script.path);
+			// } else if (script && typeof(script) == "string") {
+			// 	loaderArguments.push(script);
+			// }
 			loaderArguments.push.apply(loaderArguments,mainArguments);
 
 			var _arguments = new $api.java.Array({ type: Packages.java.lang.String, length: loaderArguments.length });

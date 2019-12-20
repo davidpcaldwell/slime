@@ -127,26 +127,26 @@ var Reader = function(peer) {
 		}
 		return result;
 	};
-//
-//	this.read = function(callback,mode) {
-//		if (!mode) mode = {};
-//		if (!mode.onEnd) mode.onEnd = function() { peer.close(); };
-//		var more = true;
-//		var result;
-//		while(more) {
-//			var c = peer.read();
-//			var result = callback( String(c) );
-//			if (typeof(result) != "undefined") {
-//				break;
-//			}
-//		}
-//		if (typeof(result) == "undefined") {
-//			mode.onEnd.call(this);
-//		} else {
-//			mode.onEnd.call(this,result);
-//		}
-//		return result;
-//	}
+
+	// this.read = function(callback,mode) {
+	// 	if (!mode) mode = {};
+	// 	if (!mode.onEnd) mode.onEnd = function() { peer.close(); };
+	// 	var more = true;
+	// 	var result;
+	// 	while(more) {
+	// 		var c = peer.read();
+	// 		var result = callback( String(c) );
+	// 		if (typeof(result) != "undefined") {
+	// 			break;
+	// 		}
+	// 	}
+	// 	if (typeof(result) == "undefined") {
+	// 		mode.onEnd.call(this);
+	// 	} else {
+	// 		mode.onEnd.call(this,result);
+	// 	}
+	// 	return result;
+	// }
 
 	this.readLines.UNIX = "\n";
 	this.readLines.DOS = "\r\n";
