@@ -1,6 +1,8 @@
+//	https://eslint.org/docs/user-guide/configuring
 {
 	"ignorePatterns": ["local/"],
 	"extends": "eslint:recommended",
+	//	https://eslint.org/docs/rules/
 	"rules": {
 		"no-mixed-spaces-and-tabs": "error",
 

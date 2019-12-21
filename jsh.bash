@@ -18,7 +18,7 @@
 SRC=$(dirname $0)
 
 JDK_LOCAL="${SRC}/local/jdk/default"
-JDK_USER="${HOME}/.slime/jdk/default"
+JDK_USER="${JSH_USER_JDK:-${HOME}/.slime/jdk/default}"
 
 URL_libericaopenjdk8="https://download.bell-sw.com/java/8u232+10/bellsoft-jdk8u232+10-macos-amd64.zip"
 
