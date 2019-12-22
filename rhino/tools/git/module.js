@@ -10,11 +10,31 @@
 //	Contributor(s):
 //	END LICENSE
 
-/** @typedef {{
+//@ts-check
+
+/**
+ * @typedef {{
+ * 		daemon: Function
+ * }} slime.jrunscript.git.Installation
+ */
+/**
+ * @typedef {{
  *		reference: string
  * }} slime.jrunscript.git.Repository
  */
 
+/** @typedef {{
+ *		Installation: Function
+ *		credentialHelper: any,
+ *		installation: slime.jrunscript.git.Installation,
+ *		install: Function & { GUI: any }
+ * }} slime.jrunscript.git.Exports */
+
+/**
+ *
+ * @param {*} $context
+ * @param {slime.jrunscript.git.Exports} $exports
+ */
 var define = function($context,$exports) {
 	var Installation = function(environment) {
 
