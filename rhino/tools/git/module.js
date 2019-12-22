@@ -12,11 +12,22 @@
 
 //@ts-check
 
+/** @typedef {{
+  *		program: slime.jrunscript.file.File
+  * }} slime.jrunscript.git.Installation.argument
+ */
+
+/**
+ * @typedef {({port: number, basePath: string, exportAll: boolean}) => { kill: () => void }
+ * } slime.jrunscript.git.Installation.daemon
+*/
+
 /**
  * @typedef {{
- * 		daemon: Function
+ * 		daemon: slime.jrunscript.git.Installation.daemon
  * }} slime.jrunscript.git.Installation
  */
+
 /**
  * @typedef {{
  *		reference: string
@@ -24,7 +35,7 @@
  */
 
 /** @typedef {{
- *		Installation: Function
+ *		Installation: (environment: slime.jrunscript.git.Installation.argument) => slime.jrunscript.git.Installation
  *		credentialHelper: any,
  *		installation: slime.jrunscript.git.Installation,
  *		install: Function & { GUI: any }
@@ -32,10 +43,14 @@
 
 /**
  *
- * @param {*} $context
+ * @param { { program: slime.jrunscript.file.File, api: any }} $context
  * @param {slime.jrunscript.git.Exports} $exports
  */
 var define = function($context,$exports) {
+	/**
+	 * 	@type { new (environment: slime.jrunscript.git.Installation.argument) => slime.jrunscript.git.Installation }
+	 *  @param { slime.jrunscript.git.Installation.argument } environment
+	 */
 	var Installation = function(environment) {
 
 		//	Organized via https://git-scm.com/docs
@@ -260,10 +275,17 @@ var define = function($context,$exports) {
 
 		//	Plumbing Commands
 
+		/**
+		 * @type { new ({}) => slime.jrunscript.git.Repository }
+		 */
 		var Repository = function(o) {
 			var environment = (o && o.environment) ? o.environment : {};
 
 			//	Getting and Creating Projects
+			/** @type { string } */
+			this.reference = void(0);
+
+			/** @property { string } reference */
 
 			this.clone = function(p) {
 				return clone($api.Object.compose(p, {
@@ -791,6 +813,10 @@ var define = function($context,$exports) {
 
 		//	Server Admin
 
+		/**
+		 * @param { { port: number, basePath: string, exportAll: boolean  } } p
+		 * @returns { { kill: () => void } }
+		 */
 		this.daemon = function(p) {
 			var args = [];
 			if (typeof(p.port) == "number") args.push("--port=" + p.port);
@@ -845,6 +871,10 @@ var define = function($context,$exports) {
 		}
 	};
 
+	/**
+	 * 	@type { (environment: slime.jrunscript.git.Installation.argument) => slime.jrunscript.git.Installation }
+	 *  @param { slime.jrunscript.git.Installation.argument } p
+	 */
 	$exports.Installation = function(p) {
 		return new Installation(p);
 	}
