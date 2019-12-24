@@ -17,7 +17,7 @@
  * @typedef { slime.jrunscript.http.servlet.handler & { stop?: () => void } } slime.jsh.unit.mock.handler
  */
 
- /**
+/**
   * @typedef {Object} slime.jsh.unit.mock.Web.hg
   * @property {Object} config - an object that describes the Mercurial configuration needed for Mercurial to use this mock internet.
   */
