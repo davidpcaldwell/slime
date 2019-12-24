@@ -17,15 +17,24 @@
  * @typedef { slime.jrunscript.http.servlet.handler & { stop?: () => void } } slime.jsh.unit.mock.handler
  */
 
+ /**
+  * @typedef {Object} slime.jsh.unit.mock.Web.hg
+  * @property {Object} config - an object that describes the Mercurial configuration needed for Mercurial to use this mock internet.
+  */
+
 /**
  * @typedef {Object} slime.jsh.unit.mock.Web
  * @property { (handler: slime.jsh.unit.mock.handler) => void } add - adds a handler that can supply parts of the mock internet
+ * @property { slime.jrunscript.http.Client } client - described on definition page
+ * @property { Function } jrunscript - described on definition page
+ * @property { Object } environment - the environment to use when launching a process that proxies through this mock internet;
+ * 		sets http_proxy variable
+ * @property { slime.jsh.unit.mock.Web.hg } hg
  */
 
 /**
- * @typedef {{
- * 		trace?: boolean
- * }} slime.jsh.unit.mock.Web.argument
+ * @typedef {Object} slime.jsh.unit.mock.Web.argument
+ * @property {boolean} trace
  */
 
 /**
@@ -67,7 +76,9 @@ function defineJshUnitMock($set,jsh,Packages) {
 			 * @param { slime.jsh.unit.mock.Web.argument } o
 			 */
 			var Web = function(o) {
-				if (!o) o = {};
+				if (!o) o = {
+					trace: false
+				};
 				var tomcat = new jsh.httpd.Tomcat({
 					https: {}
 				});
