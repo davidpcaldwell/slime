@@ -10,330 +10,333 @@
 //	Contributor(s):
 //	END LICENSE
 
-this.jsh = new function() {
-	var $slime = (function($jsh) {
-		//	$jsh is a inonit.script.jsh.Shell Java object
+(function() {
+	this.jsh = new function() {
+		var $slime = (function($jsh) {
+			//	$jsh is a inonit.script.jsh.Shell Java object
 
-		//	$slime is essentially a SLIME Java runtime object, augmented by jsh/loader/rhino.js or jsh/loader/nashorn.js
-		var $slime = $jsh.runtime();
+			//	$slime is essentially a SLIME Java runtime object, augmented by jsh/loader/rhino.js or jsh/loader/nashorn.js
+			var $slime = $jsh.runtime();
 
-		var configuration = $jsh.getEnvironment();
-		var invocation = $jsh.getInvocation();
+			var configuration = $jsh.getEnvironment();
+			var invocation = $jsh.getInvocation();
 
-		$slime.getSystemProperties = function() {
-			return configuration.getSystemProperties();
-		};
-
-		//	Could consider returning empty string for null; this seems to be the way properties are used
-		$slime.getSystemProperty = function(name) {
-			var _rv = configuration.getSystemProperties().getProperty(name);
-			if (_rv === null) return null;
-			return String(_rv);
-		}
-
-		$slime.getEnvironment = function() {
-			return configuration.getEnvironment();
-		};
-
-		$slime.getStdio = function() {
-			return stdio;
-		};
-
-		$slime.getInvocation = function() {
-			return invocation;
-		};
-
-		$slime.getPackaged = function() {
-			return configuration.getPackaged();
-		}
-
-		$slime.getInterface = function() {
-			return $jsh.getInterface();
-		}
-
-		$slime.getLibraryFile = function(path) {
-			return $jsh.getLibraryFile(path);
-		};
-
-		$slime.loader = new function() {
-			this.getPackagedCode = function() {
-				return configuration.getPackagedCode();
+			$slime.getSystemProperties = function() {
+				return configuration.getSystemProperties();
 			};
 
-			var getLoaderCode = function(path) {
-				var _reader = $jsh.getJshLoader().getFile(path).getReader();
-				return String(new Packages.inonit.script.runtime.io.Streams().readString(_reader));
-			};
-
-			this.getLoaderScript = function(path) {
-				return new $slime.Resource({
-					name: "jsh://" + path,
-					string: getLoaderCode(path)
-				});
-			};
-		};
-
-		var stdio = new function() {
-			var out = new Packages.java.io.PrintStream(configuration.getStdio().getStandardOutput());
-			var err = new Packages.java.io.PrintStream(configuration.getStdio().getStandardError());
-
-			this.getStandardInput = function() {
-				return configuration.getStdio().getStandardInput();
-			};
-
-			this.getStandardOutput = function() {
-				return out;
-			};
-
-			this.getStandardError = function() {
-				return err;
-			};
-		};
-
-		$slime.coffee = $jsh.getLibrary("coffee-script.js");
-
-		return $slime;
-	})($jsh);
-
-	(function initializeDeprecation() {
-		//	TODO	The name prefix used below is duplicative of the one in js/debug/plugin.jsh.js, so not DRY currently
-		var _log = function(_logger,_level,mask) {
-			var substitutions = Array.prototype.slice.call(arguments,3);
-			if (_logger.isLoggable(_level)) {
-				var _message = Packages.java.lang.String.format(mask, substitutions);
-				_logger.log(_level, _message);
+			//	Could consider returning empty string for null; this seems to be the way properties are used
+			$slime.getSystemProperty = function(name) {
+				var _rv = configuration.getSystemProperties().getProperty(name);
+				if (_rv === null) return null;
+				return String(_rv);
 			}
-		}
 
-		$slime.$api.deprecate.warning = function(o) {
-			var name = arguments.callee.javaLogName;
-			var _level = Packages.java.util.logging.Level.WARNING;
-			var _logger = Packages.java.util.logging.Logger.getLogger(name);
-			var _traceLevel = Packages.java.util.logging.Level.FINE;
-			if (o.callee) {
-				if (o.object && o.property) {
-					_log(_logger, _level, "Use of deprecated method %s of object %s", String(o.property), String(o.object));
-				} else {
-					_log(_logger, _level, "Use of deprecated function %s", String(o.callee));
+			$slime.getEnvironment = function() {
+				return configuration.getEnvironment();
+			};
+
+			$slime.getStdio = function() {
+				return stdio;
+			};
+
+			$slime.getInvocation = function() {
+				return invocation;
+			};
+
+			$slime.getPackaged = function() {
+				return configuration.getPackaged();
+			}
+
+			$slime.getInterface = function() {
+				return $jsh.getInterface();
+			}
+
+			$slime.getLibraryFile = function(path) {
+				return $jsh.getLibraryFile(path);
+			};
+
+			$slime.loader = new function() {
+				this.getPackagedCode = function() {
+					return configuration.getPackagedCode();
+				};
+
+				var getLoaderCode = function(path) {
+					var _reader = $jsh.getJshLoader().getFile(path).getReader();
+					return String(new Packages.inonit.script.runtime.io.Streams().readString(_reader));
+				};
+
+				this.getLoaderScript = function(path) {
+					return new $slime.Resource({
+						name: "jsh://" + path,
+						string: getLoaderCode(path)
+					});
+				};
+			};
+
+			var stdio = new function() {
+				var out = new Packages.java.io.PrintStream(configuration.getStdio().getStandardOutput());
+				var err = new Packages.java.io.PrintStream(configuration.getStdio().getStandardError());
+
+				this.getStandardInput = function() {
+					return configuration.getStdio().getStandardInput();
+				};
+
+				this.getStandardOutput = function() {
+					return out;
+				};
+
+				this.getStandardError = function() {
+					return err;
+				};
+			};
+
+			$slime.coffee = $jsh.getLibrary("coffee-script.js");
+
+			return $slime;
+		})($jsh);
+
+		(function initializeDeprecation() {
+			//	TODO	The name prefix used below is duplicative of the one in js/debug/plugin.jsh.js, so not DRY currently
+			var _log = function(_logger,_level,mask) {
+				var substitutions = Array.prototype.slice.call(arguments,3);
+				if (_logger.isLoggable(_level)) {
+					var _message = Packages.java.lang.String.format(mask, substitutions);
+					_logger.log(_level, _message);
 				}
-			} else if (o.object && o.property) {
-				_log(_logger, _level, "Access to deprecated property %s of object %s", String(o.property), String(o.object));
 			}
-			if (_logger.isLoggable(_traceLevel)) {
-				//	TODO	disable break on error
-				_log(_logger, _traceLevel, "Stack trace of deprecated usage:\n%s", String(new Error().stack));
+
+			$slime.$api.deprecate.warning = function(o) {
+				var name = arguments.callee.javaLogName;
+				var _level = Packages.java.util.logging.Level.WARNING;
+				var _logger = Packages.java.util.logging.Logger.getLogger(name);
+				var _traceLevel = Packages.java.util.logging.Level.FINE;
+				if (o.callee) {
+					if (o.object && o.property) {
+						_log(_logger, _level, "Use of deprecated method %s of object %s", String(o.property), String(o.object));
+					} else {
+						_log(_logger, _level, "Use of deprecated function %s", String(o.callee));
+					}
+				} else if (o.object && o.property) {
+					_log(_logger, _level, "Access to deprecated property %s of object %s", String(o.property), String(o.object));
+				}
+				if (_logger.isLoggable(_traceLevel)) {
+					//	TODO	disable break on error
+					_log(_logger, _traceLevel, "Stack trace of deprecated usage:\n%s", String(new Error().stack));
+				}
+				debugger;
+			};
+			$slime.$api.deprecate.warning.javaLogName = "inonit.script.jsh.Shell.log.$api.deprecate";
+		})();
+
+		var plugins = $slime.value(
+			$slime.loader.getLoaderScript("plugins.js"),
+			{
+				$slime: $slime,
+				jsh: this
 			}
-			debugger;
-		};
-		$slime.$api.deprecate.warning.javaLogName = "inonit.script.jsh.Shell.log.$api.deprecate";
-	})();
+		);
 
-	var plugins = $slime.value(
-		$slime.loader.getLoaderScript("plugins.js"),
-		{
-			$slime: $slime,
-			jsh: this
-		}
-	);
-
-	$slime.plugins = {
-		mock: function(p) {
-			plugins.mock(p);
-		}
-	};
-
-	this.loader = new function() {
-		var getCode = function(code) {
-			if (typeof(code) == "undefined") throw new TypeError("'code' must not be undefined.");
-			if (code === null) throw new TypeError("'code' must not be null.");
-			//	This check determines whether the object is a Pathname; is there a way to do that in the rhino/file module itself?
-			//	TODO	presumably the run/file methods should only support file objects, not directories or pathnames not
-			//			corresponding to files ... or else what should they do if the file is not found? Maybe file could return
-			//			null or something ... but run would probably have to fail silently, which is not good unless it is
-			//			explicitly specified
-			if (code.java && code.java.adapt() && $slime.classpath.getClass("java.io.File").isInstance(code.java.adapt())) {
-				return new $slime.Resource({
-					name: code.toString(),
-					string: (function() {
-						var _in = new Packages.java.io.FileInputStream(code.java.adapt());
-						var rv = String(new Packages.inonit.script.runtime.io.Streams().readString(_in));
-						return rv;
-					})()
-				});
-			} else {
-				if (typeof(code.read) == "function") return code;
-				return new $slime.Resource(code);
+		$slime.plugins = {
+			mock: function(p) {
+				plugins.mock(p);
 			}
-		}
-
-		this.run = function(code,scope,target) {
-			return $slime.run(getCode(code),scope,target);
 		};
 
-		this.value = function(code,scope,target) {
-			return $slime.value(getCode(code),scope,target);
-		};
+		this.loader = new function() {
+			var getCode = function(code) {
+				if (typeof(code) == "undefined") throw new TypeError("'code' must not be undefined.");
+				if (code === null) throw new TypeError("'code' must not be null.");
+				//	This check determines whether the object is a Pathname; is there a way to do that in the rhino/file module itself?
+				//	TODO	presumably the run/file methods should only support file objects, not directories or pathnames not
+				//			corresponding to files ... or else what should they do if the file is not found? Maybe file could return
+				//			null or something ... but run would probably have to fail silently, which is not good unless it is
+				//			explicitly specified
+				if (code.java && code.java.adapt() && $slime.classpath.getClass("java.io.File").isInstance(code.java.adapt())) {
+					return new $slime.Resource({
+						name: code.toString(),
+						string: (function() {
+							var _in = new Packages.java.io.FileInputStream(code.java.adapt());
+							var rv = String(new Packages.inonit.script.runtime.io.Streams().readString(_in));
+							return rv;
+						})()
+					});
+				} else {
+					if (typeof(code.read) == "function") return code;
+					return new $slime.Resource(code);
+				}
+			}
 
-		this.file = function(code,$context) {
-			return $slime.file(getCode(code),$context);
-		};
+			this.run = function(code,scope,target) {
+				return $slime.run(getCode(code),scope,target);
+			};
 
-		this.module = function(pathname) {
-			var format = {};
-			if (pathname.directory) {
-				if (!pathname.directory.getFile("module.js")) {
+			this.value = function(code,scope,target) {
+				return $slime.value(getCode(code),scope,target);
+			};
+
+			this.file = function(code,$context) {
+				return $slime.file(getCode(code),$context);
+			};
+
+			this.module = function(pathname) {
+				var format = {};
+				if (pathname.directory) {
+					if (!pathname.directory.getFile("module.js")) {
+						return null;
+					}
+					format.base = pathname.java.adapt();
+					format.name = "module.js";
+				} else if (pathname.file && /\.slime$/.test(pathname.basename)) {
+					format.slime = pathname.java.adapt();
+					format.name = "module.js";
+				} else if (pathname.file) {
+					format.base = pathname.parent.java.adapt();
+					format.name = pathname.basename;
+				} else {
 					return null;
 				}
-				format.base = pathname.java.adapt();
-				format.name = "module.js";
-			} else if (pathname.file && /\.slime$/.test(pathname.basename)) {
-				format.slime = pathname.java.adapt();
-				format.name = "module.js";
-			} else if (pathname.file) {
-				format.base = pathname.parent.java.adapt();
-				format.name = pathname.basename;
-			} else {
-				return null;
-			}
-			var p = {};
-			if (arguments.length == 2) {
-				p.$context = arguments[1];
-			}
-			var loader = (function(format) {
-				if (format.slime) return new $slime.Loader({ zip: { _file: format.slime } });
-				if (format.base) return new $slime.Loader({ _file: format.base });
-				throw new TypeError("Unreachable code: format.slime and format.base null in jsh loader's module()");
-			})(format);
-			if (format.slime) {
-				$slime.classpath.add({ slime: { loader: loader } });
-			}
-			var args = [format.name].concat(Array.prototype.slice.call(arguments,1));
-			return loader.module.apply(loader,args);
-		};
-
-		this.namespace = function(name) {
-			return $slime.namespace(name);
-		}
-
-		//	experimental interface and therefore currently undocumented
-		this.addFinalizer = function(f) {
-			$slime.loader.addFinalizer(new JavaAdapter(
-				Packages.java.lang.Runnable,
-				{
-					run: function() {
-						f();
-					}
+				var p = {};
+				if (arguments.length == 2) {
+					p.$context = arguments[1];
 				}
-			));
-		}
-
-		this.java = new function() {
-			this.toString = function() {
-				return $slime.classpath.toString();
-			}
-
-			this.add = function(pathname) {
-				if (!pathname) throw new TypeError("'pathname' must be provided and not undefined or null.");
-				if (!pathname.directory && !pathname.file) {
-					return;
+				var loader = (function(format) {
+					if (format.slime) return new $slime.Loader({ zip: { _file: format.slime } });
+					if (format.base) return new $slime.Loader({ _file: format.base });
+					throw new TypeError("Unreachable code: format.slime and format.base null in jsh loader's module()");
+				})(format);
+				if (format.slime) {
+					$slime.classpath.add({ slime: { loader: loader } });
 				}
-				$slime.classpath.add({ _file: pathname.java.adapt() });
+				var args = [format.name].concat(Array.prototype.slice.call(arguments,1));
+				return loader.module.apply(loader,args);
 			};
 
-			this.getClass = function(name) {
-				return $slime.classpath.getClass(name);
+			this.namespace = function(name) {
+				return $slime.namespace(name);
 			}
-		};
 
-		this.plugins = function(from) {
-			var isPathname = from && from.java && from.java.adapt && $slime.classpath.getClass("java.io.File").isInstance(from.java.adapt());
-			var isFile = from && from.pathname && from.pathname.file;
-			var isDirectory = from && from.pathname && from.pathname.directory;
-			if (isPathname) {
-				if (from.file) {
-					plugins.load({ zip: { _file: from.java.adapt() } });
-				} else if (from.directory) {
-					plugins.load({ _file: from.java.adapt() });
-				} else {
-					//	TODO	log a message
+			//	experimental interface and therefore currently undocumented
+			this.addFinalizer = function(f) {
+				$slime.loader.addFinalizer(new JavaAdapter(
+					Packages.java.lang.Runnable,
+					{
+						run: function() {
+							f();
+						}
+					}
+				));
+			}
+
+			this.java = new function() {
+				this.toString = function() {
+					return $slime.classpath.toString();
 				}
-			} else if (from && from.get) {
-				plugins.load({ loader: from });
-			} else if (isFile) {
-				//	Should we be sending a script resource, rather than a Java file? Could expose that API in loader/jrunscript/expression.js
-				plugins.load({ zip: { _file: from.pathname.java.adapt() } });
-			} else if (isDirectory) {
-				plugins.load({ _file: from.pathname.java.adapt() });
+
+				this.add = function(pathname) {
+					if (!pathname) throw new TypeError("'pathname' must be provided and not undefined or null.");
+					if (!pathname.directory && !pathname.file) {
+						return;
+					}
+					$slime.classpath.add({ _file: pathname.java.adapt() });
+				};
+
+				this.getClass = function(name) {
+					return $slime.classpath.getClass(name);
+				}
+			};
+
+			this.plugins = function(from) {
+				var isPathname = from && from.java && from.java.adapt && $slime.classpath.getClass("java.io.File").isInstance(from.java.adapt());
+				var isFile = from && from.pathname && from.pathname.file;
+				var isDirectory = from && from.pathname && from.pathname.directory;
+				if (isPathname) {
+					if (from.file) {
+						plugins.load({ zip: { _file: from.java.adapt() } });
+					} else if (from.directory) {
+						plugins.load({ _file: from.java.adapt() });
+					} else {
+						//	TODO	log a message
+					}
+				} else if (from && from.get) {
+					plugins.load({ loader: from });
+				} else if (isFile) {
+					//	Should we be sending a script resource, rather than a Java file? Could expose that API in loader/jrunscript/expression.js
+					plugins.load({ zip: { _file: from.pathname.java.adapt() } });
+				} else if (isDirectory) {
+					plugins.load({ _file: from.pathname.java.adapt() });
+				}
+			};
+
+			//	TODO	check semantics; maybe this returns null on non-existence, currently not documented in jsh/loader/plugin.api.html
+			if ($slime.getLibraryFile("kotlin") && $slime.getLibraryFile("kotlin").exists()) {
+				this.kotlin = (function kotlin() {
+					var KOTLIN = $slime.getLibraryFile("kotlin/lib");
+
+					var libraries = [
+						"kotlin-compiler.jar",
+						"kotlin-scripting-jvm.jar",
+						"kotlin-scripting-compiler.jar",
+						"kotlin-scripting-impl.jar",
+						"kotlin-script-util.jar",
+						"kotlin-script-runtime.jar",
+						"jsr223.jar"
+					].map(function(name) {
+						return new Packages.java.io.File(KOTLIN, name);
+					});
+
+					//	TODO	duplicates jsh.file.Searchpath; could push that logic up
+					Packages.java.lang.System.setProperty("kotlin.script.classpath", libraries.map(function(library) {
+						return String(library.getCanonicalPath());
+					}).join(String(Packages.java.io.File.pathSeparator)));
+
+					libraries.forEach(function(library) {
+						$slime.classpath.add({ _file: library });
+					});
+
+					var factory = new Packages.org.jetbrains.kotlin.script.jsr223.KotlinJsr223JvmLocalScriptEngineFactory();
+
+					return new function() {
+						this.run = function(code,scope) {
+							var kotlinc = factory.getScriptEngine();
+
+							for (var x in scope) {
+								if (x != "bindings") throw new TypeError("Unsupported: scope variable other than 'bindings': " + x);
+							}
+							for (var x in scope.bindings) {
+								kotlinc.put(x, scope.bindings[x]);
+							}
+							var resource = getCode(code);
+							var string = resource.read(String);
+							var result = kotlinc.eval(string);
+							return result;
+						};
+					};
+				}).call(this);
 			}
 		};
 
-		//	TODO	check semantics; maybe this returns null on non-existence, currently not documented in jsh/loader/plugin.api.html
-		if ($slime.getLibraryFile("kotlin") && $slime.getLibraryFile("kotlin").exists()) {
-			this.kotlin = (function kotlin() {
-				var KOTLIN = $slime.getLibraryFile("kotlin/lib");
+		(function loadPlugins() {
+			var _sources = $slime.getInterface().getPluginSources();
+			for (var i=0; i<_sources.length; i++) {
+				plugins.load({ loader: new $slime.Loader({ _source: _sources[i] }) });
+			}
+		})();
 
-				var libraries = [
-					"kotlin-compiler.jar",
-					"kotlin-scripting-jvm.jar",
-					"kotlin-scripting-compiler.jar",
-					"kotlin-scripting-impl.jar",
-					"kotlin-script-util.jar",
-					"kotlin-script-runtime.jar",
-					"jsr223.jar"
-				].map(function(name) {
-					return new Packages.java.io.File(KOTLIN, name);
-				});
+		//	TODO	below could be turned into jsh plugin loaded at runtime by jsapi; would need to make getLibrary accessible through
+		//			$slime
 
-				//	TODO	duplicates jsh.file.Searchpath; could push that logic up
-				Packages.java.lang.System.setProperty("kotlin.script.classpath", libraries.map(function(library) {
-					return String(library.getCanonicalPath());
-				}).join(String(Packages.java.io.File.pathSeparator)));
-
-				libraries.forEach(function(library) {
-					$slime.classpath.add({ _file: library });
-				});
-
-				var factory = new Packages.org.jetbrains.kotlin.script.jsr223.KotlinJsr223JvmLocalScriptEngineFactory();
-
-				return new function() {
-					this.run = function(code,scope) {
-						var kotlinc = factory.getScriptEngine();
-
-						for (var x in scope) {
-							if (x != "bindings") throw new TypeError("Unsupported: scope variable other than 'bindings': " + x);
-						}
-						for (var x in scope.bindings) {
-							kotlinc.put(x, scope.bindings[x]);
-						}
-						var resource = getCode(code);
-						var string = resource.read(String);
-						var result = kotlinc.eval(string);
-						return result;
-					};
-				};
-			}).call(this);
+		if ($slime.getSystemProperties().get("inonit.tools.Profiler.args")) {
+			$slime.run($slime.loader.getLoaderScript("profiler.js"), {
+				jsh: this,
+				_properties: $slime.getSystemProperties()
+			});
 		}
 	};
+}).call(this);
 
-	(function loadPlugins() {
-		var _sources = $slime.getInterface().getPluginSources();
-		for (var i=0; i<_sources.length; i++) {
-			plugins.load({ loader: new $slime.Loader({ _source: _sources[i] }) });
-		}
-	})();
-
-	//	TODO	below could be turned into jsh plugin loaded at runtime by jsapi; would need to make getLibrary accessible through
-	//			$slime
-
-	if ($slime.getSystemProperties().get("inonit.tools.Profiler.args")) {
-		$slime.run($slime.loader.getLoaderScript("profiler.js"), {
-			jsh: this,
-			_properties: $slime.getSystemProperties()
-		});
-	}
-};
-
-jsh.loader.run({
+jsh.loader.run(
+	{
 		name: $jsh.getInvocation().getScript().getSource().getSourceName(),
 		string: (function() {
 			//	TODO	this code is repeated inside loader.js; should factor out
