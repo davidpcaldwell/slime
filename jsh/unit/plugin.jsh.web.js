@@ -25,7 +25,7 @@
 /**
  * @typedef {Object} slime.jsh.unit.mock.Web
  * @property { (handler: slime.jsh.unit.mock.handler) => void } add - adds a handler that can supply parts of the mock internet
- * @property { slime.jrunscript.http.Client } client - described on definition page
+ * @property { slime.jrunscript.http.client.Client } client - described on definition page
  * @property { Function } jrunscript - described on definition page
  * @property { Object } environment - the environment to use when launching a process that proxies through this mock internet;
  * 		sets http_proxy variable
