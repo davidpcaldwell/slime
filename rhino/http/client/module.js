@@ -9,6 +9,12 @@
 //
 //	Contributor(s):
 //	END LICENSE
+
+/**
+ * @typedef {Object} slime.jrunscript.http.Client
+ * @property {Function} request
+*/
+
 Packages.java.lang.System.setProperty("sun.net.http.allowRestrictedHeaders", "true");
 
 (function($context) {
