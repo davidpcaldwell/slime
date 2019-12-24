@@ -14,10 +14,14 @@
 //@ts-check
 
 /**
- * @typedef {{
- * 		add: Function
- * }} slime.jsh.unit.mock.Web
+ * @typedef { slime.jrunscript.http.servlet.handler & { stop?: () => void } } slime.jsh.unit.mock.handler
  */
+
+/**
+ * @typedef {Object} slime.jsh.unit.mock.Web
+ * @property { (handler: slime.jsh.unit.mock.handler) => void } add - adds a handler that can supply parts of the mock internet
+ */
+
 /**
  * @typedef {{
  * 		trace?: boolean
@@ -25,13 +29,26 @@
  */
 
 /**
+ * @typedef { new (o?: slime.jsh.unit.mock.Web.argument) => slime.jsh.unit.mock.Web } slime.jsh.unit.Web.constructor.function
+ */
+
+/**
+ * @typedef {
+ 		slime.jsh.unit.Web.constructor.function
+ * 		& {
+ * 			bitbucket: (o: {}) => slime.jsh.unit.mock.handler,
+ * 			github: () => slime.jsh.unit.mock.handler
+ * 		}
+ * } slime.jsh.unit.mock.Web.constructor
+*/
+
+/**
  * @typedef {{
- * 		Web: new (o: slime.jsh.unit.mock.Web.argument) => slime.jsh.unit.mock.Web
+ * 		Web: slime.jsh.unit.mock.Web.constructor
  * }} slime.jsh.unit.mock
  */
 
 /**
- *
  * @param {Function} $set
  * @param {any} jsh
  * @param {any} Packages
@@ -55,6 +72,7 @@ function defineJshUnitMock($set,jsh,Packages) {
 					https: {}
 				});
 
+				/** @type { slime.jsh.unit.mock.handler[] } */
 				var handlers = [];
 
 				tomcat.map({
@@ -157,7 +175,12 @@ function defineJshUnitMock($set,jsh,Packages) {
 			};
 			if (jsh.httpd.Tomcat) jsh.unit.mock.Web = Web;
 			if (jsh.httpd.Tomcat) jsh.unit.mock.Internet = $api.deprecate(jsh.unit.mock.Web);
-			if (jsh.unit.mock.Web) jsh.unit.mock.Web.bitbucket = function(o) {
+
+			/**
+			 * @param { { loopback: boolean, src: any } } o
+			 * @returns { slime.jsh.unit.mock.handler }
+			 */
+			var MockBitbucketApi = function(o) {
 				var hgserve;
 
 				var startHgServer = function() {
@@ -371,7 +394,18 @@ function defineJshUnitMock($set,jsh,Packages) {
 				};
 				return rv;
 			};
+			if (jsh.unit.mock.Web) jsh.unit.mock.Web.bitbucket = MockBitbucketApi;
 			if (jsh.unit.mock.Internet) jsh.unit.mock.Internet.bitbucket = $api.deprecate(jsh.unit.mock.Web.bitbucket);
+
+			/**
+			 *	@returns { slime.jsh.unit.mock.handler }
+			 */
+			var MockGithubApi = function() {
+				throw new Error();
+				return void(0);
+			};
+			if (jsh.unit.mock.Web) jsh.unit.mock.Web.github = MockGithubApi;
+
 
 			jsh.unit.mock.Hg = function() {
 			};
