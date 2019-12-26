@@ -1,14 +1,13 @@
-interface jsh {
-	shell: any,
-	loader: any,
-	js: any,
-	file: any,
-	document: any,
-	script: any,
-	tools: any,
-	httpd: any
-}
+interface jsh {}
 
-namespace jsh {
-	const httpd: any
+declare namespace jsh {
+	namespace unit {
+		const mock: slime.jsh.unit.mock
+	}
+
+	const http: slime.jrunscript.http.client
+
+	const script: {
+		getopts: Function
+	}
 }

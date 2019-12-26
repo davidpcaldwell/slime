@@ -9,6 +9,21 @@
 //
 //	Contributor(s):
 //	END LICENSE
+
+/**
+ * @typedef {Object} slime.jrunscript.http.client.Client
+ * @property {Function} request
+*/
+
+/**
+ * @typedef { new (configuration: {}) => slime.jrunscript.http.client } slime.jrunscript.http.client.Client.constructor
+ */
+
+/**
+ * @typedef {Object} slime.jrunscript.http
+ * @property { slime.jrunscript.http.client.Client.constructor } Client
+ */
+
 Packages.java.lang.System.setProperty("sun.net.http.allowRestrictedHeaders", "true");
 
 (function($context) {
@@ -312,6 +327,9 @@ var Parameters = function(p) {
 	}
 }
 
+/**
+ * @type { new (configuration: {}) => slime.jrunscript.http.Client }
+ */
 var Client = function(configuration) {
 	var cookies = new Cookies();
 
