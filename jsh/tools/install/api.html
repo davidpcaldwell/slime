@@ -96,22 +96,22 @@ END LICENSE
 						var tmpdir = jsh.shell.TMPDIR.createTemporary({ directory: true });
 						tmpdir.getRelativePath("directory").createDirectory();
 						tmpdir.getRelativePath("directory/file").write("text", { append: false });
-	
+
 						var tmpdest = jsh.shell.TMPDIR.createTemporary({ directory: true });
-	
+
 						var rv = { local: tmpdest };
-	
+
 						if (jsh.shell.PATH.getCommand("tar")) {
 							jsh.shell.run({
 								command: "tar",
 								arguments: ["czvf", tmpdest.getRelativePath("directory.tar.gz"), "directory"],
 								directory: tmpdir
 							});
-	
+
 							rv.tar = tmpdest.getFile("directory.tar.gz");
 							rv.renamed = rv.tar.copy(tmpdest.getRelativePath("renamed.tar.gz"));
 						}
-	
+
 						jsh.file.zip({
 							from: tmpdir,
 							to: tmpdest.getRelativePath("directory.zip")
