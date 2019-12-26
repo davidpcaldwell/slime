@@ -419,6 +419,7 @@ END LICENSE
 							}
 						</script>
 						<script type="application/x.jsapi#tests"><![CDATA[
+							//	Test .tar format
 							var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
 							tmp.directory.remove();
 
@@ -461,6 +462,7 @@ END LICENSE
 							//	TODO	ensure when a copy has already been downloaded, the cached version is used
 						]]></script>
 						<script type="application/x.jsapi#tests">
+							//	Test ZIP format
 							if (server) {
 								(function() {
 									var tmp = tmpdir();
