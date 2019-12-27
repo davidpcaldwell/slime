@@ -182,7 +182,8 @@ window.addEventListener("load", function() {
 				var id = getJsapiAttribute(element,"id");
 				if (id) {
 					//	TODO	develop better way to display this, perhaps outside the script element?
-					fixed.splice(0,0,"//\t" + id);
+					//	TODO	would be better to display path
+					fixed.splice(0,0,"//\tjsapi:id=" + id);
 				}
 				element.innerHTML = fixed.join("\n");
 				console.log(JSON.stringify(element.innerHTML));
