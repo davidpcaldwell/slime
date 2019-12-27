@@ -20,7 +20,7 @@
  */
 
 /**
- * @typedef {Object} slime.jrunscript.http
+ * @typedef {Object} slime.jrunscript.http.client
  * @property { slime.jrunscript.http.client.Client.constructor } Client
  */
 

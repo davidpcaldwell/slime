@@ -14,14 +14,56 @@
 //@ts-check
 
 /**
- * @typedef {Object} slime.time.exports
- *
+ * @typedef { Object } slime.time.Day.Time
+ */
+/**
+ * @typedef { { new (hours: number, minutes: number) : slime.time.Day.Time } & { new (p: any) : slime.time.Day.Time } } slime.time.Day_Time.constructor
+ */
+/**
+ * @typedef { Object } slime.time.Day
+ * @property { any } year
+ */
+/**
+ * @typedef { new (p: any) => slime.time.Day } slime.time.Day.constructor.function
+ */
+/**
+ * @typedef { slime.time.Day.constructor.function & { order: Function, subtract: Function, Time: slime.time.Day_Time.constructor }} slime.time.Day.constructor
+ */
+/**
+ * @typedef { new () => any } slime.time.When.constructor.function
+ */
+/**
+ * @typedef { slime.time.When.constructor.function & { order: Function } } slime.time.When.constructor
+ */
+/**
+ * @typedef { Object } slime.time.Time
+ */
+/**
+ * @typedef { new () => slime.time.Time } slime.time.Time.constructor.function
+ */
+/**
+ * @typedef { slime.time.Time.constructor.function & { Zone: Object } } slime.time.Time.constructor
+ */
+/**
+ * @typedef {Object} slime.time.$context
+ * @property {Object} zones
+ * @property {Object} old
+ * @property {Object} java
+ */
+/**
+ * @typedef {Object} slime.time
+ * @property {Function} Year
+ * @property {Function} Month
+ * @property {slime.time.Day.constructor} Day
+ * @property {slime.time.Time.constructor} Time
+ * @property {slime.time.When.constructor} When
+ * @property {Object} java
+ * @property {Function} install
 */
 
 /**
- *
- * @param {*} $context
- * @param {*} $exports
+ * @param { slime.time.$context } $context
+ * @param { slime.time } $exports
  */
 function defineTime($context,$exports) {
 	var zones = {};
@@ -383,7 +425,11 @@ function defineTime($context,$exports) {
 		return 0;
 	}
 
-	var Day = function() {
+	/**
+	 * @constructor
+	 * @param { any } p
+	 */
+	function Day(p) {
 		var year;
 		var month;
 		var day;
@@ -490,14 +536,15 @@ function defineTime($context,$exports) {
 		return this;
 	}
 	Day.subtract = function(a,b) {
-		var whena = a.at(new Day.Time(0,0)).local();
-		var whenb = b.at(new Day.Time(0,0)).local();
+		var whena = a.at(new Day_Time(0,0)).local();
+		var whenb = b.at(new Day_Time(0,0)).local();
 		return Math.round((whena.unix - whenb.unix) / 1000 / 60 / 60 / 24);
 	}
 	/**
 	 * @constructor
 	 */
-	Day.Time = function Self() {
+	function Day_Time(hours,minutes) {
+		var Self = arguments.callee;
 		var hours;
 		var minutes;
 		var seconds;
@@ -520,14 +567,14 @@ function defineTime($context,$exports) {
 					throw "Illegal seconds: " + seconds;
 				}
 			} else if (typeof(args.json) != "undefined") {
-				return new Self(args.json);
+				return new Day_Time(args.json);
 			} else {
 				throw "Unrecognized arguments.";
 			}
 		} else if (arguments.length == 2) {
-			return new Self({hours: arguments[0], minutes: arguments[1]});
+			return new Day_Time({hours: arguments[0], minutes: arguments[1]});
 		} else if (arguments.length == 3) {
-			return new Self({hours: arguments[0], minutes: arguments[1], seconds: arguments[2]});
+			return new Day_Time({hours: arguments[0], minutes: arguments[1], seconds: arguments[2]});
 		} else {
 			throw "Unrecognized arguments.";
 		}
@@ -626,14 +673,14 @@ function defineTime($context,$exports) {
 		}
 	}
 
-	var Time = function() {
+	function Time() {
 		var day;
 		var time;
 
 		if (arguments.length == 1) {
 			if (arguments[0].json) {
 				day = new Day({ json: arguments[0].json.day });
-				time = new Day.Time({ json: arguments[0].json.time });
+				time = new Day_Time({ json: arguments[0].json.time });
 			} else {
 				day = arguments[0].day;
 				time = arguments[0].time;
@@ -694,12 +741,12 @@ function defineTime($context,$exports) {
 		this.decode = function(o) {
 			return new Time({
 				day: Day.codec.js.decode(o.day),
-				time: new Day.Time(o.time)
+				time: new Day_Time(o.time)
 			});
 		}
 	}
 
-	var When = function Callee() {
+	function When() {
 		var date;
 
 		if (arguments.length == 1) {
@@ -721,7 +768,7 @@ function defineTime($context,$exports) {
 					(args.time.seconds - Math.floor(args.time.seconds)) * 1000
 				);
 			} else if (args.json) {
-				return new Callee({
+				return new When({
 					unix: args.json.unix
 				});
 			} else {
@@ -741,7 +788,7 @@ function defineTime($context,$exports) {
 			var zoned = zone.local(date.getTime());
 			return new Time({
 				day: new Day(zoned.year,zoned.month,zoned.day),
-				time: new Day.Time(zoned.hour,zoned.minute,zoned.second)
+				time: new Day_Time(zoned.hour,zoned.minute,zoned.second)
 			});
 		}
 
@@ -860,10 +907,14 @@ function defineTime($context,$exports) {
 	$exports.Year = Year;
 	//$exports.Year = {Month: Year.Month};
 	$exports.Month = Month;
+	//@ts-ignore
 	$exports.Day = Day;
 	$exports.Day.order = order;
+	$exports.Day.Time = Day_Time;
+	//@ts-ignore
 	$exports.Time = Time;
 	$exports.Time.Zone = zones;
+	//@ts-ignore
 	$exports.When = When;
 	$exports.When.order = order;
 	if ($context.java) {
