@@ -13,9 +13,11 @@
 //@ts-check
 
 /**
- * @typedef { {
- * 		uri: any
- * } } slime.jrunscript.http.servlet.Request
+ * @typedef { Object } slime.jrunscript.http.servlet.Request
+ * @property { string } method
+ * @property { any } uri
+ * @property { string } path
+ * @property { any } headers
  */
 
 /**

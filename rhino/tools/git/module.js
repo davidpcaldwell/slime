@@ -34,6 +34,18 @@
  * }} slime.jrunscript.git.Repository
  */
 
+/**
+ * @typedef { Object } slime.jrunscript.git.LocalXRepository.Branch
+ * @property { boolean } current
+ * @property { string } name
+ * @property { any } commit
+ */
+
+/**
+ * @typedef { slime.jrunscript.git.Repository } slime.jrunscript.git.LocalRepository
+ * @property { (p: any) => slime.jrunscript.git.LocalRepository.Branch[] } branch
+ */
+
 /** @typedef {{
  *		Installation: (environment: slime.jrunscript.git.Installation.argument) => slime.jrunscript.git.Installation
  *		credentialHelper: any,
@@ -536,24 +548,24 @@ var define = function($context,$exports) {
 						output: (output) ? String : (function() {})()
 					},
 					evaluate: function(result) {
-						var currentBranch;
-						var DELIMITER = "|";
-						if (output) {
-							currentBranch = execute({
-								command: "rev-parse",
-								arguments: [
-									"--abbrev-ref", "HEAD"
-								],
-								stdio: {
-									output: String
-								},
-								evaluate: function(result) {
-									//	TODO	would this work on Windows with a two-character line terminator?
-									return result.stdio.output.substring(0,result.stdio.output.length-1);
-								}
-							});
-							args.push("--format",["%(refname)"].join(DELIMITER));
-						}
+						// var currentBranch;
+						// var DELIMITER = "|";
+						// if (output) {
+						// 	currentBranch = execute({
+						// 		command: "rev-parse",
+						// 		arguments: [
+						// 			"--abbrev-ref", "HEAD"
+						// 		],
+						// 		stdio: {
+						// 			output: String
+						// 		},
+						// 		evaluate: function(result) {
+						// 			//	TODO	would this work on Windows with a two-character line terminator?
+						// 			return result.stdio.output.substring(0,result.stdio.output.length-1);
+						// 		}
+						// 	});
+						// 	args.push("--format",["%(refname)"].join(DELIMITER));
+						// }
 						if (output) {
 							var rv = result.stdio.output.split("\n")
 								.filter(function(line) { return line; })
@@ -715,22 +727,23 @@ var define = function($context,$exports) {
 				}
 			};
 
-		this.push = function(p) {
-			var args = [];
-			if (p && p.delete) args.push("--delete");
-			//jsh.shell.console("Setting upstream ...");
-			if (p && p.setUpstream) args.push("--set-upstream", p.setUpstream);
-			if (p && p.all) args.push("--all");
-			if (p && p.repository) args.push(p.repository);
-			if (p && p.refspec) args.push(p.refspec);
-			//jsh.shell.console("push " + args.join(" "));
-			execute({
-				config: p.config,
-				command: "push",
-				arguments: args,
-				environment: p.environment
-			});
-		};
+			this.push = function(p) {
+				var args = [];
+				if (p && p.delete) args.push("--delete");
+				//jsh.shell.console("Setting upstream ...");
+				if (p && p.setUpstream) args.push("--set-upstream", p.setUpstream);
+				if (p && p.all) args.push("--all");
+				if (p && p.repository) args.push(p.repository);
+				if (p && p.refspec) args.push(p.refspec);
+				//jsh.shell.console("push " + args.join(" "));
+				execute({
+					config: p.config,
+					command: "push",
+					arguments: args,
+					environment: p.environment
+				});
+			};
+
 			//	Inspection and Comparison
 
 			this.show = function(p) {
