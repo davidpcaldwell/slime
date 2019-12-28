@@ -25,15 +25,18 @@ $exports.get = function(p) {
 	}
 	if (!schema.getTable("version")) {
 		schema.perform(function(context) {
-			context.execute(<>CREATE TABLE version (id INTEGER)</>);
-			context.execute(<>INSERT INTO version (id) VALUES (0)</>);
+			throw new Error("Removing E4X below.");
+			// context.execute(<>CREATE TABLE version (id INTEGER)</>);
+			// context.execute(<>INSERT INTO version (id) VALUES (0)</>);
 		});
 	}
-	var version = schema.row(<>SELECT id FROM version</>)[0];
+	throw new Error("Removing E4X below.");
+	// var version = schema.row(<>SELECT id FROM version</>)[0];
 	while(version < p.ddl.length) {
 		schema.perform(function(context) {
 			p.ddl[version](context);
-			context.execute(<>UPDATE version SET id = {++version}</>)
+			throw new Error("Removing E4X below.");
+			// context.execute(<>UPDATE version SET id = {++version}</>)
 		});
 	}
 	return schema;

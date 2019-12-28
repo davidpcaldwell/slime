@@ -149,9 +149,9 @@ var Pom = function(file) {
 			}
 		});
 		return rv;
-//		if (declared) return declared;
-//		if (management) return management.child( filter );
-//		return null;
+		// if (declared) return declared;
+		// if (management) return management.child( filter );
+		// return null;
 	};
 
 	this.getModules = function() {
@@ -164,27 +164,27 @@ var Pom = function(file) {
 		});
 	}
 
-//	if (this.getDependencies()) {
-//		this.getDependencies().children.forEach(function(item) {
-//			if (item.element && item.element.type.name == "dependency") {
-//				item.getGroup = function(v) {
-//					return getElementContent(this,"groupId");
-//				};
-//				item.getArtifact = function(v) {
-//					return getElementContent(this,"artifactId");
-//				};
-//				item.setGroup = function(v) {
-//					setElementContent(this,"groupId",v);
-//				}
-//				item.setArtifact = function(v) {
-//					setElementContent(this,"artifactId",v);
-//				}
-//				item.setVersion = function(v) {
-//					setElementContent(this,"version",v);
-//				}
-//			}
-//		});
-//	}
+	// if (this.getDependencies()) {
+	// 	this.getDependencies().children.forEach(function(item) {
+	// 		if (item.element && item.element.type.name == "dependency") {
+	// 			item.getGroup = function(v) {
+	// 				return getElementContent(this,"groupId");
+	// 			};
+	// 			item.getArtifact = function(v) {
+	// 				return getElementContent(this,"artifactId");
+	// 			};
+	// 			item.setGroup = function(v) {
+	// 				setElementContent(this,"groupId",v);
+	// 			}
+	// 			item.setArtifact = function(v) {
+	// 				setElementContent(this,"artifactId",v);
+	// 			}
+	// 			item.setVersion = function(v) {
+	// 				setElementContent(this,"version",v);
+	// 			}
+	// 		}
+	// 	});
+	// }
 
 	var parent = root.child( jsh.document.filter({ elements: "parent" }) );
 

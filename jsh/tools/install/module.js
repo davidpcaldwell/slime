@@ -89,10 +89,18 @@ var algorithms = {
 		};
 
 		this.extract = function(file,to) {
-			$context.api.file.unzip({
-				zip: file,
-				to: to
-			});
+			if ($context.api.shell.PATH.getCommand("unzip")) {
+				jsh.shell.run({
+					command: "unzip",
+					arguments: [file],
+					directory: to
+				});
+			} else {
+				$context.api.file.unzip({
+					zip: file,
+					to: to
+				});
+			}
 		}
 	}
 };

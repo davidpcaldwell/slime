@@ -444,10 +444,10 @@ var DataSource = function(c) {
 
 		this.executeDdl = execute;
 
-//			this.query = function(sql) {
-//				var statement = peer.createStatement();
-//				var rs = peer.executeQuery(sql);
-//			}
+		// this.query = function(sql) {
+		// 	var statement = peer.createStatement();
+		// 	var rs = peer.executeQuery(sql);
+		// }
 
 		var createQueryArguments = function(sql) {
 			return new function() {
@@ -639,23 +639,23 @@ var Context = function(p) {
 	}
 
 	var connection = p.connections.get();
-//	var connection = createConnection();
-//	if (!schema) {
-//		var cwrap = function(f) {
-//			return pin(connection,f);
-//		}
-//
-//		this.getSchemas = cwrap(getSchemas);
-//		this.getSchema = cwrap(getSchema);
-//		this.createSchema = cwrap(createSchema);
-//		this.dropSchema = cwrap(dropSchema);
-//	} else {
-//		connection.execute("SET search_path TO " + schema);
-//	}
-//
-//	this.rows = function(sql) {
-//		return connection.createQuery(sql).toArray();
-//	}
+	// var connection = createConnection();
+	// if (!schema) {
+	// 	var cwrap = function(f) {
+	// 		return pin(connection,f);
+	// 	}
+
+	// 	this.getSchemas = cwrap(getSchemas);
+	// 	this.getSchema = cwrap(getSchema);
+	// 	this.createSchema = cwrap(createSchema);
+	// 	this.dropSchema = cwrap(dropSchema);
+	// } else {
+	// 	connection.execute("SET search_path TO " + schema);
+	// }
+
+	// this.rows = function(sql) {
+	// 	return connection.createQuery(sql).toArray();
+	// }
 	this.mapper = {
 		name: {
 			exact: new Mapper({
@@ -671,51 +671,50 @@ var Context = function(p) {
 				}
 			})
 		}
-//	var old = function(types,columns) {
-//		return function(rs) {
-//			var row = {};
-//			columns.forEach( function(column,index) {
-//				row[index] = types.decode(column.type,rs,index);
-//				if (!isNaN(column.name)) {
-//					//	TODO	if column names are numeric we have a problem, which is perhaps severe enough that we should
-//					//			redesign this whole mechanism
-//				} else {
-//					if (true) row[column.name] = row[index];
-//				}
-//			} );
-//			return row;
-//		};
-//	};
-//
+		// var old = function(types,columns) {
+		// 	return function(rs) {
+		// 		var row = {};
+		// 		columns.forEach( function(column,index) {
+		// 			row[index] = types.decode(column.type,rs,index);
+		// 			if (!isNaN(column.name)) {
+		// 				//	TODO	if column names are numeric we have a problem, which is perhaps severe enough that we should
+		// 				//			redesign this whole mechanism
+		// 			} else {
+		// 				if (true) row[column.name] = row[index];
+		// 			}
+		// 		} );
+		// 		return row;
+		// 	};
+		// };
 	};
 
 	this.createQuery = function(p) {
 		return connection.createQuery(p);
 	}
-//
-//	this.row = function(sql) {
-//		return toValue(this.rows(String(sql)));
-//	}
+
+	// this.row = function(sql) {
+	// 	return toValue(this.rows(String(sql)));
+	// }
 
 	this.execute = function(p) {
 		return connection.execute(p);
 	}
-//
-//	this.call = function(/* name, args */) {
-//		var name = arguments[0];
-//		var array = [];
-//		for (var i=1; i<arguments.length; i++) {
-//			array.push(arguments[i]);
-//		}
-//		var sql = "SELECT " + name + "(" + array.map(function(value) {
-//			if (value.castLiteral) {
-//				return value.castLiteral;
-//			} else {
-//				return $ANY.cast(value);
-//			}
-//		} ).join(",") + ")";
-//		connection.execute(sql);
-//	}
+
+	// this.call = function(/* name, args */) {
+	// 	var name = arguments[0];
+	// 	var array = [];
+	// 	for (var i=1; i<arguments.length; i++) {
+	// 		array.push(arguments[i]);
+	// 	}
+	// 	var sql = "SELECT " + name + "(" + array.map(function(value) {
+	// 		if (value.castLiteral) {
+	// 			return value.castLiteral;
+	// 		} else {
+	// 			return $ANY.cast(value);
+	// 		}
+	// 	} ).join(",") + ")";
+	// 	connection.execute(sql);
+	// }
 
 	this.commit = function() {
 		connection.commit();

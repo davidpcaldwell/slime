@@ -1,3 +1,4 @@
+/* eslint-env es6 */
 //	Reference: https://github.com/microsoft/tsdoc/blob/master/api-demo/src/advancedDemo.ts
 const path = require("path");
 const os = require('os');

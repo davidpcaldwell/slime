@@ -28,6 +28,21 @@ END LICENSE
 		<div>
 			<code>./jsh.bash [-<i>vmargument</i> [...-<i>vmargument</i>]] &lt;path-to-script> [arguments]</code>
 		</div>
+		<div>
+			The <code>jsh</code> script locates a suitable Java installation with which to run the shell using the following
+			algorithm:
+			<ul>
+				<li>For an unbuilt shell, it checks in the <code>local/jdk/default</code> directory.</li>
+				<li>
+					It then checks in the SLIME user installation directory, which is <code>$HOME/.slime/jdk/default</code>
+					(this value can be overridden using the <code>JSH_USER_JDK</code> variable; this variable can be set to
+					<code>/dev/null</code> to ignore the user JDK entirely).
+				</li>
+				<li>
+					Finally, it checks <code>PATH</code> for a suitable <code>jrunscript</code> command.
+				</li>
+			</ul>
+		</div>
 	</div>
 	<div>
 		<h1>Settings</h1>

@@ -60,7 +60,8 @@ END LICENSE
 				list.forEach(function(item) {
 					map[item.path] = item;
 				});
-				verify(list,"number of entries in rhino/file").length.is(15);
+				//	TODO	this is pretty brittle
+				verify(list,"number of entries in rhino/file").length.is(16);
 				//	jsh.shell.echo(loader.list().map(function(item) { return item.path; }));
 				verify(map.java).loader.is.not.equalTo(void(0));
 				verify(map.java).evaluate(function() { return this.resource; }).is(void(0));

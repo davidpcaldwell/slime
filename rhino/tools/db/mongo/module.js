@@ -35,19 +35,19 @@ var _unwrap = function(o) {
 		}
 		var jsstring = String(o);
 		var codes = [];
-//		for (var i=0; i<jsstring.length; i++) {
-//			var code = jsstring.charCodeAt(i);
-//			if (code > 255) {
-//				jsh.shell.echo("Warning: code = " + code);
-//			}
-//			codes.push(code);
-//		}
-//		jsh.shell.echo("codes = " + codes);
-//		jsh.shell.echo("selectedText = [" + jsh.js.toLiteral(String(o.get("selectedText"))) + "]");
-//		var _string = o.get("selectedText");
-//		for (var i=0; i<_string.length(); i++) {
-//			jsh.shell.echo(String(i) + ":[" + _string.charAt(i) + "]/" + Packages.java.lang.String.valueOf(new Packages.java.lang.Character(_string.charAt(i))));
-//		}
+		// for (var i=0; i<jsstring.length; i++) {
+		// 	var code = jsstring.charCodeAt(i);
+		// 	if (code > 255) {
+		// 		jsh.shell.echo("Warning: code = " + code);
+		// 	}
+		// 	codes.push(code);
+		// }
+		// jsh.shell.echo("codes = " + codes);
+		// jsh.shell.echo("selectedText = [" + jsh.js.toLiteral(String(o.get("selectedText"))) + "]");
+		// var _string = o.get("selectedText");
+		// for (var i=0; i<_string.length(); i++) {
+		// 	jsh.shell.echo(String(i) + ":[" + _string.charAt(i) + "]/" + Packages.java.lang.String.valueOf(new Packages.java.lang.Character(_string.charAt(i))));
+		// }
 		throw new TypeError("Could not unwrap: (" + String(o) + ")");
 	}
 }

@@ -66,19 +66,7 @@ END LICENSE
 				<script type="application/x.jsapi#initialize">
 					scope.downloads = jsh.shell.TMPDIR.createTemporary({ directory: true });
 
-					scope.module = function(p) {
-						return $jsapi.loader.module("module.js", {
-							api: {
-								shell: jsh.shell,
-								http: jsh.http,
-								file: jsh.file,
-								Error: jsh.js.Error
-							},
-							downloads: p.downloads
-						});
-					};
-
-					scope.api = $jsapi.loader.module("module.js", {
+					var defaults = {
 						api: {
 							shell: jsh.shell,
 							http: jsh.http,
@@ -86,40 +74,60 @@ END LICENSE
 							Error: jsh.js.Error
 						},
 						downloads: scope.downloads
-					});
+					};
 
-					var tmpdir = jsh.shell.TMPDIR.createTemporary({ directory: true });
-					tmpdir.getRelativePath("directory").createDirectory();
-					tmpdir.getRelativePath("directory/file").write("text", { append: false });
-
-					var tmpdest = jsh.shell.TMPDIR.createTemporary({ directory: true });
-
-					scope.harness = {};
-
-					if (jsh.shell.PATH.getCommand("tar")) {
-						jsh.shell.run({
-							command: "tar",
-							arguments: ["czvf", tmpdest.getRelativePath("directory.tar.gz"), "directory"],
-							directory: tmpdir
-						});
-
-						scope.harness.tar = tmpdest.getFile("directory.tar.gz");
-						scope.harness.renamed = scope.harness.tar.copy(tmpdest.getRelativePath("renamed.tar.gz"));
+					scope.load = function(p) {
+						if (!p) p = {};
+						var context = $api.Object.compose(defaults);
+						context.api.shell = $api.Object.compose(context.api.shell);
+						if (p.downloads) {
+							context.downloads = p.downloads;
+						}
+						return $jsapi.loader.module("module.js", context);
 					}
 
-					jsh.file.zip({
-						from: tmpdir,
-						to: tmpdest.getRelativePath("directory.zip")
-					});
-					scope.harness.zip = tmpdest.getFile("directory.zip");
+					scope.module = function(p) {
+						return scope.load(p);
+					};
+
+					scope.api = scope.load();
+
+					scope.harness = (function createHarness() {
+						var tmpdir = jsh.shell.TMPDIR.createTemporary({ directory: true });
+						tmpdir.getRelativePath("directory").createDirectory();
+						tmpdir.getRelativePath("directory/file").write("text", { append: false });
+
+						var tmpdest = jsh.shell.TMPDIR.createTemporary({ directory: true });
+
+						var rv = { local: tmpdest };
+
+						if (jsh.shell.PATH.getCommand("tar")) {
+							jsh.shell.run({
+								command: "tar",
+								arguments: ["czvf", tmpdest.getRelativePath("directory.tar.gz"), "directory"],
+								directory: tmpdir
+							});
+
+							rv.tar = tmpdest.getFile("directory.tar.gz");
+							rv.renamed = rv.tar.copy(tmpdest.getRelativePath("renamed.tar.gz"));
+						}
+
+						jsh.file.zip({
+							from: tmpdir,
+							to: tmpdest.getRelativePath("directory.zip")
+						});
+						rv.zip = tmpdest.getFile("directory.zip");
+						return rv;
+					})();
 
 					if (jsh.httpd.Tomcat) {
-						var server = jsh.httpd.Tomcat.serve({ directory: tmpdest });
+						var server = jsh.httpd.Tomcat.serve({ directory: scope.harness.local });
 						scope.server = server;
 					} else {
 						scope.server = null;
 					}
 
+					//	TODO	provide within test framework and make return location / directory / file as desired
 					scope.tmpdir = function() {
 						var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
 						tmp.directory.remove();
@@ -411,6 +419,7 @@ END LICENSE
 							}
 						</script>
 						<script type="application/x.jsapi#tests"><![CDATA[
+							//	Test .tar format
 							var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
 							tmp.directory.remove();
 
@@ -453,6 +462,7 @@ END LICENSE
 							//	TODO	ensure when a copy has already been downloaded, the cached version is used
 						]]></script>
 						<script type="application/x.jsapi#tests">
+							//	Test ZIP format
 							if (server) {
 								(function() {
 									var tmp = tmpdir();

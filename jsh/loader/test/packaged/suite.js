@@ -40,7 +40,7 @@ var packaged = {
 	build: function(p) {
 		var TEST = src.getSubdirectory("jsh/loader/test/packaged");
 		var invocation = [];
-	//	var invocation = [ getJshPathname(new File(JSH_HOME,"tools/package.jsh.js")) ];
+		// var invocation = [ getJshPathname(new File(JSH_HOME,"tools/package.jsh.js")) ];
 		var script = (typeof(p.script) == "string") ? TEST.getFile(p.script) : p.script;
 		if (!script) throw new Error("No script at " + p.script + " for " + TEST);
 		invocation.push("-script",script);
@@ -86,7 +86,7 @@ var packaged = {
 			}
 			return location.directory;
 		})();
-//		var shell = (p.unbuilt) ? jsh.shell.jsh.home.getSubdirectory("src") : jsh.shell.jsh.home;
+		// var shell = (p.unbuilt) ? jsh.shell.jsh.home.getSubdirectory("src") : jsh.shell.jsh.home;
 		jsh.shell.console("Packaging using shell " + shell);
 		jsh.shell.jsh({
 			fork: true,

@@ -298,24 +298,24 @@
 					enumerable: true
 				})
 			}
-		//	if (typeof(p.length) == "number") {
-		//		this.length = p.length;
-		//	} else if (typeof(p.length) == "undefined" && binary) {
-		//		Object.defineProperty(this, "length", {
-		//			get: function() {
-		//				//	TODO	use something from $api
-		//				if (!arguments.callee.called) {
-		//					arguments.callee.called = { returns: _java.readBytes(binary().java.adapt()).length };
-		//				}
-		//				return arguments.callee.called.returns;
-		//			},
-		//			enumerable: true
-		//		});
-		//	}
+			// if (typeof(p.length) == "number") {
+			// 	this.length = p.length;
+			// } else if (typeof(p.length) == "undefined" && binary) {
+			// 	Object.defineProperty(this, "length", {
+			// 		get: function() {
+			// 			//	TODO	use something from $api
+			// 			if (!arguments.callee.called) {
+			// 				arguments.callee.called = { returns: _java.readBytes(binary().java.adapt()).length };
+			// 			}
+			// 			return arguments.callee.called.returns;
+			// 		},
+			// 		enumerable: true
+			// 	});
+			// }
 
-		//	if (typeof(p.modified) == "object") {
-		//		this.modified = p.modified;
-		//	}
+			// if (typeof(p.modified) == "object") {
+			// 	this.modified = p.modified;
+			// }
 			if (p.hasOwnProperty("modified")) {
 				Object.defineProperty(this,"modified",{
 					get: loader.$api.Function.memoized(function() {
@@ -543,12 +543,12 @@
 						if (!rv.type) {
 							rv.type = getTypeFromPath(path);
 						}
-	//					rv.java = {
-	//						InputStream: function() {
-	//							return resource.read.binary().java.adapt()
-	//						}
-	//					};
-	//					rv.resource = rv;
+						// rv.java = {
+						// 	InputStream: function() {
+						// 		return resource.read.binary().java.adapt()
+						// 	}
+						// };
+						// rv.resource = rv;
 						return rv;
 					};
 					if (!p.child) p.child = function(prefix) {
@@ -628,7 +628,7 @@
 						_classpath.add(Packages.inonit.script.engine.Code.Loader.zip(
 							Packages.inonit.script.engine.Code.Loader.Resource.create(p.jar._file)
 						));
-//						_classpath.add(Packages.inonit.script.engine.Code.Loader.create(p.jar._file));
+						// _classpath.add(Packages.inonit.script.engine.Code.Loader.create(p.jar._file));
 					} else {
 						_classpath.addJar(p.jar._file);
 					}
