@@ -105,6 +105,11 @@ var algorithms = {
 	}
 };
 
+/**
+ * @param { { url: any, file: slime.jrunscript.file.File, format: any, to: slime.jrunscript.file.Pathname, replace: boolean } } p
+ * @param {*} events 
+ * @returns { slime.jrunscript.file.Directory }
+ */
 var installLocalArchive = function(p,events) {
 	if (!p.format) {
 		var basename = (p.url) ? p.url.toString().split("/").slice(-1)[0] : p.file.pathname.basename;

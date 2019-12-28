@@ -18,117 +18,138 @@ if (!$context.api || !$context.api.document) {
 //	Apple documentation on Mac OS X filesystem hierarchy
 //	https://developer.apple.com/library/mac/documentation/FileManagement/Conceptual/FileSystemProgrammingGuide/FileSystemOverview/FileSystemOverview.html
 
-$exports.plist = new function() {
-	//	https://developer.apple.com/library/ios/documentation/Cocoa/Conceptual/PropertyLists/AboutPropertyLists/AboutPropertyLists.html
-	this.xml = new function() {
-		var isArray = function(object) {
-			if (typeof(object.length) == "number" && typeof(object.splice) == "function") return true;
-			return false;
-		};
+/**
+ * @typedef {Object} slime.jrunscript.shell.system.apple.plist.xml.document
+ */
+/**
+ * @typedef {Object} slime.jrunscript.shell.system.apple.plist.xml
+ * @property { (v: any) => slime.jrunscript.shell.system.apple.plist.xml.document } encode
+ * @property { (document: slime.jrunscript.shell.system.apple.plist.xml.document) => any } decode
+ */
+/**
+ * @typedef {Object} slime.jrunscript.shell.system.apple.plist
+ * @property {Object} xml
+ */
 
-		this.encode = function(v) {
-			var Value = function recurse(v,indent) {
-				if (!indent) indent = "";
-				if (typeof(v) == "object") {
-					if (isArray(v)) {
-						var rv = new $context.api.document.Element({
-							type: {
-								name: "array"
-							}
-						});
-						v.forEach(function(element) {
-							rv.children.push(new $context.api.document.Text({ text: "\n" + indent + "  " }))
-							rv.children.push(recurse(element,indent+"  "));
-						});
-						rv.children.push(new $context.api.document.Text({ text: "\n" + indent }))
-						return rv;
-					} else {
-						var rv = new $context.api.document.Element({
-							type: {
-								name: "dict"
-							}
-						});
-						for (var x in v) {
-							var key = new $context.api.document.Element({ type: { name: "key" } });
-							//	TODO	document use of new Text() in slime/js/document/api.html
-							key.children.push(new $context.api.document.Text({ text: x }));
-							if (typeof(v[x]) == "undefined") {
-								//	TODO	what happens? Looks like the property should be omitted.
-							} else if (v[x] === null) {
-								//	TODO	what happens? Looks like the property should be omitted.
-							} else if (typeof(v[x]) == "string" || typeof(v[x]) == "object") {
-								rv.children.push(new $context.api.document.Text({ text: "\n" + indent + "  " }));
-								rv.children.push(key, new $context.api.document.Text({ text: "\n" + indent + "  " }), recurse(v[x], indent+"  "));
-							}
+/**
+ * @typedef {Object} slime.jrunscript.shell.system.apple
+ * @property { slime.jrunscript.shell.system.apple.plist } plist
+ */
+
+/** @type { new () => slime.jrunscript.shell.system.apple.plist.xml } */
+function PlistXmlCodec() {
+	var isArray = function(object) {
+		if (typeof(object.length) == "number" && typeof(object.splice) == "function") return true;
+		return false;
+	};
+
+	this.encode = function(v) {
+		var Value = function recurse(v,indent) {
+			if (!indent) indent = "";
+			if (typeof(v) == "object") {
+				if (isArray(v)) {
+					var rv = new $context.api.document.Element({
+						type: {
+							name: "array"
 						}
-						rv.children.push(new $context.api.document.Text({ text: "\n" + indent }))
-						return rv;
-					}
-				} else if (typeof(v) == "string") {
-					var rv = new $context.api.document.Element({ type: { name: "string" } });
-					rv.children.push(new $context.api.document.Text({ text: v }));
+					});
+					v.forEach(function(element) {
+						rv.children.push(new $context.api.document.Text({ text: "\n" + indent + "  " }))
+						rv.children.push(recurse(element,indent+"  "));
+					});
+					rv.children.push(new $context.api.document.Text({ text: "\n" + indent }))
 					return rv;
 				} else {
-					throw new TypeError("v = " + v + " typeof(v) = " + typeof(v));
+					var rv = new $context.api.document.Element({
+						type: {
+							name: "dict"
+						}
+					});
+					for (var x in v) {
+						var key = new $context.api.document.Element({ type: { name: "key" } });
+						//	TODO	document use of new Text() in slime/js/document/api.html
+						key.children.push(new $context.api.document.Text({ text: x }));
+						if (typeof(v[x]) == "undefined") {
+							//	TODO	what happens? Looks like the property should be omitted.
+						} else if (v[x] === null) {
+							//	TODO	what happens? Looks like the property should be omitted.
+						} else if (typeof(v[x]) == "string" || typeof(v[x]) == "object") {
+							rv.children.push(new $context.api.document.Text({ text: "\n" + indent + "  " }));
+							rv.children.push(key, new $context.api.document.Text({ text: "\n" + indent + "  " }), recurse(v[x], indent+"  "));
+						}
+					}
+					rv.children.push(new $context.api.document.Text({ text: "\n" + indent }))
+					return rv;
 				}
-			};
-
-			var document = new $context.api.document.Document();
-			var root = new $context.api.document.Element({
-				type: {
-					name: "plist"
-				}
-			});
-			document.children.push(root);
-			root.element.attributes.set("version", "1.0");
-			root.children.push(new $context.api.document.Text({ text: "\n" + "  " }));
-			root.children.push(Value(v, "  "));
-			root.children.push(new $context.api.document.Text({ text: "\n" }));
-			return document;
+			} else if (typeof(v) == "string") {
+				var rv = new $context.api.document.Element({ type: { name: "string" } });
+				rv.children.push(new $context.api.document.Text({ text: v }));
+				return rv;
+			} else {
+				throw new TypeError("v = " + v + " typeof(v) = " + typeof(v));
+			}
 		};
 
-		this.decode = function(document) {
-			var decode = function recurse(value) {
-				if (value.element.type.name == "dict") {
-					var rv = {};
-					var elements = value.children.filter(function(node) {
-						return node.element;
-					});
-					var index = 0;
-					while(index < elements.length) {
-						var keyElement = elements[index++];
-						if (keyElement.element.type.name != "key") throw new Error();
-						var key = keyElement.children[0].getString();
-						var value = recurse(elements[index++]);
-						rv[key] = value;
-					}
-					return rv;
-				} else if (value.element.type.name == "array") {
-					return value.children.filter(function(node) {
-						return node.element;
-					}).map(function(element) {
-						return recurse(element);
-					});
-				} else if (value.element.type.name == "false") {
-					return false;
-				} else if (value.element.type.name == "true") {
-					return true;
-				} else if (value.element.type.name == "string") {
-					return value.children[0].getString();
-				} else {
-					throw new Error("Unimplemented: " + value.element.type.name);
-				}
+		var document = new $context.api.document.Document();
+		var root = new $context.api.document.Element({
+			type: {
+				name: "plist"
 			}
+		});
+		document.children.push(root);
+		root.element.attributes.set("version", "1.0");
+		root.children.push(new $context.api.document.Text({ text: "\n" + "  " }));
+		root.children.push(Value(v, "  "));
+		root.children.push(new $context.api.document.Text({ text: "\n" }));
+		return document;
+	};
 
-			var root = document.document.getElement();
-			if (root.element.type.name != "plist") throw new Error();
-			//	TODO	check version attribute value?
-			var value = root.children.filter(function(node) {
-				return node.element;
-			})[0];
-			return decode(value);
+	this.decode = function(document) {
+		var decode = function recurse(value) {
+			if (value.element.type.name == "dict") {
+				var rv = {};
+				var elements = value.children.filter(function(node) {
+					return node.element;
+				});
+				var index = 0;
+				while(index < elements.length) {
+					var keyElement = elements[index++];
+					if (keyElement.element.type.name != "key") throw new Error();
+					var key = keyElement.children[0].getString();
+					var value = recurse(elements[index++]);
+					rv[key] = value;
+				}
+				return rv;
+			} else if (value.element.type.name == "array") {
+				return value.children.filter(function(node) {
+					return node.element;
+				}).map(function(element) {
+					return recurse(element);
+				});
+			} else if (value.element.type.name == "false") {
+				return false;
+			} else if (value.element.type.name == "true") {
+				return true;
+			} else if (value.element.type.name == "string") {
+				return value.children[0].getString();
+			} else {
+				throw new Error("Unimplemented: " + value.element.type.name);
+			}
 		}
+
+		var root = document.document.getElement();
+		if (root.element.type.name != "plist") throw new Error();
+		//	TODO	check version attribute value?
+		var value = root.children.filter(function(node) {
+			return node.element;
+		})[0];
+		return decode(value);
 	}
+};
+
+$exports.plist = {
+	//	https://developer.apple.com/library/ios/documentation/Cocoa/Conceptual/PropertyLists/AboutPropertyLists/AboutPropertyLists.html
+	xml: new PlistXmlCodec()
 };
 
 $exports.osx = {};
