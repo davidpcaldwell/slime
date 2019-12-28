@@ -5,12 +5,14 @@ namespace slime {
 				directory: Directory,
 				parent: Pathname,
 				createDirectory: (p: { exists: (d: Directory) => boolean } ) => Directory,
-				write: (any,any) => void
+				write: (any,any) => void,
+				file: File
 			}
 
 			interface Node {
 				pathname: Pathname,
-				remove: () => void
+				remove: () => void,
+				parent: Directory
 			}
 
 			interface File extends Node {

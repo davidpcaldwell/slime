@@ -20,8 +20,34 @@
  */
 
 /**
+ * @typedef {string} slime.jrunscript.http.client.Authorization
+ */
+
+/**
+ * @typedef { (p: { user: string, password: string }) => slime.jrunscript.http.client.Authorization } slime.jrunscript.http.client.Authentication.Basic.Authorization.factory
+ */
+
+//	Note that on definition page, Authorization is listed as constructor
+/**
+ * @typedef {Object} slime.jrunscript.http.client.Authentication.Basic
+ * @property { slime.jrunscript.http.client.Authentication.Basic.Authorization.factory } Authorization
+ */
+
+/**
+ * @typedef {Object} slime.jrunscript.http.client.Authentication
+ * @property { slime.jrunscript.http.client.Authentication.Basic } Basic
+ */
+
+/**
+ * @typedef { Object } slime.jrunscript.http.client.test
+ * @property { () => void } disableHttpsSecurity
+ */
+
+/**
  * @typedef {Object} slime.jrunscript.http.client
  * @property { slime.jrunscript.http.client.Client.constructor } Client
+ * @property { slime.jrunscript.http.client.Authentication } Authentication
+ * @property { slime.jrunscript.http.client.test } test
  */
 
 Packages.java.lang.System.setProperty("sun.net.http.allowRestrictedHeaders", "true");

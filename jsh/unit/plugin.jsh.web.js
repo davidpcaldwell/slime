@@ -23,6 +23,12 @@
   */
 
 /**
+ * @typedef { Object } slime.jsh.unit.mock.Web.https
+ * @property { number } port
+ * @property { slime.jrunscript.http.client.Client } client}
+ */
+
+/**
  * @typedef {Object} slime.jsh.unit.mock.Web
  * @property { (handler: slime.jsh.unit.mock.handler) => void } add - adds a handler that can supply parts of the mock internet
  * @property { slime.jrunscript.http.client.Client } client - described on definition page
@@ -30,6 +36,8 @@
  * @property { Object } environment - the environment to use when launching a process that proxies through this mock internet;
  * 		sets http_proxy variable
  * @property { slime.jsh.unit.mock.Web.hg } hg
+ * @property { () => void } start
+ * @property { slime.jsh.unit.mock.Web.https } https
  */
 
 /**
@@ -46,7 +54,7 @@
  		slime.jsh.unit.Web.constructor.function
  * 		& {
  * 			bitbucket: (o: {}) => slime.jsh.unit.mock.handler,
- * 			github: () => slime.jsh.unit.mock.handler
+ * 			github: (o: {}) => slime.jsh.unit.mock.handler
  * 		}
  * } slime.jsh.unit.mock.Web.constructor
 */
@@ -411,12 +419,38 @@ function defineJshUnitMock($set,jsh,Packages) {
 			/**
 			 *	@returns { slime.jsh.unit.mock.handler }
 			 */
-			var MockGithubApi = function() {
-				throw new Error();
+			var MockGithubApi = function(o) {
+				return function(request) {
+					var host = request.headers.value("host");
+					if (host == "raw.githubusercontent.com") {
+						var pattern = /^(.*?)\/(.*?)\/(.*?)\/(.*)$/;
+						var match = pattern.exec(request.path);
+						var user = match[1];
+						var repo = match[2];
+						var ref = match[3];
+						var repository = o.src[user][repo];
+						var branch = repository.branch().filter(function(b) {
+							return b.current;
+						})[0];
+						if (branch.name == ref) {
+							return {
+								status: { code: 200 },
+								body: {
+									type: "text/plain",
+									string: repository.directory.getFile(match[4]).read(String)
+								}
+							}
+						} else {
+							throw new Error("Unsupported: branch and ref different.");
+						}
+					}
+					return {
+						status: { code: 404 }
+					}
+				}
 				return void(0);
 			};
 			if (jsh.unit.mock.Web) jsh.unit.mock.Web.github = MockGithubApi;
-
 
 			jsh.unit.mock.Hg = function() {
 			};

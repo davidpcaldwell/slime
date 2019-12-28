@@ -8,6 +8,17 @@ declare namespace jsh {
 	const http: slime.jrunscript.http.client
 
 	const script: {
-		getopts: Function
+		getopts: Function,
+		file: slime.jrunscript.file.File
+	}
+
+	const shell: {
+		console: (message: string) => void,
+		exit: (code: number) => void,
+		jsh: any
+	}
+
+	const tools: {
+		git: any
 	}
 }
