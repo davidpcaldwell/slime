@@ -16,7 +16,7 @@
 */
 
 /**
- * @typedef { new (configuration: {}) => slime.jrunscript.http.client } slime.jrunscript.http.client.Client.constructor
+ * @typedef { new (configuration?: {}) => slime.jrunscript.http.client } slime.jrunscript.http.client.Client.constructor
  */
 
 /**

@@ -15,6 +15,6 @@ if (jsh.script.script) {
 }
 $api.debug.disableBreakOnExceptionsFor(function(x) {
 });
-var client = new jsh.http.Client();
+var packagedClient = new jsh.http.Client();
 jsh.a.log("Hello, World!");
 a.log("Hello, World!");
