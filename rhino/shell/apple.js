@@ -27,10 +27,21 @@ $exports.plist = new function() {
 		};
 
 		this.encode = function(v) {
-			var Value = function(v) {
+			var Value = function recurse(v,indent) {
+				if (!indent) indent = "";
 				if (typeof(v) == "object") {
 					if (isArray(v)) {
-						throw new TypeError("Unimplemented.");
+						var rv = new $context.api.document.Element({
+							type: {
+								name: "array"
+							}
+						});
+						v.forEach(function(element) {
+							rv.children.push(new $context.api.document.Text({ text: "\n" + indent + "  " }))
+							rv.children.push(recurse(element,indent+"  "));
+						});
+						rv.children.push(new $context.api.document.Text({ text: "\n" + indent }))
+						return rv;
 					} else {
 						var rv = new $context.api.document.Element({
 							type: {
@@ -46,9 +57,11 @@ $exports.plist = new function() {
 							} else if (v[x] === null) {
 								//	TODO	what happens? Looks like the property should be omitted.
 							} else if (typeof(v[x]) == "string" || typeof(v[x]) == "object") {
-								rv.children.push(key, new Value(v[x]));
+								rv.children.push(new $context.api.document.Text({ text: "\n" + indent + "  " }));
+								rv.children.push(key, new $context.api.document.Text({ text: "\n" + indent + "  " }), recurse(v[x], indent+"  "));
 							}
 						}
+						rv.children.push(new $context.api.document.Text({ text: "\n" + indent }))
 						return rv;
 					}
 				} else if (typeof(v) == "string") {
@@ -68,7 +81,9 @@ $exports.plist = new function() {
 			});
 			document.children.push(root);
 			root.element.attributes.set("version", "1.0");
-			root.children.push(new Value(v));
+			root.children.push(new $context.api.document.Text({ text: "\n" + "  " }));
+			root.children.push(Value(v, "  "));
+			root.children.push(new $context.api.document.Text({ text: "\n" }));
 			return document;
 		};
 
@@ -88,10 +103,20 @@ $exports.plist = new function() {
 						rv[key] = value;
 					}
 					return rv;
+				} else if (value.element.type.name == "array") {
+					return value.children.filter(function(node) {
+						return node.element;
+					}).map(function(element) {
+						return recurse(element);
+					});
+				} else if (value.element.type.name == "false") {
+					return false;
+				} else if (value.element.type.name == "true") {
+					return true;
 				} else if (value.element.type.name == "string") {
 					return value.children[0].getString();
 				} else {
-					throw new Error("Unimplemented");
+					throw new Error("Unimplemented: " + value.element.type.name);
 				}
 			}
 

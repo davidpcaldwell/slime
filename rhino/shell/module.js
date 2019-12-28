@@ -733,10 +733,10 @@ if ($context.kotlin) $exports.kotlin = $api.Events.Function(function(p,events) {
 		return property.name != "script";
 	}).object();
 	return run(Object.assign({}, copy, {
-		 command: $context.kotlin.compiler,
-		 arguments: function(rv) {
-			 rv.push("-script", p.script);
-			 if (p.arguments) rv.push.apply(rv,p.arguments);
-		 }
+		command: $context.kotlin.compiler,
+		arguments: function(rv) {
+			rv.push("-script", p.script);
+			if (p.arguments) rv.push.apply(rv,p.arguments);
+		}
 	}), events);
 });

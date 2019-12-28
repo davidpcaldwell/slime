@@ -256,21 +256,21 @@ $exports.jsh = function(p) {
 		var configuration = new JavaAdapter(
 			Packages.inonit.script.jsh.Shell.Environment,
 			new function() {
-//				this.getOptimizationLevel = function() {
-//					return -1;
-//				};
-//
-//				this.getDebugger = function() {
-//					//	TODO	an alternative would be to re-use the debugger from this shell; neither seems to work as expected
-//					if (environment.JSH_SCRIPT_DEBUGGER == "rhino") {
-//						var Engine = Packages.inonit.script.rhino.Engine;
-//						return Engine.RhinoDebugger.create(Engine.RhinoDebugger.Configuration.create(
-//							Packages.inonit.script.rhino.Gui.RHINO_UI_FACTORY
-//						));
-//					} else {
-//						return null;
-//					}
-//				}
+				// this.getOptimizationLevel = function() {
+				// 	return -1;
+				// };
+
+				// this.getDebugger = function() {
+				// 	//	TODO	an alternative would be to re-use the debugger from this shell; neither seems to work as expected
+				// 	if (environment.JSH_SCRIPT_DEBUGGER == "rhino") {
+				// 		var Engine = Packages.inonit.script.rhino.Engine;
+				// 		return Engine.RhinoDebugger.create(Engine.RhinoDebugger.Configuration.create(
+				// 			Packages.inonit.script.rhino.Gui.RHINO_UI_FACTORY
+				// 		));
+				// 	} else {
+				// 		return null;
+				// 	}
+				// }
 
 				var specified = $exports.run.stdio(p);
 
@@ -305,20 +305,20 @@ $exports.jsh = function(p) {
 					}
 				);
 
-//				//	For now, we supply an implementation that logs to stderr, just like the launcher-based jsh does, although it is
-//				//	possible we should revisit this
-//				var log = new JavaAdapter(
-//					Packages.inonit.script.rhino.Engine.Log,
-//					new function() {
-//						this.println = function(message) {
-//							new Packages.java.io.PrintStream(stdio.getStandardError()).println(message);
-//						}
-//					}
-//				);
+				// //	For now, we supply an implementation that logs to stderr, just like the launcher-based jsh does, although it is
+				// //	possible we should revisit this
+				// var log = new JavaAdapter(
+				// 	Packages.inonit.script.rhino.Engine.Log,
+				// 	new function() {
+				// 		this.println = function(message) {
+				// 			new Packages.java.io.PrintStream(stdio.getStandardError()).println(message);
+				// 		}
+				// 	}
+				// );
 
-//				this.getLog = function() {
-//					return log;
-//				}
+				// this.getLog = function() {
+				// 	return log;
+				// }
 
 				this.getClassLoader = function() {
 					return Packages.java.lang.ClassLoader.getSystemClassLoader();
@@ -329,13 +329,13 @@ $exports.jsh = function(p) {
 					var keys = $context._getSystemProperties().keySet().iterator();
 					while(keys.hasNext()) {
 						var key = keys.next();
-//						if (String(key) != "jsh.shell.packaged") {
-							if ($context._getSystemProperties().getProperty(key) == null) {
-								//	TODO	seems to be the case for jsh.launcher.shell, through an unknown set of mechanisms
-							} else {
-								rv.setProperty(key, $context._getSystemProperties().getProperty(key));
-							}
-//						}
+						// if (String(key) != "jsh.shell.packaged") {
+						if ($context._getSystemProperties().getProperty(key) == null) {
+							//	TODO	seems to be the case for jsh.launcher.shell, through an unknown set of mechanisms
+						} else {
+							rv.setProperty(key, $context._getSystemProperties().getProperty(key));
+						}
+						// }
 					}
 					if (p.workingDirectory) {
 						rv.setProperty("user.dir", p.workingDirectory.pathname.java.adapt());
@@ -513,15 +513,15 @@ $exports.jsh.relaunch = $api.experimental(function(p) {
 	});
 });
 $exports.jsh.require = $api.Events.Function(function(p,events) {
-    //  TODO    should develop a strategy for preventing infinite loops
-    if (!p.satisfied()) {
-        events.fire("installing");
-        p.install();
-        events.fire("installed");
-        jsh.shell.jsh.relaunch();
-    } else {
-        events.fire("satisfied");
-    }
+	//  TODO    should develop a strategy for preventing infinite loops
+	if (!p.satisfied()) {
+		events.fire("installing");
+		p.install();
+		events.fire("installed");
+		jsh.shell.jsh.relaunch();
+	} else {
+		events.fire("satisfied");
+	}
 });
 $exports.run.evaluate.jsh = {};
 $exports.run.evaluate.jsh.wrap = function(result) {

@@ -42,6 +42,7 @@ $exports.files = new function() {
 		if (node.pathname.basename == ".git") return false;
 		if (node.pathname.basename == ".hgtags") return false;
 		if (node.pathname.basename == ".svn") return false;
+		if (/\.iml$/.test(node.pathname.basename)) return false;
 		if (node.pathname.basename == "target") return false;
 		//	TODO	next line breaks encapsulation of rhino/file/
 		if (node.directory) return false;
@@ -76,6 +77,7 @@ $exports.files = new function() {
 		if (/\.numbers$/.test(basename)) return false;
 		//	TODO	if license.js has a license for the file, should always return true; we are repeating information
 		if (/\.hgrc$/.test(basename)) return true;
+		if (/\.gitignore$/.test(basename)) return true;
 		if (/META-INF\/services\/java.lang.Runnable$/.test(node.pathname.toString())) return false;
 	}
 

@@ -12,38 +12,38 @@
 //	END LICENSE
 
 window.addEventListener('load', function() {
-    //	TODO	CORS
-    document.domain = document.domain;
+	//	TODO	CORS
+	document.domain = document.domain;
 
-    var xhr = new XMLHttpRequest();
-    xhr.open("GET","../../../../$reload",false);
-    xhr.send();
+	var xhr = new XMLHttpRequest();
+	xhr.open("GET","../../../../$reload",false);
+	xhr.send();
 
-    var xhr = new XMLHttpRequest();
-    xhr.open("GET","../../../../",false);
-    xhr.send();
-    var settings = JSON.parse(xhr.responseText);
+	var xhr = new XMLHttpRequest();
+	xhr.open("GET","../../../../",false);
+	xhr.send();
+	var settings = JSON.parse(xhr.responseText);
 
-    var whitespace = inonit.loader.loader.value("whitespace.js");
+	var whitespace = inonit.loader.loader.value("whitespace.js");
 
 	var editable = typeof(document.createElement("span").contentEditable) != "undefined";
 
-    var selection = (function() {
-        var state = new function() {
-            var current;
+	var selection = (function() {
+		var state = new function() {
+			var current;
 
-            this.is = function(element) {
-            	return current && current.element == element;
-            }
+			this.is = function(element) {
+				return current && current.element == element;
+			}
 
-            this.up = function() {
-            	if (current) {
-            		current.deselect();
-            		this.select(current.element.parentNode);
-            	}
-            }
+			this.up = function() {
+				if (current) {
+					current.deselect();
+					this.select(current.element.parentNode);
+				}
+			}
 
-            this.select = function(element) {
+			this.select = function(element) {
 				if (current) current.deselect();
 				current = new function() {
 					this.element = element;
@@ -66,16 +66,16 @@ window.addEventListener('load', function() {
 					status.insertBefore(child,status.children[0]);
 					node = node.parentNode;
 				}
-            };
-        };
-        return state;
-    })();
+			};
+		};
+		return state;
+	})();
 
-    var inline = function(callback) {
+	var inline = function(callback) {
 		var contentEditable = this.contentEditable;
 
-        var listener = function(target,callback) {
-        	return function(e) {
+		var listener = function(target,callback) {
+			return function(e) {
 				if (e.key == "Enter") {
 					this.removeEventListener("keydown", arguments.callee);
 					if (this.contentEditable == "true") {
@@ -89,10 +89,10 @@ window.addEventListener('load', function() {
 					}
 					if (callback) callback();
 				}
-        	};
-        };
+			};
+		};
 
-        this.addEventListener("click", function(e) {
+		this.addEventListener("click", function(e) {
 			if (editable) {
 				if (this.contentEditable == "true") return;
 				this.contentEditable = "true";
@@ -107,16 +107,16 @@ window.addEventListener('load', function() {
 				input.addEventListener("keydown", listener);
 				this.inonit = { inline: true };
 			}
-        });
-    };
+		});
+	};
 
-    document.getElementById("target").addEventListener("load", function(e) {
-    	//	Set up HEAD here by iterating through nodes of content document <head>
-    	var head = this.contentDocument.getElementsByTagName("head")[0];
-    	var tbody = document.getElementById("head").getElementsByTagName("tbody")[0];
+	document.getElementById("target").addEventListener("load", function(e) {
+		//	Set up HEAD here by iterating through nodes of content document <head>
+		var head = this.contentDocument.getElementsByTagName("head")[0];
+		var tbody = document.getElementById("head").getElementsByTagName("tbody")[0];
 
-    	var handleRow = function(handler) {
-    		return function(child) {
+		var handleRow = function(handler) {
+			return function(child) {
 				var tr = document.createElement("tr");
 				var label = document.createElement("td");
 				var editor = document.createElement("td");
@@ -124,8 +124,8 @@ window.addEventListener('load', function() {
 				tr.appendChild(label);
 				tr.appendChild(editor);
 				tbody.appendChild(tr);
-    		}
-    	};
+			}
+		};
 
 		var formEditable = function(p) {
 			var parent = p.parent;
@@ -410,12 +410,12 @@ window.addEventListener('load', function() {
 			editor.appendChild(document.createTextNode("(unknown)"));
 		});
 
-    	for (var i=0; i<head.childNodes.length; i++) {
-    		var child = head.childNodes[i];
+		for (var i=0; i<head.childNodes.length; i++) {
+			var child = head.childNodes[i];
 			var handler = function(child) {
 			};
 			var isOnlyWhitespace = /^\s+$/;
-    		if (child.nodeType === 1) {
+			if (child.nodeType === 1) {
 				if (child.tagName == "TITLE") {
 					handler = handleTitle;
 				} else if (child.tagName == "LINK") {
@@ -425,39 +425,39 @@ window.addEventListener('load', function() {
 				} else {
 					handler = handleElement;
 				}
-    		} else if (child.nodeType === 3) {
-    			if (!isOnlyWhitespace.test(child.data)) {
+			} else if (child.nodeType === 3) {
+				if (!isOnlyWhitespace.test(child.data)) {
 					debugger;
-    			} else {
-    				//	we ignore whitespace text nodes
-    			}
-    		} else if (child.nodeType == 8) {
-    			handler = handleComment;
-    		} else {
-    			handler = handleOther;
-    		}
-    		handler(child);
-    	}
+				} else {
+					//	we ignore whitespace text nodes
+				}
+			} else if (child.nodeType == 8) {
+				handler = handleComment;
+			} else {
+				handler = handleOther;
+			}
+			handler(child);
+		}
 
-        var content = document.getElementById("target").contentDocument;
+		var content = document.getElementById("target").contentDocument;
 
 		document.getElementById("title").innerHTML = content.title;
 
-        this.contentDocument.addEventListener("click", function(e) {
+		this.contentDocument.addEventListener("click", function(e) {
 			if (!selection.is(e.target)) {
 				selection.select(e.target);
 			}
-        });
+		});
 
-        this.contentDocument.documentElement.addEventListener("keydown", function(e) {
-        	if (e.key == "ArrowLeft") {
+		this.contentDocument.documentElement.addEventListener("keydown", function(e) {
+			if (e.key == "ArrowLeft") {
 				selection.up();
-        	} else if (e.key == "ArrowRight") {
+			} else if (e.key == "ArrowRight") {
 				debugger;
-        	} else {
+			} else {
 				debugger;
-        	}
-        });
+			}
+		});
 
 		var base = inonit.loader.base.split("/").slice(0,-3).join("/") + "/";
 
@@ -467,7 +467,7 @@ window.addEventListener('load', function() {
 				$loader: new loader.Child("slime/")
 			});
 		}
-    });
+	});
 
-    document.getElementById("target").src = window.location + "../../../../../../filesystem/" + settings.api.substring(1);
+	document.getElementById("target").src = window.location + "../../../../../../filesystem/" + settings.api.substring(1);
 });

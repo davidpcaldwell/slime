@@ -73,15 +73,15 @@ var run = function() {
 			e.code = arguments[0];
 		}
 		throw e;
-//		if (!e.type) {
-//			var error = new Error(e.message);
-//			error.cause = e;
-//			error.code = arguments[0];
-//			throw error;
-//		} else {
-//			e.code = arguments[0];
-//			throw e;
-//		}
+		// if (!e.type) {
+		// 	var error = new Error(e.message);
+		// 	error.cause = e;
+		// 	error.code = arguments[0];
+		// 	throw error;
+		// } else {
+		// 	e.code = arguments[0];
+		// 	throw e;
+		// }
 	}
 }
 

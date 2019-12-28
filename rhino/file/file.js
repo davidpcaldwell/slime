@@ -141,23 +141,23 @@ var Pathname = function Pathname(parameters) {
 			}
 		});
 		return poorResource.write(dataOrType,mode);
-//		if (dataOrType == $context.Streams.binary) {
-//			return $filesystem.write.binary(peer,append);
-//		} else if (dataOrType == $context.Streams.text) {
-//			return $filesystem.write.character(peer,append);
-//		} else if (typeof(dataOrType) == "string") {
-//			$filesystem.write.string(peer,append,dataOrType);
-//		} else if (dataOrType.java && dataOrType.java.adapt && $context.isJavaType(Packages.java.io.InputStream)(dataOrType.java.adapt())) {
-//			var stream = $filesystem.write.binary(peer,append);
-//			$context.Streams.binary.copy(dataOrType,stream);
-//			stream.close();
-//		} else if (dataOrType.java && dataOrType.java.adapt && $context.isJavaType(Packages.java.io.Reader)(dataOrType.java.adapt())) {
-//			var stream = $filesystem.write.character(peer,append);
-//			$context.Streams.text.copy(dataOrType,stream);
-//			stream.close();
-//		} else {
-//			fail("Unimplemented: write " + dataOrType);
-//		}
+		// if (dataOrType == $context.Streams.binary) {
+		// 	return $filesystem.write.binary(peer,append);
+		// } else if (dataOrType == $context.Streams.text) {
+		// 	return $filesystem.write.character(peer,append);
+		// } else if (typeof(dataOrType) == "string") {
+		// 	$filesystem.write.string(peer,append,dataOrType);
+		// } else if (dataOrType.java && dataOrType.java.adapt && $context.isJavaType(Packages.java.io.InputStream)(dataOrType.java.adapt())) {
+		// 	var stream = $filesystem.write.binary(peer,append);
+		// 	$context.Streams.binary.copy(dataOrType,stream);
+		// 	stream.close();
+		// } else if (dataOrType.java && dataOrType.java.adapt && $context.isJavaType(Packages.java.io.Reader)(dataOrType.java.adapt())) {
+		// 	var stream = $filesystem.write.character(peer,append);
+		// 	$context.Streams.text.copy(dataOrType,stream);
+		// 	stream.close();
+		// } else {
+		// 	fail("Unimplemented: write " + dataOrType);
+		// }
 	}
 
 	this.write = write;
@@ -290,14 +290,14 @@ var Pathname = function Pathname(parameters) {
 			}
 		}
 
-//		this.getPathname = getPathname;
-//		$api.deprecate(this, "getPathname");
-//		this.getParent = getParent;
-//		$api.deprecate(this, "getParent");
-//		this.setLastModified = setLastModified;
-//		this.getLastModified = getLastModified;
-//		$api.deprecate(this, "getLastModified");
-//		$api.deprecate(this, "setLastModified");
+		// this.getPathname = getPathname;
+		// $api.deprecate(this, "getPathname");
+		// this.getParent = getParent;
+		// $api.deprecate(this, "getParent");
+		// this.setLastModified = setLastModified;
+		// this.getLastModified = getLastModified;
+		// $api.deprecate(this, "getLastModified");
+		// $api.deprecate(this, "setLastModified");
 
 		this.copy = function(target,mode) {
 			var to = (function() {
@@ -441,7 +441,7 @@ var Pathname = function Pathname(parameters) {
 			return this.read.lines.apply(this,arguments);
 		});
 	}
-//	File.prototype = new Node(this,$filesystem.separators.pathname + ".." + $filesystem.separators.pathname);
+	// File.prototype = new Node(this,$filesystem.separators.pathname + ".." + $filesystem.separators.pathname);
 
 	var Directory = function(pathname,peer) {
 		Node.call(this,pathname,"");
@@ -499,12 +499,12 @@ var Pathname = function Pathname(parameters) {
 				var add = function(dir) {
 					var items = dir.list();
 					items.forEach(function(item) {
-						 if (filter(item)) {
+						if (filter(item)) {
 							rv.push(item);
-						 }
-						 if (item.directory && mode.descendants(item)) {
-							 add(item);
-						 }
+						}
+						if (item.directory && mode.descendants(item)) {
+							add(item);
+						}
 					})
 				};
 				add(this);
