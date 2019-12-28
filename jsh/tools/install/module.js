@@ -105,9 +105,17 @@ var algorithms = {
 	}
 };
 
+/**
+ * @param { { url: any, file: slime.jrunscript.file.File, format: any, to: slime.jrunscript.file.Pathname, replace: boolean } } p
+ * @param {*} events
+ * @returns { slime.jrunscript.file.Directory }
+ */
 var installLocalArchive = function(p,events) {
 	if (!p.format) {
-		var basename = (p.url) ? p.url.toString().split("/").slice(-1)[0] : p.file.pathname.basename;
+		var basename = (function() {
+			if (p.name) return p.name;
+			return (p.url) ? p.url.toString().split("/").slice(-1)[0] : p.file.pathname.basename;
+		})();
 		if (/\.tar\.xz$/.test(basename) && $exports.format.gzip) p.format = $exports.format.gzip;
 		if (/\.tar\.gz$/.test(basename) && $exports.format.gzip) p.format = $exports.format.gzip;
 		if (/\.tgz$/.test(basename) && $exports.format.gzip) p.format = $exports.format.gzip;

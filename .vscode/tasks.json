@@ -18,7 +18,7 @@
 		{
 			"label": "documentation",
 			"type": "shell",
-			"command": "./jsh.bash contributor/documentation.jsh.js",
+			"command": "./jsh.bash contributor/documentation.jsh.js -base . -host slime",
 			"problemMatcher": []
 		}
 	]
