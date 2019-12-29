@@ -52,3 +52,15 @@ var sources = client.request({
 	}
 });
 jsh.shell.console(JSON.stringify(sources, void(0), "    "));
+
+var plugins = client.request({
+	url: "https://api.github.com/repos/davidpcaldwell/slime/contents/local/jsh/plugins/",
+	evaluate: function(response) {
+		jsh.shell.console("Response code: " + response.status.code);
+		jsh.shell.console("Content type: " + response.body.type);
+		var string = response.body.stream.character().asString();
+		jsh.shell.console(string);
+		return JSON.parse(string);
+	}
+});
+jsh.shell.console(JSON.stringify(plugins, void(0), "    "));

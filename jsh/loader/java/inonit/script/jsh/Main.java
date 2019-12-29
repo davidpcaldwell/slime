@@ -31,7 +31,8 @@ public class Main {
 			if (string == null) return Code.Loader.NULL;
 			if (string.startsWith("http://") || string.startsWith("https://")) {
 				try {
-					return Code.Loader.bitbucketApiVersionOne(new URL(string));
+//					return Code.Loader.bitbucketApiVersionOne(new URL(string));
+					return Code.Loader.githubApi(new URL(string));
 				} catch (MalformedURLException e) {
 					throw new RuntimeException(e);
 				}
