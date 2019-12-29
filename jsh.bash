@@ -15,10 +15,16 @@
 #	rm -Rvf local/jdk/default; rm -Rvf ~/.slime/jdk/default; ./jsh.bash jsh/test/jsh-data.jsh.js; ./jsh.bash --install-user-jdk; rm -Rvf local/jdk/default; ./jsh.bash jsh/test/jsh-data.jsh.js
 #	check java.home of last script invoked and ensure that it is the user JDK
 
-SRC=$(dirname $0)
-
-JDK_LOCAL="${SRC}/local/jdk/default"
-JDK_USER="${JSH_USER_JDK:-${HOME}/.slime/jdk/default}"
+if [ "$0" == "bash" ]; then
+	#	Remote shell
+	#	set -x
+	JDK_LOCAL="$(mktemp -d)"
+	rmdir ${JDK_LOCAL}
+	JDK_USER=/dev/null
+else
+	JDK_LOCAL="$(dirname $0)/local/jdk/default"
+	JDK_USER="${JSH_USER_JDK:-${HOME}/.slime/jdk/default}"
+fi
 
 URL_libericaopenjdk8="https://download.bell-sw.com/java/8u232+10/bellsoft-jdk8u232+10-macos-amd64.zip"
 
@@ -133,4 +139,16 @@ fi
 #			dynamically, possibly using an environment variable provided here
 export PATH="$(dirname ${JRUNSCRIPT}):${PATH}"
 
-${JRUNSCRIPT} $SRC/rhino/jrunscript/api.js jsh "$@"
+if [ -n "${JSH_HTTP_PROXY_HOST}" ]; then
+	PROXY_HOST_ARGUMENT="-Dhttp.proxyHost=${JSH_HTTP_PROXY_HOST}"
+fi
+
+if [ -n "${JSH_HTTP_PROXY_PORT}" ]; then
+	PROXY_PORT_ARGUMENT="-Dhttp.proxyPort=${JSH_HTTP_PROXY_PORT}"
+fi
+
+if [ "$0" == "bash" ]; then
+	${JRUNSCRIPT} ${PROXY_HOST_ARGUMENT} ${PROXY_PORT_ARGUMENT} -e "load('http://raw.githubusercontent.com/davidpcaldwell/slime/master/rhino/jrunscript/api.js?jsh')" "$@"
+else
+	${JRUNSCRIPT} $(dirname $0)/rhino/jrunscript/api.js jsh "$@"
+fi

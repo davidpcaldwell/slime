@@ -87,6 +87,9 @@ function defineJshUnitMock($set,jsh,Packages) {
 				if (!o) o = {
 					trace: false
 				};
+
+				//	TODO	https doesn't really work, as CONNECT to the real destination is attempted when requests for that
+				//			host arrive
 				var tomcat = new jsh.httpd.Tomcat({
 					https: {}
 				});
