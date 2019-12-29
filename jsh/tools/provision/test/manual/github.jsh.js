@@ -26,8 +26,21 @@ var command = (function() {
 
 //	jsh.shell.console("curl " + "https://127.0.0.1:" + www.https.port + "/" + "davidpcaldwell/slime/master/jsh.bash");
 
+jsh.shell.console("Test of local mock: ");
 jsh.shell.console(
 	command.join(" ") + " | " + "env JSH_HTTP_PROXY_HOST=127.0.0.1 JSH_HTTP_PROXY_PORT=" + www.port + " bash -s "
 	+ "http://raw.githubusercontent.com/davidpcaldwell/slime/master/jsh/test/jsh-data.jsh.js"
 );
+jsh.shell.console("");
+jsh.shell.console("Test on GitHub: ");
+jsh.shell.console(
+	(function() {
+		var rv = [];
+		rv.push("curl");
+		rv.push("-u", "davidpcaldwell:" + jsh.shell.jsh.src.getFile("local/github/token").read(String));
+		//	TODO	with -L, specifying http:// below works properly via redirection
+		rv.push("https://raw.githubusercontent.com/davidpcaldwell/slime/master/jsh.bash");
+		return rv;
+	})().join(" ") + " | bash -s https://raw.githubusercontent.com/davidpcaldwell/slime/master/jsh/test/jsh-data.jsh.js"
+)
 www.run();
