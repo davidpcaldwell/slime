@@ -462,8 +462,19 @@ function defineJshUnitMock($set,jsh,Packages) {
 							var at = repository.directory.getRelativePath(path);
 							Packages.java.lang.System.err.println("Checking: " + at);
 							if (at.file) throw new Error();
-							if (!at.directory) throw new Error();
-							var list = at.directory.list().map(function(node) {
+							if (!at.directory) return {
+								status: { code: 404 },
+								body: {
+									type: "application/json",
+									string: JSON.stringify({
+										message: "Not Found",
+										documentation_url: "https://developer.github.com/v3/repos/contents/#get-contents"
+									})
+								}
+							};
+							var list = at.directory.list().filter(function(node) {
+								return node.pathname.basename != ".git";
+							}).map(function(node) {
 								if (node.directory) return { type: "dir", name: node.pathname.basename };
 								if (!node.directory) return { type: "file", name: node.pathname.basename };
 								throw new Error("Not directory/file: " + node);

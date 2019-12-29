@@ -342,6 +342,10 @@ public class Code {
 			return Code.Loader.create(url, Code.Loader.Enumerator.bitbucketApiVersionOne(url));
 		}
 
+		public static Loader githubApi(URL url) {
+			return Code.Loader.create(url, Code.Loader.Enumerator.githubApi(url));
+		}
+
 		static Loader create(java.net.URLClassLoader parent) {
 			List<URL> urls = Arrays.asList(((URLClassLoader)parent).getURLs());
 			List<Code.Loader> sources = new ArrayList<Code.Loader>();
@@ -585,6 +589,254 @@ public class Code {
 						} catch (IOException e) {
 							throw new RuntimeException(e);
 						}
+					}
+				};
+			}
+
+			private static class TerribleGithubJsonParser {
+				static abstract class JsonValue {}
+
+				static class JsonPrimitive extends JsonValue {
+					static JsonPrimitive TRUE = new JsonPrimitive(true);
+					static JsonPrimitive FALSE = new JsonPrimitive(false);
+
+					static JsonPrimitive string(String s) {
+						return new JsonPrimitive(s);
+					}
+
+					static JsonPrimitive number(Double d) {
+						return new JsonPrimitive(d);
+					}
+
+					private Object o;
+
+					private JsonPrimitive(Object o) {
+						this.o = o;
+					}
+
+					private JsonPrimitive(boolean b) {
+						o = new Boolean(b);
+					}
+
+					@Override public String toString() { return String.valueOf(o); }
+
+					Object value() {
+						return this.o;
+					}
+				}
+
+				static abstract class JsonObject extends JsonValue {}
+
+				static class JsonObjectLiteral extends JsonObject {
+					private Map<String,JsonValue> properties;
+
+					JsonObjectLiteral(Map<String,JsonValue> properties) {
+						this.properties = properties;
+					}
+
+					@Override public String toString() { return "Object{" + this.properties + "}"; }
+
+					JsonValue getProperty(String name) {
+						return properties.get(name);
+					}
+				}
+
+				static class JsonArrayLiteral extends JsonObject {
+					private List<JsonValue> contents;
+
+					JsonArrayLiteral(List<JsonValue> contents) {
+						this.contents = contents;
+					}
+
+					@Override public String toString() { return "Array[" + this.contents + "]"; }
+
+					List<JsonValue> values() { return this.contents; }
+				}
+
+				static class State {
+					private String json;
+
+					State(String json) {
+						this.json = json;
+					}
+
+					@Override public String toString() {
+						return "JSON[" + this.json + "]";
+					}
+
+					boolean startsWith(String prefix) {
+						return this.json.startsWith(prefix);
+					}
+
+					boolean startsWithDigit() {
+						char first = this.json.charAt(0);
+						return first >= '0' && first <= '9';
+					}
+
+					String until(String substring) {
+						int rv = this.json.indexOf(substring);
+						if (rv == -1) throw new Error("Substring not found: " + substring);
+						return this.json.substring(0, this.json.indexOf(substring));
+					}
+
+					void consume(String prefix) {
+						if (!this.startsWith(prefix)) throw new RuntimeException("Does not start with " + prefix + ":" + this.json);
+						this.json = this.json.substring(prefix.length());
+					}
+
+					String consume(int count) {
+						String rv = this.json.substring(0,count);
+						consume(rv);
+						return rv;
+					}
+				}
+
+				private String parseStringLiteral(State json) {
+					json.consume("\"");
+					String name = json.until("\"");
+					json.consume(name + "\"");
+					return name;
+				}
+
+				private JsonPrimitive parseBoolean(State json) {
+					if (json.startsWith("true")) return JsonPrimitive.TRUE;
+					if (json.startsWith("false")) return JsonPrimitive.FALSE;
+					throw new RuntimeException();
+				}
+
+				private JsonPrimitive parseNumber(State json) {
+					String s = "";
+					while(json.startsWithDigit()) {
+						s += json.consume(1);
+					}
+					return JsonPrimitive.number(Double.parseDouble(s));
+				}
+
+				private JsonPrimitive parseString(State json) {
+					String value = parseStringLiteral(json);
+					return JsonPrimitive.string(value);
+				}
+
+				private static class JsonProperty {
+					private String name;
+					private JsonValue value;
+
+					JsonProperty(String name, JsonValue value) {
+						this.name = name;
+						this.value = value;
+					}
+
+					String getName() { return this.name; }
+					JsonValue getValue() { return this.value; }
+				}
+
+				private JsonProperty parseProperty(State json) {
+					String name = parseStringLiteral(json);
+					json.consume(":");
+					JsonValue value = parse(json);
+					return new JsonProperty(name, value);
+				}
+
+				JsonObjectLiteral parseObject(State json) {
+					json.consume("{");
+					HashMap<String,JsonValue> properties = new HashMap<String,JsonValue>();
+					while(!json.startsWith("}")) {
+						JsonProperty property = parseProperty(json);
+						properties.put(property.getName(), property.getValue());
+						if (json.startsWith(",")) json.consume(",");
+					}
+					json.consume("}");
+					return new JsonObjectLiteral(properties);
+				}
+
+				JsonArrayLiteral parseArray(State json) {
+					json.consume("[");
+					ArrayList<JsonValue> rv = new ArrayList<JsonValue>();
+					while(!json.startsWith("]")) {
+						rv.add(parse(json));
+						if (json.startsWith(",")) json.consume(",");
+					}
+					json.consume("]");
+					return new JsonArrayLiteral(rv);
+				}
+
+				JsonValue parse(State json) {
+					if (json.startsWith("[")) {
+						return parseArray(json);
+					} else if (json.startsWith("{")) {
+						return parseObject(json);
+					} else if (json.startsWith("true") || json.startsWith("false")) {
+						return parseBoolean(json);
+					} else if (json.startsWithDigit()) {
+						return parseNumber(json);
+					} else if (json.startsWith("\"")) {
+						return parseString(json);
+					} else {
+						throw new RuntimeException("Cannot parse: " + json);
+					}
+				}
+
+				JsonValue parse(String json) {
+					return parse(new State(json));
+				}
+			}
+
+			static Enumerator githubApi(final URL base) {
+				String path = base.getPath();
+				String[] tokens = path.substring(1).split("\\/");
+				final String user = tokens[0];
+				final String repo = tokens[1];
+				String ref = tokens[2];
+				return new Enumerator() {
+					@Override public String[] list(String prefix) {
+						//System.err.println("path = " + path + " tokens=" + Arrays.asList(tokens));
+						try {
+							URL url = new java.net.URL("http://api.github.com/repos/" + user + "/" + repo + "/contents/" + prefix);
+							String s = new inonit.script.runtime.io.Streams().readString(url.openConnection().getInputStream());
+							//System.err.println("contents of " + prefix + " = " + s + " from " + url);
+							TerribleGithubJsonParser parser = new TerribleGithubJsonParser();
+							TerribleGithubJsonParser.JsonValue value = parser.parse(s);
+							TerribleGithubJsonParser.JsonArrayLiteral items = (TerribleGithubJsonParser.JsonArrayLiteral)value;
+							//System.err.println(items);
+							ArrayList<String> rv = new ArrayList<String>();
+							for (TerribleGithubJsonParser.JsonValue item: items.values()) {
+								TerribleGithubJsonParser.JsonObjectLiteral entry = (TerribleGithubJsonParser.JsonObjectLiteral)item;
+								TerribleGithubJsonParser.JsonPrimitive typeProperty = ((TerribleGithubJsonParser.JsonPrimitive)entry.getProperty("type"));
+								TerribleGithubJsonParser.JsonPrimitive nameProperty = ((TerribleGithubJsonParser.JsonPrimitive)entry.getProperty("name"));
+								String type = (String)typeProperty.value();
+								String name = (String)nameProperty.value();
+								if (type.equals("file")) {
+									rv.add(name);
+								} else if (type.equals("dir")) {
+									rv.add(name + "/");
+								} else {
+									throw new Error("Unexpected type: " + entry);
+								}
+							}
+							return rv.toArray(new String[0]);
+						} catch (MalformedURLException e) {
+							throw new RuntimeException(e);
+						} catch (FileNotFoundException e) {
+							return null;
+						} catch (IOException e) {
+							throw new RuntimeException(e);
+						}
+						// try {
+						// 	URL url = (prefix == null) ? base : new URL(base, prefix);
+						// 	BufferedReader lines = new BufferedReader(new InputStreamReader(url.openConnection().getInputStream()));
+						// 	List<String> rv = new ArrayList<String>();
+						// 	String line;
+						// 	while( (line = lines.readLine()) != null) {
+						// 		rv.add(line);
+						// 	}
+						// 	return rv.toArray(new String[0]);
+						// } catch (MalformedURLException e) {
+						// 	throw new RuntimeException(e);
+						// } catch (FileNotFoundException e) {
+						// 	return null;
+						// } catch (IOException e) {
+						// 	throw new RuntimeException(e);
+						// }
 					}
 				};
 			}
