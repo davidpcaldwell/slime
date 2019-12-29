@@ -92,7 +92,9 @@ $api.slime = (function(was) {
 						return base.toExternalForm();
 					};
 
-					var getSourceFilesUnder = function(url,rv) {
+					var bitbucketGetSourceFilesUnder = function(url,rv) {
+						//	Bitbucket raw URLs allow essentially listing the directory with a neline-delimited list of names,
+						//	with directories ending with /.
 						var string = $api.engine.readUrl(url.toExternalForm());
 						var lines = string.split("\n");
 						for (var i=0; i<lines.length; i++) {
@@ -104,6 +106,26 @@ $api.slime = (function(was) {
 								}
 							}
 						}
+					}
+
+					var getSourceFilesUnder = function(url,rv) {
+						var pattern = /^http(?:s)?\:\/\/raw.githubusercontent.com\/davidpcaldwell\/slime\/(.*?)\/(.*)$/;
+						var match = pattern.exec(url);
+						if (!match) throw new Error("No match: " + url);
+						//	TODO	make branch into ref query parameter
+						var branch = match[1];
+						var path = match[2];
+						//	TODO	deal with http/https protocol issue
+						var json = JSON.parse($api.engine.readUrl("http://api.github.com/repos/davidpcaldwell/slime/contents/" + path));
+						json.forEach(function(item) {
+							if (item.type == "dir") {
+								getSourceFilesUnder(new Packages.java.net.URL(url,item.name+"/"), rv);
+							} else {
+								if (/\.java$/.test(item.name)) {
+									rv.push(new Packages.java.net.URL(url, item.name));
+								}
+							}
+						});
 					}
 
 					this.getSourceFilesUnder = function(path) {
@@ -220,16 +242,16 @@ $api.slime = (function(was) {
 		//	Sent from launcher to loader
 		map("jsh.shell.src", BOTH);
 		map("jsh.shell.lib", BOTH);
-//		map("jsh.shell.home", BOTH);
-//		map("jsh.shell.packaged", BOTH);
-//		map("jsh.shell.packaged.plugins", BOTH);
+		// map("jsh.shell.home", BOTH);
+		// map("jsh.shell.packaged", BOTH);
+		// map("jsh.shell.packaged.plugins", BOTH);
 
 		//	TODO	not settled on these names for plugins
 		map("jsh.shell.classes", BOTH);
 		map("jsh.shell.plugins", BOTH);
 		map("jsh.shell.classpath", BOTH);
 		map("jsh.shell.profiler", BOTH);
-//		map("jsh.user.plugins", BOTH);
+		// map("jsh.user.plugins", BOTH);
 
 		//	Undocumented so far
 		map("jsh.launcher.script.api", BOTH);
@@ -295,7 +317,7 @@ $api.slime = (function(was) {
 					if (all[x].type.container) {
 						rv = rv.concat(all[x].type.container(value));
 					} else {
-//						rv.push("-D" + x + "=" + value);
+						// rv.push("-D" + x + "=" + value);
 					}
 				}
 			}

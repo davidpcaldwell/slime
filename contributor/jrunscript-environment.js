@@ -177,7 +177,9 @@ var Environment = function(p) {
 			});
 		};
 
-		if (jsh.httpd.Tomcat) this.remote = new function() {
+		var BITBUCKET = false;
+
+		if (BITBUCKET && jsh.httpd.Tomcat) this.remote = new function() {
 			var data;
 
 			var url = "http://bitbucket.org/" + "api/1.0/repositories/davidpcaldwell/slime/raw/local/";

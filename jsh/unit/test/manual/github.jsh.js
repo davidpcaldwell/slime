@@ -41,3 +41,14 @@ var launcher = client.request({
 });
 jsh.shell.console(launcher.body.type);
 jsh.shell.console(launcher.body.stream.character().asString());
+
+var sources = client.request({
+	url: "https://api.github.com/repos/davidpcaldwell/slime/contents/loader/jrunscript/java/",
+	evaluate: function(response) {
+		jsh.shell.console("Content type: " + response.body.type);
+		var string = response.body.stream.character().asString();
+		jsh.shell.console(string);
+		return JSON.parse(string);
+	}
+});
+jsh.shell.console(JSON.stringify(sources, void(0), "    "));
