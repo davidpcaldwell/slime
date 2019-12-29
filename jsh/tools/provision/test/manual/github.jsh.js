@@ -24,7 +24,10 @@ var command = (function() {
 	return rv;
 })();
 
-jsh.shell.console("curl " + "https://127.0.0.1:" + www.https.port + "/" + "davidpcaldwell/slime/master/jsh.bash");
+//	jsh.shell.console("curl " + "https://127.0.0.1:" + www.https.port + "/" + "davidpcaldwell/slime/master/jsh.bash");
 
-jsh.shell.console(command.join(" ") + " | " + "env JSH_HTTP_PROXY_HOST=127.0.0.1 JSH_HTTP_PROXY_PORT=" + www.port + " bash -s");
+jsh.shell.console(
+	command.join(" ") + " | " + "env JSH_HTTP_PROXY_HOST=127.0.0.1 JSH_HTTP_PROXY_PORT=" + www.port + " bash -s "
+	+ "http://raw.githubusercontent.com/davidpcaldwell/slime/master/jsh/test/jsh-data.jsh.js"
+);
 www.run();

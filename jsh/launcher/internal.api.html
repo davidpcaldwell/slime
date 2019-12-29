@@ -440,9 +440,10 @@ END LICENSE
 				});
 				verify(outputLines)[0].is("Completed.");
 			</script>
-			<script type="application/x.jsapi#tests">
+			<script type="application/x.jsapi#tests"><![CDATA[
 				// TODO: substitute jsh-data.jsh.js here and read some substantive values?
-				if ($jsapi.environment.jsh.remote) {
+				var BITBUCKET = false;
+				if (BITBUCKET && $jsapi.environment.jsh.remote) {
 					var remote = $jsapi.environment.jsh.remote;
 					if (!remote) throw new Error("No remote shell!");
 					var fileTestOutputLines = remote.jsh({
@@ -466,7 +467,7 @@ END LICENSE
 					});
 					verify(fileTestOutputLines)[0].is("Completed.");
 				}
-			</script>
+			]]></script>
 			<script type="application/x.jsapi#tests" jsapi:id="executable">
 				if ($jsapi.environment.jsh.built.home.getFile("jsh")) {
 					var output = jsh.shell.run({

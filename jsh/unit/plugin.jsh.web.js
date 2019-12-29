@@ -446,6 +446,42 @@ function defineJshUnitMock($set,jsh,Packages) {
 						} else {
 							throw new Error("Unsupported: branch and ref different.");
 						}
+					} else if (host == "api.github.com") {
+						var pattern = /^repos\/(.*)\/(.*)\/contents\/(.*)$/;
+						var match = pattern.exec(request.path);
+						if (match) {
+							var user = match[1];
+							var repo = match[2];
+							var path = match[3];
+							//	TODO	can take ref as query parameter; see https://developer.github.com/v3/repos/contents/
+							var ref = "master";
+							var repository = o.src[user][repo];
+							var branch = repository.branch().filter(function(b) {
+								return b.current;
+							})[0];
+							var at = repository.directory.getRelativePath(path);
+							Packages.java.lang.System.err.println("Checking: " + at);
+							if (at.file) throw new Error();
+							if (!at.directory) throw new Error();
+							var list = at.directory.list().map(function(node) {
+								if (node.directory) return { type: "dir", name: node.pathname.basename };
+								if (!node.directory) return { type: "file", name: node.pathname.basename };
+								throw new Error("Not directory/file: " + node);
+							})
+							if (branch.name == ref) {
+								return {
+									status: { code: 200 },
+									body: {
+										type: "application/json",
+										string: JSON.stringify(list)
+									}
+								}
+							} else {
+								throw new Error("Umsupported: branch and ref different.");
+							}
+						} else {
+							Packages.java.lang.System.err.println("No match: " + request.path);
+						}
 					}
 					return {
 						status: { code: 404 }
