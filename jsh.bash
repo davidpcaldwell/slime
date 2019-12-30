@@ -21,7 +21,7 @@ if [ "$0" == "bash" ]; then
 	JDK_LOCAL="$(mktemp -d)"
 	rmdir ${JDK_LOCAL}
 	JDK_USER=/dev/null
-	JSH_GITHUB_PROTOCOL="${JSH_GITHUB_PROTOCOL:-https}"
+	JSH_LAUNCHER_GITHUB_PROTOCOL="${JSH_LAUNCHER_GITHUB_PROTOCOL:-https}"
 else
 	JDK_LOCAL="$(dirname $0)/local/jdk/default"
 	JDK_USER="${JSH_USER_JDK:-${HOME}/.slime/jdk/default}"
@@ -158,7 +158,7 @@ fi
 
 if [ "$0" == "bash" ]; then
 	JSH_NETWORK_ARGUMENTS="${PROXY_HOST_ARGUMENT} ${PROXY_PORT_ARGUMENT} ${JSH_LOADER_USER_ARGUMENT} ${JSH_LOADER_PASSWORD_ARGUMENT}"
-	${JRUNSCRIPT} ${JSH_NETWORK_ARGUMENTS} -e "load('${JSH_GITHUB_PROTOCOL}://raw.githubusercontent.com/davidpcaldwell/slime/master/rhino/jrunscript/api.js?jsh')" "$@"
+	${JRUNSCRIPT} ${JSH_NETWORK_ARGUMENTS} -e "load('${JSH_LAUNCHER_GITHUB_PROTOCOL}://raw.githubusercontent.com/davidpcaldwell/slime/master/rhino/jrunscript/api.js?jsh')" "$@"
 else
 	${JRUNSCRIPT} $(dirname $0)/rhino/jrunscript/api.js jsh "$@"
 fi

@@ -314,7 +314,7 @@ public class Code {
 		}
 
 		static Loader create(final java.net.URL url, Enumerator enumerator) {
-			return new UrlBased(url, enumerator, null);
+			return new UrlBased(url, enumerator, null, null);
 		}
 
 		//	TODO
@@ -335,7 +335,7 @@ public class Code {
 		}
 
 		public static Loader create(final java.net.URL url) {
-			return new UrlBased(url, null, null);
+			return create(url, null);
 		}
 
 		public static Loader bitbucketApiVersionOne(URL url) {
@@ -972,14 +972,19 @@ public class Code {
 			private HttpConnector connector;
 			private Locator classes;
 
-			UrlBased(final java.net.URL url, Enumerator enumerator, HttpConnector connector) {
+			UrlBased(final java.net.URL url, Enumerator enumerator, HttpConnector connector, URLStreamHandlerFactory urlConnector) {
 				//	TODO	could this.url be replaced by calls to the created classes object?
 				this.url = url;
 				this.enumerator = enumerator;
 				this.connector = connector;
+				final URLClassLoader delegate = (urlConnector != null)
+					? new URLClassLoader(new java.net.URL[] { url }, new URLClassLoader(new java.net.URL[]{}).getParent(), urlConnector)
+					: new URLClassLoader(new java.net.URL[] { url })
+				;
+				if (url.getProtocol().startsWith("http") && System.getProperty("jsh.loader.user") != null && urlConnector == null)  {
+					throw new RuntimeException("No authorization defined for class loader for " + url);
+				}
 				this.classes = new Locator() {
-					private java.net.URLClassLoader delegate = new java.net.URLClassLoader(new java.net.URL[] {url});
-
 					@Override public URL getResource(String path) {
 						return delegate.getResource(path);
 					}
