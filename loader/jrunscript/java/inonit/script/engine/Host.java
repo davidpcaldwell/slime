@@ -68,6 +68,7 @@ public class Host {
 	}
 
 	public void add(Code.Loader.Resource script) {
+		if (script == null) throw new NullPointerException("Attempt to add null script.");
 		scripts.add(script);
 	}
 
