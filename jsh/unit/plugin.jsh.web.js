@@ -460,7 +460,7 @@ function defineJshUnitMock($set,jsh,Packages) {
 								return b.current;
 							})[0];
 							var at = repository.directory.getRelativePath(path);
-							Packages.java.lang.System.err.println("Checking: " + at);
+							if (false) Packages.java.lang.System.err.println("Checking: " + at);
 							if (at.file) throw new Error();
 							if (!at.directory) return {
 								status: { code: 404 },

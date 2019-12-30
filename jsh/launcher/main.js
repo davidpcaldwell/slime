@@ -262,10 +262,13 @@ for (var i=0; i<$api.arguments.length; i++) {
 	command.argument($api.arguments[i]);
 }
 
-//	TODO	try to figure out a way to get rid of HTTP property passthrough; used for testing of HTTP-based launch
-//			from Bitbucket
+//	TODO	try to figure out a way to get rid of HTTP property passthrough; used for testing of HTTP-based launch from GitHub
 var passthrough = ["http.proxyHost","http.proxyPort","jsh.loader.user","jsh.loader.password"];
+var noProxy = $api.slime.settings.get("jsh.loader.noproxy");
+$api.debug("noProxy = " + noProxy);
 for (var i=0; i<passthrough.length; i++) {
+	$api.debug("property = " + passthrough[i] + " value=" + Packages.java.lang.System.getProperty(passthrough[i]));
+	if (noProxy && passthrough[i].startsWith("http.")) continue;
 	if (Packages.java.lang.System.getProperty(passthrough[i])) {
 		command.systemProperty(passthrough[i], Packages.java.lang.System.getProperty(passthrough[i]));
 	}
