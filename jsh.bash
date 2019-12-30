@@ -21,6 +21,7 @@ if [ "$0" == "bash" ]; then
 	JDK_LOCAL="$(mktemp -d)"
 	rmdir ${JDK_LOCAL}
 	JDK_USER=/dev/null
+	JSH_GITHUB_PROTOCOL="${JSH_GITHUB_PROTOCOL:-https}"
 else
 	JDK_LOCAL="$(dirname $0)/local/jdk/default"
 	JDK_USER="${JSH_USER_JDK:-${HOME}/.slime/jdk/default}"
@@ -147,8 +148,17 @@ if [ -n "${JSH_HTTP_PROXY_PORT}" ]; then
 	PROXY_PORT_ARGUMENT="-Dhttp.proxyPort=${JSH_HTTP_PROXY_PORT}"
 fi
 
+if [ -n "${JSH_LOADER_USER}" ]; then
+	JSH_LOADER_USER_ARGUMENT="-Djsh.loader.user=${JSH_LOADER_USER}"
+fi
+
+if [ -n "${JSH_LOADER_PASSWORD}" ]; then
+	JSH_LOADER_PASSWORD_ARGUMENT="-Djsh.loader.password=${JSH_LOADER_PASSWORD}"
+fi
+
 if [ "$0" == "bash" ]; then
-	${JRUNSCRIPT} ${PROXY_HOST_ARGUMENT} ${PROXY_PORT_ARGUMENT} -e "load('http://raw.githubusercontent.com/davidpcaldwell/slime/master/rhino/jrunscript/api.js?jsh')" "$@"
+	JSH_NETWORK_ARGUMENTS="${PROXY_HOST_ARGUMENT} ${PROXY_PORT_ARGUMENT} ${JSH_LOADER_USER_ARGUMENT} ${JSH_LOADER_PASSWORD_ARGUMENT}"
+	${JRUNSCRIPT} ${JSH_NETWORK_ARGUMENTS} -e "load('${JSH_GITHUB_PROTOCOL}://raw.githubusercontent.com/davidpcaldwell/slime/master/rhino/jrunscript/api.js?jsh')" "$@"
 else
 	${JRUNSCRIPT} $(dirname $0)/rhino/jrunscript/api.js jsh "$@"
 fi

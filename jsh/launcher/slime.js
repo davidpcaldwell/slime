@@ -266,6 +266,8 @@ $api.slime = (function(was) {
 		//	TODO	should be treated as JVM-level variable
 		map("jsh.java.home", BOTH);
 
+		map("jsh.loader.noproxy", BOTH);
+
 		//	TODO	Seem to be used in loader:
 		//	Main.java:
 		//	jsh.shell.packaged
