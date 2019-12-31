@@ -26,10 +26,11 @@ public class Main {
 
 	//	TODO	refactor into locateCodeSource() method
 	private static abstract class Location {
-		static Code.Loader create(String string) {
+		static Code.Loader loader(String string) {
 			//	TODO	below can happen when looking for local/jsh/lib in remote shell
 			if (string == null) return Code.Loader.NULL;
-			if (string.startsWith("http://") || string.startsWith("https://")) {
+			String host = "raw.githubusercontent.com";
+			if (string.startsWith("http://" + host) || string.startsWith("https://" + host)) {
 				try {
 //					return Code.Loader.bitbucketApiVersionOne(new URL(string));
 					return Code.Loader.githubApi(new URL(string));
@@ -238,24 +239,6 @@ public class Main {
 			};
 		}
 
-		private Code.Loader.HttpConnector getHttpConnector() {
-			if (System.getProperty("jsh.loader.user") != null) {
-				return new Code.Loader.HttpConnector() {
-					@Override public void decorate(HttpURLConnection connection) {
-						String user = System.getProperty("jsh.loader.user");
-						String password = System.getProperty("jsh.loader.password");
-						String authorization = "Basic "
-							+ javax.xml.bind.DatatypeConverter.printBase64Binary(
-								(user + ":" + password).getBytes()
-							)
-						;
-						connection.addRequestProperty("Authorization", authorization);
-					}
-				};
-			}
-			return Code.Loader.HttpConnector.NULL;
-		}
-
 		Shell.Invocation invocation(String[] arguments) throws Shell.Invocation.CheckedException {
 			if (arguments.length == 0) {
 				throw new IllegalArgumentException("No arguments supplied; is this actually a packaged application? system properties = " + System.getProperties());
@@ -284,7 +267,8 @@ public class Main {
 								}
 
 								@Override public Code.Loader.Resource getSource() {
-									return Code.Loader.Resource.create(url, getHttpConnector());
+									//	TODO	should have GitHub-aware implementation here
+									return Code.Loader.Resource.create(url);
 	//								return Code.Loader.Resource.create(Code.Loader.URI.create(url), scriptPath, null, null, stream);
 								}
 							};
@@ -387,7 +371,7 @@ public class Main {
 		Code.Loader getLibraries() {
 			//	See jsh/launcher/main.js; this value is defined there because it is needed by launcher to start loader with Rhino
 			//	in classpath
-			return Location.create(System.getProperty("jsh.shell.lib"));
+			return Location.loader(System.getProperty("jsh.shell.lib"));
 //			File file = new java.io.File(System.getProperty("jsh.shell.lib"));
 //			return Code.Loader.create(file);
 		}
@@ -469,7 +453,7 @@ public class Main {
 				//	TODO	eliminate the below system property by using a shell API to specify this
 				return new Built(home);
 			}
-			return new Unbuilt(Location.create(System.getProperty("jsh.shell.src")));
+			return new Unbuilt(Location.loader(System.getProperty("jsh.shell.src")));
 		}
 	}
 

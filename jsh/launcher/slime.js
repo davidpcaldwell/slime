@@ -267,6 +267,7 @@ $api.slime = (function(was) {
 		map("jsh.java.home", BOTH);
 
 		map("jsh.loader.noproxy", BOTH);
+		map("jsh.github.api.protocol", BOTH);
 
 		//	TODO	Seem to be used in loader:
 		//	Main.java:
