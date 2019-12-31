@@ -23,6 +23,26 @@ public class Code {
 	private Code() {
 	}
 
+	private static URLConnection openBasicAuthConnection(URL url, String user, String password) throws IOException {
+		final URLConnection connection = url.openConnection();
+		String authorization = "Basic "
+			+ javax.xml.bind.DatatypeConverter.printBase64Binary(
+				(user + ":" + password).getBytes()
+			)
+		;
+		connection.addRequestProperty("Authorization", authorization);
+		return connection;
+	}
+
+	private static URLConnection openConnection(URL url) throws IOException {
+		boolean isGithub = url.getAuthority().equals("raw.githubusercontent.com") || url.getAuthority().equals("api.github.com");
+		if (isGithub && System.getProperty("jsh.loader.user") != null) {
+			return openBasicAuthConnection(url, System.getProperty("jsh.loader.user"), System.getProperty("jsh.loader.password"));
+		} else {
+			return url.openConnection();
+		}
+	}
+
 	/**
 	 *	A class provided by Loader objects so that they can be used to create class path elements. The
 	 *	{@link Locator#getResource getResource()} method has the same semantics as the <code>ClassLoader.getResource()</code>
@@ -253,19 +273,6 @@ public class Code {
 					}
 				};
 			}
-
-			public static Resource create(java.net.URL url, UrlBased.HttpConnector connector) {
-				try {
-					URLConnection connection = url.openConnection();
-					if (connector != null && connection instanceof HttpURLConnection) {
-						connector.decorate((HttpURLConnection)connection);
-					}
-					return create(url, connection);
-				} catch (IOException e) {
-					//	TODO	is this the only way to test whether the URL is available?
-					return null;
-				}
-			}
 		}
 
 		public static Loader NULL = new Loader() {
@@ -314,7 +321,7 @@ public class Code {
 		}
 
 		static Loader create(final java.net.URL url, Enumerator enumerator) {
-			return new UrlBased(url, enumerator, null, null);
+			return new UrlBased(url, enumerator);
 		}
 
 		//	TODO
@@ -596,6 +603,10 @@ public class Code {
 			private static class TerribleGithubJsonParser {
 				static abstract class JsonValue {}
 
+				static class JsonNull extends JsonValue {
+					static final JsonNull INSTANCE = new JsonNull();
+				}
+
 				static class JsonPrimitive extends JsonValue {
 					static JsonPrimitive TRUE = new JsonPrimitive(true);
 					static JsonPrimitive FALSE = new JsonPrimitive(false);
@@ -699,9 +710,20 @@ public class Code {
 				}
 
 				private JsonPrimitive parseBoolean(State json) {
-					if (json.startsWith("true")) return JsonPrimitive.TRUE;
-					if (json.startsWith("false")) return JsonPrimitive.FALSE;
+					if (json.startsWith("true")) {
+						json.consume("true");
+						return JsonPrimitive.TRUE;
+					}
+					if (json.startsWith("false")) {
+						json.consume("false");
+						return JsonPrimitive.FALSE;
+					}
 					throw new RuntimeException();
+				}
+
+				private JsonNull parseNull(State json) {
+					json.consume("null");
+					return JsonNull.INSTANCE;
 				}
 
 				private JsonPrimitive parseNumber(State json) {
@@ -765,6 +787,8 @@ public class Code {
 						return parseArray(json);
 					} else if (json.startsWith("{")) {
 						return parseObject(json);
+					} else if (json.startsWith("null")) {
+						return parseNull(json);
 					} else if (json.startsWith("true") || json.startsWith("false")) {
 						return parseBoolean(json);
 					} else if (json.startsWithDigit()) {
@@ -791,8 +815,9 @@ public class Code {
 					@Override public String[] list(String prefix) {
 						//System.err.println("path = " + path + " tokens=" + Arrays.asList(tokens));
 						try {
-							URL url = new java.net.URL("http://api.github.com/repos/" + user + "/" + repo + "/contents/" + prefix);
-							String s = new inonit.script.runtime.io.Streams().readString(url.openConnection().getInputStream());
+							String protocol = System.getProperty("jsh.github.api.protocol", "https");
+							URL url = new java.net.URL(protocol + "://api.github.com/repos/" + user + "/" + repo + "/contents/" + prefix);
+							String s = new inonit.script.runtime.io.Streams().readString(openConnection(url).getInputStream());
 							//System.err.println("contents of " + prefix + " = " + s + " from " + url);
 							TerribleGithubJsonParser parser = new TerribleGithubJsonParser();
 							TerribleGithubJsonParser.JsonValue value = parser.parse(s);
@@ -908,15 +933,6 @@ public class Code {
 			public abstract String[] list(String prefix);
 		}
 
-		public static abstract class HttpConnector {
-			public abstract void decorate(HttpURLConnection connection);
-
-			public static final HttpConnector NULL = new HttpConnector() {
-				@Override public void decorate(HttpURLConnection connection) {
-				}
-			};
-		}
-
 		public abstract Resource getFile(String path) throws IOException;
 		public abstract Enumerator getEnumerator();
 		public abstract Locator getLocator();
@@ -966,24 +982,49 @@ public class Code {
 			};
 		}
 
+		private static class MyUrlClassLoader extends URLClassLoader {
+			private URL url;
+
+			MyUrlClassLoader(URL url) {
+				super(new URL[] { url });
+				this.url = url;
+			}
+
+			@Override public URL findResource(String name) {
+				if (System.getProperty("jsh.loader.user") != null) {
+					try {
+						URL was = new URL(this.url, name);
+						try {
+							final URLConnection connection = openBasicAuthConnection(was, System.getProperty("jsh.loader.user"), System.getProperty("jsh.loader.password"));
+							HttpURLConnection h = (HttpURLConnection)connection;
+							int code = h.getResponseCode();
+							if (code == 404) return null;
+							return new URL(this.url, name, new URLStreamHandler() {
+								@Override protected URLConnection openConnection(URL u) throws IOException {
+									return connection;
+								}
+							});
+						} catch (IOException e) {
+							return null;
+						}
+					} catch (MalformedURLException e) {
+						throw new RuntimeException(e);
+					}
+				}
+				return super.findResource(name);
+			}
+		}
+
 		private static class UrlBased extends Loader {
 			private java.net.URL url;
 			private Enumerator enumerator;
-			private HttpConnector connector;
 			private Locator classes;
 
-			UrlBased(final java.net.URL url, Enumerator enumerator, HttpConnector connector, URLStreamHandlerFactory urlConnector) {
+			UrlBased(final java.net.URL url, Enumerator enumerator) {
 				//	TODO	could this.url be replaced by calls to the created classes object?
 				this.url = url;
 				this.enumerator = enumerator;
-				this.connector = connector;
-				final URLClassLoader delegate = (urlConnector != null)
-					? new URLClassLoader(new java.net.URL[] { url }, new URLClassLoader(new java.net.URL[]{}).getParent(), urlConnector)
-					: new URLClassLoader(new java.net.URL[] { url })
-				;
-				if (url.getProtocol().startsWith("http") && System.getProperty("jsh.loader.user") != null && urlConnector == null)  {
-					throw new RuntimeException("No authorization defined for class loader for " + url);
-				}
+				final URLClassLoader delegate = new MyUrlClassLoader(url);
 				this.classes = new Locator() {
 					@Override public URL getResource(String path) {
 						return delegate.getResource(path);
@@ -998,7 +1039,7 @@ public class Code {
 			public Resource getFile(String path) throws IOException {
 				URL url = classes.getResource(path);
 				if (url == null) return null;
-				return Resource.create(url, connector);
+				return Resource.create(url);
 			}
 
 			public Enumerator getEnumerator() {
