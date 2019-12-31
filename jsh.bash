@@ -140,24 +140,19 @@ fi
 #			dynamically, possibly using an environment variable provided here
 export PATH="$(dirname ${JRUNSCRIPT}):${PATH}"
 
-if [ -n "${JSH_HTTP_PROXY_HOST}" ]; then
-	PROXY_HOST_ARGUMENT="-Dhttp.proxyHost=${JSH_HTTP_PROXY_HOST}"
-fi
+javaSystemPropertyArgument() {
+	if [ -n "$2" ]; then
+		echo "-D$1=$2"
+	fi
+}
 
-if [ -n "${JSH_HTTP_PROXY_PORT}" ]; then
-	PROXY_PORT_ARGUMENT="-Dhttp.proxyPort=${JSH_HTTP_PROXY_PORT}"
-fi
-
-if [ -n "${JSH_LOADER_USER}" ]; then
-	JSH_LOADER_USER_ARGUMENT="-Djsh.loader.user=${JSH_LOADER_USER}"
-fi
-
-if [ -n "${JSH_LOADER_PASSWORD}" ]; then
-	JSH_LOADER_PASSWORD_ARGUMENT="-Djsh.loader.password=${JSH_LOADER_PASSWORD}"
-fi
+PROXY_HOST_ARGUMENT=$(javaSystemPropertyArgument http.proxyHost ${JSH_HTTP_PROXY_HOST})
+PROXY_PORT_ARGUMENT=$(javaSystemPropertyArgument http.proxyPort ${JSH_HTTP_PROXY_PORT})
+JSH_GITHUB_USER_ARGUMENT=$(javaSystemPropertyArgument jsh.github.user ${JSH_GITHUB_USER})
+JSH_GITHUB_PASSWORD_ARGUMENT=$(javaSystemPropertyArgument jsh.github.password ${JSH_GITHUB_PASSWORD})
 
 if [ "$0" == "bash" ]; then
-	JSH_NETWORK_ARGUMENTS="${PROXY_HOST_ARGUMENT} ${PROXY_PORT_ARGUMENT} ${JSH_LOADER_USER_ARGUMENT} ${JSH_LOADER_PASSWORD_ARGUMENT}"
+	JSH_NETWORK_ARGUMENTS="${PROXY_HOST_ARGUMENT} ${PROXY_PORT_ARGUMENT} ${JSH_GITHUB_USER_ARGUMENT} ${JSH_GITHUB_PASSWORD_ARGUMENT}"
 	${JRUNSCRIPT} ${JSH_NETWORK_ARGUMENTS} -e "load('${JSH_LAUNCHER_GITHUB_PROTOCOL}://raw.githubusercontent.com/davidpcaldwell/slime/master/rhino/jrunscript/api.js?jsh')" "$@"
 else
 	${JRUNSCRIPT} $(dirname $0)/rhino/jrunscript/api.js jsh "$@"

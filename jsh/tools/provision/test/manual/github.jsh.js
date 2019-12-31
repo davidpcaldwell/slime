@@ -56,14 +56,14 @@ jsh.shell.console(
 	+ " bash -s " + "http://raw.githubusercontent.com/davidpcaldwell/slime/master/jsh/test/jsh-data.jsh.js"
 );
 jsh.shell.console("");
-jsh.shell.console("Test launcher with mock GitHub, loader with real GitHub:");
+jsh.shell.console("Test launcher with mock GitHub, loader with GitHub:");
 jsh.shell.console(
 	getCommand().join(" ")
 	+ " |"
 	+ " env"
 	+ " JSH_HTTP_PROXY_HOST=127.0.0.1 JSH_HTTP_PROXY_PORT=" + www.port + " JSH_LAUNCHER_GITHUB_PROTOCOL=http"
 	+ " JSH_SHELL_SRC=https://raw.githubusercontent.com/davidpcaldwell/slime/master/"
-	+ " " + toEnvArguments({ JSH_LOADER_USER: githubUser, JSH_LOADER_PASSWORD: githubToken, JSH_LOADER_NOPROXY: "true" }).join(" ")
+	+ " " + toEnvArguments({ JSH_GITHUB_USER: githubUser, JSH_GITHUB_PASSWORD: githubToken, JSH_LOADER_NOPROXY: "true" }).join(" ")
 	+ " bash -s https://raw.githubusercontent.com/davidpcaldwell/slime/master/jsh/test/jsh-data.jsh.js"
 );
 jsh.shell.console("");
