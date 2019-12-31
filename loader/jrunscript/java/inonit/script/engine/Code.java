@@ -23,19 +23,6 @@ public class Code {
 	private Code() {
 	}
 
-	//	TODO	The next two methods are somewhat tangled and probably could be encapsulated in URLStreamHandler objects
-
-	private static URLConnection openBasicAuthConnection(URL url, String user, String password) throws IOException {
-		final URLConnection connection = url.openConnection();
-		String authorization = "Basic "
-			+ javax.xml.bind.DatatypeConverter.printBase64Binary(
-				(user + ":" + password).getBytes()
-			)
-		;
-		connection.addRequestProperty("Authorization", authorization);
-		return connection;
-	}
-
 	/**
 	 *	A class provided by Loader objects so that they can be used to create class path elements. The
 	 *	{@link Locator#getResource getResource()} method has the same semantics as the <code>ClassLoader.getResource()</code>
@@ -48,6 +35,17 @@ public class Code {
 	public static abstract class Loader {
 		public static class Github {
 			public static final Github INSTANCE = new Github();
+
+			private static URLConnection openBasicAuthConnection(URL url, String user, String password) throws IOException {
+				final URLConnection connection = url.openConnection();
+				String authorization = "Basic "
+					+ javax.xml.bind.DatatypeConverter.printBase64Binary(
+						(user + ":" + password).getBytes()
+					)
+				;
+				connection.addRequestProperty("Authorization", authorization);
+				return connection;
+			}
 
 			private URLStreamHandler handler = new URLStreamHandler() {
 				@Override protected URLConnection openConnection(URL u) throws IOException {
@@ -68,6 +66,7 @@ public class Code {
 			}
 
 			public boolean hosts(URL url) {
+				if (url.getAuthority() == null) return false;
 				return url.getAuthority().equals("raw.githubusercontent.com") || url.getAuthority().equals("api.github.com");
 			}
 
@@ -1020,19 +1019,24 @@ public class Code {
 			}
 
 			@Override public URL findResource(String name) {
-				if (System.getProperty("jsh.github.user") != null) {
+				Loader.Github github = Loader.Github.INSTANCE;
+				if (github.hosts(this.url)) {
 					try {
-						URL was = new URL(this.url, name);
+						URL url = new URL(this.url, name, github.getUrlStreamHandler());
 						try {
-							final URLConnection connection = openBasicAuthConnection(was, System.getProperty("jsh.github.user"), System.getProperty("jsh.github.password"));
+							final URLConnection connection = url.openConnection();
 							HttpURLConnection h = (HttpURLConnection)connection;
-							int code = h.getResponseCode();
-							if (code == 404) return null;
-							return new URL(this.url, name, new URLStreamHandler() {
-								@Override protected URLConnection openConnection(URL u) throws IOException {
-									return connection;
-								}
-							});
+							try {
+								int code = h.getResponseCode();
+								if (code == 404) return null;
+								return new URL(this.url, name, new URLStreamHandler() {
+									@Override protected URLConnection openConnection(URL u) throws IOException {
+										return connection;
+									}
+								});
+							} catch (IOException e) {
+								return null;
+							}
 						} catch (IOException e) {
 							return null;
 						}
