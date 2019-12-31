@@ -36,15 +36,6 @@ public class Code {
 		return connection;
 	}
 
-	private static URLConnection openConnection(URL url) throws IOException {
-		boolean isGithub = Loader.Github.INSTANCE.hosts(url);
-		if (isGithub && System.getProperty("jsh.github.user") != null) {
-			return openBasicAuthConnection(url, System.getProperty("jsh.github.user"), System.getProperty("jsh.github.password"));
-		} else {
-			return url.openConnection();
-		}
-	}
-
 	/**
 	 *	A class provided by Loader objects so that they can be used to create class path elements. The
 	 *	{@link Locator#getResource getResource()} method has the same semantics as the <code>ClassLoader.getResource()</code>
@@ -848,8 +839,14 @@ public class Code {
 						//System.err.println("path = " + path + " tokens=" + Arrays.asList(tokens));
 						try {
 							String protocol = System.getProperty("jsh.github.api.protocol", "https");
-							URL url = new java.net.URL(protocol + "://api.github.com/repos/" + user + "/" + repo + "/contents/" + prefix);
-							String s = new inonit.script.runtime.io.Streams().readString(openConnection(url).getInputStream());
+							URL url = new java.net.URL(
+								protocol,
+								"api.github.com",
+								-1,
+								"/repos/" + user + "/" + repo + "/contents/" + prefix,
+								Loader.Github.INSTANCE.getUrlStreamHandler()
+							);
+							String s = new inonit.script.runtime.io.Streams().readString(url.openConnection().getInputStream());
 							//System.err.println("contents of " + prefix + " = " + s + " from " + url);
 							TerribleGithubJsonParser parser = new TerribleGithubJsonParser();
 							TerribleGithubJsonParser.JsonValue value = parser.parse(s);
