@@ -436,12 +436,16 @@ function defineJshUnitMock($set,jsh,Packages) {
 							return b.current;
 						})[0];
 						if (branch.name == ref) {
-							return {
+							var file = repository.directory.getFile(match[4])
+							return (file) ? {
 								status: { code: 200 },
 								body: {
 									type: "text/plain",
-									string: repository.directory.getFile(match[4]).read(String)
+									string: file.read(String)
 								}
+							} : {
+								//	TODO	could check actual GitHub response to better simulate this
+								status: { code: 404 }
 							}
 						} else {
 							throw new Error("Unsupported: branch and ref different.");
