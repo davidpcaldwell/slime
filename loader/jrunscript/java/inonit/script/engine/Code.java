@@ -23,6 +23,8 @@ public class Code {
 	private Code() {
 	}
 
+	//	TODO	The next two methods are somewhat tangled and probably could be encapsulated in URLStreamHandler objects
+
 	private static URLConnection openBasicAuthConnection(URL url, String user, String password) throws IOException {
 		final URLConnection connection = url.openConnection();
 		String authorization = "Basic "
@@ -35,7 +37,7 @@ public class Code {
 	}
 
 	private static URLConnection openConnection(URL url) throws IOException {
-		boolean isGithub = url.getAuthority().equals("raw.githubusercontent.com") || url.getAuthority().equals("api.github.com");
+		boolean isGithub = Loader.Github.INSTANCE.hosts(url);
 		if (isGithub && System.getProperty("jsh.loader.user") != null) {
 			return openBasicAuthConnection(url, System.getProperty("jsh.loader.user"), System.getProperty("jsh.loader.password"));
 		} else {
@@ -53,6 +55,36 @@ public class Code {
 	}
 
 	public static abstract class Loader {
+		public static class Github {
+			public static final Github INSTANCE = new Github();
+
+			private URLStreamHandler handler = new URLStreamHandler() {
+				@Override protected URLConnection openConnection(URL u) throws IOException {
+					URL withoutStreamHandler = new URL(u.toExternalForm());
+					if (System.getProperty("jsh.loader.user") != null) {
+						return openBasicAuthConnection(
+							withoutStreamHandler,
+							System.getProperty("jsh.loader.user"),
+							System.getProperty("jsh.loader.password")
+						);
+					} else {
+						return withoutStreamHandler.openConnection();
+					}
+				}
+			};
+
+			private Github() {
+			}
+
+			public boolean hosts(URL url) {
+				return url.getAuthority().equals("raw.githubusercontent.com") || url.getAuthority().equals("api.github.com");
+			}
+
+			public URLStreamHandler getUrlStreamHandler() {
+				return this.handler;
+			}
+		}
+
 		public static class URI {
 			private static java.net.URI string(String s) {
 				try {

@@ -252,7 +252,11 @@ public class Main {
 			final String[] scriptArguments = args.toArray(new String[0]);
 			if (scriptPath.startsWith("http://") || scriptPath.startsWith("https://")) {
 				try {
-					final java.net.URL url = new java.net.URL(scriptPath);
+					URL parsed = new URL(scriptPath);
+					final URL url = Code.Loader.Github.INSTANCE.hosts(parsed)
+						? new URL(parsed.getProtocol(), parsed.getHost(), parsed.getPort(), parsed.getFile(), Code.Loader.Github.INSTANCE.getUrlStreamHandler())
+						: parsed
+					;
 					return new Shell.Invocation() {
 						public Shell.Script getScript() {
 							return new Shell.Script() {
@@ -267,7 +271,6 @@ public class Main {
 								}
 
 								@Override public Code.Loader.Resource getSource() {
-									//	TODO	should have GitHub-aware implementation here
 									return Code.Loader.Resource.create(url);
 	//								return Code.Loader.Resource.create(Code.Loader.URI.create(url), scriptPath, null, null, stream);
 								}
