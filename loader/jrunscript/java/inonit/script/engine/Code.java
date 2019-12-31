@@ -38,8 +38,8 @@ public class Code {
 
 	private static URLConnection openConnection(URL url) throws IOException {
 		boolean isGithub = Loader.Github.INSTANCE.hosts(url);
-		if (isGithub && System.getProperty("jsh.loader.user") != null) {
-			return openBasicAuthConnection(url, System.getProperty("jsh.loader.user"), System.getProperty("jsh.loader.password"));
+		if (isGithub && System.getProperty("jsh.github.user") != null) {
+			return openBasicAuthConnection(url, System.getProperty("jsh.github.user"), System.getProperty("jsh.github.password"));
 		} else {
 			return url.openConnection();
 		}
@@ -61,11 +61,11 @@ public class Code {
 			private URLStreamHandler handler = new URLStreamHandler() {
 				@Override protected URLConnection openConnection(URL u) throws IOException {
 					URL withoutStreamHandler = new URL(u.toExternalForm());
-					if (System.getProperty("jsh.loader.user") != null) {
+					if (System.getProperty("jsh.github.user") != null) {
 						return openBasicAuthConnection(
 							withoutStreamHandler,
-							System.getProperty("jsh.loader.user"),
-							System.getProperty("jsh.loader.password")
+							System.getProperty("jsh.github.user"),
+							System.getProperty("jsh.github.password")
 						);
 					} else {
 						return withoutStreamHandler.openConnection();
@@ -1023,11 +1023,11 @@ public class Code {
 			}
 
 			@Override public URL findResource(String name) {
-				if (System.getProperty("jsh.loader.user") != null) {
+				if (System.getProperty("jsh.github.user") != null) {
 					try {
 						URL was = new URL(this.url, name);
 						try {
-							final URLConnection connection = openBasicAuthConnection(was, System.getProperty("jsh.loader.user"), System.getProperty("jsh.loader.password"));
+							final URLConnection connection = openBasicAuthConnection(was, System.getProperty("jsh.github.user"), System.getProperty("jsh.github.password"));
 							HttpURLConnection h = (HttpURLConnection)connection;
 							int code = h.getResponseCode();
 							if (code == 404) return null;

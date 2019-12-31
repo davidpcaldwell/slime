@@ -263,7 +263,7 @@ for (var i=0; i<$api.arguments.length; i++) {
 }
 
 //	TODO	try to figure out a way to get rid of HTTP property passthrough; used for testing of HTTP-based launch from GitHub
-var passthrough = ["http.proxyHost","http.proxyPort","jsh.loader.user","jsh.loader.password"];
+var passthrough = ["http.proxyHost","http.proxyPort","jsh.github.user","jsh.github.password"];
 var noProxy = $api.slime.settings.get("jsh.loader.noproxy");
 $api.debug("noProxy = " + noProxy);
 for (var i=0; i<passthrough.length; i++) {
