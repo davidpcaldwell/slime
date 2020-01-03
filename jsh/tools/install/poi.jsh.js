@@ -25,6 +25,9 @@ var VERSIONS = {
 	},
 	"4.0.0": {
 		url: "https://archive.apache.org/dist/poi/release/bin/poi-bin-4.0.0-20180907.tar.gz"
+	},
+	"4.1.1": {
+		url: "https://archive.apache.org/dist/poi/release/bin/poi-bin-4.1.1-20191023.tar.gz"
 	}
 };
 
