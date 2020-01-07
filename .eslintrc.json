@@ -7,26 +7,48 @@
 		"no-mixed-spaces-and-tabs": "error",
 
 		"indent": ["warn", "tab"],
+		"quotes": ["warn", "double"],
+		"no-unused-vars": "warn",
+		"no-extra-semi": "warn",
+		"no-empty": "warn",
+		"no-redeclare": "warn",
+		"no-debugger": "warn",
+		"no-cond-assign": "warn",
+		"getter-return": "warn",
+		"no-ex-assign": "warn",
+		"no-prototype-builtins": "warn",
+		"no-shadow-restricted-names": "warn",
 
-		"quotes": ["off", "double"],
-		"no-unused-vars": "off",
+		//	things like if (false), used often to disable code while retaining syntax highlighting, etc.
 		"no-constant-condition": "off",
-		"no-extra-semi": "off",
-		"no-redeclare": "off",
-		"no-useless-escape": "off",
-		"no-debugger": "off",
-		"no-unreachable": "off",
-		"no-empty": "off",
-		"no-extra-boolean-cast": "off",
-		"no-cond-assign": "off",
-		"no-self-assign": "off",
-		"no-prototype-builtins": "off",
-		"getter-return": "off",
-		"no-with": "off",
+
+		//	disallows references to undefined variables; currently would break everything with $context/$exports/$loader, so turning
+		//	off
+		"no-undef": "off",
+
+		//	Restricts comparison of typeof(x) to other typeofs or correct string literals (and optionally other variables).
+		//	Would break E4X-aware code, so leaving off
 		"valid-typeof": "off",
-		"no-shadow-restricted-names": "off",
-		"no-ex-assign": "off",
-		"no-global-assign": "off",
-		"no-undef": "off"
+
+		//	Disallows 'with' statements, currently used by loader
+		"no-with": "off",
+
+		//	Below are recommended options needing evaluation, possibly by flagging all instances and examining to see why they're
+		//	being broken
+
+		//	Disallows escape sequences in strings, RegExp, template literals
+		"no-useless-escape": "off",
+
+		//	Disallows unreachable code
+		"no-unreachable": "off",
+
+		//	Disallows cast to Boolean in if / while / do-while / for
+		"no-extra-boolean-cast": "off",
+
+		//	Disallows assigning value to itself
+		"no-self-assign": "off",
+
+		//	Disallows assigning global variables
+		"no-global-assign": "off"
 	}
 }
