@@ -1,0 +1,46 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
+<head>
+	<title>__TITLE__</title>
+	<link href="../../..//loader/api/api.css" rel="stylesheet" type="text/css" />
+	<script src="../../..//loader/api/api.js"></script>
+	<script>
+		//	TODO	CORS
+		document.domain = document.domain;
+	</script>
+</head>
+<body>
+	<div>__DESCRIPTION__</div>
+	<div>
+		<h1>Context</h1>
+		<ul>
+		</ul>
+	</div>
+	<script type="application/x.jsapi#initialize">
+		scope.api = jsh.tools.github;
+	</script>
+	<div>
+		<h1>Exports</h1>
+		<ul>
+			<li class="constructor">
+				<div class="name">Session</div>
+				<span>__DESCRIPTION__</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+					</ol>
+				</div>
+				<div class="instances">
+					<div class="label">Instances</div>
+					<span class="type">__TYPE__</span>
+					<span>__DESCRIPTION__</span>
+				</div>
+				<script type="application/x.jsapi#tests">
+					verify(api).evaluate.property("Session").is.type("function");
+					verify(api).evaluate.property("Foo").is.type("undefined");
+				</script>
+			</li>
+		</ul>
+	</div>
+</body>
+</html>

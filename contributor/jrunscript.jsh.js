@@ -169,6 +169,9 @@ suite.add("jrunscript/tools/hg", new jsh.unit.html.Part({
 if (!parameters.options.issue138) suite.add("jrunscript/tools/git", new jsh.unit.html.Part({
 	pathname: SRC.getRelativePath("rhino/tools/git/api.html")
 }));
+suite.add("jrunscript/tools/github", new jsh.unit.html.Part({
+	pathname: SRC.getRelativePath("rhino/tools/github/api.html")
+}));
 suite.add("jrunscript/tools/node", new jsh.unit.html.Part({
 	pathname: SRC.getRelativePath("rhino/tools/node/api.html")
 }));
