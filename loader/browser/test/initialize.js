@@ -325,33 +325,33 @@ document.domain = document.domain;
 							return this.string;
 						}
 					});
-// 					var args = [];
-// 					args.push(function() {
-// 						window.console.log("Resolving", executor, arguments[0]);
-// 						var rv = resolved.apply(this,arguments);
-// 						end();
-// 						return rv;
-// 					});
-// 					if (rejected) args.push(function() {
-// 						window.console.log("Rejecting", executor, arguments[0]);
-// 						var rv = rejected.apply(this,arguments);
-// 						end();
-// 						return rv;
-// 					});
-// 					var rv = delegate.then.apply(delegate,args);
-// 					if (rv instanceof was) {
-// 						rv = new Promise({
-// 							delegate: rv,
-// 							track: true,
-// 							string: "delegate " + rv,
-// 							toString: function() {
-// 								return this.string;
-// 							}
-// 						});
-// 					} else {
-// 						throw new Error("Should always be a Promise");
-// 					}
-// 					return rv;
+					// var args = [];
+					// args.push(function() {
+					// 	window.console.log("Resolving", executor, arguments[0]);
+					// 	var rv = resolved.apply(this,arguments);
+					// 	end();
+					// 	return rv;
+					// });
+					// if (rejected) args.push(function() {
+					// 	window.console.log("Rejecting", executor, arguments[0]);
+					// 	var rv = rejected.apply(this,arguments);
+					// 	end();
+					// 	return rv;
+					// });
+					// var rv = delegate.then.apply(delegate,args);
+					// if (rv instanceof was) {
+					// 	rv = new Promise({
+					// 		delegate: rv,
+					// 		track: true,
+					// 		string: "delegate " + rv,
+					// 		toString: function() {
+					// 			return this.string;
+					// 		}
+					// 	});
+					// } else {
+					// 	throw new Error("Should always be a Promise");
+					// }
+					// return rv;
 				};
 
 				this.catch = function(rejected) {

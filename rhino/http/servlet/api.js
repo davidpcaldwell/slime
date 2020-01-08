@@ -171,17 +171,17 @@ var Loader = (function() {
 					// 		});
 					// 	}
 					// 	return new bootstrap.io.Resource(delegate)
-//						if (newtype) {
-//							var rv = {};
-//						}
-//						Packages.java.lang.System.err.println("newtype = " + path + " " + newtype);
-//						dResource.type = newtype;
-//						Packages.java.lang.System.err.println("dResource = " + path + " pp.type=" + dResource.type);
-//					}
-//					return dResource;
+					// 	if (newtype) {
+					// 		var rv = {};
+					// 	}
+					// 	Packages.java.lang.System.err.println("newtype = " + path + " " + newtype);
+					// 	dResource.type = newtype;
+					// 	Packages.java.lang.System.err.println("dResource = " + path + " pp.type=" + dResource.type);
+					// }
+					// return dResource;
 				}
 			}
-//			var rv = new bootstrap.io.Loader(pp);
+			// var rv = new bootstrap.io.Loader(pp);
 			var rv = new bootstrap.io.Loader(source);
 			rv.list = function(m) {
 				var path = prefix + m.path;
