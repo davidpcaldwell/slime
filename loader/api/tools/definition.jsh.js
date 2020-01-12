@@ -33,7 +33,8 @@ var templateXml = (function() {
 		parameters.options.to.parent.createDirectory({
 			exists: function(dir) {
 				return false;
-			}
+			},
+			recursive: true
 		});
 		var to = {
 			slime: jsh.file.navigate({
