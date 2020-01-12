@@ -29,6 +29,12 @@ var templateXml = (function() {
 
 	(function() {
 		var slimepath = "__SLIME__";
+		//	TODO	maybe should log message if directory is created
+		parameters.options.to.parent.createDirectory({
+			exists: function(dir) {
+				return false;
+			}
+		});
 		var to = {
 			slime: jsh.file.navigate({
 				from: parameters.options.to,

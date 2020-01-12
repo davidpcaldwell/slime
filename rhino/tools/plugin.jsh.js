@@ -145,6 +145,15 @@ plugin({
 
 plugin({
 	isReady: function() {
+		return jsh.tools;
+	},
+	load: function() {
+		jsh.tools.github = $loader.module("github/module.js");
+	}
+});
+
+plugin({
+	isReady: function() {
 		//	TODO	cannot load postgresql driver under Nashorn presently; uses E4X
 		return jsh.shell && jsh.shell.jsh && jsh.shell.jsh.lib /*&& String(Packages.java.lang.System.getProperty("jsh.engine")) == "rhino"*/;
 	},
