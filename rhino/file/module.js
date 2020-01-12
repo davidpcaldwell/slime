@@ -134,9 +134,15 @@ $exports.navigate = $api.experimental(function(p) {
 	if (from.pathname && !from.pathname.directory && from.parent) {
 		from = from.parent;
 	} else if (!from.pathname && from.parent) {
-		from = from.parent.directory;
+		if (from.parent.directory) {
+			from = from.parent.directory;
+		} else {
+			throw new Error("Required: 'from' parent directory must exist.");
+		}
 	}
 	var startsWith = function(start,under) {
+		if (!start) throw new Error("Required: start");
+		if (!under) throw new Error("Required: under");
 		return under.toString().substring(0,start.toString().length) == start.toString();
 	};
 	var common = from;
@@ -144,6 +150,7 @@ $exports.navigate = $api.experimental(function(p) {
 	while(!startsWith(common,to)) {
 		up++;
 		common = common.parent;
+		if (!common) throw new Error("No common parent: " + from + " and " + to);
 	}
 	var remaining = to.toString().substring(common.toString().length);
 	return {
