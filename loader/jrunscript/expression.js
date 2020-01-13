@@ -365,8 +365,9 @@
 						writer.write(dataOrType);
 						writer.close();
 					} else if (typeof(dataOrType) == "object" && loader.java.isJavaType(Packages.java.util.Properties)(dataOrType)) {
+						var comments = (mode && mode.comments) ? mode.comments : null;
 						var writer = writeText(mode);
-						dataOrType.store(writer.java.adapt(), null);
+						dataOrType.store(writer.java.adapt(), comments);
 						writer.close();
 					} else if (typeof(dataOrType) == "xml" && writeText) {
 						var writer = writeText(mode);
