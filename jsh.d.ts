@@ -16,11 +16,21 @@ interface jsh {
 		getopts: Function & { UNEXPECTED_OPTION_PARSER: any },
 		file: slime.jrunscript.file.File,
 		Application: any
+	};
+
+	tools: {
+		git: any,
+		node: slime.jrunscript.node.Exports
 	}
 }
 
 declare namespace jsh {
 	const http: slime.jrunscript.http.client
+
+	//	jsh-specific
+	//	Indexed access properties; see https://www.typescriptlang.org/docs/handbook/advanced-types.html#index-types
+	const tools: jsh['tools'];
+	const script: jsh['script']
 
 	//	TODO	Below probably should be defined in terms of SLIME types, like above
 	const js: jsh.js;
@@ -30,13 +40,8 @@ declare namespace jsh {
 
 	//	TODO	investigate whether to define in terms of SLIME
 	const loader: jsh.loader;
-	const tools: {
-		git: any
-	}
+
 	namespace unit {
 		const mock: slime.jsh.unit.mock
 	}
-
-	//	jsh-specific
-	const script: jsh.script
 }
