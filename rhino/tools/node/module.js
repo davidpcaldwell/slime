@@ -1,18 +1,31 @@
 //@ts-check
 
 /**
- *	@typedef {object} slime.jrunscript.node.Context
+ * @typedef {object} slime.jrunscript.node.Context
+ */
+
+/**
+ * @typedef {object} slime.jrunscript.node.Version
+ * @property {string} number
  */
 
 /**
  * @typedef {object} slime.jrunscript.node.Installation
+ * @property {slime.jrunscript.node.Version} version
+ * @property {Function} run
+ * @property {object} modules
+ * @property {object} npm
+ */
+
+/**
+ * @typedef { (p: { location: slime.jrunscript.file.Pathname, version?: string, update?: boolean } ) => slime.jrunscript.node.Installation } slime.jrunscript.node.install
  */
 
 /**
  * @typedef {object} slime.jrunscript.node.Exports
- * @property { new (p: any) => slime.jrunscript.node.Installation } Installation
+ * @property { new (o: any) => slime.jrunscript.node.Installation } Installation
  * @property {Function} at
- * @property {Function} install
+ * @property { slime.jrunscript.node.install } install
  * @property {Function} Project
  */
 
@@ -32,6 +45,9 @@ void(0);
 				return "Node installation at " + o.directory;
 			};
 
+			//	TODO	below incantation required for TypeScript
+			/** @property { slime.jrunscript.node.Version } */
+			this.version = void(0);
 			Object.defineProperty(this, "version", {
 				get: function() {
 					var string = $context.module.shell.run({
@@ -164,30 +180,34 @@ void(0);
 			})
 		};
 
-		$exports.install = $api.Events.Function(function(p,events) {
-			if (!p) p = {};
-			if (!p.version) p.version = "12.14.1";
-			var existing = $exports.at({ location: p.location });
-			var rv;
-			if (!existing || (existing.version != p.version && p.update)) {
-				if (existing) {
-					p.location.directory.remove();
+		$exports.install = $api.Events.Function(
+			/** @type { slime.jrunscript.node.install } */
+			function(p,events) {
+				if (!p) throw new TypeError();
+				if (!p.version) p.version = "12.14.1";
+				var existing = $exports.at({ location: p.location });
+				/** @type { slime.jrunscript.node.Installation } */
+				var rv;
+				if (!existing || (existing.version != p.version && p.update)) {
+					if (existing) {
+						p.location.directory.remove();
+					}
+					var version = versions[p.version];
+					$context.library.install.install({
+						url: version.url,
+						to: p.location
+					});
+					rv = new $exports.Installation({
+						directory: p.location.directory
+					});
+					events.fire("console", "Node " + rv.version + " installed.");
+				} else {
+					rv = existing;
+					events.fire("console", "Node " + existing.version + " already installed.");
 				}
-				var version = versions[p.version];
-				$context.library.install.install({
-					url: version.url,
-					to: p.location
-				});
-				rv = new $exports.Installation({
-					directory: p.location.directory
-				});
-				events.fire("console", "Node " + rv.version + " installed.");
-			} else {
-				rv = existing;
-				events.fire("console", "Node " + existing.version + " already installed.");
+				return rv;
 			}
-			return rv;
-		});
+		);
 	}
 	//@ts-ignore
 )($context,$exports)
