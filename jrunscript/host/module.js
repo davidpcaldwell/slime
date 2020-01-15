@@ -575,9 +575,9 @@ void(0);
 			};
 		};
 		$exports.Thread.Task = function(p) {
-			return function(tell) {
+			var rv = function x(tell) {
 				//	TODO	below causes TypeScript error. Unclear what this line of code does, but tests do not pass without it.
-				arguments.callee.p = p;
+				x.p = p;
 				if (tell) {
 					$exports.Thread.start({
 						call: function() {
@@ -598,6 +598,8 @@ void(0);
 					return p.call();
 				}
 			};
+			rv.p = void(0);
+			return rv;
 		};
 		$exports.Thread.map = function(array,mapper,target,p) {
 			if (!target) target = {};

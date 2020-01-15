@@ -85,7 +85,13 @@ jsh.shell.jsh({
 			jsh.shell.console("ESLint passed.");
 		}
 	}
-})
+});
+
+//	TODO	this is pretty horrendous; doesn't check for TypeScript installation in the first place; probably should convert to
+//			jsh script that can detect and handle installing TypeScript
+jsh.shell.run({
+	command: jsh.script.file.parent.parent.getFile("tsc.bash")
+});
 
 //	Runs test suite
 var timestamp = jsh.time.When.now();
