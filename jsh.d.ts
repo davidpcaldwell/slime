@@ -1,6 +1,7 @@
 interface jsh {
 	loader: any;
 	js: any;
+	java: slime.jrunscript.host.Exports;
 	document: any;
 	file: any;
 
