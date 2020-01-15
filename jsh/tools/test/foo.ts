@@ -1,13 +1,13 @@
-interface Context {
+interface TypescriptTestContext {
 	prefix: string
 }
 
-interface Exports {
+interface TypescriptTestExports {
 	foo: String
 }
 
-declare var $context : Context
-declare var $exports : Exports
+declare var $context : TypescriptTestContext
+declare var $exports : TypescriptTestExports
 
 var person : string = "Foo";
 
