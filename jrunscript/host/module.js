@@ -301,21 +301,21 @@ void(0);
 		}
 
 		var createErrorType = function(p) {
-			var rv = function(message) {
+			var f = function(message) {
 				this.message = message;
 				this.name = p.name;
 			};
-			rv.prototype = new Error();
-			rv = errors.decorate(rv);
+			f.prototype = new Error();
+			var rv = errors.decorate(rv);
 			return rv;
 		}
 		$exports.ErrorType = createErrorType;
 		$api.experimental($exports,"ErrorType");
 
-		var experimental = function(name) {
-			$exports[name] = items[name];
-			$api.experimental($exports, name);
-		};
+		// var experimental = function(name) {
+		// 	$exports[name] = items[name];
+		// 	$api.experimental($exports, name);
+		// };
 
 		var toJsArray = function(javaArray,scriptValueFactory) {
 			if (typeof(javaArray) == "undefined" || javaArray == null) throw "Required: the Java array must not be null or undefined.";
@@ -340,16 +340,16 @@ void(0);
 		};
 		$exports.toJavaArray = $api.deprecate(toJavaArray);
 
-		if ($context.globals && $context.globals.Array) {
-			Array.java = {};
-			deprecate(Array, "java");
-			//	TODO	Review whether having the second argument be required makes sense
-			Array.java.toScript = items.toJsArray;
+		// if ($context.globals && $context.globals.Array) {
+		// 	Array.java = {};
+		// 	deprecate(Array, "java");
+		// 	//	TODO	Review whether having the second argument be required makes sense
+		// 	Array.java.toScript = items.toJsArray;
 
-			Array.prototype.toJava = $api.deprecate(function(javaclass) {
-				return toJavaArray(this,javaclass);
-			});
-		}
+		// 	Array.prototype.toJava = $api.deprecate(function(javaclass) {
+		// 		return toJavaArray(this,javaclass);
+		// 	});
+		// }
 
 		//	TODO	Below seems to be some kind of elaborate error-handling attempt; it merits examination at some point
 		//var execute = function(pathname) {
@@ -389,6 +389,9 @@ void(0);
 		//	}
 		//}
 
+		/**
+		 * @constructor
+		 */
 		var Thread = function(p,factory) {
 			var synchronize = (function() {
 				//	This entire construct (synchronize, synchronize.lock) exists just to support join()
@@ -404,7 +407,8 @@ void(0);
 
 			//	TODO	replace with Java logging; currently there is no way to enable this debugging without changing this file
 			var debug = function(m) {
-				if (arguments.callee.on) {
+				//	TODO	below property could never be set in existing code
+				if (false /* arguments.callee.on */) {
 					Packages.java.lang.System.err.println(m);
 				}
 			}
@@ -446,7 +450,7 @@ void(0);
 
 			if (p && p.timeout) {
 				debug("Starting timeout thread for " + thread + " ...");
-				new arguments.callee({
+				new Thread({
 					call: function() {
 						debug(thread + ": Sleeping for " + p.timeout);
 						Packages.java.lang.Thread.sleep(p.timeout);
@@ -492,7 +496,6 @@ void(0);
 			return new Thread(p,factory);
 		}
 		$exports.Thread.run = function(p) {
-			var callee = arguments.callee;
 			var on = new function() {
 				var result = {};
 
@@ -511,7 +514,7 @@ void(0);
 				this.evaluate = function() {
 					if (result.returned) return result.returned.value;
 					if (result.threw) throw result.threw;
-					if (result.timedOut) throw callee.TIMED_OUT;
+					if (result.timedOut) throw $exports.Thread.run.TIMED_OUT;
 				}
 			};
 			var o = {};
@@ -524,13 +527,16 @@ void(0);
 			return on.evaluate();
 		};
 		//	TODO	make the below a subtype of Error
-		//	TODO	this indirection is necessary because Rhino debugger pauses when constructing new Error() if set to break on errors
-		$exports.Thread.run.__defineGetter__("TIMED_OUT", function() {
-			if (!arguments.callee.cached) {
-				arguments.callee.cached = new Error("Timed out.");
+		$exports.Thread.run.__defineGetter__("TIMED_OUT", (function() {
+			//	TODO	this indirection is necessary because Rhino debugger pauses when constructing new Error() if set to break on errors
+			var cached;
+			return function() {
+				if (!cached) {
+					cached = new Error("Timed out.");
+				}
+				return cached;
 			}
-			return arguments.callee.cached;
-		});
+		})());
 		$exports.Thread.thisSynchronize = function(f) {
 			//	TODO	deprecate when Rhino 1.7R3 released; use two-argument version of the Synchronizer constructor in a new method called
 			//			synchronize()
@@ -570,6 +576,7 @@ void(0);
 		};
 		$exports.Thread.Task = function(p) {
 			return function(tell) {
+				//	TODO	below causes TypeScript error. Unclear what this line of code does, but tests do not pass without it.
 				arguments.callee.p = p;
 				if (tell) {
 					$exports.Thread.start({
