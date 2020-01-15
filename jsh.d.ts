@@ -30,8 +30,9 @@ declare namespace jsh {
 
 	//	jsh-specific
 	//	Indexed access properties; see https://www.typescriptlang.org/docs/handbook/advanced-types.html#index-types
+	const java: jsh['java'];
 	const tools: jsh['tools'];
-	const script: jsh['script']
+	const script: jsh['script'];
 
 	//	TODO	Below probably should be defined in terms of SLIME types, like above
 	const js: jsh.js;
