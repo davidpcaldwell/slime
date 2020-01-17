@@ -97,25 +97,37 @@ plugin({
 			return new html.PartDescriptor(p);
 		};
 
-		jsh.unit.html.cli = function(p) {
-			jsh.unit.interface.create(p.suite.build(), new function() {
-				// TODO: is this redundant? Value of "chrome" should just work, right? Or is it because we want to specify instance?
-				this.view = p.view;
+		jsh.unit.html.Suite = (function(was) {
+			return function() {
+				was.apply(this,arguments);
 
-				if (p.part) {
-					var tokens = p.part.split(":");
-					var path = p.suite.getPath({
-						part: tokens[0],
-						element: tokens[1]
-					});
-					//	TODO	below seems like hack, probably can be more specific: part was found, but HTML path was not?
-					//	TODO	could also improve error reporting
-					if (path[1] === null) {
-						throw new Error("Not found: path " + p.part);
-					}
-					this.path = path;
-				}
-			});
+				//	TODO	undocumented
+				this.cli = function(p) {
+					var suite = this;
+					jsh.unit.interface.create(suite.build(), new function() {
+						// TODO: is this redundant? Value of "chrome" should just work, right? Or is it because we want to specify instance?
+						this.view = p.view;
+
+						if (p.part) {
+							var tokens = p.part.split(":");
+							var path = suite.getPath({
+								part: tokens[0],
+								element: tokens[1]
+							});
+							//	TODO	below seems like hack, probably can be more specific: part was found, but HTML path was not?
+							//	TODO	could also improve error reporting
+							if (path[1] === null) {
+								throw new Error("Not found: path " + p.part);
+							}
+							this.path = path;
+						}
+					})
+				};
+			}
+		})(jsh.unit.html.Suite);
+
+		jsh.unit.html.cli = function(p) {
+			p.suite.cli(p);
 		}
 
 		jsh.unit.html.documentation = html.documentation;
