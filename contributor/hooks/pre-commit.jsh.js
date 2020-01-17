@@ -87,8 +87,12 @@ jsh.shell.jsh({
 	}
 });
 
-//	TODO	this is pretty horrendous; doesn't check for TypeScript installation in the first place; probably should convert to
-//			jsh script that can detect and handle installing TypeScript
+if (!jsh.shell.jsh.src.getFile("local/jsh/lib/node/bin/tsc")) {
+	jsh.shell.jsh({
+		shell: jsh.shell.jsh.src,
+		script: jsh.shell.jsh.src.getFile("jsh/tools/install/typescript.jsh.js")
+	});
+}
 jsh.shell.run({
 	command: jsh.script.file.parent.parent.getFile("tsc.bash")
 });
