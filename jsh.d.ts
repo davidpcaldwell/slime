@@ -21,7 +21,8 @@ interface jsh {
 
 	tools: {
 		git: any,
-		node: slime.jrunscript.node.Exports
+		node: slime.jrunscript.node.Exports,
+		install: any
 	}
 }
 
