@@ -145,10 +145,15 @@ plugin({
 
 plugin({
 	isReady: function() {
-		return jsh.tools;
+		return jsh.http && jsh.shell && jsh.tools;
 	},
 	load: function() {
-		jsh.tools.github = $loader.module("github/module.js");
+		jsh.tools.github = $loader.module("github/module.js", {
+			library: {
+				http: jsh.http,
+				shell: jsh.shell
+			}
+		});
 	}
 });
 
