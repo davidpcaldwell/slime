@@ -20,6 +20,10 @@ void(0);
 	 */
 	function($context,$exports,Packages) {
 		$exports.Session = function(o) {
+			var apiUrl = function(relative) {
+				return "https://api.github.com/" + relative;
+			};
+
 			var apiClient = (function(o) {
 				var client = new $context.library.http.Client({
 					authorization: (o.credentials) ? $context.library.http.Authentication.Basic.Authorization({
@@ -53,7 +57,6 @@ void(0);
 						var rv;
 						while(more) {
 							rv = was.call(this, $api.Object.compose(p, {
-								url: "https://api.github.com/" + p.url,
 								evaluate: evaluate
 							}));
 							if (rv && rv.retry) {
@@ -72,7 +75,15 @@ void(0);
 				return client;
 			})(o);
 
-			throw new Error("Unimplemented.");
+			return new function() {
+				this.repositories = new function() {
+					this.list = function() {
+						return apiClient.request({
+							url: apiUrl("user/repos")
+						});
+					};
+				}
+			};
 		}
 	}
 //@ts-ignore
