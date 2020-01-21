@@ -1,17 +1,12 @@
 interface jsh {
-	loader: any;
-	js: any;
 	java: slime.jrunscript.host.Exports;
-	document: any;
-	file: any;
+	http: slime.jrunscript.http.client;
 
-	shell: {
-		console: (message: string) => void,
-		exit: (code: number) => void,
-		jsh: any,
-		environment: any,
-		echo: Function
-	};
+	tools: {
+		git: any,
+		node: slime.jrunscript.node.Exports,
+		install: any
+	}
 
 	script: {
 		getopts: Function & { UNEXPECTED_OPTION_PARSER: any },
@@ -19,32 +14,43 @@ interface jsh {
 		Application: any
 	};
 
-	tools: {
-		git: any,
-		node: slime.jrunscript.node.Exports,
-		install: any
+	shell: {
+		console: (message: string) => void,
+		exit: (code: number) => void,
+		jsh: any,
+		environment: any,
+		echo: Function,
+		run: Function,
+		HOME: slime.jrunscript.file.Directory,
+		PATH: any,
+		browser: any
+	};
+
+	unit: {
+		mock: slime.jsh.unit.mock;
 	}
+
+	loader: any;
+	js: any;
+	document: any;
+	file: any;
+	time: any;
 }
 
 declare namespace jsh {
-	const http: slime.jrunscript.http.client
-
-	//	jsh-specific
 	//	Indexed access properties; see https://www.typescriptlang.org/docs/handbook/advanced-types.html#index-types
+
 	const java: jsh['java'];
+	const http: jsh['http'];
+
 	const tools: jsh['tools'];
 	const script: jsh['script'];
+	const shell: jsh['shell'];
+	const unit: jsh['unit'];
 
-	//	TODO	Below probably should be defined in terms of SLIME types, like above
-	const js: jsh.js;
-	const document: jsh.document;
-	const shell: jsh.shell;
-	const file: jsh.file;
-
-	//	TODO	investigate whether to define in terms of SLIME
-	const loader: jsh.loader;
-
-	namespace unit {
-		const mock: slime.jsh.unit.mock
-	}
+	const loader: jsh['loader'];
+	const js: jsh['js'];
+	const document: jsh['document'];
+	const file: jsh['file'];
+	const time: jsh['time'];
 }
