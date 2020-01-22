@@ -322,7 +322,8 @@
 					}
 				}
 			}
-		}
+		};
+
 		this.match = function(p) {
 			var first = p.left;
 			var second = p.right;
