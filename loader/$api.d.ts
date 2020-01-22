@@ -17,7 +17,34 @@ declare namespace $api {
 				},
 				count: boolean
 			}
-		)
+		);
+
+
+		//	TODO	investigate whether match can be defined with parameterized types
+
+		interface match {
+			left: any,
+			right: any
+		}
+
+		function match(
+			p: {
+				left: any[],
+				right: any[],
+				matches: (l: any, r: any) => boolean,
+				unmatched: {
+					left: (l: any) => void,
+					right: (r: any) => void
+				},
+				matched: (l: any, r: any) => void
+			}
+		) : {
+			unmatched: {
+				left: any[],
+				right: any[]
+			},
+			matched: match[]
+		}
 	}
 
 	namespace Events {
