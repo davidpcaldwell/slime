@@ -20,6 +20,12 @@
 			"type": "shell",
 			"command": "./jsh.bash contributor/documentation.jsh.js -base . -host slime",
 			"problemMatcher": []
+		},
+		{
+			"label": "hosting",
+			"type": "shell",
+			"command": "./jsh.bash contributor/hosting.jsh.js",
+			"problemMatcher": []
 		}
 	]
 }
