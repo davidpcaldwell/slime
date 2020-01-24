@@ -73,6 +73,9 @@
  * @property { slime.jrunscript.git.Repository.Local.show } show
  * @property { slime.jrunscript.git.Repository.Local.fetch } fetch
  * @property { slime.jrunscript.git.Repository.Local.merge } merge
+ * @property { (p: any) => void } checkout
+ * @property { () => any } status
+ * @property { any } remote
  */
 
 /**
