@@ -9,12 +9,31 @@
  * @property {string} number
  */
 
+//	TODO	clean up below definition by relating it to jrunscript/shell constructs
+/**
+ * @typedef {object} slime.jrunscript.node.Installation.npm.run.argument
+ * @property {string} command
+ * @property {boolean} [global]
+ * @property {string[]} [arguments]
+ * @property {any} [stdio]
+ * @property {slime.jrunscript.file.Directory} [directory]
+ */
+
+/**
+ * @typedef { (p: slime.jrunscript.node.Installation.npm.run.argument ) => any } slime.jrunscript.node.Installation.npm.run
+ */
+
+/**
+ * @typedef {object} slime.jrunscript.node.Installation.npm
+ * @property { slime.jrunscript.node.Installation.npm.run } run
+ */
+
 /**
  * @typedef {object} slime.jrunscript.node.Installation
  * @property {slime.jrunscript.node.Version} version
  * @property {Function} run
  * @property {object} modules
- * @property {object} npm
+ * @property {slime.jrunscript.node.Installation.npm} npm
  */
 
 /**
@@ -101,7 +120,10 @@ void(0);
 			}
 
 			var npm = (function(run) {
-				return function(p) {
+				/**
+				 * @type { slime.jrunscript.node.Installation.npm.run }
+				 */
+				var rv = function(p) {
 					return run($api.Object.compose(p, {
 						command: "npm",
 						arguments: function(list) {
@@ -115,6 +137,7 @@ void(0);
 						}
 					}));
 				};
+				return rv;
 			})(this.run);
 
 			this.modules = new function() {

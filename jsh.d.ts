@@ -18,12 +18,18 @@ interface jsh {
 		console: (message: string) => void,
 		exit: (code: number) => void,
 		jsh: any,
+		os: {
+			process: {
+				list: () => slime.jrunscript.shell.system.Process[]
+			}
+		}
 		environment: any,
 		echo: Function,
 		run: Function,
 		HOME: slime.jrunscript.file.Directory,
 		PATH: any,
-		browser: any
+		browser: any,
+		listeners: any
 	};
 
 	unit: {
@@ -35,6 +41,7 @@ interface jsh {
 	document: any;
 	file: any;
 	time: any;
+	ui: any;
 }
 
 declare namespace jsh {
@@ -53,4 +60,5 @@ declare namespace jsh {
 	const document: jsh['document'];
 	const file: jsh['file'];
 	const time: jsh['time'];
+	const ui: jsh['ui'];
 }
