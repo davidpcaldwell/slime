@@ -5,7 +5,7 @@ namespace slime {
 				directory: Directory,
 				parent: Pathname,
 				createDirectory: (p: { exists: (d: Directory) => boolean } ) => Directory,
-				write: (any,any) => void,
+				write: (any,any?) => any,
 				file: File
 			}
 
@@ -22,7 +22,8 @@ namespace slime {
 			interface Directory extends Node {
 				getRelativePath: (string) => Pathname,
 				getFile: (string) => File,
-				getSubdirectory: (string) => Directory
+				getSubdirectory: (string) => Directory,
+				createTemporary: (p: any) => Node
 			}
 		}
 	}
