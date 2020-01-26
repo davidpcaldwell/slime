@@ -568,39 +568,47 @@
 	};
 
 	var listening = function(f,defaultOn) {
-		var Listeners = function(p) {
+		var ListenersInvocationReceiver = function(on) {
 			var source = {};
 			var events = $exports.Events({ source: source });
 
-			this.add = function() {
-				for (var x in p.on) {
-					source.listeners.add(x,p.on[x]);
+			this.attach = function() {
+				for (var x in on) {
+					source.listeners.add(x,on[x]);
 				}
 			};
 
-			this.remove = function() {
-				for (var x in p.on) {
-					source.listeners.remove(x,p.on[x]);
+			this.detach = function() {
+				for (var x in on) {
+					source.listeners.remove(x,on[x]);
 				}
 			};
 
-			this.events = events;
+			this.emitter = events;
 		};
 
-		return function(p,on) {
-			var instance = $exports.Events.instance(on);
-			var listeners = (!instance) ? new Listeners({
-				on: $exports.Function.evaluator(
-					function() { return on; },
-					function() { return defaultOn; },
-					function() { return {}; }
-				)()
-			}) : void(0);
-			if (listeners) listeners.add();
+		var EmitterInvocationReceiver = function(emitter) {
+			this.attach = function(){};
+			this.detach = function(){};
+			this.emitter = emitter;
+		}
+
+		return function(p,receiver) {
+			var invocationReceiver = ($exports.Events.instance(receiver))
+				? new EmitterInvocationReceiver(receiver)
+				: new ListenersInvocationReceiver(
+					$exports.Function.evaluator(
+						function() { return receiver; },
+						function() { return defaultOn; },
+						function() { return {}; }
+					)()
+				)
+			;
+			invocationReceiver.attach();
 			try {
-				return f.call(this,p, (listeners) ? listeners.events : on );
+				return f.call( this, p, invocationReceiver.emitter );
 			} finally {
-				if (listeners) listeners.remove();
+				invocationReceiver.detach();
 			}
 		}
 	};

@@ -1,3 +1,14 @@
+interface $api {
+	Events: {
+		(p: any): {
+			listeners: any,
+			fire: (type: string, detail: any) => void
+		},
+		//	TODO	could probably use parameterized types to improve accuracy
+		Function: (f: (p: any) => any, defaultListeners: object) => (argument: any, receiver: $api.Events | object) => any
+	}
+}
+
 declare namespace $api {
 	namespace Iterable {
 		/**
@@ -47,9 +58,7 @@ declare namespace $api {
 		}
 	}
 
-	namespace Events {
-		function Function(f: any): any
-	}
+	const Events : $api["Events"];
 
 	function deprecate(a: any): any
 }
