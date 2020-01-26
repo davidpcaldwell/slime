@@ -11,11 +11,11 @@
 //	Contributor(s):
 //	END LICENSE
 
-var $api = this.$api;
+var $$api = this.$api;
 
 //	Provide better implementation that uses Java delegate, replacing pure JavaScript version supplied by api.js
 if (typeof(Packages.inonit.script.runtime.io.Streams) == "function") {
-	$api.io.copy = function(i,o) {
+	$$api.io.copy = function(i,o) {
 		if (!arguments.callee.delegate) {
 			arguments.callee.delegate = new Packages.inonit.script.runtime.io.Streams();
 		}
@@ -25,34 +25,34 @@ if (typeof(Packages.inonit.script.runtime.io.Streams) == "function") {
 
 if (Packages.java.lang.System.getProperty("jsh.engine.rhino.classpath")) {
 	//	TODO	hard-coded assumption that this is file
-	$api.rhino.classpath = new Packages.java.io.File(Packages.java.lang.System.getProperty("jsh.engine.rhino.classpath"));
+	$$api.rhino.classpath = new Packages.java.io.File(Packages.java.lang.System.getProperty("jsh.engine.rhino.classpath"));
 }
 
-$api.slime = (function(was) {
+$$api.slime = (function(was) {
 	var rv;
 	if (was && was.built) {
 		rv = was;
 		rv.launcher = new function() {
 			this.getClasses = function() {
-				return new Packages.java.io.File($api.script.file.getParentFile(), "jsh.jar");
+				return new Packages.java.io.File($$api.script.file.getParentFile(), "jsh.jar");
 			};
 		};
 
-		rv.home = $api.script.file.getParentFile();
+		rv.home = $$api.script.file.getParentFile();
 	} else {
 		rv = {};
 
-		var isSourceFile = $api.script.file && String($api.script.file.getParentFile().getName()) == "launcher";
-		var isHttp = $api.script.url && /^http/.test(String($api.script.url.getProtocol()));
+		var isSourceFile = $$api.script.file && String($$api.script.file.getParentFile().getName()) == "launcher";
+		var isHttp = $$api.script.url && /^http/.test(String($$api.script.url.getProtocol()));
 		if (isSourceFile || isHttp) {
 			rv.src = new function() {
-				if ($api.script.file) {
+				if ($$api.script.file) {
 					this.toString = function() {
-						return $api.script.file.getAbsoluteFile().getParentFile().getParentFile().getParentFile().toString();
+						return $$api.script.file.getAbsoluteFile().getParentFile().getParentFile().getParentFile().toString();
 					};
 
 					var File = function(path) {
-						return new Packages.java.io.File($api.script.file.getAbsoluteFile().getParentFile().getParentFile().getParentFile(), path);
+						return new Packages.java.io.File($$api.script.file.getAbsoluteFile().getParentFile().getParentFile().getParentFile(), path);
 					}
 
 					this.File = function(path) {
@@ -60,7 +60,7 @@ $api.slime = (function(was) {
 					}
 
 					this.getFile = function(path) {
-						return $api.script.resolve("../../" + path).file;
+						return $$api.script.resolve("../../" + path).file;
 					}
 
 					this.getSourceFilesUnder = function getSourceFilesUnder(dir,rv) {
@@ -86,7 +86,7 @@ $api.slime = (function(was) {
 						return rv;
 					};
 				} else {
-					var base = new Packages.java.net.URL($api.script.url, "../../");
+					var base = new Packages.java.net.URL($$api.script.url, "../../");
 
 					this.toString = function() {
 						return base.toExternalForm();
@@ -95,7 +95,7 @@ $api.slime = (function(was) {
 					var bitbucketGetSourceFilesUnder = function(url,rv) {
 						//	Bitbucket raw URLs allow essentially listing the directory with a neline-delimited list of names,
 						//	with directories ending with /.
-						var string = $api.engine.readUrl(url.toExternalForm());
+						var string = $$api.engine.readUrl(url.toExternalForm());
 						var lines = string.split("\n");
 						for (var i=0; i<lines.length; i++) {
 							if (/\/$/.test(lines[i])) {
@@ -116,7 +116,7 @@ $api.slime = (function(was) {
 						var branch = match[1];
 						var path = match[2];
 						//	TODO	deal with http/https protocol issue
-						var json = JSON.parse($api.engine.readUrl("http://api.github.com/repos/davidpcaldwell/slime/contents/" + path));
+						var json = JSON.parse($$api.engine.readUrl("http://api.github.com/repos/davidpcaldwell/slime/contents/" + path));
 						json.forEach(function(item) {
 							if (item.type == "dir") {
 								getSourceFilesUnder(new Packages.java.net.URL(url,item.name+"/"), rv);
@@ -137,14 +137,14 @@ $api.slime = (function(was) {
 				}
 
 				this.getPath = function(path) {
-					$api.debug("getPath: " + path);
-					var rv = $api.script.resolve("../../" + path);
+					$$api.debug("getPath: " + path);
+					var rv = $$api.script.resolve("../../" + path);
 					//	TODO	this needs simplification
 					if (rv == null) {
 						if (this.File) {
 							rv = new this.File(path).getAbsolutePath().toString()
 						} else {
-							$api.debug("getPath return null for: " + path);
+							$$api.debug("getPath return null for: " + path);
 							return null;
 						}
 					}
@@ -156,7 +156,7 @@ $api.slime = (function(was) {
 		rv.launcher = new function() {
 			//	Exposed because it is used by jsh build script
 			this.compile = function(p) {
-				var to = (p && p.to) ? p.to : $api.io.tmpdir();
+				var to = (p && p.to) ? p.to : $$api.io.tmpdir();
 				var args = [
 					"-Xlint:deprecation",
 					"-Xlint:unchecked",
@@ -165,7 +165,7 @@ $api.slime = (function(was) {
 					rv.src.getPath("jsh/launcher/java/inonit/script/jsh/launcher/Main.java")
 				];
 				args.push.apply(args,rv.src.getSourceFilesUnder(rv.src.getFile("rhino/system/java")));
-				$api.java.install.compile(args);
+				$$api.java.install.compile(args);
 				if (!p || !p.to) return to;
 			};
 
@@ -364,4 +364,4 @@ $api.slime = (function(was) {
 	};
 
 	return rv;
-})($api.slime);
+})($$api.slime);

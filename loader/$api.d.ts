@@ -1,3 +1,8 @@
+type Iterable_match<L,R> = {
+	left: L,
+	right: R
+}
+
 interface $api {
 	Events: {
 		(p: any): {
@@ -5,60 +10,49 @@ interface $api {
 			fire: (type: string, detail: any) => void
 		},
 		//	TODO	could probably use parameterized types to improve accuracy
-		Function: (f: (p: any) => any, defaultListeners: object) => (argument: any, receiver: $api.Events | object) => any
-	}
-}
-
-declare namespace $api {
-	namespace Iterable {
+		Function: (f: (p: any, events: any) => any, defaultListeners?: object) => (argument: any, receiver: $api.Events | object) => any
+	},
+	Iterable: {
 		/**
 		 * Collates an iterable set of values of type V (extends any) into groups of type G (extends any) (or counts the number of
 		 * values in each group) based on a specified set of criteria.
 		 *
 		 * @param p
 		 */
-		function groupBy(
-			p: {
-				array: Array<any>,
-				group: (element: any) => any,
-				groups?: Array<any>,
-				codec?: {
-					encode: (group: any) => string,
-					decode: (string: string) => any
-				},
-				count: boolean
-			}
-		);
-
-
-		//	TODO	investigate whether match can be defined with parameterized types
-
-		interface match {
-			left: any,
-			right: any
-		}
-
-		function match(
-			p: {
-				left: any[],
-				right: any[],
-				matches: (l: any, r: any) => boolean,
-				unmatched: {
-					left: (l: any) => void,
-					right: (r: any) => void
-				},
-				matched: (l: any, r: any) => void
-			}
-		) : {
-			unmatched: {
-				left: any[],
-				right: any[]
+		groupBy: (p: {
+			array: Array<any>,
+			group: (element: any) => any,
+			groups?: Array<any>,
+			codec?: {
+				encode: (group: any) => string,
+				decode: (string: string) => any
 			},
-			matched: match[]
-		}
-	}
+			count: boolean
+		}) => any,
 
+		match<L,R> (
+			p: {
+				left: L[],
+				right: R[],
+				matches: (l: L, r: R) => boolean,
+				unmatched: {
+					left: (l: L) => void,
+					right: (r: R) => void
+				},
+				matched: (l: L, r: R) => void
+			}
+		): Iterable_match<L,R>[]
+	},
+	deprecate: (a: any) => any,
+	experimental: (a: any, b: any) => any
+}
+
+declare namespace $api {
+	const Iterable: $api["Iterable"];
 	const Events : $api["Events"];
+	const deprecate: $api["deprecate"];
+	const experimental: $api["experimental"];
 
-	function deprecate(a: any): any
+	const Function: any;
+	const Object: any;
 }
