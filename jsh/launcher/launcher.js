@@ -110,23 +110,23 @@
 //	TODO	Provide runtime access to plugin path, with jsh.shell.jsh.plugins?
 
 try {
-	var $api = this.$api;
+	var $$api = this.$api;
 	if (!this.$api.slime) {
 		//	This can occur when the script is called from a packaged script
 		//	TODO	figure out how and why, and whether the packaged script should invoke slime.js itself instead
-		var slime = $api.script.resolve("slime.js");
+		var slime = $$api.script.resolve("slime.js");
 		slime.load();
-		$api.log("Loaded slime.js: src=" + $api.slime.src);
+		$$api.log("Loaded slime.js: src=" + $$api.slime.src);
 	}
 
-	if ($api.slime.setting("jsh.launcher.debug")) {
-		$api.debug.on = true;
-		$api.debug("debugging enabled");
+	if ($$api.slime.setting("jsh.launcher.debug")) {
+		$$api.debug.on = true;
+		$$api.debug("debugging enabled");
 	}
 
-	$api.jsh = {};
+	$$api.jsh = {};
 
-	$api.jsh.exit = $api.engine.resolve({
+	$$api.jsh.exit = $$api.engine.resolve({
 		rhino: function(status) {
 			var _field = Packages.java.lang.Class.forName("org.mozilla.javascript.tools.shell.Main").getDeclaredField("exitCode");
 			_field.setAccessible(true);
@@ -143,7 +143,7 @@ try {
 		}
 	});
 
-	$api.jsh.engines = {
+	$$api.jsh.engines = {
 		rhino: {
 			main: "inonit.script.jsh.Rhino",
 			resolve: function(o) {
@@ -164,14 +164,14 @@ try {
 		}
 	};
 
-	$api.jsh.engine = (function() {
-		var engines = $api.jsh.engines;
-		if ($api.slime.settings.get("jsh.engine")) {
+	$$api.jsh.engine = (function() {
+		var engines = $$api.jsh.engines;
+		if ($$api.slime.settings.get("jsh.engine")) {
 			return (function(setting) {
 				return engines[setting];
-			})($api.slime.settings.get("jsh.engine"));
+			})($$api.slime.settings.get("jsh.engine"));
 		}
-		return $api.engine.resolve(engines);
+		return $$api.engine.resolve(engines);
 	})();
 
 	var Classpath = function(_urls) {
@@ -197,14 +197,14 @@ try {
 				var pathname;
 				if (!this._urls[i].getProtocol) throw new Error("Not URL: " + this._urls[i]);
 				if (String(this._urls[i].getProtocol()) != "file") {
-		//			var tmpdir = new Directory(String($api.io.tmpdir().getCanonicalPath()));
+		//			var tmpdir = new Directory(String($$api.io.tmpdir().getCanonicalPath()));
 		//
 		//			var rhino = ClassLoader.getSystemResourceAsStream("$jsh/rhino.jar");
 		//			if (rhino) {
-		//				$api.debug("Copying rhino ...");
+		//				$$api.debug("Copying rhino ...");
 		//				var rhinoCopiedTo = tmpdir.getFile("rhino.jar");
 		//				var writeTo = rhinoCopiedTo.writeTo();
-		//				$api.io.copy(rhino,writeTo);
+		//				$$api.io.copy(rhino,writeTo);
 		//			}
 					throw new Error("Not a file: " + this._urls[i]);
 				} else {
@@ -221,27 +221,27 @@ try {
 	};
 
 	//	TODO	Merge below with above
-	$api.jsh.Classpath = Classpath;
+	$$api.jsh.Classpath = Classpath;
 
-	$api.script.resolve("javac.js").load();
+	$$api.script.resolve("javac.js").load();
 
-	$api.jsh.Unbuilt = function(p) {
+	$$api.jsh.Unbuilt = function(p) {
 		var File = Packages.java.io.File;
 
 		//	TODO	p.rhino argument is supplied by jsh/etc/build.jsh.js and is dubious
 		this.toString = function() {
-			return "Unbuilt: src=" + $api.slime.src + " rhino=" + this.rhino;
+			return "Unbuilt: src=" + $$api.slime.src + " rhino=" + this.rhino;
 		}
 
-		// TODO: this same approach for locating the lib directory should be used in $api.jsh.Built, no?
+		// TODO: this same approach for locating the lib directory should be used in $$api.jsh.Built, no?
 		var lib = (function() {
-			var setting = $api.slime.settings.get("jsh.shell.lib");
-			//	TODO	setting can be null because $api.script.resolve() doesn't find local/jsh/lib online; should refactor
+			var setting = $$api.slime.settings.get("jsh.shell.lib");
+			//	TODO	setting can be null because $$api.script.resolve() doesn't find local/jsh/lib online; should refactor
 			if (!setting) return null;
 			if (/^http/.test(setting)) {
 				return { url: setting }
 			} else {
-				var file = new Packages.java.io.File($api.slime.settings.get("jsh.shell.lib"));
+				var file = new Packages.java.io.File($$api.slime.settings.get("jsh.shell.lib"));
 				if (!file.exists()) file.mkdirs();
 				return { file: file };
 			}
@@ -251,9 +251,9 @@ try {
 
 		// TODO: do we still need jsh.engine.rhino.classpath? Maybe if working with a local Rhino build?
 		if (!rhino) {
-			if ($api.slime.settings.get("jsh.engine.rhino.classpath")) {
-				rhino = [new Packages.java.io.File($api.slime.settings.get("jsh.engine.rhino.classpath")).toURI().toURL()];
-			} else if ($api.slime.settings.get("jsh.shell.lib") && lib.file) {
+			if ($$api.slime.settings.get("jsh.engine.rhino.classpath")) {
+				rhino = [new Packages.java.io.File($$api.slime.settings.get("jsh.engine.rhino.classpath")).toURI().toURL()];
+			} else if ($$api.slime.settings.get("jsh.shell.lib") && lib.file) {
 				if (new Packages.java.io.File(lib.file, "js.jar").exists()) {
 					rhino = [new Packages.java.io.File(lib.file, "js.jar").toURI().toURL()];
 				}
@@ -267,8 +267,8 @@ try {
 		}
 
 		this.profiler = (function() {
-			if ($api.slime.settings.get("jsh.shell.profiler")) {
-				return new Packages.java.io.File($api.slime.settings.get("jsh.shell.profiler"));
+			if ($$api.slime.settings.get("jsh.shell.profiler")) {
+				return new Packages.java.io.File($$api.slime.settings.get("jsh.shell.profiler"));
 			}
 		})();
 
@@ -317,14 +317,14 @@ try {
 			// TODO: should we be compiling classes for engines we are not using?
 			var graal = this.graal;
 			if (!p) p = {};
-			if (!p.to) p.to = $api.io.tmpdir();
-			var toCompile = $api.slime.src.getSourceFilesUnder(new $api.slime.src.File("loader/jrunscript/java"));
-			if (rhino) toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("loader/jrunscript/rhino/java")));
-			if (graal) toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("loader/jrunscript/graal/java")));
-			toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("rhino/system/java")));
-			toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("jsh/loader/java")));
-			if (rhino) toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("jsh/loader/rhino/java")));
-			if (graal) toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("jsh/loader/graal/java")));
+			if (!p.to) p.to = $$api.io.tmpdir();
+			var toCompile = $$api.slime.src.getSourceFilesUnder(new $$api.slime.src.File("loader/jrunscript/java"));
+			if (rhino) toCompile = toCompile.concat($$api.slime.src.getSourceFilesUnder(new $$api.slime.src.File("loader/jrunscript/rhino/java")));
+			if (graal) toCompile = toCompile.concat($$api.slime.src.getSourceFilesUnder(new $$api.slime.src.File("loader/jrunscript/graal/java")));
+			toCompile = toCompile.concat($$api.slime.src.getSourceFilesUnder(new $$api.slime.src.File("rhino/system/java")));
+			toCompile = toCompile.concat($$api.slime.src.getSourceFilesUnder(new $$api.slime.src.File("jsh/loader/java")));
+			if (rhino) toCompile = toCompile.concat($$api.slime.src.getSourceFilesUnder(new $$api.slime.src.File("jsh/loader/rhino/java")));
+			if (graal) toCompile = toCompile.concat($$api.slime.src.getSourceFilesUnder(new $$api.slime.src.File("jsh/loader/graal/java")));
 			var classpathArguments = (classpath) ? ["-classpath", classpath.local()] : [];
 			var targetArguments = (p && p.target) ? ["-target", p.target] : [];
 			var sourceArguments = (p && p.source) ? ["-source", p.source] : [];
@@ -337,53 +337,53 @@ try {
 			for (var i=0; i<toCompile.length; i++) {
 				args.push(toCompile[i].getCanonicalPath());
 			}
-			$api.java.install.compile(args);
+			$$api.java.install.compile(args);
 			return p.to;
 		};
 
 		this.shellClasspath = function() {
 			var rhinoClasspath = (rhino && rhino.length) ? new Classpath(rhino) : null;
 
-			if (!$api.slime.src) throw new Error("Could not detect SLIME source root for unbuilt shell.")
-			var setting = $api.slime.settings.get("jsh.shell.classes");
-			var LOADER_CLASSES = (setting) ? new Packages.java.io.File(setting, "loader") : $api.io.tmpdir();
+			if (!$$api.slime.src) throw new Error("Could not detect SLIME source root for unbuilt shell.")
+			var setting = $$api.slime.settings.get("jsh.shell.classes");
+			var LOADER_CLASSES = (setting) ? new Packages.java.io.File(setting, "loader") : $$api.io.tmpdir();
 			if (!LOADER_CLASSES.exists()) LOADER_CLASSES.mkdirs();
-			if ($api.slime.src.File) {
+			if ($$api.slime.src.File) {
 				if (setting && LOADER_CLASSES.exists() && new Packages.java.io.File(LOADER_CLASSES, "inonit/script/engine/Code.class").exists()) {
-					$api.debug("Found already-compiled files.");
+					$$api.debug("Found already-compiled files.");
 				} else {
 					this.compileLoader({
 						to: LOADER_CLASSES
 					});
 				}
 			} else {
-				$api.log("Looking for loader source files under " + $api.slime.src + " ...");
+				$$api.log("Looking for loader source files under " + $$api.slime.src + " ...");
 				var toCompile = getLoaderSourceFiles({
 					list: function(string) {
-						return $api.slime.src.getSourceFilesUnder(string);
+						return $$api.slime.src.getSourceFilesUnder(string);
 					},
 					rhino: rhinoClasspath,
 					on: {
 						start: function(e) {
-							$api.log("Checking under " + e.path + " (" + e.current + "/" + e.total + ")");
+							$$api.log("Checking under " + e.path + " (" + e.current + "/" + e.total + ")");
 						},
 						end: function(e) {
-							$api.log("Done checking under " + e.path + " (" + e.current + "/" + e.total + ")");
+							$$api.log("Done checking under " + e.path + " (" + e.current + "/" + e.total + ")");
 						}
 					}
 				});
-				$api.java.compile({
+				$$api.java.compile({
 					classpath: (rhinoClasspath) ? rhinoClasspath._urls : [],
 					destination: LOADER_CLASSES,
 					files: toCompile
 				});
 			}
-			$api.debug("Returning shellClasspath: " + LOADER_CLASSES.toURI().toURL());
+			$$api.debug("Returning shellClasspath: " + LOADER_CLASSES.toURI().toURL());
 			return [LOADER_CLASSES.toURI().toURL()];
 		};
 	};
 
-	$api.jsh.Built = function(home) {
+	$$api.jsh.Built = function(home) {
 		this.toString = function() {
 			var rhino = (new Packages.java.io.File(home, "lib/js.jar").exists()) ? new Packages.java.io.File(home, "lib/js.jar") : void(0);
 			return "Built: " + home + " rhino=" + rhino;
@@ -408,13 +408,13 @@ try {
 		}
 	};
 
-	$api.jsh.Packaged = function(file) {
+	$$api.jsh.Packaged = function(file) {
 		this.packaged = file;
 
 		//	TODO	test and enable (and document) if this works
 		if (false) this.profiler = (function() {
-			if ($api.slime.settings.get("jsh.shell.profiler")) {
-				return new Packages.java.io.File($api.slime.settings.get("jsh.shell.profiler"));
+			if ($$api.slime.settings.get("jsh.shell.profiler")) {
+				return new Packages.java.io.File($$api.slime.settings.get("jsh.shell.profiler"));
 			}
 		})();
 
@@ -426,7 +426,7 @@ try {
 	//	TODO	it seems like the below should migrate to main.js where similar code is already present, and packaged applications
 	//			should launch that script
 	if (Packages.java.lang.System.getProperties().get("jsh.launcher.shell") && Packages.java.lang.System.getProperties().get("jsh.launcher.shell").getPackaged()) {
-		$api.jsh.shell = new (function(peer) {
+		$$api.jsh.shell = new (function(peer) {
 			var getRhinoClasspath = function() {
 				var classpath = peer.getRhinoClasspath();
 				if (classpath) {
@@ -438,8 +438,8 @@ try {
 
 			var shell = (function(peer) {
 				if (peer.getPackaged()) {
-					$api.debug("Setting packaged shell: " + String(peer.getPackaged().getCanonicalPath()));
-					return new $api.jsh.Packaged(peer.getPackaged());
+					$$api.debug("Setting packaged shell: " + String(peer.getPackaged().getCanonicalPath()));
+					return new $$api.jsh.Packaged(peer.getPackaged());
 				} else {
 					throw new Error("No getPackaged() in " + peer);
 				}
@@ -457,7 +457,7 @@ try {
 			this.classpath = function() {
 				var rv = new Classpath();
 
-				$api.jsh.engine.resolve({
+				$$api.jsh.engine.resolve({
 					rhino: function() {
 						rv.append(getRhinoClasspath());
 					},
@@ -471,24 +471,24 @@ try {
 			};
 		})(Packages.java.lang.System.getProperties().get("jsh.launcher.shell"));
 
-		if ($api.arguments.length == 0 && !$api.jsh.shell.packaged) {
-			$api.console("Usage: " + $api.script.file + " <script-path> [arguments]");
+		if ($$api.arguments.length == 0 && !$$api.jsh.shell.packaged) {
+			$$api.console("Usage: " + $$api.script.file + " <script-path> [arguments]");
 			//	TODO	should replace the below with a mechanism that uses setExitStatus, adding setExitStatus for Rhino throwing a
 			//			java.lang.Error so that it is not caught
-			$api.jsh.exit(1);
+			$$api.jsh.exit(1);
 		}
 
-		$api.debug("Launcher environment = " + JSON.stringify($api.shell.environment, void(0), "    "));
-		$api.debug("Launcher working directory = " + Packages.java.lang.System.getProperty("user.dir"));
-		$api.debug("Launcher system properties = " + Packages.java.lang.System.getProperties());
+		$$api.debug("Launcher environment = " + JSON.stringify($$api.shell.environment, void(0), "    "));
+		$$api.debug("Launcher working directory = " + Packages.java.lang.System.getProperty("user.dir"));
+		$$api.debug("Launcher system properties = " + Packages.java.lang.System.getProperties());
 
-		$api.debug("Creating command ...");
-		var command = new $api.java.Command();
+		$$api.debug("Creating command ...");
+		var command = new $$api.java.Command();
 
 		var container = (function() {
 			//	TODO	test whether next line necessary
-			if ($api.jsh.shell.packaged) return "jvm";
-			if ($api.slime.settings.get("jsh.shell.container")) return $api.slime.settings.get("jsh.shell.container");
+			if ($$api.jsh.shell.packaged) return "jvm";
+			if ($$api.slime.settings.get("jsh.shell.container")) return $$api.slime.settings.get("jsh.shell.container");
 			return "classloader";
 		})();
 		if (container == "jvm") {
@@ -498,43 +498,43 @@ try {
 		(function vmArguments() {
 			//	TODO	what about jsh.jvm.options? If it is set, the options may already have been applied by launcher and we may not need
 			//			to add them and fork a VM; launcher could *unset* them, perhaps. Need to think through and develop test case
-			if ($api.jsh.shell.packaged) return;
+			if ($$api.jsh.shell.packaged) return;
 			var rv = [];
-			while($api.arguments.length && $api.arguments[0].substring(0,1) == "-") {
-				command.vm($api.arguments.shift());
+			while($$api.arguments.length && $$api.arguments[0].substring(0,1) == "-") {
+				command.vm($$api.arguments.shift());
 			}
 			return rv;
 		})();
 
 		//	Describe the shell
-		if ($api.jsh.shell.rhino) $api.slime.settings.set("jsh.engine.rhino.classpath", $api.jsh.shell.rhino);
+		if ($$api.jsh.shell.rhino) $$api.slime.settings.set("jsh.engine.rhino.classpath", $$api.jsh.shell.rhino);
 
-		$api.slime.settings.sendPropertiesTo(command);
+		$$api.slime.settings.sendPropertiesTo(command);
 
-		//	TODO	If the container is classloader, presumably could use URLs or push the files switch back into $api.java.Command
-		var classpath = $api.jsh.shell.classpath()._urls;
+		//	TODO	If the container is classloader, presumably could use URLs or push the files switch back into $$api.java.Command
+		var classpath = $$api.jsh.shell.classpath()._urls;
 		for (var i=0; i<classpath.length; i++) {
 			command.classpath(classpath[i]);
 		}
 
-		command.main($api.jsh.engine.main);
+		command.main($$api.jsh.engine.main);
 
-		for (var i=0; i<$api.arguments.length; i++) {
-			command.argument($api.arguments[i]);
+		for (var i=0; i<$$api.arguments.length; i++) {
+			command.argument($$api.arguments[i]);
 		}
 
-		$api.debug("Running command " + command + " ...");
+		$$api.debug("Running command " + command + " ...");
 		var status = command.run();
-		$api.debug("Command returned: status = " + status);
+		$$api.debug("Command returned: status = " + status);
 		if (typeof(status) != "undefined") {
-			$api.jsh.exit(status);
+			$$api.jsh.exit(status);
 		}
 	}
 } catch (e) {
-	if ($api.debug) {
-		$api.debug("Error:");
-		$api.debug(e);
-		$api.debug(e.fileName + ":" + e.lineNumber);
+	if ($$api.debug) {
+		$$api.debug("Error:");
+		$$api.debug(e);
+		$$api.debug(e.fileName + ":" + e.lineNumber);
 	}
 	if (e.rhinoException) {
 		e.rhinoException.printStackTrace();
@@ -549,5 +549,5 @@ try {
 	}
 	//	Below works around Rhino debugger bug that does not allow e to be inspected
 	var error = e;
-	$api.jsh.exit(1);
+	$$api.jsh.exit(1);
 }
