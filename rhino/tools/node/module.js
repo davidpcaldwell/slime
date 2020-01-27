@@ -37,7 +37,7 @@
  */
 
 /**
- * @typedef { (p: { location: slime.jrunscript.file.Pathname, version?: string, update?: boolean }, events: any ) => slime.jrunscript.node.Installation } slime.jrunscript.node.install
+ * @typedef { (p: { location: slime.jrunscript.file.Pathname, version?: string, update?: boolean }, events?: any ) => slime.jrunscript.node.Installation } slime.jrunscript.node.install
  */
 
 /**
