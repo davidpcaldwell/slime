@@ -36,6 +36,7 @@
  * @property { slime.jrunscript.shell.system.Process } parent
  * @property { string } command
  * @property { slime.jrunscript.shell.system.Process[] } children
+ * @property { () => void } kill
  */
 
 void(0);
