@@ -5,7 +5,8 @@ interface jsh {
 	tools: {
 		git: any,
 		node: slime.jrunscript.node.Exports,
-		install: any
+		install: any,
+		github: slime.jrunscript.tools.github.Exports
 	}
 
 	script: {
