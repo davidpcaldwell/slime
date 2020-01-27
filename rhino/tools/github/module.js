@@ -6,8 +6,21 @@
  */
 
 /**
+ * @typedef { object } slime.jrunscript.tools.github.Repository
+ * @property { number } id
+ * @property { string } node_id
+ * @property { string } name
+ * @property { string } full_name
+ */
+
+/**
+ * @typedef { object } slime.jrunscript.tools.github.Session
+ * @property { { list: () => slime.jrunscript.tools.github.Repository[] } } repositories
+ */
+
+/**
  * @typedef {object} slime.jrunscript.tools.github.Exports
- * @property {any} Session
+ * @property { (o: any) => slime.jrunscript.tools.github.Session } Session
  */
 
 //	Work around tsc bug not allowing first expression to be parenthetical
