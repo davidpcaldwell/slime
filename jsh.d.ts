@@ -20,6 +20,7 @@ interface jsh {
 		exit: (code: number) => void,
 		jsh: any,
 		os: {
+			name: string,
 			process: {
 				list: () => slime.jrunscript.shell.system.Process[]
 			}
@@ -31,7 +32,17 @@ interface jsh {
 		PATH: any,
 		TMPDIR: slime.jrunscript.file.Directory,
 		browser: any,
-		listeners: any
+		listeners: any,
+		system: {
+			apple: {
+				plist: {
+					xml: {
+						encode: Function,
+						decode: Function
+					}
+				}
+			}
+		}
 	};
 
 	unit: {

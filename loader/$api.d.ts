@@ -41,7 +41,13 @@ interface $api {
 				},
 				matched: (l: L, r: R) => void
 			}
-		): Iterable_match<L,R>[]
+		): {
+			unmatched: {
+				left: L[],
+				right: R[]
+			},
+			matched: Iterable_match<L,R>[]
+		}
 	},
 	deprecate: (a: any) => any,
 	experimental: (a: any, b: any) => any
