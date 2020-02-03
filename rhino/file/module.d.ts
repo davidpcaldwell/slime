@@ -4,7 +4,7 @@ namespace slime {
 			interface Pathname {
 				directory: Directory,
 				parent: Pathname,
-				createDirectory: (p: { exists: (d: Directory) => boolean, recursive: boolean } ) => Directory,
+				createDirectory: (p: { exists: (d: Directory) => boolean, recursive?: boolean } ) => Directory,
 				write: (any,any?) => any,
 				file: File
 			}
