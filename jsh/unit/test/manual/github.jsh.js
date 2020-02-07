@@ -27,7 +27,7 @@ var client = (function() {
 	www.add(jsh.unit.mock.Web.github({
 		src: {
 			davidpcaldwell: {
-				slime: new jsh.tools.git.Repository({ directory: jsh.shell.jsh.src })
+				slime: jsh.tools.git.Repository({ directory: jsh.shell.jsh.src })
 			}
 		}
 	}));
