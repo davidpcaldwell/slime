@@ -10,7 +10,11 @@ interface $api {
 			fire: (type: string, detail: any) => void
 		},
 		//	TODO	could probably use parameterized types to improve accuracy
-		Function: (f: (p: any, events: any) => any, defaultListeners?: object) => (argument: any, receiver: $api.Events | object) => any
+		Function: <P,R>(f: (p: P, events: any) => R, defaultListeners?: object) => (argument: P, receiver: $api.Events | object) => R
+	},
+	Object: {
+		(p: any): any,
+		compose: Function
 	},
 	Iterable: {
 		/**
@@ -60,5 +64,5 @@ declare namespace $api {
 	const experimental: $api["experimental"];
 
 	const Function: any;
-	const Object: any;
+	const Object: $api["Object"];
 }

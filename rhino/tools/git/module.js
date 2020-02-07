@@ -76,6 +76,7 @@
  * @property { (p: any) => void } checkout
  * @property { () => any } status
  * @property { any } remote
+ * @property { any } stash
  */
 
 /**
@@ -92,8 +93,13 @@
 */
 
 /**
+ * @typedef { (p: any) => slime.jrunscript.git.Repository } slime.jrunscript.git.Installation.Repository
+*/
+
+/**
  * @typedef {object} slime.jrunscript.git.Installation
  * @property {slime.jrunscript.git.Installation.daemon} daemon
+ * @property {slime.jrunscript.git.Installation.Repository} Repository
  */
 
 /**
@@ -102,6 +108,7 @@
  * @property { any } credentialHelper
  * @property { slime.jrunscript.git.Installation } installation
  * @property { Function & { GUI: any } } install
+ * @property { slime.jrunscript.git.Installation.Repository } Repository
  */
 
 void(0);

@@ -3,7 +3,8 @@ interface jsh {
 	http: slime.jrunscript.http.client;
 
 	tools: {
-		git: any,
+		git: slime.jrunscript.git.Exports,
+		hg: any,
 		node: slime.jrunscript.node.Exports,
 		install: any,
 		github: slime.jrunscript.tools.github.Exports
