@@ -331,7 +331,7 @@ END LICENSE
 										url: "http://127.0.0.1:" + server.port + "/" + ""
 									});
 									verify(index).status.code.is(404);
-									
+
 									server.stop();
 
 									server = new jsh.httpd.Tomcat();

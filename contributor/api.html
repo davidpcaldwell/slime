@@ -62,38 +62,52 @@ END LICENSE
 		<div>
 			<h1>Tests</h1>
 			<div>
-				All tests can be run via <code><a href="suite.jsh.js">contributor/suite.jsh.js</a></code>. Tomcat is installed into the shell automatically so
-				that browser tests run.
+				<h2><code><a href="suite.jsh.js">contributor/suite.jsh.js</a></code></h2>
+				Runs all tests, installing Tomcat into the shell if necessary so that browser (and servlet) tests can be run.
 			</div>
 			<div>
-				The suite runs a set of low-level tests using all Java engines that are present. It then runs a set of higher-level
-				tests only using the default engine.
+				The suite runs:
+				<ul>
+					<li><code><a href="jrunscript-engines.jsh.js">contributor/jrunscript-engines.jsh.js</a></code>,</li>
+					<li><code><a href="jrunscript.jsh.js">contributor/jrunscript.jsh.js</a></code>,</li>
+					<li><code><a href="loader/browser/suite.js">loader/browser/suite.js</a></code>,</li>
+					<li>A series of tests on development tools.</li>
+				</ul>
 			</div>
-			<ul>
-				<li>
-					Java tests:
-					<code><a href="jrunscript.jsh.js">contributor/jrunscript.jsh.js</a>
-						[-view <i>view</i>]
-						[-part <i>suitepath[:pagepath]</i>]
-						[-noselfping] [-executable]
-					</code>
-				</li>
-				<li>
-					Browser suite:
-					<code>
-						<a href="../loader/browser/test/suite.jsh.api.html">loader/browser/test/suite.jsh.js</a>
-						-suite <a href="../loader/browser/suite.js">loader/browser/suite.js</a>
-					</code>
-				</li>
-				<li>
-					Browser definition page:
-					<code><a href="../loader/browser/test/suite.jsh.api.html">loader/browser/test/suite.jsh.js</a>
-						-definition <i>pathname</i>
-						[-part <i>part</i>]
-						[-interactive]
-					</code>
-				</li>
-			</ul>
+			<div>
+				<h2>Running subsuites, in whole or in part</h2>
+				<ul>
+					<li>
+						Java tests:
+						<code><a href="jrunscript.jsh.js">contributor/jrunscript.jsh.js</a>
+							[-view <i>view</i>]
+							[-part <i>suitepath[:pagepath]</i>]
+							[-noselfping] [-executable]
+						</code>
+					</li>
+					<li>
+						Browser suite:
+						<code>
+							<a href="../loader/browser/test/suite.jsh.api.html">loader/browser/test/suite.jsh.js</a>
+							-suite <a href="../loader/browser/suite.js">loader/browser/suite.js</a>
+						</code>
+					</li>
+					<li>
+						Browser definition page:
+						<code><a href="../loader/browser/test/suite.jsh.api.html">loader/browser/test/suite.jsh.js</a>
+							-definition <i>pathname</i>
+							[-part <i>part</i>]
+							[-interactive]
+						</code>
+					</li>
+				</ul>
+			</div>
+			<div>
+				<h2>Running individual test suites</h2>
+				<ul>
+					<li><code>jsh</code>: <code>jsh/test/suite.jsh.js -definition <i>definition</i> [-part <i>part</i>]</code></li>
+				</ul>
+			</div>
 		</div>
 		<div>
 			<h1>Features</h1>
