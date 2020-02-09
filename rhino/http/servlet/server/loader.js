@@ -151,7 +151,12 @@ $exports.Handler.Proxy = function(o) {
 $exports.Handler.Loader = function(o) {
 	return function(request) {
 		if (request.method == "GET") {
-			var resource = o.loader.get(request.path);
+			var path = (function(path,index) {
+				if (path) return path;
+				if (index) return index;
+				return path;
+			})(request.path, o.index)
+			var resource = o.loader.get(path);
 			if (resource) {
 				return {
 					status: {

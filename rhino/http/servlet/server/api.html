@@ -287,6 +287,11 @@ END LICENSE
 												<span class="type">Loader</span>
 												<span>__DESCRIPTION__</span>
 											</li>
+											<li class="value">
+												<div class="name">index</div>
+												<span class="type">string</span>
+												<span>The path to be used when a request with an empty path is received.</span>
+											</li>
 										</ul>
 									</li>
 								</ol>
@@ -321,6 +326,29 @@ END LICENSE
 										url: "http://127.0.0.1:" + server.port + "/" + "nonexistent"
 									});
 									verify(notFound).status.code.is(404);
+
+									var index = client.request({
+										url: "http://127.0.0.1:" + server.port + "/" + ""
+									});
+									verify(index).status.code.is(404);
+									
+									server.stop();
+
+									server = new jsh.httpd.Tomcat();
+									server.servlet(new function() {
+										this.load = function(scope) {
+											scope.$exports.handle = new module.Handler.Loader({
+												loader: $jsapi.loader,
+												index: "api.html"
+											});
+										}
+									});
+									server.start();
+									var index = client.request({
+										url: "http://127.0.0.1:" + server.port + "/" + ""
+									});
+									verify(index).status.code.is(200);
+									server.stop();
 								}
 							</script>
 						</li>
