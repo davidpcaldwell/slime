@@ -170,13 +170,13 @@ plugin({
 				WEBAPP.getRelativePath("WEB-INF/web.xml").write(xml, { append: false });
 			})();
 
-//			if (p.buildResources) {
-//				p.buildResources();
-//			} else if (p.Resources) {
-				var resources = new jsh.httpd.Resources();
-				p.Resources.call(resources);
-				resources.build(WEBAPP);
-//			}
+			// if (p.buildResources) {
+			// 	p.buildResources();
+			// } else if (p.Resources) {
+			var resources = new jsh.httpd.Resources();
+			p.Resources.call(resources);
+			resources.build(WEBAPP);
+			// }
 
 			if (p.destination.war) {
 				jsh.file.zip({
