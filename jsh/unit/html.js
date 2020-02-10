@@ -300,7 +300,15 @@ var Scope = function(suite,environment) {
 		file: {
 			newTemporaryDirectory: $api.deprecate(function() {
 				return jsh.shell.TMPDIR.createTemporary({ directory: true });
-			})
+			}),
+			//	TODO	tmp is undocumented
+			tmp: {
+				location: function() {
+					var rv = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
+					rv.directory.remove();
+					return rv;
+				}
+			}
 		},
 		java: {
 			loader: $context.$slime.java,
