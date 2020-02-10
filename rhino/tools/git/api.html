@@ -555,6 +555,30 @@ END LICENSE
 								verify(submodules)[0].commit.commit.hash.is.type("string");
 								verify(submodules)[0].commit.subject.is("child b");
 							</script>
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="function">
+									<div class="name">add</div>
+									<span>__DESCRIPTION__</span>
+									<div class="arguments">
+										<div class="label">Arguments</div>
+										<ol>
+										</ol>
+									</div>
+									<div class="returns">
+										<div class="label">Returns</div>
+										<span class="type">__TYPE__</span>
+										<span>__DESCRIPTION__</span>
+									</div>
+									<script type="application/x.jsapi#tests">
+										var tmp = $jsapi.file.tmp.location();
+										var local = remote.clone({ to: tmp });
+										var sub = local.submodule.add({ repository: child, path: "sub" });
+										verify(sub).directory.pathname.toString().is(tmp.directory.getRelativePath("sub").toString());
+										verify(sub.remote.getUrl({ name: "origin" })).is(child.reference);
+									</script>
+								</li>
+							</ul>
 						</li>
 						<li class="function">
 							<div class="name">fetch</div>

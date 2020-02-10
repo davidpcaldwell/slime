@@ -181,7 +181,7 @@ void(0);
 							arguments: args,
 							environment: environment,
 							stdio: stdio,
-							directory: p.repository,
+							directory: p.directory,
 							evaluate: m.evaluate
 						});
 					}
@@ -326,6 +326,17 @@ void(0);
 							path: path
 						}
 					})
+				}
+			});
+			var submodule_add = cli.command({
+				command: "submodule",
+				arguments: function(p) {
+					this.push("add");
+					this.push(p.repository.reference);
+					this.push(p.path);
+				},
+				evaluate: function(result) {
+					return new LocalRepository({ directory: result.directory.getSubdirectory(result.arguments[3]) });
 				}
 			});
 
@@ -505,7 +516,7 @@ void(0);
 
 				var command = function(f) {
 					return function(p) {
-						return f($api.Object.compose(p, { repository: directory }));
+						return f($api.Object.compose(p, { directory: directory }));
 					}
 				}
 
@@ -796,6 +807,7 @@ void(0);
 						});
 					}
 				};
+				this.submodule.add = command(submodule_add);
 
 				this.push = function(p) {
 					var args = [];
