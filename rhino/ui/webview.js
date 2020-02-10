@@ -274,7 +274,7 @@ $set(function(p) {
 					}
 				}
 			))
-		};
+		}
 
 		var events = $api.Events({
 			source: this
@@ -326,7 +326,7 @@ $set(function(p) {
 								//	keep media attribute if present
 								node.element.type.name = "style";
 								node.element.attributes.set("href", null);
-//								node.element.attributes.set("href", location.getFileUrl(reference));
+								// node.element.attributes.set("href", location.getFileUrl(reference));
 								node.element.attributes.set("rel", null);
 								node.children.push(new $context.api.document.Text({ text: location.getCode(reference) }));
 							}

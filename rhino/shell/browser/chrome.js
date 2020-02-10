@@ -26,7 +26,7 @@ var Chrome = function(b) {
 		user: b.user
 	});
 
-		//	Used to be called "User" but "Instance" seems a better name (so as not to be confused with a
+	//	Used to be called "User" but "Instance" seems a better name (so as not to be confused with a
 	//	"profile" (which is called a "person" by Chrome, although it used to be called a "user"). The term "install"
 	//	wouldn't be perfect because then one Chrome codebase could be multiple "installs" (user data directories).
 	//
@@ -78,7 +78,7 @@ var Chrome = function(b) {
 						base: p.base.getSubdirectory(x),
 						data: localState.profile.info_cache[x]
 					}));
-				};
+				}
 			}
 		};
 
@@ -146,15 +146,15 @@ var Chrome = function(b) {
 					args.push("--app=" + m.app);
 					//	TODO	no combination of these things seems to work, although it may work for "new" browser profiles;
 					//			see http://stackoverflow.com/questions/13436855/launch-google-chrome-from-the-command-line-with-specific-window-coordinates
-//					if (m.position || m.size) {
-//						args.push("--chrome-frame");
-//					}
-//					if (m.position) {
-//						args.push("--window-position=" + m.position.x + "," + m.position.y);
-//					}
-//					if (m.size) {
-//						args.push("--window-size=" + m.size.width + "," + m.size.height);
-//					}
+					// if (m.position || m.size) {
+					// 	args.push("--chrome-frame");
+					// }
+					// if (m.position) {
+					// 	args.push("--window-position=" + m.position.x + "," + m.position.y);
+					// }
+					// if (m.size) {
+					// 	args.push("--window-size=" + m.size.width + "," + m.size.height);
+					// }
 				}
 			} else {
 				if (m.newWindow) {

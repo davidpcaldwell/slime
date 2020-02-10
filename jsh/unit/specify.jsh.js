@@ -35,18 +35,18 @@ jsh.ui.application({
 			location: parameters.options["chrome:instance"]
 		}
 	},
-// 	browser: function(p) {
-// 		return chrome.run({
-// 			arguments: (function() {
-// 				var rv = [];
-// 				if (parameters.options["test:proxy"]) {
-// 					rv.push("--proxy-pac-url=" + parameters.options["test:proxy"]);
-// 				}
-// 				debugger;
-// 				return rv;
-// 			})(),
-// 			app: p.url
-// 		});
-// 	},
+	// browser: function(p) {
+	// 	return chrome.run({
+	// 		arguments: (function() {
+	// 			var rv = [];
+	// 			if (parameters.options["test:proxy"]) {
+	// 				rv.push("--proxy-pac-url=" + parameters.options["test:proxy"]);
+	// 			}
+	// 			debugger;
+	// 			return rv;
+	// 		})(),
+	// 		app: p.url
+	// 	});
+	// },
 	path: "slime/jsh/unit/specify/index.html"
 });
