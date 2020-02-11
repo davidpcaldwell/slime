@@ -1,5 +1,6 @@
 //	https://eslint.org/docs/user-guide/configuring
 {
+	"root": true,
 	"ignorePatterns": ["local/"],
 	"extends": "eslint:recommended",
 	//	https://eslint.org/docs/rules/
