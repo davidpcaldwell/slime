@@ -23,6 +23,11 @@ var getLatestVersion = function() {
 		var match = matcher.exec(downloadRawHtml);
 		var version = match[1];
 		jsh.shell.console("Latest Tomcat version from tomcat.apache.org is " + version);
+		//	Work around issue manifested 2020-02-14 regarding version
+		if (version.indexOf("\"") != -1) {
+			jsh.shell.console("html = [" + downloadRawHtml + "]");
+			version = version.substring(0,version.indexOf("\""));
+		}
 		return version;
 	} catch (e) {
 		jsh.shell.console("Could not get latest Tomcat 7 version from tomcat.apache.org (offline?) ...");
