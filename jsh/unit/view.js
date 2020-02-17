@@ -134,17 +134,16 @@ $exports.Console = function(o) {
 
 	this.test = function(test) {
 		var success = test.success;
-		var old = false;
 		console.print(indent());
 		console.println(test.message);
 		if (!success) {
-//				if (!dots) {
-//					$context.console.print(indent());
-//					dots = true;
-//				}
-//				var code = (success == null) ? "*" : "X";
-//				$context.console.print(code);
-//				$context.console.println(test.message(success));
+			// if (!dots) {
+			// 	$context.console.print(indent());
+			// 	dots = true;
+			// }
+			// var code = (success == null) ? "*" : "X";
+			// $context.console.print(code);
+			// $context.console.println(test.message(success));
 			if (test.error) {
 				printError(test.error);
 			} else if (success == null) {
@@ -152,12 +151,12 @@ $exports.Console = function(o) {
 			}
 			stack[stack.length-1].success = false;
 		} else {
-//				if (!dots) {
-//					$context.console.print(indent());
-//					dots = true;
-//				}
-//				$context.console.println(test.message(success));
-//				$context.console.print(".");
+			// if (!dots) {
+			// 	$context.console.print(indent());
+			// 	dots = true;
+			// }
+			// $context.console.println(test.message(success));
+			// $context.console.print(".");
 		}
 	}
 
@@ -177,8 +176,8 @@ $exports.Console = function(o) {
 			if (stack.length > 0) {
 				stack[stack.length-1].success = false;
 			} else {
-//				throw "Unimplemented";
-//				success = false;
+				// throw "Unimplemented";
+				// success = false;
 			}
 		}
 	}
