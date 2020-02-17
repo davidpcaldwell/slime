@@ -1,7 +1,7 @@
 /* eslint-env es6 */
 //	Reference: https://github.com/microsoft/tsdoc/blob/master/api-demo/src/advancedDemo.ts
 const path = require("path");
-const os = require('os');
+const os = require("os");
 const colors = {
 	green: function(s) { return s; },
 	gray: function(s) { return s; },
@@ -20,7 +20,7 @@ var kinds = (function() {
 })();
 
 function dumpTSDocTree(docNode, indent) {
-	let dumpText = '';
+	let dumpText = "";
 	if (docNode instanceof tsdoc.DocExcerpt) {
 		const content = docNode.content.toString();
 		dumpText += colors.gray(`${indent}* ${docNode.excerptKind}=`) + colors.cyan(JSON.stringify(content));
@@ -30,20 +30,20 @@ function dumpTSDocTree(docNode, indent) {
 	console.log(dumpText);
 
 	for (const child of docNode.getChildNodes()) {
-		dumpTSDocTree(child, indent + '  ');
+		dumpTSDocTree(child, indent + "  ");
 	}
 }
 
 function parseTSDoc(sourceFile, foundComment) {
-	console.log(os.EOL + colors.green('Comment to be parsed:') + os.EOL);
-	console.log(colors.gray('<<<<<<'));
+	console.log(os.EOL + colors.green("Comment to be parsed:") + os.EOL);
+	console.log(colors.gray("<<<<<<"));
 	console.log(foundComment.textRange.toString());
-	console.log(colors.gray('>>>>>>'));
+	console.log(colors.gray(">>>>>>"));
 
 	const customConfiguration = new tsdoc.TSDocConfiguration();
 
 	const customInlineDefinition = new tsdoc.TSDocTagDefinition({
-		tagName: '@customInline',
+		tagName: "@customInline",
 		syntaxKind: tsdoc.TSDocTagSyntaxKind.InlineTag,
 		allowMultiple: true
 	});
@@ -51,14 +51,14 @@ function parseTSDoc(sourceFile, foundComment) {
 	// NOTE: Defining this causes a new DocBlock to be created under docComment.customBlocks.
 	// Otherwise, a simple DocBlockTag would appear inline in the @remarks section.
 	const customBlockDefinition = new tsdoc.TSDocTagDefinition({
-		tagName: '@customBlock',
+		tagName: "@customBlock",
 		syntaxKind: tsdoc.TSDocTagSyntaxKind.BlockTag
 	});
 
 	// NOTE: Defining this causes @customModifier to be removed from its section,
 	// and added to the docComment.modifierTagSet
 	const customModifierDefinition = new tsdoc.TSDocTagDefinition({
-		tagName: '@customModifier',
+		tagName: "@customModifier",
 		syntaxKind: tsdoc.TSDocTagSyntaxKind.ModifierTag
 	});
 
@@ -68,23 +68,23 @@ function parseTSDoc(sourceFile, foundComment) {
 		customModifierDefinition
 	]);
 
-	console.log(os.EOL + 'Invoking TSDocParser with custom configuration...' + os.EOL);
+	console.log(os.EOL + "Invoking TSDocParser with custom configuration..." + os.EOL);
 	const tsdocParser = new tsdoc.TSDocParser(customConfiguration);
 	const parserContext = tsdocParser.parseRange(foundComment.textRange);
 	const docComment = parserContext.docComment;
 
-	console.log(os.EOL + colors.green('Parser Log Messages:') + os.EOL);
+	console.log(os.EOL + colors.green("Parser Log Messages:") + os.EOL);
 
 	if (parserContext.log.messages.length === 0) {
-		console.log('No errors or warnings.');
+		console.log("No errors or warnings.");
 	} else {
 		for (const message of parserContext.log.messages) {
-		// Since we have the compiler's analysis, use it to calculate the line/column information,
-		// since this is currently faster than TSDoc's TextRange.getLocation() lookup.
-		const location = sourceFile.getLineAndCharacterOfPosition(message.textRange.pos);
-		const formattedMessage = `${sourceFile.fileName}(${location.line + 1},${location.character + 1}):`
-			+ ` [TSDoc] ${message}`;
-		console.log(formattedMessage);
+			// Since we have the compiler's analysis, use it to calculate the line/column information,
+			// since this is currently faster than TSDoc's TextRange.getLocation() lookup.
+			const location = sourceFile.getLineAndCharacterOfPosition(message.textRange.pos);
+			const formattedMessage = `${sourceFile.fileName}(${location.line + 1},${location.character + 1}):`
+				+ ` [TSDoc] ${message}`;
+			console.log(formattedMessage);
 		}
 	}
 
@@ -94,8 +94,8 @@ function parseTSDoc(sourceFile, foundComment) {
 		console.log(os.EOL + colors.cyan(`The ${customModifierDefinition.tagName} modifier was NOT FOUND.`));
 	}
 
-	console.log(os.EOL + colors.green('Visiting TSDoc\'s DocNode tree') + os.EOL);
-	dumpTSDocTree(docComment, '');
+	console.log(os.EOL + colors.green("Visiting TSDoc\'s DocNode tree") + os.EOL);
+	dumpTSDocTree(docComment, "");
 }
 
 const isDeclarationKind = function(kind) {
@@ -143,8 +143,8 @@ function getJSDocCommentRanges(node, text) {
 		case ts.SyntaxKind.FunctionExpression:
 		case ts.SyntaxKind.ArrowFunction:
 		case ts.SyntaxKind.ParenthesizedExpression:
-		commentRanges.push(...ts.getTrailingCommentRanges(text, node.pos) || []);
-		break;
+			commentRanges.push(...ts.getTrailingCommentRanges(text, node.pos) || []);
+			break;
 	}
 	console.log("text", text);
 	commentRanges.push(...ts.getLeadingCommentRanges(text, node.pos) || []);
@@ -181,7 +181,7 @@ const traverse = function(sourceFile, node, indent, rv) {
 	}
 
 	return node.forEachChild(
-		child => traverse(sourceFile, child, indent + '  ', rv)
+		child => traverse(sourceFile, child, indent + "  ", rv)
 	);
 };
 
@@ -199,7 +199,7 @@ const main = function(args) {
 
 	const comments = [];
 
-	traverse(source, source, '', comments);
+	traverse(source, source, "", comments);
 
 	if (comments.length === 0) {
 		console.log("No comments.");

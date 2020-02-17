@@ -17,8 +17,6 @@ if (!jsh.shell.tools.node.modules.installed["@microsoft/tsdoc"]) {
 	jsh.shell.tools.node.modules.install({ name: "@microsoft/tsdoc" });
 }
 
-jsh.shell.console("TypeScript: " + jsh.shell.tools.node.modules.installed.typescript);
-
 jsh.shell.tools.node.run({
 	arguments: function(rv) {
 		rv.push(jsh.script.file.parent.getRelativePath("tsdoc.node.js"));

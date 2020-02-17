@@ -149,7 +149,13 @@ void(0);
 					debugger;
 					if (node_modules) {
 						node_modules.list().forEach(function(item) {
-							this[item.pathname.basename] = {};
+							if (item.directory && item.pathname.basename.substring(0,1) == "@") {
+								item.list().forEach(function(sub) {
+									this[item.pathname.basename + "/" + sub.pathname.basename] = {};
+								}, this);
+							} else {
+								this[item.pathname.basename] = {};
+							}
 						},this);
 					}
 				}
