@@ -487,7 +487,23 @@ END LICENSE
 					</span>
 					<div>
 						If Node.js is installed in this installation of <code>jsh</code>, this object will be a Node.js
-						<a href="../../../rhino/tools/node/api.html">Installation</a>.
+						<a href="../../../rhino/tools/node/api.html">Installation</a>, augmented with the following property:
+						<div class="label">has properties:</div>
+						<ul>
+							<li class="function">
+								<div class="name">update</div>
+								<span>
+									Updates the <code>jsh</code> Node.js (removing all globally-installed modules), replacing
+									the <code>jsh.shell.tools.node</code> object with the new installation.
+									<!--	TODO	but now lacks update() method; should we fix that somehow?	-->
+								</span>
+								<div class="returns">
+									<div class="label">Returns</div>
+									<span class="type">__TYPE__</span>
+									<span>__DESCRIPTION__</span>
+								</div>
+							</li>
+						</ul>
 					</div>
 					<div>
 						If Node.js is not installed in this <code>jsh</code> installation, but can be installed, it will be an

@@ -152,7 +152,10 @@ END LICENSE
 						<li class="value">
 							<div class="name">installed</div>
 							<span class="type">__TYPE__</span>
-							<span>__DESCRIPTION__</span>
+							<span>
+								An object with a property for each installed module; the name of the module is the name of the
+								property.
+							</span>
 						</li>
 						<li class="function">
 							<div class="name">install</div>
@@ -160,6 +163,16 @@ END LICENSE
 							<div class="arguments">
 								<div class="label">Arguments</div>
 								<ol>
+									<li class="object">
+										<div class="label">has properties:</div>
+										<ul>
+											<li class="value">
+												<div class="name">name</div>
+												<span class="type">string</span>
+												<span>The name of the module to install.</span>
+											</li>
+										</ul>
+									</li>
 								</ol>
 							</div>
 							<div class="returns">

@@ -18,10 +18,19 @@
  */
 
 /**
+ * @typedef { Object } slime.jrunscript.git.Commit
+ * @property { string[] } names
+ * @property { { hash: string } } commit
+ * @property { { name: string, email: string, date: any } } author
+ * @property { { name: string, email: string, date: any } } committer
+ * @property { string } subject
+ */
+
+/**
  * @typedef { Object } slime.jrunscript.git.LocalRepository.Branch
  * @property { boolean } current
  * @property { string } name
- * @property { any } commit
+ * @property { slime.jrunscript.git.Commit } commit
  */
 
 //	TODO	dates below are When
@@ -135,7 +144,6 @@ void(0);
 					if (config) {
 						for (var x in config) {
 							if (config[x] instanceof Array) {
-								debugger;
 								config[x].forEach(function(value) {
 									array.push("-c", x + "=" + value);
 								});
@@ -362,8 +370,6 @@ void(0);
 			 * @type { new ({}) => slime.jrunscript.git.Repository }
 			 */
 			var Repository = function(o) {
-				var environment = (o && o.environment) ? o.environment : {};
-
 				//	Getting and Creating Projects
 				/** @type { string } */
 				this.reference = void(0);
@@ -447,6 +453,10 @@ void(0);
 							return "%" + field;
 						}).join("~~");
 
+						/**
+						 * @param { string } line
+						 * @returns { slime.jrunscript.git.Commit }
+						 */
 						this.parse = function(line) {
 							var tokens = line.split("~~");
 							if (typeof(tokens[5]) == "undefined") throw new Error("No tokens[5]: [" + line + "]");
