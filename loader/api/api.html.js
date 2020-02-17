@@ -191,10 +191,10 @@ $exports.ApiHtmlTests = function(html,name) {
 				if (rv == null) {
 					throw new Error("Could not locate path " + path + " in " + apipath);
 				}
-//				if (!otherhtml.getRelativePath) throw new Error("html " + otherhtml + " does not have getRelativePath");
-//				rv.getRelativePath = function(path) {
-//					return otherhtml.getRelativePath(path);
-//				}
+				// if (!otherhtml.getRelativePath) throw new Error("html " + otherhtml + " does not have getRelativePath");
+				// rv.getRelativePath = function(path) {
+				// 	return otherhtml.getRelativePath(path);
+				// }
 				return rv;
 			}
 			return rv;
@@ -264,7 +264,7 @@ $exports.ApiHtmlTests = function(html,name) {
 
 			var relativeScope = function(element) {
 				var rv = scope.$relative(element.getRelativePath);
-	//			debugger;
+				// debugger;
 				if (scope.module) {
 					rv.module = scope.module;
 				}
@@ -394,19 +394,19 @@ $exports.ApiHtmlTests = function(html,name) {
 					//Packages.java.lang.System.err.println("some tests = " + descend + " for " + element);
 					if (descend) {
 						rv.parts[String(i)] = recurse(scope,element);
-//						var child = (scope,element);
-//						if (!child) throw new Error("No child for element " + element);
-//						if (child.scenario) {
-//							rv.parts[String(i)] = {
-//								create: child.scenario
-//							};
-////								SUITE.scenario(String(i), {
-////									create: child.scenario
-////								});
-//						} else {
-//							rv.parts[String(i)] = child;
-////								SUITE.suite(String(i),child);
-//						}
+						// var child = (scope,element);
+						// if (!child) throw new Error("No child for element " + element);
+						// if (child.scenario) {
+						// 	rv.parts[String(i)] = {
+						// 		create: child.scenario
+						// 	};
+						// 		// SUITE.scenario(String(i), {
+						// 		// 	create: child.scenario
+						// 		// });
+						// } else {
+						// 	rv.parts[String(i)] = child;
+						// 		// SUITE.suite(String(i),child);
+						// }
 					}
 				})(children[i]);
 			}

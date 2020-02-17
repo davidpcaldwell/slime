@@ -116,13 +116,13 @@ var Verify = function(scope,vars) {
 			return isEqualTo(value,true);
 		}
 
-//		this.isUndefined = $api.deprecate(function() {
-//			is(void(0));
-//		});
-//
-//		this.isNotEqualTo = $api.deprecate(function(value) {
-//			return isEqualTo(value,true);
-//		});
+		// this.isUndefined = $api.deprecate(function() {
+		// 	is(void(0));
+		// });
+
+		// this.isNotEqualTo = $api.deprecate(function(value) {
+		// 	return isEqualTo(value,true);
+		// });
 	};
 
 	var prefixFactory = function(name) {
@@ -146,14 +146,14 @@ var Verify = function(scope,vars) {
 			}
 			var strings = Array.prototype.map.call(arguments,argumentToString);
 			var name = prefix(x)+"(" + strings.join() + ")";
-//				try {
-				var returned = o[x].apply(o,arguments);
-				var value = rv(returned,name);
-//					value.threw = new DidNotThrow(returned,name);
-				return value;
-//				} catch (e) {
-//					return new DidNotReturn(e,name);
-//				}
+			// try {
+			var returned = o[x].apply(o,arguments);
+			var value = rv(returned,name);
+			// value.threw = new DidNotThrow(returned,name);
+			return value;
+			// } catch (e) {
+			// 	return new DidNotReturn(e,name);
+			// }
 		};
 		wrapObject.call(wrapped,o[x]);
 		return wrapped;
@@ -355,9 +355,9 @@ var TestExecutionProcessor = (function() {
 			} else if (assertion === null) {
 				return BooleanTest(assertion);
 			} else if (
-					(typeof(assertion) == "object" && assertion != null && typeof(assertion.success) == "boolean")
+				(typeof(assertion) == "object" && assertion != null && typeof(assertion.success) == "boolean")
 					|| (typeof(assertion) == "object" && assertion != null && assertion.success === null)
-				) {
+			) {
 				return (function(object) {
 					var MESSAGE_FOR_MESSAGES = function(assertion_messages) {
 						return function(success) {
@@ -546,7 +546,7 @@ $exports.TestExecutionProcessor = TestExecutionProcessor;
 				if (destroy) destroy.call(this,scope);
 			} catch (e) {
 				//	TODO	what to do on destroy error?
-//				vscope.error(e);
+				// vscope.error(e);
 			}
 		}).bind(this);
 
@@ -690,7 +690,6 @@ $exports.TestExecutionProcessor = TestExecutionProcessor;
 				}
 			}
 
-			var c = context;
 			if (!next) {
 				return part.after(vscope.success,local);
 			} else if (!part.find("next")) {
