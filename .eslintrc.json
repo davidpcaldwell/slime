@@ -7,7 +7,7 @@
 	"rules": {
 		"no-mixed-spaces-and-tabs": "error",
 
-		"indent": ["warn", "tab"],
+		"indent": ["warn", "tab", { "SwitchCase": 1 }],
 		"quotes": ["warn", "double"],
 
 		"no-extra-semi": "warn",
