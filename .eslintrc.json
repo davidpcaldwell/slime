@@ -9,7 +9,7 @@
 
 		"indent": ["warn", "tab"],
 		"quotes": ["warn", "double"],
-		"no-unused-vars": "warn",
+
 		"no-extra-semi": "warn",
 		"no-empty": "warn",
 		"no-redeclare": "warn",
@@ -19,6 +19,9 @@
 		"no-ex-assign": "warn",
 		"no-prototype-builtins": "warn",
 		"no-shadow-restricted-names": "warn",
+
+		//	Possibly should be allowed, at least for unused parameters?
+		"no-unused-vars": "warn",
 
 		//	things like if (false), used often to disable code while retaining syntax highlighting, etc.
 		"no-constant-condition": "off",

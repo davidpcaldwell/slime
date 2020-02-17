@@ -113,6 +113,9 @@ void(0);
 						var mutating = $api.Function.mutating(p.environment);
 						var result = mutating(environment);
 						if (!result.PATH) result.PATH = PATH.toString();
+
+						//	TODO	what if NODE_PATH is set?
+						environment.NODE_PATH = o.directory.getRelativePath("lib/node_modules")
 					},
 					stdio: p.stdio,
 					evaluate: p.evaluate
@@ -143,6 +146,7 @@ void(0);
 			this.modules = new function() {
 				var Installed = function() {
 					var node_modules = o.directory.getSubdirectory("lib/node_modules");
+					debugger;
 					if (node_modules) {
 						node_modules.list().forEach(function(item) {
 							this[item.pathname.basename] = {};
@@ -192,7 +196,8 @@ void(0);
 
 		var versions = {
 			"12.13.1": { url: "https://nodejs.org/dist/v12.13.1/node-v12.13.1-darwin-x64.tar.gz" },
-			"12.14.1": { url: "https://nodejs.org/dist/v12.14.1/node-v12.14.1-darwin-x64.tar.gz" }
+			"12.14.1": { url: "https://nodejs.org/dist/v12.14.1/node-v12.14.1-darwin-x64.tar.gz" },
+			"12.16.0": { url: "https://nodejs.org/dist/v12.16.0/node-v12.16.0-darwin-x64.tar.gz" }
 		};
 
 		$exports.at = function(p) {
@@ -207,7 +212,7 @@ void(0);
 			/** @type { slime.jrunscript.node.install } */
 			function(p,events) {
 				if (!p) throw new TypeError();
-				if (!p.version) p.version = "12.14.1";
+				if (!p.version) p.version = "12.16.0";
 				var existing = $exports.at({ location: p.location });
 				/** @type { slime.jrunscript.node.Installation } */
 				var rv;
