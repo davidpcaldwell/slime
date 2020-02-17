@@ -136,6 +136,7 @@
 					}
 				}
 			} catch (e) {
+				//	MetaObject will not be defined
 			}
 
 			return $exports;
@@ -366,7 +367,7 @@
 						name: resource.name,
 						js: string
 					}
-				};
+				}
 				if (!resource.js) {
 					throw new TypeError("Resource " + resource.name + " is not JavaScript; type = " + type);
 				}
@@ -426,7 +427,7 @@
 
 				var declare = function(name) {
 					this[name] = function retarget(path,scope,target) {
-//						return methods[name].call(target,p.get(path),scope);
+						// return methods[name].call(target,p.get(path),scope);
 						return methods[name].call(target,this.get(path),scope);
 					};
 				};

@@ -472,6 +472,7 @@
 
 	loader.Loader = (function(was) {
 		var rv = function(p) {
+			if (!p) throw new TypeError("source argument required for Loader.");
 			if (p.zip) {
 				if (p.zip._file) {
 					p._source = Packages.inonit.script.engine.Code.Loader.zip(p.zip._file);
