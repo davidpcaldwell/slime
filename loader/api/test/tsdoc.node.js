@@ -166,16 +166,15 @@ function getJSDocCommentRanges(node, text) {
 }
 
 const traverse = function(sourceFile, node, indent, rv) {
-	const buffer = sourceFile.getFullText();
 	const match = isDeclarationKind(node.kind);
 	console.log("isDeclarationKind", kinds[node.kind], match);
 	if (match) {
-		const comments = getJSDocCommentRanges(node, buffer);
+		const comments = sourceFile.getJsdocCommentRanges(node);
 		console.log(`Found ${comments.length} comments.`);
 		for (let i=0; i<comments.length; i++) {
 			rv.push({
 				compilerNode: node,
-				textRange: tsdoc.TextRange.fromStringRange(buffer, comments[i].pos, comments[i].end)
+				textRange: sourceFile.getTextRange(comments[i])
 			});
 		}
 	}
@@ -184,6 +183,20 @@ const traverse = function(sourceFile, node, indent, rv) {
 		child => traverse(sourceFile, child, indent + "  ", rv)
 	);
 };
+
+var SourceFile = function(o) {
+	const buffer = o.sourceFile.getFullText();
+
+	this.getJsdocCommentRanges = function(node) {
+		return getJSDocCommentRanges(node, buffer)
+	}
+
+	this.node = o.sourceFile;
+
+	this.getTextRange = function(comment) {
+		return tsdoc.TextRange.fromStringRange(buffer, comment.pos, comment.end);
+	}
+}
 
 const main = function(args) {
 	console.log("Hello, World! " + args.join("|"));
@@ -196,10 +209,11 @@ const main = function(args) {
 
 	console.log("input = " + inputFilename);
 	const source = program.getSourceFile(inputFilename);
+	const sourceFile = new SourceFile({ sourceFile: source });
 
 	const comments = [];
 
-	traverse(source, source, "", comments);
+	traverse(sourceFile, source, "", comments);
 
 	if (comments.length === 0) {
 		console.log("No comments.");
@@ -207,6 +221,13 @@ const main = function(args) {
 		//	TODO	Just do one for now.
 		parseTSDoc(source, comments[0]);
 	}
+
+	debugger;
+	var results = source.forEachChild(function(child) {
+		console.log("child = " + child);
+		return 1;
+	});
+	console.log("results = " + results);
 }
 
 main(process.argv.slice(2));
