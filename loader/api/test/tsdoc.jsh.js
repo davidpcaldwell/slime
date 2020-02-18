@@ -1,3 +1,9 @@
+var parameters = jsh.script.getopts({
+	options: {
+		"node:debug": false
+	}
+})
+
 if (jsh.shell.tools.node.install) {
 	jsh.shell.tools.node.install();
 } else {
@@ -19,6 +25,7 @@ if (!jsh.shell.tools.node.modules.installed["@microsoft/tsdoc"]) {
 
 jsh.shell.tools.node.run({
 	arguments: function(rv) {
+		if (parameters.options["node:debug"]) rv.push("--inspect-brk");
 		rv.push(jsh.script.file.parent.getRelativePath("tsdoc.node.js"));
 	}
 });
