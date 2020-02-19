@@ -1,6 +1,6 @@
 /* eslint-env es6 */
 //	Reference: https://github.com/microsoft/tsdoc/blob/master/api-demo/src/advancedDemo.ts
-const path = require("path");
+//	https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API
 const os = require("os");
 const colors = {
 	green: function(s) { return s; },
@@ -134,58 +134,75 @@ const isDeclarationKind = function(kind) {
     || kind === ts.SyntaxKind.JSDocPropertyTag;
 }
 
-function getJSDocCommentRanges(node, text) {
-	const commentRanges = [];
-
-	switch (node.kind) {
-		case ts.SyntaxKind.Parameter:
-		case ts.SyntaxKind.TypeParameter:
-		case ts.SyntaxKind.FunctionExpression:
-		case ts.SyntaxKind.ArrowFunction:
-		case ts.SyntaxKind.ParenthesizedExpression:
-			commentRanges.push(...ts.getTrailingCommentRanges(text, node.pos) || []);
-			break;
-	}
-	console.log("text", text);
-	commentRanges.push(...ts.getLeadingCommentRanges(text, node.pos) || []);
-
-	console.log(
-		"Comments: "
-		+ "\n"
-		+ commentRanges.map(
-			(comment) => JSON.stringify(comment)
-		).join("\n")
-		+ "\n"
-	)
-
-	// True if the comment starts with '/**' but not if it is '/**/'
-	return commentRanges.filter((comment) =>
-		text.charCodeAt(comment.pos + 1) === 0x2A /* ts.CharacterCodes.asterisk */ &&
-		text.charCodeAt(comment.pos + 2) === 0x2A /* ts.CharacterCodes.asterisk */ &&
-		text.charCodeAt(comment.pos + 3) !== 0x2F /* ts.CharacterCodes.slash */);
-}
-
-const traverse = function(sourceFile, node, indent, rv) {
+const traverse = function(sourceFile, node) {
 	const match = isDeclarationKind(node.kind);
 	console.log("isDeclarationKind", kinds[node.kind], match);
 	if (match) {
 		const comments = sourceFile.getJsdocCommentRanges(node);
 		console.log(`Found ${comments.length} comments.`);
-		for (let i=0; i<comments.length; i++) {
-			rv.push({
-				compilerNode: node,
-				textRange: sourceFile.getTextRange(comments[i])
-			});
-		}
+		// for (let i=0; i<comments.length; i++) {
+		// 	rv.push({
+		// 		compilerNode: node,
+		// 		textRange: sourceFile.getTextRange(comments[i])
+		// 	});
+		// }
 	}
 
-	return node.forEachChild(
-		child => traverse(sourceFile, child, indent + "  ", rv)
-	);
+	const children = (function() {
+		var children = [];
+		node.forEachChild(function(child) {
+			children.push(traverse(sourceFile, child));
+		});
+		return (children.length) ? children : void(0);
+	})();
+
+	const parent = (function() {
+		const rv = {
+			kind: kinds[node.kind]
+		};
+		if (rv.kind == "Identifier") rv.text = node.text;
+		return rv;
+	})();
+
+	return {
+		node: parent,
+		children: children
+	}
 };
 
 var SourceFile = function(o) {
 	const buffer = o.sourceFile.getFullText();
+
+	function getJSDocCommentRanges(node, text) {
+		const commentRanges = [];
+
+		switch (node.kind) {
+			case ts.SyntaxKind.Parameter:
+			case ts.SyntaxKind.TypeParameter:
+			case ts.SyntaxKind.FunctionExpression:
+			case ts.SyntaxKind.ArrowFunction:
+			case ts.SyntaxKind.ParenthesizedExpression:
+				commentRanges.push(...ts.getTrailingCommentRanges(text, node.pos) || []);
+				break;
+		}
+		//console.log("text", text);
+		commentRanges.push(...ts.getLeadingCommentRanges(text, node.pos) || []);
+
+		console.log(
+			"Comments: "
+			+ "\n"
+			+ commentRanges.map(
+				(comment) => JSON.stringify(comment)
+			).join("\n")
+			+ "\n"
+		)
+
+		// True if the comment starts with '/**' but not if it is '/**/'
+		return commentRanges.filter((comment) =>
+			text.charCodeAt(comment.pos + 1) === 0x2A /* ts.CharacterCodes.asterisk */ &&
+			text.charCodeAt(comment.pos + 2) === 0x2A /* ts.CharacterCodes.asterisk */ &&
+			text.charCodeAt(comment.pos + 3) !== 0x2F /* ts.CharacterCodes.slash */);
+	}
 
 	this.getJsdocCommentRanges = function(node) {
 		return getJSDocCommentRanges(node, buffer)
@@ -199,35 +216,27 @@ var SourceFile = function(o) {
 }
 
 const main = function(args) {
-	console.log("Hello, World! " + args.join("|"));
-	const inputFilename = path.resolve(
-		path.join(__dirname, "../../..", "loader", "$api.d.ts")
-	);
+	const inputFilename = args[0];
 	const program = ts.createProgram([ inputFilename ], {
-		target: ts.ScriptTarget.ES5
+		target: ts.ScriptTarget.ES5,
+		allowJs: true
 	});
 
 	console.log("input = " + inputFilename);
 	const source = program.getSourceFile(inputFilename);
+	if (!source) throw new Error("No source file: " + inputFilename);
 	const sourceFile = new SourceFile({ sourceFile: source });
 
-	const comments = [];
+	const json = traverse(sourceFile, sourceFile.node, [], []);
 
-	traverse(sourceFile, source, "", comments);
+	// if (comments.length === 0) {
+	// 	console.log("No comments.");
+	// } else {
+	// 	//	TODO	Just do one for now.
+	// 	parseTSDoc(source, comments[0]);
+	// }
 
-	if (comments.length === 0) {
-		console.log("No comments.");
-	} else {
-		//	TODO	Just do one for now.
-		parseTSDoc(source, comments[0]);
-	}
-
-	debugger;
-	var results = source.forEachChild(function(child) {
-		console.log("child = " + child);
-		return 1;
-	});
-	console.log("results = " + results);
+	console.log(JSON.stringify(json, void(0), "    "));
 }
 
 main(process.argv.slice(2));
