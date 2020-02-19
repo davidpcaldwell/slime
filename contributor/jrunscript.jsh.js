@@ -44,7 +44,7 @@ var SRC = jsh.script.file.parent.parent;
 
 if (!parameters.options.noplatform) suite.add("internal/slime", new jsh.unit.html.Part({
 	//	TODO	redundant; now tested per-engine in contributor/suite.jsh.js
-		//	Functionality used internally or accessed through loader/jrunscript (although untested by loader/jrunscript)
+	//	Functionality used internally or accessed through loader/jrunscript (although untested by loader/jrunscript)
 	pathname: SRC.getRelativePath("loader/api.html")
 }));
 suite.add("internal/mime", new jsh.unit.html.Part({
@@ -332,7 +332,7 @@ suite.add("servlet/jsh", new jsh.unit.html.Part({
 	pathname: SRC.getRelativePath("rhino/http/servlet/plugin.jsh.api.html")
 }));
 
-// TODO: requires Tomvcat, right?
+// TODO: requires Tomcat, right?
 // TODO: move to rhino/http/servlet, creating internal.api.html?
 var servletPart = new function() {
 	// TODO: enable

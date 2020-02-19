@@ -134,8 +134,8 @@ plugin({
 
 		//	TODO	probably will move to loader/api
 		jsh.unit.part = {};
-		$api.deprecate(jsh.unit, "part");
 		jsh.unit.part.Html = $api.deprecate(jsh.unit.html.Part);
+		$api.deprecate(jsh.unit, "part");
 		jsh.unit.Scenario.Html = $api.deprecate(function(p) {
 			return new html.Scenario(p);
 		});

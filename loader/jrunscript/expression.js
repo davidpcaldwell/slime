@@ -100,8 +100,6 @@
 
 	loader.Resource = (function(was) {
 		return function(p) {
-			was.apply(this,arguments);
-			//	TODO	probably should allow name property to be passed in and then passed through
 			if (p.stream && p.stream.binary) {
 				if (!p.read) p.read = {};
 				p.read.binary = (function(stream) {
@@ -116,13 +114,56 @@
 				})(p.stream.binary);
 			}
 			if (p._loaded) {
-				if (!this.type) {
-					this.type = loader.mime.Type.fromName(p._loaded.path);
-				}
-
 				if (!p.read) p.read = {};
 				p.read.binary = function() {
 					return new loader.io.InputStream(p._loaded.resource.getInputStream());
+				}
+			}
+
+			var binary = (function() {
+				if (p.read && p.read.binary) {
+					return function() {
+						return p.read.binary();
+					}
+				}
+			})();
+
+			// TODO: Probably should implement this method if the argument provides a string or read.string also
+			var text = (function() {
+				if (p.read && p.read.text) {
+					return function() {
+						return p.read.text();
+					}
+				}
+				if (p.read && p.read.string) {
+					return function() {
+						return new loader.io.Reader(new Packages.java.io.StringReader(p.read.string()));
+					}
+				}
+				if (p.string) {
+					return function() {
+						return new loader.io.Reader(new Packages.java.io.StringReader(p.string));
+					}
+				}
+				if (p.read && p.read.binary) {
+					return function() {
+						return p.read.binary().character();
+					}
+				}
+			})();
+
+			if (p.read && !p.read.string) {
+				p.read.string = function() {
+					return text().asString();
+				}
+			}
+
+			was.apply(this,arguments);
+
+			//	TODO	probably should allow name property to be passed in and then passed through
+			if (p._loaded) {
+				if (!this.type) {
+					this.type = loader.mime.Type.fromName(p._loaded.path);
 				}
 
 				if (typeof(p.length) == "undefined") Object.defineProperty(
@@ -183,33 +224,6 @@
 					})
 				}).call(this,this.name);
 			}
-
-			var binary = (function() {
-				if (p.read && p.read.binary) {
-					return function() {
-						return p.read.binary();
-					}
-				}
-			})();
-
-			// TODO: Probably should implement this method if the argument provides a string or read.string also
-			var text = (function() {
-				if (p.read && p.read.text) {
-					return function() {
-						return p.read.text();
-					}
-				}
-				if (p.read && p.read.string) {
-					return function() {
-						return new loader.io.Reader(new Packages.java.io.StringReader(p.read.string()));
-					}
-				}
-				if (p.read && p.read.binary) {
-					return function() {
-						return p.read.binary().character();
-					}
-				}
-			})();
 
 			if (typeof(this.string) == "undefined") Object.defineProperty(this, "string", {
 				get: loader.$api.deprecate(function() {
