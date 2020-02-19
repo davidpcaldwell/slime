@@ -2,6 +2,7 @@ var parameters = jsh.script.getopts({
 	options: {
 		"node:debug": false,
 		file: jsh.file.Pathname,
+		ast: jsh.file.Pathname,
 		to: jsh.file.Pathname
 	}
 })
@@ -25,11 +26,20 @@ if (!jsh.shell.tools.node.modules.installed["@microsoft/tsdoc"]) {
 	jsh.shell.tools.node.modules.install({ name: "@microsoft/tsdoc" });
 }
 
-jsh.shell.tools.node.run({
+var ast = jsh.shell.tools.node.run({
 	arguments: function(rv) {
 		if (parameters.options["node:debug"]) rv.push("--inspect-brk");
 		rv.push(jsh.script.file.parent.getRelativePath("tsdoc.node.js"));
 		rv.push(parameters.options.file.toString());
-		rv.push(parameters.options.to.toString());
+		rv.push(parameters.options.ast.toString());
+	},
+	evaluate: function(result) {
+		if (result.status != 0) throw new Error();
+		//	TODO	read(JSON)
+		return parameters.options.ast.file.read(JSON);
 	}
 });
+jsh.shell.console(JSON.stringify(ast));
+
+var output = {};
+parameters.options.to.write(JSON.stringify(output, void(0), "    "), { append: false });

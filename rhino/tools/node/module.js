@@ -146,7 +146,6 @@ void(0);
 			this.modules = new function() {
 				var Installed = function() {
 					var node_modules = o.directory.getSubdirectory("lib/node_modules");
-					debugger;
 					if (node_modules) {
 						node_modules.list().forEach(function(item) {
 							if (item.directory && item.pathname.basename.substring(0,1) == "@") {

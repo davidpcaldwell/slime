@@ -314,6 +314,19 @@ END LICENSE
 										verify(resource).read(String).is("Buffer");
 										verify(resource).read(String).is("Buffer");
 									</script>
+									<script type="application/x.jsapi#tests">
+										var buffer = new module.io.Buffer();
+										var writer = buffer.writeText();
+										writer.write(JSON.stringify({ foo: "bar" }));
+										buffer.close();
+										var resource = new module.Resource({
+											stream: {
+												binary: buffer.readBinary()
+											}
+										});
+										verify(resource).read(JSON).foo.is("bar");
+										verify(resource).read(JSON).foo.is("bar");
+									</script>
 								</li>
 								<li class="object">
 									<div class="name">read</div>
