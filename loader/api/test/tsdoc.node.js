@@ -141,7 +141,7 @@ const traverse = function(sourceFile, node) {
 	})();
 
 	return {
-		node: parent,
+		object: parent,
 		children: children
 	}
 };
@@ -210,7 +210,7 @@ const main = function(args) {
 	const json = traverse(sourceFile, sourceFile.node, [], []);
 
 	function keep(json) {
-		if (json.node.comments && json.node.comments.length) return true;
+		if (json.object.comments && json.object.comments.length) return true;
 		if (json.children && json.children.some(function(child) {
 			return keep(child);
 		})) return true;

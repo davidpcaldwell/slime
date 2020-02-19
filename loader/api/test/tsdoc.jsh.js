@@ -41,5 +41,68 @@ var ast = jsh.shell.tools.node.run({
 });
 jsh.shell.console(JSON.stringify(ast));
 
-var output = {};
-parameters.options.to.write(JSON.stringify(output, void(0), "    "), { append: false });
+var kinds = {};
+
+var Context = function() {
+	this.types = {};
+	this.interfaces = {};
+	this.modules = {};
+
+	this.addTypeAlias = function(name,value) {
+		this.types[name] = value;
+	};
+
+	this.addInterface = function(name,value) {
+		this.interfaces[name] = value;
+	};
+
+	this.addModule = function(name,value) {
+		this.modules[name] = value;
+	}
+};
+
+var getName = function(node) {
+	var identifier = node.children.filter(function(child) {
+		return child.object.kind == "Identifier";
+	})[0];
+	return identifier.object.text;
+}
+
+kinds.SourceFile = function(context,node) {
+	node.children.forEach(function(child) {
+		interpret(context,child);
+	});
+}
+
+kinds.TypeAliasDeclaration = function(context,node) {
+	var name = getName(node);
+	context.addTypeAlias(name, {});
+}
+
+kinds.InterfaceDeclaration = function(context,node) {
+	var name = getName(node);
+	//	TODO	parse elements of the declaration
+	context.addInterface(name, {});
+}
+
+kinds.ModuleDeclaration = function(context,node) {
+	var name = getName(node);
+	context.addModule(name, {});
+}
+
+kinds.EndOfFileToken = function(context,node) {
+}
+
+kinds.Identifier = function(rv,o) {
+	throw new TypeError();
+	rv.text = o.node.text;
+}
+
+var interpret = function(context,node) {
+	kinds[node.object.kind](context,node);
+}
+
+var context = new Context();
+
+output = interpret(context,ast);
+parameters.options.to.write(JSON.stringify(context, void(0), "    "), { append: false });
