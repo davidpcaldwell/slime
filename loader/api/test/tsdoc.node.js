@@ -36,6 +36,18 @@ function dumpTSDocTree(docNode, indent) {
 	}
 }
 
+function docNodeToJson(docNode) {
+	var rv = {};
+	if (docNode instanceof tsdoc.DocExcerpt) {
+		rv.content = docNode.content.toString();
+		rv.excerptKind = docNode.excerptKind;
+	} else {
+		rv.kind = docNode.kind;
+	}
+	rv.children = docNode.getChildNodes().map(docNodeToJson);
+	return rv;
+}
+
 function parseTSDoc(sourceFile, foundComment) {
 	console.log(os.EOL + colors.green("Comment to be parsed:") + os.EOL);
 	console.log(colors.gray("<<<<<<"));
@@ -148,7 +160,7 @@ const tsdocParser = (function() {
 	// NOTE: Defining this causes a new DocBlock to be created under docComment.customBlocks.
 	// Otherwise, a simple DocBlockTag would appear inline in the @remarks section.
 	const customBlockDefinition = new tsdoc.TSDocTagDefinition({
-		tagName: "@customBlock",
+		tagName: "@typedef",
 		syntaxKind: tsdoc.TSDocTagSyntaxKind.BlockTag
 	});
 
@@ -181,6 +193,7 @@ const traverse = function(sourceFile, node) {
 				//const docComment = parserContext.docComment;
 				return {
 					string: range.toString(),
+					parsed: docNodeToJson(parserContext.docComment),
 					log: {
 						messages: parserContext.log.messages.map(function(message) {
 							return message.toString()
