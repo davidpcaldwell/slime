@@ -1,6 +1,7 @@
 var parameters = jsh.script.getopts({
 	options: {
-		"node:debug": false
+		"node:debug": false,
+		file: jsh.file.Pathname
 	}
 })
 
@@ -27,5 +28,6 @@ jsh.shell.tools.node.run({
 	arguments: function(rv) {
 		if (parameters.options["node:debug"]) rv.push("--inspect-brk");
 		rv.push(jsh.script.file.parent.getRelativePath("tsdoc.node.js"));
+		rv.push(parameters.options.file.toString());
 	}
 });
