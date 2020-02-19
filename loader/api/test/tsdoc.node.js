@@ -2,6 +2,8 @@
 //	Reference: https://github.com/microsoft/tsdoc/blob/master/api-demo/src/advancedDemo.ts
 //	https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API
 const os = require("os");
+const path = require("path");
+const fs = require("fs");
 const colors = {
 	green: function(s) { return s; },
 	gray: function(s) { return s; },
@@ -134,19 +136,69 @@ const isDeclarationKind = function(kind) {
     || kind === ts.SyntaxKind.JSDocPropertyTag;
 }
 
+const tsdocParser = (function() {
+	const customConfiguration = new tsdoc.TSDocConfiguration();
+
+	const customInlineDefinition = new tsdoc.TSDocTagDefinition({
+		tagName: "@customInline",
+		syntaxKind: tsdoc.TSDocTagSyntaxKind.InlineTag,
+		allowMultiple: true
+	});
+
+	// NOTE: Defining this causes a new DocBlock to be created under docComment.customBlocks.
+	// Otherwise, a simple DocBlockTag would appear inline in the @remarks section.
+	const customBlockDefinition = new tsdoc.TSDocTagDefinition({
+		tagName: "@customBlock",
+		syntaxKind: tsdoc.TSDocTagSyntaxKind.BlockTag
+	});
+
+	// NOTE: Defining this causes @customModifier to be removed from its section,
+	// and added to the docComment.modifierTagSet
+	const customModifierDefinition = new tsdoc.TSDocTagDefinition({
+		tagName: "@customModifier",
+		syntaxKind: tsdoc.TSDocTagSyntaxKind.ModifierTag
+	});
+
+	customConfiguration.addTagDefinitions([
+		customInlineDefinition,
+		customBlockDefinition,
+		customModifierDefinition
+	]);
+
+	console.log(os.EOL + "Creating TSDocParser with custom configuration..." + os.EOL);
+	return new tsdoc.TSDocParser(customConfiguration);
+})();
+
 const traverse = function(sourceFile, node) {
-	const match = isDeclarationKind(node.kind);
-	console.log("isDeclarationKind", kinds[node.kind], match);
-	if (match) {
-		const comments = sourceFile.getJsdocCommentRanges(node);
-		console.log(`Found ${comments.length} comments.`);
-		// for (let i=0; i<comments.length; i++) {
-		// 	rv.push({
-		// 		compilerNode: node,
-		// 		textRange: sourceFile.getTextRange(comments[i])
-		// 	});
-		// }
-	}
+	const isDeclaration = isDeclarationKind(node.kind);
+	if (false) console.log("isDeclarationKind", kinds[node.kind], match);
+	const comments = (function() {
+		if (isDeclaration) {
+			const comments = sourceFile.getJsdocCommentRanges(node);
+			return comments.map(function(comment) {
+				const range = sourceFile.getTextRange(comment);
+				const parserContext = tsdocParser.parseRange(range);
+				//const docComment = parserContext.docComment;
+				return {
+					string: range.toString(),
+					log: {
+						messages: parserContext.log.messages.map(function(message) {
+							return message.toString()
+						})
+					}
+				}
+			});
+			if (false) console.log(`Found ${comments.length} comments.`);
+			// for (let i=0; i<comments.length; i++) {
+			// 	rv.push({
+			// 		compilerNode: node,
+			// 		textRange: sourceFile.getTextRange(comments[i])
+			// 	});
+			// }
+		} else {
+			return null;
+		}
+	})();
 
 	const children = (function() {
 		var children = [];
@@ -161,6 +213,8 @@ const traverse = function(sourceFile, node) {
 			kind: kinds[node.kind]
 		};
 		if (rv.kind == "Identifier") rv.text = node.text;
+		if (rv.kind == "FunctionDeclaration") rv.name = node.name.text;
+		if (comments) rv.comments = comments;
 		return rv;
 	})();
 
@@ -188,7 +242,7 @@ var SourceFile = function(o) {
 		//console.log("text", text);
 		commentRanges.push(...ts.getLeadingCommentRanges(text, node.pos) || []);
 
-		console.log(
+		if (false) console.log(
 			"Comments: "
 			+ "\n"
 			+ commentRanges.map(
@@ -217,17 +271,45 @@ var SourceFile = function(o) {
 
 const main = function(args) {
 	const inputFilename = args[0];
+	const outputFilename = args[1];
+
+	console.error("input =  " + inputFilename);
+	console.error("output = " + outputFilename);
+
 	const program = ts.createProgram([ inputFilename ], {
 		target: ts.ScriptTarget.ES5,
 		allowJs: true
 	});
 
-	console.log("input = " + inputFilename);
 	const source = program.getSourceFile(inputFilename);
 	if (!source) throw new Error("No source file: " + inputFilename);
 	const sourceFile = new SourceFile({ sourceFile: source });
 
 	const json = traverse(sourceFile, sourceFile.node, [], []);
+
+	function keep(json) {
+		if (json.node.comments && json.node.comments.length) return true;
+		if (json.children && json.children.some(function(child) {
+			return keep(child);
+		})) return true;
+		return false;
+	}
+
+	function prune(tree) {
+		if (tree.children) {
+			tree.children.forEach(function(child) {
+				prune(child);
+			});
+			tree.children = tree.children.filter(function(child) {
+				return keep(child);
+			});
+			if (tree.children.length == 0) {
+				delete tree.children;
+			}
+		}
+	}
+
+	prune(json)
 
 	// if (comments.length === 0) {
 	// 	console.log("No comments.");
@@ -236,7 +318,8 @@ const main = function(args) {
 	// 	parseTSDoc(source, comments[0]);
 	// }
 
-	console.log(JSON.stringify(json, void(0), "    "));
+	fs.mkdirSync(path.dirname(outputFilename), { recursive: true });
+	fs.writeFileSync(outputFilename, JSON.stringify(json, void(0), "    "));
 }
 
 main(process.argv.slice(2));
