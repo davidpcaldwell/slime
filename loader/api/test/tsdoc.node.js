@@ -4,11 +4,6 @@
 const os = require("os");
 const path = require("path");
 const fs = require("fs");
-const colors = {
-	green: function(s) { return s; },
-	gray: function(s) { return s; },
-	cyan: function(s) { return s; }
-};
 
 const ts = require("typescript");
 const tsdoc = require("@microsoft/tsdoc");
@@ -21,21 +16,6 @@ var kinds = (function() {
 	return rv;
 })();
 
-function dumpTSDocTree(docNode, indent) {
-	let dumpText = "";
-	if (docNode instanceof tsdoc.DocExcerpt) {
-		const content = docNode.content.toString();
-		dumpText += colors.gray(`${indent}* ${docNode.excerptKind}=`) + colors.cyan(JSON.stringify(content));
-	} else {
-		dumpText += `${indent}- ${docNode.kind}`;
-	}
-	console.log(dumpText);
-
-	for (const child of docNode.getChildNodes()) {
-		dumpTSDocTree(child, indent + "  ");
-	}
-}
-
 function docNodeToJson(docNode) {
 	var rv = {};
 	if (docNode instanceof tsdoc.DocExcerpt) {
@@ -46,70 +26,6 @@ function docNodeToJson(docNode) {
 	}
 	rv.children = docNode.getChildNodes().map(docNodeToJson);
 	return rv;
-}
-
-function parseTSDoc(sourceFile, foundComment) {
-	console.log(os.EOL + colors.green("Comment to be parsed:") + os.EOL);
-	console.log(colors.gray("<<<<<<"));
-	console.log(foundComment.textRange.toString());
-	console.log(colors.gray(">>>>>>"));
-
-	const customConfiguration = new tsdoc.TSDocConfiguration();
-
-	const customInlineDefinition = new tsdoc.TSDocTagDefinition({
-		tagName: "@customInline",
-		syntaxKind: tsdoc.TSDocTagSyntaxKind.InlineTag,
-		allowMultiple: true
-	});
-
-	// NOTE: Defining this causes a new DocBlock to be created under docComment.customBlocks.
-	// Otherwise, a simple DocBlockTag would appear inline in the @remarks section.
-	const customBlockDefinition = new tsdoc.TSDocTagDefinition({
-		tagName: "@customBlock",
-		syntaxKind: tsdoc.TSDocTagSyntaxKind.BlockTag
-	});
-
-	// NOTE: Defining this causes @customModifier to be removed from its section,
-	// and added to the docComment.modifierTagSet
-	const customModifierDefinition = new tsdoc.TSDocTagDefinition({
-		tagName: "@customModifier",
-		syntaxKind: tsdoc.TSDocTagSyntaxKind.ModifierTag
-	});
-
-	customConfiguration.addTagDefinitions([
-		customInlineDefinition,
-		customBlockDefinition,
-		customModifierDefinition
-	]);
-
-	console.log(os.EOL + "Invoking TSDocParser with custom configuration..." + os.EOL);
-	const tsdocParser = new tsdoc.TSDocParser(customConfiguration);
-	const parserContext = tsdocParser.parseRange(foundComment.textRange);
-	const docComment = parserContext.docComment;
-
-	console.log(os.EOL + colors.green("Parser Log Messages:") + os.EOL);
-
-	if (parserContext.log.messages.length === 0) {
-		console.log("No errors or warnings.");
-	} else {
-		for (const message of parserContext.log.messages) {
-			// Since we have the compiler's analysis, use it to calculate the line/column information,
-			// since this is currently faster than TSDoc's TextRange.getLocation() lookup.
-			const location = sourceFile.getLineAndCharacterOfPosition(message.textRange.pos);
-			const formattedMessage = `${sourceFile.fileName}(${location.line + 1},${location.character + 1}):`
-				+ ` [TSDoc] ${message}`;
-			console.log(formattedMessage);
-		}
-	}
-
-	if (parserContext.docComment.modifierTagSet.hasTag(customModifierDefinition)) {
-		console.log(os.EOL + colors.cyan(`The ${customModifierDefinition.tagName} modifier was FOUND.`));
-	} else {
-		console.log(os.EOL + colors.cyan(`The ${customModifierDefinition.tagName} modifier was NOT FOUND.`));
-	}
-
-	console.log(os.EOL + colors.green("Visiting TSDoc\'s DocNode tree") + os.EOL);
-	dumpTSDocTree(docComment, "");
 }
 
 const isDeclarationKind = function(kind) {
@@ -201,13 +117,6 @@ const traverse = function(sourceFile, node) {
 					}
 				}
 			});
-			if (false) console.log(`Found ${comments.length} comments.`);
-			// for (let i=0; i<comments.length; i++) {
-			// 	rv.push({
-			// 		compilerNode: node,
-			// 		textRange: sourceFile.getTextRange(comments[i])
-			// 	});
-			// }
 		} else {
 			return null;
 		}
@@ -305,7 +214,7 @@ const main = function(args) {
 		if (json.children && json.children.some(function(child) {
 			return keep(child);
 		})) return true;
-		return false;
+		return true;
 	}
 
 	function prune(tree) {
