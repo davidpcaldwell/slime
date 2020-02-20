@@ -671,7 +671,7 @@ void(0);
 										return {
 											current: status == "*",
 											name: name,
-											commit: show(toShow)
+											commit: show({ object: toShow })
 										};
 									})
 								;
