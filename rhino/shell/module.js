@@ -112,18 +112,18 @@ var run = function(p,events) {
 			};
 		}
 
-//		var toCommandToken = function(arg) {
-//			var index = (arguments.length > 1) ? arguments[1] : null;
-//			var label = (typeof(index) == "number") ? "token " + String(index) + " '" + arg + "'" : "command";
-//			if (typeof(arg) == "undefined") {
-//				throw new TypeError(label + " cannot be undefined.");
-//			}
-//			if (arg === null) throw new TypeError(label + " cannot be null.");
-//			if (arg && typeof(arg) == "object") return String(arg);
-//			//	TODO	the below check does not allow the empty string to be a token
-//			if (arg && typeof(arg) == "string") return arg;
-//			throw new TypeError(label + " is not a string nor an object that can be converted to string.");
-//		}
+		// var toCommandToken = function(arg) {
+		// 	var index = (arguments.length > 1) ? arguments[1] : null;
+		// 	var label = (typeof(index) == "number") ? "token " + String(index) + " '" + arg + "'" : "command";
+		// 	if (typeof(arg) == "undefined") {
+		// 		throw new TypeError(label + " cannot be undefined.");
+		// 	}
+		// 	if (arg === null) throw new TypeError(label + " cannot be null.");
+		// 	if (arg && typeof(arg) == "object") return String(arg);
+		// 	//	TODO	the below check does not allow the empty string to be a token
+		// 	if (arg && typeof(arg) == "string") return arg;
+		// 	throw new TypeError(label + " is not a string nor an object that can be converted to string.");
+		// }
 
 		if (p.tokens) {
 			return $api.deprecate(function() {

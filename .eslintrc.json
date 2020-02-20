@@ -21,7 +21,7 @@
 		"no-shadow-restricted-names": "warn",
 
 		//	Possibly should be allowed, at least for unused parameters?
-		"no-unused-vars": "warn",
+		"no-unused-vars": ["warn", { "args": "none" }],
 
 		//	things like if (false), used often to disable code while retaining syntax highlighting, etc.
 		"no-constant-condition": "off",

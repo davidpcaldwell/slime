@@ -803,7 +803,7 @@ var Table = function(c) {
 		//	TODO	would not work in multi-catalog database; would need to filter on catalog
 		function(metadata) { return metadata.getColumns(null,c.schema.name,c.name.toString(),null) }
 	).forEach( function(row) {
-//		var type = IMPLEMENTATION.TYPES.get(row);
+		// var type = IMPLEMENTATION.TYPES.get(row);
 		//	TODO	write test for scale being correct for DECIMAL types
 		var type = c.dataSource.types.getCodec({ code: row.data_type, precision: row.column_size, scale: row.decimal_digits })
 		if (!type) throw new Error("No type for " + row.type_name + " " + $context.api.js.toLiteral(row) + " using " + c.dataSource.types.getCodec);
@@ -942,7 +942,7 @@ var Schema = function(c) {
 	this.name = c.name.toString();
 
 	this.perform = function(transaction) {
-//		var context = new p.dataSource.SchemaContext(p.name.sql);
+		// var context = new p.dataSource.SchemaContext(p.name.sql);
 		var context = new Context({ ds: c.ds });
 		return Context.perform(context,transaction);
 	};
@@ -976,15 +976,15 @@ var Schema = function(c) {
 			return this.table_name == name.toString();
 		});
 		return (row) ? newTable(row) : null;
-//		return new c.Table({ schema: this, dataSource: c.dataSource, name: )
-//		.one( function() {
-//			return row.table_name == name.toString();
-//		}, this ).toArray();
+		// return new c.Table({ schema: this, dataSource: c.dataSource, name: )
+		// .one( function() {
+		// 	return row.table_name == name.toString();
+		// }, this ).toArray();
 
-//		var rv = $context.api.js.Array(tables).one(function(table) {
-//			return this.name == new Identifier(p.name).toString();
-//		});
-//		return (rv) ? rv : null;
+		// var rv = $context.api.js.Array(tables).one(function(table) {
+		// 	return this.name == new Identifier(p.name).toString();
+		// });
+		// return (rv) ? rv : null;
 	}
 }
 

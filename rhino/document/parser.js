@@ -70,9 +70,9 @@ var load = function() {
 				until: function() { return done; },
 				then: function() {
 					return result;
-		//			var document = new jsh.document.Document({ string: result });
-		//			Packages.javafx.application.Platform.exit();
-		//			return document;
+					// var document = new jsh.document.Document({ string: result });
+					// Packages.javafx.application.Platform.exit();
+					// return document;
 				}
 			})();
 		};

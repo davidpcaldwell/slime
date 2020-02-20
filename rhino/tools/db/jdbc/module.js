@@ -14,15 +14,15 @@
 if (!$context.api || !$context.api.js) {
 	throw new Error("Required: $context.api.js");
 
-//						//	Statement creation optimized to stream results for MySQL Connector/J driver; currently there is no
-//						//	easy way for an individual driver to customize this object
-//						//	TODO	but there should be an easier way and so this should be refactored
-//						if (false) {
-//							statement = peer.createStatement();
-//						} else {
-//							statement = peer.createStatement(Packages.java.sql.ResultSet.TYPE_FORWARD_ONLY, Packages.java.sql.ResultSet.CONCUR_READ_ONLY);
-//							statement.setFetchSize(Packages.java.lang.Integer.MIN_VALUE);
-//						}
+	// //	Statement creation optimized to stream results for MySQL Connector/J driver; currently there is no
+	// //	easy way for an individual driver to customize this object
+	// //	TODO	but there should be an easier way and so this should be refactored
+	// if (false) {
+	// 	statement = peer.createStatement();
+	// } else {
+	// 	statement = peer.createStatement(Packages.java.sql.ResultSet.TYPE_FORWARD_ONLY, Packages.java.sql.ResultSet.CONCUR_READ_ONLY);
+	// 	statement.setFetchSize(Packages.java.lang.Integer.MIN_VALUE);
+	// }
 
 }
 
