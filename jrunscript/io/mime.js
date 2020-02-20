@@ -79,25 +79,25 @@ $exports.Multipart = function(p) {
 			if (part.type) {
 				writer.write("Content-Type: " + part.type + CRLF);
 			}
-//			if (!part.disposition && subtype == "form-data") {
-//				part.disposition = "form-data";
-//			}
-//			if (part.disposition) {
-//				var attributes = [];
-//				if (part.name) {
-//					attributes.push({ name: "name", value: part.name });
-//				}
-//				if (part.filename) {
-//					attributes.push({ name: "filename", value: part.filename });
-//				}
-//				if (attributes.length) {
-//					attributes.shift("");
-//				}
-//				var attributesString = attributes.map(function(attribute) { return attribute.name + "=" + attribute.value }).join("; ");
-//				var header = "Content-Disposition: " + part.disposition + attributesString + CRLF;
-//				jsh.shell.echo(header);
-//				writer.write(header);
-//			}
+			// if (!part.disposition && subtype == "form-data") {
+			// 	part.disposition = "form-data";
+			// }
+			// if (part.disposition) {
+			// 	var attributes = [];
+			// 	if (part.name) {
+			// 		attributes.push({ name: "name", value: part.name });
+			// 	}
+			// 	if (part.filename) {
+			// 		attributes.push({ name: "filename", value: part.filename });
+			// 	}
+			// 	if (attributes.length) {
+			// 		attributes.shift("");
+			// 	}
+			// 	var attributesString = attributes.map(function(attribute) { return attribute.name + "=" + attribute.value }).join("; ");
+			// 	var header = "Content-Disposition: " + part.disposition + attributesString + CRLF;
+			// 	jsh.shell.echo(header);
+			// 	writer.write(header);
+			// }
 			writer.write(CRLF);
 			if (typeof(part.string) == "string") {
 				writer.write(part.string);

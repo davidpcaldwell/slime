@@ -36,10 +36,10 @@ var Pathname = function Pathname(parameters) {
 	}
 
 	//	Removing these deprecated properties significantly improves performance under Rhino when dealing with many files
-//	$api.deprecate(parameters,"$filesystem");
-//	$api.deprecate(parameters,"$path");
-//	$api.deprecate(parameters,"$peer");
-//	$api.deprecate(parameters,"path");
+	// $api.deprecate(parameters,"$filesystem");
+	// $api.deprecate(parameters,"$path");
+	// $api.deprecate(parameters,"$peer");
+	// $api.deprecate(parameters,"path");
 
 	var $filesystem = firstDefined(parameters,"filesystem","$filesystem");
 	if (!$filesystem.peerToString) throw new Error("Internal error; Pathname constructed incorrectly: " + parameters);
