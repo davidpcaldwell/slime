@@ -61,6 +61,16 @@ var Context = function() {
 	}
 };
 
+var ChildContext = function(parent) {
+	Context.apply(this,arguments);
+
+	this.properties = {};
+
+	this.addProperty = function(name,value) {
+		this.properties[name] = value;
+	}
+}
+
 var getName = function(node) {
 	var identifier = node.children.filter(function(child) {
 		return child.object.kind == "Identifier";
@@ -82,12 +92,24 @@ kinds.TypeAliasDeclaration = function(context,node) {
 kinds.InterfaceDeclaration = function(context,node) {
 	var name = getName(node);
 	//	TODO	parse elements of the declaration
-	context.addInterface(name, {});
+	var c = new ChildContext(context);
+	var children = node.children.filter(function(child) {
+		return child.object.kind != "Identifier";
+	});
+	children.forEach(function(child) {
+		interpret(c, child);
+	});
+	context.addInterface(name, c);
 }
 
 kinds.ModuleDeclaration = function(context,node) {
 	var name = getName(node);
 	context.addModule(name, {});
+}
+
+kinds.PropertySignature = function(context,node) {
+	var name = getName(node);
+	context.addProperty(name, {});
 }
 
 kinds.EndOfFileToken = function(context,node) {
@@ -98,8 +120,13 @@ kinds.Identifier = function(rv,o) {
 	rv.text = o.node.text;
 }
 
+var UnimplementedKind = jsh.js.Error.Type("UnimplementedKind");
+
 var interpret = function(context,node) {
-	kinds[node.object.kind](context,node);
+	var kind = node.object.kind;
+	var processor = kinds[kind];
+	if (!processor) throw new UnimplementedKind("No processor for " + kind);
+	processor(context,node);
 }
 
 var context = new Context();
