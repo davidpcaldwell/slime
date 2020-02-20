@@ -812,6 +812,30 @@ END LICENSE
 								verify(list).evaluate(hasBranch({ current: false, name: "b" })).is(true);
 								verify(list).evaluate(hasBranch({ current: false, name: "c" })).is(false);
 							]]></script>
+							<script type="application/x.jsapi#tests">
+								var repository = newRepository();
+								repository.test.writeFile("a", "a");
+								repository.add({ path: "a" });
+								repository.commit({ message: "message a" });
+								repository.branch({ name: "a" });
+								repository.branch({ name: "b" });
+								repository.checkout({ branch: "b" });
+								repository.test.writeFile("b", "b");
+								repository.add({ path: "b" });
+								repository.commit({ message: "message b" });
+
+								var branches = repository.branch();
+								var a = branches.filter(function(branch) {
+									return branch.name == "a";
+								})[0];
+								var b = branches.filter(function(branch) {
+									return branch.name == "b";
+								})[0];
+								verify(a).commit.commit.hash.is.type("string");
+								verify(b).commit.commit.hash.is.type("string");
+								verify(a).commit.commit.hash.is.not(b.commit.commit.hash);
+								jsh.shell.console(repository.directory);
+							</script>
 						</li>
 						<li class="function">
 							<div class="name">mergeBase</div>
