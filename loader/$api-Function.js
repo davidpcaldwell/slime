@@ -7,7 +7,6 @@ $exports.Function.type = function(o) {
 
 $exports.Function.memoized = function(f) {
 	var returns;
-	var global = (function() { return this; });
 
 	return function() {
 		if (arguments.length > 0) throw new TypeError("Memoized functions may not have arguments.");
@@ -34,6 +33,12 @@ $exports.Function.property = function(name) {
 	return function(v) {
 		//  TODO    handling of undefined, null?
 		return v[name];
+	}
+};
+
+$exports.Function.is = function(value) {
+	return function(v) {
+		return v === value;
 	}
 };
 

@@ -149,6 +149,26 @@ END LICENSE
 
 			</script>
 		</li>
+		<li class="function">
+			<div class="name">is</div>
+			<span>__DESCRIPTION__</span>
+			<div class="arguments">
+				<div class="label">Arguments</div>
+				<ol>
+				</ol>
+			</div>
+			<div class="returns">
+				<div class="label">Returns</div>
+				<span class="type">__TYPE__</span>
+				<span>__DESCRIPTION__</span>
+			</div>
+			<script type="application/x.jsapi#tests">
+				var is2 = api.Function.is(2);
+
+				verify(is2(2)).is(true);
+				verify(is2(3)).is(false);
+			</script>
+		</li>
 		<li class="object">
 			<div class="name">argument</div>
 			<span>__DESCRIPTION__</span>
