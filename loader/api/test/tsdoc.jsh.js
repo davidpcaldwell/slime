@@ -71,10 +71,27 @@ var ChildContext = function(parent) {
 	}
 }
 
+var $ff = {
+	not: function() {
+		return function(b) {
+			return !b;
+		}
+	}
+};
+
+var isIdentifier = $api.Function.pipe(
+	$api.Function.property("object"),
+	$api.Function.property("kind"),
+	$api.Function.is("Identifier")
+);
+
+var isNotIdentifier = $api.Function.pipe(
+	isIdentifier,
+	$ff.not()
+)
+
 var getName = function(node) {
-	var identifier = node.children.filter(function(child) {
-		return child.object.kind == "Identifier";
-	})[0];
+	var identifier = node.children.filter(isIdentifier)[0];
 	return identifier.object.text;
 }
 
@@ -93,9 +110,7 @@ kinds.InterfaceDeclaration = function(context,node) {
 	var name = getName(node);
 	//	TODO	parse elements of the declaration
 	var c = new ChildContext(context);
-	var children = node.children.filter(function(child) {
-		return child.object.kind != "Identifier";
-	});
+	var children = node.children.filter(isNotIdentifier);
 	children.forEach(function(child) {
 		interpret(c, child);
 	});
