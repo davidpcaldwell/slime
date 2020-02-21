@@ -621,10 +621,10 @@ void(0);
 					if (p.name) args.push(p.name);
 					if (p.start) args.push(p.start);
 					if (p.force) {
-						args.push("-f");
+						args.push("--force");
 					}
 					if (p.delete) {
-						args.push("-d");
+						args.push("--delete");
 						if (typeof(p.delete) == "string") {
 							args.push(p.delete);
 						}
