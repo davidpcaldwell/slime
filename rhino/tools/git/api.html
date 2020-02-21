@@ -836,6 +836,18 @@ END LICENSE
 								verify(a).commit.commit.hash.is.not(b.commit.commit.hash);
 								jsh.shell.console(repository.directory);
 							</script>
+							<script type="application/x.jsapi#tests">
+								var repository = newRepository();
+								repository.test.writeFile("a", "a");
+								repository.add({ path: "a" });
+								repository.commit({ message: "message a" });
+								var a = repository.show({ object: "master" });
+								repository.checkout({ branch: a.commit.hash });
+								var branch = repository.branch().filter(function(b) {
+									return b.current;
+								})[0];
+								verify(branch).name.is(null);
+							</script>
 						</li>
 						<li class="function">
 							<div class="name">mergeBase</div>

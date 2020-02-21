@@ -662,10 +662,10 @@ void(0);
 									.map(function(line) {
 										var status = line.substring(0,1);
 										var name = line.substring(2);
-										var detachedHeadPattern = /^\(HEAD detached at (.*)\)/;
+										var detachedHeadPattern = /^\(HEAD detached (at|from) (.*)\)/;
 										var toShow;
 										if (detachedHeadPattern.test(name)) {
-											toShow = detachedHeadPattern.exec(name)[1];
+											toShow = "HEAD";
 											name = null;
 										} else {
 											toShow = name;
