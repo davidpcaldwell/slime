@@ -16,7 +16,6 @@ jsh.script.Application.run({
 					jsh.shell.console(branch.name + " " + JSON.stringify(branch));
 					jsh.shell.console("");
 				});
-				var master = repository.show({ object: "master" });
 
 				var remotePattern = /^remotes\/(.+?)\/(.*)$/;
 
@@ -35,9 +34,19 @@ jsh.script.Application.run({
 							jsh.shell.console("Remove: " + branch.name + " remote = " + isRemote(branch));
 							if (remote) {
 								var match = remotePattern.exec(branch.name);
-								jsh.shell.console("Delete remote: " + match[1] + " name: " + match[2]);
+								if (match[2] != "master") {
+									jsh.shell.console("Delete remote: " + match[1] + " name: " + match[2]);
+									repository.push({
+										delete: true,
+										repository: match[1],
+										refspec: match[2]
+									});
+								} else {
+									jsh.shell.console("Not deleting remote: " + match[1] + " name: " + match[2]);
+								}
 							} else {
 								jsh.shell.console("Delete local: " + branch.name);
+								repository.branch({ delete: branch.name });
 							}
 						} else {
 							jsh.shell.console(Object.keys(branch));
@@ -46,8 +55,6 @@ jsh.script.Application.run({
 						}
 					}
 				});
-				jsh.shell.console("Implementation incomplete; simply lists branches rather than acting on them.");
-				jsh.shell.exit(1);
 			}
 		}
 	}
