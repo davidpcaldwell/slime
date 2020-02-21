@@ -43,7 +43,7 @@ jsh.script.Application.run({
 							} else {
 								if (branch.name != "master") {
 									jsh.shell.console("Delete local: " + branch.name);
-									repository.branch({ delete: branch.name });
+									repository.branch({ delete: branch.name, force: true });
 								} else {
 									// jsh.shell.console("Not deleting master.");
 								}
