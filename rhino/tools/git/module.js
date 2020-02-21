@@ -67,6 +67,7 @@
 /**
  * @typedef { object } slime.jrunscript.git.Repository.Local.fetch.argument
  * @property { boolean } [all] - whether to include the --all argument to git fetch
+ * @property { boolean } [prune] - whether to include the --prune argument to git fetch
  * @property { any } [repository]
  * @property { any } [refspec]
  * @property { any } [config]
@@ -748,6 +749,9 @@ void(0);
 					var args = [];
 					if (p && p.all) {
 						args.push("--all");
+						if (p && p.prune) {
+							args.push("--prune");
+						}
 					} else {
 						if (p && p.repository) args.push(p.repository);
 						if (p && p.refspec) args.push(p.refspec);
