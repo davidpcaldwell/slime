@@ -576,6 +576,7 @@ void(0);
 										if (!rv.paths) rv.paths = {};
 										rv.paths[match[2]] = match[1];
 									} else if (line == "") {
+										//	do nothing
 									} else {
 										throw new Error("Unexpected line: [" + line + "]");
 									}
