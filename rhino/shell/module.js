@@ -343,10 +343,11 @@ $exports.run.stdio = function(p) {
 		}
 		if (typeof(rv.input) == "undefined") rv.input = null;
 	} else {
-		//	The only way rv should be anything other than an object is if p.stdio was null
 		if (!$exports.stdio) {
 			if (p.stdio === null) {
+				//	That's what we thought
 			} else {
+				//	The only way rv should be anything other than an object is if p.stdio was null
 				throw new Error("Unreachable");
 			}
 		}

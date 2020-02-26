@@ -28,7 +28,7 @@ interface jsh {
 		}
 		environment: any,
 		echo: Function,
-		run: Function,
+		run: Function & { stdio: any },
 		HOME: slime.jrunscript.file.Directory,
 		PATH: any,
 		TMPDIR: slime.jrunscript.file.Directory,
@@ -43,7 +43,8 @@ interface jsh {
 					}
 				}
 			}
-		}
+		},
+		stdio: any
 	};
 
 	unit: {
