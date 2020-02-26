@@ -391,7 +391,60 @@ $exports.run.directory = function(p) {
 	if (p.workingDirectory) {
 		return $api.deprecate(getDirectoryProperty)({ directory: p.workingDirectory });
 	}
-}
+};
+
+var embed = $api.Events.Function(
+	/**
+	 * @param { { method: Function, argument: object, started: (p: { output?: string, error?: string }) => boolean } } p
+	 */
+	function(p,events) {
+		var ServerMonitor = function(started) {
+			return function(events) {
+				return {
+					output: {
+						line: function(line) {
+							events.fire("stdout", line);
+							if (started({ output: line })) events.fire("started");
+						}
+					},
+					error: {
+						line: function(line) {
+							events.fire("stderr", line);
+							if (started({ error: line })) events.fire("started");
+						}
+					}
+				}
+			}
+		};
+
+		p.method(
+			$api.Object.compose(p.argument, { stdio: ServerMonitor(p.started)(events) })
+		);
+	}
+);
+
+$exports.embed = $api.Events.Function(function(p,events) {
+	var lock = new jsh.java.Thread.Monitor();
+	var started = false;
+	events.listeners.add("started", new lock.Waiter({
+		then: function() {
+			started = true;
+		}
+	}));
+	jsh.java.Thread.start(function() {
+		try {
+			embed(p, events);
+		} catch (e) {
+			events.fire("exception", e);
+		}
+	});
+	new lock.Waiter({
+		until: function() {
+			return started;
+		}
+	})();
+});
+
 $exports.environment = $context.api.java.Environment( ($context._environment) ? $context._environment : Packages.inonit.system.OperatingSystem.Environment.SYSTEM );
 
 var toLocalPathname = function(osPathname) {
