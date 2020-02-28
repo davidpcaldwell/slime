@@ -1,7 +1,4 @@
 var repository = new jsh.tools.git.Repository({ directory: jsh.script.file.parent.parent.parent });
-var configuration = repository.config({
-	arguments: ["--list"]
-});
 
 var getConfiguration = function() {
 	return repository.config({

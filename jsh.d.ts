@@ -60,6 +60,10 @@ interface jsh {
 	ui: any;
 }
 
+declare namespace Packages {
+	const java: any
+}
+
 declare namespace jsh {
 	//	Indexed access properties; see https://www.typescriptlang.org/docs/handbook/advanced-types.html#index-types
 
