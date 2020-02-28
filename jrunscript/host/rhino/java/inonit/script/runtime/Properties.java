@@ -60,10 +60,10 @@ public class Properties {
 		}
 
 		private String[] getPropertiesStartingWith(String prefix) {
-			Iterator i = jdk.keySet().iterator();
-			ArrayList rv = new ArrayList();
+			Iterator<String> i = jdk.stringPropertyNames().iterator();
+			ArrayList<String> rv = new ArrayList<String>();
 			while(i.hasNext()) {
-				String name = (String)i.next();
+				String name = i.next();
 				if (name.startsWith(prefix)) {
 					String propertyName = name.substring(prefix.length());
 					String propertyFamily = propertyName;
@@ -136,10 +136,10 @@ public class Properties {
 		}
 
 		public void delete(String string) {
-			Iterator i = jdk.keySet().iterator();
-			ArrayList toDelete = new ArrayList();
+			Iterator<String> i = jdk.stringPropertyNames().iterator();
+			ArrayList<String> toDelete = new ArrayList<String>();
 			while(i.hasNext()) {
-				String name = (String)i.next();
+				String name = i.next();
 				if (name.equals(this.prefix() + string)) {
 					toDelete.add(name);
 				} else if (name.startsWith(this.prefix() + string + ".")) {

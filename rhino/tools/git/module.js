@@ -94,6 +94,7 @@
  * @property { () => any } status
  * @property { any } remote
  * @property { any } stash
+ * @property { Function } config
  */
 
 /**
