@@ -1,2 +1,8 @@
 #!/bin/bash
 git config core.hooksPath contributor/hooks
+
+#	For Eclipse-based developers, including Visual Studio Code users, copy improved Eclipse preferences to proper location
+PROJECT=$(dirname $0)
+if [ -d "${PROJECT}/.settings" ]; then
+	cp $PROJECT/contributor/org.eclipse.jdt.core.prefs $PROJECT/.settings
+fi

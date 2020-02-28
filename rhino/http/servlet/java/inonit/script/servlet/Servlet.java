@@ -17,7 +17,6 @@ import java.util.logging.*;
 
 import javax.servlet.http.*;
 
-import inonit.system.*;
 import inonit.script.engine.*;
 
 public class Servlet extends javax.servlet.http.HttpServlet {
