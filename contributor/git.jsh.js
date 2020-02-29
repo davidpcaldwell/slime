@@ -24,7 +24,7 @@ jsh.script.Application.run({
 				}
 
 				branches.forEach(function(branch) {
-					if (branch.name != "remotes/origin/master") {
+					if (branch.name && branch.name != "remotes/origin/master") {
 						//jsh.shell.console(branch.name);
 						var common = repository.mergeBase({
 							commits: ["origin/master", branch.name]
