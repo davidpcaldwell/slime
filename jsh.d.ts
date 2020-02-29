@@ -28,7 +28,8 @@ interface jsh {
 		}
 		environment: any,
 		echo: Function,
-		run: Function,
+		run: Function & { stdio: any },
+		embed: (p: { method: Function, argument: object, started: (p: { output?: string, error?: string }) => boolean }, events?: any ) => void,
 		HOME: slime.jrunscript.file.Directory,
 		PATH: any,
 		TMPDIR: slime.jrunscript.file.Directory,
@@ -43,7 +44,8 @@ interface jsh {
 					}
 				}
 			}
-		}
+		},
+		stdio: any
 	};
 
 	unit: {
@@ -56,6 +58,10 @@ interface jsh {
 	file: any;
 	time: any;
 	ui: any;
+}
+
+declare namespace Packages {
+	const java: any
 }
 
 declare namespace jsh {
