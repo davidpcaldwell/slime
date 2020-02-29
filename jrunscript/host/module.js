@@ -609,7 +609,6 @@ void(0);
 			var lock = new $exports.Thread.Monitor();
 			var running = 0;
 			var completed = 0;
-			var computations = [];
 			var threads = [];
 			var fail = false;
 			var computation = function(index) {
@@ -670,6 +669,10 @@ void(0);
 				throw new Error("Failed.");
 			}
 			return rv;
+		};
+
+		$exports.Thread.sleep = function(milliseconds) {
+			Packages.java.lang.Thread.sleep(milliseconds);
 		}
 
 		$exports.Environment = function(_environment) {

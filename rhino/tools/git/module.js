@@ -13,8 +13,15 @@
 //@ts-check
 
 /**
+ * @typedef { object } slime.jrunscript.git.Repository.clone.argument
+ * @property { slime.jrunscript.file.Pathname } to
+ * @property { any } [config]
+ */
+
+/**
  * @typedef {object} slime.jrunscript.git.Repository
  * @property {string} reference
+ * @property { (p: slime.jrunscript.git.Repository.clone.argument) => slime.jrunscript.git.LocalRepository } clone
  */
 
 /**
@@ -89,6 +96,7 @@
  * @property { any } stash
  * @property { Function } push
  * @property { Function } mergeBase
+ * @property { Function } config
  */
 
 /**
@@ -259,6 +267,9 @@ void(0);
 				});
 			};
 
+			/**
+			 * @param { slime.jrunscript.git.Repository.clone.argument & { repository: string } } p
+			 */
 			var clone = function(p) {
 				if (!p.to) {
 					throw new Error("Required: 'to' property indicating destination.");
@@ -267,7 +278,7 @@ void(0);
 					config: p.config,
 					command: "clone",
 					arguments: [p.repository,p.to.toString()],
-					environment: $context.api.js.Object.set({}, $context.api.shell.environment, environment)
+					environment: $api.Object.compose($context.api.shell.environment, environment)
 				});
 				return new LocalRepository({ directory: p.to.directory });
 			}
@@ -379,6 +390,9 @@ void(0);
 
 				/** @property { string } reference */
 
+				/**
+				 * @param { slime.jrunscript.git.Repository.clone.argument } p
+				 */
 				this.clone = function(p) {
 					return clone($api.Object.compose(p, {
 						repository: this.reference
@@ -388,6 +402,8 @@ void(0);
 
 			var RemoteRepository = function(o) {
 				Repository.call(this,o);
+
+				this.clone = this.clone;
 
 				this.toString = function() {
 					return "git remote: " + o.remote;
@@ -411,6 +427,8 @@ void(0);
 			 */
 			var LocalRepository = function(o) {
 				Repository.call(this,o);
+
+				this.clone = this.clone;
 
 				var directory = (function() {
 					if (o.directory) return o.directory;

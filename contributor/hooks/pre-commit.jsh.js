@@ -1,7 +1,4 @@
 var repository = new jsh.tools.git.Repository({ directory: jsh.script.file.parent.parent.parent });
-var configuration = repository.config({
-	arguments: ["--list"]
-});
 
 var getConfiguration = function() {
 	return repository.config({
@@ -40,9 +37,8 @@ var failed = false;
 code.files.trailingWhitespace({
 	base: jsh.script.file.parent.parent.parent,
 	isText: function(entry) {
-		if (/\.def$/.test(entry.path)) {
-			return true;
-		}
+		if (/\.def$/.test(entry.path)) return true;
+		if (/\.prefs$/.test(entry.path)) return true;
 		if (entry.path == ".hgsub") return true;
 		if (entry.path == ".hgsubstate") return false;
 		if (entry.path == ".hgignore") return false;
