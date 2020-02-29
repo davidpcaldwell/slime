@@ -58,6 +58,7 @@ interface jsh {
 	file: any;
 	time: any;
 	ui: any;
+	ip: any;
 }
 
 declare namespace Packages {
@@ -81,4 +82,5 @@ declare namespace jsh {
 	const file: jsh['file'];
 	const time: jsh['time'];
 	const ui: jsh['ui'];
+	const ip: jsh['ip'];
 }
