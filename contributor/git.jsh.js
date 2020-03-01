@@ -11,6 +11,7 @@ jsh.script.Application.run({
 				/** @type { slime.jrunscript.git.LocalRepository } */
 				var repository = new jsh.tools.git.Repository({ directory: parameters.global.repository.directory });
 				repository.fetch({ all: true, prune: true });
+				jsh.shell.console("Repository: " + repository);
 				var branches = repository.branch({ all: true });
 				// branches.forEach(function(branch) {
 				// 	jsh.shell.console(branch.name + " " + JSON.stringify(branch));
