@@ -25,15 +25,6 @@
  */
 
 /**
- * @typedef { Object } slime.jrunscript.git.Commit
- * @property { string[] } names
- * @property { { hash: string } } commit
- * @property { { name: string, email: string, date: any } } author
- * @property { { name: string, email: string, date: any } } committer
- * @property { string } subject
- */
-
-/**
  * @typedef { Object } slime.jrunscript.git.LocalRepository.Branch
  * @property { boolean } current
  * @property { string } name
