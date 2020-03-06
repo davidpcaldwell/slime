@@ -181,6 +181,10 @@ void(0);
 					);
 				};
 
+				/**
+				 * @param { { command: string, arguments: (this: string[], p: any) => void, environment?: Function, stdio?: Function, evaluate?: Function } } m
+				 * @returns { Function }
+				 */
 				this.command = function(m) {
 					var program = environment.program;
 					return function(p) {
@@ -305,6 +309,27 @@ void(0);
 			//	Branching and Merging
 
 			//	Sharing and Updating Projects
+
+			var fetch = cli.command({
+				command: "fetch",
+				arguments: function(p) {
+					if (p && p.all) {
+						this.push("--all");
+						if (p && p.prune) {
+							this.push("--prune");
+						}
+					}
+				}
+				,
+				stdio: function(p) {
+					return {
+						output: null,
+						//	TODO	stderr is used to indicate progress when fetching multiple subrepositories; we may want to build
+						//			in the idea of events for commands like this
+						error: null
+					}
+				}
+			});
 
 			var remote = {};
 			remote.getUrl = cli.command({
@@ -764,27 +789,7 @@ void(0);
 
 				//	Sharing and Updating Projects
 
-				/** @type { slime.jrunscript.git.Repository.Local.fetch } */
-				this.fetch = function(p) {
-					var args = [];
-					if (p && p.all) {
-						args.push("--all");
-						if (p && p.prune) {
-							args.push("--prune");
-						}
-					} else {
-						if (p && p.repository) args.push(p.repository);
-						if (p && p.refspec) args.push(p.refspec);
-					}
-					execute({
-						config: p.config,
-						command: "fetch",
-						arguments: args,
-						stdio: {
-							output: String
-						}
-					});
-				};
+				this.fetch = command(fetch);
 
 				this.push = function(p) {
 					var args = [];
