@@ -23,7 +23,7 @@ public class Servlet extends javax.servlet.http.HttpServlet {
 	private static final Logger LOG = Logger.getLogger(Servlet.class.getName());
 
 	static {
-		Class[] dependencies = new Class[] {
+		Class<?>[] dependencies = new Class[] {
 			//	Pull these in as dependencies, since the Java loader depends on them
 			inonit.script.runtime.Throwables.class
 		};
@@ -50,7 +50,7 @@ public class Servlet extends javax.servlet.http.HttpServlet {
 
 	private boolean hasClass(String name) {
 		try {
-			Class c = Servlet.class.getClassLoader().loadClass(name);
+			Servlet.class.getClassLoader().loadClass(name);
 			return true;
 		} catch (ClassNotFoundException e) {
 			return false;

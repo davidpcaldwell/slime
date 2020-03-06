@@ -137,7 +137,8 @@ public class Rhino {
 	private static Integer execute(Shell shell, Engine rhino, Engine.Log log, Interface $rhino) throws Shell.Invocation.CheckedException {
 		try {
 			ExecutionImpl execution = new ExecutionImpl(shell, rhino, $rhino);
-			Integer ignore = execution.execute();
+			//	Ignore returned Integer
+			execution.execute();
 			return null;
 		} catch (ExitError e) {
 			return new Integer(e.getStatus());
@@ -287,7 +288,6 @@ public class Rhino {
 					context.exit(status.intValue());
 				} else {
 					Thread[] threads = new Thread[Thread.activeCount()*2];
-					int count = Thread.enumerate(threads);
 					for (Thread t : threads) {
 						if (t != null && t != Thread.currentThread() && !t.isDaemon()) {
 							LOG.log(Level.FINER, "Active thread: " + t + " daemon = " + t.isDaemon());

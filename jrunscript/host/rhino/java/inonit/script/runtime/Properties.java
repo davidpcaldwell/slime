@@ -156,7 +156,7 @@ public class Properties {
 			delete(String.valueOf(i));
 		}
 
-		public Object getDefaultValue(Class hint) {
+		public Object getDefaultValue(Class<?> hint) {
 			if (hint == String.class || hint == null) {
 				String value = jdk.getProperty(name);
 				if (value != null) {
@@ -174,10 +174,6 @@ public class Properties {
 
 		public boolean hasInstance(Scriptable scriptable) {
 			return scriptable instanceof Property;
-		}
-
-		public java.util.Properties getJdk() {
-			return jdk;
 		}
 	}
 }

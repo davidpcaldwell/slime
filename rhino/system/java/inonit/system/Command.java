@@ -23,15 +23,15 @@ public class Command {
 		public abstract OutputStream getStandardOutput();
 		public abstract OutputStream getStandardError();
 		public abstract InputStream getStandardInput();
-		public abstract Map getSubprocessEnvironment();
+		public abstract Map<String,String> getSubprocessEnvironment();
 		public abstract File getWorkingDirectory();
 
 		final String[] envp() {
 			String[] env = null;
-			Map envMap = getSubprocessEnvironment();
+			Map<String,String> envMap = getSubprocessEnvironment();
 			if (envMap != null) {
 				ArrayList<String> list = new ArrayList<String>();
-				Iterator i = envMap.keySet().iterator();
+				Iterator<String> i = envMap.keySet().iterator();
 				while(i.hasNext()) {
 					Object next = i.next();
 					if (!(next instanceof String)) {
@@ -107,13 +107,13 @@ public class Command {
 			private InputStream in = new ByteArrayInputStream(new byte[0]);
 
 			private File working = null;
-			private Map environment = null;
+			private Map<String,String> environment = null;
 
 			public File getWorkingDirectory() {
 				return working;
 			}
 
-			public Map getSubprocessEnvironment() {
+			public Map<String,String> getSubprocessEnvironment() {
 				return environment;
 			}
 
@@ -130,14 +130,6 @@ public class Command {
 			}
 
 			private String commandOutput;
-
-			byte[] output() {
-				return out.toByteArray();
-			}
-
-			byte[] error() {
-				return err.toByteArray();
-			}
 
 			public String getCommandOutput() throws IOException {
 				if (commandOutput == null) {
@@ -215,7 +207,6 @@ public class Command {
 
 		private Thread in;
 		private Thread err;
-		private Thread out;
 
 		private InputStream stdin;
 
@@ -229,7 +220,7 @@ public class Command {
 			this.err = Spooler.start(delegate.getErrorStream(), context.getStandardError(), false, "stderr: " + spoolName);
 			this.stdin = context.getStandardInput();
 			LOG.log(Level.FINEST, "Stack trace", new Throwable("Starting input spooler"));
-			this.out = Spooler.start(this.stdin, inonit.script.runtime.io.Streams.Bytes.Flusher.ALWAYS.decorate(delegate.getOutputStream()), true, "stdin from " + this.stdin + ": " + spoolName);
+			Spooler.start(this.stdin, inonit.script.runtime.io.Streams.Bytes.Flusher.ALWAYS.decorate(delegate.getOutputStream()), true, "stdin from " + this.stdin + ": " + spoolName);
 		}
 
 		Integer getPid() {
@@ -355,7 +346,7 @@ public class Command {
 
 		private boolean closeOnEnd;
 
-		private IOException e;
+		// private IOException e;
 
 		Spooler(InputStream in, OutputStream out, boolean closeOnEnd) {
 			this.in = in;
@@ -363,9 +354,9 @@ public class Command {
 			this.closeOnEnd = closeOnEnd;
 		}
 
-		IOException failure() {
-			return e;
-		}
+		// IOException failure() {
+		// 	return e;
+		// }
 
 		public void run() {
 			int i;
@@ -382,7 +373,7 @@ public class Command {
 					out.close();
 				}
 			} catch (IOException e) {
-				this.e = e;
+				// this.e = e;
 			}
 		}
 	}

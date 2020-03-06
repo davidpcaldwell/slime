@@ -51,7 +51,7 @@ public class Logging {
 //		}
 //	}
 
-	public void log(Class logging, Level level, String message, Throwable throwable) {
+	public void log(Class<?> logging, Level level, String message, Throwable throwable) {
 		Logger logger = Logger.getLogger(logging.getName());
 		if (logger.isLoggable(level)) {
 			logger.log(level, message, throwable);
@@ -74,7 +74,7 @@ public class Logging {
 		public abstract Throwable create(String message);
 	}
 
-	public void logStackTrace(Class logging, Level level, String message) {
+	public void logStackTrace(Class<?> logging, Level level, String message) {
 		Logger logger = Logger.getLogger(logging.getName());
 		if (logger.isLoggable(level)) {
 			logger.log(level, message, new StackTraceThrowable());
