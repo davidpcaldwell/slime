@@ -100,7 +100,7 @@ public class Code {
 				return new URI(string("script/" + scriptName.replace("/", "-") + "/" + path));
 			}
 
-			public static URI jvm(Class c, String path) {
+			public static URI jvm(Class<?> c, String path) {
 				return new URI(string("java/" + c.getName() + "/" + path));
 			}
 
@@ -415,7 +415,6 @@ public class Code {
 				java.util.zip.ZipEntry entry;
 				final HashMap<String,Loader.Resource> files = new HashMap<String,Loader.Resource>();
 				while( (entry = in.getNextEntry()) != null) {
-					final java.util.zip.ZipEntry ENTRY = entry;
 					final byte[] bytes = new inonit.script.runtime.io.Streams().readBytes(in, false);
 					final String entryName = entry.getName();
 					Loader.Resource f = new Loader.Resource() {
@@ -832,7 +831,7 @@ public class Code {
 				String[] tokens = path.substring(1).split("\\/");
 				final String user = tokens[0];
 				final String repo = tokens[1];
-				String ref = tokens[2];
+				// String ref = tokens[2];
 				return new Enumerator() {
 					@Override public String[] list(String prefix) {
 						//System.err.println("path = " + path + " tokens=" + Arrays.asList(tokens));
@@ -899,7 +898,6 @@ public class Code {
 				java.util.zip.ZipEntry entry;
 				final HashMap<String,Loader.Resource> files = new HashMap<String,Loader.Resource>();
 				while( (entry = in.getNextEntry()) != null) {
-					final java.util.zip.ZipEntry ENTRY = entry;
 					final byte[] bytes = new inonit.script.runtime.io.Streams().readBytes(in, false);
 					final String entryName = entry.getName();
 					Loader.Resource f = new Loader.Resource() {

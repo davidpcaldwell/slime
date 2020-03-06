@@ -517,7 +517,7 @@ public class Java {
 
 		private boolean hasClass(String name) {
 			try {
-				Class c = Java.class.getClassLoader().loadClass(name);
+				Class<?> c = Java.class.getClassLoader().loadClass(name);
 				return c != null;
 			} catch (ClassNotFoundException e) {
 				return false;

@@ -56,7 +56,7 @@ public class MetaObject implements Scriptable {
 		return delegate.getParentScope();
 	}
 
-	public Object getDefaultValue(Class arg0) {
+	public Object getDefaultValue(Class<?> arg0) {
 		return delegate.getDefaultValue(arg0);
 	}
 

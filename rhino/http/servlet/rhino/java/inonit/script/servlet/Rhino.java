@@ -19,7 +19,7 @@ import inonit.script.rhino.*;
 
 public class Rhino extends Servlet.ScriptContainer {
 	static {
-		Class[] dependencies = new Class[] {
+		Class<?>[] dependencies = new Class[] {
 			//	Pull these in as dependencies, since the Rhino loader depends on them
 			inonit.script.rhino.Objects.class
 			,inonit.script.rhino.MetaObject.class

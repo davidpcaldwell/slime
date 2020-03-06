@@ -191,7 +191,6 @@ public class Engine {
 
 		private class MyDebugger implements org.mozilla.javascript.debug.Debugger {
 			private class DebugFrameImpl implements org.mozilla.javascript.debug.DebugFrame {
-				private org.mozilla.javascript.debug.DebuggableScript script;
 				private Listener listener;
 				private CodeImpl code;
 
@@ -199,7 +198,6 @@ public class Engine {
 					if (script == null) {
 						throw new NullPointerException();
 					}
-					this.script = script;
 					this.listener = listener;
 					this.code = new CodeImpl(script);
 				}
@@ -533,10 +531,10 @@ public class Engine {
 				return this.classes.getApplicationClassLoader();
 			}
 
-			final ClassLoader getCompilationClassLoader() {
-				initializeClassLoaders();
-				return this.classes.getApplicationClassLoader();
-			}
+			// final ClassLoader getCompilationClassLoader() {
+			// 	initializeClassLoaders();
+			// 	return this.classes.getApplicationClassLoader();
+			// }
 
 			final Loader.Classes.Interface getClasspath() {
 				initializeClassLoaders();

@@ -12,8 +12,6 @@
 
 package inonit.script.jsh;
 
-import java.util.*;
-
 import javax.script.*;
 
 import inonit.script.engine.*;
@@ -127,7 +125,8 @@ public class Nashorn extends Main.Engine {
 
 		@Override public Integer run() {
 			try {
-				Object ignore = host.run();
+				//	ignore returned Object
+				host.run();
 				return null;
 			} catch (RuntimeException e) {
 				ExitException exit = getExitException(e);

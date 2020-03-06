@@ -492,20 +492,20 @@ public class Main {
 		//	TODO	The cli() method appears to force VM containers; the embed() method and Runner class may have been intended
 		//			to support another kind of container, but are currently unused
 
-		private class Runner extends Shell.Container.Holder.Run {
-			public void threw(Throwable t) {
-				t.printStackTrace();
-			}
+		// private class Runner extends Shell.Container.Holder.Run {
+		// 	public void threw(Throwable t) {
+		// 		t.printStackTrace();
+		// 	}
 
-			public void run(Shell.Container context, Shell.Configuration shell) throws Shell.Invocation.CheckedException {
-				Engine.this.shell(context,shell);
-			}
-		}
+		// 	public void run(Shell.Container context, Shell.Configuration shell) throws Shell.Invocation.CheckedException {
+		// 		Engine.this.shell(context,shell);
+		// 	}
+		// }
 
-		private Integer embed(Shell.Configuration configuration) throws Shell.Invocation.CheckedException {
-			Shell.Container.Holder context = new Shell.Container.Holder();
-			return context.getExitCode(new Runner(), configuration);
-		}
+		// private Integer embed(Shell.Configuration configuration) throws Shell.Invocation.CheckedException {
+		// 	Shell.Container.Holder context = new Shell.Container.Holder();
+		// 	return context.getExitCode(new Runner(), configuration);
+		// }
 
 		private void cli(String[] args) throws Shell.Invocation.CheckedException {
 			shell(Shell.Container.VM, Main.configuration(args));

@@ -68,7 +68,7 @@ public abstract class Loader {
 			/**
 				Returns class with the given name, or <code>null</code> if there is no such class.
 			*/
-			public final Class getClass(String name) {
+			public final Class<?> getClass(String name) {
 				try {
 					return Classes.this.getClassLoader().loadClass(name);
 				} catch (ClassNotFoundException e) {
@@ -171,7 +171,7 @@ public abstract class Loader {
 				return rv;
 			}
 
-			protected Class findClass(String name) throws ClassNotFoundException {
+			protected Class<?> findClass(String name) throws ClassNotFoundException {
 				//LOGGER.log(Level.FINE, "findClass(" + name + ")");
 				String path = name.replace('.', '/') + ".class";
 				String[] tokens = name.split("\\.");
