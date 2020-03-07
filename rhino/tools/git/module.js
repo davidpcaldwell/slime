@@ -18,42 +18,11 @@
  * @property { (p: slime.jrunscript.git.Repository.clone.argument) => slime.jrunscript.git.LocalRepository } clone
  */
 
-/**
- * @typedef { Object } slime.jrunscript.git.LocalRepository.Branch
- * @property { boolean } current
- * @property { string } name
- * @property { slime.jrunscript.git.Commit } commit
- */
-
 //	TODO	dates below are When
 
 /**
- * @typedef { object } slime.jrunscript.git.Repository.Local.merge.argument
- * @property { string } name
- * @property { boolean } [ff_only]
- * @property { any } [stdio]
- */
-
-/**
- * @typedef { (p: slime.jrunscript.git.Repository.Local.merge.argument) => void } slime.jrunscript.git.Repository.Local.merge
-*/
-
-/**
- * @typedef { object } slime.jrunscript.git.Repository.Local.fetch.argument
- * @property { boolean } [all] - whether to include the --all argument to git fetch
- * @property { boolean } [prune] - whether to include the --prune argument to git fetch
- * @property { any } [repository]
- * @property { any } [refspec]
- * @property { any } [config]
- */
-
-/**
- * @typedef { (p: slime.jrunscript.git.Repository.Local.fetch.argument) => any } slime.jrunscript.git.Repository.Local.fetch
- */
-
-/**
  * @typedef { object } slime.jrunscript.git.Repository.Local
- * @property { (p?: any) => slime.jrunscript.git.LocalRepository.Branch[] } branch
+ * @property { (p?: any) => slime.jrunscript.git.Repository.Local.Branch[] } branch
  * @property { slime.jrunscript.git.Repository.Local.show } show
  * @property { slime.jrunscript.git.Repository.Local.fetch } fetch
  * @property { slime.jrunscript.git.Repository.Local.merge } merge
@@ -69,15 +38,6 @@
 /**
  * @typedef { slime.jrunscript.git.Repository & slime.jrunscript.git.Repository.Local } slime.jrunscript.git.LocalRepository
  */
-
-/**
- * @typedef {object} slime.jrunscript.git.Installation.argument
- * @property {slime.jrunscript.file.File} program
- */
-
-/**
- * @typedef { ({port: number, basePath: string, exportAll: boolean}) => { kill: () => void } } slime.jrunscript.git.Installation.daemon
-*/
 
 /**
  * @typedef { (p: any) => slime.jrunscript.git.Repository } slime.jrunscript.git.Installation.Repository
