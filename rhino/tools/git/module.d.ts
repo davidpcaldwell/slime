@@ -39,6 +39,8 @@ namespace slime {
 							subject: string
 						}
 					}
+
+					export type show = (p: slime.jrunscript.git.Repository.Local.show.argument) => slime.jrunscript.git.Repository.Local.show.result
 				}
 			}
 		}
