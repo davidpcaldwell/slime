@@ -12,37 +12,14 @@
 
 //@ts-check
 
-/**
- * @typedef {object} slime.jrunscript.git.Repository
- * @property {string} reference
- * @property { (p: slime.jrunscript.git.Repository.clone.argument) => slime.jrunscript.git.LocalRepository } clone
- */
-
 //	TODO	dates below are When
-
-/**
- * @typedef { slime.jrunscript.git.Repository & slime.jrunscript.git.Repository.Local } slime.jrunscript.git.LocalRepository
- */
-
-/**
- * @typedef { (p: any) => slime.jrunscript.git.Repository } slime.jrunscript.git.Installation.Repository
-*/
-
-/**
- * @typedef {object} slime.jrunscript.git.Exports
- * @property { (environment: slime.jrunscript.git.Installation.argument) => slime.jrunscript.git.Installation } Installation
- * @property { any } credentialHelper
- * @property { slime.jrunscript.git.Installation } installation
- * @property { Function & { GUI: any } } install
- * @property { slime.jrunscript.git.Installation.Repository } Repository
- */
 
 void(0);
 
 (
 	/**
-	 * @param { { program: slime.jrunscript.file.File, api: any }} $context
-	 * @param {slime.jrunscript.git.Exports} $exports
+	 * @param { slime.jrunscript.git.Context } $context
+	 * @param { slime.jrunscript.git.Exports } $exports
 	 */
 	function($context,$exports) {
 		/**
@@ -354,7 +331,7 @@ void(0);
 			};
 
 			/**
-			 * @type { new (o: any) => slime.jrunscript.git.LocalRepository }
+			 * @type { new (o: any) => slime.jrunscript.git.Repository.Local }
 			 */
 			var LocalRepository = function(o) {
 				Repository.call(this,o);
