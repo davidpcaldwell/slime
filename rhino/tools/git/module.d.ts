@@ -19,11 +19,17 @@ namespace slime {
 				}
 
 				export type daemon = ({port: number, basePath: string, exportAll: boolean}) => { kill: () => void }
+				export type Repository = (p: any) => slime.jrunscript.git.Repository;
 			}
 
 			interface Installation {
 				daemon: slime.jrunscript.git.Installation.daemon,
 				Repository: slime.jrunscript.git.Installation.Repository
+			}
+
+			interface Repository {
+				reference: string,
+				clone: (p: slime.jrunscript.git.Repository.clone.argument) => slime.jrunscript.git.LocalRepository
 			}
 
 			namespace Repository {
@@ -36,6 +42,20 @@ namespace slime {
 						to: slime.jrunscript.file.Pathname,
 						config?: any
 					}
+				}
+
+				interface Local extends slime.jrunscript.git.Repository {
+					branch: (p?: any) => slime.jrunscript.git.Repository.Local.Branch[],
+					show: slime.jrunscript.git.Repository.Local.show,
+					fetch: slime.jrunscript.git.Repository.Local.fetch,
+					merge: slime.jrunscript.git.Repository.Local.merge,
+					checkout: (p: any) => void,
+					status: () => any,
+					remote: any,
+					stash: any,
+					push: Function,
+					mergeBase: function,
+					config: Function
 				}
 
 				namespace Local {
@@ -98,20 +118,19 @@ namespace slime {
 				//  * @property { Function } mergeBase
 				//  * @property { Function } config
 				//  */
+			}
 
-				interface Local {
-					branch: (p?: any) => slime.jrunscript.git.Repository.Local.Branch[],
-					show: slime.jrunscript.git.Repository.Local.show,
-					fetch: slime.jrunscript.git.Repository.Local.fetch,
-					merge: slime.jrunscript.git.Repository.Local.merge,
-					checkout: (p: any) => void,
-					status: () => any,
-					remote: any,
-					stash: any,
-					push: Function,
-					mergeBase: function,
-					config: Function
-				}
+			interface Context {
+				program: slime.jrunscript.file.File,
+				api: any
+			}
+
+			interface Exports {
+				Installation: (environment: slime.jrunscript.git.Installation.argument) => slime.jrunscript.git.Installation,
+				credentialHelper: any,
+				installation: slime.jrunscript.git.Installation,
+				install: Function & { GUI: any },
+				Repository: slime.jrunscript.git.Installation.Repository
 			}
 		}
 	}
