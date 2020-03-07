@@ -9,10 +9,6 @@ namespace slime {
 				subject: string
 			}
 
-			// interface Repository {
-
-			// }
-
 			namespace Installation {
 				interface argument {
 					program: slime.jrunscript.file.File
@@ -103,21 +99,6 @@ namespace slime {
 
 					export type fetch = (p: slime.jrunscript.git.Repository.Local.fetch.argument) => void
 				}
-
-				// /**
-				//  * @typedef { object } slime.jrunscript.git.Repository.Local
-				//  * @property { (p?: any) => slime.jrunscript.git.Repository.Local.Branch[] } branch
-				//  * @property { slime.jrunscript.git.Repository.Local.show } show
-				//  * @property { slime.jrunscript.git.Repository.Local.fetch } fetch
-				//  * @property { slime.jrunscript.git.Repository.Local.merge } merge
-				//  * @property { (p: any) => void } checkout
-				//  * @property { () => any } status
-				//  * @property { any } remote
-				//  * @property { any } stash
-				//  * @property { Function } push
-				//  * @property { Function } mergeBase
-				//  * @property { Function } config
-				//  */
 			}
 
 			interface Context {
