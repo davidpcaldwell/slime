@@ -21,6 +21,11 @@ namespace slime {
 				export type daemon = ({port: number, basePath: string, exportAll: boolean}) => { kill: () => void }
 			}
 
+			interface Installation {
+				daemon: slime.jrunscript.git.Installation.daemon,
+				Repository: slime.jrunscript.git.Installation.Repository
+			}
+
 			namespace Repository {
 				// export interface Local {
 
@@ -77,6 +82,35 @@ namespace slime {
 					}
 
 					export type fetch = (p: slime.jrunscript.git.Repository.Local.fetch.argument) => void
+				}
+
+				// /**
+				//  * @typedef { object } slime.jrunscript.git.Repository.Local
+				//  * @property { (p?: any) => slime.jrunscript.git.Repository.Local.Branch[] } branch
+				//  * @property { slime.jrunscript.git.Repository.Local.show } show
+				//  * @property { slime.jrunscript.git.Repository.Local.fetch } fetch
+				//  * @property { slime.jrunscript.git.Repository.Local.merge } merge
+				//  * @property { (p: any) => void } checkout
+				//  * @property { () => any } status
+				//  * @property { any } remote
+				//  * @property { any } stash
+				//  * @property { Function } push
+				//  * @property { Function } mergeBase
+				//  * @property { Function } config
+				//  */
+
+				interface Local {
+					branch: (p?: any) => slime.jrunscript.git.Repository.Local.Branch[],
+					show: slime.jrunscript.git.Repository.Local.show,
+					fetch: slime.jrunscript.git.Repository.Local.fetch,
+					merge: slime.jrunscript.git.Repository.Local.merge,
+					checkout: (p: any) => void,
+					status: () => any,
+					remote: any,
+					stash: any,
+					push: Function,
+					mergeBase: function,
+					config: Function
 				}
 			}
 		}

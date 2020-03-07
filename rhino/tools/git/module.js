@@ -21,33 +21,12 @@
 //	TODO	dates below are When
 
 /**
- * @typedef { object } slime.jrunscript.git.Repository.Local
- * @property { (p?: any) => slime.jrunscript.git.Repository.Local.Branch[] } branch
- * @property { slime.jrunscript.git.Repository.Local.show } show
- * @property { slime.jrunscript.git.Repository.Local.fetch } fetch
- * @property { slime.jrunscript.git.Repository.Local.merge } merge
- * @property { (p: any) => void } checkout
- * @property { () => any } status
- * @property { any } remote
- * @property { any } stash
- * @property { Function } push
- * @property { Function } mergeBase
- * @property { Function } config
- */
-
-/**
  * @typedef { slime.jrunscript.git.Repository & slime.jrunscript.git.Repository.Local } slime.jrunscript.git.LocalRepository
  */
 
 /**
  * @typedef { (p: any) => slime.jrunscript.git.Repository } slime.jrunscript.git.Installation.Repository
 */
-
-/**
- * @typedef {object} slime.jrunscript.git.Installation
- * @property {slime.jrunscript.git.Installation.daemon} daemon
- * @property {slime.jrunscript.git.Installation.Repository} Repository
- */
 
 /**
  * @typedef {object} slime.jrunscript.git.Exports
