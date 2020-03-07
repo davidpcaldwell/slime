@@ -28,10 +28,6 @@
 //	TODO	dates below are When
 
 /**
- * @typedef { (p: slime.jrunscript.git.Repository.Local.show.argument) => slime.jrunscript.git.Repository.Local.show.result } slime.jrunscript.git.Repository.Local.show
-*/
-
-/**
  * @typedef { object } slime.jrunscript.git.Repository.Local.merge.argument
  * @property { string } name
  * @property { boolean } [ff_only]
