@@ -116,30 +116,6 @@ void(0);
 				}
 			});
 
-			// var config = function(p) {
-			// 	return git({
-			// 		command: "config",
-			// 		arguments: (function(rv) {
-			// 			if (p.arguments) {
-			// 				rv.push.apply(rv,p.arguments);
-			// 			}
-			// 			return rv;
-			// 		})([]),
-			// 		stdio: {
-			// 			output: String
-			// 		},
-			// 		directory: p.directory,
-			// 		evaluate: function(result) {
-			// 			return $api.Object({
-			// 				properties: result.stdio.output.split("\n").map(function(line) {
-			// 					var token = line.split("=");
-			// 					return { name: token[0], value: token[1] }
-			// 				})
-			// 			});
-			// 		}
-			// 	});
-			// };
-
 			//	help
 
 			//	Getting and Creating Projects
