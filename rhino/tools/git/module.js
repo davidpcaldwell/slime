@@ -13,12 +13,6 @@
 //@ts-check
 
 /**
- * @typedef { object } slime.jrunscript.git.Repository.clone.argument
- * @property { slime.jrunscript.file.Pathname } to
- * @property { any } [config]
- */
-
-/**
  * @typedef {object} slime.jrunscript.git.Repository
  * @property {string} reference
  * @property { (p: slime.jrunscript.git.Repository.clone.argument) => slime.jrunscript.git.LocalRepository } clone
@@ -32,20 +26,6 @@
  */
 
 //	TODO	dates below are When
-
-/**
- * @typedef { object } slime.jrunscript.git.Repository.Local.show.argument
- * @property { string } object
- */
-
-/**
- * @typedef { object } slime.jrunscript.git.Repository.Local.show.result
- * @property { string[] } names
- * @property { { hash: string } } commit
- * @property { { name: string, email: string, date: any }} author
- * @property { { name: string, email: string, date: any }} committer
- * @property { string } subject
- */
 
 /**
  * @typedef { (p: slime.jrunscript.git.Repository.Local.show.argument) => slime.jrunscript.git.Repository.Local.show.result } slime.jrunscript.git.Repository.Local.show
