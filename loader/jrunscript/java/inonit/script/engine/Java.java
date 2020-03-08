@@ -234,9 +234,11 @@ public class Java {
 					}
 					return rv;
 				}
-				if (location == StandardLocation.SOURCE_PATH) return Arrays.asList(new JavaFileObject[0]);
-				if (true) throw new RuntimeException("No list() implementation for " + location);
-				return Arrays.asList(new JavaFileObject[0]);
+				if (location == StandardLocation.SOURCE_PATH) {
+					return Arrays.asList(new JavaFileObject[0]);
+				} else {
+					throw new RuntimeException("No list() implementation for " + location);
+				}
 			}
 
 			public String inferBinaryName(JavaFileManager.Location location, JavaFileObject file) {

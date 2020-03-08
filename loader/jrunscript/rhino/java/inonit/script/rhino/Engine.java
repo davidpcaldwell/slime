@@ -788,32 +788,27 @@ public class Engine {
 				if (t == null) return null;
 				StringWriter s = new StringWriter();
 				PrintWriter p = new PrintWriter(s, true);
-				if (false) {
-					t.printStackTrace(p);
-					return s.toString();
-				} else {
-					t.printStackTrace(p);
-					String topStack = s.toString();
-					if (topStack.indexOf("Caused by:") != -1) {
-						topStack = topStack.substring(0, topStack.indexOf("Caused by:"));
-					}
-					s = new StringWriter();
-					p = new PrintWriter(s, true);
-					p.print(topStack);
-					Throwable target = t.getCause();
-					while(target != null) {
-						p.println("Caused by: " + target.getClass().getName() + ": " + target.getMessage());
-						for (int i=0; i<target.getStackTrace().length; i++) {
-							StackTraceElement e = target.getStackTrace()[i];
-							p.println("\tat " + e);
-						}
-						target = target.getCause();
-						if (target != null) {
-							p.print("Caused by: ");
-						}
-					}
-					return s.toString();
+				t.printStackTrace(p);
+				String topStack = s.toString();
+				if (topStack.indexOf("Caused by:") != -1) {
+					topStack = topStack.substring(0, topStack.indexOf("Caused by:"));
 				}
+				s = new StringWriter();
+				p = new PrintWriter(s, true);
+				p.print(topStack);
+				Throwable target = t.getCause();
+				while(target != null) {
+					p.println("Caused by: " + target.getClass().getName() + ": " + target.getMessage());
+					for (int i=0; i<target.getStackTrace().length; i++) {
+						StackTraceElement e = target.getStackTrace()[i];
+						p.println("\tat " + e);
+					}
+					target = target.getCause();
+					if (target != null) {
+						p.print("Caused by: ");
+					}
+				}
+				return s.toString();
 			}
 
 			public Throwable getThrowable() {
