@@ -1,2 +1,3 @@
 #!/bin/bash
-env PATH="${PATH}:local/jsh/lib/node/bin" tsc -p jsconfig.json
+BASE=$(dirname $0)/..
+env PATH="${PATH}:${BASE}/local/jsh/lib/node/bin" tsc -p ${TSCONFIG_JSON=jsconfig.json}
