@@ -1,7 +1,7 @@
 var parameters = jsh.script.getopts({
 	options: {
 		base: jsh.file.Pathname,
-		path: "api.html",
+		path: "README.html",
 		host: "documentation"
 	}
 });
