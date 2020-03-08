@@ -29,10 +29,6 @@ namespace slime {
 			}
 
 			namespace Repository {
-				// export interface Local {
-
-				// }
-
 				namespace clone {
 					interface argument {
 						to: slime.jrunscript.file.Pathname,
@@ -90,10 +86,7 @@ namespace slime {
 					namespace fetch {
 						interface argument {
 							all?: boolean,
-							prune?: boolean,
-							repository: any,
-							refspec: any,
-							config: any
+							prune?: boolean
 						}
 					}
 
