@@ -213,7 +213,7 @@ END LICENSE
 					verify(inonit).loader.base.is(inonit.loader.base);
 					var js = resource("loader/expression.js");
 					var css = resource("loader/api/api.css");
-					var html = resource("api.html");
+					var html = resource("README.html");
 					verify(js,"js").evaluate(hasSourceUrl).is(true);
 					verify(js).type.getMedia().is("application");
 					verify(js).type.getSubtype().is("javascript");
