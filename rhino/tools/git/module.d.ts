@@ -47,7 +47,8 @@ namespace slime {
 					stash: any,
 					push: Function,
 					mergeBase: function,
-					config: Function
+					config: Function,
+					submodule: any
 				}
 
 				namespace Local {
@@ -86,7 +87,8 @@ namespace slime {
 					namespace fetch {
 						interface argument {
 							all?: boolean,
-							prune?: boolean
+							prune?: boolean,
+							stdio?: any
 						}
 					}
 
