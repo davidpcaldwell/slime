@@ -43,7 +43,7 @@ namespace slime {
 					merge: slime.jrunscript.git.Repository.Local.merge,
 					checkout: (p: any) => void,
 					status: () => any,
-					remote: any,
+					remote: ( () => void ) & { getUrl: ({ name: string }) => string },
 					stash: any,
 					push: Function,
 					mergeBase: function,

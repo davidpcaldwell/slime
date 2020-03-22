@@ -73,7 +73,13 @@ plugin({
 		jsh.shell.tools = {};
 
 		jsh.shell.tools.rhino = {
-			install: installRhino
+			install: installRhino,
+			require: $api.Events.Function(function(p,events) {
+				jsh.shell.jsh.require({
+					satisfied: function() { return jsh.shell.jsh.lib.getFile("js.jar"); },
+					install: function() { return installRhino(p); }
+				});
+			})
 		};
 
 		(function deprecated() {
