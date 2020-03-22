@@ -10,6 +10,9 @@
 //	Contributor(s):
 //	END LICENSE
 
+//	TODO	remove this restriction
+jsh.shell.tools.rhino.require();
+
 jsh.shell.tools.tomcat.require(void(0), {
 	console: function(e) {
 		jsh.shell.console(e.detail);
