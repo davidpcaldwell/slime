@@ -33,6 +33,7 @@ interface jsh {
 		HOME: slime.jrunscript.file.Directory,
 		PATH: any,
 		TMPDIR: slime.jrunscript.file.Directory,
+		PWD: slime.jrunscript.file.Directory,
 		browser: any,
 		listeners: any,
 		system: {
