@@ -13,7 +13,8 @@ interface jsh {
 	script: {
 		getopts: Function & { UNEXPECTED_OPTION_PARSER: any },
 		file: slime.jrunscript.file.File,
-		Application: any
+		Application: any,
+		loader: slime.Loader
 	};
 
 	shell: {
