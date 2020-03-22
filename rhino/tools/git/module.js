@@ -447,7 +447,7 @@ void(0);
 					add($api.Object.compose(p, { directory: directory }));
 				};
 
-				/** @type { Function & { getUrl: Function }} */
+				/** @type { ( () => void ) & { getUrl: ({ name: string }) => string } }} */
 				var myremote = function() {
 					throw new Error("Unimplemented: remote");
 				};
