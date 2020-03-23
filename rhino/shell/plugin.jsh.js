@@ -18,7 +18,8 @@ plugin({
 		var kotlin = ($slime.getLibraryFile("kotlin")) ? {
 			compiler: jsh.file.Pathname( String($slime.getLibraryFile("kotlin/bin/kotlinc").getAbsolutePath()) ).file
 		} : null;
-		var $shell = $loader.module("module.js", {
+
+		var module = $loader.module("module.js", {
 			api: {
 				js: jsh.js,
 				java: jsh.java,
@@ -35,6 +36,7 @@ plugin({
 			_environment: $slime.getEnvironment(),
 			kotlin: kotlin
 		});
+		if (!module.properties) throw new TypeError();
 
 		var context = {};
 		context.api = {
@@ -73,10 +75,10 @@ plugin({
 			"jsh.js",
 			{
 				$context: context,
-				$exports: $shell
+				$exports: module
 			}
 		);
-		jsh.shell = $shell;
+		jsh.shell = module;
 	}
 });
 

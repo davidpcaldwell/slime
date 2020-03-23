@@ -638,6 +638,7 @@ $exports.java = function(p) {
 		} else if (x == "jar") {
 			args.push("-jar", p[x]);
 		} else if (x == "properties") {
+			//	handled above
 		} else {
 			shell[x] = p[x];
 		}
