@@ -509,6 +509,8 @@ plugin({
 				//	TODO	update?
 				jsh.shell.tools.node = installed;
 
+				jsh.shell.tools.node.require = function(){};
+
 				jsh.shell.tools.node.update = function() {
 					jsh.shell.tools.node = node.install({
 						location: location,
@@ -522,16 +524,20 @@ plugin({
 						jsh.shell.tools.node = node.install({
 							location: location,
 							update: p.update
+						}, {
+							console: function(e) {
+								jsh.shell.console(e.detail);
+							}
 						});
+						jsh.shell.tools.node.require = function(){};
+						jsh.shell.tools.node.update = function() {
+							throw new Error("Unimplemented.");
+						}
 					}
 				};
-				node.install({
-					location: location
-				}, {
-					console: function(e) {
-						jsh.shell.console(e.detail);
-					}
-				});
+				jsh.shell.tools.node.require = function() {
+					jsh.shell.tools.node.install();
+				};
 			}
 		})();
 
