@@ -76,7 +76,7 @@ void(0);
 							output: String
 						},
 						evaluate: function(result) {
-							return result.stdio.output;
+							return result.stdio.output.split("\n")[0];
 						}
 					});
 					return {
@@ -202,7 +202,8 @@ void(0);
 		var versions = {
 			"12.13.1": { url: "https://nodejs.org/dist/v12.13.1/node-v12.13.1-darwin-x64.tar.gz" },
 			"12.14.1": { url: "https://nodejs.org/dist/v12.14.1/node-v12.14.1-darwin-x64.tar.gz" },
-			"12.16.0": { url: "https://nodejs.org/dist/v12.16.0/node-v12.16.0-darwin-x64.tar.gz" }
+			"12.16.0": { url: "https://nodejs.org/dist/v12.16.0/node-v12.16.0-darwin-x64.tar.gz" },
+			"12.16.1": { url: "https://nodejs.org/dist/v12.16.1/node-v12.16.1-darwin-x64.tar.gz" }
 		};
 
 		$exports.at = function(p) {
@@ -217,7 +218,7 @@ void(0);
 			/** @type { slime.jrunscript.node.install } */
 			function(p,events) {
 				if (!p) throw new TypeError();
-				if (!p.version) p.version = "12.16.0";
+				if (!p.version) p.version = "12.16.1";
 				var existing = $exports.at({ location: p.location });
 				/** @type { slime.jrunscript.node.Installation } */
 				var rv;
