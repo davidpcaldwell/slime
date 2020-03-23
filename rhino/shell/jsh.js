@@ -10,6 +10,10 @@
 //	Contributor(s):
 //	END LICENSE
 
+//	TODO	would be nice to generalize this and push it back into the shell module itself
+if (!$exports.properties) throw new TypeError("No properties properties.");
+$exports.engine = $exports.properties.get("jsh.engine");
+
 //	TODO	ordinarily there is no $context.api.shell referring to the module, but with jsapi unit tests, currently the idea
 //			of testing a jsh plugin directly is not supported. So it loads this file as a "module," loads the module.js module
 //			separately, and provides it as $context.api.shell. Normally the module.js module would be $exports and this file

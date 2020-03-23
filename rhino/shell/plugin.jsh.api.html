@@ -35,6 +35,8 @@ END LICENSE
 <body>
 	<div>
 		<script type="application/x.jsapi#initialize">
+			//	TODO	this setup is horrendous, far out of date, far too complicated, and needs refactoring; currently it is part
+			//			jsh/jsh.shell of the contributor/jrunscript.jsh.js suite
 			var context = new function() {
 				var host = $jsapi.loader.module("../../jrunscript/host/", {
 					$slime: jsh.unit.$slime
@@ -84,6 +86,7 @@ END LICENSE
 					_environment: Packages.inonit.system.OperatingSystem.Environment.SYSTEM,
 					_properties: Packages.java.lang.System.getProperties()
 				});
+				this.module = shell;
 				this.api = {
 					js: $jsapi.loader.module("../../js/object/"),
 					java: host,
@@ -108,7 +111,14 @@ END LICENSE
 				this.exit = function() {
 				}
 			};
-			scope.module = $jsapi.loader.module("jsh.js", context);
+			$jsapi.loader.run(
+				"jsh.js",
+				{
+					$context: context,
+					$exports: context.module
+				}
+			);
+			scope.module = context.module;
 		</script>
 		<h1>Exports</h1>
 		<script type="application/x.jsapi#initialize" jsapi:reference="getApi('api.html').getElement('script.initialize')">
