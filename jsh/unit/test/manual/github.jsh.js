@@ -11,6 +11,7 @@ var parameters = jsh.script.getopts({
 	}
 });
 
+/** @type { any } */
 var client = (function() {
 	if (parameters.options.real) {
 		if (!parameters.options.user) {

@@ -161,9 +161,12 @@ void(0);
 
 				this.installed = new Installed();
 
-				this.refresh = function() {
+				var refresh = (function() {
 					this.installed = new Installed();
-				}
+				}).bind(this);
+
+				//	TODO	used in tests; see whether that's needed
+				this.refresh = refresh;
 
 				this.install = function(p) {
 					if (p.name) {
@@ -172,9 +175,21 @@ void(0);
 							global: true,
 							arguments: [p.name]
 						});
-						this.refresh();
+						refresh();
 					}
 				};
+
+				this.require = $api.Events.Function(function(p,events) {
+					if (p.name) {
+						if (!this.installed[p.name]) {
+							events.fire("installing", p);
+							this.install(p);
+							events.fire("installed", p);
+						} else {
+							events.fire("already", p);
+						}
+					}
+				});
 
 				this.uninstall = function(p) {
 					if (p.name) {
@@ -183,7 +198,7 @@ void(0);
 							global: true,
 							arguments: [p.name]
 						});
-						this.refresh();
+						refresh();
 					}
 				};
 			};
