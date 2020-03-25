@@ -4,9 +4,8 @@ var parameters = jsh.script.getopts({
 	}
 });
 
-jsh.shell.jsh({
-	script: jsh.shell.jsh.src.getFile("jsh/tools/install/eslint.jsh.js")
-});
+jsh.shell.tools.node.require();
+jsh.shell.tools.node.modules.require({ name: "eslint" });
 
 jsh.shell.tools.node.run({
 	command: "eslint",
