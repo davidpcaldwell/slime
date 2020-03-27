@@ -83,12 +83,6 @@ jsh.shell.jsh({
 	}
 });
 
-if (!jsh.shell.jsh.src.getFile("local/jsh/lib/node/bin/tsc")) {
-	jsh.shell.jsh({
-		shell: jsh.shell.jsh.src,
-		script: jsh.shell.jsh.src.getFile("jsh/tools/install/typescript.jsh.js")
-	});
-}
 jsh.shell.run({
 	command: jsh.script.file.parent.parent.getFile("tsc.bash")
 });
