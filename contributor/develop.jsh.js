@@ -11,6 +11,7 @@
 //	Contributor(s):
 //	END LICENSE
 
+//	TODO	obsolete; harvest anything useful and remove. See contributor/hooks
 jsh.loader.plugins(jsh.script.file.getRelativePath("../rhino/tools/hg"));
 
 if (jsh.script.arguments.length == 0) {
