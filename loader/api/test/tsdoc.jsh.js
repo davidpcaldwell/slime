@@ -7,24 +7,9 @@ var parameters = jsh.script.getopts({
 	}
 })
 
-if (jsh.shell.tools.node.install) {
-	jsh.shell.tools.node.install();
-} else {
-	//	For now, not updating; current implementation removes node_modules
-	//	jsh.shell.tools.node.update();
-}
-
-//	TODO	can next two blocks be modularized?
-
-if (!jsh.shell.tools.node.modules.installed.typescript) {
-	jsh.shell.console("TypeScript not installed; installing ...");
-	jsh.shell.tools.node.modules.install({ name: "typescript" });
-}
-
-if (!jsh.shell.tools.node.modules.installed["@microsoft/tsdoc"]) {
-	jsh.shell.console("tsdoc not installed; installing ...");
-	jsh.shell.tools.node.modules.install({ name: "@microsoft/tsdoc" });
-}
+jsh.shell.tools.node.require();
+jsh.shell.tools.node.modules.require({ name: "typescript" });
+jsh.shell.tools.node.modules.require({ name: "@microsoft/tsdoc" });
 
 var ast = jsh.shell.tools.node.run({
 	arguments: function(rv) {
@@ -35,11 +20,9 @@ var ast = jsh.shell.tools.node.run({
 	},
 	evaluate: function(result) {
 		if (result.status != 0) throw new Error();
-		//	TODO	read(JSON)
 		return parameters.options.ast.file.read(JSON);
 	}
 });
-jsh.shell.console(JSON.stringify(ast));
 
 var kinds = {};
 
@@ -117,9 +100,23 @@ kinds.InterfaceDeclaration = function(context,node) {
 	context.addInterface(name, c);
 }
 
+kinds.ModuleBlock = function(context,node) {
+	node.children.forEach(function(child) {
+		interpret(context, child);
+	});
+}
+
+kinds.HeritageClause = function(context,node) {
+	throw new Error("Learn to parse HeritageClause.");
+}
+
 kinds.ModuleDeclaration = function(context,node) {
 	var name = getName(node);
-	context.addModule(name, {});
+	var c = new ChildContext(context);
+	node.children.filter(isNotIdentifier).forEach(function(child) {
+		interpret(c, child);
+	});
+	context.addModule(name, c);
 }
 
 kinds.PropertySignature = function(context,node) {
