@@ -182,10 +182,10 @@ void(0);
 				,
 				stdio: function(p) {
 					return {
-						output: null,
-						//	TODO	stderr is used to indicate progress when fetching multiple subrepositories; we may want to build
-						//			in the idea of events for commands like this
-						error: null
+						// output: null,
+						// //	TODO	stderr is used to indicate progress when fetching multiple subrepositories; we may want to build
+						// //			in the idea of events for commands like this
+						// error: null
 					}
 				}
 			});
@@ -567,8 +567,9 @@ void(0);
 										var status = line.substring(0,1);
 										var name = line.substring(2);
 										var detachedHeadPattern = /^\(HEAD detached (at|from) (.*)\)/;
+										var noBranchName = "(no branch)";
 										var toShow;
-										if (detachedHeadPattern.test(name)) {
+										if (detachedHeadPattern.test(name) || name == noBranchName) {
 											toShow = "HEAD";
 											name = null;
 										} else {
