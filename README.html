@@ -56,6 +56,15 @@ END LICENSE
 			<h1>Tools</h1>
 			<ul>
 				<li>
+					<code>tools/documentation.jsh.js -base <i>directory</i> [-index <i>path</i>] [-host <i>hostname</i>]</code>:
+					Serves the documentation for project, in a custom Chrome browser if Chrome is found.
+					<ul>
+						<li><code>-base</code>: top-level directory of the project.</li>
+						<li><code>-index</code>: relative path to the index page; defaults to <code>README.html</code>.</li>
+						<li><code>-host</code>: hostname to use when serving pages.</li>
+					</ul>
+				</li>
+				<li>
 					<code>loader/api/tools/update.jsh.js [-base <i>directory</i>]</code>: Inlines or updates the definition files
 					for a library that does not itself contain SLIME (and thus cannot link to the SLIME definition files in
 					<code>loader/api</code>).
