@@ -1,8 +1,15 @@
-namespace slime {
-	namespace jrunscript {
-		namespace hg {
-			interface Repository {
-			}
-		}
+namespace slime.jrunscript.hg {
+	interface Repository {
+	}
+
+	interface Hgrc {
+		get: (name?: string) => string | object;
+		set: (section: string, name: string, value: string) => void;
+		normalize: () => void;
+		write: () => void;
+	}
+
+	interface Exports {
+		Hgrc: new () => Hgrc
 	}
 }
