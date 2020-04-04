@@ -245,6 +245,14 @@ void(0);
 					return new LocalRepository({ directory: result.directory.getSubdirectory(result.arguments[3]) });
 				}
 			});
+			var submodule_update = cli.command({
+				command: "submodule",
+				arguments: function(p) {
+					this.push("update");
+					if (p.init) this.push("--init");
+					if (p.recursive) this.push("--recursive");
+				}
+			});
 
 			//	Inspection and Comparison
 
@@ -708,6 +716,7 @@ void(0);
 					}
 				};
 				this.submodule.add = command(submodule_add);
+				this.submodule.update = command(submodule_update);
 
 				this.push = function(p) {
 					var args = [];
