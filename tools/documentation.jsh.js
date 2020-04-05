@@ -34,7 +34,7 @@ if (jsh.shell.browser.chrome) {
 		})
 	});
 	instance.run({
-		uri: "http://" + parameters.options.host + "/" + parameters.options.path
+		uri: "http://" + parameters.options.host + "/" + parameters.options.index
 	});
 } else {
 	//	Otherwise, fall back to Java desktop integration and default browser
