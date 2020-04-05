@@ -1,27 +1,10 @@
 var repository = new jsh.tools.git.Repository({ directory: jsh.script.file.parent.parent.parent });
 
-var getConfiguration = function() {
-	return repository.config({
-		arguments: ["--list"]
-	});
-};
+jsh.sdlc.requireGitIdentity({
+	repository: repository,
+	get: jsh.sdlc.requireGitIdentity.get.gui
+});
 
-var requireConfigurationValue = function(name) {
-	if (!getConfiguration()[name]) {
-		jsh.shell.console("Missing " + name + "; aborting commit and obtaining value from UI.");
-		var value = jsh.ui.askpass.gui({
-			prompt: "Enter Git configuration value for " + name,
-			nomask: true
-		});
-		repository.config({
-			arguments: [name, value]
-		});
-		jsh.shell.exit(1);
-	}
-}
-
-requireConfigurationValue("user.name");
-requireConfigurationValue("user.email");
 var status = repository.status();
 var untracked = (status.paths) ? $api.Object.properties(status.paths).filter(function(property) {
 	return property.value == "??"
