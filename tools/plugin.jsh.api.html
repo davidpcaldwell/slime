@@ -1,0 +1,89 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
+<head>
+	<title>__TITLE__</title>
+	<link href="..//loader/api/api.css" rel="stylesheet" type="text/css" />
+	<script src="..//loader/api/api.js"></script>
+	<script>
+		//	TODO	CORS
+		document.domain = document.domain;
+	</script>
+</head>
+<body>
+	<div>__DESCRIPTION__</div>
+	<div>
+		<h1><code>jsh.sdlc</code></h1>
+		<ul>
+			<li class="function">
+				<div class="name">requireGitIdentity</div>
+				<span>__DESCRIPTION__</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="object">
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="value">
+									<div class="name">repository</div>
+									<span class="type">__TYPE__</span>
+									<span>__DESCRIPTION__</span>
+								</li>
+							</ul>
+						</li>
+					</ol>
+				</div>
+				<script type="application/x.jsapi#tests">
+					var directory = jsh.shell.TMPDIR.createTemporary({ directory: true });
+					jsh.tools.git.init({ pathname: directory.pathname });
+					var unconfigured = jsh.tools.git.Repository({ directory: directory });
+					//jsh.sdlc.requireGitIdentity({ repository: unconfigured });
+					//	TODO	could we get this working?:
+					//	verify(jsh.sdlc).requireGitIdentity( ... ).threw.type(Error)
+					verify(jsh.sdlc).evaluate(function() {
+						this.requireGitIdentity({ repository: unconfigured });
+					}).threw.type(Error);
+				</script>
+				<script type="application/x.jsapi#tests">
+					//	TODO	test callbacks
+					var directory = jsh.shell.TMPDIR.createTemporary({ directory: true });
+					jsh.tools.git.init({ pathname: directory.pathname });
+					var toConfigure = jsh.tools.git.Repository({ directory: directory });
+					verify(jsh.sdlc).evaluate(function() {
+						this.requireGitIdentity({
+							repository: toConfigure,
+							get: {
+								name: function(p) {
+									return "Marcus Aurelius";
+								},
+								email: function(p) {
+									return "test@example.com";
+								}
+							}
+						});
+					}).threw.nothing();
+					var config = toConfigure.config({
+						arguments: ["--list"]
+					});
+					jsh.shell.console(JSON.stringify(config));
+					verify(config)["user.name"].is("Marcus Aurelius");
+					verify(config)["user.email"].is("test@example.com");
+				</script>
+				<script type="application/x.jsapi#tests">
+					var directory = jsh.shell.TMPDIR.createTemporary({ directory: true });
+					jsh.tools.git.init({ pathname: directory.pathname });
+					var configured = jsh.tools.git.Repository({ directory: directory });
+					configured.config({
+						arguments: ["user.name", "foo"]
+					});
+					configured.config({
+						arguments: ["user.email", "bar"]
+					});
+					verify(jsh.sdlc).evaluate(function() {
+						this.requireGitIdentity({ repository: configured });
+					}).threw.nothing();
+				</script>
+			</li>
+		</ul>
+	</div>
+</body>
+</html>

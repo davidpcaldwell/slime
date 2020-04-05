@@ -1,3 +1,7 @@
+namespace jsh.plugin {
+	const plugin: (p: { isReady: () => boolean, load: () => void }) => void;
+}
+
 interface jsh {
 	java: slime.jrunscript.host.Exports;
 	http: slime.jrunscript.http.client;
@@ -85,4 +89,5 @@ declare namespace jsh {
 	const time: jsh['time'];
 	const ui: jsh['ui'];
 	const ip: jsh['ip'];
+	const sdlc: jsh.sdlc.Exports;
 }

@@ -47,7 +47,7 @@ namespace slime {
 					stash: any,
 					push: Function,
 					mergeBase: function,
-					config: Function,
+					config: (p: { arguments: string[] }) => object,
 					submodule: any
 				}
 
