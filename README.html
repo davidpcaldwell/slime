@@ -54,36 +54,46 @@ END LICENSE
 		</div>
 		<div>
 			<h1>Tools</h1>
-			<ul>
-				<li>
-					<code>tools/documentation.jsh.js -base <i>directory</i> [-index <i>path</i>] [-host <i>hostname</i>]</code>:
-					Serves the documentation for project, in a custom Chrome browser if Chrome is found.
-					<ul>
-						<li><code>-base</code>: top-level directory of the project.</li>
-						<li><code>-index</code>: relative path to the index page; defaults to <code>README.html</code>.</li>
-						<li><code>-host</code>: hostname to use when serving pages.</li>
-					</ul>
-				</li>
-				<li>
-					<code>loader/api/tools/update.jsh.js [-base <i>directory</i>]</code>: Inlines or updates the definition files
-					for a library that does not itself contain SLIME (and thus cannot link to the SLIME definition files in
-					<code>loader/api</code>).
-				</li>
-				<li>
-					Running individual definition pages
-					<ul>
-						<li><code>jsh</code>: <code>jsh/test/suite.jsh.js -definition <i>definition</i> [-part <i>part</i>]</code></li>
-						<li>
-							Browser definition page:
-							<code><a href="../loader/browser/test/suite.jsh.api.html">loader/browser/test/suite.jsh.js</a>
-								-definition <i>pathname</i>
-								[-part <i>part</i>]
-								[-interactive]
-							</code>
-						</li>
-					</ul>
-				</li>
-			</ul>
+			<div>
+				<h2>Command-line tools</h2>
+				<ul>
+					<li>
+						<code>tools/documentation.jsh.js -base <i>directory</i> [-index <i>path</i>] [-host <i>hostname</i>]</code>:
+						Serves the documentation for project, in a custom Chrome browser if Chrome is found.
+						<ul>
+							<li><code>-base</code>: top-level directory of the project.</li>
+							<li><code>-index</code>: relative path to the index page; defaults to <code>README.html</code>.</li>
+							<li><code>-host</code>: hostname to use when serving pages.</li>
+						</ul>
+					</li>
+					<li>
+						<code>loader/api/tools/update.jsh.js [-base <i>directory</i>]</code>: Inlines or updates the definition files
+						for a library that does not itself contain SLIME (and thus cannot link to the SLIME definition files in
+						<code>loader/api</code>).
+					</li>
+					<li>
+						Running individual definition pages
+						<ul>
+							<li><code>jsh</code>: <code>jsh/test/suite.jsh.js -definition <i>definition</i> [-part <i>part</i>]</code></li>
+							<li>
+								Browser definition page:
+								<code><a href="../loader/browser/test/suite.jsh.api.html">loader/browser/test/suite.jsh.js</a>
+									-definition <i>pathname</i>
+									[-part <i>part</i>]
+									[-interactive]
+								</code>
+							</li>
+						</ul>
+					</li>
+				</ul>
+			</div>
+			<div>
+				<h2><code>jsh</code> Plugin</h2>
+				<p>
+					SLIME also provides an API (in the form of a <a href="tools/plugin.jsh.api.html"><code>jsh</code> plugin</a>) that provides methods that may
+					be helpful in implementing SDLC processes.
+				</p>
+			</div>
 		</div>
 		<div>
 			<h1><a href="contributor/README.html">Contributing</a></h1>
