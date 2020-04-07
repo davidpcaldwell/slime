@@ -6,7 +6,7 @@
 	function(plugin) {
 		plugin({
 			isReady: function() {
-				return true;
+				return jsh.shell && jsh.ui;
 			},
 			load: function() {
 				//@ts-ignore
@@ -47,14 +47,20 @@
 						arguments: ["--list"]
 					});
 					if (!config["user.name"]) {
+						jsh.shell.console("Getting user.name for " + p.repository);
 						p.repository.config({
 							arguments: ["user.name", get.name({ repository: p.repository })]
-						})
+						});
+					} else {
+						jsh.shell.console("Found user.name " + config["user.name"] + " for " + p.repository);
 					}
 					if (!config["user.email"]) {
+						jsh.shell.console("Getting user.name for " + p.repository);
 						p.repository.config({
 							arguments: ["user.email", get.email({ repository: p.repository })]
-						})
+						});
+					} else {
+						jsh.shell.console("Found user.email " + config["user.email"] + " for " + p.repository);
 					}
 				}, {
 					get: {
