@@ -51,7 +51,8 @@ interface jsh {
 				}
 			}
 		},
-		stdio: any
+		stdio: any,
+		tools: any
 	};
 
 	unit: {
