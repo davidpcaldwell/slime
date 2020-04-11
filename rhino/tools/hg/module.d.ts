@@ -10,6 +10,6 @@ namespace slime.jrunscript.hg {
 	}
 
 	interface Exports {
-		Hgrc: new () => Hgrc
+		Hgrc: new (p: { file: slime.jrunscript.file.File }) => Hgrc
 	}
 }

@@ -1286,6 +1286,36 @@ END LICENSE
 							</div>
 						</li>
 						<li class="function">
+							<div class="name">remove</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</div>
+							<script type="application/x.jsapi#tests">
+								var dir = jsh.shell.TMPDIR.createTemporary({ directory: true });
+								var location = dir.getRelativePath("remove.hgrc");
+								var hgrc = new module.Hgrc({
+									pathname: location
+								});
+								hgrc.set("a", "b", "value");
+								hgrc.set("a", "c", "c");
+								verify(hgrc).get("a.b").is("value");
+								verify(hgrc).get("a.c").is("c");
+								verify(hgrc).get("a.d").is(null);
+								hgrc.remove("a", "b");
+								verify(hgrc).get("a.b").is(null);
+								verify(hgrc).get("a.c").is("c");
+								verify(hgrc).get("a.d").is(null);
+							</script>
+						</li>
+						<li class="function">
 							<div class="name">write</div>
 							<span>Writes out the current file.</span>
 						</li>
