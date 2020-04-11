@@ -218,12 +218,12 @@ void(0);
 					}
 				},
 				evaluate: function(result) {
-					var linePattern = /(?:\s*)(\S+)(?:\s+)(\S+)(?:\s+)\((\S+)\)/;
+					var linePattern = /(?:\s*)(\S+)(?:\s+)(\S+)((?:\s+)\((\S+)\))?/;
 					return result.stdio.output.split("\n").filter(function(line) {
 						return line;
 					}).map(function(line) {
 						var parsed = linePattern.exec(line);
-						if (!parsed) throw new Error("No match: [" + line + "]");
+						if (!parsed) throw new Error("No match in submodule evaluate: [" + line + "] in\n" + result.stdio.output);
 						var commit = parsed[1];
 						var path = parsed[2];
 						//	parsed[3] is git describe; see https://git-scm.com/docs/git-submodule
