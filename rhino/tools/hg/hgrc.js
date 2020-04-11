@@ -2,13 +2,18 @@
 //@ts-ignore
 $set(
 	/**
-	 * @param { { file: slime.jrunscript.file.File, section?: any } } p
+	 * @param { { pathname?: slime.jrunscript.file.Pathname, file?: slime.jrunscript.file.File } } p
 	 */
-	function(p) {
+	function (p) {
+		var pathname = (function() {
+			if (p.file) return p.file.pathname;
+			if (p.pathname) return p.pathname;
+			throw new TypeError("Required: p.pathname");
+		})();
 		var headerMatch = /^\[(.*)\]/;
 		var valueMatch = /^(\S+)(?:\s*)\=(?:\s*)(.+)$/
 		var continueMatch = /^(\s+)(.*)$/
-		var lines = p.file.read(String).split("\n");
+		var lines = pathname.file ? pathname.file.read(String).split("\n") : [];
 
 		var parse = function() {
 			//	From man hgrc:
@@ -37,13 +42,10 @@ $set(
 				}
 			};
 
-			var section;
-			if (typeof(p.section) != "undefined") {
-				section = {
-					name: p.section,
-					lines: []
-				}
-			}
+			var section = {
+				name: "",
+				lines: []
+			};
 			lines.forEach(function(line) {
 				var current = { line: line };
 				rv.lines.push(current);
@@ -92,6 +94,16 @@ $set(
 			lines.push("[" + section + "]");
 			lines.push(name + " = " + value);
 		};
+
+		this.remove = function(section,name) {
+			var now = parse().lines;
+			lines = now.filter(function(line) {
+				if (line.section == section && line.name == name) return false;
+				return true;
+			}).map(function(line) {
+				return line.line;
+			})
+		}
 
 		var normalizeSections = function(parsed) {
 			var section;
@@ -159,16 +171,18 @@ $set(
 		};
 
 		this.write = function() {
-			p.file.pathname.write(lines.join("\n"), { append: false });
+			pathname.write(lines.join("\n"), { append: false });
 		};
 
 		this.unit = {
 			parse: parse
 		};
 
-		// TODO: Object.defineProperty
-		this.unit.__defineGetter__("lines", function() {
-			return lines;
+		Object.defineProperty(this.unit, "lines", {
+			get: function() {
+				return lines;
+			},
+			enumerable: true
 		});
 	}
 );

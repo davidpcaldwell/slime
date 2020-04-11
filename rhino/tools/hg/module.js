@@ -150,7 +150,6 @@ var Installation = function(environment) {
 			invocation.command = parsed[1];
 			args.unshift(environment.install.toString());
 			invocation.arguments = args;
-			debugger;
 		} else {
 			invocation.command = environment.install;
 			invocation.arguments = args;
@@ -298,7 +297,6 @@ var Installation = function(environment) {
 
 		var inout = (function(target) {
 			return function(verb,m) {
-				var self = this;
 				var MyErrorType = $context.api.js.Error.Type("HgError");
 				var MyError = function(p) {
 					var rv = new MyErrorType();
@@ -351,9 +349,9 @@ var Installation = function(environment) {
 							throw e;
 						} else {
 							if (parsed.err && parsed.err.split("\n")[0] == "abort: error: nodename nor servname provided, or not known") {
-								var e = new Error("Unable to use DNS to identify repository server");
-								e.unreachable = true;
-								throw e;
+								var ex = new Error("Unable to use DNS to identify repository server");
+								ex.unreachable = true;
+								throw ex;
 							}
 							if (!/^comparing with /.test(parsed.lines[0])) throw new Error("Wrong line 0: " + parsed.lines[0]);
 							//	TODO	probably need to review this with some test cases: what is status when no changes found?
@@ -537,7 +535,6 @@ var Installation = function(environment) {
 			if (!file) return null;
 			var hgsub = new $exports.Hgrc({ file: file/*, section: "" */ });
 			var list = hgsub.get();
-			debugger;
 
 			var hgsubstate = {};
 			if (dir.getFile(".hgsubstate")) {
@@ -649,7 +646,7 @@ var Installation = function(environment) {
 				} else if (x == "message") {
 					args.push("--message",p[x]);
 				}
-			};
+			}
 			if (p.files) {
 				args.push.apply(args,p.files);
 			}
