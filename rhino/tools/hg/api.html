@@ -1313,6 +1313,14 @@ END LICENSE
 								verify(hgrc).get("a.b").is(null);
 								verify(hgrc).get("a.c").is("c");
 								verify(hgrc).get("a.d").is(null);
+
+								hgrc.write();
+								var read = new module.Hgrc({
+									pathname: location
+								});
+								verify(read).get("a.b").is(null);
+								verify(read).get("a.c").is("c");
+								verify(read).get("a.d").is(null);
 							</script>
 						</li>
 						<li class="function">
