@@ -896,7 +896,7 @@ var Installation = function(environment) {
 			} else if (p.directory && p.directory.pathname) {
 				return new LocalRepository(p.directory);
 			} else {
-				throw new Error("Required: local or url");
+				throw new Error("Required: directory or url");
 			}
 		} else {
 			throw new TypeError();
