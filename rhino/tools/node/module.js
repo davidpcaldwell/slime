@@ -1,55 +1,4 @@
 //@ts-check
-
-/**
- * @typedef {object} slime.jrunscript.node.Context
- */
-
-/**
- * @typedef {object} slime.jrunscript.node.Version
- * @property {string} number
- */
-
-//	TODO	clean up below definition by relating it to jrunscript/shell constructs
-/**
- * @typedef {object} slime.jrunscript.node.Installation.npm.run.argument
- * @property {string} command
- * @property {boolean} [global]
- * @property {string[]} [arguments]
- * @property {any} [stdio]
- * @property {slime.jrunscript.file.Directory} [directory]
- */
-
-/**
- * @typedef { (p: slime.jrunscript.node.Installation.npm.run.argument ) => any } slime.jrunscript.node.Installation.npm.run
- */
-
-/**
- * @typedef {object} slime.jrunscript.node.Installation.npm
- * @property { slime.jrunscript.node.Installation.npm.run } run
- */
-
-/**
- * @typedef {object} slime.jrunscript.node.Installation
- * @property {slime.jrunscript.node.Version} version
- * @property {Function} run
- * @property {object} modules
- * @property {slime.jrunscript.node.Installation.npm} npm
- */
-
-/**
- * @typedef { (p: { location: slime.jrunscript.file.Pathname, version?: string, update?: boolean }, events?: any ) => slime.jrunscript.node.Installation } slime.jrunscript.node.install
- */
-
-/**
- * @typedef {object} slime.jrunscript.node.Exports
- * @property { new (o: any) => slime.jrunscript.node.Installation } Installation
- * @property {Function} at
- * @property { slime.jrunscript.node.install } install
- * @property {Function} Project
- */
-
-void(0);
-
 (
 	/**
 	 * @param {slime.jrunscript.node.Context} $context
@@ -124,7 +73,7 @@ void(0);
 
 			var npm = (function(run) {
 				/**
-				 * @type { slime.jrunscript.node.Installation.npm.run }
+				 * @type { slime.jrunscript.node.Installation["npm"]["run"] }
 				 */
 				var rv = function(p) {
 					return run($api.Object.compose(p, {
@@ -231,7 +180,7 @@ void(0);
 		};
 
 		$exports.install = $api.Events.Function(
-			/** @type { slime.jrunscript.node.install } */
+			/** @type { slime.jrunscript.node.Exports["install"] } */
 			function(p,events) {
 				if (!p) throw new TypeError();
 				//	TODO	compute this somehow?
