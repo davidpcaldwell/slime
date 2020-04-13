@@ -41,6 +41,22 @@
 			});
 		}
 
+		if (!Object.fromEntries) {
+			Object.defineProperty(Object, "fromEntries", {
+				value: function(iterable) {
+					if (iterable instanceof Array) {
+						var rv = {};
+						iterable.forEach(function(item) {
+							rv[item[0]] = item[1];
+						});
+						return rv;
+					} else {
+						throw new TypeError("'iterable' must currently be an array");
+					}
+				}
+			});
+		}
+
 		if (!Array.prototype.find) {
 			Object.defineProperty(Array.prototype, "find", {
 				value: function(f, target) {
