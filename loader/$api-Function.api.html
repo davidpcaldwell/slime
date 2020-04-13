@@ -166,8 +166,58 @@ END LICENSE
 				var is2 = api.Function.is(2);
 
 				verify(is2(2)).is(true);
+				verify(is2("2")).is(false);
 				verify(is2(3)).is(false);
 			</script>
+		</li>
+		<li class="function">
+			<div class="name">result</div>
+			<span>
+				Returns the result of a chain of functions. The first argument is the input to the chain,
+				and succeeding arguments are the functions that make up the chain.
+			</span>
+			<script type="application/x.jsapi#tests">
+				var times = function(x) {
+					return function(v) {
+						return v * x;
+					}
+				};
+
+				var plus = function(x) {
+					return function(v) {
+						return v + x;
+					}
+				};
+
+				var x = $api.Function.result(
+					2,
+					times(3),
+					plus(4)
+				);
+				verify(x).is(10);
+			</script>
+		</li>
+		<li class="object">
+			<div class="name">Object</div>
+			<span>__DESCRIPTION__</span>
+			<div class="label">has properties:</div>
+			<ul>
+				<li class="function">
+					<div class="name">fromEntries</div>
+					<span>Invokes Object.fromEntries with the argument and returns the result.</span>
+					<script type="application/x.jsapi#tests">
+						var array = [ ["a", 2], ["b", 3] ];
+						var result = api.Function.result(
+							array,
+							api.Function.Object.fromEntries
+						);
+						verify(result).a.is(2);
+						verify(result).b.is(3);
+						verify(result).evaluate.property("b").is(3);
+						verify(result).evaluate.property("c").is(void(0));
+					</script>
+				</li>
+			</ul>
 		</li>
 		<li class="object">
 			<div class="name">argument</div>

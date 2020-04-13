@@ -29,6 +29,11 @@ $exports.Function.pipe = function() {
 	}
 };
 
+$exports.Function.result = function() {
+	var items = Array.prototype.slice.call(arguments);
+	return $exports.Function.pipe.apply(this, items.slice(1))(items[0]);
+}
+
 $exports.Function.property = function(name) {
 	return function(v) {
 		//  TODO    handling of undefined, null?
@@ -54,6 +59,31 @@ $exports.Function.conditional = function(test,yes,no) {
 		return (condition) ? yes.apply(this,arguments) : no.apply(this,arguments);
 	};
 };
+
+$exports.Function.String = {
+	split: function(delimiter) {
+		return function(string) {
+			return string.split(delimiter);
+		}
+	}
+};
+
+$exports.Function.Array = {
+	map: function(f) {
+		return function(array) {
+			return array.map(f, this);
+		}
+	}
+};
+
+$exports.Function.Object = {
+	entries: function(o) {
+		return Object.entries(o);
+	},
+	fromEntries: function(iterable) {
+		return Object.fromEntries(iterable);
+	}
+}
 
 $exports.Function.argument = {};
 $exports.Function.argument.check = function(p) {
