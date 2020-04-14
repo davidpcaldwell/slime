@@ -90,9 +90,20 @@ $set(
 		};
 
 		this.set = function(section,name,value) {
-			//	TODO	more intelligent implementation
-			lines.push("[" + section + "]");
-			lines.push(name + " = " + value);
+			if (!section) {
+				var now = parse().lines;
+				lines = now.map(function(line) {
+					if (!line.section && line.name == name) {
+						return line.name + " = " + value;
+					} else {
+						return line.line;
+					}
+				});
+			} else {
+				//	TODO	more intelligent implementation
+				lines.push("[" + section + "]");
+				lines.push(name + " = " + value);
+			}
 		};
 
 		this.remove = function(section,name) {
