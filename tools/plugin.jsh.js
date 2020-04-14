@@ -55,7 +55,7 @@
 						jsh.shell.console("Found user.name " + config["user.name"] + " for " + p.repository);
 					}
 					if (!config["user.email"]) {
-						jsh.shell.console("Getting user.name for " + p.repository);
+						jsh.shell.console("Getting user.email for " + p.repository);
 						p.repository.config({
 							arguments: ["user.email", get.email({ repository: p.repository })]
 						});
