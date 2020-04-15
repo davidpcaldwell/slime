@@ -1,5 +1,25 @@
 namespace slime.jrunscript.hg {
+	interface Commit {
+		changeset: {
+			local: number
+			global: string
+		},
+		summary: string
+	}
+
 	interface Repository {
+	}
+
+	namespace Repository {
+		interface Local extends slime.jrunscript.hg.Repository {
+			identify: Function
+			log: (p: any) => Commit[]
+			paths: {
+				default: {
+					url: any
+				}
+			}
+		}
 	}
 
 	interface Hgrc {

@@ -606,6 +606,7 @@ void(0);
 					});
 				};
 
+				/** @type { slime.jrunscript.git.Repository.Local["checkout" ] } */
 				this.checkout = function(p) {
 					var args = [];
 					args.push(p.branch);
@@ -742,17 +743,34 @@ void(0);
 					return show(p);
 				};
 
+				/** @type { slime.jrunscript.git.Repository.Local["log"] } */
 				this.log = function(p) {
+					if (!p) p = {};
+
+					/**
+					 *  @typedef { object } deprecatedRange
+					 *  @property { string } since
+					 *  @property { string } until
+					 */
+
+					/** @type { (p: any) => p is deprecatedRange } */
+					function isDeprecatedRange(p) {
+						return typeof(p.since) == "string" && typeof(p.until) == "string";
+					}
+
 					return execute({
 						command: "log",
 						arguments: (function() {
 							var rv = [];
 							rv.push("--format=format:" + formats.log.format);
-							if (p && p.since && p.until) {
-								rv.push(p.since+".."+p.until);
-								rv.push("--");
-							} else if (p && p.since || p && p.until) {
-								throw new TypeError("Unsupported: since or until without other");
+							if (isDeprecatedRange(p)) {
+								var x = p;
+								$api.deprecate(function() {
+									rv.push(x.since+".."+x.until);
+									rv.push("--");
+								})();
+							} else if (typeof(p.range) == "string") {
+								rv.push(p.range);
 							}
 							if (p && p.author) {
 								rv.push("--author=" + p.author);

@@ -57,6 +57,18 @@
 			});
 		}
 
+		if (!Object.entries) {
+			Object.defineProperty(Object, "entries", {
+				value: function(object) {
+					var rv = [];
+					for (var x in object) {
+						rv.push([x, object[x]]);
+					}
+					return rv;
+				}
+			});
+		}
+
 		if (!Array.prototype.find) {
 			Object.defineProperty(Array.prototype, "find", {
 				value: function(f, target) {
