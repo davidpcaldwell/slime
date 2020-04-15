@@ -183,11 +183,18 @@ var Installation = function(environment) {
 				if (p.to) return arguments.callee(p.to);
 				throw new TypeError("Argument must be directory or pathname")
 			})(p);
+			var args = [];
+			args.push(this.reference);
+			if (p.updaterev) {
+				args.push("-u", p.updaterev);
+			}
+			args.push(todir.toString());
+
 			//Packages.java.lang.System.err.println("verbose " + Boolean(p && p.verbose));
 			//Packages.java.lang.System.err.println("debug " + Boolean(p && p.debug));
 			return shell({
 				command: "clone",
-				arguments: [this.reference, todir.toString()],
+				arguments: args,
 				config: (p && p.config) ? p.config : {},
 				debug: (p && p.debug),
 				verbose: (p && p.verbose),
@@ -204,7 +211,7 @@ var Installation = function(environment) {
 					//	is version 2.4+. Could, I suppose, check to see whether revision is the same as bookmark before update command
 					var bookmarks = rv.bookmarks();
 					var magic = $context.api.js.Array.choose(bookmarks, $context.api.js.Filter.property("name", $context.api.js.Filter.equals("@")));
-					if (magic && !p.update) {
+					if (magic && !p.updaterev) {
 						rv.update({
 							revision: "@"
 						});
@@ -547,6 +554,7 @@ var Installation = function(environment) {
 			var rv = (p.array) ? $api.deprecate(function() { return []; })() : {};
 			for (var x in list) {
 				if (/^subpaths\./.test(x)) {
+					//	entries in the [subpaths] section do not specify subrepositories, but URL mappings
 				} else {
 					//	TODO	below works in scenario where we are just self-mapping, but not for git URLs
 					var gitPattern = /^\[git\](.*)/;
@@ -618,7 +626,9 @@ var Installation = function(environment) {
 			return shell({
 				repository: this,
 				command: "update",
-				arguments: args
+				arguments: args,
+				stdio: p && p.stdio,
+				evaluate: p && p.evaluate
 			});
 		};
 

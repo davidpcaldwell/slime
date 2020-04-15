@@ -25,7 +25,7 @@ namespace slime {
 
 			interface Repository {
 				reference: string,
-				clone: (p: slime.jrunscript.git.Repository.clone.argument) => slime.jrunscript.git.LocalRepository
+				clone: (p: slime.jrunscript.git.Repository.clone.argument) => slime.jrunscript.git.Repository.Local
 			}
 
 			namespace Repository {
@@ -37,11 +37,13 @@ namespace slime {
 				}
 
 				interface Local extends slime.jrunscript.git.Repository {
+					directory: slime.jrunscript.file.Directory
+
 					branch: (p?: any) => slime.jrunscript.git.Repository.Local.Branch[],
 					show: slime.jrunscript.git.Repository.Local.show,
 					fetch: slime.jrunscript.git.Repository.Local.fetch,
 					merge: slime.jrunscript.git.Repository.Local.merge,
-					checkout: (p: any) => void,
+					checkout: (p: { branch: string, stdio?: any  }) => void,
 					status: () => any,
 					remote: ( () => void ) & { getUrl: ({ name: string }) => string },
 					stash: any,
@@ -49,6 +51,7 @@ namespace slime {
 					mergeBase: function,
 					config: (p: { arguments: string[] }) => object,
 					submodule: any
+					log: (p?: { author?: string, all?: boolean, range?: string }) => Commit[]
 				}
 
 				namespace Local {
