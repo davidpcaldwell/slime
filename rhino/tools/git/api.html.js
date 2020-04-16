@@ -5,12 +5,33 @@
 	 * @param { * } $exports
 	 */
 	function($context,$exports) {
+		var daemon;
+
 		$context.scope.initialize = function() {
+			/**
+			 * @type { {
+			 * 		init: Function
+			 * 		module: slime.jrunscript.git.Exports
+			 * 		remotes: slime.jrunscript.file.Directory
+			 * 		fixtures: {
+			 * 			repositories: {
+			 * 				create: () => void
+			 * 			}
+			 * 		}
+			 * 		remote: slime.jrunscript.git.Repository
+			 * 		child: slime.jrunscript.git.Repository
+			 * 		fixture: {
+			 * 			write: Function
+			 * 		}
+			 * } }
+			 */
 			var scope = this;
-			scope.module = jsh.tools.git;
+			var module = jsh.tools.git;
+
+			scope.module = module;
 
 			scope.init = function(p) {
-				var rv = scope.module.init(p);
+				var rv = module.init(p);
 				rv.execute({
 					command: "config",
 					arguments: [
@@ -26,20 +47,56 @@
 				return rv;
 			};
 
-			scope.remotes = jsh.shell.TMPDIR.createTemporary({ directory: true });
-			//	TODO	provide $jsapi accessor for this
-			var port = jsh.ip.getEphemeralPort().number;
-			var daemon = scope.module.daemon({
-				port: port,
-				basePath: scope.remotes,
+			var castToDirectory = function(node) {
+				/**
+				 * @type { (p: slime.jrunscript.file.Node) => p is slime.jrunscript.file.Directory }
+				 */
+				var isDirectory = function(p) {
+					return true;
+				};
+
+				if (isDirectory(node)) {
+					return node;
+				} else {
+					throw new TypeError();
+				}
+			};
+
+			scope.remotes = castToDirectory(jsh.shell.TMPDIR.createTemporary({ directory: true }));
+
+			daemon = module.daemon({
+				port: jsh.ip.getEphemeralPort().number,
+				basePath: scope.remotes.pathname,
 				exportAll: true
 			});
 
-			scope.daemon = {
-				process: daemon,
-				port: port
+			scope.fixtures = {
+				repositories: new function() {
+					this.create = function(p) {
+						var location = scope.remotes.getRelativePath(p.name);
+						if (!location.directory) {
+							location.createDirectory();
+							var repository = scope.init({ pathname: scope.remotes.getRelativePath(p.name) });
+							if (p.files) {
+								//	TODO	should use execute and forEach
+								$api.Function.result(
+									p.files,
+									$api.Function.Object.entries,
+									$api.Function.Array.map(function(entry) {
+										location.directory.getRelativePath(entry[0]).write(entry[1], { append: false, recursive: true });
+										repository.add({ path: entry[0] });
+									})
+								);
+								repository.commit({ message: "initial" });
+							}
+						}
+						return {
+							server: repository,
+							remote: module.Repository({ remote: "git://127.0.0.1:" + daemon.port + "/" + p.name })
+						};
+					};
+				}
 			};
-			jsh.shell.console("new daemon = " + scope.daemon);
 
 			//	TODO	refactor the stuff below here to improve cohesion, especially URLs, and remove repetition
 
@@ -51,7 +108,7 @@
 				all: true,
 				message: "RemoteRepository a"
 			});
-			var remote = new scope.module.Repository({ remote: "git://127.0.0.1:" + scope.daemon.port + "/RemoteRepository" });
+			var remote = module.Repository({ remote: "git://127.0.0.1:" + daemon.port + "/RemoteRepository" });
 			scope.remote = remote;
 
 			var child = scope.remotes.getRelativePath("child").createDirectory();
@@ -62,7 +119,7 @@
 				all: true,
 				message: "child b"
 			});
-			var childRemote = new scope.module.Repository({ remote: "git://127.0.0.1:" + scope.daemon.port + "/child" });
+			var childRemote = module.Repository({ remote: "git://127.0.0.1:" + daemon.port + "/child" });
 			scope.child = childRemote;
 
 			scope.fixture = {
@@ -81,7 +138,7 @@
 
 		$context.scope.destroy = function() {
 			jsh.shell.console("destroying daemon");
-			scope.daemon.process.kill();
+			daemon.kill();
 		}
 	}
 //@ts-ignore

@@ -114,11 +114,28 @@ END LICENSE
 										"a": "a"
 									}
 								});
+								var captor = new function() {
+									var stdout = [];
+									var stderr = [];
+
+									this.output = stdout;
+									this.error = stderr;
+
+									this.stdout = function(e) {
+										stdout.push(e);
+									};
+
+									this.stderr = function(e) {
+										stderr.push(e);
+									};
+								};
 								var repository = module.init({
 									pathname: location
-								});
+								}, captor);
 								verify(repository).is.type("object");
 								verify(repository).directory.getFile("a").is.type("object");
+								verify(captor).output.length.is(2);
+								verify(captor).output[1].detail.is("");
 							</script>
 						</li>
 						<li class="function">
@@ -545,6 +562,52 @@ END LICENSE
 								<span class="type">__TYPE__</span>
 								<span>__DESCRIPTION__</span>
 							</div>
+							<script type="application/x.jsapi#tests">
+								var parent = fixtures.repositories.create({
+									name: "fetch-parent",
+									files: {
+										a: "a"
+									}
+								});
+								var child = fixtures.repositories.create({
+									name: "fetch-child",
+									files: {
+										b: "b"
+									}
+								});
+
+								var local = {
+									parent: parent.remote.clone({
+										to: jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname
+									})
+								};
+
+								local.parent.config({
+									arguments: [
+										"submodule.recurse", "true"
+									]
+								});
+
+								jsh.shell.console("config: " + JSON.stringify(local.parent.config({
+									arguments: ["--list"]
+								})));
+
+								parent.server.submodule.add({
+									path: "child",
+									repository: child.remote
+								});
+								parent.server.commit({ all: true, message: "add submodule" });
+
+								local.parent.fetch({ all: true });
+								local.parent.merge({ name: "origin/master" });
+								local.parent.submodule.update({ init: true, recursive: true });
+
+								child.server.directory.getRelativePath("add").write("add", { append: false });
+								child.server.add({ path: "add" });
+								child.server.commit({ message: "add file to child" });
+
+								local.parent.fetch({ all: true });
+							</script>
 						</li>
 						<li class="function">
 							<div class="name">checkout</div>

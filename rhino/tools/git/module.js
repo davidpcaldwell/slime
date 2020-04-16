@@ -13,9 +13,6 @@
 //@ts-check
 
 //	TODO	dates below are When
-
-void(0);
-
 (
 	/**
 	 * @param { slime.jrunscript.git.Context } $context
@@ -120,15 +117,29 @@ void(0);
 
 			//	Getting and Creating Projects
 
-			var init = function(m) {
+			/** @type { slime.jrunscript.git.Installation["init"] } */
+			var init = $api.Events.Function(function(m,events) {
+				var stdio = {
+					output: {
+						line: function(line) {
+							events.fire("stdout", line);
+						}
+					},
+					error: {
+						line: function(line) {
+							events.fire("stderr", line);
+						}
+					}
+				};
 				git({
 					command: "init",
-					arguments: [m.pathname]
+					arguments: [m.pathname],
+					stdio: stdio
 				});
 				return new LocalRepository({
 					directory: m.pathname.directory
 				});
-			};
+			});
 
 			/**
 			 * @param { slime.jrunscript.git.Repository.clone.argument & { repository: string } } p
@@ -677,7 +688,7 @@ void(0);
 					});
 				};
 
-				this.submodule = function(p) {
+				this.submodule = Object.assign(function(p) {
 					if (!p) p = {};
 					if (!p.command) {
 						return command(submodule)(p).map(function(line) {
@@ -715,9 +726,10 @@ void(0);
 							arguments: ["sync"]
 						});
 					}
-				};
-				this.submodule.add = command(submodule_add);
-				this.submodule.update = command(submodule_update);
+				}, {
+					add: command(submodule_add),
+					update: command(submodule_update)
+				});
 
 				this.push = function(p) {
 					var args = [];
@@ -846,16 +858,14 @@ void(0);
 				}
 			};
 
-			/** @property {any} init */
 			this.init = init;
 
 			//	Server Admin
 
-			/**
-			 * @param { { port: number, basePath: string, exportAll: boolean  } } p
-			 * @returns { { kill: () => void } }
-			 */
+			/** @type { slime.jrunscript.git.Installation["daemon"] } */
 			this.daemon = function(p) {
+				var DEFAULT_GIT_PORT = 9418;
+
 				var args = [];
 				if (typeof(p.port) == "number") args.push("--port=" + p.port);
 				if (p.basePath) args.push("--base-path=" + p.basePath);
@@ -888,6 +898,10 @@ void(0);
 					}
 				})();
 				return new function() {
+					this.port = (p.port) ? p.port : DEFAULT_GIT_PORT;
+
+					this.basePath = p.basePath;
+
 					this.kill = function() {
 						process.kill();
 					}
