@@ -9,18 +9,28 @@ namespace slime {
 				subject: string
 			}
 
+			interface Daemon {
+				port: number
+				basePath?: slime.jrunscript.file.Pathname
+				kill: () => void
+			}
+
 			namespace Installation {
 				interface argument {
 					program: slime.jrunscript.file.File
 				}
-
-				export type daemon = ({port: number, basePath: string, exportAll: boolean}) => { kill: () => void }
-				export type Repository = (p: any) => slime.jrunscript.git.Repository;
 			}
 
 			interface Installation {
-				daemon: slime.jrunscript.git.Installation.daemon,
-				Repository: slime.jrunscript.git.Installation.Repository
+				init: (p: { pathname: slime.jrunscript.file.Pathname }, events?: object) => slime.jrunscript.git.Repository.Local
+
+				daemon: (p: {
+					port?: number
+					basePath?: slime.jrunscript.file.Pathname
+					exportAll?: boolean
+				}) => Daemon
+
+				Repository: (p: any) => slime.jrunscript.git.Repository
 			}
 
 			interface Repository {
@@ -50,8 +60,19 @@ namespace slime {
 					push: Function,
 					mergeBase: function,
 					config: (p: { arguments: string[] }) => object,
-					submodule: any
+					submodule: Function & {
+						add: (p: {
+							repository: slime.jrunscript.git.Repository,
+							path: string
+						}) => slime.jrunscript.git.Repository.Local
+					}
 					log: (p?: { author?: string, all?: boolean, range?: string }) => Commit[]
+					execute: (p: {
+						command: string
+						arguments?: string[]
+						environment?: object,
+						directory?: slime.jrunscript.file.Directory
+					}) => any
 				}
 
 				namespace Local {
@@ -105,11 +126,14 @@ namespace slime {
 			}
 
 			interface Exports {
-				Installation: (environment: slime.jrunscript.git.Installation.argument) => slime.jrunscript.git.Installation,
-				credentialHelper: any,
-				installation: slime.jrunscript.git.Installation,
-				install: Function & { GUI: any },
-				Repository: slime.jrunscript.git.Installation.Repository
+				Installation: (environment: slime.jrunscript.git.Installation.argument) => slime.jrunscript.git.Installation
+				credentialHelper: any
+				installation: slime.jrunscript.git.Installation
+				daemon: slime.jrunscript.git.Installation["daemon"]
+				Repository: slime.jrunscript.git.Installation["Repository"]
+				init: slime.jrunscript.git.Installation["init"]
+				execute: slime.jrunscript.git.Installation["execute"]
+				install: Function & { GUI: any }
 			}
 		}
 	}
