@@ -19,10 +19,8 @@
 	 * @param { slime.jrunscript.git.Exports } $exports
 	 */
 	function($context,$exports) {
-		/**
-		 * 	@type { new (environment: slime.jrunscript.git.Installation.argument) => slime.jrunscript.git.Installation }
-		 *  @param { slime.jrunscript.git.Installation.argument } environment
-		 */
+
+		/** @type { new (environment: slime.jrunscript.git.Installation.argument) => slime.jrunscript.git.Installation } */
 		var Installation = function(environment) {
 
 			//	Organized via https://git-scm.com/docs
@@ -346,6 +344,9 @@
 				this.clone = clone;
 			};
 
+			/**
+			 * @type { new ({}) => slime.jrunscript.git.Repository }
+			 */
 			var RemoteRepository = function(o) {
 				Repository.call(this,o);
 
@@ -934,6 +935,7 @@
 				}
 			}
 
+			/** @type { slime.jrunscript.git.Installation["Repository"] } */
 			this.Repository = function(p) {
 				if (p.local || p.directory) {
 					return new LocalRepository(p);
@@ -949,12 +951,9 @@
 			}
 		};
 
-		/**
-		 * 	@type { (environment: slime.jrunscript.git.Installation.argument) => slime.jrunscript.git.Installation }
-		 *  @param { slime.jrunscript.git.Installation.argument } p
-		 */
-		$exports.Installation = function(p) {
-			return new Installation(p);
+		/** @type { (environment: slime.jrunscript.git.Installation.argument) => slime.jrunscript.git.Installation } */
+		$exports.Installation = function(environment) {
+			return new Installation(environment);
 		}
 
 		$exports.credentialHelper = {};

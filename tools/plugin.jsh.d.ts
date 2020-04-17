@@ -13,5 +13,6 @@ namespace jsh.sdlc {
 
 	interface Exports {
 		requireGitIdentity: ( (p: Exports.requireGitIdentity.argument) => void) & { get: any }
+		prohibitUntrackedFiles: (p: { repository: slime.jrunscript.git.Repository.Local }, events: $api.Events.Function.Receiver) => void
 	}
 }

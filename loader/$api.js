@@ -10,7 +10,8 @@
 //	Contributor(s):
 //	END LICENSE
 
-(function() {
+//@ts-check
+(function($platform,$slime) {
 	var $exports = {};
 
 	var load = function(name,$context) {
@@ -462,7 +463,7 @@
 	$exports.Value = function(v,name) {
 		return new function() {
 			this.property = function() {
-				return new $exports.Value($exports.Object.property.apply(v,arguments),((name)?name:"") + "." + Array.prototype.join.call(arguments,"."))
+				return $exports.Value($exports.Object.property.apply(v,arguments),((name)?name:"") + "." + Array.prototype.join.call(arguments,"."))
 			};
 
 			this.require = function() {
@@ -482,6 +483,7 @@
 		}
 		var byType = {};
 
+		/** @type { new (type: string, detail: any) => $api.Event } */
 		var Event = function(type,detail) {
 			this.type = type;
 			this.source = source;
@@ -623,4 +625,5 @@
 	})($exports);
 
 	return $exports;
-})()
+//@ts-ignore
+})($platform,$slime)

@@ -21,20 +21,7 @@
 					}
 				};
 
-				/**
-				 * @param {Function} a
-				 * @param {object} b
-				 * @returns { Function & object }
-				 */
-				var assign = function(a,b) {
-					var rv = a;
-					for (var x in b) {
-						rv[x] = b[x];
-					}
-					return rv;
-				};
-
-				jsh.sdlc.requireGitIdentity = assign(function(p) {
+				jsh.sdlc.requireGitIdentity = Object.assign(function(p) {
 					var get = p.get || {
 						name: function(p) {
 							throw new Error("Missing: user.name");
@@ -68,6 +55,20 @@
 							name: guiAsk({ name: "user.name" }),
 							email: guiAsk({ name: "user.email" })
 						}
+					}
+				});
+
+				jsh.sdlc.prohibitUntrackedFiles = $api.Events.Function(function(p, events) {
+					var status = p.repository.status();
+					var untracked = (status.paths) ? $api.Object.properties(status.paths).filter(function(property) {
+						return property.value == "??"
+					}).map(function(property) { return property.name; }) : [];
+					if (untracked.length) {
+						events.fire("untracked", untracked);
+					}
+				}, {
+					untracked: function(e) {
+						throw new Error("Found untracked files: " + e.detail.join("\n"));
 					}
 				});
 			}

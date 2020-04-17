@@ -61,6 +61,7 @@ interface jsh {
 
 	loader: any;
 	js: any;
+	io: any;
 	document: any;
 	file: any;
 	time: any;
@@ -85,6 +86,7 @@ declare namespace jsh {
 
 	const loader: jsh['loader'];
 	const js: jsh['js'];
+	const io: jsh['io'];
 	const document: jsh['document'];
 	const file: jsh['file'];
 	const time: jsh['time'];
