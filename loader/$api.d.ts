@@ -1,3 +1,7 @@
+interface Function {
+	construct: any
+}
+
 type Iterable_match<L,R> = {
 	left: L,
 	right: R
@@ -10,8 +14,9 @@ interface $api {
 		Function: <P,R>(f: (p: P, events: any) => R, defaultListeners?: object) => (argument: P, receiver: $api.Events | object) => R
 	},
 	Object: {
-		(p: any): any,
+		(p: any): any
 		compose: Function
+		properties: Function
 	},
 	Iterable: {
 		/**
@@ -58,9 +63,20 @@ declare namespace $api {
 	const Iterable: $api["Iterable"];
 	const Events : $api["Events"];
 
+	interface Event {
+		type: string
+		source: object
+		timestamp: number
+		detail: any
+	}
+
 	interface Events {
 		listeners: any,
 		fire: (type: string, detail: any) => void
+	}
+
+	namespace Events.Function {
+		type Receiver = { [x: string]: (e: Event) => void } | $api.Events
 	}
 
 	const deprecate: $api["deprecate"];
