@@ -588,10 +588,6 @@ END LICENSE
 									]
 								});
 
-								jsh.shell.console("config: " + JSON.stringify(local.parent.config({
-									arguments: ["--list"]
-								})));
-
 								parent.server.submodule.add({
 									path: "child",
 									repository: child.remote
