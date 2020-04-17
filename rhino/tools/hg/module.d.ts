@@ -4,19 +4,25 @@ namespace slime.jrunscript.hg {
 			local: number
 			global: string
 		},
-		summary: string
+		summary: string,
+		date: Date
 	}
 
 	interface Repository {
 	}
 
 	namespace Repository {
+		interface Remote extends slime.jrunscript.hg.Repository {
+			url: any
+		}
+
 		interface Local extends slime.jrunscript.hg.Repository {
 			identify: Function
 			log: (p: any) => Commit[]
 			paths: {
 				default: {
 					url: any
+					directory: slime.jrunscript.file.Directory
 				}
 			}
 		}
