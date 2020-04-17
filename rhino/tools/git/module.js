@@ -62,12 +62,25 @@
 				};
 
 				/**
-				 * @param { { command: string, arguments: (this: string[], p: any) => void, environment?: Function, stdio?: Function, evaluate?: Function } } m
+				 * @typedef { { config?: object, directory?: slime.jrunscript.file.Directory, [x: string]: any } } CommandArgument
+				 */
+
+				/**
+				 * @param { {
+				 * 		command: string
+				 * 		arguments: (this: string[], p: CommandArgument) => void
+				 * 		environment?: (this: object, p: CommandArgument) => void | object
+				 * 		stdio?: (p: CommandArgument, events: $api.Events) => slime.jrunscript.shell.Stdio
+				 * 		evaluate?: Function
+				 * } } m
 				 * @returns { Function }
 				 */
 				this.command = function(m) {
 					var program = environment.program;
-					return function(p) {
+					/**
+					 * @param { CommandArgument } p
+					 */
+					function rv(p,events) {
 						var args = [];
 						addConfigurationArgumentsTo(args,p.config);
 						args.push(m.command);
@@ -78,7 +91,7 @@
 							if (typeof(replaced) != "undefined") environment = replaced;
 						}
 						var stdio;
-						if (m.stdio) stdio = m.stdio(p);
+						if (m.stdio) stdio = m.stdio(p, events);
 						return $context.api.shell.run({
 							command: program,
 							arguments: args,
@@ -88,6 +101,7 @@
 							evaluate: m.evaluate
 						});
 					}
+					return $api.Events.Function(rv);
 				}
 			};
 
@@ -175,6 +189,36 @@
 					directory: p.directory
 				});
 			};
+
+			var commit = cli.command({
+				command: "commit",
+				arguments: function(p) {
+					if (!p.message) {
+						throw new TypeError("Required: message property containing commit message");
+					}
+					this.push("--message", p.message);
+					if (p.author) {
+						this.push("--author=" + p.author);
+					}
+					if (p.all) {
+						this.push("--all");
+					}
+				},
+				stdio: function(p, events) {
+					return {
+						output: {
+							line: function(line) {
+								events.fire("stdout", line);
+							}
+						},
+						error: {
+							line: function(line) {
+								events.fire("stderr", line);
+							}
+						}
+					}
+				}
+			});
 
 			//	Branching and Merging
 
@@ -511,24 +555,7 @@
 					});
 				};
 
-				this.commit = function(p) {
-					execute({
-						command: "commit",
-						arguments: (function() {
-							if (!p.message) {
-								throw new TypeError("Required: message property containing commit message");
-							}
-							var rv = ["-m", p.message];
-							if (p.author) {
-								rv.push("--author=" + p.author);
-							}
-							if (p.all) {
-								rv.push("-a");
-							}
-							return rv;
-						})()
-					});
-				};
+				this.commit = command(commit);
 
 				//	Branching and Merging
 

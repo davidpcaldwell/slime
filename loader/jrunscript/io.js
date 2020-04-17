@@ -221,6 +221,7 @@ var Streams = new function() {
 	this.java = new function() {
 		this.adapt = function(object) {
 			if (false) {
+				throw new Error("Unreachable.");
 			} else if ($context.api.java.isJavaObject(object) && $context.api.java.isJavaType(Packages.java.io.InputStream)(object)) {
 				return new InputStream(object);
 			} else if ($context.api.java.isJavaObject(object) && $context.api.java.isJavaType(Packages.java.io.OutputStream)(object)) {

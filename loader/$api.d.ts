@@ -5,10 +5,7 @@ type Iterable_match<L,R> = {
 
 interface $api {
 	Events: {
-		(p: any): {
-			listeners: any,
-			fire: (type: string, detail: any) => void
-		},
+		(p: any): $api.Events,
 		//	TODO	could probably use parameterized types to improve accuracy
 		Function: <P,R>(f: (p: P, events: any) => R, defaultListeners?: object) => (argument: P, receiver: $api.Events | object) => R
 	},
@@ -60,6 +57,12 @@ interface $api {
 declare namespace $api {
 	const Iterable: $api["Iterable"];
 	const Events : $api["Events"];
+
+	interface Events {
+		listeners: any,
+		fire: (type: string, detail: any) => void
+	}
+
 	const deprecate: $api["deprecate"];
 	const experimental: $api["experimental"];
 
