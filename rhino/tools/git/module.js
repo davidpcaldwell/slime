@@ -62,18 +62,22 @@
 				};
 
 				/**
-				 * @typedef { { config?: object, directory?: slime.jrunscript.file.Directory, [x: string]: any } } CommandArgument
+				 * @typedef { slime.jrunscript.git.Repository.argument & { [x: string]: any } } CommandArgument
+				 */
+
+				/**
+				 * @typedef { CommandArgument & { _this: slime.jrunscript.git.Repository } } RepositoryArgument
 				 */
 
 				/**
 				 * @param { {
 				 * 		command: string
-				 * 		arguments: (this: string[], p: CommandArgument) => void
+				 * 		arguments: (this: string[], p: RepositoryArgument) => void
 				 * 		environment?: (this: object, p: CommandArgument) => void | object
 				 * 		stdio?: (p: CommandArgument, events: $api.Events) => slime.jrunscript.shell.Stdio
 				 * 		evaluate?: Function
 				 * } } m
-				 * @returns { Function }
+				 * @returns { any }
 				 */
 				this.command = function(m) {
 					var program = environment.program;
@@ -84,7 +88,8 @@
 						var args = [];
 						addConfigurationArgumentsTo(args,p.config);
 						args.push(m.command);
-						if (typeof(m.arguments) == "function") m.arguments.call(args,p);
+						var r = $api.Object.compose(p, { _this: this });
+						if (typeof(m.arguments) == "function") m.arguments.call(args,r);
 						var environment = $api.Object.compose($context.api.shell.environment);
 						if (m.environment) {
 							var replaced = m.environment.call(environment, p);
@@ -98,7 +103,10 @@
 							environment: environment,
 							stdio: stdio,
 							directory: p.directory,
-							evaluate: m.evaluate
+							evaluate: (m.evaluate) ? function(result) {
+								result.argument = p;
+								return m.evaluate(result);
+							} : m.evaluate
 						});
 					}
 					return $api.Events.Function(rv);
@@ -155,21 +163,34 @@
 				});
 			});
 
-			/**
-			 * @param { slime.jrunscript.git.Repository.clone.argument & { repository: string } } p
-			 */
-			var clone = function(p) {
-				if (!p.to) {
-					throw new Error("Required: 'to' property indicating destination.");
+			/** @type { slime.jrunscript.git.Repository["clone"] } */
+			var clone = cli.command({
+				command: "clone",
+				arguments: function(p) {
+					if (!p.to) {
+						throw new Error("Required: 'to' property indicating destination.");
+					}
+					this.push(p._this.reference, p.to.toString());
+				},
+				stdio: function(p, events) {
+					return {
+						output: {
+							line: function(line) {
+								events.fire("stdout", line);
+							}
+						},
+						error: {
+							line: function(line) {
+								events.fire("stderr", line);
+							}
+						}
+					}
+				},
+				evaluate: function(result) {
+					if (result.status) throw new Error();
+					return new LocalRepository({ directory: result.argument.to.directory });
 				}
-				git({
-					config: p.config,
-					command: "clone",
-					arguments: [p.repository,p.to.toString()],
-					environment: $api.Object.compose($context.api.shell.environment, environment)
-				});
-				return new LocalRepository({ directory: p.to.directory });
-			}
+			});
 
 			//	Basic Snapshotting
 
@@ -337,14 +358,7 @@
 
 				/** @property { string } reference */
 
-				/**
-				 * @param { slime.jrunscript.git.Repository.clone.argument } p
-				 */
-				this.clone = function(p) {
-					return clone($api.Object.compose(p, {
-						repository: this.reference
-					}));
-				}
+				this.clone = clone;
 			};
 
 			var RemoteRepository = function(o) {
@@ -383,6 +397,12 @@
 						return o.local;
 					})();
 				})();
+
+				var command = function(f) {
+					return function(p) {
+						return f($api.Object.compose(p, { directory: directory }));
+					}
+				}
 
 				this.reference = directory.pathname.toString();
 
@@ -491,12 +511,6 @@
 				};
 
 				//	Organization of commands mirrors organization on https://git-scm.com/docs
-
-				var command = function(f) {
-					return function(p) {
-						return f($api.Object.compose(p, { directory: directory }));
-					}
-				}
 
 				//	Setup and Config
 

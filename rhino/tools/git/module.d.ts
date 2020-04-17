@@ -35,15 +35,13 @@ namespace slime {
 
 			interface Repository {
 				reference: string,
-				clone: (p: slime.jrunscript.git.Repository.clone.argument) => slime.jrunscript.git.Repository.Local
+				clone: (p: { to: slime.jrunscript.file.Pathname } & Repository.argument ) => slime.jrunscript.git.Repository.Local
 			}
 
 			namespace Repository {
-				namespace clone {
-					interface argument {
-						to: slime.jrunscript.file.Pathname,
-						config?: any
-					}
+				interface argument {
+					config?: { [x: string]: string }
+					directory?: slime.jrunscript.file.Directory
 				}
 
 				interface Local extends slime.jrunscript.git.Repository {
