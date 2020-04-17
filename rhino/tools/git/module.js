@@ -110,6 +110,28 @@
 						});
 					}
 					return $api.Events.Function(rv);
+				};
+
+				this.stdio = new function() {
+					this.Events = function(o) {
+						if (!o) o = {};
+						return function(p, events) {
+							return {
+								output: {
+									line: function(line) {
+										events.fire("stdout", line);
+										if (o.output) o.output(line);
+									}
+								},
+								error: {
+									line: function(line) {
+										events.fire("stderr", line);
+										if (o.error) o.error(line);
+									}
+								}
+							}
+						}
+					}
 				}
 			};
 
@@ -141,22 +163,10 @@
 
 			/** @type { slime.jrunscript.git.Installation["init"] } */
 			var init = $api.Events.Function(function(m,events) {
-				var stdio = {
-					output: {
-						line: function(line) {
-							events.fire("stdout", line);
-						}
-					},
-					error: {
-						line: function(line) {
-							events.fire("stderr", line);
-						}
-					}
-				};
 				git({
 					command: "init",
 					arguments: [m.pathname],
-					stdio: stdio
+					stdio: cli.stdio.Events()(void(0), events)
 				});
 				return new LocalRepository({
 					directory: m.pathname.directory
@@ -172,20 +182,7 @@
 					}
 					this.push(p._this.reference, p.to.toString());
 				},
-				stdio: function(p, events) {
-					return {
-						output: {
-							line: function(line) {
-								events.fire("stdout", line);
-							}
-						},
-						error: {
-							line: function(line) {
-								events.fire("stderr", line);
-							}
-						}
-					}
-				},
+				stdio: cli.stdio.Events(),
 				evaluate: function(result) {
 					if (result.status) throw new Error();
 					return new LocalRepository({ directory: result.argument.to.directory });
@@ -225,20 +222,7 @@
 						this.push("--all");
 					}
 				},
-				stdio: function(p, events) {
-					return {
-						output: {
-							line: function(line) {
-								events.fire("stdout", line);
-							}
-						},
-						error: {
-							line: function(line) {
-								events.fire("stderr", line);
-							}
-						}
-					}
-				}
+				stdio: cli.stdio.Events()
 			});
 
 			//	Branching and Merging
@@ -317,6 +301,7 @@
 					this.push(p.repository.reference);
 					this.push(p.path);
 				},
+				stdio: cli.stdio.Events(),
 				evaluate: function(result) {
 					return new LocalRepository({ directory: result.directory.getSubdirectory(result.arguments[3]) });
 				}
