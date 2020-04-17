@@ -46,7 +46,7 @@ plugin({
 
 plugin({
 	isReady: function() {
-		return jsh.js && jsh.js.web && jsh.time && jsh.java && jsh.ip && jsh.file && jsh.shell && jsh.tools && jsh.tools.install && jsh.java.tools;
+		return jsh.js && jsh.time && jsh.js.web && jsh.java && jsh.ip && jsh.file && jsh.shell && jsh.tools && jsh.tools.install && jsh.java.tools;
 	},
 	load: function() {
 		var loadGit = function() {

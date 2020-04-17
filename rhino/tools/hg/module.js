@@ -481,7 +481,9 @@ var Installation = function(environment) {
 				command: "identify",
 				arguments: ((local) ? ["-ni"] : []).concat([this.reference]),
 				evaluate: function(result) {
-					var output = result.out.split("\n").slice(0,-1)[0];
+					var lines = result.out.split("\n").slice(0,-1);
+					if (lines.length == 0) throw new Error("No output from identify; err = \n" + result.err);
+					var output = lines[0];
 					if (local) {
 						var match = /([0-9a-f]+)(\+?)\s+(\-?[0-9]+)(\+?)/.exec(output);
 						if (!match) {
