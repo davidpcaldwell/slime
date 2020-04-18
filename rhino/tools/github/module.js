@@ -37,6 +37,25 @@ void(0);
 				return "https://api.github.com/" + relative;
 			};
 
+			var parseLinkHeader = function(value) {
+				return $api.Function.result(
+					value,
+					$api.Function.String.split(", "),
+					$api.Function.Array.map(function(string) {
+						var relationFormat = /^\<(.+?)\>\; rel\=\"(.+)\"/;
+						var parsed = relationFormat.exec(string);
+						return {
+							url: parsed[1],
+							rel: parsed[2]
+						}
+					}),
+					$api.Function.Array.map(function(relation) {
+						return [relation.rel, relation.url];
+					}),
+					$api.Function.Object.fromEntries
+				);
+			}
+
 			var apiClient = (function(o) {
 				var client = new $context.library.http.Client({
 					authorization: (o.credentials) ? $context.library.http.Authentication.Basic.Authorization({
@@ -54,6 +73,10 @@ void(0);
 						$context.library.shell.console("");
 					}
 					var rv = (string) ? JSON.parse(string) : void(0);
+					if (response.headers.get("Link")) {
+						var link = parseLinkHeader(response.headers.get("Link"));
+						rv.next = link.next;
+					}
 					if (response.status.code == 403 && rv && rv.documentation_url == "https://developer.github.com/v3/#abuse-rate-limits") {
 						return {
 							retry: true
@@ -68,16 +91,27 @@ void(0);
 						var more = true;
 						var retry = 1;
 						var rv;
+						var next;
 						while(more) {
-							rv = was.call(this, $api.Object.compose(p, {
-								evaluate: evaluate
-							}));
+							var json = was.call(this, $api.Object.compose(
+								p,
+								{ evaluate: evaluate },
+								(next) ? { url: next } : {}
+							));
+							if (rv) {
+								rv = rv.concat(json);
+							} else {
+								rv = json;
+							}
 							if (rv && rv.retry) {
 								//	TODO	X.X should use Retry-After
 								//			see https://developer.github.com/v3/guides/best-practices-for-integrators/#dealing-with-abuse-rate-limits
 								$context.library.shell.console("Sleeping for " + retry + " seconds...");
 								Packages.java.lang.Thread.sleep(retry * 1000);
 								retry *= 2;
+							} else if (json.next) {
+								next = json.next;
+								//	more is still true, will cycle
 							} else {
 								return rv;
 							}
