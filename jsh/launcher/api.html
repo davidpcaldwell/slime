@@ -24,25 +24,52 @@ END LICENSE
 </head>
 <body>
 	<div>
-		The easiest way to run <code>jsh</code> is via the top-level <code>jsh.bash</code> script:
+		<h1><code>jsh.bash</code></h1>
 		<div>
-			<code>./jsh.bash [-<i>vmargument</i> [...-<i>vmargument</i>]] &lt;path-to-script> [arguments]</code>
+			The easiest way to run <code>jsh</code> is via the top-level <code>jsh.bash</code> script:
+			<div>
+				<code>./jsh.bash [-<i>vmargument</i> [...-<i>vmargument</i>]] &lt;path-to-script> [arguments]</code>
+			</div>
+			<div>
+				The <code>jsh</code> script locates a suitable Java installation with which to run the shell using the following
+				algorithm:
+				<ul>
+					<li>
+						It checks to see whether the <code>JSH_LAUNCHER_JDK_HOME</code> environment variable
+						is defined, and if so, it uses the JDK found in that location.
+					</li>
+					</li>
+					<li>For an unbuilt shell, it checks in the <code>local/jdk/default</code> directory.</li>
+					<li>
+						It then checks in the SLIME user installation directory, which is <code>$HOME/.slime/jdk/default</code>
+						(this value can be overridden using the <code>JSH_USER_JDK</code> variable; this variable can be set to
+						<code>/dev/null</code> to ignore the user JDK entirely).
+					</li>
+					<li>
+						Finally, it checks <code>PATH</code> for a suitable <code>jrunscript</code> command.
+					</li>
+				</ul>
+			</div>
 		</div>
 		<div>
-			The <code>jsh</code> script locates a suitable Java installation with which to run the shell using the following
-			algorithm:
-			<ul>
-				<li>For an unbuilt shell, it checks in the <code>local/jdk/default</code> directory.</li>
-				<li>
-					It then checks in the SLIME user installation directory, which is <code>$HOME/.slime/jdk/default</code>
-					(this value can be overridden using the <code>JSH_USER_JDK</code> variable; this variable can be set to
-					<code>/dev/null</code> to ignore the user JDK entirely).
-				</li>
-				<li>
-					Finally, it checks <code>PATH</code> for a suitable <code>jrunscript</code> command.
-				</li>
-			</ul>
+			<h2>Installing a JDK</h2>
+			<div>
+				<code>jsh.bash</code> is also capable of installing JDKs in both the shell and user installation directories.
+				The following arguments are accepted:
+				<ul>
+					<li><code>--install-jdk</code>: Installs the default JDK (currently 8) to the shell as the default.</li>
+					<li>
+						<code>--install-jdk-11</code>: Installs JDK 11 at <code>local/jdk/11</code>; the
+						<code>JSH_LAUNCHER_JDK_HOME</code> environment variable currently must be used in order to run JDK 11.
+					</li>
+					<li>
+						<code>--install-user-jdk</code>: Installs the default JDK (currently 8) as the SLIME user JDK, which will
+						be accessible to all SLIME installations on the system.
+					</li>
+				</ul>
+			</div>
 		</div>
+	</div>
 	</div>
 	<div>
 		<h1>Settings</h1>

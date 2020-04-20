@@ -28,6 +28,7 @@ else
 fi
 
 URL_libericaopenjdk8="https://download.bell-sw.com/java/8u232+10/bellsoft-jdk8u232+10-macos-amd64.zip"
+URL_libericaopenjdk11="https://download.bell-sw.com/java/11.0.7+10/bellsoft-jdk11.0.7+10-macos-amd64.zip"
 
 JDK_provider="libericaopenjdk8"
 
@@ -64,6 +65,22 @@ install_libericaopenjdk8() {
 	mv ${JDK_WORKDIR}/${JDK_ZIP_PATH} ${TO}
 }
 
+install_libericaopenjdk11() {
+	TO="$1"
+	mkdir -p $(dirname $TO)
+	JDK_ZIP_URL="${URL_libericaopenjdk11}"
+	JDK_ZIP_BASENAME="bellsoft-jdk11.0.7+10-macos-amd64.zip"
+	JDK_ZIP_PATH="jdk-11.0.7.jdk"
+	JDK_ZIP_LOCATION="${HOME}/Downloads/${JDK_ZIP_BASENAME}"
+	if [ ! -f "${JDK_ZIP_LOCATION}" ]; then
+		echo "Downloading ${JDK_ZIP_URL} ..."
+		curl -o ${HOME}/Downloads/${JDK_ZIP_BASENAME} ${JDK_ZIP_URL}
+	fi
+	JDK_WORKDIR=$(mktemp -d)
+	unzip -q ${JDK_ZIP_LOCATION} -d ${JDK_WORKDIR}
+	mv ${JDK_WORKDIR}/${JDK_ZIP_PATH} ${TO}
+}
+
 install_jdk() {
 	DESTINATION="$1"
 	URL_variable_name="URL_${JDK_provider}"
@@ -73,6 +90,16 @@ install_jdk() {
 	install_${JDK_provider} ${DESTINATION}
 	JRUNSCRIPT=${DESTINATION}/bin/jrunscript
 }
+
+if [ "$1" == "--install-jdk" ]; then
+	install_jdk ${JDK_LOCAL}
+	exit $?
+fi
+
+if [ "$1" == "--install-jdk-11" ]; then
+	install_libericaopenjdk11 $(dirname $0)/local/jdk/11
+	exit $?
+fi
 
 if [ "$1" == "--install-user-jdk" ]; then
 	install_jdk ${JDK_USER}
@@ -89,6 +116,15 @@ check_jdk() {
 }
 
 #	TODO	the below would not support adoptopenjdk8 on Mac OS X; need to use Contents/Home
+
+check_environment() {
+	if [ -n "${JSH_LAUNCHER_JDK_HOME}" ]; then
+		check_jdk ${JSH_LAUNCHER_JDK_HOME}
+		if [ $? -eq 0 ]; then
+			echo "${JSH_LAUNCHER_JDK_HOME}/bin/jrunscript"
+		fi
+	fi
+}
 
 check_local() {
 	check_jdk ${JDK_LOCAL}
@@ -121,7 +157,11 @@ check_path() {
 	fi
 }
 
-JRUNSCRIPT=$(check_local)
+JRUNSCRIPT=$(check_environment)
+
+if [ -z "${JRUNSCRIPT}" ]; then
+	JRUNSCRIPT=$(check_local)
+fi
 
 if [ -z "${JRUNSCRIPT}" ]; then
 	JRUNSCRIPT=$(check_user)
