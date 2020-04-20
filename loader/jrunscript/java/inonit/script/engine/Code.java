@@ -39,7 +39,9 @@ public class Code {
 			private static URLConnection openBasicAuthConnection(URL url, String user, String password) throws IOException {
 				final URLConnection connection = url.openConnection();
 				String authorization = "Basic "
-					+ javax.xml.bind.DatatypeConverter.printBase64Binary(
+					//	below used java.xml.bind.DatatypeConverter.printBase64Binary earlier, which is JDK 7-compatible
+					//	but does not work with JDK 11
+					+ java.util.Base64.getEncoder().encodeToString(
 						(user + ":" + password).getBytes()
 					)
 				;
