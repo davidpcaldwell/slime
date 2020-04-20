@@ -198,7 +198,7 @@ suite.add("testing/html", new jsh.unit.part.Html({
 suite.add("testing/jsh.unit/definition", new jsh.unit.part.Html({
 	pathname: SRC.getRelativePath("jsh/unit/plugin.jsh.api.html")
 }));
-suite.add("testing/jsh.unit/bitbucket", new jsh.unit.Suite.Fork({
+if (false) suite.add("testing/jsh.unit/bitbucket", new jsh.unit.Suite.Fork({
 	run: jsh.shell.jsh,
 	shell: (environment.jsh.built) ? environment.jsh.built.homne : environment.jsh.unbuilt.src,
 	script: SRC.getFile("jsh/unit/test/bitbucket.jsh.js"),
@@ -303,7 +303,7 @@ var servletPart = new function() {
 };
 suite.add("servlet/suite", servletPart);
 
-suite.add("provision", new jsh.unit.part.Html({
+if (false) suite.add("provision", new jsh.unit.part.Html({
 	pathname: SRC.getRelativePath("jsh/tools/provision/api.html")
 }));
 
