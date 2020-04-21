@@ -85,6 +85,9 @@
 					function rv(p,events) {
 						var args = [];
 						addConfigurationArgumentsTo(args,p.config);
+						if (p.credentialHelper) {
+							args.push("-c", "credential.helper=", "-c", "credential.helper=" + p.credentialHelper);
+						}
 						args.push(m.command);
 						var r = $api.Object.compose(p, { _this: this });
 						if (typeof(m.arguments) == "function") m.arguments.call(args,r);
@@ -182,7 +185,7 @@
 				},
 				stdio: cli.stdio.Events(),
 				evaluate: function(result) {
-					if (result.status) throw new Error();
+					if (result.status) throw new Error("Clone failed.");
 					return new LocalRepository({ directory: result.argument.to.directory });
 				}
 			});

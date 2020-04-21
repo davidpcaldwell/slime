@@ -32,6 +32,7 @@
 			if (entry.path == ".classpath") return false;
 			if (entry.path == ".project") return false;
 			if (entry.path == "contribute") return true;
+			if (entry.path == "tools/sdlc") return true;
 			return code.files.isText(entry.node);
 		},
 		on: {

@@ -42,7 +42,11 @@ namespace slime {
 
 			interface Repository {
 				reference: string,
-				clone: (p: { to: slime.jrunscript.file.Pathname } & Repository.argument ) => slime.jrunscript.git.Repository.Local
+				clone: (p: {
+					to: slime.jrunscript.file.Pathname & Repository.argument,
+					config?: { [x: string]: string },
+					credentialHelper?: string
+				}, events?: any) => slime.jrunscript.git.Repository.Local
 			}
 
 			namespace Repository {
