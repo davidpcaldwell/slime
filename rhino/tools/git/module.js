@@ -181,11 +181,12 @@
 					if (!p.to) {
 						throw new Error("Required: 'to' property indicating destination.");
 					}
+					if (p.recurseSubmodules) this.push("--recurse-submodules");
 					this.push(p._this.reference, p.to.toString());
 				},
 				stdio: cli.stdio.Events(),
 				evaluate: function(result) {
-					if (result.status) throw new Error("Clone failed.");
+					if (result.status) throw new Error("git clone failed.");
 					return new LocalRepository({ directory: result.argument.to.directory });
 				}
 			});
