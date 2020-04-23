@@ -11,26 +11,59 @@
 </head>
 <body>
 	<div>
+		<h1><code>tools/sdlc</code></h1>
+		<div>
+			Scripts may use the <code>sdlc</code> script to execute commands related to their project lifecycle. The script relies
+			on the project directory containing a <code>sdlc.js</code> file, which is used to implement the commands.
+		</div>
+		<div>
+			The project directory may be specified using the <code>PROJECT</code> environment variable; if this variable is not
+			set, the working directory will be used.
+		</div>
+	</div>
+	<div>
+		<h1><code>sdlc.js</code></h1>
+		<div>
+			The <code>sdlc.js</code> script provided by the project is an ordinary SLIME module (see the definition of
+			<code>module()</code> in the <a href="../loader/api.html">Loader</a> documentation). Each function it exports
+			is a command which can be executed by name.
+		</div>
+		<div>
+			If an <code>initialize</code> command is provided, it is executed prior to every command (and should thus be
+			idempotent).
+		</div>
+		<div>
+			Commands receive the following argument:
+			<div class="label">has properties:</div>
+			<ul>
+				<li class="object">
+					<div class="name">options</div>
+					<span>Global options passed to <code>sdlc</code>. Currently, none are defined.</span>
+					<div class="label">has properties:</div>
+					<ul>
+					</ul>
+				</li>
+				<li class="value">
+					<div class="name">arguments</div>
+					<span class="type">string[]</span>
+					<span>The set of arguments to the <code>sdlc</code> command, not including global options.</span>
+				</li>
+			</ul>
+		</div>
+	</div>
+	<div>
 		<h1><code>jsh.sdlc</code></h1>
 		<div>A set of APIs that can be helpful in implementing tasks related to software development.</div>
 		<ul>
-			<li class="function">
+			<li class="function experimental">
 				<div class="name">requireGitIdentity</div>
-				<span>__DESCRIPTION__</span>
-				<div class="arguments">
-					<div class="label">Arguments</div>
-					<ol>
-						<li class="object">
-							<div class="label">has properties:</div>
-							<ul>
-								<li class="value">
-									<div class="name">repository</div>
-									<span class="type">__TYPE__</span>
-									<span>__DESCRIPTION__</span>
-								</li>
-							</ul>
-						</li>
-					</ol>
+				<div>
+					Errs if the given repository does not supply Git <code>user.name</code> and <code>user.email</code>
+					values. Callers may provide an implementation that obtains the configuration values, including a provided
+					implementation that prompts the user in a GUI dialog.
+				</div>
+				<div>
+					See <a href="plugin.jsh.d.ts">TypeScript definition</a>.
 				</div>
 				<script type="application/x.jsapi#tests">
 					var directory = jsh.shell.TMPDIR.createTemporary({ directory: true });
@@ -82,6 +115,12 @@
 						this.requireGitIdentity({ repository: configured });
 					}).threw.nothing();
 				</script>
+			</li>
+			<li class="function experimental">
+				<div class="name">prohibitUntrackedFiles</div>
+				<span>Errs if files untracked by Git are found in the given repository.
+					See <a href="plugin.jsh.d.ts">TypeScript definition</a>.
+				</span>
 			</li>
 		</ul>
 	</div>
