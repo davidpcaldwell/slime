@@ -4,15 +4,16 @@ namespace jsh.sdlc {
 			name: (p: { repository: slime.jrunscript.git.Repository.Local }) => string,
 			email: (p: { repository: slime.jrunscript.git.Repository.Local }) => string
 		}
-
-		interface argument {
-			repository: slime.jrunscript.git.Repository.Local,
-			get?: Exports.requireGitIdentity.get
-		}
 	}
 
 	interface Exports {
-		requireGitIdentity: ( (p: Exports.requireGitIdentity.argument) => void) & { get: any }
+		requireGitIdentity: ( (p: {
+			repository: slime.jrunscript.git.Repository.Local,
+			get?: Exports.requireGitIdentity.get
+		}) => void) & { get: {
+			gui: Exports.requireGitIdentity.get
+		} }
+
 		prohibitUntrackedFiles: (p: { repository: slime.jrunscript.git.Repository.Local }, events: $api.Events.Function.Receiver) => void
 	}
 }
