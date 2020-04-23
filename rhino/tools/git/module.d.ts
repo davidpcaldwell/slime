@@ -43,15 +43,15 @@ namespace slime {
 			interface Repository {
 				reference: string,
 				clone: (p: {
-					to: slime.jrunscript.file.Pathname & Repository.argument,
-					config?: { [x: string]: string },
-					credentialHelper?: string
-				}, events?: any) => slime.jrunscript.git.Repository.Local
+					to: slime.jrunscript.file.Pathname,
+					recurseSubmodules?: boolean
+				} & Repository.argument, events?: object ) => slime.jrunscript.git.Repository.Local
 			}
 
 			namespace Repository {
 				interface argument {
 					config?: { [x: string]: string }
+					credentialHelper?: string
 					directory?: slime.jrunscript.file.Directory
 				}
 
