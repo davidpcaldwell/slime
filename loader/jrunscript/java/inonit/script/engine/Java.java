@@ -277,7 +277,7 @@ public class Java {
 				if (location == StandardLocation.SOURCE_PATH) return true;
 				//	StandardLocation.NATIVE_HEADER_OUTPUT not defined before Java 8
 				if (location.getName().equals("NATIVE_HEADER_OUTPUT")) return false;
-				throw new UnsupportedOperationException("Not supported yet: " + location.getName());
+				throw new UnsupportedOperationException("Not supported yet: hasLocation(location=" + location.getName() + ")");
 			}
 
 			public OutputClass getJavaFileForInput(JavaFileManager.Location location, String className, JavaFileObject.Kind kind) {
@@ -285,7 +285,7 @@ public class Java {
 				if (location == null) {
 					return map.get(className);
 				}
-				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+				throw new UnsupportedOperationException("Not supported yet: getJavaFileForInput(location=" + location.getName() + ")"); //To change body of generated methods, choose Tools | Templates.
 			}
 
 			public JavaFileObject getJavaFileForOutput(JavaFileManager.Location location, String className, JavaFileObject.Kind kind, FileObject sibling) throws IOException {
@@ -318,8 +318,9 @@ public class Java {
 			}
 
 			public int isSupportedOption(String option) {
+				if (option.equals("--multi-release")) return -1;
 				log("isSupportedOption");
-				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+				throw new UnsupportedOperationException("Not supported yet: isSupportedOption(" + option + ")"); //To change body of generated methods, choose Tools | Templates.
 			}
 
 			private static class InputClass implements JavaFileObject {
