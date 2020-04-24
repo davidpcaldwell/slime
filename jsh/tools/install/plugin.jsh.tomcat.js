@@ -22,6 +22,9 @@ var getLatestVersion = function() {
 		var matcher = /\<h3 id=\"(7\..*)\"\>/;
 		var match = matcher.exec(downloadRawHtml);
 		var version = match[1];
+		if (version.indexOf("\"") != -1) {
+			version = version.substring(0, version.indexOf("\""));
+		}
 		jsh.shell.console("Latest Tomcat version from tomcat.apache.org is " + version);
 		return version;
 	} catch (e) {
