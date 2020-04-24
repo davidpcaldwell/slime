@@ -1,0 +1,3 @@
+#!/bin/bash
+export PROJECT=$(dirname $0)
+${PROJECT}/tools/sdlc "$@"
