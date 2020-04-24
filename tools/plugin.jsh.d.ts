@@ -10,10 +10,10 @@ namespace jsh.sdlc {
 		requireGitIdentity: ( (p: {
 			repository: slime.jrunscript.git.Repository.Local,
 			get?: Exports.requireGitIdentity.get
-		}) => void) & { get: {
+		}, events?: $api.Events.Function.Receiver) => void) & { get: {
 			gui: Exports.requireGitIdentity.get
 		} }
 
-		prohibitUntrackedFiles: (p: { repository: slime.jrunscript.git.Repository.Local }, events: $api.Events.Function.Receiver) => void
+		prohibitUntrackedFiles: (p: { repository: slime.jrunscript.git.Repository.Local }, events?: $api.Events.Function.Receiver) => void
 	}
 }

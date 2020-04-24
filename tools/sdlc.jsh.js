@@ -27,7 +27,7 @@
 		}
 	);
 
-	if (project.initialize) {
+	if (project.initialize && parameters.command != "initialize") {
 		project.initialize();
 	}
 	if (project[parameters.command]) {

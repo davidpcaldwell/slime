@@ -21,7 +21,7 @@
 					}
 				};
 
-				jsh.sdlc.requireGitIdentity = Object.assign(function(p) {
+				jsh.sdlc.requireGitIdentity = Object.assign($api.Events.Function(function(p,events) {
 					var get = p.get || {
 						name: function(p) {
 							throw new Error("Missing: user.name");
@@ -34,22 +34,22 @@
 						arguments: ["--list"]
 					});
 					if (!config["user.name"]) {
-						jsh.shell.console("Getting user.name for " + p.repository);
+						events.fire("console", "Getting user.name for " + p.repository);
 						p.repository.config({
 							arguments: ["user.name", get.name({ repository: p.repository })]
 						});
 					} else {
-						jsh.shell.console("Found user.name " + config["user.name"] + " for " + p.repository);
+						events.fire("console", "Found user.name " + config["user.name"] + " for " + p.repository);
 					}
 					if (!config["user.email"]) {
-						jsh.shell.console("Getting user.email for " + p.repository);
+						events.fire("console", "Getting user.email for " + p.repository);
 						p.repository.config({
 							arguments: ["user.email", get.email({ repository: p.repository })]
 						});
 					} else {
-						jsh.shell.console("Found user.email " + config["user.email"] + " for " + p.repository);
+						events.fire("console", "Found user.email " + config["user.email"] + " for " + p.repository);
 					}
-				}, {
+				}), {
 					get: {
 						gui: {
 							name: guiAsk({ name: "user.name" }),

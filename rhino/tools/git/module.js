@@ -216,12 +216,15 @@
 					if (!p.message) {
 						throw new TypeError("Required: message property containing commit message");
 					}
+					if (p.all) {
+						this.push("--all");
+					}
+					if (p.noVerify) {
+						this.push("--no-verify");
+					}
 					this.push("--message", p.message);
 					if (p.author) {
 						this.push("--author=" + p.author);
-					}
-					if (p.all) {
-						this.push("--all");
 					}
 				},
 				stdio: cli.stdio.Events()
