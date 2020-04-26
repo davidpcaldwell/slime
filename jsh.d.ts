@@ -21,7 +21,7 @@ interface jsh {
 		loader: slime.Loader
 	};
 
-	shell: {
+	shell: slime.jrunscript.shell.Exports & {
 		console: (message: string) => void,
 		exit: (code: number) => void,
 		jsh: any,
@@ -34,7 +34,6 @@ interface jsh {
 		environment: any,
 		echo: Function,
 		run: Function & { stdio: any },
-		embed: (p: { method: Function, argument: object, started: (p: { output?: string, error?: string }) => boolean }, events?: any ) => void,
 		HOME: slime.jrunscript.file.Directory,
 		PATH: any,
 		TMPDIR: slime.jrunscript.file.Directory,
