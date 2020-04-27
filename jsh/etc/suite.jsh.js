@@ -39,7 +39,7 @@ var suite = new jsh.unit.Suite({
 suite.scenario("unit", jsh.unit.Suite.Fork({
 	name: "Unit tests",
 	run: jsh.shell.jsh,
-	shell: parameters.options.jsh.directory,
+	shell: parameters.options.src.directory,
 	script: parameters.options.src.directory.getRelativePath("jsh/etc/unit.jsh.js"),
 	arguments: ["-view","stdio"]
 }));

@@ -39,7 +39,8 @@ var environment = new function() {
 
 		this.src = (function() {
 			if (jsh.shell.jsh.src) return jsh.shell.jsh.src;
-			throw new Error();
+			if (jsh.shell.jsh.home && jsh.shell.jsh.home.getSubdirectory("src")) return jsh.shell.jsh.home.getSubdirectory("src");
+			throw new Error("No jsh.shell.jsh.src");
 		})();
 
 		var rhino = ((jsh.shell.jsh.lib.getFile("js.jar") && typeof(Packages.org.mozilla.javascript.Context) == "function")) ? jsh.shell.jsh.lib.getFile("js.jar") : null;
