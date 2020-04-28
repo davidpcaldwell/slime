@@ -40,6 +40,18 @@ var noTrailingWhitespace = function() {
 	}
 };
 
+$exports.git = {
+	branches: {
+		unmerged: $api.Function.pipe(
+			function(p) {
+				var repository = jsh.tools.git.Repository({ directory: $context.base });
+				var branches = repository.branch({ all: true });
+				throw new Error();
+			}
+		)
+	}
+}
+
 //	TODO	implement generation of git hooks so that we can get rid of separate pre-commit implementation
 $exports.commit = $api.Function.pipe(
 	function(p) {
