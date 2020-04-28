@@ -9,6 +9,12 @@ namespace slime {
 				subject: string
 			}
 
+			interface Branch {
+				current: boolean,
+				name: string,
+				commit: Commit
+			}
+
 			interface Daemon {
 				port: number
 				basePath?: slime.jrunscript.file.Pathname
@@ -58,7 +64,26 @@ namespace slime {
 				interface Local extends slime.jrunscript.git.Repository {
 					directory: slime.jrunscript.file.Directory
 
-					branch: (p?: any) => slime.jrunscript.git.Repository.Local.Branch[],
+					branch: (p: {
+						name: string
+						startPoint: string
+						force: boolean
+					}) => void
+
+					branch: (p?: {
+						remote?: boolean
+						all?: boolean
+					}) => slime.jrunscript.git.Repository.Local.Branch[]
+
+					branch: (p: {
+						delete: string
+						force: boolean
+					}) => void
+
+					branch: (p: {
+						old: boolean
+					}) => slime.jrunscript.git.Repository.Local.Branch
+
 					show: slime.jrunscript.git.Repository.Local.show,
 					fetch: slime.jrunscript.git.Repository.Local.fetch,
 					merge: slime.jrunscript.git.Repository.Local.merge,
@@ -95,17 +120,9 @@ namespace slime {
 						interface argument {
 							object: string
 						}
-
-						interface result {
-							names: string[],
-							commit: { hash: string },
-							author: { name: string, email: string, date: any },
-							committer: { name: string, email: string, date: any },
-							subject: string
-						}
 					}
 
-					export type show = (p: slime.jrunscript.git.Repository.Local.show.argument) => slime.jrunscript.git.Repository.Local.show.result
+					export type show = (p: slime.jrunscript.git.Repository.Local.show.argument) => Commit
 
 					namespace merge {
 						interface argument {

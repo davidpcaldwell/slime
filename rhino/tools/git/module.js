@@ -566,89 +566,121 @@
 
 				//	Branching and Merging
 
-				this.branch = function(p) {
+				/**
+				 * @param { string } output
+				 * @returns { slime.jrunscript.git.Branch[] }
+				 */
+				var toBranchList = function(output) {
+					return output.split("\n")
+						.filter(function(line) { return line; })
+						.filter(function(line) { return line.indexOf(" -> ") == -1 })
+						.map(function(line) {
+							var status = line.substring(0,1);
+							var name = line.substring(2);
+							var detachedHeadPattern = /^\(HEAD detached (at|from) (.*)\)/;
+							var noBranchName = "(no branch)";
+							var toShow;
+							if (detachedHeadPattern.test(name) || name == noBranchName) {
+								toShow = "HEAD";
+								name = null;
+							} else {
+								toShow = name;
+							}
+							return {
+								current: status == "*",
+								name: name,
+								commit: show({ object: toShow })
+							};
+						})
+					;
+				}
+
+				/**
+				 * @param { { remote?: boolean, all?: boolean } } p
+				 * @returns { slime.jrunscript.git.Branch[] }
+				 */
+				var branchList = function(p) {
 					var args = [];
-					if (!p) p = {};
 					if (p.remote) {
 						args.push("-r");
 					}
 					if (p.all) {
 						args.push("-a");
 					}
-					if (p.name) args.push(p.name);
-					if (p.start) args.push(p.start);
-					if (p.force) {
-						args.push("--force");
-					}
-					if (p.delete) {
-						args.push("--delete");
-						if (typeof(p.delete) == "string") {
-							args.push(p.delete);
-						}
-					}
-					var output = !Boolean(p.name);
 					return execute({
 						command: "branch",
 						arguments: args,
 						stdio: {
-							output: (output) ? String : (function() {})()
+							output: String
 						},
 						evaluate: function(result) {
-							// var currentBranch;
-							// var DELIMITER = "|";
-							// if (output) {
-							// 	currentBranch = execute({
-							// 		command: "rev-parse",
-							// 		arguments: [
-							// 			"--abbrev-ref", "HEAD"
-							// 		],
-							// 		stdio: {
-							// 			output: String
-							// 		},
-							// 		evaluate: function(result) {
-							// 			//	TODO	would this work on Windows with a two-character line terminator?
-							// 			return result.stdio.output.substring(0,result.stdio.output.length-1);
-							// 		}
-							// 	});
-							// 	args.push("--format",["%(refname)"].join(DELIMITER));
-							// }
-							if (output) {
-								var rv = result.stdio.output.split("\n")
-									.filter(function(line) { return line; })
-									.filter(function(line) { return line.indexOf(" -> ") == -1 })
-									.map(function(line) {
-										var status = line.substring(0,1);
-										var name = line.substring(2);
-										var detachedHeadPattern = /^\(HEAD detached (at|from) (.*)\)/;
-										var noBranchName = "(no branch)";
-										var toShow;
-										if (detachedHeadPattern.test(name) || name == noBranchName) {
-											toShow = "HEAD";
-											name = null;
-										} else {
-											toShow = name;
-										}
-										return {
-											current: status == "*",
-											name: name,
-											commit: show({ object: toShow })
-										};
-									})
-								;
-								// rv.forEach(function(entry) {
-								// 	jsh.shell.console(JSON.stringify(show(entry)));
-								// })
-								if (p.old && !p.all) {
-									rv = rv.filter(function(branch) {
-										return branch.current;
-									})[0];
-								}
-								return rv;
-							} else {
-								return (function(){})();
-							}
+							return toBranchList(result.stdio.output);
 						}
+					})
+				};
+
+				/**
+				 * @returns { slime.jrunscript.git.Branch }
+				 */
+				var currentBranch = function() {
+					return execute({
+						command: "branch",
+						arguments: args,
+						stdio: {
+							output: String
+						},
+						evaluate: function(result) {
+							return toBranchList(result.stdio.output).filter(function(branch) {
+								return branch.current;
+							})[0];
+						}
+					})
+				};
+
+				/**
+				 * @param { { name: string, force?: boolean, start?: string, startPoint?: string } } p
+				 */
+				var modifyBranch = function(p) {
+					var args = [];
+					if (p.force) args.push("--force");
+					args.push(p.name);
+					if (p.startPoint) {
+						args.push(p.startPoint);
+					} else if (p.start) {
+						$api.deprecate(function() {
+							args.push(p.start);
+						})();
+					}
+					return execute({
+						command: "branch",
+						arguments: args
 					});
+				}
+
+				/**
+				 * @param { { delete: string, force?: boolean } } p
+				 */
+				var deleteBranch = function(p) {
+					var args = ["--delete", p.delete];
+					if (p.force) args.push("--force");
+					return execute({
+						command: "branch",
+						arguments: args
+					});
+				};
+
+				this.branch = function(p) {
+					if (!p) p = {};
+					if (p.name) {
+						modifyBranch(p);
+					} else if (p.delete) {
+						//	TODO	can supply an array here on the git command
+						return deleteBranch(p);
+					} else if (p.old) {
+						return currentBranch();
+					} else {
+						return branchList(p);
+					}
 				};
 
 				/** @type { slime.jrunscript.git.Repository.Local["checkout" ] } */
