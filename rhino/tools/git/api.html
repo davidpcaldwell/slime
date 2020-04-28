@@ -563,13 +563,13 @@ END LICENSE
 								<span>__DESCRIPTION__</span>
 							</div>
 							<script type="application/x.jsapi#tests">
-								var parent = fixtures.repositories.create({
+								var parent = fixtures.repository.remote({
 									name: "fetch-parent",
 									files: {
 										a: "a"
 									}
 								});
-								var child = fixtures.repositories.create({
+								var child = fixtures.repository.remote({
 									name: "fetch-child",
 									files: {
 										b: "b"
@@ -755,16 +755,6 @@ END LICENSE
 								<span>__DESCRIPTION__</span>
 							</div>
 							<script type="application/x.jsapi#tests"><![CDATA[
-								var repository = newRepository();
-								repository.test.writeFile("a","a");
-								repository.add({ path: "a" });
-								repository.commit({ message: "message a" });
-								repository.branch({ name: "a" });
-								repository.branch({ name: "b" });
-								var branches = repository.branch();
-
-								verify(branches).length.is(3);
-
 								var hasBranch = function(branch) {
 									var rv = function(p) {
 										for (var i=0; i<p.length; i++) {
@@ -778,20 +768,45 @@ END LICENSE
 									return rv;
 								};
 
+								var origin = fixtures.repository.local({
+									files: {
+										a: "a"
+									}
+								});
+
+								var repository = origin.clone({ to: fixtures.location.temporary() });
+
+								repository.branch({ name: "a" });
+								repository.branch({ name: "b" });
+
+								//	TODO	untested: startPoint property
+								//	TODO	untested: force property
+
+								var branches = repository.branch();
+
+								verify(branches).length.is(3);
+
 								verify(branches).evaluate(hasBranch({ current: false, name: "b" })).is(true);
 								verify(branches).evaluate(hasBranch({ current: false, name: "a" })).is(true);
 								verify(branches).evaluate(hasBranch({ current: true, name: "master" })).is(true);
 								verify(branches).evaluate(hasBranch({ current: false, name: "foo" })).is(false);
 
-								var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
-								tmp.directory.remove();
-								var local = remote.clone({ to: tmp });
-								var all = local.branch({ all: true });
-								verify(all).length.is(2);
-								verify(all).evaluate(hasBranch({ current: true, name: "master" })).is(true);
+								var all = repository.branch({ all: true });
+								verify(all).length.is(4);
 								verify(all).evaluate(hasBranch({ current: false, name: "remotes/origin/master" })).is(true);
-								verify(all).evaluate(hasBranch({ current: false, name: "x" })).is(false);
 
+								var remotes = repository.branch({ remote: true });
+								verify(remotes).length.is(1);
+								remotes.forEach(function(branch) {
+									jsh.shell.console(JSON.stringify(branch));
+								})
+								verify(remotes).evaluate(hasBranch({ current: false, name: "origin/master" })).is(true);
+
+								//	TODO	untested: delete form
+
+								//	TODO	untested: old form
+
+								//	ensure name of detached branch is null
 								var commit = repository.log()[0];
 								repository.checkout({ branch: commit.commit.hash });
 								var list = repository.branch();

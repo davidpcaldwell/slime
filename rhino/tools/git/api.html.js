@@ -14,8 +14,12 @@
 			 * 		module: slime.jrunscript.git.Exports
 			 * 		remotes: slime.jrunscript.file.Directory
 			 * 		fixtures: {
-			 * 			repositories: {
-			 * 				create: () => void
+			 * 			location: {
+			 * 				temporary: () => slime.jrunscript.file.Pathname
+			 * 			}
+			 * 			repository: {
+			 * 				local: () => void
+			 * 				remote: () => void
 			 * 			}
 			 * 		}
 			 * 		remote: slime.jrunscript.git.Repository
@@ -71,23 +75,34 @@
 			});
 
 			scope.fixtures = {
-				repositories: new function() {
-					this.create = function(p) {
+				location: {
+					temporary: function() {
+						var rv = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
+						rv.directory.remove();
+						return rv;
+					}
+				},
+				repository: new function() {
+					var commit = function(repository,files,message) {
+						//	TODO	should use execute and forEach
+						$api.Function.result(
+							files,
+							$api.Function.Object.entries,
+							$api.Function.Array.map(function(entry) {
+								repository.directory.getRelativePath(entry[0]).write(entry[1], { append: false, recursive: true });
+								repository.add({ path: entry[0] });
+							})
+						);
+						repository.commit({ message: message });
+					}
+
+					this.remote = function(p) {
 						var location = scope.remotes.getRelativePath(p.name);
 						if (!location.directory) {
 							location.createDirectory();
-							var repository = scope.init({ pathname: scope.remotes.getRelativePath(p.name) });
+							var repository = scope.init({ pathname: location });
 							if (p.files) {
-								//	TODO	should use execute and forEach
-								$api.Function.result(
-									p.files,
-									$api.Function.Object.entries,
-									$api.Function.Array.map(function(entry) {
-										location.directory.getRelativePath(entry[0]).write(entry[1], { append: false, recursive: true });
-										repository.add({ path: entry[0] });
-									})
-								);
-								repository.commit({ message: "initial" });
+								commit(repository, p.files, "initial");
 							}
 						}
 						return {
@@ -95,6 +110,22 @@
 							remote: module.Repository({ remote: "git://127.0.0.1:" + daemon.port + "/" + p.name })
 						};
 					};
+
+					this.local = function(p) {
+						var location = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
+						location.directory.remove();
+						var repository = scope.init({ pathname: location });
+						if (p.files) {
+							commit(repository, p.files, "initial");
+						}
+						return repository;
+					}
+
+					this.actions = {
+						commit: function(p) {
+							commit(p.repository, p.files, p.message);
+						}
+					}
 				}
 			};
 
