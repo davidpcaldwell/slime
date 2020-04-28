@@ -802,7 +802,14 @@ END LICENSE
 								})
 								verify(remotes).evaluate(hasBranch({ current: false, name: "origin/master" })).is(true);
 
-								//	TODO	untested: delete form
+								//	TODO	untested: delete current branch; delete --force
+
+								repository.branch({ delete: "a" });
+								var afterDelete = repository.branch();
+								verify(afterDelete).length.is(2);
+								verify(afterDelete).evaluate(hasBranch({ current: false, name: "b" })).is(true);
+								verify(afterDelete).evaluate(hasBranch({ current: false, name: "a" })).is(false);
+								verify(afterDelete).evaluate(hasBranch({ current: true, name: "master" })).is(true);
 
 								//	TODO	untested: old form
 
@@ -810,10 +817,10 @@ END LICENSE
 								var commit = repository.log()[0];
 								repository.checkout({ branch: commit.commit.hash });
 								var list = repository.branch();
-								verify(list).length.is(4);
+								verify(list).length.is(3);
 								verify(list).evaluate(hasBranch({ current: true, name: null })).is(true);
 								verify(list).evaluate(hasBranch({ current: false, name: "master" })).is(true);
-								verify(list).evaluate(hasBranch({ current: false, name: "a" })).is(true);
+								verify(list).evaluate(hasBranch({ current: false, name: "a" })).is(false);
 								verify(list).evaluate(hasBranch({ current: false, name: "b" })).is(true);
 								verify(list).evaluate(hasBranch({ current: false, name: "c" })).is(false);
 							]]></script>
