@@ -8,6 +8,9 @@ type Iterable_match<L,R> = {
 }
 
 interface $api {
+	debug: {
+		disableBreakOnExceptionsFor: <T extends Function>(f: T) => T
+	}
 	Events: {
 		(p: any): $api.Events,
 		//	TODO	could probably use parameterized types to improve accuracy
@@ -60,6 +63,7 @@ interface $api {
 }
 
 declare namespace $api {
+	const debug: $api["debug"];
 	const Iterable: $api["Iterable"];
 	const Events : $api["Events"];
 
