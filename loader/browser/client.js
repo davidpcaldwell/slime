@@ -188,6 +188,7 @@
 			};
 			//	TODO	document
 			if ($context.$slime) $slime.flags = $context.$slime.flags;
+			var $engine = void(0);
 			return eval(fetcher.getCode(bootstrap.getRelativePath("expression.js")));
 		})();
 		platform.$api.deprecate.warning = function(access) {
