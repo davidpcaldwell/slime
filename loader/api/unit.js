@@ -12,6 +12,9 @@
 
 //@ts-check
 (
+/** @typedef { () => { success: boolean, message: string } } ScopeTest */
+/** @typedef { { test: (f: ScopeTest) => void } } Scope */
+
 	/**
 	 * @param { {
 	 * 		log: (message: string, p: any) => void,
@@ -36,7 +39,7 @@
 		//	We have an object called Object in this file, so this
 		var defineProperty = (function() { return this.Object.defineProperty; })();
 
-		/** @type { (scope: any, vars?: any ) => slime.definition.unit.Verify } */
+		/** @type { ( scope: Scope, vars?: any ) => slime.definition.unit.Verify } */
 		var Verify = function(scope,vars) {
 			var Value = function(v,name) {
 				var prefix = (name) ? (name + " ") : "";
@@ -233,33 +236,33 @@
 
 						for (var x in delegate) {
 							this[x] = function() {
-								scope.test({
+								scope.test($api.Function.returning({
 									success: function() { return false; },
 									error: e,
 									message: function(success) {
 										return name + " threw " + e;
 									}
-								});
+								}));
 							}
 						}
 
 						this.threw = new Object(e,name + " thrown");
 						this.threw.type = function(type) {
-							scope.test({
+							scope.test($api.Function.returning({
 								success: function() { return e instanceof type; },
 								message: function(success) {
 									if (success) return name + " threw expected " + type.name;
 									return "Threw " + e + ", not " + new type().name;
 								}
-							});
+							}));
 						};
 						this.threw.nothing = function() {
-							scope.test({
+							scope.test($api.Function.returning({
 								success: function() { return false; },
 								message: function(success) {
 									return name + " threw " + e;
 								}
-							});
+							}));
 						}
 					};
 
@@ -268,31 +271,31 @@
 
 						for (var x in delegate) {
 							this[x] = function() {
-								scope.test({
+								scope.test($api.Function.returning({
 									success: function() { return false; },
 									message: function(success) {
 										return name + " did not throw; returned " + returned;
 									}
-								});
+								}));
 							}
 						}
 
 						this.nothing = function() {
-							scope.test({
+							scope.test($api.Function.returning({
 								success: function() { return true; },
 								message: function(success) {
 									return name + " did not error. (returned: " + returned + ")";
 								}
-							});
+							}));
 						};
 
 						this.type = function(type) {
-							scope.test({
+							scope.test($api.Function.returning({
 								success: function() { return false; },
 								message: function(success) {
 									return name + " did not throw expected error; returned " + returned;
 								}
-							})
+							}))
 						}
 					};
 
