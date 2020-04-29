@@ -83,9 +83,31 @@ $exports.git = {
 					}
 				});
 			}
-		)
+		);
 	}
 }
+
+$exports.merge = $api.Function.pipe(
+	function(p) {
+		var rv = {
+			options: $api.Object.compose(p.options),
+			arguments: []
+		};
+		for (var i=0; i<p.arguments.length; i++) {
+			if (i == 0) {
+				rv.options.branch = p.arguments[0];
+			} else {
+				throw new Error("Unexpected arguments.");
+			}
+		}
+		return rv;
+	},
+	function(p) {
+		var repository = jsh.tools.git.Repository({ directory: $context.base });
+		//	TODO	deal with non-zero exit code
+		repository.merge({ name: p.options.branch, noCommit: true });
+	}
+)
 
 //	TODO	implement generation of git hooks so that we can get rid of separate pre-commit implementation
 $exports.commit = $api.Function.pipe(
