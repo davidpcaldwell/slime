@@ -111,6 +111,7 @@ plugin({
 			return p.to.directory;
 		}
 		jsh.test.requireBuiltShell = function(p) {
+			if (!p) p = {};
 			if (!jsh.shell.jsh.home) {
 				jsh.shell.console("Building shell in which to relaunch " + jsh.script.file + " ...");
 				//	TODO	this probably does not make sense; why do we require callers to have exactly these on the command line,
