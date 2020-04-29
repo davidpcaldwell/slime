@@ -244,9 +244,15 @@
 						if (p && p.prune) {
 							this.push("--prune");
 						}
+						if (p && p.recurseSubmodules) {
+							if (typeof(p.recurseSubmodules) == "string") {
+								this.push("--recurse-submodules=" + p.recurseSubmodules);
+							} else {
+								this.push("--recurse-submodules");
+							}
+						}
 					}
-				}
-				,
+				},
 				stdio: function(p) {
 					return {
 						// output: null,

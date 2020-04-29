@@ -64,28 +64,35 @@ namespace slime {
 				interface Local extends slime.jrunscript.git.Repository {
 					directory: slime.jrunscript.file.Directory
 
-					branch: (p: {
-						name: string
-						startPoint?: string
-						force?: boolean
-					}) => void
-
 					branch: (p?: {
 						remote?: boolean
 						all?: boolean
 					}) => slime.jrunscript.git.Repository.Local.Branch[]
 
 					branch: (p: {
+						old: boolean
+					}) => slime.jrunscript.git.Repository.Local.Branch
+
+					branch: (p: {
+						name: string
+						startPoint?: string
+						force?: boolean
+					}) => void
+
+					branch: (p: {
 						delete: string
 						force: boolean
 					}) => void
 
-					branch: (p: {
-						old: boolean
-					}) => slime.jrunscript.git.Repository.Local.Branch
-
 					show: slime.jrunscript.git.Repository.Local.show,
-					fetch: slime.jrunscript.git.Repository.Local.fetch,
+
+					fetch: (p: {
+						all?: boolean
+						prune?: boolean
+						recurseSubmodules?: boolean
+						stdio?: any
+					}) => void
+
 					merge: slime.jrunscript.git.Repository.Local.merge,
 					checkout: (p: { branch: string, stdio?: any  }) => void,
 					status: () => any,
@@ -133,16 +140,6 @@ namespace slime {
 					}
 
 					export type merge = (p: slime.jrunscript.git.Repository.Local.merge.argument) => void;
-
-					namespace fetch {
-						interface argument {
-							all?: boolean,
-							prune?: boolean,
-							stdio?: any
-						}
-					}
-
-					export type fetch = (p: slime.jrunscript.git.Repository.Local.fetch.argument) => void
 				}
 			}
 
