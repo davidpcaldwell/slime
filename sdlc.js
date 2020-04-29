@@ -50,6 +50,7 @@ $exports.git = {
 
 		this.clean = $api.Function.pipe(
 			function(p) {
+				repository.fetch({ all: true, prune: true, recurseSubmodules: true });
 				/** @type { slime.jrunscript.git.Branch[] } */
 				var branches = repository.branch({ all: true });
 				var target = "remotes/origin/master";
@@ -57,7 +58,14 @@ $exports.git = {
 					var common = repository.mergeBase({ commits: [target, branch.commit.commit.hash] });
 					if (common.commit.hash == branch.commit.commit.hash) {
 						if (/^remotes\//.test(branch.name)) {
-							jsh.shell.console("Merged; doing nothing: " + branch.name);
+							var parsed = branch.name.split("/");
+							jsh.shell.console("Merged; removing remotely: " + branch.name);
+							var argument = {
+								delete: true,
+								repository: parsed[1],
+								refspec: parsed.slice(2).join("/")
+							};
+							repository.push(argument);
 						} else {
 							jsh.shell.console("Merged to " + target + "; removing " + branch.name);
 							repository.branch({ delete: branch.name });
@@ -71,6 +79,7 @@ $exports.git = {
 
 		this.list = $api.Function.pipe(
 			function(p) {
+				repository.fetch({ all: true, prune: true, recurseSubmodules: true });
 				/** @type { slime.jrunscript.git.Branch[] } */
 				var branches = repository.branch({ all: true });
 				var target = "remotes/origin/master";
