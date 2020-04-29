@@ -182,6 +182,8 @@
 						throw new Error("Required: 'to' property indicating destination.");
 					}
 					if (p.recurseSubmodules) this.push("--recurse-submodules");
+					//	TODO	no test coverage for branch option
+					if (p.branch) this.push("--branch", p.branch);
 					this.push(p._this.reference, p.to.toString());
 				},
 				stdio: cli.stdio.Events(),
@@ -671,7 +673,11 @@
 
 				this.branch = function(p) {
 					if (!p) p = {};
-					if (p.name) {
+					if (p.name && p.delete === true) {
+						$api.deprecate(function() {
+							deleteBranch({ delete: p.name });
+						})();
+					} else if (p.name) {
 						modifyBranch(p);
 					} else if (p.delete) {
 						//	TODO	can supply an array here on the git command

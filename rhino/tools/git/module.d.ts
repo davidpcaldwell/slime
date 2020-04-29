@@ -66,8 +66,8 @@ namespace slime {
 
 					branch: (p: {
 						name: string
-						startPoint: string
-						force: boolean
+						startPoint?: string
+						force?: boolean
 					}) => void
 
 					branch: (p?: {
