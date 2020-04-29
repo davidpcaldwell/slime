@@ -705,13 +705,20 @@
 					}, (p.stdio) ? { stdio: p.stdio } : {}));
 				};
 
-				/** @type { slime.jrunscript.git.Repository.Local.merge } */
+				/** @type { slime.jrunscript.git.Repository.Local["merge"] } */
 				this.merge = function(p) {
 					var args = [];
-					args.push(p.name);
-					if (p.ff_only) {
-						args.push("--ff-only");
+					if (p.noCommit) {
+						args.push("--no-commit");
 					}
+					if (p.ffOnly) {
+						args.push("--ff-only");
+					} else if (p["ff_only"]) {
+						$api.deprecate(function() {
+							args.push("-ff-only");
+						})();
+					}
+					args.push(p.name);
 					execute($context.api.js.Object.set({
 						command: "merge",
 						arguments: args

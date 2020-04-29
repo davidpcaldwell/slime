@@ -93,7 +93,13 @@ namespace slime {
 						stdio?: any
 					}) => void
 
-					merge: slime.jrunscript.git.Repository.Local.merge,
+					merge: (p: {
+						name: string
+						noCommit: boolean
+						ffOnly?: boolean
+						stdio?: any
+					}) => void
+
 					checkout: (p: { branch: string, stdio?: any  }) => void,
 					status: () => any,
 					remote: ( () => void ) & { getUrl: ({ name: string }) => string },
@@ -130,16 +136,6 @@ namespace slime {
 					}
 
 					export type show = (p: slime.jrunscript.git.Repository.Local.show.argument) => Commit
-
-					namespace merge {
-						interface argument {
-							name: string,
-							ff_only?: boolean
-							stdio?: any
-						}
-					}
-
-					export type merge = (p: slime.jrunscript.git.Repository.Local.merge.argument) => void;
 				}
 			}
 
