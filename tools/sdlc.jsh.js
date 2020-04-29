@@ -30,8 +30,22 @@
 	if (project.initialize && parameters.command != "initialize") {
 		project.initialize();
 	}
-	if (project[parameters.command]) {
-		project[parameters.command]({
+
+	var getCommand = function(project,command) {
+		var rv = project;
+		var tokens = command.split(".");
+		for (var i=0; i<tokens.length; i++) {
+			if (rv) {
+				rv = rv[tokens[i]];
+			}
+		}
+		return rv;
+	}
+
+	var command = getCommand(project,parameters.command);
+
+	if (command) {
+		command({
 			options: parameters.options,
 			arguments: parameters.arguments
 		});
