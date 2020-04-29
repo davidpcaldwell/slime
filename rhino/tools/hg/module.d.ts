@@ -19,6 +19,8 @@ namespace slime.jrunscript.hg {
 		interface Local extends slime.jrunscript.hg.Repository {
 			identify: Function
 			log: (p: any) => Commit[]
+			subrepositories: () => { [path: string]: { repository: slime.jrunscript.hg.Repository.Local, revision: string } }
+			subrepositories: ({ array: boolean }) => slime.jrunscript.hg.Repository.Local[]
 			paths: {
 				default: {
 					url: any
