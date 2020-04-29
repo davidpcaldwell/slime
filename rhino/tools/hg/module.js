@@ -562,7 +562,9 @@ var Installation = function(environment) {
 					var gitPattern = /^\[git\](.*)/;
 					var repository;
 					if (gitPattern.test(list[x])) {
-						repository = new $context.api.git.Repository({ directory: dir.getSubdirectory(x) });
+						var directory = dir.getSubdirectory(x);
+						if (!directory) throw new Error("Missing subdirectory " + x + " in " + dir);
+						repository = new $context.api.git.Repository({ directory: directory });
 					} else {
 						var sub = dir.getSubdirectory(list[x]);
 						repository = (sub) ? new Recurse(sub) : null;
