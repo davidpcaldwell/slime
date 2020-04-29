@@ -92,7 +92,7 @@ namespace slime {
 					remote: ( () => void ) & { getUrl: ({ name: string }) => string },
 					stash: any,
 					push: Function,
-					mergeBase: function,
+					mergeBase: (p: { commits: string[] }) => Commit,
 					config: (p: { arguments: string[] }) => object,
 					submodule: Function & {
 						add: (p: {
