@@ -95,7 +95,7 @@ namespace slime {
 
 					merge: (p: {
 						name: string
-						noCommit: boolean
+						noCommit?: boolean
 						ffOnly?: boolean
 						stdio?: any
 					}) => void

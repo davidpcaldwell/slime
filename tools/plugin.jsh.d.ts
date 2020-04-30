@@ -7,6 +7,15 @@ namespace jsh.wf {
 	}
 
 	interface Exports {
+		git: {
+			compareTo: (branchName: string) =>
+				(repository: slime.jrunscript.git.Repository.Local) => {
+					ahead: slime.jrunscript.git.Commit[],
+					behind: slime.jrunscript.get.Commit[],
+					paths: any
+				}
+		}
+
 		requireGitIdentity: ( (p: {
 			repository: slime.jrunscript.git.Repository.Local,
 			get?: Exports.requireGitIdentity.get
