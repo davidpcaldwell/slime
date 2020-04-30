@@ -1,8 +1,9 @@
 var parameters = jsh.script.getopts({
 	options: {
 		base: jsh.file.Pathname,
-		index: "README.html",
-		host: "documentation"
+		"chrome:id": "documentation",
+		host: "documentation",
+		index: "README.html"
 	}
 });
 
@@ -28,7 +29,7 @@ if (jsh.shell.browser.chrome) {
 		.replace(/__PORT__/g, String(server.port))
 	;
 	var instance = new jsh.shell.browser.chrome.Instance({
-		location: base.getRelativePath("local/chrome/documentation"),
+		location: base.getRelativePath("local/chrome/" + parameters.options["chrome:id"]),
 		proxy: new jsh.shell.browser.ProxyConfiguration({
 			code: pac
 		})

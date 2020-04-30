@@ -28,16 +28,22 @@ interface $api {
 		 *
 		 * @param p
 		 */
-		groupBy: (p: {
-			array: Array<any>,
-			group: (element: any) => any,
-			groups?: Array<any>,
+		groupBy<V,G> (p: {
+			array: Array<V>,
+			group: (element: V) => G,
+			groups?: Array<G>,
 			codec?: {
-				encode: (group: any) => string,
-				decode: (string: string) => any
+				encode: (group: G) => string,
+				decode: (string: string) => G
 			},
-			count: boolean
-		}) => any,
+			count?: boolean
+		}) : {
+			array: () => Array<{
+				group: G
+				array?: V[],
+				count?: number
+			}>
+		},
 
 		match<L,R> (
 			p: {
