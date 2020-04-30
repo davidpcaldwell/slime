@@ -91,6 +91,17 @@ $exports.git = {
 						jsh.shell.console("Unmerged: " + branch.name);
 					}
 				});
+
+				var status = repository.status();
+				var ahead = repository.log({ revisionRange: "origin/master.." });
+				var behind = repository.log({ revisionRange: "..origin/master"});
+				jsh.shell.console("Current branch: " + status.branch.name);
+				if (ahead.length) jsh.shell.console("ahead of origin/master: " + ahead.length);
+				if (behind.length) jsh.shell.console("behind origin/master: " + behind.length);
+				if (behind.length && !ahead.length && !status.paths) {
+					jsh.shell.console("Fast-forwarding ...");
+					repository.merge({ ffOnly: true, name: "origin/master" });
+				}
 			}
 		);
 	}

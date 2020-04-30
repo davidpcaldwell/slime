@@ -84,7 +84,7 @@ namespace slime {
 						force: boolean
 					}) => void
 
-					show: slime.jrunscript.git.Repository.Local.show,
+					show: (p: { object: string}  ) => Commit
 
 					fetch: (p: {
 						all?: boolean
@@ -100,8 +100,10 @@ namespace slime {
 						stdio?: any
 					}) => void
 
-					checkout: (p: { branch: string, stdio?: any  }) => void,
-					status: () => any,
+					checkout: (p: { branch: string, stdio?: any  }) => void
+
+					status: () => { branch: Branch, paths?: { [path: string]: any }},
+
 					remote: ( () => void ) & { getUrl: ({ name: string }) => string },
 					stash: any,
 					push: Function,
@@ -114,29 +116,19 @@ namespace slime {
 						}) => slime.jrunscript.git.Repository.Local,
 						update: any
 					}
-					log: (p?: { author?: string, all?: boolean, range?: string }) => Commit[]
+
+					log: (p?: {
+						author?: string
+						all?: boolean
+						revisionRange?: string, /* deprecated name */ range?: string
+					}) => Commit[]
+
 					execute: (p: {
 						command: string
 						arguments?: string[]
 						environment?: object,
 						directory?: slime.jrunscript.file.Directory
 					}) => any
-				}
-
-				namespace Local {
-					interface Branch {
-						current: boolean,
-						name: string,
-						commit: slime.jrunscript.git.Commit
-					}
-
-					namespace show {
-						interface argument {
-							object: string
-						}
-					}
-
-					export type show = (p: slime.jrunscript.git.Repository.Local.show.argument) => Commit
 				}
 			}
 
