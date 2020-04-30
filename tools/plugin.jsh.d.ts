@@ -1,4 +1,4 @@
-namespace jsh.sdlc {
+namespace jsh.wf {
 	namespace Exports.requireGitIdentity {
 		interface get {
 			name: (p: { repository: slime.jrunscript.git.Repository.Local }) => string,

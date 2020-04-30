@@ -14,8 +14,8 @@ var noTrailingWhitespace = function() {
 			if (entry.path == ".classpath") return false;
 			if (entry.path == ".project") return false;
 			if (entry.path == "contribute") return true;
-			if (entry.path == "sdlc") return true;
-			if (entry.path == "tools/sdlc") return true;
+			if (entry.path == "wf") return true;
+			if (entry.path == "tools/wf") return true;
 			return code.files.isText(entry.node);
 		},
 		on: {
@@ -178,12 +178,12 @@ $exports.commit = $api.Function.pipe(
 		}
 		var repository = jsh.tools.git.Repository({ directory: $context.base });
 
-		jsh.sdlc.requireGitIdentity({
+		jsh.wf.requireGitIdentity({
 			repository: repository,
-			get: jsh.sdlc.requireGitIdentity.get.gui
+			get: jsh.wf.requireGitIdentity.get.gui
 		});
 
-		jsh.sdlc.prohibitUntrackedFiles({
+		jsh.wf.prohibitUntrackedFiles({
 			repository: repository
 		}, {
 			untracked: function(e) {
@@ -214,7 +214,7 @@ $exports.commit = $api.Function.pipe(
 
 		//	Runs test suite
 		var timestamp = jsh.time.When.now();
-		var logs = $context.base.getRelativePath("local/sdlc/logs/commit").createDirectory({
+		var logs = $context.base.getRelativePath("local/wf/logs/commit").createDirectory({
 			recursive: true,
 			exists: function(dir) { return false; }
 		}).getRelativePath(timestamp.local().format("yyyy.mm.dd.HR.mi.sc")).createDirectory();

@@ -1,2 +1,0 @@
-#!/bin/bash
-$(dirname $0)/../jsh.bash $(dirname $0)/sdlc.jsh.js "$@"

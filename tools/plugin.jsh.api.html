@@ -1,7 +1,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
 <head>
-	<title>SLIME: SDLC</title>
+	<title>SLIME: WF</title>
 	<link href="..//loader/api/api.css" rel="stylesheet" type="text/css" />
 	<script src="..//loader/api/api.js"></script>
 	<script>
@@ -11,10 +11,10 @@
 </head>
 <body>
 	<div>
-		<h1><code>tools/sdlc</code></h1>
+		<h1><code>tools/wf</code></h1>
 		<div>
-			Scripts may use the <code>sdlc</code> script to execute commands related to their project lifecycle. The script relies
-			on the project directory containing a <code>sdlc.js</code> file, which is used to implement the commands.
+			Scripts may use the <code>wf</code> script to execute commands related to their project lifecycle. The script relies
+			on the project directory containing a <code>wf.js</code> file, which is used to implement the commands.
 		</div>
 		<div>
 			The project directory may be specified using the <code>PROJECT</code> environment variable; if this variable is not
@@ -22,9 +22,9 @@
 		</div>
 	</div>
 	<div>
-		<h1><code>sdlc.js</code></h1>
+		<h1><code>wf.js</code></h1>
 		<div>
-			The <code>sdlc.js</code> script provided by the project is an ordinary SLIME module (see the definition of
+			The <code>wf.js</code> script provided by the project is an ordinary SLIME module (see the definition of
 			<code>module()</code> in the <a href="../loader/api.html">Loader</a> documentation). Each function it exports
 			is a command which can be executed by name.
 		</div>
@@ -49,7 +49,7 @@
 			<ul>
 				<li class="object">
 					<div class="name">options</div>
-					<span>Global options passed to <code>sdlc</code>. Currently, none are defined.</span>
+					<span>Global options passed to <code>wf</code>. Currently, none are defined.</span>
 					<div class="label">has properties:</div>
 					<ul>
 					</ul>
@@ -57,13 +57,13 @@
 				<li class="value">
 					<div class="name">arguments</div>
 					<span class="type">string[]</span>
-					<span>The set of arguments to the <code>sdlc</code> command, not including global options.</span>
+					<span>The set of arguments to the <code>wf</code> command, not including global options.</span>
 				</li>
 			</ul>
 		</div>
 	</div>
 	<div>
-		<h1><code>jsh.sdlc</code></h1>
+		<h1><code>jsh.wf</code></h1>
 		<div>A set of APIs that can be helpful in implementing tasks related to software development.</div>
 		<ul>
 			<li class="function experimental">
@@ -80,10 +80,10 @@
 					var directory = jsh.shell.TMPDIR.createTemporary({ directory: true });
 					jsh.tools.git.init({ pathname: directory.pathname });
 					var unconfigured = jsh.tools.git.Repository({ directory: directory });
-					//jsh.sdlc.requireGitIdentity({ repository: unconfigured });
+					//jsh.wf.requireGitIdentity({ repository: unconfigured });
 					//	TODO	could we get this working?:
-					//	verify(jsh.sdlc).requireGitIdentity( ... ).threw.type(Error)
-					verify(jsh.sdlc).evaluate(function() {
+					//	verify(jsh.wf).requireGitIdentity( ... ).threw.type(Error)
+					verify(jsh.wf).evaluate(function() {
 						this.requireGitIdentity({ repository: unconfigured });
 					}).threw.type(Error);
 				</script>
@@ -92,7 +92,7 @@
 					var directory = jsh.shell.TMPDIR.createTemporary({ directory: true });
 					jsh.tools.git.init({ pathname: directory.pathname });
 					var toConfigure = jsh.tools.git.Repository({ directory: directory });
-					verify(jsh.sdlc).evaluate(function() {
+					verify(jsh.wf).evaluate(function() {
 						this.requireGitIdentity({
 							repository: toConfigure,
 							get: {
@@ -122,7 +122,7 @@
 					configured.config({
 						arguments: ["user.email", "bar"]
 					});
-					verify(jsh.sdlc).evaluate(function() {
+					verify(jsh.wf).evaluate(function() {
 						this.requireGitIdentity({ repository: configured });
 					}).threw.nothing();
 				</script>

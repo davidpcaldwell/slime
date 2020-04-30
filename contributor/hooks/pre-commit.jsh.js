@@ -2,12 +2,12 @@
 (function main(base) {
 	var repository = jsh.tools.git.Repository({ directory: base });
 
-	jsh.sdlc.requireGitIdentity({
+	jsh.wf.requireGitIdentity({
 		repository: repository,
-		get: jsh.sdlc.requireGitIdentity.get.gui
+		get: jsh.wf.requireGitIdentity.get.gui
 	});
 
-	jsh.sdlc.prohibitUntrackedFiles({
+	jsh.wf.prohibitUntrackedFiles({
 		repository: repository
 	}, {
 		untracked: function(e) {
@@ -32,7 +32,7 @@
 			if (entry.path == ".classpath") return false;
 			if (entry.path == ".project") return false;
 			if (entry.path == "contribute") return true;
-			if (entry.path == "tools/sdlc") return true;
+			if (entry.path == "tools/wf") return true;
 			return code.files.isText(entry.node);
 		},
 		on: {

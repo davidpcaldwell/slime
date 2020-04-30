@@ -91,5 +91,5 @@ declare namespace jsh {
 	const time: jsh['time'];
 	const ui: jsh['ui'];
 	const ip: jsh['ip'];
-	const sdlc: jsh.sdlc.Exports;
+	const wf: jsh.wf.Exports;
 }

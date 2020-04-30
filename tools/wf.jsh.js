@@ -4,12 +4,12 @@
 		return jsh.shell.PWD;
 	})();
 
-	if (!base.getFile("sdlc.js")) {
-		jsh.shell.console("Directory " + base + " does not appear to be a project directory; no sdlc.js found.");
+	if (!base.getFile("wf.js")) {
+		jsh.shell.console("Directory " + base + " does not appear to be a project directory; no wf.js found.");
 		jsh.shell.exit(1);
 	}
 
-	var project = new jsh.file.Loader({ directory: base }).module("sdlc.js", {
+	var project = new jsh.file.Loader({ directory: base }).module("wf.js", {
 		base: base
 	});
 
