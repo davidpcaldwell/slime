@@ -10,7 +10,7 @@
 			},
 			load: function() {
 				//@ts-ignore
-				jsh.sdlc = {};
+				jsh.wf = {};
 				var guiAsk = function(pp) {
 					return function(p) {
 						//	TODO	this "works" but could be improved in terms of font size and screen placement
@@ -21,7 +21,7 @@
 					}
 				};
 
-				jsh.sdlc.requireGitIdentity = Object.assign($api.Events.Function(function(p,events) {
+				jsh.wf.requireGitIdentity = Object.assign($api.Events.Function(function(p,events) {
 					var get = p.get || {
 						name: function(p) {
 							throw new Error("Missing: user.name");
@@ -58,7 +58,7 @@
 					}
 				});
 
-				jsh.sdlc.prohibitUntrackedFiles = $api.Events.Function(function(p, events) {
+				jsh.wf.prohibitUntrackedFiles = $api.Events.Function(function(p, events) {
 					var status = p.repository.status();
 					var untracked = (status.paths) ? $api.Object.properties(status.paths).filter(function(property) {
 						return property.value == "??"
