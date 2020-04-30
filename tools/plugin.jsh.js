@@ -21,6 +21,21 @@
 					}
 				};
 
+				jsh.wf.git = {
+					compareTo: function(branchName) {
+						return function(repository) {
+							var ahead = repository.log({ revisionRange: branchName + ".." });
+							var behind = repository.log({ revisionRange: ".." + branchName });
+							var status = repository.status();
+							return {
+								ahead: ahead,
+								behind: behind,
+								paths: status.paths
+							}
+						};
+					}
+				}
+
 				jsh.wf.requireGitIdentity = Object.assign($api.Events.Function(function(p,events) {
 					var get = p.get || {
 						name: function(p) {

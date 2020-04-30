@@ -198,6 +198,9 @@ $exports.commit = $api.Function.pipe(
 		jsh.shell.jsh({
 			shell: jsh.shell.jsh.src,
 			script: $context.base.getFile("contributor/eslint.jsh.js"),
+			stdio: {
+				output: null
+			},
 			evaluate: function(result) {
 				if (result.status) {
 					jsh.shell.console("ESLint status: " + result.status + "; failing.");
@@ -255,5 +258,7 @@ $exports.commit = $api.Function.pipe(
 			noVerify: true,
 			message: p.options.message
 		});
+		jsh.shell.console("Committed changes to " + repository.directory);
+		//	TODO	add conditional push; see issue #166
 	}
 )
