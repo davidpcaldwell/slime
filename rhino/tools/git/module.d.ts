@@ -111,7 +111,8 @@ namespace slime {
 						add: (p: {
 							repository: slime.jrunscript.git.Repository,
 							path: string
-						}) => slime.jrunscript.git.Repository.Local
+						}) => slime.jrunscript.git.Repository.Local,
+						update: any
 					}
 					log: (p?: { author?: string, all?: boolean, range?: string }) => Commit[]
 					execute: (p: {
