@@ -486,7 +486,7 @@
 					}
 				};
 
-				/** @type { slime.jrunscript.git.Repository.Local.show } */
+				/** @type { slime.jrunscript.git.Repository.Local["show"] } */
 				var show = function(p) {
 					return execute({
 						command: "show",
@@ -551,8 +551,11 @@
 									if (branchName.indexOf("...") != -1) {
 										branchName = branchName.substring(0,branchName.indexOf("..."));
 									}
-									rv.branch = { name: branchName };
-									$context.api.js.Object.set(rv, self.show({ object: branchName }));
+									rv.branch = {
+										name: branchName,
+										current: true,
+										commit: self.show({ object: branchName })
+									};
 								} else {
 									var match = parser.exec(line);
 									if (match) {
@@ -867,7 +870,13 @@
 									rv.push("--");
 								})();
 							} else if (typeof(p.range) == "string") {
+								$api.deprecate(function() {
+									rv.push(p.range);
+								})();
+								//	TODO	rename to revisionRange? see https://git-scm.com/docs/git-log
 								rv.push(p.range);
+							} else if (typeof(p.revisionRange) == "string") {
+								rv.push(p.revisionRange);
 							}
 							if (p && p.author) {
 								rv.push("--author=" + p.author);

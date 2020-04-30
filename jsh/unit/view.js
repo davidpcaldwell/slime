@@ -147,7 +147,8 @@ $exports.Console = function(o) {
 			if (test.error) {
 				printError(test.error);
 			} else if (success == null) {
-				console.println("success = " + success + " and no error property provided for test.")
+				console.println("success = " + success + " and no error property provided for test.");
+				console.println(new Error().stack);
 			}
 			stack[stack.length-1].success = false;
 		} else {

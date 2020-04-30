@@ -237,31 +237,29 @@
 						for (var x in delegate) {
 							this[x] = function() {
 								scope.test($api.Function.returning({
-									success: function() { return false; },
+									success: false,
 									error: e,
-									message: function(success) {
-										return name + " threw " + e;
-									}
+									message: name + " threw " + e
 								}));
 							}
 						}
 
 						this.threw = new Object(e,name + " thrown");
 						this.threw.type = function(type) {
+							var success = e instanceof type;
+							var message = (function(success) {
+								if (success) return name + " threw expected " + type.name;
+								return "Threw " + e + ", not " + new type().name;
+							})(success);
 							scope.test($api.Function.returning({
-								success: function() { return e instanceof type; },
-								message: function(success) {
-									if (success) return name + " threw expected " + type.name;
-									return "Threw " + e + ", not " + new type().name;
-								}
+								success: success,
+								message: message
 							}));
 						};
 						this.threw.nothing = function() {
 							scope.test($api.Function.returning({
-								success: function() { return false; },
-								message: function(success) {
-									return name + " threw " + e;
-								}
+								success: false,
+								message: name + " threw " + e
 							}));
 						}
 					};
@@ -272,29 +270,23 @@
 						for (var x in delegate) {
 							this[x] = function() {
 								scope.test($api.Function.returning({
-									success: function() { return false; },
-									message: function(success) {
-										return name + " did not throw; returned " + returned;
-									}
+									success: false,
+									message: name + " did not throw; returned " + returned
 								}));
 							}
 						}
 
 						this.nothing = function() {
 							scope.test($api.Function.returning({
-								success: function() { return true; },
-								message: function(success) {
-									return name + " did not error. (returned: " + returned + ")";
-								}
+								success: true,
+								message: name + " did not error. (returned: " + returned + ")"
 							}));
 						};
 
 						this.type = function(type) {
 							scope.test($api.Function.returning({
-								success: function() { return false; },
-								message: function(success) {
-									return name + " did not throw expected error; returned " + returned;
-								}
+								success: false,
+								message: name + " did not throw expected error; returned " + returned
 							}))
 						}
 					};
