@@ -254,12 +254,7 @@
 					}
 				},
 				stdio: function(p) {
-					return {
-						// output: null,
-						// //	TODO	stderr is used to indicate progress when fetching multiple subrepositories; we may want to build
-						// //			in the idea of events for commands like this
-						// error: null
-					}
+					return p.stdio;
 				}
 			});
 
