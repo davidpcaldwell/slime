@@ -4,7 +4,8 @@ namespace slime.jrunscript.hg {
 			local: number
 			global: string
 		},
-		summary: string,
+		user: string
+		summary: string
 		date: Date
 	}
 
@@ -17,8 +18,10 @@ namespace slime.jrunscript.hg {
 		}
 
 		interface Local extends slime.jrunscript.hg.Repository {
+			directory: slime.jrunscript.file.Directory
 			identify: Function
-			log: (p: any) => Commit[]
+			heads: () => any
+			log: (p?: any) => Commit[]
 			subrepositories: () => { [path: string]: { repository: slime.jrunscript.hg.Repository.Local, revision: string } }
 			subrepositories: ({ array: boolean }) => slime.jrunscript.hg.Repository.Local[]
 			paths: {

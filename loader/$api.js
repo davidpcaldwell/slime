@@ -263,6 +263,7 @@
 			}
 		}
 
+		/** @type { $api["Iterable"]["groupBy"] } */
 		this.groupBy = function(p) {
 			var iterator = getIterator(p);
 
