@@ -49,5 +49,7 @@
 			options: parameters.options,
 			arguments: parameters.arguments
 		});
+	} else {
+		jsh.shell.console("Project at " + base + " does not have a '" + parameters.command + "' command.")
 	}
 })();
