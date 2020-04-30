@@ -50,7 +50,7 @@ $exports.git = {
 
 		this.clean = $api.Function.pipe(
 			function(p) {
-				repository.fetch({ all: true, prune: true, recurseSubmodules: true });
+				repository.fetch({ all: true, prune: true, recurseSubmodules: true, stdio: { output: null } });
 				/** @type { slime.jrunscript.git.Branch[] } */
 				var branches = repository.branch({ all: true });
 				var target = "remotes/origin/master";
@@ -79,7 +79,7 @@ $exports.git = {
 
 		this.list = $api.Function.pipe(
 			function(p) {
-				repository.fetch({ all: true, prune: true, recurseSubmodules: true });
+				repository.fetch({ all: true, prune: true, recurseSubmodules: true, stdio: { output: null } });
 				/** @type { slime.jrunscript.git.Branch[] } */
 				var branches = repository.branch({ all: true });
 				var target = "remotes/origin/master";
