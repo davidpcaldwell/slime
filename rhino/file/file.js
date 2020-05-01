@@ -371,10 +371,14 @@ var Pathname = function Pathname(parameters) {
 					directory.list({
 						type: directory.list.ENTRY
 					}).forEach(function(entry) {
-						if (!entry.node.directory) {
+						if (entry.node.pathname.directory) {
+							processDirectory(path+entry.path,entry.node,topathname.directory.getRelativePath(entry.path));
+						} else if (entry.node.pathname.file) {
 							processFile(path+entry.path,entry.node,topathname.directory.getRelativePath(entry.path));
 						} else {
-							processDirectory(path+entry.path,entry.node,topathname.directory.getRelativePath(entry.path));
+							//	TODO	probably broken softlink
+							debugger;
+							throw new Error("Cannot copy " + entry.path);
 						}
 					});
 					return rv;
