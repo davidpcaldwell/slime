@@ -108,6 +108,11 @@
 								result.argument = p;
 								return m.evaluate(result);
 							} : m.evaluate
+						}, {
+							terminate: function(e) {
+								//	way to dispatch
+								events.fire("terminate", e.detail);
+							}
 						});
 					}
 					return $api.Events.Function(rv);
@@ -236,6 +241,21 @@
 
 			//	Sharing and Updating Projects
 
+			var StdioDispatcher = function(o) {
+				return {
+					output: {
+						line: function(line) {
+							if (o.output) o.output(line, o.events);
+						}
+					},
+					error: {
+						line: function(line) {
+							if (o.error) o.error(line, o.events);
+						}
+					}
+				}
+			};
+
 			var fetch = cli.command({
 				command: "fetch",
 				arguments: function(p) {
@@ -253,8 +273,29 @@
 						}
 					}
 				},
-				stdio: function(p) {
-					return p.stdio;
+				stdio: function(p, events) {
+					if (p.stdio) return p.stdio;
+					return StdioDispatcher({
+						events: events,
+						output: function(line, events) {
+							var fetchingRemote = /Fetching (.*)/;
+							if (fetchingRemote.test(line)) {
+								events.fire("remote", fetchingRemote.exec(line)[1])
+							} else {
+								events.fire("stdout_other", line);
+							}
+							events.fire("stdout", line);
+						},
+						error: function(line, events) {
+							var fetchingSubmodule = /Fetching submodule (.*)/;
+							if (fetchingSubmodule.test(line)) {
+								events.fire("submodule", fetchingSubmodule.exec(line)[1])
+							} else {
+								events.fire("stderr_other", line);
+							}
+							events.fire("stderr", line);
+						}
+					});
 				}
 			});
 
@@ -395,8 +436,8 @@
 				})();
 
 				var command = function(f) {
-					return function(p) {
-						return f($api.Object.compose(p, { directory: directory }));
+					return function(p, events) {
+						return f($api.Object.compose(p, { directory: directory }), events);
 					}
 				}
 
