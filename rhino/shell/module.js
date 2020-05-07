@@ -260,6 +260,7 @@ var run = function(p,events) {
 		}
 	}
 	stdio.close();
+
 	//	TODO	this returning of stdio values is currently undocumented. Certainly they should be returned if String were specified
 	//			as their type; not sure what should happen otherwise.
 	["output","error"].forEach(function(stream) {
@@ -268,6 +269,9 @@ var run = function(p,events) {
 			result.stdio[stream] = stdio[stream];
 		}
 	});
+
+	events.fire("terminate", result);
+
 	var evaluate = (p.evaluate) ? p.evaluate : $exports.run.evaluate;
 	return evaluate(result);
 };
