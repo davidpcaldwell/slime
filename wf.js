@@ -40,6 +40,21 @@ var noTrailingWhitespace = function() {
 	}
 };
 
+$exports.initialize = function() {
+	if ($context.base.getSubdirectory(".settings")) {
+		var filename = "org.eclipse.jdt.core.prefs";
+		$context.base.getFile("tools/" + filename).copy(
+			$context.base.getSubdirectory(".settings").getRelativePath(filename),
+			{
+				filter: function() {
+					return true;
+				}
+			}
+		);
+		jsh.shell.console("VSCode: Execute the 'Java: Clean the Java language server workspace' command to update.");
+	}
+}
+
 $exports.git = {
 	branches: new function() {
 		var repository = jsh.tools.git.Repository({ directory: $context.base });
