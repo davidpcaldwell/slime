@@ -15,6 +15,7 @@ interface jsh {
 	}
 
 	script: {
+		arguments: string[],
 		getopts: Function & { UNEXPECTED_OPTION_PARSER: any },
 		file: slime.jrunscript.file.File,
 		Application: any,

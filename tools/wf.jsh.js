@@ -1,16 +1,12 @@
+//@ts-check
 (function() {
-	var base = (function() {
-		if (jsh.shell.environment.PROJECT) return jsh.file.Pathname(jsh.shell.environment.PROJECT).directory;
-		return jsh.shell.PWD;
-	})();
-
-	if (!base.getFile("wf.js")) {
-		jsh.shell.console("Directory " + base + " does not appear to be a project directory; no wf.js found.");
+	if (!jsh.wf.project.base.getFile("wf.js")) {
+		jsh.shell.console("Directory " + jsh.wf.project.base + " does not appear to be a project directory; no wf.js found.");
 		jsh.shell.exit(1);
 	}
 
-	var project = new jsh.file.Loader({ directory: base }).module("wf.js", {
-		base: base
+	var project = new jsh.file.Loader({ directory: jsh.wf.project.base }).module("wf.js", {
+		base: jsh.wf.project.base
 	});
 
 	var parameters = $api.Function.result(
@@ -50,6 +46,6 @@
 			arguments: parameters.arguments
 		});
 	} else {
-		jsh.shell.console("Project at " + base + " does not have a '" + parameters.command + "' command.")
+		jsh.shell.console("Project at " + jsh.wf.project.base + " does not have a '" + parameters.command + "' command.")
 	}
 })();

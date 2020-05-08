@@ -11,6 +11,16 @@
 			load: function() {
 				//@ts-ignore
 				jsh.wf = {};
+
+				var base = (function() {
+					if (jsh.shell.environment.PROJECT) return jsh.file.Pathname(jsh.shell.environment.PROJECT).directory;
+					return jsh.shell.PWD;
+				})();
+
+				jsh.wf.project = {
+					base: base
+				}
+
 				var guiAsk = function(pp) {
 					return function(p) {
 						//	TODO	this "works" but could be improved in terms of font size and screen placement
@@ -33,6 +43,18 @@
 								paths: status.paths
 							}
 						};
+					}
+				};
+
+				jsh.wf.typescript = {
+					tsc: function(p) {
+						jsh.shell.run({
+							command: jsh.shell.jsh.src.getFile("tools/tsc.bash"),
+							arguments: [
+								//	TODO	make more flexible
+								"-tsconfig", base.getFile("jsconfig.json")
+							]
+						})
 					}
 				}
 

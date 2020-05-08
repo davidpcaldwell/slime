@@ -211,9 +211,7 @@ $exports.commit = $api.Function.pipe(
 			}
 		});
 
-		jsh.shell.run({
-			command: $context.base.getFile("contributor/tsc.bash")
-		});
+		jsh.wf.typescript.tsc();
 
 		//	Runs test suite
 		var timestamp = jsh.time.When.now();
