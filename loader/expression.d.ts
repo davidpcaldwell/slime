@@ -60,9 +60,10 @@ interface Array<T> {
 
 namespace slime {
 	interface Loader {
-		file: any,
-		module: any,
-		Child: (prefix: string) => Loader,
+		file: any
+        module: any
+        run: any
+		Child: (prefix: string) => Loader
 		get: (path: string) => any
 	}
 }

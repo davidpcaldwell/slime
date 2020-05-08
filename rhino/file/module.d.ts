@@ -14,7 +14,7 @@ namespace slime {
 				remove: () => void,
 				parent: Directory,
 				move: any
-				copy: (pathname: Pathname) => Node
+				copy: (pathname: Pathname, mode?: any) => Node
 			}
 
 			interface File extends Node {
