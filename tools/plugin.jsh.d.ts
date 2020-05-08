@@ -6,6 +6,10 @@ namespace jsh.wf {
 		}
 	}
 
+	interface Context {
+		base: slime.jrunscript.file.Directory
+	}
+
 	interface Exports {
 		project: {
 			base: slime.jrunscript.file.Directory
