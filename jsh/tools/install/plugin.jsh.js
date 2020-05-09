@@ -390,6 +390,15 @@ plugin({
 				}
 			});
 
+			rv.require = function(p) {
+				jsh.shell.jsh.require({
+					satisfied: function() { return jsh.shell.jsh.lib.getFile("jsoup.jar"); },
+					install: function() {
+						return rv.install();
+					}
+				});
+			};
+
 			return rv;
 		})();
 
