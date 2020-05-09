@@ -145,9 +145,13 @@ $exports.navigate = $api.experimental(function(p) {
 		if (!under) throw new Error("Required: under");
 		return under.toString().substring(0,start.toString().length) == start.toString();
 	};
+	var isBelowBase = function(base,node) {
+		if (!base) return false;
+		return startsWith(base, node) && node.toString().length > base.toString().length;
+	};
 	var common = from;
 	var up = 0;
-	while(!startsWith(common,to)) {
+	while(!startsWith(common,to) || isBelowBase(p.base,common)) {
 		up++;
 		common = common.parent;
 		if (!common) throw new Error("No common parent: " + from + " and " + to);

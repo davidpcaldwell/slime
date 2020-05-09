@@ -67,23 +67,24 @@ END LICENSE
 						</ul>
 					</li>
 					<li>
-						<code>loader/api/tools/update.jsh.js [-base <i>directory</i>]</code>: Inlines or updates the definition files
-						for a library that does not itself contain SLIME (and thus cannot link to the SLIME definition files in
-						<code>loader/api</code>).
-					</li>
-					<li>
 						Running individual definition pages
 						<ul>
 							<li><code>jsh</code>: <code>./jsh.bash jsh/test/suite.jsh.js -definition <i>definition</i> [-part <i>part</i>]</code></li>
 							<li>
 								Browser definition page:
-								<code><a href="../loader/browser/test/suite.jsh.api.html">loader/browser/test/suite.jsh.js</a>
+								<code><a href="loader/browser/test/suite.jsh.api.html">loader/browser/test/suite.jsh.js</a>
 									-definition <i>pathname</i>
+									[-base <i>directory</i>]
 									[-part <i>part</i>]
 									[-interactive]
 								</code>
 							</li>
 						</ul>
+					</li>
+					<li>
+						<code>loader/api/tools/update.jsh.js [-base <i>directory</i>]</code>: Inlines or updates the definition files
+						for a library that does not itself contain SLIME (and thus cannot link to the SLIME definition files in
+						<code>loader/api</code>).
 					</li>
 				</ul>
 			</div>

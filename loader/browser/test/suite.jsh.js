@@ -16,6 +16,9 @@ var parameters = jsh.script.getopts({
 		definition: jsh.file.Pathname,
 		part: String,
 
+		//	Necessary if the suite references pages outside the hierarchy defined by suite / launching page / SLIME installation
+		base: jsh.file.Pathname,
+
 		parameter: jsh.script.getopts.ARRAY(String),
 
 		browser: String,
@@ -55,7 +58,8 @@ if (parameters.options.definition && !parameters.options.suite) {
 
 var toSuite = jsh.file.navigate({
 	from: jsh.shell.jsh.src.getFile("loader/browser/test/suite.js"),
-	to: parameters.options.suite.file
+	to: parameters.options.suite.file,
+	base: (parameters.options.base) ? parameters.options.base.directory : void(0)
 });
 
 var testBase = toSuite.base;
