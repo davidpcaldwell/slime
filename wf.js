@@ -43,15 +43,20 @@ var noTrailingWhitespace = function() {
 $exports.initialize = function() {
 	if ($context.base.getSubdirectory(".settings")) {
 		var filename = "org.eclipse.jdt.core.prefs";
-		$context.base.getFile("tools/" + filename).copy(
-			$context.base.getSubdirectory(".settings").getRelativePath(filename),
-			{
-				filter: function() {
-					return true;
+		var destination = $context.base.getSubdirectory(".settings").getRelativePath(filename);
+		var now = (destination.file) ? destination.file.read(String) : void(0);
+		var after = $context.base.getFile("tools/" + filename).read(String);
+		if (now != after) {
+			$context.base.getFile("tools/" + filename).copy(
+				$context.base.getSubdirectory(".settings").getRelativePath(filename),
+				{
+					filter: function() {
+						return true;
+					}
 				}
-			}
-		);
-		jsh.shell.console("VSCode: Execute the 'Java: Clean the Java language server workspace' command to update.");
+			);
+			jsh.shell.console("VSCode: Execute the 'Java: Clean the Java language server workspace' command to update.");
+		}
 	}
 }
 

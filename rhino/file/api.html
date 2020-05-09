@@ -1212,6 +1212,46 @@ END LICENSE
 					</ul>
 				</div>
 			</li>
+			<li class="function expermintal">
+				<div class="name">navigate</div>
+				<span>__DESCRIPTION__</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+					</ol>
+				</div>
+				<div class="returns">
+					<div class="label">Returns</div>
+					<span class="type">__TYPE__</span>
+					<span>__DESCRIPTION__</span>
+				</div>
+				<script type="application/x.jsapi#tests">
+					var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true });
+
+					tmp.getRelativePath("a/b/c").write("c", { append: false, recursive: true });
+					tmp.getRelativePath("a/c/c").write("c", { append: false, recursive: true });
+
+					var first = tmp.getRelativePath("a/b/c");
+					var second = tmp.getRelativePath("a/c/c");
+
+					var minimal = module.navigate({
+						from: first,
+						to: second
+					});
+
+					verify(minimal).base.toString().is(tmp.getSubdirectory("a").toString());
+					verify(minimal).relative.is("../c/c");
+
+					var top = module.navigate({
+						from: first,
+						to: second,
+						base: tmp
+					});
+
+					verify(top).base.toString().is(tmp.toString());
+					verify(top).relative.is("../../a/c/c");
+				</script>
+			</li>
 			<!-- TODO: below replaced by experimental navigate() -->
 			<!-- <li class="function">
 				<div class="name">getRelativePathTo</div>
