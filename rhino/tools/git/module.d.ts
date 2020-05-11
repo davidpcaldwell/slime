@@ -129,6 +129,13 @@ namespace slime {
 						environment?: object,
 						directory?: slime.jrunscript.file.Directory
 					}) => any
+
+					commit: (p: {
+						all?: boolean
+						noVerify?: boolean
+						message: string
+						author?: string
+					}) => any
 				}
 			}
 
