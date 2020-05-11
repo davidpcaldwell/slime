@@ -73,6 +73,11 @@ $exports.Function.Array = {
 		return function(array) {
 			return array.map(f, this);
 		}
+	},
+	find: function(f) {
+		return function(array) {
+			return array.find(f, this);
+		}
 	}
 };
 
