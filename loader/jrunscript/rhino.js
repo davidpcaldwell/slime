@@ -94,6 +94,7 @@
 		this.test = {};
 	};
 
+	//	TODO	does this file need to know what directory it is in, or could it just use ./expression.js somehow?
 	var rv = $rhino.script(
 		"jrunscript/expression.js",
 		$loader.getLoaderCode("jrunscript/expression.js"),
