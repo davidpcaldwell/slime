@@ -961,6 +961,9 @@ public class Code {
 			public abstract String[] list(String prefix);
 		}
 
+		/**
+		 * Returns the resource located at the given path, or <code>null</code> if no resource is located at that path.
+		 */
 		public abstract Resource getFile(String path) throws IOException;
 		public abstract Enumerator getEnumerator();
 		public abstract Locator getLocator();
