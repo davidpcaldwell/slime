@@ -53,6 +53,8 @@
 		};
 
 		this.eval = this.script;
+
+		this.noEnvironmentAccess = !$rhino.canAccessEnvironment();
 	};
 
 	var $bridge = new function() {

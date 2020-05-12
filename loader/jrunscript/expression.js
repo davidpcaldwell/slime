@@ -41,15 +41,17 @@
 			typescript: $loader.getTypescript(),
 			flags: {}
 		};
-		var flagPattern = /^SLIME_(.*)$/;
-		var _entries = Packages.java.lang.System.getenv().entrySet().iterator();
-		while(_entries.hasNext()) {
-			var _entry = _entries.next();
-			var name = String(_entry.getKey());
-			var value = String(_entry.getValue());
-			var match = flagPattern.exec(name);
-			if (match) {
-				$slime.flags[match[1]] = value;
+		if (!$javahost.noEnvironmentAccess) {
+			var flagPattern = /^SLIME_(.*)$/;
+			var _entries = Packages.java.lang.System.getenv().entrySet().iterator();
+			while(_entries.hasNext()) {
+				var _entry = _entries.next();
+				var name = String(_entry.getKey());
+				var value = String(_entry.getValue());
+				var match = flagPattern.exec(name);
+				if (match) {
+					$slime.flags[match[1]] = value;
+				}
 			}
 		}
 		return $javahost.eval("slime://loader/expression.js",String($loader.getLoaderCode("expression.js")),{
