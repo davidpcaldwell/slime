@@ -465,6 +465,10 @@ public class Engine {
 				return true;
 			}
 
+			@Override public boolean canAccessEnvironment() {
+				return true;
+			}
+
 			@Override public int getOptimizationLevel() {
 				return -1;
 			}
@@ -474,7 +478,9 @@ public class Engine {
 			return getClass().getName() + " factory=" + factory;
 		}
 
+		//	TODO	rename to canCreateClassLoader
 		public abstract boolean createClassLoader();
+		public abstract boolean canAccessEnvironment();
 		public abstract ClassLoader getApplicationClassLoader();
 		public abstract File getLocalClassCache();
 		public abstract int getOptimizationLevel();
@@ -625,6 +631,10 @@ public class Engine {
 		Object rv = source.evaluate(debugger, contexts, scope, target);
 		if (rv instanceof Scriptable) return (Scriptable)rv;
 		return null;
+	}
+
+	public boolean canAccessEnvironment() {
+		return contexts.canAccessEnvironment();
 	}
 
 	public static class Errors extends RuntimeException {

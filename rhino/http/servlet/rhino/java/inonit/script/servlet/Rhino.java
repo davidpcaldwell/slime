@@ -61,6 +61,10 @@ public class Rhino extends Servlet.ScriptContainer {
 				return true;
 			}
 
+			@Override public boolean canAccessEnvironment() {
+				return true;
+			}
+
 			@Override public ClassLoader getApplicationClassLoader() {
 				return Servlet.class.getClassLoader();
 			}

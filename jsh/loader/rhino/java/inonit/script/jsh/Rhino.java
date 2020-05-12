@@ -41,6 +41,10 @@ public class Rhino {
 			return engine.script(name, code, scope, target);
 		}
 
+		public boolean canAccessEnvironment() {
+			return engine.canAccessEnvironment();
+		}
+
 		public Loader.Classes.Interface getClasspath() {
 			return engine.getClasspath();
 		}
@@ -170,6 +174,10 @@ public class Rhino {
 				}
 
 				@Override public boolean createClassLoader() {
+					return true;
+				}
+
+				@Override public boolean canAccessEnvironment() {
 					return true;
 				}
 
