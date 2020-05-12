@@ -20,7 +20,8 @@ var parameters = jsh.script.getopts({
 		//	Whether to use a built shell
 		"profiler:built": false,
 
-		"profiler:nobrowser": false
+		"profiler:nobrowser": false,
+		"profiler:property": String
 	},
 	unhandled: jsh.script.getopts.UNEXPECTED_OPTION_PARSER.SKIP
 });
@@ -87,6 +88,10 @@ var properties = {
 };
 if (jsh.shell.rhino) {
 	properties["jsh.engine.rhino.classpath"] = String(jsh.shell.rhino.classpath);
+}
+if (parameters.options["profiler:property"]) {
+	var split = parameters.options["profiler:property"].split("=");
+	parameters.arguments.unshift("-D" + split[0] + "=" + split[1]);
 }
 
 if (!parameters.options["profiler:built"]) {

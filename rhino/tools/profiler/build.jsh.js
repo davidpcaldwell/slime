@@ -31,7 +31,7 @@ if (!parameters.options.to) {
 
 var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true });
 
-jsh.shell.echo("Compiling profiler ...");
+jsh.shell.echo("Compiling profiler to " + tmp + " ...");
 jsh.java.tools.javac({
 	destination: tmp.getRelativePath("classes"),
 	classpath: jsh.file.Searchpath([parameters.options.javassist]),
@@ -66,6 +66,12 @@ jsh.shell.shell(
 
 var manifest = jsh.shell.TMPDIR.createTemporary({ suffix: "mf" });
 manifest.pathname.write("Premain-Class: inonit.tools.Profiler\n", { append: false });
+parameters.options.to.parent.createDirectory({
+	exists: function(dir) {
+		return false;
+	},
+	recursive: true
+});
 jsh.shell.shell(
 	jar,
 	[
