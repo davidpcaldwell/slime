@@ -165,7 +165,7 @@ $exports.status = $api.Function.pipe(
 
 		if (upstream && behind.length && !ahead.length && !status.paths) {
 			jsh.shell.console("Fast-forwarding ...");
-			repository.merge({ ffOnly: true, name: upstream });
+			repository.merge({ ffOnly: true, name: upstream.name });
 		}
 	}
 )
