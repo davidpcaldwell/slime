@@ -200,7 +200,7 @@ $exports.commit = $api.Function.pipe(
 			arguments: []
 		};
 		for (var i=0; i<p.arguments.length; i++) {
-			if (p.arguments[i] == "-m") {
+			if (p.arguments[i] == "--message") {
 				rv.options.message = p.arguments[++i];
 			} else {
 				rv.arguments.push(p.arguments[i]);

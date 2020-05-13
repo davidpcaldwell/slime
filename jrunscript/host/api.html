@@ -884,6 +884,32 @@ END LICENSE
 							verify(doubled)[2].is(6);
 						</script>
 					</li>
+					<li class="function">
+						<div class="name">forkJoin</div>
+						<span>__DESCRIPTION__</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</div>
+						<script type="application/x.jsapi#tests">
+							var fork = [
+								(function() { return 1; }),
+								(function() { return 3; }),
+								(function() { return 2; })
+							];
+							var result = module.Thread.forkJoin(fork);
+							verify(result).length.is(3);
+							verify(result)[0].is(1);
+							verify(result)[1].is(3);
+							verify(result)[2].is(2);
+						</script>
+					</li>
 				</ul>
 				<script type="application/x.jsapi#tests">
 					if (module.Thread) {
