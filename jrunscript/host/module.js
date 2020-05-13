@@ -601,6 +601,28 @@ void(0);
 			rv.p = void(0);
 			return rv;
 		};
+
+		$exports.Thread.forkJoin = function(functions) {
+			var rv = functions.map(function(){});
+			var threads = functions.map(function(f,index) {
+				return $exports.Thread.start({
+					call: f,
+					on: {
+						result: function(returned) {
+							rv[index] = returned;
+						},
+						error: function(error) {
+							throw error;
+						}
+					}
+				});
+			});
+			threads.forEach(function(thread) {
+				thread.join();
+			});
+			return rv;
+		};
+
 		$exports.Thread.map = function(array,mapper,target,p) {
 			if (!target) target = {};
 			if (!p) p = {};
