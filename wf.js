@@ -149,8 +149,8 @@ $exports.status = $api.Function.pipe(
 			var vsOrigin = jsh.wf.git.compareTo(upstream.name)(repository);
 			var ahead = vsOrigin.ahead;
 			var behind = vsOrigin.behind;
-			if (ahead.length) jsh.shell.console("ahead of " + upstream + ": " + ahead.length);
-			if (behind.length) jsh.shell.console("behind " + upstream + ": " + behind.length);
+			if (ahead.length) jsh.shell.console("ahead of " + upstream.name + ": " + ahead.length);
+			if (behind.length) jsh.shell.console("behind " + upstream.name + ": " + behind.length);
 		} else {
 			jsh.shell.console("Upstream branch " + "origin/" + status.branch.name + " not found.");
 		}
