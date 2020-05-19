@@ -3,7 +3,9 @@ namespace jsh.plugin {
 }
 
 interface jsh {
-	java: slime.jrunscript.host.Exports;
+	java: slime.jrunscript.host.Exports & {
+		tools: any
+	};
 	http: slime.jrunscript.http.client;
 
 	tools: {
@@ -16,7 +18,7 @@ interface jsh {
 
 	script: {
 		arguments: string[],
-		getopts: Function & { UNEXPECTED_OPTION_PARSER: any },
+		getopts: Function & { UNEXPECTED_OPTION_PARSER: any, ARRAY: any },
 		file: slime.jrunscript.file.File,
 		Application: any,
 		loader: slime.Loader
@@ -52,7 +54,8 @@ interface jsh {
 			}
 		},
 		stdio: any,
-		tools: any
+		tools: any,
+		rhino: any
 	};
 
 	unit: {
