@@ -474,7 +474,7 @@ if (!destination.installer) {
 			if (!gcc) {
 				jsh.shell.console("Cannot find gcc in PATH; not building native launcher.");
 				jsh.shell.exit(1);
-//				return;
+				// return;
 			}
 			var args = ["-o", "jsh"];
 			args.push(SLIME.getRelativePath("jsh/launcher/native/jsh.c"));
@@ -497,7 +497,7 @@ if (!destination.installer) {
 			jsh.shell.console("Did not detect UNIX-like operating system (detected " + jsh.shell.os.name + "); not building native launcher.");
 			jsh.shell.exit(1);
 		}
-	} else if (parameters.options.executable) {
+	} else {
 		jsh.shell.console("No -executable argument; skipping native launcher");
 	}
 

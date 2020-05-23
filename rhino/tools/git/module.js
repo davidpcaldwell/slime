@@ -119,6 +119,9 @@
 				};
 
 				this.stdio = new function() {
+					/**
+					 * @param { any } [o]
+					 */
 					this.Events = function(o) {
 						if (!o) o = {};
 						return function(p, events) {
