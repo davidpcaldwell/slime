@@ -58,6 +58,10 @@ $exports.initialize = function() {
 			jsh.shell.console("VSCode: Execute the 'Java: Clean the Java language server workspace' command to update.");
 		}
 	}
+};
+
+$exports.tsc = function() {
+	jsh.wf.typescript.tsc();
 }
 
 $exports.git = {

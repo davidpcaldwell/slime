@@ -542,6 +542,8 @@ function defineTime($context,$exports) {
 	}
 	/**
 	 * @constructor
+	 * @param { any } hours
+	 * @param { any } [minutes]
 	 */
 	function Day_Time(hours,minutes) {
 		var Self = arguments.callee;
