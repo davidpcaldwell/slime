@@ -86,6 +86,7 @@
 				return null;
 			}
 		};
+		var $engine = {}
 		return eval(load(slime+"loader/expression.js").code);
 	})(slimePath + "/");
 

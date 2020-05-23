@@ -391,6 +391,7 @@ void(0);
 
 		/**
 		 * @constructor
+		 * @param { any } [factory]
 		 */
 		var Thread = function(p,factory) {
 			var synchronize = (function() {

@@ -28,6 +28,9 @@ $set(
 					return (typeof(line.section) != "undefined" && line.name) ? ((line.section) ? (line.section + ".") : line.section) + line.name : null;
 				}
 
+				/**
+				 * @param { any } [name]
+				 */
 				this.get = function(name) {
 					var single = (arguments.length > 0);
 					var rv = (single) ? null : {};
