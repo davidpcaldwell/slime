@@ -6,7 +6,7 @@
 	});
 
 	jsh.shell.tools.node.require();
-	jsh.shell.tools.node.modules.require({ name: "typescript" });
+	jsh.shell.tools.node.modules.require({ name: "typescript@3.8.3" });
 	//	TODO	re-implement tsc.bash in terms of this script; see jsh/tools/install/typescript.jsh.js
 	var base = jsh.script.file.parent.parent;
 	var PATH = jsh.file.Searchpath(jsh.shell.PATH.pathnames.concat([base.getRelativePath("local/jsh/lib/node/bin")]));
