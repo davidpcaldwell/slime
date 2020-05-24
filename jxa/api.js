@@ -33,6 +33,10 @@
 		this.filesystem = filesystem;
 	};
 
+	var environment = objc.dictionary.adapt($.NSProcessInfo.processInfo.environment);
+
+	if (environment.SLIME_JXA_DEBUG) debugger;
+
 	var bootstrap = Application.currentApplication()
 	bootstrap.includeStandardAdditions = true
 	var bootstrapPath = bootstrap.pathTo(this)
@@ -48,8 +52,6 @@
 			code: contents.toString()
 		};
 	}
-
-	var environment = objc.dictionary.adapt($.NSProcessInfo.processInfo.environment);
 
 	var invocation = (function processArguments(argv) {
 		var osascript = argv.shift();
