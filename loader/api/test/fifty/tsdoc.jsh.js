@@ -16,6 +16,9 @@ var ast = jsh.shell.tools.node.run({
 		if (parameters.options["node:debug"]) rv.push("--inspect-brk");
 		rv.push(jsh.script.file.parent.getRelativePath("tsdoc.node.js"));
 		rv.push(parameters.options.file.toString());
+		parameters.options.ast.parent.createDirectory({
+			exists: function(dir) { return false; }
+		});
 		rv.push(parameters.options.ast.toString());
 	},
 	evaluate: function(result) {
@@ -130,6 +133,14 @@ kinds.EndOfFileToken = function(context,node) {
 kinds.Identifier = function(rv,o) {
 	throw new TypeError();
 	rv.text = o.node.text;
+}
+
+kinds.FirstStatement = function(context,node) {
+	//	TODO
+}
+
+kinds.ExpressionStatement = function(context,node) {
+	//	TODO
 }
 
 var UnimplementedKind = jsh.js.Error.Type("UnimplementedKind");
