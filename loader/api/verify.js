@@ -11,7 +11,7 @@
 		})();
 
 		/** @type { slime.definition.verify.Factory } */
-		var Verify = function(scope,vars) {
+		var Verify = function(scope/*,vars*/) {
 			var Value = function(v,name) {
 				var prefix = (name) ? (name + " ") : "";
 
@@ -288,11 +288,11 @@
 				if (value && typeof(value) == "object") {
 					var localName = (function() {
 						if (name) return name;
-						for (var x in vars) {
-							if (vars[x] == value) {
-								return x;
-							}
-						}
+						// for (var x in vars) {
+						// 	if (vars[x] == value) {
+						// 		return x;
+						// 	}
+						// }
 					})();
 					return new Object(value,localName);
 				}
@@ -306,21 +306,21 @@
 			rv.fire = void(0);
 			rv.scope = void(0);
 
-			for (var x in vars) {
-				if (typeof(vars[x]) == "function") {
-					rv[x] = (function(delegate,name) {
-						return function() {
-							//	TODO	this cannot be right, should not depend on Slim
-							//@ts-ignore
-							var v = delegate.apply(inonit.slim.getDocument(),arguments);
-							//	TODO	the below does a poor job at creating the prefix to use
-							return rv(v,name);
-						}
-					})(vars[x],x)
-				} else {
-					rv[x] = rv(vars[x]);
-				}
-			}
+			// for (var x in vars) {
+			// 	if (typeof(vars[x]) == "function") {
+			// 		rv[x] = (function(delegate,name) {
+			// 			return function() {
+			// 				//	TODO	this cannot be right, should not depend on Slim
+			// 				//@ts-ignore
+			// 				var v = delegate.apply(inonit.slim.getDocument(),arguments);
+			// 				//	TODO	the below does a poor job at creating the prefix to use
+			// 				return rv(v,name);
+			// 			}
+			// 		})(vars[x],x)
+			// 	} else {
+			// 		rv[x] = rv(vars[x]);
+			// 	}
+			// }
 
 			return rv;
 		};
