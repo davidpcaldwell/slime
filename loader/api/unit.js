@@ -152,6 +152,9 @@
 				}
 			};
 
+			/**
+			 * @param { { events: any } } o
+			 */
 			var Scope = function(o) {
 				var success = true;
 
