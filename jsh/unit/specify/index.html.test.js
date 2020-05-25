@@ -11,7 +11,7 @@
 //	Contributor(s):
 //	END LICENSE
 
-var api = $loader.file("loader/api/unit.js");
+var api = $loader.module("loader/api/unit.js");
 var unit = $loader.module("loader/browser/test/module.js", {
 	api: {
 		unit: api,
