@@ -7,6 +7,7 @@ const fs = require("fs");
 
 const ts = require("typescript");
 const tsdoc = require("@microsoft/tsdoc");
+const printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed, removeComments: true });
 
 var kinds = (function() {
 	const rv = {};
@@ -136,6 +137,10 @@ const traverse = function(sourceFile, node) {
 		};
 		if (rv.kind == "Identifier") rv.text = node.text;
 		if (rv.kind == "FunctionDeclaration") rv.name = node.name.text;
+		if (rv.kind == "FirstStatement") {
+			//	TODO	get this working. Currently fails deep inside TypeScript because sourceFile does not have text property
+			//rv.code = printer.printNode(ts.EmitHint.Unspecified, node, sourceFile);
+		}
 		if (comments) rv.comments = comments;
 		return rv;
 	})();
