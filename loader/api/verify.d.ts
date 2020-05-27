@@ -22,4 +22,8 @@ namespace slime.definition.verify {
 	type Factory = {
 		( scope: slime.definition.verify.Scope ): slime.definition.unit.Verify
 	}
+
+	interface Exports {
+		Verify: Factory
+	}
 }

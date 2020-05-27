@@ -1,7 +1,7 @@
 //@ts-check
 (
 	/**
-	 * @param { { Verify: ( scope: slime.definition.verify.Scope ) => slime.definition.verify.Verify } } $exports
+	 * @param { { Verify: slime.definition.verify.Factory } } $exports
 	 */
 	function($exports) {
 		//	We have an object called Object in this file, so this
