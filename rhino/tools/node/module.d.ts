@@ -28,6 +28,7 @@ namespace slime.jrunscript.node {
 				global?: boolean
 				arguments?: string[]
 				stdio?: any
+				evaluate?: any
 				directory?: slime.jrunscript.file.Directory
 			}) => any
 		}
