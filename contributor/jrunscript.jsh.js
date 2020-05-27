@@ -262,6 +262,9 @@ suite.add("testing/html", new jsh.unit.html.Part({
 suite.add("testing/jsh.unit/definition", new jsh.unit.html.Part({
 	pathname: SRC.getRelativePath("jsh/unit/plugin.jsh.api.html")
 }));
+suite.add("testing/fifty", new jsh.unit.html.Part({
+	pathname: SRC.getRelativePath("loader/api/test/fifty/api.html")
+}));
 //	TODO	disabling Bitbucket testing to try to get tests to pass after migration to GitHub. Examine to see whether there is
 //			something still needed, something analogous still needed, or whether this can be discarded
 if (false) suite.add("testing/jsh.unit/bitbucket", new jsh.unit.Suite.Fork({
