@@ -518,8 +518,6 @@ plugin({
 				//	TODO	update?
 				jsh.shell.tools.node = installed;
 
-				jsh.shell.tools.node.require = function(){};
-
 				jsh.shell.tools.node.update = function() {
 					jsh.shell.tools.node = node.install({
 						location: location,
@@ -544,9 +542,42 @@ plugin({
 						}
 					}
 				};
-				jsh.shell.tools.node.require = function() {
-					jsh.shell.tools.node.install();
-				};
+			}
+			jsh.shell.tools.node.require = function() {
+				jsh.shell.jsh.require({
+					satisfied: function() {
+						return Boolean(jsh.shell.tools.node.version)
+					},
+					install: function() {
+						jsh.shell.tools.node.install();
+					}
+				});
+			};
+			if (jsh.shell.tools.node.modules) {
+				jsh.shell.tools.node.modules.require = function(p) {
+					jsh.shell.jsh.require({
+						satisfied: function() {
+							var now = jsh.shell.tools.node.modules.installed[p.name];
+							if (!now) return false;
+							if (p.version) {
+								return now.version == p.version;
+							} else {
+								return true;
+							}
+						},
+						install: function() {
+							if (p.version) {
+								jsh.shell.tools.node.modules.install({
+									name: p.name + "@" + p.version
+								});
+							} else {
+								jsh.shell.tools.node.modules.install({
+									name: p.name
+								});
+							}
+						}
+					})
+				}
 			}
 		})();
 

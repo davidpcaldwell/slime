@@ -24,39 +24,7 @@ interface jsh {
 		loader: slime.Loader
 	};
 
-	shell: slime.jrunscript.shell.Exports & {
-		console: (message: string) => void,
-		exit: (code: number) => void,
-		jsh: any,
-		os: {
-			name: string,
-			process: {
-				list: () => slime.jrunscript.shell.system.Process[]
-			}
-		}
-		environment: any,
-		echo: Function,
-		run: Function & { stdio: any },
-		HOME: slime.jrunscript.file.Directory,
-		PATH: any,
-		TMPDIR: slime.jrunscript.file.Directory,
-		PWD: slime.jrunscript.file.Directory,
-		browser: any,
-		listeners: any,
-		system: {
-			apple: {
-				plist: {
-					xml: {
-						encode: Function,
-						decode: Function
-					}
-				}
-			}
-		},
-		stdio: any,
-		tools: any,
-		rhino: any
-	};
+	shell: slime.jrunscript.shell.Exports & jsh.shell.Exports;
 
 	unit: {
 		mock: slime.jsh.unit.mock;

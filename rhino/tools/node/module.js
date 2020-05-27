@@ -93,25 +93,27 @@
 			})(this.run);
 
 			this.modules = new function() {
-				var Installed = function() {
-					var node_modules = o.directory.getSubdirectory("lib/node_modules");
-					if (node_modules) {
-						node_modules.list().forEach(function(item) {
-							if (item.directory && item.pathname.basename.substring(0,1) == "@") {
-								item.list().forEach(function(sub) {
-									this[item.pathname.basename + "/" + sub.pathname.basename] = {};
-								}, this);
-							} else {
-								this[item.pathname.basename] = {};
-							}
-						},this);
-					}
-				}
+				var installed = function() {
+					var json = npm({
+						command: "ls",
+						global: true,
+						arguments: [
+							"--depth", "0", "--json"
+						],
+						stdio: {
+							output: String
+						},
+						evaluate: function(result) {
+							return JSON.parse(result.stdio.output);
+						}
+					});
+					return json.dependencies;
+				};
 
-				this.installed = new Installed();
+				this.installed = installed();
 
 				var refresh = (function() {
-					this.installed = new Installed();
+					this.installed = installed();
 				}).bind(this);
 
 				//	TODO	used in tests; see whether that's needed
