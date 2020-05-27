@@ -1,0 +1,21 @@
+<html>
+	<head>
+		<title>Fifty api.html Bridge</title>
+	</head>
+	<body>
+		<script type="application/x.jsapi#tests">
+			var tests = {
+				types: {}
+			};
+			$jsapi.loader.run(
+				"module.d.ts",
+				{
+					$loader: $jsapi.loader,
+					tests: tests,
+					verify: verify
+				}
+			);
+			tests.suite();
+		</script>
+	</body>
+</html>
