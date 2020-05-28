@@ -20,6 +20,14 @@
 			The project directory may be specified using the <code>PROJECT</code> environment variable; if this variable is not
 			set, the working directory will be used.
 		</div>
+		<div>
+			So, a typical <code>wf</code> file might look like:
+			<pre>
+#!/bin/bash
+export PROJECT="$(dirname $0)"
+${PROJECT}/[<i>path/to/slime</i>]/tools/wf "$@"
+			</pre>
+		</div>
 	</div>
 	<div>
 		<h1><code>wf.js</code></h1>
