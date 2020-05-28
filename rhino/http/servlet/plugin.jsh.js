@@ -116,11 +116,11 @@ plugin({
 				return returning({
 					load: servlet.load
 				});
-//			} else if (servlet.$loader && servlet.path) {
-//				return returning({
-//					$loader: servlet.$loader,
-//					load: byLoader(servlet.$loader,servlet.path)
-//				});
+			// } else if (servlet.$loader && servlet.path) {
+			// 	return returning({
+			// 		$loader: servlet.$loader,
+			// 		load: byLoader(servlet.$loader,servlet.path)
+			// 	});
 			} else if (servlet.file) {
 				return returning({
 					$loader: new jsh.file.Loader({
