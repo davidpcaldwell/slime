@@ -38,6 +38,7 @@ interface jsh {
 	time: any;
 	ui: any;
 	ip: any;
+	httpd: jsh.httpd.Exports
 }
 
 declare namespace Packages {
@@ -64,4 +65,5 @@ declare namespace jsh {
 	const ui: jsh['ui'];
 	const ip: jsh['ip'];
 	const wf: jsh.wf.Exports;
+	const httpd: jsh['httpd']
 }
