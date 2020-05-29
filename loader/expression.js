@@ -296,6 +296,7 @@
 
 			var methods = {};
 
+			/** @this { slime.Resource } */
 			var Resource = function(o) {
 				if (typeof(o.read) == "function") {
 					// TODO: ncdbg conditional breakpoint with above condition does not appear to work
@@ -349,7 +350,10 @@
 
 				//	TODO	temporary measure; some tests assume loader.get() returns resource source and so we increase compatibility between resource and its source
 				if (typeof(o.string) == "string") {
-					this.string = o.string;
+					Object.defineProperty(this, "string", {
+						value: o.string,
+						enumerable: true
+					});
 				}
 			}
 

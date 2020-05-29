@@ -3,8 +3,18 @@ namespace jsh.httpd {
 		parameters?: ({ [name: string]: any })
 		file?: slime.jrunscript.file.File
 		resource?: string
-		//	TODO	below scope is incomplete
-		load: (scope: { $exports: { handle: Function } }) => void
+		load: (scope: {
+			httpd: {
+				Handler: {
+					series: (...handlers: slime.servlet.handler[]) => slime.servlet.handler
+					Child: (p: {
+						filter: RegExp,
+						handle: slime.servlet.handler
+					}) => slime.servlet.handler
+				}
+			},
+			$exports: { handle: (request: slime.servlet.Request) => slime.servlet.Response }
+		}) => void
 	}
 
 	interface Tomcat {

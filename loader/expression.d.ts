@@ -59,12 +59,21 @@ interface Array<T> {
 }
 
 namespace slime {
+    interface MimeType {
+    }
+
+    interface Resource {
+        name: string
+        type: MimeType,
+        read: (any) => any
+    }
+
 	interface Loader {
 		file: any
         module: any
         run: any
         value: any
 		Child: (prefix: string) => Loader
-		get: (path: string) => any
+		get: (path: string) => Resource
 	}
 }
