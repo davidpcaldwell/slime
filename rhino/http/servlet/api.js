@@ -247,10 +247,10 @@ var $code = (function() {
 	if ($servlet) {
 		var path = String($servlet.path);
 		var tokens = path.split("/");
-		var path = tokens[tokens.length-1];
+		var basename = tokens[tokens.length-1];
 		return function(scope) {
 			Packages.java.lang.System.err.println("Loading servlet from " + path);
-			loaders.script.run(path,scope);
+			loaders.script.run(basename,scope);
 		};
 	} else if ($host.getCode) {
 		return $host.getCode;
