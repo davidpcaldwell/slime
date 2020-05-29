@@ -5,6 +5,7 @@ namespace slime.servlet {
 
 	interface Response {
 		status: { code: number }
+		body?: slime.Resource
 	}
 
 	type handler = (request: Request) => Response
@@ -18,8 +19,19 @@ namespace slime.servlet {
 			http: {
 				Response: {
 					text: (string: string) => Response
+					body: (body: slime.Resource) => Response
 				}
+			},
+			Handler: {
+				series: (...handlers: slime.servlet.handler[]) => slime.servlet.handler
+				Child: (p: {
+					filter: RegExp,
+					handle: slime.servlet.handler
+				}) => slime.servlet.handler
 			}
+		}
+		$exports: {
+			handle: Function
 		}
 	}
 }
