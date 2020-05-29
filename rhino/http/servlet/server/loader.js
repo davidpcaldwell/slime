@@ -44,6 +44,13 @@ $exports.http.Response.javascript = function(p) {
 	}
 }
 
+$exports.http.Response.resource = function(body) {
+	return {
+		status: { code: 200 },
+		body: body
+	};
+};
+
 $exports.http.Response.NOT_FOUND = function() {
 	return {
 		status: {

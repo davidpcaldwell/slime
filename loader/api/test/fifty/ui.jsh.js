@@ -13,12 +13,7 @@
 					load: function(scope) {
 						scope.$exports.handle = scope.httpd.Handler.series(
 							function(request) {
-								if (request.path == "") {
-									return {
-										status: { code: 200 },
-										body: $loader.get("ui.html")
-									}
-								}
+								if (request.path == "") return scope.httpd.http.Response.body($loader.get("ui.html"));
 							},
 							scope.httpd.Handler.Child({
 								filter: /^code\/slime\/(.*)/,
