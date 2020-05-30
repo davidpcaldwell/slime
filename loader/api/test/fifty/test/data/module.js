@@ -1,7 +1,7 @@
 //@ts-check
 (
 	/**
-	 * @param { slime.fifty.shopping.Exports } $exports
+	 * @param { slime.fifty.test.data.shopping.Exports } $exports
 	 */
 	function($exports) {
 		/** @constructor */
@@ -16,7 +16,7 @@
 				}
 			});
 
-			/** @type { slime.fifty.shopping.Database["add"] } */
+			/** @type { slime.fifty.test.data.shopping.Database["add"] } */
 			this.add = function(p) {
 				items.push(p.item);
 			}

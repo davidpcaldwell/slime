@@ -1,4 +1,4 @@
-namespace slime.fifty.shopping {
+namespace slime.fifty.test.data.shopping {
 	/**
 	 * Something on the shopping list.
 	 */
