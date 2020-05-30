@@ -1,7 +1,7 @@
 //@ts-check
 (
 	function() {
-		var base = jsh.script.file.parent.parent.parent.parent.parent;
+		var base = jsh.script.file.parent.parent.parent.parent.parent.parent;
 		var server = new jsh.httpd.Tomcat();
 		var loader = new jsh.file.Loader({ directory: base });
 		var $loader = jsh.script.loader;
@@ -13,16 +13,13 @@
 					load: function(scope) {
 						scope.$exports.handle = scope.httpd.Handler.series(
 							function(request) {
-								if (request.path == "") return scope.httpd.http.Response.body($loader.get("ui.html"));
+								if (request.path == "") return scope.httpd.http.Response.resource($loader.get("index.html"));
 							},
 							scope.httpd.Handler.Child({
 								filter: /^code\/slime\/(.*)/,
 								handle: function(request) {
 									var resource = loader.get(request.path);
-									return (resource) ? {
-										status: { code: 200 },
-										body: resource
-									} : {
+									return (resource) ? scope.httpd.http.Response.resource(resource) : {
 										status: { code: 404 }
 									}
 								}
@@ -33,7 +30,7 @@
 			}
 		});
 		server.start();
-		var browser = new jsh.shell.browser.chrome.Instance({ location: base.getRelativePath("local/fifty" )});
+		var browser = new jsh.shell.browser.chrome.Instance({ location: base.getRelativePath("local/fifty/chrome" )});
 		browser.run({ uri: "http://127.0.0.1:" + server.port + "/" });
 		server.run();
 	}

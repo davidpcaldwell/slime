@@ -40,5 +40,5 @@
 		tests.suite();
 	};
 
-	execute(jsh.script.file.parent.getFile("module.d.ts"));
+	execute(jsh.script.file.parent.getFile("test/data/module.d.ts"));
 })();

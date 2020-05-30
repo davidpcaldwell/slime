@@ -19,7 +19,7 @@ namespace slime.servlet {
 			http: {
 				Response: {
 					text: (string: string) => Response
-					body: (body: slime.Resource) => Response
+					resource: (body: slime.Resource) => Response
 				}
 			},
 			Handler: {
