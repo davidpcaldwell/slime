@@ -11,20 +11,16 @@ jsh.shell.tools.node.require();
 jsh.shell.tools.node.modules.require({ name: "typescript" });
 jsh.shell.tools.node.modules.require({ name: "@microsoft/tsdoc" });
 
-var ast = jsh.shell.tools.node.run({
-	arguments: function(rv) {
-		if (parameters.options["node:debug"]) rv.push("--inspect-brk");
-		rv.push(jsh.script.file.parent.getRelativePath("tsdoc.node.js"));
-		rv.push(parameters.options.file.toString());
-		parameters.options.ast.parent.createDirectory({
-			exists: function(dir) { return false; }
-		});
-		rv.push(parameters.options.ast.toString());
+/** @type { slime.fifty.Exports } */
+var module = jsh.script.loader.module("module.js");
+
+var ast = module.ast({
+	node: {
+		script: jsh.script.file.parent.getRelativePath("tsdoc.node.js"),
+		debug: parameters.options["node:debug"]
 	},
-	evaluate: function(result) {
-		if (result.status != 0) throw new Error();
-		return parameters.options.ast.file.read(JSON);
-	}
+	ast: parameters.options.ast,
+	file: parameters.options.file
 });
 
 var kinds = {};
