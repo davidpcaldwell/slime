@@ -246,7 +246,7 @@ const main = function(args) {
 	// }
 
 	fs.mkdirSync(path.dirname(outputFilename), { recursive: true });
-	fs.writeFileSync(outputFilename, JSON.stringify(json, void(0), "    "));
+	fs.writeFileSync(outputFilename, JSON.stringify(json, void(0), 2));
 }
 
 main(process.argv.slice(2));
