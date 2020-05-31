@@ -2,6 +2,12 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
+			"name": "Node Debug (attach)",
+			"type": "node",
+			"request": "attach",
+			"port": 9229
+		},
+		{
 			"type": "java",
 			"name": "Debug (Attach)",
 			"request": "attach",

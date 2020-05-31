@@ -75,7 +75,10 @@ const status = performCompilation(
 	}),
 	function(program) {
 		console.log(program);
-		console.log(program.getRootFileNames());
+		const typeChecker = program.getTypeChecker();
+		console.log(typeChecker);
+		debugger;
+		//console.log(program.getRootFileNames());
 		//	TODO	now that we have the program, see:
 		//			https://github.com/Microsoft/TypeScript/wiki/Using-the-Compiler-API#using-the-type-checker
 		//			for reference on how we might proceed
