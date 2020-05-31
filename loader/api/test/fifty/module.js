@@ -78,80 +78,82 @@
 				return identifier.object.text;
 			}
 
-			kinds.SourceFile = function(context,node) {
+			var interpretChildren = function(node,context) {
 				node.children.forEach(function(child) {
-					interpret(context,child);
+					interpret(child,context);
 				});
 			}
 
-			kinds.TypeAliasDeclaration = function(context,node) {
+			kinds.SourceFile = function(node,context) {
+				interpretChildren(node,context);
+			}
+
+			kinds.TypeAliasDeclaration = function(node,context) {
 				var name = getName(node);
 				context.addTypeAlias(name, {});
 			}
 
-			kinds.InterfaceDeclaration = function(context,node) {
+			kinds.InterfaceDeclaration = function(node,context) {
 				var name = getName(node);
 				//	TODO	parse elements of the declaration
 				var c = new ChildContext(context);
 				var children = node.children.filter(isNotIdentifier);
 				children.forEach(function(child) {
-					interpret(c, child);
+					interpret(child, c);
 				});
 				context.addInterface(name, c);
 			}
 
-			kinds.ModuleBlock = function(context,node) {
-				node.children.forEach(function(child) {
-					interpret(context, child);
-				});
+			kinds.ModuleBlock = function(node,context) {
+				interpretChildren(node,context);
 			}
 
-			kinds.HeritageClause = function(context,node) {
+			kinds.HeritageClause = function(node,context) {
 				throw new Error("Learn to parse HeritageClause.");
 			}
 
-			kinds.ModuleDeclaration = function(context,node) {
+			kinds.ModuleDeclaration = function(node,context) {
 				var name = getName(node);
 				var c = new ChildContext(context);
 				node.children.filter(isNotIdentifier).forEach(function(child) {
-					interpret(c, child);
+					interpret(child,c);
 				});
 				context.addModule(name, c);
 			}
 
-			kinds.PropertySignature = function(context,node) {
+			kinds.PropertySignature = function(node,context) {
 				var name = getName(node);
 				context.addProperty(name, {});
 			}
 
-			kinds.EndOfFileToken = function(context,node) {
+			kinds.EndOfFileToken = function(node,context) {
 			}
 
-			kinds.Identifier = function(rv,o) {
+			kinds.Identifier = function(node,context) {
 				throw new TypeError();
-				rv.text = o.node.text;
+				// context.text = o.node.text;
 			}
 
-			kinds.FirstStatement = function(context,node) {
+			kinds.FirstStatement = function(node,context) {
 				//	TODO
 			}
 
-			kinds.ExpressionStatement = function(context,node) {
+			kinds.ExpressionStatement = function(node,context) {
 				//	TODO
 			}
 
 			var UnimplementedKind = jsh.js.Error.Type("UnimplementedKind");
 
-			var interpret = function(context,node) {
+			var interpret = function(node,context) {
 				var kind = node.object.kind;
 				var processor = kinds[kind];
 				if (!processor) throw new UnimplementedKind("No processor for " + kind);
-				processor(context,node);
+				processor(node,context);
 			}
 
 			var context = new Context();
 
-			interpret(context,p.ast);
+			interpret(p.ast,context);
 
 			return context;
 		}
