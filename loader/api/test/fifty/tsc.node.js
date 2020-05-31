@@ -48,6 +48,7 @@ function performCompilation(sys, cb, reportDiagnostic, config) {
 var project = process.env.PROJECT;
 var normalized = path.resolve(ts.normalizePath(project))
 
+//	TODO	can we invoke the logic that calculates the name of the config file, rather than hard=coding?
 const configFileName = ts.findConfigFile(
 	normalized,
 	function (fileName) { return ts.sys.fileExists(fileName); },
@@ -75,6 +76,9 @@ const status = performCompilation(
 	function(program) {
 		console.log(program);
 		console.log(program.getRootFileNames());
+		//	TODO	now that we have the program, see:
+		//			https://github.com/Microsoft/TypeScript/wiki/Using-the-Compiler-API#using-the-type-checker
+		//			for reference on how we might proceed
 	},
 	reportDiagnostic,
 	configParseResult
