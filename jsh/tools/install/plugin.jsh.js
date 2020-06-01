@@ -289,7 +289,7 @@ plugin({
 
 				events.fire("console", "Adding kotlin-script-util.jar ...");
 				location.directory.getRelativePath("lib/kotlin-script-util.jar").write(client.request({
-					url: "http://central.maven.org/maven2/org/jetbrains/kotlin/kotlin-script-util/1.3.31/kotlin-script-util-1.3.31.jar"
+					url: "http://search.maven.org/maven2/org/jetbrains/kotlin/kotlin-script-util/1.3.31/kotlin-script-util-1.3.31.jar"
 				}).body.stream, { append: false });
 
 				jsh.shell.run({
