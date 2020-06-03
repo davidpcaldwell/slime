@@ -27,8 +27,12 @@ namespace slime.jrunscript.file {
 		list: Function
 	}
 
+	interface Searchpath {
+	}
+
 	interface Exports {
 		Loader: new (p: { directory: Directory }) => slime.Loader
 		Pathname: (p: string) => Pathname
+		Searchpath: (pathnames: slime.jrunscript.file.Pathname[]) => Searchpath
 	}
 }
