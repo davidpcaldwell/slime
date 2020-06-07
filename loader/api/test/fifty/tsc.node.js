@@ -1,6 +1,19 @@
 /* eslint-env es6 */
 const path = require("path");
 const ts = require("typescript");
+const { Console } = require("console");
+
+var output = global.console;
+var console = new Console(process.stderr);
+const printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
+
+var kinds = (function() {
+	const rv = {};
+	for (var x in ts.SyntaxKind) {
+		rv[ts.SyntaxKind[x]] = x;
+	}
+	return rv;
+})();
 
 //	Shims supporting copy-pasted functions
 
@@ -22,7 +35,7 @@ function createReportErrorSummary(sys, options) {
 		undefined;
 }
 
-function performCompilation(sys, cb, reportDiagnostic, config) {
+function performCompilation(sys, cb, reportDiagnostic, config, fileName) {
 	var fileNames = config.fileNames, options = config.options, projectReferences = config.projectReferences;
 	var host = ts.createCompilerHostWorker(options, undefined, sys);
 	var currentDirectory = host.getCurrentDirectory();
@@ -30,7 +43,7 @@ function performCompilation(sys, cb, reportDiagnostic, config) {
 	ts.changeCompilerHostLikeToUseCache(host, function (fileName) { return ts.toPath(fileName, currentDirectory, getCanonicalFileName); });
 	enableStatistics(sys, options);
 	var programOptions = {
-		rootNames: fileNames,
+		rootNames: (fileName) ? [fileName] : fileNames,
 		options: options,
 		projectReferences: projectReferences,
 		host: host,
@@ -67,24 +80,190 @@ const configParseResult = ts.parseConfigFileWithSystem(
 	reportDiagnostic
 );
 
-const status = performCompilation(
-	Object.assign({}, ts.sys, {
-		exit: function(status) {
-			return status;
-		}
-	}),
-	function(program) {
-		console.log(program);
-		const typeChecker = program.getTypeChecker();
-		console.log(typeChecker);
-		debugger;
-		//console.log(program.getRootFileNames());
-		//	TODO	now that we have the program, see:
-		//			https://github.com/Microsoft/TypeScript/wiki/Using-the-Compiler-API#using-the-type-checker
-		//			for reference on how we might proceed
-	},
-	reportDiagnostic,
-	configParseResult
-)
+const Project = function(program) {
+	const checker = program.getTypeChecker();
 
-console.log("Finished with exit status: " + status);
+	this.qname = function(node) {
+		var rv = [];
+		var symbol = program.getTypeChecker().getSymbolAtLocation(node.name);
+		rv.push(symbol.name);
+		var parent = symbol.parent;
+		while(parent) {
+			rv.unshift(parent.name);
+			parent = parent.parent;
+		}
+		return rv.join(".");
+	}
+
+	this.type = function(node) {
+		try {
+			return checker.typeToString( checker.getTypeOfSymbolAtLocation( checker.getSymbolAtLocation(node.name), node ) )
+		} catch (e) {
+			return "error: " + e + " " + e.stack;
+		}
+	}
+}
+
+const Debug = function(program) {
+	this.code = function(node) {
+		return printer.printNode(ts.EmitHint.Unspecified, node, node.getSourceFile())
+	};
+
+	this.kind = function(node) {
+		return kinds[node.kind];
+	}
+}
+
+//	See https://github.com/Microsoft/TypeScript/wiki/Using-the-Compiler-API#using-the-type-checker
+const generateDocumentation = function(program) {
+	const project = new Project(program);
+	const debug = new Debug(program);
+
+	// Get the checker, we will use it to find more about classes
+	let checker = program.getTypeChecker();
+	let output = {
+		interfaces: {}
+	};
+
+	// Visit every sourceFile in the program
+	for (const sourceFile of program.getSourceFiles()) {
+		console.log("sourceFile = " + sourceFile.fileName);
+		if (sourceFile.fileName.indexOf("node_modules") != -1) {
+			console.log("Skipping.");
+			continue;
+		}
+		if (true || !sourceFile.isDeclarationFile) {
+			// Walk the tree to search for classes
+			ts.forEachChild(sourceFile, visit);
+		}
+	}
+
+	// // print out the doc
+	// fs.writeFileSync("classes.json", JSON.stringify(output, undefined, 4));
+
+	return output;
+
+	/** visit nodes finding exported classes */
+	function visit(node) {
+		const qname = function() {
+			return project.qname(node);
+		}
+
+		const type = function() {
+			return checker.getTypeOfSymbolAtLocation( checker.getSymbolAtLocation(node.name), node );
+		}
+
+		// Only consider exported nodes
+		if (false && !isNodeExported(node)) {
+			console.log("Not exported: " + node);
+			return;
+		}
+
+		if (ts.isClassDeclaration(node) && node.name) {
+			// This is a top level class, get its symbol
+			let symbol = checker.getSymbolAtLocation(node.name);
+			if (symbol) {
+				output.push(serializeClass(symbol));
+			}
+			// No need to walk any further, class expressions/inner declarations
+			// cannot be exported
+		} else if (ts.isModuleDeclaration(node)) {
+			// This is a namespace, visit its children
+			ts.forEachChild(node, visit);
+		} else if (ts.isModuleBlock(node)) {
+			// This is a namespace, visit its children
+			ts.forEachChild(node, visit);
+		} else if (ts.isInterfaceDeclaration(node)) {
+			output.interfaces[project.qname(node)] = {
+				members: node.members.map(function(member) {
+					const type = project.type(member);
+					debugger;
+					return {
+						name: member.symbol.name,
+						type
+					}
+				})
+			};
+			node.members.forEach(visit);
+		} else {
+			const kind = kinds[node.kind];
+			const code = debug.code(node, node.getSourceFile());
+			//	PropertySignature: checker.typeToString( checker.getTypeOfSymbolAtLocation( checker.getSymbolAtLocation(node.name), node ) )
+			console.log("kind = " + kind);
+			debugger;
+		}
+	}
+
+	/** Serialize a symbol into a json object */
+	function serializeSymbol(symbol) {
+		return {
+			name: symbol.getName(),
+			documentation: ts.displayPartsToString(symbol.getDocumentationComment(checker)),
+			type: checker.typeToString(
+				checker.getTypeOfSymbolAtLocation(symbol, symbol.valueDeclaration)
+			)
+		};
+	}
+
+	/** Serialize a class symbol information */
+	function serializeClass(symbol) {
+		let details = serializeSymbol(symbol);
+
+		// Get the construct signatures
+		let constructorType = checker.getTypeOfSymbolAtLocation(
+			symbol,
+			symbol.valueDeclaration
+		);
+		details.constructors = constructorType
+			.getConstructSignatures()
+			.map(serializeSignature);
+		return details;
+	}
+
+	/** Serialize a signature (call or construct) */
+	function serializeSignature(signature) {
+		return {
+			parameters: signature.parameters.map(serializeSymbol),
+			returnType: checker.typeToString(signature.getReturnType()),
+			documentation: ts.displayPartsToString(signature.getDocumentationComment(checker))
+		};
+	}
+
+	/** True if this is visible outside this file, false otherwise */
+	function isNodeExported(node) {
+		return (
+			(ts.getCombinedModifierFlags(node) & ts.ModifierFlags.Export) !== 0 ||
+			(!!node.parent && node.parent.kind === ts.SyntaxKind.SourceFile)
+		);
+	}
+}
+
+const main = function(args) {
+	const status = performCompilation(
+		Object.assign({}, ts.sys, {
+			exit: function(status) {
+				return status;
+			}
+		}),
+		function(program) {
+			console.log(program);
+			const typeChecker = program.getTypeChecker();
+			console.log(typeChecker);
+			var documentation = generateDocumentation(program);
+			output.log(JSON.stringify(documentation, void(0), 2));
+			debugger;
+			//console.log(program.getRootFileNames());
+			//	TODO	now that we have the program, see:
+			//			https://github.com/Microsoft/TypeScript/wiki/Using-the-Compiler-API#using-the-type-checker
+			//			for reference on how we might proceed
+			//			see also potentially https://github.com/ktsn/ts-compiler-api-examples/blob/master/src/3-type-checking.ts
+		},
+		reportDiagnostic,
+		configParseResult,
+		args[0]
+	)
+
+	console.log("Finished with exit status: " + status);
+}
+
+main(process.argv.slice(2));
