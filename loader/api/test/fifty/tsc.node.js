@@ -15,25 +15,6 @@ var kinds = (function() {
 	return rv;
 })();
 
-const debug = {
-	code: function(node) {
-		return printer.printNode(ts.EmitHint.Unspecified, node, node.getSourceFile())
-	},
-	kind: function(node) {
-		return kinds[node.kind];
-	},
-	qname: function(node,program) {
-		var rv = [];
-		var symbol = program.getTypeChecker().getSymbolAtLocation(node.name);
-		rv.push(symbol.name);
-		var parent = symbol.parent;
-		while(parent) {
-			rv.unshift(parent.name);
-			parent = parent.parent;
-		}
-		return rv.join(".");
-	}
-}
 //	Shims supporting copy-pasted functions
 
 function shouldBePretty(sys, options) {
@@ -99,11 +80,50 @@ const configParseResult = ts.parseConfigFileWithSystem(
 	reportDiagnostic
 );
 
+const Project = function(program) {
+	const checker = program.getTypeChecker();
+
+	this.qname = function(node) {
+		var rv = [];
+		var symbol = program.getTypeChecker().getSymbolAtLocation(node.name);
+		rv.push(symbol.name);
+		var parent = symbol.parent;
+		while(parent) {
+			rv.unshift(parent.name);
+			parent = parent.parent;
+		}
+		return rv.join(".");
+	}
+
+	this.type = function(node) {
+		try {
+			return checker.typeToString( checker.getTypeOfSymbolAtLocation( checker.getSymbolAtLocation(node.name), node ) )
+		} catch (e) {
+			return "error: " + e + " " + e.stack;
+		}
+	}
+}
+
+const Debug = function(program) {
+	this.code = function(node) {
+		return printer.printNode(ts.EmitHint.Unspecified, node, node.getSourceFile())
+	};
+
+	this.kind = function(node) {
+		return kinds[node.kind];
+	}
+}
+
 //	See https://github.com/Microsoft/TypeScript/wiki/Using-the-Compiler-API#using-the-type-checker
 const generateDocumentation = function(program) {
+	const project = new Project(program);
+	const debug = new Debug(program);
+
 	// Get the checker, we will use it to find more about classes
 	let checker = program.getTypeChecker();
-	let output = [];
+	let output = {
+		interfaces: {}
+	};
 
 	// Visit every sourceFile in the program
 	for (const sourceFile of program.getSourceFiles()) {
@@ -126,7 +146,7 @@ const generateDocumentation = function(program) {
 	/** visit nodes finding exported classes */
 	function visit(node) {
 		const qname = function() {
-			return debug.qname(node, program);
+			return project.qname(node);
 		}
 
 		const type = function() {
@@ -154,6 +174,16 @@ const generateDocumentation = function(program) {
 			// This is a namespace, visit its children
 			ts.forEachChild(node, visit);
 		} else if (ts.isInterfaceDeclaration(node)) {
+			output.interfaces[project.qname(node)] = {
+				members: node.members.map(function(member) {
+					const type = project.type(member);
+					debugger;
+					return {
+						name: member.symbol.name,
+						type
+					}
+				})
+			};
 			node.members.forEach(visit);
 		} else {
 			const kind = kinds[node.kind];
