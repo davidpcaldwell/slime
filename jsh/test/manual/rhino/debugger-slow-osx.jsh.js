@@ -16,31 +16,35 @@
 //	JSH_DEBUG_SCRIPT=rhino
 //	jrunscript
 //	rhino/jrunscript/api.js jsh jsh/test/unit.jsh.js -unit jsh.file
-var parameters = jsh.script.getopts({
-	options: {
-		netbeans: jsh.file.Pathname,
-		workaround: false
+(function() {
+	var parameters = jsh.script.getopts({
+		options: {
+			netbeans: jsh.file.Pathname,
+			workaround: false
+		}
+	});
+
+	var base = jsh.script.file.parent.parent.parent.parent.parent;
+
+	var nb = parameters.options.netbeans;
+
+	var properties = {};
+	if (parameters.options.workaround) {
+		properties["swing.defaultlaf"] = "javax.swing.plaf.nimbus.NimbusLookAndFeel";
 	}
-});
 
-var base = jsh.script.file.parent.parent.parent.parent.parent;
-
-var nb = parameters.options.netbeans;
-
-var properties = {};
-if (parameters.options.workaround) {
-	properties["swing.defaultlaf"] = "javax.swing.plaf.nimbus.NimbusLookAndFeel";
-}
-
-jsh.shell.jsh({
-	environment: jsh.js.Object.set({}, jsh.shell.environment, {
-		JSH_JVM_OPTIONS: (parameters.options.netbeans) ? "-agentpath:"
-			+ nb + "/profiler/lib/deployed/jdk16/mac/libprofilerinterface.jnilib="
-			+ nb + "/profiler/lib,5140"
-		: null,
-		JSH_DEBUG_SCRIPT: "rhino"
-	}),
-	properties: properties,
-	script: base.getFile("jsh/test/unit.jsh.js"),
-	arguments: ["-unit", "jsh.file"]
-});
+	jsh.shell.jsh({
+		environment: jsh.js.Object.set({}, jsh.shell.environment, {
+			JSH_JVM_OPTIONS: (parameters.options.netbeans)
+				? "-agentpath:"
+					+ nb + "/profiler/lib/deployed/jdk16/mac/libprofilerinterface.jnilib="
+					+ nb + "/profiler/lib,5140"
+				: null
+			,
+			JSH_DEBUG_SCRIPT: "rhino"
+		}),
+		properties: properties,
+		script: base.getFile("jsh/test/unit.jsh.js"),
+		arguments: ["-unit", "jsh.file"]
+	});
+})();

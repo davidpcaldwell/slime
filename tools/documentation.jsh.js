@@ -1,44 +1,46 @@
-var parameters = jsh.script.getopts({
-	options: {
-		base: jsh.file.Pathname,
-		"chrome:id": "documentation",
-		host: "documentation",
-		index: "README.html"
-	}
-});
-
-jsh.shell.jsh.require({
-	satisfied: function() {
-		return jsh.httpd.Tomcat;
-	},
-	install: function() {
-		jsh.shell.tools.tomcat.install();
-	}
-});
-
-var base = parameters.options.base.directory;
-
-var server = jsh.httpd.Tomcat.serve({
-	directory: base
-});
-
-//	Use dedicated Chrome browser if present
-if (jsh.shell.browser.chrome) {
-	var pac = jsh.shell.jsh.src.getFile("rhino/ui/application-hostToPort.pac").read(String)
-		.replace(/__HOST__/g, parameters.options.host)
-		.replace(/__PORT__/g, String(server.port))
-	;
-	var instance = new jsh.shell.browser.chrome.Instance({
-		location: base.getRelativePath("local/chrome/" + parameters.options["chrome:id"]),
-		proxy: new jsh.shell.browser.ProxyConfiguration({
-			code: pac
-		})
+(function() {
+	var parameters = jsh.script.getopts({
+		options: {
+			base: jsh.file.Pathname,
+			"chrome:id": "documentation",
+			host: "documentation",
+			index: "README.html"
+		}
 	});
-	instance.run({
-		uri: "http://" + parameters.options.host + "/" + parameters.options.index
+
+	jsh.shell.jsh.require({
+		satisfied: function() {
+			return jsh.httpd.Tomcat;
+		},
+		install: function() {
+			jsh.shell.tools.tomcat.install();
+		}
 	});
-} else {
-	//	Otherwise, fall back to Java desktop integration and default browser
-	Packages.java.awt.Desktop.getDesktop().browse( new Packages.java.net.URI( "http://127.0.0.1:" + server.port + "/" + parameters.options.path ) );
-}
-server.run();
+
+	var base = parameters.options.base.directory;
+
+	var server = jsh.httpd.Tomcat.serve({
+		directory: base
+	});
+
+	//	Use dedicated Chrome browser if present
+	if (jsh.shell.browser.chrome) {
+		var pac = jsh.shell.jsh.src.getFile("rhino/ui/application-hostToPort.pac").read(String)
+			.replace(/__HOST__/g, parameters.options.host)
+			.replace(/__PORT__/g, String(server.port))
+		;
+		var instance = new jsh.shell.browser.chrome.Instance({
+			location: base.getRelativePath("local/chrome/" + parameters.options["chrome:id"]),
+			proxy: new jsh.shell.browser.ProxyConfiguration({
+				code: pac
+			})
+		});
+		instance.run({
+			uri: "http://" + parameters.options.host + "/" + parameters.options.index
+		});
+	} else {
+		//	Otherwise, fall back to Java desktop integration and default browser
+		Packages.java.awt.Desktop.getDesktop().browse( new Packages.java.net.URI( "http://127.0.0.1:" + server.port + "/" + parameters.options.path ) );
+	}
+	server.run();
+})()
