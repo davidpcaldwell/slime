@@ -1,12 +1,95 @@
 //@ts-check
 (
-	function() {
+	function(p) {
 		var slime = {
-			directory: jsh.script.file.parent.parent.parent.parent.parent.parent
+			directory: p.file.parent.parent.parent.parent.parent.parent
 		};
 		slime.loader = new jsh.file.Loader({ directory: slime.directory });
 		var server = new jsh.httpd.Tomcat();
 		var $loader = jsh.script.loader;
+
+		var option = {
+			value: function(o) {
+				return function(p) {
+					var rv = {
+						options: $api.Object.compose(p.options),
+						arguments: []
+					};
+					for (var i=0; i<rv.arguments.length; i++) {
+						if (o.longname && rv.arguments[i] == "--" + o.longname) {
+							p.options[o.longname] = rv.arguments[++i];
+						} else {
+							rv.arguments.push(p.arguments[i]);
+						}
+					}
+					return rv;
+				}
+			},
+			boolean: function(o) {
+				return function(p) {
+					var rv = {
+						options: $api.Object.compose(p.options),
+						arguments: []
+					};
+					for (var i=0; i<rv.arguments.length; i++) {
+						if (o.longname && rv.arguments[i] == "--" + o.longname) {
+							p.options[o.longname] = true;
+						} else {
+							rv.arguments.push(p.arguments[i]);
+						}
+					}
+					return rv;
+				}
+			}
+		}
+
+		var invocation = $api.Function.result(
+			{ options: {}, arguments: p.arguments },
+			option.value({ longname: "nocache" }),
+			option.boolean({ longname: "harness" })
+		);
+
+		invocation.options.file = (invocation.options.harness)
+			? slime.directory.getRelativePath("loader/api/test/fifty/test/data/module.d.ts")
+			: void(0)
+		;
+
+		var getTscOutput = (function(options) {
+			var rv = function() {
+				return jsh.shell.run({
+					command: slime.directory.getFile("loader/api/test/fifty/tsc.bash"),
+					arguments: (options.file) ? [options.file] : [],
+					environment: $api.Object.compose(
+						jsh.shell.environment,
+						{
+							PROJECT: slime.directory,
+							//	TODO	using void(0) below actually passed 'undefined', should do better
+							NODE_DEBUG: (options.debug) ? "--inspect-brk" : ""
+						}
+					),
+					stdio: {
+						output: String,
+						error: String
+					},
+					evaluate: function(result) {
+						jsh.shell.console("evaluate()");
+						jsh.shell.console("result.arguments = " + result.arguments);
+						jsh.shell.console("result.stdio.output = \n" + result.stdio.output);
+						jsh.shell.console("result.stdio.error = \n" + result.stdio.error);
+						return {
+							status: { code: 200 },
+							body: {
+								type: "application/json",
+								string: result.stdio.output
+							}
+						}
+					}
+				});
+			};
+			if (!options.nocache) rv = $api.Function.memoized(rv);
+			return rv;
+		})(invocation.options);
+
 		server.map({
 			path: "/",
 			resources: slime.loader,
@@ -19,33 +102,7 @@
 							},
 							function(request) {
 								if (request.path == "tsc.json") {
-									return $api.Function.memoized(function() {
-										return jsh.shell.run({
-											command: slime.directory.getFile("loader/api/test/fifty/tsc.bash"),
-											arguments: [ slime.directory.getFile("loader/api/test/fifty/test/data/module.d.ts") ],
-											environment: $api.Object.compose(
-												jsh.shell.environment,
-												{
-													PROJECT: slime.directory
-													//,
-													//NODE_DEBUG: "--inspect-brk"
-												}
-											),
-											stdio: {
-												output: String,
-												error: String
-											},
-											evaluate: function(result) {
-												return {
-													status: { code: 200 },
-													body: {
-														type: "application/json",
-														string: result.stdio.output
-													}
-												}
-											}
-										})
-									})();
+									return getTscOutput();
 								}
 							},
 							scope.httpd.Handler.Child({
@@ -67,4 +124,8 @@
 		browser.run({ uri: "http://127.0.0.1:" + server.port + "/" });
 		server.run();
 	}
-)()
+)({
+	file: jsh.script.file,
+	options: {},
+	arguments: jsh.script.arguments
+})
