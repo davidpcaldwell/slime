@@ -5,7 +5,10 @@ namespace slime.servlet {
 
 	interface Response {
 		status: { code: number }
-		body?: slime.Resource
+		body?: slime.Resource | {
+			type: string,
+			string: string
+		}
 	}
 
 	type handler = (request: Request) => Response

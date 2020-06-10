@@ -77,11 +77,9 @@
 						jsh.shell.console("result.stdio.output = \n" + result.stdio.output);
 						jsh.shell.console("result.stdio.error = \n" + result.stdio.error);
 						return {
-							status: { code: 200 },
-							body: {
-								type: "application/json",
-								string: result.stdio.output
-							}
+							status: result.status,
+							stdout: result.stdio.output,
+							stderr: result.stdio.error
 						}
 					}
 				});
@@ -102,7 +100,14 @@
 							},
 							function(request) {
 								if (request.path == "tsc.json") {
-									return getTscOutput();
+									var result = getTscOutput();
+									return {
+										status: { code: 200 },
+										body: {
+											type: "application/json",
+											string: result.stdout
+										}
+									}
 								}
 							},
 							scope.httpd.Handler.Child({
@@ -120,8 +125,17 @@
 			}
 		});
 		server.start();
-		var browser = new jsh.shell.browser.chrome.Instance({ location: slime.directory.getRelativePath("local/fifty/chrome" )});
-		browser.run({ uri: "http://127.0.0.1:" + server.port + "/" });
+		var host = "documentation";
+		var browser = new jsh.shell.browser.chrome.Instance({
+			location: slime.directory.getRelativePath("local/fifty/chrome" ),
+			proxy: new jsh.shell.browser.ProxyConfiguration({
+				code: slime.directory.getFile("rhino/ui/application-hostToPort.pac")
+					.read(String)
+					.replace(/__HOST__/g, host)
+					.replace(/__PORT__/g, String(server.port))
+			})
+		});
+		browser.run({ uri: "http://" + host + "/" });
 		server.run();
 	}
 )({
