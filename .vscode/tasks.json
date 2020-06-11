@@ -26,6 +26,12 @@
 			"type": "shell",
 			"command": "./jsh.bash contributor/hosting.jsh.js",
 			"problemMatcher": []
+		},
+		{
+			"label": "Fifty UI harness",
+			"type": "shell",
+			"command": "loader/api/test/fifty/ui.bash --harness",
+			"problemMatcher": []
 		}
 	]
 }

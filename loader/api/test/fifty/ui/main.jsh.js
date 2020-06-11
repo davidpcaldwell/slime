@@ -15,9 +15,9 @@
 						options: $api.Object.compose(p.options),
 						arguments: []
 					};
-					for (var i=0; i<rv.arguments.length; i++) {
-						if (o.longname && rv.arguments[i] == "--" + o.longname) {
-							p.options[o.longname] = rv.arguments[++i];
+					for (var i=0; i<p.arguments.length; i++) {
+						if (o.longname && p.arguments[i] == "--" + o.longname) {
+							rv.options[o.longname] = rv.arguments[++i];
 						} else {
 							rv.arguments.push(p.arguments[i]);
 						}
@@ -31,9 +31,9 @@
 						options: $api.Object.compose(p.options),
 						arguments: []
 					};
-					for (var i=0; i<rv.arguments.length; i++) {
-						if (o.longname && rv.arguments[i] == "--" + o.longname) {
-							p.options[o.longname] = true;
+					for (var i=0; i<p.arguments.length; i++) {
+						if (o.longname && p.arguments[i] == "--" + o.longname) {
+							rv.options[o.longname] = true;
 						} else {
 							rv.arguments.push(p.arguments[i]);
 						}
@@ -45,9 +45,11 @@
 
 		var invocation = $api.Function.result(
 			{ options: {}, arguments: p.arguments },
-			option.value({ longname: "nocache" }),
+			option.boolean({ longname: "nocache" }),
 			option.boolean({ longname: "harness" })
 		);
+
+		if (invocation.options.harness) invocation.options.nocache = true;
 
 		invocation.options.file = (invocation.options.harness)
 			? slime.directory.getRelativePath("loader/api/test/fifty/test/data/module.d.ts")
