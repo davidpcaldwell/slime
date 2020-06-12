@@ -48,8 +48,12 @@
 			option.boolean({ longname: "nocache" }),
 			option.boolean({ longname: "harness" }),
 			option.boolean({ longname: "tsc-harness"}),
+			option.boolean({ longname: "node-debug" }),
+			option.boolean({ longname: "chrome-debug" }),
 			option.boolean({ longname: "debug" })
 		);
+
+		if (invocation.options.debug) invocation.options["node-debug"] = true;
 
 		if (invocation.options.harness) invocation.options.nocache = true;
 
@@ -72,7 +76,7 @@
 						{
 							PROJECT: options.project,
 							//	TODO	using void(0) below actually passed 'undefined', should do better
-							NODE_DEBUG: (options.debug) ? "--inspect-brk" : ""
+							NODE_DEBUG: (options["node-debug"]) ? "--inspect-brk" : ""
 						}
 					),
 					stdio: {
@@ -118,6 +122,11 @@
 									}
 								}
 							},
+							function(request) {
+								var loader = new jsh.file.Loader({ directory: jsh.script.file.parent });
+								var resource = loader.get(request.path);
+								return (resource) ? scope.httpd.http.Response.resource(resource) : void(0);
+							},
 							scope.httpd.Handler.Child({
 								filter: /^code\/slime\/(.*)/,
 								handle: function(request) {
@@ -133,7 +142,7 @@
 			}
 		});
 		server.start();
-		var host = "documentation";
+		var host = invocation.options.project.pathname.basename + ".fifty";
 		var browser = new jsh.shell.browser.chrome.Instance({
 			location: invocation.options.project.getRelativePath("local/chrome/fifty" ),
 			proxy: new jsh.shell.browser.ProxyConfiguration({
@@ -144,7 +153,10 @@
 			})
 		});
 		var path = (invocation.options["tsc-harness"]) ? "tsc.json" : ""
-		browser.run({ uri: "http://" + host + "/" + path });
+		browser.run({
+			uri: "http://" + host + "/" + path,
+			arguments: (invocation.options["chrome-debug"]) ? ["--remote-debugging-port=9222"] : []
+		});
 		server.run();
 	}
 )({

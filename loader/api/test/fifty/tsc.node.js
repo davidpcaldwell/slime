@@ -254,8 +254,8 @@ const generateDocumentation = function(program) {
 						return {
 							name: member.symbol.name,
 							type: {
-								name: "ERROR: " + e + "\n" + e.stack,
-								arguments: []
+								//	splitting stack trace increases readability as pretty-printed JSON
+								error: e.stack.split("\n")
 							}
 						}
 					}
