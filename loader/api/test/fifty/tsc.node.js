@@ -82,10 +82,23 @@ const configParseResult = ts.parseConfigFileWithSystem(
 
 const Project = function(program) {
 	const checker = program.getTypeChecker();
+	const printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
 
-	this.qname = function(node) {
+	this.getSymbolAtLocation = function(node) {
+		return checker.getSymbolAtLocation(node);
+	}
+
+	this.getIdentifierType = function(node) {
+		const symbol = checker.getSymbolAtLocation(node);
+		return checker.getTypeOfSymbolAtLocation(symbol, node);
+	}
+
+	this.print = function(node) {
+		return printer.printNode(ts.EmitHint.Unspecified, node, node.sourceFile);
+	}
+
+	this.getSymbolName = function(symbol) {
 		var rv = [];
-		var symbol = program.getTypeChecker().getSymbolAtLocation(node.name);
 		rv.push(symbol.name);
 		var parent = symbol.parent;
 		while(parent) {
@@ -93,11 +106,25 @@ const Project = function(program) {
 			parent = parent.parent;
 		}
 		return rv.join(".");
+	};
+
+	this.getSymbolType = function(symbol, node) {
+		return checker.getTypeOfSymbolAtLocation(symbol, node);
 	}
 
+	this.qname = function(node) {
+		var symbol = program.getTypeChecker().getSymbolAtLocation(node.name);
+		return this.getSymbolName(symbol);
+	};
+
 	this.type = function(node) {
+		const symbol = checker.getSymbolAtLocation(node.name);
+		return checker.getTypeOfSymbolAtLocation(symbol, node);
+	};
+
+	this.typeString = function(node) {
 		try {
-			return checker.typeToString( checker.getTypeOfSymbolAtLocation( checker.getSymbolAtLocation(node.name), node ) )
+			return checker.typeToString(this.type(node));
 		} catch (e) {
 			return "error: " + e + " " + e.stack;
 		}
@@ -145,12 +172,57 @@ const generateDocumentation = function(program) {
 
 	/** visit nodes finding exported classes */
 	function visit(node) {
-		const qname = function() {
-			return project.qname(node);
+		const parameterToJson = function(parameter) {
+			return {
+				name: parameter.symbol.name,
+				type: typeToJson(parameter.type)
+			}
 		}
 
-		const type = function() {
-			return checker.getTypeOfSymbolAtLocation( checker.getSymbolAtLocation(node.name), node );
+		const functionToJson = function(declaration) {
+			const returnTypeIdentifier = declaration.type.typeName;
+			const returnTypeSymbol = project.getSymbolAtLocation(returnTypeIdentifier);
+			const constructor = Boolean(declaration.symbol.members.get("__new"))
+			return {
+				constructor: constructor,
+				parameters: declaration.parameters.map(parameterToJson),
+				returns: (returnTypeSymbol) ? { name: project.getSymbolName(returnTypeSymbol) } : void(0)
+			}
+		}
+
+		const typeToJson = function(type) {
+			if (type.intrinsicName) {
+				return { name: type.intrinsicName };
+			}
+			if (!type.symbol) {
+				debugger;
+			}
+			if (type.members) {
+				//	for now, we assume this is an interface
+				return {
+					members: type.members.map(function(member) {
+						return {
+							name: member.symbol.name,
+							type: typeToJson(project.type(member))
+						}
+					})
+				};
+			}
+			const name = project.getSymbolName(type.symbol);
+			if (name == "__type") {
+				if (type.symbol.declarations.length == 1 && type.symbol.declarations[0].parameters) {
+					return functionToJson(type.symbol.declarations[0])
+				}
+				//	type.symbol.declarations[0].parameters: parameters to function type
+				debugger;
+				return { string: checker.typeToString(type) };
+			}
+			return {
+				name: name,
+				arguments: (type.typeArguments) ? type.typeArguments.map(function(argument) {
+					return typeToJson(argument);
+				}) : void(0)
+			};
 		}
 
 		// Only consider exported nodes
@@ -174,23 +246,32 @@ const generateDocumentation = function(program) {
 			// This is a namespace, visit its children
 			ts.forEachChild(node, visit);
 		} else if (ts.isInterfaceDeclaration(node)) {
+			//	TODO	does not detect supertypes
 			output.interfaces[project.qname(node)] = {
 				members: node.members.map(function(member) {
-					const type = project.type(member);
-					debugger;
-					return {
-						name: member.symbol.name,
-						type
+					try {
+						const type = project.type(member);
+						return {
+							name: member.symbol.name,
+							type: typeToJson(type)
+						}
+					} catch (e) {
+						return {
+							name: member.symbol.name,
+							type: {
+								name: "ERROR: " + e + "\n" + e.stack,
+								arguments: []
+							}
+						}
 					}
 				})
 			};
-			node.members.forEach(visit);
+			//node.members.forEach(visit);
 		} else {
 			const kind = kinds[node.kind];
 			const code = debug.code(node, node.getSourceFile());
 			//	PropertySignature: checker.typeToString( checker.getTypeOfSymbolAtLocation( checker.getSymbolAtLocation(node.name), node ) )
 			console.log("kind = " + kind);
-			debugger;
 		}
 	}
 
@@ -251,7 +332,6 @@ const main = function(args) {
 			console.log(typeChecker);
 			var documentation = generateDocumentation(program);
 			output.log(JSON.stringify(documentation, void(0), 2));
-			debugger;
 			//console.log(program.getRootFileNames());
 			//	TODO	now that we have the program, see:
 			//			https://github.com/Microsoft/TypeScript/wiki/Using-the-Compiler-API#using-the-type-checker

@@ -46,15 +46,24 @@
 		var invocation = $api.Function.result(
 			{ options: {}, arguments: p.arguments },
 			option.boolean({ longname: "nocache" }),
-			option.boolean({ longname: "harness" })
+			option.boolean({ longname: "harness" }),
+			option.boolean({ longname: "tsc-harness"}),
+			option.boolean({ longname: "debug" })
 		);
 
 		if (invocation.options.harness) invocation.options.nocache = true;
 
-		invocation.options.file = (invocation.options.harness)
+		invocation.options.file = (invocation.options.harness || invocation.options["tsc-harness"])
 			? slime.directory.getRelativePath("loader/api/test/fifty/test/data/module.d.ts")
 			: void(0)
 		;
+
+		jsh.shell.console(JSON.stringify(
+			$api.Object.compose(
+				invocation.options,
+				{ file: (invocation.options.file) ? invocation.options.file.toString() : void(0) }
+			)
+		));
 
 		var getTscOutput = (function(options) {
 			var rv = function() {
@@ -137,7 +146,8 @@
 					.replace(/__PORT__/g, String(server.port))
 			})
 		});
-		browser.run({ uri: "http://" + host + "/" });
+		var path = (invocation.options["tsc-harness"]) ? "tsc.json" : ""
+		browser.run({ uri: "http://" + host + "/" + path });
 		server.run();
 	}
 )({
