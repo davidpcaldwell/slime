@@ -175,7 +175,7 @@ const generateDocumentation = function(program) {
 		const parameterToJson = function(parameter) {
 			return {
 				name: parameter.symbol.name,
-				type: typeToJson(parameter.type)
+				type: typeToJson(project.getSymbolType(parameter.symbol, parameter))
 			}
 		}
 
@@ -194,9 +194,6 @@ const generateDocumentation = function(program) {
 			if (type.intrinsicName) {
 				return { name: type.intrinsicName };
 			}
-			if (!type.symbol) {
-				debugger;
-			}
 			if (type.members) {
 				//	for now, we assume this is an interface
 				return {
@@ -213,8 +210,6 @@ const generateDocumentation = function(program) {
 				if (type.symbol.declarations.length == 1 && type.symbol.declarations[0].parameters) {
 					return functionToJson(type.symbol.declarations[0])
 				}
-				//	type.symbol.declarations[0].parameters: parameters to function type
-				debugger;
 				return { string: checker.typeToString(type) };
 			}
 			return {

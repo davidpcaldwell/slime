@@ -58,12 +58,9 @@
 			: void(0)
 		;
 
-		jsh.shell.console(JSON.stringify(
-			$api.Object.compose(
-				invocation.options,
-				{ file: (invocation.options.file) ? invocation.options.file.toString() : void(0) }
-			)
-		));
+		invocation.options.project = (jsh.shell.environment.PROJECT)
+			? jsh.file.Pathname(jsh.shell.environment.PROJECT).directory
+			: slime.directory
 
 		var getTscOutput = (function(options) {
 			var rv = function() {
@@ -73,7 +70,7 @@
 					environment: $api.Object.compose(
 						jsh.shell.environment,
 						{
-							PROJECT: slime.directory,
+							PROJECT: options.project,
 							//	TODO	using void(0) below actually passed 'undefined', should do better
 							NODE_DEBUG: (options.debug) ? "--inspect-brk" : ""
 						}
@@ -138,7 +135,7 @@
 		server.start();
 		var host = "documentation";
 		var browser = new jsh.shell.browser.chrome.Instance({
-			location: slime.directory.getRelativePath("local/fifty/chrome" ),
+			location: invocation.options.project.getRelativePath("local/chrome/fifty" ),
 			proxy: new jsh.shell.browser.ProxyConfiguration({
 				code: slime.directory.getFile("rhino/ui/application-hostToPort.pac")
 					.read(String)
