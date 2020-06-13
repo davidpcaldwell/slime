@@ -94,18 +94,19 @@ plugin({
 
 		var graal = new function() {
 			var VERSION = {
-				number: "19.2.1",
+				number: "20.1.0",
 				edition: "ce"
 			};
+			//	https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-20.1.0/graalvm-ce-java8-darwin-amd64-20.1.0.tar.gz
 			this.install = $api.Events.Function(function(p,events) {
 				if (jsh.shell.os.name == "Mac OS X") {
 					jsh.tools.install.install({
-						url: "https://github.com/oracle/graal/releases/download/"
+						url: "https://github.com/graalvm/graalvm-ce-builds/releases/download/"
 							+ "vm-" + VERSION.number + "/"
-							+ "graalvm-" + VERSION.edition + "-" + "darwin" + "-" + "amd64" + "-" + VERSION.number + ".tar.gz"
+							+ "graalvm-" + VERSION.edition + "-" + "java8" + "-" + "darwin" + "-" + "amd64" + "-" + VERSION.number + ".tar.gz"
 						,
 						getDestinationPath: function(file) {
-							return "graalvm-" + VERSION.edition + "-" + VERSION.number + "/Contents/Home";
+							return "graalvm-" + VERSION.edition + "-" + "java8" + "-" + VERSION.number + "/Contents/Home";
 						},
 						to: jsh.shell.jsh.lib.getRelativePath("graal")
 					});
