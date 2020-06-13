@@ -7,6 +7,15 @@
 		<script src="index.html.js"></script>
 	</head>
 	<body>
+		<div id="interfaces">
+			<h1>Interfaces</h1>
+			<template id="fifty-interface">
+				<style>
+					slot[name="name"] { font-family: monospace }
+				</style>
+				<h2><slot name="name">name</slot></h2>
+			</template>
+		</div>
 		<div>
 			<h1>Errors</h1>
 			<table>
@@ -16,9 +25,11 @@
 					</tr>
 				</thead>
 				<tbody>
-					<tr>
-						<td>foo</td>
-					</tr>
+					<template data-slime-id="error">
+						<tr>
+							<td>foo</td>
+						</tr>
+					</template>
 				</tbody>
 			</table>
 		</div>
