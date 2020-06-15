@@ -277,15 +277,23 @@ public class Java {
 				if (location == StandardLocation.SOURCE_PATH) return true;
 				//	StandardLocation.NATIVE_HEADER_OUTPUT not defined before Java 8
 				if (location.getName().equals("NATIVE_HEADER_OUTPUT")) return false;
+				//	Next three come from Java 11; fourth is used in Java 11 but not Java 8
+				if (location.getName().equals("MODULE_SOURCE_PATH")) return false;
+				if (location.getName().equals("ANNOTATION_PROCESSOR_MODULE_PATH")) return false;
+				if (location.getName().equals("PATCH_MODULE_PATH")) return false;
+				if (location.getName().equals("CLASS_OUTPUT")) return false;
 				throw new UnsupportedOperationException("Not supported yet: hasLocation(location=" + location.getName() + ")");
 			}
 
 			public OutputClass getJavaFileForInput(JavaFileManager.Location location, String className, JavaFileObject.Kind kind) {
-				//LOG.log(MyJavaFileManager.class, Level.FINE, "getJavaFileForInput: location=" + location + " className=" + className + " kind=" + kind, null);
+				LOG.log(MyJavaFileManager.class, Level.FINE, "getJavaFileForInput: location=" + location + " className=" + className + " kind=" + kind, null);
 				if (location == null) {
 					return map.get(className);
 				}
-				throw new UnsupportedOperationException("Not supported yet: getJavaFileForInput(location=" + location.getName() + ")"); //To change body of generated methods, choose Tools | Templates.
+				if (location.getName().equals("SOURCE_PATH") && className != null && className.equals("module-info")) {
+					return null;
+				}
+				throw new UnsupportedOperationException("Not supported yet: getJavaFileForInput(location=" + location.getName() + ")");
 			}
 
 			public JavaFileObject getJavaFileForOutput(JavaFileManager.Location location, String className, JavaFileObject.Kind kind, FileObject sibling) throws IOException {
@@ -321,6 +329,13 @@ public class Java {
 				if (option.equals("--multi-release")) return -1;
 				log("isSupportedOption");
 				throw new UnsupportedOperationException("Not supported yet: isSupportedOption(" + option + ")"); //To change body of generated methods, choose Tools | Templates.
+			}
+
+			//	Below added for JDK 11 ... implementation may be nonsensical, just overrides method that throws UnxupportedOperationException
+			private final Iterable<Set<JavaFileManager.Location>> EMPTY_LOCATIONS_FOR_MODULES = new ArrayList<Set<JavaFileManager.Location>>();
+
+			public Iterable<Set<JavaFileManager.Location>> listLocationsForModules(JavaFileManager.Location location) {
+				return EMPTY_LOCATIONS_FOR_MODULES;
 			}
 
 			private static class InputClass implements JavaFileObject {
@@ -707,7 +722,7 @@ public class Java {
 
 				@Override Code.Loader.Resource readAt(String location) {
 					final File source = new File(file, location);
-					//LOG.log(Java.class, Level.FINE, "Attempting to read class from " + source, null);
+					LOG.log(Java.class, Level.FINE, "Attempting to read class from " + source, null);
 					if (!source.exists()) return null;
 					if (!source.exists()) return null;
 					return new Code.Loader.Resource() {
