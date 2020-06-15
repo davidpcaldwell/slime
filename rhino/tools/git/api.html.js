@@ -2,9 +2,9 @@
 (
 	/**
 	 * @param { { scope: object } } $context
-	 * @param { * } $exports
+	 * @param { slime.Loader } $loader
 	 */
-	function($context,$exports) {
+	function($context,$loader) {
 		var daemon;
 
 		$context.scope.initialize = function() {
@@ -34,22 +34,9 @@
 
 			scope.module = module;
 
-			scope.init = function(p) {
-				var rv = module.init(p);
-				rv.execute({
-					command: "config",
-					arguments: [
-						"user.email", "slime@davidpcaldwell.com"
-					]
-				});
-				rv.execute({
-					command: "config",
-					arguments: [
-						"user.name", "David P. Caldwell"
-					]
-				});
-				return rv;
-			};
+			var fixtures = $loader.file("fixtures.js", { module: module });
+
+			scope.init = fixtures.init;
 
 			var castToDirectory = function(node) {
 				/**
@@ -173,4 +160,4 @@
 		}
 	}
 //@ts-ignore
-)($context,$exports);
+)($context,$loader);
