@@ -282,16 +282,21 @@ public class Java {
 				if (location.getName().equals("ANNOTATION_PROCESSOR_MODULE_PATH")) return false;
 				if (location.getName().equals("PATCH_MODULE_PATH")) return false;
 				if (location.getName().equals("CLASS_OUTPUT")) return false;
+				if (location.getName().startsWith("SYSTEM_MODULES")) return true;
 				throw new UnsupportedOperationException("Not supported yet: hasLocation(location=" + location.getName() + ")");
 			}
 
-			public OutputClass getJavaFileForInput(JavaFileManager.Location location, String className, JavaFileObject.Kind kind) {
+			public OutputClass getJavaFileForInput(JavaFileManager.Location location, String className, JavaFileObject.Kind kind) /* throws IOException */ {
 				LOG.log(MyJavaFileManager.class, Level.FINE, "getJavaFileForInput: location=" + location + " className=" + className + " kind=" + kind, null);
 				if (location == null) {
 					return map.get(className);
 				}
 				if (location.getName().equals("SOURCE_PATH") && className != null && className.equals("module-info")) {
 					return null;
+				}
+				if (location.getName().startsWith("SYSTEM_MODULES")) {
+					throw new UnsupportedOperationException("Refactoring required.");
+					//return delegate.getJavaFileForInput(location, className, kind);
 				}
 				throw new UnsupportedOperationException("Not supported yet: getJavaFileForInput(location=" + location.getName() + ")");
 			}
@@ -334,8 +339,40 @@ public class Java {
 			//	Below added for JDK 11 ... implementation may be nonsensical, just overrides method that throws UnxupportedOperationException
 			private final Iterable<Set<JavaFileManager.Location>> EMPTY_LOCATIONS_FOR_MODULES = new ArrayList<Set<JavaFileManager.Location>>();
 
+			private Iterable<Set<JavaFileManager.Location>> getDefaultListLocationsForModules(JavaFileManager.Location location) {
+				try {
+					java.lang.reflect.Method method = delegate.getClass().getMethod("listLocationsForModules", new Class[] { JavaFileManager.Location.class });
+					return (Iterable<Set<JavaFileManager.Location>>)method.invoke(delegate, new Object[] { location });
+				} catch (NoSuchMethodException e) {
+					return null;
+				} catch (IllegalAccessException e) {
+					return null;
+				} catch (java.lang.reflect.InvocationTargetException e) {
+					return null;
+				} finally {}
+			}
+
+			private String defaultInferModuleName(JavaFileManager.Location location) {
+				try {
+					java.lang.reflect.Method method = delegate.getClass().getMethod("inferModuleName", new Class[] { JavaFileManager.Location.class });
+					return (String)method.invoke(delegate, new Object[] { location });
+				} catch (NoSuchMethodException e) {
+					return null;
+				} catch (IllegalAccessException e) {
+					return null;
+				} catch (java.lang.reflect.InvocationTargetException e) {
+					return null;
+				} finally {}
+			}
+
+			public String inferModuleName(JavaFileManager.Location location) {
+				return defaultInferModuleName(location);
+			}
+
 			public Iterable<Set<JavaFileManager.Location>> listLocationsForModules(JavaFileManager.Location location) {
-				return EMPTY_LOCATIONS_FOR_MODULES;
+				LOG.log(MyJavaFileManager.class, Level.FINE, "listLocationsForModules(" + location + "); default=" + getDefaultListLocationsForModules(location), null);
+				return getDefaultListLocationsForModules(location);
+//				return EMPTY_LOCATIONS_FOR_MODULES;
 			}
 
 			private static class InputClass implements JavaFileObject {
