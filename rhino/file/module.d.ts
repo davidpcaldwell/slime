@@ -5,6 +5,9 @@ namespace slime.jrunscript.file {
 		createDirectory: (p?: { exists?: (d: Directory) => boolean, recursive?: boolean } ) => Directory,
 		write: (any,any?) => any,
 		file: File
+		java: {
+			adapt: () => Packages.java.io.File
+		}
 	}
 
 	interface Node {
@@ -24,7 +27,7 @@ namespace slime.jrunscript.file {
 		getFile: (string) => File,
 		getSubdirectory: (string) => Directory,
 		createTemporary: (p: any) => Node,
-		list: Function
+		list: Function & { RESOURCE: any }
 	}
 
 	interface Searchpath {

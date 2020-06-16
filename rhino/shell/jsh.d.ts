@@ -9,8 +9,10 @@ namespace jsh.shell {
 		//	TODO	shell?
 		rhino: any
 		jsh: ((p: any) => any) & {
-			src?: slime.jrunscript.file.Directory,
-			require: (p: { satisfied: () => boolean, install: () => void }, events: $api.Events.Function.Receiver ) => void
+			src?: slime.jrunscript.file.Directory
+			require: (p: { satisfied: () => boolean, install: () => void }, events?: $api.Events.Function.Receiver ) => void
+			lib?: slime.jrunscript.file.Directory
+			home?: slime.jrunscript.file.Directory
 		}
 		os: {
 			name: string
@@ -36,6 +38,29 @@ namespace jsh.shell {
 				}
 			}
 		},
-		tools: any
+		tools: {
+			rhino: {
+				install: (
+					p: {
+						mock?: { lib: slime.jrunscript.file.Directory, rhino: slime.jrunscript.file.File }
+						local?: slime.jrunscript.file.File
+						replace?: boolean
+						version?: string
+					},
+					events?: any
+				) => void
+				require: any
+			}
+			graal: any
+			tomcat: any
+			ncdbg: any
+			kotlin: any
+			jsyaml: any
+			node: any
+			javamail: any
+			jsoup: any
+			postgresql: any
+			scala: any
+		}
 	}
 }

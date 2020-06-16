@@ -64,7 +64,10 @@ interface $api {
 			matched: Iterable_match<L,R>[]
 		}
 	},
-	deprecate: (a: any) => any,
+	deprecate: {
+		(o: object, property: string): void
+		<T extends Function>(f: T): T
+	}
 	experimental: (a: any, b: any) => any
 }
 

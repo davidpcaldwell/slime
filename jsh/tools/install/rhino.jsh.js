@@ -17,11 +17,13 @@
 var parameters = jsh.script.getopts({
 	options: {
 		local: jsh.file.Pathname,
-		replace: false
+		replace: false,
+		version: String
 	}
 });
 
 jsh.shell.tools.rhino.install({
 	local: (parameters.options.local) ? parameters.options.local.file : null,
-	replace: parameters.options.replace
+	replace: parameters.options.replace,
+	version: parameters.options.version
 });

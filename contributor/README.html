@@ -167,6 +167,19 @@ END LICENSE
 					</ul>
 				</div>
 			</div>
+			<div>
+				<h2>Rhino</h2>
+				<p>
+					Rhino is currently downloaded and installed as part of the <code>jrunscript</code> API in order to
+					preserve the ability to restore support for older JDKs (6 or 7, where the built-in engine cannot
+					run the loader, so the launcher would need to install it).
+				</p>
+				<p>
+					The implementation could be simplified at the cost of making it harder to restore support for JDK 6 and
+					7. Relying on the shell to install Rhino would also increase reliance on the deprecated Nashorn, which
+					would be running the shell that installed Rhino.
+				</p>
+			</div>
 		</div>
 		<div>
 			<h1><a href="typescript.api.html">TypeScript</a></h1>
