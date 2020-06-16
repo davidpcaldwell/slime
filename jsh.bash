@@ -53,8 +53,8 @@ install_libericaopenjdk8() {
 	TO="$1"
 	mkdir -p $(dirname $TO)
 	JDK_ZIP_URL="${URL_libericaopenjdk8}"
-	JDK_ZIP_BASENAME="bellsoft-jdk8u232+10-macos-amd64.zip"
-	JDK_ZIP_PATH="jdk8u232"
+	JDK_ZIP_BASENAME="bellsoft-jdk8u252+9-macos-amd64.zip"
+	JDK_ZIP_PATH="jdk8u252"
 	JDK_ZIP_LOCATION="${HOME}/Downloads/${JDK_ZIP_BASENAME}"
 	if [ ! -f "${JDK_ZIP_LOCATION}" ]; then
 		echo "Downloading ${JDK_ZIP_URL} ..."
@@ -97,6 +97,11 @@ if [ "$1" == "--install-jdk" ]; then
 fi
 
 if [ "$1" == "--install-jdk-11" ]; then
+	install_libericaopenjdk11 ${JDK_LOCAL}
+	exit $?
+fi
+
+if [ "$1" == "--add-jdk-11" ]; then
 	install_libericaopenjdk11 $(dirname $0)/local/jdk/11
 	exit $?
 fi

@@ -4,7 +4,7 @@
 		jsh.shell.run({
 			command: jsh.shell.jsh.src.getFile("jsh.bash"),
 			arguments: [
-				"--install-jdk-11"
+				"--add-jdk-11"
 			]
 		});
 	}
