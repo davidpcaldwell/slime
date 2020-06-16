@@ -975,23 +975,27 @@
 			"mozilla/1.7R3": {
 				url: "http://ftp.mozilla.org/pub/mozilla.org/js/rhino1_7R3.zip",
 				format: "dist"
+			},
+			"mozilla/1.7.12": {
+				url: "https://github.com/mozilla/rhino/releases/download/Rhino1_7_12_Release/rhino-1.7.12.jar",
+				format: "jar"
 			}
 		};
 		var source = sources[version];
 		if (!source) throw new Error("No known way to retrieve Rhino version " + version);
+		var tmpdir = Packages.java.io.File.createTempFile("jsh-install",null);
+		tmpdir["delete"]();
+		tmpdir.mkdirs();
+		if (!tmpdir.exists()) {
+			throw new Error("Failed to create temporary file.");
+		}
+		var tmprhino = new Packages.java.io.File(tmpdir,"js.jar");
+		var _url = new Packages.java.net.URL(source.url);
+		Packages.java.lang.System.err.println("Downloading Rhino from " + _url);
+		var _connection = _url.openConnection();
 		if (source.format == "dist") {
-			var _url = new Packages.java.net.URL(source.url);
-			Packages.java.lang.System.err.println("Downloading Rhino from " + _url);
-			var _connection = _url.openConnection();
 			var _zipstream = new Packages.java.util.zip.ZipInputStream(_connection.getInputStream());
 			var _entry;
-			var tmpdir = Packages.java.io.File.createTempFile("jsh-install",null);
-			tmpdir["delete"]();
-			tmpdir.mkdirs();
-			if (!tmpdir.exists()) {
-				throw new Error("Failed to create temporary file.");
-			}
-			var tmprhino = new Packages.java.io.File(tmpdir,"js.jar");
 			while(_entry = _zipstream.getNextEntry()) {
 				var name = String(_entry.getName());
 				var path = name.split("/");
@@ -1001,6 +1005,9 @@
 				}
 			}
 			Packages.java.lang.System.err.println("Downloaded Rhino to " + tmprhino);
+			return tmprhino;
+		} else if (source.format == "jar") {
+			$api.io.copy(_connection.getInputStream(), new Packages.java.io.FileOutputStream(tmprhino));
 			return tmprhino;
 		} else {
 			throw new Error("Unsupported Rhino format: version=" + version + " format=" + source.format);

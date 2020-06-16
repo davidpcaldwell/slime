@@ -9,11 +9,17 @@ interface jsh {
 	http: slime.jrunscript.http.client;
 
 	tools: {
-		git: slime.jrunscript.git.Exports,
-		hg: any,
-		node: slime.jrunscript.node.Exports,
-		install: any,
+		git: slime.jrunscript.git.Exports
+		hg: any
+		node: slime.jrunscript.node.Exports
+		install: any
 		github: slime.jrunscript.tools.github.Exports
+		gradle: any
+	} & {
+		//	deprecated
+		rhino: {}
+		tomcat: {}
+		ncdbg: {}
 	}
 
 	script: {

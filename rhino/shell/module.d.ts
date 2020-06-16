@@ -26,6 +26,10 @@ namespace slime.jrunscript.shell {
 			started: (p: { output?: string, error?: string }) => boolean
 		}, events: $api.Events.Function.Receiver) => void
 
+		user: {
+			downloads?: slime.jrunscript.file.Directory
+		}
+
 		java: java
 	}
 }
