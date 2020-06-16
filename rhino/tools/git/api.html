@@ -27,7 +27,7 @@ END LICENSE
 			Run *that* askpass.bash with a prompt argument
 		-->
 		<script type="application/x.jsapi#initialize">
-			var tests = $jsapi.loader.file("api.html.js", { scope: scope });
+			var tests = $jsapi.loader.module("api.html.js", { scope: scope });
 			scope.initialize();
 		</script>
 		<script type="application/x.jsapi#destroy">
