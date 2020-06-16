@@ -677,7 +677,7 @@ $exports.java = function(p) {
 
 	this["class"] = new function() {
 		this.version = $exports.properties.get("java.class.version");
-		this.path = $exports.properties.searchpath("java.class.path");
+		if ($exports.properties.get("java.class.path")) this.path = $exports.properties.searchpath("java.class.path");
 	}
 
 	//	Convenience alias that omits keyword
@@ -696,7 +696,7 @@ $exports.java = function(p) {
 		this.compiler = compiler;
 	}
 
-	this.ext = new function() {
+	if ($exports.properties.get("java.ext.dirs")) this.ext = new function() {
 		this.dirs = $exports.properties.searchpath("java.ext.dirs");
 	}
 

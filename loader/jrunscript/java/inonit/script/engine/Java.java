@@ -120,9 +120,13 @@ public class Java {
 		}
 
 		private Code.Loader.Resource getFile(String name) {
-			MyJavaFileManager.OutputClass jfo = this.jfm.getJavaFileForInput(null, name, null);
-			if (jfo == null) return null;
-			return jfo.toCodeSourceFile();
+			try {
+				MyJavaFileManager.OutputClass jfo = (MyJavaFileManager.OutputClass)this.jfm.getJavaFileForInput(null, name, null);
+				if (jfo == null) return null;
+				return jfo.toCodeSourceFile();
+			} catch (IOException e) {
+				return null;
+			}
 		}
 
 		private boolean compile(JavaFileObject jfo) {
@@ -236,6 +240,8 @@ public class Java {
 				}
 				if (location == StandardLocation.SOURCE_PATH) {
 					return Arrays.asList(new JavaFileObject[0]);
+				} else if (location.getName().startsWith("SYSTEM_MODULES")) {
+					return delegate.list(location, packageName, kinds, recurse);
 				} else {
 					throw new RuntimeException("No list() implementation for " + location);
 				}
@@ -247,13 +253,17 @@ public class Java {
 					log(Level.FINER, "inferBinaryName location=" + location + " file=" + file + " rv=" + rv);
 					return rv;
 				}
-				//log("inferBinaryName location=" + location + " file object " + file);
 				if (file instanceof InputClass) {
 					String rv = ((InputClass)file).binaryName();
 					log("inferBinaryName location=" + location + " file object " + file + " rv=" + rv);
 					return rv;
 				}
 				if (location == StandardLocation.CLASS_PATH) {
+					String rv = delegate.inferBinaryName(location, file);
+					log("inferBinaryName location=" + location + " jfo " + file + " rv=" + rv);
+					return rv;
+				}
+				if (location.getName().startsWith("SYSTEM_MODULES")) {
 					String rv = delegate.inferBinaryName(location, file);
 					log("inferBinaryName location=" + location + " jfo " + file + " rv=" + rv);
 					return rv;
@@ -286,7 +296,7 @@ public class Java {
 				throw new UnsupportedOperationException("Not supported yet: hasLocation(location=" + location.getName() + ")");
 			}
 
-			public OutputClass getJavaFileForInput(JavaFileManager.Location location, String className, JavaFileObject.Kind kind) /* throws IOException */ {
+			public JavaFileObject getJavaFileForInput(JavaFileManager.Location location, String className, JavaFileObject.Kind kind) throws IOException {
 				LOG.log(MyJavaFileManager.class, Level.FINE, "getJavaFileForInput: location=" + location + " className=" + className + " kind=" + kind, null);
 				if (location == null) {
 					return map.get(className);
@@ -295,8 +305,8 @@ public class Java {
 					return null;
 				}
 				if (location.getName().startsWith("SYSTEM_MODULES")) {
-					throw new UnsupportedOperationException("Refactoring required.");
-					//return delegate.getJavaFileForInput(location, className, kind);
+					//throw new UnsupportedOperationException("Refactoring required.");
+					return delegate.getJavaFileForInput(location, className, kind);
 				}
 				throw new UnsupportedOperationException("Not supported yet: getJavaFileForInput(location=" + location.getName() + ")");
 			}
