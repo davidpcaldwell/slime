@@ -194,28 +194,11 @@ END LICENSE
 							</div>
 						</div>
 						<div>
-							<h3><code>ncdbg</code></h3>
-							<!--	test: jsh/launcher/test/manual/debug-ncdbg.bash -->
-							<div>
-								<strong>(Not recommended to use <code>ncdbg</code> setting directly; see below.)</strong>
-							</div>
-							<div>
-								If the value is <code>ncdbg</code>, and the shell can use Nashorn as its JavaScript engine, the
-								<a href="https://github.com/provegard/ncdbg"><code>ncdbg</code></a> debugger will be used to execute the script.
-								But setting this variable is insufficient to do the other things needed to run <code>ncdbg</code>:
-								start its server, etc. Using the
-								<a href="../jsh/tools/ncdbg.jsh.js"><code>jsh/tools/ncdbg.jsh.js</code></a> script is recommended.
-							</div>
-							<div>
-								Note that in recent (2020 Jun 17) testing, Chrome DevTools integration with <code>ncdbg</code> seems
-								not to work. <a href="https://code.visualstudio.com/">Visual Studio Code</a> integration
-								<strong>does</strong> seem to work; see the <code>ncdbg</code> Visual Studio Code
-								<a href="https://github.com/provegard/ncdbg/blob/master/docs/VSCode.md">README</a> for how to set
-								it up.
-							</div>
-						</div>
-						<div>
 							<h3><code>profiler</code> or <code>profiler:<i>name1</i>=<i>value1</i>,<i>name2</i>=<i>value2</i></code></h3>
+							<!--	test: jsh/launcher/test/manual/debug-profiler.bash -->
+							<div>
+								<strong>(Not recommended to use <code>profiler</code> or <code>profiler:...</code> settings directly; see below.)</strong>
+							</div>
 							<div>
 								<p>
 									If set to <code>profiler</code> or a value starting with <code>profiler:</code>,
@@ -230,9 +213,32 @@ END LICENSE
 									<a href="../../jsh/loader/profiler.api.html">jsh profiler documentation</a>.
 								</p>
 								<p>
-									Note that the <a href="../../jsh/tools/api.html"><code>jsh/tools/profile.jsh.js</code></a>
-									script provides a simple command-line wrapper for profiling an underlying script.
+									The <a href="../../jsh/tools/api.html"><code>jsh/tools/profile.jsh.js</code></a>
+									script provides a simple command-line wrapper for profiling an underlying script, and
+									is the recommended way to use the profiler.
 								</p>
+							</div>
+						</div>
+						<div>
+							<h3><code>ncdbg</code> (alpha quality)</h3>
+							<!--	test: jsh/launcher/test/manual/debug-ncdbg.bash -->
+							<div>
+								<strong>(Not recommended to use <code>ncdbg</code> setting directly; see below.)</strong>
+							</div>
+							<div>
+								If the value is <code>ncdbg</code>, and the shell can use Nashorn as its JavaScript engine, the
+								<a href="https://github.com/provegard/ncdbg"><code>ncdbg</code></a> debugger will be used to execute the script.
+								But setting this variable is insufficient to do the other things needed to run <code>ncdbg</code>:
+								start its server, etc. Using the
+								<a href="../jsh/tools/ncdbg.jsh.js"><code>jsh/tools/ncdbg.jsh.js</code></a> script is recommended.
+							</div>
+							<div>
+								Note that in recent (2020 Jun 17) testing, Chrome DevTools integration with <code>ncdbg</code> seems
+								not to work. <a href="https://code.visualstudio.com/">Visual Studio Code</a> integration
+								<strong>does</strong> seem to work, but only for the <code>debugger</code> keyword.
+								Breakpoints do not seem to work. See the <code>ncdbg</code> Visual Studio Code
+								<a href="https://github.com/provegard/ncdbg/blob/master/docs/VSCode.md">README</a> for how to set
+								up integration between VSCode and <code>ncdbg</code>.
 							</div>
 						</div>
 					</td>
