@@ -352,7 +352,10 @@ public class Java {
 			private Iterable<Set<JavaFileManager.Location>> getDefaultListLocationsForModules(JavaFileManager.Location location) {
 				try {
 					java.lang.reflect.Method method = delegate.getClass().getMethod("listLocationsForModules", new Class[] { JavaFileManager.Location.class });
-					return (Iterable<Set<JavaFileManager.Location>>)method.invoke(delegate, new Object[] { location });
+					//	No real way to avoid unchecked warning here, since return type is generic, Class.cast() is not enough
+					@SuppressWarnings("unchecked")
+					Iterable<Set<JavaFileManager.Location>> rv = (Iterable<Set<JavaFileManager.Location>>)method.invoke(delegate, new Object[] { location });
+					return rv;
 				} catch (NoSuchMethodException e) {
 					return null;
 				} catch (IllegalAccessException e) {
