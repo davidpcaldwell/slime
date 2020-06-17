@@ -500,7 +500,9 @@ public class Engine {
 		}
 
 		Object call(ContextAction action) {
-			return factory.call(action);
+			@SuppressWarnings("unchecked")
+			Object rv = factory.call(action);
+			return rv;
 		}
 
 		private class ContextFactoryInner extends ContextFactory {
