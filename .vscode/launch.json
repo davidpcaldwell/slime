@@ -2,17 +2,25 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
-			"name": "Node Debug (attach)",
+			"name": "Node.js Debug (attach 9229)",
 			"type": "node",
 			"request": "attach",
 			"port": 9229
 		},
 		{
 			"type": "java",
-			"name": "Debug (Attach)",
+			"name": "Java JDWP Debug (attach 8000)",
 			"request": "attach",
 			"hostName": "localhost",
 			"port": 8000
+		},
+		{
+			"type": "chrome",
+			"request": "attach",
+			"name": "ncdbg",
+			"address": "localhost",
+			"port": 7778,
+			"webRoot": "${workspaceRoot}"
 		}
 	]
 }
