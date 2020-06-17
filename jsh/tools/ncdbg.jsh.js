@@ -132,7 +132,12 @@ var startNcdbg = function() {
 		//	TODO	probably need to add port:ncdbg here if we want this to work for all potential values
 		var args = [];
 		//	TODO	this is obviously ludicrous; need a first-class way to determine version
-		if (jsh.shell.jsh.lib.getFile("ncdbg/lib/ncdbg-0.8.1.jar") || jsh.shell.jsh.lib.getFile("ncdbg/lib/ncdbg-0.8.2.jar") || jsh.shell.jsh.lib.getFile("ncdbg/lib/ncdbg-0.8.3.jar")) {
+		if (
+			jsh.shell.jsh.lib.getFile("ncdbg/lib/ncdbg-0.8.1.jar")
+			|| jsh.shell.jsh.lib.getFile("ncdbg/lib/ncdbg-0.8.2.jar")
+			|| jsh.shell.jsh.lib.getFile("ncdbg/lib/ncdbg-0.8.3.jar")
+			|| jsh.shell.jsh.lib.getFile("ncdbg/lib/ncdbg-0.8.4.jar")
+		) {
 			args.push("--lazy");
 		}
 		var JAVA_HOME = jsh.shell.java.home.parent;

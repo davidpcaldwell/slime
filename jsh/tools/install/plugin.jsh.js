@@ -198,7 +198,7 @@
 
 					this.install = $api.Events.Function(function(p,events) {
 						if (!p) p = {};
-						if (!p.version) p.version = "0.8.3";
+						if (!p.version) p.version = "0.8.4";
 						if (p.replace) {
 							if (jsh.shell.jsh.lib.getSubdirectory("ncdbg")) {
 								jsh.shell.jsh.lib.getSubdirectory("ncdbg").remove();
@@ -211,7 +211,7 @@
 							}
 						}
 						events.fire("console", { message: "Installing ncdbg ..." });
-						var isReleasedVersion = ["0.8.0","0.8.1","0.8.2","0.8.3"].some(function(version) {
+						var isReleasedVersion = ["0.8.0","0.8.1","0.8.2","0.8.3","0.8.4"].some(function(version) {
 							return p.version == version;
 						});
 						if (isReleasedVersion) {

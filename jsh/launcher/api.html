@@ -17,20 +17,86 @@ END LICENSE
 	<title>Running jsh</title>
 	<link rel="stylesheet" type="text/css" href="../../../loader/api/api.css"></link>
 	<style>
-		table { border-collapse: collapse }
-		td { padding: 1em; border: 1px solid black; }
+		h2 {
+			font-style: italic;
+			text-decoration: underline;
+		}
+
+		div {
+			margin: 1em 0em;
+		}
+
+		.example, .usage {
+			margin: 1em 0em;
+		}
+
+		.example code, .usage code {
+			font-weight: bold;
+			background-color: black;
+			color: #e0e0e0;
+			padding: 0.5em;
+		}
+
+		#settings { border-collapse: collapse }
+
+		#settings th, #settings td {
+			border: 1px solid black;
+		}
+
+		#settings th {
+			padding: 0.5em 1em;
+		}
+
+		#settings td {
+			padding: 0.75em 1em;
+		}
+
+		#settings .name {
+			font-weight: normal;
+			font-size: 110%;
+		}
+
+		#settings td div:first-of-type {
+			margin-top: 0em
+		}
+
+		#settings td div, #settings td p {
+			margin: 0.75em 0em;
+		}
 	</style>
 	<script type="text/javascript" src="../../../loader/api/api.js"></script>
+	<script>
+		window.addEventListener('load', function() {
+			var settings = document.getElementById("settings");
+			Array.prototype.slice.call(settings.tBodies[0].rows).forEach(function(row) {
+				var propertyElement = row.cells[0].getElementsByTagName("code")[0];
+				propertyElement.className = "name";
+				var cell = document.createElement("td");
+				var code = document.createElement("code");
+				code.className = "name";
+				code.appendChild(document.createTextNode(propertyElement.innerHTML.replace(/\./g, "_").toUpperCase()));
+				cell.appendChild(code);
+				row.insertBefore(cell, row.cells[1]);
+			});
+		});
+	</script>
 </head>
 <body>
 	<div>
-		<h1><code>jsh.bash</code></h1>
+		<h1>Running <code>jsh</code>: <code>jsh.bash</code></h1>
 		<div>
 			The easiest way to run <code>jsh</code> is via the top-level <code>jsh.bash</code> script:
-			<div>
-				<code>./jsh.bash [-<i>vmargument</i> [...-<i>vmargument</i>]] &lt;path-to-script> [arguments]</code>
+			<div class="usage">
+				<code>./jsh.bash [<i>-vmargument</i> [...<i>-vmargument</i>]] &lt;<i>path-to-script</i>> <i>[arguments]</i></code>
 			</div>
 			<div>
+				For example, if a suitable Java installation is available in the <code>PATH</code>, the following invocation
+				from the directory containing the SLIME code) will
+				launch a script that outputs information about the shell in JSON format:
+				<pre class="example"><code>./jsh.bash jsh/test/jsh-data.jsh.js</code></pre>
+			</div>
+			<div>
+				<h2>How <code>jsh</code> selects a JDK</h2>
 				The <code>jsh</code> script locates a suitable Java installation with which to run the shell using the following
 				algorithm:
 				<ul>
@@ -51,104 +117,129 @@ END LICENSE
 				</ul>
 			</div>
 		</div>
-		<div>
-			<h2>Installing a JDK</h2>
-			<div>
-				<code>jsh.bash</code> is also capable of installing JDKs in both the shell and user installation directories.
-				The following arguments are accepted:
-				<ul>
-					<li><code>--install-jdk</code>: Installs the default JDK (currently 8) to the shell as the default.</li>
-					<li>
-						<code>--install-jdk-11</code>: Installs JDK 11 to the shell as the default.
-					</li>
-					<li>
-						<code>--add-jdk-11</code>: Installs JDK 11 at <code>local/jdk/11</code>; the
-						<code>JSH_LAUNCHER_JDK_HOME</code> environment variable must be used in order to run JDK 11.
-					</li>
-					<li>
-						<code>--install-user-jdk</code>: Installs the default JDK (currently 8) as the SLIME user JDK, which will
-						be accessible to all SLIME installations on the system.
-					</li>
-				</ul>
-			</div>
-		</div>
-	</div>
 	</div>
 	<div>
-		<h1>Settings</h1>
-		<table>
+		<h1>Installing a JDK for <code>jsh</code></h1>
+		<div>
+			<code>jsh.bash</code> is also capable of installing JDKs in both the shell and user installation directories.
+			The following arguments are accepted:
+			<ul>
+				<li><code>--install-jdk</code>: Installs the default JDK (currently 8) to the shell as the default.</li>
+				<li>
+					<code>--install-jdk-11</code>: Installs JDK 11 to the shell as the default.
+				</li>
+				<li>
+					<code>--add-jdk-11</code>: Installs JDK 11 at <code>local/jdk/11</code>; the
+					<code>JSH_LAUNCHER_JDK_HOME</code> environment variable must be used in order to run JDK 11. This option is
+					useful if you need to run your software with multiple Java versions.
+				</li>
+				<li>
+					<code>--install-user-jdk</code>: Installs the default JDK (currently 8) as the SLIME user JDK, which will
+					be accessible to all SLIME installations on the system.
+				</li>
+			</ul>
+		</div>
+	</div>
+	<div>
+		<h1>Shell settings</h1>
+		<p>
+			A particular shell can be invoked with various settings to control its behavior. These settings can be provided
+			as Java system properties or as system environment variables. Note that system environment variables are inherited
+			by subprocesses, so using a system environment variable will pass the setting through to subshells launched by
+			the shell; using system properties will not.
+		</p>
+		<table id="settings">
 			<thead>
 				<tr>
-					<th>Name</th>
-					<th>Description</th>
+					<th colspan="2">Setting name</th>
+					<th rowspan="2">Description</th>
+				</tr>
+				<tr>
+					<th>Java system property</th>
+					<th>System environment variable</th>
 				</tr>
 			</thead>
 			<tbody>
 				<tr>
-					<!--
-						Tested manually
-						env JSH_DEBUG_JDWP=transport=dt_socket,address=8000,server=y,suspend=y jrunscript rhino/jrunscript/api.js jsh/launcher/main.js jsh/test/jsh-data.jsh.js
-					-->
-					<td>jsh.debug.jdwp</td>
-					<td>
-						Sets up a Java debugger to debug the shell. The value of this setting is interpreted as an argument to
-						the <code>-agentlib-jdwp:</code> Java launcher argument. See the
-						<a href="https://docs.oracle.com/javase/7/docs/technotes/guides/jpda/conninv.html">JDWP documentation</a>
-						for details.
-					</td>
-				</tr>
-				<tr>
-					<!-- TODO: below test for echo.jsh.js invalidated by removal of that file -->
-					<!--
-						Tested manually
-						env JSH_DEBUG_SCRIPT=rhino JSH_ENGINE_RHINO_CLASSPATH=$HOME/Downloads/rhino-1.7R3.jar jrunscript rhino/jrunscript/api.js jsh/launcher/main.js jsh/test/jsh-data.jsh.js
-						jrunscript -Djsh.build.rhino.jar=$HOME/Downloads/rhino-1.7R3.jar rhino/jrunscript/api.js jsh/etc/unbuilt.rhino.js build $HOME/tmp/jsh/profile -install profiler && jrunscript -Djsh.debug.script=profiler:output=$HOME/tmp/echo.html,exclude=inonit.script.jsh,exclude=inonit.script.rhino $HOME/tmp/jsh/profile/jsh.js jsh/test/jsh.shell/echo.jsh.js
-					-->
-					<td>jsh.debug.script</td>
-					<td>
-						<div>
-							Sets up a debugger to debug scripts.
-						</div>
-						<div>
-							If the value is <code>rhino</code>, and the shell can use Rhino as
-							its JavaScript engine, the Rhino debugger will be launched to debug the script.
-						</div>
-						<div>
-							If the value is <code>ncdbg</code>, and the shell can use Nashorn as its JavaScript engine, the
-							<code>ncdbg</code> debugger will be used to execute the script.
-							<!-- TODO: hyperlink to ncdbg -->
-						</div>
-						<div>
-							<p>
-								If set to <code>profiler</code> or a value starting with <code>profiler:</code>,
-								and a built shell including a profiler is being run under the Rhino engine, the loader process will be
-								run under a profiler.
-								The profiler may be configured with an
-								argument like: <code>profiler:<i>name1</i>=<i>value1</i>,<i>name2</i>=<i>value2</i></code>. With no parameters,
-								the profiler will emit profiling information to stderr when the program completes.
-							</p>
-							<p>
-								Profiler parameters are defined in the
-								<a href="../../jsh/loader/profiler.api.html">jsh profiler documentation</a>.
-							</p>
-							<p>
-								Note that the <a href="../../jsh/tools/api.html"><code>jsh/tools/profile.jsh.js</code></a>
-								script provides a simple command-line wrapper for profiling an underlying script.
-							</p>
-						</div>
-					</td>
-				</tr>
-				<tr>
-					<!--	Tested in jsh/launcher/test/suite.jsh.js	-->
-					<td>jsh.jvm.options</td>
+					<!--	Test: in test/suite.jsh.js	-->
+					<td><code>jsh.jvm.options</code></td>
 					<td>
 						A set of space-delimited literal options to be passed to the Java launcher when starting the Java virtual
 						machine running the shell.
 					</td>
 				</tr>
 				<tr>
+					<!--	Test: test/manual/debug-jdwp.bash -->
+					<td><code>jsh.debug.jdwp</code></td>
+					<td>
+						Sets up a Java debugger to debug the shell. The value of this setting is interpreted as an argument to
+						the <code>-agentlib:jdwp</code> Java launcher argument. See the
+						<a href="https://docs.oracle.com/javase/7/docs/technotes/guides/jpda/conninv.html">JDWP documentation</a>
+						for details. See the <a href="test/manual/jdwp.bash">manual test case</a> for an example usage.
+					</td>
+				</tr>
+				<tr>
+					<td><code>jsh.debug.script</code></td>
+					<td>
+						<div>
+							Sets up a debugger to debug scripts.
+						</div>
+						<div>
+							<h3><code>rhino</code></h3>
+							<div>
+								If the value is <code>rhino</code>, and the shell can use Rhino as
+								its JavaScript engine, the Rhino debugger will be launched to debug the script.
+								<!--	test: test/manual/debug-rhino.bash -->
+								<!--	test for Rhino not installed: test/manual/debug-rhino-no-rhino.bash -->
+							</div>
+						</div>
+						<div>
+							<h3><code>ncdbg</code></h3>
+							<!--	test: jsh/launcher/test/manual/debug-ncdbg.bash -->
+							<div>
+								<strong>(Not recommended to use <code>ncdbg</code> setting directly; see below.)</strong>
+							</div>
+							<div>
+								If the value is <code>ncdbg</code>, and the shell can use Nashorn as its JavaScript engine, the
+								<a href="https://github.com/provegard/ncdbg"><code>ncdbg</code></a> debugger will be used to execute the script.
+								But setting this variable is insufficient to do the other things needed to run <code>ncdbg</code>:
+								start its server, etc. Using the
+								<a href="../jsh/tools/ncdbg.jsh.js"><code>jsh/tools/ncdbg.jsh.js</code></a> script is recommended.
+							</div>
+							<div>
+								Note that in recent (2020 Jun 17) testing, Chrome DevTools integration with <code>ncdbg</code> seems
+								not to work. <a href="https://code.visualstudio.com/">Visual Studio Code</a> integration
+								<strong>does</strong> seem to work; see the <code>ncdbg</code> Visual Studio Code
+								<a href="https://github.com/provegard/ncdbg/blob/master/docs/VSCode.md">README</a> for how to set
+								it up.
+							</div>
+						</div>
+						<div>
+							<h3><code>profiler</code> or <code>profiler:<i>name1</i>=<i>value1</i>,<i>name2</i>=<i>value2</i></code></h3>
+							<div>
+								<p>
+									If set to <code>profiler</code> or a value starting with <code>profiler:</code>,
+									and a built shell including a profiler is being run under the Rhino engine, the loader process will be
+									run under a profiler.
+									The profiler may be configured with an
+									argument like: <code>profiler:<i>name1</i>=<i>value1</i>,<i>name2</i>=<i>value2</i></code>. With no parameters,
+									the profiler will emit profiling information to stderr when the program completes.
+								</p>
+								<p>
+									Profiler parameters are defined in the
+									<a href="../../jsh/loader/profiler.api.html">jsh profiler documentation</a>.
+								</p>
+								<p>
+									Note that the <a href="../../jsh/tools/api.html"><code>jsh/tools/profile.jsh.js</code></a>
+									script provides a simple command-line wrapper for profiling an underlying script.
+								</p>
+							</div>
+						</div>
+					</td>
+				</tr>
+				<tr>
 					<!--	Tested in jsh/launcher/test/suite.jsh.js	-->
-					<td>jsh.log.java.properties</td>
+					<td><code>jsh.log.java.properties</code></td>
 					<td>
 						Specifies the location of a <code>java.util.logging</code> properties file to use in configuring logging
 						for the Java virtual machine running the shell. This must be an absolute path.
@@ -157,7 +248,7 @@ END LICENSE
 				</tr>
 				<tr>
 					<!--	Used in jsh/launcher/test/suite.jsh.js	-->
-					<td>jsh.shell.tmpdir</td>
+					<td><code>jsh.shell.tmpdir</code></td>
 					<td>
 						Specifies the location the shell should use for creating temporary files. This setting is used to set the
 						<code>java.io.tmpdir</code> Java property.
@@ -165,7 +256,7 @@ END LICENSE
 				</tr>
 				<tr>
 					<!--	Used in jsh/launcher/test/suite.jsh.js	-->
-					<td>jsh.engine</td>
+					<td><code>jsh.engine</code></td>
 					<td>
 						If set to <code>rhino</code>, the shell will be run using Rhino as the JavaScript engine. If set to
 						<code>nashorn</code>, Nashorn will be used. If the selected engine is not present, the shell will not
@@ -173,7 +264,7 @@ END LICENSE
 					</td>
 				</tr>
 				<tr>
-					<td>jsh.shell.lib</td>
+					<td><code>jsh.shell.lib</code></td>
 					<!--
 						TODO: untested; could be tested using jsh/test/jsh-data.jsh.js if it emitted jsh.shell.jsh.lib. Could also
 						check for executing engine if Rhino were installed in default shell
@@ -185,7 +276,7 @@ END LICENSE
 				</tr>
 				<tr>
 					<!--	Tested in jsh/launcher/test/suite.jsh.js	-->
-					<td>jsh.engine.rhino.classpath</td>
+					<td><code>jsh.engine.rhino.classpath</code></td>
 					<td>
 						Specifies the location of Rhino when running a runtime shell.
 						<!--	What happens in installed shells if this is specified and Rhino is absent? Present?	-->
@@ -193,7 +284,7 @@ END LICENSE
 				</tr>
 				<tr>
 					<!--	Tested in jsh/launcher/test/suite.jsh.js	-->
-					<td>jsh.engine.rhino.optimization</td>
+					<td><code>jsh.engine.rhino.optimization</code></td>
 					<td>
 						Sets the Rhino optimization level to be used for running the shell.
 						<!--	What happens in installed shells if this is specified and Rhino is absent? Present?	-->
