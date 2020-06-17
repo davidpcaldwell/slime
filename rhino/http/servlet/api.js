@@ -11,7 +11,8 @@
 //	END LICENSE
 
 var $java = (function() {
-	// TODO: there is no test coverage for the below; when the rhino/ directory was renamed to jrunscript/, the test suite still passed
+	//	TODO	there is no test coverage for the below; when the rhino/ directory was renamed to jrunscript/, the test suite still passed
+	//	Packages.java.lang.System.err.println("$host.getLoader = " + $host.getLoader + " $host.getEngine = " + $host.getEngine + " $host.getClasspath = " + $host.getClasspath);
 	if ($host.getLoader && $host.getEngine) {
 		//	TODO	consider pushing these details back into inonit.script.servlet.Rhino.Host
 		//			would need to construct the two-property scope object below; rest should be straightforward.
@@ -227,7 +228,7 @@ var loaders = (function() {
 	} else if ($host.loaders) {
 		return $host.loaders;
 	} else {
-		throw new Error();
+		throw new Error("Cannot instantiate loaders: $java = " + $java + " $servlet = " + $servlet + " $host.loaders = " + $host.loaders);
 	}
 })();
 
