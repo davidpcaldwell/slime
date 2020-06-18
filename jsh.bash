@@ -32,13 +32,33 @@ URL_libericaopenjdk11="https://download.bell-sw.com/java/11.0.7+10/bellsoft-jdk1
 
 JDK_provider="libericaopenjdk8"
 
+announce_install() {
+	URL="$1"
+	DESTINATION="$2"
+	#	TODO	possibly want to expand DESTINATION to absolute path for this message
+	>&2 echo "Installing ${URL} to ${DESTINATION} ..."
+}
+
+download_install() {
+	URL="$1"
+	LOCATION="$2"
+	if [ ! -f "${LOCATION}" ]; then
+		echo "Downloading ${URL} ..."
+		curl -L -o ${LOCATION} ${URL}
+	fi
+}
+
 install_adoptopenjdk8() {
 	TO="$1"
 	mkdir -p $(dirname ${TO})
+
 	JDK_TARBALL_URL="https://github.com/AdoptOpenJDK/openjdk8-binaries/releases/download/jdk8u232-b09/OpenJDK8U-jdk_x64_mac_hotspot_8u232b09.tar.gz"
 	JDK_TARBALL_BASENAME="OpenJDK8U-jdk_x64_mac_hotspot_8u232b09.tar.gz"
 	JDK_TARBALL_LOCATION="${HOME}/Downloads/${JDK_TARBALL_BASENAME}"
 	JDK_TARBALL_PATH="jdk8u232-b09"
+
+	announce_install "${JDK_TARBALL_URL}" "${TO}"
+
 	if [ ! -f "${JDK_TARBALL_LOCATION}" ]; then
 		echo "Downloading ${JDK_TARBALL_URL} ..."
 		curl -L -o ${HOME}/Downloads/${JDK_TARBALL_BASENAME} ${JDK_TARBALL_URL}
@@ -52,17 +72,35 @@ install_adoptopenjdk8() {
 install_libericaopenjdk8() {
 	TO="$1"
 	mkdir -p $(dirname $TO)
-	JDK_ZIP_URL="${URL_libericaopenjdk8}"
-	JDK_ZIP_BASENAME="bellsoft-jdk8u252+9-macos-amd64.zip"
-	JDK_ZIP_PATH="jdk8u252"
+
+	JDK_ZIP_URL="https://download.bell-sw.com/java/8u232+10/bellsoft-jdk8u232+10-macos-amd64.zip"
+	JDK_ZIP_BASENAME="bellsoft-jdk8u232+10-macos-amd64.zip"
+	JDK_ZIP_PATH="jdk8u232"
 	JDK_ZIP_LOCATION="${HOME}/Downloads/${JDK_ZIP_BASENAME}"
-	if [ ! -f "${JDK_ZIP_LOCATION}" ]; then
-		echo "Downloading ${JDK_ZIP_URL} ..."
-		curl -o ${HOME}/Downloads/${JDK_ZIP_BASENAME} ${JDK_ZIP_URL}
-	fi
+
+	announce_install "${JDK_ZIP_URL}" "${TO}"
+	download_install "${JDK_ZIP_URL}" "${JDK_ZIP_LOCATION}"
+
 	JDK_WORKDIR=$(mktemp -d)
 	unzip -q ${JDK_ZIP_LOCATION} -d ${JDK_WORKDIR}
 	mv ${JDK_WORKDIR}/${JDK_ZIP_PATH} ${TO}
+}
+
+install_corretto8() {
+	TO="$1"
+	mkdir -p $(dirname ${TO})
+	JDK_TARBALL_URL="https://corretto.aws/downloads/resources/8.252.09.1/amazon-corretto-8.252.09.1-macosx-x64.tar.gz"
+	JDK_TARBALL_BASENAME="amazon-corretto-8.252.09.1-macosx-x64.tar.gz"
+	JDK_TARBALL_LOCATION="${HOME}/Downloads/${JDK_TARBALL_BASENAME}"
+	JDK_TARBALL_PATH="amazon-corretto-8.jdk/Contents/Home"
+	if [ ! -f "${JDK_TARBALL_LOCATION}" ]; then
+		echo "Downloading ${JDK_TARBALL_URL} ..."
+		curl -L -o ${HOME}/Downloads/${JDK_TARBALL_BASENAME} ${JDK_TARBALL_URL}
+	fi
+	JDK_WORKDIR=$(mktemp -d)
+	tar xvf ${JDK_TARBALL_LOCATION} -C ${JDK_WORKDIR}
+	mv ${JDK_WORKDIR}/${JDK_TARBALL_PATH} ${TO}
+	export JDK_BIN="${TO}/Contents/Home/bin"
 }
 
 install_libericaopenjdk11() {
@@ -83,11 +121,7 @@ install_libericaopenjdk11() {
 
 install_jdk() {
 	DESTINATION="$1"
-	URL_variable_name="URL_${JDK_provider}"
-	URL="$(echo ${!URL_variable_name})"
-	#	TODO	possibly want to expand DESTINATION to absolute path for this message
-	>&2 echo "Installing ${URL} to ${DESTINATION} ..."
-	install_${JDK_provider} ${DESTINATION}
+	install_libericaopenjdk8 ${DESTINATION}
 	JRUNSCRIPT=${DESTINATION}/bin/jrunscript
 }
 
