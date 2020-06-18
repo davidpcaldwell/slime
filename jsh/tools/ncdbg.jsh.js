@@ -48,7 +48,7 @@ var browser;
 var CAN_OPEN_BROWSER_WITH_DEVTOOLS_URL = false;
 
 var getDevtoolsUrl = function() {
-	return "chrome-devtools://devtools/bundled/inspector.html?experiments=true&v8only=true&ws=localhost:" + parameters.options["ncdbg:port:ncdbg"] + "/dbg";
+	return "devtools://devtools/bundled/inspector.html?ws=localhost:" + parameters.options["ncdbg:port:ncdbg"] + "/dbg";
 };
 
 var startChrome = function() {
@@ -140,7 +140,10 @@ var startNcdbg = function() {
 		) {
 			args.push("--lazy");
 		}
-		var JAVA_HOME = jsh.shell.java.home.parent;
+		var JAVA_HOME = (function(home) {
+			if (home.pathname.basename == "jre") return home.parent;
+			return home;
+		})(jsh.shell.java.home);
 		jsh.shell.run({
 			command: jsh.shell.jsh.lib.getRelativePath("ncdbg/bin/ncdbg"),
 			arguments: args,
