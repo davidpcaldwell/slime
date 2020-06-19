@@ -37,17 +37,21 @@ END LICENSE
 			padding: 0.5em;
 		}
 
-		#settings { border-collapse: collapse }
+		.bug {
+			background-color: yellow;
+		}
 
-		#settings th, #settings td {
+		table { border-collapse: collapse }
+
+		table th, table td {
 			border: 1px solid black;
 		}
 
-		#settings th {
+		table th {
 			padding: 0.5em 1em;
 		}
 
-		#settings td {
+		table td {
 			padding: 0.75em 1em;
 		}
 
@@ -124,7 +128,7 @@ END LICENSE
 			<code>jsh.bash</code> is also capable of installing JDKs in both the shell and user installation directories.
 			The following arguments are accepted:
 			<ul>
-				<li><code>--install-jdk</code>: Installs the default JDK (currently 8) to the shell as the default.</li>
+				<li><code>--install-jdk</code>: Installs the default JDK (currently <a href="https://aws.amazon.com/corretto/">Amazon Corretto 8</a>) to the shell as the default.</li>
 				<li>
 					<code>--install-jdk-11</code>: Installs JDK 11 to the shell as the default.
 				</li>
@@ -139,6 +143,36 @@ END LICENSE
 				</li>
 			</ul>
 		</div>
+	</div>
+	<div>
+		<h1>How <code>jsh</code> selects a JavaScript engine</h1>
+		<table>
+			<thead>
+				<tr>
+					<th rowspan="2">Java version</th>
+					<th colspan="2">JavaScript engine</th>
+				</tr>
+				<tr>
+					<th>Launcher (bootstrap)</th>
+					<th>Loader (shell), in preference order</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td>8</td>
+					<td>Nashorn (preinstalled)</td>
+					<td>Rhino (if added to shell), Nashorn (preinstalled)</td>
+				</tr>
+				<tr>
+					<td>11</td>
+					<td>Nashorn (preinstalled)</td>
+					<td>
+						Rhino (required)
+						<span class="bug">currently broken: (<a href="https://github.com/davidpcaldwell/slime/issues/198">issue #198</a>)</span>
+					</td>
+				</tr>
+			</tbody>
+		</table>
 	</div>
 	<div>
 		<h1>Shell settings</h1>
