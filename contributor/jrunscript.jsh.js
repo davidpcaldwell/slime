@@ -177,7 +177,7 @@ suite.add("jrunscript/tools/node", new jsh.unit.html.Part({
 }));
 
 (function jshLauncher() {
-	var rhinoArgs = (jsh.shell.jsh.lib.getFile("js.jar")) ? ["-rhino", jsh.shell.jsh.lib.getFile("js.jar")] : [];
+	var rhinoArgs = (jsh.shell.rhino) ? ["-rhino", jsh.shell.rhino.classpath.toString()] : [];
 
 	//	TODO	Move these tests elsewhere; see issue #335
 	var part = jsh.unit.Suite.Fork({
