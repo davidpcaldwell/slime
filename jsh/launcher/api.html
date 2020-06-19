@@ -133,8 +133,13 @@ END LICENSE
 					<code>--install-jdk-11</code>: Installs JDK 11 to the shell as the default.
 				</li>
 				<li>
-					<code>--add-jdk-11</code>: Installs JDK 11 at <code>local/jdk/11</code>; the
-					<code>JSH_LAUNCHER_JDK_HOME</code> environment variable must be used in order to run JDK 11. This option is
+					<code>--add-jdk-8</code>: Installs JDK 8 at <code>local/jdk/8</code>; it can be used by setting the
+					<code>JSH_LAUNCHER_JDK_HOME</code> environment variable to this value. This option is
+					useful if you need to run your software with multiple Java versions.
+				</li>
+				<li>
+					<code>--add-jdk-11</code>: Installs JDK 11 at <code>local/jdk/11</code>; it can be used by setting the
+					<code>JSH_LAUNCHER_JDK_HOME</code> environment variable to this value. This option is
 					useful if you need to run your software with multiple Java versions.
 				</li>
 				<li>
@@ -199,6 +204,12 @@ END LICENSE
 					<td><code>JSH_LAUNCHER_JDK_HOME</code></td>
 					<td>
 						Specifies a Java Development Kit that <code>jsh.bash</code> should use to execute scripts.
+					</td>
+				</tr>
+				<tr>
+					<td><code>jsh.launcher.debug</code></td>
+					<td>
+						Turns on debugging output in the <a href="internal.api.html">launcher script</a>.
 					</td>
 				</tr>
 				<tr>

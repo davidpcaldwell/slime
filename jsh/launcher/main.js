@@ -16,7 +16,7 @@
 if (!$api.slime) {
 	if ($api.script.url) {
 		//	Load as-is, I guess?
-	} else if ($api.script.file.getParentFile().getName() =="launcher") {
+	} else if ($api.script.file.getParentFile().getName() == "launcher") {
 		//	Graal does not currently implement java.lang.String methods on strings
 		//	Load as-is
 	} else if ($api.script.file.getParentFile().getName().equals("launcher")) {
@@ -34,7 +34,6 @@ if (!$api.slime) {
 $api.debug.on = Boolean($api.slime.settings.get("jsh.launcher.debug"));
 $api.debug("Source: " + $api.slime.src);
 $api.debug("Bootstrap script: " + $api.script);
-
 
 //var container = new function() {
 //	//	TODO	jsh.tmpdir is not correctly passed to launcher in the forking scenario
@@ -102,6 +101,11 @@ $api.debug("shell detected = " + shell);
 if (!new Packages.javax.script.ScriptEngineManager().getEngineByName("nashorn")) {
 	delete $api.jsh.engines.nashorn;
 }
+if ($api.jsh.engines.nashorn) {
+	var Context = Java.type("jdk.nashorn.internal.runtime.Context");
+	if (typeof(Context.getContext) != "function") delete $api.jsh.engines.nashorn;
+}
+
 // TODO: delete Graal if it is not available
 
 var defaultEngine = (function() {

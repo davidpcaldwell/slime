@@ -114,19 +114,22 @@ install_libericaopenjdk11() {
 	mv ${JDK_WORKDIR}/${JDK_ZIP_PATH} ${TO}
 }
 
-install_jdk() {
-	DESTINATION="$1"
-	install_corretto8 ${DESTINATION}
-	JRUNSCRIPT=${DESTINATION}/bin/jrunscript
+install_default_jdk() {
+	install_corretto8 "$@"
 }
 
 if [ "$1" == "--install-jdk" ]; then
-	install_jdk ${JDK_LOCAL}
+	install_default_jdk ${JDK_LOCAL}
 	exit $?
 fi
 
 if [ "$1" == "--install-jdk-11" ]; then
 	install_libericaopenjdk11 ${JDK_LOCAL}
+	exit $?
+fi
+
+if [ "$1" == "--add-jdk-8" ]; then
+	install_corretto8 $(dirname $0)/local/jdk/8
 	exit $?
 fi
 
@@ -136,7 +139,7 @@ if [ "$1" == "--add-jdk-11" ]; then
 fi
 
 if [ "$1" == "--install-user-jdk" ]; then
-	install_jdk ${JDK_USER}
+	install_default_jdk ${JDK_USER}
 	exit $?
 fi
 
@@ -206,7 +209,8 @@ if [ -z "${JRUNSCRIPT}" ]; then
 fi
 
 if [ -z "${JRUNSCRIPT}" ]; then
-	install_jdk ${JDK_LOCAL}
+	install_default_jdk ${JDK_LOCAL}
+	JRUNSCRIPT="${JDK_LOCAL}/bin/jrunscript"
 fi
 
 #	TODO	Because jsh shells invoke jrunscript by name currently, we put jrunscript in the PATH. Could be removed by having
