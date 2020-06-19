@@ -43,7 +43,7 @@ download_install() {
 	fi
 }
 
-install_adoptopenjdk8() {
+install_jdk_8_adoptopenjdk() {
 	TO="$1"
 	mkdir -p $(dirname ${TO})
 
@@ -61,10 +61,9 @@ install_adoptopenjdk8() {
 	JDK_WORKDIR=$(mktemp -d)
 	tar xvf ${JDK_TARBALL_LOCATION} -C ${JDK_WORKDIR}
 	mv ${JDK_WORKDIR}/${JDK_TARBALL_PATH} ${TO}
-	export JDK_BIN="${TO}/Contents/Home/bin"
 }
 
-install_libericaopenjdk8() {
+install_jdk_8_liberica() {
 	TO="$1"
 	mkdir -p $(dirname $TO)
 
@@ -81,24 +80,7 @@ install_libericaopenjdk8() {
 	mv ${JDK_WORKDIR}/${JDK_ZIP_PATH} ${TO}
 }
 
-install_corretto8() {
-	TO="$1"
-	mkdir -p $(dirname ${TO})
-	JDK_TARBALL_URL="https://corretto.aws/downloads/resources/8.252.09.1/amazon-corretto-8.252.09.1-macosx-x64.tar.gz"
-	JDK_TARBALL_BASENAME="amazon-corretto-8.252.09.1-macosx-x64.tar.gz"
-	JDK_TARBALL_LOCATION="${HOME}/Downloads/${JDK_TARBALL_BASENAME}"
-	JDK_TARBALL_PATH="amazon-corretto-8.jdk/Contents/Home"
-	if [ ! -f "${JDK_TARBALL_LOCATION}" ]; then
-		echo "Downloading ${JDK_TARBALL_URL} ..."
-		curl -L -o ${HOME}/Downloads/${JDK_TARBALL_BASENAME} ${JDK_TARBALL_URL}
-	fi
-	JDK_WORKDIR=$(mktemp -d)
-	tar xvf ${JDK_TARBALL_LOCATION} -C ${JDK_WORKDIR}
-	mv ${JDK_WORKDIR}/${JDK_TARBALL_PATH} ${TO}
-	export JDK_BIN="${TO}/Contents/Home/bin"
-}
-
-install_libericaopenjdk11() {
+install_jdk_11_liberica() {
 	TO="$1"
 	mkdir -p $(dirname $TO)
 	JDK_ZIP_URL="https://download.bell-sw.com/java/11.0.7+10/bellsoft-jdk11.0.7+10-macos-amd64.zip"
@@ -114,32 +96,72 @@ install_libericaopenjdk11() {
 	mv ${JDK_WORKDIR}/${JDK_ZIP_PATH} ${TO}
 }
 
-install_default_jdk() {
-	install_corretto8 "$@"
+install_jdk_8_corretto() {
+	TO="$1"
+	mkdir -p $(dirname ${TO})
+	JDK_TARBALL_URL="https://corretto.aws/downloads/resources/8.252.09.1/amazon-corretto-8.252.09.1-macosx-x64.tar.gz"
+	JDK_TARBALL_BASENAME="amazon-corretto-8.252.09.1-macosx-x64.tar.gz"
+	JDK_TARBALL_LOCATION="${HOME}/Downloads/${JDK_TARBALL_BASENAME}"
+	JDK_TARBALL_PATH="amazon-corretto-8.jdk/Contents/Home"
+	if [ ! -f "${JDK_TARBALL_LOCATION}" ]; then
+		echo "Downloading ${JDK_TARBALL_URL} ..."
+		curl -L -o ${HOME}/Downloads/${JDK_TARBALL_BASENAME} ${JDK_TARBALL_URL}
+	fi
+	JDK_WORKDIR=$(mktemp -d)
+	tar xvf ${JDK_TARBALL_LOCATION} -C ${JDK_WORKDIR}
+	mv ${JDK_WORKDIR}/${JDK_TARBALL_PATH} ${TO}
+}
+
+install_jdk_11_corretto() {
+	TO="$1"
+	mkdir -p $(dirname ${TO})
+	JDK_TARBALL_URL="https://corretto.aws/downloads/resources/11.0.7.10.1-1/amazon-corretto-11.0.7.10.1-1-macosx-x64.tar.gz"
+	JDK_TARBALL_BASENAME="amazon-corretto-11.0.7.10.1-1-macosx-x64.tar.gz"
+	JDK_TARBALL_LOCATION="${HOME}/Downloads/${JDK_TARBALL_BASENAME}"
+	JDK_TARBALL_PATH="amazon-corretto-11.jdk/Contents/Home"
+	if [ ! -f "${JDK_TARBALL_LOCATION}" ]; then
+		echo "Downloading ${JDK_TARBALL_URL} ..."
+		curl -L -o ${HOME}/Downloads/${JDK_TARBALL_BASENAME} ${JDK_TARBALL_URL}
+	fi
+	JDK_WORKDIR=$(mktemp -d)
+	tar xvf ${JDK_TARBALL_LOCATION} -C ${JDK_WORKDIR}
+	mv ${JDK_WORKDIR}/${JDK_TARBALL_PATH} ${TO}
+}
+
+install_jdk_8() {
+	install_jdk_8_corretto "$@"
+}
+
+install_jdk_11() {
+	install_jdk_11_corretto "$@"
+}
+
+install_jdk() {
+	install_jdk_8 "$@"
 }
 
 if [ "$1" == "--install-jdk" ]; then
-	install_default_jdk ${JDK_LOCAL}
+	install_jdk ${JDK_LOCAL}
 	exit $?
 fi
 
 if [ "$1" == "--install-jdk-11" ]; then
-	install_libericaopenjdk11 ${JDK_LOCAL}
+	install_jdk_11 ${JDK_LOCAL}
 	exit $?
 fi
 
 if [ "$1" == "--add-jdk-8" ]; then
-	install_corretto8 $(dirname $0)/local/jdk/8
+	install_jdk_8 $(dirname $0)/local/jdk/8
 	exit $?
 fi
 
 if [ "$1" == "--add-jdk-11" ]; then
-	install_libericaopenjdk11 $(dirname $0)/local/jdk/11
+	install_jdk_11 $(dirname $0)/local/jdk/11
 	exit $?
 fi
 
 if [ "$1" == "--install-user-jdk" ]; then
-	install_default_jdk ${JDK_USER}
+	install_jdk ${JDK_USER}
 	exit $?
 fi
 

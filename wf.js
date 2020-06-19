@@ -254,6 +254,19 @@ $exports.commit = $api.Function.pipe(
 
 		jsh.wf.typescript.tsc();
 
+		//	For now, commit tests use 1.8 with default Rhino version
+		if (!/^1\.8/.test(jsh.shell.java.version)) {
+			jsh.shell.console("Required: Java 1.8; found: " + jsh.shell.java.version);
+			return;
+		}
+		jsh.shell.run({
+			command: jsh.shell.jsh.src.getFile("jsh.bash"),
+			arguments: [
+				jsh.shell.jsh.src.getRelativePath("jsh/tools/install/rhino.jsh.js"),
+				"-replace"
+			]
+		});
+
 		//	Runs test suite
 		var timestamp = jsh.time.When.now();
 		var logs = $context.base.getRelativePath("local/wf/logs/commit").createDirectory({
