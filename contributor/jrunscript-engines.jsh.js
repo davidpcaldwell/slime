@@ -5,14 +5,6 @@ var parameters = jsh.script.getopts({
 	}
 });
 
-var engines = (function() {
-	var rv = [];
-	if (jsh.shell.jsh.lib.getFile("js.jar")) rv.push("rhino");
-	if (new Packages.javax.script.ScriptEngineManager().getEngineByName("nashorn")) rv.push("nashorn");
-	if (jsh.shell.jsh.lib.getSubdirectory("graal")) rv.push("graal");
-	return rv;
-})();
-
 var Environment = jsh.script.loader.file("jrunscript-environment.js").Environment;
 
 var environment = new Environment({
@@ -20,6 +12,17 @@ var environment = new Environment({
 	noselfping: parameters.options.noselfping,
 	tomcat: true,
 	executable: true
+});
+
+var engines = jsh.shell.run({
+	command: environment.jsh.unbuilt.src.getFile("jsh.bash"),
+	arguments: ["-engines"],
+	stdio: {
+		output: String
+	},
+	evaluate: function(result) {
+		return JSON.parse(result.stdio.output);
+	}
 });
 
 var suite = new jsh.unit.html.Suite();
