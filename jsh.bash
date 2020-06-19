@@ -27,11 +27,6 @@ else
 	JDK_USER="${JSH_USER_JDK:-${HOME}/.slime/jdk/default}"
 fi
 
-URL_libericaopenjdk8="https://download.bell-sw.com/java/8u232+10/bellsoft-jdk8u232+10-macos-amd64.zip"
-URL_libericaopenjdk11="https://download.bell-sw.com/java/11.0.7+10/bellsoft-jdk11.0.7+10-macos-amd64.zip"
-
-JDK_provider="libericaopenjdk8"
-
 announce_install() {
 	URL="$1"
 	DESTINATION="$2"
@@ -106,7 +101,7 @@ install_corretto8() {
 install_libericaopenjdk11() {
 	TO="$1"
 	mkdir -p $(dirname $TO)
-	JDK_ZIP_URL="${URL_libericaopenjdk11}"
+	JDK_ZIP_URL="https://download.bell-sw.com/java/11.0.7+10/bellsoft-jdk11.0.7+10-macos-amd64.zip"
 	JDK_ZIP_BASENAME="bellsoft-jdk11.0.7+10-macos-amd64.zip"
 	JDK_ZIP_PATH="jdk-11.0.7.jdk"
 	JDK_ZIP_LOCATION="${HOME}/Downloads/${JDK_ZIP_BASENAME}"
@@ -121,7 +116,7 @@ install_libericaopenjdk11() {
 
 install_jdk() {
 	DESTINATION="$1"
-	install_libericaopenjdk8 ${DESTINATION}
+	install_corretto8 ${DESTINATION}
 	JRUNSCRIPT=${DESTINATION}/bin/jrunscript
 }
 
