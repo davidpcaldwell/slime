@@ -43,7 +43,7 @@ log("java.class.version = " + jsh.shell.java["class"].version);
 log("java.class.path = " + jsh.shell.java["class"].path);
 log("java.library.path = " + jsh.shell.java.library.path);
 log("java.compiler = " + jsh.shell.java.compiler);
-log("java.ext.dirs = " + jsh.shell.java.ext.dirs);
+if (jsh.shell.java.ext) log("java.ext.dirs = " + jsh.shell.java.ext.dirs);
 if (jsh.shell.rhino) {
 	log("jsh.shell.rhino.classpath = " + jsh.shell.rhino.classpath);
 } else {
