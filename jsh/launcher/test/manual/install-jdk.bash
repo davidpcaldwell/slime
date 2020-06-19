@@ -1,7 +1,9 @@
 #!/bin/bash
+COMMAND="$1"
+shift
 SLIME="$(dirname $0)/../../../.."
 rm -Rvf "${SLIME}/local/jdk/default"
-${SLIME}/jsh.bash --install-jdk
+${SLIME}/jsh.bash ${COMMAND}
 LOGS="${SLIME}/local/test/jsh/launcher/install-jdk-default"
 mkdir -p "${LOGS}"
 >&2 echo "Running test suite at contributor/suite.jsh.js, starting at $(date) ..."
