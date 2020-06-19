@@ -132,17 +132,17 @@
 						}
 						if (/* /api\.js$/.test(parsed[1]) */ true) {
 							return parsed[1];
-//							return String(new Packages.java.io.File(parsed[1]).getCanonicalPath());
+							// return String(new Packages.java.io.File(parsed[1]).getCanonicalPath());
 						}
 					}
 				}
 				return null;
 			},
 			graal: function() {
-//				new Packages.java.lang.Throwable().printStackTrace();
-//				Packages.java.lang.System.err.println(new Error().stack);
-//				Packages.java.lang.System.err.println(new Packages.java.lang.Throwable().getStackTrace()[0].getFileName());
-//				Packages.java.lang.System.err.println("sun.java.command = " + Packages.java.lang.System.getProperty("sun.java.command"));
+				// new Packages.java.lang.Throwable().printStackTrace();
+				// Packages.java.lang.System.err.println(new Error().stack);
+				// Packages.java.lang.System.err.println(new Packages.java.lang.Throwable().getStackTrace()[0].getFileName());
+				// Packages.java.lang.System.err.println("sun.java.command = " + Packages.java.lang.System.getProperty("sun.java.command"));
 				var command = Packages.java.lang.System.getProperty("sun.java.command");
 				var main = (function() {
 					var tokens = command.split(" ");
@@ -154,8 +154,8 @@
 					}
 				})();
 				return main;
-//				Packages.java.lang.System.err.println("main = " + main);
-//				throw new Error("Unimplemented: script for Graal");
+				// Packages.java.lang.System.err.println("main = " + main);
+				// throw new Error("Unimplemented: script for Graal");
 			},
 			jdkrhino: function() {
 				return global[String(Packages.javax.script.ScriptEngine.FILENAME)];
@@ -525,13 +525,13 @@
 							$api.log("Connecting to " + url + " ...");
 						}
 						var connection = url.openConnection();
-//						Packages.java.lang.System.err.println("url: " + url + " connection = " + connection);
+						// Packages.java.lang.System.err.println("url: " + url + " connection = " + connection);
 						if (connection.getResponseCode) {
 							if (connection.getResponseCode() == 404) return null;
 							if (connection.getResponseCode() == 500) return null;
 						}
 					} catch (e) {
-//						Packages.java.lang.System.err.println("stack: " + e.stack);
+						// Packages.java.lang.System.err.println("stack: " + e.stack);
 						return null;
 					}
 					return new Callee({ url: url, connection: connection });
@@ -1120,14 +1120,15 @@
 				dashD.push("-D" + x + "=" + p.properties[x]);
 			}
 		}
-		var args = [
-		]
-		.concat(dashD)
-		.concat([
-			"-jar",p.rhino.getCanonicalPath(),
-			"-opt","-1",
-			p.script.getCanonicalPath()
-		]).concat((p.arguments) ? p.arguments : []);
+		var args = []
+			.concat(dashD)
+			.concat([
+				"-jar", p.rhino.getCanonicalPath(),
+				"-opt", "-1",
+				p.script.getCanonicalPath()
+			]).concat((p.arguments) ? p.arguments : [])
+		;
+
 		$api.shell.exec({
 			command: $api.java.install.launcher.getCanonicalPath(),
 			arguments: args,

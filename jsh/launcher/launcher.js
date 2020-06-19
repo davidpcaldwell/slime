@@ -197,15 +197,15 @@ try {
 				var pathname;
 				if (!this._urls[i].getProtocol) throw new Error("Not URL: " + this._urls[i]);
 				if (String(this._urls[i].getProtocol()) != "file") {
-		//			var tmpdir = new Directory(String($$api.io.tmpdir().getCanonicalPath()));
-		//
-		//			var rhino = ClassLoader.getSystemResourceAsStream("$jsh/rhino.jar");
-		//			if (rhino) {
-		//				$$api.debug("Copying rhino ...");
-		//				var rhinoCopiedTo = tmpdir.getFile("rhino.jar");
-		//				var writeTo = rhinoCopiedTo.writeTo();
-		//				$$api.io.copy(rhino,writeTo);
-		//			}
+					// var tmpdir = new Directory(String($$api.io.tmpdir().getCanonicalPath()));
+
+					// var rhino = ClassLoader.getSystemResourceAsStream("$jsh/rhino.jar");
+					// if (rhino) {
+					// 	$$api.debug("Copying rhino ...");
+					// 	var rhinoCopiedTo = tmpdir.getFile("rhino.jar");
+					// 	var writeTo = rhinoCopiedTo.writeTo();
+					// 	$$api.io.copy(rhino,writeTo);
+					// }
 					throw new Error("Not a file: " + this._urls[i]);
 				} else {
 					pathname = new Packages.java.io.File(this._urls[i].toURI()).getCanonicalPath();
