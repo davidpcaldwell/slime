@@ -697,7 +697,7 @@ public class Java {
 
 			@Override public Long getLength() {
 				if (modified == null) throw new IllegalStateException("Stream is currently being written.");
-				return new Long(this.out.delegate().toByteArray().length);
+				return Long.valueOf(this.out.delegate().toByteArray().length);
 			}
 
 			@Override public Date getLastModified() {

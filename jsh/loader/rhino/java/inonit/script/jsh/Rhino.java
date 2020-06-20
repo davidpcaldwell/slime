@@ -145,7 +145,7 @@ public class Rhino {
 			execution.execute();
 			return null;
 		} catch (ExitError e) {
-			return new Integer(e.getStatus());
+			return Integer.valueOf(e.getStatus());
 		} catch (Engine.Errors e) {
 			LOG.log(Level.INFO, "Engine.Errors thrown.", e);
 			Engine.Errors.ScriptError[] errors = e.getErrors();

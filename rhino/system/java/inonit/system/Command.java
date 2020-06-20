@@ -83,7 +83,7 @@ public class Command {
 		private IOException threw;
 
 		final void finished(int status) {
-			this.status = new Integer(status);
+			this.status = Integer.valueOf(status);
 		}
 
 		final void threw(IOException e) {

@@ -15,8 +15,7 @@ package inonit.script.rhino;
 import org.mozilla.javascript.*;
 
 public class Objects {
-	/** @deprecated */
-	public static final Objects INSTANCE = new Objects();
+	@Deprecated static final Objects INSTANCE = new Objects();
 
 	private void setAttribute(Scriptable object, String name, int mask, boolean value) {
 		if (!(object instanceof ScriptableObject)) {

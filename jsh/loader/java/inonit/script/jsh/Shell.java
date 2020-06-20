@@ -286,7 +286,7 @@ public class Shell {
 			private Integer status;
 
 			@Override public void exit(int status) {
-				this.status = new Integer(status);
+				this.status = Integer.valueOf(status);
 			}
 
 			public Integer getExitCode(Run run, Shell.Configuration shell) {
@@ -295,7 +295,7 @@ public class Shell {
 					return status;
 				} catch (Throwable t) {
 					run.threw(t);
-					if (status == null) return new Integer(1);
+					if (status == null) return Integer.valueOf(1);
 					return status;
 				}
 			}

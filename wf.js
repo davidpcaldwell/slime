@@ -255,16 +255,24 @@ $exports.commit = $api.Function.pipe(
 		jsh.wf.typescript.tsc();
 
 		//	For now, commit tests use 1.8 with default Rhino version
-		if (!/^1\.8/.test(jsh.shell.java.version)) {
-			jsh.shell.console("Required: Java 1.8; found: " + jsh.shell.java.version);
-			return;
+		var JSH_LAUNCHER_JDK_HOME = jsh.shell.jsh.src.getRelativePath("local/jdk/8");
+
+		if (!JSH_LAUNCHER_JDK_HOME.directory) {
+			jsh.shell.run({
+				command: jsh.shell.jsh.src.getFile("jsh.bash"),
+				arguments: ["--add-jdk-8"]
+			});
 		}
+
 		jsh.shell.run({
 			command: jsh.shell.jsh.src.getFile("jsh.bash"),
 			arguments: [
 				jsh.shell.jsh.src.getRelativePath("jsh/tools/install/rhino.jsh.js"),
 				"-replace"
-			]
+			],
+			environment: $api.Object.compose(jsh.shell.environment, {
+				JSH_LAUNCHER_JDK_HOME: JSH_LAUNCHER_JDK_HOME
+			})
 		});
 
 		//	Runs test suite
@@ -279,8 +287,10 @@ $exports.commit = $api.Function.pipe(
 		};
 		jsh.shell.console("Running tests with output to " + logs + " ...");
 		var invocation = {
-			shell: $context.base,
-			script: $context.base.getFile("contributor/suite.jsh.js"),
+			command: jsh.shell.jsh.src.getFile("jsh.bash"),
+			arguments: [
+				$context.base.getFile("contributor/suite.jsh.js")
+			],
 			stdio: {
 				output: {
 					line: function(line) {
@@ -293,6 +303,9 @@ $exports.commit = $api.Function.pipe(
 					}
 				}
 			},
+			environment: $api.Object.compose(jsh.shell.environment, {
+				JSH_LAUNCHER_JDK_HOME: JSH_LAUNCHER_JDK_HOME
+			}),
 			evaluate: function(result) {
 				if (result.status != 0) {
 					jsh.shell.console("Failing because tests failed.");
@@ -303,7 +316,7 @@ $exports.commit = $api.Function.pipe(
 				}
 			}
 		};
-		jsh.shell.jsh(invocation);
+		jsh.shell.run(invocation);
 
 		repository.commit({
 			all: true,

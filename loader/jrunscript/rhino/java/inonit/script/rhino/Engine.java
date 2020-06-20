@@ -926,7 +926,7 @@ public class Engine {
 		private ArrayList<Integer> breakpoints = new ArrayList<Integer>();
 
 		final void addBreakpoint(int line) {
-			breakpoints.add( new Integer(line) );
+			breakpoints.add( Integer.valueOf(line) );
 		}
 
 		final void setBreakpoints(Debugger dim) {
