@@ -30,8 +30,10 @@ $api.java.compile = function(p) {
 			var _delegate = javac.getStandardFileManager(null, null, null);
 			$api.debug("_delegate constructed ...");
 
-			["close","flush","getClassLoader","getFileForInput","getFileForOutput","getJavaFileForInput","getJavaFileForOutput",
-			"handleOption","hasLocation","inferBinaryName","isSameFile","list","isSupportedOption"].forEach(function(name) {
+			[
+				"close","flush","getClassLoader","getFileForInput","getFileForOutput","getJavaFileForInput","getJavaFileForOutput",
+				"handleOption","hasLocation","inferBinaryName","isSameFile","list","isSupportedOption"
+			].forEach(function(name) {
 				this[name] = function(){};
 			},this);
 
@@ -57,8 +59,10 @@ $api.java.compile = function(p) {
 					return new JavaAdapter(
 						Packages.javax.tools.JavaFileObject,
 						new function() {
-							["delete","getCharContent","getLastModified","getName","openInputStream","openOutputStream","openReader",
-							"openWriter","toUri","getAccessLevel","getKind","getNestingKind","isNameCompatible"].forEach(function(name) {
+							[
+								"delete","getCharContent","getLastModified","getName","openInputStream","openOutputStream","openReader",
+								"openWriter","toUri","getAccessLevel","getKind","getNestingKind","isNameCompatible"
+							].forEach(function(name) {
 								this[name] = function(){};
 							},this);
 
@@ -135,8 +139,10 @@ $api.java.compile = function(p) {
 					return new JavaAdapter(
 						Packages.javax.tools.JavaFileObject,
 						new function() {
-							["delete","getCharContent","getLastModified","getName","openInputStream","openOutputStream","openReader",
-							"openWriter","toUri","getAccessLevel","getKind","getNestingKind","isNameCompatible"].forEach(function(name) {
+							[
+								"delete","getCharContent","getLastModified","getName","openInputStream","openOutputStream","openReader",
+								"openWriter","toUri","getAccessLevel","getKind","getNestingKind","isNameCompatible"
+							].forEach(function(name) {
 								this[name] = function(){};
 							},this);
 
@@ -374,8 +380,10 @@ $api.java.compile = function(p) {
 				this.hashCode = function() { return 1; };
 
 				//	JDK 1.7 Rhino requires that all interface methods be defined even if they are not used
-				["delete","getCharContent","getLastModified","getName","openInputStream","openOutputStream","openReader",
-				"openWriter","toUri","getAccessLevel","getKind","getNestingKind","isNameCompatible"].forEach(function(name) {
+				[
+					"delete","getCharContent","getLastModified","getName","openInputStream","openOutputStream","openReader",
+					"openWriter","toUri","getAccessLevel","getKind","getNestingKind","isNameCompatible"
+				].forEach(function(name) {
 					this[name] = function(){};
 				},this);
 				this.toString = function() {

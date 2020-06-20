@@ -173,7 +173,7 @@ public class Streams {
 			}
 
 			private synchronized void write(int i) {
-				bytes.addLast( new Byte( (byte)i ) );
+				bytes.addLast( Byte.valueOf( (byte)i ) );
 				notifyAll();
 			}
 

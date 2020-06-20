@@ -251,6 +251,41 @@ PROXY_PORT_ARGUMENT=$(javaSystemPropertyArgument http.proxyPort ${JSH_HTTP_PROXY
 JSH_GITHUB_USER_ARGUMENT=$(javaSystemPropertyArgument jsh.github.user ${JSH_GITHUB_USER})
 JSH_GITHUB_PASSWORD_ARGUMENT=$(javaSystemPropertyArgument jsh.github.password ${JSH_GITHUB_PASSWORD})
 
+get_jdk_major_version() {
+	#	This function works with supported JDKs Amazon Corretto 8 and 11. Untested with others.
+	JDK=$1
+	JAVA="${JDK}/bin/java"
+	IFS=$'\n'
+	JAVA_VERSION_OUTPUT=$(${JAVA} -version 2>&1)
+	for line in ${JAVA_VERSION_OUTPUT}; do
+		if [[ $line =~ \"(.+)\" ]]; then
+			JAVA_VERSION="${BASH_REMATCH[1]}"
+		fi
+	done
+	if [ -n ${JAVA_VERSION} ]; then
+		if [[ $JAVA_VERSION =~ ^1\.8\. ]]; then
+			echo "8"
+		elif [[ $JAVA_VERSION =~ ^11\. ]]; then
+			echo "11"
+		else
+			echo "Unknown"
+		fi
+	else
+		echo "Unparsed"
+	fi
+}
+
+#	So this is a mess. With JDK 11 and up, according to (for example) https://bugs.openjdk.java.net/browse/JDK-8210140, we need
+#	an extra argument to Nashorn (--no-deprecation-warning) to avoid emitting warnings. But this argument causes Nashorn not to
+#	be found with JDK 8. So we have to version-check the JDK to determine whether to supply the argument. This version test works
+#	with SLIME-supported Amazon Corretta JDK 8 and JDK 11, and hasn't yet been tested with anything else.
+#
+#	But it works with JDK 8 and 11, so it's better than nothing.
+JDK_MAJOR_VERSION=$(get_jdk_major_version $(dirname ${JRUNSCRIPT})/..)
+if [ "${JDK_MAJOR_VERSION}" == "11" ]; then
+	JRUNSCRIPT="${JRUNSCRIPT} -Dnashorn.args=--no-deprecation-warning"
+fi
+
 if [ "$0" == "bash" ]; then
 	JSH_NETWORK_ARGUMENTS="${PROXY_HOST_ARGUMENT} ${PROXY_PORT_ARGUMENT} ${JSH_GITHUB_USER_ARGUMENT} ${JSH_GITHUB_PASSWORD_ARGUMENT}"
 	${JRUNSCRIPT} ${JSH_NETWORK_ARGUMENTS} -e "load('${JSH_LAUNCHER_GITHUB_PROTOCOL}://raw.githubusercontent.com/davidpcaldwell/slime/master/rhino/jrunscript/api.js?jsh')" "$@"

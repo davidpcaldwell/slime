@@ -153,7 +153,7 @@ public class Code {
 					}
 
 					@Override public Long getLength() {
-						return new Long(file.length());
+						return Long.valueOf(file.length());
 					}
 
 					@Override public java.util.Date getLastModified() {
@@ -440,7 +440,7 @@ public class Code {
 						}
 
 						@Override public Long getLength() {
-							return new Long(bytes.length);
+							return Long.valueOf(bytes.length);
 						}
 
 						@Override public Date getLastModified() {
@@ -649,7 +649,7 @@ public class Code {
 					}
 
 					private JsonPrimitive(boolean b) {
-						o = new Boolean(b);
+						o = Boolean.valueOf(b);
 					}
 
 					@Override public String toString() { return String.valueOf(o); }
@@ -923,7 +923,7 @@ public class Code {
 						}
 
 						@Override public Long getLength() {
-							return new Long(bytes.length);
+							return Long.valueOf(bytes.length);
 						}
 
 						@Override public Date getLastModified() {
