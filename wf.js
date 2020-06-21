@@ -254,27 +254,6 @@ $exports.commit = $api.Function.pipe(
 
 		jsh.wf.typescript.tsc();
 
-		//	For now, commit tests use 1.8 with default Rhino version
-		var JSH_LAUNCHER_JDK_HOME = jsh.shell.jsh.src.getRelativePath("local/jdk/8");
-
-		if (!JSH_LAUNCHER_JDK_HOME.directory) {
-			jsh.shell.run({
-				command: jsh.shell.jsh.src.getFile("jsh.bash"),
-				arguments: ["--add-jdk-8"]
-			});
-		}
-
-		jsh.shell.run({
-			command: jsh.shell.jsh.src.getFile("jsh.bash"),
-			arguments: [
-				jsh.shell.jsh.src.getRelativePath("jsh/tools/install/rhino.jsh.js"),
-				"-replace"
-			],
-			environment: $api.Object.compose(jsh.shell.environment, {
-				JSH_LAUNCHER_JDK_HOME: JSH_LAUNCHER_JDK_HOME
-			})
-		});
-
 		//	Runs test suite
 		var timestamp = jsh.time.When.now();
 		var logs = $context.base.getRelativePath("local/wf/logs/commit").createDirectory({
@@ -303,9 +282,6 @@ $exports.commit = $api.Function.pipe(
 					}
 				}
 			},
-			environment: $api.Object.compose(jsh.shell.environment, {
-				JSH_LAUNCHER_JDK_HOME: JSH_LAUNCHER_JDK_HOME
-			}),
 			evaluate: function(result) {
 				if (result.status != 0) {
 					jsh.shell.console("Failing because tests failed.");

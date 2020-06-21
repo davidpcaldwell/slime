@@ -158,6 +158,22 @@ while($api.arguments.length > 0 && $api.arguments[0].substring(0,1) == "-") {
 	command.vm($api.arguments.shift());
 }
 
+var hasJavaPlatformModuleSystem = (function() {
+	var javaLangObjectClass = Packages.java.lang.Class.forName("java.lang.Object");
+	return typeof(javaLangObjectClass.getModule) == "function";
+})();
+
+if (hasJavaPlatformModuleSystem) {
+	command.vm("--add-opens");
+	command.vm("java.base/java.lang.reflect=ALL-UNNAMED");
+	command.vm("--add-opens");
+	command.vm("java.base/java.net=ALL-UNNAMED");
+	command.vm("--add-opens");
+	command.vm("jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED");
+}
+
+command.systemProperty("nashorn.args", "--no-deprecation-warning");
+
 var _urls = [];
 
 if (shell.rhino) {
