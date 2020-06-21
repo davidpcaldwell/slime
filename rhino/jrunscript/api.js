@@ -663,10 +663,17 @@
 				for (var i=0; i<jarray.length; i++) {
 					jarray[i] = new Packages.java.lang.String(args[i]);
 				}
+				var SUPPRESS_WARNINGS = true;
+				var NOWHERE = new JavaAdapter(
+					Packages.java.io.OutputStream,
+					new function() {
+						this.write = function(b){}
+					}
+				);
 				var status = compiler.run(
 					Packages.java.lang.System["in"],
 					Packages.java.lang.System.out,
-					Packages.java.lang.System.err,
+					(SUPPRESS_WARNINGS) ? new Packages.java.io.PrintStream(NOWHERE) : Packages.java.lang.System.err,
 					jarray
 				);
 				if (status) {
