@@ -17,6 +17,9 @@ public class Host {
 		private ExecutorImpl(String engineName) {
 			this.factory = new ScriptEngineManager();
 			this.engine = factory.getEngineByName(engineName);
+			if (this.engine == null) {
+				throw new RuntimeException("No engine: " + engineName + " in " + System.getProperty("java.home"));
+			}
 		}
 
 		public void set(String name, Object value) {
