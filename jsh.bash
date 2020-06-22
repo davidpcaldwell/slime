@@ -283,7 +283,8 @@ get_jdk_major_version() {
 #	But it works with JDK 8 and 11, so it's better than nothing.
 JDK_MAJOR_VERSION=$(get_jdk_major_version $(dirname ${JRUNSCRIPT})/..)
 if [ "${JDK_MAJOR_VERSION}" == "11" ]; then
-	JRUNSCRIPT="${JRUNSCRIPT} -Dnashorn.args=--no-deprecation-warning"
+	export JSH_NASHORN_DEPRECATION_ARGUMENT="-Dnashorn.args=--no-deprecation-warning"
+	JRUNSCRIPT="${JRUNSCRIPT} ${JSH_NASHORN_DEPRECATION_ARGUMENT}"
 fi
 
 if [ "$0" == "bash" ]; then

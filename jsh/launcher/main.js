@@ -172,7 +172,9 @@ if (hasJavaPlatformModuleSystem) {
 	command.vm("jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED");
 }
 
-command.systemProperty("nashorn.args", "--no-deprecation-warning");
+if (Packages.java.lang.System.getenv("JSH_NASHORN_DEPRECATION_ARGUMENT")) {
+	command.systemProperty("nashorn.args", "--no-deprecation-warning");
+}
 
 var _urls = [];
 
