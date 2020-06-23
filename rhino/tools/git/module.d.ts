@@ -37,12 +37,12 @@ namespace slime {
 				}) => Daemon
 
 				Repository: {
-					(p: { remote: string }): slime.jrunscript.git.Repository
-					new (p: { remote: string }): slime.jrunscript.git.Repository
 					(p: { directory: slime.jrunscript.file.Directory }): slime.jrunscript.git.Repository.Local
 					new (p: { directory: slime.jrunscript.file.Directory }): slime.jrunscript.git.Repository.Local
 					(p: { local: slime.jrunscript.file.Directory }): slime.jrunscript.git.Repository.Local
 					new (p: { local: slime.jrunscript.file.Directory }): slime.jrunscript.git.Repository.Local
+					(p: { remote: string }): slime.jrunscript.git.Repository
+					new (p: { remote: string }): slime.jrunscript.git.Repository
 				}
 			}
 
