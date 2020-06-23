@@ -6,7 +6,7 @@
 	function(plugin) {
 		plugin({
 			isReady: function() {
-				return jsh.shell && jsh.ui;
+				return Boolean(jsh.file && jsh.shell && jsh.ui && jsh.tools && jsh.tools.git);
 			},
 			load: function() {
 				//@ts-ignore
@@ -108,6 +108,16 @@
 						throw new Error("Found untracked files: " + e.detail.join("\n"));
 					}
 				});
+
+				jsh.wf.prohibitModifiedSubmodules = $api.Events.Function(function(p,events) {
+					p.repository.submodule().forEach(function(sub) {
+						var submodule = jsh.tools.git.Repository({ directory: p.repository.directory.getSubdirectory(sub.path) });
+						var status = submodule.status();
+						if (status.paths) {
+							throw new Error("Submodule " + sub.path + " is modified.");
+						}
+					});
+				})
 			}
 		})
 	}
