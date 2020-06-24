@@ -264,6 +264,19 @@ $exports.commit = $api.Function.pipe(
 			output: logs.getRelativePath("stdout.txt").write(jsh.io.Streams.text),
 			error: logs.getRelativePath("stderr.txt").write(jsh.io.Streams.text)
 		};
+		jsh.shell.run({
+			command: $context.base.getRelativePath("jsh.bash"),
+			arguments: [
+				"--install-jdk"
+			]
+		});
+		jsh.shell.run({
+			command: $context.base.getRelativePath("jsh.bash"),
+			arguments: [
+				$context.base.getRelativePath("jsh/tools/install/rhino.jsh.js"),
+				"-replace"
+			]
+		});
 		jsh.shell.console("Running tests with output to " + logs + " ...");
 		var invocation = {
 			command: jsh.shell.jsh.src.getFile("jsh.bash"),
