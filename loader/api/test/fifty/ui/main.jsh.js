@@ -55,7 +55,7 @@
 
 		if (invocation.options.debug) invocation.options["node-debug"] = true;
 
-		if (invocation.options.harness) invocation.options.nocache = true;
+		if (invocation.options.harness || invocation.options["tsc-harness"]) invocation.options.nocache = true;
 
 		invocation.options.file = (invocation.options.harness || invocation.options["tsc-harness"])
 			? slime.directory.getRelativePath("loader/api/test/fifty/test/data/module.d.ts")

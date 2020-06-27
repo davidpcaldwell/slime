@@ -1,28 +1,56 @@
-var FiftyInterface = function() {
-	var rv = Reflect.construct(HTMLDivElement, [], FiftyInterface);
-	var instance = document.getElementById('fifty-interface').content.cloneNode(true);
-	var shadow = rv.attachShadow({ mode: "open" })
-	shadow.appendChild(instance);
-	rv.connectedCallback = function() {
-		debugger;
+var defineCustomElement = function(p) {
+	var Super = document.createElement(p.extends).constructor;
+
+	var model = function() {
+		return document.getElementById(p.tagName).content.cloneNode(true);
 	}
-	return rv;
-}
-FiftyInterface.prototype = Object.create(HTMLDivElement.prototype);
 
-customElements.define("fifty-interface", FiftyInterface, { extends: "div" });
+	var Constructor = function() {
+		var rv = Reflect.construct(Super, [], Constructor);
+		var shadow = rv.attachShadow({ mode: "open" })
+		shadow.appendChild(model());
+		rv.connectedCallback = function() {
+			debugger;
+		}
+		return rv;
+	}
+	Constructor.prototype = Object.create(Super.prototype);
 
-var fillSlot = function(element,slot,content) {
-	content.setAttribute("slot", slot);
-	element.appendChild(content);
+	customElements.define(p.tagName, Constructor, { extends: p.extends });
+
+	var fillSlot = function(element,slot,content) {
+		content.setAttribute("slot", slot);
+		element.appendChild(content);
+	}
+
+	return {
+		create: function(m) {
+			var rv = document.createElement(p.extends, { is: p.tagName });
+			var name = document.createElement("span");
+			name.appendChild(document.createTextNode(p.name));
+			for (var x in m.slots) {
+				fillSlot(rv, x, m.slots[x]());
+			}
+			return rv;
+		}
+	}
 }
+
+var fiftyInterface = defineCustomElement({
+	tagName: "fifty-interface",
+	extends: "div"
+});
 
 var createFiftyInterface = function(p) {
-	var rv = document.createElement("div", { is: "fifty-interface" });
-	var name = document.createElement("span");
-	name.appendChild(document.createTextNode(p.name));
-	fillSlot(rv, "name", name);
-	return rv;
+	return fiftyInterface.create({
+		slots: {
+			name: function() {
+				var name = document.createElement("span");
+				name.appendChild(document.createTextNode(p.name));
+				return name;
+			}
+		}
+	});
 }
 
 window.addEventListener("load", function() {
