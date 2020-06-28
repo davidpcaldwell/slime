@@ -97,6 +97,8 @@ var fiftyProperty = defineCustomElement({
 	initialize: function(p) {
 		if (p.type.parameters) {
 			this.shadowRoot.querySelector(".name").className += " method";
+		} else if (p.type.name == "any") {
+			this.shadowRoot.querySelector(".name").className += " any";
 		} else if (p.type.name) {
 			this.shadowRoot.querySelector(".name").className += " property";
 		}
