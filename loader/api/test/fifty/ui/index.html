@@ -20,12 +20,14 @@
 				</style>
 				<span class="name"><slot name="name">name</slot></span>
 				<span class="type"><slot name="type"></slot></span>
+				<span class="comment"><slot name="comment"></slot></span>
 			</template>
 			<template id="fifty-interface">
 				<style>
 					slot[name="name"] { font-family: monospace }
 				</style>
 				<h3>interface <slot name="name">name</slot></h3>
+				<slot name="comment"></slot>
 				<slot name="properties"></slot>
 			</template>
 		</div>
