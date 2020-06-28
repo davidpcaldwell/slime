@@ -48,6 +48,7 @@
 			option.boolean({ longname: "nocache" }),
 			option.boolean({ longname: "harness" }),
 			option.boolean({ longname: "tsc-harness"}),
+			option.boolean({ longname: "design" }),
 			option.boolean({ longname: "node-debug" }),
 			option.boolean({ longname: "chrome-debug" }),
 			option.boolean({ longname: "debug" })
@@ -55,9 +56,9 @@
 
 		if (invocation.options.debug) invocation.options["node-debug"] = true;
 
-		if (invocation.options.harness) invocation.options.nocache = true;
+		if (invocation.options.harness || invocation.options["tsc-harness"]) invocation.options.nocache = true;
 
-		invocation.options.file = (invocation.options.harness || invocation.options["tsc-harness"])
+		invocation.options.file = (invocation.options.harness || invocation.options["tsc-harness"] || invocation.options.design)
 			? slime.directory.getRelativePath("loader/api/test/fifty/test/data/module.d.ts")
 			: void(0)
 		;
@@ -152,7 +153,11 @@
 					.replace(/__PORT__/g, String(server.port))
 			})
 		});
-		var path = (invocation.options["tsc-harness"]) ? "tsc.json" : ""
+		var path = (function() {
+			if (invocation.options.design) return "?design";
+			if (invocation.options["tsc-harness"]) return "tsc.json";
+			return "";
+		})();
 		browser.run({
 			uri: "http://" + host + "/" + path,
 			arguments: (invocation.options["chrome-debug"]) ? ["--remote-debugging-port=9222"] : []
