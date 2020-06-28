@@ -86,6 +86,12 @@ var fiftyProperty = defineCustomElement({
 
 		this.type = function(p) {
 			return typeToElement(p.type);
+		};
+
+		this.comment = function(p) {
+			var comment = document.createElement("span");
+			comment.appendChild(document.createTextNode(p.documentation));
+			return comment;
 		}
 	},
 	initialize: function(p) {
@@ -113,6 +119,12 @@ var fiftyInterface = defineCustomElement({
 				rv.appendChild(child);
 			});
 			return rv;
+		},
+		comment: function(p) {
+			var comment = document.createElement("span");
+			debugger;
+			comment.appendChild(document.createTextNode(p.documentation));
+			return comment;
 		}
 	}
 });
@@ -142,7 +154,7 @@ window.addEventListener("load", function() {
 		for (var x in tsc.interfaces) {
 			var type = tsc.interfaces[x];
 			var members = type.members;
-			element = fiftyInterface.create({ name: x, members: members });
+			element = fiftyInterface.create({ name: x, documentation: type.documentation, members: members });
 			document.getElementById("interfaces").appendChild(element);
 		}
 	}
