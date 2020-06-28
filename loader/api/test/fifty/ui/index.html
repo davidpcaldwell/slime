@@ -7,13 +7,26 @@
 		<script src="index.html.js"></script>
 	</head>
 	<body>
+		<h1>API documentation</h1>
 		<div id="interfaces">
-			<h1>Interfaces</h1>
+			<template id="fifty-property">
+				<style>
+					.name { padding: 0.1em 0.4em; font-family: monospace }
+					.name.method { color: white; background-color: blue; }
+					.name.property { color: white; background-color: red; }
+
+					.type { padding: 0.1em 0.4em; font-family: monospace }
+					.type { border: 1px solid black; }
+				</style>
+				<span class="name"><slot name="name">name</slot></span>
+				<span class="type"><slot name="type"></slot></span>
+			</template>
 			<template id="fifty-interface">
 				<style>
 					slot[name="name"] { font-family: monospace }
 				</style>
-				<h2><slot name="name">name</slot></h2>
+				<h3>interface <slot name="name">name</slot></h3>
+				<slot name="properties"></slot>
 			</template>
 		</div>
 		<div>
