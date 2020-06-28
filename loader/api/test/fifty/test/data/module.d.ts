@@ -3,6 +3,9 @@ namespace slime.fifty.test.data.shopping {
 	 * Something on the shopping list.
 	 */
 	interface Item {
+		/**
+		 * The name of the thing on the shopping list.
+		 */
 		name: string
 	}
 
