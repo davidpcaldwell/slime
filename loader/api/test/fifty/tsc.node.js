@@ -242,17 +242,21 @@ const generateDocumentation = function(program) {
 			ts.forEachChild(node, visit);
 		} else if (ts.isInterfaceDeclaration(node)) {
 			//	TODO	does not detect supertypes
+			var symbol = program.getTypeChecker().getSymbolAtLocation(node.name);
 			output.interfaces[project.qname(node)] = {
+				documentation: ts.displayPartsToString(symbol.getDocumentationComment(checker)),
 				members: node.members.map(function(member) {
 					try {
 						const type = project.type(member);
 						return {
 							name: member.symbol.name,
+							documentation: ts.displayPartsToString(member.symbol.getDocumentationComment(checker)),
 							type: typeToJson(type)
 						}
 					} catch (e) {
 						return {
 							name: member.symbol.name,
+							documentation: ts.displayPartsToString(member.symbol.getDocumentationComment(checker)),
 							type: {
 								//	splitting stack trace increases readability as pretty-printed JSON
 								error: e.stack.split("\n")
