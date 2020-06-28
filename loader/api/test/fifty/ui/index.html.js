@@ -31,6 +31,7 @@ var defineCustomElement = function(p) {
 			for (var x in p.slots) {
 				fillSlot(rv, x, p.slots[x](m));
 			}
+			if (p.initialize) p.initialize.call(rv, m);
 			return rv;
 		}
 	}
@@ -56,11 +57,14 @@ var fiftyProperty = defineCustomElement({
 					span.appendChild(container);
 				}
 			} else if (type && type.parameters) {
-				if (type.constructor) span.appendChild(document.createTextNode("new "));
+				if (type.constructor === true) span.appendChild(document.createTextNode("new "));
 				span.appendChild(document.createTextNode("("));
-				type.parameters.forEach(function(parameter) {
+				type.parameters.forEach(function(parameter,index,array) {
 					span.appendChild(document.createTextNode(parameter.name + ": "));
 					span.appendChild(typeToElement(parameter.type));
+					if (index != array.length-1) {
+						span.appendChild(document.createTextNode(", "));
+					}
 				})
 				span.appendChild(document.createTextNode(")"));
 				if (type.returns) {
@@ -75,12 +79,20 @@ var fiftyProperty = defineCustomElement({
 
 		this.name = function(p) {
 			var name = document.createElement("span");
-			name.appendChild(document.createTextNode(p.name));
+			var suffix = (p.type.parameters) ? "()" : "";
+			name.appendChild(document.createTextNode(p.name + suffix));
 			return name;
 		};
 
 		this.type = function(p) {
 			return typeToElement(p.type);
+		}
+	},
+	initialize: function(p) {
+		if (p.type.parameters) {
+			this.shadowRoot.querySelector(".name").className += " method";
+		} else if (p.type.name) {
+			this.shadowRoot.querySelector(".name").className += " property";
 		}
 	}
 });
@@ -107,7 +119,23 @@ var fiftyInterface = defineCustomElement({
 
 window.addEventListener("load", function() {
 	if (window.location.search == "?design") {
-		var element = fiftyInterface.create({ name: "a.a.name" });
+		var element = fiftyInterface.create({
+			name: "a.a.name",
+			members: [
+				{
+					name: "field",
+					type: {
+						name: "string"
+					}
+				},
+				{
+					name: "method",
+					type: {
+						parameters: []
+					}
+				}
+			]
+		});
 		document.getElementById("interfaces").appendChild(element);
 	} else {
 		var tsc = inonit.loader.loader.get("tsc.json").read(JSON);
