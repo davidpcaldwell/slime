@@ -73,7 +73,10 @@ namespace slime {
         module: any
         run: any
         value: any
-		Child: (prefix: string) => Loader
+		Child: {
+            (prefix: string): Loader
+            new (prefix: string): Loader
+        }
 		get: (path: string) => Resource
 	}
 }

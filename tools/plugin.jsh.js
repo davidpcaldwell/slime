@@ -117,7 +117,7 @@
 							throw new Error("Submodule " + sub.path + " is modified.");
 						}
 					});
-				})
+				});
 			}
 		})
 	}
