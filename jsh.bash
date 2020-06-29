@@ -27,6 +27,16 @@ else
 	JDK_USER="${JSH_USER_JDK:-${HOME}/.slime/jdk/default}"
 fi
 
+clean_destination() {
+	TO="$1"
+	if [ -d "${TO}" ]; then
+		>&2 echo "Removing existing installation at ${TO} ..."
+		rm -Rf "${TO}"
+	fi
+	mkdir -p $(dirname ${TO})
+	echo "${TO}"
+}
+
 announce_install() {
 	URL="$1"
 	DESTINATION="$2"
@@ -38,14 +48,13 @@ download_install() {
 	URL="$1"
 	LOCATION="$2"
 	if [ ! -f "${LOCATION}" ]; then
-		echo "Downloading ${URL} ..."
+		>&2 echo "Downloading ${URL} ..."
 		curl -L -o ${LOCATION} ${URL}
 	fi
 }
 
 install_jdk_8_adoptopenjdk() {
-	TO="$1"
-	mkdir -p $(dirname ${TO})
+	TO=$(clean_destination $1)
 
 	JDK_TARBALL_URL="https://github.com/AdoptOpenJDK/openjdk8-binaries/releases/download/jdk8u232-b09/OpenJDK8U-jdk_x64_mac_hotspot_8u232b09.tar.gz"
 	JDK_TARBALL_BASENAME="OpenJDK8U-jdk_x64_mac_hotspot_8u232b09.tar.gz"
@@ -64,8 +73,7 @@ install_jdk_8_adoptopenjdk() {
 }
 
 install_jdk_8_liberica() {
-	TO="$1"
-	mkdir -p $(dirname $TO)
+	TO=$(clean_destination $1)
 
 	JDK_ZIP_URL="https://download.bell-sw.com/java/8u232+10/bellsoft-jdk8u232+10-macos-amd64.zip"
 	JDK_ZIP_BASENAME="bellsoft-jdk8u232+10-macos-amd64.zip"
@@ -81,8 +89,8 @@ install_jdk_8_liberica() {
 }
 
 install_jdk_11_liberica() {
-	TO="$1"
-	mkdir -p $(dirname $TO)
+	TO=$(clean_destination $1)
+
 	JDK_ZIP_URL="https://download.bell-sw.com/java/11.0.7+10/bellsoft-jdk11.0.7+10-macos-amd64.zip"
 	JDK_ZIP_BASENAME="bellsoft-jdk11.0.7+10-macos-amd64.zip"
 	JDK_ZIP_PATH="jdk-11.0.7.jdk"
@@ -97,8 +105,8 @@ install_jdk_11_liberica() {
 }
 
 install_jdk_8_corretto() {
-	TO="$1"
-	mkdir -p $(dirname ${TO})
+	TO=$(clean_destination $1)
+
 	JDK_TARBALL_URL="https://corretto.aws/downloads/resources/8.252.09.1/amazon-corretto-8.252.09.1-macosx-x64.tar.gz"
 	JDK_TARBALL_BASENAME="amazon-corretto-8.252.09.1-macosx-x64.tar.gz"
 	JDK_TARBALL_LOCATION="${HOME}/Downloads/${JDK_TARBALL_BASENAME}"
@@ -108,13 +116,14 @@ install_jdk_8_corretto() {
 		curl -L -o ${HOME}/Downloads/${JDK_TARBALL_BASENAME} ${JDK_TARBALL_URL}
 	fi
 	JDK_WORKDIR=$(mktemp -d)
-	tar xvf ${JDK_TARBALL_LOCATION} -C ${JDK_WORKDIR}
+	tar xf ${JDK_TARBALL_LOCATION} -C ${JDK_WORKDIR}
 	mv ${JDK_WORKDIR}/${JDK_TARBALL_PATH} ${TO}
+	>&2 echo "Installed ${JDK_TARBALL_URL} at ${TO}"
 }
 
 install_jdk_11_corretto() {
-	TO="$1"
-	mkdir -p $(dirname ${TO})
+	TO=$(clean_destination $1)
+
 	JDK_TARBALL_URL="https://corretto.aws/downloads/resources/11.0.7.10.1-1/amazon-corretto-11.0.7.10.1-1-macosx-x64.tar.gz"
 	JDK_TARBALL_BASENAME="amazon-corretto-11.0.7.10.1-1-macosx-x64.tar.gz"
 	JDK_TARBALL_LOCATION="${HOME}/Downloads/${JDK_TARBALL_BASENAME}"
@@ -124,8 +133,9 @@ install_jdk_11_corretto() {
 		curl -L -o ${HOME}/Downloads/${JDK_TARBALL_BASENAME} ${JDK_TARBALL_URL}
 	fi
 	JDK_WORKDIR=$(mktemp -d)
-	tar xvf ${JDK_TARBALL_LOCATION} -C ${JDK_WORKDIR}
+	tar xf ${JDK_TARBALL_LOCATION} -C ${JDK_WORKDIR}
 	mv ${JDK_WORKDIR}/${JDK_TARBALL_PATH} ${TO}
+	>&2 echo "Installed ${JDK_TARBALL_URL} at ${TO}"
 }
 
 install_jdk_8() {

@@ -2,6 +2,12 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
+			"label": "Install JDK",
+			"type": "shell",
+			"command": "./jsh.bash --install-jdk",
+			"problemMatcher": []
+		},
+		{
 			"label": "eslint",
 			"type": "shell",
 			"command": "./jsh.bash contributor/eslint.jsh.js",
