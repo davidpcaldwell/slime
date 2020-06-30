@@ -16,6 +16,7 @@ namespace slime.definition.verify {
 	}
 
 	interface Scope {
+		success: boolean
 		test: (f: ScopeTest) => void
 	}
 
