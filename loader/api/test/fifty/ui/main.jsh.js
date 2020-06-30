@@ -65,7 +65,7 @@
 
 		invocation.options.project = (jsh.shell.environment.PROJECT)
 			? jsh.file.Pathname(jsh.shell.environment.PROJECT).directory
-			: slime.directory
+			: jsh.shell.PWD
 
 		var getTscOutput = (function(options) {
 			var rv = function() {
