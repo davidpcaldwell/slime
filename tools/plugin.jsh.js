@@ -48,11 +48,15 @@
 
 				jsh.wf.typescript = {
 					tsc: function(p) {
+						var config = (function() {
+							if (base.getFile("tsconfig.json")) return base.getFile("tsconfig.json");
+							if (base.getFile("jsconfig.json")) return base.getFile("jsconfig.json");
+							throw new Error("No TypeScript configuration file found at " + base);
+						})()
 						jsh.shell.run({
 							command: jsh.shell.jsh.src.getFile("tools/tsc.bash"),
 							arguments: [
-								//	TODO	make more flexible
-								"-tsconfig", base.getFile("jsconfig.json")
+								"-tsconfig", config
 							]
 						})
 					}
