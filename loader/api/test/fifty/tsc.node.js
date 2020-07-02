@@ -1,5 +1,6 @@
 /* eslint-env es6 */
 const path = require("path");
+const fs = require("fs");
 const ts = require("typescript");
 const { Console } = require("console");
 
@@ -61,11 +62,18 @@ function performCompilation(sys, cb, reportDiagnostic, config, fileName) {
 var project = process.env.PROJECT;
 var normalized = path.resolve(ts.normalizePath(project))
 
+var filename = (() => {
+	//	TODO	path separator
+	if (fs.existsSync(normalized + "/" + "tsconfig.json")) return "tsconfig.json";
+	if (fs.existsSync(normalized + "/" + "jsconfig.json")) return "jsconfig.json";
+	throw new Error("No TypeScript configuration found at " + normalized);
+})()
+
 //	TODO	can we invoke the logic that calculates the name of the config file, rather than hard=coding?
 const configFileName = ts.findConfigFile(
 	normalized,
 	function (fileName) { return ts.sys.fileExists(fileName); },
-	"jsconfig.json"
+	filename
 );
 
 const commandLine = ts.parseCommandLine([], function (path) { return system.readFile(path); });
