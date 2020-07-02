@@ -1,5 +1,5 @@
-namespace jsh.shell {
-	interface Tools {
+namespace jsh.shell.tools {
+	interface Exports {
 		rhino: {
 			install: (
 				p: {

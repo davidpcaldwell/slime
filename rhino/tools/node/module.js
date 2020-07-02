@@ -190,7 +190,7 @@
 				var existing = $exports.at({ location: p.location });
 				/** @type { slime.jrunscript.node.Installation } */
 				var rv;
-				if (!existing || (existing.version != p.version && p.update)) {
+				if (!existing || (existing.version.number != p.version && p.update)) {
 					if (existing) {
 						p.location.directory.remove();
 					}
