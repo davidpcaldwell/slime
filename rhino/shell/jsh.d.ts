@@ -38,6 +38,6 @@ namespace jsh.shell {
 				}
 			}
 		},
-		tools: jsh.shell.Tools
+		tools: jsh.shell.tools.Exports
 	}
 }

@@ -36,7 +36,7 @@ namespace slime.jrunscript.node {
 
 	interface Exports {
 		Installation: new (o: any) => slime.jrunscript.node.Installation
-		at: Function
+		at: (p: { location: slime.jrunscript.file.Pathname }) => slime.jrunscript.node.Installation
 		Project: Function,
 		install: (
 			p: {
