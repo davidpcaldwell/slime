@@ -63,9 +63,14 @@ namespace slime {
     }
 
     interface Resource {
-        name: string
-        type: MimeType,
-        read: (any) => any
+        name?: string
+        type?: MimeType,
+        read?: {
+            (p: StringConstructor): string
+            (p: JSON): any
+            //  XML, XMLList allowed
+            (p: any): any
+        }
     }
 
 	interface Loader {
@@ -81,12 +86,21 @@ namespace slime {
     }
 
     namespace runtime {
+        interface ResourceArgument {
+            read: {
+                string: () => string
+            },
+            type: string | MimeType
+            name: string
+            string?: string
+        }
+
         interface Exports {
             mime: any
             run: any
             file: any
             value: any
-            Resource: any
+            Resource: new (o: ResourceArgument) => slime.Resource
             Loader: any
             namespace: any
             java: any
