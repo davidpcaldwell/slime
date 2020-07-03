@@ -80,7 +80,7 @@
 					});
 					sets.forEach( function(header) {
 						var trim = function(str) {
-							return str.replace(/^\s\s*/, '').replace(/\s\s*$/, '');
+							return str.replace(/^\s\s*/, "").replace(/\s\s*$/, "");
 						}
 
 						var parts = header.value.split(";");
@@ -269,6 +269,7 @@
 
 				//	TODO	Does not handle stream/$stream from rhino/mime
 				if (false) {
+					//	just syntax to help chaining
 				} else if (p.body.stream) {
 					$context.api.io.Streams.binary.copy(p.body.stream,$urlConnection.getOutputStream());
 					$urlConnection.getOutputStream().close();

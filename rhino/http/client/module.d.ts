@@ -1,9 +1,40 @@
 namespace slime.jrunscript.http.client {
-	interface Client {
-		request: Function
+	interface Request {
+		method?: string
+		url: any
+		headers?: any
+		params?: any
+		parameters?: any
+		authorization?: Authorization
+		proxy?: any
+		body?: any
+		timeout?: any
+		on?: any
+	}
+
+	interface Response {
+		request: Request
+		status: any
+		headers: any
+		body: {
+			type: any,
+			stream: any
+		}
 	}
 
 	type Authorization = string
+
+	interface request {
+		(p: Request & { evaluate: JSON }): any
+		<T>(p: Request & { evaluate: (Response) => T }): T
+		<T>(p: Request & { parse: (Response) => T }): T
+		(p: Request): Response
+	}
+
+	interface Client {
+		request: request,
+		Loader: any
+	}
 
 	interface Exports {
 		Client: new (configuration?: {}) => Client

@@ -57,6 +57,9 @@ void(0);
 			}
 
 			var apiClient = (function(o) {
+				/**
+				 * @type { slime.jrunscript.http.client.Client }
+				 */
 				var client = new $context.library.http.Client({
 					authorization: (o.credentials) ? $context.library.http.Authentication.Basic.Authorization({
 						user: o.credentials.user,
@@ -86,7 +89,8 @@ void(0);
 					return rv;
 				};
 
-				client.request = (function(was) {
+				/** @type { (p: slime.jrunscript.http.client.Request) => slime.jrunscript.tools.github.Repository[] } */
+				var request = (function(was) {
 					return function(p) {
 						var more = true;
 						var retry = 1;
@@ -119,7 +123,7 @@ void(0);
 					}
 				})(client.request);
 
-				return client;
+				return { request: request }
 			})(o);
 
 			return new function() {
