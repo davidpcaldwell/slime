@@ -11,15 +11,16 @@ interface $api {
 	debug: {
 		disableBreakOnExceptionsFor: <T extends Function>(f: T) => T
 	}
-	Events: {
-		(p: any): $api.Events,
-		//	TODO	could probably use parameterized types to improve accuracy
-		Function: <P,R>(f: (p: P, events: any) => R, defaultListeners?: object) => (argument: P, receiver: $api.Events | object) => R
-	},
 	Object: {
 		(p: any): any
 		compose: Function
 		properties: Function
+	},
+	Value: any,
+	Events: {
+		(p: any): $api.Events,
+		//	TODO	could probably use parameterized types to improve accuracy
+		Function: <P,R>(f: (p: P, events: any) => R, defaultListeners?: object) => (argument: P, receiver: $api.Events | object) => R
 	},
 	Iterable: {
 		/**
@@ -75,6 +76,7 @@ declare namespace $api {
 	const debug: $api["debug"];
 	const Iterable: $api["Iterable"];
 	const Events : $api["Events"];
+	const Value: $api["Value"]
 
 	interface Event {
 		type: string

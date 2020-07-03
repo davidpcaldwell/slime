@@ -49,6 +49,7 @@ interface jsh {
 
 declare namespace Packages {
 	const java: any
+	const javax: any
 }
 
 declare namespace jsh {
