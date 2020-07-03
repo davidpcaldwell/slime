@@ -78,5 +78,20 @@ namespace slime {
             new (prefix: string): Loader
         }
 		get: (path: string) => Resource
-	}
+    }
+
+    namespace runtime {
+        interface Exports {
+            mime: any
+            run: any
+            file: any
+            value: any
+            Resource: any
+            Loader: any
+            namespace: any
+            java: any
+            $platform: any
+            $api: $api
+        }
+    }
 }
