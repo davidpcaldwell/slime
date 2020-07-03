@@ -296,7 +296,11 @@
 
 			var methods = {};
 
-			/** @this { slime.Resource } */
+			/**
+			 * @type { slime.runtime.Exports["Resource"] }
+			 * @constructor
+			 * @param { slime.runtime.ResourceArgument } o
+			 */
 			var Resource = function(o) {
 				if (typeof(o.read) == "function") {
 					// TODO: ncdbg conditional breakpoint with above condition does not appear to work
@@ -324,9 +328,10 @@
 				}
 
 				if ( (!o.read || !o.read.string) && typeof(o.string) == "string") {
-					if (!o.read) o.read = {};
-					o.read.string = function() {
-						return o.string;
+					if (!o.read) o.read = {
+						string: function() {
+							return o.string;
+						}
 					};
 				}
 
