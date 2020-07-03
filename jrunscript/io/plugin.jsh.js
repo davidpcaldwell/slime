@@ -17,6 +17,7 @@ plugin({
 	},
 	load: function() {
 		var poi = $slime.getLibraryFile("poi");
+
 		if (poi) {
 			var addLibDirectory = function(dir) {
 				jsh.java.Array.adapt(dir.listFiles()).forEach(function(_file) {
