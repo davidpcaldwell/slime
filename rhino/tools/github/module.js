@@ -2,7 +2,7 @@
 
 /**
  * @typedef {object} slime.jrunscript.tools.github.Context
- * @property { { http: slime.jrunscript.http.client, shell: jsh.shell } } library
+ * @property { { http: slime.jrunscript.http.client.Exports, shell: jsh.shell } } library
  */
 
 /**
