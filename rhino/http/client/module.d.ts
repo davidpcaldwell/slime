@@ -1,10 +1,12 @@
 namespace slime.jrunscript.http.client {
+	type Pairs = { name: string, value: string }[] | { [x: string]: string | string[] }
+
 	interface Request {
 		method?: string
 		url: any
-		headers?: any
-		params?: any
-		parameters?: any
+		headers?: Pairs
+		params?: Pairs
+		parameters?: Pairs
 		authorization?: Authorization
 		proxy?: any
 		body?: any

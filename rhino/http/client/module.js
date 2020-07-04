@@ -13,7 +13,7 @@
 //@ts-check
 (
 	/**
-	 * @param {*} $context
+	 * @param { { debug: any, gae: any, api: { web: any, java: any, js: any, io: any } } } $context
 	 * @param { slime.jrunscript.http.client.Exports } $exports
 	 */
 	function($context,$exports) {
@@ -297,18 +297,39 @@
 			}
 		}
 
+		/**
+		 * @param { slime.jrunscript.http.client.Pairs } p
+		 * @returns { { name: string, value: string }[] }
+		 */
 		var Parameters = function(p) {
 			if (typeof(p) == "object" && p instanceof Array) {
 				return p;
 			} else if (typeof(p) == "object") {
 				var rv = [];
+
+				/** @type { (v: any) => v is Array } */
+				var isArray = function(v) {
+					return v instanceof Array
+				}
+
+				/** @type { (v: any) => v is string } */
+				var isString = function(v) {
+					return typeof(v) == "string";
+				}
+
+				/** @type { (v: any) => v is number } */
+				var isNumber = function(v) {
+					return typeof(v) == "number"
+				}
+
 				for (var x in p) {
-					if (typeof(p[x]) == "string") {
-						rv.push({ name: x, value: p[x] });
-					} else if (typeof(p[x]) == "number") {
-						rv.push({ name: x, value: String(p[x]) });
-					} else if (typeof(p[x]) == "object" && p[x] instanceof Array) {
-						p[x].forEach( function(item) {
+					var value = p[x];
+					if (isString(value)) {
+						rv.push({ name: x, value: value });
+					} else if (isNumber(value)) {
+						rv.push({ name: x, value: String(value) });
+					} else if (typeof(value) == "object" && isArray(value)) {
+						value.forEach( function(item) {
 							rv.push({ name: x, value: item });
 						});
 					} else {
@@ -327,7 +348,9 @@
 		var Client = function(configuration) {
 			var cookies = new Cookies();
 
-			/** @type { slime.jrunscript.http.client.Client["request"] } */
+			/**
+			 * @type { slime.jrunscript.http.client.Client["request"] }
+			 */
 			this.request = function(p) {
 				var method = (p.method) ? p.method.toUpperCase() : "GET";
 				var url = (function() {

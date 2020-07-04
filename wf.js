@@ -58,6 +58,7 @@ $exports.initialize = function() {
 			jsh.shell.console("VSCode: Execute the 'Java: Clean the Java language server workspace' command to update.");
 		}
 	}
+	//	TODO	should set up eslint here
 };
 
 $exports.tsc = function() {
