@@ -1,4 +1,11 @@
 namespace jsh.plugin {
+
+	//	See jsh/loader/jsh.js
+	interface $slime extends slime.jrunscript.runtime.Exports {
+		getSystemProperty(name: string): string
+		getEnvironment(): any
+	}
+
 	const plugin: (p: { isReady: () => boolean, load: () => void }) => void;
 }
 
