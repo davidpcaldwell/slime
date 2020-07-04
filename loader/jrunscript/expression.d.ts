@@ -4,9 +4,20 @@ namespace slime.jrunscript.runtime {
 			binary: () => slime.jrunscript.runtime.io.InputStream
 			text: () => slime.jrunscript.runtime.io.Reader
 		}
+		string?: any
 	}
 
 	interface ResourceArgument extends slime.runtime.ResourceArgument {
+		read: slime.runtime.ResourceArgument["read"] & {
+			string?: () => string
+			binary?: any
+			text?: any
+		}
+		stream?: any
+		_loaded: any
+		length?: any
+		write?: any
+		modified?: any
 	}
 
 	interface Exports extends slime.runtime.Exports {

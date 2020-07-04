@@ -121,7 +121,11 @@
 		}
 
 		loader.Resource = (function(was) {
-			return function(p) {
+			/**
+			 * @param { slime.jrunscript.runtime.ResourceArgument } p
+			 * @constructor
+			 */
+			var rv = function(p) {
 				if (p.stream && p.stream.binary) {
 					if (!p.read) p.read = {};
 					p.read.binary = (function(stream) {
@@ -247,11 +251,17 @@
 					}).call(this,this.name);
 				}
 
+				/** @property { string } string */
+				this.string = this.string;
+
 				if (typeof(this.string) == "undefined") Object.defineProperty(this, "string", {
 					get: loader.$api.deprecate(loader.$api.Function.memoized(function() {
 						return text().asString();
 					}))
 				});
+
+				/** @property { slime.jrunscript.runtime.Exports["Resources"] } */
+				this.read = this.read;
 
 				this.read = (function(was,global) {
 					return function(mode) {
@@ -442,7 +452,8 @@
 						);
 					}
 				}
-			}
+			};
+			return rv;
 		})(loader.Resource);
 
 		// //	Convert a Java inonit.script.engine.Code.Loader.Resource to a resource
