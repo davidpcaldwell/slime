@@ -196,6 +196,65 @@ $exports.merge = $api.Function.pipe(
 	}
 )
 
+var test = function(p) {
+	var logs = p.logs;
+	var stdio = {
+		output: logs.getRelativePath("stdout.txt").write(jsh.io.Streams.text),
+		error: logs.getRelativePath("stderr.txt").write(jsh.io.Streams.text)
+	};
+	jsh.shell.run({
+		command: $context.base.getRelativePath("jsh.bash"),
+		arguments: [
+			"--install-jdk"
+		]
+	});
+	jsh.shell.run({
+		command: $context.base.getRelativePath("jsh.bash"),
+		arguments: [
+			$context.base.getRelativePath("jsh/tools/install/rhino.jsh.js"),
+			"-replace"
+		]
+	});
+	jsh.shell.console("Running tests with output to " + logs + " ...");
+	var invocation = {
+		command: jsh.shell.jsh.src.getFile("jsh.bash"),
+		arguments: [
+			$context.base.getFile("contributor/suite.jsh.js")
+		],
+		stdio: {
+			output: {
+				line: function(line) {
+					stdio.output.write(line + "\n");
+				}
+			},
+			error: {
+				line: function(line) {
+					stdio.error.write(line + "\n");
+				}
+			}
+		},
+		evaluate: function(result) {
+			if (result.status != 0) {
+				jsh.shell.console("Failing because tests failed.");
+				jsh.shell.console("Output directory: " + logs);
+				jsh.shell.exit(1);
+			} else {
+				jsh.shell.console("Tests passed.");
+			}
+		}
+	};
+	jsh.shell.run(invocation);
+};
+
+$exports.test = function(p) {
+	var timestamp = jsh.time.When.now();
+	var logs = $context.base.getRelativePath("local/wf/logs/test").createDirectory({
+		recursive: true,
+		exists: function(dir) { return false; }
+	}).getRelativePath(timestamp.local().format("yyyy.mm.dd.HR.mi.sc")).createDirectory();
+	test({ logs: logs });
+}
+
 //	TODO	implement generation of git hooks so that we can get rid of separate pre-commit implementation
 $exports.commit = $api.Function.pipe(
 	function(p) {

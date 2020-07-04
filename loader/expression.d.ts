@@ -88,7 +88,7 @@ namespace slime {
     namespace runtime {
         interface ResourceArgument {
             read: {
-                string: () => string
+                string?: () => string
             },
             type: string | MimeType
             name: string
