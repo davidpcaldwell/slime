@@ -175,8 +175,16 @@
 		var $api = $platform.execute( $slime.getRuntimeScript("$api.js"), { $platform: $platform, $slime: $slime }, null);
 
 		var mime = (
+			/**
+			 * @param { slime.runtime.Exports["mime"] } $exports
+			 */
 			function($exports) {
 				$exports.Type = Object.assign(
+					/**
+					 * @param {string} media
+					 * @param {string} subtype
+					 * @param { { [x: string]: string } } parameters
+					 */
 					function(media,subtype,parameters) {
 						$api.Function.argument.isString({ index: 0, name: "media" }).apply(this,arguments);
 						$api.Function.argument.isString({ index: 1, name: "subtype" }).apply(this,arguments);
@@ -286,6 +294,7 @@
 		if (!$slime.flags) $slime.flags = {};
 
 		(function() {
+			/** @type { slime.runtime.Exports["mime"]["Type"]["fromName"] } */
 			mime.Type.fromName = function(path) {
 				if (/\.js$/.test(path)) return mime.Type.parse("application/javascript");
 				if (/\.css$/.test(path)) return mime.Type.parse("text/css");
@@ -302,12 +311,7 @@
 			 * @param { slime.runtime.ResourceArgument } o
 			 */
 			var Resource = function(o) {
-				if (typeof(o.read) == "function") {
-					// TODO: ncdbg conditional breakpoint with above condition does not appear to work
-					debugger;
-					throw new Error();
-				}
-				if (!this.type) this.type = (function(type,name) {
+				this.type = (function(type,name) {
 					if (typeof(type) == "string") return mime.Type.parse(type);
 					if (type instanceof mime.Type) return type;
 					if (!type && name) {
@@ -318,14 +322,7 @@
 					throw new TypeError("Resource 'type' property must be a MIME type or string.");
 				})(o.type,o.name);
 
-				if (!this.type && o.name) {
-					var nameType = mime.Type.fromName(o.name);
-					if (nameType) this.type = nameType;
-				}
-
-				if (o.name) {
-					this.name = o.name;
-				}
+				this.name = (o.name) ? o.name : void(0);
 
 				if ( (!o.read || !o.read.string) && typeof(o.string) == "string") {
 					if (!o.read) o.read = {

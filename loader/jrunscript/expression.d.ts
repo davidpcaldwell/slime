@@ -13,7 +13,9 @@ namespace slime.jrunscript.runtime {
 			binary?: any
 			text?: any
 		}
-		stream?: any
+		stream?: {
+			binary: slime.jrunscript.runtime.io.InputStream
+		}
 		_loaded: any
 		length?: any
 		write?: any

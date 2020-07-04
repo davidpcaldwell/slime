@@ -60,11 +60,16 @@ interface Array<T> {
 
 namespace slime {
     interface MimeType {
+        getMedia(): string
+        getSubtype(): string
+        getParameters(): { [x: string]: string }
+        is(string: string): boolean
+        toString(): string
     }
 
     interface Resource {
-        name?: string
-        type?: MimeType,
+        name: string
+        type: MimeType,
         read?: {
             (p: StringConstructor): string
             (p: JSON): any
@@ -87,16 +92,22 @@ namespace slime {
 
     namespace runtime {
         interface ResourceArgument {
+            type: string | MimeType
+            name?: string
             read: {
                 string?: () => string
             },
-            type: string | MimeType
-            name: string
             string?: string
         }
 
         interface Exports {
-            mime: any
+            mime: {
+                Type: {
+                    new (media: string, subtype: string, parameters: { [x: string]: string }): MimeType
+                    parse: (string: string) => MimeType
+                    fromName: (path: string) => MimeType
+                }
+            }
             run: any
             file: any
             value: any
