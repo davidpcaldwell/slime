@@ -20,7 +20,7 @@ interface $api {
 	Events: {
 		(p: any): $api.Events,
 		//	TODO	could probably use parameterized types to improve accuracy
-		Function: <P,R>(f: (p: P, events: any) => R, defaultListeners?: object) => (argument: P, receiver: $api.Events | object) => R
+		Function: <P,R>(f: (p: P, events: any) => R, defaultListeners?: object) => (argument: P, receiver: $api.Events.Function.Receiver) => R
 	},
 	Iterable: {
 		/**
