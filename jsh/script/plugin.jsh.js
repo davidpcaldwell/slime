@@ -20,7 +20,9 @@
 	 * @param { slime.Loader } $loader
 	 */
 	function(plugin,$slime,jsh,$loader) {
+		/** @returns { jsh.script.Exports } */
 		var load = function($context) {
+			/** @type { Partial<jsh.script.Exports> } */
 			var $exports = {};
 
 			if ($context.file) {
@@ -101,7 +103,12 @@
 				getopts: $exports.getopts
 			}).Application;
 
-			return $exports;
+			/** @type { $api.TypeScript.UnsafeCast<jsh.script.Exports> } */
+			var finished = function(partial) {
+				return partial;
+			}
+
+			return finished($exports);
 		};
 
 		plugin({
@@ -128,7 +135,7 @@
 					return rv;
 				})();
 
-				jsh.script = load(jsh.js.Object.set({}, {
+				jsh.script = load($api.Object.compose({
 					api: {
 						js: jsh.js,
 						web: jsh.js.web,
