@@ -4,6 +4,8 @@ namespace jsh.plugin {
 	interface $slime extends slime.jrunscript.runtime.Exports {
 		getSystemProperty(name: string): string
 		getEnvironment(): any
+		getInvocation(): any
+		getPackaged(): any
 	}
 
 	const plugin: (p: { isReady: () => boolean, load: () => void }) => void;
@@ -37,7 +39,10 @@ interface jsh {
 		loader: slime.Loader
 	};
 
-	shell: slime.jrunscript.shell.Exports & jsh.shell.Exports;
+	shell: slime.jrunscript.shell.Exports & jsh.shell.Exports & {
+		/** @deprecated */
+		getopts: jsh.script["getopts"]
+	};
 
 	unit: {
 		mock: slime.jsh.unit.mock;
