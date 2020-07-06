@@ -37,5 +37,6 @@ namespace slime.jrunscript.file {
 		Loader: new (p: { directory: Directory }) => slime.Loader
 		Pathname: (p: string) => Pathname
 		Searchpath: (pathnames: slime.jrunscript.file.Pathname[]) => Searchpath
+		filesystem: any
 	}
 }
