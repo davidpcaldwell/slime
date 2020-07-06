@@ -14,8 +14,9 @@ namespace jsh.plugin {
 interface jsh {
 	java: slime.jrunscript.host.Exports & {
 		tools: any
-	};
-	http: slime.jrunscript.http.client;
+	}
+
+	http: slime.jrunscript.http.client
 
 	tools: {
 		git: slime.jrunscript.git.Exports
@@ -31,31 +32,25 @@ interface jsh {
 		ncdbg: {}
 	}
 
-	script: {
-		arguments: string[],
-		getopts: Function & { UNEXPECTED_OPTION_PARSER: any, ARRAY: any },
-		file: slime.jrunscript.file.File,
-		Application: any,
-		loader: slime.Loader
-	};
+	script: jsh.script.Exports
 
 	shell: slime.jrunscript.shell.Exports & jsh.shell.Exports & {
 		/** @deprecated */
 		getopts: jsh.script["getopts"]
-	};
+	}
 
 	unit: {
 		mock: slime.jsh.unit.mock;
 	}
 
-	loader: any;
-	js: any;
-	io: any;
-	document: any;
-	file: slime.jrunscript.file.Exports;
-	time: any;
-	ui: any;
-	ip: any;
+	loader: any
+	js: any
+	io: any
+	document: any
+	file: slime.jrunscript.file.Exports
+	time: any
+	ui: any
+	ip: any
 	httpd: jsh.httpd.Exports
 }
 
