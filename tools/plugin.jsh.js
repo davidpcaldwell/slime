@@ -19,7 +19,64 @@
 
 				jsh.wf.project = {
 					base: base
+				};
+
+				jsh.wf.$f = {
+					option: {
+						/**
+						 * @param { Parameters<jsh.wf.Exports["$f"]["option"]["string"]>[0] } o
+						 */
+						string: function(o) {
+							/**
+							 * @param { jsh.wf.Invocation } p
+							 */
+							var rv = function(p) {
+								jsh.shell.console("string " + o.longname + " " + JSON.stringify(p));
+								var args = [];
+								for (var i=0; i<p.arguments.length; i++) {
+									if (o.longname && p.arguments[i] == "--" + o.longname) {
+										p.options[o.longname] = p.arguments[++i];
+									} else {
+										args.push(p.arguments[i]);
+									}
+								}
+								p.arguments = args;
+							}
+							return rv;
+						},
+						/**
+						 * @param { Parameters<jsh.wf.Exports["$f"]["option"]["boolean"]>[0] } o
+						 */
+						boolean: function(o) {
+							/**
+							 * @param { jsh.wf.Invocation } p
+							 */
+							var rv = function(p) {
+								var args = [];
+								for (var i=0; i<p.arguments.length; i++) {
+									if (o.longname && p.arguments[i] == "--" + o.longname) {
+										p.options[o.longname] = true;
+									} else {
+										args.push(p.arguments[i]);
+									}
+								}
+								p.arguments = args;
+							}
+							return rv;
+						}
+					}
 				}
+
+				jsh.wf.invocation = function(mutator) {
+					var rv = {
+						options: {},
+						arguments: Array.prototype.slice.call(jsh.script.arguments)
+					};
+					Array.prototype.slice.call(arguments).forEach(function(mutator) {
+						mutator(rv);
+					})
+					return rv;
+				};
 
 				var guiAsk = function(pp) {
 					return function(p) {
