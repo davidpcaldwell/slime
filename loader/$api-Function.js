@@ -69,6 +69,12 @@ $exports.Function.String = {
 };
 
 $exports.Function.Array = {
+	/** @type { $api["Function"]["Array"]["filter"] } */
+	filter: function(f) {
+		return function(array) {
+			return array.filter(f, this);
+		}
+	},
 	map: function(f) {
 		return function(array) {
 			return array.map(f, this);
