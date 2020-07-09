@@ -70,6 +70,13 @@ interface $api {
 		<T extends Function>(f: T): T
 	}
 	experimental: (a: any, b: any) => any
+	Function: {
+		Array: {
+			filter: <T>(f: (t: T) => boolean) => (ts: T[]) => T[]
+			map: any
+		}
+		[name: string]: amy
+	}
 }
 
 declare namespace $api {
@@ -97,6 +104,6 @@ declare namespace $api {
 	const deprecate: $api["deprecate"];
 	const experimental: $api["experimental"];
 
-	const Function: any;
+	const Function: $api["Function"];
 	const Object: $api["Object"];
 }
