@@ -15,7 +15,7 @@
 	(function polyfill() {
 		var ToObject = function(v) {
 			//	https://www.ecma-international.org/ecma-262/6.0/#sec-toobject
-			if (typeof(v) == "undefined" || v === null) throw new TypeError();
+			if (typeof(v) == "undefined" || v === null) throw new TypeError("ToObject() cannot be invoked with argument " + v);
 			if (typeof(v) == "boolean") return Boolean(v);
 			if (typeof(v) == "number") return Number(v);
 			if (typeof(v) == "string") return String(v);
