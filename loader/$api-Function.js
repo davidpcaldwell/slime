@@ -12,7 +12,7 @@ $exports.Function.memoized = function(f) {
 		if (arguments.length > 0) throw new TypeError("Memoized functions may not have arguments.");
 		//	Ignore 'this'
 		if (!returns) {
-			returns = { value: f() };
+			returns = { value: f.call(this) };
 		}
 		return returns.value;
 	};
