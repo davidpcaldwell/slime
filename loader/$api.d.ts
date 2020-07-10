@@ -13,7 +13,12 @@ interface $api {
 	}
 	Object: {
 		(p: any): any
-		compose: Function
+		compose: {
+			<T>(t: T): T
+			<T,U>(t: T, u: U): T & U
+			<T,U,V>(t: T, u: U, v: V): T & U & V
+			<T,U,V,W>(t: T, u: U, v: V, w: W): T & U & V & W
+		}
 		properties: Function
 	},
 	Value: any,
