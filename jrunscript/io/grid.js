@@ -74,19 +74,22 @@ if ($context.getClass("org.apache.poi.hssf.usermodel.HSSFWorkbook")) {
 
 		var format = {};
 
+		/** @type { slime.jrunscript.io.grid.excel.Format } */
 		format.xls = function(p) {
 			return new Packages.org.apache.poi.hssf.usermodel.HSSFWorkbook(
 				p.resource.read($context.Streams.binary).java.adapt()
 			);
 		}
 
+		/** @type { slime.jrunscript.io.grid.excel.Format } */
 		format.xlsx = function(p) {
 			return new Packages.org.apache.poi.xssf.usermodel.XSSFWorkbook(p.resource.read($context.Streams.binary).java.adapt());
 		};
 
 		this.format = format;
 
-		this.Workbook = function(p) {
+		/** @type { slime.jrunscript.io.grid.excel.Exports["Workbook"] } */
+		var WorkbookConstructor = function(p) {
 			if (!p.format) {
 				if (/\.xls$/.test(p.resource.name)) {
 					p.format = format.xls;
@@ -96,5 +99,7 @@ if ($context.getClass("org.apache.poi.hssf.usermodel.HSSFWorkbook")) {
 			}
 			return new Workbook(p.format(p));
 		}
+
+		this.Workbook = WorkbookConstructor;
 	}
 }
