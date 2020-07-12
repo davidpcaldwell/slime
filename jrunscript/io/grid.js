@@ -1,14 +1,42 @@
 if ($context.getClass("org.apache.poi.hssf.usermodel.HSSFWorkbook")) {
 	$exports.excel = new function() {
+		/** @type { slime.jrunscript.io.grid.excel.Exports["toJavascriptDate"] } */
+		this.toJavascriptDate = function(num) {
+			var _calendar = Packages.org.apache.poi.ss.usermodel.DateUtil.getJavaCalendar(num);
+			var _date = _calendar.getTime();
+			return new Date(_date.getTime());
+		}
+
 		var Cell = function(_cell) {
+			var getCellType = function(_cell) {
+				return String(_cell.getCellTypeEnum().toString());
+			}
+
 			this.toString = function() {
 				return String(_cell);
 			}
 
-			this.getStringValue = function() {
+			var getStringValue = function() {
 				var _string = _cell.getStringCellValue();
 				if (_string === null) return null;
 				return String(_string);
+			};
+
+			var getNumericValue = function() {
+				return _cell.getNumericCellValue();
+			}
+
+			this.getStringValue = $api.deprecate(getStringValue);
+
+			this.getValue = function() {
+				var type = getCellType(_cell);
+				if (type == "STRING") {
+					return getStringValue();
+				} else if (type == "NUMERIC") {
+					return getNumericValue();
+				} else {
+					throw new Error("Type: " + type);
+				}
 			}
 		};
 
@@ -41,7 +69,7 @@ if ($context.getClass("org.apache.poi.hssf.usermodel.HSSFWorkbook")) {
 
 			this.getRows = function() {
 				var rv = [];
-				for (var i=0; i<_sheet.getLastRowNum(); i++) {
+				for (var i=0; i<=_sheet.getLastRowNum(); i++) {
 					var _row = _sheet.getRow(i);
 					rv.push( (_row) ? new Row(_row) : null );
 				}
@@ -81,7 +109,7 @@ if ($context.getClass("org.apache.poi.hssf.usermodel.HSSFWorkbook")) {
 			);
 		}
 
-		/** @type { slime.jrunscript.io.grid.excel.Format } */
+		/** @type { slime.jrunscript.io.grid.excel.Exports["Format"] } */
 		format.xlsx = function(p) {
 			return new Packages.org.apache.poi.xssf.usermodel.XSSFWorkbook(p.resource.read($context.Streams.binary).java.adapt());
 		};
