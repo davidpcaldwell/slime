@@ -1,7 +1,24 @@
 namespace slime.jrunscript.io.grid.excel {
 	type Format = (p: { resource: slime.Resource }) => Packages.org.apache.poi.POIDocument
 
+	interface Cell {
+		getStringValue: () => string
+	}
+
+	interface Row {
+		getCells: () => Cell[]
+	}
+
+	interface Sheet {
+		name: string
+		getRows: () => Row[]
+	}
+
 	interface Workbook {
+		sheets: {
+			count: number,
+			list: () => Sheet[]
+		}
 	}
 
 	interface Exports {
@@ -13,6 +30,27 @@ namespace slime.jrunscript.io.grid.excel {
 			(p: { resource: slime.Resource , format?: Format }): Workbook
 			new (p: { resource: slime.Resource, format?: Format }): Workbook
 		}
+		toJavascriptDate: (num: number) => Date
+	}
+
+	function testSpreadsheet(module, workbook: Workbook) {
+		verify(workbook).sheets.is.type("object");
+
+		verify(workbook).sheets.count.is(1);
+		var sheet = workbook.sheets.list()[0];
+		verify(sheet).getRows().length.is(2);
+		var first = sheet.getRows()[0];
+		verify(first).getCells()[0].getStringValue().is("First Name");
+		var second = sheet.getRows()[1];
+		verify(second).getCells()[0].getValue().is("Lin-Manuel");
+		verify(second).getCells()[1].getValue().is("Miranda");
+		verify(second).getCells()[2].getValue().is(40);
+		var dob = second.getCells()[3].getValue();
+		var date = module.excel.toJavascriptDate(dob);
+		var time = jsh.time.When(date).local();
+		jsh.shell.console(time);
+		var day = time.day;
+		verify(day).format("yyyy Mmm dd").is("1980 Jan 16");
 	}
 
 	tests.suite = function() {
@@ -31,11 +69,14 @@ namespace slime.jrunscript.io.grid.excel {
 			};
 
 			(function() {
-				var workbook = new module.excel.Workbook({ resource: getFile("1.xlsx") });
-				verify(workbook).is.type("object");
-				verify(workbook).sheets.is.type("object");
-				jsh.shell.console(workbook.sheets.count);
-				verify(workbook).sheets.count.is(1);
+				//	Test data created:
+				//	1.xlsx is slime-1 document in OneDrive
+				//	1.xls created via https://www.zamzar.com/convert/xlsx-to-xls/
+				var workbook: Workbook = new module.excel.Workbook({ resource: getFile("1.xlsx") });
+				testSpreadsheet(module, workbook);
+
+				var old: Workbook = new module.excel.Workbook({ resource: getFile("1.xls") });
+				testSpreadsheet(module, old);
 			})();
 		} else {
 			verify("POI not installed").is("POI not installed");
