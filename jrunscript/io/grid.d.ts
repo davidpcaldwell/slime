@@ -2,6 +2,8 @@ namespace slime.jrunscript.io.grid.excel {
 	type Format = (p: { resource: slime.Resource }) => Packages.org.apache.poi.POIDocument
 
 	interface Cell {
+		getValue(): string | number
+		/** @deprecated */
 		getStringValue: () => string
 	}
 
@@ -48,7 +50,6 @@ namespace slime.jrunscript.io.grid.excel {
 		var dob = second.getCells()[3].getValue();
 		var date = module.excel.toJavascriptDate(dob);
 		var time = jsh.time.When(date).local();
-		jsh.shell.console(time);
 		var day = time.day;
 		verify(day).format("yyyy Mmm dd").is("1980 Jan 16");
 	}
