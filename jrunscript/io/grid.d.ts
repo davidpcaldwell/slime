@@ -44,6 +44,7 @@ namespace slime.jrunscript.io.grid.excel {
 		var first = sheet.getRows()[0];
 		verify(first).getCells()[0].getStringValue().is("First Name");
 		var second = sheet.getRows()[1];
+		verify(second).getCells().length.is(4);
 		verify(second).getCells()[0].getValue().is("Lin-Manuel");
 		verify(second).getCells()[1].getValue().is("Miranda");
 		verify(second).getCells()[2].getValue().is(40);
