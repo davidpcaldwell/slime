@@ -80,6 +80,7 @@ interface $api {
 			filter: <T>(f: (t: T) => boolean) => (ts: T[]) => T[]
 			map: any
 		}
+		memoized: <T>(f: () => T) => () => T
 		[name: string]: amy
 	}
 }
