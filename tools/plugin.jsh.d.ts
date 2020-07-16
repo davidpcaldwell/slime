@@ -35,7 +35,7 @@ namespace jsh.wf {
 		project: {
 			base: slime.jrunscript.file.Directory
 			submodule: {
-				status: (p: {}) => Array<{
+				status: () => Array<{
 					path: string
 					branch: slime.jrunscript.git.Branch
 					state: ReturnType<ReturnType<Exports["git"]["compareTo"]>>

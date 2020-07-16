@@ -32,7 +32,7 @@
 				jsh.wf.project = {
 					base: base,
 					submodule: {
-						status: function(p) {
+						status: function() {
 							var repository = castToLocal(jsh.tools.git.Repository({ directory: base }));
 							var submodules = repository.submodule();
 							return submodules.map(function(submodule) {
