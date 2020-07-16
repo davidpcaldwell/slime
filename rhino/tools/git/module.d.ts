@@ -48,10 +48,10 @@ namespace slime {
 
 			interface Repository {
 				reference: string,
-				clone: (p: {
+				clone: (argument: Repository.argument & {
 					to: slime.jrunscript.file.Pathname,
 					recurseSubmodules?: boolean
-				} & Repository.argument, events?: object ) => slime.jrunscript.git.Repository.Local
+				}, events?: object ) => slime.jrunscript.git.Repository.Local
 			}
 
 			namespace Repository {
@@ -109,7 +109,12 @@ namespace slime {
 					push: Function,
 					mergeBase: (p: { commits: string[] }) => Commit,
 					config: (p: { arguments: string[] }) => object,
-					submodule: Function & {
+					submodule: {
+						(): {
+							path: string
+							repository: Local
+							commit: Commit
+						}[]
 						add: (p: {
 							repository: slime.jrunscript.git.Repository,
 							path: string
