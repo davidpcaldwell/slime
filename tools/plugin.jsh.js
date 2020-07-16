@@ -2,7 +2,7 @@
 (
 	/**
 	 * @param { jsh } jsh
-	 * @param {jsh.plugin.plugin} plugin
+	 * @param { jsh.plugin.plugin } plugin
 	 */
 	function(jsh,plugin) {
 		plugin({
@@ -18,7 +18,8 @@
 					prohibitUntrackedFiles: void(0),
 					$f: void(0),
 					invocation: void(0),
-					prohibitModifiedSubmodules: void(0)
+					prohibitModifiedSubmodules: void(0),
+					cli: void(0)
 				};
 
 				var base = (function() {
@@ -71,6 +72,38 @@
 							}
 						} else {
 							jsh.shell.console(repository + " is up to date.");
+						}
+					}
+				};
+
+				jsh.wf.cli = {
+					initialize: function($context,$exports) {
+						$exports.tsc = function() {
+							jsh.wf.typescript.tsc();
+						};
+
+						$exports.submodule = {
+							status: void(0)
+						};
+
+						$exports.submodule.status = function(p) {
+							var repository = jsh.tools.git.Repository({ directory: $context.base });
+							jsh.shell.console("Fetching all updates ...");
+							repository.fetch({ all: true, recurseSubmodules: true });
+							jsh.shell.console("Fetched updates.");
+							jsh.shell.console("");
+							var status = jsh.wf.project.submodule.status();
+							status.forEach(function(item) {
+								if (item.branch.name != "master") {
+									jsh.shell.console(item.path + ": not on master");
+								}
+								if (item.state.behind.length) {
+									jsh.shell.console(item.path + ": behind (" + item.state.behind.length + " commits)");
+								}
+								if (item.state.paths) {
+									jsh.shell.console(item.path + ": locally modified");
+								}
+							});
 						}
 					}
 				};

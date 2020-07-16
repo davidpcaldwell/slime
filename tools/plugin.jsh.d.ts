@@ -22,12 +22,35 @@ namespace jsh.wf {
 
 	type Mutator<T> = <T>(t: T) => void
 
+	namespace cli {
+		interface Arguments {
+			options: {},
+			arguments: string[]
+		}
+
+		interface Command {
+			(p: Arguments): void
+		}
+	}
+
 	interface Exports {
 		$f: {
 			option: {
 				string: (c: { longname: string }) => (p: Invocation) => void
 				boolean: (c: { longname: string }) => (p: Invocation) => void
 			}
+		}
+
+		cli: {
+			initialize(
+				context: jsh.wf.Context,
+				$exports: {
+					tsc: jsh.wf.cli.Command
+					submodule: {
+						status: jsh.wf.cli.Command
+					}
+				}
+			)
 		}
 
 		invocation: (mutator: Mutator<Invocation>) => Invocation
