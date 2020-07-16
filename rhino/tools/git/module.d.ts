@@ -91,7 +91,7 @@ namespace slime {
 						prune?: boolean
 						recurseSubmodules?: boolean
 						stdio?: any
-					}) => void
+					}, events?: $api.Events.Function.Receiver) => void
 
 					merge: (p: {
 						name: string
