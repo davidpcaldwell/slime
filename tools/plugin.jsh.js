@@ -1,16 +1,25 @@
 //@ts-check
 (
 	/**
+	 * @param { jsh } jsh
 	 * @param {jsh.plugin.plugin} plugin
 	 */
-	function(plugin) {
+	function(jsh,plugin) {
 		plugin({
 			isReady: function() {
 				return Boolean(jsh.file && jsh.shell && jsh.ui && jsh.tools && jsh.tools.git);
 			},
 			load: function() {
-				//@ts-ignore
-				jsh.wf = {};
+				jsh.wf = {
+					project: void(0),
+					git: void(0),
+					typescript: void(0),
+					requireGitIdentity: void(0),
+					prohibitUntrackedFiles: void(0),
+					$f: void(0),
+					invocation: void(0),
+					prohibitModifiedSubmodules: void(0)
+				};
 
 				var base = (function() {
 					if (jsh.shell.environment.PROJECT) return jsh.file.Pathname(jsh.shell.environment.PROJECT).directory;
@@ -18,7 +27,34 @@
 				})();
 
 				jsh.wf.project = {
-					base: base
+					base: base,
+					updateSubmodule: function(p) {
+						/* @returns { slime.jrunscript.git.Repository.Local } */
+						var castToLocal = $api.Function.identity;
+
+						var repository = castToLocal(jsh.tools.git.Repository({ directory: base.getSubdirectory(p.path) }));
+
+						jsh.shell.console("Update subrepository " + repository + " ...");
+						var current = repository.branch().filter(function(branch) {
+							return branch.current;
+						})[0];
+						jsh.shell.console("Subrepository is on branch: " + current.name);
+						repository.fetch({ all: true });
+						var comparison = jsh.wf.git.compareTo("origin/master")(repository);
+						jsh.shell.console(JSON.stringify(comparison,void(0),4));
+						if (comparison.paths) {
+							jsh.shell.console(repository + " is modified; aborting.");
+							jsh.shell.exit(1);
+						}
+						if (comparison.behind.length) {
+							if (!comparison.ahead.length) {
+								repository.merge({ ffOnly: true, name: "origin/master" });
+							} else {
+								jsh.shell.console("Cannot update: merge is required.");
+								jsh.shell.exit(1);
+							}
+						}
+					}
 				};
 
 				jsh.wf.$f = {
@@ -183,4 +219,4 @@
 		})
 	}
 //@ts-ignore
-)(plugin)
+)(jsh,plugin)

@@ -1,3 +1,7 @@
+interface jsh {
+	wf: jsh.wf.Exports
+}
+
 namespace jsh.wf {
 	namespace Exports.requireGitIdentity {
 		interface get {
@@ -30,6 +34,7 @@ namespace jsh.wf {
 
 		project: {
 			base: slime.jrunscript.file.Directory
+			updateSubmodule: (p: { path: string }) => void
 		}
 
 		git: {
