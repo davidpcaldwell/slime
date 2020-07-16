@@ -146,4 +146,9 @@ namespace slime {
             $api: $api
         }
     }
+
+    type Codec<T,E> = {
+        encode: (t: T) => E
+        decode: (e: E) => T
+    }
 }

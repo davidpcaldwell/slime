@@ -8,6 +8,15 @@ namespace slime.time {
 		}
 	}
 
+	interface Time {
+		format(mask: string): string
+	}
+
+	interface When {
+		unix: number
+		local(): Time
+	}
+
 	interface Context {
 		zones: object
 		old: {
@@ -30,7 +39,11 @@ namespace slime.time {
 			Zone: object
 		}
 		When: {
-			new (): any
+			new (): When
+			new (date: Date): When
+			codec: {
+				rfc3339: slime.Codec<When,string>
+			}
 			order: Function
 		}
 		java: object
