@@ -1,5 +1,7 @@
 $exports.Function = $context.old.Function;
 
+$exports.Function.identity = function(v) { return v; };
+
 $exports.Function.type = function(o) {
 	if (o === null) return "null";
 	return typeof(o);

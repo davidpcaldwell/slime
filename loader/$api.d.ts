@@ -76,6 +76,7 @@ interface $api {
 	}
 	experimental: (a: any, b: any) => any
 	Function: {
+		identity: <T>(t: T) => T
 		Array: {
 			filter: <T>(f: (t: T) => boolean) => (ts: T[]) => T[]
 			map: any

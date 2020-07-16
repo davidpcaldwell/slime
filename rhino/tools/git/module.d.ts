@@ -67,11 +67,11 @@ namespace slime {
 					branch: (p?: {
 						remote?: boolean
 						all?: boolean
-					}) => slime.jrunscript.git.Repository.Local.Branch[]
+					}) => slime.jrunscript.git.Branch[]
 
 					branch: (p: {
 						old: boolean
-					}) => slime.jrunscript.git.Repository.Local.Branch
+					}) => slime.jrunscript.git.Branch
 
 					branch: (p: {
 						name: string
