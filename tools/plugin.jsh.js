@@ -56,6 +56,10 @@
 							return branch.current;
 						})[0];
 						jsh.shell.console("Subrepository is on branch: " + current.name);
+						if (current.name != "master") {
+							jsh.shell.console("Cannot update: not on master, but " + current.name);
+							jsh.shell.exit(1);
+						}
 						repository.fetch({ all: true });
 						var comparison = jsh.wf.git.compareTo("origin/master")(repository);
 						jsh.shell.console(JSON.stringify(comparison,void(0),4));
