@@ -26,12 +26,28 @@
 					return jsh.shell.PWD;
 				})();
 
+				/* @returns { slime.jrunscript.git.Repository.Local } */
+				var castToLocal = $api.Function.identity;
+
 				jsh.wf.project = {
 					base: base,
+					submodule: {
+						status: function(p) {
+							var repository = castToLocal(jsh.tools.git.Repository({ directory: base }));
+							var submodules = repository.submodule();
+							return submodules.map(function(submodule) {
+								var current = submodule.repository.branch().filter(function(branch) {
+									return branch.current;
+								})[0];
+								return {
+									path: submodule.path,
+									branch: current,
+									state: jsh.wf.git.compareTo("origin/master")(submodule.repository)
+								}
+							});
+						}
+					},
 					updateSubmodule: function(p) {
-						/* @returns { slime.jrunscript.git.Repository.Local } */
-						var castToLocal = $api.Function.identity;
-
 						var repository = castToLocal(jsh.tools.git.Repository({ directory: base.getSubdirectory(p.path) }));
 
 						jsh.shell.console("Update subrepository " + repository + " ...");
@@ -53,6 +69,8 @@
 								jsh.shell.console("Cannot update: merge is required.");
 								jsh.shell.exit(1);
 							}
+						} else {
+							jsh.shell.console(repository + " is up to date.");
 						}
 					}
 				};

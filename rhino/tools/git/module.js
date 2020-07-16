@@ -59,29 +59,8 @@
 					);
 				};
 
-				/**
-				 * @typedef { slime.jrunscript.git.Repository.argument & { [x: string]: any } } CommandArgument
-				 */
-
-				/**
-				 * @typedef { CommandArgument & { _this: slime.jrunscript.git.Repository } } RepositoryArgument
-				 */
-
-				/**
-				 * @param { {
-				 * 		command: string
-				 * 		arguments: (this: string[], p: RepositoryArgument) => void
-				 * 		environment?: (this: object, p: CommandArgument) => void | object
-				 * 		stdio?: (p: CommandArgument, events: $api.Events) => slime.jrunscript.shell.Stdio
-				 * 		evaluate?: Function
-				 * } } m
-				 * @returns { any }
-				 */
 				this.command = function(m) {
 					var program = environment.program;
-					/**
-					 * @param { CommandArgument } p
-					 */
 					function rv(p,events) {
 						var args = [];
 						addConfigurationArgumentsTo(args,p.config);
@@ -259,6 +238,9 @@
 				}
 			};
 
+			/**
+			 * @type { slime.jrunscript.git.Repository.Local["fetch"] }
+			 */
 			var fetch = cli.command({
 				command: "fetch",
 				arguments: function(p) {
@@ -554,6 +536,7 @@
 
 				//	Setup and Config
 
+				/** @type { slime.jrunscript.git.Repository.Local["config"] } */
 				this.config = command(config);
 
 				//	Getting and Creating Projects
@@ -571,6 +554,7 @@
 				myremote.getUrl = command(remote.getUrl);
 				this.remote = myremote;
 
+				/** @type { slime.jrunscript.git.Repository.Local["status"] } */
 				this.status = function(p) {
 					var self = this;
 
@@ -612,6 +596,7 @@
 					});
 				};
 
+				/** @type { slime.jrunscript.git.Repository.Local["commit"] } */
 				this.commit = command(commit);
 
 				//	Branching and Merging
@@ -796,6 +781,7 @@
 
 				//	Sharing and Updating Projects
 
+				/** @type { slime.jrunscript.git.Repository.Local["fetch"] } */
 				this.fetch = command(fetch);
 
 				this.push = function(p) {
@@ -815,6 +801,7 @@
 					});
 				};
 
+				/** @type { slime.jrunscript.git.Repository.Local["submodule"] } */
 				this.submodule = Object.assign(function(p) {
 					if (!p) p = {};
 					if (!p.command) {
