@@ -38,5 +38,6 @@ namespace slime.jrunscript.file {
 		Pathname: (p: string) => Pathname
 		Searchpath: (pathnames: slime.jrunscript.file.Pathname[]) => Searchpath
 		filesystem: any
+		navigate: any
 	}
 }
