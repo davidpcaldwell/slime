@@ -64,25 +64,27 @@ namespace slime {
 				interface Local extends slime.jrunscript.git.Repository {
 					directory: slime.jrunscript.file.Directory
 
-					branch: (p?: {
-						remote?: boolean
-						all?: boolean
-					}) => slime.jrunscript.git.Branch[]
+					branch: {
+						(p: {
+							delete: string
+							force?: boolean
+						}): void
 
-					branch: (p: {
-						old: boolean
-					}) => slime.jrunscript.git.Branch
+						(p?: {
+							remote?: boolean
+							all?: boolean
+						}): slime.jrunscript.git.Branch[]
 
-					branch: (p: {
-						name: string
-						startPoint?: string
-						force?: boolean
-					}) => void
+						(p: {
+							old: boolean
+						}): slime.jrunscript.git.Branch
 
-					branch: (p: {
-						delete: string
-						force: boolean
-					}) => void
+						(p: {
+							name: string
+							startPoint?: string
+							force?: boolean
+						}): void
+					}
 
 					show: (p: { object: string}  ) => Commit
 
