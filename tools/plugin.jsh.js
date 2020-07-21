@@ -70,6 +70,7 @@
 						if (comparison.behind.length) {
 							if (!comparison.ahead.length) {
 								repository.merge({ ffOnly: true, name: "origin/master" });
+								repository.submodule.update({ recursive: true });
 							} else {
 								jsh.shell.console("Cannot update: merge is required.");
 								jsh.shell.exit(1);
