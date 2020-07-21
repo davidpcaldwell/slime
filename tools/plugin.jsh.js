@@ -140,7 +140,28 @@
 									message: "Update " + p.options.path + " submodule"
 								});
 							}
-						)
+						);
+
+						$exports.commit = $api.Function.pipe(
+							function(p) {
+								var rv = {
+									options: $api.Object.compose(p.options),
+									arguments: []
+								};
+								for (var i=0; i<p.arguments.length; i++) {
+									if (p.arguments[i] == "--message") {
+										rv.options.message = p.arguments[++i];
+									} else {
+										rv.arguments.push(p.arguments[i]);
+									}
+								}
+								return rv;
+							},
+							function(p) {
+								if (!p.options.message) throw new Error("No message");
+								operations.commit({ message: p.options.message });
+							}
+						);
 					}
 				};
 
