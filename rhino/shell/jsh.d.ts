@@ -19,6 +19,7 @@ namespace jsh.shell {
 			process: {
 				list: () => slime.jrunscript.shell.system.Process[]
 			}
+			sudo: slime.jrunscript.shell.system.Exports["sudo"]
 		}
 		environment: any
 		run: Function & { stdio: any }
