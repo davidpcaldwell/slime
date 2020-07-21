@@ -81,7 +81,16 @@
 				};
 
 				jsh.wf.cli = {
-					initialize: function($context,$exports) {
+					initialize: function($context,operations,$exports) {
+						if (arguments.length == 2) {
+							//	old signature
+							$api.deprecate(function(invocation) {
+								$context = invocation[0];
+								operations = {};
+								$exports = invocation[1];
+							})(arguments);
+						}
+
 						$exports.tsc = function() {
 							jsh.wf.typescript.tsc();
 						};
@@ -108,7 +117,30 @@
 									jsh.shell.console(item.path + ": locally modified");
 								}
 							});
-						}
+						};
+
+						$exports.submodule.update = $api.Function.pipe(
+							function(p) {
+								var rv = {
+									options: $api.Object.compose(p.options),
+									arguments: []
+								};
+								for (var i=0; i<p.arguments.length; i++) {
+									if (p.arguments[i] == "--path") {
+										rv.options.path = p.arguments[++i];
+									} else {
+										rv.arguments.push(p.arguments[i]);
+									}
+								}
+								return rv;
+							},
+							function(p) {
+								jsh.wf.project.updateSubmodule({ path: p.options.path });
+								operations.commit({
+									message: "Update " + p.options.path + " submodule"
+								});
+							}
+						)
 					}
 				};
 
