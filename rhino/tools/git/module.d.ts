@@ -121,7 +121,10 @@ namespace slime {
 							repository: slime.jrunscript.git.Repository,
 							path: string
 						}) => slime.jrunscript.git.Repository.Local,
-						update: any
+						update: (p: argument & {
+							init?: boolean,
+							recursive?: boolean
+						}) => void
 					}
 
 					log: (p?: {
