@@ -11,35 +11,6 @@
 //	END LICENSE
 
 //@ts-check
-
-/**
- * @typedef { object } slime.jrunscript.shell.system.Context
- * @property { any } run
- * @property { any } os
- * @property { { js: any, file: any, io: any } } api
- * @property { any } environment
- * @property { slime.jrunscript.file.Directory } TMPDIR
- * @property { any } PATH
- * @property { any } replacePath
- */
-
-/**
- * @typedef { object } slime.jrunscript.shell.system.Exports
- * @property { any } ps
- * @property { any } sudo
- * @property { any } ping
- */
-
-/**
- * @typedef { object } slime.jrunscript.shell.system.Process
- * @property { number } id
- * @property { slime.jrunscript.shell.system.Process } parent
- * @property { string } command
- * @property { slime.jrunscript.shell.system.Process[] } children
- * @property { () => void } kill
- */
-
-void(0);
 (
 	/**
 	 * @param {slime.jrunscript.shell.system.Context} $context
@@ -157,36 +128,12 @@ void(0);
 
 		if ($context.os.name == "Mac OS X") {
 			var correctPassword;
-			/** @type { Function & { initialize: Function, PasswordRequired: new (string) => Error, PasswordIncorrect: new (string) => Error }} */
-			var sudo = function sudo(p) {
-				if (!correctPassword) {
-					if (p.password) {
-						if (typeof(p.password) == "string") {
-							sudo.initialize(p.password);
-						} else if (typeof(p.password) == "function") {
-							sudo.initialize(p.password());
-						} else {
-							throw new TypeError("p.password is incorrect type: " + typeof(p.password));
-						}
-					} else {
-						throw new sudo.PasswordRequired("Password required for sudo.");
-					}
-				}
-				var args = [p.command];
-				if (p.arguments) {
-					args.push.apply(args,p.arguments);
-				}
-				$context.run($context.api.js.Object.set({}, p, {
-					command: "sudo",
-					arguments: args
-				}));
-			};
-			sudo.PasswordIncorrect = $context.api.js.Error.Type("PasswordIncorrect");
-			sudo.PasswordRequired = $context.api.js.Error.Type("PasswordRequired");
+			var PasswordIncorrect = $context.api.js.Error.Type("PasswordIncorrect");
+			var PasswordRequired = $context.api.js.Error.Type("PasswordRequired");
 			//	TODO	the below method results in 3 failures from OS point of view; apparently askpass program is run three times before
 			//			giving up. Is there a way to verify password in one try and then use it?
 			//	TODO	developing a true graphical program would be one way to deal with the above
-			sudo.initialize = function(password) {
+			var sudo_initialize = function(password) {
 				$context.run({
 					command: "sudo",
 					arguments: ["-k"]
@@ -220,8 +167,34 @@ void(0);
 				script.remove();
 				correctPassword = password;
 			};
-			$exports.sudo = sudo;
-			$exports.sudo.desktop = function(p) {
+			/** @type { slime.jrunscript.shell.system.Exports["sudo"] } */
+			var sudo = function sudo(p) {
+				if (!correctPassword) {
+					if (p.password) {
+						if (typeof(p.password) == "string") {
+							sudo_initialize(p.password);
+						} else if (typeof(p.password) == "function") {
+							sudo_initialize(p.password());
+						} else {
+							throw new TypeError("p.password is incorrect type: " + typeof(p.password));
+						}
+					} else {
+						throw new PasswordRequired("Password required for sudo.");
+					}
+				}
+				var args = [p.command];
+				if (p.arguments) {
+					args.push.apply(args,p.arguments);
+				}
+				$context.run($context.api.js.Object.set({}, p, {
+					command: "sudo",
+					arguments: args
+				}));
+			};
+			sudo.PasswordIncorrect = PasswordIncorrect;
+			sudo.PasswordRequired = PasswordRequired;
+			sudo.initialize = sudo_initialize;
+			var sudo_desktop = function(p) {
 				if (p.askpass && (p.askpass.author || p.askpass.prompt)) {
 					var args = (p.arguments) ? p.arguments : [];
 					if (true) {
@@ -270,6 +243,8 @@ void(0);
 					}
 				}
 			};
+			sudo.desktop = sudo_desktop;
+			$exports.sudo = sudo;
 
 			$exports.ping = function(p) {
 				//	tested on Mac OS X
