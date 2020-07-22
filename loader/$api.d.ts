@@ -82,6 +82,18 @@ interface $api {
 			map: any
 		}
 		memoized: <T>(f: () => T) => () => T
+		pipe: {
+			<T,U,V,R>(
+				f: (t: T) => U,
+				g: (u: U) => V,
+				h: (v: V) => R
+			): (t: T) => R
+			<T,U,R>(
+				f: (t: T) => U,
+				g: (u: U) => R
+			): (t: T) => R
+			<T,R>(f: (t: T) => R): (t: T) => R
+		}
 		[name: string]: amy
 	}
 }
