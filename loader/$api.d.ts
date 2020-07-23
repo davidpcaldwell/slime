@@ -94,6 +94,14 @@ interface $api {
 			): (t: T) => R
 			<T,R>(f: (t: T) => R): (t: T) => R
 		}
+		Object: {
+			entries: {
+				(p: {}): [string, any][]
+			}
+			fromEntries: {
+				(p: [string, any][]): { [x: string]: any }
+			}
+		}
 		[name: string]: amy
 	}
 }
