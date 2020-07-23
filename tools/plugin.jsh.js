@@ -87,8 +87,8 @@
 							//	old signature
 							$api.deprecate(function(invocation) {
 								$context = invocation[0];
-								operations = {};
 								$exports = invocation[1];
+								operations = {};
 							})(arguments);
 						}
 
