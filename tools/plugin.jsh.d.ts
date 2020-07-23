@@ -24,7 +24,7 @@ namespace jsh.wf {
 
 	namespace cli {
 		interface Arguments {
-			options: {},
+			options: { [x: string]: any },
 			arguments: string[]
 		}
 
