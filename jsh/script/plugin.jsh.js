@@ -103,12 +103,11 @@
 				getopts: $exports.getopts
 			}).Application;
 
-			/** @type { $api.TypeScript.UnsafeCast<jsh.script.Exports> } */
-			var finished = function(partial) {
-				return partial;
-			}
+			/** @returns {jsh.script.Exports} */
+			var finished = function(partial) { return partial; }
 
-			return finished($exports);
+			var rv = finished($exports);
+			return rv;
 		};
 
 		plugin({

@@ -1,9 +1,3 @@
-namespace $api {
-	namespace TypeScript {
-		type UnsafeCast<T> = <T>(v: any) => T
-	}
-}
-
 namespace jsh.script {
 	interface Invocation {
 		options: { [x: string]: any }
