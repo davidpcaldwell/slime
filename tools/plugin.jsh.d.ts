@@ -43,7 +43,7 @@ namespace jsh.wf {
 
 		cli: {
 			initialize(
-				context: jsh.wf.Context,
+				$context: jsh.wf.Context,
 				$exports: {
 					tsc: jsh.wf.cli.Command
 					submodule: {
