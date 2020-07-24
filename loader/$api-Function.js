@@ -43,6 +43,12 @@ $exports.Function.property = function(name) {
 	}
 };
 
+$exports.Function.safeNavigate = function(name) {
+	return function(p) {
+		return (p == null) ? void(0) : p[name];
+	}
+};
+
 $exports.Function.is = function(value) {
 	return function(v) {
 		return v === value;
