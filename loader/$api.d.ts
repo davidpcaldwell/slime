@@ -102,39 +102,6 @@ declare namespace $api {
 	const deprecate: $api["deprecate"];
 	const experimental: $api["experimental"];
 
-	interface Function {
-		identity: <T>(t: T) => T
-		returning: <T>(t: T) => () => T
-		Array: {
-			filter: <T>(f: (t: T) => boolean) => (ts: T[]) => T[]
-			find: <T>(f: (t: T) => boolean) => (ts: T[]) => T | undefined
-			map: any
-		}
-		safeNavigate<T,K>(k: keyof T): (t: T) => T[k]
-		memoized: <T>(f: () => T) => () => T
-		pipe: {
-			<T,U,V,R>(
-				f: (t: T) => U,
-				g: (u: U) => V,
-				h: (v: V) => R
-			): (t: T) => R
-			<T,U,R>(
-				f: (t: T) => U,
-				g: (u: U) => R
-			): (t: T) => R
-			<T,R>(f: (t: T) => R): (t: T) => R
-		}
-		Object: {
-			entries: {
-				(p: {}): [string, any][]
-			}
-			fromEntries: {
-				(p: [string, any][]): { [x: string]: any }
-			}
-		}
-		[name: string]: amy
-	}
-
 	const Function: Function;
 	const Object: $api["Object"];
 }

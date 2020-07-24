@@ -2,7 +2,7 @@
 (
 	/**
 	 *
-	 * @param { { old: Partial<$api.Function> } } $context
+	 * @param { { $api: any, old: Partial<$api.Function> } } $context
 	 * @param { { Function: Partial<$api.Function> }} $exports
 	 */
 	function($context,$exports) {
@@ -76,6 +76,14 @@
 			};
 		};
 
+		$exports.Function.Boolean = {
+			map: function(p) {
+				return function(b) {
+					return (b) ? p.true : p.false
+				}
+			}
+		}
+
 		$exports.Function.String = {
 			split: function(delimiter) {
 				return function(string) {
@@ -98,6 +106,22 @@
 			map: function(f) {
 				return function(array) {
 					return array.map(f, this);
+				}
+			},
+			groupBy: function(c) {
+				return function(array) {
+					return $context.$api.Iterable.groupBy({
+						array: array,
+						group: c.group,
+						groups: c.groups,
+						codec: c.codec,
+						count: false
+					}).array().map(function(row) {
+						return {
+							group: row.group,
+							array: row.array
+						}
+					});
 				}
 			}
 		};
