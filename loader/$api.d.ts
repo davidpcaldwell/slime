@@ -104,8 +104,10 @@ declare namespace $api {
 
 	interface Function {
 		identity: <T>(t: T) => T
+		returning: <T>(t: T) => () => T
 		Array: {
 			filter: <T>(f: (t: T) => boolean) => (ts: T[]) => T[]
+			find: <T>(f: (t: T) => boolean) => (ts: T[]) => T | undefined
 			map: any
 		}
 		safeNavigate<T,K>(k: keyof T): (t: T) => T[k]
