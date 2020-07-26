@@ -15,7 +15,7 @@ namespace $api {
 		Boolean: {
 			map: <T>(p: { true: T, false: T }) => (b: boolean) => T
 		}
-		safeNavigate<T,K>(k: keyof T): (t: T) => T[k]
+		optionalChain<T,K>(k: keyof T): (t: T) => T[k]
 		memoized: <T>(f: () => T) => () => T
 		pipe: {
 			<T,U,V,W,R>(

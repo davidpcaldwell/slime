@@ -51,7 +51,7 @@
 			}
 		};
 
-		$exports.Function.safeNavigate = function(name) {
+		$exports.Function.optionalChain = function(name) {
 			return function(p) {
 				return (p == null) ? void(0) : p[name];
 			}
