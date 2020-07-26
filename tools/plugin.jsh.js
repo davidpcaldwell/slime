@@ -82,13 +82,18 @@
 				};
 
 				jsh.wf.cli = {
+					/**
+					 * @param { jsh.wf.Context } $context
+					 * @param { { commit: (p: { message: string }) => void  } } operations
+					 * @param { Parameters<jsh.wf.Exports["cli"]["initialize"]>[2] } $exports
+					 */
 					initialize: function($context,operations,$exports) {
 						if (arguments.length == 2) {
 							//	old signature
 							$api.deprecate(function(invocation) {
 								$context = invocation[0];
 								$exports = invocation[1];
-								operations = {};
+								operations = { commit: void(0) };
 							})(arguments);
 						}
 
@@ -97,7 +102,8 @@
 						};
 
 						$exports.submodule = {
-							status: void(0)
+							status: void(0),
+							update: void(0)
 						};
 
 						$exports.submodule.status = function(p) {
