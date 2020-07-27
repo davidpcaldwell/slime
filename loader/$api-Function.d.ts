@@ -43,6 +43,10 @@ namespace $api {
 				(p: [string, any][]): { [x: string]: any }
 			}
 		}
+		conditional: {
+			(test: any, yes: any, no: any): any
+			<T,R>(p: { condition: (t: T) => boolean, true: (t: T) => R, false: (t: T) => R }): (t: T) => R
+		}
 		[name: string]: amy
 	}
 }

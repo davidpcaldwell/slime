@@ -70,10 +70,18 @@
 		};
 
 		$exports.Function.conditional = function(test,yes,no) {
-			return function() {
-				var condition = test.apply(this,arguments);
-				return (condition) ? yes.apply(this,arguments) : no.apply(this,arguments);
-			};
+			if (arguments.length == 3) {
+				return function() {
+					var condition = test.apply(this,arguments);
+					return (condition) ? yes.apply(this,arguments) : no.apply(this,arguments);
+				};
+			} else {
+				var p = test;
+				return function(argument) {
+					var condition = p.condition(argument);
+					return condition ? p.true(argument) : p.false(argument);
+				}
+			}
 		};
 
 		$exports.Function.Boolean = {
