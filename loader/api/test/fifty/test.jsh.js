@@ -10,11 +10,11 @@
 	var Verify = jsh.loader.file(jsh.shell.jsh.src.getFile("loader/api/verify.js")).Verify;
 
 	var execute = function(file) {
-		/** @type { slime.definition.verify.Scope } */
+		/** @type { slime.definition.verify.Scope & { success: boolean } } */
 		var scope = new function() {
 			this.success = true;
 
-			/** @param { slime.definition.verify.ScopeTest } f */
+			/** @param { slime.definition.verify.Scope.Test } f */
 			this.test = function(f) {
 				var result = f();
 				if (result.success === false) {

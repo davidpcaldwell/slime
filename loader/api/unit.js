@@ -37,7 +37,7 @@
 		//	We have an object called Object in this file, so this
 		var defineProperty = (function() { return this.Object.defineProperty; })();
 
-		/** @type { slime.definition.verify.Factory } */
+		/** @type { slime.definition.unit.Verify.Factory } */
 		var Verify = $loader.file("verify.js").Verify
 
 		$exports.Verify = Verify;
