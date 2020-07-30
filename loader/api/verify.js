@@ -294,13 +294,6 @@
 				return new Value(value,name);
 			};
 
-			//	For TypeScript
-			rv.scenario = void(0);
-			rv.suite = void(0);
-			rv.test = void(0);
-			rv.fire = void(0);
-			rv.scope = void(0);
-
 			return rv;
 		};
 
