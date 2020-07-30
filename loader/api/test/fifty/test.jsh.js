@@ -31,9 +31,10 @@
 
 		var verify = Verify(scope);
 
-		var file = parameters.options.declaration.file;
-
-		var loader = new jsh.file.Loader({ directory: file.parent });
+		var loader = Object.assign(
+			new jsh.file.Loader({ directory: file.parent }),
+			{ getRelativePath: function(path) { return file.parent.getRelativePath(path); } }
+		)
 
 		var tests = {
 			types: {}
@@ -50,7 +51,7 @@
 		return scope.success;
 	};
 
-	var success = execute(parameters.options.file);
+	var success = execute(parameters.options.declaration.file);
 	jsh.shell.console( (success) ? "Success." : "FAILED!" );
 	jsh.shell.exit( (success) ? 0 : 1 )
 //@ts-ignore
