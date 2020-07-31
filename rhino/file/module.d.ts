@@ -1,9 +1,10 @@
 namespace slime.jrunscript.file {
 	interface Pathname {
-		directory: Directory,
-		parent: Pathname,
-		createDirectory: (p?: { exists?: (d: Directory) => boolean, recursive?: boolean } ) => Directory,
-		write: (any,any?) => any,
+		directory: Directory
+		basename: string
+		parent: Pathname
+		createDirectory: (p?: { exists?: (d: Directory) => boolean, recursive?: boolean } ) => Directory
+		write: (any,any?) => any
 		file: File
 		java: {
 			adapt: () => Packages.java.io.File
