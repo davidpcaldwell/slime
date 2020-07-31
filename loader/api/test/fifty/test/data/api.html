@@ -4,18 +4,10 @@
 	</head>
 	<body>
 		<script type="application/x.jsapi#tests">
-			var tests = {
-				types: {}
-			};
-			$jsapi.loader.run(
-				"module.d.ts",
-				{
-					$loader: $jsapi.loader,
-					tests: tests,
-					verify: verify
-				}
-			);
-			tests.suite();
+			$jsapi.loader.fifty({
+				path: "module.d.ts",
+				verify: verify
+			});
 		</script>
 	</body>
 </html>
