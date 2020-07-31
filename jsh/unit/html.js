@@ -286,6 +286,29 @@ var Scope = function(suite,environment) {
 			return suite.getRelativePath(path);
 		};
 
+		/**
+		 *
+		 * @param { { path: string, verify: slime.definition.verify.Verify }} p
+		 */
+		delegate.fifty = function(p) {
+			var tests = { types: {} };
+			delegate.run(
+				p.path,
+				{
+					$loader: delegate,
+					tests: tests,
+					//	TODO	for now we just flatten everything and run within a single scope, using a single verify and
+					//			just invoking the function during run()
+					verify: p.verify,
+					run: function(f,name) {
+						f();
+					}
+				}
+			);
+			if (!tests.suite) throw new TypeError("A 'suite' function must be added to the tests object.");
+			tests.suite();
+		}
+
 		return delegate;
 	}
 
