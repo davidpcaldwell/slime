@@ -16,7 +16,7 @@
 		};
 
 		this.start = function(indent,name) {
-			write(indent, "RUN: " + name);
+			write(indent, "Running: " + name);
 		};
 
 		this.end = function(indent,name,result) {
@@ -119,7 +119,6 @@
 	};
 
 	var success = execute(parameters.options.declaration.file);
-	jsh.shell.console( (success) ? "Success." : "FAILED!" );
 	jsh.shell.exit( (success) ? 0 : 1 )
 //@ts-ignore
 })({ file: jsh.script.file, arguments: jsh.script.arguments });
