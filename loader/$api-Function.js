@@ -131,6 +131,11 @@
 						}
 					});
 				}
+			},
+			join: function(string) {
+				return function(array) {
+					return array.join(string);
+				}
 			}
 		};
 

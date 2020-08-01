@@ -104,7 +104,7 @@ namespace slime {
 
 					checkout: (p: { branch: string, stdio?: any  }) => void
 
-					status: () => { branch: Branch, paths?: { [path: string]: any }},
+					status: () => { branch: Branch, paths?: { [path: string]: string }},
 
 					remote: ( () => void ) & { getUrl: ({ name: string }) => string },
 					stash: any,
