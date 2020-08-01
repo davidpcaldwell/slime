@@ -49,6 +49,7 @@ namespace jsh.wf {
 						commit: (p: { message: string }) => void
 					},
 					$exports: {
+						status: jsh.wf.cli.Command
 						tsc: jsh.wf.cli.Command
 						submodule: {
 							status: jsh.wf.cli.Command

@@ -106,12 +106,42 @@
 							update: void(0)
 						};
 
-						$exports.submodule.status = function(p) {
+						var fetch = $api.Function.memoized(function() {
 							var repository = jsh.tools.git.Repository({ directory: $context.base });
 							jsh.shell.console("Fetching all updates ...");
 							repository.fetch({ all: true, recurseSubmodules: true });
 							jsh.shell.console("Fetched updates.");
 							jsh.shell.console("");
+							return repository;
+						});
+
+						$exports.status = function(p) {
+							var repository = fetch();
+							var status = repository.status();
+							var output = $api.Function.result(
+								status.paths,
+								$api.Function.conditional({
+									condition: Boolean,
+									true: $api.Function.pipe(
+										$api.Function.Object.entries,
+										$api.Function.Array.map(function(entry) {
+											return entry[1] + " " + entry[0];
+										}),
+										$api.Function.Array.join("\n")
+									),
+									false: $api.Function.returning(null)
+								})
+							);
+							if (output) jsh.shell.console(output);
+							if (repository.submodule().length) {
+								jsh.shell.console("");
+								jsh.shell.console("Submodules:");
+								$exports.submodule.status(p);
+							}
+						}
+
+						$exports.submodule.status = function(p) {
+							fetch();
 							var status = jsh.wf.project.submodule.status();
 							status.forEach(function(item) {
 								if (item.branch.name != "master") {
@@ -126,7 +156,7 @@
 							});
 						};
 
-						$exports.submodule.update = $api.Function.pipe(
+						if (operations.commit) $exports.submodule.update = $api.Function.pipe(
 							function(p) {
 								var rv = {
 									options: $api.Object.compose(p.options),
@@ -149,7 +179,7 @@
 							}
 						);
 
-						$exports.commit = $api.Function.pipe(
+						if (operations.commit) $exports.commit = $api.Function.pipe(
 							function(p) {
 								var rv = {
 									options: $api.Object.compose(p.options),
