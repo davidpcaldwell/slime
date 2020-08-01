@@ -97,7 +97,8 @@
 					scope: scope,
 					verify: verify
 				};
-				verify = Verify(new Scope({ parent: scope }));
+				scope = new Scope({ parent: scope });
+				verify = Verify(scope);
 				code();
 				var result = scope.success;
 				scope = was.scope;
