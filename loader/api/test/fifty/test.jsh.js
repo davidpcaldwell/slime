@@ -62,8 +62,7 @@
 		this.test = function(f) {
 			var result = f();
 			if (result.success === false) {
-				fail();
-				console.test(this.depth() + 1, result.message);
+				this.fail();
 			} else if (result.success === true) {
 				//	do nothing
 			} else {
