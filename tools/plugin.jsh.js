@@ -102,22 +102,57 @@
 						};
 
 						$exports.submodule = {
-							status: void(0),
 							update: void(0)
 						};
 
 						var fetch = $api.Function.memoized(function() {
 							var repository = jsh.tools.git.Repository({ directory: $context.base });
 							jsh.shell.console("Fetching all updates ...");
-							repository.fetch({ all: true, recurseSubmodules: true });
+							repository.fetch({
+								all: true,
+								prune: true,
+								recurseSubmodules: true
+							}, {
+								remote: function(e) {
+									var remote = e.detail;
+									var url = repository.remote.getUrl({ name: remote });
+									jsh.shell.console("Fetching updates from: " + url);
+								},
+								submodule: (function() {
+									var first = true;
+									return function(e) {
+										if (first) {
+											jsh.shell.stdio.error.write("Submodules: ");
+											first = false;
+										}
+										if (e.detail) {
+											jsh.shell.stdio.error.write(".");
+										} else {
+											jsh.shell.console("");
+										}
+									}
+								})(),
+								stdout_other: function(e) {
+									if (e.detail) jsh.shell.console("STDOUT: " + e.detail);
+								},
+								stderr_other: function(e) {
+									if (e.detail) jsh.shell.console("STDERR: " + e.detail);
+								}
+							});
+							jsh.shell.console("");
 							jsh.shell.console("Fetched updates.");
 							jsh.shell.console("");
 							return repository;
 						});
 
 						$exports.status = function(p) {
+							//	TODO	add option for offline
 							var repository = fetch();
+							var vsOriginMaster = jsh.wf.git.compareTo("origin/master")(repository);
 							var status = repository.status();
+							jsh.shell.console("Current branch: " + status.branch.name);
+							if (vsOriginMaster.ahead.length) jsh.shell.console("ahead of origin/master: " + vsOriginMaster.ahead.length);
+							if (vsOriginMaster.behind.length) jsh.shell.console("behind origin/master: " + vsOriginMaster.behind.length);
 							var output = $api.Function.result(
 								status.paths,
 								$api.Function.conditional({
@@ -133,28 +168,27 @@
 								})
 							);
 							if (output) jsh.shell.console(output);
+							if (vsOriginMaster.behind.length && !vsOriginMaster.ahead.length && !vsOriginMaster.paths) {
+								jsh.shell.console("Fast-forwarding ...");
+								repository.merge({ ffOnly: true, name: "origin/master" });
+							}
 							if (repository.submodule().length) {
 								jsh.shell.console("");
 								jsh.shell.console("Submodules:");
-								$exports.submodule.status(p);
+								var submodules = jsh.wf.project.submodule.status();
+								submodules.forEach(function(item) {
+									if (item.branch.name != "master") {
+										jsh.shell.console(item.path + ": not on master");
+									}
+									if (item.state.behind.length) {
+										jsh.shell.console(item.path + ": behind (" + item.state.behind.length + " commits)");
+									}
+									if (item.state.paths) {
+										jsh.shell.console(item.path + ": locally modified");
+									}
+								});
 							}
 						}
-
-						$exports.submodule.status = function(p) {
-							fetch();
-							var status = jsh.wf.project.submodule.status();
-							status.forEach(function(item) {
-								if (item.branch.name != "master") {
-									jsh.shell.console(item.path + ": not on master");
-								}
-								if (item.state.behind.length) {
-									jsh.shell.console(item.path + ": behind (" + item.state.behind.length + " commits)");
-								}
-								if (item.state.paths) {
-									jsh.shell.console(item.path + ": locally modified");
-								}
-							});
-						};
 
 						if (operations.commit) $exports.submodule.update = $api.Function.pipe(
 							function(p) {

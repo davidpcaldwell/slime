@@ -52,7 +52,6 @@ namespace jsh.wf {
 						status: jsh.wf.cli.Command
 						tsc: jsh.wf.cli.Command
 						submodule: {
-							status: jsh.wf.cli.Command
 							update: jsh.wf.cli.Command
 						},
 						commit: any
