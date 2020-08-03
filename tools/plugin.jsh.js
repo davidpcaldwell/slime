@@ -83,9 +83,7 @@
 
 				jsh.wf.cli = {
 					/**
-					 * @param { jsh.wf.Context } $context
-					 * @param { { commit: (p: { message: string }) => void  } } operations
-					 * @param { Parameters<jsh.wf.Exports["cli"]["initialize"]>[2] } $exports
+					 * @type { jsh.wf.Exports["cli"]["initialize"] }
 					 */
 					initialize: function($context,operations,$exports) {
 						if (arguments.length == 2) {
@@ -93,8 +91,30 @@
 							$api.deprecate(function(invocation) {
 								$context = invocation[0];
 								$exports = invocation[1];
-								operations = { commit: void(0) };
+								operations = {};
 							})(arguments);
+						}
+
+						if (operations.test && !operations.commit) {
+							operations.commit = function(p) {
+								var repository = jsh.tools.git.Repository({ directory: $context.base });
+								jsh.wf.requireGitIdentity({ repository: repository }, {
+									console: function(e) {
+										jsh.shell.console(e.detail);
+									}
+								});
+								jsh.wf.prohibitUntrackedFiles({ repository: repository });
+								jsh.wf.prohibitModifiedSubmodules({ repository: repository });
+								jsh.wf.typescript.tsc();
+								var success = operations.test();
+								if (!success) {
+									throw new Error("Tests failed.");
+								}
+								repository.commit({
+									all: true,
+									message: p.message
+								});
+							}
 						}
 
 						$exports.tsc = function() {
