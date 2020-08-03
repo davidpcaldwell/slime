@@ -46,7 +46,8 @@ namespace jsh.wf {
 				(
 					$context: jsh.wf.Context,
 					operations: {
-						commit: (p: { message: string }) => void
+						test?: () => boolean
+						commit?: (p: { message: string }) => void
 					},
 					$exports: {
 						status: jsh.wf.cli.Command
