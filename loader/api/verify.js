@@ -196,6 +196,8 @@
 				}
 			});
 
+			//	TODO	Clean up the four ts-ignores inserted below
+
 			var Object = function(o,name) {
 				Value.call(this,o,name);
 
@@ -265,6 +267,7 @@
 					try {
 						var mapped = f.call(o,o);
 						var value = rv(mapped,((name) ? name : "")+"{" + f + "}");
+						//@ts-ignore
 						value.threw = new DidNotThrow(mapped,"{" + f + "}");
 						return value;
 					} catch (e) {
@@ -279,6 +282,7 @@
 			var delegates = [];
 
 			/** @type { slime.definition.verify.Verify } */
+			//@ts-ignore
 			var rv = function(value,name) {
 				for (var i=0; i<delegates.length; i++) {
 					if (delegates[i].accept(value)) {
@@ -289,8 +293,10 @@
 					var localName = (function() {
 						if (name) return name;
 					})();
+					//@ts-ignore
 					return new Object(value,localName);
 				}
+				//@ts-ignore
 				return new Value(value,name);
 			};
 
