@@ -90,6 +90,13 @@
 
 				jsh.wf.cli = {
 					$f: {
+						command: function(p) {
+							return {
+								command: p.arguments[0],
+								options: p.options,
+								arguments: p.arguments.slice(1)
+							}
+						},
 						option: {
 							/**
 							 * @param { Parameters<jsh.wf.Exports["cli"]["$f"]["option"]["string"]>[0] } o
