@@ -1,16 +1,3 @@
-namespace jsh.plugin {
-
-	//	See jsh/loader/jsh.js
-	interface $slime extends slime.jrunscript.runtime.Exports {
-		getSystemProperty(name: string): string
-		getEnvironment(): any
-		getInvocation(): any
-		getPackaged(): any
-	}
-
-	const plugin: (p: { isReady: () => boolean, load: () => void }) => void;
-}
-
 interface jsh {
 	java: slime.jrunscript.host.Exports & {
 		tools: any
@@ -78,6 +65,5 @@ declare namespace jsh {
 	const time: jsh['time'];
 	const ui: jsh['ui'];
 	const ip: jsh['ip'];
-	const wf: jsh.wf.Exports;
 	const httpd: jsh['httpd']
 }

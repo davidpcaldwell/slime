@@ -1,23 +1,30 @@
 //@ts-check
 (
 	/**
+	 * @param { jsh.plugin.$slime } $slime
 	 * @param { jsh } jsh
 	 * @param { jsh.plugin.plugin } plugin
 	 */
-	function(jsh,plugin) {
+	function($slime,jsh,plugin) {
 		plugin({
 			isReady: function() {
 				return Boolean(jsh.file && jsh.shell && jsh.ui && jsh.tools && jsh.tools.git);
 			},
 			load: function() {
+				jsh.$fifty = {
+					plugin: {
+						mock: function(p) {
+							return $slime.plugins.mock(p);
+						}
+					}
+				};
+
 				jsh.wf = {
 					project: void(0),
 					git: void(0),
 					typescript: void(0),
 					requireGitIdentity: void(0),
 					prohibitUntrackedFiles: void(0),
-					$f: void(0),
-					invocation: void(0),
 					prohibitModifiedSubmodules: void(0),
 					cli: void(0)
 				};
@@ -82,6 +89,57 @@
 				};
 
 				jsh.wf.cli = {
+					$f: {
+						option: {
+							/**
+							 * @param { Parameters<jsh.wf.Exports["cli"]["$f"]["option"]["string"]>[0] } o
+							 */
+							string: function(o) {
+								var rv = function(p) {
+									var args = [];
+									for (var i=0; i<p.arguments.length; i++) {
+										if (o.longname && p.arguments[i] == "--" + o.longname) {
+											p.options[o.longname] = p.arguments[++i];
+										} else {
+											args.push(p.arguments[i]);
+										}
+									}
+									p.arguments = args;
+								}
+								return rv;
+							},
+							/**
+							 * @param { Parameters<jsh.wf.Exports["cli"]["$f"]["option"]["boolean"]>[0] } o
+							 */
+							boolean: function(o) {
+								var rv = function(p) {
+									var args = [];
+									for (var i=0; i<p.arguments.length; i++) {
+										if (o.longname && p.arguments[i] == "--" + o.longname) {
+											p.options[o.longname] = true;
+										} else {
+											args.push(p.arguments[i]);
+										}
+									}
+									p.arguments = args;
+								}
+								return rv;
+							}
+						}
+					},
+					invocation: function() {
+						/** @type { jsh.wf.cli.Arguments } */
+						var rv = {
+							options: {},
+							arguments: Array.prototype.slice.call(jsh.script.arguments)
+						};
+						/** @type { jsh.wf.Mutator<jsh.wf.cli.Arguments>[] } */
+						var mutators = Array.prototype.slice.call(arguments);
+						mutators.forEach(function(mutator) {
+							mutator(rv);
+						})
+						return rv;
+					},
 					/**
 					 * @type { jsh.wf.Exports["cli"]["initialize"] }
 					 */
@@ -256,63 +314,6 @@
 					}
 				};
 
-				jsh.wf.$f = {
-					option: {
-						/**
-						 * @param { Parameters<jsh.wf.Exports["$f"]["option"]["string"]>[0] } o
-						 */
-						string: function(o) {
-							/**
-							 * @param { jsh.wf.Invocation } p
-							 */
-							var rv = function(p) {
-								jsh.shell.console("string " + o.longname + " " + JSON.stringify(p));
-								var args = [];
-								for (var i=0; i<p.arguments.length; i++) {
-									if (o.longname && p.arguments[i] == "--" + o.longname) {
-										p.options[o.longname] = p.arguments[++i];
-									} else {
-										args.push(p.arguments[i]);
-									}
-								}
-								p.arguments = args;
-							}
-							return rv;
-						},
-						/**
-						 * @param { Parameters<jsh.wf.Exports["$f"]["option"]["boolean"]>[0] } o
-						 */
-						boolean: function(o) {
-							/**
-							 * @param { jsh.wf.Invocation } p
-							 */
-							var rv = function(p) {
-								var args = [];
-								for (var i=0; i<p.arguments.length; i++) {
-									if (o.longname && p.arguments[i] == "--" + o.longname) {
-										p.options[o.longname] = true;
-									} else {
-										args.push(p.arguments[i]);
-									}
-								}
-								p.arguments = args;
-							}
-							return rv;
-						}
-					}
-				}
-
-				jsh.wf.invocation = function(mutator) {
-					var rv = {
-						options: {},
-						arguments: Array.prototype.slice.call(jsh.script.arguments)
-					};
-					Array.prototype.slice.call(arguments).forEach(function(mutator) {
-						mutator(rv);
-					})
-					return rv;
-				};
-
 				var guiAsk = function(pp) {
 					return function(p) {
 						//	TODO	this "works" but could be improved in terms of font size and screen placement
@@ -418,4 +419,4 @@
 		})
 	}
 //@ts-ignore
-)(jsh,plugin)
+)($slime,jsh,plugin)

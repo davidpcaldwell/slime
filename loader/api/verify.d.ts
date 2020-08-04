@@ -13,6 +13,7 @@ namespace slime.definition.verify {
 			type: (name: string) => void
 			not: (t: T) => void
 		}
+		evaluate: any
 	} & (
 		T extends Array ? { length: Subject<number> } : {}
 	)

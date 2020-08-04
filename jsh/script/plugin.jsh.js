@@ -45,7 +45,6 @@
 			$exports.arguments = $context.arguments;
 			$exports.addClasses = $api.deprecate($context.api.addClasses);
 
-
 			//	TODO	should jsh.script.loader support some sort of path structure?
 			if ($context.packaged) {
 				$exports.loader = $context.packaged.loader;

@@ -208,19 +208,13 @@ ${PROJECT}/[<i>path/to/slime</i>]/tools/wf "$@"
 			</li>
 		</ul>
 	</div>
-	<script type="application/x.jsapi#tests">
-		var tests = {
-			types: {}
-		};
-		$jsapi.loader.run(
-			"plugin.jsh.d.ts",
-			{
-				$loader: $jsapi.loader,
-				tests: tests,
+	<div jsapi:id="fifty">
+		<script type="application/x.jsapi#tests">
+			$jsapi.loader.fifty({
+				path: "plugin.jsh.d.ts",
 				verify: verify
-			}
-		);
-		tests.suite();
-	</script>
+			});
+		</script>
+	</div>
 </body>
 </html>

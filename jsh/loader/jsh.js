@@ -139,7 +139,7 @@
 
 		$slime.plugins = {
 			mock: function(p) {
-				plugins.mock(p);
+				return plugins.mock(p);
 			}
 		};
 
