@@ -36,6 +36,57 @@ namespace $api {
 			): (t: T) => R
 			<T,R>(f: (t: T) => R): (t: T) => R
 		}
+		result: {
+			<P,T,U,V,W,X,Y,R>(
+				p: P,
+				f: (p: P) => T,
+				g: (t: T) => U,
+				h: (u: U) => V,
+				i: (v: V) => W,
+				j: (w: W) => X,
+				k: (x: x) => Y,
+				l: (y: Y) => R
+			): R
+			<P,T,U,V,W,X,R>(
+				p: P,
+				f: (p: P) => T,
+				g: (t: T) => U,
+				h: (u: U) => V,
+				i: (v: V) => W,
+				j: (w: W) => X,
+				k: (x: x) => R
+			): R
+			<P,T,U,V,W,R>(
+				p: P,
+				f: (p: P) => T,
+				g: (t: T) => U,
+				h: (u: U) => V,
+				i: (v: V) => W,
+				j: (w: W) => R
+			): R
+			<P,T,U,V,R>(
+				p: P,
+				f: (p: P) => T,
+				g: (t: T) => U,
+				h: (u: U) => V,
+				i: (v: V) => R
+			): R
+			<P,T,U,R>(
+				p: P,
+				f: (p: P) => T,
+				g: (t: T) => U,
+				h: (u: U) => R
+			): R
+			<P,T,R>(
+				p: P,
+				f: (p: P) => T,
+				g: (t: T) => R
+			): R
+			<P,R>(
+				p: P,
+				f: (i: P) => R
+			): R
+		}
 		Object: {
 			entries: {
 				(p: {}): [string, any][]
