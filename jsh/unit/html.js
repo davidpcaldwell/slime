@@ -255,14 +255,15 @@ var Scope = function(suite,environment) {
 					global: scope,
 					jsh: scope.jsh
 				});
+				var rv = {
+					global: scope,
+					jsh: scope.jsh,
+					plugins: plugins
+				};
 				if (configuration.evaluate) {
-					return configuration.evaluate({
-						global: scope,
-						jsh: scope.jsh,
-						plugins: plugins
-					});
+					return configuration.evaluate(rv);
 				} else {
-					return void(0);
+					return rv;
 				}
 			}
 		}

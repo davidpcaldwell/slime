@@ -78,9 +78,23 @@
 
 		var verify = Verify(scope);
 
+		var delegate = new jsh.file.Loader({ directory: file.parent });
 		var loader = Object.assign(
-			new jsh.file.Loader({ directory: file.parent }),
-			{ getRelativePath: function(path) { return file.parent.getRelativePath(path); } }
+			delegate,
+			{
+				getRelativePath: function(path) { return file.parent.getRelativePath(path); },
+				plugin: {
+					mock: function(p) {
+						var global = (function() { return this; })();
+						return global.jsh.$fifty.plugin.mock(
+							$api.Object.compose(
+								p,
+								{ $loader: delegate }
+							)
+						);
+					}
+				}
+			}
 		)
 
 		var tests = {
@@ -88,6 +102,7 @@
 		};
 
 		loader.run(file.pathname.basename, $api.Object.compose({
+			jsh: jsh,
 			$loader: loader,
 			run: function(code,name) {
 				if (!name) name = "run";

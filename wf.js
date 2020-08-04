@@ -61,6 +61,10 @@ $exports.initialize = function() {
 	//	TODO	should set up eslint here
 };
 
+$exports.hello = function(p) {
+	jsh.shell.console("Hello, World!");
+}
+
 $exports.tsc = function() {
 	jsh.wf.typescript.tsc();
 }
