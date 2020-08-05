@@ -90,11 +90,42 @@
 
 				jsh.wf.cli = {
 					$f: {
-						command: function(p) {
-							return {
-								command: p.arguments[0],
-								options: p.options,
-								arguments: p.arguments.slice(1)
+						command: {
+							parse: function(p) {
+								return {
+									command: p.arguments[0],
+									options: p.options,
+									arguments: p.arguments.slice(1)
+								}
+							},
+							execute: function(p) {
+								var invocation = jsh.wf.cli.$f.command.parse(p.arguments);
+
+								var method = (function(command) {
+									var tokens = command.split(".");
+									/** @type { jsh.wf.cli.Interface | jsh.wf.cli.Command } */
+									var rv = p.interface;
+									for (var i=0; i<tokens.length; i++) {
+										rv = rv[tokens[i]];
+									}
+									return rv;
+								})(invocation.command);
+
+								if (typeof(method) == "function") {
+									method.call(
+										null,
+										{
+											options: invocation.options,
+											arguments: invocation.arguments
+										}
+									);
+								} else if (!method) {
+									jsh.shell.console("Command not found: " + invocation.command);
+									jsh.shell.exit(1);
+								} else {
+									jsh.shell.console("Implementation is not a function: " + method);
+									jsh.shell.exit(1);
+								}
 							}
 						},
 						option: {

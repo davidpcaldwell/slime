@@ -27,12 +27,19 @@ namespace jsh.wf {
 		export interface Command {
 			(p: Arguments): void
 		}
+
+		export interface Interface {
+			[x: string]: ( Command | Interface )
+		}
 	}
 
 	export interface Exports {
 		cli: {
 			$f: {
-				command: (p: cli.Arguments) => cli.Invocation
+				command: {
+					parse: (p: cli.Arguments) => cli.Invocation
+					execute: (p: { interface: cli.Interface, arguments: cli.Arguments }) => void
+				}
 				option: {
 					string: (c: { longname: string }) => Mutator<cli.Arguments>
 					boolean: (c: { longname: string }) => Mutator<cli.Arguments>
