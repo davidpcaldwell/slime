@@ -37,6 +37,17 @@ namespace $api {
 			<T,R>(f: (t: T) => R): (t: T) => R
 		}
 		result: {
+			<P,T,U,V,W,X,Y,Z,R>(
+				p: P,
+				f: (p: P) => T,
+				g: (t: T) => U,
+				h: (u: U) => V,
+				i: (v: V) => W,
+				j: (w: W) => X,
+				k: (x: x) => Y,
+				l: (y: Y) => Z,
+				m: (z: Z) => R
+			): R
 			<P,T,U,V,W,X,Y,R>(
 				p: P,
 				f: (p: P) => T,
