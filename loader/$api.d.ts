@@ -22,6 +22,9 @@ interface $api {
 		properties: Function
 	},
 	Value: any,
+	Error: {
+		Type: <T extends Error>(p: { name: string, extends?: Function }) => new (message: string, properties: object) => T
+	}
 	Events: {
 		(p: any): $api.Events,
 		//	TODO	could probably use parameterized types to improve accuracy
