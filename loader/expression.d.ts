@@ -127,6 +127,25 @@ namespace slime {
             string?: string
         }
 
+        interface $engine {
+            execute: (script: { name: string, code: string }, scope: object, target: object) => any
+            Object: {
+                defineProperty: {
+                    setReadOnly: any
+                }
+            }
+            MetaObject: any
+        }
+
+        interface $slime {
+            getRuntimeScript(path: string): any
+            flags: object
+            getCoffeeScript(): any
+            typescript?: {
+                compile: (code: string) => string
+            }
+        }
+
         interface Exports {
             mime: {
                 Type: {
