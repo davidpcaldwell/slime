@@ -10,8 +10,6 @@ namespace jsh.wf {
 		base: slime.jrunscript.file.Directory
 	}
 
-	export type Mutator<T> = <T>(t: T) => void
-
 	export namespace cli {
 		export interface Arguments {
 			options: { [x: string]: any },
@@ -31,6 +29,8 @@ namespace jsh.wf {
 		export interface Interface {
 			[x: string]: ( Command | Interface )
 		}
+
+		export type Reviser = $api.Function.impure.Reviser<cli.Arguments>
 	}
 
 	export interface Exports {
@@ -41,16 +41,16 @@ namespace jsh.wf {
 					execute: (p: { interface: cli.Interface, arguments: cli.Arguments }) => void
 				}
 				option: {
-					string: (c: { longname: string }) => Mutator<cli.Arguments>
-					boolean: (c: { longname: string }) => Mutator<cli.Arguments>
+					string: (c: { longname: string }) => cli.Reviser
+					boolean: (c: { longname: string }) => cli.Reviser
 				}
 			}
 
 			invocation: {
-				(mutator: Mutator<cli.Arguments>, m2: Mutator<cli.Arguments>, m3: Mutator<cli.Arguments>, m4: Mutator<cli.Arguments>): cli.Arguments
-				(mutator: Mutator<cli.Arguments>, m2: Mutator<cli.Arguments>, m3: Mutator<cli.Arguments>): cli.Arguments
-				(mutator: Mutator<cli.Arguments>, m2: Mutator<cli.Arguments>): cli.Arguments
-				(mutator: Mutator<cli.Arguments>): cli.Arguments
+				(mutator: cli.Reviser, m2: cli.Reviser, m3: cli.Reviser, m4: cli.Reviser): cli.Arguments
+				(mutator: cli.Reviser, m2: cli.Reviser, m3: cli.Reviser): cli.Arguments
+				(mutator: cli.Reviser, m2: cli.Reviser): cli.Arguments
+				(mutator: cli.Reviser): cli.Arguments
 			}
 
 			initialize: {

@@ -160,7 +160,7 @@
 									}
 									p.arguments = args;
 								}
-								return rv;
+								return $api.Function.impure.revise(rv);
 							},
 							/**
 							 * @param { Parameters<jsh.wf.Exports["cli"]["$f"]["option"]["boolean"]>[0] } o
@@ -177,7 +177,7 @@
 									}
 									p.arguments = args;
 								}
-								return rv;
+								return $api.Function.impure.revise(rv);
 							}
 						}
 					},
@@ -187,7 +187,7 @@
 							options: {},
 							arguments: Array.prototype.slice.call(jsh.script.arguments)
 						};
-						/** @type { jsh.wf.Mutator<jsh.wf.cli.Arguments>[] } */
+						/** @type { jsh.wf.cli.Reviser[] } */
 						var mutators = Array.prototype.slice.call(arguments);
 						mutators.forEach(function(mutator) {
 							mutator(rv);
