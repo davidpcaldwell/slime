@@ -64,6 +64,10 @@ namespace slime {
 				interface Local extends slime.jrunscript.git.Repository {
 					directory: slime.jrunscript.file.Directory
 
+					config: any
+					add: any
+					rm: (p: { path: string }) => void
+
 					branch: {
 						(p: {
 							delete: string
@@ -117,13 +121,19 @@ namespace slime {
 							repository: Local
 							commit: Commit
 						}[]
+
 						add: (p: {
 							repository: slime.jrunscript.git.Repository,
 							path: string
-						}) => slime.jrunscript.git.Repository.Local,
+						}) => slime.jrunscript.git.Repository.Local
+
 						update: (p: argument & {
 							init?: boolean,
 							recursive?: boolean
+						}) => void
+
+						deinit: (p: argument & {
+							path: string
 						}) => void
 					}
 

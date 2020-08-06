@@ -64,6 +64,7 @@ namespace jsh.wf {
 						status: jsh.wf.cli.Command
 						tsc: jsh.wf.cli.Command
 						submodule: {
+							remove: jsh.wf.cli.Command
 							update: jsh.wf.cli.Command
 						},
 						commit: any
@@ -80,6 +81,7 @@ namespace jsh.wf {
 					branch: slime.jrunscript.git.Branch
 					state: ReturnType<ReturnType<Exports["git"]["compareTo"]>>
 				}>
+				remove: (p: { path: string }) => void
 			}
 			updateSubmodule: (p: { path: string }) => void
 		}

@@ -53,6 +53,22 @@
 									state: jsh.wf.git.compareTo("origin/master")(submodule.repository)
 								}
 							});
+						},
+						remove: function(p) {
+							var repository = castToLocal(jsh.tools.git.Repository({ directory: base }));
+							jsh.shell.console("Removing submodule " + p.path);
+							repository.submodule.deinit({ path: p.path });
+							repository.rm({ path: p.path });
+
+							var gitdir = (function(target) {
+								if (target.getFile(".git")) throw new TypeError("Not supported for submodules of submodules; " + target.getFile(".git") + " is file.");
+								if (target.getFile(".git")) {
+									var reference = jsh.shell.console(target.getFile(".git").read(String));
+									//	string like gitdir: ../../.git/modules/path/to/me
+								}
+								return target.getSubdirectory(".git");
+							})(repository.directory);
+							gitdir.getSubdirectory("modules").getSubdirectory(p.path).remove();
 						}
 					},
 					updateSubmodule: function(p) {
@@ -218,7 +234,8 @@
 						};
 
 						$exports.submodule = {
-							update: void(0)
+							update: void(0),
+							remove: void(0)
 						};
 
 						var fetch = $api.Function.memoized(function() {
@@ -305,6 +322,14 @@
 								});
 							}
 						}
+
+						if (operations.commit) $exports.submodule.remove = $api.Function.pipe(
+							$api.Function.impure.revise(jsh.wf.cli.$f.option.string({ longname: "path" })),
+							function(p) {
+								var path = p.options.path;
+								jsh.wf.project.submodule.remove({ path: path });
+							}
+						)
 
 						if (operations.commit) $exports.submodule.update = $api.Function.pipe(
 							function(p) {
