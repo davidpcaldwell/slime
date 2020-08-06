@@ -219,6 +219,13 @@
 				stdio: cli.stdio.Events()
 			});
 
+			var rm = cli.command({
+				command: "rm",
+				arguments: function(p) {
+					if (p.path) this.push(p.path);
+				}
+			});
+
 			//	Branching and Merging
 
 			//	Sharing and Updating Projects
@@ -348,6 +355,13 @@
 					if (p.recursive) this.push("--recursive");
 				}
 			});
+			var submodule_deinit = cli.command({
+				command: "submodule",
+				arguments: function(p) {
+					this.push("deinit");
+					if (p.path) this.push(p.path);
+				}
+			});
 
 			//	Inspection and Comparison
 
@@ -411,8 +425,6 @@
 			var LocalRepository = function(o) {
 				Repository.call(this,o);
 
-				this.clone = this.clone;
-
 				var directory = (function() {
 					if (o.directory) return o.directory;
 					if (o.local) return $api.deprecate(function() {
@@ -427,6 +439,8 @@
 				}
 
 				this.reference = directory.pathname.toString();
+
+				this.clone = this.clone;
 
 				this.directory = directory;
 
@@ -546,6 +560,8 @@
 				this.add = function(p) {
 					add($api.Object.compose(p, { directory: directory }));
 				};
+
+				this.rm = command(rm);
 
 				/** @type { ( () => void ) & { getUrl: ({ name: string }) => string } }} */
 				var myremote = function() {
@@ -842,7 +858,8 @@
 					}
 				}, {
 					add: command(submodule_add),
-					update: command(submodule_update)
+					update: command(submodule_update),
+					deinit: command(submodule_deinit)
 				});
 
 				this.push = function(p) {
