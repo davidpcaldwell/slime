@@ -215,6 +215,15 @@
 				}
 			};
 		};
+
+		$exports.Function.impure = {
+			revise: function(f) {
+				return function(p) {
+					var rv = f.call(this,p);
+					return (rv) ? rv : p;
+				}
+			}
+		};
 	}
 //@ts-ignore
 )($context,$exports)

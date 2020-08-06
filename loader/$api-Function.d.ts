@@ -110,6 +110,9 @@ namespace $api {
 			(test: any, yes: any, no: any): any
 			<T,R>(p: { condition: (t: T) => boolean, true: (t: T) => R, false: (t: T) => R }): (t: T) => R
 		}
+		impure: {
+			revise: <T,P>(f: (this: T, p: P) => (P | void)) => (this: T, p: P) => P
+		}
 		[name: string]: amy
 	}
 }
