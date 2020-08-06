@@ -179,6 +179,15 @@
 								}
 								return $api.Function.impure.revise(rv);
 							}
+						},
+						invocation: function(f) {
+							return $api.Function.result(
+								{
+									options: {},
+									arguments: Array.prototype.slice.call(jsh.script.arguments)
+								},
+								f
+							);
 						}
 					},
 					invocation: function() {

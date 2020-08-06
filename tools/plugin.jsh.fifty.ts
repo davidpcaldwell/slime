@@ -43,9 +43,19 @@ namespace jsh.wf {
 				option: {
 					string: (c: { longname: string }) => cli.Reviser
 					boolean: (c: { longname: string }) => cli.Reviser
-				}
+				},
+				/**
+				 * Returns an object representing the global invocation of `jsh`.
+				 */
+				invocation: <T>(
+					f: (p: cli.Arguments) => T
+				) => T
 			}
 
+			/**
+			 * Provides an imperative way to process the arguments of a script. The function takes an array of argument
+			 * revisers and returns the result of processing `jsh.script.arguments` through the revisers.
+			 */
 			invocation: {
 				(mutator: cli.Reviser, m2: cli.Reviser, m3: cli.Reviser, m4: cli.Reviser): cli.Arguments
 				(mutator: cli.Reviser, m2: cli.Reviser, m3: cli.Reviser): cli.Arguments
