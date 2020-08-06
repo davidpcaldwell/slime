@@ -217,6 +217,7 @@
 		};
 
 		$exports.Function.impure = {
+			/** @type { $api.Function["impure"]["revise"] } */
 			revise: function(f) {
 				return function(p) {
 					var rv = f.call(this,p);

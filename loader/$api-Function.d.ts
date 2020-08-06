@@ -111,8 +111,14 @@ namespace $api {
 			<T,R>(p: { condition: (t: T) => boolean, true: (t: T) => R, false: (t: T) => R }): (t: T) => R
 		}
 		impure: {
-			revise: <T,P>(f: (this: T, p: P) => (P | void)) => (this: T, p: P) => P
+			revise: <T,P>(f: (this: T, p: P) => (P | void)) => impure.Reviser<P>
 		}
 		[name: string]: amy
+	}
+
+	namespace Function {
+		namespace impure {
+			type Reviser<P> = (p: P) => P
+		}
 	}
 }
