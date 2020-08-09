@@ -39,8 +39,9 @@ namespace slime.time {
 			Zone: object
 		}
 		When: {
-			new (): When
+			new ({ date: Date }): When
 			new (date: Date): When
+			new (): When
 			codec: {
 				rfc3339: slime.Codec<When,string>
 			}
