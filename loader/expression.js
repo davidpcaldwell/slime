@@ -434,9 +434,11 @@
 				}
 
 				var createFileScope = function($context) {
+					/** @type { any } */
+					var $exports = {};
 					return {
 						$context: ($context) ? $context : {},
-						$exports: {}
+						$exports: $exports
 					};
 				}
 
@@ -456,6 +458,10 @@
 					return rv;
 				}
 
+				/**
+				 * @constructor
+				 * @type { slime.runtime.Exports["Loader"] }
+				 */
 				var Loader = function(p) {
 					if (!p.Resource) p.Resource = Resource;
 					if (!p.get) {
@@ -480,11 +486,14 @@
 						};
 					};
 
+					this.run = void(0);
+					this.file = void(0);
+					this.value = void(0);
 					declare.call(this,"run");
 					declare.call(this,"file");
 					declare.call(this,"value");
 
-					this.module = function(path,scope,target) {
+					this.module = function(path,$context,target) {
 						var getModuleLocations = function(path) {
 							var tokens = path.split("/");
 							var prefix = (tokens.length > 1) ? tokens.slice(0,tokens.length-1).join("/") + "/" : "";
@@ -500,7 +509,7 @@
 
 						var locations = getModuleLocations(path);
 
-						var inner = createFileScope(scope);
+						var inner = createFileScope($context);
 						inner.$loader = Child(locations.prefix);
 						var script = this.get(locations.main);
 						//	TODO	generalize error handling strategy; add to file, run, value
@@ -508,6 +517,13 @@
 						methods.run.call(target,script,inner);
 						return inner.$exports;
 					};
+
+					this.factory = function(path) {
+						var $loader = this;
+						return function(c) {
+							return $loader.module(path, c);
+						}
+					}
 
 					var Child = (function(parent,argument) {
 						return function(prefix) {
@@ -531,7 +547,15 @@
 									return p.list(nowprefix);
 								} : null
 							};
-							return new parent.constructor(parameter);
+
+							/**
+							 * @returns { new (p: any) => slime.Loader }
+							 */
+							var castToConstructor = function(v) {
+								return v;
+							}
+							var ParentConstructor = castToConstructor(parent.constructor);
+							return new ParentConstructor(parameter);
 						}
 					})(this,p);
 
