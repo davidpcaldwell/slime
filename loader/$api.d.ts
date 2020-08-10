@@ -77,7 +77,10 @@ interface $api {
 		(o: object, property: string): void
 		<T extends Function>(f: T): T
 	}
-	experimental: (a: any, b: any) => any
+	experimental: {
+		(o: object, property: string): void
+		<T extends Function>(f: T): T
+	}
 }
 
 declare namespace $api {

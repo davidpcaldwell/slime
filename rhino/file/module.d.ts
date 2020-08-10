@@ -36,9 +36,21 @@ namespace slime.jrunscript.file {
 
 	interface Exports {
 		Loader: new (p: { directory: Directory }) => slime.Loader
-		Pathname: (p: string) => Pathname
-		Searchpath: (pathnames: slime.jrunscript.file.Pathname[]) => Searchpath
+		Pathname: {
+			(p: string): Pathname
+			createDirectory: any
+		}
+		Searchpath: {
+			(pathnames: slime.jrunscript.file.Pathname[]): Searchpath
+			createEmpty: any
+		}
 		filesystem: any
-		navigate: any
+		filesystems: any
+		navigate: (p: any) => any
+		Filesystem: any
+		Streams: any
+		java: any
+		zip: any
+		unzip: any
 	}
 }

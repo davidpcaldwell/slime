@@ -10,340 +10,363 @@
 //	Contributor(s):
 //	END LICENSE
 
-if (!$context.api) throw new Error("Missing 'api' member of context");
-if ($context.$pwd && typeof($context.$pwd) != "string") {
-	throw new Error("$pwd is object.");
-}
-
-var isPathname = function(item) {
-	return item && item.java && item.java.adapt() && $context.api.java.isJavaType(Packages.java.io.File)(item.java.adapt());
-}
-
-var prototypes = {
-	Searchpath: {}
-};
-
-var file = $loader.file("file.js", {
-	pathext: $context.pathext,
-	isPathname: isPathname,
-	defined: $context.api.js.defined,
-	constant: $context.api.js.constant,
-	fail: $context.api.java.fail,
-	isJavaType: $context.api.java.isJavaType,
-	Streams: $context.api.io.Streams,
-	Resource: $context.api.io.Resource
-});
-file.Searchpath.prototype = prototypes.Searchpath;
-
-var spi = $loader.file("spi.js", {
-	Searchpath: file.Searchpath
-});
-
-var java = $loader.file("java.js", new function() {
-	this.spi = spi;
-
-	this.Pathname = file.Pathname;
-
-	this.api = {
-		defined: $context.api.js.defined,
-		io: $context.api.io
-	};
-});
-
-//	TODO	separate out Cygwin and make it less tightly bound with the rest of this
-var os = $loader.file("filesystem.js", new function() {
-	this.java = java;
-
-	this.Pathname = file.Pathname;
-
-	this.api = new function() {
-		this.io = $context.api.io;
-		this.defined = $context.api.js.defined;
-	};
-
-	this.cygwin = $context.cygwin;
-
-	this.Searchpath = file.Searchpath;
-	this.isPathname = isPathname;
-
-	this.addFinalizer = $context.addFinalizer;
-});
-
-var filesystems = {};
-
-java.FilesystemProvider.os = new java.FilesystemProvider(Packages.inonit.script.runtime.io.Filesystem.create());
-filesystems.os = new os.Filesystem( java.FilesystemProvider.os );
-
-$exports.filesystems = filesystems;
-
-if ($context.cygwin) {
-	$exports.filesystems.cygwin = $loader.file("cygwin.js", {
-		cygwin: $context.cygwin,
-		Filesystem: os.Filesystem,
-		java: java,
-		isPathname: isPathname,
-		Searchpath: file.Searchpath,
-		addFinalizer: $context.addFinalizer
-	});
-}
-
-//	By policy, default filesystem is cygwin filesystem if it is present.  Default can be set through module's filesystem property
-$exports.filesystem = ($exports.filesystems.cygwin) ? $exports.filesystems.cygwin : $exports.filesystems.os;
-
-//	TODO	perhaps should move selection of default filesystem into these definitions rather than inside file.js
-$exports.Pathname = function(parameters) {
-	if (this.constructor != arguments.callee) {
-		var ctor = arguments.callee;
-
-		var decorator = function(rv) {
-			rv.constructor = ctor;
-			return rv;
+//@ts-check
+(
+	/**
+	 * @param { any } Packages
+	 * @param { any } $context
+	 * @param { slime.Loader } $loader
+	 * @param { slime.jrunscript.file.Exports } $exports
+	 */
+	function(Packages,$context,$loader,$exports) {
+		if (!$context.api) throw new Error("Missing 'api' member of context");
+		if ($context.$pwd && typeof($context.$pwd) != "string") {
+			throw new Error("$pwd is object.");
 		}
 
-		//	not called as constructor but as function
-		//	perform a "cast"
-		if (typeof(parameters) == "string") {
-			return decorator($exports.filesystem.Pathname(parameters));
-		} else if (typeof(parameters) == "object" && parameters instanceof String) {
-			return decorator($exports.filesystem.Pathname(parameters.toString()));
-		} else {
-			throw new TypeError("Illegal argument to Pathname(): " + parameters);
+		var isPathname = function(item) {
+			return item && item.java && item.java.adapt() && $context.api.java.isJavaType(Packages.java.io.File)(item.java.adapt());
 		}
-	} else {
-		$context.api.java.fail("Cannot invoke Pathname as constructor.");
-	}
-};
 
-$exports.Pathname.createDirectory = function(p) {
-	return p.pathname.createDirectory({
-		ifExists: p.exists
-	});
-};
-$exports.Pathname.createDirectory.exists = {};
-$exports.Pathname.createDirectory.exists.LEAVE = function(dir) {
-	return false;
-};
-$exports.Pathname.createDirectory.exists.RECREATE = function(dir) {
-	dir.remove();
-	return true;
-};
+		var prototypes = {
+			Searchpath: {}
+		};
 
-$exports.navigate = $api.experimental(function(p) {
-	var from = p.from;
-	var to = p.to;
-	if (from.pathname && !from.pathname.directory && from.parent) {
-		from = from.parent;
-	} else if (!from.pathname && from.parent) {
-		if (from.parent.directory) {
-			from = from.parent.directory;
-		} else {
-			throw new Error("Required: 'from' parent directory must exist.");
+		var file = $loader.file("file.js", {
+			pathext: $context.pathext,
+			isPathname: isPathname,
+			defined: $context.api.js.defined,
+			constant: $context.api.js.constant,
+			fail: $context.api.java.fail,
+			isJavaType: $context.api.java.isJavaType,
+			Streams: $context.api.io.Streams,
+			Resource: $context.api.io.Resource
+		});
+		file.Searchpath.prototype = prototypes.Searchpath;
+
+		var spi = $loader.file("spi.js", {
+			Searchpath: file.Searchpath
+		});
+
+		var java = $loader.file("java.js", new function() {
+			this.spi = spi;
+
+			this.Pathname = file.Pathname;
+
+			this.api = {
+				defined: $context.api.js.defined,
+				io: $context.api.io
+			};
+		});
+
+		//	TODO	separate out Cygwin and make it less tightly bound with the rest of this
+		var os = $loader.file("filesystem.js", new function() {
+			this.java = java;
+
+			this.Pathname = file.Pathname;
+
+			this.api = new function() {
+				this.io = $context.api.io;
+				this.defined = $context.api.js.defined;
+			};
+
+			this.cygwin = $context.cygwin;
+
+			this.Searchpath = file.Searchpath;
+			this.isPathname = isPathname;
+
+			this.addFinalizer = $context.addFinalizer;
+		});
+
+		var filesystems = {};
+
+		java.FilesystemProvider.os = new java.FilesystemProvider(Packages.inonit.script.runtime.io.Filesystem.create());
+		filesystems.os = new os.Filesystem( java.FilesystemProvider.os );
+
+		$exports.filesystems = filesystems;
+
+		if ($context.cygwin) {
+			$exports.filesystems.cygwin = $loader.file("cygwin.js", {
+				cygwin: $context.cygwin,
+				Filesystem: os.Filesystem,
+				java: java,
+				isPathname: isPathname,
+				Searchpath: file.Searchpath,
+				addFinalizer: $context.addFinalizer
+			});
 		}
-	}
-	var startsWith = function(start,under) {
-		if (!start) throw new Error("Required: start");
-		if (!under) throw new Error("Required: under");
-		return under.toString().substring(0,start.toString().length) == start.toString();
-	};
-	var isBelowBase = function(base,node) {
-		if (!base) return false;
-		return startsWith(base, node) && node.toString().length > base.toString().length;
-	};
-	var common = from;
-	var up = 0;
-	while(!startsWith(common,to) || isBelowBase(p.base,common)) {
-		up++;
-		common = common.parent;
-		if (!common) throw new Error("No common parent: " + from + " and " + to);
-	}
-	var remaining = to.toString().substring(common.toString().length);
-	return {
-		base: common,
-		relative: new Array(up+1).join("../") + remaining
-	};
-});
 
-// $exports.getRelativePathTo = function(to) {
-// 	// TODO: no test coverage
-// 	return function(from) {
-// 		if (from.pathname && !from.pathname.directory && from.parent) {
-// 			from = from.parent;
-// 		}
-// 		var startsWith = function(start,under) {
-// 			return under.toString().substring(0,start.toString().length) == start.toString();
-// 		};
-// 		var common = from;
-// 		var up = 0;
-// 		while(!startsWith(common,to)) {
-// 			var basename = common.pathname.basename;
-// 			up++;
-// 			common = common.parent;
-// 		}
-// 		var remaining = to.toString().substring(common.toString().length);
-// 		return new Array(up+1).join("../") + remaining;
-// 	}
-// }
+		//	By policy, default filesystem is cygwin filesystem if it is present.  Default can be set through module's filesystem property
+		$exports.filesystem = ($exports.filesystems.cygwin) ? $exports.filesystems.cygwin : $exports.filesystems.os;
 
-//	TODO	Searchpath implementation has multiple layers: in os.js, file.js, here ... consolidate and refactor
-$exports.Searchpath = function(parameters) {
-	if (this.constructor != arguments.callee) {
-		if (parameters instanceof Array) {
-			return $exports.filesystem.Searchpath(parameters);
-		} else {
-			throw new TypeError("Illegal argument to Searchpath(): " + parameters);
+		//	TODO	perhaps should move selection of default filesystem into these definitions rather than inside file.js
+		$exports.Pathname = Object.assign(function(parameters) {
+			if (this.constructor != arguments.callee) {
+				var ctor = arguments.callee;
+
+				var decorator = function(rv) {
+					rv.constructor = ctor;
+					return rv;
+				}
+
+				//	not called as constructor but as function
+				//	perform a "cast"
+				if (typeof(parameters) == "string") {
+					return decorator($exports.filesystem.Pathname(parameters));
+				} else if (typeof(parameters) == "object" && parameters instanceof String) {
+					return decorator($exports.filesystem.Pathname(parameters.toString()));
+				} else {
+					throw new TypeError("Illegal argument to Pathname(): " + parameters);
+				}
+			} else {
+				$context.api.java.fail("Cannot invoke Pathname as constructor.");
+			}
+		}, { createDirectory: void(0) });
+
+		$exports.Pathname.createDirectory = function(p) {
+			return p.pathname.createDirectory({
+				ifExists: p.exists
+			});
+		};
+		$exports.Pathname.createDirectory.exists = {};
+		$exports.Pathname.createDirectory.exists.LEAVE = function(dir) {
+			return false;
+		};
+		$exports.Pathname.createDirectory.exists.RECREATE = function(dir) {
+			dir.remove();
+			return true;
+		};
+
+		$exports.navigate = $api.experimental(function(p) {
+			var from = p.from;
+			var to = p.to;
+			if (from.pathname && !from.pathname.directory && from.parent) {
+				from = from.parent;
+			} else if (!from.pathname && from.parent) {
+				if (from.parent.directory) {
+					from = from.parent.directory;
+				} else {
+					throw new Error("Required: 'from' parent directory must exist.");
+				}
+			}
+			var startsWith = function(start,under) {
+				if (!start) throw new Error("Required: start");
+				if (!under) throw new Error("Required: under");
+				return under.toString().substring(0,start.toString().length) == start.toString();
+			};
+			var isBelowBase = function(base,node) {
+				if (!base) return false;
+				return startsWith(base, node) && node.toString().length > base.toString().length;
+			};
+			var common = from;
+			var up = 0;
+			while(!startsWith(common,to) || isBelowBase(p.base,common)) {
+				up++;
+				common = common.parent;
+				if (!common) throw new Error("No common parent: " + from + " and " + to);
+			}
+			var remaining = to.toString().substring(common.toString().length);
+			return {
+				base: common,
+				relative: new Array(up+1).join("../") + remaining
+			};
+		});
+
+		// $exports.getRelativePathTo = function(to) {
+		// 	// TODO: no test coverage
+		// 	return function(from) {
+		// 		if (from.pathname && !from.pathname.directory && from.parent) {
+		// 			from = from.parent;
+		// 		}
+		// 		var startsWith = function(start,under) {
+		// 			return under.toString().substring(0,start.toString().length) == start.toString();
+		// 		};
+		// 		var common = from;
+		// 		var up = 0;
+		// 		while(!startsWith(common,to)) {
+		// 			var basename = common.pathname.basename;
+		// 			up++;
+		// 			common = common.parent;
+		// 		}
+		// 		var remaining = to.toString().substring(common.toString().length);
+		// 		return new Array(up+1).join("../") + remaining;
+		// 	}
+		// }
+
+		//	TODO	Searchpath implementation has multiple layers: in os.js, file.js, here ... consolidate and refactor
+		$exports.Searchpath = Object.assign(function(parameters) {
+			if (this.constructor != arguments.callee) {
+				if (parameters instanceof Array) {
+					return $exports.filesystem.Searchpath(parameters);
+				} else {
+					throw new TypeError("Illegal argument to Searchpath(): " + parameters);
+				}
+			} else {
+				throw new Error("Cannot invoke Searchpath as constructor.");
+			}
+		}, { createEmpty: void(0) });
+		$exports.Searchpath.createEmpty = function() {
+			return $exports.Searchpath([]);
 		}
-	} else {
-		throw new Error("Cannot invoke Searchpath as constructor.");
-	}
-};
-$exports.Searchpath.createEmpty = function() {
-	return $exports.Searchpath([]);
-}
-$api.deprecate($exports.Searchpath,"createEmpty");
-$exports.Searchpath.prototype = prototypes.Searchpath;
+		$api.deprecate($exports.Searchpath,"createEmpty");
+		$exports.Searchpath.prototype = prototypes.Searchpath;
 
-////	TODO	this implementation would be much simpler if we could use a normal loader/jrunscript loader with a _source, but
-////			right now this would cause Cygwin loaders to fail, probably
-//$context.$rhino.Loader.spi(function(underlying) {
-//	return function(p) {
-//		underlying.apply(this,arguments);
-//		if (arguments[0].directory) {
-//			var directory = arguments[0].directory;
-//			this.list = function(m) {
-//				return directory.list().map(function(node) {
-//					if (node.directory) {
-//						return { path: node.pathname.basename, loader: new $context.$rhino.Loader({ directory: node }) };
-//					} else {
-//						return {
-//							path: node.pathname.basename,
-//							resource: new $context.api.io.Resource({
-//								type: p.type(node),
-//								read: {
-//									binary: function() {
-//										return node.read($context.api.io.Streams.binary);
-//									}
-//								}
-//							})
-//						};
-//					}
-//				});
-//			};
-//		}
-//	};
-//});
+		////	TODO	this implementation would be much simpler if we could use a normal loader/jrunscript loader with a _source, but
+		////			right now this would cause Cygwin loaders to fail, probably
+		//$context.$rhino.Loader.spi(function(underlying) {
+		//	return function(p) {
+		//		underlying.apply(this,arguments);
+		//		if (arguments[0].directory) {
+		//			var directory = arguments[0].directory;
+		//			this.list = function(m) {
+		//				return directory.list().map(function(node) {
+		//					if (node.directory) {
+		//						return { path: node.pathname.basename, loader: new $context.$rhino.Loader({ directory: node }) };
+		//					} else {
+		//						return {
+		//							path: node.pathname.basename,
+		//							resource: new $context.api.io.Resource({
+		//								type: p.type(node),
+		//								read: {
+		//									binary: function() {
+		//										return node.read($context.api.io.Streams.binary);
+		//									}
+		//								}
+		//							})
+		//						};
+		//					}
+		//				});
+		//			};
+		//		}
+		//	};
+		//});
 
-$exports.Loader = function recurse(p) {
-	if (typeof(arguments[0]) != "object") throw new TypeError("Argument 0 must be an object.");
+		/**
+		 *	@constructor
+		 */
+		var Loader = function Loader(p) {
+			if (typeof(arguments[0]) != "object") throw new TypeError("Argument 0 must be an object.");
 
-	if (arguments[0].pathname && arguments[0].directory) {
-		return $api.deprecate(function() {
-			return new recurse({ directory: p });
-		})();
-	}
+			if (arguments[0].pathname && arguments[0].directory) {
+				return $api.deprecate(function() {
+					return new Loader({ directory: p });
+				})();
+			}
 
-	if (arguments[0].directory === null || typeof(arguments[0].directory) == "undefined") {
-		throw new TypeError("'directory' property must be present and an object.");
-	}
+			if (arguments[0].directory === null || typeof(arguments[0].directory) == "undefined") {
+				throw new TypeError("'directory' property must be present and an object.");
+			}
 
-	if (!p.type) p.type = function(path) {
-		return $context.api.io.mime.Type.fromName(path);
-	}
+			if (!p.type) p.type = function(path) {
+				return $context.api.io.mime.Type.fromName(path);
+			}
 
-	p.toString = function() {
-		return "rhino/file Loader: directory=" + p.directory;
-	};
+			p.toString = function() {
+				return "rhino/file Loader: directory=" + p.directory;
+			};
 
-	var getFile = function getFile(path) {
-		var file = p.directory.getFile(path);
-		//	TODO	could we modify this so that file supported Resource?
-		if (file) {
-			var data = {
-				name: p.directory.toString() + path,
-				type: p.type(file),
-				getInputStream: function() {
-					return file.read($context.api.io.Streams.binary).java.adapt();
-				},
-				read: {
-					binary: function() {
-						return file.read($context.api.io.Streams.binary);
+			var getFile = function getFile(path) {
+				var file = p.directory.getFile(path);
+				//	TODO	could we modify this so that file supported Resource?
+				if (file) {
+					var data = {
+						name: p.directory.toString() + path,
+						type: p.type(file),
+						getInputStream: function() {
+							return file.read($context.api.io.Streams.binary).java.adapt();
+						},
+						read: {
+							binary: function() {
+								return file.read($context.api.io.Streams.binary);
+							}
+						}
+					};
+					Object.defineProperty(data,"length",{
+						get: function() {
+							return file.length;
+						}
+					});
+					Object.defineProperty(data,"modified",{
+						get: function() {
+							return file.modified;
+						}
+					});
+					return data;
+				}
+				return null;
+			}
+			p.get = function(path) {
+				if (!p.directory) return null;
+				return getFile(path);
+			}
+			p.list = function(path) {
+				if (!p.directory) return [];
+				//	Validate path
+				if (path) {
+					// Packages.java.lang.System.err.println("directory list(" + path + ")");
+					var last = path.substring(path.length-1);
+					if (last == "/") {
+						path = path.substring(0,path.length-1);
 					}
 				}
-			};
-			Object.defineProperty(data,"length",{
-				get: function() {
-					return file.length;
-				}
-			});
-			Object.defineProperty(data,"modified",{
-				get: function() {
-					return file.modified;
-				}
-			});
-			return data;
-		}
-		return null;
-	}
-	p.get = function(path) {
-		if (!p.directory) return null;
-		return getFile(path);
-	}
-	p.list = function(path) {
-		if (!p.directory) return [];
-		//	Validate path
-		if (path) {
-			// Packages.java.lang.System.err.println("directory list(" + path + ")");
-			var last = path.substring(path.length-1);
-			if (last == "/") {
-				path = path.substring(0,path.length-1);
+				var directory = (path) ? p.directory.getSubdirectory(path) : p.directory;
+				// Packages.java.lang.System.err.println("Listing " + directory);
+				return directory.list().map(function(node) {
+					return { path: node.pathname.basename, loader: node.directory, resource: !node.directory };
+				});
 			}
-		}
-		var directory = (path) ? p.directory.getSubdirectory(path) : p.directory;
-		// Packages.java.lang.System.err.println("Listing " + directory);
-		return directory.list().map(function(node) {
-			return { path: node.pathname.basename, loader: node.directory, resource: !node.directory };
+			p.child = function(prefix) {
+				if (!p.directory) return { directory: null };
+				return { directory: p.directory.getSubdirectory(prefix) };
+			}
+			this.file = void(0);
+			this.module = void(0);
+			this.value = void(0);
+			this.run = void(0);
+			this.Child = void(0);
+			this.get = void(0);
+			$context.api.io.Loader.apply(this,arguments);
+		};
+
+		$exports.Loader = Loader;
+
+		//	Possibly used for initial attempt to produce HTTP filesystem, for example
+		$exports.Filesystem = os.Filesystem;
+		$api.experimental($exports,"Filesystem");
+
+		var zip = $loader.file("zip.js", {
+			Streams: $context.api.io.Streams
+			,Pathname: file.Pathname
+			,InputStream: function(_in) {
+				return $context.api.io.java.adapt(_in)
+			}
 		});
+
+		$exports.zip = zip.zip;
+		$exports.unzip = zip.unzip;
+		$api.experimental($exports, "zip");
+		$api.experimental($exports, "unzip");
+
+		//	TODO	probably does not need to use __defineGetter__ but can use function literal?
+		var workingDirectory = function() {
+			//	TODO	the call used by jsh.shell to translate OS paths to paths from this package can probably be used here
+			if ($context.$pwd) {
+				var osdir = $exports.filesystems.os.Pathname($context.$pwd);
+				if ($exports.filesystem == $exports.filesystems.cygwin) {
+					osdir = $exports.filesystems.cygwin.toUnix(osdir);
+				}
+				return osdir.directory;
+			}
+		};
+		$exports.__defineGetter__("workingDirectory", workingDirectory);
+		//	Property only makes sense in context of an execution environment, so moving to jsh.shell (other environments can provide their
+		//	own mechanisms)
+		$api.deprecate($exports,"workingDirectory");
+
+		$exports.Streams = $context.api.io.Streams;
+		$api.deprecate($exports,"Streams");
+		$exports.java = $context.api.io.java;
+		$api.deprecate($exports,"java");
 	}
-	p.child = function(prefix) {
-		if (!p.directory) return { directory: null };
-		return { directory: p.directory.getSubdirectory(prefix) };
-	}
-	$context.api.io.Loader.apply(this,arguments);
-};
-
-//	Possibly used for initial attempt to produce HTTP filesystem, for example
-$exports.Filesystem = os.Filesystem;
-$api.experimental($exports,"Filesystem");
-
-var zip = $loader.file("zip.js", {
-	Streams: $context.api.io.Streams
-	,Pathname: file.Pathname
-	,InputStream: function(_in) {
-		return $context.api.io.java.adapt(_in)
-	}
-});
-
-$exports.zip = zip.zip;
-$exports.unzip = zip.unzip;
-$api.experimental($exports, "zip");
-$api.experimental($exports, "unzip");
-
-//	TODO	probably does not need to use __defineGetter__ but can use function literal?
-var workingDirectory = function() {
-	//	TODO	the call used by jsh.shell to translate OS paths to paths from this package can probably be used here
-	if ($context.$pwd) {
-		var osdir = $exports.filesystems.os.Pathname($context.$pwd);
-		if ($exports.filesystem == $exports.filesystems.cygwin) {
-			osdir = $exports.filesystems.cygwin.toUnix(osdir);
-		}
-		return osdir.directory;
-	}
-};
-$exports.__defineGetter__("workingDirectory", workingDirectory);
-//	Property only makes sense in context of an execution environment, so moving to jsh.shell (other environments can provide their
-//	own mechanisms)
-$api.deprecate($exports,"workingDirectory");
-
-$exports.Streams = $context.api.io.Streams;
-$api.deprecate($exports,"Streams");
-$exports.java = $context.api.io.java;
-$api.deprecate($exports,"java");
+//@ts-ignore
+)(Packages,$context,$loader,$exports)
