@@ -12,7 +12,16 @@
 		</div>
 		<div>
 			<h2>Running tests</h2>
-			<code>loader/api/test/fifty/test.bash -declaration <i>pathname</i></code>
+			<code>loader/api/test/fifty/test.bash <i>declaration</i> [--part <i>part</i>]</code>
+		</div>
+		<div>
+			<h2>Bridging to <code>$jsapi</code></h2>
+			<pre>
+$jsapi.loader.fifty({
+	path: "<i>path.fifty.ts</i>",
+	verify: verify
+});
+			</pre>
 		</div>
 	</body>
 </html>

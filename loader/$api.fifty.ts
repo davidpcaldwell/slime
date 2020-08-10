@@ -2,7 +2,8 @@
 (
 	function(
 		verify: slime.definition.verify.Verify,
-		$api: $api
+		$api: $api,
+		tests: any
 	) {
 		tests.suite = function() {
 			var CustomError = $api.Error.Type({
@@ -51,4 +52,4 @@
 		}
 	}
 //@ts-ignore
-)(verify,$api)
+)(verify,$api,tests)

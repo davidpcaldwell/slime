@@ -244,6 +244,11 @@ var Scope = function(definition,environment) {
 			}
 
 			//	TODO	add this.scenario; see jsh/unit/jsapi.js
+
+			if (false) this.fifty = function(p) {
+				//	TODO	implement
+				throw new Error("Unimplemented.");
+			}
 		};
 
 		this.environment = environment;

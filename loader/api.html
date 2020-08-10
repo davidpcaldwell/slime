@@ -217,6 +217,14 @@ END LICENSE
 					return $jsapi.loader.module(path,context);
 				}
 			</script>
+			<div jsapi:id="fifty">
+				<script type="application/x.jsapi#tests">
+					if ($jsapi.loader.fifty) $jsapi.loader.fifty({
+						path: "expression.fifty.ts",
+						verify: verify
+					})
+				</script>
+			</div>
 			<div class="label">has properties:</div>
 			<ul>
 				<li class="value">
