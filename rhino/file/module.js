@@ -325,6 +325,7 @@
 			this.run = void(0);
 			this.Child = void(0);
 			this.get = void(0);
+			this.factory = void(0);
 			$context.api.io.Loader.apply(this,arguments);
 		};
 

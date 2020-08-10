@@ -110,11 +110,18 @@ namespace slime {
         module: any
         run: any
         value: any
+        factory: <C,E>(path: string) => Loader.Product<C,E>
 		Child: {
             (prefix: string): Loader
             new (prefix: string): Loader
         }
 		get: (path: string) => Resource
+    }
+
+    namespace Loader {
+        interface Product<C,E> {
+            (c: C): E
+        }
     }
 
     namespace runtime {
@@ -158,7 +165,9 @@ namespace slime {
             file: any
             value: any
             Resource: new (o: ResourceArgument) => slime.Resource
-            Loader: any
+            Loader: {
+                new (p: { Resource?: any, get: any }): Loader
+            }
             namespace: any
             java: any
             $platform: any
