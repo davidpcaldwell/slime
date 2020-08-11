@@ -40,6 +40,7 @@ namespace slime.time {
 		}
 		When: {
 			new ({ date: Date }): When
+			new ({ unix: number }): When
 			new (date: Date): When
 			new (): When
 			codec: {
