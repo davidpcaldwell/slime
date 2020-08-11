@@ -381,6 +381,7 @@
 							function(p) {
 								if (!p.options.message) throw new Error("No message");
 								operations.commit({ message: p.options.message });
+								jsh.shell.console("Committed changes to " + $context.base);
 							}
 						);
 					}
