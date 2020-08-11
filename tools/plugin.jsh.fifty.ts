@@ -6,11 +6,11 @@ namespace jsh.wf {
 		}
 	}
 
-	export interface Context {
-		base: slime.jrunscript.file.Directory
-	}
-
 	export namespace cli {
+		export interface Context {
+			base: slime.jrunscript.file.Directory
+		}
+
 		export interface Arguments {
 			options: { [x: string]: any },
 			arguments: string[]
@@ -65,7 +65,7 @@ namespace jsh.wf {
 
 			initialize: {
 				(
-					$context: jsh.wf.Context,
+					$context: jsh.wf.cli.Context,
 					operations: {
 						test?: () => boolean
 						commit?: (p: { message: string }) => void
