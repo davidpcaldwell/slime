@@ -46,6 +46,7 @@ namespace slime.time {
 				rfc3339: slime.Codec<When,string>
 			}
 			order: Function
+			now: () => When
 		}
 		java: object
 		install: Function
