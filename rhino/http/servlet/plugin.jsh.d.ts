@@ -16,10 +16,17 @@ namespace jsh.httpd {
 
 	interface Resources {
 		file: any
+		add: any
+		loader: any
 	}
 
 	interface Exports {
-		Resources: new () => Resources
+		Resources: {
+			new (): Resources
+			Old: any
+			NoVcsDirectory: any
+			script: any
+		}
 		Tomcat?: new (p?: { port?: number }) => Tomcat
 		plugin: {
 			tools: () => void
