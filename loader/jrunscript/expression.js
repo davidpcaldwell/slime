@@ -120,341 +120,348 @@
 			return loader.mime.Type.fromName(path);
 		}
 
-		loader.Resource = (function(was) {
-			/**
-			 * @param { slime.jrunscript.runtime.ResourceArgument } p
-			 * @constructor
-			 */
-			var rv = function(p) {
-				if (p.stream && p.stream.binary) {
-					if (!p.read) p.read = {};
-					p.read.binary = (function(stream) {
-						var _bytes;
+		/** @type { slime.jrunscript.runtime.Exports["Resource"] } */
+		var Resource = (function(was) {
+			var rv = (
+				/**
+				 * @param { slime.jrunscript.runtime.ResourceArgument } p
+				 * @constructor
+				 */
+				function(p) {
+					if (p.stream && p.stream.binary) {
+						if (!p.read) p.read = {};
+						p.read.binary = (function(stream) {
+							var _bytes;
 
-						return function() {
-							if (!_bytes) {
-								_bytes = stream.java.array();
-							}
-							return new loader.io.InputStream(new Packages.java.io.ByteArrayInputStream(_bytes));
-						}
-					})(p.stream.binary);
-				}
-				if (p._loaded) {
-					if (!p.read) p.read = {};
-					p.read.binary = function() {
-						return new loader.io.InputStream(p._loaded.resource.getInputStream());
-					}
-				}
-
-				var binary = (function() {
-					if (p.read && p.read.binary) {
-						return function() {
-							return p.read.binary();
-						}
-					}
-				})();
-
-				// TODO: Probably should implement this method if the argument provides a string or read.string also
-				var text = (function() {
-					if (p.read && p.read.text) {
-						return function() {
-							return p.read.text();
-						}
-					}
-					if (p.read && p.read.string) {
-						return function() {
-							return new loader.io.Reader(new Packages.java.io.StringReader(p.read.string()));
-						}
-					}
-					if (p.string) {
-						return function() {
-							return new loader.io.Reader(new Packages.java.io.StringReader(p.string));
-						}
-					}
-					if (p.read && p.read.binary) {
-						return function() {
-							return p.read.binary().character();
-						}
-					}
-				})();
-
-				if (p.read && !p.read.string) {
-					p.read.string = function() {
-						return text().asString();
-					}
-				}
-
-				was.apply(this,arguments);
-
-				//	TODO	probably should allow name property to be passed in and then passed through
-				if (p._loaded) {
-					if (!this.type) {
-						this.type = loader.mime.Type.fromName(p._loaded.path);
-					}
-
-					if (typeof(p.length) == "undefined") Object.defineProperty(
-						p,
-						"length",
-						new function() {
-							this.get = function() {
-								var length = p._loaded.resource.getLength();
-								if (typeof(length) == "object" && length !== null && length.longValue) {
-									return Number(length.longValue());
+							return function() {
+								if (!_bytes) {
+									_bytes = stream.java.array();
 								}
-							};
-							this.enumerable = true;
-						}
-					);
-
-					this.name = String(p._loaded.resource.getSourceName());
-
-					Object.defineProperty(
-						this,
-						"modified",
-						new function() {
-							this.get = function() {
-								var _modified = p._loaded.resource.getLastModified();
-								if (_modified) return new Date( Number(_modified.getTime()) );
-							};
-							this.enumerable = true;
-						}
-					);
-
-					this.java = {
-						adapt: function() {
-							return p._loaded.resource;
-						}
-					}
-				}
-
-				if (this.type) {
-					//	Go ahead and make it immutable; in Java we know we have Object.defineProperty
-					(function(type) {
-						Object.defineProperty(this, "type", {
-							get: function() {
-								return type;
-							},
-							enumerable: true
-						})
-					}).call(this,this.type);
-				}
-
-				if (this.name) {
-					//	Go ahead and make it immutable; in Java we know we have Object.defineProperty
-					(function(name) {
-						Object.defineProperty(this, "name", {
-							get: function() {
-								return name;
-							},
-							enumerable: true
-						})
-					}).call(this,this.name);
-				}
-
-				/** @property { string } string */
-				this.string = this.string;
-
-				if (typeof(this.string) == "undefined") Object.defineProperty(this, "string", {
-					get: loader.$api.deprecate(loader.$api.Function.memoized(function() {
-						return text().asString();
-					}))
-				});
-
-				/** @property { slime.jrunscript.runtime.Exports["Resources"] } */
-				this.read = this.read;
-
-				this.read = (function(was,global) {
-					return function(mode) {
-						var rv = (was) ? was.apply(this,arguments) : void(0);
-						if (typeof(rv) != "undefined") return rv;
-
-						var _properties = function(peer) {
-							//	peer can be Packages.java.io.InputStream or Packages.java.io.Reader
-							var properties = new Packages.java.util.Properties();
-							properties.load( peer );
-							peer.close();
-							return properties;
-						}
-
-						if (binary) {
-							if (mode == loader.io.Streams.binary) return binary();
-							if (mode == Packages.java.util.Properties) return _properties(binary().java.adapt());
-						}
-						if (text) {
-							if (mode == loader.io.Streams.text) return text();
-							if (mode == String) return text().asString();
-							if (mode == Packages.java.util.Properties) return _properties(text().java.adapt());
-							if (mode == global.XML) return loader.$api.deprecate(function() {
-								return XML(text().asString())
-							})();
-						}
-						var parameters = (function() {
-							if (!p) return String(p);
-							if (typeof(p) == "object") return String(p) + " with keys: " + Object.keys(p);
-							return String(p);
-						})();
-						throw new TypeError("No compatible read() mode specified: parameters = " + parameters + " binary=" + binary + " text=" + text + " argument was " + mode
-							+ " Streams.binary " + (mode == loader.io.Streams.binary)
-							+ " Streams.text " + (mode == loader.io.Streams.text)
-							+ " XML " + (mode == global.XML)
-							+ " String " + (mode == String)
-						);
-					};
-				})(this.read, function() { return this; }());
-
-				//	We provide the optional operations read.binary and read.text, even though they are semantically equivalent to read(),
-				//	for two reasons. First, they
-				//	allow callers to use object detection to determine the capabilities of this resource. Second, they make it possible for
-				//	callers to use these methods without having access to the module Streams object (which would be used as an argument to
-				//	read()). This is why we do not provide the same sort of API for String and XML, because those global objects will be
-				//	accessible to every caller.
-
-				if (binary) {
-					this.read.binary = function() {
-						return binary();
-					}
-				}
-
-				if (text) {
-					this.read.text = function() {
-						return text();
-					};
-
-					this.read.lines = function() {
-						var stream = text();
-						return stream.readLines.apply(stream,arguments);
-					};
-				}
-
-				// TODO: Resources are not really conceptually immuntable, since they can be written, so they should probably not
-				// cache length and modified
-				if (p.hasOwnProperty("length")) {
-					Object.defineProperty(this,"length",{
-						get: loader.$api.Function.memoized(function() {
-							if (typeof(p.length) == "number") {
-								return p.length;
-							} else if (typeof(p.length) == "undefined" && binary) {
-								return _java.readBytes(binary().java.adapt()).length;
+								return new loader.io.InputStream(new Packages.java.io.ByteArrayInputStream(_bytes));
 							}
-						}),
-						enumerable: true
-					})
-				}
-				// if (typeof(p.length) == "number") {
-				// 	this.length = p.length;
-				// } else if (typeof(p.length) == "undefined" && binary) {
-				// 	Object.defineProperty(this, "length", {
-				// 		get: function() {
-				// 			//	TODO	use something from $api
-				// 			if (!arguments.callee.called) {
-				// 				arguments.callee.called = { returns: _java.readBytes(binary().java.adapt()).length };
-				// 			}
-				// 			return arguments.callee.called.returns;
-				// 		},
-				// 		enumerable: true
-				// 	});
-				// }
+						})(p.stream.binary);
+					}
+					if (p._loaded) {
+						if (!p.read) p.read = {};
+						p.read.binary = function() {
+							return new loader.io.InputStream(p._loaded.resource.getInputStream());
+						}
+					}
 
-				// if (typeof(p.modified) == "object") {
-				// 	this.modified = p.modified;
-				// }
-				if (p.hasOwnProperty("modified")) {
-					Object.defineProperty(this,"modified",{
-						get: loader.$api.Function.memoized(function() {
-							return p.modified;
-						}),
-						enumerable: true
-					});
-				}
-
-				if (p.write) {
-					var writeBinary = (function() {
-						if (p.write.binary) {
-							return function(mode) {
-								return p.write.binary(mode);
+					var binary = (function() {
+						if (p.read && p.read.binary) {
+							return function() {
+								return p.read.binary();
 							}
 						}
 					})();
 
-					var writeText = (function() {
-						if (p.write.text) {
-							return function(mode) {
-								return p.write.text(mode);
-							};
-						} else if (p.write.binary) {
-							return function(mode) {
-								return p.write.binary(mode).character();
-							};
+					// TODO: Probably should implement this method if the argument provides a string or read.string also
+					var text = (function() {
+						if (p.read && p.read.text) {
+							return function() {
+								return p.read.text();
+							}
+						}
+						if (p.read && p.read.string) {
+							return function() {
+								return new loader.io.Reader(new Packages.java.io.StringReader(p.read.string()));
+							}
+						}
+						if (p.string) {
+							return function() {
+								return new loader.io.Reader(new Packages.java.io.StringReader(p.string));
+							}
+						}
+						if (p.read && p.read.binary) {
+							return function() {
+								return p.read.binary().character();
+							}
 						}
 					})();
 
-					this.write = function(dataOrType,mode) {
-						if (!mode) mode = {};
-						if (dataOrType == loader.io.Streams.binary && writeBinary) {
-							return writeBinary(mode);
-						} else if (dataOrType == loader.io.Streams.text && writeText) {
-							return writeText(mode);
-						} else if (dataOrType.java && dataOrType.java.adapt && loader.java.isJavaType(Packages.java.io.InputStream)(dataOrType.java.adapt())) {
-							var stream = writeBinary(mode);
-							loader.io.Streams.binary.copy(dataOrType,stream);
-							stream.close();
-						} else if (dataOrType.java && dataOrType.java.adapt && loader.java.isJavaType(Packages.java.io.Reader)(dataOrType.java.adapt())) {
-							stream = writeText(mode);
-							loader.io.Streams.text.copy(dataOrType,stream);
-							stream.close();
-						} else if (typeof(dataOrType) == "string" && writeText) {
-							var writer = writeText(mode);
-							writer.write(dataOrType);
-							writer.close();
-						} else if (typeof(dataOrType) == "object" && loader.java.isJavaType(Packages.java.util.Properties)(dataOrType)) {
-							var comments = (mode && mode.comments) ? mode.comments : null;
-							var writer = writeText(mode);
-							dataOrType.store(writer.java.adapt(), comments);
-							writer.close();
-						} else if (String(typeof(dataOrType)) == "xml" && writeText) {
-							var writer = writeText(mode);
-							writer.write(dataOrType.toXMLString());
-							writer.close();
-						} else {
-							throw new TypeError("No compatible write mode, trying to write: " + dataOrType);
+					if (p.read && !p.read.string) {
+						p.read.string = function() {
+							return text().asString();
 						}
-					};
+					}
 
-					if (!this.java) this.java = {};
-					var self = this;
-					if (!this.java.adapt) this.java.adapt = function(path) {
-						return new JavaAdapter(
-							Packages.inonit.script.engine.Code.Loader.Resource,
+					was.apply(this,arguments);
+
+					//	TODO	probably should allow name property to be passed in and then passed through
+					if (p._loaded) {
+						if (!this.type) {
+							this.type = loader.mime.Type.fromName(p._loaded.path);
+						}
+
+						if (typeof(p.length) == "undefined") Object.defineProperty(
+							p,
+							"length",
 							new function() {
-								["getURI","getSourceName","getInputStream","getLength","getLastModified"].forEach(function(methodName) {
-									this[methodName] = function() {
-										throw new Error("Unimplemented: " + methodName);
-									};
-								},this);
-
-								this.getURI = function() {
-									// TODO: Unclear what this is doing; does this object represent just one file? Seems like no
-									return Packages.inonit.script.engine.Code.Loader.URI.script(
-										"expression.js",
-										path
-									)
-								}
-
-								this.getSourceName = function() {
-									return (self.name) ? self.name : null;
-								}
-
-								this.getInputStream = function() {
-									if (!self.read || !self.read.binary) throw new Error("Cannot read " + self);
-									return self.read.binary().java.adapt();
-								}
+								this.get = function() {
+									var length = p._loaded.resource.getLength();
+									if (typeof(length) == "object" && length !== null && length.longValue) {
+										return Number(length.longValue());
+									}
+								};
+								this.enumerable = true;
 							}
 						);
+
+						this.name = String(p._loaded.resource.getSourceName());
+
+						Object.defineProperty(
+							this,
+							"modified",
+							new function() {
+								this.get = function() {
+									var _modified = p._loaded.resource.getLastModified();
+									if (_modified) return new Date( Number(_modified.getTime()) );
+								};
+								this.enumerable = true;
+							}
+						);
+
+						this.java = {
+							adapt: function() {
+								return p._loaded.resource;
+							}
+						}
+					}
+
+					if (this.type) {
+						//	Go ahead and make it immutable; in Java we know we have Object.defineProperty
+						(function(type) {
+							Object.defineProperty(this, "type", {
+								get: function() {
+									return type;
+								},
+								enumerable: true
+							})
+						}).call(this,this.type);
+					}
+
+					if (this.name) {
+						//	Go ahead and make it immutable; in Java we know we have Object.defineProperty
+						(function(name) {
+							Object.defineProperty(this, "name", {
+								get: function() {
+									return name;
+								},
+								enumerable: true
+							})
+						}).call(this,this.name);
+					}
+
+					/** @property { string } string */
+					this.string = this.string;
+
+					if (typeof(this.string) == "undefined") Object.defineProperty(this, "string", {
+						get: loader.$api.deprecate(loader.$api.Function.memoized(function() {
+							return text().asString();
+						}))
+					});
+
+					/** @property { slime.jrunscript.runtime.Exports["Resources"] } */
+					this.read = this.read;
+
+					this.read = (function(was,global) {
+						return function(mode) {
+							var rv = (was) ? was.apply(this,arguments) : void(0);
+							if (typeof(rv) != "undefined") return rv;
+
+							var _properties = function(peer) {
+								//	peer can be Packages.java.io.InputStream or Packages.java.io.Reader
+								var properties = new Packages.java.util.Properties();
+								properties.load( peer );
+								peer.close();
+								return properties;
+							}
+
+							if (binary) {
+								if (mode == loader.io.Streams.binary) return binary();
+								if (mode == Packages.java.util.Properties) return _properties(binary().java.adapt());
+							}
+							if (text) {
+								if (mode == loader.io.Streams.text) return text();
+								if (mode == String) return text().asString();
+								if (mode == Packages.java.util.Properties) return _properties(text().java.adapt());
+								if (mode == global.XML) return loader.$api.deprecate(function() {
+									return XML(text().asString())
+								})();
+							}
+							var parameters = (function() {
+								if (!p) return String(p);
+								if (typeof(p) == "object") return String(p) + " with keys: " + Object.keys(p);
+								return String(p);
+							})();
+							throw new TypeError("No compatible read() mode specified: parameters = " + parameters + " binary=" + binary + " text=" + text + " argument was " + mode
+								+ " Streams.binary " + (mode == loader.io.Streams.binary)
+								+ " Streams.text " + (mode == loader.io.Streams.text)
+								+ " XML " + (mode == global.XML)
+								+ " String " + (mode == String)
+							);
+						};
+					})(this.read, function() { return this; }());
+
+					//	We provide the optional operations read.binary and read.text, even though they are semantically equivalent to read(),
+					//	for two reasons. First, they
+					//	allow callers to use object detection to determine the capabilities of this resource. Second, they make it possible for
+					//	callers to use these methods without having access to the module Streams object (which would be used as an argument to
+					//	read()). This is why we do not provide the same sort of API for String and XML, because those global objects will be
+					//	accessible to every caller.
+
+					if (binary) {
+						this.read.binary = function() {
+							return binary();
+						}
+					}
+
+					if (text) {
+						this.read.text = function() {
+							return text();
+						};
+
+						this.read.lines = function() {
+							var stream = text();
+							return stream.readLines.apply(stream,arguments);
+						};
+					}
+
+					// TODO: Resources are not really conceptually immuntable, since they can be written, so they should probably not
+					// cache length and modified
+					if (p.hasOwnProperty("length")) {
+						Object.defineProperty(this,"length",{
+							get: loader.$api.Function.memoized(function() {
+								if (typeof(p.length) == "number") {
+									return p.length;
+								} else if (typeof(p.length) == "undefined" && binary) {
+									return _java.readBytes(binary().java.adapt()).length;
+								}
+							}),
+							enumerable: true
+						})
+					}
+					// if (typeof(p.length) == "number") {
+					// 	this.length = p.length;
+					// } else if (typeof(p.length) == "undefined" && binary) {
+					// 	Object.defineProperty(this, "length", {
+					// 		get: function() {
+					// 			//	TODO	use something from $api
+					// 			if (!arguments.callee.called) {
+					// 				arguments.callee.called = { returns: _java.readBytes(binary().java.adapt()).length };
+					// 			}
+					// 			return arguments.callee.called.returns;
+					// 		},
+					// 		enumerable: true
+					// 	});
+					// }
+
+					// if (typeof(p.modified) == "object") {
+					// 	this.modified = p.modified;
+					// }
+					if (p.hasOwnProperty("modified")) {
+						this.modified = void(0);
+						Object.defineProperty(this,"modified",{
+							get: loader.$api.Function.memoized(function() {
+								return p.modified;
+							}),
+							enumerable: true
+						});
+					}
+
+					if (p.write) {
+						var writeBinary = (function() {
+							if (p.write.binary) {
+								return function(mode) {
+									return p.write.binary(mode);
+								}
+							}
+						})();
+
+						var writeText = (function() {
+							if (p.write.text) {
+								return function(mode) {
+									return p.write.text(mode);
+								};
+							} else if (p.write.binary) {
+								return function(mode) {
+									return p.write.binary(mode).character();
+								};
+							}
+						})();
+
+						this.write = function(dataOrType,mode) {
+							if (!mode) mode = {};
+							if (dataOrType == loader.io.Streams.binary && writeBinary) {
+								return writeBinary(mode);
+							} else if (dataOrType == loader.io.Streams.text && writeText) {
+								return writeText(mode);
+							} else if (dataOrType.java && dataOrType.java.adapt && loader.java.isJavaType(Packages.java.io.InputStream)(dataOrType.java.adapt())) {
+								var stream = writeBinary(mode);
+								loader.io.Streams.binary.copy(dataOrType,stream);
+								stream.close();
+							} else if (dataOrType.java && dataOrType.java.adapt && loader.java.isJavaType(Packages.java.io.Reader)(dataOrType.java.adapt())) {
+								stream = writeText(mode);
+								loader.io.Streams.text.copy(dataOrType,stream);
+								stream.close();
+							} else if (typeof(dataOrType) == "string" && writeText) {
+								var writer = writeText(mode);
+								writer.write(dataOrType);
+								writer.close();
+							} else if (typeof(dataOrType) == "object" && loader.java.isJavaType(Packages.java.util.Properties)(dataOrType)) {
+								var comments = (mode && mode.comments) ? mode.comments : null;
+								var writer = writeText(mode);
+								dataOrType.store(writer.java.adapt(), comments);
+								writer.close();
+							} else if (String(typeof(dataOrType)) == "xml" && writeText) {
+								var writer = writeText(mode);
+								writer.write(dataOrType.toXMLString());
+								writer.close();
+							} else {
+								throw new TypeError("No compatible write mode, trying to write: " + dataOrType);
+							}
+						};
+
+						if (!this.java) this.java = {};
+						var self = this;
+						if (!this.java.adapt) this.java.adapt = function(path) {
+							return new JavaAdapter(
+								Packages.inonit.script.engine.Code.Loader.Resource,
+								new function() {
+									["getURI","getSourceName","getInputStream","getLength","getLastModified"].forEach(function(methodName) {
+										this[methodName] = function() {
+											throw new Error("Unimplemented: " + methodName);
+										};
+									},this);
+
+									this.getURI = function() {
+										// TODO: Unclear what this is doing; does this object represent just one file? Seems like no
+										return Packages.inonit.script.engine.Code.Loader.URI.script(
+											"expression.js",
+											path
+										)
+									}
+
+									this.getSourceName = function() {
+										return (self.name) ? self.name : null;
+									}
+
+									this.getInputStream = function() {
+										if (!self.read || !self.read.binary) throw new Error("Cannot read " + self);
+										return self.read.binary().java.adapt();
+									}
+								}
+							);
+						}
 					}
 				}
-			};
+			);
+			/** @type { slime.jrunscript.runtime.Exports["Resource"] } */
 			return rv;
 		})(loader.Resource);
+
+		loader.Resource = Resource;
 
 		// //	Convert a Java inonit.script.engine.Code.Loader.Resource to a resource
 		// //	TODO	should this logic be pushed into loader.io? Probably

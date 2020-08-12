@@ -14,7 +14,7 @@
 //@ts-check
 
 /**
- * @typedef { slime.jrunscript.http.servlet.handler & { stop?: () => void } } slime.jsh.unit.mock.handler
+ * @typedef { slime.servlet.handler & { stop?: () => void } } slime.jsh.unit.mock.handler
  */
 
 /**

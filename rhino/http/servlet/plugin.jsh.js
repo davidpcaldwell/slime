@@ -195,13 +195,19 @@
 				if (TOMCAT_CLASS) {
 					var Tomcat = (
 						/**
-						 * @this { jsh.httpd.Tomcat }
+						 * @constructor
+						 * @param { ConstructorParameters<jsh.httpd.Exports["Tomcat"]>[0] } p
 						 */
 						function(p) {
 							if (!p) p = {};
 							var tomcat = new Packages.org.apache.catalina.startup.Tomcat();
 
-							var base = (p.base) ? p.base : jsh.shell.TMPDIR.createTemporary({ directory: true, prefix: "tomcat" });
+							/** @returns { slime.jrunscript.file.Directory } */
+							var castToDirectory = function(node) {
+								return node;
+							}
+
+							var base = (p.base) ? p.base : castToDirectory(jsh.shell.TMPDIR.createTemporary({ directory: true, prefix: "tomcat" }));
 
 							this.base = base;
 

@@ -223,31 +223,36 @@
 			}
 		})();
 
-		var loaders = (function() {
-			if ($java && $servlet) {
-				//	servlet container, determine webapp path and load relative to that
-				var path = String($servlet.path);
-				var tokens = path.split("/");
-				var prefix = tokens.slice(0,tokens.length-1).join("/") + "/";
-				Packages.java.lang.System.err.println("Creating application loader with prefix " + prefix);
-				var loader = Loader({
-					_source: $servlet.resources
-				});
-				return {
-					script: Loader({
+		var loaders = (
+			/**
+			 * @return { { script: slime.Loader, container: slime.Loader, api: slime.Loader } }
+			 */
+			function() {
+				if ($java && $servlet) {
+					//	servlet container, determine webapp path and load relative to that
+					var path = String($servlet.path);
+					var tokens = path.split("/");
+					var prefix = tokens.slice(0,tokens.length-1).join("/") + "/";
+					Packages.java.lang.System.err.println("Creating application loader with prefix " + prefix);
+					var loader = Loader({
 						_source: $servlet.resources
-					},prefix),
-					container: Loader({
-						_source: $servlet.resources
-					},""),
-					api: new loader.Child("WEB-INF/slime/rhino/http/servlet/server/")
-				};
-			} else if ($host.loaders) {
-				return $host.loaders;
-			} else {
-				throw new Error("Cannot instantiate loaders: $java = " + $java + " $servlet = " + $servlet + " $host.loaders = " + $host.loaders);
+					});
+					return {
+						script: Loader({
+							_source: $servlet.resources
+						},prefix),
+						container: Loader({
+							_source: $servlet.resources
+						},""),
+						api: new loader.Child("WEB-INF/slime/rhino/http/servlet/server/")
+					};
+				} else if ($host.loaders) {
+					return $host.loaders;
+				} else {
+					throw new Error("Cannot instantiate loaders: $java = " + $java + " $servlet = " + $servlet + " $host.loaders = " + $host.loaders);
+				}
 			}
-		})();
+		)();
 
 		var $parameters = (function() {
 			if ($servlet) {
