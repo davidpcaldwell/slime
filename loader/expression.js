@@ -15,6 +15,7 @@
 	/**
 	 * @param { slime.runtime.$engine | undefined } $engine
 	 * @param { slime.runtime.$slime } $slime
+	 * @returns { slime.runtime.Exports }
 	 */
 	function($engine,$slime) {
 		(function polyfill() {
@@ -89,7 +90,10 @@
 			}
 		})();
 
-		return new function() {
+		/**
+		 * @constructor
+		 */
+		var Exports = function() {
 			var $platform = (function() {
 				var $exports = {};
 				$exports.Object = {};
@@ -297,6 +301,21 @@
 			)({ Type: void(0) });
 
 			if (!$slime.flags) $slime.flags = {};
+
+			//	TODO	these property declarations trick out TypeScript while the below IIFE (which has a forgotten purpose)
+			//			is refactored or removed
+
+			this.file = void(0);
+			this.mime = void(0);
+			this.value = void(0);
+			this.resource = void(0);
+			this.run = void(0);
+			this.Resource = void(0);
+			this.namespace = void(0);
+			this.$platform = void(0);
+			this.$api = void(0);
+			this.Loader = void(0);
+			this.java = void(0);
 
 			(function() {
 				/** @type { slime.runtime.Exports["mime"]["Type"]["fromName"] } */
@@ -708,6 +727,9 @@
 				this.$api = $api;
 			}).call(this);
 		};
+		/** @type { slime.runtime.Exports } */
+		var rv = new Exports();
+		return rv;
 	}
 //@ts-ignore
 )($engine,$slime)
