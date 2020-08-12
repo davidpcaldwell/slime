@@ -21,6 +21,8 @@ namespace slime.jrunscript.file {
 
 	interface File extends Node {
 		read: (any) => any
+		length: any
+		modified: any
 	}
 
 	interface Directory extends Node {
@@ -35,7 +37,7 @@ namespace slime.jrunscript.file {
 	}
 
 	interface Exports {
-		Loader: new (p: { directory: Directory }) => slime.Loader
+		Loader: new (p: { directory: Directory, type?: (path: slime.jrunscript.file.File) => slime.MimeType }) => slime.Loader
 		Pathname: {
 			(p: string): Pathname
 			createDirectory: any
