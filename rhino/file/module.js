@@ -14,7 +14,7 @@
 (
 	/**
 	 * @param { any } Packages
-	 * @param { any } $context
+	 * @param { { $pwd: string, pathext: any, api: { js: any, java: any, io: any }, cygwin: any, addFinalizer: any } } $context
 	 * @param { slime.Loader } $loader
 	 * @param { slime.jrunscript.file.Exports } $exports
 	 */
@@ -242,14 +242,20 @@
 		//});
 
 		/**
-		 *	@constructor
+		 * @param { ConstructorParameters<slime.jrunscript.file.Exports["Loader"]>[0] } p
+		 * @constructor
 		 */
-		var Loader = function Loader(p) {
+		function Loader(p) {
 			if (typeof(arguments[0]) != "object") throw new TypeError("Argument 0 must be an object.");
 
 			if (arguments[0].pathname && arguments[0].directory) {
 				return $api.deprecate(function() {
-					return new Loader({ directory: p });
+					/** @returns { slime.jrunscript.file.Directory } */
+					var castToDirectory = function(v) {
+						return v;
+					}
+
+					return new Loader({ directory: castToDirectory(p) });
 				})();
 			}
 
@@ -257,11 +263,14 @@
 				throw new TypeError("'directory' property must be present and an object.");
 			}
 
-			if (!p.type) p.type = function(path) {
-				return $context.api.io.mime.Type.fromName(path);
+			if (!p.type) p.type = function(file) {
+				return $context.api.io.mime.Type.fromName(file.toString());
 			}
 
-			p.toString = function() {
+			/** @type { any } */
+			var a = $api.Object.compose(p);
+
+			a.toString = function() {
 				return "rhino/file Loader: directory=" + p.directory;
 			};
 
@@ -295,11 +304,11 @@
 				}
 				return null;
 			}
-			p.get = function(path) {
+			a.get = function(path) {
 				if (!p.directory) return null;
 				return getFile(path);
 			}
-			p.list = function(path) {
+			a.list = function(path) {
 				if (!p.directory) return [];
 				//	Validate path
 				if (path) {
@@ -315,7 +324,7 @@
 					return { path: node.pathname.basename, loader: node.directory, resource: !node.directory };
 				});
 			}
-			p.child = function(prefix) {
+			a.child = function(prefix) {
 				if (!p.directory) return { directory: null };
 				return { directory: p.directory.getSubdirectory(prefix) };
 			}
@@ -326,7 +335,9 @@
 			this.Child = void(0);
 			this.get = void(0);
 			this.factory = void(0);
-			$context.api.io.Loader.apply(this,arguments);
+			var args = Array.prototype.slice.call(arguments);
+			args.splice(0,1,a);
+			$context.api.io.Loader.apply(this,args);
 		};
 
 		$exports.Loader = Loader;
