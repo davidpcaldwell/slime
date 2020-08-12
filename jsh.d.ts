@@ -1,6 +1,7 @@
 interface jsh {
 	java: slime.jrunscript.host.Exports & {
-		tools: any
+		tools: any,
+		log: any
 	}
 
 	http: slime.jrunscript.http.client

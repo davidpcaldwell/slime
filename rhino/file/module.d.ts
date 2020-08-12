@@ -37,7 +37,9 @@ namespace slime.jrunscript.file {
 	}
 
 	interface Exports {
-		Loader: new (p: { directory: Directory, type?: (path: slime.jrunscript.file.File) => slime.MimeType }) => slime.Loader
+		//	TODO	would be nice to get rid of string below, but right now it's unknown exactly how to access MimeType from
+		//			jsh/browser/servlet environments
+		Loader: new (p: { directory: Directory, type?: (path: slime.jrunscript.file.File) => (slime.MimeType | string) }) => slime.Loader
 		Pathname: {
 			(p: string): Pathname
 			createDirectory: any
