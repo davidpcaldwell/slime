@@ -43,7 +43,7 @@ namespace jsh.httpd {
 			script: any
 		}
 		Tomcat?: {
-			new (p?: { port?: number }): Tomcat
+			new (p?: { port?: number, base?: slime.jrunscript.file.Directory, https?: { port: number } }): Tomcat
 			serve: any
 		}
 		plugin: {

@@ -1,14 +1,31 @@
 namespace slime.servlet {
+	interface Header {
+		name: string
+		value: string
+	}
+
+	type Headers = Array<Header> & { value: Function }
+
 	interface Request {
+		headers: Headers
+		method: string
 		path: string
 	}
 
 	interface Response {
 		status: { code: number }
-		body?: slime.Resource | {
-			type: string,
-			string: string
-		}
+		headers?: Header[]
+		body?: (
+			slime.jrunscript.runtime.Resource
+			| {
+				type: string,
+				string: string
+			}
+			| {
+				type: string,
+				stream: any
+			}
+		)
 	}
 
 	type handler = (request: Request) => Response
@@ -36,10 +53,11 @@ namespace slime.servlet {
 				}) => slime.servlet.handler
 			}
 		}
-		$loader: any
+		$loader: slime.Loader
 		$parameters: any
 		$exports: {
-			handle: Function
+			handle: (request: Request) => Response
+			destroy?: () => void
 		}
 	}
 }
