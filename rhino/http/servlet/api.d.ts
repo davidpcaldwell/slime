@@ -15,10 +15,13 @@ namespace slime.servlet {
 
 	interface Scope {
 		httpd: {
-			js: any,
-			java: any,
-			io: any,
-			web: any,
+			$java: any
+			$reload?: () => void
+			loader: any
+			js: any
+			java: any
+			io: any
+			web: any
 			http: {
 				Response: {
 					text: (string: string) => Response
@@ -33,6 +36,8 @@ namespace slime.servlet {
 				}) => slime.servlet.handler
 			}
 		}
+		$loader: any
+		$parameters: any
 		$exports: {
 			handle: Function
 		}

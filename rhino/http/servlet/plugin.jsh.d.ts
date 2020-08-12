@@ -11,9 +11,27 @@ namespace jsh.httpd {
 		map: (p: { path: string, resources: slime.Loader, servlets: { [pattern: string]: servlet }}) => void
 		start: () => void
 		run: () => void
+		stop: () => void
+	}
+
+	interface Resources {
+		file: any
 	}
 
 	interface Exports {
-		Tomcat?: new () => Tomcat
+		Resources: new () => Resources
+		Tomcat?: new (p?: { port?: number }) => Tomcat
+		plugin: {
+			tools: () => void
+		}
+		tools: {
+			build: {
+				(p: {
+
+				}): void
+
+				getJavaSourceFiles: (p: any) => any[]
+			}
+		}
 	}
 }

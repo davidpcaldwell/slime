@@ -394,12 +394,14 @@ var NewResources = function() {
 	};
 };
 
-jsh.httpd.Resources = function() {
-	return new NewResources();
-};
-jsh.httpd.Resources.Old = $api.deprecate(OldResources);
+(function(jsh) {
+	jsh.httpd.Resources = function() {
+		return new NewResources();
+	};
+	jsh.httpd.Resources.Old = $api.deprecate(OldResources);
 
-jsh.httpd.Resources.NoVcsDirectory = DirectoryWithoutVcsLoader;
+	jsh.httpd.Resources.NoVcsDirectory = DirectoryWithoutVcsLoader;
+})(jsh);
 
 var script = function(rv,args) {
 	for (var i=0; i<args.length; i++) {
