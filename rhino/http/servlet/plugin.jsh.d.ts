@@ -7,10 +7,23 @@ namespace jsh.httpd {
 	}
 
 	interface Tomcat {
+		base: slime.jrunscript.file.Directory
 		port: number
-		map: (p: { path: string, resources: slime.Loader, servlets: { [pattern: string]: servlet }}) => void
+
+		map: (p: {
+			path: string,
+			resources?: slime.Loader,
+			servlets: { [pattern: string]: servlet }
+		}) => void
+
+		https: any
+
+		servlet: any
+
 		start: () => void
+
 		run: () => void
+
 		stop: () => void
 	}
 
@@ -21,13 +34,18 @@ namespace jsh.httpd {
 	}
 
 	interface Exports {
+		nugget: any
+		spi: any
 		Resources: {
 			new (): Resources
 			Old: any
 			NoVcsDirectory: any
 			script: any
 		}
-		Tomcat?: new (p?: { port?: number }) => Tomcat
+		Tomcat?: {
+			new (p?: { port?: number }): Tomcat
+			serve: any
+		}
 		plugin: {
 			tools: () => void
 		}

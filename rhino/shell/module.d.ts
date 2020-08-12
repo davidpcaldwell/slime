@@ -15,6 +15,8 @@ namespace slime.jrunscript.shell {
 
 		version: string
 
+		keytool: any
+
 		launcher: slime.jrunscript.file.File
 	}
 
