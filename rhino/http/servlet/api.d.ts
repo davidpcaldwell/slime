@@ -28,13 +28,15 @@ namespace slime.servlet {
 		)
 	}
 
+	interface Parameters {
+		[x: string]: any
+	}
+
 	type handler = (request: Request) => Response
 
 	interface Scope {
 		httpd: {
-			$java: any
-			$reload?: () => void
-			loader: any
+			loader: slime.Loader
 			js: any
 			java: any
 			io: any
@@ -52,9 +54,11 @@ namespace slime.servlet {
 					handle: slime.servlet.handler
 				}) => slime.servlet.handler
 			}
+			$java: any
+			$reload?: () => void
 		}
 		$loader: slime.Loader
-		$parameters: any
+		$parameters: Parameters
 		$exports: {
 			handle: (request: Request) => Response
 			destroy?: () => void
