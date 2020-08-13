@@ -328,6 +328,7 @@
 				if (!p.directory) return { directory: null };
 				return { directory: p.directory.getSubdirectory(prefix) };
 			}
+			this.source = void(0);
 			this.file = void(0);
 			this.module = void(0);
 			this.value = void(0);

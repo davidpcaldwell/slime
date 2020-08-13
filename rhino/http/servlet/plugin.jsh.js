@@ -101,11 +101,35 @@
 				jsh.httpd.nugget = {};
 				jsh.httpd.nugget.getMimeType = getMimeType;
 
-				jsh.httpd.spi = {};
+				jsh.httpd.spi = {
+					argument: void(0)
+				};
+
+				/**
+				 * @param { slime.Loader } resources
+				 * @param { jsh.httpd.servlet.descriptor } servlet
+				 * @returns { { resources: slime.Loader, load: (scope: slime.servlet.Scope) => void, $loader?: slime.Loader } }
+				 */
 				jsh.httpd.spi.argument = function(resources,servlet) {
-					if (servlet.$loader) throw new Error("servlet.$loader provided");
-					if (servlet.pathname && servlet.directory === false) {
-						servlet = { file: servlet };
+					if (servlet["$loader"]) throw new Error("servlet.$loader provided");
+
+					/** @returns { slime.jrunscript.file.File } */
+					var toFile = function(servlet) {
+						return servlet;
+					};
+
+					/** @type { (servlet: jsh.httpd.servlet.descriptor) => servlet is jsh.httpd.servlet.byLoad } */
+					var isByLoad = function(servlet) {
+						return Boolean(servlet["load"]);
+					}
+
+					/** @type { (servlet: jsh.httpd.servlet.descriptor) => servlet is jsh.httpd.servlet.byFile } */
+					var isByFile = function(servlet) {
+						return Boolean(servlet["file"]);
+					}
+
+					if (servlet["pathname"] && servlet["directory"] === false) {
+						servlet = { file: toFile(servlet) };
 					}
 
 					var byLoader = function($loader,path) {
@@ -124,28 +148,26 @@
 
 					resources = getResourceLoader(resources);
 
+					/**
+					 *	@param { { load: (scope: slime.servlet.Scope) => void, $loader?: slime.Loader } } o
+					 */
 					var returning = function(o) {
-						o.resources = resources;
-						return o;
+						return Object.assign(o, { resources: resources });
 					};
 
-					if (servlet.load) {
+					if (isByLoad(servlet)) {
 						return returning({
 							load: servlet.load
 						});
-					// } else if (servlet.$loader && servlet.path) {
-					// 	return returning({
-					// 		$loader: servlet.$loader,
-					// 		load: byLoader(servlet.$loader,servlet.path)
-					// 	});
-					} else if (servlet.file) {
+					} else if (isByFile(servlet)) {
+						var file = servlet.file;
 						return returning({
 							$loader: new jsh.file.Loader({
 								directory: servlet.file.parent,
 								type: getMimeType
 							}),
 							load: function(scope) {
-								jsh.loader.run(servlet.file.pathname, scope);
+								jsh.loader.run(file.pathname, scope);
 							}
 						});
 					} else if (servlet.resource) {
@@ -259,6 +281,13 @@
 								return tomcat.addContext(path, base.pathname.java.adapt().getCanonicalPath());
 							};
 
+							/**
+							 * @param { any } context - Tomcat native Java context object
+							 * @param { slime.Loader } resources
+							 * @param { string } pattern
+							 * @param { string } servletName
+							 * @param { jsh.httpd.servlet.descriptor } servletDeclaration
+							 */
 							var addServlet = function(context,resources,pattern,servletName,servletDeclaration) {
 								var servletImplementation = jsh.httpd.spi.argument(resources,servletDeclaration);
 								Packages.org.apache.catalina.startup.Tomcat.addServlet(context,servletName,new JavaAdapter(
@@ -268,27 +297,28 @@
 										var servlet;
 
 										this.init = function() {
+											/** @type { { $host: slime.servlet.internal.$host.jsh } } */
 											var apiScope = {
-												$host: new function() {
-													this.parameters = (servletDeclaration.parameters) ? servletDeclaration.parameters : {};
+												$host: {
+													parameters: (servletDeclaration.parameters) ? servletDeclaration.parameters : {},
 
-													this.loaders = {
+													loaders: {
 														api: new $loader.Child("server/"),
 														script: servletImplementation.$loader,
 														container: servletImplementation.resources
-													};
+													},
 
-													this.getCode = function(scope) {
+													getCode: function(scope) {
 														servletImplementation.load(scope);
-													}
+													},
 
 													//	TODO	should not needlessly rename this
-													this.$java = $slime;
+													$java: $slime,
 
-													this.server = server;
-													this.api = api;
+													server: server,
+													api: api,
 
-													this.script = function(script) {
+													script: function(script) {
 														servlet = script;
 													}
 												}
@@ -308,6 +338,7 @@
 								context.addServletMapping(pattern,servletName);
 							};
 
+							/** @type { jsh.httpd.Tomcat["map"] } */
 							this.map = function(m) {
 								if (typeof(m.path) == "string" && m.servlets) {
 									var context = addContext(m.path,base);
@@ -322,11 +353,9 @@
 								}
 							};
 
+							/** @type { jsh.httpd.Tomcat["servlet"] } */
 							this.servlet = function(declaration) {
-								var context = addContext("",base);
-								//	TODO	provide a way to specify resources?
-								var resources = null;
-								addServlet(context,resources,"/*","slime",declaration);
+								addServlet(addContext("",base),declaration.resources,"/*","slime",declaration);
 							};
 
 							var started = false;

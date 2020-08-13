@@ -13,15 +13,30 @@
 //@ts-check
 (
 	/**
-	 * @param {*} Packages
-	 * @param {*} JavaAdapter
-	 * @param {*} $host
+	 * @param { any } Packages
+	 * @param { any } JavaAdapter
+	 * @param { slime.servlet.internal.$host } $host
 	 */
 	function(Packages,JavaAdapter,$host) {
+		/** @type { ($host: slime.servlet.internal.$host) => $host is slime.servlet.internal.$host.Java } */
+		var isJava = function($host) {
+			return $host["register"];
+		};
+
+		/** @type { ($host: slime.servlet.internal.$host) => $host is slime.servlet.internal.$host.Rhino } */
+		var isRhino = function($host) {
+			return isJava($host) && $host["getEngine"];
+		};
+
+		/** @type { ($host: slime.servlet.internal.$host) => $host is slime.servlet.internal.$host.jsh } */
+		var isScript = function($host) {
+			return $host["loaders"];
+		}
+
 		var $java = (function() {
 			//	TODO	there is no test coverage for the below; when the rhino/ directory was renamed to jrunscript/, the test suite still passed
 			//	Packages.java.lang.System.err.println("$host.getLoader = " + $host.getLoader + " $host.getEngine = " + $host.getEngine + " $host.getClasspath = " + $host.getClasspath);
-			if ($host.getLoader && $host.getEngine) {
+			if (isRhino($host)) {
 				//	TODO	consider pushing these details back into inonit.script.servlet.Rhino.Host
 				//			would need to construct the two-property scope object below; rest should be straightforward.
 				//			Need also to identify test case
@@ -34,7 +49,7 @@
 					},
 					null
 				);
-			} else if ($host.getLoader && $host.getClasspath) {
+			} else if (isJava($host)) {
 				//	TODO	implement along with Graal servlets
 				var $graal;
 				var scripts = eval($host.getLoader().getLoaderCode("jrunscript/nashorn.js"));
@@ -53,7 +68,7 @@
 		})();
 
 		var $servlet = (function() {
-			if ($host.getServlet) {
+			if (isJava($host)) {
 				var rv = {};
 				//	TODO	Find a way to use _url version of loader/jrunscript/expression.js constructor to get access to this object, probably
 				//			via the created loader's .source property
@@ -218,7 +233,7 @@
 		var api = (function() {
 			if (bootstrap) {
 				return bootstrap;
-			} else if ($host.api) {
+			} else if (isScript($host)) {
 				return $host.api;
 			}
 		})();
@@ -246,14 +261,17 @@
 						},""),
 						api: new loader.Child("WEB-INF/slime/rhino/http/servlet/server/")
 					};
-				} else if ($host.loaders) {
+				} else if (isScript($host)) {
 					return $host.loaders;
 				} else {
-					throw new Error("Cannot instantiate loaders: $java = " + $java + " $servlet = " + $servlet + " $host.loaders = " + $host.loaders);
+					throw new Error("Cannot instantiate loaders: $java = " + $java + " $servlet = " + $servlet + " $host = " + $host);
 				}
 			}
 		)();
 
+		/**
+		 * @type { { [x: string]: any } }
+		 */
 		var $parameters = (function() {
 			if ($servlet) {
 				var rv = {};
@@ -261,7 +279,7 @@
 					rv[x] = String($servlet.parameters[x]);
 				}
 				return rv;
-			} else if ($host.parameters) {
+			} else if (isScript($host)) {
 				return $host.parameters;
 			}
 		})();
@@ -275,7 +293,7 @@
 					Packages.java.lang.System.err.println("Loading servlet from " + path);
 					loaders.script.run(basename,scope);
 				};
-			} else if ($host.getCode) {
+			} else if (isScript($host)) {
 				return $host.getCode;
 			} else {
 				throw new Error();
@@ -294,7 +312,7 @@
 		};
 		scope.httpd.$java = (function() {
 			if ($java && $servlet) return $java;
-			return $host.$java;
+			if (isScript($host)) return $host.$java;
 		})();
 
 		if (loaders.container) {
@@ -333,8 +351,11 @@
 
 		$code(scope);
 
+		/**
+		 * @type { slime.servlet.internal.server.Exports }
+		 */
 		var server = (function() {
-			if ($host.server) {
+			if (isScript($host)) {
 				return $host.server;
 			} else if ($servlet) {
 				return loaders.container.module("WEB-INF/server.js", {
@@ -345,7 +366,7 @@
 
 		var servlet = new server.Servlet(scope.$exports);
 
-		scope.httpd.$reload = ($host.getCode) ? function() {
+		scope.httpd.$reload = (isScript($host)) ? function() {
 			servlet.destroy();
 			$code(scope);
 			servlet.reload(scope.$exports);
@@ -353,7 +374,7 @@
 
 		//	TODO	trying to push this first form back into a register() method in the jsh plugin, but for some reason it does not work;
 		//			figure out why and do it
-		if ($host.script) {
+		if (isScript($host)) {
 			$host.script(servlet);
 		} else {
 			$host.register(new JavaAdapter(

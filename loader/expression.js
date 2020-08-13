@@ -317,298 +317,335 @@
 			this.Loader = void(0);
 			this.java = void(0);
 
-			(function() {
-				/** @type { slime.runtime.Exports["mime"]["Type"]["fromName"] } */
-				mime.Type.fromName = function(path) {
-					if (/\.js$/.test(path)) return mime.Type.parse("application/javascript");
-					if (/\.css$/.test(path)) return mime.Type.parse("text/css");
-					if (/\.ts$/.test(path)) return mime.Type.parse("application/x.typescript");
-					if (/\.csv$/.test(path)) return mime.Type.parse("text/csv");
-					if (/\.coffee$/.test(path)) return mime.Type.parse("application/vnd.coffeescript");
-				};
+			/** @type { slime.runtime.Exports["mime"]["Type"]["fromName"] } */
+			mime.Type.fromName = function(path) {
+				if (/\.js$/.test(path)) return mime.Type.parse("application/javascript");
+				if (/\.css$/.test(path)) return mime.Type.parse("text/css");
+				if (/\.ts$/.test(path)) return mime.Type.parse("application/x.typescript");
+				if (/\.csv$/.test(path)) return mime.Type.parse("text/csv");
+				if (/\.coffee$/.test(path)) return mime.Type.parse("application/vnd.coffeescript");
+			};
 
-				var methods = {};
+			var methods = {};
 
-				/**
-				 * @type { slime.runtime.Exports["Resource"] }
-				 * @constructor
-				 * @param { slime.runtime.ResourceArgument } o
-				 */
-				var Resource = function(o) {
-					this.type = (function(type,name) {
-						if (typeof(type) == "string") return mime.Type.parse(type);
-						if (type instanceof mime.Type) return type;
-						if (!type && name) {
-							var fromName = mime.Type.fromName(name);
-							if (fromName) return fromName;
+			/**
+			 * @constructor
+			 * @param { slime.Resource.Descriptor } o
+			 */
+			var Resource = function(o) {
+				this.type = (function(type,name) {
+					if (typeof(type) == "string") return mime.Type.parse(type);
+					if (type instanceof mime.Type) return type;
+					if (!type && name) {
+						var fromName = mime.Type.fromName(name);
+						if (fromName) return fromName;
+					}
+					if (!type) return null;
+					throw new TypeError("Resource 'type' property must be a MIME type or string.");
+				})(o.type,o.name);
+
+				this.name = (o.name) ? o.name : void(0);
+
+				if ( (!o.read || !o.read.string) && typeof(o.string) == "string") {
+					if (!o.read) o.read = {
+						string: function() {
+							return o.string;
 						}
-						if (!type) return null;
-						throw new TypeError("Resource 'type' property must be a MIME type or string.");
-					})(o.type,o.name);
-
-					this.name = (o.name) ? o.name : void(0);
-
-					if ( (!o.read || !o.read.string) && typeof(o.string) == "string") {
-						if (!o.read) o.read = {
-							string: function() {
-								return o.string;
-							}
-						};
-					}
-
-					if (o.read && o.read.string) {
-						this.read = function(v) {
-							if (v === String) return o.read.string();
-							if (v === JSON) return JSON.parse(this.read(String));
-							if ($platform.e4x && v == $platform.e4x.XML) {
-								var string = this.read(String);
-								string = string.replace(/\<\?xml.*\?\>/, "");
-								string = string.replace(/\<\!DOCTYPE.*?\>/, "");
-								return $platform.e4x.XML( string );
-							} else if ($platform.e4x && v == $platform.e4x.XMLList) {
-								var string = this.read(String);
-								string = string.replace(/\<\?xml.*\?\>/, "");
-								string = string.replace(/\<\!DOCTYPE.*?\>/, "");
-								return $platform.e4x.XMLList( string );
-							}
-						}
-					}
-
-					//	TODO	temporary measure; some tests assume loader.get() returns resource source and so we increase compatibility between resource and its source
-					if (typeof(o.string) == "string") {
-						Object.defineProperty(this, "string", {
-							value: o.string,
-							enumerable: true
-						});
-					}
-				}
-
-				//	resource.type: optional, but if it is not a recognized type, this method will error
-				//	resource.name: optional, but used to determine default type if type is absent, and used for resource.js.name
-				//	resource.string: optional, but used to determine code
-				//	resource.js { name, code }: forcibly set based on other properties
-				//	TODO	re-work resource.js
-
-				var $coffee = (function() {
-					//	TODO	rename to getCoffeescript to make consistent with camel case.
-					var coffeeScript = $slime.getCoffeeScript();
-					if (!coffeeScript) return null;
-					if (coffeeScript.code) {
-						var target = {};
-						$platform.execute({ name: "coffee-script.js", js: String(coffeeScript.code) }, {}, target);
-						return target.CoffeeScript;
-					} else if (coffeeScript.object) {
-						return coffeeScript.object;
-					}
-				})();
-
-				methods.run = function run(object,scope) {
-					if (!object || typeof(object) != "object") {
-						throw new TypeError("'object' must be an object, not " + object);
-					}
-					if (typeof(object.read) != "function") throw new Error("Not resource.");
-					var resource = object;
-					var type = resource.type;
-					if (!type) type = mime.Type.parse("application/javascript");
-					var string = (function() {
-						if (resource.read) {
-							var rv = resource.read(String);
-							if (typeof(rv) == "string") return rv;
-						}
-					})();
-					if (typeof(string) != "string") {
-						throw new TypeError("Resource: " + resource.name + " is not convertible to string, so cannot be executed.");
-					}
-					if ($slime.typescript && type && type.is("application/x.typescript")) {
-						resource.js = {
-							name: resource.name,
-							js: $slime.typescript.compile(string)
-						};
-					} else if (type && type.is("application/vnd.coffeescript")) {
-						resource.js = {
-							name: resource.name,
-							js: $coffee.compile(string)
-						};
-					} else if (type && type.is("application/javascript") || type && type.is("application/x-javascript")) {
-						resource.js = {
-							name: resource.name,
-							js: string
-						}
-					}
-					if (!resource.js) {
-						throw new TypeError("Resource " + resource.name + " is not JavaScript; type = " + type);
-					}
-					var target = this;
-					var global = (function() { return this; })();
-					//	TODO	why is this present?
-					if (scope === global) {
-						scope = {};
-					}
-					if (scope === void(0)) {
-						scope = {};
-					}
-					scope.$platform = $platform;
-					scope.$api = $api;
-					$platform.execute(resource.js,scope,target);
-				}
-
-				var createFileScope = function($context) {
-					/** @type { any } */
-					var $exports = {};
-					return {
-						$context: ($context) ? $context : {},
-						$exports: $exports
 					};
 				}
 
-				methods.file = function(code,scope) {
-					var inner = createFileScope(scope);
-					methods.run.call(this,code,inner);
+				if (o.read && o.read.string) {
+					this.read = function(v) {
+						if (v === String) return o.read.string();
+						if (v === JSON) return JSON.parse(this.read(String));
+						if ($platform.e4x && v == $platform.e4x.XML) {
+							var string = this.read(String);
+							string = string.replace(/\<\?xml.*\?\>/, "");
+							string = string.replace(/\<\!DOCTYPE.*?\>/, "");
+							return $platform.e4x.XML( string );
+						} else if ($platform.e4x && v == $platform.e4x.XMLList) {
+							var string = this.read(String);
+							string = string.replace(/\<\?xml.*\?\>/, "");
+							string = string.replace(/\<\!DOCTYPE.*?\>/, "");
+							return $platform.e4x.XMLList( string );
+						}
+					}
+				}
+
+				//	TODO	temporary measure; some tests assume loader.get() returns resource source and so we increase compatibility between resource and its source
+				if (typeof(o.string) == "string") {
+					Object.defineProperty(this, "string", {
+						value: o.string,
+						enumerable: true
+					});
+				}
+			}
+
+			//	resource.type: optional, but if it is not a recognized type, this method will error
+			//	resource.name: optional, but used to determine default type if type is absent, and used for resource.js.name
+			//	resource.string: optional, but used to determine code
+			//	resource.js { name, code }: forcibly set based on other properties
+			//	TODO	re-work resource.js
+
+			var $coffee = (function() {
+				//	TODO	rename to getCoffeescript to make consistent with camel case.
+				var coffeeScript = $slime.getCoffeeScript();
+				if (!coffeeScript) return null;
+				if (coffeeScript.code) {
+					var target = {};
+					$platform.execute({ name: "coffee-script.js", js: String(coffeeScript.code) }, {}, target);
+					return target.CoffeeScript;
+				} else if (coffeeScript.object) {
+					return coffeeScript.object;
+				}
+			})();
+
+			/**
+			 * @param { slime.Resource } object
+			 * @param { any } scope
+			 */
+			methods.run = function run(object,scope) {
+				if (!object || typeof(object) != "object") {
+					throw new TypeError("'object' must be an object, not " + object);
+				}
+				if (typeof(object.read) != "function") throw new Error("Not resource.");
+				/** @type { slime.Resource & { js: { name: string, js: string } } } */
+				var resource = Object.assign(object, { js: void(0) });
+				var type = resource.type;
+				if (!type) type = mime.Type.parse("application/javascript");
+				var string = (function() {
+					if (resource.read) {
+						var rv = resource.read(String);
+						if (typeof(rv) == "string") return rv;
+					}
+				})();
+				if (typeof(string) != "string") {
+					throw new TypeError("Resource: " + resource.name + " is not convertible to string, so cannot be executed.");
+				}
+				if ($slime.typescript && type && type.is("application/x.typescript")) {
+					resource.js = {
+						name: resource.name,
+						js: $slime.typescript.compile(string)
+					};
+				} else if (type && type.is("application/vnd.coffeescript")) {
+					resource.js = {
+						name: resource.name,
+						js: $coffee.compile(string)
+					};
+				} else if (type && type.is("application/javascript") || type && type.is("application/x-javascript")) {
+					resource.js = {
+						name: resource.name,
+						js: string
+					}
+				}
+				if (!resource.js) {
+					throw new TypeError("Resource " + resource.name + " is not JavaScript; type = " + type);
+				}
+				var target = this;
+				var global = (function() { return this; })();
+				//	TODO	why is this present?
+				if (scope === global) {
+					scope = {};
+				}
+				if (scope === void(0)) {
+					scope = {};
+				}
+				scope.$platform = $platform;
+				scope.$api = $api;
+				$platform.execute(resource.js,scope,target);
+			}
+
+			var createFileScope = function($context) {
+				/** @type { any } */
+				var $exports = {};
+				return {
+					$context: ($context) ? $context : {},
+					$exports: $exports
+				};
+			}
+
+			/**
+			 * @param { slime.Resource & { js: { name: string, js: string } } } code
+			 * @param { any } $context
+			 */
+			methods.file = function(code,$context) {
+				var inner = createFileScope($context);
+				methods.run.call(this,code,inner);
+				return inner.$exports;
+			};
+
+			/**
+			 * @param { slime.Resource & { js: { name: string, js: string } } } code
+			 * @param { any } scope
+			 */
+			methods.value = function value(code,scope) {
+				var rv;
+				if (!scope) scope = {};
+				scope.$set = function(v) {
+					rv = v;
+				};
+				methods.run.call(this,code,scope);
+				return rv;
+			}
+
+			/**
+			 * @constructor
+			 * @param { ConstructorParameters<slime.runtime.Exports["Loader"]>[0] } p
+			 */
+			var Loader = function(p) {
+				if (!p.get) throw new TypeError("Loader argument must have a 'get' property.");
+
+				if (!p.Resource) p.Resource = Resource;
+
+				this.toString = function() {
+					return p.toString();
+				}
+
+				this.source = p;
+
+				/** @type { slime.Loader["get"] } */
+				this.get = function(path) {
+					var rsource = this.source.get(path);
+					if (!rsource) return null;
+					return new p.Resource(rsource);
+				};
+
+				/**
+				 * @this { slime.Loader }
+				 * @param { string } name
+				 */
+				var declare = function(name) {
+					this[name] = (
+						/**
+						 * @param { string } path
+						 * @param { any } context
+						 * @param { any } target
+						 */
+						function retarget(path,context,target) {
+							// return methods[name].call(target,p.get(path),scope);
+							return methods[name].call(target,this.get(path),context);
+						}
+					);
+				};
+
+				/** @type { slime.Loader["run"] } */
+				this.run = void(0);
+				/** @type { slime.Loader["value"] } */
+				this.value = void(0);
+				/** @type { slime.Loader["file"] } */
+				this.file = void(0);
+				declare.call(this,"run");
+				declare.call(this,"value");
+				declare.call(this,"file");
+
+				/** @type { slime.Loader["module"] } */
+				this.module = function(path,$context,target) {
+					var getModuleLocations = function(path) {
+						var tokens = path.split("/");
+						var prefix = (tokens.length > 1) ? tokens.slice(0,tokens.length-1).join("/") + "/" : "";
+						var main = path;
+						if (!main || /\/$/.test(main)) {
+							main += "module.js";
+						}
+						return {
+							prefix: prefix,
+							main: main
+						}
+					};
+
+					var locations = getModuleLocations(path);
+
+					var inner = createFileScope($context);
+					inner.$loader = Child(locations.prefix);
+					var script = this.get(locations.main);
+					//	TODO	generalize error handling strategy; add to file, run, value
+					if (!script) throw new Error("Module not found at " + locations.main);
+					methods.run.call(target,script,inner);
 					return inner.$exports;
 				};
 
-				methods.value = function value(code,scope) {
-					var rv;
-					if (!scope) scope = {};
-					scope.$set = function(v) {
-						rv = v;
-					};
-					methods.run.call(this,code,scope);
-					return rv;
+				/** @type { slime.Loader["factory"] } */
+				this.factory = function(path) {
+					var $loader = this;
+					return function(c) {
+						return $loader.module(path, c);
+					}
 				}
 
-				/**
-				 * @constructor
-				 * @type { slime.runtime.Exports["Loader"] }
-				 */
-				var Loader = function(p) {
-					if (!p.Resource) p.Resource = Resource;
-					if (!p.get) {
-						throw new Error("Loader argument must have a 'get' property.");
-					}
-					this.toString = function() {
-						return p.toString();
-					}
-
-					this.source = p;
-
-					this.get = function(path) {
-						var rsource = this.source.get(path);
-						if (!rsource) return rsource;
-						return new p.Resource(rsource);
-					};
-
-					var declare = function(name) {
-						this[name] = function retarget(path,scope,target) {
-							// return methods[name].call(target,p.get(path),scope);
-							return methods[name].call(target,this.get(path),scope);
-						};
-					};
-
-					this.run = void(0);
-					this.file = void(0);
-					this.value = void(0);
-					declare.call(this,"run");
-					declare.call(this,"file");
-					declare.call(this,"value");
-
-					this.module = function(path,$context,target) {
-						var getModuleLocations = function(path) {
-							var tokens = path.split("/");
-							var prefix = (tokens.length > 1) ? tokens.slice(0,tokens.length-1).join("/") + "/" : "";
-							var main = path;
-							if (!main || /\/$/.test(main)) {
-								main += "module.js";
-							}
-							return {
-								prefix: prefix,
-								main: main
-							}
+				var Child = (function(parent,argument) {
+					return function(prefix) {
+						//	TODO	should we short-circuit if prefix is empty string?
+						if (prefix && prefix.substring(prefix.length-1) != "/") throw new Error("Prefix not ending with /");
+						var parameter = (p.child) ? p.child(prefix) : {
+							toString: function() {
+								return "Child [" + prefix + "] of " + argument.toString();
+							},
+							get: function(path) {
+								return argument.get(prefix + path);
+							},
+							list: (p.list) ? function(given) {
+								if (given) {
+									var slash = given.substring(given.length-1);
+									if (slash != "/") {
+										throw new Error("Given list path not ending with /: " + given)
+									}
+								}
+								var nowprefix = (given) ? prefix + given : prefix;
+								return p.list(nowprefix);
+							} : null
 						};
 
-						var locations = getModuleLocations(path);
+						/**
+						 * @returns { new (p: any) => slime.Loader }
+						 */
+						var castToConstructor = function(v) {
+							return v;
+						}
+						var ParentConstructor = castToConstructor(parent.constructor);
+						return new ParentConstructor(parameter);
+					}
+				})(this,p);
 
-						var inner = createFileScope($context);
-						inner.$loader = Child(locations.prefix);
-						var script = this.get(locations.main);
-						//	TODO	generalize error handling strategy; add to file, run, value
-						if (!script) throw new Error("Module not found at " + locations.main);
-						methods.run.call(target,script,inner);
-						return inner.$exports;
-					};
+				/** @type { slime.Loader["Child"] } */
+				this.Child = $api.experimental(Child);
 
-					this.factory = function(path) {
-						var $loader = this;
-						return function(c) {
-							return $loader.module(path, c);
+				if (p.list) {
+					var list = function recurse(loader,m,context,callback) {
+						var all = loader.source.list("");
+						for (var i=0; i<all.length; i++) {
+							var path = context.path.slice();
+							var name = all[i].path;
+							path.push(name);
+							if (m.filter(all[i])) {
+								var arg = {};
+								for (var x in all[i]) {
+									arg[x] = all[i][x];
+								}
+								arg.path = path.join("/");
+								callback(arg);
+							}
+							if (all[i].loader) {
+								if (m.descendants(all[i])) {
+									recurse(Child(name + "/"),m,{ path: path },callback);
+								}
+							}
 						}
 					}
 
-					var Child = (function(parent,argument) {
-						return function(prefix) {
-							//	TODO	should we short-circuit if prefix is empty string?
-							if (prefix && prefix.substring(prefix.length-1) != "/") throw new Error("Prefix not ending with /");
-							var parameter = (p.child) ? p.child(prefix) : {
-								toString: function() {
-									return "Child [" + prefix + "] of " + argument.toString();
-								},
-								get: function(path) {
-									return argument.get(prefix + path);
-								},
-								list: (p.list) ? function(given) {
-									if (given) {
-										var slash = given.substring(given.length-1);
-										if (slash != "/") {
-											throw new Error("Given list path not ending with /: " + given)
-										}
-									}
-									var nowprefix = (given) ? prefix + given : prefix;
-									return p.list(nowprefix);
-								} : null
-							};
-
+					/** @type { slime.Loader["list"] } */
+					this.list = function(m) {
+						if (!m) m = {};
+						if (!m.filter) m.filter = function() { return true; };
+						if (!m.descendants) m.descendants = function() { return false; };
+						var rv = [];
+						list(
+							this,
+							m,
+							{ path: [] },
 							/**
-							 * @returns { new (p: any) => slime.Loader }
+							 * @param { { path: string, loader: boolean, resource: boolean } } entry
 							 */
-							var castToConstructor = function(v) {
-								return v;
-							}
-							var ParentConstructor = castToConstructor(parent.constructor);
-							return new ParentConstructor(parameter);
-						}
-					})(this,p);
-
-					this.Child = $api.experimental(Child);
-
-					if (p.list) {
-						var list = function recurse(loader,m,context,callback) {
-							var all = loader.source.list("");
-							for (var i=0; i<all.length; i++) {
-								var path = context.path.slice();
-								var name = all[i].path;
-								path.push(name);
-								if (m.filter(all[i])) {
-									var arg = {};
-									for (var x in all[i]) {
-										arg[x] = all[i][x];
-									}
-									arg.path = path.join("/");
-									callback(arg);
-								}
-								if (all[i].loader) {
-									if (m.descendants(all[i])) {
-										recurse(Child(name + "/"),m,{ path: path },callback);
-									}
-								}
-							}
-						}
-
-						this.list = function(m) {
-							if (!m) m = {};
-							if (!m.filter) m.filter = function() { return true; };
-							if (!m.descendants) m.descendants = function() { return false; };
-							var rv = [];
-							list(this,m,{ path: [] },function(entry) {
+							function(entry) {
 								//	TODO	switch to 'name' property
 								if (entry.loader) {
 									rv.push({ path: entry.path, loader: Child(entry.path + "/") });
@@ -617,115 +654,115 @@
 									if (!gotten) throw new Error("Unexpected error: resource is " + entry.resource + " path is " + entry.path + " p is " + p);
 									rv.push({ path: entry.path, resource: new p.Resource(p.get(entry.path)) });
 								}
-							});
-							return rv;
-						}
-					}
-				};
-
-				var addTopMethod = function(name) {
-					this[name] = function(code,scope,target) {
-						return methods[name].call(target,code,scope);
-					};
-				};
-
-				this.mime = mime;
-
-				addTopMethod.call(this,"run");
-
-				//	TODO	For file, what should we do about 'this' and why?
-				addTopMethod.call(this,"file");
-
-				addTopMethod.call(this,"value");
-
-				this.Resource = Resource;
-
-				this.Loader = Loader;
-				this.Loader.source = {};
-				this.Loader.source.object = function(o) {
-					var getLocation = function(path) {
-						var target = o;
-						var tokens = path.split("/");
-						for (var i=0; i<tokens.length-1; i++) {
-							target = target[tokens[i]].loader;
-							if (!target) return null;
-						}
-						return {
-							loader: target,
-							path: tokens[tokens.length-1]
-						};
-					};
-
-					this.get = function(path) {
-						//	TODO	should not return directories
-						var location = getLocation(path);
-						return (location) ? location.loader[location.path].resource : null;
-					};
-
-					this.list = function(path) {
-						var location = getLocation(path);
-						if (location.path) throw new Error("Wrong path: [" + path + "]");
-						var rv = [];
-						for (var x in location.loader) {
-							rv.push({
-								path: x,
-								loader: Boolean(location.loader[x].loader),
-								resource: Boolean(location.loader[x].resource)
-							});
-						}
+							}
+						);
 						return rv;
 					}
+				}
+			};
+
+			var addTopMethod = function(name) {
+				this[name] = function(code,scope,target) {
+					return methods[name].call(target,code,scope);
 				};
-				this.Loader.series = function(list) {
-					var sources = [];
-					for (var i=0; i<list.length; i++) {
-						sources[i] = list[i].source;
+			};
+
+			this.mime = mime;
+
+			addTopMethod.call(this,"run");
+
+			//	TODO	For file, what should we do about 'this' and why?
+			addTopMethod.call(this,"file");
+
+			addTopMethod.call(this,"value");
+
+			this.Resource = Resource;
+
+			this.Loader = Object.assign(Loader, { source: void(0), series: void(0) });
+			this.Loader.source = {};
+			this.Loader.source.object = function(o) {
+				var getLocation = function(path) {
+					var target = o;
+					var tokens = path.split("/");
+					for (var i=0; i<tokens.length-1; i++) {
+						target = target[tokens[i]].loader;
+						if (!target) return null;
 					}
-					var source = new function() {
-						this.get = function(path) {
-							for (var i=0; i<sources.length; i++) {
-								var rv = sources[i].get(path);
-								if (rv) return rv;
-							}
-							return null;
+					return {
+						loader: target,
+						path: tokens[tokens.length-1]
+					};
+				};
+
+				this.get = function(path) {
+					//	TODO	should not return directories
+					var location = getLocation(path);
+					return (location) ? location.loader[location.path].resource : null;
+				};
+
+				this.list = function(path) {
+					var location = getLocation(path);
+					if (location.path) throw new Error("Wrong path: [" + path + "]");
+					var rv = [];
+					for (var x in location.loader) {
+						rv.push({
+							path: x,
+							loader: Boolean(location.loader[x].loader),
+							resource: Boolean(location.loader[x].resource)
+						});
+					}
+					return rv;
+				}
+			};
+			this.Loader.series = function(list) {
+				var sources = [];
+				for (var i=0; i<list.length; i++) {
+					sources[i] = list[i].source;
+				}
+				var source = new function() {
+					this.get = function(path) {
+						for (var i=0; i<sources.length; i++) {
+							var rv = sources[i].get(path);
+							if (rv) return rv;
 						}
+						return null;
 					}
-					return new Loader(source);
 				}
+				return new Loader(source);
+			}
 
-				this.namespace = function(string) {
-					//	This construct returns the top-level global object, e.g., window in the browser
-					var global = function() {
-						return this;
-					}();
+			this.namespace = function(string) {
+				//	This construct returns the top-level global object, e.g., window in the browser
+				var global = function() {
+					return this;
+				}();
 
-					var scope = global;
-					if (string) {
-						var tokens = string.split(".");
-						for (var i=0; i<tokens.length; i++) {
-							if (typeof(scope[tokens[i]]) == "undefined") {
-								scope[tokens[i]] = {};
-							}
-							scope = scope[tokens[i]];
+				var scope = global;
+				if (string) {
+					var tokens = string.split(".");
+					for (var i=0; i<tokens.length; i++) {
+						if (typeof(scope[tokens[i]]) == "undefined") {
+							scope[tokens[i]] = {};
 						}
+						scope = scope[tokens[i]];
 					}
-					return scope;
 				}
+				return scope;
+			}
 
-				if ($platform.java) {
-					this.java = $platform.java;
-				}
+			if ($platform.java) {
+				this.java = $platform.java;
+			}
 
-				//	TODO	currently only used by jsapi in jsh/unit via jsh.js, so undocumented
-				//	TODO	also used by client.html unit tests
-				this.$platform = $platform;
+			//	TODO	currently only used by jsapi in jsh/unit via jsh.js, so undocumented
+			//	TODO	also used by client.html unit tests
+			this.$platform = $platform;
 
-				//	TODO	currently used to set deprecation warning in jsh.js
-				//	TODO	currently used by jsapi in jsh/unit via jsh.js
-				//	TODO	also used by client.html unit tests
-				//	used to allow implementations to set warnings for deprecate and experimental
-				this.$api = $api;
-			}).call(this);
+			//	TODO	currently used to set deprecation warning in jsh.js
+			//	TODO	currently used by jsapi in jsh/unit via jsh.js
+			//	TODO	also used by client.html unit tests
+			//	used to allow implementations to set warnings for deprecate and experimental
+			this.$api = $api;
 		};
 		/** @type { slime.runtime.Exports } */
 		var rv = new Exports();

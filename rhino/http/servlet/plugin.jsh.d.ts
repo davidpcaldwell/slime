@@ -1,24 +1,33 @@
 namespace jsh.httpd {
-	interface servlet {
-		parameters?: ({ [name: string]: any })
-		file?: slime.jrunscript.file.File
-		resource?: string
-		load: (scope: slime.servlet.Scope) => void
+	namespace servlet {
+		type byLoad = { load: (scope: slime.servlet.Scope) => void }
+		type byFile = { file: slime.jrunscript.file.File }
+		type byResource = { resource: string }
+
+		type descriptor = (byLoad | byFile | byResource) & {
+			parameters?: Parameters
+		}
+
+		type Parameters = { [name: string]: any }
 	}
 
 	interface Tomcat {
 		base: slime.jrunscript.file.Directory
+
 		port: number
+
+		https: {
+			port: number
+		}
 
 		map: (p: {
 			path: string,
 			resources?: slime.Loader,
-			servlets: { [pattern: string]: servlet }
+			servlets?: { [pattern: string]: servlet.descriptor }
+			webapp?: any
 		}) => void
 
-		https: any
-
-		servlet: any
+		servlet: (servlet: servlet.descriptor & { resources?: slime.Loader }) => void
 
 		start: () => void
 
@@ -29,13 +38,19 @@ namespace jsh.httpd {
 
 	interface Resources {
 		file: any
-		add: any
+		add: (m: { directory?: slime.jrunscript.file.Directory, loader?: slime.Loader, prefix: string }) => void
 		loader: any
 	}
 
 	interface Exports {
 		nugget: any
-		spi: any
+		spi: {
+			argument: (resources: slime.Loader, servlet: any) => {
+				resources: slime.Loader,
+				load: (scope: object) => void,
+				$loader?: slime.Loader
+			}
+		}
 		Resources: {
 			new (): Resources
 			Old: any
