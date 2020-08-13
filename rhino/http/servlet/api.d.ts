@@ -60,4 +60,41 @@ namespace slime.servlet {
 			destroy?: () => void
 		}
 	}
+
+	namespace internal {
+		namespace $host {
+			interface Java {
+				getClasspath?: Packages.inonit.script.engine.Loader.Classes.Interface
+				register: (_script: Packages.inonit.script.servlet.Servlet.Script) => void
+				getLoader?: Packages.inonit.script.Engine.Loader
+				getServlet?: Packages.inonit.script.servlet.Servlet
+			}
+
+			interface Rhino extends Java {
+				getEngine?: Packages.inonit.script.rhino.Engine
+			}
+
+			interface jsh {
+				api?: any
+				loaders?: any
+				parameters?: { [x: string]: any }
+				getCode?: any
+				$java?: any
+				script?: any
+				server?: any
+			}
+		}
+
+		type $host = $host.Java | $host.jsh
+
+		namespace server {
+			interface Exports {
+				Servlet: new (script: slime.servlet.Scope["$exports"]) => {
+					reload: (script: slime.servlet.Scope["$exports"]) => void
+					service: (_request: any, _response: any) => void
+					destroy: () => void
+				}
+			}
+		}
+	}
 }

@@ -47,6 +47,9 @@
 			jsh.io.Loader.call(this,source);
 		};
 
+		/**
+		 * @param { { directory?: slime.jrunscript.file.Directory, loader?: slime.Loader, prefix: string } } p
+		 */
 		var Mapping = function(p) {
 			if (p.directory) {
 				p.loader = new DirectoryWithoutVcsLoader({ directory: p.directory });
@@ -388,6 +391,7 @@
 			this.loader = void(0);
 			Resources.call(this,mapping);
 
+			/** @type { jsh.httpd.Resources["add"] } */
 			this.add = function(m) {
 				mapping.push(new Mapping(m));
 			}

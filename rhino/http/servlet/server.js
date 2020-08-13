@@ -16,7 +16,7 @@
 	 * @param { any } Packages
 	 * @param { any } $context
 	 * @param { slime.Loader } $loader
-	 * @param { { Servlet: any } } $exports
+	 * @param { slime.servlet.internal.server.Exports } $exports
 	 */
 	function(Packages,$context,$loader,$exports) {
 		var log = $context.api.java.log.named("rhino.http.servlet.server");
@@ -161,6 +161,7 @@
 
 		var Servlet = (
 			/**
+			 * @constructor
 			 * @param { slime.servlet.Scope["$exports"] } script
 			 */
 			function(script) {

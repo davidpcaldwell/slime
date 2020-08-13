@@ -105,27 +105,8 @@ namespace slime {
         }
     }
 
-	interface Loader {
-		file: any
-        module: any
-        run: any
-        value: any
-        factory: <C,E>(path: string) => Loader.Product<C,E>
-		Child: {
-            (prefix: string): Loader
-            new (prefix: string): Loader
-        }
-		get: (path: string) => Resource
-    }
-
-    namespace Loader {
-        interface Product<C,E> {
-            (c: C): E
-        }
-    }
-
-    namespace runtime {
-        interface ResourceArgument {
+    namespace Resource {
+        interface Descriptor {
             type?: string | MimeType
             name?: string
             read: {
@@ -134,6 +115,38 @@ namespace slime {
             string?: string
         }
 
+        type Factory = new (o: Descriptor) => slime.Resource
+    }
+
+	interface Loader {
+        source: Loader.Source
+        run: (path: string, scope?: any, target?: any) => void
+        value: (path: string, scope?: any, target?: any) => any
+		file: (path: string, $context?: any, target?: any) => any
+        module: (path: string, $context?: any, target?: any) => any
+        factory: <C,E>(path: string) => Loader.Product<C,E>
+		Child: {
+            (prefix: string): Loader
+            new (prefix: string): Loader
+        }
+        get: (path: string) => Resource
+        list?: (m?: { filter?: any, descendants?: any }) => any[]
+    }
+
+    namespace Loader {
+        interface Product<C,E> {
+            (c: C): E
+        }
+
+        interface Source {
+            Resource?: Resource.Factory
+            get: (path: string) => Resource.Descriptor
+            child?: any
+            list?: any
+        }
+    }
+
+    namespace runtime {
         interface $engine {
             execute: (script: { name: string, code: string }, scope: object, target: object) => any
             Object: {
@@ -164,9 +177,11 @@ namespace slime {
             run: any
             file: any
             value: any
-            Resource: new (o: ResourceArgument) => slime.Resource
+            Resource: Resource.Factory
             Loader: {
-                new (p: { Resource?: any, get: any }): Loader
+                new (p: Loader.Source): Loader
+                source: any
+                series: any
             }
             namespace: any
             java: any
