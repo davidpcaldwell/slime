@@ -36,8 +36,8 @@ namespace slime.definition.verify {
 	)
 
 	type Verify = {
-		<T>(value: boolean, name?: string): BooleanSubject
-		<T>(value: T, name?: string): Subject<T>
+		<T>(value: boolean, name?: string, lambda?: (it: BooleanSubject) => void): BooleanSubject
+		<T>(value: T, name?: string, lambda?: (it: Subject<T>) => void): Subject<T>
 	}
 
 	namespace Scope {
