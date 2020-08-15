@@ -164,9 +164,9 @@
 				/** @type { () => void } */
 				var callable = target;
 				//	TODO	probably should print test being run as well in case part is not suite
-				console.start(0, file);
+				console.start(0, file + ":" + part);
 				callable();
-				console.end(0, file, scope.success);
+				console.end(0, file + ":" + part, scope.success);
 			} else {
 				jsh.shell.console("Not a function: " + part);
 			}
