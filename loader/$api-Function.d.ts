@@ -107,8 +107,8 @@ namespace $api {
 			}
 		}
 		conditional: {
-			(test: any, yes: any, no: any): any
 			<T,R>(p: { condition: (t: T) => boolean, true: (t: T) => R, false: (t: T) => R }): (t: T) => R
+			(test: any, yes: any, no: any): any
 		}
 		impure: {
 			revise: <T,P>(f: (this: T, p: P) => (P | void)) => impure.Reviser<P>
