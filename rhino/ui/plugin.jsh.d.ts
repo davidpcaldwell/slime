@@ -35,7 +35,9 @@ namespace jsh.ui.application {
 	type ServerSpecification = ServerRunning | ServerConfiguration
 
 	interface Events {
-		on?: any
+		on?: {
+			close: () => void
+		}
 	}
 
 	interface ChromeConfiguration {
