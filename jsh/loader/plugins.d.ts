@@ -1,5 +1,5 @@
 namespace jsh.plugin {
-	const plugin: (p: { isReady: () => boolean, load: () => void }) => void;
+	const plugin: (p: { isReady?: () => boolean, load: () => void }) => void;
 }
 
 namespace jsh.loader.plugins {

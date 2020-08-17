@@ -11,73 +11,86 @@
 //	Contributor(s):
 //	END LICENSE
 
-plugin({
-	load: function() {
-		jsh.ui = $loader.module("module.js", {
-			exit: function(status) {
-				Packages.java.lang.System.exit(status);
-			},
-			javafx: $slime.classpath.getClass("javafx.embed.swing.JFXPanel")
-		});
-	}
-});
-
-plugin({
-	isReady: function() {
-		return jsh.ui && jsh.java;
-	},
-	load: function() {
-		jsh.ui.askpass = $loader.file("askpass.js", {
-			api: {
-				java: jsh.java
+//@ts-check
+(
+	/**
+	 * @param { jsh } jsh
+	 * @param { jsh.plugin.$slime } $slime
+	 * @param { slime.Loader } $loader
+	 * @param { jsh.plugin.plugin } plugin
+	 */
+	function(jsh,$slime,$loader,plugin) {
+		plugin({
+			load: function() {
+				jsh.ui = $loader.module("module.js", {
+					exit: function(status) {
+						Packages.java.lang.System.exit(status);
+					},
+					javafx: $slime.classpath.getClass("javafx.embed.swing.JFXPanel")
+				});
 			}
 		});
-	}
-})
 
-plugin({
-	isReady: function() {
-		return Boolean(jsh.io && jsh.java.log && jsh.ui.javafx && jsh.java.Thread && jsh.js.document);
-	},
-	load: function() {
-		$loader.resource = function(path) {
-			//	TODO	assumes resource exists
-			return $loader.get(path);
-		};
-		$loader.run("webview.js", {
-			$loader: $loader,
-			$context: {
-				log: jsh.java.log.named("slime.ui.javafx.webview"),
-				api: {
-					thread: {
-						javafx: jsh.ui.javafx.run,
-						create: function(f) {
-							jsh.java.Thread.start({
-								call: f
-							});
+		plugin({
+			isReady: function() {
+				return Boolean(jsh.ui && jsh.java);
+			},
+			load: function() {
+				jsh.ui.askpass = $loader.file("askpass.js", {
+					api: {
+						java: jsh.java
+					}
+				});
+			}
+		})
+
+		plugin({
+			isReady: function() {
+				return Boolean(jsh.io && jsh.java.log && jsh.ui.javafx && jsh.java.Thread && jsh.js.document);
+			},
+			load: function() {
+				$loader.run("webview.js", {
+					$loader: Object.assign($loader, {
+						resource: function(path) {
+							//	TODO	assumes resource exists
+							return $loader.get(path);
+						}
+					}),
+					$context: {
+						log: jsh.java.log.named("slime.ui.javafx.webview"),
+						api: {
+							thread: {
+								javafx: jsh.ui.javafx.run,
+								create: function(f) {
+									jsh.java.Thread.start({
+										call: f
+									});
+								}
+							},
+							document: jsh.js.document
 						}
 					},
-					document: jsh.js.document
-				}
-			},
-			$set: function(v) {
-				jsh.ui.javafx.WebView = v;
+					$set: function(v) {
+						jsh.ui.javafx.WebView = v;
+					}
+				});
 			}
 		});
-	}
-});
 
-plugin({
-	isReady: function() {
-		return jsh.ui && jsh.ui.javafx && jsh.ui.javafx.WebView && jsh.httpd && jsh.httpd.Tomcat && jsh.java;
-	},
-	load: function() {
-		var api = $loader.module("application.js");
-		(function(v) {
-			jsh.ui.javafx.WebView.application = $api.deprecate(v);
-			jsh.ui.browser = $api.deprecate(v);
-			jsh.ui.application = v;
-		})(api.Application);
-		jsh.ui.Chrome = api.Chrome;
+		plugin({
+			isReady: function() {
+				return Boolean(jsh.ui && jsh.ui.javafx && jsh.ui.javafx.WebView && jsh.httpd && jsh.httpd.Tomcat && jsh.java);
+			},
+			load: function() {
+				var api = $loader.module("application.js");
+				(function(v) {
+					jsh.ui.javafx.WebView.application = $api.deprecate(v);
+					jsh.ui.browser = $api.deprecate(v);
+					jsh.ui.application = v;
+				})(api.Application);
+				jsh.ui.Chrome = api.Chrome;
+			}
+		})
 	}
-})
+//@ts-ignore
+)(jsh,$slime,$loader,plugin)
