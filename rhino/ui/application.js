@@ -11,279 +11,312 @@
 //	Contributor(s):
 //	END LICENSE
 
-// TODO: Remove or document (probably by renaming file) dependency on jsh
+//@ts-check
+(
+	/**
+	 * @param { any } Packages
+	 * @param { slime.Loader } $loader
+	 * @param { { Application: jsh["ui"]["application"] } } $exports
+	 */
+	function(Packages,$loader,$exports) {
+		// TODO: Remove or document (probably by renaming file) dependency on jsh
 
-var webviewDecorated = function(was) {
-	return function(request) {
-		if (request.path == "webview.initialize.js") {
-			var code = $loader.get("webview.initialize.js").read(String);
-			return {
-				status: {
-					code: 200
-				},
-				body: {
-					type: "text/javascript",
-					string: code
-				}
-			}
-		}
-		return was.apply(this,arguments);
-	}
-};
-
-var Server = function(p) {
-	var server = new jsh.httpd.Tomcat({
-		port: (p.port) ? p.port : void(0)
-	});
-	var servlet = jsh.httpd.spi.argument(p.resources,p.servlet);
-	server.map({
-		path: "",
-		servlets: {
-			"/*": {
-				parameters: p.parameters,
-				load: function(scope) {
-					scope.$loader = servlet.$loader;
-					servlet.load.apply(this,arguments);
-					scope.$exports.handle = webviewDecorated(scope.$exports.handle);
-				}
-			}
-		},
-		resources: servlet.resources
-	});
-	return server;
-};
-
-var Chrome = function(o) {
-	//	TODO	add location (rather than directory) argument
-	return function(p) {
-		var lock = new jsh.java.Thread.Monitor();
-
-		var notify = function() {
-			new lock.Waiter({
-				until: function() {
-					return true;
-				},
-				then: function() {
-				}
-			})();
-		}
-
-		var instance = new jsh.shell.browser.chrome.Instance({
-			location: o.location,
-			directory: o.directory,
-			proxy: p.proxy
-		});
-
-		var process;
-		var finished = false;
-
-		jsh.java.Thread.start(function() {
-			var argument = {
-				on: {
-					start: function(argument) {
-						process = new function() {
-							this.close = function() {
-								argument.kill();
-							};
-
-							this.run = function() {
-								return new lock.Waiter({
-									until: function() {
-										return finished;
-									},
-									then: function() {
-									}
-								})();
-							};
-						};
-						notify();
+		var webviewDecorated = function(was) {
+			return function(request) {
+				if (request.path == "webview.initialize.js") {
+					var code = $loader.get("webview.initialize.js").read(String);
+					return {
+						status: {
+							code: 200
+						},
+						body: {
+							type: "text/javascript",
+							string: code
+						}
 					}
 				}
-			};
-			if (o.browser) {
-				argument.uri = p.url;
-			} else {
-				argument.app = p.url;
+				return was.apply(this,arguments);
 			}
-			instance.run(argument);
-			finished = true;
-			notify();
-		});
-
-		return new lock.Waiter({
-			until: function() {
-				return process;
-			},
-			then: function() {
-				return process;
-			}
-		})();
-	}
-};
-
-var javafx = function(settings) {
-	return function(p) {
-		var addTitleListener = function() {
-			this.listeners.add("title", function(e) {
-				this._frame.setTitle(e.detail.after);
-			});
 		};
 
-		var lock = new jsh.java.Thread.Monitor();
-		var closed = false;
-
-		jsh.ui.javafx.launch({
-			title: "WebView",	//	TODO	default
-			Scene: jsh.ui.javafx.WebView({
-				page: { url: p.url },
-				//	TODO	configurable
-				alert: function(s) {
-					jsh.shell.console("ALERT: " + s);
-				},
-				//	TODO	configurable
-				console: (settings.browser.console) ? settings.browser.console : new function() {
-					this.toString = function() {
-						if (this.delegee) {
-							return "WebView console: " + this.delegee.log;
-						} else {
-							return "WebView console: " + this.log;
+		/**
+		 * @param { jsh.ui.application.ServerConfiguration } p
+		 * @returns { jsh.httpd.Tomcat }
+		 */
+		var Server = function(p) {
+			var server = new jsh.httpd.Tomcat({
+				port: (p.port) ? p.port : void(0)
+			});
+			var servlet = jsh.httpd.spi.argument(p.resources,p.servlet);
+			server.map({
+				path: "",
+				servlets: {
+					"/*": {
+						parameters: p.parameters,
+						load: function(scope) {
+							scope.$loader = servlet.$loader;
+							servlet.load.apply(this,arguments);
+							scope.$exports.handle = webviewDecorated(scope.$exports.handle);
 						}
-					};
-
-					this.log = function() {
-						jsh.shell.console("WEBVIEW CONSOLE: " + Array.prototype.slice.call(arguments).join("|"));
 					}
 				},
-				popup: function(_popup) {
-					if (!_popup) _popup = this._popup;
-					jsh.shell.console("Creating popup " + _popup + " ...");
-					var browser = new Packages.javafx.scene.web.WebView();
-					//	TODO	This seems to be a layer higher than it should be; perhaps the lower layer should be creating this
-					//			object and calling back into the application layer with it already configured with things like the
-					//			zoom level by default
-					browser.setZoom(this._browser.getZoom());
-					new jsh.ui.javafx.Frame({
-						Scene: jsh.ui.javafx.WebView({
-							browser: browser,
-							initialize: function() {
-								addTitleListener.call(this);
-							}
-						}),
-						on: {
-							close: function() {
-								this.close();
-							}
-						}
-					});
-					return browser.getEngine();
-				},
-				//	TODO	configurable
-				initialize: function() {
-					addTitleListener.call(this);
-				},
-				zoom: settings.browser.zoom
-			}),
-			on: {
-				close: function(p) {
+				resources: servlet.resources
+			});
+			return server;
+		};
+
+		/**
+		 * @param { jsh.ui.application.ChromeConfiguration } o
+		 */
+		var Chrome = function(o) {
+			//	TODO	add location (rather than directory) argument
+			return function(p) {
+				var lock = new jsh.java.Thread.Monitor();
+
+				var notify = function() {
 					new lock.Waiter({
 						until: function() {
 							return true;
 						},
 						then: function() {
-							closed = true;
 						}
 					})();
 				}
+
+				var instance = new jsh.shell.browser.chrome.Instance({
+					location: o.location,
+					directory: o.directory,
+					proxy: p.proxy
+				});
+
+				var process;
+				var finished = false;
+
+				jsh.java.Thread.start(function() {
+					var argument = {
+						on: {
+							start: function(argument) {
+								process = new function() {
+									this.close = function() {
+										argument.kill();
+									};
+
+									this.run = function() {
+										return new lock.Waiter({
+											until: function() {
+												return finished;
+											},
+											then: function() {
+											}
+										})();
+									};
+								};
+								notify();
+							}
+						}
+					};
+					if (o.browser) {
+						argument.uri = p.url;
+					} else {
+						argument.app = p.url;
+					}
+					instance.run(argument);
+					finished = true;
+					notify();
+				});
+
+				return new lock.Waiter({
+					until: function() {
+						return process;
+					},
+					then: function() {
+						return process;
+					}
+				})();
 			}
-		});
-		new lock.Waiter({
-			until: function() {
-				return closed;
-			},
-			then: function() {
-			}
-		})();
-	};
-}
+		};
 
-var Application = function(p,events) {
-	var server = (p.server) ? p.server : Server(p);
-	server.start();
-	events.fire("started", server);
+		var javafx = function(settings) {
+			return function(p) {
+				var addTitleListener = function() {
+					this.listeners.add("title", function(e) {
+						this._frame.setTitle(e.detail.after);
+					});
+				};
 
-	jsh.java.addShutdownHook(function() {
-		server.stop();
-	});
+				var lock = new jsh.java.Thread.Monitor();
+				var closed = false;
 
-	var on = (p.on) ? p.on : {
-		close: function() {
-			Packages.java.lang.System.exit(0);
+				jsh.ui.javafx.launch({
+					title: "WebView",	//	TODO	default
+					Scene: jsh.ui.javafx.WebView({
+						page: { url: p.url },
+						//	TODO	configurable
+						alert: function(s) {
+							jsh.shell.console("ALERT: " + s);
+						},
+						//	TODO	configurable
+						console: (settings.browser.console) ? settings.browser.console : new function() {
+							this.toString = function() {
+								if (this.delegee) {
+									return "WebView console: " + this.delegee.log;
+								} else {
+									return "WebView console: " + this.log;
+								}
+							};
+
+							this.log = function() {
+								jsh.shell.console("WEBVIEW CONSOLE: " + Array.prototype.slice.call(arguments).join("|"));
+							}
+						},
+						popup: function(_popup) {
+							if (!_popup) _popup = this._popup;
+							jsh.shell.console("Creating popup " + _popup + " ...");
+							var browser = new Packages.javafx.scene.web.WebView();
+							//	TODO	This seems to be a layer higher than it should be; perhaps the lower layer should be creating this
+							//			object and calling back into the application layer with it already configured with things like the
+							//			zoom level by default
+							browser.setZoom(this._browser.getZoom());
+							new jsh.ui.javafx.Frame({
+								Scene: jsh.ui.javafx.WebView({
+									browser: browser,
+									initialize: function() {
+										addTitleListener.call(this);
+									}
+								}),
+								on: {
+									close: function() {
+										this.close();
+									}
+								}
+							});
+							return browser.getEngine();
+						},
+						//	TODO	configurable
+						initialize: function() {
+							addTitleListener.call(this);
+						},
+						zoom: settings.browser.zoom
+					}),
+					on: {
+						close: function(p) {
+							new lock.Waiter({
+								until: function() {
+									return true;
+								},
+								then: function() {
+									closed = true;
+								}
+							})();
+						}
+					}
+				});
+				new lock.Waiter({
+					until: function() {
+						return closed;
+					},
+					then: function() {
+					}
+				})();
+			};
 		}
-	};
 
-	if (!p.browser) {
-		$api.deprecate(function() {
-			p.browser = {
-				zoom: p.zoom,
-				console: p.console
+		/**
+		 * @param { jsh.ui.application.Argument } p
+		 * @param { $api.Events } events
+		 */
+		var Application = function(p,events) {
+			/** @type { (v: jsh.ui.application.ServerSpecification) => v is jsh.ui.application.ServerRunning } */
+			var isTomcat = function(v) {
+				return Boolean(v["server"]);
 			}
-		})()
-	}
-	if (typeof(p.browser) == "function") {
-		p.browser = $api.deprecate(function(implementation) {
+			var server = (isTomcat(p)) ? p.server : Server(p);
+			server.start();
+			events.fire("started", server);
+
+			jsh.java.addShutdownHook(function() {
+				server.stop();
+			});
+
+			var on = (p.on) ? p.on : {
+				close: function() {
+					Packages.java.lang.System.exit(0);
+				}
+			};
+
+			if (!p.browser) {
+				$api.deprecate(function() {
+					p.browser = {
+						zoom: p.zoom,
+						console: p.console
+					}
+				})()
+			}
+			if (typeof(p.browser) == "function") {
+				p.browser = $api.deprecate(function(implementation) {
+					return {
+						run: function(p) {
+							implementation(p);
+						}
+					}
+				})(p.browser);
+			}
+			if (p.browser.chrome) {
+				p.browser.create = Chrome(p.browser.chrome);
+			}
+			/** @type { slime.jrunscript.shell.browser.ProxyConfiguration } */
+			var proxySettings = (function() {
+				if (p.browser.proxy && typeof(p.browser.proxy) == "object") return p.browser.proxy;
+				if (p.browser.proxy && typeof(p.browser.proxy) == "function") return p.browser.proxy({ port: server.port });
+				if (p.browser.host) return hostToPort(p.browser.host)({ port: server.port });
+				return null;
+			})();
+			var proxy = (proxySettings) ? new jsh.shell.browser.ProxyConfiguration(proxySettings) : void(0);
+			var authority = (p.browser.host) ? p.browser.host : "127.0.0.1:" + server.port;
+			var url = "http://" + authority + "/" + ((p.path) ? p.path : "");
+			if (p.browser.create) {
+				var browser = p.browser.create({ url: url, proxy: proxy });
+				jsh.java.Thread.start(function() {
+					browser.run();
+					server.stop();
+					on.close();
+				});
+			} else {
+				if (typeof(p.browser.run) != "function") {
+					p.browser.run = javafx(p);
+				}
+				var run = p.browser.run;
+				jsh.java.Thread.start(function() {
+					run({ url: url, proxy: proxy });
+					server.stop();
+					on.close();
+				});
+			}
+
 			return {
-				run: function(p) {
-					implementation(p);
+				port: server.port,
+				server: server,
+				browser: browser
+			};
+		};
+
+		var hostToPort = function(name) {
+			/**
+			 * @param { { port: number } } o
+			 * @returns { slime.jrunscript.shell.browser.ProxyConfiguration }
+			 */
+			var rv = function(o) {
+				var code = $loader.get("application-hostToPort.pac").read(String).replace(/__HOST__/g, name).replace(/__PORT__/g, String(o.port));
+				return {
+					code: code
 				}
 			}
-		})(p.browser);
-	}
-	if (p.browser.chrome) {
-		p.browser.create = Chrome(p.browser.chrome);
-	}
-	var proxySettings = (function() {
-		if (p.browser.proxy && typeof(p.browser.proxy) == "object") return p.browser.proxy;
-		if (p.browser.proxy && typeof(p.browser.proxy) == "function") return p.browser.proxy({ port: server.port });
-		if (p.browser.host) return hostToPort(p.browser.host)({ port: server.port });
-		return null;
-	})();
-	var proxy = (proxySettings) ? new jsh.shell.browser.ProxyConfiguration(proxySettings) : void(0);
-	var authority = (p.browser.host) ? p.browser.host : "127.0.0.1:" + server.port;
-	var url = "http://" + authority + "/" + ((p.path) ? p.path : "");
-	if (p.browser.create) {
-		var browser = p.browser.create({ url: url, proxy: proxy });
-		jsh.java.Thread.start(function() {
-			browser.run();
-			server.stop();
-			on.close();
-		});
-	} else {
-		if (typeof(p.browser.run) != "function") {
-			p.browser.run = javafx(p);
-		}
-		jsh.java.Thread.start(function() {
-			p.browser.run({ url: url, proxy: proxy });
-			server.stop();
-			on.close();
+			return rv;
+		};
+
+		$exports.Application = $api.Events.Function(function(p,events) {
+			return Application(p,events);
 		});
 	}
-
-	return {
-		port: server.port,
-		server: server,
-		browser: browser
-	};
-};
-
-var hostToPort = function(name) {
-	return function(o) {
-		var code = $loader.get("application-hostToPort.pac").read(String).replace(/__HOST__/g, name).replace(/__PORT__/g, String(o.port));
-		return {
-			code: code
-		}
-	}
-};
-
-$exports.Application = $api.Events.Function(function(p,events) {
-	return Application(p,events);
-});
+//@ts-ignore
+)(Packages,$loader,$exports);
