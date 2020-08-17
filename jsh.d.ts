@@ -37,7 +37,6 @@ interface jsh {
 	document: any
 	file: slime.jrunscript.file.Exports
 	time: slime.time.Exports
-	ui: any
 	ip: any
 	httpd: jsh.httpd.Exports
 }
