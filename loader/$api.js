@@ -12,10 +12,11 @@
 
 //@ts-check
 (
+	//	TODO	get rid of the wildcarded properties in $exports by adding all properties to $api.d.ts
 	/**
 	 * @param { any } $platform
-	 * @param { any } $slime
-	 * @param { any } $exports
+	 * @param { slime.runtime.$slime } $slime
+	 * @param { $api & { [x: string]: any } } $exports
 	 */
 	function($platform,$slime,$exports) {
 		var load = function(name,$context) {
@@ -37,9 +38,11 @@
 		})();
 
 		$exports.debug = {
+			//	TODO	try to get rid of ignore below
+			//@ts-ignore
 			disableBreakOnExceptionsFor: function(f) {
 				if ($exports.debugger) {
-					return function() {
+					var rv = function() {
 						var enabled = $exports.debugger.breakOnExceptions;
 						if (enabled) {
 							$exports.debugger.breakOnExceptions = false;
@@ -52,6 +55,7 @@
 							}
 						}
 					}
+					return rv;
 				} else {
 					//	TODO	unclear what should be done here, but forcing a debugger pause is probably not right
 					//	debugger;
@@ -416,7 +420,7 @@
 			return Properties(array);
 		};
 
-		$exports.Object = function(p) {
+		$exports.Object = Object.assign(function(p) {
 			var rv = {};
 			if (p.properties) {
 				for (var i=0; i<p.properties.length; i++) {
@@ -424,7 +428,12 @@
 				}
 			}
 			return rv;
-		};
+		}, {
+			compose: void(0),
+			properties: void(0),
+			property: void(0),
+			optional: void(0)
+		});
 		$exports.Object.compose = function() {
 			var args = [{}];
 			for (var i=0; i<arguments.length; i++) {
@@ -506,12 +515,19 @@
 		};
 
 		$exports.Error = {
+			//	TODO	see whether we can get rid of this
+			//@ts-ignore
 			Type: ErrorType
 		}
 
+		/**
+		 * @constructor
+		 * @param { Parameters<$api["Events"]>[0] } [p]
+		 */
 		var Emitter = function(p) {
 			if (!p) p = {};
 			var source = (p.source) ? p.source : this;
+			/** @returns { { bubble: any } } */
 			var getParent = function() {
 				if (p.parent) return p.parent;
 				if (p.getParent) return p.getParent();
@@ -597,9 +613,17 @@
 			}
 		};
 
-		$exports.Events = function(p) {
-			return new Emitter(p);
-		};
+		/** @type { $api["Events"] } */
+		var Events = Object.assign(
+			/**
+			 * @param { Parameters<$api["Events"]>[0] } p
+			 */
+			function(p) {
+				return new Emitter(p);
+			},
+			{ Function: void(0), instance: void(0) }
+		);
+		$exports.Events = Events;
 		$exports.Events.instance = function(v) {
 			return v instanceof Emitter;
 		};

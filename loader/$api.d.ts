@@ -20,15 +20,18 @@ interface $api {
 			<T,U,V,W>(t: T, u: U, v: V, w: W): T & U & V & W
 		}
 		properties: Function
+		property: any
+		optional: any
 	},
 	Value: any,
 	Error: {
 		Type: <T extends Error>(p: { name: string, extends?: Function }) => new (message: string, properties: object) => T
 	}
 	Events: {
-		(p: any): $api.Events,
+		(p?: { source?: any, parent?: any, getParent?: () => any , on?: { [x: string]: any } }): $api.Events,
 		//	TODO	could probably use parameterized types to improve accuracy
-		Function: <P,R>(f: (p: P, events: any) => R, defaultListeners?: object) => (argument: P, receiver?: $api.Events.Function.Receiver) => R
+		Function: <P,R>(f: (p: P, events: any) => R, defaultListeners?: object) => (argument: P, receiver?: $api.Events.Function.Receiver) => R,
+		instance: (v: any) => boolean
 	},
 	Iterable: {
 		/**
