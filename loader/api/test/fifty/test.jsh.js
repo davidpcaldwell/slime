@@ -114,10 +114,27 @@
 				types: {}
 			};
 
+			function getPropertyPathFrom(target) {
+				return function(value) {
+					if (value === target) return [];
+					for (var x in target) {
+						var found = getPropertyPathFrom(target[x])(value);
+						if (found) return [x].concat(found);
+					}
+					return null;
+				}
+			};
+
 			loader.run(file.pathname.basename, $api.Object.compose({
 				jsh: jsh,
 				$loader: loader,
 				run: function(code,name) {
+					if (!name) name = $api.Function.result(
+						getPropertyPathFrom(tests)(code),
+						function(array) {
+							return (array) ? array.join(".") : array;
+						}
+					);
 					if (!name) name = "run";
 					scope.start(name);
 					var was = {
@@ -147,9 +164,9 @@
 				/** @type { () => void } */
 				var callable = target;
 				//	TODO	probably should print test being run as well in case part is not suite
-				console.start(0, file);
+				console.start(0, file + ":" + part);
 				callable();
-				console.end(0, file, scope.success);
+				console.end(0, file + ":" + part, scope.success);
 			} else {
 				jsh.shell.console("Not a function: " + part);
 			}

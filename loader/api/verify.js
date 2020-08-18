@@ -283,7 +283,12 @@
 
 			/** @type { slime.definition.verify.Verify } */
 			//@ts-ignore
-			var rv = function(value,name) {
+			var rv = function(value,name,lambda) {
+				var runLambda = function(verify,lambda) {
+					if (lambda) lambda(verify);
+					return verify;
+				}
+
 				for (var i=0; i<delegates.length; i++) {
 					if (delegates[i].accept(value)) {
 						return delegates[i].wrap(value);
@@ -294,10 +299,10 @@
 						if (name) return name;
 					})();
 					//@ts-ignore
-					return new Object(value,localName);
+					return runLambda(new Object(value,localName),lambda);
 				}
 				//@ts-ignore
-				return new Value(value,name);
+				return runLambda(new Value(value,name),lambda);
 			};
 
 			return rv;
