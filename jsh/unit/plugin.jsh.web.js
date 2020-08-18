@@ -37,6 +37,7 @@
  * 		sets http_proxy variable
  * @property { slime.jsh.unit.mock.Web.hg } hg
  * @property { () => void } start
+ * @property { () => void } stop
  * @property { slime.jsh.unit.mock.Web.https } https
  */
 
