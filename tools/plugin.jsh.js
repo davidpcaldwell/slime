@@ -332,6 +332,13 @@
 							}
 						}
 
+						if (operations.test) {
+							$exports.test = function(p) {
+								var success = operations.test();
+								jsh.shell.console("Tests: " + ( (success) ? "passed." : "FAILED!") );
+							}
+						}
+
 						if (operations.commit) $exports.submodule.remove = $api.Function.pipe(
 							$api.Function.impure.revise(jsh.wf.cli.$f.option.string({ longname: "path" })),
 							function(p) {
