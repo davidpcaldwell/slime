@@ -1,6 +1,7 @@
 namespace slime.time {
 	interface Day {
 		year: any
+		at: Function
 	}
 
 	namespace Day {
@@ -29,6 +30,7 @@ namespace slime.time {
 		Year: Function
 		Month: Function
 		Day: {
+			new (year: number, month: number, day: number): slime.time.Day
 			new (p: any): slime.time.Day
 			Time: new (hours: number, minutes: number) => Day.Time
 			subtract: Function

@@ -6,9 +6,12 @@
 	});
 
 	jsh.shell.tools.node.require();
-	jsh.shell.tools.node.modules.require({ name: "typescript", version: "3.8.3" });
-	//	TODO	re-implement tsc.bash in terms of this script; see jsh/tools/install/typescript.jsh.js
 	var base = jsh.script.file.parent.parent;
+	var project = (parameters.options.tsconfig) ? parameters.options.tsconfig.parent.directory : base;
+	var tsVersion = (project.getFile("tsc.version")) ? project.getFile("tsc.version").read(String) : "3.8.3";
+	jsh.shell.console("Use TypeScript version: " + tsVersion);
+	jsh.shell.tools.node.modules.require({ name: "typescript", version: tsVersion });
+	//	TODO	re-implement tsc.bash in terms of this script; see jsh/tools/install/typescript.jsh.js
 	var PATH = jsh.file.Searchpath(jsh.shell.PATH.pathnames.concat([base.getRelativePath("local/jsh/lib/node/bin")]));
 	var environment = $api.Object.compose(jsh.shell.environment, {
 		PATH: PATH.toString()

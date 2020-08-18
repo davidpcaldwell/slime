@@ -4,4 +4,17 @@ namespace slime.fifty {
 
 		interpret: (p: { ast: object }) => object
 	}
+
+	namespace test {
+		type verify = slime.definition.verify.Verify
+
+		type $loader = slime.Loader & { getRelativePath: any }
+
+		interface run {
+			(f: () => void, name: string): void
+			(f: () => void): void
+		}
+
+		type tests = any
+	}
 }
