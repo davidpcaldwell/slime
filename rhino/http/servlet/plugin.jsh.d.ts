@@ -45,7 +45,7 @@ namespace jsh.httpd {
 	interface Exports {
 		nugget: any
 		spi: {
-			argument: (resources: slime.Loader, servlet: any) => {
+			argument: (resources: slime.Loader, servlet: jsh.httpd.servlet.descriptor) => {
 				resources: slime.Loader,
 				load: (scope: object) => void,
 				$loader?: slime.Loader
