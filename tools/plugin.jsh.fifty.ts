@@ -73,6 +73,7 @@ namespace jsh.wf {
 					$exports: {
 						status: jsh.wf.cli.Command
 						tsc: jsh.wf.cli.Command
+						test: jsh.wf.cli.Command
 						submodule: {
 							remove: jsh.wf.cli.Command
 							update: jsh.wf.cli.Command
