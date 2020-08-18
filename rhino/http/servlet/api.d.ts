@@ -10,6 +10,9 @@ namespace slime.servlet {
 		headers: Headers
 		method: string
 		path: string
+		user?: {
+			name: string
+		}
 	}
 
 	interface Response {
