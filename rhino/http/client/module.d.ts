@@ -19,7 +19,7 @@ namespace slime.jrunscript.http.client {
 		status: any
 		headers: any
 		body: {
-			type: slime.MimeType,
+			type: slime.MimeType
 			//	TODO	Possibly should be slime.jrunscript.InputStream or slime.jrunscript.io.InputStream
 			stream: slime.jrunscript.runtime.io.InputStream
 		}
