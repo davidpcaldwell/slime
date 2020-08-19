@@ -45,31 +45,33 @@ namespace slime.servlet {
 		[x: string]: any
 	}
 
+	interface httpd {
+		loader: slime.Loader
+		js: any
+		java: any
+		io: any
+		web: any
+		http: {
+			Response: {
+				text: (string: string) => Response
+				resource: (body: slime.Resource) => Response
+			}
+		},
+		Handler: {
+			series: (...handlers: slime.servlet.handler[]) => slime.servlet.handler
+			Child: (p: {
+				filter: RegExp,
+				handle: slime.servlet.handler
+			}) => slime.servlet.handler
+		}
+		$java: any
+		$reload?: () => void
+	}
+
 	type handler = (request: Request) => Response
 
 	interface Scope {
-		httpd: {
-			loader: slime.Loader
-			js: any
-			java: any
-			io: any
-			web: any
-			http: {
-				Response: {
-					text: (string: string) => Response
-					resource: (body: slime.Resource) => Response
-				}
-			},
-			Handler: {
-				series: (...handlers: slime.servlet.handler[]) => slime.servlet.handler
-				Child: (p: {
-					filter: RegExp,
-					handle: slime.servlet.handler
-				}) => slime.servlet.handler
-			}
-			$java: any
-			$reload?: () => void
-		}
+		httpd: httpd
 		$loader: slime.Loader
 		$parameters: Parameters
 		$exports: {
