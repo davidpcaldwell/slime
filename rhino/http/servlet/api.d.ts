@@ -10,6 +10,16 @@ namespace slime.servlet {
 		headers: Headers
 		method: string
 		path: string
+		query?: {
+			string: string
+			form: {
+				(p: ObjectConstructor): slime.web.Form
+				(): slime.web.Form.Control[]
+			}
+		}
+		body?: {
+			form: () => slime.web.Form
+		}
 		user?: {
 			name: string
 		}

@@ -10,40 +10,42 @@
 //	Contributor(s):
 //	END LICENSE
 
-$exports.Streams = $context.$slime.io.Streams;
+(function() {
+	$exports.Streams = $context.$slime.io.Streams;
 
-$exports.Buffer = $context.$slime.io.Buffer;
+	$exports.Buffer = $context.$slime.io.Buffer;
 
-$exports.Resource = $context.$slime.Resource;
+	$exports.Resource = $context.$slime.Resource;
 
-$exports.Loader = $context.$slime.Loader;
+	$exports.Loader = $context.$slime.Loader;
 
-$exports.java = {
-	adapt: $api.deprecate($context.$slime.io.Streams.java.adapt)
-};
+	$exports.java = {
+		adapt: $api.deprecate($context.$slime.io.Streams.java.adapt)
+	};
 
-$exports.mime = $loader.file("mime.js", {
-	nojavamail: $context.nojavamail,
-	$slime: {
-		mime: $context.$slime.mime,
-		Resource: $context.$slime.Resource
-	},
-	api: {
-		java: $context.api.java,
-		io: $exports
-	}
-});
+	$exports.mime = $loader.file("mime.js", {
+		nojavamail: $context.nojavamail,
+		$slime: {
+			mime: $context.$slime.mime,
+			Resource: $context.$slime.Resource
+		},
+		api: {
+			java: $context.api.java,
+			io: $exports
+		}
+	});
 
-$exports.archive = {
-	zip: $loader.file("zip.js", {
-		InputStream: $context.$slime.io.InputStream,
+	$exports.archive = {
+		zip: $loader.file("zip.js", {
+			InputStream: $context.$slime.io.InputStream,
+			Streams: $context.$slime.io.Streams
+		})
+	};
+
+	$exports.grid = $loader.file("grid.js", {
+		getClass: function(name) {
+			return $context.api.java.getClass(name);
+		},
 		Streams: $context.$slime.io.Streams
-	})
-};
-
-$exports.grid = $loader.file("grid.js", {
-	getClass: function(name) {
-		return $context.api.java.getClass(name);
-	},
-	Streams: $context.$slime.io.Streams
-});
+	});
+})();

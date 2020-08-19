@@ -10,13 +10,15 @@
 //	Contributor(s):
 //	END LICENSE
 
-$exports.file = $loader.file("Loader.file.js");
+(function() {
+	$exports.file = $loader.file("Loader.file.js");
 
-var grandchild = $loader.module("Loader/module.js");
+	var grandchild = $loader.module("Loader/module.js");
 
-$exports.resource = function(path) {
-	return $loader.get(path);
-};
-$exports.grandchildResource = function(path) {
-	return grandchild.resource(path);
-}
+	$exports.resource = function(path) {
+		return $loader.get(path);
+	};
+	$exports.grandchildResource = function(path) {
+		return grandchild.resource(path);
+	}
+})();

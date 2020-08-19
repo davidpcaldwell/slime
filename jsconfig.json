@@ -1,6 +1,7 @@
 {
 	"exclude": [
 		"local",
+		"jsh/tools/test/foo.ts"
 		//	"**/*.jsh.js"
 	]
 }

@@ -10,6 +10,8 @@
 //	Contributor(s):
 //	END LICENSE
 
-$exports.resource = function(path) {
-	return $loader.get(path);
-}
+(function() {
+	$exports.resource = function(path) {
+		return $loader.get(path);
+	}
+})();
