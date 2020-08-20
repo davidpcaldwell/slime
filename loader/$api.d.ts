@@ -12,7 +12,7 @@ interface $api {
 		disableBreakOnExceptionsFor: <T extends Function>(f: T) => T
 	}
 	Object: {
-		(p: any): any
+		(p: { properties: {name: string, value: any }[] }): { [x: string]: any }
 		compose: {
 			<T>(t: T): T
 			<T,U>(t: T, u: U): T & U

@@ -420,20 +420,26 @@
 			return Properties(array);
 		};
 
-		$exports.Object = Object.assign(function(p) {
-			var rv = {};
-			if (p.properties) {
-				for (var i=0; i<p.properties.length; i++) {
-					rv[p.properties[i].name] = p.properties[i].value;
+		$exports.Object = Object.assign(
+			/**
+			 * @param { { properties: {name: string, value: any }[] } } p
+			 * @returns { { [x: string]: any } }
+			 */
+			function(p) {
+				var rv = {};
+				if (p.properties) {
+					for (var i=0; i<p.properties.length; i++) {
+						rv[p.properties[i].name] = p.properties[i].value;
+					}
 				}
+				return rv;
+			}, {
+				compose: void(0),
+				properties: void(0),
+				property: void(0),
+				optional: void(0)
 			}
-			return rv;
-		}, {
-			compose: void(0),
-			properties: void(0),
-			property: void(0),
-			optional: void(0)
-		});
+		);
 		$exports.Object.compose = function() {
 			var args = [{}];
 			for (var i=0; i<arguments.length; i++) {
