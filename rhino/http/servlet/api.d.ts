@@ -7,7 +7,11 @@ namespace slime.servlet {
 	type Headers = Array<Header> & { value: Function }
 
 	interface Request {
-		headers: Headers
+		uri: slime.web.Url
+		source: {
+			ip: string
+		}
+		scheme: string
 		method: string
 		path: string
 		query?: {
@@ -17,11 +21,12 @@ namespace slime.servlet {
 				(): slime.web.Form.Control[]
 			}
 		}
-		body?: {
-			form: () => slime.web.Form
-		}
+		headers: Headers
 		user?: {
 			name: string
+		}
+		body?: {
+			form: () => slime.web.Form
 		}
 	}
 
@@ -50,7 +55,7 @@ namespace slime.servlet {
 		js: any
 		java: any
 		io: any
-		web: any
+		web: slime.web.Exports
 		http: {
 			Response: {
 				text: (string: string) => Response
