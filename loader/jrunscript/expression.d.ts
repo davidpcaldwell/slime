@@ -5,7 +5,7 @@ namespace slime.jrunscript.runtime {
 			text: () => slime.jrunscript.runtime.io.Reader
 		}
 		length?: any
-		modified: any
+		modified?: any
 		string?: any
 	}
 
