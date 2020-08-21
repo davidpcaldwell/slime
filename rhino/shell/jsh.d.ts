@@ -8,11 +8,13 @@ namespace jsh.shell {
 		console: (message: string) => void
 		//	TODO	shell?
 		rhino: any
-		jsh: ((p: any) => any) & {
+		jsh: {
+			(p: any): any
 			src?: slime.jrunscript.file.Directory
 			require: (p: { satisfied: () => boolean, install: () => void }, events?: $api.Events.Function.Receiver ) => void
 			lib?: slime.jrunscript.file.Directory
 			home?: slime.jrunscript.file.Directory
+			relaunch: () => void
 		}
 		os: {
 			name: string
