@@ -515,7 +515,9 @@
 					return new Subtype(message);
 				}
 			};
-			Subtype.prototype = new Supertype();
+			Subtype.prototype = $exports.debug.disableBreakOnExceptionsFor(function() {
+				return new Supertype();
+			})();
 			//@ts-ignore
 			return Subtype;
 		};
