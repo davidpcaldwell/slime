@@ -546,7 +546,7 @@
 
 		plugin({
 			isReady: function() {
-				return plugins.node && jsh.file && jsh.shell && jsh.shell.tools && jsh.tools.install;
+				return Boolean(plugins.node && jsh.file && jsh.shell && jsh.shell.tools && jsh.tools.install);
 			},
 			load: function() {
 				var node = plugins.node.module({
