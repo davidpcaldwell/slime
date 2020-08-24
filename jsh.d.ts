@@ -10,7 +10,7 @@ interface jsh {
 		git: slime.jrunscript.git.Exports
 		hg: any
 		node: slime.jrunscript.node.Exports
-		install: any
+		install: jsh.tools.install.Exports
 		github: slime.jrunscript.tools.github.Exports
 		gradle: any
 	} & {
