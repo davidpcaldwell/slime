@@ -40,6 +40,7 @@ namespace jsh.shell {
 					}
 				}
 			}
+			opendesktop: any
 		},
 		tools: jsh.shell.tools.Exports
 	}

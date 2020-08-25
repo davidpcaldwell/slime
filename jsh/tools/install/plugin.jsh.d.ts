@@ -1,3 +1,10 @@
+namespace jsh.tools.install {
+	type Exports = jsh.tools.install.module.Exports & {
+		rhino: any
+		tomcat: any
+	};
+}
+
 namespace jsh.shell.tools {
 	interface Exports {
 		rhino: {
