@@ -129,6 +129,7 @@
 				jsh: jsh,
 				$loader: loader,
 				run: function(code,name) {
+					if (!code) throw new TypeError("Cannot run scope " + code);
 					if (!name) name = $api.Function.result(
 						getPropertyPathFrom(tests)(code),
 						function(array) {
