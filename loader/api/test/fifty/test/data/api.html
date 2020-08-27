@@ -1,13 +1,15 @@
-<html>
+<html xmlns:jsapi="http://www.inonit.com/jsapi">
 	<head>
 		<title>Fifty api.html Bridge</title>
 	</head>
 	<body>
-		<script type="application/x.jsapi#tests">
-			$jsapi.loader.fifty({
-				path: "module.d.ts",
-				verify: verify
-			});
-		</script>
+		<div jsapi:id="fifty">
+			<script type="application/x.jsapi#tests">
+				$jsapi.loader.fifty({
+					path: "module.d.ts",
+					verify: verify
+				});
+			</script>
+		</div>
 	</body>
 </html>
