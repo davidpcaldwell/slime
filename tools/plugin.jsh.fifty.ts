@@ -37,7 +37,16 @@ namespace jsh.wf {
 		cli: {
 			$f: {
 				command: {
+					/**
+					 * Converts a set of arguments whose first argument describes a command to an invocation that indicates
+					 * that command and includes the remaining arguments.
+					 */
 					parse: (p: cli.Arguments) => cli.Invocation
+
+					/**
+					 * Executes a command, derived from the first available argument, on the given interface with the remaining
+					 * arguments following the command.
+					 */
 					execute: (p: { interface: cli.Interface, arguments: cli.Arguments }) => void
 				}
 				option: {
