@@ -239,7 +239,13 @@
 						}
 
 						$exports.tsc = function() {
-							jsh.wf.typescript.tsc();
+							try {
+								jsh.wf.typescript.tsc();
+								jsh.shell.console("Passed.");
+							} catch (e) {
+								jsh.shell.console("tsc failed.");
+								jsh.shell.exit(1);
+							}
 						};
 
 						$exports.submodule = {
@@ -430,7 +436,10 @@
 							command: jsh.shell.jsh.src.getFile("tools/tsc.bash"),
 							arguments: [
 								"-tsconfig", config
-							]
+							],
+							evaluate: function(result) {
+								if (result.status) throw new Error("tsc failed.");
+							}
 						})
 					}
 				}
