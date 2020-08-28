@@ -1,7 +1,7 @@
 namespace slime.jrunscript.runtime.io {
 	interface InputStream {
 		close()
-		character(mode: any): Reader
+		character(mode?: any): Reader
 		java: {
 			adapt(): Packages.java.io.InputStream
 			array(): any
@@ -10,5 +10,6 @@ namespace slime.jrunscript.runtime.io {
 
 	interface Reader {
 		close()
+		asString(): string
 	}
 }
