@@ -785,6 +785,9 @@
 		When.codec.rfc3339 = new function() {
 			this.decode = function(string) {
 				var parsedTime = /^(\d{4})\-(\d{2})\-(\d{2})T(\d{2})\:(\d{2})\:(\d{2})(?:\.(\d{3}))?(Z|((?:\+|\-)\d{2})\:(\d{2}))$/.exec(string);
+				if (!parsedTime) {
+					throw new TypeError("Does not match RFC3339 format: " + string);
+				}
 				var seconds = parsedTime[6];
 				if (parsedTime[7]) {
 					seconds += Number(parsedTime[7]) / 1000;
