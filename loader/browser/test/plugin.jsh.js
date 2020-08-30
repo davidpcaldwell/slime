@@ -1,19 +1,19 @@
 //@ts-check
 (
 	/**
+	 * @param { jsh } jsh
 	 * @param { jsh.plugin.$slime } $slime
 	 * @param { jsh.plugin.plugin } plugin
 	 */
-	function($slime,plugin) {
+	function(jsh,$slime,plugin) {
 		plugin({
 			isReady: function() {
-				return true;
+				return Boolean($slime.typescript);
 			},
 			load: function() {
-				//	provide an API that allows compiling TypeScript using $slime object
-				//	Packages.java.lang.System.err.println("in loader/browser/test jsh plugin, $slime.typescript = " + $slime.typescript);
+				jsh.typescript = $slime.typescript;
 			}
 		})
 	}
 //@ts-ignore
-)($slime,plugin);
+)(jsh,$slime,plugin);

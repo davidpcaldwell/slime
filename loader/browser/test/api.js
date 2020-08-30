@@ -245,7 +245,7 @@ var Scope = function(definition,environment) {
 
 			//	TODO	add this.scenario; see jsh/unit/jsapi.js
 
-			if (false) this.fifty = function(p) {
+			this.fifty = function(p) {
 				//	TODO	problem is that TypeScript compiler is not built into this loader; need to do that.
 				var tests = { types: {} };
 				this.run(
