@@ -15,13 +15,24 @@
 			<code>loader/api/test/fifty/test.bash <i>declaration</i> [--part <i>part</i>]</code>
 		</div>
 		<div>
+		</div>
+		<div>
 			<h2>Bridging to <code>$jsapi</code></h2>
-			<pre>
+			<div>
+				<h3>Generating a JSAPI <code>api.html</code></h3>
+				<pre>
+loader/api/test/fifty/tools/jsapi-adapter.bash -tests <i>pathname</i>.fifty.ts
+				</pre>
+			</div>
+			<div>
+				<h3>Adding an invocation to an existing file</h3>
+				<pre>
 $jsapi.loader.fifty({
 	path: "<i>path.fifty.ts</i>",
 	verify: verify
 });
-			</pre>
+				</pre>
+			</div>
 		</div>
 	</body>
 </html>
