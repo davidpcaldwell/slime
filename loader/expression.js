@@ -669,6 +669,8 @@
 
 			this.mime = mime;
 
+			this.typescript = $slime.typescript;
+
 			addTopMethod.call(this,"run");
 
 			//	TODO	For file, what should we do about 'this' and why?

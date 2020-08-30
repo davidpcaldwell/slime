@@ -246,8 +246,23 @@ var Scope = function(definition,environment) {
 			//	TODO	add this.scenario; see jsh/unit/jsapi.js
 
 			if (false) this.fifty = function(p) {
-				//	TODO	implement
-				throw new Error("Unimplemented.");
+				//	TODO	problem is that TypeScript compiler is not built into this loader; need to do that.
+				var tests = { types: {} };
+				this.run(
+					p.path,
+					{
+						$loader: this,
+						tests: tests,
+						//	TODO	for now we just flatten everything and run within a single scope, using a single verify and
+						//			just invoking the function during run()
+						verify: p.verify,
+						run: function(f,name) {
+							f();
+						}
+					}
+				);
+				if (!tests.suite) throw new TypeError("A 'suite' function must be added to the tests object.");
+				tests.suite();
 			}
 		};
 

@@ -78,7 +78,7 @@
 			}
 		)();
 
-		Object.assign(loader, slime)
+		Object.assign(loader, slime);
 
 		loader.mime = (function(was) {
 			var guess_URLConnection = function(p) {
@@ -700,6 +700,7 @@
 			};
 		})($loader.getClasspath())
 
+		//	TODO	come up with a better way to do this; adding a property to loader would ideally add it here
 		return {
 			run: loader.run,
 			file: loader.file,
@@ -712,7 +713,8 @@
 			mime: loader.mime,
 			io: loader.io,
 			java: loader.java,
-			classpath: loader.classpath
+			classpath: loader.classpath,
+			typescript: loader.typescript
 		};
 	}
 //@ts-ignore

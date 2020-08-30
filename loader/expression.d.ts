@@ -174,6 +174,9 @@ namespace slime {
                     fromName: (path: string) => MimeType
                 }
             }
+            typescript: {
+                compile: (code: string) => string
+            }
             run: any
             file: any
             value: any
