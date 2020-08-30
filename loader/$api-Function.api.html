@@ -40,6 +40,14 @@ END LICENSE
 		scope.api = $jsapi.loader.eval("$api.js", { $platform: $platform, $slime: $slime });
 		scope.api.loadedByJsapi = true;
 	</script>
+	<div jsapi:id="fifty">
+		<script type="application/x.jsapi#tests">
+			$jsapi.loader.fifty({
+				path: "$api-Function.fifty.ts",
+				verify: verify
+			});
+		</script>
+	</div>
 	<!--
 		TODO	Uncommenting this block caused tests to fail in definition page for some reason, though this
 				file has since been refactored
