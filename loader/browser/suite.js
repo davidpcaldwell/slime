@@ -36,3 +36,4 @@ add("loader/api/unit.js", getSlimePart("loader/api/unit.api.html"));
 add("loader/api/", getSlimePart("loader/api/api.html"));
 add("loader/api/test/data/1/", getSlimePart("loader/api/test/data/1/api.html"));
 add("loader/browser/test/", getSlimePart("loader/browser/test/api.html"));
+add("$jsapi.loader.fifty", getSlimePart("loader/api/test/fifty/test/data/api.html"));

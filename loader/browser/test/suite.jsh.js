@@ -122,12 +122,31 @@
 								return rv;
 							})();
 
+							var filesystemLoader = new jsh.file.Loader({
+								directory: toResult.base
+							});
+
 							scope.$exports.handle = scope.httpd.Handler.series(
 								function(request) {
 									jsh.shell.console("REQUEST: " + request.method + " " + request.path);
 								},
 								function(request) {
 									if (!parameters.options.interactive) return resultServlet.handle(request);
+								},
+								function handleTypescript(request) {
+									if (jsh.typescript && /\.ts$/.test(request.path)) {
+										var resource = filesystemLoader.get(request.path);
+										if (resource) {
+											var compiled = jsh.typescript.compile(resource.read(String));
+											return {
+												status: { code: 200 },
+												body: {
+													type: "application/javascript",
+													string: compiled
+												}
+											}
+										}
+									}
 								},
 								new scope.httpd.Handler.Loader({
 									loader: new jsh.file.Loader({
