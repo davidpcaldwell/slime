@@ -16,10 +16,8 @@ namespace jsh.wf {
 			arguments: string[]
 		}
 
-		export interface Invocation {
+		export interface Invocation extends Arguments {
 			command: string
-			options: { [x: string]: any },
-			arguments: string[]
 		}
 
 		export interface Command {
@@ -30,7 +28,7 @@ namespace jsh.wf {
 			[x: string]: ( Command | Interface )
 		}
 
-		export type Reviser = $api.Function.impure.Reviser<cli.Arguments>
+		export type Processor = $api.Function.impure.Updater<cli.Arguments>
 	}
 
 	export interface Exports {
@@ -43,6 +41,8 @@ namespace jsh.wf {
 					 */
 					parse: (p: cli.Arguments) => cli.Invocation
 
+					process: (p: { interface: cli.Interface, invocation: cli.Invocation }) => void
+
 					/**
 					 * Executes a command, derived from the first available argument, on the given interface with the remaining
 					 * arguments following the command.
@@ -50,8 +50,8 @@ namespace jsh.wf {
 					execute: (p: { interface: cli.Interface, arguments: cli.Arguments }) => void
 				}
 				option: {
-					string: (c: { longname: string }) => cli.Reviser
-					boolean: (c: { longname: string }) => cli.Reviser
+					string: (c: { longname: string }) => cli.Processor
+					boolean: (c: { longname: string }) => cli.Processor
 				},
 				/**
 				 * Returns an object representing the global invocation of `jsh`.
@@ -66,10 +66,10 @@ namespace jsh.wf {
 			 * revisers and returns the result of processing `jsh.script.arguments` through the revisers.
 			 */
 			invocation: {
-				(mutator: cli.Reviser, m2: cli.Reviser, m3: cli.Reviser, m4: cli.Reviser): cli.Arguments
-				(mutator: cli.Reviser, m2: cli.Reviser, m3: cli.Reviser): cli.Arguments
-				(mutator: cli.Reviser, m2: cli.Reviser): cli.Arguments
-				(mutator: cli.Reviser): cli.Arguments
+				(mutator: cli.Processor, m2: cli.Processor, m3: cli.Processor, m4: cli.Processor): cli.Arguments
+				(mutator: cli.Processor, m2: cli.Processor, m3: cli.Processor): cli.Arguments
+				(mutator: cli.Processor, m2: cli.Processor): cli.Arguments
+				(mutator: cli.Processor): cli.Arguments
 			}
 
 			initialize: {

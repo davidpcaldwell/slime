@@ -114,34 +114,40 @@
 									arguments: p.arguments.slice(1)
 								}
 							},
-							execute: function(p) {
-								var invocation = jsh.wf.cli.$f.command.parse(p.arguments);
-
+							process: function(p) {
+								var command = (p.invocation.command) ? p.invocation.command : "";
 								var method = (function(command) {
-									var tokens = command.split(".");
+									//jsh.shell.console("command = [" + command + "]");
+									var tokens = (command.length) ? command.split(".") : [];
+									//jsh.shell.console("tokens = " + JSON.stringify(tokens));
 									/** @type { jsh.wf.cli.Interface | jsh.wf.cli.Command } */
 									var rv = p.interface;
 									for (var i=0; i<tokens.length; i++) {
 										rv = rv[tokens[i]];
 									}
 									return rv;
-								})(invocation.command);
+								})(command);
 
 								if (typeof(method) == "function") {
 									method.call(
 										null,
 										{
-											options: invocation.options,
-											arguments: invocation.arguments
+											options: p.invocation.options,
+											arguments: p.invocation.arguments
 										}
 									);
 								} else if (!method) {
-									jsh.shell.console("Command not found: " + invocation.command);
+									jsh.shell.console("Method not found: " + method);
+									jsh.shell.console("Command not found: [" + command + "]");
 									jsh.shell.exit(1);
 								} else {
 									jsh.shell.console("Implementation is not a function: " + method);
 									jsh.shell.exit(1);
 								}
+							},
+							execute: function(p) {
+								var invocation = jsh.wf.cli.$f.command.parse(p.arguments);
+								jsh.wf.cli.$f.command.process({ interface: p.interface, invocation: invocation });
 							}
 						},
 						option: {
@@ -196,7 +202,7 @@
 							options: {},
 							arguments: Array.prototype.slice.call(jsh.script.arguments)
 						};
-						/** @type { jsh.wf.cli.Reviser[] } */
+						/** @type { jsh.wf.cli.Processor[] } */
 						var mutators = Array.prototype.slice.call(arguments);
 						mutators.forEach(function(mutator) {
 							mutator(rv);

@@ -223,8 +223,46 @@
 					var rv = f.call(this,p);
 					return (rv) ? rv : p;
 				}
+			},
+			compose: function() {
+				var functions = Array.prototype.slice.call(arguments).map($exports.Function.impure.revise);
+				return function(p) {
+					var rv = p;
+					for (var i=0; i<functions.length; i++) {
+						rv = functions[i].call(this,rv);
+					}
+					return rv;
+				}
 			}
 		};
+
+		$exports.Function.comparator = {
+			create: function(mapping, comparator) {
+				return function(a, b) {
+					return comparator(mapping(a), mapping(b));
+				}
+			},
+			operators: function(a, b) {
+				if (a < b) return -1;
+				if (b < a) return 1;
+				return 0;
+			},
+			reverse: function(comparator) {
+				return function(a, b) {
+					return -(comparator(a,b));
+				}
+			},
+			compose: function() {
+				var comparators = Array.prototype.slice.call(arguments);
+				return function(a, b) {
+					for (var i=0; i<comparators.length; i++) {
+						var rv = comparators[i](a, b);
+						if (rv !== 0) return rv;
+					}
+					return 0;
+				}
+			}
+		}
 	}
 //@ts-ignore
 )($context,$exports)
