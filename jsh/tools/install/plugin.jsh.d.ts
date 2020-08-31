@@ -9,7 +9,7 @@ namespace jsh.shell.tools {
 	interface Exports {
 		rhino: {
 			install: (
-				p: {
+				p?: {
 					mock?: { lib: slime.jrunscript.file.Directory, rhino: slime.jrunscript.file.File }
 					local?: slime.jrunscript.file.File
 					replace?: boolean
