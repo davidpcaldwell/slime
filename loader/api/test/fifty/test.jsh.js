@@ -8,9 +8,11 @@
 			$api.Function.pipe(
 				$api.Function.impure.revise(function(p) {
 					var path = p.arguments.shift();
-					var definition = jsh.script.getopts.parser.Pathname(path);
-					//	check for existence
-					p.options.definition = definition.file;
+					if (typeof(path) != "undefined") {
+						var definition = jsh.script.getopts.parser.Pathname(path);
+						//	check for existence
+						p.options.definition = definition.file;
+					}
 				}),
 				jsh.wf.cli.$f.option.string({ longname: "part" }),
 				$api.Function.impure.revise(function(p) {
@@ -18,6 +20,11 @@
 				})
 			)
 		);
+
+		if (!parameters.options.definition) {
+			jsh.shell.console("Required: test file to execute; not specified or not found.");
+			jsh.shell.exit(1);
+		}
 
 		/** @type { slime.definition.verify.Factory } */
 		var Verify = jsh.loader.file(jsh.shell.jsh.src.getFile("loader/api/verify.js")).Verify;

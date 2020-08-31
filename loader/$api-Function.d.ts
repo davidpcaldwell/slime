@@ -1,3 +1,7 @@
+interface $api {
+	Function: $api.Function
+}
+
 namespace $api {
 	interface Function {
 		identity: <T>(t: T) => T
@@ -110,15 +114,73 @@ namespace $api {
 			<T,R>(p: { condition: (t: T) => boolean, true: (t: T) => R, false: (t: T) => R }): (t: T) => R
 			(test: any, yes: any, no: any): any
 		}
-		impure: {
-			revise: <T,P>(f: (this: T, p: P) => (P | void)) => impure.Reviser<P>
-		}
 		[name: string]: amy
+	}
+
+	interface Function {
+		impure: {
+			/**
+			 * Converts an Updater to a function that can be used in a function pipeline; in other words, if it is an updater
+			 * that modifies its argument in place, it will be augmented to return the argument.
+			 */
+			revise: <T,P>(f: (this: T, p: P) => (P | void)) => impure.Updater<P>
+
+			/**
+			 * Creates an Updater that runs the given updaters in a pipeline, allowing the Updaters to replace the pipeline input
+			 * by returning a value.
+			 */
+			compose: {
+				<P>(f1: Updater<P>, f2: Updater<P>, f3: Updater<P>, f4: Updater<P>, f5: Updater<P>): Updater<P>
+				<P>(f1: Updater<P>, f2: Updater<P>, f3: Updater<P>, f4: Updater<P>): Updater<P>
+				<P>(f1: Updater<P>, f2: Updater<P>, f3: Updater<P>): Updater<P>
+				<P>(f1: Updater<P>, f2: Updater<P>): Updater<P>
+				<P>(f: Updater<P>): Updater<P>
+			}
+		}
 	}
 
 	namespace Function {
 		namespace impure {
-			type Reviser<P> = (p: P) => P
+			/**
+			 * An Updater is a function that takes an argument and either (potentially) modifies the argument, returning undefined,
+			 * or returns a completely new value to replace the argument.
+			 */
+			type Updater<P> = (p: P) => P
 		}
+	}
+
+	interface Function {
+		comparator: {
+			/**
+			 * Creates a comparator given a mapping (which represents some aspect of an underlying type) and a comparator that
+			 * compares the mapped values.
+			 */
+			create: <T,M>(mapping: (t: T) => M, comparator: Function.Comparator<M>) => Function.Comparator<T>
+
+			/**
+			 * A comparator that uses the < and > operators to compare its arguments.
+			 */
+			operators: Function.Comparator<any>,
+
+			/**
+			 * Creates a comparator that represents the opposite of the given comparator.
+			 */
+			reverse: (comparator: Function.Comparator<T>) => Function.Comarator<T>
+
+			/**
+			 * Creates a comparator that applies the given comparators in order, using succeeding comparators if a comparator
+			 * indicates two values are equal.
+			 */
+			compose: {
+				<T>(c1: Comparator<T>, c2: Comparator<T>, c3: Comparator<T>, c4: Comparator<T>, c5: Comparator<T>): Comparator<T>
+				<T>(c1: Comparator<T>, c2: Comparator<T>, c3: Comparator<T>, c4: Comparator<T>): Comparator<T>
+				<T>(c1: Comparator<T>, c2: Comparator<T>, c3: Comparator<T>): Comparator<T>
+				<T>(c1: Comparator<T>, c2: Comparator<T>): Comparator<T>
+			}
+		}
+	}
+
+	namespace Function {
+		type Comparator<T> = (t1: T, t2: T) => number
 	}
 }
