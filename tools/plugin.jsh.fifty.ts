@@ -35,10 +35,25 @@ namespace jsh.wf {
 		}
 
 		export type Processor = $api.Function.impure.Updater<cli.Arguments>
+
+		export namespace error {
+			export interface TargetNotFound extends Error {
+				command: string
+			}
+
+			export interface TargetNotFunction extends Error {
+				command: string
+				target: any
+			}
+		}
 	}
 
 	export interface Exports {
 		cli: {
+			error: {
+				TargetNotFound: $api.Error.Type<cli.error.TargetNotFound>
+				TargetNotFunction: $api.Error.Type<cli.error.TargetNotFunction>
+			}
 			$f: {
 				command: {
 					/**
@@ -46,6 +61,12 @@ namespace jsh.wf {
 					 * that command and includes the remaining arguments.
 					 */
 					parse: (p: cli.Arguments) => cli.Invocation
+
+					/**
+					 * @throws { cli.error.TargetNotFound } if the specified target is not found on the interface
+					 * @throws { cli.error.TargetNotFunction } if the specified target is not a function
+					 */
+					target: (p: { interface: cli.Interface, target: string }) => cli.Command
 
 					process: (p: { interface: cli.Interface, invocation: cli.Invocation }) => void
 

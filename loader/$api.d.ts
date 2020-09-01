@@ -25,7 +25,7 @@ interface $api {
 	},
 	Value: any,
 	Error: {
-		Type: <T extends Error>(p: { name: string, extends?: Function }) => new (message: string, properties: object) => T
+		Type: <T extends Error>(p: { name: string, extends?: Function }) => $api.Error.Type<T>
 	}
 	Events: {
 		(p?: { source?: any, parent?: any, getParent?: () => any , on?: { [x: string]: any } }): $api.Events,
@@ -106,6 +106,10 @@ declare namespace $api {
 
 	namespace Events.Function {
 		type Receiver = { [x: string]: (e: Event) => void } | $api.Events
+	}
+
+	namespace Error {
+		type Type<T extends Error> = new (message: string, properties?: object) => T
 	}
 
 	const deprecate: $api["deprecate"];
