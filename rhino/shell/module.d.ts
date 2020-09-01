@@ -33,5 +33,16 @@ namespace slime.jrunscript.shell {
 		}
 
 		java: java
+
+		PATH?: any
+
+		run?: any
+
+		os: {
+			name: any
+			version: any
+		}
+
+		environment: any
 	}
 }
