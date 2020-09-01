@@ -79,6 +79,7 @@ namespace jsh.wf {
 				option: {
 					string: (c: { longname: string }) => cli.Processor
 					boolean: (c: { longname: string }) => cli.Processor
+					pathname: (c: { longname: string }) => cli.Processor
 				},
 				/**
 				 * Returns an object representing the global invocation of `jsh`.
