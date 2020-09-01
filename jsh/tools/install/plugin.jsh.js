@@ -15,10 +15,11 @@
 (
 	/**
 	 * @param { jsh } jsh
+	 * @param { object } plugins
 	 * @param { jsh.plugin.plugin } plugin
 	 * @param { slime.Loader } $loader
 	 */
-	function(jsh,plugin,$loader) {
+	function(jsh,plugins,plugin,$loader) {
 		plugin({
 			isReady: function() {
 				return jsh.js && jsh.js.web && jsh.java && jsh.ip && jsh.time && jsh.file && jsh.http && jsh.shell && jsh.java.tools;
@@ -640,4 +641,4 @@
 		});
 	}
 //@ts-ignore
-)(jsh,plugin,$loader)
+)(jsh,plugins,plugin,$loader)
