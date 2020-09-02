@@ -45,7 +45,14 @@ namespace slime {
 					new (p: { remote: string }): slime.jrunscript.git.Repository
 				}
 
-				execute: (m: {}) => void
+				//	Uses Object.assign for rhino/shell run(), so should cross-check with those arguments
+				execute: (m: {
+					config?: any
+					command: string,
+					arguments?: string[]
+					environment?: any
+					directory?: slime.jrunscript.file.Directory
+				}) => void
 			}
 
 			interface Repository {
