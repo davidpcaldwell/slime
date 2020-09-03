@@ -1,9 +1,15 @@
 namespace jsh.wf {
+	/**
+	 * An object that, given a Git repository, can provide the Git user.name and user.email values for that repository (perhaps
+	 * by prompting the user).
+	 */
+	interface GitIentityProvider {
+		name: (p: { repository: slime.jrunscript.git.Repository.Local }) => string,
+		email: (p: { repository: slime.jrunscript.git.Repository.Local }) => string
+	}
+
 	namespace Exports.requireGitIdentity {
-		export interface get {
-			name: (p: { repository: slime.jrunscript.git.Repository.Local }) => string,
-			email: (p: { repository: slime.jrunscript.git.Repository.Local }) => string
-		}
+		export type get = GitIentityProvider
 	}
 
 	export namespace cli {
@@ -29,10 +35,25 @@ namespace jsh.wf {
 		}
 
 		export type Processor = $api.Function.impure.Updater<cli.Arguments>
+
+		export namespace error {
+			export interface TargetNotFound extends Error {
+				command: string
+			}
+
+			export interface TargetNotFunction extends Error {
+				command: string
+				target: any
+			}
+		}
 	}
 
 	export interface Exports {
 		cli: {
+			error: {
+				TargetNotFound: $api.Error.Type<cli.error.TargetNotFound>
+				TargetNotFunction: $api.Error.Type<cli.error.TargetNotFunction>
+			}
 			$f: {
 				command: {
 					/**
@@ -40,6 +61,12 @@ namespace jsh.wf {
 					 * that command and includes the remaining arguments.
 					 */
 					parse: (p: cli.Arguments) => cli.Invocation
+
+					/**
+					 * @throws { cli.error.TargetNotFound } if the specified target is not found on the interface
+					 * @throws { cli.error.TargetNotFunction } if the specified target is not a function
+					 */
+					target: (p: { interface: cli.Interface, target: string }) => cli.Command
 
 					process: (p: { interface: cli.Interface, invocation: cli.Invocation }) => void
 
@@ -52,6 +79,7 @@ namespace jsh.wf {
 				option: {
 					string: (c: { longname: string }) => cli.Processor
 					boolean: (c: { longname: string }) => cli.Processor
+					pathname: (c: { longname: string }) => cli.Processor
 				},
 				/**
 				 * Returns an object representing the global invocation of `jsh`.

@@ -1,11 +1,12 @@
 //@ts-check
 (
 	/**
+	 * @param { $api } $api
 	 * @param { jsh.plugin.$slime } $slime
 	 * @param { jsh } jsh
 	 * @param { jsh.plugin.plugin } plugin
 	 */
-	function($slime,jsh,plugin) {
+	function($api,$slime,jsh,plugin) {
 		plugin({
 			isReady: function() {
 				return Boolean(jsh.file && jsh.shell && jsh.ui && jsh.tools && jsh.tools.git);
@@ -105,6 +106,10 @@
 				};
 
 				jsh.wf.cli = {
+					error: {
+						TargetNotFound: $api.Error.Type({ name: "TargetNotFound" }),
+						TargetNotFunction: $api.Error.Type({ name: "TargetNotFunction", extends: TypeError })
+					},
 					$f: {
 						command: {
 							parse: function(p) {
@@ -114,8 +119,8 @@
 									arguments: p.arguments.slice(1)
 								}
 							},
-							process: function(p) {
-								var command = (p.invocation.command) ? p.invocation.command : "";
+							target: function(p) {
+								var command = (p.target) ? p.target : "";
 								var method = (function(command) {
 									//jsh.shell.console("command = [" + command + "]");
 									var tokens = (command.length) ? command.split(".") : [];
@@ -129,6 +134,24 @@
 								})(command);
 
 								if (typeof(method) == "function") {
+									return method;
+								} else if (!method) {
+									throw new jsh.wf.cli.error.TargetNotFound("Command not found: [" + command + "]", {
+										command: command
+									});
+								} else {
+									throw new jsh.wf.cli.error.TargetNotFunction("Implementation is not a function: [" + command + "]" + ", but " + method, {
+										command: command,
+										target: method
+									});
+								}
+							},
+							process: function(p) {
+								try {
+									var method = this.target({
+										target: p.invocation.command,
+										interface: p.interface
+									});
 									method.call(
 										null,
 										{
@@ -136,13 +159,17 @@
 											arguments: p.invocation.arguments
 										}
 									);
-								} else if (!method) {
-									jsh.shell.console("Method not found: " + method);
-									jsh.shell.console("Command not found: [" + command + "]");
-									jsh.shell.exit(1);
-								} else {
-									jsh.shell.console("Implementation is not a function: " + method);
-									jsh.shell.exit(1);
+								} catch (e) {
+									if (e instanceof jsh.wf.cli.error.TargetNotFound) {
+										jsh.shell.console(String(e));
+										jsh.shell.exit(1);
+									} else if (e instanceof jsh.wf.cli.error.TargetNotFunction) {
+										jsh.shell.console(String(e));
+										jsh.shell.exit(1);
+									} else {
+										//	need to dump stack, maybe? or attach it to e?
+										throw e;
+									}
 								}
 							},
 							execute: function(p) {
@@ -177,6 +204,20 @@
 									for (var i=0; i<p.arguments.length; i++) {
 										if (o.longname && p.arguments[i] == "--" + o.longname) {
 											p.options[o.longname] = true;
+										} else {
+											args.push(p.arguments[i]);
+										}
+									}
+									p.arguments = args;
+								}
+								return $api.Function.impure.revise(rv);
+							},
+							pathname: function(o) {
+								var rv = function(p) {
+									var args = [];
+									for (var i=0; i<p.arguments.length; i++) {
+										if (o.longname && p.arguments[i] == "--" + o.longname) {
+											p.options[o.longname] = jsh.script.getopts.parser.Pathname(p.arguments[++i]);
 										} else {
 											args.push(p.arguments[i]);
 										}
@@ -514,4 +555,4 @@
 		})
 	}
 //@ts-ignore
-)($slime,jsh,plugin)
+)($api,$slime,jsh,plugin)

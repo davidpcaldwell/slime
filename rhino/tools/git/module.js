@@ -1056,6 +1056,7 @@
 				}
 			};
 
+			/** @type { slime.jrunscript.git.Installation["execute"] } */
 			this.execute = function(m) {
 				git(m);
 			}
@@ -1095,41 +1096,46 @@
 
 		var GUI = $context.api.Error.Type("Please execute the graphical installer.");
 
-		$exports.install = $context.api.Events.Function(function(p,events) {
-			var console = function(message) {
-				events.fire("console", message);
-			};
-			if (!$exports.installation) {
-				if ($context.api.shell.os.name == "Mac OS X") {
-					console("Detected OS X " + $context.api.shell.os.version);
-					console("Install Apple's command line developer tools.");
-					$context.api.shell.run({
-						command: "/usr/bin/git",
-						evaluate: function(result) {
-							//	Do nothing; exit status will be 1
-							throw new GUI();
+		$exports.install = Object.assign(
+			$api.Events.Function(
+				function(p,events) {
+					var console = function(message) {
+						events.fire("console", message);
+					};
+					if (!$exports.installation) {
+						if ($context.api.shell.os.name == "Mac OS X") {
+							console("Detected OS X " + $context.api.shell.os.version);
+							console("Install Apple's command line developer tools.");
+							$context.api.shell.run({
+								command: "/usr/bin/git",
+								evaluate: function(result) {
+									//	Do nothing; exit status will be 1
+									throw new GUI();
+								}
+							});
+						} else if ($context.api.shell.os.name == "Linux") {
+							console("Installing git using apt ...");
+							if ($context.api.shell.PATH.getCommand("apt")) {
+								$context.api.shell.run({
+									command: "sudo",
+									arguments: [
+										"apt", "install", "git", "-y"
+									]
+								});
+							} else {
+								throw new Error("Unimplemented: installation of Git for Linux system without 'apt'.");
+							}
+						} else {
+							throw new Error("Unimplemented: installation of Git for non-OS X, non-Linux system.");
 						}
-					});
-				} else if ($context.api.shell.os.name == "Linux") {
-					console("Installing git using apt ...");
-					if ($context.api.shell.PATH.getCommand("apt")) {
-						$context.api.shell.run({
-							command: "sudo",
-							arguments: [
-								"apt", "install", "git", "-y"
-							]
-						});
 					} else {
-						throw new Error("Unimplemented: installation of Git for Linux system without 'apt'.");
+						console("Git already installed.");
 					}
-				} else {
-					throw new Error("Unimplemented: installation of Git for non-OS X, non-Linux system.");
 				}
-			} else {
-				console("Git already installed.");
+			), {
+				GUI: GUI
 			}
-		});
-		$exports.install.GUI = GUI;
+		);
 	}
 //@ts-ignore
 )($context,$exports)
