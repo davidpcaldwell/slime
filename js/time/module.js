@@ -313,7 +313,7 @@
 
 		var addTimeParserChecks = function(parser,hours,minutes,seconds) {
 			var format = function(n,pad) {
-				var rv = n.toFixed(0);
+				var rv = Math.floor(n).toFixed(0);
 				if (pad && rv.length == 1) rv = "0" + rv;
 				return rv;
 			}
@@ -538,6 +538,7 @@
 			this.minutes = minutes;
 			this.seconds = seconds;
 
+			//	TODO	horrifying overlap of stuff in addTimeParserChecks
 			this.format = function(mask) {
 				var format = function(n,pad) {
 					var rv = Math.floor(n).toFixed(0);
@@ -790,7 +791,7 @@
 				}
 				var seconds = parsedTime[6];
 				if (parsedTime[7]) {
-					seconds += Number(parsedTime[7]) / 1000;
+					seconds += "." + parsedTime[7];
 				}
 				var offset;
 				var zone = parsedTime[8];
@@ -807,7 +808,7 @@
 					day: parsedTime[3],
 					hour: parsedTime[4],
 					minute: parsedTime[5],
-					second: parsedTime[6]
+					second: seconds
 				});
 				var rv = utc - offset * 60 * 1000;
 				return new When({ unix: rv });
