@@ -47,7 +47,9 @@
 					};
 				}
 				this.unix = function(local) {
-					return Date.UTC(local.year,local.month-1,local.day,local.hour,local.minute,local.second);
+					var wholeSeconds = Math.floor(local.second);
+					var milliseconds = (local.second - Math.floor(local.second)) * 1000
+					return Date.UTC(local.year,local.month-1,local.day,local.hour,local.minute,wholeSeconds,milliseconds);
 				}
 			}
 		}
@@ -584,7 +586,7 @@
 				return mask;
 			}
 
-			return function(){}();
+			return void(0);
 		}
 		Day.today = function() {
 			return new Day({date: new Date()});
@@ -803,12 +805,12 @@
 					offset = 0;
 				}
 				var utc = zones.UTC.unix({
-					year: parsedTime[1],
-					month: parsedTime[2],
-					day: parsedTime[3],
-					hour: parsedTime[4],
-					minute: parsedTime[5],
-					second: seconds
+					year: Number(parsedTime[1]),
+					month: Number(parsedTime[2]),
+					day: Number(parsedTime[3]),
+					hour: Number(parsedTime[4]),
+					minute: Number(parsedTime[5]),
+					second: Number(seconds)
 				});
 				var rv = utc - offset * 60 * 1000;
 				return new When({ unix: rv });
