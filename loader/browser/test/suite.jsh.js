@@ -25,7 +25,9 @@
 
 				browser: String,
 				interactive: false,
+
 				"chrome:instance": jsh.file.Pathname,
+				"chrome:debug:port": Number,
 
 				view: "console"
 			}
@@ -222,6 +224,11 @@
 			this.start = function(p) {
 				instance.run({
 					uri: p.uri,
+					arguments: (function() {
+						var rv = [];
+						if (o.remoteDebugPort) rv.push("--remote-debugging-port=" + o.remoteDebugPort);
+						return rv;
+					})(),
 					on: {
 						start: function(e) {
 							kill = function() {
@@ -240,7 +247,8 @@
 		var toBrowser = function(argument) {
 			if (argument == "chrome") {
 				return new Chrome({
-					location: parameters.options["chrome:instance"]
+					location: parameters.options["chrome:instance"],
+					remoteDebugPort: parameters.options["chrome:debug:port"]
 				});
 			}
 			var browsers = ["IE","Firefox","Safari"];

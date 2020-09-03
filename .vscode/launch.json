@@ -21,6 +21,14 @@
 			"address": "localhost",
 			"port": 7778,
 			"webRoot": "${workspaceRoot}"
-		}
+		},
+		{
+
+			"name": "Chrome debug (attach 9222)",
+			"type": "pwa-chrome",
+			"request": "attach",
+			"port": 9222,
+			"webRoot": "${workspaceFolder}"
+		},
 	]
 }

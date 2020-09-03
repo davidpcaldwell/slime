@@ -12,7 +12,7 @@ Portions created by the Initial Developer are Copyright (C) 2016 the Initial Dev
 Contributor(s):
 END LICENSE
 -->
-<html>
+<html xmlns:jsapi="http://www.inonit.com/jsapi">
 <head>
 	<title>SLIME: time</title>
 	<link rel="stylesheet" type="text/css" href="../../loader/api/api.css" />
@@ -46,6 +46,14 @@ END LICENSE
 		}
 		scope.module.install();
 	</script>
+	<div jsapi:id="fifty">
+		<script type="application/x.jsapi#tests">
+			$jsapi.loader.fifty({
+				path: "module.fifty.ts",
+				verify: verify
+			});
+		</script>
+	</div>
 	<div>
 		<h1>Exports</h1>
 		<div class="type">
