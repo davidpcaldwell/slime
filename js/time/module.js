@@ -48,7 +48,7 @@
 				}
 				this.unix = function(local) {
 					var wholeSeconds = Math.floor(local.second);
-					var milliseconds = (local.second - Math.floor(local.second)) * 1000
+					var milliseconds = Math.round((local.second - Math.floor(local.second)) * 1000);
 					return Date.UTC(local.year,local.month-1,local.day,local.hour,local.minute,wholeSeconds,milliseconds);
 				}
 			}

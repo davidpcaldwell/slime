@@ -14,6 +14,13 @@
 				var decoded = subject.When.codec.rfc3339.decode(rfc3339);
 				verify(when).unix.is(decoded.unix);
 			})(when);
+
+			//	Got 1599187454916 from 2020-09-04T02:44:14.917Z
+			var sample = "2020-09-04T02:44:14.917Z";
+			var desired = 1599187454917;
+			debugger;
+			var decoded = subject.When.codec.rfc3339.decode(sample);
+			verify(decoded).unix.is(desired);
 		}
 	}
 //@ts-ignore
