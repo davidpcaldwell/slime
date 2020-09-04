@@ -104,6 +104,7 @@ namespace jsh.wf {
 				(
 					$context: jsh.wf.cli.Context,
 					operations: {
+						lint?: () => boolean
 						test?: () => boolean
 						commit?: (p: { message: string }) => void
 					},
