@@ -35,7 +35,7 @@ var Zone = function(peer) {
 		//Packages.java.lang.System.err.println("zone = " + peer + " calendar = " + calendar);
 		var second = Math.floor(local.second);
 		var fraction = local.second - second;
-		var milliseconds = Math.floor(fraction * 1000);
+		var milliseconds = Math.round(fraction * 1000);
 		//Packages.java.lang.System.err.println("Calling Calendar.set");
 		calendar.set(local.year, local.month-1, local.day, local.hour, local.minute, local.second);
 		//Packages.java.lang.System.err.println("Calling Calendar.set (MILLISECONDS)");
