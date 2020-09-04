@@ -121,7 +121,16 @@ namespace slime {
 
 					remote: ( () => void ) & { getUrl: ({ name: string }) => string },
 					stash: any,
-					push: Function,
+					push: (p?: {
+						delete?: boolean
+						setUpstream?: string
+						all?: boolean
+						repository?: string
+						refspec?: string
+
+						config?: any
+						environment?: any
+					}) => void,
 					mergeBase: (p: { commits: string[] }) => Commit,
 					config: (p: { arguments: string[] }) => object,
 					submodule: {

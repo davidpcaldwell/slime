@@ -263,43 +263,6 @@
 							})(arguments);
 						}
 
-						if (operations.test && !operations.commit) {
-							operations.commit = function(p) {
-								var repository = jsh.tools.git.Repository({ directory: $context.base });
-								jsh.wf.requireGitIdentity({ repository: repository }, {
-									console: function(e) {
-										jsh.shell.console(e.detail);
-									}
-								});
-								jsh.wf.prohibitUntrackedFiles({ repository: repository });
-								jsh.wf.prohibitModifiedSubmodules({ repository: repository });
-								jsh.wf.typescript.tsc();
-								var success = operations.test();
-								if (!success) {
-									throw new Error("Tests failed.");
-								}
-								repository.commit({
-									all: true,
-									message: p.message
-								});
-							}
-						}
-
-						$exports.tsc = function() {
-							try {
-								jsh.wf.typescript.tsc();
-								jsh.shell.console("Passed.");
-							} catch (e) {
-								jsh.shell.console("tsc failed.");
-								jsh.shell.exit(1);
-							}
-						};
-
-						$exports.submodule = {
-							update: void(0),
-							remove: void(0)
-						};
-
 						var fetch = $api.Function.memoized(function() {
 							var repository = jsh.tools.git.Repository({ directory: $context.base });
 							jsh.shell.console("Fetching all updates ...");
@@ -339,6 +302,72 @@
 							jsh.shell.console("");
 							return repository;
 						});
+
+						if (operations.test && !operations.commit) {
+							operations.commit = function(p) {
+								if (!p.message) throw new Error("No message");
+								var allowDivergeFromMaster = false;
+								var repository = jsh.tools.git.Repository({ directory: $context.base });
+								var vsLocalOriginMaster = jsh.wf.git.compareTo("origin/master")(repository);
+								if (vsLocalOriginMaster.behind.length && !allowDivergeFromMaster) {
+									jsh.shell.console("Behind origin/master by " + vsLocalOriginMaster.behind.length + " commits.");
+									jsh.shell.exit(1);
+								}
+								repository = fetch();
+								var vsOriginMaster = jsh.wf.git.compareTo("origin/master")(repository);
+								//	var status = repository.status();
+								//	maybe check branch above if we allow non-master-based workflow
+								//	Perhaps allow a command-line argument or something for this, need to think through branching
+								//	strategy overall
+								if (vsOriginMaster.behind.length && !allowDivergeFromMaster) {
+									jsh.shell.console("Behind origin/master by " + vsOriginMaster.behind.length + " commits.");
+									jsh.shell.exit(1);
+								}
+								jsh.wf.requireGitIdentity({ repository: repository }, {
+									console: function(e) {
+										jsh.shell.console(e.detail);
+									}
+								});
+								jsh.wf.prohibitUntrackedFiles({ repository: repository });
+								if (operations.lint) {
+									if (!operations.lint()) {
+										throw new Error("Linting failed.");
+									}
+								}
+								jsh.wf.prohibitModifiedSubmodules({ repository: repository });
+								jsh.wf.typescript.tsc();
+								var success = operations.test();
+								if (!success) {
+									throw new Error("Tests failed.");
+								}
+								repository.commit({
+									all: true,
+									message: p.message
+								});
+								//	We checked for upstream changes, so now we're going to push
+								//	If we allow branching, we may or may not really want to push, or may not want to push to
+								//	master
+								repository.push({
+									repository: "origin",
+									refspec: "master"
+								});
+							}
+						}
+
+						$exports.tsc = function() {
+							try {
+								jsh.wf.typescript.tsc();
+								jsh.shell.console("Passed.");
+							} catch (e) {
+								jsh.shell.console("tsc failed.");
+								jsh.shell.exit(1);
+							}
+						};
+
+						$exports.submodule = {
+							update: void(0),
+							remove: void(0)
+						};
 
 						$exports.status = function(p) {
 							//	TODO	add option for offline
@@ -424,21 +453,10 @@
 						);
 
 						if (operations.commit) $exports.commit = $api.Function.pipe(
+							jsh.wf.cli.$f.option.string({ longname: "message" }),
 							function(p) {
-								var rv = {
-									options: $api.Object.compose(p.options),
-									arguments: []
-								};
-								for (var i=0; i<p.arguments.length; i++) {
-									if (p.arguments[i] == "--message") {
-										rv.options.message = p.arguments[++i];
-									} else {
-										rv.arguments.push(p.arguments[i]);
-									}
-								}
-								return rv;
-							},
-							function(p) {
+								//	Leave redundant check for message for now, in case there are existing implementations of
+								//	operations.commit that do not check. But going forward they should check themselves.
 								if (!p.options.message) throw new Error("No message");
 								operations.commit({ message: p.options.message });
 								jsh.shell.console("Committed changes to " + $context.base);

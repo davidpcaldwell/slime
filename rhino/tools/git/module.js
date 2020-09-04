@@ -800,22 +800,25 @@
 				/** @type { slime.jrunscript.git.Repository.Local["fetch"] } */
 				this.fetch = command(fetch);
 
-				this.push = function(p) {
-					var args = [];
-					if (p && p.delete) args.push("--delete");
-					//jsh.shell.console("Setting upstream ...");
-					if (p && p.setUpstream) args.push("--set-upstream", p.setUpstream);
-					if (p && p.all) args.push("--all");
-					if (p && p.repository) args.push(p.repository);
-					if (p && p.refspec) args.push(p.refspec);
-					//jsh.shell.console("push " + args.join(" "));
-					execute({
-						config: p.config,
-						command: "push",
-						arguments: args,
-						environment: p.environment
-					});
-				};
+				this.push = (
+					/** @param { Parameters<slime.jrunscript.git.Repository.Local["push"]>[0] } p */
+					function(p) {
+						var args = [];
+						if (p && p.delete) args.push("--delete");
+						//jsh.shell.console("Setting upstream ...");
+						if (p && p.setUpstream) args.push("--set-upstream", p.setUpstream);
+						if (p && p.all) args.push("--all");
+						if (p && p.repository) args.push(p.repository);
+						if (p && p.refspec) args.push(p.refspec);
+						//jsh.shell.console("push " + args.join(" "));
+						execute({
+							config: p.config,
+							command: "push",
+							arguments: args,
+							environment: p.environment
+						});
+					}
+				);
 
 				/** @type { slime.jrunscript.git.Repository.Local["submodule"] } */
 				this.submodule = Object.assign(function(p) {
