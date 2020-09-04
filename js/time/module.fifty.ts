@@ -21,6 +21,13 @@
 			debugger;
 			var decoded = subject.When.codec.rfc3339.decode(sample);
 			verify(decoded).unix.is(desired);
+
+			//	Got 1599188612109 from 2020-09-04T03:03:32.110Z
+			var sample = "2020-09-04T03:03:32.110Z";
+			var desired = 1599188612110;
+			debugger;
+			var decoded = subject.When.codec.rfc3339.decode(sample);
+			verify(decoded).unix.is(desired);
 		}
 	}
 //@ts-ignore
