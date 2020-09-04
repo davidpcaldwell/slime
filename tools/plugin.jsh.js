@@ -167,7 +167,8 @@
 										jsh.shell.console(String(e));
 										jsh.shell.exit(1);
 									} else {
-										//	need to dump stack, maybe? or attach it to e?
+										jsh.shell.console(e);
+										jsh.shell.console(e.stack);
 										throw e;
 									}
 								}
