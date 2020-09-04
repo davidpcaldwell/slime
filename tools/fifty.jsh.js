@@ -13,16 +13,25 @@
 
 		jsh.wf.cli.$f.command.process({
 			interface: {
-				test: function(p) {
-					jsh.shell.jsh({
-						shell: SLIME,
-						script: SLIME.getFile("loader/api/test/fifty/test.jsh.js"),
-						arguments: p.arguments,
-						evaluate: function(result) {
-							jsh.shell.exit(result.status);
-						}
-					})
-				}
+				test: $api.Function.pipe(
+					jsh.wf.cli.$f.option.boolean({ longname: "debug:rhino" }),
+					function(p) {
+						jsh.shell.jsh({
+							shell: SLIME,
+							script: SLIME.getFile("loader/api/test/fifty/test.jsh.js"),
+							arguments: p.arguments,
+							environment: $api.Object.compose(
+								jsh.shell.environment,
+								p.options["debug:rhino"] ? {
+									JSH_DEBUG_SCRIPT: "rhino"
+								} : {}
+							),
+							evaluate: function(result) {
+								jsh.shell.exit(result.status);
+							}
+						})
+					}
+				)
 			},
 			invocation: args
 		})
