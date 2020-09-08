@@ -2,6 +2,7 @@ namespace slime.time {
 	interface Day {
 		year: any
 		at: Function
+		format(mask: string): string
 	}
 
 	namespace Day {
