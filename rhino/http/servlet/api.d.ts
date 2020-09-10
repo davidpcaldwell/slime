@@ -36,11 +36,11 @@ namespace slime.servlet {
 		body?: (
 			slime.jrunscript.runtime.Resource
 			| {
-				type: string,
+				type: string | slime.MimeType,
 				string: string
 			}
 			| {
-				type: string,
+				type: string | slime.MimeType,
 				stream: any
 			}
 		)
