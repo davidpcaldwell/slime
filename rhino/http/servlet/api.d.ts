@@ -68,6 +68,7 @@ namespace slime.servlet {
 				filter: RegExp,
 				handle: slime.servlet.handler
 			}) => slime.servlet.handler
+			HostRedirect: any
 		}
 		$java: any
 		$reload?: () => void
