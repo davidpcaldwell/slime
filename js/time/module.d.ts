@@ -48,6 +48,7 @@ namespace slime.time {
 			new (): When
 			codec: {
 				rfc3339: slime.Codec<When,string>
+				Date: slime.Codec<When,Date>
 			}
 			order: Function
 			now: () => When
