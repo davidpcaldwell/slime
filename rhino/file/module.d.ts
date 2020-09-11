@@ -22,7 +22,7 @@ namespace slime.jrunscript.file {
 	interface File extends Node {
 		read: (any) => any
 		length: any
-		modified: any
+		modified: Date
 	}
 
 	interface Directory extends Node {
