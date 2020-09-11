@@ -4,7 +4,7 @@ interface jsh {
 		log: any
 	}
 
-	http: slime.jrunscript.http.client
+	http: slime.jrunscript.http.client.Exports
 
 	tools: {
 		git: slime.jrunscript.git.Exports
