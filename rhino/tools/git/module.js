@@ -61,7 +61,7 @@
 
 				this.command = function(m) {
 					var program = environment.program;
-					function rv(p,events) {
+					function commandImplmenetation(p,events) {
 						var args = [];
 						addConfigurationArgumentsTo(args,p.config);
 						if (p.credentialHelper) {
@@ -94,7 +94,7 @@
 							}
 						});
 					}
-					return $api.Events.Function(rv);
+					return $api.Events.Function(commandImplmenetation);
 				};
 
 				this.stdio = new function() {
@@ -430,10 +430,11 @@
 					if (o.local) return $api.deprecate(function() {
 						return o.local;
 					})();
+					throw new TypeError("Required: .directory property.");
 				})();
 
 				var command = function(f) {
-					return function(p, events) {
+					return function localRepositoryCommand(p, events) {
 						return f($api.Object.compose(p, { directory: directory }), events);
 					}
 				}
