@@ -238,8 +238,11 @@ var Pathname = function Pathname(parameters) {
 			$filesystem.setLastModified(_peer,date);
 		}
 
-		this.__defineGetter__("modified", getLastModified);
-		this.__defineSetter__("modified", setLastModified);
+		Object.defineProperty(this, "modified", {
+			enumerable: true,
+			get: getLastModified,
+			set: setLastModified
+		})
 
 		var getRelativePath = function(pathString) {
 			var directoryPath = pathname.toString() + prefix;
