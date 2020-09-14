@@ -95,6 +95,7 @@
 		 */
 		var Exports = function() {
 			var $platform = (function() {
+				/** @type { slime.runtime.$platform } */
 				var $exports = {};
 				$exports.Object = {};
 				if (Object.defineProperty) {
