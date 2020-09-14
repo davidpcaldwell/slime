@@ -5,6 +5,21 @@
 		$api: $api,
 		tests: any
 	) {
+		tests.exports = {};
+
+		tests.exports.Error = function() {
+			var Type = $api.Error.Type({
+				name: "foo",
+				extends: TypeError
+			});
+
+			try {
+				throw new Type("bar");
+			} catch (e) {
+				verify("stack").is(e.stack);
+			}
+		};
+
 		tests.suite = function() {
 			var CustomError = $api.Error.Type({
 				name: "Custom"

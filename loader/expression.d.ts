@@ -166,6 +166,24 @@ namespace slime {
             }
         }
 
+        interface $platform {
+            execute: (code: { name?: string, js: string }, scope: { [x: string]: any }, target: any) => any
+            Object: {
+                defineProperty: {
+                    ecma?: boolean
+                    accessor?: boolean
+                }
+            }
+            e4x: any
+            MetaObject: any
+            java: any
+        }
+
+        interface Scope {
+            $platform: $platform
+            $api: $api
+        }
+
         interface Exports {
             mime: {
                 Type: {
@@ -188,7 +206,7 @@ namespace slime {
             }
             namespace: any
             java: any
-            $platform: any
+            $platform: $platform
             $api: $api
         }
     }
