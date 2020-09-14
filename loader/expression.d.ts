@@ -149,21 +149,15 @@ namespace slime {
     namespace runtime {
         interface $engine {
             execute: (script: { name: string, code: string }, scope: object, target: object) => any
+            Error?: {
+                decorate: any
+            }
             Object: {
                 defineProperty: {
                     setReadOnly: any
                 }
             }
             MetaObject: any
-        }
-
-        interface $slime {
-            getRuntimeScript(path: string): any
-            flags: object
-            getCoffeeScript(): any
-            typescript?: {
-                compile: (code: string) => string
-            }
         }
 
         interface $platform {
@@ -174,9 +168,21 @@ namespace slime {
                     accessor?: boolean
                 }
             }
+            Error: {
+                decorate?: <T>(errorConstructor: T) => T
+            }
             e4x: any
             MetaObject: any
             java: any
+        }
+
+        interface $slime {
+            getRuntimeScript(path: string): any
+            flags: object
+            getCoffeeScript(): any
+            typescript?: {
+                compile: (code: string) => string
+            }
         }
 
         interface Scope {

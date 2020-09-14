@@ -12,7 +12,7 @@
 
 //@ts-check
 (
-	//	TODO	get rid of the wildcarded properties in $exports by adding all properties to $api.d.ts
+//	TODO	get rid of the wildcarded properties in $exports by adding all properties to $api.d.ts
 	/**
 	 * @param { slime.runtime.$platform } $platform
 	 * @param { slime.runtime.$slime } $slime
@@ -516,10 +516,16 @@
 				}
 			};
 			Subtype.prototype = $exports.debug.disableBreakOnExceptionsFor(function() {
-				return new Supertype();
+				var rv = new Supertype();
+				delete rv.stack;
+				return rv;
 			})();
+			var rv = Subtype;
+			if ($platform.Error && $platform.Error.decorate) {
+				rv = $platform.Error.decorate(rv);
+			}
 			//@ts-ignore
-			return Subtype;
+			return rv;
 		};
 
 		$exports.Error = {

@@ -16,6 +16,7 @@
 			try {
 				throw new Type("bar");
 			} catch (e) {
+				//	Given that stack is non-standard, not adding this to suite and not really asserting on its format
 				verify("stack").is(e.stack);
 			}
 		};

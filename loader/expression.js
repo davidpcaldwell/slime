@@ -113,6 +113,10 @@
 					$exports.e4x.XMLList = global.XMLList;
 				}
 
+				$exports.Error = {
+					decorate: ($engine && $engine.Error) ? $engine.Error.decorate : void(0)
+				}
+
 				$exports.execute = (function() {
 					if (typeof($engine) != "undefined" && $engine.execute) return $engine.execute;
 					return function(/*script{name,code},scope,target*/) {
