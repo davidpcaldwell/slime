@@ -97,6 +97,9 @@
 				return function(string) {
 					return string.split(delimiter);
 				}
+			},
+			toUpperCase: function(string) {
+				return string.toUpperCase();
 			}
 		};
 
