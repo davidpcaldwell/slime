@@ -129,6 +129,7 @@
 									var rv = p.interface;
 									for (var i=0; i<tokens.length; i++) {
 										rv = rv[tokens[i]];
+										if (!rv) throw new TypeError("Not found: " + tokens.slice(0,i+1).join("."));
 									}
 									return rv;
 								})(command);
