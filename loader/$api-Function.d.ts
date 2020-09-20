@@ -114,7 +114,7 @@ namespace $api {
 			<T,R>(p: { condition: (t: T) => boolean, true: (t: T) => R, false: (t: T) => R }): (t: T) => R
 			(test: any, yes: any, no: any): any
 		}
-		[name: string]: amy
+		[name: string]: any
 	}
 
 	interface Function {
