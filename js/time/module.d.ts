@@ -3,6 +3,8 @@ namespace slime.time {
 		year: any
 		at: Function
 		format(mask: string): string
+		month: any
+		day: any
 	}
 
 	namespace Day {
@@ -36,6 +38,7 @@ namespace slime.time {
 			Time: new (hours: number, minutes: number) => Day.Time
 			subtract: Function
 			order: Function
+			today: () => Day
 		}
 		Time: {
 			new (): slime.time.Time
