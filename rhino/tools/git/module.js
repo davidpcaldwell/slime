@@ -359,6 +359,7 @@
 				command: "submodule",
 				arguments: function(p) {
 					this.push("deinit");
+					if (p.force) this.push("--force");
 					if (p.path) this.push(p.path);
 				}
 			});

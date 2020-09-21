@@ -58,8 +58,20 @@
 						remove: function(p) {
 							var repository = castToLocal(jsh.tools.git.Repository({ directory: base }));
 							jsh.shell.console("Removing submodule " + p.path);
-							repository.submodule.deinit({ path: p.path });
-							repository.rm({ path: p.path });
+							var checkout = base.getSubdirectory(p.path);
+							if (checkout && checkout.getSubdirectory(".git")) {
+								jsh.shell.console("Removing submodule .git ...");
+								checkout.getSubdirectory(".git").remove();
+							}
+							var isConfigured = repository.config({ arguments: ["--list"] })["submodule." + p.path + ".url"];
+							if (isConfigured) {
+								jsh.shell.console("De-init ...");
+								repository.submodule.deinit({ path: p.path, force: true });
+							}
+							if (checkout) {
+								jsh.shell.console("git rm ...");
+								repository.rm({ path: p.path });
+							}
 
 							var gitdir = (function(target) {
 								if (target.getFile(".git")) throw new TypeError("Not supported for submodules of submodules; " + target.getFile(".git") + " is file.");
@@ -69,7 +81,13 @@
 								}
 								return target.getSubdirectory(".git");
 							})(repository.directory);
-							gitdir.getSubdirectory("modules").getSubdirectory(p.path).remove();
+							var module = gitdir.getSubdirectory("modules").getSubdirectory(p.path);
+							if (module) {
+								jsh.shell.console("Remove modules/" + p.path + " directory ...");
+								module.remove();
+							} else {
+								jsh.shell.console("No modules/ directory for " + p.path + ".");
+							}
 						}
 					},
 					updateSubmodule: function(p) {
@@ -423,7 +441,7 @@
 							}
 						}
 
-						if (operations.commit) $exports.submodule.remove = $api.Function.pipe(
+						$exports.submodule.remove = $api.Function.pipe(
 							$api.Function.impure.revise(jsh.wf.cli.$f.option.string({ longname: "path" })),
 							function(p) {
 								var path = p.options.path;

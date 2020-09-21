@@ -151,6 +151,7 @@ namespace slime {
 						}) => void
 
 						deinit: (p: argument & {
+							force?: boolean
 							path: string
 						}) => void
 					}
