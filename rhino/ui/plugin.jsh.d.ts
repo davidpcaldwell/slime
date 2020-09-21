@@ -2,7 +2,7 @@ interface jsh {
 	ui: {
 		application: (
 			p: jsh.ui.application.Argument,
-			events: $api.Events.Function.Receiver
+			events?: $api.Events.Function.Receiver
 		) => {
 			port: number,
 			server: any,
