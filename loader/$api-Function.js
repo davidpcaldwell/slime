@@ -142,6 +142,26 @@
 			}
 		};
 
+		$exports.Function.filter = {
+			/** @type { $api.Function["filter"]["or"] } */
+			or: function() {
+				return function(p) {
+					for (var i=0; i<arguments.length; i++) {
+						if (arguments[i](p)) return true;
+					}
+					return false;
+				}
+			},
+			and: function() {
+				return function(p) {
+					for (var i=0; i<arguments.length; i++) {
+						if (!arguments[i](p)) return false;
+					}
+					return true;
+				}
+			}
+		}
+
 		$exports.Function.Object = {
 			entries: function(o) {
 				return Object.entries(o);
