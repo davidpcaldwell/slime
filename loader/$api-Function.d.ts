@@ -150,6 +150,27 @@ namespace $api {
 	}
 
 	interface Function {
+		filter: {
+			or: {
+				<T>(f1: Filter<T>, f2: Filter<T>, f3: Filter<T>, f4: Filter<T>, f5: Filter<T>): Filter<T>
+				<T>(f1: Filter<T>, f2: Filter<T>, f3: Filter<T>, f4: Filter<T>): Filter<T>
+				<T>(f1: Filter<T>, f2: Filter<T>, f3: Filter<T>): Filter<T>
+				<T>(f1: Filter<T>, f2: Filter<T>): Filter<T>
+			}
+			and: {
+				<T>(f1: Filter<T>, f2: Filter<T>, f3: Filter<T>, f4: Filter<T>, f5: Filter<T>): Filter<T>
+				<T>(f1: Filter<T>, f2: Filter<T>, f3: Filter<T>, f4: Filter<T>): Filter<T>
+				<T>(f1: Filter<T>, f2: Filter<T>, f3: Filter<T>): Filter<T>
+				<T>(f1: Filter<T>, f2: Filter<T>): Filter<T>
+			}
+		}
+	}
+
+	namespace Function {
+		type Filter<T> = (t: T) => boolean
+	}
+
+	interface Function {
 		comparator: {
 			/**
 			 * Creates a comparator given a mapping (which represents some aspect of an underlying type) and a comparator that
