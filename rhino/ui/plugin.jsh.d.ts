@@ -68,5 +68,5 @@ namespace jsh.ui.application {
 		console?: any
 	}
 
-	type Argument = ServerSpecification & Events & BrowserSpecification & { path: string } & Deprecated
+	type Argument = ServerSpecification & Events & BrowserSpecification & { path?: string } & Deprecated
 }
