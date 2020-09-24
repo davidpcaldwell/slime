@@ -6,6 +6,8 @@ namespace $api {
 	interface Function {
 		identity: <T>(t: T) => T
 		returning: <T>(t: T) => () => T
+		is: <T>(value: T) => (t: T) => boolean
+		property: <T,K extends keyof T>(name: K) => (t: T) => T[K]
 		Array: {
 			filter: <T>(f: (t: T) => boolean) => (ts: T[]) => T[]
 			find: <T>(f: (t: T) => boolean) => (ts: T[]) => T | undefined
@@ -163,6 +165,7 @@ namespace $api {
 				<T>(f1: Filter<T>, f2: Filter<T>, f3: Filter<T>): Filter<T>
 				<T>(f1: Filter<T>, f2: Filter<T>): Filter<T>
 			}
+			not: <T>(f: Filter<T>) => Filter<T>
 		}
 	}
 

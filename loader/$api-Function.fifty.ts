@@ -36,7 +36,7 @@
 				{ name: "b", value: 0 },
 				{ name: "c", value: 2 }
 			];
-			var comparator = $api.Function.comparator.create(
+			var comparator: $api.Function.Comparator<{ name: string, value: number }> = $api.Function.comparator.create(
 				$api.Function.property("value"),
 				$api.Function.comparator.operators
 			);

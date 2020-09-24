@@ -145,19 +145,26 @@
 		$exports.Function.filter = {
 			/** @type { $api.Function["filter"]["or"] } */
 			or: function() {
+				var functions = Array.prototype.slice.call(arguments);
 				return function(p) {
-					for (var i=0; i<arguments.length; i++) {
-						if (arguments[i](p)) return true;
+					for (var i=0; i<functions.length; i++) {
+						if (functions[i](p)) return true;
 					}
 					return false;
 				}
 			},
 			and: function() {
+				var functions = Array.prototype.slice.call(arguments);
 				return function(p) {
-					for (var i=0; i<arguments.length; i++) {
-						if (!arguments[i](p)) return false;
+					for (var i=0; i<functions.length; i++) {
+						if (!functions[i](p)) return false;
 					}
 					return true;
+				}
+			},
+			not: function(f) {
+				return function(p) {
+					return !f(p);
 				}
 			}
 		}
