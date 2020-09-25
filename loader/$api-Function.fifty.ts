@@ -49,22 +49,22 @@
 			verify(array)[1].name.is("a");
 			verify(array)[2].name.is("b");
 
+			var tiebreaking: $api.Function.Comparator<{ name: string, value: number, tiebreaker: number }> = $api.Function.comparator.create(
+				$api.Function.property("tiebreaker"),
+				$api.Function.comparator.operators
+			);
+
+			var multicomparator: $api.Function.Comparator<{ name: string, value: number, tiebreaker: number }> = $api.Function.comparator.compose(
+				$api.Function.comparator.reverse(comparator),
+				$api.Function.comparator.reverse(tiebreaking)
+			);
+
 			var multi = [
 				{ name: "a", value: 1, tiebreaker: 2 },
 				{ name: "b", value: 2, tiebreaker: 0 },
 				{ name: "c", value: 1, tiebreaker: 3 },
 				{ name: "d", value: 2, tiebreaker: 2 }
-			].sort(
-				$api.Function.comparator.compose(
-					$api.Function.comparator.reverse(comparator),
-					$api.Function.comparator.reverse(
-						$api.Function.comparator.create(
-							$api.Function.property("tiebreaker"),
-							$api.Function.comparator.operators
-						)
-					)
-				)
-			);
+			].sort(multicomparator);
 
 			verify(multi)[0].name.is("d");
 			verify(multi)[1].name.is("b");
