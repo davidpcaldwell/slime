@@ -189,17 +189,17 @@ namespace $api {
 			/**
 			 * Creates a comparator that represents the opposite of the given comparator.
 			 */
-			reverse: (comparator: Function.Comparator<T>) => Function.Comarator<T>
+			reverse: <T>(comparator: Function.Comparator<T>) => Function.Comarator<T>
 
 			/**
 			 * Creates a comparator that applies the given comparators in order, using succeeding comparators if a comparator
 			 * indicates two values are equal.
 			 */
 			compose: {
-				<T>(c1: Comparator<T>, c2: Comparator<T>, c3: Comparator<T>, c4: Comparator<T>, c5: Comparator<T>): Comparator<T>
-				<T>(c1: Comparator<T>, c2: Comparator<T>, c3: Comparator<T>, c4: Comparator<T>): Comparator<T>
-				<T>(c1: Comparator<T>, c2: Comparator<T>, c3: Comparator<T>): Comparator<T>
-				<T>(c1: Comparator<T>, c2: Comparator<T>): Comparator<T>
+				<TXY>(c1: Comparator<TXY>, c2: Comparator<TXY>, c3: Comparator<TXY>, c4: Comparator<TXY>, c5: Comparator<TXY>): Comparator<TXY>
+				<TXY>(c1: Comparator<TXY>, c2: Comparator<TXY>, c3: Comparator<TXY>, c4: Comparator<TXY>): Comparator<TXY>
+				<TXY>(c1: Comparator<TXY>, c2: Comparator<TXY>, c3: Comparator<TXY>): Comparator<TXY>
+				<TXY>(c1: Comparator<TXY>, c2: Comparator<TXY>): Comparator<TXY>
 			}
 		}
 	}
