@@ -628,6 +628,8 @@ public class Engine {
 		source.evaluate(debugger, contexts, scope, target);
 	}
 
+	//	TODO	it would be nice if this returned the evaluation value of the script, but according to interactive testing,
+	//			it does not; it always returns null, because source.evaluate always returns undefined, even for an expression.
 	public Scriptable script(String name, String code, Scriptable scope, Scriptable target) throws IOException {
 		Source source = Engine.Source.create(name,code);
 		Object rv = source.evaluate(debugger, contexts, scope, target);

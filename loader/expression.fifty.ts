@@ -1,11 +1,15 @@
 (
 	function(
-		verify: slime.definition.verify.Verify,
+		$loader: slime.fifty.test.$loader,
+		verify: slime.fifty.test.verify,
 		tests: any
 	) {
 		tests.suite = function() {
-			verify(1).is(1);
+			var closure: slime.Loader.Product<{ scale: number }, { convert: (input: number) => number }> = $loader.value("test/data/closure.js");
+			var context = { scale: 2 };
+			var module = closure(context);
+			verify(module).convert(2).is(4);
 		}
 	}
 //@ts-ignore
-)(verify,tests)
+)($loader,verify,tests)
