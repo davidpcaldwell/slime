@@ -13,9 +13,8 @@
 //@ts-check
 (
 	/**
-	 *
-	 * @param { any } $context
-	 * @param { { location: Location, inonit: any, XMLHttpRequest: any, CoffeeScript: any } } window
+	 * @param { slime.browser.Settings } $context
+	 * @param { slime.browser.Context } window
 	 */
 	function($context,window) {
 		if (!$context.debug) $context.debug = function(message) {};
@@ -45,12 +44,29 @@
 
 		if (!$context.callback) $context.callback = function(){};
 
+		/** @type { slime.browser.Exports["loader"] } */
 		var $exports = (function() {
-			if (!window.inonit) window.inonit = {};
+			if (!window.inonit) window.inonit = {
+				loader: void(0)
+			};
 			if (window.inonit.loader && window.inonit.loader.run && window.inonit.loader.file && window.inonit.loader.module) {
 				throw new Error("Unimplemented: trying to reload inonit.loader");
 			}
-			window.inonit.loader = {};
+			window.inonit.loader = {
+				run: void(0),
+				file: void(0),
+				module: void(0),
+				value: void(0),
+				get: void(0),
+				Loader: void(0),
+				namespace: void(0),
+				nugget: void(0),
+				base: void(0),
+				location: void(0),
+				$api: void(0),
+				$sdk: void(0),
+				script: void(0)
+			};
 			return window.inonit.loader;
 		})();
 
@@ -125,207 +141,212 @@
 
 		//	Now even if the object existed before, we have obtained the specified properties and we replace the existing object with
 		//	this one
-		(function() {
+		(
+			/**
+			 * @this { slime.browser.Exports["loader"] }
+			 */
+			function() {
 
-			var fetcher = new function() {
-				var downloads = {};
+				var fetcher = new function() {
+					var downloads = {};
 
-				/** @type { <O,P>(o: O, p: P) => O & P } */
-				var assign = function(o,properties) {
-					for (var x in properties) {
-						o[x] = properties[x];
-					}
-					return o;
-				}
-
-				var get = function(path) {
-					$context.debug("Fetching: " + path);
-					var req = new XMLHttpRequest();
-					req.open("GET", path, false);
-					req.send(null);
-					//	TODO	throw actual error object
-					if (req.status >= 400) {
-						throw assign(
-							new Error("Status: " + req.status),
-							{
-								code: req.status,
-								message: req.statusText,
-								page: req.responseText,
-								toString: function() {
-									return String(req.status) + " " + req.statusText
-								}
-							}
-						);
-					};
-					return {
-						contentType: req.getResponseHeader("Content-Type"),
-						responseText: req.responseText
-					};
-				};
-
-				this.get = get;
-
-				var fetch = function(path) {
-					var got = get(path);
-					return got.responseText;
-				}
-
-				this.fetch = fetch;
-
-				var getCode = function(path) {
-					if (!downloads[path]) {
-						downloads[path] = get(path);
-					}
-					return downloads[path].responseText;
-				}
-
-				//	TODO	probably should reorganize so that sourceURL can be added for CoffeeScript after compilation
-				this.getCode = getCode;
-			}
-
-			// TODO: with the reorganization of the platform, 'runtime' is probably the best name for this object now
-			var platform = (function() {
-				var $slime = {
-					getRuntimeScript: function(path) {
-						return {
-							name: bootstrap.getRelativePath(path),
-							js: fetcher.getCode(bootstrap.getRelativePath(path))
+					/** @type { <O,P>(o: O, p: P) => O & P } */
+					var assign = function(o,properties) {
+						for (var x in properties) {
+							o[x] = properties[x];
 						}
-					},
-					getCoffeeScript: function() {
-						return (window.CoffeeScript) ? { object: window.CoffeeScript } : null;
+						return o;
 					}
-				};
-				//	TODO	document
-				if ($context.$slime) $slime.flags = $context.$slime.flags;
-				var $engine = void(0);
-				return eval(fetcher.getCode(bootstrap.getRelativePath("expression.js")));
-			})();
-			platform.$api.deprecate.warning = function(access) {
-				debugger;
-			}
-			platform.$api.experimental.warning = function(access) {
-				//	TODO	should configure this via property of inonit.loader
-				//	Can set breakpoint here to pop into debugger on experimental accesses
-				var breakpoint = null;
-			}
 
-			var Loader = function(p) {
-				if (typeof(p) == "string") {
-					p = (function(prefix) {
-						return {
-							get: function(path) {
-								try {
-									var code = fetcher.get(prefix+path);
-									if (code.contentType == "application/javascript") {
-										//	Add sourceURL for JavaScript debuggers
-										code.responseText += "\n//# sourceURL=" + prefix+path;
+					var get = function(path) {
+						$context.debug("Fetching: " + path);
+						var req = new XMLHttpRequest();
+						req.open("GET", path, false);
+						req.send(null);
+						//	TODO	throw actual error object
+						if (req.status >= 400) {
+							throw assign(
+								new Error("Status: " + req.status),
+								{
+									code: req.status,
+									message: req.statusText,
+									page: req.responseText,
+									toString: function() {
+										return String(req.status) + " " + req.statusText
 									}
-									// TODO: is 'path' used?
-									return { type: code.contentType, name: path, string: code.responseText, path: prefix+path };
-								} catch (e) {
-									if (e.code == 404) return null;
-									throw e;
 								}
-							},
-							toString: function() {
-								return "Browser loader: prefix=[" + prefix + "]";
-							}
-						}
-					})(canonicalize(p));
-				}
-				platform.Loader.apply(this,arguments);
-			};
-			Loader.series = platform.Loader.series;
+							);
+						};
+						return {
+							contentType: req.getResponseHeader("Content-Type"),
+							responseText: req.responseText
+						};
+					};
 
-			var loader = new Loader("");
+					this.get = get;
 
-			this.run = function(path,scope,target) {
-				return loader.run.apply(loader,arguments);
-			};
-
-			this.file = function(path,$context) {
-				return loader.file.apply(loader,arguments);
-			};
-
-			this.module = function(path,$context) {
-				return loader.module.apply(loader,arguments);
-			}
-
-			this.value = function(path,scope,target) {
-				return loader.value.apply(loader,arguments);
-			};
-
-			this.get = function(path) {
-				return loader.get.apply(loader,arguments);
-			}
-
-			var getPageBase = function() {
-				return getCurrentBase().split("/").slice(0,-1).join("/") + "/";
-			};
-
-			(function() {
-				this.loader = new Loader(getPageBase());
-			}).call(this);
-
-			this.Loader = Object.assign(
-				Loader,
-				{
-					getCode: fetcher.getCode,
-					fetch: fetcher.fetch
-				}
-			)
-
-			this.script = platform.$api.deprecate(this.file);
-
-			this.namespace = function(name) {
-				return platform.namespace(name);
-			}
-
-			this.nugget = new function() {
-				//	DRY:	Other scripts may want to use this (already have examples)
-				this.getCurrentScript = getCurrentScript;
-
-				this.page = {
-					base: getPageBase(),
-					relative: function(path) {
-						return canonicalize(getPageBase() + path);
+					var fetch = function(path) {
+						var got = get(path);
+						return got.responseText;
 					}
-				};
-			};
 
-			//	TODO	Experimental API currently used by httpd, perhaps should be kept (and possibly made more robust)
+					this.fetch = fetch;
 
-			//	TODO	we may want a base attribute; the below is one way to do it which should work under most circumstances.
-			//			We could make it the responsibility of the caller to set the 'base' property if this file is loaded another way.
+					var getCode = function(path) {
+						if (!downloads[path]) {
+							downloads[path] = get(path);
+						}
+						return downloads[path].responseText;
+					}
 
-			//	Undocumented
-			this.base = bootstrap.base;
-
-			if ($context.base) {
-				this.location = $context.base;
-			}
-
-			//	For use in scripts that are loaded directly by the browser rather than via this loader
-			this.$api = platform.$api;
-
-			//	Used by loader/browser/tools/offline.html, which may be obsolete
-
-			//	TODO set to dontenum if possible
-			this.$sdk = new function() {
-				//	Used via inonit.loader.$sdk.fetch call in loader/browser/test somehow
-				this.fetch = function(url) {
-					return fetcher.fetch(url);
+					//	TODO	probably should reorganize so that sourceURL can be added for CoffeeScript after compilation
+					this.getCode = getCode;
 				}
 
-				//	used by unit tests
-				this.platform = platform.$platform;
-				//	this variable is now public above
-				this.api = platform.$api;
-			};
+				// TODO: with the reorganization of the platform, 'runtime' is probably the best name for this object now
+				var platform = (function() {
+					var $slime = {
+						getRuntimeScript: function(path) {
+							return {
+								name: bootstrap.getRelativePath(path),
+								js: fetcher.getCode(bootstrap.getRelativePath(path))
+							}
+						},
+						getCoffeeScript: function() {
+							return (window.CoffeeScript) ? { object: window.CoffeeScript } : null;
+						}
+					};
+					//	TODO	document
+					if ($context.$slime) $slime.flags = $context.$slime.flags;
+					var $engine = void(0);
+					return eval(fetcher.getCode(bootstrap.getRelativePath("expression.js")));
+				})();
+				platform.$api.deprecate.warning = function(access) {
+					debugger;
+				}
+				platform.$api.experimental.warning = function(access) {
+					//	TODO	should configure this via property of inonit.loader
+					//	Can set breakpoint here to pop into debugger on experimental accesses
+					var breakpoint = null;
+				}
 
-			$context.callback.call(this);
-		}).call($exports);
+				var Loader = function(p) {
+					if (typeof(p) == "string") {
+						p = (function(prefix) {
+							return {
+								get: function(path) {
+									try {
+										var code = fetcher.get(prefix+path);
+										if (code.contentType == "application/javascript") {
+											//	Add sourceURL for JavaScript debuggers
+											code.responseText += "\n//# sourceURL=" + prefix+path;
+										}
+										// TODO: is 'path' used?
+										return { type: code.contentType, name: path, string: code.responseText, path: prefix+path };
+									} catch (e) {
+										if (e.code == 404) return null;
+										throw e;
+									}
+								},
+								toString: function() {
+									return "Browser loader: prefix=[" + prefix + "]";
+								}
+							}
+						})(canonicalize(p));
+					}
+					platform.Loader.apply(this,arguments);
+				};
+				Loader.series = platform.Loader.series;
+
+				var loader = new Loader("");
+
+				this.run = function(path,scope,target) {
+					return loader.run.apply(loader,arguments);
+				};
+
+				this.file = function(path,$context) {
+					return loader.file.apply(loader,arguments);
+				};
+
+				this.module = function(path,$context) {
+					return loader.module.apply(loader,arguments);
+				}
+
+				this.value = function(path,scope,target) {
+					return loader.value.apply(loader,arguments);
+				};
+
+				this.get = function(path) {
+					return loader.get.apply(loader,arguments);
+				}
+
+				var getPageBase = function() {
+					return getCurrentBase().split("/").slice(0,-1).join("/") + "/";
+				};
+
+				(function() {
+					this.loader = new Loader(getPageBase());
+				}).call(this);
+
+				this.Loader = Object.assign(
+					Loader,
+					{
+						getCode: fetcher.getCode,
+						fetch: fetcher.fetch
+					}
+				)
+
+				this.script = platform.$api.deprecate(this.file);
+
+				this.namespace = function(name) {
+					return platform.namespace(name);
+				}
+
+				this.nugget = new function() {
+					//	DRY:	Other scripts may want to use this (already have examples)
+					this.getCurrentScript = getCurrentScript;
+
+					this.page = {
+						base: getPageBase(),
+						relative: function(path) {
+							return canonicalize(getPageBase() + path);
+						}
+					};
+				};
+
+				//	TODO	Experimental API currently used by httpd, perhaps should be kept (and possibly made more robust)
+
+				//	TODO	we may want a base attribute; the below is one way to do it which should work under most circumstances.
+				//			We could make it the responsibility of the caller to set the 'base' property if this file is loaded another way.
+
+				//	Undocumented
+				this.base = bootstrap.base;
+
+				if ($context.base) {
+					this.location = $context.base;
+				}
+
+				//	For use in scripts that are loaded directly by the browser rather than via this loader
+				this.$api = platform.$api;
+
+				//	Used by loader/browser/tools/offline.html, which may be obsolete
+
+				//	TODO set to dontenum if possible
+				this.$sdk = new function() {
+					//	Used via inonit.loader.$sdk.fetch call in loader/browser/test somehow
+					this.fetch = function(url) {
+						return fetcher.fetch(url);
+					}
+
+					//	used by unit tests
+					this.platform = platform.$platform;
+					//	this variable is now public above
+					this.api = platform.$api;
+				};
+
+				$context.callback.call(this);
+			}
+		).call($exports);
 	}
 //@ts-ignore
 )((window.inonit && window.inonit.loader) ? window.inonit.loader : {}, window);
