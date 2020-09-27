@@ -27,6 +27,7 @@
 				interactive: false,
 
 				"chrome:instance": jsh.file.Pathname,
+				"chrome:debug:vscode": false,
 				"chrome:debug:port": Number,
 
 				view: "console"
@@ -100,8 +101,9 @@
 
 		var resultServletFile = jsh.shell.jsh.src.getFile("loader/browser/test/browser.servlet.js");
 
+		var tomcat = new jsh.httpd.Tomcat();
+
 		var run = function(browser) {
-			var tomcat = new jsh.httpd.Tomcat();
 			tomcat.map({
 				// TODO: make the below the default for goodness' sake
 				path: "",
@@ -246,9 +248,13 @@
 
 		var toBrowser = function(argument) {
 			if (argument == "chrome") {
+				var port = (function() {
+					if (parameters.options["chrome:debug:port"]) return parameters.options["chrome:debug:port"];
+					if (parameters.options["chrome:debug:vscode"]) return 9222;
+				})();
 				return new Chrome({
 					location: parameters.options["chrome:instance"],
-					remoteDebugPort: parameters.options["chrome:debug:port"]
+					remoteDebugPort: port
 				});
 			}
 			var browsers = ["IE","Firefox","Safari"];
