@@ -232,6 +232,20 @@
 								}
 								return $api.Function.impure.revise(rv);
 							},
+							number: function(o) {
+								var rv = function(p) {
+									var args = [];
+									for (var i=0; i<p.arguments.length; i++) {
+										if (o.longname && p.arguments[i] == "--" + o.longname) {
+											p.options[o.longname] = Number(p.arguments[++i]);
+										} else {
+											args.push(p.arguments[i]);
+										}
+									}
+									p.arguments = args;
+								}
+								return $api.Function.impure.revise(rv);
+							},
 							pathname: function(o) {
 								var rv = function(p) {
 									var args = [];
