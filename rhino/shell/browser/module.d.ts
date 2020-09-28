@@ -1,10 +1,8 @@
-type Tomcat = jsh.httpd.Tomcat
-
 namespace slime.jrunscript.shell.browser {
 	interface Context {
 		api: {
 			httpd: {
-				Tomcat: new (p: {}) => Tomcat
+				Tomcat: new (p: {}) => jsh.httpd.Tomcat
 			}
 		}
 	}

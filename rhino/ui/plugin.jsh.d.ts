@@ -44,6 +44,9 @@ namespace jsh.ui.application {
 		location?: slime.jrunscript.file.Pathname
 		directory?: slime.jrunscript.file.Directory
 		browser?: boolean
+		debug?: {
+			port?: number
+		}
 	}
 
 	type BrowserConfiguration = {

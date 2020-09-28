@@ -29,6 +29,6 @@
 			"request": "attach",
 			"port": 9222,
 			"webRoot": "${workspaceFolder}"
-		},
+		}
 	]
 }
