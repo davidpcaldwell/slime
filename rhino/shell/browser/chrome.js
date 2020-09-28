@@ -128,6 +128,9 @@ var Chrome = function(b) {
 			if (disableGpu) {
 				args.push("--disable-gpu");
 			}
+			if (m.debug && m.debug.port) {
+				args.push("--remote-debugging-port=" + m.debug.port);
+			}
 			if (m.arguments) {
 				args.push.apply(args,m.arguments);
 			}

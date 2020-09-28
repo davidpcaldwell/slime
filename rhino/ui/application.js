@@ -115,6 +115,9 @@
 							}
 						}
 					};
+					if (o.debug && o.debug.port) {
+						argument.debug = o.debug;
+					}
 					if (o.browser) {
 						argument.uri = p.url;
 					} else {
