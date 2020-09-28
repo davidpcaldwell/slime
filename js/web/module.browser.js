@@ -3,7 +3,7 @@
 	function($loader,$exports) {
 		Object.assign(
 			$exports,
-			$loader.module({
+			$loader.module("module.js", {
 				window: window,
 				escaper: {
 					encode: window.escape,
