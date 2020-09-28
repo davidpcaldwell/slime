@@ -58,6 +58,7 @@
 				module: void(0),
 				value: void(0),
 				get: void(0),
+				loader: void(0),
 				Loader: void(0),
 				namespace: void(0),
 				nugget: void(0),
