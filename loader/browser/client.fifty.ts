@@ -26,6 +26,7 @@ namespace slime.browser {
 			module: any
 			value: any
 			get: any
+			loader: any
 			Loader: any
 			namespace: any
 			nugget: any
