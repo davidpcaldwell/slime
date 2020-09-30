@@ -19,25 +19,27 @@ namespace slime.browser {
 		CoffeeScript: any
 	}
 
-	export interface Exports {
-		loader: {
-			run: any
-			file: any
-			module: any
-			value: any
-			get: any
-			loader: any
-			Loader: any
-			namespace: any
-			nugget: any
-			base: any
-			location: any
-			$api: $api
-			$sdk: any
+	export interface Runtime {
+		run: any
+		file: any
+		module: any
+		value: any
+		get: any
+		loader: any
+		Loader: any
+		namespace: any
+		nugget: any
+		base: any
+		location: any
+		$api: $api
+		$sdk: any
 
-			/** @deprecated */
-			script: any
-		}
+		/** @deprecated */
+		script: any
+	}
+
+	export interface Exports {
+		loader: Runtime
 	}
 }
 
