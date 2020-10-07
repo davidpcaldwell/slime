@@ -11,120 +11,124 @@
 //	Contributor(s):
 //	END LICENSE
 
-var parameters = jsh.script.getopts({
-	options: {
-		interactive: false,
-		"chrome:profile": jsh.file.Pathname,
-		port: Number,
-		success: false
-	}
-});
-
-var SLIME = new jsh.file.Loader({ directory: jsh.script.file.parent.parent.parent.parent.parent });
-
-var lock = new jsh.java.Thread.Monitor();
-var result = {
-	received: function(v) {
-		var self = this;
-		//	TODO	lock.Waiter may not have intelligent 'this' handling
-		lock.Waiter({
-			until: function() { return true; },
-			then: function() {
-				self.success = v;
+(
+	function() {
+		var parameters = jsh.script.getopts({
+			options: {
+				interactive: false,
+				"chrome:profile": jsh.file.Pathname,
+				port: Number,
+				success: false
 			}
-		})();
-	}
-};
+		});
 
-var tomcat = new jsh.httpd.Tomcat({ port: parameters.options.port });
-tomcat.map({
-	path: "/",
-	servlets: {
-		"/*": {
-			load: function(scope) {
-				scope.$exports.handle = function(request) {
-					if (request.path == "loader/api/ui/test/result") {
-						var json = request.body.stream.character().asString();
-						jsh.shell.console("Got result JSON=" + json);
-						result.received(JSON.parse(json));
-						return { status: { code: 200 } };
+		var SLIME = new jsh.file.Loader({ directory: jsh.script.file.parent.parent.parent.parent.parent });
+
+		var lock = new jsh.java.Thread.Monitor();
+		var result = {
+			received: function(v) {
+				var self = this;
+				//	TODO	lock.Waiter may not have intelligent 'this' handling
+				lock.Waiter({
+					until: function() { return true; },
+					then: function() {
+						self.success = v;
 					}
-					if (SLIME.get(request.path)) {
-						return {
-							status: { code: 200 },
-							body: SLIME.get(request.path)
-						}
-					} else {
-						return {
-							status: { code: 404 }
+				})();
+			}
+		};
+
+		var tomcat = new jsh.httpd.Tomcat({ port: parameters.options.port });
+		tomcat.map({
+			path: "/",
+			servlets: {
+				"/*": {
+					load: function(scope) {
+						scope.$exports.handle = function(request) {
+							if (request.path == "loader/api/ui/test/result") {
+								var json = request.body.stream.character().asString();
+								jsh.shell.console("Got result JSON=" + json);
+								result.received(JSON.parse(json));
+								return { status: { code: 200 } };
+							}
+							if (SLIME.get(request.path)) {
+								return {
+									status: { code: 200 },
+									body: SLIME.get(request.path)
+								}
+							} else {
+								return {
+									status: { code: 404 }
+								}
+							}
 						}
 					}
 				}
 			}
-		}
-	}
-});
+		});
 
-tomcat.start();
+		tomcat.start();
 
-var chrome = new jsh.shell.browser.chrome.Instance({
-	location: parameters.options["chrome:profile"],
-	proxy: new jsh.shell.browser.ProxyConfiguration({
-		port: tomcat.port
-	})
-});
+		var chrome = new jsh.shell.browser.chrome.Instance({
+			location: parameters.options["chrome:profile"],
+			proxy: new jsh.shell.browser.ProxyConfiguration({
+				port: tomcat.port
+			})
+		});
 
-if (parameters.options.interactive) {
-	chrome.run({
-		uri: "http://api-ui-test/loader/api/ui/test/browser.html" + ((parameters.options.success) ? "?success" : "")
-	});
-} else {
-	var opened;
+		if (parameters.options.interactive) {
+			chrome.run({
+				uri: "http://api-ui-test/loader/api/ui/test/browser.html" + ((parameters.options.success) ? "?success" : "")
+			});
+		} else {
+			var opened;
 
-	var on = {
-		start: function(p) {
-			new lock.Waiter({
-				until: function() {
-					return true;
-				},
-				then: function() {
-					opened = new function() {
-						this.close = function() {
-							jsh.shell.echo("Killing browser process " + p + " ...");
-							p.kill();
-							jsh.shell.echo("Killed.");
+			var on = {
+				start: function(p) {
+					new lock.Waiter({
+						until: function() {
+							return true;
+						},
+						then: function() {
+							opened = new function() {
+								this.close = function() {
+									jsh.shell.echo("Killing browser process " + p + " ...");
+									p.kill();
+									jsh.shell.echo("Killed.");
+								}
+							}
 						}
-					}
+					})();
+				}
+			};
+
+			chrome.launch({
+				uri: "http://api-ui-test/loader/api/ui/test/browser.html?unit.run" + ((parameters.options.success) ? "&success" : ""),
+				on: on
+			});
+
+			new lock.Waiter({
+				until: function() { return Boolean(opened); },
+				then: function() {
+					jsh.shell.console("opened = " + opened);
 				}
 			})();
+
+			new lock.Waiter({
+				until: function() { return typeof(result.success) != "undefined" },
+				then: function() {
+				}
+			})();
+
+			jsh.shell.console("result.success = " + result.success);
+			opened.close();
+			if (result.success === parameters.options.success) {
+				jsh.shell.console("Success: " + result.success);
+				jsh.shell.exit(0);
+			} else {
+				jsh.shell.console("Failure: result=" + result.success + ", not " + parameters.options.success);
+				jsh.shell.exit(1);
+			}
 		}
-	};
-
-	chrome.launch({
-		uri: "http://api-ui-test/loader/api/ui/test/browser.html?unit.run" + ((parameters.options.success) ? "&success" : ""),
-		on: on
-	});
-
-	new lock.Waiter({
-		until: function() { return Boolean(opened); },
-		then: function() {
-			jsh.shell.console("opened = " + opened);
-		}
-	})();
-
-	new lock.Waiter({
-		until: function() { return typeof(result.success) != "undefined" },
-		then: function() {
-		}
-	})();
-
-	jsh.shell.console("result.success = " + result.success);
-	opened.close();
-	if (result.success === parameters.options.success) {
-		jsh.shell.console("Success: " + result.success);
-		jsh.shell.exit(0);
-	} else {
-		jsh.shell.console("Failure: result=" + result.success + ", not " + parameters.options.success);
-		jsh.shell.exit(1);
 	}
-}
+)();
