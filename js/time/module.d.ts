@@ -39,6 +39,11 @@ namespace slime.time {
 			subtract: Function
 			order: Function
 			today: () => Day
+			codec: {
+				iso8601: {
+					extended: slime.Codec<Day,string>
+				}
+			}
 		}
 		Time: {
 			new (): slime.time.Time
