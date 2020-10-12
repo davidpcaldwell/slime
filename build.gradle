@@ -28,9 +28,6 @@ sourceSets {
 		java {
 			srcDir 'rhino/system/java'
 			srcDir 'loader/jrunscript/java'
-
-			//	modules
-			srcDir 'jrunscript/host/java'
 		}
 	}
 

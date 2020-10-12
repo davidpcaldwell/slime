@@ -35,3 +35,14 @@ namespace slime.jrunscript.runtime {
 		classpath: any
 	}
 }
+
+namespace Packages {
+	namespace inonit.script.runtime.io {
+		interface Streams {
+			split: any
+			readBytes: any
+			copy: any
+			readLine: any
+		}
+	}
+}

@@ -12,7 +12,9 @@ namespace slime.jrunscript.io {
 		Buffer: slime.jrunscript.runtime.Exports["Buffer"]
 		Resource: slime.jrunscript.runtime.Exports["Resource"]
 		Loader: slime.jrunscript.runtime.Exports["Loader"]
-		java: any
+		java: {
+			adapt: any
+		}
 		mime: any
 		archive: any
 		grid: any
