@@ -4,5 +4,6 @@
 	"eslint.validate": [
 		"javascript"
 	],
-	"debug.node.autoAttach": "on"
+	"debug.node.autoAttach": "on",
+	"java.configuration.updateBuildConfiguration": "interactive"
 }

@@ -22,6 +22,7 @@
 	 * @returns { slime.jrunscript.runtime.Exports }
 	 */
 	function($javahost,$bridge,Packages,JavaAdapter,XML,$loader) {
+		/** @type { Packages.inonit.script.runtime.io.Streams } */
 		var _streams = new Packages.inonit.script.runtime.io.Streams();
 
 		var loader = {};
@@ -327,47 +328,57 @@
 						}))
 					});
 
+					/** @type { slime.jrunscript.runtime.Resource["read"] } */
+					var read = this.read;
+
 					/** @property { slime.jrunscript.runtime.Exports["Resources"] } */
-					this.read = this.read;
+					this.read = read;
 
-					this.read = (function(was,global) {
-						return function(mode) {
-							var rv = (was) ? was.apply(this,arguments) : void(0);
-							if (typeof(rv) != "undefined") return rv;
+					this.read = Object.assign(
+						(function(was,global) {
+							return function(mode) {
+								var rv = (was) ? was.apply(this,arguments) : void(0);
+								if (typeof(rv) != "undefined") return rv;
 
-							var _properties = function(peer) {
-								//	peer can be Packages.java.io.InputStream or Packages.java.io.Reader
-								var properties = new Packages.java.util.Properties();
-								properties.load( peer );
-								peer.close();
-								return properties;
-							}
+								var _properties = function(peer) {
+									//	peer can be Packages.java.io.InputStream or Packages.java.io.Reader
+									var properties = new Packages.java.util.Properties();
+									properties.load( peer );
+									peer.close();
+									return properties;
+								}
 
-							if (binary) {
-								if (mode == loader.io.Streams.binary) return binary();
-								if (mode == Packages.java.util.Properties) return _properties(binary().java.adapt());
-							}
-							if (text) {
-								if (mode == loader.io.Streams.text) return text();
-								if (mode == String) return text().asString();
-								if (mode == Packages.java.util.Properties) return _properties(text().java.adapt());
-								if (mode == global.XML) return loader.$api.deprecate(function() {
-									return XML(text().asString())
+								if (binary) {
+									if (mode == loader.io.Streams.binary) return binary();
+									if (mode == Packages.java.util.Properties) return _properties(binary().java.adapt());
+								}
+								if (text) {
+									if (mode == loader.io.Streams.text) return text();
+									if (mode == String) return text().asString();
+									if (mode == Packages.java.util.Properties) return _properties(text().java.adapt());
+									if (mode == global.XML) return loader.$api.deprecate(function() {
+										return XML(text().asString())
+									})();
+								}
+								var parameters = (function() {
+									if (!p) return String(p);
+									if (typeof(p) == "object") return String(p) + " with keys: " + Object.keys(p);
+									return String(p);
 								})();
-							}
-							var parameters = (function() {
-								if (!p) return String(p);
-								if (typeof(p) == "object") return String(p) + " with keys: " + Object.keys(p);
-								return String(p);
-							})();
-							throw new TypeError("No compatible read() mode specified: parameters = " + parameters + " binary=" + binary + " text=" + text + " argument was " + mode
-								+ " Streams.binary " + (mode == loader.io.Streams.binary)
-								+ " Streams.text " + (mode == loader.io.Streams.text)
-								+ " XML " + (mode == global.XML)
-								+ " String " + (mode == String)
-							);
-						};
-					})(this.read, function() { return this; }());
+								throw new TypeError("No compatible read() mode specified: parameters = " + parameters + " binary=" + binary + " text=" + text + " argument was " + mode
+									+ " Streams.binary " + (mode == loader.io.Streams.binary)
+									+ " Streams.text " + (mode == loader.io.Streams.text)
+									+ " XML " + (mode == global.XML)
+									+ " String " + (mode == String)
+								);
+							};
+						})(this.read, function() { return this; }()),
+						{
+							binary: void(0),
+							text: void(0),
+							lines: void(0)
+						}
+					);
 
 					//	We provide the optional operations read.binary and read.text, even though they are semantically equivalent to read(),
 					//	for two reasons. First, they
@@ -401,7 +412,7 @@
 								if (typeof(p.length) == "number") {
 									return p.length;
 								} else if (typeof(p.length) == "undefined" && binary) {
-									return _java.readBytes(binary().java.adapt()).length;
+									return _streams.readBytes(binary().java.adapt()).length;
 								}
 							}),
 							enumerable: true
@@ -586,6 +597,10 @@
 		// };
 
 		loader.Loader = (function(was) {
+			/**
+			 * @this { slime.Loader & { java: any } }
+			 * @param {*} p
+			 */
 			var rv = function(p) {
 				if (!p) throw new TypeError("source argument required for Loader.");
 				if (p.zip) {
@@ -684,7 +699,7 @@
 				var self = this;
 				this.java = {
 					adapt: function() {
-						if (source._source) return source._source;
+						if (source["_source"]) return source["_source"];
 						return new JavaAdapter(
 							Packages.inonit.script.engine.Code.Loader,
 							new function() {
@@ -692,7 +707,7 @@
 									var resource = self.get(path);
 									// TODO: Below inserted hastily, not sure whether it makes sense
 									if (!resource) return null;
-									return resource.java.adapt(path);
+									return resource["java"].adapt(path);
 								};
 
 								this.getClasses = function() {

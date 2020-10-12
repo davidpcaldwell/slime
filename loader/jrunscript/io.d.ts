@@ -12,4 +12,21 @@ namespace slime.jrunscript.runtime.io {
 		close()
 		asString(): string
 	}
+
+	interface Context {
+		_streams: Packages.inonit.script.runtime.io.Streams
+		api: {
+			java: slime.jrunscript.host.Exports
+			Resource: any
+		}
+	}
+
+	interface Exports {
+		OutputStream: any
+		Writer: any
+		InputStream: any
+		Reader: any
+		Streams: any
+		Buffer: any
+	}
 }
