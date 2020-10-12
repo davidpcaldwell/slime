@@ -8,10 +8,10 @@ namespace slime.jrunscript.io {
 	}
 
 	interface Exports {
-		Streams: any
-		Buffer: any
-		Resource: any
-		Loader: any
+		Streams: slime.jrunscript.runtime.Exports["Streams"]
+		Buffer: slime.jrunscript.runtime.Exports["Buffer"]
+		Resource: slime.jrunscript.runtime.Exports["Resource"]
+		Loader: slime.jrunscript.runtime.Exports["Loader"]
 		java: any
 		mime: any
 		archive: any
