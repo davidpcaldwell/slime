@@ -24,7 +24,7 @@ namespace slime.jrunscript.runtime.io {
 	interface Exports {
 		OutputStream: any
 		Writer: any
-		InputStream: any
+		InputStream: new (p: Packages.java.io.InputStream) => InputStream
 		Reader: any
 		Streams: any
 		Buffer: any
