@@ -26,6 +26,7 @@ namespace slime.jrunscript.runtime {
 
 	interface Exports extends slime.runtime.Exports {
 		Loader: any
+
 		Resource: {
 			new (p: ResourceArgument): Resource
 		}

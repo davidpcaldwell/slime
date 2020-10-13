@@ -10,8 +10,25 @@ namespace slime.jrunscript.io.mime {
 		}
 	}
 
+	/**
+	 * A MIME entity, as defined by {@link http://tools.ietf.org/html/rfc2045#section-2.4|RFC 2045 section 2.4}.
+	 */
+	interface Entity {
+		type: MimeType
+		stream?: slime.jrunscript.runtime.io.InputStream
+		string?: string
+	}
+
+	interface Part extends Entity {
+		filename: string
+	}
+
 	interface Exports {
-		Multipart: any
+		Multipart: (p: {
+			subtype: string
+			parts: Part[]
+		}) => {}
+
 		Type: any
 	}
 }
