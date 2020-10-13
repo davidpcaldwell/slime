@@ -42,11 +42,6 @@ interface jsh {
 	httpd: jsh.httpd.Exports
 }
 
-declare namespace Packages {
-	const java: any
-	const javax: any
-}
-
 declare namespace jsh {
 	//	Indexed access properties; see https://www.typescriptlang.org/docs/handbook/advanced-types.html#index-types
 

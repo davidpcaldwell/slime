@@ -190,7 +190,7 @@
 		var Resource = (function(was) {
 			var rv = (
 				/**
-				 * @param { slime.jrunscript.runtime.ResourceArgument } p
+				 * @param { slime.jrunscript.runtime.Resource.Descriptor } p
 				 * @constructor
 				 */
 				function(p) {
@@ -207,6 +207,7 @@
 							}
 						})(p.stream.binary);
 					}
+
 					if (p._loaded) {
 						if (!p.read) p.read = {};
 						p.read.binary = function() {
@@ -599,7 +600,7 @@
 		loader.Loader = (function(was) {
 			/**
 			 * @this { slime.Loader & { java: any } }
-			 * @param {*} p
+			 * @param { slime.jrunscript.runtime.Loader.Source } p
 			 */
 			var rv = function(p) {
 				if (!p) throw new TypeError("source argument required for Loader.");
@@ -623,7 +624,8 @@
 							_loaded: {
 								resource: _file,
 								path: path
-							}
+							},
+							read: void(0)
 						};
 					};
 					p.child = function(prefix) {
@@ -664,7 +666,8 @@
 							if (typeof(resource.type) != "undefined") rv.type = resource.type;
 							if (typeof(resource.read) == "function") {
 								rv.read = {
-									binary: resource.read.binary
+									binary: resource.read.binary,
+									string: void(0)
 								}
 							}
 							//var rv = new loader.Resource(resource);
