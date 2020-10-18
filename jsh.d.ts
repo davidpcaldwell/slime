@@ -34,7 +34,6 @@ interface jsh {
 
 	loader: any
 	js: any
-	io: any
 	document: any
 	file: slime.jrunscript.file.Exports
 	time: slime.time.Exports

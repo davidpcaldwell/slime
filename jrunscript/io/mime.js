@@ -65,6 +65,30 @@
 				}
 			};
 
+			/**
+			 *
+			 * @param { slime.jrunscript.io.mime.Part } part
+			 * @returns { slime.jrunscript.runtime.Resource }
+			 */
+			function getResource(part) {
+				if (part.resource) return part.resource;
+				return $api.deprecate(function() {
+					if (part.string) {
+						return new $context.api.io.Resource({
+							type: part.type,
+							string: part.string
+						})
+					} else if (part.stream) {
+						return new $context.api.io.Resource({
+							type: part.type,
+							stream: {
+								binary: part.stream
+							}
+						})
+					}
+				})();
+			}
+
 			var subtype = p.subtype;
 			var parts = p.parts;
 
@@ -75,6 +99,10 @@
 				index++;
 				var BOUNDARY = "----=_SLIME_MULTIPART_HACK_" + index;
 				parts.forEach( function(part) {
+
+					/** @type { slime.jrunscript.runtime.Resource } */
+					var resource = getResource(part);
+
 					if (arguments[1] != 0) {
 						writer.write(CRLF);
 					}
@@ -84,36 +112,11 @@
 					if (disposition) {
 						writer.write("Content-Disposition: " + disposition + CRLF);
 					}
-					if (part.type) {
-						writer.write("Content-Type: " + part.type + CRLF);
+					if (resource.type) {
+						writer.write("Content-Type: " + resource.type + CRLF);
 					}
-					// if (!part.disposition && subtype == "form-data") {
-					// 	part.disposition = "form-data";
-					// }
-					// if (part.disposition) {
-					// 	var attributes = [];
-					// 	if (part.name) {
-					// 		attributes.push({ name: "name", value: part.name });
-					// 	}
-					// 	if (part.filename) {
-					// 		attributes.push({ name: "filename", value: part.filename });
-					// 	}
-					// 	if (attributes.length) {
-					// 		attributes.shift("");
-					// 	}
-					// 	var attributesString = attributes.map(function(attribute) { return attribute.name + "=" + attribute.value }).join("; ");
-					// 	var header = "Content-Disposition: " + part.disposition + attributesString + CRLF;
-					// 	jsh.shell.echo(header);
-					// 	writer.write(header);
-					// }
 					writer.write(CRLF);
-					if (typeof(part.string) == "string") {
-						writer.write(part.string);
-					} else if (part.stream) {
-						$context.api.io.Streams.binary.copy(part.stream,buffer.writeBinary());
-					} else {
-						throw new TypeError("Unimplemented: part = " + part + ((part && typeof(part) == "object") ? " keys=" + Object.keys(part) : ""));
-					}
+					$context.api.io.Streams.binary.copy(resource.read.binary(), buffer.writeBinary());
 				});
 				writer.write(CRLF);
 				writer.write("--" + BOUNDARY + "--" + CRLF);
@@ -129,17 +132,14 @@
 				var $mail = Packages.javax.mail;
 				var $multipart = new $mail.internet.MimeMultipart(subtype);
 
+				/**
+				 *
+				 * @param { slime.jrunscript.io.mime.Part } part
+				 */
 				var toDataHandler = function(part) {
 					var bytes = new Packages.java.io.ByteArrayOutputStream();
-					var characters = new Packages.java.io.OutputStreamWriter(bytes);
-					if (false) {
-						//	convenience for else-if structure
-					} else if (part.stream && part.stream.java && typeof(part.stream.java.adapt) == "function" && $context.api.java.isJavaType(Packages.java.io.InputStream)(part.stream.java.adapt())) {
-						$context.api.io.Streams.binary.copy(part.stream.java.adapt(),bytes);
-					} else if (part.string) {
-						characters.write(part.string);
-						characters.flush();
-					}
+					var resource = getResource(part);
+					$context.api.io.Streams.binary.copy(resource.read.binary(),bytes);
 					bytes.close();
 					return new Packages.javax.activation.DataHandler(new JavaAdapter(Packages.javax.activation.DataSource, new function() {
 						this.getInputStream = function() {
@@ -155,7 +155,8 @@
 							return (part.type) ? String(part.type) : null;
 						}
 					}));
-				}
+				};
+
 				parts.forEach( function(part) {
 					var $part = new $mail.internet.MimeBodyPart();
 					if (part.filename) {
@@ -172,6 +173,7 @@
 					$multipart.addBodyPart($part);
 				});
 
+				/** @type { slime.jrunscript.io.mime.Multipart } */
 				var rv = new $context.api.io.Resource({
 					type: $context.$slime.mime.Type.parse(String($multipart.getContentType())),
 					read: {
@@ -183,9 +185,10 @@
 						}
 					}
 				});
-				rv.java = {};
-				rv.java.adapt = function() {
-					return $multipart;
+				rv.java = {
+					adapt: function() {
+						return $multipart
+					}
 				};
 				return rv;
 			}
