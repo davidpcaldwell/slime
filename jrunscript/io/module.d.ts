@@ -15,7 +15,7 @@ namespace slime.jrunscript.io {
 		java: {
 			adapt: any
 		}
-		mime: any
+		mime: slime.jrunscript.io.mime.Exports
 		archive: any
 		grid: any
 	}

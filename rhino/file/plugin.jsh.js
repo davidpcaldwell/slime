@@ -22,7 +22,7 @@
 	function($slime, jsh, plugin, $loader) {
 		plugin({
 			isReady: function() {
-				return jsh.loader && jsh.loader.addFinalizer && jsh.js && jsh.java && jsh.io;
+				return Boolean(jsh.loader && jsh.loader.addFinalizer && jsh.js && jsh.java && jsh.io);
 			},
 			load: function() {
 				var context = {
