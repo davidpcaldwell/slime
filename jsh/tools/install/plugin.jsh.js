@@ -457,17 +457,30 @@
 					return rv;
 				})();
 
-				jsh.shell.tools.javamail = {};
-				jsh.shell.tools.javamail.install = function(p) {
-					var to = jsh.shell.jsh.lib.getRelativePath("javamail.jar");
-					if (!to.file) {
-						//	Moving to https://projects.eclipse.org/projects/ee4j.javamail for version 1.6.3
-						var response = new jsh.http.Client().request({
-							url: "https://github.com/javaee/javamail/releases/download/JAVAMAIL-1_6_2/javax.mail.jar"
-						});
-						to.write(response.body.stream, { append: false });
-					}
-				};
+				jsh.shell.tools.javamail = (function() {
+					var to = jsh.shell.jsh.lib && jsh.shell.jsh.lib.getRelativePath("javamail.jar");
+
+					var install = function(p) {
+						if (!to.file) {
+							//	Moving to https://projects.eclipse.org/projects/ee4j.javamail for version 1.6.3
+							//	TODO	note that there is now a 1.6.5 to which we can upgrade: https://github.com/eclipse-ee4j/mail/releases/tag/1.6.5
+							var response = new jsh.http.Client().request({
+								url: "https://github.com/javaee/javamail/releases/download/JAVAMAIL-1_6_2/javax.mail.jar"
+							});
+							to.write(response.body.stream, { append: false });
+						}
+					};
+
+					return (to) ? {
+						install: install,
+						require: function() {
+							jsh.shell.jsh.require({
+								satisfied: function() { return Boolean(to.file); },
+								install: install
+							});
+						}
+					} : void(0);
+				})();
 
 				jsh.shell.tools.postgresql = {
 					jdbc: new function() {

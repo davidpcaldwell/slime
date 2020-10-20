@@ -25,7 +25,10 @@ namespace jsh.shell.tools {
 		kotlin: any
 		jsyaml: any
 		node: any
-		javamail: any
+		javamail: {
+			install: () => void
+			require: () => void
+		}
 		jsoup: any
 		postgresql: any
 		scala: any

@@ -54,11 +54,39 @@ namespace slime.jrunscript.runtime {
 	}
 }
 
+interface $api {
+	jrunscript: {
+		Properties: {
+			codec: {
+				object: slime.Codec<$api.jrunscript.Properties,Packages.java.util.Properties>
+			}
+		}
+	}
+}
+
+namespace $api {
+	var jrunscript: $api["jrunscript"]
+
+	namespace jrunscript {
+		type Properties = { [x: string]: string }
+	}
+}
+
 declare namespace Packages {
 	//	TODO	convert Packages to interface by moving these into interface and declaring Packages explicitly everywhere it is
 	//			used in the code; should write issue and remove this comment
 
 	const java: any
+
+	namespace java {
+		namespace util {
+			interface Properties {
+				propertyNames(): any
+				getProperty(name: string): string
+			}
+		}
+	}
+
 	const javax: any
 
 	namespace inonit.script.runtime.io {
