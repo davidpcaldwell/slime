@@ -781,7 +781,34 @@
 					throw new Error("No relevant handler for add(" + p + ")");
 				}
 			};
-		})($loader.getClasspath())
+		})($loader.getClasspath());
+
+		loader.$api.jrunscript = {
+			Properties: {
+				codec: {
+					object: {
+						encode: function(properties) {
+							var rv = new Packages.java.util.Properties();
+							for (var x in properties) {
+								rv.setProperty(x, properties[x]);
+							}
+							return rv;
+						},
+						decode: function(_properties) {
+							var _keys = _properties.propertyNames();
+							/** @type { $api.jrunscript.Properties } */
+							var rv = {};
+							while(_keys.hasMoreElements()) {
+								var name = String(_keys.nextElement());
+								var value = String(_properties.getProperty(name));
+								rv[name] = value;
+							}
+							return rv;
+						}
+					}
+				}
+			}
+		}
 
 		//	TODO	come up with a better way to do this; adding a property to loader would ideally add it here
 		return {
