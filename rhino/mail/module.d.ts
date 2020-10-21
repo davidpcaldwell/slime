@@ -6,6 +6,16 @@ namespace slime.jrunscript.mail {
 		}
 	}
 
+	interface Session {
+		send(message: Message): void
+		Message(o: Message): {
+			resource: slime.jrunscript.runtime.Resource
+		}
+		java: {
+			adapt: any
+		}
+	}
+
 	interface Recipient {
 		name: string
 		address: string
@@ -13,12 +23,22 @@ namespace slime.jrunscript.mail {
 
 	interface Message {
 		to: Recipient[]
+		subject: string
+		content: slime.jrunscript.runtime.io.InputStream
 	}
 
 	interface Exports {
-		Session: any
-		Message: (p: {
-			to: Recipient[]
-		}) => Message
+		Session: {
+			(p?: {
+				properties?: $api.jrunscript.Properties
+				credentials?: {
+					user: string
+					password: string
+				}
+			}): Session
+			properties: {
+				GMAIL: $api.jrunscript.Properties
+			}
+		}
 	}
 }

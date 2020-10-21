@@ -141,11 +141,17 @@
 		var Message = function() {
 		};
 
-		var Session = function(p) {
-			if (!p) p = {};
+		/**
+		 *
+		 * @param { Parameters<slime.jrunscript.mail.Exports["Session"]>[0] } p
+		 */
+		function Session(p) {
+			if (!p) p = {
+				properties: void(0)
+			};
 			var properties = (function() {
 				if (p.properties) return p.properties;
-				if (p._properties) return $api.jrunscript.Properties.codec.object.decode(p._properties);
+				if (p["_properties"]) return $api.jrunscript.Properties.codec.object.decode(p["_properties"]);
 				return {};
 			})();
 
@@ -155,98 +161,98 @@
 
 			var _transport;
 
-			this.send = function(message) {
-				var _message = Message_toPeer.call(message,_session);
-				if (true) {
-					//	gmail
-					if (!_transport) {
-						_transport = _session.getTransport();
-						_transport.connect(p.credentials.user, p.credentials.password);
+			/** @type { slime.jrunscript.mail.Session } */
+			var rv = {
+				send: (p.credentials) ? function(message) {
+					var _message = Message_toPeer.call(message,_session);
+					if (true) {
+						//	gmail
+						if (!_transport) {
+							_transport = _session.getTransport();
+							_transport.connect(p.credentials.user, p.credentials.password);
+						}
+						var before = Packages.java.lang.Thread.currentThread().getContextClassLoader();
+						Packages.java.lang.Thread.currentThread().setContextClassLoader(_session.getClass().getClassLoader());
+						_transport.sendMessage(_message,_message.getAllRecipients());
+						Packages.java.lang.Thread.currentThread().setContextClassLoader(before);
+					} else {
+						//	GAE (untested)
+						//	Packages.javax.mail.Transport.send(_message);
 					}
-					var before = Packages.java.lang.Thread.currentThread().getContextClassLoader();
-					Packages.java.lang.Thread.currentThread().setContextClassLoader(_session.getClass().getClassLoader());
-					_transport.sendMessage(_message,_message.getAllRecipients());
-					Packages.java.lang.Thread.currentThread().setContextClassLoader(before);
-				} else {
-					//	GAE (untested)
-					//	Packages.javax.mail.Transport.send(_message);
+				} : void(0),
+				Message: function(o) {
+					var _message = new Packages.javax.mail.internet.MimeMessage(_session);
+
+					if (o.to) {
+						if (typeof(o.to) == "object" && (!(o.to instanceof Array))) {
+							o.to = [o.to];
+						}
+						o.to.forEach(function(recipient) {
+							var _address = (function() {
+								if (recipient.address && recipient.name) {
+									return new Packages.javax.mail.internet.InternetAddress(
+										recipient.address,
+										recipient.name
+									)
+								}
+								throw new Error();
+							})();
+							_message.setRecipients(Packages.javax.mail.Message.RecipientType.TO, jsh.java.Array.create({
+								type: Packages.javax.mail.Address,
+								array: [
+									_address
+								]
+							}))
+						});
+					}
+
+					if (o.subject) {
+						_message.setSubject(o.subject);
+					}
+
+					if (o.content) {
+						_message.setContent(o.content.java.adapt());
+					}
+
+					return {
+						resource: (function() {
+							jsh.shell.console("context class loader: " + Packages.java.lang.Thread.currentThread().getContextClassLoader());
+							var _baos = new Packages.java.io.ByteArrayOutputStream();
+							var before = Packages.java.lang.Thread.currentThread().getContextClassLoader();
+							Packages.java.lang.Thread.currentThread().setContextClassLoader(_message.getClass().getClassLoader());
+							_message.writeTo(_baos);
+							Packages.java.lang.Thread.currentThread().setContextClassLoader(before);
+							_baos.close();
+							var _bytes = _baos.toByteArray();
+							return new jsh.io.Resource({
+								type: "message/rfc822",
+								read: {
+									binary: function() {
+										return jsh.io.java.adapt(new Packages.java.io.ByteArrayInputStream(_bytes));
+									}
+								}
+							});
+						})()
+					}
+				},
+				java: {
+					adapt: function() {
+						return _session;
+					}
 				}
 			};
-
-			this.Message = function(o) {
-				var _message = new Packages.javax.mail.internet.MimeMessage(_session);
-
-				if (o.to) {
-					if (typeof(o.to) == "object" && (!(o.to instanceof Array))) {
-						o.to = [o.to];
-					}
-					o.to.forEach(function(recipient) {
-						var _address = (function() {
-							if (recipient.address && recipient.name) {
-								return new Packages.javax.mail.internet.InternetAddress(
-									recipient.address,
-									recipient.name
-								)
-							}
-							throw new Error();
-						})();
-						_message.setRecipients(Packages.javax.mail.Message.RecipientType.TO, jsh.java.Array.create({
-							type: Packages.javax.mail.Address,
-							array: [
-								_address
-							]
-						}))
-					});
-				}
-
-				if (o.subject) {
-					_message.setSubject(o.subject);
-				}
-
-				if (o.multipart) {
-					_message.setContent(o.multipart.java.adapt());
-				}
-
-				this.resource = (function() {
-					jsh.shell.console("context class loader: " + Packages.java.lang.Thread.currentThread().getContextClassLoader());
-					var _baos = new Packages.java.io.ByteArrayOutputStream();
-					var before = Packages.java.lang.Thread.currentThread().getContextClassLoader();
-					Packages.java.lang.Thread.currentThread().setContextClassLoader(_message.getClass().getClassLoader());
-					_message.writeTo(_baos);
-					Packages.java.lang.Thread.currentThread().setContextClassLoader(before);
-					_baos.close();
-					var _bytes = _baos.toByteArray();
-					return new jsh.io.Resource({
-						type: "message/rfc822",
-						read: {
-							binary: function() {
-								return jsh.io.java.adapt(new Packages.java.io.ByteArrayInputStream(_bytes));
-							}
-						}
-					});
-				})();
-			}
-
-			this.java = {
-				adapt: function() {
-					return _session;
-				}
+			return rv;
+		};
+		Session.properties = {
+			GMAIL: {
+				"mail.store.protocol": "imaps",
+				"mail.imaps.host": "imap.gmail.com",
+				"mail.transport.protocol": "smtps",
+				"mail.smtps.host": "smtp.gmail.com",
+				"mail.smtps.port": "465",
+				"mail.smtps.auth": "true"
 			}
 		};
-		Session._properties = {};
-		Session._properties.GMAIL = (function() {
-			var properties = new Packages.java.util.Properties();
-			//mail.store.protocol, mail.transport.protocol, mail.host, mail.user, and mail.from
-			properties.put("mail.store.protocol", "imaps");
-
-			properties.put("mail.imaps.host", "imap.gmail.com");
-
-			properties.put("mail.transport.protocol", "smtps");
-			properties.put("mail.smtps.host", "smtp.gmail.com");
-			properties.put("mail.smtps.port", "465");
-			properties.put("mail.smtps.auth", "true");
-			return properties;
-		})();
 
 		$exports.Session = Session;
 	}
