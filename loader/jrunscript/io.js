@@ -120,7 +120,7 @@
 			this.readLines = Object.assign(function(callback,mode) {
 				if (!mode) mode = {};
 				//	TODO	should we retrieve properties from the jrunscript/host module, or is this sufficient?
-				if (!mode.ending && properties.LINE_SEPARATOR) mode.ending = properties.LINE_SEPARATOR;
+				if (!mode.ending && properties && properties.LINE_SEPARATOR) mode.ending = properties.LINE_SEPARATOR;
 				if (!mode.ending) mode.ending = String(Packages.java.lang.System.getProperty("line.separator"));
 				if (!mode.onEnd) mode.onEnd = function() { peer.close(); }
 				var read;
