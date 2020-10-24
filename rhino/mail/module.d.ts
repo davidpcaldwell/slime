@@ -17,7 +17,7 @@ namespace slime.jrunscript.mail {
 	}
 
 	interface Recipient {
-		name: string
+		name?: string
 		address: string
 	}
 

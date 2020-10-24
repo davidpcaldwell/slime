@@ -194,6 +194,10 @@
 										recipient.address,
 										recipient.name
 									)
+								} else if (recipient.address) {
+									return new Packages.javax.mail.internet.InternetAddress(
+										recipient.address
+									)
 								}
 								throw new Error();
 							})();
