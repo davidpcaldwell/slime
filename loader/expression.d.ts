@@ -135,7 +135,7 @@ namespace slime {
 
     namespace Loader {
         interface Product<C,E> {
-            (c: C): E
+            (c?: C): E
         }
 
         interface Source {
