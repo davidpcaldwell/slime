@@ -214,8 +214,10 @@
 						_message.setSubject(o.subject);
 					}
 
-					if (o.content) {
-						_message.setContent(o.content.java.adapt());
+					if (o.multipart) {
+						Packages.java.lang.System.err.println("_message = " + Object.keys(_message) + " class=" + _message.getClass().getName());
+						Packages.java.lang.System.err.println("o.multipart.java.adapt() = " + o.multipart.java.adapt());
+						_message.setContent(o.multipart.java.adapt());
 					}
 
 					return {

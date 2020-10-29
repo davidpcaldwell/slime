@@ -93,6 +93,7 @@
 			var parts = p.parts;
 
 			if ($context.nojavamail || typeof(Packages.javax.mail.internet.MimeMultipart) != "function") {
+				Packages.java.lang.System.err.println("Creating inonit multipart");
 				var buffer = new $context.api.io.Buffer();
 				var writer = buffer.writeText();
 				var CRLF = "\r\n";
@@ -129,6 +130,7 @@
 					type: new $context.$slime.mime.Type("multipart", subtype, { boundary: BOUNDARY })
 				});
 			} else {
+				Packages.java.lang.System.err.println("Creating JavaMail multipart");
 				var $mail = Packages.javax.mail;
 				var $multipart = new $mail.internet.MimeMultipart(subtype);
 
@@ -187,7 +189,7 @@
 				});
 				rv.java = {
 					adapt: function() {
-						return $multipart
+						return $multipart;
 					}
 				};
 				return rv;
