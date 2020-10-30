@@ -61,6 +61,12 @@ if (!parameters.options.noplatform) {
 		//	TODO	redundant; now tested per-engine in contributor/suite.jsh.js
 		pathname: SRC.getRelativePath("loader/jrunscript/java.api.html")
 	}));
+	suite.add("internal/jrunscript/io", new jsh.unit.html.Part({
+		pathname: SRC.getRelativePath("loader/jrunscript/io.api.html"),
+		environment: {
+			$slime: jsh.unit.$slime
+		}
+	}));
 }
 suite.add("internal/other", new jsh.unit.html.Part({
 	//	Test cases involving the HTML test runner itself

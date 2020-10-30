@@ -12,7 +12,6 @@ namespace slime.jrunscript.runtime {
 	namespace Resource {
 		interface Descriptor extends slime.Resource.Descriptor {
 			read?: slime.Resource.Descriptor["read"] & {
-				string?: () => string
 				binary?: any
 				text?: any
 			}
@@ -48,7 +47,7 @@ namespace slime.jrunscript.runtime {
 			new (p: Resource.Descriptor): Resource
 		}
 
-		io: any
+		io: slime.jrunscript.runtime.io.Exports
 		java: any
 		classpath: any
 	}
@@ -79,6 +78,10 @@ declare namespace Packages {
 	const java: any
 
 	namespace java {
+		namespace io {
+			type InputStream = any
+		}
+
 		namespace util {
 			interface Properties {
 				propertyNames(): any
