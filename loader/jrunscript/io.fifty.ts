@@ -1,5 +1,5 @@
 namespace slime.jrunscript.runtime.io {
-	interface InputStream {
+	export interface InputStream {
 		character(mode?: any): Reader
 		close()
 		java: {
