@@ -30,6 +30,7 @@ END LICENSE
 			<h1>Exports</h1>
 			<div jsapi:id="exports">
 				<script type="application/x.jsapi#initialize">
+					if (!scope.module) scope.module = $jsapi.environment.$slime;
 					scope.module = scope.module.io;
 				</script>
 				<ul>
@@ -453,6 +454,14 @@ END LICENSE
 					</li>
 				</ul>
 			</div>
+		</div>
+		<div>
+			<script type="application/x.jsapi#tests">
+				$jsapi.loader.fifty({
+					path: "io.fifty.ts",
+					verify: verify
+				});
+			</script>
 		</div>
 	</body>
 </html>

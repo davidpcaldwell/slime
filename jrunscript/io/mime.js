@@ -74,10 +74,16 @@
 				if (part.resource) return part.resource;
 				return $api.deprecate(function() {
 					if (part.string) {
+						var buffer = new $context.api.io.Buffer();
+						var stream = buffer.writeText();
+						stream.write(part.string);
+						stream.close();
 						return new $context.api.io.Resource({
 							type: part.type,
-							string: part.string
-						})
+							stream: {
+								binary: buffer.readBinary()
+							}
+						});
 					} else if (part.stream) {
 						return new $context.api.io.Resource({
 							type: part.type,
