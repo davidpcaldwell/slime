@@ -183,6 +183,8 @@
 				Message: function(o) {
 					var _message = new Packages.javax.mail.internet.MimeMessage(_session);
 
+					_message.setFrom(_Address(o.from));
+
 					if (o.to) {
 						if (typeof(o.to) == "object" && (!(o.to instanceof Array))) {
 							o.to = [o.to];

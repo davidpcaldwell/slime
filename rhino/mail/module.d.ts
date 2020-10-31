@@ -22,6 +22,7 @@ namespace slime.jrunscript.mail {
 	}
 
 	interface Message {
+		from: Recipient
 		to: Recipient[]
 		subject: string
 		multipart: slime.jrunscript.io.mime.Multipart
