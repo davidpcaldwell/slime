@@ -136,7 +136,6 @@
 					type: new $context.$slime.mime.Type("multipart", subtype, { boundary: BOUNDARY })
 				});
 			} else {
-				Packages.java.lang.System.err.println("Creating JavaMail multipart");
 				var $mail = Packages.javax.mail;
 				var $multipart = new $mail.internet.MimeMultipart(subtype);
 
