@@ -18,6 +18,11 @@
 	 * @param { slime.jrunscript.mail.Exports } $exports
 	 */
 	function(JavaAdapter,$context,$exports) {
+
+		/**
+		 *
+		 * @param { slime.jrunscript.mail.Recipient } value
+		 */
 		var _Address = function(value) {
 			var rv = new Packages.javax.mail.internet.InternetAddress();
 			if (typeof(value) == "string") {
@@ -26,7 +31,7 @@
 				if (value.name) {
 					rv.setPersonal(value.name);
 				}
-				rv.setAddress(value.email);
+				rv.setAddress(value.address);
 			}
 			return rv;
 		};
@@ -220,6 +225,10 @@
 						Packages.java.lang.System.err.println("_message = " + Object.keys(_message) + " class=" + _message.getClass().getName());
 						Packages.java.lang.System.err.println("o.multipart.java.adapt() = " + o.multipart.java.adapt());
 						_message.setContent(o.multipart.java.adapt());
+						var before = Packages.java.lang.Thread.currentThread().getContextClassLoader();
+						Packages.java.lang.Thread.currentThread().setContextClassLoader(_message.getClass().getClassLoader());
+						_message.writeTo(Packages.java.lang.System.err);
+						Packages.java.lang.Thread.currentThread().setContextClassLoader(before);
 					}
 
 					return {
