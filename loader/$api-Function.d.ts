@@ -17,7 +17,8 @@ namespace $api {
 				groups?: G[],
 				codec?: { encode: (group: G) => string, decode: (string: string) => G },
 			}) => (p: V[]) => { group: G, array: V[] }[]
-			join: (s: string) => (elements: any[]) => string
+			join: (s: string) => (elements: any[]) => string,
+			sum: <T>(attribute: (T) => number) => (array: T[]) => number
 		}
 		Boolean: {
 			map: <T>(p: { true: T, false: T }) => (b: boolean) => T
