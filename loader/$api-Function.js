@@ -139,6 +139,13 @@
 				return function(array) {
 					return array.join(string);
 				}
+			},
+			sum: function(attribute) {
+				return function(array) {
+					return array.reduce(function(rv,element) {
+						return rv + attribute(element);
+					},0);
+				}
 			}
 		};
 
