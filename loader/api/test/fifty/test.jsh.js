@@ -130,7 +130,7 @@
 					}
 					return null;
 				}
-			};
+			}
 
 			loader.run(file.pathname.basename, $api.Object.compose({
 				jsh: jsh,
