@@ -10,4 +10,8 @@
 //	Contributor(s):
 //	END LICENSE
 
-$exports.property = "2";
+(
+	function() {
+		$exports.property = "2";
+	}
+)();

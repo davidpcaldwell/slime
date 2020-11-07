@@ -10,6 +10,10 @@
 //	Contributor(s):
 //	END LICENSE
 
-$exports.handle = function(request) {
-	return httpd.http.Response.text("Hello, World!");
-}
+(
+	function() {
+		$exports.handle = function(request) {
+			return httpd.http.Response.text("Hello, World!");
+		}
+	}
+)();

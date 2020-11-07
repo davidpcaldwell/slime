@@ -10,37 +10,41 @@
 //	Contributor(s):
 //	END LICENSE
 
-$exports.Array = {};
-$exports.String = {};
-$exports.Array.indexOf = function(element) {
-	for (var i=0; i<this.length; i++) {
-		if (this[i] == element) {
-			return i;
+(
+	function() {
+		$exports.Array = {};
+		$exports.String = {};
+		$exports.Array.indexOf = function(element) {
+			for (var i=0; i<this.length; i++) {
+				if (this[i] == element) {
+					return i;
+				}
+			}
+			return -1;
+		}
+		$exports.Array.filter = function(f,target) {
+			var rv = [];
+			for (var i=0; i<this.length; i++) {
+				if (f.call(target,this[i])) {
+					rv.push(this[i]);
+				}
+			}
+			return rv;
+		}
+		$exports.Array.forEach = function(f,target) {
+			for (var i=0; i<this.length; i++) {
+				f.call(target,this[i],i,this);
+			}
+		}
+		$exports.Array.map = function(f,target) {
+			var rv = [];
+			for (var i=0; i<this.length; i++) {
+				rv[i] = f.call(target,this[i],i,this);
+			}
+			return rv;
+		}
+		$exports.String.trim = function() {
+			return this.replace(/^\s\s*/, "").replace(/\s\s*$/, "");
 		}
 	}
-	return -1;
-}
-$exports.Array.filter = function(f,target) {
-	var rv = [];
-	for (var i=0; i<this.length; i++) {
-		if (f.call(target,this[i])) {
-			rv.push(this[i]);
-		}
-	}
-	return rv;
-}
-$exports.Array.forEach = function(f,target) {
-	for (var i=0; i<this.length; i++) {
-		f.call(target,this[i],i,this);
-	}
-}
-$exports.Array.map = function(f,target) {
-	var rv = [];
-	for (var i=0; i<this.length; i++) {
-		rv[i] = f.call(target,this[i],i,this);
-	}
-	return rv;
-}
-$exports.String.trim = function() {
-	return this.replace(/^\s\s*/, "").replace(/\s\s*$/, "");
-}
+)();

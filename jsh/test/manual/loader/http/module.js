@@ -10,7 +10,10 @@
 //	Contributor(s):
 //	END LICENSE
 
-$exports.property = "1";
+(
+	function() {
+		$exports.property = "1";
 
-$exports.fileProperty = $loader.file("file.js").property;
-
+		$exports.fileProperty = $loader.file("file.js").property;
+	}
+)();

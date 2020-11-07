@@ -10,6 +10,10 @@
 //	Contributor(s):
 //	END LICENSE
 
-$exports.answer = 42;
-$exports.foo = "bar";
-$exports.integer = $context.integer;
+(
+	function() {
+		$exports.answer = 42;
+		$exports.foo = "bar";
+		$exports.integer = $context.integer;
+	}
+)();

@@ -10,4 +10,8 @@
 //	Contributor(s):
 //	END LICENSE
 
-$exports.$loader = $loader;
+(
+	function() {
+		$exports.$loader = $loader;
+	}
+)();

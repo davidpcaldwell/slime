@@ -10,12 +10,16 @@
 //	Contributor(s):
 //	END LICENSE
 
-var a = 3;
+(
+	function() {
+		var a = 3;
 
-var c = 5;
+		var c = 5;
 
-$exports.a = a;
-$exports.b = $context.b;
-$exports.c = c;
+		$exports.a = a;
+		$exports.b = $context.b;
+		$exports.c = c;
 
-$exports.thisName = this.description;
+		$exports.thisName = this.description;
+	}
+).call(this);

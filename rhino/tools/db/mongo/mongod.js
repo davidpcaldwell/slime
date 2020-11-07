@@ -11,77 +11,81 @@
 //	Contributor(s):
 //	END LICENSE
 
-if (!$context.install) {
-	throw new TypeError("Required: $context.install pointing to Mongo installation directory.");
-}
+(
+	function() {
+		if (!$context.install) {
+			throw new TypeError("Required: $context.install pointing to Mongo installation directory.");
+		}
 
-//	Reference:
-//	http://docs.mongodb.org/manual/reference/program/mongod/
-//
-//	TODO	depends on jsh
-//
-//	$context
-//		install: installation directory
+		//	Reference:
+		//	http://docs.mongodb.org/manual/reference/program/mongod/
+		//
+		//	TODO	depends on jsh
+		//
+		//	$context
+		//		install: installation directory
 
-//	TODO	would be nice to search PATH for installation directory by looking for program called "mongod"
-//	TODO	would be really nice to detect ready state somehow
-$exports.Server = function(p) {
-	var options = [];
-	if (p && typeof(p.port) != "undefined") {
-		options.push("-port", String(p.port));
-	}
-	if (p && typeof(p.dbpath) != "undefined") {
-		options.push("-dbpath", p.dbpath.pathname.toString());
-	}
-	var daemon;
-	var started = false;
-	var lock = new jsh.java.Thread.Monitor();
+		//	TODO	would be nice to search PATH for installation directory by looking for program called "mongod"
+		//	TODO	would be really nice to detect ready state somehow
+		$exports.Server = function(p) {
+			var options = [];
+			if (p && typeof(p.port) != "undefined") {
+				options.push("-port", String(p.port));
+			}
+			if (p && typeof(p.dbpath) != "undefined") {
+				options.push("-dbpath", p.dbpath.pathname.toString());
+			}
+			var daemon;
+			var started = false;
+			var lock = new jsh.java.Thread.Monitor();
 
-	jsh.java.Thread.start({
-		call: function() {
-			jsh.shell.run({
-				command: $context.install.getFile("bin/mongod"),
-				arguments: options,
-				stdio: {
-					output: {
-						line: function(s) {
-							jsh.shell.console("[mongo:stdout] " + s);
-							if (/\[initandlisten\] waiting for connections/.test(s)) {
-								new lock.Waiter({
-									until: function() {
-										return true;
-									},
-									then: function() {
-										started = true;
+			jsh.java.Thread.start({
+				call: function() {
+					jsh.shell.run({
+						command: $context.install.getFile("bin/mongod"),
+						arguments: options,
+						stdio: {
+							output: {
+								line: function(s) {
+									jsh.shell.console("[mongo:stdout] " + s);
+									if (/\[initandlisten\] waiting for connections/.test(s)) {
+										new lock.Waiter({
+											until: function() {
+												return true;
+											},
+											then: function() {
+												started = true;
+											}
+										})();
 									}
-								})();
+								}
+							},
+							error: {
+								line: function(s) {
+									jsh.shell.console("[mongo:stderr] " + s);
+								}
+							}
+						},
+						on: {
+							start: function(process) {
+								daemon = process;
 							}
 						}
-					},
-					error: {
-						line: function(s) {
-							jsh.shell.console("[mongo:stderr] " + s);
-						}
-					}
-				},
-				on: {
-					start: function(process) {
-						daemon = process;
-					}
+					});
 				}
 			});
-		}
-	});
 
-	new lock.Waiter({
-		until: function() {
-			return started;
-		},
-		then: function() {
-		}
-	})();
+			new lock.Waiter({
+				until: function() {
+					return started;
+				},
+				then: function() {
+				}
+			})();
 
-	this.stop = function() {
-		daemon.kill();
+			this.stop = function() {
+				daemon.kill();
+			}
+		}
 	}
-}
+)();

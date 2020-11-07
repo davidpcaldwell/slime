@@ -11,41 +11,45 @@
 //	Contributor(s):
 //	END LICENSE
 
-$exports.getClass = function(name) {
-	$api.Function.argument.isString({ index: 0, name: "name" }).apply(this,arguments);
-	if ($context.classpath.getClass(name)) {
-		return $context.engine.getJavaClass(name);
+(
+	function() {
+		$exports.getClass = function(name) {
+			$api.Function.argument.isString({ index: 0, name: "name" }).apply(this,arguments);
+			if ($context.classpath.getClass(name)) {
+				return $context.engine.getJavaClass(name);
+			}
+			return null;
+		};
+
+		var isJavaObject = function(object) {
+			if (typeof(object) == "undefined") return false;
+			if (typeof(object) == "string") return false;
+			if (typeof(object) == "number") return false;
+			if (typeof(object) == "boolean") return false;
+			if (object === null) return false;
+			if ($context.engine.isNativeJavaObject(object)) return true;
+			return false;
+		}
+		$exports.isJavaObject = isJavaObject;
+
+		//	Used by io.js
+		$exports.isJavaType = function(javaclass) {
+			if (arguments.length != 1) throw new Error("isJavaType takes one argument.");
+			return function isSpecificJavaType(object) {
+				if (!isJavaObject(object)) return false;
+				var loaded = $context.engine.toNativeClass(javaclass);
+				return loaded.isInstance(object);
+			}
+		};
+
+		$exports.toNativeClass = $context.engine.toNativeClass;
+
+		$exports.test = $context.engine.test;
+
+		$exports.adapt = {};
+		$exports.adapt.String = function(_s) {
+			if (_s == null) return null;
+			return String(_s);
+		}
 	}
-	return null;
-};
-
-var isJavaObject = function(object) {
-	if (typeof(object) == "undefined") return false;
-	if (typeof(object) == "string") return false;
-	if (typeof(object) == "number") return false;
-	if (typeof(object) == "boolean") return false;
-	if (object === null) return false;
-	if ($context.engine.isNativeJavaObject(object)) return true;
-	return false;
-}
-$exports.isJavaObject = isJavaObject;
-
-//	Used by io.js
-$exports.isJavaType = function(javaclass) {
-	if (arguments.length != 1) throw new Error("isJavaType takes one argument.");
-	return function isSpecificJavaType(object) {
-		if (!isJavaObject(object)) return false;
-		var loaded = $context.engine.toNativeClass(javaclass);
-		return loaded.isInstance(object);
-	}
-};
-
-$exports.toNativeClass = $context.engine.toNativeClass;
-
-$exports.test = $context.engine.test;
-
-$exports.adapt = {};
-$exports.adapt.String = function(_s) {
-	if (_s == null) return null;
-	return String(_s);
-}
+)();

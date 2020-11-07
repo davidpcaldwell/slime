@@ -10,10 +10,14 @@
 //	Contributor(s):
 //	END LICENSE
 
-$exports.message = function() {
-	var rv = "";
-	for (var i=0; i<3; i++) {
-		rv += $context.message;
+(
+	function() {
+		$exports.message = function() {
+			var rv = "";
+			for (var i=0; i<3; i++) {
+				rv += $context.message;
+			}
+			return rv;
+		}();
 	}
-	return rv;
-}();
+)();
