@@ -10,4 +10,8 @@
 //	Contributor(s):
 //	END LICENSE
 
-$exports.foo = "bar";
+(
+	function() {
+		$exports.foo = "bar";
+	}
+)();

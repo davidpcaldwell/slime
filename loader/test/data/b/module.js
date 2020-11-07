@@ -10,6 +10,10 @@
 //	Contributor(s):
 //	END LICENSE
 
-$exports.a = "a";
+(
+	function() {
+		$exports.a = "a";
 
-$exports.submodule = $loader.module("submodule.js", { message: "it" });
+		$exports.submodule = $loader.module("submodule.js", { message: "it" });
+	}
+)();

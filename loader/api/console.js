@@ -11,34 +11,38 @@
 //	Contributor(s):
 //	END LICENSE
 
-$exports.Forwarder = function(p) {
-	this.start = function(scenario) {
-		p.send({ start: { scenario: { name: scenario.name } } });
-	};
+(
+	function() {
+		$exports.Forwarder = function(p) {
+			this.start = function(scenario) {
+				p.send({ start: { scenario: { name: scenario.name } } });
+			};
 
-	var jsonError = function(error) {
-		if (error) {
-			return {
-				type: error.type,
-				message: error.message,
-				stack: error.stack
+			var jsonError = function(error) {
+				if (error) {
+					return {
+						type: error.type,
+						message: error.message,
+						stack: error.stack
+					}
+				} else {
+					return void(0);
+				}
 			}
-		} else {
-			return void(0);
-		}
-	}
 
-	this.test = function(result) {
-		p.send({
-			test: {
-				success: result.success,
-				message: result.message,
-				error: jsonError(result.error)
+			this.test = function(result) {
+				p.send({
+					test: {
+						success: result.success,
+						message: result.message,
+						error: jsonError(result.error)
+					}
+				});
 			}
-		});
-	}
 
-	this.end = function(scenario,success) {
-		p.send({ end: { scenario: { name: scenario.name }, success: success }});
+			this.end = function(scenario,success) {
+				p.send({ end: { scenario: { name: scenario.name }, success: success }});
+			}
+		};
 	}
-};
+)();

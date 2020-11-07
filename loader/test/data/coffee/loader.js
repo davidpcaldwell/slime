@@ -10,4 +10,8 @@
 //	Contributor(s):
 //	END LICENSE
 
-$exports.file = $loader.file("file.coffee");
+(
+	function() {
+		$exports.file = $loader.file("file.coffee");
+	}
+)();

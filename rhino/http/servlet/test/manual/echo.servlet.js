@@ -10,8 +10,12 @@
 //	Contributor(s):
 //	END LICENSE
 
-$exports.handle = function(request) {
-	var lines = [];
-	lines.push("Requested path: [" + request.path + "]");
-	return httpd.http.Response.text(lines.join("\n"));
-};
+(
+	function() {
+		$exports.handle = function(request) {
+			var lines = [];
+			lines.push("Requested path: [" + request.path + "]");
+			return httpd.http.Response.text(lines.join("\n"));
+		};
+	}
+)();

@@ -11,4 +11,8 @@
 //	Contributor(s):
 //	END LICENSE
 
-$exports.one = 1;
+(
+	function() {
+		$exports.one = 1;
+	}
+)();

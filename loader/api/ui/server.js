@@ -11,70 +11,73 @@
 //	Contributor(s):
 //	END LICENSE
 
-$exports.handle = function(request) {
-	var qualifier = /^loader\/api\/ui\/(.*)/;
-	if (qualifier.exec(request.path)) {
-		request.path = qualifier.exec(request.path)[1];
-	}
-	if (/\.html$/.test(request.path) || /\.js$/.test(request.path) || /\.css$/.test(request.path)) {
-		return {
-			status: { code: 200 },
-			body: $loader.get(request.path)
-		};
-	}
-	if (request.path == "structure") {
-		//	TODO	getStructure is part of loader/api/unit.js also
-		var getStructure = function(part) {
-			var rv = {
-				id: part.id,
-				name: part.name
-			};
-			if (part.parts) {
-				var parts = part.parts;
-				rv.parts = {};
-				for (var x in parts) {
-					rv.parts[x] = getStructure(parts[x]);
+(
+	function() {
+		$exports.handle = function(request) {
+			var qualifier = /^loader\/api\/ui\/(.*)/;
+			if (qualifier.exec(request.path)) {
+				request.path = qualifier.exec(request.path)[1];
+			}
+			if (/\.html$/.test(request.path) || /\.js$/.test(request.path) || /\.css$/.test(request.path)) {
+				return {
+					status: { code: 200 },
+					body: $loader.get(request.path)
+				};
+			}
+			if (request.path == "structure") {
+				//	TODO	getStructure is part of loader/api/unit.js also
+				var getStructure = function(part) {
+					var rv = {
+						id: part.id,
+						name: part.name
+					};
+					if (part.parts) {
+						var parts = part.parts;
+						rv.parts = {};
+						for (var x in parts) {
+							rv.parts[x] = getStructure(parts[x]);
+						}
+					}
+					return rv;
+				};
+
+				var getPartStructure = function(part) {
+
+				}
+
+				return {
+					status: { code: 200 },
+					body: {
+						type: "application/json",
+						string: JSON.stringify(getStructure($context.suite), void(0), "    ")
+					}
 				}
 			}
-			return rv;
-		};
-
-		var getPartStructure = function(part) {
-
-		}
-
-		return {
-			status: { code: 200 },
-			body: {
-				type: "application/json",
-				string: JSON.stringify(getStructure($context.suite), void(0), "    ")
+			if (request.path == "messages") {
+				return {
+					status: { code: 200 },
+					body: {
+						type: "application/json",
+						string: JSON.stringify($context.messages(), void(0), "    ")
+					}
+				}
+			}
+			if (request.path == "run") {
+				var json = JSON.parse(request.body.stream.character().asString());
+				jsh.java.Thread.start(function() {
+					$context.suite.run({
+						scope: {},
+						path: json
+					});
+				});
+				return {
+					status: { code: 200 },
+					body: {
+						type: "application/json",
+						string: JSON.stringify({}, void(0), "    ")
+					}
+				}
 			}
 		}
 	}
-	if (request.path == "messages") {
-		return {
-			status: { code: 200 },
-			body: {
-				type: "application/json",
-				string: JSON.stringify($context.messages(), void(0), "    ")
-			}
-		}
-	}
-	if (request.path == "run") {
-		var json = JSON.parse(request.body.stream.character().asString());
-		jsh.java.Thread.start(function() {
-			$context.suite.run({
-				scope: {},
-				path: json
-			});
-		});
-		return {
-			status: { code: 200 },
-			body: {
-				type: "application/json",
-				string: JSON.stringify({}, void(0), "    ")
-			}
-		}
-	}
-}
-
+)();

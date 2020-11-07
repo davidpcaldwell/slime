@@ -38,6 +38,7 @@
 				if (entry.path == ".project") return false;
 				if (entry.path == "contribute") return true;
 				if (entry.path == "tools/wf") return true;
+				if (entry.path == "wf") return true;
 				return code.files.isText(entry.node);
 			},
 			on: {
@@ -75,7 +76,7 @@
 		});
 
 		jsh.shell.run({
-			command: jsh.script.file.parent.parent.getFile("tsc.bash")
+			command: jsh.script.file.parent.parent.parent.getFile("tools/tsc.bash")
 		});
 
 		//	Runs test suite

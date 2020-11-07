@@ -10,6 +10,10 @@
 //	Contributor(s):
 //	END LICENSE
 
-var x = 2;
+(
+	function() {
+		var x = 2;
 
-$exports.y = 3;
+		$exports.y = 3;
+	}
+)();

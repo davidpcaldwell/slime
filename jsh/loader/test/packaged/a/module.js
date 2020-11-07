@@ -10,6 +10,10 @@
 //	Contributor(s):
 //	END LICENSE
 
-$exports.log = function(string) {
-	$context.log("a: " + string);
-}
+(
+	function() {
+		$exports.log = function(string) {
+			$context.log("a: " + string);
+		}
+	}
+)();

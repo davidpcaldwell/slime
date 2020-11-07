@@ -10,43 +10,47 @@
 //	Contributor(s):
 //	END LICENSE
 
-if (typeof($context.d) == "undefined") {
-	debugger;
-	throw new Error("$context.d is undefined");
-}
+(
+	function() {
+		if (typeof($context.d) == "undefined") {
+			debugger;
+			throw new Error("$context.d is undefined");
+		}
 
-var fThis = { description: "fThis" };
-var file = $loader.file("file.js", {$debug: $context.debug, b: 4}, fThis);
-var mThis = { description: "mThis" };
-var module = $loader.module("file.js", {$debug: $context.debug, b: 4}, mThis);
+		var fThis = { description: "fThis" };
+		var file = $loader.file("file.js", {$debug: $context.debug, b: 4}, fThis);
+		var mThis = { description: "mThis" };
+		var module = $loader.module("file.js", {$debug: $context.debug, b: 4}, mThis);
 
-var runScope = new function() {
-	this.e = 2;
+		var runScope = new function() {
+			this.e = 2;
 
-	var result;
+			var result;
 
-	this.set = function(x) {
-		result = x;
+			this.set = function(x) {
+				result = x;
+			}
+
+			this.result = function() {
+				return result;
+			}
+		};
+
+		var runThis = {};
+
+		$loader.run("run.js",runScope,runThis);
+		var vThis = { description: "vThis" };
+		var value = $loader.value("value.js", {b: 4}, vThis);
+
+		$exports.a = file.a;
+		$exports.b = file.b;
+		$exports.c = file.c;
+		$exports.d = $context.d;
+		$exports.e = runScope.result();
+		$exports.f = runThis.f;
+		$exports.fThis = file.thisName;
+		$exports.mThis = module.thisName;
+		$exports.vThis = vThis;
+		$exports.value = value;
 	}
-
-	this.result = function() {
-		return result;
-	}
-};
-
-var runThis = {};
-
-$loader.run("run.js",runScope,runThis);
-var vThis = { description: "vThis" };
-var value = $loader.value("value.js", {b: 4}, vThis);
-
-$exports.a = file.a;
-$exports.b = file.b;
-$exports.c = file.c;
-$exports.d = $context.d;
-$exports.e = runScope.result();
-$exports.f = runThis.f;
-$exports.fThis = file.thisName;
-$exports.mThis = module.thisName;
-$exports.vThis = vThis;
-$exports.value = value;
+)();

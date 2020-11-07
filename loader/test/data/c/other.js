@@ -10,4 +10,8 @@
 //	Contributor(s):
 //	END LICENSE
 
-$exports.value = 42;
+(
+	function() {
+		$exports.value = 42;
+	}
+)();

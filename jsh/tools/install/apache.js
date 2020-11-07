@@ -11,36 +11,40 @@
 //	Contributor(s):
 //	END LICENSE
 
-var getMirror = function() {
-	return $context.client.request({
-		url: "http://www.apache.org/dyn/closer.cgi?asjson=1",
-		evaluate: function(response) {
-			var json = eval("(" + response.body.stream.character().asString() + ")");
-			return json.preferred;
+(
+	function() {
+		var getMirror = function() {
+			return $context.client.request({
+				url: "http://www.apache.org/dyn/closer.cgi?asjson=1",
+				evaluate: function(response) {
+					var json = eval("(" + response.body.stream.character().asString() + ")");
+					return json.preferred;
+				}
+			});
 		}
-	});
-}
 
-$exports.find = $api.Events.Function(function(p,events) {
-	var name = p.path.split("/").slice(-1)[0];
-	if ($context.downloads) {
-		if ($context.downloads.getFile(name)) {
-			events.fire("console", "Found " + name + " in " + $context.downloads + "; using local copy.");
-			return $context.get({
-				file: $context.downloads.getFile(name)
-			})
-		}
+		$exports.find = $api.Events.Function(function(p,events) {
+			var name = p.path.split("/").slice(-1)[0];
+			if ($context.downloads) {
+				if ($context.downloads.getFile(name)) {
+					events.fire("console", "Found " + name + " in " + $context.downloads + "; using local copy.");
+					return $context.get({
+						file: $context.downloads.getFile(name)
+					})
+				}
+			}
+			var mirror = (p.mirror) ? p.mirror : getMirror();
+			var argument = {
+				name: p.path.split("/").slice(-1)[0],
+				url: function() {
+					return mirror + p.path
+				}
+			};
+			return $context.get(argument);
+		}, {
+			console: function(e) {
+				jsh.shell.console(e.detail);
+			}
+		});
 	}
-	var mirror = (p.mirror) ? p.mirror : getMirror();
-	var argument = {
-		name: p.path.split("/").slice(-1)[0],
-		url: function() {
-			return mirror + p.path
-		}
-	};
-	return $context.get(argument);
-}, {
-	console: function(e) {
-		jsh.shell.console(e.detail);
-	}
-});
+)();
