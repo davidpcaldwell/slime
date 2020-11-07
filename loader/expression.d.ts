@@ -166,6 +166,7 @@ namespace slime {
                 defineProperty: {
                     ecma?: boolean
                     accessor?: boolean
+                    setReadOnly?: any
                 }
             }
             Error: {
