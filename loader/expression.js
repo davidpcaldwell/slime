@@ -468,10 +468,14 @@
 			var createFileScope = function($context) {
 				/** @type { any } */
 				var $exports = {};
-				return {
+				var rv = {
 					$context: ($context) ? $context : {},
-					$exports: $exports
+					$exports: $exports,
+					$export: function(v) {
+						rv.$exports = v;
+					}
 				};
+				return rv;
 			}
 
 			/**

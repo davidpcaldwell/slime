@@ -10,7 +10,10 @@
 					var path = p.arguments.shift();
 					if (typeof(path) != "undefined") {
 						var definition = jsh.script.getopts.parser.Pathname(path);
-						//	check for existence
+						if (!definition.file) {
+							jsh.shell.console("File not found: " + path);
+							jsh.shell.exit(1);
+						}
 						p.options.definition = definition.file;
 					}
 				}),
