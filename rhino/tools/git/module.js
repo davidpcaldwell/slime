@@ -573,7 +573,7 @@
 				this.remote = myremote;
 
 				/** @type { slime.jrunscript.git.Repository.Local["status"] } */
-				this.status = function(p) {
+				this.status = function() {
 					var self = this;
 
 					return execute({
@@ -1051,15 +1051,17 @@
 			}
 
 			/** @type { slime.jrunscript.git.Installation["Repository"] } */
-			this.Repository = function(p) {
-				if (p.local || p.directory) {
-					return new LocalRepository(p);
-				} else if (p.remote) {
-					return new RemoteRepository(p);
-				} else {
-					throw new TypeError("Required: .local or .remote property.");
+			this.Repository = (
+				function(p) {
+					if (p.local || p.directory) {
+						return new LocalRepository(p);
+					} else if (p.remote) {
+						return new RemoteRepository(p);
+					} else {
+						throw new TypeError("Required: .local or .remote property.");
+					}
 				}
-			};
+			);
 
 			/** @type { slime.jrunscript.git.Installation["execute"] } */
 			this.execute = function(m) {

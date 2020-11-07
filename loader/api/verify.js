@@ -10,6 +10,8 @@
 			return global.Object.defineProperty;
 		})();
 
+		var assign = Object.assign;
+
 		/** @type { slime.definition.verify.Factory } */
 		var Verify = function(scope) {
 			var Value = function(v,name) {
@@ -95,9 +97,9 @@
 					});
 				};
 
-				this.is = function(value) {
+				this.is = assign(function(value) {
 					is(value);
-				};
+				}, { not: void(0), type: void(0), equalTo: void(0) });
 				this.is.not = function(value) {
 					is(value,true);
 				};
@@ -165,36 +167,43 @@
 				});
 			};
 
-			var wrapObject = $api.debug.disableBreakOnExceptionsFor(function(o,name) {
-				for (var x in o) {
-					try {
-						var noSelection = (o.tagName == "INPUT" && (o.type == "button" || o.type == "checkbox"));
-						if (noSelection && x == "selectionDirection") continue;
-						if (noSelection && x == "selectionEnd") continue;
-						if (noSelection && x == "selectionStart") continue;
-						if (typeof(o) == "function" && !o.hasOwnProperty(x)) continue;
-						var value = o[x];
-						if (typeof(value) == "function") {
-							this[x] = wrapMethod(o,x,name);
-						} else {
-							if (x != "is" && x != "evaluate") {
-								wrapProperty.call(this,o,x,name);
+			var wrapObject = $api.debug.disableBreakOnExceptionsFor(
+				/**
+				 * @this { { message: string, getTime: any } }
+				 * @param { any } o
+				 * @param { any } name
+				 */
+				function(o,name) {
+					for (var x in o) {
+						try {
+							var noSelection = (o.tagName == "INPUT" && (o.type == "button" || o.type == "checkbox"));
+							if (noSelection && x == "selectionDirection") continue;
+							if (noSelection && x == "selectionEnd") continue;
+							if (noSelection && x == "selectionStart") continue;
+							if (typeof(o) == "function" && !o.hasOwnProperty(x)) continue;
+							var value = o[x];
+							if (typeof(value) == "function") {
+								this[x] = wrapMethod(o,x,name);
+							} else {
+								if (x != "is" && x != "evaluate") {
+									wrapProperty.call(this,o,x,name);
+								}
 							}
+						} catch (e) {
 						}
-					} catch (e) {
+					}
+
+					if (o instanceof Array) {
+						wrapProperty.call(this,o,"length",name);
+					}
+					if (o instanceof Date) {
+						this.getTime = wrapMethod(o,"getTime",name);
+					}
+					if (o instanceof Error && !this.message) {
+						wrapProperty.call(this,o,"message",name);
 					}
 				}
-
-				if (o instanceof Array) {
-					wrapProperty.call(this,o,"length",name);
-				}
-				if (o instanceof Date) {
-					this.getTime = wrapMethod(o,"getTime",name);
-				}
-				if (o instanceof Error && !this.message) {
-					wrapProperty.call(this,o,"message",name);
-				}
-			});
+			);
 
 			//	TODO	Clean up the four ts-ignores inserted below
 
@@ -203,7 +212,7 @@
 
 				wrapObject.call(this,o,name);
 
-				this.evaluate = function(f) {
+				this.evaluate = assign(function(f) {
 					var DidNotReturn = function(e,name) {
 						var delegate = new Value(void(0),name);
 
@@ -217,7 +226,7 @@
 							}
 						}
 
-						this.threw = new Object(e,name + " thrown");
+						this.threw = assign(new Object(e,name + " thrown"), { type: void(0), nothing: void(0) });
 						this.threw.type = function(type) {
 							var success = e instanceof type;
 							var message = (function(success) {
@@ -273,7 +282,7 @@
 					} catch (e) {
 						return new DidNotReturn(e,"{" + f + "}");
 					}
-				};
+				}, { property: void(0) });
 				this.evaluate.property = function(property) {
 					return rv(o[property], ((name) ? name : "")+"." + property);
 				}

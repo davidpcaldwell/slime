@@ -160,6 +160,9 @@
 						},
 						//	TODO	configurable
 						console: (settings.browser.console) ? settings.browser.console : new function() {
+							//	Satisfy TypeScript
+							this.delegee = this.delegee;
+
 							this.toString = function() {
 								if (this.delegee) {
 									return "WebView console: " + this.delegee.log;

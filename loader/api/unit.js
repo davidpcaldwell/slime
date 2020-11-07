@@ -364,6 +364,8 @@
 					return verify;
 				}
 
+				//	Satisfy TypeScript
+				this.listeners = this.listeners;
 
 				this.run = function(p,next) {
 					var local = part.before(p).scope;

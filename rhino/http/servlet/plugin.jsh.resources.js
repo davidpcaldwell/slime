@@ -297,6 +297,10 @@
 					return rv;
 				};
 
+				//	Satisfy TypeScript
+				this.Child = this.Child;
+				this.get = this.get;
+
 				var self = this;
 
 				p.list = function() {
@@ -333,6 +337,11 @@
 			this.file = function(mappingFile,scope) {
 				if (!mappingFile) throw new TypeError("mappingFile must be defined.");
 				if (!scope) scope = {};
+
+				//	Satisfy TypeScript
+				this.add = this.add;
+				this.map = this.map;
+
 				var rv = this;
 				var api = jsh.js.Object.set({}, {
 					$mapping: (mappingFile.pathname) ? mappingFile : void(0),
