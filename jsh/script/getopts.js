@@ -10,8 +10,9 @@
 //	Contributor(s):
 //	END LICENSE
 
+//@ts-check
 (
-	function() {
+	function($context,$exports) {
 		var $arguments = $context.$arguments;
 		var $filesystem = $context.$filesystem;
 		var $Pathname = $context.$Pathname;
@@ -147,7 +148,7 @@
 
 		var getopts = function(settings,array) {
 			if (settings instanceof Array) {
-				warning("DEPRECATED: invoking getopts with (array,settings)");
+				$context.warning("DEPRECATED: invoking getopts with (array,settings)");
 				//	deprecated
 				var tmp = array;
 				array = settings;
@@ -211,7 +212,7 @@
 
 				this.parsed = function() {
 					return {
-						options: (function() {
+						options: (function(options) {
 							var rv = {};
 							for (var x in options) {
 								rv[x] = options[x].value;
@@ -271,4 +272,5 @@
 
 		$exports.getopts = getopts;
 	}
-)();
+//@ts-ignore
+)($context,$exports);
