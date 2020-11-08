@@ -144,6 +144,13 @@ namespace slime {
             child?: any
             list?: any
         }
+
+        interface Scope {
+            $context: any
+            $loader?: slime.Loader
+            $exports: any
+            $export: ($exports: any) => void
+        }
     }
 
     namespace runtime {
@@ -210,6 +217,7 @@ namespace slime {
                 new (p: Loader.Source): Loader
                 source: any
                 series: any
+                tools: any
             }
             namespace: any
             java: any

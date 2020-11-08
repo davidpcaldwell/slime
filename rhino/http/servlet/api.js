@@ -37,6 +37,7 @@
 			//	TODO	there is no test coverage for the below; when the rhino/ directory was renamed to jrunscript/, the test suite still passed
 			//	Packages.java.lang.System.err.println("$host.getLoader = " + $host.getLoader + " $host.getEngine = " + $host.getEngine + " $host.getClasspath = " + $host.getClasspath);
 			if (isRhino($host)) {
+				debugger;
 				//	TODO	consider pushing these details back into inonit.script.servlet.Rhino.Host
 				//			would need to construct the two-property scope object below; rest should be straightforward.
 				//			Need also to identify test case
@@ -99,15 +100,19 @@
 			}
 		})();
 
+		var toExportScope = (function() {
+			if ($java) return $java.Loader.tools.toExportScope;
+			if (isScript($host)) {
+				return $host.Loader.tools.toExportScope;
+			}
+		})();
+
 		/** @type { slime.servlet.Scope } */
-		var scope = {
+		var scope = toExportScope({
 			httpd: void(0),
 			$loader: void(0),
-			$parameters: void(0),
-			$exports: {
-				handle: void(0)
-			}
-		};
+			$parameters: void(0)
+		});
 
 		var bootstrap = (function() {
 			if ($java && $servlet) {

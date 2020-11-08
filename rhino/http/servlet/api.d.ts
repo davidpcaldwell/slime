@@ -102,6 +102,7 @@ namespace slime.servlet {
 			interface jsh {
 				api?: any
 				loaders?: any
+				Loader: any
 				parameters?: { [x: string]: any }
 				getCode?: any
 				$java?: any
