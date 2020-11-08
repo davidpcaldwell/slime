@@ -308,6 +308,8 @@
 														container: servletImplementation.resources
 													},
 
+													Loader: jsh.io.Loader,
+
 													getCode: function(scope) {
 														servletImplementation.load(scope);
 													},

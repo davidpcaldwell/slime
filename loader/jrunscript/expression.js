@@ -725,7 +725,7 @@
 					}
 				};
 			};
-			rv.series = was.series;
+			Object.assign(rv, was);
 			return rv;
 		})(loader.Loader);
 

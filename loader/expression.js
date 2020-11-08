@@ -465,17 +465,37 @@
 				$platform.execute(resource.js,scope,target);
 			}
 
-			var createFileScope = function($context) {
-				/** @type { any } */
+			/**
+			 * @template T
+			 * @param { T } scope
+			 * @returns { T & { $exports: any, $export: any } }
+			 */
+			var toExportScope = function(scope) {
+				/** @type { T & { $exports: any, $export: any } } */
+				var rv = Object.assign(scope, { $exports: void(0), $export: void(0) });
 				var $exports = {};
-				var rv = {
-					$context: ($context) ? $context : {},
-					$exports: $exports,
-					$export: function(v) {
-						rv.$exports = v;
-					}
+				var $export = function(v) {
+					$exports = v;
 				};
+				Object.defineProperty(scope, "$exports", {
+					get: function() {
+						return $exports;
+					},
+					enumerable: true
+				});
+				Object.defineProperty(scope, "$export", {
+					get: function() {
+						return $export;
+					},
+					enumerable: true
+				});
 				return rv;
+			}
+
+			var createFileScope = function($context) {
+				return toExportScope({
+					$context: ($context) ? $context : {}
+				});
 			}
 
 			/**
@@ -569,6 +589,7 @@
 
 					var locations = getModuleLocations(path);
 
+					/** @type { slime.Loader.Scope } */
 					var inner = createFileScope($context);
 					inner.$loader = Child(locations.prefix);
 					var script = this.get(locations.main);
@@ -694,7 +715,7 @@
 
 			this.Resource = Resource;
 
-			this.Loader = Object.assign(Loader, { source: void(0), series: void(0) });
+			this.Loader = Object.assign(Loader, { source: void(0), series: void(0), tools: void(0) });
 			this.Loader.source = {};
 			this.Loader.source.object = function(o) {
 				var getLocation = function(path) {
@@ -745,7 +766,10 @@
 					}
 				}
 				return new Loader(source);
-			}
+			};
+			this.Loader.tools = {
+				toExportScope: toExportScope
+			};
 
 			this.namespace = function(string) {
 				//	This construct returns the top-level global object, e.g., window in the browser
