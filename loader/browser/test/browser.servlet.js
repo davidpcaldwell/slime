@@ -16,69 +16,76 @@
 (
 	/**
 	 * @param { { java: jsh["java"], shell: jsh["shell"] } } jsh
-	 * @param { slime.servlet.httpd } httpd
-	 * @param { { url: string } } $parameters
-	 * @param { slime.servlet.Script } $exports
+	 * @param { { httpd: slime.servlet.httpd } } $context
+	 * @param { (value: (configuration: { url: string }) => slime.servlet.handler) => void } $export
 	 */
-	function(jsh,httpd,$parameters,$exports) {
+	function(jsh,$context,$export) {
+		var httpd = $context.httpd;
 		jsh.shell.console("Loading browser servlet ...");
 		var lock = new jsh.java.Thread.Monitor();
 		var success;
 
-		$exports.handle = function(request) {
-			//	This disables reloading for unit tests; should find a better way to do this rather than just ripping out the method
-			if (httpd.$reload) delete httpd.$reload;
-			if (request.path == $parameters.url) {
-				if (request.method == "POST") {
-					debugger;
-					//	TODO	perhaps need better concurrency construct, like Notifier
-					var waiter = new lock.Waiter({
-						until: function() {
-							return true;
-						},
-						then: function() {
-							debugger;
-							var string = request.body.stream.character().asString();
-							if (string == "true") {
-								success = string;
-							} else if (string == "false") {
-								success = string;
-							} else if (string.length == 0) {
-								success = "null";
-							} else {
-								success = string;
+		var createHandler = function(configuration) {
+			/** @type { slime.servlet.handler } */
+			function handle(request) {
+				//	This disables reloading for unit tests; should find a better way to do this rather than just ripping out the method
+				if (httpd.$reload) delete httpd.$reload;
+				if (request.path == configuration.url) {
+					if (request.method == "POST") {
+						debugger;
+						//	TODO	perhaps need better concurrency construct, like Notifier
+						var waiter = new lock.Waiter({
+							until: function() {
+								return true;
+							},
+							then: function() {
+								debugger;
+								var string = request.body.stream.character().asString();
+								if (string == "true") {
+									success = string;
+								} else if (string == "false") {
+									success = string;
+								} else if (string.length == 0) {
+									success = "null";
+								} else {
+									success = string;
+								}
+			//					jsh.shell.echo("server side success = " + success + "; returning 200 for POST and unblocking on " + lock);
+								return {
+									status: {
+										code: 200
+									}
+								};
 							}
-		//					jsh.shell.echo("server side success = " + success + "; returning 200 for POST and unblocking on " + lock);
-							return {
-								status: {
-									code: 200
-								}
-							};
-						}
-					});
-					return waiter();
-				} else if (request.method == "GET") {
-					jsh.shell.echo("Received GET request for " + request.path + "; blocking on " + lock);
-					var waiter = new lock.Waiter({
-						until: function() {
-							return typeof(success) != "undefined";
-						},
-						then: function() {
-							return {
-								status: {
-									code: 200
-								},
-								body: {
-									type: "application/json",
-									string: success
-								}
-							};
-						}
-					});
-					return waiter();
+						});
+						return waiter();
+					} else if (request.method == "GET") {
+						jsh.shell.echo("Received GET request for " + request.path + "; blocking on " + lock);
+						var waiter = new lock.Waiter({
+							until: function() {
+								return typeof(success) != "undefined";
+							},
+							then: function() {
+								return {
+									status: {
+										code: 200
+									},
+									body: {
+										type: "application/json",
+										string: success
+									}
+								};
+							}
+						});
+						return waiter();
+					}
 				}
 			}
-		};
+
+			return handle;
+		}
+
+		$export(createHandler);
 	}
 //@ts-ignore
-)(jsh,httpd,$parameters,$exports);
+)(jsh,$context,$export);

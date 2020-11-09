@@ -9,6 +9,8 @@
 			var tools: { [x: string]: any } = jsh.io.Loader.tools;
 			verify(tools).is.type("object");
 			verify(tools).evaluate.property("toExportScope").is.type("function");
+
+			verify(jsh.loader).evaluate.property("factory").is.type("function");
 		}
 	}
 //@ts-ignore

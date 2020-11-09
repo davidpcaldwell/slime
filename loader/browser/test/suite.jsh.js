@@ -99,7 +99,7 @@
 		// loader/browser/test/test/sample-suite.
 		// $HOME/.bash_profile
 
-		var resultServletFile = jsh.shell.jsh.src.getFile("loader/browser/test/browser.servlet.js");
+		var $loader = new jsh.file.Loader({ directory: jsh.script.file.parent });
 
 		var tomcat = new jsh.httpd.Tomcat();
 
@@ -114,17 +114,15 @@
 					"/*": {
 						load: function(scope) {
 							jsh.shell.console("Serving " + toShell.base);
-							var resultServlet = (function() {
-								var rv = {};
-								jsh.loader.run(resultServletFile.pathname, {
-									httpd: scope.httpd,
-									$parameters: {
-										url: url
-									},
-									$exports: rv
-								});
-								return rv;
-							})();
+							var resultServletFile = $loader.file("browser.servlet.js", {
+								httpd: scope.httpd
+							});
+							debugger;
+							var resultServlet = {
+								handle: resultServletFile({
+									url: url
+								})
+							};
 
 							var filesystemLoader = new jsh.file.Loader({
 								directory: toResult.base
