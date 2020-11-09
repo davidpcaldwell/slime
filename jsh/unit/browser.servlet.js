@@ -10,6 +10,7 @@
 //	Contributor(s):
 //	END LICENSE
 
+//	TODO	See loader/browser/test/browser.servlet.js, a better-maintained version of this
 (
 	function() {
 		//	TODO	remove direct jsh references from this file

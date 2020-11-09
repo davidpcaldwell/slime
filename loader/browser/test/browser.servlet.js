@@ -15,58 +15,19 @@
 //@ts-check
 (
 	/**
-	 *
+	 * @param { { java: jsh["java"], shell: jsh["shell"] } } jsh
 	 * @param { slime.servlet.httpd } httpd
-	 * @param { { delegate: any, coffeescript: any, url: string } } $parameters
-	 * @param { { handle: any, destroy: any } } $exports
+	 * @param { { url: string } } $parameters
+	 * @param { slime.servlet.Script } $exports
 	 */
-	function(httpd,$parameters,$exports) {
+	function(jsh,httpd,$parameters,$exports) {
 		jsh.shell.console("Loading browser servlet ...");
 		var lock = new jsh.java.Thread.Monitor();
 		var success;
 
-		var delegate = ($parameters.delegate) ? (function() {
-			var scope = {
-				$exports: {},
-				httpd: httpd,
-				$parameters: $parameters,
-				$loader: new httpd.io.Loader({
-					resources: new function() {
-						var prefix = $parameters.delegate.split("/").slice(0,-1).join("/") + "/";
-
-						this.get = function(path) {
-							return httpd.loader.get(prefix + path);
-						}
-					}
-				})
-			};
-			jsh.shell.console("Running: " + $parameters.delegate);
-			httpd.loader.run($parameters.delegate, scope);
-			return scope.$exports;
-		})() : void(0);
-
 		$exports.handle = function(request) {
 			//	This disables reloading for unit tests; should find a better way to do this rather than just ripping out the method
 			if (httpd.$reload) delete httpd.$reload;
-			if (request.path == "coffee-script.js") {
-				if ($parameters.coffeescript) {
-					return {
-						status: { code: 200 },
-						body: {
-							type: "text/javascript",
-							string: $parameters.coffeescript.file.read(String)
-						}
-					}
-				} else {
-					return {
-						status: { code: 404 },
-						body: {
-							type: "text/plain",
-							string: "No $parameters.coffeescript"
-						}
-					}
-				}
-			}
 			if (request.path == $parameters.url) {
 				if (request.method == "POST") {
 					debugger;
@@ -117,13 +78,7 @@
 					return waiter();
 				}
 			}
-
-			if (delegate) return delegate.handle(request);
 		};
-
-		$exports.destroy = function() {
-			if (delegate && delegate.destroy) delegate.destroy();
-		}
 	}
 //@ts-ignore
-)(httpd,$parameters,$exports);
+)(jsh,httpd,$parameters,$exports);
