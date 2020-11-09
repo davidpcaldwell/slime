@@ -41,16 +41,7 @@
 							then: function() {
 								debugger;
 								var string = request.body.stream.character().asString();
-								if (string == "true") {
-									success = string;
-								} else if (string == "false") {
-									success = string;
-								} else if (string.length == 0) {
-									success = "null";
-								} else {
-									success = string;
-								}
-			//					jsh.shell.echo("server side success = " + success + "; returning 200 for POST and unblocking on " + lock);
+								success = JSON.parse(string);
 								return {
 									status: {
 										code: 200
@@ -72,7 +63,7 @@
 									},
 									body: {
 										type: "application/json",
-										string: success
+										string: JSON.stringify(success, void(0), "    ")
 									}
 								};
 							}

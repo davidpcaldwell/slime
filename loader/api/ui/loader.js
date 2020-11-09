@@ -96,9 +96,8 @@ $set(function(p) {
 						if (!e.path.length && e.detail.end) {
 							var xhr = new XMLHttpRequest();
 							xhr.open("POST","result",false);
-							xhr.send(
-								(p && p.events) ? JSON.stringify({ events: events, success: e.detail.success }) : e.detail.success
-							);
+							var payload = (p && p.events) ? { events: events, success: e.detail.success } : e.detail.success
+							xhr.send(JSON.stringify(payload));
 						}
 					};
 
