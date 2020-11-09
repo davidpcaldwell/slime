@@ -32,17 +32,14 @@
 				if (httpd.$reload) delete httpd.$reload;
 				if (request.path == configuration.url) {
 					if (request.method == "POST") {
-						jsh.shell.console("Browser POSTing results ...");
-						debugger;
+						jsh.shell.console("Receiving POSTed results ...");
 						//	TODO	perhaps need better concurrency construct, like Notifier
-						var waiter = new lock.Waiter({
+						var notifier = new lock.Waiter({
 							until: function() {
 								return true;
 							},
 							then: function() {
-								debugger;
-								var string = request.body.stream.character().asString();
-								result = JSON.parse(string);
+								result = JSON.parse(request.body.stream.character().asString());
 								return {
 									status: {
 										code: 200
@@ -50,10 +47,10 @@
 								};
 							}
 						});
-						return waiter();
+						return notifier();
 					} else if (request.method == "GET") {
-						jsh.shell.console("Received GET request for " + request.path + "; blocking on " + lock);
-						var waiter = new lock.Waiter({
+						jsh.shell.console("Received GET request for results; blocking on " + lock);
+						var waitForResult = new lock.Waiter({
 							until: function() {
 								return typeof(result) != "undefined";
 							},
@@ -69,7 +66,7 @@
 								};
 							}
 						});
-						return waiter();
+						return waitForResult();
 					}
 				}
 			}

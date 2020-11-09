@@ -139,18 +139,6 @@ suite.add("browsers", new function() {
 		},this);
 	}
 });
-// var browserPart = jsh.unit.Suite.Fork({
-// 	name: "Browser suites",
-// 	run: jsh.shell.jsh,
-// 	shell: environment.jsh.home,
-// 	script: environment.jsh.src.getFile("loader/browser/suite.jsh.js"),
-// 	arguments: [
-// 		"-view", "stdio"
-// 	].concat(parameters.arguments),
-// 	// TODO: is setting the working directory necessary?
-// 	directory: environment.jsh.src
-// });
-// suite.add("browser", browserPart);
 
 suite.add("tools", {
 	initialize: function() {
