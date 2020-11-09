@@ -23,7 +23,7 @@
 		var httpd = $context.httpd;
 		jsh.shell.console("Loading browser servlet ...");
 		var lock = new jsh.java.Thread.Monitor();
-		var success;
+		var result;
 
 		var createHandler = function(configuration) {
 			/** @type { slime.servlet.handler } */
@@ -32,6 +32,7 @@
 				if (httpd.$reload) delete httpd.$reload;
 				if (request.path == configuration.url) {
 					if (request.method == "POST") {
+						jsh.shell.console("Browser POSTing results ...");
 						debugger;
 						//	TODO	perhaps need better concurrency construct, like Notifier
 						var waiter = new lock.Waiter({
@@ -41,7 +42,7 @@
 							then: function() {
 								debugger;
 								var string = request.body.stream.character().asString();
-								success = JSON.parse(string);
+								result = JSON.parse(string);
 								return {
 									status: {
 										code: 200
@@ -51,10 +52,10 @@
 						});
 						return waiter();
 					} else if (request.method == "GET") {
-						jsh.shell.echo("Received GET request for " + request.path + "; blocking on " + lock);
+						jsh.shell.console("Received GET request for " + request.path + "; blocking on " + lock);
 						var waiter = new lock.Waiter({
 							until: function() {
-								return typeof(success) != "undefined";
+								return typeof(result) != "undefined";
 							},
 							then: function() {
 								return {
@@ -63,7 +64,7 @@
 									},
 									body: {
 										type: "application/json",
-										string: JSON.stringify(success, void(0), "    ")
+										string: JSON.stringify(result, void(0), "    ")
 									}
 								};
 							}
