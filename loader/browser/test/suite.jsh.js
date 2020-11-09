@@ -273,6 +273,7 @@
 			var suite = new jsh.unit.Suite();
 			jsh.shell.console("Requesting result.");
 			var running = run(browser);
+			/** @type { { events: any[] } } */
 			var result = new jsh.http.Client().request({
 				url: "http://127.0.0.1:" + running.port + "/" + url,
 				evaluate: function(response) {
@@ -281,7 +282,6 @@
 					return json;
 				}
 			});
-			var decoder = new jsh.unit.JSON.Decoder();
 			var scenario = {
 				name: browser.name,
 				execute: function(scope,verify) {
