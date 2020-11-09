@@ -27,6 +27,7 @@ namespace slime.servlet {
 		}
 		body?: {
 			form: () => slime.web.Form
+			stream: slime.jrunscript.runtime.io.InputStream
 		}
 	}
 
@@ -76,14 +77,16 @@ namespace slime.servlet {
 
 	type handler = (request: Request) => Response
 
+	interface Script {
+		handle: (request: Request) => Response
+		destroy?: () => void
+	}
+
 	interface Scope {
 		httpd: httpd
 		$loader: slime.Loader
 		$parameters: Parameters
-		$exports: {
-			handle: (request: Request) => Response
-			destroy?: () => void
-		}
+		$exports: Script
 	}
 
 	namespace internal {
