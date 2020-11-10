@@ -1,5 +1,10 @@
 //@ts-check
 (
+	/**
+	 *
+	 * @param { any } $context
+	 * @param { any } $export
+	 */
 	function($context,$export) {
 		$export({
 			convert: function(number) {
