@@ -156,6 +156,9 @@ namespace jsh.wf {
 			gui: Exports.requireGitIdentity.get
 		} }
 
+		/**
+		 * Errs if files untracked by Git are found in the given repository.
+		 */
 		prohibitUntrackedFiles: (p: { repository: slime.jrunscript.git.Repository.Local }, events?: $api.Events.Function.Receiver) => void
 
 		prohibitModifiedSubmodules: (p: { repository: slime.jrunscript.git.Repository.Local }, events?: $api.Events.Function.Receiver) => void
