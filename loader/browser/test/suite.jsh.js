@@ -115,49 +115,57 @@
 						load: function(scope) {
 							//	This disables reloading for unit tests; should find a better way to do this rather than just ripping out the method
 							delete scope.httpd.$reload;
+
 							jsh.shell.console("Serving " + toShell.base);
-							/** @type { slime.Loader.Product<slime.runtime.browser.test.results.Context,slime.runtime.browser.test.results.Factory> } */
-							var resultServletFactory = $loader.factory("browser.servlet.js");
-
-							var resultServletFile = resultServletFactory({
-								library: {
-									java: jsh.java,
-									shell: jsh.shell
-								}
-							});
-
-							var resultServlet = {
-								handle: resultServletFile({
-									url: url
-								})
-							};
-
-							var filesystemLoader = new jsh.file.Loader({
-								directory: toResult.base
-							});
 
 							scope.$exports.handle = scope.httpd.Handler.series(
 								function(request) {
 									jsh.shell.console("REQUEST: " + request.method + " " + request.path);
 								},
-								function(request) {
-									if (!parameters.options.interactive) return resultServlet.handle(request);
-								},
-								function handleTypescript(request) {
-									if (jsh.typescript && /\.ts$/.test(request.path)) {
-										var resource = filesystemLoader.get(request.path);
-										if (resource) {
-											var compiled = jsh.typescript.compile(resource.read(String));
-											return {
-												status: { code: 200 },
-												body: {
-													type: "application/javascript",
-													string: compiled
+								(
+									(jsh.typescript)
+										? (function() {
+											var filesystemLoader = new jsh.file.Loader({
+												directory: toResult.base
+											});
+
+											return function handleTypescript(request) {
+												if (/\.ts$/.test(request.path)) {
+													var resource = filesystemLoader.get(request.path);
+													if (resource) {
+														var compiled = jsh.typescript.compile(resource.read(String));
+														return {
+															status: { code: 200 },
+															body: {
+																type: "application/javascript",
+																string: compiled
+															}
+														}
+													}
 												}
 											}
-										}
-									}
-								},
+										})()
+										: $api.Function.returning(void(0))
+								),
+								(
+									(!parameters.options.interactive)
+										? (function createResultHandler() {
+											/** @type { slime.Loader.Product<slime.runtime.browser.test.results.Context,slime.runtime.browser.test.results.Factory> } */
+											var resultServletFactory = $loader.factory("handler-results.js");
+
+											var resultServletFile = resultServletFactory({
+												library: {
+													java: jsh.java,
+													shell: jsh.shell
+												}
+											});
+
+											return resultServletFile({
+												url: url
+											})
+										})()
+										: $api.Function.returning(void(0))
+								),
 								new scope.httpd.Handler.Loader({
 									loader: new jsh.file.Loader({
 										directory: toResult.base
