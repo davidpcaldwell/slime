@@ -29,8 +29,8 @@
 			jsh.shell.exit(1);
 		}
 
-		/** @type { slime.definition.verify.Factory } */
-		var Verify = jsh.loader.file(jsh.shell.jsh.src.getFile("loader/api/verify.js")).Verify;
+		/** @type { slime.definition.verify.Exports } */
+		var verifyApi = jsh.loader.file(jsh.shell.jsh.src.getFile("loader/api/verify.js"));
 
 		var console = new function() {
 			var write = function(indent,string) {
@@ -52,56 +52,9 @@
 			}
 		}
 
-		/** @type { new (p?: {}) => slime.definition.verify.Scope & { success: boolean, start: Function, end: Function } } */
-		var Scope = function(p) {
-			if (!p) p = {};
-
-			this.success = true;
-
-			this.parent = (p.parent) ? p.parent : null;
-
-			this.depth = function() {
-				return (this.parent) ? this.parent.depth() + 1 : 0;
-			};
-
-			this.toString = function() {
-				return "Scope: " + this.depth();
-			}
-
-			this.start = function(name) {
-				console.start(this.depth() + 1, name);
-			}
-
-			this.end = function(name,result) {
-				console.end(this.depth() + 1, name, result);
-			}
-
-			this.fail = function() {
-				this.success = false;
-				if (p.parent) p.parent.fail();
-			}
-
-			/** @param { slime.definition.verify.Scope.Test } f */
-			this.test = function(f) {
-				var result = f();
-				if (result.success === false) {
-					this.fail();
-				} else if (result.success === true) {
-					//	do nothing
-				} else {
-					throw new TypeError();
-				}
-				console.test(this.depth() + 1, result.message);
-			}
-		}
-
 		var execute = function(file,part) {
-			/** @type { slime.definition.verify.Scope & { success: boolean, start: Function, end: Function } } */
-			var scope = new Scope();
-
-			var verify = Verify(scope);
-
 			var delegate = new jsh.file.Loader({ directory: file.parent });
+
 			var loader = Object.assign(
 				delegate,
 				{
@@ -120,69 +73,19 @@
 				}
 			)
 
-			var tests = {
-				types: {}
-			};
-
-			function getPropertyPathFrom(target) {
-				return function(value) {
-					if (value === target) return [];
-					for (var x in target) {
-						var found = getPropertyPathFrom(target[x])(value);
-						if (found) return [x].concat(found);
-					}
-					return null;
-				}
-			}
-
-			loader.run(file.pathname.basename, $api.Object.compose({
-				jsh: jsh,
-				$loader: loader,
-				run: function(code,name) {
-					if (!code) throw new TypeError("Cannot run scope " + code);
-					if (!name) name = $api.Function.result(
-						getPropertyPathFrom(tests)(code),
-						function(array) {
-							return (array) ? array.join(".") : array;
-						}
-					);
-					if (!name) name = "run";
-					scope.start(name);
-					var was = {
-						scope: scope,
-						verify: verify
-					};
-					scope = new Scope({ parent: scope });
-					verify = Verify(scope);
-					code();
-					var result = scope.success;
-					scope = was.scope;
-					verify = was.verify;
-					scope.end(name,result);
+			var implementation = jsh.script.loader.file("test.js", {
+				library: {
+					verify: verifyApi
 				},
-				tests: tests
-			}, new function() {
-				this.verify = function() {
-					return verify.apply(this,arguments);
-				}
-			}));
-
-			var target = tests;
-			part.split(".").forEach(function(token) {
-				target = $api.Function.optionalChain(token)(target)
+				console: console
 			});
-			if (typeof(target) == "function") {
-				/** @type { () => void } */
-				var callable = target;
-				//	TODO	probably should print test being run as well in case part is not suite
-				console.start(0, file + ":" + part);
-				callable();
-				console.end(0, file + ":" + part, scope.success);
-			} else {
-				jsh.shell.console("Not a function: " + part);
-			}
 
-			return scope.success;
+			return implementation(
+				loader,
+				file.pathname.basename,
+				{ jsh: jsh },
+				part
+			)
 		};
 
 		var success = execute(parameters.options.definition,parameters.options.part);
