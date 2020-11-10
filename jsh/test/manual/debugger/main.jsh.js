@@ -1,3 +1,7 @@
-var file = jsh.script.loader.file("file.js");
-file.doIt();
-jsh.shell.console("Finished.");
+(
+	function() {
+		var file = jsh.script.loader.file("file.js");
+		file.doIt();
+		jsh.shell.console("Finished.");
+	}
+)();

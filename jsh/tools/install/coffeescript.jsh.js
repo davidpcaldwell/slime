@@ -11,17 +11,21 @@
 //	Contributor(s):
 //	END LICENSE
 
-var parameters = jsh.script.getopts({
-	options: {
-		url: "https://coffeescript.org/v2/browser-compiler/coffeescript.js"
+(
+	function() {
+		var parameters = jsh.script.getopts({
+			options: {
+				url: "https://coffeescript.org/v2/browser-compiler/coffeescript.js"
+			}
+		});
+
+		var file = jsh.tools.install.get({
+			url: parameters.options.url
+		});
+
+		var destination = jsh.shell.jsh.lib.getRelativePath("coffee-script.js");
+
+		jsh.shell.console("Writing CoffeeScript to " + destination + " ...");
+		file.copy(destination);
 	}
-});
-
-var file = jsh.tools.install.get({
-	url: parameters.options.url
-});
-
-var destination = jsh.shell.jsh.lib.getRelativePath("coffee-script.js");
-
-jsh.shell.console("Writing CoffeeScript to " + destination + " ...");
-file.copy(destination);
+)();

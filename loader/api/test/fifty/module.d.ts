@@ -17,4 +17,23 @@ namespace slime.fifty {
 
 		type tests = any
 	}
+
+	namespace test.internal {
+		interface Console {
+			start: (depth: number, name: string) => void
+			test: (depth: number, message: string) => void
+			end: (depth: number, name: string, result: boolean) => void
+		}
+
+		interface Scope {
+			success: boolean
+
+			depth(): number
+			fail(): void
+
+			start: (name: string) => void
+			test: slime.definition.verify.Scope["test"]
+			end: (name: string, result: boolean) => void
+		}
+	}
 }
