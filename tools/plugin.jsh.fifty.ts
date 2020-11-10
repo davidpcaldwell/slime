@@ -115,6 +115,9 @@ namespace jsh.wf {
 						test: jsh.wf.cli.Command
 						submodule: {
 							remove: jsh.wf.cli.Command
+							/**
+							 * `--path <path-to-submodule>`
+							 */
 							update: jsh.wf.cli.Command
 						},
 						commit: any
