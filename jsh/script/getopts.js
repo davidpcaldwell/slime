@@ -12,6 +12,11 @@
 
 //@ts-check
 (
+	/**
+	 *
+	 * @param { any } $context
+	 * @param { any } $exports
+	 */
 	function($context,$exports) {
 		var $arguments = $context.$arguments;
 		var $filesystem = $context.$filesystem;
