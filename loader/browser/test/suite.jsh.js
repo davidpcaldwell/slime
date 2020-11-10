@@ -113,11 +113,19 @@
 				servlets: {
 					"/*": {
 						load: function(scope) {
+							//	This disables reloading for unit tests; should find a better way to do this rather than just ripping out the method
+							delete scope.httpd.$reload;
 							jsh.shell.console("Serving " + toShell.base);
-							var resultServletFile = $loader.file("browser.servlet.js", {
-								httpd: scope.httpd
+							/** @type { slime.Loader.Product<slime.runtime.browser.test.results.Context,slime.runtime.browser.test.results.Factory> } */
+							var resultServletFactory = $loader.factory("browser.servlet.js");
+
+							var resultServletFile = resultServletFactory({
+								library: {
+									java: jsh.java,
+									shell: jsh.shell
+								}
 							});
-							debugger;
+
 							var resultServlet = {
 								handle: resultServletFile({
 									url: url
