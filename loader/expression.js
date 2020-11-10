@@ -466,12 +466,12 @@
 			}
 
 			/**
-			 * @template T
-			 * @param { T } scope
-			 * @returns { T & { $exports: any, $export: any } }
+			 * @template TT
+			 * @param { TT } scope
+			 * @returns { TT & { $exports: any, $export: any } }
 			 */
 			var toExportScope = function(scope) {
-				/** @type { T & { $exports: any, $export: any } } */
+				/** @type { TT & { $exports: any, $export: any } } */
 				var rv = Object.assign(scope, { $exports: void(0), $export: void(0) });
 				var $exports = {};
 				var $export = function(v) {
