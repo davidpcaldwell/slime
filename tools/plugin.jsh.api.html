@@ -1,7 +1,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
 <head>
-	<title>SLIME: WF</title>
+	<title>SLIME: wf</title>
 	<link href="..//loader/api/api.css" rel="stylesheet" type="text/css" />
 	<script src="..//loader/api/api.js"></script>
 	<script>
@@ -73,6 +73,9 @@ ${PROJECT}/[<i>path/to/slime</i>]/tools/wf "$@"
 	<div>
 		<h1><code>jsh.wf</code></h1>
 		<div>A set of APIs that can be helpful in implementing tasks related to software development.</div>
+		<div>
+			<strong>See <a href="plugin.jsh.fifty.ts">TypeScript definition</a>.</strong>
+		</div>
 		<ul>
 			<li class="function experimental">
 				<div class="name">requireGitIdentity</div>
@@ -134,12 +137,6 @@ ${PROJECT}/[<i>path/to/slime</i>]/tools/wf "$@"
 						this.requireGitIdentity({ repository: configured });
 					}).threw.nothing();
 				</script>
-			</li>
-			<li class="function experimental">
-				<div class="name">prohibitUntrackedFiles</div>
-				<span>Errs if files untracked by Git are found in the given repository.
-					See <a href="plugin.jsh.d.ts">TypeScript definition</a>.
-				</span>
 			</li>
 			<li class="function">
 				<div class="name">prohibitModifiedSubmodules</div>
