@@ -114,6 +114,9 @@ namespace jsh.wf {
 						tsc: jsh.wf.cli.Command
 						test: jsh.wf.cli.Command
 						submodule: {
+							/**
+							 * `--path <path-to-submodule>`
+							 */
 							remove: jsh.wf.cli.Command
 							/**
 							 * `--path <path-to-submodule>`
