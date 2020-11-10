@@ -3,7 +3,7 @@
 	/**
 	 * @param { $api } $api
 	 * @param { { library: { verify: slime.definition.verify.Exports }, console: slime.fifty.test.internal.Console } } $context
-	 * @param { any } $export
+	 * @param { (value: slime.fifty.test.internal.run) => void } $export
 	 */
 	function($api,$context,$export) {
 		var Verify = $context.library.verify.Verify;
@@ -81,42 +81,51 @@
 			/**
 			 * @param { slime.fifty.test.$loader } loader
 			 * @param { string } path
-			 * @param { { [x: string]: any } } vars
 			 * @param { string } part
 			 * @returns { boolean }
 			 */
-			function(loader,path,vars,part) {
-				loader.run(path, $api.Object.compose(vars, {
-					jsh: jsh,
-					$loader: loader,
-					run: function(code,name) {
-						if (!code) throw new TypeError("Cannot run scope " + code);
-						if (!name) name = $api.Function.result(
-							getPropertyPathFrom(tests)(code),
-							function(array) {
-								return (array) ? array.join(".") : array;
+			function(loader,path,part) {
+				var global = (function() { return this; })();
+				loader.run(
+					path,
+					$api.Object.compose(
+						(global.jsh) ? { jsh: global.jsh } : {},
+						{
+							global: (function() { return this; })()
+						},
+						{
+							$loader: loader,
+							run: function(code,name) {
+								if (!code) throw new TypeError("Cannot run scope " + code);
+								if (!name) name = $api.Function.result(
+									getPropertyPathFrom(tests)(code),
+									function(array) {
+										return (array) ? array.join(".") : array;
+									}
+								);
+								if (!name) name = "run";
+								scope.start(name);
+								var was = {
+									scope: scope,
+									verify: verify
+								};
+								scope = Scope({ parent: scope });
+								verify = Verify(scope);
+								code();
+								var result = scope.success;
+								scope = was.scope;
+								verify = was.verify;
+								scope.end(name,result);
+							},
+							tests: tests
+						},
+						{
+							verify: function() {
+								return verify.apply(this,arguments);
 							}
-						);
-						if (!name) name = "run";
-						scope.start(name);
-						var was = {
-							scope: scope,
-							verify: verify
-						};
-						scope = Scope({ parent: scope });
-						verify = Verify(scope);
-						code();
-						var result = scope.success;
-						scope = was.scope;
-						verify = was.verify;
-						scope.end(name,result);
-					},
-					tests: tests
-				}, new function() {
-					this.verify = function() {
-						return verify.apply(this,arguments);
-					}
-				}));
+						}
+					)
+				);
 
 				/** @type { any } */
 				var target = tests;

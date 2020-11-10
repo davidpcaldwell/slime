@@ -35,5 +35,7 @@ namespace slime.fifty {
 			test: slime.definition.verify.Scope["test"]
 			end: (name: string, result: boolean) => void
 		}
+
+		type run = (loader: slime.fifty.test.$loader, path: string, part: string) => boolean
 	}
 }
