@@ -298,6 +298,7 @@
 					delegate.run(
 						p.path,
 						{
+							global: (function() { return this; })(),
 							$loader: delegate,
 							tests: tests,
 							//	TODO	for now we just flatten everything and run within a single scope, using a single verify and

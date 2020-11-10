@@ -32,4 +32,4 @@
 		}
 	}
 //@ts-ignore
-)(jsh,tests,verify);
+)(global.jsh,tests,verify);

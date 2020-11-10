@@ -73,6 +73,7 @@
 				}
 			)
 
+			/** @type { slime.fifty.test.internal.run } */
 			var implementation = jsh.script.loader.file("test.js", {
 				library: {
 					verify: verifyApi
@@ -83,7 +84,6 @@
 			return implementation(
 				loader,
 				file.pathname.basename,
-				{ jsh: jsh },
 				part
 			)
 		};
