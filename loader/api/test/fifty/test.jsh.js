@@ -89,6 +89,7 @@
 		};
 
 		var success = execute(parameters.options.definition,parameters.options.part);
+
 		jsh.shell.exit( (success) ? 0 : 1 )
 	}
 //@ts-ignore

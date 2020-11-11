@@ -76,7 +76,6 @@
 			types: {}
 		};
 
-		//	TODO	loader below should be slime.fifty.test.Loader
 		$export(
 			/**
 			 * @param { slime.fifty.test.$loader } loader

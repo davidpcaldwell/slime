@@ -104,6 +104,7 @@
 		var tomcat = new jsh.httpd.Tomcat();
 
 		var run = function(browser) {
+			//	TODO	first two lines are now copied to loader/browser/test/server.js
 			tomcat.map({
 				// TODO: make the below the default for goodness' sake
 				path: "",
