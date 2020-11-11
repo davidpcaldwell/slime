@@ -70,6 +70,7 @@ namespace slime.servlet {
 				handle: slime.servlet.handler
 			}) => slime.servlet.handler
 			HostRedirect: any
+			Loader: any
 		}
 		$java: any
 		$reload?: () => void
