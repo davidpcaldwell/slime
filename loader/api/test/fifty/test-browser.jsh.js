@@ -44,12 +44,6 @@
 					};
 				})();
 
-				jsh.shell.console("resources = " + paths.toShell.base);
-
-				jsh.shell.console("serve = " + paths.toResult.base);
-
-				jsh.shell.console("path = " + paths.toPage.relative);
-
 				var loader = new jsh.file.Loader({ directory: jsh.shell.jsh.src });
 				var code = {
 					server: loader.factory("loader/browser/test/server.js")
@@ -76,6 +70,8 @@
 						]
 					}).toString()
 				});
+
+				//	TODO	make it possible to retrieve results of the tests; probably need to start browser in thread
 			}
 		)({ options: {}, arguments: jsh.script.arguments })
 	}

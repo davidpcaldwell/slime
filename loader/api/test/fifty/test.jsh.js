@@ -30,7 +30,7 @@
 		}
 
 		/** @type { slime.definition.verify.Exports } */
-		var verifyApi = jsh.loader.file(jsh.shell.jsh.src.getFile("loader/api/verify.js"));
+		var verify = jsh.loader.file(jsh.shell.jsh.src.getFile("loader/api/verify.js"));
 
 		var console = new function() {
 			var write = function(indent,string) {
@@ -53,6 +53,16 @@
 		}
 
 		var execute = function(file,part) {
+			var fiftyLoader = jsh.script.loader;
+
+			/** @type { slime.fifty.test.internal.run } */
+			var implementation = fiftyLoader.file("test.js", {
+				library: {
+					verify: verify
+				},
+				console: console
+			});
+
 			var delegate = new jsh.file.Loader({ directory: file.parent });
 
 			var loader = Object.assign(
@@ -72,14 +82,6 @@
 					}
 				}
 			)
-
-			/** @type { slime.fifty.test.internal.run } */
-			var implementation = jsh.script.loader.file("test.js", {
-				library: {
-					verify: verifyApi
-				},
-				console: console
-			});
 
 			return implementation(
 				loader,

@@ -53,6 +53,16 @@
 			 * @param { string } part
 			 */
 			var execute = function(file,part) {
+				var fiftyLoader = new inonit.loader.Loader("../../../../loader/api/test/fifty/");
+
+				/** @type { slime.fifty.test.internal.run } */
+				var implementation = fiftyLoader.file("test.js", {
+					library: {
+						verify: verify
+					},
+					console: console
+				});
+
 				var path = (function(file) {
 					var elements = file.split("/");
 					var parent = elements.slice(0, elements.length-1).join("/") + "/";
@@ -72,19 +82,11 @@
 					}
 				);
 
-				/** @type { slime.fifty.test.internal.run } */
-				var implementation = inonit.loader.loader.file("../../../../loader/api/test/fifty/test.js", {
-					library: {
-						verify: verify
-					},
-					console: console
-				});
-
 				return implementation(
 					loader,
 					path.file,
 					part
-				)
+				);
 			};
 
 			var result = execute(query.file, "suite");
