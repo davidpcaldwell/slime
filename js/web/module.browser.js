@@ -1,8 +1,7 @@
 //@ts-check
 (
-	function($loader,$exports) {
-		Object.assign(
-			$exports,
+	function($loader,$export) {
+		$export(
 			$loader.module("module.js", {
 				window: window,
 				escaper: {
@@ -13,4 +12,4 @@
 		)
 	}
 //@ts-ignore
-)($loader,$exports);
+)($loader,$export);

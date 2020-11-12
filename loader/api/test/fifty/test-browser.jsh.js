@@ -31,10 +31,16 @@
 						to: page
 					});
 
+					var toFile = jsh.file.navigate({
+						from: page,
+						to: target.file
+					});
+
 					return {
 						toShell: clientToShell,
 						toResult: toResult,
-						toPage: toPage
+						toPage: toPage,
+						toFile: toFile
 					};
 				})();
 
@@ -58,7 +64,17 @@
 				});
 
 				chrome.run({
-					uri: "http://127.0.0.1:" + tomcat.port + "/" + paths.toPage.relative
+					uri: new jsh.js.web.Url({
+						scheme: "http",
+						authority: {
+							host: "127.0.0.1",
+							port: tomcat.port
+						},
+						path: "/" + paths.toPage.relative,
+						query: [
+							{ name: "file", value: paths.toFile.relative }
+						]
+					}).toString()
 				});
 			}
 		)({ options: {}, arguments: jsh.script.arguments })
