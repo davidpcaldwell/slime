@@ -69,11 +69,43 @@
 			}
 		}
 
-		var scope = Scope();
-		var verify = Verify(scope);
+		var scope;
+		var verify;
 
 		var tests = {
 			types: {}
+		};
+
+		var run = function(code,name) {
+			if (!code) throw new TypeError("Cannot run scope " + code);
+			if (!name) name = $api.Function.result(
+				getPropertyPathFrom(tests)(code),
+				function(array) {
+					return (array) ? array.join(".") : array;
+				}
+			);
+			if (!name) name = "run";
+			if (scope) {
+				scope.start(name);
+			} else {
+				console.start(0, name);
+			}
+			var was = {
+				scope: scope,
+				verify: verify
+			};
+			scope = Scope({ parent: scope });
+			verify = Verify(scope);
+			code();
+			var result = scope.success;
+			scope = was.scope;
+			verify = was.verify;
+			if (scope) {
+				scope.end(name,result);
+			} else {
+				console.end(0, name, result);
+			}
+			return result;
 		};
 
 		$export(
@@ -85,45 +117,25 @@
 			 */
 			function(loader,path,part) {
 				var global = (function() { return this; })();
+
+				var scope = {
+					global: global,
+					$loader: loader,
+					run: run,
+					tests: tests,
+					verify: function() {
+						return verify.apply(this,arguments);
+					}
+				};
+
+				//	TODO	deprecate
+				Object.assign(scope, {
+					jsh: global.jsh
+				});
+
 				loader.run(
 					path,
-					$api.Object.compose(
-						(global.jsh) ? { jsh: global.jsh } : {},
-						{
-							global: (function() { return this; })()
-						},
-						{
-							$loader: loader,
-							run: function(code,name) {
-								if (!code) throw new TypeError("Cannot run scope " + code);
-								if (!name) name = $api.Function.result(
-									getPropertyPathFrom(tests)(code),
-									function(array) {
-										return (array) ? array.join(".") : array;
-									}
-								);
-								if (!name) name = "run";
-								scope.start(name);
-								var was = {
-									scope: scope,
-									verify: verify
-								};
-								scope = Scope({ parent: scope });
-								verify = Verify(scope);
-								code();
-								var result = scope.success;
-								scope = was.scope;
-								verify = was.verify;
-								scope.end(name,result);
-							},
-							tests: tests
-						},
-						{
-							verify: function() {
-								return verify.apply(this,arguments);
-							}
-						}
-					)
+					scope
 				);
 
 				/** @type { any } */
@@ -134,15 +146,10 @@
 				if (typeof(target) == "function") {
 					/** @type { () => void } */
 					var callable = target;
-					//	TODO	probably should print test being run as well in case part is not suite
-					console.start(0, path + ":" + part);
-					callable();
-					console.end(0, path + ":" + part, scope.success);
+					return run(callable, path + ":" + part);
 				} else {
 					throw new TypeError("Not a function: " + part);
 				}
-
-				return scope.success;
 			}
 		)
 	}
