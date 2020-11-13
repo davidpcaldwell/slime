@@ -7,8 +7,6 @@
 	function(jsh) {
 		$api.Function.pipe(
 			function(p) {
-				jsh.shell.console("Fifty! " + JSON.stringify(p.arguments));
-
 				var page = jsh.script.file.parent.getFile("test-browser.html");
 				var client = jsh.shell.jsh.src.getFile("loader/browser/client.js");
 

@@ -20,9 +20,9 @@ namespace slime.fifty {
 
 	namespace test.internal {
 		interface Console {
-			start: (depth: number, name: string) => void
-			test: (depth: number, message: string) => void
-			end: (depth: number, name: string, result: boolean) => void
+			start: (scope: Scope, name: string) => void
+			test: (scope: Scope, message: string, result: boolean) => void
+			end: (scope: Scope, name: string, result: boolean) => void
 		}
 
 		interface Scope {

@@ -1,10 +1,23 @@
 <html>
 	<head>
 		<title>Fifty: Testing</title>
+		<link rel="stylesheet" type="text/css" href="test-browser.css" />
 		<script src="../../../browser/client.js"></script>
 		<script src="test-browser.js"></script>
 	</head>
 	<body>
 		<h1>Test Results</h1>
+		<template id="scope">
+			<div data-fifty-id="scope">
+				<div data-fifty-id="start"></div>
+				<div data-fifty-id="tests"></div>
+				<div data-fifty-id="end"></div>
+			</div>
+		</template>
+		<template id="test">
+			<div>
+				<span data-fifty-id="message"></span>
+			</div>
+		</template>
 	</body>
 </html>
