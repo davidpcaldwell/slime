@@ -1,0 +1,27 @@
+* {
+	font-family: arial;
+}
+
+.success {
+	background-color: green;
+	color: white;
+}
+
+.failure {
+	background-color: red;
+	color: white;
+}
+
+body>div {
+	padding: 0.5em;
+}
+
+div>div {
+	padding: 0.1em 0.0em;
+}
+div[data-fifty-id="tests"]>div {
+	padding: 0.1em 0.8em;
+}
+div[data-fifty-id="tests"] {
+	border-left: 1px solid white;
+}

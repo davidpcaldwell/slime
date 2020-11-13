@@ -32,25 +32,31 @@
 		/** @type { slime.definition.verify.Exports } */
 		var verify = jsh.loader.file(jsh.shell.jsh.src.getFile("loader/api/verify.js"));
 
-		var console = new function() {
-			var write = function(indent,string) {
+		var console = (function() {
+			var write = function(scope,string) {
+				var indent = (scope) ? scope.depth() + 1 : 0;
 				var prefix = new Array(indent + 1).join("  ")
 				jsh.shell.console(prefix + string);
 			};
 
-			this.start = function(indent,name) {
-				write(indent, "Running: " + name);
+			/** @type { slime.fifty.test.internal.Console } */
+			var rv = {
+				start: function(scope,name) {
+					write(scope, "Running: " + name);
+				},
+
+				end: function(scope,name,result) {
+					var resultString = (result) ? "PASSED" : "FAILED"
+					write(scope, resultString + ": " + name);
+				},
+
+				test: function(scope,message,result) {
+					write(scope, message);
+				}
 			};
 
-			this.end = function(indent,name,result) {
-				var resultString = (result) ? "PASSED" : "FAILED"
-				write(indent, resultString + ": " + name);
-			};
-
-			this.test = function(indent,message) {
-				write(indent, message);
-			}
-		}
+			return rv;
+		})();
 
 		var execute = function(file,part) {
 			var fiftyLoader = jsh.script.loader;

@@ -20,27 +20,25 @@
 			return new function() {
 				this.success = true;
 
-				this.parent = (p.parent) ? p.parent : null;
-
 				this.depth = function() {
-					return (this.parent) ? this.parent.depth() + 1 : 0;
+					return (p.parent) ? p.parent.depth() + 1 : 0;
 				};
+
+				this.fail = function() {
+					this.success = false;
+					if (p.parent) p.parent.fail();
+				}
 
 				this.toString = function() {
 					return "Scope: " + this.depth();
 				}
 
 				this.start = function(name) {
-					console.start(this.depth() + 1, name);
+					console.start(this, name);
 				}
 
 				this.end = function(name,result) {
-					console.end(this.depth() + 1, name, result);
-				}
-
-				this.fail = function() {
-					this.success = false;
-					if (p.parent) p.parent.fail();
+					console.end(this, name, result);
 				}
 
 				/** @type { slime.definition.verify.Scope["test"] } */
@@ -53,7 +51,7 @@
 					} else {
 						throw new TypeError();
 					}
-					console.test(this.depth() + 1, result.message);
+					console.test(this, result.message, result.success);
 				}
 			}
 		}
@@ -88,7 +86,7 @@
 			if (scope) {
 				scope.start(name);
 			} else {
-				console.start(0, name);
+				console.start(null, name);
 			}
 			var was = {
 				scope: scope,
@@ -103,7 +101,7 @@
 			if (scope) {
 				scope.end(name,result);
 			} else {
-				console.end(0, name, result);
+				console.end(null, name, result);
 			}
 			return result;
 		};
