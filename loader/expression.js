@@ -557,7 +557,9 @@
 						 */
 						function retarget(path,context,target) {
 							// return methods[name].call(target,p.get(path),scope);
-							return methods[name].call(target,this.get(path),context);
+							var resource = this.get(path);
+							if (!resource) throw new Error("Not found: " + path);
+							return methods[name].call(target,resource,context);
 						}
 					);
 				};

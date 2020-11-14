@@ -26,7 +26,8 @@ namespace slime.fifty.test.data.shopping {
 			verify: slime.fifty.test.verify,
 			tests: slime.fifty.test.tests,
 			$loader: slime.fifty.test.$loader,
-			run: slime.fifty.test.run
+			run: slime.fifty.test.run,
+			load: slime.fifty.test.load
 		) {
 			tests.types.Database = function(database: Database) {
 				var before = database.items.length;
@@ -48,8 +49,9 @@ namespace slime.fifty.test.data.shopping {
 				var module: Exports = $loader.module("module.js");
 				tests.types.Exports(module);
 				run(tests.subsuite);
+				load("load/child.fifty.ts");
 			}
 		}
 	//@ts-ignore
-	)(verify, tests, $loader, run)
+	)(verify, tests, $loader, run, load)
 }
