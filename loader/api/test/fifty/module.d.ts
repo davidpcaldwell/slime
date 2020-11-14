@@ -41,6 +41,6 @@ namespace slime.fifty {
 			end: (name: string, result: boolean) => void
 		}
 
-		type run = (loader: slime.fifty.test.$loader, path: string, part: string) => boolean
+		type run = (loader: slime.fifty.test.$loader, path: string, part?: string) => boolean
 	}
 }

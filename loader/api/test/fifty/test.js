@@ -160,12 +160,7 @@
 		}
 
 		$export(
-			/**
-			 * @param { slime.fifty.test.$loader } loader
-			 * @param { string } path
-			 * @param { string } part
-			 * @returns { boolean }
-			 */
+			/** @type { slime.fifty.test.internal.run } */
 			function(loader,path,part) {
 				return load(loader,path,part);
 			}
