@@ -306,6 +306,9 @@
 							verify: p.verify,
 							run: function(f,name) {
 								f();
+							},
+							load: function() {
+								Packages.java.lang.System.err.println("WARNING: Fifty load() not implemented in $jsapi.");
 							}
 						}
 					);

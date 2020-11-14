@@ -16,6 +16,11 @@ namespace slime.fifty {
 		}
 
 		type tests = any
+
+		interface load {
+			<T>(path: string, part: string, t: T): (t: T) => void
+			<T>(path: string, part?: string): () => void
+		}
 	}
 
 	namespace test.internal {

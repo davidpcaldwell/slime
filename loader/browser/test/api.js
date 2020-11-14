@@ -260,6 +260,9 @@
 								verify: p.verify,
 								run: function(f,name) {
 									f();
+								},
+								load: function() {
+									console.warn("Fifty load() not implemented in $jsapi.");
 								}
 							}
 						);

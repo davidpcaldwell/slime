@@ -70,41 +70,94 @@
 		var scope;
 		var verify;
 
-		var tests = {
-			types: {}
+		var runner = function(tests) {
+			return function(code,name,argument) {
+				if (!code) throw new TypeError("Cannot run scope " + code);
+				if (!name) name = $api.Function.result(
+					getPropertyPathFrom(tests)(code),
+					function(array) {
+						return (array) ? array.join(".") : array;
+					}
+				);
+				if (!name) name = "run";
+				if (scope) {
+					scope.start(name);
+				} else {
+					console.start(null, name);
+				}
+				var was = {
+					scope: scope,
+					verify: verify
+				};
+				scope = Scope({ parent: scope });
+				verify = Verify(scope);
+				code(argument);
+				var result = scope.success;
+				scope = was.scope;
+				verify = was.verify;
+				if (scope) {
+					scope.end(name,result);
+				} else {
+					console.end(null, name, result);
+				}
+				return result;
+			}
 		};
 
-		var run = function(code,name) {
-			if (!code) throw new TypeError("Cannot run scope " + code);
-			if (!name) name = $api.Function.result(
-				getPropertyPathFrom(tests)(code),
-				function(array) {
-					return (array) ? array.join(".") : array;
-				}
-			);
-			if (!name) name = "run";
-			if (scope) {
-				scope.start(name);
-			} else {
-				console.start(null, name);
+		var parsePath = function(path) {
+			var tokens = path.split("/");
+			return {
+				folder: tokens.slice(0, tokens.length-1).join("/") + "/",
+				file: tokens[tokens.length-1]
 			}
-			var was = {
-				scope: scope,
-				verify: verify
-			};
-			scope = Scope({ parent: scope });
-			verify = Verify(scope);
-			code();
-			var result = scope.success;
-			scope = was.scope;
-			verify = was.verify;
-			if (scope) {
-				scope.end(name,result);
-			} else {
-				console.end(null, name, result);
-			}
-			return result;
 		};
+
+		var load = function recurse(loader,path,part,argument) {
+			if (!part) part = "suite";
+
+			var global = (function() { return this; })();
+
+			var tests = {
+				types: {}
+			};
+
+			var scope = {
+				global: global,
+				$loader: loader,
+				run: runner(tests),
+				load: function(at,part,argument) {
+					var path = parsePath(at);
+					recurse(loader.Child(path.folder), path.file, part, argument);
+				},
+				tests: tests,
+				verify: function() {
+					return verify.apply(this,arguments);
+				}
+			};
+
+			//	TODO	deprecate
+			Object.assign(scope, {
+				jsh: global.jsh
+			});
+
+			loader.run(
+				path,
+				scope
+			);
+
+			/** @type { any } */
+			var target = scope.tests;
+			part.split(".").forEach(function(token) {
+				target = $api.Function.optionalChain(token)(target)
+			});
+			if (typeof(target) == "function") {
+				/** @type { (argument: any) => void } */
+				var callable = target;
+				return runner(tests)(callable, path + ":" + part,argument);
+			} else {
+				throw new TypeError("Not a function: " + part);
+			}
+		}
 
 		$export(
 			/**
@@ -114,40 +167,7 @@
 			 * @returns { boolean }
 			 */
 			function(loader,path,part) {
-				var global = (function() { return this; })();
-
-				var scope = {
-					global: global,
-					$loader: loader,
-					run: run,
-					tests: tests,
-					verify: function() {
-						return verify.apply(this,arguments);
-					}
-				};
-
-				//	TODO	deprecate
-				Object.assign(scope, {
-					jsh: global.jsh
-				});
-
-				loader.run(
-					path,
-					scope
-				);
-
-				/** @type { any } */
-				var target = tests;
-				part.split(".").forEach(function(token) {
-					target = $api.Function.optionalChain(token)(target)
-				});
-				if (typeof(target) == "function") {
-					/** @type { () => void } */
-					var callable = target;
-					return run(callable, path + ":" + part);
-				} else {
-					throw new TypeError("Not a function: " + part);
-				}
+				return load(loader,path,part);
 			}
 		)
 	}
