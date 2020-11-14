@@ -294,26 +294,42 @@
 				 * @param { { path: string, verify: slime.definition.verify.Verify }} p
 				 */
 				delegate.fifty = function(p) {
-					var tests = { types: {} };
-					delegate.run(
-						p.path,
-						{
-							global: (function() { return this; })(),
-							$loader: delegate,
-							tests: tests,
-							//	TODO	for now we just flatten everything and run within a single scope, using a single verify and
-							//			just invoking the function during run()
-							verify: p.verify,
-							run: function(f,name) {
-								f();
-							},
-							load: function() {
-								Packages.java.lang.System.err.println("WARNING: Fifty load() not implemented in $jsapi.");
-							}
+					var slime = new jsh.file.Loader({ directory: jsh.shell.jsh.src });
+
+					var verify = slime.file("loader/api/verify.js");
+
+					var run = slime.file("loader/api/test/fifty/test.js", {
+						library: {
+							verify: verify
+						},
+						console: {
+							start: function() {},
+							end: function() {},
+							test: function() {},
 						}
+					});
+
+					var path = (function(path) {
+						var split = path.split("/");
+						if (split.length == 1) {
+							return {
+								folder: "",
+								file: split[0]
+							}
+						} else {
+							return {
+								folder: split.slice(0,split.length-1).join("/") + "/",
+								file: split[split.length-1]
+							};
+						}
+					})(p.path);
+
+					var result = run(
+						(path.folder) ? delegate.Child(path.folder) : delegate,
+						path.file
 					);
-					if (!tests.suite) throw new TypeError("A 'suite' function must be added to the tests object.");
-					tests.suite();
+
+					p.verify(result,"Fifty " + p.path + " result").is(true);
 				}
 
 				return delegate;
