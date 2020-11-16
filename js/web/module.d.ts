@@ -62,6 +62,9 @@ namespace slime.web {
 			}
 		}
 		Form: new (p: Form.Argument) => Form
+		/**
+		 * Provides browser-specific APIs.
+		 */
 		window?: {
 			url: () => Url
 		}

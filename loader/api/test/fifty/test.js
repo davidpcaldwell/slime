@@ -121,7 +121,7 @@
 				types: {}
 			};
 
-			var scope = {
+			var fifty = {
 				global: global,
 				$loader: loader,
 				run: runner(tests),
@@ -134,6 +134,20 @@
 					return verify.apply(this,arguments);
 				}
 			};
+
+			var scope = {
+				fifty: fifty
+			}
+
+			//	TODO	deprecate
+			Object.assign(scope, {
+				global: fifty.global,
+				$loader: fifty.$loader,
+				run: fifty.run,
+				load: fifty.load,
+				tests: fifty.tests,
+				verify: fifty.verify
+			});
 
 			//	TODO	deprecate
 			Object.assign(scope, {
