@@ -91,6 +91,10 @@
 						}
 					},
 					updateSubmodule: function(p) {
+						var subcheckout = base.getSubdirectory(p.path);
+						if (!subcheckout) {
+							throw new Error("Submodule not found at " + p.path + " of " + base);
+						}
 						var repository = castToLocal(jsh.tools.git.Repository({ directory: base.getSubdirectory(p.path) }));
 
 						jsh.shell.console("Update subrepository " + repository + " ...");
