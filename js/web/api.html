@@ -46,7 +46,7 @@ END LICENSE
 		scope.context = context;
 		scope.module = $jsapi.loader.module("module.js", context);
 	]]></script>
-	<div>__DESCRIPTION__</div>
+	<div>See <a href="module.d.ts">TypeScript</a>.</div>
 	<div class="type">
 		<a class="type" name="types.pair">pair</a>
 		<span>An object representing a name-value pair.</span>
@@ -378,36 +378,15 @@ END LICENSE
 					</li>
 				</ul>
 			</li>
-			<li class="constructor">
-				<div class="name">Form</div>
-				<span>__DESCRIPTION__</span>
-				<div class="arguments">
-					<div class="label">Arguments</div>
-					<ol>
-					</ol>
-				</div>
-				<div class="instances">
-					<div class="label">Instances</div>
-					<span class="type">__TYPE__</span>
-					<span>__DESCRIPTION__</span>
-				</div>
-				<script type="application/x.jsapi#tests"><![CDATA[
-					var one = new module.Form({
-						urlencoded: "foo=bar&a=b"
-					});
-					verify(one).controls[0].name.is("foo");
-					verify(one).controls[0].value.is("bar");
-					verify(one).controls[1].name.is("a");
-					verify(one).controls[1].value.is("b");
-
-					var controls = [{ name: "foo", value: "baz" }, { name: "c", value: "d" }];
-					var two = new module.Form({
-						controls: controls
-					});
-					verify(two).getUrlencoded().is("foo=baz&c=d");
-				]]></script>
-			</li>
 		</ul>
+	</div>
+	<div jsapi:id="fifty">
+		<script type="application/x.jsapi#tests">
+			$jsapi.loader.fifty({
+				path: "module.fifty.ts",
+				verify: verify
+			});
+		</script>
 	</div>
 </body>
 </html>

@@ -21,6 +21,18 @@ namespace slime.fifty {
 			<T>(path: string, part: string, t: T): (t: T) => void
 			<T>(path: string, part?: string): () => void
 		}
+
+		interface kit {
+			verify: verify
+			$loader: $loader
+			run: run
+			tests: tests
+			load: load
+			global: {
+				jsh?: jsh
+				window?: Window
+			}
+		}
 	}
 
 	namespace test.internal {
