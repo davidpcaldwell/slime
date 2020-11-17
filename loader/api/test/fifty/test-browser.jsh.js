@@ -26,7 +26,7 @@
 						to: target.file
 					});
 
-					var toPage = jsh.file.navigate({
+					var toHtmlRunner = jsh.file.navigate({
 						from: toResult.base,
 						to: page
 					});
@@ -39,7 +39,7 @@
 					return {
 						toShell: clientToShell,
 						toResult: toResult,
-						toPage: toPage,
+						toHtmlRunner: toHtmlRunner,
 						toFile: toFile
 					};
 				})();
@@ -53,12 +53,10 @@
 				var start = code.server();
 
 				var resultsPath = (p.options.interactive) ? void(0) : (function() {
-					var tokens = paths.toPage.relative.split("/");
+					var tokens = paths.toHtmlRunner.relative.split("/");
 					tokens[tokens.length-1] = "result";
 					return tokens.join("/");
 				})();
-
-				jsh.shell.console("resultsPath = " + resultsPath);
 
 				var tomcat = start(paths.toShell.base, paths.toResult.base, resultsPath);
 
@@ -78,7 +76,7 @@
 								host: "127.0.0.1",
 								port: tomcat.port
 							},
-							path: "/" + paths.toPage.relative,
+							path: "/" + paths.toHtmlRunner.relative,
 							query: [
 								{ name: "file", value: paths.toFile.relative },
 								{ name: "results", value: String(Boolean(resultsPath)) }
@@ -95,7 +93,6 @@
 				if (p.options.interactive) {
 					run();
 				} else {
-					jsh.shell.console("Unimplemented: non-interactive");
 					jsh.java.Thread.start(run);
 					var resultsUrl = new jsh.js.web.Url({
 						scheme: "http",

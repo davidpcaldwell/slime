@@ -149,7 +149,7 @@
 			 * @param { string } part
 			 */
 			var execute = function(file,part) {
-				var fiftyLoader = new inonit.loader.Loader("../../../../loader/api/test/fifty/");
+				var fiftyLoader = new inonit.loader.Loader(inonit.loader.nugget.page.base);
 
 				/** @type { slime.fifty.test.internal.run } */
 				var implementation = fiftyLoader.file("test.js", {
@@ -167,7 +167,7 @@
 						parent: parent,
 						file: file
 					}
-				})(file);
+				})(inonit.loader.nugget.page.relative(file));
 
 				var loader = Object.assign(
 					new inonit.loader.Loader(path.parent),
@@ -196,8 +196,6 @@
 				var payload = result;
 				xhr.send(JSON.stringify(payload));
 			}
-
-			debugger;
 		});
 	}
 //@ts-ignore

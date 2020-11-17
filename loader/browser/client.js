@@ -259,31 +259,35 @@
 				};
 				Loader.series = platform.Loader.series;
 
-				var loader = new Loader("");
-
-				this.run = function(path,scope,target) {
-					return loader.run.apply(loader,arguments);
-				};
-
-				this.file = function(path,$context) {
-					return loader.file.apply(loader,arguments);
-				};
-
-				this.module = function(path,$context) {
-					return loader.module.apply(loader,arguments);
-				}
-
-				this.value = function(path,scope,target) {
-					return loader.value.apply(loader,arguments);
-				};
-
-				this.get = function(path) {
-					return loader.get.apply(loader,arguments);
-				}
-
 				var getPageBase = function() {
 					return getCurrentBase().split("/").slice(0,-1).join("/") + "/";
 				};
+
+				(
+					function() {
+						var loader = new Loader("");
+
+						this.run = function(path,scope,target) {
+							return loader.run.apply(loader,arguments);
+						};
+
+						this.file = function(path,$context) {
+							return loader.file.apply(loader,arguments);
+						};
+
+						this.module = function(path,$context) {
+							return loader.module.apply(loader,arguments);
+						}
+
+						this.value = function(path,scope,target) {
+							return loader.value.apply(loader,arguments);
+						};
+
+						this.get = function(path) {
+							return loader.get.apply(loader,arguments);
+						};
+					}
+				).call(this);
 
 				(function() {
 					this.loader = new Loader(getPageBase());
