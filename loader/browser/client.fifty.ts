@@ -45,12 +45,11 @@ namespace slime.browser {
 
 (
 	function(
-		verify: slime.fifty.test.verify,
-		tests: slime.fifty.test.tests
+		fifty: slime.fifty.test.kit
 	) {
-		tests.suite = function() {
-			verify(1).is(1);
+		fifty.tests.suite = function() {
+			fifty.verify(1).is(1);
 		}
 	}
 //@ts-ignore
-)(verify, tests)
+)(fifty)

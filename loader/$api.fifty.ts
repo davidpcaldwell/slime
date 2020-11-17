@@ -1,13 +1,19 @@
 //@ts-check
 (
-	function(
-		verify: slime.definition.verify.Verify,
-		$api: $api,
-		tests: any
-	) {
-		tests.exports = {};
+	function(fifty: slime.fifty.test.kit) {
+		fifty.tests.exports = {};
+	}
+//@ts-ignore
+)(fifty);
 
-		tests.exports.Error = function() {
+(
+	function(
+		fifty: slime.fifty.test.kit,
+		$api: $api
+	) {
+		var verify = fifty.verify;
+
+		fifty.tests.exports.Error = function() {
 			var Type = $api.Error.Type({
 				name: "foo",
 				extends: TypeError
@@ -17,11 +23,12 @@
 				throw new Type("bar");
 			} catch (e) {
 				//	Given that stack is non-standard, not adding this to suite and not really asserting on its format
-				verify("stack").is(e.stack);
+				var error: Error = e;
+				verify(error).stack.is.not(void(0));
 			}
 		};
 
-		tests.suite = function() {
+		fifty.tests.Error = function() {
 			var CustomError = $api.Error.Type({
 				name: "Custom"
 			});
@@ -68,4 +75,15 @@
 		}
 	}
 //@ts-ignore
-)(verify,$api,tests)
+)(fifty, $api);
+
+(
+	function(
+		fifty: slime.fifty.test.kit,
+	) {
+		fifty.tests.suite = function() {
+			run(fifty.tests.Error);
+		}
+	}
+//@ts-ignore
+)(fifty)

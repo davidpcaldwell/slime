@@ -1,4 +1,6 @@
 window.addEventListener("load", function() {
+	debugger;
+
 	// TODO: Figure out what to do with deprecation longer-term; right now, just trying to debug browser test runner
 	inonit.loader.$api.deprecate.warning = function() {
 	}
