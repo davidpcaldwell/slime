@@ -73,8 +73,6 @@
 		}
 
 		var getCurrentScriptElement = function() {
-			//	TODO	Undocumented
-			if ($context.script) return $context.script;
 			var scripts = document.getElementsByTagName("script");
 			return scripts[scripts.length-1];
 		}
@@ -126,11 +124,7 @@
 			return new Bootstrap(current);
 		}
 
-		var bootstrap = (function() {
-			//	TODO	Undocumented
-			if ($context.base) return new Bootstrap(getCurrent($context.base));
-			return getCurrentScript();
-		})();
+		var bootstrap = getCurrentScript();
 
 		//	Now even if the object existed before, we have obtained the specified properties and we replace the existing object with
 		//	this one
@@ -317,10 +311,6 @@
 
 				//	Undocumented
 				this.base = bootstrap.base;
-
-				if ($context.base) {
-					this.location = $context.base;
-				}
 
 				//	For use in scripts that are loaded directly by the browser rather than via this loader
 				this.$api = platform.$api;

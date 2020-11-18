@@ -12,8 +12,6 @@ namespace slime.browser {
 		 */
 		XMLHttpRequest?: typeof XMLHttpRequest
 
-		script?: any
-		base?: any
 		$slime?: {
 			flags?: any
 		}
