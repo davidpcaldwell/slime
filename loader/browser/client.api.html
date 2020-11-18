@@ -23,41 +23,9 @@ END LICENSE
 		The SLIME browser-based code loader.
 	</div>
 	<div>
-		<h1><a name="configuration">Configuration</a></h1>
-		<div>
-			The <code>inonit.loader</code> module is configured specially, given that it bootstraps the module system. To configure
-			the module, one must create a global <code>inonit</code> object with a <code>loader</code> property containing
-			configuration information. If this <code>inonit.loader</code> object is present, its properties are used to create the
-			functioning <code>inonit.loader</code> object (which replaces the configuration object).
-		</div>
 		<div>
 			The following properties are used for configuration:
 			<ul>
-				<li class="function">
-					<div class="name">debug</div>
-					<span>
-						(optional; if unspecified, a default implementation that does nothing will be supplied)
-						A one-argument function that is passed a string argument corresponding to a message
-						this module would like to log.
-					</span>
-					<div class="arguments">
-						<div class="label">Arguments</div>
-						<ol>
-							<li class="value">
-								<span class="type">string</span>
-								<span>A message to emit.</span>
-							</li>
-						</ol>
-					</div>
-				</li>
-				<li class="value">
-					<div class="name">XMLHttpRequest</div>
-					<span class="type">function</span>
-					<span>
-						The implementation of <code>XMLHttpRequest</code> to use. By default, the
-						implementation attempts to use the implementation in the browser (including ActiveX implementations).
-					</span>
-				</li>
 				<li class="function">
 					<div class="name">callback</div>
 					<span>

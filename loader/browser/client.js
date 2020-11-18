@@ -37,9 +37,6 @@
 			}
 		)();
 
-		//	TODO	Undocumented for now; seemingly unused
-		if (!$context.url) $context.url = void(0);
-
 		if (!$context.callback) $context.callback = function(){};
 
 		/** @type { slime.browser.Exports["loader"] } */
@@ -132,7 +129,6 @@
 		}
 
 		var bootstrap = (function() {
-			if ($context.url) return new Bootstrap($context.url);
 			//	TODO	Undocumented
 			if ($context.base) return new Bootstrap(getCurrent($context.base));
 			return getCurrentScript();
