@@ -191,7 +191,18 @@
 				return $exports;
 			})();
 
-			var $api = $platform.execute( $slime.getRuntimeScript("$api.js"), { $platform: $platform, $slime: $slime }, null);
+			var $api = $platform.execute(
+				$slime.getRuntimeScript("$api.js"),
+				{
+					$platform: $platform,
+					$slime: {
+						getRuntimeScript: function(path) {
+							return $slime.getRuntimeScript(path);
+						}
+					}
+				},
+				null
+			);
 
 			var mime = (
 				/**
@@ -310,8 +321,6 @@
 				}
 			)({ Type: void(0) });
 
-			if (!$slime.flags) $slime.flags = {};
-
 			//	TODO	these property declarations trick out TypeScript while the below IIFE (which has a forgotten purpose)
 			//			is refactored or removed
 
@@ -397,6 +406,7 @@
 			//	resource.js { name, code }: forcibly set based on other properties
 			//	TODO	re-work resource.js
 
+			/** @type { slime.runtime.$slime.CoffeeScript } */
 			var $coffee = (function() {
 				//	TODO	rename to getCoffeescript to make consistent with camel case.
 				var coffeeScript = $slime.getCoffeeScript();
