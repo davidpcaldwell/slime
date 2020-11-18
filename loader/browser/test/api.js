@@ -204,26 +204,26 @@
 						//			that has a terminal file name, probably needs to strip that file name to find the
 						//			base from which to load the module at 'path'
 						return inonit.loader.module(
-							inonit.loader.nugget.page.relative(base+path),
+							base+path,
 							context
 						);
 					};
 					this.file = function(path,context) {
 						return inonit.loader.file(
-							inonit.loader.nugget.page.relative(base+path),
+							base+path,
 							context
 						);
 					};
 					this.run = function(path,scope,target) {
 						return inonit.loader.run(
-							inonit.loader.nugget.page.relative(base+path),
+							base+path,
 							scope,
 							target
 						);
 					};
 					this.value = function(path,scope,target) {
 						return inonit.loader.value(
-							inonit.loader.nugget.page.relative(base+path),
+							base+path,
 							scope,
 							target
 						);
@@ -242,7 +242,7 @@
 					this.coffee = window.CoffeeScript;
 
 					this.get = function(path) {
-						return inonit.loader.get(inonit.loader.nugget.page.relative(base+path));
+						return inonit.loader.get(base+path);
 					}
 
 					//	TODO	add this.scenario; see jsh/unit/jsapi.js

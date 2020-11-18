@@ -13,31 +13,29 @@
 //@ts-check
 (
 	/**
-	 * @param { slime.browser.Settings } $context
+	 * @param { slime.browser.Settings } $context - provided by setting `inonit.loader` before loading this script
 	 * @param { slime.browser.Context } window
 	 */
 	function($context,window) {
-		if (!$context.debug) $context.debug = function(message) {};
-		if ($context.XMLHttpRequest) {
-			window.XMLHttpRequest = $context.XMLHttpRequest;
-		}
-		if (!window.XMLHttpRequest) {
-			//@ts-ignore
-			window.XMLHttpRequest = function() {
-				var req = false;
-				try {
-					req = new ActiveXObject("Msxml2.XMLHTTP");
-				} catch(e) {
-					try {
-						req = new ActiveXObject("Microsoft.XMLHTTP");
-					} catch(e) {
-						$context.debug("Error instantiating XMLHttpRequest using ActiveX");
-						throw e;
+		(
+			function setXmlHttpRequest() {
+				if ($context.XMLHttpRequest) {
+					window.XMLHttpRequest = $context.XMLHttpRequest;
+				}
+				if (!window.XMLHttpRequest) {
+					//@ts-ignore
+					window.XMLHttpRequest = function() {
+						var req = false;
+						try {
+							req = new ActiveXObject("Msxml2.XMLHTTP");
+						} catch(e) {
+							req = new ActiveXObject("Microsoft.XMLHTTP");
+						}
+						return req;
 					}
 				}
-				return req;
 			}
-		}
+		)();
 
 		//	TODO	Undocumented for now; seemingly unused
 		if (!$context.url) $context.url = void(0);
@@ -160,7 +158,6 @@
 					}
 
 					var get = function(path) {
-						$context.debug("Fetching: " + path);
 						var req = new XMLHttpRequest();
 						req.open("GET", path, false);
 						req.send(null);
@@ -265,7 +262,7 @@
 
 				(
 					function() {
-						var loader = new Loader("");
+						var loader = new Loader(getPageBase());
 
 						this.run = function(path,scope,target) {
 							return loader.run.apply(loader,arguments);
