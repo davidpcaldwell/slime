@@ -466,12 +466,12 @@
 			}
 
 			/**
-			 * @template TT
-			 * @param { TT } scope
-			 * @returns { TT & { $exports: any, $export: any } }
+			 * @template PSLE_T
+			 * @param { PSLE_T } scope
+			 * @returns { PSLE_T & { $exports: any, $export: any } }
 			 */
 			var toExportScope = function(scope) {
-				/** @type { TT & { $exports: any, $export: any } } */
+				/** @type { PSLE_T & { $exports: any, $export: any } } */
 				var rv = Object.assign(scope, { $exports: void(0), $export: void(0) });
 				var $exports = {};
 				var $export = function(v) {
