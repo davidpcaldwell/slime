@@ -162,7 +162,7 @@
 									}
 								}
 							);
-						};
+						}
 						return {
 							contentType: req.getResponseHeader("Content-Type"),
 							responseText: req.responseText
@@ -189,9 +189,19 @@
 					this.getCode = getCode;
 				}
 
-				// TODO: with the reorganization of the platform, 'runtime' is probably the best name for this object now
-				var platform = (function() {
-					var $slime = {
+				var runtime = (function($slime,$engine) {
+					var rv = eval(fetcher.getCode(bootstrap.getRelativePath("expression.js")));
+					rv.$api.deprecate.warning = function(access) {
+						debugger;
+					}
+					rv.$api.experimental.warning = function(access) {
+						//	TODO	should configure this via property of inonit.loader
+						//	Can set breakpoint here to pop into debugger on experimental accesses
+						var breakpoint = null;
+					}
+					return rv;
+				})(
+					/* $slime */ {
 						getRuntimeScript: function(path) {
 							return {
 								name: bootstrap.getRelativePath(path),
@@ -201,20 +211,9 @@
 						getCoffeeScript: function() {
 							return (window.CoffeeScript) ? { object: window.CoffeeScript } : null;
 						}
-					};
-					//	TODO	document
-					if ($context.$slime) $slime.flags = $context.$slime.flags;
-					var $engine = void(0);
-					return eval(fetcher.getCode(bootstrap.getRelativePath("expression.js")));
-				})();
-				platform.$api.deprecate.warning = function(access) {
-					debugger;
-				}
-				platform.$api.experimental.warning = function(access) {
-					//	TODO	should configure this via property of inonit.loader
-					//	Can set breakpoint here to pop into debugger on experimental accesses
-					var breakpoint = null;
-				}
+					},
+					/* $engine */ void(0)
+				);
 
 				var Loader = function(p) {
 					if (typeof(p) == "string") {
@@ -240,9 +239,9 @@
 							}
 						})(canonicalize(p));
 					}
-					platform.Loader.apply(this,arguments);
+					runtime.Loader.apply(this,arguments);
 				};
-				Loader.series = platform.Loader.series;
+				Loader.series = runtime.Loader.series;
 
 				var getPageBase = function() {
 					return getCurrentBase().split("/").slice(0,-1).join("/") + "/";
@@ -286,10 +285,10 @@
 					}
 				)
 
-				this.script = platform.$api.deprecate(this.file);
+				this.script = runtime.$api.deprecate(this.file);
 
 				this.namespace = function(name) {
-					return platform.namespace(name);
+					return runtime.namespace(name);
 				}
 
 				this.nugget = new function() {
@@ -313,7 +312,7 @@
 				this.base = bootstrap.base;
 
 				//	For use in scripts that are loaded directly by the browser rather than via this loader
-				this.$api = platform.$api;
+				this.$api = runtime.$api;
 
 				//	Used by loader/browser/tools/offline.html, which may be obsolete
 
@@ -325,9 +324,9 @@
 					}
 
 					//	used by unit tests
-					this.platform = platform.$platform;
+					this.platform = runtime.$platform;
 					//	this variable is now public above
-					this.api = platform.$api;
+					this.api = runtime.$api;
 				};
 			}
 		).call($exports);

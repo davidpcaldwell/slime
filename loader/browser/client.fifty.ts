@@ -11,10 +11,6 @@ namespace slime.browser {
 		 * in the browser (including ActiveX implementations).
 		 */
 		XMLHttpRequest?: typeof XMLHttpRequest
-
-		$slime?: {
-			flags?: any
-		}
 	}
 
 	export interface Context {

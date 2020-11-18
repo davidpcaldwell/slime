@@ -184,11 +184,23 @@ namespace slime {
             java: any
         }
 
+        interface TypeScript {
+            compile: (code: string) => string
+        }
+
         interface $slime {
             getRuntimeScript(path: string): any
-            flags: object
-            getCoffeeScript(): any
-            typescript?: {
+
+            getCoffeeScript?(): {
+                code?: string
+                object?: $slime.CoffeeScript
+            }
+
+            typescript?: TypeScript
+        }
+
+        namespace $slime {
+            interface CoffeeScript {
                 compile: (code: string) => string
             }
         }
@@ -206,9 +218,7 @@ namespace slime {
                     fromName: (path: string) => MimeType
                 }
             }
-            typescript: {
-                compile: (code: string) => string
-            }
+            typescript: TypeScript
             run: any
             file: any
             value: any

@@ -117,4 +117,10 @@ declare namespace $api {
 
 	const Function: Function;
 	const Object: $api["Object"];
+
+	namespace internal {
+		interface $slime {
+			getRuntimeScript(path: string): any
+		}
+	}
 }
