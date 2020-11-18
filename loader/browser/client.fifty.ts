@@ -12,7 +12,6 @@ namespace slime.browser {
 		 */
 		XMLHttpRequest?: typeof XMLHttpRequest
 
-		callback?: () => void
 		script?: any
 		base?: any
 		$slime?: {
