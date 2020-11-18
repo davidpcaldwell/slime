@@ -37,8 +37,6 @@
 			}
 		)();
 
-		if (!$context.callback) $context.callback = function(){};
-
 		/** @type { slime.browser.Exports["loader"] } */
 		var $exports = (function() {
 			if (!window.inonit) window.inonit = {
@@ -341,8 +339,6 @@
 					//	this variable is now public above
 					this.api = platform.$api;
 				};
-
-				$context.callback.call(this);
 			}
 		).call($exports);
 	}
