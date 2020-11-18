@@ -1,7 +1,10 @@
 namespace slime.browser {
 	export interface Settings {
-		debug?: (message: string) => void
+		/**
+		 * Allows the consumer to configure an alternate `XMLHttpRequest` constructor.
+		 */
 		XMLHttpRequest?: typeof XMLHttpRequest
+
 		url?: any
 		callback?: () => void
 		script?: any
