@@ -66,7 +66,7 @@
 								if (p[x] === null) {
 									//	do nothing
 								} else {
-									rv.put( new Packages.java.lang.String(x), new Packages.java.lang.String(p[x]) );
+									rv.put( new Packages.java.lang.String(String(x)), new Packages.java.lang.String(String(p[x])) );
 								}
 							}
 							return rv;

@@ -828,4 +828,4 @@
 		};
 	}
 //@ts-ignore
-)($javahost,$bridge,Packages,JavaAdapter,XML,$loader)
+)($javahost,$bridge,Packages,JavaAdapter, (function() { return this.XML })(),$loader)
