@@ -309,4 +309,4 @@
 		$exports.Buffer = Buffer;
 	}
 //@ts-ignore
-)($platform, Packages, XMLList, $context, $exports);
+)($platform, Packages, (function() { return this.XMLList })(), $context, $exports);
