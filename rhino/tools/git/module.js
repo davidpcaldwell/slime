@@ -339,6 +339,9 @@
 				command: "submodule",
 				arguments: function(p) {
 					this.push("add");
+					if (p.branch) {
+						this.push("-b", p.branch);
+					}
 					this.push(p.repository.reference);
 					this.push(p.path);
 				},

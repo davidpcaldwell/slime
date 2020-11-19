@@ -139,8 +139,9 @@ namespace slime.jrunscript.git {
 				}[]
 
 				add: (p: {
-					repository: slime.jrunscript.git.Repository,
+					repository: slime.jrunscript.git.Repository
 					path: string
+					branch?: string
 				}) => slime.jrunscript.git.Repository.Local
 
 				update: (p: argument & {
