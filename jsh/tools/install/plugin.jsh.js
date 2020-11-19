@@ -132,7 +132,7 @@
 
 				var graal = new function() {
 					var VERSION = {
-						number: "20.1.0",
+						number: "20.3.0",
 						edition: "ce"
 					};
 					//	https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-20.1.0/graalvm-ce-java8-darwin-amd64-20.1.0.tar.gz
