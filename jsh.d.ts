@@ -30,6 +30,8 @@ interface jsh {
 	unit: {
 		mock: slime.jsh.unit.mock;
 		html: any
+		Suite: any
+		interface: any
 	}
 
 	loader: any
