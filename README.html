@@ -38,7 +38,10 @@ END LICENSE
 			(using the Rhino, Nashorn, or GraalVM JavaScript engines), Java servlet-based servers, and the browser.
 		</div>
 		<div>
-			<h1>APIs</h1>
+			<h2><a href="local/doc/typedoc/index.html">API Documentation</a></h2>
+		</div>
+		<div>
+			<h1>Older API documentation</h1>
 			<div>
 				<h2><code><a href="jsh/etc/api.html">jsh</a></code>: a JavaScript application environment that can access the Java platform</h2>
 			</div>
@@ -68,8 +71,10 @@ END LICENSE
 						</ul>
 					</li>
 					<li>
-						Running individual definition pages
+						Running individual definitions (JSAPI pages or <a href="loader/api/test/fifty/README.html">Fifty</a> definitions)
 						<ul>
+							<li><code>tools/fifty.bash test <i>file</i>.fifty.ts [--part <i>part</i>]</code></li>
+							<li><code>./jsh.bash loader/api/test/fifty/test-browser.jsh.js [-interactive] [--chrome:data <i>pathname</i>] <i>file</i>.fifty.ts</i></code></li>
 							<li><code>jsh</code>: <code>./jsh.bash jsh/test/suite.jsh.js -definition <i>definition</i> [-part <i>part</i>]</code></li>
 							<li>
 								Browser definition page:

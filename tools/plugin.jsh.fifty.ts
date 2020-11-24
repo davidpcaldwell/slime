@@ -112,6 +112,7 @@ namespace jsh.wf {
 					$exports: {
 						status: jsh.wf.cli.Command
 						tsc: jsh.wf.cli.Command
+						typedoc: jsh.wf.cli.Command
 						test: jsh.wf.cli.Command
 						submodule: {
 							/**
@@ -153,6 +154,7 @@ namespace jsh.wf {
 
 		typescript: {
 			tsc: () => void
+			typedoc: () => void
 		}
 
 		/**
