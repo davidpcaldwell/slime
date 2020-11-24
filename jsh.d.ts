@@ -32,6 +32,7 @@ interface jsh {
 		html: any
 		Suite: any
 		interface: any
+		$slime: slime.runtime.Exports & { plugins: { mock: any } }
 	}
 
 	loader: any

@@ -159,8 +159,6 @@ namespace jsh.wf {
 		 * Errs if files untracked by Git are found in the given repository.
 		 */
 		prohibitUntrackedFiles: (p: { repository: slime.jrunscript.git.Repository.Local }, events?: $api.Events.Function.Receiver) => void
-
-		prohibitModifiedSubmodules: (p: { repository: slime.jrunscript.git.Repository.Local }, events?: $api.Events.Function.Receiver) => void
 	}
 
 	export interface Exports {
@@ -247,13 +245,108 @@ namespace jsh.wf {
 		}
 	//@ts-ignore
 	)(fifty)
+
+	export interface Exports {
+		prohibitModifiedSubmodules: (p: { repository: slime.jrunscript.git.Repository.Local }, events?: $api.Events.Function.Receiver) => void
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.kit
+		) {
+			var jsh = fifty.global.jsh;
+			var verify = fifty.verify;
+
+			//	TODO	standardize to Fifty
+			function mockJshPlugin(delegate,configuration) {
+				var $loader = (configuration.path) ? new delegate.Child(configuration.path) : delegate;
+				var plugins = (configuration.plugins) ? configuration.plugins : {};
+				var scope = (function() {
+					if (!configuration.global && !configuration.jsh) return {};
+					if (configuration.global && configuration.jsh) {
+						return $api.Object.compose(configuration.global, { jsh: configuration.jsh });
+					}
+					if (configuration.global) return configuration.global;
+					if (configuration.jsh) return { jsh: configuration.jsh };
+					throw new Error("Unreachable.");
+				})();
+				jsh.unit.$slime.plugins.mock({
+					$loader: $loader,
+					plugins: plugins,
+					toString: configuration.toString,
+					global: scope,
+					jsh: scope.jsh
+				});
+				var rv = {
+					global: scope,
+					jsh: scope.jsh,
+					plugins: plugins
+				};
+				return rv;
+			};
+
+			fifty.tests.exports.prohibitModifiedSubmodules = function() {
+				var directory = jsh.shell.TMPDIR.createTemporary({ directory: true }) as slime.jrunscript.file.Directory;
+				jsh.shell.console("directory = " + directory);
+				var parent = jsh.tools.git.init({ pathname: directory.pathname });
+				directory.getRelativePath("a").write("a", { append: false });
+				parent.add({ path: "." });
+				parent.commit({ all: true, message: "message a" });
+				var subdirectory = directory.getRelativePath("sub").createDirectory();
+				var child = jsh.tools.git.init({ pathname: subdirectory.pathname });
+				subdirectory.getRelativePath("b").write("b", { append: false });
+				child.add({ path: "." });
+				child.commit({ all: true, message: "message b" });
+				verify(parent).submodule().length.is(0);
+				parent.submodule.add({
+					repository: child,
+					path: "sub"
+				});
+
+				var mock = mockJshPlugin(fifty.$loader, {
+					jsh: {
+						file: jsh.file,
+						tools: {
+							git: jsh.tools.git
+						},
+						shell: {
+							environment: {
+								PROJECT: directory.pathname.toString()
+							}
+						},
+						ui: {}
+					},
+					evaluate: function(mock) {
+						jsh.shell.console("mock = " + Object.keys(mock));
+						jsh.shell.console("mock.jsh = " + Object.keys(mock.jsh));
+						return mock.jsh.wf;
+					}
+				});
+				var plugin = mock.jsh.wf;
+
+				jsh.shell.console(Object.keys(plugin).toString());
+
+				var prohibitModifiedSubmodules = function(module) {
+					return module.prohibitModifiedSubmodules({ repository: parent })
+				};
+
+				verify(plugin).evaluate(prohibitModifiedSubmodules).threw.nothing();
+
+				subdirectory.getRelativePath("c").write("", { append: false });
+				verify(plugin).evaluate(prohibitModifiedSubmodules).threw.type(Error);
+
+				verify(parent).submodule().length.is(1);
+			};
+		}
+	//@ts-ignore
+	)(fifty)
 }
 
 (
 	function(
 		jsh: jsh,
 		verify: slime.definition.verify.Verify,
-		run: (f: () => void, name: string) => void,
+		run: slime.fifty.test.run,
 		tests: any,
 		$loader: slime.Loader & { getRelativePath: any, plugin: any }
 	) {
@@ -339,6 +432,9 @@ namespace jsh.wf {
 				throw new TypeError("No jsh.wf loaded.");
 			}
 			tests.types.Exports(plugin, global.jsh);
+
+			run(tests.exports.requireGitIdentity);
+			run(tests.exports.prohibitModifiedSubmodules);
 		}
 	}
 //@ts-ignore
