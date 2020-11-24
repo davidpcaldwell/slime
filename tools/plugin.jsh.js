@@ -12,14 +12,6 @@
 				return Boolean(jsh.file && jsh.shell && jsh.ui && jsh.tools && jsh.tools.git);
 			},
 			load: function() {
-				jsh.$fifty = {
-					plugin: {
-						mock: function(p) {
-							return $slime.plugins.mock(p);
-						}
-					}
-				};
-
 				jsh.wf = {
 					project: void(0),
 					git: void(0),

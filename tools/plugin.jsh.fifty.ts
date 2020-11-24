@@ -257,34 +257,6 @@ namespace jsh.wf {
 			var jsh = fifty.global.jsh;
 			var verify = fifty.verify;
 
-			//	TODO	standardize to Fifty
-			function mockJshPlugin(delegate,configuration) {
-				var $loader = (configuration.path) ? new delegate.Child(configuration.path) : delegate;
-				var plugins = (configuration.plugins) ? configuration.plugins : {};
-				var scope = (function() {
-					if (!configuration.global && !configuration.jsh) return {};
-					if (configuration.global && configuration.jsh) {
-						return $api.Object.compose(configuration.global, { jsh: configuration.jsh });
-					}
-					if (configuration.global) return configuration.global;
-					if (configuration.jsh) return { jsh: configuration.jsh };
-					throw new Error("Unreachable.");
-				})();
-				jsh.unit.$slime.plugins.mock({
-					$loader: $loader,
-					plugins: plugins,
-					toString: configuration.toString,
-					global: scope,
-					jsh: scope.jsh
-				});
-				var rv = {
-					global: scope,
-					jsh: scope.jsh,
-					plugins: plugins
-				};
-				return rv;
-			};
-
 			fifty.tests.exports.prohibitModifiedSubmodules = function() {
 				var directory = jsh.shell.TMPDIR.createTemporary({ directory: true }) as slime.jrunscript.file.Directory;
 				jsh.shell.console("directory = " + directory);
@@ -303,7 +275,7 @@ namespace jsh.wf {
 					path: "sub"
 				});
 
-				var mock = mockJshPlugin(fifty.$loader, {
+				var mock = fifty.$loader.jsh.plugin.mock({
 					jsh: {
 						file: jsh.file,
 						tools: {
@@ -315,11 +287,6 @@ namespace jsh.wf {
 							}
 						},
 						ui: {}
-					},
-					evaluate: function(mock) {
-						jsh.shell.console("mock = " + Object.keys(mock));
-						jsh.shell.console("mock.jsh = " + Object.keys(mock.jsh));
-						return mock.jsh.wf;
 					}
 				});
 				var plugin = mock.jsh.wf;
@@ -421,11 +388,7 @@ namespace jsh.wf {
 				tools: jsh.tools
 			};
 			var mock = $loader.plugin.mock({
-				path: "./",
-				global: {
-					jsh: mockjsh
-				},
-				plugins: {}
+				jsh: mockjsh
 			});
 			var plugin = mock.jsh.wf;
 			if (!plugin) {

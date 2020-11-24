@@ -9,7 +9,12 @@ namespace jsh.loader.plugins {
 			jsh?: { [x: string]: any }
 			plugins?: { [x: string]: any }
 			$loader: slime.Loader
-		}) => { global: { [x: string]: any }, jsh: { [x: string]: any }, plugins: { [x: string]: any } }
+		}) => {
+			global: { [x: string]: any },
+			jsh: { [x: string]: any },
+			plugins: { [x: string]: any }
+		}
+
 		load: any
 	}
 }

@@ -12,6 +12,12 @@
 //	END LICENSE
 
 plugin({
+	load: function() {
+		jsh.loader.plugins($loader.Child("test/fifty/"));
+	}
+});
+
+plugin({
 	isReady: function() {
 		return jsh.js;
 	},

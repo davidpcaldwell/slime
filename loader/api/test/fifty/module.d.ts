@@ -1,3 +1,9 @@
+type mockjshplugin = (p: {
+	global?: { [x: string]: any }
+	jsh?: { [x: string]: any }
+	plugins?: { [x: string]: any }
+}) => ReturnType<jsh.loader.plugins.Export["mock"]>
+
 namespace slime.fifty {
 	interface Exports {
 		ast: (p: { node: { script: slime.jrunscript.file.Pathname, debug?: boolean }, ast: slime.jrunscript.file.Pathname, file: slime.jrunscript.file.Pathname }) => object
@@ -8,7 +14,22 @@ namespace slime.fifty {
 	namespace test {
 		type verify = slime.definition.verify.Verify
 
-		type $loader = slime.Loader & { getRelativePath: any }
+		type $loader = slime.Loader & {
+			getRelativePath: any,
+			/**
+			 * Present if Fifty is being run in a `jsh` shell; provides the ability to load `jsh` plugins into a mock shell.
+			 */
+			jsh?: {
+				plugin: {
+					/**
+					 * Allows a test to load `jsh` plugins into a mock shell. Loads plugins from the same directory as the
+					 * shell, optionally specifying the global object, `jsh`, and the shared `plugins` object used by the jsh plugin
+					 * loader.
+					 */
+					mock: mockjshplugin
+				}
+			}
+		}
 
 		interface run {
 			(f: () => void, name: string): void

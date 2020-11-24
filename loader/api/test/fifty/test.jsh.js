@@ -71,19 +71,26 @@
 
 			var delegate = new jsh.file.Loader({ directory: file.parent });
 
+			/** @type { mockjshplugin } */
+			var mockPlugin = function(p) {
+				return jsh.$fifty.plugin.mock(
+					$api.Object.compose(
+						p,
+						{ $loader: delegate }
+					)
+				);
+			}
+
 			var loader = Object.assign(
 				delegate,
 				{
 					getRelativePath: function(path) { return file.parent.getRelativePath(path); },
 					plugin: {
-						mock: function(p) {
-							var global = (function() { return this; })();
-							return global.jsh.$fifty.plugin.mock(
-								$api.Object.compose(
-									p,
-									{ $loader: delegate }
-								)
-							);
+						mock: mockPlugin
+					},
+					jsh: {
+						plugin: {
+							mock: mockPlugin
 						}
 					}
 				}
