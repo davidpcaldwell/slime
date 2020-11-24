@@ -324,8 +324,28 @@
 						}
 					})(p.path);
 
+					/** @type { mockjshplugin } */
+					var mockPlugin = function(p) {
+						return jsh.$fifty.plugin.mock(
+							$api.Object.compose(
+								p,
+								{ $loader: delegate }
+							)
+						);
+					};
+
+					var toFiftyLoader = function(loader) {
+						return Object.assign(loader, {
+							jsh: {
+								plugin: {
+									mock: mockPlugin
+								}
+							}
+						})
+					};
+
 					var result = run(
-						(path.folder) ? delegate.Child(path.folder) : delegate,
+						(path.folder) ? toFiftyLoader(delegate.Child(path.folder)) : toFiftyLoader(delegate),
 						path.file
 					);
 
