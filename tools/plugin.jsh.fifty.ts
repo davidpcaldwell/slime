@@ -3,13 +3,13 @@ namespace jsh.wf {
 	 * An object that, given a Git repository, can provide the Git user.name and user.email values for that repository (perhaps
 	 * by prompting the user).
 	 */
-	interface GitIentityProvider {
+	interface GitIdentityProvider {
 		name: (p: { repository: slime.jrunscript.git.Repository.Local }) => string,
 		email: (p: { repository: slime.jrunscript.git.Repository.Local }) => string
 	}
 
 	namespace Exports.requireGitIdentity {
-		export type get = GitIentityProvider
+		export type get = GitIdentityProvider
 	}
 
 	export namespace cli {
@@ -155,13 +155,6 @@ namespace jsh.wf {
 			tsc: () => void
 		}
 
-		requireGitIdentity: ( (p: {
-			repository: slime.jrunscript.git.Repository.Local,
-			get?: Exports.requireGitIdentity.get
-		}, events?: $api.Events.Function.Receiver) => void) & { get: {
-			gui: Exports.requireGitIdentity.get
-		} }
-
 		/**
 		 * Errs if files untracked by Git are found in the given repository.
 		 */
@@ -169,6 +162,91 @@ namespace jsh.wf {
 
 		prohibitModifiedSubmodules: (p: { repository: slime.jrunscript.git.Repository.Local }, events?: $api.Events.Function.Receiver) => void
 	}
+
+	export interface Exports {
+		/**
+		 * Errs if the given repository does not supply Git `user.name` and `user.email`
+		 * values. Callers may provide an implementation that obtains the configuration values, including a provided
+		 * implementation that prompts the user in a GUI dialog.
+		 */
+		requireGitIdentity: ( (p: {
+			repository: slime.jrunscript.git.Repository.Local,
+			get?: Exports.requireGitIdentity.get
+		}, events?: $api.Events.Function.Receiver) => void) & { get: {
+			gui: Exports.requireGitIdentity.get
+		} }
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.kit
+		) {
+			var jsh = fifty.global.jsh;
+			var verify = fifty.verify;
+
+			fifty.tests.exports = {};
+
+			fifty.tests.exports.requireGitIdentity = function() {
+				run(fifty.tests.exports.requireGitIdentity.first);
+				run(fifty.tests.exports.requireGitIdentity.second);
+				run(fifty.tests.exports.requireGitIdentity.third);
+			};
+
+			fifty.tests.exports.requireGitIdentity.first = function() {
+				var directory = jsh.shell.TMPDIR.createTemporary({ directory: true }) as slime.jrunscript.file.Directory;
+				jsh.tools.git.init({ pathname: directory.pathname });
+				var unconfigured = jsh.tools.git.Repository({ directory: directory });
+				//jsh.wf.requireGitIdentity({ repository: unconfigured });
+				//	TODO	could we get this working?:
+				//	verify(jsh.wf).requireGitIdentity( ... ).threw.type(Error)
+				fifty.verify(jsh.wf).evaluate(function() {
+					this.requireGitIdentity({ repository: unconfigured });
+				}).threw.type(Error);
+			}
+
+			fifty.tests.exports.requireGitIdentity.second = function() {
+				//	TODO	test callbacks
+				var directory = jsh.shell.TMPDIR.createTemporary({ directory: true }) as slime.jrunscript.file.Directory;
+				jsh.tools.git.init({ pathname: directory.pathname });
+				var toConfigure = jsh.tools.git.Repository({ directory: directory });
+				verify(jsh.wf).evaluate(function() {
+					this.requireGitIdentity({
+						repository: toConfigure,
+						get: {
+							name: function(p) {
+								return "Marcus Aurelius";
+							},
+							email: function(p) {
+								return "test@example.com";
+							}
+						}
+					});
+				}).threw.nothing();
+				var config = toConfigure.config({
+					arguments: ["--list"]
+				}) as { [x: string]: string };
+				jsh.shell.console(JSON.stringify(config));
+				verify(config)["user.name"].is("Marcus Aurelius");
+				verify(config)["user.email"].is("test@example.com");
+			}
+
+			fifty.tests.exports.requireGitIdentity.third = function() {
+				var directory = jsh.shell.TMPDIR.createTemporary({ directory: true }) as slime.jrunscript.file.Directory;
+				jsh.tools.git.init({ pathname: directory.pathname });
+				var configured = jsh.tools.git.Repository({ directory: directory });
+				configured.config({
+					arguments: ["user.name", "foo"]
+				});
+				configured.config({
+					arguments: ["user.email", "bar"]
+				});
+				verify(jsh.wf).evaluate(function() {
+					this.requireGitIdentity({ repository: configured });
+				}).threw.nothing();
+			}
+		}
+	//@ts-ignore
+	)(fifty)
 }
 
 (
