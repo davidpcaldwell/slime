@@ -165,10 +165,6 @@
 			jsh.shell.console("Hello, World!");
 		}
 
-		$exports.tsc = function() {
-			jsh.wf.typescript.tsc();
-		}
-
 		$exports.git = {
 			branches: new function() {
 				var repository = jsh.tools.git.Repository({ directory: $context.base });
@@ -235,49 +231,6 @@
 				);
 			}
 		}
-
-		$exports.status = $api.Function.pipe(
-			function(p) {
-				var repository = jsh.tools.git.Repository({ directory: $context.base });
-				//	TODO	add option for offline
-				var branches = function(repository) {
-					repository.fetch({ all: true, prune: true, recurseSubmodules: true, stdio: { output: null } });
-					jsh.shell.console("Fetched updates from " + repository.remote.getUrl({ name: "origin" }));
-					return repository.branch({ all: true })
-				};
-				var status = repository.status();
-				var upstream = $api.Function.result(
-					repository,
-					branches,
-					$api.Function.Array.find(function(branch) {
-						return branch.name == "remotes/origin/" + status.branch.name;
-					})
-				)
-				jsh.shell.console("Current branch: " + status.branch.name);
-				if (upstream) {
-					var vsOrigin = jsh.wf.git.compareTo(upstream.name)(repository);
-					var ahead = vsOrigin.ahead;
-					var behind = vsOrigin.behind;
-					if (ahead.length) jsh.shell.console("ahead of " + upstream.name + ": " + ahead.length);
-					if (behind.length) jsh.shell.console("behind " + upstream.name + ": " + behind.length);
-				} else {
-					jsh.shell.console("Upstream branch " + "origin/" + status.branch.name + " not found.");
-				}
-
-				$api.Function.result(
-					status.paths,
-					$api.Function.Object.entries,
-					$api.Function.Array.map(function(item) {
-						jsh.shell.console(item[1] + " " + item[0])
-					})
-				)
-
-				if (upstream && behind.length && !ahead.length && !status.paths) {
-					jsh.shell.console("Fast-forwarding ...");
-					repository.merge({ ffOnly: true, name: upstream.name });
-				}
-			}
-		)
 
 		$exports.merge = $api.Function.pipe(
 			function(p) {

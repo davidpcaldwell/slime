@@ -26,8 +26,6 @@ namespace slime.jrunscript.git {
 	}
 
 	interface Installation {
-		init: (p: { pathname: slime.jrunscript.file.Pathname }, events?: object) => slime.jrunscript.git.Repository.Local
-
 		daemon: (p: {
 			port?: number
 			basePath?: slime.jrunscript.file.Pathname
@@ -71,7 +69,6 @@ namespace slime.jrunscript.git {
 		interface Local extends slime.jrunscript.git.Repository {
 			directory: slime.jrunscript.file.Directory
 
-			config: any
 			add: any
 			rm: (p: { path: string }, events?: $api.Events.Function.Receiver) => void
 
@@ -130,8 +127,11 @@ namespace slime.jrunscript.git {
 				environment?: any
 			}) => void,
 			mergeBase: (p: { commits: string[] }) => Commit,
-			config: (p: { arguments: string[] }) => object,
+			config: (p: { arguments: string[] }) => { [x: string]: string },
 			submodule: {
+				/**
+				 * Returns a list of submodules for this repository.
+				 */
 				(): {
 					path: string
 					repository: Local

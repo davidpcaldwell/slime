@@ -92,16 +92,24 @@ declare namespace $api {
 	const Events : $api["Events"];
 	const Value: $api["Value"]
 
-	interface Event {
+	interface Event<T> {
 		type: string
 		source: object
 		timestamp: number
-		detail: any
+		detail: T
+	}
+
+	namespace Event {
+		type Handler<T> = (e: Event<T>) => void
 	}
 
 	interface Events {
 		listeners: any,
 		fire: (type: string, detail: any) => void
+	}
+
+	namespace Events {
+		type Handler<K> = Partial<Record<K, Event.Handler<any>>>
 	}
 
 	namespace Events.Function {

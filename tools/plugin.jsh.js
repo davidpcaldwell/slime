@@ -395,6 +395,10 @@
 							}
 						};
 
+						$exports.typedoc = function() {
+							jsh.wf.typescript.typedoc();
+						}
+
 						$exports.submodule = {
 							update: void(0),
 							remove: void(0)
@@ -537,6 +541,16 @@
 								if (result.status) throw new Error("tsc failed.");
 							}
 						})
+					},
+					typedoc: function(p) {
+						jsh.shell.jsh({
+							shell: jsh.shell.jsh.src,
+							script: jsh.shell.jsh.src.getFile("tools/typedoc.jsh.js"),
+							arguments: [
+								"--output", base.getRelativePath("local/doc/typedoc"),
+								"--input", base
+							]
+						});
 					}
 				}
 
