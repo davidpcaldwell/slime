@@ -77,67 +77,6 @@ ${PROJECT}/[<i>path/to/slime</i>]/tools/wf "$@"
 			<strong>See <a href="plugin.jsh.fifty.ts">TypeScript definition</a>.</strong>
 		</div>
 		<ul>
-			<li class="function experimental">
-				<div class="name">requireGitIdentity</div>
-				<div>
-					Errs if the given repository does not supply Git <code>user.name</code> and <code>user.email</code>
-					values. Callers may provide an implementation that obtains the configuration values, including a provided
-					implementation that prompts the user in a GUI dialog.
-				</div>
-				<div>
-					See <a href="plugin.jsh.d.ts">TypeScript definition</a>.
-				</div>
-				<script type="application/x.jsapi#tests">
-					var directory = jsh.shell.TMPDIR.createTemporary({ directory: true });
-					jsh.tools.git.init({ pathname: directory.pathname });
-					var unconfigured = jsh.tools.git.Repository({ directory: directory });
-					//jsh.wf.requireGitIdentity({ repository: unconfigured });
-					//	TODO	could we get this working?:
-					//	verify(jsh.wf).requireGitIdentity( ... ).threw.type(Error)
-					verify(jsh.wf).evaluate(function() {
-						this.requireGitIdentity({ repository: unconfigured });
-					}).threw.type(Error);
-				</script>
-				<script type="application/x.jsapi#tests">
-					//	TODO	test callbacks
-					var directory = jsh.shell.TMPDIR.createTemporary({ directory: true });
-					jsh.tools.git.init({ pathname: directory.pathname });
-					var toConfigure = jsh.tools.git.Repository({ directory: directory });
-					verify(jsh.wf).evaluate(function() {
-						this.requireGitIdentity({
-							repository: toConfigure,
-							get: {
-								name: function(p) {
-									return "Marcus Aurelius";
-								},
-								email: function(p) {
-									return "test@example.com";
-								}
-							}
-						});
-					}).threw.nothing();
-					var config = toConfigure.config({
-						arguments: ["--list"]
-					});
-					jsh.shell.console(JSON.stringify(config));
-					verify(config)["user.name"].is("Marcus Aurelius");
-					verify(config)["user.email"].is("test@example.com");
-				</script>
-				<script type="application/x.jsapi#tests">
-					var directory = jsh.shell.TMPDIR.createTemporary({ directory: true });
-					jsh.tools.git.init({ pathname: directory.pathname });
-					var configured = jsh.tools.git.Repository({ directory: directory });
-					configured.config({
-						arguments: ["user.name", "foo"]
-					});
-					configured.config({
-						arguments: ["user.email", "bar"]
-					});
-					verify(jsh.wf).evaluate(function() {
-						this.requireGitIdentity({ repository: configured });
-					}).threw.nothing();
-				</script>
-			</li>
 			<li class="function">
 				<div class="name">prohibitModifiedSubmodules</div>
 				<span>__DESCRIPTION__</span>

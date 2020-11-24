@@ -376,6 +376,8 @@
 								var success = operations.test();
 								if (!success) {
 									throw new Error("Tests failed.");
+								} else {
+									jsh.shell.console("Tests passed; proceeding with commit.");
 								}
 								repository.commit({
 									all: true,
