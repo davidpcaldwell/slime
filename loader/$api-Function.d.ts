@@ -17,13 +17,15 @@ namespace $api {
 		Array: {
 			filter: <T>(f: Predicate<T>) => (ts: T[]) => T[]
 			find: <T>(f: Predicate<T>) => (ts: T[]) => T | undefined
-			map: any,
+			map: any
+			join: (s: string) => (elements: any[]) => string
+
 			groupBy: <V,G>(c: {
 				group: (element: V) => G,
 				groups?: G[],
 				codec?: { encode: (group: G) => string, decode: (string: string) => G },
 			}) => (p: V[]) => { group: G, array: V[] }[]
-			join: (s: string) => (elements: any[]) => string,
+
 			sum: <T>(attribute: (T) => number) => (array: T[]) => number
 		}
 		Boolean: {

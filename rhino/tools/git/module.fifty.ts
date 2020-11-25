@@ -111,24 +111,45 @@ namespace slime.jrunscript.git {
 				fifty.tests.types.Repository = {};
 				fifty.tests.types.Repository.Local = {};
 				fifty.tests.types.Repository.Local.config = function() {
-					var empty = code.module.init({
-						pathname: fifty.jsh.file.location()
-					});
-					var old = empty.config({
-						arguments: ["--list", "--local"]
-					});
-					fifty.verify(old).evaluate.property("foo.bar").is(void(0));
+					run(function old() {
+						var empty = code.module.init({
+							pathname: fifty.jsh.file.location()
+						});
+						var old = empty.config({
+							arguments: ["--list", "--local"]
+						});
+						fifty.verify(old).evaluate.property("foo.bar").is(void(0));
 
-					fifty.global.jsh.shell.run({
-						command: "git",
-						arguments: ["config", "foo.bar", "baz"],
-						directory: empty.directory
+						fifty.global.jsh.shell.run({
+							command: "git",
+							arguments: ["config", "foo.bar", "baz"],
+							directory: empty.directory
+						});
+						var after = empty.config({
+							arguments: ["--list", "--local"]
+						});
+						fifty.verify( Object.keys(after).length - Object.keys(old).length ).is(1);
+						fifty.verify(after).evaluate.property("foo.bar").is("baz");
 					});
-					var after = empty.config({
-						arguments: ["--list", "--local"]
+
+					run(function list() {
+						var empty = code.module.init({
+							pathname: fifty.jsh.file.location()
+						});
+						var local = empty.config({
+							list: {
+								fileOption: "local"
+							}
+						});
+						fifty.verify(local)[0].name.is.type("string");
+						fifty.verify(local)[0].value.is.type("string");
+						//	TODO	should verify there's no value with empty string for name
+						fifty.verify(local).evaluate(function(p) {
+							return p.some(function(value) {
+								return !Boolean(value.name);
+							})
+						}).is(false);
 					});
-					fifty.verify( Object.keys(after).length - Object.keys(old).length ).is(1);
-					fifty.verify(after).evaluate.property("foo.bar").is("baz");
 				}
 			}
 		//@ts-ignore
@@ -139,6 +160,7 @@ namespace slime.jrunscript.git {
 (function(fifty: slime.fifty.test.kit) {
 	fifty.tests.suite = function() {
 		run(fifty.tests.Installation.init);
+		run(fifty.tests.types.Repository.Local.config);
 	}
 //@ts-ignore
 })(fifty);
