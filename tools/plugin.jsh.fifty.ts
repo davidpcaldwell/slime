@@ -34,7 +34,7 @@ namespace jsh.wf {
 			[x: string]: ( Command | Interface )
 		}
 
-		export type Processor = $api.Function.impure.Updater<cli.Arguments>
+		export type Processor = (p: cli.Arguments) => cli.Arguments
 
 		export namespace error {
 			export interface TargetNotFound extends Error {

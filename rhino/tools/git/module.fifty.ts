@@ -22,7 +22,10 @@ namespace slime.jrunscript.git {
 				 */
 				pathname: slime.jrunscript.file.Pathname
 			},
-			events?: $api.Events.Handler<"stdout" | "stderr">
+			events?: {
+				stdout: $api.Event.Handler<string>
+				stderr: $api.Event.Handler<string>
+			}
 		) => slime.jrunscript.git.Repository.Local
 	}
 
@@ -47,7 +50,7 @@ namespace slime.jrunscript.git {
 
 			fifty.tests.Installation = {};
 			fifty.tests.Installation.init = function() {
-				var verifyEmptyRepository = function(repository: Repository.Local) {
+				var verifyEmptyRepository = function(repository: slime.jrunscript.git.Repository.Local) {
 					verify(repository).is.type("object");
 					verify(repository).log().length.is(0);
 				};
@@ -74,19 +77,15 @@ namespace slime.jrunscript.git {
 
 					var captor = fifty.$api.Events.Captor("stdout", "stderr");
 
-					var isType = function(type: string): (e: $api.Event<any>) => boolean {
+					var isType = function(type: string): $api.Function.Predicate<$api.Event<any>> {
 						return $api.Function.pipe(
 							$api.Function.property("type"),
-							function(p) {
-								return p === type;
-							}
-						)
+							$api.Function.Predicate.is(type)
+						);
 					};
 
 					var ofType = function(type: string) {
-						return function(events: $api.Event<any>[]) {
-							return events.filter(isType(type));
-						}
+						return $api.Function.Array.filter(isType(type));
 					}
 
 					var repository = code.module.init({
@@ -100,11 +99,46 @@ namespace slime.jrunscript.git {
 					verify(captor).events.evaluate(ofType("stdout"))[1].detail.is("");
 				});
 			};
-
-			fifty.tests.suite = function() {
-				run(fifty.tests.Installation.init);
-			}
 		}
 	//@ts-ignore
 	)(fifty)
+
+	namespace Repository {
+		(
+			function(
+				fifty: slime.fifty.test.kit
+			) {
+				fifty.tests.types.Repository = {};
+				fifty.tests.types.Repository.Local = {};
+				fifty.tests.types.Repository.Local.config = function() {
+					var empty = code.module.init({
+						pathname: fifty.jsh.file.location()
+					});
+					var old = empty.config({
+						arguments: ["--list", "--local"]
+					});
+					fifty.verify(old).evaluate.property("foo.bar").is(void(0));
+
+					fifty.global.jsh.shell.run({
+						command: "git",
+						arguments: ["config", "foo.bar", "baz"],
+						directory: empty.directory
+					});
+					var after = empty.config({
+						arguments: ["--list", "--local"]
+					});
+					fifty.verify( Object.keys(after).length - Object.keys(old).length ).is(1);
+					fifty.verify(after).evaluate.property("foo.bar").is("baz");
+				}
+			}
+		//@ts-ignore
+		)(fifty)
+	}
 }
+
+(function(fifty: slime.fifty.test.kit) {
+	fifty.tests.suite = function() {
+		run(fifty.tests.Installation.init);
+	}
+//@ts-ignore
+})(fifty);

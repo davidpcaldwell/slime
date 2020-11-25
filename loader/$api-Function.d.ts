@@ -3,14 +3,20 @@ interface $api {
 }
 
 namespace $api {
+	namespace Function {
+		type Predicate<T> = (t: T) => boolean
+		/** @deprecated */
+		type Filter<T> = (t: T) => boolean
+	}
+
 	interface Function {
 		identity: <T>(t: T) => T
 		returning: <T>(t: T) => () => T
 		is: <T>(value: T) => (t: T) => boolean
 		property: <T,K extends keyof T>(name: K) => (t: T) => T[K]
 		Array: {
-			filter: <T>(f: (t: T) => boolean) => (ts: T[]) => T[]
-			find: <T>(f: (t: T) => boolean) => (ts: T[]) => T | undefined
+			filter: <T>(f: Predicate<T>) => (ts: T[]) => T[]
+			find: <T>(f: Predicate<T>) => (ts: T[]) => T | undefined
 			map: any,
 			groupBy: <V,G>(c: {
 				group: (element: V) => G,
@@ -145,38 +151,6 @@ namespace $api {
 	}
 
 	interface Function {
-		impure: {
-			/**
-			 * Converts an Updater to a function that can be used in a function pipeline; in other words, if it is an updater
-			 * that modifies its argument in place, it will be augmented to return the argument.
-			 */
-			revise: <T,P>(f: (this: T, p: P) => (P | void)) => impure.Updater<P>
-
-			/**
-			 * Creates an Updater that runs the given updaters in a pipeline, allowing the Updaters to replace the pipeline input
-			 * by returning a value.
-			 */
-			compose: {
-				<P>(f1: Updater<P>, f2: Updater<P>, f3: Updater<P>, f4: Updater<P>, f5: Updater<P>): Updater<P>
-				<P>(f1: Updater<P>, f2: Updater<P>, f3: Updater<P>, f4: Updater<P>): Updater<P>
-				<P>(f1: Updater<P>, f2: Updater<P>, f3: Updater<P>): Updater<P>
-				<P>(f1: Updater<P>, f2: Updater<P>): Updater<P>
-				<P>(f: Updater<P>): Updater<P>
-			}
-		}
-	}
-
-	namespace Function {
-		namespace impure {
-			/**
-			 * An Updater is a function that takes an argument and either (potentially) modifies the argument, returning undefined,
-			 * or returns a completely new value to replace the argument.
-			 */
-			type Updater<P> = (p: P) => P
-		}
-	}
-
-	interface Function {
 		filter: {
 			or: {
 				<T>(f1: Filter<T>, f2: Filter<T>, f3: Filter<T>, f4: Filter<T>, f5: Filter<T>): Filter<T>
@@ -192,14 +166,9 @@ namespace $api {
 			}
 			not: <T>(f: Filter<T>) => Filter<T>
 		},
-		predicate: {
+		Predicate: {
 			is: <T>(value: T) => Predicate<T>
 		}
-	}
-
-	namespace Function {
-		type Filter<T> = (t: T) => boolean
-		type Predicate<T> = (t: T) => boolean
 	}
 
 	interface Function {

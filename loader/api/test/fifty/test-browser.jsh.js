@@ -8,12 +8,15 @@
 		$api.Function.pipe(
 			jsh.wf.cli.$f.option.boolean({ longname: "interactive" }),
 			jsh.wf.cli.$f.option.pathname({ longname: "chrome:data" }),
+			jsh.wf.cli.$f.option.boolean({ longname: "chrome:debug:vscode" }),
 			function(p) {
 				var page = jsh.script.file.parent.getFile("test-browser.html");
 				var client = jsh.shell.jsh.src.getFile("loader/browser/client.js");
 
 				var path = p.arguments.shift();
 				var target = jsh.script.getopts.parser.Pathname(path);
+
+				if (!target.file) throw new Error("File not found: " + target);
 
 				var paths = (function() {
 					var clientToShell = jsh.file.navigate({
@@ -82,6 +85,7 @@
 								{ name: "results", value: String(Boolean(resultsPath)) }
 							]
 						}).toString(),
+						arguments: (p.options["chrome:debug:vscode"]) ? ["--remote-debugging-port=9222"] : [],
 						on: {
 							start: function(p) {
 								process = p;
