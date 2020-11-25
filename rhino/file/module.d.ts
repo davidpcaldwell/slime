@@ -12,7 +12,8 @@ namespace slime.jrunscript.file {
 	}
 
 	interface Node {
-		pathname: Pathname,
+		pathname: Pathname
+		directory: boolean
 		remove: () => void,
 		parent: Directory,
 		move: any
@@ -50,7 +51,7 @@ namespace slime.jrunscript.file {
 		}
 		filesystem: any
 		filesystems: any
-		navigate: (p: any) => any
+		navigate: (p: { from: Pathname | Node, to: Pathname | Node, base?: Directory }) => { base: Directory, relative: string }
 		Filesystem: any
 		Streams: any
 		java: any

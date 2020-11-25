@@ -1,5 +1,37 @@
+namespace $api {
+	export namespace Function {
+		export namespace impure {
+			/**
+			 * An Updater is a function that takes an argument and either (potentially) modifies the argument, returning undefined,
+			 * or returns a completely new value to replace the argument.
+			 */
+			export type Updater<M> = (mutable: M) => M | void
+		}
+	}
+
+	type Updater<M> = Function.impure.Updater<M>
+
+	interface Function {
+		impure: {
+			/**
+			 * Converts an Updater to a function that can be used in a function pipeline; in other words, if it is an updater
+			 * that modifies its argument in place, it will be augmented to return the argument. If the argument is `undefined`
+			 * or `null`, an identity function will be returned.
+			 */
+			revise: <M>(f: Updater<M>) => (mutable: M) => M
+
+			/**
+			 * Creates an Updater that runs the given updaters in a pipeline, allowing the Updaters to replace the pipeline input
+			 * by returning a value.
+			 */
+			compose: <M>(...functions: Updater<M>[]) => Updater<M>
+		}
+	}
+}
+
 (
 	function(
+		fifty: slime.fifty.test.kit,
 		$api: $api,
 		tests: slime.fifty.test.tests,
 		verify: slime.fifty.test.tests
@@ -28,6 +60,15 @@
 			var routput = r(rinput);
 			verify(routput).number.is(6);
 
+			fifty.run(function() {
+				var nullRevision: $api.Function.impure.Updater<{ number: number }> = $api.Function.impure.revise(null);
+				var undefinedRevision: $api.Function.impure.Updater<{ number: number }> = $api.Function.impure.revise(null);
+
+				var two = { number: 2 }
+
+				verify( nullRevision(two) ).is(two);
+				verify( undefinedRevision(two) ).is(two);
+			});
 		}
 
 		tests.compare = function() {
@@ -78,4 +119,4 @@
 		}
 	}
 //@ts-ignore
-)($api, tests, verify)
+)(fifty, $api, tests, verify)

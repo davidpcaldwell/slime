@@ -15,10 +15,11 @@
 //	TODO	dates below are When
 (
 	/**
+	 * @param { $api } $api
 	 * @param { slime.jrunscript.git.Context } $context
 	 * @param { slime.jrunscript.git.Exports } $exports
 	 */
-	function($context,$exports) {
+	function($api,$context,$exports) {
 
 		/** @type { new (environment: slime.jrunscript.git.Installation.argument) => slime.jrunscript.git.Installation } */
 		var Installation = function(environment) {
@@ -61,7 +62,8 @@
 
 				this.command = function(m) {
 					var program = environment.program;
-					function commandImplmenetation(p,events) {
+
+					function commandImplementation(p,events) {
 						var args = [];
 						addConfigurationArgumentsTo(args,p.config);
 						if (p.credentialHelper) {
@@ -94,8 +96,75 @@
 							}
 						});
 					}
-					return $api.Events.Function(commandImplmenetation);
+
+					return $api.Events.Function(commandImplementation);
 				};
+
+				/**
+				 *
+				 * @param { slime.jrunscript.git.internal.GitCommand } c
+				 */
+				this.gitCommand = function(c) {
+					var program = environment.program;
+
+					/**
+					 *
+					 * @param { slime.jrunscript.git.internal.InvocationConfiguration } o
+					 * @param { slime.jrunscript.git.Repository.argument } p
+					 * @param { any } events
+					 */
+					function invoke(o,p,events) {
+						/** @type { string[] } */
+						var args = [];
+						addConfigurationArgumentsTo(args,p.config);
+						if (p.credentialHelper) {
+							args.push("-c", "credential.helper=", "-c", "credential.helper=" + p.credentialHelper);
+						}
+						args.push(c.name);
+						if (o.arguments) args = $api.Function.impure.revise(o.arguments(p))(args);
+						//	TODO	this type should be in rhino/shell if it is not already
+						/** @type { slime.jrunscript.git.internal.Environment } */
+						var environment = $api.Object.compose(jsh.shell.environment);
+						if (o.environment) environment = $api.Function.impure.revise(o.environment(p))(environment);
+
+						var output = {
+							stdout: [],
+							stderr: []
+						};
+
+						var result = $context.api.shell.run({
+							command: program,
+							arguments: args,
+							environment: environment,
+							stdio: {
+								output: {
+									line: function(line) {
+										output.stdout.push(line);
+										if (events) events.fire("stdout", line);
+									}
+								},
+								error: {
+									line: function(line) {
+										output.stderr.push(line);
+										if (events) events.fire("stderr", line);
+									}
+								}
+							},
+							directory: p.directory
+						});
+
+						var createReturnValue = (o.createReturnValue) ? o.createReturnValue(p) : $api.Function.returning(void(0));
+
+						return createReturnValue({ output: output, result: result });
+					};
+
+					function execute(p, events) {
+						var configuration = c.configure(p);
+						return invoke(configuration, p, events);
+					}
+
+					return execute;
+				}
 
 				this.stdio = new function() {
 					/**
@@ -125,23 +194,48 @@
 
 			var git = cli.old;
 
-			var config = cli.command({
-				command: "config",
-				arguments: function(p) {
-					this.push.apply(this,p.arguments);
-				},
-				stdio: function() {
-					return {
-						output: String
+			var config = cli.gitCommand({
+				name: "config",
+				configure: function(p) {
+					if (p.arguments.indexOf("--list") != -1 || p.arguments.indexOf("-l") != -1) {
+						return {
+							arguments: function(p) {
+								return function(array) {
+									array.push.apply(array,p.arguments);
+								}
+							},
+							createReturnValue: function(p) {
+								return function(result) {
+									return $api.Object({
+										properties: result.output.stdout.map(function(line) {
+											var token = line.split("=");
+											return { name: token[0], value: token[1] }
+										})
+									});
+								}
+							}
+						}
+					} else if (p.arguments.indexOf("--add") != -1) {
+						return {
+							arguments: function(p) {
+								return function(array) {
+									array.push.apply(array,p.arguments);
+								}
+							}
+						}
+					} else if (p.arguments) {
+						return $api.deprecate(function() {
+							return {
+								arguments: function(p) {
+									return function(array) {
+										array.push.apply(array,p.arguments);
+									}
+								}
+							}
+						})();
+					} else {
+						throw new TypeError();
 					}
-				},
-				evaluate: function(result) {
-					return $api.Object({
-						properties: result.stdio.output.split("\n").map(function(line) {
-							var token = line.split("=");
-							return { name: token[0], value: token[1] }
-						})
-					});
 				}
 			});
 
@@ -1153,4 +1247,4 @@
 		);
 	}
 //@ts-ignore
-)($context,$exports)
+)($api,$context,$exports)

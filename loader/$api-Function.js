@@ -176,7 +176,7 @@
 			}
 		};
 
-		$exports.Function.predicate = {
+		$exports.Function.Predicate = {
 			is: function(value) {
 				return function(p) {
 					return p === value;
@@ -264,6 +264,7 @@
 		$exports.Function.impure = {
 			/** @type { $api.Function["impure"]["revise"] } */
 			revise: function(f) {
+				if (f === null || f === void(0)) return $exports.Function.identity;
 				return function(p) {
 					var rv = f.call(this,p);
 					return (rv) ? rv : p;

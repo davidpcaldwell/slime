@@ -24,6 +24,7 @@
 			throw new Error("$pwd is object.");
 		}
 
+		/** @returns { item is slime.jrunscript.file.Pathname } */
 		var isPathname = function(item) {
 			return item && item.java && item.java.adapt() && $context.api.java.isJavaType(Packages.java.io.File)(item.java.adapt());
 		}
@@ -137,40 +138,65 @@
 			return true;
 		};
 
-		$exports.navigate = $api.experimental(function(p) {
+		/**
+		 * @type { slime.jrunscript.file.Exports["navigate"] }
+		 */
+		var navigate = function(p) {
+			if (!p.from) throw new TypeError("Required: .from");
+			if (!p.to) throw new TypeError("Required: .to");
+
 			var from = p.from;
 			var to = p.to;
-			if (from.pathname && !from.pathname.directory && from.parent) {
+
+			/** @returns { item is slime.jrunscript.file.Node } */
+			function isNode(item) {
+				return Boolean(item.pathname);
+			}
+
+			/** @returns { item is slime.jrunscript.file.Directory } */
+			function isDirectory(item) {
+				return isNode(item) && item.directory;
+			}
+
+			if (isNode(from) && !from.pathname.directory && from.parent) {
 				from = from.parent;
-			} else if (!from.pathname && from.parent) {
+			} else if (isPathname(from) && from.parent) {
 				if (from.parent.directory) {
 					from = from.parent.directory;
 				} else {
 					throw new Error("Required: 'from' parent directory must exist.");
 				}
 			}
+
 			var startsWith = function(start,under) {
 				if (!start) throw new Error("Required: start");
 				if (!under) throw new Error("Required: under");
 				return under.toString().substring(0,start.toString().length) == start.toString();
 			};
+
 			var isBelowBase = function(base,node) {
 				if (!base) return false;
 				return startsWith(base, node) && node.toString().length > base.toString().length;
 			};
-			var common = from;
+
+			/** @type { slime.jrunscript.file.Directory } */
+			var common = (isDirectory(from)) ? from : (function() { throw new Error("Always true; refactor method to narrow type"); })();
 			var up = 0;
 			while(!startsWith(common,to) || isBelowBase(p.base,common)) {
 				up++;
 				common = common.parent;
 				if (!common) throw new Error("No common parent: " + from + " and " + to);
 			}
+
 			var remaining = to.toString().substring(common.toString().length);
+
 			return {
 				base: common,
 				relative: new Array(up+1).join("../") + remaining
 			};
-		});
+		}
+
+		$exports.navigate = $api.experimental(navigate);
 
 		// $exports.getRelativePathTo = function(to) {
 		// 	// TODO: no test coverage

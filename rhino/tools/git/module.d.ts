@@ -126,8 +126,8 @@ namespace slime.jrunscript.git {
 				config?: any
 				environment?: any
 			}) => void,
-			mergeBase: (p: { commits: string[] }) => Commit,
-			config: (p: { arguments: string[] }) => { [x: string]: string },
+			mergeBase: (p: { commits: string[] }) => Commit
+			config: (p: { arguments: string[] }) => { [x: string]: string }
 			submodule: {
 				/**
 				 * Returns a list of submodules for this repository.
@@ -174,6 +174,39 @@ namespace slime.jrunscript.git {
 				message: string
 				author?: string
 			}) => any
+		}
+	}
+
+	namespace internal {
+		interface Environment {
+			[x: string]: string
+		}
+
+		interface InvocationConfiguration<T> {
+			arguments?: (p: T) => $api.Function.impure.Updater<string[]>
+			environment?: (p: T) => $api.Function.impure.Updater<Environment>,
+			createReturnValue?: (p: T) => (result: Result) => any
+		}
+
+		interface GitCommand<T> {
+			name: string
+			configure: <S extends T>(p: T) => InvocationConfiguration<S>
+		}
+
+		interface Result {
+			output: {
+				stdout: string[]
+				stderr: string[]
+			}
+
+			//	TODO	this should be the datatype returned by rhino/shell.run(), which is currently not declared
+			result: {
+				status: number
+			}
+		}
+
+		interface Command {
+			name: string
 		}
 	}
 
