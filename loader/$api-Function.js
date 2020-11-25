@@ -174,6 +174,14 @@
 					return !f(p);
 				}
 			}
+		};
+
+		$exports.Function.predicate = {
+			is: function(value) {
+				return function(p) {
+					return p === value;
+				}
+			}
 		}
 
 		$exports.Function.Object = {

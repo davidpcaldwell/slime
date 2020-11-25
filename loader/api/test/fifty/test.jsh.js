@@ -62,7 +62,7 @@
 			var fiftyLoader = jsh.script.loader;
 
 			/** @type { slime.fifty.test.internal.run } */
-			var implementation = fiftyLoader.file("test.js", {
+			var implementation = fiftyLoader.module("test.js", {
 				library: {
 					verify: verify
 				},

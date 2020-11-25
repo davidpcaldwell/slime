@@ -298,7 +298,7 @@
 
 					var verify = slime.file("loader/api/verify.js");
 
-					var run = slime.file("loader/api/test/fifty/test.js", {
+					var run = slime.module("loader/api/test/fifty/test.js", {
 						library: {
 							verify: verify
 						},

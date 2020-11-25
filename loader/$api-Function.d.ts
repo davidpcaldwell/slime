@@ -191,11 +191,15 @@ namespace $api {
 				<T>(f1: Filter<T>, f2: Filter<T>): Filter<T>
 			}
 			not: <T>(f: Filter<T>) => Filter<T>
+		},
+		predicate: {
+			is: <T>(value: T) => Predicate<T>
 		}
 	}
 
 	namespace Function {
 		type Filter<T> = (t: T) => boolean
+		type Predicate<T> = (t: T) => boolean
 	}
 
 	interface Function {
