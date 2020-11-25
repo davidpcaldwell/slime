@@ -152,7 +152,7 @@
 				var fiftyLoader = new inonit.loader.Loader(inonit.loader.nugget.page.base);
 
 				/** @type { slime.fifty.test.internal.run } */
-				var implementation = fiftyLoader.file("test.js", {
+				var implementation = fiftyLoader.module("test.js", {
 					library: {
 						verify: verify
 					},

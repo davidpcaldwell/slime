@@ -52,6 +52,23 @@ namespace slime.fifty {
 			global: {
 				jsh?: jsh
 				window?: Window
+			},
+			$api: {
+				Events: {
+					/**
+					 * Creates an [[$api.Events.Handler]] that captures and stores all received [[$api.Event]]s for querying.
+					 */
+					Captor: (...types: string[]) => {
+						events: $api.Event<any>[],
+						handler: $api.Events.Handler
+					}
+				}
+			},
+			jsh?: {
+				file: {
+					location: () => slime.jrunscript.file.Pathname
+					directory: () => slime.jrunscript.file.Directory
+				}
 			}
 		}
 	}

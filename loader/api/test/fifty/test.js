@@ -3,9 +3,10 @@
 	/**
 	 * @param { $api } $api
 	 * @param { { library: { verify: slime.definition.verify.Exports }, console: slime.fifty.test.internal.Console } } $context
+	 * @param { slime.Loader } $loader
 	 * @param { (value: slime.fifty.test.internal.run) => void } $export
 	 */
-	function($api,$context,$export) {
+	function($api,$context,$loader,$export) {
 		var Verify = $context.library.verify.Verify;
 		var console = $context.console;
 
@@ -112,10 +113,16 @@
 			}
 		};
 
+		var global = (function() { return this; })();
+
+		var scopes = (function() {
+			var rv = {};
+			if (global.jsh) rv.jsh = $loader.file("scope-jsh.ts");
+			return rv;
+		})();
+
 		var load = function recurse(loader,path,part,argument) {
 			if (!part) part = "suite";
-
-			var global = (function() { return this; })();
 
 			var tests = {
 				types: {}
@@ -132,7 +139,25 @@
 				tests: tests,
 				verify: function() {
 					return verify.apply(this,arguments);
-				}
+				},
+				$api: {
+					Events: {
+						Captor: function() {
+							var events = [];
+							var handler = Array.prototype.slice.call(arguments).reduce(function(rv,type) {
+								rv[type] = function(e) {
+									events.push(e);
+								}
+								return rv;
+							}, {});
+							return {
+								events: events,
+								handler: handler
+							}
+						}
+					}
+				},
+				jsh: scopes.jsh
 			};
 
 			var scope = {
@@ -181,4 +206,4 @@
 		)
 	}
 //@ts-ignore
-)($api,$context,$export);
+)($api,$context,$loader,$export);

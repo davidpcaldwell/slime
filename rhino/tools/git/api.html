@@ -84,61 +84,6 @@ END LICENSE
 							</div>
 						</li>
 						<li class="function">
-							<div class="name">init</div>
-							<span>Creates a new repository at the given location (see <code>git init</code>).</span>
-							<div class="arguments">
-								<div class="label">Arguments</div>
-								<ol>
-									<li class="object">
-										<div class="label">has properties:</div>
-										<ul>
-											<li class="value">
-												<div class="name">pathname</div>
-												<span class="type">Pathname</span>
-												<span>A location at which to create an empty repository.</span>
-											</li>
-										</ul>
-									</li>
-								</ol>
-							</div>
-							<div class="returns">
-								<div class="label">Returns</div>
-								<span class="type"><a href="#types.LocalRepository">LocalRepository</a></span>
-								<span>The local repository created.</span>
-							</div>
-							<script type="application/x.jsapi#tests">
-								var location = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
-								fixture.write({
-									directory: location.directory,
-									files: {
-										"a": "a"
-									}
-								});
-								var captor = new function() {
-									var stdout = [];
-									var stderr = [];
-
-									this.output = stdout;
-									this.error = stderr;
-
-									this.stdout = function(e) {
-										stdout.push(e);
-									};
-
-									this.stderr = function(e) {
-										stderr.push(e);
-									};
-								};
-								var repository = module.init({
-									pathname: location
-								}, captor);
-								verify(repository).is.type("object");
-								verify(repository).directory.getFile("a").is.type("object");
-								verify(captor).output.length.is(2);
-								verify(captor).output[1].detail.is("");
-							</script>
-						</li>
-						<li class="function">
 							<div class="name">execute</div>
 							<span>__DESCRIPTION__</span>
 							<div class="arguments">

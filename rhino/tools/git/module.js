@@ -938,10 +938,15 @@
 							return rv;
 						})()
 						,stdio: {
-							output: String
+							output: String,
+							error: String
 						}
 						,evaluate: function(result) {
 							if (result.status != 0) {
+								var lines = result.stdio.error.split("\n");
+								if (lines[0].indexOf("does not have any commits yet") != -1) {
+									return [];
+								}
 								return null;
 							}
 							return result.stdio.output.split("\n").map(function(line) {
