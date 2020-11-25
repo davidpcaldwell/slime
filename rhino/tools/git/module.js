@@ -197,7 +197,7 @@
 			var config = cli.gitCommand({
 				name: "config",
 				configure: function(p) {
-					if (p.arguments.indexOf("--list") != -1 || p.arguments.indexOf("-l") != -1) {
+					if (p.arguments && (p.arguments.indexOf("--list") != -1 || p.arguments.indexOf("-l") != -1)) {
 						return {
 							arguments: function(p) {
 								return function(array) {
@@ -215,7 +215,7 @@
 								}
 							}
 						}
-					} else if (p.arguments.indexOf("--add") != -1) {
+					} else if (p.arguments && p.arguments.indexOf("--add") != -1) {
 						return {
 							arguments: function(p) {
 								return function(array) {
@@ -233,6 +233,29 @@
 								}
 							}
 						})();
+					} else if (p.list) {
+						return {
+							arguments: function(p) {
+								return function(array) {
+									array.push("--list");
+									if (typeof(p.list.fileOption) == "string") {
+										array.push("--" + p.list.fileOption);
+									} else {
+										throw new TypeError("Unimplemented: non-string fileOption");
+									}
+								}
+							},
+							createReturnValue: function(p) {
+								return function(result) {
+									return result.output.stdout.filter(Boolean).map(function(line) {
+										//	TODO	what if value contains equals? Does the below work?
+										var tokens = line.split("=");
+										if (!tokens[0]) jsh.shell.console("line: [" + line + "] " + " tokens=" + JSON.stringify(tokens));
+										return { name: tokens[0], value: tokens.slice(1).join("=") }
+									});
+								}
+							}
+						}
 					} else {
 						throw new TypeError();
 					}
