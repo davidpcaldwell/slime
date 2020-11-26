@@ -129,6 +129,13 @@ namespace slime.jrunscript.git {
 			mergeBase: (p: { commits: string[] }) => Commit
 			config: {
 				(p: {
+					set: {
+						name: string
+						value: string
+					}
+				}): void
+
+				(p: {
 					list: {
 						fileOption?: "system" | "global" | "local" | "worktree" | { file: string }
 						showOrigin?: boolean

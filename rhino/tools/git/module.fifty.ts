@@ -150,6 +150,32 @@ namespace slime.jrunscript.git {
 							})
 						}).is(false);
 					});
+
+					run(function set() {
+						var getConfigObject = function(repository) {
+							return repository.config({
+								list: {
+									fileOption: "local"
+								}
+							}).reduce(function(rv,entry) {
+								rv[entry.name] = entry.value;
+								return rv;
+							}, {});
+						}
+
+						var empty = code.module.init({
+							pathname: fifty.jsh.file.location()
+						});
+						fifty.verify(empty).evaluate(getConfigObject).evaluate.property("foo.bar").is(void(0));
+
+						empty.config({
+							set: {
+								name: "foo.bar",
+								value: "baz"
+							}
+						});
+						fifty.verify(empty).evaluate(getConfigObject).evaluate.property("foo.bar").is("baz");
+					});
 				}
 			}
 		//@ts-ignore

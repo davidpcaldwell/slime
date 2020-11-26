@@ -80,6 +80,7 @@
 						return (array) ? array.join(".") : array;
 					}
 				);
+				if (!name) name = code.name;
 				if (!name) name = "run";
 				if (scope) {
 					scope.start(name);
