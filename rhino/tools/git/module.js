@@ -256,8 +256,16 @@
 								}
 							}
 						}
+					} else if (p.set) {
+						return {
+							arguments: function(p) {
+								return function(array) {
+									array.push(p.set.name, p.set.value);
+								}
+							}
+						}
 					} else {
-						throw new TypeError();
+						throw new Error("Unrecognized config argument type");
 					}
 				}
 			});
