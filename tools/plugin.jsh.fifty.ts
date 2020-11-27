@@ -1,3 +1,7 @@
+/**
+ * A set of APIs that can be helpful in implementing tasks related to software development. The The [[Exports]] object represents the
+ * main `jsh.wf` APIs project authors can use in constructing their own `wf` commands.
+ */
 namespace jsh.wf {
 	/**
 	 * An object that, given a Git repository, can provide the Git user.name and user.email values for that repository (perhaps
@@ -14,11 +18,14 @@ namespace jsh.wf {
 
 	export namespace cli {
 		export interface Context {
+			/** The project directory. */
 			base: slime.jrunscript.file.Directory
 		}
 
 		export interface Arguments {
+			/** Global options passed to `wf`. Currently, none are defined. */
 			options: { [x: string]: any },
+			/** The set of arguments to the `wf` command, not including global options. */
 			arguments: string[]
 		}
 
@@ -48,6 +55,10 @@ namespace jsh.wf {
 		}
 	}
 
+	/**
+	 * The `cli.initialize` function provides a default `wf` implementation for projects with a number of standard commands; it
+	 * requires project-level specification of operations like `commit`, `lint`, and/or `test`.
+	 */
 	export interface Exports {
 		cli: {
 			error: {
