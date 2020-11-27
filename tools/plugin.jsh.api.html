@@ -10,8 +10,9 @@
 	</script>
 </head>
 <body>
+	<h1><code>wf</code></h1>
 	<div>
-		<h1><code>tools/wf</code></h1>
+		<h2><code>tools/wf</code></h2>
 		<div>
 			Scripts may use the <code>wf</code> script to execute commands related to their project lifecycle. The script relies
 			on the project directory containing a <code>wf.js</code> file, which is used to implement the commands.
@@ -30,60 +31,20 @@ ${PROJECT}/[<i>path/to/slime</i>]/tools/wf "$@"
 		</div>
 	</div>
 	<div>
-		<h1><code>wf.js</code></h1>
+		<h2><code>wf.js</code></h2>
 		<div>
-			The <code>wf.js</code> script provided by the project is an ordinary SLIME module (see the definition of
-			<code>module()</code> in the <a href="../loader/api.html">Loader</a> documentation). Each function it exports
-			is a command which can be executed by name.
+			Projects may provide a <code>wf.js</code> script, which should be an ordinary SLIME module (see the definition of
+			<code>module()</code> in the <a href="../loader/api.html">Loader</a> documentation), which will be loaded with
+			a <a href="../local/doc/typedoc/interfaces/jsh.wf.cli.context.html"><code>$context</code></a> providing project
+			information. Each function it exports
+			will be interpreted as a command which can be executed by name, and will receive an argument specified by
+			<a href="../local/doc/typedoc/interfaces/jsh.wf.cli.arguments.html">jsh.wf.cli.Arguments</a>. Commands can use the
+			<a href="../local/doc/typedoc/modules/jsh.wf.html"><code>jsh.wf</code></a> APIs as part of their implementation.
 		</div>
 		<div>
 			If an <code>initialize</code> command is provided, it is executed prior to every command (and should thus be
 			idempotent).
 		</div>
-		<div>
-			The module is loaded with the following <code>$context</code>:
-			<div class="label">has properties:</div>
-			<ul>
-				<li class="value">
-					<div class="name">base</div>
-					<span class="type">directory</span>
-					<span>The project directory.</span>
-				</li>
-			</ul>
-		</div>
-		<div>
-			Commands receive the following argument:
-			<div class="label">has properties:</div>
-			<ul>
-				<li class="object">
-					<div class="name">options</div>
-					<span>Global options passed to <code>wf</code>. Currently, none are defined.</span>
-					<div class="label">has properties:</div>
-					<ul>
-					</ul>
-				</li>
-				<li class="value">
-					<div class="name">arguments</div>
-					<span class="type">string[]</span>
-					<span>The set of arguments to the <code>wf</code> command, not including global options.</span>
-				</li>
-			</ul>
-		</div>
-	</div>
-	<div>
-		<h1><code>jsh.wf</code></h1>
-		<div>A set of APIs that can be helpful in implementing tasks related to software development.</div>
-		<div>
-			<strong>See <a href="plugin.jsh.fifty.ts">TypeScript definition</a>.</strong>
-		</div>
-	</div>
-	<div jsapi:id="fifty">
-		<script type="application/x.jsapi#tests">
-			$jsapi.loader.fifty({
-				path: "plugin.jsh.fifty.ts",
-				verify: verify
-			});
-		</script>
 	</div>
 </body>
 </html>
