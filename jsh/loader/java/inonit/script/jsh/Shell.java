@@ -189,7 +189,7 @@ public class Shell {
 												"--outDir", tmp.getCanonicalPath(),
 												//	--module ES6 basically leaves the code alone if it exports type definitions,
 												//	which is the one kind of export we want to use right now
-												"--module", "ES6",
+												"--module", "None",
 												ts.getCanonicalPath()
 											};
 										} catch (IOException e) {
