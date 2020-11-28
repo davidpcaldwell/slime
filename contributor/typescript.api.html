@@ -23,7 +23,24 @@ END LICENSE
 	</script>
 </head>
 <body>
-	<h1>How to declare type metadata for TypeScript in SLIME code</h1>
+	<h1>TypeScript in SLIME</h1>
+	<div>
+		<h2>TypeScript runtime support</h2>
+		<div>
+			TypeScript can be supported in SLIME embeddings by providing a <code>typescript</code> property of type
+			<a href="../local/doc/typedoc/interfaces/slime.runtime.typescript.html">slime.runtime.TypeScript</a> on the
+			<code>$slime</code> object provided to the runtime.
+		</div>
+		<div>
+			<h3><code>jsh</code> support</h3>
+			<div>
+				The implementation in <code>inonit.script.jsh.Shell</code> essentially looks for the Node installation in the
+				<code>jsh</code> <code>lib/</code> directory and creates a <code>Loader.TypeScript</code> that runs <code>tsc</code>
+				there if it exists.
+			</div>
+		</div>
+	</div>
+	<h2>How to declare type metadata for TypeScript in SLIME code</h2>
 	<div>
 		This document describes tested, working practices for defining TypeScript-compatible type information within SLIME itself.
 	</div>
