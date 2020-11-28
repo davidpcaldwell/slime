@@ -90,236 +90,346 @@
 			}
 		})();
 
+		var $platform = (function() {
+			/** @type { slime.runtime.$platform } */
+			var $exports = {};
+			$exports.Object = {};
+			if (Object.defineProperty) {
+				$exports.Object.defineProperty = { ecma: true };
+			}
+			if (Object.prototype.__defineGetter__) {
+				if (!$exports.Object.defineProperty) $exports.Object.defineProperty = {};
+				$exports.Object.defineProperty.accessor = true;
+			}
+
+			var global = (function() { return this; })();
+			if (global.XML && global.XMLList) {
+				$exports.e4x = {};
+				$exports.e4x.XML = global.XML;
+				$exports.e4x.XMLList = global.XMLList;
+			}
+
+			$exports.Error = {
+				decorate: ($engine && $engine.Error) ? $engine.Error.decorate : void(0)
+			}
+
+			$exports.execute = (function() {
+				if (typeof($engine) != "undefined" && $engine.execute) return $engine.execute;
+				return function(/*script{name,code},scope,target*/) {
+					return (function() {
+						//@ts-ignore
+						with( arguments[1] ) {
+							return eval(arguments[0]);
+						}
+					}).call(
+						arguments[2],
+						arguments[0].js, arguments[1]
+					);
+				}
+			})();
+
+			(
+				/**
+				 * @this { slime.runtime.$platform }
+				 */
+				function() {
+					var getJavaClass = function(name) {
+						try {
+							if (typeof(Packages) == "undefined") return null;
+							var rv = Packages[name];
+							if (typeof(rv) == "function") {
+								//	In the Firefox Java plugin, JavaPackage objects have typeof() == "function". They also have the
+								//	following format for their String values
+								try {
+									var prefix = "[Java Package";
+									if (String(rv).substring(0, prefix.length) == prefix) {
+										return null;
+									}
+								} catch (e) {
+									//	The string value of Packages.java.lang.Object and Packages.java.lang.Number throws a string (the
+									//	below) if you attempt to evaluate it.
+									if (e == "java.lang.NullPointerException") {
+										return rv;
+									}
+								}
+								return rv;
+							}
+							return null;
+						} catch (e) {
+							return null;
+						}
+					}
+
+					if (getJavaClass("java.lang.Object")) {
+						this.java = new function() {
+							this.getClass = function(name) {
+								return getJavaClass(name);
+							}
+						};
+					}
+
+					if (typeof($engine) != "undefined" && $engine.Object && $engine.Object.defineProperty && $engine.Object.defineProperty.setReadOnly) {
+						this.Object.defineProperty.setReadOnly = $engine.Object.defineProperty.setReadOnly;
+					}
+				}
+			).call($exports);
+
+			try {
+				if (typeof($engine) != "undefined") {
+					if ($engine.MetaObject) {
+						$exports.MetaObject = $engine.MetaObject;
+					}
+				}
+			} catch (e) {
+				//	MetaObject will not be defined
+			}
+
+			return $exports;
+		})();
+
+		var $api = $platform.execute(
+			$slime.getRuntimeScript("$api.js"),
+			{
+				$platform: $platform,
+				$slime: {
+					getRuntimeScript: function(path) {
+						return $slime.getRuntimeScript(path);
+					}
+				}
+			},
+			null
+		);
+
+		var mime = (
+			/**
+			 * @param { slime.runtime.Exports["mime"] } $exports
+			 */
+			function($exports) {
+				$exports.Type = Object.assign(
+					/**
+					 * @param {string} media
+					 * @param {string} subtype
+					 * @param { { [x: string]: string } } parameters
+					 */
+					function(media,subtype,parameters) {
+						$api.Function.argument.isString({ index: 0, name: "media" }).apply(this,arguments);
+						$api.Function.argument.isString({ index: 1, name: "subtype" }).apply(this,arguments);
+						(function() {
+							if (typeof(arguments[2]) != "object" && typeof(arguments[2]) != "undefined") {
+								throw new TypeError("arguments[2] (parameters) must be undefined or object");
+							}
+						}).apply(this,arguments);
+
+						this.getMedia = function() {
+							return media;
+						}
+
+						this.getSubtype = function() {
+							return subtype;
+						}
+
+						this.getParameters = function() {
+							return parameters;
+						}
+
+						this.is = function(string) {
+							return string == media + "/" + subtype;
+						}
+
+						this.toString = function() {
+							var rv = media + "/" + subtype;
+							for (var x in parameters) {
+								rv += ";" + x + "=\"" + parameters[x] + "\"";
+							}
+							return rv;
+						}
+					},
+					{
+						parse: function(string) {
+							if (string === null) return null;
+							//	First parse RFC 822 header; see RFC 822 section 3.2 http://tools.ietf.org/html/rfc822#section-3.2
+							var collapser = /^(.*)(?:\r\n| |\t){2,}(.*)/;
+							while(collapser.test(string)) {
+								var match = collapser.exec(string);
+								string = match[1] + " " + match[2];
+							}
+							var slash = string.indexOf("/");
+							var media = string.substring(0,slash);
+							string = string.substring(slash+1);
+							var semicolon = string.indexOf(";");
+							var subtype;
+							var parameters;
+							if (semicolon == -1) {
+								subtype = string;
+								string = "";
+								parameters = {};
+							} else {
+								subtype = string.substring(0,semicolon);
+								string = string.substring(semicolon);
+								parameters = {};
+								var more = true;
+								while(more) {
+									//	First, get rid of the semicolon
+									if (string.substring(0,1) != ";") {
+										throw new Error();
+									} else {
+										string = string.substring(1);
+									}
+									//	Then, get rid of whitespace
+									var wsmatcher = /^\s+(.*)/;
+									if (wsmatcher.test(string)) {
+										string = wsmatcher.exec(string)[1];
+									}
+									var nvmatch = /(.*?)\=(.*)/.exec(string);
+									var name = nvmatch[1];
+									var rest = nvmatch[2];
+									var value = "";
+									if (rest.substring(0,1) == "\"") {
+										rest = rest.substring(1);
+										while(rest.substring(0,1) != "\"") {
+											value += rest.substring(0,1);
+											rest = rest.substring(1);
+										}
+										string = rest.substring(1);
+									} else {
+										while(rest.length > 0 && rest.substring(0,1) != ";") {
+											value += rest.substring(0,1);
+											rest = rest.substring(1);
+										}
+										string = rest;
+									}
+									parameters[name] = value;
+									more = (string.length > 0);
+								}
+								var codes = [];
+								for (var i=0; i<string.length; i++) {
+									codes.push(string.charCodeAt(i));
+								}
+								//	loop
+							}
+							var rv = new $exports.Type(media,subtype,parameters);
+							return rv;
+						},
+						fromName: void(0)
+					}
+				);
+				return $exports;
+			}
+		)({ Type: void(0) });
+
+		/** @type { slime.runtime.Exports["mime"]["Type"]["fromName"] } */
+		mime.Type.fromName = function(path) {
+			if (/\.js$/.test(path)) return mime.Type.parse("application/javascript");
+			if (/\.css$/.test(path)) return mime.Type.parse("text/css");
+			if (/\.ts$/.test(path)) return mime.Type.parse("application/x.typescript");
+			if (/\.csv$/.test(path)) return mime.Type.parse("text/csv");
+			if (/\.coffee$/.test(path)) return mime.Type.parse("application/vnd.coffeescript");
+		};
+
+		/**
+		 * @constructor
+		 * @param { slime.Resource.Descriptor } o
+		 */
+		var Resource = function(o) {
+			this.type = (function(type,name) {
+				if (typeof(type) == "string") return mime.Type.parse(type);
+				if (type instanceof mime.Type) return type;
+				if (!type && name) {
+					var fromName = mime.Type.fromName(name);
+					if (fromName) return fromName;
+				}
+				if (!type) return null;
+				throw new TypeError("Resource 'type' property must be a MIME type or string.");
+			})(o.type,o.name);
+
+			this.name = (o.name) ? o.name : void(0);
+
+			if ( (!o.read || !o.read.string) && typeof(o.string) == "string") {
+				if (!o.read) o.read = {
+					string: function() {
+						return o.string;
+					}
+				};
+			}
+
+			if (o.read && o.read.string) {
+				this.read = function(v) {
+					if (v === String) return o.read.string();
+					if (v === JSON) return JSON.parse(this.read(String));
+					if ($platform.e4x && v == $platform.e4x.XML) {
+						var string = this.read(String);
+						string = string.replace(/\<\?xml.*\?\>/, "");
+						string = string.replace(/\<\!DOCTYPE.*?\>/, "");
+						return $platform.e4x.XML( string );
+					} else if ($platform.e4x && v == $platform.e4x.XMLList) {
+						var string = this.read(String);
+						string = string.replace(/\<\?xml.*\?\>/, "");
+						string = string.replace(/\<\!DOCTYPE.*?\>/, "");
+						return $platform.e4x.XMLList( string );
+					}
+				}
+			}
+
+			//	TODO	temporary measure; some tests assume loader.get() returns resource source and so we increase compatibility between resource and its source
+			if (typeof(o.string) == "string") {
+				Object.defineProperty(this, "string", {
+					value: o.string,
+					enumerable: true
+				});
+			}
+		}
+
+		/** @type { slime.runtime.$slime.CoffeeScript } */
+		var $coffee = (function() {
+			//	TODO	rename to getCoffeescript to make consistent with camel case.
+			var coffeeScript = $slime.getCoffeeScript();
+			if (!coffeeScript) return null;
+			if (coffeeScript.code) {
+				var target = {};
+				$platform.execute({ name: "coffee-script.js", js: String(coffeeScript.code) }, {}, target);
+				return target.CoffeeScript;
+			} else if (coffeeScript.object) {
+				return coffeeScript.object;
+			}
+		})();
+
+		/**
+		 * @template PSLE_T
+		 * @param { PSLE_T } scope
+		 * @returns { PSLE_T & { $exports: any, $export: any } }
+		 */
+		var toExportScope = function(scope) {
+			/** @type { PSLE_T & { $exports: any, $export: any } } */
+			var rv = Object.assign(scope, { $exports: void(0), $export: void(0) });
+			var $exports = {};
+			var $export = function(v) {
+				$exports = v;
+			};
+			Object.defineProperty(scope, "$exports", {
+				get: function() {
+					return $exports;
+				},
+				enumerable: true
+			});
+			Object.defineProperty(scope, "$export", {
+				get: function() {
+					return $export;
+				},
+				enumerable: true
+			});
+			return rv;
+		}
+
+		var createFileScope = function($context) {
+			return toExportScope({
+				$context: ($context) ? $context : {}
+			});
+		}
+
 		/**
 		 * @constructor
 		 */
 		var Exports = function() {
-			var $platform = (function() {
-				/** @type { slime.runtime.$platform } */
-				var $exports = {};
-				$exports.Object = {};
-				if (Object.defineProperty) {
-					$exports.Object.defineProperty = { ecma: true };
-				}
-				if (Object.prototype.__defineGetter__) {
-					if (!$exports.Object.defineProperty) $exports.Object.defineProperty = {};
-					$exports.Object.defineProperty.accessor = true;
-				}
-
-				var global = (function() { return this; })();
-				if (global.XML && global.XMLList) {
-					$exports.e4x = {};
-					$exports.e4x.XML = global.XML;
-					$exports.e4x.XMLList = global.XMLList;
-				}
-
-				$exports.Error = {
-					decorate: ($engine && $engine.Error) ? $engine.Error.decorate : void(0)
-				}
-
-				$exports.execute = (function() {
-					if (typeof($engine) != "undefined" && $engine.execute) return $engine.execute;
-					return function(/*script{name,code},scope,target*/) {
-						return (function() {
-							//@ts-ignore
-							with( arguments[1] ) {
-								return eval(arguments[0]);
-							}
-						}).call(
-							arguments[2],
-							arguments[0].js, arguments[1]
-						);
-					}
-				})();
-
-				(
-					/**
-					 * @this { slime.runtime.$platform }
-					 */
-					function() {
-						var getJavaClass = function(name) {
-							try {
-								if (typeof(Packages) == "undefined") return null;
-								var rv = Packages[name];
-								if (typeof(rv) == "function") {
-									//	In the Firefox Java plugin, JavaPackage objects have typeof() == "function". They also have the
-									//	following format for their String values
-									try {
-										var prefix = "[Java Package";
-										if (String(rv).substring(0, prefix.length) == prefix) {
-											return null;
-										}
-									} catch (e) {
-										//	The string value of Packages.java.lang.Object and Packages.java.lang.Number throws a string (the
-										//	below) if you attempt to evaluate it.
-										if (e == "java.lang.NullPointerException") {
-											return rv;
-										}
-									}
-									return rv;
-								}
-								return null;
-							} catch (e) {
-								return null;
-							}
-						}
-
-						if (getJavaClass("java.lang.Object")) {
-							this.java = new function() {
-								this.getClass = function(name) {
-									return getJavaClass(name);
-								}
-							};
-						}
-
-						if (typeof($engine) != "undefined" && $engine.Object && $engine.Object.defineProperty && $engine.Object.defineProperty.setReadOnly) {
-							this.Object.defineProperty.setReadOnly = $engine.Object.defineProperty.setReadOnly;
-						}
-					}
-				).call($exports);
-
-				try {
-					if (typeof($engine) != "undefined") {
-						if ($engine.MetaObject) {
-							$exports.MetaObject = $engine.MetaObject;
-						}
-					}
-				} catch (e) {
-					//	MetaObject will not be defined
-				}
-
-				return $exports;
-			})();
-
-			var $api = $platform.execute(
-				$slime.getRuntimeScript("$api.js"),
-				{
-					$platform: $platform,
-					$slime: {
-						getRuntimeScript: function(path) {
-							return $slime.getRuntimeScript(path);
-						}
-					}
-				},
-				null
-			);
-
-			var mime = (
-				/**
-				 * @param { slime.runtime.Exports["mime"] } $exports
-				 */
-				function($exports) {
-					$exports.Type = Object.assign(
-						/**
-						 * @param {string} media
-						 * @param {string} subtype
-						 * @param { { [x: string]: string } } parameters
-						 */
-						function(media,subtype,parameters) {
-							$api.Function.argument.isString({ index: 0, name: "media" }).apply(this,arguments);
-							$api.Function.argument.isString({ index: 1, name: "subtype" }).apply(this,arguments);
-							(function() {
-								if (typeof(arguments[2]) != "object" && typeof(arguments[2]) != "undefined") {
-									throw new TypeError("arguments[2] (parameters) must be undefined or object");
-								}
-							}).apply(this,arguments);
-
-							this.getMedia = function() {
-								return media;
-							}
-
-							this.getSubtype = function() {
-								return subtype;
-							}
-
-							this.getParameters = function() {
-								return parameters;
-							}
-
-							this.is = function(string) {
-								return string == media + "/" + subtype;
-							}
-
-							this.toString = function() {
-								var rv = media + "/" + subtype;
-								for (var x in parameters) {
-									rv += ";" + x + "=\"" + parameters[x] + "\"";
-								}
-								return rv;
-							}
-						},
-						{
-							parse: function(string) {
-								if (string === null) return null;
-								//	First parse RFC 822 header; see RFC 822 section 3.2 http://tools.ietf.org/html/rfc822#section-3.2
-								var collapser = /^(.*)(?:\r\n| |\t){2,}(.*)/;
-								while(collapser.test(string)) {
-									var match = collapser.exec(string);
-									string = match[1] + " " + match[2];
-								}
-								var slash = string.indexOf("/");
-								var media = string.substring(0,slash);
-								string = string.substring(slash+1);
-								var semicolon = string.indexOf(";");
-								var subtype;
-								var parameters;
-								if (semicolon == -1) {
-									subtype = string;
-									string = "";
-									parameters = {};
-								} else {
-									subtype = string.substring(0,semicolon);
-									string = string.substring(semicolon);
-									parameters = {};
-									var more = true;
-									while(more) {
-										//	First, get rid of the semicolon
-										if (string.substring(0,1) != ";") {
-											throw new Error();
-										} else {
-											string = string.substring(1);
-										}
-										//	Then, get rid of whitespace
-										var wsmatcher = /^\s+(.*)/;
-										if (wsmatcher.test(string)) {
-											string = wsmatcher.exec(string)[1];
-										}
-										var nvmatch = /(.*?)\=(.*)/.exec(string);
-										var name = nvmatch[1];
-										var rest = nvmatch[2];
-										var value = "";
-										if (rest.substring(0,1) == "\"") {
-											rest = rest.substring(1);
-											while(rest.substring(0,1) != "\"") {
-												value += rest.substring(0,1);
-												rest = rest.substring(1);
-											}
-											string = rest.substring(1);
-										} else {
-											while(rest.length > 0 && rest.substring(0,1) != ";") {
-												value += rest.substring(0,1);
-												rest = rest.substring(1);
-											}
-											string = rest;
-										}
-										parameters[name] = value;
-										more = (string.length > 0);
-									}
-									var codes = [];
-									for (var i=0; i<string.length; i++) {
-										codes.push(string.charCodeAt(i));
-									}
-									//	loop
-								}
-								var rv = new $exports.Type(media,subtype,parameters);
-								return rv;
-							},
-							fromName: void(0)
-						}
-					);
-					return $exports;
-				}
-			)({ Type: void(0) });
 
 			//	TODO	these property declarations trick out TypeScript while the below IIFE (which has a forgotten purpose)
 			//			is refactored or removed
@@ -336,201 +446,7 @@
 			this.Loader = void(0);
 			this.java = void(0);
 
-			/** @type { slime.runtime.Exports["mime"]["Type"]["fromName"] } */
-			mime.Type.fromName = function(path) {
-				if (/\.js$/.test(path)) return mime.Type.parse("application/javascript");
-				if (/\.css$/.test(path)) return mime.Type.parse("text/css");
-				if (/\.ts$/.test(path)) return mime.Type.parse("application/x.typescript");
-				if (/\.csv$/.test(path)) return mime.Type.parse("text/csv");
-				if (/\.coffee$/.test(path)) return mime.Type.parse("application/vnd.coffeescript");
-			};
-
 			var methods = {};
-
-			/**
-			 * @constructor
-			 * @param { slime.Resource.Descriptor } o
-			 */
-			var Resource = function(o) {
-				this.type = (function(type,name) {
-					if (typeof(type) == "string") return mime.Type.parse(type);
-					if (type instanceof mime.Type) return type;
-					if (!type && name) {
-						var fromName = mime.Type.fromName(name);
-						if (fromName) return fromName;
-					}
-					if (!type) return null;
-					throw new TypeError("Resource 'type' property must be a MIME type or string.");
-				})(o.type,o.name);
-
-				this.name = (o.name) ? o.name : void(0);
-
-				if ( (!o.read || !o.read.string) && typeof(o.string) == "string") {
-					if (!o.read) o.read = {
-						string: function() {
-							return o.string;
-						}
-					};
-				}
-
-				if (o.read && o.read.string) {
-					this.read = function(v) {
-						if (v === String) return o.read.string();
-						if (v === JSON) return JSON.parse(this.read(String));
-						if ($platform.e4x && v == $platform.e4x.XML) {
-							var string = this.read(String);
-							string = string.replace(/\<\?xml.*\?\>/, "");
-							string = string.replace(/\<\!DOCTYPE.*?\>/, "");
-							return $platform.e4x.XML( string );
-						} else if ($platform.e4x && v == $platform.e4x.XMLList) {
-							var string = this.read(String);
-							string = string.replace(/\<\?xml.*\?\>/, "");
-							string = string.replace(/\<\!DOCTYPE.*?\>/, "");
-							return $platform.e4x.XMLList( string );
-						}
-					}
-				}
-
-				//	TODO	temporary measure; some tests assume loader.get() returns resource source and so we increase compatibility between resource and its source
-				if (typeof(o.string) == "string") {
-					Object.defineProperty(this, "string", {
-						value: o.string,
-						enumerable: true
-					});
-				}
-			}
-
-			//	resource.type: optional, but if it is not a recognized type, this method will error
-			//	resource.name: optional, but used to determine default type if type is absent, and used for resource.js.name
-			//	resource.string: optional, but used to determine code
-			//	resource.js { name, code }: forcibly set based on other properties
-			//	TODO	re-work resource.js
-
-			/** @type { slime.runtime.$slime.CoffeeScript } */
-			var $coffee = (function() {
-				//	TODO	rename to getCoffeescript to make consistent with camel case.
-				var coffeeScript = $slime.getCoffeeScript();
-				if (!coffeeScript) return null;
-				if (coffeeScript.code) {
-					var target = {};
-					$platform.execute({ name: "coffee-script.js", js: String(coffeeScript.code) }, {}, target);
-					return target.CoffeeScript;
-				} else if (coffeeScript.object) {
-					return coffeeScript.object;
-				}
-			})();
-
-			/**
-			 * @param { slime.Resource } object
-			 * @param { any } scope
-			 */
-			methods.run = function run(object,scope) {
-				if (!object || typeof(object) != "object") {
-					throw new TypeError("'object' must be an object, not " + object);
-				}
-				if (typeof(object.read) != "function") throw new Error("Not resource.");
-				/** @type { slime.Resource & { js: { name: string, js: string } } } */
-				var resource = Object.assign(object, { js: void(0) });
-				var type = resource.type;
-				if (!type) type = mime.Type.parse("application/javascript");
-				var string = (function() {
-					if (resource.read) {
-						var rv = resource.read(String);
-						if (typeof(rv) == "string") return rv;
-					}
-				})();
-				if (typeof(string) != "string") {
-					throw new TypeError("Resource: " + resource.name + " is not convertible to string, so cannot be executed.");
-				}
-				if ($slime.typescript && type && type.is("application/x.typescript")) {
-					resource.js = {
-						name: resource.name,
-						js: $slime.typescript.compile(string)
-					};
-				} else if (type && type.is("application/vnd.coffeescript")) {
-					resource.js = {
-						name: resource.name,
-						js: $coffee.compile(string)
-					};
-				} else if (type && type.is("application/javascript") || type && type.is("application/x-javascript")) {
-					resource.js = {
-						name: resource.name,
-						js: string
-					}
-				}
-				if (!resource.js) {
-					throw new TypeError("Resource " + resource.name + " is not JavaScript; type = " + type);
-				}
-				var target = this;
-				var global = (function() { return this; })();
-				//	TODO	why is this present?
-				if (scope === global) {
-					scope = {};
-				}
-				if (scope === void(0)) {
-					scope = {};
-				}
-				scope.$platform = $platform;
-				scope.$api = $api;
-				$platform.execute(resource.js,scope,target);
-			}
-
-			/**
-			 * @template PSLE_T
-			 * @param { PSLE_T } scope
-			 * @returns { PSLE_T & { $exports: any, $export: any } }
-			 */
-			var toExportScope = function(scope) {
-				/** @type { PSLE_T & { $exports: any, $export: any } } */
-				var rv = Object.assign(scope, { $exports: void(0), $export: void(0) });
-				var $exports = {};
-				var $export = function(v) {
-					$exports = v;
-				};
-				Object.defineProperty(scope, "$exports", {
-					get: function() {
-						return $exports;
-					},
-					enumerable: true
-				});
-				Object.defineProperty(scope, "$export", {
-					get: function() {
-						return $export;
-					},
-					enumerable: true
-				});
-				return rv;
-			}
-
-			var createFileScope = function($context) {
-				return toExportScope({
-					$context: ($context) ? $context : {}
-				});
-			}
-
-			/**
-			 * @param { slime.Resource & { js: { name: string, js: string } } } code
-			 * @param { any } $context
-			 */
-			methods.file = function(code,$context) {
-				var inner = createFileScope($context);
-				methods.run.call(this,code,inner);
-				return inner.$exports;
-			};
-
-			/**
-			 * @param { slime.Resource & { js: { name: string, js: string } } } code
-			 * @param { any } scope
-			 */
-			methods.value = function value(code,scope) {
-				var rv;
-				if (!scope) scope = {};
-				scope.$set = function(v) {
-					rv = v;
-				};
-				methods.run.call(this,code,scope);
-				return rv;
-			}
 
 			/**
 			 * @constructor
@@ -707,6 +623,91 @@
 					}
 				}
 			};
+
+			//	resource.type: optional, but if it is not a recognized type, this method will error
+			//	resource.name: optional, but used to determine default type if type is absent, and used for resource.js.name
+			//	resource.string: optional, but used to determine code
+			//	resource.js { name, code }: forcibly set based on other properties
+			//	TODO	re-work resource.js
+
+			/**
+			 * @param { slime.Resource } object
+			 * @param { any } scope
+			 */
+			methods.run = function run(object,scope) {
+				if (!object || typeof(object) != "object") {
+					throw new TypeError("'object' must be an object, not " + object);
+				}
+				if (typeof(object.read) != "function") throw new Error("Not resource.");
+				/** @type { slime.Resource & { js: { name: string, js: string } } } */
+				var resource = Object.assign(object, { js: void(0) });
+				var type = resource.type;
+				if (!type) type = mime.Type.parse("application/javascript");
+				var string = (function() {
+					if (resource.read) {
+						var rv = resource.read(String);
+						if (typeof(rv) == "string") return rv;
+					}
+				})();
+				if (typeof(string) != "string") {
+					throw new TypeError("Resource: " + resource.name + " is not convertible to string, so cannot be executed.");
+				}
+				if ($slime.typescript && type && type.is("application/x.typescript")) {
+					resource.js = {
+						name: resource.name,
+						js: $slime.typescript.compile(string)
+					};
+				} else if (type && type.is("application/vnd.coffeescript")) {
+					resource.js = {
+						name: resource.name,
+						js: $coffee.compile(string)
+					};
+				} else if (type && type.is("application/javascript") || type && type.is("application/x-javascript")) {
+					resource.js = {
+						name: resource.name,
+						js: string
+					}
+				}
+				if (!resource.js) {
+					throw new TypeError("Resource " + resource.name + " is not JavaScript; type = " + type);
+				}
+				var target = this;
+				var global = (function() { return this; })();
+				//	TODO	why is this present?
+				if (scope === global) {
+					scope = {};
+				}
+				if (scope === void(0)) {
+					scope = {};
+				}
+				scope.$platform = $platform;
+				scope.$api = $api;
+				$platform.execute(resource.js,scope,target);
+			}
+
+			/**
+			 * @param { slime.Resource & { js: { name: string, js: string } } } code
+			 * @param { any } $context
+			 */
+			methods.file = function(code,$context) {
+				var inner = createFileScope($context);
+				methods.run.call(this,code,inner);
+				return inner.$exports;
+			};
+
+			/**
+			 * @param { slime.Resource & { js: { name: string, js: string } } } code
+			 * @param { any } scope
+			 */
+			methods.value = function value(code,scope) {
+				var rv;
+				if (!scope) scope = {};
+				scope.$set = function(v) {
+					rv = v;
+				};
+				methods.run.call(this,code,scope);
+				return rv;
+			}
 
 			var addTopMethod = function(name) {
 				this[name] = function(code,scope,target) {
