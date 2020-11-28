@@ -119,4 +119,19 @@ declare namespace Packages {
 			}
 		}
 	}
+
+	namespace inonit.script.jsh {
+		interface Shell {
+			setRuntime: any
+			getLoader: any
+		}
+
+		namespace Rhino {
+			interface Interface {
+				script: any
+				exit: any
+				jsh: any
+			}
+		}
+	}
 }

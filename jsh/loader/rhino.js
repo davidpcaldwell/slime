@@ -10,21 +10,32 @@
 //	Contributor(s):
 //	END LICENSE
 
-$jsh.setRuntime((function() {
-	var rv = $rhino.script(
-		"jrunscript/rhino.js",
-		$jsh.getLoader().getLoaderCode("jrunscript/rhino.js"),
-		{ $loader: $jsh.getLoader(), $rhino: $rhino },
-		null
-	);
+//@ts-check
+(
+	/**
+	 *
+	 * @param { Packages.inonit.script.jsh.Shell } $jsh
+	 * @param { Packages.inonit.script.jsh.Rhino.Interface } $rhino
+	 */
+	function($jsh,$rhino) {
+		$jsh.setRuntime((function() {
+			var rv = $rhino.script(
+				"jrunscript/rhino.js",
+				$jsh.getLoader().getLoaderCode("jrunscript/rhino.js"),
+				{ $loader: $jsh.getLoader(), $rhino: $rhino },
+				null
+			);
 
-	rv.exit = function(status) {
-		return $rhino.exit(status);
-	};
+			rv.exit = function(status) {
+				return $rhino.exit(status);
+			};
 
-	rv.jsh = function(configuration,invocation) {
-		return $rhino.jsh(configuration,invocation);
-	};
+			rv.jsh = function(configuration,invocation) {
+				return $rhino.jsh(configuration,invocation);
+			};
 
-	return rv;
-})());
+			return rv;
+		})());
+	}
+//@ts-ignore
+)($jsh,$rhino);
