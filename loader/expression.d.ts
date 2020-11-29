@@ -218,7 +218,6 @@ namespace slime {
                     fromName: (path: string) => MimeType
                 }
             }
-            typescript: TypeScript
             run: any
             file: any
             value: any
@@ -233,6 +232,8 @@ namespace slime {
             $platform: $platform
             java?: any
             $api: $api
+
+            readonly typescript: TypeScript
         }
     }
 
