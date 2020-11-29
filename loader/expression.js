@@ -426,25 +426,8 @@
 			});
 		}
 
-		/**
-		 * @constructor
-		 */
+		/** @returns { slime.runtime.Exports } */
 		var Exports = function() {
-
-			//	TODO	these property declarations trick out TypeScript while the below IIFE (which has a forgotten purpose)
-			//			is refactored or removed
-
-			this.file = void(0);
-			this.mime = void(0);
-			this.value = void(0);
-			this.resource = void(0);
-			this.run = void(0);
-			this.Resource = void(0);
-			this.namespace = void(0);
-			this.$platform = void(0);
-			this.$api = void(0);
-			this.Loader = void(0);
-			this.java = void(0);
 
 			var methods = {};
 
@@ -639,7 +622,7 @@
 					throw new TypeError("'object' must be an object, not " + object);
 				}
 				if (typeof(object.read) != "function") throw new Error("Not resource.");
-				/** @type { slime.Resource & { js: { name: string, js: string } } } */
+				/** @type { slime.Resource & { js: { name: string, code: string } } } */
 				var resource = Object.assign(object, { js: void(0) });
 				var type = resource.type;
 				if (!type) type = mime.Type.parse("application/javascript");
@@ -655,17 +638,17 @@
 				if ($slime.typescript && type && type.is("application/x.typescript")) {
 					resource.js = {
 						name: resource.name,
-						js: $slime.typescript.compile(string)
+						code: $slime.typescript.compile(string)
 					};
 				} else if (type && type.is("application/vnd.coffeescript")) {
 					resource.js = {
 						name: resource.name,
-						js: $coffee.compile(string)
+						code: $coffee.compile(string)
 					};
 				} else if (type && type.is("application/javascript") || type && type.is("application/x-javascript")) {
 					resource.js = {
 						name: resource.name,
-						js: string
+						code: string
 					}
 				}
 				if (!resource.js) {
@@ -682,7 +665,14 @@
 				}
 				scope.$platform = $platform;
 				scope.$api = $api;
-				$platform.execute(resource.js,scope,target);
+				$platform.execute(
+					{
+						name: resource.js.name,
+						js: resource.js.code
+					},
+					scope,
+					target
+				);
 			}
 
 			/**
@@ -709,28 +699,15 @@
 				return rv;
 			}
 
-			var addTopMethod = function(name) {
-				this[name] = function(code,scope,target) {
+			var topMethod = function(name) {
+				return function(code,scope,target) {
 					return methods[name].call(target,code,scope);
 				};
 			};
 
-			this.mime = mime;
-
-			this.typescript = $slime.typescript;
-
-			addTopMethod.call(this,"run");
-
-			//	TODO	For file, what should we do about 'this' and why?
-			addTopMethod.call(this,"file");
-
-			addTopMethod.call(this,"value");
-
-			this.Resource = Resource;
-
-			this.Loader = Object.assign(Loader, { source: void(0), series: void(0), tools: void(0) });
-			this.Loader.source = {};
-			this.Loader.source.object = function(o) {
+			var export_Loader = Object.assign(Loader, { source: void(0), series: void(0), tools: void(0) });
+			export_Loader.source = {};
+			export_Loader.source.object = function(o) {
 				var getLocation = function(path) {
 					var target = o;
 					var tokens = path.split("/");
@@ -764,7 +741,7 @@
 					return rv;
 				}
 			};
-			this.Loader.series = function(list) {
+			export_Loader.series = function(list) {
 				var sources = [];
 				for (var i=0; i<list.length; i++) {
 					sources[i] = list[i].source;
@@ -780,11 +757,11 @@
 				}
 				return new Loader(source);
 			};
-			this.Loader.tools = {
+			export_Loader.tools = {
 				toExportScope: toExportScope
 			};
 
-			this.namespace = function(string) {
+			var export_namespace = function(string) {
 				//	This construct returns the top-level global object, e.g., window in the browser
 				var global = function() {
 					return this;
@@ -803,23 +780,32 @@
 				return scope;
 			}
 
-			if ($platform.java) {
-				this.java = $platform.java;
-			}
-
-			//	TODO	currently only used by jsapi in jsh/unit via jsh.js, so undocumented
-			//	TODO	also used by client.html unit tests
-			this.$platform = $platform;
-
-			//	TODO	currently used to set deprecation warning in jsh.js
-			//	TODO	currently used by jsapi in jsh/unit via jsh.js
-			//	TODO	also used by client.html unit tests
-			//	used to allow implementations to set warnings for deprecate and experimental
-			this.$api = $api;
+			return Object.assign({},
+				{
+					mime: mime,
+					typescript: $slime.typescript,
+					run: topMethod("run"),
+					file: topMethod("file"),
+					value: topMethod("value"),
+					Resource: Resource,
+					Loader: export_Loader,
+					namespace: export_namespace,
+					//	TODO	currently only used by jsapi in jsh/unit via jsh.js, so undocumented
+					//	TODO	also used by client.html unit tests
+					$platform: $platform
+				},
+				($platform.java) ? { java: $platform.java } : {},
+				{
+					//	TODO	currently used to set deprecation warning in jsh.js
+					//	TODO	currently used by jsapi in jsh/unit via jsh.js
+					//	TODO	also used by client.html unit tests
+					//	used to allow implementations to set warnings for deprecate and experimental
+					$api: $api
+				}
+			)
 		};
-		/** @type { slime.runtime.Exports } */
-		var rv = new Exports();
-		return rv;
+
+		return Exports();
 	}
 //@ts-ignore
 )($engine,$slime)
