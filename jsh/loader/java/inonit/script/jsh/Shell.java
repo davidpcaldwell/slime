@@ -189,7 +189,7 @@ public class Shell {
 												"--outDir", tmp.getCanonicalPath(),
 												//	--module ES6 basically leaves the code alone if it exports type definitions,
 												//	which is the one kind of export we want to use right now
-												"--module", "None",
+												"--module", "ES6",
 												ts.getCanonicalPath()
 											};
 										} catch (IOException e) {
@@ -199,6 +199,7 @@ public class Shell {
 								}
 							);
 							String compiled = streams.readString(new FileReader(js));
+							compiled = compiled.replace("export {};", "/* REMOVED BY JSH LOADER: $export {}; */");
 							return compiled;
 						} catch (FileNotFoundException e) {
 							e.printStackTrace();

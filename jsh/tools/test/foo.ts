@@ -1,4 +1,4 @@
-interface TypescriptTestContext {
+export interface TypescriptTestContext {
 	prefix: string
 }
 
