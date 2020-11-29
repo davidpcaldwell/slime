@@ -780,10 +780,9 @@
 				return scope;
 			}
 
-			return Object.assign({},
+			var rv = Object.assign({},
 				{
 					mime: mime,
-					typescript: $slime.typescript,
 					run: topMethod("run"),
 					file: topMethod("file"),
 					value: topMethod("value"),
@@ -801,8 +800,18 @@
 					//	TODO	also used by client.html unit tests
 					//	used to allow implementations to set warnings for deprecate and experimental
 					$api: $api
+				},
+				{
+					typescript: void(0)
 				}
-			)
+			);
+			Object.defineProperty(rv, "typescript", {
+				get: function() {
+					return $slime.typescript;
+				},
+				enumerable: true
+			});
+			return rv;
 		};
 
 		return Exports();
