@@ -230,8 +230,8 @@ namespace slime {
                 tools: any
             }
             namespace: any
-            java: any
             $platform: $platform
+            java?: any
             $api: $api
         }
     }
