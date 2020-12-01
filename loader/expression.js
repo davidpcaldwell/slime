@@ -114,7 +114,7 @@
 			}
 
 			$exports.execute = (function() {
-				if (typeof($engine) != "undefined" && $engine.execute) return $engine.execute;
+				if ($engine && $engine.execute) return $engine.execute;
 				return function(/*script{name,code},scope,target*/) {
 					return (function() {
 						//@ts-ignore

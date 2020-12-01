@@ -23,6 +23,7 @@ END LICENSE
 <body>
 	<h1>Overview</h1>
 	<div>
+		<!--	TODO	remove reference to this documentation so that it can be removed	-->
 		<div jsapi:id="1">
 			Generally speaking, the SLIME runtime is responsible for providing basic constructs to SLIME embeddings.
 		</div>
@@ -35,54 +36,10 @@ END LICENSE
 	</div>
 	<div>
 		<h1>Embedding</h1>
-		<p>
-			The SLIME runtime (<code>expression.js</code>) is an expression that evaluates to an object providing its capabilities to
-			the embedder. The embedder must provide a <code>$slime</code> object that provides access to the installation, and can
-			add an <code>$engine</code> object in the loader's scope in order to provide engine-specific capabilities to the
-			runtime.
-		</p>
 		<div>
 			<h2><code>$slime</code></h2>
-			<span>An object providing access to the SLIME execution environment.</span>
 			<div class="label">has properties:</div>
 			<ul>
-				<li class="experimental function">
-					<div class="name">getRuntimeScript</div>
-					<span>
-						Returns a component source file of the runtime.
-					</span>
-					<div class="type">
-						<a class="type" name="types.$slime.code">code</a>
-						<span>An executable JavaScript script.</span>
-						<div class="label">has properties:</div>
-						<ul>
-							<li class="value">
-								<div class="name">name</div>
-								<span class="type">string</span>
-							</li>
-							<li class="value">
-								<div class="name">js</div>
-								<span class="type">string</span>
-							</li>
-						</ul>
-					</div>
-					<div class="arguments">
-						<div class="label">Arguments</div>
-						<ol>
-							<li class="value">
-								<span class="type">string</span>
-								<span>The path to a SLIME source file, relative to the loader.</span>
-							</li>
-						</ol>
-					</div>
-					<div class="returns">
-						<div class="label">Returns</div>
-						<span class="type"><a href="#types.$slime.code">code</a></span>
-						<!--	Note that this implies all code must be vanilla JavaScript.	-->
-						<strong>This interface may change to return an instance of the <i>script</i> type.</strong>
-						<span>The code contained in the source file.</span>
-					</div>
-				</li>
 				<li class="experimental function">
 					<div class="name">getCoffeeScript</div>
 					<span>Returns an implementation of CoffeeScript, if one is present.</span>

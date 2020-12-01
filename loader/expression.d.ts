@@ -153,17 +153,32 @@ namespace slime {
         }
     }
 
+    /**
+     * Generally speaking, the SLIME runtime is responsible for providing basic constructs to SLIME embeddings.
+     *
+     * The SLIME runtime (`expression.js`) is an expression that evaluates to an object providing its capabilities to
+     * the embedder.
+     *
+     * Embeddings must supply two values in the scope when executing the runtime. They must supply a value for `$engine` that is either
+     * `undefined` or is a value of type {@link $engine} specifying information about the underlying JavaScript engine, and
+     * they must supply a value for `$slime` that is a {@link $slime} object that provides information about the SLIME installation.
+     *
+     * [Older documentation](../../../../loader/api.html)
+     */
     namespace runtime {
         interface $engine {
-            execute: (script: { name: string, code: string }, scope: object, target: object) => any
             Error?: {
                 decorate: any
             }
+
+            execute?: (script: { name: string, code: string }, scope: object, target: object) => any
+
             Object: {
                 defineProperty: {
                     setReadOnly: any
                 }
             }
+
             MetaObject: any
         }
 
@@ -188,8 +203,16 @@ namespace slime {
             compile: (code: string) => string
         }
 
+        /**
+         * An object providing access to the SLIME execution environment.
+         */
         interface $slime {
-            getRuntimeScript(path: string): any
+            /**
+             * Returns a component source file of the runtime.
+             * @param path The path to a SLIME source file, relative to `expression.js`.
+             * @returns An executable JavaScript script. The code contained in the source file. **This interface may change to return an instance of the *script* type.**
+             */
+            getRuntimeScript(path: string): { name: string, js: string }
 
             getCoffeeScript?(): {
                 code?: string
