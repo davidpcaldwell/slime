@@ -114,8 +114,6 @@
 						jsh.shell.console("Failing because tests failed.");
 						jsh.shell.console("Output directory: " + logs);
 						jsh.shell.exit(1);
-					} else {
-						jsh.shell.console("Tests passed.");
 					}
 				}
 			};

@@ -208,14 +208,26 @@ namespace slime {
          */
         interface $slime {
             /**
-             * Returns a component source file of the runtime.
+             * Provides a component source file of the runtime.
              * @param path The path to a SLIME source file, relative to `expression.js`.
              * @returns An executable JavaScript script. The code contained in the source file. **This interface may change to return an instance of the *script* type.**
              */
             getRuntimeScript(path: string): { name: string, js: string }
 
+            /**
+             * Should provide an implementation of CoffeeScript, if one is present.
+             *
+             * @returns An object containing the CoffeeScript implementation, or `null` if CoffeeScript is not present.
+             */
             getCoffeeScript?(): {
+                /**
+                 * The JavaScript code for the CoffeeScript object, which can be executed to produce the CoffeeScript object.
+                 */
                 code?: string
+
+                /**
+                 * The CoffeeScript object.
+                 */
                 object?: $slime.CoffeeScript
             }
 
