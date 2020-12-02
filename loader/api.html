@@ -37,55 +37,6 @@ END LICENSE
 	<div>
 		<h1>Embedding</h1>
 		<div>
-			<h2><code>$engine</code></h2>
-			<p>
-				The <code>$engine</code> object can be provided in the scope by the embedding in order to provide additional
-				capabilities the JavaScript engine may have.
-			</p>
-			<ul>
-				<li class="constructor">
-					<div class="name">MetaObject</div>
-					<span>
-						A function that implements the behavior defined by
-						<a href="#$platform.MetaObject"><code>$platform.MetaObject</code></a>.
-					</span>
-				</li>
-				<li class="function">
-					<div class="name">execute</div>
-					<span>A function that can execute JavaScript code with a given scope and <i>target</i> (<code>this</code> value).</span>
-					<div class="arguments">
-						<div class="label">Arguments</div>
-						<ol>
-							<li class="object">
-								<span>An object describing the file to execute.</span>
-								<div class="label">has properties:</div>
-								<ul>
-									<li class="value">
-										<div class="name">code</div>
-										<span class="type">string</span>
-										<span>A string of JavaScript code to execute.</span>
-									</li>
-								</ul>
-							</li>
-							<li class="value">
-								<span class="type">object</span>
-								<span>
-									A scope to provide to the object; all the properties of this object must be in scope while
-									the code executes.
-								</span>
-							</li>
-							<li class="value">
-								<span class="type">object</span>
-								<span>
-									An object to provide to the code as <code>this</code> while the code is executing.
-								</span>
-							</li>
-						</ol>
-					</div>
-				</li>
-			</ul>
-		</div>
-		<div>
 			<h2>Properties</h2>
 			<p>
 				The platform loader is normally loaded within an environment-specific embedding, so the following exports are not
