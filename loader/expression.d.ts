@@ -166,41 +166,14 @@ namespace slime {
      * [Older documentation](../../../../loader/api.html)
      */
     namespace runtime {
-        interface $engine {
-            Error?: {
-                decorate: any
+        namespace $slime {
+            interface TypeScript {
+                compile: (code: string) => string
             }
 
-            execute?: (script: { name: string, code: string }, scope: object, target: object) => any
-
-            Object: {
-                defineProperty: {
-                    setReadOnly: any
-                }
+            interface CoffeeScript {
+                compile: (code: string) => string
             }
-
-            MetaObject: any
-        }
-
-        interface $platform {
-            execute: (code: { name?: string, js: string }, scope: { [x: string]: any }, target: any) => any
-            Object: {
-                defineProperty: {
-                    ecma?: boolean
-                    accessor?: boolean
-                    setReadOnly?: any
-                }
-            }
-            Error: {
-                decorate?: <T>(errorConstructor: T) => T
-            }
-            e4x: any
-            MetaObject: any
-            java: any
-        }
-
-        interface TypeScript {
-            compile: (code: string) => string
         }
 
         /**
@@ -228,16 +201,36 @@ namespace slime {
                 /**
                  * The CoffeeScript object.
                  */
-                object?: $slime.CoffeeScript
+                object?: CoffeeScript
             }
 
             typescript?: TypeScript
         }
 
-        namespace $slime {
-            interface CoffeeScript {
-                compile: (code: string) => string
+        interface $engine {
+            Error?: {
+                decorate: any
             }
+
+            execute?: (script: { name: string, code: string }, scope: object, target: object) => any
+
+            MetaObject: any
+        }
+
+        interface $platform {
+            execute: (code: { name?: string, js: string }, scope: { [x: string]: any }, target: any) => any
+            Object: {
+                defineProperty: {
+                    ecma?: boolean
+                    accessor?: boolean
+                }
+            }
+            Error: {
+                decorate?: <T>(errorConstructor: T) => T
+            }
+            e4x: any
+            MetaObject: any
+            java: any
         }
 
         interface Scope {
