@@ -38,7 +38,7 @@
 		{
 			"label": "documentation",
 			"type": "shell",
-			"command": "./jsh.bash tools/documentation.jsh.js -base . -host slime",
+			"command": "./jsh.bash tools/documentation.jsh.js --host slime --watch",
 			"problemMatcher": []
 		},
 		{

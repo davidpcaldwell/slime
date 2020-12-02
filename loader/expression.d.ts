@@ -207,13 +207,35 @@ namespace slime {
             typescript?: TypeScript
         }
 
+        /**
+         * The `$engine` object can be provided in the scope by the embedding in order to provide additional capabilities the
+         * JavaScript engine may have.
+         */
         interface $engine {
             Error?: {
                 decorate: any
             }
 
-            execute?: (script: { name: string, code: string }, scope: object, target: object) => any
+            /**
+             * A function that can execute JavaScript code with a given scope and *target* (`this` value).
+             *
+             * @param script An object describing the file to execute.
+             * @param scope A scope to provide to the object; all the properties of this object must be in scope while the code executes.
+             * @param target An object that must be provided to the code as `this` while the code is executing.
+             */
+            execute?(
+                script: {
+                    name: string,
+                    /** A string of JavaScript code to execute. */
+                    code: string
+                },
+                scope: { [x: string]: any },
+                target: object
+            ): any
 
+            /**
+             * A constructor that implements the behavior defined by {@link $platform.MetaObject}.
+             */
             MetaObject: any
         }
 
