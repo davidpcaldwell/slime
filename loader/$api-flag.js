@@ -51,8 +51,9 @@
 						return;
 					}
 					//	We only execute the rest of this method if the accessor form of defineProperty is present
+					if (!Object.defineProperty) return;
+
 					//	TODO	Make compatible with ECMA method of get/set
-					if (!$platform.Object.defineProperty || !$platform.Object.defineProperty.accessor) return function(){}();
 
 					//	If object has neither getter nor setter, we create both with versions that cooperate with one another
 					//	If object has custom getter and/or custom setter, we overwrite both with versions that wrap them with warnings

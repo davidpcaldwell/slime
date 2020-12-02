@@ -163,6 +163,13 @@ namespace slime {
      * `undefined` or is a value of type {@link $engine} specifying information about the underlying JavaScript engine, and
      * they must supply a value for `$slime` that is a {@link $slime} object that provides information about the SLIME installation.
      *
+     * The runtime will in turn supply embeddings with an {@link $api} object, providing a basic set of JavaScript utilities, and a
+     * {@link $platform} object, providing more advanced JavaScript engine capabilities that depend on the underlying JavaScript
+     * engine.
+     *
+     * All code loaded by the SLIME runtime has access to the {@link $api} object (as `$api`) and the
+     * {@link $platform} object (as `$platform`).
+     *
      * [Older documentation](../../../../loader/api.html)
      */
     namespace runtime {
@@ -240,15 +247,14 @@ namespace slime {
         }
 
         interface $platform {
-            execute: (code: { name?: string, js: string }, scope: { [x: string]: any }, target: any) => any
+            /** @deprecated */
+            execute: any
+
             Object: {
                 defineProperty: {
                     ecma?: boolean
                     accessor?: boolean
                 }
-            }
-            Error: {
-                decorate?: <T>(errorConstructor: T) => T
             }
             e4x: any
             MetaObject: any

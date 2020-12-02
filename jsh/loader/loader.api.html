@@ -24,8 +24,17 @@ END LICENSE
 		<a href="../../loader/jrunscript/api.html">SLIME Java runtime</a> loader, which in turn augments the
 		<a href="../../loader/api.html">SLIME runtime</a> loader.
 	</div>
-	<div jsapi:reference="getApi('../../loader/api.html').getElement('1')"></div>
-	<div jsapi:reference="getApi('../../loader/api.html').getElement('2')"></div>
+	<div jsapi:id="1">
+		<!--	TODO	Moved to loader/expression.d.ts	-->
+		Generally speaking, the SLIME runtime is responsible for providing basic constructs to SLIME embeddings like
+		<code>jsh</code>.
+	</div>
+	<div jsapi:id="2">
+		The SLIME runtime provides the <a href="$api.api.html"><code>$api</code></a> and <code>$platform</code> objects.
+		The <code>$api</code> provides a basic set of JavaScript utilities. The <code>$platform</code> object provides more
+		advanced JavaScript engine capabilities that depend on the underlying JavaScript engine. All code loaded by the SLIME
+		runtime has access to the <code>$api</code> and <code>$platform</code> objects.
+	</div>
 	<!--
 	<div jsapi:reference="getApi('../../loader/api.html').getElement('3')"></div>
 	-->
