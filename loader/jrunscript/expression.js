@@ -105,6 +105,8 @@
 						}
 					}
 				};
+				//	TODO	decorate global Error objects; see jrunscript/host/module.js
+
 				(function() {
 					if ($javahost.setReadOnly) $engine.Object.defineProperty.setReadOnly = $javahost.setReadOnly;
 					if ($javahost.MetaObject) $engine.MetaObject = $javahost.MetaObject;

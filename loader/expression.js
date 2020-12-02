@@ -167,10 +167,6 @@
 							}
 						};
 					}
-
-					if (typeof($engine) != "undefined" && $engine.Object && $engine.Object.defineProperty && $engine.Object.defineProperty.setReadOnly) {
-						this.Object.defineProperty.setReadOnly = $engine.Object.defineProperty.setReadOnly;
-					}
 				}
 			).call($exports);
 
