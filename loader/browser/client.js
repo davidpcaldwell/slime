@@ -323,10 +323,8 @@
 						return fetcher.fetch(url);
 					}
 
-					//	used by unit tests
+					//	used by unit tests <-- old comment; used in loader/browser/test/api.js somehow
 					this.platform = runtime.$platform;
-					//	this variable is now public above
-					this.api = runtime.$api;
 				};
 			}
 		).call($exports);

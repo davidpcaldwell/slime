@@ -294,7 +294,7 @@
 			};
 
 			this.$platform = inonit.loader.$sdk.platform;
-			this.$api = inonit.loader.$sdk.api;
+			this.$api = inonit.loader.$api;
 		};
 
 		var getPartDescriptor = function(definition,environment) {

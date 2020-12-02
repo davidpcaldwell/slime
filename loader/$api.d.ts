@@ -130,5 +130,12 @@ declare namespace $api {
 		interface $slime {
 			getRuntimeScript(path: string): any
 		}
+
+		interface $platform {
+            execute: (code: { name?: string, js: string }, scope: { [x: string]: any }, target: any) => any
+            Error: {
+                decorate?: <T>(errorConstructor: T) => T
+            }
+		}
 	}
 }

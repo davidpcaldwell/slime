@@ -14,7 +14,7 @@
 (
 //	TODO	get rid of the wildcarded properties in $exports by adding all properties to $api.d.ts
 	/**
-	 * @param { slime.runtime.$platform } $platform
+	 * @param { $api.internal.$platform } $platform
 	 * @param { $api.internal.$slime } $slime
 	 * @param { $api & { [x: string]: any } } $exports
 	 */

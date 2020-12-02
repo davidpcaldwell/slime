@@ -90,6 +90,29 @@
 			}
 		})();
 
+		/**
+		 * @type { $api.internal.$platform }
+		 */
+		var $$platform = {
+			Error: {
+				decorate: ($engine && $engine.Error) ? $engine.Error.decorate : void(0)
+			},
+			execute: (function() {
+				if ($engine && $engine.execute) return $engine.execute;
+				return function(/*script{name,code},scope,target*/) {
+					return (function() {
+						//@ts-ignore
+						with( arguments[1] ) {
+							return eval(arguments[0]);
+						}
+					}).call(
+						arguments[2],
+						arguments[0].js, arguments[1]
+					);
+				}
+			})()
+		}
+
 		var $platform = (function() {
 			/** @type { slime.runtime.$platform } */
 			var $exports = {};
@@ -108,25 +131,6 @@
 				$exports.e4x.XML = global.XML;
 				$exports.e4x.XMLList = global.XMLList;
 			}
-
-			$exports.Error = {
-				decorate: ($engine && $engine.Error) ? $engine.Error.decorate : void(0)
-			}
-
-			$exports.execute = (function() {
-				if ($engine && $engine.execute) return $engine.execute;
-				return function(/*script{name,code},scope,target*/) {
-					return (function() {
-						//@ts-ignore
-						with( arguments[1] ) {
-							return eval(arguments[0]);
-						}
-					}).call(
-						arguments[2],
-						arguments[0].js, arguments[1]
-					);
-				}
-			})();
 
 			(
 				/**
@@ -180,13 +184,16 @@
 				//	MetaObject will not be defined
 			}
 
+			//	TODO	get rid of this, but right now tests don't pass without it
+			$exports.execute = $$platform.execute;
+
 			return $exports;
 		})();
 
-		var $api = $platform.execute(
+		var $api = $$platform.execute(
 			$slime.getRuntimeScript("$api.js"),
 			{
-				$platform: $platform,
+				$platform: $$platform,
 				$slime: {
 					getRuntimeScript: function(path) {
 						return $slime.getRuntimeScript(path);
@@ -382,7 +389,7 @@
 			if (!coffeeScript) return null;
 			if (coffeeScript.code) {
 				var target = {};
-				$platform.execute({ name: "coffee-script.js", js: String(coffeeScript.code) }, {}, target);
+				$$platform.execute({ name: "coffee-script.js", js: String(coffeeScript.code) }, {}, target);
 				return target.CoffeeScript;
 			} else if (coffeeScript.object) {
 				return coffeeScript.object;
@@ -661,7 +668,7 @@
 				}
 				scope.$platform = $platform;
 				scope.$api = $api;
-				$platform.execute(
+				$$platform.execute(
 					{
 						name: resource.js.name,
 						js: resource.js.code
