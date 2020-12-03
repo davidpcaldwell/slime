@@ -144,6 +144,8 @@ END LICENSE
 									will attempt to deduce the type from the name.
 								</span>
 								<script type="application/x.jsapi#tests">
+									var toString = function(p) { return p.toString(); };
+
 									(function() {
 										var resource = new api.Resource({});
 										verify(resource).type.is(null);
@@ -152,13 +154,13 @@ END LICENSE
 										var resource = new api.Resource({
 											type: api.mime.Type.parse("application/json")
 										});
-										verify(resource).type.toString().is("application/json");
+										verify(resource).type.evaluate(toString).is("application/json");
 									})();
 									(function() {
 										var resource = new api.Resource({
 											name: "foo.js"
 										});
-										verify(resource).type.toString().is("application/javascript");
+										verify(resource).type.evaluate(toString).is("application/javascript");
 									})();
 									(function() {
 										var resource = new api.Resource({

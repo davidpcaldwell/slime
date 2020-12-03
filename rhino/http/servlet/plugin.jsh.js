@@ -399,7 +399,7 @@
 						var loader = new jsh.file.Loader({ directory: p.directory });
 						var getMimeType = function(path) {
 							var rv = jsh.httpd.nugget.getMimeType(p.directory.getFile(path));
-							if (rv && rv.getMedia() == "application" && rv.getSubtype() == "x.typescript") return "text/plain";
+							if (rv && rv.media == "application" && rv.subtype == "x.typescript") return "text/plain";
 							return rv;
 						}
 						var tomcat = new jsh.httpd.Tomcat(p);

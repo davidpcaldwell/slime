@@ -208,6 +208,33 @@
 			 * @param { slime.runtime.Exports["mime"] } $exports
 			 */
 			function($exports) {
+				/**
+				 *
+				 * @param { string } string
+				 */
+				var is = function(string) {
+					/**
+					 *
+					 * @param { slime.MimeType } type
+					 */
+					function rv(type) {
+						return string == type.media + "/" + type.subtype;
+					}
+					return rv;
+				}
+
+				/**
+				 *
+				 * @param { slime.MimeType } mimeType
+				 */
+				var toDeclaration = function(mimeType) {
+					var rv = mimeType.media + "/" + mimeType.subtype;
+					for (var x in mimeType.parameters) {
+						rv += "; " + x + "=\"" + mimeType.parameters[x] + "\"";
+					}
+					return rv;
+				};
+
 				$exports.Type = Object.assign(
 					/**
 					 * @param {string} media
@@ -223,29 +250,43 @@
 							}
 						}).apply(this,arguments);
 
-						this.getMedia = function() {
-							return media;
-						}
+						/**
+						 * @type { slime.MimeType.Object }
+						 */
+						var rv = {
+							media: void(0),
+							subtype: void(0),
+							parameters: void(0),
+							is: void(0)
+						};
 
-						this.getSubtype = function() {
-							return subtype;
-						}
+						/** @property { string } media  */
+						Object.defineProperty(rv, "media", {
+							enumerable: true,
+							value: media
+						});
 
-						this.getParameters = function() {
-							return parameters;
-						}
+						Object.defineProperty(rv, "subtype", {
+							enumerable: true,
+							value: subtype
+						});
 
-						this.is = function(string) {
-							return string == media + "/" + subtype;
-						}
+						Object.defineProperty(rv, "parameters", {
+							enumerable: true,
+							value: (parameters) ? parameters : {}
+						});
 
-						this.toString = function() {
-							var rv = media + "/" + subtype;
-							for (var x in parameters) {
-								rv += "; " + x + "=\"" + parameters[x] + "\"";
+						Object.defineProperty(rv, "toString", {
+							value: function() {
+								return toDeclaration(this);
 							}
-							return rv;
-						}
+						});
+
+						rv.is = $api.deprecate(function(string) {
+							return is(string)(this);
+						});
+
+						return rv;
 					},
 					{
 						parse: function(string) {
@@ -310,24 +351,22 @@
 								}
 								//	loop
 							}
-							var rv = new $exports.Type(media,subtype,parameters);
+							var rv = $exports.Type(media,subtype,parameters);
 							return rv;
 						},
-						fromName: void(0)
+						fromName: function(path) {
+							if (/\.js$/.test(path)) return mime.Type.parse("application/javascript");
+							if (/\.css$/.test(path)) return mime.Type.parse("text/css");
+							if (/\.ts$/.test(path)) return mime.Type.parse("application/x.typescript");
+							if (/\.csv$/.test(path)) return mime.Type.parse("text/csv");
+							if (/\.coffee$/.test(path)) return mime.Type.parse("application/vnd.coffeescript");
+						},
+						toDeclaration: toDeclaration
 					}
 				);
 				return $exports;
 			}
 		)({ Type: void(0) });
-
-		/** @type { slime.runtime.Exports["mime"]["Type"]["fromName"] } */
-		mime.Type.fromName = function(path) {
-			if (/\.js$/.test(path)) return mime.Type.parse("application/javascript");
-			if (/\.css$/.test(path)) return mime.Type.parse("text/css");
-			if (/\.ts$/.test(path)) return mime.Type.parse("application/x.typescript");
-			if (/\.csv$/.test(path)) return mime.Type.parse("text/csv");
-			if (/\.coffee$/.test(path)) return mime.Type.parse("application/vnd.coffeescript");
-		};
 
 		/**
 		 * @constructor
@@ -336,7 +375,7 @@
 		var Resource = function(o) {
 			this.type = (function(type,name) {
 				if (typeof(type) == "string") return mime.Type.parse(type);
-				if (type instanceof mime.Type) return type;
+				if (type && type.media && type.subtype) return type;
 				if (!type && name) {
 					var fromName = mime.Type.fromName(name);
 					if (fromName) return fromName;
@@ -628,8 +667,7 @@
 				if (typeof(object.read) != "function") throw new Error("Not resource.");
 				/** @type { slime.Resource & { js: { name: string, code: string } } } */
 				var resource = Object.assign(object, { js: void(0) });
-				var type = resource.type;
-				if (!type) type = mime.Type.parse("application/javascript");
+				var type = (resource.type) ? mime.Type(resource.type.media, resource.type.subtype, resource.type.parameters) : mime.Type.parse("application/javascript");
 				var string = (function() {
 					if (resource.read) {
 						var rv = resource.read(String);

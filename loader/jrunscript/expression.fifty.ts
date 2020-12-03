@@ -18,8 +18,8 @@
 				}
 			});
 			verify(resource).is.type("object");
-			verify(resource).type.getMedia().is("application");
-			verify(resource).type.getSubtype().is("x.typescript");
+			verify(resource).type.media.is("application");
+			verify(resource).type.subtype.is("x.typescript");
 
 			//	TODO	when running Fifty tests, this shows up as a 'run' child; should use function name ("streamIsCopied")
 			//			if there is one

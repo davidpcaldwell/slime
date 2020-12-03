@@ -36,10 +36,10 @@ declare type factory = slime.Loader.Product<{ scale: number }, api>;
 			run(function parse() {
 				var string = "text/plain";
 				var type = subject.mime.Type.parse(string);
-				verify(type).getMedia().is("text");
-				verify(type).getSubtype().is("plain");
-				verify(type).getParameters().is.type("object");
-				verify(type).getParameters().evaluate(function(p) { return Object.keys(p); }).length.is(0);
+				verify(type).media.is("text");
+				verify(type).subtype.is("plain");
+				verify(type).parameters.is.type("object");
+				verify(type).parameters.evaluate(function(p) { return Object.keys(p); }).length.is(0);
 			});
 
 			run(function fromName() {
@@ -59,36 +59,36 @@ declare type factory = slime.Loader.Product<{ scale: number }, api>;
 
 			run(function constructorArguments() {
 				verify(subject.mime).evaluate(function() {
-					return new subject.mime.Type(void(0), "plain");
+					return subject.mime.Type(void(0), "plain");
 				}).threw.type(Error);
 
 				verify(subject.mime).evaluate(function() {
-					return new subject.mime.Type(null, "plain");
+					return subject.mime.Type(null, "plain");
 				}).threw.type(Error);
 
 				verify(subject.mime).evaluate(function() {
-					return new subject.mime.Type("text", void(0));
+					return subject.mime.Type("text", void(0));
 				}).threw.type(Error);
 
 				verify(subject.mime).evaluate(function() {
-					return new subject.mime.Type("text", null);
+					return subject.mime.Type("text", null);
 				}).threw.type(Error);
 
 				verify(subject.mime).evaluate(function() {
 					//@ts-expect-error
-					return new subject.mime.Type("text", "plain", 2);
+					return subject.mime.Type("text", "plain", 2);
 				}).threw.type(Error);
 
 				verify(subject.mime).evaluate(function() {
-					return new subject.mime.Type("text", "plain");
+					return subject.mime.Type("text", "plain");
 				}).threw.nothing();
 
 				verify(subject.mime).evaluate(function() {
-					return new subject.mime.Type("text", "plain").toString();
+					return subject.mime.Type("text", "plain").toString();
 				}).is("text/plain");
 
 				verify(subject.mime).evaluate(function() {
-					return new subject.mime.Type("text", "plain", { charset: "us-ascii" }).toString();
+					return subject.mime.Type("text", "plain", { charset: "us-ascii" }).toString();
 				}).is("text/plain; charset=\"us-ascii\"");
 			});
 		}
