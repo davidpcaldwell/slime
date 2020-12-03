@@ -19,5 +19,7 @@ try {
 
 //	What about pausing on *uncaught* exceptions?
 
-var x = {};
-x.foo();
+(function() {
+	var x = {};
+	x.foo();
+})();

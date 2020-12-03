@@ -31,9 +31,11 @@ var VERSIONS = {
 	}
 };
 
-for (var x in VERSIONS) {
-	VERSIONS[x].version = x;
-}
+(function() {
+	for (var x in VERSIONS) {
+		VERSIONS[x].version = x;
+	}
+})()
 
 var VERSION = VERSIONS[parameters.options.version];
 
