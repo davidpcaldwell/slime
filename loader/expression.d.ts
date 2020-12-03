@@ -86,11 +86,32 @@ interface Array<T> {
 }
 
 namespace slime {
+    /**
+     * A MIME type.
+     */
     interface MimeType {
+        /**
+         * Returns the MIME media type for this type; for `text/plain`, returns `"text"`.
+         */
         getMedia(): string
+
+        /**
+         * Returns the MIME subtype for this type; for `text/plain`, returns `"plain"`.
+         */
         getSubtype(): string
+
+        /**
+         * Returns an object with property values of type `string`. Each property of the object represents a MIME type
+         * parameter of the form *`name`*=*`value`*. The preceding declaration would result in the returned object containing
+         * a property named *`name`* that had the value *`value`*.
+         */
         getParameters(): { [x: string]: string }
+
         is(string: string): boolean
+
+        /**
+         * Returns a string representation of this MIME type, suitable for a MIME type declaration.
+         */
         toString(): string
     }
 
@@ -269,11 +290,29 @@ namespace slime {
         interface Exports {
             mime: {
                 Type: {
+                    /**
+                     * Creates a MIME type from its parsed components.
+                     *
+                     * @param media The MIME media type: for `text/plain`, `"text"`.
+                     * @param subtype The MIME subtype: for `text/plain`, `"plain"`.
+                     * @param parameters Each property of the object represents a MIME parameter that
+                     * will be appended to the MIME type; the name of the property is the name of the parameter, while the value of the property is the
+                     * value of the parameter.
+                     */
                     new (media: string, subtype: string, parameters: { [x: string]: string }): MimeType
+
+                    /**
+                     * Parses the given string, returning the appropriate MIME type object.
+                     *
+                     * @param string A MIME type.
+                     */
                     parse: (string: string) => MimeType
                     fromName: (path: string) => MimeType
                 }
             }
+        }
+
+        interface Exports {
             run: any
             file: any
             value: any

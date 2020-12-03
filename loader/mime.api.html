@@ -24,113 +24,12 @@ END LICENSE
 	</script>
 	<div>A simple set of constructs that pertain to MIME that can run on any JavaScript engine.</div>
 	<div>
-		<h1>Context</h1>
-		<ul>
-		</ul>
-	</div>
-	<div>
-		<div class="type" jsapi:id="type">
-			<a class="type" name="types.type">type</a>
-			<span>A MIME type.</span>
-			<div class="label">has properties:</div>
-			<ul>
-				<li class="function">
-					<div class="name">getMedia</div>
-					<span>Returns the MIME media type for this type; for <code>text/plain</code>, returns <code>"text"</code>.</span>
-					<div class="returns">
-						<div class="label">Returns</div>
-						<span class="type">string</span>
-					</div>
-				</li>
-				<li class="function">
-					<div class="name">getSubtype</div>
-					<span>Returns the MIME subtype for this type; for <code>text/plain</code>, returns <code>"plain"</code>.</span>
-					<div class="returns">
-						<div class="label">Returns</div>
-						<span class="type">string</span>
-					</div>
-				</li>
-				<li class="function">
-					<div class="name">getParameters</div>
-					<span>
-						Returns an object with property values of type <code>string</code>. Each property of the object represents a MIME type
-						parameter of the form <code><i>name</i>=<i>value</i></code>. The preceding declaration would result in the returned object containing
-						a property named <code><i>name</i></code> that had the value <code><i>value</i></code>.
-					</span>
-					<div class="returns">
-						<div class="label">Returns</div>
-						<span class="type">object</span>
-					</div>
-				</li>
-				<li class="function">
-					<div class="name">toString</div>
-					<span>Returns a string representation of this MIME type, suitable for a MIME type declaration.</span>
-					<div class="returns">
-						<div class="label">Returns</div>
-						<span class="type">string</span>
-					</div>
-				</li>
-			</ul>
-		</div>
 		<h1>Exports</h1>
 		<ul>
 			<li class="constructor" jsapi:id="exports.Type">
 				<div class="name"><a name="$exports.Type">Type</a></div>
-				<span>Creates a MIME type from its parsed components.</span>
-				<div class="arguments">
-					<div class="label">Arguments</div>
-					<ol>
-						<li class="value">
-							<span class="type">string</span>
-							<span>The MIME media type: for <code>text/plain</code>, <code>"text"</code>.</span>
-						</li>
-						<li class="value">
-							<span class="type">string</span>
-							<span>The MIME subtype: for <code>text/plain</code>, <code>"plain"</code>.</span>
-						</li>
-						<li class="value">
-							<span class="type">object</span>
-							<span>
-								An object with properties that have <code>string</code> values. Each property of the object represents a MIME parameter that
-								will be appended to the MIME type; the name of the property is the name of the parameter, while the value of the property is the
-								value of the parameter.
-							</span>
-						</li>
-					</ol>
-				</div>
-				<div class="instances">
-					<div class="label">Instances</div>
-					<span class="type"><a href="#types.type">type</a></span>
-				</div>
 				<div class="label">has properties:</div>
 				<ul>
-					<li class="function">
-						<div class="name">parse</div>
-						<span>Parses the given string, returning the appropriate MIME type object.</span>
-						<div class="arguments">
-							<div class="label">Arguments</div>
-							<ol>
-								<li class="value">
-									<span class="type">string</span>
-									<span>A MIME type.</span>
-								</li>
-							</ol>
-						</div>
-						<div class="returns">
-							<div class="label">Returns</div>
-							<span class="type"><a href="#types.type">type</a></span>
-						</div>
-						<script type="application/x.jsapi#tests">
-							(function() {
-								var string = "text/plain";
-								var type = api.mime.Type.parse(string);
-								verify(type).getMedia().is("text");
-								verify(type).getSubtype().is("plain");
-								verify(type).getParameters().is.type("object");
-								verify(type).getParameters().evaluate(function(p) { return Object.keys(p); }).length.is(0);
-							})();
-						</script>
-					</li>
 					<li class="function">
 						<div class="name">fromName</div>
 						<span>Attempts to determine the MIME type of a resource given its name.</span>
