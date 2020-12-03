@@ -31,14 +31,65 @@ declare type factory = slime.Loader.Product<{ scale: number }, api>;
 
 			fifty.verify(subject).mime.is.type("object");
 
+			var verify = fifty.verify;
+
 			run(function parse() {
-				var verify = fifty.verify;
 				var string = "text/plain";
 				var type = subject.mime.Type.parse(string);
 				verify(type).getMedia().is("text");
 				verify(type).getSubtype().is("plain");
 				verify(type).getParameters().is.type("object");
 				verify(type).getParameters().evaluate(function(p) { return Object.keys(p); }).length.is(0);
+			});
+
+			run(function fromName() {
+			 	verify(subject.mime).Type.fromName("foo.js").evaluate(function(p) { return p.toString() }).is("application/javascript");
+			 	verify(subject.mime).Type.fromName("foo.f").is(void(0));
+			});
+
+			//	TODO	According to RFC 2045 section 5.1, matching is case-insensitive
+			//			https://tools.ietf.org/html/rfc2045#section-5
+			//
+			//			types, subtypes, and parameter names are case-insensitive
+			//			parameter values are "normally" case-sensitive
+			//
+			//			TODO	comments are apparently allowed as well, see 5.1
+			//
+			//			TODO	quotes are also apparently not part of parameter values
+
+			run(function constructorArguments() {
+				verify(subject.mime).evaluate(function() {
+					return new subject.mime.Type(void(0), "plain");
+				}).threw.type(Error);
+
+				verify(subject.mime).evaluate(function() {
+					return new subject.mime.Type(null, "plain");
+				}).threw.type(Error);
+
+				verify(subject.mime).evaluate(function() {
+					return new subject.mime.Type("text", void(0));
+				}).threw.type(Error);
+
+				verify(subject.mime).evaluate(function() {
+					return new subject.mime.Type("text", null);
+				}).threw.type(Error);
+
+				verify(subject.mime).evaluate(function() {
+					//@ts-expect-error
+					return new subject.mime.Type("text", "plain", 2);
+				}).threw.type(Error);
+
+				verify(subject.mime).evaluate(function() {
+					return new subject.mime.Type("text", "plain");
+				}).threw.nothing();
+
+				verify(subject.mime).evaluate(function() {
+					return new subject.mime.Type("text", "plain").toString();
+				}).is("text/plain");
+
+				verify(subject.mime).evaluate(function() {
+					return new subject.mime.Type("text", "plain", { charset: "us-ascii" }).toString();
+				}).is("text/plain; charset=\"us-ascii\"");
 			});
 		}
 	}

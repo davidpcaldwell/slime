@@ -194,7 +194,7 @@
 							}
 
 							if (response.body && response.body["type"]) {
-								//	Documented to accept loader/mime.api.html Type and string
+								//	Documented to accept slime.MimeType and string
 								_response.setContentType(String(response.body["type"]));
 							}
 							if (response.body && typeof(response.body["length"]) == "number") {
