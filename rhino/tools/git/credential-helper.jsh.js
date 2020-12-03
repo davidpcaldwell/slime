@@ -35,12 +35,14 @@ if (operation == "get") {
 	input.password = jsh.ui.askpass.gui({
 		prompt: "Enter password for " + input.username + "@" + input.host
 	});
-	for (var x in input) {
-		if (jsh.shell.environment.GIT_DEBUG) {
-			jsh.shell.echo(x + "=" + input[x], { stream: jsh.shell.stdio.error });
+	(function() {
+		for (var x in input) {
+			if (jsh.shell.environment.GIT_DEBUG) {
+				jsh.shell.echo(x + "=" + input[x], { stream: jsh.shell.stdio.error });
+			}
+			jsh.shell.echo(x + "=" + input[x]);
 		}
-		jsh.shell.echo(x + "=" + input[x]);
-	}
+	})();
 	jsh.shell.echo();
 	jsh.shell.console("Obtained git credentials.");
 }

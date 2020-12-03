@@ -18,6 +18,8 @@ var repository = new jsh.tools.hg.Repository({ directory: parameters.options.rep
 var subs = repository.subrepositories();
 debugger;
 jsh.shell.console("Result after debugger ...");
-for (var x in subs) {
-	jsh.shell.console(x + " = " + subs[x].repository + " at " + subs[x].revision);
-}
+(function() {
+	for (var x in subs) {
+		jsh.shell.console(x + " = " + subs[x].repository + " at " + subs[x].revision);
+	}
+})();
