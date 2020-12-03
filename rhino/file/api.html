@@ -1144,7 +1144,7 @@ END LICENSE
 						-->
 						<script type="application/x.jsapi#tests">
 							var apiHtml = $jsapi.loader.getRelativePath("api.html").file;
-							verify(apiHtml).type.toString().is("text/html");
+							verify(apiHtml).type.evaluate(function(p) { return p.toString() }).is("text/html");
 						</script>
 					</ul>
 				</div>

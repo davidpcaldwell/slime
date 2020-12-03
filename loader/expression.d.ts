@@ -91,28 +91,38 @@ namespace slime {
      */
     interface MimeType {
         /**
-         * Returns the MIME media type for this type; for `text/plain`, returns `"text"`.
+         * The MIME media type for this type; for `text/plain`, `"text"`.
          */
-        getMedia(): string
+        media: string
 
         /**
-         * Returns the MIME subtype for this type; for `text/plain`, returns `"plain"`.
+         * The MIME subtype for this type; for `text/plain`, `"plain"`.
          */
-        getSubtype(): string
+        subtype: string
 
         /**
-         * Returns an object with property values of type `string`. Each property of the object represents a MIME type
-         * parameter of the form *`name`*=*`value`*. The preceding declaration would result in the returned object containing
-         * a property named *`name`* that had the value *`value`*.
+         * Each property of the object represents a MIME type
+         * parameter of the form *`name`*=*`value`*.
          */
-        getParameters(): { [x: string]: string }
+        parameters: { [x: string]: string }
+    }
 
-        is(string: string): boolean
-
+    namespace MimeType {
         /**
-         * Returns a string representation of this MIME type, suitable for a MIME type declaration.
+         * @deprecated
          */
-        toString(): string
+        interface Object extends MimeType {
+            /**
+             * @deprecated
+             * @param string
+             */
+            is(string: string): boolean
+
+            /**
+             * Returns a string representation of this MIME type, suitable for a MIME type declaration.
+             */
+            toString(): string
+        }
     }
 
     interface Resource {
@@ -302,14 +312,14 @@ namespace slime {
                      * will be appended to the MIME type; the name of the property is the name of the parameter, while the value of the property is the
                      * value of the parameter.
                      */
-                    new (media: string, subtype: string, parameters?: { [x: string]: string }): MimeType
+                    (media: string, subtype: string, parameters?: { [x: string]: string }): MimeType.Object
 
                     /**
                      * Parses the given string, returning the appropriate MIME type object.
                      *
                      * @param string A MIME type.
                      */
-                    parse(string: string): MimeType
+                    parse(string: string): MimeType.Object
 
                     /**
                      * Attempts to determine the MIME type of a resource given its name.
@@ -318,6 +328,11 @@ namespace slime {
                      * @returns The type determined from the name, or `undefined` if the type cannot be determined.
                      */
                     fromName(path: string): MimeType
+
+                    /**
+                     * Converts a MIME type to a string, suitable for a MIME type declaration.
+                     */
+                    toDeclaration(mimeType: MimeType): string
                 }
             }
         }

@@ -220,13 +220,13 @@ END LICENSE
 					</li>
 					<script type="application/x.jsapi#tests">
 						var type = jsh.httpd.nugget.getMimeType($jsapi.loader.getRelativePath("api.js").file);
-						verify(type).getMedia().is("application");
-						verify(type).getSubtype().is("javascript");
+						verify(type).media.is("application");
+						verify(type).subtype.is("javascript");
 
 						(function html() {
 							var type = jsh.httpd.nugget.getMimeType($jsapi.loader.getRelativePath("api.html").file);
-							verify(type).getMedia().is("text");
-							verify(type).getSubtype().is("html");
+							verify(type).media.is("text");
+							verify(type).subtype.is("html");
 						})();
 					</script>
 				</ul>
