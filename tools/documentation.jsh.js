@@ -29,26 +29,28 @@
 						"/*": {
 							load: function(scope) {
 								scope.$exports.handle = scope.httpd.Handler.series(
-									scope.httpd.Handler.Child({
-										filter: /^local\/doc\/typedoc\/((.*)\.html$)/,
-										handle: function(request) {
+									function(request) {
+										var typedocPattern = /^(?:(.+)\/)?local\/doc\/typedoc\/((.*)\.html$)/;
+										var match = typedocPattern.exec(request.path);
+										if (match) {
+											var src = (match[1]) ? base.getSubdirectory(match[1]) : base;
 											if (p.options.watch) {
 												jsh.shell.jsh({
 													shell: jsh.shell.jsh.src,
 													script: jsh.shell.jsh.src.getFile("tools/typedoc.jsh.js"),
 													arguments: [
-														"--output", base.getRelativePath("local/doc/typedoc"),
-														"--input", base
+														"--output", src.getRelativePath("local/doc/typedoc"),
+														"--input", src
 													]
 												});
 											}
 											jsh.shell.console("Serving: " + request.path);
 											return new scope.httpd.Handler.Loader({
-												loader: new jsh.file.Loader({ directory: base.getSubdirectory("local/doc/typedoc") }),
+												loader: new jsh.file.Loader({ directory: src.getSubdirectory("local/doc/typedoc") }),
 												index: "index.html"
-											})(request)
+											})($api.Object.compose(request, { path: match[2] }))
 										}
-									}),
+									},
 									new scope.httpd.Handler.Loader({
 										loader: new jsh.file.Loader({ directory: base })
 									})
