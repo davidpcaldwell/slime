@@ -385,6 +385,7 @@
 		/** @type { slime.runtime.$slime.CoffeeScript } */
 		var $coffee = (function() {
 			//	TODO	rename to getCoffeescript to make consistent with camel case.
+			if (!$slime.getCoffeeScript) return null;
 			var coffeeScript = $slime.getCoffeeScript();
 			if (!coffeeScript) return null;
 			if (coffeeScript.code) {
