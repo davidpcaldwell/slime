@@ -288,6 +288,9 @@ namespace slime {
         }
 
         interface Exports {
+            /**
+             * Provides APIs relating to MIME types.
+             */
             mime: {
                 Type: {
                     /**
@@ -299,15 +302,22 @@ namespace slime {
                      * will be appended to the MIME type; the name of the property is the name of the parameter, while the value of the property is the
                      * value of the parameter.
                      */
-                    new (media: string, subtype: string, parameters: { [x: string]: string }): MimeType
+                    new (media: string, subtype: string, parameters?: { [x: string]: string }): MimeType
 
                     /**
                      * Parses the given string, returning the appropriate MIME type object.
                      *
                      * @param string A MIME type.
                      */
-                    parse: (string: string) => MimeType
-                    fromName: (path: string) => MimeType
+                    parse(string: string): MimeType
+
+                    /**
+                     * Attempts to determine the MIME type of a resource given its name.
+                     *
+                     * @param path A resource name.
+                     * @returns The type determined from the name, or `undefined` if the type cannot be determined.
+                     */
+                    fromName(path: string): MimeType
                 }
             }
         }

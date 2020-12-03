@@ -49,9 +49,6 @@
 			//	Functionality used internally or accessed through loader/jrunscript (although untested by loader/jrunscript)
 			pathname: SRC.getRelativePath("loader/api.html")
 		}));
-		suite.add("internal/mime", new jsh.unit.html.Part({
-			pathname: SRC.getRelativePath("loader/mime.api.html")
-		}));
 		if (!parameters.options.noplatform) {
 			suite.add("internal/jrunscript/main", new jsh.unit.html.Part({
 				//	Test cases of loader implementation
