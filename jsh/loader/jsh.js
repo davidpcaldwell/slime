@@ -280,7 +280,9 @@
 						"kotlin-scripting-impl.jar",
 						"kotlin-script-util.jar",
 						"kotlin-script-runtime.jar",
-						"jsr223.jar"
+						"jsr223.jar",
+
+						"kotlin-stdlib.jar"
 					].map(function(name) {
 						return new Packages.java.io.File(KOTLIN, name);
 					});
