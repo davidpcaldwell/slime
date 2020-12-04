@@ -203,6 +203,14 @@
 			}
 		};
 
+		$exports.Function.RegExp = {
+			modify: function(modifier) {
+				return function(regexp) {
+					return new RegExp( modifier(regexp.source) );
+				}
+			}
+		}
+
 		$exports.Function.argument = {};
 		$exports.Function.argument.check = function(p) {
 			if (p.type) {
