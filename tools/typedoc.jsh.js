@@ -10,6 +10,7 @@
 			jsh.wf.cli.$f.option.pathname({ longname: "input" }),
 			function(p) {
 				jsh.shell.tools.node.require();
+				jsh.shell.tools.node.modules.require({ name: "typescript" });
 				jsh.shell.tools.node.modules.require({ name: "typedoc" });
 				var shell = jsh.script.file.parent.parent;
 				var PATH = jsh.file.Searchpath(jsh.shell.PATH.pathnames.concat([shell.getRelativePath("local/jsh/lib/node/bin")]));
