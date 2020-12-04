@@ -121,30 +121,23 @@
 				body: lines,
 				description: "api.html " + snippet.name
 			};
-		}
+		};
 
-		var languages = {
-			html: function() {
-				var html = getHtmlDocument();
+		var snippetPattern = /^snippet\-(.*)-(.*)\.zzz$/;
 
-				var snippets = getHtmlSnippets(html);
-
-				//  TODO    strip leading shared whitespace
-
-				return {
-					json: snippets.map(function(snippet) {
-						return { name: snippet.abbreviation, code: snippet.html }
-					}),
-					vscode: snippets.map(htmlSnippetToVscodeSnippet)
-				}
-			},
-			javascript: function() {
-				var snippetPattern = /^snippet\-(.*)-(.*)\.js$/;
+		var snippetFiles = function(p) {
+			return function() {
+				var pattern = $api.Function.result(
+					snippetPattern,
+					$api.Function.RegExp.modify(function(pattern) {
+						return pattern.replace(/zzz/g, p.extension)
+					})
+				);
 				var snippets = jsh.script.file.parent.list().filter(function(node) {
-					var match = snippetPattern.exec(node.pathname.basename);
+					var match = pattern.exec(node.pathname.basename);
 					return Boolean(match);
 				}).map(function(node) {
-					var match = snippetPattern.exec(node.pathname.basename);
+					var match = pattern.exec(node.pathname.basename);
 					return {
 						name: match[1],
 						abbreviation: match[2],
@@ -170,6 +163,25 @@
 					})
 				}
 			}
+		}
+
+		var languages = {
+			html: function() {
+				var html = getHtmlDocument();
+
+				var snippets = getHtmlSnippets(html);
+
+				//  TODO    strip leading shared whitespace
+
+				return {
+					json: snippets.map(function(snippet) {
+						return { name: snippet.abbreviation, code: snippet.html }
+					}),
+					vscode: snippets.map(htmlSnippetToVscodeSnippet)
+				}
+			},
+			javascript: snippetFiles({ extension: "js" }),
+			typescript: snippetFiles({ extension: "ts" })
 		}
 
 		$api.Function.result(

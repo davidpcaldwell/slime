@@ -142,6 +142,7 @@
 					return verify.apply(this,arguments);
 				},
 				$api: {
+					Function: $api.Function,
 					Events: {
 						Captor: function() {
 							var events = [];

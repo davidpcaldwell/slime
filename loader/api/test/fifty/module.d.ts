@@ -54,6 +54,7 @@ namespace slime.fifty {
 				window?: Window
 			},
 			$api: {
+				Function: $api.Function
 				Events: {
 					/**
 					 * Creates an [[$api.Events.Handler]] that captures and stores all received [[$api.Event]]s for querying.

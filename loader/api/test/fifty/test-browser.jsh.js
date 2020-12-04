@@ -9,6 +9,7 @@
 			jsh.wf.cli.$f.option.boolean({ longname: "interactive" }),
 			jsh.wf.cli.$f.option.pathname({ longname: "chrome:data" }),
 			jsh.wf.cli.$f.option.boolean({ longname: "chrome:debug:vscode" }),
+			jsh.wf.cli.$f.option.string({ longname: "part" }),
 			function(p) {
 				var page = jsh.script.file.parent.getFile("test-browser.html");
 				var client = jsh.shell.jsh.src.getFile("loader/browser/client.js");
@@ -83,7 +84,9 @@
 							query: [
 								{ name: "file", value: paths.toFile.relative },
 								{ name: "results", value: String(Boolean(resultsPath)) }
-							]
+							].concat(
+								(p.options.part) ? [{ name: "part", value: p.options.part }] : []
+							)
 						}).toString(),
 						arguments: (p.options["chrome:debug:vscode"]) ? ["--remote-debugging-port=9222"] : [],
 						on: {
