@@ -50,8 +50,8 @@ namespace slime.time {
 			Zone: object
 		}
 		When: {
-			new ({ date: Date }): When
-			new ({ unix: number }): When
+			new (p: { date: Date }): When
+			new (p: { unix: number }): When
 			new (date: Date): When
 			new (): When
 			codec: {

@@ -67,6 +67,10 @@ namespace slime.web {
 		 */
 		window?: {
 			url: () => Url
+			query: {
+				controls: () => Form.Control[]
+				object: () => { [name: string]: string }
+			}
 		}
 	}
 }

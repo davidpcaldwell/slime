@@ -246,6 +246,27 @@
 			$exports.window = new function() {
 				this.url = function() {
 					return $exports.Url.parse($context.window.location.href);
+				};
+
+				this.query = {
+					controls: function() {
+						return $api.Function.pipe(
+							$exports.window.url,
+							$api.Function.property("query"),
+							$exports.Url.query.parse
+						)(void(0))
+					},
+					object: function() {
+						var controls = $exports.window.query.controls();
+						if (controls === null) return null;
+						return $api.Function.result(
+							controls,
+							$api.Function.Array.map(function(control) {
+								return [control.name,control.value]
+							}),
+							$api.Function.Object.fromEntries
+						)
+					}
 				}
 			}
 		}
