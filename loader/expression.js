@@ -203,25 +203,27 @@
 			null
 		);
 
+		/**
+		 *
+		 * @param { string } string
+		 */
+		var mimeTypeIs = function(string) {
+			/**
+			 *
+			 * @param { slime.MimeType } type
+			 */
+			function rv(type) {
+				return string == type.media + "/" + type.subtype;
+			}
+			return rv;
+		};
+
 		var mime = (
 			/**
 			 * @param { slime.runtime.Exports["mime"] } $exports
 			 */
 			function($exports) {
-				/**
-				 *
-				 * @param { string } string
-				 */
-				var is = function(string) {
-					/**
-					 *
-					 * @param { slime.MimeType } type
-					 */
-					function rv(type) {
-						return string == type.media + "/" + type.subtype;
-					}
-					return rv;
-				}
+				var is = mimeTypeIs;
 
 				/**
 				 *
@@ -677,17 +679,22 @@
 				if (typeof(string) != "string") {
 					throw new TypeError("Resource: " + resource.name + " is not convertible to string, so cannot be executed.");
 				}
-				if ($slime.typescript && type && type.is("application/x.typescript")) {
+
+				var typeIs = function(string) {
+					return type && mimeTypeIs(string)(type);
+				}
+
+				if ($slime.typescript && typeIs("application/x.typescript")) {
 					resource.js = {
 						name: resource.name,
 						code: $slime.typescript.compile(string)
 					};
-				} else if (type && type.is("application/vnd.coffeescript")) {
+				} else if (typeIs("application/vnd.coffeescript")) {
 					resource.js = {
 						name: resource.name,
 						code: $coffee.compile(string)
 					};
-				} else if (type && type.is("application/javascript") || type && type.is("application/x-javascript")) {
+				} else if (typeIs("application/javascript") || typeIs("application/x-javascript")) {
 					resource.js = {
 						name: resource.name,
 						code: string

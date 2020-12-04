@@ -23,7 +23,6 @@
 			"webRoot": "${workspaceFolder}"
 		},
 		{
-
 			"name": "Chrome debug (attach 9222)",
 			"type": "pwa-chrome",
 			"request": "attach",
