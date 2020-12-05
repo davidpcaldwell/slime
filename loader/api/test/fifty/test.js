@@ -99,42 +99,18 @@
 			} else {
 				console.start(null, name);
 			}
-		}
-
-		var runner = function(tests) {
-			return function(code,name,argument) {
-				name = getContainerName(tests,code,name);
-				start(name);
-				var was = {
-					scope: scope,
-					verify: verify
-				};
-				scope = Scope({ parent: scope });
-				verify = Verify(scope);
-				code(argument);
-				var result = scope.success;
-				scope = was.scope;
-				verify = was.verify;
-				if (scope) {
-					scope.end(name,result);
-				} else {
-					console.end(null, name, result);
-				}
-				return result;
-			}
 		};
 
-		//	TODO	remove duplication with above after constructing test case
-		var error = function(name,e) {
+		var executeTestScope = function(name,execute) {
 			start(name);
-			scope = Scope({ parent: scope });
-			verify = Verify(scope);
-			verify("Error").is(String(e));
-			var result = scope.success;
 			var was = {
 				scope: scope,
 				verify: verify
 			};
+			scope = Scope({ parent: scope });
+			verify = Verify(scope);
+			execute();
+			var result = scope.success;
 			scope = was.scope;
 			verify = was.verify;
 			if (scope) {
@@ -143,6 +119,24 @@
 				console.end(null, name, result);
 			}
 			return result;
+		}
+
+		var runner = function(tests) {
+			return function(code,name,argument) {
+				return executeTestScope(
+					getContainerName(tests,code,name),
+					function() { code(argument); }
+				)
+			}
+		};
+
+		var error = function(name,e) {
+			executeTestScope(
+				name,
+				//	TODO	works, but should display something better, probably including stack and using
+				//			more general verify()
+				function() { verify("Error").is(String(e)); }
+			)
 		}
 
 		var parsePath = function(path) {
