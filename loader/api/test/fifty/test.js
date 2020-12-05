@@ -44,13 +44,22 @@
 
 				/** @type { slime.definition.verify.Scope["test"] } */
 				this.test = function(f) {
-					var result = f();
-					if (result.success === false) {
+					var result;
+					try {
+						result = f();
+						if (result.success === false) {
+							this.fail();
+						} else if (result.success === true) {
+							//	do nothing
+						} else {
+							throw new TypeError();
+						}
+					} catch (e) {
 						this.fail();
-					} else if (result.success === true) {
-						//	do nothing
-					} else {
-						throw new TypeError();
+						result = {
+							success: null,
+							message: String(e)
+						}
 					}
 					console.test(this, result.message, result.success);
 				}
@@ -71,22 +80,31 @@
 		var scope;
 		var verify;
 
+		var getContainerName = function(tests,code,name) {
+			if (!code) throw new TypeError("Cannot run scope " + code);
+			if (!name) name = $api.Function.result(
+				getPropertyPathFrom(tests)(code),
+				function(array) {
+					return (array) ? array.join(".") : array;
+				}
+			);
+			if (!name) name = code.name;
+			if (!name) name = "run";
+			return name;
+		};
+
+		var start = function(name) {
+			if (scope) {
+				scope.start(name);
+			} else {
+				console.start(null, name);
+			}
+		}
+
 		var runner = function(tests) {
 			return function(code,name,argument) {
-				if (!code) throw new TypeError("Cannot run scope " + code);
-				if (!name) name = $api.Function.result(
-					getPropertyPathFrom(tests)(code),
-					function(array) {
-						return (array) ? array.join(".") : array;
-					}
-				);
-				if (!name) name = code.name;
-				if (!name) name = "run";
-				if (scope) {
-					scope.start(name);
-				} else {
-					console.start(null, name);
-				}
+				name = getContainerName(tests,code,name);
+				start(name);
 				var was = {
 					scope: scope,
 					verify: verify
@@ -105,6 +123,27 @@
 				return result;
 			}
 		};
+
+		//	TODO	remove duplication with above after constructing test case
+		var error = function(name,e) {
+			start(name);
+			scope = Scope({ parent: scope });
+			verify = Verify(scope);
+			verify("Error").is(String(e));
+			var result = scope.success;
+			var was = {
+				scope: scope,
+				verify: verify
+			};
+			scope = was.scope;
+			verify = was.verify;
+			if (scope) {
+				scope.end(name,result);
+			} else {
+				console.end(null, name, result);
+			}
+			return result;
+		}
 
 		var parsePath = function(path) {
 			var tokens = path.split("/");
@@ -181,22 +220,33 @@
 				jsh: global.jsh
 			});
 
-			loader.run(
-				path,
-				scope
-			);
+			var loaderError;
 
-			/** @type { any } */
-			var target = scope.tests;
-			part.split(".").forEach(function(token) {
-				target = $api.Function.optionalChain(token)(target)
-			});
-			if (typeof(target) == "function") {
-				/** @type { (argument: any) => void } */
-				var callable = target;
-				return runner(tests)(callable, path + ":" + part,argument);
+			try {
+				loader.run(
+					path,
+					scope
+				);
+			} catch (e) {
+				loaderError = e;
+			}
+
+			if (!loaderError) {
+				/** @type { any } */
+				var target = scope.tests;
+				part.split(".").forEach(function(token) {
+					target = $api.Function.optionalChain(token)(target)
+				});
+				if (typeof(target) == "function") {
+					/** @type { (argument: any) => void } */
+					var callable = target;
+					return runner(tests)(callable, path + ":" + part,argument);
+				} else {
+					throw new TypeError("Not a function: " + part);
+				}
 			} else {
-				throw new TypeError("Not a function: " + part);
+				error(path, loaderError);
+//				return runner(tests)
 			}
 		}
 
