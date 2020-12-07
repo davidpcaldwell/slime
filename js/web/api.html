@@ -65,181 +65,21 @@ END LICENSE
 		</ul>
 	</div>
 	<div>
-		<h1>Context</h1>
-		<script type="application/x.jsapi#context">
-			(function() {
-				var rv = [];
-				var global = (function() {
-					return this;
-				})();
-				if (global == global.window) {
-					rv.push({
-						escaper: {
-							encode: window.escape,
-							decode: window.unescape
-						}
-					});
-				}
-				if (global.jsh) {
-					rv.push($jsapi.loader.file("context.java.js"));
-				}
-				return rv;
-			})()
-		</script>
-		<ul>
-			<li class="object">
-				<div class="name">escaper</div>
-				<span>
-					An object capable of handling the <a href="http://tools.ietf.org/html/rfc3986#section-2.1">percent-encoding</a>
-					or "URL-encoding") algorithm.
-				</span>
-				<div class="label">has properties:</div>
-				<ul>
-					<li class="function">
-						<div class="name">encode</div>
-						<span>__DESCRIPTION__</span>
-						<div class="arguments">
-							<div class="label">Arguments</div>
-							<ol>
-							</ol>
-						</div>
-						<div class="returns">
-							<div class="label">Returns</div>
-							<span class="type">__TYPE__</span>
-							<span>__DESCRIPTION__</span>
-						</div>
-					</li>
-					<li class="function">
-						<div class="name">decode</div>
-						<span>__DESCRIPTION__</span>
-						<div class="arguments">
-							<div class="label">Arguments</div>
-							<ol>
-							</ol>
-						</div>
-						<div class="returns">
-							<div class="label">Returns</div>
-							<span class="type">__TYPE__</span>
-							<span>__DESCRIPTION__</span>
-						</div>
-					</li>
-				</ul>
-			</li>
-		</ul>
-	</div>
-	<div>
 		<h1>Exports</h1>
 		<div class="type">
 			<a class="type" id="types.Url">Url</a>
-			<span>
-				An object having several properties representing parts of the URL. These properties are "live" -- they can be
-				changed, and the URL will reflect the changes.
-			</span>
 			<div class="label">has properties:</div>
 			<ul>
 				<li class="function">
 					<div class="name">toString</div>
 					<span>Converts this URL into its string form.</span>
 				</li>
-				<li class="value">
-					<div class="name">scheme</div>
-					<span class="type">__TYPE__</span>
-					<span>__DESCRIPTION__</span>
-				</li>
-				<li class="value">
-					<div class="name">host</div>
-					<span class="type">__TYPE__</span>
-					<span>__DESCRIPTION__</span>
-				</li>
-				<li class="value">
-					<div class="name">port</div>
-					<span class="type">number</span>
-					<span>If a port number is specified in the URL, the port number; otherwise, <code>undefined</code>.</span>
-				</li>
-				<li class="value">
-					<div class="name">path</div>
-					<span class="type">__TYPE__</span>
-					<span>__DESCRIPTION__</span>
-				</li>
-				<li class="value">
-					<div class="name">query</div>
-					<span class="type">string</span>
-					<span>The query portion of this URL (with no preceding <code>?</code>).</span>
-				</li>
-				<li class="function">
-					<div class="name">form</div>
-					<span>__DESCRIPTION__</span>
-					<div class="returns">
-						<div class="label">Returns</div>
-						<span class="type">__TYPE__</span>
-						<span>__DESCRIPTION__</span>
-					</div>
-				</li>
-				<li class="value">
-					<div class="name">fragment</div>
-					<span class="type">__TYPE__</span>
-					<span>__DESCRIPTION__</span>
-				</li>
-				<li class="function">
-					<div class="name">resolve</div>
-					<span>__DESCRIPTION__</span>
-					<div class="arguments">
-						<div class="label">Arguments</div>
-						<ol>
-							<li class="value">
-								<span class="type">string</span>
-								<span>A reference.</span>
-							</li>
-						</ol>
-					</div>
-					<div class="returns">
-						<div class="label">Returns</div>
-						<span class="type"><a href="#types.Url">Url</a></span>
-						<span>__DESCRIPTION__</span>
-					</div>
-					<script type="application/x.jsapi#tests"><![CDATA[
-						var base = module.Url.parse("http://www.example.com/path/to/page.html?name=value&foo=bar#fragment");
-						(function() {
-							var relative = base.resolve("../foo.js");
-							test(relative.toString() == "http://www.example.com/path/foo.js");
-						})();
-					]]></script>
-				</li>
 			</ul>
-			<script type="application/x.jsapi#tests"><![CDATA[
-				(function liveQueryProperty() {
-					var url = module.Url.parse("http://www.example.com/path/to/page.html");
-					verify(url).toString().is("http://www.example.com/path/to/page.html");
-					url.query = module.Url.query([
-						{ name: "foo", value: "bar" },
-						{ name: "foo", value: "baz" }
-					]);
-					verify(url).toString().is("http://www.example.com/path/to/page.html?foo=bar&foo=baz");
-				})();
-			]]></script>
 		</div>
 
 		<ul>
 			<li class="constructor">
 				<div class="name">Url</div>
-				<span>See <a href="http://tools.ietf.org/html/rfc3986">RFC 3986</a>.</span>
-				<div class="arguments">
-					<div class="label">Arguments</div>
-					<ol>
-						<li class="object">
-							<div class="name">__NAME__</div>
-							<span>__DESCRIPTION__</span>
-							<div class="label">has properties:</div>
-							<ul>
-							</ul>
-						</li>
-					</ol>
-				</div>
-				<div class="instances">
-					<div class="label">Instances</div>
-					<span class="type">__TYPE__</span>
-					<span>__DESCRIPTION__</span>
-				</div>
 				<script type="application/x.jsapi#tests">
 					var one = new module.Url({
 						path: "path",
