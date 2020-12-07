@@ -1,59 +1,18 @@
 namespace slime.web {
-	interface Url {
-		scheme: string
-		userinfo: string
-		host: string
-		port: number
-		path: string
-		query: string
-		fragment: string
-	}
-
-	namespace Url {
-		interface Argument {
-			scheme?: string
-			authority?: {
-				host: string
-				port: number
-				userinfo?: string
-			}
-			path: string
-			query: string | Form.Control[]
-			fragment?: string
-		}
-	}
-
 	interface Context {
+		/**
+		 * An object capable of handling the [percent-encoding](http://tools.ietf.org/html/rfc3986#section-2.1)
+		 * (or "URL-encoding") algorithm.
+		 */
 		escaper: slime.Codec<string,string>
 		window?: Window
 	}
 
-	interface Form {
-		controls: Form.Control[]
-		getUrlencoded: () => string
-	}
-
-	namespace Form {
-		interface Control {
-			name: string
-			value: string
-		}
-
-		type Argument = Argument.UrlEncoded | Argument.Controls
-
-		namespace Argument {
-			interface UrlEncoded {
-				urlencoded: string
-			}
-
-			interface Controls {
-				controls: Control[]
-			}
-		}
-	}
-
 	interface Exports {
 		Url: {
+			/**
+			 * See [RFC 3986](http://tools.ietf.org/html/rfc3986).
+			 */
 			new (argument: Url.Argument): Url
 			parse: (string: string) => Url
 			query: {
