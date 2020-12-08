@@ -10,8 +10,17 @@
 //	Contributor(s):
 //	END LICENSE
 
+//@ts-check
 (
-	function() {
+	/**
+	 *
+	 * @param { slime.runtime.$platform } $platform
+	 * @param { $api } $api
+	 * @param { slime.runtime.old.Context } $context
+	 * @param { slime.Loader } $loader
+	 * @param { slime.runtime.old.Exports } $exports
+	 */
+	function($platform,$api,$context,$loader,$exports) {
 		var globals = $loader.file("global.js");
 
 		if ($context.globals) {
@@ -47,11 +56,11 @@
 
 		var constant = function constant(f) {
 			return function() {
-				if (typeof(arguments.callee.called) == "undefined") {
-					arguments.callee.result = f.call(this);
-					arguments.callee.called = true;
+				if (typeof(arguments.callee["called"]) == "undefined") {
+					arguments.callee["result"] = f.call(this);
+					arguments.callee["called"] = true;
 				}
-				return arguments.callee.result;
+				return arguments.callee["result"];
 			}
 		}
 
@@ -76,6 +85,11 @@
 					return string;
 				}
 
+				/** @type { (x: any) => string } */
+				var _typeof = function(x) {
+					return typeof(x);
+				}
+
 				var literal = function(it) {
 					if (typeof(it) == "object") {
 						return sourceify(it,references);
@@ -85,7 +99,7 @@
 						return "\"" + escape(it) + "\"";
 					} else if (typeof(it) == "function") {
 						return null;
-					} else if (typeof(it) == "xml") {
+					} else if (_typeof(it) == "xml") {
 						return null;
 					} else if (typeof(it) == "undefined") {
 						return UNDEFINED;
@@ -104,7 +118,7 @@
 					return "\"" + escape(value) + "\"";
 				} else if (typeof(value) == "function") {
 					return null;
-				} else if (typeof(value) == "xml") {
+				} else if (_typeof(value) == "xml") {
 					return null;
 				} else if (typeof(value) == "object") {
 					if (globals.Array.indexOf.call(references,value) == -1) {
@@ -126,16 +140,16 @@
 						return "[" + globals.Array.map.call( value, function(item) {
 							return literal(item);
 						} ).join(",") + "]";
-			//		} else if (object.constructor.prototype == Date.prototype) {
+					// } else if (object.constructor.prototype == Date.prototype) {
 					} else if (value.getFullYear && value.getYear) {
 						//	TODO	Seems like the original form of the test does not work in Rhino, for some reason
 						//	TODO	Above comment may have been written when the Date constructor had been replaced by the js/time module
 						return "new Date(" + value.getTime() + ")";
 					} else {
-		//				var extended = extensions.encode(object);
-		//				if (extended) {
-		//					return extended;
-		//				}
+						// var extended = extensions.encode(object);
+						// if (extended) {
+						// 	return extended;
+						// }
 						var properties = [];
 						for (var x in value) {
 							var source = sourceify(value[x],references);
@@ -163,7 +177,7 @@
 			}
 
 			this.addMapping = function(o) {
-				delegates.push(Self.methods(o));
+				delegates.push(Self["methods"](o));
 			}
 
 			this.transform = function(o) {
@@ -261,9 +275,9 @@
 				return properties.values(o);
 			};
 
-			this.pairs = function(o) {
+			this.pairs = Object.assign(function(o) {
 				return properties.pairs(o);
-			}
+			}, { create: void(0) });
 			this.pairs.create = function(array) {
 				var rv = {};
 				array.forEach(function(item) {
@@ -333,18 +347,15 @@
 			}
 		}
 
-		$exports.Function = $api.deprecate($api.Function);
+		$exports.Function = $api.Function;
+		$api.deprecate($exports, "Function");
 
 		$exports.Filter = new function() {
 			this.property = function(name,filter) {
 				if (typeof(filter) != "function") {
-					//	the version that tests for equality is deprecated
-					//	below is copy-paste from the check in flag()
-					var warning = ($context.flag && $context.flag.warning) ? $context.flag.warning : function(){};
-					warning({ "function": arguments.callee, call: arguments, reason: deprecate });
-					return function(o) {
+					return $api.deprecate(function(o) {
 						return o[name] == filter;
-					};
+					});
 				} else {
 					return function(o) {
 						return filter(o[name]);
@@ -493,9 +504,7 @@
 			var create = (function(self) {
 				return function() {
 					var rv = [];
-					for (var x in self) {
-						rv[x] = self[x];
-					}
+					Object.assign(rv,self);
 					return rv;
 				};
 			})(this);
@@ -507,6 +516,7 @@
 				return select[0];
 			};
 
+			/** @this { Array } */
 			this.fold = function(f,initial) {
 				var current = initial;
 				for (var i=0; i<this.length; i++) {
@@ -515,6 +525,7 @@
 				return current;
 			};
 
+			/** @this { Array } */
 			this.each = function(f) {
 				var rv = create();
 				for (var i=0; i<this.length; i++) {
@@ -523,6 +534,7 @@
 				return rv;
 			};
 
+			/** @this { Array } */
 			this.select = function(f) {
 				var rv = create();
 				for (var i=0; i<this.length; i++) {
@@ -598,7 +610,7 @@
 			}
 		};
 
-		$exports.deprecate = deprecate;
-		$api.deprecate($exports,"deprecate");
+		$exports.deprecate = $api.deprecate($api.deprecate);
 	}
-)();
+//@ts-ignore
+)($platform,$api,$context,$loader,$exports);
