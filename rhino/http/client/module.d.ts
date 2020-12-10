@@ -39,8 +39,24 @@ namespace slime.jrunscript.http.client {
 		Loader: any
 	}
 
+	interface Context {
+		debug: any
+		gae: any
+		api: {
+			web: any
+			java: any
+			js: any
+			io: any
+		}
+	}
+
 	interface Exports {
-		Client: new (configuration?: {}) => Client
+		Client: new (configuration?: {
+			authorization?: any
+			spi?: any
+			proxy?: any
+			TREAT_302_AS_303?: boolean
+		}) => Client
 
 		Authentication: {
 			Basic: {

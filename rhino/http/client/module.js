@@ -13,7 +13,7 @@
 //@ts-check
 (
 	/**
-	 * @param { { debug: any, gae: any, api: { web: any, java: any, js: any, io: any } } } $context
+	 * @param { slime.jrunscript.http.client.Context } $context
 	 * @param { slime.jrunscript.http.client.Exports } $exports
 	 */
 	function($context,$exports) {
@@ -343,7 +343,8 @@
 		}
 
 		/**
-		 * @type { new (configuration: {}) => slime.jrunscript.http.client.Client }
+		 *
+		 * @param { ConstructorParameters<slime.jrunscript.http.client.Exports["Client"]>[0] } configuration
 		 */
 		var Client = function(configuration) {
 			var cookies = new Cookies();
