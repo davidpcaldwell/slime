@@ -1,6 +1,7 @@
 /**
- * A set of APIs that can be helpful in implementing tasks related to software development. The The [[Exports]] object represents the
- * main `jsh.wf` APIs project authors can use in constructing their own `wf` commands.
+ * A set of APIs that can be helpful in implementing tasks related to software development. The [[Exports]] object represents the
+ * main `jsh.wf` APIs project authors can use in constructing their own `wf` commands, including the `cli.initialize` method that
+ * provides standard implementations for several commands.
  */
 namespace jsh.wf {
 	/**
