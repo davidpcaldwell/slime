@@ -16,8 +16,24 @@ namespace slime.jrunscript.http.client {
 
 	interface Response {
 		request: Request
-		status: any
-		headers: any
+		status: {
+			code: number
+			reason: string
+			/**
+			 * @deprecated Same as `reason`
+			 */
+			message: string
+		}
+		headers: (
+			{
+				name: string
+				value: string
+			}[]
+			&
+			{
+				get: any
+			}
+		)
 		body: {
 			type: slime.MimeType
 			//	TODO	Possibly should be slime.jrunscript.InputStream or slime.jrunscript.io.InputStream
@@ -50,10 +66,34 @@ namespace slime.jrunscript.http.client {
 		}
 	}
 
+	type spi = (
+		p: {
+			method: string
+			url: any
+			headers: any
+			proxy: any
+			timeout: any
+			body: any
+		},
+		cookies?: any
+	) => {
+		status: {
+			code: number
+			reason: string
+		}
+		headers: (
+			{
+				name: string
+				value: string
+			}[]
+		)
+		stream: slime.jrunscript.runtime.io.InputStream
+	}
+
 	interface Exports {
 		Client: new (configuration?: {
 			authorization?: any
-			spi?: any
+			spi?: (standard: spi) => spi
 			proxy?: any
 			TREAT_302_AS_303?: boolean
 		}) => Client

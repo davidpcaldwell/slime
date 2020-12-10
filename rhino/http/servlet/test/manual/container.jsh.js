@@ -73,39 +73,43 @@ jsh.java.Thread.start(function() {
 	});
 });
 
-var client = new jsh.http.Client();
-new lock.Waiter({
-	until: function() {
-		return proceed;
-	},
-	then: function() {
-		jsh.shell.console("Proceeding ...");
+(
+	function() {
+		var client = new jsh.http.Client();
+		new lock.Waiter({
+			until: function() {
+				return proceed;
+			},
+			then: function() {
+				jsh.shell.console("Proceeding ...");
+			}
+		})();
+
+		var response = client.request({
+			url: "http://127.0.0.1:8080/container/",
+			evaluate: function(response) {
+				if (response.status.code != 200) throw new Error("Response code: " + response.status.code);
+				return response.body.stream.character().asString();
+			}
+		});
+
+		jsh.shell.run({
+			command: jsh.file.Pathname("/bin/sh"),
+			arguments: [
+				CATALINA_HOME.getFile("bin/catalina.sh"),
+				"stop"
+			],
+			environment: Object.assign({}, jsh.shell.environment, {
+				CATALINA_BASE: CATALINA_BASE.toString()
+			})
+		});
+
+		if (response == "Requested path: []") {
+			jsh.shell.console("Got expected output; exiting with success.");
+			jsh.shell.exit(0);
+		} else {
+			jsh.shell.console("Bad response: " + response);
+			jsh.shell.exit(1);
+		}
 	}
-})();
-
-var response = client.request({
-	url: "http://127.0.0.1:8080/container/",
-	evaluate: function(response) {
-		if (response.status.code != 200) throw new Error("Response code: " + response.status.code);
-		return response.body.stream.character().asString();
-	}
-});
-
-jsh.shell.run({
-	command: jsh.file.Pathname("/bin/sh"),
-	arguments: [
-		CATALINA_HOME.getFile("bin/catalina.sh"),
-		"stop"
-	],
-	environment: Object.assign({}, jsh.shell.environment, {
-		CATALINA_BASE: CATALINA_BASE.toString()
-	})
-});
-
-if (response == "Requested path: []") {
-	jsh.shell.console("Got expected output; exiting with success.");
-	jsh.shell.exit(0);
-} else {
-	jsh.shell.console("Bad response: " + response);
-	jsh.shell.exit(1);
-}
+)()

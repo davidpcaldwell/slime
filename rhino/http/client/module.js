@@ -170,7 +170,11 @@
 			}
 		};
 
-		var spi = function(p) {
+		/**
+		 * @type { slime.jrunscript.http.client.spi }
+		 * @returns { ReturnType<slime.jrunscript.http.client.spi> }
+		 */
+		function spi(p) {
 			var connect = function(method,url,headers,mode) {
 				if (typeof(url) == "string") url = $context.api.web.Url.parse(url);
 				var hostHeader;
@@ -290,12 +294,14 @@
 				var $error = $urlConnection.getErrorStream();
 			}
 			var result = ($input) ? $input : $error;
-			return {
+			/** @type { ReturnType<slime.jrunscript.http.client.spi> } */
+			var rv = {
 				status: getStatus($urlConnection),
 				headers: getHeaders($urlConnection),
 				stream: (result) ? $context.api.io.java.adapt(result) : null
 			}
-		}
+			return rv;
+		};
 
 		/**
 		 * @param { slime.jrunscript.http.client.Pairs } p
@@ -400,7 +406,8 @@
 					}
 				})();
 
-				var response = myspi({
+				//	TODO	is the cookies argument really used by alternative spis?
+				var spiresponse = myspi({
 					method: method,
 					url: url,
 					headers: headers,
@@ -409,12 +416,11 @@
 					timeout: p.timeout
 				},cookies);
 
-				response.status.message = response.status.reason;
-				$api.deprecate(response.status,"message");
-
-				cookies.set(url.toString(),response.headers);
-
-				response.headers.get = function(name) {
+				/**
+				 * @this { ReturnType<slime.jrunscript.http.client.spi>["headers"] }
+				 * @param { string } name
+				 */
+				var headersGetMethod = function(name) {
 					var values = this
 						.filter(function(header) { return header.name.toUpperCase() == name.toUpperCase() })
 						.map(function(header) { return header.value; })
@@ -424,12 +430,55 @@
 					return values;
 				}
 
+				/**
+				 *
+				 * @param { ReturnType<slime.jrunscript.http.client.spi>["headers"] } headers
+				 * @returns { slime.jrunscript.http.client.Response["headers"] }
+				 */
+				var withHeadersGet = function(headers) {
+					/** @type { slime.jrunscript.http.client.Response["headers"] } */
+					var rv = Object.assign(headers, { get: void(0) });
+					rv.get = headersGetMethod;
+					return rv;
+				}
+
+				cookies.set(url.toString(),spiresponse.headers);
+
+				// response.headers.get = function(name) {
+				// 	var values = this
+				// 		.filter(function(header) { return header.name.toUpperCase() == name.toUpperCase() })
+				// 		.map(function(header) { return header.value; })
+				// 	;
+				// 	if (values.length == 0) return null;
+				// 	if (values.length == 1) return values[0];
+				// 	return values;
+				// }
+
 				var isRedirect = function(status) {
 					return (status.code >= 300 && status.code <= 303) || status.code == 307;
 				}
 
-				if (isRedirect(response.status)) {
-					var redirectTo = response.headers.get("Location");
+				/**
+				 *
+				 * @param { ReturnType<slime.jrunscript.http.client.spi> } spiresponse
+				 * @returns { slime.jrunscript.http.client.Response }
+				 */
+				var toResponse = function(spiresponse) {
+					var rv = {
+						request: p,
+						status: $api.Object.compose(spiresponse.status, { message: spiresponse.status.reason }),
+						headers: withHeadersGet(spiresponse.headers),
+						body: {
+							type: type,
+							stream: spiresponse.stream
+						}
+					}
+					$api.deprecate(rv.status,"message");
+					return rv;
+				}
+
+				if (isRedirect(spiresponse.status)) {
+					var redirectTo = headersGetMethod.call(spiresponse.headers, "Location");
 					if (!redirectTo) throw new Error("Redirect without location header.");
 					var redirectUrl = url.resolve(redirectTo);
 					//	TODO	copy object rather than modifying
@@ -438,7 +487,7 @@
 						//	Treating 302 as 303, as many user agents do that; see discussion in RFC 2616 10.3.3
 						//	TODO	document this, perhaps after designing mode to be more general
 						var TREAT_302_AS_303 = (configuration && configuration.TREAT_302_AS_303);
-						var IS_303 = (TREAT_302_AS_303) ? (response.status.code == 302 || response.status.code == 303) : response.status.code == 303;
+						var IS_303 = (TREAT_302_AS_303) ? (spiresponse.status.code == 302 || spiresponse.status.code == 303) : spiresponse.status.code == 303;
 						if (x == "method" && IS_303) {
 							rv.method = "GET";
 						} else if (x == "body" && IS_303) {
@@ -451,13 +500,13 @@
 					var callback = new function() {
 						this.next = rv;
 						this.request = p;
-						this.response = response;
+						this.response = spiresponse;
 					};
 					if (p.on && p.on.redirect) {
 						p.on.redirect(callback);
 					}
 					//	rv.body is undefined
-					return (callback.next) ? arguments.callee(callback.next) : response;
+					return (callback.next) ? arguments.callee(callback.next) : toResponse(spiresponse);
 				} else {
 					var parser = (function() {
 						if (p.evaluate === JSON) {
@@ -476,21 +525,14 @@
 						};
 					})();
 					var type = (function() {
-						var string = response.headers.get("Content-Type");
+						var string = headersGetMethod.call(spiresponse.headers, "Content-Type");
 						if (string) {
 							return $context.api.io.mime.Type.parse(string);
 						}
 						return null;
 					})();
-					return parser({
-						request: p,
-						status: response.status,
-						headers: response.headers,
-						body: {
-							type: type,
-							stream: response.stream
-						}
-					});
+
+					return parser(toResponse(spiresponse));
 				}
 			}
 
