@@ -51,7 +51,7 @@
 		 * @param { string } x - snippet id
 		 */
 		var elementToHtml = function(html, x) {
-			return toHtml(getElement(html,"template." + x));
+			return toHtml(getElement(html,"template." + x)).replace(/\/\//g, "");
 		};
 
 		/**
@@ -68,7 +68,8 @@
 				supports: "spas",
 				"test.initialize": "testi",
 				"test.tests": "testt",
-				"test.destroy": "testd"
+				"test.destroy": "testd",
+				"test.fifty": "testf"
 			};
 
 			/**
@@ -82,7 +83,7 @@
 						return {
 							name: p[0],
 							abbreviation: p[1],
-							html: elementToHtml(html, p[0])
+							html: elementToHtml(html, p[0]).replace(/\$jsapi/g, "\\$jsapi")
 						}
 					}
 				)
