@@ -221,13 +221,14 @@
 							return {
 								get: function(path) {
 									try {
-										var code = fetcher.get(prefix+path);
+										var url = canonicalize(prefix+path);
+										var code = fetcher.get(url);
 										if (code.contentType == "application/javascript") {
 											//	Add sourceURL for JavaScript debuggers
-											code.responseText += "\n//# sourceURL=" + prefix+path;
+											code.responseText += "\n//# sourceURL=" + url;
 										}
 										// TODO: is 'path' used?
-										return { type: code.contentType, name: path, string: code.responseText, path: prefix+path };
+										return { type: code.contentType, name: path, string: code.responseText, path: url };
 									} catch (e) {
 										if (e.code == 404) return null;
 										throw e;
