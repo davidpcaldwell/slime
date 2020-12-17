@@ -1,13 +1,17 @@
 namespace slime.jrunscript.git {
+	namespace internal {
+		export const code = (
+			function(
+				fifty: slime.fifty.test.kit
+			) {
+				var module = jsh.tools.git;
+				var fixtures = fifty.$loader.file("fixtures.js", { module: module });
+				return { module, fixtures }
+			}
+			//@ts-ignore
+		)(fifty);
+	}
 
-	var code = (function(
-		fifty: slime.fifty.test.kit
-	) {
-		var module = jsh.tools.git;
-		var fixtures = fifty.$loader.file("fixtures.js", { module: module });
-		return { module, fixtures }
-	//@ts-ignore
-	})(fifty)
 
 	export interface Installation {
 		/**
@@ -58,7 +62,7 @@ namespace slime.jrunscript.git {
 				run(function worksWhenCreatingDirectory() {
 					var location = fifty.jsh.file.location();
 					verify(location).directory.is(null);
-					var createdLocation = code.module.init({
+					var createdLocation = internal.code.module.init({
 						pathname: location
 					});
 					verify(location).directory.is.type("object");
@@ -88,7 +92,7 @@ namespace slime.jrunscript.git {
 						return $api.Function.Array.filter(isType(type));
 					}
 
-					var repository = code.module.init({
+					var repository = internal.code.module.init({
 						pathname: directory.pathname
 					}, captor.handler);
 
@@ -112,7 +116,7 @@ namespace slime.jrunscript.git {
 				fifty.tests.types.Repository.Local = {};
 				fifty.tests.types.Repository.Local.config = function() {
 					run(function old() {
-						var empty = code.module.init({
+						var empty = internal.code.module.init({
 							pathname: fifty.jsh.file.location()
 						});
 						var old = empty.config({
@@ -133,7 +137,7 @@ namespace slime.jrunscript.git {
 					});
 
 					run(function list() {
-						var empty = code.module.init({
+						var empty = internal.code.module.init({
 							pathname: fifty.jsh.file.location()
 						});
 						var local = empty.config({
@@ -163,7 +167,7 @@ namespace slime.jrunscript.git {
 							}, {});
 						}
 
-						var empty = code.module.init({
+						var empty = internal.code.module.init({
 							pathname: fifty.jsh.file.location()
 						});
 						fifty.verify(empty).evaluate(getConfigObject).evaluate.property("foo.bar").is(void(0));
