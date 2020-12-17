@@ -165,15 +165,6 @@
 			var fifty = {
 				global: global,
 				$loader: loader,
-				run: runner(tests),
-				load: function(at,part,argument) {
-					var path = parsePath(at);
-					recurse(loader.Child(path.folder), path.file, part, argument);
-				},
-				tests: tests,
-				verify: function() {
-					return verify.apply(this,arguments);
-				},
 				$api: {
 					Function: $api.Function,
 					Events: {
@@ -191,6 +182,15 @@
 							}
 						}
 					}
+				},
+				run: runner(tests),
+				load: function(at,part,argument) {
+					var path = parsePath(at);
+					recurse(loader.Child(path.folder), path.file, part, argument);
+				},
+				tests: tests,
+				verify: function() {
+					return verify.apply(this,arguments);
 				},
 				jsh: scopes.jsh
 			};
