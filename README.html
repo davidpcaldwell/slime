@@ -60,44 +60,68 @@ END LICENSE
 			<h1>Tools</h1>
 			<div>
 				<h2>Command-line tools</h2>
-				<ul>
-					<li>
-						<code>tools/documentation.jsh.js -base <i>directory</i> [-index <i>path</i>] [-host <i>hostname</i>]</code>:
-						Serves the documentation for project, in a custom Chrome browser if Chrome is found.
-						<ul>
-							<li><code>-base</code>: top-level directory of the project.</li>
-							<li><code>-index</code>: relative path to the index page; defaults to <code>README.html</code>.</li>
-							<li><code>-host</code>: hostname to use when serving pages.</li>
-						</ul>
-					</li>
-					<li>
-						Running individual definitions (JSAPI pages or <a href="loader/api/test/fifty/README.html">Fifty</a> definitions)
-						<ul>
-							<li><code>tools/fifty.bash test.jsh <i>file</i>.fifty.ts [--part <i>part</i>]</code></li>
-							<li><code>tools/fifty.bash test.browser [--interactive] [--chrome:data <i>pathname</i>] [--chrome:debug:vscode] <i>file</i>.fifty.ts</i> [--part <i>part</i>]</code></code></li>
-							<li><code>jsh</code>: <code>./jsh.bash jsh/test/suite.jsh.js -definition <i>definition</i> [-part <i>part</i>]</code></li>
-							<li>
-								Browser definition page:
-								<code>./jsh.bash <a href="loader/browser/test/suite.jsh.api.html">loader/browser/test/suite.jsh.js</a>
-									-definition <i>pathname</i> [...]
-								</code>
-							</li>
-						</ul>
-					</li>
-					<li>
-						Running browser suite:
-						<code>./jsh.bash <a href="loader/browser/test/suite.jsh.api.html">loader/browser/test/suite.jsh.js</a>
-							-suite <i>pathname</i>
-							[-base <i>directory</i>]
-							[-interactive]
-						</code>
-					</li>
-					<li>
-						<code>loader/api/tools/update.jsh.js [-base <i>directory</i>]</code>: Inlines or updates the definition files
-						for a library that does not itself contain SLIME (and thus cannot link to the SLIME definition files in
-						<code>loader/api</code>).
-					</li>
-				</ul>
+				<div>
+					<h3>Testing</h3>
+					<ul>
+						<li>
+							<code>tools/documentation.jsh.js -base <i>directory</i> [-index <i>path</i>] [-host <i>hostname</i>]</code>:
+							Serves the documentation for project, in a custom Chrome browser if Chrome is found.
+							<ul>
+								<li><code>-base</code>: top-level directory of the project.</li>
+								<li><code>-index</code>: relative path to the index page; defaults to <code>README.html</code>.</li>
+								<li><code>-host</code>: hostname to use when serving pages.</li>
+							</ul>
+						</li>
+						<li>
+							Running individual definitions (JSAPI pages or <a href="loader/api/test/fifty/README.html">Fifty</a> definitions)
+							<ul>
+								<li><code>tools/fifty.bash test.jsh <i>file</i>.fifty.ts [--part <i>part</i>]</code></li>
+								<li><code>tools/fifty.bash test.browser [--interactive] [--chrome:data <i>pathname</i>] [--chrome:debug:vscode] <i>file</i>.fifty.ts</i> [--part <i>part</i>]</code></code></li>
+								<li><code>jsh</code>: <code>./jsh.bash jsh/test/suite.jsh.js -definition <i>definition</i> [-part <i>part</i>]</code></li>
+								<li>
+									Browser definition page:
+									<code>./jsh.bash <a href="loader/browser/test/suite.jsh.api.html">loader/browser/test/suite.jsh.js</a>
+										-definition <i>pathname</i> [...]
+									</code>
+								</li>
+							</ul>
+						</li>
+						<li>
+							Running browser suite:
+							<code>./jsh.bash <a href="loader/browser/test/suite.jsh.api.html">loader/browser/test/suite.jsh.js</a>
+								-suite <i>pathname</i>
+								[-base <i>directory</i>]
+								[-interactive]
+							</code>
+						</li>
+						<li>
+							<code>loader/api/tools/update.jsh.js [-base <i>directory</i>]</code>: Inlines or updates the definition files
+							for a library that does not itself contain SLIME (and thus cannot link to the SLIME definition files in
+							<code>loader/api</code>).
+						</li>
+					</ul>
+				</div>
+				<div>
+					<h3>Other</h3>
+					<ul>
+						<li>
+							<code>rhino/http/servlet/tools/serve.jsh.js
+								[--chrome:data <i>location</i>]
+								[--chrome:debug:port <i>number</i>]
+								[--index <i>path-to-index</i>]
+								<i>directory</i></code>: Serves a directory on an ephemeral port. If <code>--chrome:data</code>
+								is provided, Chrome will be opened to
+								browse the directory, starting at the path specified by <code>--index</code> (default: <code>index.html</code>).
+								If <code>--chrome-debug-port</code> is specified, the opened Chrome will
+								allow debuggers to connect on the given port.
+						</li>
+						<li>
+							<code>loader/api/tools/update.jsh.js [-base <i>directory</i>]</code>: Inlines or updates the definition files
+							for a library that does not itself contain SLIME (and thus cannot link to the SLIME definition files in
+							<code>loader/api</code>).
+						</li>
+					</ul>
+				</div>
 			</div>
 			<div>
 				<h2><code>wf</code></h2>
