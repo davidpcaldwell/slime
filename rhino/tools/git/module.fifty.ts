@@ -1,14 +1,11 @@
 namespace slime.jrunscript.git {
 	namespace internal {
-		export const code = (
-			function(
-				fifty: slime.fifty.test.kit
-			) {
-				var module = jsh.tools.git;
-				var fixtures = fifty.$loader.file("fixtures.js", { module: module });
-				return { module, fixtures }
+		export const subject = jsh.tools.git;
+		export const fixtures = (
+			function(fifty: slime.fifty.test.kit) {
+				return fifty.$loader.file("fixtures.js", { module: subject });
 			}
-			//@ts-ignore
+		//@ts-ignore
 		)(fifty);
 	}
 
@@ -62,7 +59,7 @@ namespace slime.jrunscript.git {
 				run(function worksWhenCreatingDirectory() {
 					var location = fifty.jsh.file.location();
 					verify(location).directory.is(null);
-					var createdLocation = internal.code.module.init({
+					var createdLocation = internal.subject.init({
 						pathname: location
 					});
 					verify(location).directory.is.type("object");
@@ -92,7 +89,7 @@ namespace slime.jrunscript.git {
 						return $api.Function.Array.filter(isType(type));
 					}
 
-					var repository = internal.code.module.init({
+					var repository = internal.subject.init({
 						pathname: directory.pathname
 					}, captor.handler);
 
@@ -116,7 +113,7 @@ namespace slime.jrunscript.git {
 				fifty.tests.types.Repository.Local = {};
 				fifty.tests.types.Repository.Local.config = function() {
 					run(function old() {
-						var empty = internal.code.module.init({
+						var empty = internal.subject.init({
 							pathname: fifty.jsh.file.location()
 						});
 						var old = empty.config({
@@ -137,7 +134,7 @@ namespace slime.jrunscript.git {
 					});
 
 					run(function list() {
-						var empty = internal.code.module.init({
+						var empty = internal.subject.init({
 							pathname: fifty.jsh.file.location()
 						});
 						var local = empty.config({
@@ -167,7 +164,7 @@ namespace slime.jrunscript.git {
 							}, {});
 						}
 
-						var empty = internal.code.module.init({
+						var empty = internal.subject.init({
 							pathname: fifty.jsh.file.location()
 						});
 						fifty.verify(empty).evaluate(getConfigObject).evaluate.property("foo.bar").is(void(0));
@@ -185,6 +182,37 @@ namespace slime.jrunscript.git {
 		//@ts-ignore
 		)(fifty)
 	}
+
+	(function(fifty: slime.fifty.test.kit) {
+		const verify = fifty.verify;
+
+		var commitFile = function(repository: git.Repository.Local,p) {
+			var path = p;
+			repository.directory.getRelativePath(path).write(path, { append: false });
+			repository.add({ path: path });
+			repository.commit({ all: true, message: path });
+		}
+
+		fifty.tests.submoduleWithDifferentNameAndPath = function() {
+			var tmpdir = fifty.jsh.file.directory();
+			var sub = internal.subject.init({ pathname: tmpdir.getRelativePath("sub") });
+			commitFile(sub, "b");
+			var parent = internal.subject.init({ pathname: tmpdir.getRelativePath("parent") });
+			commitFile(parent, "a");
+
+			var added = parent.submodule.add({ repository: sub, path: "path/sub", name: "sub", branch: "master" });
+
+			var submodules = parent.submodule();
+			verify(submodules).length.is(1);
+			verify(submodules)[0].evaluate.property("name").is("sub");
+			verify(submodules)[0].path.is("path/sub");
+			verify(submodules)[0].repository.reference.is(added.reference);
+			verify(submodules)[0].evaluate.property("branch").is("master");
+			verify(submodules)[0].commit.subject.is("b");
+			//	don't bother testing other fields of commit
+		}
+	//@ts-ignore
+	})(fifty);
 }
 
 (function(fifty: slime.fifty.test.kit) {
