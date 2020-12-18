@@ -27,29 +27,25 @@
 					return jsh.shell.PWD;
 				})();
 
-				/* @returns { slime.jrunscript.git.Repository.Local } */
-				var castToLocal = $api.Function.identity;
-
 				jsh.wf.project = {
 					base: base,
 					submodule: {
 						status: function() {
-							var repository = castToLocal(jsh.tools.git.Repository({ directory: base }));
+							var repository = jsh.tools.git.Repository({ directory: base });
 							var submodules = repository.submodule();
 							return submodules.map(function(submodule) {
-								var current = submodule.repository.branch().filter(function(branch) {
-									return branch.current;
-								})[0];
-								return {
-									path: submodule.path,
-									branch: current,
-									tracking: submodule.branch,
-									state: jsh.wf.git.compareTo("origin/master")(submodule.repository)
-								}
+								var tracking = submodule.branch;
+								return $api.Object.compose(
+									submodule,
+									{
+										status: submodule.repository.status(),
+										state: (tracking) ? jsh.wf.git.compareTo("origin/" + tracking)(submodule.repository) : void(0)
+									}
+								)
 							});
 						},
 						remove: function(p) {
-							var repository = castToLocal(jsh.tools.git.Repository({ directory: base }));
+							var repository = jsh.tools.git.Repository({ directory: base });
 							jsh.shell.console("Removing submodule " + p.path);
 							var checkout = base.getSubdirectory(p.path);
 							if (checkout && checkout.getSubdirectory(".git")) {
@@ -88,7 +84,7 @@
 						if (!subcheckout) {
 							throw new Error("Submodule not found at " + p.path + " of " + base);
 						}
-						var repository = castToLocal(jsh.tools.git.Repository({ directory: base.getSubdirectory(p.path) }));
+						var repository = jsh.tools.git.Repository({ directory: base.getSubdirectory(p.path) });
 
 						jsh.shell.console("Update subrepository " + repository + " ...");
 						var current = repository.branch().filter(function(branch) {
@@ -400,11 +396,6 @@
 							jsh.wf.typescript.typedoc();
 						}
 
-						$exports.submodule = {
-							update: void(0),
-							remove: void(0)
-						};
-
 						$exports.status = function(p) {
 							//	TODO	add option for offline
 							var repository = fetch();
@@ -437,13 +428,13 @@
 								jsh.shell.console("Submodules:");
 								var submodules = jsh.wf.project.submodule.status();
 								submodules.forEach(function(item) {
-									if (item.branch.name != "master") {
-										jsh.shell.console(item.path + ": not on master");
+									if (item.branch && item.status.branch.name != item.branch) {
+										jsh.shell.console(item.path + ": tracking branch " + item.branch + ", but checked out branch is " + item.status.branch.name);
 									}
 									if (item.state.behind.length) {
-										jsh.shell.console(item.path + ": behind (" + item.state.behind.length + " commits)");
+										jsh.shell.console(item.path + ": behind remote tracked branch " + "origin/" + item.branch + " (" + item.state.behind.length + " commits)");
 									}
-									if (item.state.paths) {
+									if (item.status.paths) {
 										jsh.shell.console(item.path + ": locally modified");
 									}
 								});
@@ -456,6 +447,18 @@
 								jsh.shell.console("Tests: " + ( (success) ? "passed." : "FAILED!") );
 							}
 						}
+
+						$exports.submodule = {
+							update: void(0),
+							remove: void(0),
+							reset: $api.Function.pipe(
+								jsh.wf.cli.$f.option.string({ longname: "path" }),
+								function(p) {
+									jsh.shell.console("Unimplemented.");
+									jsh.shell.exit(1);
+								}
+							)
+						};
 
 						$exports.submodule.remove = $api.Function.pipe(
 							$api.Function.impure.revise(jsh.wf.cli.$f.option.string({ longname: "path" })),

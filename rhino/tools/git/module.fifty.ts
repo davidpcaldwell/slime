@@ -184,7 +184,7 @@ namespace slime.jrunscript.git {
 	}
 
 	(function(fifty: slime.fifty.test.kit) {
-		const verify = fifty.verify;
+		const { verify, run } = fifty;
 
 		var debug = function(s) {
 			fifty.global.jsh.shell.console(s);
@@ -195,6 +195,36 @@ namespace slime.jrunscript.git {
 			repository.directory.getRelativePath(path).write(path, { append: false });
 			repository.add({ path: path });
 			repository.commit({ all: true, message: path });
+		}
+
+		fifty.tests.submoduleTrackingBranch = function() {
+			function initialize() {
+				var tmpdir = fifty.jsh.file.directory();
+
+				var library = internal.subject.init({ pathname: tmpdir.getRelativePath("sub") });
+				commitFile(library, "b");
+
+				var parent = internal.subject.init({ pathname: tmpdir.getRelativePath("parent") });
+				commitFile(parent, "a");
+
+				return { library, parent };
+			}
+
+			run(function trackingMaster() {
+				const { parent, library } = initialize();
+				const submodule = parent.submodule.add({ repository: library, path: "path/sub", name: "sub", branch: "master" });
+				parent.commit({ all: true, message: "add submodule"});
+				var submodules = parent.submodule();
+				verify(submodules)[0].branch.is("master");
+			});
+
+			run(function trackingNothing() {
+				const { parent, library } = initialize();
+				const submodule = parent.submodule.add({ repository: library, path: "path/sub", name: "sub" });
+				parent.commit({ all: true, message: "add submodule"});
+				var submodules = parent.submodule();
+				verify(submodules)[0].evaluate.property("branch").is(void(0));
+			});
 		}
 
 		fifty.tests.submoduleWithDifferentNameAndPath = function() {
@@ -249,6 +279,9 @@ namespace slime.jrunscript.git {
 	fifty.tests.suite = function() {
 		run(fifty.tests.Installation.init);
 		run(fifty.tests.types.Repository.Local.config);
+		run(fifty.tests.submoduleStatusCached);
+		run(fifty.tests.submoduleWithDifferentNameAndPath);
+		run(fifty.tests.submoduleTrackingBranch);
 	}
 //@ts-ignore
 })(fifty);
