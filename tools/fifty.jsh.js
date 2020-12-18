@@ -26,7 +26,8 @@
 									p.options["debug:rhino"] ? {
 										JSH_DEBUG_SCRIPT: "rhino"
 									} : {}
-								)
+								),
+								evaluate: jsh.shell.run.evaluate.wrap
 							});
 						},
 						function(p) {
