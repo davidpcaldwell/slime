@@ -194,6 +194,22 @@
 
 			var git = cli.old;
 
+			var configFile = {
+				/**
+				 *
+				 * @param { slime.jrunscript.git.internal.Result } result
+				 * @returns { { name: string, value: string }[] }
+				 */
+				parseResult: function(result) {
+					return result.output.stdout.filter(Boolean).map(function(line) {
+						//	TODO	what if value contains equals? Does the below work?
+						var tokens = line.split("=");
+						if (!tokens[0]) jsh.shell.console("line: [" + line + "] " + " tokens=" + JSON.stringify(tokens));
+						return { name: tokens[0], value: tokens.slice(1).join("=") }
+					});
+				}
+			};
+
 			var config = cli.gitCommand({
 				name: "config",
 				configure: function(p) {
@@ -246,14 +262,7 @@
 								}
 							},
 							createReturnValue: function(p) {
-								return function(result) {
-									return result.output.stdout.filter(Boolean).map(function(line) {
-										//	TODO	what if value contains equals? Does the below work?
-										var tokens = line.split("=");
-										if (!tokens[0]) jsh.shell.console("line: [" + line + "] " + " tokens=" + JSON.stringify(tokens));
-										return { name: tokens[0], value: tokens.slice(1).join("=") }
-									});
-								}
+								return configFile.parseResult;
 							}
 						}
 					} else if (p.set) {
@@ -436,7 +445,10 @@
 			var submodule = cli.command({
 				command: "submodule",
 				arguments: function(p) {
-					//	quiet, cached
+					if (p.cached) {
+						this.push("--cached");
+					}
+					//	quiet
 				},
 				stdio: function(p) {
 					return {
@@ -444,15 +456,16 @@
 					}
 				},
 				evaluate: function(result) {
-					var linePattern = /(?:\s*)(\S+)(?:\s+)(\S+)((?:\s+)\((\S+)\))?/;
+					var linePattern = /(?:\s*)(\+?)(\S+)(?:\s+)(\S+)((?:\s+)\((\S+)\))?/;
 					return result.stdio.output.split("\n").filter(function(line) {
 						return line;
 					}).map(function(line) {
 						var parsed = linePattern.exec(line);
 						if (!parsed) throw new Error("No match in submodule evaluate: [" + line + "] in\n" + result.stdio.output);
-						var commit = parsed[1];
-						var path = parsed[2];
-						//	parsed[3] is git describe; see https://git-scm.com/docs/git-submodule
+						//	parsed[1] is a plus sign sometimes
+						var commit = parsed[2];
+						var path = parsed[3];
+						//	parsed[4] is git describe; see https://git-scm.com/docs/git-submodule
 						return {
 							commit: commit,
 							path: path
@@ -464,6 +477,9 @@
 				command: "submodule",
 				arguments: function(p) {
 					this.push("add");
+					if (p.name) {
+						this.push("--name", p.name);
+					}
 					if (p.branch) {
 						this.push("-b", p.branch);
 					}
@@ -472,7 +488,7 @@
 				},
 				stdio: cli.stdio.Events(),
 				evaluate: function(result) {
-					return new LocalRepository({ directory: result.directory.getSubdirectory(result.arguments[3]) });
+					return new LocalRepository({ directory: result.directory.getSubdirectory(result.argument.path) });
 				}
 			});
 			var submodule_update = cli.command({
@@ -551,7 +567,7 @@
 			/**
 			 * @type { new (o: any) => slime.jrunscript.git.Repository.Local }
 			 */
-			var LocalRepository = function(o) {
+			var LocalRepository = function LocalRepository(o) {
 				Repository.call(this,o);
 
 				var directory = (function() {
@@ -950,20 +966,73 @@
 					}
 				);
 
+				var getSubmoduleConfiguration = function() {
+					if (directory.getFile(".gitmodules")) {
+						var settingsCommand = cli.gitCommand({
+							name: "config",
+							configure: function(p) {
+								return {
+									arguments: function(p) {
+										return function(array) {
+											array.push("--file", directory.getFile(".gitmodules"));
+											array.push("--list");
+										}
+									},
+									createReturnValue: function(p) {
+										return configFile.parseResult;
+									}
+								}
+							}
+						});
+						/** @type { { name: string, value: string }[] } */
+						var settings = settingsCommand({});
+						return $api.Function.result(
+							settings,
+							function(settings) {
+								return settings.reduce(function(rv,setting) {
+									var tokens = setting.name.split(".");
+									if (tokens[0] != "submodule") throw new TypeError("Not submodule: " + setting.name);
+									var name = tokens[1];
+									var property = tokens[2];
+									if (!rv[name]) rv[name] = {};
+									rv[name][property] = setting.value;
+									return rv;
+								}, {});
+							},
+							Object.entries,
+							$api.Function.Array.map(function(entry) {
+								return $api.Object.compose({
+									name: entry[0]
+								}, entry[1])
+							})
+						);
+					} else {
+						return null;
+					}
+				}
+
 				/** @type { slime.jrunscript.git.Repository.Local["submodule"] } */
 				this.submodule = Object.assign(function(p) {
 					if (!p) p = {};
 					if (!p.command) {
+						var submoduleConfiguration = getSubmoduleConfiguration();
+
+						var getConfiguration = function(path) {
+							return submoduleConfiguration.find(function(item) {
+								return item.path == path;
+							});
+						}
+
 						return command(submodule)(p).map(function(line) {
 							//	commit, path
 							var subdirectory = directory.getSubdirectory(line.path);
 							if (!subdirectory) throw new Error("directory=" + directory + " path=" + line.path);
 							var sub = new LocalRepository({ directory: subdirectory });
-							return {
-								path: line.path,
+							var shown = sub.show({ object: line.commit });
+							return $api.Object.compose(getConfiguration(line.path), {
 								repository: sub,
-								commit: sub.show(line.commit)
-							}
+								commit: shown
+							});
 						});
 					}
 					if (p.command == "update") {

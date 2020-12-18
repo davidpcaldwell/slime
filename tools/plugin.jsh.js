@@ -43,6 +43,7 @@
 								return {
 									path: submodule.path,
 									branch: current,
+									tracking: submodule.branch,
 									state: jsh.wf.git.compareTo("origin/master")(submodule.repository)
 								}
 							});
