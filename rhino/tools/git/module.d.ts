@@ -158,7 +158,7 @@ namespace slime.jrunscript.git {
 				/**
 				 * Returns a list of submodules for this repository.
 				 */
-				(): {
+				(p?: { cached?: boolean }): {
 					name: string
 					path: string
 					repository: Local

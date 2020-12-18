@@ -186,6 +186,10 @@ namespace slime.jrunscript.git {
 	(function(fifty: slime.fifty.test.kit) {
 		const verify = fifty.verify;
 
+		var debug = function(s) {
+			fifty.global.jsh.shell.console(s);
+		}
+
 		var commitFile = function(repository: git.Repository.Local,p) {
 			var path = p;
 			repository.directory.getRelativePath(path).write(path, { append: false });
@@ -210,6 +214,32 @@ namespace slime.jrunscript.git {
 			verify(submodules)[0].evaluate.property("branch").is("master");
 			verify(submodules)[0].commit.subject.is("b");
 			//	don't bother testing other fields of commit
+		};
+
+		fifty.tests.submoduleStatusCached = function() {
+			var tmpdir = fifty.jsh.file.directory();
+
+			var library = internal.subject.init({ pathname: tmpdir.getRelativePath("sub") });
+			commitFile(library, "b");
+
+			var parent = internal.subject.init({ pathname: tmpdir.getRelativePath("parent") });
+			commitFile(parent, "a");
+
+			var subrepository = parent.submodule.add({ repository: library, path: "path/sub", name: "sub", branch: "master" });
+			parent.commit({ all: true, message: "add submodule"});
+
+			var before = subrepository.status().branch;
+			commitFile(subrepository, "c");
+			var after = subrepository.status().branch;
+
+			//	cached: true shows the committed state of the submodule
+			var cached = parent.submodule({ cached: true });
+			verify(cached)[0].commit.commit.hash.is(before.commit.commit.hash);
+
+			//	when not cached, shows the current state of the submodule in its directory
+			var submodules = parent.submodule();
+			verify(submodules)[0].commit.commit.hash.is(after.commit.commit.hash);
+			verify(submodules)[0].repository.status().branch.commit.commit.hash.is(after.commit.commit.hash);
 		}
 	//@ts-ignore
 	})(fifty);

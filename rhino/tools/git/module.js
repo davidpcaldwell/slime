@@ -445,7 +445,10 @@
 			var submodule = cli.command({
 				command: "submodule",
 				arguments: function(p) {
-					//	quiet, cached
+					if (p.cached) {
+						this.push("--cached");
+					}
+					//	quiet
 				},
 				stdio: function(p) {
 					return {
@@ -453,15 +456,16 @@
 					}
 				},
 				evaluate: function(result) {
-					var linePattern = /(?:\s*)(\S+)(?:\s+)(\S+)((?:\s+)\((\S+)\))?/;
+					var linePattern = /(?:\s*)(\+?)(\S+)(?:\s+)(\S+)((?:\s+)\((\S+)\))?/;
 					return result.stdio.output.split("\n").filter(function(line) {
 						return line;
 					}).map(function(line) {
 						var parsed = linePattern.exec(line);
 						if (!parsed) throw new Error("No match in submodule evaluate: [" + line + "] in\n" + result.stdio.output);
-						var commit = parsed[1];
-						var path = parsed[2];
-						//	parsed[3] is git describe; see https://git-scm.com/docs/git-submodule
+						//	parsed[1] is a plus sign sometimes
+						var commit = parsed[2];
+						var path = parsed[3];
+						//	parsed[4] is git describe; see https://git-scm.com/docs/git-submodule
 						return {
 							commit: commit,
 							path: path
@@ -1013,12 +1017,6 @@
 					if (!p.command) {
 						var submoduleConfiguration = getSubmoduleConfiguration();
 
-						var getName = function(path) {
-							return submoduleConfiguration.find(function(item) {
-								return item.path == path;
-							}).name;
-						};
-
 						var getConfiguration = function(path) {
 							return submoduleConfiguration.find(function(item) {
 								return item.path == path;
@@ -1030,9 +1028,10 @@
 							var subdirectory = directory.getSubdirectory(line.path);
 							if (!subdirectory) throw new Error("directory=" + directory + " path=" + line.path);
 							var sub = new LocalRepository({ directory: subdirectory });
+							var shown = sub.show({ object: line.commit });
 							return $api.Object.compose(getConfiguration(line.path), {
 								repository: sub,
-								commit: sub.show(line.commit)
+								commit: shown
 							});
 						});
 					}
