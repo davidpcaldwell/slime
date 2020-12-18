@@ -454,8 +454,26 @@
 							reset: $api.Function.pipe(
 								jsh.wf.cli.$f.option.string({ longname: "path" }),
 								function(p) {
-									jsh.shell.console("Unimplemented.");
-									jsh.shell.exit(1);
+									var repository = jsh.tools.git.Repository({ directory: base });
+									var submodule = repository.submodule({ cached: true }).find(function(submodule) {
+										return submodule.path == p.options.path;
+									});
+									var revision = submodule.commit.commit.hash;
+									//	TODO	implement git reset API
+									submodule.repository.execute({
+										command: "reset",
+										arguments: [
+											"--hard",
+											revision
+										]
+									})
+									if (submodule.branch) {
+										submodule.repository.branch({
+											force: true,
+											name: submodule.branch
+										});
+										submodule.repository.checkout({ branch: submodule.branch });
+									}
 								}
 							)
 						};
