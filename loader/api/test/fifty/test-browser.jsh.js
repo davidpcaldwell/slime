@@ -71,23 +71,25 @@
 				/** @type { { kill: any } } */
 				var process;
 
+				var url = new jsh.js.web.Url({
+					scheme: "http",
+					authority: {
+						host: "127.0.0.1",
+						port: tomcat.port
+					},
+					path: "/" + paths.toHtmlRunner.relative,
+					query: [
+						{ name: "file", value: paths.toFile.relative },
+						{ name: "results", value: String(Boolean(resultsPath)) }
+					].concat(
+						(p.options.part) ? [{ name: "part", value: p.options.part }] : []
+					)
+				});
+
 				var run = function() {
 					chrome.run({
 						//	TODO	enhance chrome.run so it can take a Url object rather than just a string
-						uri: new jsh.js.web.Url({
-							scheme: "http",
-							authority: {
-								host: "127.0.0.1",
-								port: tomcat.port
-							},
-							path: "/" + paths.toHtmlRunner.relative,
-							query: [
-								{ name: "file", value: paths.toFile.relative },
-								{ name: "results", value: String(Boolean(resultsPath)) }
-							].concat(
-								(p.options.part) ? [{ name: "part", value: p.options.part }] : []
-							)
-						}).toString(),
+						uri: url.toString(),
 						arguments: (p.options["chrome:debug:vscode"]) ? ["--remote-debugging-port=9222"] : [],
 						on: {
 							start: function(p) {
