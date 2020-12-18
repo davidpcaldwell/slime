@@ -59,6 +59,26 @@ namespace slime.jrunscript.git {
 		}, events?: object ) => slime.jrunscript.git.Repository.Local
 	}
 
+	interface Submodule {
+		/**
+		 * The logical name of the submodule, as it is referenced in configuration entries.
+		 */
+		name: string
+
+		/**
+		 * The path of the submodule within its parent.
+		 */
+		path: string
+
+		/**
+		 * The branch the submodule is set up to track, if it is set up to track one.
+		 */
+		branch?: string
+
+		repository: Repository.Local
+		commit: Commit
+	}
+
 	namespace Repository {
 		interface argument {
 			config?: { [x: string]: string }
@@ -158,13 +178,7 @@ namespace slime.jrunscript.git {
 				/**
 				 * Returns a list of submodules for this repository.
 				 */
-				(p?: { cached?: boolean }): {
-					name: string
-					path: string
-					repository: Local
-					commit: Commit
-					branch: string
-				}[]
+				(p?: { cached?: boolean }): Submodule[]
 
 				add: (p: {
 					repository: slime.jrunscript.git.Repository

@@ -135,6 +135,7 @@ namespace jsh.wf {
 							 * `--path <path-to-submodule>`
 							 */
 							update: jsh.wf.cli.Command
+							reset: jsh.wf.cli.Command
 						},
 						commit: any
 					}
@@ -144,14 +145,15 @@ namespace jsh.wf {
 
 		project: {
 			base: slime.jrunscript.file.Directory
+
 			submodule: {
-				status: () => Array<{
-					path: string
-					branch: slime.jrunscript.git.Branch
+				status: () => Array<slime.jrunscript.git.Submodule & {
+					status: ReturnType<slime.jrunscript.git.Repository.Local["status"]>
 					state: ReturnType<ReturnType<Exports["git"]["compareTo"]>>
 				}>
 				remove: (p: { path: string }) => void
 			}
+
 			updateSubmodule: (p: { path: string }) => void
 		}
 
