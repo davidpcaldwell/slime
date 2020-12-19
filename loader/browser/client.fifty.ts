@@ -22,11 +22,13 @@ namespace slime.browser {
 	}
 
 	export interface Runtime {
+		//	top-level loader methods that operate by URL
 		run: any
 		file: any
 		module: any
 		value: any
 		get: any
+
 		loader: any
 		Loader: any
 		namespace: any
