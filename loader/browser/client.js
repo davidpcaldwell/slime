@@ -249,7 +249,7 @@
 
 				(
 					function() {
-						var loader = new Loader(getPageBase());
+						var loader = new Loader("");
 
 						this.run = function(path,scope,target) {
 							return loader.run.apply(loader,arguments);
