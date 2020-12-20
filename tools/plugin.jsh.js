@@ -399,11 +399,13 @@
 						$exports.status = function(p) {
 							//	TODO	add option for offline
 							var repository = fetch();
-							var vsOriginMaster = jsh.wf.git.compareTo("origin/master")(repository);
+							var remote = "origin";
+							var branch = "master";
+							var vsOriginMaster = jsh.wf.git.compareTo(remote + "/" + branch)(repository);
 							var status = repository.status();
 							jsh.shell.console("Current branch: " + status.branch.name);
-							if (vsOriginMaster.ahead.length) jsh.shell.console("ahead of origin/master: " + vsOriginMaster.ahead.length);
-							if (vsOriginMaster.behind.length) jsh.shell.console("behind origin/master: " + vsOriginMaster.behind.length);
+							if (vsOriginMaster.ahead.length) jsh.shell.console("ahead of " + remote + "/" + branch + ": " + vsOriginMaster.ahead.length);
+							if (vsOriginMaster.behind.length) jsh.shell.console("behind " + remote + "/" + branch + ": " + vsOriginMaster.behind.length);
 							var output = $api.Function.result(
 								status.paths,
 								$api.Function.conditional({
@@ -421,18 +423,19 @@
 							if (output) jsh.shell.console(output);
 							if (vsOriginMaster.behind.length && !vsOriginMaster.ahead.length && !vsOriginMaster.paths) {
 								jsh.shell.console("Fast-forwarding ...");
-								repository.merge({ ffOnly: true, name: "origin/master" });
+								repository.merge({ ffOnly: true, name: remote + "/" + branch });
 							}
 							if (repository.submodule().length) {
 								jsh.shell.console("");
 								jsh.shell.console("Submodules:");
 								var submodules = jsh.wf.project.submodule.status();
 								submodules.forEach(function(item) {
+									var remote = "origin";
 									if (item.branch && item.status.branch.name != item.branch) {
 										jsh.shell.console(item.path + ": tracking branch " + item.branch + ", but checked out branch is " + item.status.branch.name);
 									}
 									if (item.state.behind.length) {
-										jsh.shell.console(item.path + ": behind remote tracked branch " + "origin/" + item.branch + " (" + item.state.behind.length + " commits)");
+										jsh.shell.console(item.path + ": behind remote tracked branch " + remote + "/" + item.branch + " (" + item.state.behind.length + " commits)");
 									}
 									if (item.status.paths) {
 										jsh.shell.console(item.path + ": locally modified");
