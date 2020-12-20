@@ -425,6 +425,21 @@
 								jsh.shell.console("Fast-forwarding ...");
 								repository.merge({ ffOnly: true, name: remote + "/" + branch });
 							}
+							var branches = repository.branch({ remote: true, all: true });
+							var first = true;
+							branches.forEach(function(branch) {
+								var compared = jsh.wf.git.compareTo(branch.name)(repository);
+								if (compared.behind.length) {
+									if (first) {
+										jsh.shell.console("");
+										first = false;
+									}
+									jsh.shell.console("Unmerged branch: " + branch.name);
+								}
+							});
+							if (!first) {
+								jsh.shell.console("");
+							}
 							if (repository.submodule().length) {
 								jsh.shell.console("");
 								jsh.shell.console("Submodules:");
