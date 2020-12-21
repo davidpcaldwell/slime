@@ -329,11 +329,22 @@
 							return repository;
 						});
 
+						/**
+						 *
+						 * @param { slime.jrunscript.git.Repository.Local } repository
+						 * @param { string } path
+						 */
+						var isSubmodulePath = function(repository,path) {
+							var submodules = repository.submodule();
+							return submodules.some(function(submodule) {
+								return submodule.path == path;
+							});
+						}
+
 						if (operations.test && !operations.commit) {
 							operations.commit = function(p) {
-								if (!p.message) throw new Error("No message");
-								var allowDivergeFromMaster = false;
 								var repository = jsh.tools.git.Repository({ directory: $context.base });
+								var allowDivergeFromMaster = false;
 								var vsLocalOriginMaster = jsh.wf.git.compareTo("origin/master")(repository);
 								if (vsLocalOriginMaster.behind.length && !allowDivergeFromMaster) {
 									jsh.shell.console("Behind origin/master by " + vsLocalOriginMaster.behind.length + " commits.");
@@ -532,7 +543,30 @@
 							function(p) {
 								//	Leave redundant check for message for now, in case there are existing implementations of
 								//	operations.commit that do not check. But going forward they should check themselves.
-								if (!p.options.message) throw new Error("No message");
+								var repository = jsh.tools.git.Repository({ directory: $context.base });
+								var status = repository.status();
+								var defaultCommitMessage = null;
+								if (status.paths) {
+									var modified = $api.Function.result(
+										status.paths,
+										$api.Function.Object.entries
+									);
+									if (
+										modified.length &&
+										modified.every(function(entry) {
+											return isSubmodulePath(repository,entry[0])
+										})
+									) {
+										defaultCommitMessage = "Update "
+											+ ( (modified.length > 1) ? "submodules" : "submodule" )
+											+ " " + modified.map(function(entry) { return entry[0]; }).join(", ");
+									}
+								}
+								if (!p.options.message && defaultCommitMessage) {
+									p.options.message = defaultCommitMessage;
+								}
+
+								if (!p.options.message) throw new Error("No default commit message, and no message given.");
 								operations.commit({ message: p.options.message });
 								jsh.shell.console("Committed changes to " + $context.base);
 							}
