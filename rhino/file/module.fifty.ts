@@ -4,15 +4,17 @@
 		tests: slime.fifty.test.tests,
 		verify: slime.fifty.test.verify
 	) {
-		var now = new jsh.time.When({ unix: 1599862384355 });
+		var MODIFIED_TIME = new jsh.time.When({ unix: 1599862384355 });
 
 		tests.filetime = function() {
 			var directory = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname.directory;
 			directory.getRelativePath("file").write("foo");
 			var file = directory.getFile("file");
 
-			file.modified = jsh.time.When.codec.Date.encode(now);
-			verify(file).modified.evaluate(function(p) { return p.getTime(); }).is( Math.floor(now.unix / 1000) * 1000 );
+			file.modified = jsh.time.When.codec.Date.encode(MODIFIED_TIME);
+			var isNearestSecond = file.modified.getTime() == Math.floor(MODIFIED_TIME.unix / 1000) * 1000;
+			var isMillisecond = file.modified.getTime() == MODIFIED_TIME.unix;
+			verify(isNearestSecond || isMillisecond, "sNearestSecond || isMillisecond").is(true);
 		}
 
 		tests.filetime.testbed = function() {
@@ -22,7 +24,7 @@
 
 			var nio = file.pathname.java.adapt().toPath();
 			jsh.shell.console(nio);
-			Packages.java.nio.file.Files.setLastModifiedTime(nio, Packages.java.nio.file.attribute.FileTime.fromMillis(now.unix));
+			Packages.java.nio.file.Files.setLastModifiedTime(nio, Packages.java.nio.file.attribute.FileTime.fromMillis(MODIFIED_TIME.unix));
 			var _modified = Packages.java.nio.file.Files.getLastModifiedTime(nio);
 			jsh.shell.console(_modified.toMillis());
 		}

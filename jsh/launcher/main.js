@@ -159,8 +159,14 @@ while($api.arguments.length > 0 && $api.arguments[0].substring(0,1) == "-") {
 }
 
 var hasJavaPlatformModuleSystem = (function() {
-	var javaLangObjectClass = Packages.java.lang.Class.forName("java.lang.Object");
-	return typeof(javaLangObjectClass.getModule) == "function";
+	if ($api.slime.settings.get("jsh.java.home")) {
+		//	returning false if it *does* have the module system will produce extra warnings but still work
+		//	returning false if it doesn't will work
+		return false;
+	} else {
+		var javaLangObjectClass = Packages.java.lang.Class.forName("java.lang.Object");
+		return typeof(javaLangObjectClass.getModule) == "function";
+	}
 })();
 
 if (hasJavaPlatformModuleSystem) {
