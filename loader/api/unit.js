@@ -650,11 +650,26 @@
 			return rv;
 		};
 
-		/** @constructor */
+		/**
+		 * @param { slime.definition.unit.View.Argument } o
+		 */
 		$exports.View = function(o) {
 			var On = function(implementation) {
-				this.scenario = function(e) {
-					if (e.detail.start) {
+				/**
+				 * @param { slime.definition.unit.Event.Scenario.Detail } detail
+				 * @returns { detail is slime.definition.unit.Event.Scenario.Start }
+				 */
+				var isStart = function(detail) {
+					return Boolean(detail["start"])
+				};
+
+				/**
+				 *
+				 * @type { slime.definition.unit.View["on"]["scenario"] }
+				 * @param { $api.Event<slime.definition.unit.Event.Scenario.Detail> } e
+				 */
+				var scenario = function(e) {
+					if (isStart(e.detail)) {
 						if (implementation.start) {
 							implementation.start(e.detail.start);
 						}
@@ -665,11 +680,18 @@
 					}
 				};
 
+				this.scenario = scenario;
+
 				this.test = function(e) {
 					if (implementation.test) implementation.test(e.detail);
 				}
 			};
 
+			/**
+			 *
+			 * @param { $api.Events } scenario
+			 * @param { slime.definition.unit.View.Argument } implementation
+			 */
 			var addConsoleListener = function(scenario,implementation) {
 				if (typeof(implementation) == "function") {
 					scenario.listeners.add("scenario", implementation);
@@ -681,27 +703,37 @@
 				}
 			};
 
-			this.listen = function(scenario) {
+			/**
+			 *
+			 * @param { $api.Events } scenario
+			 */
+			var listen = function(scenario) {
 				addConsoleListener(scenario,o);
 			};
 
+			var on;
 			if (typeof(o) == "object") {
-				this.on = new On(o);
+				on = new On(o);
 			} else if (typeof(o) == "function") {
-				this.on = {
+				on = {
 					scenario: o,
 					test: o
 				};
 			}
+
+			return {
+				listen: listen,
+				on: on
+			}
 		};
 
-		$exports.JSON = new function() {
-			this.Encoder = function(o) {
-				return new $exports.View(new function() {
-					this.start = function(scenario) {
-						o.send(JSON.stringify({ type: "scenario", detail: { start: { name: scenario.name } } }));
-					};
-
+		$exports.JSON = {
+			Encoder: function(o) {
+				var handler = (function() {
+					/**
+					 *
+					 * @param { slime.definition.unit.View.Error } error
+					 */
 					var jsonError = function(error) {
 						if (error) {
 							return {
@@ -714,29 +746,41 @@
 						}
 					}
 
-					this.test = function(result) {
-						o.send(JSON.stringify({
-							type: "test",
-							detail: {
-								success: result.success,
-								message: result.message,
-								error: jsonError(result.error)
-							}
-						}));
-					}
+					/**
+					 * @type { slime.definition.unit.View.Handler }
+					 */
+					var rv = {
+						start: function(scenario) {
+							o.send(JSON.stringify({ type: "scenario", detail: { start: { name: scenario.name } } }));
+						},
+						test: function(result) {
+							o.send(JSON.stringify({
+								type: "test",
+								detail: {
+									success: result.success,
+									message: result.message,
+									error: jsonError(result.error)
+								}
+							}));
+						},
+						end: function(scenario,success) {
+							o.send(
+								JSON.stringify({
+									type: "scenario",
+									detail: { end: { name: scenario.name }, success: success }
+								})
+							);
+						}
+					};
+					return rv;
+				})();
 
-					this.end = function(scenario,success) {
-						o.send(
-							JSON.stringify({
-								type: "scenario",
-								detail: { end: { name: scenario.name }, success: success }
-							})
-						);
-					}
-				});
-			};
+				return $exports.View(handler);
+			},
 
-			this.Decoder = function() {
+			Decoder: function() {
+				this.listeners = void(0);
+
 				var events = $api.Events({ source: this });
 
 				this.decode = function(string) {

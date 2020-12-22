@@ -109,7 +109,9 @@ declare namespace $api {
 	}
 
 	namespace Events {
-		type Handler<K> = Partial<Record<K, Event.Handler<any>>>
+		type Handler<D> = {
+			[k in keyof D]?: Event.Handler<D[k]>
+		}
 	}
 
 	namespace Events.Function {
