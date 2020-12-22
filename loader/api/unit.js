@@ -20,15 +20,7 @@
   	 * 		}
 	 * } } $context
 	 * @param { slime.Loader } $loader
-	 * @param { {
-	 * 		Verify: (scope: any, vars?: any) => slime.definition.verify.Verify
-	 *		Suite: new (o: any) => { listeners: { add: (type: string, handler: Function) => void }, run: () => void, promise: () => void }
-	 *		View: new (o: any) => { on: any }
-	 *		getStructure: Function
-	 *		Scenario: new () => {}
-	 *		TestExecutionProcessor: Function
-	 *		JSON: slime.definition.unit.JSON
-	 * } } $exports
+	 * @param { slime.definition.unit.Exports } $exports
 	 */
 	function($context,$loader,$exports) {
 		/** @type { (message: string, p: any) => void } */
