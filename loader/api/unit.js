@@ -13,12 +13,7 @@
 //@ts-check
 (
 	/**
-	 * @param { {
-	 * 		log: (message: string, p: any) => void,
-	 * 		api: {
-	 * 			Promise: () => PromiseConstructorLike & { all: Function, resolve: Function }
-  	 * 		}
-	 * } } $context
+	 * @param { slime.definition.unit.Context } $context
 	 * @param { slime.Loader } $loader
 	 * @param { slime.definition.unit.Exports } $exports
 	 */
