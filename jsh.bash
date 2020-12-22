@@ -107,8 +107,8 @@ install_jdk_11_liberica() {
 install_jdk_8_corretto() {
 	TO=$(clean_destination $1)
 
-	JDK_TARBALL_URL="https://corretto.aws/downloads/resources/8.252.09.1/amazon-corretto-8.252.09.1-macosx-x64.tar.gz"
-	JDK_TARBALL_BASENAME="amazon-corretto-8.252.09.1-macosx-x64.tar.gz"
+	JDK_TARBALL_URL="https://corretto.aws/downloads/resources/8.275.01.1/amazon-corretto-8.275.01.1-macosx-x64.tar.gz"
+	JDK_TARBALL_BASENAME="amazon-corretto-8.275.01.1-macosx-x64.tar.gz"
 	JDK_TARBALL_LOCATION="${HOME}/Downloads/${JDK_TARBALL_BASENAME}"
 	JDK_TARBALL_PATH="amazon-corretto-8.jdk/Contents/Home"
 	if [ ! -f "${JDK_TARBALL_LOCATION}" ]; then
@@ -124,8 +124,8 @@ install_jdk_8_corretto() {
 install_jdk_11_corretto() {
 	TO=$(clean_destination $1)
 
-	JDK_TARBALL_URL="https://corretto.aws/downloads/resources/11.0.7.10.1-1/amazon-corretto-11.0.7.10.1-1-macosx-x64.tar.gz"
-	JDK_TARBALL_BASENAME="amazon-corretto-11.0.7.10.1-1-macosx-x64.tar.gz"
+	JDK_TARBALL_URL="https://corretto.aws/downloads/resources/11.0.9.12.1/amazon-corretto-11.0.9.12.1-macosx-x64.tar.gz"
+	JDK_TARBALL_BASENAME="amazon-corretto-11.0.9.12.1-macosx-x64.tar.gz"
 	JDK_TARBALL_LOCATION="${HOME}/Downloads/${JDK_TARBALL_BASENAME}"
 	JDK_TARBALL_PATH="amazon-corretto-11.jdk/Contents/Home"
 	if [ ! -f "${JDK_TARBALL_LOCATION}" ]; then

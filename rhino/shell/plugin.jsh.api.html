@@ -159,6 +159,7 @@ END LICENSE
 					test(typeof(module.stdio.error.close) == "function");
 				</script>
 				<script type="application/x.jsapi#tests" jsapi:id="1">
+					var NASHORN_DEPRECATION_WARNING = "Warning: Nashorn engine is planned to be removed from a future JDK release";
 					var one = jsh.shell.jsh({
 						shell: $jsapi.environment.jsh.built.home,
 						script: $jsapi.environment.jsh.src.getFile("rhino/shell/test/stdio.1.jsh.js"),
@@ -167,7 +168,12 @@ END LICENSE
 							error: String
 						},
 						evaluate: function(result) {
-							return result.stdio;
+							return {
+								output: result.stdio.output,
+								error: result.stdio.error.split("\n").filter(function(line) {
+									return line != NASHORN_DEPRECATION_WARNING;
+								}).join("\n")
+							}
 						}
 					});
 					verify(one).output.is("Hello, World!");
