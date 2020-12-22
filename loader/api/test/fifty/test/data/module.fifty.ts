@@ -50,6 +50,11 @@ namespace slime.fifty.test.data.shopping {
 				tests.types.Exports(module);
 				run(tests.subsuite);
 				load("load/child.fifty.ts");
+
+				//	Small demonstration of using function name to name a subsuite
+				run(function name() {
+					verify("function name").is("function name");
+				})
 			}
 		}
 	//@ts-ignore
