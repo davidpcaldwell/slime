@@ -22,15 +22,6 @@ END LICENSE
 		<script type="application/x.jsapi#initialize">
 			scope.module = $jsapi.loader.module("unit.js");
 		</script>
-		<div>__DESCRIPTION__</div>
-		<!--	TODO	investigate $context.asynchronous	-->
-		<!--
-		<div>
-			<h1>Context</h1>
-			<ul>
-			</ul>
-		</div>
-		-->
 		<div>
 			<script type="application/x.jsapi#initialize"><![CDATA[
 				scope.a = new module.Suite({
@@ -131,25 +122,6 @@ END LICENSE
 								</li>
 							</ol>
 						</div>
-						<!--	TODO	add test for error being thrown	-->
-						<script type="application/x.jsapi#tests">
-							var a = {};
-							var suite = new module.Suite({
-								parts: {
-									a: {
-										initialize: function(scope) {
-											scope.a = a;
-										},
-										execute: function(scope,verify) {
-											verify(scope.a).is(a);
-										}
-									}
-								}
-							});
-							var rv = suite.run();
-							verify(rv,"success").is(true);
-						</script>
-						<!--	TODO	add tests for suite	-->
 					</li>
 					<li class="function">
 						<div class="name">destroy</div>
@@ -733,6 +705,14 @@ END LICENSE
 				verify(starts).length.is(2);
 			</script>
 
+		</div>
+		<div xmlns:jsdom_0="http:www.inonit.com/jsapi" jsdom_0:id="fifty">
+			<script type="application/x.jsapi#tests">
+				$jsapi.loader.fifty({
+					path: "unit.fifty.ts",
+					verify: verify
+				});
+			</script>
 		</div>
 	</body>
 </html>
