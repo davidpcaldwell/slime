@@ -214,34 +214,6 @@ plugin({
 	}
 });
 
-var serializeError = function recurse(e) {
-	return {
-		name: e.name,
-		message: e.message,
-		stack: e.stack,
-		code: e.code,
-		cause: (e.cause) ? recurse(e.cause) : null
-	};
-};
-
-var serializeEvent = function(e) {
-	var json = {
-		type: e.type,
-		timestamp: e.timestamp,
-		detail: e.detail
-	};
-
-	var paths = e.path.map(function(source) {
-		return source.id;
-	});
-	json.path = paths;
-
-	if (json.detail.error) {
-		json.detail.error = serializeError(json.detail.error);
-	}
-	return json;
-};
-
 plugin({
 	isReady: function() {
 		return jsh.js && jsh.shell && jsh.httpd && jsh.httpd.Tomcat && jsh.http && jsh.unit && jsh.unit.Scenario && jsh.unit.Scenario.Events && jsh.java && jsh.file;
@@ -250,6 +222,34 @@ plugin({
 		var $exports = {};
 		$loader.run("plugin.jsh.browser.js", { $exports: $exports, jsh: jsh });
 		jsh.unit.browser = $exports;
+
+		var serializeEvent = function(e) {
+			var serializeError = function recurse(e) {
+				return {
+					name: e.name,
+					message: e.message,
+					stack: e.stack,
+					code: e.code,
+					cause: (e.cause) ? recurse(e.cause) : null
+				};
+			};
+
+			var json = {
+				type: e.type,
+				timestamp: e.timestamp,
+				detail: e.detail
+			};
+
+			var paths = e.path.map(function(source) {
+				return source.id;
+			});
+			json.path = paths;
+
+			if (json.detail.error) {
+				json.detail.error = serializeError(json.detail.error);
+			}
+			return json;
+		};
 
 		var Chrome = function(p) {
 			var location = (p && p.profile) ? p.profile : jsh.shell.TMPDIR.createTemporary({

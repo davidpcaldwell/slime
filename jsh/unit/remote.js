@@ -11,8 +11,14 @@
 //	Contributor(s):
 //	END LICENSE
 
+//@ts-check
 (
-	function() {
+	/**
+	 *
+	 * @param { jsh.unit.internal.remote.Context } $context
+	 * @param { jsh.unit.internal.remote.Exports } $exports
+	 */
+	function($context,$exports) {
 		//	The 'top' member of this implementation can be used as an argument to the Scenario constructor; it then needs to be fed
 		//	information via the queue() method, and then the finish() method.
 		$exports.Events = function(o) {
@@ -142,4 +148,5 @@
 			return scenario;
 		}
 	}
-)();
+//@ts-ignore
+)($context,$exports);

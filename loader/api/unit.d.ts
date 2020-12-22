@@ -13,6 +13,13 @@ namespace slime.definition.unit {
 		fire: Function
 	}
 
-	interface JSON {
+	interface Exports {
+		Verify: (scope: any, vars?: any) => slime.definition.verify.Verify
+		Suite: new (o: any) => { listeners: { add: (type: string, handler: Function) => void }, run: () => void, promise: () => void }
+		View: new (o: any) => { on: any }
+		getStructure: Function
+		Scenario: new () => {}
+		TestExecutionProcessor: Function
+		JSON: {}
 	}
 }
