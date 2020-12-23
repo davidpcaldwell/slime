@@ -143,7 +143,7 @@
 									+ "graalvm-" + VERSION.edition + "-" + "java8" + "-" + "darwin" + "-" + "amd64" + "-" + VERSION.number + ".tar.gz"
 								,
 								getDestinationPath: function(file) {
-									return "graalvm-" + VERSION.edition + "-" + "java8" + "-" + VERSION.number + "/Contents/Home";
+									return "graalvm-" + VERSION.edition + "-" + "java8" + "-" + VERSION.number;
 								},
 								to: jsh.shell.jsh.lib.getRelativePath("graal")
 							});

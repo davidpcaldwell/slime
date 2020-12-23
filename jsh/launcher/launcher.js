@@ -263,7 +263,11 @@ try {
 		this.rhino = rhino;
 
 		if (lib && lib.file && new File(lib.file, "graal").exists()) {
-			this.graal = new File(lib.file, "graal");
+			if (new File(lib.file, "graal/Contents/Home").exists()) {
+				this.graal = new File(lib.file, "graal/Contents/Home");
+			} else {
+				this.graal = new File(lib.file, "graal");
+			}
 		}
 
 		this.profiler = (function() {
@@ -396,6 +400,7 @@ try {
 			this.rhino = [new Packages.java.io.File(home, "lib/js.jar").toURI().toURL()];
 		}
 
+		//	TODO	should we allow Contents/Home here?
 		if (new Packages.java.io.File(home, "lib/graal").exists()) {
 			this.graal = new Packages.java.io.File(home, "lib/graal");
 		}
