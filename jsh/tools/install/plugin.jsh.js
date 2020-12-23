@@ -135,7 +135,6 @@
 						number: "20.3.0",
 						edition: "ce"
 					};
-					//	https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-20.1.0/graalvm-ce-java8-darwin-amd64-20.1.0.tar.gz
 					this.install = $api.Events.Function(function(p,events) {
 						if (jsh.shell.os.name == "Mac OS X") {
 							jsh.tools.install.install({

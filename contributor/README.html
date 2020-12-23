@@ -201,12 +201,27 @@ END LICENSE
 			<h1><a href="typescript.api.html">TypeScript</a></h1>
 		</div>
 		<div>
-			<h1>Work In Progress</h1>
+			<h2>Work In Progress</h2>
 			<div>
-				<h2><a href="../loader/api/test/fifty/README.html">Fifty</a></h2>
+				<h3><a href="../loader/api/test/fifty/README.html">Fifty</a></h3>
 			</div>
 			<div>
-				<h2><a href="../loader/document/api.html">loader/document</a> (HTML parsing)</h2>
+				<h3>GraalVM</h3>
+				<div>
+					To install: from script <code>jsh.shell.tools.graal.install()</code>, or from command line
+					<code>./jsh.bash jsh/tools/install/graal.jsh.js</code>.
+				</div>
+				<div>
+					To run sample script:
+					<code>env JSH_ENGINE=graal ./jsh.bash jsh/test/jsh-data.jsh.js</code>
+				</div>
+				<div>
+					To run sample script in debugger:
+					<code>env JSH_ENGINE=graal JSH_DEBUG_SCRIPT=graal ./jsh.bash jsh/test/jsh-data.jsh.js</code>
+				</div>
+			</div>
+			<div>
+				<h3><a href="../loader/document/api.html">loader/document</a> (HTML parsing)</h3>
 				<div>
 					Goal would be to replace DOM in loader/browser/test/api.js and JaspiHtml in jsh/unit/html.js; this feeds into
 					loader/api/api.html.js as the <code>html</code> argument to ApiHtmlTests.
@@ -224,11 +239,11 @@ END LICENSE
 					An equivalent browser migration for replacing the JSAPI DOM in loader/browser/test/api.js is then needed.
 				</div>
 				<div>
-					<h3><a href="https://jsoup.org/">JSoup</a></h3>
+					<h4><a href="https://jsoup.org/">JSoup</a></h4>
 					<a href="https://jsoup.org/apidocs/overview-summary.html">API</a>
 				</div>
 				<div>
-					<h3><a href="../loader/document/source.api.html">Source-level parser</a></h3>
+					<h4><a href="../loader/document/source.api.html">Source-level parser</a></h4>
 				</div>
 			</div>
 		</div>
