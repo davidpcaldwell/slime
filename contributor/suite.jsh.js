@@ -47,11 +47,14 @@ if (!parameters.options.engine.length) {
 
 var Environment = jsh.script.loader.file("jrunscript-environment.js").Environment;
 
+//	Disabled use of native launcher because of regression when updating Apple Command Line Tools
+var FIXED_IMPLICIT_DECLARATION = false;
+
 var environment = new Environment({
 	src: jsh.script.file.parent.parent,
 	noselfping: parameters.options.noselfping,
 	tomcat: true,
-	executable: true
+	executable: FIXED_IMPLICIT_DECLARATION
 });
 
 var suite = new jsh.unit.html.Suite();

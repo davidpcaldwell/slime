@@ -49,9 +49,7 @@
 							arguments: [
 								p.home,
 								"-notest",
-								"-nodoc",
-								// TODO: use command-line argument rather than hard-coding?
-								"-executable"
+								"-nodoc"
 							].concat(
 								(jsh.shell.jsh.lib.getFile("js.jar")) ? ["-rhino", jsh.shell.jsh.lib.getFile("js.jar")] : []
 							).concat(
