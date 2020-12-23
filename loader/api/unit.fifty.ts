@@ -24,7 +24,10 @@ namespace slime.definition.unit {
 		}
 		getStructure: Function
 		Scenario: new () => {}
-		TestExecutionProcessor: Function
+
+		//	TODO	probably should not use "internal" type if it is exported. Reorganize.
+		TestExecutionProcessor: slime.definition.unit.internal.Scope
+
 		JSON: {
 			Encoder: (o: {
 				send: (json: string) => void
@@ -83,6 +86,8 @@ namespace slime.definition.unit.internal {
 		}
 	//@ts-ignore
 	})(fifty);
+
+	export type Scope = new (o: { events: $api.Events }) => slime.definition.unit.Scope
 }
 
 namespace slime.definition.unit {
@@ -111,6 +116,10 @@ namespace slime.definition.unit {
 		scope: Function
 		scenario: Function
 		fire: Function
+	}
+
+	export interface Scope {
+
 	}
 
 	export namespace Event {
