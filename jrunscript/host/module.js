@@ -41,12 +41,13 @@ void(0);
 
 (
 	/**
+	 * @param { $api } $api
 	 * @param {slime.jrunscript.host.Context} $context
 	 * @param {slime.jrunscript.host.Exports} $exports
 	 * @param {*} Packages
 	 * @param {*} JavaAdapter
 	 */
-	function($context,$exports,Packages,JavaAdapter) {
+	function($api,$context,$exports,Packages,JavaAdapter) {
 		//	TODO	Document these three, when it is clear how to represent host objects in the documentation; or we provide JavaScript
 		//	objects to wrap Java classes, which may be a better approach
 		//$exports.getClass = $api.Function({
@@ -745,4 +746,4 @@ void(0);
 		}
 	}
 //@ts-ignore
-)($context,$exports,Packages,JavaAdapter)
+)($api,$context,$exports,Packages,JavaAdapter)

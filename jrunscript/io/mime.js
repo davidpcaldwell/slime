@@ -15,10 +15,11 @@
 	/**
 	 *
 	 * @param { any } JavaAdapter
+	 * @param { $api } $api
 	 * @param { slime.jrunscript.io.mime.Context } $context
 	 * @param { slime.jrunscript.io.mime.Exports } $exports
 	 */
-	function(JavaAdapter,$context,$exports) {
+	function(JavaAdapter,$api,$context,$exports) {
 		//	Mime objects have the following properties:
 		//	type: the MIME type of the content
 		//	ONE OF:
@@ -214,4 +215,4 @@
 		});
 	}
 //@ts-ignore
-)(JavaAdapter,$context,$exports);
+)(JavaAdapter,$api,$context,$exports);

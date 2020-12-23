@@ -14,11 +14,12 @@
 (
 	/**
 	 *
+	 * @param { $api } $api
 	 * @param { slime.jrunscript.io.Context } $context
 	 * @param { slime.Loader } $loader
 	 * @param { slime.jrunscript.io.Exports } $exports
 	 */
-	function($context,$loader,$exports) {
+	function($api,$context,$loader,$exports) {
 		$exports.Streams = $context.$slime.io.Streams;
 
 		$exports.Buffer = $context.$slime.io.Buffer;
@@ -58,4 +59,4 @@
 		});
 	}
 //@ts-ignore
-)($context, $loader, $exports);
+)($api, $context, $loader, $exports);
