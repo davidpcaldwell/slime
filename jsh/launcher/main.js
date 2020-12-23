@@ -131,7 +131,12 @@ if ($api.slime.settings.get("jsh.engine") == "graal") {
 	$api.debug("Engine is Graal.js");
 	var lib = $api.slime.settings.get("jsh.shell.lib");
 	if (new Packages.java.io.File(lib, "graal").exists()) {
-		$api.slime.settings.set("jsh.java.home", String(new Packages.java.io.File(lib, "graal")));
+		//	TODO	this logic is duplicated in launcher.js
+		if (new Packages.java.io.File(lib, "graal/Contents/Home").exists()) {
+			$api.slime.settings.set("jsh.java.home", String(new Packages.java.io.File(lib, "graal/Contents/Home")));
+		} else {
+			$api.slime.settings.set("jsh.java.home", String(new Packages.java.io.File(lib, "graal")));
+		}
 	} else {
 		Packages.java.lang.System.err.println("Graal.js specified as engine but not found.");
 		Packages.java.lang.System.exit(1);
@@ -192,6 +197,7 @@ if (shell.rhino) {
 	}
 }
 
+//	TODO	note if this code were uncommented it would need to adjust to the possibility of lib/graal/Contents/Home
 // if ($api.slime.settings.get("jsh.engine") == "graal") {
 // 	var lib = $api.slime.settings.get("jsh.shell.lib");
 // 	_urls.push(new Packages.java.io.File(lib, "graal/jre/lib/truffle/truffle-api.jar").toURI().toURL());
