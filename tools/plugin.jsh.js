@@ -365,7 +365,14 @@
 										jsh.shell.console(e.detail);
 									}
 								});
-								jsh.wf.prohibitUntrackedFiles({ repository: repository });
+								try {
+									//	TODO	emits events; could use those rather than try-catch
+									jsh.wf.prohibitUntrackedFiles({ repository: repository });
+								} catch (e) {
+									jsh.shell.console("");
+									jsh.shell.console(e.message);
+									jsh.shell.exit(1);
+								}
 								if (operations.lint) {
 									if (!operations.lint()) {
 										throw new Error("Linting failed.");
