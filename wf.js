@@ -14,6 +14,7 @@
 				isText: function(entry) {
 					if (/\.def$/.test(entry.path)) return true;
 					if (/\.prefs$/.test(entry.path)) return true;
+					if (/\.py$/.test(entry.path)) return true;
 					if (entry.path == ".hgsub") return true;
 					if (entry.path == ".hgsubstate") return false;
 					if (entry.path == ".hgignore") return false;
