@@ -296,6 +296,8 @@ for (var i=0; i<$api.arguments.length; i++) {
 	command.argument($api.arguments[i]);
 }
 
+command.systemProperty("jsh.launcher.jrunscript", $api.java.install.jrunscript.getCanonicalPath());
+
 //	TODO	try to figure out a way to get rid of HTTP property passthrough; used for testing of HTTP-based launch from GitHub
 var passthrough = ["http.proxyHost","http.proxyPort","jsh.github.user","jsh.github.password"];
 var noProxy = $api.slime.settings.get("jsh.loader.noproxy");

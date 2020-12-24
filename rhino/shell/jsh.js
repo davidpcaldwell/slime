@@ -257,8 +257,14 @@
 
 
 			if (fork) {
-				var argument = arguments.callee.command(p);
-				return $exports.jrunscript(argument);
+				return $exports.jrunscript(
+					$api.Object.compose(
+						arguments.callee.command(p),
+						{
+							jrunscript: $exports.properties.file("jsh.launcher.jrunscript")
+						}
+					)
+				);
 			} else {
 				var environment = getJshEnvironment(p,fork);
 				var configuration = new JavaAdapter(

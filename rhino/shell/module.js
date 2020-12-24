@@ -469,6 +469,10 @@
 				return String(rv);
 			};
 
+			this.file = function(name) {
+				return toLocalPathname($context.api.file.filesystems.os.Pathname(this.get(name))).file;
+			}
+
 			this.directory = function(name) {
 				return toLocalPathname($context.api.file.filesystems.os.Pathname(this.get(name))).directory;
 			};
@@ -744,7 +748,15 @@
 		}).call($exports.java);
 
 		$exports.jrunscript = function(p) {
+			/** @type { slime.jrunscript.file.File } */
 			var launch = (function() {
+				//	This argument serves mostly to allow the jsh launcher to specify the jrunscript to use, since in Graal
+				//	shells the JDK's jrunscript does not work and we need to use the bootstrapping JDK
+				if (p.jrunscript) return {
+					command: p.jrunscript,
+					arguments: [],
+					vmArgumentPrefix: "-J"
+				};
 				if (false && $exports.rhino && $exports.rhino.classpath) {
 					//	TODO	implicit jsh dependency, because rhino.classpath not set in this file
 					return {
@@ -769,6 +781,8 @@
 					}
 				}
 			})();
+
+			Packages.java.lang.System.err.println("Executing jrunscript " + launch.command);
 
 			var vmargs = [];
 

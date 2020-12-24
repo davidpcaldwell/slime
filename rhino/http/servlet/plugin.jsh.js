@@ -264,7 +264,7 @@
 								};
 							}
 
-							tomcat.setBaseDir(base);
+							tomcat.setBaseDir(base.toString());
 							tomcat.setPort(port);
 
 							var api = {
