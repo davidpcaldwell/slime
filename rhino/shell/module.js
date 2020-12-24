@@ -782,8 +782,6 @@
 				}
 			})();
 
-			Packages.java.lang.System.err.println("Executing jrunscript " + launch.command);
-
 			var vmargs = [];
 
 			addPropertyArgumentsTo(vmargs,p.properties);
