@@ -142,7 +142,7 @@ namespace $api {
 				(p: {}): [string, any][]
 			}
 			fromEntries: {
-				(p: [string, any][]): { [x: string]: any }
+				(p: Iterable<readonly [string | number | symbol, any]>): { [x: string]: any }
 			}
 		}
 		conditional: {
