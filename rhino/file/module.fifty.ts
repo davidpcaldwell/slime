@@ -1,5 +1,6 @@
 (
 	function(
+		Packages: Packages,
 		jsh: jsh,
 		tests: slime.fifty.test.tests,
 		verify: slime.fifty.test.verify
@@ -69,4 +70,4 @@
 		}
 	}
 //@ts-ignore
-)(global.jsh,tests,verify);
+)(Packages,global.jsh,tests,verify);

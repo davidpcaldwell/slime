@@ -14,27 +14,28 @@
 (
 	/**
 	 *
+	 * @param { Packages } Packages
 	 * @param { { Resource: any, constant: any, fail: any, isPathname: any, Streams: any, pathext: any } } $context
 	 * @param { { Searchpath: any, Pathname: any }} $exports
 	 */
-	function($context,$exports) {
+	function (Packages, $context, $exports) {
 		if (!$context.Resource) throw new Error();
 
 		var constant = $context.constant;
 		var fail = $context.fail;
 
-		var firstDefined = function(object/*, names */) {
-			for (var i=1; i<arguments.length; i++) {
-				if (typeof(object[arguments[i]]) != "undefined") {
+		var firstDefined = function (object/*, names */) {
+			for (var i = 1; i < arguments.length; i++) {
+				if (typeof (object[arguments[i]]) != "undefined") {
 					return object[arguments[i]];
 				}
 			}
-			return function(){}();
+			return function () { }();
 		}
 
 		var Pathname = function Pathname(parameters) {
 			if (parameters.directory) {
-				$api.deprecate(function() {
+				$api.deprecate(function () {
 					var directorySpecified = true;
 				})();
 			}
@@ -48,23 +49,23 @@
 			// $api.deprecate(parameters,"$peer");
 			// $api.deprecate(parameters,"path");
 
-			var $filesystem = firstDefined(parameters,"filesystem","$filesystem");
+			var $filesystem = firstDefined(parameters, "filesystem", "$filesystem");
 			if (!$filesystem.peerToString) throw new Error("Internal error; Pathname constructed incorrectly: " + parameters);
 
-			var peer = (function() {
-				var peer = firstDefined(parameters,"peer","$peer");
+			var peer = (function () {
+				var peer = firstDefined(parameters, "peer", "$peer");
 				if (peer) return peer;
-				var path = firstDefined(parameters,"path","$path");
+				var path = firstDefined(parameters, "path", "$path");
 				//	TODO	below line appears to invoke nonexistent method
 				if (path) return $filesystem.getPeer(path);
 				fail("Missing new Pathname() arguments: " + parameters);
 			})();
 
-			var toString = constant(function() {
+			var toString = constant(function () {
 				var rv = $filesystem.peerToString(peer);
-				if (rv.substring(rv.length-$filesystem.separators.pathname.length) == $filesystem.separators.pathname) {
-					$api.deprecate(function() {
-						rv = rv.substring(0,rv.length-$filesystem.separators.pathname.length);
+				if (rv.substring(rv.length - $filesystem.separators.pathname.length) == $filesystem.separators.pathname) {
+					$api.deprecate(function () {
+						rv = rv.substring(0, rv.length - $filesystem.separators.pathname.length);
 					})();
 				}
 				return rv;
@@ -72,52 +73,52 @@
 
 			this.toString = toString;
 
-			var getBasename = constant(function() {
+			var getBasename = constant(function () {
 				var path = toString();
 				if ($filesystem.isRootPath(path)) return path;
-				if (path.substring(path.length-1) == $filesystem.separators.pathname) {
-					path = path.substring(0,path.length-1);
+				if (path.substring(path.length - 1) == $filesystem.separators.pathname) {
+					path = path.substring(0, path.length - 1);
 				}
 				var tokens = path.split($filesystem.separators.pathname);
 				return tokens.pop();
 			});
 			this.__defineGetter__("basename", getBasename);
 
-			var getParent = constant(function() {
+			var getParent = constant(function () {
 				return $filesystem.getParent(peer);
 			});
 			this.__defineGetter__("parent", getParent);
 
-			var getFile = function() {
+			var getFile = function () {
 				if (arguments.length > 0) {
 					throw new TypeError("No arguments expected to Pathname.getFile");
 				}
 				if (!$filesystem.exists(peer)) return null;
 				if ($filesystem.isDirectory(peer)) return null;
-				return new File(this,peer);
+				return new File(this, peer);
 			}
-			this.file = void(0);
+			this.file = void (0);
 			this.__defineGetter__("file", getFile);
 
-			var getDirectory = function() {
+			var getDirectory = function () {
 				if (!$filesystem.exists(peer)) return null;
 				if (!$filesystem.isDirectory(peer)) return null;
 				var pathname = new Pathname({ filesystem: $filesystem, peer: peer });
-				return new Directory(pathname,peer);
+				return new Directory(pathname, peer);
 			}
-			this.directory = void(0);
+			this.directory = void (0);
 			this.__defineGetter__("directory", getDirectory);
 
-			var write = function(dataOrType,mode) {
+			var write = function (dataOrType, mode) {
 				if (!mode) mode = {};
 
 				var prepareWrite = function prepareWrite(mode) {
-					$api.deprecate(mode,"overwrite");
+					$api.deprecate(mode, "overwrite");
 					//	TODO	Right now we can specify a file where we do not want to create its directory, and a file where we do want to
 					//			create it, but not one where we are willing to create its directory but not parent directories.  Is that OK?
 					if ($filesystem.exists(peer)) {
 						var append = mode.append;
-						if (typeof(append) == "undefined") {
+						if (typeof (append) == "undefined") {
 							if (mode.overwrite) {
 								append = false;
 							}
@@ -144,12 +145,12 @@
 				//	TODO	adapt to use jrunscript/io Resource write method
 				var poorResource = new $context.Resource({
 					write: {
-						binary: function(mode) {
-							return $filesystem.write.binary(peer,Boolean(mode.append));
+						binary: function (mode) {
+							return $filesystem.write.binary(peer, Boolean(mode.append));
 						}
 					}
 				});
-				return poorResource.write(dataOrType,mode);
+				return poorResource.write(dataOrType, mode);
 				// if (dataOrType == $context.Streams.binary) {
 				// 	return $filesystem.write.binary(peer,append);
 				// } else if (dataOrType == $context.Streams.text) {
@@ -171,15 +172,15 @@
 
 			this.write = write;
 
-			this.createDirectory = function(mode) {
+			this.createDirectory = function (mode) {
 				if (!mode) mode = {};
-				var exists = (function(mode) {
+				var exists = (function (mode) {
 					if (mode.exists) return mode.exists;
 					if (mode.ifExists) return $api.deprecate(mode.ifExists);
-					return function() { throw new Error("Cannot create directory; already exists: " + toString()); };
+					return function () { throw new Error("Cannot create directory; already exists: " + toString()); };
 				})(mode);
 				if ($filesystem.exists(peer)) {
-					var getNode = function() {
+					var getNode = function () {
 						if ($filesystem.isDirectory(peer)) return getDirectory();
 						return getFile.call(this);
 					}
@@ -201,50 +202,50 @@
 				return getDirectory();
 			}
 
-			this.java = new function() {
+			this.java = new function () {
 				//	Undocumented; used only by mapPathname, which is used only by Searchpath, all of which are dubious
-				this.getPeer = function() {
+				this.getPeer = function () {
 					return peer;
 				}
 
-				this.adapt = function() {
+				this.adapt = function () {
 					return peer.getHostFile();
 				}
 
 				if (peer.invalidate) {
-					this.invalidate = function() {
+					this.invalidate = function () {
 						peer.invalidate();
 					}
 				}
 			}
 
-			var Node = function Node(pathname,prefix,_peer) {
+			var Node = function Node(pathname, prefix, _peer) {
 				if (!_peer) {
 					_peer = peer;
 				}
-				this.toString = function() {
+				this.toString = function () {
 					return pathname.toString();
 				}
 
-				var getPathname = function() {
+				var getPathname = function () {
 					return pathname;
 				}
 
 				this.__defineGetter__("pathname", getPathname);
 
-				var getParent = function() {
+				var getParent = function () {
 					if (pathname.parent == null) return null;
 					return pathname.parent.directory;
 				}
 
 				this.__defineGetter__("parent", getParent);
 
-				var getLastModified = function() {
+				var getLastModified = function () {
 					return $filesystem.getLastModified(_peer);
 				}
 
-				var setLastModified = function(date) {
-					$filesystem.setLastModified(_peer,date);
+				var setLastModified = function (date) {
+					$filesystem.setLastModified(_peer, date);
 				}
 
 				Object.defineProperty(this, "modified", {
@@ -253,26 +254,26 @@
 					set: setLastModified
 				})
 
-				var getRelativePath = function(pathString) {
+				var getRelativePath = function (pathString) {
 					var directoryPath = pathname.toString() + prefix;
 					//	TODO	the below logic is counterintuitive for / on UNIX, but it works; the empty string does not end with slash,
 					//			so a / is appended
 					// if (directoryPath.length > 0 && directoryPath.substring( directoryPath.length - 1 ) != $filesystem.separators.pathname)
-					if (directoryPath.substring( directoryPath.length - 1 ) != $filesystem.separators.pathname)
+					if (directoryPath.substring(directoryPath.length - 1) != $filesystem.separators.pathname)
 						directoryPath += $filesystem.separators.pathname;
-					return $filesystem.newPathname( directoryPath + pathString );
+					return $filesystem.newPathname(directoryPath + pathString);
 				}
 				this.getRelativePath = getRelativePath;
 
-				this.remove = function() {
+				this.remove = function () {
 					//	TODO	Should probably invalidate this object somehow
 					//	TODO	Should this return a value of some kind?
 					$filesystem.remove(_peer);
 				}
 
-				this.move = function(toPathname,mode) {
+				this.move = function (toPathname, mode) {
 					if (!mode) mode = {};
-					if (typeof(toPathname.directory) == "boolean") {
+					if (typeof (toPathname.directory) == "boolean") {
 						//	toPathname is a directory object
 						toPathname = toPathname.getRelativePath(pathname.basename);
 					}
@@ -292,7 +293,7 @@
 							toPathname.parent.createDirectory({ recursive: true });
 						}
 					}
-					$filesystem.move(_peer,toPathname);
+					$filesystem.move(_peer, toPathname);
 					if (toPathname.file) {
 						return toPathname.file;
 					} else if (toPathname.directory) {
@@ -311,8 +312,8 @@
 				// $api.deprecate(this, "getLastModified");
 				// $api.deprecate(this, "setLastModified");
 
-				this.copy = function(target,mode) {
-					var to = (function() {
+				this.copy = function (target, mode) {
+					var to = (function () {
 						if (target.pathname && $context.isPathname(target.pathname)) {
 							//	Assume target is itself a directory
 							if (target.pathname.directory) {
@@ -336,7 +337,7 @@
 						}
 					}
 
-					var filter = (mode.filter) ? mode.filter : function(p) {
+					var filter = (mode.filter) ? mode.filter : function (p) {
 						if (p.exists) throw new Error(
 							"Cannot copy " + p.entry.node
 							+ "; node already exists at " + p.exists.pathname.toString()
@@ -344,12 +345,12 @@
 						return true;
 					};
 
-					var getNode = function(pathname) {
+					var getNode = function (pathname) {
 						if (pathname.file) return pathname.file;
 						if (pathname.directory) return pathname.directory;
 					}
 
-					var processFile = function(path,file,topathname) {
+					var processFile = function (path, file, topathname) {
 						var b = filter({
 							entry: {
 								path: path,
@@ -358,7 +359,7 @@
 							exists: getNode(topathname)
 						});
 						if (b) {
-							topathname.write( file.resource.read($context.Streams.binary), { append: false } );
+							topathname.write(file.resource.read($context.Streams.binary), { append: false });
 							var _from = file.pathname.java.adapt().toPath();
 							var _to = topathname.java.adapt().toPath();
 							var _Files = Packages.java.nio.file.Files;
@@ -370,7 +371,7 @@
 						}
 					}
 
-					var processDirectory = function(path,directory,topathname) {
+					var processDirectory = function (path, directory, topathname) {
 						var b = filter({
 							entry: {
 								path: path,
@@ -382,11 +383,11 @@
 							var rv = (topathname.directory) ? topathname.directory : topathname.createDirectory();
 							directory.list({
 								type: directory.list.ENTRY
-							}).forEach(function(entry) {
+							}).forEach(function (entry) {
 								if (entry.node.pathname.directory) {
-									processDirectory(path+entry.path,entry.node,topathname.directory.getRelativePath(entry.path));
+									processDirectory(path + entry.path, entry.node, topathname.directory.getRelativePath(entry.path));
 								} else if (entry.node.pathname.file) {
-									processFile(path+entry.path,entry.node,topathname.directory.getRelativePath(entry.path));
+									processFile(path + entry.path, entry.node, topathname.directory.getRelativePath(entry.path));
 								} else {
 									//	TODO	probably broken softlink
 									debugger;
@@ -405,43 +406,43 @@
 				};
 				Object.assign(this.copy, {
 					filter: {
-						OVERWRITE: function(p) {
+						OVERWRITE: function (p) {
 							return true;
 						}
 					}
 				});
 
 				/** @type { boolean } */
-				this.directory = void(0);
+				this.directory = void (0);
 			}
 
-			var Link = function(pathname,peer) {
-				Node.call(this,pathname,$filesystem.separators.pathname + ".." + $filesystem.separators.pathname,peer);
+			var Link = function (pathname, peer) {
+				Node.call(this, pathname, $filesystem.separators.pathname + ".." + $filesystem.separators.pathname, peer);
 
 				this.directory = null;
 			}
 
-			var File = function File(pathname,peer) {
-				Node.call(this,pathname,$filesystem.separators.pathname + ".." + $filesystem.separators.pathname);
+			var File = function File(pathname, peer) {
+				Node.call(this, pathname, $filesystem.separators.pathname + ".." + $filesystem.separators.pathname);
 
 				this.directory = false;
 
 				var rdata = {
 					name: pathname.toString(),
 					read: {
-						binary: function() {
+						binary: function () {
 							return $filesystem.read.binary(peer);
 						},
-						text: function() {
+						text: function () {
 							return $filesystem.read.character(peer);
 						}
 					}
 				};
 
-				Object.defineProperty(rdata,"length",{
-					get: function() {
+				Object.defineProperty(rdata, "length", {
+					get: function () {
 						var length = pathname.java.adapt().length();
-						if (typeof(length) == "object") {
+						if (typeof (length) == "object") {
 							//	Nashorn treats it as object
 							length = Number(String(length));
 						}
@@ -449,47 +450,47 @@
 					}
 				});
 
-				$context.Resource.call(this,rdata);
+				$context.Resource.call(this, rdata);
 
 				Object.defineProperty(this, "resource", {
-					get: $api.deprecate((function() {
+					get: $api.deprecate((function () {
 						return this;
 					}).bind(this)),
 					enumerable: false
 				});
 
-				this.readLines = $api.deprecate(function() {
-					return this.read.lines.apply(this,arguments);
+				this.readLines = $api.deprecate(function () {
+					return this.read.lines.apply(this, arguments);
 				});
 			}
 			// File.prototype = new Node(this,$filesystem.separators.pathname + ".." + $filesystem.separators.pathname);
 
-			var Directory = function(pathname,peer) {
-				this.getRelativePath = void(0);
-				this.toString = void(0);
+			var Directory = function (pathname, peer) {
+				this.getRelativePath = void (0);
+				this.toString = void (0);
 
-				Node.call(this,pathname,"");
+				Node.call(this, pathname, "");
 
-				this.toString = (function(was) {
-					return function() {
-						return was.apply(this,arguments) + "/";
+				this.toString = (function (was) {
+					return function () {
+						return was.apply(this, arguments) + "/";
 					}
 				})(this.toString);
 
 				this.directory = true;
 
-				this.getFile = function(name) {
-					return $filesystem.newPathname( this.getRelativePath(name).toString() ).file;
+				this.getFile = function (name) {
+					return $filesystem.newPathname(this.getRelativePath(name).toString()).file;
 				}
 
-				this.getSubdirectory = function(name) {
-					if (typeof(name) == "string" && !name.length) return this;
+				this.getSubdirectory = function (name) {
+					if (typeof (name) == "string" && !name.length) return this;
 					if (!name) throw new TypeError("Missing: subdirectory name.");
-					return $filesystem.newPathname( this.getRelativePath(name).toString() ).directory;
+					return $filesystem.newPathname(this.getRelativePath(name).toString()).directory;
 				}
 
-				var toFilter = function(regexp) {
-					return function(item) {
+				var toFilter = function (regexp) {
+					return function (item) {
 						return regexp.test(item.pathname.basename);
 					}
 				}
@@ -497,23 +498,23 @@
 				var self = this;
 
 				var NODE = {
-					create: function(d,n) {
+					create: function (d, n) {
 						return n;
 					}
 				};
 
-				var list = function(mode) {
+				var list = function (mode) {
 					if (!mode) mode = {};
 					var filter = mode.filter;
 					if (filter instanceof RegExp) {
 						filter = toFilter(filter);
 					}
-					if (!filter) filter = function() { return true; }
+					if (!filter) filter = function () { return true; }
 
 					var type = (mode.type == null) ? NODE : mode.type;
-					var toReturn = function(rv) {
-						var map = function(node) {
-							return type.create(self,node);
+					var toReturn = function (rv) {
+						var map = function (node) {
+							return type.create(self, node);
 						};
 
 						if (type.filter) {
@@ -524,11 +525,11 @@
 					};
 
 					var rv;
-					if (typeof(mode.descendants) != "undefined") {
+					if (typeof (mode.descendants) != "undefined") {
 						rv = [];
-						var add = function(dir) {
+						var add = function (dir) {
 							var items = dir.list();
-							items.forEach(function(item) {
+							items.forEach(function (item) {
 								if (filter(item)) {
 									rv.push(item);
 								}
@@ -540,11 +541,11 @@
 						add(this);
 						return toReturn(rv);
 					} else if (mode.recursive) {
-						return $api.deprecate(function() {
+						return $api.deprecate(function () {
 							rv = [];
-							var add = function(dir) {
+							var add = function (dir) {
 								var items = dir.list();
-								items.forEach( function(item) {
+								items.forEach(function (item) {
 									var include = filter(item);
 									if (include) {
 										if (!item.directory) {
@@ -560,7 +561,7 @@
 											}
 										}
 									}
-								} );
+								});
 							}
 
 							add(this);
@@ -568,27 +569,27 @@
 							return toReturn(rv);
 						}).call(this);
 					} else {
-						var createNodesFromPeers = function(peers) {
+						var createNodesFromPeers = function (peers) {
 							//	This function is written with this kind of for loop to allow accessing a Java array directly
 							//	It also uses an optimization, using the peer's directory property if it has one, which a peer would not be
 							//	required to have
 							var rv = [];
-							for (var i=0; i<peers.length; i++) {
-								var pathname = new Pathname( { filesystem: $filesystem, peer: peers[i] } );
+							for (var i = 0; i < peers.length; i++) {
+								var pathname = new Pathname({ filesystem: $filesystem, peer: peers[i] });
 								if (pathname.directory) {
 									rv.push(pathname.directory);
 								} else if (pathname.file) {
 									rv.push(pathname.file);
 								} else {
 									//	broken softlink, apparently
-									rv.push(new Link(pathname,peers[i]));
+									rv.push(new Link(pathname, peers[i]));
 								}
 							}
 							return rv;
 						}
 						var peers = $filesystem.list(peer);
 						rv = createNodesFromPeers(peers);
-						rv = rv.filter( filter );
+						rv = rv.filter(filter);
 						return toReturn(rv);
 					}
 				}
@@ -600,7 +601,7 @@
 					},
 					NODE: NODE,
 					ENTRY: {
-						create: function(d,n) {
+						create: function (d, n) {
 							return {
 								path: n.toString().substring(d.toString().length),
 								node: n
@@ -608,10 +609,10 @@
 						}
 					},
 					RESOURCE: {
-						filter: function(n) {
+						filter: function (n) {
 							return !n.directory
 						},
-						create: function(d,n) {
+						create: function (d, n) {
 							return {
 								path: n.toString().substring(d.toString().length).replace(/\\/g, "/"),
 								resource: n.resource
@@ -621,16 +622,16 @@
 				});
 
 				if ($filesystem.temporary) {
-					this.createTemporary = function(parameters) {
-						return $filesystem.temporary(peer,parameters);
+					this.createTemporary = function (parameters) {
+						return $filesystem.temporary(peer, parameters);
 					}
-					$api.experimental(this,"createTemporary");
+					$api.experimental(this, "createTemporary");
 				}
 			}
-		//	Directory.prototype = new Node(this,"");
+			//	Directory.prototype = new Node(this,"");
 		}
 
-		var Searchpath = function(parameters) {
+		var Searchpath = function (parameters) {
 			if (!parameters || !parameters.array) {
 				throw new TypeError("Illegal argument to new Searchpath(): " + parameters);
 			}
@@ -641,13 +642,13 @@
 			var array = parameters.array.slice(0);
 			var filesystem = parameters.filesystem;
 
-			this.append = function(pathname) {
+			this.append = function (pathname) {
 				//	TODO	Check to make sure pathname filesystem matches filesystem?
 				array.push(pathname);
 			}
 			$api.deprecate(this, "append");
 
-			var getPathnames = function() {
+			var getPathnames = function () {
 				return array;
 			}
 			this.__defineGetter__("pathnames", getPathnames);
@@ -655,11 +656,11 @@
 			this.getPathnames = getPathnames;
 			$api.deprecate(this, "getPathnames");
 
-			this.getCommand = function(name) {
-				for (var i=0; i<array.length; i++) {
+			this.getCommand = function (name) {
+				for (var i = 0; i < array.length; i++) {
 					if (array[i].directory) {
 						if ($context.pathext) {
-							for (var j=0; j<$context.pathext.length; j++) {
+							for (var j = 0; j < $context.pathext.length; j++) {
 								//	TODO	subtle bugs lurking here: should probably list the directory and make a case-insensitive check
 								if (array[i].directory.getFile(name + $context.pathext[j].toLowerCase())) {
 									return array[i].directory.getFile(name + $context.pathext[j].toLowerCase());
@@ -675,23 +676,23 @@
 				return null;
 			}
 
-			this.toString = function() {
-				return getPathnames().map( function(pathname) {
+			this.toString = function () {
+				return getPathnames().map(function (pathname) {
 					if (!filesystem.java) {
 						debugger;
 					}
 					var mapped = filesystem.java.adapt(pathname.java.adapt());
 					return mapped.toString();
-				} ).join(filesystem.separators.searchpath);
+				}).join(filesystem.separators.searchpath);
 			}
 		}
-		Searchpath.createEmpty = function() {
+		Searchpath.createEmpty = function () {
 			return new Searchpath({ array: [] });
 		}
 
 		$exports.Searchpath = Searchpath;
 		$exports.Pathname = Pathname;
 	}
-//@ts-ignore
-)($context,$exports)
+	//@ts-ignore
+)(Packages, $context, $exports)
 

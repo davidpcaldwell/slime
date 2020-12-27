@@ -15,9 +15,10 @@
 	/**
 	 * @param { slime.runtime.$engine | undefined } $engine
 	 * @param { slime.runtime.$slime } $slime
+	 * @param { Packages } Packages - note that in the rare case of a browser with Java, Packages may not include inonit.* classes
 	 * @returns { slime.runtime.Exports }
 	 */
-	function($engine,$slime) {
+	function($engine,$slime,Packages) {
 		(function polyfill() {
 			var ToObject = function(v) {
 				//	https://www.ecma-international.org/ecma-262/6.0/#sec-toobject
@@ -866,4 +867,4 @@
 		return Exports();
 	}
 //@ts-ignore
-)($engine,$slime)
+)($engine,$slime,Packages)

@@ -15,10 +15,11 @@
 (
 	/**
 	 *
+	 * @param { Packages } Packages
 	 * @param { jsh } jsh
 	 * @param { any } $exports
 	 */
-	function(jsh,$exports) {
+	function(Packages,jsh,$exports) {
 		$exports.Modules = function(slime,pathnames) {
 			var common = (function() {
 				var isCommonAncestor = function(directory,list) {
@@ -396,4 +397,4 @@
 		add("Firefox", "/usr/bin/firefox");
 	}
 //@ts-ignore
-)(jsh,$exports);
+)(Packages,jsh,$exports);

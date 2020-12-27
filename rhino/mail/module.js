@@ -13,12 +13,13 @@
 //@ts-check
 (
 	/**
+	 * @param { Packages } Packages
 	 * @param { any } JavaAdapter
 	 * @param { $api } $api
 	 * @param { slime.jrunscript.mail.Context } $context
 	 * @param { slime.jrunscript.mail.Exports } $exports
 	 */
-	function(JavaAdapter,$api,$context,$exports) {
+	function(Packages,JavaAdapter,$api,$context,$exports) {
 
 		/**
 		 *
@@ -268,4 +269,4 @@
 		$exports.Session = Session;
 	}
 //@ts-ignore
-)(JavaAdapter,$api,$context,$exports);
+)(Packages,JavaAdapter,$api,$context,$exports);

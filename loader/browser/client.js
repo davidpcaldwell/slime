@@ -189,7 +189,7 @@
 					this.getCode = getCode;
 				}
 
-				var runtime = (function($slime,$engine) {
+				var runtime = (function($engine,$slime,Packages) {
 					var rv = eval(fetcher.getCode(bootstrap.getRelativePath("expression.js")));
 					rv.$api.deprecate.warning = function(access) {
 						debugger;
@@ -201,6 +201,7 @@
 					}
 					return rv;
 				})(
+					/* $engine */ void(0),
 					/* $slime */ {
 						getRuntimeScript: function(path) {
 							return {
@@ -212,7 +213,7 @@
 							return (window.CoffeeScript) ? { object: window.CoffeeScript } : null;
 						}
 					},
-					/* $engine */ void(0)
+					/* Packages */ window["Packages"]
 				);
 
 				var Loader = function(p) {
