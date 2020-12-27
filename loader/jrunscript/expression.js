@@ -13,12 +13,12 @@
 //@ts-check
 (
 	/**
-	 * @param { any } $javahost
-	 * @param { any } $bridge
-	 * @param { any } Packages
+	 * @param { slime.jrunscript.runtime.$javahost } $javahost
+	 * @param { slime.jrunscript.runtime.$bridge } $bridge
+	 * @param { Packages } Packages
 	 * @param { any } JavaAdapter
 	 * @param { any } XML
-	 * @param { any } $loader
+	 * @param { Packages.inonit.script.engine.Loader } $loader
 	 * @returns { slime.jrunscript.runtime.Exports }
 	 */
 	function($javahost,$bridge,Packages,JavaAdapter,XML,$loader) {
@@ -101,7 +101,7 @@
 					Error: {
 						decorate: function(was) {
 							return errorDecorate(was);
-//							throw new TypeError("Can't decorate nothing was: " + was);
+							// throw new TypeError("Can't decorate nothing was: " + was);
 						}
 					}
 				};
