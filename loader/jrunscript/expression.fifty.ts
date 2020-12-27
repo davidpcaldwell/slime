@@ -40,6 +40,17 @@ namespace slime.jrunscript.runtime {
 		}
 	}
 
+	export interface $javahost {
+		script: any
+		setReadOnly: any
+		MetaObject: any
+		noEnvironmentAccess: any
+		eval(a: any, b: any, c: any, d: any): any
+	}
+
+	export interface $bridge {
+	}
+
 	export interface Exports extends slime.runtime.Exports {
 		Loader: any
 
@@ -81,6 +92,8 @@ interface Packages {
 				setProperty(name: string, value: string)
 				getProperty(name: string): Packages.java.lang.String
 				exit(status: number)
+				getenv(name: string): string
+				getenv(): any
 			}
 			reflect: {
 				Field: any
@@ -93,6 +106,11 @@ interface Packages {
 			ByteArrayInputStream: any
 			ByteArrayOutputStream: any
 			File: any
+			InputStream: any
+			StringReader: any
+			StringWriter: any
+			PrintWriter: any
+			Reader: any
 		},
 		net: {
 			URLConnection: any
@@ -117,12 +135,28 @@ interface Packages {
 		util: {
 			HashMap: any
 			ArrayList: any
+			Properties: any
 		}
 		awt: {
 			Desktop: any
 		}
 	}
 	javax: any
+	inonit: {
+		script: {
+			runtime: {
+				io: {
+					Streams: any
+				}
+				Throwables: any
+			}
+			engine: {
+				Code: {
+					Loader: any
+				}
+			}
+		}
+	}
 }
 
 namespace Packages {
@@ -176,6 +210,13 @@ namespace Packages {
 						getLastModified(): Packages.java.util.Date
 					}
 				}
+			}
+
+			export interface Loader {
+				getCoffeeScript()
+				getTypescript()
+				getClasspath(): any
+				getLoaderCode(path: string): any
 			}
 		}
 
