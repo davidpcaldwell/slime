@@ -14,12 +14,13 @@
 (
 	/**
 	 *
+	 * @param { Packages } Packages
 	 * @param { jsh.plugin.plugin } plugin
 	 * @param { jsh.plugin.$slime } $slime
 	 * @param { jsh } jsh
 	 * @param { slime.Loader } $loader
 	 */
-	function(plugin,$slime,jsh,$loader) {
+	function(Packages,plugin,$slime,jsh,$loader) {
 		/** @returns { jsh.script.Exports } */
 		var load = function($context) {
 			/** @type { Partial<jsh.script.Exports> } */
@@ -172,4 +173,4 @@
 		})
 	}
 //@ts-ignore
-)(plugin,$slime,jsh,$loader)
+)(Packages,plugin,$slime,jsh,$loader)

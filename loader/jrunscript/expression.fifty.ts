@@ -71,72 +71,127 @@ namespace $api {
 	}
 }
 
-declare namespace Packages {
+interface Packages {
+	java: {
+		lang: {
+			System: {
+				err: {
+					println: any
+				}
+				setProperty(name: string, value: string)
+				getProperty(name: string): Packages.java.lang.String
+				exit(status: number)
+			}
+			reflect: {
+				Field: any
+				Modifier: any
+			}
+			String: any
+			Thread: any
+		}
+		io: {
+			ByteArrayInputStream: any
+			ByteArrayOutputStream: any
+			File: any
+		},
+		net: {
+			URLConnection: any
+			URI: any
+			URL: any
+			URLEncoder: any
+			URLDecoder: any
+			HttpURLConnection: any
+			CookieManager: any
+			CookiePolicy: any
+			Proxy: any
+			InetSocketAddress: any
+		}
+		nio: {
+			file: {
+				Files: any
+				attribute: {
+					FileTime: any
+				}
+			}
+		}
+		util: {
+			HashMap: any
+			ArrayList: any
+		}
+		awt: {
+			Desktop: any
+		}
+	}
+	javax: any
+}
+
+namespace Packages {
 	//	TODO	convert Packages to interface by moving these into interface and declaring Packages explicitly everywhere it is
 	//			used in the code; should write issue and remove this comment
 
-	const java: any
-
-	namespace java {
-		namespace lang {
-			type String = any
+	export namespace java {
+		export namespace lang {
+			export interface String {
+			}
 		}
-
-		namespace io {
-			type InputStream = any
+		export namespace io {
+			export interface InputStream {
+			}
 		}
-
-		namespace util {
-			interface Properties {
+		export namespace util {
+			export interface Properties {
 				propertyNames(): any
 				getProperty(name: string): string
 			}
 
-			type Date = any
-		}
-	}
-
-	const javax: any
-
-	namespace inonit.script.runtime.io {
-		interface Streams {
-			split: any
-			readBytes: any
-			copy: any
-			readLine: any
-		}
-	}
-
-	namespace inonit.script.engine {
-		namespace Code {
-			interface Loader {
-				getFile(path: string): Loader.Resource
+			export interface Date {
+				getTime(): number
 			}
+		}
+	}
 
-			namespace Loader {
-				interface Resource {
-					getInputStream(): Packages.java.io.InputStream
-					getLength(): {
-						longValue(): number
+	export namespace inonit.script {
+		export namespace runtime.io {
+			export interface Streams {
+				split: any
+				readBytes: any
+				copy: any
+				readLine: any
+			}
+		}
+
+		export namespace engine {
+			export namespace Code {
+				interface Loader {
+					getFile(path: string): Loader.Resource
+				}
+
+				export namespace Loader {
+					export interface Resource {
+						getInputStream(): Packages.java.io.InputStream
+						getLength(): {
+							longValue(): number
+						}
+						getSourceName(): Packages.java.lang.String
+						getLastModified(): Packages.java.util.Date
 					}
-					getSourceName(): Packages.java.lang.String
-					getLastModified(): Packages.java.util.Date
 				}
 			}
 		}
-	}
 
-	namespace inonit.script.jsh {
-		interface Shell {
-			setRuntime: any
-			getLoader: any
-		}
+		//	TODO	move to appropriate directory
+		export namespace jsh {
+			export interface Shell {
+				setRuntime: any
+				getLoader: any
+			}
 
-		namespace Rhino {
-			interface Interface {
-				script: any
-				exit: any
-				jsh: any
+			export namespace Rhino {
+				export interface Interface {
+					script: any
+					exit: any
+					jsh: any
+				}
 			}
 		}
 	}

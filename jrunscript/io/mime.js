@@ -13,13 +13,13 @@
 //@ts-check
 (
 	/**
-	 *
+	 * @param { Packages } Packages
 	 * @param { any } JavaAdapter
 	 * @param { $api } $api
 	 * @param { slime.jrunscript.io.mime.Context } $context
 	 * @param { slime.jrunscript.io.mime.Exports } $exports
 	 */
-	function(JavaAdapter,$api,$context,$exports) {
+	function(Packages,JavaAdapter,$api,$context,$exports) {
 		//	Mime objects have the following properties:
 		//	type: the MIME type of the content
 		//	ONE OF:
@@ -215,4 +215,4 @@
 		});
 	}
 //@ts-ignore
-)(JavaAdapter,$api,$context,$exports);
+)(Packages,JavaAdapter,$api,$context,$exports);

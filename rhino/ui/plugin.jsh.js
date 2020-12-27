@@ -14,12 +14,13 @@
 //@ts-check
 (
 	/**
+	 * @param { Packages } Packages
 	 * @param { jsh } jsh
 	 * @param { jsh.plugin.$slime } $slime
 	 * @param { slime.Loader } $loader
 	 * @param { jsh.plugin.plugin } plugin
 	 */
-	function(jsh,$slime,$loader,plugin) {
+	function(Packages,jsh,$slime,$loader,plugin) {
 		plugin({
 			load: function() {
 				jsh.ui = $loader.module("module.js", {
@@ -93,4 +94,4 @@
 		})
 	}
 //@ts-ignore
-)(jsh,$slime,$loader,plugin)
+)(Packages,jsh,$slime,$loader,plugin)
