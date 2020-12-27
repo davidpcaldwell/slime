@@ -14,10 +14,11 @@
 (
 	/**
 	 * @param { any } JavaAdapter
+	 * @param { $api } $api
 	 * @param { slime.jrunscript.mail.Context } $context
 	 * @param { slime.jrunscript.mail.Exports } $exports
 	 */
-	function(JavaAdapter,$context,$exports) {
+	function(JavaAdapter,$api,$context,$exports) {
 
 		/**
 		 *
@@ -267,4 +268,4 @@
 		$exports.Session = Session;
 	}
 //@ts-ignore
-)(JavaAdapter,$context,$exports);
+)(JavaAdapter,$api,$context,$exports);

@@ -11,7 +11,7 @@ namespace slime.jrunscript.runtime.io {
 	interface OutputStream {
 	}
 
-	interface Reader {
+	export interface Reader {
 		close()
 		asString(): string
 	}

@@ -175,7 +175,7 @@ namespace slime {
         export interface Descriptor {
             type?: string | MimeType
             name?: string
-            read: {
+            read?: {
                 string?: () => string
             },
             string?: string
