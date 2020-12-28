@@ -141,6 +141,7 @@ interface Packages {
 			}
 			String: any
 			Thread: any
+			Runnable: any
 		}
 		io: {
 			ByteArrayInputStream: any
@@ -151,6 +152,8 @@ interface Packages {
 			StringWriter: any
 			PrintWriter: any
 			Reader: any
+			FileInputStream: any
+			PrintStream: any
 		},
 		net: {
 			URLConnection: any
@@ -176,6 +179,7 @@ interface Packages {
 			HashMap: any
 			ArrayList: any
 			Properties: any
+			logging: any
 		}
 		awt: {
 			Desktop: any
@@ -191,6 +195,7 @@ interface Packages {
 			}
 		}
 		graalvm: any
+		jetbrains: any
 	}
 	inonit: {
 		script: {
@@ -286,7 +291,14 @@ namespace Packages {
 		export namespace jsh {
 			export interface Shell {
 				setRuntime: any
+				runtime: any
 				getLoader: any
+				getEnvironment: any
+				getInvocation: any
+				getJshLoader: any
+				getInterface(): any
+				getLibrary(path: string): any
+				getLibraryFile(path: string): any
 			}
 
 			export namespace Rhino {
