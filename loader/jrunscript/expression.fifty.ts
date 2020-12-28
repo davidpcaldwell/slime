@@ -60,8 +60,19 @@ namespace slime.jrunscript.runtime {
 		getDebugger(): Packages.inonit.script.rhino.Engine.Debugger
 	}
 
+	export type sync = any
+
+	export interface Java {
+		type(className: string): any
+	}
+
 	export namespace internal {
 		export namespace nashorn {
+			export interface load {
+				(location: string): void
+				(script: { script: string, name: string })
+			}
+
 			export interface Engine {
 				script: any
 				subshell: any
@@ -73,6 +84,9 @@ namespace slime.jrunscript.runtime {
 
 			export interface Graal extends Engine {
 				eval: any
+			}
+
+			export interface $graal {
 			}
 		}
 	}
@@ -168,6 +182,7 @@ interface Packages {
 		}
 	}
 	javax: any
+	jdk: any
 	org: {
 		mozilla: {
 			javascript: {
@@ -175,6 +190,7 @@ interface Packages {
 				Synchronizer: any
 			}
 		}
+		graalvm: any
 	}
 	inonit: {
 		script: {
