@@ -14,12 +14,12 @@
 (
 	/**
 	 *
-	 * @param {*} load
-	 * @param {*} Java
-	 * @param {*} Packages
-	 * @param {*} sync
-	 * @param {*} $graal
-	 * @param {*} $loader
+	 * @param { slime.jrunscript.runtime.internal.nashorn.load } load
+	 * @param { slime.jrunscript.runtime.Java } Java
+	 * @param { Packages } Packages
+	 * @param { slime.jrunscript.runtime.sync } sync
+	 * @param { slime.jrunscript.runtime.internal.nashorn.$graal } $graal
+	 * @param { Packages.inonit.script.engine.Loader } $loader
 	 */
 	function(load,Java,Packages,sync,$graal,$loader) {
 		load("nashorn:mozilla_compat.js");
@@ -156,6 +156,9 @@
 		)();
 
 		var graal = (
+			/**
+			 * @returns { slime.jrunscript.runtime.internal.nashorn.Graal }
+			 */
 			function() {
 				//	Creating new context does not work; results in complaints about cross-context access:
 				//	var _context = Packages.org.graalvm.polyglot.Context.newBuilder("js").allowHostAccess(true).option("js.nashorn-compat","true").build();
@@ -168,48 +171,48 @@
 				//	Source transform is needed to implement 'this' targeting, as in Rhino; no straightforward way to change target as of
 				//	now. Could use a magic Value member (see comment with 'script' below) but since we have to use a source transform
 				//	anyway (see scope comment above), no real benefit to doing that right now.
-				var context = function(name,code,scope,target) {
-					var bindings = [];
-					// TODO: No idea why this does not work if this value is true; that implementation seems cleaner and would love to
-					// switch to it
-					var USE_BINDINGS_FOR_CREATING_SCOPE = false;
-					for (var x in scope) {
-						if (x != "$$this") {
-							bindings.push({ name: x, value: scope[x] });
-						}
-					}
-					var args = bindings.map(function(binding) {
-						return binding.name;
-					}).join(",");
-					code = "(function(" + args + ") { " + code + "}).call($$this," + args + ")";
-					var _context = Packages.org.graalvm.polyglot.Context.getCurrent();
-					var was = {};
-					if (USE_BINDINGS_FOR_CREATING_SCOPE) {
-						bindings.forEach(function(binding) {
-							was[x] = $graal.getMember(binding.name);
-							$graal.putMember(binding.name, binding.value);
-						})
-					} else {
-						for (var x in scope) {
-							was[x] = $graal.getMember(x);
-							$graal.putMember(x, scope[x]);
-						}
-					}
-					$graal.putMember("$$this", target);
-					var _source = Packages.org.graalvm.polyglot.Source.newBuilder("js", code, name).build();
-					var rv = _context.eval(_source);
-					if (USE_BINDINGS_FOR_CREATING_SCOPE) {
-						bindings.forEach(function(binding) {
-							$graal.putMember(binding.name, was[binding.name]);
-						});
-					} else {
-						for (var x in scope) {
-							$graal.putMember(x, was[x]);
-						}
-					}
-					$graal.putMember("$$this", null);
-					return rv;
-				};
+				// var context = function(name,code,scope,target) {
+				// 	var bindings = [];
+				// 	// TODO: No idea why this does not work if this value is true; that implementation seems cleaner and would love to
+				// 	// switch to it
+				// 	var USE_BINDINGS_FOR_CREATING_SCOPE = false;
+				// 	for (var x in scope) {
+				// 		if (x != "$$this") {
+				// 			bindings.push({ name: x, value: scope[x] });
+				// 		}
+				// 	}
+				// 	var args = bindings.map(function(binding) {
+				// 		return binding.name;
+				// 	}).join(",");
+				// 	code = "(function(" + args + ") { " + code + "}).call($$this," + args + ")";
+				// 	var _context = Packages.org.graalvm.polyglot.Context.getCurrent();
+				// 	var was = {};
+				// 	if (USE_BINDINGS_FOR_CREATING_SCOPE) {
+				// 		bindings.forEach(function(binding) {
+				// 			was[x] = $graal.getMember(binding.name);
+				// 			$graal.putMember(binding.name, binding.value);
+				// 		})
+				// 	} else {
+				// 		for (var x in scope) {
+				// 			was[x] = $graal.getMember(x);
+				// 			$graal.putMember(x, scope[x]);
+				// 		}
+				// 	}
+				// 	$graal.putMember("$$this", target);
+				// 	var _source = Packages.org.graalvm.polyglot.Source.newBuilder("js", code, name).build();
+				// 	var rv = _context.eval(_source);
+				// 	if (USE_BINDINGS_FOR_CREATING_SCOPE) {
+				// 		bindings.forEach(function(binding) {
+				// 			$graal.putMember(binding.name, was[binding.name]);
+				// 		});
+				// 	} else {
+				// 		for (var x in scope) {
+				// 			$graal.putMember(x, was[x]);
+				// 		}
+				// 	}
+				// 	$graal.putMember("$$this", null);
+				// 	return rv;
+				// };
 
 				return {
 					eval: function(name,code,scope,target) {

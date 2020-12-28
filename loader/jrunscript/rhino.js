@@ -15,7 +15,7 @@
 	/**
 	 *
 	 * @param { Packages } Packages
-	 * @param { any } sync
+	 * @param { slime.jrunscript.runtime.sync } sync
 	 * @param { slime.jrunscript.runtime.$rhino } $rhino
 	 * @param { Packages.inonit.script.engine.Loader } $loader
 	 */
