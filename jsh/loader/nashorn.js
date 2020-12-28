@@ -15,7 +15,9 @@ $jsh.setRuntime((function() {
 	//			explanation
 
 	var $graal = this.$graal;
-	var scripts = eval($jsh.getLoader().getLoaderCode("jrunscript/nashorn.js"));
+	var scripts = (function($loader) {
+		return eval($jsh.getLoader().getLoaderCode("jrunscript/nashorn.js"));
+	})(void(0));
 
 	var rv = scripts.script(
 		"slime://loader/jrunscript/nashorn.js",

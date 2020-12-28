@@ -60,6 +60,23 @@ namespace slime.jrunscript.runtime {
 		getDebugger(): Packages.inonit.script.rhino.Engine.Debugger
 	}
 
+	export namespace internal {
+		export namespace nashorn {
+			export interface Engine {
+				script: any
+				subshell: any
+			}
+
+			export interface Nashorn extends Engine {
+				sync: any
+			}
+
+			export interface Graal extends Engine {
+				eval: any
+			}
+		}
+	}
+
 	export interface Exports extends slime.runtime.Exports {
 		Loader: any
 
