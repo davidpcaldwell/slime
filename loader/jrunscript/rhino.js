@@ -10,119 +10,132 @@
 //	Contributor(s):
 //	END LICENSE
 
-(function() {
-	var $javahost = new function() {
-		this.setReadOnly = function(object,name,value) {
-			if (!arguments.callee.objects) {
-				arguments.callee.objects = new Packages.inonit.script.rhino.Objects();
-			}
-			arguments.callee.objects.setReadOnly(object,name,value);
+//@ts-check
+(
+	/**
+	 *
+	 * @param { Packages } Packages
+	 * @param { any } sync
+	 * @param { slime.jrunscript.runtime.$rhino } $rhino
+	 * @param { Packages.inonit.script.engine.Loader } $loader
+	 */
+	function(Packages,sync,$rhino,$loader) {
+		var $javahost = new function() {
+			var objects;
+
+			this.setReadOnly = function(object,name,value) {
+				if (!objects) {
+					objects = new Packages.inonit.script.rhino.Objects();
+				}
+				objects.setReadOnly(object,name,value);
+			};
+
+			this.MetaObject = function(p) {
+				var delegate = (p.delegate) ? p.delegate : {};
+				var get = (p.get) ? p.get : function(){};
+				var set = (p.set) ? p.set : function(){};
+				return Packages.inonit.script.rhino.MetaObject.create(delegate,get,set);
+			};
+
+			this.script = function(name,code,scope,target) {
+				//	TODO	revisit whether some improved error reporting code inspired by the below can be re-enabled at some point;
+				//			currently it somehow breaks some automated tests
+				// try {
+					return $rhino.script(name,code,scope,target);
+				// } catch (e) {
+				// 	if (e.rhinoException) {
+				// 		if (e.rhinoException.getWrappedException) {
+				// 			if (e.rhinoException.getWrappedException().getErrors) {
+				// 				var errors = e.rhinoException.getWrappedException().getErrors();
+				// 				for (var i=0; i<errors.length; i++) {
+				// 					Packages.java.lang.System.err.println(errors[i]);
+				// 				}
+				// 			} else {
+				// 				e.rhinoException.getWrappedException().printStackTrace();
+				// 			}
+				// 		} else {
+				// 			e.rhinoException.printStackTrace();
+				// 		}
+				// 	} else if (e.javaException) {
+				// 		e.javaException.printStackTrace();
+				// 	}
+				// 	throw e;
+				// }
+			};
+
+			this.eval = this.script;
+
+			this.noEnvironmentAccess = !$rhino.canAccessEnvironment();
 		};
 
-		this.MetaObject = function(p) {
-			var delegate = (p.delegate) ? p.delegate : {};
-			var get = (p.get) ? p.get : function(){};
-			var set = (p.set) ? p.set : function(){};
-			return Packages.inonit.script.rhino.MetaObject.create(delegate,get,set);
-		};
-
-		this.script = function(name,code,scope,target) {
-			//	TODO	revisit whether some improved error reporting code inspired by the below can be re-enabled at some point;
-			//			currently it somehow breaks some automated tests
-			// try {
-				return $rhino.script(name,code,scope,target);
-			// } catch (e) {
-			// 	if (e.rhinoException) {
-			// 		if (e.rhinoException.getWrappedException) {
-			// 			if (e.rhinoException.getWrappedException().getErrors) {
-			// 				var errors = e.rhinoException.getWrappedException().getErrors();
-			// 				for (var i=0; i<errors.length; i++) {
-			// 					Packages.java.lang.System.err.println(errors[i]);
-			// 				}
-			// 			} else {
-			// 				e.rhinoException.getWrappedException().printStackTrace();
-			// 			}
-			// 		} else {
-			// 			e.rhinoException.printStackTrace();
-			// 		}
-			// 	} else if (e.javaException) {
-			// 		e.javaException.printStackTrace();
-			// 	}
-			// 	throw e;
-			// }
-		};
-
-		this.eval = this.script;
-
-		this.noEnvironmentAccess = !$rhino.canAccessEnvironment();
-	};
-
-	var $bridge = new function() {
-		var getJavaClassName = function(javaclass) {
-			var toString = "" + javaclass;
-			if (/\[JavaClass /.test(toString)) {
-				return toString.substring("[JavaClass ".length, toString.length-1);
-			} else {
-				return null;
-			}
-		}
-
-		var getNamedJavaClass = function(name) {
-			//	TODO	could this be $rhino.getClasspath().getClass(name) ?
-			return Packages.org.mozilla.javascript.Context.getCurrentContext().getApplicationClassLoader().loadClass(name);
-		};
-
-		this.getJavaClass = function(name) {
-			return Packages[name];
-		}
-
-		this.toNativeClass = function(javaclass) {
-			var className = getJavaClassName(javaclass);
-			//	TODO	this seems unacceptably brittle, but seems to work for now
-			if (className == null) {
-				try {
-					if (getNamedJavaClass("java.lang.Class").isInstance(javaclass)) return javaclass;
-				} catch (e) {
-					throw new TypeError("Not a class: " + javaclass);
+		var $bridge = new function() {
+			var getJavaClassName = function(javaclass) {
+				var toString = "" + javaclass;
+				if (/\[JavaClass /.test(toString)) {
+					return toString.substring("[JavaClass ".length, toString.length-1);
+				} else {
+					return null;
 				}
 			}
-			return getNamedJavaClass(className);
+
+			var getNamedJavaClass = function(name) {
+				//	TODO	could this be $rhino.getClasspath().getClass(name) ?
+				return Packages.org.mozilla.javascript.Context.getCurrentContext().getApplicationClassLoader().loadClass(name);
+			};
+
+			this.getJavaClass = function(name) {
+				return Packages[name];
+			}
+
+			this.toNativeClass = function(javaclass) {
+				var className = getJavaClassName(javaclass);
+				//	TODO	this seems unacceptably brittle, but seems to work for now
+				if (className == null) {
+					try {
+						if (getNamedJavaClass("java.lang.Class").isInstance(javaclass)) return javaclass;
+					} catch (e) {
+						throw new TypeError("Not a class: " + javaclass);
+					}
+				}
+				return getNamedJavaClass(className);
+			};
+
+			this.isNativeJavaObject = function(object) {
+				return String(object.getClass) == "function getClass() {/*\njava.lang.Class getClass()\n*/}\n";
+			};
+
+			this.test = {};
 		};
 
-		this.isNativeJavaObject = function(object) {
-			return String(object.getClass) == "function getClass() {/*\njava.lang.Class getClass()\n*/}\n";
+		//	TODO	does this file need to know what directory it is in, or could it just use ./expression.js somehow?
+		var rv = $rhino.script(
+			"jrunscript/expression.js",
+			$loader.getLoaderCode("jrunscript/expression.js"),
+			{ $loader: $loader, $javahost: $javahost, $bridge: $bridge },
+			null
+		);
+
+		rv.getDebugger = function() {
+			return $rhino.getDebugger();
 		};
 
-		this.test = {};
-	};
+		rv.java.sync = function(f,lock) {
+			if (rv.java.getClass("inonit.script.runtime.Threads")) {
+				return Packages.inonit.script.runtime.Threads.createSynchronizedFunction(lock,f);
+			} else {
+				return sync(f,lock);
+			}
+		};
 
-	//	TODO	does this file need to know what directory it is in, or could it just use ./expression.js somehow?
-	var rv = $rhino.script(
-		"jrunscript/expression.js",
-		$loader.getLoaderCode("jrunscript/expression.js"),
-		{ $loader: $loader, $javahost: $javahost, $bridge: $bridge },
-		null
-	);
-
-	rv.getDebugger = function() {
-		return $rhino.getDebugger();
-	};
-
-	rv.java.sync = function(f,lock) {
-		if (rv.java.getClass("inonit.script.runtime.Threads")) {
-			return Packages.inonit.script.runtime.Threads.createSynchronizedFunction(lock,f);
-		} else {
-			return sync(f,lock);
+		rv.java.thisSynchronize = function(f) {
+			if (rv.java.getClass("org.mozilla.javascript.Synchronizer")) {
+				return new Packages.org.mozilla.javascript.Synchronizer(f);
+			} else {
+				return sync(f);
+			}
 		}
-	};
 
-	rv.java.thisSynchronize = function(f) {
-		if (rv.java.getClass("org.mozilla.javascript.Synchronizer")) {
-			return new Packages.org.mozilla.javascript.Synchronizer(f);
-		} else {
-			return sync(f);
-		}
+		return rv;
 	}
-
-	return rv;
-})()
+//@ts-ignore
+)(Packages,(function() { return this; })().sync,$rhino,$loader)

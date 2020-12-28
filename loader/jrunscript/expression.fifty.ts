@@ -51,6 +51,15 @@ namespace slime.jrunscript.runtime {
 	export interface $bridge {
 	}
 
+	/**
+	 * This is essentially a `inonit.script.rhino.Engine` instance.
+	 */
+	export interface $rhino {
+		script(name: string, code: string, scope: object, target: object)
+		canAccessEnvironment(): boolean
+		getDebugger(): Packages.inonit.script.rhino.Engine.Debugger
+	}
+
 	export interface Exports extends slime.runtime.Exports {
 		Loader: any
 
@@ -142,6 +151,14 @@ interface Packages {
 		}
 	}
 	javax: any
+	org: {
+		mozilla: {
+			javascript: {
+				Context: any
+				Synchronizer: any
+			}
+		}
+	}
 	inonit: {
 		script: {
 			runtime: {
@@ -149,11 +166,16 @@ interface Packages {
 					Streams: any
 				}
 				Throwables: any
+				Threads: any
 			}
 			engine: {
 				Code: {
 					Loader: any
 				}
+			}
+			rhino: {
+				Objects: any
+				MetaObject: any
 			}
 		}
 	}
@@ -217,6 +239,13 @@ namespace Packages {
 				getTypescript()
 				getClasspath(): any
 				getLoaderCode(path: string): any
+			}
+		}
+
+		export namespace rhino {
+			export namespace Engine {
+				export interface Debugger {
+				}
 			}
 		}
 
