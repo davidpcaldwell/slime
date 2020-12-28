@@ -45,10 +45,14 @@ engines.forEach(function(engine) {
 							output: String
 						},
 						evaluate: function(result) {
+							if (result.status != 0) return {
+								error: true,
+								properties: {}
+							}
 							return JSON.parse(result.stdio.output);
 						}
 					});
-					verify(output).properties["jsh.engine"].is(engine);
+					verify(output).properties.evaluate.property("jsh.engine").is(engine);
 				}
 			};
 
