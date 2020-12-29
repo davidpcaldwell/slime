@@ -216,6 +216,9 @@ interface Packages {
 				MetaObject: any
 			}
 		}
+		system: {
+
+		}
 	}
 }
 
@@ -231,6 +234,8 @@ namespace Packages {
 		export namespace io {
 			export interface InputStream {
 			}
+			export interface OutputStream {
+			}
 		}
 		export namespace util {
 			export interface Properties {
@@ -240,6 +245,13 @@ namespace Packages {
 
 			export interface Date {
 				getTime(): number
+			}
+		}
+	}
+
+	export namespace inonit.system {
+		export namespace OperatingSystem {
+			export interface Environment {
 			}
 		}
 	}
@@ -303,11 +315,21 @@ namespace Packages {
 
 			export namespace Shell {
 				export interface Environment {
-					getStdio: any
-					getEnvironment: any
-					getSystemProperties: any
-					getPackaged: any
-					getPackagedCode: any
+					getStdio(): Environment.Stdio
+					getEnvironment(): Packages.inonit.system.OperatingSystem.Environment
+					getSystemProperties(): Packages.java.util.Properties
+					getPackaged(): Environment.Packaged
+				}
+
+				export namespace Environment {
+					export interface Stdio {
+						getStandardInput(): Packages.java.io.InputStream
+						getStandardOutput(): Packages.java.io.OutputStream
+						getStandardError(): Packages.java.io.OutputStream
+					}
+
+					export interface Packaged {
+					}
 				}
 
 				export interface Invocation {

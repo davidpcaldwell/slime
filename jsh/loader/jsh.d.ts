@@ -9,7 +9,9 @@ namespace jsh.plugin {
 			mock: jsh.loader.plugins.Export["mock"]
 		}
 
-		loader: any
+		loader: {
+			getLoaderScript(path: string): any
+		}
 		getLibraryFile: any
 		getInterface(): any
 		getSystemProperties(): any
