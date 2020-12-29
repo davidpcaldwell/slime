@@ -49,7 +49,7 @@ public class Rhino {
 			return engine.getClasspath();
 		}
 
-		public Engine.Debugger getDebugger() {
+		public Debugger getDebugger() {
 			return engine.getDebugger();
 		}
 
@@ -160,7 +160,7 @@ public class Rhino {
 
 	public static abstract class Configuration {
 		public abstract int getOptimizationLevel();
-		public abstract Engine.Debugger getDebugger();
+		public abstract Debugger getDebugger();
 
 		//	TODO	consider: should this log implementation be supplied, and just log to stderr?
 		public abstract Engine.Log getLog();
@@ -207,7 +207,7 @@ public class Rhino {
 					return optimization;
 				}
 
-				public Engine.Debugger getDebugger() {
+				public Debugger getDebugger() {
 					String id = System.getProperty("jsh.debug.script");
 					if (id == null) return null;
 					if (id.equals("rhino")) {
@@ -222,15 +222,15 @@ public class Rhino {
 								}
 							}
 						});
-						return Engine.RhinoDebugger.create(new Engine.RhinoDebugger.Configuration() {
-							public Engine.RhinoDebugger.Ui.Factory getUiFactory() {
+						return Debugger.RhinoDebugger.create(new Debugger.RhinoDebugger.Configuration() {
+							public Debugger.RhinoDebugger.Ui.Factory getUiFactory() {
 								return Gui.RHINO_UI_FACTORY;
 							}
 						});
 					} else if (id.equals("profiler")) {
-						return new Engine.Profiler();
+						return new Debugger.Profiler();
 					} else if (id.startsWith("profiler:")) {
-						return new Engine.Profiler();
+						return new Debugger.Profiler();
 					} else {
 						//	TODO	emit some kind of error?
 						return null;

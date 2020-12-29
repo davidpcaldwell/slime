@@ -19,7 +19,7 @@ import org.mozilla.javascript.tools.debugger.Dim;
 public class Gui {
 	private Gui() {}
 
-	private static class SwingGui extends Engine.RhinoDebugger.Ui {
+	private static class SwingGui extends Debugger.RhinoDebugger.Ui {
 		private org.mozilla.javascript.tools.debugger.SwingGui delegate;
 
 		private void workAroundOsxSwingSlowness() {
@@ -68,8 +68,8 @@ public class Gui {
 		}
 	}
 
-	public static final Engine.RhinoDebugger.Ui.Factory RHINO_UI_FACTORY = new Engine.RhinoDebugger.Ui.Factory() {
-		@Override public Engine.RhinoDebugger.Ui create(Dim dim, String title) {
+	public static final Debugger.RhinoDebugger.Ui.Factory RHINO_UI_FACTORY = new Debugger.RhinoDebugger.Ui.Factory() {
+		@Override public Debugger.RhinoDebugger.Ui create(Dim dim, String title) {
 			return new SwingGui(dim, title);
 		}
 	};
