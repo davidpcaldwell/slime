@@ -48,16 +48,37 @@ namespace slime.jrunscript.runtime {
 		eval(a: any, b: any, c: any, d: any): any
 	}
 
-	export interface $bridge {
+	export namespace rhino {
+		/**
+		 * An object providing the scope variables for running `loader/jrunscript/rhino.js`.
+		 */
+		export interface Scope {
+			$rhino: Engine
+			$loader: Packages.inonit.script.engine.Loader
+		}
+
+		/**
+		 * This is essentially a `Packages.inonit.script.rhino.Engine` instance.
+		 */
+		export interface Engine {
+			script(name: string, code: string, scope: object, target: object)
+			canAccessEnvironment(): boolean
+			getDebugger(): Packages.inonit.script.rhino.Engine.Debugger
+		}
 	}
 
-	/**
-	 * This is essentially a `inonit.script.rhino.Engine` instance.
-	 */
-	export interface $rhino {
-		script(name: string, code: string, scope: object, target: object)
-		canAccessEnvironment(): boolean
-		getDebugger(): Packages.inonit.script.rhino.Engine.Debugger
+	export namespace nashorn {
+		/**
+		 * A `Packages.inonit.script.jsh.Graal.Host` instance, currently, although this should not depend on `jsh` classes. In any case,
+		 * none of its methods are currently used, so this is currently an empty interface.
+		 */
+		export interface Graal {
+		}
+
+		export interface Scope {
+			$graal: Graal
+			$loader: Packages.inonit.script.engine.Loader
+		}
 	}
 
 	export type sync = any
@@ -84,9 +105,6 @@ namespace slime.jrunscript.runtime {
 
 			export interface Graal extends Engine {
 				eval: any
-			}
-
-			export interface $graal {
 			}
 		}
 	}

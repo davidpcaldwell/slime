@@ -11,8 +11,14 @@
 //	Contributor(s):
 //	END LICENSE
 
+//@ts-check
 (
-	function() {
+	/**
+	 *
+	 * @param { slime.jrunscript.runtime.java.Context } $context
+	 * @param { slime.jrunscript.runtime.java.Exports } $exports
+	 */
+	function($context,$exports) {
 		$exports.getClass = function(name) {
 			$api.Function.argument.isString({ index: 0, name: "name" }).apply(this,arguments);
 			if ($context.classpath.getClass(name)) {
@@ -44,12 +50,12 @@
 
 		$exports.toNativeClass = $context.engine.toNativeClass;
 
-		$exports.test = $context.engine.test;
-
-		$exports.adapt = {};
-		$exports.adapt.String = function(_s) {
-			if (_s == null) return null;
-			return String(_s);
-		}
+		$exports.adapt = {
+			String: function(_s) {
+				if (_s == null) return null;
+				return String(_s);
+			}
+		};
 	}
-)();
+//@ts-ignore
+)($context,$exports);

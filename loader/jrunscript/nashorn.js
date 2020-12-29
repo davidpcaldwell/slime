@@ -18,8 +18,8 @@
 	 * @param { slime.jrunscript.runtime.Java } Java
 	 * @param { Packages } Packages
 	 * @param { slime.jrunscript.runtime.sync } sync
-	 * @param { slime.jrunscript.runtime.internal.nashorn.$graal } $graal
-	 * @param { Packages.inonit.script.engine.Loader } $loader
+	 * @param { slime.jrunscript.runtime.nashorn.Scope["$graal"] } $graal
+	 * @param { slime.jrunscript.runtime.nashorn.Scope["$loader"] } $loader
 	 */
 	function(load,Java,Packages,sync,$graal,$loader) {
 		load("nashorn:mozilla_compat.js");
