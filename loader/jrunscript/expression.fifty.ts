@@ -290,15 +290,29 @@ namespace Packages {
 		//	TODO	move to appropriate directory
 		export namespace jsh {
 			export interface Shell {
-				setRuntime: any
-				runtime: any
-				getLoader: any
-				getEnvironment: any
-				getInvocation: any
+				setRuntime(value: slime.jrunscript.runtime.Exports)
+				runtime(): slime.jrunscript.runtime.Exports
+				getLoader(): Packages.inonit.script.engine.Loader
+				getEnvironment(): Shell.Environment
+				getInvocation(): Shell.Invocation
 				getJshLoader: any
 				getInterface(): any
 				getLibrary(path: string): any
 				getLibraryFile(path: string): any
+			}
+
+			export namespace Shell {
+				export interface Environment {
+					getStdio: any
+					getEnvironment: any
+					getSystemProperties: any
+					getPackaged: any
+					getPackagedCode: any
+				}
+
+				export interface Invocation {
+					getScript: any
+				}
 			}
 
 			export namespace Rhino {
