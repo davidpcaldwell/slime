@@ -97,7 +97,7 @@ public class Rhino extends Servlet.ScriptContainer {
 			jsh.setPermanent(true);
 			jsh.setDontenum(true);
 			program.set(jsh);
-		} catch (Engine.Errors errors) {
+		} catch (Errors errors) {
 			errors.dump(
 				new Engine.Log() {
 					@Override public void println(String message) {
@@ -119,7 +119,7 @@ public class Rhino extends Servlet.ScriptContainer {
 			System.err.println("Executing JavaScript program ...");
 			engine.execute(program);
 			System.err.println("Executed program: script = " + servlet.script());
-		} catch (Engine.Errors errors) {
+		} catch (Errors errors) {
 			System.err.println("Caught errors.");
 			errors.dump(
 				new Engine.Log() {
