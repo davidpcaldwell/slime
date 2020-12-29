@@ -30,64 +30,8 @@
 				function($jsh) {
 					//	$jsh is a inonit.script.jsh.Shell Java object
 
-					//	$slime is essentially a SLIME Java runtime object, augmented by jsh/loader/rhino.js or jsh/loader/nashorn.js
-					var $slime = $jsh.runtime();
-
 					var configuration = $jsh.getEnvironment();
 					var invocation = $jsh.getInvocation();
-
-					$slime.getSystemProperties = function() {
-						return configuration.getSystemProperties();
-					};
-
-					//	Could consider returning empty string for null; this seems to be the way properties are used
-					$slime.getSystemProperty = function(name) {
-						var _rv = configuration.getSystemProperties().getProperty(name);
-						if (_rv === null) return null;
-						return String(_rv);
-					}
-
-					$slime.getEnvironment = function() {
-						return configuration.getEnvironment();
-					};
-
-					$slime.getStdio = function() {
-						return stdio;
-					};
-
-					$slime.getInvocation = function() {
-						return invocation;
-					};
-
-					$slime.getPackaged = function() {
-						return configuration.getPackaged();
-					}
-
-					$slime.getInterface = function() {
-						return $jsh.getInterface();
-					}
-
-					$slime.getLibraryFile = function(path) {
-						return $jsh.getLibraryFile(path);
-					};
-
-					$slime.loader = new function() {
-						this.getPackagedCode = function() {
-							return configuration.getPackagedCode();
-						};
-
-						var getLoaderCode = function(path) {
-							var _reader = $jsh.getJshLoader().getFile(path).getReader();
-							return String(new Packages.inonit.script.runtime.io.Streams().readString(_reader));
-						};
-
-						this.getLoaderScript = function(path) {
-							return new $slime.Resource({
-								name: "jsh://" + path,
-								string: getLoaderCode(path)
-							});
-						};
-					};
 
 					var stdio = new function() {
 						var out = new Packages.java.io.PrintStream(configuration.getStdio().getStandardOutput());
@@ -106,9 +50,59 @@
 						};
 					};
 
-					$slime.coffee = $jsh.getLibrary("coffee-script.js");
+					// $jsh.runtime() is essentially a SLIME Java runtime object, augmented by jsh/loader/rhino.js or jsh/loader/nashorn.js
+					return Object.assign(
+						$jsh.runtime(),
+						{
+							getEnvironment: function() {
+								return configuration.getEnvironment();
+							},
+							//	Could consider returning empty string for null; this seems to be the way properties are used
+							getSystemProperty: function(name) {
+								var _rv = configuration.getSystemProperties().getProperty(name);
+								if (_rv === null) return null;
+								return String(_rv);
+							},
+							getSystemProperties: function() {
+								return configuration.getSystemProperties();
+							},
+							getInvocation: function() {
+								return invocation;
+							},
+							getPackaged: function() {
+								return configuration.getPackaged();
+							},
+							loader: new function() {
+								this.getPackagedCode = function() {
+									return configuration.getPackagedCode();
+								};
 
-					return $slime;
+								var getLoaderCode = function(path) {
+									var _reader = $jsh.getJshLoader().getFile(path).getReader();
+									return String(new Packages.inonit.script.runtime.io.Streams().readString(_reader));
+								};
+
+								this.getLoaderScript = function(path) {
+									return new $slime.Resource({
+										name: "jsh://" + path,
+										string: getLoaderCode(path)
+									});
+								};
+							},
+							getLibraryFile: function(path) {
+								return $jsh.getLibraryFile(path);
+							},
+							getInterface: function() {
+								return $jsh.getInterface();
+							},
+							getStdio: function() {
+								return stdio;
+							},
+							coffee: $jsh.getLibrary("coffee-script.js"),
+							//	Probably assigned in plugins.js
+							plugins: void(0)
+						}
+					);
 				}
 			)($jsh);
 
