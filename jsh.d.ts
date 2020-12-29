@@ -33,6 +33,8 @@ interface jsh {
 		Suite: any
 		interface: any
 		$slime: slime.runtime.Exports & { plugins: { mock: any } }
+		jsapi: any
+		Verify: slime.definition.unit.Verify.Factory
 	}
 
 	loader: any

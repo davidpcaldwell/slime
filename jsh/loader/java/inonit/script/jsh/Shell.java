@@ -478,10 +478,10 @@ public class Shell {
 		protected abstract void setGlobalProperty(String name, Object value);
 
 		/**
-		 *	Must invoke <code>$jsh.setHost(o)</code> where o is a JavaScript object that will be provided to the <code>jsh.js</code>
-		 *	script via <code>$jsh.host()</code>
+		 *	Must execute a script that creates and provides the SLIME jrunscript runtime object to the {@link Shell}. The
+		 *  <code>Shell</code> will be present in the scope as the <code>$jsh</code. variable (see {@link #execute}).
 		 */
-		//	TODO	not quite DRY; all implementations must invoke $jsh.setHost; would be better if this somehow eval-ed and did
+		//	TODO	not quite DRY; all implementations must invoke $jsh.setRuntime; would be better if this somehow eval-ed and did
 		//			that itself
 		protected abstract void setJshRuntimeObject();
 
