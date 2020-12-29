@@ -16,8 +16,8 @@
 	 *
 	 * @param { Packages } Packages
 	 * @param { slime.jrunscript.runtime.sync } sync
-	 * @param { slime.jrunscript.runtime.$rhino } $rhino
-	 * @param { Packages.inonit.script.engine.Loader } $loader
+	 * @param { slime.jrunscript.runtime.rhino.Scope["$rhino"] } $rhino
+	 * @param { slime.jrunscript.runtime.rhino.Scope["$loader"] } $loader
 	 */
 	function(Packages,sync,$rhino,$loader) {
 		var $javahost = new function() {
