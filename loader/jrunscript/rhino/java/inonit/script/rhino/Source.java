@@ -50,7 +50,7 @@ public abstract class Source {
 
 	abstract String getSourceName();
 //		abstract Script compile(Debugger dim, Context context) throws java.io.IOException;
-	abstract Object evaluate(Engine.Debugger dim, Context context, Scriptable scope, Scriptable target, boolean compile) throws java.io.IOException;
+	abstract Object evaluate(Debugger dim, Context context, Scriptable scope, Scriptable target, boolean compile) throws java.io.IOException;
 
 	public abstract Reader getReader();
 
@@ -64,7 +64,7 @@ public abstract class Source {
 		breakpoints.add( Integer.valueOf(line) );
 	}
 
-	final void setBreakpoints(Engine.Debugger dim) {
+	final void setBreakpoints(Debugger dim) {
 		if (dim != null) {
 			for (int j=0; j<breakpoints.size(); j++) {
 				int line = breakpoints.get(j).intValue();
@@ -77,7 +77,7 @@ public abstract class Source {
 		}
 	}
 
-	final Object evaluate(Engine.Debugger dim, Engine.Configuration configuration, Scriptable scope, Scriptable target) throws java.io.IOException {
+	final Object evaluate(Debugger dim, Engine.Configuration configuration, Scriptable scope, Scriptable target) throws java.io.IOException {
 		Context context = configuration.getContext();
 		if (context == null) {
 			throw new IllegalArgumentException("context is null");
@@ -257,7 +257,7 @@ public abstract class Source {
 			}
 		}
 
-		final Object evaluate(Engine.Debugger dim, Context context, Scriptable scope, Scriptable target, boolean compile) throws IOException {
+		final Object evaluate(Debugger dim, Context context, Scriptable scope, Scriptable target, boolean compile) throws IOException {
 			BufferedReader lines = new BufferedReader(reader);
 			String code = parse(lines);
 			try {
