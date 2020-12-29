@@ -72,23 +72,21 @@
 							getPackaged: function() {
 								return configuration.getPackaged();
 							},
-							loader: new function() {
-								this.getPackagedCode = function() {
-									return configuration.getPackagedCode();
-								};
-
+							loader: (function() {
 								var getLoaderCode = function(path) {
 									var _reader = $jsh.getJshLoader().getFile(path).getReader();
 									return String(new Packages.inonit.script.runtime.io.Streams().readString(_reader));
 								};
 
-								this.getLoaderScript = function(path) {
-									return new $slime.Resource({
-										name: "jsh://" + path,
-										string: getLoaderCode(path)
-									});
+								return {
+									getLoaderScript: function(path) {
+										return new $slime.Resource({
+											name: "jsh://" + path,
+											string: getLoaderCode(path)
+										});
+									}
 								};
-							},
+							})(),
 							getLibraryFile: function(path) {
 								return $jsh.getLibraryFile(path);
 							},
@@ -227,16 +225,17 @@
 					return $slime.namespace(name);
 				}
 
-				//	experimental interface and therefore currently undocumented
+				//	TODO	try to bring this back? Would it be legal under Graal threading rules?
+				// //	experimental interface and therefore currently undocumented
 				this.addFinalizer = function(f) {
-					$slime.loader.addFinalizer(new JavaAdapter(
-						Packages.java.lang.Runnable,
-						{
-							run: function() {
-								f();
-							}
-						}
-					));
+					// $slime.loader.addFinalizer(new JavaAdapter(
+					// 	Packages.java.lang.Runnable,
+					// 	{
+					// 		run: function() {
+					// 			f();
+					// 		}
+					// 	}
+					// ));
 				}
 
 				this.java = new function() {
