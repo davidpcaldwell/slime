@@ -173,7 +173,7 @@ public class Rhino {
 					return shell.getClassLoader();
 				}
 
-				@Override public boolean createClassLoader() {
+				@Override public boolean canCreateClassLoaders() {
 					return true;
 				}
 

@@ -57,7 +57,7 @@ public class Rhino extends Servlet.ScriptContainer {
 			debugger = Engine.RhinoDebugger.create(configuration);
 		}
 		Engine engine = Engine.create(debugger, new Engine.Configuration() {
-			@Override public boolean createClassLoader() {
+			@Override public boolean canCreateClassLoaders() {
 				return true;
 			}
 
