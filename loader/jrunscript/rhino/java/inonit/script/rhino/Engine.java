@@ -461,7 +461,7 @@ public class Engine {
 				return null;
 			}
 
-			@Override public boolean createClassLoader() {
+			@Override public boolean canCreateClassLoaders() {
 				return true;
 			}
 
@@ -478,10 +478,17 @@ public class Engine {
 			return getClass().getName() + " factory=" + factory;
 		}
 
-		//	TODO	rename to canCreateClassLoader
-		public abstract boolean createClassLoader();
+		public abstract boolean canCreateClassLoaders();
 		public abstract boolean canAccessEnvironment();
+
+		/**
+		 * Creates the single <code>ClassLoader</code> to be used for this {@link Engine}. Currently all {@link Context}s created
+		 * by an <code>Engine</code> share the same <code>ClassLoader</code>.
+		 *
+		 * @return A <code>ClassLoader</code>, or <code>null</code> to use the ClassLoader that loaded Rhino.
+		 */
 		public abstract ClassLoader getApplicationClassLoader();
+
 		public abstract File getLocalClassCache();
 		public abstract int getOptimizationLevel();
 
@@ -507,8 +514,6 @@ public class Engine {
 
 		private class ContextFactoryInner extends ContextFactory {
 			private Loader.Classes classes;
-//			private ClassLoader classLoader;
-//			private Loader.Classes classes;
 
 			ContextFactoryInner() {
 			}
@@ -519,7 +524,7 @@ public class Engine {
 				if (!initialized) {
 					this.classes = Loader.Classes.create(new Loader.Classes.Configuration() {
 						@Override public boolean canCreateClassLoaders() {
-							return Configuration.this.createClassLoader();
+							return Configuration.this.canCreateClassLoaders();
 						}
 
 						@Override public ClassLoader getApplicationClassLoader() {
@@ -539,20 +544,10 @@ public class Engine {
 				return this.classes.getApplicationClassLoader();
 			}
 
-			// final ClassLoader getCompilationClassLoader() {
-			// 	initializeClassLoaders();
-			// 	return this.classes.getApplicationClassLoader();
-			// }
-
 			final Loader.Classes.Interface getClasspath() {
 				initializeClassLoaders();
 				return this.classes.getInterface();
 			}
-
-//			final Loader.Classes getLoaderClasses() {
-//				initializeClassLoaders();
-//				return this.classes.getScriptClasses();
-//			}
 
 			@Override protected synchronized Context makeContext() {
 				Context rv = super.makeContext();
@@ -603,13 +598,13 @@ public class Engine {
 			debugger = new NoDebugger();
 		}
 		rv.debugger = debugger;
-		rv.contexts = contexts;
+		rv.configuration = contexts;
 		debugger.initialize(contexts);
 		return rv;
 	}
 
 	private Debugger debugger;
-	private Configuration contexts;
+	private Configuration configuration;
 
 	private Engine() {
 	}
@@ -620,25 +615,25 @@ public class Engine {
 
 	void script(String name, InputStream code, Scriptable scope, Scriptable target) throws IOException {
 		Source source = Engine.Source.create(name,new InputStreamReader(code));
-		source.evaluate(debugger, contexts, scope, target);
+		source.evaluate(debugger, configuration, scope, target);
 	}
 
 	void script(String name, Reader code, Scriptable scope, Scriptable target) throws IOException {
 		Source source = Engine.Source.create(name, code);
-		source.evaluate(debugger, contexts, scope, target);
+		source.evaluate(debugger, configuration, scope, target);
 	}
 
 	//	TODO	it would be nice if this returned the evaluation value of the script, but according to interactive testing,
 	//			it does not; it always returns null, because source.evaluate always returns undefined, even for an expression.
 	public Scriptable script(String name, String code, Scriptable scope, Scriptable target) throws IOException {
 		Source source = Engine.Source.create(name,code);
-		Object rv = source.evaluate(debugger, contexts, scope, target);
+		Object rv = source.evaluate(debugger, configuration, scope, target);
 		if (rv instanceof Scriptable) return (Scriptable)rv;
 		return null;
 	}
 
 	public boolean canAccessEnvironment() {
-		return contexts.canAccessEnvironment();
+		return configuration.canAccessEnvironment();
 	}
 
 	public static class Errors extends RuntimeException {
@@ -834,8 +829,8 @@ public class Engine {
 	public Scriptable createHostObject(final Object javaHostObject) {
 		ContextFactory.GlobalSetter global = ContextFactory.getGlobalSetter();
 		ContextFactory before = global.getContextFactoryGlobal();
-		global.setContextFactoryGlobal(contexts.factory);
-		Context owned = contexts.factory.enterContext();
+		global.setContextFactoryGlobal(configuration.factory);
+		Context owned = configuration.factory.enterContext();
 		Scriptable scope = this.getGlobalScope(owned);
 		Scriptable rv = (Scriptable)Context.javaToJS(javaHostObject, scope);
 		global.setContextFactoryGlobal(before);
@@ -845,22 +840,22 @@ public class Engine {
 	}
 
 	public Object execute(Program program) {
-		Program.Outcome outcome = (Program.Outcome)contexts.call(new ProgramAction(this, program, debugger));
+		Program.Outcome outcome = (Program.Outcome)configuration.call(new ProgramAction(this, program, debugger));
 		return outcome.getResult();
 	}
 
 	public Object evaluate(Program program, String name, Class<?> type) {
-		Program.Outcome outcome = (Program.Outcome)contexts.call(new ProgramAction(this, program, debugger));
+		Program.Outcome outcome = (Program.Outcome)configuration.call(new ProgramAction(this, program, debugger));
 		return outcome.castScopeTo(name, type);
 	}
 
 	public Object evaluate(Program program, Class<?> type) {
-		Program.Outcome outcome = (Program.Outcome)contexts.call(new ProgramAction(this, program, debugger));
+		Program.Outcome outcome = (Program.Outcome)configuration.call(new ProgramAction(this, program, debugger));
 		return outcome.castScopeTo(null, type);
 	}
 
 	public Scriptable load(Program program) {
-		Program.Outcome outcome = (Program.Outcome)contexts.call(new ProgramAction(this, program, debugger));
+		Program.Outcome outcome = (Program.Outcome)configuration.call(new ProgramAction(this, program, debugger));
 		return outcome.getGlobal();
 	}
 
@@ -871,7 +866,7 @@ public class Engine {
 	 *	for the new code included in <code>source</code>.
 	 */
 	public void include(Scriptable jsThis, Engine.Source source) throws IOException {
-		source.evaluate(debugger, contexts, null, jsThis);
+		source.evaluate(debugger, configuration, null, jsThis);
 	}
 
 	public static abstract class Source {
@@ -1466,6 +1461,6 @@ public class Engine {
 //	}
 
 	public Loader.Classes.Interface getClasspath() {
-		return this.contexts.getClasspath();
+		return this.configuration.getClasspath();
 	}
 }
