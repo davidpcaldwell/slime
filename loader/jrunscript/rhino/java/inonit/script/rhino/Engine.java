@@ -36,7 +36,7 @@ public class Engine {
 	public static abstract class Debugger {
 		abstract void initialize(Configuration contexts);
 		abstract void initialize(Scriptable scope, Engine engine, Program program);
-		abstract void setBreakpoint(Engine.Source source, int line);
+		abstract void setBreakpoint(Source source, int line);
 		abstract Log getLog();
 
 		final void log(String message) {
@@ -52,7 +52,7 @@ public class Engine {
 		void initialize(Configuration contexts) {
 		}
 
-		void setBreakpoint(Engine.Source source, int line) {
+		void setBreakpoint(Source source, int line) {
 		}
 
 		void initialize(Scriptable scope, Engine engine, Program program) {
@@ -266,7 +266,7 @@ public class Engine {
 			});
 		}
 
-		void setBreakpoint(Engine.Source source, int line) {
+		void setBreakpoint(Source source, int line) {
 		}
 
 		void initialize(Scriptable scope, Engine engine, Program program) {
@@ -402,7 +402,7 @@ public class Engine {
 			contexts.attach(dim);
 		}
 
-		void setBreakpoint(Engine.Source source, int line) {
+		void setBreakpoint(Source source, int line) {
 			org.mozilla.javascript.tools.debugger.Dim.SourceInfo info = getSourceInfo(source.getSourceName());
 			if (info != null) {
 				info.breakpoint(line, true);
@@ -614,19 +614,19 @@ public class Engine {
 	}
 
 	void script(String name, InputStream code, Scriptable scope, Scriptable target) throws IOException {
-		Source source = Engine.Source.create(name,new InputStreamReader(code));
+		Source source = Source.create(name,new InputStreamReader(code));
 		source.evaluate(debugger, configuration, scope, target);
 	}
 
 	void script(String name, Reader code, Scriptable scope, Scriptable target) throws IOException {
-		Source source = Engine.Source.create(name, code);
+		Source source = Source.create(name, code);
 		source.evaluate(debugger, configuration, scope, target);
 	}
 
 	//	TODO	it would be nice if this returned the evaluation value of the script, but according to interactive testing,
 	//			it does not; it always returns null, because source.evaluate always returns undefined, even for an expression.
 	public Scriptable script(String name, String code, Scriptable scope, Scriptable target) throws IOException {
-		Source source = Engine.Source.create(name,code);
+		Source source = Source.create(name,code);
 		Object rv = source.evaluate(debugger, configuration, scope, target);
 		if (rv instanceof Scriptable) return (Scriptable)rv;
 		return null;
@@ -648,6 +648,10 @@ public class Engine {
 
 		private ArrayList<ScriptError> errors = new ArrayList<ScriptError>();
 		private ErrorReporterImpl reporter = new ErrorReporterImpl();
+
+		List<ScriptError> errors() {
+			return errors;
+		}
 
 		class ErrorReporterImpl implements ErrorReporter {
 			public void warning(String string, String string0, int i, String string1, int i0) {
@@ -826,19 +830,6 @@ public class Engine {
 		}
 	}
 
-	public Scriptable createHostObject(final Object javaHostObject) {
-		ContextFactory.GlobalSetter global = ContextFactory.getGlobalSetter();
-		ContextFactory before = global.getContextFactoryGlobal();
-		global.setContextFactoryGlobal(configuration.factory);
-		Context owned = configuration.factory.enterContext();
-		Scriptable scope = this.getGlobalScope(owned);
-		Scriptable rv = (Scriptable)Context.javaToJS(javaHostObject, scope);
-		global.setContextFactoryGlobal(before);
-		return rv;
-//		Context context = contexts.factory.enterContext();
-//		return context.getWrapFactory().wrapAsJavaObject(context, this.getGlobalScope(context), javaHostObject, null);
-	}
-
 	public Object execute(Program program) {
 		Program.Outcome outcome = (Program.Outcome)configuration.call(new ProgramAction(this, program, debugger));
 		return outcome.getResult();
@@ -865,314 +856,8 @@ public class Engine {
 	 *	<code>jsThis</code> as the scope
 	 *	for the new code included in <code>source</code>.
 	 */
-	public void include(Scriptable jsThis, Engine.Source source) throws IOException {
+	public void include(Scriptable jsThis, Source source) throws IOException {
 		source.evaluate(debugger, configuration, null, jsThis);
-	}
-
-	public static abstract class Source {
-		public static Source create(String sourceName, java.io.Reader reader) {
-			if (reader == null) throw new RuntimeException("'reader' must not be null.");
-			return new ReaderSource(sourceName, reader);
-		}
-
-		public static Engine.Source create(String name, InputStream in) {
-			return create(name, new InputStreamReader(in));
-		}
-
-		public static Source create(String sourceName, String s) {
-			return new ReaderSource(sourceName, new StringReader(s));
-		}
-
-		//	TODO	should look at unifying Code.Loader and Engine.Source
-
-		/**
-			Creates a new <code>Source</code> using the contents of the given file.
-
-			@param file A file containing a script.  Must exist.
-		 */
-		public static Source create(java.io.File file) {
-			try {
-				return new ReaderSource(file.getCanonicalPath(), new FileReader(file));
-			} catch (java.io.FileNotFoundException e) {
-				throw new RuntimeException("Could not find file: [" + file.getPath() + "]", e);
-			} catch (IOException e) {
-				throw new RuntimeException("Cannot get canonical path of " + file);
-			}
-		}
-
-		public static Source create(Code.Loader.Resource file) {
-			return new ReaderSource(file.getSourceName(), file.getReader());
-		}
-
-		private boolean debug = true;
-
-		final boolean debug() {
-			return debug;
-		}
-
-		abstract String getSourceName();
-//		abstract Script compile(Debugger dim, Context context) throws java.io.IOException;
-		abstract Object evaluate(Debugger dim, Context context, Scriptable scope, Scriptable target, boolean compile) throws java.io.IOException;
-
-		public abstract Reader getReader();
-
-		public final void setDebug(boolean debug) {
-			this.debug = debug;
-		}
-
-		private ArrayList<Integer> breakpoints = new ArrayList<Integer>();
-
-		final void addBreakpoint(int line) {
-			breakpoints.add( Integer.valueOf(line) );
-		}
-
-		final void setBreakpoints(Debugger dim) {
-			if (dim != null) {
-				for (int j=0; j<breakpoints.size(); j++) {
-					int line = breakpoints.get(j).intValue();
-					try {
-						dim.setBreakpoint( this, line );
-					} catch (IllegalArgumentException e) {
-						dim.log("Cannot set breakpoint at line " + line + " of " + getSourceName());
-					}
-				}
-			}
-		}
-
-		final Object evaluate(Debugger dim, Configuration configuration, Scriptable scope, Scriptable target) throws java.io.IOException {
-			Context context = configuration.getContext();
-			if (context == null) {
-				throw new IllegalArgumentException("context is null");
-			}
-			//	This flag controls whether scripts are compiled and then evaluated, or just evaluated.
-			final boolean COMPILE_SCRIPTS = false;
-			if (COMPILE_SCRIPTS) {
-				//	The below logic for target/scope probably does not really work; we probably need some logic to rewrite the code similar to that found in
-				//	the other branch of this if
-				if (target != null && scope != null && target != scope) {
-					target.setParentScope(scope);
-				} else {
-					target = scope;
-				}
-				Script script = null;
-				Errors errors = Errors.get(context);
-				try {
-					errors.reset();
-//					script = compile(dim, context);
-				} catch (EvaluatorException e) {
-					if (errors.errors.size() > 0) {
-						throw errors;
-					} else {
-						throw e;
-					}
-				}
-				if (true) {
-					//	Making a very low-level change by refactoring this, so leaving old code in place for now; if all goes well, this branch of the if can
-					//	be removed
-					throw new UnsupportedOperationException("Left in for easy reversion");
-				}
-				return script.exec(context, target);
-			} else {
-				Errors errors = Errors.get(context);
-				try {
-					if (errors != null) {
-						errors.reset();
-					}
-					final boolean USE_COMPILE = true;
-					return evaluate(dim, context, scope, target, USE_COMPILE);
-				} catch (EvaluatorException e) {
-					if (errors != null && errors.errors.size() > 0) {
-						throw errors;
-					} else {
-						throw e;
-					}
-				}
-			}
-		}
-
-		private static class ReaderSource extends Source {
-			private String id;
-			private java.io.Reader reader;
-
-			ReaderSource(String id, java.io.Reader reader) {
-				this.id = id;
-				this.reader = reader;
-			}
-
-			public Reader getReader() {
-				return reader;
-			}
-
-			final String getSourceName() {
-				return id;
-			}
-
-			private String parse(BufferedReader lines) throws IOException {
-				StringBuffer b = new StringBuffer();
-				String line;
-				int number = 0;
-				while( (line = lines.readLine()) != null) {
-					number++;
-					String toParser;
-					if (line.length() > 0 && line.charAt(0) == '^') {
-						if (debug()) {
-							addBreakpoint( number );
-						}
-						toParser = line.substring(1);
-					} else if (line.length() > 0 && line.charAt(0) == '#') {
-						//	We actually do want to insert a blank line here to preserve line numbers, but we will put in the
-						//	JavaScript comment for good measure
-						toParser = "//" + line;
-					} else if (line.length() > 0 && line.trim().equals("debugger;") && debug()) {
-						//	TODO	This absurd workaround is because I don't like how Rhino decides when to pop up the debugger
-						//			when using the debugger keyword
-						addBreakpoint(number);
-						toParser = line.replace("debugger;", "/* BREAKPOINT */ new Object();");
-					} else {
-						toParser = line;
-					}
-					b.append( toParser + "\n" );
-				}
-				String code = b.toString();
-				return code;
-			}
-
-			private static class TargetingScope implements Scriptable {
-				private static final String THIS_IDENTIFIER = "__target__";
-
-				private Scriptable scope;
-				private Scriptable target;
-
-				TargetingScope(Scriptable scope, Scriptable target) {
-					this.scope = scope;
-					this.target = target;
-				}
-
-				public String getClassName() {
-					return scope.getClassName();
-				}
-
-				public Object get(String string, Scriptable s) {
-					if (string.equals(THIS_IDENTIFIER)) {
-						return target;
-					}
-					return scope.get(string, s);
-				}
-
-				public Object get(int i, Scriptable s) {
-					return scope.get(i, s);
-				}
-
-				public boolean has(String string, Scriptable s) {
-					if (string.equals(THIS_IDENTIFIER)) {
-						return true;
-					}
-					return scope.has(string, s);
-				}
-
-				public boolean has(int i, Scriptable s) {
-					return scope.has(i, s);
-				}
-
-				public void put(String string, Scriptable s, Object o) {
-					scope.put(string, s, o);
-				}
-
-				public void put(int i, Scriptable s, Object o) {
-					scope.put(i, s, o);
-				}
-
-				public void delete(String string) {
-					scope.delete(string);
-				}
-
-				public void delete(int i) {
-					scope.delete(i);
-				}
-
-				public Scriptable getPrototype() {
-					return scope.getPrototype();
-				}
-
-				public void setPrototype(Scriptable s) {
-					scope.setPrototype(s);
-				}
-
-				public Scriptable getParentScope() {
-					return scope.getParentScope();
-				}
-
-				public void setParentScope(Scriptable s) {
-					scope.setParentScope(s);
-				}
-
-				public Object[] getIds() {
-					return scope.getIds();
-				}
-
-				public Object getDefaultValue(Class<?> type) {
-					return scope.getDefaultValue(type);
-				}
-
-				public boolean hasInstance(Scriptable s) {
-					return scope.hasInstance(s);
-				}
-			}
-
-			final Object evaluate(Debugger dim, Context context, Scriptable scope, Scriptable target, boolean compile) throws IOException {
-				BufferedReader lines = new BufferedReader(reader);
-				String code = parse(lines);
-				try {
-					if (target != scope && target != null) {
-						scope = new TargetingScope(scope,target);
-						code = "(function(){ " + code + "\n}).call(" + TargetingScope.THIS_IDENTIFIER + ");";
-					}
-					Script script = null;
-					if (compile) {
-						script = context.compileString(code, id, 1, null);
-					}
-					setBreakpoints(dim);
-					//	Rhino is going to evaluate this script as a top-level script, in the magic global scope. Thus, the global scope will also be 'this'
-					//	and we cannot set a separate scope that acts as the provider of scope variables and 'this' object that will be set for a particular
-					//	script. Our API specifies, however, that we can do this. So we do a source-level transformation to make it possible.
-					if (compile) {
-						//	TODO	this does not seem to work if a target is supplied; seems to return null
-						return script.exec(context, scope);
-					} else {
-						return context.evaluateString(scope, code, id, 1, null);
-					}
-				} catch (org.mozilla.javascript.EvaluatorException e) {
-					//	TODO	would be nice to somehow attach the code variable to this so that someone could see what source code failed
-					throw e;
-				} finally {
-					try {
-						lines.close();
-					} catch (IOException e) {
-						//	TODO	do some sort of reasonable logging or notification or something
-						System.err.println("Error closing: " + reader);
-						e.printStackTrace();
-					}
-				}
-			}
-//
-//			final Script compile(Debugger dim, Context context) throws java.io.IOException {
-//				BufferedReader lines = new BufferedReader(reader);
-//				String code = parse(lines);
-//				try {
-//					Script rv = context.compileString(code, id, 1, null);
-//					setBreakpoints(dim);
-//					return rv;
-//				} finally {
-//					try {
-//						lines.close();
-//					} catch (IOException e) {
-//						//	TODO	do some sort of reasonable logging or notification or something
-//						System.err.println("Error closing: " + reader);
-//						e.printStackTrace();
-//					}
-//				}
-//			}
-		}
 	}
 
 	public static class Program {
