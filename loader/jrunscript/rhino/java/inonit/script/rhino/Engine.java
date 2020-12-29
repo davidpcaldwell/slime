@@ -835,30 +835,30 @@ public class Engine {
 		return outcome.getResult();
 	}
 
-	public Object evaluate(Program program, String name, Class<?> type) {
-		Program.Outcome outcome = (Program.Outcome)configuration.call(new ProgramAction(this, program, debugger));
-		return outcome.castScopeTo(name, type);
-	}
+	// public Object evaluate(Program program, String name, Class<?> type) {
+	// 	Program.Outcome outcome = (Program.Outcome)configuration.call(new ProgramAction(this, program, debugger));
+	// 	return outcome.castScopeTo(name, type);
+	// }
 
-	public Object evaluate(Program program, Class<?> type) {
-		Program.Outcome outcome = (Program.Outcome)configuration.call(new ProgramAction(this, program, debugger));
-		return outcome.castScopeTo(null, type);
-	}
+	// public Object evaluate(Program program, Class<?> type) {
+	// 	Program.Outcome outcome = (Program.Outcome)configuration.call(new ProgramAction(this, program, debugger));
+	// 	return outcome.castScopeTo(null, type);
+	// }
 
-	public Scriptable load(Program program) {
-		Program.Outcome outcome = (Program.Outcome)configuration.call(new ProgramAction(this, program, debugger));
-		return outcome.getGlobal();
-	}
+	// public Scriptable load(Program program) {
+	// 	Program.Outcome outcome = (Program.Outcome)configuration.call(new ProgramAction(this, program, debugger));
+	// 	return outcome.getGlobal();
+	// }
 
-	//	Seems to be used by Servlet
-	/**
-	 *	This method can be exposed to scripts to allow a script to include its own script code into its environment, using
-	 *	<code>jsThis</code> as the scope
-	 *	for the new code included in <code>source</code>.
-	 */
-	public void include(Scriptable jsThis, Source source) throws IOException {
-		source.evaluate(debugger, configuration, null, jsThis);
-	}
+	// //	Seems to be used by Servlet
+	// /**
+	//  *	This method can be exposed to scripts to allow a script to include its own script code into its environment, using
+	//  *	<code>jsThis</code> as the scope
+	//  *	for the new code included in <code>source</code>.
+	//  */
+	// public void include(Scriptable jsThis, Source source) throws IOException {
+	// 	source.evaluate(debugger, configuration, null, jsThis);
+	// }
 
 	public static class Program {
 		private ArrayList<Variable> variables = new ArrayList<Variable>();
@@ -898,26 +898,26 @@ public class Engine {
 		}
 
 		static class Outcome {
-			private Scriptable global;
+			// private Scriptable global;
 			private Object result;
 
-			Outcome(Scriptable global, Object result) {
-				this.global = global;
+			Outcome(/*Scriptable global, */Object result) {
+				// this.global = global;
 				this.result = result;
 			}
 
-			Scriptable getGlobal() {
-				return global;
-			}
+			// Scriptable getGlobal() {
+			// 	return global;
+			// }
 
 			Object getResult() {
 				return result;
 			}
 
-			Object castScopeTo(String name, Class<?> type) {
-				if (name == null) return Context.jsToJava( global, type );
-				return Context.jsToJava( ScriptableObject.getProperty(global, name), type);
-			}
+			// Object castScopeTo(String name, Class<?> type) {
+			// 	if (name == null) return Context.jsToJava( global, type );
+			// 	return Context.jsToJava( ScriptableObject.getProperty(global, name), type);
+			// }
 		}
 
 		void setVariablesInGlobalScope(Context context, Scriptable global) {
@@ -943,14 +943,14 @@ public class Engine {
 			if (context == null) {
 				throw new RuntimeException("'context' is null");
 			}
-			Object ignore = null;
+			Object result = null;
 			for (int i=0; i<units.size(); i++) {
 				Errors errors = Errors.get(context);
 				if (errors != null) {
 					errors.reset();
 				}
 				try {
-					ignore = units.get(i).execute(dim, context, global);
+					result = units.get(i).execute(dim, context, global);
 				} catch (WrappedException e) {
 					//	TODO	Note that when this is merged into jsh, we will need to change jsh error reporting to dump the
 					//			stack trace from the contained Throwable inside the errors object.
@@ -987,7 +987,7 @@ public class Engine {
 					}
 				}
 			}
-			return new Outcome(global, ignore);
+			return new Outcome(result);
 		}
 
 		Outcome interpret(Debugger dim, Context context, Scriptable global) throws IOException {
@@ -1140,10 +1140,6 @@ public class Engine {
 	public Debugger getDebugger() {
 		return this.debugger;
 	}
-
-//	public Loader.Classes getApplicationClassLoader() {
-//		return this.contexts.getLoaderClasses();
-//	}
 
 	public Loader.Classes.Interface getClasspath() {
 		return this.configuration.getClasspath();
