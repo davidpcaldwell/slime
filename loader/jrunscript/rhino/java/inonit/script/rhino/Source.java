@@ -93,7 +93,7 @@ public abstract class Source {
 				target = scope;
 			}
 			Script script = null;
-			Engine.Errors errors = Engine.Errors.get(context);
+			Errors errors = Errors.get(context);
 			try {
 				errors.reset();
 //					script = compile(dim, context);
@@ -111,7 +111,7 @@ public abstract class Source {
 			}
 			return script.exec(context, target);
 		} else {
-			Engine.Errors errors = Engine.Errors.get(context);
+			Errors errors = Errors.get(context);
 			try {
 				if (errors != null) {
 					errors.reset();
