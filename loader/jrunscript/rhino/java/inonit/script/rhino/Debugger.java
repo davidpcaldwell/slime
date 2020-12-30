@@ -4,6 +4,8 @@ import java.util.*;
 
 import org.mozilla.javascript.*;
 
+import inonit.script.engine.*;
+
 public abstract class Debugger {
 	abstract void initialize(Engine.Configuration contexts);
 	abstract void initialize(Scriptable scope, Engine engine, Program program);

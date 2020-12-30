@@ -268,13 +268,13 @@ public class Engine {
 			throw new RuntimeException("'context' is null");
 		}
 		Object result = null;
-		for (int i=0; i<program.sources().size(); i++) {
+		for (int i=0; i<program.scripts().size(); i++) {
 			Errors errors = Errors.get(context);
 			if (errors != null) {
 				errors.reset();
 			}
 			try {
-				SourceUnit unit = new SourceUnit(program.sources().get(i));
+				SourceUnit unit = new SourceUnit(Source.create(program.scripts().get(i)));
 				result = unit.execute(dim, context, global);
 			} catch (WrappedException e) {
 				//	TODO	Note that when this is merged into jsh, we will need to change jsh error reporting to dump the

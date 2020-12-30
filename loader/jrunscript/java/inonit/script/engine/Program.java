@@ -1,27 +1,25 @@
-package inonit.script.rhino;
+package inonit.script.engine;
 
 import java.util.*;
 
-import inonit.script.engine.*;
-
 public class Program {
 	private ArrayList<DataPropertyDescriptor> variables = new ArrayList<DataPropertyDescriptor>();
-	private ArrayList<Source> units = new ArrayList<Source>();
+	private ArrayList<Code.Loader.Resource> scripts = new ArrayList<Code.Loader.Resource>();
 
 	public void set(DataPropertyDescriptor variable) {
 		variables.add( variable );
 	}
 
-	final List<DataPropertyDescriptor> variables() {
+	public final List<DataPropertyDescriptor> variables() {
 		return variables;
 	}
 
-	public void add(Code.Loader.Resource code) {
-		units.add(Source.create(code));
+	public void add(Code.Loader.Resource script) {
+		scripts.add(script);
 	}
 
-	final List<Source> sources() {
-		return units;
+	public final List<Code.Loader.Resource> scripts() {
+		return scripts;
 	}
 
 	public static class DataPropertyDescriptor {
@@ -41,12 +39,12 @@ public class Program {
 			this.value = value;
 		}
 
-		Object value() {
-			return value;
+		public String getName() {
+			return name;
 		}
 
-		String getName() {
-			return name;
+		public Object value() {
+			return value;
 		}
 
 		public boolean configurable() {
