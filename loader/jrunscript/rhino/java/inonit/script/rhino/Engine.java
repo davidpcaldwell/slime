@@ -234,12 +234,16 @@ public class Engine {
 		return value.get(context, scope);
 	}
 
+	private static int getRhinoAttributes(Program.Variable variable) {
+		return Engine.toRhinoAttributes(variable.attributes());
+	}
+
 	static void scope_set(Context context, Scriptable global, Program.Variable variable) {
 		ScriptableObject.defineProperty(
 			global,
 			variable.getName(),
 			variable_getValue(variable.value(), context, global),
-			variable.getRhinoAttributes()
+			getRhinoAttributes(variable)
 		);
 	}
 
@@ -332,6 +336,14 @@ public class Engine {
 		protected Object execute(Debugger dim, Context context, Scriptable global) throws IOException {
 			return source.evaluate(dim, context, global, global, true);
 		}
+	}
+
+	static int toRhinoAttributes(Program.Variable.Attributes attributes) {
+		int rv = ScriptableObject.EMPTY;
+		if (!attributes.configurable()) rv |= ScriptableObject.PERMANENT;
+		if (!attributes.writable()) rv |= ScriptableObject.READONLY;
+		if (!attributes.enumerable()) rv |= ScriptableObject.DONTENUM;
+		return rv;
 	}
 
 	private static class ProgramAction implements ContextAction {

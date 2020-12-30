@@ -2,8 +2,6 @@ package inonit.script.rhino;
 
 import java.util.*;
 
-import org.mozilla.javascript.*;
-
 public class Program {
 	private ArrayList<Variable> variables = new ArrayList<Variable>();
 	private ArrayList<Source> units = new ArrayList<Source>();
@@ -47,20 +45,20 @@ public class Program {
 			return name;
 		}
 
-		int getRhinoAttributes() {
-			return attributes.toRhinoAttributes();
+		Attributes attributes() {
+			return attributes;
 		}
 
 		public void setPermanent(boolean permanent) {
-			attributes.permanent = permanent;
+			attributes.configurable(!permanent);
 		}
 
 		public void setReadonly(boolean readonly) {
-			attributes.readonly = readonly;
+			attributes.writable(!readonly);
 		}
 
 		public void setDontenum(boolean dontenum) {
-			attributes.dontenum = dontenum;
+			attributes.enumerable(!dontenum);
 		}
 
 		public static class Attributes {
@@ -68,19 +66,38 @@ public class Program {
 				return new Attributes();
 			}
 
-			private boolean permanent;
-			private boolean readonly;
-			private boolean dontenum;
+			private boolean configurable;
+			private boolean writable;
+			private boolean enumerable;
 
 			private Attributes() {
 			}
 
-			int toRhinoAttributes() {
-				int rv = ScriptableObject.EMPTY;
-				if (permanent) rv |= ScriptableObject.PERMANENT;
-				if (readonly) rv |= ScriptableObject.READONLY;
-				if (dontenum) rv |= ScriptableObject.DONTENUM;
-				return rv;
+			public boolean configurable() {
+				return this.configurable;
+			}
+
+			public boolean writable() {
+				return this.writable;
+			}
+
+			public boolean enumerable() {
+				return this.enumerable;
+			}
+
+			Attributes configurable(boolean configurable) {
+				this.configurable = configurable;
+				return this;
+			}
+
+			Attributes writable(boolean writable) {
+				this.writable = writable;
+				return this;
+			}
+
+			Attributes enumerable(boolean enumerable) {
+				this.enumerable = enumerable;
+				return this;
 			}
 		}
 	}
