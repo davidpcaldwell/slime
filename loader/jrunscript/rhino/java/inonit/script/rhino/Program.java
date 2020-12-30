@@ -3,14 +3,14 @@ package inonit.script.rhino;
 import java.util.*;
 
 public class Program {
-	private ArrayList<Variable> variables = new ArrayList<Variable>();
+	private ArrayList<DataPropertyDescriptor> variables = new ArrayList<DataPropertyDescriptor>();
 	private ArrayList<Source> units = new ArrayList<Source>();
 
-	public void set(Variable variable) {
+	public void set(DataPropertyDescriptor variable) {
 		variables.add( variable );
 	}
 
-	final List<Variable> variables() {
+	final List<DataPropertyDescriptor> variables() {
 		return variables;
 	}
 
@@ -22,22 +22,24 @@ public class Program {
 		return units;
 	}
 
-	public static class Variable {
-		public static Variable create(String name, Engine.Value value) {
-			return new Variable(name, value, new Attributes());
+	public static class DataPropertyDescriptor {
+		public static DataPropertyDescriptor create(String name, Object value) {
+			if (value == null) throw new IllegalArgumentException("value must not be null");
+			return new DataPropertyDescriptor(name, value);
 		}
 
 		private String name;
-		private Engine.Value value;
-		private Attributes attributes;
+		private Object value;
+		private boolean configurable;
+		private boolean writable;
+		private boolean enumerable;
 
-		Variable(String name, Engine.Value value, Attributes attributes) {
+		private DataPropertyDescriptor(String name, Object value) {
 			this.name = name;
 			this.value = value;
-			this.attributes = attributes;
 		}
 
-		Engine.Value value() {
+		Object value() {
 			return value;
 		}
 
@@ -45,60 +47,31 @@ public class Program {
 			return name;
 		}
 
-		Attributes attributes() {
-			return attributes;
+		public boolean configurable() {
+			return this.configurable;
 		}
 
-		public void setPermanent(boolean permanent) {
-			attributes.configurable(!permanent);
+		public boolean writable() {
+			return this.writable;
 		}
 
-		public void setReadonly(boolean readonly) {
-			attributes.writable(!readonly);
+		public boolean enumerable() {
+			return this.enumerable;
 		}
 
-		public void setDontenum(boolean dontenum) {
-			attributes.enumerable(!dontenum);
+		DataPropertyDescriptor configurable(boolean configurable) {
+			this.configurable = configurable;
+			return this;
 		}
 
-		public static class Attributes {
-			public static Attributes create() {
-				return new Attributes();
-			}
+		DataPropertyDescriptor writable(boolean writable) {
+			this.writable = writable;
+			return this;
+		}
 
-			private boolean configurable;
-			private boolean writable;
-			private boolean enumerable;
-
-			private Attributes() {
-			}
-
-			public boolean configurable() {
-				return this.configurable;
-			}
-
-			public boolean writable() {
-				return this.writable;
-			}
-
-			public boolean enumerable() {
-				return this.enumerable;
-			}
-
-			Attributes configurable(boolean configurable) {
-				this.configurable = configurable;
-				return this;
-			}
-
-			Attributes writable(boolean writable) {
-				this.writable = writable;
-				return this;
-			}
-
-			Attributes enumerable(boolean enumerable) {
-				this.enumerable = enumerable;
-				return this;
-			}
+		DataPropertyDescriptor enumerable(boolean enumerable) {
+			this.enumerable = enumerable;
+			return this;
 		}
 	}
 }

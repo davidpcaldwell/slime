@@ -234,20 +234,20 @@ public class Engine {
 		return value.get(context, scope);
 	}
 
-	private static int getRhinoAttributes(Program.Variable variable) {
-		return Engine.toRhinoAttributes(variable.attributes());
+	private static int getRhinoAttributes(Program.DataPropertyDescriptor variable) {
+		return Engine.toRhinoAttributes(variable);
 	}
 
-	static void scope_set(Context context, Scriptable global, Program.Variable variable) {
+	static void scope_set(Context context, Scriptable global, Program.DataPropertyDescriptor variable) {
 		ScriptableObject.defineProperty(
 			global,
 			variable.getName(),
-			variable_getValue(variable.value(), context, global),
+			variable_getValue(Value.create(variable.value()), context, global),
 			getRhinoAttributes(variable)
 		);
 	}
 
-	static void variable_set(Program.Variable variable, Context context, Scriptable global) {
+	static void variable_set(Program.DataPropertyDescriptor variable, Context context, Scriptable global) {
 		Engine.scope_set(context, global, variable);
 	}
 
@@ -338,7 +338,7 @@ public class Engine {
 		}
 	}
 
-	static int toRhinoAttributes(Program.Variable.Attributes attributes) {
+	static int toRhinoAttributes(Program.DataPropertyDescriptor attributes) {
 		int rv = ScriptableObject.EMPTY;
 		if (!attributes.configurable()) rv |= ScriptableObject.PERMANENT;
 		if (!attributes.writable()) rv |= ScriptableObject.READONLY;
@@ -358,10 +358,10 @@ public class Engine {
 		}
 
 		private void setVariablesInGlobalScope(Program program, Context context, Scriptable global) {
-			List<Program.Variable> variables = program.variables();
+			List<Program.DataPropertyDescriptor> variables = program.variables();
 			for (int i=0; i<variables.size(); i++) {
-				Program.Variable v = variables.get(i);
-				Object value = v.value().get(context, global);
+				Program.DataPropertyDescriptor v = variables.get(i);
+				Object value = Value.create(v.value()).get(context, global);
 
 				//	Deal with dumb Rhino restriction that we use object arrays only
 				if (value instanceof Object[]) {
