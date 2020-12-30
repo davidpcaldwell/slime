@@ -8,34 +8,15 @@ import org.mozilla.javascript.*;
 import inonit.script.engine.*;
 
 public abstract class Source {
-	public static Source create(String sourceName, java.io.Reader reader) {
-		if (reader == null) throw new RuntimeException("'reader' must not be null.");
-		return new ReaderSource(sourceName, reader);
-	}
+	//	TODO	should look at further unifying Code.Loader and Source. Is the create(String, String) method necessary?
+	//			what about create(String, InputStream) used by Rhino servlet?
 
 	public static Source create(String name, InputStream in) {
-		return create(name, new InputStreamReader(in));
+		return new ReaderSource(name, new InputStreamReader(in));
 	}
 
 	public static Source create(String sourceName, String s) {
 		return new ReaderSource(sourceName, new StringReader(s));
-	}
-
-	//	TODO	should look at unifying Code.Loader and Source
-
-	/**
-		Creates a new <code>Source</code> using the contents of the given file.
-
-		@param file A file containing a script.  Must exist.
-	 */
-	public static Source create(java.io.File file) {
-		try {
-			return new ReaderSource(file.getCanonicalPath(), new FileReader(file));
-		} catch (java.io.FileNotFoundException e) {
-			throw new RuntimeException("Could not find file: [" + file.getPath() + "]", e);
-		} catch (IOException e) {
-			throw new RuntimeException("Cannot get canonical path of " + file);
-		}
 	}
 
 	public static Source create(Code.Loader.Resource file) {
@@ -49,11 +30,14 @@ public abstract class Source {
 	}
 
 	abstract String getSourceName();
-//		abstract Script compile(Debugger dim, Context context) throws java.io.IOException;
+
 	abstract Object evaluate(Debugger dim, Context context, Scriptable scope, Scriptable target, boolean compile) throws java.io.IOException;
 
-	public abstract Reader getReader();
-
+	/**
+	 * This method should allow disabling debugging for a given {@link Source}, but is currently unused and untested.
+	 *
+	 * @param debug false to disable debugging for this file; true (default) to allow it
+	 */
 	public final void setDebug(boolean debug) {
 		this.debug = debug;
 	}
@@ -82,48 +66,18 @@ public abstract class Source {
 		if (context == null) {
 			throw new IllegalArgumentException("context is null");
 		}
-		//	This flag controls whether scripts are compiled and then evaluated, or just evaluated.
-		final boolean COMPILE_SCRIPTS = false;
-		if (COMPILE_SCRIPTS) {
-			//	The below logic for target/scope probably does not really work; we probably need some logic to rewrite the code similar to that found in
-			//	the other branch of this if
-			if (target != null && scope != null && target != scope) {
-				target.setParentScope(scope);
-			} else {
-				target = scope;
-			}
-			Script script = null;
-			Errors errors = Errors.get(context);
-			try {
+		Errors errors = Errors.get(context);
+		try {
+			if (errors != null) {
 				errors.reset();
-//					script = compile(dim, context);
-			} catch (EvaluatorException e) {
-				if (errors.errors().size() > 0) {
-					throw errors;
-				} else {
-					throw e;
-				}
 			}
-			if (true) {
-				//	Making a very low-level change by refactoring this, so leaving old code in place for now; if all goes well, this branch of the if can
-				//	be removed
-				throw new UnsupportedOperationException("Left in for easy reversion");
-			}
-			return script.exec(context, target);
-		} else {
-			Errors errors = Errors.get(context);
-			try {
-				if (errors != null) {
-					errors.reset();
-				}
-				final boolean USE_COMPILE = true;
-				return evaluate(dim, context, scope, target, USE_COMPILE);
-			} catch (EvaluatorException e) {
-				if (errors != null && errors.errors().size() > 0) {
-					throw errors;
-				} else {
-					throw e;
-				}
+			final boolean USE_COMPILE = true;
+			return evaluate(dim, context, scope, target, USE_COMPILE);
+		} catch (EvaluatorException e) {
+			if (errors != null && errors.errors().size() > 0) {
+				throw errors;
+			} else {
+				throw e;
 			}
 		}
 	}
@@ -135,10 +89,6 @@ public abstract class Source {
 		ReaderSource(String id, java.io.Reader reader) {
 			this.id = id;
 			this.reader = reader;
-		}
-
-		public Reader getReader() {
-			return reader;
 		}
 
 		final String getSourceName() {
@@ -161,11 +111,15 @@ public abstract class Source {
 					//	We actually do want to insert a blank line here to preserve line numbers, but we will put in the
 					//	JavaScript comment for good measure
 					toParser = "//" + line;
-				} else if (line.length() > 0 && line.trim().equals("debugger;") && debug()) {
+				} else if (line.length() > 0 && line.trim().equals("debugger;")) {
 					//	TODO	This absurd workaround is because I don't like how Rhino decides when to pop up the debugger
 					//			when using the debugger keyword
-					addBreakpoint(number);
-					toParser = line.replace("debugger;", "/* BREAKPOINT */ new Object();");
+					if (debug()) {
+						addBreakpoint(number);
+						toParser = line.replace("debugger;", "/* BREAKPOINT */ new Object();");
+					} else {
+						toParser = line.replace("debugger;", "// debugging disabled; was debugger;");
+					}
 				} else {
 					toParser = line;
 				}
@@ -292,23 +246,5 @@ public abstract class Source {
 				}
 			}
 		}
-//
-//			final Script compile(Debugger dim, Context context) throws java.io.IOException {
-//				BufferedReader lines = new BufferedReader(reader);
-//				String code = parse(lines);
-//				try {
-//					Script rv = context.compileString(code, id, 1, null);
-//					setBreakpoints(dim);
-//					return rv;
-//				} finally {
-//					try {
-//						lines.close();
-//					} catch (IOException e) {
-//						//	TODO	do some sort of reasonable logging or notification or something
-//						System.err.println("Error closing: " + reader);
-//						e.printStackTrace();
-//					}
-//				}
-//			}
 	}
 }
