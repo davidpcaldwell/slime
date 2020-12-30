@@ -218,6 +218,27 @@ public class Engine {
 		return outcome.getResult();
 	}
 
+	public static abstract class Value {
+		public static Value create(final Object o) {
+			return new Value() {
+				public Object get(Context context, Scriptable scope) {
+					return Context.javaToJS(o, scope);
+				}
+			};
+		}
+
+		public abstract Object get(Context context, Scriptable scope);
+	}
+
+	static void scope_set(Context context, Scriptable global, Program.Variable variable) {
+		ScriptableObject.defineProperty(
+			global,
+			variable.getName(),
+			variable.getValue(context, global),
+			variable.getRhinoAttributes()
+		);
+	}
+
 	static class Outcome {
 		private Object result;
 

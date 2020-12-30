@@ -91,7 +91,7 @@ public class Rhino extends Servlet.ScriptContainer {
 		try {
 			Program.Variable jsh = Program.Variable.create(
 				name,
-				Program.Variable.Value.create(value)
+				Engine.Value.create(value)
 			);
 			jsh.setReadonly(true);
 			jsh.setPermanent(true);
