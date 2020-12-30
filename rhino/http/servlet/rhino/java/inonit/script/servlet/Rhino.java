@@ -32,7 +32,7 @@ public class Rhino extends Servlet.ScriptContainer {
 
 	private Servlet servlet;
 	private Engine engine;
-	private Engine.Program program;
+	private Program program;
 
 	Rhino() {
 	}
@@ -80,7 +80,7 @@ public class Rhino extends Servlet.ScriptContainer {
 
 		this.servlet = servlet;
 		this.engine = engine;
-		this.program = new Engine.Program();
+		this.program = new Program();
 	}
 
 	Servlet.HostObject getServletHostObject() {
@@ -89,9 +89,9 @@ public class Rhino extends Servlet.ScriptContainer {
 
 	void setVariable(String name, Object value) {
 		try {
-			Engine.Program.Variable jsh = Engine.Program.Variable.create(
+			Program.Variable jsh = Program.Variable.create(
 				name,
-				Engine.Program.Variable.Value.create(value)
+				Program.Variable.Value.create(value)
 			);
 			jsh.setReadonly(true);
 			jsh.setPermanent(true);
