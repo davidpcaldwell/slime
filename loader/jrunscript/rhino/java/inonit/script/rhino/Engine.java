@@ -199,15 +199,15 @@ public class Engine {
 		return context.initStandardObjects();
 	}
 
-	void script(String name, InputStream code, Scriptable scope, Scriptable target) throws IOException {
-		Source source = Source.create(name,new InputStreamReader(code));
-		source.evaluate(debugger, configuration, scope, target);
-	}
+	// void script(String name, InputStream code, Scriptable scope, Scriptable target) throws IOException {
+	// 	Source source = Source.create(name,new InputStreamReader(code));
+	// 	source.evaluate(debugger, configuration, scope, target);
+	// }
 
-	void script(String name, Reader code, Scriptable scope, Scriptable target) throws IOException {
-		Source source = Source.create(name, code);
-		source.evaluate(debugger, configuration, scope, target);
-	}
+	// void script(String name, Reader code, Scriptable scope, Scriptable target) throws IOException {
+	// 	Source source = Source.create(name, code);
+	// 	source.evaluate(debugger, configuration, scope, target);
+	// }
 
 	//	TODO	it would be nice if this returned the evaluation value of the script, but according to interactive testing,
 	//			it does not; it always returns null, because source.evaluate always returns undefined, even for an expression.
@@ -222,6 +222,7 @@ public class Engine {
 		return configuration.canAccessEnvironment();
 	}
 
+	//	Used from servlet and jsh Java implementations
 	public Object execute(Program program) {
 		Program.Outcome outcome = (Program.Outcome)configuration.call(new ProgramAction(this, program, debugger));
 		return outcome.getResult();
@@ -256,9 +257,9 @@ public class Engine {
 			units.add( new SourceUnit(ObjectName.NULL, source) );
 		}
 
-		public void add(Function function, Object[] arguments) {
-			units.add( new FunctionUnit(function, arguments) );
-		}
+		// public void add(Function function, Object[] arguments) {
+		// 	units.add( new FunctionUnit(function, arguments) );
+		// }
 
 		public void add(Unit unit) {
 			units.add(unit);
@@ -454,19 +455,19 @@ public class Engine {
 			}
 		}
 
-		private static class FunctionUnit extends Unit {
-			private Function function;
-			private Object[] arguments;
+		// private static class FunctionUnit extends Unit {
+		// 	private Function function;
+		// 	private Object[] arguments;
 
-			FunctionUnit(Function function, Object[] arguments) {
-				this.function = function;
-				this.arguments = arguments;
-			}
+		// 	FunctionUnit(Function function, Object[] arguments) {
+		// 		this.function = function;
+		// 		this.arguments = arguments;
+		// 	}
 
-			protected Object execute(Debugger dim, Context context, Scriptable global) {
-				return function.call(context, global, global, arguments);
-			}
-		}
+		// 	protected Object execute(Debugger dim, Context context, Scriptable global) {
+		// 		return function.call(context, global, global, arguments);
+		// 	}
+		// }
 	}
 
 	private static class ProgramAction implements ContextAction {
