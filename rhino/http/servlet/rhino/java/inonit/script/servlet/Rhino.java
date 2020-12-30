@@ -32,7 +32,7 @@ public class Rhino extends Servlet.ScriptContainer {
 
 	private Servlet servlet;
 	private Engine engine;
-	private Program program;
+	private inonit.script.engine.Host.Program program;
 
 	Rhino() {
 	}
@@ -80,7 +80,7 @@ public class Rhino extends Servlet.ScriptContainer {
 
 		this.servlet = servlet;
 		this.engine = engine;
-		this.program = new Program();
+		this.program = new inonit.script.engine.Host.Program();
 	}
 
 	Servlet.HostObject getServletHostObject() {
@@ -89,11 +89,11 @@ public class Rhino extends Servlet.ScriptContainer {
 
 	void setVariable(String name, Object value) {
 		try {
-			Program.DataPropertyDescriptor jsh = Program.DataPropertyDescriptor.create(
+			inonit.script.engine.Host.Binding jsh = inonit.script.engine.Host.Binding.create(
 				name,
 				value
 			);
-			program.set(jsh);
+			program.bind(jsh);
 		} catch (Errors errors) {
 			errors.dump(
 				new Engine.Log() {
@@ -108,7 +108,11 @@ public class Rhino extends Servlet.ScriptContainer {
 	}
 
 	void addScript(Code.Loader.Resource resource) {
-		program.add(resource);
+		try {
+			program.run(inonit.script.engine.Host.Script.create(resource));
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	void execute() {

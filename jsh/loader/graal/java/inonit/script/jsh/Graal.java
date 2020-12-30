@@ -94,11 +94,13 @@ public class Graal extends Main.Engine {
 	}
 
 	private static class ExecutionImpl extends Shell.Execution {
+		private inonit.script.engine.Host.Program program;
 		private inonit.script.engine.Host host;
 		private boolean top;
 
 		ExecutionImpl(final Shell shell, boolean top) {
 			super(shell);
+			this.program = new inonit.script.engine.Host.Program();
 			this.host = inonit.script.graal.HostFactory.create(
 				new inonit.script.graal.HostFactory.Configuration() {
 					public inonit.script.graal.HostFactory.Configuration.Inspect inspect() {
@@ -146,12 +148,12 @@ public class Graal extends Main.Engine {
 		}
 
 		@Override public void setGlobalProperty(String name, Object value) {
-			host.bind(inonit.script.engine.Host.Binding.create(name, value));
+			program.bind(inonit.script.engine.Host.Binding.create(name, value));
 		}
 
 		@Override public void script(Code.Loader.Resource script) {
 			try {
-				host.script(inonit.script.engine.Host.Script.create(script));
+				program.run(inonit.script.engine.Host.Script.create(script));
 			} catch (java.io.IOException e) {
 				throw new RuntimeException(e);
 			}
@@ -171,7 +173,7 @@ public class Graal extends Main.Engine {
 
 		@Override public Integer run() {
 			try {
-				Object ignore = host.run();
+				Object ignore = host.run(program);
 				return null;
 			} catch (RuntimeException e) {
 				ExitException exit = getExitException(e);
@@ -205,7 +207,7 @@ public class Graal extends Main.Engine {
 			setGlobalProperty("$graal", new Host() {
 			});
 			try {
-				host.script(inonit.script.engine.Host.Script.create(this.getJshLoader().getFile("nashorn.js")));
+				program.run(inonit.script.engine.Host.Script.create(this.getJshLoader().getFile("nashorn.js")));
 			} catch (java.io.IOException e) {
 				throw new RuntimeException(e);
 			}
