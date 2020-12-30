@@ -214,20 +214,94 @@ public class Engine {
 
 	//	Used from servlet and jsh Java implementations
 	public Object execute(Program program) {
-		Program.Outcome outcome = (Program.Outcome)configuration.call(new ProgramAction(this, program, debugger));
+		Outcome outcome = (Outcome)configuration.call(new ProgramAction(this, program, debugger));
 		return outcome.getResult();
 	}
 
-	static class ObjectName {
-		static final ObjectName NULL = new ObjectName();
+	static class Outcome {
+		private Object result;
 
-		void set(Context context, Scriptable global, Program.Variable variable) {
-			ScriptableObject.defineProperty(
-				global,
-				variable.getName(),
-				variable.getValue(context, global),
-				variable.getRhinoAttributes()
-			);
+		Outcome(Object result) {
+			this.result = result;
+		}
+
+		Object getResult() {
+			return result;
+		}
+	}
+
+	private static Outcome execute(Program program, Debugger dim, Context context, Scriptable global) throws IOException {
+		if (context == null) {
+			throw new RuntimeException("'context' is null");
+		}
+		Object result = null;
+		for (int i=0; i<program.sources().size(); i++) {
+			Errors errors = Errors.get(context);
+			if (errors != null) {
+				errors.reset();
+			}
+			try {
+				SourceUnit unit = new SourceUnit(program.sources().get(i));
+				result = unit.execute(dim, context, global);
+			} catch (WrappedException e) {
+				//	TODO	Note that when this is merged into jsh, we will need to change jsh error reporting to dump the
+				//			stack trace from the contained Throwable inside the errors object.
+//					throw e;
+				if (errors != null) {
+					errors.add(e);
+					throw errors;
+				} else {
+					throw e;
+				}
+			} catch (EvaluatorException e) {
+				//	TODO	Oh my goodness, is there no better way to do this?
+				if (errors != null && (e.getMessage().indexOf("Compilation produced") == -1 || e.getMessage().indexOf("syntax errors.") == -1)) {
+					errors.add(e);
+				}
+				if (errors != null) {
+					throw errors;
+				} else {
+					throw e;
+				}
+			} catch (EcmaError e) {
+				if (errors != null) {
+					errors.add(e);
+					throw errors;
+				} else {
+					throw e;
+				}
+			} catch (JavaScriptException e) {
+				if (errors != null) {
+					errors.add(e);
+					throw errors;
+				} else {
+					throw e;
+				}
+			}
+		}
+		return new Outcome(result);
+	}
+
+	private static Outcome interpret(Program program, Debugger dim, Context context, Scriptable global) throws IOException {
+		if (context == null) {
+			throw new RuntimeException("'context' is null");
+		}
+		return execute(program, dim, context, global);
+	}
+
+	static abstract class Unit {
+		protected abstract Object execute(Debugger dim, Context context, Scriptable global) throws IOException;
+	}
+
+	private static class SourceUnit extends Unit {
+		private Source source;
+
+		SourceUnit(Source source) {
+			this.source = source;
+		}
+
+		protected Object execute(Debugger dim, Context context, Scriptable global) throws IOException {
+			return source.evaluate(dim, context, global, global, true);
 		}
 	}
 
@@ -267,7 +341,7 @@ public class Engine {
 				Scriptable global = engine.getGlobalScope(context);
 				setVariablesInGlobalScope(program, context, global);
 				debugger.initialize(global, engine, program);
-				Program.Outcome outcome = program.interpret(debugger, context, global);
+				Outcome outcome = interpret(program, debugger, context, global);
 				return outcome;
 			} catch (java.io.IOException e) {
 				throw new RuntimeException(e);
