@@ -677,7 +677,7 @@
 					jarray
 				);
 				if (status) {
-					throw new Error("Compiler exited with status " + status + " with inputs " + args.join(","));
+					throw new Error("Compiler exited with status " + status + " with inputs " + args.join(" "));
 				}
 			};
 

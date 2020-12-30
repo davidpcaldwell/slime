@@ -28,16 +28,14 @@ public class HostFactory extends inonit.script.engine.Host.Factory {
 		final org.graalvm.polyglot.Context context = builder.build();
 
 		inonit.script.engine.Host.Executor executor = new inonit.script.engine.Host.Executor() {
-			@Override public void set(String name, Object value) {
-				context.getBindings("js").putMember(name, value);
+			@Override public void bind(Host.Binding binding) {
+				context.getBindings("js").putMember(binding.getName(), binding.getValue());
 			}
 
-			@Override public Object eval(Code.Loader.Resource file) throws javax.script.ScriptException {
+			@Override public Object eval(Host.Script file) throws javax.script.ScriptException {
 				try {
-					final org.graalvm.polyglot.Source source = org.graalvm.polyglot.Source.newBuilder("js", file.getReader(), file.getSourceName()).uri(file.getURI().adapt()).build();
-					//System.err.println("context = " + context);
+					final org.graalvm.polyglot.Source source = org.graalvm.polyglot.Source.newBuilder("js", file.getCode(), file.getName()).uri(file.getURI()).build();
 					context.enter();
-					//System.err.println("current = " + org.graalvm.polyglot.Context.getCurrent());
 					Object rv = context.eval(source);
 					context.leave();
 					return rv;
