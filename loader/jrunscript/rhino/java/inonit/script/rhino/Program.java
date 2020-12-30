@@ -13,30 +13,13 @@ public class Program {
 		variables.add( variable );
 	}
 
-	private static class ObjectName {
-		static final ObjectName NULL = new ObjectName();
-
-		void set(Context context, Scriptable global, Variable variable) {
-			ScriptableObject.defineProperty(
-				global,
-				variable.getName(),
-				variable.getValue(context, global),
-				variable.getRhinoAttributes()
-			);
-		}
-
-		Scriptable get(Context context, Scriptable global, boolean create) {
-			return global;
-		}
+	final List<Variable> variables() {
+		return variables;
 	}
 
 	public void add(Source source) {
-		units.add( new SourceUnit(ObjectName.NULL, source) );
+		units.add( new SourceUnit(source) );
 	}
-
-	// public void add(Function function, Object[] arguments) {
-	// 	units.add( new FunctionUnit(function, arguments) );
-	// }
 
 	public void add(Unit unit) {
 		units.add(unit);
@@ -51,25 +34,6 @@ public class Program {
 
 		Object getResult() {
 			return result;
-		}
-	}
-
-	void setVariablesInGlobalScope(Context context, Scriptable global) {
-		for (int i=0; i<variables.size(); i++) {
-			Variable v = variables.get(i);
-			Object value = v.value.get(context, global);
-
-			//	Deal with dumb Rhino restriction that we use object arrays only
-			if (value instanceof Object[]) {
-				Object[] array = (Object[])value;
-				Object[] objects = new Object[array.length];
-				for (int j=0; j<objects.length; j++) {
-					objects[j] = array[j];
-				}
-				value = context.newArray( global, objects );
-			}
-
-			v.set(context, global);
 		}
 	}
 
@@ -133,19 +97,23 @@ public class Program {
 
 	public static class Variable {
 		public static Variable create(String name, Value value) {
-			return new Variable(ObjectName.NULL, name, value, new Attributes());
+			return new Variable(Engine.ObjectName.NULL, name, value, new Attributes());
 		}
 
-		private ObjectName scope;
+		private Engine.ObjectName scope;
 		private String name;
 		private Value value;
 		private Attributes attributes;
 
-		Variable(ObjectName scope, String name, Value value, Attributes attributes) {
+		Variable(Engine.ObjectName scope, String name, Value value, Attributes attributes) {
 			this.scope = scope;
 			this.name = name;
 			this.value = value;
 			this.attributes = attributes;
+		}
+
+		Value value() {
+			return value;
 		}
 
 		String getName() {
@@ -215,20 +183,14 @@ public class Program {
 	}
 
 	private static class SourceUnit extends Unit {
-		private ObjectName scope;
 		private Source source;
 
-		SourceUnit(ObjectName scope, Source source) {
-			this.scope = scope;
+		SourceUnit(Source source) {
 			this.source = source;
 		}
 
 		protected Object execute(Debugger dim, Context context, Scriptable global) throws IOException {
-			Scriptable executionScope = scope.get(context, global, true);
-//				Script script = source.compile(dim, context);
-//				Object rv = script.exec(context, executionScope);
-//				return rv;
-			return source.evaluate(dim, context, executionScope, executionScope, true);
+			return source.evaluate(dim, context, global, global, true);
 		}
 	}
 }
