@@ -63,20 +63,43 @@ public class Nashorn extends Main.Engine {
 
 		ExecutionImpl(final Shell shell, boolean top) {
 			super(shell);
-			this.host = inonit.script.engine.Host.create(inonit.script.engine.Host.Factory.engine("nashorn"), new Loader.Classes.Configuration() {
-				@Override public boolean canCreateClassLoaders() {
-					return true;
-				}
+			this.host = inonit.script.engine.Host.create(
+				inonit.script.engine.Host.Factory.engine("nashorn"),
+				new Loader.Classes.Configuration() {
+					@Override public boolean canCreateClassLoaders() {
+						return true;
+					}
 
-				@Override public ClassLoader getApplicationClassLoader() {
-					return Nashorn.class.getClassLoader();
-				}
+					@Override public ClassLoader getApplicationClassLoader() {
+						return Nashorn.class.getClassLoader();
+					}
 
-				@Override public java.io.File getLocalClassCache() {
-					return shell.getEnvironment().getClassCache();
+					@Override public java.io.File getLocalClassCache() {
+						return shell.getEnvironment().getClassCache();
+					}
 				}
-			});
+			);
 			this.top = top;
+		}
+
+		private void bind(String name, Object value) {
+			host.bind(inonit.script.engine.Host.Binding.create(name, value));
+		}
+
+		private void run(Code.Loader.Resource script) {
+			try {
+				host.script(inonit.script.engine.Host.Script.create(script));
+			} catch (java.io.IOException e) {
+				throw new RuntimeException(e);
+			}
+		}
+
+		private void run(Code.Loader loader, String path) {
+			try {
+				run(loader.getFile(path));
+			} catch (java.io.IOException e) {
+				throw new RuntimeException(e);
+			}
 		}
 
 		@Override protected Loader.Classes.Interface getClasspath() {
@@ -84,32 +107,32 @@ public class Nashorn extends Main.Engine {
 		}
 
 		@Override public void setGlobalProperty(String name, Object value) {
-			host.set(name, value);
+			host.bind(inonit.script.engine.Host.Binding.create(name, value));
 		}
 
 		@Override public void setJshRuntimeObject() {
-			setGlobalProperty("$nashorn", new Host() {
-				@Override public Loader.Classes.Interface getClasspath() {
-					return host.getClasspath();
-				}
+			bind(
+				"$nashorn",
+				new Host() {
+					@Override public Loader.Classes.Interface getClasspath() {
+						return host.getClasspath();
+					}
 
-				@Override public boolean isTop() {
-					return top;
-				}
+					@Override public boolean isTop() {
+						return top;
+					}
 
-				@Override public void exit(int status) {
-					throw new ExitException(status);
+					@Override public void exit(int status) {
+						throw new ExitException(status);
+					}
 				}
-			});
-			try {
-				host.add(this.getJshLoader().getFile("nashorn.js"));
-			} catch (java.io.IOException e) {
-				throw new RuntimeException(e);
-			}
-		}
+			);
+
+			run(this.getJshLoader(), "nashorn.js");
+ 		}
 
 		@Override public void script(Code.Loader.Resource script) {
-			host.add(script);
+			run(script);
 		}
 
 		private ExitException getExitException(Exception e) {

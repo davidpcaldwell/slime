@@ -122,7 +122,9 @@ public class Code {
 		}
 
 		public static abstract class Resource {
+			//	Seems to be used only for the Java compiler in inonit.script.engine.Java
 			public abstract URI getURI();
+
 			public abstract String getSourceName();
 			public abstract InputStream getInputStream();
 			public abstract Long getLength();

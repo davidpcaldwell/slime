@@ -44,11 +44,15 @@ class Nashorn extends Servlet.ScriptContainer {
 	}
 
 	@Override void setVariable(String name, Object value) {
-		host.set(name, value);
+		host.bind(Host.Binding.create(name, value));
 	}
 
 	@Override void addScript(Code.Loader.Resource resource) {
-		host.add(resource);
+		try {
+			host.script(Host.Script.create(resource));
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	@Override void execute() {

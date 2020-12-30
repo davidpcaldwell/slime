@@ -146,11 +146,15 @@ public class Graal extends Main.Engine {
 		}
 
 		@Override public void setGlobalProperty(String name, Object value) {
-			host.set(name, value);
+			host.bind(inonit.script.engine.Host.Binding.create(name, value));
 		}
 
 		@Override public void script(Code.Loader.Resource script) {
-			host.add(script);
+			try {
+				host.script(inonit.script.engine.Host.Script.create(script));
+			} catch (java.io.IOException e) {
+				throw new RuntimeException(e);
+			}
 		}
 
 		//	TODO	completely copy-pasted from Nashorn.java
@@ -201,7 +205,7 @@ public class Graal extends Main.Engine {
 			setGlobalProperty("$graal", new Host() {
 			});
 			try {
-				host.add(this.getJshLoader().getFile("nashorn.js"));
+				host.script(inonit.script.engine.Host.Script.create(this.getJshLoader().getFile("nashorn.js")));
 			} catch (java.io.IOException e) {
 				throw new RuntimeException(e);
 			}

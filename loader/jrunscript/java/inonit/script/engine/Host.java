@@ -1,13 +1,67 @@
 package inonit.script.engine;
 
+import java.io.*;
+import java.net.*;
 import java.util.*;
 
 import javax.script.*;
 
+import inonit.script.runtime.io.*;
+
+/**
+ * A {@link Host} is an object capable of executing scripts within a global scope, with an arbitrary set of values provided as
+ * to that scope (called "bindings" in the javax.script API).
+ */
 public class Host {
+	private static final Streams streams = new inonit.script.runtime.io.Streams();
+
+	public static abstract class Script {
+		public abstract URI getURI();
+		public abstract String getName();
+		public abstract String getCode();
+
+		public static Script create(final Code.Loader.Resource resource) throws IOException {
+			final String code = streams.readString(resource.getReader());
+			return new Script() {
+				@Override
+				public URI getURI() {
+					return resource.getURI().adapt();
+				}
+
+				@Override
+				public String getName() {
+					return resource.getSourceName();
+				}
+
+				public String getCode() {
+					return code;
+				}
+			};
+		}
+	}
+
+	public static abstract class Binding {
+		public abstract String getName();
+		public abstract Object getValue();
+
+		public static Binding create(final String name, final Object value) {
+			return new Binding() {
+				@Override
+				public String getName() {
+					return name;
+				}
+
+				@Override
+				public Object getValue() {
+					return value;
+				}
+			};
+		}
+	}
+
 	public static abstract class Executor {
-		public abstract void set(String name, Object value);
-		public abstract Object eval(Code.Loader.Resource file) throws ScriptException;
+		public abstract void bind(Binding binding);
+		public abstract Object eval(Script file) throws ScriptException;
 	}
 
 	private static class ExecutorImpl extends Executor {
@@ -22,14 +76,14 @@ public class Host {
 			}
 		}
 
-		public void set(String name, Object value) {
-			factory.getBindings().put(name, value);
+		public void bind(Binding binding) {
+			factory.getBindings().put(binding.getName(), binding.getValue());
 		}
 
-		public Object eval(Code.Loader.Resource file) throws ScriptException {
+		public Object eval(Script file) throws ScriptException {
 			ScriptContext c = engine.getContext();
-			c.setAttribute(ScriptEngine.FILENAME, file.getSourceName(), ScriptContext.ENGINE_SCOPE);
-			return engine.eval(file.getReader(), c);
+			c.setAttribute(ScriptEngine.FILENAME, file.getName(), ScriptContext.ENGINE_SCOPE);
+			return engine.eval(file.getCode(), c);
 		}
 	}
 
@@ -56,7 +110,7 @@ public class Host {
 
 	private Executor executor;
 	private Loader.Classes classes;
-	private List<Code.Loader.Resource> scripts = new ArrayList<Code.Loader.Resource>();
+	private List<Script> scripts = new ArrayList<Script>();
 
 	private Host() {
 	}
@@ -66,11 +120,11 @@ public class Host {
 		this.classes = classes;
 	}
 
-	public void set(String name, Object value) {
-		executor.set(name, value);
+	public void bind(Binding binding) {
+		executor.bind(binding);
 	}
 
-	public void add(Code.Loader.Resource script) {
+	public void script(Script script) throws IOException {
 		if (script == null) throw new NullPointerException("Attempt to add null script.");
 		scripts.add(script);
 	}
@@ -82,7 +136,7 @@ public class Host {
 	//	TODO	what about IOException?
 	public Object run() throws ScriptException {
 		Object rv = null;
-		for (Code.Loader.Resource file : scripts) {
+		for (Script file : scripts) {
 			rv = executor.eval(file);
 		}
 		return rv;
