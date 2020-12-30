@@ -25,21 +25,21 @@ public class Program {
 	}
 
 	public static class Variable {
-		public static Variable create(String name, Value value) {
+		public static Variable create(String name, Engine.Value value) {
 			return new Variable(name, value, new Attributes());
 		}
 
 		private String name;
-		private Value value;
+		private Engine.Value value;
 		private Attributes attributes;
 
-		Variable(String name, Value value, Attributes attributes) {
+		Variable(String name, Engine.Value value, Attributes attributes) {
 			this.name = name;
 			this.value = value;
 			this.attributes = attributes;
 		}
 
-		Value value() {
+		Engine.Value value() {
 			return value;
 		}
 
@@ -55,17 +55,8 @@ public class Program {
 			return attributes.toRhinoAttributes();
 		}
 
-		private void scope_set(Context context, Scriptable global, Program.Variable variable) {
-			ScriptableObject.defineProperty(
-				global,
-				variable.getName(),
-				variable.getValue(context, global),
-				variable.getRhinoAttributes()
-			);
-		}
-
 		void set(Context context, Scriptable global) {
-			scope_set(context, global, this);
+			Engine.scope_set(context, global, this);
 		}
 
 		public void setPermanent(boolean permanent) {
@@ -78,18 +69,6 @@ public class Program {
 
 		public void setDontenum(boolean dontenum) {
 			attributes.dontenum = dontenum;
-		}
-
-		public static abstract class Value {
-			public static Value create(final Object o) {
-				return new Value() {
-					public Object get(Context context, Scriptable scope) {
-						return Context.javaToJS(o, scope);
-					}
-				};
-			}
-
-			public abstract Object get(Context context, Scriptable scope);
 		}
 
 		public static class Attributes {

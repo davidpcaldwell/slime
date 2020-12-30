@@ -107,7 +107,7 @@ public class Rhino {
 		@Override public void setGlobalProperty(String name, Object value) {
 			Program.Variable variable = Program.Variable.create(
 				name,
-				Program.Variable.Value.create(value)
+				Engine.Value.create(value)
 			);
 			variable.setReadonly(true);
 			variable.setPermanent(true);
