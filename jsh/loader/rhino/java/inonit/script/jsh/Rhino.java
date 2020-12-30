@@ -126,7 +126,7 @@ public class Rhino {
 		}
 
 		@Override public void script(Code.Loader.Resource script) {
-			program.add(Source.create(script));
+			program.add(script);
 		}
 
 		@Override public Integer run() {
