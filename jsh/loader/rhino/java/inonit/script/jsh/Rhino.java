@@ -98,16 +98,16 @@ public class Rhino {
 			this.$rhino = $rhino;
 		}
 
-		private Engine.Program program = new Engine.Program();
+		private Program program = new Program();
 
 		@Override protected Loader.Classes.Interface getClasspath() {
 			return engine.getClasspath();
 		}
 
 		@Override public void setGlobalProperty(String name, Object value) {
-			Engine.Program.Variable variable = Engine.Program.Variable.create(
+			Program.Variable variable = Program.Variable.create(
 				name,
-				Engine.Program.Variable.Value.create(value)
+				Program.Variable.Value.create(value)
 			);
 			variable.setReadonly(true);
 			variable.setPermanent(true);
