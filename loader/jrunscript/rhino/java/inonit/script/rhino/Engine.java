@@ -93,7 +93,6 @@ public class Engine {
 		}
 
 		Object call(ContextAction action) {
-			@SuppressWarnings("unchecked")
 			Object rv = factory.call(action);
 			return rv;
 		}
@@ -214,56 +213,10 @@ public class Engine {
 
 	//	Used from servlet and jsh Java implementations
 	public Object execute(Program program) {
-		Outcome outcome = (Outcome)configuration.call(new ProgramAction(this, program, debugger));
-		return outcome.getResult();
+		return configuration.call(new ProgramAction(this, program, debugger));
 	}
 
-	public static abstract class Value {
-		public static Value create(final Object o) {
-			return new Value() {
-				public Object get(Context context, Scriptable scope) {
-					return Context.javaToJS(o, scope);
-				}
-			};
-		}
-
-		public abstract Object get(Context context, Scriptable scope);
-	}
-
-	private static Object variable_getValue(Value value, Context context, Scriptable scope) {
-		return value.get(context, scope);
-	}
-
-	private static int getRhinoAttributes(Program.DataPropertyDescriptor variable) {
-		return Engine.toRhinoAttributes(variable);
-	}
-
-	static void scope_set(Context context, Scriptable global, Program.DataPropertyDescriptor variable) {
-		ScriptableObject.defineProperty(
-			global,
-			variable.getName(),
-			variable_getValue(Value.create(variable.value()), context, global),
-			getRhinoAttributes(variable)
-		);
-	}
-
-	static void variable_set(Program.DataPropertyDescriptor variable, Context context, Scriptable global) {
-		Engine.scope_set(context, global, variable);
-	}
-
-	static class Outcome {
-		private Object result;
-
-		Outcome(Object result) {
-			this.result = result;
-		}
-
-		Object getResult() {
-			return result;
-		}
-	}
-
-	private static Outcome execute(Program program, Debugger dim, Context context, Scriptable global) throws IOException {
+	private static Object execute(Program program, Debugger dim, Context context, Scriptable global) throws IOException {
 		if (context == null) {
 			throw new RuntimeException("'context' is null");
 		}
@@ -274,7 +227,7 @@ public class Engine {
 				errors.reset();
 			}
 			try {
-				SourceUnit unit = new SourceUnit(Source.create(program.scripts().get(i)));
+				Unit unit = new Unit(Source.create(program.scripts().get(i)));
 				result = unit.execute(dim, context, global);
 			} catch (WrappedException e) {
 				//	TODO	Note that when this is merged into jsh, we will need to change jsh error reporting to dump the
@@ -312,38 +265,26 @@ public class Engine {
 				}
 			}
 		}
-		return new Outcome(result);
+		return result;
 	}
 
-	private static Outcome interpret(Program program, Debugger dim, Context context, Scriptable global) throws IOException {
+	private static Object interpret(Program program, Debugger dim, Context context, Scriptable global) throws IOException {
 		if (context == null) {
 			throw new RuntimeException("'context' is null");
 		}
 		return execute(program, dim, context, global);
 	}
 
-	static abstract class Unit {
-		protected abstract Object execute(Debugger dim, Context context, Scriptable global) throws IOException;
-	}
-
-	private static class SourceUnit extends Unit {
+	static class Unit {
 		private Source source;
 
-		SourceUnit(Source source) {
+		Unit(Source source) {
 			this.source = source;
 		}
 
 		protected Object execute(Debugger dim, Context context, Scriptable global) throws IOException {
 			return source.evaluate(dim, context, global, global, true);
 		}
-	}
-
-	static int toRhinoAttributes(Program.DataPropertyDescriptor attributes) {
-		int rv = ScriptableObject.EMPTY;
-		if (!attributes.configurable()) rv |= ScriptableObject.PERMANENT;
-		if (!attributes.writable()) rv |= ScriptableObject.READONLY;
-		if (!attributes.enumerable()) rv |= ScriptableObject.DONTENUM;
-		return rv;
 	}
 
 	private static class ProgramAction implements ContextAction {
@@ -357,23 +298,37 @@ public class Engine {
 			this.debugger = debugger;
 		}
 
-		private void setVariablesInGlobalScope(Program program, Context context, Scriptable global) {
+		private static Object toScopePropertyValue(Context context, Scriptable global, Object value) {
+			if (value instanceof Object[]) {
+				Object[] array = (Object[])value;
+				Object[] objects = new Object[array.length];
+				for (int j=0; j<objects.length; j++) {
+					objects[j] = array[j];
+				}
+				return context.newArray( global, objects );
+			}
+			return Context.javaToJS(value, global);
+		}
+
+		private static int toRhinoAttributes(Program.DataPropertyDescriptor attributes) {
+			int rv = ScriptableObject.EMPTY;
+			if (!attributes.configurable()) rv |= ScriptableObject.PERMANENT;
+			if (!attributes.writable()) rv |= ScriptableObject.READONLY;
+			if (!attributes.enumerable()) rv |= ScriptableObject.DONTENUM;
+			return rv;
+		}
+
+		private static void setVariablesInGlobalScope(Program program, Context context, Scriptable global) {
 			List<Program.DataPropertyDescriptor> variables = program.variables();
 			for (int i=0; i<variables.size(); i++) {
 				Program.DataPropertyDescriptor v = variables.get(i);
-				Object value = Value.create(v.value()).get(context, global);
 
-				//	Deal with dumb Rhino restriction that we use object arrays only
-				if (value instanceof Object[]) {
-					Object[] array = (Object[])value;
-					Object[] objects = new Object[array.length];
-					for (int j=0; j<objects.length; j++) {
-						objects[j] = array[j];
-					}
-					value = context.newArray( global, objects );
-				}
-
-				variable_set(v, context, global);
+				ScriptableObject.defineProperty(
+					global,
+					v.getName(),
+					toScopePropertyValue(context, global, v.value()),
+					toRhinoAttributes(v)
+				);
 			}
 		}
 
@@ -382,8 +337,7 @@ public class Engine {
 				Scriptable global = engine.getGlobalScope(context);
 				setVariablesInGlobalScope(program, context, global);
 				debugger.initialize(global, engine, program);
-				Outcome outcome = interpret(program, debugger, context, global);
-				return outcome;
+				return interpret(program, debugger, context, global);
 			} catch (java.io.IOException e) {
 				throw new RuntimeException(e);
 			}
