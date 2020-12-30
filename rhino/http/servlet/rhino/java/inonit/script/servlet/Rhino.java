@@ -89,13 +89,10 @@ public class Rhino extends Servlet.ScriptContainer {
 
 	void setVariable(String name, Object value) {
 		try {
-			Program.Variable jsh = Program.Variable.create(
+			Program.DataPropertyDescriptor jsh = Program.DataPropertyDescriptor.create(
 				name,
-				Engine.Value.create(value)
+				value
 			);
-			jsh.setReadonly(true);
-			jsh.setPermanent(true);
-			jsh.setDontenum(true);
 			program.set(jsh);
 		} catch (Errors errors) {
 			errors.dump(
