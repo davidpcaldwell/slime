@@ -40,7 +40,7 @@ public class Servlet extends javax.servlet.http.HttpServlet {
 		abstract void initialize(Servlet servlet);
 		abstract HostObject getServletHostObject();
 		abstract void setVariable(String name, Object value);
-		abstract void addScript(String name, InputStream stream);
+		abstract void addScript(Code.Loader.Resource resource);
 		abstract void execute();
 	}
 
@@ -86,7 +86,15 @@ public class Servlet extends javax.servlet.http.HttpServlet {
 		ScriptContainer container = createScriptContainer();
 		container.initialize(this);
 		container.setVariable("$host", container.getServletHostObject());
-		container.addScript("<api.js>", getServletContext().getResourceAsStream("/WEB-INF/api.js"));
+		container.addScript(
+			Code.Loader.Resource.create(
+				Code.Loader.URI.jvm(javax.servlet.ServletContext.class, "WEB-INF/api.js"),
+				"WEB-INF/api.js",
+				null,
+				null,
+				getServletContext().getResourceAsStream("/WEB-INF/api.js")
+			)
+		);
 		container.execute();
 	}
 

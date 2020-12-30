@@ -47,30 +47,8 @@ class Nashorn extends Servlet.ScriptContainer {
 		host.set(name, value);
 	}
 
-	@Override void addScript(final String name, final InputStream stream) {
-		host.add(new Code.Loader.Resource() {
-			@Override public Code.Loader.URI getURI() {
-				throw new UnsupportedOperationException();
-			}
-
-			@Override public String getSourceName() {
-				return name;
-			}
-
-			//	TODO	implement?
-			@Override public java.util.Date getLastModified() {
-				return null;
-			}
-
-			//	TODO	implement?
-			@Override public Long getLength() {
-				return null;
-			}
-
-			@Override public InputStream getInputStream() {
-				return stream;
-			}
-		});
+	@Override void addScript(Code.Loader.Resource resource) {
+		host.add(resource);
 	}
 
 	@Override void execute() {

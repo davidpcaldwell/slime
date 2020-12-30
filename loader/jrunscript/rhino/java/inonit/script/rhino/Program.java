@@ -1,6 +1,5 @@
 package inonit.script.rhino;
 
-import java.io.*;
 import java.util.*;
 
 import inonit.script.engine.*;
@@ -19,14 +18,6 @@ public class Program {
 
 	public void add(Code.Loader.Resource code) {
 		units.add(Source.create(code));
-	}
-
-	public void add(String name, InputStream input) {
-		units.add(Source.create(name, input));
-	}
-
-	void add(Source source) {
-		units.add( source );
 	}
 
 	final List<Source> sources() {
