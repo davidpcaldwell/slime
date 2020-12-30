@@ -9,7 +9,10 @@ public class HostFactory extends inonit.script.engine.Host.Factory {
 		this.configuration = configuration;
 	}
 
-	@Override public inonit.script.engine.Host.Executor create() {
+	@Override public inonit.script.engine.Host.Executor create(ClassLoader classes) {
+		Thread.currentThread().setContextClassLoader(classes);
+		//	TODO	figure out how to set classpath properly
+
 		//System.err.println("HostFactory.this.create()");
 		final org.graalvm.polyglot.Context.Builder builder = org.graalvm.polyglot.Context.newBuilder("js")
 			.allowExperimentalOptions(true)

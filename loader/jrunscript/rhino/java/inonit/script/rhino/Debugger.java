@@ -8,7 +8,7 @@ import inonit.script.engine.*;
 
 public abstract class Debugger {
 	abstract void initialize(Engine.Configuration contexts);
-	abstract void initialize(Scriptable scope, Engine engine, Program program);
+	abstract void initialize(Scriptable scope, Engine engine, Host.Program program);
 	abstract void setBreakpoint(Source source, int line);
 	abstract Engine.Log getLog();
 
@@ -27,7 +27,7 @@ public abstract class Debugger {
 		void setBreakpoint(Source source, int line) {
 		}
 
-		void initialize(Scriptable scope, Engine engine, Program program) {
+		void initialize(Scriptable scope, Engine engine, Host.Program program) {
 		}
 
 		Engine.Log getLog() {
@@ -241,7 +241,7 @@ public abstract class Debugger {
 		void setBreakpoint(Source source, int line) {
 		}
 
-		void initialize(Scriptable scope, Engine engine, Program program) {
+		void initialize(Scriptable scope, Engine engine, Host.Program program) {
 		}
 
 		Engine.Log getLog() {
@@ -383,7 +383,7 @@ public abstract class Debugger {
 			}
 		}
 
-		void initialize(Scriptable scope, Engine engine, Program program) {
+		void initialize(Scriptable scope, Engine engine, Host.Program program) {
 			dim.setScopeProvider( new ScopeWrapper(scope) );
 			gui.pack();
 			gui.setVisible(true);

@@ -212,11 +212,11 @@ public class Engine {
 	}
 
 	//	Used from servlet and jsh Java implementations
-	public Object execute(Program program) {
+	public Object execute(Host.Program program) {
 		return configuration.call(new ProgramAction(this, program, debugger));
 	}
 
-	private static Object execute(Program program, Debugger dim, Context context, Scriptable global) throws IOException {
+	private static Object execute(Host.Program program, Debugger dim, Context context, Scriptable global) throws IOException {
 		if (context == null) {
 			throw new RuntimeException("'context' is null");
 		}
@@ -268,7 +268,7 @@ public class Engine {
 		return result;
 	}
 
-	private static Object interpret(Program program, Debugger dim, Context context, Scriptable global) throws IOException {
+	private static Object interpret(Host.Program program, Debugger dim, Context context, Scriptable global) throws IOException {
 		if (context == null) {
 			throw new RuntimeException("'context' is null");
 		}
@@ -287,49 +287,49 @@ public class Engine {
 		}
 	}
 
+	private static Object toScopePropertyValue(Context context, Scriptable global, Object value) {
+		if (value instanceof Object[]) {
+			Object[] array = (Object[])value;
+			Object[] objects = new Object[array.length];
+			for (int j=0; j<objects.length; j++) {
+				objects[j] = array[j];
+			}
+			return context.newArray( global, objects );
+		}
+		return Context.javaToJS(value, global);
+	}
+
+	private static int toRhinoAttributes(Host.Binding attributes) {
+		int rv = ScriptableObject.EMPTY;
+		rv |= ScriptableObject.PERMANENT;
+		rv |= ScriptableObject.READONLY;
+		rv |= ScriptableObject.DONTENUM;
+		return rv;
+	}
+
+	private static void setVariablesInGlobalScope(Host.Program program, Context context, Scriptable global) {
+		List<Host.Binding> variables = program.variables();
+		for (int i=0; i<variables.size(); i++) {
+			Host.Binding v = variables.get(i);
+
+			ScriptableObject.defineProperty(
+				global,
+				v.getName(),
+				toScopePropertyValue(context, global, v.getValue()),
+				toRhinoAttributes(v)
+			);
+		}
+	}
+
 	private static class ProgramAction implements ContextAction {
 		private Engine engine;
-		private Program program;
+		private Host.Program program;
 		private Debugger debugger;
 
-		ProgramAction(Engine engine, Program program, Debugger debugger) {
+		ProgramAction(Engine engine, Host.Program program, Debugger debugger) {
 			this.engine = engine;
 			this.program = program;
 			this.debugger = debugger;
-		}
-
-		private static Object toScopePropertyValue(Context context, Scriptable global, Object value) {
-			if (value instanceof Object[]) {
-				Object[] array = (Object[])value;
-				Object[] objects = new Object[array.length];
-				for (int j=0; j<objects.length; j++) {
-					objects[j] = array[j];
-				}
-				return context.newArray( global, objects );
-			}
-			return Context.javaToJS(value, global);
-		}
-
-		private static int toRhinoAttributes(Program.DataPropertyDescriptor attributes) {
-			int rv = ScriptableObject.EMPTY;
-			if (!attributes.configurable()) rv |= ScriptableObject.PERMANENT;
-			if (!attributes.writable()) rv |= ScriptableObject.READONLY;
-			if (!attributes.enumerable()) rv |= ScriptableObject.DONTENUM;
-			return rv;
-		}
-
-		private static void setVariablesInGlobalScope(Program program, Context context, Scriptable global) {
-			List<Program.DataPropertyDescriptor> variables = program.variables();
-			for (int i=0; i<variables.size(); i++) {
-				Program.DataPropertyDescriptor v = variables.get(i);
-
-				ScriptableObject.defineProperty(
-					global,
-					v.getName(),
-					toScopePropertyValue(context, global, v.value()),
-					toRhinoAttributes(v)
-				);
-			}
 		}
 
 		public Object run(Context context) {

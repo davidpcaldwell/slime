@@ -58,11 +58,13 @@ public class Nashorn extends Main.Engine {
 	}
 
 	private static class ExecutionImpl extends Shell.Execution {
+		private inonit.script.engine.Host.Program program;
 		private inonit.script.engine.Host host;
 		private boolean top;
 
 		ExecutionImpl(final Shell shell, boolean top) {
 			super(shell);
+			this.program = new inonit.script.engine.Host.Program();
 			this.host = inonit.script.engine.Host.create(
 				inonit.script.engine.Host.Factory.engine("nashorn"),
 				new Loader.Classes.Configuration() {
@@ -83,12 +85,12 @@ public class Nashorn extends Main.Engine {
 		}
 
 		private void bind(String name, Object value) {
-			host.bind(inonit.script.engine.Host.Binding.create(name, value));
+			program.bind(inonit.script.engine.Host.Binding.create(name, value));
 		}
 
 		private void run(Code.Loader.Resource script) {
 			try {
-				host.script(inonit.script.engine.Host.Script.create(script));
+				program.run(inonit.script.engine.Host.Script.create(script));
 			} catch (java.io.IOException e) {
 				throw new RuntimeException(e);
 			}
@@ -107,7 +109,7 @@ public class Nashorn extends Main.Engine {
 		}
 
 		@Override public void setGlobalProperty(String name, Object value) {
-			host.bind(inonit.script.engine.Host.Binding.create(name, value));
+			bind(name, value);
 		}
 
 		@Override public void setJshRuntimeObject() {
@@ -149,7 +151,7 @@ public class Nashorn extends Main.Engine {
 		@Override public Integer run() {
 			try {
 				//	ignore returned Object
-				host.run();
+				host.run(program);
 				return null;
 			} catch (RuntimeException e) {
 				ExitException exit = getExitException(e);

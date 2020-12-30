@@ -64,11 +64,11 @@ public class Host {
 		public abstract Object eval(Script file) throws ScriptException;
 	}
 
-	private static class ExecutorImpl extends Executor {
+	private static class JavaxScriptExecutor extends Executor {
 		private ScriptEngineManager factory;
 		private ScriptEngine engine;
 
-		private ExecutorImpl(String engineName) {
+		private JavaxScriptExecutor(String engineName) {
 			this.factory = new ScriptEngineManager();
 			this.engine = factory.getEngineByName(engineName);
 			if (this.engine == null) {
@@ -88,12 +88,13 @@ public class Host {
 	}
 
 	public static abstract class Factory {
-		public abstract Executor create();
+		public abstract Executor create(ClassLoader classes);
 
 		public static Factory engine(final String name) {
 			return new Factory() {
-				public Executor create() {
-					return new ExecutorImpl(name);
+				public Executor create(ClassLoader classes) {
+					Thread.currentThread().setContextClassLoader(classes);
+					return new JavaxScriptExecutor(name);
 				}
 			};
 		}
@@ -101,44 +102,51 @@ public class Host {
 
 	public static Host create(Factory factory, Loader.Classes.Configuration configuration) {
 		Loader.Classes classes = Loader.Classes.create(configuration);
-		Thread.currentThread().setContextClassLoader(classes.getApplicationClassLoader());
-		Executor executor = factory.create();
-		Host rv = new Host();
-		rv.initialize(executor, classes);
-		return rv;
+		Executor executor = factory.create(classes.getApplicationClassLoader());
+		return new Host(executor, classes);
 	}
 
 	private Executor executor;
 	private Loader.Classes classes;
-	private List<Script> scripts = new ArrayList<Script>();
 
-	private Host() {
-	}
-
-	final void initialize(Executor executor, Loader.Classes classes) {
+	private Host(Executor executor, Loader.Classes classes) {
 		this.executor = executor;
 		this.classes = classes;
-	}
-
-	public void bind(Binding binding) {
-		executor.bind(binding);
-	}
-
-	public void script(Script script) throws IOException {
-		if (script == null) throw new NullPointerException("Attempt to add null script.");
-		scripts.add(script);
 	}
 
 	public Loader.Classes.Interface getClasspath() {
 		return classes.getInterface();
 	}
 
-	//	TODO	what about IOException?
-	public Object run() throws ScriptException {
+	public Object run(Program program) throws ScriptException {
+		for (Binding binding : program.variables()) {
+			executor.bind(binding);
+		}
 		Object rv = null;
-		for (Script file : scripts) {
-			rv = executor.eval(file);
+		for (Script script : program.scripts()) {
+			rv = executor.eval(script);
 		}
 		return rv;
+	}
+
+	public static class Program {
+		private ArrayList<Binding> variables = new ArrayList<Binding>();
+		private ArrayList<Script> scripts = new ArrayList<Script>();
+
+		public void bind(Binding variable) {
+			variables.add( variable );
+		}
+
+		public final List<Binding> variables() {
+			return variables;
+		}
+
+		public void run(Script script) {
+			scripts.add(script);
+		}
+
+		public final List<Script> scripts() {
+			return scripts;
+		}
 	}
 }

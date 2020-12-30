@@ -15,8 +15,12 @@ abstract class Source {
 		return new ReaderSource(name, new InputStreamReader(in));
 	}
 
-	static Source create(String sourceName, String s) {
-		return new ReaderSource(sourceName, new StringReader(s));
+	static Source create(String sourceName, String code) {
+		return new ReaderSource(sourceName, new StringReader(code));
+	}
+
+	static Source create(Host.Script script) {
+		return new ReaderSource(script.getName(), new StringReader(script.getCode()));
 	}
 
 	static Source create(Code.Loader.Resource file) {

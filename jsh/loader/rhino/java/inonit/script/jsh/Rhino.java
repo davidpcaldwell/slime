@@ -98,18 +98,18 @@ public class Rhino {
 			this.$rhino = $rhino;
 		}
 
-		private Program program = new Program();
+		private Host.Program program = new Host.Program();
 
 		@Override protected Loader.Classes.Interface getClasspath() {
 			return engine.getClasspath();
 		}
 
 		@Override public void setGlobalProperty(String name, Object value) {
-			Program.DataPropertyDescriptor variable = Program.DataPropertyDescriptor.create(
+			Host.Binding variable = Host.Binding.create(
 				name,
 				value
 			);
-			program.set(variable);
+			program.bind(variable);
 		}
 
 		@Override public void setJshRuntimeObject() {
@@ -126,7 +126,11 @@ public class Rhino {
 		}
 
 		@Override public void script(Code.Loader.Resource script) {
-			program.add(script);
+			try {
+				program.run(Host.Script.create(script));
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
 		}
 
 		@Override public Integer run() {

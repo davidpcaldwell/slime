@@ -20,10 +20,12 @@ import inonit.script.engine.*;
 
 class Nashorn extends Servlet.ScriptContainer {
 	private Servlet servlet;
+	private inonit.script.engine.Host.Program program;
 	private inonit.script.engine.Host host;
 
 	@Override void initialize(Servlet servlet) {
 		this.servlet = servlet;
+		this.program = new inonit.script.engine.Host.Program();
 		this.host = inonit.script.engine.Host.create(inonit.script.engine.Host.Factory.engine("nashorn"), new Loader.Classes.Configuration() {
 			@Override public boolean canCreateClassLoaders() {
 				return true;
@@ -44,12 +46,12 @@ class Nashorn extends Servlet.ScriptContainer {
 	}
 
 	@Override void setVariable(String name, Object value) {
-		host.bind(Host.Binding.create(name, value));
+		program.bind(Host.Binding.create(name, value));
 	}
 
 	@Override void addScript(Code.Loader.Resource resource) {
 		try {
-			host.script(Host.Script.create(resource));
+			program.run(Host.Script.create(resource));
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
@@ -57,7 +59,7 @@ class Nashorn extends Servlet.ScriptContainer {
 
 	@Override void execute() {
 		try {
-			host.run();
+			host.run(program);
 		} catch (ScriptException e) {
 			throw new RuntimeException(e);
 		}
