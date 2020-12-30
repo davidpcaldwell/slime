@@ -47,16 +47,8 @@ public class Program {
 			return name;
 		}
 
-		Object getValue(Context context, Scriptable scope) {
-			return value.get(context, scope);
-		}
-
 		int getRhinoAttributes() {
 			return attributes.toRhinoAttributes();
-		}
-
-		void set(Context context, Scriptable global) {
-			Engine.scope_set(context, global, this);
 		}
 
 		public void setPermanent(boolean permanent) {

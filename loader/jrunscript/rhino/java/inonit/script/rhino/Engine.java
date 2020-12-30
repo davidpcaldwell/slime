@@ -230,13 +230,21 @@ public class Engine {
 		public abstract Object get(Context context, Scriptable scope);
 	}
 
+	private static Object variable_getValue(Value value, Context context, Scriptable scope) {
+		return value.get(context, scope);
+	}
+
 	static void scope_set(Context context, Scriptable global, Program.Variable variable) {
 		ScriptableObject.defineProperty(
 			global,
 			variable.getName(),
-			variable.getValue(context, global),
+			variable_getValue(variable.value(), context, global),
 			variable.getRhinoAttributes()
 		);
+	}
+
+	static void variable_set(Program.Variable variable, Context context, Scriptable global) {
+		Engine.scope_set(context, global, variable);
 	}
 
 	static class Outcome {
@@ -353,7 +361,7 @@ public class Engine {
 					value = context.newArray( global, objects );
 				}
 
-				v.set(context, global);
+				variable_set(v, context, global);
 			}
 		}
 
