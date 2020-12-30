@@ -7,19 +7,19 @@ import org.mozilla.javascript.*;
 
 import inonit.script.engine.*;
 
-public abstract class Source {
+abstract class Source {
 	//	TODO	should look at further unifying Code.Loader and Source. Is the create(String, String) method necessary?
 	//			what about create(String, InputStream) used by Rhino servlet?
 
-	public static Source create(String name, InputStream in) {
+	static Source create(String name, InputStream in) {
 		return new ReaderSource(name, new InputStreamReader(in));
 	}
 
-	public static Source create(String sourceName, String s) {
+	static Source create(String sourceName, String s) {
 		return new ReaderSource(sourceName, new StringReader(s));
 	}
 
-	public static Source create(Code.Loader.Resource file) {
+	static Source create(Code.Loader.Resource file) {
 		return new ReaderSource(file.getSourceName(), file.getReader());
 	}
 
@@ -38,7 +38,7 @@ public abstract class Source {
 	 *
 	 * @param debug false to disable debugging for this file; true (default) to allow it
 	 */
-	public final void setDebug(boolean debug) {
+	final void setDebug(boolean debug) {
 		this.debug = debug;
 	}
 

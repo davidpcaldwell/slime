@@ -1,6 +1,9 @@
 package inonit.script.rhino;
 
+import java.io.*;
 import java.util.*;
+
+import inonit.script.engine.*;
 
 public class Program {
 	private ArrayList<DataPropertyDescriptor> variables = new ArrayList<DataPropertyDescriptor>();
@@ -14,7 +17,15 @@ public class Program {
 		return variables;
 	}
 
-	public void add(Source source) {
+	public void add(Code.Loader.Resource code) {
+		units.add(Source.create(code));
+	}
+
+	public void add(String name, InputStream input) {
+		units.add(Source.create(name, input));
+	}
+
+	void add(Source source) {
 		units.add( source );
 	}
 

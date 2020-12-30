@@ -108,7 +108,7 @@ public class Rhino extends Servlet.ScriptContainer {
 	}
 
 	void addScript(String name, InputStream stream) {
-		program.add(Source.create(name, stream));
+		program.add(name, stream);
 	}
 
 	void execute() {
