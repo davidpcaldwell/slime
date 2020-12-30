@@ -234,9 +234,6 @@ interface Packages {
 				MetaObject: any
 			}
 		}
-		system: {
-
-		}
 	}
 }
 
