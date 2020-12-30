@@ -218,6 +218,19 @@ public class Engine {
 		return outcome.getResult();
 	}
 
+	static class ObjectName {
+		static final ObjectName NULL = new ObjectName();
+
+		void set(Context context, Scriptable global, Program.Variable variable) {
+			ScriptableObject.defineProperty(
+				global,
+				variable.getName(),
+				variable.getValue(context, global),
+				variable.getRhinoAttributes()
+			);
+		}
+	}
+
 	private static class ProgramAction implements ContextAction {
 		private Engine engine;
 		private Program program;
@@ -229,10 +242,30 @@ public class Engine {
 			this.debugger = debugger;
 		}
 
+		private void setVariablesInGlobalScope(Program program, Context context, Scriptable global) {
+			List<Program.Variable> variables = program.variables();
+			for (int i=0; i<variables.size(); i++) {
+				Program.Variable v = variables.get(i);
+				Object value = v.value().get(context, global);
+
+				//	Deal with dumb Rhino restriction that we use object arrays only
+				if (value instanceof Object[]) {
+					Object[] array = (Object[])value;
+					Object[] objects = new Object[array.length];
+					for (int j=0; j<objects.length; j++) {
+						objects[j] = array[j];
+					}
+					value = context.newArray( global, objects );
+				}
+
+				v.set(context, global);
+			}
+		}
+
 		public Object run(Context context) {
 			try {
 				Scriptable global = engine.getGlobalScope(context);
-				program.setVariablesInGlobalScope(context, global);
+				setVariablesInGlobalScope(program, context, global);
 				debugger.initialize(global, engine, program);
 				Program.Outcome outcome = program.interpret(debugger, context, global);
 				return outcome;
