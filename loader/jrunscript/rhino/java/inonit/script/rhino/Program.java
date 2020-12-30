@@ -1,13 +1,12 @@
 package inonit.script.rhino;
 
-import java.io.*;
 import java.util.*;
 
 import org.mozilla.javascript.*;
 
 public class Program {
 	private ArrayList<Variable> variables = new ArrayList<Variable>();
-	private ArrayList<Unit> units = new ArrayList<Unit>();
+	private ArrayList<Source> units = new ArrayList<Source>();
 
 	public void set(Variable variable) {
 		variables.add( variable );
@@ -18,95 +17,23 @@ public class Program {
 	}
 
 	public void add(Source source) {
-		units.add( new SourceUnit(source) );
+		units.add( source );
 	}
 
-	public void add(Unit unit) {
-		units.add(unit);
-	}
-
-	static class Outcome {
-		private Object result;
-
-		Outcome(Object result) {
-			this.result = result;
-		}
-
-		Object getResult() {
-			return result;
-		}
-	}
-
-	private Outcome execute(Debugger dim, Context context, Scriptable global) throws IOException {
-		if (context == null) {
-			throw new RuntimeException("'context' is null");
-		}
-		Object result = null;
-		for (int i=0; i<units.size(); i++) {
-			Errors errors = Errors.get(context);
-			if (errors != null) {
-				errors.reset();
-			}
-			try {
-				result = units.get(i).execute(dim, context, global);
-			} catch (WrappedException e) {
-				//	TODO	Note that when this is merged into jsh, we will need to change jsh error reporting to dump the
-				//			stack trace from the contained Throwable inside the errors object.
-//					throw e;
-				if (errors != null) {
-					errors.add(e);
-					throw errors;
-				} else {
-					throw e;
-				}
-			} catch (EvaluatorException e) {
-				//	TODO	Oh my goodness, is there no better way to do this?
-				if (errors != null && (e.getMessage().indexOf("Compilation produced") == -1 || e.getMessage().indexOf("syntax errors.") == -1)) {
-					errors.add(e);
-				}
-				if (errors != null) {
-					throw errors;
-				} else {
-					throw e;
-				}
-			} catch (EcmaError e) {
-				if (errors != null) {
-					errors.add(e);
-					throw errors;
-				} else {
-					throw e;
-				}
-			} catch (JavaScriptException e) {
-				if (errors != null) {
-					errors.add(e);
-					throw errors;
-				} else {
-					throw e;
-				}
-			}
-		}
-		return new Outcome(result);
-	}
-
-	Outcome interpret(Debugger dim, Context context, Scriptable global) throws IOException {
-		if (context == null) {
-			throw new RuntimeException("'context' is null");
-		}
-		return execute(dim, context, global);
+	final List<Source> sources() {
+		return units;
 	}
 
 	public static class Variable {
 		public static Variable create(String name, Value value) {
-			return new Variable(Engine.ObjectName.NULL, name, value, new Attributes());
+			return new Variable(name, value, new Attributes());
 		}
 
-		private Engine.ObjectName scope;
 		private String name;
 		private Value value;
 		private Attributes attributes;
 
-		Variable(Engine.ObjectName scope, String name, Value value, Attributes attributes) {
-			this.scope = scope;
+		Variable(String name, Value value, Attributes attributes) {
 			this.name = name;
 			this.value = value;
 			this.attributes = attributes;
@@ -128,8 +55,17 @@ public class Program {
 			return attributes.toRhinoAttributes();
 		}
 
+		private void scope_set(Context context, Scriptable global, Program.Variable variable) {
+			ScriptableObject.defineProperty(
+				global,
+				variable.getName(),
+				variable.getValue(context, global),
+				variable.getRhinoAttributes()
+			);
+		}
+
 		void set(Context context, Scriptable global) {
-			scope.set(context, global, this);
+			scope_set(context, global, this);
 		}
 
 		public void setPermanent(boolean permanent) {
@@ -175,22 +111,6 @@ public class Program {
 				if (dontenum) rv |= ScriptableObject.DONTENUM;
 				return rv;
 			}
-		}
-	}
-
-	public static abstract class Unit {
-		protected abstract Object execute(Debugger dim, Context context, Scriptable global) throws IOException;
-	}
-
-	private static class SourceUnit extends Unit {
-		private Source source;
-
-		SourceUnit(Source source) {
-			this.source = source;
-		}
-
-		protected Object execute(Debugger dim, Context context, Scriptable global) throws IOException {
-			return source.evaluate(dim, context, global, global, true);
 		}
 	}
 }
