@@ -137,7 +137,7 @@ public class Host {
 			variables.add( variable );
 		}
 
-		public final List<Binding> variables() {
+		final List<Binding> variables() {
 			return variables;
 		}
 
@@ -145,7 +145,7 @@ public class Host {
 			scripts.add(script);
 		}
 
-		public final List<Script> scripts() {
+		final List<Script> scripts() {
 			return scripts;
 		}
 	}
