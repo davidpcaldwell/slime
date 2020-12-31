@@ -14,8 +14,6 @@ package inonit.script.rhino;
 
 import java.io.*;
 
-import javax.script.*;
-
 import org.mozilla.javascript.*;
 
 import inonit.script.engine.*;
@@ -89,6 +87,10 @@ public class Engine {
 			return factory.getClasspath();
 		}
 
+		final Loader.Classes getClasses() {
+			return factory.getClasses();
+		}
+
 		final Loader.Classes.Configuration classes() {
 			return new Loader.Classes.Configuration() {
 				@Override public boolean canCreateClassLoaders() {
@@ -137,6 +139,11 @@ public class Engine {
 			final Loader.Classes.Interface getClasspath() {
 				initializeClassLoaders();
 				return this.classes.getInterface();
+			}
+
+			final Loader.Classes getClasses() {
+				initializeClassLoaders();
+				return this.classes;
 			}
 
 			@Override protected synchronized Context makeContext() {
@@ -190,11 +197,13 @@ public class Engine {
 		rv.debugger = debugger;
 		rv.configuration = contexts;
 		debugger.initialize(contexts);
+		rv.hosts = new HostFactory(debugger, contexts.factory());
 		return rv;
 	}
 
 	private Debugger debugger;
 	private Configuration configuration;
+	private HostFactory hosts;
 
 	private Engine() {
 	}
@@ -213,19 +222,21 @@ public class Engine {
 		return configuration.canAccessEnvironment();
 	}
 
-	private HostFactory hosts;
+	public Host.Factory getHostFactory() {
+		return hosts;
+	}
+
+	public Loader.Classes getClasses() {
+		return configuration.getClasses();
+	}
 
 	//	Used from servlet and jsh Java implementations
 	public Object execute(Host.Program program) {
-		if (hosts == null) {
-			hosts = new HostFactory(debugger, configuration.factory());
-		}
 		try {
 			return Host.run(hosts, Loader.Classes.create(configuration.classes()), program);
 		} catch (javax.script.ScriptException e) {
 			throw new RuntimeException(e);
 		}
-//		return configuration.call(new ProgramAction(this, program, debugger));
 	}
 
 	public Debugger getDebugger() {
@@ -236,28 +247,8 @@ public class Engine {
 		return this.configuration.getClasspath();
 	}
 
-	// private static class ProgramAction implements ContextAction {
-	// 	private Engine engine;
-	// 	private Host.Program program;
-	// 	private Debugger debugger;
-
-	// 	ProgramAction(Engine engine, Host.Program program, Debugger debugger) {
-	// 		this.engine = engine;
-	// 		this.program = program;
-	// 		this.debugger = debugger;
-	// 	}
-
-	// 	public Object run(Context context) {
-	// 		try {
-	// 			return Host.run(new HostFactory(debugger, context), Loader.Classes.create(engine.configuration.classes()), program);
-	// 		} catch (ScriptException e) {
-	// 			//	can't happen right now, it is believed, though could refactor so that other exceptions are thrown as these
-	// 			//	to standardize across engines
-	// 			throw new RuntimeException(e);
-	// 		}
-	// 	}
-	// }
-
+	//	TODO	note that this implementation ignores the ClassLoader specified to its create() method, instead relying on
+	//			the single ContextFactory classloader
 	private static class HostFactory extends Host.Factory {
 		private Debugger debugger;
 		private ContextFactory contexts;

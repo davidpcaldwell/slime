@@ -107,17 +107,17 @@ public class Rhino {
 			this.$rhino = $rhino;
 		}
 
-		@Override protected Loader.Classes.Interface getClasspath() {
-			return engine.getClasspath();
-		}
-
 		@Override public void setJshRuntimeObject(Host.Program program) {
 			program.bind("$rhino", $rhino);
 			program.run(this.getJshLoaderFile("rhino.js"));
 		}
 
-		@Override public void run(Host.Program program) {
-			engine.execute(program);
+		@Override protected Host.Factory getHostFactory() {
+			return engine.getHostFactory();
+		}
+
+		@Override protected Loader.Classes getClasses() {
+			return engine.getClasses();
 		}
 
 		private ErrorHandlingImpl errorHandling = new ErrorHandlingImpl();

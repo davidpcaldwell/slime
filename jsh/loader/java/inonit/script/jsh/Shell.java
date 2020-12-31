@@ -464,7 +464,8 @@ public class Shell {
 			this.shell = shell;
 		}
 
-		protected abstract Loader.Classes.Interface getClasspath();
+		protected abstract Host.Factory getHostFactory();
+		protected abstract Loader.Classes getClasses();
 
 		protected final Code.Loader.Resource getJshLoaderFile(String path) {
 			try {
@@ -502,21 +503,19 @@ public class Shell {
 			}
 		}
 
-		protected abstract void run(Host.Program program) throws javax.script.ScriptException;
-
 		/**
 		 *	@return The exit status of the main program.
 		 */
 		public final Integer execute() {
 			LOG.log(Level.INFO, "Executing shell with %s", this);
-			shell.setClasspath(getClasspath());
+			shell.setClasspath(getClasses().getInterface());
 			final Host.Program program = new Host.Program();
 			program.bind("$jsh", shell);
 			this.setJshRuntimeObject(program);
 			return getErrorHandling().run(new ErrorHandling.Run() {
 				public void run() throws javax.script.ScriptException {
 					program.run(getJshJs());
-					Execution.this.run(program);
+					Host.run(getHostFactory(), getClasses(), program);
 				}
 			});
 		}
