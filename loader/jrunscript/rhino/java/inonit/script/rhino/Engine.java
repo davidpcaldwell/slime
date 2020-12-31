@@ -221,65 +221,6 @@ public class Engine {
 		return configuration.call(new ProgramAction(this, program, debugger));
 	}
 
-// 	private static Object execute(Host.Program program, Debugger dim, Context context, Scriptable global) throws IOException {
-// 		if (context == null) {
-// 			throw new RuntimeException("'context' is null");
-// 		}
-// 		Object result = null;
-// 		for (int i=0; i<program.scripts().size(); i++) {
-// 			Errors errors = Errors.get(context);
-// 			if (errors != null) {
-// 				errors.reset();
-// 			}
-// 			try {
-// 				Unit unit = new Unit(Source.create(program.scripts().get(i)));
-// 				result = unit.execute(dim, context, global);
-// 			} catch (WrappedException e) {
-// 				//	TODO	Note that when this is merged into jsh, we will need to change jsh error reporting to dump the
-// 				//			stack trace from the contained Throwable inside the errors object.
-// //					throw e;
-// 				if (errors != null) {
-// 					errors.add(e);
-// 					throw errors;
-// 				} else {
-// 					throw e;
-// 				}
-// 			} catch (EvaluatorException e) {
-// 				//	TODO	Oh my goodness, is there no better way to do this?
-// 				if (errors != null && (e.getMessage().indexOf("Compilation produced") == -1 || e.getMessage().indexOf("syntax errors.") == -1)) {
-// 					errors.add(e);
-// 				}
-// 				if (errors != null) {
-// 					throw errors;
-// 				} else {
-// 					throw e;
-// 				}
-// 			} catch (EcmaError e) {
-// 				if (errors != null) {
-// 					errors.add(e);
-// 					throw errors;
-// 				} else {
-// 					throw e;
-// 				}
-// 			} catch (JavaScriptException e) {
-// 				if (errors != null) {
-// 					errors.add(e);
-// 					throw errors;
-// 				} else {
-// 					throw e;
-// 				}
-// 			}
-// 		}
-// 		return result;
-// 	}
-
-	// private static Object interpret(Host.Program program, Debugger dim, Context context, Scriptable global) throws IOException {
-	// 	if (context == null) {
-	// 		throw new RuntimeException("'context' is null");
-	// 	}
-	// 	return execute(program, dim, context, global);
-	// }
-
 	static class Unit {
 		private Source source;
 
@@ -312,20 +253,6 @@ public class Engine {
 		return rv;
 	}
 
-	// private static void setVariablesInGlobalScope(Host.Program program, Context context, Scriptable global) {
-	// 	List<Host.Binding> variables = program.variables();
-	// 	for (int i=0; i<variables.size(); i++) {
-	// 		Host.Binding v = variables.get(i);
-
-	// 		ScriptableObject.defineProperty(
-	// 			global,
-	// 			v.getName(),
-	// 			toScopePropertyValue(context, global, v.getValue()),
-	// 			toRhinoAttributes(v)
-	// 		);
-	// 	}
-	// }
-
 	private static class ExecutorImpl extends Host.Executor {
 		private Debugger dim;
 		private Context context;
@@ -349,6 +276,7 @@ public class Engine {
 
 		@Override
 		public Object eval(Host.Script file) {
+			//	TODO	probably as we move toward javax.script, the caught errors should report out as ScriptException
 			Errors errors = Errors.get(context);
 			if (errors != null) {
 				errors.reset();

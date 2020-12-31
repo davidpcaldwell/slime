@@ -58,13 +58,11 @@ public class Nashorn extends Main.Engine {
 	}
 
 	private static class ExecutionImpl extends Shell.Execution {
-		private inonit.script.engine.Host.Program program;
 		private inonit.script.engine.Host host;
 		private boolean top;
 
 		ExecutionImpl(final Shell shell, boolean top) {
 			super(shell);
-			this.program = new inonit.script.engine.Host.Program();
 			this.host = inonit.script.engine.Host.create(
 				inonit.script.engine.Host.Factory.engine("nashorn"),
 				new Loader.Classes.Configuration() {
@@ -84,36 +82,12 @@ public class Nashorn extends Main.Engine {
 			this.top = top;
 		}
 
-		private void bind(String name, Object value) {
-			program.bind(inonit.script.engine.Host.Binding.create(name, value));
-		}
-
-		private void run(Code.Loader.Resource script) {
-			try {
-				program.run(inonit.script.engine.Host.Script.create(script));
-			} catch (java.io.IOException e) {
-				throw new RuntimeException(e);
-			}
-		}
-
-		private void run(Code.Loader loader, String path) {
-			try {
-				run(loader.getFile(path));
-			} catch (java.io.IOException e) {
-				throw new RuntimeException(e);
-			}
-		}
-
 		@Override protected Loader.Classes.Interface getClasspath() {
 			return host.getClasspath();
 		}
 
-		@Override public void setGlobalProperty(String name, Object value) {
-			bind(name, value);
-		}
-
-		@Override public void setJshRuntimeObject() {
-			bind(
+		@Override public void setJshRuntimeObject(inonit.script.engine.Host.Program program) {
+			program.bind(
 				"$nashorn",
 				new Host() {
 					@Override public Loader.Classes.Interface getClasspath() {
@@ -130,12 +104,8 @@ public class Nashorn extends Main.Engine {
 				}
 			);
 
-			run(this.getJshLoader(), "nashorn.js");
+			program.run(this.getJshLoaderFile("nashorn.js"));
  		}
-
-		@Override public void script(Code.Loader.Resource script) {
-			run(script);
-		}
 
 		private ExitException getExitException(Exception e) {
 			Throwable t = e;
@@ -148,7 +118,7 @@ public class Nashorn extends Main.Engine {
 			return null;
 		}
 
-		@Override public Integer run() {
+		@Override public Integer run(inonit.script.engine.Host.Program program) {
 			try {
 				//	ignore returned Object
 				host.run(program);
