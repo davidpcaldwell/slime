@@ -58,13 +58,12 @@ public class Nashorn extends Main.Engine {
 	}
 
 	private static class ExecutionImpl extends Shell.Execution {
-		private inonit.script.engine.Host host;
+		private Loader.Classes classes;
 		private boolean top;
 
 		ExecutionImpl(final Shell shell, boolean top) {
 			super(shell);
-			this.host = inonit.script.engine.Host.create(
-				inonit.script.engine.Host.Factory.engine("nashorn"),
+			this.classes = Loader.Classes.create(
 				new Loader.Classes.Configuration() {
 					@Override public boolean canCreateClassLoaders() {
 						return true;
@@ -83,7 +82,7 @@ public class Nashorn extends Main.Engine {
 		}
 
 		@Override protected Loader.Classes.Interface getClasspath() {
-			return host.getClasspath();
+			return classes.getInterface();
 		}
 
 		@Override public void setJshRuntimeObject(inonit.script.engine.Host.Program program) {
@@ -91,7 +90,7 @@ public class Nashorn extends Main.Engine {
 				"$nashorn",
 				new Host() {
 					@Override public Loader.Classes.Interface getClasspath() {
-						return host.getClasspath();
+						return classes.getInterface();
 					}
 
 					@Override public boolean isTop() {
@@ -121,7 +120,7 @@ public class Nashorn extends Main.Engine {
 		@Override public Integer run(inonit.script.engine.Host.Program program) {
 			try {
 				//	ignore returned Object
-				host.run(program);
+				inonit.script.engine.Host.run(inonit.script.engine.Host.Factory.engine("nashorn"), classes, program);
 				return null;
 			} catch (RuntimeException e) {
 				ExitException exit = getExitException(e);

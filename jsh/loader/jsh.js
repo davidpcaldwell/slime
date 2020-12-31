@@ -28,8 +28,6 @@
 				 * @returns { jsh.plugin.$slime }
 				 */
 				function($jsh) {
-					//	$jsh is a inonit.script.jsh.Shell Java object
-
 					var configuration = $jsh.getEnvironment();
 					var invocation = $jsh.getInvocation();
 
@@ -97,7 +95,7 @@
 								return stdio;
 							},
 							coffee: $jsh.getLibrary("coffee-script.js"),
-							//	Probably assigned in plugins.js
+							//	Assigned after loading plugin implementation
 							plugins: void(0)
 						}
 					);
