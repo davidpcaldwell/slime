@@ -16,6 +16,8 @@ import java.io.*;
 import java.util.*;
 import java.util.logging.*;
 
+import javax.script.ScriptException;
+
 import org.mozilla.javascript.*;
 
 import inonit.script.engine.*;
@@ -68,8 +70,7 @@ public class Rhino {
 			Shell subshell = shell.subshell(configuration, invocation);
 			Integer rv = Rhino.execute(subshell, engine, log, subinterface());
 			engine.getDebugger().setBreakOnExceptions(breakOnExceptions);
-			if (rv == null) return 0;
-			return rv.intValue();
+			return (rv == null) ? 0 : rv.intValue();
 		}
 
 		public void addFinalizer(Runnable finalizer) {
@@ -90,11 +91,13 @@ public class Rhino {
 
 	private static class ExecutionImpl extends Shell.Execution {
 		private Engine engine;
+		private Engine.Log log;
 		private Interface $rhino;
 
-		ExecutionImpl(Shell shell, Engine engine, Interface $rhino) {
+		ExecutionImpl(Shell shell, Engine engine, Engine.Log log, Interface $rhino) {
 			super(shell);
 			this.engine = engine;
+			this.log = log;
 			this.$rhino = $rhino;
 		}
 
@@ -107,30 +110,44 @@ public class Rhino {
 			program.run(this.getJshLoaderFile("rhino.js"));
 		}
 
-		@Override public Integer run(Host.Program program) {
+		@Override public void run(Host.Program program) {
 			engine.execute(program);
-			return null;
+		}
+
+		private ErrorHandlingImpl errorHandling = new ErrorHandlingImpl();
+
+		@Override public ErrorHandling getErrorHandling() {
+			return errorHandling;
+		}
+
+		private class ErrorHandlingImpl extends ErrorHandling {
+			@Override
+			public Integer run(Run r) {
+				try {
+					r.run();
+					return null;
+				} catch (ExitError e) {
+					return Integer.valueOf(e.getStatus());
+				} catch (Errors e) {
+					LOG.log(Level.INFO, "Engine.Errors thrown.", e);
+					Errors.ScriptError[] errors = e.getErrors();
+					LOG.log(Level.FINER, "Engine.Errors length: %d", errors.length);
+					LOG.log(Level.FINE, "Logging errors to %s.", log);
+					e.dump(log, "[jsh] ");
+					return -1;
+				} catch (ScriptException e) {
+					throw new RuntimeException("Should be unreachable in Rhino", e);
+				} finally {
+					$rhino.destroy();
+				}
+			}
 		}
 	}
 
 	private static Integer execute(Shell shell, Engine rhino, Engine.Log log, Interface $rhino) throws Shell.Invocation.CheckedException {
-		try {
-			ExecutionImpl execution = new ExecutionImpl(shell, rhino, $rhino);
-			//	Ignore returned Integer
-			execution.execute();
-			return null;
-		} catch (ExitError e) {
-			return Integer.valueOf(e.getStatus());
-		} catch (Errors e) {
-			LOG.log(Level.INFO, "Engine.Errors thrown.", e);
-			Errors.ScriptError[] errors = e.getErrors();
-			LOG.log(Level.FINER, "Engine.Errors length: %d", errors.length);
-			LOG.log(Level.FINE, "Logging errors to %s.", log);
-			e.dump(log, "[jsh] ");
-			return -1;
-		} finally {
-			$rhino.destroy();
-		}
+		ExecutionImpl execution = new ExecutionImpl(shell, rhino, log, $rhino);
+		//	Ignore returned Integer
+		return execution.execute();
 	}
 
 	public static abstract class Configuration {

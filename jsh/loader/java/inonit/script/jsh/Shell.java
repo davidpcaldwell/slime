@@ -482,11 +482,7 @@ public class Shell {
 		//			that itself
 		protected abstract void setJshRuntimeObject(Host.Program program);
 
-		/**
-		 *	Executes the main script, returning its exit status.
-		 *	@return The exit status of the main program.
-		 */
-		protected abstract Integer run(Host.Program program);
+		// protected abstract Integer run(Host.Program program);
 
 		private Code.Loader.Resource getJshJs() {
 			try {
@@ -496,14 +492,33 @@ public class Shell {
 			}
 		}
 
+		protected abstract ErrorHandling getErrorHandling();
+
+		public static abstract class ErrorHandling {
+			public abstract Integer run(Run r);
+
+			public static abstract class Run {
+				public abstract void run() throws javax.script.ScriptException;
+			}
+		}
+
+		protected abstract void run(Host.Program program) throws javax.script.ScriptException;
+
+		/**
+		 *	@return The exit status of the main program.
+		 */
 		public final Integer execute() {
 			LOG.log(Level.INFO, "Executing shell with %s", this);
 			shell.setClasspath(getClasspath());
-			Host.Program program = new Host.Program();
+			final Host.Program program = new Host.Program();
 			program.bind("$jsh", shell);
 			this.setJshRuntimeObject(program);
-			program.run(getJshJs());
-			return this.run(program);
+			return getErrorHandling().run(new ErrorHandling.Run() {
+				public void run() throws javax.script.ScriptException {
+					program.run(getJshJs());
+					Execution.this.run(program);
+				}
+			});
 		}
 	}
 }

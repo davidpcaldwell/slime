@@ -91,38 +91,51 @@ public class Graal extends Main.Engine {
 			program.run(this.getJshLoaderFile("nashorn.js"));
 		}
 
-		@Override public Integer run(inonit.script.engine.Host.Program program) {
-			try {
-				inonit.script.engine.Host.run(
-					inonit.script.graal.HostFactory.create(
-						new inonit.script.graal.HostFactory.Configuration() {
-							public inonit.script.graal.HostFactory.Configuration.Inspect inspect() {
-								String setting = System.getProperty("jsh.debug.script");
-								if (setting != null && setting.equals("graal")) {
-									return inonit.script.graal.HostFactory.Configuration.Inspect.SLIME;
-								} else {
-									return null;
-								}
+		private ErrorHandlingImpl errorHandling = new ErrorHandlingImpl();
+
+		@Override protected ErrorHandling getErrorHandling() {
+			return errorHandling;
+		}
+
+		private class ErrorHandlingImpl extends ErrorHandling {
+			@Override
+			public Integer run(Run r) {
+				try {
+					r.run();
+					return null;
+				} catch (RuntimeException e) {
+					ExitException exit = getExitException(e);
+					if (exit != null) {
+						return exit.getExitStatus();
+					}
+					throw e;
+				} catch (ScriptException e) {
+					ExitException exit = getExitException(e);
+					if (exit != null) {
+						return exit.getExitStatus();
+					}
+					throw new Nashorn.UncaughtException(e);
+				}
+			}
+		}
+
+		@Override public void run(inonit.script.engine.Host.Program program) throws ScriptException {
+			inonit.script.engine.Host.run(
+				inonit.script.graal.HostFactory.create(
+					new inonit.script.graal.HostFactory.Configuration() {
+						public inonit.script.graal.HostFactory.Configuration.Inspect inspect() {
+							String setting = System.getProperty("jsh.debug.script");
+							if (setting != null && setting.equals("graal")) {
+								return inonit.script.graal.HostFactory.Configuration.Inspect.SLIME;
+							} else {
+								return null;
 							}
 						}
-					),
-					classes,
-					program
-				);
-				return null;
-			} catch (RuntimeException e) {
-				ExitException exit = getExitException(e);
-				if (exit != null) {
-					return exit.getExitStatus();
-				}
-				throw e;
-			} catch (ScriptException e) {
-				ExitException exit = getExitException(e);
-				if (exit != null) {
-					return exit.getExitStatus();
-				}
-				throw new Nashorn.UncaughtException(e);
-			}
+					}
+				),
+				classes,
+				program
+			);
 		}
 	}
 
