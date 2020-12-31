@@ -71,6 +71,9 @@ public abstract class Host {
 			}
 		}
 
+		public void initialize() {}
+		public void destroy() {}
+
 		public void bind(Binding binding) {
 			factory.getBindings().put(binding.getName(), binding.getValue());
 		}
@@ -108,12 +111,19 @@ public abstract class Host {
 
 	public static Object run(Factory factory, Loader.Classes classes, Program program) throws ScriptException {
 		Host executor = factory.create(classes.getApplicationClassLoader());
-		return run(executor, program);
+		executor.initialize();
+		try {
+			return run(executor, program);
+		} finally {
+			executor.destroy();
+		}
 	}
 
 	protected Host() {
 	}
 
+	protected abstract void initialize();
+	protected abstract void destroy();
 	protected abstract void bind(Binding binding);
 	protected abstract Object eval(Script file) throws ScriptException;
 

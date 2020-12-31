@@ -31,8 +31,8 @@
 //	TODO	Eliminate launcher JAR file; seems to be used only for packaging applications now
 //	TODO	build script should build all plugins
 
-//	Policy decision to support 1.6 and up
-var JAVA_VERSION = "1.6";
+//	Policy decision to support 8 and up
+var JAVA_VERSION = "1.8";
 
 jsh.shell.console("Building jsh with arguments [" + jsh.script.arguments.join(" ") + "]", { stream: jsh.shell.stdio.error });
 var parameters = jsh.script.getopts({

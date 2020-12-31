@@ -68,7 +68,7 @@ public class Rhino {
 		public int jsh(final Shell.Environment configuration, final Shell.Invocation invocation) throws IOException, Shell.Invocation.CheckedException {
 			boolean breakOnExceptions = engine.getDebugger().isBreakOnExceptions();
 			Shell subshell = shell.subshell(configuration, invocation);
-			Integer rv = Rhino.execute(subshell, engine, log, subinterface());
+			Integer rv = ExecutionImpl.execute(subshell, engine, log, subinterface());
 			engine.getDebugger().setBreakOnExceptions(breakOnExceptions);
 			return (rv == null) ? 0 : rv.intValue();
 		}
@@ -90,6 +90,12 @@ public class Rhino {
 	}
 
 	private static class ExecutionImpl extends Shell.Execution {
+		static Integer execute(Shell shell, Engine rhino, Engine.Log log, Interface $rhino) throws Shell.Invocation.CheckedException {
+			ExecutionImpl execution = new ExecutionImpl(shell, rhino, log, $rhino);
+			//	Ignore returned Integer
+			return execution.execute();
+		}
+
 		private Engine engine;
 		private Engine.Log log;
 		private Interface $rhino;
@@ -142,12 +148,6 @@ public class Rhino {
 				}
 			}
 		}
-	}
-
-	private static Integer execute(Shell shell, Engine rhino, Engine.Log log, Interface $rhino) throws Shell.Invocation.CheckedException {
-		ExecutionImpl execution = new ExecutionImpl(shell, rhino, log, $rhino);
-		//	Ignore returned Integer
-		return execution.execute();
 	}
 
 	public static abstract class Configuration {
@@ -243,21 +243,10 @@ public class Rhino {
 		}
 	}
 
-	private Shell shell;
-
-	private Configuration engineConfiguration;
-
-	private Rhino(Shell shell) {
-		this.shell = shell;
-		this.engineConfiguration = Configuration.main(shell.getEnvironment());
+	private Rhino() {
 	}
 
 	//	TODO	try to remove dependencies on inonit.script.rhino.*;
-
-	private Integer run() throws Shell.Invocation.CheckedException {
-		engineConfiguration.initialize(shell.getEnvironment());
-		return Rhino.execute(shell, engineConfiguration.getEngine(), engineConfiguration.getLog(), new Interface(shell, engineConfiguration.getEngine(), engineConfiguration.getLog()));
-	}
 
 	static class ExitError extends Error {
 		private int status;
@@ -273,12 +262,13 @@ public class Rhino {
 
 	public static class EngineImpl extends Main.Engine {
 		private static void run(Shell.Container context, Shell shell) {
-			final Rhino main = new Rhino(shell);
+			final Configuration engineConfiguration = Configuration.main(shell.getEnvironment());
 			try {
 				java.util.concurrent.ExecutorService service = java.util.concurrent.Executors.newSingleThreadExecutor();
 				java.util.concurrent.Future<Integer> future = service.submit(new java.util.concurrent.Callable<Integer>() {
 					public Integer call() throws Exception {
-						return main.run();
+						engineConfiguration.initialize(shell.getEnvironment());
+						return ExecutionImpl.execute(shell, engineConfiguration.getEngine(), engineConfiguration.getLog(), new Interface(shell, engineConfiguration.getEngine(), engineConfiguration.getLog()));
 					}
 				});
 				Integer status = future.get();
@@ -295,7 +285,7 @@ public class Rhino {
 						}
 					}
 					LOG.log(Level.INFO, "Exiting normally with status %d.", status);
-					main.engineConfiguration.getEngine().getDebugger().destroy();
+					engineConfiguration.getEngine().getDebugger().destroy();
 					//	JVM will exit normally when non-daemon threads complete.
 				}
 			} catch (Throwable t) {
