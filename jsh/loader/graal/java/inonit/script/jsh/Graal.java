@@ -56,10 +56,6 @@ public class Graal extends Main.Engine {
 			}
 		}
 
-		@Override protected Loader.Classes.Interface getClasspath() {
-			return classes.getInterface();
-		}
-
 		//	TODO	completely copy-pasted from Nashorn.java
 		private ExitException getExitException(Exception e) {
 			Throwable t = e;
@@ -119,23 +115,23 @@ public class Graal extends Main.Engine {
 			}
 		}
 
-		@Override public void run(inonit.script.engine.Host.Program program) throws ScriptException {
-			inonit.script.engine.Host.run(
-				inonit.script.graal.HostFactory.create(
-					new inonit.script.graal.HostFactory.Configuration() {
-						public inonit.script.graal.HostFactory.Configuration.Inspect inspect() {
-							String setting = System.getProperty("jsh.debug.script");
-							if (setting != null && setting.equals("graal")) {
-								return inonit.script.graal.HostFactory.Configuration.Inspect.SLIME;
-							} else {
-								return null;
-							}
+		@Override public inonit.script.engine.Host.Factory getHostFactory() {
+			return inonit.script.graal.HostFactory.create(
+				new inonit.script.graal.HostFactory.Configuration() {
+					public inonit.script.graal.HostFactory.Configuration.Inspect inspect() {
+						String setting = System.getProperty("jsh.debug.script");
+						if (setting != null && setting.equals("graal")) {
+							return inonit.script.graal.HostFactory.Configuration.Inspect.SLIME;
+						} else {
+							return null;
 						}
 					}
-				),
-				classes,
-				program
+				}
 			);
+		}
+
+		@Override public Loader.Classes getClasses() {
+			return classes;
 		}
 	}
 

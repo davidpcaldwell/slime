@@ -81,8 +81,8 @@ public class Nashorn extends Main.Engine {
 			this.top = top;
 		}
 
-		@Override protected Loader.Classes.Interface getClasspath() {
-			return classes.getInterface();
+		@Override protected Loader.Classes getClasses() {
+			return classes;
 		}
 
 		@Override public void setJshRuntimeObject(inonit.script.engine.Host.Program program) {
@@ -145,8 +145,8 @@ public class Nashorn extends Main.Engine {
 			}
 		}
 
-		@Override public void run(inonit.script.engine.Host.Program program) throws ScriptException {
-			inonit.script.engine.Host.run(inonit.script.engine.Host.Factory.engine("nashorn"), classes, program);
+		@Override public inonit.script.engine.Host.Factory getHostFactory() {
+			return inonit.script.engine.Host.Factory.engine("nashorn");
 		}
 	}
 
