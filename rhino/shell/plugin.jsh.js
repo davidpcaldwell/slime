@@ -10,123 +10,136 @@
 //	Contributor(s):
 //	END LICENSE
 
-plugin({
-	isReady: function() {
-		return jsh.js && jsh.document && jsh.js.document && jsh.js.web && jsh.java && jsh.io && jsh.file;
-	},
-	load: function() {
-		var kotlin = ($slime.getLibraryFile("kotlin")) ? {
-			compiler: jsh.file.Pathname( String($slime.getLibraryFile("kotlin/bin/kotlinc").getAbsolutePath()) ).file
-		} : null;
+//@ts-check
+(
+	/**
+	 *
+	 * @param { Packages } Packages
+	 * @param { jsh.plugin.$slime } $slime
+	 * @param { slime.Loader } $loader
+	 * @param { jsh.plugin.plugin } plugin
+	 */
+	function(Packages,$slime,$loader,plugin) {
+		plugin({
+			isReady: function() {
+				return Boolean(jsh.js && jsh.document && jsh.js.document && jsh.js.web && jsh.java && jsh.io && jsh.file);
+			},
+			load: function() {
+				var kotlin = ($slime.getLibraryFile("kotlin")) ? {
+					compiler: jsh.file.Pathname( String($slime.getLibraryFile("kotlin/bin/kotlinc").getAbsolutePath()) ).file
+				} : null;
 
-		var module = $loader.module("module.js", {
-			api: {
-				js: jsh.js,
-				java: jsh.java,
-				io: jsh.io,
-				file: jsh.file,
-				document: jsh.js.document,
-				xml: {
-					parseFile: function(file) {
-						return new jsh.document.Document({ string: file.read(String) });
+				var module = $loader.module("module.js", {
+					api: {
+						js: jsh.js,
+						java: jsh.java,
+						io: jsh.io,
+						file: jsh.file,
+						document: jsh.js.document,
+						xml: {
+							parseFile: function(file) {
+								return new jsh.document.Document({ string: file.read(String) });
+							}
+						}
+					},
+					_properties: $slime.getSystemProperties(),
+					_environment: $slime.getEnvironment(),
+					kotlin: kotlin
+				});
+				if (!module.properties) throw new TypeError();
+
+				var context = {};
+				context.api = {
+					js: jsh.js
+					,java: jsh.java
+					,io: jsh.io
+					,file: jsh.file
+				}
+				context.stdio = new function() {
+					this.input = jsh.io.Streams.java.adapt($slime.getStdio().getStandardInput());
+					this.output = jsh.io.Streams.java.adapt($slime.getStdio().getStandardOutput());
+					this.error = jsh.io.Streams.java.adapt($slime.getStdio().getStandardError());
+				}
+				//	TODO	properties methods should go away; should not be necessary now
+				context.getSystemProperty = function(name) {
+					var rv = $slime.getSystemProperties().getProperty(name);
+					if (rv == null) return null;
+					return String(rv);
+				};
+				context._getSystemProperties = function() {
+					return $slime.getSystemProperties();
+				};
+				context.exit = function(code) {
+					$slime.exit(code);
+				};
+				context.jsh = function(configuration,script,args) {
+					var _invocation = $slime.getInterface().invocation(
+						script.pathname.java.adapt(),
+						jsh.java.toJavaArray(args,Packages.java.lang.String,function(s) {
+							return new Packages.java.lang.String(s);
+						})
+					);
+					return $slime.jsh(configuration,_invocation)
+				};
+				$loader.run(
+					"jsh.js",
+					{
+						$context: context,
+						$exports: module
+					}
+				);
+				jsh.shell = module;
+			}
+		});
+
+		plugin({
+			isReady: function() {
+				return Boolean(jsh.shell && jsh.httpd);
+			},
+			load: function() {
+				jsh.shell.browser.inject({ httpd: jsh.httpd });
+			}
+		});
+
+		plugin({
+			isReady: function() {
+				return Boolean(jsh.js && jsh.shell && jsh.shell.jsh && jsh.script)
+			},
+			load: function() {
+				jsh.shell.jsh.debug = function(p) {
+					var isRhino = (function() {
+						//	TODO	probably a way to get this from rhino/jrunscript/api.js
+						if (!jsh.java.getClass("org.mozilla.javascript.Context")) return false;
+						if (!Packages.org.mozilla.javascript.Context.getCurrentContext()) return false;
+						return true;
+					})();
+
+					//	TODO	probably want to build these arguments better so that other jsh.shell.jsh arguments like stdio and
+					//			environment can also be used and still work
+
+					var evaluate = function(result) {
+						jsh.shell.exit(result.status);
+					};
+
+					if (isRhino) {
+						jsh.shell.jsh({
+							script: jsh.script.file,
+							arguments: jsh.script.arguments,
+							environment: jsh.js.Object.set({}, jsh.shell.environment, {
+								JSH_DEBUG_SCRIPT: "rhino"
+							}),
+							evaluate: evaluate
+						})
+					} else {
+						jsh.shell.jsh({
+							script: jsh.shell.jsh.src.getFile("jsh/tools/ncdbg.jsh.js"),
+							arguments: [jsh.script.file.toString()].concat(jsh.script.arguments),
+							evaluate: evaluate
+						});
 					}
 				}
-			},
-			_properties: $slime.getSystemProperties(),
-			_environment: $slime.getEnvironment(),
-			kotlin: kotlin
-		});
-		if (!module.properties) throw new TypeError();
-
-		var context = {};
-		context.api = {
-			js: jsh.js
-			,java: jsh.java
-			,io: jsh.io
-			,file: jsh.file
-		}
-		context.stdio = new function() {
-			this.input = jsh.io.Streams.java.adapt($slime.getStdio().getStandardInput());
-			this.output = jsh.io.Streams.java.adapt($slime.getStdio().getStandardOutput());
-			this.error = jsh.io.Streams.java.adapt($slime.getStdio().getStandardError());
-		}
-		//	TODO	properties methods should go away; should not be necessary now
-		context.getSystemProperty = function(name) {
-			var rv = $slime.getSystemProperties().getProperty(name);
-			if (rv == null) return null;
-			return String(rv);
-		};
-		context._getSystemProperties = function() {
-			return $slime.getSystemProperties();
-		};
-		context.exit = function(code) {
-			$slime.exit(code);
-		};
-		context.jsh = function(configuration,script,args) {
-			var _invocation = $slime.getInterface().invocation(
-				script.pathname.java.adapt(),
-				jsh.java.toJavaArray(args,Packages.java.lang.String,function(s) {
-					return new Packages.java.lang.String(s);
-				})
-			);
-			return $slime.jsh(configuration,_invocation)
-		};
-		$loader.run(
-			"jsh.js",
-			{
-				$context: context,
-				$exports: module
 			}
-		);
-		jsh.shell = module;
+		})
 	}
-});
-
-plugin({
-	isReady: function() {
-		return jsh.shell && jsh.httpd;
-	},
-	load: function() {
-		jsh.shell.browser.inject({ httpd: jsh.httpd });
-	}
-});
-
-plugin({
-	isReady: function() {
-		return jsh.js && jsh.shell && jsh.shell.jsh && jsh.script
-	},
-	load: function() {
-		jsh.shell.jsh.debug = function(p) {
-			var isRhino = (function() {
-				//	TODO	probably a way to get this from rhino/jrunscript/api.js
-				if (!jsh.java.getClass("org.mozilla.javascript.Context")) return false;
-				if (!Packages.org.mozilla.javascript.Context.getCurrentContext()) return false;
-				return true;
-			})();
-
-			//	TODO	probably want to build these arguments better so that other jsh.shell.jsh arguments like stdio and
-			//			environment can also be used and still work
-
-			var evaluate = function(result) {
-				jsh.shell.exit(result.status);
-			};
-
-			if (isRhino) {
-				jsh.shell.jsh({
-					script: jsh.script.file,
-					arguments: jsh.script.arguments,
-					environment: jsh.js.Object.set({}, jsh.shell.environment, {
-						JSH_DEBUG_SCRIPT: "rhino"
-					}),
-					evaluate: evaluate
-				})
-			} else {
-				jsh.shell.jsh({
-					script: jsh.shell.jsh.src.getFile("jsh/tools/ncdbg.jsh.js"),
-					arguments: [jsh.script.file.toString()].concat(jsh.script.arguments),
-					evaluate: evaluate
-				});
-			}
-		}
-	}
-})
+//@ts-ignore
+)(Packages,$slime,$loader,plugin);

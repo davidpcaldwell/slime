@@ -94,7 +94,7 @@ sourceSets {
 		compileClasspath += sourceSets.rhino.output
 		compileClasspath += sourceSets.jsh.output
 		//	java.outputDir is not respected by VSCode; appears generated .classpath is wrong
-		java.outputDir = file('local/gradle/bin/jsh-rhino')
+		java.outputDir = file('local/gradle/bin/jshRhino')
 		java {
 			srcDir 'jsh/loader/rhino/java'
 		}
@@ -106,7 +106,7 @@ sourceSets {
 		compileClasspath += sourceSets.graal.output
 		compileClasspath += sourceSets.jsh.output
 		//	java.outputDir is not respected by VSCode; appears generated .classpath is wrong
-		java.outputDir = file('local/gradle/bin/jsh-graal')
+		java.outputDir = file('local/gradle/bin/jshGraal')
 		java {
 			srcDir 'jsh/loader/graal/java'
 		}

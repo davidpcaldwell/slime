@@ -15,6 +15,7 @@ namespace jsh.shell {
 			lib?: slime.jrunscript.file.Directory
 			home?: slime.jrunscript.file.Directory
 			relaunch: () => void
+			debug: any
 		}
 		os: {
 			name: string
