@@ -199,12 +199,9 @@ public class Engine {
 	private Engine() {
 	}
 
-	private Scriptable getGlobalScope(Context context) {
-		return context.initStandardObjects();
-	}
-
 	//	TODO	it would be nice if this returned the evaluation value of the script, but according to interactive testing,
 	//			it does not; it always returns null, because source.evaluate always returns undefined, even for an expression.
+	//	TODO	can this be unified with the Host.Script construct? Can Source be unified with it?
 	public Scriptable script(String name, String code, Scriptable scope, Scriptable target) throws IOException {
 		Source source = Source.create(name,code);
 		Object rv = source.evaluate(debugger, configuration, scope, target);
@@ -221,125 +218,12 @@ public class Engine {
 		return configuration.call(new ProgramAction(this, program, debugger));
 	}
 
-	static class Unit {
-		private Source source;
-
-		Unit(Source source) {
-			this.source = source;
-		}
-
-		protected Object execute(Debugger dim, Context context, Scriptable global) throws IOException {
-			return source.evaluate(dim, context, global, global, true);
-		}
+	public Debugger getDebugger() {
+		return this.debugger;
 	}
 
-	private static Object toScopePropertyValue(Context context, Scriptable global, Object value) {
-		if (value instanceof Object[]) {
-			Object[] array = (Object[])value;
-			Object[] objects = new Object[array.length];
-			for (int j=0; j<objects.length; j++) {
-				objects[j] = array[j];
-			}
-			return context.newArray( global, objects );
-		}
-		return Context.javaToJS(value, global);
-	}
-
-	private static int toRhinoAttributes(Host.Binding attributes) {
-		int rv = ScriptableObject.EMPTY;
-		rv |= ScriptableObject.PERMANENT;
-		rv |= ScriptableObject.READONLY;
-		rv |= ScriptableObject.DONTENUM;
-		return rv;
-	}
-
-	private static class ExecutorImpl extends Host.Executor {
-		private Debugger dim;
-		private Context context;
-		private Scriptable global;
-
-		ExecutorImpl(Engine engine, Debugger dim, Context context) {
-			this.dim = dim;
-			this.context = context;
-			this.global = engine.getGlobalScope(context);
-		}
-
-		@Override
-		public void bind(Host.Binding binding) {
-			ScriptableObject.defineProperty(
-				global,
-				binding.getName(),
-				toScopePropertyValue(context, global, binding.getValue()),
-				toRhinoAttributes(binding)
-			);
-		}
-
-		@Override
-		public Object eval(Host.Script file) {
-			//	TODO	probably as we move toward javax.script, the caught errors should report out as ScriptException
-			Errors errors = Errors.get(context);
-			if (errors != null) {
-				errors.reset();
-			}
-			try {
-				Unit unit = new Unit(Source.create(file));
-				return unit.execute(dim, context, global);
-			} catch (IOException e) {
-				//	TODO	could use some analysis here about what this exception would mean
-				throw new RuntimeException(e);
-			} catch (WrappedException e) {
-				//	TODO	Note that when this is merged into jsh, we will need to change jsh error reporting to dump the
-				//			stack trace from the contained Throwable inside the errors object.
-//					throw e;
-				if (errors != null) {
-					errors.add(e);
-					throw errors;
-				} else {
-					throw e;
-				}
-			} catch (EvaluatorException e) {
-				//	TODO	Oh my goodness, is there no better way to do this?
-				if (errors != null && (e.getMessage().indexOf("Compilation produced") == -1 || e.getMessage().indexOf("syntax errors.") == -1)) {
-					errors.add(e);
-				}
-				if (errors != null) {
-					throw errors;
-				} else {
-					throw e;
-				}
-			} catch (EcmaError e) {
-				if (errors != null) {
-					errors.add(e);
-					throw errors;
-				} else {
-					throw e;
-				}
-			} catch (JavaScriptException e) {
-				if (errors != null) {
-					errors.add(e);
-					throw errors;
-				} else {
-					throw e;
-				}
-			}
-		}
-	}
-
-	private static class HostFactory extends Host.Factory {
-		private Engine engine;
-		private Debugger debugger;
-		private Context context;
-
-		HostFactory(Engine engine, Debugger debugger, Context context) {
-			this.engine = engine;
-			this.debugger = debugger;
-			this.context = context;
-		}
-
-		@Override
-		public Host.Executor create(ClassLoader classes) {
-			return new ExecutorImpl(engine, debugger, context);
-		}
+	public Loader.Classes.Interface getClasspath() {
+		return this.configuration.getClasspath();
 	}
 
 	private static class ProgramAction implements ContextAction {
@@ -364,13 +248,126 @@ public class Engine {
 				throw new RuntimeException(e);
 			}
 		}
-	}
 
-	public Debugger getDebugger() {
-		return this.debugger;
-	}
+		private static class HostFactory extends Host.Factory {
+			private Engine engine;
+			private Debugger debugger;
+			private Context context;
 
-	public Loader.Classes.Interface getClasspath() {
-		return this.configuration.getClasspath();
+			HostFactory(Engine engine, Debugger debugger, Context context) {
+				this.engine = engine;
+				this.debugger = debugger;
+				this.context = context;
+			}
+
+			@Override
+			public Host.Executor create(ClassLoader classes) {
+				return new ExecutorImpl(engine, debugger, context);
+			}
+
+			private static class ExecutorImpl extends Host.Executor {
+				private Debugger dim;
+				private Context context;
+				private Scriptable global;
+
+				ExecutorImpl(Engine engine, Debugger dim, Context context) {
+					this.dim = dim;
+					this.context = context;
+					this.global = context.initStandardObjects();
+				}
+
+				private static Object toScopePropertyValue(Context context, Scriptable global, Object value) {
+					if (value instanceof Object[]) {
+						Object[] array = (Object[])value;
+						Object[] objects = new Object[array.length];
+						for (int j=0; j<objects.length; j++) {
+							objects[j] = array[j];
+						}
+						return context.newArray( global, objects );
+					}
+					return Context.javaToJS(value, global);
+				}
+
+				private static int toRhinoAttributes(Host.Binding attributes) {
+					int rv = ScriptableObject.EMPTY;
+					rv |= ScriptableObject.PERMANENT;
+					rv |= ScriptableObject.READONLY;
+					rv |= ScriptableObject.DONTENUM;
+					return rv;
+				}
+
+				@Override
+				public void bind(Host.Binding binding) {
+					ScriptableObject.defineProperty(
+						global,
+						binding.getName(),
+						toScopePropertyValue(context, global, binding.getValue()),
+						toRhinoAttributes(binding)
+					);
+				}
+
+				@Override
+				public Object eval(Host.Script file) {
+					//	TODO	probably as we move toward javax.script, the caught errors should report out as ScriptException
+					Errors errors = Errors.get(context);
+					if (errors != null) {
+						errors.reset();
+					}
+					try {
+						Unit unit = new Unit(Source.create(file));
+						return unit.execute(dim, context, global);
+					} catch (IOException e) {
+						//	TODO	could use some analysis here about what this exception would mean
+						throw new RuntimeException(e);
+					} catch (WrappedException e) {
+						//	TODO	Note that when this is merged into jsh, we will need to change jsh error reporting to dump the
+						//			stack trace from the contained Throwable inside the errors object.
+		//					throw e;
+						if (errors != null) {
+							errors.add(e);
+							throw errors;
+						} else {
+							throw e;
+						}
+					} catch (EvaluatorException e) {
+						//	TODO	Oh my goodness, is there no better way to do this?
+						if (errors != null && (e.getMessage().indexOf("Compilation produced") == -1 || e.getMessage().indexOf("syntax errors.") == -1)) {
+							errors.add(e);
+						}
+						if (errors != null) {
+							throw errors;
+						} else {
+							throw e;
+						}
+					} catch (EcmaError e) {
+						if (errors != null) {
+							errors.add(e);
+							throw errors;
+						} else {
+							throw e;
+						}
+					} catch (JavaScriptException e) {
+						if (errors != null) {
+							errors.add(e);
+							throw errors;
+						} else {
+							throw e;
+						}
+					}
+				}
+
+				private static class Unit {
+					private Source source;
+
+					Unit(Source source) {
+						this.source = source;
+					}
+
+					protected Object execute(Debugger dim, Context context, Scriptable global) throws IOException {
+						return source.evaluate(dim, context, global, global, true);
+					}
+				}
+			}
+		}
 	}
 }

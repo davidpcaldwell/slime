@@ -466,10 +466,6 @@ public class Shell {
 
 		protected abstract Loader.Classes.Interface getClasspath();
 
-		protected final Code.Loader getJshLoader() {
-			return shell.getJshLoader();
-		}
-
 		protected final Code.Loader.Resource getJshLoaderFile(String path) {
 			try {
 				return shell.getJshLoader().getFile(path);

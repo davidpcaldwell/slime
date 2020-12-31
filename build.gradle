@@ -8,15 +8,18 @@ repositories {
 
 configurations {
 	rhino
+	graal
 	servlet
 }
 
 dependencies {
 	rhino 'org.mozilla:rhino:1.7R3'
+	graal 'org.graalvm.sdk:graal-sdk:20.3.0'
 	servlet 'javax.servlet:javax.servlet-api:3.0.1'
 
 	//	These lines are necessary for VSCode to properly understand the dependencies
 	implementation 'org.mozilla:rhino:1.7R3'
+	implementation 'org.graalvm.sdk:graal-sdk:20.3.0'
 	implementation 'javax.servlet:javax.servlet-api:3.0.1'
 }
 
@@ -41,6 +44,16 @@ sourceSets {
 
 			//	modules
 			srcDir 'jrunscript/host/rhino/java'
+		}
+	}
+
+	graal {
+		compileClasspath += configurations.graal
+		compileClasspath += sourceSets.main.output
+		//	java.outputDir is not respected by VSCode; appears generated .classpath is wrong
+		java.outputDir = file('local/gradle/bin/graal')
+		java {
+			srcDir 'loader/jrunscript/graal/java'
 		}
 	}
 
@@ -81,9 +94,21 @@ sourceSets {
 		compileClasspath += sourceSets.rhino.output
 		compileClasspath += sourceSets.jsh.output
 		//	java.outputDir is not respected by VSCode; appears generated .classpath is wrong
-		java.outputDir = file('local/gradle/bin/jshRhino')
+		java.outputDir = file('local/gradle/bin/jsh-rhino')
 		java {
 			srcDir 'jsh/loader/rhino/java'
+		}
+	}
+
+	jshGraal {
+		compileClasspath += configurations.graal
+		compileClasspath += sourceSets.main.output
+		compileClasspath += sourceSets.graal.output
+		compileClasspath += sourceSets.jsh.output
+		//	java.outputDir is not respected by VSCode; appears generated .classpath is wrong
+		java.outputDir = file('local/gradle/bin/jsh-graal')
+		java {
+			srcDir 'jsh/loader/graal/java'
 		}
 	}
 }

@@ -11,20 +11,12 @@ abstract class Source {
 	//	TODO	should look at further unifying Code.Loader and Source. Is the create(String, String) method necessary?
 	//			what about create(String, InputStream) used by Rhino servlet?
 
-	static Source create(String name, InputStream in) {
-		return new ReaderSource(name, new InputStreamReader(in));
-	}
-
 	static Source create(String sourceName, String code) {
 		return new ReaderSource(sourceName, new StringReader(code));
 	}
 
 	static Source create(Host.Script script) {
 		return new ReaderSource(script.getName(), new StringReader(script.getCode()));
-	}
-
-	static Source create(Code.Loader.Resource file) {
-		return new ReaderSource(file.getSourceName(), file.getReader());
 	}
 
 	private boolean debug = true;
