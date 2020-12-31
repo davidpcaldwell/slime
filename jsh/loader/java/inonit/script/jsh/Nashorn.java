@@ -117,24 +117,36 @@ public class Nashorn extends Main.Engine {
 			return null;
 		}
 
-		@Override public Integer run(inonit.script.engine.Host.Program program) {
-			try {
-				//	ignore returned Object
-				inonit.script.engine.Host.run(inonit.script.engine.Host.Factory.engine("nashorn"), classes, program);
-				return null;
-			} catch (RuntimeException e) {
-				ExitException exit = getExitException(e);
-				if (exit != null) {
-					return exit.getExitStatus();
+		private ErrorHandlingImpl errorHandling = new ErrorHandlingImpl();
+
+		@Override protected ErrorHandling getErrorHandling() {
+			return errorHandling;
+		}
+
+		private class ErrorHandlingImpl extends ErrorHandling {
+			@Override
+			public Integer run(Run r) {
+				try {
+					r.run();
+					return null;
+				} catch (RuntimeException e) {
+					ExitException exit = getExitException(e);
+					if (exit != null) {
+						return exit.getExitStatus();
+					}
+					throw e;
+				} catch (ScriptException e) {
+					ExitException exit = getExitException(e);
+					if (exit != null) {
+						return exit.getExitStatus();
+					}
+					throw new UncaughtException(e);
 				}
-				throw e;
-			} catch (ScriptException e) {
-				ExitException exit = getExitException(e);
-				if (exit != null) {
-					return exit.getExitStatus();
-				}
-				throw new UncaughtException(e);
 			}
+		}
+
+		@Override public void run(inonit.script.engine.Host.Program program) throws ScriptException {
+			inonit.script.engine.Host.run(inonit.script.engine.Host.Factory.engine("nashorn"), classes, program);
 		}
 	}
 
