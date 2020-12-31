@@ -213,9 +213,19 @@ public class Engine {
 		return configuration.canAccessEnvironment();
 	}
 
+	private HostFactory hosts;
+
 	//	Used from servlet and jsh Java implementations
 	public Object execute(Host.Program program) {
-		return configuration.call(new ProgramAction(this, program, debugger));
+		if (hosts == null) {
+			hosts = new HostFactory(debugger, configuration.factory());
+		}
+		try {
+			return Host.run(hosts, Loader.Classes.create(configuration.classes()), program);
+		} catch (javax.script.ScriptException e) {
+			throw new RuntimeException(e);
+		}
+//		return configuration.call(new ProgramAction(this, program, debugger));
 	}
 
 	public Debugger getDebugger() {
@@ -226,51 +236,52 @@ public class Engine {
 		return this.configuration.getClasspath();
 	}
 
-	private static class ProgramAction implements ContextAction {
-		private Engine engine;
-		private Host.Program program;
-		private Debugger debugger;
+	// private static class ProgramAction implements ContextAction {
+	// 	private Engine engine;
+	// 	private Host.Program program;
+	// 	private Debugger debugger;
 
-		ProgramAction(Engine engine, Host.Program program, Debugger debugger) {
-			this.engine = engine;
-			this.program = program;
-			this.debugger = debugger;
-		}
+	// 	ProgramAction(Engine engine, Host.Program program, Debugger debugger) {
+	// 		this.engine = engine;
+	// 		this.program = program;
+	// 		this.debugger = debugger;
+	// 	}
 
-		public Object run(Context context) {
-			try {
-				return Host.run(new HostFactory(debugger, context), Loader.Classes.create(engine.configuration.classes()), program);
-			} catch (ScriptException e) {
-				//	can't happen right now, it is believed, though could refactor so that other exceptions are thrown as these
-				//	to standardize across engines
-				throw new RuntimeException(e);
-			}
-		}
-	}
+	// 	public Object run(Context context) {
+	// 		try {
+	// 			return Host.run(new HostFactory(debugger, context), Loader.Classes.create(engine.configuration.classes()), program);
+	// 		} catch (ScriptException e) {
+	// 			//	can't happen right now, it is believed, though could refactor so that other exceptions are thrown as these
+	// 			//	to standardize across engines
+	// 			throw new RuntimeException(e);
+	// 		}
+	// 	}
+	// }
 
 	private static class HostFactory extends Host.Factory {
 		private Debugger debugger;
-		private Context context;
+		private ContextFactory contexts;
 
-		HostFactory(Debugger debugger, Context context) {
+		HostFactory(Debugger debugger, ContextFactory contexts) {
 			this.debugger = debugger;
-			this.context = context;
+			this.contexts = contexts;
 		}
 
 		@Override
 		public Host create(ClassLoader classes) {
-			return new ExecutorImpl(debugger, context);
+			return new ExecutorImpl(debugger, contexts);
 		}
 
 		private static class ExecutorImpl extends Host {
 			private Debugger dim;
+			private ContextFactory contexts;
+
 			private Context context;
 			private Scriptable global;
 
-			ExecutorImpl(Debugger dim, Context context) {
+			ExecutorImpl(Debugger dim, ContextFactory contexts) {
 				this.dim = dim;
-				this.context = context;
-				this.global = context.initStandardObjects();
+				this.contexts = contexts;
 			}
 
 			private static Object toScopePropertyValue(Context context, Scriptable global, Object value) {
@@ -291,6 +302,15 @@ public class Engine {
 				rv |= ScriptableObject.READONLY;
 				rv |= ScriptableObject.DONTENUM;
 				return rv;
+			}
+
+			@Override public void initialize() {
+				this.context = contexts.enterContext();
+				this.global = context.initStandardObjects();
+			}
+
+			@Override public void destroy() {
+				Context.exit();
 			}
 
 			@Override

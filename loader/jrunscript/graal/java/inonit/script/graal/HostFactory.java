@@ -31,6 +31,9 @@ public class HostFactory extends inonit.script.engine.Host.Factory {
 		final org.graalvm.polyglot.Context context = builder.build();
 
 		inonit.script.engine.Host executor = new inonit.script.engine.Host() {
+			public void initialize() {}
+			public void destroy() {}
+
 			@Override public void bind(Host.Binding binding) {
 				context.getBindings("js").putMember(binding.getName(), binding.getValue());
 			}
