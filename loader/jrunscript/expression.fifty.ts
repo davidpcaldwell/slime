@@ -271,6 +271,8 @@ namespace Packages {
 		}
 	}
 
+	type EngineSpecificJshInterface = jsh.plugin.EngineSpecific;
+
 	export namespace inonit.script {
 		export namespace runtime.io {
 			export interface Streams {
@@ -318,7 +320,7 @@ namespace Packages {
 		export namespace jsh {
 			export interface Shell {
 				setRuntime(value: slime.jrunscript.runtime.Exports)
-				runtime(): slime.jrunscript.runtime.Exports
+				runtime(): slime.jrunscript.runtime.Exports & EngineSpecificJshInterface
 				getLoader(): Packages.inonit.script.engine.Loader
 				getEnvironment(): Shell.Environment
 				getInvocation(): Shell.Invocation

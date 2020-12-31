@@ -1,5 +1,11 @@
 namespace jsh.plugin {
-	interface $slime extends slime.jrunscript.runtime.Exports {
+	interface EngineSpecific {
+		//	provided by engine-specific rhino.js and nashorn.js
+		exit: any
+		jsh: any
+	}
+
+	interface $slime extends slime.jrunscript.runtime.Exports, EngineSpecific {
 		getSystemProperty(name: string): string
 		getEnvironment(): any
 		getInvocation(): any
@@ -15,5 +21,6 @@ namespace jsh.plugin {
 		getLibraryFile: any
 		getInterface(): any
 		getSystemProperties(): any
+		getStdio(): any
 	}
 }

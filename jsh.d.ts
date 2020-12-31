@@ -54,7 +54,7 @@ declare namespace jsh {
 
 	const tools: jsh['tools'];
 	const script: jsh['script'];
-	const shell: jsh['shell'];
+	let shell: jsh['shell'];
 	const unit: jsh['unit'];
 
 	const loader: jsh['loader'];
