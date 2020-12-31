@@ -9,7 +9,7 @@ public class HostFactory extends inonit.script.engine.Host.Factory {
 		this.configuration = configuration;
 	}
 
-	@Override public inonit.script.engine.Host.Executor create(ClassLoader classes) {
+	@Override public inonit.script.engine.Host create(ClassLoader classes) {
 		Thread.currentThread().setContextClassLoader(classes);
 		//	TODO	figure out how to set classpath properly
 
@@ -30,7 +30,7 @@ public class HostFactory extends inonit.script.engine.Host.Factory {
 
 		final org.graalvm.polyglot.Context context = builder.build();
 
-		inonit.script.engine.Host.Executor executor = new inonit.script.engine.Host.Executor() {
+		inonit.script.engine.Host executor = new inonit.script.engine.Host() {
 			@Override public void bind(Host.Binding binding) {
 				context.getBindings("js").putMember(binding.getName(), binding.getValue());
 			}
@@ -65,10 +65,10 @@ public class HostFactory extends inonit.script.engine.Host.Factory {
 		}
 	}
 
-	public static inonit.script.engine.Host create(Configuration configuration, Loader.Classes.Configuration classes) {
+	public static inonit.script.engine.Host.Factory create(Configuration configuration) {
 		//	ScriptEngine-based implementation commented-out for now
 //		return inonit.script.engine.Host.create(inonit.script.engine.Host.Factory.engine("graal.js"), configuration);
-		return inonit.script.engine.Host.create(new HostFactory(configuration), classes);
+		return new HostFactory(configuration);
 	}
 
 	private HostFactory() {

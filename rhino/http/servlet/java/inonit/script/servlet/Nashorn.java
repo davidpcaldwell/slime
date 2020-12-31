@@ -20,29 +20,31 @@ import inonit.script.engine.*;
 
 class Nashorn extends Servlet.ScriptContainer {
 	private Servlet servlet;
+	private Loader.Classes classes;
 	private inonit.script.engine.Host.Program program;
-	private inonit.script.engine.Host host;
 
 	@Override void initialize(Servlet servlet) {
 		this.servlet = servlet;
+		this.classes = Loader.Classes.create(
+			new Loader.Classes.Configuration() {
+				@Override public boolean canCreateClassLoaders() {
+					return true;
+				}
+
+				@Override public ClassLoader getApplicationClassLoader() {
+					return Nashorn.class.getClassLoader();
+				}
+
+				@Override public File getLocalClassCache() {
+					return null;
+				}
+			}
+		);
 		this.program = new inonit.script.engine.Host.Program();
-		this.host = inonit.script.engine.Host.create(inonit.script.engine.Host.Factory.engine("nashorn"), new Loader.Classes.Configuration() {
-			@Override public boolean canCreateClassLoaders() {
-				return true;
-			}
-
-			@Override public ClassLoader getApplicationClassLoader() {
-				return Nashorn.class.getClassLoader();
-			}
-
-			@Override public File getLocalClassCache() {
-				return null;
-			}
-		});
 	}
 
 	@Override Servlet.HostObject getServletHostObject() {
-		return new HostObject(servlet,host);
+		return new HostObject(servlet,classes);
 	}
 
 	@Override void setVariable(String name, Object value) {
@@ -59,7 +61,11 @@ class Nashorn extends Servlet.ScriptContainer {
 
 	@Override void execute() {
 		try {
-			host.run(program);
+			inonit.script.engine.Host.run(
+				inonit.script.engine.Host.Factory.engine("nashorn"),
+				classes,
+				program
+			);
 		} catch (ScriptException e) {
 			throw new RuntimeException(e);
 		}
@@ -67,15 +73,15 @@ class Nashorn extends Servlet.ScriptContainer {
 
 	//	TODO	could be removed and superclass could be made concrete
 	public static class HostObject extends Servlet.HostObject {
-		private inonit.script.engine.Host host;
+		private Loader.Classes classes;
 
-		HostObject(Servlet servlet, inonit.script.engine.Host host) {
+		HostObject(Servlet servlet, Loader.Classes classes) {
 			super(servlet);
-			this.host = host;
+			this.classes = classes;
 		}
 
 		public Loader.Classes.Interface getClasspath() {
-			return host.getClasspath();
+			return classes.getInterface();
 		}
 	}
 }

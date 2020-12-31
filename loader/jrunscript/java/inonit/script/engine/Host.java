@@ -12,7 +12,7 @@ import inonit.script.runtime.io.*;
  * A {@link Host} is an object capable of executing scripts within a global scope, with an arbitrary set of values provided as
  * to that scope (called "bindings" in the javax.script API).
  */
-public class Host {
+public abstract class Host {
 	private static final Streams streams = new inonit.script.runtime.io.Streams();
 
 	public static abstract class Script {
@@ -59,16 +59,11 @@ public class Host {
 		}
 	}
 
-	public static abstract class Executor {
-		public abstract void bind(Binding binding);
-		public abstract Object eval(Script file) throws ScriptException;
-	}
-
-	private static class JavaxScriptExecutor extends Executor {
+	private static class JavaxScriptHost extends Host {
 		private ScriptEngineManager factory;
 		private ScriptEngine engine;
 
-		private JavaxScriptExecutor(String engineName) {
+		private JavaxScriptHost(String engineName) {
 			this.factory = new ScriptEngineManager();
 			this.engine = factory.getEngineByName(engineName);
 			if (this.engine == null) {
@@ -88,37 +83,19 @@ public class Host {
 	}
 
 	public static abstract class Factory {
-		public abstract Executor create(ClassLoader classes);
+		public abstract Host create(ClassLoader classes);
 
 		public static Factory engine(final String name) {
 			return new Factory() {
-				public Executor create(ClassLoader classes) {
+				public Host create(ClassLoader classes) {
 					Thread.currentThread().setContextClassLoader(classes);
-					return new JavaxScriptExecutor(name);
+					return new JavaxScriptHost(name);
 				}
 			};
 		}
 	}
 
-	public static Host create(Factory factory, Loader.Classes.Configuration configuration) {
-		Loader.Classes classes = Loader.Classes.create(configuration);
-		Executor executor = factory.create(classes.getApplicationClassLoader());
-		return new Host(executor, classes);
-	}
-
-	private Executor executor;
-	private Loader.Classes classes;
-
-	private Host(Executor executor, Loader.Classes classes) {
-		this.executor = executor;
-		this.classes = classes;
-	}
-
-	public Loader.Classes.Interface getClasspath() {
-		return classes.getInterface();
-	}
-
-	public Object run(Program program) throws ScriptException {
+	private static Object run(Host executor, Program program) throws ScriptException {
 		for (Binding binding : program.variables()) {
 			executor.bind(binding);
 		}
@@ -128,6 +105,17 @@ public class Host {
 		}
 		return rv;
 	}
+
+	public static Object run(Factory factory, Loader.Classes classes, Program program) throws ScriptException {
+		Host executor = factory.create(classes.getApplicationClassLoader());
+		return run(executor, program);
+	}
+
+	protected Host() {
+	}
+
+	protected abstract void bind(Binding binding);
+	protected abstract Object eval(Script file) throws ScriptException;
 
 	public static class Program {
 		private ArrayList<Binding> variables = new ArrayList<Binding>();

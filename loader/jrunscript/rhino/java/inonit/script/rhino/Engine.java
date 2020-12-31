@@ -238,134 +238,130 @@ public class Engine {
 		}
 
 		public Object run(Context context) {
-			Host.Factory factory = new HostFactory(engine, debugger, context);
-			Host host = Host.create(factory, engine.configuration.classes());
 			try {
-				return host.run(program);
+				return Host.run(new HostFactory(debugger, context), Loader.Classes.create(engine.configuration.classes()), program);
 			} catch (ScriptException e) {
 				//	can't happen right now, it is believed, though could refactor so that other exceptions are thrown as these
 				//	to standardize across engines
 				throw new RuntimeException(e);
 			}
 		}
+	}
 
-		private static class HostFactory extends Host.Factory {
-			private Engine engine;
-			private Debugger debugger;
+	private static class HostFactory extends Host.Factory {
+		private Debugger debugger;
+		private Context context;
+
+		HostFactory(Debugger debugger, Context context) {
+			this.debugger = debugger;
+			this.context = context;
+		}
+
+		@Override
+		public Host create(ClassLoader classes) {
+			return new ExecutorImpl(debugger, context);
+		}
+
+		private static class ExecutorImpl extends Host {
+			private Debugger dim;
 			private Context context;
+			private Scriptable global;
 
-			HostFactory(Engine engine, Debugger debugger, Context context) {
-				this.engine = engine;
-				this.debugger = debugger;
+			ExecutorImpl(Debugger dim, Context context) {
+				this.dim = dim;
 				this.context = context;
+				this.global = context.initStandardObjects();
+			}
+
+			private static Object toScopePropertyValue(Context context, Scriptable global, Object value) {
+				if (value instanceof Object[]) {
+					Object[] array = (Object[])value;
+					Object[] objects = new Object[array.length];
+					for (int j=0; j<objects.length; j++) {
+						objects[j] = array[j];
+					}
+					return context.newArray( global, objects );
+				}
+				return Context.javaToJS(value, global);
+			}
+
+			private static int toRhinoAttributes(Host.Binding attributes) {
+				int rv = ScriptableObject.EMPTY;
+				rv |= ScriptableObject.PERMANENT;
+				rv |= ScriptableObject.READONLY;
+				rv |= ScriptableObject.DONTENUM;
+				return rv;
 			}
 
 			@Override
-			public Host.Executor create(ClassLoader classes) {
-				return new ExecutorImpl(engine, debugger, context);
+			public void bind(Host.Binding binding) {
+				ScriptableObject.defineProperty(
+					global,
+					binding.getName(),
+					toScopePropertyValue(context, global, binding.getValue()),
+					toRhinoAttributes(binding)
+				);
 			}
 
-			private static class ExecutorImpl extends Host.Executor {
-				private Debugger dim;
-				private Context context;
-				private Scriptable global;
-
-				ExecutorImpl(Engine engine, Debugger dim, Context context) {
-					this.dim = dim;
-					this.context = context;
-					this.global = context.initStandardObjects();
+			@Override
+			public Object eval(Host.Script file) {
+				//	TODO	probably as we move toward javax.script, the caught errors should report out as ScriptException
+				Errors errors = Errors.get(context);
+				if (errors != null) {
+					errors.reset();
 				}
-
-				private static Object toScopePropertyValue(Context context, Scriptable global, Object value) {
-					if (value instanceof Object[]) {
-						Object[] array = (Object[])value;
-						Object[] objects = new Object[array.length];
-						for (int j=0; j<objects.length; j++) {
-							objects[j] = array[j];
-						}
-						return context.newArray( global, objects );
-					}
-					return Context.javaToJS(value, global);
-				}
-
-				private static int toRhinoAttributes(Host.Binding attributes) {
-					int rv = ScriptableObject.EMPTY;
-					rv |= ScriptableObject.PERMANENT;
-					rv |= ScriptableObject.READONLY;
-					rv |= ScriptableObject.DONTENUM;
-					return rv;
-				}
-
-				@Override
-				public void bind(Host.Binding binding) {
-					ScriptableObject.defineProperty(
-						global,
-						binding.getName(),
-						toScopePropertyValue(context, global, binding.getValue()),
-						toRhinoAttributes(binding)
-					);
-				}
-
-				@Override
-				public Object eval(Host.Script file) {
-					//	TODO	probably as we move toward javax.script, the caught errors should report out as ScriptException
-					Errors errors = Errors.get(context);
+				try {
+					Unit unit = new Unit(Source.create(file));
+					return unit.execute(dim, context, global);
+				} catch (IOException e) {
+					//	TODO	could use some analysis here about what this exception would mean
+					throw new RuntimeException(e);
+				} catch (WrappedException e) {
+					//	TODO	Note that when this is merged into jsh, we will need to change jsh error reporting to dump the
+					//			stack trace from the contained Throwable inside the errors object.
+	//					throw e;
 					if (errors != null) {
-						errors.reset();
+						errors.add(e);
+						throw errors;
+					} else {
+						throw e;
 					}
-					try {
-						Unit unit = new Unit(Source.create(file));
-						return unit.execute(dim, context, global);
-					} catch (IOException e) {
-						//	TODO	could use some analysis here about what this exception would mean
-						throw new RuntimeException(e);
-					} catch (WrappedException e) {
-						//	TODO	Note that when this is merged into jsh, we will need to change jsh error reporting to dump the
-						//			stack trace from the contained Throwable inside the errors object.
-		//					throw e;
-						if (errors != null) {
-							errors.add(e);
-							throw errors;
-						} else {
-							throw e;
-						}
-					} catch (EvaluatorException e) {
-						//	TODO	Oh my goodness, is there no better way to do this?
-						if (errors != null && (e.getMessage().indexOf("Compilation produced") == -1 || e.getMessage().indexOf("syntax errors.") == -1)) {
-							errors.add(e);
-						}
-						if (errors != null) {
-							throw errors;
-						} else {
-							throw e;
-						}
-					} catch (EcmaError e) {
-						if (errors != null) {
-							errors.add(e);
-							throw errors;
-						} else {
-							throw e;
-						}
-					} catch (JavaScriptException e) {
-						if (errors != null) {
-							errors.add(e);
-							throw errors;
-						} else {
-							throw e;
-						}
+				} catch (EvaluatorException e) {
+					//	TODO	Oh my goodness, is there no better way to do this?
+					if (errors != null && (e.getMessage().indexOf("Compilation produced") == -1 || e.getMessage().indexOf("syntax errors.") == -1)) {
+						errors.add(e);
+					}
+					if (errors != null) {
+						throw errors;
+					} else {
+						throw e;
+					}
+				} catch (EcmaError e) {
+					if (errors != null) {
+						errors.add(e);
+						throw errors;
+					} else {
+						throw e;
+					}
+				} catch (JavaScriptException e) {
+					if (errors != null) {
+						errors.add(e);
+						throw errors;
+					} else {
+						throw e;
 					}
 				}
+			}
 
-				private static class Unit {
-					private Source source;
+			private static class Unit {
+				private Source source;
 
-					Unit(Source source) {
-						this.source = source;
-					}
+				Unit(Source source) {
+					this.source = source;
+				}
 
-					protected Object execute(Debugger dim, Context context, Scriptable global) throws IOException {
-						return source.evaluate(dim, context, global, global, true);
-					}
+				protected Object execute(Debugger dim, Context context, Scriptable global) throws IOException {
+					return source.evaluate(dim, context, global, global, true);
 				}
 			}
 		}

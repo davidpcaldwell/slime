@@ -17,22 +17,13 @@ public class Graal extends Main.Engine {
 	}
 
 	private static class ExecutionImpl extends Shell.Execution {
-		private inonit.script.engine.Host host;
+		private Loader.Classes classes;
 		private boolean top;
 
 		ExecutionImpl(final Shell shell, boolean top) {
 			super(shell);
-			this.host = inonit.script.graal.HostFactory.create(
-				new inonit.script.graal.HostFactory.Configuration() {
-					public inonit.script.graal.HostFactory.Configuration.Inspect inspect() {
-						String setting = System.getProperty("jsh.debug.script");
-						if (setting != null && setting.equals("graal")) {
-							return inonit.script.graal.HostFactory.Configuration.Inspect.SLIME;
-						} else {
-							return null;
-						}
-					}
-				},
+
+			this.classes = Loader.Classes.create(
 				new Loader.Classes.Configuration() {
 					@Override public boolean canCreateClassLoaders() {
 						return true;
@@ -47,6 +38,7 @@ public class Graal extends Main.Engine {
 					}
 				}
 			);
+
 			this.top = top;
 		}
 
@@ -65,7 +57,7 @@ public class Graal extends Main.Engine {
 		}
 
 		@Override protected Loader.Classes.Interface getClasspath() {
-			return host.getClasspath();
+			return classes.getInterface();
 		}
 
 		//	TODO	completely copy-pasted from Nashorn.java
@@ -80,9 +72,43 @@ public class Graal extends Main.Engine {
 			return null;
 		}
 
+		@Override public void setJshRuntimeObject(inonit.script.engine.Host.Program program) {
+			program.bind("$nashorn", new Nashorn.Host() {
+				@Override public Loader.Classes.Interface getClasspath() {
+					return classes.getInterface();
+				}
+
+				@Override public boolean isTop() {
+					return top;
+				}
+
+				@Override public void exit(int status) {
+					throw new ExitException(status);
+				}
+			});
+			program.bind("$graal", new Host() {
+			});
+			program.run(this.getJshLoaderFile("nashorn.js"));
+		}
+
 		@Override public Integer run(inonit.script.engine.Host.Program program) {
 			try {
-				Object ignore = host.run(program);
+				inonit.script.engine.Host.run(
+					inonit.script.graal.HostFactory.create(
+						new inonit.script.graal.HostFactory.Configuration() {
+							public inonit.script.graal.HostFactory.Configuration.Inspect inspect() {
+								String setting = System.getProperty("jsh.debug.script");
+								if (setting != null && setting.equals("graal")) {
+									return inonit.script.graal.HostFactory.Configuration.Inspect.SLIME;
+								} else {
+									return null;
+								}
+							}
+						}
+					),
+					classes,
+					program
+				);
 				return null;
 			} catch (RuntimeException e) {
 				ExitException exit = getExitException(e);
@@ -97,25 +123,6 @@ public class Graal extends Main.Engine {
 				}
 				throw new Nashorn.UncaughtException(e);
 			}
-		}
-
-		@Override public void setJshRuntimeObject(inonit.script.engine.Host.Program program) {
-			program.bind("$nashorn", new Nashorn.Host() {
-				@Override public Loader.Classes.Interface getClasspath() {
-					return host.getClasspath();
-				}
-
-				@Override public boolean isTop() {
-					return top;
-				}
-
-				@Override public void exit(int status) {
-					throw new ExitException(status);
-				}
-			});
-			program.bind("$graal", new Host() {
-			});
-			program.run(this.getJshLoaderFile("nashorn.js"));
 		}
 	}
 
