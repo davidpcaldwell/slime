@@ -98,42 +98,16 @@ public class Rhino {
 			this.$rhino = $rhino;
 		}
 
-		private Host.Program program = new Host.Program();
-
 		@Override protected Loader.Classes.Interface getClasspath() {
 			return engine.getClasspath();
 		}
 
-		@Override public void setGlobalProperty(String name, Object value) {
-			Host.Binding variable = Host.Binding.create(
-				name,
-				value
-			);
-			program.bind(variable);
+		@Override public void setJshRuntimeObject(Host.Program program) {
+			program.bind("$rhino", $rhino);
+			program.run(this.getJshLoaderFile("rhino.js"));
 		}
 
-		@Override public void setJshRuntimeObject() {
-			setGlobalProperty("$rhino", $rhino);
-			try {
-				Code.Loader.Resource file = this.getJshLoader().getFile("rhino.js");
-				if (file == null) {
-					throw new NullPointerException("Expected file rhino.js in " + this.getJshLoader());
-				}
-				script(file);
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			}
-		}
-
-		@Override public void script(Code.Loader.Resource script) {
-			try {
-				program.run(Host.Script.create(script));
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			}
-		}
-
-		@Override public Integer run() {
+		@Override public Integer run(Host.Program program) {
 			engine.execute(program);
 			return null;
 		}

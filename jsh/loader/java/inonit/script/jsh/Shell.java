@@ -470,12 +470,13 @@ public class Shell {
 			return shell.getJshLoader();
 		}
 
-		/**
-		 *	Should set a property on the global object. Used to set the <code>$jsh</code> property to the Shell object.
-		 *	@param name The name of the property to set
-		 *	@param value The value to which to set it
-		 */
-		protected abstract void setGlobalProperty(String name, Object value);
+		protected final Code.Loader.Resource getJshLoaderFile(String path) {
+			try {
+				return shell.getJshLoader().getFile(path);
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		}
 
 		/**
 		 *	Must execute a script that creates and provides the SLIME jrunscript runtime object to the {@link Shell}. The
@@ -483,31 +484,30 @@ public class Shell {
 		 */
 		//	TODO	not quite DRY; all implementations must invoke $jsh.setRuntime; would be better if this somehow eval-ed and did
 		//			that itself
-		protected abstract void setJshRuntimeObject();
-
-		/**
-		 *	Executes the given script in the global scope.
-		 *	@param script The script to execute.
-		 */
-		protected abstract void script(Code.Loader.Resource script);
+		protected abstract void setJshRuntimeObject(Host.Program program);
 
 		/**
 		 *	Executes the main script, returning its exit status.
 		 *	@return The exit status of the main program.
 		 */
-		protected abstract Integer run();
+		protected abstract Integer run(Host.Program program);
+
+		private Code.Loader.Resource getJshJs() {
+			try {
+				return shell.getJshLoader().getFile("jsh.js");
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		}
 
 		public final Integer execute() {
 			LOG.log(Level.INFO, "Executing shell with %s", this);
 			shell.setClasspath(getClasspath());
-			this.setGlobalProperty("$jsh", shell);
-			this.setJshRuntimeObject();
-			try {
-				this.script(shell.getJshLoader().getFile("jsh.js"));
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			}
-			return this.run();
+			Host.Program program = new Host.Program();
+			program.bind("$jsh", shell);
+			this.setJshRuntimeObject(program);
+			program.run(getJshJs());
+			return this.run(program);
 		}
 	}
 }

@@ -137,12 +137,24 @@ public class Host {
 			variables.add( variable );
 		}
 
+		public void bind(String name, Object value) {
+			bind(Binding.create(name, value));
+		}
+
 		final List<Binding> variables() {
 			return variables;
 		}
 
 		public void run(Script script) {
 			scripts.add(script);
+		}
+
+		public void run(Code.Loader.Resource resource) {
+			try {
+				run(Script.create(resource));
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
 		}
 
 		final List<Script> scripts() {
