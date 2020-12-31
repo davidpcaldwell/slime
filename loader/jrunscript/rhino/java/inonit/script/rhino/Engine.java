@@ -13,7 +13,8 @@
 package inonit.script.rhino;
 
 import java.io.*;
-import java.util.*;
+
+import javax.script.*;
 
 import org.mozilla.javascript.*;
 
@@ -88,6 +89,22 @@ public class Engine {
 			return factory.getClasspath();
 		}
 
+		final Loader.Classes.Configuration classes() {
+			return new Loader.Classes.Configuration() {
+				@Override public boolean canCreateClassLoaders() {
+					return Configuration.this.canCreateClassLoaders();
+				}
+
+				@Override public ClassLoader getApplicationClassLoader() {
+					return (Configuration.this.getApplicationClassLoader() == null) ? ContextFactory.class.getClassLoader() : Configuration.this.getApplicationClassLoader();
+				}
+
+				@Override public File getLocalClassCache() {
+					return Configuration.this.getLocalClassCache();
+				}
+			};
+		}
+
 		void attach(org.mozilla.javascript.tools.debugger.Dim dim) {
 			dim.attachTo(factory);
 		}
@@ -107,19 +124,7 @@ public class Engine {
 
 			private synchronized void initializeClassLoaders() {
 				if (!initialized) {
-					this.classes = Loader.Classes.create(new Loader.Classes.Configuration() {
-						@Override public boolean canCreateClassLoaders() {
-							return Configuration.this.canCreateClassLoaders();
-						}
-
-						@Override public ClassLoader getApplicationClassLoader() {
-							return (Configuration.this.getApplicationClassLoader() == null) ? ContextFactory.class.getClassLoader() : Configuration.this.getApplicationClassLoader();
-						}
-
-						@Override public File getLocalClassCache() {
-							return Configuration.this.getLocalClassCache();
-						}
-					});
+					this.classes = Loader.Classes.create(classes());
 					initialized = true;
 				}
 			}
@@ -216,19 +221,144 @@ public class Engine {
 		return configuration.call(new ProgramAction(this, program, debugger));
 	}
 
-	private static Object execute(Host.Program program, Debugger dim, Context context, Scriptable global) throws IOException {
-		if (context == null) {
-			throw new RuntimeException("'context' is null");
+// 	private static Object execute(Host.Program program, Debugger dim, Context context, Scriptable global) throws IOException {
+// 		if (context == null) {
+// 			throw new RuntimeException("'context' is null");
+// 		}
+// 		Object result = null;
+// 		for (int i=0; i<program.scripts().size(); i++) {
+// 			Errors errors = Errors.get(context);
+// 			if (errors != null) {
+// 				errors.reset();
+// 			}
+// 			try {
+// 				Unit unit = new Unit(Source.create(program.scripts().get(i)));
+// 				result = unit.execute(dim, context, global);
+// 			} catch (WrappedException e) {
+// 				//	TODO	Note that when this is merged into jsh, we will need to change jsh error reporting to dump the
+// 				//			stack trace from the contained Throwable inside the errors object.
+// //					throw e;
+// 				if (errors != null) {
+// 					errors.add(e);
+// 					throw errors;
+// 				} else {
+// 					throw e;
+// 				}
+// 			} catch (EvaluatorException e) {
+// 				//	TODO	Oh my goodness, is there no better way to do this?
+// 				if (errors != null && (e.getMessage().indexOf("Compilation produced") == -1 || e.getMessage().indexOf("syntax errors.") == -1)) {
+// 					errors.add(e);
+// 				}
+// 				if (errors != null) {
+// 					throw errors;
+// 				} else {
+// 					throw e;
+// 				}
+// 			} catch (EcmaError e) {
+// 				if (errors != null) {
+// 					errors.add(e);
+// 					throw errors;
+// 				} else {
+// 					throw e;
+// 				}
+// 			} catch (JavaScriptException e) {
+// 				if (errors != null) {
+// 					errors.add(e);
+// 					throw errors;
+// 				} else {
+// 					throw e;
+// 				}
+// 			}
+// 		}
+// 		return result;
+// 	}
+
+	// private static Object interpret(Host.Program program, Debugger dim, Context context, Scriptable global) throws IOException {
+	// 	if (context == null) {
+	// 		throw new RuntimeException("'context' is null");
+	// 	}
+	// 	return execute(program, dim, context, global);
+	// }
+
+	static class Unit {
+		private Source source;
+
+		Unit(Source source) {
+			this.source = source;
 		}
-		Object result = null;
-		for (int i=0; i<program.scripts().size(); i++) {
+
+		protected Object execute(Debugger dim, Context context, Scriptable global) throws IOException {
+			return source.evaluate(dim, context, global, global, true);
+		}
+	}
+
+	private static Object toScopePropertyValue(Context context, Scriptable global, Object value) {
+		if (value instanceof Object[]) {
+			Object[] array = (Object[])value;
+			Object[] objects = new Object[array.length];
+			for (int j=0; j<objects.length; j++) {
+				objects[j] = array[j];
+			}
+			return context.newArray( global, objects );
+		}
+		return Context.javaToJS(value, global);
+	}
+
+	private static int toRhinoAttributes(Host.Binding attributes) {
+		int rv = ScriptableObject.EMPTY;
+		rv |= ScriptableObject.PERMANENT;
+		rv |= ScriptableObject.READONLY;
+		rv |= ScriptableObject.DONTENUM;
+		return rv;
+	}
+
+	// private static void setVariablesInGlobalScope(Host.Program program, Context context, Scriptable global) {
+	// 	List<Host.Binding> variables = program.variables();
+	// 	for (int i=0; i<variables.size(); i++) {
+	// 		Host.Binding v = variables.get(i);
+
+	// 		ScriptableObject.defineProperty(
+	// 			global,
+	// 			v.getName(),
+	// 			toScopePropertyValue(context, global, v.getValue()),
+	// 			toRhinoAttributes(v)
+	// 		);
+	// 	}
+	// }
+
+	private static class ExecutorImpl extends Host.Executor {
+		private Debugger dim;
+		private Context context;
+		private Scriptable global;
+
+		ExecutorImpl(Engine engine, Debugger dim, Context context) {
+			this.dim = dim;
+			this.context = context;
+			this.global = engine.getGlobalScope(context);
+		}
+
+		@Override
+		public void bind(Host.Binding binding) {
+			ScriptableObject.defineProperty(
+				global,
+				binding.getName(),
+				toScopePropertyValue(context, global, binding.getValue()),
+				toRhinoAttributes(binding)
+			);
+		}
+
+		@Override
+		public Object eval(Host.Script file) {
 			Errors errors = Errors.get(context);
 			if (errors != null) {
 				errors.reset();
 			}
 			try {
-				Unit unit = new Unit(Source.create(program.scripts().get(i)));
-				result = unit.execute(dim, context, global);
+				Unit unit = new Unit(Source.create(file));
+				return unit.execute(dim, context, global);
+			} catch (IOException e) {
+				//	TODO	could use some analysis here about what this exception would mean
+				throw new RuntimeException(e);
 			} catch (WrappedException e) {
 				//	TODO	Note that when this is merged into jsh, we will need to change jsh error reporting to dump the
 				//			stack trace from the contained Throwable inside the errors object.
@@ -265,59 +395,22 @@ public class Engine {
 				}
 			}
 		}
-		return result;
 	}
 
-	private static Object interpret(Host.Program program, Debugger dim, Context context, Scriptable global) throws IOException {
-		if (context == null) {
-			throw new RuntimeException("'context' is null");
-		}
-		return execute(program, dim, context, global);
-	}
+	private static class HostFactory extends Host.Factory {
+		private Engine engine;
+		private Debugger debugger;
+		private Context context;
 
-	static class Unit {
-		private Source source;
-
-		Unit(Source source) {
-			this.source = source;
+		HostFactory(Engine engine, Debugger debugger, Context context) {
+			this.engine = engine;
+			this.debugger = debugger;
+			this.context = context;
 		}
 
-		protected Object execute(Debugger dim, Context context, Scriptable global) throws IOException {
-			return source.evaluate(dim, context, global, global, true);
-		}
-	}
-
-	private static Object toScopePropertyValue(Context context, Scriptable global, Object value) {
-		if (value instanceof Object[]) {
-			Object[] array = (Object[])value;
-			Object[] objects = new Object[array.length];
-			for (int j=0; j<objects.length; j++) {
-				objects[j] = array[j];
-			}
-			return context.newArray( global, objects );
-		}
-		return Context.javaToJS(value, global);
-	}
-
-	private static int toRhinoAttributes(Host.Binding attributes) {
-		int rv = ScriptableObject.EMPTY;
-		rv |= ScriptableObject.PERMANENT;
-		rv |= ScriptableObject.READONLY;
-		rv |= ScriptableObject.DONTENUM;
-		return rv;
-	}
-
-	private static void setVariablesInGlobalScope(Host.Program program, Context context, Scriptable global) {
-		List<Host.Binding> variables = program.variables();
-		for (int i=0; i<variables.size(); i++) {
-			Host.Binding v = variables.get(i);
-
-			ScriptableObject.defineProperty(
-				global,
-				v.getName(),
-				toScopePropertyValue(context, global, v.getValue()),
-				toRhinoAttributes(v)
-			);
+		@Override
+		public Host.Executor create(ClassLoader classes) {
+			return new ExecutorImpl(engine, debugger, context);
 		}
 	}
 
@@ -333,12 +426,13 @@ public class Engine {
 		}
 
 		public Object run(Context context) {
+			Host.Factory factory = new HostFactory(engine, debugger, context);
+			Host host = Host.create(factory, engine.configuration.classes());
 			try {
-				Scriptable global = engine.getGlobalScope(context);
-				setVariablesInGlobalScope(program, context, global);
-				debugger.initialize(global, engine, program);
-				return interpret(program, debugger, context, global);
-			} catch (java.io.IOException e) {
+				return host.run(program);
+			} catch (ScriptException e) {
+				//	can't happen right now, it is believed, though could refactor so that other exceptions are thrown as these
+				//	to standardize across engines
 				throw new RuntimeException(e);
 			}
 		}
