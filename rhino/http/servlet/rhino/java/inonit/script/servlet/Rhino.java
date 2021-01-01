@@ -143,7 +143,7 @@ public class Rhino extends Servlet.ScriptContainer {
 		}
 
 		Loader.Classes.Interface getClasspath() {
-			return engine.getClasspath();
+			return engine.getClasses().getInterface();
 		}
 
 		public Engine getEngine() {
