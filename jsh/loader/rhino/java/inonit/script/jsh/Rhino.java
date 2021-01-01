@@ -16,7 +16,7 @@ import java.io.*;
 import java.util.*;
 import java.util.logging.*;
 
-import javax.script.ScriptException;
+import javax.script.*;
 
 import org.mozilla.javascript.*;
 
@@ -48,7 +48,7 @@ public class Rhino {
 		}
 
 		public Loader.Classes.Interface getClasspath() {
-			return engine.getClasspath();
+			return engine.getClasses().getInterface();
 		}
 
 		public Debugger getDebugger() {

@@ -83,37 +83,12 @@ public class Engine {
 			return Context.getCurrentContext();
 		}
 
-		final Loader.Classes.Interface getClasspath() {
-			return factory.getClasspath();
-		}
-
 		final Loader.Classes getClasses() {
 			return factory.getClasses();
 		}
 
-		final Loader.Classes.Configuration classes() {
-			return new Loader.Classes.Configuration() {
-				@Override public boolean canCreateClassLoaders() {
-					return Configuration.this.canCreateClassLoaders();
-				}
-
-				@Override public ClassLoader getApplicationClassLoader() {
-					return (Configuration.this.getApplicationClassLoader() == null) ? ContextFactory.class.getClassLoader() : Configuration.this.getApplicationClassLoader();
-				}
-
-				@Override public File getLocalClassCache() {
-					return Configuration.this.getLocalClassCache();
-				}
-			};
-		}
-
 		void attach(org.mozilla.javascript.tools.debugger.Dim dim) {
 			dim.attachTo(factory);
-		}
-
-		Object call(ContextAction action) {
-			Object rv = factory.call(action);
-			return rv;
 		}
 
 		private class ContextFactoryInner extends ContextFactory {
@@ -126,7 +101,19 @@ public class Engine {
 
 			private synchronized void initializeClassLoaders() {
 				if (!initialized) {
-					this.classes = Loader.Classes.create(classes());
+					this.classes = Loader.Classes.create(new Loader.Classes.Configuration() {
+						@Override public boolean canCreateClassLoaders() {
+							return Configuration.this.canCreateClassLoaders();
+						}
+
+						@Override public ClassLoader getApplicationClassLoader() {
+							return (Configuration.this.getApplicationClassLoader() == null) ? ContextFactory.class.getClassLoader() : Configuration.this.getApplicationClassLoader();
+						}
+
+						@Override public File getLocalClassCache() {
+							return Configuration.this.getLocalClassCache();
+						}
+					});
 					initialized = true;
 				}
 			}
@@ -134,11 +121,6 @@ public class Engine {
 			private synchronized ClassLoader getContextApplicationClassLoader() {
 				initializeClassLoaders();
 				return this.classes.getApplicationClassLoader();
-			}
-
-			final Loader.Classes.Interface getClasspath() {
-				initializeClassLoaders();
-				return this.classes.getInterface();
 			}
 
 			final Loader.Classes getClasses() {
@@ -230,10 +212,11 @@ public class Engine {
 		return configuration.getClasses();
 	}
 
-	//	Used from servlet and jsh Java implementations
+	//	Used from servlet implementation to simplify usage given that it relies both on the Host.Factory and Loader.Classes from
+	//	this object
 	public Object execute(Host.Program program) {
 		try {
-			return Host.run(hosts, Loader.Classes.create(configuration.classes()), program);
+			return Host.run(hosts, configuration.getClasses(), program);
 		} catch (javax.script.ScriptException e) {
 			throw new RuntimeException(e);
 		}
@@ -241,10 +224,6 @@ public class Engine {
 
 	public Debugger getDebugger() {
 		return this.debugger;
-	}
-
-	public Loader.Classes.Interface getClasspath() {
-		return this.configuration.getClasspath();
 	}
 
 	//	TODO	note that this implementation ignores the ClassLoader specified to its create() method, instead relying on
