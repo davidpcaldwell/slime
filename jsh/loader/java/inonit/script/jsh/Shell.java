@@ -318,6 +318,10 @@ public class Shell {
 		public abstract Code.Loader[] getExtensions();
 	}
 
+	/**
+	 * The execution environment for a {@link Shell}, including process environment, system properties, class loader,
+	 * and standard I/O streams.
+	 */
 	public static abstract class Environment {
 		public static Environment create(final ClassLoader loader, final Properties properties, final OperatingSystem.Environment environment, final Stdio stdio, final Packaged packaged) {
 			return new Environment() {
