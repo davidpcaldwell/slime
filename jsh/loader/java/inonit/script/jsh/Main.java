@@ -486,7 +486,7 @@ public class Main {
 					}
 				}
 			});
-			main(context, Shell.create(shell));
+			main(context, Shell.create(shell, this));
 		}
 
 		//	TODO	The cli() method appears to force VM containers; the embed() method and Runner class may have been intended

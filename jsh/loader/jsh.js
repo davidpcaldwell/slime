@@ -263,6 +263,44 @@
 							var args = [format.name].concat(Array.prototype.slice.call(arguments,1));
 							return loader.module.apply(loader,args);
 						},
+						worker: function(p) {
+							Packages.java.lang.System.err.println("running " + p.script);
+							return (function() {
+								var _delegate = $jsh.worker(
+									p.script.pathname.java.adapt(),
+									(function() {
+										var rv = Packages.java.lang.reflect.Array.newInstance(
+											$slime.java.toNativeClass(Packages.java.lang.String),
+											p.arguments.length
+										);
+										for (var i=0; i<p.arguments.length; i++) {
+											rv[i] = new Packages.java.lang.String(p.arguments[i]);
+										}
+										return rv;
+									})(),
+									new JavaAdapter(
+										Packages.inonit.script.jsh.Shell.Worker.Listener,
+										{
+											on: p.onmessage
+										}
+									)
+								);
+
+								return {
+									toString: function() {
+										return String(_delegate.toString());
+									},
+									postMessage: function(v) {
+										var json = JSON.stringify(v);
+										Packages.java.lang.System.err.println("Posting message to _delegate: " + json);
+									}
+								};
+							})();
+						},
+						events: function() {
+							Packages.java.lang.System.err.println("Entering event loop.");
+							$jsh.events();
+						},
 						namespace: function(name) {
 							return $slime.namespace(name);
 						},

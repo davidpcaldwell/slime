@@ -60,7 +60,6 @@ public class Engine {
 		}
 
 		public abstract boolean canCreateClassLoaders();
-		public abstract boolean canAccessEnvironment();
 
 		/**
 		 * Creates the single <code>ClassLoader</code> to be used for this {@link Engine}. Currently all {@link Context}s created
@@ -71,7 +70,25 @@ public class Engine {
 		public abstract ClassLoader getApplicationClassLoader();
 
 		public abstract File getLocalClassCache();
+
+		public abstract boolean canAccessEnvironment();
 		public abstract int getOptimizationLevel();
+
+		final Loader.Classes.Configuration toClassesConfiguration() {
+			return new Loader.Classes.Configuration() {
+				@Override public boolean canCreateClassLoaders() {
+					return Configuration.this.canCreateClassLoaders();
+				}
+
+				@Override public ClassLoader getApplicationClassLoader() {
+					return (Configuration.this.getApplicationClassLoader() == null) ? ContextFactory.class.getClassLoader() : Configuration.this.getApplicationClassLoader();
+				}
+
+				@Override public File getLocalClassCache() {
+					return Configuration.this.getLocalClassCache();
+				}
+			};
+		}
 
 		private ContextFactoryInner factory = new ContextFactoryInner();
 
@@ -101,19 +118,7 @@ public class Engine {
 
 			private synchronized void initializeClassLoaders() {
 				if (!initialized) {
-					this.classes = Loader.Classes.create(new Loader.Classes.Configuration() {
-						@Override public boolean canCreateClassLoaders() {
-							return Configuration.this.canCreateClassLoaders();
-						}
-
-						@Override public ClassLoader getApplicationClassLoader() {
-							return (Configuration.this.getApplicationClassLoader() == null) ? ContextFactory.class.getClassLoader() : Configuration.this.getApplicationClassLoader();
-						}
-
-						@Override public File getLocalClassCache() {
-							return Configuration.this.getLocalClassCache();
-						}
-					});
+					this.classes = Loader.Classes.create(toClassesConfiguration());
 					initialized = true;
 				}
 			}
