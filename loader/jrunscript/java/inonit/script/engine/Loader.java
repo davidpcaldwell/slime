@@ -30,6 +30,10 @@ public abstract class Loader {
 		public abstract String compile(String code) throws IOException;
 	}
 
+	/**
+	 * An object that can both provide an application class loader and an interface for scripts to use, which includes the ability
+	 * to create a {@link Code.Loader} which compiles its source files.
+	 */
 	public static abstract class Classes {
 		public static abstract class Configuration {
 			public abstract boolean canCreateClassLoaders();

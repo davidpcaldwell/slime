@@ -14,6 +14,7 @@ package inonit.script.jsh;
 
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.*;
 import java.util.logging.*;
 
 import inonit.script.runtime.io.*;
@@ -64,13 +65,15 @@ public class Shell {
 		}
 	}
 
-	public static Shell create(Configuration configuration) {
+	public static Shell create(Configuration configuration, Main.Engine engine) {
 		Shell rv = new Shell();
 		rv.configuration = configuration;
+		rv.engine = engine;
 		return rv;
 	}
 
 	private Configuration configuration;
+	private Main.Engine engine;
 
 	private Shell() {
 	}
@@ -219,8 +222,8 @@ public class Shell {
 		return loader;
 	}
 
-	public Shell subshell(Environment configuration, Shell.Invocation invocation) {
-		return create(this.configuration.subshell(configuration, invocation));
+	public Shell subshell(Environment environment, Shell.Invocation invocation) {
+		return create(this.configuration.subshell(environment, invocation), engine);
 	}
 
 	public final Environment getEnvironment() {
@@ -271,6 +274,9 @@ public class Shell {
 		public abstract Code.Loader.Resource getSource();
 	}
 
+	/**
+	 * A {Container} provides a {@link Shell} with a means of exiting with an <code>int</code> status code.
+	 */
 	public static abstract class Container {
 		public static final Container VM = new Container() {
 			@Override public void exit(int status) {
@@ -439,6 +445,148 @@ public class Shell {
 		}
 	}
 
+	public static class EventLoop {
+		private ArrayList<Worker.Event> events = new ArrayList<Worker.Event>();
+		private HashSet<Worker> workers = new HashSet<Worker>();
+
+		EventLoop() {
+		}
+
+		public synchronized void post(Worker.Event event) {
+			events.add(event);
+		}
+
+		synchronized void add(Worker worker) {
+			workers.add(worker);
+		}
+
+		synchronized void remove(Worker worker) {
+			workers.remove(worker);
+			if (workers.isEmpty()) {
+				System.err.println("Last worker terminated.");
+			}
+			notifyAll();
+		}
+
+		private boolean isAlive() {
+			return !workers.isEmpty() || events.size() > 0;
+		}
+
+		private synchronized Worker.Event take() {
+			while(events.size() == 0 && isAlive()) {
+				try {
+					wait();
+				} catch (InterruptedException e) {
+					throw new RuntimeException(e);
+				}
+			}
+			if (events.size() > 0) {
+				Worker.Event rv = events.get(0);
+				events.remove(0);
+				return rv;
+			} else {
+				return null;
+			}
+		}
+
+		public Runnable run() {
+			return new Runnable() {
+				public void run() {
+					while(isAlive()) {
+						Worker.Event event = take();
+						if (event != null) {
+							event.process();
+						}
+					}
+				}
+			};
+		}
+	}
+
+	public static class Worker {
+		public static Worker create(Shell container, File source, String[] arguments, Listener listener) {
+			return new Worker(container, source, arguments, listener);
+		}
+
+		private Shell container;
+		private File source;
+		private String[] arguments;
+		private Listener listener;
+
+		Worker(Shell container, File source, String[] arguments, Listener listener) {
+			this.container = container;
+			this.source = source;
+			this.arguments = arguments;
+			this.listener = listener;
+		}
+
+		public String toString() {
+			return "Worker: " + source;
+		}
+
+		void start() {
+			container.events.add(this);
+			System.err.println("[java] Starting worker ...");
+			//	run worker in new thread and deliver events to events instance variable, then invoke done()
+			Invocation invocation = Shell.Invocation.create(Shell.Script.create(source), arguments);
+			Shell worker = container.subshell(container.getEnvironment(), invocation);
+			System.err.println("Created worker shell " + worker);
+			new Thread(
+				new Runnable() {
+					public void run() {
+						try {
+							container.engine.main(
+								new Shell.Container() {
+									@Override
+									public void exit(int status) {
+										System.err.println("Shell for " + Worker.this + " exited with " + status);
+									}
+								},
+								worker
+							);
+						} catch (Invocation.CheckedException e) {
+							throw new RuntimeException(e);
+						} finally {
+							System.err.println("Worker shell terminated.");
+							container.events.remove(Worker.this);
+						}
+					}
+				}
+			).start();
+		}
+
+		Listener listener() {
+			return listener;
+		}
+
+		public static abstract class Listener {
+			public abstract void on(Event event);
+			public abstract void done();
+		}
+
+		public class Event {
+			Worker source() {
+				return Worker.this;
+			}
+
+			final void process() {
+				Worker.this.listener().on(this);
+			}
+		}
+	}
+
+	private EventLoop events = new EventLoop();
+
+	public Worker worker(File source, String[] arguments, Worker.Listener listener) {
+		Worker rv = new Worker(this, source, arguments, listener);
+		rv.start();
+		return rv;
+	}
+
+	public void events() {
+		events.run().run();
+	}
+
 	public static class Interface {
 		private Installation installation;
 
@@ -451,6 +599,7 @@ public class Shell {
 			return installation.getExtensions();
 		}
 
+		//	Used by rhino/shell plugin as helper for implementing subshell calls
 		public Invocation invocation(File script, String[] arguments) {
 			return Shell.Invocation.create(Shell.Script.create(script), arguments);
 		}

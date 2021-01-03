@@ -156,6 +156,7 @@ interface Packages {
 			reflect: {
 				Field: any
 				Modifier: any
+				Array: any
 			}
 			String: any
 			Thread: any
@@ -232,6 +233,9 @@ interface Packages {
 			rhino: {
 				Objects: any
 				MetaObject: any
+			}
+			jsh: {
+				Shell: any
 			}
 		}
 	}
@@ -328,6 +332,9 @@ namespace Packages {
 				getInterface(): any
 				getLibrary(path: string): any
 				getLibraryFile(path: string): any
+
+				worker: any
+				events: any
 			}
 
 			export namespace Shell {
