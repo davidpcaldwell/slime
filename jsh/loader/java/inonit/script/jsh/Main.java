@@ -71,7 +71,14 @@ public class Main {
 			OutputStream stderr = new PrintStream(new Logging.OutputStream(System.err, "stderr"));
 			final Shell.Environment.Stdio stdio = Shell.Environment.Stdio.create(stdin, stdout, stderr);
 			final Shell.Environment.Packaged packaged = getPackaged();
-			return Shell.Environment.create(Shell.Environment.class.getClassLoader(), System.getProperties(), OperatingSystem.Environment.SYSTEM, stdio, packaged);
+			return Shell.Environment.create(
+				Shell.Environment.Container.VM,
+				Shell.Environment.class.getClassLoader(),
+				System.getProperties(),
+				OperatingSystem.Environment.SYSTEM,
+				stdio,
+				packaged
+			);
 		}
 
 		abstract Shell.Invocation invocation(String[] args) throws Shell.Invocation.CheckedException;
@@ -474,7 +481,7 @@ public class Main {
 			LOG.log(Level.INFO, "Argument " + i + " is: " + args[i]);
 		}
 		try {
-			engine.shell(Shell.Container.VM, Main.configuration(args));
+			engine.shell(Main.configuration(args));
 		} catch (Throwable t) {
 			t.printStackTrace();
 			System.exit(255);

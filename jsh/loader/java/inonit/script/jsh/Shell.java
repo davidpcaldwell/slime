@@ -273,48 +273,6 @@ public class Shell {
 		public abstract Code.Loader.Resource getSource();
 	}
 
-	/**
-	 * A {Container} provides a {@link Shell} with a means of exiting with an <code>int</code> status code.
-	 */
-	public static abstract class Container {
-		public static final Container VM = new Container() {
-			@Override public void exit(int status) {
-				System.out.flush();
-				System.err.flush();
-				System.exit(status);
-			}
-		};
-
-		//	TODO	Currently unused, but presumably intended to support a lighter-weight embedding of jsh inside something
-		//			smaller than a full VM
-
-		public static class Holder extends Container {
-			private Integer status;
-
-			@Override public void exit(int status) {
-				this.status = Integer.valueOf(status);
-			}
-
-			public Integer getExitCode(Run run, Shell.Configuration shell) {
-				try {
-					run.run(this, shell);
-					return status;
-				} catch (Throwable t) {
-					run.threw(t);
-					if (status == null) return Integer.valueOf(1);
-					return status;
-				}
-			}
-
-			public static abstract class Run {
-				public abstract void threw(Throwable t);
-				public abstract void run(Container context, Shell.Configuration shell) throws Throwable;
-			}
-		}
-
-		public abstract void exit(int status);
-	}
-
 	public static abstract class Installation {
 		public abstract Code.Loader getPlatformLoader();
 		public abstract Code.Loader getJshLoader();
@@ -328,8 +286,12 @@ public class Shell {
 	 * and standard I/O streams.
 	 */
 	public static abstract class Environment {
-		public static Environment create(final ClassLoader loader, final Properties properties, final OperatingSystem.Environment environment, final Stdio stdio, final Packaged packaged) {
+		public static Environment create(final Container container, final ClassLoader loader, final Properties properties, final OperatingSystem.Environment environment, final Stdio stdio, final Packaged packaged) {
 			return new Environment() {
+				@Override public Container getContainer() {
+					return container;
+				}
+
 				@Override public ClassLoader getClassLoader() {
 					return loader;
 				}
@@ -351,11 +313,59 @@ public class Shell {
 				}
 			};
 		}
+
 		public abstract ClassLoader getClassLoader();
 
 		public abstract Properties getSystemProperties();
 		public abstract OperatingSystem.Environment getEnvironment();
 		public abstract Stdio getStdio();
+		public abstract Container getContainer();
+
+		final void exit(int status) {
+			getContainer().exit(status);
+		}
+
+		/**
+		 * A {Container} provides a {@link Shell} with a means of exiting with an <code>int</code> status code.
+		 */
+		public static abstract class Container {
+			public static final Container VM = new Container() {
+				@Override public void exit(int status) {
+					System.out.flush();
+					System.err.flush();
+					System.exit(status);
+				}
+			};
+
+			//	TODO	Currently unused, but presumably intended to support a lighter-weight embedding of jsh inside something
+			//			smaller than a full VM
+
+			public static class Holder extends Container {
+				private Integer status;
+
+				@Override public void exit(int status) {
+					this.status = Integer.valueOf(status);
+				}
+
+				public Integer getExitCode(Run run, Shell.Configuration shell) {
+					try {
+						run.run(this, shell);
+						return status;
+					} catch (Throwable t) {
+						run.threw(t);
+						if (status == null) return Integer.valueOf(1);
+						return status;
+					}
+				}
+
+				public static abstract class Run {
+					public abstract void threw(Throwable t);
+					public abstract void run(Container context, Shell.Configuration shell) throws Throwable;
+				}
+			}
+
+			public abstract void exit(int status);
+		}
 
 		public final File getClassCache() {
 			String value = this.getSystemProperties().getProperty("jsh.shell.classes");
@@ -535,12 +545,6 @@ public class Shell {
 					public void run() {
 						try {
 							container.engine.main(
-								new Shell.Container() {
-									@Override
-									public void exit(int status) {
-										System.err.println("Shell for " + Worker.this + " exited with " + status);
-									}
-								},
 								worker
 							);
 						} catch (Invocation.CheckedException e) {
@@ -610,9 +614,9 @@ public class Shell {
 	}
 
 	public static abstract class Engine {
-		public abstract void main(Shell.Container context, Shell shell) throws Shell.Invocation.CheckedException;
+		public abstract void main(Shell shell) throws Shell.Invocation.CheckedException;
 
-		void shell(Shell.Container context, Shell.Configuration shell) throws Shell.Invocation.CheckedException {
+		void shell(Shell.Configuration shell) throws Shell.Invocation.CheckedException {
 			Thread.currentThread().setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
 				public void uncaughtException(Thread t, Throwable e) {
 					Throwable error = e;
@@ -630,7 +634,7 @@ public class Shell {
 					}
 				}
 			});
-			main(context, Shell.create(shell, this));
+			main(Shell.create(shell, this));
 		}
 
 		//	TODO	The cli() method appears to force VM containers; the embed() method and Runner class may have been intended
