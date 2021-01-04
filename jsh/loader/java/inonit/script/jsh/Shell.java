@@ -286,7 +286,7 @@ public class Shell {
 	 * and standard I/O streams.
 	 */
 	public static abstract class Environment {
-		public static Environment create(final Container container, final ClassLoader loader, final Properties properties, final OperatingSystem.Environment environment, final Stdio stdio, final Packaged packaged) {
+		static Environment create(final Container container, final ClassLoader loader, final Properties properties, final OperatingSystem.Environment environment, final Stdio stdio, final Packaged packaged) {
 			return new Environment() {
 				@Override public Container getContainer() {
 					return container;
@@ -372,6 +372,22 @@ public class Shell {
 			return (value == null) ? null : new File(new File(value), "modules");
 		}
 
+		public final Loader.Classes.Configuration getClasses() {
+			return new Loader.Classes.Configuration() {
+				@Override public boolean canCreateClassLoaders() {
+					return true;
+				}
+
+				@Override public ClassLoader getApplicationClassLoader() {
+					return Environment.this.getClassLoader();
+				}
+
+				@Override public java.io.File getLocalClassCache() {
+					return Environment.this.getClassCache();
+				}
+			};
+		}
+
 		public static abstract class Packaged {
 			public static Packaged create(final Code.Loader code, final File file) {
 				return new Packaged() {
@@ -384,6 +400,7 @@ public class Shell {
 					}
 				};
 			}
+
 			/**
 			 *
 			 *	@return An object capable of loading modules and scripts bundled with a script.

@@ -64,19 +64,7 @@ public class Nashorn extends Shell.Engine {
 		ExecutionImpl(final Shell shell, boolean top) {
 			super(shell);
 			this.classes = Loader.Classes.create(
-				new Loader.Classes.Configuration() {
-					@Override public boolean canCreateClassLoaders() {
-						return true;
-					}
-
-					@Override public ClassLoader getApplicationClassLoader() {
-						return Nashorn.class.getClassLoader();
-					}
-
-					@Override public java.io.File getLocalClassCache() {
-						return shell.getEnvironment().getClassCache();
-					}
-				}
+				shell.getEnvironment().getClasses()
 			);
 			this.top = top;
 		}

@@ -255,6 +255,7 @@ namespace Packages {
 			}
 			export interface OutputStream {
 			}
+			export type File = any
 		}
 		export namespace util {
 			export interface Properties {
@@ -289,7 +290,7 @@ namespace Packages {
 
 		export namespace engine {
 			export namespace Code {
-				interface Loader {
+				export interface Loader {
 					getFile(path: string): Loader.Resource
 				}
 
@@ -353,6 +354,8 @@ namespace Packages {
 					}
 
 					export interface Packaged {
+						getFile(): Packages.java.io.File
+						getCode(): Packages.inonit.script.engine.Code.Loader
 					}
 				}
 

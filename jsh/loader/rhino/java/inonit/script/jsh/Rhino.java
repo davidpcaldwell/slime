@@ -161,20 +161,12 @@ public class Rhino {
 
 		final void initialize(final Shell.Environment shell) {
 			Engine.Configuration contexts = new Engine.Configuration() {
-				@Override public ClassLoader getApplicationClassLoader() {
-					return shell.getClassLoader();
-				}
-
-				@Override public boolean canCreateClassLoaders() {
-					return true;
+				@Override public Loader.Classes.Configuration getClassesConfiguration() {
+					return shell.getClasses();
 				}
 
 				@Override public boolean canAccessEnvironment() {
 					return true;
-				}
-
-				@Override public File getLocalClassCache() {
-					return shell.getClassCache();
 				}
 
 				@Override public int getOptimizationLevel() {
