@@ -14,7 +14,6 @@ package inonit.script.jsh;
 
 import java.io.*;
 import java.util.*;
-import java.util.concurrent.*;
 import java.util.logging.*;
 
 import inonit.script.runtime.io.*;
@@ -65,7 +64,7 @@ public class Shell {
 		}
 	}
 
-	public static Shell create(Configuration configuration, Main.Engine engine) {
+	public static Shell create(Configuration configuration, Engine engine) {
 		Shell rv = new Shell();
 		rv.configuration = configuration;
 		rv.engine = engine;
@@ -73,7 +72,7 @@ public class Shell {
 	}
 
 	private Configuration configuration;
-	private Main.Engine engine;
+	private Engine engine;
 
 	private Shell() {
 	}
@@ -608,6 +607,50 @@ public class Shell {
 	public Interface getInterface() {
 		if (classpath == null) throw new IllegalStateException();
 		return new Interface(configuration.getInstallation(), classpath);
+	}
+
+	public static abstract class Engine {
+		public abstract void main(Shell.Container context, Shell shell) throws Shell.Invocation.CheckedException;
+
+		void shell(Shell.Container context, Shell.Configuration shell) throws Shell.Invocation.CheckedException {
+			Thread.currentThread().setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+				public void uncaughtException(Thread t, Throwable e) {
+					Throwable error = e;
+					java.io.PrintWriter writer = new java.io.PrintWriter(System.err,true);
+					while(error != null) {
+						writer.println(error.getClass().getName() + ": " + error.getMessage());
+						StackTraceElement[] trace = error.getStackTrace();
+						for (StackTraceElement line : trace) {
+							writer.println("\t" + line);
+						}
+						error = error.getCause();
+						if (error != null) {
+							writer.print("Caused by: ");
+						}
+					}
+				}
+			});
+			main(context, Shell.create(shell, this));
+		}
+
+		//	TODO	The cli() method appears to force VM containers; the embed() method and Runner class may have been intended
+		//			to support another kind of container, but are currently unused
+
+		// private class Runner extends Shell.Container.Holder.Run {
+		// 	public void threw(Throwable t) {
+		// 		t.printStackTrace();
+		// 	}
+
+		// 	public void run(Shell.Container context, Shell.Configuration shell) throws Shell.Invocation.CheckedException {
+		// 		Engine.this.shell(context,shell);
+		// 	}
+		// }
+
+		// private Integer embed(Shell.Configuration configuration) throws Shell.Invocation.CheckedException {
+		// 	Shell.Container.Holder context = new Shell.Container.Holder();
+		// 	return context.getExitCode(new Runner(), configuration);
+		// }
+
 	}
 
 	public static abstract class Execution {

@@ -298,8 +298,6 @@
 							})();
 						},
 						events: function() {
-							Packages.java.lang.System.err.println("Entering event loop.");
-							$jsh.events();
 						},
 						namespace: function(name) {
 							return $slime.namespace(name);
@@ -394,6 +392,8 @@
 			this,
 			this
 		);
+
+		$jsh.events();
 	}
 //@ts-ignore
 )(this,Packages,JavaAdapter,$jsh);

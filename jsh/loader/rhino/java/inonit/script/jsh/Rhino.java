@@ -260,7 +260,7 @@ public class Rhino {
 		}
 	}
 
-	public static class EngineImpl extends Main.Engine {
+	public static class EngineImpl extends Shell.Engine {
 		private static void run(Shell.Container context, Shell shell) {
 			final Configuration engineConfiguration = Configuration.main(shell.getEnvironment());
 			try {

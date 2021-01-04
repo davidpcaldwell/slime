@@ -10,7 +10,6 @@
 			}
 		});
 		jsh.shell.console("Created worker: " + worker);
-		jsh.loader.events();
 	}
 //@ts-ignore
 )(Packages,jsh)

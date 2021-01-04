@@ -4,7 +4,7 @@ import javax.script.*;
 
 import inonit.script.engine.*;
 
-public class Graal extends Main.Engine {
+public class Graal extends Shell.Engine {
 	public static abstract class Host {
 		public final void putMember(String name, Object value) {
 			org.graalvm.polyglot.Context.getCurrent().getBindings("js").putMember(name, value);
