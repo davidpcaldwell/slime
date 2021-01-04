@@ -63,41 +63,23 @@ public class Engine {
 			return getClass().getName() + " factory=" + factory;
 		}
 
-		public final boolean canCreateClassLoaders() {
-			return getClassesConfiguration().canCreateClassLoaders();
-		}
-
-		/**
-		 * Creates the single <code>ClassLoader</code> to be used for this {@link Engine}. Currently all {@link Context}s created
-		 * by an <code>Engine</code> share the same <code>ClassLoader</code>.
-		 *
-		 * @return A <code>ClassLoader</code>, or <code>null</code> to use the ClassLoader that loaded Rhino.
-		 */
-		public final ClassLoader getApplicationClassLoader() {
-			return getClassesConfiguration().getApplicationClassLoader();
-		}
-
-		public final File getLocalClassCache() {
-			return getClassesConfiguration().getLocalClassCache();
-		}
-
 		public abstract boolean canAccessEnvironment();
 		public abstract int getOptimizationLevel();
 
+		/**
+		 * The {@link Engine} uses a single <code>ClassLoader</code>, provided by the object returned here. Currently all
+		 * {@link Context}s created by an <code>Engine</code> share the same <code>ClassLoader</code>.
+		 */
 		public abstract Loader.Classes.Configuration getClassesConfiguration();
 
-		final Loader.Classes.Configuration toClassesConfiguration() {
-			return getClassesConfiguration();
+		final synchronized Context getContext() {
+			return Context.getCurrentContext();
 		}
 
 		private ContextFactoryInner factory = new ContextFactoryInner();
 
 		final ContextFactory factory() {
 			return factory;
-		}
-
-		final synchronized Context getContext() {
-			return Context.getCurrentContext();
 		}
 
 		final Loader.Classes getClasses() {
@@ -118,7 +100,7 @@ public class Engine {
 
 			private synchronized void initializeClassLoaders() {
 				if (!initialized) {
-					this.classes = Loader.Classes.create(toClassesConfiguration());
+					this.classes = Loader.Classes.create(getClassesConfiguration());
 					initialized = true;
 				}
 			}
@@ -148,30 +130,6 @@ public class Engine {
 					return true;
 				}
 				return super.hasFeature(context, feature);
-			}
-		}
-
-		public String getImplementationVersion() {
-			Context context = getContext();
-			if (context == null) {
-				Context.enter();
-				String rv = getContext().getImplementationVersion();
-				Context.exit();
-				return rv;
-			} else {
-				return context.getImplementationVersion();
-			}
-		}
-
-		public org.mozilla.javascript.xml.XMLLib.Factory getRhinoE4xImplementationFactory() {
-			Context context = getContext();
-			if (context == null) {
-				Context.enter();
-				org.mozilla.javascript.xml.XMLLib.Factory rv = getContext().getE4xImplementationFactory();
-				Context.exit();
-				return rv;
-			} else {
-				return context.getE4xImplementationFactory();
 			}
 		}
 	}

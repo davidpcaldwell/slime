@@ -160,20 +160,22 @@ public class Rhino {
 		private Engine engine;
 
 		final void initialize(final Shell.Environment shell) {
-			Engine.Configuration contexts = new Engine.Configuration() {
-				@Override public Loader.Classes.Configuration getClassesConfiguration() {
-					return shell.getClasses();
-				}
+			this.engine = Engine.create(
+				Configuration.this.getDebugger(),
+				new Engine.Configuration() {
+					@Override public Loader.Classes.Configuration getClassesConfiguration() {
+						return shell.getClassesConfiguration();
+					}
 
-				@Override public boolean canAccessEnvironment() {
-					return true;
-				}
+					@Override public boolean canAccessEnvironment() {
+						return true;
+					}
 
-				@Override public int getOptimizationLevel() {
-					return Configuration.this.getOptimizationLevel();
+					@Override public int getOptimizationLevel() {
+						return Configuration.this.getOptimizationLevel();
+					}
 				}
-			};
-			this.engine = Engine.create(Configuration.this.getDebugger(), contexts);
+			);
 		}
 
 		Engine getEngine() {

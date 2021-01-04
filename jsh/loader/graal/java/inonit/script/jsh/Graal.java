@@ -24,7 +24,7 @@ public class Graal extends Shell.Engine {
 			super(shell);
 
 			this.classes = Loader.Classes.create(
-				shell.getEnvironment().getClasses()
+				shell.getEnvironment().getClassesConfiguration()
 			);
 
 			this.top = top;

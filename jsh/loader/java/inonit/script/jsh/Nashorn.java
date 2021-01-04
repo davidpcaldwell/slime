@@ -64,7 +64,7 @@ public class Nashorn extends Shell.Engine {
 		ExecutionImpl(final Shell shell, boolean top) {
 			super(shell);
 			this.classes = Loader.Classes.create(
-				shell.getEnvironment().getClasses()
+				shell.getEnvironment().getClassesConfiguration()
 			);
 			this.top = top;
 		}

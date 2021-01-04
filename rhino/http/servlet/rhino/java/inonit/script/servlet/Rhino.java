@@ -56,30 +56,34 @@ public class Rhino extends Servlet.ScriptContainer {
 			});
 			debugger = Debugger.RhinoDebugger.create(configuration);
 		}
-		Engine engine = Engine.create(debugger, new Engine.Configuration() {
-			@Override public Loader.Classes.Configuration getClassesConfiguration() {
-				return new Loader.Classes.Configuration() {
-					@Override public boolean canCreateClassLoaders() {
-						return true;
-					}
+		Engine engine = Engine.create(
+			debugger,
+ 			new Engine.Configuration() {
+				@Override public Loader.Classes.Configuration getClassesConfiguration() {
+					return new Loader.Classes.Configuration() {
+						@Override public boolean canCreateClassLoaders() {
+							return true;
+						}
 
-					@Override public ClassLoader getApplicationClassLoader() {
-						return Servlet.class.getClassLoader();
-					}
+						@Override public ClassLoader getApplicationClassLoader() {
+							return Servlet.class.getClassLoader();
+						}
 
-					@Override public File getLocalClassCache() {
-						return null;
-					}
-				};
-			}
-			@Override public boolean canAccessEnvironment() {
-				return true;
-			}
+						@Override public File getLocalClassCache() {
+							return null;
+						}
+					};
+				}
 
-			@Override public int getOptimizationLevel() {
-				return -1;
+				@Override public boolean canAccessEnvironment() {
+					return true;
+				}
+
+				@Override public int getOptimizationLevel() {
+					return -1;
+				}
 			}
-		});
+		);
 
 		this.servlet = servlet;
 		this.engine = engine;

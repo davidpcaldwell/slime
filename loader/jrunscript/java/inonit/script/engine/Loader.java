@@ -42,9 +42,15 @@ public abstract class Loader {
 		}
 
 		abstract File getLocalClassCache();
-		abstract ClassLoader getClassLoader();
+		abstract ClassLoaderImpl getClassLoader();
 
 		public abstract ClassLoader getApplicationClassLoader();
+
+		/**
+		 * Provides an interface to class loading capabilities if they are available
+		 *
+		 * @return An {@Interface}, if configuration allows classes to be loaded, or <code>null</code> if it does not.
+		 */
 		public abstract Interface getInterface();
 
 		public class Interface {
@@ -95,7 +101,7 @@ public abstract class Loader {
 			}
 
 			public final Code.Loader compiling(Code.Loader base) {
-				return Java.compiling(base, getCompileDestination(), Loader.Classes.this.getClassLoader());
+				return Java.compiling(base, getCompileDestination(), loader);
 			}
 		}
 
@@ -114,7 +120,7 @@ public abstract class Loader {
 						return configuration.getLocalClassCache();
 					}
 
-					ClassLoader getClassLoader() {
+					ClassLoaderImpl getClassLoader() {
 						return loaderClasses;
 					}
 
@@ -137,7 +143,7 @@ public abstract class Loader {
 						return null;
 					}
 
-					ClassLoader getClassLoader() {
+					ClassLoaderImpl getClassLoader() {
 						return null;
 					}
 
