@@ -316,8 +316,8 @@ public class Shell {
 
 		public abstract ClassLoader getClassLoader();
 
-		public abstract Properties getSystemProperties();
 		public abstract OperatingSystem.Environment getEnvironment();
+		public abstract Properties getSystemProperties();
 		public abstract Stdio getStdio();
 		public abstract Container getContainer();
 
@@ -367,11 +367,6 @@ public class Shell {
 			public abstract void exit(int status);
 		}
 
-		public final File getClassCache() {
-			String value = this.getSystemProperties().getProperty("jsh.shell.classes");
-			return (value == null) ? null : new File(new File(value), "modules");
-		}
-
 		public final Loader.Classes.Configuration getClassesConfiguration() {
 			return new Loader.Classes.Configuration() {
 				@Override public boolean canCreateClassLoaders() {
@@ -383,7 +378,8 @@ public class Shell {
 				}
 
 				@Override public java.io.File getLocalClassCache() {
-					return Environment.this.getClassCache();
+					String value = Environment.this.getSystemProperties().getProperty("jsh.shell.classes");
+					return (value == null) ? null : new File(new File(value), "modules");
 				}
 			};
 		}

@@ -57,27 +57,28 @@ public class Main {
 		abstract Shell.Environment.Packaged getPackaged();
 
 		final Shell.Environment environment() {
+			//	TODO	what is this for?
 			String PREFIX = Main.class.getName() + ".";
 			System.getProperties().put(PREFIX + "stdin", System.in);
 			System.getProperties().put(PREFIX + "stdout", System.out);
 			System.getProperties().put(PREFIX + "stderr", System.err);
-			InputStream stdin = new Logging.InputStream(System.in);
-			//	We assume that as long as we have separate launcher and loader processes, we should immediately flush stdout
-			//	whenever it is written to (by default it only flushes on newlines). This way the launcher process can handle
-			//	ultimately buffering the stdout to the console or other ultimate destination.
-			OutputStream stdout = new Logging.OutputStream(inonit.script.runtime.io.Streams.Bytes.Flusher.ALWAYS.decorate(System.out), "stdout");
-			//	We do not make the same assumption for stderr because we assume it will always be written to a console-like
-			//	device and bytes will never need to be immediately available
-			OutputStream stderr = new PrintStream(new Logging.OutputStream(System.err, "stderr"));
-			final Shell.Environment.Stdio stdio = Shell.Environment.Stdio.create(stdin, stdout, stderr);
-			final Shell.Environment.Packaged packaged = getPackaged();
+
 			return Shell.Environment.create(
 				Shell.Environment.Container.VM,
 				Shell.Environment.class.getClassLoader(),
 				System.getProperties(),
 				OperatingSystem.Environment.SYSTEM,
-				stdio,
-				packaged
+				Shell.Environment.Stdio.create(
+					new Logging.InputStream(System.in),
+					//	We assume that as long as we have separate launcher and loader processes, we should immediately flush stdout
+					//	whenever it is written to (by default it only flushes on newlines). This way the launcher process can handle
+					//	ultimately buffering the stdout to the console or other ultimate destination.
+					new Logging.OutputStream(inonit.script.runtime.io.Streams.Bytes.Flusher.ALWAYS.decorate(System.out), "stdout"),
+					//	We do not make the same assumption for stderr because we assume it will always be written to a console-like
+					//	device and bytes will never need to be immediately available
+					new PrintStream(new Logging.OutputStream(System.err, "stderr"))
+				),
+				getPackaged()
 			);
 		}
 
