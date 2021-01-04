@@ -353,6 +353,10 @@ namespace Packages {
 						getStandardError(): Packages.java.io.OutputStream
 					}
 
+					/**
+					 * Methods related to packaged applications, currently used to provide access to packaged application resources
+					 * and location so that they can be provided by the <code>jsh.script</code> API.
+					 */
 					export interface Packaged {
 						getFile(): Packages.java.io.File
 						getCode(): Packages.inonit.script.engine.Code.Loader
