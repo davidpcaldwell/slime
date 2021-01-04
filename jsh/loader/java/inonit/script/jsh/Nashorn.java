@@ -16,7 +16,7 @@ import javax.script.*;
 
 import inonit.script.engine.*;
 
-public class Nashorn extends Main.Engine {
+public class Nashorn extends Shell.Engine {
 	public static abstract class Host {
 		public abstract boolean isTop();
 		public abstract Loader.Classes.Interface getClasspath();

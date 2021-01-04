@@ -465,54 +465,7 @@ public class Main {
 		return implementation().configuration(arguments);
 	}
 
-	public static abstract class Engine {
-		public abstract void main(Shell.Container context, Shell shell) throws Shell.Invocation.CheckedException;
-
-		private void shell(Shell.Container context, Shell.Configuration shell) throws Shell.Invocation.CheckedException {
-			Thread.currentThread().setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
-				public void uncaughtException(Thread t, Throwable e) {
-					Throwable error = e;
-					java.io.PrintWriter writer = new java.io.PrintWriter(System.err,true);
-					while(error != null) {
-						writer.println(error.getClass().getName() + ": " + error.getMessage());
-						StackTraceElement[] trace = error.getStackTrace();
-						for (StackTraceElement line : trace) {
-							writer.println("\t" + line);
-						}
-						error = error.getCause();
-						if (error != null) {
-							writer.print("Caused by: ");
-						}
-					}
-				}
-			});
-			main(context, Shell.create(shell, this));
-		}
-
-		//	TODO	The cli() method appears to force VM containers; the embed() method and Runner class may have been intended
-		//			to support another kind of container, but are currently unused
-
-		// private class Runner extends Shell.Container.Holder.Run {
-		// 	public void threw(Throwable t) {
-		// 		t.printStackTrace();
-		// 	}
-
-		// 	public void run(Shell.Container context, Shell.Configuration shell) throws Shell.Invocation.CheckedException {
-		// 		Engine.this.shell(context,shell);
-		// 	}
-		// }
-
-		// private Integer embed(Shell.Configuration configuration) throws Shell.Invocation.CheckedException {
-		// 	Shell.Container.Holder context = new Shell.Container.Holder();
-		// 	return context.getExitCode(new Runner(), configuration);
-		// }
-
-		private void cli(String[] args) throws Shell.Invocation.CheckedException {
-			shell(Shell.Container.VM, Main.configuration(args));
-		}
-	}
-
-	public static void cli(Engine engine, String[] args) throws Shell.Invocation.CheckedException {
+	public static void cli(Shell.Engine engine, String[] args) throws Shell.Invocation.CheckedException {
 		if (!inonit.system.Logging.get().isSpecified()) {
 			inonit.system.Logging.get().initialize(new java.util.Properties());
 		}
@@ -521,7 +474,7 @@ public class Main {
 			LOG.log(Level.INFO, "Argument " + i + " is: " + args[i]);
 		}
 		try {
-			engine.cli(args);
+			engine.shell(Shell.Container.VM, Main.configuration(args));
 		} catch (Throwable t) {
 			t.printStackTrace();
 			System.exit(255);
