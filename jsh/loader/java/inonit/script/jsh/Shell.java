@@ -372,7 +372,7 @@ public class Shell {
 			return (value == null) ? null : new File(new File(value), "modules");
 		}
 
-		public final Loader.Classes.Configuration getClasses() {
+		public final Loader.Classes.Configuration getClassesConfiguration() {
 			return new Loader.Classes.Configuration() {
 				@Override public boolean canCreateClassLoaders() {
 					return true;
