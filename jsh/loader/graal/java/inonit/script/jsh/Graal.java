@@ -135,13 +135,13 @@ public class Graal extends Shell.Engine {
 		}
 	}
 
-	public void main(Shell.Container context, Shell shell) throws Shell.Invocation.CheckedException {
+	public void main(Shell shell) throws Shell.Invocation.CheckedException {
 		Shell.Execution execution = new ExecutionImpl(shell, true);
 		Integer rv = execution.execute();
 		if (rv == null) {
 		} else if (rv.intValue() == 0) {
 		} else {
-			context.exit(rv.intValue());
+			shell.getEnvironment().exit(rv.intValue());
 		}
 	}
 

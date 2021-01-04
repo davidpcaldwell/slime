@@ -261,7 +261,7 @@ public class Rhino {
 	}
 
 	public static class EngineImpl extends Shell.Engine {
-		private static void run(Shell.Container context, Shell shell) {
+		private static void run(Shell shell) {
 			final Configuration engineConfiguration = Configuration.main(shell.getEnvironment());
 			try {
 				java.util.concurrent.ExecutorService service = java.util.concurrent.Executors.newSingleThreadExecutor();
@@ -275,7 +275,7 @@ public class Rhino {
 				service.shutdown();
 				LOG.log(Level.INFO, "Exiting normally with status %d.", status);
 				if (status != null) {
-					context.exit(status.intValue());
+					shell.getEnvironment().exit(status.intValue());
 				} else {
 					Thread[] threads = new Thread[Thread.activeCount()*2];
 					for (Thread t : threads) {
@@ -323,14 +323,14 @@ public class Rhino {
 					}
 					target = target.getCause();
 				}
-				context.exit(1);
+				shell.getEnvironment().exit(1);
 			} finally {
 
 			}
 		}
 
-		public void main(Shell.Container context, Shell shell) {
-			run(context, shell);
+		public void main(Shell shell) {
+			run(shell);
 		}
 	}
 
