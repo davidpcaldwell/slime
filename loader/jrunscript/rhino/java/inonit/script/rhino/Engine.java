@@ -34,16 +34,20 @@ public class Engine {
 
 	public static abstract class Configuration {
 		public static final Configuration DEFAULT = new Configuration() {
-			@Override public ClassLoader getApplicationClassLoader() {
-				return null;
-			}
+			@Override public Loader.Classes.Configuration getClassesConfiguration() {
+				return new Loader.Classes.Configuration() {
+					@Override public ClassLoader getApplicationClassLoader() {
+						return null;
+					}
 
-			@Override public File getLocalClassCache() {
-				return null;
-			}
+					@Override public File getLocalClassCache() {
+						return null;
+					}
 
-			@Override public boolean canCreateClassLoaders() {
-				return true;
+					@Override public boolean canCreateClassLoaders() {
+						return true;
+					}
+				};
 			}
 
 			@Override public boolean canAccessEnvironment() {
@@ -59,7 +63,9 @@ public class Engine {
 			return getClass().getName() + " factory=" + factory;
 		}
 
-		public abstract boolean canCreateClassLoaders();
+		public final boolean canCreateClassLoaders() {
+			return getClassesConfiguration().canCreateClassLoaders();
+		}
 
 		/**
 		 * Creates the single <code>ClassLoader</code> to be used for this {@link Engine}. Currently all {@link Context}s created
@@ -67,27 +73,21 @@ public class Engine {
 		 *
 		 * @return A <code>ClassLoader</code>, or <code>null</code> to use the ClassLoader that loaded Rhino.
 		 */
-		public abstract ClassLoader getApplicationClassLoader();
+		public final ClassLoader getApplicationClassLoader() {
+			return getClassesConfiguration().getApplicationClassLoader();
+		}
 
-		public abstract File getLocalClassCache();
+		public final File getLocalClassCache() {
+			return getClassesConfiguration().getLocalClassCache();
+		}
 
 		public abstract boolean canAccessEnvironment();
 		public abstract int getOptimizationLevel();
 
+		public abstract Loader.Classes.Configuration getClassesConfiguration();
+
 		final Loader.Classes.Configuration toClassesConfiguration() {
-			return new Loader.Classes.Configuration() {
-				@Override public boolean canCreateClassLoaders() {
-					return Configuration.this.canCreateClassLoaders();
-				}
-
-				@Override public ClassLoader getApplicationClassLoader() {
-					return (Configuration.this.getApplicationClassLoader() == null) ? ContextFactory.class.getClassLoader() : Configuration.this.getApplicationClassLoader();
-				}
-
-				@Override public File getLocalClassCache() {
-					return Configuration.this.getLocalClassCache();
-				}
-			};
+			return getClassesConfiguration();
 		}
 
 		private ContextFactoryInner factory = new ContextFactoryInner();

@@ -24,19 +24,7 @@ public class Graal extends Shell.Engine {
 			super(shell);
 
 			this.classes = Loader.Classes.create(
-				new Loader.Classes.Configuration() {
-					@Override public boolean canCreateClassLoaders() {
-						return true;
-					}
-
-					@Override public ClassLoader getApplicationClassLoader() {
-						return Nashorn.class.getClassLoader();
-					}
-
-					@Override public java.io.File getLocalClassCache() {
-						return shell.getEnvironment().getClassCache();
-					}
-				}
+				shell.getEnvironment().getClasses()
 			);
 
 			this.top = top;
