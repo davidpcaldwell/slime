@@ -270,22 +270,6 @@
 				var configuration = new JavaAdapter(
 					Packages.inonit.script.jsh.Shell.Environment,
 					new function() {
-						// this.getOptimizationLevel = function() {
-						// 	return -1;
-						// };
-
-						// this.getDebugger = function() {
-						// 	//	TODO	an alternative would be to re-use the debugger from this shell; neither seems to work as expected
-						// 	if (environment.JSH_SCRIPT_DEBUGGER == "rhino") {
-						// 		var Engine = Packages.inonit.script.rhino.Engine;
-						// 		return Engine.RhinoDebugger.create(Engine.RhinoDebugger.Configuration.create(
-						// 			Packages.inonit.script.rhino.Gui.RHINO_UI_FACTORY
-						// 		));
-						// 	} else {
-						// 		return null;
-						// 	}
-						// }
-
 						var specified = $exports.run.stdio(p);
 
 						var stdio = new JavaAdapter(
