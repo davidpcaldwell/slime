@@ -314,45 +314,51 @@ public class Shell {
 	 * and standard I/O streams.
 	 */
 	public static abstract class Environment {
-		static Environment create(final Container container, final Properties properties, final OperatingSystem.Environment environment, final Stdio stdio) {
+		static Environment create(
+			final OperatingSystem.Environment environment,
+			final Properties properties,
+			final Stdio stdio,
+			final Exit exit
+		) {
 			return new Environment() {
-				@Override public Container getContainer() {
-					return container;
+				@Override public OperatingSystem.Environment getEnvironment() {
+					return environment;
 				}
 
 				@Override public Properties getSystemProperties() {
 					return properties;
 				}
 
-				@Override public OperatingSystem.Environment getEnvironment() {
-					return environment;
-				}
-
 				@Override public Stdio getStdio() {
 					return stdio;
 				}
-			};
-		}
 
-		final ClassLoader getClassLoader() {
-			return Shell.class.getClassLoader();
+				@Override public Exit getExit() {
+					return exit;
+				}
+			};
 		}
 
 		public abstract OperatingSystem.Environment getEnvironment();
 		public abstract Properties getSystemProperties();
 		public abstract Stdio getStdio();
-		public abstract Container getContainer();
+		public abstract Exit getExit();
 
+		/**
+		 * Used by shell implementations as a convenience to exit the shell via the {@link Exit} implementation.
+		 *
+		 * @param status The exit status of the shell.
+		 */
 		final void exit(int status) {
-			getContainer().exit(status);
+			getExit().accept(status);
 		}
 
 		/**
 		 * A {Container} provides a {@link Shell} with a means of exiting with an <code>int</code> status code.
 		 */
-		public static abstract class Container {
-			public static final Container VM = new Container() {
-				@Override public void exit(int status) {
+		public static abstract class Exit implements java.util.function.IntConsumer {
+			public static final Exit VM = new Exit() {
+				@Override public void accept(int status) {
 					System.out.flush();
 					System.err.flush();
 					System.exit(status);
@@ -362,10 +368,10 @@ public class Shell {
 			//	TODO	Currently unused, but presumably intended to support a lighter-weight embedding of jsh inside something
 			//			smaller than a full VM
 
-			public static class Holder extends Container {
+			public static class Holder extends Exit {
 				private Integer status;
 
-				@Override public void exit(int status) {
+				@Override public void accept(int status) {
 					this.status = Integer.valueOf(status);
 				}
 
@@ -382,26 +388,24 @@ public class Shell {
 
 				public static abstract class Run {
 					public abstract void threw(Throwable t);
-					public abstract void run(Container context, Shell.Configuration shell) throws Throwable;
+					public abstract void run(Exit context, Shell.Configuration shell) throws Throwable;
 				}
 			}
-
-			public abstract void exit(int status);
 		}
 
-		public final Loader.Classes.Configuration getClassesConfiguration() {
+		final Loader.Classes.Configuration getClassesConfiguration() {
 			return new Loader.Classes.Configuration() {
 				@Override public boolean canCreateClassLoaders() {
 					return true;
 				}
 
 				@Override public ClassLoader getApplicationClassLoader() {
-					return Environment.this.getClassLoader();
+					return Shell.class.getClassLoader();
 				}
 
 				@Override public java.io.File getLocalClassCache() {
 					String value = Environment.this.getSystemProperties().getProperty("jsh.shell.classes");
-					return (value == null) ? null : new File(new File(value), "modules");
+					return (value != null) ? new File(new File(value), "modules") : null;
 				}
 			};
 		}

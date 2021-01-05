@@ -62,9 +62,8 @@ public class Main {
 			System.getProperties().put(PREFIX + "stderr", System.err);
 
 			return Shell.Environment.create(
-				Shell.Environment.Container.VM,
-				System.getProperties(),
 				OperatingSystem.Environment.SYSTEM,
+				System.getProperties(),
 				Shell.Environment.Stdio.create(
 					new Logging.InputStream(System.in),
 					//	We assume that as long as we have separate launcher and loader processes, we should immediately flush stdout
@@ -74,7 +73,8 @@ public class Main {
 					//	We do not make the same assumption for stderr because we assume it will always be written to a console-like
 					//	device and bytes will never need to be immediately available
 					new PrintStream(new Logging.OutputStream(System.err, "stderr"))
-				)
+				),
+				Shell.Environment.Exit.VM
 			);
 		}
 
