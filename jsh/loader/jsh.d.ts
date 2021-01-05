@@ -10,7 +10,7 @@ namespace jsh.plugin {
 		getEnvironment(): any
 		getInvocation(): any
 
-		getPackaged(): Packages.inonit.script.jsh.Shell.Environment.Packaged
+		getPackaged(): Packages.inonit.script.jsh.Shell.Packaged
 
 		plugins: {
 			mock: jsh.loader.plugins.Export["mock"]

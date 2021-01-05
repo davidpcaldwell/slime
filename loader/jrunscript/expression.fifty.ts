@@ -333,17 +333,26 @@ namespace Packages {
 				getInterface(): any
 				getLibrary(path: string): any
 				getLibraryFile(path: string): any
+				getPackaged(): Shell.Packaged
 
 				worker: any
 				events: any
 			}
 
 			export namespace Shell {
+				/**
+				 * Methods related to packaged applications, currently used to provide access to packaged application resources
+				 * and location so that they can be provided by the <code>jsh.script</code> API.
+				 */
+				export interface Packaged {
+					getFile(): Packages.java.io.File
+					getCode(): Packages.inonit.script.engine.Code.Loader
+				}
+
 				export interface Environment {
 					getStdio(): Environment.Stdio
 					getEnvironment(): Packages.inonit.system.OperatingSystem.Environment
 					getSystemProperties(): Packages.java.util.Properties
-					getPackaged(): Environment.Packaged
 				}
 
 				export namespace Environment {
@@ -351,15 +360,6 @@ namespace Packages {
 						getStandardInput(): Packages.java.io.InputStream
 						getStandardOutput(): Packages.java.io.OutputStream
 						getStandardError(): Packages.java.io.OutputStream
-					}
-
-					/**
-					 * Methods related to packaged applications, currently used to provide access to packaged application resources
-					 * and location so that they can be provided by the <code>jsh.script</code> API.
-					 */
-					export interface Packaged {
-						getFile(): Packages.java.io.File
-						getCode(): Packages.inonit.script.engine.Code.Loader
 					}
 				}
 

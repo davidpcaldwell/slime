@@ -68,7 +68,7 @@
 								return invocation;
 							},
 							getPackaged: function() {
-								return configuration.getPackaged();
+								return $jsh.getPackaged();
 							},
 							loader: (function() {
 								var getLoaderCode = function(path) {

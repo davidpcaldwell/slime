@@ -54,8 +54,6 @@ public class Main {
 			}
 		}
 
-		abstract Shell.Environment.Packaged getPackaged();
-
 		final Shell.Environment environment() {
 			//	TODO	what is this for?
 			String PREFIX = Main.class.getName() + ".";
@@ -65,7 +63,6 @@ public class Main {
 
 			return Shell.Environment.create(
 				Shell.Environment.Container.VM,
-				Shell.Environment.class.getClassLoader(),
 				System.getProperties(),
 				OperatingSystem.Environment.SYSTEM,
 				Shell.Environment.Stdio.create(
@@ -77,8 +74,7 @@ public class Main {
 					//	We do not make the same assumption for stderr because we assume it will always be written to a console-like
 					//	device and bytes will never need to be immediately available
 					new PrintStream(new Logging.OutputStream(System.err, "stderr"))
-				),
-				getPackaged()
+				)
 			);
 		}
 
@@ -179,6 +175,10 @@ public class Main {
 				@Override public Code.Loader[] getExtensions() {
 					return plugins;
 				}
+
+				@Override public Shell.Packaged getPackaged() {
+					return Shell.Packaged.create(Code.Loader.system("$packaged/"), main);
+				}
 			};
 		}
 
@@ -188,10 +188,6 @@ public class Main {
 				Shell.Script.create(main),
 				arguments
 			);
-		}
-
-		Shell.Environment.Packaged getPackaged() {
-			return Shell.Environment.Packaged.create(Code.Loader.system("$packaged/"), main);
 		}
 	}
 
@@ -243,6 +239,10 @@ public class Main {
 
 				@Override public Code.Loader[] getExtensions() {
 					return plugins;
+				}
+
+				@Override public Shell.Packaged getPackaged() {
+					return null;
 				}
 			};
 		}
@@ -311,10 +311,6 @@ public class Main {
 					}
 				};
 			}
-		}
-
-		Shell.Environment.Packaged getPackaged() {
-			return null;
 		}
 	}
 
