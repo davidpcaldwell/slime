@@ -201,6 +201,7 @@ interface Packages {
 			ArrayList: any
 			Properties: any
 			logging: any
+			Base64: any
 		}
 		awt: {
 			Desktop: any
