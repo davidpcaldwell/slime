@@ -147,8 +147,10 @@ interface Packages {
 				err: {
 					println: any
 				}
+				currentTimeMillis(): number
 				setProperty(name: string, value: string)
 				getProperty(name: string): Packages.java.lang.String
+				getProperties(): any
 				exit(status: number)
 				getenv(name: string): string
 				getenv(): any
