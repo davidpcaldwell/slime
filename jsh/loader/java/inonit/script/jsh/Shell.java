@@ -279,6 +279,34 @@ public class Shell {
 		public abstract Code.Loader getLibraries();
 		public abstract File getLibraryFile(String file);
 		public abstract Code.Loader[] getExtensions();
+
+		public abstract Packaged getPackaged();
+	}
+
+	public Packaged getPackaged() {
+		return configuration.getInstallation().getPackaged();
+	}
+
+	public static abstract class Packaged {
+		static Packaged create(final Code.Loader code, final File file) {
+			return new Packaged() {
+				@Override public Code.Loader getCode() {
+					return code;
+				}
+
+				@Override public File getFile() {
+					return file;
+				}
+			};
+		}
+
+		/**
+		 *
+		 *	@return An object capable of loading modules and scripts bundled with a script.
+		 */
+		public abstract Code.Loader getCode();
+
+		public abstract File getFile();
 	}
 
 	/**
@@ -286,14 +314,10 @@ public class Shell {
 	 * and standard I/O streams.
 	 */
 	public static abstract class Environment {
-		static Environment create(final Container container, final ClassLoader loader, final Properties properties, final OperatingSystem.Environment environment, final Stdio stdio, final Packaged packaged) {
+		static Environment create(final Container container, final Properties properties, final OperatingSystem.Environment environment, final Stdio stdio) {
 			return new Environment() {
 				@Override public Container getContainer() {
 					return container;
-				}
-
-				@Override public ClassLoader getClassLoader() {
-					return loader;
 				}
 
 				@Override public Properties getSystemProperties() {
@@ -307,14 +331,12 @@ public class Shell {
 				@Override public Stdio getStdio() {
 					return stdio;
 				}
-
-				@Override public Packaged getPackaged() {
-					return packaged;
-				}
 			};
 		}
 
-		public abstract ClassLoader getClassLoader();
+		final ClassLoader getClassLoader() {
+			return Shell.class.getClassLoader();
+		}
 
 		public abstract OperatingSystem.Environment getEnvironment();
 		public abstract Properties getSystemProperties();
@@ -384,32 +406,8 @@ public class Shell {
 			};
 		}
 
-		public static abstract class Packaged {
-			public static Packaged create(final Code.Loader code, final File file) {
-				return new Packaged() {
-					@Override public Code.Loader getCode() {
-						return code;
-					}
-
-					@Override public File getFile() {
-						return file;
-					}
-				};
-			}
-
-			/**
-			 *
-			 *	@return An object capable of loading modules and scripts bundled with a script.
-			 */
-			public abstract Code.Loader getCode();
-
-			public abstract File getFile();
-		}
-
-		public abstract Packaged getPackaged();
-
 		public static abstract class Stdio {
-			public static Stdio create(final InputStream in, final OutputStream out, final OutputStream err) {
+			static Stdio create(final InputStream in, final OutputStream out, final OutputStream err) {
 				return new Stdio() {
 					@Override public InputStream getStandardInput() {
 						return in;
@@ -432,7 +430,7 @@ public class Shell {
 	}
 
 	public static abstract class Invocation {
-		public static Invocation create(final Script script, final String[] arguments) {
+		static Invocation create(final Script script, final String[] arguments) {
 			//	TODO	probably should copy arguments array to make it immutable
 			return new Invocation() {
 				@Override public String toString() {
