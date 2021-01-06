@@ -30,7 +30,9 @@
 		}
 
 		/** @type { slime.definition.verify.Exports } */
-		var verify = jsh.loader.file(jsh.shell.jsh.src.getFile("loader/api/verify.js"));
+		var verify = {
+			Verify: jsh.loader.file(jsh.shell.jsh.src.getFile("loader/api/verify.js"))
+		};
 
 		var console = (function() {
 			var write = function(scope,string) {

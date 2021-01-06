@@ -250,7 +250,9 @@
 					this.fifty = function(p) {
 						var slime = new inonit.loader.Loader(inonit.loader.base + "../");
 
-						var verify = slime.file("loader/api/verify.js");
+						var verify = {
+							Verify: slime.file("loader/api/verify.js")
+						};
 
 						var run = slime.module("loader/api/test/fifty/test.js", {
 							library: {

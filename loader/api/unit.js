@@ -27,7 +27,7 @@
 		var defineProperty = (function() { return this.Object.defineProperty; })();
 
 		/** @type { slime.definition.unit.Verify.Factory } */
-		var Verify = $loader.file("verify.js").Verify
+		var Verify = $loader.file("verify.js");
 
 		$exports.Verify = Verify;
 
