@@ -42,7 +42,15 @@ namespace slime.definition.verify {
 
 	namespace Scope {
 		type Test = {
-			(): { success: boolean, message: string }
+			(): Test.Result
+		}
+
+		namespace Test {
+			interface Result {
+				success: boolean
+				error?: any
+				message: string
+			}
 		}
 	}
 

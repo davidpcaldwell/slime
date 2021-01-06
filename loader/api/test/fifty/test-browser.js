@@ -101,7 +101,7 @@
 				return;
 			}
 
-			var verify = code.verify();
+			var verify = { Verify: code.verify() };
 
 			var console = (
 				/**

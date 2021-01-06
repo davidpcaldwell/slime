@@ -296,7 +296,7 @@
 				delegate.fifty = function(p) {
 					var slime = new jsh.file.Loader({ directory: jsh.shell.jsh.src });
 
-					var verify = slime.file("loader/api/verify.js");
+					var verify = { Verify: slime.file("loader/api/verify.js") };
 
 					var run = slime.module("loader/api/test/fifty/test.js", {
 						library: {
