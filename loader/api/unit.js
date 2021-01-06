@@ -92,7 +92,7 @@
 
 				return {
 					events: events,
-					scope: new TestExecutionProcessor({ events: events }),
+					scope: TestExecutionProcessor({ events: events }),
 					create: (function() {
 						if (definition && definition.create) {
 							$api.deprecate(function() {
