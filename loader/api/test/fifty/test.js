@@ -2,12 +2,11 @@
 (
 	/**
 	 * @param { $api } $api
-	 * @param { { library: { verify: slime.definition.verify.Exports }, console: slime.fifty.test.internal.Console } } $context
+	 * @param { { library: { Verify: slime.definition.verify.Factory }, console: slime.fifty.test.internal.Console } } $context
 	 * @param { slime.Loader } $loader
 	 * @param { (value: slime.fifty.test.internal.run) => void } $export
 	 */
 	function($api,$context,$loader,$export) {
-		var Verify = $context.library.verify.Verify;
 		var console = $context.console;
 
 		/**
@@ -108,7 +107,7 @@
 				verify: verify
 			};
 			scope = Scope({ parent: scope });
-			verify = Verify(scope);
+			verify = $context.library.Verify(scope);
 			execute();
 			var result = scope.success;
 			scope = was.scope;

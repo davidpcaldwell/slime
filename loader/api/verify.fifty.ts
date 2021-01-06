@@ -15,10 +15,10 @@ namespace slime.definition.verify {
 		}
 		evaluate: any
 	} & (
-		T extends Array ? { length: Subject<number> } : {}
+		T extends Array<any> ? { length: Subject<number> } : {}
 	)
 
-	type MethodSubject<T> = {
+	type MethodSubject<T extends (...args: any) => any> = {
 		(...p: Parameters<T>): Subject<ReturnType<T>>
 	}
 
@@ -27,7 +27,7 @@ namespace slime.definition.verify {
 			T extends Boolean
 			? BooleanSubject
 			: (
-				T extends Function
+				T extends (...args: any) => any
 				? MethodSubject<T>
 				: ValueSubject<T>
 			)
@@ -35,18 +35,18 @@ namespace slime.definition.verify {
 		& { [K in keyof T]: Subject<T[K]> }
 	)
 
-	type Verify = {
+	export type Verify = {
 		<T>(value: boolean, name?: string, lambda?: (it: BooleanSubject) => void): BooleanSubject
 		<T>(value: T, name?: string, lambda?: (it: Subject<T>) => void): Subject<T>
 	}
 
-	namespace Scope {
-		type Test = {
+	export namespace Scope {
+		export type Test = {
 			(): Test.Result
 		}
 
-		namespace Test {
-			interface Result {
+		export namespace Test {
+			export interface Result {
 				success: boolean
 				error?: any
 				message: string
@@ -54,15 +54,11 @@ namespace slime.definition.verify {
 		}
 	}
 
-	interface Scope {
+	export interface Scope {
 		test: (f: Scope.Test) => void
 	}
 
-	type Factory = {
+	export type Factory = {
 		( scope: Scope ): Verify
-	}
-
-	interface Exports {
-		Verify: Factory
 	}
 }
