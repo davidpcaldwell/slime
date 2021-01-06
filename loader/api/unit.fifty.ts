@@ -87,7 +87,7 @@ namespace slime.definition.unit.internal {
 	//@ts-ignore
 	})(fifty);
 
-	export type Scope = new (o: { events: $api.Events }) => slime.definition.unit.Scope
+	export type Scope = (o: { events: $api.Events }) => slime.definition.unit.Scope
 }
 
 namespace slime.definition.unit {
@@ -119,7 +119,12 @@ namespace slime.definition.unit {
 	}
 
 	export interface Scope {
-
+		test(assertion: any)
+		error: any
+		verify: any
+		success: boolean
+		fire: any
+		checkForFailure: any
 	}
 
 	export namespace Event {

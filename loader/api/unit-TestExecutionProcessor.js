@@ -18,11 +18,17 @@
 					return $api.deprecate(function() {
 						return {
 							success: b,
-							message: MESSAGE(b)
+							message: MESSAGE(b),
+							error: void(0)
 						}
 					});
 				};
 
+				/**
+				 *
+				 * @param { any } assertion
+				 * @returns { () => { success: boolean, message: string, error: any } }
+				 */
 				this.assertion = function(assertion) {
 					if (typeof(assertion) == "function") return assertion;
 					if (typeof(assertion) == "boolean") {
@@ -117,7 +123,7 @@
 			};
 
 			/**
-			 * @param { { events: $api.Events } } o
+			 * @type { slime.definition.unit.internal.Scope }
 			 */
 			var Scope = function(o) {
 				var success = true;
@@ -144,40 +150,44 @@
 					checkForFailure(detail);
 				}
 
-				this.test = function(assertion) {
-					var getResult = function(assertion) {
-						assertion = adaptAssertion.assertion(assertion);
-						var result = assertion();
-						result = adaptAssertion.result(result);
-						return result;
-					};
+				/**
+				 * @type { slime.definition.unit.Scope }
+				 */
+				var rv = {
+					test: function(assertion) {
+						var getResult = function(assertion) {
+							assertion = adaptAssertion.assertion(assertion);
+							var result = assertion();
+							result = adaptAssertion.result(result);
+							return result;
+						};
 
-					process("test",getResult(assertion));
-				};
-
-				this.error = function(e) {
-					process("test",{
-						success: false,
-						message: "Uncaught exception: " + e,
-						error: e
-					});
+						process("test",getResult(assertion));
+					},
+					error: function(e) {
+						process("test",{
+							success: false,
+							message: "Uncaught exception: " + e,
+							error: e
+						});
+					},
+					verify: $context.Verify(this),
+					success: void(0),
+					fire: function(type,detail) {
+						process(type,detail);
+					},
+					checkForFailure: function(e) {
+						checkForFailure(e.detail);
+					}
 				}
 
-				this.verify = $context.Verify(this);
-
-				$context.defineProperty(this,"success",{
+				$context.defineProperty(rv,"success",{
 					get: function() {
 						return success;
 					}
 				});
 
-				this.fire = function(type,detail) {
-					process(type,detail);
-				}
-
-				this.checkForFailure = function(e) {
-					checkForFailure(e.detail);
-				}
+				return rv;
 			};
 
 			return Scope;
