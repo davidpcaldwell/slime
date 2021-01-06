@@ -101,7 +101,7 @@
 				return;
 			}
 
-			var verify = { Verify: code.verify() };
+			var verify = code.verify();
 
 			var console = (
 				/**
@@ -154,7 +154,7 @@
 				/** @type { slime.fifty.test.internal.run } */
 				var implementation = fiftyLoader.module("test.js", {
 					library: {
-						verify: verify
+						Verify: verify
 					},
 					console: console
 				});

@@ -29,10 +29,8 @@
 			jsh.shell.exit(1);
 		}
 
-		/** @type { slime.definition.verify.Exports } */
-		var verify = {
-			Verify: jsh.loader.file(jsh.shell.jsh.src.getFile("loader/api/verify.js"))
-		};
+		/** @type { slime.definition.verify.Factory } */
+		var verify = jsh.loader.file(jsh.shell.jsh.src.getFile("loader/api/verify.js"))
 
 		var console = (function() {
 			var write = function(scope,string) {
@@ -66,7 +64,7 @@
 			/** @type { slime.fifty.test.internal.run } */
 			var implementation = fiftyLoader.module("test.js", {
 				library: {
-					verify: verify
+					Verify: verify
 				},
 				console: console
 			});
