@@ -88,7 +88,7 @@ namespace slime.fifty {
 			fail(): void
 
 			start: (name: string) => void
-			test: slime.definition.verify.Scope["test"]
+			test: slime.definition.verify.Context["test"]
 			end: (name: string, result: boolean) => void
 		}
 

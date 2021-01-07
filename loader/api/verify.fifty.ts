@@ -35,31 +35,26 @@ namespace slime.definition.verify {
 		& { [K in keyof T]: Subject<T[K]> }
 	)
 
+	/**
+	 * A function that returns a {@link Subject}, which supports a convenient API for making assertions about a subject value.
+	 */
 	export type Verify = {
 		<T>(value: boolean, name?: string, lambda?: (it: BooleanSubject) => void): BooleanSubject
 		<T>(value: T, name?: string, lambda?: (it: Subject<T>) => void): Subject<T>
 	}
 
-	export namespace Scope {
-		export type Test = {
-			(): Test.Result
-		}
-
-		export namespace Test {
-			export interface Result {
-				success: boolean
-				error?: any
-				message: string
-			}
-		}
+	export namespace Context {
 	}
 
-	export type Scope = (f: Scope.Test) => void
+	/**
+	 * An object that can execute {@link Context.Test}s.
+	 */
+	export type Context = (f: slime.definition.unit.Test) => void
 
 	/**
-	 * Creates a {@link Verify} object that communicates with the given {@link Scope}.
+	 * Creates a {@link Verify} object that communicates with the given {@link Context}.
 	 */
-	export type Export = ( scope: Scope ) => Verify
+	export type Export = ( scope: Context ) => Verify
 
 	(
 		function(

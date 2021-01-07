@@ -2,8 +2,8 @@
 (
 	/**
 	 *
-	 * @param { { Verify: slime.definition.unit.Verify.Factory } } $context
-	 * @param { (value: slime.definition.unit.internal.Scope) => void } $export
+	 * @param { { Verify: slime.definition.verify.Export } } $context
+	 * @param { (value: slime.definition.unit.internal.EventsScope) => void } $export
 	 */
 	function($context,$export) {
 		$export((function() {
@@ -123,7 +123,7 @@
 			};
 
 			/**
-			 * @type { slime.definition.unit.internal.Scope }
+			 * @type { slime.definition.unit.internal.EventsScope }
 			 */
 			var Scope = function(o) {
 				var success = true;
