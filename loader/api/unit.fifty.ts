@@ -178,11 +178,7 @@ namespace slime.definition.unit {
 				name: string
 			}) => void
 
-			test: (result: {
-				success: boolean
-				message: string
-				error?: Error
-			}) => void
+			test: (result: Test.Result) => void
 
 			end: (
 				scenario: {
