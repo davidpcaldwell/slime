@@ -21,23 +21,17 @@
 		/** @type { (message: string, p: any) => void } */
 		var log = ($context.log) ? $context.log : function(){};
 
-		/**
-		 * @type { ObjectConstructor["defineProperty"] }
-		 */
-		var defineProperty = (function() { return this.Object.defineProperty; })();
-
-		/** @type { slime.definition.unit.Verify.Factory } */
+		/** @type { slime.definition.verify.Export } */
 		var Verify = $loader.file("verify.js");
 
 		$exports.Verify = Verify;
 
-		/** @type { slime.definition.unit.internal.Scope } */
-		var TestExecutionProcessor = $loader.file("unit-TestExecutionProcessor.js", {
-			Verify: Verify,
-			defineProperty: defineProperty
+		/** @type { slime.definition.unit.internal.EventsScope } */
+		var EventsScope = $loader.file("unit-EventsScope.js", {
+			Verify: Verify
 		});
 
-		$exports.TestExecutionProcessor = TestExecutionProcessor;
+		$exports.TestExecutionProcessor = EventsScope;
 
 		(function() {
 			var copy = function(o) {
@@ -92,7 +86,7 @@
 
 				return {
 					events: events,
-					scope: TestExecutionProcessor({ events: events }),
+					scope: EventsScope({ events: events }),
 					create: (function() {
 						if (definition && definition.create) {
 							$api.deprecate(function() {
@@ -141,9 +135,18 @@
 				}
 
 				var createVerify = function(vscope,promises) {
-					var verify = Verify(function(f) {
-						vscope.test(f);
-					});
+					var verify = Object.assign(
+						Verify(function(f) {
+							vscope.test(f);
+						}),
+						{
+							test: void(0),
+							suite: void(0),
+							scenario: void(0),
+							fire: void(0),
+							scope: void(0)
+						}
+					);
 					verify.test = $api.deprecate(function() {
 						return vscope.test.apply(this,arguments);
 					});
@@ -321,7 +324,7 @@
 					return rv;
 				}
 
-				defineProperty(this, "parts", {
+				Object.defineProperty(this, "parts", {
 					get: getParts
 				});
 

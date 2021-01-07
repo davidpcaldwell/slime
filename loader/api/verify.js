@@ -215,7 +215,7 @@
 								for (var x in delegate) {
 									this[x] = function() {
 										/**
-										 * @type { slime.definition.verify.Scope.Test.Result }
+										 * @type { slime.definition.unit.Test.Result }
 										 */
 										var result = {
 											success: false,
