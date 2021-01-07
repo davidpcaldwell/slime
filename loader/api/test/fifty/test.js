@@ -41,7 +41,7 @@
 					console.end(this, name, result);
 				}
 
-				/** @type { slime.definition.verify.Context } */
+				/** @type { slime.definition.verify.Verify.Context } */
 				this.test = function(f) {
 					/** @type { slime.definition.unit.Test.Result } */
 					var result;

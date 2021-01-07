@@ -31,18 +31,18 @@
 			Verify: Verify
 		});
 
-		$exports.TestExecutionProcessor = EventsScope;
+		$exports.EventsScope = EventsScope;
 
 		(function() {
-			var copy = function(o) {
-				var rv = {};
-				for (var x in o) {
-					rv[x] = o[x];
-				}
-				return rv;
+			function copy(o) {
+				return $api.Object.compose(o);
 			}
 
-			var Part = function(definition,context) {
+			/**
+			 * @type { slime.definition.unit.internal.Part.Constructor }
+			 * @this { slime.definition.unit.internal.Part }
+			 */
+			function Part(definition,context) {
 				//	TODO	what if caller does not use 'new'?
 				var events = $api.Events({
 					source: this,

@@ -16,17 +16,23 @@ namespace slime.definition.unit {
 	}
 
 	export interface Exports {
-		Verify: (scope: any, vars?: any) => slime.definition.verify.Verify
+		Verify: slime.definition.verify.Export
+
+		/**
+		 * @deprecated Only used in implmenting an older section of JSAPI browser tests.
+		 */
+		EventsScope: slime.definition.unit.internal.EventsScope
+
+		Scenario: new () => {}
+
 		Suite: new (o: any) => { listeners: { add: (type: string, handler: Function) => void }, run: () => boolean, promise: () => void }
+
+		getStructure: Function
+
 		View: {
 			(o: View.Handler): View
 			(f: View.Listener): View
 		}
-		getStructure: Function
-		Scenario: new () => {}
-
-		//	TODO	probably should not use "internal" type if it is exported. Reorganize.
-		TestExecutionProcessor: slime.definition.unit.internal.EventsScope
 
 		JSON: {
 			Encoder: (o: {
@@ -88,6 +94,18 @@ namespace slime.definition.unit.internal {
 	})(fifty);
 
 	export type EventsScope = (o: { events: $api.Events }) => slime.definition.unit.Scope
+
+	export interface Part {
+		id: any
+		name: any
+		listeners: $api.Events["listeners"]
+	}
+
+	export namespace Part {
+		interface Properties {
+		}
+		export type Constructor = (this: {}, definition: any, context: any) => Properties
+	}
 }
 
 namespace slime.definition.unit {

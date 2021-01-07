@@ -223,7 +223,7 @@
 			var Old = function() {
 				var Tests = function() {
 					var events = $api.Events({ source: this });
-					var scope = new $context.api.unit.TestExecutionProcessor({ events: events });
+					var scope = new $context.api.unit.EventsScope({ events: events });
 
 					var set = new Set({ events: events, scope: scope });
 
