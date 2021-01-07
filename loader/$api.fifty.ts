@@ -98,6 +98,7 @@ declare namespace $api {
 		source: object
 		timestamp: number
 		detail: T
+		path: any[]
 	}
 
 	namespace Event {
@@ -105,7 +106,10 @@ declare namespace $api {
 	}
 
 	interface Events {
-		listeners: any,
+		listeners: {
+			add: (type: string, handler: Event.Handler<any>) => void
+			remove: (type: string, handler: Event.Handler<any>) => void
+		},
 		fire: (type: string, detail: any) => void
 	}
 

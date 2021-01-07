@@ -540,12 +540,18 @@
 		 */
 		var Emitter = function(p) {
 			if (!p) p = {};
+
 			var source = (p.source) ? p.source : this;
-			/** @returns { { bubble: any } } */
+
+			/** @returns { { bubble: (event: $api.Event<any>) => void } } */
 			var getParent = function() {
 				if (p.parent) return p.parent;
 				if (p.getParent) return p.getParent();
 			}
+
+			/**
+			 * @type { { [type: string]: $api.Event.Handler<any>[] } }
+			 */
 			var byType = {};
 
 			/** @type { new (type: string, detail: any) => $api.Event } */
@@ -560,22 +566,25 @@
 				//	http://www.w3.org/TR/2000/REC-DOM-Level-2-Events-20001113/events.html#Events-interface
 			};
 
-			var listeners = new function() {
-				this.add = function(name,handler) {
+			/**
+			 * @type { $api.Events["listeners"] }
+			 */
+			var listeners = {
+				add: function(name,handler) {
 					if (!byType[name]) {
 						byType[name] = [];
 					}
 					byType[name].push(handler);
-				};
+				},
 
-				this.remove = function(name,handler) {
+				remove: function(name,handler) {
 					if (byType[name]) {
 						var index = byType[name].indexOf(handler);
 						if (index != -1) {
 							byType[name].splice(index,1);
 						}
 					}
-				};
+				}
 			};
 
 			//	TODO	capability is undocumented. Document? Deprecate? Remove?
@@ -599,7 +608,11 @@
 				};
 			}
 
-			var handle = function(event) {
+			/**
+			 *
+			 * @param { $api.Event<any> } event
+			 */
+			function handle(event) {
 				if (byType[event.type]) {
 					byType[event.type].forEach(function(listener) {
 						//	In a DOM-like structure, we would need something other than 'source' to act as 'this'
@@ -617,29 +630,23 @@
 			}
 
 			//	Private method; used by children to send an event up the chain.
-			//	TODO	switch to Object.defineProperty and make non-enumerable
-			this.bubble = function(event) {
-				handle(event);
-			}
+			Object.defineProperty(
+				this,
+				"bubble",
+				{
+					/**
+					 *
+					 * @param { $api.Event<any> } event
+					 */
+					value: function(event) {
+						handle(event);
+					}
+				}
+			);
 
 			this.fire = function(type,detail) {
 				handle(new Event(type,detail));
 			}
-		};
-
-		/** @type { $api["Events"] } */
-		var Events = Object.assign(
-			/**
-			 * @param { Parameters<$api["Events"]>[0] } p
-			 */
-			function(p) {
-				return new Emitter(p);
-			},
-			{ Function: void(0), instance: void(0) }
-		);
-		$exports.Events = Events;
-		$exports.Events.instance = function(v) {
-			return v instanceof Emitter;
 		};
 
 		var listening = function(f,defaultOn) {
@@ -688,7 +695,21 @@
 			}
 		};
 
-		$exports.Events.Function = listening;
+		/** @type { $api["Events"] } */
+		$exports.Events = Object.assign(
+			/**
+			 * @param { Parameters<$api["Events"]>[0] } p
+			 */
+			function(p) {
+				return new Emitter(p);
+			},
+			{
+				Function: listening,
+				instance: function(v) {
+					return v instanceof Emitter;
+				}
+			}
+		);;
 
 		//	TODO	switch implementation to use load()
 		$exports.threads = (function($context) {

@@ -70,7 +70,7 @@
 							if (noSelection && x == "selectionDirection") continue;
 							if (noSelection && x == "selectionEnd") continue;
 							if (noSelection && x == "selectionStart") continue;
-							if (typeof(o) == "function" && !o.hasOwnProperty(x)) continue;
+							if (typeof(o) == "function" && !Object.prototype.hasOwnProperty.call(o, x)) continue;
 							var value = o[x];
 							if (typeof(value) == "function") {
 								this[x] = wrapMethod(o,x,name);
@@ -80,6 +80,7 @@
 								}
 							}
 						} catch (e) {
+							//	TODO	figure out whether this ever happens and what can be done
 						}
 					}
 
@@ -244,7 +245,7 @@
 										message: name + " threw " + e
 									}));
 								}
-							};
+							}
 
 							var DidNotThrow = function(returned,name) {
 								var delegate = new Subject(void(0),name);
