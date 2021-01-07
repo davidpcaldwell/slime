@@ -141,7 +141,9 @@
 				}
 
 				var createVerify = function(vscope,promises) {
-					var verify = Verify(vscope);
+					var verify = Verify(function(f) {
+						vscope.test(f);
+					});
 					verify.test = $api.deprecate(function() {
 						return vscope.test.apply(this,arguments);
 					});

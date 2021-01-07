@@ -2,7 +2,7 @@
 (
 	/**
 	 *
-	 * @param { { Verify: slime.definition.unit.Verify.Factory, defineProperty: ObjectConstructor["defineProperty"] } } $context
+	 * @param { { Verify: slime.definition.unit.Verify.Factory } } $context
 	 * @param { (value: slime.definition.unit.internal.Scope) => void } $export
 	 */
 	function($context,$export) {
@@ -171,7 +171,11 @@
 							error: e
 						});
 					},
-					verify: $context.Verify(this),
+					verify: $context.Verify(
+						function(f) {
+							this.test(f)
+						}
+					),
 					success: void(0),
 					fire: function(type,detail) {
 						process(type,detail);
@@ -181,11 +185,15 @@
 					}
 				}
 
-				$context.defineProperty(rv,"success",{
-					get: function() {
-						return success;
+				Object.defineProperty(
+					rv,
+					"success",
+					{
+						get: function() {
+							return success;
+						}
 					}
-				});
+				);
 
 				return rv;
 			};

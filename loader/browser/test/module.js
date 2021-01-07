@@ -65,7 +65,9 @@
 						o.setup.call(target);
 					})();
 				}
-				var verify = new $context.api.unit.Verify(scope);
+				var verify = new $context.api.unit.Verify(function(f) {
+					scope.test(f);
+				});
 				if (o.before) {
 					o.before.call(target,verify);
 				}
@@ -99,7 +101,9 @@
 			this.async = true;
 
 			this.after = function(scope) {
-				var verify = new $context.api.unit.Verify(scope);
+				var verify = new $context.api.unit.Verify(function(f) {
+					scope.test(f);
+				});
 				if (o.check) {
 					$api.deprecate(function() {
 						o.check.call(target,verify);

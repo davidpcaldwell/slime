@@ -60,11 +60,9 @@ END LICENSE
 				<ul>
 				</ul>
 				<script type="application/x.jsapi#tests">
-					var s = {
-						test: function() {
-							test.apply(scope,arguments);
-						}
-					};
+					var s = function() {
+						test.apply(scope,arguments);
+					}
 					var v = new module.Verify(s);
 					v(1).is(1);
 					v("x").length.is(1);

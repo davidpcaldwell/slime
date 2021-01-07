@@ -76,7 +76,9 @@ var top = new jsh.unit.Scenario({
 top.add({
 	scenario: new jsh.unit.Scenario({
 		execute: function(scope) {
-			var verify = new jsh.unit.Verify(scope);
+			var verify = new jsh.unit.Verify(function(f) {
+				scope.test(f);
+			});
 			var output = echo.stdio.output.split(String(Packages.java.lang.System.getProperty("line.separator")));
 			verify(output)[0].is("true");
 		}
@@ -86,7 +88,9 @@ top.add({
 top.add({
 	scenario: new jsh.unit.Scenario({
 		execute: function(scope) {
-			var verify = new jsh.unit.Verify(scope);
+			var verify = new jsh.unit.Verify(function(f) {
+				scope.test(f);
+			});
 			var echo = jsh.shell.jsh({
 				shell: INSTALLED,
 				script: SLIME.getFile("jsh/test/jsh.shell/echo.jsh.js"),
