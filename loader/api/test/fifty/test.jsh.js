@@ -29,7 +29,7 @@
 			jsh.shell.exit(1);
 		}
 
-		/** @type { slime.definition.verify.Factory } */
+		/** @type { slime.definition.verify.Export } */
 		var verify = jsh.loader.file(jsh.shell.jsh.src.getFile("loader/api/verify.js"))
 
 		var console = (function() {

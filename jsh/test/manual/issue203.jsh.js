@@ -25,7 +25,9 @@ jsh.test.integration({
 		this.add({
 			scenario: new function() {
 				this.execute = function(scope) {
-					var verify = new jsh.unit.Verify(scope);
+					var verify = new jsh.unit.Verify(function(f) {
+						scope.test(f);
+					});
 					var JSH = jsh.shell.TMPDIR.createTemporary({ directory: true });
 					var args = [JSH];
 					if (jsh.shell.rhino && jsh.shell.rhino.classpath) {

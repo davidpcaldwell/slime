@@ -54,11 +54,20 @@ namespace slime.definition.verify {
 		}
 	}
 
-	export interface Scope {
-		test: (f: Scope.Test) => void
-	}
+	export type Scope = (f: Scope.Test) => void
 
-	export type Factory = {
-		( scope: Scope ): Verify
-	}
+	/**
+	 * Creates a {@link Verify} object that communicates with the given {@link Scope}.
+	 */
+	export type Export = ( scope: Scope ) => Verify
+
+	(
+		function(
+			fifty: slime.fifty.test.kit
+		) {
+			var subject = fifty.$loader.file("verify.js");
+		}
+	//@ts-ignore
+	)(fifty);
+
 }

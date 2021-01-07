@@ -1,10 +1,10 @@
 //@ts-check
 (
 	/**
-	 * @param { (value: slime.definition.verify.Factory) => void } $export
+	 * @param { (value: slime.definition.verify.Export) => void } $export
 	 */
 	function($export) {
-		/** @type { slime.definition.verify.Factory } */
+		/** @type { slime.definition.verify.Export } */
 		var Verify = function(scope) {
 			/**
 			 * @type { (value: any) => value is object }
@@ -130,7 +130,7 @@
 
 				var is = function(value,not) {
 					var specified = represent(value);
-					scope.test(function() {
+					scope(function() {
 						var success = (not) ? v !== specified.value : v === specified.value;
 						var message = prefix + (function() {
 							if (!not && success) return "is " + specified.name;
@@ -146,7 +146,7 @@
 				}
 
 				var isType = function(value) {
-					scope.test(function() {
+					scope(function() {
 						var type = (function() {
 							if (v === null) return "null";
 							return typeof(v);
@@ -163,7 +163,7 @@
 
 				var isEqualTo = function(value,not) {
 					var specified = represent(value);
-					scope.test(function() {
+					scope(function() {
 						var success = (not) ? v != specified.value : v == specified.value;
 						var message = prefix + (function() {
 							if (!not && success) return "is equal to " + specified.name;
@@ -222,7 +222,7 @@
 											error: e,
 											message: name + " threw " + e
 										};
-										scope.test($api.Function.returning(result));
+										scope($api.Function.returning(result));
 									}
 								}
 
@@ -233,13 +233,13 @@
 										if (success) return name + " threw expected " + type.name;
 										return "Threw " + e + ", not " + new type().name;
 									})(success);
-									scope.test($api.Function.returning({
+									scope($api.Function.returning({
 										success: success,
 										message: message
 									}));
 								};
 								this.threw.nothing = function() {
-									scope.test($api.Function.returning({
+									scope($api.Function.returning({
 										success: false,
 										message: name + " threw " + e
 									}));
@@ -251,7 +251,7 @@
 
 								for (var x in delegate) {
 									this[x] = function() {
-										scope.test($api.Function.returning({
+										scope($api.Function.returning({
 											success: false,
 											message: name + " did not throw; returned " + returned
 										}));
@@ -259,14 +259,14 @@
 								}
 
 								this.nothing = function() {
-									scope.test($api.Function.returning({
+									scope($api.Function.returning({
 										success: true,
 										message: name + " did not error. (returned: " + returned + ")"
 									}));
 								};
 
 								this.type = function(type) {
-									scope.test($api.Function.returning({
+									scope($api.Function.returning({
 										success: false,
 										message: name + " did not throw expected error; returned " + returned
 									}))
@@ -305,4 +305,4 @@
 		$export(Verify);
 	}
 //@ts-ignore
-)($export)
+)($export);
