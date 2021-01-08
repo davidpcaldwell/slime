@@ -206,30 +206,27 @@ namespace slime.definition.unit {
 	}
 
 	export namespace Event {
+		export interface Scenario {
+			id: any
+			name: any
+		}
+
 		export namespace Scenario {
 			export type Start = {
-				start: any
+				start: Event.Scenario
 			}
 
 			type End = {
-				end: any
+				end: Event.Scenario
 				success: boolean
 			}
 
 			export type Detail = Start | End
 		}
 
-		export namespace Test {
-			export type Detail = {
-				success: boolean
-				message: string
-				error: any
-			}
-		}
-
 		export type Handler = $api.Events.Handler<{
 			scenario: Event.Scenario.Detail
-			test: Event.Test.Detail
+			test: Test.Result
 		}>
 	}
 
