@@ -171,7 +171,7 @@
 				var item = stack.pop();
 				//	Adding JSON.stringify comparison to deal with scenarios that come from remote events
 				if (item.scenario != scenario && JSON.stringify(item.scenario) != JSON.stringify(scenario)) {
-					throw new Error("Scenario stack is corrupted.");
+					throw new Error("Scenario stack is corrupted: expected " + JSON.stringify(scenario) + "\ngot " + JSON.stringify(item.scenario));
 				}
 				var prefix = (item.success) ? "PASSED:  " : "FAILED:  ";
 				log(prefix + scenario.name);

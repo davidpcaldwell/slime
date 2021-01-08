@@ -81,9 +81,10 @@
 						output({
 							type: "scenario",
 							detail: {
-								start: {
+								end: {
 									name: name
-								}
+								},
+								result: result
 							}
 						});
 					},
