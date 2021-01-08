@@ -28,7 +28,13 @@ interface $api {
 		Type: <T extends Error>(p: { name: string, extends?: Function }) => $api.Error.Type<T>
 	}
 	Events: {
-		(p?: { source?: any, parent?: any, getParent?: () => any , on?: { [x: string]: any } }): $api.Events,
+		(p?: {
+			source?: any
+			parent?: $api.Events
+			getParent?: () => $api.Events
+			on?: { [x: string]: any }
+		}): $api.Events
+
 		//	TODO	could probably use parameterized types to improve accuracy
 		Function: <P,R>(f: (p: P, events: any) => R, defaultListeners?: object) => (argument: P, receiver?: $api.Events.Function.Receiver) => R,
 		instance: (v: any) => boolean

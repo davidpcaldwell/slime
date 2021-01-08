@@ -545,8 +545,13 @@
 
 			/** @returns { { bubble: (event: $api.Event<any>) => void } } */
 			var getParent = function() {
-				if (p.parent) return p.parent;
-				if (p.getParent) return p.getParent();
+				/** @returns { { bubble: (event: $api.Event<any>) => void } } */
+				var castToInternal = function(events) {
+					return events;
+				}
+
+				if (p.parent) return castToInternal(p.parent);
+				if (p.getParent) return castToInternal(p.getParent());
 			}
 
 			/**

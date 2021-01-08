@@ -39,8 +39,10 @@
 			}
 
 			/**
-			 * @type { slime.definition.unit.internal.Part.Constructor }
 			 * @this { slime.definition.unit.internal.Part }
+			 * @param { slime.definition.unit.internal.Part.Definition } [definition]
+			 * @param { slime.definition.unit.internal.Part.Context } [context]
+			 * @returns { slime.definition.unit.internal.Part.Properties }
 			 */
 			function Part(definition,context) {
 				//	TODO	what if caller does not use 'new'?
@@ -127,7 +129,13 @@
 				};
 			}
 
-			var Scenario = function(o,context) {
+			/**
+			 * @this { slime.definition.unit.internal.Scenario }
+			 * @param { slime.definition.unit.internal.Part.Definition } o
+			 * @param { slime.definition.unit.internal.Part.Context } context
+			 */
+			function Scenario(o,context) {
+				/** @type { slime.definition.unit.internal.Part.Properties } */
 				var part = Part.apply(this,arguments);
 
 				this.fire = function() {
@@ -295,10 +303,15 @@
 				part.create();
 			}
 
-			/** @constructor */
+			/**
+			 * @this { slime.definition.unit.internal.Suite }
+			 * @param { slime.definition.unit.internal.Suite.Definition } c
+			 * @param { slime.definition.unit.internal.Part.Context } context
+			 */
 			var Suite = function Suite(c,context) {
 				this.listeners = void(0);
 
+				/** @type { slime.definition.unit.internal.Part.Properties } */
 				var part = Part.apply(this,arguments);
 
 				var events = part.events;
@@ -467,8 +480,30 @@
 				part.create();
 			};
 
-			$exports.Scenario = Scenario;
-			$exports.Suite = Suite;
+			$exports.Scenario = function(definition,context) {
+				this.fire = void(0);
+				this.run = void(0);
+				this.promise = void(0);
+				this.id = void(0);
+				this.name = void(0);
+				this.listeners = void(0);
+
+				Scenario.apply(this,arguments);
+			};
+
+			/** @constructor */
+			$exports.Suite = function(definition,context) {
+				this.getParts = void(0);
+				this.part = void(0);
+				this.run = void(0);
+				this.scenario = void(0);
+				this.suite = void(0);
+				this.id = void(0);
+				this.name = void(0);
+				this.listeners = void(0);
+
+				Suite.apply(this,arguments);
+			};
 		})();
 
 		$exports.getStructure = function getStructure(part) {
