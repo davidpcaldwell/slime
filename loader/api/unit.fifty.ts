@@ -23,10 +23,6 @@ namespace slime.definition.unit {
 		 */
 		EventsScope: slime.definition.unit.internal.EventsScope
 
-		Scenario: new () => {}
-
-		Suite: new (o: any) => { listeners: { add: (type: string, handler: Function) => void }, run: () => boolean, promise: () => void }
-
 		getStructure: Function
 
 		View: {
@@ -102,9 +98,67 @@ namespace slime.definition.unit.internal {
 	}
 
 	export namespace Part {
-		interface Properties {
+		export interface Properties {
+			events: $api.Events
+			scope: any
+			create: any
+			find: any
+			before: any
+			initialize: any
+			after: any
 		}
-		export type Constructor = (this: {}, definition: any, context: any) => Properties
+
+		export interface Definition {
+			name?: any
+			/** @deprecated */
+			create?: (this: Part) => void
+		}
+
+		export interface Context {
+			id: any
+			events: $api.Events
+		}
+	}
+
+	export interface Scenario extends Part {
+		fire: $api.Events["fire"]
+		run: any
+		promise: any
+	}
+
+	export interface Suite extends Part {
+		/** @deprecated */
+		getParts: any
+		part: any
+		run: () => boolean
+		promise?: () => void
+
+		/** @deprecated */
+		scenario: any
+
+		/** @deprecated */
+		suite: any
+	}
+
+	export namespace Suite {
+		export interface Definition extends Part.Definition {
+			parts: { [x: string]: any }
+		}
+	}
+}
+
+namespace slime.definition.unit {
+	export interface Exports {
+		//	TODO	should not be using internal types in external definition
+		Scenario: new (
+			definition: slime.definition.unit.internal.Part.Definition,
+			context: slime.definition.unit.internal.Part.Context
+		) => slime.definition.unit.internal.Scenario
+
+		Suite: new (
+			definition: slime.definition.unit.internal.Suite.Definition,
+			context?: slime.definition.unit.internal.Part.Context
+		) => slime.definition.unit.internal.Suite
 	}
 }
 
