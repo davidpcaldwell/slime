@@ -35,6 +35,27 @@ interface jsh {
 		$slime: slime.runtime.Exports & { plugins: { mock: any } }
 		jsapi: any
 		Verify: slime.definition.unit.Verify.Factory
+		fifty: {
+			/**
+			 * Creates a Part that can be used in a jsapi test suite from a Fifty test file.
+			 */
+			Part: (p: {
+				/**
+				 * The shell in which to run Fifty.
+				 */
+				shell: slime.jrunscript.file.Directory
+
+				/**
+				 * The `loader/api/test/fifty/test.jsh.js` script.
+				 */
+				script: slime.jrunscript.file.File
+
+				/**
+				 * The Fifty test file to run.
+				 */
+				file: slime.jrunscript.file.File
+			}) => any
+		}
 	}
 
 	loader: any

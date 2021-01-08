@@ -211,6 +211,18 @@ plugin({
 				}
 			};
 		}
+
+		jsh.unit.fifty = {
+			Part: function(p) {
+				return new jsh.unit.Suite.Fork({
+					run: jsh.shell.jsh,
+					shell: p.shell,
+					//	always loader/api/test/fifty/test.jsh.js, but used as argument because could be a built shell
+					script: p.script,
+					arguments: [p.file,"--view", "jsapi"]
+				})
+			}
+		}
 	}
 });
 

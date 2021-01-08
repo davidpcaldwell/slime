@@ -44,29 +44,41 @@
 
 		var SRC = jsh.script.file.parent.parent;
 
-		if (!parameters.options.noplatform) suite.add("internal/slime", new jsh.unit.html.Part({
+		var FiftyPart = function(p) {
+			return jsh.unit.fifty.Part({
+				shell: environment.jsh.unbuilt.src,
+				script: SRC.getFile("loader/api/test/fifty/test.jsh.js"),
+				file: p.file
+			});
+		}
+
+		suite.add("internal/slime/fifty", FiftyPart({
+			file: SRC.getFile("loader/expression.fifty.ts")
+		}));
+
+		suite.add("internal/slime/jsapi", new jsh.unit.html.Part({
 			//	TODO	redundant; now tested per-engine in contributor/suite.jsh.js
 			//	Functionality used internally or accessed through loader/jrunscript (although untested by loader/jrunscript)
 			pathname: SRC.getRelativePath("loader/api.html")
 		}));
-		if (!parameters.options.noplatform) {
-			suite.add("internal/jrunscript/main", new jsh.unit.html.Part({
-				//	Test cases of loader implementation
-				//	TODO	redundant; now tested per-engine in contributor/suite.jsh.js
-				pathname: SRC.getRelativePath("loader/jrunscript/api.html")
-			}));
-			suite.add("internal/jrunscript/java", new jsh.unit.html.Part({
-				//	Test cases of loader implementation
-				//	TODO	redundant; now tested per-engine in contributor/suite.jsh.js
-				pathname: SRC.getRelativePath("loader/jrunscript/java.api.html")
-			}));
-			suite.add("internal/jrunscript/io", new jsh.unit.html.Part({
-				pathname: SRC.getRelativePath("loader/jrunscript/io.api.html"),
-				environment: {
-					$slime: jsh.unit.$slime
-				}
-			}));
-		}
+
+		suite.add("internal/jrunscript/main", new jsh.unit.html.Part({
+			//	Test cases of loader implementation
+			//	TODO	redundant; now tested per-engine in contributor/suite.jsh.js
+			pathname: SRC.getRelativePath("loader/jrunscript/api.html")
+		}));
+		suite.add("internal/jrunscript/java", new jsh.unit.html.Part({
+			//	Test cases of loader implementation
+			//	TODO	redundant; now tested per-engine in contributor/suite.jsh.js
+			pathname: SRC.getRelativePath("loader/jrunscript/java.api.html")
+		}));
+		suite.add("internal/jrunscript/io", new jsh.unit.html.Part({
+			pathname: SRC.getRelativePath("loader/jrunscript/io.api.html"),
+			environment: {
+				$slime: jsh.unit.$slime
+			}
+		}));
+
 		suite.add("internal/other", new jsh.unit.html.Part({
 			//	Test cases involving the HTML test runner itself
 			pathname: SRC.getRelativePath("loader/api/test/data/1/api.html")
