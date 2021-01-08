@@ -116,7 +116,7 @@ declare namespace $api {
 			add: (type: string, handler: Event.Handler<any>) => void
 			remove: (type: string, handler: Event.Handler<any>) => void
 		},
-		fire: (type: string, detail: any) => void
+		fire: (type: string, detail?: any) => void
 	}
 
 	namespace Events {

@@ -10,8 +10,16 @@
 //	Contributor(s):
 //	END LICENSE
 
+//@ts-check
 (
-	function() {
+	/**
+	 *
+	 * @param { any } Packages
+	 * @param { any } JavaAdapter
+	 * @param { any } $context
+	 * @param { any } $exports
+	 */
+	function(Packages,JavaAdapter,$context,$exports) {
 		//	TODO	fix the below or remove the whole thing; testing a jsh plugin directly *is* now supported
 		//	TODO	ordinarily there is no $context.api.shell referring to the module, but with jsapi unit tests, currently the idea
 		//			of testing a jsh plugin directly is not supported. So it loads this file as a "module," loads the module.js module
@@ -77,14 +85,19 @@
 			if (mode.console) {
 				console = mode.console;
 			} else if (mode.stream) {
-				console = streamToConsole(mode.stream,arguments.callee.String);
+				console = streamToConsole(mode.stream,$exports.echo.String);
 			} else {
-				console = streamToConsole($context.stdio.output,arguments.callee.String);
+				console = streamToConsole($context.stdio.output,$exports.echo.String);
 			}
 
 			console(message);
 		}
 		$exports.echo.String = function(message) {
+			/** @returns { string } */
+			var getTypeof = function(v) {
+				return typeof(v);
+			};
+
 			if (typeof(message) == "string") {
 				return message;
 			} else if (typeof(message) == "number") {
@@ -93,7 +106,7 @@
 				return String(message);
 			} else if (typeof(message) == "function") {
 				return message.toString();
-			} else if (typeof(message) == "xml") {
+			} else if (getTypeof(message) == "xml") {
 				return message.toXMLString();
 			} else if (message === null) {
 				return arguments.callee["null"];
@@ -211,10 +224,10 @@
 				var rv = {};
 				for (var x in $exports.environment) {
 					if (x == "JSH_DEBUG_JDWP") {
-
+						//	do not copy; exclude
 					} else if (/^JSH_/.test(x) && !/^JSH_HOST_/.test(x)) {
 						if (p.shell) {
-
+							//	do not copy; exclude
 						} else {
 							rv[x] = $exports.environment[x];
 						}
@@ -259,7 +272,7 @@
 			if (fork) {
 				return $exports.jrunscript(
 					$api.Object.compose(
-						arguments.callee.command(p),
+						$exports.jsh.command(p),
 						{
 							jrunscript: $exports.properties.file("jsh.launcher.jrunscript")
 						}
@@ -510,8 +523,8 @@
 				}
 			});
 		});
+		/** @type { jsh.shell.Exports["jsh"]["require"] } */
 		$exports.jsh.require = $api.Events.Function(
-			/** @type { jsh.shell.Exports["jsh"]["require"] } */
 			function(p,events) {
 				//  TODO    should develop a strategy for preventing infinite loops
 				if (!p.satisfied()) {
@@ -554,4 +567,5 @@
 			$exports.jsh.lib = $exports.jsh.home.getSubdirectory("lib");
 		}
 	}
-)();
+//@ts-ignore
+)(Packages,JavaAdapter,$context,$exports);
