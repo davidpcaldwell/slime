@@ -68,9 +68,19 @@
 					}
 				}).bind(this);
 
-				var EVENT = (function() {
-					return { id: (context && context.id ) ? context.id : null, name: this.name };
-				}).bind(this);
+				/**
+				 * @type { () => slime.definition.unit.Event.Scenario }
+				 */
+				var EVENT = (
+					/**
+					 * @returns { slime.definition.unit.Event.Scenario }
+					 */
+					function() {
+						/** @type { slime.definition.unit.Event.Scenario } */
+						var rv = { id: (context && context.id ) ? context.id : null, name: this.name };
+						return rv;
+					}
+				).bind(this);
 
 				var destroy = (function(scope) {
 					try {
@@ -131,12 +141,12 @@
 
 			/**
 			 * @this { slime.definition.unit.internal.Scenario }
-			 * @param { slime.definition.unit.internal.Part.Definition } o
+			 * @param { slime.definition.unit.internal.Part.Definition } definition
 			 * @param { slime.definition.unit.internal.Part.Context } context
 			 */
-			function Scenario(o,context) {
+			function Scenario(definition,context) {
 				/** @type { slime.definition.unit.internal.Part.Properties } */
-				var part = Part.apply(this,arguments);
+				var part = Part.call(this,definition,context);
 
 				this.fire = function() {
 					part.events.fire.apply(part.events,arguments);
@@ -232,7 +242,7 @@
 							//	TODO	execute is apparently mandatory
 							var execute = part.find("execute");
 							var promise = part.find("promise");
-							if (!execute) throw new Error("execute not found in " + o);
+							if (!execute) throw new Error("execute not found in " + definition);
 							if (!promise || !next) {
 								execute.call(this,local,verify);
 							}
@@ -305,14 +315,14 @@
 
 			/**
 			 * @this { slime.definition.unit.internal.Suite }
-			 * @param { slime.definition.unit.internal.Suite.Definition } c
+			 * @param { slime.definition.unit.internal.Suite.Definition } definition
 			 * @param { slime.definition.unit.internal.Part.Context } context
 			 */
-			var Suite = function Suite(c,context) {
+			var Suite = function Suite(definition,context) {
 				this.listeners = void(0);
 
 				/** @type { slime.definition.unit.internal.Part.Properties } */
-				var part = Part.apply(this,arguments);
+				var part = Part.call(this,definition,context);
 
 				var events = part.events;
 
@@ -323,9 +333,9 @@
 					parts[id] = new type(definition,{ id: id, events: events });
 				}
 
-				if (c && c.parts) {
-					for (var x in c.parts) {
-						addPart(x,c.parts[x]);
+				if (definition && definition.parts) {
+					for (var x in definition.parts) {
+						addPart(x,definition.parts[x]);
 					}
 				}
 
