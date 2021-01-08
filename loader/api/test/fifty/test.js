@@ -58,7 +58,8 @@
 						this.fail();
 						result = {
 							success: null,
-							message: String(e)
+							message: String(e),
+							error: e
 						}
 					}
 					console.test(this, result.message, result.success);
