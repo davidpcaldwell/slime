@@ -31,22 +31,27 @@
 					var configuration = $jsh.getEnvironment();
 					var invocation = $jsh.getInvocation();
 
-					var stdio = new function() {
+					/**
+					 * @type { jsh.plugin.Stdio }
+					 */
+					var stdio = (function() {
 						var out = new Packages.java.io.PrintStream(configuration.getStdio().getStandardOutput());
 						var err = new Packages.java.io.PrintStream(configuration.getStdio().getStandardError());
 
-						this.getStandardInput = function() {
-							return configuration.getStdio().getStandardInput();
-						};
+						return {
+							getStandardInput: function() {
+								return configuration.getStdio().getStandardInput();
+							},
 
-						this.getStandardOutput = function() {
-							return out;
-						};
+							getStandardOutput: function() {
+								return out;
+							},
 
-						this.getStandardError = function() {
-							return err;
-						};
-					};
+							getStandardError: function() {
+								return err;
+							}
+						}
+					})();
 
 					// $jsh.runtime() is essentially a SLIME Java runtime object, augmented by jsh/loader/rhino.js or jsh/loader/nashorn.js
 					return Object.assign(

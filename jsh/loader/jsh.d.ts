@@ -5,6 +5,12 @@ namespace jsh.plugin {
 		jsh: any
 	}
 
+	interface Stdio {
+		getStandardInput(): Packages.java.io.InputStream
+		getStandardOutput(): Packages.java.io.PrintStream
+		getStandardError(): Packages.java.io.PrintStream
+	}
+
 	interface $slime extends slime.jrunscript.runtime.Exports, EngineSpecific {
 		getSystemProperty(name: string): string
 		getEnvironment(): any
@@ -22,6 +28,6 @@ namespace jsh.plugin {
 		getLibraryFile: any
 		getInterface(): any
 		getSystemProperties(): any
-		getStdio(): any
+		getStdio(): Stdio
 	}
 }

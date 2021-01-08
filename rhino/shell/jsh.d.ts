@@ -1,4 +1,12 @@
 namespace jsh.shell {
+	namespace internal {
+		interface Context {
+			api: {
+				shell: any
+			}
+		}
+	}
+
 	interface Exports {
 		engine: string
 		//	TODO	run.evaluate.wrap

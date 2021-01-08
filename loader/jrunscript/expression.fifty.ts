@@ -174,7 +174,9 @@ interface Packages {
 			PrintWriter: any
 			Reader: any
 			FileInputStream: any
-			PrintStream: any
+			PrintStream: {
+				new (stream: Packages.java.io.OutputStream): Packages.java.io.PrintStream
+			}
 		},
 		net: {
 			URLConnection: any
@@ -241,6 +243,16 @@ interface Packages {
 				Shell: any
 			}
 		}
+		system: {
+			OperatingSystem: any
+			Command: {
+				Configuration: any
+				Context: any
+			}
+			Subprocess: {
+				Listener: any
+			}
+		}
 	}
 }
 
@@ -257,6 +269,8 @@ namespace Packages {
 			export interface InputStream {
 			}
 			export interface OutputStream {
+			}
+			export interface PrintStream extends OutputStream {
 			}
 			export type File = any
 		}

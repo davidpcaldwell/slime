@@ -35,6 +35,7 @@ namespace slime.jrunscript.file {
 	}
 
 	interface Searchpath {
+		getCommand: any
 	}
 
 	interface Exports {

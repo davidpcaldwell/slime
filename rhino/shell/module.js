@@ -10,8 +10,17 @@
 //	Contributor(s):
 //	END LICENSE
 
+//@ts-check
 (
-	function() {
+	/**
+	 *
+	 * @param { Packages } Packages
+	 * @param { any } JavaAdapter
+	 * @param { slime.jrunscript.shell.Context } $context
+	 * @param { slime.Loader } $loader
+	 * @param { slime.jrunscript.shell.Exports } $exports
+	 */
+	function(Packages,JavaAdapter,$context,$loader,$exports) {
 		if (!$context.api.io) {
 			throw new Error("Missing: $context.api.io");
 		}
@@ -235,6 +244,8 @@
 				module.events.fire("run.start", handle);
 				events.fire("start", handle);
 				var listener = new function() {
+					this.status = void(0);
+
 					this.finished = function(status) {
 						this.status = status;
 					};
@@ -630,36 +641,45 @@
 			}
 		};
 
-		$exports.java = function(p) {
-			//	TODO	check for both p.classpath and p.jar being defined and decide what to do
-			var launcher = arguments.callee.launcher;
-			var shell = {
-				command: launcher
-			};
-			var args = [];
-			var vmarguments = (p.vmarguments) ? p.vmarguments : [];
-			if (p.properties) {
-				addPropertyArgumentsTo(vmarguments,p.properties);
-			}
-			args.push.apply(args,vmarguments);
-			for (var x in p) {
-				if (x == "classpath") {
-					args.push("-classpath", p[x]);
-				} else if (x == "jar") {
-					args.push("-jar", p[x]);
-				} else if (x == "properties") {
-					//	handled above
-				} else {
-					shell[x] = p[x];
+		$exports.java = Object.assign(
+			function(p) {
+				//	TODO	check for both p.classpath and p.jar being defined and decide what to do
+				var launcher = $exports.java.launcher;
+				var shell = {
+					command: launcher
+				};
+				var args = [];
+				var vmarguments = (p.vmarguments) ? p.vmarguments : [];
+				if (p.properties) {
+					addPropertyArgumentsTo(vmarguments,p.properties);
 				}
+				args.push.apply(args,vmarguments);
+				for (var x in p) {
+					if (x == "classpath") {
+						args.push("-classpath", p[x]);
+					} else if (x == "jar") {
+						args.push("-jar", p[x]);
+					} else if (x == "properties") {
+						//	handled above
+					} else {
+						shell[x] = p[x];
+					}
+				}
+				//	TODO	some way of specifying VM arguments
+				if (!p.jar) {
+					args.push(p.main);
+				}
+				shell.arguments = args.concat( (p.arguments) ? p.arguments : [] );
+				return $exports.run(shell);
+			},
+			{
+				version: void(0),
+				keytool: void(0),
+				launcher: void(0),
+				jrunscript: void(0),
+				home: void(0)
 			}
-			//	TODO	some way of specifying VM arguments
-			if (!p.jar) {
-				args.push(p.main);
-			}
-			shell.arguments = args.concat( (p.arguments) ? p.arguments : [] );
-			return $exports.run(shell);
-		};
+		);
 		(function() {
 			this.version = $exports.properties.get("java.version");
 			this.vendor = new function() {
@@ -677,7 +697,12 @@
 				this.name = $exports.properties.get(prefix + "name");
 			}
 
-			this.vm = new Vvn("java.vm.");
+			this.vm = Object.assign(
+				new Vvn("java.vm."),
+				{
+					specification: void(0)
+				}
+			);
 			this.vm.specification = new Vvn("java.vm.specification.");
 			this.specification = new Vvn("java.specification.");
 
@@ -725,7 +750,7 @@
 					})
 				}
 			);
-		//	this.launcher = $context.api.file.Searchpath([this.home.getRelativePath("bin")]).getCommand("java");
+			// this.launcher = $context.api.file.Searchpath([this.home.getRelativePath("bin")]).getCommand("java");
 
 			Object.defineProperty(
 				this, "jrunscript",
@@ -748,7 +773,6 @@
 		}).call($exports.java);
 
 		$exports.jrunscript = function(p) {
-			/** @type { slime.jrunscript.file.File } */
 			var launch = (function() {
 				//	This argument serves mostly to allow the jsh launcher to specify the jrunscript to use, since in Graal
 				//	shells the JDK's jrunscript does not work and we need to use the bootstrapping JDK
@@ -814,4 +838,5 @@
 			}), events);
 		});
 	}
-)();
+//@ts-ignore
+)(Packages,JavaAdapter,$context,$loader,$exports);
