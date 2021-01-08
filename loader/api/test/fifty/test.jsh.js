@@ -18,7 +18,9 @@
 					}
 				}),
 				jsh.wf.cli.$f.option.string({ longname: "part" }),
+				jsh.wf.cli.$f.option.string({ longname: "view" }),
 				$api.Function.impure.revise(function(p) {
+					if (!p.options.view) p.options.view = "console";
 					if (!p.options.part) p.options.part = "suite";
 				})
 			)
@@ -32,33 +34,75 @@
 		/** @type { slime.definition.verify.Export } */
 		var verify = jsh.loader.file(jsh.shell.jsh.src.getFile("loader/api/verify.js"))
 
-		var console = (function() {
-			var write = function(scope,string) {
-				var indent = (scope) ? scope.depth() + 1 : 0;
-				var prefix = new Array(indent + 1).join("  ")
-				jsh.shell.console(prefix + string);
-			};
+		var views = {
+			console: (function() {
+				var write = function(scope,string) {
+					var indent = (scope) ? scope.depth() + 1 : 0;
+					var prefix = new Array(indent + 1).join("  ")
+					jsh.shell.console(prefix + string);
+				};
 
-			/** @type { slime.fifty.test.internal.Console } */
-			var rv = {
-				start: function(scope,name) {
-					write(scope, "Running: " + name);
-				},
+				/** @type { slime.fifty.test.internal.Console } */
+				var rv = {
+					start: function(scope,name) {
+						write(scope, "Running: " + name);
+					},
 
-				end: function(scope,name,result) {
-					var resultString = (result) ? "PASSED" : "FAILED"
-					write(scope, resultString + ": " + name);
-				},
+					end: function(scope,name,result) {
+						var resultString = (result) ? "PASSED" : "FAILED"
+						write(scope, resultString + ": " + name);
+					},
 
-				test: function(scope,message,result) {
-					write(scope, message);
+					test: function(scope,message,result) {
+						write(scope, message);
+					}
+				};
+
+				return rv;
+			})(),
+			jsapi: (function() {
+				function output(v) {
+					jsh.shell.echo(JSON.stringify(v));
 				}
-			};
 
-			return rv;
-		})();
+				return {
+					start: function(scope, name) {
+						output({
+							type: "scenario",
+							detail: {
+								start: {
+									name: name
+								}
+							}
+						});
+					},
 
-		var execute = function(file,part) {
+					end: function(scope, name, result) {
+						output({
+							type: "scenario",
+							detail: {
+								start: {
+									name: name
+								}
+							}
+						});
+					},
+
+					test: function(scope, message, success) {
+						output({
+							type: "test",
+							detail: {
+								success: success,
+								message: message
+								//	TODO	error
+							}
+						})
+					}
+				}
+			})()
+		}
+
+		var execute = function(file,part,view) {
 			var fiftyLoader = jsh.script.loader;
 
 			/** @type { slime.fifty.test.internal.run } */
@@ -66,7 +110,7 @@
 				library: {
 					Verify: verify
 				},
-				console: console
+				console: view
 			});
 
 			var delegate = new jsh.file.Loader({ directory: file.parent });
@@ -103,7 +147,7 @@
 			)
 		};
 
-		var success = execute(parameters.options.definition,parameters.options.part);
+		var success = execute(parameters.options.definition,parameters.options.part,views[parameters.options.view]);
 
 		jsh.shell.exit( (success) ? 0 : 1 )
 	}
