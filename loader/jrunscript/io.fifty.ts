@@ -8,7 +8,7 @@ namespace slime.jrunscript.runtime.io {
 		}
 	}
 
-	interface OutputStream {
+	export interface OutputStream {
 	}
 
 	export interface Reader {
@@ -16,7 +16,7 @@ namespace slime.jrunscript.runtime.io {
 		asString(): string
 	}
 
-	interface Writer {
+	export interface Writer {
 		write(string: string)
 		close()
 	}
@@ -42,7 +42,22 @@ namespace slime.jrunscript.runtime.io {
 		Writer: any
 		InputStream: new (p: Packages.java.io.InputStream) => InputStream
 		Reader: any
-		Streams: any
+		Streams: {
+			binary: {
+				copy(from: any, to: any, mode: any)
+			}
+			text: {
+				copy(from: any, to: any)
+			}
+			java: {
+				adapt: {
+					(_stream: Packages.java.io.InputStream): InputStream
+					(_stream: Packages.java.io.OutputStream): OutputStream
+					(_stream: Packages.java.io.Reader): Reader
+					(_stream: Packages.java.io.Writer): Writer
+				}
+			}
+		}
 		Buffer: new () => Buffer
 	}
 }

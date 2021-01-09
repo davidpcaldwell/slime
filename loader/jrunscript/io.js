@@ -24,7 +24,11 @@
 	function($platform,Packages,XMLList,$context,$exports) {
 		var _java = $context._streams;
 
-		var OutputStream = function OutputStream(peer) {
+		/**
+		 *
+		 * @param { Packages.java.io.OutputStream } peer
+		 */
+		function OutputStream(peer) {
 			this.close = function() {
 				peer.close();
 			}
@@ -49,7 +53,7 @@
 					return peer;
 				}
 			}
-		};
+		}
 
 		var Writer = function(peer) {
 			this.close = function() {
@@ -80,7 +84,7 @@
 			};
 		};
 
-		var InputStream = function(peer) {
+		function InputStream(peer) {
 			this.close = function() {
 				peer.close();
 			}
@@ -105,7 +109,7 @@
 
 			this.characters = this.character;
 			$api.deprecate(this, "characters");
-		};
+		}
 
 		/**
 		 *
@@ -203,76 +207,92 @@
 			}
 		};
 
-		var Streams = new function() {
-			this.binary = new function() {
-				this.copy = function(from,to,mode) {
-					var isJavaType = $context.api.java.isJavaType;
-					var _r = (function() {
-						if (isJavaType(Packages.java.io.InputStream)(from)) return from;
-						var adapt = (from.java && from.java.adapt) ? from.java.adapt() : null;
-						if (adapt && isJavaType(Packages.java.io.InputStream)(adapt)) return adapt;
-					})();
-					var _w = (function() {
-						if (isJavaType(Packages.java.io.OutputStream)(to)) return to;
-						if (to.java && to.java.adapt && isJavaType(Packages.java.io.OutputStream)(to.java.adapt())) return to.java.adapt();
-					})();
-					if (mode) {
-						_java.copy(_r,_w,false);
-						if (mode.onFinish) {
-							mode.onFinish(_r,_w);
-						}
-					} else {
-						_java.copy(_r,_w);
-					}
-				}
-			}
-
-			this.text = new function() {
-				this.copy = function(from,to) {
-					//	TODO	unknown the cases in which this is called, but the below is a pretty scary implicit conversion
-					var isJavaType = $context.api.java.isJavaType;
-					if (
-						from && from.java && from.java.adapt && isJavaType(Packages.java.io.Reader)(from.java.adapt())
-						&& to && to.java && to.java.adapt && isJavaType(Packages.java.io.Writer)(to.java.adapt())
-					) {
-						_java.copy(
-							from.java.adapt(),
-							to.java.adapt()
-						);
-					}
-				}
-			}
-
-			this.java = new function() {
-				this.adapt = function(object) {
-					if (false) {
-						throw new Error("Unreachable.");
-					} else if ($context.api.java.isJavaObject(object) && $context.api.java.isJavaType(Packages.java.io.InputStream)(object)) {
-						return new InputStream(object);
-					} else if ($context.api.java.isJavaObject(object) && $context.api.java.isJavaType(Packages.java.io.OutputStream)(object)) {
-						return new OutputStream(object);
-					} else if ($context.api.java.isJavaObject(object) && $context.api.java.isJavaType(Packages.java.io.Reader)(object)) {
-						return new Reader(object);
-					} else if ($context.api.java.isJavaObject(object) && $context.api.java.isJavaType(Packages.java.io.Writer)(object)) {
-						return new Writer(object);
-					} else {
-						var type = (function() {
-							if (object.getClass) {
-								return " (Java class: " + object.getClass().getName() + ")";
-							}
-							var rv = " typeof=" + typeof(object);
-							var props = [];
-							for (var x in object) {
-								props.push(x);
-							}
-							rv += " properties=" + props.join(",");
-							return rv;
+		var Streams = (function() {
+			return {
+				binary: new function() {
+					this.copy = function(from,to,mode) {
+						var isJavaType = $context.api.java.isJavaType;
+						var _r = (function() {
+							if (isJavaType(Packages.java.io.InputStream)(from)) return from;
+							var adapt = (from.java && from.java.adapt) ? from.java.adapt() : null;
+							if (adapt && isJavaType(Packages.java.io.InputStream)(adapt)) return adapt;
 						})();
-						throw new Error("Unimplemented java.adapt: " + type + object);
+						var _w = (function() {
+							if (isJavaType(Packages.java.io.OutputStream)(to)) return to;
+							if (to.java && to.java.adapt && isJavaType(Packages.java.io.OutputStream)(to.java.adapt())) return to.java.adapt();
+						})();
+						if (mode) {
+							_java.copy(_r,_w,false);
+							if (mode.onFinish) {
+								mode.onFinish(_r,_w);
+							}
+						} else {
+							_java.copy(_r,_w);
+						}
 					}
-				};
-			};
-		};
+				},
+
+				text: new function() {
+					this.copy = function(from,to) {
+						//	TODO	unknown the cases in which this is called, but the below is a pretty scary implicit conversion
+						var isJavaType = $context.api.java.isJavaType;
+						if (
+							from && from.java && from.java.adapt && isJavaType(Packages.java.io.Reader)(from.java.adapt())
+							&& to && to.java && to.java.adapt && isJavaType(Packages.java.io.Writer)(to.java.adapt())
+						) {
+							_java.copy(
+								from.java.adapt(),
+								to.java.adapt()
+							);
+						}
+					}
+				},
+
+				java: new function() {
+					/** @type { (object: any) => object is Packages.java.io.InputStream } */
+					var isJavaInputStream = $context.api.java.isJavaType(Packages.java.io.InputStream);
+					/** @type { (object: any) => object is Packages.java.io.OutputStream } */
+					var isJavaOutputStream = $context.api.java.isJavaType(Packages.java.io.OutputStream);
+					/** @type { (object: any) => object is Packages.java.io.Reader } */
+					var isJavaReader = $context.api.java.isJavaType(Packages.java.io.Reader);
+					/** @type { (object: any) => object is Packages.java.io.Writer } */
+					var isJavaWriter = $context.api.java.isJavaType(Packages.java.io.Writer);
+
+					/**
+					 * @type { slime.jrunscript.runtime.io.Exports["Streams"]["java"]["adapt"] }
+					 */
+					//	TODO	figure out tyoe safety here
+					//@ts-ignore
+					this.adapt = function(object) {
+						if (false) {
+							throw new Error("Unreachable.");
+						} else if ($context.api.java.isJavaObject(object) && isJavaInputStream(object)) {
+							return new InputStream(object);
+						} else if ($context.api.java.isJavaObject(object) && isJavaOutputStream(object)) {
+							return new OutputStream(object);
+						} else if ($context.api.java.isJavaObject(object) && isJavaReader(object)) {
+							return new Reader(object);
+						} else if ($context.api.java.isJavaObject(object) && isJavaWriter(object)) {
+							return new Writer(object);
+						} else {
+							var type = (function() {
+								if (object.getClass) {
+									return " (Java class: " + object.getClass().getName() + ")";
+								}
+								var rv = " typeof=" + typeof(object);
+								var props = [];
+								for (var x in object) {
+									props.push(x);
+								}
+								rv += " properties=" + props.join(",");
+								return rv;
+							})();
+							throw new Error("Unimplemented java.adapt: " + type + object);
+						}
+					};
+				}
+			}
+		})();
 
 		var Buffer = function() {
 			var peer = new Packages.inonit.script.runtime.io.Streams.Bytes.Buffer();

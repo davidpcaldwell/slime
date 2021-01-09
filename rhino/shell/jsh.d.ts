@@ -1,8 +1,16 @@
 namespace jsh.shell {
 	namespace internal {
 		interface Context {
+			exit: any
+			stdio: any
+			_getSystemProperties: any
+			jsh: any
 			api: {
-				shell: any
+				js: any
+				java: slime.jrunscript.host.Exports
+				io: slime.jrunscript.io.Exports
+				file: slime.jrunscript.file.Exports
+				shell: slime.jrunscript.shell.Exports
 			}
 		}
 	}
