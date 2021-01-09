@@ -14,9 +14,9 @@
 (
 	/**
 	 *
-	 * @param { any } Packages
+	 * @param { Packages } Packages
 	 * @param { any } JavaAdapter
-	 * @param { any } $context
+	 * @param { jsh.shell.internal.Context } $context
 	 * @param { any } $exports
 	 */
 	function(Packages,JavaAdapter,$context,$exports) {
@@ -69,8 +69,8 @@
 			var streamToConsole = function(stream,toString) {
 				var writer = (function() {
 					//	TODO	is this redundancy necessary? Does isJavaType(...) need to know it is a Java object?
-					if ($context.api.java.isJavaObject(stream) && $context.api.java.isJavaType(Packages.java.io.OutputStream)(stream)) return $context.api.io.adapt(stream).character();
-					if ($context.api.java.isJavaObject(stream) && $context.api.java.isJavaType(Packages.java.io.Writer)(stream)) return $context.api.io.adapt(stream);
+					if ($context.api.java.isJavaObject(stream) && $context.api.java.isJavaType(Packages.java.io.OutputStream)(stream)) return $context.api.io.Streams.java.adapt(stream).character();
+					if ($context.api.java.isJavaObject(stream) && $context.api.java.isJavaType(Packages.java.io.Writer)(stream)) return $context.api.io.Streams.java.adapt(stream);
 					if (stream && typeof(stream.character) == "function") return stream.character();
 					if (stream && typeof(stream.write) == "function") return stream;
 					if (stream && typeof(stream) == "object") throw new TypeError("Not a recognized stream: " + stream + " with properties " + Object.keys(stream));

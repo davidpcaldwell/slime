@@ -163,6 +163,7 @@ interface Packages {
 			String: any
 			Thread: any
 			Runnable: any
+			ClassLoader: any
 		}
 		io: {
 			ByteArrayInputStream: any
@@ -173,6 +174,8 @@ interface Packages {
 			StringWriter: any
 			PrintWriter: any
 			Reader: any
+			Writer: any
+			OutputStream: any
 			FileInputStream: any
 			PrintStream: {
 				new (stream: Packages.java.io.OutputStream): Packages.java.io.PrintStream
@@ -267,8 +270,14 @@ namespace Packages {
 		}
 		export namespace io {
 			export interface InputStream {
+				getClass(): any
 			}
 			export interface OutputStream {
+				close()
+			}
+			export interface Reader {
+			}
+			export interface Writer {
 			}
 			export interface PrintStream extends OutputStream {
 			}
