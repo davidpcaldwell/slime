@@ -33,6 +33,9 @@ END LICENSE
 	</script>
 </head>
 <body>
+	<!--
+		This file cannot be run standalone but requires $jsapi.environment arguments provided by contributor/jrunscript.jsh.js
+	-->
 	<div>
 		<script type="application/x.jsapi#initialize">
 			//	TODO	this setup is horrendous, far out of date, far too complicated, and needs refactoring; currently it is part
@@ -68,57 +71,21 @@ END LICENSE
 						}
 					}
 				});
-				var shell = $jsapi.loader.module("../../rhino/shell/", {
-					api: {
-						js: $jsapi.loader.module("../../js/object/"),
-						java: host,
-						io: jsh.io,
-						file: file,
-						document: $jsapi.loader.module("../../js/document/"),
-						xml: {
-							parseFile: function(file) {
-								return new jsh.document.Document({
-									string: file.read(String)
-								});
-							}
-						}
-					},
-					_environment: Packages.inonit.system.OperatingSystem.Environment.SYSTEM,
-					_properties: Packages.java.lang.System.getProperties()
-				});
-				this.module = shell;
-				this.api = {
-					js: $jsapi.loader.module("../../js/object/"),
-					java: host,
-					shell: shell,
-					file: file
-				};
-
-				this.getSystemProperty = function(name) {
-					return String(Packages.java.lang.System.getProperty(name));
-				}
-
-				this._getSystemProperties = function() {
-					return Packages.java.lang.System.getProperties();
-				}
-
-				this.stdio = new function() {
-					this.input = (jsh.shell.stdio) ? jsh.shell.stdio.input : jsh.shell.stdin;
-					this.output = (jsh.shell.stdio) ? jsh.shell.stdio.output : jsh.shell.stdout;
-					this.error = (jsh.shell.stdio) ? jsh.shell.stdio.error : jsh.shell.stderr;
-				}
-
-				this.exit = function() {
-				}
+				this.host = host;
+				this.file = file;
 			};
-			$jsapi.loader.run(
-				"jsh.js",
-				{
-					$context: context,
-					$exports: context.module
+			scope.module = $jsapi.loader.plugin.mock({
+				jsh: {
+					js: jsh.js,
+					document: jsh.document,
+					java: context.host,
+					io: jsh.io,
+					file: context.file
+				},
+				evaluate: function(p) {
+					return p.jsh.shell;
 				}
-			);
-			scope.module = context.module;
+			});
 		</script>
 		<h1>Exports</h1>
 		<script type="application/x.jsapi#initialize" jsapi:reference="getApi('api.html').getElement('script.initialize')">
