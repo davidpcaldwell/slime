@@ -16,6 +16,14 @@ namespace jsh.shell {
 
 	interface Exports extends slime.jrunscript.shell.Exports {
 		engine: string
+		run: {
+			(p: any): any
+			stdio: any
+			evaluate: {
+				wrap: any
+				jsh: any
+			}
+		}
 		//	TODO	run.evaluate.wrap
 		exit: (code: number) => void
 		stdio: any
