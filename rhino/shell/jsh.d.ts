@@ -10,20 +10,23 @@ namespace jsh.shell {
 				java: slime.jrunscript.host.Exports
 				io: slime.jrunscript.io.Exports
 				file: slime.jrunscript.file.Exports
-				shell: slime.jrunscript.shell.Exports
 			}
 		}
 	}
 
-	interface Exports {
+	interface Exports extends slime.jrunscript.shell.Exports {
 		engine: string
 		//	TODO	run.evaluate.wrap
 		exit: (code: number) => void
 		stdio: any
-		echo: Function
+		echo: {
+			(message: any, mode?: any): void
+			String: any
+		}
 		console: (message: string) => void
 		//	TODO	shell?
 		rhino: any
+		shell: any
 		jsh: {
 			(p: any): any
 			src?: slime.jrunscript.file.Directory
@@ -32,6 +35,8 @@ namespace jsh.shell {
 			home?: slime.jrunscript.file.Directory
 			relaunch: () => void
 			debug: any
+			command: any
+			url: any
 		}
 		os: {
 			name: string
@@ -41,7 +46,6 @@ namespace jsh.shell {
 			sudo: slime.jrunscript.shell.system.Exports["sudo"]
 		}
 		environment: any
-		run: Function & { stdio: any }
 		HOME: slime.jrunscript.file.Directory
 		PATH: any
 		TMPDIR: slime.jrunscript.file.Directory
