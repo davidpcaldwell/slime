@@ -48,38 +48,36 @@
 				});
 				if (!module.properties) throw new TypeError();
 
-				var context = {};
-				context.api = {
-					js: jsh.js
-					,java: jsh.java
-					,io: jsh.io
-					,file: jsh.file
-				}
-				context.stdio = new function() {
-					this.input = jsh.io.Streams.java.adapt($slime.getStdio().getStandardInput());
-					this.output = jsh.io.Streams.java.adapt($slime.getStdio().getStandardOutput());
-					this.error = jsh.io.Streams.java.adapt($slime.getStdio().getStandardError());
-				}
-				//	TODO	properties methods should go away; should not be necessary now
-				context.getSystemProperty = function(name) {
-					var rv = $slime.getSystemProperties().getProperty(name);
-					if (rv == null) return null;
-					return String(rv);
-				};
-				context._getSystemProperties = function() {
-					return $slime.getSystemProperties();
-				};
-				context.exit = function(code) {
-					$slime.exit(code);
-				};
-				context.jsh = function(configuration,script,args) {
-					var _invocation = $slime.getInterface().invocation(
-						script.pathname.java.adapt(),
-						jsh.java.toJavaArray(args,Packages.java.lang.String,function(s) {
-							return new Packages.java.lang.String(s);
-						})
-					);
-					return $slime.jsh(configuration,_invocation)
+				/**
+				 * @type { jsh.shell.internal.Context }
+				 */
+				var context = {
+					api: {
+						js: jsh.js
+						,java: jsh.java
+						,io: jsh.io
+						,file: jsh.file
+					},
+					stdio: new function() {
+						this.input = jsh.io.Streams.java.adapt($slime.getStdio().getStandardInput());
+						this.output = jsh.io.Streams.java.adapt($slime.getStdio().getStandardOutput());
+						this.error = jsh.io.Streams.java.adapt($slime.getStdio().getStandardError());
+					},
+					_getSystemProperties: function() {
+						return $slime.getSystemProperties();
+					},
+					exit: function(code) {
+						$slime.exit(code);
+					},
+					jsh: function(configuration,script,args) {
+						var _invocation = $slime.getInterface().invocation(
+							script.pathname.java.adapt(),
+							jsh.java.toJavaArray(args,Packages.java.lang.String,function(s) {
+								return new Packages.java.lang.String(s);
+							})
+						);
+						return $slime.jsh(configuration,_invocation)
+					}
 				};
 				$loader.run(
 					"jsh.js",
