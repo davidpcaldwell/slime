@@ -132,6 +132,7 @@
 			}
 			var stdio = getStdio(p);
 			var directory = getDirectory(p);
+
 			var environment = (function(now,argument) {
 				if (typeof(argument) == "undefined") return now;
 				if (argument === null) return now;
@@ -141,6 +142,7 @@
 					return $api.Function.mutating(argument)(rv);
 				}
 			})($exports.environment,p.environment)
+
 			var context = new JavaAdapter(
 				Packages.inonit.system.Command.Context,
 				new function() {
@@ -390,6 +392,7 @@
 			if (result.status != 0) throw new Error("Exit code: " + result.status + " executing " + result.command + ((result.arguments && result.arguments.length) ? " " + result.arguments.join(" ") : ""));
 			return result;
 		};
+		//	TODO	the getStdio function is currently used in jsh.js, requiring us to export it; is that the best structure?
 		$exports.run.stdio = Object.assign(getStdio, {
 			LineBuffered: function(o) {
 				return Object.assign({}, o, {
@@ -406,16 +409,6 @@
 				});
 			}
 		});
-		$exports.run.environment = function(argument) {
-			var now = $exports.environment;
-			if (typeof(argument) == "undefined") return now;
-			if (argument === null) return now;
-			if (typeof(argument) == "object") return argument;
-			if (typeof(argument) == "function") {
-				return $api.Function.mutating(argument)($api.Object.compose(now));
-			}
-			throw new TypeError();
-		}
 
 		var embed = $api.Events.Function(
 			/**
@@ -474,33 +467,36 @@
 			return $context.api.file.filesystem.java.adapt(_rv);
 		}
 
-		$exports.properties = new function() {
-			var _properties = ($context._properties) ? $context._properties : Packages.java.lang.System.getProperties();
+		$exports.properties = (
+			/**
+			 * @returns { slime.jrunscript.shell.Exports["properties"] }
+			 */
+			function() {
+				var _properties = ($context._properties) ? $context._properties : Packages.java.lang.System.getProperties();
 
-			this.object = $context.api.java.Properties.adapt( _properties );
-
-			this.get = function(name) {
-				var rv = _properties.getProperty(name);
-				if (!rv) return null;
-				return String(rv);
-			};
-
-			this.file = function(name) {
-				return toLocalPathname($context.api.file.filesystems.os.Pathname(this.get(name))).file;
+				return {
+					object: $context.api.java.Properties.adapt( _properties ),
+					get: function(name) {
+						var rv = _properties.getProperty(name);
+						if (!rv) return null;
+						return String(rv);
+					},
+					file: function(name) {
+						return toLocalPathname($context.api.file.filesystems.os.Pathname(this.get(name))).file;
+					},
+					directory: function(name) {
+						return toLocalPathname($context.api.file.filesystems.os.Pathname(this.get(name))).directory;
+					},
+					searchpath: function(name) {
+						var string = this.get(name);
+						if (!string) throw new Error("No property: " + name);
+						var rv = $context.api.file.filesystems.os.Searchpath.parse(string);
+						var pathnames = rv.pathnames.map(toLocalPathname);
+						return $context.api.file.Searchpath(pathnames);
+					}
+				}
 			}
-
-			this.directory = function(name) {
-				return toLocalPathname($context.api.file.filesystems.os.Pathname(this.get(name))).directory;
-			};
-
-			this.searchpath = function(name) {
-				var string = this.get(name);
-				if (!string) throw new Error("No property: " + name);
-				var rv = $context.api.file.filesystems.os.Searchpath.parse(string);
-				var pathnames = rv.pathnames.map(toLocalPathname);
-				return $context.api.file.Searchpath(pathnames);
-			};
-		};
+		)();
 
 		var toLocalSearchpath = function(searchpath) {
 			return $context.api.file.Searchpath($context.api.file.filesystems.os.Searchpath.parse(searchpath).pathnames.map(toLocalPathname));
