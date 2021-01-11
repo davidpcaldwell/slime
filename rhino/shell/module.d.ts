@@ -73,12 +73,18 @@ namespace slime.jrunscript.shell {
 		}
 
 		TMPDIR: slime.jrunscript.file.Directory
-		USER: slime.jrunscript.file.Directory
+		USER: string
 		HOME: slime.jrunscript.file.Directory
 		PWD: slime.jrunscript.file.Directory
 
 		jrunscript: any
-		properties: any
+		properties: {
+			object: any
+			get(name: string): string
+			file(name: any): any
+			directory(name: any): any
+			searchpath(name: any): any
+		}
 		system: any
 		rhino: any
 		kotlin: any
