@@ -290,6 +290,7 @@
 		};
 
 		$exports.run = $api.Events.Function(run);
+
 		$exports.run.evaluate = function(result) {
 			if (result.error) throw result.error;
 			if (result.status != 0) throw new Error("Exit code: " + result.status + " executing " + result.command + ((result.arguments && result.arguments.length) ? " " + result.arguments.join(" ") : ""));
