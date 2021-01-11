@@ -31,13 +31,107 @@
 
 		$exports.listeners = module.events.listeners;
 
+		var getStdio = function(p) {
+			var rv = (function() {
+				if (typeof(p.stdio) != "undefined") return p.stdio;
+
+				if (typeof(p.stdin) != "undefined" || typeof(p.stdout) != "undefined" || typeof(p.stderr) != "undefined") {
+					return $api.deprecate(function() {
+						return {
+							input: p.stdin,
+							output: p.stdout,
+							error: p.stderr
+						};
+					})();
+				}
+
+				return {};
+			})();
+			if (rv) {
+				var buffers = {};
+				rv.close = function() {
+					for (var x in buffers) {
+						buffers[x].close();
+						if (buffers[x].readText) {
+							this[x] = buffers[x].readText().asString();
+						}
+					}
+				};
+				["output","error"].forEach(function(stream) {
+					if (rv[stream] == String) {
+						buffers[stream] = new $context.api.io.Buffer();
+						rv[stream] = buffers[stream].writeBinary();
+					} else if (rv[stream] && typeof(rv[stream]) == "object" && rv[stream].line) {
+						buffers[stream] = new (function(callback) {
+							var buffer = new $context.api.io.Buffer();
+
+							var thread = $context.api.java.Thread.start({
+								call: function() {
+									buffer.readText().readLines(callback);
+								}
+							});
+
+							this.buffer = buffer;
+
+							this.close = function() {
+								buffer.close();
+								thread.join();
+							}
+						})(rv[stream].line);
+						rv[stream] = buffers[stream].buffer.writeBinary();
+					}
+				});
+				if (typeof(rv.input) == "string") {
+					var buffer = new $context.api.io.Buffer();
+					buffer.writeText().write(rv.input);
+					buffer.close();
+					rv.input = buffer.readBinary();
+				}
+			}
+			if (rv) {
+				if ($context.stdio) {
+					["output","error"].forEach(function(stream) {
+						if (typeof(rv[stream]) == "undefined") rv[stream] = $context.stdio[stream];
+					});
+				}
+				if (typeof(rv.input) == "undefined") rv.input = null;
+			} else {
+				if (!$context.stdio) {
+					if (p.stdio === null) {
+						//	That's what we thought
+					} else {
+						//	The only way rv should be anything other than an object is if p.stdio was null
+						throw new Error("Unreachable");
+					}
+				}
+			}
+			return rv;
+		};
+
+		var getDirectory = function(p) {
+			var getDirectoryProperty = function(p) {
+				if (p.directory && p.directory.pathname) {
+					return p.directory;
+				}
+			}
+
+			if (p.directory) {
+				return getDirectoryProperty(p);
+			}
+			if (p.workingDirectory) {
+				return $api.deprecate(getDirectoryProperty)({ directory: p.workingDirectory });
+			}
+		};
+
+		$exports.environment = $context.api.java.Environment( ($context._environment) ? $context._environment : Packages.inonit.system.OperatingSystem.Environment.SYSTEM );
+
 		var run = function(p,events) {
 			var as;
 			if (p.as) {
 				as = p.as;
 			}
-			var stdio = $exports.run.stdio(p);
-			var directory = $exports.run.directory(p);
+			var stdio = getStdio(p);
+			var directory = getDirectory(p);
 			var environment = (function(now,argument) {
 				if (typeof(argument) == "undefined") return now;
 				if (argument === null) return now;
@@ -296,96 +390,22 @@
 			if (result.status != 0) throw new Error("Exit code: " + result.status + " executing " + result.command + ((result.arguments && result.arguments.length) ? " " + result.arguments.join(" ") : ""));
 			return result;
 		};
-		$exports.run.stdio = function(p) {
-			var rv = (function() {
-				if (typeof(p.stdio) != "undefined") return p.stdio;
-
-				if (typeof(p.stdin) != "undefined" || typeof(p.stdout) != "undefined" || typeof(p.stderr) != "undefined") {
-					return $api.deprecate(function() {
-						return {
-							input: p.stdin,
-							output: p.stdout,
-							error: p.stderr
-						};
-					})();
-				}
-
-				return {};
-			})();
-			if (rv) {
-				var buffers = {};
-				rv.close = function() {
-					for (var x in buffers) {
-						buffers[x].close();
-						if (buffers[x].readText) {
-							this[x] = buffers[x].readText().asString();
+		$exports.run.stdio = Object.assign(getStdio, {
+			LineBuffered: function(o) {
+				return Object.assign({}, o, {
+					output: {
+						line: function(line) {
+							o.stdio.output.write(line + $exports.os.newline);
+						}
+					},
+					error: {
+						line: function(line) {
+							o.stdio.error.write(line + $exports.os.newline);
 						}
 					}
-				};
-				["output","error"].forEach(function(stream) {
-					if (rv[stream] == String) {
-						buffers[stream] = new $context.api.io.Buffer();
-						rv[stream] = buffers[stream].writeBinary();
-					} else if (rv[stream] && typeof(rv[stream]) == "object" && rv[stream].line) {
-						buffers[stream] = new (function(callback) {
-							var buffer = new $context.api.io.Buffer();
-
-							var thread = $context.api.java.Thread.start({
-								call: function() {
-									buffer.readText().readLines(callback);
-								}
-							});
-
-							this.buffer = buffer;
-
-							this.close = function() {
-								buffer.close();
-								thread.join();
-							}
-						})(rv[stream].line);
-						rv[stream] = buffers[stream].buffer.writeBinary();
-					}
 				});
-				if (typeof(rv.input) == "string") {
-					var buffer = new $context.api.io.Buffer();
-					buffer.writeText().write(rv.input);
-					buffer.close();
-					rv.input = buffer.readBinary();
-				}
 			}
-			if (rv) {
-				if ($exports.stdio) {
-					["output","error"].forEach(function(stream) {
-						if (typeof(rv[stream]) == "undefined") rv[stream] = $exports.stdio[stream];
-					});
-				}
-				if (typeof(rv.input) == "undefined") rv.input = null;
-			} else {
-				if (!$exports.stdio) {
-					if (p.stdio === null) {
-						//	That's what we thought
-					} else {
-						//	The only way rv should be anything other than an object is if p.stdio was null
-						throw new Error("Unreachable");
-					}
-				}
-			}
-			return rv;
-		};
-		$exports.run.stdio.LineBuffered = function(o) {
-			return Object.assign({}, o, {
-				output: {
-					line: function(line) {
-						o.stdio.output.write(line + $exports.os.newline);
-					}
-				},
-				error: {
-					line: function(line) {
-						o.stdio.error.write(line + $exports.os.newline);
-					}
-				}
-			});
-		}
+		});
 		$exports.run.environment = function(argument) {
 			var now = $exports.environment;
 			if (typeof(argument) == "undefined") return now;
@@ -396,20 +416,6 @@
 			}
 			throw new TypeError();
 		}
-		$exports.run.directory = function(p) {
-			var getDirectoryProperty = function(p) {
-				if (p.directory && p.directory.pathname) {
-					return p.directory;
-				}
-			}
-
-			if (p.directory) {
-				return getDirectoryProperty(p);
-			}
-			if (p.workingDirectory) {
-				return $api.deprecate(getDirectoryProperty)({ directory: p.workingDirectory });
-			}
-		};
 
 		var embed = $api.Events.Function(
 			/**
@@ -462,8 +468,6 @@
 				}
 			})();
 		});
-
-		$exports.environment = $context.api.java.Environment( ($context._environment) ? $context._environment : Packages.inonit.system.OperatingSystem.Environment.SYSTEM );
 
 		var toLocalPathname = function(osPathname) {
 			var _rv = osPathname.java.adapt();
