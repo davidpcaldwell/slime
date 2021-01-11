@@ -29,6 +29,12 @@
 					compiler: jsh.file.Pathname( String($slime.getLibraryFile("kotlin/bin/kotlinc").getAbsolutePath()) ).file
 				} : null;
 
+				var stdio = {
+					input: jsh.io.Streams.java.adapt($slime.getStdio().getStandardInput()),
+					output: jsh.io.Streams.java.adapt($slime.getStdio().getStandardOutput()),
+					error: jsh.io.Streams.java.adapt($slime.getStdio().getStandardError())
+				}
+
 				var module = $loader.module("module.js", {
 					api: {
 						js: jsh.js,
@@ -44,7 +50,8 @@
 					},
 					_properties: $slime.getSystemProperties(),
 					_environment: $slime.getEnvironment(),
-					kotlin: kotlin
+					kotlin: kotlin,
+					stdio: stdio
 				});
 				if (!module.properties) throw new TypeError();
 
@@ -58,11 +65,7 @@
 						,io: jsh.io
 						,file: jsh.file
 					},
-					stdio: new function() {
-						this.input = jsh.io.Streams.java.adapt($slime.getStdio().getStandardInput());
-						this.output = jsh.io.Streams.java.adapt($slime.getStdio().getStandardOutput());
-						this.error = jsh.io.Streams.java.adapt($slime.getStdio().getStandardError());
-					},
+					stdio: stdio,
 					_getSystemProperties: function() {
 						return $slime.getSystemProperties();
 					},

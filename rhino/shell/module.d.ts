@@ -1,8 +1,8 @@
 namespace slime.jrunscript.shell {
 	interface Stdio {
-		input?: any
-		output?: any
-		error?: any
+		input?: slime.jrunscript.runtime.io.InputStream
+		output?: slime.jrunscript.runtime.io.OutputStream
+		error?: slime.jrunscript.runtime.io.OutputStream
 	}
 
 	interface Result {
@@ -28,6 +28,7 @@ namespace slime.jrunscript.shell {
 	}
 
 	interface Context {
+		stdio: Stdio
 		_environment: any
 		_properties: any
 		kotlin: any
@@ -44,6 +45,10 @@ namespace slime.jrunscript.shell {
 	}
 
 	interface Exports {
+		listeners: $api.Events["listeners"]
+
+		environment: any
+
 		//	fires started, exception, stdout, stderr
 		embed: (p: {
 			method: Function
@@ -67,8 +72,6 @@ namespace slime.jrunscript.shell {
 			newline: any
 		}
 
-		listeners: $api.Events["listeners"]
-
 		TMPDIR: slime.jrunscript.file.Directory
 		USER: slime.jrunscript.file.Directory
 		HOME: slime.jrunscript.file.Directory
@@ -76,11 +79,8 @@ namespace slime.jrunscript.shell {
 
 		jrunscript: any
 		properties: any
-		stdio: any
 		system: any
 		rhino: any
 		kotlin: any
-
-		environment: any
 	}
 }
