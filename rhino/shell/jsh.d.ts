@@ -15,7 +15,11 @@ namespace jsh.shell {
 	}
 
 	interface Exports extends slime.jrunscript.shell.Exports {
+		/**
+		 * The JavaScript engine executing the loader process for the shell, e.g., `rhino`, `nashorn`.
+		 */
 		engine: string
+
 		run: {
 			(p: any): any
 			stdio: any

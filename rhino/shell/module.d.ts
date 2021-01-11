@@ -32,7 +32,7 @@ namespace slime.jrunscript.shell {
 		_properties: any
 		kotlin: any
 		api: {
-			js: any
+			js: slime.runtime.old.Exports
 			java: slime.jrunscript.host.Exports
 			io: slime.jrunscript.io.Exports
 			file: slime.jrunscript.file.Exports
