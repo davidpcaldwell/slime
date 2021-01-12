@@ -45,11 +45,11 @@
 				}
 			};
 
-			var isCaseInsensitive = function(environment): { booleanValue(): boolean } {
+			var detectedAsCaseSensitive = function(environment): { booleanValue(): boolean } {
 				return jsh.java.invoke({
 					method: {
 						class: Packages.inonit.system.OperatingSystem.Environment,
-						name: "detectedAsCaseInsensitive",
+						name: "detectedAsCaseSensitive",
 						parameterTypes: [ Packages.inonit.system.OperatingSystem.Environment ]
 					},
 					arguments: [
@@ -61,10 +61,10 @@
 				});
 			};
 
-			fifty.verify(isCaseInsensitive(CaseSensitive({ foo: "bar" }))).booleanValue().is(false);
-			fifty.verify(isCaseInsensitive(CaseSensitive({ foo: "bar", FOO: "BAR" }))).is(null);
-			fifty.verify(isCaseInsensitive(CaseInsensitive({ foo: "bar" }))).booleanValue().is(true);
-			fifty.verify(isCaseInsensitive(CaseSensitive({ FOO: "BAR" }))).is(null);
+			fifty.verify(detectedAsCaseSensitive(CaseSensitive({ foo: "bar" }))).booleanValue().is(true);
+			fifty.verify(detectedAsCaseSensitive(CaseSensitive({ foo: "bar", FOO: "BAR" }))).is(null);
+			fifty.verify(detectedAsCaseSensitive(CaseInsensitive({ foo: "bar" }))).booleanValue().is(false);
+			fifty.verify(detectedAsCaseSensitive(CaseSensitive({ FOO: "BAR" }))).is(null);
 
 			var create = function(p) {
 				return jsh.java.invoke({
@@ -78,7 +78,7 @@
 					},
 					arguments: [
 						toMap(p.values),
-						p.caseInsensitive
+						p.caseSensitive
 					]
 				})
 			};
@@ -89,7 +89,7 @@
 
 			var caseSensitive = create({
 				values: { foo: "bar" },
-				caseInsensitive: false
+				caseSensitive: true
 			});
 
 			fifty.verify( toJsString(caseSensitive.getValue("foo")) ).is("bar");
@@ -97,7 +97,7 @@
 
 			var caseInsensitive = create({
 				values: { foo: "bar" },
-				caseInsensitive: true
+				caseSensitive: false
 			});
 
 			fifty.verify( toJsString(caseInsensitive.getValue("foo")) ).is("bar");

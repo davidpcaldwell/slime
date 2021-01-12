@@ -38,7 +38,7 @@ public class OperatingSystem {
 	}
 
 	public static abstract class Environment {
-		private static Boolean detectedAsCaseInsensitive(Environment environment) {
+		private static Boolean detectedAsCaseSensitive(Environment environment) {
 			//	TODO	this algorithm is not entirely accurate
 			for(String key : environment.getMap().keySet()) {
 				String upper = key.toUpperCase();
@@ -46,7 +46,7 @@ public class OperatingSystem {
 				if (isNotUppercase) {
 					boolean hasSameNameInUppercase = environment.getMap().containsKey(upper);
 					if (isNotUppercase && !hasSameNameInUppercase) {
-						return environment.getValue(key).equals(environment.getValue(upper));
+						return !environment.getValue(key).equals(environment.getValue(upper));
 					}
 				}
 			}
@@ -54,6 +54,18 @@ public class OperatingSystem {
 		}
 
 		public static final Environment SYSTEM = new Environment() {
+			//	TODO	ideally would lazy-initialize
+			private boolean initialized = false;
+			private Boolean isCaseSensitive;
+
+			@Override public Boolean isNameCaseSensitive() {
+				if (!initialized) {
+					isCaseSensitive = detectedAsCaseSensitive(this);
+					initialized = true;
+				}
+				return isCaseSensitive;
+			}
+
 			@Override public Map<String, String> getMap() {
 				return System.getenv();
 			}
@@ -63,14 +75,16 @@ public class OperatingSystem {
 			}
 		};
 
-		private static Environment create(final Map<String,String> map, boolean caseInsensitive) {
+		private static Environment create(final Map<String,String> map, final boolean caseSensitive) {
 			return new Environment() {
+				@Override public Boolean isNameCaseSensitive() { return Boolean.valueOf(caseSensitive); }
+
 				@Override public Map<String, String> getMap() {
 					return map;
 				}
 
 				@Override public String getValue(String name) {
-					if (caseInsensitive) {
+					if (!caseSensitive) {
 						for (Map.Entry<String,String> entry : map.entrySet()) {
 							if (entry.getKey().toUpperCase().equals(name.toUpperCase())) {
 								return entry.getValue();
@@ -85,11 +99,12 @@ public class OperatingSystem {
 		}
 
 		public static Environment create(final Map<String,String> map) {
-			Boolean caseInsensitive = detectedAsCaseInsensitive(SYSTEM);
+			Boolean caseSensitive = SYSTEM.isNameCaseSensitive();
 
-			return create(map, (caseInsensitive != null) ? caseInsensitive.booleanValue() : false);
+			return create(map, (caseSensitive != null) ? caseSensitive.booleanValue() : false);
 		}
 
+		public abstract Boolean isNameCaseSensitive();
 		public abstract Map<String,String> getMap();
 		public abstract String getValue(String name);
 	}
