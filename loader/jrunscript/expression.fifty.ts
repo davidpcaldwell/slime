@@ -285,6 +285,7 @@ namespace Packages {
 		}
 		export namespace util {
 			export interface Properties {
+				get(name: string): any
 				propertyNames(): any
 				getProperty(name: string): string
 			}

@@ -25,23 +25,25 @@
 				return Boolean(jsh.js && jsh.document && jsh.js.document && jsh.js.web && jsh.java && jsh.io && jsh.file);
 			},
 			load: function() {
-				var kotlin = ($slime.getLibraryFile("kotlin")) ? {
-					compiler: jsh.file.Pathname( String($slime.getLibraryFile("kotlin/bin/kotlinc").getAbsolutePath()) ).file
-				} : null;
-
 				var stdio = {
 					input: jsh.io.Streams.java.adapt($slime.getStdio().getStandardInput()),
 					output: jsh.io.Streams.java.adapt($slime.getStdio().getStandardOutput()),
 					error: jsh.io.Streams.java.adapt($slime.getStdio().getStandardError())
 				}
 
-				var module = $loader.module("module.js", {
+				var code = {
+					/** @type { slime.jrunscript.shell.Loader } */
+					module: $loader.factory("module.js")
+				}
+
+				var module = code.module({
 					api: {
 						js: jsh.js,
 						java: jsh.java,
 						io: jsh.io,
 						file: jsh.file,
 						document: jsh.js.document,
+						httpd: void(0),
 						xml: {
 							parseFile: function(file) {
 								return new jsh.document.Document({ string: file.read(String) });
@@ -50,9 +52,12 @@
 					},
 					_properties: $slime.getSystemProperties(),
 					_environment: $slime.getEnvironment(),
-					kotlin: kotlin,
+					kotlin: ($slime.getLibraryFile("kotlin")) ? {
+						compiler: jsh.file.Pathname( String($slime.getLibraryFile("kotlin/bin/kotlinc").getAbsolutePath()) ).file
+					} : null,
 					stdio: stdio
 				});
+
 				if (!module.properties) throw new TypeError();
 
 				/**
@@ -89,7 +94,13 @@
 						$exports: module
 					}
 				);
-				jsh.shell = module;
+
+				/** @returns { jsh.shell.Exports & { getopts: any } } */
+				var toJsh = function(api) {
+					return api;
+				}
+
+				jsh.shell = toJsh(module);
 			}
 		});
 
