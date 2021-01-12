@@ -94,23 +94,9 @@ namespace slime.jrunscript.shell {
 
 	export type Loader = slime.Loader.Product<Context,Exports>
 
-	namespace fixtures {
-		const load = (function(fifty: slime.fifty.test.kit) {
-			return void(0);
-			// return fifty.$loader.factory("module.js")({
-			// 	stdio: void(0),
-			// 	_environment: void(0),
-			// 	_properties: void(0),
-
-			// })
-		//@ts-ignore
-		})(fifty);
-	}
-
 	(
 		function(fifty: slime.fifty.test.kit) {
 			fifty.tests.suite = function() {
-				jsh.shell.console("Hello.");
 				fifty.verify(1).is(1);
 			}
 		}
