@@ -38,6 +38,21 @@ public class OperatingSystem {
 	}
 
 	public static abstract class Environment {
+		private static Boolean detectedAsCaseInsensitive(Environment environment) {
+			//	TODO	this algorithm is not entirely accurate
+			for(String key : environment.getMap().keySet()) {
+				String upper = key.toUpperCase();
+				boolean isNotUppercase = !key.equals(upper);
+				if (isNotUppercase) {
+					boolean hasSameNameInUppercase = environment.getMap().containsKey(upper);
+					if (isNotUppercase && !hasSameNameInUppercase) {
+						return environment.getValue(key).equals(environment.getValue(upper));
+					}
+				}
+			}
+			return null;
+		}
+
 		public static final Environment SYSTEM = new Environment() {
 			@Override public Map<String, String> getMap() {
 				return System.getenv();
@@ -48,16 +63,31 @@ public class OperatingSystem {
 			}
 		};
 
-		public static Environment create(final Map<String,String> map) {
+		private static Environment create(final Map<String,String> map, boolean caseInsensitive) {
 			return new Environment() {
 				@Override public Map<String, String> getMap() {
 					return map;
 				}
 
 				@Override public String getValue(String name) {
-					return map.get(name);
+					if (caseInsensitive) {
+						for (Map.Entry<String,String> entry : map.entrySet()) {
+							if (entry.getKey().toUpperCase().equals(name.toUpperCase())) {
+								return entry.getValue();
+							}
+						}
+						return null;
+					} else {
+						return map.get(name);
+					}
 				}
 			};
+		}
+
+		public static Environment create(final Map<String,String> map) {
+			Boolean caseInsensitive = detectedAsCaseInsensitive(SYSTEM);
+
+			return create(map, (caseInsensitive != null) ? caseInsensitive.booleanValue() : false);
 		}
 
 		public abstract Map<String,String> getMap();

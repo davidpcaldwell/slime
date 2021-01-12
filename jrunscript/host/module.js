@@ -95,7 +95,7 @@
 			var _method = _class.getDeclaredMethod(p.method.name, _types);
 			_method.setAccessible(true);
 			var rv = _method.invoke(
-				p.target,
+				(p.target) ? p.target : null,
 				JavaArray.create({
 					type: Packages.java.lang.Object,
 					array: (p.arguments) ? p.arguments : []

@@ -78,6 +78,9 @@
 				$slime: jsh.unit.$slime
 			}
 		}));
+		suite.add("internal/jrunscript/system", FiftyPart({
+			file: SRC.getFile("rhino/system/test/Packages.inonit.system.OperatingSystem.Environment.fifty.ts")
+		}));
 
 		suite.add("internal/other", new jsh.unit.html.Part({
 			//	Test cases involving the HTML test runner itself
@@ -164,9 +167,12 @@
 			environment: environment
 		}));
 
-		suite.add("jrunscript/shell/main", new jsh.unit.html.Part({
+		suite.add("jrunscript/shell/jsapi", new jsh.unit.html.Part({
 			pathname: SRC.getRelativePath("rhino/shell/api.html"),
 			environment: { noselfping: parameters.options.noselfping }
+		}));
+		suite.add("jrunscript/shell/fifty", FiftyPart({
+			file: SRC.getRelativePath("rhino/shell/module.fifty.ts")
 		}));
 		suite.add("jrunscript/shell/browser", new jsh.unit.html.Part({
 			pathname: SRC.getRelativePath("rhino/shell/browser/api.html")
