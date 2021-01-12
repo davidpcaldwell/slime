@@ -27,11 +27,13 @@ namespace slime.jrunscript.shell {
 		home: any
 	}
 
-	interface Context {
+	export interface Context {
 		stdio: Stdio
-		_environment: any
-		_properties: any
-		kotlin: any
+		_environment: Packages.inonit.system.OperatingSystem.Environment
+		_properties: Packages.java.util.Properties
+		kotlin: {
+			compiler: slime.jrunscript.file.File
+		}
 		api: {
 			js: slime.runtime.old.Exports
 			java: slime.jrunscript.host.Exports
@@ -44,7 +46,7 @@ namespace slime.jrunscript.shell {
 		}
 	}
 
-	interface Exports {
+	export interface Exports {
 		listeners: $api.Events["listeners"]
 
 		environment: any
@@ -89,4 +91,29 @@ namespace slime.jrunscript.shell {
 		rhino: any
 		kotlin: any
 	}
+
+	export type Loader = slime.Loader.Product<Context,Exports>
+
+	namespace fixtures {
+		const load = (function(fifty: slime.fifty.test.kit) {
+			return void(0);
+			// return fifty.$loader.factory("module.js")({
+			// 	stdio: void(0),
+			// 	_environment: void(0),
+			// 	_properties: void(0),
+
+			// })
+		//@ts-ignore
+		})(fifty);
+	}
+
+	(
+		function(fifty: slime.fifty.test.kit) {
+			fifty.tests.suite = function() {
+				jsh.shell.console("Hello.");
+				fifty.verify(1).is(1);
+			}
+		}
+	//@ts-ignore
+	)(fifty)
 }

@@ -11,34 +11,6 @@
 //	END LICENSE
 
 //@ts-check
-
-/**
- * @typedef {object} slime.jrunscript.host.Context
- * @property {any} $slime
- * @property {any} globals
- */
-
-/**
- * @typedef {object} slime.jrunscript.host.Exports
- * @property {Function} getClass
- * @property {any} isJavaObject
- * @property {any} isJavaType
- * @property {any} toNativeClass
- * @property {any} Array
- * @property {any} invoke
- * @property {any} Properties
- * @property {any} fail
- * @property {any} ErrorType
- * @property {any} toJsArray
- * @property {any} toJavaArray
- * @property {any} Thread
- * @property {any} Environment
- * @property {any} addShutdownHook
- */
-
-//	Workaround for https://github.com/microsoft/TypeScript/issues/36179
-void(0);
-
 (
 	/**
 	 * @param { $api } $api

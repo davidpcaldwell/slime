@@ -50,8 +50,7 @@ namespace jsh.shell {
 			command: any
 			url: any
 		}
-		os: {
-			name: string
+		os: slime.jrunscript.shell.Exports["os"] & {
 			process: {
 				list: () => slime.jrunscript.shell.system.Process[]
 			}

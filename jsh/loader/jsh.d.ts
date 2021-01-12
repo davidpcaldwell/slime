@@ -13,7 +13,7 @@ namespace jsh.plugin {
 
 	interface $slime extends slime.jrunscript.runtime.Exports, EngineSpecific {
 		getSystemProperty(name: string): string
-		getEnvironment(): any
+		getEnvironment(): Packages.inonit.system.OperatingSystem.Environment
 		getInvocation(): any
 
 		getPackaged(): Packages.inonit.script.jsh.Shell.Packaged
@@ -27,7 +27,7 @@ namespace jsh.plugin {
 		}
 		getLibraryFile: any
 		getInterface(): any
-		getSystemProperties(): any
+		getSystemProperties(): Packages.java.util.Properties
 		getStdio(): Stdio
 	}
 }
