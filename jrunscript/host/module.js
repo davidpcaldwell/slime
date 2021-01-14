@@ -685,37 +685,16 @@
 		}
 
 		$exports.Environment = function(_environment) {
-			var getter = function(value) {
-				return function() {
-					return value;
-				};
-			};
-
-			var isCaseInsensitive = (function() {
-				var jenv = _environment.getMap();
-				var i = jenv.keySet().iterator();
-				while(i.hasNext()) {
-					var name = String(i.next());
-					var value = String(jenv.get(name));
-					if (name != name.toUpperCase()) {
-						return String(_environment.getValue(name.toUpperCase())) == value;
-					} else {
-						return String(_environment.getValue(name.toLowerCase())) == value;
-					}
-				}
-				return function(){}();
-			})();
-
 			/** @type { ReturnType<slime.jrunscript.host.Exports["Environment"] >} */
 			var rv = {};
 			var i = _environment.getMap().keySet().iterator();
 			while(i.hasNext()) {
 				var name = String(i.next());
 				var value = String(_environment.getValue(name));
-				if (isCaseInsensitive) {
-					name = name.toUpperCase();
+				Object.defineProperty(rv, name, { value: value, enumerable: true });
+				if (_environment.isNameCaseSensitive() && !_environment.isNameCaseSensitive().booleanValue() && !rv[name.toUpperCase()]) {
+					Object.defineProperty(rv, name.toUpperCase(), { value: value, enumerable: false });
 				}
-				rv.__defineGetter__(name, getter(value));
 			}
 			return rv;
 		};

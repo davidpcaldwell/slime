@@ -41,6 +41,22 @@ namespace slime.jrunscript.host {
 
 				fifty.verify(environment).evaluate.property("foo").is("bar");
 				fifty.verify(environment).evaluate.property("baz").is(void(0));
+
+				const assignable: object = environment;
+				assignable["foo"] = "baz";
+
+				fifty.verify(assignable).evaluate.property("foo").is("bar");
+
+				var _insensitive = _Environment(
+					{ foo: "bar" },
+					false
+				);
+
+				var insensitive = subject.Environment(_insensitive);
+
+				fifty.verify(insensitive).evaluate.property("foo").is("bar");
+				fifty.verify(insensitive).evaluate.property("FOO").is("bar");
+				fifty.verify(insensitive).evaluate.property("baz").is(void(0));
 			}
 		}
 	//@ts-ignore
