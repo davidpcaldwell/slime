@@ -11,7 +11,8 @@
 				directory: function() {
 					return jsh.shell.TMPDIR.createTemporary({ directory: true }) as slime.jrunscript.file.Directory;
 				}
-			}
+			},
+			$slime: jsh.unit.$slime
 		})
 	}
 //@ts-ignore
