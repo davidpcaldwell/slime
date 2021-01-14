@@ -313,6 +313,9 @@ namespace Packages {
 	export namespace inonit.system {
 		export namespace OperatingSystem {
 			export interface Environment {
+				isNameCaseSensitive(): {
+					booleanValue(): boolean
+				}
 				getMap(): Packages.java.util.Map
 				getValue(name: string): string
 			}
