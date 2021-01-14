@@ -197,7 +197,12 @@
 				verify: function() {
 					return verify.apply(this,arguments);
 				},
-				jsh: scopes.jsh
+				jsh: (scopes.jsh) ? $api.Object.compose(
+					scopes.jsh,
+					{
+						$slime: (loader && loader.jsh) ? loader.jsh.$slime : void(0)
+					}
+				) : void(0)
 			};
 
 			var scope = {
@@ -245,7 +250,7 @@
 				}
 			} else {
 				error(path, loaderError);
-//				return runner(tests)
+				// return runner(tests)
 			}
 		}
 

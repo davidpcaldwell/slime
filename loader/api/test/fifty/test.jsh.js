@@ -134,6 +134,7 @@
 						mock: mockPlugin
 					},
 					jsh: {
+						$slime: jsh.unit.$slime,
 						plugin: {
 							mock: mockPlugin
 						}

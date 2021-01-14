@@ -84,6 +84,19 @@
 
 		$exports.Array = JavaArray;
 
+		$exports.Map = function(o) {
+			return $api.Function.result(
+				o.object,
+				$api.Function.Object.entries,
+				function(entries) {
+					return entries.reduce(function(rv,entry) {
+						rv.put(entry[0],entry[1]);
+						return rv;
+					}, new Packages.java.util.HashMap())
+				}
+			)
+		}
+
 		$exports.invoke = function(p) {
 			var parameterTypes = (p.method.parameterTypes) ? p.method.parameterTypes : [];
 			var _types = JavaArray.create({
@@ -693,6 +706,7 @@
 				return function(){}();
 			})();
 
+			/** @type { ReturnType<slime.jrunscript.host.Exports["Environment"] >} */
 			var rv = {};
 			var i = _environment.getMap().keySet().iterator();
 			while(i.hasNext()) {

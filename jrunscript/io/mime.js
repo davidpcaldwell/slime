@@ -134,7 +134,7 @@
 					stream: {
 						binary: stream
 					},
-					type: new $context.$slime.mime.Type("multipart", subtype, { boundary: BOUNDARY })
+					type: $context.$slime.mime.Type("multipart", subtype, { boundary: BOUNDARY })
 				});
 			} else {
 				var $mail = Packages.javax.mail;

@@ -293,12 +293,28 @@ namespace Packages {
 			export interface Date {
 				getTime(): number
 			}
+
+			export interface Iterator {
+				hasNext(): boolean
+				next(): any
+			}
+
+			export interface Set {
+				iterator(): Iterator
+			}
+
+			export interface Map {
+				keySet(): Set
+				get(key: any): any
+			}
 		}
 	}
 
 	export namespace inonit.system {
 		export namespace OperatingSystem {
 			export interface Environment {
+				getMap(): Packages.java.util.Map
+				getValue(name: string): string
 			}
 		}
 	}

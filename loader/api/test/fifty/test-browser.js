@@ -162,10 +162,9 @@
 				var path = (function(file) {
 					var elements = file.split("/");
 					var parent = elements.slice(0, elements.length-1).join("/") + "/";
-					var file = elements[elements.length-1];
 					return {
 						parent: parent,
-						file: file
+						file: elements[elements.length-1]
 					}
 				})(inonit.loader.nugget.page.relative(file));
 

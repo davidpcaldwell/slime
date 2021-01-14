@@ -27,7 +27,8 @@ namespace slime.fifty {
 					 * loader.
 					 */
 					mock: mockjshplugin
-				}
+				},
+				$slime: jsh.plugin.$slime
 			}
 		}
 
@@ -66,6 +67,7 @@ namespace slime.fifty {
 				}
 			},
 			jsh?: {
+				$slime: jsh.plugin.$slime
 				file: {
 					location: () => slime.jrunscript.file.Pathname
 					directory: () => slime.jrunscript.file.Directory
