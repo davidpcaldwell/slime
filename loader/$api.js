@@ -572,7 +572,7 @@
 			};
 
 			/**
-			 * @type { $api.Events["listeners"] }
+			 * @type { $api.Events<{ [name: string]: any }>["listeners"] }
 			 */
 			var listeners = {
 				add: function(name,handler) {
