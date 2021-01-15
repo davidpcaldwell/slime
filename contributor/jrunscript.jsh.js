@@ -67,7 +67,10 @@
 			//	TODO	redundant; now tested per-engine in contributor/suite.jsh.js
 			pathname: SRC.getRelativePath("loader/jrunscript/api.html")
 		}));
-		suite.add("internal/jrunscript/java", new jsh.unit.html.Part({
+		suite.add("internal/jrunscript/java/fifty", FiftyPart({
+			file: SRC.getFile("loader/jrunscript/java.fifty.ts")
+		}));
+		suite.add("internal/jrunscript/java/jsapi", new jsh.unit.html.Part({
 			//	Test cases of loader implementation
 			//	TODO	redundant; now tested per-engine in contributor/suite.jsh.js
 			pathname: SRC.getRelativePath("loader/jrunscript/java.api.html")

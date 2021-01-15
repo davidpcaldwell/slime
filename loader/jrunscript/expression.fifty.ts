@@ -1,4 +1,7 @@
 namespace slime.jrunscript.runtime {
+	export interface JavaClass {
+	}
+
 	export interface Resource extends slime.Resource {
 		read: slime.Resource["read"] & {
 			binary: () => slime.jrunscript.runtime.io.InputStream
@@ -117,7 +120,7 @@ namespace slime.jrunscript.runtime {
 		}
 
 		io: slime.jrunscript.runtime.io.Exports
-		java: any
+		java: slime.jrunscript.runtime.java.Exports
 		classpath: any
 	}
 }
@@ -266,6 +269,10 @@ namespace Packages {
 	export namespace java {
 		export namespace lang {
 			export interface String {
+			}
+
+			export interface Class {
+				isInstance(object: any): boolean
 			}
 		}
 		export namespace io {

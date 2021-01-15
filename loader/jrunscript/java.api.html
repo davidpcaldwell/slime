@@ -58,48 +58,6 @@ END LICENSE
 		<h1>Exports</h1>
 		<div jsapi:id="exports">
 			<ul>
-				<li class="function" jsapi:id="getClass">
-					<div class="name">getClass</div>
-					<span>
-						Returns a Java class given its name. Note that the name expected is the VM-level class name, not the
-						source-level class name. So for inner class <code>Baz</code> of class <code>foo.Bar</code>, the argument given
-						should be <code>"foo.Bar$Baz"</code>.
-					</span>
-					<div class="arguments">
-						<div class="label">Arguments</div>
-						<ol>
-							<li class="value">
-								<span class="type">string</span>
-								<span>The name of a Java class.</span>
-							</li>
-						</ol>
-					</div>
-					<div class="returns">
-						<div class="label">Returns</div>
-						<span class="type">JavaClass</span>
-						<span>
-							The JavaClass representing the Java class with the given name, or <code>null</code> if no such class
-							exists.
-						</span>
-					</div>
-					<script type="application/x.jsapi#tests">
-						var ObjectType = api.java.getClass("java.lang.Object");
-						verify(ObjectType).is.type("function");
-						var Object = api.java.toNativeClass(ObjectType);
-						verify(Object).is.type("object");
-						verify(Object).evaluate(function() { return String(this.getName()); }).is("java.lang.Object");
-						verify(Object).evaluate(function() { return String(this.getSimpleName()); }).is("Object");
-
-
-						var Foo = api.java.getClass("foo.bar.Baz");
-						verify(Foo).is(null);
-
-						verify(api).java.getClass("inonit.script.runtime.io.Streams").is.type("function");
-						verify(api).java.getClass("inonit.script.runtime.io.Streams$Null").is.type("function");
-						verify(api).java.evaluate(function() { return String(this.getClass("inonit.script.runtime.io.Streams$Null")); }).is("[JavaClass inonit.script.runtime.io.Streams$Null]");
-						verify(api).java.getClass("inonit.script.runtime.io.Streams.Null").is.type("null");
-					</script>
-				</li>
 				<li class="function" jsapi:id="isJavaObject">
 					<div class="name">isJavaObject</div>
 					<span>A method that can be used to determine whether a given value is a native Java host object.</span>
