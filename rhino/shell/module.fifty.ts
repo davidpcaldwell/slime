@@ -60,7 +60,6 @@ namespace slime.jrunscript.shell {
 				var subject: Exports = jsh.shell;
 
 				var command = jsh.shell.PATH.getCommand("true");
-				jsh.shell.console(command);
 
 				var log = (function() {
 					var events = [];
@@ -89,14 +88,43 @@ namespace slime.jrunscript.shell {
 	//@ts-ignore
 	)(fifty);
 
-
 	export interface Exports {
 		/**
 		 * An object representing the environment provided via the {@link Context}, or representing the system environment if
 		 * no environment was provided via the `Context`.
 		 */
 		environment: slime.jrunscript.host.Environment
+	}
 
+	(
+		function(
+			fifty: slime.fifty.test.kit
+		) {
+			fifty.tests.environment = function() {
+				var fixtures: Packages.inonit.system.test.Fixtures = fifty.$loader.file("../../rhino/system/test/system.fixtures.ts");
+				var o = fixtures.OperatingSystem.Environment.create({
+					values: { foo: "bazz" },
+					caseSensitive: true
+				});
+				fifty.verify(String(o.getValue("foo"))).is("bazz");
+
+				var module: Exports = fifty.$loader.module("module.js", {
+					_environment: o,
+					api: {
+						java: jsh.java,
+						io: jsh.io,
+						file: jsh.file,
+						js: jsh.js
+					}
+				});
+				fifty.verify(module).environment.evaluate.property("foo").is("bazz");
+				fifty.verify(module).environment.evaluate.property("xxx").is(void(0));
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export interface Exports {
 		//	fires started, exception, stdout, stderr
 		embed: (p: {
 			method: Function
@@ -138,12 +166,13 @@ namespace slime.jrunscript.shell {
 		kotlin: any
 	}
 
-	export type Loader = slime.Loader.Product<Context,Exports>
+	export type Loader = slime.Loader.Product<Context,Exports>;
 
 	(
 		function(fifty: slime.fifty.test.kit) {
 			fifty.tests.suite = function() {
-				fifty.verify(1).is(1);
+				run(fifty.tests.listeners);
+				run(fifty.tests.environment);
 			}
 		}
 	//@ts-ignore
