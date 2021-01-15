@@ -82,7 +82,7 @@
 			}
 		}));
 		suite.add("internal/jrunscript/system", FiftyPart({
-			file: SRC.getFile("rhino/system/test/Packages.inonit.system.OperatingSystem.Environment.fifty.ts")
+			file: SRC.getFile("rhino/system/test/Packages.inonit.system.fifty.ts")
 		}));
 
 		suite.add("internal/other", new jsh.unit.html.Part({

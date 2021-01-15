@@ -1,25 +1,51 @@
+namespace Packages {
+	export namespace inonit {
+		export interface system {
+			OperatingSystem: any
+			Command: {
+				Configuration: any
+				Context: any
+			}
+			Subprocess: {
+				Listener: any
+			}
+		}
+	}
+
+	export namespace inonit.system {
+		export namespace test {
+			export interface Fixtures {
+				OperatingSystem: {
+					Environment: {
+						create: (p: { values: object, caseSensitive: boolean }) => Packages.inonit.system.OperatingSystem.Environment
+					}
+				}
+			}
+		}
+
+		export namespace OperatingSystem {
+			export interface Environment {
+				isNameCaseSensitive(): {
+					booleanValue(): boolean
+				}
+				getMap(): Packages.java.util.Map
+				getValue(name: string): string
+			}
+		}
+	}
+}
+
 (
 	function(
 		Packages: any,
 		JavaAdapter: any,
 		fifty: slime.fifty.test.kit
 	) {
-		fifty.tests.suite = function() {
-			var toMap = function(values) {
-				return $api.Function.result(
-					values,
-					$api.Function.Object.entries,
-					function(entries) {
-						return entries.reduce(function(rv,entry) {
-							rv.put(entry[0],entry[1]);
-							return rv;
-						}, new Packages.java.util.HashMap())
-					}
-				)
-			};
+		const fixtures: Packages.inonit.system.test.Fixtures = fifty.$loader.file("system.fixtures.ts");
 
+		fifty.tests.suite = function() {
 			var CaseSensitive = function(values) {
-				var map = toMap(values);
+				var map = jsh.java.Map({ object: values });
 				return {
 					getMap: function() {
 						return map;
@@ -31,7 +57,7 @@
 			};
 
 			var CaseInsensitive = function(values) {
-				var map = toMap(values);
+				var map = jsh.java.Map({ object: values });
 				return {
 					getMap: function() {
 						return map;
@@ -66,28 +92,11 @@
 			fifty.verify(detectedAsCaseSensitive(CaseInsensitive({ foo: "bar" }))).booleanValue().is(false);
 			fifty.verify(detectedAsCaseSensitive(CaseSensitive({ FOO: "BAR" }))).is(null);
 
-			var create = function(p) {
-				return jsh.java.invoke({
-					method: {
-						class: Packages.inonit.system.OperatingSystem.Environment,
-						name: "create",
-						parameterTypes: [
-							Packages.java.util.Map,
-							Packages.java.lang.Boolean.TYPE
-						]
-					},
-					arguments: [
-						toMap(p.values),
-						p.caseSensitive
-					]
-				})
-			};
-
 			var toJsString = function(v) {
 				return (v === null) ? null : String(v);
 			}
 
-			var caseSensitive = create({
+			var caseSensitive = fixtures.OperatingSystem.Environment.create({
 				values: { foo: "bar" },
 				caseSensitive: true
 			});
@@ -95,7 +104,7 @@
 			fifty.verify( toJsString(caseSensitive.getValue("foo")) ).is("bar");
 			fifty.verify( toJsString(caseSensitive.getValue("FOO")) ).is(null);
 
-			var caseInsensitive = create({
+			var caseInsensitive = fixtures.OperatingSystem.Environment.create({
 				values: { foo: "bar" },
 				caseSensitive: false
 			});

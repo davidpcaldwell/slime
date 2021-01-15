@@ -8,6 +8,25 @@ namespace slime.jrunscript.host {
 		readonly [x: string]: string
 	}
 
+	(
+		function(
+			fifty: slime.fifty.test.kit
+		) {
+			fifty.tests.exports = {};
+		}
+	//@ts-ignore
+	)(fifty);
+
+	namespace internal.test {
+		export const subject: Exports = (function(fifty: slime.fifty.test.kit) {
+			return fifty.$loader.module("module.js", {
+				$slime: fifty.jsh.$slime,
+				globals: false
+			});
+		//@ts-ignore
+		})(fifty)
+	}
+
 	export interface Exports {
 		Environment: (java: Packages.inonit.system.OperatingSystem.Environment) => Environment
 	}
@@ -17,11 +36,8 @@ namespace slime.jrunscript.host {
 			Packages: any,
 			fifty: slime.fifty.test.kit
 		) {
-			fifty.tests.suite = function() {
-				var subject: Exports = fifty.$loader.module("module.js", {
-					$slime: fifty.jsh.$slime,
-					globals: false
-				});
+			fifty.tests.exports.Environment = function() {
+				const { subject } = internal.test;
 
 				var _Environment = function(o: object, caseSensitive: boolean) {
 					return subject.invoke({
@@ -66,14 +82,51 @@ namespace slime.jrunscript.host {
 	//@ts-ignore
 	)(Packages,fifty);
 
-
 	export interface Exports {
 		getClass: Function
 		isJavaObject: any
 		isJavaType: any
 		toNativeClass: any
 		Array: any
-		Map: any
+	}
+
+	export interface Exports {
+		/**
+		 * Creates a Java `java.util.Map` object from the given JavaScript object by putting all its enumerable properties
+		 * into the `Map`.
+		 *
+		 * @param p
+		 */
+		Map(p: { object: object }): Packages.java.util.Map
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.kit
+		) {
+			fifty.tests.exports.Map = function() {
+				const { subject } = internal.test;
+
+				var _map: Packages.java.util.Map = subject.Map({ object: { foo: "bar" } } );
+				fifty.verify(String(_map.get("foo"))).is("bar");
+				fifty.verify(String(_map.get("baz"))).is("null");
+
+				var object = {
+					foo: "bar"
+				};
+				Object.defineProperty(object, "baz", {
+					value: "bizzy"
+				});
+				var _object = subject.Map({ object: object });
+				fifty.verify(String(_object.get("foo"))).is("bar");
+				fifty.verify(object).evaluate.property("baz").is("bizzy");
+				fifty.verify(String(_object.get("baz"))).is("null");
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export interface Exports {
 		invoke: any
 		Properties: any
 		fail: any
@@ -83,4 +136,17 @@ namespace slime.jrunscript.host {
 		Thread: any
 		addShutdownHook: any
 	}
+
+	(
+		function(
+			fifty: slime.fifty.test.kit
+		) {
+			fifty.tests.suite = function() {
+				run(fifty.tests.exports.Environment);
+				run(fifty.tests.exports.Map);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
 }

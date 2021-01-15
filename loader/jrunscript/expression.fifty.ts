@@ -167,6 +167,7 @@ interface Packages {
 			Thread: any
 			Runnable: any
 			ClassLoader: any
+			Boolean: any
 		}
 		io: {
 			ByteArrayInputStream: any
@@ -210,6 +211,7 @@ interface Packages {
 			Properties: any
 			logging: any
 			Base64: any
+			Map: any
 		}
 		awt: {
 			Desktop: any
@@ -249,16 +251,7 @@ interface Packages {
 				Shell: any
 			}
 		}
-		system: {
-			OperatingSystem: any
-			Command: {
-				Configuration: any
-				Context: any
-			}
-			Subprocess: {
-				Listener: any
-			}
-		}
+		system: Packages.inonit.system
 	}
 }
 
@@ -313,18 +306,6 @@ namespace Packages {
 			export interface Map {
 				keySet(): Set
 				get(key: any): any
-			}
-		}
-	}
-
-	export namespace inonit.system {
-		export namespace OperatingSystem {
-			export interface Environment {
-				isNameCaseSensitive(): {
-					booleanValue(): boolean
-				}
-				getMap(): Packages.java.util.Map
-				getValue(name: string): string
 			}
 		}
 	}
