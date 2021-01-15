@@ -47,8 +47,50 @@ namespace slime.jrunscript.shell {
 	}
 
 	export interface Exports {
-		listeners: $api.Events<any>["listeners"]
+		listeners: $api.Events<{
+			"run.start": any
+		}>["listeners"]
+	}
 
+	(
+		function(
+			fifty: slime.fifty.test.kit
+		) {
+			fifty.tests.listeners = function() {
+				var subject: Exports = jsh.shell;
+
+				var command = jsh.shell.PATH.getCommand("true");
+				jsh.shell.console(command);
+
+				var log = (function() {
+					var events = [];
+					var listener: $api.Event.Handler<any> = function(e) {
+						events.push(e);
+					};
+					return {
+						listener: listener,
+						captured: function() {
+							return events;
+						}
+					}
+				})();
+
+				subject.listeners.add("run.start", log.listener);
+
+				fifty.verify(log).captured().length.is(0);
+
+				subject.run({
+					command: command
+				});
+
+				fifty.verify(log).captured().length.is(1);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+
+	export interface Exports {
 		/**
 		 * An object representing the environment provided via the {@link Context}, or representing the system environment if
 		 * no environment was provided via the `Context`.
