@@ -30,10 +30,10 @@ interface $api {
 	Events: {
 		(p?: {
 			source?: any
-			parent?: $api.Events
-			getParent?: () => $api.Events
+			parent?: $api.Events<any>
+			getParent?: () => $api.Events<any>
 			on?: { [x: string]: any }
-		}): $api.Events
+		}): $api.Events<any>
 
 		//	TODO	could probably use parameterized types to improve accuracy
 		Function: <P,R>(f: (p: P, events: any) => R, defaultListeners?: object) => (argument: P, receiver?: $api.Events.Function.Receiver) => R,
@@ -111,12 +111,12 @@ declare namespace $api {
 		type Handler<T> = (e: Event<T>) => void
 	}
 
-	interface Events {
+	interface Events<D> {
 		listeners: {
-			add: (type: string, handler: Event.Handler<any>) => void
-			remove: (type: string, handler: Event.Handler<any>) => void
+			add: <K extends keyof D>(type: K, handler: Event.Handler<D[K]>) => void
+			remove: <K extends keyof D>(type: K, handler: Event.Handler<D[K]>) => void
 		},
-		fire: (type: string, detail?: any) => void
+		fire: <K extends keyof D>(type: K, detail?: D[K]) => void
 	}
 
 	namespace Events {
@@ -126,7 +126,7 @@ declare namespace $api {
 	}
 
 	namespace Events.Function {
-		type Receiver = { [x: string]: (e: Event<any>) => void } | $api.Events
+		type Receiver = { [x: string]: (e: Event<any>) => void } | $api.Events<any>
 	}
 
 	namespace Error {

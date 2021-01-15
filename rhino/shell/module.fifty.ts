@@ -47,9 +47,13 @@ namespace slime.jrunscript.shell {
 	}
 
 	export interface Exports {
-		listeners: $api.Events["listeners"]
+		listeners: $api.Events<any>["listeners"]
 
-		environment: any
+		/**
+		 * An object representing the environment provided via the {@link Context}, or representing the system environment if
+		 * no environment was provided via the `Context`.
+		 */
+		environment: slime.jrunscript.host.Environment
 
 		//	fires started, exception, stdout, stderr
 		embed: (p: {

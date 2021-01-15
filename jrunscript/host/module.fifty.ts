@@ -4,8 +4,12 @@ namespace slime.jrunscript.host {
 		globals: any
 	}
 
+	export interface Environment {
+		readonly [x: string]: string
+	}
+
 	export interface Exports {
-		Environment: (java: Packages.inonit.system.OperatingSystem.Environment) => { readonly [x: string]: string }
+		Environment: (java: Packages.inonit.system.OperatingSystem.Environment) => Environment
 	}
 
 	(

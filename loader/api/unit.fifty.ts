@@ -39,7 +39,7 @@ namespace slime.definition.unit {
 				/**
 				 * A property that allows listeners to be added to / removed from the underlying event emitter.
 				 */
-				listeners: $api.Events["listeners"]
+				listeners: $api.Events<any>["listeners"]
 
 				/**
 				 * Fires the decoded event to this decoder's listeners.
@@ -89,17 +89,17 @@ namespace slime.definition.unit.internal {
 	//@ts-ignore
 	})(fifty);
 
-	export type EventsScope = (o: { events: $api.Events }) => slime.definition.unit.Scope
+	export type EventsScope = (o: { events: $api.Events<any> }) => slime.definition.unit.Scope
 
 	export interface Part {
 		id: any
 		name: any
-		listeners: $api.Events["listeners"]
+		listeners: $api.Events<any>["listeners"]
 	}
 
 	export namespace Part {
 		export interface Properties {
-			events: $api.Events
+			events: $api.Events<any>
 			scope: any
 			create: any
 			find: any
@@ -116,12 +116,12 @@ namespace slime.definition.unit.internal {
 
 		export interface Context {
 			id: any
-			events: $api.Events
+			events: $api.Events<any>
 		}
 	}
 
 	export interface Scenario extends Part {
-		fire: $api.Events["fire"]
+		fire: $api.Events<any>["fire"]
 		run: any
 		promise: any
 	}
@@ -231,7 +231,7 @@ namespace slime.definition.unit {
 	}
 
 	export interface View {
-		listen: (scenario: $api.Events) => void
+		listen: (scenario: $api.Events<any>) => void
 		on: Event.Handler
 	}
 
