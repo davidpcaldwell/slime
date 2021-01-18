@@ -168,7 +168,7 @@
 				})();
 
 				var gradle = (function() {
-					var URL = "https://services.gradle.org/distributions/gradle-6.0.1-bin.zip";
+					var URL = "https://services.gradle.org/distributions/gradle-6.8-bin.zip";
 
 					return new function() {
 						this.install = function(p,events) {
@@ -177,7 +177,7 @@
 								format: jsh.tools.install.format.zip,
 								to: jsh.shell.jsh.lib.getRelativePath("gradle"),
 								getDestinationPath: function(file) {
-									return "gradle-6.0.1";
+									return "gradle-6.8";
 								},
 								replace: true
 							}, events);
