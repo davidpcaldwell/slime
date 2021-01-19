@@ -445,14 +445,18 @@
 							}
 							var branches = repository.branch({ remote: true, all: true });
 							var first = true;
-							branches.forEach(function(branch) {
-								var compared = jsh.wf.git.compareTo(branch.name)(repository);
-								if (compared.behind.length) {
-									if (first) {
-										jsh.shell.console("");
-										first = false;
+							branches.forEach(function findUnmergedBranches(branch) {
+								if (branch.name === null) {
+									return;
+								} else {
+									var compared = jsh.wf.git.compareTo(branch.name)(repository);
+									if (compared.behind.length) {
+										if (first) {
+											jsh.shell.console("");
+											first = false;
+										}
+										jsh.shell.console("Unmerged branch: " + branch.name);
 									}
-									jsh.shell.console("Unmerged branch: " + branch.name);
 								}
 							});
 							if (!first) {

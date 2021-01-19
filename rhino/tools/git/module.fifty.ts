@@ -104,7 +104,55 @@ namespace slime.jrunscript.git {
 	//@ts-ignore
 	)(fifty)
 
-	namespace Repository {
+	export namespace Repository {
+		(
+			function(
+				fifty: slime.fifty.test.kit
+			) {
+				fifty.tests.types.Repository = {};
+				fifty.tests.types.Repository.Local = {};
+			}
+		//@ts-ignore
+		)(fifty);
+
+		export interface Local {
+			log: (p?: {
+				author?: string
+				all?: boolean
+				revisionRange?: string, /* deprecated name */ range?: string
+			}) => Commit[]
+		}
+
+		export interface Local {
+			config: {
+				(p: {
+					set: {
+						name: string
+						value: string
+					}
+				}): void
+
+				(p: {
+					list: {
+						fileOption?: "system" | "global" | "local" | "worktree" | { file: string }
+						showOrigin?: boolean
+						//	TODO	--show-scope not supported on macOS Big Sur
+						//	--null might make sense as an implementation detail, should investigate
+						//	--name-only probably does not ever make sense; would make value optional if it did
+					}
+				}): {
+					/**
+					 * Present only if `showOrigin` was `true`.
+					 */
+					origin?: string
+					name: string
+					value: string
+				}[]
+
+				(p: { arguments: string[] }): { [x: string]: string }
+			}
+		}
+
 		(
 			function(
 				fifty: slime.fifty.test.kit

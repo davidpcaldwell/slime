@@ -147,33 +147,6 @@ namespace slime.jrunscript.git {
 				environment?: any
 			}) => void,
 			mergeBase: (p: { commits: string[] }) => Commit
-			config: {
-				(p: {
-					set: {
-						name: string
-						value: string
-					}
-				}): void
-
-				(p: {
-					list: {
-						fileOption?: "system" | "global" | "local" | "worktree" | { file: string }
-						showOrigin?: boolean
-						//	TODO	--show-scope not supported on macOS Big Sur
-						//	--null might make sense as an implementation detail, should investigate
-						//	--name-only probably does not ever make sense; would make value optional if it did
-					}
-				}): {
-					/**
-					 * Present only if `showOrigin` was `true`.
-					 */
-					origin?: string
-					name: string
-					value: string
-				}[]
-
-				(p: { arguments: string[] }): { [x: string]: string }
-			}
 			submodule: {
 				/**
 				 * Returns a list of submodules for this repository.
@@ -197,12 +170,6 @@ namespace slime.jrunscript.git {
 					path: string
 				}) => void
 			}
-
-			log: (p?: {
-				author?: string
-				all?: boolean
-				revisionRange?: string, /* deprecated name */ range?: string
-			}) => Commit[]
 
 			execute: (p: {
 				command: string
