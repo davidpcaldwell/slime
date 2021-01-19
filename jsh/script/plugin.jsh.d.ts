@@ -2,7 +2,6 @@ namespace jsh.script {
 	interface Invocation {
 		options: { [x: string]: any }
 		arguments: string[]
-		[x: string]: any
 	}
 
 	interface Exports {

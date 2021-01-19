@@ -64,15 +64,6 @@ END LICENSE
 					<h3>Testing</h3>
 					<ul>
 						<li>
-							<code>tools/documentation.jsh.js -base <i>directory</i> [-index <i>path</i>] [-host <i>hostname</i>]</code>:
-							Serves the documentation for project, in a custom Chrome browser if Chrome is found.
-							<ul>
-								<li><code>-base</code>: top-level directory of the project.</li>
-								<li><code>-index</code>: relative path to the index page; defaults to <code>README.html</code>.</li>
-								<li><code>-host</code>: hostname to use when serving pages.</li>
-							</ul>
-						</li>
-						<li>
 							Running individual definitions (JSAPI pages or <a href="loader/api/test/fifty/README.html">Fifty</a> definitions)
 							<ul>
 								<li><code>tools/fifty.bash test.jsh <i>file</i>.fifty.ts [--part <i>part</i>]</code></li>
@@ -98,6 +89,20 @@ END LICENSE
 							<code>loader/api/tools/update.jsh.js [-base <i>directory</i>]</code>: Inlines or updates the definition files
 							for a library that does not itself contain SLIME (and thus cannot link to the SLIME definition files in
 							<code>loader/api</code>).
+						</li>
+					</ul>
+				</div>
+				<div>
+					<h3>Documentation</h3>
+					<ul>
+						<li>
+							<code>tools/documentation.jsh.js -base <i>directory</i> [-index <i>path</i>] [-host <i>hostname</i>]</code>:
+							Serves the documentation for project, in a dedicated Chrome browser if Chrome is found.
+							<ul>
+								<li><code>-base</code>: top-level directory of the project.</li>
+								<li><code>-host</code>: hostname to use when serving pages.</li>
+								<li><code>-index</code>: relative path to the index page; defaults to <code>README.html</code>.</li>
+							</ul>
 						</li>
 					</ul>
 				</div>
