@@ -1118,7 +1118,6 @@
 								$api.deprecate(function() {
 									rv.push(p.range);
 								})();
-								//	TODO	rename to revisionRange? see https://git-scm.com/docs/git-log
 								rv.push(p.range);
 							} else if (typeof(p.revisionRange) == "string") {
 								rv.push(p.revisionRange);
