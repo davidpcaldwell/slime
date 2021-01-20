@@ -96,12 +96,19 @@ END LICENSE
 					<h3>Documentation</h3>
 					<ul>
 						<li>
-							<code>tools/documentation.jsh.js -base <i>directory</i> [-index <i>path</i>] [-host <i>hostname</i>]</code>:
-							Serves the documentation for project, in a dedicated Chrome browser if Chrome is found.
+							<code>tools/documentation.jsh.js</code>:
+							Serves the documentation for project, in a dedicated Chrome browser if Chrome is found. Typedoc
+							documentation will be generated if necessary and served for both the top-level repository and
+							subrepositories at <code>local/doc/typedoc</code> (it will be re-generated for each request if
+							<code>--watch</code> is used).
 							<ul>
-								<li><code>-base</code>: top-level directory of the project.</li>
-								<li><code>-host</code>: hostname to use when serving pages.</li>
-								<li><code>-index</code>: relative path to the index page; defaults to <code>README.html</code>.</li>
+								<li><code>--base <i>directory</i></code>: top-level directory of the project.</li>
+								<li><code>--host <i>hostname</i></code>: hostname to use when serving pages.</li>
+								<li><code>--index <i>path</i></code>: relative path to the index page; defaults to <code>README.html</code>.</li>
+								<li><code>--chrome:id <i>name</i></code>: the private Chrome directory to use (under <code>local/chrome</code>); defaults to <code>documentation</code>.</li>
+								<li><code>--watch</code>: if present, causes documentation to be re-generated for every HTML page
+									requested; helpful when authoring docunmentation.
+								</li>
 							</ul>
 						</li>
 					</ul>

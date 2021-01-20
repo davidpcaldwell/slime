@@ -35,12 +35,13 @@
 										var match = typedocPattern.exec(request.path);
 										if (match) {
 											var src = (match[1]) ? base.getSubdirectory(match[1]) : base;
-											if (p.options.watch) {
+											var output = src.getRelativePath("local/doc/typedoc");
+											if (!output.directory || p.options.watch) {
 												jsh.shell.jsh({
 													shell: jsh.shell.jsh.src,
 													script: jsh.shell.jsh.src.getFile("tools/typedoc.jsh.js"),
 													arguments: [
-														"--output", src.getRelativePath("local/doc/typedoc"),
+														"--output", output,
 														"--input", src
 													]
 												});
