@@ -67,7 +67,11 @@ END LICENSE
 							Running individual definitions (JSAPI pages or <a href="loader/api/test/fifty/README.html">Fifty</a> definitions)
 							<ul>
 								<li><code>tools/fifty.bash test.jsh <i>file</i>.fifty.ts [--part <i>part</i>]</code></li>
-								<li><code>tools/fifty.bash test.browser [--interactive] [--chrome:data <i>pathname</i>] [--chrome:debug:vscode] <i>file</i>.fifty.ts</i> [--part <i>part</i>]</code></code></li>
+								<li>
+									<code>tools/fifty.bash test.browser [--interactive] [--chrome:data <i>pathname</i>] [--chrome:debug:vscode] <i>file</i>.fifty.ts</i> [--part <i>part</i>]</code>:
+									Invokes a <a href="loader/api/test/fifty/test-browser.jsh.js">script</a> to run Fifty browser tests;
+									see the script for command-line argument definitions.
+								</li>
 								<li><code>jsh</code>: <code>./jsh.bash jsh/test/suite.jsh.js -definition <i>definition</i> [-part <i>part</i>]</code></li>
 								<li>
 									Browser definition page:

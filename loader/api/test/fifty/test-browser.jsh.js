@@ -6,10 +6,18 @@
 	 */
 	function(jsh) {
 		$api.Function.pipe(
+			//	Keeps the browser open after running the tests so that they can be re-run by refreshing the page
 			jsh.wf.cli.$f.option.boolean({ longname: "interactive" }),
+
+			//	Selects a location to use for Google Chrome configuration; if unspecified, a temporary directory will be used
 			jsh.wf.cli.$f.option.pathname({ longname: "chrome:data" }),
+
+			//	Configures the browser to allow remote debugging connections on the SLIME Visual Studio Code debugger port
 			jsh.wf.cli.$f.option.boolean({ longname: "chrome:debug:vscode" }),
+
+			//	Selects a part of the test suite to run; default is to run the entire suite
 			jsh.wf.cli.$f.option.string({ longname: "part" }),
+
 			function(p) {
 				var page = jsh.script.file.parent.getFile("test-browser.html");
 				var client = jsh.shell.jsh.src.getFile("loader/browser/client.js");
