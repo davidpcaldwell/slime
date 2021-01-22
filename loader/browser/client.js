@@ -14,7 +14,7 @@
 (
 	/**
 	 * @param { slime.browser.Settings } $context - provided by setting `inonit.loader` before loading this script
-	 * @param { slime.browser.Context } window
+	 * @param { slime.browser.Context & { inonit: slime.browser.Runtime } } window
 	 */
 	function($context,window) {
 		(
@@ -37,7 +37,7 @@
 			}
 		)();
 
-		/** @type { slime.browser.Exports["loader"] } */
+		/** @type { slime.browser.Exports } */
 		var $exports = (function() {
 			if (!window.inonit) window.inonit = {
 				loader: void(0)
@@ -130,7 +130,7 @@
 		//	this one
 		(
 			/**
-			 * @this { slime.browser.Exports["loader"] }
+			 * @this { slime.browser.Runtime["loader"] }
 			 */
 			function() {
 

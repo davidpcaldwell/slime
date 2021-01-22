@@ -2,7 +2,7 @@
 (
 	/**
 	 *
-	 * @param { slime.browser.Exports } inonit
+	 * @param { slime.browser.Runtime } inonit
 	 */
 	function(inonit) {
 		var $api = inonit.loader.$api;

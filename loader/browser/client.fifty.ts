@@ -1,3 +1,10 @@
+/**
+ * The SLIME browser runtime can be loaded by executing the `loader/browser/client.js` script. The runtime can be configured by
+ * creating a `window.inonit.loader` of type {@link Settings} before loading the runtime. The `window` object itself is presented
+ * to the script as a {@link Context} object, and can be further configured by manipulating that object's writable properties.
+ * Based on the configuration, a `window.inonit` object of type
+ * {@link Runtime} will be created and be available to the application.
+ */
 namespace slime.browser {
 	/**
 	 * The `inonit.loader` module is configured specially, given that it bootstraps the module system. To configure the module, one
@@ -13,15 +20,16 @@ namespace slime.browser {
 		XMLHttpRequest?: typeof XMLHttpRequest
 	}
 
+	/**
+	 * The state of the `window` object prior to loading the `loader/browser/client.js` script.
+	 */
 	export interface Context {
-		location: Location
-
+		readonly location: Location
 		XMLHttpRequest: typeof XMLHttpRequest
-		inonit: Exports
 		CoffeeScript: any
 	}
 
-	export interface Runtime {
+	export interface Exports {
 		//	top-level loader methods that operate by URL
 		run: any
 		file: any
@@ -42,8 +50,8 @@ namespace slime.browser {
 		script: any
 	}
 
-	export interface Exports {
-		loader: Runtime
+	export interface Runtime {
+		loader: Exports
 	}
 }
 
