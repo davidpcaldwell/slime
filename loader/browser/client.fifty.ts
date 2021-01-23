@@ -4,6 +4,18 @@
  * to the script as a {@link Context} object, and can be further configured by manipulating that object's writable properties.
  * Based on the configuration, a `window.inonit` object of type
  * {@link Runtime} will be created and be available to the application.
+ *
+ * All additional code loaded through the runtime will be provided with a {@link $api} object in its scope as `$api`.
+ *
+ * Several additional APIs can be loaded from the `Runtime`:
+ *
+ * Path           | Description
+ * -------------- | ----------------------------------
+ * `js/web/`      | {@link slime.web.Exports}
+ * `js/time/`     | {@link slime.time.Exports}
+ * `js/document/` | XML and HTML documents
+ * `js/promise/`  | Asynchronous programming using A+-like promises
+ * `js/object/`   | {@link slime.runtime.old.Exports}
  */
 namespace slime.browser {
 	/**
