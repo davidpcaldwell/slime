@@ -268,9 +268,13 @@
 			arguments: ["-view","stdio"]
 		})));
 
-		suite.add("jsh/jsh.script", new jsh.unit.html.Part({
+		suite.add("jsh/jsh.script/jsapi", new jsh.unit.html.Part({
 			pathname: SRC.getRelativePath("jsh/script/plugin.jsh.api.html"),
 			environment: environment
+		}));
+
+		suite.add("jsh/jsh.script/fifty", FiftyPart({
+			file: SRC.getFile("jsh/script/plugin.jsh.fifty.ts")
 		}));
 
 		suite.add("jsh/jsh.tools", new jsh.unit.html.Part({

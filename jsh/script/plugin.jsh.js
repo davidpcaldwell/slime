@@ -148,6 +148,12 @@
 					arguments: jsh.java.Array.adapt($slime.getInvocation().getArguments()).map(function(s) { return String(s); }),
 				}, source));
 
+				jsh.script.cli = {
+					run: function(commands, args) {
+						return 0;
+					}
+				};
+
 				jsh.script.Application.run = function(descriptor,args) {
 					try {
 						return new jsh.script.Application(descriptor).run.apply(null, (args) ? args : jsh.script.arguments);
