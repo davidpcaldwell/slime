@@ -4,17 +4,43 @@ namespace jsh.script {
 		arguments: string[]
 	}
 
-	interface Command<T> {
-		(invocation: Invocation<T>): number
+	interface Processor<T> {
+		(invocation: Invocation<T>): Invocation<T>
 	}
 
-	interface Commands {
+	export interface Command<T> {
+		options: Processor<T>
+		command: (invocation: Invocation<T>) => number
+	}
+
+	export interface Commands {
 		[x: string]: Commands | Command<any>
 	}
 
+	interface Application {
+		run: (args: string[]) => number
+	}
+
+	const subject: Exports = (function(fifty) {
+		const jsh = fifty.global.jsh;
+		const subject = jsh.script;
+		return subject;
+	//@ts-ignore
+	})(fifty);
+
 	export interface Exports {
 		cli: {
-			run: (commands: Commands, arguments: string[]) => number
+			option: {
+				string: (c: { longname: string }) => Processor<any>
+				boolean: (c: { longname: string }) => Processor<any>
+				number: (c: { longname: string }) => Processor<any>
+				pathname: (c: { longname: string }) => Processor<any>
+			},
+
+			Application: (p: {
+				options: <G>(invocation: Invocation<G>) => Invocation<G>
+				commands: Commands
+			}) => Application
 		}
 	}
 
@@ -23,10 +49,24 @@ namespace jsh.script {
 			fifty: slime.fifty.test.kit
 		) {
 			fifty.tests.suite = function() {
-				const jsh = fifty.global.jsh;
-				const subject = jsh.script;
-				jsh.shell.console("subject keys = " + Object.keys(jsh.script));
-				fifty.verify(subject).cli.run({}, []).is(0);
+				var was: Invocation<any>;
+				var invocationWas = function(invocation: Invocation<any>) {
+					was = invocation;
+				}
+				fifty.verify(subject).cli.Application({
+					options: subject.cli.option.string({ longname: "global" }),
+					commands: {
+						universe: {
+							options: subject.cli.option.string({ longname: "command" }),
+							command: function(invocation) {
+								invocationWas(invocation);
+								return 42;
+							}
+						}
+					}
+				}).run(["--global", "foo", "universe", "--command", "bar"]).is(42);
+				fifty.verify(was).options.evaluate.property("global").is("foo");
+				fifty.verify(was).options.evaluate.property("command").is("bar");
 			}
 		}
 	//@ts-ignore

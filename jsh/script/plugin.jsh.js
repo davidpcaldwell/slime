@@ -149,8 +149,101 @@
 				}, source));
 
 				jsh.script.cli = {
-					run: function(commands, args) {
-						return 0;
+					option: {
+						string: function(o) {
+							var rv = function(p) {
+								var args = [];
+								for (var i=0; i<p.arguments.length; i++) {
+									if (o.longname && p.arguments[i] == "--" + o.longname) {
+										p.options[o.longname] = p.arguments[++i];
+									} else {
+										args.push(p.arguments[i]);
+									}
+								}
+								p.arguments = args;
+							}
+							return $api.Function.impure.revise(rv);
+						},
+						boolean: function(o) {
+							var rv = function(p) {
+								var args = [];
+								for (var i=0; i<p.arguments.length; i++) {
+									if (o.longname && p.arguments[i] == "--" + o.longname) {
+										p.options[o.longname] = true;
+									} else {
+										args.push(p.arguments[i]);
+									}
+								}
+								p.arguments = args;
+							}
+							return $api.Function.impure.revise(rv);
+						},
+						number: function(o) {
+							var rv = function(p) {
+								var args = [];
+								for (var i=0; i<p.arguments.length; i++) {
+									if (o.longname && p.arguments[i] == "--" + o.longname) {
+										p.options[o.longname] = Number(p.arguments[++i]);
+									} else {
+										args.push(p.arguments[i]);
+									}
+								}
+								p.arguments = args;
+							}
+							return $api.Function.impure.revise(rv);
+						},
+						pathname: function(o) {
+							var rv = function(p) {
+								var args = [];
+								for (var i=0; i<p.arguments.length; i++) {
+									if (o.longname && p.arguments[i] == "--" + o.longname) {
+										p.options[o.longname] = jsh.script.getopts.parser.Pathname(p.arguments[++i]);
+									} else {
+										args.push(p.arguments[i]);
+									}
+								}
+								p.arguments = args;
+							}
+							return $api.Function.impure.revise(rv);
+						}
+					},
+					Application: function(p) {
+						return {
+							run: function(args) {
+								var global = p.options({
+									options: {},
+									arguments: args
+								});
+								var command = global.arguments.shift();
+								var referenced = (function() {
+									/** @type { jsh.script.Commands | jsh.script.Command } */
+									var rv = p.commands;
+									var tokens = command.split(".");
+									for (var i=0; i<tokens.length; i++) {
+										rv = rv[tokens[i]];
+										if (!rv) return rv;
+									}
+									return rv;
+								})();
+
+								/** @type { (v: any) => v is jsh.script.Command } */
+								var isCommand = function(v) {
+									return v.options && v.command;
+								};
+
+								if (!referenced) {
+									jsh.shell.console("Command " + command + " is " + referenced);
+									return 1;
+								}
+								if (!isCommand(referenced)) {
+									jsh.shell.console(p.commands + " is object.");
+									return 1;
+								} else {
+									var invocation = referenced.options(global);
+									return referenced.command(invocation);
+								}
+							}
+						}
 					}
 				};
 
