@@ -235,7 +235,7 @@
 
 								/** @type { (v: any) => v is jsh.script.Command } */
 								var isCommand = function(v) {
-									return v.command;
+									return typeof(v) == "function";
 								};
 
 								if (!referenced) {
@@ -246,8 +246,7 @@
 									jsh.shell.console(command + " is object.");
 									return 1;
 								} else {
-									var invocation = (referenced.options) ? referenced.options(global) : global;
-									return referenced.command(invocation);
+									return referenced(global);
 								}
 							}
 						}

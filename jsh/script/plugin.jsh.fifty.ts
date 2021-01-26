@@ -9,8 +9,7 @@ namespace jsh.script {
 	}
 
 	export interface Command<T> {
-		options?: Processor<T>
-		command: (invocation: Invocation<T>) => number
+		(invocation: Invocation<T>): number
 	}
 
 	export interface Commands {
@@ -46,8 +45,7 @@ namespace jsh.script {
 
 			/**
 			 * Executes the program with the given descriptor inside this shell, with the arguments of the shell, and exits the
-			 * shell with the exit status indicated by running the {@link Application} indicated by the {@link Descriptor} and
-			 * command specified by the shell arguments.
+			 * shell with the exit status returned by the {Command}.
 			 */
 			wrap: (descriptor: Descriptor) => void
 		}
@@ -66,13 +64,13 @@ namespace jsh.script {
 					fifty.verify(subject).cli.Application({
 						options: subject.cli.option.string({ longname: "global" }),
 						commands: {
-							universe: {
-								options: subject.cli.option.string({ longname: "command" }),
-								command: function(invocation) {
+							universe: $api.Function.pipe(
+								subject.cli.option.string({ longname: "command" }),
+								function(invocation) {
 									invocationWas(invocation);
 									return 42;
 								}
-							}
+							)
 						}
 					}).run(["--global", "foo", "universe", "--command", "bar"]).is(42);
 					fifty.verify(was).options.evaluate.property("global").is("foo");
@@ -107,6 +105,7 @@ namespace jsh.script {
 
 			fifty.tests.suite = function() {
 				fifty.run(fifty.tests.cli.run);
+				fifty.run(fifty.tests.cli.wrap);
 			}
 		}
 	//@ts-ignore
