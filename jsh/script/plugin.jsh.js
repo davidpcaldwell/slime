@@ -210,11 +210,18 @@
 					Application: function(p) {
 						return {
 							run: function(args) {
-								var global = p.options({
+								var global = (p.options) ? p.options({
 									options: {},
 									arguments: args
-								});
+								}) : {
+									options: {},
+									arguments: args
+								};
 								var command = global.arguments.shift();
+								if (!command) {
+									jsh.shell.console("Usage: <command> [arguments]");
+									return 1;
+								}
 								var referenced = (function() {
 									/** @type { jsh.script.Commands | jsh.script.Command } */
 									var rv = p.commands;
@@ -228,7 +235,7 @@
 
 								/** @type { (v: any) => v is jsh.script.Command } */
 								var isCommand = function(v) {
-									return v.options && v.command;
+									return v.command;
 								};
 
 								if (!referenced) {
@@ -236,14 +243,17 @@
 									return 1;
 								}
 								if (!isCommand(referenced)) {
-									jsh.shell.console(p.commands + " is object.");
+									jsh.shell.console(command + " is object.");
 									return 1;
 								} else {
-									var invocation = referenced.options(global);
+									var invocation = (referenced.options) ? referenced.options(global) : global;
 									return referenced.command(invocation);
 								}
 							}
 						}
+					},
+					wrap: function(descriptor) {
+						jsh.shell.exit(jsh.script.cli.Application(descriptor).run(jsh.script.arguments.slice()));
 					}
 				};
 
