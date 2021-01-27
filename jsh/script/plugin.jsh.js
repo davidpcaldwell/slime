@@ -246,7 +246,14 @@
 									jsh.shell.console(command + " is object.");
 									return 1;
 								} else {
-									return referenced(global);
+									try {
+										var status = referenced(global);
+										return status || 0;
+									} catch (e) {
+										jsh.shell.console(e);
+										jsh.shell.console(e.stack);
+										return 1;
+									}
 								}
 							}
 						}

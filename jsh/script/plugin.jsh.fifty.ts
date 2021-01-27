@@ -9,7 +9,7 @@ namespace jsh.script {
 	}
 
 	export interface Command<T> {
-		(invocation: Invocation<T>): number
+		(invocation: Invocation<T>): number | void
 	}
 
 	export interface Commands {
@@ -75,6 +75,20 @@ namespace jsh.script {
 					}).run(["--global", "foo", "universe", "--command", "bar"]).is(42);
 					fifty.verify(was).options.evaluate.property("global").is("foo");
 					fifty.verify(was).options.evaluate.property("command").is("bar");
+
+					fifty.verify(subject).cli.Application({
+						commands: {
+							foo: function nothing(){}
+						}
+					}).run(["foo"]).is(0);
+
+					fifty.verify(subject).cli.Application({
+						commands: {
+							foo: function error() {
+								throw new Error();
+							}
+						}
+					}).run(["foo"]).is(1);
 				},
 				wrap: function() {
 					var result: { status: number } = fifty.global.jsh.shell.jsh({
