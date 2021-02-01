@@ -25,10 +25,10 @@
 				$api.Function.Object.fromEntries,
 				function(p) {
 					return $api.Object.compose(p, {
-						results: void(0),
-						design: void(0),
-						file: void(0),
-						part: void(0)
+						results: p.results,
+						design: p.design,
+						file: p.file,
+						part: p.part
 					});
 				}
 			);
