@@ -3,11 +3,10 @@
 	/**
 	 *
 	 * @param { jsh } jsh
-	 * @param {*} $context
 	 * @param {*} $loader
-	 * @param {*} $export
+	 * @param { (value: slime.runtime.browser.test.server.Export) => void } $export
 	 */
-	function(jsh,$context,$loader,$export) {
+	function(jsh,$loader,$export) {
 		$export(
 			function(resources,serve,resultsPath) {
 				var tomcat = new jsh.httpd.Tomcat();
@@ -90,4 +89,4 @@
 		)
 	}
 //@ts-ignore
-)(jsh,$context,$loader,$export);
+)(jsh,$loader,$export);

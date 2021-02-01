@@ -59,6 +59,7 @@
 				var loader = new jsh.file.Loader({ directory: jsh.shell.jsh.src });
 
 				var code = {
+					/** @type { slime.runtime.browser.test.server.Factory } */
 					server: loader.factory("loader/browser/test/server.js")
 				};
 
