@@ -41,6 +41,10 @@ namespace slime.browser {
 		CoffeeScript: any
 	}
 
+	interface Bootstrap {
+
+	}
+
 	export interface Exports {
 		//	top-level loader methods that operate by URL
 		run: any
@@ -52,7 +56,13 @@ namespace slime.browser {
 		loader: any
 		Loader: any
 		namespace: any
-		nugget: any
+		nugget: {
+			getCurrentScript: () => Bootstrap
+			page: {
+				base: string
+				relative: (path: string) => string
+			}
+		}
 		base: any
 		location: any
 		$api: $api

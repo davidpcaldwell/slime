@@ -15,13 +15,22 @@
 		};
 
 		window.addEventListener("load", function() {
+			/** @type { slime.fifty.browser.test.internal.Query } */
 			var query = $api.Function.result(
 				void(0),
 				web.window.url,
 				$api.Function.property("query"),
 				web.Url.query.parse,
 				$api.Function.Array.map(function(control) { return [control.name, control.value]; }),
-				$api.Function.Object.fromEntries
+				$api.Function.Object.fromEntries,
+				function(p) {
+					return $api.Object.compose(p, {
+						results: void(0),
+						design: void(0),
+						file: void(0),
+						part: void(0)
+					});
+				}
 			);
 
 			/**
