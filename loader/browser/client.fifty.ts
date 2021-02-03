@@ -63,7 +63,7 @@ namespace slime.browser {
 				relative: (path: string) => string
 			}
 		}
-		base: any
+		base: string
 		location: any
 		$api: $api
 		$sdk: any
@@ -82,6 +82,10 @@ namespace slime.browser {
 		fifty: slime.fifty.test.kit
 	) {
 		fifty.tests.suite = function() {
+			var runtime = fifty.global.window["inonit"].loader;
+			var base = runtime.base;
+			var endsInSlash = base.substring(base.length-1) == "/";
+			fifty.verify(endsInSlash).is(true);
 			fifty.verify(1).is(1);
 		}
 	}

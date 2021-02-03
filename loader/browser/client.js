@@ -64,7 +64,11 @@
 			return window.inonit.loader;
 		})();
 
-		var Bootstrap = function(base) {
+		/**
+		 *
+		 * @param { string } base
+		 */
+		function Bootstrap(base) {
 			this.base = base;
 
 			this.getRelativePath = function(path) {
@@ -82,7 +86,12 @@
 			return getCurrentScriptElement().getAttribute("src");
 		};
 
-		var canonicalize = function(current) {
+		/**
+		 *
+		 * @param { string } current
+		 * @returns { string }
+		 */
+		function canonicalize(current) {
 			//	TODO	The next block is not very robust but probably works for most, or even all, cases. That said, the js/web
 			//			module has a better implementation of URL canonicalization.
 			//			This mostly matters for debuggers that try to map URLs to files or whatever; they may not be able to handle
@@ -98,7 +107,11 @@
 			return current;
 		}
 
-		var getCurrent = function(base) {
+		/**
+		 *
+		 * @param { string } base
+		 */
+		function getCurrent(base) {
 			var getBasePath = function(pathname) {
 				var path = pathname.split("?")[0];
 				var tokens = path.split("/");
