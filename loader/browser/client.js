@@ -202,6 +202,7 @@
 					this.getCode = getCode;
 				}
 
+				/** @type { slime.runtime.Exports } */
 				var runtime = (function($engine,$slime,Packages) {
 					var rv = eval(fetcher.getCode(bootstrap.getRelativePath("expression.js")));
 					rv.$api.deprecate.warning = function(access) {
@@ -229,6 +230,10 @@
 					/* Packages */ window["Packages"]
 				);
 
+				/**
+				 * @type { slime.browser.Exports["Loader"] }
+				 * @param { string | slime.Loader.Source } p
+				 */
 				var Loader = function(p) {
 					if (typeof(p) == "string") {
 						p = (function(prefix) {
