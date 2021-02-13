@@ -58,7 +58,19 @@ interface jsh {
 		}
 	}
 
-	loader: any
+	loader: {
+		plugins: {
+			(p: slime.jrunscript.file.Directory): void
+			(p: slime.jrunscript.file.Pathname): void
+			(p: slime.Loader): void
+		}
+		run: any
+		file: any
+		addFinalizer: any
+		java: any
+		module: any
+		worker: any
+	}
 	js: any
 	document: any
 	file: slime.jrunscript.file.Exports
