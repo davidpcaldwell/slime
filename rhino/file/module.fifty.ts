@@ -24,7 +24,7 @@
 			var file = directory.getFile("file");
 
 			var nio = file.pathname.java.adapt().toPath();
-			jsh.shell.console(nio);
+			jsh.shell.console(String(nio));
 			Packages.java.nio.file.Files.setLastModifiedTime(nio, Packages.java.nio.file.attribute.FileTime.fromMillis(MODIFIED_TIME.unix));
 			var _modified = Packages.java.nio.file.Files.getLastModifiedTime(nio);
 			jsh.shell.console(_modified.toMillis());

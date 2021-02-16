@@ -2,7 +2,7 @@ namespace jsh.plugin {
 	type plugin = (p: { isReady?: () => boolean, load: () => void }) => void;
 }
 
-namespace jsh.loader.plugins {
+namespace jsh.loader.internal.plugins {
 	interface Export {
 		mock: (p: {
 			global?: { [x: string]: any }
@@ -15,6 +15,14 @@ namespace jsh.loader.plugins {
 			plugins: { [x: string]: any }
 		}
 
-		load: any
+		load: {
+			(p: {
+				_file?: Packages.java.io.File
+				loader?: slime.Loader
+				zip?: {
+					_file: Packages.java.io.File
+				}
+			}): void
+		}
 	}
 }

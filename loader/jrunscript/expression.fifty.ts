@@ -281,7 +281,17 @@ namespace Packages {
 			}
 			export interface PrintStream extends OutputStream {
 			}
-			export type File = any
+			export interface File {
+				isDirectory(): boolean
+				toPath(): Packages.java.nio.file.Path
+				getName(): Packages.java.lang.String
+			}
+		}
+		export namespace nio {
+			export namespace file {
+				export interface Path {
+				}
+			}
 		}
 		export namespace util {
 			export interface Properties {

@@ -16,7 +16,7 @@
 	/**
 	 * @param { any } Packages
 	 * @param { jsh.plugin.$slime } $slime
-	 * @param { (v: jsh.loader.plugins.Export) => void } $set
+	 * @param { (v: jsh.loader.internal.plugins.Export) => void } $set
 	 */
 	function(Packages,$slime,$set) {
 		var Constructor = function() {
@@ -113,7 +113,7 @@
 				}
 			};
 
-			/** @type { jsh.loader.plugins.Export["mock"] } */
+			/** @type { jsh.loader.internal.plugins.Export["mock"] } */
 			this.mock = function(p) {
 				if (!p.global && p.jsh) p.global = { jsh: p.jsh }
 				if (!p.plugins) p.plugins = {};
@@ -158,66 +158,69 @@
 				return list;
 			}
 
-			this.load = function(p) {
-				if (p._file && p._file.isDirectory()) {
-					p.loader = new $slime.Loader({ _file: p._file })
-				}
-				var list = [];
-				var plugins = {};
-				if (p.loader) {
-					var sources = scan(p.loader);
-					sources.sort(function(a,b) {
-						var precedence = function(item) {
-							return 0;
-						}
-
-						return precedence(b) - precedence(a);
-					});
-					//	TODO	should this share with jsh loader?
-					//	Use while loop because loop can add to the list; not sure how .forEach() works in that instance
-					//	TODO	check the above
-					var index = 0;
-					while(index < sources.length) {
-						var item = sources[index];
-						if (item.loader) {
-							$slime.classpath.add({ src: { loader: item.loader }});
-							var array = load({
-								plugins: plugins,
-								toString: (function(item) {
-									return function() {
-										return item.loader.toString();
-									};
-								})(item),
-								$loader: item.loader
-							});
-							list.push.apply(list,array);
-						} else if (item.slime) {
-							var subloader = new $slime.Loader({ zip: { resource: item.slime } });
-							$slime.classpath.add({ slime: { loader: subloader } });
-							//	TODO	.slime files cannot contain multiple plugin folders; we only look at the top level. Is this a good
-							//			decision?
-							if (subloader.get("plugin.jsh.js")) {
-								sources.push({
-									loader: subloader
-								});
+			this.load = (
+				/** @type { jsh.loader.internal.plugins.Export["load"] } p */
+				function(p) {
+					if (p._file && p._file.isDirectory()) {
+						p.loader = new $slime.Loader({ _file: p._file })
+					}
+					var list = [];
+					var plugins = {};
+					if (p.loader) {
+						var sources = scan(p.loader);
+						sources.sort(function(a,b) {
+							var precedence = function(item) {
+								return 0;
 							}
-						} else if (item.jar) {
-							$slime.classpath.add({ jar: { resource: item.jar }});
+
+							return precedence(b) - precedence(a);
+						});
+						//	TODO	should this share with jsh loader?
+						//	Use while loop because loop can add to the list; not sure how .forEach() works in that instance
+						//	TODO	check the above
+						var index = 0;
+						while(index < sources.length) {
+							var item = sources[index];
+							if (item.loader) {
+								$slime.classpath.add({ src: { loader: item.loader }});
+								var array = load({
+									plugins: plugins,
+									toString: (function(item) {
+										return function() {
+											return item.loader.toString();
+										};
+									})(item),
+									$loader: item.loader
+								});
+								list.push.apply(list,array);
+							} else if (item.slime) {
+								var subloader = new $slime.Loader({ zip: { resource: item.slime } });
+								$slime.classpath.add({ slime: { loader: subloader } });
+								//	TODO	.slime files cannot contain multiple plugin folders; we only look at the top level. Is this a good
+								//			decision?
+								if (subloader.get("plugin.jsh.js")) {
+									sources.push({
+										loader: subloader
+									});
+								}
+							} else if (item.jar) {
+								$slime.classpath.add({ jar: { resource: item.jar }});
+							}
+							index++;
 						}
-						index++;
+					} else if (p.zip && p.zip._file) {
+						var name = String(p.zip._file.getName());
+						if (/\.jar$/.test(name)) {
+							$slime.classpath.add({ jar: { _file: p.zip._file }});
+						} else if (/\.slime$/.test(name)) {
+							throw new Error("Deal with .slime");
+						} else {
+							throw new Error("Deal with " + name);
+						}
 					}
-				} else if (p.zip && p.zip._file) {
-					var name = String(p.zip._file.getName());
-					if (/\.jar$/.test(name)) {
-						$slime.classpath.add({ jar: { _file: p.zip._file }});
-					} else if (/\.slime$/.test(name)) {
-						throw new Error("Deal with .slime");
-					} else {
-						throw new Error("Deal with " + name);
-					}
+					run(list);
 				}
-				run(list);
-			}
+			);
 		}
 
 		var instance = new Constructor();

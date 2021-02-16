@@ -59,6 +59,9 @@ interface jsh {
 	}
 
 	loader: {
+		/**
+		 * Loads `jsh` plugins from a given location.
+		 */
 		plugins: {
 			(p: slime.jrunscript.file.Directory): void
 			(p: slime.jrunscript.file.Pathname): void
