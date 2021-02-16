@@ -285,6 +285,7 @@ namespace Packages {
 				isDirectory(): boolean
 				toPath(): Packages.java.nio.file.Path
 				getName(): Packages.java.lang.String
+				getCanonicalPath(): Packages.java.lang.String
 			}
 		}
 		export namespace nio {
