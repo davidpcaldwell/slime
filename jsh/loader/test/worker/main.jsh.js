@@ -1,5 +1,10 @@
 //@ts-check
 (
+	/**
+	 *
+	 * @param { Packages } Packages
+	 * @param { jsh } jsh
+	 */
 	function(Packages,jsh) {
 		Packages.java.lang.System.err.println("Main script executing! thread = " + Packages.java.lang.Thread.currentThread());
 		var worker = jsh.loader.worker({

@@ -15,11 +15,12 @@
 	/**
 	 *
 	 * @param { Packages } Packages
+	 * @param { jsh } jsh
 	 * @param { jsh.plugin.$slime } $slime
 	 * @param { slime.Loader } $loader
 	 * @param { jsh.plugin.plugin } plugin
 	 */
-	function(Packages,$slime,$loader,plugin) {
+	function(Packages,jsh,$slime,$loader,plugin) {
 		plugin({
 			isReady: function() {
 				return Boolean(jsh.js && jsh.document && jsh.js.document && jsh.js.web && jsh.java && jsh.io && jsh.file);
@@ -154,4 +155,4 @@
 		})
 	}
 //@ts-ignore
-)(Packages,$slime,$loader,plugin);
+)(Packages,jsh,$slime,$loader,plugin);

@@ -1,10 +1,10 @@
 //@ts-check
 (
 	/**
-	 *
 	 * @param { $api } $api
+	 * @param { jsh } jsh
 	 */
-	function($api) {
+	function($api,jsh) {
 		if (!jsh.shell.jsh.src.getSubdirectory("local/jdk/11")) {
 			jsh.shell.run({
 				command: jsh.shell.jsh.src.getFile("jsh.bash"),
@@ -32,4 +32,4 @@
 		})
 	}
 //@ts-ignore
-)($api)
+)($api,jsh)

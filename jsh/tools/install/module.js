@@ -98,7 +98,7 @@
 
 				this.extract = function(file,to) {
 					if ($context.api.shell.PATH.getCommand("unzip")) {
-						jsh.shell.run({
+						$context.api.shell.run({
 							command: "unzip",
 							arguments: [file],
 							directory: to

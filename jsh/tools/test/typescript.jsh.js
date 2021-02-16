@@ -1,6 +1,10 @@
 //@ts-check
 (
-	function() {
+	/**
+	 *
+	 * @param { jsh } jsh
+	 */
+	function(jsh) {
 		var compile = function(parameters) {
 			var output = (parameters.options.output)
 				? parameters.options.output.createDirectory({
@@ -69,4 +73,4 @@
 		});
 	}
 //@ts-ignore
-)();
+)(jsh);

@@ -1,6 +1,10 @@
 //@ts-check
 (
-	function() {
+	/**
+	 *
+	 * @param { jsh } jsh
+	 */
+	function(jsh) {
 		var parameters = jsh.script.getopts({
 			options: {
 				"node:debug": false,
@@ -32,4 +36,5 @@
 
 		parameters.options.to.write(JSON.stringify(documentation, void(0), "    "), { append: false });
 	}
-)()
+//@ts-ignore
+)(jsh)

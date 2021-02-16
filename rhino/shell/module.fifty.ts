@@ -57,6 +57,8 @@ namespace slime.jrunscript.shell {
 			fifty: slime.fifty.test.kit
 		) {
 			fifty.tests.listeners = function() {
+				const jsh = fifty.global.jsh;
+
 				var subject: Exports = jsh.shell;
 
 				var command = jsh.shell.PATH.getCommand("true");
@@ -101,6 +103,8 @@ namespace slime.jrunscript.shell {
 			fifty: slime.fifty.test.kit
 		) {
 			fifty.tests.environment = function() {
+				const jsh = fifty.global.jsh;
+
 				var fixtures: Packages.inonit.system.test.Fixtures = fifty.$loader.file("../../rhino/system/test/system.fixtures.ts");
 				var o = fixtures.OperatingSystem.Environment.create({
 					values: { foo: "bazz" },

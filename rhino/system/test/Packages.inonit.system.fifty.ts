@@ -44,6 +44,8 @@ namespace Packages {
 		const fixtures: Packages.inonit.system.test.Fixtures = fifty.$loader.file("system.fixtures.ts");
 
 		fifty.tests.suite = function() {
+			const jsh = fifty.global.jsh;
+
 			var CaseSensitive = function(values) {
 				var map = jsh.java.Map({ object: values });
 				return {

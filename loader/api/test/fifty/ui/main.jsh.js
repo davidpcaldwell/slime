@@ -1,6 +1,11 @@
 //@ts-check
 (
-	function(p) {
+	/**
+	 *
+	 * @param { jsh } jsh
+	 * @param { { file: any, options: any, arguments: any }} p
+	 */
+	function(jsh,p) {
 		var slime = {
 			directory: p.file.parent.parent.parent.parent.parent.parent
 		};
@@ -164,8 +169,5 @@
 		});
 		server.run();
 	}
-)({
-	file: jsh.script.file,
-	options: {},
-	arguments: jsh.script.arguments
-})
+//@ts-ignore
+)(jsh, { file: jsh.script.file, options: {}, arguments: jsh.script.arguments })

@@ -25,6 +25,9 @@ namespace jsh.script {
 		commands: Commands
 	}
 
+	/**
+	 * Represents the module inside the Fifty test suite.
+	 */
 	const subject: Exports = (function(fifty) {
 		const jsh = fifty.global.jsh;
 		const subject = jsh.script;

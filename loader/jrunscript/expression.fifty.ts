@@ -425,6 +425,7 @@ namespace Packages {
 
 (
 	function(
+		fifty: slime.fifty.test.kit,
 		$slime: slime.jrunscript.runtime.Exports,
 		$api: $api,
 		$loader: slime.fifty.test.$loader,
@@ -472,6 +473,8 @@ namespace Packages {
 		};
 
 		tests.suite = function() {
+			const jsh = fifty.global.jsh;
+
 			var values = {
 				a: "1"
 			};
@@ -489,4 +492,4 @@ namespace Packages {
 		}
 	}
 //@ts-ignore
-)(jsh.unit["$slime"], $api, $loader, verify, tests, run);
+)(fifty, jsh.unit["$slime"], $api, $loader, verify, tests, run);
