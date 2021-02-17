@@ -124,7 +124,7 @@
 						if (o.arguments) args = $api.Function.impure.revise(o.arguments(p))(args);
 						//	TODO	this type should be in rhino/shell if it is not already
 						/** @type { slime.jrunscript.git.internal.Environment } */
-						var environment = $api.Object.compose(jsh.shell.environment);
+						var environment = $api.Object.compose($context.environment);
 						if (o.environment) environment = $api.Function.impure.revise(o.environment(p))(environment);
 
 						var output = {
@@ -204,7 +204,7 @@
 					return result.output.stdout.filter(Boolean).map(function(line) {
 						//	TODO	what if value contains equals? Does the below work?
 						var tokens = line.split("=");
-						if (!tokens[0]) jsh.shell.console("line: [" + line + "] " + " tokens=" + JSON.stringify(tokens));
+						if (!tokens[0]) $context.console("line: [" + line + "] " + " tokens=" + JSON.stringify(tokens));
 						return { name: tokens[0], value: tokens.slice(1).join("=") }
 					});
 				}

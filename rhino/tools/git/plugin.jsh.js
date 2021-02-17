@@ -25,7 +25,9 @@ plugin({
 				api: {
 					Error: jsh.js.Error,
 					Events: $api.Events
-				}
+				},
+				environment: jsh.shell.environment,
+				console: jsh.shell.console
 			});
 			git.jsh = {};
 			//	TODO	enable credentialHelper for built shells

@@ -219,7 +219,7 @@
 							});
 						} else {
 							//	TODO	should not have jsh dependency here
-							var password = jsh.ui.askpass.gui({
+							var password = $context.api.ui.askpass.gui({
 								prompt: p.askpass.prompt
 							});
 						}

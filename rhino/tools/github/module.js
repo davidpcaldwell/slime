@@ -2,7 +2,7 @@
 
 /**
  * @typedef {object} slime.jrunscript.tools.github.Context
- * @property { { http: slime.jrunscript.http.client.Exports, shell: jsh.shell } } library
+ * @property { { http: slime.jrunscript.http.client.Exports, shell: jsh["shell"] } } library
  */
 
 /**
@@ -23,8 +23,6 @@
  * @property { (o: any) => slime.jrunscript.tools.github.Session } Session
  */
 
-//	Work around tsc bug not allowing first expression to be parenthetical
-void(0);
 (
 	/**
 	 * @param {slime.jrunscript.tools.github.Context} $context

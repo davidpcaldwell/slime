@@ -289,7 +289,7 @@ END LICENSE
 					</ul>
 				</div>
 				<script type="application/x.jsapi#initialize">
-					scope.api = $jsapi.loader.module("application.js");
+					scope.api = $jsapi.loader.module("application.js", { jsh: jsh });
 				</script>
 				<script type="application/x.jsapi#tests"><![CDATA[
 					//	jsh.httpd.Tomcat supplies default server implementation

@@ -10,7 +10,7 @@ namespace slime.jrunscript.shell.system {
 	interface Context {
 		run: any
 		os: any
-		api: { js: any, file: any, io: any }
+		api: { js: any, file: any, io: any, ui: any }
 		environment: any
 		TMPDIR: slime.jrunscript.file.Directory
 		PATH: any

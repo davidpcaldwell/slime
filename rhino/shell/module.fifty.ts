@@ -43,6 +43,7 @@ namespace slime.jrunscript.shell {
 			document: any
 			httpd: any
 			xml: any
+			ui: any
 		}
 	}
 

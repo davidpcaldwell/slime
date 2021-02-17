@@ -1,6 +1,12 @@
 namespace slime.jrunscript.git {
 	namespace internal {
-		export const subject = jsh.tools.git;
+		export const subject = (
+			function(fifty: slime.fifty.test.kit) {
+				return fifty.global.jsh.tools.git;
+			}
+		//@ts-ignore
+		)(fifty);
+
 		export const fixtures = (
 			function(fifty: slime.fifty.test.kit) {
 				return fifty.$loader.file("fixtures.js", { module: subject });

@@ -37,7 +37,7 @@
 					module: $loader.factory("module.js")
 				}
 
-				var module = code.module({
+				var mContext = {
 					api: {
 						js: jsh.js,
 						java: jsh.java,
@@ -49,7 +49,8 @@
 							parseFile: function(file) {
 								return new jsh.document.Document({ string: file.read(String) });
 							}
-						}
+						},
+						ui: void(0)
 					},
 					_properties: $slime.getSystemProperties(),
 					_environment: $slime.getEnvironment(),
@@ -57,7 +58,16 @@
 						compiler: jsh.file.Pathname( String($slime.getLibraryFile("kotlin/bin/kotlinc").getAbsolutePath()) ).file
 					} : null,
 					stdio: stdio
+				};
+
+				//	TODO	necessary because dependencies are entangled here
+				Object.defineProperty(mContext.api, "ui", {
+					get: function() {
+						return jsh.ui;
+					}
 				});
+
+				var module = code.module(mContext);
 
 				if (!module.properties) throw new TypeError();
 

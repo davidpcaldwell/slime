@@ -77,25 +77,3 @@ interface jsh {
 	ip: any
 	httpd: jsh.httpd.Exports
 }
-
-declare namespace jsh {
-	//	Indexed access properties; see https://www.typescriptlang.org/docs/handbook/advanced-types.html#index-types
-
-	const java: jsh['java'];
-	const http: jsh['http'];
-
-	const tools: jsh['tools'];
-	const script: jsh['script'];
-	let shell: jsh['shell'];
-	const unit: jsh['unit'];
-
-	const loader: jsh['loader'];
-	const js: jsh['js'];
-	const io: jsh['io'];
-	const document: jsh['document'];
-	const file: jsh['file'];
-	const time: jsh['time'];
-	const ui: jsh['ui'];
-	const ip: jsh['ip'];
-	const httpd: jsh['httpd']
-}

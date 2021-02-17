@@ -229,6 +229,8 @@ namespace slime.jrunscript.git {
 			Error: any
 			time: slime.time.Exports
 		}
+		environment: any
+		console: any
 	}
 
 	interface Exports {

@@ -15,10 +15,12 @@
 (
 	/**
 	 * @param { any } Packages
+	 * @param { { jsh: jsh } } $context
 	 * @param { slime.Loader } $loader
 	 * @param { { Application: jsh["ui"]["application"] } } $exports
 	 */
-	function(Packages,$loader,$exports) {
+	function(Packages,$context,$loader,$exports) {
+		var jsh = $context.jsh;
 		// TODO: Remove or document (probably by renaming file) dependency on jsh
 
 		var webviewDecorated = function(was) {
@@ -325,4 +327,4 @@
 		});
 	}
 //@ts-ignore
-)(Packages,$loader,$exports);
+)(Packages,$context,$loader,$exports);

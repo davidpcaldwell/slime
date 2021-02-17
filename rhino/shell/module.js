@@ -547,7 +547,8 @@
 				api: {
 					js: $context.api.js,
 					io: $context.api.io,
-					file: $context.api.file
+					file: $context.api.file,
+					ui: $context.api.ui
 				}
 			});
 			var ps = this.resolve(system.ps);
