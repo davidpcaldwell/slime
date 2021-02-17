@@ -1,4 +1,4 @@
-namespace jsh.plugin {
+namespace slime.jsh.plugin {
 	interface EngineSpecific {
 		//	provided by engine-specific rhino.js and nashorn.js
 		exit: any

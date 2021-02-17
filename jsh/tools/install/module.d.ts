@@ -1,4 +1,4 @@
-namespace jsh.tools.install.module {
+namespace slime.jsh.tools.install.module {
 	interface Context {
 		client?: any
 		api: {

@@ -1,4 +1,4 @@
-namespace jsh.script {
+namespace slime.jsh.script {
 	interface Invocation<T> {
 		options: T
 		arguments: string[]

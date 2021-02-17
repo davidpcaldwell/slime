@@ -3,7 +3,7 @@
  * main `jsh.wf` APIs project authors can use in constructing their own `wf` commands, including the `cli.initialize` method that
  * provides standard implementations for several commands.
  */
-namespace jsh.wf {
+namespace slime.jsh.wf {
 	/**
 	 * An object that, given a Git repository, can provide the Git user.name and user.email values for that repository (perhaps
 	 * by prompting the user).
@@ -333,7 +333,7 @@ namespace jsh.wf {
 		tests: any,
 		$loader: slime.Loader & { getRelativePath: any, plugin: any }
 	) {
-		tests.types.Exports = function(module: jsh.wf.Exports,jsh: jsh) {
+		tests.types.Exports = function(module: slime.jsh.wf.Exports,jsh: jsh) {
 			(function() {
 				var invocation = {
 					options: {},

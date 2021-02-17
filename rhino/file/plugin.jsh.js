@@ -14,9 +14,9 @@
 //@ts-check
 (
 	/**
-	 * @param { jsh.plugin.$slime } $slime
+	 * @param { slime.jsh.plugin.$slime } $slime
 	 * @param { jsh } jsh
-	 * @param { jsh.plugin.plugin } plugin
+	 * @param { slime.jsh.plugin.plugin } plugin
 	 * @param { slime.Loader } $loader
 	 */
 	function($slime, jsh, plugin, $loader) {

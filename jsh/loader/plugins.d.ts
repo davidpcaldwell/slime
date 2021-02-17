@@ -1,8 +1,8 @@
-namespace jsh.plugin {
+namespace slime.jsh.plugin {
 	type plugin = (p: { isReady?: () => boolean, load: () => void }) => void;
 }
 
-namespace jsh.loader.internal.plugins {
+namespace slime.jsh.loader.internal.plugins {
 	interface Export {
 		mock: (p: {
 			global?: { [x: string]: any }

@@ -1,4 +1,4 @@
-namespace jsh.shell {
+namespace slime.jsh.shell {
 	namespace internal {
 		interface Context {
 			exit: any

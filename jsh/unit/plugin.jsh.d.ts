@@ -1,4 +1,4 @@
-namespace jsh.unit {
+namespace slime.jsh.unit {
 	namespace internal.remote {
 		interface Context {
 			api: {

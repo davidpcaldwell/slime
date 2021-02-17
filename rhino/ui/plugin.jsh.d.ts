@@ -20,7 +20,7 @@ interface jsh {
 	}
 }
 
-namespace jsh.ui.application {
+namespace slime.jsh.ui.application {
 	interface ServerConfiguration {
 		port?: number
 		resources: slime.Loader

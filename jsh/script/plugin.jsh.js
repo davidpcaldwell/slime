@@ -15,15 +15,15 @@
 	/**
 	 *
 	 * @param { Packages } Packages
-	 * @param { jsh.plugin.plugin } plugin
-	 * @param { jsh.plugin.$slime } $slime
+	 * @param { slime.jsh.plugin.plugin } plugin
+	 * @param { slime.jsh.plugin.$slime } $slime
 	 * @param { jsh } jsh
 	 * @param { slime.Loader } $loader
 	 */
 	function(Packages,plugin,$slime,jsh,$loader) {
-		/** @returns { jsh.script.Exports } */
+		/** @returns { slime.jsh.script.Exports } */
 		var load = function($context) {
-			/** @type { Partial<jsh.script.Exports> } */
+			/** @type { Partial<slime.jsh.script.Exports> } */
 			var $exports = {};
 
 			if ($context.file) {
@@ -103,7 +103,7 @@
 				getopts: $exports.getopts
 			}).Application;
 
-			/** @returns {jsh.script.Exports} */
+			/** @returns {slime.jsh.script.Exports} */
 			var finished = function(partial) { return partial; }
 
 			var rv = finished($exports);
@@ -223,7 +223,7 @@
 									return 1;
 								}
 								var referenced = (function() {
-									/** @type { jsh.script.Commands | jsh.script.Command } */
+									/** @type { slime.jsh.script.Commands | slime.jsh.script.Command } */
 									var rv = p.commands;
 									var tokens = command.split(".");
 									for (var i=0; i<tokens.length; i++) {
@@ -233,7 +233,7 @@
 									return rv;
 								})();
 
-								/** @type { (v: any) => v is jsh.script.Command } */
+								/** @type { (v: any) => v is slime.jsh.script.Command } */
 								var isCommand = function(v) {
 									return typeof(v) == "function";
 								};

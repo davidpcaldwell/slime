@@ -15,8 +15,8 @@
 (
 	/**
 	 *
-	 * @param { jsh.unit.internal.remote.Context } $context
-	 * @param { jsh.unit.internal.remote.Exports } $exports
+	 * @param { slime.jsh.unit.internal.remote.Context } $context
+	 * @param { slime.jsh.unit.internal.remote.Exports } $exports
 	 */
 	function($context,$exports) {
 		//	The 'top' member of this implementation can be used as an argument to the Scenario constructor; it then needs to be fed

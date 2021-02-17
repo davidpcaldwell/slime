@@ -1,4 +1,4 @@
-namespace jsh.httpd {
+namespace slime.jsh.httpd {
 	namespace servlet {
 		type byLoad = { load: (scope: slime.servlet.Scope) => void }
 		type byFile = { file: slime.jrunscript.file.File }

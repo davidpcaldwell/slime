@@ -2,8 +2,8 @@
 (
 	/**
 	 * @param { jsh } jsh
-	 * @param { jsh.wf.cli.Context } $context
-	 * @param { Parameters<jsh.wf.Exports["cli"]["initialize"]>[2] & { initialize: jsh.wf.cli.Command, hello: jsh.wf.cli.Command, git: any, merge: any } } $exports
+	 * @param { slime.jsh.wf.cli.Context } $context
+	 * @param { Parameters<slime.jsh.wf.Exports["cli"]["initialize"]>[2] & { initialize: slime.jsh.wf.cli.Command, hello: slime.jsh.wf.cli.Command, git: any, merge: any } } $exports
 	 */
 	function(jsh,$context,$exports) {
 		var noTrailingWhitespace = function() {

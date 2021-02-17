@@ -16,8 +16,8 @@
 	 *
 	 * @param { Packages } Packages
 	 * @param { any } JavaAdapter
-	 * @param { jsh.shell.internal.Context } $context
-	 * @param { jsh.shell.Exports } $exports
+	 * @param { slime.jsh.shell.internal.Context } $context
+	 * @param { slime.jsh.shell.Exports } $exports
 	 */
 	function(Packages,JavaAdapter,$context,$exports) {
 		//	TODO	would be nice to generalize this and push it back into the shell module itself
@@ -524,7 +524,7 @@
 				}
 			});
 		});
-		/** @type { jsh.shell.Exports["jsh"]["require"] } */
+		/** @type { slime.jsh.shell.Exports["jsh"]["require"] } */
 		$exports.jsh.require = $api.Events.Function(
 			function(p,events) {
 				//  TODO    should develop a strategy for preventing infinite loops

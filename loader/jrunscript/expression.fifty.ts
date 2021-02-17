@@ -321,7 +321,7 @@ namespace Packages {
 		}
 	}
 
-	type EngineSpecificJshInterface = jsh.plugin.EngineSpecific;
+	type EngineSpecificJshInterface = slime.jsh.plugin.EngineSpecific;
 
 	export namespace inonit.script {
 		export namespace runtime.io {

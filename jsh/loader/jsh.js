@@ -25,14 +25,14 @@
 				/**
 				 *
 				 * @param { Packages.inonit.script.jsh.Shell } $jsh
-				 * @returns { jsh.plugin.$slime }
+				 * @returns { slime.jsh.plugin.$slime }
 				 */
 				function($jsh) {
 					var configuration = $jsh.getEnvironment();
 					var invocation = $jsh.getInvocation();
 
 					/**
-					 * @type { jsh.plugin.Stdio }
+					 * @type { slime.jsh.plugin.Stdio }
 					 */
 					var stdio = (function() {
 						var out = new Packages.java.io.PrintStream(configuration.getStdio().getStandardOutput());

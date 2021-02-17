@@ -1,11 +1,11 @@
-namespace jsh.tools.install {
+namespace slime.jsh.tools.install {
 	type Exports = jsh.tools.install.module.Exports & {
 		rhino: any
 		tomcat: any
 	};
 }
 
-namespace jsh.shell.tools {
+namespace slime.jsh.shell.tools {
 	namespace rhino {
 		interface InstallCommand {
 			mock?: { lib: slime.jrunscript.file.Directory, rhino: slime.jrunscript.file.File }

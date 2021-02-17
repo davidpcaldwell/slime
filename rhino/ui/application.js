@@ -42,8 +42,8 @@
 		};
 
 		/**
-		 * @param { jsh.ui.application.ServerConfiguration } p
-		 * @returns { jsh.httpd.Tomcat }
+		 * @param { slime.jsh.ui.application.ServerConfiguration } p
+		 * @returns { slime.jsh.httpd.Tomcat }
 		 */
 		var Server = function(p) {
 			var server = new jsh.httpd.Tomcat({
@@ -68,7 +68,7 @@
 		};
 
 		/**
-		 * @param { jsh.ui.application.ChromeConfiguration } o
+		 * @param { slime.jsh.ui.application.ChromeConfiguration } o
 		 */
 		var Chrome = function(o) {
 			//	TODO	add location (rather than directory) argument
@@ -230,11 +230,11 @@
 		}
 
 		/**
-		 * @param { jsh.ui.application.Argument } p
+		 * @param { slime.jsh.ui.application.Argument } p
 		 * @param { $api.Events } events
 		 */
 		var Application = function(p,events) {
-			/** @type { (v: jsh.ui.application.ServerSpecification) => v is jsh.ui.application.ServerRunning } */
+			/** @type { (v: slime.jsh.ui.application.ServerSpecification) => v is slime.jsh.ui.application.ServerRunning } */
 			var isTomcat = function(v) {
 				return Boolean(v["server"]);
 			}

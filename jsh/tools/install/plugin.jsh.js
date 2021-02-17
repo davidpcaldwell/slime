@@ -16,7 +16,7 @@
 	/**
 	 * @param { jsh } jsh
 	 * @param { object } plugins
-	 * @param { jsh.plugin.plugin } plugin
+	 * @param { slime.jsh.plugin.plugin } plugin
 	 * @param { slime.Loader } $loader
 	 */
 	function(jsh,plugins,plugin,$loader) {
@@ -49,7 +49,7 @@
 				});
 
 				/**
-				 * @type { jsh.shell.Exports["tools"]["rhino"]["install"] }
+				 * @type { slime.jsh.shell.Exports["tools"]["rhino"]["install"] }
 				 */
 				var installRhino = $api.Events.Function(
 					function(p,events) {

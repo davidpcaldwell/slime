@@ -16,9 +16,9 @@
 	 *
 	 * @param { Packages } Packages
 	 * @param { jsh } jsh
-	 * @param { jsh.plugin.$slime } $slime
+	 * @param { slime.jsh.plugin.$slime } $slime
 	 * @param { slime.Loader } $loader
-	 * @param { jsh.plugin.plugin } plugin
+	 * @param { slime.jsh.plugin.plugin } plugin
 	 */
 	function(Packages,jsh,$slime,$loader,plugin) {
 		plugin({
@@ -72,7 +72,7 @@
 				if (!module.properties) throw new TypeError();
 
 				/**
-				 * @type { jsh.shell.internal.Context }
+				 * @type { slime.jsh.shell.internal.Context }
 				 */
 				var context = {
 					api: {
@@ -115,7 +115,7 @@
 					}
 				);
 
-				/** @returns { jsh.shell.Exports & { getopts: any } } */
+				/** @returns { slime.jsh.shell.Exports & { getopts: any } } */
 				var toJsh = function(api) {
 					return api;
 				}

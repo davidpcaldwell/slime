@@ -16,9 +16,9 @@
 	/**
 	 * @param { any } Packages
 	 * @param { any } JavaAdapter
-	 * @param { jsh.plugin.$slime } $slime
+	 * @param { slime.jsh.plugin.$slime } $slime
 	 * @param { jsh } jsh
-	 * @param { jsh.plugin.plugin } plugin
+	 * @param { slime.jsh.plugin.plugin } plugin
 	 * @param { slime.Loader } $loader
 	 */
 	function(Packages,JavaAdapter,$slime,jsh,plugin,$loader) {
@@ -107,7 +107,7 @@
 
 				/**
 				 * @param { slime.Loader } resources
-				 * @param { jsh.httpd.servlet.descriptor } servlet
+				 * @param { slime.jsh.httpd.servlet.descriptor } servlet
 				 * @returns { { resources: slime.Loader, load: (scope: slime.servlet.Scope) => void, $loader?: slime.Loader } }
 				 */
 				jsh.httpd.spi.argument = function(resources,servlet) {
@@ -118,12 +118,12 @@
 						return servlet;
 					};
 
-					/** @type { (servlet: jsh.httpd.servlet.descriptor) => servlet is jsh.httpd.servlet.byLoad } */
+					/** @type { (servlet: slime.jsh.httpd.servlet.descriptor) => servlet is slime.jsh.httpd.servlet.byLoad } */
 					var isByLoad = function(servlet) {
 						return Boolean(servlet["load"]);
 					}
 
-					/** @type { (servlet: jsh.httpd.servlet.descriptor) => servlet is jsh.httpd.servlet.byFile } */
+					/** @type { (servlet: slime.jsh.httpd.servlet.descriptor) => servlet is slime.jsh.httpd.servlet.byFile } */
 					var isByFile = function(servlet) {
 						return Boolean(servlet["file"]);
 					}
@@ -218,7 +218,7 @@
 					var Tomcat = (
 						/**
 						 * @constructor
-						 * @param { ConstructorParameters<jsh.httpd.Exports["Tomcat"]>[0] } p
+						 * @param { ConstructorParameters<slime.jsh.httpd.Exports["Tomcat"]>[0] } p
 						 */
 						function(p) {
 							if (!p) p = {};
@@ -286,7 +286,7 @@
 							 * @param { slime.Loader } resources
 							 * @param { string } pattern
 							 * @param { string } servletName
-							 * @param { jsh.httpd.servlet.descriptor } servletDeclaration
+							 * @param { slime.jsh.httpd.servlet.descriptor } servletDeclaration
 							 */
 							var addServlet = function(context,resources,pattern,servletName,servletDeclaration) {
 								var servletImplementation = jsh.httpd.spi.argument(resources,servletDeclaration);
@@ -340,7 +340,7 @@
 								context.addServletMapping(pattern,servletName);
 							};
 
-							/** @type { jsh.httpd.Tomcat["map"] } */
+							/** @type { slime.jsh.httpd.Tomcat["map"] } */
 							this.map = function(m) {
 								if (typeof(m.path) == "string" && m.servlets) {
 									var context = addContext(m.path,base);
@@ -355,7 +355,7 @@
 								}
 							};
 
-							/** @type { jsh.httpd.Tomcat["servlet"] } */
+							/** @type { slime.jsh.httpd.Tomcat["servlet"] } */
 							this.servlet = function(declaration) {
 								addServlet(addContext("",base),declaration.resources,"/*","slime",declaration);
 							};

@@ -391,7 +391,7 @@
 		};
 
 		/**
-		 * @type { new () => jsh.httpd.Resources }
+		 * @type { new () => slime.jsh.httpd.Resources }
 		 */
 		var NewResources = function() {
 			var mapping = [];
@@ -400,7 +400,7 @@
 			this.loader = void(0);
 			Resources.call(this,mapping);
 
-			/** @type { jsh.httpd.Resources["add"] } */
+			/** @type { slime.jsh.httpd.Resources["add"] } */
 			this.add = function(m) {
 				mapping.push(new Mapping(m));
 			}

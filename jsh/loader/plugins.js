@@ -15,8 +15,8 @@
 (
 	/**
 	 * @param { any } Packages
-	 * @param { jsh.plugin.$slime } $slime
-	 * @param { (v: jsh.loader.internal.plugins.Export) => void } $set
+	 * @param { slime.jsh.plugin.$slime } $slime
+	 * @param { (v: slime.jsh.loader.internal.plugins.Export) => void } $set
 	 */
 	function(Packages,$slime,$set) {
 		var Constructor = function() {
@@ -113,7 +113,7 @@
 				}
 			};
 
-			/** @type { jsh.loader.internal.plugins.Export["mock"] } */
+			/** @type { slime.jsh.loader.internal.plugins.Export["mock"] } */
 			this.mock = function(p) {
 				if (!p.global && p.jsh) p.global = { jsh: p.jsh }
 				if (!p.plugins) p.plugins = {};
@@ -159,7 +159,7 @@
 			}
 
 			this.load = (
-				/** @type { jsh.loader.internal.plugins.Export["load"] } p */
+				/** @type { slime.jsh.loader.internal.plugins.Export["load"] } p */
 				function(p) {
 					if (p._file && p._file.isDirectory()) {
 						p.loader = new $slime.Loader({ _file: p._file })

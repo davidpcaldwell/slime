@@ -1,10 +1,10 @@
-namespace jsh.unit {
+namespace slime.jsh.unit {
 	interface mock {
 		Web: mock.Web.constructor
 	}
 }
 
-namespace jsh.unit.mock {
+namespace slime.jsh.unit.mock {
 	type handler = slime.servlet.handler & { stop?: () => void }
 
 	namespace Web {

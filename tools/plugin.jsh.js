@@ -2,9 +2,9 @@
 (
 	/**
 	 * @param { $api } $api
-	 * @param { jsh.plugin.$slime } $slime
+	 * @param { slime.jsh.plugin.$slime } $slime
 	 * @param { jsh } jsh
-	 * @param { jsh.plugin.plugin } plugin
+	 * @param { slime.jsh.plugin.plugin } plugin
 	 */
 	function($api,$slime,jsh,plugin) {
 		plugin({
@@ -136,7 +136,7 @@
 									//jsh.shell.console("command = [" + command + "]");
 									var tokens = (command.length) ? command.split(".") : [];
 									//jsh.shell.console("tokens = " + JSON.stringify(tokens));
-									/** @type { jsh.wf.cli.Interface | jsh.wf.cli.Command } */
+									/** @type { slime.jsh.wf.cli.Interface | slime.jsh.wf.cli.Command } */
 									var rv = p.interface;
 									for (var i=0; i<tokens.length; i++) {
 										if (rv) rv = rv[tokens[i]];
@@ -191,7 +191,7 @@
 						},
 						option: {
 							/**
-							 * @param { Parameters<jsh.wf.Exports["cli"]["$f"]["option"]["string"]>[0] } o
+							 * @param { Parameters<slime.jsh.wf.Exports["cli"]["$f"]["option"]["string"]>[0] } o
 							 */
 							string: function(o) {
 								var rv = function(p) {
@@ -208,7 +208,7 @@
 								return $api.Function.impure.revise(rv);
 							},
 							/**
-							 * @param { Parameters<jsh.wf.Exports["cli"]["$f"]["option"]["boolean"]>[0] } o
+							 * @param { Parameters<slime.jsh.wf.Exports["cli"]["$f"]["option"]["boolean"]>[0] } o
 							 */
 							boolean: function(o) {
 								var rv = function(p) {
@@ -264,12 +264,12 @@
 						}
 					},
 					invocation: function() {
-						/** @type { jsh.wf.cli.Arguments } */
+						/** @type { slime.jsh.wf.cli.Arguments } */
 						var rv = {
 							options: {},
 							arguments: Array.prototype.slice.call(jsh.script.arguments)
 						};
-						/** @type { jsh.wf.cli.Processor[] } */
+						/** @type { slime.jsh.wf.cli.Processor[] } */
 						var mutators = Array.prototype.slice.call(arguments);
 						mutators.forEach(function(mutator) {
 							mutator(rv);
@@ -277,7 +277,7 @@
 						return rv;
 					},
 					/**
-					 * @type { jsh.wf.Exports["cli"]["initialize"] }
+					 * @type { slime.jsh.wf.Exports["cli"]["initialize"] }
 					 */
 					initialize: function($context,operations,$exports) {
 						if (arguments.length == 2) {

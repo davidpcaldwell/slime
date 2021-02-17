@@ -1,3 +1,7 @@
+namespace slime.jsh.mail {
+	type Exports = slime.jrunscript.mail.Exports
+}
+
 interface jsh {
-	mail: slime.jrunscript.mail.Exports
+	mail: slime.jsh.mail.Exports
 }

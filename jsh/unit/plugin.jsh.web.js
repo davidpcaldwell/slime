@@ -24,12 +24,12 @@ function defineJshUnitMock($set,jsh,Packages) {
 			return jsh.js && jsh.httpd && jsh.http && jsh.file && jsh.io && jsh.shell && jsh.unit;
 		},
 		load: function() {
-			/** @type { jsh.unit.mock } */
+			/** @type { slime.jsh.unit.mock } */
 			jsh.unit.mock = {};
 
 			/**
-			 * @type { new (o: jsh.unit.mock.Web.argument) => jsh.unit.mock.Web }
-			 * @param { jsh.unit.mock.Web.argument } o
+			 * @type { new (o: slime.jsh.unit.mock.Web.argument) => slime.jsh.unit.mock.Web }
+			 * @param { slime.jsh.unit.mock.Web.argument } o
 			 */
 			var Web = function(o) {
 				if (!o) o = {
@@ -42,7 +42,7 @@ function defineJshUnitMock($set,jsh,Packages) {
 					https: {}
 				});
 
-				/** @type { jsh.unit.mock.handler[] } */
+				/** @type { slime.jsh.unit.mock.handler[] } */
 				var handlers = [];
 
 				tomcat.map({
@@ -148,7 +148,7 @@ function defineJshUnitMock($set,jsh,Packages) {
 
 			/**
 			 * @param { { loopback: boolean, src: any } } o
-			 * @returns { jsh.unit.mock.handler }
+			 * @returns { slime.jsh.unit.mock.handler }
 			 */
 			var MockBitbucketApi = function(o) {
 				var hgserve;
@@ -368,7 +368,7 @@ function defineJshUnitMock($set,jsh,Packages) {
 			if (jsh.unit.mock.Internet) jsh.unit.mock.Internet.bitbucket = $api.deprecate(jsh.unit.mock.Web.bitbucket);
 
 			/**
-			 *	@returns { jsh.unit.mock.handler }
+			 *	@returns { slime.jsh.unit.mock.handler }
 			 */
 			var MockGithubApi = function(o) {
 				return function(request) {
