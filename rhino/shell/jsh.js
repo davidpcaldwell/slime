@@ -25,7 +25,7 @@
 		$exports.engine = $exports.properties.get("jsh.engine");
 
 		$exports.run.evaluate.wrap = function(result) {
-			jsh.shell.exit(result.status);
+			$exports.exit(result.status);
 		};
 
 		$exports.exit = $context.exit;
@@ -513,11 +513,11 @@
 		};
 		$exports.jsh.relaunch = $api.experimental(function(p) {
 			if (!p) p = {};
-			var environment = $api.Function.mutating(p.environment)(jsh.shell.environment);
+			var environment = $api.Function.mutating(p.environment)($exports.environment);
 			$exports.jsh({
 				fork: true,
-				script: jsh.script.file,
-				arguments: jsh.script.arguments,
+				script: $context.api.script.file,
+				arguments: $context.api.script.arguments,
 				environment: environment,
 				evaluate: function(result) {
 					$exports.exit(result.status);
@@ -532,7 +532,7 @@
 					events.fire("installing");
 					p.install();
 					events.fire("installed");
-					jsh.shell.jsh.relaunch();
+					$exports.jsh.relaunch();
 				} else {
 					events.fire("satisfied");
 				}
@@ -540,7 +540,7 @@
 		);
 		$exports.run.evaluate.jsh = {};
 		$exports.run.evaluate.jsh.wrap = function(result) {
-			jsh.shell.exit(result.status);
+			$exports.exit(result.status);
 		}
 
 		//if (String($exports.properties.object.jsh.plugins)) {

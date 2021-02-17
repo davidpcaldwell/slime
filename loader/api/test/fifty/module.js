@@ -1,11 +1,13 @@
 //@ts-check
 (
 	/**
+	 * @param { $api } $api
+	 * @param { { library: { node: any } } } $context
 	 * @param { slime.fifty.Exports } $exports
 	 */
-	function($exports) {
+	function($api,$context,$exports) {
 		$exports.ast = function(p) {
-			return jsh.shell.tools.node.run({
+			return $context.library.node.run({
 				arguments: function(rv) {
 					if (p.node.debug) rv.push("--inspect-brk");
 					//	TODO	consider using stdin so that we can use loader.get("tsdoc.node.js").read(String)
@@ -142,7 +144,7 @@
 				//	TODO
 			}
 
-			var UnimplementedKind = jsh.js.Error.Type("UnimplementedKind");
+			var UnimplementedKind = $api.Error.Type({ name: "UnimplementedKind" });
 
 			var interpret = function(node,context) {
 				var kind = node.object.kind;

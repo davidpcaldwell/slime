@@ -441,14 +441,14 @@
 		);
 
 		$exports.embed = $api.Events.Function(function(p,events) {
-			var lock = new jsh.java.Thread.Monitor();
+			var lock = new $context.api.java.Thread.Monitor();
 			var started = false;
 			events.listeners.add("started", new lock.Waiter({
 				then: function() {
 					started = true;
 				}
 			}));
-			jsh.java.Thread.start(function() {
+			$context.api.java.Thread.start(function() {
 				try {
 					embed(p, events);
 				} catch (e) {

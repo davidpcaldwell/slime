@@ -88,7 +88,7 @@
 						};
 
 						this.getContentType = function() {
-							jsh.shell.echo("Content type: " + p.resource.type.toString());
+							$context.api.shell.echo("Content type: " + p.resource.type.toString());
 							return p.resource.type.toString();
 						};
 
@@ -106,8 +106,7 @@
 			};
 
 			var DataHandler = Packages.javax.activation.DataHandler;
-			jsh.shell.echo("Packages.javax.mail.Session = " + Packages.javax.mail.Session);
-			var MimeMultipart = Packages.javax.mail.internet.MimeMultipart;
+			$context.api.shell.echo("Packages.javax.mail.Session = " + Packages.javax.mail.Session);
 
 			var body = (function() {
 				if (bodyparts.length == 1) {
@@ -124,6 +123,7 @@
 
 			if (!attachments.length) {
 				throw new Error("Unimplemented; type checking below failed.");
+				// var MimeMultipart = Packages.javax.mail.internet.MimeMultipart;
 				// 		if (body.resource) {
 				// 			jsh.shell.echo("body.resource with no attachments");
 				// //			_rv.setDataHandler(new DataHandler(DataSource({ resource: body.resource })));
@@ -135,7 +135,7 @@
 				// 		}
 			} else {
 				//	TODO	the below is confusing. We know that if attachments.length is 0, this is a multipart
-				jsh.shell.echo("attachments: body=" + body + " attachments=" + attachments);
+				$context.api.shell.echo("attachments: body=" + body + " attachments=" + attachments);
 				var content = new $context.api.mime.Multipart({
 					subtype: "mixed",
 					parts: [body].concat(attachments)
@@ -143,9 +143,6 @@
 				_rv.setDataHandler(new DataHandler(DataSource({ resource: content })));
 			}
 			return _rv;
-		};
-
-		var Message = function() {
 		};
 
 		/**
@@ -210,7 +207,7 @@
 								}
 								throw new Error();
 							})();
-							_message.setRecipients(Packages.javax.mail.Message.RecipientType.TO, jsh.java.Array.create({
+							_message.setRecipients(Packages.javax.mail.Message.RecipientType.TO, $context.api.java.Array.create({
 								type: Packages.javax.mail.Address,
 								array: [
 									_address
@@ -236,11 +233,11 @@
 							Packages.java.lang.Thread.currentThread().setContextClassLoader(before);
 							_baos.close();
 							var _bytes = _baos.toByteArray();
-							return new jsh.io.Resource({
+							return new $context.api.io.Resource({
 								type: "message/rfc822",
 								read: {
 									binary: function() {
-										return jsh.io.java.adapt(new Packages.java.io.ByteArrayInputStream(_bytes));
+										return $context.api.io.java.adapt(new Packages.java.io.ByteArrayInputStream(_bytes));
 									}
 								}
 							});
@@ -254,7 +251,7 @@
 				}
 			};
 			return rv;
-		};
+		}
 		Session.properties = {
 			GMAIL: {
 				"mail.store.protocol": "imaps",

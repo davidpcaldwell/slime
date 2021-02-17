@@ -2,7 +2,9 @@ namespace slime.jrunscript.mail {
 	interface Context {
 		api: {
 			java: slime.jrunscript.host.Exports
+			io: slime.jrunscript.io.Exports
 			mime: any
+			shell: jsh.shell.Exports
 		}
 	}
 

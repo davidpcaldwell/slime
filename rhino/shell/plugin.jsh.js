@@ -70,6 +70,7 @@
 						,java: jsh.java
 						,io: jsh.io
 						,file: jsh.file
+						,script: void(0)
 					},
 					stdio: stdio,
 					_getSystemProperties: function() {
@@ -88,6 +89,14 @@
 						return $slime.jsh(configuration,_invocation)
 					}
 				};
+
+				//	TODO	necessary because dependencies are entangled here
+				Object.defineProperty(context.api, "script", {
+					get: function() {
+						return jsh.script;
+					}
+				});
+
 				$loader.run(
 					"jsh.js",
 					{

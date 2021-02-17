@@ -19,7 +19,11 @@
 		jsh.shell.tools.node.modules.require({ name: "@microsoft/tsdoc" });
 
 		/** @type { slime.fifty.Exports } */
-		var module = jsh.script.loader.module("module.js");
+		var module = jsh.script.loader.module("module.js", {
+			library: {
+				node: jsh.shell.tools.node
+			}
+		});
 
 		var ast = module.ast({
 			node: {

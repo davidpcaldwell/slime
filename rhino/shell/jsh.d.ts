@@ -10,6 +10,7 @@ namespace jsh.shell {
 				java: slime.jrunscript.host.Exports
 				io: slime.jrunscript.io.Exports
 				file: slime.jrunscript.file.Exports
+				script: jsh.script.Exports
 			}
 		}
 	}
