@@ -17,6 +17,11 @@
 				var environment = $api.Object.compose(jsh.shell.environment, {
 					PATH: PATH.toString()
 				});
+				var readme = (function(input) {
+					var readme = input.directory.getFile("typedoc-index.md");
+					if (readme) return readme.toString();
+					return "none";
+				})(p.options.input);
 				var result = jsh.shell.run({
 					command: shell.getRelativePath("local/jsh/lib/node/bin/typedoc"),
 					arguments: [
@@ -24,7 +29,7 @@
 						"--tsconfig", p.options.input.directory.getRelativePath("jsconfig.json"),
 						"--mode", "file",
 						"--includeDeclarations", "--excludeExternals",
-						"--readme", "none"
+						"--readme", readme
 						//	TODO	add --name
 						//,p.options.input
 					],

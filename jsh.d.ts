@@ -20,7 +20,7 @@ interface jsh {
 		ncdbg: {}
 	}
 
-	script: jsh.script.Exports
+	script: slime.jsh.script.Exports
 
 	shell: slime.jrunscript.shell.Exports & jsh.shell.Exports & {
 		/** @deprecated */
