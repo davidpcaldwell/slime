@@ -10,7 +10,7 @@ interface jsh {
 		git: slime.jrunscript.git.Exports
 		hg: any
 		node: slime.jrunscript.node.Exports
-		install: jsh.tools.install.Exports
+		install: slime.jsh.tools.install.Exports
 		github: slime.jrunscript.tools.github.Exports
 		gradle: any
 	} & {
@@ -24,7 +24,7 @@ interface jsh {
 
 	shell: slime.jrunscript.shell.Exports & jsh.shell.Exports & {
 		/** @deprecated */
-		getopts: jsh.script["getopts"]
+		getopts: jsh["script"]["getopts"]
 	}
 
 	unit: {
@@ -32,7 +32,7 @@ interface jsh {
 		html: any
 		Suite: any
 		interface: any
-		$slime: jsh.plugin.$slime
+		$slime: slime.jsh.plugin.$slime
 		jsapi: any
 		Verify: slime.definition.unit.Verify.Factory
 		fifty: {
@@ -75,5 +75,5 @@ interface jsh {
 	file: slime.jrunscript.file.Exports
 	time: slime.time.Exports
 	ip: any
-	httpd: jsh.httpd.Exports
+	httpd: slime.jsh.httpd.Exports
 }

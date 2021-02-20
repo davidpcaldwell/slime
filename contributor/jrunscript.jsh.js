@@ -292,8 +292,11 @@
 		suite.add("testing/html", new jsh.unit.html.Part({
 			pathname: SRC.getRelativePath("loader/api/api.html")
 		}));
-		suite.add("testing/jsh.unit/definition", new jsh.unit.html.Part({
+		suite.add("testing/jsh.unit/definition/jsapi", new jsh.unit.html.Part({
 			pathname: SRC.getRelativePath("jsh/unit/plugin.jsh.api.html")
+		}));
+		suite.add("testing/jsh.unit/definition/fifty/web", FiftyPart({
+			file: SRC.getFile("jsh/unit/plugin.jsh.web.fifty.ts")
 		}));
 		suite.add("testing/fifty", new jsh.unit.html.Part({
 			pathname: SRC.getRelativePath("loader/api/test/fifty/test/data/api.html")

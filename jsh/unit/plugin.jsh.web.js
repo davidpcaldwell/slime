@@ -40,7 +40,9 @@
 					//	TODO	https doesn't really work, as CONNECT to the real destination is attempted when requests for that
 					//			host arrive
 					var tomcat = new jsh.httpd.Tomcat({
-						https: {}
+						https: {
+							port: void(0)
+						}
 					});
 
 					/** @type { slime.jsh.unit.mock.handler[] } */
