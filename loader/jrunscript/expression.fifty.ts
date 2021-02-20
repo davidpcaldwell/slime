@@ -270,6 +270,7 @@ namespace Packages {
 		}
 		export namespace io {
 			export interface InputStream {
+				read(): any
 				getClass(): any
 			}
 			export interface OutputStream {

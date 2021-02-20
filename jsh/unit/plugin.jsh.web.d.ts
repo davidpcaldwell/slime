@@ -1,6 +1,9 @@
 namespace slime.jsh.unit {
 	interface mock {
 		Web: mock.Web.constructor
+		Internet: any
+		Hg: any
+		git: any
 	}
 }
 
