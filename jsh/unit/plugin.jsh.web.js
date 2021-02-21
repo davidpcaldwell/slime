@@ -371,7 +371,8 @@
 				if (jsh.unit.mock.Internet) jsh.unit.mock.Internet.bitbucket = $api.deprecate(jsh.unit.mock.Web.bitbucket);
 
 				/**
-				 *	@returns { slime.jsh.unit.mock.handler }
+				 * @param { { src: slime.jsh.unit.mock.github.src } } o
+				 * @returns { slime.jsh.unit.mock.handler }
 				 */
 				var MockGithubApi = function(o) {
 					return function(request) {

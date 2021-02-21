@@ -10,22 +10,10 @@ namespace slime.jsh.unit {
 		export type handler = slime.servlet.handler & { stop?: () => void }
 
 		export namespace Web {
-			export interface hg {
-				/** an object that describes the Mercurial configuration needed for Mercurial to use this mock internet. */
-				config: object
-			}
-
-			export interface https {
-				port: number
-				client: slime.jrunscript.http.client.Client
-			}
-
-			export interface argument {
-				trace: boolean
-			}
-
 			namespace constructor {
-				export type Function = new (o?: slime.jsh.unit.mock.Web.argument) => slime.jsh.unit.mock.Web
+				export type Function = new (o?: {
+					trace: boolean
+				}) => slime.jsh.unit.mock.Web
 			}
 
 			export type constructor = constructor.Function & {
@@ -46,12 +34,18 @@ namespace slime.jsh.unit {
 			/** described on definition page */
 			jrunscript: Function
 
-			https: Web.https
+			https: {
+				port: number
+				client: slime.jrunscript.http.client.Client
+			}
 
 			/** the environment to use when launching a process that proxies through this mock internet; sets http_proxy variable */
 			environment: object
 
-			hg: Web.hg
+			hg: {
+				/** an object that describes the Mercurial configuration needed for Mercurial to use this mock internet. */
+				config: object
+			}
 
 			start: () => void
 			run: () => void
@@ -114,6 +108,16 @@ namespace slime.jsh.unit {
 				}
 			}
 		//@ts-ignore
-		)(fifty)
+		)(fifty);
+
+		export namespace github {
+			interface User {
+				[x: string]: slime.jrunscript.git.Repository.Local
+			}
+
+			export interface src {
+				[x: string]: User
+			}
+		}
 	}
 }
