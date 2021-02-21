@@ -48,7 +48,7 @@ namespace slime.jsh.script {
 
 			/**
 			 * Executes the program with the given descriptor inside this shell, with the arguments of the shell, and exits the
-			 * shell with the exit status returned by the {Command}.
+			 * shell with the exit status returned by the {@link Command}.
 			 */
 			wrap: (descriptor: Descriptor) => void
 		}

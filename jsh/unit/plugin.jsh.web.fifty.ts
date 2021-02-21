@@ -38,11 +38,15 @@ namespace slime.jsh.unit {
 			/** adds a handler that can supply parts of the mock internet */
 			add: (handler: jsh.unit.mock.handler) => void
 
+			port: number
+
 			/** described on definition page */
 			client: slime.jrunscript.http.client.Client
 
 			/** described on definition page */
 			jrunscript: Function
+
+			https: Web.https
 
 			/** the environment to use when launching a process that proxies through this mock internet; sets http_proxy variable */
 			environment: object
@@ -50,10 +54,8 @@ namespace slime.jsh.unit {
 			hg: Web.hg
 
 			start: () => void
-
+			run: () => void
 			stop: () => void
-
-			https: Web.https
 		}
 
 		(
@@ -66,27 +68,48 @@ namespace slime.jsh.unit {
 					fifty.verify("mock").is("mock");
 
 					var web = new jsh.unit.mock.Web({ trace: true });
-					web.add(function(request) {
-						if (request.headers.value("host") == "mockweb.slime.com") {
-							return {
-								status: {
-									code: 200
-								},
-								body: {
-									type: "application/json",
-									string: JSON.stringify({ path: request.path })
-								}
-							}
-						}
-						return void(0);
-					});
+					web.add(fifty.$loader.module("test/mock-echo-handler.js"));
 					web.start();
+
+					//	HTTP interface
 					var client = web.client;
 					var response = client.request({
 						url: "http://mockweb.slime.com/foo-bar-baz"
 					});
-					var json: { path: string } = JSON.parse(response.body.stream.character().asString());
+					var json: { method: string, path: string } = JSON.parse(response.body.stream.character().asString());
+					fifty.verify(json).method.is("GET");
 					fifty.verify(json).path.is("foo-bar-baz");
+
+					//	Try to tunnel
+					try {
+						var secured = client.request({
+							url: "https://mockweb.slime.com/foo-bar-baz"
+						});
+					} catch (e) {
+						jsh.shell.console("tunnel");
+						jsh.shell.console("tunnel error: " + JSON.stringify({
+							type: e.type,
+							message: e.message
+						}));
+					}
+
+					//	HTTPS interface
+					fifty.verify(web).https.port.is.type("number");
+					var secure = web.https.client;
+					try {
+						jsh.http.test.disableHttpsSecurity();
+						var secured = secure.request({
+							url: "https://mockweb.slime.com/foo-bar-baz"
+						});
+						jsh.shell.console("Success.");
+					} catch (e) {
+						jsh.shell.console("HTTPS connection");
+						jsh.shell.console("tunnel error: " + JSON.stringify({
+							type: e.type,
+							message: e.message
+						}));
+					}
+
 					web.stop();
 				}
 			}
