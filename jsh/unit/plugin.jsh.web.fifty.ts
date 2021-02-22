@@ -18,7 +18,7 @@ namespace slime.jsh.unit {
 
 			export type constructor = constructor.Function & {
 				bitbucket: (o: {}) => handler
-				github: (o: {}) => handler
+				github: (o: { src: slime.jsh.unit.mock.github.src }) => handler
 			}
 		}
 
@@ -109,15 +109,5 @@ namespace slime.jsh.unit {
 			}
 		//@ts-ignore
 		)(fifty);
-
-		export namespace github {
-			interface User {
-				[x: string]: slime.jrunscript.git.Repository.Local
-			}
-
-			export interface src {
-				[x: string]: User
-			}
-		}
 	}
 }
