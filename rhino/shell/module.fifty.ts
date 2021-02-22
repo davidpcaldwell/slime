@@ -159,13 +159,22 @@ namespace slime.jrunscript.shell {
 		PWD: slime.jrunscript.file.Directory
 
 		jrunscript: any
+
 		properties: {
 			object: any
+
+			/**
+			 * Returns the value of the specified system property, or `null` if it does not have a value.
+			 *
+			 * @param name
+			 */
 			get(name: string): string
+
 			file(name: any): any
 			directory(name: any): any
 			searchpath(name: any): any
 		}
+
 		system: any
 		rhino: any
 		kotlin: any

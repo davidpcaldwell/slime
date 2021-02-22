@@ -440,7 +440,7 @@
 								rv.push("-p", String(port));
 								//	Adding verbose output causes the server to print a message when it starts
 								rv.push("-v");
-								rv.push("--web-conf", CONFIG);
+								rv.push("--web-conf", CONFIG.toString());
 								// jsh.shell.console("hg args = " + rv.join(" "));
 								return rv;
 							})(),

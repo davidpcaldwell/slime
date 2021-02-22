@@ -22,7 +22,7 @@ interface jsh {
 
 	script: slime.jsh.script.Exports
 
-	shell: slime.jrunscript.shell.Exports & jsh.shell.Exports & {
+	shell: slime.jsh.shell.Exports & {
 		/** @deprecated */
 		getopts: jsh["script"]["getopts"]
 	}

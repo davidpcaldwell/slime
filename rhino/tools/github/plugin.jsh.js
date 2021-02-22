@@ -11,7 +11,6 @@
 				return Boolean(jsh.unit.mock.Web);
 			},
 			load: function() {
-				jsh.shell.console("Loading GitHub mock ...");
 				/**
 				 * @param { { src: slime.jsh.unit.mock.github.src } } o
 				 * @returns { slime.jsh.unit.mock.handler }

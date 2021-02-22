@@ -33,18 +33,6 @@ namespace slime.jrunscript.tools.github {
 	function(
 		fifty: slime.fifty.test.kit
 	) {
-		fifty.tests.mock = function() {
-			fifty.global.jsh.loader.plugins(fifty.global.jsh.shell.jsh.src.getSubdirectory("rhino/tools/github"));
-			const plugin = fifty.global.jsh.unit.mock.Web.github({
-				src: {
-					davidpcaldwell: {
-						slime: fifty.global.jsh.tools.git.Repository({ directory: fifty.global.jsh.shell.jsh.src })
-					}
-				}
-			});
-			var type: string = typeof(plugin);
-			fifty.verify(type).is("function");
-		}
 
 		fifty.tests.suite = function() {
 			const verify = fifty.verify;

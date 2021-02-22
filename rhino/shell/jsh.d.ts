@@ -15,6 +15,8 @@ namespace slime.jsh.shell {
 		}
 	}
 
+	type Argument = string | slime.jrunscript.file.Pathname | slime.jrunscript.file.Node | slime.jrunscript.file.File | slime.jrunscript.file.Directory
+
 	interface Exports extends slime.jrunscript.shell.Exports {
 		/**
 		 * The JavaScript engine executing the loader process for the shell, e.g., `rhino`, `nashorn`.
@@ -41,7 +43,15 @@ namespace slime.jsh.shell {
 		rhino: any
 		shell: any
 		jsh: {
-			(p: any): any
+			(p: {
+				shell?: slime.jrunscript.file.Directory
+				script: slime.jrunscript.file.File
+				fork?: boolean
+				evaluate?: (p: any) => any
+				arguments?: Argument[]
+				environment?: any
+				stdio?: any
+			}): any
 			src?: slime.jrunscript.file.Directory
 			require: (p: { satisfied: () => boolean, install: () => void }, events?: $api.Events.Function.Receiver ) => void
 			lib?: slime.jrunscript.file.Directory
