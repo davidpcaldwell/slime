@@ -1,35 +1,12 @@
 //@ts-check
 
-/**
- * @typedef {object} slime.jrunscript.tools.github.Context
- * @property { { http: slime.jrunscript.http.client.Exports, shell: jsh["shell"] } } library
- */
-
-/**
- * @typedef { object } slime.jrunscript.tools.github.Repository
- * @property { number } id
- * @property { string } node_id
- * @property { string } name
- * @property { string } full_name
- */
-
-/**
- * @typedef { object } slime.jrunscript.tools.github.Session
- * @property { { list: () => slime.jrunscript.tools.github.Repository[] } } repositories
- */
-
-/**
- * @typedef {object} slime.jrunscript.tools.github.Exports
- * @property { (o: any) => slime.jrunscript.tools.github.Session } Session
- */
-
 (
 	/**
-	 * @param {slime.jrunscript.tools.github.Context} $context
-	 * @param {slime.jrunscript.tools.github.Exports} $exports
-	 * @param {*} Packages
+	 * @param { Packages } Packages
+	 * @param { slime.jrunscript.tools.github.Context } $context
+	 * @param { slime.jrunscript.tools.github.Exports } $exports
 	 */
-	function($context,$exports,Packages) {
+	function(Packages,$context,$exports) {
 		$exports.Session = function(o) {
 			var apiUrl = function(relative) {
 				return "https://api.github.com/" + relative;
@@ -136,4 +113,4 @@
 		}
 	}
 //@ts-ignore
-)($context,$exports,Packages)
+)(Packages,$context,$exports)

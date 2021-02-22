@@ -11,8 +11,13 @@
 //	Contributor(s):
 //	END LICENSE
 
+//@ts-check
 (
-	function() {
+	/**
+	 *
+	 * @param { jsh } jsh
+	 */
+	function(jsh) {
 		var parameters = jsh.script.getopts({
 			options: {
 				//	undocumented; used by suite.jsh.js
@@ -44,6 +49,10 @@
 
 		var SRC = jsh.script.file.parent.parent;
 
+		/**
+		 *
+		 * @param { { file: slime.jrunscript.file.File }} p
+		 */
 		var FiftyPart = function(p) {
 			return jsh.unit.fifty.Part({
 				shell: environment.jsh.unbuilt.src,
@@ -178,7 +187,7 @@
 			environment: { noselfping: parameters.options.noselfping }
 		}));
 		suite.add("jrunscript/shell/fifty", FiftyPart({
-			file: SRC.getRelativePath("rhino/shell/module.fifty.ts")
+			file: SRC.getFile("rhino/shell/module.fifty.ts")
 		}));
 		suite.add("jrunscript/shell/browser", new jsh.unit.html.Part({
 			pathname: SRC.getRelativePath("rhino/shell/browser/api.html")
@@ -198,8 +207,8 @@
 		if (!parameters.options.issue138) suite.add("jrunscript/tools/git", new jsh.unit.html.Part({
 			pathname: SRC.getRelativePath("rhino/tools/git/api.html")
 		}));
-		suite.add("jrunscript/tools/github", new jsh.unit.html.Part({
-			pathname: SRC.getRelativePath("rhino/tools/github/api.html")
+		suite.add("jrunscript/tools/github", FiftyPart({
+			file: SRC.getFile("rhino/tools/github/module.fifty.ts")
 		}));
 		suite.add("jrunscript/tools/node", new jsh.unit.html.Part({
 			pathname: SRC.getRelativePath("rhino/tools/node/api.html")
@@ -442,4 +451,5 @@
 			part: parameters.options.part
 		});
 	}
-)();
+//@ts-ignore
+)(jsh);

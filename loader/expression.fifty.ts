@@ -398,8 +398,10 @@ namespace slime {
     }
 }
 
-declare type api = { convert: (input: number) => number };
-declare type factory = slime.Loader.Product<{ scale: number }, api>;
+namespace slime.test {
+    declare type api = { convert: (input: number) => number };
+    export type factory = slime.Loader.Product<{ scale: number }, api>;
+}
 
 (
 	function(fifty: slime.fifty.test.kit) {
@@ -505,14 +507,14 @@ declare type factory = slime.Loader.Product<{ scale: number }, api>;
 		tests.loader = {};
 
 		tests.loader.closure = function() {
-			var closure: factory = $loader.value("test/data/closure.js");
+			var closure: slime.test.factory = $loader.value("test/data/closure.js");
 			var context = { scale: 2 };
 			var module = closure(context);
 			verify(module).convert(2).is(4);
 		};
 
 		tests.loader.$export = function() {
-			var file: factory = $loader.factory("test/data/module-export.js");
+			var file: slime.test.factory = $loader.factory("test/data/module-export.js");
 			var api = file({ scale: 2 });
 			verify(api).convert(3).is(6);
 		}
