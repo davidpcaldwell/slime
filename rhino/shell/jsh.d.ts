@@ -51,6 +51,8 @@ namespace slime.jsh.shell {
 				arguments?: Argument[]
 				environment?: any
 				stdio?: any
+				directory?: any
+				workingDirectory?: any
 			}): any
 			src?: slime.jrunscript.file.Directory
 			require: (p: { satisfied: () => boolean, install: () => void }, events?: $api.Events.Function.Receiver ) => void

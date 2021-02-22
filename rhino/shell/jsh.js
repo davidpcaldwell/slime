@@ -233,6 +233,10 @@
 		};
 
 		$exports.jsh = Object.assign(
+			/**
+			 *
+			 * @param { Parameters<slime.jsh.shell.Exports["jsh"]>[0] } p
+			 */
 			function(p) {
 				if (!arguments[0].script && !arguments[0].arguments) {
 					$api.deprecate(function() {
@@ -251,10 +255,10 @@
 				var argumentsFactory = $api.Function.mutating(p.arguments);
 				p.arguments = argumentsFactory([]);
 
-				if (p.script.file && !p.script.pathname) {
+				if (p.script["file"] && !p.script.pathname) {
 					$api.deprecate(function() {
 						//	User supplied Pathname; should have supplied file
-						p.script = p.script.file;
+						p.script = p.script["file"];
 					})();
 				}
 				//	TODO	need to detect directives in the given script and fork if they are present
@@ -272,6 +276,10 @@
 						)
 					);
 				} else {
+					var directory = (function() {
+						if (p.directory) return p.directory;
+						if (p.workingDirectory) return p.workingDirectory;
+					})();
 					var environment = getJshEnvironment(p,fork);
 					var configuration = new JavaAdapter(
 						Packages.inonit.script.jsh.Shell.Environment,
@@ -341,8 +349,8 @@
 									}
 									// }
 								}
-								if (p.workingDirectory) {
-									rv.setProperty("user.dir", p.workingDirectory.pathname.java.adapt());
+								if (directory) {
+									rv.setProperty("user.dir", directory.pathname.java.adapt());
 								}
 								return rv;
 							}
@@ -400,9 +408,11 @@
 							script: p.script,
 							arguments: p.arguments
 						},
-						classpath: p.classpath,
+						//	TODO	was unused, but documented; perhaps should bring back through refactoring
+						//classpath: p.classpath,
 						environment: environment,
-						workingDirectory: p.workingDirectory
+						directory: directory,
+						workingDirectory: directory
 					});
 				}
 			},

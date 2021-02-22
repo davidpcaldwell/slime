@@ -31,6 +31,10 @@
 
 		$exports.listeners = module.events.listeners;
 
+		/**
+		 *
+		 * @param { Parameters<slime.jrunscript.shell.Exports["run"]>[0] } p
+		 */
 		var getStdio = function(p) {
 			var rv = (function() {
 				if (typeof(p.stdio) != "undefined") return p.stdio;
@@ -108,6 +112,10 @@
 			return rv;
 		};
 
+		/**
+		 *
+		 * @param { Parameters<slime.jrunscript.shell.Exports["run"]>[0] } p
+		 */
 		var getDirectory = function(p) {
 			var getDirectoryProperty = function(p) {
 				if (p.directory && p.directory.pathname) {
@@ -125,6 +133,11 @@
 
 		$exports.environment = $context.api.java.Environment( ($context._environment) ? $context._environment : Packages.inonit.system.OperatingSystem.Environment.SYSTEM );
 
+		/**
+		 *
+		 * @param { Parameters<slime.jrunscript.shell.Exports["run"]>[0] } p
+		 * @param {*} events
+		 */
 		var run = function(p,events) {
 			var as;
 			if (p.as) {
@@ -385,7 +398,13 @@
 			return evaluate(result);
 		};
 
-		$exports.run = $api.Events.Function(run);
+		$exports.run = Object.assign(
+			$api.Events.Function(run),
+			{
+				evaluate: void(0),
+				stdio: void(0)
+			}
+		);
 
 		$exports.run.evaluate = function(result) {
 			if (result.error) throw result.error;

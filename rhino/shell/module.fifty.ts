@@ -145,7 +145,26 @@ namespace slime.jrunscript.shell {
 
 		PATH?: any
 
-		run?: any
+		run: {
+			(p: {
+				as?: any
+				environment?: any
+				tokens?: any
+				command?: any
+				arguments?: any
+				on?: any
+				directory?: any
+				workingDirectory?: any
+				stdio?: any
+				stdout?: any
+				stdin?: any
+				stderr?: any
+				evaluate?: (p: any) => any
+			}, events?: any): any
+
+			evaluate: any
+			stdio: any
+		}
 
 		os: {
 			name: any
