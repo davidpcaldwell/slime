@@ -298,8 +298,25 @@ if [ "${JDK_MAJOR_VERSION}" == "11" ]; then
 fi
 
 if [ "$0" == "bash" ]; then
+	#	TODO	below is an attempt to get this working with a private GitHub repository. There are many problems with this:
+	#			*	can't use the standard java.net.Authenticator because GitHub uses 404 rather than 401 when unauthorized
+	#			*	need to delve into sun.* classes to try to manipulate cached authentication data. May still be possible in
+	#				principle, but possibly more effort than it is worth given that repository will eventually be public.
+	#			If repository is made public, this may be removed; authorize.js can probably be removed.
+	get_authorization_script() {
+		SCRIPT=$1
+		if [ -n "${JSH_HTTP_PROXY_HOST}" ]; then
+			CURL_PROXY_ARGUMENTS="-x ${JSH_LAUNCHER_GITHUB_PROTOCOL}://${JSH_HTTP_PROXY_HOST}:${JSH_HTTP_PROXY_PORT}"
+		fi
+		AUTHORIZATION_SCRIPT_URL="${JSH_LAUNCHER_GITHUB_PROTOCOL}://raw.githubusercontent.com/davidpcaldwell/slime/master/rhino/tools/github/${SCRIPT}"
+		echo $(curl -L ${CURL_PROXY_ARGUMENTS} -u ${JSH_GITHUB_USER}:${JSH_GITHUB_PASSWORD} ${AUTHORIZATION_SCRIPT_URL})
+	}
+
 	JSH_NETWORK_ARGUMENTS="${PROXY_HOST_ARGUMENT} ${PROXY_PORT_ARGUMENT} ${JSH_GITHUB_USER_ARGUMENT} ${JSH_GITHUB_PASSWORD_ARGUMENT}"
-	${JRUNSCRIPT} ${JSH_NETWORK_ARGUMENTS} -e "load('${JSH_LAUNCHER_GITHUB_PROTOCOL}://raw.githubusercontent.com/davidpcaldwell/slime/master/rhino/jrunscript/api.js?jsh')" "$@"
+	#	AUTHORIZATION_SCRIPT=$(get_authorization_script authorize.js)
+	#	echo ${AUTHORIZATION_SCRIPT}
+	AUTHORIZATION_SCRIPT="//  no-op"
+	${JRUNSCRIPT} ${JSH_NETWORK_ARGUMENTS} -e "${AUTHORIZATION_SCRIPT}" -e "load('${JSH_LAUNCHER_GITHUB_PROTOCOL}://raw.githubusercontent.com/davidpcaldwell/slime/master/rhino/jrunscript/api.js?jsh')" "$@"
 else
 	${JRUNSCRIPT} $(dirname $0)/rhino/jrunscript/api.js jsh "$@"
 fi

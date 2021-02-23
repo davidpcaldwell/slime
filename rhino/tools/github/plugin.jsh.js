@@ -12,13 +12,27 @@
 			},
 			load: function() {
 				/**
-				 * @param { { src: slime.jsh.unit.mock.github.src } } o
+				 * @param { { src: slime.jsh.unit.mock.github.src, private: boolean } } o
 				 * @returns { slime.jsh.unit.mock.handler }
 				 */
 				var MockGithubApi = function(o) {
+					var authorize = function(request) {
+						if (o.private) {
+							jsh.shell.console("Private: " + request.path);
+							var authorization = request.headers.value("Authorization");
+							jsh.shell.console("Authorization: " + authorization);
+							if (!authorization) return {
+								status: {
+									code: 404
+								}
+							}
+						}
+					}
 					return function(request) {
 						var host = request.headers.value("host");
 						if (host == "raw.githubusercontent.com") {
+							var response = authorize(request);
+							if (response) return response;
 							var pattern = /^(.*?)\/(.*?)\/(.*?)\/(.*)$/;
 							var match = pattern.exec(request.path);
 							var user = match[1];

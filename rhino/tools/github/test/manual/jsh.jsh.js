@@ -9,6 +9,9 @@
 			var web = new jsh.unit.mock.Web({ trace: true });
 			jsh.loader.plugins(jsh.script.file.parent.parent.parent);
 			web.add(jsh.unit.mock.Web.github({
+				//	TODO	flip to true to test possibility of accessing private repositories
+				//	TODO	this should actually be per-repository, though
+				private: false,
 				src: {
 					davidpcaldwell: {
 						slime: jsh.tools.git.Repository({ directory: jsh.script.file.parent.parent.parent.parent.parent.parent })
@@ -38,6 +41,9 @@
 				command.push("JSH_LAUNCHER_GITHUB_PROTOCOL=http");
 				command.push("JSH_GITHUB_API_PROTOCOL=http");
 			}
+			if (p.token) {
+				command.push("JSH_GITHUB_USER=davidpcaldwell", "JSH_GITHUB_PASSWORD=" + p.token);
+			}
 			command.push("bash", "-s");
 			command.push("http://raw.githubusercontent.com/davidpcaldwell/slime/master/jsh/test/jsh-data.jsh.js");
 			return command;
@@ -61,7 +67,8 @@
 					var web = startMock();
 					jsh.shell.console("HTTP port: " + web.port + " HTTPS port: " + web.https.port);
 					var command = getCommand({
-						mock: web
+						mock: web,
+						token: jsh.shell.jsh.src.getFile("local/github/token").read(String)
 					});
 					emit(command);
 					web.run();
