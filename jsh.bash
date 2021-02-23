@@ -241,7 +241,7 @@ if [ -z "${JRUNSCRIPT}" ]; then
 fi
 
 if [ -z "${JRUNSCRIPT}" ]; then
-	install_default_jdk ${JDK_LOCAL}
+	install_jdk ${JDK_LOCAL}
 	JRUNSCRIPT="${JDK_LOCAL}/bin/jrunscript"
 fi
 
