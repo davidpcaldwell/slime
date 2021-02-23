@@ -346,7 +346,7 @@
 								var repository = jsh.tools.git.Repository({ directory: $context.base });
 								var allowDivergeFromMaster = false;
 								var vsLocalOriginMaster = jsh.wf.git.compareTo("origin/master")(repository);
-								if (vsLocalOriginMaster.behind.length && !allowDivergeFromMaster) {
+								if (vsLocalOriginMaster.behind && vsLocalOriginMaster.behind.length && !allowDivergeFromMaster) {
 									jsh.shell.console("Behind origin/master by " + vsLocalOriginMaster.behind.length + " commits.");
 									jsh.shell.exit(1);
 								}
@@ -356,7 +356,7 @@
 								//	maybe check branch above if we allow non-master-based workflow
 								//	Perhaps allow a command-line argument or something for this, need to think through branching
 								//	strategy overall
-								if (vsOriginMaster.behind.length && !allowDivergeFromMaster) {
+								if (vsLocalOriginMaster.behind && vsOriginMaster.behind.length && !allowDivergeFromMaster) {
 									jsh.shell.console("Behind origin/master by " + vsOriginMaster.behind.length + " commits.");
 									jsh.shell.exit(1);
 								}
