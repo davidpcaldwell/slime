@@ -42,6 +42,7 @@ namespace slime.jsh.script {
 				boolean: (c: { longname: string }) => Processor<any>
 				number: (c: { longname: string }) => Processor<any>
 				pathname: (c: { longname: string }) => Processor<any>
+				array: (c: { longname: string, value: (s: string) => any }) => Processor<any>
 			},
 
 			Application: (p: Descriptor) => Application
@@ -59,6 +60,28 @@ namespace slime.jsh.script {
 			fifty: slime.fifty.test.kit
 		) {
 			fifty.tests.cli = {
+				option: function() {
+					var invocation: Invocation<{ a: string, b: number[], c: string }> = {
+						options: {
+							a: void(0),
+							b: [],
+							c: void(0)
+						},
+						arguments: ["--a", "A", "--b", "1", "--b", "3", "--c", "C"]
+					};
+					fifty.verify(invocation).options.b.length.is(0);
+					var after: Invocation<{ a: string, b: number[], c: string }> = subject.cli.option.array({
+						longname: "b",
+						value: Number
+					})(invocation);
+					fifty.verify(after).options.b.length.is(2);
+					fifty.verify(after).options.b[0].is(1);
+					fifty.verify(after).options.b[1].is(3);
+					fifty.verify(after).arguments[0].is("--a");
+					fifty.verify(after).arguments[1].is("A");
+					fifty.verify(after).arguments[2].is("--c");
+					fifty.verify(after).arguments[3].is("C");
+				},
 				run: function() {
 					var was: Invocation<any>;
 					var invocationWas = function(invocation: Invocation<any>) {
@@ -121,6 +144,7 @@ namespace slime.jsh.script {
 			};
 
 			fifty.tests.suite = function() {
+				fifty.run(fifty.tests.cli.option);
 				fifty.run(fifty.tests.cli.run);
 				fifty.run(fifty.tests.cli.wrap);
 			}

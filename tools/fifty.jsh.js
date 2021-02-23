@@ -16,7 +16,23 @@
 				test: {
 					jsh: $api.Function.pipe(
 						jsh.wf.cli.$f.option.boolean({ longname: "debug:rhino" }),
+						jsh.script.cli.option.array({
+							longname: "property",
+							value: function(string) {
+								var tokens = string.split("=");
+								//	TODO	allow setting property to "true" with length 1, maybe test for presence of property
+								if (tokens.length != 2) throw new TypeError();
+								return {
+									name: tokens[0],
+									value: tokens[1]
+								}
+							}
+						}),
 						function(p) {
+							var properties = p.options["property"].reduce(function(rv,element) {
+								rv[element.name] = element.value;
+								return rv;
+							},{});
 							return jsh.shell.jsh({
 								shell: SLIME,
 								script: SLIME.getFile("loader/api/test/fifty/test.jsh.js"),
@@ -27,6 +43,7 @@
 										JSH_DEBUG_SCRIPT: "rhino"
 									} : {}
 								),
+								properties: properties,
 								evaluate: jsh.shell.run.evaluate.wrap
 							});
 						},
