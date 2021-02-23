@@ -610,34 +610,44 @@
 					}
 				};
 
-				jsh.wf.typescript = {
-					tsc: function(p) {
-						var config = (function() {
-							if (base.getFile("tsconfig.json")) return base.getFile("tsconfig.json");
-							if (base.getFile("jsconfig.json")) return base.getFile("jsconfig.json");
-							throw new Error("No TypeScript configuration file found at " + base);
-						})()
-						jsh.shell.run({
-							command: jsh.shell.jsh.src.getFile("tools/tsc.bash"),
-							arguments: [
-								"-tsconfig", config
-							],
-							evaluate: function(result) {
-								if (result.status) throw new Error("tsc failed.");
-							}
-						})
-					},
-					typedoc: function(p) {
-						jsh.shell.jsh({
-							shell: jsh.shell.jsh.src,
-							script: jsh.shell.jsh.src.getFile("tools/typedoc.jsh.js"),
-							arguments: [
-								"--output", base.getRelativePath("local/doc/typedoc"),
-								"--input", base
-							]
-						});
+				jsh.wf.typescript = (function() {
+					function getVersion(project) {
+						if (project.getFile("tsc.version")) return project.getFile("tsc.version").read(String);
+						return "4.0.5";
 					}
-				}
+
+					function getConfig(base) {
+						if (base.getFile("tsconfig.json")) return base.getFile("tsconfig.json");
+						if (base.getFile("jsconfig.json")) return base.getFile("jsconfig.json");
+						throw new Error("No TypeScript configuration file found at " + base);
+					}
+
+					return {
+						tsc: function(p) {
+							var project = (p && p.project) ? p.project : base;
+							var result = jsh.shell.jsh({
+								script: jsh.shell.jsh.src.getFile("tools/tsc.jsh.js"),
+								arguments: [
+									"-version", getVersion(project),
+									"-tsconfig", getConfig(project)
+								]
+							});
+							if (result.status) throw new Error("tsc failed.");
+						},
+						typedoc: function(p) {
+							var project = (p && p.project) ? p.project : base;
+							jsh.shell.jsh({
+								shell: jsh.shell.jsh.src,
+								script: jsh.shell.jsh.src.getFile("tools/typedoc.jsh.js"),
+								arguments: [
+									"--ts:version", getVersion(project),
+									"--tsconfig", getConfig(project),
+									"--output", project.getRelativePath("local/doc/typedoc"),
+								]
+							});
+						}
+					}
+				})();
 
 				jsh.wf.requireGitIdentity = Object.assign($api.Events.Function(function(p,events) {
 					var get = p.get || {

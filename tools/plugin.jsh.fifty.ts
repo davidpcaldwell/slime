@@ -167,8 +167,8 @@ namespace slime.jsh.wf {
 		}
 
 		typescript: {
-			tsc: () => void
-			typedoc: () => void
+			tsc: (p?: { project: slime.jrunscript.file.Directory }) => void
+			typedoc: (p?: { project: slime.jrunscript.file.Directory }) => void
 		}
 
 		/**

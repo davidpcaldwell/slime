@@ -1,3 +1,3 @@
 interface jsh {
-	wf: jsh.wf.Exports
+	wf: slime.jsh.wf.Exports
 }

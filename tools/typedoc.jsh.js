@@ -6,32 +6,35 @@
 	 */
 	function(jsh) {
 		$api.Function.pipe(
+			jsh.wf.cli.$f.option.string({ longname: "ts:version" }),
+			jsh.wf.cli.$f.option.pathname({ longname: "tsconfig" }),
 			jsh.wf.cli.$f.option.pathname({ longname: "output" }),
-			jsh.wf.cli.$f.option.pathname({ longname: "input" }),
 			function(p) {
+				jsh.shell.tools.rhino.require();
+				jsh.shell.tools.tomcat.require();
 				jsh.shell.tools.node.require();
-				jsh.shell.tools.node.modules.require({ name: "typescript" });
-				jsh.shell.tools.node.modules.require({ name: "typedoc" });
+				jsh.shell.tools.node.modules.require({ name: "typescript", version: p.options["ts:version"] });
+				jsh.shell.tools.node.modules.require({ name: "typedoc", version: "0.19.2" });
 				var shell = jsh.script.file.parent.parent;
 				var PATH = jsh.file.Searchpath(jsh.shell.PATH.pathnames.concat([shell.getRelativePath("local/jsh/lib/node/bin")]));
 				var environment = $api.Object.compose(jsh.shell.environment, {
 					PATH: PATH.toString()
 				});
-				var readme = (function(input) {
-					var readme = input.directory.getFile("typedoc-index.md");
+				var readme = (function(project) {
+					var readme = project.directory.getFile("typedoc-index.md");
 					if (readme) return readme.toString();
 					return "none";
-				})(p.options.input);
+				})(p.options.tsconfig.parent);
 				var result = jsh.shell.run({
 					command: shell.getRelativePath("local/jsh/lib/node/bin/typedoc"),
 					arguments: [
 						"--out", p.options.output,
-						"--tsconfig", p.options.input.directory.getRelativePath("jsconfig.json"),
+						"--tsconfig", p.options.tsconfig,
 						"--mode", "file",
-						"--includeDeclarations", "--excludeExternals",
+						"--includeDeclarations",
+						"--excludeExternals",
 						"--readme", readme
 						//	TODO	add --name
-						//,p.options.input
 					],
 					environment: environment,
 					evaluate: function(result) {
