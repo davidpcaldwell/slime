@@ -93,9 +93,8 @@
 
 			$exports.getopts = $loader.file("getopts.js", {
 				$arguments: $exports.arguments,
-				$filesystem: $context.api.file.filesystem,
-				$workingDirectory: $context.directory,
-				$Pathname: $context.api.file.Pathname
+				$Pathname: $context.api.file.Pathname,
+				parser: $context.api.parser
 			}).getopts;
 
 			$exports.Application = $loader.file("Application.js", {
@@ -134,6 +133,41 @@
 					return rv;
 				})();
 
+				/** @type { slime.jsh.script.Exports["cli"]["parser"] } */
+				var parser = (function(filesystem,workingDirectory) {
+					var isAbsolute = function(string) {
+						//	Cover UNIX case, Windows network drive, UNIX network drive
+						var start = string.substring(0,1);
+						if (start == filesystem.$jsh.PATHNAME_SEPARATOR) return true;
+						if (filesystem.$jsh.PATHNAME_SEPARATOR == "\\") {
+							if (string.substring(1,2) == ":" || string.substring(2,3) == filesystem.$jsh.PATHNAME_SEPARATOR) {
+								return true;
+							}
+							//	Cover Windows drive letter
+						}
+						if (start == "/" || start == "\\") {
+							//	using wrong path separator character, we handle as error
+							throw "Path separator for this platform is " + filesystem.$jsh.PATHNAME_SEPARATOR;
+						}
+						return false;
+					}
+
+					return {
+						/**
+						 *
+						 * @param { string } value
+						 * @returns { slime.jrunscript.file.Pathname }
+						 */
+						pathname: function(value) {
+							if (isAbsolute(value)) {
+								return filesystem.Pathname(value);
+							} else {
+								return workingDirectory.getRelativePath(value);
+							}
+						}
+					}
+				})(jsh.file.filesystem, jsh.shell.PWD);
+
 				jsh.script = load($api.Object.compose({
 					api: {
 						js: jsh.js,
@@ -142,13 +176,15 @@
 						http: function() {
 							return jsh.http;
 						},
-						addClasses: jsh.loader.java.add
+						addClasses: jsh.loader.java.add,
+						parser: parser
 					},
 					directory: jsh.shell.PWD,
 					arguments: jsh.java.Array.adapt($slime.getInvocation().getArguments()).map(function(s) { return String(s); }),
 				}, source));
 
 				jsh.script.cli = {
+					parser: parser,
 					option: {
 						string: function(o) {
 							var rv = function(p) {

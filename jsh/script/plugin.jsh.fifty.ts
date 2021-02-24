@@ -37,6 +37,9 @@ namespace slime.jsh.script {
 
 	export interface Exports {
 		cli: {
+			parser: {
+				pathname: (argument: string) => slime.jrunscript.file.Pathname
+			}
 			option: {
 				string: (c: { longname: string }) => Processor<any>
 				boolean: (c: { longname: string }) => Processor<any>

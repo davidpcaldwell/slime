@@ -19,9 +19,7 @@
 	 */
 	function($context,$exports) {
 		var $arguments = $context.$arguments;
-		var $filesystem = $context.$filesystem;
 		var $Pathname = $context.$Pathname;
-		var $workingDirectory = $context.$workingDirectory;
 
 		var PRESENT = function() {
 			return new function() {
@@ -48,35 +46,10 @@
 			}
 		}
 		var PATHNAME = function(value) {
-			var filesystem = $filesystem;
-
-			var isAbsolute = function(string) {
-				//	Cover UNIX case, Windows network drive, UNIX network drive
-				var start = string.substring(0,1);
-				if (start == filesystem.$jsh.PATHNAME_SEPARATOR) return true;
-				if (filesystem.$jsh.PATHNAME_SEPARATOR == "\\") {
-					if (string.substring(1,2) == ":" || string.substring(2,3) == filesystem.$jsh.PATHNAME_SEPARATOR) {
-						return true;
-					}
-					//	Cover Windows drive letter
-				}
-				if (start == "/" || start == "\\") {
-					//	using wrong path separator character, we handle as error
-					throw "Path separator for this platform is " + filesystem.$jsh.PATHNAME_SEPARATOR;
-				}
-				return false;
-			}
-
 			return new function() {
 				this.parser = function(array) {
 					var value = array.shift();
-					if (isAbsolute(value)) {
-						var pathname = $filesystem.Pathname(value);
-						return pathname;
-					} else {
-						var pathname = $workingDirectory.getRelativePath(value);
-						return pathname;
-					}
+					return $context.parser.pathname(value);
 				}
 				this.value = value;
 			}
