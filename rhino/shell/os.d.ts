@@ -18,25 +18,27 @@ namespace slime.jrunscript.shell.system {
 	}
 
 	interface Exports {
-		ps: any
-		sudo: {
-			//	TODO	relate below argument to module run() method, which is not yet well-defined
-			(p: {
-				password: string | sudo.getPassword
-				command: string
-				arguments?: string[]
-				stdio?: any
-				evaluate?: any
-			}): void
-			initialize: Function
-			desktop: any
-			PasswordRequired: new (string) => Error
-			PasswordIncorrect: new (string) => Error
+		ps: {
+			[os: string]: ps
 		}
+		sudo: sudo
 		ping: any
 	}
 
-	namespace sudo {
-		type getPassword = () => string
+	type ps = () => slime.jrunscript.shell.system.Process[]
+
+	type sudo = {
+		//	TODO	relate below argument to module run() method, which is not yet well-defined
+		(p: {
+			password: string | (() => string)
+			command: string
+			arguments?: string[]
+			stdio?: any
+			evaluate?: any
+		}): void
+		initialize: Function
+		desktop: any
+		PasswordRequired: new (string) => Error
+		PasswordIncorrect: new (string) => Error
 	}
 }

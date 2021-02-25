@@ -17,7 +17,8 @@
 	 * @param {slime.jrunscript.shell.system.Exports} $exports
 	 */
 	function($context,$exports) {
-		var ps = new function() {
+		/** @type { slime.jrunscript.shell.system.Exports["ps"]} */
+		var ps = (function() {
 			/**
 			 * @returns {slime.jrunscript.shell.system.Process[]}
 			 */
@@ -120,10 +121,11 @@
 				return result;
 			}
 
-			this["Mac OS X"] = unix;
-
-			this.Linux = unix;
-		};
+			return {
+				"Mac OS X": unix,
+				"Linux": unix
+			}
+		})();
 		$exports.ps = ps;
 
 		if ($context.os.name == "Mac OS X") {

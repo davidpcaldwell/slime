@@ -171,7 +171,7 @@
 					}
 				}
 			}
-		})
+		});
 	}
 //@ts-ignore
 )(Packages,jsh,$slime,$loader,plugin);

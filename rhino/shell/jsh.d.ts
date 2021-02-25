@@ -64,12 +64,6 @@ namespace slime.jsh.shell {
 			command: any
 			url: any
 		}
-		os: slime.jrunscript.shell.Exports["os"] & {
-			process: {
-				list: () => slime.jrunscript.shell.system.Process[]
-			}
-			sudo: slime.jrunscript.shell.system.Exports["sudo"]
-		}
 		environment: any
 		HOME: slime.jrunscript.file.Directory
 		PATH: any

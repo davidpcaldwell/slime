@@ -554,6 +554,7 @@
 				}
 			};
 
+			/** @type { slime.jrunscript.shell.system.Exports } */
 			var system = $loader.file("os.js", {
 				PATH: $exports.PATH,
 				replacePath: function(PATH) {
@@ -570,10 +571,12 @@
 					ui: $context.api.ui
 				}
 			});
+			/** @type { slime.jrunscript.shell.system.ps } */
 			var ps = this.resolve(system.ps);
 			if (ps) {
-				this.process = {};
-				this.process.list = ps;
+				this.process = {
+					list: ps
+				};
 			}
 			if (system.sudo) this.sudo = system.sudo;
 			if (system.ping) this.ping = system.ping;

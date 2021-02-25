@@ -167,9 +167,16 @@ namespace slime.jrunscript.shell {
 		}
 
 		os: {
-			name: any
-			version: any
-			newline: any
+			name: string
+			arch: string
+			version: string
+			newline: string
+			resolve: any
+			process?: {
+				list: slime.jrunscript.shell.system.ps
+			}
+			sudo?: slime.jrunscript.shell.system.sudo
+			ping?: slime.jrunscript.shell.system.Exports["ping"]
 		}
 
 		TMPDIR: slime.jrunscript.file.Directory
