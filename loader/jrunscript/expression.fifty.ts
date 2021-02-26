@@ -129,13 +129,13 @@ interface $api {
 	jrunscript: {
 		Properties: {
 			codec: {
-				object: slime.Codec<$api.jrunscript.Properties,Packages.java.util.Properties>
+				object: slime.Codec<slime.$api.jrunscript.Properties,Packages.java.util.Properties>
 			}
 		}
 	}
 }
 
-namespace $api {
+namespace slime.$api {
 	var jrunscript: $api["jrunscript"]
 
 	export namespace jrunscript {

@@ -2,9 +2,10 @@
 (
 	/**
 	 *
+	 * @param { $api } $api
 	 * @param { jsh } jsh
 	 */
-	function(jsh) {
+	function($api,jsh) {
 		if (!jsh.shell.tools.node.version) {
 			jsh.shell.console("Node not installed.");
 			jsh.shell.exit(1);
@@ -21,4 +22,4 @@
 		)
 	}
 //@ts-ignore
-)(jsh)
+)($api,jsh)

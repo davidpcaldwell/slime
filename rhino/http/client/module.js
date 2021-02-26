@@ -14,10 +14,11 @@
 (
 	/**
 	 * @param { Packages } Packages
+	 * @param { $api } $api
 	 * @param { slime.jrunscript.http.client.Context } $context
 	 * @param { slime.jrunscript.http.client.Exports } $exports
 	 */
-	function(Packages,$context,$exports) {
+	function(Packages,$api,$context,$exports) {
 		Packages.java.lang.System.setProperty("sun.net.http.allowRestrictedHeaders", "true");
 
 		(function($context) {
@@ -682,4 +683,4 @@
 		};
 	}
 //@ts-ignore
-)(Packages,$context,$exports)
+)(Packages,$api,$context,$exports)

@@ -2,8 +2,8 @@
 (
 	/**
 	 *
-	 * @param { { $api: any, old: Partial<$api.Function> } } $context
-	 * @param { { Function: Partial<$api.Function> }} $exports
+	 * @param { { $api: any, old: Partial<slime.$api.Function> } } $context
+	 * @param { { Function: Partial<slime.$api.Function> }} $exports
 	 */
 	function($context,$exports) {
 		$exports.Function = $context.old.Function;
@@ -150,7 +150,7 @@
 		};
 
 		$exports.Function.filter = {
-			/** @type { $api.Function["filter"]["or"] } */
+			/** @type { slime.$api.Function["filter"]["or"] } */
 			or: function() {
 				var functions = Array.prototype.slice.call(arguments);
 				return function(p) {
@@ -270,7 +270,7 @@
 		};
 
 		$exports.Function.impure = {
-			/** @type { $api.Function["impure"]["revise"] } */
+			/** @type { slime.$api.Function["impure"]["revise"] } */
 			revise: function(f) {
 				if (f === null || f === void(0)) return $exports.Function.identity;
 				return function(p) {

@@ -18,10 +18,11 @@
 	 * @param { any } $platform
 	 * @param { any } Packages
 	 * @param { any } XMLList
+	 * @param { $api } $api
 	 * @param { slime.jrunscript.runtime.io.Context } $context
 	 * @param { slime.jrunscript.runtime.io.Exports } $exports
 	 */
-	function($platform,Packages,XMLList,$context,$exports) {
+	function($platform,Packages,XMLList,$api,$context,$exports) {
 		var _java = $context._streams;
 
 		/**
@@ -329,4 +330,4 @@
 		$exports.Buffer = Buffer;
 	}
 //@ts-ignore
-)($platform, Packages, (function() { return this.XMLList })(), $context, $exports);
+)($platform, Packages, (function() { return this.XMLList })(), $api, $context, $exports);

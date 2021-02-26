@@ -1,11 +1,12 @@
 //@ts-check
 (
 	/**
+	 * @param { $api } $api
 	 * @param { jsh } jsh
 	 * @param { { scope: object } } $context
 	 * @param { slime.Loader } $loader
 	 */
-	function(jsh,$context,$loader) {
+	function($api,jsh,$context,$loader) {
 		var daemon;
 
 		$context.scope.initialize = function() {
@@ -161,4 +162,4 @@
 		}
 	}
 //@ts-ignore
-)(jsh,$context,$loader);
+)($api,jsh,$context,$loader);

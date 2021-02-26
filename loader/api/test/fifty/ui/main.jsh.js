@@ -2,10 +2,11 @@
 (
 	/**
 	 *
+	 * @param { $api } $api
 	 * @param { jsh } jsh
 	 * @param { { file: any, options: any, arguments: any }} p
 	 */
-	function(jsh,p) {
+	function($api,jsh,p) {
 		var slime = {
 			directory: p.file.parent.parent.parent.parent.parent.parent
 		};
@@ -170,4 +171,4 @@
 		server.run();
 	}
 //@ts-ignore
-)(jsh, { file: jsh.script.file, options: {}, arguments: jsh.script.arguments })
+)($api, jsh, { file: jsh.script.file, options: {}, arguments: jsh.script.arguments })

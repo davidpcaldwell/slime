@@ -14,12 +14,13 @@
 //@ts-check
 (
 	/**
+	 * @param { $api } $api
 	 * @param { jsh } jsh
 	 * @param { object } plugins
 	 * @param { slime.jsh.plugin.plugin } plugin
 	 * @param { slime.Loader } $loader
 	 */
-	function(jsh,plugins,plugin,$loader) {
+	function($api,jsh,plugins,plugin,$loader) {
 		plugin({
 			isReady: function() {
 				return jsh.js && jsh.js.web && jsh.java && jsh.ip && jsh.time && jsh.file && jsh.http && jsh.shell && jsh.java.tools;
@@ -653,4 +654,4 @@
 		});
 	}
 //@ts-ignore
-)(jsh,plugins,plugin,$loader)
+)($api,jsh,plugins,plugin,$loader)

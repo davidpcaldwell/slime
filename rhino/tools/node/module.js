@@ -1,10 +1,11 @@
 //@ts-check
 (
 	/**
+	 * @param { $api } $api
 	 * @param {slime.jrunscript.node.Context} $context
 	 * @param {slime.jrunscript.node.Exports} $exports
 	 */
-	function($context,$exports) {
+	function($api,$context,$exports) {
 		/**
 		 * @constructor
 		 */
@@ -212,4 +213,4 @@
 		);
 	}
 	//@ts-ignore
-)($context,$exports)
+)($api,$context,$exports)

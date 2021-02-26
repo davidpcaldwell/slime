@@ -14,8 +14,8 @@
 (
 //	TODO	get rid of the wildcarded properties in $exports by adding all properties to $api.d.ts
 	/**
-	 * @param { $api.internal.$platform } $platform
-	 * @param { $api.internal.$slime } $slime
+	 * @param { slime.$api.internal.$platform } $platform
+	 * @param { slime.$api.internal.$slime } $slime
 	 * @param { $api & { [x: string]: any } } $exports
 	 */
 	function($platform,$slime,$exports) {
@@ -543,9 +543,9 @@
 
 			var source = (p.source) ? p.source : this;
 
-			/** @returns { { bubble: (event: $api.Event<any>) => void } } */
+			/** @returns { { bubble: (event: slime.$api.Event<any>) => void } } */
 			var getParent = function() {
-				/** @returns { { bubble: (event: $api.Event<any>) => void } } */
+				/** @returns { { bubble: (event: slime.$api.Event<any>) => void } } */
 				var castToInternal = function(events) {
 					return events;
 				}
@@ -555,11 +555,11 @@
 			}
 
 			/**
-			 * @type { { [type: string]: $api.Event.Handler<any>[] } }
+			 * @type { { [type: string]: slime.$api.Event.Handler<any>[] } }
 			 */
 			var byType = {};
 
-			/** @type { new (type: string, detail: any) => $api.Event } */
+			/** @type { new (type: string, detail: any) => slime.$api.Event } */
 			var Event = function(type,detail) {
 				this.type = type;
 				this.source = source;
@@ -572,7 +572,7 @@
 			};
 
 			/**
-			 * @type { $api.Events<{ [name: string]: any }>["listeners"] }
+			 * @type { slime.$api.Events<{ [name: string]: any }>["listeners"] }
 			 */
 			var listeners = {
 				add: function(name,handler) {
@@ -615,7 +615,7 @@
 
 			/**
 			 *
-			 * @param { $api.Event<any> } event
+			 * @param { slime.$api.Event<any> } event
 			 */
 			function handle(event) {
 				if (byType[event.type]) {
@@ -641,7 +641,7 @@
 				{
 					/**
 					 *
-					 * @param { $api.Event<any> } event
+					 * @param { slime.$api.Event<any> } event
 					 */
 					value: function(event) {
 						handle(event);

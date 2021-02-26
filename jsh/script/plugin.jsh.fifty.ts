@@ -86,6 +86,7 @@ namespace slime.jsh.script {
 					fifty.verify(after).arguments[3].is("C");
 				},
 				run: function() {
+					const $api = fifty.$api;
 					var was: Invocation<any>;
 					var invocationWas = function(invocation: Invocation<any>) {
 						was = invocation;
@@ -120,6 +121,7 @@ namespace slime.jsh.script {
 					}).run(["foo"]).is(1);
 				},
 				wrap: function() {
+					const $api = fifty.$api;
 					var result: { status: number } = fifty.global.jsh.shell.jsh({
 						shell: fifty.global.jsh.shell.jsh.src,
 						script: fifty.$loader.getRelativePath("test/cli.jsh.js").file,

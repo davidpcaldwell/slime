@@ -15,12 +15,13 @@
 (
 	/**
 	 * @param { Packages } Packages
+	 * @param { $api } $api
 	 * @param { jsh } jsh
 	 * @param { slime.jsh.plugin.$slime } $slime
 	 * @param { slime.Loader } $loader
 	 * @param { slime.jsh.plugin.plugin } plugin
 	 */
-	function(Packages,jsh,$slime,$loader,plugin) {
+	function(Packages,$api,jsh,$slime,$loader,plugin) {
 		plugin({
 			load: function() {
 				jsh.ui = $loader.module("module.js", {
@@ -94,4 +95,4 @@
 		})
 	}
 //@ts-ignore
-)(Packages,jsh,$slime,$loader,plugin)
+)(Packages,$api,jsh,$slime,$loader,plugin)

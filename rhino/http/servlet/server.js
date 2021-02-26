@@ -14,11 +14,12 @@
 (
 	/**
 	 * @param { any } Packages
+	 * @param { $api } $api
 	 * @param { { api: { java: any, io: any, web: slime.web.Exports } } } $context
 	 * @param { slime.Loader } $loader
 	 * @param { slime.servlet.internal.server.Exports } $exports
 	 */
-	function(Packages,$context,$loader,$exports) {
+	function(Packages,$api,$context,$loader,$exports) {
 		var log = $context.api.java.log.named("rhino.http.servlet.server");
 
 		var debug = function(message) {
@@ -247,4 +248,4 @@
 		$exports.Servlet = Servlet;
 	}
 //@ts-ignore
-)(Packages,$context,$loader,$exports)
+)(Packages,$api,$context,$loader,$exports)

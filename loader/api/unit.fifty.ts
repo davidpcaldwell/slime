@@ -224,7 +224,7 @@ namespace slime.definition.unit {
 			export type Detail = Start | End
 		}
 
-		export type Handler = $api.Events.Handler<{
+		export type Handler = slime.$api.Events.Handler<{
 			scenario: Event.Scenario.Detail
 			test: Test.Result
 		}>

@@ -1,8 +1,8 @@
 interface $api {
-	Function: $api.Function
+	Function: slime.$api.Function
 }
 
-namespace $api {
+namespace slime.$api {
 	export namespace Function {
 		export type Predicate<T> = (t: T) => boolean
 		/** @deprecated */
@@ -209,7 +209,7 @@ namespace $api {
 	}
 }
 
-namespace $api {
+namespace slime.$api {
 	interface Function {
 		RegExp: {
 			/**
@@ -250,7 +250,7 @@ namespace $api {
 	)($api,fifty);
 }
 
-namespace $api {
+namespace slime.$api {
 	export namespace Function {
 		export namespace impure {
 			/**
@@ -313,8 +313,8 @@ namespace $api {
 			verify(routput).number.is(6);
 
 			fifty.run(function() {
-				var nullRevision: $api.Function.impure.Updater<{ number: number }> = fifty.$api.Function.impure.revise(null);
-				var undefinedRevision: $api.Function.impure.Updater<{ number: number }> = fifty.$api.Function.impure.revise(null);
+				var nullRevision: slime.$api.Function.impure.Updater<{ number: number }> = fifty.$api.Function.impure.revise(null);
+				var undefinedRevision: slime.$api.Function.impure.Updater<{ number: number }> = fifty.$api.Function.impure.revise(null);
 
 				var two = { number: 2 }
 
@@ -329,7 +329,7 @@ namespace $api {
 				{ name: "b", value: 0 },
 				{ name: "c", value: 2 }
 			];
-			var comparator: $api.Function.Comparator<{ name: string, value: number }> = fifty.$api.Function.comparator.create(
+			var comparator: slime.$api.Function.Comparator<{ name: string, value: number }> = fifty.$api.Function.comparator.create(
 				fifty.$api.Function.property("value"),
 				fifty.$api.Function.comparator.operators
 			);
@@ -342,12 +342,12 @@ namespace $api {
 			verify(array)[1].name.is("a");
 			verify(array)[2].name.is("b");
 
-			var tiebreaking: $api.Function.Comparator<{ name: string, value: number, tiebreaker: number }> = fifty.$api.Function.comparator.create(
+			var tiebreaking: slime.$api.Function.Comparator<{ name: string, value: number, tiebreaker: number }> = fifty.$api.Function.comparator.create(
 				fifty.$api.Function.property("tiebreaker"),
 				fifty.$api.Function.comparator.operators
 			);
 
-			var multicomparator: $api.Function.Comparator<{ name: string, value: number, tiebreaker: number }> = fifty.$api.Function.comparator.compose(
+			var multicomparator: slime.$api.Function.Comparator<{ name: string, value: number, tiebreaker: number }> = fifty.$api.Function.comparator.compose(
 				fifty.$api.Function.comparator.reverse(comparator),
 				fifty.$api.Function.comparator.reverse(tiebreaking)
 			);

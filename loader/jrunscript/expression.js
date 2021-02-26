@@ -798,7 +798,7 @@
 						},
 						decode: function(_properties) {
 							var _keys = _properties.propertyNames();
-							/** @type { $api.jrunscript.Properties } */
+							/** @type { slime.$api.jrunscript.Properties } */
 							var rv = {};
 							while(_keys.hasMoreElements()) {
 								var name = String(_keys.nextElement());

@@ -14,11 +14,12 @@
 //@ts-check
 (
 	/**
+	 * @param { $api } $api
 	 * @param { slime.jsh.tools.install.module.Context } $context
 	 * @param { slime.Loader } $loader
 	 * @param { slime.jsh.tools.install.module.Exports } $exports
 	 */
-	function($context,$loader,$exports) {
+	function($api,$context,$loader,$exports) {
 		// TODO: Find any remaining uses of this and eliminate them
 		$exports.$api = {
 			Events: {
@@ -234,4 +235,4 @@
 
 	}
 //@ts-ignore
-)($context,$loader,$exports)
+)($api,$context,$loader,$exports)

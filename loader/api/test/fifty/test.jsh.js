@@ -1,9 +1,10 @@
 //@ts-check
 (
 	/**
+	 * @param { $api } $api
 	 * @param { jsh } jsh
 	 */
-	function(jsh) {
+	function($api,jsh) {
 		var parameters = jsh.wf.cli.$f.invocation(
 			$api.Function.pipe(
 				$api.Function.impure.revise(function(p) {
@@ -154,4 +155,4 @@
 		jsh.shell.exit( (success) ? 0 : 1 )
 	}
 //@ts-ignore
-)(jsh);
+)($api,jsh);

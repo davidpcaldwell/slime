@@ -14,11 +14,12 @@
 (
 	/**
 	 * @param { any } Packages
+	 * @param { $api } $api
 	 * @param { { $pwd: string, pathext: any, api: { js: any, java: any, io: any }, cygwin: any, addFinalizer: any } } $context
 	 * @param { slime.Loader } $loader
 	 * @param { slime.jrunscript.file.Exports } $exports
 	 */
-	function(Packages,$context,$loader,$exports) {
+	function(Packages,$api,$context,$loader,$exports) {
 		if (!$context.api) throw new Error("Missing 'api' member of context");
 		if ($context.$pwd && typeof($context.$pwd) != "string") {
 			throw new Error("$pwd is object.");
@@ -408,4 +409,4 @@
 		$api.deprecate($exports,"java");
 	}
 //@ts-ignore
-)(Packages,$context,$loader,$exports)
+)(Packages,$api,$context,$loader,$exports)

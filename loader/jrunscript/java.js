@@ -15,10 +15,11 @@
 (
 	/**
 	 *
+	 * @param { $api } $api
 	 * @param { slime.jrunscript.runtime.java.Context } $context
 	 * @param { slime.jrunscript.runtime.java.Exports } $exports
 	 */
-	function($context,$exports) {
+	function($api,$context,$exports) {
 		$exports.getClass = function(name) {
 			$api.Function.argument.isString({ index: 0, name: "name" }).apply(this,arguments);
 			if ($context.classpath.getClass(name)) {
@@ -58,4 +59,4 @@
 		};
 	}
 //@ts-ignore
-)($context,$exports);
+)($api,$context,$exports);

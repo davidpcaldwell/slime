@@ -2,10 +2,11 @@
 (
 	/**
 	 *
+	 * @param { $api } $api
 	 * @param { { Verify: slime.definition.verify.Export } } $context
 	 * @param { (value: slime.definition.unit.internal.EventsScope) => void } $export
 	 */
-	function($context,$export) {
+	function($api,$context,$export) {
 		$export((function() {
 			//	TODO	would like to move this adapter to another file, but would need to alter callers to load unit.js as module first
 
@@ -202,4 +203,4 @@
 		})());
 	}
 //@ts-ignore
-)($context,$export);
+)($api,$context,$export);

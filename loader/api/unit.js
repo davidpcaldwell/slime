@@ -13,11 +13,12 @@
 //@ts-check
 (
 	/**
+	 * @param { $api } $api
 	 * @param { slime.definition.unit.Context } $context
 	 * @param { slime.Loader } $loader
 	 * @param { slime.definition.unit.Exports } $exports
 	 */
-	function($context,$loader,$exports) {
+	function($api,$context,$loader,$exports) {
 		/** @type { (message: string, p: any) => void } */
 		var log = ($context.log) ? $context.log : function(){};
 
@@ -547,7 +548,7 @@
 				/**
 				 *
 				 * @type { slime.definition.unit.View["on"]["scenario"] }
-				 * @param { $api.Event<slime.definition.unit.Event.Scenario.Detail> } e
+				 * @param { slime.$api.Event<slime.definition.unit.Event.Scenario.Detail> } e
 				 */
 				var scenario = function(e) {
 					if (isStart(e.detail)) {
@@ -570,7 +571,7 @@
 
 			/**
 			 *
-			 * @param { $api.Events } scenario
+			 * @param { slime.$api.Events } scenario
 			 * @param { slime.definition.unit.View.Argument } implementation
 			 */
 			var addConsoleListener = function(scenario,implementation) {
@@ -586,7 +587,7 @@
 
 			/**
 			 *
-			 * @param { $api.Events } scenario
+			 * @param { slime.$api.Events } scenario
 			 */
 			var listen = function(scenario) {
 				addConsoleListener(scenario,o);
@@ -672,4 +673,4 @@
 		};
 	}
 //@ts-ignore
-)($context,$loader,$exports)
+)($api,$context,$loader,$exports)

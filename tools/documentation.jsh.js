@@ -3,9 +3,10 @@
 	/**
 	 *
 	 * @param { Packages } Packages
+	 * @param { $api } $api
 	 * @param { jsh } jsh
 	 */
-	function(Packages,jsh) {
+	function(Packages,$api,jsh) {
 		$api.Function.result(
 			{ options: {}, arguments: jsh.script.arguments.slice() },
 			jsh.wf.cli.$f.option.pathname({ longname: "base" }),
@@ -82,4 +83,4 @@
 		)
 	}
 //@ts-ignore
-)(Packages,jsh)
+)(Packages,$api,jsh)

@@ -17,11 +17,12 @@
 	 * @param { any } Packages
 	 * @param { any } JavaAdapter
 	 * @param { slime.jsh.plugin.$slime } $slime
+	 * @param { $api } $api
 	 * @param { jsh } jsh
 	 * @param { slime.jsh.plugin.plugin } plugin
 	 * @param { slime.Loader } $loader
 	 */
-	function(Packages,JavaAdapter,$slime,jsh,plugin,$loader) {
+	function(Packages,JavaAdapter,$slime,$api,jsh,plugin,$loader) {
 		plugin({
 			isReady: function() {
 				return Boolean(jsh.js && jsh.java && jsh.java.log && jsh.io && jsh.io.mime && jsh.shell && jsh.file);
@@ -449,4 +450,4 @@
 		});
 	}
 //@ts-ignore
-)(Packages,JavaAdapter,$slime,jsh,plugin,$loader)
+)(Packages,JavaAdapter,$slime,$api,jsh,plugin,$loader)

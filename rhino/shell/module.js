@@ -16,11 +16,12 @@
 	 *
 	 * @param { Packages } Packages
 	 * @param { any } JavaAdapter
+	 * @param { $api } $api
 	 * @param { slime.jrunscript.shell.Context } $context
 	 * @param { slime.Loader } $loader
 	 * @param { slime.jrunscript.shell.Exports } $exports
 	 */
-	function(Packages,JavaAdapter,$context,$loader,$exports) {
+	function(Packages,JavaAdapter,$api,$context,$loader,$exports) {
 		if (!$context.api.io) {
 			throw new Error("Missing: $context.api.io");
 		}
@@ -865,4 +866,4 @@
 		});
 	}
 //@ts-ignore
-)(Packages,JavaAdapter,$context,$loader,$exports);
+)(Packages,JavaAdapter,$api,$context,$loader,$exports);

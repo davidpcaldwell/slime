@@ -15,10 +15,11 @@
 	/**
 	 *
 	 * @param { Packages } Packages
+	 * @param { $api } $api
 	 * @param { { Resource: any, constant: any, fail: any, isPathname: any, Streams: any, pathext: any } } $context
 	 * @param { { Searchpath: any, Pathname: any }} $exports
 	 */
-	function (Packages, $context, $exports) {
+	function (Packages, $api, $context, $exports) {
 		if (!$context.Resource) throw new Error();
 
 		var constant = $context.constant;
@@ -694,5 +695,5 @@
 		$exports.Pathname = Pathname;
 	}
 	//@ts-ignore
-)(Packages, $context, $exports)
+)(Packages, $api, $context, $exports)
 

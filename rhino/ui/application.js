@@ -15,11 +15,12 @@
 (
 	/**
 	 * @param { any } Packages
+	 * @param { $api } $api
 	 * @param { { jsh: jsh } } $context
 	 * @param { slime.Loader } $loader
 	 * @param { { Application: jsh["ui"]["application"] } } $exports
 	 */
-	function(Packages,$context,$loader,$exports) {
+	function(Packages,$api,$context,$loader,$exports) {
 		var jsh = $context.jsh;
 		// TODO: Remove or document (probably by renaming file) dependency on jsh
 
@@ -231,7 +232,7 @@
 
 		/**
 		 * @param { slime.jsh.ui.application.Argument } p
-		 * @param { $api.Events } events
+		 * @param { slime.$api.Events } events
 		 */
 		var Application = function(p,events) {
 			/** @type { (v: slime.jsh.ui.application.ServerSpecification) => v is slime.jsh.ui.application.ServerRunning } */
@@ -327,4 +328,4 @@
 		});
 	}
 //@ts-ignore
-)(Packages,$context,$loader,$exports);
+)(Packages,$api,$context,$loader,$exports);

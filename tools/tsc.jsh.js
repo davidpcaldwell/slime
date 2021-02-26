@@ -2,9 +2,10 @@
 (
 	/**
 	 *
+	 * @param { $api } $api
 	 * @param { jsh } jsh
 	 */
-	function(jsh) {
+	function($api,jsh) {
 		var parameters = jsh.script.getopts({
 			options: {
 				tsconfig: jsh.file.Pathname,
@@ -45,4 +46,4 @@
 		});
 	}
 //@ts-ignore
-)(jsh);
+)($api,jsh);

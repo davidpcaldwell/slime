@@ -30,8 +30,8 @@ namespace slime.jrunscript.git {
 				pathname: slime.jrunscript.file.Pathname
 			},
 			events?: {
-				stdout: $api.Event.Handler<string>
-				stderr: $api.Event.Handler<string>
+				stdout: slime.$api.Event.Handler<string>
+				stderr: slime.$api.Event.Handler<string>
 			}
 		) => slime.jrunscript.git.Repository.Local
 	}
@@ -73,6 +73,7 @@ namespace slime.jrunscript.git {
 				});
 
 				run(function worksWithEmptyDirectory() {
+					const $api = fifty.$api;
 					var directory = fifty.jsh.file.directory();
 
 					fixture.write({
@@ -84,7 +85,7 @@ namespace slime.jrunscript.git {
 
 					var captor = fifty.$api.Events.Captor("stdout", "stderr");
 
-					var isType = function(type: string): $api.Function.Predicate<$api.Event<any>> {
+					var isType = function(type: string): slime.$api.Function.Predicate<slime.$api.Event<any>> {
 						return $api.Function.pipe(
 							$api.Function.property("type"),
 							$api.Function.Predicate.is(type)

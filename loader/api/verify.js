@@ -1,9 +1,10 @@
 //@ts-check
 (
 	/**
+	 * @param { $api } $api
 	 * @param { (value: slime.definition.verify.Export) => void } $export
 	 */
-	function($export) {
+	function($api,$export) {
 		/** @type { slime.definition.verify.Export } */
 		var Verify = function(scope) {
 			/**
@@ -306,4 +307,4 @@
 		$export(Verify);
 	}
 //@ts-ignore
-)($export);
+)($api,$export);

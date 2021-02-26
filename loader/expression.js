@@ -92,7 +92,7 @@
 		})();
 
 		/**
-		 * @type { $api.internal.$platform }
+		 * @type { slime.$api.internal.$platform }
 		 */
 		var $$platform = {
 			Error: {

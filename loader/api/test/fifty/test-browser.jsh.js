@@ -2,9 +2,10 @@
 (
 	/**
 	 *
+	 * @param { $api } $api
 	 * @param { jsh } jsh
 	 */
-	function(jsh) {
+	function($api,jsh) {
 		$api.Function.pipe(
 			//	Keeps the browser open after running the tests so that they can be re-run by refreshing the page
 			jsh.wf.cli.$f.option.boolean({ longname: "interactive" }),
@@ -143,4 +144,4 @@
 		)({ options: {}, arguments: jsh.script.arguments })
 	}
 //@ts-ignore
-)(jsh);
+)($api,jsh);

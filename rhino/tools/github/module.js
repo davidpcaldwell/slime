@@ -3,10 +3,11 @@
 (
 	/**
 	 * @param { Packages } Packages
+	 * @param { $api } $api
 	 * @param { slime.jrunscript.tools.github.Context } $context
 	 * @param { slime.jrunscript.tools.github.Exports } $exports
 	 */
-	function(Packages,$context,$exports) {
+	function(Packages,$api,$context,$exports) {
 		$exports.Session = function(o) {
 			var apiUrl = function(relative) {
 				return "https://api.github.com/" + relative;
@@ -113,4 +114,4 @@
 		}
 	}
 //@ts-ignore
-)(Packages,$context,$exports)
+)(Packages,$api,$context,$exports)

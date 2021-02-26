@@ -13,10 +13,11 @@
 //@ts-check
 (
 	/**
+	 * @param { $api } $api
 	 * @param { slime.web.Context } $context
 	 * @param { slime.web.Exports } $exports
 	 */
-	function($context,$exports) {
+	function($api,$context,$exports) {
 		/**
 		 * @param { string } string
 		 * @returns { slime.web.Url.Argument }
@@ -272,4 +273,4 @@
 		}
 	}
 //@ts-ignore
-)($context,$exports)
+)($api,$context,$exports)

@@ -17,10 +17,11 @@
 	 * @param { Packages } Packages
 	 * @param { slime.jsh.plugin.plugin } plugin
 	 * @param { slime.jsh.plugin.$slime } $slime
+	 * @param { $api } $api
 	 * @param { jsh } jsh
 	 * @param { slime.Loader } $loader
 	 */
-	function(Packages,plugin,$slime,jsh,$loader) {
+	function(Packages,plugin,$slime,$api,jsh,$loader) {
 		/** @returns { slime.jsh.script.Exports } */
 		var load = function($context) {
 			/** @type { Partial<slime.jsh.script.Exports> } */
@@ -339,4 +340,4 @@
 		})
 	}
 //@ts-ignore
-)(Packages,plugin,$slime,jsh,$loader)
+)(Packages,plugin,$slime,$api,jsh,$loader)

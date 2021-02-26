@@ -15,10 +15,11 @@
 (
 	/**
 	 * @param { Packages } Packages
+	 * @param { $api } $api
 	 * @param { jsh } jsh
 	 * @param { (value: any) => void } $set
 	 */
-	function($set,jsh,Packages) {
+	function(Packages,$api,jsh,$set) {
 		$set({
 			isReady: function() {
 				return jsh.js && jsh.httpd && jsh.http && jsh.file && jsh.io && jsh.shell && jsh.unit;
@@ -643,4 +644,4 @@
 		});
 	}
 //@ts-ignore
-)($set,jsh,Packages)
+)(Packages,$api,jsh,$set)

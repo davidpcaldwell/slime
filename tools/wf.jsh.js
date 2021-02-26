@@ -1,9 +1,10 @@
 //@ts-check
 (
 	/**
+	 * @param { $api } $api
 	 * @param { jsh } jsh
 	 */
-	function(jsh) {
+	function($api,jsh) {
 		if (!jsh.wf.project.base.getFile("wf.js")) {
 			jsh.shell.console("Directory " + jsh.wf.project.base + " does not appear to be a project directory; no wf.js found.");
 			jsh.shell.exit(1);
@@ -54,4 +55,4 @@
 		}
 	}
 //@ts-ignore
-)(jsh);
+)($api,jsh);

@@ -25,18 +25,18 @@ interface $api {
 	},
 	Value: any,
 	Error: {
-		Type: <T extends Error>(p: { name: string, extends?: Function }) => $api.Error.Type<T>
+		Type: <T extends Error>(p: { name: string, extends?: Function }) => slime.$api.Error.Type<T>
 	}
 	Events: {
 		(p?: {
 			source?: any
-			parent?: $api.Events<any>
-			getParent?: () => $api.Events<any>
+			parent?: slime.$api.Events<any>
+			getParent?: () => slime.$api.Events<any>
 			on?: { [x: string]: any }
-		}): $api.Events<any>
+		}): slime.$api.Events<any>
 
 		//	TODO	could probably use parameterized types to improve accuracy
-		Function: <P,R>(f: (p: P, events: any) => R, defaultListeners?: object) => (argument: P, receiver?: $api.Events.Function.Receiver) => R,
+		Function: <P,R>(f: (p: P, events: any) => R, defaultListeners?: object) => (argument: P, receiver?: slime.$api.Events.Function.Receiver) => R,
 		instance: (v: any) => boolean
 	},
 	Iterable: {
@@ -93,13 +93,8 @@ interface $api {
 	}
 }
 
-declare namespace $api {
-	const debug: $api["debug"];
-	const Iterable: $api["Iterable"];
-	const Events : $api["Events"];
-	const Value: $api["Value"]
-
-	interface Event<T> {
+namespace slime.$api {
+	export interface Event<T> {
 		type: string
 		source: object
 		timestamp: number
@@ -107,11 +102,11 @@ declare namespace $api {
 		path: any[]
 	}
 
-	namespace Event {
-		type Handler<T> = (e: Event<T>) => void
+	export namespace Event {
+		export type Handler<T> = (e: Event<T>) => void
 	}
 
-	interface Events<D> {
+	export interface Events<D> {
 		listeners: {
 			add: <K extends keyof D>(type: K, handler: Event.Handler<D[K]>) => void
 			remove: <K extends keyof D>(type: K, handler: Event.Handler<D[K]>) => void
@@ -119,32 +114,26 @@ declare namespace $api {
 		fire: <K extends keyof D>(type: K, detail?: D[K]) => void
 	}
 
-	namespace Events {
-		type Handler<D> = {
+	export namespace Events {
+		export type Handler<D> = {
 			[k in keyof D]?: Event.Handler<D[k]>
 		}
 	}
 
-	namespace Events.Function {
-		type Receiver = { [x: string]: (e: Event<any>) => void } | $api.Events<any>
+	export namespace Events.Function {
+		export type Receiver = { [x: string]: (e: Event<any>) => void } | Events<any>
 	}
 
-	namespace Error {
-		type Type<T extends Error> = new (message: string, properties?: object) => T
+	export namespace Error {
+		export type Type<T extends Error> = new (message: string, properties?: object) => T
 	}
 
-	const deprecate: $api["deprecate"];
-	const experimental: $api["experimental"];
-
-	const Function: Function;
-	const Object: $api["Object"];
-
-	namespace internal {
-		interface $slime {
+	export namespace internal {
+		export interface $slime {
 			getRuntimeScript(path: string): any
 		}
 
-		interface $platform {
+		export interface $platform {
             execute: (code: { name?: string, js: string }, scope: { [x: string]: any }, target: any) => any
             Error: {
                 decorate?: <T>(errorConstructor: T) => T

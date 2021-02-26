@@ -14,10 +14,11 @@
 //@ts-check
 (
 	/**
+	 * @param { $api } $api
 	 * @param { slime.time.Context } $context
 	 * @param { slime.time.Exports } $exports
 	 */
-	function($context,$exports) {
+	function($api,$context,$exports) {
 		var zones = {};
 		if (typeof($context.zones) != "undefined") {
 			for (var x in $context.zones) {
@@ -940,4 +941,4 @@
 		$exports.install = install;
 	}
 //@ts-ignore
-)($context,$exports)
+)($api,$context,$exports)

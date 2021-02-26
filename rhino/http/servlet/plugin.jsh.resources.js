@@ -19,10 +19,11 @@
 //@ts-check
 (
 	/**
+	 * @param { $api } $api
 	 * @param { jsh } jsh
 	 * @param { { getMimeType: any } } $context
 	 */
-	function(jsh,$context) {
+	function($api,jsh,$context) {
 		var DirectoryWithoutVcsLoader = function(p) {
 			var delegate = (p.directory) ? new jsh.file.Loader(p) : p.loader;
 			var source = {
@@ -467,4 +468,4 @@
 		};
 	}
 //@ts-ignore
-)(jsh,$context)
+)($api,jsh,$context)

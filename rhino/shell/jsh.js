@@ -16,10 +16,11 @@
 	 *
 	 * @param { Packages } Packages
 	 * @param { any } JavaAdapter
+	 * @param { $api } $api
 	 * @param { slime.jsh.shell.internal.Context } $context
 	 * @param { slime.jsh.shell.Exports } $exports
 	 */
-	function(Packages,JavaAdapter,$context,$exports) {
+	function(Packages,JavaAdapter,$api,$context,$exports) {
 		//	TODO	would be nice to generalize this and push it back into the shell module itself
 		if (!$exports.properties) throw new TypeError("No properties properties.");
 		$exports.engine = $exports.properties.get("jsh.engine");
@@ -579,4 +580,4 @@
 		}
 	}
 //@ts-ignore
-)(Packages,JavaAdapter,$context,$exports);
+)(Packages,JavaAdapter,$api,$context,$exports);

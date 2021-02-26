@@ -2,9 +2,10 @@
 (
 	/**
 	 *
+	 * @param { $api } $api
 	 * @param { jsh } jsh
 	 */
-	function(jsh) {
+	function($api,jsh) {
 		$api.Function.pipe(
 			jsh.wf.cli.$f.option.string({ longname: "ts:version" }),
 			jsh.wf.cli.$f.option.pathname({ longname: "tsconfig" }),
@@ -46,4 +47,4 @@
 		)({ options: {}, arguments: jsh.script.arguments })
 	}
 //@ts-ignore
-)(jsh);
+)($api,jsh);

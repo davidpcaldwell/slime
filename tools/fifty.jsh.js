@@ -1,9 +1,10 @@
 //@ts-check
 (
 	/**
+	 * @param { $api } $api
 	 * @param { jsh } jsh
 	 */
-	function(jsh) {
+	function($api,jsh) {
 		var SLIME = jsh.script.file.parent.parent;
 
 		var args = jsh.wf.cli.$f.command.parse({
@@ -72,4 +73,4 @@
 		})
 	}
 //@ts-ignore
-)(jsh);
+)($api,jsh);
