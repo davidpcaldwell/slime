@@ -196,57 +196,64 @@
 			sudo.PasswordIncorrect = PasswordIncorrect;
 			sudo.PasswordRequired = PasswordRequired;
 			sudo.initialize = sudo_initialize;
-			var sudo_desktop = function(p) {
-				if (p.askpass && (p.askpass.author || p.askpass.prompt)) {
-					var args = (p.arguments) ? p.arguments : [];
-					if (true) {
-						//	TODO	could check to see whether password is necessary; currently askpass.force is essentially implied
-						if (false) {
-							var SUDO_ASKPASS = $context.run($context.api.js.Object.set({}, p.askpass.author, {
-								stdio: {
-									output: String
-								},
-								evaluate: function(result) {
-									return $context.api.file.Pathname(result.stdio.output).file;
-								}
-							}));
-							var password = $context.run({
-								command: SUDO_ASKPASS.pathname,
-								stdio: {
-									output: String
-								},
-								evaluate: function(result) {
-									return result.stdio.output;
-								}
-							});
-						} else {
-							//	TODO	should not have jsh dependency here
-							var password = $context.api.ui.askpass.gui({
-								prompt: p.askpass.prompt
-							});
-						}
-						var stdio = $context.api.js.Object.set({}, (p.stdio) ? p.stdio : {}, {
-							input: password + "\n"
-						});
-						return $context.run($context.api.js.Object.set({}, p, {
-							command: "sudo",
-							arguments: /*(p.askpass.force ? ["-k"] : [])*/[].concat(["-S"]).concat([p.command]).concat(args),
-							stdio: stdio
-						}));
-					} else {
-						//	For some reason the -A strategy just did not work on Mac OS X 10.9.5
-						return $context.run($context.api.js.Object.set({}, p, {
-							command: "sudo",
-							arguments: (p.askpass.force ? ["-k"] : []).concat(["-A"]).concat([p.command]).concat(args),
-							environment: $context.api.js.Object.set({}, $context.environment, {
-								SUDO_ASKPASS: SUDO_ASKPASS.pathname.toString()
-							})
-						}));
-					}
-				}
-			};
-			sudo.desktop = sudo_desktop;
+
 			$exports.sudo = sudo;
+
+			$exports.desktop = function(library) {
+				/**
+				 *
+				 * @type { slime.jrunscript.shell.system.sudo["desktop"] }
+				 */
+				var sudo_desktop = function(p) {
+					if (p.askpass && (p.askpass.author || p.askpass.prompt)) {
+						var args = (p.arguments) ? p.arguments : [];
+						if (true) {
+							//	TODO	could check to see whether password is necessary; currently askpass.force is essentially implied
+							if (false) {
+								var SUDO_ASKPASS = $context.run($context.api.js.Object.set({}, p.askpass.author, {
+									stdio: {
+										output: String
+									},
+									evaluate: function(result) {
+										return $context.api.file.Pathname(result.stdio.output).file;
+									}
+								}));
+								var password = $context.run({
+									command: SUDO_ASKPASS.pathname,
+									stdio: {
+										output: String
+									},
+									evaluate: function(result) {
+										return result.stdio.output;
+									}
+								});
+							} else {
+								var password = library.askpass.gui({
+									prompt: p.askpass.prompt
+								});
+							}
+							var stdio = $context.api.js.Object.set({}, (p.stdio) ? p.stdio : {}, {
+								input: password + "\n"
+							});
+							return $context.run($context.api.js.Object.set({}, p, {
+								command: "sudo",
+								arguments: /*(p.askpass.force ? ["-k"] : [])*/[].concat(["-S"]).concat([p.command]).concat(args),
+								stdio: stdio
+							}));
+						} else {
+							//	For some reason the -A strategy just did not work on Mac OS X 10.9.5
+							return $context.run($context.api.js.Object.set({}, p, {
+								command: "sudo",
+								arguments: (p.askpass.force ? ["-k"] : []).concat(["-A"]).concat([p.command]).concat(args),
+								environment: $context.api.js.Object.set({}, $context.environment, {
+									SUDO_ASKPASS: SUDO_ASKPASS.pathname.toString()
+								})
+							}));
+						}
+					}
+				};
+				sudo.desktop = sudo_desktop;
+			}
 
 			$exports.ping = function(p) {
 				//	tested on Mac OS X

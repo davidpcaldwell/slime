@@ -10,19 +10,15 @@ namespace slime.jrunscript.shell.system {
 	interface Context {
 		run: any
 		os: any
-		api: { js: any, file: any, io: any, ui: any }
+		api: {
+			js: any,
+			file: any,
+			io: any
+		}
 		environment: any
 		TMPDIR: slime.jrunscript.file.Directory
 		PATH: any
 		replacePath: any
-	}
-
-	interface Exports {
-		ps: {
-			[os: string]: ps
-		}
-		sudo: sudo
-		ping: any
 	}
 
 	type ps = () => slime.jrunscript.shell.system.Process[]
@@ -37,8 +33,20 @@ namespace slime.jrunscript.shell.system {
 			evaluate?: any
 		}): void
 		initialize: Function
-		desktop: any
 		PasswordRequired: new (string) => Error
 		PasswordIncorrect: new (string) => Error
+
+		gui?: (p?: { prompt: string }) => () => string
+
+		desktop?: (p: { askpass: { author: any, prompt: any, force: any }, arguments: any, stdio: any, command: any }) => any
+	}
+
+	interface Exports {
+		ps: {
+			[os: string]: ps
+		}
+		sudo: sudo
+		ping: any
+		desktop: (library: jsh["ui"]) => void
 	}
 }

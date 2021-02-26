@@ -567,8 +567,7 @@
 				api: {
 					js: $context.api.js,
 					io: $context.api.io,
-					file: $context.api.file,
-					ui: $context.api.ui
+					file: $context.api.file
 				}
 			});
 			/** @type { slime.jrunscript.shell.system.ps } */
@@ -580,6 +579,7 @@
 			}
 			if (system.sudo) this.sudo = system.sudo;
 			if (system.ping) this.ping = system.ping;
+			if (system.desktop) this.desktop = system.desktop;
 		};
 
 		$exports.user = {};

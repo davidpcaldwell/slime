@@ -43,7 +43,6 @@ namespace slime.jrunscript.shell {
 			document: any
 			httpd: any
 			xml: any
-			ui: any
 		}
 	}
 
@@ -177,6 +176,10 @@ namespace slime.jrunscript.shell {
 			}
 			sudo?: slime.jrunscript.shell.system.sudo
 			ping?: slime.jrunscript.shell.system.Exports["ping"]
+
+			//	TODO	should not depend on jsh; need to disentangle jsh["ui"] from jsh first and have a separate TypeScript
+			//			definition for something like slime.jrunscript.ui or something
+			desktop: (library: jsh["ui"]) => void
 		}
 
 		TMPDIR: slime.jrunscript.file.Directory

@@ -60,13 +60,6 @@
 					stdio: stdio
 				};
 
-				//	TODO	necessary because dependencies are entangled here
-				Object.defineProperty(mContext.api, "ui", {
-					get: function() {
-						return jsh.ui;
-					}
-				});
-
 				var module = code.module(mContext);
 
 				if (!module.properties) throw new TypeError();
@@ -121,6 +114,22 @@
 				}
 
 				jsh.shell = toJsh(module);
+			}
+		});
+
+		plugin({
+			isReady: function() {
+				return Boolean(jsh.shell && jsh.ui);
+			},
+			load: function() {
+				jsh.shell.os.sudo.gui = function(p) {
+					if (!p) p = { prompt: void(0) };
+					if (!p.prompt) p.prompt = "Account password for " + jsh.shell.environment.USER + ":";
+					return function() {
+						return jsh.ui.askpass.gui({ prompt: p.prompt });
+					};
+				}
+				jsh.shell.os.desktop(jsh.ui);
 			}
 		});
 
