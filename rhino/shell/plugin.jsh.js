@@ -129,7 +129,7 @@
 						return jsh.ui.askpass.gui({ prompt: p.prompt });
 					};
 				}
-				jsh.shell.os.desktop(jsh.ui);
+				jsh.shell.os.inject({ ui: jsh.ui });
 			}
 		});
 

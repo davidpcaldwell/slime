@@ -23,14 +23,15 @@ namespace slime.jsh.shell {
 		 */
 		engine: string
 
-		run: {
-			(p: any): any
-			stdio: any
+		run: slime.jrunscript.shell.Exports["run"] & {
 			evaluate: {
 				wrap: any
-				jsh: any
+				jsh: {
+					wrap: any
+				}
 			}
 		}
+
 		//	TODO	run.evaluate.wrap
 		exit: (code: number) => void
 		stdio: any

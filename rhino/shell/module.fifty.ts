@@ -179,7 +179,7 @@ namespace slime.jrunscript.shell {
 
 			//	TODO	should not depend on jsh; need to disentangle jsh["ui"] from jsh first and have a separate TypeScript
 			//			definition for something like slime.jrunscript.ui or something
-			desktop: (library: jsh["ui"]) => void
+			inject: (dependencies: { ui: jsh["ui"] }) => void
 		}
 
 		TMPDIR: slime.jrunscript.file.Directory

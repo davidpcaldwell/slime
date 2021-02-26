@@ -579,7 +579,9 @@
 			}
 			if (system.sudo) this.sudo = system.sudo;
 			if (system.ping) this.ping = system.ping;
-			if (system.desktop) this.desktop = system.desktop;
+			if (system.desktop) this.inject = function(inject) {
+				system.desktop(inject.ui);
+			};
 		};
 
 		$exports.user = {};
