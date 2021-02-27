@@ -15,14 +15,14 @@
 	/**
 	 * @param { slime.jrunscript.runtime.$javahost } $javahost
 	 * @param { slime.jrunscript.runtime.java.Engine } $bridge
-	 * @param { Packages } Packages
+	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { any } JavaAdapter
 	 * @param { any } XML
-	 * @param { Packages.inonit.script.engine.Loader } $loader
+	 * @param { slime.jrunscript.native.inonit.script.engine.Loader } $loader
 	 * @returns { slime.jrunscript.runtime.Exports }
 	 */
 	function($javahost,$bridge,Packages,JavaAdapter,XML,$loader) {
-		/** @type { Packages.inonit.script.runtime.io.Streams } */
+		/** @type { slime.jrunscript.native.inonit.script.runtime.io.Streams } */
 		var _streams = new Packages.inonit.script.runtime.io.Streams();
 
 		var loader = {};

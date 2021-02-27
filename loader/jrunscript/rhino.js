@@ -14,7 +14,7 @@
 (
 	/**
 	 *
-	 * @param { Packages } Packages
+	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { slime.jrunscript.runtime.sync } sync
 	 * @param { slime.jrunscript.runtime.rhino.Scope["$rhino"] } $rhino
 	 * @param { slime.jrunscript.runtime.rhino.Scope["$loader"] } $loader

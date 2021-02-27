@@ -15,7 +15,7 @@
 	/**
 	 *
 	 * @param { slime.runtime.$platform } $platform
-	 * @param { $api } $api
+	 * @param { slime.$api.Global } $api
 	 * @param { slime.runtime.old.Context } $context
 	 * @param { slime.Loader } $loader
 	 * @param { slime.runtime.old.Exports } $exports

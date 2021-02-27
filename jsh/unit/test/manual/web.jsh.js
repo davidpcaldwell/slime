@@ -2,7 +2,7 @@
 (
 	/**
 	 *
-	 * @param { jsh } jsh
+	 * @param { slime.jsh.Global } jsh
 	 */
 	function(jsh) {
 		jsh.script.cli.wrap({

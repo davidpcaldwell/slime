@@ -15,7 +15,7 @@
 (
 	/**
 	 *
-	 * @param { $api } $api
+	 * @param { slime.$api.Global } $api
 	 * @param { slime.jrunscript.runtime.java.Context } $context
 	 * @param { slime.jrunscript.runtime.java.Exports } $exports
 	 */

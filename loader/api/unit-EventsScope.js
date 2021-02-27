@@ -2,7 +2,7 @@
 (
 	/**
 	 *
-	 * @param { $api } $api
+	 * @param { slime.$api.Global } $api
 	 * @param { { Verify: slime.definition.verify.Export } } $context
 	 * @param { (value: slime.definition.unit.internal.EventsScope) => void } $export
 	 */

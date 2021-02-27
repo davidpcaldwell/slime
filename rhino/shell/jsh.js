@@ -14,9 +14,9 @@
 (
 	/**
 	 *
-	 * @param { Packages } Packages
+	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { any } JavaAdapter
-	 * @param { $api } $api
+	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.shell.internal.Context } $context
 	 * @param { slime.jsh.shell.Exports } $exports
 	 */

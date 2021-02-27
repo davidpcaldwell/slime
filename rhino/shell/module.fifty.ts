@@ -29,8 +29,8 @@ namespace slime.jrunscript.shell {
 
 	export interface Context {
 		stdio: Stdio
-		_environment: Packages.inonit.system.OperatingSystem.Environment
-		_properties: Packages.java.util.Properties
+		_environment: slime.jrunscript.native.inonit.system.OperatingSystem.Environment
+		_properties: slime.jrunscript.native.java.util.Properties
 		kotlin: {
 			compiler: slime.jrunscript.file.File
 		}
@@ -105,7 +105,7 @@ namespace slime.jrunscript.shell {
 			fifty.tests.environment = function() {
 				const jsh = fifty.global.jsh;
 
-				var fixtures: Packages.inonit.system.test.Fixtures = fifty.$loader.file("../../rhino/system/test/system.fixtures.ts");
+				var fixtures: slime.jrunscript.native.inonit.system.test.Fixtures = fifty.$loader.file("../../rhino/system/test/system.fixtures.ts");
 				var o = fixtures.OperatingSystem.Environment.create({
 					values: { foo: "bazz" },
 					caseSensitive: true
@@ -179,7 +179,7 @@ namespace slime.jrunscript.shell {
 
 			//	TODO	should not depend on jsh; need to disentangle jsh["ui"] from jsh first and have a separate TypeScript
 			//			definition for something like slime.jrunscript.ui or something
-			inject: (dependencies: { ui: jsh["ui"] }) => void
+			inject: (dependencies: { ui: slime.jsh.Global["ui"] }) => void
 		}
 
 		TMPDIR: slime.jrunscript.file.Directory

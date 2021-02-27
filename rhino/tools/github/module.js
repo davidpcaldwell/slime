@@ -2,8 +2,8 @@
 
 (
 	/**
-	 * @param { Packages } Packages
-	 * @param { $api } $api
+	 * @param { slime.jrunscript.Packages } Packages
+	 * @param { slime.$api.Global } $api
 	 * @param { slime.jrunscript.tools.github.Context } $context
 	 * @param { slime.jrunscript.tools.github.Exports } $exports
 	 */

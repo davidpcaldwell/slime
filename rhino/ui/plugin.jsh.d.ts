@@ -1,22 +1,24 @@
-interface jsh {
-	ui: {
-		application: (
-			p: jsh.ui.application.Argument,
-			events?: $api.Events.Function.Receiver
-		) => {
-			port: number,
-			server: any,
-			browser: any
+namespace slime.jsh {
+	interface Global {
+		ui: {
+			application: (
+				p: jsh.ui.application.Argument,
+				events?: $api.Events.Function.Receiver
+			) => {
+				port: number,
+				server: any,
+				browser: any
+			}
+
+			askpass: any
+			javafx: any
+			Chrome: any
+
+			/**
+			 * Deprecated; replaced by application
+			 */
+			browser: jsh["ui"]["application"]
 		}
-
-		askpass: any
-		javafx: any
-		Chrome: any
-
-		/**
-		 * Deprecated; replaced by application
-		 */
-		browser: jsh["ui"]["application"]
 	}
 }
 

@@ -1,8 +1,8 @@
 //@ts-check
 (
 	/**
-	 * @param { Packages } Packages
-	 * @param { jsh } jsh
+	 * @param { slime.jrunscript.Packages } Packages
+	 * @param { slime.jsh.Global } jsh
 	 * @param { slime.jsh.plugin.plugin } plugin
 	 */
 	function(Packages,jsh,plugin) {

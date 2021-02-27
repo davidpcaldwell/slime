@@ -14,7 +14,7 @@
 (
 	/**
 	 * @param { any } Packages
-	 * @param { $api } $api
+	 * @param { slime.$api.Global } $api
 	 * @param { { $pwd: string, pathext: any, api: { js: any, java: any, io: any }, cygwin: any, addFinalizer: any } } $context
 	 * @param { slime.Loader } $loader
 	 * @param { slime.jrunscript.file.Exports } $exports

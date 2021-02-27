@@ -14,11 +14,11 @@
 (
 	/**
 	 *
-	 * @param { Packages } Packages
+	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { slime.jsh.plugin.plugin } plugin
 	 * @param { slime.jsh.plugin.$slime } $slime
-	 * @param { $api } $api
-	 * @param { jsh } jsh
+	 * @param { slime.$api.Global } $api
+	 * @param { slime.jsh.Global } jsh
 	 * @param { slime.Loader } $loader
 	 */
 	function(Packages,plugin,$slime,$api,jsh,$loader) {

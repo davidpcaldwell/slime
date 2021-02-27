@@ -13,7 +13,7 @@ namespace slime.jrunscript.runtime.java {
 	}
 
 	export interface Engine {
-		toNativeClass(javaClass: JavaClass): Packages.java.lang.Class
+		toNativeClass(javaClass: JavaClass): slime.jrunscript.native.java.lang.Class
 		//	TODO	possibly this type could be object; see java.js implementation
 		isNativeJavaObject(value: any): boolean
 		getJavaClass(name: string): JavaClass
@@ -68,9 +68,9 @@ namespace slime.jrunscript.runtime.java {
 	export interface Exports {
 		isJavaObject(value: any): boolean
 		isJavaType(javaclass: JavaClass): (value: any) => boolean
-		toNativeClass(javaClass: JavaClass): Packages.java.lang.Class
+		toNativeClass(javaClass: JavaClass): slime.jrunscript.native.java.lang.Class
 		adapt: {
-			String(s: Packages.java.lang.String): string
+			String(s: slime.jrunscript.native.java.lang.String): string
 		}
 		test: any
 	}

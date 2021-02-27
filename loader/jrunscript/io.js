@@ -18,7 +18,7 @@
 	 * @param { any } $platform
 	 * @param { any } Packages
 	 * @param { any } XMLList
-	 * @param { $api } $api
+	 * @param { slime.$api.Global } $api
 	 * @param { slime.jrunscript.runtime.io.Context } $context
 	 * @param { slime.jrunscript.runtime.io.Exports } $exports
 	 */
@@ -27,7 +27,7 @@
 
 		/**
 		 *
-		 * @param { Packages.java.io.OutputStream } peer
+		 * @param { slime.jrunscript.native.java.io.OutputStream } peer
 		 */
 		function OutputStream(peer) {
 			this.close = function() {
@@ -250,13 +250,13 @@
 				},
 
 				java: new function() {
-					/** @type { (object: any) => object is Packages.java.io.InputStream } */
+					/** @type { (object: any) => object is slime.jrunscript.native.java.io.InputStream } */
 					var isJavaInputStream = $context.api.java.isJavaType(Packages.java.io.InputStream);
-					/** @type { (object: any) => object is Packages.java.io.OutputStream } */
+					/** @type { (object: any) => object is slime.jrunscript.native.java.io.OutputStream } */
 					var isJavaOutputStream = $context.api.java.isJavaType(Packages.java.io.OutputStream);
-					/** @type { (object: any) => object is Packages.java.io.Reader } */
+					/** @type { (object: any) => object is slime.jrunscript.native.java.io.Reader } */
 					var isJavaReader = $context.api.java.isJavaType(Packages.java.io.Reader);
-					/** @type { (object: any) => object is Packages.java.io.Writer } */
+					/** @type { (object: any) => object is slime.jrunscript.native.java.io.Writer } */
 					var isJavaWriter = $context.api.java.isJavaType(Packages.java.io.Writer);
 
 					/**

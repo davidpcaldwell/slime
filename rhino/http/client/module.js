@@ -13,8 +13,8 @@
 //@ts-check
 (
 	/**
-	 * @param { Packages } Packages
-	 * @param { $api } $api
+	 * @param { slime.jrunscript.Packages } Packages
+	 * @param { slime.$api.Global } $api
 	 * @param { slime.jrunscript.http.client.Context } $context
 	 * @param { slime.jrunscript.http.client.Exports } $exports
 	 */

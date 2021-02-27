@@ -14,7 +14,7 @@
 //@ts-check
 (
 	/**
-	 * @param { $api } $api
+	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.tools.install.module.Context } $context
 	 * @param { slime.Loader } $loader
 	 * @param { slime.jsh.tools.install.module.Exports } $exports

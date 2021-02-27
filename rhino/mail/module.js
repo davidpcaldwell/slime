@@ -13,9 +13,9 @@
 //@ts-check
 (
 	/**
-	 * @param { Packages } Packages
+	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { any } JavaAdapter
-	 * @param { $api } $api
+	 * @param { slime.$api.Global } $api
 	 * @param { slime.jrunscript.mail.Context } $context
 	 * @param { slime.jrunscript.mail.Exports } $exports
 	 */

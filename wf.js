@@ -1,8 +1,8 @@
 //@ts-check
 (
 	/**
-	 * @param { $api } $api
-	 * @param { jsh } jsh
+	 * @param { slime.$api.Global } $api
+	 * @param { slime.jsh.Global } jsh
 	 * @param { slime.jsh.wf.cli.Context } $context
 	 * @param { Parameters<slime.jsh.wf.Exports["cli"]["initialize"]>[2] & { initialize: slime.jsh.wf.cli.Command, hello: slime.jsh.wf.cli.Command, git: any, merge: any } } $exports
 	 */

@@ -16,7 +16,7 @@
 	 *
 	 * @param { slime.jrunscript.runtime.internal.nashorn.load } load
 	 * @param { slime.jrunscript.runtime.Java } Java
-	 * @param { Packages } Packages
+	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { slime.jrunscript.runtime.sync } sync
 	 * @param { slime.jrunscript.runtime.nashorn.Scope["$graal"] } $graal
 	 * @param { slime.jrunscript.runtime.nashorn.Scope["$loader"] } $loader

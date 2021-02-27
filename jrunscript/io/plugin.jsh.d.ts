@@ -1,3 +1,5 @@
-interface jsh {
-	io: slime.jrunscript.io.Exports
+namespace slime.jsh {
+	interface Global {
+		io: slime.jrunscript.io.Exports
+	}
 }

@@ -7,89 +7,94 @@ type Iterable_match<L,R> = {
 	right: R
 }
 
-interface $api {
-	debug: {
-		disableBreakOnExceptionsFor: <T extends Function>(f: T) => T
-	}
-	Object: {
-		(p: { properties: {name: string, value: any }[] }): { [x: string]: any }
-		compose: {
-			<T>(t: T): T
-			<T,U>(t: T, u: U): T & U
-			<T,U,V>(t: T, u: U, v: V): T & U & V
-			<T,U,V,W>(t: T, u: U, v: V, w: W): T & U & V & W
+//	TODO	probably should reference these as slime.global.Function
+type GlobalFunction = Function
+
+namespace slime.$api {
+	export interface Global {
+		debug: {
+			disableBreakOnExceptionsFor: <T extends GlobalFunction>(f: T) => T
 		}
-		properties: Function
-		property: any
-		optional: any
-	},
-	Value: any,
-	Error: {
-		Type: <T extends Error>(p: { name: string, extends?: Function }) => slime.$api.Error.Type<T>
-	}
-	Events: {
-		(p?: {
-			source?: any
-			parent?: slime.$api.Events<any>
-			getParent?: () => slime.$api.Events<any>
-			on?: { [x: string]: any }
-		}): slime.$api.Events<any>
-
-		//	TODO	could probably use parameterized types to improve accuracy
-		Function: <P,R>(f: (p: P, events: any) => R, defaultListeners?: object) => (argument: P, receiver?: slime.$api.Events.Function.Receiver) => R,
-		instance: (v: any) => boolean
-	},
-	Iterable: {
-		/**
-		 * Collates an iterable set of values of type V (extends any) into groups of type G (extends any) (or counts the number of
-		 * values in each group) based on a specified set of criteria.
-		 *
-		 * @param p
-		 */
-		groupBy<V,G> (p: {
-			array: Array<V>,
-			group: (element: V) => G,
-			groups?: Array<G>,
-			codec?: {
-				encode: (group: G) => string,
-				decode: (string: string) => G
-			},
-			count?: boolean
-		}) : {
-			array: () => Array<{
-				group: G
-				array?: V[],
-				count?: number
-			}>
-		},
-
-		match<L,R> (
-			p: {
-				left: L[],
-				right: R[],
-				matches: (l: L, r: R) => boolean,
-				unmatched: {
-					left: (l: L) => void,
-					right: (r: R) => void
-				},
-				matched: (l: L, r: R) => void
+		Object: {
+			(p: { properties: {name: string, value: any }[] }): { [x: string]: any }
+			compose: {
+				<T>(t: T): T
+				<T,U>(t: T, u: U): T & U
+				<T,U,V>(t: T, u: U, v: V): T & U & V
+				<T,U,V,W>(t: T, u: U, v: V, w: W): T & U & V & W
 			}
-		): {
-			unmatched: {
-				left: L[],
-				right: R[]
-			},
-			matched: Iterable_match<L,R>[]
+			properties: GlobalFunction
+			property: any
+			optional: any
+		},
+		Value: any,
+		Error: {
+			Type: <T extends Error>(p: { name: string, extends?: GlobalFunction }) => slime.$api.Error.Type<T>
 		}
-	},
-	deprecate: {
-		(o: object, property: string): void
-		<T extends Function>(f: T): T
-		warning: any
-	}
-	experimental: {
-		(o: object, property: string): void
-		<T extends Function>(f: T): T
+		Events: {
+			(p?: {
+				source?: any
+				parent?: slime.$api.Events<any>
+				getParent?: () => slime.$api.Events<any>
+				on?: { [x: string]: any }
+			}): slime.$api.Events<any>
+
+			//	TODO	could probably use parameterized types to improve accuracy
+			Function: <P,R>(f: (p: P, events: any) => R, defaultListeners?: object) => (argument: P, receiver?: slime.$api.Events.Function.Receiver) => R,
+			instance: (v: any) => boolean
+		},
+		Iterable: {
+			/**
+			 * Collates an iterable set of values of type V (extends any) into groups of type G (extends any) (or counts the number of
+			 * values in each group) based on a specified set of criteria.
+			 *
+			 * @param p
+			 */
+			groupBy<V,G> (p: {
+				array: Array<V>,
+				group: (element: V) => G,
+				groups?: Array<G>,
+				codec?: {
+					encode: (group: G) => string,
+					decode: (string: string) => G
+				},
+				count?: boolean
+			}) : {
+				array: () => Array<{
+					group: G
+					array?: V[],
+					count?: number
+				}>
+			},
+
+			match<L,R> (
+				p: {
+					left: L[],
+					right: R[],
+					matches: (l: L, r: R) => boolean,
+					unmatched: {
+						left: (l: L) => void,
+						right: (r: R) => void
+					},
+					matched: (l: L, r: R) => void
+				}
+			): {
+				unmatched: {
+					left: L[],
+					right: R[]
+				},
+				matched: Iterable_match<L,R>[]
+			}
+		},
+		deprecate: {
+			(o: object, property: string): void
+			<T extends GlobalFunction>(f: T): T
+			warning: any
+		}
+		experimental: {
+			(o: object, property: string): void
+			<T extends GlobalFunction>(f: T): T
+		}
 	}
 }
 
@@ -152,7 +157,7 @@ namespace slime.$api {
 (
 	function(
 		fifty: slime.fifty.test.kit,
-		$api: $api
+		$api: slime.$api.Global
 	) {
 		var verify = fifty.verify;
 

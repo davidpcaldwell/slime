@@ -1,7 +1,7 @@
 //@ts-check
 (
 	/**
-	 * @param { $api } $api
+	 * @param { slime.$api.Global } $api
 	 * @param { (value: slime.definition.verify.Export) => void } $export
 	 */
 	function($api,$export) {

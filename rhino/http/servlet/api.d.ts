@@ -93,14 +93,14 @@ namespace slime.servlet {
 	namespace internal {
 		namespace $host {
 			interface Java {
-				getClasspath?: Packages.inonit.script.engine.Loader.Classes.Interface
-				register: (_script: Packages.inonit.script.servlet.Servlet.Script) => void
-				getLoader?: Packages.inonit.script.Engine.Loader
-				getServlet?: Packages.inonit.script.servlet.Servlet
+				getClasspath?: slime.jrunscript.native.inonit.script.engine.Loader.Classes.Interface
+				register: (_script: slime.jrunscript.native.inonit.script.servlet.Servlet.Script) => void
+				getLoader?: slime.jrunscript.native.inonit.script.Engine.Loader
+				getServlet?: slime.jrunscript.native.inonit.script.servlet.Servlet
 			}
 
 			interface Rhino extends Java {
-				getEngine?: Packages.inonit.script.rhino.Engine
+				getEngine?: slime.jrunscript.native.inonit.script.rhino.Engine
 			}
 
 			interface jsh {

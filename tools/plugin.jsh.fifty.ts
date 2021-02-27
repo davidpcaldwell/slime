@@ -327,13 +327,13 @@ namespace slime.jsh.wf {
 
 (
 	function(
-		jsh: jsh,
+		jsh: slime.jsh.Global,
 		verify: slime.definition.verify.Verify,
 		run: slime.fifty.test.run,
 		tests: any,
 		$loader: slime.Loader & { getRelativePath: any, plugin: any }
 	) {
-		tests.types.Exports = function(module: slime.jsh.wf.Exports,jsh: jsh) {
+		tests.types.Exports = function(module: slime.jsh.wf.Exports,jsh: slime.jsh.Global) {
 			(function() {
 				var invocation = {
 					options: {},

@@ -1,8 +1,8 @@
 //@ts-check
 (
 	/**
-	 * @param { $api } $api
-	 * @param { jsh } jsh
+	 * @param { slime.$api.Global } $api
+	 * @param { slime.jsh.Global } jsh
 	 */
 	function($api,jsh) {
 		var SLIME = jsh.script.file.parent.parent;

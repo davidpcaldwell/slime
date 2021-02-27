@@ -3,14 +3,14 @@ namespace slime.jrunscript.runtime.io {
 		character(mode?: any): Reader
 		close()
 		java: {
-			adapt(): Packages.java.io.InputStream
+			adapt(): slime.jrunscript.native.java.io.InputStream
 			array(): any
 		}
 	}
 
 	export interface OutputStream {
 		java: {
-			adapt(): Packages.java.io.OutputStream
+			adapt(): slime.jrunscript.native.java.io.OutputStream
 		}
 	}
 
@@ -34,7 +34,7 @@ namespace slime.jrunscript.runtime.io {
 	}
 
 	export interface Context {
-		_streams: Packages.inonit.script.runtime.io.Streams
+		_streams: slime.jrunscript.native.inonit.script.runtime.io.Streams
 		api: {
 			java: slime.jrunscript.host.Exports
 			Resource: any
@@ -44,7 +44,7 @@ namespace slime.jrunscript.runtime.io {
 	export interface Exports {
 		OutputStream: any
 		Writer: any
-		InputStream: new (p: Packages.java.io.InputStream) => InputStream
+		InputStream: new (p: slime.jrunscript.native.java.io.InputStream) => InputStream
 		Reader: any
 		Streams: {
 			binary: {
@@ -55,10 +55,10 @@ namespace slime.jrunscript.runtime.io {
 			}
 			java: {
 				adapt: {
-					(_stream: Packages.java.io.InputStream): InputStream
-					(_stream: Packages.java.io.OutputStream): OutputStream
-					(_stream: Packages.java.io.Reader): Reader
-					(_stream: Packages.java.io.Writer): Writer
+					(_stream: slime.jrunscript.native.java.io.InputStream): InputStream
+					(_stream: slime.jrunscript.native.java.io.OutputStream): OutputStream
+					(_stream: slime.jrunscript.native.java.io.Reader): Reader
+					(_stream: slime.jrunscript.native.java.io.Writer): Writer
 				}
 			}
 		}

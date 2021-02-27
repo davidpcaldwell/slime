@@ -17,10 +17,10 @@ namespace slime.jsh.loader.internal.plugins {
 
 		load: {
 			(p: {
-				_file?: Packages.java.io.File
+				_file?: slime.jrunscript.native.java.io.File
 				loader?: slime.Loader
 				zip?: {
-					_file: Packages.java.io.File
+					_file: slime.jrunscript.native.java.io.File
 				}
 			}): void
 		}

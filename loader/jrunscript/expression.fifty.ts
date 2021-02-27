@@ -23,7 +23,7 @@ namespace slime.jrunscript.runtime {
 			}
 			_loaded?: {
 				path: string
-				resource: Packages.inonit.script.engine.Code.Loader.Resource
+				resource: slime.jrunscript.native.inonit.script.engine.Code.Loader.Resource
 			}
 			length?: number
 			modified?: any
@@ -57,7 +57,7 @@ namespace slime.jrunscript.runtime {
 		 */
 		export interface Scope {
 			$rhino: Engine
-			$loader: Packages.inonit.script.engine.Loader
+			$loader: slime.jrunscript.native.inonit.script.engine.Loader
 		}
 
 		/**
@@ -66,7 +66,7 @@ namespace slime.jrunscript.runtime {
 		export interface Engine {
 			script(name: string, code: string, scope: object, target: object)
 			canAccessEnvironment(): boolean
-			getDebugger(): Packages.inonit.script.rhino.Engine.Debugger
+			getDebugger(): slime.jrunscript.native.inonit.script.rhino.Engine.Debugger
 		}
 	}
 
@@ -80,7 +80,7 @@ namespace slime.jrunscript.runtime {
 
 		export interface Scope {
 			$graal: Graal
-			$loader: Packages.inonit.script.engine.Loader
+			$loader: slime.jrunscript.native.inonit.script.engine.Loader
 		}
 	}
 
@@ -125,302 +125,304 @@ namespace slime.jrunscript.runtime {
 	}
 }
 
-interface $api {
-	jrunscript: {
-		Properties: {
-			codec: {
-				object: slime.Codec<slime.$api.jrunscript.Properties,Packages.java.util.Properties>
+namespace slime.$api {
+	export interface Global {
+		jrunscript: {
+			Properties: {
+				codec: {
+					object: slime.Codec<slime.$api.jrunscript.Properties,slime.jrunscript.native.java.util.Properties>
+				}
 			}
 		}
 	}
-}
 
-namespace slime.$api {
-	var jrunscript: $api["jrunscript"]
+	var jrunscript: Global["jrunscript"]
 
 	export namespace jrunscript {
 		export type Properties = { [x: string]: string }
 	}
 }
 
-interface Packages {
-	java: {
-		lang: {
-			System: {
-				err: {
-					println: any
-				}
-				currentTimeMillis(): number
-				setProperty(name: string, value: string)
-				getProperty(name: string): Packages.java.lang.String
-				getProperties(): any
-				exit(status: number)
-				getenv(name: string): string
-				getenv(): any
-			}
-			reflect: {
-				Field: any
-				Modifier: any
-				Array: any
-			}
-			String: any
-			Thread: any
-			Runnable: any
-			ClassLoader: any
-			Boolean: any
-		}
-		io: {
-			ByteArrayInputStream: any
-			ByteArrayOutputStream: any
-			File: any
-			InputStream: any
-			StringReader: any
-			StringWriter: any
-			PrintWriter: any
-			Reader: any
-			Writer: any
-			OutputStream: any
-			FileInputStream: any
-			PrintStream: {
-				new (stream: Packages.java.io.OutputStream): Packages.java.io.PrintStream
-			}
-		},
-		net: {
-			URLConnection: any
-			URI: any
-			URL: any
-			URLEncoder: any
-			URLDecoder: any
-			HttpURLConnection: any
-			CookieManager: any
-			CookiePolicy: any
-			Proxy: any
-			InetSocketAddress: any
-		}
-		nio: {
-			file: {
-				Files: any
-				attribute: {
-					FileTime: any
-				}
-			}
-		}
-		util: {
-			HashMap: any
-			ArrayList: any
-			Properties: any
-			logging: any
-			Base64: any
-			Map: any
-		}
-		awt: {
-			Desktop: any
-		}
-	}
-	javax: any
-	jdk: any
-	org: {
-		mozilla: {
-			javascript: {
-				Context: any
-				Synchronizer: any
-			}
-		}
-		graalvm: any
-		jetbrains: any
-	}
-	inonit: {
-		script: {
-			runtime: {
-				io: {
-					Streams: any
-				}
-				Throwables: any
-				Threads: any
-			}
-			engine: {
-				Code: {
-					Loader: any
-				}
-			}
-			rhino: {
-				Objects: any
-				MetaObject: any
-			}
-			jsh: {
-				Shell: any
-			}
-		}
-		system: Packages.inonit.system
-	}
-}
+namespace slime.jrunscript {
+	export namespace native {
+		//	TODO	convert Packages to interface by moving these into interface and declaring Packages explicitly everywhere it is
+		//			used in the code; should write issue and remove this comment
 
-namespace Packages {
-	//	TODO	convert Packages to interface by moving these into interface and declaring Packages explicitly everywhere it is
-	//			used in the code; should write issue and remove this comment
+		export namespace java {
+			export namespace lang {
+				export interface String {
+				}
 
-	export namespace java {
-		export namespace lang {
-			export interface String {
+				export interface Class {
+					isInstance(object: any): boolean
+				}
 			}
+			export namespace io {
+				export interface InputStream {
+					read(): any
+					getClass(): any
+				}
+				export interface OutputStream {
+					close()
+				}
+				export interface Reader {
+				}
+				export interface Writer {
+				}
+				export interface PrintStream extends OutputStream {
+				}
+				export interface File {
+					isDirectory(): boolean
+					toPath(): slime.jrunscript.native.java.nio.file.Path
+					getName(): slime.jrunscript.native.java.lang.String
+					getCanonicalPath(): slime.jrunscript.native.java.lang.String
+				}
+			}
+			export namespace nio {
+				export namespace file {
+					export interface Path {
+					}
+				}
+			}
+			export namespace util {
+				export interface Properties {
+					get(name: string): any
+					propertyNames(): any
+					getProperty(name: string): string
+				}
 
-			export interface Class {
-				isInstance(object: any): boolean
-			}
-		}
-		export namespace io {
-			export interface InputStream {
-				read(): any
-				getClass(): any
-			}
-			export interface OutputStream {
-				close()
-			}
-			export interface Reader {
-			}
-			export interface Writer {
-			}
-			export interface PrintStream extends OutputStream {
-			}
-			export interface File {
-				isDirectory(): boolean
-				toPath(): Packages.java.nio.file.Path
-				getName(): Packages.java.lang.String
-				getCanonicalPath(): Packages.java.lang.String
-			}
-		}
-		export namespace nio {
-			export namespace file {
-				export interface Path {
+				export interface Date {
+					getTime(): number
+				}
+
+				export interface Iterator {
+					hasNext(): boolean
+					next(): any
+				}
+
+				export interface Set {
+					iterator(): Iterator
+				}
+
+				export interface Map {
+					keySet(): Set
+					get(key: any): any
 				}
 			}
 		}
-		export namespace util {
-			export interface Properties {
-				get(name: string): any
-				propertyNames(): any
-				getProperty(name: string): string
-			}
 
-			export interface Date {
-				getTime(): number
-			}
+		type EngineSpecificJshInterface = slime.jsh.plugin.EngineSpecific;
 
-			export interface Iterator {
-				hasNext(): boolean
-				next(): any
-			}
-
-			export interface Set {
-				iterator(): Iterator
-			}
-
-			export interface Map {
-				keySet(): Set
-				get(key: any): any
-			}
-		}
-	}
-
-	type EngineSpecificJshInterface = slime.jsh.plugin.EngineSpecific;
-
-	export namespace inonit.script {
-		export namespace runtime.io {
-			export interface Streams {
-				split: any
-				readBytes: any
-				copy: any
-				readLine: any
-			}
-		}
-
-		export namespace engine {
-			export namespace Code {
-				export interface Loader {
-					getFile(path: string): Loader.Resource
+		export namespace inonit.script {
+			export namespace runtime.io {
+				export interface Streams {
+					split: any
+					readBytes: any
+					copy: any
+					readLine: any
 				}
+			}
 
-				export namespace Loader {
-					export interface Resource {
-						getInputStream(): Packages.java.io.InputStream
-						getLength(): {
-							longValue(): number
+			export namespace engine {
+				export namespace Code {
+					export interface Loader {
+						getFile(path: string): Loader.Resource
+					}
+
+					export namespace Loader {
+						export interface Resource {
+							getInputStream(): slime.jrunscript.native.java.io.InputStream
+							getLength(): {
+								longValue(): number
+							}
+							getSourceName(): slime.jrunscript.native.java.lang.String
+							getLastModified(): slime.jrunscript.native.java.util.Date
 						}
-						getSourceName(): Packages.java.lang.String
-						getLastModified(): Packages.java.util.Date
+					}
+				}
+
+				export interface Loader {
+					getCoffeeScript()
+					getTypescript()
+					getClasspath(): any
+					getLoaderCode(path: string): any
+				}
+			}
+
+			export namespace rhino {
+				export namespace Engine {
+					export interface Debugger {
 					}
 				}
 			}
 
-			export interface Loader {
-				getCoffeeScript()
-				getTypescript()
-				getClasspath(): any
-				getLoaderCode(path: string): any
-			}
-		}
+			//	TODO	move to appropriate directory
+			export namespace jsh {
+				export interface Shell {
+					setRuntime(value: slime.jrunscript.runtime.Exports)
+					runtime(): slime.jrunscript.runtime.Exports & EngineSpecificJshInterface
+					getLoader(): slime.jrunscript.native.inonit.script.engine.Loader
+					getEnvironment(): Shell.Environment
+					getInvocation(): Shell.Invocation
+					getJshLoader: any
+					getInterface(): any
+					getLibrary(path: string): any
+					getLibraryFile(path: string): any
+					getPackaged(): Shell.Packaged
 
-		export namespace rhino {
-			export namespace Engine {
-				export interface Debugger {
-				}
-			}
-		}
-
-		//	TODO	move to appropriate directory
-		export namespace jsh {
-			export interface Shell {
-				setRuntime(value: slime.jrunscript.runtime.Exports)
-				runtime(): slime.jrunscript.runtime.Exports & EngineSpecificJshInterface
-				getLoader(): Packages.inonit.script.engine.Loader
-				getEnvironment(): Shell.Environment
-				getInvocation(): Shell.Invocation
-				getJshLoader: any
-				getInterface(): any
-				getLibrary(path: string): any
-				getLibraryFile(path: string): any
-				getPackaged(): Shell.Packaged
-
-				worker: any
-				events: any
-			}
-
-			export namespace Shell {
-				/**
-				 * Methods related to packaged applications, currently used to provide access to packaged application resources
-				 * and location so that they can be provided by the <code>jsh.script</code> API.
-				 */
-				export interface Packaged {
-					getFile(): Packages.java.io.File
-					getCode(): Packages.inonit.script.engine.Code.Loader
+					worker: any
+					events: any
 				}
 
-				export interface Environment {
-					getStdio(): Environment.Stdio
-					getEnvironment(): Packages.inonit.system.OperatingSystem.Environment
-					getSystemProperties(): Packages.java.util.Properties
-				}
+				export namespace Shell {
+					/**
+					 * Methods related to packaged applications, currently used to provide access to packaged application resources
+					 * and location so that they can be provided by the <code>jsh.script</code> API.
+					 */
+					export interface Packaged {
+						getFile(): slime.jrunscript.native.java.io.File
+						getCode(): slime.jrunscript.native.inonit.script.engine.Code.Loader
+					}
 
-				export namespace Environment {
-					export interface Stdio {
-						getStandardInput(): Packages.java.io.InputStream
-						getStandardOutput(): Packages.java.io.OutputStream
-						getStandardError(): Packages.java.io.OutputStream
+					export interface Environment {
+						getStdio(): Environment.Stdio
+						getEnvironment(): slime.jrunscript.native.inonit.system.OperatingSystem.Environment
+						getSystemProperties(): slime.jrunscript.native.java.util.Properties
+					}
+
+					export namespace Environment {
+						export interface Stdio {
+							getStandardInput(): slime.jrunscript.native.java.io.InputStream
+							getStandardOutput(): slime.jrunscript.native.java.io.OutputStream
+							getStandardError(): slime.jrunscript.native.java.io.OutputStream
+						}
+					}
+
+					export interface Invocation {
+						getScript: any
 					}
 				}
 
-				export interface Invocation {
-					getScript: any
+				export namespace Rhino {
+					export interface Interface {
+						script: any
+						exit: any
+						jsh: any
+					}
 				}
 			}
+		}
+	}
 
-			export namespace Rhino {
-				export interface Interface {
-					script: any
-					exit: any
-					jsh: any
+	export interface Packages {
+		java: {
+			lang: {
+				System: {
+					err: {
+						println: any
+					}
+					currentTimeMillis(): number
+					setProperty(name: string, value: string)
+					getProperty(name: string): slime.jrunscript.native.java.lang.String
+					getProperties(): any
+					exit(status: number)
+					getenv(name: string): string
+					getenv(): any
+				}
+				reflect: {
+					Field: any
+					Modifier: any
+					Array: any
+				}
+				String: any
+				Thread: any
+				Runnable: any
+				ClassLoader: any
+				Boolean: any
+			}
+			io: {
+				ByteArrayInputStream: any
+				ByteArrayOutputStream: any
+				File: any
+				InputStream: any
+				StringReader: any
+				StringWriter: any
+				PrintWriter: any
+				Reader: any
+				Writer: any
+				OutputStream: any
+				FileInputStream: any
+				PrintStream: {
+					new (stream: slime.jrunscript.native.java.io.OutputStream): slime.jrunscript.native.java.io.PrintStream
+				}
+			},
+			net: {
+				URLConnection: any
+				URI: any
+				URL: any
+				URLEncoder: any
+				URLDecoder: any
+				HttpURLConnection: any
+				CookieManager: any
+				CookiePolicy: any
+				Proxy: any
+				InetSocketAddress: any
+			}
+			nio: {
+				file: {
+					Files: any
+					attribute: {
+						FileTime: any
+					}
 				}
 			}
+			util: {
+				HashMap: any
+				ArrayList: any
+				Properties: any
+				logging: any
+				Base64: any
+				Map: any
+			}
+			awt: {
+				Desktop: any
+			}
+		}
+		javax: any
+		jdk: any
+		org: {
+			mozilla: {
+				javascript: {
+					Context: any
+					Synchronizer: any
+				}
+			}
+			graalvm: any
+			jetbrains: any
+		}
+		inonit: {
+			script: {
+				runtime: {
+					io: {
+						Streams: any
+					}
+					Throwables: any
+					Threads: any
+				}
+				engine: {
+					Code: {
+						Loader: any
+					}
+				}
+				rhino: {
+					Objects: any
+					MetaObject: any
+				}
+				jsh: {
+					Shell: any
+				}
+			}
+			system: slime.jrunscript.native.inonit.system
 		}
 	}
 }
@@ -429,7 +431,7 @@ namespace Packages {
 	function(
 		fifty: slime.fifty.test.kit,
 		$slime: slime.jrunscript.runtime.Exports,
-		$api: $api,
+		$api: slime.$api.Global,
 		$loader: slime.fifty.test.$loader,
 		verify: slime.fifty.test.verify,
 		tests: slime.fifty.test.tests,

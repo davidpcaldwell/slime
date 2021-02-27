@@ -1,7 +1,7 @@
 //@ts-check
 (
 	/**
-	 * @param { $api } $api
+	 * @param { slime.$api.Global } $api
 	 * @param { { library: { node: any } } } $context
 	 * @param { slime.fifty.Exports } $exports
 	 */

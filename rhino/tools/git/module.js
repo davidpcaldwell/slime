@@ -15,7 +15,7 @@
 //	TODO	dates below are When
 (
 	/**
-	 * @param { $api } $api
+	 * @param { slime.$api.Global } $api
 	 * @param { slime.jrunscript.git.Context } $context
 	 * @param { slime.jrunscript.git.Exports } $exports
 	 */

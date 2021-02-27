@@ -14,8 +14,8 @@
 (
 	/**
 	 *
-	 * @param { Packages.inonit.script.jsh.Shell } $jsh
-	 * @param { Packages.inonit.script.jsh.Rhino.Interface } $rhino
+	 * @param { slime.jrunscript.native.inonit.script.jsh.Shell } $jsh
+	 * @param { slime.jrunscript.native.inonit.script.jsh.Rhino.Interface } $rhino
 	 */
 	function($jsh,$rhino) {
 		$jsh.setRuntime((function() {

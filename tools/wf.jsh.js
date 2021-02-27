@@ -1,8 +1,8 @@
 //@ts-check
 (
 	/**
-	 * @param { $api } $api
-	 * @param { jsh } jsh
+	 * @param { slime.$api.Global } $api
+	 * @param { slime.jsh.Global } jsh
 	 */
 	function($api,jsh) {
 		if (!jsh.wf.project.base.getFile("wf.js")) {

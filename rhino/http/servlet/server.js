@@ -14,7 +14,7 @@
 (
 	/**
 	 * @param { any } Packages
-	 * @param { $api } $api
+	 * @param { slime.$api.Global } $api
 	 * @param { { api: { java: any, io: any, web: slime.web.Exports } } } $context
 	 * @param { slime.Loader } $loader
 	 * @param { slime.servlet.internal.server.Exports } $exports

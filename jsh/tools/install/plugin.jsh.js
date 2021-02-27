@@ -14,8 +14,8 @@
 //@ts-check
 (
 	/**
-	 * @param { $api } $api
-	 * @param { jsh } jsh
+	 * @param { slime.$api.Global } $api
+	 * @param { slime.jsh.Global } jsh
 	 * @param { object } plugins
 	 * @param { slime.jsh.plugin.plugin } plugin
 	 * @param { slime.Loader } $loader

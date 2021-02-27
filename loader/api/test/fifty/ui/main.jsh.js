@@ -2,8 +2,8 @@
 (
 	/**
 	 *
-	 * @param { $api } $api
-	 * @param { jsh } jsh
+	 * @param { slime.$api.Global } $api
+	 * @param { slime.jsh.Global } jsh
 	 * @param { { file: any, options: any, arguments: any }} p
 	 */
 	function($api,jsh,p) {

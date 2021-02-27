@@ -15,8 +15,8 @@
 (
 	/**
 	 *
-	 * @param { Packages } Packages
-	 * @param { jsh } jsh
+	 * @param { slime.jrunscript.Packages } Packages
+	 * @param { slime.jsh.Global } jsh
 	 * @param { any } $exports
 	 */
 	function(Packages,jsh,$exports) {

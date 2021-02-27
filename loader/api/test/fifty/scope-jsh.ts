@@ -1,5 +1,5 @@
 (
-	function(jsh: jsh, $export: (value: slime.fifty.test.kit["jsh"]) => void) {
+	function(jsh: slime.jsh.Global, $export: (value: slime.fifty.test.kit["jsh"]) => void) {
 		$export({
 			file: {
 				location: function() {

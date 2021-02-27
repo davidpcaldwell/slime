@@ -1,7 +1,7 @@
 (
 	function(
-		Packages: Packages,
-		jsh: jsh,
+		Packages: slime.jrunscript.Packages,
+		jsh: slime.jsh.Global,
 		tests: slime.fifty.test.tests,
 		verify: slime.fifty.test.verify
 	) {

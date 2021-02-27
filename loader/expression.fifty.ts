@@ -329,7 +329,7 @@ namespace slime {
 
         interface Scope {
             $platform: $platform
-            $api: $api
+            $api: slime.$api.Global
         }
 
         export interface Exports {
@@ -386,7 +386,7 @@ namespace slime {
             namespace: any
             $platform: $platform
             java?: any
-            $api: $api
+            $api: slime.$api.Global
 
             readonly typescript: slime.runtime.$slime.TypeScript
         }

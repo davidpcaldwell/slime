@@ -19,11 +19,11 @@ namespace slime.runtime.old {
 		Error: any
 		Task: any
 
-		Function: $api["Function"]
+		Function: slime.$api.Global["Function"]
 
 		/**
 		 * @deprecated
 		 */
-		deprecate: $api["deprecate"]
+		deprecate: slime.$api.Global["deprecate"]
 	}
 }

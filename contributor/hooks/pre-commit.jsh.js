@@ -1,7 +1,7 @@
 //@ts-check
 (
 	/**
-	 * @param { jsh } jsh
+	 * @param { slime.jsh.Global } jsh
 	 * @param { slime.jrunscript.file.Directory } base
 	 */
 	function main(jsh,base) {

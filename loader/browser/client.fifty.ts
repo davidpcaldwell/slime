@@ -65,7 +65,7 @@ namespace slime.browser {
 		}
 		base: string
 		location: any
-		$api: $api
+		$api: slime.$api.Global
 		$sdk: any
 
 		/** @deprecated */

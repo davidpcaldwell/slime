@@ -15,7 +15,7 @@
 	/**
 	 * @param { slime.runtime.$engine | undefined } $engine
 	 * @param { slime.runtime.$slime } $slime
-	 * @param { Packages } Packages - note that in the rare case of a browser with Java, Packages may not include inonit.* classes
+	 * @param { slime.jrunscript.Packages } Packages - note that in the rare case of a browser with Java, Packages may not include inonit.* classes
 	 * @returns { slime.runtime.Exports }
 	 */
 	function($engine,$slime,Packages) {

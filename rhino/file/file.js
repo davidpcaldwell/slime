@@ -14,8 +14,8 @@
 (
 	/**
 	 *
-	 * @param { Packages } Packages
-	 * @param { $api } $api
+	 * @param { slime.jrunscript.Packages } Packages
+	 * @param { slime.$api.Global } $api
 	 * @param { { Resource: any, constant: any, fail: any, isPathname: any, Streams: any, pathext: any } } $context
 	 * @param { { Searchpath: any, Pathname: any }} $exports
 	 */

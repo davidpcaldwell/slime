@@ -14,9 +14,9 @@
 //@ts-check
 (
 	/**
-	 * @param { Packages } Packages
-	 * @param { $api } $api
-	 * @param { jsh } jsh
+	 * @param { slime.jrunscript.Packages } Packages
+	 * @param { slime.$api.Global } $api
+	 * @param { slime.jsh.Global } jsh
 	 * @param { (value: any) => void } $set
 	 */
 	function(Packages,$api,jsh,$set) {

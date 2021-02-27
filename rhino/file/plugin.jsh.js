@@ -15,7 +15,7 @@
 (
 	/**
 	 * @param { slime.jsh.plugin.$slime } $slime
-	 * @param { jsh } jsh
+	 * @param { slime.jsh.Global } jsh
 	 * @param { slime.jsh.plugin.plugin } plugin
 	 * @param { slime.Loader } $loader
 	 */

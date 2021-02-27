@@ -19,8 +19,8 @@
 //@ts-check
 (
 	/**
-	 * @param { $api } $api
-	 * @param { jsh } jsh
+	 * @param { slime.$api.Global } $api
+	 * @param { slime.jsh.Global } jsh
 	 * @param { { getMimeType: any } } $context
 	 */
 	function($api,jsh,$context) {
@@ -424,7 +424,7 @@
 		};
 
 		/**
-		 * @param { jsh } jsh
+		 * @param { slime.jsh.Global } jsh
 		 */
 		(function(jsh) {
 			jsh.httpd.Resources = Object.assign(NewResources,{

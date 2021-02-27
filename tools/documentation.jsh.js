@@ -2,9 +2,9 @@
 (
 	/**
 	 *
-	 * @param { Packages } Packages
-	 * @param { $api } $api
-	 * @param { jsh } jsh
+	 * @param { slime.jrunscript.Packages } Packages
+	 * @param { slime.$api.Global } $api
+	 * @param { slime.jsh.Global } jsh
 	 */
 	function(Packages,$api,jsh) {
 		$api.Function.result(

@@ -1,7 +1,7 @@
 //@ts-check
 (
 	/**
-	 * @param { $api } $api
+	 * @param { slime.$api.Global } $api
 	 * @param {slime.jrunscript.node.Context} $context
 	 * @param {slime.jrunscript.node.Exports} $exports
 	 */

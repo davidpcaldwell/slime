@@ -2,7 +2,7 @@
 (
 	/**
 	 *
-	 * @param { jsh } jsh
+	 * @param { slime.jsh.Global } jsh
 	 */
 	function(jsh) {
 		var startMock = function() {

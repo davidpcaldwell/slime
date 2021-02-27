@@ -2,8 +2,8 @@
 (
 	/**
 	 *
-	 * @param { Packages } Packages
-	 * @param { jsh } jsh
+	 * @param { slime.jrunscript.Packages } Packages
+	 * @param { slime.jsh.Global } jsh
 	 */
 	function(Packages,jsh) {
 		Packages.java.lang.System.err.println("Main script executing! thread = " + Packages.java.lang.Thread.currentThread());

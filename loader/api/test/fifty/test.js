@@ -1,7 +1,7 @@
 //@ts-check
 (
 	/**
-	 * @param { $api } $api
+	 * @param { slime.$api.Global } $api
 	 * @param { { library: { Verify: slime.definition.verify.Export }, console: slime.fifty.test.internal.Console } } $context
 	 * @param { slime.Loader } $loader
 	 * @param { (value: slime.fifty.test.internal.run) => void } $export

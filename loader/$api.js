@@ -16,7 +16,7 @@
 	/**
 	 * @param { slime.$api.internal.$platform } $platform
 	 * @param { slime.$api.internal.$slime } $slime
-	 * @param { $api & { [x: string]: any } } $exports
+	 * @param { slime.$api.Global & { [x: string]: any } } $exports
 	 */
 	function($platform,$slime,$exports) {
 		var load = function(name,$context) {
@@ -271,7 +271,7 @@
 				}
 			}
 
-			/** @type { $api["Iterable"]["groupBy"] } */
+			/** @type { slime.$api.Global["Iterable"]["groupBy"] } */
 			this.groupBy = function(p) {
 				var iterator = getIterator(p);
 
@@ -536,7 +536,7 @@
 
 		/**
 		 * @constructor
-		 * @param { Parameters<$api["Events"]>[0] } [p]
+		 * @param { Parameters<slime.$api.Global["Events"]>[0] } [p]
 		 */
 		var Emitter = function(p) {
 			if (!p) p = {};
@@ -700,10 +700,10 @@
 			}
 		};
 
-		/** @type { $api["Events"] } */
+		/** @type { slime.$api.Global["Events"] } */
 		$exports.Events = Object.assign(
 			/**
-			 * @param { Parameters<$api["Events"]>[0] } p
+			 * @param { Parameters<slime.$api.Global["Events"]>[0] } p
 			 */
 			function(p) {
 				return new Emitter(p);

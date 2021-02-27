@@ -4,6 +4,8 @@ namespace slime.jsh.typescript {
 	}
 }
 
-interface jsh {
-	typescript: slime.jsh.typescript.Exports
+namespace slime.jsh {
+	interface Global {
+		typescript: slime.jsh.typescript.Exports
+	}
 }

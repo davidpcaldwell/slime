@@ -1,7 +1,7 @@
 //@ts-check
 (
 	/**
-	 * @param { jsh } jsh
+	 * @param { slime.jsh.Global } jsh
 	 * @param { slime.jsh.plugin.$slime } $slime
 	 * @param { slime.jsh.plugin.plugin } plugin
 	 */

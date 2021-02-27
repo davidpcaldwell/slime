@@ -14,7 +14,7 @@
 //@ts-check
 (
 	/**
-	 * @param { $api } $api
+	 * @param { slime.$api.Global } $api
 	 * @param { slime.time.Context } $context
 	 * @param { slime.time.Exports } $exports
 	 */

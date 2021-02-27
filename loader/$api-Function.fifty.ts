@@ -1,8 +1,8 @@
-interface $api {
-	Function: slime.$api.Function
-}
-
 namespace slime.$api {
+	export interface Global {
+		Function: slime.$api.Function
+	}
+
 	export namespace Function {
 		export type Predicate<T> = (t: T) => boolean
 		/** @deprecated */
@@ -224,7 +224,7 @@ namespace slime.$api {
 
 	(
 		function(
-			$api: $api,
+			$api: slime.$api.Global,
 			fifty: slime.fifty.test.kit
 		) {
 			fifty.tests.RegExp = function() {
@@ -284,7 +284,7 @@ namespace slime.$api {
 (
 	function(
 		fifty: slime.fifty.test.kit,
-		$api: $api,
+		$api: slime.$api.Global,
 		tests: slime.fifty.test.tests,
 		verify: slime.fifty.test.tests
 	) {

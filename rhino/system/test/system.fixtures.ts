@@ -1,9 +1,9 @@
 (
-	function(Packages: Packages, jsh: jsh, $export: (value: Packages.inonit.system.test.Fixtures) => void) {
+	function(Packages: slime.jrunscript.Packages, jsh: slime.jsh.Global, $export: (value: slime.jrunscript.native.inonit.system.test.Fixtures) => void) {
 		$export({
 			OperatingSystem: {
 				Environment: {
-					create: function(p: { values: object, caseSensitive: boolean }): Packages.inonit.system.OperatingSystem.Environment {
+					create: function(p: { values: object, caseSensitive: boolean }): slime.jrunscript.native.inonit.system.OperatingSystem.Environment {
 						return jsh.java.invoke({
 							method: {
 								class: Packages.inonit.system.OperatingSystem.Environment,

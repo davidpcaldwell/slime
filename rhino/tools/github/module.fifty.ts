@@ -10,7 +10,7 @@ namespace slime.jsh.unit.mock.github {
 
 namespace slime.jrunscript.tools.github {
 	export interface Context {
-		library: { http: slime.jrunscript.http.client.Exports, shell: jsh["shell"] }
+		library: { http: slime.jrunscript.http.client.Exports, shell: slime.jsh.Global["shell"] }
 	}
 
 	export interface Repository {

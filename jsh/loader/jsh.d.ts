@@ -6,17 +6,17 @@ namespace slime.jsh.plugin {
 	}
 
 	interface Stdio {
-		getStandardInput(): Packages.java.io.InputStream
-		getStandardOutput(): Packages.java.io.PrintStream
-		getStandardError(): Packages.java.io.PrintStream
+		getStandardInput(): slime.jrunscript.native.java.io.InputStream
+		getStandardOutput(): slime.jrunscript.native.java.io.PrintStream
+		getStandardError(): slime.jrunscript.native.java.io.PrintStream
 	}
 
 	interface $slime extends slime.jrunscript.runtime.Exports, EngineSpecific {
 		getSystemProperty(name: string): string
-		getEnvironment(): Packages.inonit.system.OperatingSystem.Environment
+		getEnvironment(): slime.jrunscript.native.inonit.system.OperatingSystem.Environment
 		getInvocation(): any
 
-		getPackaged(): Packages.inonit.script.jsh.Shell.Packaged
+		getPackaged(): slime.jrunscript.native.inonit.script.jsh.Shell.Packaged
 
 		plugins: {
 			mock: jsh.loader.plugins.Export["mock"]
@@ -27,7 +27,7 @@ namespace slime.jsh.plugin {
 		}
 		getLibraryFile: any
 		getInterface(): any
-		getSystemProperties(): Packages.java.util.Properties
+		getSystemProperties(): slime.jrunscript.native.java.util.Properties
 		getStdio(): Stdio
 	}
 }

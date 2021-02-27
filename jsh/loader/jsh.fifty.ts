@@ -1,6 +1,6 @@
 (
 	function(
-		jsh: jsh,
+		jsh: slime.jsh.Global,
 		tests: slime.fifty.test.tests,
 		verify: slime.fifty.test.verify
 	) {

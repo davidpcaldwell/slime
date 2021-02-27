@@ -15,10 +15,10 @@
 (
 	/**
 	 * @param { any } Packages
-	 * @param { $api } $api
-	 * @param { { jsh: jsh } } $context
+	 * @param { slime.$api.Global } $api
+	 * @param { { jsh: slime.jsh.Global } } $context
 	 * @param { slime.Loader } $loader
-	 * @param { { Application: jsh["ui"]["application"] } } $exports
+	 * @param { { Application: slime.jsh.Global["ui"]["application"] } } $exports
 	 */
 	function(Packages,$api,$context,$loader,$exports) {
 		var jsh = $context.jsh;

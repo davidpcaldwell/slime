@@ -1,4 +1,4 @@
-namespace Packages {
+namespace slime.jrunscript.native {
 	export namespace inonit {
 		export interface system {
 			OperatingSystem: any
@@ -17,7 +17,7 @@ namespace Packages {
 			export interface Fixtures {
 				OperatingSystem: {
 					Environment: {
-						create: (p: { values: object, caseSensitive: boolean }) => Packages.inonit.system.OperatingSystem.Environment
+						create: (p: { values: object, caseSensitive: boolean }) => slime.jrunscript.native.inonit.system.OperatingSystem.Environment
 					}
 				}
 			}
@@ -28,7 +28,7 @@ namespace Packages {
 				isNameCaseSensitive(): {
 					booleanValue(): boolean
 				}
-				getMap(): Packages.java.util.Map
+				getMap(): slime.jrunscript.native.java.util.Map
 				getValue(name: string): string
 			}
 		}
@@ -41,7 +41,7 @@ namespace Packages {
 		JavaAdapter: any,
 		fifty: slime.fifty.test.kit
 	) {
-		const fixtures: Packages.inonit.system.test.Fixtures = fifty.$loader.file("system.fixtures.ts");
+		const fixtures: slime.jrunscript.native.inonit.system.test.Fixtures = fifty.$loader.file("system.fixtures.ts");
 
 		fifty.tests.suite = function() {
 			const jsh = fifty.global.jsh;

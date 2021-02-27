@@ -15,16 +15,16 @@
 	/**
 	 *
 	 * @param { { jsh: any } } global
-	 * @param { Packages } Packages
+	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { any } JavaAdapter
-	 * @param { Packages.inonit.script.jsh.Shell } $jsh
+	 * @param { slime.jrunscript.native.inonit.script.jsh.Shell } $jsh
 	 */
 	function(global,Packages,JavaAdapter,$jsh) {
 		global.jsh = new function() {
 			var $slime = (
 				/**
 				 *
-				 * @param { Packages.inonit.script.jsh.Shell } $jsh
+				 * @param { slime.jrunscript.native.inonit.script.jsh.Shell } $jsh
 				 * @returns { slime.jsh.plugin.$slime }
 				 */
 				function($jsh) {

@@ -28,7 +28,7 @@ namespace slime.jrunscript.host {
 	}
 
 	export interface Exports {
-		Environment: (java: Packages.inonit.system.OperatingSystem.Environment) => Environment
+		Environment: (java: slime.jrunscript.native.inonit.system.OperatingSystem.Environment) => Environment
 	}
 
 	(
@@ -97,7 +97,7 @@ namespace slime.jrunscript.host {
 		 *
 		 * @param p
 		 */
-		Map(p: { object: object }): Packages.java.util.Map
+		Map(p: { object: object }): slime.jrunscript.native.java.util.Map
 	}
 
 	(
@@ -107,7 +107,7 @@ namespace slime.jrunscript.host {
 			fifty.tests.exports.Map = function() {
 				const { subject } = internal.test;
 
-				var _map: Packages.java.util.Map = subject.Map({ object: { foo: "bar" } } );
+				var _map: slime.jrunscript.native.java.util.Map = subject.Map({ object: { foo: "bar" } } );
 				fifty.verify(String(_map.get("foo"))).is("bar");
 				fifty.verify(String(_map.get("baz"))).is("null");
 

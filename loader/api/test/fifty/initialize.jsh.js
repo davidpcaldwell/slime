@@ -2,7 +2,7 @@
 (
 	/**
 	 *
-	 * @param { jsh } jsh
+	 * @param { slime.jsh.Global } jsh
 	 */
 	function(jsh) {
 		var location = jsh.shell.jsh.src.getRelativePath("local/src/typescript");

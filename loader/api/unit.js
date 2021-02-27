@@ -13,7 +13,7 @@
 //@ts-check
 (
 	/**
-	 * @param { $api } $api
+	 * @param { slime.$api.Global } $api
 	 * @param { slime.definition.unit.Context } $context
 	 * @param { slime.Loader } $loader
 	 * @param { slime.definition.unit.Exports } $exports

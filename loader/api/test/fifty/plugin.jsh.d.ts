@@ -6,6 +6,9 @@ namespace slime.jsh.$fifty {
 	}
 }
 
-interface jsh {
-	$fifty: slime.jsh.$fifty.Exports
+namespace slime.jsh {
+	interface Global {
+		$fifty: slime.jsh.$fifty.Exports
+	}
 }
+

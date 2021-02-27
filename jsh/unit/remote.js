@@ -15,7 +15,7 @@
 (
 	/**
 	 *
-	 * @param { $api } $api
+	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.unit.internal.remote.Context } $context
 	 * @param { slime.jsh.unit.internal.remote.Exports } $exports
 	 */

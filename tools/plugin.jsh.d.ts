@@ -1,3 +1,5 @@
-interface jsh {
-	wf: slime.jsh.wf.Exports
+namespace slime.jsh {
+	interface Global {
+		wf: slime.jsh.wf.Exports
+	}
 }
