@@ -1,4 +1,9 @@
 namespace slime.jsh {
+	/**
+	 * The global `jsh` object provided by the `jsh` shell. See [old documentation](../src/jsh/etc/api.html).
+	 *
+	 * All code loaded by `jsh` also has access to the `$api` global object; see [$api](slime._api.global.html).
+	 */
 	interface Global {
 		java: slime.jrunscript.host.Exports & {
 			tools: any,

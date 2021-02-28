@@ -157,7 +157,7 @@
 		};
 
 		/**
-		 * @param { { file?: slime.jrunscript.file.File, url?: string, name?: string } } p
+		 * @param { Parameters<slime.jsh.tools.install.module.Exports["get"]>[0] } p
 		 * @param { any } events
 		 */
 		var get = function(p,events) {
@@ -196,10 +196,17 @@
 			return installLocalArchive(p,events);
 		};
 
-		$exports.get = $api.Events.Function(function(p,events) {
-			get(p,events);
-			return p.file;
-		});
+		$exports.get = $api.Events.Function(
+			/**
+			 *
+			 * @param { Parameters<slime.jsh.tools.install.module.Exports["get"]>[0] } p
+			 * @param {*} events
+			 */
+			function(p,events) {
+				get(p,events);
+				return p.file;
+			}
+		);
 
 		$exports.format = {
 			zip: algorithms.zip

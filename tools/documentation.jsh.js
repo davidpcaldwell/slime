@@ -32,6 +32,17 @@
 							load: function(scope) {
 								scope.$exports.handle = scope.httpd.Handler.series(
 									function(request) {
+										var typedocPattern = /^(?:(.+)\/)?local\/doc\/typedoc\/src\/(.*)/;
+										var match = typedocPattern.exec(request.path);
+										if (match) {
+											var src = (match[1]) ? base.getSubdirectory(match[1]) : base;
+											return new scope.httpd.Handler.Loader({
+												loader: new jsh.file.Loader({ directory: src }),
+												index: "index.html"
+											})($api.Object.compose(request, { path: match[2] }))
+										}
+									},
+									function(request) {
 										var typedocPattern = /^(?:(.+)\/)?local\/doc\/typedoc\/((.*)\.html$)/;
 										var match = typedocPattern.exec(request.path);
 										if (match) {

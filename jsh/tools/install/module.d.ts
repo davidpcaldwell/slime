@@ -11,7 +11,12 @@ namespace slime.jsh.tools.install.module {
 
 	interface Exports {
 		format: any
-		get: any
+
+		get: (
+			p: { file?: slime.jrunscript.file.File, url?: string, name?: string },
+			events?: slime.$api.Events.Function.Receiver
+		) => slime.jrunscript.file.File
+
 		install: (p: {
 			name?: string,
 			getDestinationPath?: (file: slime.jrunscript.file.File) => string,
@@ -21,6 +26,7 @@ namespace slime.jsh.tools.install.module {
 			to: slime.jrunscript.file.Pathname,
 			replace?: boolean
 		}, events?: $api.Events.Function.Receiver) => slime.jrunscript.file.Directory
+
 		gzip: any
 		zip: any
 		apache: any
