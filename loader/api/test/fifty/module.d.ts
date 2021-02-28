@@ -51,7 +51,7 @@ namespace slime.fifty {
 			tests: tests
 			load: load
 			global: {
-				jsh?: jsh
+				jsh?: slime.jsh.Global
 				window?: Window
 			},
 			$api: {
