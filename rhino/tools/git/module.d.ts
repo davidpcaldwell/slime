@@ -116,7 +116,7 @@ namespace slime.jrunscript.git {
 
 			show: (p: { object: string}  ) => Commit
 
-			fetch: (p: {
+			fetch: (p: argument & {
 				all?: boolean
 				prune?: boolean
 				recurseSubmodules?: boolean
