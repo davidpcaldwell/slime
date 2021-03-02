@@ -5,14 +5,14 @@ namespace slime.$api {
 
 	export namespace Function {
 		export type Predicate<T> = (t: T) => boolean
-		/** @deprecated */
+		/** @deprecated - Use {@link Predicate}. */
 		export type Filter<T> = (t: T) => boolean
 	}
 
 	export interface Function {
 		identity: <T>(t: T) => T
 		returning: <T>(t: T) => () => T
-		is: <T>(value: T) => (t: T) => boolean
+		is: <T>(value: T) => Function.Predicate<T>
 		property: <T,K extends keyof T>(name: K) => (t: T) => T[K]
 		Array: {
 			filter: <T>(f: Function.Predicate<T>) => (ts: T[]) => T[]
