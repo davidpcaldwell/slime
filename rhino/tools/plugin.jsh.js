@@ -10,163 +10,144 @@
 //	Contributor(s):
 //	END LICENSE
 
-plugin({
-	//	TODO	it does not make much sense to check for jsh.shell in .isReady() and then not pass it to the plugin. Is this
-	//			method of running the compiler obsolete?
-	isReady: function() {
-		return typeof(jsh.js) != "undefined" && typeof(jsh.java) != "undefined"
-			&& (
-				Packages.javax.tools.ToolProvider.getSystemToolClassLoader() != null
-				|| jsh.shell && jsh.file.Searchpath([ jsh.shell.java.home.getRelativePath("bin") ]).getCommand("javac")
-			)
-		;
-	},
-	load: function() {
-		jsh.java.tools = $loader.module("module.js", {
-			api: {
-				js: jsh.js,
-				java: jsh.java
-			}
-		});
-	}
-});
-
-plugin({
-	isReady: function() {
-		return true;
-	},
-	load: function() {
-		plugins.node = {
-			module: function(p) {
-				return $loader.module("node/module.js", p.context);
-			}
-		};
-	}
-})
-
-plugin({
-	isReady: function() {
-		return jsh.js && jsh.time && jsh.js.web && jsh.java && jsh.ip && jsh.file && jsh.shell && jsh.tools && jsh.tools.install && jsh.java.tools;
-	},
-	load: function() {
-		var loadGit = function() {
-			jsh.tools.git = $loader.module("git/module.js", {
-				api: {
-					js: jsh.js,
-					java: {
-						Thread: jsh.java.Thread
-					},
-					time: jsh.time,
-					file: jsh.file,
-					shell: jsh.shell,
-					ip: jsh.ip,
-					Events: {
-						//	TODO	convert to standard form and get rid of this
-						Function: jsh.tools.install.$api.Events.Function
-					},
-					Error: jsh.js.Error
-				}
-			});
-			if (jsh.tools.git.installation) {
-				//	TODO	enable credentialHelper for built shells
-				//	TODO	investigate enabling credentialHelper for remote shells
-				if (jsh.shell.jsh.src) {
-					var credentialHelper = [
-						jsh.shell.java.jrunscript.toString(),
-						jsh.shell.jsh.src.getRelativePath("rhino/jrunscript/api.js"),
-						"jsh",
-						jsh.shell.jsh.src.getRelativePath("rhino/tools/git/credential-helper.jsh.js")
-					].join(" ");
-					jsh.tools.git.credentialHelper.jsh = credentialHelper;
-				}
-
-				global.git = {};
-				["Repository","init"].forEach(function(name) {
-					global.git[name] = jsh.tools.git[name];
-					$api.deprecate(global.git,name);
-				});
-				$api.deprecate(global,"git");
-			}
-		};
-		loadGit();
-
-		var loadHg = function() {
-			var module = $loader.module("hg/module.js", {
-				api: {
-					js: jsh.js,
-					time: jsh.time,
-					web: jsh.js.web,
-					java: jsh.java,
-					ip: jsh.ip,
-					file: jsh.file,
-					shell: jsh.shell,
-					git: jsh.tools.git
-				}
-			});
-
-			jsh.tools.hg = $loader.file("hg/install.js", {
-				api: {
-					module: module,
-					shell: jsh.shell,
-					ui: jsh.ui,
-					Error: jsh.js.Error,
-					install: jsh.tools.install,
-					Events: {
-						Function: jsh.tools.install.$api.Events.Function
+//@ts-check
+(
+	/**
+	 *
+	 * @param { slime.jrunscript.Packages } Packages
+	 * @param { slime.$api.Global } $api
+	 * @param { slime.jsh.Global } jsh
+	 * @param { slime.jsh.plugin.plugins } plugins
+	 * @param { slime.jsh.plugin.plugin } plugin
+	 * @param { slime.Loader } $loader
+	 */
+	function(Packages,$api,jsh,plugins,plugin,$loader) {
+		plugin({
+			//	TODO	it does not make much sense to check for jsh.shell in .isReady() and then not pass it to the plugin. Is this
+			//			method of running the compiler obsolete?
+			isReady: function() {
+				return typeof(jsh.js) != "undefined" && typeof(jsh.java) != "undefined"
+					&& (
+						Packages.javax.tools.ToolProvider.getSystemToolClassLoader() != null
+						|| jsh.shell && jsh.file.Searchpath([ jsh.shell.java.home.getRelativePath("bin") ]).getCommand("javac")
+					)
+				;
+			},
+			load: function() {
+				jsh.java.tools = $loader.module("module.js", {
+					api: {
+						js: jsh.js,
+						java: jsh.java
 					}
-				}
-			});
-
-			if (jsh.tools.hg.installation) {
-				global.hg = {};
-				["Repository","init"].forEach(function(name) {
-					global.hg[name] = jsh.tools.hg[name];
-					$api.deprecate(global.hg,name);
 				});
-				$api.deprecate(global,"hg");
 			}
+		});
+
+		plugin({
+			isReady: function() {
+				return true;
+			},
+			load: function() {
+				plugins.node = {
+					module: function(p) {
+						return $loader.module("node/module.js", p.context);
+					}
+				};
+			}
+		});
+
+		var loadGit = function() {
+			jsh.loader.plugins($loader.Child("git/"));
 		};
 
+		plugin({
+			isReady: function() {
+				return jsh.js && jsh.time && jsh.js.web && jsh.java && jsh.ip && jsh.file && jsh.shell && jsh.tools && jsh.tools.install && jsh.java.tools;
+			},
+			load: function() {
+				//	TODO	we are duplicating the isReady() logic both here and in the git plugin
+				loadGit();
 
-		loadHg();
+				var loadHg = function() {
+					var module = $loader.module("hg/module.js", {
+						api: {
+							js: jsh.js,
+							time: jsh.time,
+							web: jsh.js.web,
+							java: jsh.java,
+							ip: jsh.ip,
+							file: jsh.file,
+							shell: jsh.shell,
+							git: jsh.tools.git
+						}
+					});
 
-		if (!jsh.java.tools.plugin) jsh.java.tools.plugin = {};
-		jsh.java.tools.plugin.hg = $api.deprecate(function() {
-			loadHg();
+					jsh.tools.hg = $loader.file("hg/install.js", {
+						api: {
+							module: module,
+							shell: jsh.shell,
+							ui: jsh.ui,
+							Error: jsh.js.Error,
+							install: jsh.tools.install,
+							Events: {
+								Function: jsh.tools.install.$api.Events.Function
+							}
+						}
+					});
+
+					if (jsh.tools.hg.installation) {
+						global.hg = {};
+						["Repository","init"].forEach(function(name) {
+							global.hg[name] = jsh.tools.hg[name];
+							$api.deprecate(global.hg,name);
+						});
+						$api.deprecate(global,"hg");
+					}
+				};
+
+
+				loadHg();
+
+				if (!jsh.java.tools.plugin) jsh.java.tools.plugin = {};
+				jsh.java.tools.plugin.hg = $api.deprecate(function() {
+					loadHg();
+				});
+
+				//	TODO	provide alternate means of loading the plugin
+				if (!jsh.java.tools.plugin) jsh.java.tools.plugin = {};
+				jsh.java.tools.plugin.git = $api.deprecate(function() {
+					loadGit();
+				});
+			}
 		});
 
-		//	TODO	provide alternate means of loading the plugin
-		if (!jsh.java.tools.plugin) jsh.java.tools.plugin = {};
-		jsh.java.tools.plugin.git = $api.deprecate(function() {
-			loadGit();
+		plugin({
+			isReady: function() {
+				return Boolean(jsh.http && jsh.shell && jsh.tools);
+			},
+			load: function() {
+				jsh.tools.github = $loader.module("github/module.js", {
+					library: {
+						http: jsh.http,
+						shell: jsh.shell
+					}
+				});
+			}
 		});
-	}
-});
 
-plugin({
-	isReady: function() {
-		return jsh.http && jsh.shell && jsh.tools;
-	},
-	load: function() {
-		jsh.tools.github = $loader.module("github/module.js", {
-			library: {
-				http: jsh.http,
-				shell: jsh.shell
+		plugin({
+			isReady: function() {
+				//	TODO	cannot load postgresql driver under Nashorn presently; uses E4X
+				return Boolean(jsh.shell && jsh.shell.jsh && jsh.shell.jsh.lib) /*&& String(Packages.java.lang.System.getProperty("jsh.engine")) == "rhino"*/;
+			},
+			load: function() {
+				var postgresql = jsh.shell.jsh.lib.getRelativePath("postgresql.jar");
+				if (postgresql.file) {
+					jsh.loader.java.add(postgresql);
+				}
+				jsh.loader.plugins(new $loader.Child("db/jdbc/"));
 			}
 		});
 	}
-});
-
-plugin({
-	isReady: function() {
-		//	TODO	cannot load postgresql driver under Nashorn presently; uses E4X
-		return jsh.shell && jsh.shell.jsh && jsh.shell.jsh.lib /*&& String(Packages.java.lang.System.getProperty("jsh.engine")) == "rhino"*/;
-	},
-	load: function() {
-		var postgresql = jsh.shell.jsh.lib.getRelativePath("postgresql.jar");
-		if (postgresql.file) {
-			jsh.loader.java.add(postgresql);
-		}
-		jsh.loader.plugins(new $loader.Child("db/jdbc/"));
-	}
-});
+//@ts-ignore
+)(Packages,$api,jsh,plugins,plugin,$loader);

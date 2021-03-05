@@ -274,6 +274,7 @@
 							});
 							var plugin = $jsapi.loader.plugin.mock({
 								jsh: mockjsh,
+								path: "git/",
 								evaluate: function(p) {
 									return p.jsh.tools.git;
 								}
@@ -311,6 +312,7 @@
 							});
 							plugin = $jsapi.loader.plugin.mock({
 								jsh: mockjsh,
+								path: "git/",
 								evaluate: function(p) {
 									return p.jsh.tools.git;
 								}

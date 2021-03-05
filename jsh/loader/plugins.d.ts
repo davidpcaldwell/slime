@@ -1,5 +1,6 @@
 namespace slime.jsh.plugin {
 	type plugin = (p: { isReady?: () => boolean, load: () => void }) => void;
+	type plugins = { [x: string]: any }
 }
 
 namespace slime.jsh.loader.internal.plugins {

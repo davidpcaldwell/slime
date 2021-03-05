@@ -15,36 +15,45 @@
 //			to locate it explicitly
 plugin({
 	isReady: function() {
-		return jsh.js && jsh.shell && Boolean(jsh.shell.PATH.getCommand("git"));
+		return jsh.js && jsh.time && jsh.js.web && jsh.java && jsh.ip && jsh.file && jsh.shell && jsh.tools && jsh.tools.install && jsh.java.tools;
 	},
 	load: function() {
-		//	TODO	should be covered by parent directory jsh plugin
-		$api.deprecate(function() {
-			var git = $loader.module("module.js", {
-				program: jsh.shell.PATH.getCommand("git"),
-				api: {
-					Error: jsh.js.Error,
-					Events: $api.Events
+		jsh.tools.git = $loader.module("module.js", {
+			api: {
+				js: jsh.js,
+				java: {
+					Thread: jsh.java.Thread
 				},
-				environment: jsh.shell.environment,
-				console: jsh.shell.console
-			});
-			git.jsh = {};
+				time: jsh.time,
+				file: jsh.file,
+				shell: jsh.shell,
+				ip: jsh.ip,
+				Events: {
+					//	TODO	convert to standard form and get rid of this
+					Function: jsh.tools.install.$api.Events.Function
+				},
+				Error: jsh.js.Error
+			}
+		});
+		if (jsh.tools.git.installation) {
 			//	TODO	enable credentialHelper for built shells
 			//	TODO	investigate enabling credentialHelper for remote shells
 			if (jsh.shell.jsh.src) {
-				git.jsh.credentialHelper = [
+				var credentialHelper = [
 					jsh.shell.java.jrunscript.toString(),
 					jsh.shell.jsh.src.getRelativePath("rhino/jrunscript/api.js"),
 					"jsh",
 					jsh.shell.jsh.src.getRelativePath("rhino/tools/git/credential-helper.jsh.js")
-				].join(" ")
+				].join(" ");
+				jsh.tools.git.credentialHelper.jsh = credentialHelper;
 			}
 
-			if (!jsh.tools) jsh.tools = {};
-			jsh.tools.git = git;
-			global.git = git;
+			global.git = {};
+			["Repository","init"].forEach(function(name) {
+				global.git[name] = jsh.tools.git[name];
+				$api.deprecate(global.git,name);
+			});
 			$api.deprecate(global,"git");
-		})();
+		}
 	}
 })
