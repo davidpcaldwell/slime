@@ -184,23 +184,28 @@
 					arguments: jsh.java.Array.adapt($slime.getInvocation().getArguments()).map(function(s) { return String(s); }),
 				}, source));
 
+				var option = function(parse) {
+					return function(o) {
+						var rv = function(p) {
+							if (typeof(o.default) != "undefined") p.options[o.longname] = o.default;
+							var args = [];
+							for (var i=0; i<p.arguments.length; i++) {
+								if (o.longname && p.arguments[i] == "--" + o.longname) {
+									p.options[o.longname] = parse(p.arguments[++i]);
+								} else {
+									args.push(p.arguments[i]);
+								}
+							}
+							p.arguments = args;
+						};
+						return $api.Function.impure.revise(rv);
+					}
+				};
+
 				jsh.script.cli = {
 					parser: parser,
 					option: {
-						string: function(o) {
-							var rv = function(p) {
-								var args = [];
-								for (var i=0; i<p.arguments.length; i++) {
-									if (o.longname && p.arguments[i] == "--" + o.longname) {
-										p.options[o.longname] = p.arguments[++i];
-									} else {
-										args.push(p.arguments[i]);
-									}
-								}
-								p.arguments = args;
-							}
-							return $api.Function.impure.revise(rv);
-						},
+						string: option($api.Function.identity),
 						boolean: function(o) {
 							var rv = function(p) {
 								var args = [];
@@ -215,34 +220,8 @@
 							}
 							return $api.Function.impure.revise(rv);
 						},
-						number: function(o) {
-							var rv = function(p) {
-								var args = [];
-								for (var i=0; i<p.arguments.length; i++) {
-									if (o.longname && p.arguments[i] == "--" + o.longname) {
-										p.options[o.longname] = Number(p.arguments[++i]);
-									} else {
-										args.push(p.arguments[i]);
-									}
-								}
-								p.arguments = args;
-							}
-							return $api.Function.impure.revise(rv);
-						},
-						pathname: function(o) {
-							var rv = function(p) {
-								var args = [];
-								for (var i=0; i<p.arguments.length; i++) {
-									if (o.longname && p.arguments[i] == "--" + o.longname) {
-										p.options[o.longname] = jsh.script.getopts.parser.Pathname(p.arguments[++i]);
-									} else {
-										args.push(p.arguments[i]);
-									}
-								}
-								p.arguments = args;
-							}
-							return $api.Function.impure.revise(rv);
-						},
+						number: option(Number),
+						pathname: option(jsh.script.getopts.parser.Pathname),
 						array: function(o) {
 							var rv = function(p) {
 								var args = [];

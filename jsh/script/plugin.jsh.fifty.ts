@@ -42,10 +42,10 @@ namespace slime.jsh.script {
 			}
 
 			option: {
-				string: (c: { longname: string }) => Processor<any>
+				string: (c: { longname: string, default?: string }) => Processor<any>
 				boolean: (c: { longname: string }) => Processor<any>
-				number: (c: { longname: string }) => Processor<any>
-				pathname: (c: { longname: string }) => Processor<any>
+				number: (c: { longname: string, default?: number }) => Processor<any>
+				pathname: (c: { longname: string, default?: slime.jrunscript.file.Pathname }) => Processor<any>
 				array: (c: { longname: string, value: (s: string) => any }) => Processor<any>
 			}
 
@@ -67,6 +67,40 @@ namespace slime.jsh.script {
 		) {
 			fifty.tests.cli = {
 				option: function() {
+					var trial = function(p: Processor<any>, args: string[]) {
+						return p({
+							options: {},
+							arguments: args
+						});
+					}
+
+					run(function string() {
+						var one = trial(subject.cli.option.string({ longname: "a" }), []);
+						var two = trial(subject.cli.option.string({ longname: "a" }), ["--a", "foo"]);
+
+						fifty.verify(one).options.evaluate.property("a").is(void(0));
+						fifty.verify(two).options.evaluate.property("a").is("foo");
+					});
+
+					//	TODO	number is tested below in defaults, but not on its own
+
+					//	TODO	pathname is not tested explicitly
+
+					run(function defaults() {
+						var noDefault = subject.cli.option.number({ longname: "a" });
+						var withDefault = subject.cli.option.number({ longname: "a", default: 2 });
+
+						var one = trial(noDefault, []);
+						var two = trial(noDefault, ["--a", "1"]);
+						var three = trial(withDefault, []);
+						var four = trial(withDefault, ["--a", "1"]);
+
+						fifty.verify(one).options.evaluate.property("a").is(void(0));
+						fifty.verify(two).options.evaluate.property("a").is(1);
+						fifty.verify(three).options.evaluate.property("a").is(2);
+						fifty.verify(four).options.evaluate.property("a").is(1);
+					});
+
 					var invocation: Invocation<{ a: string, b: number[], c: string }> = {
 						options: {
 							a: void(0),
