@@ -14,12 +14,12 @@ namespace slime.jsh.plugin {
 	interface $slime extends slime.jrunscript.runtime.Exports, EngineSpecific {
 		getSystemProperty(name: string): string
 		getEnvironment(): slime.jrunscript.native.inonit.system.OperatingSystem.Environment
-		getInvocation(): any
+		getInvocation(): slime.jrunscript.native.inonit.script.jsh.Shell.Invocation
 
 		getPackaged(): slime.jrunscript.native.inonit.script.jsh.Shell.Packaged
 
 		plugins: {
-			mock: jsh.loader.plugins.Export["mock"]
+			mock: slime.jsh.loader.internal.plugins.Export["mock"]
 		}
 
 		loader: {

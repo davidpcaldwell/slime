@@ -23,7 +23,7 @@
 			//	Loads the plugin code from a specific plugin.jsh.js at the top level of a loader and returns a list of implementations
 			//	with 'declaration' properties representing the objects provided by the implementor and 'toString' methods supplied by the
 			//	caller of this function
-			var load = function(p) {
+			var load = function load(p) {
 				var scope = {};
 				//	TODO	$host is currently *automatically* in scope for these plugins, but that is probably not as it should be; see
 				//			issue 32. $host *should* be in scope, though; we should just have to put it there manually.
@@ -46,7 +46,7 @@
 					});
 				}
 
-				scope.$slime = $slime;
+				scope.$slime = (p.mock && p.mock.$slime) ? p.mock.$slime : $slime;
 
 				(function setDeprecatedProperty(object,property,value) {
 					object[property] = value;
@@ -87,17 +87,18 @@
 			var run = function(plugins) {
 				var stop = false;
 				while(plugins.length > 0 && !stop) {
-					var marked = false;
+					var ranSomething = false;
 					var i = 0;
-					while(i < plugins.length && !marked) {
+					while(i < plugins.length) {
 						if (plugins[i].declaration.isReady()) {
 							plugins[i].declaration.load();
 							plugins.splice(i,1);
-							marked = true;
+							ranSomething = true;
+						} else {
+							i++;
 						}
-						i++;
 					}
-					if (plugins.length > 0 && !marked) {
+					if (plugins.length > 0 && !ranSomething) {
 						//	Some plugin was never ready
 						stop = true;
 						//	TODO	think harder about what to do
@@ -122,7 +123,8 @@
 					toString: (p.toString) ? p.toString : function() { return "mock"; },
 					$loader: p.$loader,
 					mock: {
-						global: p.global
+						global: p.global,
+						$slime: p.$slime
 					}
 				});
 				run(list);

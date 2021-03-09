@@ -259,6 +259,12 @@
 							return $api.Function.impure.revise(rv);
 						}
 					},
+					invocation: function(f) {
+						return f({
+							options: {},
+							arguments: Array.prototype.slice.call(jsh.script.arguments)
+						});
+					},
 					Application: function(p) {
 						return {
 							run: function(args) {

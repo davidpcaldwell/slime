@@ -1,7 +1,7 @@
 namespace slime.jsh.$fifty {
 	interface Exports {
 		plugin: {
-			mock: jsh.loader.plugins.Export["mock"]
+			mock: slime.jsh.loader.internal.plugins.Export["mock"]
 		}
 	}
 }

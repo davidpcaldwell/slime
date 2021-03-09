@@ -16,10 +16,11 @@ plugin({
 		return Boolean(jsh.unit);
 	},
 	load: function() {
-		jsh.unit.$slime = {};
-		["$platform","$api","mime","coffee","java","io","Loader","Resource","plugins"].forEach(function(property) {
-			jsh.unit.$slime[property] = $slime[property];
-		});
+		jsh.unit.$slime = $slime;
+		// jsh.unit.$slime = {};
+		// ["$platform","$api","mime","coffee","java","io","Loader","Resource","plugins"].forEach(function(property) {
+		// 	jsh.unit.$slime[property] = $slime[property];
+		// });
 	}
 });
 

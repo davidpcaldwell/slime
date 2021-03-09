@@ -300,6 +300,7 @@ namespace slime.jrunscript {
 
 					export interface Invocation {
 						getScript: any
+						getArguments(): slime.jrunscript.native.java.lang.String[]
 					}
 				}
 

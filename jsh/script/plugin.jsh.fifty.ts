@@ -40,13 +40,16 @@ namespace slime.jsh.script {
 			parser: {
 				pathname: (argument: string) => slime.jrunscript.file.Pathname
 			}
+
 			option: {
 				string: (c: { longname: string }) => Processor<any>
 				boolean: (c: { longname: string }) => Processor<any>
 				number: (c: { longname: string }) => Processor<any>
 				pathname: (c: { longname: string }) => Processor<any>
 				array: (c: { longname: string, value: (s: string) => any }) => Processor<any>
-			},
+			}
+
+			invocation: (processor: Processor<any>) => Invocation<any>
 
 			Application: (p: Descriptor) => Application
 
@@ -84,6 +87,32 @@ namespace slime.jsh.script {
 					fifty.verify(after).arguments[1].is("A");
 					fifty.verify(after).arguments[2].is("--c");
 					fifty.verify(after).arguments[3].is("C");
+				},
+				invocation: function() {
+					var parser = fifty.$api.Function.pipe(
+						subject.cli.option.string({ longname: "foo" })
+					);
+					var was = fifty.global.jsh.unit.$slime;
+					var mocked = fifty.$loader.jsh.plugin.mock({
+						jsh: fifty.global.jsh,
+						$slime: Object.assign({}, was, {
+							getPackaged: function() { return null; },
+							/** @return { slime.jrunscript.native.inonit.script.jsh.Shell.Invocation } */
+							getInvocation: function() {
+								return {
+									getScript: function() {
+										return was.getInvocation().getScript();
+									},
+									getArguments: function() {
+										return ["--foo", "bar"]
+									}
+								};
+							}
+						})
+					});
+					var result: { options: { foo: string }, arguments: string[] } = mocked.jsh.script.cli.invocation(parser);
+					fifty.verify(result).options.foo.is("bar");
+					fifty.verify(result).arguments.length.is(0);
 				},
 				run: function() {
 					const $api = fifty.$api;
@@ -150,6 +179,7 @@ namespace slime.jsh.script {
 
 			fifty.tests.suite = function() {
 				fifty.run(fifty.tests.cli.option);
+				fifty.run(fifty.tests.cli.invocation);
 				fifty.run(fifty.tests.cli.run);
 				fifty.run(fifty.tests.cli.wrap);
 			}

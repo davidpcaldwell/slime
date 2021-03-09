@@ -2,7 +2,8 @@ type mockjshplugin = (p: {
 	global?: { [x: string]: any }
 	jsh?: { [x: string]: any }
 	plugins?: { [x: string]: any }
-}) => ReturnType<jsh.loader.plugins.Export["mock"]>
+	$slime?: slime.jsh.plugin.$slime
+}) => ReturnType<slime.jsh.loader.internal.plugins.Export["mock"]>
 
 namespace slime.fifty {
 	interface Exports {
