@@ -49,6 +49,9 @@ namespace slime.jsh.script {
 				array: (c: { longname: string, value: (s: string) => any }) => Processor<any>
 			}
 
+			/**
+			 * Parses the shell's global arguments using the given {@link Processor}, returning the result of the processing.
+			 */
 			invocation: (processor: Processor<any>) => Invocation<any>
 
 			Application: (p: Descriptor) => Application
