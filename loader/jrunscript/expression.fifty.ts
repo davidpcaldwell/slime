@@ -390,6 +390,7 @@ namespace slime.jrunscript {
 			}
 		}
 		javax: any
+		javafx: any
 		jdk: any
 		org: {
 			mozilla: {

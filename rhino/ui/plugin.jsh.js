@@ -84,13 +84,16 @@
 				return Boolean(jsh.ui && jsh.ui.javafx && jsh.ui.javafx.WebView && jsh.httpd && jsh.httpd.Tomcat && jsh.java);
 			},
 			load: function() {
+				/** @type { slime.jsh.ui.application.internal.Exports } */
 				var api = $loader.module("application.js", { jsh: jsh });
 				(function(v) {
 					jsh.ui.javafx.WebView.application = $api.deprecate(v);
 					jsh.ui.browser = $api.deprecate(v);
 					jsh.ui.application = v;
 				})(api.Application);
-				jsh.ui.Chrome = api.Chrome;
+
+				//	TODO	was undocumented and thus apparently unused; not even exported. Moved to rhino/shell, maybe?
+				//	jsh.ui.Chrome = api.Chrome;
 			}
 		})
 	}

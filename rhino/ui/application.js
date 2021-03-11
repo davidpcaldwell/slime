@@ -14,11 +14,11 @@
 //@ts-check
 (
 	/**
-	 * @param { any } Packages
+	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { slime.$api.Global } $api
 	 * @param { { jsh: slime.jsh.Global } } $context
 	 * @param { slime.Loader } $loader
-	 * @param { { Application: slime.jsh.Global["ui"]["application"] } } $exports
+	 * @param { slime.jsh.ui.application.internal.Exports } $exports
 	 */
 	function(Packages,$api,$context,$loader,$exports) {
 		var jsh = $context.jsh;

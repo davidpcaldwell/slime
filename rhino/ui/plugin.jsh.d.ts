@@ -2,7 +2,7 @@ namespace slime.jsh {
 	interface Global {
 		ui: {
 			application: (
-				p: jsh.ui.application.Argument,
+				p: slime.jsh.ui.application.Argument,
 				events?: $api.Events.Function.Receiver
 			) => {
 				port: number,
@@ -23,15 +23,21 @@ namespace slime.jsh {
 }
 
 namespace slime.jsh.ui.application {
+	namespace internal {
+		interface Exports {
+			Application: slime.jsh.Global["ui"]["application"]
+		}
+	}
+
 	interface ServerConfiguration {
 		port?: number
 		resources: slime.Loader
-		parameters: jsh.httpd.servlet.Parameters
-		servlet: jsh.httpd.servlet.descriptor
+		parameters: slime.jsh.httpd.servlet.Parameters
+		servlet: slime.jsh.httpd.servlet.descriptor
 	}
 
 	interface ServerRunning {
-		server: jsh.httpd.Tomcat
+		server: slime.jsh.httpd.Tomcat
 	}
 
 	type ServerSpecification = ServerRunning | ServerConfiguration
@@ -73,5 +79,10 @@ namespace slime.jsh.ui.application {
 		console?: any
 	}
 
-	type Argument = ServerSpecification & Events & BrowserSpecification & { path?: string } & Deprecated
+	type Argument = ServerSpecification & Events & BrowserSpecification & {
+		/**
+		 * The path in the server application to open when opening the application.
+		 */
+		path?: string
+	} & Deprecated
 }
