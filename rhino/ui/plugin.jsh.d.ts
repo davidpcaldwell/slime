@@ -42,12 +42,6 @@ namespace slime.jsh.ui.application {
 
 	type ServerSpecification = ServerRunning | ServerConfiguration
 
-	interface Events {
-		on?: {
-			close: () => void
-		}
-	}
-
 	interface ChromeConfiguration {
 		location?: slime.jrunscript.file.Pathname
 		directory?: slime.jrunscript.file.Directory
@@ -70,19 +64,28 @@ namespace slime.jsh.ui.application {
 		create?: any
 	} | ((p: any) => void)
 
-	interface BrowserSpecification {
+	interface ClientSpecification {
 		browser: BrowserConfiguration
-	}
-
-	interface Deprecated {
-		zoom?: any
-		console?: any
-	}
-
-	type Argument = ServerSpecification & Events & BrowserSpecification & {
 		/**
 		 * The path in the server application to open when opening the application.
 		 */
 		path?: string
-	} & Deprecated
+	}
+
+	interface EventsConfiguration {
+		close: () => void
+	}
+
+	interface EventsSpecification {
+		on?: EventsConfiguration
+	}
+
+	interface Deprecated {
+		/** @deprecated */
+		zoom?: any
+		/** @deprecated */
+		console?: any
+	}
+
+	type Argument = ServerSpecification & ClientSpecification & EventsSpecification & Deprecated
 }
