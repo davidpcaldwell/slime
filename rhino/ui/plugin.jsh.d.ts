@@ -17,7 +17,7 @@ namespace slime.jsh {
 			/**
 			 * Deprecated; replaced by application
 			 */
-			browser: jsh["ui"]["application"]
+			browser: slime.jsh.Global["ui"]["application"]
 		}
 	}
 }
@@ -30,6 +30,9 @@ namespace slime.jsh.ui.application {
 	}
 
 	interface ServerConfiguration {
+		/**
+		 * See {@link slime.jsh.httpd.Tomcat.Configuration}.
+		 */
 		port?: number
 		resources: slime.Loader
 		parameters: slime.jsh.httpd.servlet.Parameters

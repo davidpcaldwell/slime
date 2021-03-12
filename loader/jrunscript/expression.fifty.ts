@@ -184,6 +184,12 @@ namespace slime.jrunscript {
 					}
 				}
 			}
+			export namespace net {
+				export interface ServerSocket {
+					getLocalPort(): number
+					close()
+				}
+			}
 			export namespace util {
 				export interface Properties {
 					get(name: string): any
@@ -368,6 +374,7 @@ namespace slime.jrunscript {
 				CookiePolicy: any
 				Proxy: any
 				InetSocketAddress: any
+				ServerSocket: new (n: number) => slime.jrunscript.native.java.net.ServerSocket
 			}
 			nio: {
 				file: {
@@ -399,6 +406,7 @@ namespace slime.jrunscript {
 					Synchronizer: any
 				}
 			}
+			apache: any
 			graalvm: any
 			jetbrains: any
 		}

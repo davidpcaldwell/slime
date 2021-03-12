@@ -14,7 +14,7 @@
 //@ts-check
 (
 	/**
-	 * @param { any } Packages
+	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { any } JavaAdapter
 	 * @param { slime.jsh.plugin.$slime } $slime
 	 * @param { slime.$api.Global } $api
@@ -106,11 +106,7 @@
 					argument: void(0)
 				};
 
-				/**
-				 * @param { slime.Loader } resources
-				 * @param { slime.jsh.httpd.servlet.descriptor } servlet
-				 * @returns { { resources: slime.Loader, load: (scope: slime.servlet.Scope) => void, $loader?: slime.Loader } }
-				 */
+				/** @type { slime.jsh.httpd.Exports["spi"]["argument"] } */
 				jsh.httpd.spi.argument = function(resources,servlet) {
 					if (servlet["$loader"]) throw new Error("servlet.$loader provided");
 

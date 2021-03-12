@@ -36,6 +36,24 @@ namespace slime.jsh.httpd {
 		stop: () => void
 	}
 
+	namespace Tomcat {
+		interface Configuration {
+			/**
+			 * The port on which the server's HTTP service should run; if omitted, an ephemeral port will be used.
+			 */
+			port?: number
+
+			/**
+			 * The base directory against which the server should run; if omitted, a temporary directory will be used.
+			 */
+			base?: slime.jrunscript.file.Directory
+
+			https?: {
+				port: number
+			}
+		}
+	}
+
 	interface Resources {
 		file: any
 		add: (m: { directory?: slime.jrunscript.file.Directory, loader?: slime.Loader, prefix: string }) => void
@@ -47,7 +65,7 @@ namespace slime.jsh.httpd {
 		spi: {
 			argument: (resources: slime.Loader, servlet: jsh.httpd.servlet.descriptor) => {
 				resources: slime.Loader,
-				load: (scope: object) => void,
+				load: servlet.byLoad["load"],
 				$loader?: slime.Loader
 			}
 		}
@@ -58,7 +76,8 @@ namespace slime.jsh.httpd {
 			script: any
 		}
 		Tomcat?: {
-			new (p?: { port?: number, base?: slime.jrunscript.file.Directory, https?: { port: number } }): Tomcat
+			new (p?: Tomcat.Configuration): Tomcat
+
 			serve: any
 		}
 		plugin: {
