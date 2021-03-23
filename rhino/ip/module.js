@@ -10,15 +10,22 @@
 //	Contributor(s):
 //	END LICENSE
 
+//@ts-check
 (
-	function() {
-		$exports.tcp = new function() {
-			this.getEphemeralPortNumber = function() {
+	/**
+	 * @param { slime.jrunscript.Packages } Packages
+	 * @param { slime.$api.Global } $api
+	 * @param { slime.jrunscript.ip.Context } $context
+	 * @param { slime.jrunscript.ip.Exports } $exports
+	 */
+	function(Packages,$api,$context,$exports) {
+		$exports.tcp = {
+			getEphemeralPortNumber: function() {
 				var _socket = new Packages.java.net.ServerSocket(0);
 				var rv = _socket.getLocalPort();
 				_socket.close();
 				return rv;
-			};
+			}
 		};
 
 		var assert = function(test,failure) {
@@ -60,12 +67,14 @@
 				}
 			),
 			function(o) {
-				this.isReachable = function(p) {
-					var ping = $context.api.shell.os.ping({
-						host: o.name,
-						timeout: (p && p.timeout) ? p.timeout : void(0)
-					});
-					return ping.status == 0;
+				return {
+					isReachable: function(p) {
+						var ping = $context.api.shell.os.ping({
+							host: o.name,
+							timeout: (p && p.timeout) ? p.timeout : void(0)
+						});
+						return ping.status == 0;
+					}
 				}
 			}
 		);
@@ -74,50 +83,54 @@
 			if (typeof(o) == "number") o = { number: o };
 			var number = o.number;
 
-			Object.defineProperty(this, "number", {
-				enumerable: true,
-				configurable: true,
-				value: number,
-				writable: false
-			});
-
-			this.isOpen = $api.debug.disableBreakOnExceptionsFor(function() {
-				var debug = function(message) {
-					//Packages.java.lang.System.err.println(message);
-				}
-				debug.exception = function(e) {
-					//e.rhinoException.printStackTrace();
-				}
-
-				var _server;
-				var _client;
-				try {
-					_server = new Packages.java.net.ServerSocket(number);
-					debug("Opened server socket for " + number);
-					_server.close();
-					_server = null;
-					try {
-						_client = new Packages.java.net.Socket("localhost",number);
-						debug("Opened client socket for " + number);
-						return false;
-					} catch (e) {
-						debug("Did not open client socket for " + number);
-						debug.exception(e);
-						return true;
+			var rv = {
+				number: void(0),
+				isOpen: $api.debug.disableBreakOnExceptionsFor(function() {
+					var debug = function(message) {
+						//Packages.java.lang.System.err.println(message);
 					}
-				} catch (e) {
-					debug("Did not open server socket for " + number);
-					debug.exception(e);
-					return false;
-				} finally {
-					if (_server) _server.close();
-					if (_client) _client.close();
-				}
+					debug.exception = function(e) {
+						//e.rhinoException.printStackTrace();
+					}
+
+					var _server;
+					var _client;
+					try {
+						_server = new Packages.java.net.ServerSocket(number);
+						debug("Opened server socket for " + number);
+						_server.close();
+						_server = null;
+						try {
+							_client = new Packages.java.net.Socket("localhost",number);
+							debug("Opened client socket for " + number);
+							return false;
+						} catch (e) {
+							debug("Did not open client socket for " + number);
+							debug.exception(e);
+							return true;
+						}
+					} catch (e) {
+						debug("Did not open server socket for " + number);
+						debug.exception(e);
+						return false;
+					} finally {
+						if (_server) _server.close();
+						if (_client) _client.close();
+					}
+				})
+			};
+
+			Object.defineProperty(rv, "number", {
+				enumerable: true,
+				value: number
 			});
+
+			return rv;
 		};
 
 		$exports.getEphemeralPort = function() {
-			return new $exports.Port($exports.tcp.getEphemeralPortNumber());
+			return $exports.Port({ number: $exports.tcp.getEphemeralPortNumber() });
 		}
 	}
-)();
+//@ts-ignore
+)(Packages,$api,$context,$exports);

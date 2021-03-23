@@ -80,7 +80,7 @@ namespace slime.jsh {
 		document: any
 		file: slime.jrunscript.file.Exports
 		time: slime.time.Exports
-		ip: any
+		ip: slime.jrunscript.ip.Exports
 		httpd: slime.jsh.httpd.Exports
 	}
 }

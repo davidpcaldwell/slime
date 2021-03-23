@@ -117,11 +117,11 @@
 			var unit = (tokens.length == 1) ? void(0) : tokens.slice(1).join(".");
 			var environment = jsh.js.Object.set({}, ENVIRONMENT, { file: pathname.file });
 			tests.add({ scenario: new jsh.unit.Scenario.Html({ pathname: pathname, unit: unit, environment: environment }) });
-	//		if (tokens.length == 1) {
-	//			tests.add({ scenario: new jsh.unit.Scenario.Html({ pathname: getModule(test).location, environment: ENVIRONMENT }) });
-	//		} else {
-	//			tests.add({ scenario: new jsh.unit.Scenario.Html({ pathname: getModule(tokens[0]).location, unit: tokens.slice(1).join("."), environment: ENVIRONMENT }) });
-	//		}
+			// if (tokens.length == 1) {
+			// 	tests.add({ scenario: new jsh.unit.Scenario.Html({ pathname: getModule(test).location, environment: ENVIRONMENT }) });
+			// } else {
+			// 	tests.add({ scenario: new jsh.unit.Scenario.Html({ pathname: getModule(tokens[0]).location, unit: tokens.slice(1).join("."), environment: ENVIRONMENT }) });
+			// }
 		});
 		var UNIT_TESTS_COMPLETED = function(success) {
 			if (!success) {

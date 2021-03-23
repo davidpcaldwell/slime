@@ -118,14 +118,14 @@
 						browser: browser,
 						interactive: parameters.options.interactive
 					}));
-		//			scenario.add({
-		//				scenario: MODULES.test({
-		//					coffeescript: parameters.options.coffeescript,
-		//					port: parameters.options.port,
-		//					browser: browser,
-		//					interactive: parameters.options.interactive
-		//				})
-		//			});
+					// scenario.add({
+					// 	scenario: MODULES.test({
+					// 		coffeescript: parameters.options.coffeescript,
+					// 		port: parameters.options.port,
+					// 		browser: browser,
+					// 		interactive: parameters.options.interactive
+					// 	})
+					// });
 				});
 				if (parameters.options.interactive) {
 					jsh.shell.exit(0);

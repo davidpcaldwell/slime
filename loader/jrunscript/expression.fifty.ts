@@ -375,6 +375,7 @@ namespace slime.jrunscript {
 				Proxy: any
 				InetSocketAddress: any
 				ServerSocket: new (n: number) => slime.jrunscript.native.java.net.ServerSocket
+				Socket: any
 			}
 			nio: {
 				file: {

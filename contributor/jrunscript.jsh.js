@@ -23,6 +23,8 @@
 				//	undocumented; used by suite.jsh.js
 				"shell:built": jsh.file.Pathname,
 
+				//	TODO	currently ignored, was used to configure rhino/ip jsapi tests in the past. Should use new Fifty
+				//			mechanism for configuring tests, whatever that is (system properties?)
 				noselfping: false,
 				issue138: false,
 
@@ -165,9 +167,8 @@
 			pathname: SRC.getRelativePath("rhino/file/api.Searchpath.html")
 		}));
 
-		suite.add("jrunscript/ip", new jsh.unit.html.Part({
-			pathname: SRC.getRelativePath("rhino/ip/api.html"),
-			environment: { noselfping: parameters.options.noselfping }
+		suite.add("jrunscript/ip", FiftyPart({
+			file: SRC.getFile("rhino/ip/module.fifty.ts")
 		}));
 
 		suite.add("jrunscript/http", new jsh.unit.html.Part({
