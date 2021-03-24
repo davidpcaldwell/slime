@@ -313,9 +313,17 @@
 				// $api.deprecate(this, "getLastModified");
 				// $api.deprecate(this, "setLastModified");
 
+				/** @type { slime.jrunscript.file.Node["copy"] } */
 				this.copy = function (target, mode) {
+					/**
+					 * @type { (target: any) => target is slime.jrunscript.file.Directory }
+					 */
+					var isDirectory = function(target) {
+						return (target.pathname && $context.isPathname(target.pathname));
+					}
+
 					var to = (function () {
-						if (target.pathname && $context.isPathname(target.pathname)) {
+						if (isDirectory(target)) {
 							//	Assume target is itself a directory
 							if (target.pathname.directory) {
 								return target.pathname.directory.getRelativePath(pathname.basename);
@@ -329,7 +337,9 @@
 							throw new Error();
 						}
 					})();
+
 					if (!mode) mode = {};
+
 					if (!to.parent.directory) {
 						if (mode.recursive) {
 							to.parent.createDirectory({ recursive: true });

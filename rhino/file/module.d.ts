@@ -17,7 +17,20 @@ namespace slime.jrunscript.file {
 		remove: () => void,
 		parent: Directory,
 		move: any
-		copy: (pathname: Pathname, mode?: any) => Node
+		copy: (
+			pathname: Pathname | Directory,
+			mode?: {
+				filter?: (p: {
+					entry: {
+						path: string
+						node: slime.jrunscript.file.Node
+					},
+					exists: slime.jrunscript.file.Node
+				}) => boolean
+
+				recursive?: any
+			}
+		) => Node
 	}
 
 	interface File extends Node {
