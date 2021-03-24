@@ -79,7 +79,7 @@ namespace slime.servlet {
 	type handler = (request: Request) => Response
 
 	interface Script {
-		handle: (request: Request) => Response
+		handle: handler
 		destroy?: () => void
 	}
 

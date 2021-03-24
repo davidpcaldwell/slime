@@ -25,41 +25,20 @@
 				var index = p.options.index || "README.html";
 
 				var server = new jsh.httpd.Tomcat();
+				var loader = new jsh.file.Loader({ directory: jsh.script.file.parent });
+				/** @type { slime.tools.documentation.implementation } */
+				var documentationHandler = loader.module("documentation-handler.js");
+				var documentationFactory = documentationHandler({
+					base: base,
+					watch: p.options.watch
+				});
 				server.map({
 					path: "",
 					servlets: {
 						"/*": {
 							load: function(scope) {
 								scope.$exports.handle = scope.httpd.Handler.series(
-									function(request) {
-										var typedocPattern = /^(?:(.+)\/)?local\/doc\/typedoc\/src\/(.*)/;
-										var match = typedocPattern.exec(request.path);
-										if (match) {
-											var src = (match[1]) ? base.getSubdirectory(match[1]) : base;
-											return new scope.httpd.Handler.Loader({
-												loader: new jsh.file.Loader({ directory: src }),
-												index: "index.html"
-											})($api.Object.compose(request, { path: match[2] }))
-										}
-									},
-									function(request) {
-										var typedocPattern = /^(?:(.+)\/)?local\/doc\/typedoc\/((.*)\.html$)/;
-										var match = typedocPattern.exec(request.path);
-										if (match) {
-											var src = (match[1]) ? base.getSubdirectory(match[1]) : base;
-											var output = src.getRelativePath("local/doc/typedoc");
-											if (!output.directory || p.options.watch) {
-												jsh.wf.typescript.typedoc({
-													project: src
-												});
-											}
-											jsh.shell.console("Serving: " + request.path);
-											return new scope.httpd.Handler.Loader({
-												loader: new jsh.file.Loader({ directory: src.getSubdirectory("local/doc/typedoc") }),
-												index: "index.html"
-											})($api.Object.compose(request, { path: match[2] }))
-										}
-									},
+									documentationFactory(scope.httpd),
 									new scope.httpd.Handler.Loader({
 										loader: new jsh.file.Loader({ directory: base })
 									})
