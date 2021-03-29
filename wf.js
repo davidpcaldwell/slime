@@ -171,10 +171,6 @@
 			$exports
 		)
 
-		$exports.hello = function(p) {
-			jsh.shell.console("Hello, World!");
-		}
-
 		$exports.git = {
 			branches: new function() {
 				var repository = jsh.tools.git.Repository({ directory: $context.base });

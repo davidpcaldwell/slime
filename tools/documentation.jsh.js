@@ -20,12 +20,18 @@
 				/** @type { slime.jrunscript.file.Directory } */
 				var base = (p.options.base) ? p.options.base.directory : jsh.shell.PWD;
 
+				var operation = (p.options.watch) ? "document" : "documentation";
+
 				var chromeId = (function(chromeId,watch) {
 					if (chromeId) return chromeId;
 					return (watch) ? "document" : "documentation";
 				})(p.options["chrome:id"], p.options.watch);
 
-				var host = p.options.host || "documentation";
+				var host = (function(host,operation) {
+					if (host) return operation + "." + host;
+					return operation;
+				})(p.options.host, operation);
+
 				var index = p.options.index || "README.html";
 
 				var server = new jsh.httpd.Tomcat();

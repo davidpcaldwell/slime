@@ -38,8 +38,15 @@ namespace slime.jsh.wf {
 			(p: Arguments): void
 		}
 
-		export interface Interface {
-			[x: string]: ( Command | Interface )
+		export interface Commands {
+			[x: string]: ( Command | Commands )
+		}
+
+		export interface Interface extends Commands {
+			/**
+			 * A special {@link Command} that is run each time any (other) `Command` is run.
+			 */
+			 initialize?: Command
 		}
 
 		export type Processor = (p: cli.Arguments) => cli.Arguments
