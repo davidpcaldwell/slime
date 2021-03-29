@@ -38,6 +38,20 @@
 		{
 			"label": "documentation",
 			"type": "shell",
+			"command": "./jsh.bash tools/documentation.jsh.js --host slime",
+			"problemMatcher": [],
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "dedicated",
+				"showReuseMessage": true,
+				"clear": true
+			}
+		},
+		{
+			"label": "document",
+			"type": "shell",
 			"command": "./jsh.bash tools/documentation.jsh.js --host slime --watch",
 			"problemMatcher": []
 		},

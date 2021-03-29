@@ -1,9 +1,0 @@
-#!/bin/bash
-git config core.hooksPath contributor/hooks
-
-#	For Eclipse-based developers, including Visual Studio Code users, copy improved Eclipse preferences to proper location
-PROJECT=$(dirname $0)
-if [ -d "${PROJECT}/.settings" ]; then
-	#	TODO	after this in VSCode, must Java: Clean the Java language server workspace
-	cp $PROJECT/tools/org.eclipse.jdt.core.prefs $PROJECT/.settings
-fi

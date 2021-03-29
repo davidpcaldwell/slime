@@ -40,7 +40,7 @@ END LICENSE
 		<div>
 			<h1>Platforms</h1>
 			<div>
-				<h2><code><a href="local/doc/typedoc/interfaces/slime.jsh.global.html">jsh</a></code>: a JavaScript application environment that can access the Java platform.</h2>
+				<h2><code><a href="local/doc/typedoc/interfaces/jsh.html">jsh</a></code>: a JavaScript application environment that can access the Java platform.</h2>
 			</div>
 			<div>
 				<h2><a href="rhino/http/servlet/api.html">Java servlets</a>: a JavaScript environment for authoring
@@ -109,9 +109,13 @@ END LICENSE
 								<li><code>--base <i>directory</i></code>: top-level directory of the project.</li>
 								<li><code>--host <i>hostname</i></code>: hostname to use when serving pages.</li>
 								<li><code>--index <i>path</i></code>: relative path to the index page; defaults to <code>README.html</code>.</li>
-								<li><code>--chrome:id <i>name</i></code>: the private Chrome directory to use (under <code>local/chrome</code>); defaults to <code>documentation</code>.</li>
 								<li><code>--watch</code>: if present, causes documentation to be re-generated for every HTML page
 									requested; helpful when authoring docunmentation.
+								</li>
+								<li>
+									<code>--chrome:id <i>name</i></code>: the private Chrome directory to use (under
+									<code>local/chrome</code>); defaults to <code>documentation</code>, or <code>document</code>
+									if <code>--watch</code> is set).
 								</li>
 							</ul>
 						</li>

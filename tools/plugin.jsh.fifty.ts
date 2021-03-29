@@ -56,6 +56,33 @@ namespace slime.jsh.wf {
 		}
 	}
 
+	export namespace standard {
+		export interface Operations {
+			lint?: () => boolean
+			test?: () => boolean
+			commit?: (p: { message: string }) => void
+		}
+
+		export interface Interface {
+			status: jsh.wf.cli.Command
+			tsc: jsh.wf.cli.Command
+			typedoc: jsh.wf.cli.Command
+			test: jsh.wf.cli.Command
+			submodule: {
+				/**
+				 * `--path <path-to-submodule>`
+				 */
+				remove: jsh.wf.cli.Command
+				/**
+				 * `--path <path-to-submodule>`
+				 */
+				update: jsh.wf.cli.Command
+				reset: jsh.wf.cli.Command
+			},
+			commit: jsh.wf.cli.Command
+		}
+	}
+
 	/**
 	 * The `cli.initialize` function provides a default `wf` implementation for projects with a number of standard commands; it
 	 * requires project-level specification of operations like `commit`, `lint`, and/or `test`.
@@ -116,29 +143,8 @@ namespace slime.jsh.wf {
 			initialize: {
 				(
 					$context: jsh.wf.cli.Context,
-					operations: {
-						lint?: () => boolean
-						test?: () => boolean
-						commit?: (p: { message: string }) => void
-					},
-					$exports: {
-						status: jsh.wf.cli.Command
-						tsc: jsh.wf.cli.Command
-						typedoc: jsh.wf.cli.Command
-						test: jsh.wf.cli.Command
-						submodule: {
-							/**
-							 * `--path <path-to-submodule>`
-							 */
-							remove: jsh.wf.cli.Command
-							/**
-							 * `--path <path-to-submodule>`
-							 */
-							update: jsh.wf.cli.Command
-							reset: jsh.wf.cli.Command
-						},
-						commit: any
-					}
+					operations: standard.Operations,
+					$exports: standard.Interface
 				): void
 			}
 		}

@@ -4,7 +4,7 @@
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.Global } jsh
 	 * @param { slime.jsh.wf.cli.Context } $context
-	 * @param { Parameters<slime.jsh.wf.Exports["cli"]["initialize"]>[2] & { initialize: slime.jsh.wf.cli.Command, hello: slime.jsh.wf.cli.Command, git: any, merge: any } } $exports
+	 * @param { slime.jsh.wf.standard.Interface & { initialize: slime.jsh.wf.cli.Command, hello: slime.jsh.wf.cli.Command, git: any, merge: any } } $exports
 	 */
 	function($api,jsh,$context,$exports) {
 		var noTrailingWhitespace = function() {
@@ -16,16 +16,19 @@
 					if (/\.def$/.test(entry.path)) return true;
 					if (/\.prefs$/.test(entry.path)) return true;
 					if (/\.py$/.test(entry.path)) return true;
+
 					if (entry.path == ".hgsub") return true;
-					if (entry.path == ".hgsubstate") return false;
-					if (entry.path == ".hgignore") return false;
-					if (entry.path == ".gitignore") return false;
-					if (entry.path == "contributor/hooks/pre-commit") return true;
+					if (entry.path == ".hgignore") return true;
+					if (entry.path == ".gitignore") return true;
+
+					//	Really should ignore these files because they are VCS-ignored, not because they are binary
 					if (entry.path == ".classpath") return false;
 					if (entry.path == ".project") return false;
-					if (entry.path == "contribute") return true;
+					if (entry.path == ".hgsubstate") return false;
+
 					if (entry.path == "wf") return true;
 					if (entry.path == "tools/wf") return true;
+					if (entry.path == "contributor/hooks/pre-commit") return true;
 					return code.files.isText(entry.node);
 				},
 				on: {
@@ -51,7 +54,13 @@
 		};
 
 		$exports.initialize = function() {
-			if ($context.base.getSubdirectory(".settings")) {
+			//	TODO	could consider whether we can wire our commit process into the git hooks mechanism:
+			//			git config core.hooksPath contributor/hooks
+			//			... and then appropriately implement contributor/hooks/pre-commit
+
+			var isEclipseProject = Boolean($context.base.getSubdirectory(".settings"));
+			if (isEclipseProject) {
+				//	copy project settings to Eclipse project if they differ from current settings
 				var filename = "org.eclipse.jdt.core.prefs";
 				var destination = $context.base.getSubdirectory(".settings").getRelativePath(filename);
 				var now = (destination.file) ? destination.file.read(String) : void(0);
@@ -68,6 +77,7 @@
 					jsh.shell.console("VSCode: Execute the 'Java: Clean the Java language server workspace' command to update.");
 				}
 			}
+
 			//	TODO	should set up eslint here
 		};
 
