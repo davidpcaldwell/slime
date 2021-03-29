@@ -4,7 +4,7 @@
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.Global } jsh
 	 * @param { slime.jsh.wf.cli.Context } $context
-	 * @param { slime.jsh.wf.standard.Interface & { initialize: slime.jsh.wf.cli.Command, hello: slime.jsh.wf.cli.Command, git: any, merge: any } } $exports
+	 * @param { slime.project.wf.Interface } $exports
 	 */
 	function($api,jsh,$context,$exports) {
 		var noTrailingWhitespace = function() {
