@@ -1,7 +1,8 @@
 /**
  * A set of APIs that can be helpful in implementing tasks related to software development. The [[Exports]] object represents the
  * main `jsh.wf` APIs project authors can use in constructing their own `wf` commands, including the `cli.initialize` method that
- * provides standard implementations for several commands.
+ * provides a standard project {@link slime.jsh.wf.standard.Interface | Interface} given a set of project
+ * {@link slime.jsh.wf.standard.Operations | Operations}.
  */
 namespace slime.jsh.wf {
 	/**
@@ -60,33 +61,6 @@ namespace slime.jsh.wf {
 				command: string
 				target: any
 			}
-		}
-	}
-
-	export namespace standard {
-		export interface Operations {
-			lint?: () => boolean
-			test?: () => boolean
-			commit?: (p: { message: string }) => void
-		}
-
-		export interface Interface {
-			status: jsh.wf.cli.Command
-			tsc: jsh.wf.cli.Command
-			typedoc: jsh.wf.cli.Command
-			test: jsh.wf.cli.Command
-			submodule: {
-				/**
-				 * `--path <path-to-submodule>`
-				 */
-				remove: jsh.wf.cli.Command
-				/**
-				 * `--path <path-to-submodule>`
-				 */
-				update: jsh.wf.cli.Command
-				reset: jsh.wf.cli.Command
-			},
-			commit: jsh.wf.cli.Command
 		}
 	}
 

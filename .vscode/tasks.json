@@ -3,6 +3,7 @@
 	"tasks": [
 		{
 			"label": "Install JDK",
+			"detail": "Installs the default JDK into this shell",
 			"type": "shell",
 			"command": "./jsh.bash --install-jdk",
 			"problemMatcher": []
