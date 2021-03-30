@@ -114,14 +114,17 @@
 				throw new Error("Unimplemented.");
 				//destination.script.write(p.code.bash, { append: false, recursive: true });
 			}
-			var desktop = new $exports.Entry($context.api.js.Object.set({
-					Type: "Application",
-					Name: p.name,
-					Exec: ["/bin/bash", script].join(" ")
-				},
-				(p.opendesktop.GenericName) ? { GenericName: p.opendesktop.GenericName } : {},
-				(p.opendesktop.Categories && p.opendesktop.Categories.length) ? { Categories: p.opendesktop.Categories.join(";") } : {}
-			));
+			var desktop = new $exports.Entry(
+				$context.api.js.Object.set(
+					{
+						Type: "Application",
+						Name: p.name,
+						Exec: ["/bin/bash", script].join(" ")
+					},
+					(p.opendesktop.GenericName) ? { GenericName: p.opendesktop.GenericName } : {},
+					(p.opendesktop.Categories && p.opendesktop.Categories.length) ? { Categories: p.opendesktop.Categories.join(";") } : {}
+				)
+			);
 			//	TODO	Icon
 			if (p.icon) {
 				throw new Error();

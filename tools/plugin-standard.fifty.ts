@@ -7,7 +7,7 @@ namespace slime.jsh.wf {
 		}
 
 		export interface Interface {
-			status: jsh.wf.cli.Command
+			eslint: jsh.wf.cli.Command
 
 			/**
 			 * Runs the TypeScript compiler on the project.
@@ -18,6 +18,8 @@ namespace slime.jsh.wf {
 			 * Runs the Typedoc documentation generator.
 			 */
 			typedoc: jsh.wf.cli.Command
+
+			status: jsh.wf.cli.Command
 
 			test: jsh.wf.cli.Command
 			submodule: {

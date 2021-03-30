@@ -129,6 +129,18 @@
 					}
 				}
 
+				if ($context.base.getFile(".eslintrc.json")) {
+					jsh.shell.tools.node.require();
+					jsh.shell.tools.node.modules.require({ name: "eslint" });
+					$exports.eslint = function() {
+						jsh.shell.jsh({
+							shell: jsh.shell.jsh.src,
+							script: jsh.shell.jsh.src.getFile("contributor/eslint.jsh.js"),
+							arguments: ["-project", $context.base]
+						});
+					}
+				}
+
 				$exports.tsc = function() {
 					try {
 						jsh.wf.typescript.tsc();

@@ -64,95 +64,95 @@
 			//		process = null;
 			//	}
 
-				if (!o) o = {};
-				if (!o.data) o.data = o.base.getRelativePath("data");
+			if (!o) o = {};
+			if (!o.data) o.data = o.base.getRelativePath("data");
 
-				this.initialize = function() {
-					if (true) {
-						jsh.shell.run({
-							command: o.base.getFile("scripts/mysql_install_db"),
-							arguments: [
-								"--basedir=" + o.base.pathname,
-								"--datadir=" + o.data
-							]
-						});
-					} else {
-						//	TODO	this is MySQL 5.7 version
-						jsh.shell.run({
-							command: o.base.getFile("bin/mysqld"),
-							arguments: [
-								"--initialize-insecure",
-								"--datadir=" + o.data
-							]
-						});
-					}
-					jsh.shell.console("MySQL database initialized.");
-				};
+			this.initialize = function() {
+				if (true) {
+					jsh.shell.run({
+						command: o.base.getFile("scripts/mysql_install_db"),
+						arguments: [
+							"--basedir=" + o.base.pathname,
+							"--datadir=" + o.data
+						]
+					});
+				} else {
+					//	TODO	this is MySQL 5.7 version
+					jsh.shell.run({
+						command: o.base.getFile("bin/mysqld"),
+						arguments: [
+							"--initialize-insecure",
+							"--datadir=" + o.data
+						]
+					});
+				}
+				jsh.shell.console("MySQL database initialized.");
+			};
 
-				var server;
+			var server;
 
-				this.start = function(p) {
-					var started = new jsh.java.Thread.Monitor();
+			this.start = function(p) {
+				var started = new jsh.java.Thread.Monitor();
 
-					jsh.shell.console("Starting mysqld ...");
-					jsh.java.Thread.start(function() {
-						var myserver;
+				jsh.shell.console("Starting mysqld ...");
+				jsh.java.Thread.start(function() {
+					var myserver;
 
-						jsh.shell.run({
-							command: o.base.getFile("bin/mysqld"),
-							arguments: [
-								"--datadir=" + o.data,
-								"--port=" + o.port,
-								"--lc-messages-dir=" + o.base.getRelativePath("share/english")
-							],
-							on: {
-								start: function(process) {
-									myserver = process;
-								}
-							},
-							stdio: {
-								error: {
-									line: function(string) {
-										jsh.shell.console("[mysql stderr] " + string);
-										if (/ready for connections/.test(string)) {
-											new started.Waiter({
-												until: function() {
-													return true;
-												},
-												then: function() {
-													server = myserver;
-												}
-											})()
-										}
+					jsh.shell.run({
+						command: o.base.getFile("bin/mysqld"),
+						arguments: [
+							"--datadir=" + o.data,
+							"--port=" + o.port,
+							"--lc-messages-dir=" + o.base.getRelativePath("share/english")
+						],
+						on: {
+							start: function(process) {
+								myserver = process;
+							}
+						},
+						stdio: {
+							error: {
+								line: function(string) {
+									jsh.shell.console("[mysql stderr] " + string);
+									if (/ready for connections/.test(string)) {
+										new started.Waiter({
+											until: function() {
+												return true;
+											},
+											then: function() {
+												server = myserver;
+											}
+										})()
 									}
 								}
 							}
-						});
-						jsh.shell.console("mysqld apparently terminated.");
-						server = null;
-					});
-
-					jsh.shell.console("Started mysqld thread.");
-					new started.Waiter({
-						until: function() {
-							return server;
-						},
-						then: function() {
 						}
-					})();
-					jsh.shell.console("mysqld start detected.");
-				};
+					});
+					jsh.shell.console("mysqld apparently terminated.");
+					server = null;
+				});
 
-				this.stop = function(p) {
-					if (server) {
-						jsh.shell.console("Stopping mysqld ...");
-						server.kill();
-						jsh.shell.console("Stopped mysqld.");
-						server = null;
-					} else {
-						jsh.shell.console("mysqld not running.");
+				jsh.shell.console("Started mysqld thread.");
+				new started.Waiter({
+					until: function() {
+						return server;
+					},
+					then: function() {
 					}
-				};
+				})();
+				jsh.shell.console("mysqld start detected.");
+			};
+
+			this.stop = function(p) {
+				if (server) {
+					jsh.shell.console("Stopping mysqld ...");
+					server.kill();
+					jsh.shell.console("Stopped mysqld.");
+					server = null;
+				} else {
+					jsh.shell.console("mysqld not running.");
+				}
+			};
 
 			//	TODO	 is this needed?
 			//	var object = this;

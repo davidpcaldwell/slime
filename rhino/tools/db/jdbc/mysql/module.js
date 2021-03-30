@@ -51,13 +51,13 @@
 			var DOUBLE = new Numeric();
 
 			this.getCodec = function(type) {
-		//		if (type.code == Types.VARCHAR) return VARCHAR(type.precision);
+				// if (type.code == Types.VARCHAR) return VARCHAR(type.precision);
 				if (type.code == Types.CHAR) return CHAR(type.precision);
-		//		if (type.code == Types.SMALLINT) return SMALLINT;
-		//		if (type.code == Types.BIGINT) return BIGINT;
-		//		if (type.code == Types.BIT) return BIT;
-		//		if (type.code == Types.INTEGER) return INT;
-		//		if (type.code == Types.DOUBLE) return DOUBLE;
+				// if (type.code == Types.SMALLINT) return SMALLINT;
+				// if (type.code == Types.BIGINT) return BIGINT;
+				// if (type.code == Types.BIT) return BIT;
+				// if (type.code == Types.INTEGER) return INT;
+				// if (type.code == Types.DOUBLE) return DOUBLE;
 				var rv = $context.types.getCodec(type);
 				if (rv && rv.toString() == "BIT") {
 					rv.cast = (function(was) {

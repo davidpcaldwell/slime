@@ -11,13 +11,13 @@
 		{
 			"label": "eslint",
 			"type": "shell",
-			"command": "./jsh.bash contributor/eslint.jsh.js",
+			"command": "./wf eslint",
 			"problemMatcher": [],
 			"presentation": {
 				"echo": false,
 				"reveal": "always",
 				"focus": false,
-				"panel": "shared",
+				"panel": "dedicated",
 				"showReuseMessage": false,
 				"clear": true
 			}
@@ -38,8 +38,9 @@
 		},
 		{
 			"label": "documentation",
+			"detail": "Serves the project documentation and opens a browser to view it",
 			"type": "shell",
-			"command": "./jsh.bash tools/documentation.jsh.js --host slime",
+			"command": "./wf documentation",
 			"problemMatcher": [],
 			"presentation": {
 				"echo": true,
@@ -52,9 +53,18 @@
 		},
 		{
 			"label": "document",
+			"detail": "Serves the project documentation and opens a browser to view it, re-rendering the documentation as it changes",
 			"type": "shell",
-			"command": "./jsh.bash tools/documentation.jsh.js --host slime --watch",
-			"problemMatcher": []
+			"command": "./wf document",
+			"problemMatcher": [],
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared",
+				"showReuseMessage": true,
+				"clear": true
+			}
 		},
 		{
 			"label": "hosting",
