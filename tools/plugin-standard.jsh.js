@@ -311,6 +311,29 @@
 						jsh.shell.console("Committed changes to " + $context.base);
 					}
 				);
+
+				var serveDocumentation = function(c) {
+					return function(p) {
+						jsh.shell.jsh({
+							shell: jsh.shell.jsh.src,
+							script: jsh.shell.jsh.src.getFile("tools/documentation.jsh.js"),
+							//	TODO	make functional implementation of below simpler
+							arguments: (function() {
+								var rv = [];
+								var host = (function(provided) {
+									if (provided) return provided;
+									return $context.base.pathname.basename;
+								})(p.options.host);
+								rv.push("--host", host);
+								if (c.watch) rv.push("--watch");
+								return rv;
+							})()
+						});
+					}
+				}
+
+				$exports.documentation = serveDocumentation({ watch: false });
+				$exports.document = serveDocumentation({ watch: true });
 			}
 		)
 	}

@@ -1,6 +1,6 @@
 namespace slime.jsh.wf {
 	export namespace standard {
-		export interface Operations {
+		export interface Project {
 			lint?: () => boolean
 			test?: () => boolean
 			commit?: (p: { message: string }) => void
@@ -32,6 +32,9 @@ namespace slime.jsh.wf {
 				reset: jsh.wf.cli.Command
 			},
 			commit: jsh.wf.cli.Command
+
+			documentation: jsh.wf.cli.Command
+			document: jsh.wf.cli.Command
 		}
 	}
 }
