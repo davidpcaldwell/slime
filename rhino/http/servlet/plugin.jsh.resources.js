@@ -20,10 +20,12 @@
 (
 	/**
 	 * @param { slime.$api.Global } $api
-	 * @param { slime.jsh.Global } jsh
-	 * @param { { getMimeType: any } } $context
+	 * @param { { getMimeType: any, jsh: slime.jsh.Global } } $context
+	 * @param { (value: slime.jsh.httpd.resources.Export) => void } $export
 	 */
-	function($api,jsh,$context) {
+	function($api,$context,$export) {
+		var jsh = $context.jsh;
+
 		var DirectoryWithoutVcsLoader = function(p) {
 			var delegate = (p.directory) ? new jsh.file.Loader(p) : p.loader;
 			var source = {
@@ -423,19 +425,18 @@
 			};
 		};
 
-		/**
-		 * @param { slime.jsh.Global } jsh
-		 */
-		(function(jsh) {
-			jsh.httpd.Resources = Object.assign(NewResources,{
+		var rv = (function() {
+			var rv = Object.assign(NewResources,{
 				Old: void(0),
 				NoVcsDirectory: void(0),
 				script: void(0)
 			});
-			jsh.httpd.Resources.Old = $api.deprecate(OldResources);
+			rv.Old = $api.deprecate(OldResources);
 
-			jsh.httpd.Resources.NoVcsDirectory = DirectoryWithoutVcsLoader;
-		})(jsh);
+			rv.NoVcsDirectory = DirectoryWithoutVcsLoader;
+
+			return rv;
+		})();
 
 		var script = function(rv,args) {
 			for (var i=0; i<args.length; i++) {
@@ -445,12 +446,12 @@
 			return rv;
 		}
 
-		jsh.httpd.Resources.script = function(/* mapping files */) {
+		rv.script = function(/* mapping files */) {
 			var resources = new NewResources();
 			return script(resources, Array.prototype.slice.call(arguments));
 		};
 
-		jsh.httpd.Resources.script.Directory = function(loader) {
+		rv.script.Directory = function(loader) {
 			this.pathname = {
 				loader: loader
 			};
@@ -463,9 +464,11 @@
 			}
 		};
 
-		jsh.httpd.Resources.script.old = function(/* mapping files */) {
+		rv.script.old = function(/* mapping files */) {
 			return script(new OldResources(), Array.prototype.slice.call(arguments));
 		};
+
+		$export(rv);
 	}
 //@ts-ignore
-)($api,jsh,$context)
+)($api,$context,$export)

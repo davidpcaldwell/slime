@@ -224,11 +224,9 @@ END LICENSE
 				file: jsh.file
 			}
 			if (!scope.module) {
-				$jsapi.loader.run("plugin.jsh.resources.js", {
-					$context: {
-						getMimeType: jsh.httpd.nugget.getMimeType
-					},
-					jsh: shell
+				shell.httpd.Resources = $jsapi.loader.module("plugin.jsh.resources.js", {
+					getMimeType: jsh.httpd.nugget.getMimeType,
+					jsh: jsh
 				});
 				scope.module = shell.httpd;
 			}

@@ -181,11 +181,9 @@
 				};
 
 
-				$loader.run("plugin.jsh.resources.js", {
-					jsh: jsh,
-					$context: {
-						getMimeType: getMimeType
-					}
+				jsh.httpd.Resources = $loader.module("plugin.jsh.resources.js", {
+					getMimeType: getMimeType,
+					jsh: jsh
 				});
 
 				var CATALINA_HOME = (function() {
