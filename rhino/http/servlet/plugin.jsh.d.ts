@@ -54,12 +54,6 @@ namespace slime.jsh.httpd {
 		}
 	}
 
-	interface Resources {
-		file: any
-		add: (m: { directory?: slime.jrunscript.file.Directory, loader?: slime.Loader, prefix: string }) => void
-		loader: any
-	}
-
 	interface Exports {
 		nugget: any
 		spi: {
@@ -69,12 +63,7 @@ namespace slime.jsh.httpd {
 				$loader?: slime.Loader
 			}
 		}
-		Resources: {
-			new (): Resources
-			Old: any
-			NoVcsDirectory: any
-			script: any
-		}
+		Resources: slime.jsh.httpd.resources.Export
 		Tomcat?: {
 			new (p?: Tomcat.Configuration): Tomcat
 
