@@ -2,6 +2,12 @@ namespace slime.jsh.httpd {
 	export interface Resources {
 		file: any
 		add: (m: { directory?: slime.jrunscript.file.Directory, loader?: slime.Loader, prefix: string }) => void
+		/** @deprecated */
+		map: {
+			(prefix: string, pathname: slime.jrunscript.file.Pathname): void
+			/** @deprecated Use the string, Pathname version */
+			(prefix: string, pathname: slime.jrunscript.file.Directory): void
+		}
 		loader: any
 	}
 
