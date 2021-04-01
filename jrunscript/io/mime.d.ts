@@ -37,6 +37,6 @@ namespace slime.jrunscript.io.mime {
 			parts: Part[]
 		}) => Multipart
 
-		Type: any
+		Type: slime.runtime.Exports["mime"]["Type"] & { guess: (p: { name: string }) => slime.MimeType.Object }
 	}
 }

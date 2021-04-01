@@ -25,7 +25,22 @@
 		/** @type { slime.jrunscript.native.inonit.script.runtime.io.Streams } */
 		var _streams = new Packages.inonit.script.runtime.io.Streams();
 
-		var loader = {};
+		/** @type { slime.jrunscript.runtime.Exports } */
+		var loader = {
+			run: void(0),
+			Loader: void(0),
+			Resource: void(0),
+			io: void(0),
+			java: void(0),
+			classpath: void(0),
+			mime: void(0),
+			file: void(0),
+			value: void(0),
+			namespace: void(0),
+			$platform: void(0),
+			$api: void(0),
+			typescript: void(0)
+		};
 
 		var slime = (
 			/**
@@ -812,22 +827,7 @@
 			}
 		}
 
-		//	TODO	come up with a better way to do this; adding a property to loader would ideally add it here
-		return {
-			run: loader.run,
-			file: loader.file,
-			value: loader.value,
-			namespace: loader.namespace,
-			$platform: loader.platform,
-			$api: loader.$api,
-			Loader: loader.Loader,
-			Resource: loader.Resource,
-			mime: loader.mime,
-			io: loader.io,
-			java: loader.java,
-			classpath: loader.classpath,
-			typescript: loader.typescript
-		};
+		return loader;
 	}
 //@ts-ignore
 )($javahost,$bridge,Packages,JavaAdapter, (function() { return this.XML })(),$loader)

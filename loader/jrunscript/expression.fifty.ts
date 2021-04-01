@@ -488,6 +488,8 @@ namespace slime.jrunscript {
 		};
 
 		tests.suite = function() {
+			verify($slime).$platform.is.type("object");
+
 			const jsh = fifty.global.jsh;
 
 			var values = {

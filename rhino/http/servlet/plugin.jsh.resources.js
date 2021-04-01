@@ -20,7 +20,7 @@
 (
 	/**
 	 * @param { slime.$api.Global } $api
-	 * @param { { getMimeType: any, jsh: slime.jsh.Global } } $context
+	 * @param { slime.jsh.httpd.resources.Context } $context
 	 * @param { (value: slime.jsh.httpd.resources.Export) => void } $export
 	 */
 	function($api,$context,$export) {

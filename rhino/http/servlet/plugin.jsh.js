@@ -90,7 +90,12 @@
 					return jsh.shell.HOME.getFile(".inonit/jsh/etc/keystore");
 				}
 
-				var getMimeType = function(file) {
+				/**
+				 *
+				 * @param { slime.jrunscript.file.File } file
+				 * @returns { slime.MimeType }
+				 */
+				function getMimeType(file) {
 					var type = jsh.io.mime.Type.fromName(file.pathname.basename);
 					if (type) return type;
 					type = jsh.io.mime.Type.guess({

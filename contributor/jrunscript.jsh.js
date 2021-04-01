@@ -377,6 +377,10 @@
 			pathname: SRC.getRelativePath("rhino/http/servlet/plugin.jsh.resources.api.html")
 		}));
 
+		suite.add("servlet/resources/fifty", FiftyPart({
+			file: SRC.getFile("rhino/http/servlet/plugin.jsh.resources.fifty.ts")
+		}));
+
 		suite.add("servlet/server", new jsh.unit.html.Part({
 			pathname: SRC.getRelativePath("rhino/http/servlet/server/api.html")
 		}));

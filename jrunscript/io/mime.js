@@ -202,17 +202,19 @@
 			}
 		};
 
-		$exports.Type = $context.$slime.mime.Type;
-
-		$exports.Type.guess = $api.deprecate(function(p) {
-			if (p.name) {
-				var _rv = Packages.java.net.URLConnection.getFileNameMap().getContentTypeFor(p.name);
-				if (!_rv) return function(){}();
-				return $context.$slime.mime.Type.parse(String(_rv));
-			} else {
-				throw new TypeError("argument must be a string.");
+		$exports.Type = Object.assign(
+			$context.$slime.mime.Type,
+			{
+				guess: $api.deprecate(
+					function(p) {
+						if (!p.name) throw new TypeError("argument must be a string.");
+						var _rv = Packages.java.net.URLConnection.getFileNameMap().getContentTypeFor(p.name);
+						if (!_rv) return void(0);
+						return $context.$slime.mime.Type.parse(String(_rv));
+					}
+				)
 			}
-		});
+		)
 	}
 //@ts-ignore
 )(Packages,JavaAdapter,$api,$context,$exports);
