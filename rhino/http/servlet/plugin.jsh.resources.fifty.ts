@@ -1,13 +1,24 @@
 namespace slime.jsh.httpd {
 	export interface Resources {
-		file: any
 		add: (m: { directory?: slime.jrunscript.file.Directory, loader?: slime.Loader, prefix: string }) => void
+
 		/** @deprecated */
 		map: {
 			(prefix: string, pathname: slime.jrunscript.file.Pathname): void
 			/** @deprecated Use the string, Pathname version */
 			(prefix: string, pathname: slime.jrunscript.file.Directory): void
 		}
+
+		/**
+		 * Allows the execution of mapping information stored in a separate file; Executes the given {@link resources.Mapping} with
+		 * a {@link resources.Scope} created by combining information
+		 * from the mapping with the given scope argument, if any.
+		 */
+		file: (
+			file: resources.Mapping,
+			scope?: { [x: string]: any }
+		) => void
+
 		loader: any
 	}
 
@@ -25,6 +36,26 @@ namespace slime.jsh.httpd {
 		}
 
 		export type Factory = slime.Loader.Product<Context,Export>
+
+		export type Mapping = slime.jrunscript.file.File | LoaderMapping | CodeMapping
+
+		export interface LoaderMapping {
+			loader: slime.Loader
+			path: string
+		}
+
+		export interface CodeMapping {
+			/** File name to use when executing. */
+			name: string
+			/** Code to execute. */
+			string: string
+		}
+
+		export interface Scope {
+			$mapping: slime.jrunscript.file.File
+			map: Resources["map"]
+			add?: Resources["add"]
+		}
 	}
 
 	(

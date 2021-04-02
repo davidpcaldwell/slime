@@ -337,25 +337,44 @@
 
 			this.loader = (old) ? OldLoader("") : new NewLoader();
 
+			/**
+			 * @type { slime.jsh.httpd.Resources["file"] }
+			 */
 			this.file = function(mappingFile,scope) {
 				if (!mappingFile) throw new TypeError("mappingFile must be defined.");
 				if (!scope) scope = {};
+
+				/** @type { (argument: slime.jsh.httpd.resources.Mapping) => argument is slime.jrunscript.file.File } */
+				var isFile = function(argument) {
+					return Boolean(argument["pathname"]);
+				}
+
+				/** @type { (argument: slime.jsh.httpd.resources.Mapping) => argument is slime.jsh.httpd.resources.LoaderMapping } */
+				var isLoaderMapping = function(argument) {
+					return Boolean(argument["loader"]);
+				}
+
+				/** @type { (argument: slime.jsh.httpd.resources.Mapping) => argument is slime.jsh.httpd.resources.CodeMapping } */
+				var isCodeMapping = function(argument) {
+					return Boolean(argument["name"]) && Boolean(argument["string"]);
+				}
 
 				//	Satisfy TypeScript
 				this.add = this.add;
 				this.map = this.map;
 
 				var rv = this;
-				var api = jsh.js.Object.set({}, {
-					$mapping: (mappingFile.pathname) ? mappingFile : void(0),
+				/** @type { slime.jsh.httpd.resources.Scope } */
+				var api = $api.Object.compose({
+					$mapping: (isFile(mappingFile)) ? mappingFile : void(0),
 					map: function(prefix,pathname) {
 						rv.map(prefix,pathname);
 					}
 				}, (rv.add) ? { add: function(m) { rv.add(m); } } : {}, scope);
-				if (mappingFile.loader) {
+				if (isLoaderMapping(mappingFile)) {
 					mappingFile.loader.run(mappingFile.path, api);
 				} else {
-					var toRun = (mappingFile.name && mappingFile.string) ? mappingFile : {
+					var toRun = (isCodeMapping(mappingFile)) ? mappingFile : {
 						name: mappingFile.pathname.basename,
 						type: "application/javascript",
 						string: mappingFile.read(String)
