@@ -229,14 +229,13 @@ namespace slime {
      * `undefined` or is a value of type {@link $engine} specifying information about the underlying JavaScript engine, and
      * they must supply a value for `$slime` that is a {@link $slime} object that provides information about the SLIME installation.
      *
-     * The runtime will in turn supply embeddings with an {@link $api} object, providing a basic set of JavaScript utilities, and a
-     * {@link $platform} object, providing more advanced JavaScript engine capabilities that depend on the underlying JavaScript
-     * engine.
+     * In return, the embedding will be supplied with an {@link Exports} object that provides the SLIME runtime.
      *
-     * All code loaded by the SLIME runtime has access to the {@link $api} object (as `$api`) and the
-     * {@link $platform} object (as `$platform`).
+     * All code loaded by the SLIME runtime has access to the {@link $api} object (as `$api`), providing a basic set of JavaScript
+     * utilities, and a {@link $platform} object (as `$platform`), providing more advanced JavaScript engine capabilities that
+     * depend on the underlying JavaScript engine.
      *
-     * [Older documentation](../../../../loader/api.html)
+     * [Older documentation](src/loader/api.html)
      */
     export namespace runtime {
         export namespace $slime {
@@ -332,6 +331,14 @@ namespace slime {
             $api: slime.$api.Global
         }
 
+        (
+            function(fifty: slime.fifty.test.kit) {
+                fifty.tests.runtime = {};
+                fifty.tests.runtime.exports = {};
+            }
+        //@ts-ignore
+        )(fifty);
+
         export interface Exports {
             /**
              * Provides APIs relating to MIME types.
@@ -372,6 +379,93 @@ namespace slime {
             }
         }
 
+        (
+            function(
+                fifty: slime.fifty.test.kit
+            ) {
+                fifty.tests.runtime.exports.mime = function() {
+                    var code = fifty.$loader.get("expression.js");
+                    var js = code.read(String);
+                    fifty.verify(js).is.type("string");
+
+                    var subject: slime.runtime.Exports = (function() {
+                        var $slime = {
+                            getRuntimeScript: function(path) {
+                                var resource = fifty.$loader.get(path);
+                                return { name: resource.name, js: resource.read(String) }
+                            }
+                        };
+                        var $engine = void(0);
+                        return eval(js);
+                    })();
+
+                    fifty.verify(subject).mime.is.type("object");
+
+                    var verify = fifty.verify;
+
+                    run(function parse() {
+                        var string = "text/plain";
+                        var type = subject.mime.Type.parse(string);
+                        verify(type).media.is("text");
+                        verify(type).subtype.is("plain");
+                        verify(type).parameters.is.type("object");
+                        verify(type).parameters.evaluate(function(p) { return Object.keys(p); }).length.is(0);
+                    });
+
+                    run(function fromName() {
+                         verify(subject.mime).Type.fromName("foo.js").evaluate(function(p) { return p.toString() }).is("application/javascript");
+                         verify(subject.mime).Type.fromName("foo.f").is(void(0));
+                    });
+
+                    //	TODO	According to RFC 2045 section 5.1, matching is case-insensitive
+                    //			https://tools.ietf.org/html/rfc2045#section-5
+                    //
+                    //			types, subtypes, and parameter names are case-insensitive
+                    //			parameter values are "normally" case-sensitive
+                    //
+                    //			TODO	comments are apparently allowed as well, see 5.1
+                    //
+                    //			TODO	quotes are also apparently not part of parameter values
+
+                    run(function constructorArguments() {
+                        verify(subject.mime).evaluate(function() {
+                            return subject.mime.Type(void(0), "plain");
+                        }).threw.type(Error);
+
+                        verify(subject.mime).evaluate(function() {
+                            return subject.mime.Type(null, "plain");
+                        }).threw.type(Error);
+
+                        verify(subject.mime).evaluate(function() {
+                            return subject.mime.Type("text", void(0));
+                        }).threw.type(Error);
+
+                        verify(subject.mime).evaluate(function() {
+                            return subject.mime.Type("text", null);
+                        }).threw.type(Error);
+
+                        verify(subject.mime).evaluate(function() {
+                            //@ts-expect-error
+                            return subject.mime.Type("text", "plain", 2);
+                        }).threw.type(Error);
+
+                        verify(subject.mime).evaluate(function() {
+                            return subject.mime.Type("text", "plain");
+                        }).threw.nothing();
+
+                        verify(subject.mime).evaluate(function() {
+                            return subject.mime.Type("text", "plain").toString();
+                        }).is("text/plain");
+
+                        verify(subject.mime).evaluate(function() {
+                            return subject.mime.Type("text", "plain", { charset: "us-ascii" }).toString();
+                        }).is("text/plain; charset=\"us-ascii\"");
+                    });
+                }
+            }
+        //@ts-ignore
+        )(fifty);
+
         export interface Exports {
             run: any
             file: any
@@ -404,107 +498,15 @@ namespace slime.test {
 }
 
 (
-	function(fifty: slime.fifty.test.kit) {
-		fifty.tests.runtime = {};
-		fifty.tests.runtime.exports = {};
-	}
-//@ts-ignore
-)(fifty);
-
-(
-	function(
-		fifty: slime.fifty.test.kit
-	) {
-		fifty.tests.runtime.exports.mime = function() {
-			var code = fifty.$loader.get("expression.js");
-			var js = code.read(String);
-			fifty.verify(js).is.type("string");
-
-			var subject: slime.runtime.Exports = (function() {
-				var $slime = {
-					getRuntimeScript: function(path) {
-						var resource = fifty.$loader.get(path);
-						return { name: resource.name, js: resource.read(String) }
-					}
-				};
-				var $engine = void(0);
-				return eval(js);
-			})();
-
-			fifty.verify(subject).mime.is.type("object");
-
-			var verify = fifty.verify;
-
-			run(function parse() {
-				var string = "text/plain";
-				var type = subject.mime.Type.parse(string);
-				verify(type).media.is("text");
-				verify(type).subtype.is("plain");
-				verify(type).parameters.is.type("object");
-				verify(type).parameters.evaluate(function(p) { return Object.keys(p); }).length.is(0);
-			});
-
-			run(function fromName() {
-			 	verify(subject.mime).Type.fromName("foo.js").evaluate(function(p) { return p.toString() }).is("application/javascript");
-			 	verify(subject.mime).Type.fromName("foo.f").is(void(0));
-			});
-
-			//	TODO	According to RFC 2045 section 5.1, matching is case-insensitive
-			//			https://tools.ietf.org/html/rfc2045#section-5
-			//
-			//			types, subtypes, and parameter names are case-insensitive
-			//			parameter values are "normally" case-sensitive
-			//
-			//			TODO	comments are apparently allowed as well, see 5.1
-			//
-			//			TODO	quotes are also apparently not part of parameter values
-
-			run(function constructorArguments() {
-				verify(subject.mime).evaluate(function() {
-					return subject.mime.Type(void(0), "plain");
-				}).threw.type(Error);
-
-				verify(subject.mime).evaluate(function() {
-					return subject.mime.Type(null, "plain");
-				}).threw.type(Error);
-
-				verify(subject.mime).evaluate(function() {
-					return subject.mime.Type("text", void(0));
-				}).threw.type(Error);
-
-				verify(subject.mime).evaluate(function() {
-					return subject.mime.Type("text", null);
-				}).threw.type(Error);
-
-				verify(subject.mime).evaluate(function() {
-					//@ts-expect-error
-					return subject.mime.Type("text", "plain", 2);
-				}).threw.type(Error);
-
-				verify(subject.mime).evaluate(function() {
-					return subject.mime.Type("text", "plain");
-				}).threw.nothing();
-
-				verify(subject.mime).evaluate(function() {
-					return subject.mime.Type("text", "plain").toString();
-				}).is("text/plain");
-
-				verify(subject.mime).evaluate(function() {
-					return subject.mime.Type("text", "plain", { charset: "us-ascii" }).toString();
-				}).is("text/plain; charset=\"us-ascii\"");
-			});
-		}
-	}
-//@ts-ignore
-)(fifty);
-
-(
 	function(
 		$loader: slime.fifty.test.$loader,
 		verify: slime.fifty.test.verify,
 		tests: any
 	) {
-		tests.loader = {};
+        tests.loader = function() {
+            run(tests.loader.closure);
+            run(tests.loader.$export);
+        }
 
 		tests.loader.closure = function() {
 			var closure: slime.test.factory = $loader.value("test/data/closure.js");
@@ -514,13 +516,21 @@ namespace slime.test {
 		};
 
 		tests.loader.$export = function() {
-			var file: slime.test.factory = $loader.factory("test/data/module-export.js");
-			var api = file({ scale: 2 });
-			verify(api).convert(3).is(6);
-		}
+            run(function module() {
+                var module: slime.test.factory = $loader.factory("test/data/module-export.js");
+                var api = module({ scale: 2 });
+                verify(api).convert(3).is(6);
+            });
+
+            run(function file() {
+                var file: slime.test.factory = $loader.factory("test/data/file-export.js");
+                var api = file({ scale: 2 });
+                verify(api).convert(3).is(6);
+            });
+        }
 
 		tests.suite = function() {
-			run(tests.loader.closure);
+			run(tests.loader);
 			run(tests.runtime.exports.mime);
 		}
 	}
