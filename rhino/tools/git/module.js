@@ -793,12 +793,12 @@
 				}
 
 				/**
-				 * @param { { remote?: boolean, all?: boolean } } p
+				 * @param { { remotes?: boolean, remote?: boolean, all?: boolean } } p
 				 * @returns { slime.jrunscript.git.Branch[] }
 				 */
 				var branchList = function(p) {
 					var args = [];
-					if (p.remote) {
+					if (p.remotes || p.remote) {
 						args.push("-r");
 					}
 					if (p.all) {
@@ -902,6 +902,8 @@
 					}
 					if (p.ffOnly) {
 						args.push("--ff-only");
+					} else if (p.noFf) {
+						args.push("--no-ff");
 					} else if (p["ff_only"]) {
 						$api.deprecate(function() {
 							args.push("-ff-only");

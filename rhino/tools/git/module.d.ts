@@ -99,6 +99,8 @@ namespace slime.jrunscript.git {
 				}): void
 
 				(p?: {
+					remotes?: boolean
+					/** @deprecated */
 					remote?: boolean
 					all?: boolean
 				}): slime.jrunscript.git.Branch[]
@@ -126,6 +128,7 @@ namespace slime.jrunscript.git {
 			merge: (p: {
 				name: string
 				noCommit?: boolean
+				noFf?: boolean
 				ffOnly?: boolean
 				stdio?: any
 			}) => void
