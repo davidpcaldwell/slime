@@ -209,7 +209,7 @@ namespace slime.jrunscript.shell {
 		kotlin: any
 	}
 
-	export type Loader = slime.Loader.Product<Context,Exports>;
+	export type Loader = slime.loader.Product<Context,Exports>;
 
 	(
 		function(fifty: slime.fifty.test.kit) {

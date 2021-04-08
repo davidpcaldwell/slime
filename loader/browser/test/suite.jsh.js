@@ -151,7 +151,7 @@
 								(
 									(!parameters.options.interactive)
 										? (function createResultHandler() {
-											/** @type { slime.Loader.Product<slime.runtime.browser.test.results.Context,slime.runtime.browser.test.results.Factory> } */
+											/** @type { slime.loader.Product<slime.runtime.browser.test.results.Context,slime.runtime.browser.test.results.Factory> } */
 											var resultServletFactory = $loader.factory("handler-results.js");
 
 											var resultServletFile = resultServletFactory({

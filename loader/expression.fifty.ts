@@ -171,7 +171,7 @@ namespace slime {
         }
     }
 
-    export namespace Resource {
+    export namespace resource {
         export interface Descriptor {
             type?: string | mime.Type
             name?: string
@@ -185,12 +185,12 @@ namespace slime {
     }
 
 	export interface Loader {
-        source: Loader.Source
+        source: loader.Source
         run: (path: string, scope?: any, target?: any) => void
         value: (path: string, scope?: any, target?: any) => any
 		file: (path: string, $context?: any, target?: any) => any
         module: (path: string, $context?: any, target?: any) => any
-        factory: <C,E>(path: string) => Loader.Product<C,E>
+        factory: <C,E>(path: string) => loader.Product<C,E>
 		Child: {
             (prefix: string): Loader
             new (prefix: string): Loader
@@ -199,14 +199,14 @@ namespace slime {
         list?: (m?: { filter?: any, descendants?: any }) => any[]
     }
 
-    export namespace Loader {
+    export namespace loader {
         export interface Product<C,E> {
             (c?: C): E
         }
 
         export interface Source {
-            Resource?: Resource.Factory
-            get: (path: string) => Resource.Descriptor
+            Resource?: resource.Factory
+            get: (path: string) => resource.Descriptor
             child?: any
             list?: any
         }
@@ -470,9 +470,9 @@ namespace slime {
             run: any
             file: any
             value: any
-            Resource: Resource.Factory
+            Resource: resource.Factory
             Loader: {
-                new (p: Loader.Source): Loader
+                new (p: loader.Source): Loader
                 source: any
                 series: any
                 tools: any
@@ -486,7 +486,7 @@ namespace slime {
         }
     }
 
-    export type Codec<T,E> = {
+    export interface Codec<T,E> {
         encode: (t: T) => E
         decode: (e: E) => T
     }
@@ -494,7 +494,7 @@ namespace slime {
 
 namespace slime.test {
     declare type api = { convert: (input: number) => number };
-    export type factory = slime.Loader.Product<{ scale: number }, api>;
+    export type factory = slime.loader.Product<{ scale: number }, api>;
 }
 
 (

@@ -373,7 +373,7 @@
 
 		/**
 		 * @constructor
-		 * @param { slime.Resource.Descriptor } o
+		 * @param { slime.resource.Descriptor } o
 		 */
 		var Resource = function(o) {
 			this.type = (function(type,name) {
@@ -546,7 +546,7 @@
 
 					var locations = getModuleLocations(path);
 
-					/** @type { slime.Loader.Scope } */
+					/** @type { slime.loader.Scope } */
 					var inner = createFileScope($context);
 					inner.$loader = Child(locations.prefix);
 					var script = this.get(locations.main);

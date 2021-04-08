@@ -49,7 +49,7 @@ namespace slime.definition.unit {
 		}
 	}
 
-	export type Factory = slime.Loader.Product<Context,Exports>
+	export type Factory = slime.loader.Product<Context,Exports>
 }
 
 namespace slime.definition.unit.internal {

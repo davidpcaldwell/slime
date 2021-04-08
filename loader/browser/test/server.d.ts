@@ -8,5 +8,5 @@ namespace slime.runtime.browser.test.server {
 		resultsPath: string
 	) => jsh.httpd.Tomcat
 
-	type Factory = slime.Loader.Product<any,Export>
+	type Factory = slime.loader.Product<any,Export>
 }

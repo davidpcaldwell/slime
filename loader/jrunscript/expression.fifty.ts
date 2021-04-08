@@ -13,8 +13,8 @@ namespace slime.jrunscript.runtime {
 	}
 
 	export namespace Resource {
-		export interface Descriptor extends slime.Resource.Descriptor {
-			read?: slime.Resource.Descriptor["read"] & {
+		export interface Descriptor extends slime.resource.Descriptor {
+			read?: slime.resource.Descriptor["read"] & {
 				binary?: any
 				text?: any
 			}
@@ -33,7 +33,7 @@ namespace slime.jrunscript.runtime {
 	}
 
 	export namespace Loader {
-		export interface Source extends slime.Loader.Source {
+		export interface Source extends slime.loader.Source {
 			zip: any
 			_source: any
 			_file: any

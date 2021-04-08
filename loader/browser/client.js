@@ -232,7 +232,7 @@
 
 				/**
 				 * @type { slime.browser.Exports["Loader"] }
-				 * @param { string | slime.Loader.Source } p
+				 * @param { string | slime.loader.Source } p
 				 */
 				var Loader = function(p) {
 					if (typeof(p) == "string") {

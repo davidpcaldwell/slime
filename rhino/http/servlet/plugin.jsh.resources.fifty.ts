@@ -35,7 +35,7 @@ namespace slime.jsh.httpd {
 			script: any
 		}
 
-		export type Factory = slime.Loader.Product<Context,Export>
+		export type Factory = slime.loader.Product<Context,Export>
 
 		export type Mapping = slime.jrunscript.file.File | LoaderMapping | CodeMapping
 
