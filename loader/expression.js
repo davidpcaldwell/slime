@@ -415,16 +415,16 @@
 				}
 			}
 
-			//	TODO	temporary measure; some tests assume loader.get() returns resource source and so we increase compatibility between resource and its source
-			if (typeof(o.string) == "string") {
-				Object.defineProperty(this, "string", {
-					get: function() {
-						debugger;
-						return o.string;
-					},
-					enumerable: false
-				});
-			}
+			// //	TODO	temporary measure; some tests assume loader.get() returns resource source and so we increase compatibility between resource and its source
+			// if (typeof(o.string) == "string") {
+			// 	Object.defineProperty(this, "string", {
+			// 		get: function() {
+			// 			debugger;
+			// 			return o.string;
+			// 		},
+			// 		enumerable: false
+			// 	});
+			// }
 		}
 
 		/** @type { slime.runtime.$slime.CoffeeScript } */
