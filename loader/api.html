@@ -841,8 +841,8 @@ END LICENSE
 											}
 										});
 										var loader = new api.Loader(source);
-										verify(loader).get("a").string.is("a");
-										verify(loader).get("b/c").string.is("c");
+										verify(loader).get("a").read(String).is("a");
+										verify(loader).get("b/c").read(String).is("c");
 										verify(loader).list().length.is(2);
 									</script>
 								</li>
@@ -963,8 +963,8 @@ END LICENSE
 							mock2.add("b/c", "sb/c");
 							var series = api.Loader.series([mock1.loader,mock2.loader]);
 							verify(series).get("foo").is(null);
-							verify(series).get("a").string.is("sa");
-							verify(series).get("b/c").string.is("sb/c");
+							verify(series).get("a").read(String).is("sa");
+							verify(series).get("b/c").read(String).is("sb/c");
 						</script>
 					</div>
 				</li>

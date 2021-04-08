@@ -24,7 +24,7 @@ $set(function(p) {
 		document: (function() {
 			var resource = $loader.get("loader/api/ui/ui.html");
 			var doc = document.implementation.createHTMLDocument("");
-			doc.documentElement.innerHTML = resource.string;
+			doc.documentElement.innerHTML = resource.read(String);
 			return doc;
 		})()
 	};

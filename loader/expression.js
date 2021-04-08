@@ -372,10 +372,10 @@
 		)({ Type: void(0) });
 
 		/**
-		 * @constructor
 		 * @param { slime.resource.Descriptor } o
+		 * @this { slime.Resource }
 		 */
-		var Resource = function(o) {
+		function Resource(o) {
 			this.type = (function(type,name) {
 				if (typeof(type) == "string") return mime.Type.parse(type);
 				if (type && type.media && type.subtype) return type;
@@ -418,8 +418,11 @@
 			//	TODO	temporary measure; some tests assume loader.get() returns resource source and so we increase compatibility between resource and its source
 			if (typeof(o.string) == "string") {
 				Object.defineProperty(this, "string", {
-					value: o.string,
-					enumerable: true
+					get: function() {
+						debugger;
+						return o.string;
+					},
+					enumerable: false
 				});
 			}
 		}
