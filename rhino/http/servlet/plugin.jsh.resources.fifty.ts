@@ -24,7 +24,7 @@ namespace slime.jsh.httpd {
 
 	export namespace resources {
 		export interface Context {
-			getMimeType: (file: slime.jrunscript.file.File) => slime.MimeType
+			getMimeType: (file: slime.jrunscript.file.File) => slime.mime.Type
 			jsh: slime.jsh.Global
 		}
 

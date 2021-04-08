@@ -14,7 +14,7 @@
 (
 	/**
 	 * @param { slime.runtime.$engine | undefined } $engine
-	 * @param { slime.runtime.$slime } $slime
+	 * @param { slime.runtime.$slime.Global } $slime
 	 * @param { slime.jrunscript.Packages } Packages - note that in the rare case of a browser with Java, Packages may not include inonit.* classes
 	 * @returns { slime.runtime.Exports }
 	 */
@@ -211,7 +211,7 @@
 		var mimeTypeIs = function(string) {
 			/**
 			 *
-			 * @param { slime.MimeType } type
+			 * @param { slime.mime.Type } type
 			 */
 			function rv(type) {
 				return string == type.media + "/" + type.subtype;
@@ -228,7 +228,7 @@
 
 				/**
 				 *
-				 * @param { slime.MimeType } mimeType
+				 * @param { slime.mime.Type } mimeType
 				 */
 				var toDeclaration = function(mimeType) {
 					var rv = mimeType.media + "/" + mimeType.subtype;
@@ -254,7 +254,7 @@
 						}).apply(this,arguments);
 
 						/**
-						 * @type { slime.MimeType.Object }
+						 * @type { slime.mime.Object }
 						 */
 						var rv = {
 							media: void(0),

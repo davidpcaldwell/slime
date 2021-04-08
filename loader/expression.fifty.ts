@@ -121,32 +121,32 @@ interface Array<T> {
 }
 
 namespace slime {
-    /**
-     * A MIME type.
-     */
-    export interface MimeType {
+    export namespace mime {
         /**
-         * The MIME media type for this type; for `text/plain`, `"text"`.
+         * A MIME type.
          */
-        media: string
+        export interface Type {
+            /**
+             * The MIME media type for this type; for `text/plain`, `"text"`.
+             */
+            media: string
 
-        /**
-         * The MIME subtype for this type; for `text/plain`, `"plain"`.
-         */
-        subtype: string
+            /**
+             * The MIME subtype for this type; for `text/plain`, `"plain"`.
+             */
+            subtype: string
 
-        /**
-         * Each property of the object represents a MIME type
-         * parameter of the form *`name`*=*`value`*.
-         */
-        parameters: { [x: string]: string }
-    }
+            /**
+             * Each property of the object represents a MIME type
+             * parameter of the form *`name`*=*`value`*.
+             */
+            parameters: { [x: string]: string }
+        }
 
-    export namespace MimeType {
         /**
          * @deprecated
          */
-        export interface Object extends MimeType {
+         export interface Object extends Type {
             /**
              * @deprecated
              * @param string
@@ -162,7 +162,7 @@ namespace slime {
 
     export interface Resource {
         name: string
-        type: MimeType,
+        type: mime.Type,
         read?: {
             (p: StringConstructor): string
             (p: JSON): any
@@ -173,7 +173,7 @@ namespace slime {
 
     export namespace Resource {
         export interface Descriptor {
-            type?: string | MimeType
+            type?: string | mime.Type
             name?: string
             read?: {
                 string?: () => string
@@ -246,37 +246,37 @@ namespace slime {
             export interface CoffeeScript {
                 compile: (code: string) => string
             }
-        }
-
-        /**
-         * An object providing access to the SLIME execution environment.
-         */
-        export interface $slime {
-            /**
-             * Provides a component source file of the runtime.
-             * @param path The path to a SLIME source file, relative to `expression.js`.
-             * @returns An executable JavaScript script. The code contained in the source file. **This interface may change to return an instance of the *script* type.**
-             */
-            getRuntimeScript(path: string): { name: string, js: string }
 
             /**
-             * Should provide an implementation of CoffeeScript, if one is present.
-             *
-             * @returns An object containing the CoffeeScript implementation, or `null` if CoffeeScript is not present.
+             * An object providing access to the SLIME execution environment.
              */
-            getCoffeeScript?(): {
+            export interface Global {
                 /**
-                 * The JavaScript code for the CoffeeScript object, which can be executed to produce the CoffeeScript object.
+                 * Provides a component source file of the runtime.
+                 * @param path The path to a SLIME source file, relative to `expression.js`.
+                 * @returns An executable JavaScript script. The code contained in the source file. **This interface may change to return an instance of the *script* type.**
                  */
-                code?: string
+                getRuntimeScript(path: string): { name: string, js: string }
 
                 /**
-                 * The CoffeeScript object.
+                 * Should provide an implementation of CoffeeScript, if one is present.
+                 *
+                 * @returns An object containing the CoffeeScript implementation, or `null` if CoffeeScript is not present.
                  */
-                object?: slime.runtime.$slime.CoffeeScript
+                getCoffeeScript?(): {
+                    /**
+                     * The JavaScript code for the CoffeeScript object, which can be executed to produce the CoffeeScript object.
+                     */
+                    code?: string
+
+                    /**
+                     * The CoffeeScript object.
+                     */
+                    object?: CoffeeScript
+                }
+
+                typescript?: TypeScript
             }
-
-            typescript?: slime.runtime.$slime.TypeScript
         }
 
         /**
@@ -354,14 +354,14 @@ namespace slime {
                      * will be appended to the MIME type; the name of the property is the name of the parameter, while the value of the property is the
                      * value of the parameter.
                      */
-                    (media: string, subtype: string, parameters?: { [x: string]: string }): MimeType.Object
+                    (media: string, subtype: string, parameters?: { [x: string]: string }): mime.Object
 
                     /**
                      * Parses the given string, returning the appropriate MIME type object.
                      *
                      * @param string A MIME type.
                      */
-                    parse(string: string): MimeType.Object
+                    parse(string: string): mime.Object
 
                     /**
                      * Attempts to determine the MIME type of a resource given its name.
@@ -369,12 +369,12 @@ namespace slime {
                      * @param path A resource name.
                      * @returns The type determined from the name, or `undefined` if the type cannot be determined.
                      */
-                    fromName(path: string): MimeType
+                    fromName(path: string): mime.Type
 
                     /**
                      * Converts a MIME type to a string, suitable for a MIME type declaration.
                      */
-                    toDeclaration(mimeType: MimeType): string
+                    toDeclaration(mimeType: mime.Type): string
                 }
             }
         }

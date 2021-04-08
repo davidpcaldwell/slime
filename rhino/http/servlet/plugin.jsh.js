@@ -93,7 +93,7 @@
 				/**
 				 *
 				 * @param { slime.jrunscript.file.File } file
-				 * @returns { slime.MimeType }
+				 * @returns { slime.mime.Type }
 				 */
 				function getMimeType(file) {
 					var type = jsh.io.mime.Type.fromName(file.pathname.basename);

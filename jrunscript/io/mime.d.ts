@@ -16,7 +16,7 @@ namespace slime.jrunscript.io.mime {
 	interface Entity {
 		resource?: slime.jrunscript.runtime.Resource
 
-		type?: MimeType
+		type?: slime.mime.Type
 		stream?: slime.jrunscript.runtime.io.InputStream
 		string?: string
 	}
