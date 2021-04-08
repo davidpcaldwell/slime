@@ -9,7 +9,6 @@ namespace slime.jrunscript.runtime {
 		}
 		length?: any
 		modified?: any
-		string?: any
 	}
 
 	export namespace Resource {

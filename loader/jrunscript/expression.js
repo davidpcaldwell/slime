@@ -337,14 +337,14 @@
 						}).call(this,this.name);
 					}
 
-					/** @property { string } string */
-					this.string = this.string;
+					// /** @property { string } string */
+					// this.string = this.string;
 
-					if (typeof(this.string) == "undefined") Object.defineProperty(this, "string", {
-						get: loader.$api.deprecate(loader.$api.Function.memoized(function() {
-							return text().asString();
-						}))
-					});
+					// if (typeof(this.string) == "undefined") Object.defineProperty(this, "string", {
+					// 	get: loader.$api.deprecate(loader.$api.Function.memoized(function() {
+					// 		return text().asString();
+					// 	}))
+					// });
 
 					/** @type { slime.jrunscript.runtime.Resource["read"] } */
 					var read = this.read;
