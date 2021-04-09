@@ -310,6 +310,19 @@ namespace slime {
             MetaObject: any
         }
 
+        export namespace internal {
+            export type LoaderConstructor = new (p: loader.Source) => Loader
+            export type Resource = resource.Factory
+            export type methods = {
+                run: any
+            }
+            export type createFileScope = <T>($context: T) => {
+                $context: T
+                $export: any
+                $exports: any
+            }
+        }
+
         export interface $platform {
             /** @deprecated */
             execute: any
@@ -460,24 +473,7 @@ namespace slime {
         //@ts-ignore
         )(fifty);
 
-        export namespace internal {
-            export type LoaderConstructor = new (p: loader.Source) => Loader
-            export type Resource = resource.Factory
-            export type methods = {
-                run: any
-            }
-            export type createFileScope = <T>($context: T) => {
-                $context: T
-                $export: any
-                $exports: any
-            }
-        }
-
         export interface Exports {
-            run: any
-            file: any
-            value: any
-            Resource: resource.Factory
             Loader: internal.LoaderConstructor & {
                 source: {
                     object: any
@@ -487,6 +483,48 @@ namespace slime {
                     toExportScope: <T>(t: T) => T & { $export: any, $exports: any }
                 }
             }
+        }
+
+        (
+            function(
+                $loader: slime.fifty.test.$loader,
+                verify: slime.fifty.test.verify,
+                tests: any
+            ) {
+                tests.loader = function() {
+                    run(tests.loader.closure);
+                    run(tests.loader.$export);
+                }
+
+                tests.loader.closure = function() {
+                    var closure: slime.test.factory = $loader.value("test/data/closure.js");
+                    var context = { scale: 2 };
+                    var module = closure(context);
+                    verify(module).convert(2).is(4);
+                };
+
+                tests.loader.$export = function() {
+                    run(function module() {
+                        var module: slime.test.factory = $loader.factory("test/data/module-export.js");
+                        var api = module({ scale: 2 });
+                        verify(api).convert(3).is(6);
+                    });
+
+                    run(function file() {
+                        var file: slime.test.factory = $loader.factory("test/data/file-export.js");
+                        var api = file({ scale: 2 });
+                        verify(api).convert(3).is(6);
+                    });
+                }
+            }
+        //@ts-ignore
+        )($loader,verify,tests)
+
+        export interface Exports {
+            run: any
+            file: any
+            value: any
+            Resource: resource.Factory
             namespace: any
             $platform: $platform
             java?: any
@@ -513,32 +551,6 @@ namespace slime.test {
 		verify: slime.fifty.test.verify,
 		tests: any
 	) {
-        tests.loader = function() {
-            run(tests.loader.closure);
-            run(tests.loader.$export);
-        }
-
-		tests.loader.closure = function() {
-			var closure: slime.test.factory = $loader.value("test/data/closure.js");
-			var context = { scale: 2 };
-			var module = closure(context);
-			verify(module).convert(2).is(4);
-		};
-
-		tests.loader.$export = function() {
-            run(function module() {
-                var module: slime.test.factory = $loader.factory("test/data/module-export.js");
-                var api = module({ scale: 2 });
-                verify(api).convert(3).is(6);
-            });
-
-            run(function file() {
-                var file: slime.test.factory = $loader.factory("test/data/file-export.js");
-                var api = file({ scale: 2 });
-                verify(api).convert(3).is(6);
-            });
-        }
-
 		tests.suite = function() {
 			run(tests.loader);
 			run(tests.runtime.exports.mime);
