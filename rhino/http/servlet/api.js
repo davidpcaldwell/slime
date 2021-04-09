@@ -264,7 +264,7 @@
 						container: Loader({
 							_source: $servlet.resources
 						},""),
-						api: new loader.Child("WEB-INF/slime/rhino/http/servlet/server/")
+						api: loader.Child("WEB-INF/slime/rhino/http/servlet/server/")
 					};
 				} else if (isScript($host)) {
 					return $host.loaders;

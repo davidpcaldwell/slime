@@ -72,7 +72,7 @@
 			this.list = function(path) {
 				if (path.substring(0,p.prefix.length) == p.prefix) {
 					var subpath = path.substring(p.prefix.length);
-					var loader = (subpath.length) ? new p.loader.Child(subpath) : p.loader;
+					var loader = (subpath.length) ? p.loader.Child(subpath) : p.loader;
 					return loader.list();
 				}
 				return null;

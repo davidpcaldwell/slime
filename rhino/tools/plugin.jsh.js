@@ -145,7 +145,7 @@
 				if (postgresql.file) {
 					jsh.loader.java.add(postgresql);
 				}
-				jsh.loader.plugins(new $loader.Child("db/jdbc/"));
+				jsh.loader.plugins($loader.Child("db/jdbc/"));
 			}
 		});
 	}

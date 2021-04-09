@@ -175,7 +175,7 @@
 					} else if (servlet.resource) {
 						var prefix = servlet.resource.split("/").slice(0,-1).join("/");
 						if (prefix) prefix += "/";
-						var $loader = new resources.Child(prefix);
+						var $loader = resources.Child(prefix);
 						return returning({
 							$loader: $loader,
 							load: byLoader($loader, servlet.resource.substring(prefix.length))
@@ -303,7 +303,7 @@
 													parameters: (servletDeclaration.parameters) ? servletDeclaration.parameters : {},
 
 													loaders: {
-														api: new $loader.Child("server/"),
+														api: $loader.Child("server/"),
 														script: servletImplementation.$loader,
 														container: servletImplementation.resources
 													},
@@ -442,7 +442,7 @@
 						tools: void(0)
 					};
 					jsh.httpd.plugin.tools = function() {
-						jsh.loader.plugins(new $loader.Child("tools/"));
+						jsh.loader.plugins($loader.Child("tools/"));
 					}
 				}
 			}

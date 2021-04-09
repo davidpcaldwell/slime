@@ -193,7 +193,6 @@ namespace slime {
         factory: <C,E>(path: string) => loader.Product<C,E>
 		Child: {
             (prefix: string): Loader
-            new (prefix: string): Loader
         }
         get: (path: string) => Resource
         list?: (m?: { filter?: any, descendants?: any }) => any[]
