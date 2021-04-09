@@ -203,11 +203,28 @@ namespace slime {
             (c?: C): E
         }
 
+        /**
+         * An object that provides the implementation for a {@link Loader}.
+         */
         export interface Source {
-            Resource?: resource.Factory
             get: (path: string) => resource.Descriptor
+
+            list?: (path: string) => {
+                path: string
+                loader: boolean
+                resource: boolean
+            }[]
+
+            /**
+             * Internal use only; may be removed.
+             */
             child?: any
-            list?: any
+
+            /**
+             * Internal use only; may be removed.
+             */
+            //  TODO    is this used?
+            Resource?: resource.Factory
         }
 
         export interface Scope {
@@ -483,16 +500,25 @@ namespace slime {
 
         export interface Exports {
             Loader: internal.LoaderConstructor & {
-                /** @deprecated */
+                /** @deprecated Use `loader.source` */
                 source: {
                     /**
                      * @deprecated Use `loader.source.object`.
                      */
-                    object: (o: object) => loader.Source
+                    object: Exports["loader"]["source"]["object"]
                 }
-                series: (loaders: Loader[]) => Loader
+                /**
+                 * @deprecated Use `loader.series`.
+                 */
+                series: Exports["loader"]["series"]
+                /**
+                 * @deprecated Use `loader.tools`.
+                 */
                 tools: {
-                    toExportScope: <T>(t: T) => T & { $export: any, $exports: any }
+                    /**
+                     * @deprecated Use `loader.tools.toExportScope`.
+                     */
+                    toExportScope: Exports["loader"]["tools"]["toExportScope"]
                 }
             }
             loader: {
@@ -503,6 +529,10 @@ namespace slime {
                      * is a loader which provides its children, or a resource object, whose properties are {@link resource.Descriptor}s.
                      */
                      object: (o: object) => loader.Source
+                }
+                series: (loaders: Loader[]) => Loader
+                tools: {
+                    toExportScope: <T>(t: T) => T & { $export: any, $exports: any }
                 }
             }
         }
