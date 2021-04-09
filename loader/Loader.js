@@ -2,16 +2,16 @@
 (
 	/**
 	 *
-	 * @param { any } Resource
-	 * @param { any } methods
-	 * @param { any } createFileScope
+	 * @param { slime.runtime.internal.Resource } Resource
+	 * @param { slime.runtime.internal.methods } methods
+	 * @param { slime.runtime.internal.createFileScope } createFileScope
 	 * @param { slime.$api.Global } $api
-	 * @param { any } $export
+	 * @param { (value: slime.runtime.internal.LoaderConstructor) => void } $export
 	 */
 	function(Resource,methods,createFileScope,$api,$export) {
 		$export(
 			/**
-			 * @constructor
+			 * @this { slime.Loader }
 			 * @param { ConstructorParameters<slime.runtime.Exports["Loader"]>[0] } p
 			 */
 			function(p) {

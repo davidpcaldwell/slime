@@ -372,7 +372,7 @@
 		)({ Type: void(0) });
 
 		/**
-		 * @param { slime.resource.Descriptor } o
+		 * @param { ConstructorParameters<slime.resource.Factory>[0] } o
 		 * @this { slime.Resource }
 		 */
 		function Resource(o) {
@@ -434,12 +434,10 @@
 		})();
 
 		/**
-		 * @template PSLE_T
-		 * @param { PSLE_T } scope
-		 * @returns { PSLE_T & { $exports: any, $export: any } }
+		 * @type { slime.runtime.Exports["Loader"]["tools"]["toExportScope"] }
 		 */
 		var toExportScope = function(scope) {
-			/** @type { PSLE_T & { $exports: any, $export: any } } */
+			/** @type { ReturnType<slime.runtime.Exports["Loader"]["tools"]["toExportScope"]> } */
 			var rv = Object.assign(scope, { $exports: void(0), $export: void(0) });
 			var $exports = {};
 			var $export = function(v) {
@@ -460,6 +458,7 @@
 			return rv;
 		}
 
+		/** @type { slime.runtime.internal.createFileScope } */
 		var createFileScope = function($context) {
 			return toExportScope({
 				$context: ($context) ? $context : {}

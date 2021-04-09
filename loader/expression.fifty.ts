@@ -460,16 +460,32 @@ namespace slime {
         //@ts-ignore
         )(fifty);
 
+        export namespace internal {
+            export type LoaderConstructor = new (p: loader.Source) => Loader
+            export type Resource = resource.Factory
+            export type methods = {
+                run: any
+            }
+            export type createFileScope = <T>($context: T) => {
+                $context: T
+                $export: any
+                $exports: any
+            }
+        }
+
         export interface Exports {
             run: any
             file: any
             value: any
             Resource: resource.Factory
-            Loader: {
-                new (p: loader.Source): Loader
-                source: any
-                series: any
-                tools: any
+            Loader: internal.LoaderConstructor & {
+                source: {
+                    object: any
+                }
+                series: (loaders: Loader[]) => Loader
+                tools: {
+                    toExportScope: <T>(t: T) => T & { $export: any, $exports: any }
+                }
             }
             namespace: any
             $platform: $platform
