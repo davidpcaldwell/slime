@@ -29,6 +29,7 @@
 		var loader = {
 			run: void(0),
 			Loader: void(0),
+			loader: void(0),
 			Resource: void(0),
 			io: void(0),
 			java: void(0),

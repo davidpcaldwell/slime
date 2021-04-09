@@ -800,54 +800,6 @@ END LICENSE
 					</div>
 					<div class="label">has properties:</div>
 					<ul>
-						<li class="object">
-							<div class="name">source</div>
-							<span>__DESCRIPTION__</span>
-							<div class="label">has properties:</div>
-							<ul>
-								<li class="constructor">
-									<!-- TODO: should this be a constructor or a function? Should it be capitalized? -->
-									<div class="name">object</div>
-									<span>Creates an loader source defined by a single JavaScript object.</span>
-									<div class="arguments">
-										<div class="label">Arguments</div>
-										<ol>
-											<li class="value">
-												<span class="type">object</span>
-												<span>__DESCRIPTION__</span>
-											</li>
-										</ol>
-									</div>
-									<div class="instances">
-										<div class="label">Instances</div>
-										<span class="type"><a href="#types.Loader.source">source</a></span>
-									</div>
-									<script type="application/x.jsapi#tests">
-										verify(api).evaluate(function() { return this.Loader.source.object; }).is.type("function");
-										var source = new api.Loader.source.object({
-											a: {
-												resource: {
-													string: "a"
-												}
-											},
-											b: {
-												loader: {
-													c: {
-														resource: {
-															string: "c"
-														}
-													}
-												}
-											}
-										});
-										var loader = new api.Loader(source);
-										verify(loader).get("a").read(String).is("a");
-										verify(loader).get("b/c").read(String).is("c");
-										verify(loader).list().length.is(2);
-									</script>
-								</li>
-							</ul>
-						</li>
 						<li class="experimental function">
 							<div class="name">series</div>
 							<span>

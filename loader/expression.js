@@ -599,7 +599,9 @@
 			var export_Loader = Object.assign(
 				Loader,
 				{
+					/** @type { slime.runtime.Exports["Loader"]["source"] } */
 					source: {
+						/** @type { slime.runtime.Exports["Loader"]["source"]["object"] } */
 						object: function(o) {
 							var getLocation = function(path) {
 								var target = o;
@@ -614,24 +616,25 @@
 								};
 							};
 
-							this.get = function(path) {
-								//	TODO	should not return directories
-								var location = getLocation(path);
-								return (location) ? location.loader[location.path].resource : null;
-							};
-
-							this.list = function(path) {
-								var location = getLocation(path);
-								if (location.path) throw new Error("Wrong path: [" + path + "]");
-								var rv = [];
-								for (var x in location.loader) {
-									rv.push({
-										path: x,
-										loader: Boolean(location.loader[x].loader),
-										resource: Boolean(location.loader[x].resource)
-									});
+							return {
+								get: function(path) {
+									//	TODO	should not return directories
+									var location = getLocation(path);
+									return (location) ? location.loader[location.path].resource : null;
+								},
+								list: function(path) {
+									var location = getLocation(path);
+									if (location.path) throw new Error("Wrong path: [" + path + "]");
+									var rv = [];
+									for (var x in location.loader) {
+										rv.push({
+											path: x,
+											loader: Boolean(location.loader[x].loader),
+											resource: Boolean(location.loader[x].resource)
+										});
+									}
+									return rv;
 								}
-								return rv;
 							}
 						}
 					},
@@ -684,6 +687,11 @@
 					value: topMethod("value"),
 					Resource: Resource,
 					Loader: export_Loader,
+					loader: {
+						source: {
+							object: export_Loader.source.object
+						}
+					},
 					namespace: export_namespace,
 					//	TODO	currently only used by jsapi in jsh/unit via jsh.js, so undocumented
 					//	TODO	also used by client.html unit tests

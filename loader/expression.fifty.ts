@@ -346,6 +346,27 @@ namespace slime {
         //@ts-ignore
         )(fifty);
 
+        export namespace test {
+            export const subject: slime.runtime.Exports = (function(fifty) {
+                var code = fifty.$loader.get("expression.js");
+                var js = code.read(String);
+
+                var subject: slime.runtime.Exports = (function() {
+                    var $slime = {
+                        getRuntimeScript: function(path) {
+                            var resource = fifty.$loader.get(path);
+                            return { name: resource.name, js: resource.read(String) }
+                        }
+                    };
+                    var $engine = void(0);
+                    return eval(js);
+                })();
+
+                return subject;
+            //@ts-ignore
+            })(fifty)
+        }
+
         export interface Exports {
             /**
              * Provides APIs relating to MIME types.
@@ -391,20 +412,7 @@ namespace slime {
                 fifty: slime.fifty.test.kit
             ) {
                 fifty.tests.runtime.exports.mime = function() {
-                    var code = fifty.$loader.get("expression.js");
-                    var js = code.read(String);
-                    fifty.verify(js).is.type("string");
-
-                    var subject: slime.runtime.Exports = (function() {
-                        var $slime = {
-                            getRuntimeScript: function(path) {
-                                var resource = fifty.$loader.get(path);
-                                return { name: resource.name, js: resource.read(String) }
-                            }
-                        };
-                        var $engine = void(0);
-                        return eval(js);
-                    })();
+                    var subject: slime.runtime.Exports = slime.runtime.test.subject;
 
                     fifty.verify(subject).mime.is.type("object");
 
@@ -475,12 +483,26 @@ namespace slime {
 
         export interface Exports {
             Loader: internal.LoaderConstructor & {
+                /** @deprecated */
                 source: {
-                    object: any
+                    /**
+                     * @deprecated Use `loader.source.object`.
+                     */
+                    object: (o: object) => loader.Source
                 }
                 series: (loaders: Loader[]) => Loader
                 tools: {
                     toExportScope: <T>(t: T) => T & { $export: any, $exports: any }
+                }
+            }
+            loader: {
+                source: {
+                    /**
+                     * Creates an loader source defined by a single JavaScript object.
+                     * @param o An object with named properties; each property either contains a loader object, in which case it
+                     * is a loader which provides its children, or a resource object, whose properties are {@link resource.Descriptor}s.
+                     */
+                     object: (o: object) => loader.Source
                 }
             }
         }
@@ -492,8 +514,41 @@ namespace slime {
                 tests: any
             ) {
                 tests.loader = function() {
+                    run(tests.loader.source);
                     run(tests.loader.closure);
                     run(tests.loader.$export);
+                }
+
+                tests.loader.source = function() {
+                    run(tests.loader.source.object);
+                };
+
+                tests.loader.source.object = function() {
+                    var api: slime.runtime.Exports = slime.runtime.test.subject;
+                    verify(api).evaluate(function() { return this.Loader.source.object; }).is.type("function");
+                    var source = api.loader.source.object({
+                        a: {
+                            resource: {
+                                string: "a"
+                            }
+                        },
+                        b: {
+                            loader: {
+                                c: {
+                                    resource: {
+                                        string: "c"
+                                    }
+                                }
+                            }
+                        }
+                    });
+                    var readString = function(p) {
+                        return p.read(String);
+                    };
+                    var loader = new api.Loader(source);
+                    verify(loader).get("a").evaluate(readString).is("a");
+                    verify(loader).get("b/c").evaluate(readString).is("c");
+                    verify(loader).list().length.is(2);
                 }
 
                 tests.loader.closure = function() {
