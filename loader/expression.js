@@ -14,7 +14,7 @@
 (
 	/**
 	 * @param { slime.runtime.$engine | undefined } $engine
-	 * @param { slime.runtime.$slime.Global } $slime
+	 * @param { slime.runtime.$slime.Deployment } $slime
 	 * @param { slime.jrunscript.Packages } Packages - note that in the rare case of a browser with Java, Packages may not include inonit.* classes
 	 * @returns { slime.runtime.Exports }
 	 */
@@ -33,8 +33,8 @@
 				//	https://www.ecma-international.org/ecma-262/6.0/#sec-object.assign
 				//	TODO	currently the basics can be tested manually with loader/test/test262.jsh.js -file local/test262/test/built-ins/Object/assign/Target-Object.js
 				Object.defineProperty(Object, "assign", {
-					value: function assign(rv,firstSource /* to set function .length properly*/) {
-						var rv = ToObject(arguments[0]);
+					value: function assign(target,firstSource /* to set function .length properly*/) {
+						var rv = ToObject(target);
 						if (arguments.length == 1) return rv;
 						for (var i=1; i<arguments.length; i++) {
 							var source = (typeof(arguments[i]) == "undefined" || arguments[i] === null) ? {} : ToObject(arguments[i]);
@@ -401,30 +401,21 @@
 				this.read = function(v) {
 					if (v === String) return o.read.string();
 					if (v === JSON) return JSON.parse(this.read(String));
+
+					var e4xRead = function() {
+						var string = this.read(String);
+						string = string.replace(/\<\?xml.*\?\>/, "");
+						string = string.replace(/\<\!DOCTYPE.*?\>/, "");
+						return string;
+					};
+
 					if ($platform.e4x && v == $platform.e4x.XML) {
-						var string = this.read(String);
-						string = string.replace(/\<\?xml.*\?\>/, "");
-						string = string.replace(/\<\!DOCTYPE.*?\>/, "");
-						return $platform.e4x.XML( string );
+						return $platform.e4x.XML( e4xRead.call(this) );
 					} else if ($platform.e4x && v == $platform.e4x.XMLList) {
-						var string = this.read(String);
-						string = string.replace(/\<\?xml.*\?\>/, "");
-						string = string.replace(/\<\!DOCTYPE.*?\>/, "");
-						return $platform.e4x.XMLList( string );
+						return $platform.e4x.XMLList( e4xRead.call(this) );
 					}
 				}
 			}
-
-			// //	TODO	temporary measure; some tests assume loader.get() returns resource source and so we increase compatibility between resource and its source
-			// if (typeof(o.string) == "string") {
-			// 	Object.defineProperty(this, "string", {
-			// 		get: function() {
-			// 			debugger;
-			// 			return o.string;
-			// 		},
-			// 		enumerable: false
-			// 	});
-			// }
 		}
 
 		/** @type { slime.runtime.$slime.CoffeeScript } */

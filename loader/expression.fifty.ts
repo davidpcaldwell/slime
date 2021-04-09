@@ -227,7 +227,7 @@ namespace slime {
      *
      * Embeddings must supply two values in the scope when executing the runtime. They must supply a value for `$engine` that is either
      * `undefined` or is a value of type {@link $engine} specifying information about the underlying JavaScript engine, and
-     * they must supply a value for `$slime` that is a {@link $slime} object that provides information about the SLIME installation.
+     * they must supply a value for `$slime` of type {@link $slime.Deployment} that provides information about the SLIME installation.
      *
      * In return, the embedding will be supplied with an {@link Exports} object that provides the SLIME runtime.
      *
@@ -250,7 +250,7 @@ namespace slime {
             /**
              * An object providing access to the SLIME execution environment.
              */
-            export interface Global {
+            export interface Deployment {
                 /**
                  * Provides a component source file of the runtime.
                  * @param path The path to a SLIME source file, relative to `expression.js`.
@@ -324,11 +324,6 @@ namespace slime {
             e4x: any
             MetaObject: any
             java: any
-        }
-
-        interface Scope {
-            $platform: $platform
-            $api: slime.$api.Global
         }
 
         (
