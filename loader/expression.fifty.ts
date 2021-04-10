@@ -338,6 +338,10 @@ namespace slime {
                 $export: any
                 $exports: any
             }
+            export type mime = {
+                Type: Exports["mime"]["Type"],
+                mimeTypeIs: (type: string) => (type: slime.mime.Type) => boolean
+            }
         }
 
         export interface $platform {

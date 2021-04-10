@@ -12,7 +12,7 @@
 		$export(
 			/**
 			 * @this { slime.Loader }
-			 * @param { ConstructorParameters<slime.runtime.Exports["Loader"]>[0] } p
+			 * @param { slime.loader.Source } p
 			 */
 			function(p) {
 				if (!p.get) throw new TypeError("Loader argument must have a 'get' property.");
