@@ -3,7 +3,7 @@
 	/**
 	 *
 	 * @param { slime.$api.Global } $api
-	 * @param { (value: slime.runtime.internal.mime ) => void } $export
+	 * @param { (value: slime.runtime.internal.mime) => void } $export
 	 */
 	function($api,$export) {
 		/**
