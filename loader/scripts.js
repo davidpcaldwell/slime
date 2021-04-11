@@ -3,15 +3,46 @@
 	/**
 	 *
 	 * @param { slime.$api.Global } $api
-	 * @param { any } mime
-	 * @param { any } mimeTypeIs
-	 * @param { any } $slime
-	 * @param { any } $platform
-	 * @param { any } $$platform
-	 * @param { any } createFileScope
-	 * @param { any } $export
+	 * @param { slime.runtime.Exports["mime"] } mime
+	 * @param { slime.runtime.internal.mime["mimeTypeIs"] } mimeTypeIs
+	 * @param { slime.runtime.$slime.Deployment } $slime
+	 * @param { slime.runtime.$platform } $platform
+	 * @param { slime.$api.internal.$platform } $$platform
+	 * @param { (value: slime.runtime.internal.scripts) => void } $export
 	 */
-	function($api,mime,mimeTypeIs,$slime,$platform,$$platform,createFileScope,$export) {
+	function($api,mime,mimeTypeIs,$slime,$platform,$$platform,$export) {
+		/**
+		 * @type { slime.runtime.Exports["Loader"]["tools"]["toExportScope"] }
+		 */
+		var toExportScope = function(scope) {
+			/** @type { ReturnType<slime.runtime.Exports["Loader"]["tools"]["toExportScope"]> } */
+			var rv = Object.assign(scope, { $exports: void(0), $export: void(0) });
+			var $exports = {};
+			var $export = function(v) {
+				$exports = v;
+			};
+			Object.defineProperty(scope, "$exports", {
+				get: function() {
+					return $exports;
+				},
+				enumerable: true
+			});
+			Object.defineProperty(scope, "$export", {
+				get: function() {
+					return $export;
+				},
+				enumerable: true
+			});
+			return rv;
+		};
+
+		/** @type { slime.runtime.internal.createFileScope } */
+		var createFileScope = function($context) {
+			return toExportScope({
+				$context: ($context) ? $context : {}
+			});
+		};
+
 		/** @type { slime.runtime.$slime.CoffeeScript } */
 		var $coffee = (function() {
 			//	TODO	rename to getCoffeescript to make consistent with camel case.
@@ -28,6 +59,12 @@
 		})();
 
 		var methods = {};
+
+		//	resource.type: optional, but if it is not a recognized type, this method will error
+		//	resource.name: optional, but used to determine default type if type is absent, and used for resource.js.name
+		//	resource.string: optional, but used to determine code
+		//	resource.js { name, code }: forcibly set based on other properties
+		//	TODO	re-work resource.js
 
 		/**
 		 * @param { slime.Resource } object
@@ -119,7 +156,11 @@
 			return rv;
 		}
 
-		$export(methods);
+		$export({
+			methods: methods,
+			toExportScope: toExportScope,
+			createFileScope: createFileScope
+		});
 	}
 //@ts-ignore
-)($api,mime,mimeTypeIs,$slime,$platform,$$platform,createFileScope,$export);
+)($api,mime,mimeTypeIs,$slime,$platform,$$platform,$export);

@@ -191,6 +191,7 @@
 			return $exports;
 		})();
 
+		/** @type { slime.$api.Global } */
 		var $api = $$platform.execute(
 			$slime.getRuntimeScript("$api.js"),
 			{
@@ -281,152 +282,92 @@
 			}
 		}
 
-		/**
-		 * @type { slime.runtime.Exports["Loader"]["tools"]["toExportScope"] }
-		 */
-		var toExportScope = function(scope) {
-			/** @type { ReturnType<slime.runtime.Exports["Loader"]["tools"]["toExportScope"]> } */
-			var rv = Object.assign(scope, { $exports: void(0), $export: void(0) });
-			var $exports = {};
-			var $export = function(v) {
-				$exports = v;
-			};
-			Object.defineProperty(scope, "$exports", {
-				get: function() {
-					return $exports;
-				},
-				enumerable: true
-			});
-			Object.defineProperty(scope, "$export", {
-				get: function() {
-					return $export;
-				},
-				enumerable: true
-			});
-			return rv;
-		}
-
-		/** @type { slime.runtime.internal.createFileScope } */
-		var createFileScope = function($context) {
-			return toExportScope({
-				$context: ($context) ? $context : {}
-			});
-		};
-
-		/** @returns { slime.runtime.Exports } */
-		var Exports = function() {
-
-			var methods = {};
-
-			/** @type { slime.runtime.internal.LoaderConstructor } */
-			var Loader = load("Loader.js", {
-				Resource: Resource,
-				methods: methods,
-				createFileScope: createFileScope,
-				$api: $api
-			});
-
-			//	resource.type: optional, but if it is not a recognized type, this method will error
-			//	resource.name: optional, but used to determine default type if type is absent, and used for resource.js.name
-			//	resource.string: optional, but used to determine code
-			//	resource.js { name, code }: forcibly set based on other properties
-			//	TODO	re-work resource.js
-
-			Object.assign(
-				methods,
-				load(
-					"scripts.js",
-					{
-						$api: $api,
-						mime: mime,
-						mimeTypeIs: mimeExports.mimeTypeIs,
-						$slime: $slime,
-						$platform: $platform,
-						$$platform: $$platform,
-						createFileScope: createFileScope
-					}
-				)
-			);
-
-			var topMethod = function(name) {
-				return function(code,scope,target) {
-					return methods[name].call(target,code,scope);
-				};
-			};
-
-			var loaders = load(
-				"loaders.js",
-				{
-					toExportScope: toExportScope,
-					Loader: Loader
-				}
-			)
-
-
-			var export_Loader = Object.assign(
-				Loader,
-				loaders
-			);
-
-			var export_namespace = function(string) {
-				//	This construct returns the top-level global object, e.g., window in the browser
-				var global = function() {
-					return this;
-				}();
-
-				var scope = global;
-				if (string) {
-					var tokens = string.split(".");
-					for (var i=0; i<tokens.length; i++) {
-						if (typeof(scope[tokens[i]]) == "undefined") {
-							scope[tokens[i]] = {};
-						}
-						scope = scope[tokens[i]];
-					}
-				}
-				return scope;
+		var scripts = load(
+			"scripts.js",
+			{
+				$api: $api,
+				mime: mime,
+				mimeTypeIs: mimeExports.mimeTypeIs,
+				$slime: $slime,
+				$platform: $platform,
+				$$platform: $$platform
 			}
+		);
 
-			var rv = Object.assign({},
-				{
-					mime: mime,
-					run: topMethod("run"),
-					file: topMethod("file"),
-					value: topMethod("value"),
-					Resource: Resource,
-					Loader: export_Loader,
-					loader: {
-						source: {
-							object: export_Loader.source.object
-						}
-					},
-					namespace: export_namespace,
-					//	TODO	currently only used by jsapi in jsh/unit via jsh.js, so undocumented
-					//	TODO	also used by client.html unit tests
-					$platform: $platform
-				},
-				($platform.java) ? { java: $platform.java } : {},
-				{
-					//	TODO	currently used to set deprecation warning in jsh.js
-					//	TODO	currently used by jsapi in jsh/unit via jsh.js
-					//	TODO	also used by client.html unit tests
-					//	used to allow implementations to set warnings for deprecate and experimental
-					$api: $api
-				},
-				{
-					typescript: void(0)
-				}
-			);
-			Object.defineProperty(rv, "typescript", {
-				get: function() {
-					return $slime.typescript;
-				},
-				enumerable: true
-			});
-			return rv;
+		/** @type { slime.runtime.internal.LoaderConstructor } */
+		var Loader = load("Loader.js", {
+			Resource: Resource,
+			methods: scripts.methods,
+			createFileScope: scripts.createFileScope,
+			$api: $api
+		});
+
+		var topMethod = function(name) {
+			return function(code,scope,target) {
+				return scripts.methods[name].call(target,code,scope);
+			};
 		};
 
-		return Exports();
+		/** @type { slime.runtime.Exports["loader"] } */
+		var loaders = load(
+			"loaders.js",
+			{
+				toExportScope: scripts.toExportScope,
+				Loader: Loader
+			}
+		)
+
+		/** @type { slime.runtime.Exports } */
+		var rv = $api.Object.compose(
+			{
+				mime: mime,
+				run: topMethod("run"),
+				file: topMethod("file"),
+				value: topMethod("value"),
+				Resource: Resource,
+				Loader: Object.assign(Loader, loaders),
+				loader: loaders,
+				namespace: function(string) {
+					//	This construct returns the top-level global object, e.g., window in the browser
+					var global = function() {
+						return this;
+					}();
+
+					var scope = global;
+					if (string) {
+						var tokens = string.split(".");
+						for (var i=0; i<tokens.length; i++) {
+							if (typeof(scope[tokens[i]]) == "undefined") {
+								scope[tokens[i]] = {};
+							}
+							scope = scope[tokens[i]];
+						}
+					}
+					return scope;
+				},
+				//	TODO	currently only used by jsapi in jsh/unit via jsh.js, so undocumented
+				//	TODO	also used by client.html unit tests
+				$platform: $platform
+			},
+			($platform.java) ? { java: $platform.java } : {},
+			{
+				//	TODO	currently used to set deprecation warning in jsh.js
+				//	TODO	currently used by jsapi in jsh/unit via jsh.js
+				//	TODO	also used by client.html unit tests
+				//	used to allow implementations to set warnings for deprecate and experimental
+				$api: $api
+			},
+			{
+				typescript: void(0)
+			}
+		);
+		Object.defineProperty(rv, "typescript", {
+			get: function() {
+				return $slime.typescript;
+			},
+			enumerable: true
+		});
+		return rv;
 	}
 //@ts-ignore
 )($engine,$slime,Packages)

@@ -342,6 +342,11 @@ namespace slime {
                 Type: Exports["mime"]["Type"],
                 mimeTypeIs: (type: string) => (type: slime.mime.Type) => boolean
             }
+            export type scripts = {
+                methods: any
+                toExportScope: slime.runtime.Exports["Loader"]["tools"]["toExportScope"]
+                createFileScope: createFileScope
+            }
         }
 
         export interface $platform {
