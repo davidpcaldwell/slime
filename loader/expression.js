@@ -19,117 +19,130 @@
 	 * @returns { slime.runtime.Exports }
 	 */
 	function($engine,$slime,Packages) {
-		/**
-		 * @type { slime.$api.internal.$platform }
-		 */
-		var $$platform = {
-			Error: {
-				decorate: ($engine && $engine.Error) ? $engine.Error.decorate : void(0)
-			},
-			execute: (function() {
-				if ($engine && $engine.execute) return $engine.execute;
-				return function(/*script{name,code},scope,target*/) {
-					return (function() {
-						//@ts-ignore
-						with( arguments[1] ) {
-							return eval(arguments[0]);
+		var $$engine = (
+			/**
+			 *
+			 * @param { slime.runtime.$engine } $engine
+			 * @returns { slime.runtime.internal.$engine }
+			 */
+			function($engine) {
+				return {
+					Error: {
+						decorate: ($engine && $engine.Error) ? $engine.Error.decorate : void(0)
+					},
+					execute: (function() {
+						if ($engine && $engine.execute) return $engine.execute;
+						return function(/*script{name,code},scope,target*/) {
+							return (function() {
+								//@ts-ignore
+								with( arguments[1] ) {
+									return eval(arguments[0]);
+								}
+							}).call(
+								arguments[2],
+								arguments[0].js, arguments[1]
+							);
 						}
-					}).call(
-						arguments[2],
-						arguments[0].js, arguments[1]
-					);
+					})(),
+					MetaObject: ($engine && $engine.MetaObject) ? $engine.MetaObject : void(0)
 				}
-			})()
-		};
+			}
+		)($engine);
 
-		$$platform.execute(
+		$$engine.execute(
 			$slime.getRuntimeScript("polyfill.js"),
 			{},
 			null
 		);
 
-		var $platform = (function() {
-			/** @type { slime.runtime.$platform } */
-			var $exports = {};
-			$exports.Object = {};
-			if (Object.defineProperty) {
-				$exports.Object.defineProperty = { ecma: true };
-			}
-			if (Object.prototype.__defineGetter__) {
-				if (!$exports.Object.defineProperty) $exports.Object.defineProperty = {};
-				$exports.Object.defineProperty.accessor = true;
-			}
+		var $platform = (
+			/**
+			 *
+			 * @param { slime.runtime.internal.$engine } $engine
+			 */
+			function($engine) {
+				/** @type { slime.runtime.$platform } */
+				var $exports = {};
+				$exports.Object = {};
+				if (Object.defineProperty) {
+					$exports.Object.defineProperty = { ecma: true };
+				}
+				if (Object.prototype.__defineGetter__) {
+					if (!$exports.Object.defineProperty) $exports.Object.defineProperty = {};
+					$exports.Object.defineProperty.accessor = true;
+				}
 
-			var global = (function() { return this; })();
-			if (global.XML && global.XMLList) {
-				$exports.e4x = {};
-				$exports.e4x.XML = global.XML;
-				$exports.e4x.XMLList = global.XMLList;
-			}
+				var global = (function() { return this; })();
+				if (global.XML && global.XMLList) {
+					$exports.e4x = {};
+					$exports.e4x.XML = global.XML;
+					$exports.e4x.XMLList = global.XMLList;
+				}
 
-			(
-				/**
-				 * @this { slime.runtime.$platform }
-				 */
-				function() {
-					var getJavaClass = function(name) {
-						try {
-							if (typeof(Packages) == "undefined") return null;
-							var rv = Packages[name];
-							if (typeof(rv) == "function") {
-								//	In the Firefox Java plugin, JavaPackage objects have typeof() == "function". They also have the
-								//	following format for their String values
-								try {
-									var prefix = "[Java Package";
-									if (String(rv).substring(0, prefix.length) == prefix) {
-										return null;
+				(
+					/**
+					 * @this { slime.runtime.$platform }
+					 */
+					function() {
+						var getJavaClass = function(name) {
+							try {
+								if (typeof(Packages) == "undefined") return null;
+								var rv = Packages[name];
+								if (typeof(rv) == "function") {
+									//	In the Firefox Java plugin, JavaPackage objects have typeof() == "function". They also have the
+									//	following format for their String values
+									try {
+										var prefix = "[Java Package";
+										if (String(rv).substring(0, prefix.length) == prefix) {
+											return null;
+										}
+									} catch (e) {
+										//	The string value of Packages.java.lang.Object and Packages.java.lang.Number throws a string (the
+										//	below) if you attempt to evaluate it.
+										if (e == "java.lang.NullPointerException") {
+											return rv;
+										}
 									}
-								} catch (e) {
-									//	The string value of Packages.java.lang.Object and Packages.java.lang.Number throws a string (the
-									//	below) if you attempt to evaluate it.
-									if (e == "java.lang.NullPointerException") {
-										return rv;
-									}
+									return rv;
 								}
-								return rv;
+								return null;
+							} catch (e) {
+								return null;
 							}
-							return null;
-						} catch (e) {
-							return null;
+						}
+
+						if (getJavaClass("java.lang.Object")) {
+							this.java = new function() {
+								this.getClass = function(name) {
+									return getJavaClass(name);
+								}
+							};
 						}
 					}
+				).call($exports);
 
-					if (getJavaClass("java.lang.Object")) {
-						this.java = new function() {
-							this.getClass = function(name) {
-								return getJavaClass(name);
-							}
-						};
+				try {
+					if (typeof($engine) != "undefined") {
+						if ($engine.MetaObject) {
+							$exports.MetaObject = $engine.MetaObject;
+						}
 					}
+				} catch (e) {
+					//	MetaObject will not be defined
 				}
-			).call($exports);
 
-			try {
-				if (typeof($engine) != "undefined") {
-					if ($engine.MetaObject) {
-						$exports.MetaObject = $engine.MetaObject;
-					}
-				}
-			} catch (e) {
-				//	MetaObject will not be defined
+				//	TODO	get rid of this, but right now tests don't pass without it
+				$exports.execute = $$engine.execute;
+
+				return $exports;
 			}
-
-			//	TODO	get rid of this, but right now tests don't pass without it
-			$exports.execute = $$platform.execute;
-
-			return $exports;
-		})();
+		)($$engine);
 
 		/** @type { slime.$api.Global } */
-		var $api = $$platform.execute(
+		var $api = $$engine.execute(
 			$slime.getRuntimeScript("$api.js"),
 			{
-				$platform: $$platform,
+				$engine: $$engine,
 				$slime: {
 					getRuntimeScript: function(path) {
 						return $slime.getRuntimeScript(path);
@@ -143,7 +156,7 @@
 			/** @type { any } */
 			var exported;
 
-			$$platform.execute(
+			$$engine.execute(
 				$slime.getRuntimeScript(path),
 				Object.assign(scope, {
 					$export: function(value) {
@@ -221,7 +234,7 @@
 				mimeTypeIs: mime.mimeTypeIs,
 				$slime: $slime,
 				$platform: $platform,
-				$$platform: $$platform
+				$engine: $$engine
 			}
 		);
 

@@ -7,10 +7,10 @@
 	 * @param { slime.runtime.internal.mime["mimeTypeIs"] } mimeTypeIs
 	 * @param { slime.runtime.$slime.Deployment } $slime
 	 * @param { slime.runtime.$platform } $platform
-	 * @param { slime.$api.internal.$platform } $$platform
+	 * @param { slime.runtime.internal.$engine } $engine
 	 * @param { (value: slime.runtime.internal.scripts) => void } $export
 	 */
-	function($api,mime,mimeTypeIs,$slime,$platform,$$platform,$export) {
+	function($api,mime,mimeTypeIs,$slime,$platform,$engine,$export) {
 		/**
 		 * @type { slime.runtime.Exports["Loader"]["tools"]["toExportScope"] }
 		 */
@@ -51,7 +51,7 @@
 			if (!coffeeScript) return null;
 			if (coffeeScript.code) {
 				var target = {};
-				$$platform.execute({ name: "coffee-script.js", js: String(coffeeScript.code) }, {}, target);
+				$engine.execute({ name: "coffee-script.js", js: String(coffeeScript.code) }, {}, target);
 				return target.CoffeeScript;
 			} else if (coffeeScript.object) {
 				return coffeeScript.object;
@@ -122,7 +122,7 @@
 			}
 			scope.$platform = $platform;
 			scope.$api = $api;
-			$$platform.execute(
+			$engine.execute(
 				{
 					name: resource.js.name,
 					js: resource.js.code
@@ -163,4 +163,4 @@
 		});
 	}
 //@ts-ignore
-)($api,mime,mimeTypeIs,$slime,$platform,$$platform,$export);
+)($api,mime,mimeTypeIs,$slime,$platform,$engine,$export);

@@ -132,19 +132,6 @@ namespace slime.$api {
 	export namespace Error {
 		export type Type<T extends Error> = new (message: string, properties?: object) => T
 	}
-
-	export namespace internal {
-		export interface $slime {
-			getRuntimeScript(path: string): any
-		}
-
-		export interface $platform {
-            execute: (code: { name?: string, js: string }, scope: { [x: string]: any }, target: any) => any
-            Error: {
-                decorate?: <T>(errorConstructor: T) => T
-            }
-		}
-	}
 }
 
 (

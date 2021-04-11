@@ -39,7 +39,8 @@ END LICENSE
 						}
 					}
 				};
-				scope.api = $jsapi.loader.eval("$api.js", { $platform: $platform, $slime: $slime });
+				//	TODO	dubious, relies on $engine and $platformj being compatible
+				scope.api = $jsapi.loader.eval("$api.js", { $engine: $platform, $slime: $slime });
 				scope.api.loadedByJsapi = true;
 			</script>
 			<div jsapi:id="summary">

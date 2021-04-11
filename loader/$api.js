@@ -12,18 +12,18 @@
 
 //@ts-check
 (
-//	TODO	get rid of the wildcarded properties in $exports by adding all properties to $api.d.ts
+	//	TODO	get rid of the wildcarded properties in $exports by adding all properties to $api.d.ts
 	/**
-	 * @param { slime.$api.internal.$platform } $platform
-	 * @param { slime.$api.internal.$slime } $slime
+	 * @param { slime.runtime.internal.$engine } $engine
+	 * @param { slime.runtime.internal.Code } $slime
 	 * @param { slime.$api.Global & { [x: string]: any } } $exports
 	 */
-	function($platform,$slime,$exports) {
+	function($engine,$slime,$exports) {
 		var load = function(name,$context) {
 			var $exports = {};
-			$platform.execute(
+			$engine.execute(
 				$slime.getRuntimeScript(name),
-				{ $platform: $platform, $context: $context, $exports: $exports },
+				{ $platform: $engine, $context: $context, $exports: $exports },
 				null
 			);
 			return $exports;
@@ -521,8 +521,8 @@
 				return rv;
 			})();
 			var rv = Subtype;
-			if ($platform.Error && $platform.Error.decorate) {
-				rv = $platform.Error.decorate(rv);
+			if ($engine.Error && $engine.Error.decorate) {
+				rv = $engine.Error.decorate(rv);
 			}
 			//@ts-ignore
 			return rv;
@@ -719,11 +719,11 @@
 		//	TODO	switch implementation to use load()
 		$exports.threads = (function($context) {
 			var $exports = {};
-			$platform.execute($slime.getRuntimeScript("threads.js"), { $context: $context, $exports: $exports }, null);
+			$engine.execute($slime.getRuntimeScript("threads.js"), { $context: $context, $exports: $exports }, null);
 			return $exports;
 		})($exports);
 
 		return $exports;
 	}
 //@ts-ignore
-)($platform,$slime,{})
+)($engine,$slime,{})

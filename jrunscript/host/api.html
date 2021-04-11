@@ -717,7 +717,9 @@ END LICENSE
 											js: $jsapi.loader.string("../../loader/" + path)
 										}
 									}
-								}
+								},
+								//	TODO	dubious; relies on $engine/$platform compatibility
+								$engine: $platform
 							});
 							scope.$$api = $$api;
 
@@ -787,6 +789,7 @@ END LICENSE
 							};
 						</script>
 						<script type="application/x.jsapi#tests">
+							Packages.java.lang.System.err.println("Second test.");
 							var Steps = function() {
 								var shared = { a: false, b: false };
 

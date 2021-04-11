@@ -25,7 +25,8 @@
 				}
 			}
 		};
-		scope.api = $jsapi.loader.eval("$api.js", { $platform: $platform, $slime: $slime });
+		//	TODO	dubious; taking advantage of coincidental compatibility between $engine/$platform
+		scope.api = $jsapi.loader.eval("$api.js", { $engine: $platform, $slime: $slime });
 		scope.api.loadedByJsapi = true;
 	</script>
 	<div>

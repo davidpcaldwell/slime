@@ -264,6 +264,21 @@ namespace slime {
                 toExportScope: slime.runtime.Exports["Loader"]["tools"]["toExportScope"]
                 createFileScope: createFileScope
             }
+
+            /**
+             * An internal object derived from {@link slime.runtime.$engine} which adds default implementations.
+             */
+            export interface $engine {
+                execute: (code: { name?: string, js: string }, scope: { [x: string]: any }, target: any) => any
+                Error: {
+                    decorate?: <T>(errorConstructor: T) => T
+                }
+                MetaObject: slime.runtime.$engine["MetaObject"]
+            }
+
+            export interface Code {
+                getRuntimeScript: $slime.Deployment["getRuntimeScript"]
+            }
         }
 
         export interface $platform {
