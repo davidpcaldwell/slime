@@ -79,6 +79,8 @@
 			//	TODO	if license.js has a license for the file, should always return true; we are repeating information
 			if (/\.hgrc$/.test(basename)) return true;
 			if (/\.gitignore$/.test(basename)) return true;
+			if (/\.dockerignore$/.test(basename)) return true;
+			if (/Dockerfile$/.test(basename)) return true;
 			if (/META-INF\/services\/java.lang.Runnable$/.test(node.pathname.toString())) return false;
 		}
 

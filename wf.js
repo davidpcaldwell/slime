@@ -269,6 +269,28 @@
 			test({ logs: logs });
 		}
 
+		$exports.docker = {
+			test: function(p) {
+				var docker = jsh.shell.PATH.getCommand("docker");
+				jsh.shell.run({
+					command: docker,
+					arguments: [
+						"build", ".",
+						"-t", "davidpcaldwell/slime"
+					],
+					directory: $context.base
+				});
+				jsh.shell.run({
+					command: docker,
+					arguments: [
+						"run",
+						"davidpcaldwell/slime",
+						"/slime/wf", "test"
+					]
+				});
+			}
+		}
+
 		//	TODO	implement generation of git hooks so that we can get rid of separate pre-commit implementation
 		if (false) $exports.commit = $api.Function.pipe(
 			function(p) {

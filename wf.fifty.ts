@@ -13,7 +13,12 @@ namespace slime {
 					list: slime.jsh.wf.cli.Command
 				}
 			}
+
 			merge: slime.jsh.wf.cli.Command
+
+			docker: {
+				test: slime.jsh.wf.cli.Command
+			}
 		}
 	}
 }
