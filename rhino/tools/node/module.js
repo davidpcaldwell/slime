@@ -167,11 +167,17 @@
 		}
 
 		var versions = {
-			"12.13.1": { url: "https://nodejs.org/dist/v12.13.1/node-v12.13.1-darwin-x64.tar.gz" },
-			"12.14.1": { url: "https://nodejs.org/dist/v12.14.1/node-v12.14.1-darwin-x64.tar.gz" },
-			"12.16.0": { url: "https://nodejs.org/dist/v12.16.0/node-v12.16.0-darwin-x64.tar.gz" },
-			"12.16.1": { url: "https://nodejs.org/dist/v12.16.1/node-v12.16.1-darwin-x64.tar.gz" },
-			"12.16.2": { url: "https://nodejs.org/dist/v12.16.2/node-v12.16.2-darwin-x64.tar.gz" }
+			"Mac OS X": {
+				"12.13.1": { url: "https://nodejs.org/dist/v12.13.1/node-v12.13.1-darwin-x64.tar.gz" },
+				"12.14.1": { url: "https://nodejs.org/dist/v12.14.1/node-v12.14.1-darwin-x64.tar.gz" },
+				"12.16.0": { url: "https://nodejs.org/dist/v12.16.0/node-v12.16.0-darwin-x64.tar.gz" },
+				"12.16.1": { url: "https://nodejs.org/dist/v12.16.1/node-v12.16.1-darwin-x64.tar.gz" },
+				"12.16.2": { url: "https://nodejs.org/dist/v12.16.2/node-v12.16.2-darwin-x64.tar.gz" },
+				"12.22.1": { url: "https://nodejs.org/download/release/v12.22.1/node-v12.22.1-darwin-x64.tar.gz"}
+			},
+			"Linux": {
+				"12.22.1": { url: "https://nodejs.org/download/release/v12.22.1/node-v12.22.1-linux-x64.tar.gz" }
+			}
 		};
 
 		$exports.at = function(p) {
@@ -187,7 +193,7 @@
 			function(p,events) {
 				if (!p) throw new TypeError();
 				//	TODO	compute this somehow?
-				if (!p.version) p.version = "12.16.2";
+				if (!p.version) p.version = "12.22.1";
 				var existing = $exports.at({ location: p.location });
 				/** @type { slime.jrunscript.node.Installation } */
 				var rv;
@@ -195,7 +201,9 @@
 					if (existing) {
 						p.location.directory.remove();
 					}
-					var version = versions[p.version];
+					var os = versions[$context.module.shell.os.name];
+					if (!os) throw new TypeError("Unsupported operating system: " + $context.module.shell.os.name);
+					var version = os[p.version];
 					$context.library.install.install({
 						url: version.url,
 						to: p.location

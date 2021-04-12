@@ -20,6 +20,8 @@
 	 * @param { slime.jsh.tools.install.module.Exports } $exports
 	 */
 	function($api,$context,$loader,$exports) {
+		var downloads = $context.downloads ? $context.downloads : $context.api.shell.TMPDIR.createTemporary({ directory: true })
+
 		// TODO: Find any remaining uses of this and eliminate them
 		$exports.$api = {
 			Events: {
@@ -167,16 +169,16 @@
 					//	Apache supplies name so that url property, which is getter that hits Apache mirror list, is not invoked
 					var find = (typeof(p.url) == "function") ? $api.Function.memoized(p.url) : function() { return p.url; };
 					if (!p.name) p.name = find().split("/").slice(-1)[0];
-					var pathname = $context.downloads.getRelativePath(p.name);
+					var pathname = downloads.getRelativePath(p.name);
 					if (!pathname.file) {
 						//	TODO	we could check to make sure this URL is http
 						//	Only access url property once because in Apache case it is actually a getter that can return different values
-						events.fire("console", "Downloading from " + find() + " to: " + $context.downloads);
+						events.fire("console", "Downloading from " + find() + " to: " + downloads);
 						var response = client.request({
 							url: find()
 						});
 						pathname.write(response.body.stream, { append: false });
-						events.fire("console", "Wrote to: " + $context.downloads);
+						events.fire("console", "Wrote to: " + downloads);
 					} else {
 						events.fire("console", "Found " + pathname.file + "; using cached version.");
 					}
@@ -235,7 +237,7 @@
 		var apache = $loader.file("apache.js", {
 			client: client,
 			get: $exports.get,
-			downloads: $context.downloads
+			downloads: downloads
 		});
 
 		$exports.apache = apache;

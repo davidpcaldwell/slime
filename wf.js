@@ -91,22 +91,25 @@
 				error: logs.getRelativePath("stderr.txt").write(jsh.io.Streams.text)
 			};
 			jsh.shell.run({
-				command: $context.base.getRelativePath("jsh.bash"),
+				command: "bash",
 				arguments: [
+					$context.base.getRelativePath("jsh.bash"),
 					"--install-jdk"
 				]
 			});
 			jsh.shell.run({
-				command: $context.base.getRelativePath("jsh.bash"),
+				command: "bash",
 				arguments: [
+					$context.base.getRelativePath("jsh.bash"),
 					$context.base.getRelativePath("jsh/tools/install/rhino.jsh.js"),
 					"-replace"
 				]
 			});
 			jsh.shell.console("Running tests with output to " + logs + " ...");
 			var invocation = {
-				command: jsh.shell.jsh.src.getFile("jsh.bash"),
+				command: "bash",
 				arguments: [
+					jsh.shell.jsh.src.getFile("jsh.bash"),
 					$context.base.getFile("contributor/suite.jsh.js")
 				],
 				stdio: {
