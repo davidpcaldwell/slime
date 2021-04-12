@@ -1,14 +1,20 @@
 #!/bin/bash
 export PROJECT="$(dirname $0)"
 
-#	For now, run all SLIME wf commands under JDK 8 with Rhino
 SLIME="${PROJECT}"
-if [ ! -d "${SLIME}/local/jdk/8" ]; then
+
+#	For now, run all SLIME wf commands under JDK 8 with Rhino
+
+if [ -z "${SLIME_WF_JDK_8}" ]; then
+	SLIME_WF_JDK_8="${SLIME}/local/jdk/8"
+fi
+
+if [ ! -d "${SLIME_WF_JDK_8}" ]; then
 	${SLIME}/jsh.bash --add-jdk-8
 fi
 if [ ! -f "${SLIME}/local/jsh/lib/js.jar" ]; then
 	${SLIME}/jsh.bash ${SLIME}/jsh/tools/install/rhino.jsh.js
 fi
-export JSH_LAUNCHER_JDK_HOME="${SLIME}/local/jdk/8"
+export JSH_LAUNCHER_JDK_HOME="${SLIME_WF_JDK_8}"
 
 ${PROJECT}/tools/wf "$@"

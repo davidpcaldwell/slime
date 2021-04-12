@@ -212,7 +212,7 @@ check_user() {
 }
 
 check_path() {
-	local path=$(type jrunscript)
+	local path=$(type -p jrunscript)
 	if [ -n "${path}" ]; then
 		if [ $(uname) == "Darwin" ]; then
 			#	Mac OS X uses a default stub for jrunscript; check whether there's a real JDK

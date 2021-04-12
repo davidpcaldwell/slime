@@ -119,17 +119,17 @@
 
 		plugin({
 			isReady: function() {
-				return Boolean(jsh.shell && jsh.ui);
+				return Boolean(jsh.shell && jsh.ui && jsh.shell.os);
 			},
 			load: function() {
-				jsh.shell.os.sudo.gui = function(p) {
+				if (jsh.shell.os.sudo) jsh.shell.os.sudo.gui = function(p) {
 					if (!p) p = { prompt: void(0) };
 					if (!p.prompt) p.prompt = "Account password for " + jsh.shell.environment.USER + ":";
 					return function() {
 						return jsh.ui.askpass.gui({ prompt: p.prompt });
 					};
 				}
-				jsh.shell.os.inject({ ui: jsh.ui });
+				if (jsh.shell.os.inject) jsh.shell.os.inject({ ui: jsh.ui });
 			}
 		});
 
