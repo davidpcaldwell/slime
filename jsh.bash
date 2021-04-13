@@ -15,17 +15,18 @@
 #	rm -Rvf local/jdk/default; rm -Rvf ~/.slime/jdk/default; ./jsh.bash jsh/test/jsh-data.jsh.js; ./jsh.bash --install-user-jdk; rm -Rvf local/jdk/default; ./jsh.bash jsh/test/jsh-data.jsh.js
 #	check java.home of last script invoked and ensure that it is the user JDK
 
+UNAME=$(uname)
+
 if [ "$0" == "bash" ]; then
 	#	Remote shell
 	#	set -x
-	JDK_LOCAL="$(mktemp -d)"
-	rmdir ${JDK_LOCAL}
-	JDK_USER=/dev/null
+	JSH_LOCAL_JDKS="$(mktemp -d)"
+	rmdir ${JSH_LOCAL_JDKS}
+	JDK_USER_JDKS=/dev/null
 	JSH_LAUNCHER_GITHUB_PROTOCOL="${JSH_LAUNCHER_GITHUB_PROTOCOL:-https}"
 else
-	JDK_LOCAL="${JSH_JDK_LOCAL:-$(dirname $0)/local/jdk}"
-	#	TODO	make corresponding change to JDK_USER with .slime/jdk being value and version as argument, rename to JSH_JDK_USER
-	JDK_USER="${JSH_USER_JDK:-${HOME}/.slime/jdk/default}"
+	JSH_LOCAL_JDKS="${JSH_LOCAL_JDKS:-$(dirname $0)/local/jdk}"
+	JDK_USER_JDKS="${JSH_USER_JDKS:-${HOME}/.slime/jdk}"
 fi
 
 clean_destination() {
@@ -50,7 +51,11 @@ download_install() {
 	LOCATION="$2"
 	if [ ! -f "${LOCATION}" ]; then
 		>&2 echo "Downloading ${URL} ..."
-		curl -L -o ${LOCATION} ${URL}
+		if [ "${UNAME}" == "Darwin" ]; then
+			curl -L -o ${LOCATION} ${URL}
+		elif [ "${UNAME}" == "Linux" ]; then
+			wget -O ${LOCATION} ${URL}
+		fi
 	fi
 }
 
@@ -108,13 +113,19 @@ install_jdk_11_liberica() {
 install_jdk_8_corretto() {
 	TO=$(clean_destination $1)
 
-	JDK_TARBALL_URL="https://corretto.aws/downloads/resources/8.275.01.1/amazon-corretto-8.275.01.1-macosx-x64.tar.gz"
-	JDK_TARBALL_BASENAME="amazon-corretto-8.275.01.1-macosx-x64.tar.gz"
+	local VERSION="8.282.08.1"
+	if [ "${UNAME}" == "Darwin" ]; then
+		JDK_TARBALL_BASENAME="amazon-corretto-${VERSION}-macosx-x64.tar.gz"
+		JDK_TARBALL_PATH="amazon-corretto-8.jdk/Contents/Home"
+	elif [ "${UNAME}" == "Linux" ]; then
+		JDK_TARBALL_BASENAME="amazon-corretto-${VERSION}-linux-x64.tar.gz"
+		JDK_TARBALL_PATH="amazon-corretto-${VERSION}-linux-x64"
+	fi
+	JDK_TARBALL_URL="https://corretto.aws/downloads/resources/${VERSION}/${JDK_TARBALL_BASENAME}"
 	JDK_TARBALL_LOCATION="${HOME}/Downloads/${JDK_TARBALL_BASENAME}"
-	JDK_TARBALL_PATH="amazon-corretto-8.jdk/Contents/Home"
+
 	if [ ! -f "${JDK_TARBALL_LOCATION}" ]; then
-		echo "Downloading ${JDK_TARBALL_URL} ..."
-		curl -L -o ${HOME}/Downloads/${JDK_TARBALL_BASENAME} ${JDK_TARBALL_URL}
+		download_install "${JDK_TARBALL_URL}" "${JDK_TARBALL_LOCATION}"
 	fi
 	JDK_WORKDIR=$(mktemp -d)
 	tar xf ${JDK_TARBALL_LOCATION} -C ${JDK_WORKDIR}
@@ -152,27 +163,27 @@ install_jdk() {
 }
 
 if [ "$1" == "--install-jdk" ]; then
-	install_jdk ${JDK_LOCAL}/default
+	install_jdk ${JSH_LOCAL_JDKS}/default
 	exit $?
 fi
 
 if [ "$1" == "--install-jdk-11" ]; then
-	install_jdk_11 ${JDK_LOCAL}/default
+	install_jdk_11 ${JSH_LOCAL_JDKS}/default
 	exit $?
 fi
 
 if [ "$1" == "--add-jdk-8" ]; then
-	install_jdk_8 ${JDK_LOCAL}/8
+	install_jdk_8 ${JSH_LOCAL_JDKS}/8
 	exit $?
 fi
 
 if [ "$1" == "--add-jdk-11" ]; then
-	install_jdk_11 ${JDK_LOCAL}/11
+	install_jdk_11 ${JSH_LOCAL_JDKS}/11
 	exit $?
 fi
 
 if [ "$1" == "--install-user-jdk" ]; then
-	install_jdk ${JDK_USER}
+	install_jdk ${JDK_USER_JDKS}/default
 	exit $?
 fi
 
@@ -197,18 +208,18 @@ check_environment() {
 }
 
 check_local() {
-	check_jdk ${JDK_LOCAL}/default
+	check_jdk ${JSH_LOCAL_JDKS}/default
 	if [ $? -eq 0 ]; then
-		echo "${JDK_LOCAL}/default/bin/jrunscript"
+		echo "${JSH_LOCAL_JDKS}/default/bin/jrunscript"
 	fi
 }
 
 #	TODO	provide a way to install to this directory
 
 check_user() {
-	check_jdk ${JDK_USER}
+	check_jdk ${JDK_USER_JDKS}/default
 	if [ $? -eq 0 ]; then
-		echo "${JDK_USER}/bin/jrunscript"
+		echo "${JDK_USER_JDKS}/default/bin/jrunscript"
 	fi
 }
 
@@ -242,8 +253,8 @@ if [ -z "${JRUNSCRIPT}" ]; then
 fi
 
 if [ -z "${JRUNSCRIPT}" ]; then
-	install_jdk ${JDK_LOCAL}/default
-	JRUNSCRIPT="${JDK_LOCAL}/default/bin/jrunscript"
+	install_jdk ${JSH_LOCAL_JDKS}/default
+	JRUNSCRIPT="${JSH_LOCAL_JDKS}/default/bin/jrunscript"
 fi
 
 #	TODO	Because jsh shells invoke jrunscript by name currently, we put jrunscript in the PATH. Could be removed by having

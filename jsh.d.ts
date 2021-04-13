@@ -1,6 +1,17 @@
+/**
+ * `jsh` is a shell environment which allows JavaScript programs to be written which execute in the Java virtual machine and thus
+ * can interact with Java platform classes and libraries written in Java or other JVM languages.
+ *
+ * `jsh` scripts have access to the global `jsh` object, which is of type {@link Global}.
+ *
+ * See [running `jsh`](../src/jsh/launcher/api.html) for information about how to run scripts using `jsh` and configure the
+ * shell.
+ *
+ * See [old documentation](../src/jsh/etc/api.html).
+ */
 namespace slime.jsh {
 	/**
-	 * The global `jsh` object provided by the `jsh` shell. See [old documentation](../src/jsh/etc/api.html).
+	 * The global `jsh` object provided by the `jsh` shell.
 	 *
 	 * All code loaded by `jsh` also has access to the `$api` global object; see [$api](slime._api.global.html).
 	 */

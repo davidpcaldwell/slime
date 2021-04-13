@@ -109,11 +109,14 @@ END LICENSE
 						is defined, and if so, it uses the JDK found in that location.
 					</li>
 					</li>
-					<li>For an unbuilt shell, it checks in the <code>local/jdk/default</code> directory.</li>
+					<li>For an unbuilt shell, it checks in the <code>JSH_LOCAL_JDKS</code> location (default:
+						<code>local/jdk</code>), looking for a
+						<code>default</code> directory.
 					<li>
-						It then checks in the SLIME user installation directory, which is <code>$HOME/.slime/jdk/default</code>
-						(this value can be overridden using the <code>JSH_USER_JDK</code> variable; this variable can be set to
-						<code>/dev/null</code> to ignore the user JDK entirely).
+						It then checks in the SLIME user installation directory
+						(<code>JSH_USER_JDKS</code>; by default: <code>$HOME/.slime/jdk</code>),
+						again looking for a <code>default</code> directory.
+						<code>JSH_USER_JDKS</code> can be set to <code>/dev/null</code> to ignore the user JDK entirely.
 					</li>
 					<li>
 						Finally, it checks <code>PATH</code> for a suitable <code>jrunscript</code> command.
