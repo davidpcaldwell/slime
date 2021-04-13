@@ -27,6 +27,12 @@ END LICENSE
 			};
 		</script>
 		<script src="loader/api/api.js"></script>
+		<style>
+			#platforms, #java {
+				border: 1px solid black;
+				padding: 1em;
+			}
+		</style>
 		<script>
 			//	TODO	CORS
 			document.domain = document.domain;
@@ -37,31 +43,39 @@ END LICENSE
 			The SLIME project provides tools for JavaScript development on several platforms, including the Java platform
 			(using the Rhino, Nashorn, or GraalVM JavaScript engines), Java servlet-based servers, and the browser.
 		</div>
-		<div>
-			<h1>Platforms</h1>
+		<div id="platforms">
+			<h2>Supported Platforms</h2>
+			<div id="java">
+				<h3>Java</h3>
+				<div>
+					Compatibility: current goal is to be compatible with version used by most Java developers per most recent
+					<a href="https://www.jetbrains.com/lp/devecosystem-2020/java/">JetBrains survey</a>, which is currently
+					<strong>Java 8</strong>.
+				</div>
+				<div>
+					<h4><code><a href="local/doc/typedoc/interfaces/slime.jsh.global.html">jsh</a></code>: a JavaScript application environment that can access the Java platform.</h4>
+				</div>
+				<div>
+					<h4><a href="rhino/http/servlet/api.html">Java servlets</a>: a JavaScript environment for authoring
+						Java servlets</h4>
+				</div>
+				</div>
 			<div>
-				<h2><code><a href="local/doc/typedoc/interfaces/slime.jsh.global.html">jsh</a></code>: a JavaScript application environment that can access the Java platform.</h2>
+				<h3><a href="loader/browser/api.html">Browser</a>: a SLIME environment for the browser</h3>
 			</div>
 			<div>
-				<h2><a href="rhino/http/servlet/api.html">Java servlets</a>: a JavaScript environment for authoring
-					Java servlets</h2>
-			</div>
-			<div>
-				<h2><a href="loader/browser/api.html">Browser</a>: a SLIME environment for the browser</h2>
-			</div>
-			<div>
-				<h2><a href="jxa/api.html">JXA</a>: a SLIME environment for use in macOS automation</h2>
+				<h3><a href="jxa/api.html">JXA</a>: a SLIME environment for use in macOS automation</h3>
 			</div>
 		</div>
 		<div>
 			<h2><a href="local/doc/typedoc/index.html">All TypeScript Documentation</a></h2>
 		</div>
 		<div>
-			<h1>Tools</h1>
+			<h2>Tools</h2>
 			<div>
-				<h2>Command-line tools</h2>
+				<h3>Command-line tools</h3>
 				<div>
-					<h3>Testing</h3>
+					<h4>Testing</h4>
 					<ul>
 						<li>
 							Running individual definitions (JSAPI pages or <a href="loader/api/test/fifty/README.html">Fifty</a> definitions)
@@ -97,7 +111,7 @@ END LICENSE
 					</ul>
 				</div>
 				<div>
-					<h3>Documentation</h3>
+					<h4>Documentation</h4>
 					<ul>
 						<li>
 							<code>tools/documentation.jsh.js</code>:
@@ -122,7 +136,7 @@ END LICENSE
 					</ul>
 				</div>
 				<div>
-					<h3>Other</h3>
+					<h4>Other</h4>
 					<ul>
 						<li>
 							<code>rhino/http/servlet/tools/serve.jsh.js
@@ -144,7 +158,7 @@ END LICENSE
 				</div>
 			</div>
 			<div>
-				<h2><code>wf</code></h2>
+				<h3><code>wf</code></h3>
 				<p>
 					SLIME also provides <a href="tools/plugin.jsh.api.html">tools</a> for projects to implement commands related to the software lifecycle, including a
 					top-level script that can be invoked (at <code>tools/wf</code>)
@@ -153,10 +167,10 @@ END LICENSE
 			</div>
 		</div>
 		<div>
-			<h1><a href="https://github.com/davidpcaldwell/slime">Online</a> at GitHub</h1>
+			<h2><a href="https://github.com/davidpcaldwell/slime">Online</a> at GitHub</h2>
 		</div>
 		<div>
-			<h1><a href="contributor/README.html">Contributing</a></h1>
+			<h2><a href="contributor/README.html">Contributing</a></h2>
 		</div>
 	</body>
 </html>
