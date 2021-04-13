@@ -86,17 +86,30 @@
 		 */
 		var test = function(p) {
 			var logs = p.logs;
-			var stdio = {
+			var stdio = (logs) ? {
 				output: logs.getRelativePath("stdout.txt").write(jsh.io.Streams.text),
 				error: logs.getRelativePath("stderr.txt").write(jsh.io.Streams.text)
+			} : {
+				output: {
+					write: function(s) {
+						jsh.shell.echo(s);
+					}
+				},
+				error: {
+					write: function(s) {
+						jsh.shell.console(s);
+					}
+				}
 			};
-			jsh.shell.run({
-				command: "bash",
-				arguments: [
-					$context.base.getRelativePath("jsh.bash"),
-					"--install-jdk"
-				]
-			});
+			if (!jsh.shell.environment.SLIME_WF_JDK_8) {
+				jsh.shell.run({
+					command: "bash",
+					arguments: [
+						$context.base.getRelativePath("jsh.bash"),
+						"--install-jdk"
+					]
+				});
+			}
 			jsh.shell.run({
 				command: "bash",
 				arguments: [
@@ -105,7 +118,7 @@
 					"-replace"
 				]
 			});
-			jsh.shell.console("Running tests with output to " + logs + " ...");
+			if (logs) jsh.shell.console("Running tests with output to " + logs + " ...");
 			var invocation = {
 				command: "bash",
 				arguments: [
@@ -263,22 +276,32 @@
 			}
 		)
 
-		$exports.test = function(p) {
-			var timestamp = jsh.time.When.now();
-			var logs = $context.base.getRelativePath("local/wf/logs/test").createDirectory({
-				recursive: true,
-				exists: function(dir) { return false; }
-			}).getRelativePath(timestamp.local().format("yyyy.mm.dd.HR.mi.sc")).createDirectory();
-			test({ logs: logs });
-		}
+		$exports.test = $api.Function.pipe(
+			jsh.script.cli.option.boolean({ longname: "stdio" }),
+			jsh.script.cli.option.string({ longname: "logs" }),
+			function(p) {
+				var logs = (function(stdio,logs) {
+					if (stdio) return void(0);
+					var directory = $context.base.getRelativePath("local/wf/logs/test").createDirectory({
+						recursive: true,
+						exists: function(dir) { return false; }
+					});
+					if (!logs) logs = jsh.time.When.now().local().format("yyyy.mm.dd.HR.mi.sc");
+					return directory.getRelativePath(logs).createDirectory();
+				})(p.options.stdio,p.options.logs);
+				test({ logs: logs });
+			}
+		)
 
 		$exports.docker = {
 			test: function(p) {
 				var docker = jsh.shell.PATH.getCommand("docker");
+				//	delta
 				jsh.shell.run({
 					command: docker,
 					arguments: [
-						"build", ".",
+						"build",
+						".",
 						"-t", "davidpcaldwell/slime"
 					],
 					directory: $context.base
@@ -287,8 +310,11 @@
 					command: docker,
 					arguments: [
 						"run",
+						"--name", "slime-test",
 						"davidpcaldwell/slime",
-						"/slime/wf", "test"
+						"/slime/wf", "test",
+						"--logs", "current"
+						/*, "--stdio"*/
 					]
 				});
 			}

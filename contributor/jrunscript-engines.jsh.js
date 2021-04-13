@@ -15,8 +15,8 @@ var environment = new Environment({
 });
 
 var engines = jsh.shell.run({
-	command: environment.jsh.unbuilt.src.getFile("jsh.bash"),
-	arguments: ["-engines"],
+	command: "bash",
+	arguments: [environment.jsh.unbuilt.src.getFile("jsh.bash"),"-engines"],
 	stdio: {
 		output: String
 	},
