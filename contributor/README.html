@@ -39,35 +39,35 @@ END LICENSE
 			<h2><a href="../local/doc/typedoc/interfaces/slime.project.wf.interface.html"><code>wf</code> Commands</a></h2>
 		</div>
 		<div>
-			<h1>Project Management</h1>
-			<h2><a href="https://github.com/davidpcaldwell/slime/issues?q=is%3Aissue+is%3Aopen+no%3Aproject">Issues with no assigned project</a></h2>
+			<h2>Project Management</h2>
+			<h3><a href="https://github.com/davidpcaldwell/slime/issues?q=is%3Aissue+is%3Aopen+no%3Aproject">Issues with no assigned project</a></h3>
 			<p>
 				Can assign the <code>backlog</code> milestone when no milestone applies.
 			</p>
 			<a href="https://github.com/davidpcaldwell/slime/projects?query=is%3Aopen+sort%3Aname-asc">Projects</a>
 		</div>
 		<div>
-			<h1>Low-level structure</h1>
+			<h2>Low-level structure</h2>
 			<div>
-				<h2><a href="../local/doc/typedoc/modules/slime.runtime.html">SLIME Runtime</a> (<code><a href="../loader/expression.js">loader/expression.js</a></code>)</h2>
+				<h3><a href="../local/doc/typedoc/modules/slime.runtime.html">SLIME Runtime</a> (<code><a href="../loader/expression.js">loader/expression.js</a></code>)</h3>
 			</div>
 			<div>
-				<h2><a href="../loader/jrunscript/api.html">SLIME Java runtime</a></h2>
-			</div>
-		</div>
-		<div>
-			<h1>Shell: <code>jsh</code></h1>
-			<div>
-				<h2><a href="../jsh/launcher/internal.api.html">Launcher</a> documentation</h2>
-			</div>
-			<div>
-				<h2><a href="../jsh/loader/internal.api.html">Loader</a> documentation</h2>
+				<h3><a href="../loader/jrunscript/api.html">SLIME Java runtime</a></h3>
 			</div>
 		</div>
 		<div>
-			<h1>Tests</h1>
+			<h2>Shell: <code>jsh</code></h2>
 			<div>
-				<h2><code><a href="suite.jsh.js">contributor/suite.jsh.js</a></code></h2>
+				<h3><a href="../jsh/launcher/internal.api.html">Launcher</a> documentation</h3>
+			</div>
+			<div>
+				<h3><a href="../jsh/loader/internal.api.html">Loader</a> documentation</h3>
+			</div>
+		</div>
+		<div>
+			<h2>Tests</h2>
+			<div>
+				<h3><code><a href="suite.jsh.js">contributor/suite.jsh.js</a></code></h3>
 				Runs all tests, installing Tomcat into the shell if necessary so that browser (and servlet) tests can be run.
 				<div>
 					<h3><code>./wf docker.test</code></h3>
@@ -84,7 +84,7 @@ END LICENSE
 				</ul>
 			</div>
 			<div>
-				<h2>Running the browser suite</h2>
+				<h3>Running the browser suite</h3>
 				<div>
 					<code>
 						<a href="../loader/browser/test/suite.jsh.api.html">loader/browser/test/suite.jsh.js</a>
@@ -93,7 +93,7 @@ END LICENSE
 				</div>
 			</div>
 			<div>
-				<h2>Running subsuites, in whole or in part</h2>
+				<h3>Running subsuites, in whole or in part</h3>
 				<ul>
 					<li>
 						Java tests:
@@ -107,24 +107,24 @@ END LICENSE
 			</div>
 		</div>
 		<div>
-			<h1>Features</h1>
+			<h2>Features</h2>
 			<div>
-				<h2>Built <code>jsh</code> shells</h2>
+				<h3>Built <code>jsh</code> shells</h3>
 				<div>
 					<code>./jsh.bash jsh/test/tools/run-in-built-shell.jsh.js <i>script</i> [<i>arguments</i>]</code>.
 				</div>
 			</div>
 			<div>
-				<h2>Remote <code>jsh</code> shells</h2>
+				<h3>Remote <code>jsh</code> shells</h3>
 				<div>
 					See <a href="../jsh/tools/provision/test/plugin.jsh.api.html"><code>jsh.test.provision</code></a>.
 				</div>
 			</div>
 		</div>
 		<div>
-			<h1>Manual testing required</h1>
+			<h2>Manual testing required</h2>
 			<div>
-				<h2>Provisioning</h2>
+				<h3>Provisioning</h3>
 				<div>
 					<code>jrunscript rhino/jrunscript/api.js jsh jsh/tools/provision/test/server.jsh.js</code>
 				</div>
@@ -140,7 +140,7 @@ END LICENSE
 				</div>
 			</div>
 			<div>
-				<h2>Google Chrome integration</h2>
+				<h3>Google Chrome integration</h3>
 				<div>
 					<code>rhino/shell/test/manual/chrome.jsh.js</code>
 					<ul>
@@ -156,28 +156,28 @@ END LICENSE
 			</div>
 		</div>
 		<div>
-			<h1>Specifying Dependencies</h1>
+			<h2>Specifying Dependencies</h2>
 			<div>
-				<h2>JDK</h2>
+				<h3>JDK</h3>
 				<div>
-					<h3>JDK 8</h3>
+					<h4>JDK 8</h4>
 					See <a href="https://github.com/corretto/corretto-8/releases">Amazon Corretto 8</a> site and then update
 					<code>./jsh.bash</code> in two places (URL and basename).
 				</div>
 				<div>
-					<h3>JDK 11</h3>
+					<h4>JDK 11</h4>
 					See <a href="https://github.com/corretto/corretto-11/releases">Amazon Corretto 11</a> site and then update
 					<code>./jsh.bash</code>.
 				</div>
 				<div>
-					<h3>Old</h3>
+					<h4>Old</h4>
 					<ul>
 						<li>JDK: <code>jsh/tools/provision/jdk.bash</code></li>
 					</ul>
 				</div>
 			</div>
 			<div>
-				<h2>Rhino</h2>
+				<h3>Rhino</h3>
 				<p>
 					Rhino is currently downloaded and installed as part of the <code>jrunscript</code> API
 					(see <a href="../rhino/jrunscript/api.js"><code>rhino/jrunscript/api.js</code></a>, specifically
@@ -193,12 +193,12 @@ END LICENSE
 				</p>
 			</div>
 			<div>
-				<h2>Nashorn</h2>
+				<h3>Nashorn</h3>
 				<p>
 					<code>jsh</code> presently depends on the Nashorn bundled with the JDK on which it is running.
 				</p>
 				<div>
-					<h3><code>ncdbg</code></h3>
+					<h4><code>ncdbg</code></h4>
 					<p>
 						The version of <code>ncdbg</code> is specified in
 						<a href="../jsh/tools/install/plugin.jsh.js"><code>jsh/tools/install/plugin.jsh.js</code></a>.
@@ -207,7 +207,92 @@ END LICENSE
 			</div>
 		</div>
 		<div>
-			<h1><a href="typescript.api.html">TypeScript</a></h1>
+			<h2><a href="typescript.api.html">TypeScript</a></h2>
+		</div>
+		<div>
+			<h2>VM Testing</h2>
+			<div>
+				<h3>Linux</h3>: Ubuntu 20.04.2.0
+				<ul>
+					<li>VMWare</li>
+					<li>Do not use "Easy Install"</li>
+					<li>Legacy BIOS</li>
+					<li>
+						Customize Settings
+						<ul>
+							<li>Save As: slime-linux</li>
+							<li>Sharing
+								<ul>
+									<li>Enable Shared Folders</li>
+									<li>Add source folder with name <code>slime</code> and read/write access</li>
+								</ul>
+							</li>
+						</ul>
+					</li>
+					<li>
+						Installation Wizard
+						<ul>
+							<li>
+								English | Install Ubuntu
+							</li>
+							<li>
+								English (US) - English (US)
+							</li>
+							<li>
+								Minimal installation; Install third-party software: <strong>true</strong>
+							</li>
+							<li>
+								Erase disk and install Ubuntu
+							</li>
+							<li>
+								Where are you? New York
+							</li>
+							<li>
+								<ul>
+									<li>Your name: SLIME Linux testbed</li>
+									<li>Your computer's name: slime-linux</li>
+									<li>Pick a user name: slime</li>
+									<li>Choose a password: slime</li>
+									<li>Confirm your password: slime</li>
+									<li>Log in automatically</li>
+								</ul>
+							</li>
+							<li>
+								(Remove installation CD and reboot)
+							</li>
+							<li>
+								Connect Your Online Accounts: skip
+							</li>
+							<li>
+								Livepatch: Next
+							</li>
+							<li>
+								Help improve Ubuntu: Yes
+							</li>
+							<li>
+								You're ready to go! Done
+							</li>
+							<li>
+								Install VMWare Tools
+								<ul>
+									<li>sudo apt install open-vm-tools</li>
+									<li>sudo apt install open-vm-tools-desktop</li>
+								</ul>
+							</li>
+							<li>
+								Terminal
+								<ul>
+									<li>sudo apt-get update</li>
+									<li>sudo apt install git</li>
+									<li>git clone https://[user]@github.com/davidpcaldwell/slime src</li>
+									<li>cd /mnt/hgfs/slime</li>
+									<li>./wf test</li>
+								</ul>
+							</li>
+						</ul>
+					</li>
+				</ul>
+			</div>
 		</div>
 		<div>
 			<h2>Work In Progress</h2>

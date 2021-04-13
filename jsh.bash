@@ -23,7 +23,8 @@ if [ "$0" == "bash" ]; then
 	JDK_USER=/dev/null
 	JSH_LAUNCHER_GITHUB_PROTOCOL="${JSH_LAUNCHER_GITHUB_PROTOCOL:-https}"
 else
-	JDK_LOCAL="$(dirname $0)/local/jdk/default"
+	JDK_LOCAL="${JSH_JDK_LOCAL:-$(dirname $0)/local/jdk}"
+	#	TODO	make corresponding change to JDK_USER with .slime/jdk being value and version as argument, rename to JSH_JDK_USER
 	JDK_USER="${JSH_USER_JDK:-${HOME}/.slime/jdk/default}"
 fi
 
@@ -151,22 +152,22 @@ install_jdk() {
 }
 
 if [ "$1" == "--install-jdk" ]; then
-	install_jdk ${JDK_LOCAL}
+	install_jdk ${JDK_LOCAL}/default
 	exit $?
 fi
 
 if [ "$1" == "--install-jdk-11" ]; then
-	install_jdk_11 ${JDK_LOCAL}
+	install_jdk_11 ${JDK_LOCAL}/default
 	exit $?
 fi
 
 if [ "$1" == "--add-jdk-8" ]; then
-	install_jdk_8 $(dirname $0)/local/jdk/8
+	install_jdk_8 ${JDK_LOCAL}/8
 	exit $?
 fi
 
 if [ "$1" == "--add-jdk-11" ]; then
-	install_jdk_11 $(dirname $0)/local/jdk/11
+	install_jdk_11 ${JDK_LOCAL}/11
 	exit $?
 fi
 
@@ -196,9 +197,9 @@ check_environment() {
 }
 
 check_local() {
-	check_jdk ${JDK_LOCAL}
+	check_jdk ${JDK_LOCAL}/default
 	if [ $? -eq 0 ]; then
-		echo "${JDK_LOCAL}/bin/jrunscript"
+		echo "${JDK_LOCAL}/default/bin/jrunscript"
 	fi
 }
 
@@ -241,8 +242,8 @@ if [ -z "${JRUNSCRIPT}" ]; then
 fi
 
 if [ -z "${JRUNSCRIPT}" ]; then
-	install_jdk ${JDK_LOCAL}
-	JRUNSCRIPT="${JDK_LOCAL}/bin/jrunscript"
+	install_jdk ${JDK_LOCAL}/default
+	JRUNSCRIPT="${JDK_LOCAL}/default/bin/jrunscript"
 fi
 
 #	TODO	Because jsh shells invoke jrunscript by name currently, we put jrunscript in the PATH. Could be removed by having
