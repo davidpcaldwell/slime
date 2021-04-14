@@ -218,7 +218,9 @@
 				for (var x in $exports.environment) {
 					if (x == "JSH_DEBUG_JDWP") {
 						//	do not copy; exclude
-					} else if (/^JSH_/.test(x) && !/^JSH_HOST_/.test(x)) {
+					} else if (/^JSH_/.test(x) && !/^JSH_HOST_/.test(x) && x != "JSH_LOCAL_JDKS" && x != "JSH_SHELL_LIB") {
+						//	We are copying JSH_LOCAL_JDKS/JSH_SHELL_LIB to try to support the Linux VM use case right now. Hard to
+						//	say what the "right" behavior is surrounding any of this, so just hard-coding that behavior for now.
 						if (p.shell) {
 							//	do not copy; exclude
 						} else {

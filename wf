@@ -11,6 +11,9 @@ if [ "$(uname)" == "Linux" ]; then
 			echo "source $(realpath ${SLIME}/contributor/macos/linuxvm/profile.bashrc)" >>"${HOME}/.bashrc"
 			source ${SLIME}/contributor/macos/linuxvm/profile.bashrc
 		fi
+		if [ ! -h "${HOME}/src" ]; then
+			ln -s /mnt/hgfs/slime ${HOME}/src
+		fi
 	fi
 fi
 
