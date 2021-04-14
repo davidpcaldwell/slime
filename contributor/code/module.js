@@ -81,6 +81,7 @@
 			if (/\.gitignore$/.test(basename)) return true;
 			if (/\.dockerignore$/.test(basename)) return true;
 			if (/Dockerfile$/.test(basename)) return true;
+			if (/\.bashrc$/.test(basename)) return true;
 			if (/META-INF\/services\/java.lang.Runnable$/.test(node.pathname.toString())) return false;
 		}
 

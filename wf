@@ -3,6 +3,17 @@ export PROJECT="$(dirname $0)"
 
 SLIME="${PROJECT}"
 
+if [ "$(uname)" == "Linux" ]; then
+	#	We know (?) realpath is present because this is Linux
+	if [ "$(realpath $0)" == "/mnt/hgfs/slime/wf" ]; then
+		#	VMWare Linux guest with host source directory mounted
+		if [ -z "${JSH_LOCAL_JDKS}" ]; then
+			echo "source $(realpath ${SLIME}/contributor/macos/linuxvm/profile.bashrc)" >>"${HOME}/.bashrc"
+			source ${SLIME}/contributor/macos/linuxvm/profile.bashrc
+		fi
+	fi
+fi
+
 #	For now, run all SLIME wf commands under JDK 8 with Rhino
 
 if [ -z "${SLIME_WF_JDK_8}" ]; then
