@@ -186,7 +186,7 @@ namespace slime.jrunscript.git {
 				noVerify?: boolean
 				message: string
 				author?: string
-			}) => any
+			}, events?: any) => any
 		}
 	}
 

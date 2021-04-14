@@ -17,14 +17,19 @@
 
 		var src = (jsh.shell.jsh.src) ? jsh.shell.jsh.src : jsh.shell.jsh.home.getSubdirectory("src");
 
-		suite.add("browser", jsh.unit.Suite.Fork({
+		var browser = (function() {
+			if (jsh.shell.browser.chrome) return "chrome";
+			if (jsh.unit.browser.installed.firefox) return "firefox";
+		})();
+
+		if (browser) suite.add("browser", jsh.unit.Suite.Fork({
 			name: "browser",
 			run: jsh.shell.jsh,
 			shell: src,
 			script: src.getFile("loader/browser/test/suite.jsh.js"),
 			arguments: [
 				"-definition", code.getRelativePath("api.html"),
-				"-browser", "chrome",
+				"-browser", browser,
 				"-view", "stdio"
 			].concat(parameters.arguments)//,
 			// TODO: is setting the working directory necessary?

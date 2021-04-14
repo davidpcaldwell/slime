@@ -25,9 +25,10 @@
 		}
 
 		jsh.shell.tools.node.require();
-		//	TODO	should the above return an installation? does it? Should the below be part of it?
-		var nodeBin = jsh.script.file.parent.parent.getSubdirectory("local/jsh/lib/node/bin");
 		jsh.shell.tools.node.modules.require({ name: "typescript", version: parameters.options.version });
+
+		//	TODO	should jsh.shell.tools.node.require return an installation? does it? Should the below be part of it?
+		var nodeBin = jsh.script.file.parent.parent.getSubdirectory("local/jsh/lib/node/bin");
 
 		//	TODO	re-implement tsc.bash in terms of this script; see jsh/tools/install/typescript.jsh.js
 		var PATH = jsh.file.Searchpath(jsh.shell.PATH.pathnames.concat([nodeBin.pathname]));

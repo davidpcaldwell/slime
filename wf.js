@@ -92,12 +92,12 @@
 			} : {
 				output: {
 					write: function(s) {
-						jsh.shell.echo(s);
+						jsh.shell.echo(s.substring(0,s.length-1));
 					}
 				},
 				error: {
 					write: function(s) {
-						jsh.shell.console(s);
+						jsh.shell.console(s.substring(0,s.length-1));
 					}
 				}
 			};

@@ -201,13 +201,24 @@
 			pathname: SRC.getRelativePath("rhino/tools/plugin.jsh.api.html")
 		}));
 		// TODO: does this require hg be installed?
-		suite.add("jrunscript/tools/hg", new jsh.unit.html.Part({
+		if (jsh.tools.hg.init) suite.add("jrunscript/tools/hg", new jsh.unit.html.Part({
 			pathname: SRC.getRelativePath("rhino/tools/hg/api.html")
 		}));
 		// TODO: does this require git be installed?
-		if (!parameters.options.issue138) suite.add("jrunscript/tools/git", new jsh.unit.html.Part({
-			pathname: SRC.getRelativePath("rhino/tools/git/api.html")
-		}));
+		if (!parameters.options.issue138) {
+			suite.add(
+				"jrunscript/tools/git/jsapi",
+				new jsh.unit.html.Part({
+					pathname: SRC.getRelativePath("rhino/tools/git/api.html")
+				})
+			);
+			suite.add(
+				"jrunscript/tools/git/fifty",
+				FiftyPart({
+					file: SRC.getFile("rhino/tools/git/module.fifty.ts")
+				})
+			);
+		}
 		suite.add("jrunscript/tools/github", FiftyPart({
 			file: SRC.getFile("rhino/tools/github/module.fifty.ts")
 		}));

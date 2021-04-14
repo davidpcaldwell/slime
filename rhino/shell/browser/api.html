@@ -282,7 +282,7 @@ END LICENSE
 						The Google Chrome browser installed at the default location (currently on Mac OS X and Linux).
 					</span>
 					<script type="application/x.jsapi#tests"><![CDATA[
-						if (api && jsh.httpd.Tomcat) {
+						if (api && jsh.httpd.Tomcat && jsh.shell.browser.chrome) {
 							jsh.shell.console("Creating Tomcat.");
 
 							var tomcat = new jsh.httpd.Tomcat();

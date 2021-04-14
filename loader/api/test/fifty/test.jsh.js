@@ -5,6 +5,8 @@
 	 * @param { slime.jsh.Global } jsh
 	 */
 	function($api,jsh) {
+		jsh.wf.typescript.require();
+
 		var parameters = jsh.wf.cli.$f.invocation(
 			$api.Function.pipe(
 				$api.Function.impure.revise(function(p) {

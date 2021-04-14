@@ -154,6 +154,10 @@ namespace slime.jsh.wf {
 		}
 
 		typescript: {
+			/**
+			 * Ensures that Node.js is installed and that the project-appropriate version of TypeScript is present.
+			 */
+			require: (p?: { project: slime.jrunscript.file.Directory }) => void
 			tsc: (p?: { project: slime.jrunscript.file.Directory }) => void
 			typedoc: (p?: { project: slime.jrunscript.file.Directory }) => void
 		}

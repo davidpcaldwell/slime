@@ -249,7 +249,14 @@ namespace slime.jrunscript.git {
 			var path = p;
 			repository.directory.getRelativePath(path).write(path, { append: false });
 			repository.add({ path: path });
-			repository.commit({ all: true, message: path });
+			repository.commit({ all: true, message: path }, {
+				stdout: function(e) {
+					fifty.global.jsh.shell.console(e.detail);
+				},
+				stderr: function(e) {
+					fifty.global.jsh.shell.console(e.detail);
+				}
+			});
 		}
 
 		fifty.tests.submoduleTrackingBranch = function() {
