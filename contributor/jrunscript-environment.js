@@ -54,6 +54,12 @@
 								(jsh.shell.jsh.lib.getFile("js.jar")) ? ["-rhino", jsh.shell.jsh.lib.getFile("js.jar")] : []
 							).concat(
 								(p.executable) ? ["-executable"] : []
+							),
+							environment: $api.Object.compose(
+								jsh.shell.environment,
+								(jsh.shell.jsh.lib) ? {
+									JSH_SHELL_LIB: jsh.shell.jsh.lib.toString()
+								} : {}
 							)
 							// TODO: below was from previous verify.jsh.js; is it helpful? On Windows, maybe? Looks like no-op
 							// environment: jsh.js.Object.set({

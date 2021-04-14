@@ -12,7 +12,8 @@ fi
 if [ ! -d "${SLIME_WF_JDK_8}" ]; then
 	${SLIME}/jsh.bash --add-jdk-8
 fi
-if [ ! -f "${SLIME}/local/jsh/lib/js.jar" ]; then
+LIB="${JSH_SHELL_LIB:-${SLIME}/local/jsh/lib}"
+if [ ! -f "${LIB}/js.jar" ]; then
 	${SLIME}/jsh.bash ${SLIME}/jsh/tools/install/rhino.jsh.js
 fi
 export JSH_LAUNCHER_JDK_HOME="${SLIME_WF_JDK_8}"
