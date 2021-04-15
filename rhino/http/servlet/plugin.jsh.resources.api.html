@@ -280,8 +280,13 @@ END LICENSE
 				verify(servlet,"servlet").list().is.not.equalTo(null);
 			}
 			verify(servlet,"servlet").list().length.is(2);
-			verify(servlet,"servlet").list()[0].path.is("Nashorn.java");
-			verify(servlet,"servlet").list()[1].path.is("Servlet.java");
+			var servletList = servlet.list().sort(function(a,b) {
+				if (a.path > b.path) return 1;
+				if (b.path > a.path) return -1;
+				return 0;
+			});
+			verify(servletList)[0].path.is("Nashorn.java");
+			verify(servletList)[1].path.is("Servlet.java");
 			var webinf = new one.loader.Child("WEB-INF/");
 			debugger;
 			verify(webinf,"webinf").list().length.is(3);

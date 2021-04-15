@@ -210,93 +210,102 @@ END LICENSE
 			<h2><a href="typescript.api.html">TypeScript</a></h2>
 		</div>
 		<div>
-			<h2>VM Testing</h2>
+			<h2>Testing Environments</h2>
 			<div>
-				<h3>Linux</h3>: Ubuntu 20.04.2.0
+				<h3>VM Testing</h3>
+				<div>
+					<h4>Linux</h4>: Ubuntu 20.04.2.0
+					<ul>
+						<li>VMWare</li>
+						<li>Do not use "Easy Install"</li>
+						<li>Legacy BIOS</li>
+						<li>
+							Customize Settings
+							<ul>
+								<li>Save As: slime-linux</li>
+								<li>Sharing
+									<ul>
+										<li>Enable Shared Folders</li>
+										<li>Add source folder with name <code>slime</code> and read/write access</li>
+									</ul>
+								</li>
+							</ul>
+						</li>
+						<li>
+							Installation Wizard
+							<ul>
+								<li>
+									English | Install Ubuntu
+								</li>
+								<li>
+									English (US) - English (US)
+								</li>
+								<li>
+									Minimal installation; Install third-party software: <strong>true</strong>
+								</li>
+								<li>
+									Erase disk and install Ubuntu
+								</li>
+								<li>
+									Where are you? New York
+								</li>
+								<li>
+									<ul>
+										<li>Your name: SLIME Linux Testbed</li>
+										<li>Your computer's name: slime-linux</li>
+										<li>Pick a user name: slime</li>
+										<li>Choose a password: slime</li>
+										<li>Confirm your password: slime</li>
+										<li>Log in automatically</li>
+									</ul>
+								</li>
+								<li>
+									(Remove installation CD and reboot)
+								</li>
+								<li>
+									Connect Your Online Accounts: skip
+								</li>
+								<li>
+									Livepatch: Next
+								</li>
+								<li>
+									Help improve Ubuntu: Yes
+								</li>
+								<li>
+									You're ready to go! Done
+								</li>
+								<li>
+									Install VMWare Tools
+									<ul>
+										<li>sudo apt install open-vm-tools</li>
+										<li>sudo apt install open-vm-tools-desktop</li>
+									</ul>
+								</li>
+								<li>
+									Terminal
+									<ul>
+										<li>sudo apt-get update</li>
+										<li>sudo apt install git</li>
+										<li>git clone https://[user]@github.com/davidpcaldwell/slime src</li>
+										<li>cd /mnt/hgfs/slime</li>
+										<li>./wf test</li>
+									</ul>
+								</li>
+								<li>
+									If <code>hgfs</code> connection is lost somehow, use:
+									<div>
+										<code>sudo vmhgfs-fuse .host:/ /mnt/hgfs/ -o allow_other -o uid=1000</code>
+									</div>
+								</li>
+							</ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+			<div>
+				<h3>Docker Testing</h3>
 				<ul>
-					<li>VMWare</li>
-					<li>Do not use "Easy Install"</li>
-					<li>Legacy BIOS</li>
-					<li>
-						Customize Settings
-						<ul>
-							<li>Save As: slime-linux</li>
-							<li>Sharing
-								<ul>
-									<li>Enable Shared Folders</li>
-									<li>Add source folder with name <code>slime</code> and read/write access</li>
-								</ul>
-							</li>
-						</ul>
-					</li>
-					<li>
-						Installation Wizard
-						<ul>
-							<li>
-								English | Install Ubuntu
-							</li>
-							<li>
-								English (US) - English (US)
-							</li>
-							<li>
-								Minimal installation; Install third-party software: <strong>true</strong>
-							</li>
-							<li>
-								Erase disk and install Ubuntu
-							</li>
-							<li>
-								Where are you? New York
-							</li>
-							<li>
-								<ul>
-									<li>Your name: SLIME Linux Testbed</li>
-									<li>Your computer's name: slime-linux</li>
-									<li>Pick a user name: slime</li>
-									<li>Choose a password: slime</li>
-									<li>Confirm your password: slime</li>
-									<li>Log in automatically</li>
-								</ul>
-							</li>
-							<li>
-								(Remove installation CD and reboot)
-							</li>
-							<li>
-								Connect Your Online Accounts: skip
-							</li>
-							<li>
-								Livepatch: Next
-							</li>
-							<li>
-								Help improve Ubuntu: Yes
-							</li>
-							<li>
-								You're ready to go! Done
-							</li>
-							<li>
-								Install VMWare Tools
-								<ul>
-									<li>sudo apt install open-vm-tools</li>
-									<li>sudo apt install open-vm-tools-desktop</li>
-								</ul>
-							</li>
-							<li>
-								Terminal
-								<ul>
-									<li>sudo apt-get update</li>
-									<li>sudo apt install git</li>
-									<li>git clone https://[user]@github.com/davidpcaldwell/slime src</li>
-									<li>cd /mnt/hgfs/slime</li>
-									<li>./wf test</li>
-								</ul>
-							</li>
-							<li>
-								If <code>hgfs</code> connection is lost somehow, use:
-								<div>
-									<code>sudo vmhgfs-fuse .host:/ /mnt/hgfs/ -o allow_other -o uid=1000</code>
-								</div>
-							</li>
-						</ul>
-					</li>
+					<li>Increase Docker RAM to 4GB</li>
 				</ul>
 			</div>
 		</div>

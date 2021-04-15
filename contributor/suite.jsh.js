@@ -16,6 +16,8 @@ jsh.shell.tools.tomcat.require(void(0), {
 	}
 });
 
+jsh.wf.typescript.require();
+
 var parameters = jsh.script.getopts({
 	options: {
 		java: jsh.script.getopts.ARRAY(jsh.file.Pathname),

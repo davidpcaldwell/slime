@@ -153,9 +153,15 @@ plugin({
 						}
 					});
 					jsh.java.Thread.start(function() {
-						//	TODO	currently no way to report error
-						p.run(arg);
-						buffer.close();
+						try {
+							p.run(arg);
+						} catch (e) {
+							Packages.java.lang.System.err.println(e);
+							Packages.java.lang.System.err.println(e.stack);
+							throw e;
+						} finally {
+							buffer.close();
+						}
 					});
 					var decoder = new remote.Decoder({
 						stream: buffer.readBinary(),
