@@ -1,4 +1,5 @@
 (
+	//	TODO	unclear whether this file is still needed. See TODO comment below, and rhino/tools/github/test/manual/jsh.jsh.js
 	function() {
 		var parameters = jsh.script.getopts({
 			options: {
