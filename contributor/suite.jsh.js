@@ -154,7 +154,7 @@ suite.add("tools", {
 					parts: {
 						failure: {
 							execute: function(scope,verify) {
-								jsh.shell.jsh({
+								if (jsh.shell.browser.chrome) jsh.shell.jsh({
 									shell: environment.jsh.built.home,
 									script: environment.jsh.src.getFile("loader/api/ui/test/browser.jsh.js"),
 									evaluate: function(result) {
@@ -165,7 +165,7 @@ suite.add("tools", {
 						},
 						success: {
 							execute: function(scope,verify) {
-								jsh.shell.jsh({
+								if (jsh.shell.browser.chrome) jsh.shell.jsh({
 									shell: environment.jsh.built.home,
 									script: environment.jsh.src.getFile("loader/api/ui/test/browser.jsh.js"),
 									arguments: ["-success"],

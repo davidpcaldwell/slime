@@ -264,15 +264,32 @@ namespace slime.jsh.wf {
 			var jsh = fifty.global.jsh;
 			var verify = fifty.verify;
 
+			function configure(repository: slime.jrunscript.git.Repository.Local) {
+				repository.config({
+					set: {
+						name: "user.name",
+						value: "SLIME"
+					}
+				});
+				repository.config({
+					set: {
+						name: "user.email",
+						value: "slime@example.com"
+					}
+				});
+			}
+
 			fifty.tests.exports.prohibitModifiedSubmodules = function() {
 				var directory = jsh.shell.TMPDIR.createTemporary({ directory: true }) as slime.jrunscript.file.Directory;
 				jsh.shell.console("directory = " + directory);
 				var parent = jsh.tools.git.init({ pathname: directory.pathname });
+				configure(parent);
 				directory.getRelativePath("a").write("a", { append: false });
 				parent.add({ path: "." });
 				parent.commit({ all: true, message: "message a" });
 				var subdirectory = directory.getRelativePath("sub").createDirectory();
 				var child = jsh.tools.git.init({ pathname: subdirectory.pathname });
+				configure(child);
 				subdirectory.getRelativePath("b").write("b", { append: false });
 				child.add({ path: "." });
 				child.commit({ all: true, message: "message b" });
