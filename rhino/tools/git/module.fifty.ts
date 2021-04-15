@@ -257,6 +257,21 @@ namespace slime.jrunscript.git {
 					fifty.global.jsh.shell.console(e.detail);
 				}
 			});
+		};
+
+		function configure(repository: git.Repository.Local) {
+			repository.config({
+				set: {
+					name: "user.name",
+					value: "SLIME"
+				}
+			});
+			repository.config({
+				set: {
+					name: "user.email",
+					value: "slime@example.com"
+				}
+			});
 		}
 
 		fifty.tests.submoduleTrackingBranch = function() {
@@ -264,9 +279,11 @@ namespace slime.jrunscript.git {
 				var tmpdir = fifty.jsh.file.directory();
 
 				var library = internal.subject.init({ pathname: tmpdir.getRelativePath("sub") });
+				configure(library);
 				commitFile(library, "b");
 
 				var parent = internal.subject.init({ pathname: tmpdir.getRelativePath("parent") });
+				configure(parent);
 				commitFile(parent, "a");
 
 				return { library, parent };
@@ -275,6 +292,7 @@ namespace slime.jrunscript.git {
 			run(function trackingMaster() {
 				const { parent, library } = initialize();
 				const submodule = parent.submodule.add({ repository: library, path: "path/sub", name: "sub", branch: "master" });
+				configure(submodule);
 				parent.commit({ all: true, message: "add submodule"});
 				var submodules = parent.submodule();
 				verify(submodules)[0].branch.is("master");
@@ -283,6 +301,7 @@ namespace slime.jrunscript.git {
 			run(function trackingNothing() {
 				const { parent, library } = initialize();
 				const submodule = parent.submodule.add({ repository: library, path: "path/sub", name: "sub" });
+				configure(submodule);
 				parent.commit({ all: true, message: "add submodule"});
 				var submodules = parent.submodule();
 				verify(submodules)[0].evaluate.property("branch").is(void(0));
@@ -292,8 +311,10 @@ namespace slime.jrunscript.git {
 		fifty.tests.submoduleWithDifferentNameAndPath = function() {
 			var tmpdir = fifty.jsh.file.directory();
 			var sub = internal.subject.init({ pathname: tmpdir.getRelativePath("sub") });
+			configure(sub);
 			commitFile(sub, "b");
 			var parent = internal.subject.init({ pathname: tmpdir.getRelativePath("parent") });
+			configure(parent);
 			commitFile(parent, "a");
 
 			var added = parent.submodule.add({ repository: sub, path: "path/sub", name: "sub", branch: "master" });
@@ -312,12 +333,15 @@ namespace slime.jrunscript.git {
 			var tmpdir = fifty.jsh.file.directory();
 
 			var library = internal.subject.init({ pathname: tmpdir.getRelativePath("sub") });
+			configure(library);
 			commitFile(library, "b");
 
 			var parent = internal.subject.init({ pathname: tmpdir.getRelativePath("parent") });
+			configure(parent);
 			commitFile(parent, "a");
 
 			var subrepository = parent.submodule.add({ repository: library, path: "path/sub", name: "sub", branch: "master" });
+			configure(subrepository);
 			parent.commit({ all: true, message: "add submodule"});
 
 			var before = subrepository.status().branch;

@@ -47,13 +47,17 @@ jsh.test.integration({
 					"-notest",
 					"-nodoc"
 				].concat(buildArguments),
-				environment: jsh.js.Object.set({
-					//	TODO	next two lines duplicate logic in jsh.test plugin
-					TEMP: (jsh.shell.environment.TEMP) ? jsh.shell.environment.TEMP : "",
-					PATHEXT: (jsh.shell.environment.PATHEXT) ? jsh.shell.environment.PATHEXT : "",
-					PATH: jsh.shell.environment.PATH.toString()
-				})
+				environment: $api.Object.compose(
+					{
+						//	TODO	next two lines duplicate logic in jsh.test plugin
+						TEMP: (jsh.shell.environment.TEMP) ? jsh.shell.environment.TEMP : "",
+						PATHEXT: (jsh.shell.environment.PATHEXT) ? jsh.shell.environment.PATHEXT : "",
+						PATH: jsh.shell.environment.PATH.toString()
+					},
+					(jsh.shell.environment.JSH_SHELL_LIB) ? { JSH_SHELL_LIB: jsh.shell.environment.JSH_SHELL_LIB } : {}
+				)
 			});
+			jsh.shell.console("Build successful.");
 			return tmpdir;
 		})();
 
@@ -70,9 +74,11 @@ jsh.test.integration({
 			}
 			var shell = (p.bash) ? [home.getFile("jsh.bash")] : vm.concat(p.shell)
 			var script = (p.script) ? p.script : jsh.script.file;
-			var environment = jsh.js.Object.set({}, p.environment, (p.bash && p.logging) ? {
-				JSH_LOG_JAVA_PROPERTIES: p.logging
-			} : {})
+			var environment = $api.Object.compose(
+				p.environment,
+				(p.bash && p.logging) ? { JSH_LOG_JAVA_PROPERTIES: p.logging } : {},
+				(jsh.shell.environment.JSH_SHELL_LIB) ? { JSH_SHELL_LIB: jsh.shell.environment.JSH_SHELL_LIB } : {}
+			);
 			return jsh.shell.run({
 				command: (p.bash) ? p.bash : jsh.shell.java.jrunscript,
 				arguments: shell.concat([script.toString()]).concat( (p.arguments) ? p.arguments : [] ),
@@ -127,8 +133,8 @@ jsh.test.integration({
 		}).bind(this);
 
 		var engines = jsh.shell.run({
-			command: src.getFile("jsh.bash"),
-			arguments: ["-engines"],
+			command: "bash",
+			arguments: [src.getFile("jsh.bash"), "-engines"],
 			stdio: {
 				output: String
 			},
