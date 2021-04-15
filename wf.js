@@ -287,7 +287,10 @@
 						exists: function(dir) { return false; }
 					});
 					if (!logs) logs = jsh.time.When.now().local().format("yyyy.mm.dd.HR.mi.sc");
-					return directory.getRelativePath(logs).createDirectory();
+					return directory.getRelativePath(logs).createDirectory({
+						//	might exist because docker creates it when mapping container directory to host directory
+						exists: $api.Function.returning(false)
+					});
 				})(p.options.stdio,p.options.logs);
 				test({ logs: logs });
 			}
@@ -296,6 +299,9 @@
 		$exports.docker = {
 			test: function(p) {
 				var docker = jsh.shell.PATH.getCommand("docker");
+				var logs = $context.base.getRelativePath("local/wf/logs/docker.test");
+				//	directory will be created by docker command below; we do this to empty it
+				if (logs.directory) logs.directory.remove();
 				//	delta
 				jsh.shell.run({
 					command: docker,
@@ -311,6 +317,7 @@
 					arguments: [
 						"run",
 						"--name", "slime-test",
+						"-v", logs + ":" + "/slime/local/wf/logs/test/current/",
 						"davidpcaldwell/slime",
 						"/slime/wf", "test",
 						"--logs", "current"
