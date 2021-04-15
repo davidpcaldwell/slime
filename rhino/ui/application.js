@@ -71,7 +71,7 @@
 		/**
 		 * @param { slime.jsh.ui.application.ChromeConfiguration } o
 		 */
-		var Chrome = function(o) {
+		var Chrome = (jsh.shell.browser.chrome) ? function(o) {
 			//	TODO	add location (rather than directory) argument
 			return function(p) {
 				var lock = new jsh.java.Thread.Monitor();
@@ -140,7 +140,7 @@
 					}
 				})();
 			}
-		};
+		} : void(0);
 
 		var javafx = function(settings) {
 			return function(p) {

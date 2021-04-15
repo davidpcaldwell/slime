@@ -293,7 +293,8 @@ END LICENSE
 				</script>
 				<script type="application/x.jsapi#tests"><![CDATA[
 					//	jsh.httpd.Tomcat supplies default server implementation
-					if (jsh.httpd.Tomcat) {
+					//	TODO	do we need to disable this whole thing when Chrome is not available?
+					if (jsh.httpd.Tomcat && jsh.shell.browser.chrome) {
 						verify("hello").is("hello");
 
 						var singleRequestApplication = function(decorator) {
