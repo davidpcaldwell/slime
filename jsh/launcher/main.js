@@ -252,6 +252,9 @@
 			$api.slime.settings.set("jsh.engine", "graal");
 		//	command.vm("-Dpolyglot.inspect=true");
 		//	command.argument("--inspect");
+		} else if (scriptDebugger) {
+			Packages.java.lang.System.err.println("Unknown script debugger (jsh.debug.script) specified: [" + scriptDebugger + "]. Exiting.");
+			Packages.java.lang.System.exit(1);
 		}
 
 		(function() {
