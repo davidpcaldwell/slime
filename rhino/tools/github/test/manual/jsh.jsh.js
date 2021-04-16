@@ -22,19 +22,36 @@
 			return web;
 		};
 
-		var getCommand = function(p) {
+		var echoJshBash = function(p) {
 			var command = [];
-			//	curl -v -x http://127.0.0.1:54510 -L http://raw.githubusercontent.com/davidpcaldwell/slime/master/jsh.bash | bash
-			command.push("curl", "-v");
-			if (p.token) {
-				command.push("-u", "davidpcaldwell:" + p.token);
-			}
 			var PROTOCOL = (p.mock) ? "http" : "https";
-			if (p.mock) {
-				command.push("-x", "http://127.0.0.1:" + p.mock.port);
+			if (jsh.shell.PATH.getCommand("curl")) {
+				command.push("curl", "-v");
+				if (p.token) {
+					command.push("-u", "davidpcaldwell:" + p.token);
+				}
+				if (p.mock) {
+					command.push("--proxy", "http://127.0.0.1:" + p.mock.port);
+				}
+				command.push("-L");
+				command.push(PROTOCOL + "://raw.githubusercontent.com/davidpcaldwell/slime/master/jsh.bash");
+				return command;
+			} else if (jsh.shell.PATH.getCommand("wget")) {
+				command.push("wget");
+				command.push("--http-user=" + "davidpcaldwell");
+				command.push("--http-password=" + p.token);
+				command.push(PROTOCOL + "://raw.githubusercontent.com/davidpcaldwell/slime/master/jsh.bash");
+				command.push("-e", "use_proxy=yes");
+				command.push("-e", "http_proxy=" + "http://127.0.0.1:" + p.mock.port);
+				command.push("-O", "-");
+				return command;
+			} else {
+				throw new TypeError("No way to download files.");
 			}
-			command.push("-L");
-			command.push(PROTOCOL + "://raw.githubusercontent.com/davidpcaldwell/slime/master/jsh.bash");
+		}
+
+		var getCommand = function(p) {
+			var command = echoJshBash(p);
 			command.push("|");
 			if (p.mock) {
 				command.push("env", "JSH_HTTP_PROXY_HOST=127.0.0.1", "JSH_HTTP_PROXY_PORT=" + p.mock.port);
@@ -51,14 +68,17 @@
 
 		var emit = function(command) {
 			var paste = command.join(" ");
-			jsh.shell.run({
-				command: "pbcopy",
-				stdio: {
-					input: paste
-				}
-			});
 			jsh.shell.console(paste);
-			jsh.shell.console("Copied to clipboard.");
+			if (jsh.shell.PATH.getCommand("pbcopy")) {
+				jsh.shell.run({
+					command: "pbcopy",
+					stdio: {
+						input: paste
+					}
+				});
+				jsh.shell.console("Copied to clipboard.");
+			}
+
 		}
 
 		jsh.script.cli.wrap({
