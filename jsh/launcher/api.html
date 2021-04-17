@@ -67,6 +67,20 @@ END LICENSE
 		#settings td div, #settings td p {
 			margin: 0.75em 0em;
 		}
+
+		.obsolete {
+			background-color: #c0c0c0;
+			padding: 0.2em 0.5em;
+		}
+
+		.debugger {
+			border: 1px solid grey;
+			padding: 0.2em 0.5em;
+		}
+
+		.debugger h3 {
+			text-decoration: underline;
+		}
 	</style>
 	<script type="text/javascript" src="../../loader/api/api.js"></script>
 	<script>
@@ -247,10 +261,10 @@ END LICENSE
 					<td><code>jsh.debug.script</code></td>
 					<td>
 						<div>
-							Sets up a debugger to debug scripts.
+							Sets up a debugger or profiler to run scripts under instrumentation.
 						</div>
-						<div>
-							<h3><code>rhino</code></h3>
+						<div class="debugger">
+							<h3><code>rhino</code>: Use the Rhino debugger</h3>
 							<div>
 								If the value is <code>rhino</code>, and the shell can use Rhino as
 								its JavaScript engine, the Rhino debugger will be launched to debug the script.
@@ -258,8 +272,8 @@ END LICENSE
 								<!--	test for Rhino not installed: test/manual/debug-rhino-no-rhino.bash -->
 							</div>
 						</div>
-						<div>
-							<h3><code>profiler</code> or <code>profiler:<i>name1</i>=<i>value1</i>,<i>name2</i>=<i>value2</i></code></h3>
+						<div class="debugger">
+							<h3><code>profiler</code> or <code>profiler:<i>name1</i>=<i>value1</i>,<i>name2</i>=<i>value2</i></code>: Use the SLIME profiler, which requires Rhino</h3>
 							<!--	test: jsh/launcher/test/manual/debug-profiler.bash -->
 							<div>
 								<strong>(Not recommended to use <code>profiler</code> or <code>profiler:...</code> settings directly; see below.)</strong>
@@ -284,13 +298,21 @@ END LICENSE
 								</p>
 							</div>
 						</div>
-						<div>
-							<h3><code>ncdbg</code> (alpha quality)</h3>
-							<!--	test: jsh/launcher/test/manual/debug-ncdbg.bash -->
+						<div class="debugger">
+							<h3><code>ncdbg</code> (DO NOT USE; not working)</h3>
 							<div>
+								<strong>
+									No version (0.8.1-0.8.4) of <code>ncdbg</code> has been successfully tested with the current
+									(Chrome 89) version of DevTools and the default JDK (Corretto 8) for SLIME. Previous versions
+									of SLIME, DevTools, and <code>ncdbg</code> did work successfully. The below
+									information is present in case the situation improves.
+								</strong>
+							</div>
+							<!--	test: jsh/launcher/test/manual/debug-ncdbg.bash -->
+							<div class="obsolete">
 								<strong>(Not recommended to use <code>ncdbg</code> setting directly; see below.)</strong>
 							</div>
-							<div>
+							<div class="obsolete">
 								If the value is <code>ncdbg</code>, and the shell can use Nashorn as its JavaScript engine, the
 								<a href="https://github.com/provegard/ncdbg"><code>ncdbg</code></a> debugger will be used to execute
 								the script. This allows using Google Chrome's DevTools or Visual Studio Code to
@@ -299,11 +321,11 @@ END LICENSE
 								start its server, etc. Using the
 								<a href="../jsh/tools/ncdbg.jsh.js"><code>jsh/tools/ncdbg.jsh.js</code></a> script is recommended.
 							</div>
-							<div>
+							<div class="obsolete">
 								To work in Visual Studio Code using the <code>ncdbg</code> debugger, see the <code>ncdbg</code> Visual Studio Code
 								<a href="https://github.com/provegard/ncdbg/blob/master/docs/VSCode.md">Visual Studio Code README</a>.
 							</div>
-							<div>
+							<div class="obsolete">
 								Note that in recent (2020 Jun 18) testing, <code>ncdbg</code> does not seem to halt on breakpoints,
 								but only when the <code>debugger</code> keyword is used.
 							</div>

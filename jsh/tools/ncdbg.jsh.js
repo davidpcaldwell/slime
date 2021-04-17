@@ -12,6 +12,7 @@
 //	END LICENSE
 
 (
+	//	TODO	if port 7778 is bound, should fail immediately
 	function() {
 		var result;
 
