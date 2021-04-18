@@ -31,6 +31,36 @@ END LICENSE
 			//	TODO	CORS
 			document.domain = document.domain;
 		</script>
+		<style>
+			#jsapi table { border-collapse: collapse; }
+			#jsapi th, #jsapi td {
+				border: 1px solid black;
+				padding: 0.5em 1.0em;
+			}
+			h2 {
+				text-decoration: underline;
+			}
+			.section {
+				padding: 0.5em 1em;
+				border: 1px solid grey;
+			}
+		</style>
+		<script>
+			window.addEventListener("load", function() {
+//				document.body.style.backgroundColor = "#c0c0c0";
+				/** @type { HTMLElement[] } */
+				var elements = Array.prototype.slice.call(document.getElementsByTagName("*"));
+				elements.forEach(function(element) {
+					var tag = element.tagName.toLowerCase();
+					if (tag == "h3" || tag == "h2" || tag == "h4") {
+						element.parentElement.className = (element.parentElement.className)
+							? element.parentElement.className + " " + "section"
+							: "section"
+						;
+					}
+				});
+			});
+		</script>
 	</head>
 	<body>
 		<h1>SLIME: Contributing</h1>
@@ -40,41 +70,159 @@ END LICENSE
 		</div>
 		<div>
 			<h2>Project Management</h2>
+			<div>
+				GitHub <a href="https://github.com/davidpcaldwell/slime/projects?query=is%3Aopen+sort%3Aname-asc">projects</a> are
+				things that can get done; they're releases and projects that have an endpoint that are
+				orthogonal to releases. Issues should belong to a project (including the Backlog project).
+			</div>
 			<h3><a href="https://github.com/davidpcaldwell/slime/issues?q=is%3Aissue+is%3Aopen+no%3Aproject">Issues with no assigned project</a></h3>
-			<p>
-				Can assign the <code>backlog</code> milestone when no milestone applies.
-			</p>
-			<a href="https://github.com/davidpcaldwell/slime/projects?query=is%3Aopen+sort%3Aname-asc">Projects</a>
-		</div>
-		<div>
-			<h2>Low-level structure</h2>
 			<div>
-				<h3><a href="../local/doc/typedoc/modules/slime.runtime.html">SLIME Runtime</a> (<code><a href="../loader/expression.js">loader/expression.js</a></code>)</h3>
-			</div>
-			<div>
-				<h3><a href="../loader/jrunscript/api.html">SLIME Java runtime</a></h3>
-			</div>
-		</div>
-		<div>
-			<h2>Shell: <code>jsh</code></h2>
-			<div>
-				<h3><a href="../jsh/launcher/internal.api.html">Launcher</a> documentation</h3>
-			</div>
-			<div>
-				<h3><a href="../jsh/loader/internal.api.html">Loader</a> documentation</h3>
-			</div>
-		</div>
-		<div>
-			<h2>Tests</h2>
-			<div>
-				<h3><code><a href="suite.jsh.js">contributor/suite.jsh.js</a></code></h3>
-				Runs all tests, installing Tomcat into the shell if necessary so that browser (and servlet) tests can be run.
+				<h3><a href="https://github.com/davidpcaldwell/slime/projects?query=is%3Aopen+sort%3Aname-asc">Open Projects</a></h3>
+				<div id="jsapi">
+					<h4><a href="https://github.com/davidpcaldwell/slime/projects/13">jsapi</a>: migrate old tests to Fifty</h4>
+					<div>
+						The current state of interoperability between the old jsapi tests and the new Fifty tests is as follows:
+						<table>
+							<thead>
+								<tr>
+									<th>Parent</th>
+									<th>Child</th>
+									<th>In-process</th>
+									<th>Fork</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td>jsapi</td>
+									<td>jsapi</td>
+									<td>
+										Supported in a variety of ways, including <code>jsh.unit.html.Suite</code>
+										<code>add()</code>
+									</td>
+									<td>
+										Supported via <code>-stdio</code> protocol
+									</td>
+								</tr>
+								<tr>
+									<td>jsapi</td>
+									<td>Fifty</td>
+									<td>
+										<code>$jsapi.loader.fifty({ path: <i>path</i>, verify: verify })</code>
+									</td>
+									<td>
+										The <code>loader/api/test/fifty/test.jsh.js</code> script provides a
+										<code>--view jsapi</code> argument that allows the executed Fifty script to broadcast its
+										results in a way compatible with jsapi. For jsapi-based tests, this is encapsulated in
+										<code>jsh.unit.fifty.Part(p)</code>, which takes <code>shell</code>, <code>script</code>,
+										and <code>file</code> as properties.
+									</td>
+								</tr>
+								<tr>
+									<td>Fifty</td>
+									<td>jsapi</td>
+									<td>No support; jsapi suites can be replaced by Fifty bottom-up</td>
+									<td>Minimal support: could read exit status</td>
+								</tr>
+								<tr>
+									<td>Fifty</td>
+									<td>Fifty</td>
+									<td>
+										Fifty kit <a href="../local/doc/typedoc/interfaces/slime.fifty.test.kit.html#load">load()</a>
+										methods
+									</td>
+									<td>
+										Minimal support currently: could read exit status. Unclear whether more is needed.
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
 				<div>
-					<h3><code>./wf docker.test</code></h3>
-					Runs the suite in Docker, which currently does not work.
+					<h4><a href="https://github.com/davidpcaldwell/slime/projects/10">GraalVM</a></h4>
+					<div>
+						To install: from script <code>jsh.shell.tools.graal.install()</code>, or from command line
+						<code>./jsh.bash jsh/tools/install/graal.jsh.js</code>.
+					</div>
+					<div>
+						To run sample script:
+						<code>env JSH_ENGINE=graal ./jsh.bash jsh/test/jsh-data.jsh.js</code>
+					</div>
+					<div>
+						To run sample script in debugger:
+						<code>env JSH_ENGINE=graal JSH_DEBUG_SCRIPT=graal ./jsh.bash jsh/test/jsh-data.jsh.js</code>
+					</div>
+				</div>
+				<div>
+					<h4><a href="https://github.com/davidpcaldwell/slime/projects/4">Reorganize source tree</a></h4>
+				</div>
+				<div>
+					<h4><a href="https://github.com/davidpcaldwell/slime/projects/7">JCEF</a></h4>
+				</div>
+				<div>
+					<h4><a href="../loader/document/api.html">loader/document</a> (HTML parsing)</h4>
+					<div>
+						Goal would be to replace DOM in loader/browser/test/api.js and JaspiHtml in jsh/unit/html.js; this feeds into
+						loader/api/api.html.js as the <code>html</code> argument to ApiHtmlTests.
+					</div>
+					<div>
+						First step should be to build an adapter at loader/api/document-adapter.js that converts a loader/document
+						document into a JSAPI-compatible html object. An additional property can be added to jsh/unit/html.js
+						PartDescriptor argument to specify the creation of this new kind of document in loadApiHtml().
+					</div>
+					<div>
+						Test case which runs the above scenario:
+						<code>./jsh.bash loader/document/test/suite.jsh.js -experimental -part document</code>
+					</div>
+					<div>
+						An equivalent browser migration for replacing the JSAPI DOM in loader/browser/test/api.js is then needed.
+					</div>
+					<div>
+						<h5><a href="https://jsoup.org/">JSoup</a></h5>
+						<a href="https://jsoup.org/apidocs/overview-summary.html">API</a>
+					</div>
+					<div>
+						<h5><a href="../loader/document/source.api.html">Source-level parser</a></h5>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div>
+			<h2>Documentation</h2>
+			<div>
+				<h3>Low-level structure</h3>
+				<div>
+					<h4><a href="../local/doc/typedoc/modules/slime.runtime.html">SLIME Runtime</a> (<code><a href="../loader/expression.js">loader/expression.js</a></code>)</h4>
+				</div>
+				<div>
+					<h4><a href="../loader/jrunscript/api.html">SLIME Java runtime</a></h4>
 				</div>
 			</div>
 			<div>
+				<h3>Shell: <code>jsh</code></h3>
+				<div>
+					<h4><a href="../jsh/launcher/internal.api.html">Launcher</a> documentation</h4>
+				</div>
+				<div>
+					<h4><a href="../jsh/loader/internal.api.html">Loader</a> documentation</h4>
+				</div>
+			</div>
+			<div>
+				<h3><a href="typescript.api.html">TypeScript integration</a></h3>
+			</div>
+		</div>
+		<div>
+			<h2>Testing</h2>
+			<div>
+				<h3><code><a href="suite.jsh.js">contributor/suite.jsh.js</a></code></h3>
+				Runs all tests, installing Tomcat into the shell if necessary so that browser (and servlet) tests can be run.
+			</div>
+			<div>
+				<h3><code>./wf docker.test</code></h3>
+				Runs the full test suite in Docker.
+			</div>
+			<div>
+				<h3>Suite parts</h3>
 				The suite runs:
 				<ul>
 					<li><code><a href="jrunscript-engines.jsh.js">contributor/jrunscript-engines.jsh.js</a></code>,</li>
@@ -84,16 +232,17 @@ END LICENSE
 				</ul>
 			</div>
 			<div>
-				<h3>Running the browser suite</h3>
+				<h3>Running the full browser suite (implemented in jsapi)</h3>
 				<div>
-					<code>
+					<code>./jsh.bash
 						<a href="../loader/browser/test/suite.jsh.api.html">loader/browser/test/suite.jsh.js</a>
 						-suite <a href="../loader/browser/suite.js">loader/browser/suite.js</a>
+						[-interactive]
 					</code>
 				</div>
 			</div>
 			<div>
-				<h3>Running subsuites, in whole or in part</h3>
+				<h3>Running <code>jrunscript</code>-based subsuites, in whole or in part</h3>
 				<ul>
 					<li>
 						Java tests:
@@ -105,42 +254,187 @@ END LICENSE
 					</li>
 				</ul>
 			</div>
-		</div>
-		<div>
-			<h2>Features</h2>
 			<div>
-				<h3>Built <code>jsh</code> shells</h3>
+				<h3>Testing specific features</h3>
 				<div>
-					<code>./jsh.bash jsh/test/tools/run-in-built-shell.jsh.js <i>script</i> [<i>arguments</i>]</code>.
+					<h4>Built <code>jsh</code> shells</h4>
+					<div>
+						<code>./jsh.bash jsh/test/tools/run-in-built-shell.jsh.js <i>script</i> [<i>arguments</i>]</code>.
+					</div>
+				</div>
+				<div>
+					<h4>Testing Remote Shells Using Mock GitHub</h4>
+					<div>
+						Remote shells, run directly from GitHub, can be "tested" locally using the GitHub mock. This process is
+						currently manual:
+						<ul>
+							<li>
+								Execute <code>./jsh.bash rhino/tools/github/test/manual/jsh.jsh.js serve</code>, which will start
+								a mock GitHub server and create a <code>curl</code> command to execute the shell remotely, emitting
+								that command to the console and (on macOS) copying it to the clipboard.
+							</li>
+							<li>
+								Go to another terminal and execute the <code>curl</code> command emitted to the console, which will
+								run the standard <code>jsh</code> diagnostic script. Confirm the script executes correctly.
+							</li>
+						</ul>
+					</div>
+					<!--
+						Older documentation for the above
+						TODO	check to see whether completely obsolete
+						TODO	very doubtful the part about private repositories is useful; it probably pertains to Bitbucket
+					<div>
+						<h3>Provisioning</h3>
+						<div>
+							<code>jrunscript rhino/jrunscript/api.js jsh jsh/tools/provision/test/server.jsh.js</code>
+						</div>
+						<div>
+							Test: copy and paste the <samp>Testing (standard)</samp> output and make sure it produces a Hello, World message.
+						</div>
+						<div>
+							Testing private repositories requires the private <code>slime-kit</code> repository, and can be invoked as
+							follows:
+							<div>
+								<code>-repository:name slime-kit -repository:location <i>directory where slime-kit is located</i> -repository:script test/provision-script.jsh.js -password <i>password for server to use for davidpcaldwell</i></code>
+							</div>
+						</div>
+					</div>
+					-->
+					<!--
+						More older documentation for the above
+					<h4>Remote <code>jsh</code> shells</h4>
+					<div>
+						See <a href="../jsh/tools/provision/test/plugin.jsh.api.html"><code>jsh.test.provision</code></a>.
+					</div>
+					-->
+				</div>
+				<div>
+					<h4>TypeScript runtime integration</h4>
+					<div>
+						See <code>jsh/tools/test/typescript.jsh.js</code>.
+					</div>
+				</div>
+				<div>
+					<h4>Google Chrome integration</h4>
+					<div>
+						<code>rhino/shell/test/manual/chrome.jsh.js</code>
+						<ul>
+							<li><code>profile</code></li>
+							<li><code>app</code></li>
+							<li><code>close [-exitOnClose]</code>: allows testing the detection of Google Chrome closing. On OS X, the
+								<code>-exitOnClose</code> flag will attempt to terminate Chrome when the last window for the
+								user data directory closes. Upon closure, a message will be printed to the console announcing Chrome
+								has closed.
+							</li>
+						</ul>
+					</div>
 				</div>
 			</div>
 			<div>
-				<h3>Remote <code>jsh</code> shells</h3>
+				<h3>Configuring Supported Test Environments</h3>
 				<div>
-					See <a href="../jsh/tools/provision/test/plugin.jsh.api.html"><code>jsh.test.provision</code></a>.
+					<h4>VM Testing</h4>
+					<div>
+						<h5>Linux: Ubuntu 20.04.2.0 on VMWare</h5>
+						<ul>
+							<li>VMWare</li>
+							<li>Do not use "Easy Install"</li>
+							<li>Legacy BIOS</li>
+							<li>
+								Customize Settings
+								<ul>
+									<li>Save As: slime-linux</li>
+									<li>Sharing
+										<ul>
+											<li>Enable Shared Folders</li>
+											<li>Add source folder with name <code>slime</code> and read/write access</li>
+										</ul>
+									</li>
+								</ul>
+							</li>
+							<li>
+								Installation Wizard
+								<ul>
+									<li>
+										English | Install Ubuntu
+									</li>
+									<li>
+										English (US) - English (US)
+									</li>
+									<li>
+										Minimal installation; Install third-party software: <strong>true</strong>
+									</li>
+									<li>
+										Erase disk and install Ubuntu
+									</li>
+									<li>
+										Where are you? New York
+									</li>
+									<li>
+										<ul>
+											<li>Your name: SLIME Linux Testbed</li>
+											<li>Your computer's name: slime-linux</li>
+											<li>Pick a user name: slime</li>
+											<li>Choose a password: slime</li>
+											<li>Confirm your password: slime</li>
+											<li>Log in automatically</li>
+										</ul>
+									</li>
+									<li>
+										(Remove installation CD and reboot)
+									</li>
+									<li>
+										Connect Your Online Accounts: skip
+									</li>
+									<li>
+										Livepatch: Next
+									</li>
+									<li>
+										Help improve Ubuntu: Yes
+									</li>
+									<li>
+										You're ready to go! Done
+									</li>
+									<li>
+										Install VMWare Tools
+										<ul>
+											<li>sudo apt install open-vm-tools</li>
+											<li>sudo apt install open-vm-tools-desktop</li>
+										</ul>
+									</li>
+									<li>
+										Terminal
+										<ul>
+											<li>sudo apt-get update</li>
+											<li>sudo apt install git</li>
+											<li>git clone https://[user]@github.com/davidpcaldwell/slime src</li>
+											<li>cd /mnt/hgfs/slime</li>
+											<li>./wf test</li>
+										</ul>
+									</li>
+									<li>
+										If <code>hgfs</code> connection is lost somehow, use:
+										<div>
+											<code>sudo vmhgfs-fuse .host:/ /mnt/hgfs/ -o allow_other -o uid=1000</code>
+										</div>
+									</li>
+								</ul>
+							</li>
+						</ul>
+					</div>
 				</div>
-			</div>
-		</div>
-		<div>
-			<h2>Manual testing required</h2>
-			<div>
-				<h3>Google Chrome integration</h3>
 				<div>
-					<code>rhino/shell/test/manual/chrome.jsh.js</code>
+					<h4>Docker</h4>
 					<ul>
-						<li><code>profile</code></li>
-						<li><code>app</code></li>
-						<li><code>close [-exitOnClose]</code>: allows testing the detection of Google Chrome closing. On OS X, the
-							<code>-exitOnClose</code> flag will attempt to terminate Chrome when the last window for the
-							user data directory closes. Upon closure, a message will be printed to the console announcing Chrome
-							has closed.
-						</li>
+						<li>Increase Docker RAM to 4GB</li>
 					</ul>
 				</div>
+				<div>
+				</div>
 			</div>
 		</div>
 		<div>
-			<h2>Specifying Dependencies</h2>
+			<h2>Dependencies: updating</h2>
 			<div>
 				<h3>JDK</h3>
 				<div>
@@ -184,6 +478,9 @@ END LICENSE
 				<div>
 					<h4><code>ncdbg</code></h4>
 					<p>
+						<strong>Note that no version of <code>ncdbg</code> is currently working with SLIME!</strong>
+					</p>
+					<p>
 						The version of <code>ncdbg</code> is specified in
 						<a href="../jsh/tools/install/plugin.jsh.js"><code>jsh/tools/install/plugin.jsh.js</code></a>.
 					</p>
@@ -191,192 +488,13 @@ END LICENSE
 			</div>
 		</div>
 		<div>
-			<h2><a href="typescript.api.html">TypeScript</a></h2>
-		</div>
-		<div>
-			<h2>Testing Environments</h2>
+			<h2>Writing Code</h2>
 			<div>
-				<h3>VM Testing</h3>
-				<div>
-					<h4>Linux</h4>: Ubuntu 20.04.2.0
-					<ul>
-						<li>VMWare</li>
-						<li>Do not use "Easy Install"</li>
-						<li>Legacy BIOS</li>
-						<li>
-							Customize Settings
-							<ul>
-								<li>Save As: slime-linux</li>
-								<li>Sharing
-									<ul>
-										<li>Enable Shared Folders</li>
-										<li>Add source folder with name <code>slime</code> and read/write access</li>
-									</ul>
-								</li>
-							</ul>
-						</li>
-						<li>
-							Installation Wizard
-							<ul>
-								<li>
-									English | Install Ubuntu
-								</li>
-								<li>
-									English (US) - English (US)
-								</li>
-								<li>
-									Minimal installation; Install third-party software: <strong>true</strong>
-								</li>
-								<li>
-									Erase disk and install Ubuntu
-								</li>
-								<li>
-									Where are you? New York
-								</li>
-								<li>
-									<ul>
-										<li>Your name: SLIME Linux Testbed</li>
-										<li>Your computer's name: slime-linux</li>
-										<li>Pick a user name: slime</li>
-										<li>Choose a password: slime</li>
-										<li>Confirm your password: slime</li>
-										<li>Log in automatically</li>
-									</ul>
-								</li>
-								<li>
-									(Remove installation CD and reboot)
-								</li>
-								<li>
-									Connect Your Online Accounts: skip
-								</li>
-								<li>
-									Livepatch: Next
-								</li>
-								<li>
-									Help improve Ubuntu: Yes
-								</li>
-								<li>
-									You're ready to go! Done
-								</li>
-								<li>
-									Install VMWare Tools
-									<ul>
-										<li>sudo apt install open-vm-tools</li>
-										<li>sudo apt install open-vm-tools-desktop</li>
-									</ul>
-								</li>
-								<li>
-									Terminal
-									<ul>
-										<li>sudo apt-get update</li>
-										<li>sudo apt install git</li>
-										<li>git clone https://[user]@github.com/davidpcaldwell/slime src</li>
-										<li>cd /mnt/hgfs/slime</li>
-										<li>./wf test</li>
-									</ul>
-								</li>
-								<li>
-									If <code>hgfs</code> connection is lost somehow, use:
-									<div>
-										<code>sudo vmhgfs-fuse .host:/ /mnt/hgfs/ -o allow_other -o uid=1000</code>
-									</div>
-								</li>
-							</ul>
-						</li>
-					</ul>
-				</div>
-			</div>
-			<div>
-				<h3>Docker Testing</h3>
-				<ul>
-					<li>Increase Docker RAM to 4GB</li>
-				</ul>
-			</div>
-			<div>
-				<h3>Testing Remote Shells Using Mock GitHub</h3>
-				<div>
-					Remote shells, run directly from GitHub, can be "tested" locally using the GitHub mock. This process is
-					currently manual:
-					<ul>
-						<li>
-							Execute <code>./jsh.bash rhino/tools/github/test/manual/jsh.jsh.js serve</code>, which will start
-							a mock GitHub server and create a <code>curl</code> command to execute the shell remotely, emitting
-							that command to the console and (on macOS) copying it to the clipboard.
-						</li>
-						<li>
-							Go to another terminal and execute the <code>curl</code> command emitted to the console, which will
-							run the standard <code>jsh</code> diagnostic script. Confirm the script executes correctly.
-						</li>
-					</ul>
-				</div>
-				<!--
-					Older documentation for the above
-					TODO	check to see whether completely obsolete
-					TODO	very doubtful the part about private repositories is useful; it probably pertains to Bitbucket
-				<div>
-					<h3>Provisioning</h3>
-					<div>
-						<code>jrunscript rhino/jrunscript/api.js jsh jsh/tools/provision/test/server.jsh.js</code>
-					</div>
-					<div>
-						Test: copy and paste the <samp>Testing (standard)</samp> output and make sure it produces a Hello, World message.
-					</div>
-					<div>
-						Testing private repositories requires the private <code>slime-kit</code> repository, and can be invoked as
-						follows:
-						<div>
-							<code>-repository:name slime-kit -repository:location <i>directory where slime-kit is located</i> -repository:script test/provision-script.jsh.js -password <i>password for server to use for davidpcaldwell</i></code>
-						</div>
-					</div>
-				</div>
-				-->
-			</div>
-		</div>
-		<div>
-			<h2>Work In Progress</h2>
-			<div>
-				<h3><a href="../loader/api/test/fifty/README.html">Fifty</a></h3>
-			</div>
-			<div>
-				<h3>GraalVM</h3>
-				<div>
-					To install: from script <code>jsh.shell.tools.graal.install()</code>, or from command line
-					<code>./jsh.bash jsh/tools/install/graal.jsh.js</code>.
-				</div>
-				<div>
-					To run sample script:
-					<code>env JSH_ENGINE=graal ./jsh.bash jsh/test/jsh-data.jsh.js</code>
-				</div>
-				<div>
-					To run sample script in debugger:
-					<code>env JSH_ENGINE=graal JSH_DEBUG_SCRIPT=graal ./jsh.bash jsh/test/jsh-data.jsh.js</code>
-				</div>
-			</div>
-			<div>
-				<h3><a href="../loader/document/api.html">loader/document</a> (HTML parsing)</h3>
-				<div>
-					Goal would be to replace DOM in loader/browser/test/api.js and JaspiHtml in jsh/unit/html.js; this feeds into
-					loader/api/api.html.js as the <code>html</code> argument to ApiHtmlTests.
-				</div>
-				<div>
-					First step should be to build an adapter at loader/api/document-adapter.js that converts a loader/document
-					document into a JSAPI-compatible html object. An additional property can be added to jsh/unit/html.js
-					PartDescriptor argument to specify the creation of this new kind of document in loadApiHtml().
-				</div>
-				<div>
-					Test case which runs the above scenario:
-					<code>./jsh.bash loader/document/test/suite.jsh.js -experimental -part document</code>
-				</div>
-				<div>
-					An equivalent browser migration for replacing the JSAPI DOM in loader/browser/test/api.js is then needed.
-				</div>
-				<div>
-					<h4><a href="https://jsoup.org/">JSoup</a></h4>
-					<a href="https://jsoup.org/apidocs/overview-summary.html">API</a>
-				</div>
-				<div>
-					<h4><a href="../loader/document/source.api.html">Source-level parser</a></h4>
-				</div>
+				SLIME uses TypeScript for type definition (a few types are still defined in JavaScript for historical reasons).
+				However, the SLIME implementation is written in JavaScript. TypeScript
+				information is represented in the code using TypeScript's JSDoc integration.
+				See the <a href="https://www.typescriptlang.org/docs/handbook/type-checking-javascript-files.html#supported-jsdoc">TypeScript documentation</a>
+				on using JSDoc to specify TypeScript information for details.
 			</div>
 		</div>
 	</body>

@@ -16,7 +16,6 @@
 			});
 		};
 
-		var data = new $api.Properties({ array: parameters.form.controls }).object();
 		var add = function(id,part) {
 			suite.part(id, part);
 		};
