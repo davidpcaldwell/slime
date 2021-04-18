@@ -73,6 +73,11 @@ void strip_trailing_slash(char *path) {
 	}
 }
 
+#if defined __APPLE__
+#include <libproc.h>
+#include <libgen.h>
+#include <unistd.h>
+
 int javaLaunch(char *JAVA_HOME, int argc, char **argv) {
 	debug("JAVA_HOME = %s\n", JAVA_HOME);
 	char **args = malloc( (sizeof(char*) * (argc+2) ) );
@@ -104,11 +109,6 @@ int javaLaunch(char *JAVA_HOME, int argc, char **argv) {
 	}
 	return 0;
 }
-
-#if defined __APPLE__
-#include <libproc.h>
-#include <libgen.h>
-#include <unistd.h>
 
 #define JSH_PATHNAME_BUFFER_SIZE PROC_PIDPATHINFO_MAXSIZE*sizeof(char)
 int programAbsolutePath(char *argsv0, char *rv, int size) {
