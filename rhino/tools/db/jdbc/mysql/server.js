@@ -11,8 +11,20 @@
 //	Contributor(s):
 //	END LICENSE
 
+//@ts-check
 (
-	function() {
+	/**
+	 *
+	 * @param { slime.jrunscript.db.mysql.server.Context } $context
+	 * @param { slime.jrunscript.db.mysql.server.Exports } $exports
+	 */
+	function($context,$exports) {
+		var jsh = $context.library;
+
+		/**
+		 *
+		 * @param { { base: slime.jrunscript.file.Directory, port: number, data?: slime.jrunscript.file.Pathname } } o
+		 */
 		$exports.Server = function(o) {
 			//	var SOCKET = jsh.file.Pathname("/tmp/mysql.sock");
 			//
@@ -64,7 +76,6 @@
 			//		process = null;
 			//	}
 
-			if (!o) o = {};
 			if (!o.data) o.data = o.base.getRelativePath("data");
 
 			this.initialize = function() {
@@ -169,5 +180,6 @@
 			//	);
 		}
 	}
-)();
+//@ts-ignore
+)($context,$exports);
 

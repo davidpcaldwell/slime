@@ -93,5 +93,6 @@ namespace slime.jsh {
 		time: slime.time.Exports
 		ip: slime.jrunscript.ip.Exports
 		httpd: slime.jsh.httpd.Exports
+		db: any
 	}
 }

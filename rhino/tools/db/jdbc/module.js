@@ -11,8 +11,16 @@
 //	Contributor(s):
 //	END LICENSE
 
+//@ts-check
 (
-	function() {
+	/**
+	 *
+	 * @param { slime.$api.Global } $api
+	 * @param { any } $context
+	 * @param { slime.Loader } $loader
+	 * @param { any } $exports
+	 */
+	function($api,$context,$loader,$exports) {
 		if (!$context.api || !$context.api.js) {
 			throw new Error("Required: $context.api.js");
 
@@ -53,11 +61,21 @@
 						return $loader.file("drivers.js", Object.assign({}, { api: api }, configuration));
 					},
 				});
+			};
+
+			var code = {
+				/** @type { slime.jrunscript.db.mysql.Factory } */
+				mysql: $loader.factory("mysql/module.js")
 			}
 
-			if (getJavaClass("com.mysql.jdbc.Driver")) {
-				$exports.mysql = $loader.module("mysql/module.js",drivers);
-			}
+			$exports.mysql = code.mysql({
+				jdbc: (getJavaClass("com.mysql.jdbc.Driver")) ? drivers : void(0),
+				library: {
+					java: $context.api.java,
+					shell: $context.api.shell
+				}
+			});
 		})();
 	}
-)();
+//@ts-ignore
+)($api,$context,$loader,$exports);

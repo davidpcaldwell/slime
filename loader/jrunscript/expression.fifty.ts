@@ -395,6 +395,9 @@ namespace slime.jrunscript {
 			awt: {
 				Desktop: any
 			}
+			sql: {
+				Types: any
+			}
 		}
 		javax: any
 		javafx: any

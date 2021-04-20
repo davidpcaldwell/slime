@@ -29,11 +29,39 @@ plugin({
 			api: {
 				js: jsh.js,
 				java: jsh.java,
-				io: jsh.io
+				io: jsh.io,
+				shell: jsh.shell
 			},
 			getJavaClass: function(name) {
 				return jsh.java.getClass(name);
 			}
 		});
+
+		/**
+		 *
+		 * @param { { to: slime.jrunscript.file.Pathname } } p
+		 */
+		jsh.db.jdbc.mysql.install = function(p) {
+			if (jsh.shell.os.name == "Mac OS X") {
+				jsh.tools.install.install({
+					url: "https://downloads.mysql.com/archives/get/p/23/file/mysql-8.0.23-macos10.15-x86_64.tar.gz",
+					to: p.to
+				});
+				return {
+					server: function(pp) {
+						return new jsh.db.jdbc.mysql.server.Server(
+							$api.Object.compose(
+								{
+									base: p.to.directory,
+									//	TODO	do not hard-code
+									port: 3306,
+									data: (pp && pp.data) ? pp.data : void(0)
+								}
+							)
+						);
+					}
+				}
+			}
+		}
 	}
 })
