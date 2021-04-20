@@ -61,6 +61,12 @@ namespace slime.jrunscript.db.mysql {
 		}
 
 		export type Factory = slime.loader.Product<Context,Exports>
+
+		export type Server = {
+			initialize: () => void
+			start: () => void
+			stop: () => void
+		}
 	}
 
 	(
@@ -68,7 +74,6 @@ namespace slime.jrunscript.db.mysql {
 			var jsh = fifty.global.jsh;
 			var verify = fifty.verify;
 			fifty.tests.suite = function() {
-				jsh.shell.console("hello");
 				//	TODO	fifty.jsh.file is undocumented
 				var tmp = fifty.jsh.file.location();
 				var installed = jsh.db.jdbc.mysql.install({
@@ -79,6 +84,10 @@ namespace slime.jrunscript.db.mysql {
 				verify(server).evaluate.property("start").is.type("function");
 				verify(server).evaluate.property("stop").is.type("function");
 				verify(server).evaluate.property("foo").is.type("undefined");
+				server.initialize();
+				server.start();
+				server.stop();
+				jsh.shell.console("tmp = " + tmp);
 			}
 		}
 	//@ts-ignore

@@ -10,6 +10,12 @@
  * See [old documentation](../src/jsh/etc/api.html).
  */
 namespace slime.jsh {
+	namespace db.jdbc {
+		interface Exports {
+			//	interface is built out via Declaration Merging (https://www.typescriptlang.org/docs/handbook/declaration-merging.html)
+		}
+	}
+
 	/**
 	 * The global `jsh` object provided by the `jsh` shell.
 	 *
@@ -93,6 +99,8 @@ namespace slime.jsh {
 		time: slime.time.Exports
 		ip: slime.jrunscript.ip.Exports
 		httpd: slime.jsh.httpd.Exports
-		db: any
+		db: {
+			jdbc: slime.jsh.db.jdbc.Exports
+		}
 	}
 }

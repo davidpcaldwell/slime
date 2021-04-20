@@ -79,7 +79,12 @@
 			if (!o.data) o.data = o.base.getRelativePath("data");
 
 			this.initialize = function() {
-				if (true) {
+				var VERSION_UNDER_57 = false;
+				if (VERSION_UNDER_57) {
+					var command = o.base.getFile("scripts/mysql_install_db");
+					if (!command) {
+						throw new Error("No file at " + o.base.getRelativePath("scripts/mysql_install_db"));
+					}
 					jsh.shell.run({
 						command: o.base.getFile("scripts/mysql_install_db"),
 						arguments: [
@@ -88,7 +93,6 @@
 						]
 					});
 				} else {
-					//	TODO	this is MySQL 5.7 version
 					jsh.shell.run({
 						command: o.base.getFile("bin/mysqld"),
 						arguments: [
