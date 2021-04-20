@@ -15,17 +15,35 @@
 (
 	/**
 	 *
-	 * @param { slime.jrunscript.db.mysql.server.Context } $context
-	 * @param { slime.jrunscript.db.mysql.server.Exports } $exports
+	 * @param { slime.jrunscript.db.mysql.local.Context } $context
+	 * @param { (value: slime.jrunscript.db.mysql.local.Exports) => void } $export
 	 */
-	function($context,$exports) {
+	function(Packages,JavaAdapter,$context,$export) {
 		var jsh = $context.library;
 
-		/**
-		 *
-		 * @param { { base: slime.jrunscript.file.Directory, port: number, data?: slime.jrunscript.file.Pathname } } o
-		 */
-		$exports.Server = function(o) {
+		/** @type { slime.jrunscript.db.mysql.local.Exports["Client"] } */
+		var Client = function(o) {
+			var command = function(args) {
+				return {
+					command: o.program,
+					arguments: args
+				};
+			};
+
+			return {
+				command: function(p) {
+					var args = [];
+					if (p.host) args.push("--host", p.host);
+					if (p.port) args.push("--port", String(p.port));
+					if (p.user) args.push("--user", p.user);
+					if (p.execute) args.push("--execute", p.execute);
+					return command(args);
+				}
+			};
+		}
+
+		/** @type { slime.jrunscript.db.mysql.local.Exports["Server"] } */
+		var Server = function(o) {
 			//	var SOCKET = jsh.file.Pathname("/tmp/mysql.sock");
 			//
 			//	var process;
@@ -76,9 +94,10 @@
 			//		process = null;
 			//	}
 
+			if (!o.port) o.port = 3306;
 			if (!o.data) o.data = o.base.getRelativePath("data");
 
-			this.initialize = function() {
+			var initialize = function() {
 				var VERSION_UNDER_57 = false;
 				if (VERSION_UNDER_57) {
 					var command = o.base.getFile("scripts/mysql_install_db");
@@ -106,7 +125,7 @@
 
 			var server;
 
-			this.start = function(p) {
+			var start = function(p) {
 				var started = new jsh.java.Thread.Monitor();
 
 				jsh.shell.console("Starting mysqld ...");
@@ -158,7 +177,7 @@
 				jsh.shell.console("mysqld start detected.");
 			};
 
-			this.stop = function(p) {
+			var stop = function(p) {
 				if (server) {
 					jsh.shell.console("Stopping mysqld ...");
 					server.kill();
@@ -169,21 +188,32 @@
 				}
 			};
 
-			//	TODO	 is this needed?
-			//	var object = this;
-			//
-			//	Packages.java.lang.Runtime.getRuntime().addShutdownHook(
-			//		new JavaAdapter(
-			//			Packages.java.lang.Thread,
-			//			{
-			//				run: function() {
-			//					object.stop();
-			//				}
-			//			}
-			//		)
-			//	);
+			var rv = {
+				initialize: initialize,
+				start: start,
+				stop: stop
+			};
+
+			//	Without this shutdown hook, forked server process will outlive VM
+			Packages.java.lang.Runtime.getRuntime().addShutdownHook(
+				new JavaAdapter(
+					Packages.java.lang.Thread,
+					{
+						run: function() {
+							rv.stop();
+						}
+					}
+				)
+			);
+
+			return rv;
 		}
+
+		$export({
+			Server: Server,
+			Client: Client
+		});
 	}
 //@ts-ignore
-)($context,$exports);
+)(Packages,JavaAdapter,$context,$export);
 

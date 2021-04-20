@@ -210,11 +210,11 @@
 		}
 
 		var code = {
-			/** @type { slime.jrunscript.db.mysql.server.Factory } */
-			server: $loader.factory("server.js")
+			/** @type { slime.jrunscript.db.mysql.local.Factory } */
+			local: $loader.factory("local.js")
 		}
 
-		$exports.server = code.server({
+		$exports.local = code.local({
 			library: $context.library
 		});
 	}

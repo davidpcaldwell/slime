@@ -4,7 +4,8 @@ namespace slime.jsh.db.jdbc {
 			install: (p: {
 				to: slime.jrunscript.file.Pathname
 			}) => {
-				server: (p?: { data?: slime.jrunscript.file.Pathname }) => slime.jrunscript.db.mysql.server.Server
+				server: (p?: { port?: number, data?: slime.jrunscript.file.Pathname }) => slime.jrunscript.db.mysql.server.Server
+				client: () => slime.jrunscript.db.mysql.client.Client
 			}
 		}
 	}

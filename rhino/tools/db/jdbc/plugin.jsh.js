@@ -55,16 +55,21 @@
 						});
 						return {
 							server: function(pp) {
-								return new jsh.db.jdbc.mysql.server.Server(
+								return jsh.db.jdbc.mysql.local.Server(
 									$api.Object.compose(
 										{
 											base: p.to.directory,
 											//	TODO	do not hard-code
-											port: 3306,
+											port: (pp && pp.port) ? pp.port : void(0),
 											data: (pp && pp.data) ? pp.data : void(0)
 										}
 									)
 								);
+							},
+							client: function() {
+								return jsh.db.jdbc.mysql.local.Client({
+									program: p.to.directory.getFile("bin/mysql")
+								});
 							}
 						}
 					} else {
