@@ -6,6 +6,9 @@ namespace slime.jsh.wf {
 			commit?: (p: { message: string }) => void
 		}
 
+		/**
+		 * Implements the standard `wf` commands provided by `jsh.wf.cli.initialize()`.
+		 */
 		export interface Interface {
 			eslint: jsh.wf.cli.Command
 
@@ -22,6 +25,7 @@ namespace slime.jsh.wf {
 			status: jsh.wf.cli.Command
 
 			test: jsh.wf.cli.Command
+
 			submodule: {
 				/**
 				 * `--path <path-to-submodule>`
@@ -32,7 +36,31 @@ namespace slime.jsh.wf {
 				 */
 				update: jsh.wf.cli.Command
 				reset: jsh.wf.cli.Command
-			},
+			}
+
+			/**
+			 * Attempts to commit the current local changes.
+			 *
+			 * Steps:
+			 *
+			 * * Check whether up to date with origin.
+			 *
+			 * * Require that git identity be set.
+			 *
+			 * * Do not allow untracked files to be present.
+			 *
+			 * * Ensure linting passes, if linting is defined.
+			 *
+			 * * Make sure submodules are not modified, if submodules are present.
+			 *
+			 * * Ensure `tsc` checking passes.
+			 *
+			 * * Ensure tests pass.
+			 *
+			 * * Commit
+			 *
+			 * * Push
+			 */
 			commit: jsh.wf.cli.Command
 
 			documentation: jsh.wf.cli.Command

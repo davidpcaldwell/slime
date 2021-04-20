@@ -32,14 +32,15 @@ ${PROJECT}/[<i>path/to/slime</i>]/tools/wf "$@"
 	</div>
 	<div>
 		<h2><code>wf.js</code></h2>
+		<!--	TODO	document jsh.wf.cli.initialize() -->
 		<div>
 			Projects may provide a <code>wf.js</code> script, which should be an ordinary SLIME module (see the definition of
 			<code>module()</code> in the <a href="../loader/api.html">Loader</a> documentation), which will be loaded with
-			a <a href="../local/doc/typedoc/interfaces/jsh.wf.cli.context.html"><code>$context</code></a> providing project
+			a <a href="../local/doc/typedoc/interfaces/slime.jsh.wf.cli.context.html"><code>$context</code></a> providing project
 			information. Each function it exports
 			will be interpreted as a command which can be executed by name, and will receive an argument specified by
-			<a href="../local/doc/typedoc/interfaces/jsh.wf.cli.arguments.html">jsh.wf.cli.Arguments</a>. Commands can use the
-			<a href="../local/doc/typedoc/modules/jsh.wf.html"><code>jsh.wf</code></a> APIs as part of their implementation.
+			<a href="../local/doc/typedoc/interfaces/slime.jsh.wf.cli.arguments.html">jsh.wf.cli.Arguments</a>. Commands can use the
+			<a href="../local/doc/typedoc/modules/slime.jsh.wf.html"><code>jsh.wf</code></a> APIs as part of their implementation.
 		</div>
 		<div>
 			If an <code>initialize</code> command is provided, it is executed prior to every command (and should thus be
