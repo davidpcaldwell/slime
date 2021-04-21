@@ -153,6 +153,20 @@ namespace slime.jsh.wf {
 					fifty.verify(result).stdio.evaluate(function(stdio) {
 						return stdio.error.indexOf("Found untracked files: b") != -1;
 					}).is(true);
+
+					var tscresult: { status: number, stdio: any } = jsh.shell.run({
+						command: wf,
+						arguments: ["tsc"],
+						directory: repository.directory,
+						stdio: {
+							output: String,
+							error: String
+						},
+						evaluate: function(result) { return result; }
+					});
+					fifty.verify(tscresult).stdio.evaluate(function(stdio) {
+						return stdio.error.indexOf("Passed.") != -1
+					}).is(true);
 				}
 			}
 		//@ts-ignore
