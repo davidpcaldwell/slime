@@ -1,3 +1,9 @@
+namespace slime.jsh {
+	export interface Global {
+		wf: slime.jsh.wf.Exports
+	}
+}
+
 /**
  * A set of APIs that can be helpful in implementing tasks related to software development. The [[Exports]] object represents the
  * main `jsh.wf` APIs project authors can use in constructing their own `wf` commands, including the `cli.initialize` method that
@@ -161,12 +167,32 @@ namespace slime.jsh.wf {
 			tsc: (p?: { project: slime.jrunscript.file.Directory }) => void
 			typedoc: (p?: { project: slime.jrunscript.file.Directory }) => void
 		}
+	}
 
+	(
+		function(
+			fifty: slime.fifty.test.kit
+		) {
+			fifty.tests.exports = {};
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export interface Exports {
 		/**
 		 * Errs if files untracked by Git are found in the given repository.
 		 */
-		prohibitUntrackedFiles: (p: { repository: slime.jrunscript.git.Repository.Local }, events?: $api.Events.Function.Receiver) => void
+		 prohibitUntrackedFiles: (p: { repository: slime.jrunscript.git.Repository.Local }, events?: $api.Events.Function.Receiver) => void
 	}
+
+	(
+		function(fifty: slime.fifty.test.kit) {
+			fifty.tests.exports.prohibitUntrackedFiles = function() {
+				fifty.global.jsh.shell.console("foo");
+			}
+		}
+	//@ts-ignore
+	)(fifty)
 
 	export interface Exports {
 		/**
@@ -188,8 +214,6 @@ namespace slime.jsh.wf {
 		) {
 			var jsh = fifty.global.jsh;
 			var verify = fifty.verify;
-
-			fifty.tests.exports = {};
 
 			fifty.tests.exports.requireGitIdentity = function() {
 				run(fifty.tests.exports.requireGitIdentity.first);

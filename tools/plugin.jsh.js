@@ -410,7 +410,11 @@
 						var submodule = jsh.tools.git.Repository({ directory: p.repository.directory.getSubdirectory(sub.path) });
 						var status = submodule.status();
 						if (status.paths) {
-							throw new Error("Submodule " + sub.path + " is modified.");
+							throw new Error(
+								"Submodule " + sub.path + " " + submodule + " "
+								+ "is modified in " + p.repository
+								+ " paths=" + JSON.stringify(status.paths)
+							);
 						}
 					});
 				});
