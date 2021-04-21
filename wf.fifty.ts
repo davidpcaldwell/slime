@@ -7,6 +7,15 @@ namespace slime {
 			 */
 			initialize: slime.jsh.wf.cli.Interface["initialize"]
 
+			vscode: {
+				java: {
+					/**
+					 * Removes the VSCode extension information about the project and explains how to regenerate it.
+					 */
+					refresh: slime.jsh.wf.cli.Command
+				}
+			}
+
 			git: {
 				branches: {
 					clean: slime.jsh.wf.cli.Command

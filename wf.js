@@ -53,6 +53,25 @@
 			}
 		};
 
+		function synchronizeEclipseSettings() {
+			//	copy project settings to Eclipse project if they differ from current settings
+			var filename = "org.eclipse.jdt.core.prefs";
+			var destination = $context.base.getSubdirectory(".settings").getRelativePath(filename);
+			var now = (destination.file) ? destination.file.read(String) : void(0);
+			var after = $context.base.getFile("tools/" + filename).read(String);
+			if (now != after) {
+				$context.base.getFile("tools/" + filename).copy(
+					$context.base.getSubdirectory(".settings").getRelativePath(filename),
+					{
+						filter: function() {
+							return true;
+						}
+					}
+				);
+				jsh.shell.console("VSCode: Execute the 'Java: Clean the Java language server workspace' command to update Hava settubgs.");
+			}
+		}
+
 		$exports.initialize = function() {
 			//	TODO	could consider whether we can wire our commit process into the git hooks mechanism:
 			//			git config core.hooksPath contributor/hooks
@@ -60,26 +79,37 @@
 
 			var isEclipseProject = Boolean($context.base.getSubdirectory(".settings"));
 			if (isEclipseProject) {
-				//	copy project settings to Eclipse project if they differ from current settings
-				var filename = "org.eclipse.jdt.core.prefs";
-				var destination = $context.base.getSubdirectory(".settings").getRelativePath(filename);
-				var now = (destination.file) ? destination.file.read(String) : void(0);
-				var after = $context.base.getFile("tools/" + filename).read(String);
-				if (now != after) {
-					$context.base.getFile("tools/" + filename).copy(
-						$context.base.getSubdirectory(".settings").getRelativePath(filename),
-						{
-							filter: function() {
-								return true;
-							}
-						}
-					);
-					jsh.shell.console("VSCode: Execute the 'Java: Clean the Java language server workspace' command to update.");
-				}
+				synchronizeEclipseSettings();
 			}
 
 			//	TODO	should set up eslint here
 		};
+
+		$exports.vscode = {
+			java: {
+				refresh: function() {
+					function removeIfPresent(path) {
+						var location = $context.base.getRelativePath(path);
+						if (location.file) {
+							location.file.remove();
+						} else if (location.directory) {
+							location.directory.remove();
+						}
+					}
+
+					removeIfPresent(".settings");
+					removeIfPresent(".project");
+					removeIfPresent(".classpath");
+					removeIfPresent("bin");
+
+					jsh.shell.console("To complete the process of re-generating the VSCode project:");
+					jsh.shell.console("VSCode: Execute the 'Java: Clean the Java language server workspace' command.");
+					jsh.shell.console("When prompted, choose Restart and delete.");
+					jsh.shell.console("When prompted to import Java projects in the workspace, choose Yes.");
+					jsh.shell.console("After the import is complete, run the wf initialize command and follow its instructions.");
+				}
+			}
+		}
 
 		/**
 		 * @param { { logs: slime.jrunscript.file.Directory } } p
