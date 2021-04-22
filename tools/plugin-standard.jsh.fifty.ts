@@ -76,7 +76,7 @@ namespace slime.jsh.wf {
 		}
 
 		/**
-		 * Implements the standard `wf` commands provided by `jsh.wf.cli.initialize()`.
+		 * Implements the standard `wf` commands provided by {@link slime.jsh.wf.Exports | `jsh.wf.cli.initialize()`}.
 		 */
 		export interface Interface {
 			eslint: jsh.wf.cli.Command

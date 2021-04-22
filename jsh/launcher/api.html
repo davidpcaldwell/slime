@@ -135,12 +135,16 @@ END LICENSE
 					<li>
 						Finally, it checks <code>PATH</code> for a suitable <code>jrunscript</code> command.
 					</li>
+					<li>
+						If no Java installation is found, a default JDK will be installed into the shell at
+						<code>local/jdk/default</code>; see "Installing a JDK for <code>jsh</code>," below.
+					</li>
 				</ul>
 			</div>
 		</div>
 	</div>
 	<div>
-		<h1>Installing a JDK for <code>jsh</code></h1>
+		<h1>Installing JDKs for <code>jsh</code></h1>
 		<div>
 			<code>jsh.bash</code> is also capable of installing JDKs in both the shell and user installation directories.
 			The following arguments are accepted:
@@ -161,7 +165,7 @@ END LICENSE
 				</li>
 				<li>
 					<code>--install-user-jdk</code>: Installs the default JDK (currently 8) as the SLIME user JDK, which will
-					be accessible to all SLIME installations on the system.
+					be accessible to all SLIME installations run by the current user.
 				</li>
 			</ul>
 		</div>
@@ -276,7 +280,9 @@ END LICENSE
 							<h3><code>profiler</code> or <code>profiler:<i>name1</i>=<i>value1</i>,<i>name2</i>=<i>value2</i></code>: Use the SLIME profiler, which requires Rhino</h3>
 							<!--	test: jsh/launcher/test/manual/debug-profiler.bash -->
 							<div>
-								<strong>(Not recommended to use <code>profiler</code> or <code>profiler:...</code> settings directly; see below.)</strong>
+								<strong>
+									(Not recommended to use <code>profiler</code> or <code>profiler:...</code> settings directly.
+									See below information about a wrapper script that provides appropriate configuration.)</strong>
 							</div>
 							<div>
 								<p>
@@ -381,7 +387,8 @@ END LICENSE
 					<!--	Tested in jsh/launcher/test/suite.jsh.js	-->
 					<td><code>jsh.engine.rhino.optimization</code></td>
 					<td>
-						Sets the Rhino optimization level to be used for running the shell.
+						Sets the <a href="https://developer.mozilla.org/en-US/docs/Mozilla/Projects/Rhino/Optimization">Rhino optimization level</a>
+						to be used for running the shell.
 						<!--	What happens in installed shells if this is specified and Rhino is absent? Present?	-->
 					</td>
 				</tr>

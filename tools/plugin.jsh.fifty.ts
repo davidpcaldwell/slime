@@ -6,7 +6,8 @@ namespace slime.jsh {
 
 /**
  * A set of APIs that can be helpful in implementing tasks related to software development. The [[Exports]] object represents the
- * main `jsh.wf` APIs project authors can use in constructing their own `wf` commands, including the `cli.initialize` method that
+ * main `jsh.wf` APIs project authors can use in constructing their own `wf` commands, including the
+ * {@link slime.jsh.wf.Exports | cli.initialize} method that
  * provides a standard project {@link slime.jsh.wf.standard.Interface | Interface} given a
  * {@link slime.jsh.wf.standard.Project | Project} definition.
  */

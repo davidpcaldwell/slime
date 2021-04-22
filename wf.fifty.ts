@@ -90,7 +90,7 @@ namespace slime {
 				var jsh = fifty.global.jsh;
 
 				fifty.tests.suite = function() {
-					fifty.run(function() {
+					fifty.run(function ensureInitializeInstallsEslint() {
 						var fresh = test.fixtures.clone();
 						test.fixtures.configure(fresh);
 						test.fixtures.wf(fresh, {

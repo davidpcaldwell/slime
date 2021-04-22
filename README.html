@@ -28,7 +28,16 @@ END LICENSE
 		</script>
 		<script src="loader/api/api.js"></script>
 		<style>
-			#platforms, #java, #java-compatibility {
+			/*	Try to undo some of the unfortunate stuff in api.css inherited from JSAPI */
+			ol { counter-reset: item 0 }
+			ol>li { display: block; }
+			ol>li:before { content: "arguments[" counter(item) "] "; counter-increment: item; }
+			ol>li:before { content: counter(item) ". "; counter-increment: item; }
+			ol>li:before { font-family: inherit; font-weight: normal }
+
+			#steps code { background-color: black; color: white; padding: 0.3em 0.5em 0.1em 0.5em; font-weight: bold; }
+
+			#what, #quickstart, #platforms, #platforms>div, #java-compatibility {
 				border: 1px solid black;
 				padding: 1em;
 			}
@@ -39,42 +48,64 @@ END LICENSE
 		</script>
 	</head>
 	<body>
-		<div>
-			The SLIME project provides tools for JavaScript development on several platforms, including the Java platform
-			(using the Rhino, Nashorn, or GraalVM JavaScript engines), Java servlet-based servers, the browser, and macOS's
-			JXA JavaScript automation framework.
-		</div>
-		<div>
-			<h2>Getting Started</h2>
+		<h1>SLIME: JavaScript with Java and more</h1>
+		<div id="what">
+			<h2>What is SLIME?</h2>
 			<div>
+				The SLIME project provides tools for JavaScript development on several platforms:
+				<ul>
+					<li>Java: Mozilla Rhino</li>
+					<li>Java: Nashorn</li>
+					<li>Java: GraalVM</li>
+					<li>Java servlet containers (Tomcat, Jetty, etc.)</li>
+					<li>Browsers: Chrome, Firefox, Safari</li>
+					<li>JXA: the macOS JavaScript automation framework</li>
+				</ul>
+			</div>
+		</div>
+		<div id="quickstart">
+			<h2>Getting Started</h2>
+			<ol id="steps">
+				<li><code>git clone https://github.com/davidpcaldwell/slime.git</code></li>
+				<li><code>cd slime; ./jsh.bash jsh/test/jsh-data.jsh.js</code> - runs a sample program emitting information about
+					the installed shell.</li>
+			</ol>
+			<div>
+				<h3>Getting the code</h3>
 				The SLIME code must be obtained, either
-				by cloning it using <code>git clone https://github.com/davidpcaldwell/slime.git</code> or
+				by cloning it from GitHub or
 				<a href="https://github.com/davidpcaldwell/slime/archive/refs/heads/master.zip">downloading it</a> and unzipping
-				it. In the future (see <a href="https://github.com/davidpcaldwell/slime/issues/280">issue 280</a>), it will be
+				it. In the near future (see <a href="https://github.com/davidpcaldwell/slime/issues/280">issue 280</a>), it will be
 				possible to install SLIME via a single command on a client machine.
 			</div>
 			<div>
-				At that point, it is ready to use; SLIME is capable of installing its own dependencies over the internet.
-				The top-level <code>jsh.bash</code> script can be used to, for example,
-				run a script that will output information describing the shell (from the source directory):
-				<code>
-					./jsh.bash jsh/test/jsh-data.jsh.js
-				</code>
+				<h3>Executing scripts</h3>
+				<p>
+					At that point, it is ready to use; SLIME is capable of installing its own dependencies (including Java, Node.js,
+					and TypeScript) over the
+					internet.
+				</p>
+				<p>
+					The top-level <code><a href="jsh/launcher/api.html">jsh.bash</a></code> script can be used to run scripts.
+					<code>jsh</code> scripts that are top-level scripts and intended to be used as main programs are denoted by the
+					suffix <code>.jsh.js</code>. The example invocation above will
+					run a script that will output a JSON data structure describing the shell.
+				</p>
 			</div>
 		</div>
 		<div id="platforms">
 			<h2>Provided Platforms</h2>
 			<div id="java">
 				<h3>Java</h3>
-				<div>
+				<p>
 					SLIME's Java support allows applications to be written in JavaScript that call out to Java platform libraries.
 					As such, it is an ideal platform for migrating Java software toward JavaScript.
-				</div>
-				<div>
-					SLIME provides two Java platforms: the <code>jsh</code> scripting platform that runs on the JDK, and the Java
+				</p>
+				<p>
+					SLIME provides two Java platforms: the <code>jsh</code> scripting platform that runs on the JVM, and the Java
 					servlet platform that runs on a standard Java servlet implementation. <code>jsh</code> also provides the ability
-					to run a servlet implementation from within its shell.
-				</div>
+					to run a servlet container from within its shell.
+				</p>
 				<div id="java-compatibility">
 					<h4>Compatibility</h4>
 					<div>
@@ -114,7 +145,7 @@ END LICENSE
 			</div>
 			<div>
 				<h3><a href="loader/browser/api.html">Browser</a>: a SLIME environment for the browser</h3>
-				Browser support is less mature than Java support, but is extensively tested in Google Chrome, Firefox and Safari.
+				Browser support is less mature than Java support, but is currently tested in Google Chrome, Firefox and Safari.
 			</div>
 			<div>
 				<h3><a href="jxa/api.html">JXA</a>: a SLIME environment for use in macOS automation</h3>
@@ -122,28 +153,36 @@ END LICENSE
 			</div>
 		</div>
 		<div>
-			<h2><a href="local/doc/typedoc/index.html">SLIME TypeScript Documentation</a></h2>
-		</div>
-		<div>
-			<h2>Tools</h2>
+			<h2>Creating projects using SLIME</h2>
 			<div>
-				<h3>Command-line tools</h3>
+				<h3>SLIME Definitions (documentation and testing)</h3>
+				<p>
+					SLIME has the concept of a <dfn>definition</dfn>, which is a construct that provides both documentation and
+					a test suite for a particular software module.
+				</p>
+				<p>
+					The best way to create SLIME definitions is via the Fifty
+					definition framework, which uses TypeScript to provide type definitions and <code>tsdoc</code>-compatible
+					documentation (and uses <a href="https://typedoc.org/">Typedoc</a> to
+					publish that documentation), and allows
+					inline tests to be authored within those TypeScript definitions. A simple example that contains tests
+					for the project's <code>wf</code> commands can be found at <a href="wf.fifty.ts?as=text"><code>wf.fifty.ts</code></a>.
+				</p>
+				<p>
+				</p>
 				<div>
-					<h4>Testing</h4>
-					<div>
-						SLIME has the concept of a <dfn>definition</dfn>, which is a construct that provides both documentation and
-						a test suite for a particular software module.
-					</div>
-					<div>
-						The best way to create definitions in SLIME is via the <a href="loader/api/test/fifty/README.html">Fifty</a>
-						definition framework, which uses TypeScript to provide type definitions and documentation, and allows
-						inline tests to be authored within those TypeScript definitions.
-					</div>
-					<div>
-						Some SLIME APIs are defined via the deprecated JSAPI format, which was a literate definition that allowed
-						documentation and tests
-						to be defined via annotated HTML.
-					</div>
+					<p>
+						Documentation for SLIME itself is mostly contained in SLIME definitions.
+					</p>
+					<p>
+						Many SLIME APIs are currently defined via the deprecated JSAPI definition format, which used literate
+						definitions that allowed documentation and tests to be defined via annotated HTML, using HTML constructs for
+						documentation and embedded scripts for testing.
+					</p>
+					<h3><a href="local/doc/typedoc/index.html">SLIME Definitions</a> as published by Typedoc</h3>
+				</div>
+				<div>
+					<h4>Running SLIME definition tests</h4>
 					<ul>
 						<li>
 							<div>
@@ -193,66 +232,79 @@ END LICENSE
 					</ul>
 				</div>
 				<div>
-					<h4>Documentation</h4>
-					<ul>
-						<li>
-							<code>tools/documentation.jsh.js</code>:
-							Serves the documentation for project, in a dedicated Chrome browser if Chrome is found. Typedoc
-							documentation will be generated if necessary and served for both the top-level repository and
-							subrepositories at <code>local/doc/typedoc</code> (it will be re-generated for each request if
-							<code>--watch</code> is used).
-							<ul>
-								<li><code>--base <i>directory</i></code>: top-level directory of the project.</li>
-								<li><code>--host <i>hostname</i></code>: hostname to use when serving pages.</li>
-								<li><code>--index <i>path</i></code>: relative path to the index page; defaults to <code>README.html</code>.</li>
-								<li><code>--watch</code>: if present, causes documentation to be re-generated for every HTML page
-									requested; helpful when authoring docunmentation.
-								</li>
-								<li>
-									<code>--chrome:id <i>name</i></code>: the private Chrome directory to use (under
-									<code>local/chrome</code>); defaults to <code>documentation</code>, or <code>document</code>
-									if <code>--watch</code> is set).
-								</li>
-							</ul>
-						</li>
-					</ul>
-				</div>
-				<div>
-					<h4>Other</h4>
-					<ul>
-						<li>
-							<code>rhino/http/servlet/tools/serve.jsh.js
-								[--chrome:data <i>location</i>]
-								[--chrome:debug:port <i>number</i>]
-								[--index <i>path-to-index</i>]
-								<i>directory</i></code>: Serves a directory on an ephemeral port. If <code>--chrome:data</code>
-								is provided, Chrome will be opened to
-								browse the directory, starting at the path specified by <code>--index</code> (default: <code>index.html</code>).
-								If <code>--chrome-debug-port</code> is specified, the opened Chrome will
-								allow debuggers to connect on the given port.
-						</li>
-						<li>
-							<code>loader/api/tools/update.jsh.js [-base <i>directory</i>]</code>: Inlines or updates the definition files
-							for a library that does not itself contain SLIME (and thus cannot link to the SLIME definition files in
-							<code>loader/api</code>).
-						</li>
-					</ul>
+					<h4>Serving documentation from SLIME definitions</h4>
+					<p>
+						SLIME provides tools for SLIME-based projects to generate and serve their own documentation (interleaved with
+						SLIME's, if SLIME is included in the TypeScript project). SLIME-based projects can serve their documentation
+						using the <code>documentation.jsh.js</code> script (which is run under <code>jsh</code>).
+					</p>
+					<div>
+						<code>tools/documentation.jsh.js</code>:
+						Serves the documentation for a project, in a dedicated Chrome browser if Chrome is found. Typedoc
+						documentation will be generated if necessary and served for both the top-level repository and
+						subrepositories at <code>local/doc/typedoc</code> (it will be re-generated for each request if
+						<code>--watch</code> is used).
+						<ul>
+							<li>
+								<code>--base <i>directory</i></code>: top-level directory of the project; defaults to the current
+								working directory.
+							</li>
+							<li>
+								<code>--host <i>hostname</i></code>: hostname suffix to use in the browser's address bar when serving
+								pages. If omitted, the script will provide a host name.
+							</li>
+							<li><code>--index <i>path</i></code>: relative path to the index page; defaults to <code>README.html</code>.</li>
+							<li>
+								<code>--watch</code>: if present, causes documentation to be re-generated for every HTML page
+								requested; helpful when authoring docunmentation.
+							</li>
+							<li>
+								<code>--chrome:id <i>name</i></code>: the private Chrome directory to use (under
+								<code>local/chrome</code>); defaults to <code>documentation</code>, or <code>document</code>
+								if <code>--watch</code> is set).
+							</li>
+						</ul>
+					</div>
 				</div>
 			</div>
 			<div>
 				<h3><code>wf</code></h3>
 				<p>
-					SLIME also provides <a href="tools/plugin.jsh.api.html">tools</a> for projects to implement commands related to the software lifecycle, including a
-					top-level script that can be invoked (at <code>tools/wf</code>)
-					and an associated API (in the form of a <code>jsh</code> plugin).
+					SLIME provides a tool called <code>wf</code> for automating tasks in the software development lifecycle. It
+					provides standard implementations of various commands that can be added to a project with some project-specific
+					configuration; see <a href="local/doc/typedoc/interfaces/slime.jsh.wf.exports.html"><code>jsh.wf.cli.initialize()</code></a>.
+					Custom <code>wf</code> commands can also be implemented, either from scratch or using a provided
+					<code>jsh</code> plugin <a href="local/doc/typedoc/interfaces/slime.jsh.wf.exports.html">API</a>.
+					See the <code>wf</code> <a href="tools/plugin.jsh.api.html">documentation</a> for more information on setting up
+					<code>wf</code> in a new project.
 				</p>
 			</div>
 		</div>
 		<div>
-			<h2><a href="https://github.com/davidpcaldwell/slime">Online</a> at GitHub</h2>
+			<h2>Tools and examples</h2>
+			<ul>
+				<li>
+					<code>rhino/http/servlet/tools/serve.jsh.js
+						[--chrome:data <i>location</i>]
+						[--chrome:debug:port <i>number</i>]
+						[--index <i>path-to-index</i>]
+						<i>directory</i></code>: Serves a directory on an ephemeral port, perhaps to make it easy to browse files,
+						or maybe to support a browser-only application.
+
+						If <code>--chrome:data</code>
+						is provided, Chrome will be opened to
+						browse the directory, starting at the path specified by <code>--index</code> (default: <code>index.html</code>).
+
+						If <code>--chrome-debug-port</code> is specified, the opened Chrome will
+						allow debuggers to connect on the given port.
+				</li>
+			</ul>
 		</div>
 		<div>
-			<h2><a href="contributor/README.html">Contributing</a></h2>
+			<h2><a href="https://github.com/davidpcaldwell/slime">SLIME on GitHub</a></h2>
+		</div>
+		<div>
+			<h2><a href="contributor/README.html">Contributing to SLIME</a></h2>
 		</div>
 	</body>
 </html>

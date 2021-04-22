@@ -66,14 +66,15 @@ END LICENSE
 		<h1>SLIME: Contributing</h1>
 		<div>This page contains resources for developing SLIME itself.</div>
 		<div>
-			<h2><a href="../local/doc/typedoc/interfaces/slime.project.wf.interface.html"><code>wf</code> Commands</a></h2>
+			<h2><a href="../local/doc/typedoc/interfaces/slime.project.wf.interface.html"><code>wf</code> Commands for SLIME itself</a></h2>
 		</div>
 		<div>
 			<h2>Project Management</h2>
 			<div>
 				GitHub <a href="https://github.com/davidpcaldwell/slime/projects?query=is%3Aopen+sort%3Aname-asc">projects</a> are
-				things that can get done; they're releases and projects that have an endpoint that are
-				orthogonal to releases. Issues should belong to a project (including the Backlog project).
+				things that can get done; they're releases, as well as projects that are orthogonal to releases and
+				<em>that have an endpoint</em>, and a Backlog project for unscheduled items.
+				Issues should be assigned to at least one project.
 			</div>
 			<h3><a href="https://github.com/davidpcaldwell/slime/issues?q=is%3Aissue+is%3Aopen+no%3Aproject">Issues with no assigned project</a></h3>
 			<div>
@@ -112,7 +113,7 @@ END LICENSE
 									<td>
 										The <code>loader/api/test/fifty/test.jsh.js</code> script provides a
 										<code>--view jsapi</code> argument that allows the executed Fifty script to broadcast its
-										results in a way compatible with jsapi. For jsapi-based tests, this is encapsulated in
+										results via <code>stdio</code> in a way compatible with jsapi. For jsapi-based tests, this is encapsulated in
 										<code>jsh.unit.fifty.Part(p)</code>, which takes <code>shell</code>, <code>script</code>,
 										and <code>file</code> as properties.
 									</td>
@@ -139,7 +140,7 @@ END LICENSE
 					</div>
 				</div>
 				<div>
-					<h4><a href="https://github.com/davidpcaldwell/slime/projects/10">GraalVM</a></h4>
+					<h4><a href="https://github.com/davidpcaldwell/slime/projects/10">GraalVM</a>: get SLIME running on GraalVM</h4>
 					<div>
 						To install: from script <code>jsh.shell.tools.graal.install()</code>, or from command line
 						<code>./jsh.bash jsh/tools/install/graal.jsh.js</code>.
@@ -154,13 +155,13 @@ END LICENSE
 					</div>
 				</div>
 				<div>
-					<h4><a href="https://github.com/davidpcaldwell/slime/projects/4">Reorganize source tree</a></h4>
+					<h4><a href="https://github.com/davidpcaldwell/slime/projects/4">Reorganize source tree</a>: better names in better locations</h4>
 				</div>
 				<div>
-					<h4><a href="https://github.com/davidpcaldwell/slime/projects/7">JCEF</a></h4>
+					<h4><a href="https://github.com/davidpcaldwell/slime/projects/7">JCEF</a>: Use an embedded Chromium rather than a forked Chrome for UIs</h4>
 				</div>
 				<div>
-					<h4><a href="../loader/document/api.html">loader/document</a> (HTML parsing)</h4>
+					<h4><a href="../loader/document/api.html">loader/document</a>: improve HTML parsing</h4>
 					<div>
 						Goal would be to replace DOM in loader/browser/test/api.js and JaspiHtml in jsh/unit/html.js; this feeds into
 						loader/api/api.html.js as the <code>html</code> argument to ApiHtmlTests.
@@ -461,7 +462,7 @@ END LICENSE
 			<div>
 				<h3>Rhino</h3>
 				<p>
-					Rhino is currently downloaded and installed as part of the <code>jrunscript</code> API
+					Rhino is currently downloaded and installed as part of the <code>jrunscript</code> bootstrap API
 					(see <a href="../rhino/jrunscript/api.js"><code>rhino/jrunscript/api.js</code></a>, specifically
 					<code>$api.rhino.download()</code>)
 					in order to
@@ -472,6 +473,10 @@ END LICENSE
 					The implementation could be simplified at the cost of making it harder to restore support for JDK 6 and
 					7. Relying on the shell to install Rhino would also increase reliance on the deprecated Nashorn, which
 					would be running the shell that installed Rhino.
+				</p>
+				<p>
+					Rhino can be updated by updating the default version in <code>rhino/jrunscript/api.js</code>, along with
+					(so that contributors can work properly) the version in <code>build.gradle</code>.
 				</p>
 			</div>
 			<div>
