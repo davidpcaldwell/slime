@@ -28,7 +28,7 @@ END LICENSE
 		</script>
 		<script src="loader/api/api.js"></script>
 		<style>
-			#platforms, #java {
+			#platforms, #java, #java-compatibility {
 				border: 1px solid black;
 				padding: 1em;
 			}
@@ -41,34 +41,88 @@ END LICENSE
 	<body>
 		<div>
 			The SLIME project provides tools for JavaScript development on several platforms, including the Java platform
-			(using the Rhino, Nashorn, or GraalVM JavaScript engines), Java servlet-based servers, and the browser.
+			(using the Rhino, Nashorn, or GraalVM JavaScript engines), Java servlet-based servers, the browser, and macOS's
+			JXA JavaScript automation framework.
+		</div>
+		<div>
+			<h2>Getting Started</h2>
+			<div>
+				The SLIME code must be obtained, either
+				by cloning it using <code>git clone https://github.com/davidpcaldwell/slime.git</code> or
+				<a href="https://github.com/davidpcaldwell/slime/archive/refs/heads/master.zip">downloading it</a> and unzipping
+				it. In the future (see <a href="https://github.com/davidpcaldwell/slime/issues/280">issue 280</a>), it will be
+				possible to install SLIME via a single command on a client machine.
+			</div>
+			<div>
+				At that point, it is ready to use; SLIME is capable of installing its own dependencies over the internet.
+				The top-level <code>jsh.bash</code> script can be used to, for example,
+				run a script that will output information describing the shell (from the source directory):
+				<code>
+					./jsh.bash jsh/test/jsh-data.jsh.js
+				</code>
+			</div>
 		</div>
 		<div id="platforms">
-			<h2>Supported Platforms</h2>
+			<h2>Provided Platforms</h2>
 			<div id="java">
 				<h3>Java</h3>
 				<div>
-					Compatibility: current goal is to be compatible with version used by most Java developers per most recent
-					<a href="https://www.jetbrains.com/lp/devecosystem-2020/java/">JetBrains survey</a>, which is currently
-					<strong>Java 8</strong>.
+					SLIME's Java support allows applications to be written in JavaScript that call out to Java platform libraries.
+					As such, it is an ideal platform for migrating Java software toward JavaScript.
+				</div>
+				<div>
+					SLIME provides two Java platforms: the <code>jsh</code> scripting platform that runs on the JDK, and the Java
+					servlet platform that runs on a standard Java servlet implementation. <code>jsh</code> also provides the ability
+					to run a servlet implementation from within its shell.
+				</div>
+				<div id="java-compatibility">
+					<h4>Compatibility</h4>
+					<div>
+						<h5>JDK</h5>
+						<div>
+							Current goal is to be compatible with version used by most Java developers per most recent
+							<a href="https://www.jetbrains.com/lp/devecosystem-2020/java/">JetBrains survey</a>, which is currently
+							<strong>Java 8</strong>.
+						</div>
+					</div>
+					<div>
+						<h5>JavaScript engines</h5>
+						<div>
+							The test suite executes tests primarily with <strong>Rhino 1.7R3</strong>, with some tests for the
+							<strong>Nashorn</strong> engine on JDK 8.
+							<strong>GraalVM</strong> is not yet supported, although development is underway.
+						</div>
+					</div>
+					<div>
+						<h5>Servlet containers</h5>
+						<div>
+							SLIME Servlets is compatible with the Servlet 3.0.1 implementation.
+						</div>
+						<div>
+							<code>jsh</code> currently supports <strong>Tomcat 7.0.x</strong> and is tested via the test suite. Updating to
+							Tomcat 9 is on the roadmap via <a href="https://github.com/davidpcaldwell/slime/issues/209">issue 209</a>.
+						</div>
+					</div>
 				</div>
 				<div>
 					<h4><code><a href="local/doc/typedoc/modules/slime.jsh.html">jsh</a></code>: a JavaScript application environment that can access the Java platform.</h4>
 				</div>
 				<div>
-					<h4><a href="rhino/http/servlet/api.html">Java servlets</a>: a JavaScript environment for authoring
+					<h4><a href="rhino/http/servlet/api.html">SLIME Servlets</a>: a JavaScript environment for authoring
 						Java servlets</h4>
 				</div>
-				</div>
+			</div>
 			<div>
 				<h3><a href="loader/browser/api.html">Browser</a>: a SLIME environment for the browser</h3>
+				Browser support is less mature than Java support, but is extensively tested in Google Chrome, Firefox and Safari.
 			</div>
 			<div>
 				<h3><a href="jxa/api.html">JXA</a>: a SLIME environment for use in macOS automation</h3>
+				JXA support is alpha quality.
 			</div>
 		</div>
 		<div>
-			<h2><a href="local/doc/typedoc/index.html">All TypeScript Documentation</a></h2>
+			<h2><a href="local/doc/typedoc/index.html">SLIME TypeScript Documentation</a></h2>
 		</div>
 		<div>
 			<h2>Tools</h2>
@@ -76,43 +130,66 @@ END LICENSE
 				<h3>Command-line tools</h3>
 				<div>
 					<h4>Testing</h4>
+					<div>
+						SLIME has the concept of a <dfn>definition</dfn>, which is a construct that provides both documentation and
+						a test suite for a particular software module.
+					</div>
+					<div>
+						The best way to create definitions in SLIME is via the <a href="loader/api/test/fifty/README.html">Fifty</a>
+						definition framework, which uses TypeScript to provide type definitions and documentation, and allows
+						inline tests to be authored within those TypeScript definitions.
+					</div>
+					<div>
+						Some SLIME APIs are defined via the deprecated JSAPI format, which was a literate definition that allowed
+						documentation and tests
+						to be defined via annotated HTML.
+					</div>
 					<ul>
 						<li>
-							Running individual definitions (JSAPI pages or <a href="loader/api/test/fifty/README.html">Fifty</a> definitions)
-							<ul>
-								<li><code>tools/fifty.bash test.jsh <i>file</i>.fifty.ts [--part <i>part</i>]</code></li>
-								<li>
-									<code>tools/fifty.bash test.browser [--interactive] [--chrome:data <i>pathname</i>] [--chrome:debug:vscode] <i>file</i>.fifty.ts</i> [--part <i>part</i>]</code>:
-									Invokes a <a href="loader/api/test/fifty/test-browser.jsh.js">script</a> to run Fifty browser tests;
-									see the script for command-line argument definitions.
-								</li>
-								<li><code>jsh</code>: <code>./jsh.bash jsh/test/suite.jsh.js -definition <i>definition</i> [-part <i>part</i>]</code></li>
-								<li>
-									Browser definition page:
-									<code>./jsh.bash <a href="loader/browser/test/suite.jsh.api.html">loader/browser/test/suite.jsh.js</a>
-										-definition <i>pathname</i> [...]
-									</code>
-								</li>
-							</ul>
+							<div>
+								Running individual definitions in Fifty:
+								<ul>
+									<li><code>tools/fifty.bash test.jsh <i>file</i>.fifty.ts [--part <i>part</i>]</code></li>
+									<li>
+										<code>tools/fifty.bash test.browser [--interactive] [--chrome:data <i>pathname</i>] [--chrome:debug:vscode] <i>file</i>.fifty.ts</i> [--part <i>part</i>]</code>:
+										Invokes a <a href="loader/api/test/fifty/test-browser.jsh.js">script</a> to run Fifty browser tests;
+										see the script for command-line argument definitions.
+									</li>
+								</ul>
+							</div>
 						</li>
 						<li>
-							Running a JSAPI browser suite:
-							<code>./jsh.bash <a href="loader/browser/test/suite.jsh.api.html">loader/browser/test/suite.jsh.js</a>
-								-suite <i>pathname</i>
-								[-base <i>directory</i>]
-								[-interactive]
-							</code>
+							<div class="deprecated">
+								(<strong>deprecated</strong>) Running individual definitions in JSAPI:
+								<ul>
+									<li><code>jsh</code>: <code>./jsh.bash jsh/test/suite.jsh.js -definition <i>definition</i> [-part <i>part</i>]</code></li>
+									<li>
+										Browser definition page:
+										<code>./jsh.bash <a href="loader/browser/test/suite.jsh.api.html">loader/browser/test/suite.jsh.js</a>
+											-definition <i>pathname</i> [...]
+										</code>
+									</li>
+									<li>
+										Running a JSAPI browser suite:
+										<code>./jsh.bash <a href="loader/browser/test/suite.jsh.api.html">loader/browser/test/suite.jsh.js</a>
+											-suite <i>pathname</i>
+											[-base <i>directory</i>]
+											[-interactive]
+										</code>
+									</li>
+								</ul>
+							</div>
+							<!--
+								TODO	evaluate the below; does it even work?
+							-->
+							<!--
+							<li>
+								<code>loader/api/tools/update.jsh.js [-base <i>directory</i>]</code>: Inlines or updates the definition files
+								for a library that does not itself contain SLIME (and thus cannot link to the SLIME definition files in
+								<code>loader/api</code>).
+							</li>
+							-->
 						</li>
-						<!--
-							TODO	evaluate the below; does it even work?
-						-->
-						<!--
-						<li>
-							<code>loader/api/tools/update.jsh.js [-base <i>directory</i>]</code>: Inlines or updates the definition files
-							for a library that does not itself contain SLIME (and thus cannot link to the SLIME definition files in
-							<code>loader/api</code>).
-						</li>
-						-->
 					</ul>
 				</div>
 				<div>

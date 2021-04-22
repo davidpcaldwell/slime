@@ -7,7 +7,7 @@
  * See [running `jsh`](../src/jsh/launcher/api.html) for information about how to run scripts using `jsh` and configure the
  * shell.
  *
- * See [old documentation](../src/jsh/etc/api.html).
+ * See [old `jsh` documentation](../src/jsh/etc/api.html).
  */
 namespace slime.jsh {
 	namespace db.jdbc {
