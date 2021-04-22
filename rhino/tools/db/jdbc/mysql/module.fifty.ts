@@ -54,7 +54,7 @@ namespace slime.jrunscript.db.mysql {
 
 		export type Client = {
 			command: (p: Server & Credentials & {
-				execute: string
+				execute?: string
 			}) => Parameters<slime.jrunscript.shell.Exports["run"]>[0]
 		}
 	}

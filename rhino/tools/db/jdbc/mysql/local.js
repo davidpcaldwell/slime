@@ -36,6 +36,7 @@
 					if (p.host) args.push("--host", p.host);
 					if (p.port) args.push("--port", String(p.port));
 					if (p.user) args.push("--user", p.user);
+					if (p.password) args.push("-p" + p.password);
 					if (p.execute) args.push("--execute", p.execute);
 					return command(args);
 				}

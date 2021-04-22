@@ -8,28 +8,36 @@ namespace slime {
 						//	we want our own local modifications to be present, so we copy over everything except local/
 						var location = fifty.jsh.file.location();
 						var src : slime.jrunscript.file.Directory = fifty.$loader.getRelativePath(".").directory;
+						var origin = new jsh.tools.git.Repository({ directory: src });
+						var rv = origin.clone({ to: fifty.jsh.file.location() });
+						//	copy so that we get local modifications
 						src.copy(location, {
 							filter: function(p) {
 								if (p.entry.path.substring(0,"local/".length) == "local/") return false;
+								if (p.entry.path.substring(0,".git/".length) == ".git/") return false;
 								return true;
 							}
 						});
-						var rv = jsh.tools.git.Repository({ directory: location.directory });
-						function unset(repository,setting) {
-							jsh.shell.run({
-								command: "git",
-								arguments: ["config", "--local", "--unset", setting],
-								directory: repository.directory
-							});
-						}
-						unset(rv, "user.name");
-						unset(rv, "user.email");
 						return rv;
-						//	Was git implementation but did not include local modifications; could use this form if no local modifications
-						//	Could also do this and *then* copy modifications outside local/ and git/
-						// var origin = new jsh.tools.git.Repository({ directory: fifty.$loader.getRelativePath(".").directory });
-						// var rv = origin.clone({ to: fifty.jsh.file.location() });
-						// return rv;
+						//	good utility functions for git module?
+						// function unset(repository,setting) {
+						// 	jsh.shell.console("Unset: " + repository.directory);
+						// 	jsh.shell.run({
+						// 		command: "git",
+						// 		arguments: ["config", "--local", "--unset", setting],
+						// 		directory: repository.directory
+						// 	});
+						// }
+						// var gitdir = (function() {
+						// 	if (src.getSubdirectory(".git")) {
+						// 		return src.getSubdirectory(".git");
+						// 	}
+						// 	if (src.getFile(".git")) {
+						// 		var parsed = /^gitdir\: (.*)/.exec(src.getFile(".git").read(String));
+						// 		var relative = (parsed) ? parsed[1] : null;
+						// 		return (relative) ? src.getRelativePath(relative).directory : void(0);
+						// 	}
+						// })();
 					},
 					configure: function(repository: slime.jrunscript.git.Repository.Local) {
 						repository.config({ set: { name: "user.name", value: "foo" }});
