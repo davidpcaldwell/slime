@@ -30,6 +30,9 @@ namespace slime.jsh.wf {
 						var slime = jsh.tools.git.Repository({
 							directory: fifty.$loader.getRelativePath("..").directory
 						});
+						//	TODO	Note that this adds committed version of SLIME (or something), rather than local version. May not work
+						//			as expected. May want to overwrite (so that submodule config is preserved) with a local copy
+						//			that excludes local/
 						repository.submodule.add({
 							repository: slime,
 							path: "slime"

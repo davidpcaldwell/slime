@@ -49,8 +49,9 @@
 			});
 			if (failed) {
 				jsh.shell.console("Failing because trailing whitespace was modified.");
-				jsh.shell.exit(1);
+				return false;
 			}
+			return true;
 		};
 
 		function synchronizeEclipseSettings() {
@@ -72,10 +73,31 @@
 			}
 		}
 
-		$exports.initialize = function() {
+		$exports.initialize = function(p) {
 			//	TODO	could consider whether we can wire our commit process into the git hooks mechanism:
 			//			git config core.hooksPath contributor/hooks
 			//			... and then appropriately implement contributor/hooks/pre-commit
+
+			var gitIdentityProvider = (p && p.arguments[0] == "--test-git-identity-requirement") ? void(0) : jsh.wf.requireGitIdentity.get.gui;
+
+			try {
+				jsh.wf.requireGitIdentity({
+					repository: jsh.tools.git.Repository({ directory: $context.base }),
+					get: gitIdentityProvider
+				}, {
+					console: function(e) {
+						jsh.shell.console(e.detail);
+					}
+				});
+			} catch (e) {
+				//	TODO	returning 1 here apparently does not function as expected. Perhaps wf still has a disjoint
+				//			implementation from jsh.script.cli?
+				jsh.shell.console("user.name and user.email must be set on the local repository.");
+				jsh.shell.console("From the source directory " + $context.base + ":");
+				jsh.shell.console("git config user.name \"Your Name\"");
+				jsh.shell.console("git config user.email \"youremail@yourdomain.com\"");
+				jsh.shell.exit(1);
+			}
 
 			jsh.shell.tools.node.require();
 			jsh.shell.tools.node.modules.require({ name: "eslint" });
@@ -185,7 +207,8 @@
 			$context,
 			{
 				lint: function() {
-					noTrailingWhitespace();
+					var success = noTrailingWhitespace();
+					if (!success) return false;
 
 					jsh.shell.jsh({
 						shell: jsh.shell.jsh.src,
@@ -196,15 +219,14 @@
 						evaluate: function(result) {
 							if (result.status) {
 								jsh.shell.console("ESLint status: " + result.status + "; failing.");
-								jsh.shell.exit(result.status);
+								success = false;
 							} else {
 								jsh.shell.console("ESLint passed.");
 							}
 						}
 					});
 
-					//	TODO	adapt the jsh.shell.exit-based handling previously used to the boolean handling desired here
-					return true;
+					return success;
 				},
 				test: function() {
 					var timestamp = jsh.time.When.now();

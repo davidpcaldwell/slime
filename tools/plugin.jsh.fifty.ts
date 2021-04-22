@@ -20,10 +20,6 @@ namespace slime.jsh.wf {
 		email: (p: { repository: slime.jrunscript.git.Repository.Local }) => string
 	}
 
-	namespace Exports.requireGitIdentity {
-		export type get = GitIdentityProvider
-	}
-
 	export namespace cli {
 		export interface Context {
 			/** The project directory. */
@@ -197,15 +193,19 @@ namespace slime.jsh.wf {
 	export interface Exports {
 		/**
 		 * Errs if the given repository does not supply Git `user.name` and `user.email`
-		 * values. Callers may provide an implementation that obtains the configuration values, including a provided
-		 * implementation that prompts the user in a GUI dialog.
+		 * values. Callers may provide an implementation that obtains the configuration values if they are missing, including a
+		 * provided implementation that prompts the user in a GUI dialog.
 		 */
-		requireGitIdentity: ( (p: {
-			repository: slime.jrunscript.git.Repository.Local,
-			get?: Exports.requireGitIdentity.get
-		}, events?: $api.Events.Function.Receiver) => void) & { get: {
-			gui: Exports.requireGitIdentity.get
-		} }
+		requireGitIdentity: {
+			(p: {
+				repository: slime.jrunscript.git.Repository.Local
+				get?: GitIdentityProvider
+			}, events?: $api.Events.Function.Receiver)
+
+			get: {
+				gui: GitIdentityProvider
+			}
+		}
 	}
 
 	(

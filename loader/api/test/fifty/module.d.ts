@@ -16,7 +16,9 @@ namespace slime.fifty {
 		type verify = slime.definition.verify.Verify
 
 		type $loader = slime.Loader & {
-			getRelativePath: any,
+			//	will return a Pathname in jsh, but what in browser?
+			getRelativePath: (p: string) => any
+
 			/**
 			 * Present if Fifty is being run in a `jsh` shell; provides the ability to load `jsh` plugins into a mock shell.
 			 */
