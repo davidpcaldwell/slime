@@ -185,6 +185,19 @@ suite.add("tools", {
 	}
 });
 
+suite.add(
+	"project",
+	{
+		parts: {
+			wf: jsh.unit.fifty.Part({
+				shell: environment.jsh.unbuilt.src,
+				script: environment.jsh.unbuilt.src.getFile("loader/api/test/fifty/test.jsh.js"),
+				file: environment.jsh.unbuilt.src.getFile("wf.fifty.ts")
+			})
+		}
+	}
+);
+
 jsh.unit.interface.create(suite.build(), new function() {
 	if (parameters.options.view == "chrome") {
 		this.chrome = {

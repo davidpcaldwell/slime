@@ -77,12 +77,13 @@
 			//			git config core.hooksPath contributor/hooks
 			//			... and then appropriately implement contributor/hooks/pre-commit
 
+			jsh.shell.tools.node.require();
+			jsh.shell.tools.node.modules.require({ name: "eslint" });
+
 			var isEclipseProject = Boolean($context.base.getSubdirectory(".settings"));
 			if (isEclipseProject) {
 				synchronizeEclipseSettings();
 			}
-
-			//	TODO	should set up eslint here
 		};
 
 		$exports.vscode = {
