@@ -10,10 +10,11 @@ namespace slime.jsh.wf {
 						repository.config({ set: { name: "user.email", value: "bar@example.com" }});
 					}
 
+					var src: slime.jrunscript.file.Directory = fifty.$loader.getRelativePath("..").directory;
+
 					function fixture() {
 						var project = fifty.jsh.file.location();
 						fifty.$loader.getRelativePath("test/data/plugin-standard").directory.copy(project);
-						jsh.shell.console(project.toString());
 						var repository = jsh.tools.git.init({
 							pathname: project
 						});
@@ -28,7 +29,7 @@ namespace slime.jsh.wf {
 							path: "."
 						});
 						var slime = jsh.tools.git.Repository({
-							directory: fifty.$loader.getRelativePath("..").directory
+							directory: src
 						});
 						//	TODO	Note that this adds committed version of SLIME (or something), rather than local version. May not work
 						//			as expected. May want to overwrite (so that submodule config is preserved) with a local copy
@@ -62,6 +63,20 @@ namespace slime.jsh.wf {
 								init: true
 							});
 							configure(repository);
+							//	copy local modifications to source tree since we are testing this source code
+							src.copy(repository.directory.getRelativePath("slime"), {
+								filter: function(item) {
+									if (item.entry.path.substring(0,"local/".length) == "local/") return false;
+									if (item.entry.path == ".git") return false;
+									if (item.entry.path.substring(0,".git/".length) == ".git/") return false;
+									return true;
+								}
+							});
+							var slime = jsh.tools.git.Repository({ directory: repository.directory.getSubdirectory("slime") });
+							if (slime.status().paths) {
+								slime.add({ path: "." });
+								slime.commit({ message: "Local modifications committed by plugin-standard.jsh.fifty.ts tests." });
+							}
 							return repository;
 						}
 					}
@@ -76,7 +91,7 @@ namespace slime.jsh.wf {
 		}
 
 		/**
-		 * Implements the standard `wf` commands provided by {@link slime.jsh.wf.Exports | `jsh.wf.cli.initialize()`}.
+		 * Implements the standard `wf` commands provided by {@link slime.jsh.wf.Exports | `jsh.wf.project.initialize()`}.
 		 */
 		export interface Interface {
 			eslint: jsh.wf.cli.Command
@@ -141,6 +156,10 @@ namespace slime.jsh.wf {
 						},
 						evaluate: function(result) { return result; }
 					});
+					if (tscresult.status != 0) {
+						jsh.shell.console("In: " + repository.directory);
+						jsh.shell.console(tscresult.stdio.output + tscresult.stdio.error);
+					}
 					fifty.verify(tscresult).stdio.evaluate(function(stdio) {
 						return stdio.error.indexOf("Passed.") != -1
 					}).is(true);
@@ -164,6 +183,9 @@ namespace slime.jsh.wf {
 								},
 								evaluate: function(result) { return result; }
 							});
+							if (result.status != 0) {
+								jsh.shell.console(result.stdio.output + "\n" + result.stdio.error);
+							}
 							return result;
 						}
 

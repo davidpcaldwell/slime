@@ -84,10 +84,6 @@
 				jsh.wf.requireGitIdentity({
 					repository: jsh.tools.git.Repository({ directory: $context.base }),
 					get: gitIdentityProvider
-				}, {
-					console: function(e) {
-						jsh.shell.console(e.detail);
-					}
 				});
 			} catch (e) {
 				//	TODO	returning 1 here apparently does not function as expected. Perhaps wf still has a disjoint
@@ -203,7 +199,7 @@
 			return true;
 		};
 
-		jsh.wf.cli.initialize(
+		jsh.wf.project.initialize(
 			$context,
 			{
 				lint: function() {

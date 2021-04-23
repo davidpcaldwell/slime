@@ -140,7 +140,7 @@
 				name,
 				//	TODO	works, but should display something better, probably including stack and using
 				//			more general verify()
-				function() { verify("Error").is(String(e)); }
+				function() { verify(String(e) + "\n" + e.stack).is("Successfully loaded tests"); }
 			)
 		}
 

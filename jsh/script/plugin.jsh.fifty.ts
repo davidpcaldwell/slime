@@ -8,6 +8,10 @@ namespace slime.jsh.script {
 		(invocation: Invocation<T>): Invocation<T>
 	}
 
+	/**
+	 * A process that may return a numeric exit status that can be used as a process exit status, or may complete normally, or
+	 * may throw an uncaught exception.
+	 */
 	export interface Command<T> {
 		(invocation: Invocation<T>): number | void
 	}
@@ -50,15 +54,24 @@ namespace slime.jsh.script {
 			}
 
 			/**
-			 * Parses the shell's global arguments using the given {@link Processor}, returning the result of the processing.
+			 * Parses the `jsh` shell's arguments using the given {@link Processor}, returning the result of the processing.
 			 */
 			invocation: (processor: Processor<any>) => Invocation<any>
 
+			/**
+			 * Given a {@link Descriptor} implementing the application's global options and commands, returns an object capable of
+			 * invoking a {@link Command} with an appropriate {@link Invocation}. Options provided by the `Descriptor` will be processed into
+			 * an `Invocation`,
+			 * and the first remaining argument will be interpreted as a command name. If the command name exists and is a function,
+			 * it will be invoked with the {@link Invocation}.
+			 */
 			Application: (p: Descriptor) => Application
 
 			/**
 			 * Executes the program with the given descriptor inside this shell, with the arguments of the shell, and exits the
-			 * shell with the exit status returned by the {@link Command}.
+			 * shell with the exit status indicated by the {@link Command}. If the `Command` returns a numeric exit status, it is
+			 * used; otherwise, finishing execution successfully exits with 0 exit status and an uncaught exception exits with
+			 * status 1.
 			 */
 			wrap: (descriptor: Descriptor) => void
 		}

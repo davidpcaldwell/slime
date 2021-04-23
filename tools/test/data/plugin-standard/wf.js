@@ -7,7 +7,7 @@
 	 * @param { slime.jsh.wf.standard.Interface } $exports
 	 */
 	function(jsh,$context,$exports) {
-		jsh.wf.cli.initialize(
+		jsh.wf.project.initialize(
 			$context,
 			{
 				test: function() {

@@ -4,12 +4,35 @@ namespace slime.jsh {
 	}
 }
 
+//	TODO	"ordinary SLIME module" below may not be really documented
 /**
- * A set of APIs that can be helpful in implementing tasks related to software development. The [[Exports]] object represents the
- * main `jsh.wf` APIs project authors can use in constructing their own `wf` commands, including the
- * {@link slime.jsh.wf.Exports | cli.initialize} method that
- * provides a standard project {@link slime.jsh.wf.standard.Interface | Interface} given a
- * {@link slime.jsh.wf.standard.Project | Project} definition.
+ * The SLIME tool for implementing project tasks related to the software development life cycle.
+ *
+ * SLIME provides the `tools/wf` bash script which can be used by projects to execute `wf` commands. The script relies
+ * on the project directory containing a `wf.js` file, which is used to define the implementation of the commands.
+ *
+ * The `tools/wf` script expects the project to define the `PROJECT` environment variable to point to the root of the project.
+ * Otherwise, it will try to use the working directory as the project root.
+ *
+ * So, a typical `wf` script for a project might look like this:
+ * ```bash
+ * #!/bin/bash
+ * export PROJECT="$(dirname $0)"
+ * ${PROJECT}/[<i>path/to/slime</i>]/tools/wf "$@"
+ * ```
+ *
+ * The `wf.js` file should be an ordinary SLIME module, which will be loaded with a `$context` providing a project
+ * {@link slime.jsh.wf.cli.Context}. Each function `wf.js` exports
+ * will be interpreted as a command which can be executed by name, and will receive an argument specified by
+ * {@link jsh.wf.cli.Arguments}. Commands can use the {@link slime.jsh.wf.Exports | jsh.wf} APIs
+ * as part of their implementation.
+ *
+ * In particular, `jsh.wf` provides the
+ * {@link slime.jsh.wf.Exports | project.initialize} method that
+ * enables authors to provide a {@link slime.jsh.wf.standard.Interface | standard set} of `wf` commands given a
+ * {@link slime.jsh.wf.standard.Project | Project} definition that provides implementations for a few basic operations.
+ *
+ * If a project provides an `initialize` command, it is executed prior to every `wf` command (and should thus be idempotent).
  */
 namespace slime.jsh.wf {
 	/**
@@ -68,10 +91,36 @@ namespace slime.jsh.wf {
 	}
 
 	/**
-	 * The `cli.initialize` function provides a default `wf` implementation for projects with a number of standard commands; it
+	 * The `project.initialize` function provides a default `wf` implementation for projects with a number of standard commands; it
 	 * requires project-level specification of operations like `commit`, `lint`, and/or `test`.
 	 */
 	export interface Exports {
+		project: {
+			base: slime.jrunscript.file.Directory
+
+			submodule: {
+				status: () => Array<slime.jrunscript.git.Submodule & {
+					status: ReturnType<slime.jrunscript.git.Repository.Local["status"]>
+					state: ReturnType<ReturnType<Exports["git"]["compareTo"]>>
+				}>
+				remove: (p: { path: string }) => void
+			}
+
+			updateSubmodule: (p: { path: string }) => void
+
+			/**
+			 * Given an {@link standard.Project} defining a few simple operations, initializes the given `$exports` object
+			 * with a standard set of `wf` commands defined by {@link standard.Interface}.
+			 */
+			initialize: {
+				(
+					$context: jsh.wf.cli.Context,
+					operations: standard.Project,
+					$exports: standard.Interface
+				): void
+			}
+		}
+
 		cli: {
 			error: {
 				TargetNotFound: $api.Error.Type<cli.error.TargetNotFound>
@@ -124,6 +173,7 @@ namespace slime.jsh.wf {
 				(mutator: cli.Processor): cli.Arguments
 			}
 
+			/** @deprecated Replaced by jsh.wf.project.initialize(). */
 			initialize: {
 				(
 					$context: jsh.wf.cli.Context,
@@ -131,20 +181,6 @@ namespace slime.jsh.wf {
 					$exports: standard.Interface
 				): void
 			}
-		}
-
-		project: {
-			base: slime.jrunscript.file.Directory
-
-			submodule: {
-				status: () => Array<slime.jrunscript.git.Submodule & {
-					status: ReturnType<slime.jrunscript.git.Repository.Local["status"]>
-					state: ReturnType<ReturnType<Exports["git"]["compareTo"]>>
-				}>
-				remove: (p: { path: string }) => void
-			}
-
-			updateSubmodule: (p: { path: string }) => void
 		}
 
 		git: {

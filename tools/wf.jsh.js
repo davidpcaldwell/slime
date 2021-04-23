@@ -33,6 +33,7 @@
 		}
 
 		var getCommand = function(project,command) {
+			if (typeof(command) == "undefined") return void(0);
 			var rv = project;
 			var tokens = command.split(".");
 			for (var i=0; i<tokens.length; i++) {
@@ -41,6 +42,16 @@
 				}
 			}
 			return rv;
+		};
+
+		function getCommandList(rv,commands,prefix) {
+			if (!prefix) prefix = "";
+			for (var x in commands) {
+				if (typeof(commands[x]) == "function") {
+					rv.push(prefix + x);
+				}
+				getCommandList(rv,commands[x],prefix + x + ".");
+			}
 		}
 
 		var command = getCommand(project,parameters.command);
@@ -51,7 +62,13 @@
 				arguments: parameters.arguments
 			});
 		} else {
-			jsh.shell.console("Project at " + jsh.wf.project.base + " does not have a '" + parameters.command + "' command.")
+			if (typeof(parameters.command) != "undefined") {
+				jsh.shell.console("Project at " + jsh.wf.project.base + " does not have a '" + parameters.command + "' command.");
+			}
+			var list = [];
+			getCommandList(list,project);
+			jsh.shell.console("Available wf commands for " + jsh.wf.project.base + ":");
+			jsh.shell.console(list.join("\n"));
 		}
 	}
 //@ts-ignore

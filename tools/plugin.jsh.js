@@ -114,7 +114,13 @@
 						} else {
 							jsh.shell.console(repository + " is up to date.");
 						}
-					}
+					},
+					/**
+					 * @type { slime.jsh.wf.Exports["project"]["initialize"] }
+					 */
+					initialize: $loader.module("plugin-standard.jsh.js", {
+						jsh: jsh
+					})
 				};
 
 				jsh.wf.cli = {
@@ -280,9 +286,7 @@
 					/**
 					 * @type { slime.jsh.wf.Exports["cli"]["initialize"] }
 					 */
-					initialize: $loader.module("plugin-standard.jsh.js", {
-						jsh: jsh
-					})
+					initialize: $api.deprecate(jsh.wf.project.initialize)
 				};
 
 				var guiAsk = function(pp) {
