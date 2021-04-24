@@ -978,7 +978,7 @@
 		rhino: $engine.classpath
 	});
 	$api.rhino.download = function(version) {
-		if (!version) version = "mozilla/1.7R3";
+		if (!version) version = "mozilla/1.7.13";
 		var sources = {
 			"mozilla/1.7R3": {
 				url: "http://ftp.mozilla.org/pub/mozilla.org/js/rhino1_7R3.zip",
@@ -986,6 +986,10 @@
 			},
 			"mozilla/1.7.12": {
 				url: "https://github.com/mozilla/rhino/releases/download/Rhino1_7_12_Release/rhino-1.7.12.jar",
+				format: "jar"
+			},
+			"mozilla/1.7.13": {
+				url: "https://github.com/mozilla/rhino/releases/download/Rhino1_7_13_Release/rhino-1.7.13.jar",
 				format: "jar"
 			}
 		};

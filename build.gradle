@@ -13,12 +13,12 @@ configurations {
 }
 
 dependencies {
-	rhino 'org.mozilla:rhino:1.7R3'
+	rhino 'org.mozilla:rhino:1.7.13'
 	graal 'org.graalvm.sdk:graal-sdk:20.3.0'
 	servlet 'javax.servlet:javax.servlet-api:3.0.1'
 
 	//	These lines are necessary for VSCode to properly understand the dependencies
-	implementation 'org.mozilla:rhino:1.7R3'
+	implementation 'org.mozilla:rhino:1.7.13'
 	implementation 'org.graalvm.sdk:graal-sdk:20.3.0'
 	implementation 'javax.servlet:javax.servlet-api:3.0.1'
 }
