@@ -53,6 +53,7 @@ namespace slime.jsh.httpd {
 
 		export interface Scope {
 			$mapping: slime.jrunscript.file.File
+			/** @deprecated */
 			map: Resources["map"]
 			add?: Resources["add"]
 		}

@@ -40,7 +40,7 @@
 
 			var PATH = (function() {
 				var elements = $context.module.shell.PATH.pathnames.slice();
-				elements.push(o.directory.getRelativePath("bin"));
+				elements.unshift(o.directory.getRelativePath("bin"));
 				return $context.module.file.Searchpath(elements);
 			})();
 

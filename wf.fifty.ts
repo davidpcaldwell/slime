@@ -5,14 +5,15 @@ namespace slime {
 				const jsh = fifty.global.jsh;
 				return {
 					clone: function() {
-						//	we want our own local modifications to be present, so we copy over everything except local/
-						var location = fifty.jsh.file.location();
 						var src : slime.jrunscript.file.Directory = fifty.$loader.getRelativePath(".").directory;
 						var origin = new jsh.tools.git.Repository({ directory: src });
 						var rv = origin.clone({ to: fifty.jsh.file.location() });
-						//	copy so that we get local modifications
-						src.copy(location, {
+						//	copy code so that we get local modifications in our "clone"
+						src.copy(rv.directory.pathname, {
 							filter: function(p) {
+								//	TODO	need to review copy implementation; how do directories work?
+								if (p.entry.path == ".git") return false;
+								if (p.entry.path == "local") return false;
 								if (p.entry.path.substring(0,"local/".length) == "local/") return false;
 								if (p.entry.path.substring(0,".git/".length) == ".git/") return false;
 								return true;
@@ -97,13 +98,25 @@ namespace slime {
 			) {
 				var jsh = fifty.global.jsh;
 
+				fifty.tests.fixtures = {
+					clone: function() {
+						var clone = test.fixtures.clone();
+						jsh.shell.console("clone = " + clone);
+					}
+				}
+
 				fifty.tests.suite = function() {
 					fifty.run(function ensureInitializeInstallsEslint() {
 						var fresh = test.fixtures.clone();
 						test.fixtures.configure(fresh);
-						test.fixtures.wf(fresh, {
+						var result = test.fixtures.wf(fresh, {
 							arguments: ["initialize"]
 						});
+						fifty.verify(result).status.is(0);
+						if (result.status != 0) {
+							fifty.global.jsh.shell.console(result.stdio.output);
+							fifty.global.jsh.shell.console(result.stdio.error);
+						}
 						fifty.verify(fresh).directory.getSubdirectory("local/jsh/lib/node/lib/node_modules/eslint").is.type("object");
 						fifty.verify(fresh).directory.getSubdirectory("local/jsh/lib/node/lib/node_modules/foo").is.type("null");
 					});
