@@ -12,7 +12,7 @@
 
 //@ts-check
 (
-	//	TODO	get rid of the wildcarded properties in $exports by adding all properties to $api.d.ts
+//	TODO	get rid of the wildcarded properties in $exports by adding all properties to $api.d.ts
 	/**
 	 * @param { slime.runtime.internal.$engine } $engine
 	 * @param { slime.runtime.internal.Code } $slime

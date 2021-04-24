@@ -7,13 +7,20 @@ type Iterable_match<L,R> = {
 	right: R
 }
 
-//	TODO	probably should reference these as slime.global.Function
-type GlobalFunction = Function
+
+/**
+ * A namespace that aliases global types so that they can be shadowed by namespaced type definitions and still be available within
+ * those namespaces.
+ */
+namespace slime.alias {
+	//	TODO	probably should reference these as slime.global.Function
+	export type GlobalFunction = Function
+}
 
 namespace slime.$api {
 	export interface Global {
 		debug: {
-			disableBreakOnExceptionsFor: <T extends GlobalFunction>(f: T) => T
+			disableBreakOnExceptionsFor: <T extends slime.alias.GlobalFunction>(f: T) => T
 		}
 		Object: {
 			(p: { properties: {name: string, value: any }[] }): { [x: string]: any }
@@ -23,14 +30,11 @@ namespace slime.$api {
 				<T,U,V>(t: T, u: U, v: V): T & U & V
 				<T,U,V,W>(t: T, u: U, v: V, w: W): T & U & V & W
 			}
-			properties: GlobalFunction
+			properties: slime.alias.GlobalFunction
 			property: any
 			optional: any
 		},
 		Value: any,
-		Error: {
-			Type: <T extends Error>(p: { name: string, extends?: GlobalFunction }) => slime.$api.Error.Type<T>
-		}
 		Events: {
 			(p?: {
 				source?: any
@@ -88,17 +92,15 @@ namespace slime.$api {
 		},
 		deprecate: {
 			(o: object, property: string): void
-			<T extends GlobalFunction>(f: T): T
+			<T extends slime.alias.GlobalFunction>(f: T): T
 			warning: any
 		}
 		experimental: {
 			(o: object, property: string): void
-			<T extends GlobalFunction>(f: T): T
+			<T extends slime.alias.GlobalFunction>(f: T): T
 		}
 	}
-}
 
-namespace slime.$api {
 	export interface Event<T> {
 		type: string
 		source: object
@@ -127,6 +129,27 @@ namespace slime.$api {
 
 	export namespace Events.Function {
 		export type Receiver = { [x: string]: (e: Event<any>) => void } | Events<any>
+	}
+}
+
+namespace slime.$api {
+	export interface Global {
+		Error: {
+			/**
+			 * Creates a subtype of the JavaScript global constructor {@link Error} for use in APIs.
+			 */
+			Type: <T extends Error>(p: {
+				/**
+				 * The `name` property to use for errors of this type; see the ECMA-262 {@link https://262.ecma-international.org/11.0/#sec-error.prototype.name | error.prototype.name} definition.
+				 */
+				name: string
+				/**
+				 * An {@link Error} subtype to use as the supertype for errors created by this constructor. Defaults to `Error`,
+				 * but subtypes of other errors (like `TypeError`) can be created, as can subtypes of user-defined error types.
+				 */
+				extends?: new (message: string) => Error
+			}) => slime.$api.Error.Type<T>
+		}
 	}
 
 	export namespace Error {

@@ -121,7 +121,8 @@ END LICENSE
 						<div>
 							The test suite executes tests primarily with <strong>Rhino 1.7.13</strong>, with some tests for the
 							<strong>Nashorn</strong> engine on JDK 8.
-							<strong>GraalVM</strong> is not yet supported, although development is underway.
+							<strong>GraalVM</strong> is not yet supported, although
+							<a href="https://github.com/davidpcaldwell/slime/projects/10">development is underway</a>.
 						</div>
 					</div>
 					<div>
@@ -153,12 +154,15 @@ END LICENSE
 			</div>
 		</div>
 		<div>
-			<h2>Creating projects using SLIME</h2>
+			<h2>Using SLIME</h2>
 			<div>
 				<h3>SLIME Definitions (documentation and testing)</h3>
 				<p>
 					SLIME has the concept of a <dfn>definition</dfn>, which is a construct that provides both documentation and
 					a test suite for a particular software module.
+				</p>
+				<p>
+					Documentation for SLIME itself is mostly contained in SLIME definitions that define its APIs.
 				</p>
 				<p>
 					The best way to create SLIME definitions is via the Fifty
@@ -169,18 +173,21 @@ END LICENSE
 					for the project's <code>wf</code> commands can be found at <a href="wf.fifty.ts?as=text"><code>wf.fifty.ts</code></a>.
 				</p>
 				<p>
+					Many existing SLIME APIs are currently
+					defined via the deprecated JSAPI definition format, which used literate definitions that allowed documentation
+					and tests to be defined via annotated HTML, using HTML constructs for documentation and embedded scripts for
+					testing. These definitions can be reached via links from the Typedoc-published Fifty definitinos.
 				</p>
 				<div>
-					<p>
-						Documentation for SLIME itself is mostly contained in SLIME definitions.
-					</p>
-					<p>
-						Many SLIME APIs are currently defined via the deprecated JSAPI definition format, which used literate
-						definitions that allowed documentation and tests to be defined via annotated HTML, using HTML constructs for
-						documentation and embedded scripts for testing.
-					</p>
-					<h3><a href="local/doc/typedoc/index.html">SLIME Definitions</a> as published by Typedoc</h3>
+					<h4><a href="local/doc/typedoc/index.html">SLIME API</a> from Fifty definitions and published by Typedoc</h4>
 				</div>
+			</div>
+			<div>
+			</div>
+		</div>
+		<div>
+			<h2>Creating projects using SLIME</h2>
+			<div>
 				<div>
 					<h4>Running SLIME definition tests</h4>
 					<ul>
