@@ -93,35 +93,37 @@ namespace slime.jsh.wf {
 			}) => void
 		}
 
+		export type Options = {};
+
 		/**
 		 * Implements the standard `wf` commands provided by {@link slime.jsh.wf.Exports | `jsh.wf.project.initialize()`}.
 		 */
 		export interface Interface {
-			eslint:  slime.jsh.script.Command
+			eslint:  slime.jsh.script.Command<Options>
 
 			/**
 			 * Runs the Typedoc documentation generator.
 			 */
-			typedoc:  slime.jsh.script.Command
+			typedoc:  slime.jsh.script.Command<Options>
 
-			status:  slime.jsh.script.Command
+			status:  slime.jsh.script.Command<Options>
 
-			test:  slime.jsh.script.Command
+			test:  slime.jsh.script.Command<Options>
 
 			submodule: {
 				/**
 				 * `--path <path-to-submodule>`
 				 */
-				remove:  slime.jsh.script.Command
+				remove:  slime.jsh.script.Command<Options>
 				/**
 				 * `--path <path-to-submodule>`
 				 */
-				update:  slime.jsh.script.Command
-				reset:  slime.jsh.script.Command
+				update:  slime.jsh.script.Command<Options>
+				reset:  slime.jsh.script.Command<Options>
 			}
 
-			documentation:  slime.jsh.script.Command
-			document:  slime.jsh.script.Command
+			documentation:  slime.jsh.script.Command<Options>
+			document:  slime.jsh.script.Command<Options>
 		}
 
 		(
@@ -137,7 +139,7 @@ namespace slime.jsh.wf {
 			/**
 			 * Runs the TypeScript compiler on the project.
 			 */
-			 tsc:  slime.jsh.script.Command
+			 tsc:  slime.jsh.script.Command<Options>
 		}
 
 		(
@@ -242,7 +244,7 @@ namespace slime.jsh.wf {
 			 *
 			 * * Push
 			 */
-			 commit:  slime.jsh.script.Command
+			 commit:  slime.jsh.script.Command<Options>
 		}
 
 		(

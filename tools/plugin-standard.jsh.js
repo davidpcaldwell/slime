@@ -272,6 +272,10 @@
 				)
 
 				if (operations.commit) $exports.submodule.update = $api.Function.pipe(
+					/**
+					 *
+					 * @param { slime.jsh.script.Invocation<slime.jsh.wf.standard.Options & { path: string }> } p
+					 */
 					function(p) {
 						var rv = {
 							options: $api.Object.compose(p.options),

@@ -6,29 +6,29 @@ namespace slime.jsh.script {
 
 	//	TODO	an ambition to make Processor to have a parameterized type that matches Invocation, but haven't been able to get
 	//			that to work
-	export interface Processor {
-		(invocation: Invocation<any>): Invocation<any>
+	export interface Processor<T> {
+		(invocation: Invocation<T>): Invocation<T>
 	}
 
 	/**
 	 * A process that may return a numeric exit status that can be used as a process exit status, or may complete normally, or
 	 * may throw an uncaught exception.
 	 */
-	export interface Command {
-		(invocation: Invocation<any>): number | void
+	export interface Command<T> {
+		(invocation: Invocation<T>): number | void
 	}
 
-	export interface Commands {
-		[x: string]: Commands | Command
+	export interface Commands<T> {
+		[x: string]: Commands<T> | Command<T>
 	}
 
 	interface Application {
 		run: (args: string[]) => number
 	}
 
-	interface Descriptor {
-		options?: Processor
-		commands: Commands
+	interface Descriptor<T> {
+		options?: Processor<T>
+		commands: Commands<T>
 	}
 
 	/**
@@ -48,17 +48,17 @@ namespace slime.jsh.script {
 			}
 
 			option: {
-				string: (c: { longname: string, default?: string }) => Processor
-				boolean: (c: { longname: string }) => Processor
-				number: (c: { longname: string, default?: number }) => Processor
-				pathname: (c: { longname: string, default?: slime.jrunscript.file.Pathname }) => Processor
-				array: (c: { longname: string, value: (s: string) => any }) => Processor
+				string: (c: { longname: string, default?: string }) => Processor<any>
+				boolean: (c: { longname: string }) => Processor<any>
+				number: (c: { longname: string, default?: number }) => Processor<any>
+				pathname: (c: { longname: string, default?: slime.jrunscript.file.Pathname }) => Processor<any>
+				array: (c: { longname: string, value: (s: string) => any }) => Processor<any>
 			}
 
 			/**
 			 * Parses the `jsh` shell's arguments using the given {@link Processor}, returning the result of the processing.
 			 */
-			invocation: (processor: Processor) => Invocation<any>
+			invocation: (processor: Processor<any>) => Invocation<any>
 
 			/**
 			 * Given a {@link Descriptor} implementing the application's global options and commands, returns an object capable of
@@ -67,7 +67,7 @@ namespace slime.jsh.script {
 			 * and the first remaining argument will be interpreted as a command name. If the command name exists and is a function,
 			 * it will be invoked with the {@link Invocation}.
 			 */
-			Application: (p: Descriptor) => Application
+			Application: (p: Descriptor<any>) => Application
 
 			/**
 			 * Executes the program with the given descriptor inside this shell, with the arguments of the shell, and exits the
@@ -75,7 +75,7 @@ namespace slime.jsh.script {
 			 * used; otherwise, finishing execution successfully exits with 0 exit status and an uncaught exception exits with
 			 * status 1.
 			 */
-			wrap: (descriptor: Descriptor) => void
+			wrap: (descriptor: Descriptor<any>) => void
 		}
 	}
 
@@ -85,7 +85,7 @@ namespace slime.jsh.script {
 		) {
 			fifty.tests.cli = {
 				option: function() {
-					var trial = function(p: Processor, args: string[]) {
+					var trial = function(p: Processor<any>, args: string[]) {
 						return p({
 							options: {},
 							arguments: args

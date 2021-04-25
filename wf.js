@@ -305,6 +305,10 @@
 		}
 
 		$exports.merge = $api.Function.pipe(
+			/**
+			 *
+			 * @param { slime.jsh.script.Invocation<slime.jsh.wf.standard.Options & { branch: string }> } p
+			 */
 			function(p) {
 				var rv = {
 					options: $api.Object.compose(p.options),
@@ -379,6 +383,10 @@
 
 		//	TODO	implement generation of git hooks so that we can get rid of separate pre-commit implementation
 		if (false) $exports.commit = $api.Function.pipe(
+			/**
+			 *
+			 * @param { slime.jsh.script.Invocation<slime.jsh.wf.standard.Options & { message: string }> } p
+			 */
 			function(p) {
 				var rv = {
 					options: $api.Object.compose(p.options),

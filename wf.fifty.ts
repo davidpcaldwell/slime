@@ -62,33 +62,36 @@ namespace slime {
 			//@ts-ignore
 			})(fifty)
 		}
+
+		type Options = {}
+
 		export interface Interface extends slime.jsh.wf.standard.Interface {
 			/**
 			 * If this project is operating as an Eclipse project (including VSCode), ensures that project-specified Eclipse settings
 			 * are provided.
 			 */
-			initialize: slime.jsh.wf.cli.Interface["initialize"]
+			initialize: slime.jsh.wf.cli.Interface<any>["initialize"]
 
 			vscode: {
 				java: {
 					/**
 					 * Removes the VSCode extension information about the project and explains how to regenerate it.
 					 */
-					refresh: slime.jsh.script.Command
+					refresh: slime.jsh.script.Command<Options>
 				}
 			}
 
 			git: {
 				branches: {
-					clean: slime.jsh.script.Command
-					list: slime.jsh.script.Command
+					clean: slime.jsh.script.Command<Options>
+					list: slime.jsh.script.Command<Options>
 				}
 			}
 
-			merge: slime.jsh.script.Command
+			merge: slime.jsh.script.Command<Options>
 
 			docker: {
-				test: slime.jsh.script.Command
+				test: slime.jsh.script.Command<Options>
 			}
 		}
 

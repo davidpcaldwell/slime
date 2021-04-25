@@ -54,11 +54,11 @@ namespace slime.jsh.wf {
 			command: string
 		}
 
-		export interface Interface extends slime.jsh.script.Commands {
+		export interface Interface<T> extends slime.jsh.script.Commands<T> {
 			/**
 			 * A special {@link Command} that is run each time any (other) `Command` is run.
 			 */
-			 initialize?:  slime.jsh.script.Command
+			 initialize?:  slime.jsh.script.Command<T>
 		}
 
 		export namespace error {
@@ -121,21 +121,21 @@ namespace slime.jsh.wf {
 					 * @throws { cli.error.TargetNotFound } if the specified target is not found on the interface
 					 * @throws { cli.error.TargetNotFunction } if the specified target is not a function
 					 */
-					target: (p: { interface: cli.Interface, target: string }) =>  slime.jsh.script.Command
+					target: (p: { interface: cli.Interface<any>, target: string }) =>  slime.jsh.script.Command<any>
 
-					process: (p: { interface: cli.Interface, invocation: cli.CommandInvocation }) => void
+					process: (p: { interface: cli.Interface<any>, invocation: cli.CommandInvocation }) => void
 
 					/**
 					 * Executes a command, derived from the first available argument, on the given interface with the remaining
 					 * arguments following the command.
 					 */
-					execute: (p: { interface: cli.Interface, arguments: jsh.script.Invocation<any> }) => void
+					execute: (p: { interface: cli.Interface<any>, arguments: jsh.script.Invocation<any> }) => void
 				}
 				option: {
-					string: (c: { longname: string }) => slime.jsh.script.Processor
-					boolean: (c: { longname: string }) => slime.jsh.script.Processor
-					number: (c: { longname: string }) => slime.jsh.script.Processor
-					pathname: (c: { longname: string }) => slime.jsh.script.Processor
+					string: (c: { longname: string }) => slime.jsh.script.Processor<any>
+					boolean: (c: { longname: string }) => slime.jsh.script.Processor<any>
+					number: (c: { longname: string }) => slime.jsh.script.Processor<any>
+					pathname: (c: { longname: string }) => slime.jsh.script.Processor<any>
 				},
 				/**
 				 * Returns an object representing the global invocation of `jsh`.
@@ -150,10 +150,10 @@ namespace slime.jsh.wf {
 			 * revisers and returns the result of processing `jsh.script.arguments` through the revisers.
 			 */
 			invocation: {
-				(mutator: slime.jsh.script.Processor, m2:  slime.jsh.script.Processor, m3:  slime.jsh.script.Processor, m4:  slime.jsh.script.Processor): jsh.script.Invocation<any>
-				(mutator: slime.jsh.script.Processor, m2:  slime.jsh.script.Processor, m3:  slime.jsh.script.Processor): jsh.script.Invocation<any>
-				(mutator:  slime.jsh.script.Processor, m2:  slime.jsh.script.Processor): jsh.script.Invocation<any>
-				(mutator:  slime.jsh.script.Processor): slime.jsh.script.Invocation<any>
+				<T>(mutator: slime.jsh.script.Processor<T>, m2:  slime.jsh.script.Processor<T>, m3:  slime.jsh.script.Processor<T>, m4:  slime.jsh.script.Processor<T>): jsh.script.Invocation<T>
+				<T>(mutator: slime.jsh.script.Processor<T>, m2:  slime.jsh.script.Processor<T>, m3:  slime.jsh.script.Processor<T>): jsh.script.Invocation<T>
+				<T>(mutator:  slime.jsh.script.Processor<T>, m2:  slime.jsh.script.Processor<T>): jsh.script.Invocation<T>
+				<T>(mutator:  slime.jsh.script.Processor<T>): slime.jsh.script.Invocation<T>
 			}
 
 			/** @deprecated Replaced by jsh.wf.project.initialize(). */
