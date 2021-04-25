@@ -382,6 +382,8 @@
 		}
 
 		//	TODO	implement generation of git hooks so that we can get rid of separate pre-commit implementation
+
+		//	TODO	figure out whether there is anything to be harvested from the below or whether it can simply be removed
 		if (false) $exports.commit = $api.Function.pipe(
 			/**
 			 *
