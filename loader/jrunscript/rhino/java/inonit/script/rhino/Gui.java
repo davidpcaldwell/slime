@@ -25,7 +25,9 @@ public class Gui {
 		private void workAroundOsxSwingSlowness() {
 			try {
 				for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-					if ("Nimbus".equals(info.getName())) {
+					//	Used to use Nimbus but Metal works better. Default is Mac OS X, which runs terribly slowly with the
+					//	Rhino debugger, for unknown reasons.
+					if ("Metal".equals(info.getName())) {
 						javax.swing.UIManager.setLookAndFeel(info.getClassName());
 						break;
 					}

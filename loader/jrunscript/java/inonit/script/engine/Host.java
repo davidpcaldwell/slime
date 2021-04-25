@@ -24,6 +24,11 @@ public abstract class Host {
 			final String code = streams.readString(resource.getReader());
 			return new Script() {
 				@Override
+				public String toString() {
+					return resource.getURI().adapt().toString();
+				}
+
+				@Override
 				public URI getURI() {
 					return resource.getURI().adapt();
 				}
@@ -143,10 +148,18 @@ public abstract class Host {
 			return variables;
 		}
 
+		/**
+		 * Adds the given script to the program.
+		 * @param script
+		 */
 		public void run(Script script) {
 			scripts.add(script);
 		}
 
+		/**
+		 * Creates a script from the given resource and adds it to the program.
+		 * @param script
+		 */
 		public void run(Code.Loader.Resource resource) {
 			try {
 				run(Script.create(resource));

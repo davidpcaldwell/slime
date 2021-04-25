@@ -206,14 +206,14 @@ public class Engine {
 		}
 
 		private static class ExecutorImpl extends Host {
-			private Debugger dim;
+			private Debugger debugger;
 			private ContextFactory contexts;
 
 			private Context context;
 			private Scriptable global;
 
-			ExecutorImpl(Debugger dim, ContextFactory contexts) {
-				this.dim = dim;
+			ExecutorImpl(Debugger debugger, ContextFactory contexts) {
+				this.debugger = debugger;
 				this.contexts = contexts;
 			}
 
@@ -240,6 +240,7 @@ public class Engine {
 			@Override public void initialize() {
 				this.context = contexts.enterContext();
 				this.global = context.initStandardObjects();
+				debugger.initialize(global);
 			}
 
 			@Override public void destroy() {
@@ -265,7 +266,7 @@ public class Engine {
 				}
 				try {
 					Unit unit = new Unit(Source.create(file));
-					return unit.execute(dim, context, global);
+					return unit.execute(debugger, context, global);
 				} catch (IOException e) {
 					//	TODO	could use some analysis here about what this exception would mean
 					throw new RuntimeException(e);

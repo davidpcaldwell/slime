@@ -4,11 +4,9 @@ import java.util.*;
 
 import org.mozilla.javascript.*;
 
-import inonit.script.engine.*;
-
 public abstract class Debugger {
 	abstract void initialize(Engine.Configuration contexts);
-	abstract void initialize(Scriptable scope, Engine engine, Host.Program program);
+	abstract void initialize(Scriptable global);
 	abstract void setBreakpoint(Source source, int line);
 	abstract Engine.Log getLog();
 
@@ -27,7 +25,7 @@ public abstract class Debugger {
 		void setBreakpoint(Source source, int line) {
 		}
 
-		void initialize(Scriptable scope, Engine engine, Host.Program program) {
+		void initialize(Scriptable global) {
 		}
 
 		Engine.Log getLog() {
@@ -241,7 +239,7 @@ public abstract class Debugger {
 		void setBreakpoint(Source source, int line) {
 		}
 
-		void initialize(Scriptable scope, Engine engine, Host.Program program) {
+		void initialize(Scriptable global) {
 		}
 
 		Engine.Log getLog() {
@@ -300,7 +298,6 @@ public abstract class Debugger {
 			}
 
 			public abstract Ui.Factory getUiFactory();
-
 
 			public void setExit(Runnable exit) {
 				if (exit == null) {
@@ -366,11 +363,11 @@ public abstract class Debugger {
 			breakOnExceptions = configuration.breakOnExceptions;
 			if (configuration.breakOnExceptions) {
 				dim.setBreakOnExceptions(true);
-				breakOnExceptions = true;
 			}
 
 			this.gui = configuration.getUiFactory().create(dim, title);
 			gui.setExitAction(new ExitAction(this.dim, configuration.exit));
+			//	TODO	do we need to attach again? We did that above.
 			contexts.attach(dim);
 		}
 
@@ -383,8 +380,9 @@ public abstract class Debugger {
 			}
 		}
 
-		void initialize(Scriptable scope, Engine engine, Host.Program program) {
-			dim.setScopeProvider( new ScopeWrapper(scope) );
+		@Override
+		void initialize(Scriptable global) {
+			dim.setScopeProvider( new ScopeWrapper(global) );
 			gui.pack();
 			gui.setVisible(true);
 		}

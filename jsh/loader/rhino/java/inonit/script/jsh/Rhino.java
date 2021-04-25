@@ -92,7 +92,6 @@ public class Rhino {
 	private static class ExecutionImpl extends Shell.Execution {
 		static Integer execute(Shell shell, Engine rhino, Engine.Log log, Interface $rhino) throws Shell.Invocation.CheckedException {
 			ExecutionImpl execution = new ExecutionImpl(shell, rhino, log, $rhino);
-			//	Ignore returned Integer
 			return execution.execute();
 		}
 
