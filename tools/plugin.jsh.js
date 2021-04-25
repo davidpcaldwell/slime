@@ -143,7 +143,7 @@
 									//jsh.shell.console("command = [" + command + "]");
 									var tokens = (command.length) ? command.split(".") : [];
 									//jsh.shell.console("tokens = " + JSON.stringify(tokens));
-									/** @type { slime.jsh.wf.cli.Interface | slime.jsh.wf.cli.Command } */
+									/** @type { slime.jsh.wf.cli.Interface | slime.jsh.script.Command<any> } */
 									var rv = p.interface;
 									for (var i=0; i<tokens.length; i++) {
 										if (rv) rv = rv[tokens[i]];

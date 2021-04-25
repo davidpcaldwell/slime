@@ -54,19 +54,15 @@ namespace slime.jsh.wf {
 			command: string
 		}
 
-		export interface Command {
-			(p: jsh.script.Invocation<any>): void
-		}
-
 		export interface Commands {
-			[x: string]: ( Command | Commands )
+			[x: string]: ( slime.jsh.script.Command<any> | Commands )
 		}
 
 		export interface Interface extends Commands {
 			/**
 			 * A special {@link Command} that is run each time any (other) `Command` is run.
 			 */
-			 initialize?: Command
+			 initialize?: slime.jsh.script.Command<any>
 		}
 
 		export type Processor = (p: jsh.script.Invocation<any>) => jsh.script.Invocation<any>
@@ -131,7 +127,7 @@ namespace slime.jsh.wf {
 					 * @throws { cli.error.TargetNotFound } if the specified target is not found on the interface
 					 * @throws { cli.error.TargetNotFunction } if the specified target is not a function
 					 */
-					target: (p: { interface: cli.Interface, target: string }) => cli.Command
+					target: (p: { interface: cli.Interface, target: string }) => slime.jsh.script.Command<any>
 
 					process: (p: { interface: cli.Interface, invocation: cli.CommandInvocation }) => void
 
