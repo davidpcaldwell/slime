@@ -50,19 +50,12 @@ namespace slime.jsh.wf {
 			base: slime.jrunscript.file.Directory
 		}
 
-		export interface Arguments {
-			/** Global options passed to `wf`. Currently, none are defined. */
-			options: { [x: string]: any },
-			/** The set of arguments to the `wf` command, not including global options. */
-			arguments: string[]
-		}
-
-		export interface Invocation extends Arguments {
+		export interface CommandInvocation extends jsh.script.Invocation<any> {
 			command: string
 		}
 
 		export interface Command {
-			(p: Arguments): void
+			(p: jsh.script.Invocation<any>): void
 		}
 
 		export interface Commands {
@@ -76,7 +69,7 @@ namespace slime.jsh.wf {
 			 initialize?: Command
 		}
 
-		export type Processor = (p: cli.Arguments) => cli.Arguments
+		export type Processor = (p: jsh.script.Invocation<any>) => jsh.script.Invocation<any>
 
 		export namespace error {
 			export interface TargetNotFound extends Error {
@@ -132,7 +125,7 @@ namespace slime.jsh.wf {
 					 * Converts a set of arguments whose first argument describes a command to an invocation that indicates
 					 * that command and includes the remaining arguments.
 					 */
-					parse: (p: cli.Arguments) => cli.Invocation
+					parse: (p: jsh.script.Invocation<any>) => cli.CommandInvocation
 
 					/**
 					 * @throws { cli.error.TargetNotFound } if the specified target is not found on the interface
@@ -140,13 +133,13 @@ namespace slime.jsh.wf {
 					 */
 					target: (p: { interface: cli.Interface, target: string }) => cli.Command
 
-					process: (p: { interface: cli.Interface, invocation: cli.Invocation }) => void
+					process: (p: { interface: cli.Interface, invocation: cli.CommandInvocation }) => void
 
 					/**
 					 * Executes a command, derived from the first available argument, on the given interface with the remaining
 					 * arguments following the command.
 					 */
-					execute: (p: { interface: cli.Interface, arguments: cli.Arguments }) => void
+					execute: (p: { interface: cli.Interface, arguments: jsh.script.Invocation<any> }) => void
 				}
 				option: {
 					string: (c: { longname: string }) => cli.Processor
@@ -158,7 +151,7 @@ namespace slime.jsh.wf {
 				 * Returns an object representing the global invocation of `jsh`.
 				 */
 				invocation: <T>(
-					f: (p: cli.Arguments) => T
+					f: (p: jsh.script.Invocation<any>) => T
 				) => T
 			}
 
@@ -167,10 +160,10 @@ namespace slime.jsh.wf {
 			 * revisers and returns the result of processing `jsh.script.arguments` through the revisers.
 			 */
 			invocation: {
-				(mutator: cli.Processor, m2: cli.Processor, m3: cli.Processor, m4: cli.Processor): cli.Arguments
-				(mutator: cli.Processor, m2: cli.Processor, m3: cli.Processor): cli.Arguments
-				(mutator: cli.Processor, m2: cli.Processor): cli.Arguments
-				(mutator: cli.Processor): cli.Arguments
+				(mutator: cli.Processor, m2: cli.Processor, m3: cli.Processor, m4: cli.Processor): jsh.script.Invocation<any>
+				(mutator: cli.Processor, m2: cli.Processor, m3: cli.Processor): jsh.script.Invocation<any>
+				(mutator: cli.Processor, m2: cli.Processor): jsh.script.Invocation<any>
+				(mutator: cli.Processor): jsh.script.Invocation<any>
 			}
 
 			/** @deprecated Replaced by jsh.wf.project.initialize(). */

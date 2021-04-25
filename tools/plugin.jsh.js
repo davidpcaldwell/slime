@@ -271,7 +271,7 @@
 						}
 					},
 					invocation: function() {
-						/** @type { slime.jsh.wf.cli.Arguments } */
+						/** @type { slime.jsh.script.Invocation<any> } */
 						var rv = {
 							options: {},
 							arguments: Array.prototype.slice.call(jsh.script.arguments)

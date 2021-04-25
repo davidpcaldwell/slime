@@ -87,7 +87,10 @@ namespace slime.jsh.wf {
 		export interface Project {
 			lint?: () => boolean
 			test?: () => boolean
-			commit?: (p: { message: string }) => void
+			commit?: (p: {
+				message: string
+				notest?: boolean
+			}) => void
 		}
 
 		/**

@@ -109,11 +109,15 @@
 						}
 						jsh.wf.prohibitModifiedSubmodules({ repository: repository });
 						jsh.wf.typescript.tsc();
-						var success = operations.test();
-						if (!success) {
-							throw new Error("Tests failed.");
+						if (!p.notest) {
+							var success = operations.test();
+							if (!success) {
+								throw new Error("Tests failed.");
+							} else {
+								jsh.shell.console("Tests passed; proceeding with commit.");
+							}
 						} else {
-							jsh.shell.console("Tests passed; proceeding with commit.");
+							jsh.shell.console("Skipping tests because 'notest' is true.");
 						}
 						repository.commit({
 							all: true,
@@ -292,6 +296,7 @@
 
 				if (operations.commit) $exports.commit = $api.Function.pipe(
 					jsh.wf.cli.$f.option.string({ longname: "message" }),
+					jsh.script.cli.option.boolean({ longname: "notest" }),
 					function(p) {
 						//	Leave redundant check for message for now, in case there are existing implementations of
 						//	operations.commit that do not check. But going forward they should check themselves.
@@ -319,7 +324,7 @@
 						}
 
 						if (!p.options.message) throw new Error("No default commit message, and no message given.");
-						operations.commit({ message: p.options.message });
+						operations.commit({ message: p.options.message, notest: p.options.notest });
 						jsh.shell.console("Committed changes to " + $context.base);
 					}
 				);
