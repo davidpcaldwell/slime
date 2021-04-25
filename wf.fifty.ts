@@ -74,21 +74,21 @@ namespace slime {
 					/**
 					 * Removes the VSCode extension information about the project and explains how to regenerate it.
 					 */
-					refresh: slime.jsh.script.Command<any>
+					refresh: slime.jsh.script.Command
 				}
 			}
 
 			git: {
 				branches: {
-					clean: slime.jsh.script.Command<any>
-					list: slime.jsh.script.Command<any>
+					clean: slime.jsh.script.Command
+					list: slime.jsh.script.Command
 				}
 			}
 
-			merge: slime.jsh.script.Command<any>
+			merge: slime.jsh.script.Command
 
 			docker: {
-				test: slime.jsh.script.Command<any>
+				test: slime.jsh.script.Command
 			}
 		}
 

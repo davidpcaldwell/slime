@@ -97,31 +97,31 @@ namespace slime.jsh.wf {
 		 * Implements the standard `wf` commands provided by {@link slime.jsh.wf.Exports | `jsh.wf.project.initialize()`}.
 		 */
 		export interface Interface {
-			eslint: slime.jsh.script.Command<any>
+			eslint:  slime.jsh.script.Command
 
 			/**
 			 * Runs the Typedoc documentation generator.
 			 */
-			typedoc: slime.jsh.script.Command<any>
+			typedoc:  slime.jsh.script.Command
 
-			status: slime.jsh.script.Command<any>
+			status:  slime.jsh.script.Command
 
-			test: slime.jsh.script.Command<any>
+			test:  slime.jsh.script.Command
 
 			submodule: {
 				/**
 				 * `--path <path-to-submodule>`
 				 */
-				remove: slime.jsh.script.Command<any>
+				remove:  slime.jsh.script.Command
 				/**
 				 * `--path <path-to-submodule>`
 				 */
-				update: slime.jsh.script.Command<any>
-				reset: slime.jsh.script.Command<any>
+				update:  slime.jsh.script.Command
+				reset:  slime.jsh.script.Command
 			}
 
-			documentation: slime.jsh.script.Command<any>
-			document: slime.jsh.script.Command<any>
+			documentation:  slime.jsh.script.Command
+			document:  slime.jsh.script.Command
 		}
 
 		(
@@ -137,7 +137,7 @@ namespace slime.jsh.wf {
 			/**
 			 * Runs the TypeScript compiler on the project.
 			 */
-			 tsc: slime.jsh.script.Command<any>
+			 tsc:  slime.jsh.script.Command
 		}
 
 		(
@@ -242,7 +242,7 @@ namespace slime.jsh.wf {
 			 *
 			 * * Push
 			 */
-			 commit: slime.jsh.script.Command<any>
+			 commit:  slime.jsh.script.Command
 		}
 
 		(

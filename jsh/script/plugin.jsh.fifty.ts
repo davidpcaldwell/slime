@@ -4,6 +4,8 @@ namespace slime.jsh.script {
 		arguments: string[]
 	}
 
+	//	TODO	an ambition to make Processor to have a parameterized type that matches Invocation, but haven't been able to get
+	//			that to work
 	export interface Processor {
 		(invocation: Invocation<any>): Invocation<any>
 	}
@@ -12,12 +14,12 @@ namespace slime.jsh.script {
 	 * A process that may return a numeric exit status that can be used as a process exit status, or may complete normally, or
 	 * may throw an uncaught exception.
 	 */
-	export interface Command<T> {
-		(invocation: Invocation<T>): number | void
+	export interface Command {
+		(invocation: Invocation<any>): number | void
 	}
 
 	export interface Commands {
-		[x: string]: Commands | Command<any>
+		[x: string]: Commands | Command
 	}
 
 	interface Application {

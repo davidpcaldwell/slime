@@ -58,7 +58,7 @@ namespace slime.jsh.wf {
 			/**
 			 * A special {@link Command} that is run each time any (other) `Command` is run.
 			 */
-			 initialize?: slime.jsh.script.Command<any>
+			 initialize?:  slime.jsh.script.Command
 		}
 
 		export namespace error {
@@ -121,7 +121,7 @@ namespace slime.jsh.wf {
 					 * @throws { cli.error.TargetNotFound } if the specified target is not found on the interface
 					 * @throws { cli.error.TargetNotFunction } if the specified target is not a function
 					 */
-					target: (p: { interface: cli.Interface, target: string }) => slime.jsh.script.Command<any>
+					target: (p: { interface: cli.Interface, target: string }) =>  slime.jsh.script.Command
 
 					process: (p: { interface: cli.Interface, invocation: cli.CommandInvocation }) => void
 
