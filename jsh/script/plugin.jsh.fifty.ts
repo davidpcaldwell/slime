@@ -4,7 +4,7 @@ namespace slime.jsh.script {
 		arguments: string[]
 	}
 
-	interface Processor<T> {
+	export interface Processor<T> {
 		(invocation: Invocation<T>): Invocation<T>
 	}
 

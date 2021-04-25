@@ -276,7 +276,7 @@
 							options: {},
 							arguments: Array.prototype.slice.call(jsh.script.arguments)
 						};
-						/** @type { slime.jsh.wf.cli.Processor[] } */
+						/** @type { slime.jsh.script.Processor[] } */
 						var mutators = Array.prototype.slice.call(arguments);
 						mutators.forEach(function(mutator) {
 							mutator(rv);

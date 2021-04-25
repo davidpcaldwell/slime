@@ -61,8 +61,6 @@ namespace slime.jsh.wf {
 			 initialize?: slime.jsh.script.Command<any>
 		}
 
-		export type Processor = (p: jsh.script.Invocation<any>) => jsh.script.Invocation<any>
-
 		export namespace error {
 			export interface TargetNotFound extends Error {
 				command: string
@@ -134,10 +132,10 @@ namespace slime.jsh.wf {
 					execute: (p: { interface: cli.Interface, arguments: jsh.script.Invocation<any> }) => void
 				}
 				option: {
-					string: (c: { longname: string }) => cli.Processor
-					boolean: (c: { longname: string }) => cli.Processor
-					number: (c: { longname: string }) => cli.Processor
-					pathname: (c: { longname: string }) => cli.Processor
+					string: (c: { longname: string }) => slime.jsh.script.Processor<any>
+					boolean: (c: { longname: string }) => slime.jsh.script.Processor<any>
+					number: (c: { longname: string }) => slime.jsh.script.Processor<any>
+					pathname: (c: { longname: string }) => slime.jsh.script.Processor<any>
 				},
 				/**
 				 * Returns an object representing the global invocation of `jsh`.
@@ -152,10 +150,10 @@ namespace slime.jsh.wf {
 			 * revisers and returns the result of processing `jsh.script.arguments` through the revisers.
 			 */
 			invocation: {
-				(mutator: cli.Processor, m2: cli.Processor, m3: cli.Processor, m4: cli.Processor): jsh.script.Invocation<any>
-				(mutator: cli.Processor, m2: cli.Processor, m3: cli.Processor): jsh.script.Invocation<any>
-				(mutator: cli.Processor, m2: cli.Processor): jsh.script.Invocation<any>
-				(mutator: cli.Processor): jsh.script.Invocation<any>
+				(mutator: slime.jsh.script.Processor<any>, m2: slime.jsh.script.Processor<any>, m3: slime.jsh.script.Processor<any>, m4: slime.jsh.script.Processor<any>): jsh.script.Invocation<any>
+				(mutator: slime.jsh.script.Processor<any>, m2: slime.jsh.script.Processor<any>, m3: slime.jsh.script.Processor<any>): jsh.script.Invocation<any>
+				(mutator: slime.jsh.script.Processor<any>, m2: slime.jsh.script.Processor<any>): jsh.script.Invocation<any>
+				(mutator: slime.jsh.script.Processor<any>): slime.jsh.script.Invocation<any>
 			}
 
 			/** @deprecated Replaced by jsh.wf.project.initialize(). */
