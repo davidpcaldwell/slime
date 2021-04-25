@@ -178,6 +178,7 @@
 							var server = startHgServer();
 							// Packages.java.lang.System.err.println("Return httpd.Handler.Proxy");
 							return new httpd.Handler.Proxy({
+								client: new jsh.http.Client(),
 								target: {
 									host: "127.0.0.1",
 									port: server.port

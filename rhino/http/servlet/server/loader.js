@@ -11,13 +11,26 @@
 //	Contributor(s):
 //	END LICENSE
 
+//@ts-check
 (
-	function() {
-		$exports.http = {};
-
-		$exports.http.Response = function() {
-			throw new Error("Reserved for future use.");
+	/**
+	 * @param { { api: { web: slime.web.Exports, http: slime.jrunscript.http.client.Exports }} } $context
+	 * @param { { http: slime.servlet.httpd["http"], Handler: slime.servlet.httpd["Handler"] } } $exports
+	 */
+	function($context,$exports) {
+		$exports.http = {
+			Response: void(0)
 		};
+
+		$exports.http.Response = Object.assign(function() {
+			throw new Error("Reserved for future use.");
+		}, {
+			text: void(0),
+			resource: void(0),
+			NOT_FOUND: void(0),
+			SEE_OTHER: void(0),
+			javascript: void(0)
+		});
 
 		$exports.http.Response.text = function(string) {
 			return {
@@ -71,16 +84,24 @@
 			return rv;
 		}
 
-		$exports.Handler = function(p) {
+		$exports.Handler = Object.assign(function(p) {
 			throw new Error("Reserved for future use.");
-		};
+		}, {
+			Child: void(0),
+			series: void(0),
+			HostRedirect: void(0),
+			Proxy: void(0),
+			Loader: void(0)
+		});
 		$exports.Handler.series = function() {
 			var delegates = arguments;
 			return function(request) {
 				for (var i=0; i<delegates.length; i++) {
 					var handler = (function(argument) {
 						if (typeof(argument) == "object") {
-							return new $exports.Handler(argument);
+							throw new TypeError("argument to Handler.series must not be object.");
+							//	Not sure what the below was
+							//	return new $exports.Handler(argument);
 						} else if (typeof(argument) == "function") {
 							return argument;
 						}
@@ -133,7 +154,7 @@
 			}
 		};
 		$exports.Handler.Proxy = function(o) {
-			var client = new jsh.http.Client();
+			var client = o.client;
 
 			return function(request) {
 				//	TODO	what about protocol? What about host header?
@@ -149,11 +170,12 @@
 					body: (request.method == "GET") ? void(0) : request.body
 				};
 				var response = client.request(send);
-				response.headers = response.headers.filter(function(header) {
+				var get = response.headers.get;
+				response.headers = Object.assign(response.headers.filter(function(header) {
 					var name = header.name.toLowerCase();
 					if (name == "transfer-encoding") return false;
 					return true;
-				});
+				}), { get: get });
 				return response;
 			};
 		};
@@ -167,19 +189,28 @@
 					})(request.path, o.index)
 					var resource = o.loader.get(path);
 					if (resource) {
-						return {
-							status: {
-								code: 200
-							},
-							headers: [],
-							body: resource
+						/**
+						 *
+						 * @param { slime.Resource } resource
+						 * @returns { resource is slime.jrunscript.runtime.Resource }
+						 */
+						var isJrunscriptResource = function(resource) {
+							return true;
 						}
-					} else {
+						//	TODO	investigate whether there's a better way to do this type stuff than "casting"
+						//	TODO	maybe there's a flaw in the type definitions downstream, or maybe we need a type of loader
+						//			that returns jrunscript resources always
+						if (isJrunscriptResource(resource)) {
+							return $exports.http.Response.resource(resource);
+						} else {
+							throw new Error("Unreachable.");
+						}
+					} else if (resource === null) {
 						return null;
 					}
-
 				}
 			};
 		}
 	}
-)();
+//@ts-ignore
+)($context,$exports);

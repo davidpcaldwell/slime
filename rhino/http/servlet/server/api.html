@@ -239,6 +239,7 @@ END LICENSE
 									var frontend = new jsh.httpd.Tomcat();
 									frontend.servlet(new function() {
 										var handler = new module.Handler.Proxy({
+											client: new jsh.http.Client(),
 											target: {
 												host: "127.0.0.1",
 												port: backend.port

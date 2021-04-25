@@ -36,20 +36,26 @@
 
 				var server = new jsh.httpd.Tomcat();
 				var loader = new jsh.file.Loader({ directory: jsh.script.file.parent });
-				/** @type { slime.tools.documentation.implementation } */
-				var documentationHandler = loader.module("documentation-handler.js");
-				var documentationFactory = documentationHandler({
-					base: base,
-					watch: p.options.watch
-				});
 				server.map({
 					path: "",
 					servlets: {
 						"/*": {
 							load: function(scope) {
+								/** @type { slime.servlet.httpd["Handler"]["Loader"] } */
+								var asTextHandler = loader.module("as-text-handler.js", {
+									httpd: scope.httpd
+								});
+								/** @type { slime.tools.documentation.implementation } */
+								var documentationHandler = loader.module("documentation-handler.js", {
+									httpd: scope.httpd
+								});
+								var documentationFactory = documentationHandler({
+									base: base,
+									watch: p.options.watch
+								});
 								scope.$exports.handle = scope.httpd.Handler.series(
 									documentationFactory(scope.httpd),
-									new scope.httpd.Handler.Loader({
+									asTextHandler({
 										loader: new jsh.file.Loader({ directory: base })
 									})
 								)

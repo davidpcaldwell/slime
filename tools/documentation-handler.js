@@ -6,9 +6,13 @@
 	 *
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.Global } jsh
+	 * @param { { httpd: slime.servlet.httpd } } $context
+	 * @param { slime.Loader } $loader
 	 * @param { (value: slime.tools.documentation.implementation) => void } $export
 	 */
-	function($api,jsh,$export) {
+	function($api,jsh,$context,$loader,$export) {
+		/** @type { slime.servlet.httpd["Handler"]["Loader"] } */
+		var asTextHandler = $loader.module("as-text-handler.js");
 		$export(
 			function(configuration) {
 				var base = configuration.base;
@@ -22,7 +26,7 @@
 							var match = typedocPattern.exec(request.path);
 							if (match) {
 								var src = (match[1]) ? base.getSubdirectory(match[1]) : base;
-								return new httpd.Handler.Loader({
+								return asTextHandler({
 									loader: new jsh.file.Loader({ directory: src }),
 									index: "index.html"
 								})($api.Object.compose(request, { path: match[2] }))
@@ -40,7 +44,7 @@
 									});
 								}
 								jsh.shell.console("Serving: " + request.path);
-								return new httpd.Handler.Loader({
+								return httpd.Handler.Loader({
 									loader: new jsh.file.Loader({ directory: src.getSubdirectory("local/doc/typedoc") }),
 									index: "index.html"
 								})($api.Object.compose(request, { path: match[2] }))
@@ -53,4 +57,4 @@
 		)
 	}
 //@ts-ignore
-)($api,jsh,$export);
+)($api,jsh,$context,$loader,$export);

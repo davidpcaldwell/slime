@@ -176,14 +176,15 @@ namespace slime.web {
 
 	export namespace Url {
 		export interface Argument {
+			//	TODO	should authority.host and path also be optional? Check RFC
 			scheme?: string
 			authority?: {
 				host: string
-				port: number
+				port?: number
 				userinfo?: string
 			}
 			path: string
-			query: string | Form.Control[]
+			query?: string | Form.Control[]
 			fragment?: string
 		}
 	}

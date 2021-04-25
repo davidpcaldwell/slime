@@ -14,10 +14,10 @@
 (
 	/**
 	 * @param { slime.$api.Global } $api
-	 * @param {slime.jrunscript.host.Context} $context
-	 * @param {slime.jrunscript.host.Exports} $exports
-	 * @param {*} Packages
-	 * @param {*} JavaAdapter
+	 * @param { slime.jrunscript.host.Context } $context
+	 * @param { slime.jrunscript.host.Exports } $exports
+	 * @param { slime.jrunscript.Packages } Packages
+	 * @param { any } JavaAdapter
 	 */
 	function($api,$context,$exports,Packages,JavaAdapter) {
 		//	TODO	Document these three, when it is clear how to represent host objects in the documentation; or we provide JavaScript

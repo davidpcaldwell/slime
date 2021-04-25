@@ -334,6 +334,7 @@ namespace slime.jrunscript {
 					exit(status: number)
 					getenv(name: string): string
 					getenv(): any
+					identityHashCode(o: any): number
 				}
 				reflect: {
 					Field: any
@@ -345,6 +346,10 @@ namespace slime.jrunscript {
 				Runnable: any
 				ClassLoader: any
 				Boolean: any
+				Object: any
+				Class: any
+				Void: any
+				Runtime: any
 			}
 			io: {
 				ByteArrayInputStream: any
@@ -433,6 +438,9 @@ namespace slime.jrunscript {
 				}
 				jsh: {
 					Shell: any
+				}
+				servlet: {
+					Servlet: any
 				}
 			}
 			system: slime.jrunscript.native.inonit.system

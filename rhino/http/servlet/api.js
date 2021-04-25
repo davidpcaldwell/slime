@@ -13,7 +13,7 @@
 //@ts-check
 (
 	/**
-	 * @param { any } Packages
+	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { any } JavaAdapter
 	 * @param { slime.servlet.internal.$host } $host
 	 */

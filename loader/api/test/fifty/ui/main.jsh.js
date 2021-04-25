@@ -113,9 +113,22 @@
 			servlets: {
 				"/*": {
 					load: function(scope) {
+						var castToJrunscriptResource = function(resource) {
+							/**
+							 *
+							 * @param { slime.Resource } p
+							 * @returns { p is slime.jrunscript.runtime.Resource }
+							 */
+							var isJrunscriptResource = function(p) {
+								return true;
+							}
+
+							if (isJrunscriptResource(resource)) return resource;
+							throw new Error("Unreachable.");
+						}
 						scope.$exports.handle = scope.httpd.Handler.series(
 							function(request) {
-								if (request.path == "") return scope.httpd.http.Response.resource($loader.get("index.html"));
+								if (request.path == "") return scope.httpd.http.Response.resource(castToJrunscriptResource($loader.get("index.html")));
 							},
 							function(request) {
 								if (request.path == "tsc.json") {
@@ -132,7 +145,7 @@
 							function(request) {
 								var loader = new jsh.file.Loader({ directory: jsh.script.file.parent });
 								var resource = loader.get(request.path);
-								return (resource) ? scope.httpd.http.Response.resource(resource) : void(0);
+								return (resource) ? scope.httpd.http.Response.resource(castToJrunscriptResource(resource)) : void(0);
 							},
 							scope.httpd.Handler.Child({
 								filter: /^code\/slime\/(.*)/,

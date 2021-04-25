@@ -74,7 +74,7 @@
 											})()
 											: $api.Function.returning(void(0))
 									),
-									new scope.httpd.Handler.Loader({
+									scope.httpd.Handler.Loader({
 										loader: new jsh.file.Loader({
 											directory: serve
 										})
