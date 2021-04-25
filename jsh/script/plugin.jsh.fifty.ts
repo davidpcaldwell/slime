@@ -4,8 +4,8 @@ namespace slime.jsh.script {
 		arguments: string[]
 	}
 
-	export interface Processor<T> {
-		(invocation: Invocation<T>): Invocation<T>
+	export interface Processor {
+		(invocation: Invocation<any>): Invocation<any>
 	}
 
 	/**
@@ -46,17 +46,17 @@ namespace slime.jsh.script {
 			}
 
 			option: {
-				string: (c: { longname: string, default?: string }) => Processor<any>
-				boolean: (c: { longname: string }) => Processor<any>
-				number: (c: { longname: string, default?: number }) => Processor<any>
-				pathname: (c: { longname: string, default?: slime.jrunscript.file.Pathname }) => Processor<any>
-				array: (c: { longname: string, value: (s: string) => any }) => Processor<any>
+				string: (c: { longname: string, default?: string }) => Processor
+				boolean: (c: { longname: string }) => Processor
+				number: (c: { longname: string, default?: number }) => Processor
+				pathname: (c: { longname: string, default?: slime.jrunscript.file.Pathname }) => Processor
+				array: (c: { longname: string, value: (s: string) => any }) => Processor
 			}
 
 			/**
 			 * Parses the `jsh` shell's arguments using the given {@link Processor}, returning the result of the processing.
 			 */
-			invocation: (processor: Processor<any>) => Invocation<any>
+			invocation: (processor: Processor) => Invocation<any>
 
 			/**
 			 * Given a {@link Descriptor} implementing the application's global options and commands, returns an object capable of
@@ -83,7 +83,7 @@ namespace slime.jsh.script {
 		) {
 			fifty.tests.cli = {
 				option: function() {
-					var trial = function(p: Processor<any>, args: string[]) {
+					var trial = function(p: Processor, args: string[]) {
 						return p({
 							options: {},
 							arguments: args

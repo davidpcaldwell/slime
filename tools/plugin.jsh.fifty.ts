@@ -132,10 +132,10 @@ namespace slime.jsh.wf {
 					execute: (p: { interface: cli.Interface, arguments: jsh.script.Invocation<any> }) => void
 				}
 				option: {
-					string: (c: { longname: string }) => slime.jsh.script.Processor<any>
-					boolean: (c: { longname: string }) => slime.jsh.script.Processor<any>
-					number: (c: { longname: string }) => slime.jsh.script.Processor<any>
-					pathname: (c: { longname: string }) => slime.jsh.script.Processor<any>
+					string: (c: { longname: string }) => slime.jsh.script.Processor
+					boolean: (c: { longname: string }) => slime.jsh.script.Processor
+					number: (c: { longname: string }) => slime.jsh.script.Processor
+					pathname: (c: { longname: string }) => slime.jsh.script.Processor
 				},
 				/**
 				 * Returns an object representing the global invocation of `jsh`.
@@ -150,10 +150,10 @@ namespace slime.jsh.wf {
 			 * revisers and returns the result of processing `jsh.script.arguments` through the revisers.
 			 */
 			invocation: {
-				(mutator: slime.jsh.script.Processor<any>, m2: slime.jsh.script.Processor<any>, m3: slime.jsh.script.Processor<any>, m4: slime.jsh.script.Processor<any>): jsh.script.Invocation<any>
-				(mutator: slime.jsh.script.Processor<any>, m2: slime.jsh.script.Processor<any>, m3: slime.jsh.script.Processor<any>): jsh.script.Invocation<any>
-				(mutator: slime.jsh.script.Processor<any>, m2: slime.jsh.script.Processor<any>): jsh.script.Invocation<any>
-				(mutator: slime.jsh.script.Processor<any>): slime.jsh.script.Invocation<any>
+				(mutator: slime.jsh.script.Processor, m2:  slime.jsh.script.Processor, m3:  slime.jsh.script.Processor, m4:  slime.jsh.script.Processor): jsh.script.Invocation<any>
+				(mutator: slime.jsh.script.Processor, m2:  slime.jsh.script.Processor, m3:  slime.jsh.script.Processor): jsh.script.Invocation<any>
+				(mutator:  slime.jsh.script.Processor, m2:  slime.jsh.script.Processor): jsh.script.Invocation<any>
+				(mutator:  slime.jsh.script.Processor): slime.jsh.script.Invocation<any>
 			}
 
 			/** @deprecated Replaced by jsh.wf.project.initialize(). */
