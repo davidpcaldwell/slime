@@ -54,11 +54,7 @@ namespace slime.jsh.wf {
 			command: string
 		}
 
-		export interface Commands {
-			[x: string]: ( slime.jsh.script.Command<any> | Commands )
-		}
-
-		export interface Interface extends Commands {
+		export interface Interface extends slime.jsh.script.Commands {
 			/**
 			 * A special {@link Command} that is run each time any (other) `Command` is run.
 			 */
