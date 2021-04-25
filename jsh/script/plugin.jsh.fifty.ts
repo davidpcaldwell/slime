@@ -25,7 +25,7 @@ namespace slime.jsh.script {
 	}
 
 	interface Descriptor {
-		options?: <G>(invocation: Invocation<G>) => Invocation<G>
+		options?: Processor
 		commands: Commands
 	}
 
