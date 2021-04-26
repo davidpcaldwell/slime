@@ -119,7 +119,7 @@
 
 			var delegate = new jsh.file.Loader({ directory: file.parent });
 
-			/** @type { mockjshplugin } */
+			/** @type { slime.fifty.test.$loader["jsh"]["plugin"]["mock"] } */
 			var mockPlugin = function(p) {
 				return jsh.$fifty.plugin.mock(
 					$api.Object.compose(

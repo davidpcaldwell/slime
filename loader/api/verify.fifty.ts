@@ -43,15 +43,13 @@ namespace slime.definition.verify {
 		<T>(value: T, name?: string, lambda?: (it: Subject<T>) => void): Subject<T>
 	}
 
-	export namespace Verify {
-		/**
-		 * An object that can execute {@link Context.Test}s.
-		 */
-		export type Context = (f: slime.definition.unit.Test) => void
-	}
+	/**
+	 * An object that can execute {@link Context.Test}s.
+	 */
+	export type Context = (f: slime.definition.unit.Test) => void
 
 	/**
 	 * Creates a {@link Verify} object that communicates with the given {@link Context}.
 	 */
-	export type Export = ( scope: Verify.Context ) => Verify
+	export type Export = ( scope: Context ) => Verify
 }

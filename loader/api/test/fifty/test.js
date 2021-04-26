@@ -41,7 +41,7 @@
 					console.end(this, name, result);
 				}
 
-				/** @type { slime.definition.verify.Verify.Context } */
+				/** @type { slime.definition.verify.Context } */
 				this.test = function(f) {
 					/** @type { slime.definition.unit.Test.Result } */
 					var result;
@@ -173,10 +173,10 @@
 				$api: {
 					Function: $api.Function,
 					Events: {
-						Captor: function() {
+						Captor: function(template) {
 							var events = [];
-							var handler = Array.prototype.slice.call(arguments).reduce(function(rv,type) {
-								rv[type] = function(e) {
+							var handler = $api.Function.Object.entries(template).reduce(function(rv,entry) {
+								rv[entry[0]] = function(e) {
 									events.push(e);
 								}
 								return rv;

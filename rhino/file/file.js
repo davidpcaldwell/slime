@@ -514,7 +514,8 @@
 					}
 				};
 
-				var list = function (mode) {
+				/** @type { slime.jrunscript.file.Directory["list"] } */
+				var list = Object.assign(function(mode) {
 					if (!mode) mode = {};
 					var filter = mode.filter;
 					if (filter instanceof RegExp) {
@@ -603,7 +604,7 @@
 						rv = rv.filter(filter);
 						return toReturn(rv);
 					}
-				}
+				}, { RESOURCE: void(0), ENTRY: void(0) });
 
 				this.list = list;
 				Object.assign(this.list, {

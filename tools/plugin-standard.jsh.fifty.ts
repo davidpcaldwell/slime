@@ -72,6 +72,24 @@ namespace slime.jsh.wf {
 									return true;
 								}
 							});
+							var cloned = repository.directory.getSubdirectory("slime").list({
+								type: repository.directory.list.ENTRY,
+								filter: function(node) {
+									return !node.directory;
+								},
+								descendants: function(directory) {
+									return directory.pathname.basename != ".git" && directory.pathname.basename != "local";
+								}
+							});
+							cloned.forEach(function(entry) {
+								var deleted = !src.getFile(entry.path);
+								if (deleted) {
+									if (entry.path != ".git") {
+										jsh.shell.console("Deleting cloned file deleted locally: " + entry.path);
+										repository.directory.getSubdirectory("slime").getFile(entry.path).remove();
+									}
+								}
+							});
 							var slime = jsh.tools.git.Repository({ directory: repository.directory.getSubdirectory("slime") });
 							if (slime.status().paths) {
 								slime.add({ path: "." });

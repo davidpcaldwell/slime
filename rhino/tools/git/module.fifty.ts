@@ -83,7 +83,10 @@ namespace slime.jrunscript.git {
 						}
 					});
 
-					var captor = fifty.$api.Events.Captor("stdout", "stderr");
+					type template = { stdout: string, stderr: string };
+					var events: template = { stdout: "a", stderr: "a" };
+
+					var captor = fifty.$api.Events.Captor(events);
 
 					var isType = function(type: string): slime.$api.Function.Predicate<slime.$api.Event<any>> {
 						return $api.Function.pipe(
@@ -96,9 +99,11 @@ namespace slime.jrunscript.git {
 						return $api.Function.Array.filter(isType(type));
 					}
 
+					var handler = captor.handler;
+
 					var repository = internal.subject.init({
 						pathname: directory.pathname
-					}, captor.handler);
+					}, handler);
 
 					verifyEmptyRepository(repository);
 					verify(repository).directory.getFile("a").is.type("object");

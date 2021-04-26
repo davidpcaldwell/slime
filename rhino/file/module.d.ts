@@ -44,7 +44,18 @@ namespace slime.jrunscript.file {
 		getFile: (string) => File,
 		getSubdirectory: (string) => Directory,
 		createTemporary: (p?: any) => Node,
-		list: Function & { RESOURCE: any }
+		list: {
+			(mode?: {
+				type?: any
+				filter?: any
+				descendants?: any
+
+				/** @deprecated */
+				recursive?: any
+			}): any
+			RESOURCE: any
+			ENTRY: any
+		}
 	}
 
 	interface Searchpath {

@@ -1,21 +1,15 @@
-type mockjshplugin = (p: {
-	global?: { [x: string]: any }
-	jsh?: { [x: string]: any }
-	plugins?: { [x: string]: any }
-	$slime?: slime.jsh.plugin.$slime
-}) => ReturnType<slime.jsh.loader.internal.plugins.Export["mock"]>
-
 namespace slime.fifty {
-	interface Exports {
+	export interface Exports {
 		ast: (p: { node: { script: slime.jrunscript.file.Pathname, debug?: boolean }, ast: slime.jrunscript.file.Pathname, file: slime.jrunscript.file.Pathname }) => object
 
 		interpret: (p: { ast: object }) => object
 	}
 
-	namespace test {
-		type verify = slime.definition.verify.Verify
+	export namespace test {
+		/** @deprecated Duplicative of {@link slime.definition.verify.Verify}. */
+		export type verify = slime.definition.verify.Verify
 
-		type $loader = slime.Loader & {
+		export type $loader = slime.Loader & {
 			//	will return a Pathname in jsh, but what in browser?
 			getRelativePath: (p: string) => any
 
@@ -29,25 +23,30 @@ namespace slime.fifty {
 					 * shell, optionally specifying the global object, `jsh`, and the shared `plugins` object used by the jsh plugin
 					 * loader.
 					 */
-					mock: mockjshplugin
+					mock: (p: {
+						global?: { [x: string]: any }
+						jsh?: { [x: string]: any }
+						plugins?: { [x: string]: any }
+						$slime?: slime.jsh.plugin.$slime
+					}) => ReturnType<slime.jsh.loader.internal.plugins.Export["mock"]>
 				},
 				$slime: jsh.plugin.$slime
 			}
 		}
 
-		interface run {
+		export interface run {
 			(f: () => void, name: string): void
 			(f: () => void): void
 		}
 
-		type tests = any
+		export type tests = any
 
-		interface load {
+		export interface load {
 			<T>(path: string, part: string, t: T): (t: T) => void
 			<T>(path: string, part?: string): () => void
 		}
 
-		interface kit {
+		export interface kit {
 			verify: verify
 			$loader: $loader
 			run: run
@@ -63,9 +62,9 @@ namespace slime.fifty {
 					/**
 					 * Creates an [[$api.Events.Handler]] that captures and stores all received [[$api.Event]]s for querying.
 					 */
-					Captor: (...types: string[]) => {
+					Captor: <T>(t: T) => {
 						events: $api.Event<any>[],
-						handler: $api.Events.Handler
+						handler: Required<$api.Events.Handler<T>>
 					}
 				}
 			},
@@ -77,26 +76,26 @@ namespace slime.fifty {
 				}
 			}
 		}
-	}
 
-	namespace test.internal {
-		interface Console {
-			start: (scope: Scope, name: string) => void
-			test: (scope: Scope, message: string, result: boolean) => void
-			end: (scope: Scope, name: string, result: boolean) => void
+		export namespace internal {
+			export interface Console {
+				start: (scope: Scope, name: string) => void
+				test: (scope: Scope, message: string, result: boolean) => void
+				end: (scope: Scope, name: string, result: boolean) => void
+			}
+
+			export interface Scope {
+				success: boolean
+
+				depth(): number
+				fail(): void
+
+				start: (name: string) => void
+				test: slime.definition.verify.Context
+				end: (name: string, result: boolean) => void
+			}
+
+			export type run = (loader: slime.fifty.test.$loader, path: string, part?: string) => boolean
 		}
-
-		interface Scope {
-			success: boolean
-
-			depth(): number
-			fail(): void
-
-			start: (name: string) => void
-			test: slime.definition.verify.Context["test"]
-			end: (name: string, result: boolean) => void
-		}
-
-		type run = (loader: slime.fifty.test.$loader, path: string, part?: string) => boolean
 	}
 }
