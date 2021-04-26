@@ -1,36 +1,4 @@
 namespace slime.jsh.script {
-	export interface Invocation<T> {
-		options: T
-		arguments: string[]
-	}
-
-	//	TODO	an ambition to make Processor to have a parameterized type that matches Invocation, but haven't been able to get
-	//			that to work
-	export interface Processor<T> {
-		(invocation: Invocation<T>): Invocation<T>
-	}
-
-	/**
-	 * A process that may return a numeric exit status that can be used as a process exit status, or may complete normally, or
-	 * may throw an uncaught exception.
-	 */
-	export interface Command<T> {
-		(invocation: Invocation<T>): number | void
-	}
-
-	export interface Commands<T> {
-		[x: string]: Commands<T> | Command<T>
-	}
-
-	interface Application {
-		run: (args: string[]) => number
-	}
-
-	interface Descriptor<T> {
-		options?: Processor<T>
-		commands: Commands<T>
-	}
-
 	/**
 	 * Represents the module inside the Fifty test suite.
 	 */
@@ -41,24 +9,80 @@ namespace slime.jsh.script {
 	//@ts-ignore
 	})(fifty);
 
+	export namespace cli {
+		export interface Invocation<T> {
+			options: T
+			arguments: string[]
+		}
+
+		//	TODO	an ambition to make Processor to have a parameterized type that matches Invocation, but haven't been able to get
+		//			that to work
+		export interface Processor<T> {
+			(invocation: Invocation<T>): Invocation<T>
+		}
+
+		/**
+		 * A process that may return a numeric exit status that can be used as a process exit status, or may complete normally, or
+		 * may throw an uncaught exception.
+		 */
+		export interface Command<T> {
+			(invocation: Invocation<T>): number | void
+		}
+
+		export interface Commands<T> {
+			[x: string]: Commands<T> | Command<T>
+		}
+
+		export interface Application {
+			/**
+			 * @throws
+			 */
+			run: (args: string[]) => number | void
+		}
+
+		export interface Descriptor<T> {
+			options?: Processor<T>
+			commands: Commands<T>
+		}
+
+		export namespace error {
+			export interface NoTargetProvided extends Error {
+			}
+
+			export interface TargetNotFound extends Error {
+				command: string
+			}
+
+			export interface TargetNotFunction extends Error {
+				command: string
+				target: any
+			}
+		}
+	}
+
 	export interface Exports {
 		cli: {
+			error: {
+				NoTargetProvided: $api.Error.Type<cli.error.NoTargetProvided>
+				TargetNotFound: $api.Error.Type<cli.error.TargetNotFound>
+				TargetNotFunction: $api.Error.Type<cli.error.TargetNotFunction>
+			}
 			parser: {
 				pathname: (argument: string) => slime.jrunscript.file.Pathname
 			}
 
 			option: {
-				string: (c: { longname: string, default?: string }) => Processor<any>
-				boolean: (c: { longname: string }) => Processor<any>
-				number: (c: { longname: string, default?: number }) => Processor<any>
-				pathname: (c: { longname: string, default?: slime.jrunscript.file.Pathname }) => Processor<any>
-				array: (c: { longname: string, value: (s: string) => any }) => Processor<any>
+				string: (c: { longname: string, default?: string }) => cli.Processor<any>
+				boolean: (c: { longname: string }) => cli.Processor<any>
+				number: (c: { longname: string, default?: number }) => cli.Processor<any>
+				pathname: (c: { longname: string, default?: slime.jrunscript.file.Pathname }) => cli.Processor<any>
+				array: (c: { longname: string, value: (s: string) => any }) => cli.Processor<any>
 			}
 
 			/**
 			 * Parses the `jsh` shell's arguments using the given {@link Processor}, returning the result of the processing.
 			 */
-			invocation: (processor: Processor<any>) => Invocation<any>
+			invocation: (processor: cli.Processor<any>) => cli.Invocation<any>
 
 			/**
 			 * Given a {@link Descriptor} implementing the application's global options and commands, returns an object capable of
@@ -67,7 +91,7 @@ namespace slime.jsh.script {
 			 * and the first remaining argument will be interpreted as a command name. If the command name exists and is a function,
 			 * it will be invoked with the {@link Invocation}.
 			 */
-			Application: (p: Descriptor<any>) => Application
+			Application: (p: cli.Descriptor<any>) => cli.Application
 
 			/**
 			 * Executes the program with the given descriptor inside this shell, with the arguments of the shell, and exits the
@@ -75,7 +99,7 @@ namespace slime.jsh.script {
 			 * used; otherwise, finishing execution successfully exits with 0 exit status and an uncaught exception exits with
 			 * status 1.
 			 */
-			wrap: (descriptor: Descriptor<any>) => void
+			wrap: (descriptor: cli.Descriptor<any>) => void
 		}
 	}
 
@@ -85,7 +109,7 @@ namespace slime.jsh.script {
 		) {
 			fifty.tests.cli = {
 				option: function() {
-					var trial = function(p: Processor<any>, args: string[]) {
+					var trial = function(p: cli.Processor<any>, args: string[]) {
 						return p({
 							options: {},
 							arguments: args
@@ -119,7 +143,7 @@ namespace slime.jsh.script {
 						fifty.verify(four).options.evaluate.property("a").is(1);
 					});
 
-					var invocation: Invocation<{ a: string, b: number[], c: string }> = {
+					var invocation: cli.Invocation<{ a: string, b: number[], c: string }> = {
 						options: {
 							a: void(0),
 							b: [],
@@ -128,7 +152,7 @@ namespace slime.jsh.script {
 						arguments: ["--a", "A", "--b", "1", "--b", "3", "--c", "C"]
 					};
 					fifty.verify(invocation).options.b.length.is(0);
-					var after: Invocation<{ a: string, b: number[], c: string }> = subject.cli.option.array({
+					var after: cli.Invocation<{ a: string, b: number[], c: string }> = subject.cli.option.array({
 						longname: "b",
 						value: Number
 					})(invocation);
@@ -168,8 +192,8 @@ namespace slime.jsh.script {
 				},
 				run: function() {
 					const $api = fifty.$api;
-					var was: Invocation<any>;
-					var invocationWas = function(invocation: Invocation<any>) {
+					var was: cli.Invocation<any>;
+					var invocationWas = function(invocation: cli.Invocation<any>) {
 						was = invocation;
 					}
 					fifty.verify(subject).cli.Application({
@@ -183,7 +207,9 @@ namespace slime.jsh.script {
 								}
 							)
 						}
-					}).run(["--global", "foo", "universe", "--command", "bar"]).is(42);
+					}).evaluate(function(application) {
+						return application.run(["--global", "foo", "universe", "--command", "bar"]);
+					}).is(42);
 					fifty.verify(was).options.evaluate.property("global").is("foo");
 					fifty.verify(was).options.evaluate.property("command").is("bar");
 
@@ -191,7 +217,7 @@ namespace slime.jsh.script {
 						commands: {
 							foo: function nothing(){}
 						}
-					}).run(["foo"]).is(0);
+					}).run(["foo"]).is.type("undefined");
 
 					fifty.verify(subject).cli.Application({
 						commands: {
@@ -199,7 +225,9 @@ namespace slime.jsh.script {
 								throw new Error();
 							}
 						}
-					}).run(["foo"]).is(1);
+					}).evaluate(function(application) {
+						return application.run(["foo"]);
+					}).threw.type(Error);
 				},
 				wrap: function() {
 					const $api = fifty.$api;

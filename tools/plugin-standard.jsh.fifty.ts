@@ -99,31 +99,31 @@ namespace slime.jsh.wf {
 		 * Implements the standard `wf` commands provided by {@link slime.jsh.wf.Exports | `jsh.wf.project.initialize()`}.
 		 */
 		export interface Interface {
-			eslint:  slime.jsh.script.Command<Options>
+			eslint:  slime.jsh.script.cli.Command<Options>
 
 			/**
 			 * Runs the Typedoc documentation generator.
 			 */
-			typedoc:  slime.jsh.script.Command<Options>
+			typedoc:  slime.jsh.script.cli.Command<Options>
 
-			status:  slime.jsh.script.Command<Options>
+			status:  slime.jsh.script.cli.Command<Options>
 
-			test:  slime.jsh.script.Command<Options>
+			test:  slime.jsh.script.cli.Command<Options>
 
 			submodule: {
 				/**
 				 * `--path <path-to-submodule>`
 				 */
-				remove:  slime.jsh.script.Command<Options>
+				remove:  slime.jsh.script.cli.Command<Options>
 				/**
 				 * `--path <path-to-submodule>`
 				 */
-				update:  slime.jsh.script.Command<Options>
-				reset:  slime.jsh.script.Command<Options>
+				update:  slime.jsh.script.cli.Command<Options>
+				reset:  slime.jsh.script.cli.Command<Options>
 			}
 
-			documentation:  slime.jsh.script.Command<Options>
-			document:  slime.jsh.script.Command<Options>
+			documentation:  slime.jsh.script.cli.Command<Options>
+			document:  slime.jsh.script.cli.Command<Options>
 		}
 
 		(
@@ -139,7 +139,7 @@ namespace slime.jsh.wf {
 			/**
 			 * Runs the TypeScript compiler on the project.
 			 */
-			 tsc:  slime.jsh.script.Command<Options>
+			 tsc:  slime.jsh.script.cli.Command<Options>
 		}
 
 		(
@@ -244,7 +244,7 @@ namespace slime.jsh.wf {
 			 *
 			 * * Push
 			 */
-			 commit:  slime.jsh.script.Command<Options>
+			 commit:  slime.jsh.script.cli.Command<Options>
 		}
 
 		(

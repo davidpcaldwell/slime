@@ -70,14 +70,17 @@
 					});
 				}
 
+				var Failure = jsh.wf.error.Failure;
+
 				if (operations.test && !operations.commit) {
 					operations.commit = function(p) {
+						//	TODO	looks like the below is duplicative, checking vs origin/master twice; maybe there's an offline
+						//			scenario where that makes sense?
 						var repository = jsh.tools.git.Repository({ directory: $context.base });
 						var allowDivergeFromMaster = false;
 						var vsLocalOriginMaster = jsh.wf.git.compareTo("origin/master")(repository);
 						if (vsLocalOriginMaster.behind && vsLocalOriginMaster.behind.length && !allowDivergeFromMaster) {
-							jsh.shell.console("Behind origin/master by " + vsLocalOriginMaster.behind.length + " commits.");
-							jsh.shell.exit(1);
+							throw new Failure("Behind origin/master by " + vsLocalOriginMaster.behind.length + " commits.");
 						}
 						repository = fetch();
 						var vsOriginMaster = jsh.wf.git.compareTo("origin/master")(repository);
@@ -86,25 +89,18 @@
 						//	Perhaps allow a command-line argument or something for this, need to think through branching
 						//	strategy overall
 						if (vsLocalOriginMaster.behind && vsOriginMaster.behind.length && !allowDivergeFromMaster) {
-							jsh.shell.console("Behind origin/master by " + vsOriginMaster.behind.length + " commits.");
-							jsh.shell.exit(1);
+							throw new Failure("Behind origin/master by " + vsOriginMaster.behind.length + " commits.");
 						}
 						jsh.wf.requireGitIdentity({ repository: repository }, {
 							console: function(e) {
 								jsh.shell.console(e.detail);
 							}
 						});
-						try {
-							//	TODO	emits events; could use those rather than try-catch
-							jsh.wf.prohibitUntrackedFiles({ repository: repository });
-						} catch (e) {
-							jsh.shell.console("");
-							jsh.shell.console(e.message);
-							jsh.shell.exit(1);
-						}
+						//	TODO	emits events; could use those rather than try-catch
+						jsh.wf.prohibitUntrackedFiles({ repository: repository });
 						if (operations.lint) {
 							if (!operations.lint()) {
-								throw new Error("Linting failed.");
+								throw new Failure("Linting failed.");
 							}
 						}
 						jsh.wf.prohibitModifiedSubmodules({ repository: repository });
@@ -112,7 +108,7 @@
 						if (!p.notest) {
 							var success = operations.test();
 							if (!success) {
-								throw new Error("Tests failed.");
+								throw new Failure("Tests failed.");
 							} else {
 								jsh.shell.console("Tests passed; proceeding with commit.");
 							}
@@ -274,7 +270,7 @@
 				if (operations.commit) $exports.submodule.update = $api.Function.pipe(
 					/**
 					 *
-					 * @param { slime.jsh.script.Invocation<slime.jsh.wf.standard.Options & { path: string }> } p
+					 * @param { slime.jsh.script.cli.Invocation<slime.jsh.wf.standard.Options & { path: string }> } p
 					 */
 					function(p) {
 						var rv = {
@@ -328,8 +324,20 @@
 						}
 
 						if (!p.options.message) throw new Error("No default commit message, and no message given.");
-						operations.commit({ message: p.options.message, notest: p.options.notest });
-						jsh.shell.console("Committed changes to " + $context.base);
+						try {
+							operations.commit({ message: p.options.message, notest: p.options.notest });
+							jsh.shell.console("Committed changes to " + $context.base);
+						} catch (e) {
+							//	TODO	should generalize this in the wf.jsh.js script, perhaps even adding an error handler
+							//			to jsh.script.cli.wrap or Descriptor or something
+							if (e instanceof jsh.wf.error.Failure) {
+								jsh.shell.console("ERROR: " + e.message);
+							} else {
+								jsh.shell.console(e);
+								jsh.shell.console(e.stack);
+							}
+							return 1;
+						}
 					}
 				);
 

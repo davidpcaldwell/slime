@@ -20,7 +20,8 @@
 					requireGitIdentity: void(0),
 					prohibitUntrackedFiles: void(0),
 					prohibitModifiedSubmodules: void(0),
-					cli: void(0)
+					cli: void(0),
+					error: void(0)
 				};
 
 				var base = (function() {
@@ -83,7 +84,7 @@
 					updateSubmodule: function(p) {
 						var subcheckout = base.getSubdirectory(p.path);
 						if (!subcheckout) {
-							throw new Error("Submodule not found at " + p.path + " of " + base);
+							throw new jsh.wf.error.Failure("Submodule not found at " + p.path + " of " + base);
 						}
 						var repository = jsh.tools.git.Repository({ directory: base.getSubdirectory(p.path) });
 
@@ -93,23 +94,20 @@
 						})[0];
 						jsh.shell.console("Subrepository is on branch: " + current.name);
 						if (current.name != "master") {
-							jsh.shell.console("Cannot update: not on master, but " + current.name);
-							jsh.shell.exit(1);
+							throw new jsh.wf.error.Failure("Cannot update: not on master, but " + current.name);
 						}
 						repository.fetch({ all: true });
 						var comparison = jsh.wf.git.compareTo("origin/master")(repository);
 						jsh.shell.console(JSON.stringify(comparison,void(0),4));
 						if (comparison.paths) {
-							jsh.shell.console(repository + " is modified; aborting.");
-							jsh.shell.exit(1);
+							throw new jsh.wf.error.Failure(repository + " is modified; aborting.");
 						}
 						if (comparison.behind.length) {
 							if (!comparison.ahead.length) {
 								repository.merge({ ffOnly: true, name: "origin/master" });
 								repository.submodule.update({ recursive: true });
 							} else {
-								jsh.shell.console("Cannot update: merge is required.");
-								jsh.shell.exit(1);
+								throw new jsh.wf.error.Failure("Cannot update: merge is required.");
 							}
 						} else {
 							jsh.shell.console(repository + " is up to date.");
@@ -143,7 +141,7 @@
 									//jsh.shell.console("command = [" + command + "]");
 									var tokens = (command.length) ? command.split(".") : [];
 									//jsh.shell.console("tokens = " + JSON.stringify(tokens));
-									/** @type { slime.jsh.wf.cli.Interface |  slime.jsh.script.Command } */
+									/** @type { slime.jsh.wf.cli.Interface |  slime.jsh.script.cli.Command } */
 									var rv = p.interface;
 									for (var i=0; i<tokens.length; i++) {
 										if (rv) rv = rv[tokens[i]];
@@ -271,12 +269,12 @@
 						}
 					},
 					invocation: function() {
-						/** @type { slime.jsh.script.Invocation<any> } */
+						/** @type { slime.jsh.script.cli.Invocation<any> } */
 						var rv = {
 							options: {},
 							arguments: Array.prototype.slice.call(jsh.script.arguments)
 						};
-						/** @type { slime.jsh.script.Processor[] } */
+						/** @type { slime.jsh.script.cli.Processor[] } */
 						var mutators = Array.prototype.slice.call(arguments);
 						mutators.forEach(function(mutator) {
 							mutator(rv);
@@ -314,6 +312,10 @@
 					}
 				};
 
+				jsh.wf.error = {
+					Failure: $api.Error.Type({ name: "jsh.wf.Failure" })
+				}
+
 				jsh.wf.typescript = (function() {
 					function getVersion(project) {
 						if (project.getFile("tsc.version")) return project.getFile("tsc.version").read(String);
@@ -341,7 +343,7 @@
 									"-tsconfig", getConfig(project)
 								]
 							});
-							if (result.status) throw new Error("tsc failed.");
+							if (result.status) throw new jsh.wf.error.Failure("tsc failed.");
 						},
 						typedoc: function(p) {
 							var project = (p && p.project) ? p.project : base;
@@ -361,10 +363,10 @@
 				jsh.wf.requireGitIdentity = Object.assign($api.Events.Function(function(p,events) {
 					var get = p.get || {
 						name: function(p) {
-							throw new Error("Missing: user.name");
+							throw new jsh.wf.error.Failure("Missing: user.name");
 						},
 						email: function(p) {
-							throw new Error("Missing: user.email");
+							throw new jsh.wf.error.Failure("Missing: user.email");
 						}
 					};
 					var config = p.repository.config({
@@ -405,7 +407,7 @@
 					}
 				}, {
 					untracked: function(e) {
-						throw new Error("Found untracked files: " + e.detail.join("\n"));
+						throw new jsh.wf.error.Failure("Found untracked files: " + e.detail.join("\n"));
 					}
 				});
 
@@ -414,7 +416,7 @@
 						var submodule = jsh.tools.git.Repository({ directory: p.repository.directory.getSubdirectory(sub.path) });
 						var status = submodule.status();
 						if (status.paths) {
-							throw new Error(
+							throw new jsh.wf.error.Failure(
 								"Submodule " + sub.path + " " + submodule + " "
 								+ "is modified in " + p.repository
 								+ " paths=" + JSON.stringify(status.paths)

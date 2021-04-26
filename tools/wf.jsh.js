@@ -10,66 +10,58 @@
 			jsh.shell.exit(1);
 		}
 
-		var project = new jsh.file.Loader({ directory: jsh.wf.project.base }).module("wf.js", {
-			base: jsh.wf.project.base
-		});
+		/** @type { slime.jsh.script.cli.Descriptor<{}> } */
+		var descriptor = {
+			options: $api.Function.identity,
+			commands: new jsh.file.Loader({ directory: jsh.wf.project.base }).module("wf.js", {
+				base: jsh.wf.project.base
+			})
+		}
 
-		var parameters = $api.Function.result(
-			{
+		/** @type { slime.jsh.script.cli.Commands<{}> & { initialize?: slime.jsh.script.cli.Command<{}> } } */
+		var project = descriptor.commands;
+
+		var invocation = jsh.script.cli.invocation(descriptor.options);
+
+		if (invocation.arguments[0] != "initialize" && project.initialize) {
+			project.initialize({
 				options: {},
-				arguments: jsh.script.arguments
-			},
-			function(p) {
-				return {
-					command: p.arguments[0],
-					options: p.options,
-					arguments: p.arguments.slice(1)
-				}
-			}
-		);
-
-		if (project.initialize && parameters.command != "initialize") {
-			project.initialize();
-		}
-
-		var getCommand = function(project,command) {
-			if (typeof(command) == "undefined") return void(0);
-			var rv = project;
-			var tokens = command.split(".");
-			for (var i=0; i<tokens.length; i++) {
-				if (rv) {
-					rv = rv[tokens[i]];
-				}
-			}
-			return rv;
-		};
-
-		function getCommandList(rv,commands,prefix) {
-			if (!prefix) prefix = "";
-			for (var x in commands) {
-				if (typeof(commands[x]) == "function") {
-					rv.push(prefix + x);
-				}
-				getCommandList(rv,commands[x],prefix + x + ".");
-			}
-		}
-
-		var command = getCommand(project,parameters.command);
-
-		if (command) {
-			command({
-				options: parameters.options,
-				arguments: parameters.arguments
+				arguments: []
 			});
-		} else {
-			if (typeof(parameters.command) != "undefined") {
-				jsh.shell.console("Project at " + jsh.wf.project.base + " does not have a '" + parameters.command + "' command.");
-			}
-			var list = [];
-			getCommandList(list,project);
-			jsh.shell.console("Available wf commands for " + jsh.wf.project.base + ":");
-			jsh.shell.console(list.join("\n"));
 		}
+
+		jsh.script.cli.wrap(
+			descriptor
+		)
+
+		// var getCommand = function(project,command) {
+		// 	if (typeof(command) == "undefined") return void(0);
+		// 	var rv = project;
+		// 	var tokens = command.split(".");
+		// 	for (var i=0; i<tokens.length; i++) {
+		// 		if (rv) {
+		// 			rv = rv[tokens[i]];
+		// 		}
+		// 	}
+		// 	return rv;
+		// };
+
+		// var command = getCommand(project,parameters.command);
+
+		// if (command) {
+		// 	command({
+		// 		options: parameters.options,
+		// 		arguments: parameters.arguments
+		// 	});
+		// } else {
+		// 	if (typeof(parameters.command) != "undefined") {
+		// 		jsh.shell.console("Project at " + jsh.wf.project.base + " does not have a '" + parameters.command + "' command.");
+		// 	}
+		// 	var list = [];
+		// 	getCommandList(list,project);
+		// 	jsh.shell.console("Available wf commands for " + jsh.wf.project.base + ":");
+		// 	jsh.shell.console(list.join("\n"));
+		// }
 	}
 //@ts-ignore
 )($api,jsh);

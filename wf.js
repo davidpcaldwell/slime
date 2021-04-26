@@ -307,7 +307,7 @@
 		$exports.merge = $api.Function.pipe(
 			/**
 			 *
-			 * @param { slime.jsh.script.Invocation<slime.jsh.wf.standard.Options & { branch: string }> } p
+			 * @param { slime.jsh.script.cli.Invocation<slime.jsh.wf.standard.Options & { branch: string }> } p
 			 */
 			function(p) {
 				var rv = {
@@ -387,7 +387,7 @@
 		if (false) $exports.commit = $api.Function.pipe(
 			/**
 			 *
-			 * @param { slime.jsh.script.Invocation<slime.jsh.wf.standard.Options & { message: string }> } p
+			 * @param { slime.jsh.script.cli.Invocation<slime.jsh.wf.standard.Options & { message: string }> } p
 			 */
 			function(p) {
 				var rv = {
