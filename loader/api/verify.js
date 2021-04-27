@@ -11,17 +11,17 @@
 			 * @type { (value: any) => value is object }
 			 */
 			function isObject(value) {
-				return value && typeof(value) == "object";
+				return value && (typeof(value) == "object" || typeof(value) == "function");
 			}
 
 			var wrapObject = $api.debug.disableBreakOnExceptionsFor(
 				/**
 				 * @this { { message: string, getTime: any } }
-				 * @param { any } o
+				 * @param { { [x: string]: any } } o
 				 * @param { any } name
 				 */
 				function wrapObject(o,name) {
-					var prefixFactory = function(name) {
+					var qualifyWith = function(name) {
 						return function(x) {
 							var isNumber = function(x) {
 								return !isNaN(Number(x));
@@ -34,17 +34,17 @@
 
 					var wrapProperty = function(o,x,name) {
 						if (arguments.length != 3) throw new Error("arguments[0] = " + o + " arguments[1] = " + x + " arguments.length=" + arguments.length);
-						var prefix = prefixFactory(name);
+						var prefix = qualifyWith(name);
 						Object.defineProperty(this, x, {
 							get: function() {
-								return rv(o[x],prefix(x));
+								return subject(o[x],prefix(x));
 							}
 						});
 					};
 
 					var wrapMethod = function(o,x,name) {
 						if (arguments.length != 3) throw new Error();
-						var prefix = prefixFactory(name);
+						var prefix = qualifyWith(name);
 						var wrapped = function() {
 							var argumentToString = function(v) {
 								if (typeof(v) == "string") return "\"" + v + "\"";
@@ -54,16 +54,16 @@
 							var name = prefix(x)+"(" + strings.join() + ")";
 							// try {
 							var returned = o[x].apply(o,arguments);
-							var value = rv(returned,name);
+							var value = subject(returned,name);
 							// value.threw = new DidNotThrow(returned,name);
 							return value;
 							// } catch (e) {
 							// 	return new DidNotReturn(e,name);
 							// }
 						};
-						wrapObject.call(wrapped,o[x]);
-						Subject.call(wrapped,wrapped,prefix(x));
-						return wrapped;
+						Object.assign(wrapped, o[x]);
+						//wrapObject.call(wrapped,o[x]);
+						return subject(wrapped,prefix(x));
 					};
 
 					for (var x in o) {
@@ -89,9 +89,11 @@
 					if (o instanceof Array) {
 						wrapProperty.call(this,o,"length",name);
 					}
+
 					if (o instanceof Date) {
 						this.getTime = wrapMethod(o,"getTime",name);
 					}
+
 					if (o instanceof Error && !this.message) {
 						wrapProperty.call(this,o,"message",name);
 					}
@@ -99,6 +101,7 @@
 			);
 
 			var Subject = function(v,name) {
+				if (!name) name = String(v);
 				var prefix = (name) ? (name + " ") : "";
 
 				this.toString = function() {
@@ -198,113 +201,124 @@
 					return isEqualTo(value,true);
 				}
 
-				if (typeof(v) != "function") {
-					this.evaluate = Object.assign(
+				this.evaluate = Object.assign(
+					/**
+					 *
+					 * @param { (v: object) => any } f
+					 */
+					function(f) {
 						/**
 						 *
-						 * @param { (v: object) => any } f
+						 * @param { any } e - Almost certainly an {@link Error}, but you can technically `throw` anything
+						 * @param { string } name
 						 */
-						function(f) {
-							/**
-							 *
-							 * @param { any } e - Almost certainly an {@link Error}, but you can technically `throw` anything
-							 * @param { string } name
-							 */
-							function DidNotReturn(e,name) {
-								var delegate = new Subject(void(0),name);
+						function DidNotReturn(e,name) {
+							var delegate = new Subject(void(0),name);
 
-								for (var x in delegate) {
-									this[x] = function() {
-										/**
-										 * @type { slime.definition.unit.Test.Result }
-										 */
-										var result = {
-											success: false,
-											error: e,
-											message: name + " threw " + e
-										};
-										scope($api.Function.returning(result));
-									}
+							for (var x in delegate) {
+								this[x] = function() {
+									/**
+									 * @type { slime.definition.unit.Test.Result }
+									 */
+									var result = {
+										success: false,
+										error: e,
+										message: name + " threw " + e
+									};
+									scope($api.Function.returning(result));
 								}
+							}
 
-								this.threw = Object.assign(new Subject(e,name + " thrown"), { type: void(0), nothing: void(0) });
-								this.threw.type = function(type) {
-									var success = e instanceof type;
-									var message = (function(success) {
-										if (success) return name + " threw expected " + type.name;
-										return "Threw " + e + ", not " + new type().name;
-									})(success);
-									scope($api.Function.returning({
-										success: success,
-										message: message
-									}));
-								};
-								this.threw.nothing = function() {
+							this.threw = Object.assign(new Subject(e,name + " thrown"), { type: void(0), nothing: void(0) });
+							this.threw.type = function(type) {
+								var success = e instanceof type;
+								var message = (function(success) {
+									if (success) return name + " threw expected " + type.name;
+									return "Threw " + e + ", not " + new type().name;
+								})(success);
+								scope($api.Function.returning({
+									success: success,
+									message: message
+								}));
+							};
+							this.threw.nothing = function() {
+								scope($api.Function.returning({
+									success: false,
+									message: name + " threw " + e
+								}));
+							}
+						}
+
+						var DidNotThrow = function(returned,name) {
+							var delegate = new Subject(void(0),name);
+
+							for (var x in delegate) {
+								this[x] = function() {
 									scope($api.Function.returning({
 										success: false,
-										message: name + " threw " + e
+										message: name + " did not throw; returned " + returned
 									}));
 								}
 							}
 
-							var DidNotThrow = function(returned,name) {
-								var delegate = new Subject(void(0),name);
-
-								for (var x in delegate) {
-									this[x] = function() {
-										scope($api.Function.returning({
-											success: false,
-											message: name + " did not throw; returned " + returned
-										}));
-									}
-								}
-
-								this.nothing = function() {
-									scope($api.Function.returning({
-										success: true,
-										message: name + " did not error. (returned: " + returned + ")"
-									}));
-								};
-
-								this.type = function(type) {
-									scope($api.Function.returning({
-										success: false,
-										message: name + " did not throw expected error; returned " + returned
-									}))
-								}
+							this.nothing = function() {
+								scope($api.Function.returning({
+									success: true,
+									message: name + " did not error. (returned: " + returned + ")"
+								}));
 							};
 
-							try {
-								var mapped = f.call(v,v);
-								var value = rv(mapped,((name) ? name : "")+"{" + f + "}");
-								//@ts-ignore
-								value.threw = new DidNotThrow(mapped,"{" + f + "}");
-								return value;
-							} catch (e) {
-								return new DidNotReturn(e,"{" + f + "}");
+							this.type = function(type) {
+								scope($api.Function.returning({
+									success: false,
+									message: name + " did not throw expected error; returned " + returned
+								}))
 							}
-						},
-						{ property: void(0) }
-					);
-				}
+						};
+
+						try {
+							var operation = " -> " + f + "";
+							var mapped = f.call(v,v);
+							var value = subject(mapped,((name) ? name : "") + operation);
+							//@ts-ignore
+							value.threw = new DidNotThrow(mapped, operation);
+							return value;
+						} catch (e) {
+							return new DidNotReturn(e, operation);
+						}
+					},
+					{ property: void(0) }
+				);
 
 				if (isObject(v)) {
 					wrapObject.call(this,v,name);
 					this.evaluate.property = function(property) {
-						return rv(v[property], ((name) ? name : "")+"." + property);
+						return subject(v[property], ((name) ? name : "")+"." + property);
 					}
 				}
 			};
 
 			/** @type { slime.definition.verify.Verify } */
 			//@ts-ignore
-			var rv = function(value,name,lambda) {
-				var subject = new Subject(value,name);
-				if (lambda) lambda(subject);
-				return subject;
+			var subject = function(value,name,lambda) {
+				var rv = (function() {
+					if (typeof(value) == "function") {
+						var f = function() {
+							var underlying = value.apply(this,arguments);
+							return underlying;
+						};
+						Subject.call(f,value,name);
+						return f;
+					} else {
+						return new Subject(value,name);
+					}
+				})();
+				// var rv = new Subject(value,name);
+				if (lambda) lambda(rv);
+				return rv;
 			};
 
-			return rv;
+			return subject;
 		};
 
 		$export(Verify);

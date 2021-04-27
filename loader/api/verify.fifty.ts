@@ -16,7 +16,18 @@ namespace slime.definition.verify {
 	 * * `.threw.type(type)`, which asserts that a subtype of `type` was thrown
 	 * * `.threw.nothing()`, which asserts that nothing was thrown.
 	 */
-	type evaluate = any
+	type evaluate<T> = any
+	//	TODO	should refine in this sequence:
+	// type evaluate<T> = {
+	// 	(f: (t: T) => any): any
+	// 	property: any
+	// }
+	//	... then the following more precise functions
+	//	(f: (t: T) => any): any
+	//	<R>(f: (t: T) => R): any
+	//	<R>(f: (t: T) => R) => Subject<R>
+	//	... also need a refinement for evaluate.property
+	//	... but any of this would require some cleanup, they cause ascending numbers of errors currently
 
 	type is<T> = {
 		/**
@@ -30,24 +41,14 @@ namespace slime.definition.verify {
 	type ValueSubject<T> = {
 		is: is<T>
 
-		evaluate: evaluate
-		//	TODO	should refine in this sequence:
-		//	evaluate: {
-		//		(f: (t: T) => any): any
-		//		property: any
-		//	}
-		//	... then the following more precise functions
-		//	(f: (t: T) => any): any
-		//	<R>(f: (t: T) => R): any
-		//	<R>(f: (t: T) => R) => Subject<R>
-		//	... also need a refinement for evaluate.property
-		//	... but any of this would require some cleanup, they cause ascending numbers of errors currently
+		evaluate: evaluate<T>
 	} & (
 		T extends Array<any> ? { length: Subject<number> } : {}
 	)
 
 	type MethodSubject<T extends (...args: any) => any> = {
 		is: is<T>
+		evaluate: evaluate<T>
 
 		//	TODO	could we build the .threw stuff into MethodSubject as well?
 		(...p: Parameters<T>): Subject<ReturnType<T>>
@@ -92,6 +93,17 @@ namespace slime.definition.verify {
 				fifty.verify(2,"2").evaluate(function(p) { return p * 2; }).is(4);
 			}
 
+			fifty.tests.objectCanHaveEvaluateCalled = function() {
+				var object = {
+					method: Object.assign(function() {
+					}, { foo: "bar" })
+				};
+
+				fifty.verify(object,"object").evaluate(function(p) {
+					return 0;
+				}).is(0);
+			}
+
 			fifty.tests.functionsCanHaveEvaluateCalled = function() {
 				var object = {
 					method: Object.assign(function() {
@@ -99,9 +111,19 @@ namespace slime.definition.verify {
 				};
 
 				//	TODO	See https://github.com/davidpcaldwell/slime/issues/48
-				// fifty.verify(object).method.evaluate(function(p) {
-				// 	return p.foo == "bar";
-				// }).is(true);
+				fifty.verify(object,"object").method.evaluate(function(p) {
+					return p.foo == "bar";
+				}).is(true);
+			}
+
+			fifty.tests.methodsWork = function() {
+				var target = {
+					method: function() {
+						return 2;
+					}
+				};
+
+				fifty.verify(target,"target").method().is(2);
 			}
 
 			fifty.tests.suite = function() {
@@ -110,13 +132,16 @@ namespace slime.definition.verify {
 					}, { foo: "bar" })
 				};
 
-				var method = fifty.verify(object).method;
+				fifty.verify(1).is(1);
+
+				var method = fifty.verify(object,"object").method;
 				method.is.type("function");
 
-				fifty.verify(object).method.foo.is("bar");
-
 				fifty.tests.primitivesCanHaveEvaluateCalled();
+				fifty.tests.objectCanHaveEvaluateCalled();
 				fifty.tests.functionsCanHaveEvaluateCalled();
+				fifty.verify(object,"object").method.foo.is("bar");
+				fifty.tests.methodsWork();
 			}
 		}
 	//@ts-ignore

@@ -83,18 +83,6 @@ END LICENSE
 					v(methodThrows).evaluate(function() { return this.method(); }).threw.message.is("Wrong again, knave!");
 					v(methodThrows).evaluate(function() { return this.works(); }).threw.nothing();
 				</script>
-				<script type="application/x.jsapi#tests" jsapi:id="issue290"><![CDATA[
-					var object = {
-						method: function() {
-						}
-					};
-					var v = new module.Verify({
-						test: function() {
-							test.apply(scope,arguments);
-						}
-					});
-					if (scope.form && scope.form.issue290) v(object).method.is.type("function");
-				]]></script>
 			</div>
 			<div class="type">
 				<a class="type" name="types.definition">definition</a>
