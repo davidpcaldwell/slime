@@ -18,15 +18,17 @@ namespace slime.definition.verify {
 	 */
 	type evaluate = any
 
+	type is<T> = {
+		/**
+		 * Asserts that the subject value is === to the given value.
+		 */
+		(t: T): void
+		type: (name: string) => void
+		not: (t: T) => void
+	}
+
 	type ValueSubject<T> = {
-		is: {
-			/**
-			 * Asserts that the subject value is === to the given value.
-			 */
-			(t: T): void
-			type: (name: string) => void
-			not: (t: T) => void
-		}
+		is: is<T>
 
 		evaluate: evaluate
 		//	TODO	should refine in this sequence:
@@ -45,6 +47,8 @@ namespace slime.definition.verify {
 	)
 
 	type MethodSubject<T extends (...args: any) => any> = {
+		is: is<T>
+
 		//	TODO	could we build the .threw stuff into MethodSubject as well?
 		(...p: Parameters<T>): Subject<ReturnType<T>>
 	}
@@ -79,4 +83,43 @@ namespace slime.definition.verify {
 	 * Creates a {@link Verify} object that communicates with the given {@link Context}.
 	 */
 	export type Export = ( scope: Context ) => Verify
+
+	(
+		function(
+			fifty: slime.fifty.test.kit
+		) {
+			fifty.tests.primitivesCanHaveEvaluateCalled = function() {
+				fifty.verify(2,"2").evaluate(function(p) { return p * 2; }).is(4);
+			}
+
+			fifty.tests.functionsCanHaveEvaluateCalled = function() {
+				var object = {
+					method: Object.assign(function() {
+					}, { foo: "bar" })
+				};
+
+				//	TODO	See https://github.com/davidpcaldwell/slime/issues/48
+				// fifty.verify(object).method.evaluate(function(p) {
+				// 	return p.foo == "bar";
+				// }).is(true);
+			}
+
+			fifty.tests.suite = function() {
+				var object = {
+					method: Object.assign(function() {
+					}, { foo: "bar" })
+				};
+
+				var method = fifty.verify(object).method;
+				method.is.type("function");
+
+				fifty.verify(object).method.foo.is("bar");
+
+				fifty.tests.primitivesCanHaveEvaluateCalled();
+				fifty.tests.functionsCanHaveEvaluateCalled();
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
 }

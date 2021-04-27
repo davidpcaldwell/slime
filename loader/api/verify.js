@@ -62,6 +62,7 @@
 							// }
 						};
 						wrapObject.call(wrapped,o[x]);
+						Subject.call(wrapped,wrapped,prefix(x));
 						return wrapped;
 					};
 
@@ -197,9 +198,7 @@
 					return isEqualTo(value,true);
 				}
 
-				if (isObject(v)) {
-					wrapObject.call(this,v,name);
-
+				if (typeof(v) != "function") {
 					this.evaluate = Object.assign(
 						/**
 						 *
@@ -287,6 +286,10 @@
 						},
 						{ property: void(0) }
 					);
+				}
+
+				if (isObject(v)) {
+					wrapObject.call(this,v,name);
 					this.evaluate.property = function(property) {
 						return rv(v[property], ((name) ? name : "")+"." + property);
 					}
