@@ -3,7 +3,7 @@
 	/**
 	 * @param { slime.$api.Global } $api
 	 * @param { { library: { node: any } } } $context
-	 * @param { slime.fifty.Exports } $exports
+	 * @param { slime.fifty.ui.Exports } $exports
 	 */
 	function($api,$context,$exports) {
 		$exports.ast = function(p) {

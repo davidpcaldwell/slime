@@ -305,7 +305,7 @@ namespace slime {
         )(fifty);
 
         export namespace test {
-            export const subject: slime.runtime.Exports = (function(fifty) {
+            export const subject: slime.runtime.Exports = (function(fifty: slime.fifty.test.kit) {
                 var code = fifty.$loader.get("expression.js");
                 var js = code.read(String);
 

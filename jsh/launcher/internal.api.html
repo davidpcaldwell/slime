@@ -453,15 +453,27 @@ END LICENSE
 			]]></script>
 			<script type="application/x.jsapi#tests" jsapi:id="executable">
 				if ($jsapi.environment.jsh.built.home.getFile("jsh")) {
+					var evaluate = function(name) {
+						return function(result) {
+							if (result.status != 0) {
+								throw new Error("Status: " + result.status + " output=[" + result.stdio.output + "]");
+							}
+							if (!result.stdio.output) {
+								jsh.shell.console("built = " + $jsapi.environment.jsh.built.home);
+								throw new Error(name + " status 0 but empty string emitted");
+							} else {
+								return JSON.parse(result.stdio.output);
+							}
+						}
+					};
+
 					var output = jsh.shell.run({
 						command: $jsapi.environment.jsh.built.home.getFile("jsh"),
 						arguments: [$jsapi.environment.jsh.built.home.getFile("src/jsh/test/jsh-data.jsh.js")],
 						stdio: {
 							output: String
 						},
-						evaluate: function(result) {
-							return JSON.parse(result.stdio.output);
-						}
+						evaluate: evaluate("built file")
 					});
 					verify(output)["jsh.shell.jsh.home"].string.is($jsapi.environment.jsh.built.home.toString());
 
@@ -472,9 +484,7 @@ END LICENSE
 							stdio: {
 								output: String
 							},
-							evaluate: function(result) {
-								return JSON.parse(result.stdio.output);
-							}
+							evaluate: evaluate("built string")
 						});
 						verify(output)["jsh.shell.jsh.home"].string.is($jsapi.environment.jsh.built.home.toString());
 					})();
@@ -498,9 +508,7 @@ END LICENSE
 							stdio: {
 								output: String
 							},
-							evaluate: function(result) {
-								return JSON.parse(result.stdio.output);
-							}
+							evaluate: p.evaluate
 						});
 					};
 
@@ -516,9 +524,7 @@ END LICENSE
 								output: String
 							},
 							PATH: jsh.shell.PATH,
-							evaluate: function(result) {
-								return JSON.parse(result.stdio.output);
-							}
+							evaluate: evaluate("relative")
 						});
 						verify(output)["jsh.shell.jsh.home"].string.is($jsapi.environment.jsh.built.home.toString());
 					})();
@@ -534,9 +540,7 @@ END LICENSE
 							stdio: {
 								output: String
 							},
-							evaluate: function(result) {
-								return JSON.parse(result.stdio.output);
-							}
+							evaluate: evaluate("inPath")
 						});
 						verify(output)["jsh.shell.jsh.home"].string.is($jsapi.environment.jsh.built.home.toString());
 					})();

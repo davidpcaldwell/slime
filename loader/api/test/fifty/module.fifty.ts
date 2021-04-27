@@ -1,12 +1,57 @@
+/**
+ * **Fifty** is an authoring framework for SLIME _definitions_: constructs containing both documentation and tests. Fifty uses
+ * the {@link https://tsdoc.org/ | TSDoc } documentation format, and its results are published using
+ * {@link https://github.com/TypeStrong/typedoc | TypeDoc }.
+ *
+ * Fifty provides an API for {@link slime.fifty.test | authoring tests} right in the middle of TypeScript definitions.
+ */
 namespace slime.fifty {
-	export interface Exports {
-		ast: (p: { node: { script: slime.jrunscript.file.Pathname, debug?: boolean }, ast: slime.jrunscript.file.Pathname, file: slime.jrunscript.file.Pathname }) => object
+	(
+		function(
+			fifty: slime.fifty.test.kit
+		) {
+			fifty.tests.suite = function() {
 
-		interpret: (p: { ast: object }) => object
-	}
+			}
+		}
+	//@ts-ignore
+	)(fifty);
 
+	/**
+	 * Fifty allows tests to be embedded in TypeScript definitions.
+	 *
+	 * It does so by providing tools that
+	 * execute definitions (in both the browser and using the {@link slime.jsh | `jsh`} shell) providing a scope variable to the
+	 * tests called {@link slime.fifty.test.kit | `fifty` } allowing tests to be defined.
+	 *
+	 * A minimal Fifty test file looks something like this:
+	 * ```
+	 * namespace foo.bar {
+	 * 	(
+	 *		function(
+	 *			fifty: slime.fifty.test.kit
+	 *		) {
+	 *			fifty.tests.suite = function() {
+	 *				fifty.verify(1).is(1);
+	 *			}
+	 *		}
+	 *	//@ts-ignore
+	 *	)(fifty);
+	 * }
+	 * ```
+	 *
+	 * Fifty tests can be embedded directly in TypeScript namespaces as
+	 * {@link https://developer.mozilla.org/en-US/docs/Glossary/IIFE | IIFEs }
+	 * that take the `fifty` object as an argument. The use of `fifty` must be `@ts-ignore`d because TypeScript does not understand
+	 * that it is present.
+	 *
+	 * The Fifty test-running tools can invoke functions attached to the `fifty.tests` object, which is scoped to the test file
+	 * being executed. By default, they run the `suite()` function. Within test functions, test subjects can be created with the
+	 * `fifty.verify()` function, which creates subjects that have various methods that can be invoked to represent assertions.
+	 *
+	 * For details, see the documentation on {@link slime.fifty.test.kit | the `fifty` object}.
+	 */
 	export namespace test {
-		/** @deprecated Duplicative of {@link slime.definition.verify.Verify}. */
 		export type verify = slime.definition.verify.Verify
 
 		export type $loader = slime.Loader & {
@@ -46,7 +91,13 @@ namespace slime.fifty {
 			<T>(path: string, part?: string): () => void
 		}
 
+		/**
+		 * The variable that appears as `fifty` within the scope of Fifty definition files when executing tests.
+		 */
 		export interface kit {
+			/**
+			 * A function that can be used to create subjects and make assertions about them. See {@link slime.definition.verify.Verify}.
+			 */
 			verify: verify
 			$loader: $loader
 			run: run
@@ -96,6 +147,18 @@ namespace slime.fifty {
 			}
 
 			export type run = (loader: slime.fifty.test.$loader, path: string, part?: string) => boolean
+		}
+	}
+
+	/**
+	 * Types related to a **currently-inactive** project to build a custom UI for serving Fifty definitions (and perhaps running their
+	 * tests). See {@link https://github.com/davidpcaldwell/slime/projects/11 | the closed GitHub project}.
+	 */
+	export namespace ui {
+		export interface Exports {
+			ast: (p: { node: { script: slime.jrunscript.file.Pathname, debug?: boolean }, ast: slime.jrunscript.file.Pathname, file: slime.jrunscript.file.Pathname }) => object
+
+			interpret: (p: { ast: object }) => object
 		}
 	}
 }

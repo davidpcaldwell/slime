@@ -2,7 +2,7 @@ namespace slime.jsh.script {
 	/**
 	 * Represents the module inside the Fifty test suite.
 	 */
-	const subject: Exports = (function(fifty) {
+	const subject: Exports = (function(fifty: slime.fifty.test.kit) {
 		const jsh = fifty.global.jsh;
 		const subject = jsh.script;
 		return subject;

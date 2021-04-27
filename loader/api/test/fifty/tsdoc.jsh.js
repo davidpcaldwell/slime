@@ -18,7 +18,7 @@
 		jsh.shell.tools.node.modules.require({ name: "typescript" });
 		jsh.shell.tools.node.modules.require({ name: "@microsoft/tsdoc" });
 
-		/** @type { slime.fifty.Exports } */
+		/** @type { slime.fifty.ui.Exports } */
 		var module = jsh.script.loader.module("module.js", {
 			library: {
 				node: jsh.shell.tools.node
