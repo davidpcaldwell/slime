@@ -69,6 +69,7 @@ namespace slime.definition.verify {
 
 	/**
 	 * A function that returns a {@link Subject}, which supports a convenient API for making assertions about a subject value.
+	 * Practical examples can be found in the [`slime.definnition.verify` tests](../src/loader/api/verify.fifty.ts?as=text).
 	 */
 	export type Verify = {
 		<T>(value: boolean, name?: string, lambda?: (it: BooleanSubject) => void): BooleanSubject

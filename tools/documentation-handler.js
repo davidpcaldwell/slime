@@ -11,14 +11,16 @@
 	 * @param { (value: slime.tools.documentation.implementation) => void } $export
 	 */
 	function($api,jsh,$context,$loader,$export) {
-		/** @type { slime.servlet.httpd["Handler"]["Loader"] } */
-		var asTextHandler = $loader.module("as-text-handler.js");
 		$export(
 			function(configuration) {
 				var base = configuration.base;
 				/** @type { slime.tools.documentation.factory } */
 
 				var rv = function(httpd) {
+					/** @type { slime.servlet.httpd["Handler"]["Loader"] } */
+					var asTextHandler = $loader.module("as-text-handler.js", {
+						httpd: httpd
+					});
 					return httpd.Handler.series(
 						//	Allows links to src/path/to/file.ext within Typedoc
 						function(request) {
