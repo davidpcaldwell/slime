@@ -39,6 +39,7 @@
 				}
 
 				return {
+					directory: to,
 					update: function(p) {
 						brew("update")
 					},
