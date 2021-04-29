@@ -23,6 +23,7 @@
 
 		/** @type { slime.jrunscript.db.mysql.local.Exports["Client"] } */
 		var Client = function(o) {
+			if (!o.program) throw new TypeError("Required: .program");
 			var command = function(args) {
 				return {
 					command: o.program,
