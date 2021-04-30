@@ -18,13 +18,13 @@ namespace slime.jsh {
  * ```bash
  * #!/bin/bash
  * export PROJECT="$(dirname $0)"
- * ${PROJECT}/[<i>path/to/slime</i>]/tools/wf "$@"
+ * $(dirname $0)/path/to/slime/tools/wf "$@"
  * ```
  *
  * The `wf.js` file should be an ordinary SLIME module, which will be loaded with a `$context` providing a project
- * {@link slime.jsh.wf.cli.Context}. Each function `wf.js` exports
+ * {@link slime.jsh.wf.cli.Context | Context}. Each function `wf.js` exports
  * will be interpreted as a command which can be executed by name, and will receive an argument specified by
- * {@link jsh.wf.cli.Arguments}. Commands can use the {@link slime.jsh.wf.Exports | jsh.wf} APIs
+ * {@link slime.jsh.script.cli.Command}. Commands can use the {@link slime.jsh.wf.Exports | `jsh.wf`} APIs
  * as part of their implementation.
  *
  * In particular, `jsh.wf` provides the
