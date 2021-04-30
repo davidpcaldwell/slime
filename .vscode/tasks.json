@@ -49,6 +49,9 @@
 				"panel": "dedicated",
 				"showReuseMessage": true,
 				"clear": true
+			},
+			"runOptions": {
+				"runOn": "folderOpen"
 			}
 		},
 		{
