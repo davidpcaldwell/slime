@@ -131,7 +131,9 @@ END LICENSE
 			</div>
 			<div>
 				<h3><a href="jxa/api.html">JXA</a>: a SLIME environment for use in macOS automation</h3>
-				JXA support is alpha quality.
+				JXA support is alpha quality. That said, JXA is a very difficult environment to use, so SLIME is already extremely
+				helpful, as it provides basic abilities not provided by the platform (like the ability to load code from other
+				source files).
 			</div>
 		</div>
 		<div>
@@ -149,7 +151,7 @@ END LICENSE
 					The best way to create SLIME definitions is via the <a href="local/doc/typedoc/modules/slime.fifty.html">Fifty</a>
 					definition framework, which uses TypeScript to provide type definitions and <code>tsdoc</code>-compatible
 					documentation (and uses <a href="https://typedoc.org/">Typedoc</a> to
-					publish that documentation), and allows
+					publish that documentation, and the <code>fifty view</code> tool to serve it), and allows
 					inline tests to be authored within those TypeScript definitions. A simple example that contains tests
 					for the project's <code>wf</code> commands can be found at <a href="wf.fifty.ts?as=text"><code>wf.fifty.ts</code></a>.
 				</p>
@@ -176,9 +178,9 @@ END LICENSE
 							<div>
 								Running individual definitions in Fifty:
 								<ul>
-									<li><code>tools/fifty.bash test.jsh [--debug:rhino] <i>file</i>.fifty.ts [--part <i>part</i>]</code></li>
+									<li><code>./fifty test.jsh [--debug:rhino] <i>file</i>.fifty.ts [--part <i>part</i>]</code></li>
 									<li>
-										<code>tools/fifty.bash test.browser [--interactive] [--chrome:data <i>pathname</i>] [--chrome:debug:vscode] <i>file</i>.fifty.ts</i> [--part <i>part</i>]</code>:
+										<code>./fifty test.browser [--interactive] [--chrome:data <i>pathname</i>] [--chrome:debug:vscode] <i>file</i>.fifty.ts</i> [--part <i>part</i>]</code>:
 										Invokes a <a href="loader/api/test/fifty/test-browser.jsh.js">script</a> to run Fifty browser tests;
 										see the script for command-line argument definitions.
 									</li>
@@ -220,15 +222,14 @@ END LICENSE
 					</ul>
 				</div>
 				<div>
-					<h4>Serving documentation from SLIME definitions</h4>
+					<h4><code>fifty view</code>: Serving documentation from SLIME definitions</h4>
 					<p>
-						SLIME provides tools for SLIME-based projects to generate and serve their own documentation (interleaved with
-						SLIME's, if SLIME is included in the TypeScript project). SLIME-based projects can serve their documentation
-						using the <code>documentation.jsh.js</code> script (which is run under <code>jsh</code>).
+						Fifty also allows SLIME-based projects to generate and serve their own documentation (interleaved with
+						SLIME's, if SLIME is included in the TypeScript project) via the <code>fifty view</code> command.
 					</p>
 					<div>
-						<code>tools/documentation.jsh.js</code>:
-						Serves the documentation for a project, in a dedicated Chrome browser if Chrome is found. Typedoc
+						<code>fifty view</code> serves the documentation for a project, in a dedicated Chrome browser if Chrome is
+						found. Typedoc
 						documentation will be generated if necessary and served for both the top-level repository and
 						subrepositories at <code>local/doc/typedoc</code> (it will be re-generated for each request if
 						<code>--watch</code> is used).

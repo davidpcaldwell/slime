@@ -1,0 +1,3 @@
+#!/bin/bash
+BASE=$(dirname $0)
+${BASE}/jsh.bash ${BASE}/tools/fifty.jsh.js "$@"

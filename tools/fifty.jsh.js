@@ -14,6 +14,22 @@
 
 		jsh.wf.cli.$f.command.process({
 			interface: {
+				view: $api.Function.pipe(
+					jsh.script.cli.option.boolean({ longname: "debug:rhino" }),
+					function(p) {
+						jsh.shell.jsh({
+							shell: jsh.shell.jsh.src,
+							script: jsh.script.file.parent.getFile("fifty/documentation.jsh.js"),
+							arguments: p.arguments,
+							environment: $api.Object.compose(
+								jsh.shell.environment,
+								(p.options["debug:rhino"]) ? {
+									JSH_DEBUG_SCRIPT: "rhino"
+								} : {}
+							)
+						});
+					}
+				),
 				test: {
 					jsh: $api.Function.pipe(
 						jsh.wf.cli.$f.option.boolean({ longname: "debug:rhino" }),

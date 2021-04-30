@@ -15,4 +15,4 @@ The Java-based environments support Mozilla [Rhino](https://github.com/mozilla/r
 
 * `git clone https://github.com/davidpcaldwell/slime.git; cd slime`
 * `./jsh.bash jsh/test/jsh-data.jsh.js` - runs a sample program emitting information about the installed `jsh` shell.
-* `./documentation` - runs a server that serves the SLIME documentation and opens an instance of Google Chrome to browse it.
+* `./fifty view` - runs a server that serves the SLIME documentation and opens an instance of Google Chrome to browse it.

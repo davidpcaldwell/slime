@@ -17,10 +17,9 @@
 				/** @type { slime.tools.documentation.factory } */
 
 				var rv = function(httpd) {
-					/** @type { slime.servlet.httpd["Handler"]["Loader"] } */
-					var asTextHandler = $loader.module("as-text-handler.js", {
-						httpd: httpd
-					});
+					/** @type { slime.tools.documentation.internal.asTextHandler.Factory } */
+					var asTextHandlerCode = $loader.factory("as-text-handler.js");
+					var asTextHandler = asTextHandlerCode({ httpd: httpd });
 					return httpd.Handler.series(
 						//	Allows links to src/path/to/file.ext within Typedoc
 						function(request) {

@@ -41,8 +41,9 @@
 					servlets: {
 						"/*": {
 							load: function(scope) {
-								/** @type { slime.servlet.httpd["Handler"]["Loader"] } */
-								var asTextHandler = loader.module("as-text-handler.js", {
+								/** @type { slime.tools.documentation.internal.asTextHandler.Factory } */
+								var asTextHandlerCode = loader.factory("as-text-handler.js");
+								var asTextHandler = asTextHandlerCode({
 									httpd: scope.httpd
 								});
 								/** @type { slime.tools.documentation.implementation } */

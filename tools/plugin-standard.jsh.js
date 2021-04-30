@@ -343,28 +343,27 @@
 
 				var serveDocumentation = function(c) {
 					return $api.Function.pipe(
-						jsh.script.cli.option.boolean({ longname: "debug:rhino" }),
 						function(p) {
-							jsh.shell.jsh({
-								shell: jsh.shell.jsh.src,
-								script: jsh.shell.jsh.src.getFile("tools/documentation.jsh.js"),
+							jsh.shell.run({
+								command: jsh.shell.jsh.src.getFile("fifty"),
 								//	TODO	make functional implementation of below simpler
 								arguments: (function() {
 									var rv = [];
+
+									rv.push("view");
+
+									rv.push("--base", $context.base);
+
 									var host = (function(provided) {
 										if (provided) return provided;
 										return $context.base.pathname.basename;
 									})(p.options.host);
 									rv.push("--host", host);
+
 									if (c.watch) rv.push("--watch");
+
 									return rv;
-								})(),
-								environment: $api.Object.compose(
-									jsh.shell.environment,
-									(p.options["debug:rhino"]) ? {
-										JSH_DEBUG_SCRIPT: "rhino"
-									} : {}
-								)
+								})()
 							});
 						}
 					)

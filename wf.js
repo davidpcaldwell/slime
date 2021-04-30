@@ -27,6 +27,7 @@
 					if (entry.path == ".hgsubstate") return false;
 
 					if (entry.path == "documentation") return true;
+					if (entry.path == "fifty") return true;
 					if (entry.path == "wf") return true;
 					if (entry.path == "tools/wf") return true;
 					if (entry.path == "contributor/hooks/pre-commit") return true;

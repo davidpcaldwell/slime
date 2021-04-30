@@ -2,8 +2,8 @@
 (
 	/**
 	 *
-	 * @param { { httpd: slime.servlet.httpd } } $context
-	 * @param { (value: slime.servlet.httpd["Handler"]["Loader"]) => void } $export
+	 * @param { slime.tools.documentation.internal.asTextHandler.Context } $context
+	 * @param { (value: slime.tools.documentation.internal.asTextHandler.Export) => void } $export
 	 */
 	function($context,$export) {
 		$export(
