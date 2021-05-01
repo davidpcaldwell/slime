@@ -457,10 +457,10 @@
 		}
 
 		if (!parameters.options.issue138) suite.add("tools/jsh/api", fifty({
-			path: "tools/plugin.jsh.fifty.ts"
+			path: "tools/wf/plugin.jsh.fifty.ts"
 		}));
 		if (!parameters.options.issue138) suite.add("tools/jsh/standard", fifty({
-			path: "tools/plugin-standard.jsh.fifty.ts"
+			path: "tools/wf/plugin-standard.jsh.fifty.ts"
 		}));
 
 		//	TODO	disabling tests in order to try to get commit to succeed. Probably need to migrate this to a GitHub implementation

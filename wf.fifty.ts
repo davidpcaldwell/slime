@@ -16,7 +16,11 @@ namespace slime {
 								if (p.entry.path == "local") return false;
 								if (p.entry.path.substring(0,"local/".length) == "local/") return false;
 								if (p.entry.path.substring(0,".git/".length) == ".git/") return false;
-								return true;
+								if (p.exists && !p.exists.directory && p.entry.node.directory) {
+									p.exists.remove();
+									return true;
+								}
+							return true;
 							}
 						});
 						return rv;

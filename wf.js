@@ -61,7 +61,7 @@
 			var filename = "org.eclipse.jdt.core.prefs";
 			var destination = $context.base.getSubdirectory(".settings").getRelativePath(filename);
 			var now = (destination.file) ? destination.file.read(String) : void(0);
-			var after = $context.base.getFile("tools/" + filename).read(String);
+			var after = $context.base.getFile("contributor/" + filename).read(String);
 			if (now != after) {
 				$context.base.getFile("tools/" + filename).copy(
 					$context.base.getSubdirectory(".settings").getRelativePath(filename),

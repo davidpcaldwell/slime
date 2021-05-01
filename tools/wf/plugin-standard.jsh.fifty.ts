@@ -10,7 +10,7 @@ namespace slime.jsh.wf {
 						repository.config({ set: { name: "user.email", value: "bar@example.com" }});
 					}
 
-					var src: slime.jrunscript.file.Directory = fifty.$loader.getRelativePath("..").directory;
+					var src: slime.jrunscript.file.Directory = fifty.$loader.getRelativePath("../..").directory;
 
 					function fixture() {
 						var project = fifty.jsh.file.location();
@@ -53,7 +53,7 @@ namespace slime.jsh.wf {
 					}
 
 					return {
-						wf: fifty.$loader.getRelativePath("wf").file,
+						wf: fifty.$loader.getRelativePath("../wf.bash").file,
 						project: function() {
 							var origin = fixture();
 							var repository = origin.clone({
@@ -69,6 +69,16 @@ namespace slime.jsh.wf {
 									if (item.entry.path.substring(0,"local/".length) == "local/") return false;
 									if (item.entry.path == ".git") return false;
 									if (item.entry.path.substring(0,".git/".length) == ".git/") return false;
+									//jsh.shell.console("conflict: " + item.entry.path);
+									if (item.entry.path == "tools/wf/") {
+										if (item.exists) jsh.shell.console("exists: " + item.exists + " " + item.exists.directory);
+										jsh.shell.console("entry: " + item.entry.path + " " + item.entry.node.directory);
+									}
+									//	If we have a file in the way of a directory, remove it
+									if (item.exists && !item.exists.directory && item.entry.node.directory) {
+										item.exists.remove();
+										return true;
+									}
 									return true;
 								}
 							});
@@ -309,8 +319,8 @@ namespace slime.jsh.wf {
 				fifty: slime.fifty.test.kit
 			) {
 				fifty.tests.suite = function() {
-					fifty.tests.interface.tsc();
-					fifty.tests.interface.commit();
+					fifty.run(fifty.tests.interface.tsc);
+					fifty.run(fifty.tests.interface.commit);
 				}
 			}
 		//@ts-ignore

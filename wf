@@ -32,4 +32,4 @@ if [ ! -f "${LIB}/js.jar" ]; then
 fi
 export JSH_LAUNCHER_JDK_HOME="${SLIME_WF_JDK_8}"
 
-${PROJECT}/tools/wf "$@"
+${PROJECT}/tools/wf.bash "$@"

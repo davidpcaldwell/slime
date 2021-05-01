@@ -18,7 +18,7 @@ namespace slime.jsh {
  * ```bash
  * #!/bin/bash
  * export PROJECT="$(dirname $0)"
- * $(dirname $0)/path/to/slime/tools/wf "$@"
+ * $(dirname $0)/path/to/slime/tools/wf.bash "$@"
  * ```
  *
  * The `wf.js` file should be an ordinary SLIME module, which will be loaded with a `$context` providing a project
