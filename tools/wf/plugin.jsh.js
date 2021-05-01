@@ -25,7 +25,13 @@
 				};
 
 				var base = (function() {
-					if (jsh.shell.environment.PROJECT) return jsh.file.Pathname(jsh.shell.environment.PROJECT).directory;
+					if (jsh.shell.environment.PROJECT) {
+						var location = jsh.file.Pathname(jsh.shell.environment.PROJECT);
+						// if (!location.directory) {
+						// 	jsh.shell.console("PROJECT is missing: " + location);
+						// }
+						return location.directory;
+					}
 					return jsh.shell.PWD;
 				})();
 

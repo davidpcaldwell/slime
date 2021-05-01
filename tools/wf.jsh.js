@@ -5,6 +5,11 @@
 	 * @param { slime.jsh.Global } jsh
 	 */
 	function($api,jsh) {
+		if (!jsh.wf.project.base) {
+			jsh.shell.console("No wf project base defined; PROJECT = " + jsh.shell.environment.PROJECT);
+			jsh.shell.exit(1);
+		}
+
 		if (!jsh.wf.project.base.getFile("wf.js")) {
 			jsh.shell.console("Directory " + jsh.wf.project.base + " does not appear to be a project directory; no wf.js found.");
 			jsh.shell.exit(1);

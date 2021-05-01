@@ -70,10 +70,6 @@ namespace slime.jsh.wf {
 									if (item.entry.path == ".git") return false;
 									if (item.entry.path.substring(0,".git/".length) == ".git/") return false;
 									//jsh.shell.console("conflict: " + item.entry.path);
-									if (item.entry.path == "tools/wf/") {
-										if (item.exists) jsh.shell.console("exists: " + item.exists + " " + item.exists.directory);
-										jsh.shell.console("entry: " + item.entry.path + " " + item.entry.node.directory);
-									}
 									//	If we have a file in the way of a directory, remove it
 									if (item.exists && !item.exists.directory && item.entry.node.directory) {
 										item.exists.remove();
@@ -183,6 +179,10 @@ namespace slime.jsh.wf {
 						command: test.fixtures.wf,
 						arguments: ["tsc"],
 						directory: repository.directory,
+						environment: Object.assign({},
+							jsh.shell.environment,
+							{ PROJECT: repository.directory.toString() }
+						),
 						stdio: {
 							output: String,
 							error: String
@@ -208,6 +208,7 @@ namespace slime.jsh.wf {
 								//	TODO	add access to $api.Object in Fifty tests
 								environment: Object.assign({},
 									jsh.shell.environment,
+									{ PROJECT: repository.directory.toString() },
 									environment
 								),
 								stdio: {
@@ -283,6 +284,7 @@ namespace slime.jsh.wf {
 
 				fifty.tests.interface.commit = function() {
 					var repository = test.fixtures.project();
+					var environment = {};
 
 					//	add tracked file and wf commit
 					repository.directory.getRelativePath("a").write("", { append: false });
@@ -290,6 +292,11 @@ namespace slime.jsh.wf {
 					var r1: { status: number } = jsh.shell.run({
 						command: test.fixtures.wf,
 						arguments: ["commit", "--message", "a"],
+						environment: Object.assign({},
+							jsh.shell.environment,
+							{ PROJECT: repository.directory.toString() },
+							environment
+						),
 						directory: repository.directory
 					});
 					fifty.verify(r1).status.is(0);
@@ -303,6 +310,11 @@ namespace slime.jsh.wf {
 							output: String,
 							error: String
 						},
+						environment: Object.assign({},
+							jsh.shell.environment,
+							{ PROJECT: repository.directory.toString() },
+							environment
+						),
 						evaluate: function(result) { return result; }
 					});
 					fifty.verify(result).status.is(1);

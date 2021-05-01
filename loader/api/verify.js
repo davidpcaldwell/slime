@@ -173,7 +173,7 @@
 						var success = (not) ? v != specified.value : v == specified.value;
 						var message = prefix + (function() {
 							if (!not && success) return "is equal to " + specified.name;
-							if (!not && !success) return "is " + toLiteral(v) + ", which is not equal to " + specified.name;
+							if (!not && !success) return "is " + toLiteral(v) + ", which should be equal to " + specified.name + ", but is not.";
 							if (not && success) return "is not equal to " + specified.name;
 							if (not && !success) return "is " + toLiteral(v) + ", which equals " + specified.name + ", but should not.";
 						})();
