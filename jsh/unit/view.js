@@ -11,8 +11,15 @@
 //	Contributor(s):
 //	END LICENSE
 
+//@ts-check
 (
-	function() {
+	/**
+	 * @param { slime.jrunscript.Packages } Packages
+	 * @param { any } JavaAdapter
+	 * @param { slime.jsh.Global } jsh
+	 * @param { any } $exports
+	 */
+	function(Packages,JavaAdapter,jsh,$exports) {
 		$exports.Console = function(o) {
 			var console = new function() {
 				this.println = function(s) {
@@ -194,4 +201,5 @@
 			});
 		}
 	}
-)();
+//@ts-ignore
+)(Packages,JavaAdapter,(function() { return this; })().jsh,$exports);

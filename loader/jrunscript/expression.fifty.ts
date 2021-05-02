@@ -435,6 +435,9 @@ namespace slime.jrunscript {
 				rhino: {
 					Objects: any
 					MetaObject: any
+					Engine: {
+						Log: any
+					}
 				}
 				jsh: {
 					Shell: any

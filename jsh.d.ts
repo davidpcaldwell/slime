@@ -79,6 +79,9 @@ namespace slime.jsh {
 					file: slime.jrunscript.file.File
 				}) => any
 			}
+			JSON: {
+				Encoder: any
+			}
 		}
 
 		loader: {
