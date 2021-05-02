@@ -383,10 +383,9 @@ END LICENSE
 			</ul>
 		</div>
 		<script type="application/x.jsapi#tests">
-			//	TODO	Issue #203: re-enable this test, which began failing under JDK 11, most likely because of issues having to
-			//			do with JDK 11 / Nashorn compatibility combined with Rhino not being persistently installed into the shell
-			//	var classpathUri = String($jsapi.environment.jsh.packaged.jar.pathname.java.adapt().toURI().toString())
-			//	verify($jsapi).environment.jsh.packaged.data.shellClasspath.is(classpathUri);
+			//	TODO	apparently fails under JDK 11
+			var classpathUri = String($jsapi.environment.jsh.packaged.jar.pathname.java.adapt().toURI().toString())
+			verify($jsapi).environment.jsh.packaged.data.shellClasspath.is(classpathUri);
 		</script>
 	</div>
 	<div>
