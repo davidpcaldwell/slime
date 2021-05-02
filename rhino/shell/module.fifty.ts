@@ -1,5 +1,5 @@
 namespace slime.jrunscript.shell {
-	interface Stdio {
+	export interface Stdio {
 		input?: slime.jrunscript.runtime.io.InputStream
 		output?: slime.jrunscript.runtime.io.OutputStream
 		error?: slime.jrunscript.runtime.io.OutputStream
@@ -154,7 +154,11 @@ namespace slime.jrunscript.shell {
 				on?: any
 				directory?: any
 				workingDirectory?: any
-				stdio?: any
+				stdio?: {
+					output?: StringConstructor | slime.jrunscript.runtime.io.OutputStream | { line: (line: string) => void }
+					error?: StringConstructor | slime.jrunscript.runtime.io.OutputStream | { line: (line: string) => void }
+					input?: slime.jrunscript.runtime.io.InputStream
+				}
 				stdout?: any
 				stdin?: any
 				stderr?: any

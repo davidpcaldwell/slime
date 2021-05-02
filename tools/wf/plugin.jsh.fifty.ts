@@ -193,7 +193,19 @@ namespace slime.jsh.wf {
 			 */
 			require: (p?: { project: slime.jrunscript.file.Directory }) => void
 			tsc: (p?: { project: slime.jrunscript.file.Directory }) => void
-			typedoc: (p?: { project: slime.jrunscript.file.Directory }) => void
+
+			/**
+			 * Runs TypeDoc on the project, emitting the output to `local/doc/typedoc`.
+			 */
+			typedoc: (
+				/**
+				 * Information about the project. Defaults to running on the `wf` project directory.
+				 */
+				p?: {
+					project: slime.jrunscript.file.Directory
+					stdio?: Parameters<slime.jrunscript.shell.Exports["run"]>[0]["stdio"]
+				}
+			) => any
 		}
 	}
 

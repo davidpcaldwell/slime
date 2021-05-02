@@ -40,9 +40,23 @@
 								var src = (match[1]) ? base.getSubdirectory(match[1]) : base;
 								var output = src.getRelativePath("local/doc/typedoc");
 								if (!output.directory || configuration.watch) {
-									jsh.wf.typescript.typedoc({
-										project: src
+									var result = jsh.wf.typescript.typedoc({
+										project: src,
+										stdio: {
+											output: String,
+											error: String
+										}
 									});
+									if (result.status != 0) {
+										var body = "OUTPUT:\n" + result.stdio.output + "\nERROR:\n" + result.stdio.error;
+										return {
+											status: { code: 500 },
+											body: {
+												type: "text/plain",
+												string: body
+											}
+										}
+									}
 								}
 								jsh.shell.console("Serving: " + request.path);
 								return httpd.Handler.Loader({

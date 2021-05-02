@@ -353,14 +353,16 @@
 						},
 						typedoc: function(p) {
 							var project = (p && p.project) ? p.project : base;
-							jsh.shell.jsh({
+							return jsh.shell.jsh({
 								shell: jsh.shell.jsh.src,
 								script: jsh.shell.jsh.src.getFile("tools/typedoc.jsh.js"),
 								arguments: [
 									"--ts:version", getVersion(project),
 									"--tsconfig", getConfig(project),
 									"--output", project.getRelativePath("local/doc/typedoc"),
-								]
+								],
+								stdio: p.stdio,
+								evaluate: function(result) { return result; }
 							});
 						}
 					}

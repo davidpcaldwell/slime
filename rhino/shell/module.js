@@ -35,8 +35,10 @@
 		/**
 		 *
 		 * @param { Parameters<slime.jrunscript.shell.Exports["run"]>[0] } p
+		 * @return { slime.jrunscript.shell.Stdio & { close?: () => void } }
 		 */
 		var getStdio = function(p) {
+			/** @type { any } */
 			var rv = (function() {
 				if (typeof(p.stdio) != "undefined") return p.stdio;
 
@@ -137,7 +139,7 @@
 		/**
 		 *
 		 * @param { Parameters<slime.jrunscript.shell.Exports["run"]>[0] } p
-		 * @param {*} events
+		 * @param { any } events
 		 */
 		var run = function(p,events) {
 			var as;
