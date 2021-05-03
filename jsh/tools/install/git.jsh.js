@@ -12,4 +12,15 @@
 //	END LICENSE
 
 //	TODO	re-implement in terms of plugin
-jsh.tools.git.install();
+try {
+	jsh.tools.git.install();
+} catch (e) {
+	var isExpected = Boolean(e instanceof jsh.tools.git.install.GUI);
+	if (isExpected) {
+		jsh.shell.console(e.message);
+	} else {
+		jsh.shell.console(e);
+		jsh.shell.console(e.stack);
+	}
+	jsh.shell.exit(1);
+}

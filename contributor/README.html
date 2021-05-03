@@ -427,6 +427,64 @@ END LICENSE
 							</li>
 						</ul>
 					</div>
+					<div>
+						<h5>macOS Big Sur: VMWare</h5>
+						<ul>
+							<li><a href="https://support.apple.com/en-us/HT201372">Getting the installer application</a></li>
+							<li>
+								Customize Settings
+								<ul>
+									<li>Save As: slime-macos</li>
+									<li>Sharing
+										<ul>
+											<li>Enable Shared Folders</li>
+											<li>Add source folder with name <code>slime</code> and read/write access</li>
+										</ul>
+									</li>
+								</ul>
+							</li>
+							<li>
+								Installation Wizard
+								<ul>
+									<li>Language: English</li>
+									<li>Install macOS Big Sur</li>
+									<li>Continue</li>
+									<li>License: Agree (Confirm Agree)</li>
+									<li>Install to Macintosh HD</li>
+									<li>Country or Region: United States</li>
+									<li>Written and Spoken Languages: defaults</li>
+									<li>Accessibility: Not Now</li>
+									<li>Data &amp; Privacy: Continue</li>
+									<li>Migration Assistant: Not Now</li>
+									<li>Sign In with Your Apple ID: Set Up Later, Skip</li>
+									<li>Terms and Conditions: Agree, Agree</li>
+									<li>Full Name: SLIME macOS Testbed</li>
+									<li>Account Name: slime</li>
+									<li>Password: slime (Hint: project name)</li>
+									<li>Express Set Up: Continue</li>
+									<li>Analytics: Share crash and usage data with app developers: CHECKED</li>
+									<li>Screen Time: Set Up Later</li>
+									<li>Siri: Enable Ask Siri: UNCHECKED</li>
+									<li>Choose Your Look: Light</li>
+									<li>(on host) Virtual Machine | Install VMWare Tools</li>
+									<li>(on guest) Install VMWare Tools</li>
+									<li>Open Security Preferences (clock lock)</li>
+									<li>System software from developer "VMWare, Inc." was blocked from laoding: Allow | Restart</li>
+									<li>(on host) Virtual Machine | Snapshot | Take Snapshot, change name to Stock</li>
+									<!--
+										Terrible performance; see
+										https://communities.vmware.com/t5/VMware-Fusion-Discussions/Abysmal-Performance-in-Fusion-12-after-upgrade-to-macOS-Big-Sur/td-p/2809964
+
+										Tried the following three things, which seemed to have negligible impact:
+
+										<li>(on host) Virtual Machine | Settings | Processors and Memory | 4 cores, 8192MB</li>
+										<li>(on host) Virtual Machine | Settings | Advanced | Disable Side Channel Mitigations: CHECKED</li>
+										<li>(on host) Virtual Machine | Settings | Compatibility | Use Hardware Version: 16</li>
+									-->
+								</ul>
+							</li>
+						</ul>
+					</div>
 				</div>
 				<div>
 					<h4>Docker</h4>

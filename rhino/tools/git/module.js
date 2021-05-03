@@ -1304,7 +1304,9 @@
 			}
 		})();
 
-		var GUI = $context.api.Error.Type("Please execute the graphical installer.");
+		var GUI = $api.Error.Type({
+			name: "GUIInstallRequired"
+		});
 
 		$exports.install = Object.assign(
 			$api.Events.Function(
@@ -1318,9 +1320,13 @@
 							console("Install Apple's command line developer tools.");
 							$context.api.shell.run({
 								command: "/usr/bin/git",
+								stdio: {
+									output: null,
+									error: null
+								},
 								evaluate: function(result) {
 									//	Do nothing; exit status will be 1
-									throw new GUI();
+									throw new GUI("Please execute the graphical installer for the command line developer tools to install git.");
 								}
 							});
 						} else if ($context.api.shell.os.name == "Linux") {
