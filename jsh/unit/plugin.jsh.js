@@ -46,6 +46,7 @@ plugin({
 
 		var view = $loader.file("view.js", {
 			api: {
+				java: jsh.java,
 				unit: jsh.unit
 			}
 		});

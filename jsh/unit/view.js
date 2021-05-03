@@ -16,10 +16,10 @@
 	/**
 	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { any } JavaAdapter
-	 * @param { slime.jsh.Global } jsh
+	 * @param { { api: { java: any, unit: any } } } $context
 	 * @param { any } $exports
 	 */
-	function(Packages,JavaAdapter,jsh,$exports) {
+	function(Packages,JavaAdapter,$context,$exports) {
 		$exports.Console = function(o) {
 			var console = new function() {
 				this.println = function(s) {
@@ -106,7 +106,7 @@
 					if (e.cause == e) {
 						throw new Error("Bug in setting cause");
 					}
-					if (jsh.java.isJavaObject(e.cause)) {
+					if ($context.api.java.isJavaObject(e.cause)) {
 						printError({ javaException: e.cause });
 					} else {
 						console.println("Caused by:");
@@ -194,7 +194,7 @@
 		};
 
 		$exports.Events = function(p) {
-			return new jsh.unit.JSON.Encoder({
+			return new $context.api.unit.JSON.Encoder({
 				send: function(s) {
 					p.writer.write(s + String(Packages.java.lang.System.getProperty("line.separator")));
 				}
@@ -202,4 +202,4 @@
 		}
 	}
 //@ts-ignore
-)(Packages,JavaAdapter,(function() { return this; })().jsh,$exports);
+)(Packages,JavaAdapter,$context,$exports);
