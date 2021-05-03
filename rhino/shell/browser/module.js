@@ -24,7 +24,7 @@
 		}
 
 		//	TODO	tighten dependencies?
-		$exports.chrome = $loader.module("chrome.js", $context).chrome;
+		$exports.chrome = $loader.module("chrome.js", $context);
 
 		$exports.ProxyConfiguration = function(o) {
 			var pac = (function() {
