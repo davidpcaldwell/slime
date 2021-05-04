@@ -145,21 +145,8 @@ namespace slime.jrunscript.shell {
 	}
 
 	export interface Exports {
-		//	fires started, exception, stdout, stderr
-		embed: (p: {
-			method: Function
-			argument: object
-			started: (p: { output?: string, error?: string }) => boolean
-		}, events: $api.Events.Function.Receiver) => void
-
-		user: {
-			downloads?: slime.jrunscript.file.Directory
-		}
-
-		java: java
-
-		PATH?: any
-
+		//	listeners
+		//	environment
 		run: {
 			(p: Invocation & {
 				as?: any
@@ -175,6 +162,38 @@ namespace slime.jrunscript.shell {
 			evaluate: any
 			stdio: any
 		}
+
+		//	fires started, exception, stdout, stderr
+		/**
+		 * Provides a framework for embedding processes inside a shell. Invokes the given method with the given argument
+		 */
+		embed: (p: {
+			method: Function
+			argument: object
+			started: (p: { output?: string, error?: string }) => boolean
+		}, events: $api.Events.Function.Receiver) => void
+
+		properties: {
+			object: any
+
+			/**
+			 * Returns the value of the specified system property, or `null` if it does not have a value.
+			 *
+			 * @param name
+			 */
+			get(name: string): string
+
+			file(name: any): any
+			directory(name: any): any
+			searchpath(name: any): any
+		}
+
+		TMPDIR: slime.jrunscript.file.Directory
+		USER: string
+		HOME: slime.jrunscript.file.Directory
+
+		PWD: slime.jrunscript.file.Directory
+		PATH?: any
 
 		os: {
 			name: string
@@ -193,31 +212,22 @@ namespace slime.jrunscript.shell {
 			inject: (dependencies: { ui: slime.jsh.Global["ui"] }) => void
 		}
 
-		TMPDIR: slime.jrunscript.file.Directory
-		USER: string
-		HOME: slime.jrunscript.file.Directory
-		PWD: slime.jrunscript.file.Directory
+		user: {
+			downloads?: slime.jrunscript.file.Directory
+		}
+
+		//	browser
+
+		system: any
+
+		java: java
 
 		jrunscript: any
 
-		properties: {
-			object: any
-
-			/**
-			 * Returns the value of the specified system property, or `null` if it does not have a value.
-			 *
-			 * @param name
-			 */
-			get(name: string): string
-
-			file(name: any): any
-			directory(name: any): any
-			searchpath(name: any): any
-		}
-
-		system: any
-		rhino: any
 		kotlin: any
+
+		/** @deprecated Presently unused. */
+		rhino: any
 	}
 
 	export type Loader = slime.loader.Product<Context,Exports>;
