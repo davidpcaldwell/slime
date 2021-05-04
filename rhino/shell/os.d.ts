@@ -24,7 +24,7 @@ namespace slime.jrunscript.shell.system {
 	type ps = () => slime.jrunscript.shell.system.Process[]
 
 	type sudo = {
-		//	TODO	relate below argument to module run() method, which is not yet well-defined
+		//	TODO	relate below argument to module run() method
 		(p: {
 			password: string | (() => string)
 			command: string
@@ -32,9 +32,11 @@ namespace slime.jrunscript.shell.system {
 			stdio?: any
 			evaluate?: any
 		}): void
-		initialize: Function
-		PasswordRequired: new (string) => Error
-		PasswordIncorrect: new (string) => Error
+
+		initialize: (p: string) => void
+
+		PasswordRequired: slime.$api.Error.Type<Error>
+		PasswordIncorrect: slime.$api.Error.Type<Error>
 
 		gui?: (p?: { prompt: string }) => () => string
 

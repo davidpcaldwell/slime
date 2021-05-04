@@ -128,6 +128,22 @@ namespace slime.jrunscript.shell {
 	//@ts-ignore
 	)(fifty);
 
+	type Token = string | slime.jrunscript.file.Pathname | slime.jrunscript.file.Node
+
+	export interface Invocation {
+		command?: Token
+		arguments?: Token[] | ( (args: Token[]) => void )
+		environment?: {
+			[name: string]: string
+		}
+		directory?: slime.jrunscript.file.Directory
+		stdio?: {
+			output?: StringConstructor | slime.jrunscript.runtime.io.OutputStream | { line: (line: string) => void }
+			error?: StringConstructor | slime.jrunscript.runtime.io.OutputStream | { line: (line: string) => void }
+			input?: slime.jrunscript.runtime.io.InputStream
+		}
+	}
+
 	export interface Exports {
 		//	fires started, exception, stdout, stderr
 		embed: (p: {
@@ -145,20 +161,11 @@ namespace slime.jrunscript.shell {
 		PATH?: any
 
 		run: {
-			(p: {
+			(p: Invocation & {
 				as?: any
-				environment?: any
 				tokens?: any
-				command?: any
-				arguments?: any
 				on?: any
-				directory?: any
 				workingDirectory?: any
-				stdio?: {
-					output?: StringConstructor | slime.jrunscript.runtime.io.OutputStream | { line: (line: string) => void }
-					error?: StringConstructor | slime.jrunscript.runtime.io.OutputStream | { line: (line: string) => void }
-					input?: slime.jrunscript.runtime.io.InputStream
-				}
 				stdout?: any
 				stdin?: any
 				stderr?: any

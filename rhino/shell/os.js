@@ -13,10 +13,11 @@
 //@ts-check
 (
 	/**
+	 * @param { slime.$api.Global } $api
 	 * @param {slime.jrunscript.shell.system.Context} $context
 	 * @param {slime.jrunscript.shell.system.Exports} $exports
 	 */
-	function($context,$exports) {
+	function($api,$context,$exports) {
 		/** @type { slime.jrunscript.shell.system.Exports["ps"]} */
 		var ps = (function() {
 			/**
@@ -130,11 +131,12 @@
 
 		if ($context.os.name == "Mac OS X") {
 			var correctPassword;
-			var PasswordIncorrect = $context.api.js.Error.Type("PasswordIncorrect");
-			var PasswordRequired = $context.api.js.Error.Type("PasswordRequired");
+			var PasswordIncorrect = $api.Error.Type({ name: "PasswordIncorrect" });
+			var PasswordRequired = $api.Error.Type({ name: "PasswordRequired" });
 			//	TODO	the below method results in 3 failures from OS point of view; apparently askpass program is run three times before
 			//			giving up. Is there a way to verify password in one try and then use it?
 			//	TODO	developing a true graphical program would be one way to deal with the above
+			/** @type { slime.jrunscript.shell.system.sudo["initialize"] } */
 			var sudo_initialize = function(password) {
 				$context.run({
 					command: "sudo",
@@ -162,7 +164,7 @@
 					},
 					evaluate: function(result) {
 						if (result.status == 1) {
-							throw new sudo.PasswordIncorrect("Incorrect password.");
+							throw new PasswordIncorrect("Incorrect password.");
 						}
 					}
 				});
@@ -315,4 +317,4 @@
 		}
 	}
 //@ts-ignore
-)($context,$exports)
+)($api,$context,$exports)
