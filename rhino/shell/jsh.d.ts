@@ -70,7 +70,7 @@ namespace slime.jsh.shell {
 		PATH: any
 		TMPDIR: slime.jrunscript.file.Directory
 		PWD: slime.jrunscript.file.Directory
-		browser: any
+		browser: slime.jrunscript.shell.browser.Exports
 		listeners: any
 		system: {
 			apple: {

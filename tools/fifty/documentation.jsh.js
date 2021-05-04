@@ -74,7 +74,7 @@
 					;
 					var instance = new jsh.shell.browser.chrome.Instance({
 						location: base.getRelativePath("local/chrome/" + chromeId),
-						proxy: new jsh.shell.browser.ProxyConfiguration({
+						proxy: jsh.shell.browser.ProxyConfiguration({
 							code: pac
 						})
 					});

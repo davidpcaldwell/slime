@@ -165,7 +165,7 @@
 		var host = invocation.options.project.pathname.basename + ".fifty";
 		var browser = new jsh.shell.browser.chrome.Instance({
 			location: invocation.options.project.getRelativePath("local/chrome/fifty" ),
-			proxy: new jsh.shell.browser.ProxyConfiguration({
+			proxy: jsh.shell.browser.ProxyConfiguration({
 				code: slime.directory.getFile("rhino/ui/application-hostToPort.pac")
 					.read(String)
 					.replace(/__HOST__/g, host)

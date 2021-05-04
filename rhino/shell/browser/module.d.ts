@@ -26,9 +26,9 @@ namespace slime.jrunscript.shell.browser {
 	interface Chrome {
 		Instance: new (u: {
 			location?: slime.jrunscript.file.Pathname
-			directory: slime.jrunscript.file.Directory
+			directory?: slime.jrunscript.file.Directory
 			proxy?: slime.jrunscript.shell.browser.ProxyTools
-			install: boolean
+			install?: boolean
 		}) => any
 	}
 

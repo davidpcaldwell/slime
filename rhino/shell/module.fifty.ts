@@ -140,7 +140,7 @@ namespace slime.jrunscript.shell {
 		stdio?: {
 			output?: StringConstructor | slime.jrunscript.runtime.io.OutputStream | { line: (line: string) => void }
 			error?: StringConstructor | slime.jrunscript.runtime.io.OutputStream | { line: (line: string) => void }
-			input?: slime.jrunscript.runtime.io.InputStream
+			input?: string | slime.jrunscript.runtime.io.InputStream
 		}
 	}
 

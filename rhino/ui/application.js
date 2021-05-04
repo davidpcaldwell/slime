@@ -280,7 +280,7 @@
 				if (p.browser.host) return hostToPort(p.browser.host)({ port: server.port });
 				return null;
 			})();
-			var proxy = (proxySettings) ? new jsh.shell.browser.ProxyConfiguration(proxySettings) : void(0);
+			var proxy = (proxySettings) ? jsh.shell.browser.ProxyConfiguration(proxySettings) : void(0);
 			var authority = (p.browser.host) ? p.browser.host : "127.0.0.1:" + server.port;
 			var url = "http://" + authority + "/" + ((p.path) ? p.path : "");
 			if (p.browser.create) {

@@ -327,7 +327,7 @@
 				var url = jsh.js.web.Url.parse(uri);
 				var browser = new jsh.shell.browser.chrome.Instance({
 					directory: user,
-					proxy: new jsh.shell.browser.ProxyConfiguration({ port: url.port })
+					proxy: jsh.shell.browser.ProxyConfiguration({ port: url.port })
 				});
 				url.host = "unit";
 				url.port = void(0);
