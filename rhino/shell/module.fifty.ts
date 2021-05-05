@@ -10,11 +10,19 @@ namespace slime.jrunscript.shell {
 
 	interface java {
 		(p: {
-			vmarguments: any
-			properties: any
+			vmarguments?: any
+			properties?: any
 			jar: any
+			arguments: any
+		}): Result
+
+		(p: {
+			vmarguments?: any
+			properties?: any
+			classpath: any
 			main: any
 			arguments: any
+			environment: any
 		}): Result
 
 		version: string
