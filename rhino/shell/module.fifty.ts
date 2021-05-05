@@ -145,8 +145,13 @@ namespace slime.jrunscript.shell {
 	}
 
 	export interface Exports {
+		//	environment (maybe defined erroneously in jsh.d.ts)
+
+		invocation: {
+			sudo: (settings?: {}) => (p: Invocation) => Invocation
+		}
+
 		//	listeners
-		//	environment
 		run: {
 			(p: Invocation & {
 				as?: any

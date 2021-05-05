@@ -90,6 +90,9 @@ namespace slime.$api {
 				matched: Iterable_match<L,R>[]
 			}
 		},
+		Array: {
+			build: <T>(f: (p: T[]) => void) => T[]
+		}
 		deprecate: {
 			(o: object, property: string): void
 			<T extends slime.alias.GlobalFunction>(f: T): T

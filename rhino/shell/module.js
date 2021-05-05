@@ -26,6 +26,14 @@
 			throw new Error("Missing: $context.api.io");
 		}
 
+		var toLocalSearchpath = function(searchpath) {
+			return $context.api.file.Searchpath($context.api.file.filesystems.os.Searchpath.parse(searchpath).pathnames.map(toLocalPathname));
+		};
+
+		$exports.environment = $context.api.java.Environment( ($context._environment) ? $context._environment : Packages.inonit.system.OperatingSystem.Environment.SYSTEM );
+
+		$exports.invocation = $loader.module("invocation.js");
+
 		var module = {
 			events: $api.Events({ source: $exports })
 		};
@@ -133,8 +141,6 @@
 				return $api.deprecate(getDirectoryProperty)({ directory: p.workingDirectory });
 			}
 		};
-
-		$exports.environment = $context.api.java.Environment( ($context._environment) ? $context._environment : Packages.inonit.system.OperatingSystem.Environment.SYSTEM );
 
 		/**
 		 *
@@ -519,10 +525,6 @@
 				}
 			}
 		)();
-
-		var toLocalSearchpath = function(searchpath) {
-			return $context.api.file.Searchpath($context.api.file.filesystems.os.Searchpath.parse(searchpath).pathnames.map(toLocalPathname));
-		};
 
 		$api.experimental($exports.properties,"object");
 

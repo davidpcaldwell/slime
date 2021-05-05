@@ -16,7 +16,7 @@
 	/**
 	 * @param { slime.runtime.internal.$engine } $engine
 	 * @param { slime.runtime.internal.Code } $slime
-	 * @param { slime.$api.Global & { [x: string]: any } } $exports
+	 * @param { slime.$api.Global & { debugger: any, Filter: any, Map: any, Reduce: any, Method: any, Constructor: any, Key: any, Properties: any, threads: any } } $exports
 	 */
 	function($engine,$slime,$exports) {
 		var load = function(name,$context) {
@@ -479,6 +479,14 @@
 			}
 			return Properties(rv);
 		};
+
+		$exports.Array = {
+			build: function(f) {
+				var rv = [];
+				f(rv);
+				return rv;
+			}
+		}
 
 		$exports.Value = function(v,name) {
 			return new function() {
