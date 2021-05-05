@@ -120,6 +120,8 @@ namespace slime {
             (c?: C): E
         }
 
+        export type Export<T> = (value: T) => void
+
         /**
          * An object that provides the implementation for a {@link Loader}.
          */
