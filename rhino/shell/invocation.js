@@ -8,14 +8,26 @@
 		$export(
 			{
 				sudo: function(settings) {
+					//	TODO	sudo has preserve-env and preserver-env= flags. Should make the relationship
+					//			more explicit
+					//			between that and the environment provided normally, e.g., how could we pass an explicit environment
+					//			to sudo? Maybe by transforming the command into an `env` command?
 					return function(invocation) {
-						return {
+						return $api.Object.compose(invocation, {
 							command: "sudo",
 							arguments: $api.Array.build(function(array) {
+								if (settings && settings.askpass) array.push("--askpass");
+								if (settings && settings.nocache) array.push("--reset-timestamp")
 								array.push(invocation.command);
 								array.push.apply(array, invocation.arguments);
-							})
-						};
+							}),
+							environment: $api.Object.compose(
+								invocation.environment,
+								(settings && settings.askpass) ? { SUDO_ASKPASS: settings.askpass } : {}
+							),
+							directory: invocation.directory,
+							stdio: invocation.stdio
+						});
 					}
 				}
 			}

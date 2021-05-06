@@ -3,7 +3,7 @@ namespace slime.jsh.shell {
 		interface Context {
 			exit: any
 			stdio: any
-			_getSystemProperties: any
+			_getSystemProperties: () => slime.jrunscript.native.java.util.Properties
 			jsh: any
 			api: {
 				js: any

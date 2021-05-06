@@ -32,6 +32,15 @@
 
 		$exports.environment = $context.api.java.Environment( ($context._environment) ? $context._environment : Packages.inonit.system.OperatingSystem.Environment.SYSTEM );
 
+		$exports.Invocation = function(p) {
+			return $api.Object.compose({
+				arguments: [],
+				environment: $exports.environment,
+				stdio: $context.stdio,
+				directory: $exports.PWD
+			}, p);
+		};
+
 		$exports.invocation = $loader.module("invocation.js");
 
 		var module = {
@@ -437,6 +446,15 @@
 				});
 			}
 		});
+
+		$exports.sudo = function(settings) {
+			return {
+				run: function(invocation) {
+					var toRun = $exports.invocation.sudo(settings)($exports.Invocation(invocation));
+					return $exports.run(toRun);
+				}
+			}
+		};
 
 		var embed = $api.Events.Function(
 			/**

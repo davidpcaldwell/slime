@@ -194,6 +194,7 @@ namespace slime.jrunscript {
 					get(name: string): any
 					propertyNames(): any
 					getProperty(name: string): string
+					keySet(): any
 				}
 
 				export interface Date {

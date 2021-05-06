@@ -138,30 +138,86 @@ namespace slime.jrunscript.shell {
 
 	type Token = string | slime.jrunscript.file.Pathname | slime.jrunscript.file.Node
 
+	/**
+	 * A fully-specified invocation of a command to be run in an external process.
+	 */
 	export interface Invocation {
-		command?: Token
-		arguments?: Token[] | ( (args: Token[]) => void )
-		environment?: {
+		/**
+		 * The command to run.
+		 */
+		command: Token
+
+		/**
+		 * The arguments to pass to the command.
+		 */
+		arguments: Token[] | ( (args: Token[]) => void )
+
+		/**
+		 * The environment to pass to the command.
+		 */
+		environment: {
 			[name: string]: string
 		}
-		directory?: slime.jrunscript.file.Directory
-		stdio?: {
+
+		/**
+		 * The working directory to use when running the command.
+		 */
+		directory: slime.jrunscript.file.Directory
+
+		/**
+		 * The standard input, output, and error streams to use for the command.
+		 *
+		 * For the output streams:
+		 * * if the global `String` object is used as the value, the stream's output will be captured as a string and returned along with the result of the subprocess.
+		 * * if an object with a `line()` function is used as the value, the output will be buffered and the given object will receive a callback for each line of output.
+		 *
+		 * For the input stream:
+		 * * if the value is a string, that string will be provided on the standard input stream for the subprocess.
+		 */
+		stdio: {
 			output?: StringConstructor | slime.jrunscript.runtime.io.OutputStream | { line: (line: string) => void }
 			error?: StringConstructor | slime.jrunscript.runtime.io.OutputStream | { line: (line: string) => void }
 			input?: string | slime.jrunscript.runtime.io.InputStream
 		}
 	}
 
+	export namespace invocation {
+		/**
+		 * Type used by callers to specify {@link Invocation}s, without requiring boilerplate defaults; only the `command`
+		 * property is required.
+		 */
+		export interface Argument {
+			command: Invocation["command"]
+			arguments?: Invocation["arguments"]
+			environment?: Invocation["environment"]
+			directory?: Invocation["directory"]
+			stdio?: Invocation["stdio"]
+		}
+	}
+
 	export interface Exports {
 		//	environment (maybe defined erroneously in jsh.d.ts)
 
+		/**
+		 * Creates a fully-specified {@link Invocation} from a given {@link invocation.Argument}.
+		 */
+		Invocation: (p: invocation.Argument) => Invocation
+
 		invocation: {
-			sudo: (settings?: {}) => (p: Invocation) => Invocation
+			//	TODO	probably should be conditional based on presence of sudo tool
+			/**
+			 * Given a set of `sudo` settings, provides a function that can convert an {@link Invocation} to an equivalent
+			 * `Invocation` that runs the command under `sudo`.
+			 */
+			sudo: (settings?: {
+				nocache?: boolean
+				askpass?: string | slime.jrunscript.file.File
+			}) => (p: Invocation) => Invocation
 		}
 
 		//	listeners
 		run: {
-			(p: Invocation & {
+			(p: invocation.Argument & {
 				as?: any
 				tokens?: any
 				on?: any
@@ -174,6 +230,14 @@ namespace slime.jrunscript.shell {
 
 			evaluate: any
 			stdio: any
+		}
+
+		//	TODO	probably should be conditional based on presence of sudo tool
+		/**
+		 * Executes a given invocation under `sudo` according to the settings given.
+		 */
+		sudo: (settings?: Parameters<Exports["invocation"]["sudo"]>[0]) => {
+			run: (invocation: invocation.Argument) => any
 		}
 
 		//	fires started, exception, stdout, stderr
@@ -250,6 +314,8 @@ namespace slime.jrunscript.shell {
 			fifty.tests.suite = function() {
 				run(fifty.tests.listeners);
 				run(fifty.tests.environment);
+
+				fifty.load("invocation.fifty.ts");
 			}
 		}
 	//@ts-ignore

@@ -86,9 +86,25 @@ namespace slime.fifty {
 
 		export type tests = any
 
+		/**
+		 * Executes a test part from another file. The version that takes a third argument allows an argument of that type
+		 * to be created and passed to the test part. This can be used so that Fifty test files can define
+		 * conformance tests for a type and Fifty tests that provide implementations of that type can pass them as arguments
+		 * to those tests.
+		 *
+		 * The other form simply executes an arbitrary test part, defaulting to the entire suite (the `suite` part) for the
+		 * indicated file.
+		 */
 		export interface load {
+			/**
+			 * Executes a test part from another file that accepts an argument
+			 */
 			<T>(path: string, part: string, t: T): (t: T) => void
-			<T>(path: string, part?: string): () => void
+
+			/**
+			 * Executes a test part from another file. Defaults to the `suite` part.
+			 */
+			(path: string, part?: string): () => void
 		}
 
 		/**
@@ -102,7 +118,12 @@ namespace slime.fifty {
 			$loader: $loader
 			run: run
 			tests: tests
+
+			/**
+			 * Allows a Fifty test file to execute test parts from other files.
+			 */
 			load: load
+
 			global: {
 				jsh?: slime.jsh.Global
 				window?: Window
