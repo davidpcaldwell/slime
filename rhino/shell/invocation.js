@@ -2,7 +2,7 @@
 (
 	/**
 	 * @param { slime.$api.Global } $api
-	 * @param { (value: slime.jrunscript.shell.Exports["invocation"] ) => void } $export
+	 * @param { slime.loader.Export<slime.jrunscript.shell.Exports["invocation"]> } $export
 	 */
 	function($api,$export) {
 		$export(
