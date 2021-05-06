@@ -319,7 +319,7 @@ namespace slime.jsh.wf {
 					});
 					fifty.verify(result).status.is(1);
 					fifty.verify(result).stdio.evaluate(function(stdio) {
-						return stdio.error.indexOf("Found untracked files: b") != -1;
+						return stdio.error.indexOf("Found untracked files:\nb") != -1;
 					}).is(true);
 				}
 			}

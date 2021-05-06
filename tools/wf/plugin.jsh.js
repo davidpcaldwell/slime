@@ -415,7 +415,7 @@
 					}
 				}, {
 					untracked: function(e) {
-						throw new jsh.wf.error.Failure("Found untracked files: " + e.detail.join("\n"));
+						throw new jsh.wf.error.Failure("Found untracked files:\n" + e.detail.join("\n"));
 					}
 				});
 
