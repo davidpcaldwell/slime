@@ -3,8 +3,14 @@
 	/**
 	 *
 	 * @param { slime.jsh.Global } jsh
+	 * @param { slime.loader.Export<slime.jsh.tools.install.module.homebrew.Exports> } $export
 	 */
 	function(jsh,$export) {
+		/**
+		 *
+		 * @param { Parameters<slime.jsh.tools.install.module.homebrew.Exports["get"]>[0] } p
+		 * @returns { slime.jsh.tools.install.module.Homebrew }
+		 */
 		function getLocalHomebrew(p) {
 			var to = p.location.createDirectory({
 				exists: function(dir) {
@@ -40,7 +46,7 @@
 
 				return {
 					directory: to,
-					update: function(p) {
+					update: function() {
 						brew("update")
 					},
 					install: function(p) {
