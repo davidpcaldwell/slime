@@ -10,9 +10,9 @@ namespace slime.jsh.tools.install.module {
 		export interface Exports {
 			get: (p: { location: slime.jrunscript.file.Pathname }) => Homebrew
 		}
-	}
 
-	export type Factory = slime.loader.Product<{},homebrew.Exports>
+		export type Factory = slime.loader.Product<{},homebrew.Exports>
+	}
 
 	(
 		function(
