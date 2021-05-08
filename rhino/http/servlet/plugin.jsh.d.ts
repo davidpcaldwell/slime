@@ -27,6 +27,9 @@ namespace slime.jsh.httpd {
 			webapp?: any
 		}) => void
 
+		/**
+		 * Configures the given servlet as a single top-level servlet in this Tomcat server.
+		 */
 		servlet: (servlet: servlet.descriptor & { resources?: slime.Loader }) => void
 
 		start: () => void
