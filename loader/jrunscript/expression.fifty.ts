@@ -171,10 +171,13 @@ namespace slime.jrunscript {
 				export interface PrintStream extends OutputStream {
 				}
 				export interface File {
+					exists(): boolean
 					isDirectory(): boolean
 					toPath(): slime.jrunscript.native.java.nio.file.Path
 					getName(): slime.jrunscript.native.java.lang.String
 					getCanonicalPath(): slime.jrunscript.native.java.lang.String
+					listFiles(): slime.jrunscript.native.java.io.File[]
+					getAbsolutePath(): slime.jrunscript.native.java.lang.String
 				}
 			}
 			export namespace nio {
@@ -273,7 +276,7 @@ namespace slime.jrunscript {
 					getJshLoader: any
 					getInterface(): any
 					getLibrary(path: string): any
-					getLibraryFile(path: string): any
+					getLibraryFile(path: string): slime.jrunscript.native.java.io.File
 					getPackaged(): Shell.Packaged
 
 					worker: any

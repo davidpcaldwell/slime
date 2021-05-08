@@ -25,7 +25,7 @@ namespace slime.jsh.plugin {
 		loader: {
 			getLoaderScript(path: string): any
 		}
-		getLibraryFile: any
+		getLibraryFile: (path: string) => slime.jrunscript.native.java.io.File
 		getInterface(): any
 		getSystemProperties(): slime.jrunscript.native.java.util.Properties
 		getStdio(): Stdio

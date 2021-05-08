@@ -95,6 +95,21 @@ namespace slime.jsh {
 			java: any
 			module: any
 			worker: any
+			kotlin: {
+				/**
+				 * **Experimental** Runs the given Kotlin script under the given bindings. See `jsh/test/manual/kotlin-jsr-223.jsh.js`
+				 * for an example. Kotlin must first be installed via `jsh/tools/install/kotlin.jsh.js`.
+				 */
+				run: (
+					program: slime.jrunscript.file.File,
+					/**
+					 * A set of bindings that will be made visible to the script.
+					 */
+					bindings: {
+						[x: string]: any
+					}
+				) => any
+			}
 		}
 		js: any
 		document: any

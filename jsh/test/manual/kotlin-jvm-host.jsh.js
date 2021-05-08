@@ -1,3 +1,4 @@
+//	CURRENTLY DOES NOT WORK; see kotlin-jsr223.jsh.js, which does work
 var KOTLIN = jsh.shell.jsh.lib.getSubdirectory("kotlin/lib");
 
 jsh.loader.java.add(KOTLIN.getRelativePath("kotlin-compiler.jar"));

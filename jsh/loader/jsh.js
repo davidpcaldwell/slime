@@ -183,19 +183,15 @@
 					function kotlin() {
 						var KOTLIN = $slime.getLibraryFile("kotlin/lib");
 
-						var libraries = [
-							"kotlin-compiler.jar",
-							"kotlin-scripting-jvm.jar",
-							"kotlin-scripting-compiler.jar",
-							"kotlin-scripting-impl.jar",
-							"kotlin-script-util.jar",
-							"kotlin-script-runtime.jar",
-							"jsr223.jar",
+						var _libraries = KOTLIN.listFiles();
 
-							"kotlin-stdlib.jar"
-						].map(function(name) {
-							return new Packages.java.io.File(KOTLIN, name);
-						});
+						//	Probably an API above available to convert Java array to JS
+						//	A previous implementation used selected libraries but given the experimental nature of these APIs it
+						//	seems best to anticipate the library structures to evolve
+						var libraries = [];
+						for (var i=0; i<_libraries.length; i++) {
+							libraries.push(_libraries[i]);
+						}
 
 						//	TODO	duplicates jsh.file.Searchpath; could push that logic up
 						Packages.java.lang.System.setProperty("kotlin.script.classpath", libraries.map(function(library) {
@@ -206,10 +202,13 @@
 							$slime.classpath.add({ _file: library });
 						});
 
-						var factory = new Packages.org.jetbrains.kotlin.script.jsr223.KotlinJsr223JvmLocalScriptEngineFactory();
+						var factory = new Packages.org.jetbrains.kotlin.mainKts.jsr223.KotlinJsr223MainKtsScriptEngineFactory();
 
 						return {
 							run: function(code,scope) {
+								var _context = Packages.java.lang.Thread.currentThread().getContextClassLoader();
+								$slime.classpath.setAsThreadContextClassLoaderFor(Packages.java.lang.Thread.currentThread());
+								//Packages.java.lang.Thread.currentThread().setContextClassLoader($slime.classpath);
 								var kotlinc = factory.getScriptEngine();
 
 								for (var x in scope) {
@@ -221,6 +220,7 @@
 								var resource = getCode(code);
 								var string = resource.read(String);
 								var result = kotlinc.eval(string);
+								Packages.java.lang.Thread.currentThread().setContextClassLoader(_context);
 								return result;
 							}
 						};

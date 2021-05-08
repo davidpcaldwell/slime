@@ -759,6 +759,8 @@
 					//	TODO	determine whether this should be switched to jar._file; used by servlet plugin to put Tomcat classes
 					//			in classpath
 					_classpath.add(Packages.inonit.script.engine.Code.Loader.create(p._file));
+				} else if (p._file && !p._file.exists()) {
+					//	do nothing
 				} else if (p.slime) {
 					if (p.slime.loader) {
 						_classpath.add(p.slime.loader.java.adapt().child("$jvm/classes"));
