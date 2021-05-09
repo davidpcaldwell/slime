@@ -228,16 +228,32 @@
 
 					return {
 						run: function(code,scope,target) {
+							//	TODO	untested
+							if (typeof(code.directory) == "boolean") {
+								code = code.pathname;
+							}
 							return $slime.run(getCode(code),scope,target);
 						},
+						//	TODO	seems to be undocumented in type system, may be unused
 						value: function(code,scope,target) {
+							//	TODO	untested
+							if (typeof(code.directory) == "boolean") {
+								code = code.pathname;
+							}
 							return $slime.value(getCode(code),scope,target);
 						},
 						file: function(code,$context) {
+							//	TODO	untested
+							if (typeof(code.directory) == "boolean") {
+								code = code.pathname;
+							}
 							return $slime.file(getCode(code),$context);
 						},
 						module: function(pathname) {
 							var format = {};
+							if (typeof(pathname.directory) == "boolean") {
+								pathname = pathname.pathname;
+							}
 							if (pathname.directory) {
 								if (!pathname.directory.getFile("module.js")) {
 									return null;

@@ -300,8 +300,12 @@ namespace slime {
 
         (
             function(fifty: slime.fifty.test.kit) {
-                fifty.tests.runtime = {};
-                fifty.tests.runtime.exports = {};
+                fifty.tests.runtime = {
+                    exports: {}
+                };
+                fifty.tests.runtime.types = {
+                    exports: {}
+                };
             }
         //@ts-ignore
         )(fifty);
@@ -482,10 +486,19 @@ namespace slime {
 
         (
             function(
-                $loader: slime.fifty.test.$loader,
-                verify: slime.fifty.test.verify,
-                tests: any
+                fifty: slime.fifty.test.kit
             ) {
+                var tests = fifty.tests;
+                var verify = fifty.verify;
+                var $loader = fifty.$loader;
+
+                tests.runtime.types.exports.Loader = function(it: Exports["Loader"]) {
+                    verify(it).is.type("function");
+                    var tools: { [x: string]: any } = it.tools;
+                    verify(tools).is.type("object");
+                    verify(tools).evaluate.property("toExportScope").is.type("function");
+                };
+
                 tests.loader = function() {
                     run(tests.loader.source);
                     run(tests.loader.closure);
@@ -546,7 +559,7 @@ namespace slime {
                 }
             }
         //@ts-ignore
-        )($loader,verify,tests)
+        )(fifty)
 
         export interface Exports {
             run: any

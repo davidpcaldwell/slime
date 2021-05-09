@@ -147,8 +147,12 @@
 			environment: Object.assign({}, environment, { module: jsh.java })
 		}));
 
-		suite.add("jrunscript/io/main", new jsh.unit.html.Part({
+		suite.add("jrunscript/io/module", new jsh.unit.html.Part({
 			pathname: SRC.getRelativePath("jrunscript/io/api.html")
+		}));
+
+		suite.add("jrunscript/io/jsh", FiftyPart({
+			file: SRC.getFile("jrunscript/io/plugin.jsh.fifty.ts")
 		}));
 
 		suite.add("jrunscript/io/mime", new jsh.unit.html.Part({
@@ -260,9 +264,13 @@
 			pathname: SRC.getRelativePath("jsh/tools/install/plugin.jsh.api.html")
 		}));
 
-		suite.add("jsh/jsh.loader", new jsh.unit.html.Part({
+		suite.add("jsh/jsh.loader/jsapi", new jsh.unit.html.Part({
 			pathname: SRC.getRelativePath("jsh/loader/loader.api.html"),
 			environment: environment
+		}));
+
+		suite.add("jsh/jsh.loader/fifty", FiftyPart({
+			file: SRC.getFile("jsh/loader/jsh.fifty.ts")
 		}));
 
 		suite.add("jsh/jsh.shell/main", new jsh.unit.html.Part({

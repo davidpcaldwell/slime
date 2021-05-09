@@ -11,72 +11,86 @@
 //	Contributor(s):
 //	END LICENSE
 
-plugin({
-	isReady: function() {
-		return jsh.js && jsh.java;
-	},
-	load: function() {
-		var poi = $slime.getLibraryFile("poi");
-
-		if (poi) {
-			var addLibDirectory = function(dir) {
-				jsh.java.Array.adapt(dir.listFiles()).forEach(function(_file) {
-					if (_file.getName().endsWith(".jar")) {
-						$slime.classpath.add({ jar: { _file: _file }});
-					}
-				});
-			};
-
-			addLibDirectory(new Packages.java.io.File(poi, "lib"));
-			addLibDirectory(new Packages.java.io.File(poi, "ooxml-lib"));
-			addLibDirectory(poi);
-		}
-
-		jsh.io = $loader.module("module.js", {
-			$slime: {
-				io: $slime.io,
-				mime: $slime.mime,
-				Loader: $slime.Loader,
-				Resource: $slime.Resource
+//@ts-check
+(
+	/**
+	 *
+	 * @param { slime.jrunscript.Packages } Packages
+	 * @param { slime.jsh.plugin.$slime } $slime
+	 * @param { slime.jsh.plugin.plugin } plugin
+	 * @param { slime.Loader } $loader
+	 * @param { slime.jsh.Global } jsh
+	 */
+	function(Packages,$slime,plugin,$loader,jsh) {
+		plugin({
+			isReady: function() {
+				return Boolean(jsh.js && jsh.java);
 			},
-			api: {
-				js: jsh.js,
-				java: jsh.java
+			load: function() {
+				var poi = $slime.getLibraryFile("poi");
+
+				if (poi) {
+					var addLibDirectory = function(dir) {
+						jsh.java.Array.adapt(dir.listFiles()).forEach(function(_file) {
+							if (_file.getName().endsWith(".jar")) {
+								$slime.classpath.add({ jar: { _file: _file }});
+							}
+						});
+					};
+
+					addLibDirectory(new Packages.java.io.File(poi, "lib"));
+					addLibDirectory(new Packages.java.io.File(poi, "ooxml-lib"));
+					addLibDirectory(poi);
+				}
+
+				jsh.io = $loader.module("module.js", {
+					$slime: {
+						io: $slime.io,
+						mime: $slime.mime,
+						Loader: $slime.Loader,
+						Resource: $slime.Resource
+					},
+					api: {
+						js: jsh.js,
+						java: jsh.java
+					}
+				})
+			}
+		});
+
+		plugin({
+			isReady: function() {
+				return Boolean(jsh.js && jsh.js.web && jsh.io && jsh.io.mime);
+			},
+			load: function() {
+				jsh.js.web.Form.Multipart = function(o) {
+					var parts = o.controls.map(function(control) {
+						if (typeof(control.value) == "string") {
+							return { name: control.name, string: control.value };
+						} else if (control.value && control.value.pathname) {
+							return {
+								name: control.name,
+								filename: control.value.pathname.basename,
+								type: control.value.type.toString(),
+								stream: control.value.read.binary()
+							};
+						} else {
+							return {
+								name: control.name,
+								filename: control.value.filename,
+								type: control.value.type,
+								stream: control.value.stream
+							};
+						}
+					});
+
+					return jsh.io.mime.Multipart({
+						subtype: "form-data",
+						parts: parts
+					});
+				}
 			}
 		})
 	}
-});
-
-plugin({
-	isReady: function() {
-		return jsh.js && jsh.js.web && jsh.io && jsh.io.mime;
-	},
-	load: function() {
-		jsh.js.web.Form.Multipart = function(o) {
-			var parts = o.controls.map(function(control) {
-				if (typeof(control.value) == "string") {
-					return { name: control.name, string: control.value };
-				} else if (control.value && control.value.pathname) {
-					return {
-						name: control.name,
-						filename: control.value.pathname.basename,
-						type: control.value.type.toString(),
-						stream: control.value.read.binary()
-					};
-				} else {
-					return {
-						name: control.name,
-						filename: control.value.filename,
-						type: control.value.type,
-						stream: control.value.stream
-					};
-				}
-			});
-
-			return new jsh.io.mime.Multipart({
-				subtype: "form-data",
-				parts: parts
-			});
-		}
-	}
-})
+//@ts-ignore
+)(Packages,$slime,plugin,$loader,jsh);
