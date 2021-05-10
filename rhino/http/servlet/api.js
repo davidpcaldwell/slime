@@ -306,32 +306,18 @@
 		}).call(this);
 
 		scope.httpd = {
-			$java: void(0),
-			loader: void(0),
-			js: void(0),
-			java: void(0),
-			io: void(0),
-			web: void(0),
+			$java: (function() {
+				if ($java && $servlet) return $java;
+				if (isScript($host)) return $host.$java;
+			})(),
+			loader: (loaders.container) ? loaders.container : void(0),
+			js: api.js,
+			java: api.java,
+			io: api.io,
+			web: api.web,
 			http: void(0),
 			Handler: void(0)
 		};
-		scope.httpd.$java = (function() {
-			if ($java && $servlet) return $java;
-			if (isScript($host)) return $host.$java;
-		})();
-
-		if (loaders.container) {
-			scope.httpd.loader = loaders.container;
-		}
-
-		scope.httpd.js = api.js;
-		scope.httpd.java = api.java;
-		scope.httpd.io = api.io;
-		scope.httpd.web = api.web;
-
-		if (!loaders.api.get("loader.js")) {
-			throw new Error("loader.js not found in " + loaders.api);
-		}
 
 		loaders.api.run(
 			"loader.js",

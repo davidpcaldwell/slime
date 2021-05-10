@@ -20,6 +20,17 @@ namespace slime.servlet {
 				NOT_FOUND: () => Response
 				SEE_OTHER: () => Response
 				javascript: (code: string) => Response
+				cookie: (p: {
+					name: string
+					value: string
+					expires?: Date
+					maxAge?: number
+					domain?: string
+					path?: string
+					secure?: boolean
+					httpOnly?: boolean
+					sameSite?: "Strict" | "Lax" | "None"
+				}) => slime.servlet.Header
 			}
 		}
 	}

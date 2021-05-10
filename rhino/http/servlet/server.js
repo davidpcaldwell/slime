@@ -120,6 +120,25 @@
 				}
 				this.headers = headers;
 
+				this.cookies = (function(_cookies) {
+					var rv = [];
+					if (_cookies === null) return rv;
+
+					for (var i=0; i<_cookies.length; i++) {
+						var _c = _cookies[i];
+						rv.push({
+							name: String(_c.getName()),
+							value: String(_c.getValue()),
+							maxAge: _c.getMaxAge(),
+							domain: String(_c.getDomain()),
+							path: String(_c.getPath()),
+							secure: _c.getSecure(),
+							httpOnly: _c.isHttpOnly()
+						});
+					}
+					return rv;
+				})(_request.getCookies())
+
 				var user = (function() {
 					var _principal = _request.getUserPrincipal();
 					if (!_principal) return void(0);
@@ -170,6 +189,7 @@
 					script = reloaded;
 				};
 
+				/** @type { slime.servlet.internal.native.Servlet.Script["service"] } */
 				this.service = function(_request,_response) {
 					debug("Received Java request: method=" + _request.getMethod() + " path=" + _request.getPathInfo());
 					try {
@@ -199,7 +219,7 @@
 								_response.setContentType(String(response.body["type"]));
 							}
 							if (response.body && typeof(response.body["length"]) == "number") {
-								_response.setContentLength(String(response.body["length"]));
+								_response.setContentLength(response.body["length"]);
 							}
 							if (response.body && response.body["modified"] instanceof Date) {
 								//	TODO	basically untested

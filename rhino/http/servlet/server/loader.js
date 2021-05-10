@@ -25,64 +25,69 @@
 		$exports.http.Response = Object.assign(function() {
 			throw new Error("Reserved for future use.");
 		}, {
-			text: void(0),
-			resource: void(0),
-			NOT_FOUND: void(0),
-			SEE_OTHER: void(0),
-			javascript: void(0)
-		});
-
-		$exports.http.Response.text = function(string) {
-			return {
-				status: {
-					code: 200
-				},
-				headers: [],
-				body: {
-					type: "text/plain",
-					string: string
-				}
-			};
-		};
-
-		$exports.http.Response.javascript = function(p) {
-			if (typeof(p) == "string") {
+			text: function(string) {
+				return {
+					status: {
+						code: 200
+					},
+					headers: [],
+					body: {
+						type: "text/plain",
+						string: string
+					}
+				};
+			},
+			resource: function(body) {
 				return {
 					status: { code: 200 },
-					body: {
-						type: "text/javascript",
-						string: p
+					body: body
+				};
+			},
+			NOT_FOUND: function() {
+				return {
+					status: {
+						code: 404
 					}
 				}
-			} else {
-				throw new Error("'p' must be string");
-			}
-		}
-
-		$exports.http.Response.resource = function(body) {
-			return {
-				status: { code: 200 },
-				body: body
-			};
-		};
-
-		$exports.http.Response.NOT_FOUND = function() {
-			return {
-				status: {
-					code: 404
+			},
+			SEE_OTHER: function(p) {
+				var rv = {
+					status: { code: 303 },
+					headers: [
+						{ name: "Location", value: p.location }
+					]
+				};
+				return rv;
+			},
+			javascript: function(p) {
+				if (typeof(p) == "string") {
+					return {
+						status: { code: 200 },
+						body: {
+							type: "text/javascript",
+							string: p
+						}
+					}
+				} else {
+					throw new Error("'p' must be string");
 				}
+			},
+			/** @type { slime.servlet.httpd["http"]["Response"]["cookie"] } */
+			cookie: function(p) {
+				var name = "Set-Cookie";
+				var tokens = [
+					p.name + "=" + p.value
+				];
+				if (p.expires) tokens.push("Expires=" + p.expires.toUTCString());
+				if (p.maxAge) tokens.push("Max-Age=" + p.maxAge);
+				if (p.domain) tokens.push("Domain=" + p.domain);
+				if (p.path) tokens.push("Path=" + p.path);
+				if (p.secure) tokens.push("Secure");
+				if (p.httpOnly) tokens.push("HttpOnly");
+				if (p.sameSite) tokens.push("SameSite=" + p.sameSite);
+				return { name: name, value: tokens.join("; ") };
 			}
-		};
-
-		$exports.http.Response.SEE_OTHER = function(p) {
-			var rv = {
-				status: { code: 303 },
-				headers: [
-					{ name: "Location", value: p.location }
-				]
-			};
-			return rv;
-		}
+		});
 
 		$exports.Handler = Object.assign(function(p) {
 			throw new Error("Reserved for future use.");

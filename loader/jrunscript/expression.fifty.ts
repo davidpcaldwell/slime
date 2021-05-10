@@ -167,6 +167,7 @@ namespace slime.jrunscript {
 				export interface Reader {
 				}
 				export interface Writer {
+					write(string: string)
 				}
 				export interface PrintStream extends OutputStream {
 				}
