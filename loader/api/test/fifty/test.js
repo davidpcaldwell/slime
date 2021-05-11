@@ -200,6 +200,7 @@
 				jsh: (scopes.jsh) ? $api.Object.compose(
 					scopes.jsh,
 					{
+						//	TODO	What the heck is this doing? Can't we just provide the one from scope-jsh.ts?
 						$slime: (loader && loader.jsh) ? loader.jsh.$slime : void(0)
 					}
 				) : void(0)
