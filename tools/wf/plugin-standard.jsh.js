@@ -212,7 +212,9 @@
 							if (item.branch && item.status.branch.name != item.branch) {
 								jsh.shell.console(item.path + ": tracking branch " + item.branch + ", but checked out branch is " + item.status.branch.name);
 							}
-							if (item.state.behind.length) {
+							if (!item.state) {
+								jsh.shell.console(item.path + ": no remote tracking branch");
+							} else if (item.state.behind.length) {
 								jsh.shell.console(item.path + ": behind remote tracked branch " + remote + "/" + item.branch + " (" + item.state.behind.length + " commits)");
 							}
 							if (item.status.paths) {
