@@ -28,6 +28,7 @@ namespace slime.jrunscript.shell.browser {
 			location?: slime.jrunscript.file.Pathname
 			directory?: slime.jrunscript.file.Directory
 			proxy?: slime.jrunscript.shell.browser.ProxyTools
+			hostrules?: string[]
 			install?: boolean
 		}) => any
 	}

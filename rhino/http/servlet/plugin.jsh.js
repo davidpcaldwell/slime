@@ -247,17 +247,25 @@
 							if (p.https) {
 								var file = keygen();
 								var _https = new Packages.org.apache.catalina.connector.Connector();
+								//	Do we need protocol? https://www.namecheap.com/support/knowledgebase/article.aspx/9441/33/installing-an-ssl-certificate-on-tomcat/
 								var hport = (p.https.port) ? p.https.port : getOpenPort();
 								_https.setPort(hport);
-								_https.setSecure(true);
+								//	maxThreads
 								_https.setScheme("https");
+								_https.setSecure(true);
+								_https.setAttribute("SSLEnabled", "true");
 								//	TODO	some DRY violations; see keygen() above
-								_https.setAttribute("keyAlias", "tomcat");
-								_https.setAttribute("keystorePass", "inonit");
-								_https.setAttribute("keystoreFile", file.toString());
+								if (!p.https.keystore) {
+									_https.setAttribute("keystoreFile", file.toString());
+									_https.setAttribute("keystorePass", "inonit");
+									_https.setAttribute("keyAlias", "tomcat");
+								} else {
+									_https.setAttribute("keystoreFile", p.https.keystore.file.toString());
+									_https.setAttribute("keystorePass", p.https.keystore.password);
+									_https.setAttribute("keystoreType", "PKCS12");
+								}
 								_https.setAttribute("clientAuth", "false");
 								_https.setAttribute("sslProtocol", "TLS");
-								_https.setAttribute("SSLEnabled", "true");
 								tomcat.getService().addConnector(_https);
 								this.https = {
 									port: hport

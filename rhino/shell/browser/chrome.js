@@ -115,6 +115,11 @@
 							pacserver.start();
 							args.push("--proxy-pac-url=" + pacserver.url);
 						}
+						if (u.hostrules) {
+							var value = u.hostrules.join(",");
+							Packages.java.lang.System.err.println("hostrules = " + value);
+							args.push("--host-rules=" + value);
+						}
 						if (m.profile) args.push("--profile-directory=" + m.profile);
 						if (m.incognito) args.push("--incognito");
 					};

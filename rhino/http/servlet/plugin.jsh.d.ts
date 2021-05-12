@@ -53,6 +53,10 @@ namespace slime.jsh.httpd {
 
 			https?: {
 				port: number
+				keystore?: {
+					file: slime.jrunscript.file.File
+					password: string
+				}
 			}
 		}
 	}
