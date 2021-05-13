@@ -25,7 +25,7 @@
 		}
 
 		jsh.shell.tools.node.require();
-		jsh.shell.tools.node.modules.require({ name: "typescript", version: parameters.options.version });
+		jsh.shell.tools.node["modules"].require({ name: "typescript", version: parameters.options.version });
 
 		//	TODO	should jsh.shell.tools.node.require return an installation? does it? Should the below be part of it?
 		var nodeBin = jsh.script.file.parent.parent.getSubdirectory("local/jsh/lib/node/bin");

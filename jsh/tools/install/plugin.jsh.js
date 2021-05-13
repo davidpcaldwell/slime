@@ -516,6 +516,7 @@
 				return Boolean(plugins.node && jsh.file && jsh.shell && jsh.shell.tools && jsh.tools.install);
 			},
 			load: function() {
+				/** @type { slime.jrunscript.node.Exports } */
 				var node = plugins.node.module({
 					context: {
 						module: {
@@ -533,52 +534,74 @@
 
 					var location = jsh.shell.jsh.lib.getRelativePath("node");
 
+					/** @type { slime.jrunscript.node.Installation } */
 					var installed = node.at({ location: location });
+
+					function update() {
+						jsh.shell.tools.node = Object.assign(
+							node.install({
+								location: location,
+								update: true
+							}),
+							{
+								update: update,
+								require: require
+							}
+						);
+					}
+
+					function require() {
+						jsh.shell.jsh.require({
+							satisfied: function() {
+								return Boolean(jsh.shell.tools.node["version"])
+							},
+							install: function() {
+								jsh.shell.tools.node["install"]();
+							}
+						});
+					};
 
 					if (installed) {
 						//	TODO	update?
-						jsh.shell.tools.node = installed;
-
-						jsh.shell.tools.node.update = function() {
-							jsh.shell.tools.node = node.install({
-								location: location,
-								update: true
-							});
-						}
+						jsh.shell.tools.node = Object.assign(
+							installed,
+							{
+								update: update,
+								require: require
+							}
+						);
 					} else {
 						jsh.shell.tools.node = {
 							install: function(p) {
 								if (!p) p = {};
-								jsh.shell.tools.node = node.install({
-									location: location,
-									update: p.update
-								}, {
-									console: function(e) {
-										jsh.shell.console(e.detail);
-									}
-								});
-								jsh.shell.tools.node.require = function(){};
-								jsh.shell.tools.node.update = function() {
-									throw new Error("Unimplemented.");
-								}
-							}
+								jsh.shell.tools.node = Object.assign(
+									node.install(
+										{
+											location: location,
+											update: p.update
+										},
+										{
+											console: function(e) {
+												jsh.shell.console(e.detail);
+											}
+										}
+									),
+									{ update: update, require: require }
+								)
+							},
+							require: require
 						};
 					}
-					jsh.shell.tools.node.require = function() {
-						jsh.shell.jsh.require({
-							satisfied: function() {
-								return Boolean(jsh.shell.tools.node.version)
-							},
-							install: function() {
-								jsh.shell.tools.node.install();
-							}
-						});
-					};
-					if (jsh.shell.tools.node.modules) {
-						jsh.shell.tools.node.modules.require = function(p) {
+					if (jsh.shell.tools.node["modules"]) {
+						/** @type { slime.jrunscript.node.Installation["modules"] } */
+						var modules = jsh.shell.tools.node["modules"];
+
+						//	Wraps the existing require and makes it pertain to the entire shell. Not sure whether this is necessary;
+						//	maybe for something like TypeScript that is built into the shell itself?
+						modules.require = function(p) {
 							jsh.shell.jsh.require({
 								satisfied: function() {
-									var now = jsh.shell.tools.node.modules.installed[p.name];
+									var now = modules.installed[p.name];
 									if (!now) return false;
 									if (p.version) {
 										return now.version == p.version;
@@ -588,11 +611,11 @@
 								},
 								install: function() {
 									if (p.version) {
-										jsh.shell.tools.node.modules.install({
+										modules.install({
 											name: p.name + "@" + p.version
 										});
 									} else {
-										jsh.shell.tools.node.modules.install({
+										modules.install({
 											name: p.name
 										});
 									}

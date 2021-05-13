@@ -98,7 +98,7 @@
 			}
 
 			jsh.shell.tools.node.require();
-			jsh.shell.tools.node.modules.require({ name: "eslint" });
+			jsh.shell.tools.node["modules"].require({ name: "eslint" });
 
 			var isEclipseProject = Boolean($context.base.getSubdirectory(".settings"));
 			if (isEclipseProject) {

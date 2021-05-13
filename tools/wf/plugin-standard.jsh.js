@@ -131,7 +131,7 @@
 
 				if ($context.base.getFile(".eslintrc.json")) {
 					jsh.shell.tools.node.require();
-					jsh.shell.tools.node.modules.require({ name: "eslint" });
+					jsh.shell.tools.node["modules"].require({ name: "eslint" });
 					$exports.eslint = function() {
 						jsh.shell.jsh({
 							shell: jsh.shell.jsh.src,

@@ -43,7 +43,10 @@ namespace slime.jrunscript.file {
 		getRelativePath: (string) => Pathname,
 		getFile: (string) => File,
 		getSubdirectory: (string) => Directory,
-		createTemporary: (p?: any) => Node,
+		createTemporary: {
+			(p: { directory: true, prefix?: string, suffix?: string }): Directory
+			(p?: { directory?: false, prefix?: string, suffix?: string }): File
+		}
 		list: {
 			(mode?: {
 				type?: any

@@ -15,9 +15,17 @@ namespace slime.jrunscript.node {
 
 	interface Installation {
 		version: Version
-		run: Function
+		run: <T>(p: {
+			command?: string
+			project?: slime.jrunscript.file.Directory
+			arguments?: Parameters<slime.jrunscript.shell.Exports["run"]>[0]["arguments"]
+			directory?: Parameters<slime.jrunscript.shell.Exports["run"]>[0]["directory"]
+			environment?: Parameters<slime.jrunscript.shell.Exports["run"]>[0]["environment"]
+			stdio?: Parameters<slime.jrunscript.shell.Exports["run"]>[0]["stdio"]
+			evaluate?: (p: any) => T
+		}) => T
 		modules: {
-			installed: { [key: string]: object },
+			installed: { [key: string]: { version: string } },
 			install: Function,
 			require: Function,
 			uninstall: Function

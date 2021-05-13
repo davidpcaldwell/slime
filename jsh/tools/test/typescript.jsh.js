@@ -15,7 +15,7 @@
 				})
 				: jsh.shell.TMPDIR.createTemporary({ directory: true });
 
-			jsh.shell.tools.node.run({
+			jsh.shell.tools.node["run"]({
 				command: "tsc",
 				arguments: function(rv) {
 					rv.push("--outDir", output);

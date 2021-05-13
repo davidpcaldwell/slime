@@ -11,7 +11,11 @@ namespace slime.servlet {
 				loader: slime.Loader
 				index?: string
 			}) => slime.servlet.handler
-			Proxy: any
+			Proxy: (o: {
+				client: any
+				target: { host: string, port: number }
+				https: { host: string, port: number }
+			}) => slime.servlet.handler
 		}
 		http: {
 			Response: {

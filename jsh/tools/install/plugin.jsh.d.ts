@@ -30,7 +30,17 @@ namespace slime.jsh.shell.tools {
 		ncdbg: any
 		kotlin: any
 		jsyaml: any
-		node: any
+		node: (
+			(
+				slime.jrunscript.node.Installation & { update: () => void }
+				|
+				{
+					install: (p?: { update?: boolean }) => void
+				}
+			) & {
+				require: () => void
+			}
+		)
 		javamail: {
 			install: () => void
 			require: () => void

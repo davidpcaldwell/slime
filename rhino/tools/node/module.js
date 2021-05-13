@@ -44,6 +44,7 @@
 				return $context.module.file.Searchpath(elements);
 			})();
 
+			/** @type { slime.jrunscript.node.Installation["run"] } */
 			this.run = function(p) {
 				var command = (function() {
 					if (p.command) {

@@ -338,7 +338,7 @@
 						require: function(p) {
 							var project = (p && p.project) ? p.project : base;
 							jsh.shell.tools.node.require();
-							jsh.shell.tools.node.modules.require({ name: "typescript", version: getVersion(project) });
+							jsh.shell.tools.node["modules"].require({ name: "typescript", version: getVersion(project) });
 						},
 						tsc: function(p) {
 							var project = (p && p.project) ? p.project : base;
