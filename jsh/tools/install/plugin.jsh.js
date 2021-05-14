@@ -321,7 +321,8 @@
 							location.directory.remove();
 						}
 						jsh.tools.install.install({
-							url: "https://downloads.lightbend.com/scala/2.13.0/scala-2.13.0.tgz",
+							//	UNIX only
+							url: "https://downloads.lightbend.com/scala/2.13.5/scala-2.13.5.tgz",
 							to: location
 						})
 					};
