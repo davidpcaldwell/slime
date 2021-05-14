@@ -16,7 +16,7 @@
 	/**
 	 * @param { slime.runtime.internal.$engine } $engine
 	 * @param { slime.runtime.internal.Code } $slime
-	 * @param { slime.$api.Global & { debugger: any, Filter: any, Map: any, Reduce: any, Method: any, Constructor: any, Key: any, Properties: any, threads: any } } $exports
+	 * @param { slime.$api.Global } $exports
 	 */
 	function($engine,$slime,$exports) {
 		var load = function(name,$context) {
@@ -64,42 +64,19 @@
 			}
 		};
 
-		$exports.Filter = function(f) {
-		};
-		$exports.Filter.and = function() {
-			var functions = arguments;
-			for (var i=0; i<functions.length; i++) {
-				if (typeof(functions[i]) != "function") throw new TypeError("All arguments must be functions; index " + i + " is not.");
+		$exports.Filter = Object.assign(
+			function(f) {
+			},
+			{
+				and: void(0),
+				or: void(0),
+				not: void(0),
+				property: void(0)
 			}
-			return function() {
-				for (var i=0; i<functions.length; i++) {
-					if (!functions[i].apply(this,arguments)) {
-						return false;
-					}
-				}
-				return true;
-			}
-		};
-		$exports.Filter.or = function() {
-			var functions = arguments;
-			for (var i=0; i<functions.length; i++) {
-				if (typeof(functions[i]) != "function") throw new TypeError("All arguments must be functions; index " + i + " is not.");
-			}
-			return function() {
-				for (var i=0; i<functions.length; i++) {
-					if (functions[i].apply(this,arguments)) {
-						return true;
-					}
-				}
-				return false;
-			}
-		};
-		$exports.Filter.not = function(f) {
-			return function(v) {
-				var b = Boolean(f(v));
-				return !b;
-			}
-		};
+		);
+		$exports.Filter.and = $exports.Function.Predicate.not;
+		$exports.Filter.or = $exports.Function.Predicate.or;
+		$exports.Filter.not = $exports.Function.Predicate.not;
 		$exports.Filter.property = {
 			is: function(name,value) {
 				return function(v) {

@@ -88,7 +88,7 @@ namespace slime.jrunscript.git {
 
 					var captor = fifty.$api.Events.Captor(events);
 
-					var isType = function(type: string): slime.$api.Function.Predicate<slime.$api.Event<any>> {
+					var isType = function(type: string): slime.$api.fp.Predicate<slime.$api.Event<any>> {
 						return $api.Function.pipe(
 							$api.Function.property("type"),
 							$api.Function.Predicate.is(type)

@@ -2,8 +2,8 @@
 (
 	/**
 	 *
-	 * @param { { $api: any, old: Partial<slime.$api.Function> } } $context
-	 * @param { { Function: Partial<slime.$api.Function> }} $exports
+	 * @param { { $api: any, old: Partial<slime.$api.fp.Exports> } } $context
+	 * @param { { Function: Partial<slime.$api.fp.Exports> }} $exports
 	 */
 	function($context,$exports) {
 		$exports.Function = $context.old.Function;
@@ -149,10 +149,18 @@
 			}
 		};
 
-		$exports.Function.filter = {
-			/** @type { slime.$api.Function["filter"]["or"] } */
+		$exports.Function.Predicate = {
+			is: function(value) {
+				return function(p) {
+					return p === value;
+				}
+			},
+			/** @type { slime.$api.fp.Exports["filter"]["or"] } */
 			or: function() {
 				var functions = Array.prototype.slice.call(arguments);
+				for (var i=0; i<functions.length; i++) {
+					if (typeof(functions[i]) != "function") throw new TypeError("All arguments must be functions; index " + i + " is not.");
+				}
 				return function(p) {
 					for (var i=0; i<functions.length; i++) {
 						if (functions[i](p)) return true;
@@ -162,6 +170,9 @@
 			},
 			and: function() {
 				var functions = Array.prototype.slice.call(arguments);
+				for (var i=0; i<functions.length; i++) {
+					if (typeof(functions[i]) != "function") throw new TypeError("All arguments must be functions; index " + i + " is not.");
+				}
 				return function(p) {
 					for (var i=0; i<functions.length; i++) {
 						if (!functions[i](p)) return false;
@@ -174,15 +185,13 @@
 					return !f(p);
 				}
 			}
-		};
-
-		$exports.Function.Predicate = {
-			is: function(value) {
-				return function(p) {
-					return p === value;
-				}
-			}
 		}
+
+		$exports.Function.filter = {
+			or: $exports.Function.Predicate.or,
+			and: $exports.Function.Predicate.and,
+			not: $exports.Function.Predicate.not
+		};
 
 		$exports.Function.Object = {
 			entries: function(o) {
@@ -270,7 +279,7 @@
 		};
 
 		$exports.Function.impure = {
-			/** @type { slime.$api.Function["impure"]["revise"] } */
+			/** @type { slime.$api.fp.Exports["impure"]["revise"] } */
 			revise: function(f) {
 				if (f === null || f === void(0)) return $exports.Function.identity;
 				return function(p) {

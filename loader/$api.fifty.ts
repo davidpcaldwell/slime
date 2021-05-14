@@ -102,6 +102,32 @@ namespace slime.$api {
 			(o: object, property: string): void
 			<T extends slime.alias.GlobalFunction>(f: T): T
 		}
+		debugger: any
+		Filter: {
+			/**
+			 * @deprecated Use {@link slime.$api.Global["filter"]["and"]}. }
+			 */
+			and: $api.fp.Exports["filter"]["and"]
+			/**
+			 * @deprecated Use {@link slime.$api.Global["filter"]["or"]}. }
+			 */
+			or: $api.fp.Exports["filter"]["or"]
+			/**
+			 * @deprecated Use {@link slime.$api.Global["filter"]["not"]}. }
+			 */
+			not: $api.fp.Exports["filter"]["not"]
+			property: {
+				is: any
+				equals: any
+			}
+		}
+		Map: any
+		Reduce: any
+		Method: any
+		Constructor: any
+		Key: any
+		Properties: any
+		threads: any
 	}
 
 	export interface Event<T> {
