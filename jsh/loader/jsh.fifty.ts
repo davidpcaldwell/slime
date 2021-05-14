@@ -9,11 +9,23 @@ namespace slime.jsh {
 		//@ts-ignore
 		)(fifty);
 
+		/**
+		 * A script to be executed. Can be a {@link slime.resource.Descriptor} which fully describes the code to be executed, but
+		 * also can be specified using several other types. If the value is a {@link slime.jrunscript.file.Pathname}, the script
+		 * will be read from that location in the file system. If the value is a {@link slime.jrunscript.file.File}, the script
+		 * will be read from that file. If it is a {@link slime.web.Url}, it will be loaded over HTTP. And if it is a
+		 * `string`, the loader will:
+		 * * See whether it "looks like" a URL, and if so, try to load the script over HTTP,
+		 * * See whether it represents an absolute path on the filesystem, and if so, load the code from that file,
+		 * * Otherwise, treat it as a path relative to the main script (see {@link slime.jsh.script}) and try to load it from there.
+		 */
+		export type Code = slime.resource.Descriptor | slime.jrunscript.file.Pathname | slime.jrunscript.file.File | slime.web.Url | string
+
 		export interface Exports {
-			run: any
-			value: any
-			file: any
-			module: any
+			run: (code: Code, scope?: { [name: string]: any }, target?: object) => void
+			value: (code: Code, scope?: { [name: string]: any }, target?: object) => any
+			file: (code: Code, context?: { [name: string]: any }, target?: object) => any
+			module: (code: Code | slime.jrunscript.file.Directory, context?: { [name: string]: any }, target?: object) => any
 		}
 
 		(
@@ -27,6 +39,7 @@ namespace slime.jsh {
 				type exports = { foo: string }
 
 				type pathsExports = { a: number }
+				type pathsFileExports = { value: string }
 
 				tests.exports.module = function() {
 					var byFullPathname: exports = jsh.loader.module(fifty.$loader.getRelativePath("test/code/module.js"));
@@ -42,28 +55,43 @@ namespace slime.jsh {
 					verify(byModuleDirectory).foo.is("bar");
 
 					var paths: {
-						pathname: pathsExports,
-						relative: pathsExports,
-						absolute: pathsExports,
-						http: { base: pathsExports, file: pathsExports }
-						url: { base: pathsExports, file: pathsExports }
+						module: {
+							pathname: pathsExports
+							relative: pathsExports
+							absolute: pathsExports
+							http: { base: pathsExports, file: pathsExports }
+							url: { base: pathsExports, file: pathsExports }
+						},
+						file: {
+							pathname: pathsFileExports
+							relative: pathsFileExports
+							absolute: pathsFileExports
+							http: pathsFileExports
+							url: pathsFileExports
+						}
 					} = (function() {
 						var result = jsh.shell.jsh({
 							shell: jsh.shell.jsh.src,
-							script: fifty.$loader.getRelativePath("test/jsh-loader-module/main.jsh.js").file,
+							script: fifty.$loader.getRelativePath("test/jsh-loader-code/main.jsh.js").file,
 							stdio: {
 								output: String
 							}
 						});
 						return JSON.parse(result.stdio.output);
 					})();
-					verify(paths).pathname.a.is(2);
-					verify(paths).relative.a.is(2);
-					verify(paths).absolute.a.is(2);
-					verify(paths).http.base.a.is(2);
-					verify(paths).http.file.a.is(2);
-					verify(paths).url.base.a.is(2);
-					verify(paths).url.file.a.is(2);
+					verify(paths).module.pathname.a.is(2);
+					verify(paths).module.relative.a.is(2);
+					verify(paths).module.absolute.a.is(2);
+					verify(paths).module.http.base.a.is(2);
+					verify(paths).module.http.file.a.is(2);
+					verify(paths).module.url.base.a.is(2);
+					verify(paths).module.url.file.a.is(2);
+
+					verify(paths).file.pathname.value.is("kindness");
+					verify(paths).file.relative.value.is("kindness");
+					verify(paths).file.absolute.value.is("kindness");
+					verify(paths).file.http.value.is("kindness");
+					verify(paths).file.url.value.is("kindness");
 				}
 			}
 		//@ts-ignore

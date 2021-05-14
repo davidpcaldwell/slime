@@ -390,22 +390,22 @@
 					}
 				};
 
+				/** @type { (location: ReturnType<interpretModuleLocation>) => location is slime.jrunscript.file.Directory } */
+				var isDirectory = function(location) {
+					return typeof(location["pathname"]) == "object" && location["directory"] === true;
+				}
+
+				/** @type { (location: ReturnType<interpretModuleLocation>) => location is slime.jrunscript.file.File } */
+				var isFile = function(location) {
+					return typeof(location["pathname"]) == "object" && location["directory"] === false;
+				}
+
+				/** @type { (location: ReturnType<interpretModuleLocation>) => location is slime.web.Url } */
+				var isUrl = function(location) {
+					return typeof(location["scheme"]) == "string";
+				}
+
 				jsh.loader.module = (function(was) {
-					/** @type { (location: ReturnType<interpretModuleLocation>) => location is slime.jrunscript.file.Directory } */
-					var isDirectory = function(location) {
-						return typeof(location["pathname"]) == "object" && location["directory"] === true;
-					}
-
-					/** @type { (location: ReturnType<interpretModuleLocation>) => location is slime.jrunscript.file.File } */
-					var isFile = function(location) {
-						return typeof(location["pathname"]) == "object" && location["directory"] === false;
-					}
-
-					/** @type { (location: ReturnType<interpretModuleLocation>) => location is slime.web.Url } */
-					var isUrl = function(location) {
-						return typeof(location["scheme"]) == "string";
-					}
-
 					var fromUrl = function(location) {
 						var base = location.resolve("./");
 						var path = (base.toString() == location.toString()) ? "module.js" : location.toString().substring(base.toString().length);
@@ -423,9 +423,9 @@
 						if (typeof(code) == "string") {
 							var location = interpretModuleLocation(code);
 							if (location && isFile(location)) {
-								code = location["pathname"];
+								code = location.pathname;
 							} else if (location && isDirectory(location)) {
-								code = location["pathname"];
+								code = location.pathname;
 							} else if (location && isUrl(location)) {
 								return fromUrl(location).apply(this, arguments);
 							} else {
@@ -435,6 +435,46 @@
 						return was.apply(this,arguments);
 					}
 				})(jsh.loader.module);
+
+				var loadUrl = function(url) {
+					var response = new jsh.http.Client().request({
+						url: url
+					});
+					//	TODO	maybe better error handling?
+					if (response.status.code != 200) return null;
+					//	TODO	the strange remapping below is because of some inconsistency between jrunscript Resource types
+					//			and HTTP client bodies. Need to do some low-level refactoring, possibly.
+					return {
+						type: response.body.type,
+						stream: {
+							binary: response.body.stream
+						}
+					}
+				};
+
+				["file","value","run"].forEach(function(operation) {
+					jsh.loader[operation] = (function(was) {
+						return function(code) {
+							if (typeof(code) == "object" && code.scheme && code.host && code.path) {
+								code = loadUrl(code);
+							}
+							if (typeof(code) == "string") {
+								var location = interpretModuleLocation(code);
+								if (location && isFile(location)) {
+									code = location.pathname;
+								} else if (location && isUrl(location)) {
+									var response = loadUrl(location);
+									if (response) code = response;
+								} else if (location && isDirectory(location)) {
+									throw new TypeError("Cannot " + operation + " code from directory " + location);
+								} else {
+									return jsh.script.loader[operation].apply(jsh.script.loader, arguments);
+								}
+							}
+							return was.apply(this, arguments);
+						}
+					})(jsh.loader[operation]);
+				})
 			}
 		})
 	}

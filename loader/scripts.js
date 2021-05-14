@@ -67,8 +67,7 @@
 		//	TODO	re-work resource.js
 
 		/**
-		 * @param { slime.Resource } object
-		 * @param { any } scope
+		 * @type { slime.runtime.internal.scripts["methods"]["run"] }
 		 */
 		methods.run = function run(object,scope) {
 			if (!object || typeof(object) != "object") {

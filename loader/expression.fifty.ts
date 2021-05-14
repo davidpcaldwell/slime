@@ -24,6 +24,8 @@ interface IteratorReturnResult<TReturn> {
     value: TReturn;
 }
 
+//  TODO    in some version after 4.0.5, this is declared elsewhere
+//@ts-ignore
 type IteratorResult<T, TReturn = any> = IteratorYieldResult<T> | IteratorReturnResult<TReturn>;
 
 interface Iterator<T, TReturn = any, TNext = undefined> {
@@ -261,8 +263,13 @@ namespace slime {
                 Type: Exports["mime"]["Type"],
                 mimeTypeIs: (type: string) => (type: slime.mime.Type) => boolean
             }
+
             export type scripts = {
-                methods: any
+                methods: {
+                    run: (code: slime.Resource, scope: { [name: string]: any }) => void
+                    value: (code: slime.Resource, scope: { [name: string]: any }) => any
+                    file: (code: slime.Resource, context: { [name: string]: any }) => { [x: string]: any }
+                }
                 toExportScope: slime.runtime.Exports["Loader"]["tools"]["toExportScope"]
                 createFileScope: createFileScope
             }
@@ -562,7 +569,7 @@ namespace slime {
         )(fifty)
 
         export interface Exports {
-            run: any
+            run: (code: slime.Resource, scope?: { [name: string]: any }, target?: object ) => void
             file: any
             value: any
             Resource: resource.Factory
