@@ -256,6 +256,8 @@
 									array.push("--list");
 									if (typeof(p.list.fileOption) == "string") {
 										array.push("--" + p.list.fileOption);
+									} else if (typeof(p.list.fileOption) == "undefined") {
+										//	TODO	there is no test for this
 									} else {
 										throw new TypeError("Unimplemented: non-string fileOption");
 									}

@@ -30,6 +30,7 @@
 					if (entry.path == "fifty") return true;
 					if (entry.path == "wf") return true;
 					if (entry.path == "tools/wf") return true;
+					if (entry.path == "LICENSE") return true;
 					if (entry.path == "contributor/hooks/pre-commit") return true;
 					return code.files.isText(entry.node);
 				},
