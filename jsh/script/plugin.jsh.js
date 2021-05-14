@@ -362,6 +362,80 @@
 
 				jsh.shell.getopts = $api.deprecate(jsh.script.getopts);
 			}
+		});
+
+		plugin({
+			isReady: function() {
+				return Boolean(jsh.js && jsh.js.web && jsh.file && jsh.script && jsh.http);
+			},
+			load: function() {
+				/**
+				 * @param { string } string
+				 */
+				var interpretModuleLocation = function(string) {
+					/** @type { slime.web.Exports } */
+					var web = jsh.js.web;
+					//	try to see whether it's an absolute path
+					var location = jsh.file.Pathname(string);
+					if (location.directory) {
+						return location.directory;
+					} else if (location.file) {
+						return location.file;
+					}
+
+					//	then, let's check to see if it's a URL. For now we only support URLs with schemes.
+					var url = web.Url.parse(string);
+					if (url.scheme) {
+						return url;
+					}
+				};
+
+				jsh.loader.module = (function(was) {
+					/** @type { (location: ReturnType<interpretModuleLocation>) => location is slime.jrunscript.file.Directory } */
+					var isDirectory = function(location) {
+						return typeof(location["pathname"]) == "object" && location["directory"] === true;
+					}
+
+					/** @type { (location: ReturnType<interpretModuleLocation>) => location is slime.jrunscript.file.File } */
+					var isFile = function(location) {
+						return typeof(location["pathname"]) == "object" && location["directory"] === false;
+					}
+
+					/** @type { (location: ReturnType<interpretModuleLocation>) => location is slime.web.Url } */
+					var isUrl = function(location) {
+						return typeof(location["scheme"]) == "string";
+					}
+
+					var fromUrl = function(location) {
+						var base = location.resolve("./");
+						var path = (base.toString() == location.toString()) ? "module.js" : location.toString().substring(base.toString().length);
+						var loader = new jsh.http.Client().Loader(base);
+						return function(code) {
+							code = path;
+							return loader.module.apply(loader, arguments);
+						}
+					}
+
+					return function(code) {
+						if (typeof(code) == "object" && code.scheme && code.host && code.path) {
+							return fromUrl(code).apply(this, arguments);
+						}
+						if (typeof(code) == "string") {
+							var location = interpretModuleLocation(code);
+							if (location && isFile(location)) {
+								code = location["pathname"];
+							} else if (location && isDirectory(location)) {
+								code = location["pathname"];
+							} else if (location && isUrl(location)) {
+								return fromUrl(location).apply(this, arguments);
+							} else {
+								return jsh.script.loader.module.apply(jsh.script.loader, arguments);
+							}
+						}
+						return was.apply(this,arguments);
+					}
+				})(jsh.loader.module);
+			}
 		})
 	}
 //@ts-ignore

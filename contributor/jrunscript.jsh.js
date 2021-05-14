@@ -119,8 +119,8 @@
 			pathname: SRC.getRelativePath("loader/$api.api.html")
 		}));
 
-		suite.add("js/web", new jsh.unit.html.Part({
-			pathname: SRC.getRelativePath("js/web/api.html")
+		suite.add("js/web", FiftyPart({
+			file: SRC.getFile("js/web/module.fifty.ts")
 		}));
 
 		suite.add("js/object/other", new jsh.unit.html.Part({

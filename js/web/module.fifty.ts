@@ -94,7 +94,6 @@ namespace slime.web {
 				(function() {
 					var url = module.Url.parse("hello.html");
 					verify(url).path.is("hello.html");
-					verify(url).evaluate.property("query").is(void(0));
 				})();
 
 				(function emptyQuery() {
@@ -106,6 +105,15 @@ namespace slime.web {
 					var url = module.Url.parse("scheme://server.tld/page");
 					verify(url).evaluate.property("query").is(void(0));
 				})();
+
+				fifty.run(function noScheme() {
+					var url = module.Url.parse("//www.google.com/path?query#fragment");
+					verify(url).evaluate.property("scheme").is(void(0));
+					verify(url).host.is("www.google.com");
+					verify(url).path.is("/path");
+					verify(url).query.is("query");
+					verify(url).fragment.is("fragment");
+				});
 			},
 			query: function() {
 				var array = [ { name: "foo", value: "bar" }, { name: "foo", value: "baz" } ];
@@ -228,11 +236,16 @@ namespace slime.web {
 			{
 				resolve: function() {
 					var base = module.Url.parse("http://www.example.com/path/to/page.html?name=value&foo=bar#fragment");
-					(function() {
+					run(function() {
 						var relative = base.resolve("../foo.js");
 						var toString = function(p) { return p.toString(); };
 						fifty.verify(relative).evaluate(toString).is("http://www.example.com/path/foo.js");
-					})();
+					});
+					run(function() {
+						var relative = base.resolve("./");
+						var toString = function(p) { return p.toString(); };
+						fifty.verify(relative).evaluate(toString).is("http://www.example.com/path/to/");
+					});
 				}
 			}
 		)

@@ -1,10 +1,75 @@
 namespace slime.jsh {
-	export interface Global {
-		loader: {
+	export namespace loader {
+		(
+			function(
+				fifty: slime.fifty.test.kit
+			) {
+				fifty.tests.exports = {};
+			}
+		//@ts-ignore
+		)(fifty);
+
+		export interface Exports {
 			run: any
 			value: any
 			file: any
 			module: any
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.kit
+			) {
+				var verify = fifty.verify;
+				var tests = fifty.tests;
+				var jsh = fifty.global.jsh;
+
+				type exports = { foo: string }
+
+				type pathsExports = { a: number }
+
+				tests.exports.module = function() {
+					var byFullPathname: exports = jsh.loader.module(fifty.$loader.getRelativePath("test/code/module.js"));
+					verify(byFullPathname).foo.is("bar");
+
+					var byModulePathname: exports = jsh.loader.module(fifty.$loader.getRelativePath("test/code"));
+					verify(byModulePathname).foo.is("bar");
+
+					var byModuleFile: exports = jsh.loader.module(fifty.$loader.getRelativePath("test/code/module.js").file);
+					verify(byModuleFile).foo.is("bar");
+
+					var byModuleDirectory: exports = jsh.loader.module(fifty.$loader.getRelativePath("test/code").directory);
+					verify(byModuleDirectory).foo.is("bar");
+
+					var paths: {
+						pathname: pathsExports,
+						relative: pathsExports,
+						absolute: pathsExports,
+						http: { base: pathsExports, file: pathsExports }
+						url: { base: pathsExports, file: pathsExports }
+					} = (function() {
+						var result = jsh.shell.jsh({
+							shell: jsh.shell.jsh.src,
+							script: fifty.$loader.getRelativePath("test/jsh-loader-module/main.jsh.js").file,
+							stdio: {
+								output: String
+							}
+						});
+						return JSON.parse(result.stdio.output);
+					})();
+					verify(paths).pathname.a.is(2);
+					verify(paths).relative.a.is(2);
+					verify(paths).absolute.a.is(2);
+					verify(paths).http.base.a.is(2);
+					verify(paths).http.file.a.is(2);
+					verify(paths).url.base.a.is(2);
+					verify(paths).url.file.a.is(2);
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+
+		export interface Exports {
 			/**
 			 * Loads `jsh` plugins from a given location.
 			 */
@@ -28,34 +93,22 @@ namespace slime.jsh {
 				) => any
 			}
 		}
+
+		(
+			function(
+				fifty: slime.fifty.test.kit
+			) {
+				fifty.tests.suite = function() {
+					run(fifty.tests.exports.module);
+				}
+			}
+		//@ts-ignore
+		)(fifty);
 	}
 
-	(
-		function(
-			fifty: slime.fifty.test.kit
-		) {
-			var verify = fifty.verify;
-			var tests = fifty.tests;
-			var jsh = fifty.global.jsh;
-
-			type exports = { foo: string }
-
-			tests.suite = function() {
-				var byFullPathname: exports = jsh.loader.module(fifty.$loader.getRelativePath("test/code/module.js"));
-				verify(byFullPathname).foo.is("bar");
-
-				var byModulePathname: exports = jsh.loader.module(fifty.$loader.getRelativePath("test/code"));
-				verify(byModulePathname).foo.is("bar");
-
-				var byModuleFile: exports = jsh.loader.module(fifty.$loader.getRelativePath("test/code/module.js").file);
-				verify(byModuleFile).foo.is("bar");
-
-				var byModuleDirectory: exports = jsh.loader.module(fifty.$loader.getRelativePath("test/code").directory);
-				verify(byModuleDirectory).foo.is("bar");
-			}
-		}
-	//@ts-ignore
-	)(fifty);
+	export interface Global {
+		loader: slime.jsh.loader.Exports
+	}
 }
 
 namespace slime.jsh.plugin {
