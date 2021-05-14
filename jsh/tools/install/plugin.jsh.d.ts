@@ -14,6 +14,22 @@ namespace slime.jsh.shell.tools {
 			version?: string
 		}
 	}
+
+	namespace scala {
+		interface Installation {
+			compile: (p: {
+				destination: slime.jrunscript.file.Pathname
+				deprecation: boolean
+				files: any[]
+			}) => void
+
+			run: (p: {
+				classpath: slime.jrunscript.file.Pathname
+				main: string
+			}) => void
+		}
+	}
+
 	interface Exports {
 		rhino: {
 			install: (
@@ -47,6 +63,8 @@ namespace slime.jsh.shell.tools {
 		}
 		jsoup: any
 		postgresql: any
-		scala: any
+		scala: {
+			installation: scala.Installation
+		}
 	}
 }
