@@ -231,6 +231,21 @@
 						}
 					});
 
+					var license = jsh.shell.jsh({
+						shell: jsh.shell.jsh.src,
+						script: $context.base.getFile("contributor/code/license.jsh.js"),
+						evaluate: function(result) {
+							return result;
+						}
+					});
+
+					if (license.status) {
+						jsh.shell.console("License headers need to be updated; run contributor/code/license.jsh.js --fix");
+						return false;
+					} else {
+						jsh.shell.console("All license headers are correct.")
+					}
+
 					return success;
 				},
 				test: function() {

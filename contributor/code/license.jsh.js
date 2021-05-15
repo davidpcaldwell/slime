@@ -23,7 +23,7 @@
 	function($api,jsh) {
 		var invocation = jsh.script.cli.invocation(
 			$api.Function.pipe(
-				jsh.script.cli.option.boolean({ longname: "commit" })
+				jsh.script.cli.option.boolean({ longname: "fix" })
 			)
 		);
 
@@ -99,8 +99,8 @@
 			return 0;
 		});
 
-		jsh.shell.console("files = " + files.length);
-		jsh.shell.console(
+		if (false) jsh.shell.console("files = " + files.length);
+		if (false) jsh.shell.console(
 			files.map(
 				function(entry) { return entry.path; }
 			).join("\n")
@@ -155,7 +155,7 @@
 			text = text.replace(/\r\n/g, "\n");
 			if (!licenses.languages[extension]) throw new Error("Not found: " + extension + " for " + files[i].path);
 			var source = new licenses.SourceFile(text.split("\n"), licenses.languages[extension], template);
-			jsh.shell.console("Processing: " + files[i].path + " ...");
+			if (false) jsh.shell.console("Processing: " + files[i].path + " ...");
 			if (source.license) {
 				var UPGRADE_LICENSE = true;
 				if (UPGRADE_LICENSE) {
@@ -184,8 +184,9 @@
 			var current = text;
 			var proposed = source.toString();
 			if (current != proposed) {
-				if (!invocation.options.commit) {
-					jsh.shell.echo("Would write to " + file.node.pathname);
+				if (!invocation.options.fix) {
+					jsh.shell.echo("Would update license in " + file.node.pathname);
+					updated = true;
 				} else {
 					file.node.pathname.write(proposed, { append: false });
 					updated = true;

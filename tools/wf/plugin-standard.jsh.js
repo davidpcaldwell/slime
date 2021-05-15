@@ -147,6 +147,17 @@
 					}
 				}
 
+				if (operations.lint) {
+					$exports.lint = function(p) {
+						if (!operations.lint()) {
+							jsh.shell.console("Linting failed.");
+							return 1;
+						} else {
+							jsh.shell.console("Linting passed.");
+						}
+					}
+				}
+
 				$exports.tsc = function() {
 					try {
 						jsh.wf.typescript.tsc();

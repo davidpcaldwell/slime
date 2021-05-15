@@ -131,6 +131,8 @@ namespace slime.jsh.wf {
 		export interface Interface {
 			eslint:  slime.jsh.script.cli.Command<Options>
 
+			lint?: slime.jsh.script.cli.Command<Options>
+
 			/**
 			 * Runs the Typedoc documentation generator.
 			 */
