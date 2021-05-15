@@ -156,6 +156,7 @@
 		//	jsh.shell.echo("");
 		//}
 
+		var updated = false;
 		for (var i=0; i<files.length; i++) {
 			var file = files[i];
 			var extension = getExtension(file);
@@ -202,12 +203,15 @@
 
 				source.license = {};
 			}
-			if (!invocation.options.commit) {
-				debugger;
-				jsh.shell.echo("Would write to " + file.node.pathname);
-				if (extension == "bash") jsh.shell.echo(source.toString());
-			} else {
-				file.node.pathname.write(source.toString(), { append: false });
+			var current = text;
+			var proposed = source.toString();
+			if (current != proposed) {
+				if (!invocation.options.commit) {
+					jsh.shell.echo("Would write to " + file.node.pathname);
+				} else {
+					file.node.pathname.write(proposed, { append: false });
+					updated = true;
+				}
 			}
 		}
 
@@ -219,6 +223,7 @@
 			//jsh.shell.echo(template.introduction.create());
 
 		}
+		jsh.shell.exit( (updated) ? 1 : 0 );
 	}
 //@ts-ignore
 )($api,jsh);
