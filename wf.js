@@ -240,7 +240,8 @@
 					});
 
 					if (license.status) {
-						jsh.shell.console("License headers need to be updated; run contributor/code/license.jsh.js --fix");
+						jsh.shell.console("License headers need to be updated; run:");
+						jsh.shell.console("./jsh.bash contributor/code/license.jsh.js --fix");
 						return false;
 					} else {
 						jsh.shell.console("All license headers are correct.")
