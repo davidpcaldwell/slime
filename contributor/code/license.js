@@ -61,12 +61,6 @@
 	};
 
 	$exports.mpl["2.0"] = new function() {
-		var delegate = $exports.mpl["1.1"];
-
-		for (var x in delegate) {
-			this[x] = delegate[x];
-		}
-
 		this.introduction = new Expression($context.getLicense("mpl20"));
 	}
 
@@ -74,17 +68,25 @@
 		var createLicenseLines = function(template,p) {
 			var insert = [];
 			insert = insert.concat(template.introduction.create().split("\n"));
-			insert.push("");
-			insert = insert.concat(template.original.create(p.original).split("\n"));
-			insert.push("");
-			insert = insert.concat(template.initial.create(p.copyright.initial).split("\n"));
-			insert = insert.concat(template.copyright.create(p.copyright.year).split("\n"));
-			insert.push("");
-			insert = insert.concat(template.contributors.create().split("\n"));
-			if (p.contributors) {
-				p.contributors.forEach( function(contributor) {
-					insert = insert.concat(template.contributor.create(contributor.name, contributor.email).split("\n"));
-				});
+			if (template.original) {
+				insert.push("");
+				insert = insert.concat(template.original.create(p.original).split("\n"));
+			}
+			if (template.initial) {
+				insert.push("");
+				insert = insert.concat(template.initial.create(p.copyright.initial).split("\n"));
+			}
+			if (template.copyright) {
+				insert = insert.concat(template.copyright.create(p.copyright.year).split("\n"));
+				insert.push("");
+			}
+			if (template.contributors) {
+				insert = insert.concat(template.contributors.create().split("\n"));
+				if (p.contributors) {
+					p.contributors.forEach( function(contributor) {
+						insert = insert.concat(template.contributor.create(contributor.name, contributor.email).split("\n"));
+					});
+				}
 			}
 			return insert;
 		}
@@ -95,31 +97,50 @@
 				contributors: []
 			};
 			lines.forEach( function(line) {
-				var original = template.original.parser.exec(line);
-				if (original) {
-					rv.original = original[1];
-				} else if (!rv.original && line != "LICENSE") {
-					rv.introduction.push(line);
-				}
-				var initial = template.initial.parser.exec(line);
-				if (initial) {
-					rv.copyright = {
-						initial: initial[1]
+				if (template.original) {
+					var original = template.original.parser.exec(line);
+					if (original) {
+						rv.original = original[1];
+					} else if (!rv.original && line != "LICENSE") {
+						rv.introduction.push(line);
 					}
 				}
-				var copyright = template.copyright.parser.exec(line);
-				if (copyright) {
-					rv.copyright.year = copyright[1];
+
+				if (template.initial) {
+					var initial = template.initial.parser.exec(line);
+					if (initial) {
+						rv.copyright = {
+							initial: initial[1]
+						}
+					}
 				}
-				var contributor = template.contributor.parser.exec(line);
-				if (contributor) {
-					rv.contributor = {
-						name: contributor[1],
-						email: contributor[2]
+
+				if (template.copyright) {
+					var copyright = template.copyright.parser.exec(line);
+					if (copyright) {
+						rv.copyright.year = copyright[1];
+					}
+				}
+
+				if (template.contributor) {
+					var contributor = template.contributor.parser.exec(line);
+					if (contributor) {
+						rv.contributor = {
+							name: contributor[1],
+							email: contributor[2]
+						}
 					}
 				}
 			});
 			return rv;
+		}
+
+		var getInsertLineIndex = function(lines) {
+			//	TODO	currently there is an empty file at rhino/tools/db/jdbc/api.js, and it is actually loaded on jsh startup,
+			//			so need to handle empty files
+			if (lines.length == 0) return 0;
+			if (lines[0].substring(0,2) == "#!") return 1;
+			return 0;
 		}
 
 		var BeginEnd = function(start,end) {
@@ -131,7 +152,7 @@
 				}
 				index++;
 				if (lines[index++] != end) {
-					throw "Error: not end comment" + lines[index++];
+					throw new Error("Not end comment" + lines[index]);
 				}
 				while(/^\s*$/.test(lines[index])) {
 					block.push(lines[index++]);
@@ -157,8 +178,9 @@
 				insert.splice(0,0,start,"LICENSE");
 				insert.push("END LICENSE");
 				insert.push(end);
+				var offset = getInsertLineIndex(lines);
 				for (var i=0; i<insert.length; i++) {
-					lines.splice(i,0,insert[i]);
+					lines.splice(i+offset,0,insert[i]);
 				}
 			}
 		}
@@ -183,9 +205,17 @@
 				return block;
 			}
 
+			var getLicenseStart = function(lines) {
+				var start = (prefix+"\t"+"LICENSE"+suffix);
+				if (lines[0] == start) return 0;
+				if (lines[1] == start) return 1;
+				return null;
+			}
+
 			this.getLicense = function(lines,template) {
-				if (lines[0] == (prefix+"\t"+"LICENSE"+suffix)) {
-					var block = getBlock(lines);
+				var start = getLicenseStart(lines);
+				if (start !== null) {
+					var block = getBlock(lines.slice(start));
 					return parseLicense(template,block);
 				} else {
 					return null;
@@ -193,8 +223,11 @@
 			}
 
 			this.remove = function(lines) {
-				var block = getBlock(lines);
-				lines.splice(0,block.length);
+				var start = getLicenseStart(lines);
+				if (start !== null) {
+					var block = getBlock(lines.slice(start));
+					lines.splice(start,block.length);
+				}
 			}
 
 			this.insert = function(template,p,lines) {
@@ -209,8 +242,9 @@
 					}
 				});
 				insert.push("");
+				var offset = getInsertLineIndex(lines);
 				for (var i=0; i<insert.length; i++) {
-					lines.splice(i,0,insert[i]);
+					lines.splice(i+offset,0,insert[i]);
 				}
 			}
 		};
@@ -230,10 +264,11 @@
 		//	One source suggests triple-dash: http://stackoverflow.com/questions/4823468/comments-in-markdown
 		this.md = new Line("[comment]: # (",")");
 		this.js = cplusplus;
+		this.ts = cplusplus;
 		this.pac = cplusplus;
 		this.coffee = new BeginEnd("###","###");
-		this.bash = new Line("#");
 		this.properties = new Line("#");
+		this.prefs = new Line("#");
 		this.java = cplusplus;
 		this.jsh = cplusplus;
 		this.css = new BeginEnd("/*","*/");
@@ -241,6 +276,14 @@
 		this.c = new BeginEnd("/*","*/");
 		this.def = new Line(";");
 		this.hgrc = new Line("#");
+		this.dockerignore = new Line("#");
+		this.Dockerfile = new Line("#");
+		this.gradle = cplusplus;
+		this.py = new Line("#");
+		this.bashrc = new Line("#");
+		this.kts = cplusplus;
+
+		this.bash = new Line("#");
 	}
 
 	$exports.SourceFile = function(lines,format,template) {

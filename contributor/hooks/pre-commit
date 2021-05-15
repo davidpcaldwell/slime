@@ -1,1 +1,2 @@
+#!/bin/bash
 ./jsh.bash contributor/hooks/pre-commit.jsh.js
