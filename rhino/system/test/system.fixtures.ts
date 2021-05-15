@@ -1,3 +1,9 @@
+//	LICENSE
+//	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+//	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+//	END LICENSE
+
 (
 	function(Packages: slime.jrunscript.Packages, jsh: slime.jsh.Global, $export: (value: slime.jrunscript.native.inonit.system.test.Fixtures) => void) {
 		$export({

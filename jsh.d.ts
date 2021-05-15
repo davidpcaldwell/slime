@@ -1,3 +1,9 @@
+//	LICENSE
+//	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+//	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+//	END LICENSE
+
 /**
  * `jsh` is a shell environment which allows JavaScript programs to be written which execute in the Java virtual machine and thus
  * can interact with Java platform classes and libraries written in Java or other JVM languages.

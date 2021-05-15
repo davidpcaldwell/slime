@@ -3,12 +3,6 @@ LICENSE
 This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
 distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-The Original Code is the SLIME loader infrastructure.
-
-The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
-Portions created by the Initial Developer are Copyright (C) 2013 the Initial Developer. All Rights Reserved.
-
-Contributor(s):
 END LICENSE
 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -58,13 +52,14 @@ END LICENSE
 		verify(missing).is.type("null");
 	</script>
 	<script type="application/x.jsapi#initialize">
-		scope.testsFor1 = function(page,verify) {
-			verify(page).children.length.is(2);
-			verify(page).children.get(0).doctype.is.type("object");
-			verify(page).children.get(0).doctype.name.is.type("string");
-			verify(page).children.get(0).doctype.name.is("html");
+		scope.testsFor1 = function(page,verify,withComments) {
+			var offset = (withComments) ? 1 : 0
+			verify(page).children.length.is(2 + offset);
+			verify(page).children.get(0 + offset).doctype.is.type("object");
+			verify(page).children.get(0 + offset).doctype.name.is.type("string");
+			verify(page).children.get(0 + offset).doctype.name.is("html");
 
-			verify(page).children.get(1).element.is.type("object");
+			verify(page).children.get(1 + offset).element.is.type("object");
 			verify(page).document.element.is.type("object");
 			verify(page).document.element.element.name.is("html");
 
@@ -77,7 +72,7 @@ END LICENSE
 			loader: $jsapi.loader,
 			path: "test/data/1.html"
 		});
-		testsFor1(page,verify);
+		testsFor1(page,verify,true);
 	</script>
 	<script type="application/x.jsapi#tests">
 		var page = api.load({
@@ -91,7 +86,7 @@ END LICENSE
 		var reparsed = api.load({
 			string: string
 		});
-		testsFor1(reparsed,verify);
+		testsFor1(reparsed,verify,false);
 		if (false) {
 			verify(string).is($jsapi.loader.string("test/data/1.html"));
 		}

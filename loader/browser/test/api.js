@@ -1,3 +1,9 @@
+//	LICENSE
+//	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+//	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+//	END LICENSE
+
 // TODO: The "loader/api DOM," as it is termed here, is undocumented, and should be documented, at least at the contributor level.
 // it is essentially an adapter layer that translates both browser DOMs and other document formats into a common representation
 // for processing by the test execution framework

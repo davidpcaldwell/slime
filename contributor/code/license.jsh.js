@@ -2,12 +2,6 @@
 //	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
 //	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
-//	The Original Code is the jsh JavaScript/Java shell.
-//
-//	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
-//	Portions created by the Initial Developer are Copyright (C) 2014 the Initial Developer. All Rights Reserved.
-//
-//	Contributor(s):
 //	END LICENSE
 
 //	TODO	this is now run via jsh.loader.run, from develop.jsh.js, which is sloppy but was an easy way to wrap a jsh script
@@ -27,15 +21,12 @@
 	 * @param { slime.jsh.Global } jsh
 	 */
 	function($api,jsh) {
-		jsh.shell.console("Hello, license world!");
-
 		var invocation = jsh.script.cli.invocation(
 			$api.Function.pipe(
 				jsh.script.cli.option.boolean({ longname: "commit" })
 			)
 		);
 
-		//var licenseBase = jsh.script.file.getRelativePath("code").directory;
 		var licenses = new jsh.document.Document({ string: jsh.script.file.parent.getFile("licenses.xml").read(String) });
 		var input = {
 			parameters: {
@@ -56,19 +47,6 @@
 		var parameters = input.parameters;
 		var getLicense = input.getLicense;
 		var $loader = input.$loader;
-
-		var repository = new jsh.tools.git.Repository({ directory: parameters.options.base.directory });
-		var username = (function() {
-			var config = repository.config({
-				list: {}
-			});
-			var entry = config.find(function(it) {
-				return it.name == "user.name";
-			});
-			return entry.value;
-		})();
-
-		jsh.shell.console("username = " + username);
 
 		var BASE = parameters.options.base.directory;
 

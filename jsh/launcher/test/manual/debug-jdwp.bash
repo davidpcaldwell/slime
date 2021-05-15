@@ -1,4 +1,10 @@
 #!/bin/bash
+#	LICENSE
+#	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+#	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+#
+#	END LICENSE
+
 SLIME=$(dirname $0)/../../../..
 export JSH_DEBUG_JDWP=transport=dt_socket,address=8000,server=y,suspend=y
 >&2 echo "*After* receiving message \"Listening for transport dt_socket at address: 8000\":"

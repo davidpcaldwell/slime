@@ -1,4 +1,10 @@
 #!/bin/bash
+#	LICENSE
+#	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+#	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+#
+#	END LICENSE
+
 #	This script emulates the user experience of installing Java into a shell. See https://github.com/davidpcaldwell/slime/issues/73
 BASE=$(dirname $0)/../../../..
 if [ -d "${BASE}/local/jdk" ]; then

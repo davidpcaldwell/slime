@@ -1,3 +1,9 @@
+#	LICENSE
+#	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+#	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+#
+#	END LICENSE
+
 #	TODO	calculate EXTENSION from ICON
 mkdir $NAME.iconset
 sips -z 16 16     $ICON --out $NAME.iconset/icon_16x16.$EXTENSION

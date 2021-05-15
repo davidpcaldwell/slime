@@ -1,3 +1,9 @@
+//	LICENSE
+//	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+//	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+//	END LICENSE
+
 window.addEventListener("load", function() {
 	// TODO: Figure out what to do with deprecation longer-term; right now, just trying to debug browser test runner
 	inonit.loader.$api.deprecate.warning = function() {

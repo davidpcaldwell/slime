@@ -1,3 +1,9 @@
+//	LICENSE
+//	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+//	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+//	END LICENSE
+
 namespace slime.runtime.browser.test.server {
 	type Export = (
 		/** The directory to use when serving servlet resources, which is the SLIME directory for this purpose. */

@@ -1,3 +1,9 @@
+//	LICENSE
+//	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+//	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+//	END LICENSE
+
 //@ts-check
 (
 	/**
@@ -64,7 +70,7 @@
 			var now = (destination.file) ? destination.file.read(String) : void(0);
 			var after = $context.base.getFile("contributor/" + filename).read(String);
 			if (now != after) {
-				$context.base.getFile("tools/" + filename).copy(
+				$context.base.getFile("contributor/" + filename).copy(
 					$context.base.getSubdirectory(".settings").getRelativePath(filename),
 					{
 						filter: function() {
@@ -72,7 +78,7 @@
 						}
 					}
 				);
-				jsh.shell.console("VSCode: Execute the 'Java: Clean the Java language server workspace' command to update Hava settubgs.");
+				jsh.shell.console("VSCode: Execute the 'Java: Clean the Java language server workspace' command to update Java settubgs.");
 			}
 		}
 

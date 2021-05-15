@@ -3,12 +3,6 @@ LICENSE
 This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
 distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-The Original Code is the SLIME JDK interface.
-
-The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
-Portions created by the Initial Developer are Copyright (C) 2014 the Initial Developer. All Rights Reserved.
-
-Contributor(s):
 END LICENSE
 -->
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
@@ -1334,7 +1328,7 @@ END LICENSE
 					dir.getRelativePath("1.hgrc").write($jsapi.loader.string("test/1.hgrc"), { append: false });
 					//	Can't find easy way to write enough automated tests here; maybe just laziness?
 					var hgrc = new module.Hgrc({ file: dir.getFile("1.hgrc") });
-					var LENGTH = 29;
+					var LENGTH = 22;
 					verify(hgrc,"1.hgrc").get("ui.username").is("I use it <iuseit@aol.com>");
 					verify(hgrc,"1.hgrc").unit.lines.length.is(LENGTH);
 					hgrc.set("ui","username","I also use it");

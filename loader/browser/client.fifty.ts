@@ -1,3 +1,9 @@
+//	LICENSE
+//	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+//	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+//	END LICENSE
+
 /**
  * The SLIME browser runtime can be loaded by executing the `loader/browser/client.js` script. The runtime can be configured by
  * creating a `window.inonit.loader` of type {@link Settings} before loading the runtime. The `window` object itself is presented
