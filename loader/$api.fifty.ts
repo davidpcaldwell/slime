@@ -97,6 +97,9 @@ namespace slime.$api {
 			}
 		},
 		Array: {
+			/**
+			 * Creates an array by creating an empty array and passing it to the given function to populate.
+			 */
 			build: <T>(f: (p: T[]) => void) => T[]
 		}
 		deprecate: {

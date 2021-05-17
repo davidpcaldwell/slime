@@ -57,6 +57,7 @@
 		}
 
 		var getCommand = function(p) {
+			if (!p) p = {};
 			var command = echoJshBash(p);
 			command.push("|");
 			if (p.mock) {
@@ -104,6 +105,10 @@
 					var command = getCommand({
 						token: jsh.shell.jsh.src.getFile("local/github/token").read(String)
 					});
+					emit(command);
+				},
+				test: function() {
+					var command = getCommand();
 					emit(command);
 				}
 			}

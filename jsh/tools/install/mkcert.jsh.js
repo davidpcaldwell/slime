@@ -15,25 +15,11 @@
 		//	TODO	deal with Java
 		var invocation = jsh.script.cli.invocation(
 			$api.Function.pipe(
-				jsh.script.cli.option.pathname({ longname: "destination" })
+				jsh.script.cli.option.pathname({ longname: "destination", default: jsh.shell.jsh.lib.getRelativePath("bin/mkcert") })
 			)
 		);
 
-		var at = jsh.tools.install.get({ url: "https://github.com/FiloSottile/mkcert/releases/download/v1.4.3/mkcert-v1.4.3-darwin-amd64" });
-
-		at.copy(invocation.options.destination, {
-			filter: function(p) {
-				return true;
-			},
-			recursive: true
-		});
-		jsh.shell.console("Installed mkcert to: " + invocation.options.destination);
-		jsh.shell.run({
-			command: "chmod",
-			arguments: [
-				"+x", invocation.options.destination
-			]
-		});
+		jsh.shell.tools.mkcert.install({ destination: invocation.options.destination });
 	}
 //@ts-ignore
 )($api,jsh);

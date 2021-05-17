@@ -36,6 +36,12 @@ namespace slime.jsh.shell.tools {
 		}
 	}
 
+	namespace mkcert {
+		interface Installation {
+			pkcs12: (p: { hosts: string[], to?: slime.jrunscript.file.Pathname }) => void
+		}
+	}
+
 	interface Exports {
 		rhino: {
 			install: (
@@ -52,6 +58,10 @@ namespace slime.jsh.shell.tools {
 		ncdbg: any
 		kotlin: any
 		jsyaml: any
+		mkcert: {
+			install: (p?: { destination?: slime.jrunscript.file.Pathname, replace?: boolean }) => mkcert.Installation
+			require: () => mkcert.Installation
+		}
 		node: (
 			(
 				slime.jrunscript.node.Installation & { update: () => void }

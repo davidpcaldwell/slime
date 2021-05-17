@@ -97,6 +97,7 @@
 					ncdbg: void(0),
 					kotlin: void(0),
 					jsyaml: void(0),
+					mkcert: void(0),
 					node: void(0),
 					javamail: void(0),
 					jsoup: void(0),
@@ -269,6 +270,67 @@
 				(function deprecated() {
 					jsh.tools.ncdbg = ncdbg;
 					$api.deprecate(jsh.tools,"ncdbg");
+				})();
+
+				jsh.shell.tools.mkcert = (function() {
+					var location = (jsh.shell.jsh.lib) ? jsh.shell.jsh.lib.getRelativePath("bin/mkcert") : void(0);
+
+					/**
+					 *
+					 * @param { slime.jrunscript.file.File } program
+					 * @returns { slime.jsh.shell.tools.mkcert.Installation }
+					 */
+					function Installation(program) {
+						return {
+							pkcs12: function(p) {
+								jsh.shell.run({
+									command: location.file,
+									arguments: $api.Array.build(function(rv) {
+										rv.push("-pkcs12");
+										if (p.to) rv.push("-p12-file", p.to);
+										rv.push.apply(rv, p.hosts);
+									})
+								});
+							}
+						}
+					}
+
+					return {
+						install: function(p) {
+							var destination = (p && p.destination) ? p.destination : location;
+
+							var at = jsh.tools.install.get({ url: "https://github.com/FiloSottile/mkcert/releases/download/v1.4.3/mkcert-v1.4.3-darwin-amd64" });
+
+							at.copy(destination, {
+								filter: function(p) {
+									return true;
+								},
+								recursive: true
+							});
+
+							jsh.shell.console("Installed mkcert to: " + destination);
+
+							jsh.shell.run({
+								command: "chmod",
+								arguments: [
+									"+x", destination
+								]
+							});
+
+							jsh.shell.run({
+								command: location.file,
+								arguments: ["-install"]
+							});
+
+							return Installation(destination.file);
+						},
+						require: function() {
+							if (!location.file) {
+								this.install();
+							}
+							return Installation(location.file);
+						}
+					}
 				})();
 
 				var kotlin = (jsh.shell.jsh.lib) ? new function() {

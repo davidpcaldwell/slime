@@ -29,6 +29,8 @@ namespace slime.jsh.unit {
 		}
 
 		export interface Web {
+			addHttpsHost: (host: string) => void
+
 			/** adds a handler that can supply parts of the mock internet */
 			add: (handler: jsh.unit.mock.handler) => void
 
@@ -58,16 +60,19 @@ namespace slime.jsh.unit {
 			stop: () => void
 		}
 
+		//	TODO	the old tests and new HTTPS tests are duplicative; merge them
+
 		(
 			function(
 				fifty: slime.fifty.test.kit
 			) {
 				var jsh = fifty.global.jsh;
 
-				fifty.tests.suite = function() {
+				fifty.tests.old = function() {
 					fifty.verify("mock").is("mock");
 
 					var web = new jsh.unit.mock.Web({ trace: true });
+					web.addHttpsHost("mockweb.xlime.com");
 					web.add(fifty.$loader.module("test/mock-echo-handler.js"));
 					web.start();
 
@@ -79,19 +84,6 @@ namespace slime.jsh.unit {
 					var json: { method: string, path: string } = JSON.parse(response.body.stream.character().asString());
 					fifty.verify(json).method.is("GET");
 					fifty.verify(json).path.is("foo-bar-baz");
-
-					//	Try to tunnel
-					try {
-						var secured = client.request({
-							url: "https://mockweb.slime.com/foo-bar-baz"
-						});
-					} catch (e) {
-						jsh.shell.console("tunnel");
-						jsh.shell.console("tunnel error: " + JSON.stringify({
-							type: e.type,
-							message: e.message
-						}));
-					}
 
 					//	HTTPS interface
 					fifty.verify(web).https.port.is.type("number");
@@ -115,5 +107,59 @@ namespace slime.jsh.unit {
 			}
 		//@ts-ignore
 		)(fifty);
+
+		(
+			function(
+				fifty: slime.fifty.test.kit
+			) {
+				fifty.tests.https = function() {
+					fifty.verify(1).is(1);
+					var web = new fifty.global.jsh.unit.mock.Web();
+					web.addHttpsHost("https.fifty.com");
+					web.add(function(request) {
+						return {
+							status: { code: 200 },
+							body: {
+								type: "application/json",
+								string: JSON.stringify({
+									scheme: request.scheme,
+									method: request.method,
+									host: request.headers.value("Host"),
+									path: request.path
+								})
+							}
+						}
+					});
+					web.start();
+
+					var client = web.https.client;
+					fifty.global.jsh.http.test.disableHttpsSecurity();
+
+					var response = client.request({
+						url: "https://https.fifty.com/foo/bar"
+					});
+					var json = response.body.stream.character().asString();
+					var body: { scheme: string, method: string, host: string, path: string } = JSON.parse(json);
+					fifty.verify(body).scheme.is("https");
+					fifty.verify(body).method.is("GET");
+					fifty.verify(body).host.is("https.fifty.com");
+					fifty.verify(body).path.is("foo/bar");
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+
 	}
 }
+
+(
+	function(
+		fifty: slime.fifty.test.kit
+	) {
+		fifty.tests.suite = function() {
+			fifty.run(fifty.tests.old);
+			fifty.run(fifty.tests.https);
+		}
+	}
+//@ts-ignore
+)(fifty);
