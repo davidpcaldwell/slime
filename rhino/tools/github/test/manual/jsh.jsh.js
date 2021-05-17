@@ -14,6 +14,10 @@
 		var startMock = function() {
 			var web = new jsh.unit.mock.Web({ trace: true });
 			jsh.loader.plugins(jsh.script.file.parent.parent.parent);
+			//	TODO	push these kinds of declarations back into a mock object that aggregates hosts and handler
+			web.addHttpsHost("127.0.0.1");
+			web.addHttpsHost("raw.githubusercontent.com");
+			web.addHttpsHost("api.github.com");
 			web.add(jsh.unit.mock.Web.github({
 				//	TODO	flip to true to test possibility of accessing private repositories
 				//	TODO	this should actually be per-repository, though
@@ -37,7 +41,7 @@
 					command.push("-u", "davidpcaldwell:" + p.token);
 				}
 				if (p.mock) {
-					command.push("--proxy", "http://127.0.0.1:" + p.mock.port);
+					command.push("--proxy", "https://127.0.0.1:" + p.mock.https.port);
 				}
 				command.push("-L");
 				command.push(PROTOCOL + "://raw.githubusercontent.com/davidpcaldwell/slime/master/jsh.bash");
@@ -93,9 +97,10 @@
 				serve: function() {
 					var web = startMock();
 					jsh.shell.console("HTTP port: " + web.port + " HTTPS port: " + web.https.port);
+					var token = jsh.shell.jsh.src.getFile("local/github/token");
 					var command = getCommand({
 						mock: web,
-						token: jsh.shell.jsh.src.getFile("local/github/token").read(String)
+						token: (token) ? token.read(String) : void(0)
 					});
 					emit(command);
 					web.run();

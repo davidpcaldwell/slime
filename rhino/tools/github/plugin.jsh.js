@@ -77,7 +77,7 @@
 									return b.current;
 								})[0];
 								var at = repository.directory.getRelativePath(path);
-								if (false) Packages.java.lang.System.err.println("Checking: " + at);
+								if (true) Packages.java.lang.System.err.println("path = " + path + " checking: " + at);
 								if (at.file) throw new Error();
 								if (!at.directory) return {
 									status: { code: 404 },
@@ -90,7 +90,15 @@
 									}
 								};
 								var list = at.directory.list().filter(function(node) {
-									return node.pathname.basename != ".git";
+									var rv = node.pathname.basename != ".git";
+									if (path == "") {
+										rv = (rv
+											&& node.pathname.basename != "bin"
+											&& node.pathname.basename != ".settings"
+											&& node.pathname.basename != ".gradle"
+										);
+									}
+									return rv;
 								}).map(function(node) {
 									if (node.directory) return { type: "dir", name: node.pathname.basename };
 									if (!node.directory) return { type: "file", name: node.pathname.basename };

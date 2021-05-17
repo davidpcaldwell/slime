@@ -54,20 +54,23 @@
 					this.hg = void(0);
 
 					this.start = function() {
-						var keystore = jsh.shell.TMPDIR.createTemporary({ suffix: ".p12" }).pathname;
+						var https = (function() {
+							if (!httpsHosts.length) return void(0);
+							var keystore = jsh.shell.TMPDIR.createTemporary({ suffix: ".p12" }).pathname;
 
-						var mkcert = jsh.shell.tools.mkcert.require();
+							var mkcert = jsh.shell.tools.mkcert.require();
 
-						mkcert.pkcs12({ to: keystore, hosts: httpsHosts });
+							mkcert.pkcs12({ to: keystore, hosts: httpsHosts });
 
-						/** @type { ConstructorParameters<slime.jsh.httpd.Exports["Tomcat"]>[0]["https"] } */
-						var https = (httpsHosts.length) ? {
-							port: void(0),
-							keystore: {
-								file: keystore.file,
-								password: "changeit"
-							}
-						} : void(0)
+							/** @type { ConstructorParameters<slime.jsh.httpd.Exports["Tomcat"]>[0]["https"] } */
+							return {
+								port: void(0),
+								keystore: {
+									file: keystore.file,
+									password: "changeit"
+								}
+							};
+						})();
 
 						//	TODO	https doesn't really work, as CONNECT to the real destination is attempted when requests for that
 						//			host arrive
