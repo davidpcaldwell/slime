@@ -1068,7 +1068,19 @@ public class Code {
 				return Code.Loader.class.getName() + " url=" + url;
 			}
 
+			private static class FileRequest extends RuntimeException {
+				FileRequest(String path) {
+					super("Request for " + path);
+				}
+			}
+
 			public Resource getFile(String path) throws IOException {
+				//	When running locally, echoes every request along with a stack trace about who made it to help with analysis
+				//	of whether requests can be reduced. The environment variable is set by the script that creates the client-
+				//	side command, at rhino/tools/github/test/manual/jsh.jsh.js
+				if (System.getenv("JSH_OPTIMIZE_REMOTE_SHELL") != null && url.toString().equals("http://raw.githubusercontent.com/davidpcaldwell/slime/master/")) {
+					new FileRequest("getFile(" + path + ")").printStackTrace();
+				}
 				URL url = classes.getResource(path);
 				if (url == null) return null;
 				return Resource.create(url);

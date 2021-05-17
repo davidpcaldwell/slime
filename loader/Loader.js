@@ -187,9 +187,16 @@
 								if (entry.loader) {
 									rv.push({ path: entry.path, loader: Child(entry.path + "/") });
 								} else if (entry.resource) {
-									var gotten = p.get(entry.path);
-									if (!gotten) throw new Error("Unexpected error: resource is " + entry.resource + " path is " + entry.path + " p is " + p);
-									rv.push({ path: entry.path, resource: new p.Resource(p.get(entry.path)) });
+									var item = {
+										path: entry.path
+									};
+									Object.defineProperty(item, "resource", {
+										enumerable: true,
+										get: function() {
+											return new p.Resource(p.get(entry.path));
+										}
+									});
+									rv.push(item);
 								}
 							}
 						);

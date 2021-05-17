@@ -68,6 +68,8 @@
 				command.push("env", "JSH_HTTP_PROXY_HOST=127.0.0.1", "JSH_HTTP_PROXY_PORT=" + p.mock.port);
 				command.push("JSH_LAUNCHER_GITHUB_PROTOCOL=http");
 				command.push("JSH_GITHUB_API_PROTOCOL=http");
+				//	TODO	use a command-line argument to make this optional
+				command.push("JSH_OPTIMIZE_REMOTE_SHELL=true");
 			}
 			if (p.token) {
 				command.push("JSH_GITHUB_USER=davidpcaldwell", "JSH_GITHUB_PASSWORD=" + p.token);
