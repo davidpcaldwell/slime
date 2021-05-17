@@ -77,7 +77,7 @@
 									return b.current;
 								})[0];
 								var at = repository.directory.getRelativePath(path);
-								if (true) Packages.java.lang.System.err.println("path = " + path + " checking: " + at);
+								if (true) Packages.java.lang.System.err.println("Listing GitHub folder path [" + path + "] by checking: " + at);
 								if (at.file) throw new Error();
 								if (!at.directory) return {
 									status: { code: 404 },

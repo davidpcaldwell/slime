@@ -507,6 +507,8 @@
 				//	remote shell
 				copyPropertyIfPresent("http.proxyHost");
 				copyPropertyIfPresent("http.proxyPort");
+				copyPropertyIfPresent("https.proxyHost");
+				copyPropertyIfPresent("https.proxyPort");
 			}
 			//	TODO	the jrunscript method also handles vmarguments, perhaps we should pass those through?
 			var argument = $context.api.js.Object.set({}, p, {

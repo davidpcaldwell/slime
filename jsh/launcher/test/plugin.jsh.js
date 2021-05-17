@@ -44,6 +44,8 @@ plugin({
 					}));
 				}
 
+				//	TODO	https?
+
 				this.jrunscript = function(o) {
 					var properties = {
 						"http.proxyHost": "127.0.0.1",

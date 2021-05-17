@@ -108,8 +108,10 @@ $$api.slime = (function(was) {
 						//	TODO	make branch into ref query parameter
 						var branch = match[1];
 						var path = match[2];
-						//	TODO	deal with http/https protocol issue
-						var json = JSON.parse($$api.engine.readUrl("http://api.github.com/repos/davidpcaldwell/slime/contents/" + path));
+						//	TODO	is there a better, more general way to get this setting?
+						var SPECIFIED_PROTOCOL = Packages.java.lang.System.getenv("JSH_LAUNCHER_GITHUB_PROTOCOL") ? String(Packages.java.lang.System.getenv("JSH_LAUNCHER_GITHUB_PROTOCOL")) : void(0);
+						var PROTOCOL = (SPECIFIED_PROTOCOL) ? SPECIFIED_PROTOCOL : "https";
+						var json = JSON.parse($$api.engine.readUrl(PROTOCOL + "://api.github.com/repos/davidpcaldwell/slime/contents/" + path));
 						json.forEach(function(item) {
 							if (item.type == "dir") {
 								getSourceFilesUnder(new Packages.java.net.URL(url,item.name+"/"), rv);

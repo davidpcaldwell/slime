@@ -93,6 +93,7 @@
 						};
 
 						this.jrunscript = function(o) {
+							//	TODO	perhaps need HTTPS here
 							var properties = {
 								"http.proxyHost": "127.0.0.1",
 								"http.proxyPort": String(tomcat.port)
@@ -117,10 +118,12 @@
 							})
 						} : void(0);
 
+						//	TODO	perhaps need HTTPS here
 						this.environment = {
 							"http_proxy": "http://127.0.0.1:" + tomcat.port
 						};
 
+						//	TODO	perhaps need HTTPS here
 						this.hg = {
 							config: {
 								"http_proxy.host": "127.0.0.1:" + tomcat.port

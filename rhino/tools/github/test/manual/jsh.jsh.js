@@ -8,9 +8,10 @@
 (
 	/**
 	 *
+	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.Global } jsh
 	 */
-	function(jsh) {
+	function($api,jsh) {
 		var startMock = function() {
 			var web = new jsh.unit.mock.Web({ trace: true });
 			jsh.loader.plugins(jsh.script.file.parent.parent.parent);
@@ -65,11 +66,12 @@
 			var command = echoJshBash(p);
 			command.push("|");
 			if (p.mock) {
-				command.push("env", "JSH_HTTP_PROXY_HOST=127.0.0.1", "JSH_HTTP_PROXY_PORT=" + p.mock.port);
+				command.push("env");
+				command.push("JSH_HTTP_PROXY_HOST=127.0.0.1", "JSH_HTTP_PROXY_PORT=" + p.mock.port);
+				command.push("JSH_HTTPS_PROXY_HOST=127.0.0.1", "JSH_HTTPS_PROXY_PORT=" + p.mock.https.port);
 				command.push("JSH_LAUNCHER_GITHUB_PROTOCOL=http");
 				command.push("JSH_GITHUB_API_PROTOCOL=http");
-				//	TODO	use a command-line argument to make this optional
-				command.push("JSH_OPTIMIZE_REMOTE_SHELL=true");
+				if (p && p.optimize) command.push("JSH_OPTIMIZE_REMOTE_SHELL=true");
 			}
 			if (p.token) {
 				command.push("JSH_GITHUB_USER=davidpcaldwell", "JSH_GITHUB_PASSWORD=" + p.token);
@@ -91,22 +93,25 @@
 				});
 				jsh.shell.console("Copied to clipboard.");
 			}
-
 		}
 
 		jsh.script.cli.wrap({
 			commands: {
-				serve: function() {
-					var web = startMock();
-					jsh.shell.console("HTTP port: " + web.port + " HTTPS port: " + web.https.port);
-					var token = jsh.shell.jsh.src.getFile("local/github/token");
-					var command = getCommand({
-						mock: web,
-						token: (token) ? token.read(String) : void(0)
-					});
-					emit(command);
-					web.run();
-				},
+				serve: $api.Function.pipe(
+					jsh.script.cli.option.boolean({ longname: "optimize" }),
+					function(p) {
+						var web = startMock();
+						jsh.shell.console("HTTP port: " + web.port + " HTTPS port: " + web.https.port);
+						var token = jsh.shell.jsh.src.getFile("local/github/token");
+						var command = getCommand({
+							mock: web,
+							optimize: p.options.optimize,
+							token: (token) ? token.read(String) : void(0)
+						});
+						emit(command);
+						web.run();
+					}
+				),
 				remote: function() {
 					//	TODO	for now, we do not fully automate this command because of the piping
 					var command = getCommand({
@@ -122,4 +127,4 @@
 		});
 	}
 //@ts-ignore
-)(jsh);
+)($api,jsh);
