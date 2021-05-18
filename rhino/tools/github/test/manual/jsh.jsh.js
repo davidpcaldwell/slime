@@ -19,6 +19,7 @@
 			web.addHttpsHost("127.0.0.1");
 			web.addHttpsHost("raw.githubusercontent.com");
 			web.addHttpsHost("api.github.com");
+			web.addHttpsHost("github.com");
 			web.add(jsh.unit.mock.Web.github({
 				//	TODO	flip to true to test possibility of accessing private repositories
 				//	TODO	this should actually be per-repository, though
@@ -71,6 +72,7 @@
 				command.push("JSH_HTTPS_PROXY_HOST=127.0.0.1", "JSH_HTTPS_PROXY_PORT=" + p.mock.https.port);
 				command.push("JSH_LAUNCHER_GITHUB_PROTOCOL=http");
 				command.push("JSH_GITHUB_API_PROTOCOL=http");
+				command.push("JSH_DISABLE_HTTPS_SECURITY=true");
 				if (p && p.optimize) command.push("JSH_OPTIMIZE_REMOTE_SHELL=true");
 			}
 			if (p.token) {

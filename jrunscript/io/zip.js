@@ -123,10 +123,6 @@
 			zipOutputStream.close();
 		};
 
-		/**
-		 *
-		 * @param { { stream: slime.jrunscript.runtime.io.InputStream, output: { directory: (p: { path: string }) => void, file: (p: { path: string }) => void }}} p
-		 */
 		$exports.decode = function(p) {
 			var _zipstream = new Packages.java.util.zip.ZipInputStream(p.stream.java.adapt());
 			var entry;

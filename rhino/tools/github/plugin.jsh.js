@@ -127,7 +127,45 @@
 								var version = match[3];
 								if (user == "davidpcaldwell" && repo == "slime" && version == "master") {
 									//	create zip file of source tree, excluding .git
-
+									var isTopLevel = function(node) {
+										return node.parent.toString() == jsh.shell.jsh.src.toString();
+									}
+									var entries = jsh.shell.jsh.src.list({
+										type: jsh.shell.jsh.src.list.ENTRY,
+										filter: function(node) {
+											if (isTopLevel(node) && node.pathname.basename == "local") return false;
+											if (isTopLevel(node) && node.pathname.basename == "bin") return false;
+											if (isTopLevel(node) && node.pathname.basename == ".settings") return false;
+											if (isTopLevel(node) && node.pathname.basename == ".git") return false;
+											return true;
+										},
+										descendants: function(node) {
+											if (isTopLevel(node) && node.pathname.basename == "local") return false;
+											if (isTopLevel(node) && node.pathname.basename == "bin") return false;
+											if (isTopLevel(node) && node.pathname.basename == ".settings") return false;
+											if (isTopLevel(node) && node.pathname.basename == ".git") return false;
+											return true;
+										}
+									}).filter(function(entry) {
+										return !entry.node.directory;
+									}).map(function(entry) {
+										return {
+											path: "slime-master/" + entry.path,
+											resource: entry.node
+										}
+									});
+									var buffer = new jsh.io.Buffer();
+									jsh.io.archive.zip.encode({
+										stream: buffer.writeBinary(),
+										entries: entries
+									});
+									return {
+										status: { code: 200 },
+										body: {
+											type: "application/zip",
+											stream: buffer.readBinary()
+										}
+									}
 								}
 							}
 						}

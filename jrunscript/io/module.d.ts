@@ -24,8 +24,18 @@ namespace slime.jrunscript.io {
 		mime: slime.jrunscript.io.mime.Exports
 		archive: {
 			zip: {
-				encode: (p: {stream: slime.jrunscript.runtime.io.OutputStream, entries: { path: string, resource: slime.Resource }[]}) => void
-				decode: (p: {stream: slime.jrunscript.runtime.io.InputStream}) => void
+				encode: (p: {
+					entries: { path: string, resource: slime.Resource }[]
+					stream: slime.jrunscript.runtime.io.OutputStream
+				}) => void
+
+				decode: (p: {
+					stream: slime.jrunscript.runtime.io.InputStream
+					output: {
+						file: (p: { path: string }) => slime.jrunscript.runtime.io.OutputStream
+						directory: (p: { path: string }) => void
+					}
+				}) => void
 			}
 		}
 		grid: any

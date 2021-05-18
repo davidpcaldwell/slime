@@ -19,6 +19,37 @@ public class Main {
 
 	//	TODO	refactor into locateCodeSource() method
 	private static abstract class Location {
+		//	TODO	duplicated in rhino/http/client
+		private static void disableHttpsSecurity() throws java.security.NoSuchAlgorithmException, java.security.KeyManagementException {
+			//	TODO	this HTTPS trust rigamarole should probably be in the shell somewhere, perhaps as a test API
+			javax.net.ssl.TrustManager[] _trustManagers = new javax.net.ssl.TrustManager[] {
+				new javax.net.ssl.X509TrustManager() {
+					@Override
+					public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+						return null;
+					}
+
+					@Override
+					public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType) {
+					}
+
+					public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType) {
+					}
+				}
+			};
+			javax.net.ssl.SSLContext _sslContext = javax.net.ssl.SSLContext.getInstance("SSL");
+			_sslContext.init(null, _trustManagers, new java.security.SecureRandom());
+			javax.net.ssl.HttpsURLConnection.setDefaultSSLSocketFactory(_sslContext.getSocketFactory());
+
+			javax.net.ssl.HttpsURLConnection.setDefaultHostnameVerifier(
+				new javax.net.ssl.HostnameVerifier() {
+					public boolean verify(String hostname, javax.net.ssl.SSLSession session) {
+						return true;
+					}
+				}
+			);
+		}
+
 		static Code.Loader loader(String string) throws IOException, URISyntaxException {
 			//	TODO	below can happen when looking for local/jsh/lib in remote shell
 			if (string == null) return Code.Loader.NULL;
@@ -26,9 +57,24 @@ public class Main {
 			if (string.startsWith("http://" + host) || string.startsWith("https://" + host)) {
 				try {
 					if (string.indexOf("//raw.githubusercontent.com/davidpcaldwell/slime/master/") != -1) {
-						return Code.Loader.github(new java.net.URL("https://github.com/davidpcaldwell/slime/archive/refs/heads/master.zip"), "slime-master");
+						String protocol = "https";
+						if (System.getenv("JSH_LAUNCHER_GITHUB_PROTOCOL") != null) {
+							protocol = System.getenv("JSH_LAUNCHER_GITHUB_PROTOCOL");
+						}
+						if (System.getenv("JSH_DISABLE_HTTPS_SECURITY") != null) {
+							try {
+								disableHttpsSecurity();
+							} catch (java.security.NoSuchAlgorithmException e) {
+								throw new RuntimeException(e);
+							} catch (java.security.KeyManagementException e) {
+								throw new RuntimeException(e);
+							}
+						}
+						return Code.Loader.github(new java.net.URL(protocol + "://github.com/davidpcaldwell/slime/archive/refs/heads/master.zip"), "slime-master");
+						//	Below is older API that "works" in the sense that it requests the correct URLs etc. but is horrendously
+						//	inefficient and switfly hits a GitHub API rate limit
+						//	return Code.Loader.githubApi(new URL(string));
 					}
-					Code.Loader.githubApi(new URL(string));
 					throw new RuntimeException("Not supported: " + string);
 //					return Code.Loader.bitbucketApiVersionOne(new URL(string));
 				} catch (MalformedURLException e) {

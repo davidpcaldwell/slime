@@ -23,6 +23,10 @@
 			const jsh = fifty.global.jsh;
 			jsh.loader.plugins(jsh.shell.jsh.src.getSubdirectory("rhino/tools/github"));
 			var www = new jsh.unit.mock.Web({ trace: true });
+			www.addHttpsHost("raw.githubusercontent.com");
+			www.addHttpsHost("api.github.com");
+			www.addHttpsHost("github.com");
+			www.addHttpsHost("127.0.0.1");
 			www.add(jsh.unit.mock.Web.github({
 				src: {
 					davidpcaldwell: {
@@ -46,6 +50,30 @@
 			});
 			var type: string = typeof(plugin);
 			fifty.verify(type).is("function");
+
+			var zip = mock.request({
+				url: "https://github.com/davidpcaldwell/slime/archive/refs/heads/master.zip"
+			});
+			fifty.verify(zip).status.code.is(200);
+			fifty.verify(zip).body.type.media.is("application");
+			fifty.verify(zip).body.type.subtype.is("zip");
+			var buffers = {};
+			var contents = fifty.global.jsh.io.archive.zip.decode({
+				stream: zip.body.stream,
+				output: {
+					file: function(p) {
+						buffers[p.path] = new fifty.global.jsh.io.Buffer();
+						return buffers[p.path].writeBinary();
+					},
+					directory: function(p) {
+						fifty.global.jsh.shell.console("Creating directory: " + p.path);
+					}
+				}
+			});
+			var jshBash = buffers["slime-master/jsh.bash"];
+			fifty.verify(jshBash).is.type("object");
+			fifty.verify(buffers["slime-master/foo.bash"]).is(void(0));
+			fifty.verify(buffers["slime-master/jsh/loader/nashorn.js"]).is.type("object");
 		};
 
 		var file = function(client: slime.jrunscript.http.client.Client) {
