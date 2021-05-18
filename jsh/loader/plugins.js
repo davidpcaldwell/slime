@@ -157,7 +157,7 @@
 				/** @type { slime.jsh.loader.internal.plugins.Export["load"] } p */
 				function(p) {
 					if (p._file && p._file.isDirectory()) {
-						p.loader = new $slime.Loader({ _file: p._file })
+						p.loader = new $slime.Loader({ _file: p._file });
 					}
 					var list = [];
 					var plugins = {};

@@ -30,6 +30,11 @@
 			for (var i=0; i<top.length; i++) {
 				jsh.shell.console(top[i]);
 			}
+			var js = enumerator.list("js/");
+			jsh.shell.console("js:");
+			for (var i=0; i<js.length; i++) {
+				jsh.shell.console(js[i]);
+			}
 			var jshBash = github.getFile("jsh.bash");
 			jsh.shell.console("jsh.bash = " + jshBash);
 		}

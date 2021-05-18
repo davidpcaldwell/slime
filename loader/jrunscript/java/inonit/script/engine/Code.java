@@ -418,14 +418,43 @@ public class Code {
 			return input + "/";
 		}
 
+		private static void maintainDirectories(HashMap<String,HashSet<String>> directories, String entryName) {
+			if (entryName.lastIndexOf("/") != -1) {
+				String directory;
+				String basename;
+				if (entryName.endsWith("/")) {
+					int split = entryName.substring(0, entryName.length()-1).lastIndexOf("/");
+					if (split == -1) {
+						directory = "";
+						basename = entryName;
+					} else {
+						directory = entryName.substring(0, split+1);
+						basename = entryName.substring(split+1);
+					}
+				} else {
+					directory = entryName.substring(0, entryName.lastIndexOf("/") + 1);
+					basename = entryName.substring(entryName.lastIndexOf("/") + 1);
+				}
+				HashSet<String> listing = directories.get(directory);
+				if (listing == null) {
+					listing = new HashSet<String>();
+					directories.put(directory, listing);
+				}
+				listing.add(basename);
+				maintainDirectories(directories, directory);
+			}
+		}
+
 		private static Loader zip(final String name, final java.io.InputStream stream) {
 			try {
 				java.util.zip.ZipInputStream in = new java.util.zip.ZipInputStream(stream);
 				java.util.zip.ZipEntry entry;
 				final HashMap<String,Loader.Resource> files = new HashMap<String,Loader.Resource>();
+				final HashMap<String,HashSet<String>> directories = new HashMap<String,HashSet<String>>();
 				while( (entry = in.getNextEntry()) != null) {
 					final byte[] bytes = new inonit.script.runtime.io.Streams().readBytes(in, false);
 					final String entryName = entry.getName();
+					maintainDirectories(directories, entryName);
 					Loader.Resource f = new Loader.Resource() {
 						public String toString() {
 							return name + "!" + entryName + " length=" + bytes.length;
@@ -461,22 +490,7 @@ public class Code {
 				final Enumerator enumerator = new Enumerator() {
 					@Override public String[] list(String prefix) {
 						String start = toPrefix(prefix);
-						ArrayList<String> rv = new ArrayList<String>();
-						for (String key : files.keySet()) {
-							if (key.startsWith(start)) {
-								if (key.endsWith("/")) {
-									//	ignore
-								} else {
-									String suffix = key.substring(start.length());
-									if (suffix.indexOf("/") != -1) {
-										//	subdirectory, ignore
-									} else {
-										rv.add(suffix);
-									}
-								}
-							}
-						}
-						return rv.toArray(new String[0]);
+						return (directories.get(start) != null) ? directories.get(start).toArray(new String[0]) : new String[0];
 					}
 				};
 				return new Code.Loader() {
