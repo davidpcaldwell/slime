@@ -373,6 +373,10 @@ public class Code {
 			return Code.Loader.create(url, Code.Loader.Enumerator.githubApi(url));
 		}
 
+		public static Loader github(URL zip, String prefix) throws IOException, URISyntaxException {
+			return zip(zip.toURI().toString(), zip.openConnection().getInputStream()).child(prefix);
+		}
+
 		static Loader create(java.net.URLClassLoader parent) {
 			List<URL> urls = Arrays.asList(((URLClassLoader)parent).getURLs());
 			List<Code.Loader> sources = new ArrayList<Code.Loader>();
@@ -407,6 +411,13 @@ public class Code {
 			return zip(file.toString(), file.getInputStream());
 		}
 
+		private static String toPrefix(String input) {
+			if (input == null) return "";
+			if (input.length() == 0) return "";
+			if (input.endsWith("/")) return input;
+			return input + "/";
+		}
+
 		private static Loader zip(final String name, final java.io.InputStream stream) {
 			try {
 				java.util.zip.ZipInputStream in = new java.util.zip.ZipInputStream(stream);
@@ -417,7 +428,7 @@ public class Code {
 					final String entryName = entry.getName();
 					Loader.Resource f = new Loader.Resource() {
 						public String toString() {
-							return getClass().getName() + " length=" + bytes.length;
+							return name + "!" + entryName + " length=" + bytes.length;
 						}
 
 						@Override public URI getURI() {
@@ -449,7 +460,7 @@ public class Code {
 				}
 				final Enumerator enumerator = new Enumerator() {
 					@Override public String[] list(String prefix) {
-						String start = prefix + "/";
+						String start = toPrefix(prefix);
 						ArrayList<String> rv = new ArrayList<String>();
 						for (String key : files.keySet()) {
 							if (key.startsWith(start)) {
@@ -932,7 +943,7 @@ public class Code {
 				}
 				final Enumerator enumerator = new Enumerator() {
 					@Override public String[] list(String prefix) {
-						String start = prefix + "/";
+						String start = toPrefix(prefix);
 						ArrayList<String> rv = new ArrayList<String>();
 						for (String key : files.keySet()) {
 							if (key.startsWith(start)) {
