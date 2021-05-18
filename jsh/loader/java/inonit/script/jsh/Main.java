@@ -19,14 +19,18 @@ public class Main {
 
 	//	TODO	refactor into locateCodeSource() method
 	private static abstract class Location {
-		static Code.Loader loader(String string) {
+		static Code.Loader loader(String string) throws IOException, URISyntaxException {
 			//	TODO	below can happen when looking for local/jsh/lib in remote shell
 			if (string == null) return Code.Loader.NULL;
 			String host = "raw.githubusercontent.com";
 			if (string.startsWith("http://" + host) || string.startsWith("https://" + host)) {
 				try {
+					if (string.indexOf("//raw.githubusercontent.com/davidpcaldwell/slime/master/") != -1) {
+						return Code.Loader.github(new java.net.URL("https://github.com/davidpcaldwell/slime/archive/refs/heads/master.zip"), "slime-master");
+					}
+					Code.Loader.githubApi(new URL(string));
+					throw new RuntimeException("Not supported: " + string);
 //					return Code.Loader.bitbucketApiVersionOne(new URL(string));
-					return Code.Loader.githubApi(new URL(string));
 				} catch (MalformedURLException e) {
 					throw new RuntimeException(e);
 				}
@@ -371,7 +375,13 @@ public class Main {
 		Code.Loader getLibraries() {
 			//	See jsh/launcher/main.js; this value is defined there because it is needed by launcher to start loader with Rhino
 			//	in classpath
-			return Location.loader(System.getProperty("jsh.shell.lib"));
+			try {
+				return Location.loader(System.getProperty("jsh.shell.lib"));
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			} catch (URISyntaxException e) {
+				throw new RuntimeException(e);
+			}
 //			File file = new java.io.File(System.getProperty("jsh.shell.lib"));
 //			return Code.Loader.create(file);
 		}
@@ -453,7 +463,13 @@ public class Main {
 				//	TODO	eliminate the below system property by using a shell API to specify this
 				return new Built(home);
 			}
-			return new Unbuilt(Location.loader(System.getProperty("jsh.shell.src")));
+			try {
+				return new Unbuilt(Location.loader(System.getProperty("jsh.shell.src")));
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			} catch (URISyntaxException e) {
+				throw new RuntimeException(e);
+			}
 		}
 	}
 

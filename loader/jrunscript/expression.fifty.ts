@@ -407,6 +407,7 @@ namespace slime.jrunscript {
 				logging: any
 				Base64: any
 				Map: any
+				zip: any
 			}
 			awt: {
 				Desktop: any

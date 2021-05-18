@@ -22,7 +22,12 @@ namespace slime.jrunscript.io {
 			adapt: any
 		}
 		mime: slime.jrunscript.io.mime.Exports
-		archive: any
+		archive: {
+			zip: {
+				encode: (p: {stream: slime.jrunscript.runtime.io.OutputStream, entries: { path: string, resource: slime.Resource }[]}) => void
+				decode: (p: {stream: slime.jrunscript.runtime.io.InputStream}) => void
+			}
+		}
 		grid: any
 	}
 }

@@ -118,12 +118,23 @@
 							} else {
 								Packages.java.lang.System.err.println("No match: " + request.path);
 							}
+						} else if (host == "github.com") {
+							var zipfile = /(.*)\/(.*)\/archive\/refs\/heads\/(.*).zip$/;
+							var match = zipfile.exec(request.path);
+							if (match) {
+								var user = match[1];
+								var repo = match[2];
+								var version = match[3];
+								if (user == "davidpcaldwell" && repo == "slime" && version == "master") {
+									//	create zip file of source tree, excluding .git
+
+								}
+							}
 						}
 						return {
 							status: { code: 404 }
 						}
 					}
-					return void(0);
 				};
 
 				jsh.unit.mock.Web.github = MockGithubApi;

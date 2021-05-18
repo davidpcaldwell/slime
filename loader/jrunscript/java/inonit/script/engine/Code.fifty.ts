@@ -5,6 +5,7 @@
 //	END LICENSE
 
 (
+	//	Dependency test
 	function(
 		Packages: slime.jrunscript.Packages,
 		fifty: slime.fifty.test.kit
