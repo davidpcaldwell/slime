@@ -462,7 +462,7 @@ public class Code {
 
 						@Override public URI getURI() {
 							LOG.log(Code.Loader.class, Level.FINE, "getURI()", null);
-							throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+							return Code.Loader.URI.create(Code.Loader.URI.string(name + "!" + "/" + name));
 						}
 
 						@Override public String getSourceName() {
