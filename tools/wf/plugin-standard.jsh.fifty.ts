@@ -107,6 +107,13 @@ namespace slime.jsh.wf {
 								slime.add({ path: "." });
 								slime.commit({ message: "Local modifications committed by plugin-standard.jsh.fifty.ts tests." });
 							}
+
+							//	Initialize SLIME external types (e.g., jsyaml) so that tsc will pass
+							jsh.shell.run({
+								command: slime.directory.getFile("wf"),
+								arguments: ["initialize", "--test-skip-git-identity-requirement"]
+							});
+
 							return repository;
 						}
 					}

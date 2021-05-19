@@ -547,7 +547,7 @@
 					var load = function(code) {
 						return $api.debug.disableBreakOnExceptionsFor(function() {
 							var global = {};
-							var rv = eval(code);
+							eval(code);
 							return global.jsyaml;
 						})();
 					}

@@ -82,6 +82,8 @@
 					&& !isTxtTestData(n)
 					&& !isXlsTestData(n)
 					&& n.pathname.basename != "LICENSE"
+					//	can be a file rather than a directory when this repository is a submodule
+					&& n.pathname.basename != ".git"
 				;
 			},
 			descendants: function(dir) {

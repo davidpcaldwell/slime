@@ -82,44 +82,53 @@
 			}
 		}
 
-		$exports.initialize = function(p) {
-			//	TODO	could consider whether we can wire our commit process into the git hooks mechanism:
-			//			git config core.hooksPath contributor/hooks
-			//			... and then appropriately implement contributor/hooks/pre-commit
+		$exports.initialize = $api.Function.pipe(
+			function(p) {
+				//	TODO	could consider whether we can wire our commit process into the git hooks mechanism:
+				//			git config core.hooksPath contributor/hooks
+				//			... and then appropriately implement contributor/hooks/pre-commit
 
-			var gitIdentityProvider = (p && p.arguments[0] == "--test-git-identity-requirement") ? void(0) : jsh.wf.requireGitIdentity.get.gui;
+				//	Provided for testing, allows an automated test to initialize without GUI prompting for git identity
+				//	Currently used by plugin-standard.jsh.fifty.ts to install TypeScript types so tsc passes in parent project
+				var skipGitIdentityRequirement = (p && p.arguments[0] == "--test-skip-git-identity-requirement");
 
-			try {
-				jsh.wf.requireGitIdentity({
-					repository: jsh.tools.git.Repository({ directory: $context.base }),
-					get: gitIdentityProvider
-				});
-			} catch (e) {
-				//	TODO	returning 1 here apparently does not function as expected. Perhaps wf still has a disjoint
-				//			implementation from jsh.script.cli?
-				jsh.shell.console("user.name and user.email must be set on the local repository.");
-				jsh.shell.console("From the source directory " + $context.base + ":");
-				jsh.shell.console("git config user.name \"Your Name\"");
-				jsh.shell.console("git config user.email \"youremail@yourdomain.com\"");
-				jsh.shell.exit(1);
-			}
+				if (!skipGitIdentityRequirement) {
+					var gitIdentityProvider = (p && p.arguments[0] == "--test-git-identity-requirement") ? void(0) : jsh.wf.requireGitIdentity.get.gui;
 
-			jsh.shell.tools.node.require();
-			jsh.shell.tools.node["modules"].require({ name: "eslint" });
-
-			var isEclipseProject = Boolean($context.base.getSubdirectory(".settings"));
-			if (isEclipseProject) {
-				synchronizeEclipseSettings();
-			}
-
-			(function wiki() {
-				var remote = jsh.tools.git.Repository({ remote: "https://github.com/davidpcaldwell/slime.wiki.git" });
-				var location = $context.base.getRelativePath("local/wiki");
-				if (!location.directory) {
-					remote.clone({ to: location });
+					try {
+						jsh.wf.requireGitIdentity({
+							repository: jsh.tools.git.Repository({ directory: $context.base }),
+							get: gitIdentityProvider
+						});
+					} catch (e) {
+						//	TODO	returning 1 here apparently does not function as expected. Perhaps wf still has a disjoint
+						//			implementation from jsh.script.cli?
+						jsh.shell.console("user.name and user.email must be set on the local repository.");
+						jsh.shell.console("From the source directory " + $context.base + ":");
+						jsh.shell.console("git config user.name \"Your Name\"");
+						jsh.shell.console("git config user.email \"youremail@yourdomain.com\"");
+						jsh.shell.exit(1);
+					}
 				}
-			})();
-		};
+
+				jsh.shell.tools.node.require();
+				jsh.shell.tools.node["modules"].require({ name: "eslint" });
+				jsh.shell.tools.node["modules"].require({ name: "@types/js-yaml" });
+
+				var isEclipseProject = Boolean($context.base.getSubdirectory(".settings"));
+				if (isEclipseProject) {
+					synchronizeEclipseSettings();
+				}
+
+				(function wiki() {
+					var remote = jsh.tools.git.Repository({ remote: "https://github.com/davidpcaldwell/slime.wiki.git" });
+					var location = $context.base.getRelativePath("local/wiki");
+					if (!location.directory) {
+						remote.clone({ to: location });
+					}
+				})();
+			}
+		);
 
 		$exports.vscode = {
 			java: {

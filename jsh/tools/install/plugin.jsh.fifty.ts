@@ -4,8 +4,10 @@
 //
 //	END LICENSE
 
+/// <reference path="../../../local/jsh/lib/node/lib/node_modules/@types/js-yaml/index.d.ts" />
+
 namespace slime.jsh.tools.install {
-	type Exports = jsh.tools.install.module.Exports & {
+	export type Exports = jsh.tools.install.module.Exports & {
 		rhino: any
 		tomcat: any
 	};
@@ -13,7 +15,7 @@ namespace slime.jsh.tools.install {
 
 namespace slime.jsh.shell.tools {
 	namespace rhino {
-		interface InstallCommand {
+		export interface InstallCommand {
 			mock?: { lib: slime.jrunscript.file.Directory, rhino: slime.jrunscript.file.File }
 			local?: slime.jrunscript.file.File
 			replace?: boolean
@@ -22,7 +24,7 @@ namespace slime.jsh.shell.tools {
 	}
 
 	namespace scala {
-		interface Installation {
+		export interface Installation {
 			compile: (p: {
 				destination: slime.jrunscript.file.Pathname
 				deprecation: boolean
@@ -36,13 +38,13 @@ namespace slime.jsh.shell.tools {
 		}
 	}
 
-	namespace mkcert {
-		interface Installation {
+	export namespace mkcert {
+		export interface Installation {
 			pkcs12: (p: { hosts: string[], to?: slime.jrunscript.file.Pathname }) => void
 		}
 	}
 
-	interface Exports {
+	export interface Exports {
 		rhino: {
 			install: (
 				p?: rhino.InstallCommand,
@@ -57,7 +59,22 @@ namespace slime.jsh.shell.tools {
 		tomcat: any
 		ncdbg: any
 		kotlin: any
-		jsyaml: any
+
+		/**
+		 * Integration with [`js-yaml`](https://github.com/nodeca/js-yaml) v3, which provides support for the YAML serialization format.
+		 */
+		jsyaml: {
+			/**
+			 * Downloads `js-yaml` if it is not installed into the shell, installs it into the current shell and returns it.
+			 */
+			install: () => typeof jsyaml
+
+			/**
+			 * Downloads `js-yaml` if it is not installed into the shell, and returns it.
+			 */
+			load: () => typeof jsyaml
+		}
+
 		mkcert: {
 			install: (p?: { destination?: slime.jrunscript.file.Pathname, replace?: boolean }) => mkcert.Installation
 			require: () => mkcert.Installation
