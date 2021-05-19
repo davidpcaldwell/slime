@@ -318,7 +318,7 @@
 							});
 
 							jsh.shell.run({
-								command: location.file,
+								command: destination.file,
 								arguments: ["-install"]
 							});
 
