@@ -6,6 +6,10 @@
 
 //@ts-check
 (
+	/**
+	 *
+	 * @param { { value: string } } $exports
+	 */
 	function($exports) {
 		$exports.value = "kindness";
 	}
