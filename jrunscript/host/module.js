@@ -686,7 +686,17 @@
 				var name = String(i.next());
 				var value = String(_environment.getValue(name));
 				Object.defineProperty(rv, name, { value: value, enumerable: true });
-				if (_environment.isNameCaseSensitive() && !_environment.isNameCaseSensitive().booleanValue() && !rv[name.toUpperCase()]) {
+				//	The below handling of case sensitivity deals with GraalVM unwrapping java.lang.Boolean to JavaScript boolean,
+				//	while Nashorn and Rhino do not (untested, but the code below should have broken if not?)
+				var isCaseSensitiveObject;
+				if (typeof(_environment.isNameCaseSensitive()) == "boolean") {
+					isCaseSensitiveObject = (function toObject(value) {
+						return { booleanValue: function() { return value; } }
+					})(_environment.isNameCaseSensitive())
+				} else {
+					isCaseSensitiveObject = _environment.isNameCaseSensitive()
+				}
+				if (isCaseSensitiveObject && !isCaseSensitiveObject.booleanValue() && !rv[name.toUpperCase()]) {
 					Object.defineProperty(rv, name.toUpperCase(), { value: value, enumerable: false });
 				}
 			}

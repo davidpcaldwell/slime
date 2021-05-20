@@ -127,7 +127,8 @@
 
 				var graal = new function() {
 					var VERSION = {
-						number: "20.3.0",
+						number: "21.0.0.2",
+						jdk: "8",
 						edition: "ce"
 					};
 					this.install = $api.Events.Function(function(p,events) {
@@ -135,10 +136,10 @@
 							jsh.tools.install.install({
 								url: "https://github.com/graalvm/graalvm-ce-builds/releases/download/"
 									+ "vm-" + VERSION.number + "/"
-									+ "graalvm-" + VERSION.edition + "-" + "java8" + "-" + "darwin" + "-" + "amd64" + "-" + VERSION.number + ".tar.gz"
+									+ "graalvm-" + VERSION.edition + "-" + "java" + VERSION.jdk + "-" + "darwin" + "-" + "amd64" + "-" + VERSION.number + ".tar.gz"
 								,
 								getDestinationPath: function(file) {
-									return "graalvm-" + VERSION.edition + "-" + "java8" + "-" + VERSION.number;
+									return "graalvm-" + VERSION.edition + "-" + "java" + VERSION.jdk + "-" + VERSION.number;
 								},
 								to: jsh.shell.jsh.lib.getRelativePath("graal")
 							});
