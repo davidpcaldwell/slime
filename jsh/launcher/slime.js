@@ -7,7 +7,7 @@
 //@ts-check
 (
 	/**
-	 * @this { slime.jrunscript.bootstrap.Global<{ slime: any }> }
+	 * @this { slime.jrunscript.bootstrap.Global<{ slime: slime.jrunscript.bootstrap.Slime & { setting: any, settings: any } }> }
 	 */
 	function() {
 		var Packages = this.Packages;
@@ -46,7 +46,11 @@
 			} else {
 				rv = {
 					launcher: void(0),
-					src: void(0)
+					src: void(0),
+					built: void(0),
+					home: void(0),
+					setting: void(0),
+					settings: void(0)
 				};
 
 				var isSourceFile = $$api.script.file && String($$api.script.file.getParentFile().getName()) == "launcher";

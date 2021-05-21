@@ -13,7 +13,7 @@ namespace slime.jrunscript.bootstrap {
 		arguments: string[]
 	}
 
-	export interface Global<T> {
+	export interface Global<T,J> {
 		load: any
 		Packages: any
 		JavaAdapter: any
@@ -29,11 +29,21 @@ namespace slime.jrunscript.bootstrap {
 			engine: any
 			rhino: any
 			console: any
-			java: any
+			java: {
+				Install: any
+				install: any
+				getClass: any
+				Array: any
+				Command: any
+			} & J
 			arguments: string[]
 			shell: any
 			io: any
 			log: any
+
+			Script: any
+
+			bitbucket: any
 		} & T
 	}
 }

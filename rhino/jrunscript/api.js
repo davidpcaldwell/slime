@@ -57,6 +57,10 @@
 		var configuration = toConfiguration(this["$api"]);
 		var $script = (configuration && configuration.script) ? configuration.script : null;
 		var $arguments = (configuration && configuration.arguments) ? configuration.arguments : null;
+
+		/**
+		 * @type { slime.jrunscript.bootstrap.Global<{},{}>["$api"] }
+		 */
 		var $api = {
 			debug: void(0),
 			script: void(0),
@@ -67,7 +71,9 @@
 			arguments: void(0),
 			shell: void(0),
 			io: void(0),
-			log: void(0)
+			log: void(0),
+			Script: void(0),
+			bitbucket: void(0)
 		};
 
 		(function() {
@@ -679,7 +685,13 @@
 			}
 		})();
 
-		$api.java = {};
+		$api.java = {
+			Install: void(0),
+			install: void(0),
+			getClass: void(0),
+			Array: void(0),
+			Command: void(0)
+		};
 		$api.java.Install = function(home) {
 			var File = Packages.java.io.File;
 

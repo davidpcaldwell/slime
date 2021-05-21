@@ -7,7 +7,7 @@
 //@ts-check
 (
 	/**
-	 * @this { slime.jrunscript.bootstrap.Global<{ slime: any, jsh: any }> }
+	 * @this { slime.jrunscript.bootstrap.Global<{ slime: any, jsh: any }, { compile: any }> }
 	 */
 	function() {
 		//	NOTES ABOUT UNSUPPORTED PLATFORMS
