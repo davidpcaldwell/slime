@@ -49,6 +49,14 @@ jsh.script.loader = new jsh.script.Loader("../../");
 
 var jrunscript = (function() {
 	var THIS = {
+		Packages: Packages,
+		JavaAdapter: JavaAdapter,
+		load: function(url) {
+			jsh.shell.console("Loading " + url);
+			if (jsh.file.Pathname(url).file) {
+				jsh.loader.run(jsh.file.Pathname(url), {}, THIS);
+			}
+		}
 	};
 	THIS.$api = {
 		toString: function() { return "it"; },
@@ -57,16 +65,15 @@ var jrunscript = (function() {
 		debug: false,
 		engine: {
 			script: (jsh.script.file) ? jsh.script.file.parent.parent.getRelativePath("rhino/jrunscript/api.js").toString() : null
-		}
-	};
-	jsh.script.loader.run("rhino/jrunscript/api.js", {
+		},
 		load: function(url) {
 			jsh.shell.console("Loading " + url);
 			if (jsh.file.Pathname(url).file) {
 				jsh.loader.run(jsh.file.Pathname(url), {}, THIS);
 			}
 		}
-	}, THIS);
+	};
+	jsh.script.loader.run("rhino/jrunscript/api.js", {}, THIS);
 	THIS.$api.arguments = [];
 	return THIS;
 })();

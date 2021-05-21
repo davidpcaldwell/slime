@@ -13,7 +13,7 @@
 	 * @param { slime.jsh.plugin.plugin } plugin
 	 * @param { slime.Loader } $loader
 	 */
-	function($api,jsh,plugins,plugin,$loader) {
+	function(Packages,JavaAdapter,$api,jsh,plugins,plugin,$loader) {
 		plugin({
 			isReady: function() {
 				return jsh.js && jsh.js.web && jsh.java && jsh.ip && jsh.time && jsh.file && jsh.http && jsh.shell && jsh.java.tools;
@@ -60,7 +60,15 @@
 							var jrunscript = {
 								$api: {
 									arguments: ["api"]
-								}
+								},
+								load: function() {
+									//jsh.shell.console("load(" + Array.prototype.slice.call(arguments) + ")");
+								},
+								print: function(s) {
+									jsh.shell.console(s);
+								},
+								Packages: Packages,
+								JavaAdapter: JavaAdapter
 							};
 							//	TODO	push this back to jsh.shell as jsh.shell.jrunscript.api?
 							var SRC = (function() {
@@ -69,11 +77,7 @@
 							})();
 							jsh.loader.run(
 								SRC,
-								{
-									load: function() {
-										//jsh.shell.console("load(" + Array.prototype.slice.call(arguments) + ")");
-									}
-								},
+								{},
 								jrunscript
 							);
 							var _rhino = (p.mock && p.mock.rhino) ? p.mock.rhino.pathname.java.adapt() : jrunscript.$api.rhino.download(p.version);
@@ -689,4 +693,4 @@
 		});
 	}
 //@ts-ignore
-)($api,jsh,plugins,plugin,$loader)
+)(Packages,JavaAdapter,$api,jsh,plugins,plugin,$loader)
