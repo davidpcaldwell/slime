@@ -65,9 +65,16 @@ namespace slime.jsh.shell.tools {
 		 */
 		jsyaml: {
 			/**
-			 * Downloads `js-yaml` if it is not installed into the shell, installs it into the current shell and returns it.
+			 * Downloads `js-yaml`, installs it into the current shell, and returns it. Property is available if this shell allows
+			 * the installation of libraries.
 			 */
-			install: () => typeof jsyaml
+			install?: () => typeof jsyaml
+
+			/**
+			 * Returns `js-yaml`, downloading it if it is not installed in the shell. If it is not installed in the shell and *can*
+			 * be installed into the shell, it will be installed into the shell.
+			 */
+			require: () => typeof jsyaml
 
 			/**
 			 * Downloads `js-yaml` if it is not installed into the shell, and returns it.

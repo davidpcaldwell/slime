@@ -541,7 +541,7 @@
 
 				//	TODO	probably want to create a jrunscript/io version of this also, or even a loader/ version given that this
 				//			is pure JavaScript
-				jsh.shell.tools.jsyaml = new function() {
+				jsh.shell.tools.jsyaml = (function() {
 					var location = (jsh.shell.jsh.lib) ? jsh.shell.jsh.lib.getRelativePath("js-yaml.js") : null;
 
 					var fetchCode = function() {
@@ -561,18 +561,38 @@
 						})();
 					}
 
-					this.install = function() {
-						if (!location) throw new Error("Cannot install js-yaml into this shell.");
+					var install = (location) ? function() {
 						var code = fetchCode();
 						location.write(code, { append: false });
 						return load(code);
-					};
+					} : void(0)
 
-					this.load = function() {
-						var code = (location && location.file) ? location.file.read(String) : fetchCode();
-						return load(code);
-					}
-				};
+					return $api.Object.compose(
+						(install) ? { install: install } : {},
+						{
+							require: function() {
+								var code = (function() {
+									if (location) {
+										if (location.file) {
+											return location.file.read(String);
+										} else {
+											var rv = fetchCode();
+											location.write(code, { append: false });
+											return rv;
+										}
+									} else {
+										return fetchCode();
+									}
+								})();
+								return load(code);
+							},
+							load: function() {
+								var code = (location && location.file) ? location.file.read(String) : fetchCode();
+								return load(code);
+							}
+						}
+					);
+				})();
 
 				jsh.tools.gradle = gradle;
 			}
