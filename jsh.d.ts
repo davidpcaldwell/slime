@@ -42,6 +42,7 @@ namespace slime.jsh {
 			install: slime.jsh.tools.install.Exports
 			github: slime.jrunscript.tools.github.Exports
 			gradle: any
+			docker: slime.jrunscript.tools.docker.Engine
 		} & {
 			//	deprecated
 			rhino: {}

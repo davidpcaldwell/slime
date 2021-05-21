@@ -117,6 +117,15 @@
 
 		plugin({
 			isReady: function() {
+				return Boolean(jsh.shell && jsh.tools);
+			},
+			load: function() {
+				jsh.loader.plugins($loader.Child("docker/"));
+			}
+		})
+
+		plugin({
+			isReady: function() {
 				return Boolean(jsh.http && jsh.shell && jsh.tools);
 			},
 			load: function() {

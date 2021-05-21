@@ -26,6 +26,7 @@
 					install: void(0),
 					github: void(0),
 					gradle: void(0),
+					docker: void(0),
 
 					//	deprecated
 					rhino: void(0),
