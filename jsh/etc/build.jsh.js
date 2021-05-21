@@ -68,11 +68,11 @@
 						jsh.loader.run(jsh.file.Pathname(url), {}, THIS);
 					}
 				},
-				print: void(0),
 				readFile: void(0),
 				readUrl: void(0),
 				$api: void(0),
-				launcher: void(0)
+				launcher: void(0),
+				Java: void(0)
 			};
 			THIS.$api = {
 				toString: function() { return "it"; },

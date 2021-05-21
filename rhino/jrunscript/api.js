@@ -17,11 +17,10 @@
 (
 	/**
 	 *
-	 * @this { slime.jrunscript.bootstrap.Global }
+	 * @this { slime.jrunscript.bootstrap.Global<{}> }
 	 */
 	function() {
 		var load = this.load;
-		var print = this.print;
 
 		//	The below would initialize the logging configuration to be empty, rather than the JDK default. The only logging done is for
 		//	remote shells, which otherwise would produce an uncomfortably long silence before the program started running. So they are
@@ -49,9 +48,27 @@
 		// 	}
 		// })();
 
-		var $script = (this.$api && this.$api.script) ? this.$api.script : null;
-		var $arguments = (this.$api && this.$api.arguments) ? this.$api.arguments : null;
-		var $api = {};
+		/** @type { (p: any) => slime.jrunscript.bootstrap.Configuration } */
+		function toConfiguration(p) {
+			return p;
+		}
+
+		/** @type { slime.jrunscript.bootstrap.Configuration } */
+		var configuration = toConfiguration(this["$api"]);
+		var $script = (configuration && configuration.script) ? configuration.script : null;
+		var $arguments = (configuration && configuration.arguments) ? configuration.arguments : null;
+		var $api = {
+			debug: void(0),
+			script: void(0),
+			engine: void(0),
+			rhino: void(0),
+			console: void(0),
+			java: void(0),
+			arguments: void(0),
+			shell: void(0),
+			io: void(0),
+			log: void(0)
+		};
 
 		(function() {
 			var on = false;

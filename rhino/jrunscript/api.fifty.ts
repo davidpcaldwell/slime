@@ -5,14 +5,35 @@
 //	END LICENSE
 
 namespace slime.jrunscript.bootstrap {
-	export interface Global {
+	export interface Configuration {
+		script: {
+			file: string
+			url: string
+		}
+		arguments: string[]
+	}
+
+	export interface Global<T> {
 		load: any
-		print: any
 		Packages: any
 		JavaAdapter: any
 		readFile: any
 		readUrl: any
 
-		$api: any
+		//	Used in jsh/launcher/main.js
+		Java: any
+
+		$api: {
+			debug: any
+			script: any
+			engine: any
+			rhino: any
+			console: any
+			java: any
+			arguments: string[]
+			shell: any
+			io: any
+			log: any
+		} & T
 	}
 }

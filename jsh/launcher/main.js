@@ -11,11 +11,13 @@
 (
 	/**
 	 *
-	 * @param { any } Packages
-	 * @param { any } Java
-	 * @param { any } $api
+	 * @this { slime.jrunscript.bootstrap.Global<{ slime: any, jsh: any }> }
 	 */
-	function(Packages,Java,$api) {
+	function() {
+		var Java = this.Java;
+		var Packages = this.Packages;
+		var $api = this.$api;
+
 		if (!$api.slime) {
 			if ($api.script.url) {
 				//	Load as-is, I guess?
@@ -329,4 +331,4 @@
 		}
 	}
 //@ts-ignore
-)( (function() { return this.Packages })(), (function() { return this.Java })(), $api );
+).call(this);

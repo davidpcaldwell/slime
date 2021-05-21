@@ -68,13 +68,11 @@
 								load: function() {
 									//jsh.shell.console("load(" + Array.prototype.slice.call(arguments) + ")");
 								},
-								print: function(s) {
-									jsh.shell.console(s);
-								},
 								Packages: Packages,
 								JavaAdapter: JavaAdapter,
 								readFile: void(0),
-								readUrl: void(0)
+								readUrl: void(0),
+								Java: void(0)
 							};
 							//	TODO	push this back to jsh.shell as jsh.shell.jrunscript.api?
 							var SRC = (function() {
