@@ -58,6 +58,9 @@
 						events.fire("console", "Installing Rhino ...");
 						var operation = "copy";
 						if (!p.local) {
+							/**
+							 * @type { slime.jrunscript.bootstrap.Global }
+							 */
 							var jrunscript = {
 								$api: {
 									arguments: ["api"]
@@ -69,7 +72,9 @@
 									jsh.shell.console(s);
 								},
 								Packages: Packages,
-								JavaAdapter: JavaAdapter
+								JavaAdapter: JavaAdapter,
+								readFile: void(0),
+								readUrl: void(0)
 							};
 							//	TODO	push this back to jsh.shell as jsh.shell.jrunscript.api?
 							var SRC = (function() {

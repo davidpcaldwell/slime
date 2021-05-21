@@ -17,7 +17,7 @@
 (
 	/**
 	 *
-	 * @this { any }
+	 * @this { slime.jrunscript.bootstrap.Global }
 	 */
 	function() {
 		var load = this.load;
@@ -209,9 +209,10 @@
 				rhino: function() {
 					rv.classpath = new global.Packages.java.io.File(global.Packages.java.lang.Class.forName("org.mozilla.javascript.Context").getProtectionDomain().getCodeSource().getLocation().toURI());
 
-					this.echo = function(s) {
-						print(s);
-					}
+					//	Hard to believe this is used; commenting out. Remove if tests pass.
+					// this.echo = function(s) {
+					// 	print(s);
+					// }
 				},
 				graal: function() {
 					load("nashorn:mozilla_compat.js");
@@ -1181,6 +1182,9 @@
 ).call(this);
 
 (
+	/**
+	 * @this { slime.jrunscript.bootstrap.Global }
+	 */
 	function() {
 		var Packages = this.Packages;
 		var $api = this.$api;
