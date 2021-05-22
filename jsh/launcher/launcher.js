@@ -7,7 +7,7 @@
 //@ts-check
 (
 	/**
-	 * @this { slime.jrunscript.bootstrap.Global<{ slime: any, jsh: any }, { compile: any }> }
+	 * @this { slime.internal.jrunscript.bootstrap.Global<{ slime: any, jsh: any }, { compile: slime.internal.jsh.launcher.javac.compile }> }
 	 */
 	function() {
 		//	NOTES ABOUT UNSUPPORTED PLATFORMS
@@ -225,6 +225,8 @@
 			$$api.script.resolve("javac.js").load();
 
 			$$api.jsh.Unbuilt = function(p) {
+				if (!p) throw new TypeError("Required: arguments[0]");
+
 				var File = Packages.java.io.File;
 
 				//	TODO	p.rhino argument is supplied by jsh/etc/build.jsh.js and is dubious
@@ -233,33 +235,11 @@
 				}
 
 				// TODO: this same approach for locating the lib directory should be used in $$api.jsh.Built, no?
-				var lib = (function() {
-					var setting = $$api.slime.settings.get("jsh.shell.lib");
-					//	TODO	setting can be null because $$api.script.resolve() doesn't find local/jsh/lib online; should refactor
-					if (!setting) return null;
-					if (/^http/.test(setting)) {
-						return { url: setting }
-					} else {
-						var file = new Packages.java.io.File($$api.slime.settings.get("jsh.shell.lib"));
-						if (!file.exists()) file.mkdirs();
-						return { file: file };
-					}
-				})();
-
-				var rhino = (p && p.rhino) ? p.rhino : null;
-
-				// TODO: do we still need jsh.engine.rhino.classpath? Maybe if working with a local Rhino build?
-				if (!rhino) {
-					if ($$api.slime.settings.get("jsh.engine.rhino.classpath")) {
-						rhino = [new Packages.java.io.File($$api.slime.settings.get("jsh.engine.rhino.classpath")).toURI().toURL()];
-					} else if ($$api.slime.settings.get("jsh.shell.lib") && lib.file) {
-						if (new Packages.java.io.File(lib.file, "js.jar").exists()) {
-							rhino = [new Packages.java.io.File(lib.file, "js.jar").toURI().toURL()];
-						}
-					}
-				}
+				var rhino = (p.rhino) ? p.rhino : null;
 
 				this.rhino = rhino;
+
+				var lib = p.lib;
 
 				if (lib && lib.file && new File(lib.file, "graal").exists()) {
 					if (new File(lib.file, "graal/Contents/Home").exists()) {

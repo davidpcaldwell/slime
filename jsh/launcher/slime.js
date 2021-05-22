@@ -7,7 +7,7 @@
 //@ts-check
 (
 	/**
-	 * @this { slime.jrunscript.bootstrap.Global<{ slime: slime.jrunscript.bootstrap.Slime & { setting: any, settings: any } }> }
+	 * @this { slime.internal.jrunscript.bootstrap.Global<{ slime: slime.internal.jsh.launcher.Slime }> }
 	 */
 	function() {
 		var Packages = this.Packages;

@@ -4,7 +4,7 @@
 //
 //	END LICENSE
 
-namespace slime.jrunscript.bootstrap {
+namespace slime.internal.jrunscript.bootstrap {
 	export interface Configuration {
 		script: {
 			file: string
@@ -38,7 +38,11 @@ namespace slime.jrunscript.bootstrap {
 			} & J
 			arguments: string[]
 			shell: any
-			io: any
+			io: {
+				tmpdir: (p?: { prefix?: string, suffix?: string }) => slime.jrunscript.native.java.io.File
+				copy: any
+				unzip: any
+			}
 			log: any
 
 			Script: any

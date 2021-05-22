@@ -59,7 +59,7 @@
 						var operation = "copy";
 						if (!p.local) {
 							/**
-							 * @type { slime.jrunscript.bootstrap.Global }
+							 * @type { slime.internal.jrunscript.bootstrap.Global }
 							 */
 							var jrunscript = {
 								$api: {

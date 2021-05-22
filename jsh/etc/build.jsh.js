@@ -57,7 +57,7 @@
 
 		var jrunscript = (function() {
 			/**
-			 * @type { slime.jrunscript.bootstrap.Global & { launcher: any } }
+			 * @type { slime.internal.jrunscript.bootstrap.Global & { launcher: any } }
 			 */
 			var THIS = {
 				Packages: Packages,

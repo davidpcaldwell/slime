@@ -7,16 +7,14 @@
 //@ts-check
 (
 	/**
-	 * @this { slime.jrunscript.bootstrap.Global<{}> }
+	 * @this { slime.internal.jrunscript.bootstrap.Global<{},{ compile: any }> }
 	 */
 	function() {
 		var Packages = this.Packages;
 		var $api = this.$api;
 		var JavaAdapter = this.JavaAdapter;
 
-		if (!$api.java) $api.java = {};
-		if (!$api.debug) $api.debug = function() {
-		};
+		/** @type { slime.internal.jsh.launcher.javac.compile } */
 		$api.java.compile = function(p) {
 			var toIterable = function(array) {
 				var _rv = new Packages.java.util.ArrayList();
@@ -263,7 +261,7 @@
 						}
 
 						this.list = function(_packageName,_setOfKinds,recurse) {
-		//						$api.debug("classpath list");
+							// $api.debug("classpath list");
 							var kinds = {};
 							//Packages.java.lang.System.err.println("package: " + _packageName + " kinds " + _setOfKinds + " recurse " + recurse);
 							kinds.toString = function() {
@@ -287,16 +285,16 @@
 							//Packages.java.lang.System.err.println("_urls = " + _urls);
 							for (var i=0; i<elements.length; i++) {
 								var list = elements[i].list(String(_packageName),kinds,recurse);
-		//							$api.debug("elements[" + i + "] = " + elements[i] + " package=" + _packageName + " list = " + list);
+								// $api.debug("elements[" + i + "] = " + elements[i] + " package=" + _packageName + " list = " + list);
 								rv.push.apply(rv,list);
 							}
 							//Packages.java.lang.System.err.println("rv: " + rv);
-							for (var i=0; i<rv.length; i++) {
-		//							$api.debug("classpath[" + i + "] = " + rv[i] + " keys " + Object.keys(rv[i]));
-							}
+							// for (var i=0; i<rv.length; i++) {
+							// 	// $api.debug("classpath[" + i + "] = " + rv[i] + " keys " + Object.keys(rv[i]));
+							// }
 							var _rv = toIterable(rv);
 							//Packages.java.lang.System.err.println("_rv: " + _rv);
-		//						$api.debug("classpath list return " + _rv);
+							// $api.debug("classpath list return " + _rv);
 							return _rv;
 						};
 					})(p.classpath);
@@ -354,25 +352,21 @@
 					return new Packages.com.sun.script.javascript.RhinoScriptEngine().getInterface(object,type);
 				}
 			}
-			if (true) {
-				try {
-					var _jfm = new JavaAdapter(
-						Packages.javax.tools.JavaFileManager,
-						jfm
-					);
-				} catch (e) {
-					$api.debug("e = " + e + " keys=" + Object.keys(e));
-					$api.debug("e.stack = " + e.stack);
-					$api.debug("e.rhinoException = " + e.rhinoException);
-					$api.debug("Packages.javax.tools.JavaFileManager " + Packages.javax.tools.JavaFileManager);
-					$api.debug("jfm = " + jfm);
-					if (e.rhinoException) {
-						e.rhinoException.printStackTrace();
-					}
-					throw e;
+			try {
+				var _jfm = new JavaAdapter(
+					Packages.javax.tools.JavaFileManager,
+					jfm
+				);
+			} catch (e) {
+				$api.debug("e = " + e + " keys=" + Object.keys(e));
+				$api.debug("e.stack = " + e.stack);
+				$api.debug("e.rhinoException = " + e.rhinoException);
+				$api.debug("Packages.javax.tools.JavaFileManager " + Packages.javax.tools.JavaFileManager);
+				$api.debug("jfm = " + jfm);
+				if (e.rhinoException) {
+					e.rhinoException.printStackTrace();
 				}
-			} else {
-				var _jvm = direct;
+				throw e;
 			}
 			var _writer = null;
 			var _listener = null; /* javax.tools.DiagnosticListener */
@@ -407,7 +401,7 @@
 
 						this.getCharContent = function() {
 							return new Packages.java.lang.String($api.engine.readUrl(_url.toExternalForm()));
-		//						throw new Error("getCharContent: " + _url);
+							// throw new Error("getCharContent: " + _url);
 						}
 
 						this.isNameCompatible = function(name,kind) {

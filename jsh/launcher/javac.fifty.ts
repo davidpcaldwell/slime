@@ -4,12 +4,10 @@
 //
 //	END LICENSE
 
-namespace slime.internal.jsh.launcher {
-	export interface Slime {
-		built: any
-		launcher: any
-		home: any
-		setting: any
-		settings: any
-	}
+namespace slime.internal.jsh.launcher.javac {
+	export type compile = (p: {
+		files: any
+		destination: slime.jrunscript.native.java.io.File
+		classpath: any
+	}) => void
 }

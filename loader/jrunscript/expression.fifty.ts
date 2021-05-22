@@ -185,6 +185,7 @@ namespace slime.jrunscript {
 					getCanonicalPath(): slime.jrunscript.native.java.lang.String
 					listFiles(): slime.jrunscript.native.java.io.File[]
 					getAbsolutePath(): slime.jrunscript.native.java.lang.String
+					renameTo(file: File)
 				}
 			}
 			export namespace nio {

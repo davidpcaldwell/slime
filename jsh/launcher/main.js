@@ -11,7 +11,7 @@
 (
 	/**
 	 *
-	 * @this { slime.jrunscript.bootstrap.Global<{ slime: any, jsh: any }> }
+	 * @this { slime.internal.jrunscript.bootstrap.Global<{ slime: any, jsh: any }> }
 	 */
 	function() {
 		var Java = this.Java;
@@ -98,7 +98,29 @@
 					"jsh.shell.lib",
 					$api.slime.src.getPath("local/jsh/lib")
 				);
-				return new $api.jsh.Unbuilt();
+				var lib = (function() {
+					var setting = $api.slime.settings.get("jsh.shell.lib");
+					//	TODO	setting can be null because $$api.script.resolve() doesn't find local/jsh/lib online; should refactor
+					if (!setting) return null;
+					if (/^http/.test(setting)) {
+						return { url: setting }
+					} else {
+						var file = new Packages.java.io.File($api.slime.settings.get("jsh.shell.lib"));
+						if (!file.exists()) file.mkdirs();
+						return { file: file };
+					}
+				})();
+
+				var rhino = (function() {
+					if ($api.slime.settings.get("jsh.engine.rhino.classpath")) {
+						return [new Packages.java.io.File($api.slime.settings.get("jsh.engine.rhino.classpath")).toURI().toURL()];
+					} else if ($api.slime.settings.get("jsh.shell.lib") && lib.file) {
+						if (new Packages.java.io.File(lib.file, "js.jar").exists()) {
+							return [new Packages.java.io.File(lib.file, "js.jar").toURI().toURL()];
+						}
+					}
+				})();
+				return new $api.jsh.Unbuilt({ lib: lib, rhino: rhino });
 			}
 		})();
 		$api.debug("shell detected = " + shell);

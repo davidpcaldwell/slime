@@ -17,7 +17,7 @@
 (
 	/**
 	 *
-	 * @this { slime.jrunscript.bootstrap.Global<{}> }
+	 * @this { slime.internal.jrunscript.bootstrap.Global<{}> }
 	 */
 	function() {
 		var load = this.load;
@@ -48,18 +48,18 @@
 		// 	}
 		// })();
 
-		/** @type { (p: any) => slime.jrunscript.bootstrap.Configuration } */
+		/** @type { (p: any) => slime.internal.jrunscript.bootstrap.Configuration } */
 		function toConfiguration(p) {
 			return p;
 		}
 
-		/** @type { slime.jrunscript.bootstrap.Configuration } */
+		/** @type { slime.internal.jrunscript.bootstrap.Configuration } */
 		var configuration = toConfiguration(this["$api"]);
 		var $script = (configuration && configuration.script) ? configuration.script : null;
 		var $arguments = (configuration && configuration.arguments) ? configuration.arguments : null;
 
 		/**
-		 * @type { slime.jrunscript.bootstrap.Global<{},{}>["$api"] }
+		 * @type { slime.internal.jrunscript.bootstrap.Global<{},{}>["$api"] }
 		 */
 		var $api = {
 			debug: void(0),
@@ -940,7 +940,11 @@
 				return launcher(mode);
 			}
 		}
-		$api.io = {};
+		$api.io = {
+			copy: void(0),
+			tmpdir: void(0),
+			unzip: void(0)
+		};
 		$api.io.copy = function(from,to) {
 			var b;
 			while( (b = from.read()) != -1 ) {
@@ -1212,7 +1216,7 @@
 
 (
 	/**
-	 * @this { slime.jrunscript.bootstrap.Global }
+	 * @this { slime.internal.jrunscript.bootstrap.Global<{},{}> }
 	 */
 	function() {
 		var Packages = this.Packages;
