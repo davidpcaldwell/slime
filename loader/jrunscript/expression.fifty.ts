@@ -339,6 +339,11 @@ namespace slime.jrunscript {
 					err: {
 						println: any
 					}
+					out: {
+						print: any
+						println: any
+					}
+					console: () => any
 					currentTimeMillis(): number
 					setProperty(name: string, value: string)
 					getProperty(name: string): slime.jrunscript.native.java.lang.String
@@ -348,12 +353,14 @@ namespace slime.jrunscript {
 					getenv(): any
 					identityHashCode(o: any): number
 				}
+				Throwable: any
 				reflect: {
 					Field: any
 					Modifier: any
 					Array: any
 				}
 				String: any
+				Character: any
 				Thread: any
 				Runnable: any
 				ClassLoader: any
@@ -362,6 +369,10 @@ namespace slime.jrunscript {
 				Class: any
 				Void: any
 				Runtime: any
+				Integer: any
+				RuntimeException: any
+				ProcessBuilder: any
+				StringBuilder: any
 			}
 			io: {
 				ByteArrayInputStream: any
@@ -375,6 +386,11 @@ namespace slime.jrunscript {
 				Writer: any
 				OutputStream: any
 				FileInputStream: any
+				FileReader: any
+				InputStreamReader: any
+				OutputStreamWriter: any
+				FileOutputStream: any
+				FileWriter: any
 				PrintStream: {
 					new (stream: slime.jrunscript.native.java.io.OutputStream): slime.jrunscript.native.java.io.PrintStream
 				}
@@ -385,6 +401,7 @@ namespace slime.jrunscript {
 				URL: any
 				URLEncoder: any
 				URLDecoder: any
+				URLClassLoader: any
 				HttpURLConnection: any
 				CookieManager: any
 				CookiePolicy: any
@@ -409,6 +426,7 @@ namespace slime.jrunscript {
 				Base64: any
 				Map: any
 				zip: any
+				jar: any
 			}
 			awt: {
 				Desktop: any
@@ -425,6 +443,7 @@ namespace slime.jrunscript {
 				javascript: {
 					Context: any
 					Synchronizer: any
+					WrappedException: any
 				}
 			}
 			apache: any
@@ -454,6 +473,7 @@ namespace slime.jrunscript {
 				}
 				jsh: {
 					Shell: any
+					launcher: any
 				}
 				servlet: {
 					Servlet: any

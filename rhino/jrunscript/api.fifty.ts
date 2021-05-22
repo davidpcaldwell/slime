@@ -15,7 +15,7 @@ namespace slime.internal.jrunscript.bootstrap {
 
 	export interface Global<T,J> {
 		load: any
-		Packages: any
+		Packages: slime.jrunscript.Packages
 		JavaAdapter: any
 		readFile: any
 		readUrl: any

@@ -174,7 +174,7 @@
 					// Packages.java.lang.System.err.println("sun.java.command = " + Packages.java.lang.System.getProperty("sun.java.command"));
 					var command = global.Packages.java.lang.System.getProperty("sun.java.command");
 					var main = (function() {
-						var tokens = command.split(" ");
+						var tokens = String(command).split(" ");
 						if (tokens[0] != "com.oracle.truffle.js.shell.JSLauncher") throw new Error();
 						for (var i=1; i<tokens.length; i++) {
 							var token = tokens[i];

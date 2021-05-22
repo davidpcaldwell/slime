@@ -346,10 +346,10 @@
 					$api.debug("constructor finished ...");
 				}
 			);
-			var IS_JDK_RHINO = typeof(Packages.com.sun.script.javascript.RhinoScriptEngine) == "function";
+			var IS_JDK_RHINO = typeof(Packages.com["sun"].script.javascript.RhinoScriptEngine) == "function";
 			if (IS_JDK_RHINO) {
 				JavaAdapter = function(type,object) {
-					return new Packages.com.sun.script.javascript.RhinoScriptEngine().getInterface(object,type);
+					return new Packages.com["sun"].script.javascript.RhinoScriptEngine().getInterface(object,type);
 				}
 			}
 			try {

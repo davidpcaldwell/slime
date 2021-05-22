@@ -15,6 +15,7 @@ namespace slime.jrunscript.native {
 			Subprocess: {
 				Listener: any
 			}
+			Logging: any
 		}
 	}
 
