@@ -11,5 +11,11 @@ namespace slime.internal.jsh.launcher {
 		home: any
 		setting: any
 		settings: any
+		src?: {
+			getSourceFilesUnder: any
+			File: any
+			getFile: any
+			getPath: any
+		}
 	}
 }

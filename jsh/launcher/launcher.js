@@ -7,7 +7,7 @@
 //@ts-check
 (
 	/**
-	 * @this { slime.internal.jrunscript.bootstrap.Global<{ slime: any, jsh: any }, { compile: slime.internal.jsh.launcher.javac.compile }> }
+	 * @this { slime.internal.jsh.launcher.Global }
 	 */
 	function() {
 		//	NOTES ABOUT UNSUPPORTED PLATFORMS
@@ -123,7 +123,16 @@
 				$$api.debug("debugging enabled");
 			}
 
-			$$api.jsh = {};
+			$$api.jsh = {
+				exit: void(0),
+				engine: void(0),
+				engines: void(0),
+				shell: void(0),
+				Built: void(0),
+				Unbuilt: void(0),
+				Packaged: void(0),
+				Classpath: void(0)
+			};
 
 			$$api.jsh.exit = $$api.engine.resolve({
 				rhino: function(status) {

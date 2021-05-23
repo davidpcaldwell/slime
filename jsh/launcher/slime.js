@@ -33,6 +33,7 @@
 		}
 
 		$$api.slime = (function(was) {
+			/** @type { slime.internal.jsh.launcher.Slime } */
 			var rv;
 			if (was && was.built) {
 				rv = was;
@@ -69,6 +70,8 @@
 							this.File = function(path) {
 								return File(path);
 							}
+
+							//	TODO	it appears that this method is equivalent to File, should test that
 
 							this.getFile = function(path) {
 								return $$api.script.resolve("../../" + path).file;
