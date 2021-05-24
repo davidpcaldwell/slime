@@ -199,6 +199,8 @@ namespace slime.jrunscript {
 					getLocalPort(): number
 					close()
 				}
+
+				export interface URL {}
 			}
 			export namespace util {
 				export interface Properties {

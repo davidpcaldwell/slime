@@ -77,7 +77,7 @@
 								return $$api.script.resolve("../../" + path).file;
 							}
 
-							this.getSourceFilesUnder = function getSourceFilesUnder(dir,rv) {
+							var getSourceFilesUnderFile = function getSourceFilesUnderFile(dir,rv) {
 								//$api.log("Under: " + dir);
 								if (typeof(rv) == "undefined") {
 									rv = [];
@@ -90,7 +90,7 @@
 								if (!files) return [];
 								for (var i=0; i<files.length; i++) {
 									if (files[i].isDirectory() && String(files[i].getName()) != ".hg") {
-										getSourceFilesUnder(files[i],rv);
+										getSourceFilesUnderFile(files[i],rv);
 									} else {
 										if (files[i].getName().endsWith(".java")) {
 											rv.push(files[i]);
@@ -98,6 +98,10 @@
 									}
 								}
 								return rv;
+							}
+
+							this.getSourceFilesUnder = function(dir) {
+								return getSourceFilesUnderFile(dir, []);
 							};
 						} else {
 							var base = new Packages.java.net.URL($$api.script.url, "../../");
@@ -107,7 +111,7 @@
 							};
 
 							var bitbucketGetSourceFilesUnder = function(url,rv) {
-								//	Bitbucket raw URLs allow essentially listing the directory with a neline-delimited list of names,
+								//	Bitbucket raw URLs allow essentially listing the directory with a newline-delimited list of names,
 								//	with directories ending with /.
 								var string = $$api.engine.readUrl(url.toExternalForm());
 								var lines = string.split("\n");

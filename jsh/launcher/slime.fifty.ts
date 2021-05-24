@@ -12,8 +12,8 @@ namespace slime.internal.jsh.launcher {
 		setting: any
 		settings: any
 		src?: {
-			getSourceFilesUnder: any
-			File: any
+			getSourceFilesUnder: (dir: slime.jrunscript.native.java.io.File) => slime.jrunscript.native.java.io.File[]
+			File: (path: string) => slime.jrunscript.native.java.io.File
 			getFile: any
 			getPath: any
 		}

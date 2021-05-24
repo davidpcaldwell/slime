@@ -13,6 +13,13 @@ namespace slime.internal.jrunscript.bootstrap {
 		arguments: string[]
 	}
 
+	interface Script {
+		load: () => void
+		file?: slime.jrunscript.native.java.io.File
+		url?: slime.jrunscript.native.java.net.URL
+		resolve: (path: string) => Script
+	}
+
 	export interface Global<T,J> {
 		load: any
 		Packages: slime.jrunscript.Packages
@@ -25,10 +32,20 @@ namespace slime.internal.jrunscript.bootstrap {
 
 		$api: {
 			debug: any
-			script: any
-			engine: any
-			rhino: any
 			console: any
+			log: any
+			engine: any
+
+			Script: {
+				new (p: { string: string }): Script
+				new (p: { file: slime.jrunscript.native.java.io.File }): Script
+				new (p: { url: slime.jrunscript.native.java.net.URL }): Script
+
+				run: (p: any) => void
+			}
+			script: any
+			arguments: string[]
+
 			java: {
 				Install: any
 				install: any
@@ -36,18 +53,17 @@ namespace slime.internal.jrunscript.bootstrap {
 				Array: any
 				Command: any
 			} & J
-			arguments: string[]
-			shell: any
+
 			io: {
 				tmpdir: (p?: { prefix?: string, suffix?: string }) => slime.jrunscript.native.java.io.File
 				copy: any
 				unzip: any
 			}
-			log: any
-
-			Script: any
 
 			bitbucket: any
+
+			rhino: any
+			shell: any
 		} & T
 	}
 }

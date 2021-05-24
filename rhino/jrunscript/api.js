@@ -549,7 +549,16 @@
 			//			stuff (see readUrl, readFile), I think
 			if (!load) throw new Error("No load()");
 
-			$api.Script = function Script(p) {
+			/**
+			 *
+			 * @param { any } f
+			 * @returns { slime.internal.jrunscript.bootstrap.Global["$api"]["Script"] }
+			 */
+			function withRunProperty(f) {
+				return f;
+			}
+
+			$api.Script = withRunProperty(function Script(p) {
 				if (p.string) {
 					return new Script(interpret(p.string));
 				}
@@ -575,7 +584,7 @@
 							if (protocol == "http" || protocol == "https") {
 								$api.log("Connecting to " + url + " ...");
 							}
-							var connection = url.openConnection();
+							connection = url.openConnection();
 							// Packages.java.lang.System.err.println("url: " + url + " connection = " + connection);
 							if (connection.getResponseCode) {
 								if (connection.getResponseCode() == 404) return null;
@@ -642,7 +651,7 @@
 					}
 					$api.script = was;
 				}
-			};
+			});
 
 			$api.Script.run = function(p) {
 				new $api.Script(p).load();
