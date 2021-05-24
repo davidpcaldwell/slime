@@ -6,7 +6,7 @@
 
 namespace slime.jsh.tools.install.module {
 	export interface Homebrew {
-		directory: any
+		directory: slime.jrunscript.file.Directory
 		update: () => void
 		install: (p: { formula: string }) => void
 		upgrade: (p: { formula: string }) => void

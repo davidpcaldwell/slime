@@ -207,8 +207,8 @@ namespace slime.$api {
 	}
 }
 
-namespace slime.$api {
-	interface Function {
+namespace slime.$api.fp {
+	export interface Exports {
 		RegExp: {
 			/**
 			 * Creates a function that can convert one `RegExp` to another using a function that operates on the `RegExp's`
@@ -248,20 +248,18 @@ namespace slime.$api {
 	)($api,fifty);
 }
 
-namespace slime.$api {
-	export namespace fp {
-		export namespace impure {
-			/**
-			 * An Updater is a function that takes an argument and either (potentially) modifies the argument, returning undefined,
-			 * or returns a completely new value to replace the argument.
-			 */
-			export type Updater<M> = (mutable: M) => M | void
-		}
+namespace slime.$api.fp {
+	export namespace impure {
+		/**
+		 * An Updater is a function that takes an argument and either (potentially) modifies the argument, returning undefined,
+		 * or returns a completely new value to replace the argument.
+		 */
+		export type Updater<M> = (mutable: M) => M | void
 	}
 
-	type Updater<M> = fp.impure.Updater<M>
+	type Updater<M> = impure.Updater<M>
 
-	interface Function {
+	export interface Exports {
 		impure: {
 			/**
 			 * Converts an Updater to a function that can be used in a function pipeline; in other words, if it is an updater
