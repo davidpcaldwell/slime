@@ -26,6 +26,25 @@
 					/** @type { slime.tools.documentation.internal.asTextHandler.Factory } */
 					var asTextHandlerCode = $loader.factory("as-text-handler.js");
 					var asTextHandler = asTextHandlerCode({ httpd: httpd });
+					function update(src) {
+						var result = jsh.wf.typescript.typedoc({
+							project: src,
+							stdio: {
+								output: String,
+								error: String
+							}
+						});
+						if (result.status != 0) {
+							var body = "OUTPUT:\n" + result.stdio.output + "\nERROR:\n" + result.stdio.error;
+							return {
+								status: { code: 500 },
+								body: {
+									type: "text/plain",
+									string: body
+								}
+							}
+						}
+					}
 					return httpd.Handler.series(
 						//	Allows links to src/path/to/file.ext within Typedoc
 						function(request) {
@@ -40,29 +59,30 @@
 							}
 						},
 						function(request) {
+							var typedocPattern = /^(?:(.+)\/)?local\/doc\/typedoc\/update/;
+							var match = typedocPattern.exec(request.path);
+							if (match) {
+								var src = (match[1]) ? base.getSubdirectory(match[1]) : base;
+								var response = update(src);
+								if (response) return response;
+								return {
+									status: { code: 200 },
+									body: {
+										type: "text/plain",
+										string: "Ran typedoc successfully."
+									}
+								}
+							}
+						},
+						function(request) {
 							var typedocPattern = /^(?:(.+)\/)?local\/doc\/typedoc\/((.*)\.html$)/;
 							var match = typedocPattern.exec(request.path);
 							if (match) {
 								var src = (match[1]) ? base.getSubdirectory(match[1]) : base;
 								var output = src.getRelativePath("local/doc/typedoc");
 								if (!output.directory || configuration.watch) {
-									var result = jsh.wf.typescript.typedoc({
-										project: src,
-										stdio: {
-											output: String,
-											error: String
-										}
-									});
-									if (result.status != 0) {
-										var body = "OUTPUT:\n" + result.stdio.output + "\nERROR:\n" + result.stdio.error;
-										return {
-											status: { code: 500 },
-											body: {
-												type: "text/plain",
-												string: body
-											}
-										}
-									}
+									var response = update(src);
+									if (response) return response;
 								}
 								jsh.shell.console("Serving: " + request.path);
 								return httpd.Handler.Loader({
