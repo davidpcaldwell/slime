@@ -4,11 +4,27 @@
 //
 //	END LICENSE
 
-plugin({
-	isReady: function() {
-		return jsh.js;
-	},
-	load: function() {
-		jsh.js.web = $loader.module("module.js", $loader.file("context.java.js"));
+//@ts-check
+(
+	/**
+	 *
+	 * @param { slime.$api.Global } $api
+	 * @param { slime.jsh.Global } jsh
+	 * @param { slime.Loader } $loader
+	 * @param { slime.jsh.plugin.plugin } plugin
+	 */
+	function($api,jsh,$loader,plugin) {
+		plugin({
+			isReady: function() {
+				return jsh.js;
+			},
+			load: function() {
+				var web = $loader.module("module.js", $loader.file("context.java.js"));
+				jsh.js.web = web;
+				$api.deprecate(jsh.js, "web");
+				jsh.web = web;
+			}
+		});
 	}
-});
+//@ts-ignore
+)($api,jsh,$loader,plugin);
