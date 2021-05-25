@@ -533,7 +533,11 @@
 						var githubMatch = githubPattern.exec(string);
 						if (githubMatch) {
 							//	need to intercede with ZIP file
-							var zipurl = "http" + githubMatch[1] + "//github.com/davidpcaldwell/slime/archive/refs/heads/" + githubMatch[2] + ".zip"
+							var zipurl = "http" + githubMatch[1] + "//github.com/davidpcaldwell/slime/archive/refs/heads/" + githubMatch[2] + ".zip";
+							return {
+								zip: zipurl,
+								url: url
+							}
 						}
 						return {
 							url: url

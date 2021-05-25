@@ -89,7 +89,7 @@ namespace slime.internal.jrunscript.bootstrap {
 			var jsh = fifty.global.jsh;
 
 			fifty.tests.suite = function() {
-				var global: slime.internal.jrunscript.bootstrap.Environment = {
+				var configuration: slime.internal.jrunscript.bootstrap.Environment = {
 					Packages: Packages,
 					load: function() {
 						throw new Error("Implement.");
@@ -98,11 +98,17 @@ namespace slime.internal.jrunscript.bootstrap {
 						debug: true
 					}
 				};
-				fifty.$loader.run("api.js", {}, global);
-				var subject: slime.internal.jrunscript.bootstrap.Global<{},{}> = global as slime.internal.jrunscript.bootstrap.Global<{},{}>;
-				fifty.verify(subject).is.type("object");
-				fifty.verify(subject).$api.is.type("object");
-				fifty.verify(subject).$api.script.is.type("object");
+				fifty.$loader.run("api.js", {}, configuration);
+				var global: slime.internal.jrunscript.bootstrap.Global<{},{}> = configuration as slime.internal.jrunscript.bootstrap.Global<{},{}>;
+				fifty.verify(global).is.type("object");
+				fifty.verify(global).$api.is.type("object");
+				fifty.verify(global).$api.script.is.type("object");
+
+				var subject = global.$api;
+				fifty.verify(subject).Script.test.evaluate(function(p) {
+					var rv = p.interpret("http://server.com/path");
+					return String(rv.url);
+				}).is("http://server.com/path");
 			}
 		}
 	//@ts-ignore
