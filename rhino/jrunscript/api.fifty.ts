@@ -20,16 +20,28 @@ namespace slime.internal.jrunscript.bootstrap {
 		resolve: (path: string) => Script
 	}
 
-	export interface Global<T,J> {
+	export interface Environment {
 		load: any
+
+		//	Rhino compatibility
 		Packages: slime.jrunscript.Packages
-		JavaAdapter: any
-		readFile: any
-		readUrl: any
+		JavaAdapter?: any
 
+		//	Rhino-provided
+		readFile?: any
+		readUrl?: any
+
+		//	Nashorn-provided
+		//	Used to provide debug output before Packages is loaded
 		//	Used in jsh/launcher/main.js
-		Java: any
+		Java?: any
 
+		$api: {
+			debug: boolean
+		}
+	}
+
+	export interface Global<T,J> extends Environment {
 		$api: {
 			debug: any
 			console: any
@@ -42,6 +54,8 @@ namespace slime.internal.jrunscript.bootstrap {
 				new (p: { url: slime.jrunscript.native.java.net.URL }): Script
 
 				run: (p: any) => void
+
+				test: any
 			}
 			script: Script
 			arguments: string[]
@@ -66,4 +80,32 @@ namespace slime.internal.jrunscript.bootstrap {
 			shell: any
 		} & T
 	}
+
+	(
+		function(
+			Packages: any,
+			fifty: slime.fifty.test.kit
+		) {
+			var jsh = fifty.global.jsh;
+
+			fifty.tests.suite = function() {
+				var global: slime.internal.jrunscript.bootstrap.Environment = {
+					Packages: Packages,
+					load: function() {
+						throw new Error("Implement.");
+					},
+					$api: {
+						debug: true
+					}
+				};
+				fifty.$loader.run("api.js", {}, global);
+				var subject: slime.internal.jrunscript.bootstrap.Global<{},{}> = global as slime.internal.jrunscript.bootstrap.Global<{},{}>;
+				fifty.verify(subject).is.type("object");
+				fifty.verify(subject).$api.is.type("object");
+				fifty.verify(subject).$api.script.is.type("object");
+			}
+		}
+	//@ts-ignore
+	)(Packages,fifty);
+
 }

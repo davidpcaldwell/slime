@@ -22,6 +22,13 @@
 	function() {
 		var load = this.load;
 
+		//	TODO	seems to assume the presence of a global function called 'load' -- should handle this more like other global
+		//			stuff (see readUrl, readFile), maybe, but is there a potential default implementation for load()? Does Rhino
+		//			have load()? Does Graal?
+		if (!load) throw new Error("No load()");
+
+		var Java = this.Java;
+
 		//	The below would initialize the logging configuration to be empty, rather than the JDK default. The only logging done is for
 		//	remote shells, which otherwise would produce an uncomfortably long silence before the program started running. So they are
 		//	instead a little bit chatty. A user could configure this by configuring Java logging. Alternatively, I suppose we could
@@ -62,7 +69,7 @@
 		 * @type { slime.internal.jrunscript.bootstrap.Global<{},{}>["$api"] }
 		 */
 		var $api = {
-			debug: void(0),
+			debug: (this.$api && this.$api.debug) ? this.$api.debug : void(0),
 			script: void(0),
 			engine: void(0),
 			rhino: void(0),
@@ -80,8 +87,11 @@
 			var on = false;
 
 			$api.debug = function(message) {
-				if (on) Packages.java.lang.System.err.println(message);
-				Packages.java.util.logging.Logger.getLogger("inonit.jrunscript").log(Packages.java.util.logging.Level.FINE, message);
+				//	TODO	note that we are disabling this until Packages is provided, which means we presently can't log until
+				//			the engine compatibility is loaded unless print is present
+				if (on && Packages) Packages.java.lang.System.err.println(message);
+				if (on && !Packages && Java) Java.type("java.lang.System").err.println(message);
+				if (Packages) Packages.java.util.logging.Logger.getLogger("inonit.jrunscript").log(Packages.java.util.logging.Level.FINE, message);
 			};
 			if (this.$api && this.$api.debug) {
 				on = true;
@@ -239,11 +249,6 @@
 				},
 				rhino: function() {
 					rv.classpath = new global.Packages.java.io.File(global.Packages.java.lang.Class.forName("org.mozilla.javascript.Context").getProtectionDomain().getCodeSource().getLocation().toURI());
-
-					//	Hard to believe this is used; commenting out. Remove if tests pass.
-					// this.echo = function(s) {
-					// 	print(s);
-					// }
 				},
 				graal: function() {
 					load("nashorn:mozilla_compat.js");
@@ -252,6 +257,7 @@
 			return rv;
 		})(this);
 
+		//	Now that Nashorn / Graal have loaded mozilla_compat.js, we can access these
 		var Packages = this.Packages;
 		var JavaAdapter = this.JavaAdapter;
 
@@ -266,7 +272,7 @@
 			resolve: function(p) {
 				return $engine.resolve(p);
 			},
-			readfile: (this.readFile) ? this.readFile : function(path) {
+			readFile: (this.readFile) ? this.readFile : function(path) {
 				var rv = "";
 				var reader = new Packages.java.io.FileReader(path);
 				var c;
@@ -485,29 +491,6 @@
 			}
 		};
 
-		$api.engine.readFile = (this.readFile) ? this.readFile : function(path) {
-			var rv = "";
-			var reader = new Packages.java.io.FileReader(path);
-			var c;
-			while((c = reader.read()) != -1) {
-				var _character = new Packages.java.lang.Character(c);
-				rv += _character.toString();
-			}
-			return rv;
-		};
-
-		$api.engine.readUrl = (this.readUrl) ? this.readUrl : function(path) {
-			var rv = "";
-			var connection = new Packages.java.net.URL(path).openConnection();
-			var reader = new Packages.java.io.InputStreamReader(connection.getInputStream());
-			var c;
-			while((c = reader.read()) != -1) {
-				var _character = new Packages.java.lang.Character(c);
-				rv += _character.toString();
-			}
-			return rv;
-		};
-
 		(function() {
 			//	Given a string, returns either { file: absolute java.io.File } or { url: java.net.URL }
 			var interpret = function(string) {
@@ -546,10 +529,11 @@
 							file: new Packages.java.io.File(url.toURI())
 						};
 					} else {
-						var githubPattern = /http(?:s?)\:\/\/raw.githubusercontent.com\/davidpcaldwell\/slime\/(.*)\/rhino\/jrunscript\/api.js$/;
+						var githubPattern = /http(s?)\:\/\/raw.githubusercontent.com\/davidpcaldwell\/slime\/([^\/]*)\/rhino\/jrunscript\/api.js$/;
 						var githubMatch = githubPattern.exec(string);
 						if (githubMatch) {
 							//	need to intercede with ZIP file
+							var zipurl = "http" + githubMatch[1] + "//github.com/davidpcaldwell/slime/archive/refs/heads/" + githubMatch[2] + ".zip"
 						}
 						return {
 							url: url
@@ -557,10 +541,6 @@
 					}
 				}
 			};
-
-			//	TODO	seems to assume the presence of a global function called 'load' -- should handle this more like other global
-			//			stuff (see readUrl, readFile), I think
-			if (!load) throw new Error("No load()");
 
 			/**
 			 *
@@ -668,6 +648,10 @@
 
 			$api.Script.run = function(p) {
 				new $api.Script(p).load();
+			}
+
+			$api.Script.test = {
+				interpret: interpret
 			}
 
 			if ($script && $script.url) {
