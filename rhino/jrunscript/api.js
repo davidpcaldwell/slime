@@ -87,6 +87,14 @@
 				on = true;
 				$api.debug("Debug enabled via $api.debug");
 			}
+			if (Object.defineProperty) {
+				Object.defineProperty($api.debug, "on", {
+					enumerable: true,
+					set: function(v) {
+						on = v;
+					}
+				});
+			}
 		}).call(this);
 
 		$api.console = function(message) {
@@ -538,6 +546,11 @@
 							file: new Packages.java.io.File(url.toURI())
 						};
 					} else {
+						var githubPattern = /http(?:s?)\:\/\/raw.githubusercontent.com\/davidpcaldwell\/slime\/(.*)\/rhino\/jrunscript\/api.js$/;
+						var githubMatch = githubPattern.exec(string);
+						if (githubMatch) {
+							//	need to intercede with ZIP file
+						}
 						return {
 							url: url
 						};

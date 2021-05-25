@@ -74,6 +74,7 @@
 				command.push("JSH_GITHUB_API_PROTOCOL=http");
 				command.push("JSH_DISABLE_HTTPS_SECURITY=true");
 				if (p && p.optimize) command.push("JSH_OPTIMIZE_REMOTE_SHELL=true");
+				if (p && p.debug) command.push("JSH_LAUNCHER_DEBUG=true");
 			}
 			if (p.token) {
 				command.push("JSH_GITHUB_USER=davidpcaldwell", "JSH_GITHUB_PASSWORD=" + p.token);
@@ -100,7 +101,12 @@
 		jsh.script.cli.wrap({
 			commands: {
 				serve: $api.Function.pipe(
+					//	emit information about requests sent to GitHub
 					jsh.script.cli.option.boolean({ longname: "optimize" }),
+
+					//	turn on jsh launcher console-based debugging
+					jsh.script.cli.option.boolean({ longname: "debug" }),
+
 					function(p) {
 						var web = startMock();
 						jsh.shell.console("HTTP port: " + web.port + " HTTPS port: " + web.https.port);
@@ -108,6 +114,7 @@
 						var command = getCommand({
 							mock: web,
 							optimize: p.options.optimize,
+							debug: p.options.debug,
 							token: (token) ? token.read(String) : void(0)
 						});
 						emit(command);

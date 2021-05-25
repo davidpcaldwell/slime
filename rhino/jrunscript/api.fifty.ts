@@ -43,7 +43,7 @@ namespace slime.internal.jrunscript.bootstrap {
 
 				run: (p: any) => void
 			}
-			script: any
+			script: Script
 			arguments: string[]
 
 			java: {

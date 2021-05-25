@@ -21,7 +21,7 @@
 		if (!$api.slime) {
 			if ($api.script.url) {
 				//	Load as-is, I guess?
-			} else if ($api.script.file.getParentFile().getName() == "launcher") {
+			} else if (String($api.script.file.getParentFile().getName()) == "launcher") {
 				//	Graal does not currently implement java.lang.String methods on strings
 				//	Load as-is
 			} else if ($api.script.file.getParentFile().getName().equals("launcher")) {

@@ -156,6 +156,7 @@ namespace slime.jrunscript {
 		export namespace java {
 			export namespace lang {
 				export interface String {
+					equals(other: any): boolean
 				}
 
 				export interface Class {
@@ -186,6 +187,8 @@ namespace slime.jrunscript {
 					listFiles(): slime.jrunscript.native.java.io.File[]
 					getAbsolutePath(): slime.jrunscript.native.java.lang.String
 					renameTo(file: File)
+					getParentFile(): File
+					getAbsoluteFile(): File
 				}
 			}
 			export namespace nio {
@@ -200,7 +203,10 @@ namespace slime.jrunscript {
 					close()
 				}
 
-				export interface URL {}
+				export interface URL {
+					getQuery(): slime.jrunscript.native.java.lang.String
+					getProtocol(): slime.jrunscript.native.java.lang.String
+				}
 			}
 			export namespace util {
 				export interface Properties {
