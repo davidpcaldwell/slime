@@ -502,21 +502,6 @@
 					};
 				} else {
 					try {
-						// if (string.getClass) {
-						// 	throw new Error("it is Java");
-						// }
-						// string = (function fix(before) {
-						// 	var rv = "";
-						// 	for (var i=0; i<before.length; i++) {
-						// 		if (before.substring(i,i+1) == "\\") {
-						// 			rv += "/";
-						// 		} else {
-						// 			rv += before.substring(i,i+1);
-						// 		}
-						// 	}
-						// 	return rv;
-						// })(string);
-						// string = string.replace(/\\/g, "/");
 						var url = new Packages.java.net.URL(string);
 					} catch (e) {
 						if (e.javaException) {
@@ -533,7 +518,7 @@
 						var githubMatch = githubPattern.exec(string);
 						if (githubMatch) {
 							//	need to intercede with ZIP file
-							var zipurl = "http" + githubMatch[1] + "//github.com/davidpcaldwell/slime/archive/refs/heads/" + githubMatch[2] + ".zip";
+							var zipurl = "http" + githubMatch[1] + "://github.com/davidpcaldwell/slime/archive/refs/heads/" + githubMatch[2] + ".zip";
 							return {
 								zip: zipurl,
 								url: url

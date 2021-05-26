@@ -105,10 +105,29 @@ namespace slime.internal.jrunscript.bootstrap {
 				fifty.verify(global).$api.script.is.type("object");
 
 				var subject = global.$api;
-				fifty.verify(subject).Script.test.evaluate(function(p) {
-					var rv = p.interpret("http://server.com/path");
-					return String(rv.url);
-				}).is("http://server.com/path");
+
+				var interpret = function(string) {
+					return Object.assign(function(p) {
+						var result = p.interpret(string);
+						var entries: [name: string, value: any][] = [];
+						if (result.url) entries.push(["url",String(result.url)]);
+						if (result.file) entries.push(["file",String(result.file)]);
+						if (result.zip) entries.push(["zip",String(result.zip)]);
+						//	TODO	try to figure out obscure issue below
+						//@ts-ignore
+						return Object.fromEntries(entries);
+					}, {
+						toString: function() { return "interpret(" + string + ")"}
+					})
+				};
+
+				fifty.verify(subject).Script.test.evaluate(interpret("http://server.com/path")).url.is("http://server.com/path");
+
+				fifty.verify(subject).Script.test.evaluate(interpret("http://raw.githubusercontent.com/davidpcaldwell/slime/branch/rhino/jrunscript/api.js")).url.is("http://raw.githubusercontent.com/davidpcaldwell/slime/branch/rhino/jrunscript/api.js");
+				fifty.verify(subject).Script.test.evaluate(interpret("http://raw.githubusercontent.com/davidpcaldwell/slime/branch/rhino/jrunscript/api.js")).zip.is("http://github.com/davidpcaldwell/slime/archive/refs/heads/branch.zip");
+
+				fifty.verify(subject).Script.test.evaluate(interpret("https://raw.githubusercontent.com/davidpcaldwell/slime/branch/rhino/jrunscript/api.js")).url.is("https://raw.githubusercontent.com/davidpcaldwell/slime/branch/rhino/jrunscript/api.js");
+				fifty.verify(subject).Script.test.evaluate(interpret("https://raw.githubusercontent.com/davidpcaldwell/slime/branch/rhino/jrunscript/api.js")).zip.is("https://github.com/davidpcaldwell/slime/archive/refs/heads/branch.zip");
 			}
 		}
 	//@ts-ignore
