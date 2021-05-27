@@ -514,22 +514,35 @@
 							file: new Packages.java.io.File(url.toURI())
 						};
 					} else {
-						var githubPattern = /http(s?)\:\/\/raw.githubusercontent.com\/davidpcaldwell\/slime\/([^\/]*)\/rhino\/jrunscript\/api.js$/;
-						var githubMatch = githubPattern.exec(string);
-						if (githubMatch) {
-							//	need to intercede with ZIP file
-							var zipurl = "http" + githubMatch[1] + "://github.com/davidpcaldwell/slime/archive/refs/heads/" + githubMatch[2] + ".zip";
-							return {
-								zip: zipurl,
-								url: url
-							}
-						}
 						return {
 							url: url
 						};
 					}
 				}
 			};
+
+			/**
+			 *
+			 * @param { slime.jrunscript.native.java.net.URL } url
+			 * @returns
+			 */
+			var toGithubArchiveLocation = function(url) {
+				var string = String(url);
+				var githubPattern = /http(s?)\:\/\/raw.githubusercontent.com\/davidpcaldwell\/slime\/([^\/]*)\/(.*)$/;
+				var githubMatch = githubPattern.exec(string);
+				if (githubMatch) {
+					//	need to intercede with ZIP file
+					var zipurl = new Packages.java.net.URL(
+						"http" + githubMatch[1] + "://github.com/davidpcaldwell/slime/archive/refs/heads/" + githubMatch[2] + ".zip"
+					);
+					return {
+						zip: zipurl,
+						path: githubMatch[3]
+					}
+				} else {
+					return null;
+				}
+			}
 
 			/**
 			 *
@@ -540,107 +553,112 @@
 				return f;
 			}
 
-			$api.Script = withRunProperty(function Script(p) {
-				if (p.string) {
-					return new Script(interpret(p.string));
-				}
-				if (p.file) {
-					this.toString = function() { return String(p.file.getCanonicalPath()); }
-					this.file = p.file;
-					this.resolve = function(path) {
-						var file = (new Packages.java.io.File(path).isAbsolute())
-							? new Packages.java.io.File(path)
-							: new Packages.java.io.File(p.file.getParentFile(), path)
-						;
-						if (file.exists()) return new Script({ file: file });
-						return null;
-					};
-				} else if (p.url) {
-					this.toString = function() { return String(p.url.toExternalForm()); }
-					this.url = p.url;
-					this.resolve = function(path) {
-						var url = new Packages.java.net.URL(p.url, path);
-						var connection;
-						try {
-							var protocol = String(p.url.getProtocol());
-							if (protocol == "http" || protocol == "https") {
-								$api.log("Connecting to " + url + " ...");
-							}
-							connection = url.openConnection();
-							// Packages.java.lang.System.err.println("url: " + url + " connection = " + connection);
-							if (connection.getResponseCode) {
-								if (connection.getResponseCode() == 404) return null;
-								if (connection.getResponseCode() == 500) return null;
-							}
-						} catch (e) {
-							// Packages.java.lang.System.err.println("stack: " + e.stack);
-							return null;
-						}
-						return new Script({ url: url, connection: connection });
-					};
-				} else {
-					throw new Error("Undefined script.");
-				}
-
-				this.load = function() {
-					var was = $api.script;
-					$api.script = this;
-					if (p.connection) {
-						var version = String(Packages.java.lang.System.getProperty("java.version"));
-						var points = version.split(".");
-						if (points[0] == "1" && Number(points[1]) < 8 || this.toString().substring(0,3) == "jar") {
-							//	TODO	this has the downside of loading the code twice; is there a better way? Maybe using eval()?
-							//	TODO	is this best method to prevent resource leaks? Should HttpURLConnection.disconnect() be used?
-							//			not using it not because it might prevent pipelining
-							//	TODO	not clear why the other implementation does not work for JAR files but it is not so important
-							//			to conserve JAR accesses as it is to conserve HTTP accesses
-							p.connection.getInputStream().close();
-							load(this.toString());
-						} else {
-							var protocol = String(p.url.getProtocol());
-							if (protocol == "http" || protocol == "https") {
-								$api.log("Reading from " + p.url + " ...");
-							}
-							var reader = new Packages.java.io.InputStreamReader(p.connection.getInputStream());
-							var buffer = new Packages.java.lang.StringBuilder();
-							var c;
-							while( (c = reader.read()) != -1 ) {
-								buffer["append(char)"](c);
-							}
-							p.connection.getInputStream().close();
-							var code = String(buffer.toString());
-							if (protocol == "http" || protocol == "https") {
-								$api.log("Loaded [" + p.url + "].");
-							}
-							// Packages.java.lang.System.err.println("Loading: " + this);
-							var name = this.toString();
-							// Packages.java.lang.System.err.println("Loading: " + name + " code.length=" + code.length);
-							// Packages.java.lang.System.err.println("Loading: " + name + "\ncode=" + code);
-							// try {
-							// 	Packages.java.lang.System.err.println("load() = " + load);
-							load({
-								name: name,
-								script: code
-							});
-							// 	Packages.java.lang.System.err.println("Loaded: " + name);
-							// } catch (e) {
-							// 	Packages.java.lang.System.err.println(e.stack);
-							// 	Packages.java.lang.System.err.println("Failed: " + name);
-							// }
-						}
-					} else {
-						load(this.toString());
+			$api.Script = withRunProperty(
+				/** @this { slime.internal.jrunscript.bootstrap.Script } */
+				function Script(p) {
+					if (p.string) {
+						return new Script(interpret(p.string));
 					}
-					$api.script = was;
+					if (p.file) {
+						this.toString = function() { return String(p.file.getCanonicalPath()); }
+						this.file = p.file;
+						this.resolve = function(path) {
+							var file = (new Packages.java.io.File(path).isAbsolute())
+								? new Packages.java.io.File(path)
+								: new Packages.java.io.File(p.file.getParentFile(), path)
+							;
+							if (file.exists()) return new Script({ file: file });
+							return null;
+						};
+					} else if (p.url) {
+						this.toString = function() { return String(p.url.toExternalForm()); }
+						this.url = p.url;
+						this.resolve = function(path) {
+							var url = new Packages.java.net.URL(p.url, path);
+							var zipLocation = toGithubArchiveLocation(url);
+							var connection;
+							try {
+								var protocol = String(p.url.getProtocol());
+								if (protocol == "http" || protocol == "https") {
+									$api.log("Connecting to " + url + " ...");
+								}
+								connection = url.openConnection();
+								// Packages.java.lang.System.err.println("url: " + url + " connection = " + connection);
+								if (connection.getResponseCode) {
+									if (connection.getResponseCode() == 404) return null;
+									if (connection.getResponseCode() == 500) return null;
+								}
+							} catch (e) {
+								// Packages.java.lang.System.err.println("stack: " + e.stack);
+								return null;
+							}
+							return new Script({ url: url, connection: connection });
+						};
+					} else {
+						throw new Error("Undefined script.");
+					}
+
+					this.load = function() {
+						var was = $api.script;
+						$api.script = this;
+						if (p.connection) {
+							var version = String(Packages.java.lang.System.getProperty("java.version"));
+							var points = version.split(".");
+							if (points[0] == "1" && Number(points[1]) < 8 || this.toString().substring(0,3) == "jar") {
+								//	TODO	this has the downside of loading the code twice; is there a better way? Maybe using eval()?
+								//	TODO	is this best method to prevent resource leaks? Should HttpURLConnection.disconnect() be used?
+								//			not using it not because it might prevent pipelining
+								//	TODO	not clear why the other implementation does not work for JAR files but it is not so important
+								//			to conserve JAR accesses as it is to conserve HTTP accesses
+								p.connection.getInputStream().close();
+								load(this.toString());
+							} else {
+								var protocol = String(p.url.getProtocol());
+								if (protocol == "http" || protocol == "https") {
+									$api.log("Reading from " + p.url + " ...");
+								}
+								var reader = new Packages.java.io.InputStreamReader(p.connection.getInputStream());
+								var buffer = new Packages.java.lang.StringBuilder();
+								var c;
+								while( (c = reader.read()) != -1 ) {
+									buffer["append(char)"](c);
+								}
+								p.connection.getInputStream().close();
+								var code = String(buffer.toString());
+								if (protocol == "http" || protocol == "https") {
+									$api.log("Loaded [" + p.url + "].");
+								}
+								// Packages.java.lang.System.err.println("Loading: " + this);
+								var name = this.toString();
+								// Packages.java.lang.System.err.println("Loading: " + name + " code.length=" + code.length);
+								// Packages.java.lang.System.err.println("Loading: " + name + "\ncode=" + code);
+								// try {
+								// 	Packages.java.lang.System.err.println("load() = " + load);
+								load({
+									name: name,
+									script: code
+								});
+								// 	Packages.java.lang.System.err.println("Loaded: " + name);
+								// } catch (e) {
+								// 	Packages.java.lang.System.err.println(e.stack);
+								// 	Packages.java.lang.System.err.println("Failed: " + name);
+								// }
+							}
+						} else {
+							load(this.toString());
+						}
+						$api.script = was;
+					}
 				}
-			});
+			);
 
 			$api.Script.run = function(p) {
 				new $api.Script(p).load();
 			}
 
 			$api.Script.test = {
-				interpret: interpret
+				interpret: interpret,
+				toGithubArchiveLocation: toGithubArchiveLocation
 			}
 
 			if ($script && $script.url) {

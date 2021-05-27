@@ -13,7 +13,7 @@ namespace slime.internal.jrunscript.bootstrap {
 		arguments: string[]
 	}
 
-	interface Script {
+	export interface Script {
 		load: () => void
 		file?: slime.jrunscript.native.java.io.File
 		url?: slime.jrunscript.native.java.net.URL
@@ -55,7 +55,16 @@ namespace slime.internal.jrunscript.bootstrap {
 
 				run: (p: any) => void
 
-				test: any
+				test: {
+					interpret: (string: string) => {
+						file?: slime.jrunscript.native.java.io.File
+						url?: slime.jrunscript.native.java.net.URL
+					}
+					toGithubArchiveLocation: (url: slime.jrunscript.native.java.net.URL) => {
+						zip: slime.jrunscript.native.java.net.URL
+						path: string
+					}
+				}
 			}
 			script: Script
 			arguments: string[]
@@ -124,10 +133,24 @@ namespace slime.internal.jrunscript.bootstrap {
 				fifty.verify(subject).Script.test.evaluate(interpret("http://server.com/path")).url.is("http://server.com/path");
 
 				fifty.verify(subject).Script.test.evaluate(interpret("http://raw.githubusercontent.com/davidpcaldwell/slime/branch/rhino/jrunscript/api.js")).url.is("http://raw.githubusercontent.com/davidpcaldwell/slime/branch/rhino/jrunscript/api.js");
-				fifty.verify(subject).Script.test.evaluate(interpret("http://raw.githubusercontent.com/davidpcaldwell/slime/branch/rhino/jrunscript/api.js")).zip.is("http://github.com/davidpcaldwell/slime/archive/refs/heads/branch.zip");
-
 				fifty.verify(subject).Script.test.evaluate(interpret("https://raw.githubusercontent.com/davidpcaldwell/slime/branch/rhino/jrunscript/api.js")).url.is("https://raw.githubusercontent.com/davidpcaldwell/slime/branch/rhino/jrunscript/api.js");
-				fifty.verify(subject).Script.test.evaluate(interpret("https://raw.githubusercontent.com/davidpcaldwell/slime/branch/rhino/jrunscript/api.js")).zip.is("https://github.com/davidpcaldwell/slime/archive/refs/heads/branch.zip");
+
+				var toZipLocation = function(string): (p: any) => { zip: string, path: string } {
+					return Object.assign(function(p) {
+						var result = p.toGithubArchiveLocation(string);
+						return (result) ? {
+							zip: String(result.zip),
+							path: result.path
+						} : result
+					}, {
+						toString: function() { return "toZipLocation(" + string + ")"}
+					})
+				}
+
+				fifty.verify(subject).Script.test.evaluate(toZipLocation("http://raw.githubusercontent.com/davidpcaldwell/slime/branch/rhino/jrunscript/api.js")).zip.is("http://github.com/davidpcaldwell/slime/archive/refs/heads/branch.zip");
+				fifty.verify(subject).Script.test.evaluate(toZipLocation("http://raw.githubusercontent.com/davidpcaldwell/slime/branch/rhino/jrunscript/api.js")).path.is("rhino/jrunscript/api.js");
+
+				fifty.verify(subject).Script.test.evaluate(toZipLocation("http://example.com/path")).is(null);
 			}
 		}
 	//@ts-ignore

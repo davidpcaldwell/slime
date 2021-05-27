@@ -292,7 +292,7 @@
 					return toCompile;
 				}
 
-				//	As of this writing, used by jsh/etc/build.jsh.js, as well as shellClasspath method below
+				//	As of bbc58b79a49b6b5ae2b56c48486e85cbd1e31eb5, used by jsh/etc/build.jsh.js, as well as shellClasspath method below
 				this.compileLoader = function(p) {
 					var classpath = new Classpath();
 					if (this.rhino && this.rhino.length) classpath.append(new Classpath(this.rhino));

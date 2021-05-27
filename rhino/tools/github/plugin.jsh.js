@@ -150,7 +150,7 @@
 										return !entry.node.directory;
 									}).map(function(entry) {
 										return {
-											path: "slime-master/" + entry.path,
+											path: repo + "-" + version + "/" + entry.path,
 											resource: entry.node
 										}
 									});
