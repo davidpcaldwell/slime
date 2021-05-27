@@ -57,120 +57,142 @@
 				var isSourceFile = $$api.script.file && String($$api.script.file.getParentFile().getName()) == "launcher";
 				var isHttp = $$api.script.url && /^http/.test(String($$api.script.url.getProtocol()));
 				if (isSourceFile || isHttp) {
-					rv.src = new function() {
+					rv.src = (function() {
+						/** @type { Partial<slime.internal.jsh.launcher.Slime["src"]> } */
+						var rv;
 						if ($$api.script.file) {
-							this.toString = function() {
-								return $$api.script.file.getAbsoluteFile().getParentFile().getParentFile().getParentFile().toString();
-							};
-
-							var File = function(path) {
-								return new Packages.java.io.File($$api.script.file.getAbsoluteFile().getParentFile().getParentFile().getParentFile(), path);
-							}
-
-							this.File = function(path) {
-								return File(path);
-							}
-
-							//	TODO	it appears that this method is equivalent to File, should test that
-
-							this.getFile = function(path) {
-								return $$api.script.resolve("../../" + path).file;
-							}
-
-							var getSourceFilesUnderFile = function getSourceFilesUnderFile(dir,rv) {
-								//$api.log("Under: " + dir);
-								if (typeof(rv) == "undefined") {
-									rv = [];
+							rv = (function() {
+								var File = function(path) {
+									return new Packages.java.io.File($$api.script.file.getAbsoluteFile().getParentFile().getParentFile().getParentFile(), path);
 								}
-								if (typeof(dir) == "string") {
-									dir = File(dir);
-								}
-								var files = dir.listFiles();
-								//$api.log("files: " + files.length);
-								if (!files) return [];
-								for (var i=0; i<files.length; i++) {
-									if (files[i].isDirectory() && String(files[i].getName()) != ".hg") {
-										getSourceFilesUnderFile(files[i],rv);
-									} else {
-										if (files[i].getName().endsWith(".java")) {
-											rv.push(files[i]);
+
+								var getSourceFilesUnderFile = function getSourceFilesUnderFile(dir,rv) {
+									//$api.log("Under: " + dir);
+									if (typeof(rv) == "undefined") {
+										rv = [];
+									}
+									if (typeof(dir) == "string") {
+										dir = File(dir);
+									}
+									var files = dir.listFiles();
+									//$api.log("files: " + files.length);
+									if (!files) return [];
+									for (var i=0; i<files.length; i++) {
+										if (files[i].isDirectory() && String(files[i].getName()) != ".hg") {
+											getSourceFilesUnderFile(files[i],rv);
+										} else {
+											if (files[i].getName().endsWith(".java")) {
+												rv.push(files[i]);
+											}
 										}
 									}
+									return rv;
 								}
-								return rv;
-							}
 
-							this.getSourceFilesUnder = function(dir) {
-								return getSourceFilesUnderFile(dir, []);
-							};
+								return {
+									toString: function() {
+										return $$api.script.file.getAbsoluteFile().getParentFile().getParentFile().getParentFile().toString();
+									},
+									File: File,
+									//	TODO	it appears that this method is equivalent to File, should test that
+									getFile: function(path) {
+										return $$api.script.resolve("../../" + path).file;
+									},
+									getSourceFilesUnder: function(dir) {
+										return getSourceFilesUnderFile(dir, []);
+									}
+								}
+							})()
 						} else {
-							var base = new Packages.java.net.URL($$api.script.url, "../../");
+							rv = (function() {
+								var base = new Packages.java.net.URL($$api.script.url, "../../");
 
-							this.toString = function() {
-								return base.toExternalForm();
-							};
-
-							var bitbucketGetSourceFilesUnder = function(url,rv) {
-								//	Bitbucket raw URLs allow essentially listing the directory with a newline-delimited list of names,
-								//	with directories ending with /.
-								var string = $$api.engine.readUrl(url.toExternalForm());
-								var lines = string.split("\n");
-								for (var i=0; i<lines.length; i++) {
-									if (/\/$/.test(lines[i])) {
-										getSourceFilesUnder(new Packages.java.net.URL(url,lines[i]), rv);
-									} else {
-										if (/\.java$/.test(lines[i])) {
-											rv.push(new Packages.java.net.URL(url, lines[i]));
+								var bitbucketGetSourceFilesUnder = function(url,rv) {
+									//	Bitbucket raw URLs allow essentially listing the directory with a newline-delimited list of names,
+									//	with directories ending with /.
+									var string = $$api.engine.readUrl(url.toExternalForm());
+									var lines = string.split("\n");
+									for (var i=0; i<lines.length; i++) {
+										if (/\/$/.test(lines[i])) {
+											getSourceFilesUnder(new Packages.java.net.URL(url,lines[i]), rv);
+										} else {
+											if (/\.java$/.test(lines[i])) {
+												rv.push(new Packages.java.net.URL(url, lines[i]));
+											}
 										}
 									}
 								}
-							}
 
-							var getSourceFilesUnder = function(url,rv) {
-								var pattern = /^http(?:s)?\:\/\/raw.githubusercontent.com\/davidpcaldwell\/slime\/(.*?)\/(.*)$/;
-								var match = pattern.exec(url);
-								if (!match) throw new Error("No match: " + url);
-								//	TODO	make branch into ref query parameter
-								var branch = match[1];
-								var path = match[2];
-								//	TODO	is there a better, more general way to get this setting?
-								var SPECIFIED_PROTOCOL = Packages.java.lang.System.getenv("JSH_LAUNCHER_GITHUB_PROTOCOL") ? String(Packages.java.lang.System.getenv("JSH_LAUNCHER_GITHUB_PROTOCOL")) : void(0);
-								var PROTOCOL = (SPECIFIED_PROTOCOL) ? SPECIFIED_PROTOCOL : "https";
-								var json = JSON.parse($$api.engine.readUrl(PROTOCOL + "://api.github.com/repos/davidpcaldwell/slime/contents/" + path));
-								json.forEach(function(item) {
-									if (item.type == "dir") {
-										getSourceFilesUnder(new Packages.java.net.URL(url,item.name+"/"), rv);
-									} else {
-										if (/\.java$/.test(item.name)) {
-											rv.push(new Packages.java.net.URL(url, item.name));
+								var getSourceFilesUnder = function(url,rv) {
+									var pattern = /^http(?:s)?\:\/\/raw.githubusercontent.com\/davidpcaldwell\/slime\/(.*?)\/(.*)$/;
+									var match = pattern.exec(url);
+									if (!match) throw new Error("No match: " + url);
+									//	TODO	make branch into ref query parameter
+									var branch = match[1];
+									var path = match[2];
+									//	TODO	is there a better, more general way to get this setting?
+									var SPECIFIED_PROTOCOL = Packages.java.lang.System.getenv("JSH_LAUNCHER_GITHUB_PROTOCOL") ? String(Packages.java.lang.System.getenv("JSH_LAUNCHER_GITHUB_PROTOCOL")) : void(0);
+									var PROTOCOL = (SPECIFIED_PROTOCOL) ? SPECIFIED_PROTOCOL : "https";
+									var json = JSON.parse($$api.engine.readUrl(PROTOCOL + "://api.github.com/repos/davidpcaldwell/slime/contents/" + path));
+									json.forEach(function(item) {
+										if (item.type == "dir") {
+											getSourceFilesUnder(new Packages.java.net.URL(url,item.name+"/"), rv);
+										} else {
+											if (/\.java$/.test(item.name)) {
+												rv.push(new Packages.java.net.URL(url, item.name));
+											}
 										}
-									}
-								});
-							}
+									});
+								}
 
-							this.getSourceFilesUnder = function(path) {
-								var under = new Packages.java.net.URL(base, path);
-								var rv = [];
-								getSourceFilesUnder(under,rv);
-								return rv;
-							}
+								return {
+									toString: function() {
+										return base.toExternalForm();
+									},
+									getSourceFilesUnder: function(path) {
+										var under = new Packages.java.net.URL(base, path);
+										var rv = [];
+										getSourceFilesUnder(under,rv);
+										return rv;
+									}
+								}
+							})()
 						}
 
-						this.getPath = function(path) {
+						rv.getPath = function(path) {
 							$$api.debug("getPath: " + path);
-							var rv = $$api.script.resolve("../../" + path);
+							var resolved = $$api.script.resolve("../../" + path);
 							//	TODO	this needs simplification
-							if (rv == null) {
+							if (resolved == null) {
 								if (this.File) {
-									rv = this.File(path).getAbsolutePath().toString()
+									return String(this.File(path).getAbsolutePath().toString())
 								} else {
 									$$api.debug("getPath return null for: " + path);
 									return null;
 								}
+							} else {
+								return resolved.toString();
 							}
-							return rv.toString();
 						}
-					};
+
+						/**
+						 *
+						 * @param { Partial<slime.internal.jsh.launcher.Slime["src"]> } partial
+						 * @returns { slime.internal.jsh.launcher.Slime["src"] }
+						 */
+						function complete(partial) {
+							/**
+							 * @type { (partial: Partial<slime.internal.jsh.launcher.Slime["src"]>) => partial is slime.internal.jsh.launcher.Slime["src"] } partial
+							 */
+							function isComplete(partial) {
+								return true;
+							}
+							if (isComplete(partial)) return partial;
+							throw new Error("Unreachable");
+						}
+
+						return complete(rv);
+					})();
 				}
 
 				rv.launcher = new function() {
@@ -184,7 +206,7 @@
 							"-sourcepath", rv.src.getPath("rhino/system/java") + Packages.java.io.File.pathSeparator + rv.src.getPath("jsh/launcher/java"),
 							rv.src.getPath("jsh/launcher/java/inonit/script/jsh/launcher/Main.java")
 						];
-						args.push.apply(args,rv.src.getSourceFilesUnder(rv.src.getFile("rhino/system/java")));
+						args.push.apply(args,rv.src.getSourceFilesUnder(rv.src.File("rhino/system/java")));
 						$$api.java.install.compile(args);
 						if (!p || !p.to) return to;
 					};
