@@ -203,9 +203,13 @@ namespace slime.jrunscript {
 					close()
 				}
 
+				export interface URI {}
+
 				export interface URL {
 					getQuery(): slime.jrunscript.native.java.lang.String
 					getProtocol(): slime.jrunscript.native.java.lang.String
+					toExternalForm(): slime.jrunscript.native.java.lang.String
+					toURI(): slime.jrunscript.native.java.net.URI
 				}
 			}
 			export namespace util {

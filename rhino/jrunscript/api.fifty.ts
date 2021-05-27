@@ -97,6 +97,23 @@ namespace slime.internal.jrunscript.bootstrap {
 		) {
 			var jsh = fifty.global.jsh;
 
+			fifty.tests.zip = function() {
+				var web = new jsh.unit.mock.Web();
+				web.add(jsh.unit.mock.Web.github({
+					src: {
+						davidpcaldwell: {
+							slime: jsh.tools.git.Repository({ directory: jsh.shell.jsh.src })
+						}
+					}
+				}));
+				web.start();
+				var client = web.client;
+				var zip = client.request({
+					url: "http://github.com/davidpcaldwell/slime/archive/refs/heads/master.zip"
+				});
+				fifty.verify(zip).status.code.is(200);
+			}
+
 			fifty.tests.suite = function() {
 				var configuration: slime.internal.jrunscript.bootstrap.Environment = {
 					Packages: Packages,

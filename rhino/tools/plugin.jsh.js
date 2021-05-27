@@ -90,10 +90,10 @@
 					});
 
 					if (jsh.tools.hg.installation) {
-						global.hg = {};
+						global["hg"] = {};
 						["Repository","init"].forEach(function(name) {
-							global.hg[name] = jsh.tools.hg[name];
-							$api.deprecate(global.hg,name);
+							global["hg"][name] = jsh.tools.hg[name];
+							$api.deprecate(global["hg"],name);
 						});
 						$api.deprecate(global,"hg");
 					}
@@ -135,6 +135,15 @@
 						shell: jsh.shell
 					}
 				});
+			}
+		});
+
+		plugin({
+			isReady: function() {
+				return Boolean(jsh.unit && jsh.unit.mock && jsh.unit.mock.Web);
+			},
+			load: function() {
+				jsh.loader.plugins($loader.Child("github/"));
 			}
 		});
 

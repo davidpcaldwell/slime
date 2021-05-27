@@ -7,7 +7,7 @@
 //@ts-check
 (
 	/**
-	 * @this { slime.internal.jrunscript.bootstrap.Global<{},{ compile: any }> }
+	 * @this { slime.internal.jrunscript.bootstrap.Global<{},{ compile: slime.internal.jsh.launcher.javac.compile }> }
 	 */
 	function() {
 		var Packages = this.Packages;
@@ -117,187 +117,193 @@
 						return outputter(String(_className),String(_kind),_sibling);
 					}
 
-					var classpath = new (function(_urls) {
-						this.getClassLoader = function() {
-							var __urls = new $api.java.Array({ type: Packages.java.net.URL, length: p.classpath.length });
-							for (var i=0; i<_urls.length; i++) {
-								__urls[i] = p.classpath[i];
-							}
-							return new Packages.java.net.URLClassLoader(__urls);
-						};
-
-						var DirectoryElement = function(_url) {
-							this.toString = function() {
-								return "DirectoryElement: " + _url;
-							}
-
-							this.list = function(packageName,kinds,recurse) {
-								throw new Error("Unimplemented in " + this + ": packageName=" + packageName + " kinds=" + kinds + " recurse=" + recurse);
-							}
-						}
-
-						var classFiles = {};
-
-						this.classFiles = classFiles;
-
-						var ClassFile = function(path,_bytes) {
-							return new JavaAdapter(
-								Packages.javax.tools.JavaFileObject,
-								new function() {
-									[
-										"delete","getCharContent","getLastModified","getName","openInputStream","openOutputStream","openReader",
-										"openWriter","toUri","getAccessLevel","getKind","getNestingKind","isNameCompatible"
-									].forEach(function(name) {
-										this[name] = function(){};
-									},this);
-
-									this.toString = function() {
-										return "ClassFile: " + path;
-									};
-
-									this.getName = function() {
-										return path;
-									}
-
-									classFiles[this.toString()] = {
-										binaryName: (function() {
-											var name = path.substring(0,path.length-".class".length);
-											return name.replace(/\//g, ".");
-										})()
-									}
-
-									this.openInputStream = function() {
-										return new Packages.java.io.ByteArrayInputStream(_bytes);
-									}
-
-									this.getKind = function() {
-										return Packages.javax.tools.JavaFileObject.Kind.CLASS;
-									}
-
-									this.toUri = function() {
-										throw new Error("Unimplemented: toUri");
-									}
+					var classpath = new (
+						/**
+						 *
+						 * @param { slime.jrunscript.native.java.net.URL[] } _urls
+						 */
+						function(_urls) {
+							this.getClassLoader = function() {
+								var __urls = new $api.java.Array({ type: Packages.java.net.URL, length: p.classpath.length });
+								for (var i=0; i<_urls.length; i++) {
+									__urls[i] = p.classpath[i];
 								}
-							);
-						}
+								return new Packages.java.net.URLClassLoader(__urls);
+							};
 
-						var JarFileElement = function(file) {
-							var JarEntry = function(path,_stream) {
-								var _ostream = new Packages.java.io.ByteArrayOutputStream();
-								$api.io.copy(_stream,_ostream);
-								_ostream.close();
-								_stream.close();
-								var _bytes = _ostream.toByteArray();
+							var DirectoryElement = function(_url) {
+								this.toString = function() {
+									return "DirectoryElement: " + _url;
+								}
 
-								this.input = function() {
-									return ClassFile(path,_bytes);
+								this.list = function(packageName,kinds,recurse) {
+									throw new Error("Unimplemented in " + this + ": packageName=" + packageName + " kinds=" + kinds + " recurse=" + recurse);
 								}
 							}
 
-							var _jar = new Packages.java.util.jar.JarFile(file);
-							var _entries = _jar.entries();
-							var entries = {};
-							while(_entries.hasMoreElements()) {
-								var _entry = _entries.nextElement();
-								var path = String(_entry.getName());
-								if (/\/$/.test(path)) {
-									//	directory; skip
-								} else {
-									entries[String(_entry.getName())] = new JarEntry(path, _jar.getInputStream(_entry));
-								}
-							}
-							//Packages.java.lang.System.err.println("Done with entries");
+							var classFiles = {};
 
-							this.toString = function() {
-								return "JarFileElement: " + file;
-							}
+							this.classFiles = classFiles;
 
-							this.list = function(packageName,kinds,recurse) {
-								//Packages.java.lang.System.err.println("packageName = " + packageName + " kinds = " + kinds);
-								var rv = [];
-								if (kinds.CLASS) {
-									var prefix = packageName.replace(/\./g,"/") + "/";
-									for (var x in entries) {
-										var path = x.split("/");
-										var IN_PACKAGE_FILTER = (recurse) ? true : (path.length == packageName.split(".").length+1);
-										if (x.substring(0,prefix.length) == prefix && IN_PACKAGE_FILTER) {
-											rv.push(entries[x].input());
+							var ClassFile = function(path,_bytes) {
+								return new JavaAdapter(
+									Packages.javax.tools.JavaFileObject,
+									new function() {
+										[
+											"delete","getCharContent","getLastModified","getName","openInputStream","openOutputStream","openReader",
+											"openWriter","toUri","getAccessLevel","getKind","getNestingKind","isNameCompatible"
+										].forEach(function(name) {
+											this[name] = function(){};
+										},this);
+
+										this.toString = function() {
+											return "ClassFile: " + path;
+										};
+
+										this.getName = function() {
+											return path;
+										}
+
+										classFiles[this.toString()] = {
+											binaryName: (function() {
+												var name = path.substring(0,path.length-".class".length);
+												return name.replace(/\//g, ".");
+											})()
+										}
+
+										this.openInputStream = function() {
+											return new Packages.java.io.ByteArrayInputStream(_bytes);
+										}
+
+										this.getKind = function() {
+											return Packages.javax.tools.JavaFileObject.Kind.CLASS;
+										}
+
+										this.toUri = function() {
+											throw new Error("Unimplemented: toUri");
 										}
 									}
+								);
+							}
+
+							var JarFileElement = function(file) {
+								var JarEntry = function(path,_stream) {
+									var _ostream = new Packages.java.io.ByteArrayOutputStream();
+									$api.io.copy(_stream,_ostream);
+									_ostream.close();
+									_stream.close();
+									var _bytes = _ostream.toByteArray();
+
+									this.input = function() {
+										return ClassFile(path,_bytes);
+									}
 								}
-								if (kinds.SOURCE) {
-									//	No source code in JAR files
+
+								var _jar = new Packages.java.util.jar.JarFile(file);
+								var _entries = _jar.entries();
+								var entries = {};
+								while(_entries.hasMoreElements()) {
+									var _entry = _entries.nextElement();
+									var path = String(_entry.getName());
+									if (/\/$/.test(path)) {
+										//	directory; skip
+									} else {
+										entries[String(_entry.getName())] = new JarEntry(path, _jar.getInputStream(_entry));
+									}
+								}
+								//Packages.java.lang.System.err.println("Done with entries");
+
+								this.toString = function() {
+									return "JarFileElement: " + file;
+								}
+
+								this.list = function(packageName,kinds,recurse) {
+									//Packages.java.lang.System.err.println("packageName = " + packageName + " kinds = " + kinds);
+									var rv = [];
+									if (kinds.CLASS) {
+										var prefix = packageName.replace(/\./g,"/") + "/";
+										for (var x in entries) {
+											var path = x.split("/");
+											var IN_PACKAGE_FILTER = (recurse) ? true : (path.length == packageName.split(".").length+1);
+											if (x.substring(0,prefix.length) == prefix && IN_PACKAGE_FILTER) {
+												rv.push(entries[x].input());
+											}
+										}
+									}
+									if (kinds.SOURCE) {
+										//	No source code in JAR files
+									}
+									return rv;
+								}
+							};
+
+							var elements;
+
+							var getElements = function() {
+								var rv = [];
+								for (var i=0; i<_urls.length; i++) {
+									var protocol = String(_urls[i].getProtocol());
+									var element;
+									if (protocol == "file") {
+										var file = new Packages.java.io.File(_urls[i].toURI());
+										var basename = String(file.getName());
+										if (/\.jar$/.test(basename)) {
+											element = new JarFileElement(file);
+										} else if (file.exists() && file.isDirectory()) {
+											element = new DirectoryElement(file);
+										} else {
+											//	not anything
+											Packages.java.lang.System.err.println("file = " + file);
+										}
+									} else {
+										Packages.java.lang.System.err.println("protocol: " + protocol);
+									}
+									if (element) {
+										rv.push(element);
+									}
 								}
 								return rv;
 							}
-						};
 
-						var elements;
-
-						var getElements = function() {
-							var rv = [];
-							for (var i=0; i<_urls.length; i++) {
-								var protocol = String(_urls[i].getProtocol());
-								var element;
-								if (protocol == "file") {
-									var file = new Packages.java.io.File(_urls[i].toURI());
-									var basename = String(file.getName());
-									if (/\.jar$/.test(basename)) {
-										element = new JarFileElement(file);
-									} else if (file.exists() && file.isDirectory()) {
-										element = new DirectoryElement(file);
-									} else {
-										//	not anything
-										Packages.java.lang.System.err.println("file = " + file);
+							this.list = function(_packageName,_setOfKinds,recurse) {
+								// $api.debug("classpath list");
+								var kinds = {};
+								//Packages.java.lang.System.err.println("package: " + _packageName + " kinds " + _setOfKinds + " recurse " + recurse);
+								kinds.toString = function() {
+									var rv = [];
+									for (var x in this) {
+										if (x != "toString") {
+											rv.push(x);
+										}
 									}
-								} else {
-									Packages.java.lang.System.err.println("protocol: " + protocol);
+									return rv.join(" | ");
 								}
-								if (element) {
-									rv.push(element);
+								var _i = _setOfKinds.iterator();
+								while(_i.hasNext()) {
+									kinds[_i.next().name()] = true;
 								}
-							}
-							return rv;
-						}
-
-						this.list = function(_packageName,_setOfKinds,recurse) {
-							// $api.debug("classpath list");
-							var kinds = {};
-							//Packages.java.lang.System.err.println("package: " + _packageName + " kinds " + _setOfKinds + " recurse " + recurse);
-							kinds.toString = function() {
+								if (!elements) {
+									elements = getElements();
+								}
+								//Packages.java.lang.System.err.println("package: " + _packageName + " kinds " + kinds + " recurse " + recurse);
 								var rv = [];
-								for (var x in this) {
-									if (x != "toString") {
-										rv.push(x);
-									}
+								//Packages.java.lang.System.err.println("_urls = " + _urls);
+								for (var i=0; i<elements.length; i++) {
+									var list = elements[i].list(String(_packageName),kinds,recurse);
+									// $api.debug("elements[" + i + "] = " + elements[i] + " package=" + _packageName + " list = " + list);
+									rv.push.apply(rv,list);
 								}
-								return rv.join(" | ");
-							}
-							var _i = _setOfKinds.iterator();
-							while(_i.hasNext()) {
-								kinds[_i.next().name()] = true;
-							}
-							if (!elements) {
-								elements = getElements();
-							}
-							//Packages.java.lang.System.err.println("package: " + _packageName + " kinds " + kinds + " recurse " + recurse);
-							var rv = [];
-							//Packages.java.lang.System.err.println("_urls = " + _urls);
-							for (var i=0; i<elements.length; i++) {
-								var list = elements[i].list(String(_packageName),kinds,recurse);
-								// $api.debug("elements[" + i + "] = " + elements[i] + " package=" + _packageName + " list = " + list);
-								rv.push.apply(rv,list);
-							}
-							//Packages.java.lang.System.err.println("rv: " + rv);
-							// for (var i=0; i<rv.length; i++) {
-							// 	// $api.debug("classpath[" + i + "] = " + rv[i] + " keys " + Object.keys(rv[i]));
-							// }
-							var _rv = toIterable(rv);
-							//Packages.java.lang.System.err.println("_rv: " + _rv);
-							// $api.debug("classpath list return " + _rv);
-							return _rv;
-						};
-					})(p.classpath);
+								//Packages.java.lang.System.err.println("rv: " + rv);
+								// for (var i=0; i<rv.length; i++) {
+								// 	// $api.debug("classpath[" + i + "] = " + rv[i] + " keys " + Object.keys(rv[i]));
+								// }
+								var _rv = toIterable(rv);
+								//Packages.java.lang.System.err.println("_rv: " + _rv);
+								// $api.debug("classpath list return " + _rv);
+								return _rv;
+							};
+						}
+					)(p.classpath);
 					$api.debug("classpath created ...");
 
 					this.getClassLoader = function(_location) {
@@ -372,6 +378,11 @@
 			var _listener = null; /* javax.tools.DiagnosticListener */
 			var _annotationProcessorClasses = null;
 
+			/**
+			 *
+			 * @param { slime.jrunscript.native.java.net.URL } _url
+			 * @returns
+			 */
 			var SourceFile = function(_url) {
 				return new JavaAdapter(
 					Packages.javax.tools.JavaFileObject,

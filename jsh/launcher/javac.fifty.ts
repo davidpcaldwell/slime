@@ -6,8 +6,8 @@
 
 namespace slime.internal.jsh.launcher.javac {
 	export type compile = (p: {
-		files: any
+		files: slime.jrunscript.native.java.net.URL[]
 		destination: slime.jrunscript.native.java.io.File
-		classpath: any
+		classpath: slime.jrunscript.native.java.net.URL[]
 	}) => void
 }

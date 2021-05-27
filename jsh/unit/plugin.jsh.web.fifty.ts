@@ -6,7 +6,7 @@
 
 namespace slime.jsh.unit {
 	export interface mock {
-		Web: mock.Web.constructor
+		Web: mock.web.Constructor
 		Internet: any
 		Hg: any
 		git: any
@@ -15,14 +15,14 @@ namespace slime.jsh.unit {
 	export namespace mock {
 		export type handler = slime.servlet.handler & { stop?: () => void }
 
-		export namespace Web {
-			namespace constructor {
+		export namespace web {
+			export namespace constructor {
 				export type Function = new (o?: {
 					trace: boolean
 				}) => slime.jsh.unit.mock.Web
 			}
 
-			export type constructor = constructor.Function & {
+			export type Constructor = constructor.Function & {
 				bitbucket: (o: {}) => handler
 				github: (o: { src: slime.jsh.unit.mock.github.src, private?: boolean }) => handler
 			}
