@@ -240,7 +240,7 @@ namespace slime.jrunscript.shell {
 
 		//	TODO	probably should be conditional based on presence of sudo tool
 		/**
-		 * Executes a given invocation under `sudo` according to the settings given.
+		 * Creates an object that can execute invocations under `sudo` using the settings given.
 		 */
 		sudo: (settings?: Parameters<Exports["invocation"]["sudo"]>[0]) => {
 			run: (invocation: invocation.Argument) => any
