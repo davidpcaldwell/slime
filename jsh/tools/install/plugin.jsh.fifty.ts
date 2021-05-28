@@ -40,6 +40,8 @@ namespace slime.jsh.shell.tools {
 
 	export namespace mkcert {
 		export interface Installation {
+			program: slime.jrunscript.file.File
+			isTrusted: () => boolean
 			pkcs12: (p: { hosts: string[], to?: slime.jrunscript.file.Pathname }) => void
 		}
 	}

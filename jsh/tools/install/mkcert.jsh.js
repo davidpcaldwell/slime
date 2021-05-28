@@ -11,15 +11,27 @@
 	 * @param { slime.jsh.Global } jsh
 	 */
 	function($api,jsh) {
-		//	TODO	deal with Firefox
-		//	TODO	deal with Java
-		var invocation = jsh.script.cli.invocation(
-			$api.Function.pipe(
-				jsh.script.cli.option.pathname({ longname: "destination", default: jsh.shell.jsh.lib.getRelativePath("bin/mkcert") })
-			)
-		);
+		jsh.script.cli.wrap({
+			commands: {
+				install: function() {
+					var invocation = jsh.script.cli.invocation(
+						$api.Function.pipe(
+							jsh.script.cli.option.pathname({ longname: "destination", default: jsh.shell.jsh.lib.getRelativePath("bin/mkcert") })
+						)
+					);
 
-		jsh.shell.tools.mkcert.install({ destination: invocation.options.destination });
+					jsh.shell.tools.mkcert.install({ destination: invocation.options.destination });
+				},
+				require: function() {
+					jsh.shell.tools.mkcert.require();
+				},
+				trusted: function() {
+					var installation = jsh.shell.tools.mkcert.require();
+					var trusted = installation.isTrusted();
+					jsh.shell.console("trusted = " + trusted);
+				}
+			}
+		})
 	}
 //@ts-ignore
 )($api,jsh);

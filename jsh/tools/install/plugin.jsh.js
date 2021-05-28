@@ -282,6 +282,8 @@
 				})();
 
 				jsh.shell.tools.mkcert = (function() {
+					//	TODO	deal with Firefox
+					//	TODO	deal with Java
 					var location = (jsh.shell.jsh.lib) ? jsh.shell.jsh.lib.getRelativePath("bin/mkcert") : void(0);
 
 					/**
@@ -290,10 +292,45 @@
 					 * @returns { slime.jsh.shell.tools.mkcert.Installation }
 					 */
 					function Installation(program) {
+						var CAROOT = $api.Function.memoized(function() {
+							var result = jsh.shell.run({
+								command: program,
+								arguments: ["-CAROOT"],
+								stdio: {
+									output: String
+								}
+							});
+							return jsh.file.Pathname(result.stdio.output.trim());
+						});
+
+						var isTrusted = function(cert) {
+							var result = jsh.shell.run({
+								command: "security",
+								//	security verify-cert -c "$(src/khoros/slim/slime/local/jsh/lib/bin/mkcert -CAROOT)/rootCA.pem"
+								arguments: [
+									"verify-cert",
+									"-c", cert
+								],
+								stdio: {
+									output: null,
+									error: null
+								},
+								evaluate: $api.Function.identity
+							});
+							return result.status === 0;
+						}
+
 						return {
+							program: program,
+							isTrusted: function() {
+								var root = CAROOT();
+								if (!root.directory) return false;
+								if (!root.directory.getFile("rootCA.pem")) return false;
+								return isTrusted(root.directory.getFile("rootCA.pem"));
+							},
 							pkcs12: function(p) {
 								jsh.shell.run({
-									command: location.file,
+									command: program,
 									arguments: $api.Array.build(function(rv) {
 										rv.push("-pkcs12");
 										if (p.to) rv.push("-p12-file", p.to);

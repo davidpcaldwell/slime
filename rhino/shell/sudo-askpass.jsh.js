@@ -11,7 +11,9 @@
 	 * @param { slime.jsh.Global } jsh
 	 */
 	function(jsh) {
+		jsh.shell.console("Requesting sudo password from GUI ...");
 		jsh.shell.echo(jsh.ui.askpass.gui({ prompt: "Account password for " + jsh.shell.environment.USER + ":" }));
+		jsh.shell.console("Obtained sudo password from GUI.");
 	}
 //@ts-ignore
 )(jsh);
