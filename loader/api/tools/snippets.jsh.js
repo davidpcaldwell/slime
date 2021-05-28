@@ -133,6 +133,21 @@
 		var snippetPattern = /^snippet\-(.*)-(.*)\.zzz$/;
 
 		var snippetFiles = function(p) {
+			function removeLicense(code) {
+				var lines = code.split("\n");
+				var found;
+				for (var i=0; i<lines.length; i++) {
+					if (lines[i].indexOf("END LICENSE") != -1) {
+						found = i;
+					}
+				}
+				if (typeof(found) != "undefined") {
+					return lines.slice(found+2).join("\n")
+				} else {
+					return code;
+				}
+			}
+
 			return function() {
 				var pattern = $api.Function.result(
 					snippetPattern,
@@ -148,7 +163,7 @@
 					return {
 						name: match[1],
 						abbreviation: match[2],
-						code: node.read(String)
+						code: removeLicense(node.read(String))
 					}
 				});
 				return {
@@ -163,7 +178,8 @@
 							name: "slime " + snippet.name,
 							prefix: snippet.abbreviation,
 							body: snippet.code.split("\n").map(function(line) {
-								return line.replace(/\/\*\$0\*\//g, "$0")
+								//	TODO	generalize; escaping everything except $0 is tricky, so we do just $api for now
+								return line.replace(/\/\*\$0\*\//g, "$0").replace(/\$api/g, "\\$api")
 							}),
 							description: "slime " + snippet.name
 						}
