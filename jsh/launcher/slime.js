@@ -141,6 +141,7 @@
 								 * @param { slime.jrunscript.native.java.net.URL[] } rv
 								 */
 								var getSourceFilesUnder = function(url,rv) {
+									$$api.debug("get source files under " + url);
 									var pattern = /^http(?:s)?\:\/\/raw.githubusercontent.com\/davidpcaldwell\/slime\/(.*?)\/(.*)$/;
 									var match = pattern.exec(String(url.toExternalForm()));
 									if (!match) throw new Error("No match: " + url);

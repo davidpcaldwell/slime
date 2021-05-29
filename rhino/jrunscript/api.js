@@ -641,6 +641,9 @@
 
 			$api.github = {
 				test: {
+					toArchiveLocation: function(url) {
+						return toGithubArchiveLocation(new Packages.java.net.URL(url));
+					},
 					zip: function(input) {
 						return GithubArchive(input)
 					}
@@ -760,8 +763,7 @@
 			}
 
 			$api.Script.test = {
-				interpret: interpret,
-				toGithubArchiveLocation: toGithubArchiveLocation
+				interpret: interpret
 			}
 
 			if ($script && $script.url) {
