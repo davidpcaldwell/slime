@@ -10,6 +10,9 @@ namespace slime.internal.jrunscript.bootstrap {
 			file: string
 			url: string
 		}
+		engine: {
+			script: any
+		}
 		arguments: string[]
 	}
 
@@ -46,7 +49,19 @@ namespace slime.internal.jrunscript.bootstrap {
 			debug: any
 			console: any
 			log: any
-			engine: any
+			engine: {
+				toString: () => string
+				resolve: any
+				readFile: any
+				readUrl: any
+				runCommand: any
+			}
+
+			github: {
+				test: {
+					zip: any
+				}
+			}
 
 			Script: {
 				new (p: { string: string }): Script
@@ -112,6 +127,20 @@ namespace slime.internal.jrunscript.bootstrap {
 					url: "http://github.com/davidpcaldwell/slime/archive/refs/heads/master.zip"
 				});
 				fifty.verify(zip).status.code.is(200);
+
+				var configuration: slime.internal.jrunscript.bootstrap.Environment = {
+					Packages: Packages,
+					load: function() {
+						throw new Error("Implement.");
+					},
+					$api: {
+						debug: true
+					}
+				};
+				fifty.$loader.run("api.js", {}, configuration);
+				var global: slime.internal.jrunscript.bootstrap.Global<{},{}> = configuration as slime.internal.jrunscript.bootstrap.Global<{},{}>;
+				var subject = global.$api;
+				fifty.verify(subject).is.type("object");
 			}
 
 			fifty.tests.suite = function() {

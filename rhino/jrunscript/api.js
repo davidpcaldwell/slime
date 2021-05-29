@@ -70,15 +70,16 @@
 		 */
 		var $api = {
 			debug: (this.$api && this.$api.debug) ? this.$api.debug : void(0),
-			script: void(0),
-			engine: void(0),
-			rhino: void(0),
 			console: void(0),
+			log: void(0),
+			engine: void(0),
+			github: void(0),
+			script: void(0),
+			rhino: void(0),
 			java: void(0),
 			arguments: void(0),
 			shell: void(0),
 			io: void(0),
-			log: void(0),
 			Script: void(0),
 			bitbucket: void(0)
 		};
@@ -261,8 +262,8 @@
 		var Packages = this.Packages;
 		var JavaAdapter = this.JavaAdapter;
 
-		if (this.$api && this.$api.engine && this.$api.engine.script) {
-			$engine.script = this.$api.engine.script;
+		if (configuration && configuration.engine && configuration.engine.script) {
+			$engine.script = configuration.engine.script;
 		}
 
 		$api.engine = {
@@ -524,7 +525,7 @@
 			/**
 			 *
 			 * @param { slime.jrunscript.native.java.net.URL } url
-			 * @returns
+			 * @returns { { zip: slime.jrunscript.native.java.net.URL, path: string } }
 			 */
 			var toGithubArchiveLocation = function(url) {
 				var string = String(url);
@@ -541,6 +542,16 @@
 					}
 				} else {
 					return null;
+				}
+			}
+
+			$api.github = {
+				test: {
+					zip: function(input) {
+						return {
+							zip: "hey!"
+						}
+					}
 				}
 			}
 

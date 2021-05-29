@@ -411,6 +411,7 @@ public class Code {
 			return zip(file.toString(), file.getInputStream());
 		}
 
+		//	TODO	left over from a refactor; fixing callers should make this method unnecessary
 		private static String toPrefix(String input) {
 			if (input == null) return "";
 			if (input.length() == 0) return "";
