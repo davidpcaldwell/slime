@@ -29,7 +29,10 @@ namespace slime.internal.jsh.launcher {
 		}
 
 		src?: {
-			getSourceFilesUnder: (dir: slime.jrunscript.native.java.io.File) => slime.jrunscript.native.java.io.File[]
+			getSourceFilesUnder: {
+				(string: string): slime.jrunscript.native.java.net.URL[]
+				(dir: slime.jrunscript.native.java.io.File): slime.jrunscript.native.java.io.File[]
+			}
 			File: (path: string) => slime.jrunscript.native.java.io.File
 			getPath: (path: string) => string
 		}

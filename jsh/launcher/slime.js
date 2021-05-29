@@ -135,9 +135,14 @@
 									}
 								}
 
+								/**
+								 *
+								 * @param { slime.jrunscript.native.java.net.URL } url
+								 * @param { slime.jrunscript.native.java.net.URL[] } rv
+								 */
 								var getSourceFilesUnder = function(url,rv) {
 									var pattern = /^http(?:s)?\:\/\/raw.githubusercontent.com\/davidpcaldwell\/slime\/(.*?)\/(.*)$/;
-									var match = pattern.exec(url);
+									var match = pattern.exec(String(url.toExternalForm()));
 									if (!match) throw new Error("No match: " + url);
 									//	TODO	make branch into ref query parameter
 									var branch = match[1];
