@@ -62,6 +62,7 @@ namespace slime.internal.jrunscript.bootstrap {
 		export namespace github {
 			export type Archive = {
 				read: (name: string) => slime.jrunscript.native.java.io.InputStream
+				list: (path: string) => string[]
 			}
 		}
 	}
@@ -178,6 +179,18 @@ namespace slime.internal.jrunscript.bootstrap {
 				var fromFilesystem = fifty.$loader.getRelativePath("api.fifty.ts").file.read(String);
 				var filesAreEqual = fromZip == fromFilesystem
 				verify(filesAreEqual,"filesAreEqual").is(true);
+
+				var folder = archive.list("slime-master/rhino/jrunscript/").sort(function(a,b) {
+					if (a < b) return -1;
+					if (b < a) return 1;
+					return 0;
+				});
+				verify(folder).is.type("object");
+				verify(folder).length.is(4);
+				verify(folder)[3].is("test/");
+				var top = archive.list("");
+				verify(top).length.is(1);
+				verify(top)[0].is("slime-master/");
 			}
 
 			fifty.tests.suite = function() {

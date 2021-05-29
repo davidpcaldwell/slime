@@ -508,10 +508,11 @@
 					var _zipstream = new Packages.java.util.zip.ZipInputStream(_stream);
 					var _entry;
 					while(_entry = _zipstream.getNextEntry()) {
-						if (_entry.getName().endsWith(new Packages.java.lang.String("/"))) {
-							destination.directory(String(_entry.getName()));
+						var isDirectory = _entry.getName().endsWith(new Packages.java.lang.String("/"));
+						var name = String(_entry.getName());
+						if (isDirectory) {
+							destination.directory(name);
 						} else {
-							var name = String(_entry.getName());
 							destination.write(name,_zipstream);
 						}
 					}
@@ -578,11 +579,48 @@
 			 * @param { slime.jrunscript.native.java.io.InputStream } _stream
 			 */
 			var GithubArchive = function(_stream) {
+				//	This is pretty much a direct port of inohit.script.engine.Code.Loader.zip into JavaScript
 				var files = {};
 
+				var directories = {};
+
+				var maintainDirectories = function(entryName) {
+					var hasSlash = entryName.indexOf("/") != -1;
+					var endsWithSlash = /\/$/.test(entryName);
+					if (hasSlash) {
+						var directory;
+						var basename;
+						if (endsWithSlash) {
+							var before = entryName.substring(0, entryName.length-1);
+							var split = before.split("/"); ///entryName.substring(0, entryName.length()-1).lastIndexOf("/");
+							if (split.length == 1) {
+								directory = "";
+								basename = entryName;
+							} else {
+								directory = split.slice(0, split.length-1).join("/") + "/";
+								basename = split[split.length-1] + "/";
+							}
+						} else {
+							var tokens = entryName.split("/");
+							directory = tokens.slice(0, tokens.length-1).join("/") + "/";
+							basename = tokens[tokens.length-1];
+						}
+						var listing = directories[directory];
+						if (!listing) {
+							listing = {};
+							directories[directory] = listing;
+						}
+						listing[basename] = true;
+						maintainDirectories(directory);
+					}
+				}
+
 				io.zip.parse(_stream, {
-					directory: function(name) {},
+					directory: function(name) {
+						maintainDirectories(name);
+					},
 					write: function(name,_stream) {
+						maintainDirectories(name);
 						var to = new Packages.java.io.ByteArrayOutputStream();
 						io.copy(_stream, to);
 						files[name] = to.toByteArray();
@@ -593,6 +631,10 @@
 					read: function(name) {
 						if (!files[name]) return null;
 						return new Packages.java.io.ByteArrayInputStream(files[name]);
+					},
+					list: function(path) {
+						var listing = directories[path];
+						return (listing) ? Object.keys(listing) : null;
 					}
 				}
 			}
