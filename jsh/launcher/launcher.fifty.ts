@@ -13,7 +13,19 @@ namespace slime.internal.jsh.launcher {
 		Built: any
 		Packaged: any
 		Classpath: any
-		Unbuilt: any
+		Unbuilt: new (p: {
+			lib: {
+				url?: string
+				file?: slime.jrunscript.native.java.io.File
+			}
+			rhino: slime.jrunscript.native.java.net.URL[]
+		}) => {
+			rhino: slime.jrunscript.native.java.net.URL[]
+			graal?: slime.jrunscript.native.java.io.File
+			profiler: slime.jrunscript.native.java.io.File
+			compileLoader: any
+			shellClasspath: () => slime.jrunscript.native.java.net.URL[]
+		}
 	}
 
 	interface Additions {

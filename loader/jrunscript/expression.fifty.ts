@@ -191,6 +191,9 @@ namespace slime.jrunscript {
 					renameTo(file: File)
 					getParentFile(): File
 					getAbsoluteFile(): File
+					toURI(): net.URI
+					mkdirs()
+					isAbsolute(): boolean
 				}
 			}
 			export namespace nio {
@@ -205,7 +208,9 @@ namespace slime.jrunscript {
 					close()
 				}
 
-				export interface URI {}
+				export interface URI {
+					toURL(): URL
+				}
 
 				export interface URL {
 					getQuery(): slime.jrunscript.native.java.lang.String
@@ -391,7 +396,17 @@ namespace slime.jrunscript {
 			io: {
 				ByteArrayInputStream: any
 				ByteArrayOutputStream: any
-				File: any
+				File: {
+					new (parent: slime.jrunscript.native.java.io.File, path: string): slime.jrunscript.native.java.io.File
+					new (parent: string, path: string): slime.jrunscript.native.java.io.File
+					new (path: slime.jrunscript.native.java.lang.String): slime.jrunscript.native.java.io.File
+					new (path: string): slime.jrunscript.native.java.io.File
+					new (uri: slime.jrunscript.native.java.net.URI): slime.jrunscript.native.java.io.File
+
+					separator: slime.jrunscript.native.java.lang.String
+					pathSeparator: slime.jrunscript.native.java.lang.String
+					createTempFile: any
+				}
 				InputStream: any
 				StringReader: any
 				StringWriter: any

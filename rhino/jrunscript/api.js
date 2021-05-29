@@ -579,9 +579,9 @@
 			 * @param { slime.jrunscript.native.java.io.InputStream } _stream
 			 */
 			var GithubArchive = function(_stream) {
-				//	This is pretty much a direct port of inohit.script.engine.Code.Loader.zip into JavaScript
-				var files = {};
+				//	This function is pretty much a direct port of inohit.script.engine.Code.Loader.zip into JavaScript
 
+				var files = {};
 				var directories = {};
 
 				var maintainDirectories = function(entryName) {

@@ -13,6 +13,14 @@
 		var Packages = this.Packages;
 		var $$api = this.$api;
 
+		/** @type { (p: any) => slime.internal.jsh.launcher.SlimeConfiguration } */
+		function toSlimeConfiguration(p) {
+			return p;
+		}
+
+		/** @type { slime.internal.jsh.launcher.SlimeConfiguration } */
+		var configuration = toSlimeConfiguration($$api.slime);
+
 		//	Provide better implementation that uses Java delegate, replacing pure JavaScript version supplied by api.js
 		if (typeof(Packages.inonit.script.runtime.io.Streams) == "function") {
 			$$api.io.copy = (function() {
@@ -36,7 +44,12 @@
 			/** @type { slime.internal.jsh.launcher.Slime } */
 			var rv;
 			if (was && was.built) {
-				rv = was;
+				rv = {
+					launcher: void(0),
+					home: void(0),
+					setting: void(0),
+					settings: void(0)
+				};
 				rv.launcher = new function() {
 					this.getClasses = function() {
 						return new Packages.java.io.File($$api.script.file.getParentFile(), "jsh.jar");
@@ -48,7 +61,6 @@
 				rv = {
 					launcher: void(0),
 					src: void(0),
-					built: void(0),
 					home: void(0),
 					setting: void(0),
 					settings: void(0)
@@ -406,7 +418,7 @@
 			};
 
 			return rv;
-		})($$api.slime);
+		})(configuration);
 	}
 //@ts-ignore
 ).call(this);

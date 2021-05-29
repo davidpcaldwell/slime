@@ -5,12 +5,29 @@
 //	END LICENSE
 
 namespace slime.internal.jsh.launcher {
+	//	would like to use namespace slime but that conflicts with same name of top-level namespace
+	export interface SlimeConfiguration {
+		built?: slime.jrunscript.native.java.io.File
+	}
+
 	export interface Slime {
-		built: any
 		launcher: any
 		home: any
-		setting: any
-		settings: any
+
+		/**
+		 * Given a system property-style name (e.g., `foo.bar.baz`), searches for a value both in that system property and (if not
+		 * found) in a corresponding environment variable (in this case, `FOO_BAR_BAZ`).
+		 */
+		setting: (name: string) => string
+
+		settings: {
+			get: (name: string) => string
+			set: (name: string, value: any) => void
+
+			getContainerArguments: any
+			sendPropertiesTo: any
+		}
+
 		src?: {
 			getSourceFilesUnder: (dir: slime.jrunscript.native.java.io.File) => slime.jrunscript.native.java.io.File[]
 			File: (path: string) => slime.jrunscript.native.java.io.File

@@ -11,7 +11,7 @@
 (
 	/**
 	 *
-	 * @this { slime.internal.jrunscript.bootstrap.Global<{ slime: any, jsh: any }> }
+	 * @this { slime.internal.jrunscript.bootstrap.Global<{ slime: slime.internal.jsh.launcher.Slime, jsh: any }> }
 	 */
 	function() {
 		var Java = this.Java;
@@ -29,9 +29,14 @@
 			} else {
 				//	TODO	hard-codes assumption of built shell and hard-codes assumption unbuilt shell will arrive via launcher script; should
 				//			tighten this implementation
-				$api.slime = {
+				/** @type { slime.internal.jsh.launcher.SlimeConfiguration } */
+				var slimeConfiguration = {
 					built: $api.script.file.getParentFile()
 				};
+				var setProperty = function(obj,name,value) {
+					obj[name] = value;
+				}
+				setProperty($api, "slime", slimeConfiguration);
 			}
 			$api.script.resolve("slime.js").load();
 		}
@@ -260,7 +265,7 @@
 		} else if (scriptDebugger == "ncdbg") {
 			$api.slime.settings.set("jsh.engine", "nashorn");
 			var ncdbg = (function() {
-				if ($api.slime.src) return new $api.slime.src.File("jsh/tools/ncdbg.jsh.js");
+				if ($api.slime.src) return $api.slime.src.File("jsh/tools/ncdbg.jsh.js");
 				if ($api.slime.home) return new Packages.java.io.File($api.slime.home, "src/jsh/tools/ncdbg.jsh.js");
 			})();
 			// TODO: command.argument(.../ncdbg.jsh.js)

@@ -233,6 +233,10 @@
 
 			$$api.script.resolve("javac.js").load();
 
+			/**
+			 * @type { slime.internal.jsh.launcher.Jsh["Unbuilt"] }
+			 * @param { ConstructorParameters<slime.internal.jsh.launcher.Jsh["Unbuilt"]>[0] } p
+			 */
 			$$api.jsh.Unbuilt = function(p) {
 				if (!p) throw new TypeError("Required: arguments[0]");
 
@@ -263,34 +267,6 @@
 						return new Packages.java.io.File($$api.slime.settings.get("jsh.shell.profiler"));
 					}
 				})();
-
-				var getLoaderSourceFiles = function(p) {
-					var directories = [];
-					directories.push("loader/jrunscript/java/");
-					if (p.rhino) directories.push("loader/jrunscript/rhino/");
-					directories.push("rhino/system/java/");
-					directories.push("jsh/loader/java/");
-					if (p.rhino) directories.push("jsh/loader/rhino/");
-					var toCompile = [];
-					directories.forEach(function(directory) {
-						if (p.on && p.on.start) {
-							p.on.start({
-								path: directory,
-								current: arguments[1]+1,
-								total: arguments[2].length
-							});
-						}
-						toCompile = toCompile.concat(p.list(directory));
-						if (p.on && p.on.end) {
-							p.on.end({
-								path: directory,
-								current: arguments[1]+1,
-								total: arguments[2].length
-							});
-						}
-					});
-					return toCompile;
-				}
 
 				//	As of bbc58b79a49b6b5ae2b56c48486e85cbd1e31eb5, used by jsh/etc/build.jsh.js, as well as shellClasspath method below
 				this.compileLoader = function(p) {
@@ -339,6 +315,7 @@
 
 					if (!$$api.slime.src) throw new Error("Could not detect SLIME source root for unbuilt shell.")
 					var setting = $$api.slime.settings.get("jsh.shell.classes");
+					/** @type { slime.jrunscript.native.java.io.File } */
 					var LOADER_CLASSES = (setting) ? new Packages.java.io.File(setting, "loader") : $$api.io.tmpdir();
 					if (!LOADER_CLASSES.exists()) LOADER_CLASSES.mkdirs();
 					if ($$api.slime.src.File) {
@@ -351,6 +328,35 @@
 						}
 					} else {
 						$$api.log("Looking for loader source files under " + $$api.slime.src + " ...");
+
+						var getLoaderSourceFiles = function(p) {
+							var directories = [];
+							directories.push("loader/jrunscript/java/");
+							if (p.rhino) directories.push("loader/jrunscript/rhino/");
+							directories.push("rhino/system/java/");
+							directories.push("jsh/loader/java/");
+							if (p.rhino) directories.push("jsh/loader/rhino/");
+							var toCompile = [];
+							directories.forEach(function(directory) {
+								if (p.on && p.on.start) {
+									p.on.start({
+										path: directory,
+										current: arguments[1]+1,
+										total: arguments[2].length
+									});
+								}
+								toCompile = toCompile.concat(p.list(directory));
+								if (p.on && p.on.end) {
+									p.on.end({
+										path: directory,
+										current: arguments[1]+1,
+										total: arguments[2].length
+									});
+								}
+							});
+							return toCompile;
+						}
+
 						var toCompile = getLoaderSourceFiles({
 							list: function(string) {
 								return $$api.slime.src.getSourceFilesUnder(string);
