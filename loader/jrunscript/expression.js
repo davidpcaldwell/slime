@@ -202,7 +202,7 @@
 		var Resource = (function(was) {
 			var rv = (
 				/**
-				 * @param { slime.jrunscript.runtime.Resource.Descriptor } p
+				 * @param { slime.jrunscript.runtime.resource.Descriptor } p
 				 * @constructor
 				 */
 				function(p) {

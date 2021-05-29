@@ -84,7 +84,7 @@
 			bitbucket: void(0)
 		};
 
-		(function() {
+		(function defineLogging() {
 			var on = false;
 
 			$api.debug = function(message) {
@@ -106,15 +106,15 @@
 					}
 				});
 			}
+
+			$api.console = function(message) {
+				Packages.java.lang.System.err.println(message);
+			}
+
+			$api.log = function(message) {
+				Packages.java.util.logging.Logger.getLogger("inonit.jrunscript").log(Packages.java.util.logging.Level.INFO, message);
+			}
 		}).call(this);
-
-		$api.console = function(message) {
-			Packages.java.lang.System.err.println(message);
-		}
-
-		$api.log = function(message) {
-			Packages.java.util.logging.Logger.getLogger("inonit.jrunscript").log(Packages.java.util.logging.Level.INFO, message);
-		}
 
 		var $engine = (function(global) {
 			var Nashorn = function() {
@@ -492,6 +492,34 @@
 			}
 		};
 
+		/**
+		 * @type { slime.internal.jrunscript.bootstrap.internal.Io }
+		 */
+		var io = {
+			copy: function(from,to) {
+				var b;
+				while( (b = from.read()) != -1 ) {
+					to.write(b);
+				}
+				to.close();
+			},
+			zip: {
+				parse: function(_stream,destination) {
+					var _zipstream = new Packages.java.util.zip.ZipInputStream(_stream);
+					var _entry;
+					while(_entry = _zipstream.getNextEntry()) {
+						if (_entry.getName().endsWith(new Packages.java.lang.String("/"))) {
+							destination.directory(String(_entry.getName()));
+						} else {
+							var name = String(_entry.getName());
+							destination.write(name,_zipstream);
+						}
+					}
+					_stream.close();
+				}
+			}
+		};
+
 		(function() {
 			//	Given a string, returns either { file: absolute java.io.File } or { url: java.net.URL }
 			var interpret = function(string) {
@@ -545,12 +573,34 @@
 				}
 			}
 
+			/**
+			 *
+			 * @param { slime.jrunscript.native.java.io.InputStream } _stream
+			 */
+			var GithubArchive = function(_stream) {
+				var files = {};
+
+				io.zip.parse(_stream, {
+					directory: function(name) {},
+					write: function(name,_stream) {
+						var to = new Packages.java.io.ByteArrayOutputStream();
+						io.copy(_stream, to);
+						files[name] = to.toByteArray();
+					}
+				});
+
+				return {
+					read: function(name) {
+						if (!files[name]) return null;
+						return new Packages.java.io.ByteArrayInputStream(files[name]);
+					}
+				}
+			}
+
 			$api.github = {
 				test: {
 					zip: function(input) {
-						return {
-							zip: "hey!"
-						}
+						return GithubArchive(input)
 					}
 				}
 			}
@@ -965,16 +1015,9 @@
 			}
 		}
 		$api.io = {
-			copy: void(0),
+			copy: io.copy,
 			tmpdir: void(0),
 			unzip: void(0)
-		};
-		$api.io.copy = function(from,to) {
-			var b;
-			while( (b = from.read()) != -1 ) {
-				to.write(b);
-			}
-			to.close();
 		};
 		$api.io.tmpdir = function(p) {
 			if (!p) p = {};
@@ -992,6 +1035,7 @@
 					return new Packages.java.net.URL(p.from.url).openConnection().getInputStream();
 				}
 			})();
+			/** @type { slime.internal.jrunscript.bootstrap.internal.io.zip.Processor } */
 			var destination = (function() {
 				if (p.to._directory) {
 					if (p.to._directory.exists()) throw new Error("Cannot unzip to " + p.to._directory + "; already exists.");
@@ -1011,17 +1055,7 @@
 					}
 				}
 			})();
-			var _zipstream = new Packages.java.util.zip.ZipInputStream(_stream);
-			var _entry;
-			while(_entry = _zipstream.getNextEntry()) {
-				if (_entry.getName().endsWith(new Packages.java.lang.String("/"))) {
-					destination.directory(String(_entry.getName()));
-				} else {
-					var name = String(_entry.getName());
-					destination.write(name,_zipstream);
-				}
-			}
-			_stream.close();
+			io.zip.parse(_stream, destination);
 		};
 		$api.bitbucket = {};
 		$api.bitbucket.get = function(p) {

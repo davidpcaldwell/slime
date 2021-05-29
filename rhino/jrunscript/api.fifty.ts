@@ -44,6 +44,28 @@ namespace slime.internal.jrunscript.bootstrap {
 		}
 	}
 
+	export namespace internal {
+		export namespace io.zip {
+			export type Processor = {
+				directory: (name: string) => void
+				write: (name: string, _stream: slime.jrunscript.native.java.io.InputStream) => void
+			}
+		}
+
+		export type Io = {
+			copy: (from: slime.jrunscript.native.java.io.InputStream, to: slime.jrunscript.native.java.io.OutputStream) => void
+			zip: {
+				parse: (_stream: slime.jrunscript.native.java.io.InputStream, destination: io.zip.Processor) => void
+			}
+		}
+
+		export namespace github {
+			export type Archive = {
+				read: (name: string) => slime.jrunscript.native.java.io.InputStream
+			}
+		}
+	}
+
 	export interface Global<T,J> extends Environment {
 		$api: {
 			debug: any
@@ -59,7 +81,7 @@ namespace slime.internal.jrunscript.bootstrap {
 
 			github: {
 				test: {
-					zip: any
+					zip: (_stream: slime.jrunscript.native.java.io.InputStream) => internal.github.Archive
 				}
 			}
 
@@ -111,6 +133,7 @@ namespace slime.internal.jrunscript.bootstrap {
 			fifty: slime.fifty.test.kit
 		) {
 			var jsh = fifty.global.jsh;
+			var verify = fifty.verify;
 
 			fifty.tests.zip = function() {
 				var web = new jsh.unit.mock.Web();
@@ -139,8 +162,22 @@ namespace slime.internal.jrunscript.bootstrap {
 				};
 				fifty.$loader.run("api.js", {}, configuration);
 				var global: slime.internal.jrunscript.bootstrap.Global<{},{}> = configuration as slime.internal.jrunscript.bootstrap.Global<{},{}>;
-				var subject = global.$api;
-				fifty.verify(subject).is.type("object");
+
+				var archive = global.$api.github.test.zip(zip.body.stream.java.adapt());
+				verify(archive).read("slime-master/rhino/jrunscript/api.fifty.ts").is.type("object");
+				verify(archive).read("slime-master/rhino/jrunscript/api.fifty.ts.foo").is.type("null");
+				var descriptor: slime.jrunscript.runtime.resource.Descriptor = {
+					read: {
+						binary: function() {
+							return jsh.io.java.adapt(archive.read("slime-master/rhino/jrunscript/api.fifty.ts"));
+						}
+					}
+				}
+				var resource = new jsh.io.Resource(descriptor);
+				var fromZip = resource.read(String);
+				var fromFilesystem = fifty.$loader.getRelativePath("api.fifty.ts").file.read(String);
+				var filesAreEqual = fromZip == fromFilesystem
+				verify(filesAreEqual,"filesAreEqual").is(true);
 			}
 
 			fifty.tests.suite = function() {

@@ -17,10 +17,10 @@ namespace slime.jrunscript.runtime {
 		modified?: any
 	}
 
-	export namespace Resource {
+	export namespace resource {
 		export interface Descriptor extends slime.resource.Descriptor {
 			read?: slime.resource.Descriptor["read"] & {
-				binary?: any
+				binary?: () => slime.jrunscript.runtime.io.InputStream
 				text?: any
 			}
 			stream?: {
@@ -121,7 +121,7 @@ namespace slime.jrunscript.runtime {
 		Loader: any
 
 		Resource: {
-			new (p: Resource.Descriptor): Resource
+			new (p: resource.Descriptor): Resource
 		}
 
 		io: slime.jrunscript.runtime.io.Exports
@@ -167,8 +167,10 @@ namespace slime.jrunscript {
 				export interface InputStream {
 					read(): any
 					getClass(): any
+					close()
 				}
 				export interface OutputStream {
+					write(b: number)
 					close()
 				}
 				export interface Reader {
@@ -508,7 +510,7 @@ namespace slime.jrunscript {
 	) {
 		tests.exports = {};
 		tests.exports.Resource = function() {
-			var file: slime.jrunscript.runtime.Resource.Descriptor = $loader.source.get("expression.fifty.ts");
+			var file: slime.jrunscript.runtime.resource.Descriptor = $loader.source.get("expression.fifty.ts");
 			var resource = new $slime.Resource({
 				type: $slime.mime.Type.parse("application/x.typescript"),
 				read: {

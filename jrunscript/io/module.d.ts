@@ -13,13 +13,23 @@ namespace slime.jrunscript.io {
 		nojavamail: boolean
 	}
 
+	/**
+	 * An object that builds on the internal runtime {@link slime.jrunscript.runtime.Exports} and
+	 * {@link slime.jrunscript.runtime.io.Exports} types and provides an improved
+	 * interface for callers.
+	 */
 	interface Exports {
 		Streams: slime.jrunscript.runtime.io.Exports["Streams"]
 		Buffer: slime.jrunscript.runtime.io.Exports["Buffer"]
 		Resource: slime.jrunscript.runtime.Exports["Resource"]
 		Loader: slime.jrunscript.runtime.Exports["Loader"]
 		java: {
-			adapt: any
+			adapt: {
+				(native: slime.jrunscript.native.java.io.InputStream): slime.jrunscript.runtime.io.InputStream
+				(native: slime.jrunscript.native.java.io.OutputStream): slime.jrunscript.runtime.io.OutputStream
+				(native: slime.jrunscript.native.java.io.Reader): slime.jrunscript.runtime.io.Reader
+				(native: slime.jrunscript.native.java.io.Writer): slime.jrunscript.runtime.io.Writer
+			}
 		}
 		mime: slime.jrunscript.io.mime.Exports
 		archive: {
