@@ -58,12 +58,13 @@ namespace slime.internal.jrunscript.bootstrap {
 				parse: (_stream: slime.jrunscript.native.java.io.InputStream, destination: io.zip.Processor) => void
 			}
 		}
+	}
 
-		export namespace github {
-			export type Archive = {
-				read: (name: string) => slime.jrunscript.native.java.io.InputStream
-				list: (path: string) => string[]
-			}
+
+	export namespace github {
+		export type Archive = {
+			read: (name: string) => slime.jrunscript.native.java.io.InputStream
+			list: (path: string) => string[]
 		}
 	}
 
@@ -81,8 +82,11 @@ namespace slime.internal.jrunscript.bootstrap {
 			}
 
 			github: {
+				archives: {
+					getSourceFilesUnder: (url: slime.jrunscript.native.java.net.URL) => slime.jrunscript.native.java.net.URL[]
+				}
 				test: {
-					zip: (_stream: slime.jrunscript.native.java.io.InputStream) => internal.github.Archive
+					zip: (_stream: slime.jrunscript.native.java.io.InputStream) => github.Archive
 					toArchiveLocation: (url: slime.jrunscript.native.java.net.URL) => {
 						zip: slime.jrunscript.native.java.net.URL
 						path: string

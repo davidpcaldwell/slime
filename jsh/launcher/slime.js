@@ -142,25 +142,30 @@
 								 */
 								var getSourceFilesUnder = function(url,rv) {
 									$$api.debug("get source files under " + url);
-									var pattern = /^http(?:s)?\:\/\/raw.githubusercontent.com\/davidpcaldwell\/slime\/(.*?)\/(.*)$/;
-									var match = pattern.exec(String(url.toExternalForm()));
-									if (!match) throw new Error("No match: " + url);
-									//	TODO	make branch into ref query parameter
-									var branch = match[1];
-									var path = match[2];
-									//	TODO	is there a better, more general way to get this setting?
-									var SPECIFIED_PROTOCOL = Packages.java.lang.System.getenv("JSH_LAUNCHER_GITHUB_PROTOCOL") ? String(Packages.java.lang.System.getenv("JSH_LAUNCHER_GITHUB_PROTOCOL")) : void(0);
-									var PROTOCOL = (SPECIFIED_PROTOCOL) ? SPECIFIED_PROTOCOL : "https";
-									var json = JSON.parse($$api.engine.readUrl(PROTOCOL + "://api.github.com/repos/davidpcaldwell/slime/contents/" + path));
-									json.forEach(function(item) {
-										if (item.type == "dir") {
-											getSourceFilesUnder(new Packages.java.net.URL(url,item.name+"/"), rv);
-										} else {
-											if (/\.java$/.test(item.name)) {
-												rv.push(new Packages.java.net.URL(url, item.name));
+									if (true) {
+										var pattern = /^http(?:s)?\:\/\/raw.githubusercontent.com\/davidpcaldwell\/slime\/(.*?)\/(.*)$/;
+										var match = pattern.exec(String(url.toExternalForm()));
+										if (!match) throw new Error("No match: " + url);
+										//	TODO	make branch into ref query parameter
+										var branch = match[1];
+										var path = match[2];
+										//	TODO	is there a better, more general way to get this setting?
+										var SPECIFIED_PROTOCOL = Packages.java.lang.System.getenv("JSH_LAUNCHER_GITHUB_PROTOCOL") ? String(Packages.java.lang.System.getenv("JSH_LAUNCHER_GITHUB_PROTOCOL")) : void(0);
+										var PROTOCOL = (SPECIFIED_PROTOCOL) ? SPECIFIED_PROTOCOL : "https";
+										var json = JSON.parse($$api.engine.readUrl(PROTOCOL + "://api.github.com/repos/davidpcaldwell/slime/contents/" + path));
+										json.forEach(function(item) {
+											if (item.type == "dir") {
+												getSourceFilesUnder(new Packages.java.net.URL(url,item.name+"/"), rv);
+											} else {
+												if (/\.java$/.test(item.name)) {
+													rv.push(new Packages.java.net.URL(url, item.name));
+												}
 											}
-										}
-									});
+										});
+									} else {
+										var list = $$api.github.archives.getSourceFilesUnder(url);
+										throw new Error("Unimplemented: recursive behavior above.");
+									}
 								}
 
 								return {

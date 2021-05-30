@@ -637,9 +637,45 @@
 						return (listing) ? Object.keys(listing) : null;
 					}
 				}
-			}
+			};
+
+			var githubArchives = (function() {
+				/** @type { { [url: string]: slime.internal.jrunscript.bootstrap.github.Archive } } */
+				var archives = {};
+
+				return {
+					/**
+					 *
+					 * @param { slime.jrunscript.native.java.net.URL } _url
+					 */
+					add: function(_url) {
+						archives[String(_url.toExternalForm())] = GithubArchive(_url.openStream());
+					},
+					getSourceFilesUnder: function(_url) {
+						var location = toGithubArchiveLocation(_url);
+						if (location) {
+							var archive = archives[String(location.zip.toExternalForm())];
+							if (archive) {
+								$api.debug("Listing URL " + _url + " path " + location.path);
+								//	TODO	should not hard-code master
+								var list = archive.list("slime-master/" + location.path);
+
+								var rv = [];
+								for (var i=0; i<list.length; i++) {
+									rv.push(new Packages.java.net.URL(_url, list[i]));
+								}
+							} else {
+								return null;
+							}
+						} else {
+							return null;
+						}
+					}
+				}
+			})();
 
 			$api.github = {
+				archives: githubArchives,
 				test: {
 					toArchiveLocation: function(url) {
 						return toGithubArchiveLocation(new Packages.java.net.URL(url));
@@ -778,6 +814,12 @@
 				$api.script = new $api.Script({
 					string: $engine.script
 				});
+				if ($api.script.url) {
+					if (toGithubArchiveLocation($api.script.url)) {
+						var zip = toGithubArchiveLocation($api.script.url).zip;
+						githubArchives.add(zip);
+					}
+				}
 			}
 
 			if ($arguments) {

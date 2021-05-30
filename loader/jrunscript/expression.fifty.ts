@@ -212,11 +212,16 @@ namespace slime.jrunscript {
 					toURL(): URL
 				}
 
+				export interface URLConnection {
+				}
+
 				export interface URL {
 					getQuery(): slime.jrunscript.native.java.lang.String
 					getProtocol(): slime.jrunscript.native.java.lang.String
 					toExternalForm(): slime.jrunscript.native.java.lang.String
 					toURI(): slime.jrunscript.native.java.net.URI
+					openConnection(): slime.jrunscript.native.java.net.URLConnection
+					openStream(): slime.jrunscript.native.java.io.InputStream
 				}
 			}
 			export namespace util {
