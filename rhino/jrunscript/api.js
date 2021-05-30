@@ -664,6 +664,7 @@
 								for (var i=0; i<list.length; i++) {
 									rv.push(new Packages.java.net.URL(_url, list[i]));
 								}
+								return rv;
 							} else {
 								return null;
 							}
