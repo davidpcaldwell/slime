@@ -518,6 +518,18 @@
 					}
 					_stream.close();
 				}
+			},
+			/** @type { (_stream: slime.jrunscript.native.java.io.InputStream) => slime.jrunscript.native.java.lang.String } */
+			readJavaString: function(_stream) {
+				var _reader = new Packages.java.io.InputStreamReader(_stream);
+				var _writer = new Packages.java.io.StringWriter();
+				var c;
+				while( (c = _reader.read()) != -1 ) {
+					_writer.write(c);
+				}
+				_reader.close();
+				_writer.close();
+				return _writer.toString();
 			}
 		};
 
@@ -650,6 +662,21 @@
 					 */
 					add: function(_url) {
 						archives[String(_url.toExternalForm())] = GithubArchive(_url.openStream());
+					},
+					getSourceFile: function(_url) {
+						var location = toGithubArchiveLocation(_url);
+						if (location) {
+							var archive = archives[String(location.zip.toExternalForm())];
+							if (archive) {
+								var _inputStream = archive.read("slime-master/" + location.path);
+								if (!_inputStream) throw new Error("Not found in " + archive + ": " + "slime-master/" + location.path);
+								return io.readJavaString(_inputStream);
+							} else {
+								return null;
+							}
+						} else {
+							return null;
+						}
 					},
 					getSourceFilesUnder: function(_url) {
 						var location = toGithubArchiveLocation(_url);
@@ -1104,7 +1131,8 @@
 		$api.io = {
 			copy: io.copy,
 			tmpdir: void(0),
-			unzip: void(0)
+			unzip: void(0),
+			readJavaString: void(0)
 		};
 		$api.io.tmpdir = function(p) {
 			if (!p) p = {};
@@ -1144,6 +1172,8 @@
 			})();
 			io.zip.parse(_stream, destination);
 		};
+		$api.io.readJavaString = io.readJavaString;
+
 		$api.bitbucket = {};
 		$api.bitbucket.get = function(p) {
 			var owner = (p.owner) ? p.owner : "davidpcaldwell";

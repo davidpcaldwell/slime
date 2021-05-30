@@ -411,6 +411,8 @@
 						}
 
 						this.getCharContent = function() {
+							var fromArchive = $api.github.archives.getSourceFile(_url);
+							if (fromArchive !== null) return fromArchive;
 							return new Packages.java.lang.String($api.engine.readUrl(_url.toExternalForm()));
 							// throw new Error("getCharContent: " + _url);
 						}

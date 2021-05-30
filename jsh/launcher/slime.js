@@ -142,9 +142,6 @@
 								 */
 								var getSourceFilesUnder = function(url,rv) {
 									var list = $$api.github.archives.getSourceFilesUnder(url);
-									if (!list) {
-										$$api.debug("No list for " + url);
-									}
 									var endsWithSlash = function(url) {
 										return /\/$/.test(url.toString());
 									};

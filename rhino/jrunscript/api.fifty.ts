@@ -57,6 +57,7 @@ namespace slime.internal.jrunscript.bootstrap {
 			zip: {
 				parse: (_stream: slime.jrunscript.native.java.io.InputStream, destination: io.zip.Processor) => void
 			}
+			readJavaString: (from: slime.jrunscript.native.java.io.InputStream) => slime.jrunscript.native.java.lang.String
 		}
 	}
 
@@ -83,6 +84,7 @@ namespace slime.internal.jrunscript.bootstrap {
 
 			github: {
 				archives: {
+					getSourceFile: (url: slime.jrunscript.native.java.net.URL) => slime.jrunscript.native.java.lang.String
 					getSourceFilesUnder: (url: slime.jrunscript.native.java.net.URL) => slime.jrunscript.native.java.net.URL[]
 				}
 				test: {
@@ -123,6 +125,7 @@ namespace slime.internal.jrunscript.bootstrap {
 				tmpdir: (p?: { prefix?: string, suffix?: string }) => slime.jrunscript.native.java.io.File
 				copy: any
 				unzip: any
+				readJavaString: (from: slime.jrunscript.native.java.io.InputStream) => slime.jrunscript.native.java.lang.String
 			}
 
 			bitbucket: any
@@ -139,6 +142,31 @@ namespace slime.internal.jrunscript.bootstrap {
 		) {
 			var jsh = fifty.global.jsh;
 			var verify = fifty.verify;
+
+			fifty.tests.io = function() {
+				var configuration: slime.internal.jrunscript.bootstrap.Environment = {
+					Packages: Packages,
+					load: function() {
+						throw new Error("Implement.");
+					},
+					$api: {
+						debug: true
+					}
+				};
+				fifty.$loader.run("api.js", {}, configuration);
+				var global: slime.internal.jrunscript.bootstrap.Global<{},{}> = configuration as slime.internal.jrunscript.bootstrap.Global<{},{}>;
+				var thisPathname = fifty.$loader.getRelativePath("api.fifty.ts");
+				var jshReadThisFile = thisPathname.file.read(String);
+				var bootstrapReadThisFile = (function() {
+					var javaFile = thisPathname.java.adapt();
+					var _input = new Packages.java.io.FileInputStream(javaFile);
+					var _string = global.$api.io.readJavaString(_input);
+					var string = String(_string);
+					return string;
+				})();
+				var same = (jshReadThisFile == bootstrapReadThisFile);
+				verify(same, "files are the same").is(true);
+			}
 
 			fifty.tests.zip = function() {
 				var web = new jsh.unit.mock.Web();
