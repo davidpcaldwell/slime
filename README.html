@@ -45,6 +45,24 @@ END LICENSE
 		<div id="quickstart">
 			<h2>Getting Started</h2>
 			<div>
+				<h3>Running SLIME directly from GitHub</h3>
+				<div>
+					<p>
+						The <code>jsh</code> shell can be run directly from GitHub, optionally running scripts directly from the
+						internet.
+					</p>
+					<p>
+						The sample command: <code>
+							curl -v -L https://raw.githubusercontent.com/davidpcaldwell/slime/master/jsh.bash | bash -s https://raw.githubusercontent.com/davidpcaldwell/slime/master/jsh/test/jsh-data.jsh.js
+						</code>
+						uses the <code>master</code> version of the shell to run the <code>jsh-data.jsh.js</code> script, installing
+						all dependencies (including Java) as needed. The <code>jsh-data.jsh.js</code> script emits information
+						about the executing shell; it can be examined to get a basic idea about how <code>jsh</code> is
+						configured.
+					</p>
+				</div>
+			</div>
+			<div>
 				<h3>Getting the code</h3>
 				The SLIME code must be obtained, either
 				by cloning it from GitHub or

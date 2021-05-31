@@ -17,7 +17,16 @@ The SLIME project provides tools for JavaScript development on several platforms
 
 The Java-based environments support Mozilla [Rhino](https://github.com/mozilla/rhino) and OpenJDK [Nashorn](https://github.com/openjdk/nashorn). [GraalJS](https://github.com/oracle/graaljs) support is [under development](https://github.com/davidpcaldwell/slime/projects/10).
 
-## Getting Started
+## Getting started: run a `jsh` script without installing anything
+
+The following script runs the `master` version of the shell remotely and runs the remotely-hosted
+[`jsh/test/jsh-data.jsh.js`](jsh/test/jsh-data.jsh.js) script which emits information about the executed shell:
+
+```bash
+curl -v -L https://raw.githubusercontent.com/davidpcaldwell/slime/master/jsh.bash | bash -s https://raw.githubusercontent.com/davidpcaldwell/slime/master/jsh/test/jsh-data.jsh.js
+```
+
+## Getting Started: develop locally
 
 * `git clone https://github.com/davidpcaldwell/slime.git; cd slime`
 * `./jsh.bash jsh/test/jsh-data.jsh.js` - runs a sample program emitting information about the installed `jsh` shell.
