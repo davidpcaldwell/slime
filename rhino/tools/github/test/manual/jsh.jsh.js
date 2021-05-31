@@ -66,6 +66,7 @@
 			if (!p) p = {};
 			var command = echoJshBash(p);
 			command.push("|");
+			var PROTOCOL = "https";
 			if (p.mock) {
 				command.push("env");
 				command.push("JSH_HTTP_PROXY_HOST=127.0.0.1", "JSH_HTTP_PROXY_PORT=" + p.mock.port);
@@ -75,12 +76,16 @@
 				command.push("JSH_DISABLE_HTTPS_SECURITY=true");
 				if (p && p.optimize) command.push("JSH_OPTIMIZE_REMOTE_SHELL=true");
 				if (p && p.debug) command.push("JSH_LAUNCHER_DEBUG=true");
+				PROTOCOL = "http";
+			} else if (p && p.debug) {
+				command.push("env");
+				command.push("JSH_LAUNCHER_DEBUG=true");
 			}
 			if (p.token) {
 				command.push("JSH_GITHUB_USER=davidpcaldwell", "JSH_GITHUB_PASSWORD=" + p.token);
 			}
 			command.push("bash", "-s");
-			command.push("http://raw.githubusercontent.com/davidpcaldwell/slime/master/jsh/test/jsh-data.jsh.js");
+			command.push(PROTOCOL + "://raw.githubusercontent.com/davidpcaldwell/slime/master/jsh/test/jsh-data.jsh.js");
 			return command;
 		};
 
@@ -128,10 +133,16 @@
 					});
 					emit(command);
 				},
-				test: function() {
-					var command = getCommand();
-					emit(command);
-				}
+				test: $api.Function.pipe(
+					//	turn on jsh launcher console-based debugging
+					jsh.script.cli.option.boolean({ longname: "debug" }),
+					function(p) {
+						var command = getCommand({
+							debug: p.options.debug
+						});
+						emit(command);
+					}
+				)
 			}
 		});
 	}
