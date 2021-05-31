@@ -675,10 +675,10 @@
 								}
 								return io.readJavaString(_inputStream);
 							} else {
-								return null;
+								return void(0);
 							}
 						} else {
-							return null;
+							return void(0);
 						}
 					},
 					getSourceFilesUnder: function(_url) {
@@ -752,6 +752,8 @@
 							var archiveCode = $api.github.archives.getSourceFile(url);
 							if (archiveCode) {
 								return new Script({ url: url, code: archiveCode });
+							} else if (archiveCode === null) {
+								return null;
 							}
 							var connection;
 							try {
