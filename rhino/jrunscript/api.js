@@ -669,7 +669,10 @@
 							var archive = archives[String(location.zip.toExternalForm())];
 							if (archive) {
 								var _inputStream = archive.read("slime-master/" + location.path);
-								if (!_inputStream) throw new Error("Not found in " + archive + ": " + "slime-master/" + location.path);
+								if (!_inputStream) {
+									$api.debug("Not found in " + archive + ": " + "slime-master/" + location.path);
+									return null;
+								}
 								return io.readJavaString(_inputStream);
 							} else {
 								return null;
@@ -744,8 +747,12 @@
 						this.toString = function() { return String(p.url.toExternalForm()); }
 						this.url = p.url;
 						this.resolve = function(path) {
+							$api.debug("Resolving " + path + " from " + p.url + " ...");
 							var url = new Packages.java.net.URL(p.url, path);
-							var zipLocation = toGithubArchiveLocation(url);
+							var archiveCode = $api.github.archives.getSourceFile(url);
+							if (archiveCode) {
+								return new Script({ url: url, code: archiveCode });
+							}
 							var connection;
 							try {
 								var protocol = String(p.url.getProtocol());
@@ -787,33 +794,21 @@
 								if (protocol == "http" || protocol == "https") {
 									$api.log("Reading from " + p.url + " ...");
 								}
-								var reader = new Packages.java.io.InputStreamReader(p.connection.getInputStream());
-								var buffer = new Packages.java.lang.StringBuilder();
-								var c;
-								while( (c = reader.read()) != -1 ) {
-									buffer["append(char)"](c);
-								}
-								p.connection.getInputStream().close();
-								var code = String(buffer.toString());
+								var code = $api.io.readJavaString(p.connection.getInputStream());
 								if (protocol == "http" || protocol == "https") {
 									$api.log("Loaded [" + p.url + "].");
 								}
-								// Packages.java.lang.System.err.println("Loading: " + this);
 								var name = this.toString();
-								// Packages.java.lang.System.err.println("Loading: " + name + " code.length=" + code.length);
-								// Packages.java.lang.System.err.println("Loading: " + name + "\ncode=" + code);
-								// try {
-								// 	Packages.java.lang.System.err.println("load() = " + load);
 								load({
 									name: name,
 									script: code
 								});
-								// 	Packages.java.lang.System.err.println("Loaded: " + name);
-								// } catch (e) {
-								// 	Packages.java.lang.System.err.println(e.stack);
-								// 	Packages.java.lang.System.err.println("Failed: " + name);
-								// }
 							}
+						} else if (p.code) {
+							load({
+								name: this.toString(),
+								script: p.code
+							})
 						} else {
 							load(this.toString());
 						}
