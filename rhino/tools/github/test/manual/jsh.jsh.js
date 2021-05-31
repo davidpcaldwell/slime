@@ -50,11 +50,15 @@
 				return command;
 			} else if (jsh.shell.PATH.getCommand("wget")) {
 				command.push("wget");
-				command.push("--http-user=" + "davidpcaldwell");
-				command.push("--http-password=" + p.token);
+				if (p.token) {
+					command.push("--http-user=" + "davidpcaldwell");
+					command.push("--http-password=" + p.token);
+				}
 				command.push(PROTOCOL + "://raw.githubusercontent.com/davidpcaldwell/slime/master/jsh.bash");
-				command.push("-e", "use_proxy=yes");
-				command.push("-e", "http_proxy=" + "http://127.0.0.1:" + p.mock.port);
+				if (p.mock) {
+					command.push("-e", "use_proxy=yes");
+					command.push("-e", "http_proxy=" + "http://127.0.0.1:" + p.mock.port);
+				}
 				command.push("-O", "-");
 				return command;
 			} else {

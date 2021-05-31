@@ -22,11 +22,19 @@ The Java-based environments support Mozilla [Rhino](https://github.com/mozilla/r
 The following script runs the `master` version of the shell remotely and runs the remotely-hosted
 [`jsh/test/jsh-data.jsh.js`](jsh/test/jsh-data.jsh.js) script which emits information about the executed shell:
 
+### Using `curl` (installed on macOS)
+
 ```bash
 curl -v -L https://raw.githubusercontent.com/davidpcaldwell/slime/master/jsh.bash | bash -s https://raw.githubusercontent.com/davidpcaldwell/slime/master/jsh/test/jsh-data.jsh.js
 ```
 
-## Getting Started: develop locally
+### Using `wget` (installed on many Linux distributions lacking `curl`)
+
+```bash
+wget https://raw.githubusercontent.com/davidpcaldwell/slime/master/jsh.bash -O - | bash -s https://raw.githubusercontent.com/davidpcaldwell/slime/master/jsh/test/jsh-data.jsh.js
+```
+
+## Getting Started: Using SLIME locally
 
 * `git clone https://github.com/davidpcaldwell/slime.git; cd slime`
 * `./jsh.bash jsh/test/jsh-data.jsh.js` - runs a sample program emitting information about the installed `jsh` shell.
