@@ -142,7 +142,7 @@ namespace slime.fifty {
 					 */
 					Captor: <T>(t: T) => {
 						events: $api.Event<any>[],
-						handler: Required<$api.Events.Handler<T>>
+						handler: Required<$api.events.Handler<T>>
 					}
 				}
 			},

@@ -534,7 +534,7 @@
 			}
 
 			/**
-			 * @type { { [type: string]: slime.$api.Event.Handler<any>[] } }
+			 * @type { { [type: string]: slime.$api.event.Handler<any>[] } }
 			 */
 			var byType = {};
 

@@ -36,8 +36,8 @@ namespace slime.jrunscript.git {
 				pathname: slime.jrunscript.file.Pathname
 			},
 			events?: {
-				stdout: slime.$api.Event.Handler<string>
-				stderr: slime.$api.Event.Handler<string>
+				stdout: slime.$api.event.Handler<string>
+				stderr: slime.$api.event.Handler<string>
 			}
 		) => slime.jrunscript.git.Repository.Local
 	}

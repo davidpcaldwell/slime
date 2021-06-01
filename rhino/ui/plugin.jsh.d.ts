@@ -9,7 +9,7 @@ namespace slime.jsh {
 		ui: {
 			application: (
 				p: slime.jsh.ui.application.Argument,
-				events?: $api.Events.Function.Receiver
+				events?: $api.events.Function.Receiver
 			) => {
 				port: number,
 				server: any,

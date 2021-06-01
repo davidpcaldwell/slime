@@ -96,7 +96,7 @@ namespace slime.jrunscript.git {
 			directory: slime.jrunscript.file.Directory
 
 			add: any
-			rm: (p: { path: string }, events?: $api.Events.Function.Receiver) => void
+			rm: (p: { path: string }, events?: $api.events.Function.Receiver) => void
 
 			branch: {
 				(p: {
@@ -129,7 +129,7 @@ namespace slime.jrunscript.git {
 				prune?: boolean
 				recurseSubmodules?: boolean
 				stdio?: any
-			}, events?: $api.Events.Function.Receiver) => void
+			}, events?: $api.events.Function.Receiver) => void
 
 			merge: (p: {
 				name: string

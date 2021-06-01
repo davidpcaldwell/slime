@@ -302,6 +302,15 @@
 					}
 					return rv;
 				}
+			},
+			action: function(f) {
+				return function(p) {
+					var pinned = f(p);
+					var rv = Object.assign({
+						execute: pinned
+					}, p);
+					return rv;
+				}
 			}
 		};
 

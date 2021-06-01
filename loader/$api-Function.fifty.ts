@@ -258,6 +258,8 @@ namespace slime.$api.fp {
 		export type Updater<M> = (mutable: M) => M | void
 
 		export type State<T> = () => T
+
+		export type Action<P,E,R> = (p: P) => ({ execute: (on?: slime.$api.events.Handler<E>) => R } & P)
 	}
 
 	type Updater<M> = impure.Updater<M>
@@ -276,6 +278,8 @@ namespace slime.$api.fp {
 			 * by returning a value.
 			 */
 			compose: <M>(...functions: Updater<M>[]) => Updater<M>
+
+			action: <P,E,R>(f: (p: P) => (on: slime.$api.events.Handler<E>) => R) => impure.Action<P,E,R>
 		}
 	}
 }

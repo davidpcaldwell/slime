@@ -20,7 +20,7 @@ namespace slime.jsh.tools.install.module {
 
 		get: (
 			p: { file?: slime.jrunscript.file.File, url?: string, name?: string },
-			events?: slime.$api.Events.Function.Receiver
+			events?: slime.$api.events.Function.Receiver
 		) => slime.jrunscript.file.File
 
 		install: (p: {
@@ -31,7 +31,7 @@ namespace slime.jsh.tools.install.module {
 			format?: any,
 			to: slime.jrunscript.file.Pathname,
 			replace?: boolean
-		}, events?: $api.Events.Function.Receiver) => slime.jrunscript.file.Directory
+		}, events?: $api.events.Function.Receiver) => slime.jrunscript.file.Directory
 
 		gzip: any
 		zip: any

@@ -79,7 +79,7 @@ namespace slime.jrunscript.shell {
 
 				var log = (function() {
 					var events = [];
-					var listener: $api.Event.Handler<any> = function(e) {
+					var listener: $api.event.Handler<any> = function(e) {
 						events.push(e);
 					};
 					return {
@@ -254,7 +254,7 @@ namespace slime.jrunscript.shell {
 			method: Function
 			argument: object
 			started: (p: { output?: string, error?: string }) => boolean
-		}, events: $api.Events.Function.Receiver) => void
+		}, events: $api.events.Function.Receiver) => void
 
 		properties: {
 			object: any

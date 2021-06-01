@@ -50,7 +50,7 @@ namespace slime.$api {
 			}): slime.$api.Events<any>
 
 			//	TODO	could probably use parameterized types to improve accuracy
-			Function: <P,R>(f: (p: P, events: any) => R, defaultListeners?: object) => (argument: P, receiver?: slime.$api.Events.Function.Receiver) => R,
+			Function: <P,R>(f: (p: P, events: any) => R, defaultListeners?: object) => (argument: P, receiver?: slime.$api.events.Function.Receiver) => R,
 			instance: (v: any) => boolean
 		},
 		Iterable: {
@@ -147,25 +147,26 @@ namespace slime.$api {
 		path: any[]
 	}
 
-	export namespace Event {
+	export namespace event {
 		export type Handler<T> = (e: Event<T>) => void
 	}
 
 	export interface Events<D> {
 		listeners: {
-			add: <K extends keyof D>(type: K, handler: Event.Handler<D[K]>) => void
-			remove: <K extends keyof D>(type: K, handler: Event.Handler<D[K]>) => void
+			add: <K extends keyof D>(type: K, handler: event.Handler<D[K]>) => void
+			remove: <K extends keyof D>(type: K, handler: event.Handler<D[K]>) => void
 		},
 		fire: <K extends keyof D>(type: K, detail?: D[K]) => void
 	}
 
-	export namespace Events {
+	export namespace events {
 		export type Handler<D> = {
-			[k in keyof D]?: Event.Handler<D[k]>
+			[k in keyof D]?: event.Handler<D[k]>
 		}
 	}
 
-	export namespace Events.Function {
+	export namespace events.Function {
+		//	TODO	it appears this duplicates the events.Handler concept above
 		export type Receiver = { [x: string]: (e: Event<any>) => void } | Events<any>
 	}
 }

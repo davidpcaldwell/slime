@@ -122,6 +122,10 @@ namespace slime.jrunscript.file {
 				absolute: string
 			}[]>
 		}
+
+		action: {
+			delete: slime.$api.fp.impure.Action<{ pathname: string },{},void>
+		}
 	}
 
 	(
@@ -144,6 +148,21 @@ namespace slime.jrunscript.file {
 				fifty.verify(listing)[0].absolute.is(prefix + "/" + "api.Loader.html");
 				fifty.verify(listing)[9].relative.is("java/");
 				fifty.verify(listing)[9].absolute.is(prefix + "/" + "java/");
+			}
+
+			fifty.tests.action = {};
+			fifty.tests.action.delete = function() {
+				var subject = fifty.global.jsh.file;
+				var d1 = subject.action.delete({ pathname: "foo" });
+				fifty.verify(d1).pathname.is("foo");
+
+				var dir = fifty.jsh.file.directory();
+				dir.getRelativePath("file").write("foo", { append: false });
+				fifty.verify(dir).getFile("file").is.type("object");
+				var d2 = subject.action.delete({ pathname: dir.getRelativePath("file").toString() });
+				fifty.verify(dir).getFile("file").is.type("object");
+				d2.execute();
+				fifty.verify(dir).getFile("file").is.type("null");
 			}
 		}
 	//@ts-ignore
@@ -220,6 +239,8 @@ namespace slime.jrunscript.file {
 		tests.suite = function() {
 			run(tests.filetime);
 			run(tests.exports.navigate);
+			run(tests.state.list);
+			run(tests.action.delete);
 		}
 	}
 //@ts-ignore
