@@ -11,7 +11,7 @@
 	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { slime.$api.Global } $api
 	 * @param { { Resource: any, constant: any, fail: any, isPathname: any, Streams: any, pathext: any } } $context
-	 * @param { { Searchpath: any, Pathname: any }} $exports
+	 * @param { { Searchpath: any, Pathname: any, list: slime.jrunscript.file.Exports["list"] }} $exports
 	 */
 	function (Packages, $api, $context, $exports) {
 		if (!$context.Resource) throw new Error();
@@ -26,6 +26,40 @@
 				}
 			}
 			return function () { }();
+		}
+
+		$exports.list = {
+			NODE: {
+				create: function (d, n) {
+					return n;
+				}
+			},
+			ENTRY: {
+				create: function (d, n) {
+					return {
+						path: n.toString().substring(d.toString().length),
+						node: n
+					}
+				}
+			},
+			RESOURCE: {
+				filter: function (n) {
+					return !n.directory
+				},
+				create: function (d, n) {
+					/** @type { (node: slime.jrunscript.file.Node) => node is slime.jrunscript.file.File } */
+					var isFile = function(node) {
+						return Boolean(!node.directory);
+					};
+
+					if (isFile(n)) {
+						return {
+							path: n.toString().substring(d.toString().length).replace(/\\/g, "/"),
+							resource: n
+						}
+					}
+				}
+			}
 		}
 
 		var Pathname = function Pathname(parameters) {
@@ -502,12 +536,6 @@
 
 				var self = this;
 
-				var NODE = {
-					create: function (d, n) {
-						return n;
-					}
-				};
-
 				/** @type { slime.jrunscript.file.Directory["list"] } */
 				var list = Object.assign(function(mode) {
 					if (!mode) mode = {};
@@ -517,7 +545,7 @@
 					}
 					if (!filter) filter = function () { return true; }
 
-					var type = (mode.type == null) ? NODE : mode.type;
+					var type = (mode.type == null) ? $exports.list.NODE : mode.type;
 					var toReturn = function (rv) {
 						var map = function (node) {
 							return type.create(self, node);
@@ -605,26 +633,9 @@
 					CONTENTS: {
 						contents: true
 					},
-					NODE: NODE,
-					ENTRY: {
-						create: function (d, n) {
-							return {
-								path: n.toString().substring(d.toString().length),
-								node: n
-							}
-						}
-					},
-					RESOURCE: {
-						filter: function (n) {
-							return !n.directory
-						},
-						create: function (d, n) {
-							return {
-								path: n.toString().substring(d.toString().length).replace(/\\/g, "/"),
-								resource: n.resource
-							}
-						}
-					}
+					NODE: $exports.list.NODE,
+					ENTRY: $exports.list.ENTRY,
+					RESOURCE: $exports.list.RESOURCE
 				});
 
 				if ($filesystem.temporary) {

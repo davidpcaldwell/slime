@@ -4,6 +4,153 @@
 //
 //	END LICENSE
 
+namespace slime.jrunscript.file {
+	export interface Pathname {
+		directory: Directory
+		basename: string
+		parent: Pathname
+		createDirectory: (p?: { exists?: (d: Directory) => boolean, recursive?: boolean } ) => Directory
+		write: (content: any, mode?: any) => any
+		file: File
+		java: {
+			adapt: () => slime.jrunscript.native.java.io.File
+		}
+	}
+
+	export interface Node {
+		pathname: Pathname
+		directory: boolean
+		remove: () => void,
+		parent: Directory,
+		move: any
+		copy: (
+			pathname: Pathname | Directory,
+			mode?: {
+				filter?: (p: {
+					entry: {
+						path: string
+						node: slime.jrunscript.file.Node
+					},
+					exists: slime.jrunscript.file.Node
+				}) => boolean
+
+				recursive?: any
+			}
+		) => Node
+	}
+
+	export interface File extends Node {
+		read: (any) => any
+		length: any
+		modified: Date
+	}
+
+	export namespace directory {
+		export interface Entry<T> {
+			filter?: (child: Node) => boolean
+			create: (self: Directory, child: Node) => T
+		}
+	}
+
+	export interface Directory extends Node {
+		getRelativePath: (string) => Pathname,
+		getFile: (string) => File,
+		getSubdirectory: (string) => Directory,
+		createTemporary: {
+			(p: { directory: true, prefix?: string, suffix?: string }): Directory
+			(p?: { directory?: false, prefix?: string, suffix?: string }): File
+		}
+		list: {
+			<T>(mode?: {
+				type?: directory.Entry<T>
+				filter?: any
+				descendants?: any
+
+				/** @deprecated */
+				recursive?: any
+			}): T[]
+
+			(mode?: {
+				filter?: any
+				descendants?: any
+
+				/** @deprecated */
+				recursive?: any
+			}): Node[]
+
+			RESOURCE: directory.Entry<any>
+			ENTRY: directory.Entry<any>
+		}
+	}
+
+	interface Searchpath {
+		getCommand: any
+	}
+
+	export interface Exports {
+		//	TODO	would be nice to get rid of string below, but right now it's unknown exactly how to access MimeType from
+		//			jsh/browser/servlet environments
+		Loader: new (p: { directory: Directory, type?: (path: slime.jrunscript.file.File) => (slime.mime.Type | string) }) => slime.Loader
+		Pathname: {
+			(p: string): Pathname
+			createDirectory: any
+		}
+		Searchpath: {
+			(pathnames: slime.jrunscript.file.Pathname[]): Searchpath
+			createEmpty: any
+		}
+		filesystem: any
+		filesystems: any
+		navigate: (p: { from: Pathname | Node, to: Pathname | Node, base?: Directory }) => { base: Directory, relative: string }
+		Filesystem: any
+		Streams: any
+		java: any
+		zip: any
+		unzip: any
+
+		list: {
+			NODE: slime.jrunscript.file.directory.Entry<slime.jrunscript.file.Node>,
+			ENTRY: slime.jrunscript.file.directory.Entry<{ path: string, node: slime.jrunscript.file.Node }>,
+			RESOURCE: slime.jrunscript.file.directory.Entry<{ path: string, resource: slime.jrunscript.file.File }>
+		}
+	}
+
+	export interface Exports {
+		state: {
+			list: (pathname: string) => slime.$api.fp.impure.State<{
+				relative: string
+				absolute: string
+			}[]>
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.kit
+		) {
+			fifty.tests.state = {};
+			fifty.tests.state.list = function() {
+				var subject = fifty.global.jsh.file;
+
+				var prefix = fifty.$loader.getRelativePath(".").toString();
+				var lister = subject.state.list(prefix);
+				var listing = lister().sort(function(a,b) {
+					if (a.relative < b.relative) return -1;
+					if (b.relative < a.relative) return 1;
+					throw new Error();
+				});
+				fifty.global.jsh.shell.console(listing.toString());
+				fifty.verify(listing)[0].relative.is("api.Loader.html");
+				fifty.verify(listing)[0].absolute.is(prefix + "/" + "api.Loader.html");
+				fifty.verify(listing)[9].relative.is("java/");
+				fifty.verify(listing)[9].absolute.is(prefix + "/" + "java/");
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+}
+
 (
 	function(
 		Packages: slime.jrunscript.Packages,

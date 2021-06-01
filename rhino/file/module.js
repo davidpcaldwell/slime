@@ -330,6 +330,7 @@
 				return getFile(path);
 			}
 			a.list = function(path) {
+				debugger;
 				if (!p.directory) return [];
 				//	Validate path
 				if (path) {
@@ -380,6 +381,25 @@
 		$exports.unzip = zip.unzip;
 		$api.experimental($exports, "zip");
 		$api.experimental($exports, "unzip");
+
+		$exports.list = file.list;
+
+		$exports.state = {
+			list: function(pathname) {
+				return function() {
+					var argument = $exports.Pathname(pathname);
+					if (argument.directory) {
+						return argument.directory.list().map(function(node) {
+							var suffix = node.directory ? "/" : "";
+							return {
+								relative: node.pathname.basename + suffix,
+								absolute: node.pathname.toString() + suffix
+							}
+						})
+					}
+				}
+			}
+		}
 
 		//	TODO	probably does not need to use __defineGetter__ but can use function literal?
 		var workingDirectory = function() {

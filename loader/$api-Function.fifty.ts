@@ -175,6 +175,8 @@ namespace slime.$api {
 			}
 		}
 
+		export type Comparator<T> = (t1: T, t2: T) => number
+
 		export interface Exports {
 			comparator: {
 				/**
@@ -203,7 +205,6 @@ namespace slime.$api {
 	}
 
 	export namespace fp {
-		export type Comparator<T> = (t1: T, t2: T) => number
 	}
 }
 
@@ -255,6 +256,8 @@ namespace slime.$api.fp {
 		 * or returns a completely new value to replace the argument.
 		 */
 		export type Updater<M> = (mutable: M) => M | void
+
+		export type State<T> = () => T
 	}
 
 	type Updater<M> = impure.Updater<M>

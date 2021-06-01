@@ -152,7 +152,6 @@
 
 			this.move = function(fromPeer,toPathname) {
 				if (toPathname.java.invalidate) {
-					debugger;
 					toPathname.java.invalidate();
 				}
 				var toPeer = _peer.getNode(toPathname.java.adapt());

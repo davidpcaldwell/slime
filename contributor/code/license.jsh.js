@@ -94,12 +94,20 @@
 					&& dir.pathname.basename != "bin"
 					&& dir.pathname.basename != ".idea"
 			},
-			type: BASE.list.ENTRY
+			type: jsh.file.list.ENTRY
 		}).sort(function(a,b) {
 			if (a.path < b.path) return -1;
 			if (b.path < a.path) return 1;
 			return 0;
 		});
+
+		/** @type { (p: any) => { path: string, node: slime.jrunscript.file.File } } */
+		var toFile = function(entry) {
+			return {
+				path: entry.path,
+				node: entry.node
+			}
+		}
 
 		if (false) jsh.shell.console("files = " + files.length);
 		if (false) jsh.shell.console(
@@ -153,7 +161,7 @@
 				if (files[i].path == "wf") extension = "bash";
 				if (!extension) throw new Error("Extension null for " + files[i].path);
 			}
-			var text = file.node.read(String);
+			var text = toFile(file).node.read(String);
 			text = text.replace(/\r\n/g, "\n");
 			if (!licenses.languages[extension]) throw new Error("Not found: " + extension + " for " + files[i].path);
 			var source = new licenses.SourceFile(text.split("\n"), licenses.languages[extension], template);
