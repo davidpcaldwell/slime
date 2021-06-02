@@ -633,26 +633,26 @@
 			}
 		};
 
-		var listening = function(f,defaultOn) {
-			var ListenersInvocationReceiver = function(on) {
-				var source = {};
-				var events = $exports.Events({ source: source });
+		var ListenersInvocationReceiver = function(on) {
+			var source = {};
+			var events = $exports.Events({ source: source });
 
-				this.attach = function() {
-					for (var x in on) {
-						source.listeners.add(x,on[x]);
-					}
-				};
-
-				this.detach = function() {
-					for (var x in on) {
-						source.listeners.remove(x,on[x]);
-					}
-				};
-
-				this.emitter = events;
+			this.attach = function() {
+				for (var x in on) {
+					source.listeners.add(x,on[x]);
+				}
 			};
 
+			this.detach = function() {
+				for (var x in on) {
+					source.listeners.remove(x,on[x]);
+				}
+			};
+
+			this.emitter = events;
+		};
+
+		var listening = function(f,defaultOn) {
 			var EmitterInvocationReceiver = function(emitter) {
 				this.attach = function(){};
 				this.detach = function(){};
@@ -691,6 +691,17 @@
 				Function: listening,
 				instance: function(v) {
 					return v instanceof Emitter;
+				},
+				action: function(f) {
+					return function(handler) {
+						var invocationReceiver = new ListenersInvocationReceiver(handler);
+						invocationReceiver.attach();
+						try {
+							return f.call( this, invocationReceiver.emitter );
+						} finally {
+							invocationReceiver.detach();
+						}
+					}
 				}
 			}
 		);;

@@ -103,6 +103,8 @@ namespace slime {
 			docker: {
 				test: slime.jsh.script.cli.Command<Options>
 			}
+
+			purge: slime.jsh.script.cli.Command<Options>
 		}
 
 		(

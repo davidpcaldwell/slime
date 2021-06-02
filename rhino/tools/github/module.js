@@ -31,9 +31,12 @@
 							rel: parsed[2]
 						}
 					}),
-					$api.Function.Array.map(function(relation) {
-						return [relation.rel, relation.url];
-					}),
+					$api.Function.Array.map(
+						/** @returns { [string, string] } */
+						function(relation) {
+							return [relation.rel, relation.url];
+						}
+					),
 					$api.Function.Object.fromEntries
 				);
 			}

@@ -124,7 +124,9 @@ namespace slime.jrunscript.file {
 		}
 
 		action: {
-			delete: slime.$api.fp.impure.Action<{ pathname: string },{},void>
+			delete: (pathname: string) => slime.$api.fp.impure.Action<{
+				deleted: string
+			},void>
 		}
 	}
 
@@ -153,16 +155,21 @@ namespace slime.jrunscript.file {
 			fifty.tests.action = {};
 			fifty.tests.action.delete = function() {
 				var subject = fifty.global.jsh.file;
-				var d1 = subject.action.delete({ pathname: "foo" });
-				fifty.verify(d1).pathname.is("foo");
 
 				var dir = fifty.jsh.file.directory();
 				dir.getRelativePath("file").write("foo", { append: false });
 				fifty.verify(dir).getFile("file").is.type("object");
-				var d2 = subject.action.delete({ pathname: dir.getRelativePath("file").toString() });
+				var d2 = subject.action.delete(dir.getRelativePath("file").toString());
 				fifty.verify(dir).getFile("file").is.type("object");
-				d2.execute();
+				var events: slime.$api.Event<string>[] = [];
+				d2({
+					deleted: function(e) {
+						events.push(e);
+					}
+				});
 				fifty.verify(dir).getFile("file").is.type("null");
+				fifty.verify(events).length.is(1);
+				fifty.verify(events)[0].detail.is(dir.getRelativePath("file").toString());
 			}
 		}
 	//@ts-ignore

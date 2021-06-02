@@ -204,7 +204,14 @@
 				return Object.entries(o);
 			},
 			fromEntries: function(iterable) {
-				return Object.fromEntries(iterable);
+				//	This casting step may not be necessary in higher versions of TypeScript; was not needed in VSCode but was
+				//	needed for command line tsc 4.0.5
+				/** @type { (p: any) => Iterable<readonly any[]> } */
+				var castToIterable = function(p) {
+					return p;
+				}
+
+				return Object.fromEntries(castToIterable(iterable));
 			}
 		}
 
@@ -300,15 +307,6 @@
 					for (var i=0; i<functions.length; i++) {
 						rv = functions[i].call(this,rv);
 					}
-					return rv;
-				}
-			},
-			action: function(f) {
-				return function(p) {
-					var pinned = f(p);
-					var rv = Object.assign({
-						execute: pinned
-					}, p);
 					return rv;
 				}
 			}

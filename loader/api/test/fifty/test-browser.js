@@ -27,7 +27,12 @@
 				web.window.url,
 				$api.Function.property("query"),
 				web.Url.query.parse,
-				$api.Function.Array.map(function(control) { return [control.name, control.value]; }),
+				$api.Function.Array.map(
+					/** @returns { [string, string] } */
+					function(control) {
+						return [control.name, control.value];
+					}
+				),
 				$api.Function.Object.fromEntries,
 				function(p) {
 					return $api.Object.compose(p, {

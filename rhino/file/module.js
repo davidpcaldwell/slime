@@ -402,13 +402,22 @@
 		}
 
 		$exports.action = {
-			delete: $api.Function.impure.action(function(p) {
-				return function() {
-					var pathname = $exports.Pathname(p.pathname);
-					if (pathname.file) pathname.file.remove();
-					if (pathname.directory) pathname.directory.remove();
-				}
-			})
+			delete: function(pathname) {
+				return Object.assign(
+					$api.Events.action(function(events) {
+						var remove = function(node) {
+							node.remove();
+							events.fire("deleted", node.pathname.toString());
+						}
+						var location = $exports.Pathname(pathname);
+						if (location.file) remove(location.file);
+						if (location.directory) remove(location.directory);
+					}),
+					{
+						toString: function() { return "delete: " + pathname; }
+					}
+				)
+			}
 		}
 
 		//	TODO	probably does not need to use __defineGetter__ but can use function literal?

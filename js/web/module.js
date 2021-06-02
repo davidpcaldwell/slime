@@ -256,9 +256,12 @@
 						if (controls === null) return null;
 						return $api.Function.result(
 							controls,
-							$api.Function.Array.map(function(control) {
-								return [control.name,control.value]
-							}),
+							$api.Function.Array.map(
+								/** @returns { readonly [string, string] } */
+								function(control) {
+									return [control.name,control.value]
+								}
+							),
 							$api.Function.Object.fromEntries
 						)
 					}

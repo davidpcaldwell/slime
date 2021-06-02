@@ -52,6 +52,7 @@ namespace slime.$api {
 			//	TODO	could probably use parameterized types to improve accuracy
 			Function: <P,R>(f: (p: P, events: any) => R, defaultListeners?: object) => (argument: P, receiver?: slime.$api.events.Function.Receiver) => R,
 			instance: (v: any) => boolean
+			action: <E,R>(f: ( events: slime.$api.Events<E> ) => R) => (handler: slime.$api.events.Handler<E>) => R
 		},
 		Iterable: {
 			/**

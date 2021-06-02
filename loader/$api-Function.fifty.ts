@@ -22,7 +22,7 @@ namespace slime.$api {
 			Array: {
 				filter: <T>(f: fp.Predicate<T>) => (ts: T[]) => T[]
 				find: <T>(f: fp.Predicate<T>) => (ts: T[]) => T | undefined
-				map: any
+				map: <T,R>(f: (t: T) => R) => (ts: T[]) => R[]
 				join: (s: string) => (elements: any[]) => string
 
 				groupBy: <V,G>(c: {
@@ -147,7 +147,9 @@ namespace slime.$api {
 					(p: {}): [string, any][]
 				}
 				fromEntries: {
-					(p: Iterable<readonly [string | number | symbol, any]>): { [x: string]: any }
+					(p: [string, any][]): { [x: string]: any }
+					//	TODO	the below works in VSCode, so is probably TypeScript version-dependent
+					// (p: Iterable<readonly [string | number | symbol, any]>): { [x: string]: any }
 				}
 			}
 			conditional: {
@@ -259,7 +261,7 @@ namespace slime.$api.fp {
 
 		export type State<T> = () => T
 
-		export type Action<P,E,R> = (p: P) => ({ execute: (on?: slime.$api.events.Handler<E>) => R } & P)
+		export type Action<E,R> = (on?: slime.$api.events.Handler<E>) => R
 	}
 
 	type Updater<M> = impure.Updater<M>
@@ -278,8 +280,6 @@ namespace slime.$api.fp {
 			 * by returning a value.
 			 */
 			compose: <M>(...functions: Updater<M>[]) => Updater<M>
-
-			action: <P,E,R>(f: (p: P) => (on: slime.$api.events.Handler<E>) => R) => impure.Action<P,E,R>
 		}
 	}
 }
