@@ -153,7 +153,7 @@
 		var parsePath = function(path) {
 			var tokens = path.split("/");
 			return {
-				folder: tokens.slice(0, tokens.length-1).join("/") + "/",
+				folder: (tokens.length > 1) ? tokens.slice(0, tokens.length-1).join("/") + "/" : "",
 				file: tokens[tokens.length-1]
 			}
 		};
@@ -197,7 +197,9 @@
 				run: runner(tests),
 				load: function(at,part,argument) {
 					var path = parsePath(at);
-					recurse(loader.Child(path.folder), path.file, part, argument);
+					var subloader = (path.folder) ? loader.Child(path.folder) : loader;
+					debugger;
+					recurse(subloader, path.file, part, argument);
 				},
 				tests: tests,
 				verify: function() {

@@ -86,7 +86,7 @@
 				var rv = function(p) {
 					return run($api.Object.compose(p, {
 						command: "npm",
-						arguments: function(list) {
+						arguments: $api.Array.build(function(list) {
 							list.push(p.command);
 							if (p.global) {
 								list.push("--global");
@@ -94,7 +94,7 @@
 							var mutating = $api.Function.mutating(p.arguments);
 							var npmargs = mutating([]);
 							list.push.apply(list, npmargs);
-						}
+						})
 					}));
 				};
 				return rv;

@@ -406,9 +406,9 @@
 
 						jsh.shell.run({
 							command: "chmod",
-							arguments: function(rv) {
+							arguments: $api.Array.build(function(rv) {
 								rv.push("+x", location.directory.getRelativePath("bin/kotlinc"));
-							}
+							})
 						});
 					});
 				} : null;
@@ -438,11 +438,11 @@
 								});
 								return jsh.shell.run({
 									command: o.directory.getFile("bin/scalac"),
-									arguments: function(list) {
+									arguments: $api.Array.build(function(list) {
 										if (p.deprecation) list.push("-deprecation");
 										if (p.destination) list.push("-d", p.destination);
 										list.push.apply(list,p.files);
-									}
+									})
 								})
 							},
 							run: function(p) {
@@ -450,11 +450,11 @@
 								//			in classpath
 								return jsh.shell.run({
 									command: o.directory.getFile("bin/scala"),
-									arguments: function(list) {
+									arguments: $api.Array.build(function(list) {
 										if (p.classpath) list.push("-classpath", p.classpath);
 										if (p.deprecation) list.push("-deprecation");
 										list.push(p.main);
-									}
+									})
 								});
 							}
 						}

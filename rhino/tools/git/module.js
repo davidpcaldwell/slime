@@ -42,12 +42,12 @@
 					return $context.api.shell.run(
 						$api.Object.compose(m, {
 							command: environment.program,
-							arguments: function(rv) {
+							arguments: $api.Array.build(function(rv) {
 								addConfigurationArgumentsTo(rv,m.config);
 								rv.push(m.command);
 								rv.push.apply(rv, (m.arguments) ? m.arguments : []);
 								return rv;
-							},
+							}),
 							environment: m.environment,
 							directory: m.directory
 						})

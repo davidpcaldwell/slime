@@ -20,22 +20,74 @@
 			throw new Error("Missing: $context.api.io");
 		}
 
+		var toLocalPathname = function(osPathname) {
+			var _rv = osPathname.java.adapt();
+			return $context.api.file.filesystem.java.adapt(_rv);
+		}
+
 		var toLocalSearchpath = function(searchpath) {
 			return $context.api.file.Searchpath($context.api.file.filesystems.os.Searchpath.parse(searchpath).pathnames.map(toLocalPathname));
 		};
 
 		$exports.environment = $context.api.java.Environment( ($context._environment) ? $context._environment : Packages.inonit.system.OperatingSystem.Environment.SYSTEM );
 
-		$exports.Invocation = function(p) {
-			return $api.Object.compose({
-				arguments: [],
-				environment: $exports.environment,
-				stdio: $context.stdio,
-				directory: $exports.PWD
-			}, p);
-		};
+		$exports.properties = (
+			/**
+			 * @returns { slime.jrunscript.shell.Exports["properties"] }
+			 */
+			function() {
+				var _properties = ($context._properties) ? $context._properties : Packages.java.lang.System.getProperties();
 
-		$exports.invocation = $loader.module("invocation.js");
+				return {
+					object: $context.api.java.Properties.adapt( _properties ),
+					get: function(name) {
+						var rv = _properties.getProperty(name);
+						if (!rv) return null;
+						return String(rv);
+					},
+					file: function(name) {
+						return toLocalPathname($context.api.file.filesystems.os.Pathname(this.get(name))).file;
+					},
+					directory: function(name) {
+						return toLocalPathname($context.api.file.filesystems.os.Pathname(this.get(name))).directory;
+					},
+					searchpath: function(name) {
+						var string = this.get(name);
+						if (!string) throw new Error("No property: " + name);
+						var rv = $context.api.file.filesystems.os.Searchpath.parse(string);
+						var pathnames = rv.pathnames.map(toLocalPathname);
+						return $context.api.file.Searchpath(pathnames);
+					}
+				}
+			}
+		)();
+
+		$api.experimental($exports.properties,"object");
+
+		$exports.TMPDIR = $exports.properties.directory("java.io.tmpdir");
+		$exports.USER = $exports.properties.get("user.name");
+		$exports.HOME = $exports.properties.directory("user.home");
+		if ($exports.properties.get("user.dir")) {
+			$exports.PWD = $exports.properties.directory("user.dir");
+		}
+		if ($exports.environment.PATH) {
+			$exports.PATH = toLocalSearchpath($exports.environment.PATH);
+		} else if ($exports.environment.Path) {
+			//	Windows
+			$exports.PATH = toLocalSearchpath($exports.environment.Path);
+		} else {
+			$exports.PATH = $context.api.file.Searchpath([]);
+		}
+
+		(function loadInvocation() {
+			/** @type { slime.jrunscript.shell.internal.invocation.Factory } */
+			var code = $loader.factory("invocation.js");
+			Object.assign($exports, code({
+				stdio: $context.stdio,
+				environment: $exports.environment,
+				PWD: $exports.PWD
+			}));
+		})()
 
 		var module = {
 			events: $api.Events({ source: $exports })
@@ -275,13 +327,6 @@
 				} else if (typeof(p.command) != "undefined") {
 					rv.result.command = p.command;
 					//	TODO	switch to $api.Function.mutating
-					if (typeof(p.arguments) == "function") {
-						p.arguments = (function(f) {
-							var rv = [];
-							f(rv);
-							return rv;
-						})(p.arguments);
-					}
 					rv.result.arguments = p.arguments;
 					rv.result.as = p.as;
 					rv.configuration.command = toCommandToken(rv.result)(p.command);
@@ -501,59 +546,6 @@
 				}
 			})();
 		});
-
-		var toLocalPathname = function(osPathname) {
-			var _rv = osPathname.java.adapt();
-			return $context.api.file.filesystem.java.adapt(_rv);
-		}
-
-		$exports.properties = (
-			/**
-			 * @returns { slime.jrunscript.shell.Exports["properties"] }
-			 */
-			function() {
-				var _properties = ($context._properties) ? $context._properties : Packages.java.lang.System.getProperties();
-
-				return {
-					object: $context.api.java.Properties.adapt( _properties ),
-					get: function(name) {
-						var rv = _properties.getProperty(name);
-						if (!rv) return null;
-						return String(rv);
-					},
-					file: function(name) {
-						return toLocalPathname($context.api.file.filesystems.os.Pathname(this.get(name))).file;
-					},
-					directory: function(name) {
-						return toLocalPathname($context.api.file.filesystems.os.Pathname(this.get(name))).directory;
-					},
-					searchpath: function(name) {
-						var string = this.get(name);
-						if (!string) throw new Error("No property: " + name);
-						var rv = $context.api.file.filesystems.os.Searchpath.parse(string);
-						var pathnames = rv.pathnames.map(toLocalPathname);
-						return $context.api.file.Searchpath(pathnames);
-					}
-				}
-			}
-		)();
-
-		$api.experimental($exports.properties,"object");
-
-		$exports.TMPDIR = $exports.properties.directory("java.io.tmpdir");
-		$exports.USER = $exports.properties.get("user.name");
-		$exports.HOME = $exports.properties.directory("user.home");
-		if ($exports.properties.get("user.dir")) {
-			$exports.PWD = $exports.properties.directory("user.dir");
-		}
-		if ($exports.environment.PATH) {
-			$exports.PATH = toLocalSearchpath($exports.environment.PATH);
-		} else if ($exports.environment.Path) {
-			//	Windows
-			$exports.PATH = toLocalSearchpath($exports.environment.Path);
-		} else {
-			$exports.PATH = $context.api.file.Searchpath([]);
-		}
 
 		$exports.os = new function() {
 			this.name = $exports.properties.get("os.name");

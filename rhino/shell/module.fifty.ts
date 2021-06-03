@@ -142,8 +142,6 @@ namespace slime.jrunscript.shell {
 	//@ts-ignore
 	)(fifty);
 
-	type Token = string | slime.jrunscript.file.Pathname | slime.jrunscript.file.Node
-
 	/**
 	 * A fully-specified invocation of a command to be run in an external process.
 	 */
@@ -151,12 +149,12 @@ namespace slime.jrunscript.shell {
 		/**
 		 * The command to run.
 		 */
-		command: Token
+		command: string
 
 		/**
 		 * The arguments to pass to the command.
 		 */
-		arguments: Token[] | ( (args: Token[]) => void )
+		arguments: string[]
 
 		/**
 		 * The environment to pass to the command.
@@ -187,39 +185,8 @@ namespace slime.jrunscript.shell {
 		}
 	}
 
-	export namespace invocation {
-		/**
-		 * Type used by callers to specify {@link Invocation}s, without requiring boilerplate defaults; only the `command`
-		 * property is required.
-		 */
-		export interface Argument {
-			command: Invocation["command"]
-			arguments?: Invocation["arguments"]
-			environment?: Invocation["environment"]
-			directory?: Invocation["directory"]
-			stdio?: Invocation["stdio"]
-		}
-	}
-
 	export interface Exports {
 		//	environment (maybe defined erroneously in jsh.d.ts)
-
-		/**
-		 * Creates a fully-specified {@link Invocation} from a given {@link invocation.Argument}.
-		 */
-		Invocation: (p: invocation.Argument) => Invocation
-
-		invocation: {
-			//	TODO	probably should be conditional based on presence of sudo tool
-			/**
-			 * Given a set of `sudo` settings, provides a function that can convert an {@link Invocation} to an equivalent
-			 * `Invocation` that runs the command under `sudo`.
-			 */
-			sudo: (settings?: {
-				nocache?: boolean
-				askpass?: string | slime.jrunscript.file.File
-			}) => (p: Invocation) => Invocation
-		}
 
 		//	listeners
 		run: {
