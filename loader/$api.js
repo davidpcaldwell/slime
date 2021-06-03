@@ -68,7 +68,7 @@
 				property: void(0)
 			}
 		);
-		$exports.Filter.and = $exports.Function.Predicate.not;
+		$exports.Filter.and = $exports.Function.Predicate.and;
 		$exports.Filter.or = $exports.Function.Predicate.or;
 		$exports.Filter.not = $exports.Function.Predicate.not;
 		$exports.Filter.property = {
