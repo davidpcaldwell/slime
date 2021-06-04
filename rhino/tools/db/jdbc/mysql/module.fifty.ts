@@ -51,6 +51,7 @@ namespace slime.jrunscript.db.mysql {
 		export type Server = {
 			host: string
 			port?: number
+			database?: string
 		}
 
 		export type Credentials = {
@@ -61,7 +62,7 @@ namespace slime.jrunscript.db.mysql {
 		export type Client = {
 			command: (p: Server & Credentials & {
 				execute?: string
-			}) => Parameters<slime.jrunscript.shell.Exports["run"]>[0]
+			}) => slime.jrunscript.shell.invocation.Argument
 		}
 	}
 
