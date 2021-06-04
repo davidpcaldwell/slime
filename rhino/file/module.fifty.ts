@@ -124,9 +124,20 @@ namespace slime.jrunscript.file {
 		}
 
 		action: {
-			delete: (pathname: string) => slime.$api.fp.impure.Action<{
+			delete: (location: string) => slime.$api.fp.impure.Action<{
 				deleted: string
 			},void>
+
+			write: {
+				(p: {
+					location: string
+					content: string
+					createDirectory?: boolean
+					exists: "fail" | "leave" | "overwrite"
+				}): slime.$api.fp.impure.Action<{
+					wrote: string
+				},void>
+			}
 		}
 	}
 
@@ -153,6 +164,119 @@ namespace slime.jrunscript.file {
 			}
 
 			fifty.tests.action = {};
+			fifty.tests.action.write = function() {
+				var subject = fifty.global.jsh.file;
+
+				var newdir = function() {
+					return fifty.global.jsh.shell.TMPDIR.createTemporary({ directory: true });
+				}
+
+				var toString = function(p) { return String(p); }
+
+				run(function create() {
+					var tmpdir = newdir();
+
+					var action = subject.action.write({
+						location: tmpdir.getRelativePath("foo").toString(),
+						content: "bar",
+						exists: "fail"
+					});
+
+					var captor = fifty.$api.Events.Captor({
+						wrote: "string"
+					});
+
+					fifty.verify(tmpdir).getFile("bar").is.type("null");
+
+					action(captor.handler);
+
+					fifty.verify(captor).events.length.is(1);
+					fifty.verify(captor).events[0].type.is("wrote");
+					fifty.verify(captor).events[0].detail.evaluate(toString).is("bar");
+					fifty.verify(tmpdir).getFile("foo").is.type("object");
+					fifty.verify(tmpdir).getFile("foo").read(String).evaluate(toString).is("bar");
+				});
+
+				run(function existsFail() {
+					var tmpdir = newdir();
+
+					subject.action.write({
+						location: tmpdir.getRelativePath("foo").toString(),
+						content: "bar",
+						exists: "fail"
+					})();
+
+					var second = subject.action.write({
+						location: tmpdir.getRelativePath("foo").toString(),
+						content: "bar",
+						exists: "fail"
+					});
+
+					fifty.verify(second).evaluate(function(f) { return f(); }).threw.type(Error);
+				});
+
+				run(function existsLeave() {
+					var tmpdir = newdir();
+
+					subject.action.write({
+						location: tmpdir.getRelativePath("foo").toString(),
+						content: "bar",
+						exists: "fail"
+					})();
+
+					subject.action.write({
+						location: tmpdir.getRelativePath("foo").toString(),
+						content: "baz",
+						exists: "leave"
+					})();
+
+					fifty.verify(tmpdir).getFile("foo").read(String).evaluate(toString).is("bar");
+				});
+
+				run(function existsOverwrite() {
+					var tmpdir = newdir();
+
+					subject.action.write({
+						location: tmpdir.getRelativePath("foo").toString(),
+						content: "bar",
+						exists: "fail"
+					})();
+
+					subject.action.write({
+						location: tmpdir.getRelativePath("foo").toString(),
+						content: "baz",
+						exists: "overwrite"
+					})();
+
+					fifty.verify(tmpdir).getFile("foo").read(String).evaluate(toString).is("baz");
+				});
+
+				run(function noCreateDirectory() {
+					var tmpdir = newdir();
+
+					var action = subject.action.write({
+						location: tmpdir.getRelativePath("a/b").toString(),
+						content: "foo",
+						exists: "fail"
+					});
+
+					fifty.verify(action).evaluate(function(f) { return f(); }).threw.type(Error);
+				});
+
+				run(function createDirectory() {
+					var tmpdir = newdir();
+
+					var action = subject.action.write({
+						location: tmpdir.getRelativePath("a/b").toString(),
+						content: "foo",
+						exists: "fail",
+						createDirectory: true
+					});
+
+					fifty.verify(action).evaluate(function(f) { return f(); }).threw.nothing();
+				});
+			}
+
 			fifty.tests.action.delete = function() {
 				var subject = fifty.global.jsh.file;
 
@@ -174,7 +298,6 @@ namespace slime.jrunscript.file {
 		}
 	//@ts-ignore
 	)(fifty);
-
 }
 
 (

@@ -417,6 +417,31 @@
 						toString: function() { return "delete: " + pathname; }
 					}
 				)
+			},
+			write: function(p) {
+				return Object.assign(
+					$api.Events.action(function(events) {
+						var location = $exports.Pathname(p.location);
+						var parent = location.parent;
+						if (parent.file) throw new Error("Parent pathname " + parent + " is an ordinary file.");
+						if (!parent.directory) {
+							if (p.createDirectory) {
+								parent.createDirectory({
+									recursive: true
+								});
+							}
+						}
+						if (location.file) {
+							if (p.exists == "fail") throw new Error("Pathname " + location + " already exists.");
+							if (p.exists == "leave") return;
+						}
+						location.write(p.content, { append: false });
+						events.fire("wrote", p.content);
+					}),
+					{
+						toString: function() { return "write string to " + p.location; }
+					}
+				)
 			}
 		}
 
