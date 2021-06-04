@@ -4,35 +4,39 @@
 //
 //	END LICENSE
 
-var src = (jsh.shell.jsh.src) ? jsh.shell.jsh.src : jsh.script.file.parent.parent.parent.parent;
-jsh.loader.plugins(src.getRelativePath("jsh/test"));
-jsh.test.integration({
-	scenario: function(parameters) {
-		var max = Packages.java.lang.Runtime.getRuntime().maxMemory();
-		var half = max / 2;
-		this.scenario("-Xmx", {
-			create: function() {
-				this.execute = function(scope,verify) {
-					var forked = jsh.shell.jsh({
-						fork: true,
-						vmarguments: ["-Xmx"+half.toFixed(0)],
-						script: jsh.script.file,
-						stdio: {
-							output: String
-						},
-						evaluate: function(result) {
-							return Number(result.stdio.output);
+(
+	function() {
+		var src = (jsh.shell.jsh.src) ? jsh.shell.jsh.src : jsh.script.file.parent.parent.parent.parent;
+		jsh.loader.plugins(src.getRelativePath("jsh/test"));
+		jsh.test.integration({
+			scenario: function(parameters) {
+				var max = Packages.java.lang.Runtime.getRuntime().maxMemory();
+				var half = max / 2;
+				this.scenario("-Xmx", {
+					create: function() {
+						this.execute = function(scope,verify) {
+							var forked = jsh.shell.jsh({
+								fork: true,
+								vmarguments: ["-Xmx"+half.toFixed(0)],
+								script: jsh.script.file,
+								stdio: {
+									output: String
+								},
+								evaluate: function(result) {
+									return Number(result.stdio.output);
+								}
+							});
+							jsh.shell.echo("half = " + half + " forked=" + forked, { stream: jsh.shell.stdio.error });
+							verify({},"Subprocess").evaluate(function() {
+								return forked < half;
+							}).is(true);
 						}
-					});
-					jsh.shell.echo("half = " + half + " forked=" + forked, { stream: jsh.shell.stdio.error });
-					verify({},"Subprocess").evaluate(function() {
-						return forked < half;
-					}).is(true);
-				}
+					}
+				});
+			},
+			run: function(parameters) {
+				jsh.shell.echo(Packages.java.lang.Runtime.getRuntime().maxMemory());
 			}
-		});
-	},
-	run: function(parameters) {
-		jsh.shell.echo(Packages.java.lang.Runtime.getRuntime().maxMemory());
+		})
 	}
-})
+)();
