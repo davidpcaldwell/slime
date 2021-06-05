@@ -80,9 +80,20 @@
 
 				if (operations.test && !operations.commit) {
 					operations.commit = function(p) {
+						var repository = jsh.tools.git.Repository({ directory: $context.base });
+
+						jsh.wf.requireGitIdentity({ repository: repository }, {
+							console: function(e) {
+								jsh.shell.console(e.detail);
+							}
+						});
+
+						jsh.wf.prohibitUntrackedFiles({ repository: repository });
+
+						jsh.wf.prohibitModifiedSubmodules({ repository: repository });
+
 						//	TODO	looks like the below is duplicative, checking vs origin/master twice; maybe there's an offline
 						//			scenario where that makes sense?
-						var repository = jsh.tools.git.Repository({ directory: $context.base });
 						var allowDivergeFromMaster = false;
 						var vsLocalOriginMaster = jsh.wf.git.compareTo("origin/master")(repository);
 						if (vsLocalOriginMaster.behind && vsLocalOriginMaster.behind.length && !allowDivergeFromMaster) {
@@ -97,19 +108,13 @@
 						if (vsLocalOriginMaster.behind && vsOriginMaster.behind.length && !allowDivergeFromMaster) {
 							throw new Failure("Behind origin/master by " + vsOriginMaster.behind.length + " commits.");
 						}
-						jsh.wf.requireGitIdentity({ repository: repository }, {
-							console: function(e) {
-								jsh.shell.console(e.detail);
-							}
-						});
-						//	TODO	emits events; could use those rather than try-catch
-						jsh.wf.prohibitUntrackedFiles({ repository: repository });
+
 						if (operations.lint) {
 							if (!operations.lint()) {
 								throw new Failure("Linting failed.");
 							}
 						}
-						jsh.wf.prohibitModifiedSubmodules({ repository: repository });
+
 						jsh.wf.typescript.tsc();
 						if (!p.notest) {
 							var success = operations.test();
