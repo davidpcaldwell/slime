@@ -12,7 +12,7 @@ namespace slime.servlet {
 	interface httpd {
 		loader: slime.Loader
 		js: any
-		java: any
+		java: slime.jrunscript.host.Exports & { log: any }
 		io: any
 		web: slime.web.Exports
 		$java: any
