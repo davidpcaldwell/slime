@@ -153,10 +153,25 @@ namespace slime.jrunscript.host {
 	//@ts-ignore
 	)(fifty);
 
+	export namespace logging {
+		type LevelMethod = (...args: any[]) => void
+
+		export interface Logger {
+			log: (level: any, ...args: any[]) => void
+			SEVERE: LevelMethod
+			WARNING: LevelMethod
+			INFO: LevelMethod
+			CONFIG: LevelMethod
+			FINE: LevelMethod
+			FINER: LevelMethod
+			FINEST: LevelMethod
+		}
+	}
+
 	export interface Exports {
 		log: {
 			(...args: any[]): void
-			named: any
+			named(name: string): logging.Logger
 			initialize: (f: (record: any) => void) => void
 		}
 	}
@@ -168,6 +183,8 @@ namespace slime.jrunscript.host {
 			fifty.tests.exports.log = function() {
 				const { subject } = internal.test;
 				fifty.verify(subject).log.is.type("function");
+				var log = subject.log.named("foo");
+				fifty.verify(log).SEVERE.is.type("function");
 			}
 		}
 	//@ts-ignore
