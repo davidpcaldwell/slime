@@ -8,6 +8,9 @@ namespace slime.jrunscript.host {
 	export interface Context {
 		$slime: any
 		globals: any
+		logging: {
+			prefix: string
+		}
 	}
 
 	export interface Environment {
@@ -23,14 +26,32 @@ namespace slime.jrunscript.host {
 	//@ts-ignore
 	)(fifty);
 
-	namespace internal.test {
+	export namespace internal.test {
 		export const subject: Exports = (function(fifty: slime.fifty.test.kit) {
 			return fifty.$loader.module("module.js", {
 				$slime: fifty.jsh.$slime,
-				globals: false
+				globals: false,
+				logging: {
+					prefix: "slime.jrunscript.host.test"
+				}
 			});
 		//@ts-ignore
 		})(fifty)
+	}
+
+	export namespace internal.logging {
+		export interface Context {
+			api: {
+				java: {
+					Array: slime.jrunscript.host.Exports["Array"]
+				}
+			}
+			prefix: string
+		}
+
+		export interface Exports {
+			log: any
+		}
 	}
 
 	export interface Exports {
@@ -133,6 +154,27 @@ namespace slime.jrunscript.host {
 	)(fifty);
 
 	export interface Exports {
+		log: {
+			(...args: any[]): void
+			named: any
+			initialize: (f: (record: any) => void) => void
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.kit
+		) {
+			fifty.tests.exports.log = function() {
+				const { subject } = internal.test;
+				fifty.verify(subject).log.is.type("function");
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+
+	export interface Exports {
 		invoke: any
 		Properties: any
 		fail: any
@@ -150,6 +192,7 @@ namespace slime.jrunscript.host {
 			fifty.tests.suite = function() {
 				run(fifty.tests.exports.Environment);
 				run(fifty.tests.exports.Map);
+				run(fifty.tests.exports.log);
 			}
 		}
 	//@ts-ignore

@@ -119,14 +119,11 @@
 				});
 				rv.java = loader.module("WEB-INF/slime/jrunscript/host/", {
 					globals: true,
-					$slime: $java
-				});
-				rv.java.log = loader.file("WEB-INF/slime/js/debug/logging.java.js", {
-					prefix: "slime",
-					api: {
-						java: rv.java
+					$slime: $java,
+					logging: {
+						prefix: "slime.servlet"
 					}
-				}).log;
+				});
 				rv.io = loader.module("WEB-INF/slime/jrunscript/io/", {
 					$slime: $java,
 					api: {

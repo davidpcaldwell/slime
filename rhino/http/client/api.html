@@ -80,7 +80,10 @@ END LICENSE
 		scope.$Context = function(gae) {
 			var js = $jsapi.loader.module("../../../js/object/");
 			var java = $jsapi.loader.module("../../../jrunscript/host/", {
-				$slime: jsh.unit.$slime
+				$slime: jsh.unit.$slime,
+				logging: {
+					prefix: "slime.jrunscript.http.client.test"
+				}
 			});
 			var io = $jsapi.loader.module("../../../jrunscript/io/", {
 				api: {

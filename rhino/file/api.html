@@ -42,7 +42,10 @@ END LICENSE
 		$Context.api = new function() {
 			this.js = $jsapi.loader.module("../../js/object/");
 			var java = $jsapi.loader.module("../../jrunscript/host/", {
-				$slime: jsh.unit.$slime
+				$slime: jsh.unit.$slime,
+				logging: {
+					prefix: "slime.jrunscript.file.test"
+				}
 			});
 			this.java = java;
 			this.io = $jsapi.loader.module("../../jrunscript/io/", {

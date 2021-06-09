@@ -4,8 +4,16 @@
 //
 //	END LICENSE
 
+//@ts-check
 (
-	function() {
+	/**
+	 *
+	 * @param { slime.jrunscript.Packages } Packages
+	 * @param { any } JavaAdapter
+	 * @param { slime.jrunscript.host.internal.logging.Context } $context
+	 * @param { slime.jrunscript.host.internal.logging.Exports } $exports
+	 */
+	function(Packages,JavaAdapter,$context,$exports) {
 		var _Level = Packages.java.util.logging.Level;
 
 		var jlog = function(name,_level,_message) {
@@ -120,4 +128,5 @@
 		//});
 		//jsh.java.log.named("verify").INFO("Hey, %1$s!", "David");
 	}
-)()
+//@ts-ignore
+)(Packages,JavaAdapter,$context,$exports)

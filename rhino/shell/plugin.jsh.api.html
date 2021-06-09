@@ -36,7 +36,10 @@ END LICENSE
 			//			jsh/jsh.shell of the contributor/jrunscript.jsh.js suite
 			var context = new function() {
 				var host = $jsapi.loader.module("../../jrunscript/host/", {
-					$slime: jsh.unit.$slime
+					$slime: jsh.unit.$slime,
+					logging: {
+						prefix: "slime.jsh.shell.test"
+					}
 				});
 				var file = $jsapi.loader.module("../../rhino/file/", new function() {
 					if (jsh.shell.environment.PATHEXT) {

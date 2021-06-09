@@ -9,11 +9,12 @@
 	/**
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jrunscript.host.Context } $context
+	 * @param { slime.Loader } $loader
 	 * @param { slime.jrunscript.host.Exports } $exports
 	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { any } JavaAdapter
 	 */
-	function($api,$context,$exports,Packages,JavaAdapter) {
+	function($api,$context,$loader,$exports,Packages,JavaAdapter) {
 		//	TODO	Document these three, when it is clear how to represent host objects in the documentation; or we provide JavaScript
 		//	objects to wrap Java classes, which may be a better approach
 		//$exports.getClass = $api.Function({
@@ -369,6 +370,15 @@
 		//	}
 		//}
 
+		$exports.log = $loader.file("logging.java.js", {
+			prefix: $context.logging.prefix,
+			api: {
+				java: {
+					Array: JavaArray
+				}
+			}
+		}).log;
+
 		/**
 		 * @constructor
 		 * @param { any } [factory]
@@ -715,4 +725,4 @@
 		}
 	}
 //@ts-ignore
-)($api,$context,$exports,Packages,JavaAdapter)
+)($api,$context,$loader,$exports,Packages,JavaAdapter)

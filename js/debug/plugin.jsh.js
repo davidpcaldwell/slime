@@ -88,14 +88,6 @@ plugin({
 			}
 		)
 
-		jsh.java.log = $loader.file("logging.java.js", {
-			prefix: "inonit.script.jsh.Shell.log",
-			api: {
-				java: jsh.java
-			}
-		}).log;
-
-
 		if ($slime.getDebugger) {
 			$api.debugger = {};
 			Object.defineProperty($api.debugger, "breakOnExceptions", {
