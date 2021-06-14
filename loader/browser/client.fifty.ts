@@ -53,13 +53,13 @@ namespace slime.browser {
 
 	export interface Exports {
 		//	top-level loader methods that operate by URL
-		run: any
-		file: any
-		module: any
-		value: any
-		get: any
+		run: slime.Loader["run"]
+		file: slime.Loader["file"]
+		module: slime.Loader["module"]
+		value: slime.Loader["value"]
+		get: slime.Loader["get"]
 
-		loader: any
+		loader: slime.Loader
 		Loader: {
 			new (p: string | slime.loader.Source): slime.Loader
 			series: slime.runtime.Exports["Loader"]["series"]
@@ -73,7 +73,6 @@ namespace slime.browser {
 			}
 		}
 		base: string
-		location: any
 		$api: slime.$api.Global
 		$sdk: any
 

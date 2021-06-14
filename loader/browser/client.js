@@ -336,11 +336,7 @@
 							this.platform = runtime.$platform;
 						}
 					},
-					loaderMethods,
-					{
-						//	TODO	probably can be removed
-						location: void(0)
-					}
+					loaderMethods
 				)
 			}
 		)();
