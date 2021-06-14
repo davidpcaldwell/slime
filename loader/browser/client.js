@@ -31,32 +31,31 @@
 			}
 		)();
 
-		/** @type { slime.browser.Exports } */
-		var $exports = (function() {
-			if (!window.inonit) window.inonit = {
-				loader: void(0)
-			};
-			if (window.inonit.loader && window.inonit.loader.run && window.inonit.loader.file && window.inonit.loader.module) {
-				throw new Error("Unimplemented: trying to reload inonit.loader");
-			}
-			window.inonit.loader = {
-				run: void(0),
-				file: void(0),
-				module: void(0),
-				value: void(0),
-				get: void(0),
-				loader: void(0),
-				Loader: void(0),
-				namespace: void(0),
-				nugget: void(0),
-				base: void(0),
-				location: void(0),
-				$api: void(0),
-				$sdk: void(0),
-				script: void(0)
-			};
-			return window.inonit.loader;
-		})();
+		// var $exports = (function() {
+		// 	if (!window.inonit) window.inonit = {
+		// 		loader: void(0)
+		// 	};
+		// 	if (window.inonit.loader && window.inonit.loader.run && window.inonit.loader.file && window.inonit.loader.module) {
+		// 		throw new Error("Unimplemented: trying to reload inonit.loader");
+		// 	}
+		// 	window.inonit.loader = {
+		// 		run: void(0),
+		// 		file: void(0),
+		// 		module: void(0),
+		// 		value: void(0),
+		// 		get: void(0),
+		// 		loader: void(0),
+		// 		Loader: void(0),
+		// 		namespace: void(0),
+		// 		nugget: void(0),
+		// 		base: void(0),
+		// 		location: void(0),
+		// 		$api: void(0),
+		// 		$sdk: void(0),
+		// 		script: void(0)
+		// 	};
+		// 	return window.inonit.loader;
+		// })();
 
 		/**
 		 *
@@ -135,12 +134,14 @@
 
 		//	Now even if the object existed before, we have obtained the specified properties and we replace the existing object with
 		//	this one
-		(
+		/** @type { slime.browser.Exports } */
+		var $exports = (
 			/**
-			 * @this { slime.browser.Runtime["loader"] }
+			 * @this { { foo: boolean } }
 			 */
 			function() {
 
+				/** @type { { get: any, fetch: any, getCode: any } } */
 				var fetcher = new function() {
 					var downloads = {};
 
@@ -225,7 +226,7 @@
 				);
 
 				/**
-				 * @type { slime.browser.Exports["Loader"] }
+				 * @constructor
 				 * @param { string | slime.loader.Source } p
 				 */
 				var Loader = function(p) {
@@ -252,95 +253,102 @@
 							}
 						})(canonicalize(p));
 					}
+					this.source = void(0);
+					this.run = void(0);
+					this.value = void(0);
+					this.file = void(0);
+					this.module = void(0);
+					this.factory = void(0);
+					this.Child = void(0);
+					this.get = void(0);
 					runtime.Loader.apply(this,arguments);
 				};
-				Loader.series = runtime.Loader.series;
 
 				var getPageBase = function() {
 					return getCurrentBase().split("/").slice(0,-1).join("/") + "/";
 				};
 
-				(
+				var loaderMethods = (
 					function() {
+						/** @type { slime.Loader } */
 						var loader = new Loader("");
 
-						this.run = function(path,scope,target) {
-							return loader.run.apply(loader,arguments);
-						};
-
-						this.file = function(path,$context) {
-							return loader.file.apply(loader,arguments);
-						};
-
-						this.module = function(path,$context) {
-							return loader.module.apply(loader,arguments);
-						}
-
-						this.value = function(path,scope,target) {
-							return loader.value.apply(loader,arguments);
-						};
-
-						this.get = function(path) {
-							return loader.get.apply(loader,arguments);
+						return {
+							run: function(path,scope,target) {
+								return loader.run.apply(loader,arguments);
+							},
+							file: function(path,$context) {
+								return loader.file.apply(loader,arguments);
+							},
+							module: function(path,$context) {
+								return loader.module.apply(loader,arguments);
+							},
+							value: function(path,scope,target) {
+								return loader.value.apply(loader,arguments);
+							},
+							get: function(path) {
+								return loader.get.apply(loader,arguments);
+							}
 						};
 					}
-				).call(this);
+				)();
 
-				(function() {
-					this.loader = new Loader(getPageBase());
-				}).call(this);
-
-				this.Loader = Object.assign(
-					Loader,
+				return Object.assign(
 					{
-						getCode: fetcher.getCode,
-						fetch: fetcher.fetch
+						loader: new Loader(getPageBase()),
+						Loader: Object.assign(
+							Loader,
+							{
+								series: runtime.Loader.series,
+								getCode: fetcher.getCode,
+								fetch: fetcher.fetch
+							}
+						),
+						script: runtime.$api.deprecate(loaderMethods.file),
+						namespace: function(name) {
+							return runtime.namespace(name);
+						},
+						nugget: new function() {
+							//	DRY:	Other scripts may want to use this (already have examples)
+							this.getCurrentScript = getCurrentScript;
+
+							this.page = {
+								base: getPageBase(),
+								relative: function(path) {
+									return canonicalize(getPageBase() + path);
+								}
+							};
+						},
+						//	TODO	we may want a base attribute; the below is one way to do it which should work under most circumstances.
+						//			We could make it the responsibility of the caller to set the 'base' property if this file is loaded another way.
+						//	Undocumented
+						base: bootstrap.base,
+						//	For use in scripts that are loaded directly by the browser rather than via this loader
+						$api: runtime.$api,
+						//	(Possibly obsolete comment to follow) Used by loader/browser/tools/offline.html, which may be obsolete
+						$sdk: new function() {
+							//	Used via inonit.loader.$sdk.fetch call in loader/browser/test somehow
+							this.fetch = function(url) {
+								return fetcher.fetch(url);
+							}
+
+							//	used by unit tests <-- old comment; used in loader/browser/test/api.js somehow
+							this.platform = runtime.$platform;
+						}
+					},
+					loaderMethods,
+					{
+						//	TODO	probably can be removed
+						location: void(0)
 					}
 				)
-
-				this.script = runtime.$api.deprecate(this.file);
-
-				this.namespace = function(name) {
-					return runtime.namespace(name);
-				}
-
-				this.nugget = new function() {
-					//	DRY:	Other scripts may want to use this (already have examples)
-					this.getCurrentScript = getCurrentScript;
-
-					this.page = {
-						base: getPageBase(),
-						relative: function(path) {
-							return canonicalize(getPageBase() + path);
-						}
-					};
-				};
-
-				//	TODO	Experimental API currently used by httpd, perhaps should be kept (and possibly made more robust)
-
-				//	TODO	we may want a base attribute; the below is one way to do it which should work under most circumstances.
-				//			We could make it the responsibility of the caller to set the 'base' property if this file is loaded another way.
-
-				//	Undocumented
-				this.base = bootstrap.base;
-
-				//	For use in scripts that are loaded directly by the browser rather than via this loader
-				this.$api = runtime.$api;
-
-				//	Used by loader/browser/tools/offline.html, which may be obsolete
-
-				//	TODO set to dontenum if possible
-				this.$sdk = new function() {
-					//	Used via inonit.loader.$sdk.fetch call in loader/browser/test somehow
-					this.fetch = function(url) {
-						return fetcher.fetch(url);
-					}
-
-					//	used by unit tests <-- old comment; used in loader/browser/test/api.js somehow
-					this.platform = runtime.$platform;
-				};
 			}
-		).call($exports);
+		)();
+
+		if (!window.inonit) window.inonit = {
+			loader: void(0)
+		};
+		window.inonit.loader = $exports;
 	}
 //@ts-ignore
 )((window.inonit && window.inonit.loader) ? window.inonit.loader : {}, window);

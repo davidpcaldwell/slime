@@ -60,7 +60,10 @@ namespace slime.browser {
 		get: any
 
 		loader: any
-		Loader: any
+		Loader: {
+			new (p: string | slime.loader.Source): slime.Loader
+			series: slime.runtime.Exports["Loader"]["series"]
+		}
 		namespace: any
 		nugget: {
 			getCurrentScript: () => Bootstrap
