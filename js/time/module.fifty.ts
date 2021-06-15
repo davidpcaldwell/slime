@@ -11,6 +11,7 @@ namespace slime.time {
 		format(mask: string): string
 		month: any
 		day: any
+		add(n: number): Day
 	}
 
 	namespace Day {
