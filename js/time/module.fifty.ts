@@ -23,7 +23,7 @@ namespace slime.time {
 		format(mask: string): string
 	}
 
-	interface When {
+	export interface When {
 		unix: number
 		local(): Time
 	}
