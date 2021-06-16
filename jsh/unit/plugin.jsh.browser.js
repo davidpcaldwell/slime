@@ -317,7 +317,7 @@
 
 			this.browse = function(uri,done) {
 				//	ignoring p.program
-				var url = jsh.js.web.Url.parse(uri);
+				var url = jsh.web.Url.parse(uri);
 				var browser = new jsh.shell.browser.chrome.Instance({
 					directory: user,
 					proxy: jsh.shell.browser.ProxyConfiguration({ port: url.port })

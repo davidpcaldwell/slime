@@ -87,7 +87,7 @@
 				/** @type { { kill: any } } */
 				var process;
 
-				var url = new jsh.js.web.Url({
+				var url = new jsh.web.Url({
 					scheme: "http",
 					authority: {
 						host: "127.0.0.1",
@@ -119,7 +119,7 @@
 					run();
 				} else {
 					jsh.java.Thread.start(run);
-					var resultsUrl = new jsh.js.web.Url({
+					var resultsUrl = new jsh.web.Url({
 						scheme: "http",
 						authority: {
 							host: "127.0.0.1",

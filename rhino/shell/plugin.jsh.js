@@ -17,7 +17,7 @@
 	function(Packages,jsh,$slime,$loader,plugin) {
 		plugin({
 			isReady: function() {
-				return Boolean(jsh.js && jsh.document && jsh.js.document && jsh.js.web && jsh.java && jsh.io && jsh.file);
+				return Boolean(jsh.js && jsh.document && jsh.js.document && jsh.web && jsh.java && jsh.io && jsh.file);
 			},
 			load: function() {
 				var stdio = {

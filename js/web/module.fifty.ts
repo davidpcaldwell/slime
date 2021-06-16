@@ -27,7 +27,12 @@ namespace slime.web {
 				parse: (string: string) => Form.Control[]
 			}
 		}
-		Form: new (p: Form.Argument) => Form
+		Form: {
+			new (p: Form.Argument): Form
+
+			//	TODO	is this the right place for this? Present for jrunscript, not present in browser implementation.
+			Multipart?: any
+		}
 		/**
 		 * An object representing the current browser window; provides browser-specific APIs.
 		 * Present if $context.window supplied.

@@ -53,10 +53,10 @@
 
 		plugin({
 			isReady: function() {
-				return Boolean(jsh.js && jsh.js.web && jsh.io && jsh.io.mime);
+				return Boolean(jsh.web && jsh.io && jsh.io.mime);
 			},
 			load: function() {
-				jsh.js.web.Form.Multipart = function(o) {
+				jsh.web.Form.Multipart = function(o) {
 					var parts = o.controls.map(function(control) {
 						if (typeof(control.value) == "string") {
 							return { name: control.name, string: control.value };

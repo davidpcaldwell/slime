@@ -16,7 +16,7 @@ plugin(new function() {
 		global.jsh.tools.hg = $loader.module("module.js", {
 			api: {
 				js: jsh.js,
-				web: jsh.js.web,
+				web: jsh.web,
 				java: jsh.java,
 				io: jsh.io,
 				ip: jsh.ip,

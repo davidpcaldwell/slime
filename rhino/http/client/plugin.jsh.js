@@ -6,14 +6,14 @@
 
 plugin({
 	isReady: function() {
-		return typeof(jsh.js) != "undefined" && typeof(jsh.io) != "undefined" && typeof(jsh.js.web) != "undefined" && jsh.java;
+		return typeof(jsh.js) != "undefined" && typeof(jsh.io) != "undefined" && typeof(jsh.web) != "undefined" && jsh.java;
 	},
 	load: function() {
 		jsh.http = $loader.module("module.js", {
 			api: {
 				js: jsh.js,
 				java: jsh.java,
-				web: jsh.js.web,
+				web: jsh.web,
 				io: jsh.io
 			}
 		});

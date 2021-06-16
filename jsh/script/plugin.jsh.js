@@ -106,7 +106,7 @@
 
 		plugin({
 			isReady: function() {
-				return Boolean(jsh.js && jsh.java && jsh.file && jsh.http && jsh.shell);
+				return Boolean(jsh.js && jsh.web && jsh.java && jsh.file && jsh.http && jsh.shell);
 			},
 			load: function() {
 				var source = (function() {
@@ -166,7 +166,7 @@
 				jsh.script = load($api.Object.compose({
 					api: {
 						js: jsh.js,
-						web: jsh.js.web,
+						web: jsh.web,
 						file: jsh.file,
 						http: function() {
 							return jsh.http;
@@ -360,7 +360,7 @@
 
 		plugin({
 			isReady: function() {
-				return Boolean(jsh.js && jsh.js.web && jsh.file && jsh.script && jsh.http);
+				return Boolean(jsh.web && jsh.file && jsh.script && jsh.http);
 			},
 			load: function() {
 				/**
@@ -368,7 +368,7 @@
 				 */
 				var interpretModuleLocation = function(string) {
 					/** @type { slime.web.Exports } */
-					var web = jsh.js.web;
+					var web = jsh.web;
 					//	try to see whether it's an absolute path
 					var location = jsh.file.Pathname(string);
 					if (location.directory) {

@@ -32,7 +32,7 @@
 		var TMP = jsh.shell.TMPDIR.createTemporary({ directory: true });
 		var me = jsh.script.file.copy(TMP);
 
-		var multipart = new jsh.js.web.Form.Multipart({
+		var multipart = new jsh.web.Form.Multipart({
 			controls: [
 				{
 					name: "bytes",

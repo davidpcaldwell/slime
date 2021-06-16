@@ -204,7 +204,7 @@
 		 * @constructor
 		 * @param { slime.web.Form.Argument } p
 		 */
-		$exports.Form = function(p) {
+		$exports.Form = Object.assign(function(p) {
 			//	See https://www.w3.org/TR/REC-html40/interact/forms.html#h-17.13.4
 			/** @type { slime.web.Form.Control[] } */
 			var controls;
@@ -235,7 +235,10 @@
 					return $context.escaper.encode(item.name) + "=" + $context.escaper.encode(item.value);
 				}).join("&");
 			}
-		};
+		}, {
+			//	Present in Java; used here for (potentially flawed) TypeScript definition
+			Multipart: void(0)
+		});
 
 		if ($context.window) {
 			$exports.window = new function() {

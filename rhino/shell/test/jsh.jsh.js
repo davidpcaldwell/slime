@@ -27,7 +27,7 @@ jsh.test.integration({
 			name: "HTTP unforked",
 			execute: function(scope,verify) {
 				jsh.shell.jsh({
-					script: jsh.js.web.Url.parse(
+					script: jsh.web.Url.parse(
 						"http://127.0.0.1:" + server.port + "/jsh.jsh.js"
 					),
 					stdio: {
@@ -52,7 +52,7 @@ jsh.test.integration({
 			execute: function(scope,verify) {
 				jsh.shell.jsh({
 					fork: true,
-					script: jsh.js.web.Url.parse(url),
+					script: jsh.web.Url.parse(url),
 					stdio: {
 						output: String,
 						error: String

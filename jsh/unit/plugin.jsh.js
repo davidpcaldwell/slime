@@ -229,7 +229,7 @@ plugin({
 
 plugin({
 	isReady: function() {
-		return jsh.js && jsh.shell && jsh.httpd && jsh.httpd.Tomcat && jsh.http && jsh.unit && jsh.unit.Scenario && jsh.unit.Scenario.Events && jsh.java && jsh.file;
+		return jsh.js && jsh.web && jsh.shell && jsh.httpd && jsh.httpd.Tomcat && jsh.http && jsh.unit && jsh.unit.Scenario && jsh.unit.Scenario.Events && jsh.java && jsh.file;
 	},
 	load: function() {
 		var $exports = {};

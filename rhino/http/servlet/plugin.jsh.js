@@ -19,7 +19,7 @@
 	function(Packages,JavaAdapter,$slime,$api,jsh,plugin,$loader) {
 		plugin({
 			isReady: function() {
-				return Boolean(jsh.js && jsh.java && jsh.java.log && jsh.io && jsh.io.mime && jsh.shell && jsh.file);
+				return Boolean(jsh.js && jsh.web && jsh.java && jsh.java.log && jsh.io && jsh.io.mime && jsh.shell && jsh.file);
 			},
 			load: function() {
 				if (!jsh.httpd) {
@@ -273,7 +273,7 @@
 								js: jsh.js,
 								java: jsh.java,
 								io: jsh.io,
-								web: jsh.js.web
+								web: jsh.web
 							};
 							var server = $loader.module("server.js", {
 								api: api

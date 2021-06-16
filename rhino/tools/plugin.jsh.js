@@ -56,7 +56,7 @@
 
 		plugin({
 			isReady: function() {
-				return jsh.js && jsh.time && jsh.js.web && jsh.java && jsh.ip && jsh.file && jsh.shell && jsh.tools && jsh.tools.install && jsh.java.tools;
+				return jsh.js && jsh.time && jsh.web && jsh.java && jsh.ip && jsh.file && jsh.shell && jsh.tools && jsh.tools.install && jsh.java.tools;
 			},
 			load: function() {
 				//	TODO	we are duplicating the isReady() logic both here and in the git plugin
@@ -67,7 +67,7 @@
 						api: {
 							js: jsh.js,
 							time: jsh.time,
-							web: jsh.js.web,
+							web: jsh.web,
 							java: jsh.java,
 							ip: jsh.ip,
 							file: jsh.file,

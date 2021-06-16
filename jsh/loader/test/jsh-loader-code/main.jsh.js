@@ -45,8 +45,8 @@
 						file: jsh.loader.module( "http://127.0.0.1:" + server.port + "/module.js" )
 					},
 					url: {
-						base: jsh.loader.module( jsh.js.web.Url.parse("http://127.0.0.1:" + server.port + "/") ),
-						file: jsh.loader.module( jsh.js.web.Url.parse("http://127.0.0.1:" + server.port + "/module.js") )
+						base: jsh.loader.module( jsh.web.Url.parse("http://127.0.0.1:" + server.port + "/") ),
+						file: jsh.loader.module( jsh.web.Url.parse("http://127.0.0.1:" + server.port + "/module.js") )
 					}
 				},
 				file: {
@@ -59,7 +59,7 @@
 					relative: jsh.loader.file("file.js"),
 					absolute: jsh.loader.file(directory.getRelativePath("file.js").toString()),
 					http: jsh.loader.file("http://127.0.0.1:" + server.port + "/file.js"),
-					url: jsh.loader.file( jsh.js.web.Url.parse("http://127.0.0.1:" + server.port + "/file.js") )
+					url: jsh.loader.file( jsh.web.Url.parse("http://127.0.0.1:" + server.port + "/file.js") )
 				}
 			}, void(0), 4)
 		)
