@@ -369,12 +369,22 @@
 				var interpretModuleLocation = function(string) {
 					/** @type { slime.web.Exports } */
 					var web = jsh.web;
+
 					//	try to see whether it's an absolute path
 					var location = jsh.file.Pathname(string);
-					if (location.directory) {
-						return location.directory;
-					} else if (location.file) {
-						return location.file;
+
+					//	we don't want to use the location if it is a relative path; it will be handled later by jsh.script.loader
+					//	in the calling code
+					var isAbsolute = function(location) {
+						return location.toString() == string;
+					}
+
+					if (isAbsolute(location)) {
+						if (location.directory) {
+							return location.directory;
+						} else if (location.file) {
+							return location.file;
+						}
 					}
 
 					//	then, let's check to see if it's a URL. For now we only support URLs with schemes.

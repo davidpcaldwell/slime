@@ -50,6 +50,7 @@ namespace slime.time {
 				iso8601: {
 					extended: slime.Codec<Day,string>
 				}
+				json: any
 			}
 		}
 		Time: {
@@ -64,6 +65,7 @@ namespace slime.time {
 			codec: {
 				rfc3339: slime.Codec<When,string>
 				Date: slime.Codec<When,Date>
+				js: any
 			}
 			order: Function
 			now: () => When
