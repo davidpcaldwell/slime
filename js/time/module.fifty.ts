@@ -51,6 +51,7 @@ namespace slime.time {
 					extended: slime.Codec<Day,string>
 				}
 				json: any
+				js: any
 			}
 		}
 		Time: {
