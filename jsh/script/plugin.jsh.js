@@ -312,7 +312,9 @@
 
 						try {
 							var status = jsh.script.cli.Application(descriptor).run(jsh.script.arguments.slice());
-							jsh.shell.exit(status || 0);
+							if (typeof(status) != "undefined") {
+								jsh.shell.exit(status);
+							}
 						} catch (e) {
 							if (e instanceof jsh.script.cli.error.NoTargetProvided) {
 								showCommands();

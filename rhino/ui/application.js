@@ -64,76 +64,86 @@
 		/**
 		 * @param { slime.jsh.ui.application.ChromeConfiguration } o
 		 */
-		var Chrome = (jsh.shell.browser.chrome) ? function(o) {
-			//	TODO	add location (rather than directory) argument
-			return function(p) {
-				var lock = new jsh.java.Thread.Monitor();
+		var Chrome = (jsh.shell.browser.chrome)
+			? (
+				/**
+				 *
+				 * @param { slime.jsh.ui.application.ChromeConfiguration } o
+				 * @returns
+				 */
+				function(o) {
+					//	TODO	add location (rather than directory) argument
+					return function(p) {
+						var lock = new jsh.java.Thread.Monitor();
 
-				var notify = function() {
-					new lock.Waiter({
-						until: function() {
-							return true;
-						},
-						then: function() {
+						var notify = function() {
+							new lock.Waiter({
+								until: function() {
+									return true;
+								},
+								then: function() {
+								}
+							})();
 						}
-					})();
-				}
 
-				var instance = new jsh.shell.browser.chrome.Instance({
-					location: o.location,
-					directory: o.directory,
-					proxy: p.proxy
-				});
+						var instance = new jsh.shell.browser.chrome.Instance({
+							location: o.location,
+							directory: o.directory,
+							proxy: p.proxy
+						});
 
-				var process;
-				var finished = false;
+						var process;
+						var finished = false;
 
-				jsh.java.Thread.start(function() {
-					var argument = {
-						on: {
-							start: function(argument) {
-								process = new function() {
-									this.close = function() {
-										argument.kill();
-									};
+						jsh.java.Thread.start(function() {
+							var argument = {
+								on: {
+									start: function(argument) {
+										process = new function() {
+											this.close = function() {
+												argument.kill();
+											};
 
-									this.run = function() {
-										return new lock.Waiter({
-											until: function() {
-												return finished;
-											},
-											then: function() {
-											}
-										})();
-									};
-								};
-								notify();
+											this.run = function() {
+												return new lock.Waiter({
+													until: function() {
+														return finished;
+													},
+													then: function() {
+													}
+												})();
+											};
+										};
+										notify();
+									}
+								}
+							};
+							if (o.debug && o.debug.port) {
+								argument.debug = o.debug;
 							}
-						}
-					};
-					if (o.debug && o.debug.port) {
-						argument.debug = o.debug;
-					}
-					if (o.browser) {
-						argument.uri = p.url;
-					} else {
-						argument.app = p.url;
-					}
-					instance.run(argument);
-					finished = true;
-					notify();
-				});
+							if (o.browser) {
+								argument.uri = p.url;
+							} else {
+								argument.app = p.url;
+							}
+							instance.run(argument);
+							finished = true;
+							notify();
+						});
 
-				return new lock.Waiter({
-					until: function() {
-						return process;
-					},
-					then: function() {
-						return process;
+						return new lock.Waiter({
+							until: function() {
+								return process;
+							},
+							then: function() {
+								return process;
+							}
+						})();
 					}
-				})();
-			}
-		} : void(0);
+				}
+			)
+			: void(0)
+		;
 
 		var javafx = function(settings) {
 			return function(p) {
