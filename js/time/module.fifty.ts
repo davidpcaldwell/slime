@@ -12,6 +12,7 @@ namespace slime.time {
 		month: any
 		day: any
 		add(n: number): Day
+		isAfter(day: Day): boolean
 	}
 
 	namespace Day {
