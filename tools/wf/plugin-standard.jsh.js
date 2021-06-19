@@ -92,21 +92,22 @@
 
 						jsh.wf.prohibitModifiedSubmodules({ repository: repository });
 
+						var branch = repository.status().branch;
 						//	TODO	looks like the below is duplicative, checking vs origin/master twice; maybe there's an offline
 						//			scenario where that makes sense?
-						var allowDivergeFromMaster = false;
-						var vsLocalOriginMaster = jsh.wf.git.compareTo("origin/master")(repository);
-						if (vsLocalOriginMaster.behind && vsLocalOriginMaster.behind.length && !allowDivergeFromMaster) {
-							throw new Failure("Behind origin/master by " + vsLocalOriginMaster.behind.length + " commits.");
+						var allowDivergeFromOrigin = false;
+						var vsLocalOrigin = jsh.wf.git.compareTo("origin/" + branch.name)(repository);
+						if (vsLocalOrigin.behind && vsLocalOrigin.behind.length && !allowDivergeFromOrigin) {
+							throw new Failure("Behind origin/" + branch.name + " by " + vsLocalOrigin.behind.length + " commits.");
 						}
 						repository = fetch();
-						var vsOriginMaster = jsh.wf.git.compareTo("origin/master")(repository);
+						var vsOrigin = jsh.wf.git.compareTo("origin/" + branch.name)(repository);
 						//	var status = repository.status();
 						//	maybe check branch above if we allow non-master-based workflow
 						//	Perhaps allow a command-line argument or something for this, need to think through branching
 						//	strategy overall
-						if (vsLocalOriginMaster.behind && vsOriginMaster.behind.length && !allowDivergeFromMaster) {
-							throw new Failure("Behind origin/master by " + vsOriginMaster.behind.length + " commits.");
+						if (vsLocalOrigin.behind && vsOrigin.behind.length && !allowDivergeFromOrigin) {
+							throw new Failure("Behind origin/" + branch.name + " by " + vsOrigin.behind.length + " commits.");
 						}
 
 						if (operations.lint) {
@@ -135,7 +136,7 @@
 						//	master
 						repository.push({
 							repository: "origin",
-							refspec: "master"
+							refspec: "HEAD"
 						});
 					}
 				}
@@ -181,7 +182,7 @@
 					//	TODO	add option for offline
 					var repository = fetch();
 					var remote = "origin";
-					var branch = "master";
+					var branch = repository.status().branch.name;
 					var vsOriginMaster = jsh.wf.git.compareTo(remote + "/" + branch)(repository);
 					var status = repository.status();
 					jsh.shell.console("Current branch: " + status.branch.name);
