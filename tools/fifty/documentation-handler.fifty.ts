@@ -21,6 +21,10 @@ namespace slime.tools.documentation {
 	export namespace internal.asTextHandler {
 		export type Context = { httpd: slime.servlet.httpd }
 		export type Export = slime.servlet.httpd["Handler"]["Loader"];
+		/**
+		 * Given the `httpd` object (see {@link Context}), provides an object that can serve the contents of a Loader and
+		 * understands the `as=text` query string.
+		 */
 		export type Factory = slime.loader.Product<Context,Export>
 	}
 }
