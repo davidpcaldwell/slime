@@ -132,6 +132,7 @@ namespace slime.fifty {
 
 			global: {
 				jsh?: slime.jsh.Global
+				$api: slime.$api.Global
 				window?: Window
 			},
 			$api: {
