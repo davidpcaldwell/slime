@@ -13,8 +13,8 @@ namespace slime.tools.documentation {
 	export type factory = (p: slime.servlet.httpd) => slime.servlet.handler
 
 	/**
-	 * Using a configuration, creates a function capable of creating a servlet handler that can serve Typedoc documentation given
-	 * the httpd API.
+	 * The application-level export of the documentation handler. Using a configuration, creates a function capable of creating a
+	 * servlet handler that can serve Typedoc documentation given the httpd API.
 	 */
 	export type implementation = (configuration: Configuration) => factory
 
