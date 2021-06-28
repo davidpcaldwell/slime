@@ -20,6 +20,8 @@
 			verify: inonit.loader.loader.factory("../../../../loader/api/verify.js")
 		};
 
+		var promises = inonit.loader.loader.module("../../../../loader/api/promises.js");
+
 		window.addEventListener("load", function() {
 			/** @type { slime.fifty.browser.test.internal.Query } */
 			var query = $api.Function.result(

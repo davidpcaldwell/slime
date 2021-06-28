@@ -120,16 +120,22 @@
 					scope.test(f);
 				}
 			);
-			execute();
-			var result = scope.success;
-			scope = was.scope;
-			verify = was.verify;
-			if (scope) {
-				scope.end(name,result);
-			} else {
-				console.end(null, name, result);
+
+			var returned = execute();
+
+			function after() {
+				var result = scope.success;
+				scope = was.scope;
+				verify = was.verify;
+				if (scope) {
+					scope.end(name,result);
+				} else {
+					console.end(null, name, result);
+				}
+				return result;
 			}
-			return result;
+
+			return after();
 		}
 
 		var runner = function(tests) {
