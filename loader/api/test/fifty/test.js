@@ -179,6 +179,9 @@
 				types: {}
 			};
 
+			/**
+			 * @type { slime.fifty.test.kit }
+			 */
 			var fifty = {
 				global: global,
 				$loader: loader,
@@ -187,12 +190,14 @@
 					Events: {
 						Captor: function(template) {
 							var events = [];
+							/** @type { ReturnType<slime.fifty.test.kit["$api"]["Events"]["Captor"]>["handler"] } */
+							var initial = {};
 							var handler = $api.Function.Object.entries(template).reduce(function(rv,entry) {
 								rv[entry[0]] = function(e) {
 									events.push(e);
 								}
 								return rv;
-							}, {});
+							}, initial);
 							return {
 								events: events,
 								handler: handler
@@ -204,7 +209,6 @@
 				load: function(at,part,argument) {
 					var path = parsePath(at);
 					var subloader = (path.folder) ? loader.Child(path.folder) : loader;
-					debugger;
 					recurse(subloader, path.file, part, argument);
 				},
 				tests: tests,

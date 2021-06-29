@@ -36,7 +36,18 @@ namespace slime.$api {
 			Boolean: {
 				map: <T>(p: { true: T, false: T }) => (b: boolean) => T
 			}
+
+			/**
+			 * Given a property key, creates a function that will operate on objects with the semantics of the optional chaining
+			 * operator (`?.`). If the value passed to the returned function is `null` or undefined, the returned function will return
+			 * undefined; if the value passed to the returned function is an object, the value of the property specified by the
+			 * given property key will be returned.
+			 *
+			 * @param { string } k - a property key
+			 * @returns A function that returns the given property of its argument, or undefined if its argument is [nullish](https://developer.mozilla.org/en-US/docs/Glossary/Nullish).
+			 */
 			optionalChain<T,K extends keyof T>(k: K): (t: T) => T[K]
+
 			memoized: <T>(f: () => T) => () => T
 			pipe: {
 				<T,U,V,W,X,Y,Z,R>(

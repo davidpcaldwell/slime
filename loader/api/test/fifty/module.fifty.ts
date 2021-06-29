@@ -103,14 +103,14 @@ namespace slime.fifty {
 		 */
 		export interface load {
 			/**
-			 * Executes a test part from another file that accepts an argument
+			 * Executes a test part from another file that accepts an argument.
 			 */
-			<T>(path: string, part: string, t: T): (t: T) => void
+			<T>(path: string, part: string, t: T)
 
 			/**
 			 * Executes a test part from another file. Defaults to the `suite` part.
 			 */
-			(path: string, part?: string): () => void
+			(path: string, part?: string)
 		}
 
 		/**
