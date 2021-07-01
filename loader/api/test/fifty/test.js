@@ -8,9 +8,9 @@
 (
 	/**
 	 * @param { slime.$api.Global } $api
-	 * @param { { library: { Verify: slime.definition.verify.Export }, console: slime.fifty.test.internal.Console } } $context
+	 * @param { slime.fifty.test.internal.test.Context } $context
 	 * @param { slime.Loader } $loader
-	 * @param { (value: slime.fifty.test.internal.run) => void } $export
+	 * @param { slime.loader.Export<slime.fifty.test.internal.test.Export> } $export
 	 */
 	function($api,$context,$loader,$export) {
 		var console = $context.console;
@@ -121,7 +121,7 @@
 				}
 			);
 
-			var returned = execute();
+			execute();
 
 			function after() {
 				var result = scope.success;
@@ -274,7 +274,6 @@
 		}
 
 		$export(
-			/** @type { slime.fifty.test.internal.run } */
 			function(loader,path,part) {
 				return load(loader,path,part);
 			}

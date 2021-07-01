@@ -173,8 +173,6 @@ namespace slime.fifty {
 				test: slime.definition.verify.Context
 				end: (name: string, result: boolean) => void
 			}
-
-			export type run = (loader: slime.fifty.test.$loader, path: string, part?: string) => boolean
 		}
 	}
 
