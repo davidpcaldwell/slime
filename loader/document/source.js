@@ -138,8 +138,17 @@
 		 * @param { slime.runtime.document.source.internal.Position } position
 		 * @returns { string }
 		 */
-		function remaining(position) {
+		function after(position) {
 			return position.document.substring(position.offset);
+		}
+
+		/**
+		 *
+		 * @param { slime.runtime.document.source.internal.State } state
+		 * @returns
+		 */
+		function remaining(state) {
+			return after(state.position);
 		}
 
 		/**
@@ -166,10 +175,26 @@
 		/**
 		 *
 		 * @param { slime.runtime.document.source.internal.State } state
-		 * @returns { slime.runtime.document.source.internal.State }
+		 * @param { slime.runtime.document.source.Node } node
+		 * @param { number } advance
+		 * @returns
+		 */
+		var step = function(state,node,advance) {
+			return {
+				parsed: { children: state.parsed.children.concat([node]) },
+				position: {
+					document: state.position.document,
+					offset: state.position.offset + advance
+				}
+			}
+		}
+
+		/**
+		 *
+		 * @type { slime.runtime.document.source.internal.Step }
 		 */
 		var parseComment = function(state) {
-			var left = remaining(state.position);
+			var left = remaining(state);
 			var end = left.indexOf("-->");
 			if (end == -1) throw new Error();
 			/** @type { slime.runtime.document.source.Comment } */
@@ -177,17 +202,11 @@
 				type: "comment",
 				data: left.substring("<!--".length, end)
 			};
-			return {
-				parsed: { children: state.parsed.children.concat([comment]) },
-				position: {
-					document: state.position.document,
-					offset: state.position.offset + end + "-->".length
-				}
-			}
+			return step(state, comment, end + "-->".length);
 		}
 
 		var parseText = function(state) {
-			var left = remaining(state.position);
+			var left = remaining(state);
 			var end = left.indexOf("<");
 			if (end == -1) end = left.length;
 			/** @type { slime.runtime.document.source.Text } */
@@ -195,13 +214,7 @@
 				type: "text",
 				data: left.substring(0,end)
 			};
-			return {
-				parsed: { children: state.parsed.children.concat([text]) },
-				position: {
-					document: state.position.document,
-					offset: state.position.offset + end
-				}
-			}
+			return step(state, text, end);
 		}
 
 		/** @returns { slime.runtime.document.source.internal.Parser } */
@@ -211,14 +224,14 @@
 					return state.parsed;
 				}
 
-				if (atComment(state.position)) return recurse(parseComment(state));
-				if (atText(state.position)) return recurse(parseText(state));
+				if (atComment(state)) return recurse(parseComment(state));
+				if (atText(state)) return recurse(parseText(state));
 
 				//	skip to end of document
 				/** @type { slime.runtime.document.source.internal.Unparsed } */
 				var rest = {
 					type: "unparsed",
-					string: remaining(state.position)
+					string: remaining(state)
 				}
 				return recurse({
 					parsed: {

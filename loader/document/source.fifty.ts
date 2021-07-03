@@ -49,6 +49,8 @@ namespace slime.runtime.document.source {
 			string: string
 		}
 
+		export type Step = (state: State) => State
+
 		export type Parser = (state: State) => Document
 	}
 
