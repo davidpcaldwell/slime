@@ -19,18 +19,22 @@ namespace slime.runtime.document.source {
 		type: string
 	}
 
+	export interface Parent extends Node {
+		children: Node[]
+	}
+
 	export interface Comment extends Node {
-		type: "comment",
+		type: "comment"
 		data: string
 	}
 
 	export interface Text extends Node {
-		type: "text",
+		type: "text"
 		data: string
 	}
 
-	export interface Document {
-		children: Node[]
+	export interface Document extends Parent {
+		type: "document"
 	}
 
 	export namespace internal {
@@ -39,8 +43,8 @@ namespace slime.runtime.document.source {
 			offset: number
 		}
 
-		export interface State {
-			parsed: Document
+		export interface State<T extends Parent> {
+			parsed: T
 			position: Position
 		}
 
@@ -49,9 +53,9 @@ namespace slime.runtime.document.source {
 			string: string
 		}
 
-		export type Step = (state: State) => State
+		export type Step = <T extends Parent>(state: State<T>) => State<T>
 
-		export type Parser = (state: State) => Document
+		export type Parser = <T extends Parent>(state: State<T>) => T
 	}
 
 	(

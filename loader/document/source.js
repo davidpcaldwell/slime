@@ -11,6 +11,7 @@
 	 * @param { slime.loader.Export<slime.runtime.document.source.Export> } $export
 	 */
 	function($api,$export) {
+		//	TODO	for HTML, use this: https://html.spec.whatwg.org/multipage/syntax.html#optional-tags
 		var NodeList = function() {
 			var array = [];
 
@@ -177,7 +178,7 @@
 		 * @param { slime.runtime.document.source.internal.State } state
 		 * @param { slime.runtime.document.source.Node } node
 		 * @param { number } advance
-		 * @returns
+		 * @returns { slime.runtime.document.source.internal.State }
 		 */
 		var step = function(state,node,advance) {
 			return {
@@ -190,7 +191,6 @@
 		}
 
 		/**
-		 *
 		 * @type { slime.runtime.document.source.internal.Step }
 		 */
 		var parseComment = function(state) {
@@ -205,6 +205,9 @@
 			return step(state, comment, end + "-->".length);
 		}
 
+		/**
+		 * @type { slime.runtime.document.source.internal.Step }
+		 */
 		var parseText = function(state) {
 			var left = remaining(state);
 			var end = left.indexOf("<");
@@ -224,26 +227,35 @@
 					return state.parsed;
 				}
 
-				if (atComment(state)) return recurse(parseComment(state));
-				if (atText(state)) return recurse(parseText(state));
+				/** @type { slime.runtime.document.source.internal.State } */
+				var next;
 
-				//	skip to end of document
-				/** @type { slime.runtime.document.source.internal.Unparsed } */
-				var rest = {
-					type: "unparsed",
-					string: remaining(state)
-				}
-				return recurse({
-					parsed: {
-						children: state.parsed.children.concat([
-							rest
-						])
-					},
-					position: {
-						document: state.position.document,
-						offset: state.position.document.length
+				if (atComment(state)) {
+					next = parseComment(state);
+				} else if (atText(state)) {
+					next = parseText(state);
+				} else {
+					//	skip to end of the thing
+					/** @type { slime.runtime.document.source.internal.Unparsed } */
+					var rest = {
+						type: "unparsed",
+						string: remaining(state)
 					}
-				});
+					next = {
+						parsed: {
+							type: "document",
+							children: state.parsed.children.concat([
+								rest
+							])
+						},
+						position: {
+							document: state.position.document,
+							offset: state.position.document.length
+						}
+					}
+				}
+
+				return recurse(next);
 			};
 		}
 
@@ -265,6 +277,7 @@
 			parse: function(input) {
 				return Parser()({
 					parsed: {
+						type: "document",
 						children: []
 					},
 					position: {
