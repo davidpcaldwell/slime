@@ -40,6 +40,11 @@ namespace slime.runtime.document.source {
 		after: string
 	}
 
+	export interface Element extends Parent {
+		type: "element"
+		name: string
+	}
+
 	export interface Document extends Parent {
 		type: "document"
 	}
@@ -60,9 +65,9 @@ namespace slime.runtime.document.source {
 			string: string
 		}
 
-		export type Step = <T extends Parent>(state: State<T>) => State<T>
+		export type Step = <T extends Parent>(state: State<T>, finished?: (state: State<T>) => boolean) => State<T>
 
-		export type Parser = <T extends Parent>(state: State<T>) => T
+		export type Parser = <T extends Parent>(state: State<T>, finished: (state: State<T>) => boolean) => T
 	}
 
 	(

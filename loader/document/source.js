@@ -133,21 +133,70 @@
 		var voidElements = ["area","base","br","col","embed","hr","img","input","link","meta","param","source","track","wbr"];
 
 		/**
-		 * @type { slime.runtime.document.source.internal.Step }
+		 * @param { slime.runtime.document.source.internal.State } state
+		 * @param { slime.runtime.document.source.internal.Step } recurse
+		 * @returns { slime.runtime.document.source.internal.State }
 		 */
-		var parseElement = function(state) {
-			var findEnd = function() {
+		var parseElement = function(state,recurse) {
+			//	TODO	special handling for SCRIPT
+			//	TODO	parse attributes
+			//	TODO	deal with self-closing tags
+			//	TODO	deal with variety of https://html.spec.whatwg.org/multipage/syntax.html#optional-tags
+			//	TODO	deal with case-insensitivity
 
+			var closingTag = function(tagName) {
+				return "</" + tagName + ">";
+			}
+
+			var findEnd = function(left,tagName) {
+				return left.indexOf(closingTag(tagName));
+			}
+
+			var findContentStart = function(left) {
+				return left.indexOf(">") + ">".length;
 			}
 
 			var left = remaining(state);
-			var end = findEnd();
-			return null;
+			var startTag = left.substring(1, left.indexOf(">"));
+			var parser = /^(\S)+(.*)$/;
+			var parsed = parser.exec(startTag);
+			var tagName = parsed[1];
+			/** @type { slime.runtime.document.source.internal.State<slime.runtime.document.source.Element> } */
+			var substate = {
+				parsed: {
+					type: "element",
+					name: tagName,
+					children: []
+				},
+				position: state.position
+			};
+			var after = recurse(
+				substate,
+				$api.Function.pipe(
+					remaining,
+					startsWith(closingTag(tagName))
+				)
+			);
+			return {
+				parsed: $api.Object.compose(state.parsed, {
+					children: state.parsed.concat([after.parsed])
+				}),
+				position: {
+					document: after.position.document,
+					offset: after.position.offset + closingTag(tagName).length
+				}
+			}
 		}
 
 		/** @returns { slime.runtime.document.source.internal.Parser } */
 		var Parser = function(configuration) {
-			return function recurse(state) {
+			/**
+			 *
+			 * @param {*} state
+			 * @param { (state: slime.runtime.document.source.internal.State) => boolean } finished
+			 * @returns
+			 */
+			var rv = function recurse(state,finished) {
 				if (state.position.offset == state.position.document.length) {
 					return state.parsed;
 				}
@@ -201,8 +250,9 @@
 					}
 				}
 
-				return recurse(next);
+				return recurse(next, finished);
 			};
+			return rv;
 		}
 
 		/** @type { (node: slime.runtime.document.source.Node) => node is slime.runtime.document.source.Comment } */
@@ -235,16 +285,21 @@
 
 		$export({
 			parse: function(input) {
-				return Parser()({
-					parsed: {
-						type: "document",
-						children: []
+				return Parser()(
+					{
+						parsed: {
+							type: "document",
+							children: []
+						},
+						position: {
+							document: input.string,
+							offset: 0
+						}
 					},
-					position: {
-						document: input.string,
-						offset: 0
+					function(state) {
+						return state.position.offset == state.position.document.length
 					}
-				});
+				);
 			},
 			serialize: function(output) {
 				var serialize = Serializer();
