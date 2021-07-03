@@ -33,6 +33,13 @@ namespace slime.runtime.document.source {
 		data: string
 	}
 
+	export interface Doctype extends Node {
+		type: "doctype"
+		before: string
+		name: string
+		after: string
+	}
+
 	export interface Document extends Parent {
 		type: "document"
 	}

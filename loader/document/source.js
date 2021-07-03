@@ -163,16 +163,6 @@
 			}
 		}
 
-		var atComment = $api.Function.pipe(
-			remaining,
-			startsWith("<!--")
-		)
-
-		var atText = $api.Function.pipe(
-			remaining,
-			$api.Function.Predicate.not(startsWith("<"))
-		)
-
 		/**
 		 *
 		 * @param { slime.runtime.document.source.internal.State } state
@@ -190,19 +180,55 @@
 			}
 		}
 
+		var atComment = $api.Function.pipe(
+			remaining,
+			startsWith("<!--")
+		)
+
+		var atDoctype = $api.Function.pipe(
+			remaining,
+			//	TODO	case-insensitive
+			startsWith("<!DOCTYPE")
+		)
+
+		var atText = $api.Function.pipe(
+			remaining,
+			$api.Function.Predicate.not(startsWith("<"))
+		)
+
 		/**
 		 * @type { slime.runtime.document.source.internal.Step }
 		 */
 		var parseComment = function(state) {
 			var left = remaining(state);
 			var end = left.indexOf("-->");
-			if (end == -1) throw new Error();
+			if (end == -1) throw new Error("Comment not closed.");
 			/** @type { slime.runtime.document.source.Comment } */
 			var comment = {
 				type: "comment",
 				data: left.substring("<!--".length, end)
 			};
 			return step(state, comment, end + "-->".length);
+		}
+
+		/**
+		 * @type { slime.runtime.document.source.internal.Step }
+		 */
+		var parseDoctype = function(state) {
+			var left = remaining(state);
+			var end = left.indexOf(">");
+			if (end == -1) throw new Error("DOCTYPE not closed.");
+			var content = left.substring("<!DOCTYPE".length,end);
+			var parser = /^(\s+)(\S+)(.*)/
+			var parsed = parser.exec(content);
+			if (!parsed) throw new Error("Malformed DOCTYPE: [" + content + "]");
+			var doctype = {
+				type: "doctype",
+				before: parsed[1],
+				name: parsed[2],
+				after: parsed[3]
+			};
+			return step(state, doctype, end + ">".length);
 		}
 
 		/**
@@ -232,6 +258,8 @@
 
 				if (atComment(state)) {
 					next = parseComment(state);
+				} else if (atDoctype(state)) {
+					next = parseDoctype(state);
 				} else if (atText(state)) {
 					next = parseText(state);
 				} else {
@@ -264,10 +292,24 @@
 			return node.type == "comment";
 		}
 
+		/** @type { (node: slime.runtime.document.source.Node) => node is slime.runtime.document.source.Text } */
+		var isText = function(node) {
+			return node.type == "text";
+		}
+
+		/** @type { (node: slime.runtime.document.source.Node) => node is slime.runtime.document.source.Doctype } */
+		var isDoctype = function(node) {
+			return node.type == "doctype";
+		}
+
 		var Serializer = function(configuration) {
 			return function(node) {
 				if (isComment(node)) {
 					return "<!--" + node.data + "-->";
+				} else if (isText(node)) {
+					return node.data;
+				} else if (isDoctype(node)) {
+					return "<!DOCTYPE" + node.before + node.name + node.after + ">";
 				}
 				return "";
 			}
