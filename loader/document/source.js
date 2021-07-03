@@ -51,7 +51,7 @@
 		 */
 		var step = function(state,node,advance) {
 			return {
-				parsed: { children: state.parsed.children.concat([node]) },
+				parsed: $api.Object.compose(state.parsed, { children: state.parsed.children.concat([node]) }),
 				position: {
 					document: state.position.document,
 					offset: state.position.offset + advance
@@ -138,6 +138,7 @@
 		 * @returns { slime.runtime.document.source.internal.State }
 		 */
 		var parseElement = function(state,recurse) {
+			debugger;
 			//	TODO	special handling for SCRIPT
 			//	TODO	parse attributes
 			//	TODO	deal with self-closing tags
@@ -158,7 +159,7 @@
 
 			var left = remaining(state);
 			var startTag = left.substring(1, left.indexOf(">"));
-			var parser = /^(\S)+(.*)$/;
+			var parser = /^(\S+)(.*)$/;
 			var parsed = parser.exec(startTag);
 			var tagName = parsed[1];
 			/** @type { slime.runtime.document.source.internal.State<slime.runtime.document.source.Element> } */
@@ -168,7 +169,10 @@
 					name: tagName,
 					children: []
 				},
-				position: state.position
+				position: {
+					document: state.position.document,
+					offset: state.position.offset + findContentStart(left)
+				}
 			};
 			var after = recurse(
 				substate,
@@ -179,7 +183,7 @@
 			);
 			return {
 				parsed: $api.Object.compose(state.parsed, {
-					children: state.parsed.concat([after.parsed])
+					children: state.parsed.children.concat([after.parsed])
 				}),
 				position: {
 					document: after.position.document,
@@ -194,11 +198,11 @@
 			 *
 			 * @param {*} state
 			 * @param { (state: slime.runtime.document.source.internal.State) => boolean } finished
-			 * @returns
+			 * @returns { slime.runtime.document.source.internal.State }
 			 */
 			var rv = function recurse(state,finished) {
-				if (state.position.offset == state.position.document.length) {
-					return state.parsed;
+				if (finished(state)) {
+					return state;
 				}
 
 				/** @type { slime.runtime.document.source.internal.State } */
@@ -227,6 +231,9 @@
 					next = parseComment(state);
 				} else if (atDoctype(state)) {
 					next = parseDoctype(state);
+				} else if (atElement(state)) {
+					next = parseElement(state,recurse);
+					if (!next.parsed.type) debugger;
 				} else if (atText(state)) {
 					next = parseText(state);
 				} else {
@@ -270,14 +277,26 @@
 			return node.type == "doctype";
 		}
 
+		/** @type { (node: slime.runtime.document.source.Node) => node is slime.runtime.document.source.Document } */
+		var isDocument = function(node) {
+			return node.type == "document";
+		}
+
+		/** @type { (node: slime.runtime.document.source.Node) => node is slime.runtime.document.source.Element } */
+		var isElement = function(node) {
+			return node.type == "element";
+		}
+
 		var Serializer = function(configuration) {
-			return function(node) {
+			return function recurse(node) {
 				if (isComment(node)) {
 					return "<!--" + node.data + "-->";
 				} else if (isText(node)) {
 					return node.data;
 				} else if (isDoctype(node)) {
 					return "<!DOCTYPE" + node.before + node.name + node.after + ">";
+				} else if (isElement(node)) {
+					return "<" + node.name + ">" + node.children.map(recurse).join("") + "</" + node.name + ">";
 				}
 				return "";
 			}
@@ -285,7 +304,7 @@
 
 		$export({
 			parse: function(input) {
-				return Parser()(
+				var state = Parser()(
 					{
 						parsed: {
 							type: "document",
@@ -300,6 +319,8 @@
 						return state.position.offset == state.position.document.length
 					}
 				);
+				debugger;
+				if (isDocument(state.parsed)) return state.parsed;
 			},
 			serialize: function(output) {
 				var serialize = Serializer();
