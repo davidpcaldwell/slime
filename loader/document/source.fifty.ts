@@ -24,6 +24,11 @@ namespace slime.runtime.document.source {
 		data: string
 	}
 
+	export interface Text extends Node {
+		type: "text",
+		data: string
+	}
+
 	export interface Document {
 		children: Node[]
 	}
@@ -59,6 +64,10 @@ namespace slime.runtime.document.source {
 				});
 				//	license header
 				fifty.verify(page).children[0].type.is("comment");
+				fifty.verify(page).children[1].type.is("text");
+				var text: Text = page.children[1] as Text;
+				//	TODO	below does not render correctly on Fifty browser test runner or probably jrunscript either
+				fifty.verify(text).data.is("\n");
 				var serialized = api.serialize({
 					document: page
 				});

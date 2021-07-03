@@ -153,14 +153,14 @@
 			}
 		}
 
-		/** @type { (node: slime.runtime.document.source.Node) => node is slime.runtime.document.source.Comment } */
-		var isComment = function(node) {
-			return node.type == "comment";
-		}
-
-		var isCommentStart = $api.Function.pipe(
+		var atComment = $api.Function.pipe(
 			remaining,
 			startsWith("<!--")
+		)
+
+		var atText = $api.Function.pipe(
+			remaining,
+			$api.Function.Predicate.not(startsWith("<"))
 		)
 
 		/**
@@ -170,18 +170,36 @@
 		 */
 		var parseComment = function(state) {
 			var left = remaining(state.position);
-			var end = left.substring("<!--".length).indexOf("-->");
+			var end = left.indexOf("-->");
 			if (end == -1) throw new Error();
-			//	TODO	switch to immutable
+			/** @type { slime.runtime.document.source.Comment } */
 			var comment = {
 				type: "comment",
-				data: left.substring("<!--".length, "<!--".length + end)
+				data: left.substring("<!--".length, end)
 			};
 			return {
 				parsed: { children: state.parsed.children.concat([comment]) },
 				position: {
 					document: state.position.document,
 					offset: state.position.offset + end + "-->".length
+				}
+			}
+		}
+
+		var parseText = function(state) {
+			var left = remaining(state.position);
+			var end = left.indexOf("<");
+			if (end == -1) end = left.length;
+			/** @type { slime.runtime.document.source.Text } */
+			var text = {
+				type: "text",
+				data: left.substring(0,end)
+			};
+			return {
+				parsed: { children: state.parsed.children.concat([text]) },
+				position: {
+					document: state.position.document,
+					offset: state.position.offset + end
 				}
 			}
 		}
@@ -193,7 +211,8 @@
 					return state.parsed;
 				}
 
-				if (isCommentStart(state.position)) return recurse(parseComment(state));
+				if (atComment(state.position)) return recurse(parseComment(state));
+				if (atText(state.position)) return recurse(parseText(state));
 
 				//	skip to end of document
 				/** @type { slime.runtime.document.source.internal.Unparsed } */
@@ -213,6 +232,11 @@
 					}
 				});
 			};
+		}
+
+		/** @type { (node: slime.runtime.document.source.Node) => node is slime.runtime.document.source.Comment } */
+		var isComment = function(node) {
+			return node.type == "comment";
 		}
 
 		var Serializer = function(configuration) {
