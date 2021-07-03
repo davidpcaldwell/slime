@@ -138,7 +138,6 @@
 		 * @returns { slime.runtime.document.source.internal.State }
 		 */
 		var parseElement = function(state,recurse) {
-			debugger;
 			//	TODO	special handling for SCRIPT
 			//	TODO	parse attributes
 			//	TODO	deal with self-closing tags
@@ -157,16 +156,68 @@
 				return left.indexOf(">") + ">".length;
 			}
 
+			var toAttributes = function(list,string) {
+				if (string.length == 0) return list;
+				var attribute = {
+					whitespace: "",
+					name: null,
+					value: null
+				};
+				var index = 0;
+				var current = function() {
+					return string.substring(index,index+1);
+				}
+				var next = function() {
+					index++;
+				}
+				var isWhitespace = function() {
+					return /\s/.test(current());
+				}
+				var isName = function() {
+					return current() != "=" && /\S/.test(current());
+				}
+				while(isWhitespace()) {
+					attribute.whitespace += current();
+					next();
+				}
+				while(isName()) {
+					if (!attribute.name) attribute.name = "";
+					attribute.name += current();
+					next();
+				}
+				if (current() == "=") {
+					next();
+					//	Does not handle single quotes or unquoted
+					if (current() == "\"") {
+						next();
+						attribute.value = "";
+						while(current() != "\"") {
+							attribute.value += current();
+							next();
+						}
+						//	skip second quote
+						next();
+					} else {
+						throw new Error();
+					}
+				}
+				return toAttributes(list.concat([ attribute ]), string.substring(index));
+			}
+
 			var left = remaining(state);
 			var startTag = left.substring(1, left.indexOf(">"));
 			var parser = /^(\S+)(.*)$/;
 			var parsed = parser.exec(startTag);
 			var tagName = parsed[1];
+
+			var attributes = toAttributes([], parsed[2]);
+
 			/** @type { slime.runtime.document.source.internal.State<slime.runtime.document.source.Element> } */
 			var substate = {
 				parsed: {
 					type: "element",
 					name: tagName,
+					attributes: attributes,
 					children: []
 				},
 				position: {
@@ -288,6 +339,15 @@
 		}
 
 		var Serializer = function(configuration) {
+			/**
+			 *
+			 * @param { slime.runtime.document.source.Attribute } attribute
+			 * @returns { string }
+			 */
+			function serializeAttribute(attribute) {
+				return attribute.whitespace + attribute.name + "=" + "\"" + attribute.value + "\"";
+			}
+
 			return function recurse(node) {
 				if (isComment(node)) {
 					return "<!--" + node.data + "-->";
@@ -296,7 +356,7 @@
 				} else if (isDoctype(node)) {
 					return "<!DOCTYPE" + node.before + node.name + node.after + ">";
 				} else if (isElement(node)) {
-					return "<" + node.name + ">" + node.children.map(recurse).join("") + "</" + node.name + ">";
+					return "<" + node.name + node.attributes.map(serializeAttribute).join("") + ">" + node.children.map(recurse).join("") + "</" + node.name + ">";
 				}
 				return "";
 			}
@@ -319,7 +379,6 @@
 						return state.position.offset == state.position.document.length
 					}
 				);
-				debugger;
 				if (isDocument(state.parsed)) return state.parsed;
 			},
 			serialize: function(output) {

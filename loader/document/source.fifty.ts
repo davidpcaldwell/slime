@@ -43,6 +43,15 @@ namespace slime.runtime.document.source {
 	export interface Element extends Parent {
 		type: "element"
 		name: string
+		attributes: Attribute[]
+	}
+
+	export interface Attribute {
+		//	TODO	may be whitespace before equals
+		//	TODO	may be whitespace after equals
+		whitespace: string
+		name: string
+		value: string
 	}
 
 	export interface Document extends Parent {
@@ -94,8 +103,7 @@ namespace slime.runtime.document.source {
 				var serialized = api.serialize({
 					document: page
 				});
-				debugger;
-				if (false) fifty.verify(serialized).is(input);
+				fifty.verify(serialized).is(input);
 			}
 		}
 	//@ts-ignore
