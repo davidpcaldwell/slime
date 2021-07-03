@@ -8,9 +8,9 @@
 (
 	/**
 	 * @param { slime.$api.Global } $api
-	 * @param { { library: { Verify: slime.definition.verify.Export }, console: slime.fifty.test.internal.Console } } $context
+	 * @param { slime.fifty.test.internal.test.Context } $context
 	 * @param { slime.Loader } $loader
-	 * @param { (value: slime.fifty.test.internal.run) => void } $export
+	 * @param { slime.loader.Export<slime.fifty.test.internal.test.Export> } $export
 	 */
 	function($api,$context,$loader,$export) {
 		var console = $context.console;
@@ -120,16 +120,22 @@
 					scope.test(f);
 				}
 			);
+
 			execute();
-			var result = scope.success;
-			scope = was.scope;
-			verify = was.verify;
-			if (scope) {
-				scope.end(name,result);
-			} else {
-				console.end(null, name, result);
+
+			function after() {
+				var result = scope.success;
+				scope = was.scope;
+				verify = was.verify;
+				if (scope) {
+					scope.end(name,result);
+				} else {
+					console.end(null, name, result);
+				}
+				return result;
 			}
-			return result;
+
+			return after();
 		}
 
 		var runner = function(tests) {
@@ -173,6 +179,9 @@
 				types: {}
 			};
 
+			/**
+			 * @type { slime.fifty.test.kit }
+			 */
 			var fifty = {
 				global: global,
 				$loader: loader,
@@ -181,12 +190,14 @@
 					Events: {
 						Captor: function(template) {
 							var events = [];
+							/** @type { ReturnType<slime.fifty.test.kit["$api"]["Events"]["Captor"]>["handler"] } */
+							var initial = {};
 							var handler = $api.Function.Object.entries(template).reduce(function(rv,entry) {
 								rv[entry[0]] = function(e) {
 									events.push(e);
 								}
 								return rv;
-							}, {});
+							}, initial);
 							return {
 								events: events,
 								handler: handler
@@ -198,7 +209,6 @@
 				load: function(at,part,argument) {
 					var path = parsePath(at);
 					var subloader = (path.folder) ? loader.Child(path.folder) : loader;
-					debugger;
 					recurse(subloader, path.file, part, argument);
 				},
 				tests: tests,
@@ -264,7 +274,6 @@
 		}
 
 		$export(
-			/** @type { slime.fifty.test.internal.run } */
 			function(loader,path,part) {
 				return load(loader,path,part);
 			}

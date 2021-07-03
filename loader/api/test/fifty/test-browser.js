@@ -20,6 +20,9 @@
 			verify: inonit.loader.loader.factory("../../../../loader/api/verify.js")
 		};
 
+		/** @type { slime.definition.test.promises.Export } */
+		var promises = inonit.loader.loader.module("../../../../loader/api/promises.js");
+
 		window.addEventListener("load", function() {
 			/** @type { slime.fifty.browser.test.internal.Query } */
 			var query = $api.Function.result(
@@ -171,8 +174,13 @@
 			var execute = function(file,part) {
 				var fiftyLoader = new inonit.loader.Loader(inonit.loader.nugget.page.base);
 
-				/** @type { slime.fifty.test.internal.run } */
-				var implementation = fiftyLoader.module("test.js", {
+				var code = {
+					/** @type { slime.fifty.test.internal.test.Factory } */
+					test: fiftyLoader.factory("test.js")
+				}
+
+				var implementation = code.test({
+					promises: promises,
 					library: {
 						Verify: verify
 					},

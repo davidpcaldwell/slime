@@ -103,7 +103,7 @@ namespace slime.fifty {
 		 */
 		export interface load {
 			/**
-			 * Executes a test part from another file that accepts an argument
+			 * Executes a test part from another file that accepts an argument.
 			 */
 			<T>(path: string, part: string, t: T)
 
@@ -132,6 +132,7 @@ namespace slime.fifty {
 
 			global: {
 				jsh?: slime.jsh.Global
+				$api: slime.$api.Global
 				window?: Window
 			},
 			$api: {
@@ -172,8 +173,6 @@ namespace slime.fifty {
 				test: slime.definition.verify.Context
 				end: (name: string, result: boolean) => void
 			}
-
-			export type run = (loader: slime.fifty.test.$loader, path: string, part?: string) => boolean
 		}
 	}
 
