@@ -81,6 +81,11 @@ namespace slime.runtime.document.source {
 				var text: Text = page.children[1] as Text;
 				//	TODO	below does not render correctly on Fifty browser test runner or probably jrunscript either
 				fifty.verify(text).data.is("\n");
+				var doctype = page.children[2] as Doctype;
+				fifty.verify(doctype).type.is("doctype");
+				fifty.verify(doctype).name.is("html");
+				var text2: Text = page.children[3] as Text;
+				fifty.verify(text2).data.is("\n");
 				var serialized = api.serialize({
 					document: page
 				});
