@@ -118,9 +118,12 @@ suite.add("browsers", new function() {
 	this.name = "Browser tests";
 
 	this.parts = new function() {
+		this.jsapi = {
+			parts: {}
+		};
 		jsh.unit.browser.installed.forEach(function(browser) {
-			this[browser.id] = jsh.unit.Suite.Fork({
-				name: browser.name,
+			this.jsapi.parts[browser.id] = jsh.unit.Suite.Fork({
+				name: browser.name + " jsapi",
 				run: jsh.shell.jsh,
 				shell: environment.jsh.home,
 				script: environment.jsh.src.getFile("loader/browser/test/suite.jsh.js"),
@@ -131,8 +134,20 @@ suite.add("browsers", new function() {
 				].concat(parameters.arguments),
 				// TODO: is setting the working directory necessary?
 				directory: environment.jsh.src
-			})
+			});
 		},this);
+
+		//	TODO	Fifty tests should be able to run in multiple browsers
+		this.fifty = jsh.unit.Suite.Fork({
+			name: "fifty",
+			run: jsh.shell.run,
+			command: environment.jsh.src.getFile("fifty"),
+			arguments: [
+				"test.browser",
+				environment.jsh.src.getFile("loader/browser/test/suite.fifty.ts")
+			],
+			directory: environment.jsh.src
+		});
 	}
 });
 

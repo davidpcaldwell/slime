@@ -98,11 +98,14 @@
 			//	TODO	loader/jrunscript/java has some tests
 			//	TODO	loader/jrunscript/test/data/2/ has some tests but they require some classes in classpath
 		}));
-		suite.add("internal/document", new jsh.unit.Suite.Fork({
+		suite.add("internal/document/jsapi", new jsh.unit.Suite.Fork({
 			run: jsh.shell.jsh,
 			shell: (environment.jsh.built) ? environment.jsh.built.home : environment.jsh.unbuilt.src,
 			script: SRC.getFile("loader/document/test/suite.jsh.js"),
 			arguments: ["-view", "stdio"]
+		}));
+		suite.add("internal/document/fifty", FiftyPart({
+			file: SRC.getFile("loader/document/test/module.fifty.ts")
 		}));
 
 		suite.add("$api/flag", new jsh.unit.html.Part({
