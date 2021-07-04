@@ -264,13 +264,17 @@ namespace slime.$api.fp {
 
 namespace slime.$api.fp {
 	export namespace impure {
+		export type Ask<T> = () => T
+		export type Tell<E> = (on?: slime.$api.events.Handler<E>) => void
+
 		/**
 		 * An Updater is a function that takes an argument and either (potentially) modifies the argument, returning undefined,
 		 * or returns a completely new value to replace the argument.
 		 */
 		export type Updater<M> = (mutable: M) => M | void
 
-		export type State<T> = () => T
+		/** @deprecated Replaced by {@link Ask} */
+		export type State<T> = Ask<T>
 
 		export type Action<E,R> = (on?: slime.$api.events.Handler<E>) => R
 	}

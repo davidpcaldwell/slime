@@ -10,6 +10,10 @@ namespace slime.runtime.document.source {
 			string: string
 		}) => Document
 
+		fragment: (p: {
+			string: string
+		}) => Fragment
+
 		serialize: (p: {
 			document: Document
 		}) => string
@@ -51,11 +55,16 @@ namespace slime.runtime.document.source {
 		//	TODO	may be whitespace after equals
 		whitespace: string
 		name: string
+		quote: string
 		value: string
 	}
 
 	export interface Document extends Parent {
 		type: "document"
+	}
+
+	export interface Fragment extends Parent {
+		type: "fragment"
 	}
 
 	export namespace internal {
@@ -83,8 +92,34 @@ namespace slime.runtime.document.source {
 		function(
 			fifty: slime.fifty.test.kit
 		) {
+			var api: Export = fifty.$loader.module("source.js");
+
+			fifty.tests.attributes = Object.assign(
+				function() {
+					run(fifty.tests.attributes.singlequoted);
+					run(fifty.tests.attributes.unquoted);
+				},
+				{
+					singlequoted: function(p) {
+						var fragment = api.fragment({ string: "<e a='b'></e>" });
+						fifty.verify(fragment).children[0].type.is("element");
+						var element: Element = fragment.children[0] as Element;
+						fifty.verify(element).attributes[0].name.is("a");
+						fifty.verify(element).attributes[0].quote.is("'");
+						fifty.verify(element).attributes[0].value.is("b");
+					},
+					unquoted: function(p) {
+						var fragment = api.fragment({ string: "<e a=b></e>" });
+						fifty.verify(fragment).children[0].type.is("element");
+						var element: Element = fragment.children[0] as Element;
+						fifty.verify(element).attributes[0].name.is("a");
+						fifty.verify(element).attributes[0].quote.is("");
+						fifty.verify(element).attributes[0].value.is("b");
+					}
+				}
+			);
+
 			fifty.tests.suite = function() {
-				var api: Export = fifty.$loader.module("source.js");
 				var input = fifty.$loader.get("test/data/1.html").read(String);
 				var page = api.parse({
 					string: input
@@ -104,6 +139,8 @@ namespace slime.runtime.document.source {
 					document: page
 				});
 				fifty.verify(serialized).is(input);
+
+				run(fifty.tests.attributes);
 			}
 		}
 	//@ts-ignore

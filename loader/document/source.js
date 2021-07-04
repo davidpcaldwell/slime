@@ -158,9 +158,11 @@
 
 			var toAttributes = function(list,string) {
 				if (string.length == 0) return list;
+				/** @type { slime.runtime.document.source.Attribute } */
 				var attribute = {
 					whitespace: "",
 					name: null,
+					quote: "",
 					value: null
 				};
 				var index = 0;
@@ -176,6 +178,9 @@
 				var isName = function() {
 					return current() != "=" && /\S/.test(current());
 				}
+				var isDone = function() {
+					return index >= string.length;
+				}
 				while(isWhitespace()) {
 					attribute.whitespace += current();
 					next();
@@ -189,6 +194,7 @@
 					next();
 					//	Does not handle single quotes or unquoted
 					if (current() == "\"") {
+						attribute.quote = "\"";
 						next();
 						attribute.value = "";
 						while(current() != "\"") {
@@ -197,8 +203,22 @@
 						}
 						//	skip second quote
 						next();
+					} else if (current() == "'") {
+						attribute.quote = "'";
+						next();
+						attribute.value = "";
+						while(current() != "'") {
+							attribute.value += current();
+							next();
+						}
+						//	skip second quote
+						next();
 					} else {
-						throw new Error();
+						attribute.value = "";
+						while(!isWhitespace() && !isDone()) {
+							attribute.value += current();
+							next();
+						}
 					}
 				}
 				return toAttributes(list.concat([ attribute ]), string.substring(index));
@@ -206,8 +226,9 @@
 
 			var left = remaining(state);
 			var startTag = left.substring(1, left.indexOf(">"));
-			var parser = /^(\S+)(.*)$/;
+			var parser = /^(\S+)(.*)$/m;
 			var parsed = parser.exec(startTag);
+			if (!parsed) throw new Error("Could not parse start tag: [" + startTag + "]");
 			var tagName = parsed[1];
 
 			var attributes = toAttributes([], parsed[2]);
@@ -338,6 +359,11 @@
 			return node.type == "element";
 		}
 
+		/** @type { (node: slime.runtime.document.source.Node) => node is slime.runtime.document.source.Fragment } */
+		var isFragment = function(node) {
+			return node.type == "fragment";
+		}
+
 		var Serializer = function(configuration) {
 			/**
 			 *
@@ -380,6 +406,24 @@
 					}
 				);
 				if (isDocument(state.parsed)) return state.parsed;
+			},
+			fragment: function(input) {
+				var state = Parser()(
+					{
+						parsed: {
+							type: "fragment",
+							children: []
+						},
+						position: {
+							document: input.string,
+							offset: 0
+						}
+					},
+					function(state) {
+						return state.position.offset == state.position.document.length
+					}
+				);
+				if (isFragment(state.parsed)) return state.parsed;
 			},
 			serialize: function(output) {
 				var serialize = Serializer();
