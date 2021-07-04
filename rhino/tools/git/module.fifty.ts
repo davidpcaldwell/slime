@@ -5,7 +5,7 @@
 //	END LICENSE
 
 namespace slime.jrunscript.git {
-	namespace internal {
+	export namespace internal {
 		export const subject = (
 			function(fifty: slime.fifty.test.kit) {
 				return fifty.global.jsh.tools.git;
@@ -13,7 +13,18 @@ namespace slime.jrunscript.git {
 		//@ts-ignore
 		)(fifty);
 
-		export const fixtures = (
+		export interface Fixtures {
+			init: slime.jrunscript.git.Exports["init"]
+			write: (p: {
+				repository?: Repository.Local
+				directory?: slime.jrunscript.file.Directory
+				files: {
+					[path: string]: string
+				}
+			}) => void
+		}
+
+		export const fixtures: Fixtures = (
 			function(fifty: slime.fifty.test.kit) {
 				return fifty.$loader.file("fixtures.js", { module: subject });
 			}
@@ -247,6 +258,61 @@ namespace slime.jrunscript.git {
 			}
 		//@ts-ignore
 		)(fifty)
+
+		export interface Local {
+			status: () => {
+				/**
+				 * The current checked out branch. Note that the `name` of the branch will be `null` if a detached HEAD is checked
+				 * out.
+				 */
+				branch: Branch
+
+				/**
+				 * An object whose keys are string paths within the repository, and whose values are the two-letter output
+				 * of the `git status --porcelain` command. This property is absent if no files have a status.
+				 */
+				paths?: { [path: string]: string }
+			}
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.kit
+			) {
+				var verify = fifty.verify;
+
+				fifty.tests.types.Repository.Local.status = function() {
+					var at = fifty.jsh.file.location();
+					var repository = internal.fixtures.init({ pathname: at });
+					debugger;
+					var status = repository.status();
+					verify(repository).status().evaluate.property("paths").is(void(0));
+					internal.fixtures.write({
+						repository: repository,
+						files: {
+							a: "a"
+						}
+					});
+					verify(repository).status().paths.a.is("??");
+					repository.add({ path: "a" });
+					repository.commit({ message: "amessage" });
+					var status = repository.status();
+					verify(status).branch.name.is("master");
+					verify(status).branch.commit.subject.is("amessage");
+					verify(status).branch.commit.names.length.is(1);
+					verify(status).branch.commit.names[0].is("master");
+					fifty.global.jsh.shell.console(JSON.stringify(status,void(0),4));
+
+					run(function detachedHeadBranchNameIsNull() {
+						var hash = status.branch.commit.commit.hash;
+						repository.checkout({ branch: hash });
+						var detached = repository.status();
+						verify(detached).branch.name.is(null);
+					});
+				}
+			}
+		//@ts-ignore
+		)(fifty);
 	}
 
 	(function(fifty: slime.fifty.test.kit) {
@@ -376,6 +442,7 @@ namespace slime.jrunscript.git {
 	fifty.tests.suite = function() {
 		run(fifty.tests.Installation.init);
 		run(fifty.tests.types.Repository.Local.config);
+		run(fifty.tests.types.Repository.Local.status);
 		run(fifty.tests.submoduleStatusCached);
 		run(fifty.tests.submoduleWithDifferentNameAndPath);
 		run(fifty.tests.submoduleTrackingBranch);

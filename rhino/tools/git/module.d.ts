@@ -14,8 +14,11 @@ namespace slime.jrunscript.git {
 	}
 
 	interface Branch {
-		current: boolean,
-		name: string,
+		/**
+		 * The name of this branch. Can be `null` if this "branch" is a detached HEAD.
+		 */
+		name: string
+		current: boolean
 		commit: Commit
 	}
 
@@ -140,8 +143,6 @@ namespace slime.jrunscript.git {
 			}) => void
 
 			checkout: (p: { branch: string, stdio?: any  }) => void
-
-			status: () => { branch: Branch, paths?: { [path: string]: string }},
 
 			remote: ( () => void ) & { getUrl: ({ name: string }) => string },
 			stash: any,

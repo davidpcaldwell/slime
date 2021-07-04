@@ -732,10 +732,11 @@
 									if (branchName.indexOf("...") != -1) {
 										branchName = branchName.substring(0,branchName.indexOf("..."));
 									}
+									var detached = Boolean(branchName == "HEAD (no branch)")
 									rv.branch = {
-										name: branchName,
+										name: (detached) ? null : branchName,
 										current: true,
-										commit: self.show({ object: branchName })
+										commit: self.show({ object: (detached) ? "HEAD" : branchName })
 									};
 								} else {
 									var match = parser.exec(line);

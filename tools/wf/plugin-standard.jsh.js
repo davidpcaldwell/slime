@@ -93,6 +93,11 @@
 						jsh.wf.prohibitModifiedSubmodules({ repository: repository });
 
 						var branch = repository.status().branch;
+
+						if (branch.name === null) {
+							throw new Failure("Cannot commit a detached HEAD.");
+						}
+
 						//	TODO	looks like the below is duplicative, checking vs origin/master twice; maybe there's an offline
 						//			scenario where that makes sense?
 						var allowDivergeFromOrigin = false;

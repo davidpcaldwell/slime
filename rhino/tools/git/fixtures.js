@@ -8,27 +8,39 @@
 (
 	/**
 	 * @param { { module: slime.jrunscript.git.Exports }} $context
-	 * @param { { init: slime.jrunscript.git.Exports["init"] }} $exports
+	 * @param { slime.loader.Export<slime.jrunscript.git.internal.Fixtures> } $export
 	 */
-	function($context,$exports) {
+	function($context,$export) {
 		var module = $context.module;
 
-		$exports.init = function(p) {
-			var rv = module.init(p);
-			rv.execute({
-				command: "config",
-				arguments: [
-					"user.email", "slime@davidpcaldwell.com"
-				]
-			});
-			rv.execute({
-				command: "config",
-				arguments: [
-					"user.name", "David P. Caldwell"
-				]
-			});
-			return rv;
-		};
+		$export({
+			init: function(p) {
+				var rv = module.init(p);
+				rv.execute({
+					command: "config",
+					arguments: [
+						"user.email", "slime@davidpcaldwell.com"
+					]
+				});
+				rv.execute({
+					command: "config",
+					arguments: [
+						"user.name", "David P. Caldwell"
+					]
+				});
+				return rv;
+			},
+			write: function(o) {
+				var directory = (function() {
+					if (o.repository) return o.repository.directory;
+					if (o.directory) return o.directory;
+				})();
+				for (var x in o.files) {
+					//	TODO	add function form which receives string as argument
+					directory.getRelativePath(x).write(o.files[x], { append: false });
+				}
+			}
+		});
 	}
 //@ts-ignore
-)($context,$exports);
+)($context,$export);
