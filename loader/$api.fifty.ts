@@ -50,52 +50,17 @@ namespace slime.$api {
 			}): slime.$api.Events<any>
 
 			//	TODO	could probably use parameterized types to improve accuracy
-			Function: <P,R>(f: (p: P, events: any) => R, defaultListeners?: object) => (argument: P, receiver?: slime.$api.events.Function.Receiver) => R,
-			instance: (v: any) => boolean
-			action: <E,R>(f: ( events: slime.$api.Events<E> ) => R) => (handler: slime.$api.events.Handler<E>) => R
-		},
-		Iterable: {
-			/**
-			 * Collates an iterable set of values of type V (extends any) into groups of type G (extends any) (or counts the number of
-			 * values in each group) based on a specified set of criteria.
-			 *
-			 * @param p
-			 */
-			groupBy<V,G> (p: {
-				array: Array<V>,
-				group: (element: V) => G,
-				groups?: Array<G>,
-				codec?: {
-					encode: (group: G) => string,
-					decode: (string: string) => G
-				},
-				count?: boolean
-			}) : {
-				array: () => Array<{
-					group: G
-					array?: V[],
-					count?: number
-				}>
-			},
+			Function: <P,R>(f: (p: P, events: any) => R, defaultListeners?: object) => (argument: P, receiver?: slime.$api.events.Function.Receiver) => R
 
-			match<L,R> (
-				p: {
-					left: L[],
-					right: R[],
-					matches: (l: L, r: R) => boolean,
-					unmatched: {
-						left: (l: L) => void,
-						right: (r: R) => void
-					},
-					matched: (l: L, r: R) => void
-				}
-			): {
-				unmatched: {
-					left: L[],
-					right: R[]
-				},
-				matched: Iterable_match<L,R>[]
+			toHandler: <E>(handler: slime.$api.events.Handler<E>) => {
+				emitter: slime.$api.Events<E>
+				attach: () => void
+				detach: () => void
 			}
+
+			instance: (v: any) => boolean
+
+			action: <E,R>(f: ( events: slime.$api.Events<E> ) => R) => (handler: slime.$api.events.Handler<E>) => R
 		},
 		Array: {
 			/**
@@ -172,6 +137,150 @@ namespace slime.$api {
 	}
 }
 
+(
+	function(fifty: slime.fifty.test.kit) {
+		fifty.tests.exports = {};
+	}
+//@ts-ignore
+)(fifty);
+
+namespace slime.$api {
+	export interface Global {
+		Iterable: {
+			/**
+			 * Collates an iterable set of values of type V (extends any) into groups of type G (extends any) (or counts the number of
+			 * values in each group) based on a specified set of criteria.
+			 *
+			 * @param p
+			 */
+			groupBy<V,G> (p: {
+				/**
+				 * A set of elements to group.
+				 */
+				array: Array<V>
+
+				/**
+				 * Returns the group to which a given element should belong.
+				 */
+				group: (element: V) => G
+
+				/**
+				 * A set of groups to use in the output. Note that the `group` function still is responsible for grouping, so if it
+				 * returns groups not in this set, they will be included in the output. This value is for the purpose of
+				 * _guaranteeing_ certain elements will be returned (even with empty lists or zero counts).
+				 */
+				groups?: Array<G>
+
+				/**
+				 * If `G` is not <code>string</code>, converts `G`s to and from `string`.
+				 */
+				codec?: {
+					encode: (group: G) => string,
+					decode: (string: string) => G
+				}
+
+				/**
+				 * If `true`, a number is returned for each group indicating how many elements were in the group. If `false, an
+				 * array of all the elements for each group is returned.
+				 */
+				count?: boolean
+			}) : {
+				array: () => Array<{
+					group: G
+					array?: V[],
+					count?: number
+				}>
+			},
+
+			match<L,R> (
+				p: {
+					left: L[],
+					right: R[],
+					matches: (l: L, r: R) => boolean,
+					unmatched: {
+						left: (l: L) => void,
+						right: (r: R) => void
+					},
+					matched: (l: L, r: R) => void
+				}
+			): {
+				unmatched: {
+					left: L[],
+					right: R[]
+				},
+				matched: Iterable_match<L,R>[]
+			}
+		}
+	}
+}
+
+
+(
+	function(
+		$api: slime.$api.Global,
+		fifty: slime.fifty.test.kit
+	) {
+		var verify = fifty.verify;
+
+		fifty.tests.exports.Iterable = function() {
+			var groups = [
+				{ id: "A" },
+				{ id: "B" },
+				{ id: "C" }
+			];
+
+			var findGroup = function(letter) {
+				return groups.filter(function(group) {
+					return group.id == letter;
+				})[0];
+			};
+
+			var group = function(s) {
+				return findGroup(s.substring(0,1).toUpperCase());
+			};
+
+			var codec = {
+				encode: function(group) {
+					return group.id;
+				},
+				decode: function(string) {
+					return findGroup(string)
+				}
+			};
+
+			var words = ["ant", "ancillary", "cord"];
+
+			var grouped = $api.Iterable.groupBy({
+				array: words,
+				group: group,
+				groups: groups,
+				codec: codec,
+				count: false
+			}).array();
+
+			verify(grouped).length.is(3);
+			verify(grouped)[0].array.length.is(2);
+			verify(grouped)[1].array.length.is(0);
+			verify(grouped)[2].array.length.is(1);
+
+			var counted = $api.Iterable.groupBy({
+				array: words,
+				group: group,
+				groups: groups,
+				codec: codec,
+				count: true
+			}).array();
+
+			verify(counted).length.is(3);
+			verify(counted)[0].count.is(2);
+			verify(counted)[1].count.is(0);
+			verify(counted)[2].count.is(1);
+		}
+	}
+//@ts-ignore
+)($api,fifty);
+
+
 namespace slime.$api {
 	export interface Global {
 		Error: {
@@ -197,12 +306,6 @@ namespace slime.$api {
 	}
 }
 
-(
-	function(fifty: slime.fifty.test.kit) {
-		fifty.tests.exports = {};
-	}
-//@ts-ignore
-)(fifty);
 
 (
 	function(
@@ -280,6 +383,7 @@ namespace slime.$api {
 		fifty: slime.fifty.test.kit,
 	) {
 		fifty.tests.suite = function() {
+			run(fifty.tests.exports.Iterable);
 			run(fifty.tests.Error);
 		}
 	}

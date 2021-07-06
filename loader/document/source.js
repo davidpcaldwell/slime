@@ -134,10 +134,11 @@
 
 		/**
 		 * @param { slime.runtime.document.source.internal.State } state
-		 * @param { slime.runtime.document.source.internal.Step } recurse
+		 * @param { slime.$api.Events<slime.runtime.document.source.ParseEvents> } events
+		 * @param { slime.runtime.document.source.internal.Parser<slime.runtime.document.source.Parent> } recurse
 		 * @returns { slime.runtime.document.source.internal.State }
 		 */
-		var parseElement = function(state,recurse) {
+		var parseElement = function(state,events,recurse) {
 			//	TODO	special handling for SCRIPT
 			//	TODO	parse attributes
 			//	TODO	deal with self-closing tags
@@ -226,6 +227,7 @@
 
 			var left = remaining(state);
 			var startTag = left.substring(1, left.indexOf(">"));
+			events.fire("console", "Parsing start tag " + startTag);
 			var parser = /^(\S+)(.*)$/m;
 			var parsed = parser.exec(startTag);
 			if (!parsed) throw new Error("Could not parse start tag: [" + startTag + "]");
@@ -248,6 +250,7 @@
 			};
 			var after = recurse(
 				substate,
+				events,
 				$api.Function.pipe(
 					remaining,
 					startsWith(closingTag(tagName))
@@ -264,15 +267,16 @@
 			}
 		}
 
-		/** @returns { slime.runtime.document.source.internal.Parser } */
+		/** @returns { slime.runtime.document.source.internal.Parser<slime.runtime.document.source.Parent> } */
 		var Parser = function(configuration) {
 			/**
 			 *
-			 * @param {*} state
+			 * @param { slime.runtime.document.source.internal.State } state
+			 * @param { slime.$api.Events<slime.runtime.document.source.ParseEvents> } events
 			 * @param { (state: slime.runtime.document.source.internal.State) => boolean } finished
 			 * @returns { slime.runtime.document.source.internal.State }
 			 */
-			var rv = function recurse(state,finished) {
+			var rv = function recurse(state,events,finished) {
 				if (finished(state)) {
 					return state;
 				}
@@ -304,7 +308,7 @@
 				} else if (atDoctype(state)) {
 					next = parseDoctype(state);
 				} else if (atElement(state)) {
-					next = parseElement(state,recurse);
+					next = parseElement(state,events,recurse);
 					if (!next.parsed.type) debugger;
 				} else if (atText(state)) {
 					next = parseText(state);
@@ -329,7 +333,7 @@
 					}
 				}
 
-				return recurse(next, finished);
+				return recurse(next, events, finished);
 			};
 			return rv;
 		}
@@ -390,6 +394,8 @@
 
 		$export({
 			parse: function(input) {
+				var events = $api.Events.toHandler(input.events);
+				events.attach();
 				var state = Parser()(
 					{
 						parsed: {
@@ -401,13 +407,17 @@
 							offset: 0
 						}
 					},
+					events.emitter,
 					function(state) {
 						return state.position.offset == state.position.document.length
 					}
 				);
+				events.detach();
 				if (isDocument(state.parsed)) return state.parsed;
 			},
 			fragment: function(input) {
+				var events = $api.Events.toHandler(input.events);
+				events.attach();
 				var state = Parser()(
 					{
 						parsed: {
@@ -419,10 +429,12 @@
 							offset: 0
 						}
 					},
+					events.emitter,
 					function(state) {
 						return state.position.offset == state.position.document.length
 					}
 				);
+				events.detach();
 				if (isFragment(state.parsed)) return state.parsed;
 			},
 			serialize: function(output) {

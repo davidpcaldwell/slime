@@ -283,26 +283,29 @@
 					next = iterator.next();
 				}
 
-				return new function() {
+				return (function() {
 					var list;
 
-					this.array = function() {
-						if (!list) {
-							list = [];
-							for (var x in rv) {
-								var group = (p.codec && p.codec.decode) ? p.codec.decode(x) : x;
-								var element = { group: group };
-								if (p.count) {
-									element.count = rv[x];
-								} else {
-									element.array = rv[x];
+					return {
+						array: function() {
+							if (!list) {
+								list = [];
+								for (var x in rv) {
+									var decode = (p.codec && p.codec.decode) ? p.codec.decode : function(x) { return x; };
+									var group = decode(x);
+									var element = { group: group };
+									if (p.count) {
+										element.count = rv[x];
+									} else {
+										element.array = rv[x];
+									}
+									list.push(element);
 								}
-								list.push(element);
+								return list;
 							}
-							return list;
 						}
 					}
-				}
+				})();
 			};
 
 			this.match = function(p) {
@@ -689,6 +692,9 @@
 			},
 			{
 				Function: listening,
+				toHandler: function(handler) {
+					return new ListenersInvocationReceiver(handler);
+				},
 				instance: function(v) {
 					return v instanceof Emitter;
 				},

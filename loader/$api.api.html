@@ -219,50 +219,12 @@ END LICENSE
 					<ul>
 						<li class="function" jsapi:id="groupBy">
 							<div class="name">groupBy</div>
-							<span>
-								Collates an iterable set of values of type V (extends any) into groups of type G (extends any)
-								(or counts the number of values in each group) based on a specified set of criteria.
-							</span>
 							<div class="arguments">
 								<div class="label">Arguments</div>
 								<ol>
 									<li class="object">
 										<div class="label">has properties:</div>
 										<ul>
-											<li class="value">
-												<div class="name">array</div>
-												<span class="type">Array of V</span>
-												<span>A set of elements to group.</span>
-											</li>
-											<li class="function">
-												<div class="name">group</div>
-												<span>Returns the group to which a given element should belong.</span>
-												<div class="arguments">
-													<div class="label">Arguments</div>
-													<ol>
-														<li class="value">
-															<span class="type">V</span>
-															<span>An element to group.</span>
-														</li>
-													</ol>
-												</div>
-												<div class="returns">
-													<div class="label">Returns</div>
-													<span class="type">G</span>
-													<span>A group.</span>
-												</div>
-											</li>
-											<li class="value">
-												<div class="name">groups</div>
-												<span class="type">Array of G</span>
-												<span>
-													A set of groups to use in the output. Note that the <code>group</code> function
-													still is responsible for grouping, so if it returns groups not in this set,
-													they will be included in the output. This value is for the purpose of
-													<em>guaranteeing</em> certain elements will be returned (even with empty lists
-													or zero counts).
-												</span>
-											</li>
 											<li class="object">
 												<div class="name">codec</div>
 												<span>
@@ -309,94 +271,10 @@ END LICENSE
 													</li>
 												</ul>
 											</li>
-											<li class="value">
-												<div class="name">count</div>
-												<span class="type">boolean</span>
-												<span>
-													If <code>true</code>, a number is returned for each group indicating how many
-													elements were in the group. If <code>false</code>, an array of all the elements
-													for each group is returned.
-												</span>
-											</li>
 										</ul>
 									</li>
 								</ol>
 							</div>
-							<div class="returns">
-								<div class="label">Returns</div>
-								<span>__DESCRIPTION__</span>
-								<div class="label">has properties:</div>
-								<ul>
-									<li class="function">
-										<div class="name">array</div>
-										<span>__DESCRIPTION__</span>
-										<div class="arguments">
-											<div class="label">Arguments</div>
-											<ol>
-											</ol>
-										</div>
-										<div class="returns">
-											<div class="label">Returns</div>
-											<span class="type">__TYPE__</span>
-											<span>__DESCRIPTION__</span>
-										</div>
-									</li>
-								</ul>
-							</div>
-							<script type="application/x.jsapi#tests">
-								var groups = [
-									{ id: "A" },
-									{ id: "B" },
-									{ id: "C" }
-								];
-
-								var findGroup = function(letter) {
-									return groups.filter(function(group) {
-										return group.id == letter;
-									})[0];
-								};
-
-								var group = function(s) {
-									return findGroup(s.substring(0,1).toUpperCase());
-								};
-
-								var codec = {
-									encode: function(group) {
-										return group.id;
-									},
-									decode: function(string) {
-										return findGroup(string)
-									}
-								};
-
-								var words = ["ant", "ancillary", "cord"];
-
-								var grouped = api.Iterable.groupBy({
-									array: words,
-									group: group,
-									groups: groups,
-									codec: codec,
-									count: false
-								}).array();
-
-								verify(grouped).length.is(3);
-								verify(grouped)[0].array.length.is(2);
-								verify(grouped)[1].array.length.is(0);
-								verify(grouped)[2].array.length.is(1);
-
-								var counted = api.Iterable.groupBy({
-									array: words,
-									group: group,
-									groups: groups,
-									codec: codec,
-									count: true
-								}).array();
-
-								verify(counted).length.is(3);
-								verify(counted)[0].count.is(2);
-								verify(counted)[1].count.is(0);
-								verify(counted)[2].count.is(1);
-							</script>
 						</li>
 						<li class="function">
 							<div class="name">match</div>

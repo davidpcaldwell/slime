@@ -5,13 +5,19 @@
 //	END LICENSE
 
 namespace slime.runtime.document.source {
+	export type ParseEvents = {
+		console: string
+	}
+
 	export interface Export {
 		parse: (p: {
 			string: string
+			events?: slime.$api.events.Handler<ParseEvents>
 		}) => Document
 
 		fragment: (p: {
 			string: string
+			events?: slime.$api.events.Handler<ParseEvents>
 		}) => Fragment
 
 		serialize: (p: {
@@ -85,7 +91,11 @@ namespace slime.runtime.document.source {
 
 		export type Step = <T extends Parent>(state: State<T>, finished?: (state: State<T>) => boolean) => State<T>
 
-		export type Parser = <T extends Parent>(state: State<T>, finished: (state: State<T>) => boolean) => State<T>
+		export type Parser<T extends Parent> = (
+			state: State<T>,
+			events: slime.$api.Events<ParseEvents>,
+			finished: (state: State<T>) => boolean
+		) => State<T>
 	}
 
 	(

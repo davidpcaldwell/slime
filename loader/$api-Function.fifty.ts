@@ -264,7 +264,7 @@ namespace slime.$api.fp {
 
 namespace slime.$api.fp {
 	export namespace impure {
-		export type Ask<T> = () => T
+		export type Ask<E,T> = (on?: slime.$api.events.Handler<E>) => T
 		export type Tell<E> = (on?: slime.$api.events.Handler<E>) => void
 
 		/**
@@ -274,7 +274,7 @@ namespace slime.$api.fp {
 		export type Updater<M> = (mutable: M) => M | void
 
 		/** @deprecated Replaced by {@link Ask} */
-		export type State<T> = Ask<T>
+		export type State<T> = Ask<void,T>
 
 		export type Action<E,R> = (on?: slime.$api.events.Handler<E>) => R
 	}
