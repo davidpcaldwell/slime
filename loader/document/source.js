@@ -81,7 +81,21 @@
 		var atText = $api.Function.pipe(
 			remaining,
 			$api.Function.Predicate.not(startsWith("<"))
-		)
+		);
+
+		var warnOnce = $api.Function.memoized(function() {
+			debugger;
+		});
+
+		/**
+		 *
+		 * @param { slime.runtime.document.source.internal.State } state
+		 * @returns
+		 */
+		var atEnd = function(state) {
+			if (state.position.offset > state.position.document.length) throw new Error("Attempt to read past end of input.");
+			return state.position.offset == state.position.document.length
+		}
 
 		/**
 		 * @type { slime.runtime.document.source.internal.Step }
@@ -135,6 +149,12 @@
 
 		var voidElements = ["area","base","br","col","embed","hr","img","input","link","meta","param","source","track","wbr"];
 
+		var isVoidElement = function(tagName) {
+			return voidElements.some(function(type) {
+				return type.toLowerCase() == tagName.toLowerCase()
+			});
+		}
+
 		/**
 		 * @param { slime.runtime.document.source.internal.State } state
 		 * @param { slime.$api.Events<slime.runtime.document.source.ParseEvents> } events
@@ -150,10 +170,6 @@
 
 			var closingTag = function(tagName) {
 				return "</" + tagName + ">";
-			}
-
-			var findEnd = function(left,tagName) {
-				return left.indexOf(closingTag(tagName));
 			}
 
 			var findContentStart = function(left) {
@@ -230,12 +246,13 @@
 
 			var left = remaining(state);
 			var startTag = left.substring(1, left.indexOf(">"));
-			events.fire("startElement", "Parsing start tag " + startTag);
+			events.fire("startTag", "Parsing start tag " + startTag);
 			var parser = /^(\S+)(.*?)(\/?)(\s*)$/m;
 			var parsed = parser.exec(startTag);
 			var selfclosing = Boolean(parsed[3].length);
 			if (!parsed) throw new Error("Could not parse start tag: [" + startTag + "]");
 			var tagName = parsed[1];
+			events.fire("startElement", tagName);
 
 			var attributes = toAttributes([], parsed[2]);
 
@@ -246,7 +263,8 @@
 					name: tagName,
 					attributes: attributes,
 					selfClosing: selfclosing,
-					children: []
+					children: [],
+					endTag: null
 				},
 				position: {
 					document: state.position.document,
@@ -254,25 +272,41 @@
 				}
 			};
 
-			if (!selfclosing) {
+			var isVoid = isVoidElement(tagName);
+
+			if (!selfclosing && !isVoid) {
 				var after = recurse(
 					substate,
 					events,
 					$api.Function.pipe(
 						remaining,
-						startsWith(closingTag(tagName))
+						$api.Function.Predicate.or(
+							startsWith(closingTag(tagName)),
+							function(string) { return !Boolean(string.length) }
+						)
 					)
 				);
+				var endTag = $api.Function.pipe(
+					remaining,
+					startsWith(closingTag(tagName)),
+					function(closing) {
+						return (closing) ? closingTag(tagName) : ""
+					}
+				)(after);
+				after.parsed["endTag"] = endTag;
+				events.fire("endElement", tagName);
 				return {
 					parsed: $api.Object.compose(state.parsed, {
 						children: state.parsed.children.concat([after.parsed])
 					}),
 					position: {
 						document: after.position.document,
-						offset: after.position.offset + closingTag(tagName).length
+						offset: after.position.offset + endTag.length
 					}
 				}
 			} else {
+				substate.parsed.endTag = "";
+				events.fire("endElement", tagName);
 				return {
 					parsed: $api.Object.compose(state.parsed, {
 						children: state.parsed.children.concat([substate.parsed])
@@ -324,7 +358,6 @@
 					next = parseDoctype(state);
 				} else if (atElement(state)) {
 					next = parseElement(state,events,recurse);
-					if (!next.parsed.type) debugger;
 				} else if (atText(state)) {
 					next = parseText(state);
 				} else {
@@ -413,7 +446,7 @@
 						+ node.name + node.attributes.map(serializeAttribute).join("")
 						+ ((node.selfClosing) ? "/" : "") + ">"
 						+ node.children.map(recurse).join("")
-						+ ((node.selfClosing) ? "" : "</" + node.name + ">")
+						+ node.endTag
 					);
 				}
 				return "";
@@ -436,9 +469,7 @@
 						}
 					},
 					events.emitter,
-					function(state) {
-						return state.position.offset == state.position.document.length
-					}
+					atEnd
 				);
 				events.detach();
 				if (isDocument(state.parsed)) return state.parsed;
@@ -458,9 +489,7 @@
 						}
 					},
 					events.emitter,
-					function(state) {
-						return state.position.offset == state.position.document.length
-					}
+					atEnd
 				);
 				events.detach();
 				if (isFragment(state.parsed)) return state.parsed;

@@ -6,7 +6,9 @@
 
 namespace slime.runtime.document.source {
 	export type ParseEvents = {
+		startTag: string
 		startElement: string
+		endElement: string
 	}
 
 	export interface Export {
@@ -60,6 +62,7 @@ namespace slime.runtime.document.source {
 		name: string
 		attributes: Attribute[]
 		selfClosing: boolean
+		endTag: string
 	}
 
 	export interface Attribute {
@@ -110,6 +113,29 @@ namespace slime.runtime.document.source {
 		) {
 			var api: Export = fifty.$loader.module("source.js");
 
+			fifty.tests.happy = function() {
+				var input = fifty.$loader.get("test/data/1.html").read(String);
+				var page = api.parse({
+					string: input
+				});
+				//	license header
+				fifty.verify(page).children[0].type.is("comment");
+				fifty.verify(page).children[1].type.is("text");
+				var text: Text = page.children[1] as Text;
+				//	TODO	below does not render correctly on Fifty browser test runner or probably jrunscript either
+				fifty.verify(text).data.is("\n");
+				var doctype = page.children[2] as Doctype;
+				fifty.verify(doctype).type.is("doctype");
+				fifty.verify(doctype).name.is("html");
+				var text2: Text = page.children[3] as Text;
+				fifty.verify(text2).data.is("\n");
+				debugger;
+				var serialized = api.serialize({
+					document: page
+				});
+				fifty.verify(serialized).is(input);
+			}
+
 			fifty.tests.attributes = Object.assign(
 				function() {
 					run(fifty.tests.attributes.singlequoted);
@@ -146,7 +172,7 @@ namespace slime.runtime.document.source {
 				var fragment = api.fragment({
 					string: html,
 					events: {
-						startElement: function(e) {
+						startTag: function(e) {
 							if (fifty.global.window) {
 								fifty.global.window["console"].log(e.detail);
 							}
@@ -160,29 +186,24 @@ namespace slime.runtime.document.source {
 				fifty.verify(serialized).is(html);
 			}
 
-			fifty.tests.suite = function() {
-				var input = fifty.$loader.get("test/data/1.html").read(String);
-				var page = api.parse({
-					string: input
+			fifty.tests.voidElements = function() {
+				var html = "<input type=\"hidden\" value=\"foo\"><input type=\"hidden\" value=\"bar\">";
+				var fragment = api.fragment({
+					string: html
 				});
-				//	license header
-				fifty.verify(page).children[0].type.is("comment");
-				fifty.verify(page).children[1].type.is("text");
-				var text: Text = page.children[1] as Text;
-				//	TODO	below does not render correctly on Fifty browser test runner or probably jrunscript either
-				fifty.verify(text).data.is("\n");
-				var doctype = page.children[2] as Doctype;
-				fifty.verify(doctype).type.is("doctype");
-				fifty.verify(doctype).name.is("html");
-				var text2: Text = page.children[3] as Text;
-				fifty.verify(text2).data.is("\n");
+				fifty.verify(fragment).children.length.is(2);
 				var serialized = api.serialize({
-					document: page
+					fragment: fragment
 				});
-				fifty.verify(serialized).is(input);
+				//fifty.verify(serialized).is(html);
+				debugger;
+			}
 
+			fifty.tests.suite = function() {
+				run(fifty.tests.happy);
 				run(fifty.tests.attributes);
 				run(fifty.tests.selfClosing);
+				run(fifty.tests.voidElements);
 			}
 		}
 	//@ts-ignore
