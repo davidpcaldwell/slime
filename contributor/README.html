@@ -154,29 +154,37 @@ END LICENSE
 					<h4><a href="https://github.com/davidpcaldwell/slime/projects/7">JCEF</a>: Use an embedded Chromium rather than a forked Chrome for UIs</h4>
 				</div>
 				<div>
-					<h4><a href="../loader/document/api.html">loader/document</a>: improve HTML parsing</h4>
+					<h4><a href="https://github.com/davidpcaldwell/slime/projects/19">loader/document</a>: improve HTML parsing</h4>
 					<div>
-						Goal would be to replace DOM in loader/browser/test/api.js and JaspiHtml in jsh/unit/html.js; this feeds into
-						loader/api/api.html.js as the <code>html</code> argument to ApiHtmlTests.
-					</div>
-					<div>
-						First step should be to build an adapter at loader/api/document-adapter.js that converts a loader/document
-						document into a JSAPI-compatible html object. An additional property can be added to jsh/unit/html.js
-						PartDescriptor argument to specify the creation of this new kind of document in loadApiHtml().
-					</div>
-					<div>
-						Test case which runs the above scenario:
-						<code>./jsh.bash loader/document/test/suite.jsh.js -experimental -part document</code>
-					</div>
-					<div>
-						An equivalent browser migration for replacing the JSAPI DOM in loader/browser/test/api.js is then needed.
+						<h5><a href="../local/doc/typedoc/interfaces/slime.runtime.document.source.export.html">Source-level parser</a></h5>
+						<div>
+							Work is ongoing at <code>loader/document/source.js</code>.
+						</div>
+						<div>
+							<h6>Replacing JSAPI</h6>
+							<div>
+								One other potential goal, although jsapi is going away, would be to replace DOM in
+								<code>loader/browser/test/api.js</code> and
+								JaspiHtml in jsh/unit/html.js; this feeds
+								into loader/api/api.html.js as the <code>html</code> argument to ApiHtmlTests.
+							</div>
+							<div>
+								First step should be to build an adapter at loader/api/document-adapter.js that converts a loader/document
+								document into a JSAPI-compatible html object. An additional property can be added to jsh/unit/html.js
+								PartDescriptor argument to specify the creation of this new kind of document in loadApiHtml().
+							</div>
+							<div>
+								Test case which runs the above scenario:
+								<code>./jsh.bash loader/document/test/suite.jsh.js -experimental -part document</code>
+							</div>
+							<div>
+								An equivalent browser migration for replacing the JSAPI DOM in loader/browser/test/api.js is then needed.
+							</div>
+						</div>
 					</div>
 					<div>
 						<h5><a href="https://jsoup.org/">JSoup</a></h5>
 						<a href="https://jsoup.org/apidocs/overview-summary.html">API</a>
-					</div>
-					<div>
-						<h5><a href="../loader/document/source.api.html">Source-level parser</a></h5>
 					</div>
 				</div>
 			</div>
