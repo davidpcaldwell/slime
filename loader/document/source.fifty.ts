@@ -20,9 +20,14 @@ namespace slime.runtime.document.source {
 			events?: slime.$api.events.Handler<ParseEvents>
 		}) => Fragment
 
-		serialize: (p: {
-			document: Document
-		}) => string
+		serialize: {
+			(p: {
+				document: Document
+			}): string
+			(p: {
+				fragment: Fragment
+			}): string
+		}
 	}
 
 	export interface Node {
@@ -54,6 +59,7 @@ namespace slime.runtime.document.source {
 		type: "element"
 		name: string
 		attributes: Attribute[]
+		selfClosing: boolean
 	}
 
 	export interface Attribute {
@@ -111,23 +117,48 @@ namespace slime.runtime.document.source {
 				},
 				{
 					singlequoted: function(p) {
-						var fragment = api.fragment({ string: "<e a='b'></e>" });
+						var html = "<e a='b'></e>";
+						var fragment = api.fragment({ string: html });
 						fifty.verify(fragment).children[0].type.is("element");
 						var element: Element = fragment.children[0] as Element;
 						fifty.verify(element).attributes[0].name.is("a");
 						fifty.verify(element).attributes[0].quote.is("'");
 						fifty.verify(element).attributes[0].value.is("b");
+						var serialized = api.serialize({ fragment: fragment });
+						fifty.verify(serialized).is(html);
 					},
 					unquoted: function(p) {
-						var fragment = api.fragment({ string: "<e a=b></e>" });
+						var html = "<e a=b></e>";
+						var fragment = api.fragment({ string: html });
 						fifty.verify(fragment).children[0].type.is("element");
 						var element: Element = fragment.children[0] as Element;
 						fifty.verify(element).attributes[0].name.is("a");
 						fifty.verify(element).attributes[0].quote.is("");
 						fifty.verify(element).attributes[0].value.is("b");
+						var serialized = api.serialize({ fragment: fragment });
+						fifty.verify(serialized).is(html);
 					}
 				}
 			);
+
+			fifty.tests.selfClosing = function() {
+				var html = "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=ISO-8859-1\" />"
+				var fragment = api.fragment({
+					string: html,
+					events: {
+						startElement: function(e) {
+							if (fifty.global.window) {
+								fifty.global.window["console"].log(e.detail);
+							}
+						}
+					}
+				});
+				fifty.verify(fragment).children[0].type.is("element");
+				var serialized = api.serialize({
+					fragment: fragment
+				});
+				fifty.verify(serialized).is(html);
+			}
 
 			fifty.tests.suite = function() {
 				var input = fifty.$loader.get("test/data/1.html").read(String);
@@ -151,6 +182,7 @@ namespace slime.runtime.document.source {
 				fifty.verify(serialized).is(input);
 
 				run(fifty.tests.attributes);
+				run(fifty.tests.selfClosing);
 			}
 		}
 	//@ts-ignore

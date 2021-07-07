@@ -72,7 +72,10 @@
 
 		var atElement = $api.Function.pipe(
 			remaining,
-			startsWith("<")
+			$api.Function.Predicate.and(
+				startsWith("<"),
+				$api.Function.Predicate.not(startsWith("</"))
+			)
 		);
 
 		var atText = $api.Function.pipe(
@@ -228,8 +231,9 @@
 			var left = remaining(state);
 			var startTag = left.substring(1, left.indexOf(">"));
 			events.fire("startElement", "Parsing start tag " + startTag);
-			var parser = /^(\S+)(.*)$/m;
+			var parser = /^(\S+)(.*?)(\/?)(\s*)$/m;
 			var parsed = parser.exec(startTag);
+			var selfclosing = Boolean(parsed[3].length);
 			if (!parsed) throw new Error("Could not parse start tag: [" + startTag + "]");
 			var tagName = parsed[1];
 
@@ -241,6 +245,7 @@
 					type: "element",
 					name: tagName,
 					attributes: attributes,
+					selfClosing: selfclosing,
 					children: []
 				},
 				position: {
@@ -248,22 +253,32 @@
 					offset: state.position.offset + findContentStart(left)
 				}
 			};
-			var after = recurse(
-				substate,
-				events,
-				$api.Function.pipe(
-					remaining,
-					startsWith(closingTag(tagName))
-				)
-			);
-			return {
-				parsed: $api.Object.compose(state.parsed, {
-					children: state.parsed.children.concat([after.parsed])
-				}),
-				position: {
-					document: after.position.document,
-					offset: after.position.offset + closingTag(tagName).length
+
+			if (!selfclosing) {
+				var after = recurse(
+					substate,
+					events,
+					$api.Function.pipe(
+						remaining,
+						startsWith(closingTag(tagName))
+					)
+				);
+				return {
+					parsed: $api.Object.compose(state.parsed, {
+						children: state.parsed.children.concat([after.parsed])
+					}),
+					position: {
+						document: after.position.document,
+						offset: after.position.offset + closingTag(tagName).length
+					}
 				}
+			} else {
+				return {
+					parsed: $api.Object.compose(state.parsed, {
+						children: state.parsed.children.concat([substate.parsed])
+					}),
+					position: substate.position
+				};
 			}
 		}
 
@@ -375,7 +390,15 @@
 			 * @returns { string }
 			 */
 			function serializeAttribute(attribute) {
-				return attribute.whitespace + attribute.name + "=" + "\"" + attribute.value + "\"";
+				var rv = attribute.whitespace;
+				if (attribute.name) {
+					rv += attribute.name;
+					if (attribute.value) {
+						rv += "=";
+						rv += attribute.quote + attribute.value + attribute.quote
+					}
+				}
+				return rv;
 			}
 
 			return function recurse(node) {
@@ -386,7 +409,12 @@
 				} else if (isDoctype(node)) {
 					return "<!DOCTYPE" + node.before + node.name + node.after + ">";
 				} else if (isElement(node)) {
-					return "<" + node.name + node.attributes.map(serializeAttribute).join("") + ">" + node.children.map(recurse).join("") + "</" + node.name + ">";
+					return ("<"
+						+ node.name + node.attributes.map(serializeAttribute).join("")
+						+ ((node.selfClosing) ? "/" : "") + ">"
+						+ node.children.map(recurse).join("")
+						+ ((node.selfClosing) ? "" : "</" + node.name + ">")
+					);
 				}
 				return "";
 			}
@@ -439,7 +467,11 @@
 			},
 			serialize: function(output) {
 				var serialize = Serializer();
-				return output.document.children.map(serialize).join("");
+				var parent = (function() {
+					if (output.document) return output.document;
+					if (output.fragment) return output.fragment;
+				})();
+				return parent.children.map(serialize).join("");
 			}
 		})
 	}
