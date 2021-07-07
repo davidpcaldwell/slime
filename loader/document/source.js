@@ -155,6 +155,22 @@
 			});
 		}
 
+		var endTagMatch = /^\<\/(.*?)(\s*)\>/;
+
+		var startsWithEndTag = function(name) {
+			return function(string) {
+				var parsed = endTagMatch.exec(string);
+				if (parsed) {
+					return parsed[1].toLowerCase() == name.toLowerCase();
+				}
+			}
+		}
+
+		var startingEndTag = function(string) {
+			var parsed = endTagMatch.exec(string);
+			return parsed[0];
+		}
+
 		/**
 		 * @param { slime.runtime.document.source.internal.State } state
 		 * @param { slime.$api.Events<slime.runtime.document.source.ParseEvents> } events
@@ -281,20 +297,24 @@
 					$api.Function.pipe(
 						remaining,
 						$api.Function.Predicate.or(
-							startsWith(closingTag(tagName)),
+							startsWithEndTag(tagName),
 							function(string) { return !Boolean(string.length) }
 						)
 					)
 				);
+
 				var endTag = $api.Function.pipe(
 					remaining,
-					startsWith(closingTag(tagName)),
+					startsWithEndTag(tagName),
 					function(closing) {
 						return (closing) ? closingTag(tagName) : ""
 					}
 				)(after);
-				after.parsed["endTag"] = endTag;
+
+				after.parsed["endTag"] = startingEndTag(remaining(after));
+
 				events.fire("endElement", tagName);
+
 				return {
 					parsed: $api.Object.compose(state.parsed, {
 						children: state.parsed.children.concat([after.parsed])

@@ -195,7 +195,23 @@ namespace slime.runtime.document.source {
 				var serialized = api.serialize({
 					fragment: fragment
 				});
-				//fifty.verify(serialized).is(html);
+				fifty.verify(serialized).is(html);
+			}
+
+			fifty.tests.caseInsensitiveElement = function() {
+				var html = "<div>foo</DIV>";
+
+				var fragment = api.fragment({
+					string: html
+				});
+				fifty.verify(fragment).children.length.is(1);
+				var element: Element = fragment.children[0] as Element;
+				fifty.verify(element).type.is("element");
+				fifty.verify(element).children[0].type.is("text");
+				var serialized = api.serialize({
+					fragment: fragment
+				});
+				fifty.verify(serialized).is(html);
 				debugger;
 			}
 
