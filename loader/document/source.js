@@ -227,7 +227,7 @@
 
 			var left = remaining(state);
 			var startTag = left.substring(1, left.indexOf(">"));
-			events.fire("console", "Parsing start tag " + startTag);
+			events.fire("startElement", "Parsing start tag " + startTag);
 			var parser = /^(\S+)(.*)$/m;
 			var parsed = parser.exec(startTag);
 			if (!parsed) throw new Error("Could not parse start tag: [" + startTag + "]");

@@ -6,7 +6,7 @@
 
 namespace slime.runtime.document.source {
 	export type ParseEvents = {
-		console: string
+		startElement: string
 	}
 
 	export interface Export {
