@@ -129,7 +129,6 @@ namespace slime.runtime.document.source {
 				fifty.verify(doctype).name.is("html");
 				var text2: Text = page.children[3] as Text;
 				fifty.verify(text2).data.is("\n");
-				debugger;
 				var serialized = api.serialize({
 					document: page
 				});
@@ -215,11 +214,27 @@ namespace slime.runtime.document.source {
 				debugger;
 			}
 
+			fifty.tests.multilineStartTag = function() {
+				var html = (
+`
+<div
+	id="foo"
+>
+	bar
+</div>
+`
+				);
+				var fragment = api.fragment({ string: html });
+				var serialized = api.serialize({ fragment: fragment });
+				fifty.verify(serialized).is(html);
+			}
+
 			fifty.tests.suite = function() {
 				run(fifty.tests.happy);
 				run(fifty.tests.attributes);
 				run(fifty.tests.selfClosing);
 				run(fifty.tests.voidElements);
+				run(fifty.tests.multilineStartTag);
 			}
 		}
 	//@ts-ignore

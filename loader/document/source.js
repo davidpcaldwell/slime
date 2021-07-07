@@ -263,8 +263,10 @@
 			var left = remaining(state);
 			var startTag = left.substring(1, left.indexOf(">"));
 			events.fire("startTag", "Parsing start tag " + startTag);
-			var parser = /^(\S+)(.*?)(\/?)(\s*)$/m;
-			var parsed = parser.exec(startTag);
+			var parsed = (function() {
+				var parser = /^(\S+)([\s\S]*?)(\/?)$/;
+				return parser.exec(startTag);
+			})();
 			var selfclosing = Boolean(parsed[3].length);
 			if (!parsed) throw new Error("Could not parse start tag: [" + startTag + "]");
 			var tagName = parsed[1];
