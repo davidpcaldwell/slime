@@ -448,7 +448,7 @@
 				var rv = attribute.whitespace;
 				if (attribute.name) {
 					rv += attribute.name;
-					if (attribute.value) {
+					if (attribute.value !== null) {
 						rv += "=";
 						rv += attribute.quote + attribute.value + attribute.quote
 					}

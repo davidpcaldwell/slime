@@ -229,12 +229,21 @@ namespace slime.runtime.document.source {
 				fifty.verify(serialized).is(html);
 			}
 
+			fifty.tests.emptyAttribute = function() {
+				var html = "<div id=\"\"></div>"
+				var fragment = api.fragment({ string: html });
+				var serialized = api.serialize({ fragment: fragment });
+				fifty.verify(serialized).is(html);
+				debugger;
+			}
+
 			fifty.tests.suite = function() {
 				run(fifty.tests.happy);
 				run(fifty.tests.attributes);
 				run(fifty.tests.selfClosing);
 				run(fifty.tests.voidElements);
 				run(fifty.tests.multilineStartTag);
+				run(fifty.tests.emptyAttribute);
 			}
 		}
 	//@ts-ignore
