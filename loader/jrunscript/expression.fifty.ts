@@ -213,6 +213,17 @@ namespace slime.jrunscript {
 				}
 
 				export interface URLConnection {
+					setRequestMethod(method: string)
+					setConnectTimeout(x: any)
+					setReadTimeout(x: any)
+					addRequestProperty(name: string, value: string)
+					setRequestProperty(name: string, value: string)
+					setInstanceFollowRedirects(b: boolean)
+					setDoOutput(b: boolean)
+					getInputStream(): slime.jrunscript.native.java.io.InputStream
+					getErrorStream(): slime.jrunscript.native.java.io.InputStream
+					getOutputStream(): slime.jrunscript.native.java.io.OutputStream
+					getResponseCode(): number
 				}
 
 				export interface URL {
@@ -220,8 +231,16 @@ namespace slime.jrunscript {
 					getProtocol(): slime.jrunscript.native.java.lang.String
 					toExternalForm(): slime.jrunscript.native.java.lang.String
 					toURI(): slime.jrunscript.native.java.net.URI
-					openConnection(): slime.jrunscript.native.java.net.URLConnection
+					openConnection: {
+						(): slime.jrunscript.native.java.net.URLConnection
+						(proxy: slime.jrunscript.native.java.net.Proxy): slime.jrunscript.native.java.net.URLConnection
+					}
 					openStream(): slime.jrunscript.native.java.io.InputStream
+					getHost(): slime.jrunscript.native.java.lang.String
+					getPath(): slime.jrunscript.native.java.lang.String
+				}
+
+				export interface Proxy {
 				}
 			}
 			export namespace util {
@@ -432,14 +451,23 @@ namespace slime.jrunscript {
 			net: {
 				URLConnection: any
 				URI: any
-				URL: any
+				URL: {
+					new (base: slime.jrunscript.native.java.net.URL, relative: string): slime.jrunscript.native.java.net.URL
+					new (url: string): slime.jrunscript.native.java.net.URL
+				}
 				URLEncoder: any
 				URLDecoder: any
 				URLClassLoader: any
 				HttpURLConnection: any
 				CookieManager: any
 				CookiePolicy: any
-				Proxy: any
+				Proxy: {
+					new (x: any, y: any): slime.jrunscript.native.java.net.Proxy
+					Type: {
+						SOCKS: any
+						HTTP: any
+					}
+				}
 				InetSocketAddress: any
 				ServerSocket: new (n: number) => slime.jrunscript.native.java.net.ServerSocket
 				Socket: any

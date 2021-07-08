@@ -709,7 +709,7 @@
 				archives: githubArchives,
 				test: {
 					toArchiveLocation: function(url) {
-						return toGithubArchiveLocation(new Packages.java.net.URL(url));
+						return toGithubArchiveLocation(url);
 					},
 					zip: function(input) {
 						return GithubArchive(input)

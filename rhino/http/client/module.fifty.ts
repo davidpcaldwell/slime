@@ -5,11 +5,11 @@
 //	END LICENSE
 
 namespace slime.jrunscript.http.client {
-	type Pairs = { name: string, value: string }[] | { [x: string]: string | string[] }
+	export type Pairs = { name: string, value: string }[] | { [x: string]: string | string[] }
 
-	interface Request {
+	export interface Request {
 		method?: string
-		url: any
+		url: slime.web.Url | string
 		headers?: Pairs
 		params?: Pairs
 		parameters?: Pairs
@@ -20,7 +20,7 @@ namespace slime.jrunscript.http.client {
 		on?: any
 	}
 
-	interface Response {
+	export interface Response {
 		request: Request
 		status: {
 			code: number
@@ -41,7 +41,7 @@ namespace slime.jrunscript.http.client {
 			}
 		)
 		body: {
-			type: slime.MimeType
+			type: slime.mime.Type
 			//	TODO	Possibly should be slime.jrunscript.InputStream or slime.jrunscript.io.InputStream
 			stream: slime.jrunscript.runtime.io.InputStream
 		}
@@ -56,23 +56,23 @@ namespace slime.jrunscript.http.client {
 		(p: Request): Response
 	}
 
-	interface Client {
+	export interface Client {
 		request: request,
 		Loader: any
 	}
 
-	interface Context {
+	export interface Context {
 		debug: any
 		gae: any
 		api: {
-			web: any
-			java: any
+			web: slime.web.Exports
+			java: slime.jrunscript.host.Exports
 			js: any
-			io: any
+			io: slime.jrunscript.io.Exports
 		}
 	}
 
-	type spi = (
+	export type spi = (
 		p: {
 			method: string
 			url: any
@@ -96,7 +96,7 @@ namespace slime.jrunscript.http.client {
 		stream: slime.jrunscript.runtime.io.InputStream
 	}
 
-	interface Exports {
+	export interface Exports {
 		Client: new (configuration?: {
 			authorization?: any
 			spi?: (standard: spi) => spi

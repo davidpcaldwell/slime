@@ -15,6 +15,7 @@ namespace slime.jrunscript.runtime.io {
 	}
 
 	export interface OutputStream {
+		character(): Writer
 		java: {
 			adapt(): slime.jrunscript.native.java.io.OutputStream
 		}
