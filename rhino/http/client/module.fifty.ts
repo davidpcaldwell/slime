@@ -15,9 +15,19 @@ namespace slime.jrunscript.http.client {
 		parameters?: Pairs
 		authorization?: Authorization
 		proxy?: any
-		body?: any
+		body?: request.Body
 		timeout?: any
 		on?: any
+	}
+
+	export namespace request {
+		export type Body = {
+			type: string
+		} & (
+			{ stream: any }
+			| { read: any }
+			| { string: any }
+		)
 	}
 
 	export interface Response {
@@ -49,15 +59,17 @@ namespace slime.jrunscript.http.client {
 
 	type Authorization = string
 
-	interface request {
-		(p: Request & { evaluate: JSON }): any
-		<T>(p: Request & { evaluate: (Response) => T }): T
-		<T>(p: Request & { parse: (Response) => T }): T
-		(p: Request): Response
+	export namespace client {
+		export interface request {
+			(p: Request & { evaluate: JSON }): any
+			<T>(p: Request & { evaluate: (Response) => T }): T
+			<T>(p: Request & { parse: (Response) => T }): T
+			(p: Request): Response
+		}
 	}
 
 	export interface Client {
-		request: request,
+		request: client.request,
 		Loader: any
 	}
 
@@ -79,7 +91,7 @@ namespace slime.jrunscript.http.client {
 			headers: any
 			proxy: any
 			timeout: any
-			body: any
+			body: Request["body"]
 		},
 		cookies?: any
 	) => {

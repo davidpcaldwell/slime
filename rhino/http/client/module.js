@@ -270,15 +270,15 @@
 				//	TODO	Does not handle stream/$stream from rhino/mime
 				if (false) {
 					//	just syntax to help chaining
-				} else if (p.body.stream) {
-					$context.api.io.Streams.binary.copy(p.body.stream,$urlConnection.getOutputStream());
+				} else if (p.body["stream"]) {
+					$context.api.io.Streams.binary.copy(p.body["stream"],$urlConnection.getOutputStream());
 					$urlConnection.getOutputStream().close();
-				} else if (p.body.read && p.body.read.binary) {
-					$context.api.io.Streams.binary.copy(p.body.read.binary(),$urlConnection.getOutputStream());
+				} else if (p.body["read"] && p.body["read"].binary) {
+					$context.api.io.Streams.binary.copy(p.body["read"].binary(),$urlConnection.getOutputStream());
 					$urlConnection.getOutputStream().close();
-				} else if (typeof(p.body.string) != "undefined") {
+				} else if (typeof(p.body["string"]) != "undefined") {
 					var writer = $context.api.io.java.adapt($urlConnection.getOutputStream()).character();
-					writer.write(p.body.string);
+					writer.write(p.body["string"]);
 					writer.close();
 				} else {
 					throw new TypeError("A message body must specify its content; no p.body.stream or p.body.string found.");
@@ -352,13 +352,12 @@
 			var cookies = new Cookies();
 
 			/**
-			 * @type { slime.jrunscript.http.client.Client["request"] }
+			 * @param { slime.jrunscript.http.client.Request & { evaluate?: any, parse?: any } } p
 			 */
 			this.request = function(p) {
 				var method = (p.method) ? p.method.toUpperCase() : "GET";
 				var url = (function() {
-					var rv = p.url;
-					if (typeof(rv) == "string") rv = $context.api.web.Url.parse(rv);
+					var rv = (typeof(p.url) == "string") ? $context.api.web.Url.parse(p.url) : p.url;
 					if (p.params || p.parameters) {
 						$api.deprecate(function() {
 							//	First deal with really old "params" version
