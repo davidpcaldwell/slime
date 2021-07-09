@@ -32,6 +32,7 @@ namespace slime.web {
 
 			//	TODO	is this the right place for this? Present for jrunscript, not present in browser implementation.
 			Multipart?: any
+			type: string
 		}
 		/**
 		 * An object representing the current browser window; provides browser-specific APIs.
@@ -268,6 +269,10 @@ namespace slime.web {
 	export interface Form {
 		controls: Form.Control[]
 		getUrlencoded: () => string
+		getPayload: () => {
+			type: string
+			string: string
+		}
 	}
 
 	export namespace Form {

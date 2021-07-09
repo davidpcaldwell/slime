@@ -200,6 +200,8 @@
 			})(string);
 		};
 
+		var FORM_TYPE = "application/x-www-form-urlencoded";
+
 		/**
 		 * @constructor
 		 * @param { slime.web.Form.Argument } p
@@ -235,9 +237,18 @@
 					return $context.escaper.encode(item.name) + "=" + $context.escaper.encode(item.value);
 				}).join("&");
 			}
+
+			this.getPayload = function() {
+				return {
+					type: FORM_TYPE,
+					string: this.getUrlencoded()
+				}
+			}
 		}, {
 			//	Present in Java; used here for (potentially flawed) TypeScript definition
-			Multipart: void(0)
+			Multipart: void(0),
+			//	TODO	make strongly-typed
+			type: FORM_TYPE
 		});
 
 		if ($context.window) {

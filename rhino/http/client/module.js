@@ -637,7 +637,7 @@
 			}
 
 			this.Form = function(p) {
-				var TYPE = "application/x-www-form-urlencoded";
+				var TYPE = $context.api.web.Form.type;
 				if (p.form) {
 					return {
 						type: TYPE,
@@ -645,7 +645,7 @@
 					}
 				}
 				return {
-					type: "application/x-www-form-urlencoded",
+					type: TYPE,
 					string: QueryString.encode(UrlQuery(p))
 				};
 			};
