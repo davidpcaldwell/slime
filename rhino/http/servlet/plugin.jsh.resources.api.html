@@ -18,15 +18,6 @@ END LICENSE
 		<h1>Context</h1>
 		<ul>
 		</ul>
-		<script type="application/x.jsapi#context">
-			(function() {
-				return new function() {
-					this.getMimeType = function(file) {
-						return "text/plain";
-					}
-				}
-			})()
-		</script>
 	</div>
 	<div>
 		<h1>Exports</h1>
@@ -207,122 +198,6 @@ END LICENSE
 				</ul>
 			</li>
 		</ul>
-		<script type="application/x.jsapi#initialize">
-			var code = {};
-			var shell = {
-				js: jsh.js,
-				httpd: code,
-				loader: jsh.loader,
-				io: jsh.io,
-				file: jsh.file
-			}
-			if (!scope.module) {
-				shell.httpd.Resources = $jsapi.loader.module("plugin.jsh.resources.js", {
-					getMimeType: jsh.httpd.nugget.getMimeType,
-					jsh: jsh
-				});
-				scope.module = shell.httpd;
-			}
-			jsh.shell.echo("Keys for code: " + Object.keys(code));
-			scope.code = code;
-		</script>
-		<script type="application/x.jsapi#tests">
-			var one = code.Resources.script.old(
-				$jsapi.loader.getRelativePath("test/resource/1.old.js").file
-			);
-			var indexOf = function(value) {
-				return function() {
-					return this.indexOf(value);
-				}
-			};
-			verify(one,"one").is.not.equalTo(3);
-			verify(one).loader.list({ path: "WEB-INF/generic/" }).length.is(1);
-			verify(one).loader.list({ path: "WEB-INF/generic/" })[0].is("inonit/");
-			verify(one).loader.list({ path: "WEB-INF/generic/inonit/script/servlet/" }).length.is(2);
-			verify(one).loader.list({ path: "WEB-INF/generic/inonit/script/servlet/" }).evaluate(indexOf("Servlet.java")).is.not.equalTo(-1);
-			verify(one).loader.list({ path: "WEB-INF/generic/inonit/script/servlet/" }).evaluate(indexOf("Nashorn.java")).is.not.equalTo(-1);
-			verify(one).loader.list({ path: "WEB-INF/generic/inonit/script/servlet/" }).evaluate(indexOf("JarJarBinks.java")).is(-1);
-			verify(one).loader.list({ path: "WEB-INF/" }).length.is(3);
-			verify(one).loader.list({ path: "WEB-INF/" })[0].is("generic/");
-			verify(one).loader.list({ path: "WEB-INF/" })[1].is("mozilla/");
-			verify(one).loader.list({ path: "WEB-INF/" })[2].is("test/");
-			verify(one).loader.file("WEB-INF/test/1.file.js").is.not.equalTo(null);
-			verify(one).loader.get("WEB-INF/test/1.txt").read(String).is("1");
-		</script>
-		<script type="application/x.jsapi#tests">
-			verify(code,"code").Resources().is.not.equalTo(3);
-			var one = new code.Resources();
-			var top = $jsapi.loader.getRelativePath(".").directory;
-			one.add({ prefix: "WEB-INF/generic/", directory: top.getSubdirectory("java") });
-			one.add({ prefix: "WEB-INF/mozilla/", directory: top.getSubdirectory("rhino") });
-			one.add({ prefix: "WEB-INF/test/", directory: top.getSubdirectory("test") });
-			verify(one,"one").is.not.equalTo(3);
-//			verify(one).loader().list({ path: "WEB-INF/generic/" }).length().is(1);
-//			verify(one).loader().list({ path: "WEB-INF/generic/" })[0]().path().is("inonit");
-//			verify(one).loader().list({ path: "WEB-INF/generic/" })[0]().loader().isNotEqualTo(null);
-			var child = new one.loader.Child("WEB-INF/generic/");
-			verify(child).is.not.equalTo(null);
-			if (!jsh.shell.environment.SKIP_LOADER_LIST) {
-				verify(child).list({ path: "" }).is.not.equalTo(null);
-				var generic = new one.loader.Child("WEB-INF/generic/");
-				verify(generic,"generic").list({ path: "" }).is.not.equalTo(null);
-				verify(generic,"generic").list({ path: "" }).length.is(1);
-				var servlet = new one.loader.Child("WEB-INF/generic/inonit/script/servlet/");
-				verify(servlet,"servlet").is.not.equalTo(null);
-				var list = servlet.list();
-				verify(servlet,"servlet").list().is.not.equalTo(null);
-			}
-			verify(servlet,"servlet").list().length.is(2);
-			var servletList = servlet.list().sort(function(a,b) {
-				if (a.path > b.path) return 1;
-				if (b.path > a.path) return -1;
-				return 0;
-			});
-			verify(servletList)[0].path.is("Nashorn.java");
-			verify(servletList)[1].path.is("Servlet.java");
-			var webinf = new one.loader.Child("WEB-INF/");
-			debugger;
-			verify(webinf,"webinf").list().length.is(3);
-			var list = webinf.list();
-			if (list.length > 0) verify(webinf,"webinf").list()[0].path.is("generic");
-			if (list.length > 1) verify(webinf,"webinf").list()[1].path.is("mozilla");
-			if (list.length > 2) verify(webinf,"webinf").list()[2].path.is("test");
-			var test = webinf.list().filter(function(entry) {
-				return entry.path == "test";
-			});
-			verify(test,"test").is.not.equalTo(null);
-			verify(test,"test").length.is(1);
-			if (test) {
-				verify(test,"test")[0].loader.is.not.equalTo(null);
-				if (test) {
-					var file = test[0].loader.file("resource/1.file.js");
-					verify(file,"file").is.not.equalTo(null);
-				}
-			}
-//			verify(one).loader().file("WEB-INF/test/1.file.js").isNotEqualTo(null);
-//			verify(one).loader().resource("WEB-INF/test/1.txt").read(String).is("1");
-		</script>
-		<script type="application/x.jsapi#tests">
-			var mapping = code.Resources.script($jsapi.loader.getRelativePath("test/resource/1.hg.js").file);
-			verify(mapping).is.not.equalTo(null);
-			verify(mapping).loader.is.not.equalTo(null);
-			verify(mapping).loader.evaluate.property("list").is.type("function");
-			var slime = new mapping.loader.Child("WEB-INF/slime/");
-			var byPath = function(path) {
-				return function(o) {
-					return o.path == path;
-				};
-			};
-			verify(slime).list().evaluate(function() { return this.filter(byPath(".hg")) }).length.is(0);
-			verify(slime).list().evaluate(function() { return this.filter(byPath("loader")) }).length.is(1);
-			verify(slime).list().evaluate(function() { return this.filter(byPath("jsh")) }).length.is(1);
-			jsh.shell.echo(slime.list().map(function(item) { return item.path; }));
-
-			var tmpdir = jsh.shell.TMPDIR.createTemporary({ directory: true });
-			mapping.build(tmpdir);
-			verify(tmpdir).getSubdirectory("WEB-INF/slime/.hg").is(null);
-			verify(tmpdir).getSubdirectory("WEB-INF/slime/jsh").is.not(null);
-		</script>
 	</div>
 </body>
 </html>

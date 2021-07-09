@@ -121,10 +121,22 @@ namespace slime {
 			(prefix: string): Loader
 		}
 		get: (path: string) => Resource
-		list?: (m?: { filter?: any, descendants?: any }) => any[]
+		list?: (m?: { filter?: any, descendants?: any }) => ( loader.LoaderEntry | loader.ResourceEntry )[]
 	}
 
 	export namespace loader {
+		interface Entry {
+			path: string
+		}
+
+		export interface LoaderEntry extends Entry {
+			loader: slime.Loader
+		}
+
+		export interface ResourceEntry extends Entry {
+			resource: any
+		}
+
 		export interface Product<C,E> {
 			(c?: C): E
 		}

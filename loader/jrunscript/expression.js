@@ -606,6 +606,16 @@
 			 * @param { slime.jrunscript.runtime.Loader.Source } p
 			 */
 			var rv = function(p) {
+				//	Satisfy TypeScript
+				this.source = void(0);
+				this.run = void(0);
+				this.value = void(0);
+				this.file = void(0);
+				this.module = void(0);
+				this.factory = void(0);
+				this.Child = void(0);
+				this.get = void(0);
+
 				if (!p) throw new TypeError("source argument required for Loader.");
 				if (p.zip) {
 					if (p.zip._file) {
@@ -728,6 +738,10 @@
 					}
 				};
 			};
+			//	Satisfy TypeScript by adding properties that will be added by Object.assign below
+			rv.source = void(0);
+			rv.series = void(0);
+			rv.tools = void(0);
 			Object.assign(rv, was);
 			return rv;
 		})(loader.Loader);

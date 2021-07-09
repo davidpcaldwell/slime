@@ -165,6 +165,7 @@
 		var Loader = (function() {
 			if (bootstrap) {
 				var Loader = function(p,prefix) {
+					/** @type { slime.loader.Source } */
 					var source = {
 						get: function(path) {
 							var pp = {};
@@ -184,15 +185,34 @@
 							return bootstrap.js.Object.set({}, delegated, {
 								type: pp.type(path)
 							});
+						},
+						list: function(path) {
+							var full = prefix + path;
+							return bootstrap.loader.paths(full).map(function(string) {
+								if (string.substring(string.length-1) == "/") {
+									return {
+										path: string.substring(0,string.length-1),
+										loader: true,
+										resource: false
+									}
+								} else {
+									return {
+										path: string,
+										loader: false,
+										resource: true
+									}
+								}
+							});
 						}
 					}
 					// var rv = new bootstrap.io.Loader(pp);
 					var rv = new bootstrap.io.Loader(source);
-					rv.list = function(m) {
-						var path = prefix + m.path;
-						var rv = bootstrap.loader.paths(path);
-						return rv;
-					}
+					//	TODO	Below failed TypeScript and didn't seem to make sense; remove when safe
+					// rv.list = function(m) {
+					// 	var path = prefix + m.path;
+					// 	var rv = bootstrap.loader.paths(path);
+					// 	return rv;
+					// }
 					return rv;
 				}
 

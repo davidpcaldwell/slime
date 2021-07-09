@@ -124,7 +124,13 @@ namespace slime.jrunscript.runtime {
 		 */
 		mime: slime.runtime.Exports["mime"]
 
-		Loader: any
+		Loader: slime.runtime.Exports["Loader"] & {
+			new (p: { zip: { _file: any }}): any
+			new (p: { zip: { resource: any }}): any
+			new (p: { _file: any }): any
+			new (p: { _source: any }): any
+			new (p: { resources: any, Loader?: any }): any
+		}
 
 		Resource: {
 			new (p: resource.Descriptor): Resource

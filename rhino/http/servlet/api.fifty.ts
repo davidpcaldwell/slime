@@ -4,6 +4,9 @@
 //
 //	END LICENSE
 
+/**
+ * The SLIME servlet implementation allows Java servlets to be authored in JavaScript.
+ */
 namespace slime.servlet {
 	interface Parameters {
 		[x: string]: any
@@ -26,6 +29,9 @@ namespace slime.servlet {
 		destroy?: () => void
 	}
 
+	/**
+	 * Various objects and APIs that allow a servlet to interact with its environment, answer requests, and do various computations.
+	 */
 	export interface Scope {
 		httpd: httpd
 		$loader: slime.Loader

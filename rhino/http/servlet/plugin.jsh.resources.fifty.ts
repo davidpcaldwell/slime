@@ -69,14 +69,125 @@ namespace slime.jsh.httpd {
 		function(
 			fifty: slime.fifty.test.kit
 		) {
+			var factory: resources.Factory = fifty.$loader.factory("plugin.jsh.resources.js");
+			var api = factory({
+				getMimeType: fifty.global.jsh.httpd.nugget.getMimeType,
+				jsh: fifty.global.jsh
+			});
+
+			fifty.tests.script = {
+				old: function() {
+					var one: { loader: slime.Loader } = api.script.old(
+						fifty.$loader.getRelativePath("test/resource/1.old.js").file
+					);
+					var indexOf = function(value) {
+						return function(p) {
+							return p.map(function(entry) { return entry.path; }).indexOf(value);
+						}
+					};
+					var read = function(p) {
+						return p.read(String);
+					}
+
+					var verify = fifty.verify;
+					verify(one,"one").is.type("object");
+					verify(one).loader.Child("WEB-INF/generic/").list().length.is(1);
+					verify(one).loader.Child("WEB-INF/generic/").list()[0].path.is("inonit");
+					verify(one).loader.Child("WEB-INF/generic/inonit/script/servlet/").list().length.is(2);
+					verify(one).loader.Child("WEB-INF/generic/inonit/script/servlet/").list().evaluate(indexOf("Servlet.java")).is.not.equalTo(-1);
+					verify(one).loader.Child("WEB-INF/generic/inonit/script/servlet/").list().evaluate(indexOf("Nashorn.java")).is.not.equalTo(-1);
+					verify(one).loader.Child("WEB-INF/generic/inonit/script/servlet/").list().evaluate(indexOf("JarJarBinks.java")).is(-1);
+					verify(one).loader.Child("WEB-INF/").list().length.is(3);
+					verify(one).loader.Child("WEB-INF/").list()[0].path.is("generic");
+					verify(one).loader.Child("WEB-INF/").list()[1].path.is("mozilla");
+					verify(one).loader.Child("WEB-INF/").list()[2].path.is("test");
+					verify(one).loader.file("WEB-INF/test/1.file.js").is.not(null);
+					verify(one).loader.get("WEB-INF/test/1.txt").evaluate(read).is("1");
+				},
+				resources: function() {
+					var verify = fifty.verify;
+					var jsh = fifty.global.jsh;
+					var code = api;
+					verify(code,"code").is.type("function");
+					var one: { loader: slime.Loader, add: any } = new code();
+					var top = fifty.$loader.getRelativePath(".").directory;
+					one.add({ prefix: "WEB-INF/generic/", directory: top.getSubdirectory("java") });
+					one.add({ prefix: "WEB-INF/mozilla/", directory: top.getSubdirectory("rhino") });
+					one.add({ prefix: "WEB-INF/test/", directory: top.getSubdirectory("test") });
+					verify(one,"one").is.type("object");
+		//			verify(one).loader().list({ path: "WEB-INF/generic/" }).length().is(1);
+		//			verify(one).loader().list({ path: "WEB-INF/generic/" })[0]().path().is("inonit");
+		//			verify(one).loader().list({ path: "WEB-INF/generic/" })[0]().loader().isNotEqualTo(null);
+					var child = one.loader.Child("WEB-INF/generic/");
+					verify(child).is.not(null);
+					if (!jsh.shell.environment.SKIP_LOADER_LIST) {
+						verify(child).list().is.not(null);
+						var generic = one.loader.Child("WEB-INF/generic/");
+						verify(generic,"generic").list().is.not(null);
+						verify(generic,"generic").list().length.is(1);
+						var servlet = one.loader.Child("WEB-INF/generic/inonit/script/servlet/");
+						verify(servlet,"servlet").is.not(null);
+						var list = servlet.list();
+						verify(servlet,"servlet").list().is.not(null);
+					}
+					verify(servlet,"servlet").list().length.is(2);
+					var servletList = servlet.list().sort(function(a,b) {
+						if (a.path > b.path) return 1;
+						if (b.path > a.path) return -1;
+						return 0;
+					});
+					verify(servletList)[0].path.is("Nashorn.java");
+					verify(servletList)[1].path.is("Servlet.java");
+					var webinf = one.loader.Child("WEB-INF/");
+					debugger;
+					verify(webinf,"webinf").list().length.is(3);
+					var list = webinf.list();
+					if (list.length > 0) verify(webinf,"webinf").list()[0].path.is("generic");
+					if (list.length > 1) verify(webinf,"webinf").list()[1].path.is("mozilla");
+					if (list.length > 2) verify(webinf,"webinf").list()[2].path.is("test");
+					var test = webinf.list().filter(function(entry) {
+						return entry.path == "test";
+					});
+					verify(test,"test").is.not(null);
+					verify(test,"test").length.is(1);
+					var first = test[0] as slime.loader.LoaderEntry;
+					verify(first).loader.is.not(null);
+					var file = first.loader.file("resource/1.file.js");
+					verify(file,"file").is.not(null);
+		//			verify(one).loader().file("WEB-INF/test/1.file.js").isNotEqualTo(null);
+		//			verify(one).loader().resource("WEB-INF/test/1.txt").read(String).is("1");
+				},
+				hg: function() {
+					var verify = fifty.verify;
+					var jsh = fifty.global.jsh;
+					var mapping: { loader: slime.Loader, build: any } = api.script(fifty.$loader.getRelativePath("test/resource/1.hg.js").file);
+					verify(mapping).is.not(null);
+					verify(mapping).loader.is.not(null);
+					verify(mapping).loader.evaluate.property("list").is.type("function");
+					var slime = mapping.loader.Child("WEB-INF/slime/");
+					var byPath = function(path) {
+						return function(o) {
+							return o.path == path;
+						};
+					};
+					verify(slime).list().evaluate(function() { return this.filter(byPath(".hg")) }).length.is(0);
+					verify(slime).list().evaluate(function() { return this.filter(byPath("loader")) }).length.is(1);
+					verify(slime).list().evaluate(function() { return this.filter(byPath("jsh")) }).length.is(1);
+					jsh.shell.echo(slime.list().map(function(item) { return item.path; }));
+
+					var tmpdir = jsh.shell.TMPDIR.createTemporary({ directory: true });
+					mapping.build(tmpdir);
+					verify(tmpdir).getSubdirectory("WEB-INF/slime/.hg").is(null);
+					verify(tmpdir).getSubdirectory("WEB-INF/slime/jsh").is.not(null);
+				}
+			}
+
 			fifty.tests.suite = function() {
-				var factory: resources.Factory = fifty.$loader.factory("plugin.jsh.resources.js");
-				var api = factory({
-					getMimeType: fifty.global.jsh.httpd.nugget.getMimeType,
-					jsh: fifty.global.jsh
-				});
 				var type: string = typeof(api);
 				fifty.verify({ type: type }).type.is("function");
+				run(fifty.tests.script.old);
+				run(fifty.tests.script.resources);
+				run(fifty.tests.script.hg);
 			}
 		}
 	//@ts-ignore

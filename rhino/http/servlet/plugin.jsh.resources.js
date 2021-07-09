@@ -214,6 +214,28 @@
 					return null;
 				};
 
+				var toEntry = function(item) {
+					if (typeof(item) == "string") {
+						if (item.substring(item.length-1) == "/") {
+							return {
+								path: item.substring(0,item.length-1),
+								loader: true,
+								resource: false
+							}
+						} else {
+							return {
+								path: item,
+								loader: false,
+								resource: true
+							}
+						}
+					} else if (item.path) {
+						return item;
+					} else {
+						throw new Error();
+					}
+				};
+
 				this.list = function(path) {
 					var rv = [];
 					for (var i=0; i<mapping.length; i++) {
@@ -227,7 +249,7 @@
 							}
 						}
 					}
-					return rv;
+					return rv.map(toEntry);
 				};
 
 				this.toString = function() {
@@ -238,42 +260,21 @@
 			};
 
 			var OldLoader = function(prefix) {
-				var USE_NEW_SLIME_LOADER = true;
-				if (USE_NEW_SLIME_LOADER) {
-					var implementation = new jsh.io.Loader({
-						get: function(path) {
-							return loader.get(path);
-						}
-					});
-					var rv = new implementation.Child(prefix);
-					rv.list = function(p) {
-						return loader.list.call(loader,prefix+p.path);
-					};
-					return rv;
-				} else {
-					//	TODO	deprecated, leaving code here for a little while to see if there are regressions
-					var rv = new jsh.io.Loader({
-						resources: new function() {
-							this.get = function(path) {
-								return loader.get(prefix+path);
-							};
-						},
-						Loader: function(subprefix) {
-							var rv = OldLoader(prefix + subprefix);
-							rv.list = function(p) {
-								return loader.list(prefix + subprefix + p.path);
-							}
-							return rv;
-						}
-					});
-					rv.toString = function() {
-						return "plugin.jsh.resources.js OldLoader: prefix=" + prefix + " loader=" + loader;
+				var implementation = new jsh.io.Loader({
+					get: function(path) {
+						return loader.get(path);
+					},
+					list: function(path) {
+						debugger;
+						return loader.list(path);
 					}
-					rv.list = function(p) {
-						return loader.list(prefix+p.path);
-					};
-					return rv;
-				}
+				});
+				var rv = implementation.Child(prefix);
+				//	TODO	code below failed type-checking and does not seem to make sense
+				// rv.list = function(p) {
+				// 	return loader.list.call(loader,prefix+p.path);
+				// };
+				return rv;
 			};
 
 			/**
