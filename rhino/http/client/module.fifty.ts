@@ -21,13 +21,14 @@ namespace slime.jrunscript.http.client {
 	}
 
 	export namespace request {
-		export type Body = {
-			type: string
-		} & (
-			{ stream: any }
-			| { read: any }
-			| { string: any }
-		)
+		export type Body = body.Stream | body.Binary | body.String
+
+		export namespace body {
+			type Type = { type: string }
+			export type Stream = Type & { stream: slime.jrunscript.runtime.io.InputStream }
+			export type Binary = Type & { read: { binary: () => slime.jrunscript.runtime.io.InputStream } }
+			export type String = Type & { string: string }
+		}
 	}
 
 	export interface Response {

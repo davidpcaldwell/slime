@@ -9,7 +9,7 @@
 	/**
 	 *
 	 * @param { any } $platform
-	 * @param { any } Packages
+	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { any } XMLList
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jrunscript.runtime.io.Context } $context
@@ -206,11 +206,13 @@
 				binary: new function() {
 					this.copy = function(from,to,mode) {
 						var isJavaType = $context.api.java.isJavaType;
+						/** @type { slime.jrunscript.native.java.io.InputStream } */
 						var _r = (function() {
 							if (isJavaType(Packages.java.io.InputStream)(from)) return from;
 							var adapt = (from.java && from.java.adapt) ? from.java.adapt() : null;
 							if (adapt && isJavaType(Packages.java.io.InputStream)(adapt)) return adapt;
 						})();
+						/** @type { slime.jrunscript.native.java.io.OutputStream } */
 						var _w = (function() {
 							if (isJavaType(Packages.java.io.OutputStream)(to)) return to;
 							if (to.java && to.java.adapt && isJavaType(Packages.java.io.OutputStream)(to.java.adapt())) return to.java.adapt();

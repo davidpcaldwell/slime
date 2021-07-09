@@ -278,7 +278,7 @@ namespace slime.jrunscript {
 				export interface Streams {
 					split: any
 					readBytes: any
-					copy: any
+					copy: (i: slime.jrunscript.native.java.io.InputStream, o: slime.jrunscript.native.java.io.OutputStream, closeInputStream?: boolean) => void
 					readLine: any
 				}
 			}
@@ -478,6 +478,9 @@ namespace slime.jrunscript {
 					attribute: {
 						FileTime: any
 					}
+				}
+				charset: {
+					Charset: any
 				}
 			}
 			util: {

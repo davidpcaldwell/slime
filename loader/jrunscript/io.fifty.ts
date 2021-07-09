@@ -48,6 +48,10 @@ namespace slime.jrunscript.runtime.io {
 		}
 	}
 
+	type BinaryCopyMode = {
+		onFinish: (i: slime.jrunscript.native.java.io.InputStream, o: slime.jrunscript.native.java.io.OutputStream) => void
+	}
+
 	export interface Exports {
 		OutputStream: any
 		Writer: any
@@ -55,7 +59,7 @@ namespace slime.jrunscript.runtime.io {
 		Reader: any
 		Streams: {
 			binary: {
-				copy(from: any, to: any, mode?: any)
+				copy(from: slime.jrunscript.runtime.io.InputStream, to: slime.jrunscript.runtime.io.OutputStream, mode?: BinaryCopyMode)
 			}
 			text: {
 				copy(from: any, to: any)

@@ -267,18 +267,38 @@
 					$urlConnection.setRequestProperty("Content-Type", "application/octet-stream");
 				}
 
+				/** @type { (body: slime.jrunscript.http.client.request.Body) => body is slime.jrunscript.http.client.request.body.Stream } */
+				var isStream = function(body) {
+					return Boolean(body["stream"]);
+				}
+
+				/** @type { (body: slime.jrunscript.http.client.request.Body) => body is slime.jrunscript.http.client.request.body.Binary } */
+				var isBinary = function(body) {
+					return Boolean(body["read"] && body["read"].binary);
+				}
+
+				/** @type { (body: slime.jrunscript.http.client.request.Body) => body is slime.jrunscript.http.client.request.body.String } */
+				var isString = function(body) {
+					return typeof body["string"] != "undefined";
+				}
+
+				/** @type { (java: slime.jrunscript.native.java.io.OutputStream) => slime.jrunscript.runtime.io.OutputStream } */
+				var outputStream = function(java) {
+					return $context.api.io.java.adapt(java);
+				}
+
 				//	TODO	Does not handle stream/$stream from rhino/mime
 				if (false) {
 					//	just syntax to help chaining
-				} else if (p.body["stream"]) {
-					$context.api.io.Streams.binary.copy(p.body["stream"],$urlConnection.getOutputStream());
+				} else if (isStream(p.body)) {
+					$context.api.io.Streams.binary.copy(p.body.stream,outputStream($urlConnection.getOutputStream()));
 					$urlConnection.getOutputStream().close();
-				} else if (p.body["read"] && p.body["read"].binary) {
-					$context.api.io.Streams.binary.copy(p.body["read"].binary(),$urlConnection.getOutputStream());
+				} else if (isBinary(p.body)) {
+					$context.api.io.Streams.binary.copy(p.body.read.binary(),outputStream($urlConnection.getOutputStream()));
 					$urlConnection.getOutputStream().close();
-				} else if (typeof(p.body["string"]) != "undefined") {
+				} else if (isString(p.body)) {
 					var writer = $context.api.io.java.adapt($urlConnection.getOutputStream()).character();
-					writer.write(p.body["string"]);
+					writer.write(p.body.string);
 					writer.close();
 				} else {
 					throw new TypeError("A message body must specify its content; no p.body.stream or p.body.string found.");
