@@ -23,12 +23,12 @@ namespace slime.web {
 			new (argument: Url.Argument): Url
 			parse: (string: string) => Url
 			query: {
-				(array: Form.Control[]): string
-				parse: (string: string) => Form.Control[]
+				(array: form.Control[]): string
+				parse: (string: string) => form.Control[]
 			}
 		}
 		Form: {
-			new (p: Form.Argument): Form
+			new (p: form.Argument): Form
 
 			//	TODO	is this the right place for this? Present for jrunscript, not present in browser implementation.
 			Multipart?: any
@@ -41,7 +41,7 @@ namespace slime.web {
 		window?: {
 			url: () => Url
 			query: {
-				controls: () => Form.Control[]
+				controls: () => form.Control[]
 				object: () => { [name: string]: string }
 			}
 		}
@@ -204,7 +204,7 @@ namespace slime.web {
 				userinfo?: string
 			}
 			path: string
-			query?: string | Form.Control[]
+			query?: string | form.Control[]
 			fragment?: string
 		}
 	}
@@ -267,7 +267,7 @@ namespace slime.web {
 
 namespace slime.web {
 	export interface Form {
-		controls: Form.Control[]
+		controls: form.Control[]
 		getUrlencoded: () => string
 		getPayload: () => {
 			type: string
@@ -275,7 +275,7 @@ namespace slime.web {
 		}
 	}
 
-	export namespace Form {
+	export namespace form {
 		/**
 		 * An object representing a name-value pair.
 		 */

@@ -28,7 +28,7 @@ namespace slime.servlet {
 			string: string
 			form: {
 				(p: ObjectConstructor): slime.web.Form
-				(): slime.web.Form.Control[]
+				(): slime.web.form.Control[]
 			}
 		}
 

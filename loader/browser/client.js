@@ -147,10 +147,12 @@
 
 					/** @type { <O,P>(o: O, p: P) => O & P } */
 					var assign = function(o,properties) {
+						/** @type { any } */
+						var rv = o;
 						for (var x in properties) {
-							o[x] = properties[x];
+							rv[x] = properties[x];
 						}
-						return o;
+						return rv;
 					}
 
 					var get = function(path) {

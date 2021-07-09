@@ -204,14 +204,14 @@
 
 		/**
 		 * @constructor
-		 * @param { slime.web.Form.Argument } p
+		 * @param { slime.web.form.Argument } p
 		 */
 		$exports.Form = Object.assign(function(p) {
 			//	See https://www.w3.org/TR/REC-html40/interact/forms.html#h-17.13.4
-			/** @type { slime.web.Form.Control[] } */
+			/** @type { slime.web.form.Control[] } */
 			var controls;
 
-			/** @type { (p: slime.web.Form.Argument) => p is slime.web.Form.Argument.UrlEncoded } */
+			/** @type { (p: slime.web.form.Argument) => p is slime.web.form.Argument.UrlEncoded } */
 			var isString = function(p) {
 				return Boolean(p["urlencoded"]);
 			}
