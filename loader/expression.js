@@ -163,13 +163,7 @@
 			return exported;
 		}
 
-		/** @type { slime.runtime.internal.mime } */
-		var mime = load(
-			"mime.js",
-			{
-				$api: $api
-			}
-		);
+		var mime = $api.mime;
 
 		/**
 		 * @param { ConstructorParameters<slime.resource.Factory>[0] } o
@@ -225,7 +219,16 @@
 				mime: {
 					Type: mime.Type
 				},
-				mimeTypeIs: mime.mimeTypeIs,
+				mimeTypeIs: function(string) {
+					/**
+					 *
+					 * @param { slime.mime.Type } type
+					 */
+					function rv(type) {
+						return string == type.media + "/" + type.subtype;
+					}
+					return rv;
+				},
 				$slime: $slime,
 				$platform: $platform,
 				$engine: $$engine

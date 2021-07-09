@@ -10,7 +10,7 @@
 	 *
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.runtime.Exports["mime"] } mime
-	 * @param { slime.runtime.internal.mime["mimeTypeIs"] } mimeTypeIs
+	 * @param { slime.runtime.internal.scripts.Scope["mimeTypeIs"] } mimeTypeIs
 	 * @param { slime.runtime.$slime.Deployment } $slime
 	 * @param { slime.runtime.$platform } $platform
 	 * @param { slime.runtime.internal.$engine } $engine

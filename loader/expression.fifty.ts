@@ -278,9 +278,17 @@ namespace slime {
 				$export: any
 				$exports: any
 			}
-			export type mime = {
-				Type: Exports["mime"]["Type"],
-				mimeTypeIs: (type: string) => (type: slime.mime.Type) => boolean
+			export namespace mime {
+				export interface Context {
+					Function: slime.$api.Global["Function"]
+					deprecate: slime.$api.Global["deprecate"]
+				}
+			}
+
+			export namespace scripts {
+				export interface Scope {
+					mimeTypeIs: (type: string) => (type: slime.mime.Type) => boolean
+				}
 			}
 
 			export type scripts = {
@@ -356,120 +364,6 @@ namespace slime {
 			//@ts-ignore
 			})(fifty)
 		}
-
-		export interface Exports {
-			/**
-			 * Provides APIs relating to MIME types.
-			 */
-			mime: {
-				Type: {
-					/**
-					 * Creates a MIME type from its parsed components.
-					 *
-					 * @param media The MIME media type: for `text/plain`, `"text"`.
-					 * @param subtype The MIME subtype: for `text/plain`, `"plain"`.
-					 * @param parameters Each property of the object represents a MIME parameter that
-					 * will be appended to the MIME type; the name of the property is the name of the parameter, while the value of the property is the
-					 * value of the parameter.
-					 */
-					(media: string, subtype: string, parameters?: { [x: string]: string }): mime.Object
-
-					/**
-					 * Parses the given string, returning the appropriate MIME type object.
-					 *
-					 * @param string A MIME type.
-					 */
-					parse(string: string): mime.Object
-
-					/**
-					 * Attempts to determine the MIME type of a resource given its name.
-					 *
-					 * @param path A resource name.
-					 * @returns The type determined from the name, or `undefined` if the type cannot be determined.
-					 */
-					fromName(path: string): mime.Type
-
-					/**
-					 * Converts a MIME type to a string, suitable for a MIME type declaration.
-					 */
-					toDeclaration(mimeType: mime.Type): string
-				}
-			}
-		}
-
-		(
-			function(
-				fifty: slime.fifty.test.kit
-			) {
-				fifty.tests.runtime.exports.mime = function() {
-					var subject: slime.runtime.Exports = slime.runtime.test.subject;
-
-					fifty.verify(subject).mime.is.type("object");
-
-					var verify = fifty.verify;
-
-					run(function parse() {
-						var string = "text/plain";
-						var type = subject.mime.Type.parse(string);
-						verify(type).media.is("text");
-						verify(type).subtype.is("plain");
-						verify(type).parameters.is.type("object");
-						verify(type).parameters.evaluate(function(p) { return Object.keys(p); }).length.is(0);
-					});
-
-					run(function fromName() {
-						 verify(subject.mime).Type.fromName("foo.js").evaluate(function(p) { return p.toString() }).is("application/javascript");
-						 verify(subject.mime).Type.fromName("foo.f").is(void(0));
-					});
-
-					//	TODO	According to RFC 2045 section 5.1, matching is case-insensitive
-					//			https://tools.ietf.org/html/rfc2045#section-5
-					//
-					//			types, subtypes, and parameter names are case-insensitive
-					//			parameter values are "normally" case-sensitive
-					//
-					//			TODO	comments are apparently allowed as well, see 5.1
-					//
-					//			TODO	quotes are also apparently not part of parameter values
-
-					run(function constructorArguments() {
-						verify(subject.mime).evaluate(function() {
-							return subject.mime.Type(void(0), "plain");
-						}).threw.type(Error);
-
-						verify(subject.mime).evaluate(function() {
-							return subject.mime.Type(null, "plain");
-						}).threw.type(Error);
-
-						verify(subject.mime).evaluate(function() {
-							return subject.mime.Type("text", void(0));
-						}).threw.type(Error);
-
-						verify(subject.mime).evaluate(function() {
-							return subject.mime.Type("text", null);
-						}).threw.type(Error);
-
-						verify(subject.mime).evaluate(function() {
-							//@ts-expect-error
-							return subject.mime.Type("text", "plain", 2);
-						}).threw.type(Error);
-
-						verify(subject.mime).evaluate(function() {
-							return subject.mime.Type("text", "plain");
-						}).threw.nothing();
-
-						verify(subject.mime).evaluate(function() {
-							return subject.mime.Type("text", "plain").toString();
-						}).is("text/plain");
-
-						verify(subject.mime).evaluate(function() {
-							return subject.mime.Type("text", "plain", { charset: "us-ascii" }).toString();
-						}).is("text/plain; charset=\"us-ascii\"");
-					});
-				}
-			}
-		//@ts-ignore
-		)(fifty);
 
 		export interface Exports {
 			Loader: internal.LoaderConstructor & {
@@ -596,7 +490,10 @@ namespace slime {
 			$platform: $platform
 			java?: any
 			$api: slime.$api.Global
-
+			/**
+			 * @deprecated Replaced by `$api.mime`.
+			 */
+			mime: slime.$api.mime.Export
 			readonly typescript: slime.runtime.$slime.TypeScript
 		}
 	}
@@ -620,7 +517,6 @@ namespace slime.test {
 	) {
 		tests.suite = function() {
 			run(tests.loader);
-			run(tests.runtime.exports.mime);
 		}
 	}
 //@ts-ignore

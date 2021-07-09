@@ -8,27 +8,10 @@
 (
 	/**
 	 *
-	 * @param { slime.$api.Global } $api
-	 * @param { (value: slime.runtime.internal.mime) => void } $export
+	 * @param { slime.runtime.internal.mime.Context } $context
+	 * @param { slime.loader.Export<slime.$api.mime.Export> } $export
 	 */
-	function($api,$export) {
-		/**
-		 *
-		 * @param { string } string
-		 */
-		var mimeTypeIs = function(string) {
-			/**
-			 *
-			 * @param { slime.mime.Type } type
-			 */
-			function rv(type) {
-				return string == type.media + "/" + type.subtype;
-			}
-			return rv;
-		};
-
-		var is = mimeTypeIs;
-
+	function($context,$export) {
 		/**
 		 *
 		 * @param { slime.mime.Type } mimeType
@@ -41,6 +24,80 @@
 			return rv;
 		};
 
+		/**
+		 *
+		 * @param { string } string
+		 * @returns { slime.mime.Type }
+		 */
+		var parse = function(string) {
+			if (string === null) return null;
+			//	First parse RFC 822 header; see RFC 822 section 3.2 http://tools.ietf.org/html/rfc822#section-3.2
+			var collapser = /^(.*)(?:\r\n| |\t){2,}(.*)/;
+			while(collapser.test(string)) {
+				var match = collapser.exec(string);
+				string = match[1] + " " + match[2];
+			}
+			var slash = string.indexOf("/");
+			var media = string.substring(0,slash);
+			string = string.substring(slash+1);
+			var semicolon = string.indexOf(";");
+			var subtype;
+			var parameters;
+			if (semicolon == -1) {
+				subtype = string;
+				string = "";
+				parameters = {};
+			} else {
+				subtype = string.substring(0,semicolon);
+				string = string.substring(semicolon);
+				parameters = {};
+				var more = true;
+				while(more) {
+					//	First, get rid of the semicolon
+					if (string.substring(0,1) != ";") {
+						throw new Error();
+					} else {
+						string = string.substring(1);
+					}
+					//	Then, get rid of whitespace
+					var wsmatcher = /^\s+(.*)/;
+					if (wsmatcher.test(string)) {
+						string = wsmatcher.exec(string)[1];
+					}
+					var nvmatch = /(.*?)\=(.*)/.exec(string);
+					var name = nvmatch[1];
+					var rest = nvmatch[2];
+					var value = "";
+					if (rest.substring(0,1) == "\"") {
+						rest = rest.substring(1);
+						while(rest.substring(0,1) != "\"") {
+							value += rest.substring(0,1);
+							rest = rest.substring(1);
+						}
+						string = rest.substring(1);
+					} else {
+						while(rest.length > 0 && rest.substring(0,1) != ";") {
+							value += rest.substring(0,1);
+							rest = rest.substring(1);
+						}
+						string = rest;
+					}
+					parameters[name] = value;
+					more = (string.length > 0);
+				}
+				var codes = [];
+				for (var i=0; i<string.length; i++) {
+					codes.push(string.charCodeAt(i));
+				}
+				//	loop
+			}
+			return {
+				media: media,
+				subtype: subtype,
+				parameters: parameters
+			}
+		}
+
 		var Type = Object.assign(
 			/**
 			 * @param {string} media
@@ -48,8 +105,8 @@
 			 * @param { { [x: string]: string } } parameters
 			 */
 			function(media,subtype,parameters) {
-				$api.Function.argument.isString({ index: 0, name: "media" }).apply(this,arguments);
-				$api.Function.argument.isString({ index: 1, name: "subtype" }).apply(this,arguments);
+				$context.Function.argument.isString({ index: 0, name: "media" }).apply(this,arguments);
+				$context.Function.argument.isString({ index: 1, name: "subtype" }).apply(this,arguments);
 				(function() {
 					if (typeof(arguments[2]) != "object" && typeof(arguments[2]) != "undefined") {
 						throw new TypeError("arguments[2] (parameters) must be undefined or object");
@@ -88,76 +145,43 @@
 					}
 				});
 
-				rv.is = $api.deprecate(function(string) {
+				/**
+				 *
+				 * @param { string } string
+				 */
+				var mimeTypeIs = function(string) {
+					/**
+					 *
+					 * @param { slime.mime.Type } type
+					 */
+					function rv(type) {
+						return string == type.media + "/" + type.subtype;
+					}
+					return rv;
+				};
+
+				var is = mimeTypeIs;
+
+				rv.is = $context.deprecate(function(string) {
 					return is(string)(this);
 				});
 
 				return rv;
 			},
 			{
+				codec: {
+					declaration: {
+						encode: function(type) {
+							return toDeclaration(type);
+						},
+						decode: function(string) {
+							return parse(string);
+						}
+					}
+				},
 				parse: function(string) {
-					if (string === null) return null;
-					//	First parse RFC 822 header; see RFC 822 section 3.2 http://tools.ietf.org/html/rfc822#section-3.2
-					var collapser = /^(.*)(?:\r\n| |\t){2,}(.*)/;
-					while(collapser.test(string)) {
-						var match = collapser.exec(string);
-						string = match[1] + " " + match[2];
-					}
-					var slash = string.indexOf("/");
-					var media = string.substring(0,slash);
-					string = string.substring(slash+1);
-					var semicolon = string.indexOf(";");
-					var subtype;
-					var parameters;
-					if (semicolon == -1) {
-						subtype = string;
-						string = "";
-						parameters = {};
-					} else {
-						subtype = string.substring(0,semicolon);
-						string = string.substring(semicolon);
-						parameters = {};
-						var more = true;
-						while(more) {
-							//	First, get rid of the semicolon
-							if (string.substring(0,1) != ";") {
-								throw new Error();
-							} else {
-								string = string.substring(1);
-							}
-							//	Then, get rid of whitespace
-							var wsmatcher = /^\s+(.*)/;
-							if (wsmatcher.test(string)) {
-								string = wsmatcher.exec(string)[1];
-							}
-							var nvmatch = /(.*?)\=(.*)/.exec(string);
-							var name = nvmatch[1];
-							var rest = nvmatch[2];
-							var value = "";
-							if (rest.substring(0,1) == "\"") {
-								rest = rest.substring(1);
-								while(rest.substring(0,1) != "\"") {
-									value += rest.substring(0,1);
-									rest = rest.substring(1);
-								}
-								string = rest.substring(1);
-							} else {
-								while(rest.length > 0 && rest.substring(0,1) != ";") {
-									value += rest.substring(0,1);
-									rest = rest.substring(1);
-								}
-								string = rest;
-							}
-							parameters[name] = value;
-							more = (string.length > 0);
-						}
-						var codes = [];
-						for (var i=0; i<string.length; i++) {
-							codes.push(string.charCodeAt(i));
-						}
-						//	loop
-					}
-					var rv = Type(media,subtype,parameters);
+					var parsed = parse(string);
+					var rv = Type(parsed.media,parsed.subtype,parsed.parameters);
 					return rv;
 				},
 				fromName: function(path) {
@@ -172,9 +196,8 @@
 		);
 
 		$export({
-			Type: Type,
-			mimeTypeIs: mimeTypeIs
+			Type: Type
 		});
 	}
 //@ts-ignore
-)($api,$export);
+)($context,$export);

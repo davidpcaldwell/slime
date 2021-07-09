@@ -56,8 +56,12 @@
 			});
 		}
 
-		suite.add("internal/slime/fifty", FiftyPart({
+		suite.add("internal/slime/fifty/runtime", FiftyPart({
 			file: SRC.getFile("loader/expression.fifty.ts")
+		}));
+
+		suite.add("internal/slime/fifty/mime", FiftyPart({
+			file: SRC.getFile("loader/mime.fifty.ts")
 		}));
 
 		suite.add("internal/slime/jsapi", new jsh.unit.html.Part({

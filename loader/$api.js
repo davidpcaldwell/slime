@@ -17,7 +17,14 @@
 			var $exports = {};
 			$engine.execute(
 				$slime.getRuntimeScript(name),
-				{ $platform: $engine, $context: $context, $exports: $exports },
+				{
+					$platform: $engine,
+					$context: $context,
+					$exports: $exports,
+					$export: function(v) {
+						$exports = v;
+					}
+				},
 				null
 			);
 			return $exports;
@@ -718,6 +725,31 @@
 			$engine.execute($slime.getRuntimeScript("threads.js"), { $context: $context, $exports: $exports }, null);
 			return $exports;
 		})($exports);
+
+		var factory = function(name) {
+			/**
+			 *
+			 * @param { any } $context
+			 * @returns { any }
+			 */
+			var rv = function($context) {
+				return load(name, $context);
+			}
+			return rv;
+		}
+
+		var code = {
+			/** @type { slime.loader.Product<slime.runtime.internal.mime.Context,slime.$api.mime.Export> } */
+			mime: factory("mime.js")
+		};
+
+		/** @type { slime.$api.mime.Export } */
+		var mime = code.mime({
+			Function: $exports.Function,
+			deprecate: $exports.deprecate
+		});
+
+		$exports.mime = mime;
 
 		return $exports;
 	}
