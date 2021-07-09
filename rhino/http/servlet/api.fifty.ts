@@ -9,44 +9,44 @@ namespace slime.servlet {
 		[x: string]: any
 	}
 
-	interface httpd {
+	export interface httpd {
 		loader: slime.Loader
 		js: any
 		java: slime.jrunscript.host.Exports
-		io: any
+		io: slime.jrunscript.io.Exports
 		web: slime.web.Exports
 		$java: any
 		$reload?: () => void
 	}
 
-	type handler = (request: Request) => Response
+	export type handler = (request: Request) => Response
 
 	interface Script {
 		handle: handler
 		destroy?: () => void
 	}
 
-	interface Scope {
+	export interface Scope {
 		httpd: httpd
 		$loader: slime.Loader
 		$parameters: Parameters
 		$exports: Script
 	}
 
-	namespace internal {
-		namespace $host {
-			interface Java {
+	export namespace internal {
+		export namespace $host {
+			export interface Java {
 				getClasspath?: slime.jrunscript.native.inonit.script.engine.Loader.Classes.Interface
 				register: (_script: slime.jrunscript.native.inonit.script.servlet.Servlet.Script) => void
-				getLoader?: slime.jrunscript.native.inonit.script.Engine.Loader
-				getServlet?: slime.jrunscript.native.inonit.script.servlet.Servlet
+				getLoader(): slime.jrunscript.native.inonit.script.rhino.Engine.Loader
+				getServlet(): slime.jrunscript.native.inonit.script.servlet.Servlet
 			}
 
-			interface Rhino extends Java {
-				getEngine?: slime.jrunscript.native.inonit.script.rhino.Engine
+			export interface Rhino extends Java {
+				getEngine(): slime.jrunscript.native.inonit.script.rhino.Engine
 			}
 
-			interface jsh {
+			export interface jsh {
 				api?: any
 				loaders?: any
 				Loader: any
@@ -58,10 +58,10 @@ namespace slime.servlet {
 			}
 		}
 
-		type $host = $host.Java | $host.jsh
+		export type $host = $host.Java | $host.jsh
 
-		namespace server {
-			interface Exports {
+		export namespace server {
+			export interface Exports {
 				Servlet: new (script: slime.servlet.Scope["$exports"]) => {
 					reload: (script: slime.servlet.Scope["$exports"]) => void
 					service: (_request: any, _response: any) => void

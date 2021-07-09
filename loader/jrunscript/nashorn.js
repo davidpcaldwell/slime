@@ -14,8 +14,12 @@
 	 * @param { slime.jrunscript.runtime.sync } sync
 	 * @param { slime.jrunscript.runtime.nashorn.Scope["$graal"] } $graal
 	 * @param { slime.jrunscript.runtime.nashorn.Scope["$loader"] } $loader
+	 * @returns { slime.jrunscript.runtime.Exports | slime.jrunscript.runtime.internal.nashorn.Nashorn | slime.jrunscript.runtime.internal.nashorn.Graal }
 	 */
 	function(load,Java,Packages,sync,$graal,$loader) {
+		//	TODO	this function is called twice or something with different semantics, that's why its return type is so strange.
+		//			should figure out how this works and write it up.
+
 		load("nashorn:mozilla_compat.js");
 
 		var toScope = function(scope) {

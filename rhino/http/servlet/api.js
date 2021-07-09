@@ -27,6 +27,7 @@
 			return $host["loaders"];
 		}
 
+		/** @type { slime.jrunscript.runtime.Exports } */
 		var $java = (function() {
 			//	TODO	there is no test coverage for the below; when the rhino/ directory was renamed to jrunscript/, the test suite still passed
 			//	Packages.java.lang.System.err.println("$host.getLoader = " + $host.getLoader + " $host.getEngine = " + $host.getEngine + " $host.getClasspath = " + $host.getClasspath);
@@ -81,6 +82,11 @@
 				rv.getMimeType = function(path) {
 					return $host.getServlet().getServletConfig().getServletContext().getMimeType(path);
 				};
+				/**
+				 *
+				 * @param { string } prefix
+				 * @returns { string[] }
+				 */
 				rv.getResourcePaths = function(prefix) {
 					var _set = $host.getServlet().getServletContext().getResourcePaths("/" + prefix);
 					var rv = [];
@@ -113,26 +119,33 @@
 				var loader = new $java.Loader({
 					_source: $servlet.resources
 				});
+				var code = {
+					/** @type { slime.jrunscript.host.load } */
+					java: loader.factory("WEB-INF/slime/jrunscript/host/"),
+					/** @type { slime.jrunscript.io.load } */
+					io: loader.factory("WEB-INF/slime/jrunscript/io/"),
+					/** @type { slime.web.load } */
+					web: loader.factory("WEB-INF/slime/js/web/")
+				};
 				var rv = {};
 				rv.js = loader.module("WEB-INF/slime/js/object/", {
 					globals: true
 				});
-				rv.java = loader.module("WEB-INF/slime/jrunscript/host/", {
+				rv.java = code.java({
 					globals: true,
 					$slime: $java,
 					logging: {
 						prefix: "slime.servlet"
 					}
 				});
-				rv.io = loader.module("WEB-INF/slime/jrunscript/io/", {
+				rv.io = code.io({
 					$slime: $java,
 					api: {
-						js: rv.js,
-						mime: $java.mime,
 						java: rv.java
-					}
+					},
+					nojavamail: false
 				});
-				var web = loader.module("WEB-INF/slime/js/web/", loader.file("WEB-INF/slime/js/web/context.java.js"));
+				var web = code.web(loader.file("WEB-INF/slime/js/web/context.java.js"));
 				rv.js.web = web;
 				// TODO: Deprecate rv.js.web, after figuring out how to access $api; is it loader.$api? Available only in servlet
 				// implementation
@@ -152,62 +165,25 @@
 		var Loader = (function() {
 			if (bootstrap) {
 				var Loader = function(p,prefix) {
-					var pp = {};
-					pp._source = (prefix) ? p._source.child(prefix) : p._source;
-					pp.type = function(path) {
-						var _type = $servlet.getMimeType(path);
-						if (/\.css$/.test(path)) {
-							_type = new Packages.java.lang.String("text/css");
-						}
-						if (_type) return bootstrap.io.mime.Type.parse(String(_type));
-						return null;
-					};
-					// pp.Loader = function(sub) {
-					// 	return new Loader(p,prefix+sub);
-					// }
 					var source = {
 						get: function(path) {
+							var pp = {};
+							pp._source = (prefix) ? p._source.child(prefix) : p._source;
+							pp.type = function(path) {
+								var _type = $servlet.getMimeType(path);
+								if (/\.css$/.test(path)) {
+									_type = new Packages.java.lang.String("text/css");
+								}
+								if (_type) return bootstrap.io.mime.Type.parse(String(_type));
+								return null;
+							};
+
 							var delegate = new bootstrap.io.Loader(pp);
 							var delegated = delegate.source.get(path);
 							if (!delegated) return null;
 							return bootstrap.js.Object.set({}, delegated, {
 								type: pp.type(path)
 							});
-							// dResource = new bootstrap.io.Resource(dResource);
-							// // TODO: this is now a mess; the below TODO comment is probably obsolete, and it's quite possible this could be
-							// // vastly simplified
-							// if (dResource && !dResource.type) {
-							// 	//	TODO	all of this is necessary because we cannot alter the type of a resource, because it is cached.
-							// 	//			as such, this is tightly coupled with the rhino io.js source code
-							// 	var newtype = pp.type(path);
-							// 	var delegate = {};
-							// 	delegate.read = {};
-							// 	delegate.read.binary = dResource.read.binary;
-							// 	delegate.type = newtype;
-							// 	delegate.name = dResource.name;
-							// 	if (dResource.hasOwnProperty("length")) {
-							// 		Object.defineProperty(delegate,"length",{
-							// 			get: function() {
-							// 				return dResource.length;
-							// 			}
-							// 		});
-							// 	}
-							// 	if (dResource.hasOwnProperty("modified")) {
-							// 		Object.defineProperty(delegate,"modified",{
-							// 			get: function() {
-							// 				return dResource.modified;
-							// 			}
-							// 		});
-							// 	}
-							// 	return new bootstrap.io.Resource(delegate)
-							// 	if (newtype) {
-							// 		var rv = {};
-							// 	}
-							// 	Packages.java.lang.System.err.println("newtype = " + path + " " + newtype);
-							// 	dResource.type = newtype;
-							// 	Packages.java.lang.System.err.println("dResource = " + path + " pp.type=" + dResource.type);
-							// }
-							// return dResource;
 						}
 					}
 					// var rv = new bootstrap.io.Loader(pp);
@@ -311,6 +287,7 @@
 		};
 
 		loaders.api.run(
+			//	Populates the http and Handler methods of httpd
 			"loader.js",
 			{
 				$exports: scope.httpd,

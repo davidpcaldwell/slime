@@ -118,6 +118,12 @@ namespace slime.jrunscript.runtime {
 	}
 
 	export interface Exports extends slime.runtime.Exports {
+		/**
+		 * The `jrunscript` implementation enhances the default MIME implementation by using the
+		 * `java.net.URLConnection.getFileNameMap()` method as an additional way to guess content types from file names.
+		 */
+		mime: slime.runtime.Exports["mime"]
+
 		Loader: any
 
 		Resource: {
@@ -307,12 +313,39 @@ namespace slime.jrunscript {
 					getClasspath(): any
 					getLoaderCode(path: string): any
 				}
+
+				export namespace Loader {
+					export namespace Classes {
+						export interface Interface {}
+					}
+				}
+			}
+
+			//	TODO	move this to where these classes actually are
+			export namespace servlet {
+				export namespace Servlet {
+					export interface Script {
+					}
+				}
+
+				export interface Servlet {
+					getServletConfig(): any
+					getServletContext(): any
+				}
 			}
 
 			export namespace rhino {
 				export namespace Engine {
 					export interface Debugger {
 					}
+
+					export interface Loader {
+						getLoaderCode(path: string): any
+					}
+				}
+
+				export interface Engine {
+					script: (a: any, b: any, c: any, d: any) => any
 				}
 			}
 

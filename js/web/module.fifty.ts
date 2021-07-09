@@ -339,3 +339,8 @@ namespace slime.web {
 	}
 //@ts-ignore
 )(fifty)
+
+namespace slime.web {
+	export type load = slime.loader.Product<Context,Exports>
+}
+

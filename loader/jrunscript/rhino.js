@@ -12,6 +12,7 @@
 	 * @param { slime.jrunscript.runtime.sync } sync
 	 * @param { slime.jrunscript.runtime.rhino.Scope["$rhino"] } $rhino
 	 * @param { slime.jrunscript.runtime.rhino.Scope["$loader"] } $loader
+	 * @returns { slime.jrunscript.runtime.Exports }
 	 */
 	function(Packages,sync,$rhino,$loader) {
 		var $javahost = new function() {

@@ -5,7 +5,7 @@
 //	END LICENSE
 
 namespace slime.jrunscript.io {
-	interface Context {
+	export interface Context {
 		$slime: slime.jrunscript.runtime.Exports
 		api: {
 			java: slime.jrunscript.host.Exports
@@ -18,7 +18,7 @@ namespace slime.jrunscript.io {
 	 * {@link slime.jrunscript.runtime.io.Exports} types and provides an improved
 	 * interface for callers.
 	 */
-	interface Exports {
+	export interface Exports {
 		Streams: slime.jrunscript.runtime.io.Exports["Streams"]
 		Buffer: slime.jrunscript.runtime.io.Exports["Buffer"]
 		Resource: slime.jrunscript.runtime.Exports["Resource"]
@@ -50,4 +50,6 @@ namespace slime.jrunscript.io {
 		}
 		grid: any
 	}
+
+	export type load = slime.loader.Product<Context,Exports>
 }
