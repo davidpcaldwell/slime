@@ -64,7 +64,7 @@
 						this.fail();
 						result = {
 							success: null,
-							message: String(e),
+							message: String(e) + ((e.stack) ? ("\n" + e.stack) : ""),
 							error: e
 						}
 					}
@@ -142,7 +142,15 @@
 			return function(code,name,argument) {
 				return executeTestScope(
 					getContainerName(tests,code,name),
-					function() { code(argument); }
+					function() {
+						try {
+							code(argument);
+						} catch (e) {
+							scope.test(function() {
+								throw e;
+							});
+						}
+					}
 				)
 			}
 		};

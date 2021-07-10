@@ -108,8 +108,11 @@
 			script: SRC.getFile("loader/document/test/suite.jsh.js"),
 			arguments: ["-view", "stdio"]
 		}));
-		suite.add("internal/document/fifty", FiftyPart({
+		suite.add("internal/document/fifty/old", FiftyPart({
 			file: SRC.getFile("loader/document/test/module.fifty.ts")
+		}));
+		suite.add("internal/document/fifty/source", FiftyPart({
+			file: SRC.getFile("loader/document/test/source.fifty.ts")
 		}));
 
 		suite.add("$api/flag", new jsh.unit.html.Part({

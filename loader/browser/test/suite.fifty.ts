@@ -9,7 +9,8 @@
 		fifty: slime.fifty.test.kit
 	) {
 		fifty.tests.suite = function() {
-			fifty.load("../../document/module.fifty.ts");
+			fifty.load("../../../loader/document/module.fifty.ts");
+			fifty.load("../../../loader/document/source.fifty.ts");
 			fifty.load("../../../js/web/module.fifty.ts");
 		}
 	}

@@ -100,12 +100,14 @@
 				},
 				test: function(scope, message, result) {
 					var test = templates.test();
-					test.children[0].innerHTML = message;
+					test.children[0].innerHTML = "";
+					test.children[0].appendChild(document.createTextNode(message));
 					addHtmlClass(test, getHtmlClass(result));
 					scope.children[1].appendChild(test);
 				},
 				end: function(scope, name, result) {
-					scope.children[2].innerHTML = name;
+					scope.children[2].innerHTML = "";
+					scope.children[2].appendChild(document.createTextNode(name));
 					addHtmlClass(scope, getHtmlClass(result));
 				}
 			}

@@ -83,6 +83,12 @@ namespace slime.runtime.document.source {
 	}
 
 	export namespace internal {
+		export namespace test {
+			export const subject: Export = (function(fifty: fifty.test.kit) {
+				return fifty.$loader.module("source.js");
+			//@ts-ignore
+			})(fifty)
+		}
 		export interface Position {
 			document: string
 			offset: number
@@ -248,4 +254,72 @@ namespace slime.runtime.document.source {
 		}
 	//@ts-ignore
 	)(fifty);
+
+	(
+		function(
+			fifty: slime.fifty.test.kit
+		) {
+			//	TODO	possibly add to Fifty?
+			var console = function(...args: any[]) {
+				if (fifty.global.jsh) {
+					Array.prototype.slice.call(arguments).forEach(function(argument) {
+						fifty.global.jsh.shell.console(argument);
+					})
+				}
+				if (fifty.global.window) window.console.log.apply(null, arguments);
+			}
+
+			fifty.tests.fidelity = function(page: string) {
+				var html = internal.test.subject;
+
+				var document = html.parse({
+					string: page,
+					events: (function() {
+						var stack = [];
+						/**
+						 * @type { slime.$api.events.Handler<slime.runtime.document.source.ParseEvents> }
+						 */
+						var rv = {
+							startElement: function(e) {
+								console(e.detail);
+								stack.push(e.detail);
+								console("Stack", stack.join(" "));
+							},
+							endElement: function(e) {
+								console("/" + e.detail);
+								if (stack[stack.length-1] == e.detail) {
+									stack.pop();
+								} else {
+									console("Expected end tag for " + stack[stack.length-1] + " not " + e.detail);
+								}
+							}
+						}
+						return rv;
+					})()
+				});
+
+				console("Parsed.");
+
+				var serialized = html.serialize({
+					document: document
+				});
+
+				console("Serialized.");
+
+				var match = 1;
+				while( (page.substring(0,match) == serialized.substring(0,match)) && match < page.length) {
+					match++;
+				}
+
+				if (match < page.length) {
+					console("page", page.substring(match));
+					console("serialized", serialized.substring(match));
+				}
+
+				fifty.verify(page).is(serialized);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
 }
