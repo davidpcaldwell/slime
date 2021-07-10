@@ -4,6 +4,10 @@
 //
 //	END LICENSE
 
-var module = jsh.script.loader.module("module.js");
+(
+	function() {
+		var module = jsh.script.loader.module("module.js");
 
-jsh.shell.echo([module.property,module.fileProperty].join(" "));
+		jsh.shell.echo([module.property,module.fileProperty].join(" "));
+	}
+)();

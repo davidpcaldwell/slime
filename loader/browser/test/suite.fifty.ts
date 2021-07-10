@@ -10,6 +10,7 @@
 	) {
 		fifty.tests.suite = function() {
 			fifty.load("../../document/module.fifty.ts");
+			fifty.load("../../../js/web/module.fifty.ts");
 		}
 	}
 //@ts-ignore

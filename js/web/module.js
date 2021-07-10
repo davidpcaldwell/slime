@@ -200,7 +200,7 @@
 			})(string);
 		};
 
-		var FORM_TYPE = "application/x-www-form-urlencoded";
+		var FORM_TYPE = $api.mime.Type.codec.declaration.decode("application/x-www-form-urlencoded");
 
 		/**
 		 * @constructor
@@ -238,7 +238,7 @@
 				}).join("&");
 			}
 
-			this.getPayload = function() {
+			this.getEntityBody = function() {
 				return {
 					type: FORM_TYPE,
 					string: this.getUrlencoded()
