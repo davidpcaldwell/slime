@@ -260,7 +260,11 @@
 			if (p.body) {
 				$urlConnection.setDoOutput(true);
 				if (p.body.type) {
-					$urlConnection.setRequestProperty("Content-Type", p.body.type);
+					if (typeof(p.body.type) == "string") {
+						$urlConnection.setRequestProperty("Content-Type", p.body.type);
+					} else {
+						$urlConnection.setRequestProperty("Content-Type", $api.mime.Type.codec.declaration.encode(p.body.type));
+					}
 				} else {
 					//	TODO	Would be more accurate to remove the content type, but this does not seem to work; seems to default
 					//			to application/x-www-form-urlencoded

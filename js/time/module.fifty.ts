@@ -6,11 +6,17 @@
 
 namespace slime.time {
 	export interface Day {
-		year: any
+		year: {
+			value: number
+		}
 		at: Function
 		format(mask: string): string
-		month: any
-		day: any
+		month: {
+			id: {
+				index: number
+			}
+		}
+		day: number
 		add(n: number): Day
 		isAfter(day: Day): boolean
 	}

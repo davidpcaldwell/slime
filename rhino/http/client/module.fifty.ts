@@ -24,7 +24,7 @@ namespace slime.jrunscript.http.client {
 		export type Body = body.Stream | body.Binary | body.String
 
 		export namespace body {
-			type Type = { type: string }
+			type Type = { type: slime.mime.Type | string }
 			export type Stream = Type & { stream: slime.jrunscript.runtime.io.InputStream }
 			export type Binary = Type & { read: { binary: () => slime.jrunscript.runtime.io.InputStream } }
 			export type String = Type & { string: string }
