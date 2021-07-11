@@ -160,13 +160,17 @@
 
 		var endTagMatch = /^\<\/(.*?)(\s*)\>/;
 
-		var startsWithEndTag = function(name) {
+		var startsWithEndTagFor = function(name) {
 			return function(string) {
 				var parsed = endTagMatch.exec(string);
 				if (parsed) {
 					return parsed[1].toLowerCase() == name.toLowerCase();
 				}
 			}
+		}
+
+		var startsWithEndTag = function(string) {
+			return endTagMatch.exec(string) != null;
 		}
 
 		var startingEndTag = function(string) {
@@ -302,7 +306,7 @@
 					$api.Function.pipe(
 						State.remaining,
 						$api.Function.Predicate.or(
-							startsWithEndTag(tagName),
+							startsWithEndTag,
 							function(string) { return !Boolean(string.length) }
 						)
 					)
@@ -310,13 +314,18 @@
 
 				var endTag = $api.Function.pipe(
 					State.remaining,
-					startsWithEndTag(tagName),
+					startsWithEndTagFor(tagName),
 					function(closing) {
 						return (closing) ? closingTag(tagName) : ""
 					}
 				)(after);
 
-				after.parsed["endTag"] = State.remaining(after) ? startingEndTag(State.remaining(after)) : "";
+				after.parsed["endTag"] = (function() {
+					var remaining = State.remaining(after);
+					if (!remaining) return "";
+					if (startsWithEndTagFor(tagName)(remaining)) return startingEndTag(remaining);
+					return "";
+				})();
 
 				events.fire("endElement", tagName);
 
