@@ -30,6 +30,15 @@ namespace slime.runtime.document.source {
 				fragment: Fragment
 			}): string
 		}
+
+		Node: {
+			isComment: (node: slime.runtime.document.source.Node) => node is slime.runtime.document.source.Comment
+			isText: (node: slime.runtime.document.source.Node) => node is slime.runtime.document.source.Text
+			isDoctype: (node: slime.runtime.document.source.Node) => node is slime.runtime.document.source.Doctype
+			isDocument: (node: slime.runtime.document.source.Node) => node is slime.runtime.document.source.Document
+			isElement: (node: slime.runtime.document.source.Node) => node is slime.runtime.document.source.Element
+			isFragment: (node: slime.runtime.document.source.Node) => node is slime.runtime.document.source.Fragment
+		}
 	}
 
 	export interface Node {
@@ -243,6 +252,17 @@ namespace slime.runtime.document.source {
 				debugger;
 			}
 
+			fifty.tests.optionalTags = function() {
+			};
+
+			fifty.tests.optionalTags.tr = function() {
+				var html = "<table> <tr> <td>foo</td> </table>";
+				var fragment = api.fragment({ string: html });
+				var serialized = api.serialize({ fragment: fragment });
+				fifty.verify(serialized).is(html);
+				debugger;
+			}
+
 			fifty.tests.suite = function() {
 				run(fifty.tests.happy);
 				run(fifty.tests.attributes);
@@ -269,11 +289,11 @@ namespace slime.runtime.document.source {
 				if (fifty.global.window) window.console.log.apply(null, arguments);
 			}
 
-			fifty.tests.fidelity = function(page: string) {
+			fifty.tests.fidelity = function(input: string) {
 				var html = internal.test.subject;
 
 				var document = html.parse({
-					string: page,
+					string: input,
 					events: (function() {
 						var stack = [];
 						/**
@@ -307,16 +327,16 @@ namespace slime.runtime.document.source {
 				console("Serialized.");
 
 				var match = 1;
-				while( (page.substring(0,match) == serialized.substring(0,match)) && match < page.length) {
+				while( (input.substring(0,match) == serialized.substring(0,match)) && match < input.length) {
 					match++;
 				}
 
-				if (match < page.length) {
-					console("page", page.substring(match));
+				if (match < input.length) {
+					console("page", input.substring(match));
 					console("serialized", serialized.substring(match));
 				}
 
-				fifty.verify(page).is(serialized);
+				fifty.verify(input == serialized, "page == serialized").is(true);
 			}
 		}
 	//@ts-ignore

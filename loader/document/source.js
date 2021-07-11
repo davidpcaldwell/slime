@@ -24,15 +24,6 @@
 
 		/**
 		 *
-		 * @param { slime.runtime.document.source.internal.State } state
-		 * @returns
-		 */
-		function remaining(state) {
-			return after(state.position);
-		}
-
-		/**
-		 *
 		 * @param { string } prefix
 		 * @returns { (input: string) => boolean }
 		 */
@@ -42,66 +33,78 @@
 			}
 		}
 
-		/**
-		 *
-		 * @param { slime.runtime.document.source.internal.State } state
-		 * @param { slime.runtime.document.source.Node } node
-		 * @param { number } advance
-		 * @returns { slime.runtime.document.source.internal.State }
-		 */
-		var step = function(state,node,advance) {
+		var State = (function() {
+			/**
+			 *
+			 * @param { slime.runtime.document.source.internal.State } state
+			 * @returns
+			 */
+			var remaining = function(state) {
+				return after(state.position);
+			};
 			return {
-				parsed: $api.Object.compose(state.parsed, { children: state.parsed.children.concat([node]) }),
-				position: {
-					document: state.position.document,
-					offset: state.position.offset + advance
-				}
-			}
-		}
+				remaining: remaining,
 
-		var atComment = $api.Function.pipe(
-			remaining,
-			startsWith("<!--")
-		);
+				/**
+				 *
+				 * @param { slime.runtime.document.source.internal.State } state
+				 * @param { slime.runtime.document.source.Node } node
+				 * @param { number } advance
+				 * @returns { slime.runtime.document.source.internal.State }
+				 */
+				step: function(state,node,advance) {
+					return {
+						parsed: $api.Object.compose(state.parsed, { children: state.parsed.children.concat([node]) }),
+						position: {
+							document: state.position.document,
+							offset: state.position.offset + advance
+						}
+					}
+				},
+				/**
+				 *
+				 * @param { slime.runtime.document.source.internal.State } state
+				 */
+				atEnd: function(state) {
+					if (state.position.offset > state.position.document.length) throw new Error("Attempt to read past end of input.");
+					return state.position.offset == state.position.document.length
+				},
 
-		var atDoctype = $api.Function.pipe(
-			remaining,
-			//	TODO	case-insensitive
-			startsWith("<!DOCTYPE")
-		);
+				atComment: $api.Function.pipe(
+					remaining,
+					startsWith("<!--")
+				),
 
-		var atElement = $api.Function.pipe(
-			remaining,
-			$api.Function.Predicate.and(
-				startsWith("<"),
-				$api.Function.Predicate.not(startsWith("</"))
-			)
-		);
+				atDoctype: $api.Function.pipe(
+					remaining,
+					//	TODO	case-insensitive
+					startsWith("<!DOCTYPE")
+				),
 
-		var atText = $api.Function.pipe(
-			remaining,
-			$api.Function.Predicate.not(startsWith("<"))
-		);
+				atElement: $api.Function.pipe(
+					remaining,
+					$api.Function.Predicate.and(
+						startsWith("<"),
+						$api.Function.Predicate.not(startsWith("</"))
+					)
+				),
+
+				atText: $api.Function.pipe(
+					remaining,
+					$api.Function.Predicate.not(startsWith("<"))
+				)
+			};
+		})();
 
 		var warnOnce = $api.Function.memoized(function() {
 			debugger;
 		});
 
 		/**
-		 *
-		 * @param { slime.runtime.document.source.internal.State } state
-		 * @returns
-		 */
-		var atEnd = function(state) {
-			if (state.position.offset > state.position.document.length) throw new Error("Attempt to read past end of input.");
-			return state.position.offset == state.position.document.length
-		}
-
-		/**
 		 * @type { slime.runtime.document.source.internal.Step }
 		 */
 		var parseComment = function(state) {
-			var left = remaining(state);
+			var left = State.remaining(state);
 			var end = left.indexOf("-->");
 			if (end == -1) throw new Error("Comment not closed.");
 			/** @type { slime.runtime.document.source.Comment } */
@@ -109,14 +112,14 @@
 				type: "comment",
 				data: left.substring("<!--".length, end)
 			};
-			return step(state, comment, end + "-->".length);
+			return State.step(state, comment, end + "-->".length);
 		}
 
 		/**
 		 * @type { slime.runtime.document.source.internal.Step }
 		 */
 		var parseDoctype = function(state) {
-			var left = remaining(state);
+			var left = State.remaining(state);
 			var end = left.indexOf(">");
 			if (end == -1) throw new Error("DOCTYPE not closed.");
 			var content = left.substring("<!DOCTYPE".length,end);
@@ -129,14 +132,14 @@
 				name: parsed[2],
 				after: parsed[3]
 			};
-			return step(state, doctype, end + ">".length);
+			return State.step(state, doctype, end + ">".length);
 		}
 
 		/**
 		 * @type { slime.runtime.document.source.internal.Step }
 		 */
 		var parseText = function(state) {
-			var left = remaining(state);
+			var left = State.remaining(state);
 			var end = left.indexOf("<");
 			if (end == -1) end = left.length;
 			/** @type { slime.runtime.document.source.Text } */
@@ -144,7 +147,7 @@
 				type: "text",
 				data: left.substring(0,end)
 			};
-			return step(state, text, end);
+			return State.step(state, text, end);
 		}
 
 		var voidElements = ["area","base","br","col","embed","hr","img","input","link","meta","param","source","track","wbr"];
@@ -260,7 +263,7 @@
 				return toAttributes(list.concat([ attribute ]), string.substring(index));
 			}
 
-			var left = remaining(state);
+			var left = State.remaining(state);
 			var startTag = left.substring(1, left.indexOf(">"));
 			events.fire("startTag", "Parsing start tag " + startTag);
 			var parsed = (function() {
@@ -297,7 +300,7 @@
 					substate,
 					events,
 					$api.Function.pipe(
-						remaining,
+						State.remaining,
 						$api.Function.Predicate.or(
 							startsWithEndTag(tagName),
 							function(string) { return !Boolean(string.length) }
@@ -306,14 +309,14 @@
 				);
 
 				var endTag = $api.Function.pipe(
-					remaining,
+					State.remaining,
 					startsWithEndTag(tagName),
 					function(closing) {
 						return (closing) ? closingTag(tagName) : ""
 					}
 				)(after);
 
-				after.parsed["endTag"] = startingEndTag(remaining(after));
+				after.parsed["endTag"] = State.remaining(after) ? startingEndTag(State.remaining(after)) : "";
 
 				events.fire("endElement", tagName);
 
@@ -374,20 +377,20 @@
 				//	TODO	<!ENTITY	entity node
 				//	TODO	<!NOTATION	notation node
 
-				if (atComment(state)) {
+				if (State.atComment(state)) {
 					next = parseComment(state);
-				} else if (atDoctype(state)) {
+				} else if (State.atDoctype(state)) {
 					next = parseDoctype(state);
-				} else if (atElement(state)) {
+				} else if (State.atElement(state)) {
 					next = parseElement(state,events,recurse);
-				} else if (atText(state)) {
+				} else if (State.atText(state)) {
 					next = parseText(state);
 				} else {
 					//	skip to end of the thing
 					/** @type { slime.runtime.document.source.internal.Unparsed } */
 					var rest = {
 						type: "unparsed",
-						string: remaining(state)
+						string: State.remaining(state)
 					}
 					next = {
 						parsed: {
@@ -491,7 +494,7 @@
 						}
 					},
 					events.emitter,
-					atEnd
+					State.atEnd
 				);
 				events.detach();
 				if (isDocument(state.parsed)) return state.parsed;
@@ -511,7 +514,7 @@
 						}
 					},
 					events.emitter,
-					atEnd
+					State.atEnd
 				);
 				events.detach();
 				if (isFragment(state.parsed)) return state.parsed;
@@ -523,6 +526,14 @@
 					if (output.fragment) return output.fragment;
 				})();
 				return parent.children.map(serialize).join("");
+			},
+			Node: {
+				isComment: isComment,
+				isText: isText,
+				isFragment: isFragment,
+				isDocument: isDocument,
+				isElement: isElement,
+				isDoctype: isDoctype
 			}
 		})
 	}
