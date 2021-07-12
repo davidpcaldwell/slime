@@ -57,40 +57,6 @@ namespace slime.jsh {
 			getopts: jsh["script"]["getopts"]
 		}
 
-		unit: {
-			mock: slime.jsh.unit.mock;
-			html: any
-			Suite: any
-			interface: any
-			$slime: slime.jsh.plugin.$slime
-			jsapi: any
-			Verify: slime.definition.unit.Verify.Factory
-			fifty: {
-				/**
-				 * Creates a Part that can be used in a jsapi test suite from a Fifty test file.
-				 */
-				Part: (p: {
-					/**
-					 * The shell in which to run Fifty.
-					 */
-					shell: slime.jrunscript.file.Directory
-
-					/**
-					 * The `loader/api/test/fifty/test.jsh.js` script.
-					 */
-					script: slime.jrunscript.file.File
-
-					/**
-					 * The Fifty test file to run.
-					 */
-					file: slime.jrunscript.file.File
-				}) => any
-			}
-			JSON: {
-				Encoder: any
-			}
-		}
-
 		js: any
 		document: any
 		file: slime.jrunscript.file.Exports
