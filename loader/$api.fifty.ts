@@ -58,8 +58,6 @@ namespace slime.$api {
 				detach: () => void
 			}
 
-			instance: (v: any) => boolean
-
 			action: <E,R>(f: ( events: slime.$api.Events<E> ) => R) => (handler: slime.$api.events.Handler<E>) => R
 		},
 		Array: {

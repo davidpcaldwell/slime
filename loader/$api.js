@@ -30,12 +30,35 @@
 			return $exports;
 		};
 
+		var factory = function(name) {
+			/**
+			 *
+			 * @param { any } $context
+			 * @returns { any }
+			 */
+			var rv = function($context) {
+				return load(name, $context);
+			}
+			return rv;
+		}
+
+		var code = {
+			/** @type { slime.loader.Product<slime.runtime.internal.mime.Context,slime.$api.mime.Export> } */
+			mime: factory("mime.js"),
+			/** @type { slime.loader.Product<slime.runtime.internal.events.Context,slime.runtime.internal.events.Export> } */
+			events: factory("events.js")
+		};
+
 		Object.assign($exports, load("$api-flag.js"));
+
+		var events = code.events({
+			deprecate: $exports.deprecate
+		});
 
 		(function() {
 			var old = {};
 			Object.assign(old, load("$api-Function-old.js", { deprecate: $exports.deprecate }));
-			Object.assign($exports, load("$api-Function.js", { $api: $exports, old: old, deprecate: $exports.deprecate }));
+			Object.assign($exports, load("$api-Function.js", { $api: $exports, events: events, old: old, deprecate: $exports.deprecate }));
 		})();
 
 		$exports.debug = {
@@ -503,7 +526,7 @@
 				} else {
 					return new Subtype(message);
 				}
-			};
+			}
 			Subtype.prototype = $exports.debug.disableBreakOnExceptionsFor(function() {
 				var rv = new Supertype();
 				delete rv.stack;
@@ -523,201 +546,14 @@
 			Type: ErrorType
 		}
 
-		/**
-		 * @constructor
-		 * @param { Parameters<slime.$api.Global["Events"]>[0] } [p]
-		 */
-		var Emitter = function(p) {
-			if (!p) p = {};
-
-			var source = (p.source) ? p.source : this;
-
-			/** @returns { { bubble: (event: slime.$api.Event<any>) => void } } */
-			var getParent = function() {
-				/** @returns { { bubble: (event: slime.$api.Event<any>) => void } } */
-				var castToInternal = function(events) {
-					return events;
-				}
-
-				if (p.parent) return castToInternal(p.parent);
-				if (p.getParent) return castToInternal(p.getParent());
-			}
-
-			/**
-			 * @type { { [type: string]: slime.$api.event.Handler<any>[] } }
-			 */
-			var byType = {};
-
-			/** @type { new (type: string, detail: any) => slime.$api.Event } */
-			var Event = function(type,detail) {
-				this.type = type;
-				this.source = source;
-				this.timestamp = Date.now();
-				this.detail = detail;
-				this.path = [];
-
-				//	TODO	consider greater compatibility:
-				//	http://www.w3.org/TR/2000/REC-DOM-Level-2-Events-20001113/events.html#Events-interface
-			};
-
-			/**
-			 * @type { slime.$api.Events<{ [name: string]: any }>["listeners"] }
-			 */
-			var listeners = {
-				add: function(name,handler) {
-					if (!byType[name]) {
-						byType[name] = [];
-					}
-					byType[name].push(handler);
-				},
-
-				remove: function(name,handler) {
-					if (byType[name]) {
-						var index = byType[name].indexOf(handler);
-						if (index != -1) {
-							byType[name].splice(index,1);
-						}
-					}
-				}
-			};
-
-			//	TODO	capability is undocumented. Document? Deprecate? Remove?
-			for (var x in p.on) {
-				listeners.add(x,p.on[x]);
-			}
-
-			this.listeners = listeners;
-
-			//	TODO	roadmap: after some uses of this have been removed, add an optional 'old' property to allow this behavior
-			//			but overall we should not be adding arbitrary properties to an object just because it is an event emitter
-			if (p.source) {
-				p.source.listeners = new function() {
-					this.add = $exports.deprecate(function(name,handler) {
-						listeners.add(name, handler);
-					});
-
-					this.remove = $exports.deprecate(function(name,handler) {
-						listeners.remove(name, handler);
-					})
-				};
-			}
-
-			/**
-			 *
-			 * @param { slime.$api.Event<any> } event
-			 */
-			function handle(event) {
-				if (byType[event.type]) {
-					byType[event.type].forEach(function(listener) {
-						//	In a DOM-like structure, we would need something other than 'source' to act as 'this'
-						listener.call(source,event)
-					});
-				}
-				var parent = getParent();
-				if (parent) {
-					//	TODO	this appears to be a bug; would the path not consist of the source object several times in a row,
-					//			once for each bubble? Possibly this should be event.path.unshift(this)? Should write test for path
-					//			and see
-					event.path.unshift(source);
-					parent.bubble(event);
-				}
-			}
-
-			//	Private method; used by children to send an event up the chain.
-			Object.defineProperty(
-				this,
-				"bubble",
-				{
-					/**
-					 *
-					 * @param { slime.$api.Event<any> } event
-					 */
-					value: function(event) {
-						handle(event);
-					}
-				}
-			);
-
-			this.fire = function(type,detail) {
-				handle(new Event(type,detail));
-			}
-		};
-
-		var ListenersInvocationReceiver = function(on) {
-			var source = {};
-			var events = $exports.Events({ source: source });
-
-			this.attach = function() {
-				for (var x in on) {
-					source.listeners.add(x,on[x]);
-				}
-			};
-
-			this.detach = function() {
-				for (var x in on) {
-					source.listeners.remove(x,on[x]);
-				}
-			};
-
-			this.emitter = events;
-		};
-
-		var listening = function(f,defaultOn) {
-			var EmitterInvocationReceiver = function(emitter) {
-				this.attach = function(){};
-				this.detach = function(){};
-				this.emitter = emitter;
-			}
-
-			return function(p,receiver) {
-				var invocationReceiver = ($exports.Events.instance(receiver))
-					? new EmitterInvocationReceiver(receiver)
-					: new ListenersInvocationReceiver(
-						$exports.Function.evaluator(
-							function() { return receiver; },
-							function() { return defaultOn; },
-							function() { return {}; }
-						)()
-					)
-				;
-				invocationReceiver.attach();
-				try {
-					return f.call( this, p, invocationReceiver.emitter );
-				} finally {
-					invocationReceiver.detach();
-				}
-			}
-		};
-
-		/** @type { slime.$api.Global["Events"] } */
 		$exports.Events = Object.assign(
-			/**
-			 * @param { Parameters<slime.$api.Global["Events"]>[0] } p
-			 */
-			function(p) {
-				return new Emitter(p);
-			},
+			events.create,
 			{
-				Function: listening,
-				toHandler: function(handler) {
-					return new ListenersInvocationReceiver(handler);
-				},
-				instance: function(v) {
-					return v instanceof Emitter;
-				},
-				action: function(f) {
-					return function(handler) {
-						var invocationReceiver = new ListenersInvocationReceiver(handler);
-						invocationReceiver.attach();
-						try {
-							return f.call( this, invocationReceiver.emitter );
-						} finally {
-							invocationReceiver.detach();
-						}
-					}
-				}
+				Function: events.Function,
+				toHandler: events.toHandler,
+				action: events.action
 			}
-		);;
+		);
 
 		//	TODO	switch implementation to use load()
 		$exports.threads = (function($context) {
@@ -725,23 +561,6 @@
 			$engine.execute($slime.getRuntimeScript("threads.js"), { $context: $context, $exports: $exports }, null);
 			return $exports;
 		})($exports);
-
-		var factory = function(name) {
-			/**
-			 *
-			 * @param { any } $context
-			 * @returns { any }
-			 */
-			var rv = function($context) {
-				return load(name, $context);
-			}
-			return rv;
-		}
-
-		var code = {
-			/** @type { slime.loader.Product<slime.runtime.internal.mime.Context,slime.$api.mime.Export> } */
-			mime: factory("mime.js")
-		};
 
 		/** @type { slime.$api.mime.Export } */
 		var mime = code.mime({

@@ -1083,29 +1083,6 @@ END LICENSE
 					</div>
 					<div class="label">has properties:</div>
 					<ul>
-						<li class="function experimental">
-							<div class="name">instance</div>
-							<span>Determines whether a given argument is an event emitter.</span>
-							<div class="arguments">
-								<div class="label">Arguments</div>
-								<ol>
-									<li class="value">
-										<span class="type">(any)</span>
-										<span>A JavaScript value.</span>
-									</li>
-								</ol>
-							</div>
-							<div class="returns">
-								<div class="label">Returns</div>
-								<span class="type">boolean</span>
-								<span><code>true</code> if the argument is an <a href="#types.emitter">emitter</a>.</span>
-							</div>
-							<script type="application/x.jsapi#tests">
-								var x = api.Events();
-								verify(api.Events.instance(api.Events())).is(true);
-								verify(api.Events.instance({})).is(false);
-							</script>
-						</li>
 						<li class="function">
 							<div class="name">Function</div>
 							<span>__DESCRIPTION__</span>

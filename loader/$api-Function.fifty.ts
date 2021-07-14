@@ -295,6 +295,9 @@ namespace slime.$api.fp {
 			 * by returning a value.
 			 */
 			compose: <M>(...functions: Updater<M>[]) => Updater<M>
+
+			ask: <E,T>(f: (events: slime.$api.Events<E>) => T) => slime.$api.fp.impure.Ask<E,T>
+			tell: <E>(f: (events: slime.$api.Events<E>) => void) => slime.$api.fp.impure.Tell<E>
 		}
 	}
 }
