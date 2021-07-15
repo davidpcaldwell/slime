@@ -174,7 +174,7 @@ namespace slime.jsh.wf {
 				<T>(mutator:  slime.jsh.script.cli.Processor<T>): slime.jsh.script.cli.Invocation<T>
 			}
 
-			/** @deprecated Replaced by jsh.wf.project.initialize(). */
+			/** @deprecated Replaced by `project.initialize`. */
 			initialize: {
 				(
 					$context: jsh.wf.cli.Context,
