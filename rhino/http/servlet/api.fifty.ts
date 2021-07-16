@@ -8,7 +8,7 @@
  * The SLIME servlet implementation allows Java servlets to be authored in JavaScript.
  */
 namespace slime.servlet {
-	interface Parameters {
+	export interface Parameters {
 		[x: string]: any
 	}
 
