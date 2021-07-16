@@ -10,7 +10,7 @@
 	 *
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.Global } jsh
-	 * @param { (value: slime.jsh.wf.Exports["cli"]["initialize"]) => void } $export
+	 * @param { slime.loader.Export<slime.jsh.wf.Exports["project"]["initialize"]> } $export
 	 */
 	function($api,jsh,$export) {
 		$export(
