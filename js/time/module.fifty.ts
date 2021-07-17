@@ -27,12 +27,14 @@ namespace slime.time {
 	}
 
 	export interface Time {
+		day: any
 		format(mask: string): string
 	}
 
 	export interface When {
 		unix: number
 		local(): Time
+		local(zone: any): Time
 	}
 
 	export interface Context {
