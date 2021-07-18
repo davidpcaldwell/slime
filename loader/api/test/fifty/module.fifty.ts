@@ -162,17 +162,6 @@ namespace slime.fifty {
 				test: (scope: Scope, message: string, result: boolean) => void
 				end: (scope: Scope, name: string, result: boolean) => void
 			}
-
-			export interface Scope {
-				success: boolean
-
-				depth(): number
-				fail(): void
-
-				start: (name: string) => void
-				test: slime.definition.verify.Context
-				end: (name: string, result: boolean) => void
-			}
 		}
 	}
 

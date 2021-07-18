@@ -64,6 +64,7 @@
 		})(window.Promise);
 
 		$export({
+			Promise: window.Promise,
 			registry: registry
 		})
 	}

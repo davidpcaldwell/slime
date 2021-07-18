@@ -5,6 +5,17 @@
 //	END LICENSE
 
 namespace slime.fifty.test.internal {
+	export interface Scope {
+		success: boolean
+
+		depth(): number
+		fail(): void
+
+		start: (name: string) => void
+		test: slime.definition.verify.Context
+		end: (name: string, result: boolean) => void
+	}
+
 	export type run = slime.fifty.test.internal.test.Export
 }
 

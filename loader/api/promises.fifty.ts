@@ -10,7 +10,8 @@ namespace slime.definition.test.promises {
 			add: (item: any) => void
 			list: () => any[]
 			clear: () => void
-		}
+		},
+		Promise: PromiseConstructor
 	}
 
 	(

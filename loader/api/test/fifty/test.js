@@ -13,6 +13,12 @@
 	 * @param { slime.loader.Export<slime.fifty.test.internal.test.Export> } $export
 	 */
 	function($api,$context,$loader,$export) {
+		//	This file has four callers:
+		//	*	fifty / jsh: test.jsh.js
+		//	*	fifty / browser: test-browser.js
+		//	*	jsapi / jsh: jsh/unit/html.js
+		//	*	jsapi / browser: loader/browser/test/api.js
+
 		var console = $context.console;
 
 		/**
@@ -84,7 +90,9 @@
 			}
 		}
 
+		/** @type { slime.fifty.test.internal.Scope } */
 		var scope;
+		/** @type { slime.definition.verify.Verify } */
 		var verify;
 
 		var getContainerName = function(tests,code,name) {
