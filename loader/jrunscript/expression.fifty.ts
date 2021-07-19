@@ -596,7 +596,7 @@ namespace slime.jrunscript {
 		$loader: slime.fifty.test.$loader,
 		verify: slime.fifty.test.verify,
 		tests: slime.fifty.test.tests,
-		run: slime.fifty.test.run
+		run: slime.fifty.test.kit["run"]
 	) {
 		tests.exports = {};
 		tests.exports.Resource = function() {

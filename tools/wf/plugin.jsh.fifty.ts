@@ -411,7 +411,7 @@ namespace slime.jsh.wf {
 	function(
 		jsh: slime.jsh.Global,
 		verify: slime.definition.verify.Verify,
-		run: slime.fifty.test.run,
+		run: slime.fifty.test.kit["run"],
 		tests: any,
 		$loader: slime.Loader & { getRelativePath: any, plugin: any }
 	) {

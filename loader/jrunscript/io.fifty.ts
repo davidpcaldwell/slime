@@ -82,7 +82,7 @@ namespace slime.jrunscript.runtime.io {
 		$slime: slime.jrunscript.runtime.Exports,
 		verify: slime.fifty.test.verify,
 		tests: slime.fifty.test.tests,
-		run: slime.fifty.test.run
+		run: slime.fifty.test.kit["run"]
 	) {
 		tests.Buffer = function() {
 			var b = new $slime.io.Buffer();

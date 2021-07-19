@@ -79,26 +79,35 @@
 			}
 		}
 
-		function getPropertyPathFrom(target) {
-			return function(value) {
-				if (value === target) return [];
-				for (var x in target) {
-					var found = getPropertyPathFrom(target[x])(value);
-					if (found) return [x].concat(found);
-				}
-				return null;
-			}
-		}
-
 		/** @type { slime.fifty.test.internal.Scope } */
 		var scope;
 		/** @type { slime.definition.verify.Verify } */
 		var verify;
 
-		var getContainerName = function(tests,code,name) {
+		/**
+		 *
+		 * @param { slime.fifty.test.tests } tests - the tests for this file
+		 * @param { any } code - the code to run
+		 * @returns
+		 */
+		var getContainerName = function(tests,code) {
+			function getPropertyPathFrom(target) {
+				return function(value) {
+					if (value === target) return [];
+					for (var x in target) {
+						var found = getPropertyPathFrom(target[x])(value);
+						if (found) return [x].concat(found);
+					}
+					return null;
+				}
+			}
+
 			if (!code) throw new TypeError("Cannot run scope " + code);
+			/** @type { string } */
+			var name;
 			if (!name) name = $api.Function.result(
-				getPropertyPathFrom(tests)(code),
+				code,
+				getPropertyPathFrom(tests),
 				function(array) {
 					return (array) ? array.join(".") : array;
 				}
@@ -116,6 +125,12 @@
 			}
 		};
 
+		/**
+		 *
+		 * @param { string } name
+		 * @param { () => void } execute
+		 * @returns { boolean }
+		 */
 		var executeTestScope = function(name,execute) {
 			start(name);
 			var was = {
@@ -146,10 +161,22 @@
 			return after();
 		}
 
+		/**
+		 *
+		 * @param { slime.fifty.test.tests } tests
+		 * @returns
+		 */
 		var runner = function(tests) {
-			return function(code,name,argument) {
+			/**
+			 * @template { any } T
+			 * @param { (t: T) => void } code
+			 * @param { string } name - essentially for display when reporting results
+			 * @param { T } [argument]
+			 * @returns
+			 */
+			var rv = function(code,name,argument) {
 				return executeTestScope(
-					getContainerName(tests,code,name),
+					(name) ? name : getContainerName(tests,code),
 					function() {
 						try {
 							code(argument);
@@ -161,13 +188,12 @@
 					}
 				)
 			}
+			return rv;
 		};
 
 		var error = function(name,e) {
 			executeTestScope(
 				name,
-				//	TODO	works, but should display something better, probably including stack and using
-				//			more general verify()
 				function() { verify(String(e) + "\n" + e.stack).is("Successfully loaded tests"); }
 			)
 		}
@@ -188,9 +214,18 @@
 			return rv;
 		})();
 
+		/**
+		 *
+		 * @param { slime.fifty.test.$loader } loader
+		 * @param { string } path
+		 * @param { string } part - the part to execute. If `undefined`, the default value `"suite"` will be used.
+		 * @param { any } [argument]
+		 * @returns
+		 */
 		var load = function recurse(loader,path,part,argument) {
 			if (!part) part = "suite";
 
+			//	TODO	this should probably be completely empty
 			var tests = {
 				types: {}
 			};
@@ -221,11 +256,21 @@
 						}
 					}
 				},
-				run: runner(tests),
+				run: function(f, name) {
+					runner(tests)(f, name);
+				},
 				load: function(at,part,argument) {
+					/** @type { (p: slime.Loader) => p is slime.fifty.test.$loader } */
+					function isMyLoader(p) {
+						return true;
+					}
 					var path = parsePath(at);
 					var subloader = (path.folder) ? loader.Child(path.folder) : loader;
-					recurse(subloader, path.file, part, argument);
+					if (isMyLoader(subloader)) {
+						recurse(subloader, path.file, part, argument);
+					} else {
+						throw new Error("Runtime downcast failed.");
+					}
 				},
 				tests: tests,
 				verify: function() {
@@ -274,12 +319,12 @@
 				/** @type { any } */
 				var target = scope.tests;
 				part.split(".").forEach(function(token) {
-					target = $api.Function.optionalChain(token)(target)
+					target = $api.Function.result(target, $api.Function.optionalChain(token))
 				});
 				if (typeof(target) == "function") {
 					/** @type { (argument: any) => void } */
 					var callable = target;
-					return runner(tests)(callable, path + ":" + part,argument);
+					return runner(tests)(callable, path + ":" + part, argument);
 				} else {
 					throw new TypeError("Not a function: " + part);
 				}

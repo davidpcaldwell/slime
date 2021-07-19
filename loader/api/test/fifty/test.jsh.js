@@ -30,7 +30,6 @@
 				jsh.wf.cli.$f.option.string({ longname: "view" }),
 				$api.Function.impure.revise(function(p) {
 					if (!p.options.view) p.options.view = "console";
-					if (!p.options.part) p.options.part = "suite";
 				})
 			)
 		);

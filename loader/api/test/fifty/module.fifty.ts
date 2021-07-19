@@ -85,11 +85,6 @@ namespace slime.fifty {
 			}
 		}
 
-		export interface run {
-			(f: () => void, name: string): void
-			(f: () => void): void
-		}
-
 		export type tests = any
 
 		/**
@@ -122,7 +117,7 @@ namespace slime.fifty {
 			 */
 			verify: verify
 			$loader: $loader
-			run: run
+			run: (f: () => void, name?: string) => void
 			tests: tests
 
 			/**

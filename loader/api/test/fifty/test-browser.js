@@ -217,7 +217,7 @@
 			//	TODO	currently result is just a boolean indicating success/failure. We may want a more sophisticated regime which
 			//			communicates events that can be reconstructed
 
-			var result = execute(query.file, (query.part) ? query.part : "suite");
+			var result = execute(query.file, query.part);
 
 			if (query.results == "true") {
 				var xhr = new XMLHttpRequest();
