@@ -219,12 +219,14 @@
 
 			var result = execute(query.file, query.part);
 
-			if (query.results == "true") {
-				var xhr = new XMLHttpRequest();
-				xhr.open("POST","result",false);
-				var payload = result;
-				xhr.send(JSON.stringify(payload));
-			}
+			result.then(function(result) {
+				if (query.results == "true") {
+					var xhr = new XMLHttpRequest();
+					xhr.open("POST","result",false);
+					var payload = result;
+					xhr.send(JSON.stringify(payload));
+				}
+			})
 		});
 	}
 //@ts-ignore

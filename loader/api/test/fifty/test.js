@@ -331,13 +331,19 @@
 				}
 			} else {
 				error(path, loaderError);
-				// return runner(tests)
+				//	TODO	no test coverage
+				return false;
 			}
 		}
 
 		$export(
 			function(loader,path,part) {
-				return load(loader,path,part);
+				var result = load(loader,path,part);
+				return {
+					then: function(f) {
+						return f(result);
+					}
+				}
 			}
 		)
 	}

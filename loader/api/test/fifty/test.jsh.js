@@ -171,9 +171,10 @@
 			)
 		};
 
-		var success = execute(parameters.options.definition,parameters.options.part,views[parameters.options.view]);
-
-		jsh.shell.exit( (success) ? 0 : 1 )
+		var promise = execute(parameters.options.definition,parameters.options.part,views[parameters.options.view]);
+		promise.then(function(success) {
+			jsh.shell.exit( (success) ? 0 : 1 )
+		});
 	}
 //@ts-ignore
 )($api,jsh);

@@ -59,7 +59,9 @@ namespace slime.fifty.internal.test.data {
 
 			tests.suite = function() {
 				var module: slime.fifty.internal.test.data.shopping.Exports = $loader.module("module.js");
-				tests.types.Exports(module);
+				run(function() {
+					tests.types.Exports(module);
+				});
 				run(tests.subsuite);
 				load("load/child.fifty.ts");
 

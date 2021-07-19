@@ -258,6 +258,7 @@
 
 						var verify = slime.file("loader/api/verify.js")
 
+						/** @type { slime.fifty.test.internal.test.Export } */
 						var run = slime.module("loader/api/test/fifty/test.js", {
 							library: {
 								Verify: verify
@@ -287,12 +288,12 @@
 						var relative = inonit.loader.nugget.page.relative(base)
 						var delegate = new inonit.loader.Loader(relative);
 
-						var result = run(
+						run(
 							(path.folder) ? delegate.Child(path.folder) : delegate,
 							path.file
-						);
-
-						p.verify(result,"Fifty " + p.path + " result").is(true);
+						).then(function(result) {
+							p.verify(result,"Fifty " + p.path + " result").is(true);
+						});
 					}
 				};
 

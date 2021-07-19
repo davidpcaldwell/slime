@@ -290,6 +290,7 @@
 				delegate.fifty = function(p) {
 					var slime = new jsh.file.Loader({ directory: jsh.shell.jsh.src });
 
+					/** @type { slime.fifty.test.internal.test.Export } */
 					var run = slime.module("loader/api/test/fifty/test.js", {
 						library: {
 							Verify: slime.file("loader/api/verify.js")
@@ -336,12 +337,14 @@
 						})
 					};
 
-					var result = run(
+					var promise = run(
 						(path.folder) ? toFiftyLoader(delegate.Child(path.folder)) : toFiftyLoader(delegate),
 						path.file
 					);
 
-					p.verify(result,"Fifty " + p.path + " result").is(true);
+					promise.then(function(result) {
+						p.verify(result,"Fifty " + p.path + " result").is(true);
+					});
 				}
 
 				return delegate;
