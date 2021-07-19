@@ -28,7 +28,7 @@ namespace slime.fifty.test.internal.test {
 		console: slime.fifty.test.internal.Console
 	}
 
-	export type Export = (loader: slime.fifty.test.$loader, path: string, part?: string) => boolean
+	export type Export = (loader: slime.fifty.test.$loader, path: string, part?: string) => boolean | Promise<boolean>
 
 	export type Factory = slime.loader.Product<Context,Export>
 }

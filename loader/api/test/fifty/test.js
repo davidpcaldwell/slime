@@ -170,9 +170,9 @@
 			/**
 			 * @template { any } T
 			 * @param { (t: T) => void } code
-			 * @param { string } name - essentially for display when reporting results
+			 * @param { string } name essentially for display when reporting results
 			 * @param { T } [argument]
-			 * @returns
+			 * @returns { boolean }
 			 */
 			var rv = function(code,name,argument) {
 				return executeTestScope(
@@ -220,7 +220,7 @@
 		 * @param { string } path
 		 * @param { string } part - the part to execute. If `undefined`, the default value `"suite"` will be used.
 		 * @param { any } [argument]
-		 * @returns
+		 * @returns { boolean }
 		 */
 		var load = function recurse(loader,path,part,argument) {
 			if (!part) part = "suite";
@@ -324,7 +324,8 @@
 				if (typeof(target) == "function") {
 					/** @type { (argument: any) => void } */
 					var callable = target;
-					return runner(tests)(callable, path + ":" + part, argument);
+					var rv = runner(tests)(callable, path + ":" + part, argument);
+					return rv;
 				} else {
 					throw new TypeError("Not a function: " + part);
 				}
