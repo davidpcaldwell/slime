@@ -21,12 +21,34 @@
 				registry.splice(index,1);
 			}
 
+			var allSettled = function(promises) {
+				/**
+				 *
+				 * @param { Promise<any> } promise
+				 * @returns { Promise<any> }
+				 */
+				var settle = function(promise) {
+					return promise.then(function(value) {
+						return value;
+					}).catch(function(e) {
+						return e;
+					});
+				}
+
+				return Promise.all(
+					promises.map(settle)
+				);
+			}
+
 			return {
 				add: function(item) {
 					list.push(item);
 				},
 				list: function() {
 					return list;
+				},
+				wait: function() {
+					return allSettled(list);
 				},
 				clear: function() {
 					list.splice(0,list.length);
@@ -40,7 +62,6 @@
 			 */
 			function RegisteredPromise(executor) {
 				console.log("Created promise", executor);
-				debugger;
 				this.then = void(0);
 				this.catch = void(0);
 				var rv = new was(executor);
@@ -49,7 +70,6 @@
 			}
 			//	Copy all properties
 			for (var x in was) {
-				console.log("Coping Promise property", x);
 				RegisteredPromise[x] = was[x];
 			}
 			//	Make typescript happy if above didn't work

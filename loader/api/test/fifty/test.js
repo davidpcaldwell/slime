@@ -127,9 +127,22 @@
 
 		/**
 		 *
+		 * @param { boolean } success
+		 * @returns { slime.fifty.test.internal.test.Result }
+		 */
+		var toResult = function(success) {
+			return ($context.promises) ? $context.promises.Promise.resolve(success) : {
+				then: function(f) {
+					return f(success);
+				}
+			}
+		}
+
+		/**
+		 *
 		 * @param { string } name
 		 * @param { () => void } execute
-		 * @returns { boolean }
+		 * @returns { slime.fifty.test.internal.test.Result }
 		 */
 		var executeTestScope = function(name,execute) {
 			start(name);
@@ -158,7 +171,12 @@
 				return result;
 			}
 
-			return after();
+			return ($context.promises && false)
+				? $context.promises.registry.wait().then(function(resolved) {
+					$context.promises.registry.clear();
+					return Promise.resolve(after());
+				})
+				: toResult(after());
 		}
 
 		/**
@@ -172,7 +190,7 @@
 			 * @param { (t: T) => void } code
 			 * @param { string } name essentially for display when reporting results
 			 * @param { T } [argument]
-			 * @returns { boolean }
+			 * @returns { slime.fifty.test.internal.test.Result }
 			 */
 			var rv = function(code,name,argument) {
 				return executeTestScope(
@@ -220,7 +238,7 @@
 		 * @param { string } path
 		 * @param { string } part - the part to execute. If `undefined`, the default value `"suite"` will be used.
 		 * @param { any } [argument]
-		 * @returns { boolean }
+		 * @returns { slime.fifty.test.internal.test.Result }
 		 */
 		var load = function recurse(loader,path,part,argument) {
 			if (!part) part = "suite";
@@ -332,18 +350,13 @@
 			} else {
 				error(path, loaderError);
 				//	TODO	no test coverage
-				return false;
+				return toResult(false);
 			}
 		}
 
 		$export(
 			function(loader,path,part) {
-				var result = load(loader,path,part);
-				return {
-					then: function(f) {
-						return f(result);
-					}
-				}
+				return load(loader,path,part);
 			}
 		)
 	}

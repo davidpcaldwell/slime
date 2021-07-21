@@ -9,6 +9,7 @@ namespace slime.definition.test.promises {
 		registry: {
 			add: (item: any) => void
 			list: () => any[]
+			wait: () => Promise<any>
 			clear: () => void
 		},
 		Promise: PromiseConstructor
