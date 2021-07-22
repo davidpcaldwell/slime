@@ -15,6 +15,7 @@
 		/** @type { slime.definition.test.promises.internal.Events } */
 		var events = $api.Events();
 
+		var controlledPromiseId = 0;
 		/**
 		 *
 		 * @returns { ReturnType<slime.definition.test.promises.Export["controlled"]> }
@@ -22,11 +23,14 @@
 		var ControlledPromise = function() {
 			var resolver;
 			var rejector;
-			var constructor = function(resolve,reject) {
+			var executor = function(resolve,reject) {
 				resolver = resolve;
 				rejector = reject;
 			}
-			var promise = new Promise(constructor);
+			executor.toString = function() {
+				return "<ControlledPromise " + ++controlledPromiseId + ">";
+			}
+			var promise = new Promise(executor);
 			return {
 				promise: promise,
 				resolve: resolver,
@@ -49,7 +53,7 @@
 			var remove = function(instance) {
 				var index = list.indexOf(instance);
 				if (index == -1) {
-					console.log("Not pertinent: " + instance);
+					console.log("Not pertinent to", name, instance);
 				} else {
 					list.splice(index,1);
 				}
@@ -96,8 +100,13 @@
 
 			return {
 				wait: function() {
-					console.log("waiting for list", name, list);
+					console.log("waiting for list length", list.length, name, list);
+					if (list.length == 0) {
+						console.log("resolving wait promise for", name);
+						controlled.resolve(void(0));
+					}
 					return controlled.promise.then(function() {
+						console.log("wait promise resolved for", name);
 						events.listeners.remove("created", created);
 						events.listeners.remove("settled", created);
 					});
@@ -125,6 +134,7 @@
 				this.then = void(0);
 				this.catch = void(0);
 				var rv = new was(executor);
+				rv["executor"] = executor.toString();
 				events.fire("created", rv);
 				rv.then(function(value) {
 					console.log("settled - fulfilled", rv, value);

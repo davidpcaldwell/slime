@@ -9,9 +9,13 @@
 	function(
 		fifty: slime.fifty.test.kit
 	) {
+		var memory = 0;
+
 		fifty.tests.a = function() {
 			Promise.resolve("a").then(function(item) {
 				fifty.verify(item).is("a");
+				fifty.verify(memory).is(0);
+				memory = 1;
 			});
 		}
 
@@ -22,6 +26,15 @@
 		fifty.tests.c = function() {
 			Promise.resolve("c").then(function(item) {
 				fifty.verify(item).is("c");
+				fifty.verify(memory).is(1);
+			});
+		}
+
+		fifty.tests.d = function() {
+			run(function nest() {
+				run(function renest() {
+					fifty.verify("nested").is("nested");
+				});
 			});
 		}
 
@@ -29,6 +42,7 @@
 			run(fifty.tests.a);
 			run(fifty.tests.b);
 			run(fifty.tests.c);
+			run(fifty.tests.d);
 		}
 	}
 //@ts-ignore

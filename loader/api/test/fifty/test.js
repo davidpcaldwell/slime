@@ -183,7 +183,8 @@
 				}).then(function(executed) {
 					return registry.wait();
 				}).then(function(done) {
-					return after();
+					$context.promises.console.log("computing after() for", name);
+					return Promise.resolve(after());
 				});
 			} else {
 				execute();
@@ -264,6 +265,27 @@
 				types: {}
 			};
 
+			var AsynchronousScope = function(promises) {
+				var scopes = [promises];
+				var scope = promises;
+				return {
+					then: function(v) {
+						scope = scope.then(v);
+					},
+					descend: function() {
+						var push = newChildren();
+						scopes.push(push);
+						scope = push;
+					},
+					ascend: function() {
+						scopes.pop();
+						scope = scopes[scopes.length-1];
+					}
+				}
+			};
+
+			var ascope = ($context.promises) ? AsynchronousScope(promises) : void(0);
+
 			/**
 			 * @type { slime.fifty.test.kit }
 			 */
@@ -293,17 +315,25 @@
 				run: function(f, name) {
 					if ($context.promises) $context.promises.console.log("run", f, name);
 					var run = function() {
-						runner(tests)(f, name);
+						if ($context.promises) $context.promises.console.log("processing next child", name);
+						if (ascope) ascope.descend();
+						var rv = runner(tests)(f, name);
+						if (ascope) rv = rv.then(function() {
+							if (ascope) ascope.ascend();
+						});
+						return rv;
 					};
 					if (promises) {
-						if ($context.promises) $context.promises.console.log("children", promises);
-						promises = promises.then(run);
-						if ($context.promises) $context.promises.console.log("children now", promises);
+						if ($context.promises) $context.promises.console.log("promises", promises);
+						ascope.then(run);
+						if ($context.promises) $context.promises.console.log("promises now", promises);
 					} else {
 						run();
 					}
 				},
 				load: function(at,part,argument) {
+					var controlled = ($context.promises) ? $context.promises.controlled() : void(0);
+
 					var run = function() {
 						/** @type { (p: slime.Loader) => p is slime.fifty.test.$loader } */
 						function isMyLoader(p) {
@@ -312,7 +342,9 @@
 						var path = parsePath(at);
 						var subloader = (path.folder) ? loader.Child(path.folder) : loader;
 						if (isMyLoader(subloader)) {
-							recurse(newChildren(), subloader, path.file, part, argument);
+							var rv = recurse(newChildren(), subloader, path.file, part, argument);
+							if (controlled) controlled.resolve(void(0));
+							return rv;
 						} else {
 							throw new Error("Runtime downcast failed.");
 						}
