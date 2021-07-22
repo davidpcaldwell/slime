@@ -145,22 +145,27 @@
 		 * @returns { slime.fifty.test.internal.test.Result }
 		 */
 		var executeTestScope = function(name,execute) {
+			var registry = ($context.promises) ? $context.promises.Registry() : void(0);
+			if (registry) registry.test.setName(name);
+			if ($context.promises) $context.promises.console.log("created registry", name);
+
 			start(name);
 			var was = {
 				scope: scope,
 				verify: verify
 			};
-			scope = Scope({ parent: scope });
-			verify = $context.library.Verify(
+			var localscope = Scope({ parent: scope });
+			var localverify = $context.library.Verify(
 				function(f) {
 					scope.test(f);
 				}
 			);
-
-			execute();
+			scope = localscope;
+			verify = localverify;
 
 			function after() {
-				var result = scope.success;
+				var result = localscope.success;
+				if ($context.promises) $context.promises.console.log("restoring scope and verify to", was.scope, was.verify);
 				scope = was.scope;
 				verify = was.verify;
 				if (scope) {
@@ -171,12 +176,19 @@
 				return result;
 			}
 
-			return ($context.promises && false)
-				? $context.promises.registry.wait().then(function(resolved) {
-					$context.promises.registry.clear();
-					return Promise.resolve(after());
-				})
-				: toResult(after());
+			if ($context.promises) {
+				return new $context.promises.Promise(function(resolve,reject) {
+					execute();
+					resolve(void(0));
+				}).then(function(executed) {
+					return registry.wait();
+				}).then(function(done) {
+					return after();
+				});
+			} else {
+				execute();
+				return toResult(after());
+			}
 		}
 
 		/**
@@ -187,17 +199,17 @@
 		var runner = function(tests) {
 			/**
 			 * @template { any } T
-			 * @param { (t: T) => void } code
+			 * @param { (t: T) => void } callable
 			 * @param { string } name essentially for display when reporting results
 			 * @param { T } [argument]
 			 * @returns { slime.fifty.test.internal.test.Result }
 			 */
-			var rv = function(code,name,argument) {
+			var rv = function(callable,name,argument) {
 				return executeTestScope(
-					(name) ? name : getContainerName(tests,code),
+					(name) ? name : getContainerName(tests,callable),
 					function() {
 						try {
-							code(argument);
+							callable(argument);
 						} catch (e) {
 							scope.test(function() {
 								throw e;
@@ -232,6 +244,10 @@
 			return rv;
 		})();
 
+		var newChildren = function() {
+			return $context.promises ? Promise.resolve(void(0)) : void(0);
+		}
+
 		/**
 		 *
 		 * @param { slime.fifty.test.$loader } loader
@@ -240,7 +256,7 @@
 		 * @param { any } [argument]
 		 * @returns { slime.fifty.test.internal.test.Result }
 		 */
-		var load = function recurse(loader,path,part,argument) {
+		var load = function recurse(promises,loader,path,part,argument) {
 			if (!part) part = "suite";
 
 			//	TODO	this should probably be completely empty
@@ -275,19 +291,37 @@
 					}
 				},
 				run: function(f, name) {
-					runner(tests)(f, name);
+					if ($context.promises) $context.promises.console.log("run", f, name);
+					var run = function() {
+						runner(tests)(f, name);
+					};
+					if (promises) {
+						if ($context.promises) $context.promises.console.log("children", promises);
+						promises = promises.then(run);
+						if ($context.promises) $context.promises.console.log("children now", promises);
+					} else {
+						run();
+					}
 				},
 				load: function(at,part,argument) {
-					/** @type { (p: slime.Loader) => p is slime.fifty.test.$loader } */
-					function isMyLoader(p) {
-						return true;
-					}
-					var path = parsePath(at);
-					var subloader = (path.folder) ? loader.Child(path.folder) : loader;
-					if (isMyLoader(subloader)) {
-						recurse(subloader, path.file, part, argument);
+					var run = function() {
+						/** @type { (p: slime.Loader) => p is slime.fifty.test.$loader } */
+						function isMyLoader(p) {
+							return true;
+						}
+						var path = parsePath(at);
+						var subloader = (path.folder) ? loader.Child(path.folder) : loader;
+						if (isMyLoader(subloader)) {
+							recurse(newChildren(), subloader, path.file, part, argument);
+						} else {
+							throw new Error("Runtime downcast failed.");
+						}
+					};
+
+					if (promises) {
+						promises = promises.then(run);
 					} else {
-						throw new Error("Runtime downcast failed.");
+						run();
 					}
 				},
 				tests: tests,
@@ -342,8 +376,14 @@
 				if (typeof(target) == "function") {
 					/** @type { (argument: any) => void } */
 					var callable = target;
-					var rv = runner(tests)(callable, path + ":" + part, argument);
-					return rv;
+					var createRunner = function() {
+						return runner(tests)(callable, path + ":" + part, argument);
+					}
+					if ($context.promises) {
+						return promises.then(createRunner);
+					} else {
+						return createRunner();
+					}
 				} else {
 					throw new TypeError("Not a function: " + part);
 				}
@@ -356,7 +396,7 @@
 
 		$export(
 			function(loader,path,part) {
-				return load(loader,path,part);
+				return load(newChildren(),loader,path,part);
 			}
 		)
 	}

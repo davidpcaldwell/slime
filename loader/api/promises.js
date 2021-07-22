@@ -8,53 +8,113 @@
 (
 	/**
 	 *
+	 * @param { slime.$api.Global } $api
 	 * @param { slime.loader.Export<slime.definition.test.promises.Export> } $export
 	 */
-	function($export) {
-		var registry = (function() {
+	function($api,$export) {
+		/** @type { slime.definition.test.promises.internal.Events } */
+		var events = $api.Events();
+
+		/**
+		 *
+		 * @returns { ReturnType<slime.definition.test.promises.Export["controlled"]> }
+		 */
+		var ControlledPromise = function() {
+			var resolver;
+			var rejector;
+			var constructor = function(resolve,reject) {
+				resolver = resolve;
+				rejector = reject;
+			}
+			var promise = new Promise(constructor);
+			return {
+				promise: promise,
+				resolve: resolver,
+				reject: rejector
+			}
+		};
+
+		var Registry = function() {
+			var name;
 			var list = [];
+
+			var created = function(e) {
+				console.log("adding promise to registry", e.detail, name);
+				list.push(e.detail);
+			};
+
+			events.listeners.add("created", created);
 
 			//	Unused but could be used to remove promises when they are ressolved / caught, should that become necessary
 			var remove = function(instance) {
 				var index = list.indexOf(instance);
-				if (index == -1) throw new Error("Already removed.");
-				registry.splice(index,1);
-			}
-
-			var allSettled = function(promises) {
-				/**
-				 *
-				 * @param { Promise<any> } promise
-				 * @returns { Promise<any> }
-				 */
-				var settle = function(promise) {
-					return promise.then(function(value) {
-						return value;
-					}).catch(function(e) {
-						return e;
-					});
+				if (index == -1) {
+					console.log("Not pertinent: " + instance);
+				} else {
+					list.splice(index,1);
 				}
+			};
 
-				return Promise.all(
-					promises.map(settle)
-				);
+			var settled = function(e) {
+				remove(e.detail);
+				if (list.length == 0) {
+					controlled.resolve(void(0));
+				} else {
+					console.log("pending", name, list);
+				}
 			}
+
+			events.listeners.add("settled", settled);
+
+			var controlled = ControlledPromise();
+			remove(controlled.promise);
+
+			// var allSettled = function(promises) {
+			// 	// /**
+			// 	//  *
+			// 	//  * @param { Promise<any> } promise
+			// 	//  * @returns { Promise<any> }
+			// 	//  */
+			// 	// var settle = function(promise) {
+			// 	// 	//	Not using .finally() to preserve IE compatibility, perhaps unwisely
+			// 	// 	return promise.then(function(value) {
+			// 	// 		console.log("settled - fulfilled", promise, value);
+			// 	// 		remove(promise);
+			// 	// 		return value;
+			// 	// 	}).catch(function(e) {
+			// 	// 		console.log("settled - rejected", promise, e)
+			// 	// 		remove(promise);
+			// 	// 		return e;
+			// 	// 	});
+			// 	// };
+
+			// 	// return Promise.all(
+			// 	// 	promises.map(settle)
+			// 	// );
+
+			// };
 
 			return {
-				add: function(item) {
-					list.push(item);
-				},
-				list: function() {
-					return list;
-				},
 				wait: function() {
-					return allSettled(list);
+					console.log("waiting for list", name, list);
+					return controlled.promise.then(function() {
+						events.listeners.remove("created", created);
+						events.listeners.remove("settled", created);
+					});
 				},
-				clear: function() {
-					list.splice(0,list.length);
+				test: {
+					list: function() {
+						return list;
+					},
+					clear: function() {
+						list.splice(0,list.length);
+					},
+					setName: function(value) {
+						name = value;
+					}
 				}
 			}
-		})();
+		};
 
 		window.Promise = (function(was) {
 			/**
@@ -65,7 +125,12 @@
 				this.then = void(0);
 				this.catch = void(0);
 				var rv = new was(executor);
-				registry.add(rv);
+				events.fire("created", rv);
+				rv.then(function(value) {
+					console.log("settled - fulfilled", rv, value);
+					events.fire("settled", rv);
+					return value;
+				})
 				return rv;
 			}
 			//	Copy all properties
@@ -85,8 +150,10 @@
 
 		$export({
 			Promise: window.Promise,
-			registry: registry
+			controlled: ControlledPromise,
+			Registry: Registry,
+			console: console
 		})
 	}
 //@ts-ignore
-)($export);
+)($api,$export);

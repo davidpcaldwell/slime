@@ -20,8 +20,8 @@
 		}
 
 		fifty.tests.c = function() {
-			Promise.resolve("a").then(function(item) {
-				fifty.verify(item).is("a");
+			Promise.resolve("c").then(function(item) {
+				fifty.verify(item).is("c");
 			});
 		}
 
