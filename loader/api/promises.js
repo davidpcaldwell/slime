@@ -21,14 +21,18 @@
 		 * @returns { ReturnType<slime.definition.test.promises.Export["controlled"]> }
 		 */
 		var ControlledPromise = function() {
+			var id = ++controlledPromiseId;
 			var resolver;
 			var rejector;
 			var executor = function(resolve,reject) {
-				resolver = resolve;
+				resolver = function(value) {
+					console.log("resolving ControlledPromise", id, value);
+					resolve(value);
+				};
 				rejector = reject;
 			}
 			executor.toString = function() {
-				return "<ControlledPromise " + ++controlledPromiseId + ">";
+				return "<ControlledPromise " + id + ">";
 			}
 			var promise = new Promise(executor);
 			return {
@@ -38,12 +42,12 @@
 			}
 		};
 
-		var Registry = function() {
-			var name;
+		var Registry = function(p) {
+			var name = (p && p.name);
 			var list = [];
 
 			var created = function(e) {
-				console.log("adding promise to registry", e.detail, name);
+				console.log("adding promise to registry", name, e.detail);
 				list.push(e.detail);
 			};
 
@@ -130,7 +134,7 @@
 			 * @constructor
 			 */
 			function RegisteredPromise(executor) {
-				console.log("Created promise", executor);
+				console.log("Created promise", executor.toString());
 				this.then = void(0);
 				this.catch = void(0);
 				var rv = new was(executor);

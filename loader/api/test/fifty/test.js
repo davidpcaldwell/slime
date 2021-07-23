@@ -140,14 +140,86 @@
 
 		/**
 		 *
+		 * @param { { name: string } } [p]
+		 * @returns
+		 */
+		var AsynchronousScope = function recurse(p) {
+			var name = (p && p.name);
+
+			var registry;
+			var promises;
+
+			return {
+				test: {
+					depth: function() {
+						return scopes.length;
+					},
+					setName: function(value) {
+						registry.test.setName(value);
+					},
+					log: $context.promises.console.log
+				},
+				start: function() {
+					promises = new Promise(function promises(resolve,reject) {
+						resolve(void(0));
+					});
+
+					$context.promises.console.log("creating registry", name);
+					registry = $context.promises.Registry({ name: name });
+					if (name) registry.test.setName(p.name);
+					$context.promises.console.log("created registry", name);
+				},
+				then: function(v) {
+					promises = promises.then(v);
+					return promises;
+				},
+				now: function() {
+					return promises;
+				},
+				wait: function() {
+					return registry.wait();
+				},
+				child: function() {
+					return recurse();
+				}
+			}
+		};
+
+		//	We use a single `fifty` object throughout, and we can't change it across stack frames, so we cannot implement
+		//	these scopes on the stack; rather, we must implement a stack of them.
+		var AsynchronousScopes = function(initial) {
+			var stack = [ initial ];
+
+			var current = function() {
+				return stack[stack.length-1];
+			}
+
+			return {
+				push: function() {
+					var push = current().child();
+					stack.push(push);
+					return push;
+				},
+				pop: function() {
+					stack.pop();
+				},
+				current: function() {
+					return current();
+				}
+			}
+		};
+
+		/**
+		 *
+		 * @param { slime.fifty.test.internal.test.AsynchronousScope } ascope
 		 * @param { string } name
 		 * @param { () => void } execute
 		 * @returns { slime.fifty.test.internal.test.Result }
 		 */
-		var executeTestScope = function(name,execute) {
-			var registry = ($context.promises) ? $context.promises.Registry() : void(0);
-			if (registry) registry.test.setName(name);
-			if ($context.promises) $context.promises.console.log("created registry", name);
+		var executeTestScope = function(ascope,name,execute) {
+			if (ascope) ascope.start();
+			if (ascope) ascope.test.log("executeTestScope", name, ascope.test.depth());
+			if (ascope) ascope.test.setName(name);
 
 			start(name);
 			var was = {
@@ -165,7 +237,7 @@
 
 			function after() {
 				var result = localscope.success;
-				if ($context.promises) $context.promises.console.log("restoring scope and verify to", was.scope, was.verify);
+				if (ascope) ascope.test.log("restoring scope and verify to", was.scope, was.verify);
 				scope = was.scope;
 				verify = was.verify;
 				if (scope) {
@@ -176,12 +248,12 @@
 				return result;
 			}
 
-			if ($context.promises) {
+			if (ascope) {
 				return new $context.promises.Promise(function(resolve,reject) {
 					execute();
 					resolve(void(0));
 				}).then(function(executed) {
-					return registry.wait();
+					return ascope.wait();
 				}).then(function(done) {
 					$context.promises.console.log("computing after() for", name);
 					return Promise.resolve(after());
@@ -205,8 +277,9 @@
 			 * @param { T } [argument]
 			 * @returns { slime.fifty.test.internal.test.Result }
 			 */
-			var rv = function(callable,name,argument) {
+			var rv = function(ascope,callable,name,argument) {
 				return executeTestScope(
+					ascope,
 					(name) ? name : getContainerName(tests,callable),
 					function() {
 						try {
@@ -224,6 +297,7 @@
 
 		var error = function(name,e) {
 			executeTestScope(
+				void(0),
 				name,
 				function() { verify(String(e) + "\n" + e.stack).is("Successfully loaded tests"); }
 			)
@@ -245,46 +319,22 @@
 			return rv;
 		})();
 
-		var newChildren = function() {
-			return $context.promises ? Promise.resolve(void(0)) : void(0);
-		}
-
 		/**
 		 *
+		 * @param { slime.fifty.test.internal.test.AsynchronousScopes } ascopes
 		 * @param { slime.fifty.test.$loader } loader
 		 * @param { string } path
 		 * @param { string } part - the part to execute. If `undefined`, the default value `"suite"` will be used.
 		 * @param { any } [argument]
 		 * @returns { slime.fifty.test.internal.test.Result }
 		 */
-		var load = function recurse(promises,loader,path,part,argument) {
+		var load = function recurse(ascopes,loader,path,part,argument) {
 			if (!part) part = "suite";
 
 			//	TODO	this should probably be completely empty
 			var tests = {
 				types: {}
 			};
-
-			var AsynchronousScope = function(promises) {
-				var scopes = [promises];
-				var scope = promises;
-				return {
-					then: function(v) {
-						scope = scope.then(v);
-					},
-					descend: function() {
-						var push = newChildren();
-						scopes.push(push);
-						scope = push;
-					},
-					ascend: function() {
-						scopes.pop();
-						scope = scopes[scopes.length-1];
-					}
-				}
-			};
-
-			var ascope = ($context.promises) ? AsynchronousScope(promises) : void(0);
 
 			/**
 			 * @type { slime.fifty.test.kit }
@@ -314,19 +364,20 @@
 				},
 				run: function(f, name) {
 					if ($context.promises) $context.promises.console.log("run", f, name);
+
+					var controlled = (ascopes) ? $context.promises.controlled() : void(0);
+
 					var run = function() {
 						if ($context.promises) $context.promises.console.log("processing next child", name);
-						if (ascope) ascope.descend();
-						var rv = runner(tests)(f, name);
-						if (ascope) rv = rv.then(function() {
-							if (ascope) ascope.ascend();
-						});
+						var rv = runner(tests)( (ascopes) ? ascopes.push() : void(0), f, name);
+						if (controlled) controlled.resolve(void(0));
+						if (ascopes) ascopes.pop();
 						return rv;
 					};
-					if (promises) {
-						if ($context.promises) $context.promises.console.log("promises", promises);
-						ascope.then(run);
-						if ($context.promises) $context.promises.console.log("promises now", promises);
+					if (ascopes) {
+						if ($context.promises) $context.promises.console.log("ascope", ascopes.current().test.depth(), ascopes.current());
+						ascopes.current().then(run);
+						if ($context.promises) $context.promises.console.log("ascope now", ascopes.current().test.depth(), ascopes.current());
 					} else {
 						run();
 					}
@@ -342,16 +393,18 @@
 						var path = parsePath(at);
 						var subloader = (path.folder) ? loader.Child(path.folder) : loader;
 						if (isMyLoader(subloader)) {
-							var rv = recurse(newChildren(), subloader, path.file, part, argument);
+							if (ascopes) ascopes.push();
+							var rv = recurse(ascopes, subloader, path.file, part, argument);
 							if (controlled) controlled.resolve(void(0));
+							if (ascopes) ascopes.pop();
 							return rv;
 						} else {
 							throw new Error("Runtime downcast failed.");
 						}
 					};
 
-					if (promises) {
-						promises = promises.then(run);
+					if (ascopes) {
+						ascopes.current().then(run);
 					} else {
 						run();
 					}
@@ -409,10 +462,10 @@
 					/** @type { (argument: any) => void } */
 					var callable = target;
 					var createRunner = function() {
-						return runner(tests)(callable, path + ":" + part, argument);
+						return runner(tests)( (ascopes) ? ascopes.current() : void(0), callable, path + ":" + part, argument);
 					}
 					if ($context.promises) {
-						return promises.then(createRunner);
+						return createRunner();
 					} else {
 						return createRunner();
 					}
@@ -428,7 +481,10 @@
 
 		$export(
 			function(loader,path,part) {
-				return load(newChildren(),loader,path,part);
+				var ascopes = ($context.promises) ? AsynchronousScopes(
+					AsynchronousScope({ name: "(top)" })
+				) : void(0);
+				return load(ascopes,loader,path,part);
 			}
 		)
 	}

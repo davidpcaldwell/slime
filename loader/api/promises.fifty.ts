@@ -27,7 +27,7 @@ namespace slime.definition.test.promises {
 	}
 
 	export interface Export {
-		Registry: () => Registry
+		Registry: (p?: { name: string }) => Registry
 		Promise: PromiseConstructor
 		console: slime.rename.JavascriptConsole
 		controlled: () => {

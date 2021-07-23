@@ -32,6 +32,26 @@ namespace slime.fifty.test.internal.test {
 		then: (f: (success: boolean) => any) => any
 	}
 
+	export interface AsynchronousScope {
+		start: () => void
+		then: (v: any) => any
+		child: () => AsynchronousScope
+		wait: () => Promise<any>
+		now: () => Promise<any>
+
+		test: {
+			log: (...a: any[]) => void
+			depth: () => number
+			setName: (value: string) => void
+		}
+	}
+
+	export interface AsynchronousScopes {
+		push: () => AsynchronousScope
+		pop: () => void
+		current: () => AsynchronousScope
+	}
+
 	export type Export = (loader: slime.fifty.test.$loader, path: string, part?: string) => Result
 
 	export type Factory = slime.loader.Product<Context,Export>
