@@ -183,16 +183,20 @@
 					jsh.wf.typescript.typedoc();
 				}
 
+				var displayBranchName = function(name) {
+					return (name === null) ? "(detached HEAD)" : name;
+				}
+
 				$exports.status = function(p) {
 					//	TODO	add option for offline
 					var repository = fetch();
 					var remote = "origin";
-					var branch = repository.status().branch.name;
-					var vsOriginMaster = jsh.wf.git.compareTo(remote + "/" + branch)(repository);
 					var status = repository.status();
-					jsh.shell.console("Current branch: " + status.branch.name);
-					if (vsOriginMaster.ahead.length) jsh.shell.console("ahead of " + remote + "/" + branch + ": " + vsOriginMaster.ahead.length);
-					if (vsOriginMaster.behind.length) jsh.shell.console("behind " + remote + "/" + branch + ": " + vsOriginMaster.behind.length);
+					var branch = status.branch.name;
+					var vsOriginMaster = (branch) ? jsh.wf.git.compareTo(remote + "/" + branch)(repository) : null;
+					jsh.shell.console("Current branch: " + displayBranchName(status.branch.name));
+					if (vsOriginMaster && vsOriginMaster.ahead.length) jsh.shell.console("ahead of " + remote + "/" + branch + ": " + vsOriginMaster.ahead.length);
+					if (vsOriginMaster && vsOriginMaster.behind.length) jsh.shell.console("behind " + remote + "/" + branch + ": " + vsOriginMaster.behind.length);
 					var output = $api.Function.result(
 						status.paths,
 						$api.Function.conditional({
@@ -208,7 +212,7 @@
 						})
 					);
 					if (output) jsh.shell.console(output);
-					if (vsOriginMaster.behind.length && !vsOriginMaster.ahead.length && !vsOriginMaster.paths) {
+					if (vsOriginMaster && vsOriginMaster.behind.length && !vsOriginMaster.ahead.length && !vsOriginMaster.paths) {
 						jsh.shell.console("Fast-forwarding ...");
 						repository.merge({ ffOnly: true, name: remote + "/" + branch });
 					}
@@ -262,6 +266,28 @@
 				$exports.submodule = {
 					update: void(0),
 					remove: void(0),
+					attach: $api.Function.pipe(
+						jsh.script.cli.option.string({ longname: "path" }),
+						function(p) {
+							var repository = jsh.tools.git.Repository({ directory: $context.base });
+							var submodule = repository.submodule({ cached: true }).find(function(submodule) {
+								return submodule.path == p.options.path;
+							});
+							var tracking = submodule.branch;
+							var branch = submodule.repository.status().branch.name;
+							if (branch === null && tracking) {
+								submodule.repository.branch({
+									name: tracking,
+									startPoint: "HEAD",
+									force: true
+								});
+								submodule.repository.checkout({ branch: tracking });
+							} else {
+								jsh.shell.console("Submodule " + p.options.path + " of " + repository + " must be detached HEAD with tracking branch.");
+								return 1;
+							}
+						}
+					),
 					reset: $api.Function.pipe(
 						jsh.wf.cli.$f.option.string({ longname: "path" }),
 						function(p) {
