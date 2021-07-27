@@ -7,7 +7,7 @@
 namespace slime.tools.documentation {
 	export interface Configuration {
 		base: slime.jrunscript.file.Directory
-		watch: boolean
+		watch?: boolean
 	}
 
 	/**
@@ -15,6 +15,8 @@ namespace slime.tools.documentation {
 	 * servlet handler that can serve Typedoc documentation given the httpd API.
 	 */
 	export type implementation = (configuration: Configuration) => factory
+
+	export type Export = implementation
 
 	export type factory = (p: slime.servlet.httpd) => slime.servlet.handler
 

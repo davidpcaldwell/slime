@@ -12,11 +12,10 @@
 	 *
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.Global } jsh
-	 * @param { { httpd: slime.servlet.httpd } } $context
 	 * @param { slime.Loader } $loader
 	 * @param { slime.loader.Export<slime.tools.documentation.implementation> } $export
 	 */
-	function($api,jsh,$context,$loader,$export) {
+	function($api,jsh,$loader,$export) {
 		$export(
 			function(configuration) {
 				var base = configuration.base;
@@ -90,6 +89,15 @@
 									index: "index.html"
 								})($api.Object.compose(request, { path: match[2] }))
 							}
+						},
+						function(request) {
+							var typedocPattern = /^(?:(.+)\/)?local\/doc\/typedoc\/(.*)/;
+							var match = typedocPattern.exec(request.path);
+							if (match) {
+								var loader = new jsh.file.Loader({ directory: base });
+								var handler = httpd.Handler.Loader({ loader: loader });
+								return handler(request);
+							}
 						}
 					)
 				};
@@ -98,4 +106,4 @@
 		)
 	}
 //@ts-ignore
-)($api,jsh,$context,$loader,$export);
+)($api,jsh,$loader,$export);
