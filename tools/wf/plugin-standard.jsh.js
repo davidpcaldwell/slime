@@ -24,13 +24,15 @@
 					})(arguments);
 				}
 
+				var credentialHelper = jsh.shell.jsh.src.getFile("rhino/tools/github/git-credential-github-tokens-directory.bash").toString();
 				var fetch = $api.Function.memoized(function() {
 					var repository = jsh.tools.git.Repository({ directory: $context.base });
 					jsh.shell.console("Fetching all updates ...");
 					repository.fetch({
 						all: true,
 						prune: true,
-						recurseSubmodules: true
+						recurseSubmodules: true,
+						credentialHelper: credentialHelper
 					}, {
 						remote: function(e) {
 							var remote = e.detail;
@@ -141,7 +143,10 @@
 						//	master
 						repository.push({
 							repository: "origin",
-							refspec: "HEAD"
+							refspec: "HEAD",
+							config: {
+								"credential.helper": credentialHelper
+							}
 						});
 					}
 				}
