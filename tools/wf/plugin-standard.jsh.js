@@ -278,6 +278,10 @@
 							var submodule = repository.submodule({ cached: true }).find(function(submodule) {
 								return submodule.path == p.options.path;
 							});
+							if (!submodule) {
+								jsh.shell.console("ERROR: " + repository + " does not have a (direct) submodule at " + p.options.path);
+								return 1;
+							}
 							var tracking = submodule.branch;
 							var branch = submodule.repository.status().branch.name;
 							if (branch === null && tracking) {
