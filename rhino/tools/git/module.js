@@ -15,7 +15,7 @@
 	 */
 	function($api,$context,$exports) {
 
-		/** @type { new (environment: slime.jrunscript.git.Installation.argument) => slime.jrunscript.git.Installation } */
+		/** @type { new (environment: Parameters<slime.jrunscript.git.Exports["Installation"]>[0] ) => slime.jrunscript.git.Installation } */
 		var Installation = function(environment) {
 
 			//	Organized via https://git-scm.com/docs
@@ -104,7 +104,7 @@
 					/**
 					 *
 					 * @param { slime.jrunscript.git.internal.InvocationConfiguration } o
-					 * @param { slime.jrunscript.git.Repository.argument } p
+					 * @param { slime.jrunscript.git.repository.argument } p
 					 * @param { any } events
 					 */
 					function invoke(o,p,events) {
@@ -376,7 +376,7 @@
 			};
 
 			/**
-			 * @type { slime.jrunscript.git.Repository.Local["fetch"] }
+			 * @type { slime.jrunscript.git.repository.Local["fetch"] }
 			 */
 			var fetch = cli.command({
 				command: "fetch",
@@ -561,7 +561,7 @@
 			};
 
 			/**
-			 * @type { new (o: any) => slime.jrunscript.git.Repository.Local }
+			 * @type { new (o: any) => slime.jrunscript.git.repository.Local }
 			 */
 			var LocalRepository = function LocalRepository(o) {
 				Repository.call(this,o);
@@ -663,7 +663,7 @@
 					}
 				};
 
-				/** @type { slime.jrunscript.git.Repository.Local["show"] } */
+				/** @type { slime.jrunscript.git.repository.Local["show"] } */
 				var show = function(p) {
 					return execute({
 						command: "show",
@@ -692,7 +692,7 @@
 
 				//	Setup and Config
 
-				/** @type { slime.jrunscript.git.Repository.Local["config"] } */
+				/** @type { slime.jrunscript.git.repository.Local["config"] } */
 				this.config = command(config);
 
 				//	Getting and Creating Projects
@@ -712,7 +712,7 @@
 				myremote.getUrl = command(remote.getUrl);
 				this.remote = myremote;
 
-				/** @type { slime.jrunscript.git.Repository.Local["status"] } */
+				/** @type { slime.jrunscript.git.repository.Local["status"] } */
 				this.status = function() {
 					var self = this;
 
@@ -755,7 +755,7 @@
 					});
 				};
 
-				/** @type { slime.jrunscript.git.Repository.Local["commit"] } */
+				/** @type { slime.jrunscript.git.repository.Local["commit"] } */
 				this.commit = command(commit);
 
 				//	Branching and Merging
@@ -881,7 +881,7 @@
 					}
 				};
 
-				/** @type { slime.jrunscript.git.Repository.Local["checkout" ] } */
+				/** @type { slime.jrunscript.git.repository.Local["checkout" ] } */
 				this.checkout = function(p) {
 					var args = [];
 					args.push(p.branch);
@@ -891,7 +891,7 @@
 					}, (p.stdio) ? { stdio: p.stdio } : {}));
 				};
 
-				/** @type { slime.jrunscript.git.Repository.Local["merge"] } */
+				/** @type { slime.jrunscript.git.repository.Local["merge"] } */
 				this.merge = function(p) {
 					var args = [];
 					if (p.noCommit) {
@@ -942,11 +942,11 @@
 
 				//	Sharing and Updating Projects
 
-				/** @type { slime.jrunscript.git.Repository.Local["fetch"] } */
+				/** @type { slime.jrunscript.git.repository.Local["fetch"] } */
 				this.fetch = command(fetch);
 
 				this.push = (
-					/** @param { Parameters<slime.jrunscript.git.Repository.Local["push"]>[0] } p */
+					/** @param { Parameters<slime.jrunscript.git.repository.Local["push"]>[0] } p */
 					function(p) {
 						var args = [];
 						if (p && p.delete) args.push("--delete");
@@ -1010,7 +1010,7 @@
 					}
 				}
 
-				/** @type { slime.jrunscript.git.Repository.Local["submodule"] } */
+				/** @type { slime.jrunscript.git.repository.Local["submodule"] } */
 				this.submodule = Object.assign(function(p) {
 					if (!p) p = {};
 					if (!p.command) {
@@ -1087,7 +1087,7 @@
 					return show(p);
 				};
 
-				/** @type { slime.jrunscript.git.Repository.Local["log"] } */
+				/** @type { slime.jrunscript.git.repository.Local["log"] } */
 				this.log = function(p) {
 					if (!p) p = {};
 
@@ -1269,7 +1269,7 @@
 			}
 		};
 
-		/** @type { (environment: slime.jrunscript.git.Installation.argument) => slime.jrunscript.git.Installation } */
+		/** @type { (environment: Parameters<slime.jrunscript.git.Exports["Installation"]>[0] ) => slime.jrunscript.git.Installation } */
 		$exports.Installation = function(environment) {
 			return new Installation(environment);
 		}

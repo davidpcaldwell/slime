@@ -142,49 +142,6 @@ namespace slime.jrunscript.shell {
 	//@ts-ignore
 	)(fifty);
 
-	/**
-	 * A fully-specified invocation of a command to be run in an external process.
-	 */
-	export interface Invocation {
-		/**
-		 * The command to run.
-		 */
-		command: string
-
-		/**
-		 * The arguments to pass to the command.
-		 */
-		arguments: string[]
-
-		/**
-		 * The environment to pass to the command.
-		 */
-		environment: {
-			[name: string]: string
-		}
-
-		/**
-		 * The working directory to use when running the command.
-		 */
-		directory: slime.jrunscript.file.Directory
-
-		/**
-		 * The standard input, output, and error streams to use for the command.
-		 *
-		 * For the output streams:
-		 * * if the global `String` object is used as the value, the stream's output will be captured as a string and returned along with the result of the subprocess.
-		 * * if an object with a `line()` function is used as the value, the output will be buffered and the given object will receive a callback for each line of output.
-		 *
-		 * For the input stream:
-		 * * if the value is a string, that string will be provided on the standard input stream for the subprocess.
-		 */
-		stdio: {
-			output?: StringConstructor | slime.jrunscript.runtime.io.OutputStream | { line: (line: string) => void }
-			error?: StringConstructor | slime.jrunscript.runtime.io.OutputStream | { line: (line: string) => void }
-			input?: string | slime.jrunscript.runtime.io.InputStream
-		}
-	}
-
 	export interface Exports {
 		//	environment (maybe defined erroneously in jsh.d.ts)
 

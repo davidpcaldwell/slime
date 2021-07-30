@@ -46,8 +46,8 @@ namespace slime.jsh.wf {
 	 * by prompting the user).
 	 */
 	interface GitIdentityProvider {
-		name: (p: { repository: slime.jrunscript.git.Repository.Local }) => string,
-		email: (p: { repository: slime.jrunscript.git.Repository.Local }) => string
+		name: (p: { repository: slime.jrunscript.git.repository.Local }) => string,
+		email: (p: { repository: slime.jrunscript.git.repository.Local }) => string
 	}
 
 	export namespace cli {
@@ -101,7 +101,7 @@ namespace slime.jsh.wf {
 
 			submodule: {
 				status: () => Array<slime.jrunscript.git.Submodule & {
-					status: ReturnType<slime.jrunscript.git.Repository.Local["status"]>
+					status: ReturnType<slime.jrunscript.git.repository.Local["status"]>
 					state: ReturnType<ReturnType<Exports["git"]["compareTo"]>>
 				}>
 				remove: (p: { path: string }) => void
@@ -186,7 +186,7 @@ namespace slime.jsh.wf {
 
 		git: {
 			compareTo: (branchName: string) =>
-				(repository: slime.jrunscript.git.Repository.Local) => {
+				(repository: slime.jrunscript.git.repository.Local) => {
 					ahead: slime.jrunscript.git.Commit[],
 					behind: slime.jrunscript.git.Commit[],
 					paths: any
@@ -228,7 +228,7 @@ namespace slime.jsh.wf {
 		/**
 		 * Errs if files untracked by Git are found in the given repository.
 		 */
-		 prohibitUntrackedFiles: (p: { repository: slime.jrunscript.git.Repository.Local }, events?: $api.events.Function.Receiver) => void
+		 prohibitUntrackedFiles: (p: { repository: slime.jrunscript.git.repository.Local }, events?: $api.events.Function.Receiver) => void
 	}
 
 	(
@@ -248,7 +248,7 @@ namespace slime.jsh.wf {
 		 */
 		requireGitIdentity: {
 			(p: {
-				repository: slime.jrunscript.git.Repository.Local
+				repository: slime.jrunscript.git.repository.Local
 				get?: GitIdentityProvider
 			}, events?: $api.events.Function.Receiver)
 
@@ -328,7 +328,7 @@ namespace slime.jsh.wf {
 	)(fifty)
 
 	export interface Exports {
-		prohibitModifiedSubmodules: (p: { repository: slime.jrunscript.git.Repository.Local }, events?: $api.events.Function.Receiver) => void
+		prohibitModifiedSubmodules: (p: { repository: slime.jrunscript.git.repository.Local }, events?: $api.events.Function.Receiver) => void
 	}
 
 	(
@@ -338,7 +338,7 @@ namespace slime.jsh.wf {
 			var jsh = fifty.global.jsh;
 			var verify = fifty.verify;
 
-			function configure(repository: slime.jrunscript.git.Repository.Local) {
+			function configure(repository: slime.jrunscript.git.repository.Local) {
 				repository.config({
 					set: {
 						name: "user.name",

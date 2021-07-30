@@ -68,7 +68,7 @@
 
 				/**
 				 *
-				 * @param { slime.jrunscript.git.Repository.Local } repository
+				 * @param { slime.jrunscript.git.repository.Local } repository
 				 * @param { string } path
 				 */
 				var isSubmodulePath = function(repository,path) {

@@ -28,12 +28,6 @@ namespace slime.jrunscript.git {
 		kill: () => void
 	}
 
-	export namespace Installation {
-		export interface argument {
-			program: slime.jrunscript.file.File
-		}
-	}
-
 	export interface Installation {
 		daemon: (p: {
 			port?: number
@@ -42,10 +36,10 @@ namespace slime.jrunscript.git {
 		}) => Daemon
 
 		Repository: {
-			(p: { directory: slime.jrunscript.file.Directory }): slime.jrunscript.git.Repository.Local
-			new (p: { directory: slime.jrunscript.file.Directory }): slime.jrunscript.git.Repository.Local
-			(p: { local: slime.jrunscript.file.Directory }): slime.jrunscript.git.Repository.Local
-			new (p: { local: slime.jrunscript.file.Directory }): slime.jrunscript.git.Repository.Local
+			(p: { directory: slime.jrunscript.file.Directory }): slime.jrunscript.git.repository.Local
+			new (p: { directory: slime.jrunscript.file.Directory }): slime.jrunscript.git.repository.Local
+			(p: { local: slime.jrunscript.file.Directory }): slime.jrunscript.git.repository.Local
+			new (p: { local: slime.jrunscript.file.Directory }): slime.jrunscript.git.repository.Local
 			(p: { remote: string }): slime.jrunscript.git.Repository
 			new (p: { remote: string }): slime.jrunscript.git.Repository
 		}
@@ -62,10 +56,10 @@ namespace slime.jrunscript.git {
 
 	export interface Repository {
 		reference: string,
-		clone: (argument: Repository.argument & {
+		clone: (argument: repository.argument & {
 			to: slime.jrunscript.file.Pathname,
 			recurseSubmodules?: boolean
-		}, events?: object ) => slime.jrunscript.git.Repository.Local
+		}, events?: object ) => slime.jrunscript.git.repository.Local
 	}
 
 	export interface Submodule {
@@ -84,11 +78,11 @@ namespace slime.jrunscript.git {
 		 */
 		branch?: string
 
-		repository: Repository.Local
+		repository: repository.Local
 		commit: Commit
 	}
 
-	export namespace Repository {
+	export namespace repository {
 		export interface argument {
 			config?: { [x: string]: string }
 			credentialHelper?: string
@@ -168,7 +162,7 @@ namespace slime.jrunscript.git {
 					path: string
 					name?: string
 					branch?: string
-				}) => slime.jrunscript.git.Repository.Local
+				}) => slime.jrunscript.git.repository.Local
 
 				update: (p: argument & {
 					init?: boolean,
@@ -244,7 +238,10 @@ namespace slime.jrunscript.git {
 	}
 
 	export interface Exports {
-		Installation: (environment: slime.jrunscript.git.Installation.argument) => slime.jrunscript.git.Installation
+		Installation: (environment: {
+			program: slime.jrunscript.file.File
+		}) => slime.jrunscript.git.Installation
+
 		credentialHelper: any
 		installation: slime.jrunscript.git.Installation
 		daemon: slime.jrunscript.git.Installation["daemon"]
@@ -267,7 +264,7 @@ namespace slime.jrunscript.git {
 		export interface Fixtures {
 			init: slime.jrunscript.git.Exports["init"]
 			write: (p: {
-				repository?: Repository.Local
+				repository?: repository.Local
 				directory?: slime.jrunscript.file.Directory
 				files: {
 					[path: string]: string
@@ -301,7 +298,7 @@ namespace slime.jrunscript.git {
 				stdout: slime.$api.event.Handler<string>
 				stderr: slime.$api.event.Handler<string>
 			}
-		) => slime.jrunscript.git.Repository.Local
+		) => slime.jrunscript.git.repository.Local
 	}
 
 	(
@@ -325,7 +322,7 @@ namespace slime.jrunscript.git {
 
 			fifty.tests.Installation = {};
 			fifty.tests.Installation.init = function() {
-				var verifyEmptyRepository = function(repository: slime.jrunscript.git.Repository.Local) {
+				var verifyEmptyRepository = function(repository: slime.jrunscript.git.repository.Local) {
 					verify(repository).is.type("object");
 					verify(repository).log().length.is(0);
 				};
@@ -384,7 +381,7 @@ namespace slime.jrunscript.git {
 	//@ts-ignore
 	)(fifty)
 
-	export namespace Repository {
+	export namespace repository {
 		(
 			function(
 				fifty: slime.fifty.test.kit
@@ -573,7 +570,7 @@ namespace slime.jrunscript.git {
 			fifty.global.jsh.shell.console(s);
 		}
 
-		var commitFile = function(repository: git.Repository.Local,p) {
+		var commitFile = function(repository: git.repository.Local,p) {
 			var path = p;
 			repository.directory.getRelativePath(path).write(path, { append: false });
 			repository.add({ path: path });
@@ -587,7 +584,7 @@ namespace slime.jrunscript.git {
 			});
 		};
 
-		function configure(repository: git.Repository.Local) {
+		function configure(repository: git.repository.Local) {
 			repository.config({
 				set: {
 					name: "user.name",
