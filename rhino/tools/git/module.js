@@ -150,7 +150,7 @@
 						var createReturnValue = (o.createReturnValue) ? o.createReturnValue(p) : $api.Function.returning(void(0));
 
 						return createReturnValue({ output: output, result: result });
-					};
+					}
 
 					function execute(p, events) {
 						var configuration = c.configure(p);

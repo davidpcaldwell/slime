@@ -5,6 +5,257 @@
 //	END LICENSE
 
 namespace slime.jrunscript.git {
+	export interface Commit {
+		names: string[],
+		commit: { hash: string },
+		author: { name: string, email: string, date: any },
+		committer: { name: string, email: string, date: any },
+		subject: string
+	}
+
+	export interface Branch {
+		/**
+		 * The name of this branch. Can be `null` if this "branch" is a detached HEAD.
+		 */
+		name: string
+		current: boolean
+		commit: Commit
+	}
+
+	interface Daemon {
+		port: number
+		basePath?: slime.jrunscript.file.Pathname
+		kill: () => void
+	}
+
+	export namespace Installation {
+		export interface argument {
+			program: slime.jrunscript.file.File
+		}
+	}
+
+	export interface Installation {
+		daemon: (p: {
+			port?: number
+			basePath?: slime.jrunscript.file.Pathname
+			exportAll?: boolean
+		}) => Daemon
+
+		Repository: {
+			(p: { directory: slime.jrunscript.file.Directory }): slime.jrunscript.git.Repository.Local
+			new (p: { directory: slime.jrunscript.file.Directory }): slime.jrunscript.git.Repository.Local
+			(p: { local: slime.jrunscript.file.Directory }): slime.jrunscript.git.Repository.Local
+			new (p: { local: slime.jrunscript.file.Directory }): slime.jrunscript.git.Repository.Local
+			(p: { remote: string }): slime.jrunscript.git.Repository
+			new (p: { remote: string }): slime.jrunscript.git.Repository
+		}
+
+		//	Uses Object.assign for rhino/shell run(), so should cross-check with those arguments
+		execute: (m: {
+			config?: any
+			command: string,
+			arguments?: string[]
+			environment?: any
+			directory?: slime.jrunscript.file.Directory
+		}) => void
+	}
+
+	export interface Repository {
+		reference: string,
+		clone: (argument: Repository.argument & {
+			to: slime.jrunscript.file.Pathname,
+			recurseSubmodules?: boolean
+		}, events?: object ) => slime.jrunscript.git.Repository.Local
+	}
+
+	export interface Submodule {
+		/**
+		 * The logical name of the submodule, as it is referenced in configuration entries.
+		 */
+		name: string
+
+		/**
+		 * The path of the submodule within its parent.
+		 */
+		path: string
+
+		/**
+		 * The branch the submodule is set up to track, if it is set up to track one.
+		 */
+		branch?: string
+
+		repository: Repository.Local
+		commit: Commit
+	}
+
+	export namespace Repository {
+		export interface argument {
+			config?: { [x: string]: string }
+			credentialHelper?: string
+			directory?: slime.jrunscript.file.Directory
+		}
+
+		export interface Local extends slime.jrunscript.git.Repository {
+			directory: slime.jrunscript.file.Directory
+
+			add: any
+			rm: (p: { path: string }, events?: $api.events.Function.Receiver) => void
+
+			branch: {
+				(p: {
+					delete: string
+					force?: boolean
+				}): void
+
+				(p?: {
+					remotes?: boolean
+					/** @deprecated */
+					remote?: boolean
+					all?: boolean
+				}): slime.jrunscript.git.Branch[]
+
+				(p: {
+					old: boolean
+				}): slime.jrunscript.git.Branch
+
+				(p: {
+					name: string
+					startPoint?: string
+					force?: boolean
+				}): void
+			}
+
+			show: (p: { object: string}  ) => Commit
+
+			fetch: (p: argument & {
+				all?: boolean
+				prune?: boolean
+				recurseSubmodules?: boolean
+				stdio?: any
+			}, events?: $api.events.Function.Receiver) => void
+
+			merge: (p: {
+				name: string
+				noCommit?: boolean
+				noFf?: boolean
+				ffOnly?: boolean
+				stdio?: any
+			}) => void
+
+			checkout: (p: { branch: string, stdio?: any  }) => void
+
+			remote: ( () => void ) & { getUrl: ({ name: string }) => string },
+			stash: any,
+			push: (p?: {
+				delete?: boolean
+				setUpstream?: string
+				all?: boolean
+				repository?: string
+				refspec?: string
+
+				config?: any
+				environment?: any
+			}) => void,
+			mergeBase: (p: { commits: string[] }) => Commit
+			submodule: {
+				/**
+				 * Returns a list of submodules for this repository.
+				 */
+				(p?: { cached?: boolean }): Submodule[]
+
+				add: (p: {
+					repository: slime.jrunscript.git.Repository
+					path: string
+					name?: string
+					branch?: string
+				}) => slime.jrunscript.git.Repository.Local
+
+				update: (p: argument & {
+					init?: boolean,
+					recursive?: boolean
+				}) => void
+
+				deinit: (p: argument & {
+					force?: boolean
+					path: string
+				}) => void
+			}
+
+			execute: (p: {
+				command: string
+				arguments?: string[]
+				environment?: object,
+				directory?: slime.jrunscript.file.Directory
+			}) => any
+
+			commit: (p: {
+				all?: boolean
+				noVerify?: boolean
+				message: string
+				author?: string
+			}, events?: any) => any
+		}
+	}
+
+	export namespace internal {
+		export interface Environment {
+			[x: string]: string
+		}
+
+		export interface InvocationConfiguration<T> {
+			arguments?: (p: T) => $api.fp.impure.Updater<string[]>
+			environment?: (p: T) => $api.fp.impure.Updater<Environment>,
+			createReturnValue?: (p: T) => (result: Result) => any
+		}
+
+		export interface GitCommand<T> {
+			name: string
+			configure: <S extends T>(p: T) => InvocationConfiguration<S>
+		}
+
+		export interface Result {
+			output: {
+				stdout: string[]
+				stderr: string[]
+			}
+
+			//	TODO	this should be the datatype returned by rhino/shell.run(), which is currently not declared
+			result: {
+				status: number
+			}
+		}
+
+		interface Command {
+			name: string
+		}
+	}
+
+	export interface Context {
+		program: slime.jrunscript.file.File,
+		api: {
+			js: any
+			java: any
+			shell: slime.jrunscript.shell.Exports
+			Error: any
+			time: slime.time.Exports
+		}
+		environment: any
+		console: any
+	}
+
+	export interface Exports {
+		Installation: (environment: slime.jrunscript.git.Installation.argument) => slime.jrunscript.git.Installation
+		credentialHelper: any
+		installation: slime.jrunscript.git.Installation
+		daemon: slime.jrunscript.git.Installation["daemon"]
+		Repository: slime.jrunscript.git.Installation["Repository"]
+		init: slime.jrunscript.git.Installation["init"]
+		execute: slime.jrunscript.git.Installation["execute"]
+		install: Function & { GUI: any }
+	}
+}
+
+namespace slime.jrunscript.git {
 	export namespace internal {
 		export const subject = (
 			function(fifty: slime.fifty.test.kit) {
