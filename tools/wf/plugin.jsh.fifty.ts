@@ -266,9 +266,9 @@ namespace slime.jsh.wf {
 			var verify = fifty.verify;
 
 			fifty.tests.exports.requireGitIdentity = function() {
-				run(fifty.tests.exports.requireGitIdentity.first);
-				run(fifty.tests.exports.requireGitIdentity.second);
-				run(fifty.tests.exports.requireGitIdentity.third);
+				fifty.run(fifty.tests.exports.requireGitIdentity.first);
+				fifty.run(fifty.tests.exports.requireGitIdentity.second);
+				fifty.run(fifty.tests.exports.requireGitIdentity.third);
 			};
 
 			fifty.tests.exports.requireGitIdentity.first = function() {

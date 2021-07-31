@@ -173,7 +173,7 @@ namespace slime.jrunscript.file {
 
 				var toString = function(p) { return String(p); }
 
-				run(function create() {
+				fifty.run(function create() {
 					var tmpdir = newdir();
 
 					var action = subject.action.write({
@@ -197,7 +197,7 @@ namespace slime.jrunscript.file {
 					fifty.verify(tmpdir).getFile("foo").read(String).evaluate(toString).is("bar");
 				});
 
-				run(function existsFail() {
+				fifty.run(function existsFail() {
 					var tmpdir = newdir();
 
 					subject.action.write({
@@ -215,7 +215,7 @@ namespace slime.jrunscript.file {
 					fifty.verify(second).evaluate(function(f) { return f(); }).threw.type(Error);
 				});
 
-				run(function existsLeave() {
+				fifty.run(function existsLeave() {
 					var tmpdir = newdir();
 
 					subject.action.write({
@@ -233,7 +233,7 @@ namespace slime.jrunscript.file {
 					fifty.verify(tmpdir).getFile("foo").read(String).evaluate(toString).is("bar");
 				});
 
-				run(function existsOverwrite() {
+				fifty.run(function existsOverwrite() {
 					var tmpdir = newdir();
 
 					subject.action.write({
@@ -251,7 +251,7 @@ namespace slime.jrunscript.file {
 					fifty.verify(tmpdir).getFile("foo").read(String).evaluate(toString).is("baz");
 				});
 
-				run(function noCreateDirectory() {
+				fifty.run(function noCreateDirectory() {
 					var tmpdir = newdir();
 
 					var action = subject.action.write({
@@ -263,7 +263,7 @@ namespace slime.jrunscript.file {
 					fifty.verify(action).evaluate(function(f) { return f(); }).threw.type(Error);
 				});
 
-				run(function createDirectory() {
+				fifty.run(function createDirectory() {
 					var tmpdir = newdir();
 
 					var action = subject.action.write({
@@ -305,7 +305,8 @@ namespace slime.jrunscript.file {
 		Packages: slime.jrunscript.Packages,
 		jsh: slime.jsh.Global,
 		tests: slime.fifty.test.tests,
-		verify: slime.fifty.test.verify
+		verify: slime.fifty.test.verify,
+		fifty: slime.fifty.test.kit
 	) {
 		var MODIFIED_TIME = new jsh.time.When({ unix: 1599862384355 });
 
@@ -367,11 +368,11 @@ namespace slime.jrunscript.file {
 		}
 
 		tests.suite = function() {
-			run(tests.filetime);
-			run(tests.exports.navigate);
-			run(tests.state.list);
-			run(tests.action.delete);
+			fifty.run(tests.filetime);
+			fifty.run(tests.exports.navigate);
+			fifty.run(tests.state.list);
+			fifty.run(tests.action.delete);
 		}
 	}
 //@ts-ignore
-)(Packages,global.jsh,tests,verify);
+)(Packages,global.jsh,tests,verify,fifty);

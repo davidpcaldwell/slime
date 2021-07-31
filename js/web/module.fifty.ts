@@ -202,7 +202,7 @@ namespace slime.web {
 
 			fifty.tests.Url = Object.assign(
 				function() {
-					run(function liveQueryProperty() {
+					fifty.run(function liveQueryProperty() {
 						var url = module.Url.parse("http://www.example.com/path/to/page.html");
 						var toString = function(p) { return p.toString(); };
 						fifty.verify(url).evaluate(toString).is("http://www.example.com/path/to/page.html");
@@ -213,7 +213,7 @@ namespace slime.web {
 						fifty.verify(url).evaluate(toString).is("http://www.example.com/path/to/page.html?foo=bar&foo=baz");
 					});
 
-					run(function constructor() {
+					fifty.run(function constructor() {
 						var one = new module.Url({
 							path: "path",
 							query: [
@@ -223,17 +223,17 @@ namespace slime.web {
 						fifty.verify(one).evaluate(function(p) { return p.toString(); }).is("path?foo=bar");
 					})
 
-					run(fifty.tests.Url.resolve);
+					fifty.run(fifty.tests.Url.resolve);
 				},
 				{
 					resolve: function() {
 						var base = module.Url.parse("http://www.example.com/path/to/page.html?name=value&foo=bar#fragment");
-						run(function() {
+						fifty.run(function() {
 							var relative = base.resolve("../foo.js");
 							var toString = function(p) { return p.toString(); };
 							fifty.verify(relative).evaluate(toString).is("http://www.example.com/path/foo.js");
 						});
-						run(function() {
+						fifty.run(function() {
 							var relative = base.resolve("./");
 							var toString = function(p) { return p.toString(); };
 							fifty.verify(relative).evaluate(toString).is("http://www.example.com/path/to/");
@@ -337,12 +337,12 @@ namespace slime.web {
 (
 	function(fifty: slime.fifty.test.kit) {
 		fifty.tests.suite = function() {
-			run(fifty.tests.exports.Url.parse);
-			run(fifty.tests.exports.Url.query);
-			run(fifty.tests.Url);
+			fifty.run(fifty.tests.exports.Url.parse);
+			fifty.run(fifty.tests.exports.Url.query);
+			fifty.run(fifty.tests.Url);
 
-			run(fifty.tests.exports.Form);
-			run(fifty.tests.exports.window);
+			fifty.run(fifty.tests.exports.Form);
+			fifty.run(fifty.tests.exports.window);
 		}
 	}
 //@ts-ignore

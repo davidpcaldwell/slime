@@ -387,9 +387,9 @@ namespace slime.$api.fp {
 		}
 
 		tests.suite = function() {
-			run(tests.RegExp);
-			run(tests.impure);
-			run(tests.compare);
+			fifty.run(tests.RegExp);
+			fifty.run(tests.impure);
+			fifty.run(tests.compare);
 		}
 	}
 //@ts-ignore

@@ -872,6 +872,24 @@
 				}
 			}), events);
 		});
+
+		$exports.world = {
+			run: function(invocation) {
+				return $api.Function.impure.tell(function(events) {
+					var result = $exports.run(
+						$api.Object.compose(
+							invocation,
+							{
+								evaluate: function(result) {
+									return result;
+								}
+							}
+						)
+					);
+					events.fire("exit", result.status);
+				});
+			}
+		}
 	}
 //@ts-ignore
 )(Packages,JavaAdapter,$api,$context,$loader,$exports);

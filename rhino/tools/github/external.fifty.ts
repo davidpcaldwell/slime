@@ -103,9 +103,9 @@
 		}
 
 		fifty.tests.suite = function() {
-			run(fifty.tests.mock);
-			run(file(real));
-			run(file(mock));
+			fifty.run(fifty.tests.mock);
+			fifty.run(file(real));
+			fifty.run(file(mock));
 		}
 	}
 //@ts-ignore

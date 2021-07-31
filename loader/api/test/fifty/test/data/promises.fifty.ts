@@ -31,18 +31,18 @@
 		}
 
 		fifty.tests.d = function() {
-			run(function nest() {
-				run(function renest() {
+			fifty.run(function nest() {
+				fifty.run(function renest() {
 					fifty.verify("nested").is("nested");
 				});
 			});
 		}
 
 		fifty.tests.suite = function() {
-			run(fifty.tests.a);
-			run(fifty.tests.b);
-			run(fifty.tests.c);
-			run(fifty.tests.d);
+			fifty.run(fifty.tests.a);
+			fifty.run(fifty.tests.b);
+			fifty.run(fifty.tests.c);
+			fifty.run(fifty.tests.d);
 		}
 	}
 //@ts-ignore

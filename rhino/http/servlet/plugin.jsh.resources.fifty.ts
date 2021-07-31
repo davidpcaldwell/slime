@@ -185,9 +185,9 @@ namespace slime.jsh.httpd {
 			fifty.tests.suite = function() {
 				var type: string = typeof(api);
 				fifty.verify({ type: type }).type.is("function");
-				run(fifty.tests.script.old);
-				run(fifty.tests.script.resources);
-				run(fifty.tests.script.hg);
+				fifty.run(fifty.tests.script.old);
+				fifty.run(fifty.tests.script.resources);
+				fifty.run(fifty.tests.script.hg);
 			}
 		}
 	//@ts-ignore

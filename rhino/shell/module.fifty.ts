@@ -242,8 +242,8 @@ namespace slime.jrunscript.shell {
 	(
 		function(fifty: slime.fifty.test.kit) {
 			fifty.tests.suite = function() {
-				run(fifty.tests.listeners);
-				run(fifty.tests.environment);
+				fifty.run(fifty.tests.listeners);
+				fifty.run(fifty.tests.environment);
 
 				fifty.load("invocation.fifty.ts");
 			}

@@ -222,7 +222,7 @@ namespace slime.jsh.wf {
 						return stdio.error.indexOf("Passed.") != -1
 					}).is(true);
 
-					run(function tscfail() {
+					fifty.run(function tscfail() {
 						var repository = test.fixtures.project();
 
 						var tsc = function(environment?) {

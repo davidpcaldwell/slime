@@ -152,8 +152,8 @@ namespace slime.runtime.document.source {
 
 			fifty.tests.attributes = Object.assign(
 				function() {
-					run(fifty.tests.attributes.singlequoted);
-					run(fifty.tests.attributes.unquoted);
+					fifty.run(fifty.tests.attributes.singlequoted);
+					fifty.run(fifty.tests.attributes.unquoted);
 				},
 				{
 					singlequoted: function(p) {
@@ -264,12 +264,12 @@ namespace slime.runtime.document.source {
 			}
 
 			fifty.tests.suite = function() {
-				run(fifty.tests.happy);
-				run(fifty.tests.attributes);
-				run(fifty.tests.selfClosing);
-				run(fifty.tests.voidElements);
-				run(fifty.tests.multilineStartTag);
-				run(fifty.tests.emptyAttribute);
+				fifty.run(fifty.tests.happy);
+				fifty.run(fifty.tests.attributes);
+				fifty.run(fifty.tests.selfClosing);
+				fifty.run(fifty.tests.voidElements);
+				fifty.run(fifty.tests.multilineStartTag);
+				fifty.run(fifty.tests.emptyAttribute);
 			}
 		}
 	//@ts-ignore

@@ -420,13 +420,13 @@ namespace slime {
 				};
 
 				tests.loader = function() {
-					run(tests.loader.source);
-					run(tests.loader.closure);
-					run(tests.loader.$export);
+					fifty.run(tests.loader.source);
+					fifty.run(tests.loader.closure);
+					fifty.run(tests.loader.$export);
 				}
 
 				tests.loader.source = function() {
-					run(tests.loader.source.object);
+					fifty.run(tests.loader.source.object);
 				};
 
 				tests.loader.source.object = function() {
@@ -465,13 +465,13 @@ namespace slime {
 				};
 
 				tests.loader.$export = function() {
-					run(function module() {
+					fifty.run(function module() {
 						var module: slime.test.factory = $loader.factory("test/data/module-export.js");
 						var api = module({ scale: 2 });
 						verify(api).convert(3).is(6);
 					});
 
-					run(function file() {
+					fifty.run(function file() {
 						var file: slime.test.factory = $loader.factory("test/data/file-export.js");
 						var api = file({ scale: 2 });
 						verify(api).convert(3).is(6);
@@ -513,11 +513,12 @@ namespace slime.test {
 	function(
 		$loader: slime.fifty.test.$loader,
 		verify: slime.fifty.test.verify,
-		tests: any
+		tests: any,
+		fifty: slime.fifty.test.kit
 	) {
 		tests.suite = function() {
-			run(tests.loader);
+			fifty.run(tests.loader);
 		}
 	}
 //@ts-ignore
-)($loader,verify,tests)
+)($loader,verify,tests,fifty)

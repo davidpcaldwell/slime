@@ -327,7 +327,7 @@ namespace slime.jrunscript.git {
 					verify(repository).log().length.is(0);
 				};
 
-				run(function worksWhenCreatingDirectory() {
+				fifty.run(function worksWhenCreatingDirectory() {
 					var location = fifty.jsh.file.location();
 					verify(location).directory.is(null);
 					var createdLocation = internal.subject.init({
@@ -337,7 +337,7 @@ namespace slime.jrunscript.git {
 					verifyEmptyRepository(createdLocation);
 				});
 
-				run(function worksWithEmptyDirectory() {
+				fifty.run(function worksWithEmptyDirectory() {
 					const $api = fifty.$api;
 					var directory = fifty.jsh.file.directory();
 
@@ -437,7 +437,7 @@ namespace slime.jrunscript.git {
 				fifty.tests.types.Repository = {};
 				fifty.tests.types.Repository.Local = {};
 				fifty.tests.types.Repository.Local.config = function() {
-					run(function old() {
+					fifty.run(function old() {
 						var empty = internal.subject.init({
 							pathname: fifty.jsh.file.location()
 						});
@@ -458,7 +458,7 @@ namespace slime.jrunscript.git {
 						fifty.verify(after).evaluate.property("foo.bar").is("baz");
 					});
 
-					run(function list() {
+					fifty.run(function list() {
 						var empty = internal.subject.init({
 							pathname: fifty.jsh.file.location()
 						});
@@ -477,7 +477,7 @@ namespace slime.jrunscript.git {
 						}).is(false);
 					});
 
-					run(function set() {
+					fifty.run(function set() {
 						var getConfigObject = function(repository) {
 							return repository.config({
 								list: {
@@ -551,7 +551,7 @@ namespace slime.jrunscript.git {
 					verify(status).branch.commit.names[0].is("master");
 					fifty.global.jsh.shell.console(JSON.stringify(status,void(0),4));
 
-					run(function detachedHeadBranchNameIsNull() {
+					fifty.run(function detachedHeadBranchNameIsNull() {
 						var hash = status.branch.commit.commit.hash;
 						repository.checkout({ branch: hash });
 						var detached = repository.status();
@@ -688,12 +688,12 @@ namespace slime.jrunscript.git {
 
 (function(fifty: slime.fifty.test.kit) {
 	fifty.tests.suite = function() {
-		run(fifty.tests.Installation.init);
-		run(fifty.tests.types.Repository.Local.config);
-		run(fifty.tests.types.Repository.Local.status);
-		run(fifty.tests.submoduleStatusCached);
-		run(fifty.tests.submoduleWithDifferentNameAndPath);
-		run(fifty.tests.submoduleTrackingBranch);
+		fifty.run(fifty.tests.Installation.init);
+		fifty.run(fifty.tests.types.Repository.Local.config);
+		fifty.run(fifty.tests.types.Repository.Local.status);
+		fifty.run(fifty.tests.submoduleStatusCached);
+		fifty.run(fifty.tests.submoduleWithDifferentNameAndPath);
+		fifty.run(fifty.tests.submoduleTrackingBranch);
 	}
 //@ts-ignore
 })(fifty);

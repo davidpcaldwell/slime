@@ -67,7 +67,7 @@ namespace slime.jrunscript.tools.docker {
 			fifty: slime.fifty.test.kit
 		) {
 			fifty.tests.suite = function() {
-				run(fifty.tests.cli.exec);
+				fifty.run(fifty.tests.cli.exec);
 			}
 		}
 	//@ts-ignore

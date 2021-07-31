@@ -133,7 +133,7 @@ namespace slime.jsh {
 				fifty: slime.fifty.test.kit
 			) {
 				fifty.tests.suite = function() {
-					run(fifty.tests.exports.module);
+					fifty.run(fifty.tests.exports.module);
 				}
 			}
 		//@ts-ignore

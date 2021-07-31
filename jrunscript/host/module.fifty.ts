@@ -207,9 +207,9 @@ namespace slime.jrunscript.host {
 			fifty: slime.fifty.test.kit
 		) {
 			fifty.tests.suite = function() {
-				run(fifty.tests.exports.Environment);
-				run(fifty.tests.exports.Map);
-				run(fifty.tests.exports.log);
+				fifty.run(fifty.tests.exports.Environment);
+				fifty.run(fifty.tests.exports.Map);
+				fifty.run(fifty.tests.exports.log);
 			}
 		}
 	//@ts-ignore

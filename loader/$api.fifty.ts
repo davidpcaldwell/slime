@@ -381,8 +381,8 @@ namespace slime.$api {
 		fifty: slime.fifty.test.kit,
 	) {
 		fifty.tests.suite = function() {
-			run(fifty.tests.exports.Iterable);
-			run(fifty.tests.Error);
+			fifty.run(fifty.tests.exports.Iterable);
+			fifty.run(fifty.tests.Error);
 		}
 	}
 //@ts-ignore

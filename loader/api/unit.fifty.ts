@@ -174,7 +174,7 @@ namespace slime.definition.unit {
 			fifty: slime.fifty.test.kit
 		) {
 			fifty.tests.suite = function() {
-				run(internal.types.definition);
+				fifty.run(internal.types.definition);
 			}
 		}
 	//@ts-ignore

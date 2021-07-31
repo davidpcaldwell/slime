@@ -122,7 +122,7 @@ namespace slime.jsh.script {
 						});
 					}
 
-					run(function string() {
+					fifty.run(function string() {
 						var one = trial(subject.cli.option.string({ longname: "a" }), []);
 						var two = trial(subject.cli.option.string({ longname: "a" }), ["--a", "foo"]);
 
@@ -134,7 +134,7 @@ namespace slime.jsh.script {
 
 					//	TODO	pathname is not tested explicitly
 
-					run(function defaults() {
+					fifty.run(function defaults() {
 						var noDefault = subject.cli.option.number({ longname: "a" });
 						var withDefault = subject.cli.option.number({ longname: "a", default: 2 });
 

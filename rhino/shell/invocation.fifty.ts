@@ -132,7 +132,7 @@ namespace slime.jrunscript.shell {
 				var jsh = fifty.global.jsh;
 				var verify = fifty.verify;
 
-				run(function() {
+				fifty.run(function() {
 					var sudoed = subject.invocation.sudo()(jsh.shell.Invocation({
 						command: "ls"
 					}));
@@ -142,7 +142,7 @@ namespace slime.jrunscript.shell {
 					verify(sudoed).environment.evaluate.property("SUDO_ASKPASS").is(void(0));
 				});
 
-				run(function askpass() {
+				fifty.run(function askpass() {
 					var sudoed = subject.invocation.sudo({
 						askpass: "/path/to/askpass"
 					})(jsh.shell.Invocation({
@@ -173,12 +173,12 @@ namespace slime.jrunscript.shell {
 					}
 				}
 
-				run(function Invocation() {
+				fifty.run(function Invocation() {
 					var directory = fifty.$loader.getRelativePath(".").directory;
 
 					//	TODO	test for missing command
 
-					run(function defaults() {
+					fifty.run(function defaults() {
 						var argument: invocation.Argument = {
 							command: "ls"
 						};
@@ -195,7 +195,7 @@ namespace slime.jrunscript.shell {
 						});
 					});
 
-					run(function specified() {
+					fifty.run(function specified() {
 						var argument: invocation.Argument = {
 							command: fifty.global.jsh.file.Pathname("/bin/ls"),
 							arguments: [directory.getRelativePath("invocation.fifty.ts")],

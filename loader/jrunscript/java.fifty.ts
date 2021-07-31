@@ -86,7 +86,7 @@ namespace slime.jrunscript.runtime.java {
 			fifty: slime.fifty.test.kit
 		) {
 			fifty.tests.suite = function() {
-				run(fifty.tests.exports.getClass);
+				fifty.run(fifty.tests.exports.getClass);
 			}
 		}
 	//@ts-ignore

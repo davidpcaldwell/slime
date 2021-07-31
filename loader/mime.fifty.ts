@@ -89,7 +89,7 @@ namespace slime.$api {
 
 				var verify = fifty.verify;
 
-				run(function codec() {
+				fifty.run(function codec() {
 					var type = {
 						media: "text",
 						subtype: "plain",
@@ -108,7 +108,7 @@ namespace slime.$api {
 						it.parameters.evaluate(function(p) { return Object.keys(p).length; }).is(0);
 					});
 
-					run(function withParameter() {
+					fifty.run(function withParameter() {
 						var type = {
 							media: "text",
 							subtype: "plain",
@@ -121,13 +121,13 @@ namespace slime.$api {
 					});
 				});
 
-				run(function fromName() {
+				fifty.run(function fromName() {
 					 verify(subject).Type.fromName("foo.js").evaluate(function(p) { return p.toString() }).is("application/javascript");
 					 verify(subject).Type.fromName("foo.f").is(void(0));
 				});
 
-				run(function deprecated() {
-					run(function constructorArguments() {
+				fifty.run(function deprecated() {
+					fifty.run(function constructorArguments() {
 						verify(subject).evaluate(function() {
 							return subject.Type(void(0), "plain");
 						}).threw.type(Error);
