@@ -142,6 +142,9 @@ namespace slime.jrunscript.shell {
 	//@ts-ignore
 	)(fifty);
 
+	export interface World {
+	}
+
 	export interface Exports {
 		//	environment (maybe defined erroneously in jsh.d.ts)
 
@@ -235,9 +238,78 @@ namespace slime.jrunscript.shell {
 
 		/** @deprecated Presently unused. */
 		rhino: any
+
+		world: World
 	}
 
 	export type Loader = slime.loader.Product<Context,Exports>;
+
+
+	export interface World {
+		run: (invocation: Invocation) => slime.$api.fp.impure.Tell<{
+			exit: number
+		}>
+	}
+
+	(
+		function(
+			$api: slime.$api.Global,
+			fifty: slime.fifty.test.kit
+		) {
+			const subject = fifty.global.jsh.shell;
+
+			fifty.tests.sandbox = function() {
+				var bogus: Invocation = subject.Invocation({
+					command: "foobarbaz"
+				});
+
+				(function() {
+					var tell = subject.world.run(bogus);
+					fifty.verify(tell).evaluate(function(f) { return f(); }).threw.type(Error);
+					fifty.verify(tell).evaluate(function(f) { return f(); }).threw.name.is("JavaException");
+				})();
+
+				var directory = fifty.$loader.getRelativePath(".").directory;
+
+				if (fifty.global.jsh.shell.PATH.getCommand("ls")) {
+					var ls = subject.Invocation({
+						command: "ls",
+						directory: directory
+					});
+					var status: number;
+					subject.world.run(ls)({
+						exit: function(e) {
+							status = e.detail;
+						}
+					});
+					fifty.verify(status).is(0);
+
+					fifty.run(function checkExitStatus() {
+						var lserror = $api.Object.compose(ls, {
+							arguments: ["--foo"]
+						});
+						var status: number;
+						subject.world.run(lserror)({
+							exit: function(e) {
+								status = e.detail;
+							}
+						});
+						fifty.verify(status).is(1);
+					});
+
+					fifty.run(function checkErrorOnNonZero() {
+						var lserror = $api.Object.compose(ls, {
+							arguments: ["--foo"]
+						});
+						var tell = subject.world.run(lserror);
+						fifty.verify(tell).evaluate(function(f) { return f(); }).threw.type(Error);
+						fifty.verify(tell).evaluate(function(f) { return f(); }).threw.message.is("Non-zero exit status: 1");
+					});
+				}
+			}
+		}
+	//@ts-ignore
+	)($api,fifty);
 
 	(
 		function(fifty: slime.fifty.test.kit) {
@@ -246,6 +318,8 @@ namespace slime.jrunscript.shell {
 				fifty.run(fifty.tests.environment);
 
 				fifty.load("invocation.fifty.ts");
+
+				fifty.run(fifty.tests.sandbox);
 			}
 		}
 	//@ts-ignore

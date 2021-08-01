@@ -79,15 +79,23 @@
 			$exports.PATH = $context.api.file.Searchpath([]);
 		}
 
-		(function loadInvocation() {
+		var code = {
 			/** @type { slime.jrunscript.shell.internal.invocation.Factory } */
-			var code = $loader.factory("invocation.js");
-			Object.assign($exports, code({
+			invocation: $loader.factory("invocation.js")
+		};
+
+		var scripts = {
+			invocation: code.invocation({
 				stdio: $context.stdio,
 				environment: $exports.environment,
 				PWD: $exports.PWD
-			}));
-		})()
+			})
+		};
+
+		Object.assign($exports, {
+			invocation: scripts.invocation.invocation,
+			Invocation: scripts.invocation.Invocation
+		});
 
 		var module = {
 			events: $api.Events({ source: $exports })
@@ -875,19 +883,30 @@
 
 		$exports.world = {
 			run: function(invocation) {
-				return $api.Function.impure.tell(function(events) {
-					var result = $exports.run(
-						$api.Object.compose(
-							invocation,
-							{
-								evaluate: function(result) {
-									return result;
+				return function(on) {
+					var tell = $api.Function.impure.tell(function(events) {
+						var result = $exports.run(
+							$api.Object.compose(
+								invocation,
+								{
+									evaluate: function(result) {
+										return result;
+									}
 								}
+							)
+						);
+						events.fire("exit", result.status);
+					});
+					if (!on) on = {};
+					if (!on.exit) {
+						on.exit = function(e) {
+							if (e.detail !== 0) {
+								throw new Error("Non-zero exit status: " + e.detail);
 							}
-						)
-					);
-					events.fire("exit", result.status);
-				});
+						}
+					}
+					return tell(on);
+				}
 			}
 		}
 	}
