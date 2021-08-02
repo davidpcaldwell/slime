@@ -225,7 +225,7 @@ namespace slime.jrunscript.git {
 	}
 
 	export interface Context {
-		program: slime.jrunscript.file.File,
+		program: slime.jrunscript.file.File
 		api: {
 			js: any
 			java: any
@@ -686,6 +686,55 @@ namespace slime.jrunscript.git {
 	})(fifty);
 }
 
+namespace slime.jrunscript.git {
+	export interface Client {
+		command: slime.jrunscript.file.Pathname
+	}
+
+	export interface Invocation {
+		command: string
+		arguments?: string[]
+	}
+
+	export interface Exports {
+		Client: {
+			invocation: (p: {
+				client: Client,
+				invocation: Invocation
+			}) => slime.jrunscript.shell.Invocation
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.kit
+		) {
+			var subject: slime.jrunscript.git.Exports = fifty.global.jsh.tools.git;
+
+			fifty.tests.Client = {};
+			fifty.tests.Client.invocation = function() {
+				var fakeCommand = fifty.$loader.getRelativePath("git");
+				var client = {
+					command: fakeCommand
+				};
+				fifty.run(function status() {
+					var invocation = subject.Client.invocation({
+						client: client,
+						invocation: {
+							command: "status"
+						}
+					});
+					fifty.verify(invocation).command.is(fakeCommand.toString());
+					fifty.verify(invocation).arguments.length.is(1);
+					fifty.verify(invocation).arguments[0].is("status");
+				});
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+}
+
 (function(fifty: slime.fifty.test.kit) {
 	fifty.tests.suite = function() {
 		fifty.run(fifty.tests.Installation.init);
@@ -694,6 +743,8 @@ namespace slime.jrunscript.git {
 		fifty.run(fifty.tests.submoduleStatusCached);
 		fifty.run(fifty.tests.submoduleWithDifferentNameAndPath);
 		fifty.run(fifty.tests.submoduleTrackingBranch);
+
+		fifty.run(fifty.tests.Client.invocation);
 	}
 //@ts-ignore
 })(fifty);
