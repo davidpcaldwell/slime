@@ -34,9 +34,9 @@
 			node.run({
 				command: "dtsgen",
 				arguments: $api.Array.build(function(rv) {
-					rv.push("--url", "https://raw.githubusercontent.com/octokit/openapi/main/generated/api.github.com.json");
+					rv.push("--url", "https://raw.githubusercontent.com/github/rest-api-description/main/descriptions/api.github.com/api.github.com.json");
 					rv.push("--config", SLIME.getRelativePath("rhino/tools/github/tools/dtsgen.json"));
-					rv.push("--out", SLIME.getRelativePath("rhino/tools/github/tools/octokit.d.ts"));
+					rv.push("--out", SLIME.getRelativePath("rhino/tools/github/tools/github-rest.d.ts"));
 				})
 			});
 		} else {

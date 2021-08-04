@@ -4,7 +4,7 @@
 //
 //	END LICENSE
 
-declare namespace octokit.components {
+declare namespace github.rest.components {
     namespace Parameters {
         export type AccessToken = string;
         export type AccountId = number;
@@ -6469,105 +6469,11 @@ declare namespace octokit.components {
                     push: boolean;
                     maintain?: boolean;
                 };
-                /**
+                owner: /**
                  * Simple User
                  * Simple User
                  */
-                owner: {
-                    name?: string | null;
-                    email?: string | null;
-                    /**
-                     * example:
-                     * octocat
-                     */
-                    login: string;
-                    /**
-                     * example:
-                     * 1
-                     */
-                    id: number;
-                    /**
-                     * example:
-                     * MDQ6VXNlcjE=
-                     */
-                    node_id: string;
-                    /**
-                     * example:
-                     * https://github.com/images/error/octocat_happy.gif
-                     */
-                    avatar_url: string; // uri
-                    /**
-                     * example:
-                     * 41d064eb2195891e12d0413f63227ea7
-                     */
-                    gravatar_id: string | null;
-                    /**
-                     * example:
-                     * https://api.github.com/users/octocat
-                     */
-                    url: string; // uri
-                    /**
-                     * example:
-                     * https://github.com/octocat
-                     */
-                    html_url: string; // uri
-                    /**
-                     * example:
-                     * https://api.github.com/users/octocat/followers
-                     */
-                    followers_url: string; // uri
-                    /**
-                     * example:
-                     * https://api.github.com/users/octocat/following{/other_user}
-                     */
-                    following_url: string;
-                    /**
-                     * example:
-                     * https://api.github.com/users/octocat/gists{/gist_id}
-                     */
-                    gists_url: string;
-                    /**
-                     * example:
-                     * https://api.github.com/users/octocat/starred{/owner}{/repo}
-                     */
-                    starred_url: string;
-                    /**
-                     * example:
-                     * https://api.github.com/users/octocat/subscriptions
-                     */
-                    subscriptions_url: string; // uri
-                    /**
-                     * example:
-                     * https://api.github.com/users/octocat/orgs
-                     */
-                    organizations_url: string; // uri
-                    /**
-                     * example:
-                     * https://api.github.com/users/octocat/repos
-                     */
-                    repos_url: string; // uri
-                    /**
-                     * example:
-                     * https://api.github.com/users/octocat/events{/privacy}
-                     */
-                    events_url: string;
-                    /**
-                     * example:
-                     * https://api.github.com/users/octocat/received_events
-                     */
-                    received_events_url: string; // uri
-                    /**
-                     * example:
-                     * User
-                     */
-                    type: string;
-                    site_admin: boolean;
-                    /**
-                     * example:
-                     * "2020-07-09T00:17:55Z"
-                     */
-                    starred_at?: string;
-                } | null;
+                SimpleUser;
                 /**
                  * Whether the repository is private or public.
                  */
@@ -6995,6 +6901,7 @@ declare namespace octokit.components {
                     allow_rebase_merge?: boolean;
                     temp_clone_token?: string;
                     allow_squash_merge?: boolean;
+                    allow_auto_merge?: boolean;
                     delete_branch_on_merge?: boolean;
                     allow_merge_commit?: boolean;
                     subscribers_count?: number;
@@ -7007,6 +6914,12 @@ declare namespace octokit.components {
                  * true
                  */
                 allow_squash_merge?: boolean;
+                /**
+                 * Whether to allow Auto-merge to be used on pull requests.
+                 * example:
+                 * false
+                 */
+                allow_auto_merge?: boolean;
                 /**
                  * Whether to delete head branches when pull requests are merged
                  * example:
@@ -7036,6 +6949,11 @@ declare namespace octokit.components {
              * true
              */
             allow_squash_merge?: boolean;
+            /**
+             * example:
+             * false
+             */
+            allow_auto_merge?: boolean;
             /**
              * example:
              * false
@@ -13407,105 +13325,11 @@ declare namespace octokit.components {
              * octocat/Hello-World
              */
             full_name: string;
-            /**
+            owner: /**
              * Simple User
              * Simple User
              */
-            owner: {
-                name?: string | null;
-                email?: string | null;
-                /**
-                 * example:
-                 * octocat
-                 */
-                login: string;
-                /**
-                 * example:
-                 * 1
-                 */
-                id: number;
-                /**
-                 * example:
-                 * MDQ6VXNlcjE=
-                 */
-                node_id: string;
-                /**
-                 * example:
-                 * https://github.com/images/error/octocat_happy.gif
-                 */
-                avatar_url: string; // uri
-                /**
-                 * example:
-                 * 41d064eb2195891e12d0413f63227ea7
-                 */
-                gravatar_id: string | null;
-                /**
-                 * example:
-                 * https://api.github.com/users/octocat
-                 */
-                url: string; // uri
-                /**
-                 * example:
-                 * https://github.com/octocat
-                 */
-                html_url: string; // uri
-                /**
-                 * example:
-                 * https://api.github.com/users/octocat/followers
-                 */
-                followers_url: string; // uri
-                /**
-                 * example:
-                 * https://api.github.com/users/octocat/following{/other_user}
-                 */
-                following_url: string;
-                /**
-                 * example:
-                 * https://api.github.com/users/octocat/gists{/gist_id}
-                 */
-                gists_url: string;
-                /**
-                 * example:
-                 * https://api.github.com/users/octocat/starred{/owner}{/repo}
-                 */
-                starred_url: string;
-                /**
-                 * example:
-                 * https://api.github.com/users/octocat/subscriptions
-                 */
-                subscriptions_url: string; // uri
-                /**
-                 * example:
-                 * https://api.github.com/users/octocat/orgs
-                 */
-                organizations_url: string; // uri
-                /**
-                 * example:
-                 * https://api.github.com/users/octocat/repos
-                 */
-                repos_url: string; // uri
-                /**
-                 * example:
-                 * https://api.github.com/users/octocat/events{/privacy}
-                 */
-                events_url: string;
-                /**
-                 * example:
-                 * https://api.github.com/users/octocat/received_events
-                 */
-                received_events_url: string; // uri
-                /**
-                 * example:
-                 * User
-                 */
-                type: string;
-                site_admin: boolean;
-                /**
-                 * example:
-                 * "2020-07-09T00:17:55Z"
-                 */
-                starred_at?: string;
-            } | null;
+            SimpleUser;
             private: boolean;
             /**
              * example:
@@ -13914,105 +13738,11 @@ declare namespace octokit.components {
                     push: boolean;
                     maintain?: boolean;
                 };
-                /**
+                owner: /**
                  * Simple User
                  * Simple User
                  */
-                owner: {
-                    name?: string | null;
-                    email?: string | null;
-                    /**
-                     * example:
-                     * octocat
-                     */
-                    login: string;
-                    /**
-                     * example:
-                     * 1
-                     */
-                    id: number;
-                    /**
-                     * example:
-                     * MDQ6VXNlcjE=
-                     */
-                    node_id: string;
-                    /**
-                     * example:
-                     * https://github.com/images/error/octocat_happy.gif
-                     */
-                    avatar_url: string; // uri
-                    /**
-                     * example:
-                     * 41d064eb2195891e12d0413f63227ea7
-                     */
-                    gravatar_id: string | null;
-                    /**
-                     * example:
-                     * https://api.github.com/users/octocat
-                     */
-                    url: string; // uri
-                    /**
-                     * example:
-                     * https://github.com/octocat
-                     */
-                    html_url: string; // uri
-                    /**
-                     * example:
-                     * https://api.github.com/users/octocat/followers
-                     */
-                    followers_url: string; // uri
-                    /**
-                     * example:
-                     * https://api.github.com/users/octocat/following{/other_user}
-                     */
-                    following_url: string;
-                    /**
-                     * example:
-                     * https://api.github.com/users/octocat/gists{/gist_id}
-                     */
-                    gists_url: string;
-                    /**
-                     * example:
-                     * https://api.github.com/users/octocat/starred{/owner}{/repo}
-                     */
-                    starred_url: string;
-                    /**
-                     * example:
-                     * https://api.github.com/users/octocat/subscriptions
-                     */
-                    subscriptions_url: string; // uri
-                    /**
-                     * example:
-                     * https://api.github.com/users/octocat/orgs
-                     */
-                    organizations_url: string; // uri
-                    /**
-                     * example:
-                     * https://api.github.com/users/octocat/repos
-                     */
-                    repos_url: string; // uri
-                    /**
-                     * example:
-                     * https://api.github.com/users/octocat/events{/privacy}
-                     */
-                    events_url: string;
-                    /**
-                     * example:
-                     * https://api.github.com/users/octocat/received_events
-                     */
-                    received_events_url: string; // uri
-                    /**
-                     * example:
-                     * User
-                     */
-                    type: string;
-                    site_admin: boolean;
-                    /**
-                     * example:
-                     * "2020-07-09T00:17:55Z"
-                     */
-                    starred_at?: string;
-                } | null;
+                SimpleUser;
                 /**
                  * Whether the repository is private or public.
                  */
@@ -14440,6 +14170,7 @@ declare namespace octokit.components {
                     allow_rebase_merge?: boolean;
                     temp_clone_token?: string;
                     allow_squash_merge?: boolean;
+                    allow_auto_merge?: boolean;
                     delete_branch_on_merge?: boolean;
                     allow_merge_commit?: boolean;
                     subscribers_count?: number;
@@ -14452,6 +14183,12 @@ declare namespace octokit.components {
                  * true
                  */
                 allow_squash_merge?: boolean;
+                /**
+                 * Whether to allow Auto-merge to be used on pull requests.
+                 * example:
+                 * false
+                 */
+                allow_auto_merge?: boolean;
                 /**
                  * Whether to delete head branches when pull requests are merged
                  * example:
@@ -15265,105 +15002,11 @@ declare namespace octokit.components {
                  * octocat/Hello-World
                  */
                 full_name: string;
-                /**
+                owner: /**
                  * Simple User
                  * Simple User
                  */
-                owner: {
-                    name?: string | null;
-                    email?: string | null;
-                    /**
-                     * example:
-                     * octocat
-                     */
-                    login: string;
-                    /**
-                     * example:
-                     * 1
-                     */
-                    id: number;
-                    /**
-                     * example:
-                     * MDQ6VXNlcjE=
-                     */
-                    node_id: string;
-                    /**
-                     * example:
-                     * https://github.com/images/error/octocat_happy.gif
-                     */
-                    avatar_url: string; // uri
-                    /**
-                     * example:
-                     * 41d064eb2195891e12d0413f63227ea7
-                     */
-                    gravatar_id: string | null;
-                    /**
-                     * example:
-                     * https://api.github.com/users/octocat
-                     */
-                    url: string; // uri
-                    /**
-                     * example:
-                     * https://github.com/octocat
-                     */
-                    html_url: string; // uri
-                    /**
-                     * example:
-                     * https://api.github.com/users/octocat/followers
-                     */
-                    followers_url: string; // uri
-                    /**
-                     * example:
-                     * https://api.github.com/users/octocat/following{/other_user}
-                     */
-                    following_url: string;
-                    /**
-                     * example:
-                     * https://api.github.com/users/octocat/gists{/gist_id}
-                     */
-                    gists_url: string;
-                    /**
-                     * example:
-                     * https://api.github.com/users/octocat/starred{/owner}{/repo}
-                     */
-                    starred_url: string;
-                    /**
-                     * example:
-                     * https://api.github.com/users/octocat/subscriptions
-                     */
-                    subscriptions_url: string; // uri
-                    /**
-                     * example:
-                     * https://api.github.com/users/octocat/orgs
-                     */
-                    organizations_url: string; // uri
-                    /**
-                     * example:
-                     * https://api.github.com/users/octocat/repos
-                     */
-                    repos_url: string; // uri
-                    /**
-                     * example:
-                     * https://api.github.com/users/octocat/events{/privacy}
-                     */
-                    events_url: string;
-                    /**
-                     * example:
-                     * https://api.github.com/users/octocat/received_events
-                     */
-                    received_events_url: string; // uri
-                    /**
-                     * example:
-                     * User
-                     */
-                    type: string;
-                    site_admin: boolean;
-                    /**
-                     * example:
-                     * "2020-07-09T00:17:55Z"
-                     */
-                    starred_at?: string;
-                } | null;
+                SimpleUser;
                 private: boolean;
                 /**
                  * example:
@@ -15772,105 +15415,11 @@ declare namespace octokit.components {
                         push: boolean;
                         maintain?: boolean;
                     };
-                    /**
+                    owner: /**
                      * Simple User
                      * Simple User
                      */
-                    owner: {
-                        name?: string | null;
-                        email?: string | null;
-                        /**
-                         * example:
-                         * octocat
-                         */
-                        login: string;
-                        /**
-                         * example:
-                         * 1
-                         */
-                        id: number;
-                        /**
-                         * example:
-                         * MDQ6VXNlcjE=
-                         */
-                        node_id: string;
-                        /**
-                         * example:
-                         * https://github.com/images/error/octocat_happy.gif
-                         */
-                        avatar_url: string; // uri
-                        /**
-                         * example:
-                         * 41d064eb2195891e12d0413f63227ea7
-                         */
-                        gravatar_id: string | null;
-                        /**
-                         * example:
-                         * https://api.github.com/users/octocat
-                         */
-                        url: string; // uri
-                        /**
-                         * example:
-                         * https://github.com/octocat
-                         */
-                        html_url: string; // uri
-                        /**
-                         * example:
-                         * https://api.github.com/users/octocat/followers
-                         */
-                        followers_url: string; // uri
-                        /**
-                         * example:
-                         * https://api.github.com/users/octocat/following{/other_user}
-                         */
-                        following_url: string;
-                        /**
-                         * example:
-                         * https://api.github.com/users/octocat/gists{/gist_id}
-                         */
-                        gists_url: string;
-                        /**
-                         * example:
-                         * https://api.github.com/users/octocat/starred{/owner}{/repo}
-                         */
-                        starred_url: string;
-                        /**
-                         * example:
-                         * https://api.github.com/users/octocat/subscriptions
-                         */
-                        subscriptions_url: string; // uri
-                        /**
-                         * example:
-                         * https://api.github.com/users/octocat/orgs
-                         */
-                        organizations_url: string; // uri
-                        /**
-                         * example:
-                         * https://api.github.com/users/octocat/repos
-                         */
-                        repos_url: string; // uri
-                        /**
-                         * example:
-                         * https://api.github.com/users/octocat/events{/privacy}
-                         */
-                        events_url: string;
-                        /**
-                         * example:
-                         * https://api.github.com/users/octocat/received_events
-                         */
-                        received_events_url: string; // uri
-                        /**
-                         * example:
-                         * User
-                         */
-                        type: string;
-                        site_admin: boolean;
-                        /**
-                         * example:
-                         * "2020-07-09T00:17:55Z"
-                         */
-                        starred_at?: string;
-                    } | null;
+                    SimpleUser;
                     /**
                      * Whether the repository is private or public.
                      */
@@ -16298,6 +15847,7 @@ declare namespace octokit.components {
                         allow_rebase_merge?: boolean;
                         temp_clone_token?: string;
                         allow_squash_merge?: boolean;
+                        allow_auto_merge?: boolean;
                         delete_branch_on_merge?: boolean;
                         allow_merge_commit?: boolean;
                         subscribers_count?: number;
@@ -16310,6 +15860,12 @@ declare namespace octokit.components {
                      * true
                      */
                     allow_squash_merge?: boolean;
+                    /**
+                     * Whether to allow Auto-merge to be used on pull requests.
+                     * example:
+                     * false
+                     */
+                    allow_auto_merge?: boolean;
                     /**
                      * Whether to delete head branches when pull requests are merged
                      * example:
@@ -20513,6 +20069,7 @@ declare namespace octokit.components {
             allow_merge_commit?: boolean;
             allow_squash_merge?: boolean;
             allow_rebase_merge?: boolean;
+            allow_auto_merge?: boolean;
             delete_branch_on_merge?: boolean;
         }
         /**
@@ -20681,105 +20238,11 @@ declare namespace octokit.components {
                 push: boolean;
                 maintain?: boolean;
             };
-            /**
+            owner: /**
              * Simple User
              * Simple User
              */
-            owner: {
-                name?: string | null;
-                email?: string | null;
-                /**
-                 * example:
-                 * octocat
-                 */
-                login: string;
-                /**
-                 * example:
-                 * 1
-                 */
-                id: number;
-                /**
-                 * example:
-                 * MDQ6VXNlcjE=
-                 */
-                node_id: string;
-                /**
-                 * example:
-                 * https://github.com/images/error/octocat_happy.gif
-                 */
-                avatar_url: string; // uri
-                /**
-                 * example:
-                 * 41d064eb2195891e12d0413f63227ea7
-                 */
-                gravatar_id: string | null;
-                /**
-                 * example:
-                 * https://api.github.com/users/octocat
-                 */
-                url: string; // uri
-                /**
-                 * example:
-                 * https://github.com/octocat
-                 */
-                html_url: string; // uri
-                /**
-                 * example:
-                 * https://api.github.com/users/octocat/followers
-                 */
-                followers_url: string; // uri
-                /**
-                 * example:
-                 * https://api.github.com/users/octocat/following{/other_user}
-                 */
-                following_url: string;
-                /**
-                 * example:
-                 * https://api.github.com/users/octocat/gists{/gist_id}
-                 */
-                gists_url: string;
-                /**
-                 * example:
-                 * https://api.github.com/users/octocat/starred{/owner}{/repo}
-                 */
-                starred_url: string;
-                /**
-                 * example:
-                 * https://api.github.com/users/octocat/subscriptions
-                 */
-                subscriptions_url: string; // uri
-                /**
-                 * example:
-                 * https://api.github.com/users/octocat/orgs
-                 */
-                organizations_url: string; // uri
-                /**
-                 * example:
-                 * https://api.github.com/users/octocat/repos
-                 */
-                repos_url: string; // uri
-                /**
-                 * example:
-                 * https://api.github.com/users/octocat/events{/privacy}
-                 */
-                events_url: string;
-                /**
-                 * example:
-                 * https://api.github.com/users/octocat/received_events
-                 */
-                received_events_url: string; // uri
-                /**
-                 * example:
-                 * User
-                 */
-                type: string;
-                site_admin: boolean;
-                /**
-                 * example:
-                 * "2020-07-09T00:17:55Z"
-                 */
-                starred_at?: string;
-            } | null;
+            SimpleUser;
             /**
              * Whether the repository is private or public.
              */
@@ -21207,6 +20670,7 @@ declare namespace octokit.components {
                 allow_rebase_merge?: boolean;
                 temp_clone_token?: string;
                 allow_squash_merge?: boolean;
+                allow_auto_merge?: boolean;
                 delete_branch_on_merge?: boolean;
                 allow_merge_commit?: boolean;
                 subscribers_count?: number;
@@ -21219,6 +20683,12 @@ declare namespace octokit.components {
              * true
              */
             allow_squash_merge?: boolean;
+            /**
+             * Whether to allow Auto-merge to be used on pull requests.
+             * example:
+             * false
+             */
+            allow_auto_merge?: boolean;
             /**
              * Whether to delete head branches when pull requests are merged
              * example:
@@ -24131,105 +23601,11 @@ declare namespace octokit.components {
                     push: boolean;
                     maintain?: boolean;
                 };
-                /**
+                owner: /**
                  * Simple User
                  * Simple User
                  */
-                owner: {
-                    name?: string | null;
-                    email?: string | null;
-                    /**
-                     * example:
-                     * octocat
-                     */
-                    login: string;
-                    /**
-                     * example:
-                     * 1
-                     */
-                    id: number;
-                    /**
-                     * example:
-                     * MDQ6VXNlcjE=
-                     */
-                    node_id: string;
-                    /**
-                     * example:
-                     * https://github.com/images/error/octocat_happy.gif
-                     */
-                    avatar_url: string; // uri
-                    /**
-                     * example:
-                     * 41d064eb2195891e12d0413f63227ea7
-                     */
-                    gravatar_id: string | null;
-                    /**
-                     * example:
-                     * https://api.github.com/users/octocat
-                     */
-                    url: string; // uri
-                    /**
-                     * example:
-                     * https://github.com/octocat
-                     */
-                    html_url: string; // uri
-                    /**
-                     * example:
-                     * https://api.github.com/users/octocat/followers
-                     */
-                    followers_url: string; // uri
-                    /**
-                     * example:
-                     * https://api.github.com/users/octocat/following{/other_user}
-                     */
-                    following_url: string;
-                    /**
-                     * example:
-                     * https://api.github.com/users/octocat/gists{/gist_id}
-                     */
-                    gists_url: string;
-                    /**
-                     * example:
-                     * https://api.github.com/users/octocat/starred{/owner}{/repo}
-                     */
-                    starred_url: string;
-                    /**
-                     * example:
-                     * https://api.github.com/users/octocat/subscriptions
-                     */
-                    subscriptions_url: string; // uri
-                    /**
-                     * example:
-                     * https://api.github.com/users/octocat/orgs
-                     */
-                    organizations_url: string; // uri
-                    /**
-                     * example:
-                     * https://api.github.com/users/octocat/repos
-                     */
-                    repos_url: string; // uri
-                    /**
-                     * example:
-                     * https://api.github.com/users/octocat/events{/privacy}
-                     */
-                    events_url: string;
-                    /**
-                     * example:
-                     * https://api.github.com/users/octocat/received_events
-                     */
-                    received_events_url: string; // uri
-                    /**
-                     * example:
-                     * User
-                     */
-                    type: string;
-                    site_admin: boolean;
-                    /**
-                     * example:
-                     * "2020-07-09T00:17:55Z"
-                     */
-                    starred_at?: string;
-                } | null;
+                SimpleUser;
                 /**
                  * Whether the repository is private or public.
                  */
@@ -24657,6 +24033,7 @@ declare namespace octokit.components {
                     allow_rebase_merge?: boolean;
                     temp_clone_token?: string;
                     allow_squash_merge?: boolean;
+                    allow_auto_merge?: boolean;
                     delete_branch_on_merge?: boolean;
                     allow_merge_commit?: boolean;
                     subscribers_count?: number;
@@ -24669,6 +24046,12 @@ declare namespace octokit.components {
                  * true
                  */
                 allow_squash_merge?: boolean;
+                /**
+                 * Whether to allow Auto-merge to be used on pull requests.
+                 * example:
+                 * false
+                 */
+                allow_auto_merge?: boolean;
                 /**
                  * Whether to delete head branches when pull requests are merged
                  * example:
@@ -24699,6 +24082,12 @@ declare namespace octokit.components {
              * true
              */
             allow_squash_merge?: boolean;
+            /**
+             * Whether to allow Auto-merge to be used on pull requests.
+             * example:
+             * false
+             */
+            allow_auto_merge?: boolean;
             /**
              * Whether to delete head branches when pull requests are merged
              * example:
@@ -25826,12 +25215,12 @@ declare namespace octokit.components {
         }
     }
 }
-declare namespace octokit.paths {
+declare namespace github.rest.paths {
     namespace ActionsAddRepoAccessToSelfHostedRunnerGroupInOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.RunnerGroupId;
-            export type $2 = octokit.components.Parameters.RepositoryId;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.RunnerGroupId;
+            export type $2 = github.rest.components.Parameters.RepositoryId;
         }
         namespace Responses {
             export interface $204 {
@@ -25840,8 +25229,8 @@ declare namespace octokit.paths {
     }
     namespace ActionsAddSelectedRepoToOrgSecret {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.SecretName;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.SecretName;
             export type RepositoryId = number;
         }
         export interface PathParameters {
@@ -25856,9 +25245,9 @@ declare namespace octokit.paths {
     }
     namespace ActionsAddSelfHostedRunnerToGroupForOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.RunnerGroupId;
-            export type $2 = octokit.components.Parameters.RunnerId;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.RunnerGroupId;
+            export type $2 = github.rest.components.Parameters.RunnerId;
         }
         namespace Responses {
             export interface $204 {
@@ -25867,25 +25256,25 @@ declare namespace octokit.paths {
     }
     namespace ActionsApproveWorkflowRun {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.RunId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.RunId;
         }
         namespace Responses {
             export type $201 = /**
              * Empty Object
              * An object without any properties.
              */
-            octokit.components.Schemas.EmptyObject;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.EmptyObject;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace ActionsCancelWorkflowRun {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.RunId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.RunId;
         }
         namespace Responses {
             export interface $202 {
@@ -25894,9 +25283,9 @@ declare namespace octokit.paths {
     }
     namespace ActionsCreateOrUpdateEnvironmentSecret {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.RepositoryId;
-            export type $1 = octokit.components.Parameters.EnvironmentName;
-            export type $2 = octokit.components.Parameters.SecretName;
+            export type $0 = github.rest.components.Parameters.RepositoryId;
+            export type $1 = github.rest.components.Parameters.EnvironmentName;
+            export type $2 = github.rest.components.Parameters.SecretName;
         }
         export interface RequestBody {
             /**
@@ -25913,15 +25302,15 @@ declare namespace octokit.paths {
              * Empty Object
              * An object without any properties.
              */
-            octokit.components.Schemas.EmptyObject;
+            github.rest.components.Schemas.EmptyObject;
             export interface $204 {
             }
         }
     }
     namespace ActionsCreateOrUpdateOrgSecret {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.SecretName;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.SecretName;
         }
         export interface RequestBody {
             /**
@@ -25949,16 +25338,16 @@ declare namespace octokit.paths {
              * Empty Object
              * An object without any properties.
              */
-            octokit.components.Schemas.EmptyObject;
+            github.rest.components.Schemas.EmptyObject;
             export interface $204 {
             }
         }
     }
     namespace ActionsCreateOrUpdateRepoSecret {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.SecretName;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.SecretName;
         }
         export interface RequestBody {
             /**
@@ -25979,57 +25368,57 @@ declare namespace octokit.paths {
     }
     namespace ActionsCreateRegistrationTokenForOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
+            export type $0 = github.rest.components.Parameters.Org;
         }
         namespace Responses {
             export type $201 = /**
              * Authentication Token
              * Authentication Token
              */
-            octokit.components.Schemas.AuthenticationToken;
+            github.rest.components.Schemas.AuthenticationToken;
         }
     }
     namespace ActionsCreateRegistrationTokenForRepo {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         namespace Responses {
             export type $201 = /**
              * Authentication Token
              * Authentication Token
              */
-            octokit.components.Schemas.AuthenticationToken;
+            github.rest.components.Schemas.AuthenticationToken;
         }
     }
     namespace ActionsCreateRemoveTokenForOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
+            export type $0 = github.rest.components.Parameters.Org;
         }
         namespace Responses {
             export type $201 = /**
              * Authentication Token
              * Authentication Token
              */
-            octokit.components.Schemas.AuthenticationToken;
+            github.rest.components.Schemas.AuthenticationToken;
         }
     }
     namespace ActionsCreateRemoveTokenForRepo {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         namespace Responses {
             export type $201 = /**
              * Authentication Token
              * Authentication Token
              */
-            octokit.components.Schemas.AuthenticationToken;
+            github.rest.components.Schemas.AuthenticationToken;
         }
     }
     namespace ActionsCreateSelfHostedRunnerGroupForOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
+            export type $0 = github.rest.components.Parameters.Org;
         }
         export interface RequestBody {
             /**
@@ -26050,14 +25439,14 @@ declare namespace octokit.paths {
             runners?: number[];
         }
         namespace Responses {
-            export type $201 = octokit.components.Schemas.RunnerGroupsOrg;
+            export type $201 = github.rest.components.Schemas.RunnerGroupsOrg;
         }
     }
     namespace ActionsCreateWorkflowDispatch {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.WorkflowId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.WorkflowId;
         }
         export interface RequestBody {
             /**
@@ -26078,9 +25467,9 @@ declare namespace octokit.paths {
     }
     namespace ActionsDeleteArtifact {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.ArtifactId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.ArtifactId;
         }
         namespace Responses {
             export interface $204 {
@@ -26089,9 +25478,9 @@ declare namespace octokit.paths {
     }
     namespace ActionsDeleteEnvironmentSecret {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.RepositoryId;
-            export type $1 = octokit.components.Parameters.EnvironmentName;
-            export type $2 = octokit.components.Parameters.SecretName;
+            export type $0 = github.rest.components.Parameters.RepositoryId;
+            export type $1 = github.rest.components.Parameters.EnvironmentName;
+            export type $2 = github.rest.components.Parameters.SecretName;
         }
         namespace Responses {
             export interface $204 {
@@ -26100,8 +25489,8 @@ declare namespace octokit.paths {
     }
     namespace ActionsDeleteOrgSecret {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.SecretName;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.SecretName;
         }
         namespace Responses {
             export interface $204 {
@@ -26110,9 +25499,9 @@ declare namespace octokit.paths {
     }
     namespace ActionsDeleteRepoSecret {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.SecretName;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.SecretName;
         }
         namespace Responses {
             export interface $204 {
@@ -26121,8 +25510,8 @@ declare namespace octokit.paths {
     }
     namespace ActionsDeleteSelfHostedRunnerFromOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.RunnerId;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.RunnerId;
         }
         namespace Responses {
             export interface $204 {
@@ -26131,9 +25520,9 @@ declare namespace octokit.paths {
     }
     namespace ActionsDeleteSelfHostedRunnerFromRepo {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.RunnerId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.RunnerId;
         }
         namespace Responses {
             export interface $204 {
@@ -26142,8 +25531,8 @@ declare namespace octokit.paths {
     }
     namespace ActionsDeleteSelfHostedRunnerGroupFromOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.RunnerGroupId;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.RunnerGroupId;
         }
         namespace Responses {
             export interface $204 {
@@ -26152,9 +25541,9 @@ declare namespace octokit.paths {
     }
     namespace ActionsDeleteWorkflowRun {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.RunId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.RunId;
         }
         namespace Responses {
             export interface $204 {
@@ -26163,9 +25552,9 @@ declare namespace octokit.paths {
     }
     namespace ActionsDeleteWorkflowRunLogs {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.RunId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.RunId;
         }
         namespace Responses {
             export interface $204 {
@@ -26174,8 +25563,8 @@ declare namespace octokit.paths {
     }
     namespace ActionsDisableSelectedRepositoryGithubActionsOrganization {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.RepositoryId;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.RepositoryId;
         }
         namespace Responses {
             export interface $204 {
@@ -26184,9 +25573,9 @@ declare namespace octokit.paths {
     }
     namespace ActionsDisableWorkflow {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.WorkflowId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.WorkflowId;
         }
         namespace Responses {
             export interface $204 {
@@ -26195,9 +25584,9 @@ declare namespace octokit.paths {
     }
     namespace ActionsDownloadArtifact {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.ArtifactId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.ArtifactId;
             export type ArchiveFormat = string;
         }
         export interface PathParameters {
@@ -26210,9 +25599,9 @@ declare namespace octokit.paths {
     }
     namespace ActionsDownloadJobLogsForWorkflowRun {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.JobId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.JobId;
         }
         namespace Responses {
             export interface $302 {
@@ -26221,9 +25610,9 @@ declare namespace octokit.paths {
     }
     namespace ActionsDownloadWorkflowRunLogs {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.RunId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.RunId;
         }
         namespace Responses {
             export interface $302 {
@@ -26232,8 +25621,8 @@ declare namespace octokit.paths {
     }
     namespace ActionsEnableSelectedRepositoryGithubActionsOrganization {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.RepositoryId;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.RepositoryId;
         }
         namespace Responses {
             export interface $204 {
@@ -26242,9 +25631,9 @@ declare namespace octokit.paths {
     }
     namespace ActionsEnableWorkflow {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.WorkflowId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.WorkflowId;
         }
         namespace Responses {
             export interface $204 {
@@ -26253,271 +25642,271 @@ declare namespace octokit.paths {
     }
     namespace ActionsGetAllowedActionsOrganization {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
+            export type $0 = github.rest.components.Parameters.Org;
         }
         namespace Responses {
-            export type $200 = octokit.components.Schemas.SelectedActions;
+            export type $200 = github.rest.components.Schemas.SelectedActions;
         }
     }
     namespace ActionsGetAllowedActionsRepository {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         namespace Responses {
-            export type $200 = octokit.components.Schemas.SelectedActions;
+            export type $200 = github.rest.components.Schemas.SelectedActions;
         }
     }
     namespace ActionsGetArtifact {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.ArtifactId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.ArtifactId;
         }
         namespace Responses {
             export type $200 = /**
              * Artifact
              * An artifact
              */
-            octokit.components.Schemas.Artifact;
+            github.rest.components.Schemas.Artifact;
         }
     }
     namespace ActionsGetEnvironmentPublicKey {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.RepositoryId;
-            export type $1 = octokit.components.Parameters.EnvironmentName;
+            export type $0 = github.rest.components.Parameters.RepositoryId;
+            export type $1 = github.rest.components.Parameters.EnvironmentName;
         }
         namespace Responses {
             export type $200 = /**
              * ActionsPublicKey
              * The public key used for setting Actions Secrets.
              */
-            octokit.components.Schemas.ActionsPublicKey;
+            github.rest.components.Schemas.ActionsPublicKey;
         }
     }
     namespace ActionsGetEnvironmentSecret {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.RepositoryId;
-            export type $1 = octokit.components.Parameters.EnvironmentName;
-            export type $2 = octokit.components.Parameters.SecretName;
+            export type $0 = github.rest.components.Parameters.RepositoryId;
+            export type $1 = github.rest.components.Parameters.EnvironmentName;
+            export type $2 = github.rest.components.Parameters.SecretName;
         }
         namespace Responses {
             export type $200 = /**
              * Actions Secret
              * Set secrets for GitHub Actions.
              */
-            octokit.components.Schemas.ActionsSecret;
+            github.rest.components.Schemas.ActionsSecret;
         }
     }
     namespace ActionsGetGithubActionsPermissionsOrganization {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
+            export type $0 = github.rest.components.Parameters.Org;
         }
         namespace Responses {
-            export type $200 = octokit.components.Schemas.ActionsOrganizationPermissions;
+            export type $200 = github.rest.components.Schemas.ActionsOrganizationPermissions;
         }
     }
     namespace ActionsGetGithubActionsPermissionsRepository {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         namespace Responses {
-            export type $200 = octokit.components.Schemas.ActionsRepositoryPermissions;
+            export type $200 = github.rest.components.Schemas.ActionsRepositoryPermissions;
         }
     }
     namespace ActionsGetJobForWorkflowRun {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.JobId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.JobId;
         }
         namespace Responses {
             export type $200 = /**
              * Job
              * Information of a job execution in a workflow run
              */
-            octokit.components.Schemas.Job;
+            github.rest.components.Schemas.Job;
         }
     }
     namespace ActionsGetOrgPublicKey {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
+            export type $0 = github.rest.components.Parameters.Org;
         }
         namespace Responses {
             export type $200 = /**
              * ActionsPublicKey
              * The public key used for setting Actions Secrets.
              */
-            octokit.components.Schemas.ActionsPublicKey;
+            github.rest.components.Schemas.ActionsPublicKey;
         }
     }
     namespace ActionsGetOrgSecret {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.SecretName;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.SecretName;
         }
         namespace Responses {
             export type $200 = /**
              * Actions Secret for an Organization
              * Secrets for GitHub Actions for an organization.
              */
-            octokit.components.Schemas.OrganizationActionsSecret;
+            github.rest.components.Schemas.OrganizationActionsSecret;
         }
     }
     namespace ActionsGetPendingDeploymentsForRun {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.RunId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.RunId;
         }
         namespace Responses {
             export type $200 = /**
              * Pending Deployment
              * Details of a deployment that is waiting for protection rules to pass
              */
-            octokit.components.Schemas.PendingDeployment[];
+            github.rest.components.Schemas.PendingDeployment[];
         }
     }
     namespace ActionsGetRepoPublicKey {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         namespace Responses {
             export type $200 = /**
              * ActionsPublicKey
              * The public key used for setting Actions Secrets.
              */
-            octokit.components.Schemas.ActionsPublicKey;
+            github.rest.components.Schemas.ActionsPublicKey;
         }
     }
     namespace ActionsGetRepoSecret {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.SecretName;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.SecretName;
         }
         namespace Responses {
             export type $200 = /**
              * Actions Secret
              * Set secrets for GitHub Actions.
              */
-            octokit.components.Schemas.ActionsSecret;
+            github.rest.components.Schemas.ActionsSecret;
         }
     }
     namespace ActionsGetReviewsForRun {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.RunId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.RunId;
         }
         namespace Responses {
             export type $200 = /**
              * Environment Approval
              * An entry in the reviews log for environment deployments
              */
-            octokit.components.Schemas.EnvironmentApprovals[];
+            github.rest.components.Schemas.EnvironmentApprovals[];
         }
     }
     namespace ActionsGetSelfHostedRunnerForOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.RunnerId;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.RunnerId;
         }
         namespace Responses {
             export type $200 = /**
              * Self hosted runners
              * A self hosted runner
              */
-            octokit.components.Schemas.Runner;
+            github.rest.components.Schemas.Runner;
         }
     }
     namespace ActionsGetSelfHostedRunnerForRepo {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.RunnerId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.RunnerId;
         }
         namespace Responses {
             export type $200 = /**
              * Self hosted runners
              * A self hosted runner
              */
-            octokit.components.Schemas.Runner;
+            github.rest.components.Schemas.Runner;
         }
     }
     namespace ActionsGetSelfHostedRunnerGroupForOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.RunnerGroupId;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.RunnerGroupId;
         }
         namespace Responses {
-            export type $200 = octokit.components.Schemas.RunnerGroupsOrg;
+            export type $200 = github.rest.components.Schemas.RunnerGroupsOrg;
         }
     }
     namespace ActionsGetWorkflow {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.WorkflowId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.WorkflowId;
         }
         namespace Responses {
             export type $200 = /**
              * Workflow
              * A GitHub Actions workflow
              */
-            octokit.components.Schemas.Workflow;
+            github.rest.components.Schemas.Workflow;
         }
     }
     namespace ActionsGetWorkflowRun {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.RunId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.RunId;
         }
         namespace Responses {
             export type $200 = /**
              * Workflow Run
              * An invocation of a workflow
              */
-            octokit.components.Schemas.WorkflowRun;
+            github.rest.components.Schemas.WorkflowRun;
         }
     }
     namespace ActionsGetWorkflowRunUsage {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.RunId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.RunId;
         }
         namespace Responses {
             export type $200 = /**
              * Workflow Run Usage
              * Workflow Run Usage
              */
-            octokit.components.Schemas.WorkflowRunUsage;
+            github.rest.components.Schemas.WorkflowRunUsage;
         }
     }
     namespace ActionsGetWorkflowUsage {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.WorkflowId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.WorkflowId;
         }
         namespace Responses {
             export type $200 = /**
              * Workflow Usage
              * Workflow Usage
              */
-            octokit.components.Schemas.WorkflowUsage;
+            github.rest.components.Schemas.WorkflowUsage;
         }
     }
     namespace ActionsListArtifactsForRepo {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.PerPage;
-            export type $3 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.PerPage;
+            export type $3 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export interface $200 {
@@ -26526,16 +25915,16 @@ declare namespace octokit.paths {
                  * Artifact
                  * An artifact
                  */
-                octokit.components.Schemas.Artifact[];
+                github.rest.components.Schemas.Artifact[];
             }
         }
     }
     namespace ActionsListEnvironmentSecrets {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.RepositoryId;
-            export type $1 = octokit.components.Parameters.EnvironmentName;
-            export type $2 = octokit.components.Parameters.PerPage;
-            export type $3 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.RepositoryId;
+            export type $1 = github.rest.components.Parameters.EnvironmentName;
+            export type $2 = github.rest.components.Parameters.PerPage;
+            export type $3 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export interface $200 {
@@ -26544,17 +25933,17 @@ declare namespace octokit.paths {
                  * Actions Secret
                  * Set secrets for GitHub Actions.
                  */
-                octokit.components.Schemas.ActionsSecret[];
+                github.rest.components.Schemas.ActionsSecret[];
             }
         }
     }
     namespace ActionsListJobsForWorkflowRun {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.RunId;
-            export type $4 = octokit.components.Parameters.PerPage;
-            export type $5 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.RunId;
+            export type $4 = github.rest.components.Parameters.PerPage;
+            export type $5 = github.rest.components.Parameters.Page;
             export type Filter = "latest" | "all";
         }
         export interface QueryParameters {
@@ -26567,15 +25956,15 @@ declare namespace octokit.paths {
                  * Job
                  * Information of a job execution in a workflow run
                  */
-                octokit.components.Schemas.Job[];
+                github.rest.components.Schemas.Job[];
             }
         }
     }
     namespace ActionsListOrgSecrets {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.PerPage;
-            export type $2 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.PerPage;
+            export type $2 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export interface $200 {
@@ -26584,16 +25973,16 @@ declare namespace octokit.paths {
                  * Actions Secret for an Organization
                  * Secrets for GitHub Actions for an organization.
                  */
-                octokit.components.Schemas.OrganizationActionsSecret[];
+                github.rest.components.Schemas.OrganizationActionsSecret[];
             }
         }
     }
     namespace ActionsListRepoAccessToSelfHostedRunnerGroupInOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.RunnerGroupId;
-            export type $2 = octokit.components.Parameters.Page;
-            export type $3 = octokit.components.Parameters.PerPage;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.RunnerGroupId;
+            export type $2 = github.rest.components.Parameters.Page;
+            export type $3 = github.rest.components.Parameters.PerPage;
         }
         namespace Responses {
             export interface $200 {
@@ -26602,16 +25991,16 @@ declare namespace octokit.paths {
                  * Minimal Repository
                  * Minimal Repository
                  */
-                octokit.components.Schemas.MinimalRepository[];
+                github.rest.components.Schemas.MinimalRepository[];
             }
         }
     }
     namespace ActionsListRepoSecrets {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.PerPage;
-            export type $3 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.PerPage;
+            export type $3 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export interface $200 {
@@ -26620,16 +26009,16 @@ declare namespace octokit.paths {
                  * Actions Secret
                  * Set secrets for GitHub Actions.
                  */
-                octokit.components.Schemas.ActionsSecret[];
+                github.rest.components.Schemas.ActionsSecret[];
             }
         }
     }
     namespace ActionsListRepoWorkflows {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.PerPage;
-            export type $3 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.PerPage;
+            export type $3 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export interface $200 {
@@ -26638,41 +26027,41 @@ declare namespace octokit.paths {
                  * Workflow
                  * A GitHub Actions workflow
                  */
-                octokit.components.Schemas.Workflow[];
+                github.rest.components.Schemas.Workflow[];
             }
         }
     }
     namespace ActionsListRunnerApplicationsForOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
+            export type $0 = github.rest.components.Parameters.Org;
         }
         namespace Responses {
             export type $200 = /**
              * Runner Application
              * Runner Application
              */
-            octokit.components.Schemas.RunnerApplication[];
+            github.rest.components.Schemas.RunnerApplication[];
         }
     }
     namespace ActionsListRunnerApplicationsForRepo {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         namespace Responses {
             export type $200 = /**
              * Runner Application
              * Runner Application
              */
-            octokit.components.Schemas.RunnerApplication[];
+            github.rest.components.Schemas.RunnerApplication[];
         }
     }
     namespace ActionsListSelectedReposForOrgSecret {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.SecretName;
-            export type $2 = octokit.components.Parameters.Page;
-            export type $3 = octokit.components.Parameters.PerPage;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.SecretName;
+            export type $2 = github.rest.components.Parameters.Page;
+            export type $3 = github.rest.components.Parameters.PerPage;
         }
         namespace Responses {
             export interface $200 {
@@ -26681,15 +26070,15 @@ declare namespace octokit.paths {
                  * Minimal Repository
                  * Minimal Repository
                  */
-                octokit.components.Schemas.MinimalRepository[];
+                github.rest.components.Schemas.MinimalRepository[];
             }
         }
     }
     namespace ActionsListSelectedRepositoriesEnabledGithubActionsOrganization {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.PerPage;
-            export type $2 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.PerPage;
+            export type $2 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export interface $200 {
@@ -26698,28 +26087,28 @@ declare namespace octokit.paths {
                  * Repository
                  * A git repository
                  */
-                octokit.components.Schemas.Repository[];
+                github.rest.components.Schemas.Repository[];
             }
         }
     }
     namespace ActionsListSelfHostedRunnerGroupsForOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.PerPage;
-            export type $2 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.PerPage;
+            export type $2 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export interface $200 {
                 total_count: number;
-                runner_groups: octokit.components.Schemas.RunnerGroupsOrg[];
+                runner_groups: github.rest.components.Schemas.RunnerGroupsOrg[];
             }
         }
     }
     namespace ActionsListSelfHostedRunnersForOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.PerPage;
-            export type $2 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.PerPage;
+            export type $2 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export interface $200 {
@@ -26728,16 +26117,16 @@ declare namespace octokit.paths {
                  * Self hosted runners
                  * A self hosted runner
                  */
-                octokit.components.Schemas.Runner[];
+                github.rest.components.Schemas.Runner[];
             }
         }
     }
     namespace ActionsListSelfHostedRunnersForRepo {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.PerPage;
-            export type $3 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.PerPage;
+            export type $3 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export interface $200 {
@@ -26746,16 +26135,16 @@ declare namespace octokit.paths {
                  * Self hosted runners
                  * A self hosted runner
                  */
-                octokit.components.Schemas.Runner[];
+                github.rest.components.Schemas.Runner[];
             }
         }
     }
     namespace ActionsListSelfHostedRunnersInGroupForOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.RunnerGroupId;
-            export type $2 = octokit.components.Parameters.PerPage;
-            export type $3 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.RunnerGroupId;
+            export type $2 = github.rest.components.Parameters.PerPage;
+            export type $3 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export interface $200 {
@@ -26764,17 +26153,17 @@ declare namespace octokit.paths {
                  * Self hosted runners
                  * A self hosted runner
                  */
-                octokit.components.Schemas.Runner[];
+                github.rest.components.Schemas.Runner[];
             }
         }
     }
     namespace ActionsListWorkflowRunArtifacts {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.RunId;
-            export type $3 = octokit.components.Parameters.PerPage;
-            export type $4 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.RunId;
+            export type $3 = github.rest.components.Parameters.PerPage;
+            export type $4 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export interface $200 {
@@ -26783,22 +26172,22 @@ declare namespace octokit.paths {
                  * Artifact
                  * An artifact
                  */
-                octokit.components.Schemas.Artifact[];
+                github.rest.components.Schemas.Artifact[];
             }
         }
     }
     namespace ActionsListWorkflowRuns {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.WorkflowId;
-            export type $3 = octokit.components.Parameters.Actor;
-            export type $4 = octokit.components.Parameters.WorkflowRunBranch;
-            export type $5 = octokit.components.Parameters.Event;
-            export type $6 = octokit.components.Parameters.WorkflowRunStatus;
-            export type $7 = octokit.components.Parameters.PerPage;
-            export type $8 = octokit.components.Parameters.Page;
-            export type $9 = octokit.components.Parameters.Created /* date-time */;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.WorkflowId;
+            export type $3 = github.rest.components.Parameters.Actor;
+            export type $4 = github.rest.components.Parameters.WorkflowRunBranch;
+            export type $5 = github.rest.components.Parameters.Event;
+            export type $6 = github.rest.components.Parameters.WorkflowRunStatus;
+            export type $7 = github.rest.components.Parameters.PerPage;
+            export type $8 = github.rest.components.Parameters.Page;
+            export type $9 = github.rest.components.Parameters.Created /* date-time */;
         }
         namespace Responses {
             export interface $200 {
@@ -26807,21 +26196,21 @@ declare namespace octokit.paths {
                  * Workflow Run
                  * An invocation of a workflow
                  */
-                octokit.components.Schemas.WorkflowRun[];
+                github.rest.components.Schemas.WorkflowRun[];
             }
         }
     }
     namespace ActionsListWorkflowRunsForRepo {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.Actor;
-            export type $3 = octokit.components.Parameters.WorkflowRunBranch;
-            export type $4 = octokit.components.Parameters.Event;
-            export type $5 = octokit.components.Parameters.WorkflowRunStatus;
-            export type $6 = octokit.components.Parameters.PerPage;
-            export type $7 = octokit.components.Parameters.Page;
-            export type $8 = octokit.components.Parameters.Created /* date-time */;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.Actor;
+            export type $3 = github.rest.components.Parameters.WorkflowRunBranch;
+            export type $4 = github.rest.components.Parameters.Event;
+            export type $5 = github.rest.components.Parameters.WorkflowRunStatus;
+            export type $6 = github.rest.components.Parameters.PerPage;
+            export type $7 = github.rest.components.Parameters.Page;
+            export type $8 = github.rest.components.Parameters.Created /* date-time */;
         }
         namespace Responses {
             export interface $200 {
@@ -26830,15 +26219,15 @@ declare namespace octokit.paths {
                  * Workflow Run
                  * An invocation of a workflow
                  */
-                octokit.components.Schemas.WorkflowRun[];
+                github.rest.components.Schemas.WorkflowRun[];
             }
         }
     }
     namespace ActionsReRunWorkflow {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.RunId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.RunId;
         }
         namespace Responses {
             export interface $201 {
@@ -26847,9 +26236,9 @@ declare namespace octokit.paths {
     }
     namespace ActionsRemoveRepoAccessToSelfHostedRunnerGroupInOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.RunnerGroupId;
-            export type $2 = octokit.components.Parameters.RepositoryId;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.RunnerGroupId;
+            export type $2 = github.rest.components.Parameters.RepositoryId;
         }
         namespace Responses {
             export interface $204 {
@@ -26858,8 +26247,8 @@ declare namespace octokit.paths {
     }
     namespace ActionsRemoveSelectedRepoFromOrgSecret {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.SecretName;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.SecretName;
             export type RepositoryId = number;
         }
         export interface PathParameters {
@@ -26874,9 +26263,9 @@ declare namespace octokit.paths {
     }
     namespace ActionsRemoveSelfHostedRunnerFromGroupForOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.RunnerGroupId;
-            export type $2 = octokit.components.Parameters.RunnerId;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.RunnerGroupId;
+            export type $2 = github.rest.components.Parameters.RunnerId;
         }
         namespace Responses {
             export interface $204 {
@@ -26885,9 +26274,9 @@ declare namespace octokit.paths {
     }
     namespace ActionsReviewPendingDeploymentsForRun {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.RunId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.RunId;
         }
         export interface RequestBody {
             /**
@@ -26917,14 +26306,14 @@ declare namespace octokit.paths {
              * Deployment
              * A request for a specific ref(branch,sha,tag) to be deployed
              */
-            octokit.components.Schemas.Deployment[];
+            github.rest.components.Schemas.Deployment[];
         }
     }
     namespace ActionsSetAllowedActionsOrganization {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
+            export type $0 = github.rest.components.Parameters.Org;
         }
-        export type RequestBody = octokit.components.Schemas.SelectedActions;
+        export type RequestBody = github.rest.components.Schemas.SelectedActions;
         namespace Responses {
             export interface $204 {
             }
@@ -26932,10 +26321,10 @@ declare namespace octokit.paths {
     }
     namespace ActionsSetAllowedActionsRepository {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
-        export type RequestBody = octokit.components.Schemas.SelectedActions;
+        export type RequestBody = github.rest.components.Schemas.SelectedActions;
         namespace Responses {
             export interface $204 {
             }
@@ -26943,11 +26332,11 @@ declare namespace octokit.paths {
     }
     namespace ActionsSetGithubActionsPermissionsOrganization {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
+            export type $0 = github.rest.components.Parameters.Org;
         }
         export interface RequestBody {
-            enabled_repositories: /* The policy that controls the repositories in the organization that are allowed to run GitHub Actions. Can be one of: `all`, `none`, or `selected`. */ octokit.components.Schemas.EnabledRepositories;
-            allowed_actions?: /* The permissions policy that controls the actions that are allowed to run. Can be one of: `all`, `local_only`, or `selected`. */ octokit.components.Schemas.AllowedActions;
+            enabled_repositories: /* The policy that controls the repositories in the organization that are allowed to run GitHub Actions. Can be one of: `all`, `none`, or `selected`. */ github.rest.components.Schemas.EnabledRepositories;
+            allowed_actions?: /* The permissions policy that controls the actions that are allowed to run. Can be one of: `all`, `local_only`, or `selected`. */ github.rest.components.Schemas.AllowedActions;
         }
         namespace Responses {
             export interface $204 {
@@ -26956,12 +26345,12 @@ declare namespace octokit.paths {
     }
     namespace ActionsSetGithubActionsPermissionsRepository {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         export interface RequestBody {
-            enabled: /* Whether GitHub Actions is enabled on the repository. */ octokit.components.Schemas.ActionsEnabled;
-            allowed_actions?: /* The permissions policy that controls the actions that are allowed to run. Can be one of: `all`, `local_only`, or `selected`. */ octokit.components.Schemas.AllowedActions;
+            enabled: /* Whether GitHub Actions is enabled on the repository. */ github.rest.components.Schemas.ActionsEnabled;
+            allowed_actions?: /* The permissions policy that controls the actions that are allowed to run. Can be one of: `all`, `local_only`, or `selected`. */ github.rest.components.Schemas.AllowedActions;
         }
         namespace Responses {
             export interface $204 {
@@ -26970,8 +26359,8 @@ declare namespace octokit.paths {
     }
     namespace ActionsSetRepoAccessToSelfHostedRunnerGroupInOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.RunnerGroupId;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.RunnerGroupId;
         }
         export interface RequestBody {
             /**
@@ -26986,8 +26375,8 @@ declare namespace octokit.paths {
     }
     namespace ActionsSetSelectedReposForOrgSecret {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.SecretName;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.SecretName;
         }
         export interface RequestBody {
             /**
@@ -27002,7 +26391,7 @@ declare namespace octokit.paths {
     }
     namespace ActionsSetSelectedRepositoriesEnabledGithubActionsOrganization {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
+            export type $0 = github.rest.components.Parameters.Org;
         }
         export interface RequestBody {
             /**
@@ -27017,8 +26406,8 @@ declare namespace octokit.paths {
     }
     namespace ActionsSetSelfHostedRunnersInGroupForOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.RunnerGroupId;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.RunnerGroupId;
         }
         export interface RequestBody {
             /**
@@ -27033,8 +26422,8 @@ declare namespace octokit.paths {
     }
     namespace ActionsUpdateSelfHostedRunnerGroupForOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.RunnerGroupId;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.RunnerGroupId;
         }
         export interface RequestBody {
             /**
@@ -27047,31 +26436,31 @@ declare namespace octokit.paths {
             visibility?: "selected" | "all" | "private";
         }
         namespace Responses {
-            export type $200 = octokit.components.Schemas.RunnerGroupsOrg;
+            export type $200 = github.rest.components.Schemas.RunnerGroupsOrg;
         }
     }
     namespace ActivityCheckRepoIsStarredByAuthenticatedUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         namespace Responses {
             export interface $204 {
             }
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
             export type $404 = /**
              * Basic Error
              * Basic Error
              */
-            octokit.components.Schemas.BasicError;
+            github.rest.components.Schemas.BasicError;
         }
     }
     namespace ActivityDeleteRepoSubscription {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         namespace Responses {
             export interface $204 {
@@ -27080,14 +26469,14 @@ declare namespace octokit.paths {
     }
     namespace ActivityDeleteThreadSubscription {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.ThreadId;
+            export type $0 = github.rest.components.Parameters.ThreadId;
         }
         namespace Responses {
             export interface $204 {
             }
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
         }
     }
     namespace ActivityGetFeeds {
@@ -27096,331 +26485,331 @@ declare namespace octokit.paths {
              * Feed
              * Feed
              */
-            octokit.components.Schemas.Feed;
+            github.rest.components.Schemas.Feed;
         }
     }
     namespace ActivityGetRepoSubscription {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         namespace Responses {
             export type $200 = /**
              * Repository Invitation
              * Repository invitations let you manage who you collaborate with.
              */
-            octokit.components.Schemas.RepositorySubscription;
-            export type $403 = octokit.components.Responses.Forbidden;
+            github.rest.components.Schemas.RepositorySubscription;
+            export type $403 = github.rest.components.Responses.Forbidden;
             export interface $404 {
             }
         }
     }
     namespace ActivityGetThread {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.ThreadId;
+            export type $0 = github.rest.components.Parameters.ThreadId;
         }
         namespace Responses {
             export type $200 = /**
              * Thread
              * Thread
              */
-            octokit.components.Schemas.Thread;
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
+            github.rest.components.Schemas.Thread;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
         }
     }
     namespace ActivityGetThreadSubscriptionForAuthenticatedUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.ThreadId;
+            export type $0 = github.rest.components.Parameters.ThreadId;
         }
         namespace Responses {
             export type $200 = /**
              * Thread Subscription
              * Thread Subscription
              */
-            octokit.components.Schemas.ThreadSubscription;
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
+            github.rest.components.Schemas.ThreadSubscription;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
         }
     }
     namespace ActivityListEventsForAuthenticatedUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Username;
-            export type $1 = octokit.components.Parameters.PerPage;
-            export type $2 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Username;
+            export type $1 = github.rest.components.Parameters.PerPage;
+            export type $2 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Event
              * Event
              */
-            octokit.components.Schemas.Event[];
+            github.rest.components.Schemas.Event[];
         }
     }
     namespace ActivityListNotificationsForAuthenticatedUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.All;
-            export type $1 = octokit.components.Parameters.Participating;
-            export type $2 = octokit.components.Parameters.Since /* date-time */;
-            export type $3 = octokit.components.Parameters.Before /* date-time */;
-            export type $4 = octokit.components.Parameters.PerPage;
-            export type $5 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.All;
+            export type $1 = github.rest.components.Parameters.Participating;
+            export type $2 = github.rest.components.Parameters.Since /* date-time */;
+            export type $3 = github.rest.components.Parameters.Before /* date-time */;
+            export type $4 = github.rest.components.Parameters.PerPage;
+            export type $5 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Thread
              * Thread
              */
-            octokit.components.Schemas.Thread[];
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.Thread[];
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace ActivityListOrgEventsForAuthenticatedUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Username;
-            export type $1 = octokit.components.Parameters.Org;
-            export type $2 = octokit.components.Parameters.PerPage;
-            export type $3 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Username;
+            export type $1 = github.rest.components.Parameters.Org;
+            export type $2 = github.rest.components.Parameters.PerPage;
+            export type $3 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Event
              * Event
              */
-            octokit.components.Schemas.Event[];
+            github.rest.components.Schemas.Event[];
         }
     }
     namespace ActivityListPublicEvents {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.PerPage;
-            export type $1 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.PerPage;
+            export type $1 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Event
              * Event
              */
-            octokit.components.Schemas.Event[];
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $503 = octokit.components.Responses.ServiceUnavailable;
+            github.rest.components.Schemas.Event[];
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $503 = github.rest.components.Responses.ServiceUnavailable;
         }
     }
     namespace ActivityListPublicEventsForRepoNetwork {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.PerPage;
-            export type $3 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.PerPage;
+            export type $3 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Event
              * Event
              */
-            octokit.components.Schemas.Event[];
-            export type $301 = octokit.components.Responses.MovedPermanently;
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.Event[];
+            export type $301 = github.rest.components.Responses.MovedPermanently;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace ActivityListPublicEventsForUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Username;
-            export type $1 = octokit.components.Parameters.PerPage;
-            export type $2 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Username;
+            export type $1 = github.rest.components.Parameters.PerPage;
+            export type $2 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Event
              * Event
              */
-            octokit.components.Schemas.Event[];
+            github.rest.components.Schemas.Event[];
         }
     }
     namespace ActivityListPublicOrgEvents {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.PerPage;
-            export type $2 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.PerPage;
+            export type $2 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Event
              * Event
              */
-            octokit.components.Schemas.Event[];
+            github.rest.components.Schemas.Event[];
         }
     }
     namespace ActivityListReceivedEventsForUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Username;
-            export type $1 = octokit.components.Parameters.PerPage;
-            export type $2 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Username;
+            export type $1 = github.rest.components.Parameters.PerPage;
+            export type $2 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Event
              * Event
              */
-            octokit.components.Schemas.Event[];
+            github.rest.components.Schemas.Event[];
         }
     }
     namespace ActivityListReceivedPublicEventsForUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Username;
-            export type $1 = octokit.components.Parameters.PerPage;
-            export type $2 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Username;
+            export type $1 = github.rest.components.Parameters.PerPage;
+            export type $2 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Event
              * Event
              */
-            octokit.components.Schemas.Event[];
+            github.rest.components.Schemas.Event[];
         }
     }
     namespace ActivityListRepoEvents {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.PerPage;
-            export type $3 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.PerPage;
+            export type $3 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Event
              * Event
              */
-            octokit.components.Schemas.Event[];
+            github.rest.components.Schemas.Event[];
         }
     }
     namespace ActivityListRepoNotificationsForAuthenticatedUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.All;
-            export type $3 = octokit.components.Parameters.Participating;
-            export type $4 = octokit.components.Parameters.Since /* date-time */;
-            export type $5 = octokit.components.Parameters.Before /* date-time */;
-            export type $6 = octokit.components.Parameters.PerPage;
-            export type $7 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.All;
+            export type $3 = github.rest.components.Parameters.Participating;
+            export type $4 = github.rest.components.Parameters.Since /* date-time */;
+            export type $5 = github.rest.components.Parameters.Before /* date-time */;
+            export type $6 = github.rest.components.Parameters.PerPage;
+            export type $7 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Thread
              * Thread
              */
-            octokit.components.Schemas.Thread[];
+            github.rest.components.Schemas.Thread[];
         }
     }
     namespace ActivityListReposStarredByAuthenticatedUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Sort;
-            export type $1 = octokit.components.Parameters.Direction;
-            export type $2 = octokit.components.Parameters.PerPage;
-            export type $3 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Sort;
+            export type $1 = github.rest.components.Parameters.Direction;
+            export type $2 = github.rest.components.Parameters.PerPage;
+            export type $3 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Repository
              * A git repository
              */
-            octokit.components.Schemas.Repository[];
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
+            github.rest.components.Schemas.Repository[];
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
         }
     }
     namespace ActivityListReposStarredByUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Username;
-            export type $1 = octokit.components.Parameters.Sort;
-            export type $2 = octokit.components.Parameters.Direction;
-            export type $3 = octokit.components.Parameters.PerPage;
-            export type $4 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Username;
+            export type $1 = github.rest.components.Parameters.Sort;
+            export type $2 = github.rest.components.Parameters.Direction;
+            export type $3 = github.rest.components.Parameters.PerPage;
+            export type $4 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Starred Repository
              * Starred Repository
              */
-            octokit.components.Schemas.StarredRepository[] | /**
+            github.rest.components.Schemas.StarredRepository[] | /**
              * Repository
              * A git repository
              */
-            octokit.components.Schemas.Repository[];
+            github.rest.components.Schemas.Repository[];
         }
     }
     namespace ActivityListReposWatchedByUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Username;
-            export type $1 = octokit.components.Parameters.PerPage;
-            export type $2 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Username;
+            export type $1 = github.rest.components.Parameters.PerPage;
+            export type $2 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Minimal Repository
              * Minimal Repository
              */
-            octokit.components.Schemas.MinimalRepository[];
+            github.rest.components.Schemas.MinimalRepository[];
         }
     }
     namespace ActivityListStargazersForRepo {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.PerPage;
-            export type $3 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.PerPage;
+            export type $3 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Simple User
              * Simple User
              */
-            octokit.components.Schemas.SimpleUser[] | /**
+            github.rest.components.Schemas.SimpleUser[] | /**
              * Stargazer
              * Stargazer
              */
-            octokit.components.Schemas.Stargazer[];
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.Stargazer[];
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace ActivityListWatchedReposForAuthenticatedUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.PerPage;
-            export type $1 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.PerPage;
+            export type $1 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Minimal Repository
              * Minimal Repository
              */
-            octokit.components.Schemas.MinimalRepository[];
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
+            github.rest.components.Schemas.MinimalRepository[];
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
         }
     }
     namespace ActivityListWatchersForRepo {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.PerPage;
-            export type $3 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.PerPage;
+            export type $3 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Simple User
              * Simple User
              */
-            octokit.components.Schemas.SimpleUser[];
+            github.rest.components.Schemas.SimpleUser[];
         }
     }
     namespace ActivityMarkNotificationsAsRead {
@@ -27440,15 +26829,15 @@ declare namespace octokit.paths {
             }
             export interface $205 {
             }
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
         }
     }
     namespace ActivityMarkRepoNotificationsAsRead {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         export interface RequestBody {
             /**
@@ -27467,19 +26856,19 @@ declare namespace octokit.paths {
     }
     namespace ActivityMarkThreadAsRead {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.ThreadId;
+            export type $0 = github.rest.components.Parameters.ThreadId;
         }
         namespace Responses {
             export interface $205 {
             }
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $403 = octokit.components.Responses.Forbidden;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $403 = github.rest.components.Responses.Forbidden;
         }
     }
     namespace ActivitySetRepoSubscription {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         export interface RequestBody {
             /**
@@ -27496,12 +26885,12 @@ declare namespace octokit.paths {
              * Repository Invitation
              * Repository invitations let you manage who you collaborate with.
              */
-            octokit.components.Schemas.RepositorySubscription;
+            github.rest.components.Schemas.RepositorySubscription;
         }
     }
     namespace ActivitySetThreadSubscription {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.ThreadId;
+            export type $0 = github.rest.components.Parameters.ThreadId;
         }
         export interface RequestBody {
             /**
@@ -27514,57 +26903,57 @@ declare namespace octokit.paths {
              * Thread Subscription
              * Thread Subscription
              */
-            octokit.components.Schemas.ThreadSubscription;
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
+            github.rest.components.Schemas.ThreadSubscription;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
         }
     }
     namespace ActivityStarRepoForAuthenticatedUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         namespace Responses {
             export interface $204 {
             }
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace ActivityUnstarRepoForAuthenticatedUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         namespace Responses {
             export interface $204 {
             }
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace AppsAddRepoToInstallation {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.InstallationId;
-            export type $1 = octokit.components.Parameters.RepositoryId;
+            export type $0 = github.rest.components.Parameters.InstallationId;
+            export type $1 = github.rest.components.Parameters.RepositoryId;
         }
         namespace Responses {
             export interface $204 {
             }
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace AppsCheckAuthorization {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.ClientId;
-            export type $1 = octokit.components.Parameters.AccessToken;
+            export type $0 = github.rest.components.Parameters.ClientId;
+            export type $1 = github.rest.components.Parameters.AccessToken;
         }
         namespace Responses {
             /**
@@ -27705,7 +27094,7 @@ declare namespace octokit.paths {
                      *   "single_file": "read"
                      * }
                      */
-                    octokit.components.Schemas.AppPermissions;
+                    github.rest.components.Schemas.AppPermissions;
                     /**
                      * Describe whether all repositories have been selected or there's a selection involved
                      */
@@ -27737,15 +27126,15 @@ declare namespace octokit.paths {
                      * Simple User
                      * Simple User
                      */
-                    octokit.components.Schemas.SimpleUser;
+                    github.rest.components.Schemas.SimpleUser;
                 } | null;
             } | null;
-            export type $404 = octokit.components.Responses.NotFound;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace AppsCheckToken {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.ClientId;
+            export type $0 = github.rest.components.Parameters.ClientId;
         }
         export interface RequestBody {
             /**
@@ -27758,47 +27147,12 @@ declare namespace octokit.paths {
              * Authorization
              * The authorization for an OAuth app, GitHub App, or a Personal Access Token.
              */
-            octokit.components.Schemas.Authorization;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.Authorization;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace AppsCreateContentAttachment {
-        namespace Parameters {
-            export type ContentReferenceId = number;
-        }
-        export interface PathParameters {
-            content_reference_id: Parameters.ContentReferenceId;
-        }
-        export interface RequestBody {
-            /**
-             * The title of the attachment
-             * example:
-             * Title of the attachment
-             */
-            title: string;
-            /**
-             * The body of the attachment
-             * example:
-             * Body of the attachment
-             */
-            body: string;
-        }
-        namespace Responses {
-            export type $200 = /**
-             * ContentReferenceAttachment
-             * Content Reference attachments allow you to provide context around URLs posted in comments
-             */
-            octokit.components.Schemas.ContentReferenceAttachment;
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $410 = octokit.components.Responses.Gone;
-            export type $415 = octokit.components.Responses.PreviewHeaderMissing;
-            export type $422 = octokit.components.Responses.ValidationFailed;
-        }
-    }
-    namespace AppsCreateContentAttachmentForRepo {
         namespace Parameters {
             export type ContentReferenceId = number;
             export type Owner = string;
@@ -27828,13 +27182,13 @@ declare namespace octokit.paths {
              * ContentReferenceAttachment
              * Content Reference attachments allow you to provide context around URLs posted in comments
              */
-            octokit.components.Schemas.ContentReferenceAttachment;
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $410 = octokit.components.Responses.Gone;
-            export type $415 = octokit.components.Responses.PreviewHeaderMissing;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.ContentReferenceAttachment;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $410 = github.rest.components.Responses.Gone;
+            export type $415 = github.rest.components.Responses.PreviewHeaderMissing;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace AppsCreateFromManifest {
@@ -28052,13 +27406,13 @@ declare namespace octokit.paths {
                  */
                 pem: string;
             } | null;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $422 = octokit.components.Responses.ValidationFailedSimple;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $422 = github.rest.components.Responses.ValidationFailedSimple;
         }
     }
     namespace AppsCreateInstallationAccessToken {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.InstallationId;
+            export type $0 = github.rest.components.Parameters.InstallationId;
         }
         export interface RequestBody {
             /**
@@ -28084,24 +27438,24 @@ declare namespace octokit.paths {
              *   "single_file": "read"
              * }
              */
-            octokit.components.Schemas.AppPermissions;
+            github.rest.components.Schemas.AppPermissions;
         }
         namespace Responses {
             export type $201 = /**
              * Installation Token
              * Authentication token for a GitHub App installed on a user or org.
              */
-            octokit.components.Schemas.InstallationToken;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $415 = octokit.components.Responses.PreviewHeaderMissing;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.InstallationToken;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $415 = github.rest.components.Responses.PreviewHeaderMissing;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace AppsDeleteAuthorization {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.ClientId;
+            export type $0 = github.rest.components.Parameters.ClientId;
         }
         export interface RequestBody {
             /**
@@ -28112,22 +27466,22 @@ declare namespace octokit.paths {
         namespace Responses {
             export interface $204 {
             }
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace AppsDeleteInstallation {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.InstallationId;
+            export type $0 = github.rest.components.Parameters.InstallationId;
         }
         namespace Responses {
             export interface $204 {
             }
-            export type $404 = octokit.components.Responses.NotFound;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace AppsDeleteToken {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.ClientId;
+            export type $0 = github.rest.components.Parameters.ClientId;
         }
         export interface RequestBody {
             /**
@@ -28138,7 +27492,7 @@ declare namespace octokit.paths {
         namespace Responses {
             export interface $204 {
             }
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace AppsGetAuthenticated {
@@ -28147,108 +27501,108 @@ declare namespace octokit.paths {
              * GitHub app
              * GitHub apps are a new way to extend GitHub. They can be installed directly on organizations and user accounts and granted access to specific repositories. They come with granular permissions and built-in webhooks. GitHub apps are first class actors within GitHub.
              */
-            octokit.components.Schemas.Integration;
+            github.rest.components.Schemas.Integration;
         }
     }
     namespace AppsGetBySlug {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.AppSlug;
+            export type $0 = github.rest.components.Parameters.AppSlug;
         }
         namespace Responses {
             export type $200 = /**
              * GitHub app
              * GitHub apps are a new way to extend GitHub. They can be installed directly on organizations and user accounts and granted access to specific repositories. They come with granular permissions and built-in webhooks. GitHub apps are first class actors within GitHub.
              */
-            octokit.components.Schemas.Integration;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $415 = octokit.components.Responses.PreviewHeaderMissing;
+            github.rest.components.Schemas.Integration;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $415 = github.rest.components.Responses.PreviewHeaderMissing;
         }
     }
     namespace AppsGetInstallation {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.InstallationId;
+            export type $0 = github.rest.components.Parameters.InstallationId;
         }
         namespace Responses {
             export type $200 = /**
              * Installation
              * Installation
              */
-            octokit.components.Schemas.Installation;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $415 = octokit.components.Responses.PreviewHeaderMissing;
+            github.rest.components.Schemas.Installation;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $415 = github.rest.components.Responses.PreviewHeaderMissing;
         }
     }
     namespace AppsGetOrgInstallation {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
+            export type $0 = github.rest.components.Parameters.Org;
         }
         namespace Responses {
             export type $200 = /**
              * Installation
              * Installation
              */
-            octokit.components.Schemas.Installation;
+            github.rest.components.Schemas.Installation;
         }
     }
     namespace AppsGetRepoInstallation {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         namespace Responses {
             export type $200 = /**
              * Installation
              * Installation
              */
-            octokit.components.Schemas.Installation;
-            export type $301 = octokit.components.Responses.MovedPermanently;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.Installation;
+            export type $301 = github.rest.components.Responses.MovedPermanently;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace AppsGetSubscriptionPlanForAccount {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.AccountId;
+            export type $0 = github.rest.components.Parameters.AccountId;
         }
         namespace Responses {
             export type $200 = /**
              * Marketplace Purchase
              * Marketplace Purchase
              */
-            octokit.components.Schemas.MarketplacePurchase;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
+            github.rest.components.Schemas.MarketplacePurchase;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
             export type $404 = /**
              * Basic Error
              * Basic Error
              */
-            octokit.components.Schemas.BasicError;
+            github.rest.components.Schemas.BasicError;
         }
     }
     namespace AppsGetSubscriptionPlanForAccountStubbed {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.AccountId;
+            export type $0 = github.rest.components.Parameters.AccountId;
         }
         namespace Responses {
             export type $200 = /**
              * Marketplace Purchase
              * Marketplace Purchase
              */
-            octokit.components.Schemas.MarketplacePurchase;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
+            github.rest.components.Schemas.MarketplacePurchase;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
             export interface $404 {
             }
         }
     }
     namespace AppsGetUserInstallation {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Username;
+            export type $0 = github.rest.components.Parameters.Username;
         }
         namespace Responses {
             export type $200 = /**
              * Installation
              * Installation
              */
-            octokit.components.Schemas.Installation;
+            github.rest.components.Schemas.Installation;
         }
     }
     namespace AppsGetWebhookConfigForApp {
@@ -28257,29 +27611,29 @@ declare namespace octokit.paths {
              * Webhook Configuration
              * Configuration object of the webhook
              */
-            octokit.components.Schemas.WebhookConfig;
+            github.rest.components.Schemas.WebhookConfig;
         }
     }
     namespace AppsGetWebhookDelivery {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.DeliveryId;
+            export type $0 = github.rest.components.Parameters.DeliveryId;
         }
         namespace Responses {
             export type $200 = /**
              * Webhook delivery
              * Delivery made by a webhook.
              */
-            octokit.components.Schemas.HookDelivery;
-            export type $400 = octokit.components.Responses.BadRequest;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.HookDelivery;
+            export type $400 = github.rest.components.Responses.BadRequest;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace AppsListAccountsForPlan {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.PlanId;
-            export type $1 = octokit.components.Parameters.Sort;
-            export type $3 = octokit.components.Parameters.PerPage;
-            export type $4 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.PlanId;
+            export type $1 = github.rest.components.Parameters.Sort;
+            export type $3 = github.rest.components.Parameters.PerPage;
+            export type $4 = github.rest.components.Parameters.Page;
             export type Direction = "asc" | "desc";
         }
         export interface QueryParameters {
@@ -28290,18 +27644,18 @@ declare namespace octokit.paths {
              * Marketplace Purchase
              * Marketplace Purchase
              */
-            octokit.components.Schemas.MarketplacePurchase[];
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.MarketplacePurchase[];
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace AppsListAccountsForPlanStubbed {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.PlanId;
-            export type $1 = octokit.components.Parameters.Sort;
-            export type $3 = octokit.components.Parameters.PerPage;
-            export type $4 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.PlanId;
+            export type $1 = github.rest.components.Parameters.Sort;
+            export type $3 = github.rest.components.Parameters.PerPage;
+            export type $4 = github.rest.components.Parameters.Page;
             export type Direction = "asc" | "desc";
         }
         export interface QueryParameters {
@@ -28312,15 +27666,15 @@ declare namespace octokit.paths {
              * Marketplace Purchase
              * Marketplace Purchase
              */
-            octokit.components.Schemas.MarketplacePurchase[];
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
+            github.rest.components.Schemas.MarketplacePurchase[];
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
         }
     }
     namespace AppsListInstallationReposForAuthenticatedUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.InstallationId;
-            export type $1 = octokit.components.Parameters.PerPage;
-            export type $2 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.InstallationId;
+            export type $1 = github.rest.components.Parameters.PerPage;
+            export type $2 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export interface $200 {
@@ -28330,18 +27684,18 @@ declare namespace octokit.paths {
                  * Repository
                  * A git repository
                  */
-                octokit.components.Schemas.Repository[];
+                github.rest.components.Schemas.Repository[];
             }
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace AppsListInstallations {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.PerPage;
-            export type $1 = octokit.components.Parameters.Page;
-            export type $2 = octokit.components.Parameters.Since /* date-time */;
+            export type $0 = github.rest.components.Parameters.PerPage;
+            export type $1 = github.rest.components.Parameters.Page;
+            export type $2 = github.rest.components.Parameters.Since /* date-time */;
             export type Outdated = string;
         }
         export interface QueryParameters {
@@ -28352,13 +27706,13 @@ declare namespace octokit.paths {
              * Installation
              * Installation
              */
-            octokit.components.Schemas.Installation[];
+            github.rest.components.Schemas.Installation[];
         }
     }
     namespace AppsListInstallationsForAuthenticatedUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.PerPage;
-            export type $1 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.PerPage;
+            export type $1 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export interface $200 {
@@ -28367,47 +27721,47 @@ declare namespace octokit.paths {
                  * Installation
                  * Installation
                  */
-                octokit.components.Schemas.Installation[];
+                github.rest.components.Schemas.Installation[];
             }
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $415 = octokit.components.Responses.PreviewHeaderMissing;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $415 = github.rest.components.Responses.PreviewHeaderMissing;
         }
     }
     namespace AppsListPlans {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.PerPage;
-            export type $1 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.PerPage;
+            export type $1 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Marketplace Listing Plan
              * Marketplace Listing Plan
              */
-            octokit.components.Schemas.MarketplaceListingPlan[];
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.MarketplaceListingPlan[];
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace AppsListPlansStubbed {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.PerPage;
-            export type $1 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.PerPage;
+            export type $1 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Marketplace Listing Plan
              * Marketplace Listing Plan
              */
-            octokit.components.Schemas.MarketplaceListingPlan[];
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
+            github.rest.components.Schemas.MarketplaceListingPlan[];
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
         }
     }
     namespace AppsListReposAccessibleToInstallation {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.PerPage;
-            export type $1 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.PerPage;
+            export type $1 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export interface $200 {
@@ -28416,103 +27770,103 @@ declare namespace octokit.paths {
                  * Repository
                  * A git repository
                  */
-                octokit.components.Schemas.Repository[];
+                github.rest.components.Schemas.Repository[];
                 /**
                  * example:
                  * selected
                  */
                 repository_selection?: string;
             }
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
         }
     }
     namespace AppsListSubscriptionsForAuthenticatedUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.PerPage;
-            export type $1 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.PerPage;
+            export type $1 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * User Marketplace Purchase
              * User Marketplace Purchase
              */
-            octokit.components.Schemas.UserMarketplacePurchase[];
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.UserMarketplacePurchase[];
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace AppsListSubscriptionsForAuthenticatedUserStubbed {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.PerPage;
-            export type $1 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.PerPage;
+            export type $1 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * User Marketplace Purchase
              * User Marketplace Purchase
              */
-            octokit.components.Schemas.UserMarketplacePurchase[];
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
+            github.rest.components.Schemas.UserMarketplacePurchase[];
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
         }
     }
     namespace AppsListWebhookDeliveries {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.PerPage;
-            export type $1 = octokit.components.Parameters.Cursor;
+            export type $0 = github.rest.components.Parameters.PerPage;
+            export type $1 = github.rest.components.Parameters.Cursor;
         }
         namespace Responses {
             export type $200 = /**
              * Simple webhook delivery
              * Delivery made by a webhook, without request and response information.
              */
-            octokit.components.Schemas.HookDeliveryItem[];
-            export type $400 = octokit.components.Responses.BadRequest;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.HookDeliveryItem[];
+            export type $400 = github.rest.components.Responses.BadRequest;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace AppsRedeliverWebhookDelivery {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.DeliveryId;
+            export type $0 = github.rest.components.Parameters.DeliveryId;
         }
         namespace Responses {
-            export type $202 = octokit.components.Responses.Accepted;
-            export type $400 = octokit.components.Responses.BadRequest;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            export type $202 = github.rest.components.Responses.Accepted;
+            export type $400 = github.rest.components.Responses.BadRequest;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace AppsRemoveRepoFromInstallation {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.InstallationId;
-            export type $1 = octokit.components.Parameters.RepositoryId;
+            export type $0 = github.rest.components.Parameters.InstallationId;
+            export type $1 = github.rest.components.Parameters.RepositoryId;
         }
         namespace Responses {
             export interface $204 {
             }
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace AppsResetAuthorization {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.ClientId;
-            export type $1 = octokit.components.Parameters.AccessToken;
+            export type $0 = github.rest.components.Parameters.ClientId;
+            export type $1 = github.rest.components.Parameters.AccessToken;
         }
         namespace Responses {
             export type $200 = /**
              * Authorization
              * The authorization for an OAuth app, GitHub App, or a Personal Access Token.
              */
-            octokit.components.Schemas.Authorization;
+            github.rest.components.Schemas.Authorization;
         }
     }
     namespace AppsResetToken {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.ClientId;
+            export type $0 = github.rest.components.Parameters.ClientId;
         }
         export interface RequestBody {
             /**
@@ -28525,14 +27879,14 @@ declare namespace octokit.paths {
              * Authorization
              * The authorization for an OAuth app, GitHub App, or a Personal Access Token.
              */
-            octokit.components.Schemas.Authorization;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.Authorization;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace AppsRevokeAuthorizationForApplication {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.ClientId;
-            export type $1 = octokit.components.Parameters.AccessToken;
+            export type $0 = github.rest.components.Parameters.ClientId;
+            export type $1 = github.rest.components.Parameters.AccessToken;
         }
         namespace Responses {
             export interface $204 {
@@ -28541,8 +27895,8 @@ declare namespace octokit.paths {
     }
     namespace AppsRevokeGrantForApplication {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.ClientId;
-            export type $1 = octokit.components.Parameters.AccessToken;
+            export type $0 = github.rest.components.Parameters.ClientId;
+            export type $1 = github.rest.components.Parameters.AccessToken;
         }
         namespace Responses {
             export interface $204 {
@@ -28557,7 +27911,7 @@ declare namespace octokit.paths {
     }
     namespace AppsScopeToken {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.ClientId;
+            export type $0 = github.rest.components.Parameters.ClientId;
         }
         export interface RequestBody {
             /**
@@ -28601,38 +27955,38 @@ declare namespace octokit.paths {
              *   "single_file": "read"
              * }
              */
-            octokit.components.Schemas.AppPermissions;
+            github.rest.components.Schemas.AppPermissions;
         }
         namespace Responses {
             export type $200 = /**
              * Authorization
              * The authorization for an OAuth app, GitHub App, or a Personal Access Token.
              */
-            octokit.components.Schemas.Authorization;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.Authorization;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace AppsSuspendInstallation {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.InstallationId;
+            export type $0 = github.rest.components.Parameters.InstallationId;
         }
         namespace Responses {
             export interface $204 {
             }
-            export type $404 = octokit.components.Responses.NotFound;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace AppsUnsuspendInstallation {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.InstallationId;
+            export type $0 = github.rest.components.Parameters.InstallationId;
         }
         namespace Responses {
             export interface $204 {
             }
-            export type $404 = octokit.components.Responses.NotFound;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace AppsUpdateWebhookConfigForApp {
@@ -28651,105 +28005,105 @@ declare namespace octokit.paths {
              * example:
              * https://example.com/webhook
              */
-            octokit.components.Schemas.WebhookConfigUrl /* uri */;
+            github.rest.components.Schemas.WebhookConfigUrl /* uri */;
             content_type?: /**
              * The media type used to serialize the payloads. Supported values include `json` and `form`. The default is `form`.
              * example:
              * "json"
              */
-            octokit.components.Schemas.WebhookConfigContentType;
+            github.rest.components.Schemas.WebhookConfigContentType;
             secret?: /**
              * If provided, the `secret` will be used as the `key` to generate the HMAC hex digest value for [delivery signature headers](https://docs.github.com/webhooks/event-payloads/#delivery-headers).
              * example:
              * "********"
              */
-            octokit.components.Schemas.WebhookConfigSecret;
-            insecure_ssl?: octokit.components.Schemas.WebhookConfigInsecureSsl;
+            github.rest.components.Schemas.WebhookConfigSecret;
+            insecure_ssl?: github.rest.components.Schemas.WebhookConfigInsecureSsl;
         }
         namespace Responses {
             export type $200 = /**
              * Webhook Configuration
              * Configuration object of the webhook
              */
-            octokit.components.Schemas.WebhookConfig;
+            github.rest.components.Schemas.WebhookConfig;
         }
     }
     namespace BillingGetGithubActionsBillingGhe {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Enterprise;
+            export type $0 = github.rest.components.Parameters.Enterprise;
         }
         namespace Responses {
-            export type $200 = octokit.components.Schemas.ActionsBillingUsage;
+            export type $200 = github.rest.components.Schemas.ActionsBillingUsage;
         }
     }
     namespace BillingGetGithubActionsBillingOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
+            export type $0 = github.rest.components.Parameters.Org;
         }
         namespace Responses {
-            export type $200 = octokit.components.Schemas.ActionsBillingUsage;
+            export type $200 = github.rest.components.Schemas.ActionsBillingUsage;
         }
     }
     namespace BillingGetGithubActionsBillingUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Username;
+            export type $0 = github.rest.components.Parameters.Username;
         }
         namespace Responses {
-            export type $200 = octokit.components.Schemas.ActionsBillingUsage;
+            export type $200 = github.rest.components.Schemas.ActionsBillingUsage;
         }
     }
     namespace BillingGetGithubPackagesBillingGhe {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Enterprise;
+            export type $0 = github.rest.components.Parameters.Enterprise;
         }
         namespace Responses {
-            export type $200 = octokit.components.Schemas.PackagesBillingUsage;
+            export type $200 = github.rest.components.Schemas.PackagesBillingUsage;
         }
     }
     namespace BillingGetGithubPackagesBillingOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
+            export type $0 = github.rest.components.Parameters.Org;
         }
         namespace Responses {
-            export type $200 = octokit.components.Schemas.PackagesBillingUsage;
+            export type $200 = github.rest.components.Schemas.PackagesBillingUsage;
         }
     }
     namespace BillingGetGithubPackagesBillingUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Username;
+            export type $0 = github.rest.components.Parameters.Username;
         }
         namespace Responses {
-            export type $200 = octokit.components.Schemas.PackagesBillingUsage;
+            export type $200 = github.rest.components.Schemas.PackagesBillingUsage;
         }
     }
     namespace BillingGetSharedStorageBillingGhe {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Enterprise;
+            export type $0 = github.rest.components.Parameters.Enterprise;
         }
         namespace Responses {
-            export type $200 = octokit.components.Schemas.CombinedBillingUsage;
+            export type $200 = github.rest.components.Schemas.CombinedBillingUsage;
         }
     }
     namespace BillingGetSharedStorageBillingOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
+            export type $0 = github.rest.components.Parameters.Org;
         }
         namespace Responses {
-            export type $200 = octokit.components.Schemas.CombinedBillingUsage;
+            export type $200 = github.rest.components.Schemas.CombinedBillingUsage;
         }
     }
     namespace BillingGetSharedStorageBillingUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Username;
+            export type $0 = github.rest.components.Parameters.Username;
         }
         namespace Responses {
-            export type $200 = octokit.components.Schemas.CombinedBillingUsage;
+            export type $200 = github.rest.components.Schemas.CombinedBillingUsage;
         }
     }
     namespace ChecksCreate {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         export type RequestBody = {
             [name: string]: any;
@@ -32799,13 +32153,13 @@ declare namespace octokit.paths {
              * CheckRun
              * A check performed on the code of a given code change
              */
-            octokit.components.Schemas.CheckRun;
+            github.rest.components.Schemas.CheckRun;
         }
     }
     namespace ChecksCreateSuite {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         export interface RequestBody {
             /**
@@ -32818,66 +32172,66 @@ declare namespace octokit.paths {
              * CheckSuite
              * A suite of checks performed on the code of a given code change
              */
-            octokit.components.Schemas.CheckSuite;
+            github.rest.components.Schemas.CheckSuite;
             export type $201 = /**
              * CheckSuite
              * A suite of checks performed on the code of a given code change
              */
-            octokit.components.Schemas.CheckSuite;
+            github.rest.components.Schemas.CheckSuite;
         }
     }
     namespace ChecksGet {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.CheckRunId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.CheckRunId;
         }
         namespace Responses {
             export type $200 = /**
              * CheckRun
              * A check performed on the code of a given code change
              */
-            octokit.components.Schemas.CheckRun;
+            github.rest.components.Schemas.CheckRun;
         }
     }
     namespace ChecksGetSuite {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.CheckSuiteId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.CheckSuiteId;
         }
         namespace Responses {
             export type $200 = /**
              * CheckSuite
              * A suite of checks performed on the code of a given code change
              */
-            octokit.components.Schemas.CheckSuite;
+            github.rest.components.Schemas.CheckSuite;
         }
     }
     namespace ChecksListAnnotations {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.CheckRunId;
-            export type $3 = octokit.components.Parameters.PerPage;
-            export type $4 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.CheckRunId;
+            export type $3 = github.rest.components.Parameters.PerPage;
+            export type $4 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Check Annotation
              * Check Annotation
              */
-            octokit.components.Schemas.CheckAnnotation[];
+            github.rest.components.Schemas.CheckAnnotation[];
         }
     }
     namespace ChecksListForRef {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $3 = octokit.components.Parameters.CheckName;
-            export type $4 = octokit.components.Parameters.Status;
-            export type $6 = octokit.components.Parameters.PerPage;
-            export type $7 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $3 = github.rest.components.Parameters.CheckName;
+            export type $4 = github.rest.components.Parameters.Status;
+            export type $6 = github.rest.components.Parameters.PerPage;
+            export type $7 = github.rest.components.Parameters.Page;
             export type AppId = number;
             export type Filter = "latest" | "all";
             export type Ref = string;
@@ -32896,19 +32250,19 @@ declare namespace octokit.paths {
                  * CheckRun
                  * A check performed on the code of a given code change
                  */
-                octokit.components.Schemas.CheckRun[];
+                github.rest.components.Schemas.CheckRun[];
             }
         }
     }
     namespace ChecksListForSuite {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.CheckSuiteId;
-            export type $3 = octokit.components.Parameters.CheckName;
-            export type $4 = octokit.components.Parameters.Status;
-            export type $6 = octokit.components.Parameters.PerPage;
-            export type $7 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.CheckSuiteId;
+            export type $3 = github.rest.components.Parameters.CheckName;
+            export type $4 = github.rest.components.Parameters.Status;
+            export type $6 = github.rest.components.Parameters.PerPage;
+            export type $7 = github.rest.components.Parameters.Page;
             export type Filter = "latest" | "all";
         }
         export interface QueryParameters {
@@ -32921,17 +32275,17 @@ declare namespace octokit.paths {
                  * CheckRun
                  * A check performed on the code of a given code change
                  */
-                octokit.components.Schemas.CheckRun[];
+                github.rest.components.Schemas.CheckRun[];
             }
         }
     }
     namespace ChecksListSuitesForRef {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $4 = octokit.components.Parameters.CheckName;
-            export type $5 = octokit.components.Parameters.PerPage;
-            export type $6 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $4 = github.rest.components.Parameters.CheckName;
+            export type $5 = github.rest.components.Parameters.PerPage;
+            export type $6 = github.rest.components.Parameters.Page;
             export type AppId = number;
             export type Ref = string;
         }
@@ -32948,15 +32302,15 @@ declare namespace octokit.paths {
                  * CheckSuite
                  * A suite of checks performed on the code of a given code change
                  */
-                octokit.components.Schemas.CheckSuite[];
+                github.rest.components.Schemas.CheckSuite[];
             }
         }
     }
     namespace ChecksRerequestSuite {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.CheckSuiteId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.CheckSuiteId;
         }
         namespace Responses {
             export interface $201 {
@@ -32965,8 +32319,8 @@ declare namespace octokit.paths {
     }
     namespace ChecksSetSuitesPreferences {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         export interface RequestBody {
             /**
@@ -32988,14 +32342,14 @@ declare namespace octokit.paths {
              * Check Suite Preference
              * Check suite configuration preferences for a repository.
              */
-            octokit.components.Schemas.CheckSuitePreference;
+            github.rest.components.Schemas.CheckSuitePreference;
         }
     }
     namespace ChecksUpdate {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.CheckRunId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.CheckRunId;
         }
         export type RequestBody = {
             [name: string]: any;
@@ -37037,13 +36391,13 @@ declare namespace octokit.paths {
              * CheckRun
              * A check performed on the code of a given code change
              */
-            octokit.components.Schemas.CheckRun;
+            github.rest.components.Schemas.CheckRun;
         }
     }
     namespace CodeScanningDeleteAnalysis {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
             export type AnalysisId = number;
             export type ConfirmDelete = string | null;
         }
@@ -37058,157 +36412,157 @@ declare namespace octokit.paths {
              * Analysis deletion
              * Successful deletion of a code scanning analysis
              */
-            octokit.components.Schemas.CodeScanningAnalysisDeletion;
-            export type $400 = octokit.components.Responses.BadRequest;
-            export type $403 = octokit.components.Responses.CodeScanningForbiddenWrite;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $503 = octokit.components.Responses.ServiceUnavailable;
+            github.rest.components.Schemas.CodeScanningAnalysisDeletion;
+            export type $400 = github.rest.components.Responses.BadRequest;
+            export type $403 = github.rest.components.Responses.CodeScanningForbiddenWrite;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $503 = github.rest.components.Responses.ServiceUnavailable;
         }
     }
     namespace CodeScanningGetAlert {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.AlertNumber;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.AlertNumber;
         }
         namespace Responses {
-            export type $200 = octokit.components.Schemas.CodeScanningAlert;
-            export type $403 = octokit.components.Responses.CodeScanningForbiddenRead;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $503 = octokit.components.Responses.ServiceUnavailable;
+            export type $200 = github.rest.components.Schemas.CodeScanningAlert;
+            export type $403 = github.rest.components.Responses.CodeScanningForbiddenRead;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $503 = github.rest.components.Responses.ServiceUnavailable;
         }
     }
     namespace CodeScanningGetAnalysis {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
             export type AnalysisId = number;
         }
         export interface PathParameters {
             analysis_id: Parameters.AnalysisId;
         }
         namespace Responses {
-            export type $200 = octokit.components.Schemas.CodeScanningAnalysis;
-            export type $403 = octokit.components.Responses.CodeScanningForbiddenRead;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $503 = octokit.components.Responses.ServiceUnavailable;
+            export type $200 = github.rest.components.Schemas.CodeScanningAnalysis;
+            export type $403 = github.rest.components.Responses.CodeScanningForbiddenRead;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $503 = github.rest.components.Responses.ServiceUnavailable;
         }
     }
     namespace CodeScanningGetSarif {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
             export type SarifId = string;
         }
         export interface PathParameters {
             sarif_id: Parameters.SarifId;
         }
         namespace Responses {
-            export type $200 = octokit.components.Schemas.CodeScanningSarifsStatus;
-            export type $403 = octokit.components.Responses.CodeScanningForbiddenRead;
+            export type $200 = github.rest.components.Schemas.CodeScanningSarifsStatus;
+            export type $403 = github.rest.components.Responses.CodeScanningForbiddenRead;
             export interface $404 {
             }
-            export type $503 = octokit.components.Responses.ServiceUnavailable;
+            export type $503 = github.rest.components.Responses.ServiceUnavailable;
         }
     }
     namespace CodeScanningListAlertInstances {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.AlertNumber;
-            export type $3 = octokit.components.Parameters.Page;
-            export type $4 = octokit.components.Parameters.PerPage;
-            export type $5 = octokit.components.Parameters.GitRef;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.AlertNumber;
+            export type $3 = github.rest.components.Parameters.Page;
+            export type $4 = github.rest.components.Parameters.PerPage;
+            export type $5 = github.rest.components.Parameters.GitRef;
         }
         namespace Responses {
-            export type $200 = octokit.components.Schemas.CodeScanningAlertInstance[];
-            export type $403 = octokit.components.Responses.CodeScanningForbiddenRead;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $503 = octokit.components.Responses.ServiceUnavailable;
+            export type $200 = github.rest.components.Schemas.CodeScanningAlertInstance[];
+            export type $403 = github.rest.components.Responses.CodeScanningForbiddenRead;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $503 = github.rest.components.Responses.ServiceUnavailable;
         }
     }
     namespace CodeScanningListAlertsForRepo {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.ToolName;
-            export type $3 = octokit.components.Parameters.ToolGuid;
-            export type $4 = octokit.components.Parameters.Page;
-            export type $5 = octokit.components.Parameters.PerPage;
-            export type $6 = octokit.components.Parameters.GitRef;
-            export type State = /* State of a code scanning alert. */ octokit.components.Schemas.CodeScanningAlertState;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.ToolName;
+            export type $3 = github.rest.components.Parameters.ToolGuid;
+            export type $4 = github.rest.components.Parameters.Page;
+            export type $5 = github.rest.components.Parameters.PerPage;
+            export type $6 = github.rest.components.Parameters.GitRef;
+            export type State = /* State of a code scanning alert. */ github.rest.components.Schemas.CodeScanningAlertState;
         }
         export interface QueryParameters {
             state?: Parameters.State;
         }
         namespace Responses {
-            export type $200 = octokit.components.Schemas.CodeScanningAlertItems[];
-            export type $403 = octokit.components.Responses.CodeScanningForbiddenRead;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $503 = octokit.components.Responses.ServiceUnavailable;
+            export type $200 = github.rest.components.Schemas.CodeScanningAlertItems[];
+            export type $403 = github.rest.components.Responses.CodeScanningForbiddenRead;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $503 = github.rest.components.Responses.ServiceUnavailable;
         }
     }
     namespace CodeScanningListRecentAnalyses {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.ToolName;
-            export type $3 = octokit.components.Parameters.ToolGuid;
-            export type $4 = octokit.components.Parameters.Page;
-            export type $5 = octokit.components.Parameters.PerPage;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.ToolName;
+            export type $3 = github.rest.components.Parameters.ToolGuid;
+            export type $4 = github.rest.components.Parameters.Page;
+            export type $5 = github.rest.components.Parameters.PerPage;
             export type Ref = /**
              * The full Git reference, formatted as `refs/heads/<branch name>`,
              * `refs/pull/<number>/merge`, or `refs/pull/<number>/head`.
              */
-            octokit.components.Schemas.CodeScanningRef;
+            github.rest.components.Schemas.CodeScanningRef;
             export type SarifId = /**
              * An identifier for the upload.
              * example:
              * 6c81cd8e-b078-4ac3-a3be-1dad7dbd0b53
              */
-            octokit.components.Schemas.CodeScanningAnalysisSarifId;
+            github.rest.components.Schemas.CodeScanningAnalysisSarifId;
         }
         export interface QueryParameters {
             ref?: Parameters.Ref;
             sarif_id?: Parameters.SarifId;
         }
         namespace Responses {
-            export type $200 = octokit.components.Schemas.CodeScanningAnalysis[];
-            export type $403 = octokit.components.Responses.CodeScanningForbiddenRead;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $503 = octokit.components.Responses.ServiceUnavailable;
+            export type $200 = github.rest.components.Schemas.CodeScanningAnalysis[];
+            export type $403 = github.rest.components.Responses.CodeScanningForbiddenRead;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $503 = github.rest.components.Responses.ServiceUnavailable;
         }
     }
     namespace CodeScanningUpdateAlert {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.AlertNumber;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.AlertNumber;
         }
         export interface RequestBody {
-            state: /* Sets the state of the code scanning alert. Can be one of `open` or `dismissed`. You must provide `dismissed_reason` when you set the state to `dismissed`. */ octokit.components.Schemas.CodeScanningAlertSetState;
-            dismissed_reason?: /* **Required when the state is dismissed.** The reason for dismissing or closing the alert. Can be one of: `false positive`, `won't fix`, and `used in tests`. */ octokit.components.Schemas.CodeScanningAlertDismissedReason;
+            state: /* Sets the state of the code scanning alert. Can be one of `open` or `dismissed`. You must provide `dismissed_reason` when you set the state to `dismissed`. */ github.rest.components.Schemas.CodeScanningAlertSetState;
+            dismissed_reason?: /* **Required when the state is dismissed.** The reason for dismissing or closing the alert. Can be one of: `false positive`, `won't fix`, and `used in tests`. */ github.rest.components.Schemas.CodeScanningAlertDismissedReason;
         }
         namespace Responses {
-            export type $200 = octokit.components.Schemas.CodeScanningAlert;
-            export type $403 = octokit.components.Responses.CodeScanningForbiddenWrite;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $503 = octokit.components.Responses.ServiceUnavailable;
+            export type $200 = github.rest.components.Schemas.CodeScanningAlert;
+            export type $403 = github.rest.components.Responses.CodeScanningForbiddenWrite;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $503 = github.rest.components.Responses.ServiceUnavailable;
         }
     }
     namespace CodeScanningUploadSarif {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         export interface RequestBody {
-            commit_sha: /* The SHA of the commit to which the analysis you are uploading relates. */ octokit.components.Schemas.CodeScanningAnalysisCommitSha /* ^[0-9a-fA-F]+$ */;
+            commit_sha: /* The SHA of the commit to which the analysis you are uploading relates. */ github.rest.components.Schemas.CodeScanningAnalysisCommitSha /* ^[0-9a-fA-F]+$ */;
             ref: /**
              * The full Git reference, formatted as `refs/heads/<branch name>`,
              * `refs/pull/<number>/merge`, or `refs/pull/<number>/head`.
              */
-            octokit.components.Schemas.CodeScanningRef;
-            sarif: /* A Base64 string representing the SARIF file to upload. You must first compress your SARIF file using [`gzip`](http://www.gnu.org/software/gzip/manual/gzip.html) and then translate the contents of the file into a Base64 encoding string. For more information, see "[SARIF support for code scanning](https://docs.github.com/code-security/secure-coding/sarif-support-for-code-scanning)." */ octokit.components.Schemas.CodeScanningAnalysisSarifFile;
+            github.rest.components.Schemas.CodeScanningRef;
+            sarif: /* A Base64 string representing the SARIF file to upload. You must first compress your SARIF file using [`gzip`](http://www.gnu.org/software/gzip/manual/gzip.html) and then translate the contents of the file into a Base64 encoding string. For more information, see "[SARIF support for code scanning](https://docs.github.com/code-security/secure-coding/sarif-support-for-code-scanning)." */ github.rest.components.Schemas.CodeScanningAnalysisSarifFile;
             /**
              * The base directory used in the analysis, as it appears in the SARIF file.
              * This property is used to convert file paths from absolute to relative, so that alerts can be mapped to their correct location in the repository.
@@ -37226,14 +36580,14 @@ declare namespace octokit.paths {
             tool_name?: string;
         }
         namespace Responses {
-            export type $202 = octokit.components.Schemas.CodeScanningSarifsReceipt;
+            export type $202 = github.rest.components.Schemas.CodeScanningSarifsReceipt;
             export interface $400 {
             }
-            export type $403 = octokit.components.Responses.CodeScanningForbiddenWrite;
-            export type $404 = octokit.components.Responses.NotFound;
+            export type $403 = github.rest.components.Responses.CodeScanningForbiddenWrite;
+            export type $404 = github.rest.components.Responses.NotFound;
             export interface $413 {
             }
-            export type $503 = octokit.components.Responses.ServiceUnavailable;
+            export type $503 = github.rest.components.Responses.ServiceUnavailable;
         }
     }
     namespace CodesOfConductGetAllCodesOfConduct {
@@ -37242,8 +36596,8 @@ declare namespace octokit.paths {
              * Code Of Conduct
              * Code Of Conduct
              */
-            octokit.components.Schemas.CodeOfConduct[];
-            export type $304 = octokit.components.Responses.NotModified;
+            github.rest.components.Schemas.CodeOfConduct[];
+            export type $304 = github.rest.components.Responses.NotModified;
         }
     }
     namespace CodesOfConductGetConductCode {
@@ -37258,22 +36612,22 @@ declare namespace octokit.paths {
              * Code Of Conduct
              * Code Of Conduct
              */
-            octokit.components.Schemas.CodeOfConduct;
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.CodeOfConduct;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace CodesOfConductGetForRepo {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         namespace Responses {
             export type $200 = /**
              * Code Of Conduct
              * Code Of Conduct
              */
-            octokit.components.Schemas.CodeOfConduct;
+            github.rest.components.Schemas.CodeOfConduct;
         }
     }
     namespace EmojisGet {
@@ -37281,14 +36635,14 @@ declare namespace octokit.paths {
             export interface $200 {
                 [name: string]: string;
             }
-            export type $304 = octokit.components.Responses.NotModified;
+            export type $304 = github.rest.components.Responses.NotModified;
         }
     }
     namespace EnterpriseAdminAddOrgAccessToSelfHostedRunnerGroupInEnterprise {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Enterprise;
-            export type $1 = octokit.components.Parameters.RunnerGroupId;
-            export type $2 = octokit.components.Parameters.OrgId;
+            export type $0 = github.rest.components.Parameters.Enterprise;
+            export type $1 = github.rest.components.Parameters.RunnerGroupId;
+            export type $2 = github.rest.components.Parameters.OrgId;
         }
         namespace Responses {
             export interface $204 {
@@ -37297,9 +36651,9 @@ declare namespace octokit.paths {
     }
     namespace EnterpriseAdminAddSelfHostedRunnerToGroupForEnterprise {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Enterprise;
-            export type $1 = octokit.components.Parameters.RunnerGroupId;
-            export type $2 = octokit.components.Parameters.RunnerId;
+            export type $0 = github.rest.components.Parameters.Enterprise;
+            export type $1 = github.rest.components.Parameters.RunnerGroupId;
+            export type $2 = github.rest.components.Parameters.RunnerId;
         }
         namespace Responses {
             export interface $204 {
@@ -37308,31 +36662,31 @@ declare namespace octokit.paths {
     }
     namespace EnterpriseAdminCreateRegistrationTokenForEnterprise {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Enterprise;
+            export type $0 = github.rest.components.Parameters.Enterprise;
         }
         namespace Responses {
             export type $201 = /**
              * Authentication Token
              * Authentication Token
              */
-            octokit.components.Schemas.AuthenticationToken;
+            github.rest.components.Schemas.AuthenticationToken;
         }
     }
     namespace EnterpriseAdminCreateRemoveTokenForEnterprise {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Enterprise;
+            export type $0 = github.rest.components.Parameters.Enterprise;
         }
         namespace Responses {
             export type $201 = /**
              * Authentication Token
              * Authentication Token
              */
-            octokit.components.Schemas.AuthenticationToken;
+            github.rest.components.Schemas.AuthenticationToken;
         }
     }
     namespace EnterpriseAdminCreateSelfHostedRunnerGroupForEnterprise {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Enterprise;
+            export type $0 = github.rest.components.Parameters.Enterprise;
         }
         export interface RequestBody {
             /**
@@ -37353,13 +36707,13 @@ declare namespace octokit.paths {
             runners?: number[];
         }
         namespace Responses {
-            export type $201 = octokit.components.Schemas.RunnerGroupsEnterprise;
+            export type $201 = github.rest.components.Schemas.RunnerGroupsEnterprise;
         }
     }
     namespace EnterpriseAdminDeleteScimGroupFromEnterprise {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Enterprise;
-            export type $1 = octokit.components.Parameters.ScimGroupId;
+            export type $0 = github.rest.components.Parameters.Enterprise;
+            export type $1 = github.rest.components.Parameters.ScimGroupId;
         }
         namespace Responses {
             export interface $204 {
@@ -37368,8 +36722,8 @@ declare namespace octokit.paths {
     }
     namespace EnterpriseAdminDeleteSelfHostedRunnerFromEnterprise {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Enterprise;
-            export type $1 = octokit.components.Parameters.RunnerId;
+            export type $0 = github.rest.components.Parameters.Enterprise;
+            export type $1 = github.rest.components.Parameters.RunnerId;
         }
         namespace Responses {
             export interface $204 {
@@ -37378,8 +36732,8 @@ declare namespace octokit.paths {
     }
     namespace EnterpriseAdminDeleteSelfHostedRunnerGroupFromEnterprise {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Enterprise;
-            export type $1 = octokit.components.Parameters.RunnerGroupId;
+            export type $0 = github.rest.components.Parameters.Enterprise;
+            export type $1 = github.rest.components.Parameters.RunnerGroupId;
         }
         namespace Responses {
             export interface $204 {
@@ -37388,8 +36742,8 @@ declare namespace octokit.paths {
     }
     namespace EnterpriseAdminDeleteUserFromEnterprise {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Enterprise;
-            export type $1 = octokit.components.Parameters.ScimUserId;
+            export type $0 = github.rest.components.Parameters.Enterprise;
+            export type $1 = github.rest.components.Parameters.ScimUserId;
         }
         namespace Responses {
             export interface $204 {
@@ -37398,8 +36752,8 @@ declare namespace octokit.paths {
     }
     namespace EnterpriseAdminDisableSelectedOrganizationGithubActionsEnterprise {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Enterprise;
-            export type $1 = octokit.components.Parameters.OrgId;
+            export type $0 = github.rest.components.Parameters.Enterprise;
+            export type $1 = github.rest.components.Parameters.OrgId;
         }
         namespace Responses {
             export interface $204 {
@@ -37408,8 +36762,8 @@ declare namespace octokit.paths {
     }
     namespace EnterpriseAdminEnableSelectedOrganizationGithubActionsEnterprise {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Enterprise;
-            export type $1 = octokit.components.Parameters.OrgId;
+            export type $0 = github.rest.components.Parameters.Enterprise;
+            export type $1 = github.rest.components.Parameters.OrgId;
         }
         namespace Responses {
             export interface $204 {
@@ -37418,85 +36772,85 @@ declare namespace octokit.paths {
     }
     namespace EnterpriseAdminGetAllowedActionsEnterprise {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Enterprise;
+            export type $0 = github.rest.components.Parameters.Enterprise;
         }
         namespace Responses {
-            export type $200 = octokit.components.Schemas.SelectedActions;
+            export type $200 = github.rest.components.Schemas.SelectedActions;
         }
     }
     namespace EnterpriseAdminGetAuditLog {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Enterprise;
-            export type $1 = octokit.components.Parameters.AuditLogPhrase;
-            export type $2 = octokit.components.Parameters.AuditLogInclude;
-            export type $3 = octokit.components.Parameters.AuditLogAfter;
-            export type $4 = octokit.components.Parameters.AuditLogBefore;
-            export type $5 = octokit.components.Parameters.AuditLogOrder;
-            export type $6 = octokit.components.Parameters.Page;
-            export type $7 = octokit.components.Parameters.PerPage;
+            export type $0 = github.rest.components.Parameters.Enterprise;
+            export type $1 = github.rest.components.Parameters.AuditLogPhrase;
+            export type $2 = github.rest.components.Parameters.AuditLogInclude;
+            export type $3 = github.rest.components.Parameters.AuditLogAfter;
+            export type $4 = github.rest.components.Parameters.AuditLogBefore;
+            export type $5 = github.rest.components.Parameters.AuditLogOrder;
+            export type $6 = github.rest.components.Parameters.Page;
+            export type $7 = github.rest.components.Parameters.PerPage;
         }
         namespace Responses {
-            export type $200 = octokit.components.Schemas.AuditLogEvent[];
+            export type $200 = github.rest.components.Schemas.AuditLogEvent[];
         }
     }
     namespace EnterpriseAdminGetGithubActionsPermissionsEnterprise {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Enterprise;
+            export type $0 = github.rest.components.Parameters.Enterprise;
         }
         namespace Responses {
-            export type $200 = octokit.components.Schemas.ActionsEnterprisePermissions;
+            export type $200 = github.rest.components.Schemas.ActionsEnterprisePermissions;
         }
     }
     namespace EnterpriseAdminGetProvisioningInformationForEnterpriseGroup {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Enterprise;
-            export type $1 = octokit.components.Parameters.ScimGroupId;
+            export type $0 = github.rest.components.Parameters.Enterprise;
+            export type $1 = github.rest.components.Parameters.ScimGroupId;
             export type ExcludedAttributes = string;
         }
         export interface QueryParameters {
             excludedAttributes?: Parameters.ExcludedAttributes;
         }
         namespace Responses {
-            export type $200 = octokit.components.Schemas.ScimEnterpriseGroup;
+            export type $200 = github.rest.components.Schemas.ScimEnterpriseGroup;
         }
     }
     namespace EnterpriseAdminGetProvisioningInformationForEnterpriseUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Enterprise;
-            export type $1 = octokit.components.Parameters.ScimUserId;
+            export type $0 = github.rest.components.Parameters.Enterprise;
+            export type $1 = github.rest.components.Parameters.ScimUserId;
         }
         namespace Responses {
-            export type $200 = octokit.components.Schemas.ScimEnterpriseUser;
+            export type $200 = github.rest.components.Schemas.ScimEnterpriseUser;
         }
     }
     namespace EnterpriseAdminGetSelfHostedRunnerForEnterprise {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Enterprise;
-            export type $1 = octokit.components.Parameters.RunnerId;
+            export type $0 = github.rest.components.Parameters.Enterprise;
+            export type $1 = github.rest.components.Parameters.RunnerId;
         }
         namespace Responses {
             export type $200 = /**
              * Self hosted runners
              * A self hosted runner
              */
-            octokit.components.Schemas.Runner;
+            github.rest.components.Schemas.Runner;
         }
     }
     namespace EnterpriseAdminGetSelfHostedRunnerGroupForEnterprise {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Enterprise;
-            export type $1 = octokit.components.Parameters.RunnerGroupId;
+            export type $0 = github.rest.components.Parameters.Enterprise;
+            export type $1 = github.rest.components.Parameters.RunnerGroupId;
         }
         namespace Responses {
-            export type $200 = octokit.components.Schemas.RunnerGroupsEnterprise;
+            export type $200 = github.rest.components.Schemas.RunnerGroupsEnterprise;
         }
     }
     namespace EnterpriseAdminListOrgAccessToSelfHostedRunnerGroupInEnterprise {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Enterprise;
-            export type $1 = octokit.components.Parameters.RunnerGroupId;
-            export type $2 = octokit.components.Parameters.PerPage;
-            export type $3 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Enterprise;
+            export type $1 = github.rest.components.Parameters.RunnerGroupId;
+            export type $2 = github.rest.components.Parameters.PerPage;
+            export type $3 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export interface $200 {
@@ -37505,15 +36859,15 @@ declare namespace octokit.paths {
                  * Organization Simple
                  * Organization Simple
                  */
-                octokit.components.Schemas.OrganizationSimple[];
+                github.rest.components.Schemas.OrganizationSimple[];
             }
         }
     }
     namespace EnterpriseAdminListProvisionedGroupsEnterprise {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Enterprise;
-            export type $1 = octokit.components.Parameters.StartIndex;
-            export type $2 = octokit.components.Parameters.Count;
+            export type $0 = github.rest.components.Parameters.Enterprise;
+            export type $1 = github.rest.components.Parameters.StartIndex;
+            export type $2 = github.rest.components.Parameters.Count;
             export type ExcludedAttributes = string;
             export type Filter = string;
         }
@@ -37522,40 +36876,40 @@ declare namespace octokit.paths {
             excludedAttributes?: Parameters.ExcludedAttributes;
         }
         namespace Responses {
-            export type $200 = octokit.components.Schemas.ScimGroupListEnterprise;
+            export type $200 = github.rest.components.Schemas.ScimGroupListEnterprise;
         }
     }
     namespace EnterpriseAdminListProvisionedIdentitiesEnterprise {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Enterprise;
-            export type $1 = octokit.components.Parameters.StartIndex;
-            export type $2 = octokit.components.Parameters.Count;
+            export type $0 = github.rest.components.Parameters.Enterprise;
+            export type $1 = github.rest.components.Parameters.StartIndex;
+            export type $2 = github.rest.components.Parameters.Count;
             export type Filter = string;
         }
         export interface QueryParameters {
             filter?: Parameters.Filter;
         }
         namespace Responses {
-            export type $200 = octokit.components.Schemas.ScimUserListEnterprise;
+            export type $200 = github.rest.components.Schemas.ScimUserListEnterprise;
         }
     }
     namespace EnterpriseAdminListRunnerApplicationsForEnterprise {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Enterprise;
+            export type $0 = github.rest.components.Parameters.Enterprise;
         }
         namespace Responses {
             export type $200 = /**
              * Runner Application
              * Runner Application
              */
-            octokit.components.Schemas.RunnerApplication[];
+            github.rest.components.Schemas.RunnerApplication[];
         }
     }
     namespace EnterpriseAdminListSelectedOrganizationsEnabledGithubActionsEnterprise {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Enterprise;
-            export type $1 = octokit.components.Parameters.PerPage;
-            export type $2 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Enterprise;
+            export type $1 = github.rest.components.Parameters.PerPage;
+            export type $2 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export interface $200 {
@@ -37564,28 +36918,28 @@ declare namespace octokit.paths {
                  * Organization Simple
                  * Organization Simple
                  */
-                octokit.components.Schemas.OrganizationSimple[];
+                github.rest.components.Schemas.OrganizationSimple[];
             }
         }
     }
     namespace EnterpriseAdminListSelfHostedRunnerGroupsForEnterprise {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Enterprise;
-            export type $1 = octokit.components.Parameters.PerPage;
-            export type $2 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Enterprise;
+            export type $1 = github.rest.components.Parameters.PerPage;
+            export type $2 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export interface $200 {
                 total_count: number;
-                runner_groups: octokit.components.Schemas.RunnerGroupsEnterprise[];
+                runner_groups: github.rest.components.Schemas.RunnerGroupsEnterprise[];
             }
         }
     }
     namespace EnterpriseAdminListSelfHostedRunnersForEnterprise {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Enterprise;
-            export type $1 = octokit.components.Parameters.PerPage;
-            export type $2 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Enterprise;
+            export type $1 = github.rest.components.Parameters.PerPage;
+            export type $2 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export interface $200 {
@@ -37594,16 +36948,16 @@ declare namespace octokit.paths {
                  * Self hosted runners
                  * A self hosted runner
                  */
-                octokit.components.Schemas.Runner[];
+                github.rest.components.Schemas.Runner[];
             }
         }
     }
     namespace EnterpriseAdminListSelfHostedRunnersInGroupForEnterprise {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Enterprise;
-            export type $1 = octokit.components.Parameters.RunnerGroupId;
-            export type $2 = octokit.components.Parameters.PerPage;
-            export type $3 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Enterprise;
+            export type $1 = github.rest.components.Parameters.RunnerGroupId;
+            export type $2 = github.rest.components.Parameters.PerPage;
+            export type $3 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export interface $200 {
@@ -37612,13 +36966,13 @@ declare namespace octokit.paths {
                  * Self hosted runners
                  * A self hosted runner
                  */
-                octokit.components.Schemas.Runner[];
+                github.rest.components.Schemas.Runner[];
             }
         }
     }
     namespace EnterpriseAdminProvisionAndInviteEnterpriseGroup {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Enterprise;
+            export type $0 = github.rest.components.Parameters.Enterprise;
         }
         export interface RequestBody {
             /**
@@ -37637,12 +36991,12 @@ declare namespace octokit.paths {
             }[];
         }
         namespace Responses {
-            export type $201 = octokit.components.Schemas.ScimEnterpriseGroup;
+            export type $201 = github.rest.components.Schemas.ScimEnterpriseGroup;
         }
     }
     namespace EnterpriseAdminProvisionAndInviteEnterpriseUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Enterprise;
+            export type $0 = github.rest.components.Parameters.Enterprise;
         }
         export interface RequestBody {
             /**
@@ -37688,14 +37042,14 @@ declare namespace octokit.paths {
             }[];
         }
         namespace Responses {
-            export type $201 = octokit.components.Schemas.ScimEnterpriseUser;
+            export type $201 = github.rest.components.Schemas.ScimEnterpriseUser;
         }
     }
     namespace EnterpriseAdminRemoveOrgAccessToSelfHostedRunnerGroupInEnterprise {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Enterprise;
-            export type $1 = octokit.components.Parameters.RunnerGroupId;
-            export type $2 = octokit.components.Parameters.OrgId;
+            export type $0 = github.rest.components.Parameters.Enterprise;
+            export type $1 = github.rest.components.Parameters.RunnerGroupId;
+            export type $2 = github.rest.components.Parameters.OrgId;
         }
         namespace Responses {
             export interface $204 {
@@ -37704,9 +37058,9 @@ declare namespace octokit.paths {
     }
     namespace EnterpriseAdminRemoveSelfHostedRunnerFromGroupForEnterprise {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Enterprise;
-            export type $1 = octokit.components.Parameters.RunnerGroupId;
-            export type $2 = octokit.components.Parameters.RunnerId;
+            export type $0 = github.rest.components.Parameters.Enterprise;
+            export type $1 = github.rest.components.Parameters.RunnerGroupId;
+            export type $2 = github.rest.components.Parameters.RunnerId;
         }
         namespace Responses {
             export interface $204 {
@@ -37715,9 +37069,9 @@ declare namespace octokit.paths {
     }
     namespace EnterpriseAdminSetAllowedActionsEnterprise {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Enterprise;
+            export type $0 = github.rest.components.Parameters.Enterprise;
         }
-        export type RequestBody = octokit.components.Schemas.SelectedActions;
+        export type RequestBody = github.rest.components.Schemas.SelectedActions;
         namespace Responses {
             export interface $204 {
             }
@@ -37725,11 +37079,11 @@ declare namespace octokit.paths {
     }
     namespace EnterpriseAdminSetGithubActionsPermissionsEnterprise {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Enterprise;
+            export type $0 = github.rest.components.Parameters.Enterprise;
         }
         export interface RequestBody {
-            enabled_organizations: /* The policy that controls the organizations in the enterprise that are allowed to run GitHub Actions. Can be one of: `all`, `none`, or `selected`. */ octokit.components.Schemas.EnabledOrganizations;
-            allowed_actions?: /* The permissions policy that controls the actions that are allowed to run. Can be one of: `all`, `local_only`, or `selected`. */ octokit.components.Schemas.AllowedActions;
+            enabled_organizations: /* The policy that controls the organizations in the enterprise that are allowed to run GitHub Actions. Can be one of: `all`, `none`, or `selected`. */ github.rest.components.Schemas.EnabledOrganizations;
+            allowed_actions?: /* The permissions policy that controls the actions that are allowed to run. Can be one of: `all`, `local_only`, or `selected`. */ github.rest.components.Schemas.AllowedActions;
         }
         namespace Responses {
             export interface $204 {
@@ -37738,8 +37092,8 @@ declare namespace octokit.paths {
     }
     namespace EnterpriseAdminSetInformationForProvisionedEnterpriseGroup {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Enterprise;
-            export type $1 = octokit.components.Parameters.ScimGroupId;
+            export type $0 = github.rest.components.Parameters.Enterprise;
+            export type $1 = github.rest.components.Parameters.ScimGroupId;
         }
         export interface RequestBody {
             /**
@@ -37758,13 +37112,13 @@ declare namespace octokit.paths {
             }[];
         }
         namespace Responses {
-            export type $200 = octokit.components.Schemas.ScimEnterpriseGroup;
+            export type $200 = github.rest.components.Schemas.ScimEnterpriseGroup;
         }
     }
     namespace EnterpriseAdminSetInformationForProvisionedEnterpriseUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Enterprise;
-            export type $1 = octokit.components.Parameters.ScimUserId;
+            export type $0 = github.rest.components.Parameters.Enterprise;
+            export type $1 = github.rest.components.Parameters.ScimUserId;
         }
         export interface RequestBody {
             /**
@@ -37810,13 +37164,13 @@ declare namespace octokit.paths {
             }[];
         }
         namespace Responses {
-            export type $200 = octokit.components.Schemas.ScimEnterpriseUser;
+            export type $200 = github.rest.components.Schemas.ScimEnterpriseUser;
         }
     }
     namespace EnterpriseAdminSetOrgAccessToSelfHostedRunnerGroupInEnterprise {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Enterprise;
-            export type $1 = octokit.components.Parameters.RunnerGroupId;
+            export type $0 = github.rest.components.Parameters.Enterprise;
+            export type $1 = github.rest.components.Parameters.RunnerGroupId;
         }
         export interface RequestBody {
             /**
@@ -37831,7 +37185,7 @@ declare namespace octokit.paths {
     }
     namespace EnterpriseAdminSetSelectedOrganizationsEnabledGithubActionsEnterprise {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Enterprise;
+            export type $0 = github.rest.components.Parameters.Enterprise;
         }
         export interface RequestBody {
             /**
@@ -37846,8 +37200,8 @@ declare namespace octokit.paths {
     }
     namespace EnterpriseAdminSetSelfHostedRunnersInGroupForEnterprise {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Enterprise;
-            export type $1 = octokit.components.Parameters.RunnerGroupId;
+            export type $0 = github.rest.components.Parameters.Enterprise;
+            export type $1 = github.rest.components.Parameters.RunnerGroupId;
         }
         export interface RequestBody {
             /**
@@ -37862,8 +37216,8 @@ declare namespace octokit.paths {
     }
     namespace EnterpriseAdminUpdateAttributeForEnterpriseGroup {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Enterprise;
-            export type $1 = octokit.components.Parameters.ScimGroupId;
+            export type $0 = github.rest.components.Parameters.Enterprise;
+            export type $1 = github.rest.components.Parameters.ScimGroupId;
         }
         export interface RequestBody {
             /**
@@ -37891,13 +37245,13 @@ declare namespace octokit.paths {
             ];
         }
         namespace Responses {
-            export type $200 = octokit.components.Schemas.ScimEnterpriseGroup;
+            export type $200 = github.rest.components.Schemas.ScimEnterpriseGroup;
         }
     }
     namespace EnterpriseAdminUpdateAttributeForEnterpriseUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Enterprise;
-            export type $1 = octokit.components.Parameters.ScimUserId;
+            export type $0 = github.rest.components.Parameters.Enterprise;
+            export type $1 = github.rest.components.Parameters.ScimUserId;
         }
         export interface RequestBody {
             /**
@@ -37912,13 +37266,13 @@ declare namespace octokit.paths {
             }[];
         }
         namespace Responses {
-            export type $200 = octokit.components.Schemas.ScimEnterpriseUser;
+            export type $200 = github.rest.components.Schemas.ScimEnterpriseUser;
         }
     }
     namespace EnterpriseAdminUpdateSelfHostedRunnerGroupForEnterprise {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Enterprise;
-            export type $1 = octokit.components.Parameters.RunnerGroupId;
+            export type $0 = github.rest.components.Parameters.Enterprise;
+            export type $1 = github.rest.components.Parameters.RunnerGroupId;
         }
         export interface RequestBody {
             /**
@@ -37931,18 +37285,18 @@ declare namespace octokit.paths {
             visibility?: "selected" | "all";
         }
         namespace Responses {
-            export type $200 = octokit.components.Schemas.RunnerGroupsEnterprise;
+            export type $200 = github.rest.components.Schemas.RunnerGroupsEnterprise;
         }
     }
     namespace GistsCheckIsStarred {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.GistId;
+            export type $0 = github.rest.components.Parameters.GistId;
         }
         namespace Responses {
             export interface $204 {
             }
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $403 = octokit.components.Responses.Forbidden;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $403 = github.rest.components.Responses.Forbidden;
             export interface $404 {
             }
         }
@@ -37979,16 +37333,16 @@ declare namespace octokit.paths {
              * Gist Simple
              * Gist Simple
              */
-            octokit.components.Schemas.GistSimple;
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.GistSimple;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace GistsCreateComment {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.GistId;
+            export type $0 = github.rest.components.Parameters.GistId;
         }
         export interface RequestBody {
             /**
@@ -38003,87 +37357,87 @@ declare namespace octokit.paths {
              * Gist Comment
              * A comment made to a gist.
              */
-            octokit.components.Schemas.GistComment;
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.GistComment;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace GistsDelete {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.GistId;
+            export type $0 = github.rest.components.Parameters.GistId;
         }
         namespace Responses {
             export interface $204 {
             }
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace GistsDeleteComment {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.GistId;
-            export type $1 = octokit.components.Parameters.CommentId;
+            export type $0 = github.rest.components.Parameters.GistId;
+            export type $1 = github.rest.components.Parameters.CommentId;
         }
         namespace Responses {
             export interface $204 {
             }
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace GistsFork {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.GistId;
+            export type $0 = github.rest.components.Parameters.GistId;
         }
         namespace Responses {
             export type $201 = /**
              * Base Gist
              * Base Gist
              */
-            octokit.components.Schemas.BaseGist;
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.BaseGist;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace GistsGet {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.GistId;
+            export type $0 = github.rest.components.Parameters.GistId;
         }
         namespace Responses {
             export type $200 = /**
              * Gist Simple
              * Gist Simple
              */
-            octokit.components.Schemas.GistSimple;
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $403 = octokit.components.Responses.ForbiddenGist;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.GistSimple;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $403 = github.rest.components.Responses.ForbiddenGist;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace GistsGetComment {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.GistId;
-            export type $1 = octokit.components.Parameters.CommentId;
+            export type $0 = github.rest.components.Parameters.GistId;
+            export type $1 = github.rest.components.Parameters.CommentId;
         }
         namespace Responses {
             export type $200 = /**
              * Gist Comment
              * A comment made to a gist.
              */
-            octokit.components.Schemas.GistComment;
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $403 = octokit.components.Responses.ForbiddenGist;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.GistComment;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $403 = github.rest.components.Responses.ForbiddenGist;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace GistsGetRevision {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.GistId;
+            export type $0 = github.rest.components.Parameters.GistId;
             export type Sha = string;
         }
         export interface PathParameters {
@@ -38094,156 +37448,156 @@ declare namespace octokit.paths {
              * Gist Simple
              * Gist Simple
              */
-            octokit.components.Schemas.GistSimple;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.GistSimple;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace GistsList {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Since /* date-time */;
-            export type $1 = octokit.components.Parameters.PerPage;
-            export type $2 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Since /* date-time */;
+            export type $1 = github.rest.components.Parameters.PerPage;
+            export type $2 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Base Gist
              * Base Gist
              */
-            octokit.components.Schemas.BaseGist[];
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $403 = octokit.components.Responses.Forbidden;
+            github.rest.components.Schemas.BaseGist[];
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $403 = github.rest.components.Responses.Forbidden;
         }
     }
     namespace GistsListComments {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.GistId;
-            export type $1 = octokit.components.Parameters.PerPage;
-            export type $2 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.GistId;
+            export type $1 = github.rest.components.Parameters.PerPage;
+            export type $2 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Gist Comment
              * A comment made to a gist.
              */
-            octokit.components.Schemas.GistComment[];
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.GistComment[];
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace GistsListCommits {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.GistId;
-            export type $1 = octokit.components.Parameters.PerPage;
-            export type $2 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.GistId;
+            export type $1 = github.rest.components.Parameters.PerPage;
+            export type $2 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Gist Commit
              * Gist Commit
              */
-            octokit.components.Schemas.GistCommit[];
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.GistCommit[];
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace GistsListForUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Username;
-            export type $1 = octokit.components.Parameters.Since /* date-time */;
-            export type $2 = octokit.components.Parameters.PerPage;
-            export type $3 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Username;
+            export type $1 = github.rest.components.Parameters.Since /* date-time */;
+            export type $2 = github.rest.components.Parameters.PerPage;
+            export type $3 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Base Gist
              * Base Gist
              */
-            octokit.components.Schemas.BaseGist[];
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.BaseGist[];
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace GistsListForks {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.GistId;
-            export type $1 = octokit.components.Parameters.PerPage;
-            export type $2 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.GistId;
+            export type $1 = github.rest.components.Parameters.PerPage;
+            export type $2 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Gist Simple
              * Gist Simple
              */
-            octokit.components.Schemas.GistSimple[];
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.GistSimple[];
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace GistsListPublic {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Since /* date-time */;
-            export type $1 = octokit.components.Parameters.PerPage;
-            export type $2 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Since /* date-time */;
+            export type $1 = github.rest.components.Parameters.PerPage;
+            export type $2 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Base Gist
              * Base Gist
              */
-            octokit.components.Schemas.BaseGist[];
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.BaseGist[];
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace GistsListStarred {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Since /* date-time */;
-            export type $1 = octokit.components.Parameters.PerPage;
-            export type $2 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Since /* date-time */;
+            export type $1 = github.rest.components.Parameters.PerPage;
+            export type $2 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Base Gist
              * Base Gist
              */
-            octokit.components.Schemas.BaseGist[];
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
+            github.rest.components.Schemas.BaseGist[];
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
         }
     }
     namespace GistsStar {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.GistId;
+            export type $0 = github.rest.components.Parameters.GistId;
         }
         namespace Responses {
             export interface $204 {
             }
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace GistsUnstar {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.GistId;
+            export type $0 = github.rest.components.Parameters.GistId;
         }
         namespace Responses {
             export interface $204 {
             }
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace GistsUpdate {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.GistId;
+            export type $0 = github.rest.components.Parameters.GistId;
         }
         export type RequestBody = {
             /**
@@ -38419,15 +37773,15 @@ declare namespace octokit.paths {
              * Gist Simple
              * Gist Simple
              */
-            octokit.components.Schemas.GistSimple;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.GistSimple;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace GistsUpdateComment {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.GistId;
-            export type $1 = octokit.components.Parameters.CommentId;
+            export type $0 = github.rest.components.Parameters.GistId;
+            export type $1 = github.rest.components.Parameters.CommentId;
         }
         export interface RequestBody {
             /**
@@ -38442,14 +37796,14 @@ declare namespace octokit.paths {
              * Gist Comment
              * A comment made to a gist.
              */
-            octokit.components.Schemas.GistComment;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.GistComment;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace GitCreateBlob {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         export interface RequestBody {
             /**
@@ -38466,17 +37820,17 @@ declare namespace octokit.paths {
              * Short Blob
              * Short Blob
              */
-            octokit.components.Schemas.ShortBlob;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $409 = octokit.components.Responses.Conflict;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.ShortBlob;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $409 = github.rest.components.Responses.Conflict;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace GitCreateCommit {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         export interface RequestBody {
             /**
@@ -38535,15 +37889,15 @@ declare namespace octokit.paths {
              * Git Commit
              * Low-level Git commit operations within a repository
              */
-            octokit.components.Schemas.GitCommit;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.GitCommit;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace GitCreateRef {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         export interface RequestBody {
             /**
@@ -38565,14 +37919,14 @@ declare namespace octokit.paths {
              * Git Reference
              * Git references within a repository
              */
-            octokit.components.Schemas.GitRef;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.GitRef;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace GitCreateTag {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         export interface RequestBody {
             /**
@@ -38614,14 +37968,14 @@ declare namespace octokit.paths {
              * Git Tag
              * Metadata for a Git tag
              */
-            octokit.components.Schemas.GitTag;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.GitTag;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace GitCreateTree {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         export interface RequestBody {
             /**
@@ -38665,16 +38019,16 @@ declare namespace octokit.paths {
              * Git Tree
              * The hierarchy between files in a Git repository.
              */
-            octokit.components.Schemas.GitTree;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.GitTree;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace GitDeleteRef {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
             export type Ref = string;
         }
         export interface PathParameters {
@@ -38683,13 +38037,13 @@ declare namespace octokit.paths {
         namespace Responses {
             export interface $204 {
             }
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace GitGetBlob {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
             export type FileSha = string;
         }
         export interface PathParameters {
@@ -38700,31 +38054,31 @@ declare namespace octokit.paths {
              * Blob
              * Blob
              */
-            octokit.components.Schemas.Blob;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.Blob;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace GitGetCommit {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.CommitSha;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.CommitSha;
         }
         namespace Responses {
             export type $200 = /**
              * Git Commit
              * Low-level Git commit operations within a repository
              */
-            octokit.components.Schemas.GitCommit;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.GitCommit;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace GitGetRef {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
             export type Ref = string;
         }
         export interface PathParameters {
@@ -38735,14 +38089,14 @@ declare namespace octokit.paths {
              * Git Reference
              * Git references within a repository
              */
-            octokit.components.Schemas.GitRef;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.GitRef;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace GitGetTag {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
             export type TagSha = string;
         }
         export interface PathParameters {
@@ -38753,14 +38107,14 @@ declare namespace octokit.paths {
              * Git Tag
              * Metadata for a Git tag
              */
-            octokit.components.Schemas.GitTag;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.GitTag;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace GitGetTree {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
             export type Recursive = string;
             export type TreeSha = string;
         }
@@ -38775,17 +38129,17 @@ declare namespace octokit.paths {
              * Git Tree
              * The hierarchy between files in a Git repository.
              */
-            octokit.components.Schemas.GitTree;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.GitTree;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace GitListMatchingRefs {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $3 = octokit.components.Parameters.PerPage;
-            export type $4 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $3 = github.rest.components.Parameters.PerPage;
+            export type $4 = github.rest.components.Parameters.Page;
             export type Ref = string;
         }
         export interface PathParameters {
@@ -38796,13 +38150,13 @@ declare namespace octokit.paths {
              * Git Reference
              * Git references within a repository
              */
-            octokit.components.Schemas.GitRef[];
+            github.rest.components.Schemas.GitRef[];
         }
     }
     namespace GitUpdateRef {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
             export type Ref = string;
         }
         export interface PathParameters {
@@ -38823,14 +38177,14 @@ declare namespace octokit.paths {
              * Git Reference
              * Git references within a repository
              */
-            octokit.components.Schemas.GitRef;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.GitRef;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace GitignoreGetAllTemplates {
         namespace Responses {
             export type $200 = string[];
-            export type $304 = octokit.components.Responses.NotModified;
+            export type $304 = github.rest.components.Responses.NotModified;
         }
     }
     namespace GitignoreGetTemplate {
@@ -38845,8 +38199,8 @@ declare namespace octokit.paths {
              * Gitignore Template
              * Gitignore Template
              */
-            octokit.components.Schemas.GitignoreTemplate;
-            export type $304 = octokit.components.Responses.NotModified;
+            github.rest.components.Schemas.GitignoreTemplate;
+            export type $304 = github.rest.components.Responses.NotModified;
         }
     }
     namespace InteractionsGetRestrictionsForAuthenticatedUser {
@@ -38855,7 +38209,7 @@ declare namespace octokit.paths {
              * Interaction Limits
              * Interaction limit settings.
              */
-            octokit.components.Schemas.InteractionLimitResponse | {
+            github.rest.components.Schemas.InteractionLimitResponse | {
                 [key: string]: any;
             };
             export interface $204 {
@@ -38864,29 +38218,29 @@ declare namespace octokit.paths {
     }
     namespace InteractionsGetRestrictionsForOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
+            export type $0 = github.rest.components.Parameters.Org;
         }
         namespace Responses {
             export type $200 = /**
              * Interaction Limits
              * Interaction limit settings.
              */
-            octokit.components.Schemas.InteractionLimitResponse | {
+            github.rest.components.Schemas.InteractionLimitResponse | {
                 [key: string]: any;
             };
         }
     }
     namespace InteractionsGetRestrictionsForRepo {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         namespace Responses {
             export type $200 = /**
              * Interaction Limits
              * Interaction limit settings.
              */
-            octokit.components.Schemas.InteractionLimitResponse | {
+            github.rest.components.Schemas.InteractionLimitResponse | {
                 [key: string]: any;
             };
         }
@@ -38899,7 +38253,7 @@ declare namespace octokit.paths {
     }
     namespace InteractionsRemoveRestrictionsForOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
+            export type $0 = github.rest.components.Parameters.Org;
         }
         namespace Responses {
             export interface $204 {
@@ -38908,8 +38262,8 @@ declare namespace octokit.paths {
     }
     namespace InteractionsRemoveRestrictionsForRepo {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         namespace Responses {
             export interface $204 {
@@ -38923,59 +38277,59 @@ declare namespace octokit.paths {
          * Interaction Restrictions
          * Limit interactions to a specific type of user for a specified duration
          */
-        octokit.components.Schemas.InteractionLimit;
+        github.rest.components.Schemas.InteractionLimit;
         namespace Responses {
             export type $200 = /**
              * Interaction Limits
              * Interaction limit settings.
              */
-            octokit.components.Schemas.InteractionLimitResponse;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.InteractionLimitResponse;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace InteractionsSetRestrictionsForOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
+            export type $0 = github.rest.components.Parameters.Org;
         }
         export type RequestBody = /**
          * Interaction Restrictions
          * Limit interactions to a specific type of user for a specified duration
          */
-        octokit.components.Schemas.InteractionLimit;
+        github.rest.components.Schemas.InteractionLimit;
         namespace Responses {
             export type $200 = /**
              * Interaction Limits
              * Interaction limit settings.
              */
-            octokit.components.Schemas.InteractionLimitResponse;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.InteractionLimitResponse;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace InteractionsSetRestrictionsForRepo {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         export type RequestBody = /**
          * Interaction Restrictions
          * Limit interactions to a specific type of user for a specified duration
          */
-        octokit.components.Schemas.InteractionLimit;
+        github.rest.components.Schemas.InteractionLimit;
         namespace Responses {
             export type $200 = /**
              * Interaction Limits
              * Interaction limit settings.
              */
-            octokit.components.Schemas.InteractionLimitResponse;
+            github.rest.components.Schemas.InteractionLimitResponse;
             export interface $409 {
             }
         }
     }
     namespace IssuesAddAssignees {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.IssueNumber;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.IssueNumber;
         }
         export interface RequestBody {
             /**
@@ -38988,14 +38342,14 @@ declare namespace octokit.paths {
              * Issue Simple
              * Issue Simple
              */
-            octokit.components.Schemas.IssueSimple;
+            github.rest.components.Schemas.IssueSimple;
         }
     }
     namespace IssuesAddLabels {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.IssueNumber;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.IssueNumber;
         }
         export type RequestBody = {
             /**
@@ -39005,7 +38359,10 @@ declare namespace octokit.paths {
                 string,
                 ...string[]
             ];
-        } | {
+        } | [
+            string,
+            ...string[]
+        ] | {
             labels?: [
                 {
                     name: string;
@@ -39014,21 +38371,28 @@ declare namespace octokit.paths {
                     name: string;
                 }[]
             ];
-        };
+        } | [
+            {
+                name: string;
+            },
+            ...{
+                name: string;
+            }[]
+        ] | string;
         namespace Responses {
             export type $200 = /**
              * Label
              * Color-coded labels help you categorize and filter your issues (just like labels in Gmail).
              */
-            octokit.components.Schemas.Label[];
-            export type $410 = octokit.components.Responses.Gone;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.Label[];
+            export type $410 = github.rest.components.Responses.Gone;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace IssuesCheckUserCanBeAssigned {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
             export type Assignee = string;
         }
         export interface PathParameters {
@@ -39041,13 +38405,13 @@ declare namespace octokit.paths {
              * Basic Error
              * Basic Error
              */
-            octokit.components.Schemas.BasicError;
+            github.rest.components.Schemas.BasicError;
         }
     }
     namespace IssuesCreate {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         export interface RequestBody {
             /**
@@ -39082,19 +38446,19 @@ declare namespace octokit.paths {
              * Issue
              * Issues are a great way to keep track of tasks, enhancements, and bugs for your projects.
              */
-            octokit.components.Schemas.Issue;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $410 = octokit.components.Responses.Gone;
-            export type $422 = octokit.components.Responses.ValidationFailed;
-            export type $503 = octokit.components.Responses.ServiceUnavailable;
+            github.rest.components.Schemas.Issue;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $410 = github.rest.components.Responses.Gone;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
+            export type $503 = github.rest.components.Responses.ServiceUnavailable;
         }
     }
     namespace IssuesCreateComment {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.IssueNumber;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.IssueNumber;
         }
         export interface RequestBody {
             /**
@@ -39107,17 +38471,17 @@ declare namespace octokit.paths {
              * Issue Comment
              * Comments provide a way for people to collaborate on an issue.
              */
-            octokit.components.Schemas.IssueComment;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $410 = octokit.components.Responses.Gone;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.IssueComment;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $410 = github.rest.components.Responses.Gone;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace IssuesCreateLabel {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         export interface RequestBody {
             /**
@@ -39138,15 +38502,15 @@ declare namespace octokit.paths {
              * Label
              * Color-coded labels help you categorize and filter your issues (just like labels in Gmail).
              */
-            octokit.components.Schemas.Label;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.Label;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace IssuesCreateMilestone {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         export interface RequestBody {
             /**
@@ -39171,16 +38535,16 @@ declare namespace octokit.paths {
              * Milestone
              * A collection of related issues and pull requests.
              */
-            octokit.components.Schemas.Milestone;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.Milestone;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace IssuesDeleteComment {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.CommentId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.CommentId;
         }
         namespace Responses {
             export interface $204 {
@@ -39189,8 +38553,8 @@ declare namespace octokit.paths {
     }
     namespace IssuesDeleteLabel {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
             export type Name = string;
         }
         export interface PathParameters {
@@ -39203,53 +38567,53 @@ declare namespace octokit.paths {
     }
     namespace IssuesDeleteMilestone {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.MilestoneNumber;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.MilestoneNumber;
         }
         namespace Responses {
             export interface $204 {
             }
-            export type $404 = octokit.components.Responses.NotFound;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace IssuesGet {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.IssueNumber;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.IssueNumber;
         }
         namespace Responses {
             export type $200 = /**
              * Issue
              * Issues are a great way to keep track of tasks, enhancements, and bugs for your projects.
              */
-            octokit.components.Schemas.Issue;
-            export type $301 = octokit.components.Responses.MovedPermanently;
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $410 = octokit.components.Responses.Gone;
+            github.rest.components.Schemas.Issue;
+            export type $301 = github.rest.components.Responses.MovedPermanently;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $410 = github.rest.components.Responses.Gone;
         }
     }
     namespace IssuesGetComment {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.CommentId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.CommentId;
         }
         namespace Responses {
             export type $200 = /**
              * Issue Comment
              * Comments provide a way for people to collaborate on an issue.
              */
-            octokit.components.Schemas.IssueComment;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.IssueComment;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace IssuesGetEvent {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
             export type EventId = number;
         }
         export interface PathParameters {
@@ -39260,16 +38624,16 @@ declare namespace octokit.paths {
              * Issue Event
              * Issue Event
              */
-            octokit.components.Schemas.IssueEvent;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $410 = octokit.components.Responses.Gone;
+            github.rest.components.Schemas.IssueEvent;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $410 = github.rest.components.Responses.Gone;
         }
     }
     namespace IssuesGetLabel {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
             export type Name = string;
         }
         export interface PathParameters {
@@ -39280,32 +38644,32 @@ declare namespace octokit.paths {
              * Label
              * Color-coded labels help you categorize and filter your issues (just like labels in Gmail).
              */
-            octokit.components.Schemas.Label;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.Label;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace IssuesGetMilestone {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.MilestoneNumber;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.MilestoneNumber;
         }
         namespace Responses {
             export type $200 = /**
              * Milestone
              * A collection of related issues and pull requests.
              */
-            octokit.components.Schemas.Milestone;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.Milestone;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace IssuesList {
         namespace Parameters {
-            export type $10 = octokit.components.Parameters.PerPage;
-            export type $11 = octokit.components.Parameters.Page;
-            export type $2 = octokit.components.Parameters.Labels;
-            export type $4 = octokit.components.Parameters.Direction;
-            export type $5 = octokit.components.Parameters.Since /* date-time */;
+            export type $10 = github.rest.components.Parameters.PerPage;
+            export type $11 = github.rest.components.Parameters.Page;
+            export type $2 = github.rest.components.Parameters.Labels;
+            export type $4 = github.rest.components.Parameters.Direction;
+            export type $5 = github.rest.components.Parameters.Since /* date-time */;
             export type Collab = boolean;
             export type Filter = "assigned" | "created" | "mentioned" | "subscribed" | "repos" | "all";
             export type Orgs = boolean;
@@ -39328,55 +38692,55 @@ declare namespace octokit.paths {
              * Issue
              * Issues are a great way to keep track of tasks, enhancements, and bugs for your projects.
              */
-            octokit.components.Schemas.Issue[];
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.Issue[];
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace IssuesListAssignees {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.PerPage;
-            export type $3 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.PerPage;
+            export type $3 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Simple User
              * Simple User
              */
-            octokit.components.Schemas.SimpleUser[];
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.SimpleUser[];
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace IssuesListComments {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.IssueNumber;
-            export type $3 = octokit.components.Parameters.Since /* date-time */;
-            export type $4 = octokit.components.Parameters.PerPage;
-            export type $5 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.IssueNumber;
+            export type $3 = github.rest.components.Parameters.Since /* date-time */;
+            export type $4 = github.rest.components.Parameters.PerPage;
+            export type $5 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Issue Comment
              * Comments provide a way for people to collaborate on an issue.
              */
-            octokit.components.Schemas.IssueComment[];
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $410 = octokit.components.Responses.Gone;
+            github.rest.components.Schemas.IssueComment[];
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $410 = github.rest.components.Responses.Gone;
         }
     }
     namespace IssuesListCommentsForRepo {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.Sort;
-            export type $4 = octokit.components.Parameters.Since /* date-time */;
-            export type $5 = octokit.components.Parameters.PerPage;
-            export type $6 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.Sort;
+            export type $4 = github.rest.components.Parameters.Since /* date-time */;
+            export type $5 = github.rest.components.Parameters.PerPage;
+            export type $6 = github.rest.components.Parameters.Page;
             export type Direction = "asc" | "desc";
         }
         export interface QueryParameters {
@@ -39387,70 +38751,70 @@ declare namespace octokit.paths {
              * Issue Comment
              * Comments provide a way for people to collaborate on an issue.
              */
-            octokit.components.Schemas.IssueComment[];
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.IssueComment[];
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace IssuesListEvents {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.IssueNumber;
-            export type $3 = octokit.components.Parameters.PerPage;
-            export type $4 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.IssueNumber;
+            export type $3 = github.rest.components.Parameters.PerPage;
+            export type $4 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Issue Event for Issue
              * Issue Event for Issue
              */
-            octokit.components.Schemas.IssueEventForIssue[];
-            export type $410 = octokit.components.Responses.Gone;
+            github.rest.components.Schemas.IssueEventForIssue[];
+            export type $410 = github.rest.components.Responses.Gone;
         }
     }
     namespace IssuesListEventsForRepo {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.PerPage;
-            export type $3 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.PerPage;
+            export type $3 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Issue Event
              * Issue Event
              */
-            octokit.components.Schemas.IssueEvent[];
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.IssueEvent[];
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace IssuesListEventsForTimeline {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.IssueNumber;
-            export type $3 = octokit.components.Parameters.PerPage;
-            export type $4 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.IssueNumber;
+            export type $3 = github.rest.components.Parameters.PerPage;
+            export type $4 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Timeline Event
              * Timeline Event
              */
-            octokit.components.Schemas.TimelineIssueEvents[];
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $410 = octokit.components.Responses.Gone;
-            export type $415 = octokit.components.Responses.PreviewHeaderMissing;
+            github.rest.components.Schemas.TimelineIssueEvents[];
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $410 = github.rest.components.Responses.Gone;
+            export type $415 = github.rest.components.Responses.PreviewHeaderMissing;
         }
     }
     namespace IssuesListForAuthenticatedUser {
         namespace Parameters {
-            export type $2 = octokit.components.Parameters.Labels;
-            export type $4 = octokit.components.Parameters.Direction;
-            export type $5 = octokit.components.Parameters.Since /* date-time */;
-            export type $6 = octokit.components.Parameters.PerPage;
-            export type $7 = octokit.components.Parameters.Page;
+            export type $2 = github.rest.components.Parameters.Labels;
+            export type $4 = github.rest.components.Parameters.Direction;
+            export type $5 = github.rest.components.Parameters.Since /* date-time */;
+            export type $6 = github.rest.components.Parameters.PerPage;
+            export type $7 = github.rest.components.Parameters.Page;
             export type Filter = "assigned" | "created" | "mentioned" | "subscribed" | "repos" | "all";
             export type Sort = "created" | "updated" | "comments";
             export type State = "open" | "closed" | "all";
@@ -39465,19 +38829,19 @@ declare namespace octokit.paths {
              * Issue
              * Issues are a great way to keep track of tasks, enhancements, and bugs for your projects.
              */
-            octokit.components.Schemas.Issue[];
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.Issue[];
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace IssuesListForOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $3 = octokit.components.Parameters.Labels;
-            export type $5 = octokit.components.Parameters.Direction;
-            export type $6 = octokit.components.Parameters.Since /* date-time */;
-            export type $7 = octokit.components.Parameters.PerPage;
-            export type $8 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $3 = github.rest.components.Parameters.Labels;
+            export type $5 = github.rest.components.Parameters.Direction;
+            export type $6 = github.rest.components.Parameters.Since /* date-time */;
+            export type $7 = github.rest.components.Parameters.PerPage;
+            export type $8 = github.rest.components.Parameters.Page;
             export type Filter = "assigned" | "created" | "mentioned" | "subscribed" | "repos" | "all";
             export type Sort = "created" | "updated" | "comments";
             export type State = "open" | "closed" | "all";
@@ -39492,19 +38856,19 @@ declare namespace octokit.paths {
              * Issue
              * Issues are a great way to keep track of tasks, enhancements, and bugs for your projects.
              */
-            octokit.components.Schemas.Issue[];
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.Issue[];
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace IssuesListForRepo {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $10 = octokit.components.Parameters.Since /* date-time */;
-            export type $11 = octokit.components.Parameters.PerPage;
-            export type $12 = octokit.components.Parameters.Page;
-            export type $7 = octokit.components.Parameters.Labels;
-            export type $9 = octokit.components.Parameters.Direction;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $10 = github.rest.components.Parameters.Since /* date-time */;
+            export type $11 = github.rest.components.Parameters.PerPage;
+            export type $12 = github.rest.components.Parameters.Page;
+            export type $7 = github.rest.components.Parameters.Labels;
+            export type $9 = github.rest.components.Parameters.Direction;
             export type Assignee = string;
             export type Creator = string;
             export type Mentioned = string;
@@ -39525,67 +38889,67 @@ declare namespace octokit.paths {
              * Issue Simple
              * Issue Simple
              */
-            octokit.components.Schemas.IssueSimple[];
-            export type $301 = octokit.components.Responses.MovedPermanently;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.IssueSimple[];
+            export type $301 = github.rest.components.Responses.MovedPermanently;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace IssuesListLabelsForMilestone {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.MilestoneNumber;
-            export type $3 = octokit.components.Parameters.PerPage;
-            export type $4 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.MilestoneNumber;
+            export type $3 = github.rest.components.Parameters.PerPage;
+            export type $4 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Label
              * Color-coded labels help you categorize and filter your issues (just like labels in Gmail).
              */
-            octokit.components.Schemas.Label[];
+            github.rest.components.Schemas.Label[];
         }
     }
     namespace IssuesListLabelsForRepo {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.PerPage;
-            export type $3 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.PerPage;
+            export type $3 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Label
              * Color-coded labels help you categorize and filter your issues (just like labels in Gmail).
              */
-            octokit.components.Schemas.Label[];
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.Label[];
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace IssuesListLabelsOnIssue {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.IssueNumber;
-            export type $3 = octokit.components.Parameters.PerPage;
-            export type $4 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.IssueNumber;
+            export type $3 = github.rest.components.Parameters.PerPage;
+            export type $4 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Label
              * Color-coded labels help you categorize and filter your issues (just like labels in Gmail).
              */
-            octokit.components.Schemas.Label[];
-            export type $410 = octokit.components.Responses.Gone;
+            github.rest.components.Schemas.Label[];
+            export type $410 = github.rest.components.Responses.Gone;
         }
     }
     namespace IssuesListMilestones {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $5 = octokit.components.Parameters.PerPage;
-            export type $6 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $5 = github.rest.components.Parameters.PerPage;
+            export type $6 = github.rest.components.Parameters.Page;
             export type Direction = "asc" | "desc";
             export type Sort = "due_on" | "completeness";
             export type State = "open" | "closed" | "all";
@@ -39600,15 +38964,15 @@ declare namespace octokit.paths {
              * Milestone
              * A collection of related issues and pull requests.
              */
-            octokit.components.Schemas.Milestone[];
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.Milestone[];
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace IssuesLock {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.IssueNumber;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.IssueNumber;
         }
         export type RequestBody = {
             /**
@@ -39623,29 +38987,29 @@ declare namespace octokit.paths {
         namespace Responses {
             export interface $204 {
             }
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $410 = octokit.components.Responses.Gone;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $410 = github.rest.components.Responses.Gone;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace IssuesRemoveAllLabels {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.IssueNumber;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.IssueNumber;
         }
         namespace Responses {
             export interface $204 {
             }
-            export type $410 = octokit.components.Responses.Gone;
+            export type $410 = github.rest.components.Responses.Gone;
         }
     }
     namespace IssuesRemoveAssignees {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.IssueNumber;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.IssueNumber;
         }
         export interface RequestBody {
             /**
@@ -39658,14 +39022,14 @@ declare namespace octokit.paths {
              * Issue Simple
              * Issue Simple
              */
-            octokit.components.Schemas.IssueSimple;
+            github.rest.components.Schemas.IssueSimple;
         }
     }
     namespace IssuesRemoveLabel {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.IssueNumber;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.IssueNumber;
             export type Name = string;
         }
         export interface PathParameters {
@@ -39676,55 +39040,57 @@ declare namespace octokit.paths {
              * Label
              * Color-coded labels help you categorize and filter your issues (just like labels in Gmail).
              */
-            octokit.components.Schemas.Label[];
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $410 = octokit.components.Responses.Gone;
+            github.rest.components.Schemas.Label[];
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $410 = github.rest.components.Responses.Gone;
         }
     }
     namespace IssuesSetLabels {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.IssueNumber;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.IssueNumber;
         }
         export type RequestBody = {
             /**
              * The names of the labels to add to the issue. You can pass an empty array to remove all labels. **Note:** Alternatively, you can pass a single label as a `string` or an `array` of labels directly, but GitHub recommends passing an object with the `labels` key.
              */
             labels?: string[];
-        } | {
+        } | string[] | {
             labels?: {
                 name: string;
             }[];
-        };
+        } | {
+            name: string;
+        }[] | string;
         namespace Responses {
             export type $200 = /**
              * Label
              * Color-coded labels help you categorize and filter your issues (just like labels in Gmail).
              */
-            octokit.components.Schemas.Label[];
-            export type $410 = octokit.components.Responses.Gone;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.Label[];
+            export type $410 = github.rest.components.Responses.Gone;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace IssuesUnlock {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.IssueNumber;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.IssueNumber;
         }
         namespace Responses {
             export interface $204 {
             }
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace IssuesUpdate {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.IssueNumber;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.IssueNumber;
         }
         export interface RequestBody {
             /**
@@ -39763,20 +39129,20 @@ declare namespace octokit.paths {
              * Issue
              * Issues are a great way to keep track of tasks, enhancements, and bugs for your projects.
              */
-            octokit.components.Schemas.Issue;
-            export type $301 = octokit.components.Responses.MovedPermanently;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $410 = octokit.components.Responses.Gone;
-            export type $422 = octokit.components.Responses.ValidationFailed;
-            export type $503 = octokit.components.Responses.ServiceUnavailable;
+            github.rest.components.Schemas.Issue;
+            export type $301 = github.rest.components.Responses.MovedPermanently;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $410 = github.rest.components.Responses.Gone;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
+            export type $503 = github.rest.components.Responses.ServiceUnavailable;
         }
     }
     namespace IssuesUpdateComment {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.CommentId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.CommentId;
         }
         export interface RequestBody {
             /**
@@ -39789,14 +39155,14 @@ declare namespace octokit.paths {
              * Issue Comment
              * Comments provide a way for people to collaborate on an issue.
              */
-            octokit.components.Schemas.IssueComment;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.IssueComment;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace IssuesUpdateLabel {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
             export type Name = string;
         }
         export interface PathParameters {
@@ -39821,14 +39187,14 @@ declare namespace octokit.paths {
              * Label
              * Color-coded labels help you categorize and filter your issues (just like labels in Gmail).
              */
-            octokit.components.Schemas.Label;
+            github.rest.components.Schemas.Label;
         }
     }
     namespace IssuesUpdateMilestone {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.MilestoneNumber;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.MilestoneNumber;
         }
         export interface RequestBody {
             /**
@@ -39853,7 +39219,7 @@ declare namespace octokit.paths {
              * Milestone
              * A collection of related issues and pull requests.
              */
-            octokit.components.Schemas.Milestone;
+            github.rest.components.Schemas.Milestone;
         }
     }
     namespace LicensesGet {
@@ -39868,16 +39234,16 @@ declare namespace octokit.paths {
              * License
              * License
              */
-            octokit.components.Schemas.License;
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.License;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace LicensesGetAllCommonlyUsed {
         namespace Parameters {
-            export type $1 = octokit.components.Parameters.PerPage;
-            export type $2 = octokit.components.Parameters.Page;
+            export type $1 = github.rest.components.Parameters.PerPage;
+            export type $2 = github.rest.components.Parameters.Page;
             export type Featured = boolean;
         }
         export interface QueryParameters {
@@ -39888,21 +39254,21 @@ declare namespace octokit.paths {
              * License Simple
              * License Simple
              */
-            octokit.components.Schemas.LicenseSimple[];
-            export type $304 = octokit.components.Responses.NotModified;
+            github.rest.components.Schemas.LicenseSimple[];
+            export type $304 = github.rest.components.Responses.NotModified;
         }
     }
     namespace LicensesGetForRepo {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         namespace Responses {
             export type $200 = /**
              * License Content
              * License Content
              */
-            octokit.components.Schemas.LicenseContent;
+            github.rest.components.Schemas.LicenseContent;
         }
     }
     namespace MarkdownRender {
@@ -39924,14 +39290,14 @@ declare namespace octokit.paths {
         }
         namespace Responses {
             export type $200 = string;
-            export type $304 = octokit.components.Responses.NotModified;
+            export type $304 = github.rest.components.Responses.NotModified;
         }
     }
     namespace MarkdownRenderRaw {
         export type RequestBody = string;
         namespace Responses {
             export type $200 = string;
-            export type $304 = octokit.components.Responses.NotModified;
+            export type $304 = github.rest.components.Responses.NotModified;
         }
     }
     namespace MetaGet {
@@ -39940,8 +39306,8 @@ declare namespace octokit.paths {
              * Api Overview
              * Api Overview
              */
-            octokit.components.Schemas.ApiOverview;
-            export type $304 = octokit.components.Responses.NotModified;
+            github.rest.components.Schemas.ApiOverview;
+            export type $304 = github.rest.components.Responses.NotModified;
         }
     }
     namespace MetaGetOctocat {
@@ -39998,8 +39364,8 @@ declare namespace octokit.paths {
     }
     namespace MigrationsCancelImport {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         namespace Responses {
             export interface $204 {
@@ -40008,96 +39374,96 @@ declare namespace octokit.paths {
     }
     namespace MigrationsDeleteArchiveForAuthenticatedUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.MigrationId;
+            export type $0 = github.rest.components.Parameters.MigrationId;
         }
         namespace Responses {
             export interface $204 {
             }
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace MigrationsDeleteArchiveForOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.MigrationId;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.MigrationId;
         }
         namespace Responses {
             export interface $204 {
             }
-            export type $404 = octokit.components.Responses.NotFound;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace MigrationsDownloadArchiveForOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.MigrationId;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.MigrationId;
         }
         namespace Responses {
             export interface $302 {
             }
-            export type $404 = octokit.components.Responses.NotFound;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace MigrationsGetArchiveForAuthenticatedUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.MigrationId;
+            export type $0 = github.rest.components.Parameters.MigrationId;
         }
         namespace Responses {
             export interface $302 {
             }
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
         }
     }
     namespace MigrationsGetCommitAuthors {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.SinceUser;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.SinceUser;
         }
         namespace Responses {
             export type $200 = /**
              * Porter Author
              * Porter Author
              */
-            octokit.components.Schemas.PorterAuthor[];
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.PorterAuthor[];
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace MigrationsGetImportStatus {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         namespace Responses {
             export type $200 = /**
              * Import
              * A repository import from an external source.
              */
-            octokit.components.Schemas.Import;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.Import;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace MigrationsGetLargeFiles {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         namespace Responses {
             export type $200 = /**
              * Porter Large File
              * Porter Large File
              */
-            octokit.components.Schemas.PorterLargeFile[];
+            github.rest.components.Schemas.PorterLargeFile[];
         }
     }
     namespace MigrationsGetStatusForAuthenticatedUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.MigrationId;
+            export type $0 = github.rest.components.Parameters.MigrationId;
             export type Exclude = string[];
         }
         export interface QueryParameters {
@@ -40108,17 +39474,17 @@ declare namespace octokit.paths {
              * Migration
              * A migration.
              */
-            octokit.components.Schemas.Migration;
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.Migration;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace MigrationsGetStatusForOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.MigrationId;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.MigrationId;
             export type Exclude = ("repositories")[];
         }
         export interface QueryParameters {
@@ -40129,31 +39495,31 @@ declare namespace octokit.paths {
              * Migration
              * A migration.
              */
-            octokit.components.Schemas.Migration;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.Migration;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace MigrationsListForAuthenticatedUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.PerPage;
-            export type $1 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.PerPage;
+            export type $1 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Migration
              * A migration.
              */
-            octokit.components.Schemas.Migration[];
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
+            github.rest.components.Schemas.Migration[];
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
         }
     }
     namespace MigrationsListForOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.PerPage;
-            export type $2 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.PerPage;
+            export type $2 = github.rest.components.Parameters.Page;
             export type Exclude = ("repositories")[];
         }
         export interface QueryParameters {
@@ -40164,44 +39530,44 @@ declare namespace octokit.paths {
              * Migration
              * A migration.
              */
-            octokit.components.Schemas.Migration[];
+            github.rest.components.Schemas.Migration[];
         }
     }
     namespace MigrationsListReposForOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.MigrationId;
-            export type $2 = octokit.components.Parameters.PerPage;
-            export type $3 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.MigrationId;
+            export type $2 = github.rest.components.Parameters.PerPage;
+            export type $3 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Minimal Repository
              * Minimal Repository
              */
-            octokit.components.Schemas.MinimalRepository[];
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.MinimalRepository[];
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace MigrationsListReposForUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.MigrationId;
-            export type $1 = octokit.components.Parameters.PerPage;
-            export type $2 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.MigrationId;
+            export type $1 = github.rest.components.Parameters.PerPage;
+            export type $2 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Minimal Repository
              * Minimal Repository
              */
-            octokit.components.Schemas.MinimalRepository[];
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.MinimalRepository[];
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace MigrationsMapCommitAuthor {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
             export type AuthorId = number;
         }
         export interface PathParameters {
@@ -40222,15 +39588,15 @@ declare namespace octokit.paths {
              * Porter Author
              * Porter Author
              */
-            octokit.components.Schemas.PorterAuthor;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.PorterAuthor;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace MigrationsSetLfsPreference {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         export interface RequestBody {
             /**
@@ -40243,8 +39609,8 @@ declare namespace octokit.paths {
              * Import
              * A repository import from an external source.
              */
-            octokit.components.Schemas.Import;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.Import;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace MigrationsStartForAuthenticatedUser {
@@ -40276,16 +39642,16 @@ declare namespace octokit.paths {
              * Migration
              * A migration.
              */
-            octokit.components.Schemas.Migration;
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.Migration;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace MigrationsStartForOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
+            export type $0 = github.rest.components.Parameters.Org;
         }
         export interface RequestBody {
             /**
@@ -40307,15 +39673,15 @@ declare namespace octokit.paths {
              * Migration
              * A migration.
              */
-            octokit.components.Schemas.Migration;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.Migration;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace MigrationsStartImport {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         export interface RequestBody {
             /**
@@ -40344,41 +39710,41 @@ declare namespace octokit.paths {
              * Import
              * A repository import from an external source.
              */
-            octokit.components.Schemas.Import;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.Import;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace MigrationsUnlockRepoForAuthenticatedUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.MigrationId;
-            export type $1 = octokit.components.Parameters.RepoName;
+            export type $0 = github.rest.components.Parameters.MigrationId;
+            export type $1 = github.rest.components.Parameters.RepoName;
         }
         namespace Responses {
             export interface $204 {
             }
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace MigrationsUnlockRepoForOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.MigrationId;
-            export type $2 = octokit.components.Parameters.RepoName;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.MigrationId;
+            export type $2 = github.rest.components.Parameters.RepoName;
         }
         namespace Responses {
             export interface $204 {
             }
-            export type $404 = octokit.components.Responses.NotFound;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace MigrationsUpdateImport {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         export type RequestBody = {
             /**
@@ -40405,7 +39771,7 @@ declare namespace octokit.paths {
              * Import
              * A repository import from an external source.
              */
-            octokit.components.Schemas.Import;
+            github.rest.components.Schemas.Import;
         }
     }
     namespace OauthAuthorizationsCreateAuthorization {
@@ -40447,71 +39813,71 @@ declare namespace octokit.paths {
              * Authorization
              * The authorization for an OAuth app, GitHub App, or a Personal Access Token.
              */
-            octokit.components.Schemas.Authorization;
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $410 = octokit.components.Responses.Gone;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.Authorization;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $410 = github.rest.components.Responses.Gone;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace OauthAuthorizationsDeleteAuthorization {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.AuthorizationId;
+            export type $0 = github.rest.components.Parameters.AuthorizationId;
         }
         namespace Responses {
             export interface $204 {
             }
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
         }
     }
     namespace OauthAuthorizationsDeleteGrant {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.GrantId;
+            export type $0 = github.rest.components.Parameters.GrantId;
         }
         namespace Responses {
             export interface $204 {
             }
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
         }
     }
     namespace OauthAuthorizationsGetAuthorization {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.AuthorizationId;
+            export type $0 = github.rest.components.Parameters.AuthorizationId;
         }
         namespace Responses {
             export type $200 = /**
              * Authorization
              * The authorization for an OAuth app, GitHub App, or a Personal Access Token.
              */
-            octokit.components.Schemas.Authorization;
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
+            github.rest.components.Schemas.Authorization;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
         }
     }
     namespace OauthAuthorizationsGetGrant {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.GrantId;
+            export type $0 = github.rest.components.Parameters.GrantId;
         }
         namespace Responses {
             export type $200 = /**
              * Application Grant
              * The authorization associated with an OAuth Access.
              */
-            octokit.components.Schemas.ApplicationGrant;
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
+            github.rest.components.Schemas.ApplicationGrant;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
         }
     }
     namespace OauthAuthorizationsGetOrCreateAuthorizationForApp {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.ClientId;
+            export type $0 = github.rest.components.Parameters.ClientId;
         }
         export interface RequestBody {
             /**
@@ -40547,21 +39913,21 @@ declare namespace octokit.paths {
              * Authorization
              * The authorization for an OAuth app, GitHub App, or a Personal Access Token.
              */
-            octokit.components.Schemas.Authorization;
+            github.rest.components.Schemas.Authorization;
             export type $201 = /**
              * Authorization
              * The authorization for an OAuth app, GitHub App, or a Personal Access Token.
              */
-            octokit.components.Schemas.Authorization;
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.Authorization;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace OauthAuthorizationsGetOrCreateAuthorizationForAppAndFingerprint {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.ClientId;
+            export type $0 = github.rest.components.Parameters.ClientId;
             export type Fingerprint = string;
         }
         export interface PathParameters {
@@ -40597,19 +39963,19 @@ declare namespace octokit.paths {
              * Authorization
              * The authorization for an OAuth app, GitHub App, or a Personal Access Token.
              */
-            octokit.components.Schemas.Authorization;
+            github.rest.components.Schemas.Authorization;
             export type $201 = /**
              * Authorization
              * The authorization for an OAuth app, GitHub App, or a Personal Access Token.
              */
-            octokit.components.Schemas.Authorization;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.Authorization;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace OauthAuthorizationsListAuthorizations {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.PerPage;
-            export type $1 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.PerPage;
+            export type $1 = github.rest.components.Parameters.Page;
             export type ClientId = string;
         }
         export interface QueryParameters {
@@ -40620,17 +39986,17 @@ declare namespace octokit.paths {
              * Authorization
              * The authorization for an OAuth app, GitHub App, or a Personal Access Token.
              */
-            octokit.components.Schemas.Authorization[];
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.Authorization[];
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace OauthAuthorizationsListGrants {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.PerPage;
-            export type $1 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.PerPage;
+            export type $1 = github.rest.components.Parameters.Page;
             export type ClientId = string;
         }
         export interface QueryParameters {
@@ -40641,16 +40007,16 @@ declare namespace octokit.paths {
              * Application Grant
              * The authorization associated with an OAuth Access.
              */
-            octokit.components.Schemas.ApplicationGrant[];
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.ApplicationGrant[];
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace OauthAuthorizationsUpdateAuthorization {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.AuthorizationId;
+            export type $0 = github.rest.components.Parameters.AuthorizationId;
         }
         export interface RequestBody {
             /**
@@ -40690,37 +40056,37 @@ declare namespace octokit.paths {
              * Authorization
              * The authorization for an OAuth app, GitHub App, or a Personal Access Token.
              */
-            octokit.components.Schemas.Authorization;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.Authorization;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace OrgsBlockUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.Username;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.Username;
         }
         namespace Responses {
             export interface $204 {
             }
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace OrgsCancelInvitation {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.InvitationId;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.InvitationId;
         }
         namespace Responses {
             export interface $204 {
             }
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace OrgsCheckBlockedUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.Username;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.Username;
         }
         namespace Responses {
             export interface $204 {
@@ -40729,13 +40095,13 @@ declare namespace octokit.paths {
              * Basic Error
              * Basic Error
              */
-            octokit.components.Schemas.BasicError;
+            github.rest.components.Schemas.BasicError;
         }
     }
     namespace OrgsCheckMembershipForUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.Username;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.Username;
         }
         namespace Responses {
             export interface $204 {
@@ -40748,8 +40114,8 @@ declare namespace octokit.paths {
     }
     namespace OrgsCheckPublicMembershipForUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.Username;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.Username;
         }
         namespace Responses {
             export interface $204 {
@@ -40760,8 +40126,8 @@ declare namespace octokit.paths {
     }
     namespace OrgsConvertMemberToOutsideCollaborator {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.Username;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.Username;
         }
         namespace Responses {
             export interface $202 {
@@ -40770,12 +40136,12 @@ declare namespace octokit.paths {
             }
             export interface $403 {
             }
-            export type $404 = octokit.components.Responses.NotFound;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace OrgsCreateInvitation {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
+            export type $0 = github.rest.components.Parameters.Org;
         }
         export interface RequestBody {
             /**
@@ -40803,14 +40169,14 @@ declare namespace octokit.paths {
              * Organization Invitation
              * Organization Invitation
              */
-            octokit.components.Schemas.OrganizationInvitation;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.OrganizationInvitation;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace OrgsCreateWebhook {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
+            export type $0 = github.rest.components.Parameters.Org;
         }
         export interface RequestBody {
             /**
@@ -40826,20 +40192,20 @@ declare namespace octokit.paths {
                  * example:
                  * https://example.com/webhook
                  */
-                octokit.components.Schemas.WebhookConfigUrl /* uri */;
+                github.rest.components.Schemas.WebhookConfigUrl /* uri */;
                 content_type?: /**
                  * The media type used to serialize the payloads. Supported values include `json` and `form`. The default is `form`.
                  * example:
                  * "json"
                  */
-                octokit.components.Schemas.WebhookConfigContentType;
+                github.rest.components.Schemas.WebhookConfigContentType;
                 secret?: /**
                  * If provided, the `secret` will be used as the `key` to generate the HMAC hex digest value for [delivery signature headers](https://docs.github.com/webhooks/event-payloads/#delivery-headers).
                  * example:
                  * "********"
                  */
-                octokit.components.Schemas.WebhookConfigSecret;
-                insecure_ssl?: octokit.components.Schemas.WebhookConfigInsecureSsl;
+                github.rest.components.Schemas.WebhookConfigSecret;
+                insecure_ssl?: github.rest.components.Schemas.WebhookConfigInsecureSsl;
                 /**
                  * example:
                  * "kdaigle"
@@ -40865,141 +40231,141 @@ declare namespace octokit.paths {
              * Org Hook
              * Org Hook
              */
-            octokit.components.Schemas.OrgHook;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.OrgHook;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace OrgsDeleteWebhook {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.HookId;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.HookId;
         }
         namespace Responses {
             export interface $204 {
             }
-            export type $404 = octokit.components.Responses.NotFound;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace OrgsGet {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
+            export type $0 = github.rest.components.Parameters.Org;
         }
         namespace Responses {
             export type $200 = /**
              * Organization Full
              * Organization Full
              */
-            octokit.components.Schemas.OrganizationFull;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.OrganizationFull;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace OrgsGetAuditLog {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.AuditLogPhrase;
-            export type $2 = octokit.components.Parameters.AuditLogInclude;
-            export type $3 = octokit.components.Parameters.AuditLogAfter;
-            export type $4 = octokit.components.Parameters.AuditLogBefore;
-            export type $5 = octokit.components.Parameters.AuditLogOrder;
-            export type $6 = octokit.components.Parameters.PerPage;
-            export type $7 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.AuditLogPhrase;
+            export type $2 = github.rest.components.Parameters.AuditLogInclude;
+            export type $3 = github.rest.components.Parameters.AuditLogAfter;
+            export type $4 = github.rest.components.Parameters.AuditLogBefore;
+            export type $5 = github.rest.components.Parameters.AuditLogOrder;
+            export type $6 = github.rest.components.Parameters.PerPage;
+            export type $7 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
-            export type $200 = octokit.components.Schemas.AuditLogEvent[];
+            export type $200 = github.rest.components.Schemas.AuditLogEvent[];
         }
     }
     namespace OrgsGetMembershipForAuthenticatedUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
+            export type $0 = github.rest.components.Parameters.Org;
         }
         namespace Responses {
             export type $200 = /**
              * Org Membership
              * Org Membership
              */
-            octokit.components.Schemas.OrgMembership;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.OrgMembership;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace OrgsGetMembershipForUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.Username;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.Username;
         }
         namespace Responses {
             export type $200 = /**
              * Org Membership
              * Org Membership
              */
-            octokit.components.Schemas.OrgMembership;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.OrgMembership;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace OrgsGetWebhook {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.HookId;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.HookId;
         }
         namespace Responses {
             export type $200 = /**
              * Org Hook
              * Org Hook
              */
-            octokit.components.Schemas.OrgHook;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.OrgHook;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace OrgsGetWebhookConfigForOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.HookId;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.HookId;
         }
         namespace Responses {
             export type $200 = /**
              * Webhook Configuration
              * Configuration object of the webhook
              */
-            octokit.components.Schemas.WebhookConfig;
+            github.rest.components.Schemas.WebhookConfig;
         }
     }
     namespace OrgsGetWebhookDelivery {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.HookId;
-            export type $2 = octokit.components.Parameters.DeliveryId;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.HookId;
+            export type $2 = github.rest.components.Parameters.DeliveryId;
         }
         namespace Responses {
             export type $200 = /**
              * Webhook delivery
              * Delivery made by a webhook.
              */
-            octokit.components.Schemas.HookDelivery;
-            export type $400 = octokit.components.Responses.BadRequest;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.HookDelivery;
+            export type $400 = github.rest.components.Responses.BadRequest;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace OrgsList {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.SinceOrg;
-            export type $1 = octokit.components.Parameters.PerPage;
+            export type $0 = github.rest.components.Parameters.SinceOrg;
+            export type $1 = github.rest.components.Parameters.PerPage;
         }
         namespace Responses {
             export type $200 = /**
              * Organization Simple
              * Organization Simple
              */
-            octokit.components.Schemas.OrganizationSimple[];
-            export type $304 = octokit.components.Responses.NotModified;
+            github.rest.components.Schemas.OrganizationSimple[];
+            export type $304 = github.rest.components.Responses.NotModified;
         }
     }
     namespace OrgsListAppInstallations {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.PerPage;
-            export type $2 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.PerPage;
+            export type $2 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export interface $200 {
@@ -41008,89 +40374,89 @@ declare namespace octokit.paths {
                  * Installation
                  * Installation
                  */
-                octokit.components.Schemas.Installation[];
+                github.rest.components.Schemas.Installation[];
             }
         }
     }
     namespace OrgsListBlockedUsers {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
+            export type $0 = github.rest.components.Parameters.Org;
         }
         namespace Responses {
             export type $200 = /**
              * Simple User
              * Simple User
              */
-            octokit.components.Schemas.SimpleUser[];
-            export type $415 = octokit.components.Responses.PreviewHeaderMissing;
+            github.rest.components.Schemas.SimpleUser[];
+            export type $415 = github.rest.components.Responses.PreviewHeaderMissing;
         }
     }
     namespace OrgsListFailedInvitations {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.PerPage;
-            export type $2 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.PerPage;
+            export type $2 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Organization Invitation
              * Organization Invitation
              */
-            octokit.components.Schemas.OrganizationInvitation[];
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.OrganizationInvitation[];
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace OrgsListForAuthenticatedUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.PerPage;
-            export type $1 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.PerPage;
+            export type $1 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Organization Simple
              * Organization Simple
              */
-            octokit.components.Schemas.OrganizationSimple[];
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
+            github.rest.components.Schemas.OrganizationSimple[];
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
         }
     }
     namespace OrgsListForUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Username;
-            export type $1 = octokit.components.Parameters.PerPage;
-            export type $2 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Username;
+            export type $1 = github.rest.components.Parameters.PerPage;
+            export type $2 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Organization Simple
              * Organization Simple
              */
-            octokit.components.Schemas.OrganizationSimple[];
+            github.rest.components.Schemas.OrganizationSimple[];
         }
     }
     namespace OrgsListInvitationTeams {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.InvitationId;
-            export type $2 = octokit.components.Parameters.PerPage;
-            export type $3 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.InvitationId;
+            export type $2 = github.rest.components.Parameters.PerPage;
+            export type $3 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Team
              * Groups of organization members that gives permissions on specified repositories.
              */
-            octokit.components.Schemas.Team[];
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.Team[];
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace OrgsListMembers {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $3 = octokit.components.Parameters.PerPage;
-            export type $4 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $3 = github.rest.components.Parameters.PerPage;
+            export type $4 = github.rest.components.Parameters.Page;
             export type Filter = "2fa_disabled" | "all";
             export type Role = "all" | "admin" | "member";
         }
@@ -41103,16 +40469,16 @@ declare namespace octokit.paths {
              * Simple User
              * Simple User
              */
-            octokit.components.Schemas.SimpleUser[];
+            github.rest.components.Schemas.SimpleUser[];
             export interface $302 {
             }
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace OrgsListMembershipsForAuthenticatedUser {
         namespace Parameters {
-            export type $1 = octokit.components.Parameters.PerPage;
-            export type $2 = octokit.components.Parameters.Page;
+            export type $1 = github.rest.components.Parameters.PerPage;
+            export type $2 = github.rest.components.Parameters.Page;
             export type State = "active" | "pending";
         }
         export interface QueryParameters {
@@ -41123,18 +40489,18 @@ declare namespace octokit.paths {
              * Org Membership
              * Org Membership
              */
-            octokit.components.Schemas.OrgMembership[];
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.OrgMembership[];
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace OrgsListOutsideCollaborators {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $2 = octokit.components.Parameters.PerPage;
-            export type $3 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $2 = github.rest.components.Parameters.PerPage;
+            export type $3 = github.rest.components.Parameters.Page;
             export type Filter = "2fa_disabled" | "all";
         }
         export interface QueryParameters {
@@ -41145,132 +40511,132 @@ declare namespace octokit.paths {
              * Simple User
              * Simple User
              */
-            octokit.components.Schemas.SimpleUser[];
+            github.rest.components.Schemas.SimpleUser[];
         }
     }
     namespace OrgsListPendingInvitations {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.PerPage;
-            export type $2 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.PerPage;
+            export type $2 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Organization Invitation
              * Organization Invitation
              */
-            octokit.components.Schemas.OrganizationInvitation[];
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.OrganizationInvitation[];
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace OrgsListPublicMembers {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.PerPage;
-            export type $2 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.PerPage;
+            export type $2 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Simple User
              * Simple User
              */
-            octokit.components.Schemas.SimpleUser[];
+            github.rest.components.Schemas.SimpleUser[];
         }
     }
     namespace OrgsListSamlSsoAuthorizations {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
+            export type $0 = github.rest.components.Parameters.Org;
         }
         namespace Responses {
             export type $200 = /**
              * Credential Authorization
              * Credential Authorization
              */
-            octokit.components.Schemas.CredentialAuthorization[];
+            github.rest.components.Schemas.CredentialAuthorization[];
         }
     }
     namespace OrgsListWebhookDeliveries {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.HookId;
-            export type $2 = octokit.components.Parameters.PerPage;
-            export type $3 = octokit.components.Parameters.Cursor;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.HookId;
+            export type $2 = github.rest.components.Parameters.PerPage;
+            export type $3 = github.rest.components.Parameters.Cursor;
         }
         namespace Responses {
             export type $200 = /**
              * Simple webhook delivery
              * Delivery made by a webhook, without request and response information.
              */
-            octokit.components.Schemas.HookDeliveryItem[];
-            export type $400 = octokit.components.Responses.BadRequest;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.HookDeliveryItem[];
+            export type $400 = github.rest.components.Responses.BadRequest;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace OrgsListWebhooks {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.PerPage;
-            export type $2 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.PerPage;
+            export type $2 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Org Hook
              * Org Hook
              */
-            octokit.components.Schemas.OrgHook[];
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.OrgHook[];
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace OrgsPingWebhook {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.HookId;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.HookId;
         }
         namespace Responses {
             export interface $204 {
             }
-            export type $404 = octokit.components.Responses.NotFound;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace OrgsRedeliverWebhookDelivery {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.HookId;
-            export type $2 = octokit.components.Parameters.DeliveryId;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.HookId;
+            export type $2 = github.rest.components.Parameters.DeliveryId;
         }
         namespace Responses {
-            export type $202 = octokit.components.Responses.Accepted;
-            export type $400 = octokit.components.Responses.BadRequest;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            export type $202 = github.rest.components.Responses.Accepted;
+            export type $400 = github.rest.components.Responses.BadRequest;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace OrgsRemoveMember {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.Username;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.Username;
         }
         namespace Responses {
             export interface $204 {
             }
-            export type $403 = octokit.components.Responses.Forbidden;
+            export type $403 = github.rest.components.Responses.Forbidden;
         }
     }
     namespace OrgsRemoveMembershipForUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.Username;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.Username;
         }
         namespace Responses {
             export interface $204 {
             }
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace OrgsRemoveOutsideCollaborator {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.Username;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.Username;
         }
         namespace Responses {
             export interface $204 {
@@ -41283,8 +40649,8 @@ declare namespace octokit.paths {
     }
     namespace OrgsRemovePublicMembershipForAuthenticatedUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.Username;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.Username;
         }
         namespace Responses {
             export interface $204 {
@@ -41293,7 +40659,7 @@ declare namespace octokit.paths {
     }
     namespace OrgsRemoveSamlSsoAuthorization {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
+            export type $0 = github.rest.components.Parameters.Org;
             export type CredentialId = number;
         }
         export interface PathParameters {
@@ -41302,13 +40668,13 @@ declare namespace octokit.paths {
         namespace Responses {
             export interface $204 {
             }
-            export type $404 = octokit.components.Responses.NotFound;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace OrgsSetMembershipForUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.Username;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.Username;
         }
         export interface RequestBody {
             /**
@@ -41323,26 +40689,26 @@ declare namespace octokit.paths {
              * Org Membership
              * Org Membership
              */
-            octokit.components.Schemas.OrgMembership;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.OrgMembership;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace OrgsSetPublicMembershipForAuthenticatedUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.Username;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.Username;
         }
         namespace Responses {
             export interface $204 {
             }
-            export type $403 = octokit.components.Responses.Forbidden;
+            export type $403 = github.rest.components.Responses.Forbidden;
         }
     }
     namespace OrgsUnblockUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.Username;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.Username;
         }
         namespace Responses {
             export interface $204 {
@@ -41351,7 +40717,7 @@ declare namespace octokit.paths {
     }
     namespace OrgsUpdate {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
+            export type $0 = github.rest.components.Parameters.Org;
         }
         export interface RequestBody {
             /**
@@ -41464,23 +40830,23 @@ declare namespace octokit.paths {
              * Organization Full
              * Organization Full
              */
-            octokit.components.Schemas.OrganizationFull;
-            export type $409 = octokit.components.Responses.Conflict;
-            export type $415 = octokit.components.Responses.PreviewHeaderMissing;
+            github.rest.components.Schemas.OrganizationFull;
+            export type $409 = github.rest.components.Responses.Conflict;
+            export type $415 = github.rest.components.Responses.PreviewHeaderMissing;
             export type $422 = /**
              * Validation Error
              * Validation Error
              */
-            octokit.components.Schemas.ValidationError | /**
+            github.rest.components.Schemas.ValidationError | /**
              * Validation Error Simple
              * Validation Error Simple
              */
-            octokit.components.Schemas.ValidationErrorSimple;
+            github.rest.components.Schemas.ValidationErrorSimple;
         }
     }
     namespace OrgsUpdateMembershipForAuthenticatedUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
+            export type $0 = github.rest.components.Parameters.Org;
         }
         export interface RequestBody {
             /**
@@ -41493,16 +40859,16 @@ declare namespace octokit.paths {
              * Org Membership
              * Org Membership
              */
-            octokit.components.Schemas.OrgMembership;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.OrgMembership;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace OrgsUpdateWebhook {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.HookId;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.HookId;
         }
         export interface RequestBody {
             /**
@@ -41514,20 +40880,20 @@ declare namespace octokit.paths {
                  * example:
                  * https://example.com/webhook
                  */
-                octokit.components.Schemas.WebhookConfigUrl /* uri */;
+                github.rest.components.Schemas.WebhookConfigUrl /* uri */;
                 content_type?: /**
                  * The media type used to serialize the payloads. Supported values include `json` and `form`. The default is `form`.
                  * example:
                  * "json"
                  */
-                octokit.components.Schemas.WebhookConfigContentType;
+                github.rest.components.Schemas.WebhookConfigContentType;
                 secret?: /**
                  * If provided, the `secret` will be used as the `key` to generate the HMAC hex digest value for [delivery signature headers](https://docs.github.com/webhooks/event-payloads/#delivery-headers).
                  * example:
                  * "********"
                  */
-                octokit.components.Schemas.WebhookConfigSecret;
-                insecure_ssl?: octokit.components.Schemas.WebhookConfigInsecureSsl;
+                github.rest.components.Schemas.WebhookConfigSecret;
+                insecure_ssl?: github.rest.components.Schemas.WebhookConfigInsecureSsl;
             };
             /**
              * Determines what [events](https://docs.github.com/webhooks/event-payloads) the hook is triggered for.
@@ -41548,15 +40914,15 @@ declare namespace octokit.paths {
              * Org Hook
              * Org Hook
              */
-            octokit.components.Schemas.OrgHook;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.OrgHook;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace OrgsUpdateWebhookConfigForOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.HookId;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.HookId;
         }
         /**
          * example:
@@ -41573,91 +40939,91 @@ declare namespace octokit.paths {
              * example:
              * https://example.com/webhook
              */
-            octokit.components.Schemas.WebhookConfigUrl /* uri */;
+            github.rest.components.Schemas.WebhookConfigUrl /* uri */;
             content_type?: /**
              * The media type used to serialize the payloads. Supported values include `json` and `form`. The default is `form`.
              * example:
              * "json"
              */
-            octokit.components.Schemas.WebhookConfigContentType;
+            github.rest.components.Schemas.WebhookConfigContentType;
             secret?: /**
              * If provided, the `secret` will be used as the `key` to generate the HMAC hex digest value for [delivery signature headers](https://docs.github.com/webhooks/event-payloads/#delivery-headers).
              * example:
              * "********"
              */
-            octokit.components.Schemas.WebhookConfigSecret;
-            insecure_ssl?: octokit.components.Schemas.WebhookConfigInsecureSsl;
+            github.rest.components.Schemas.WebhookConfigSecret;
+            insecure_ssl?: github.rest.components.Schemas.WebhookConfigInsecureSsl;
         }
         namespace Responses {
             export type $200 = /**
              * Webhook Configuration
              * Configuration object of the webhook
              */
-            octokit.components.Schemas.WebhookConfig;
+            github.rest.components.Schemas.WebhookConfig;
         }
     }
     namespace PackagesDeletePackageForAuthenticatedUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.PackageType;
-            export type $1 = octokit.components.Parameters.PackageName;
+            export type $0 = github.rest.components.Parameters.PackageType;
+            export type $1 = github.rest.components.Parameters.PackageName;
         }
         namespace Responses {
             export interface $204 {
             }
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace PackagesDeletePackageForOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.PackageType;
-            export type $1 = octokit.components.Parameters.PackageName;
-            export type $2 = octokit.components.Parameters.Org;
+            export type $0 = github.rest.components.Parameters.PackageType;
+            export type $1 = github.rest.components.Parameters.PackageName;
+            export type $2 = github.rest.components.Parameters.Org;
         }
         namespace Responses {
             export interface $204 {
             }
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace PackagesDeletePackageVersionForAuthenticatedUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.PackageType;
-            export type $1 = octokit.components.Parameters.PackageName;
-            export type $2 = octokit.components.Parameters.PackageVersionId;
+            export type $0 = github.rest.components.Parameters.PackageType;
+            export type $1 = github.rest.components.Parameters.PackageName;
+            export type $2 = github.rest.components.Parameters.PackageVersionId;
         }
         namespace Responses {
             export interface $204 {
             }
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace PackagesDeletePackageVersionForOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.PackageType;
-            export type $1 = octokit.components.Parameters.PackageName;
-            export type $2 = octokit.components.Parameters.Org;
-            export type $3 = octokit.components.Parameters.PackageVersionId;
+            export type $0 = github.rest.components.Parameters.PackageType;
+            export type $1 = github.rest.components.Parameters.PackageName;
+            export type $2 = github.rest.components.Parameters.Org;
+            export type $3 = github.rest.components.Parameters.PackageVersionId;
         }
         namespace Responses {
             export interface $204 {
             }
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace PackagesGetAllPackageVersionsForPackageOwnedByAuthenticatedUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.PackageType;
-            export type $1 = octokit.components.Parameters.PackageName;
-            export type $2 = octokit.components.Parameters.Page;
-            export type $3 = octokit.components.Parameters.PerPage;
+            export type $0 = github.rest.components.Parameters.PackageType;
+            export type $1 = github.rest.components.Parameters.PackageName;
+            export type $2 = github.rest.components.Parameters.Page;
+            export type $3 = github.rest.components.Parameters.PerPage;
             export type State = "active" | "deleted";
         }
         export interface QueryParameters {
@@ -41668,19 +41034,19 @@ declare namespace octokit.paths {
              * Package Version
              * A version of a software package
              */
-            octokit.components.Schemas.PackageVersion[];
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.PackageVersion[];
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace PackagesGetAllPackageVersionsForPackageOwnedByOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.PackageType;
-            export type $1 = octokit.components.Parameters.PackageName;
-            export type $2 = octokit.components.Parameters.Org;
-            export type $3 = octokit.components.Parameters.Page;
-            export type $4 = octokit.components.Parameters.PerPage;
+            export type $0 = github.rest.components.Parameters.PackageType;
+            export type $1 = github.rest.components.Parameters.PackageName;
+            export type $2 = github.rest.components.Parameters.Org;
+            export type $3 = github.rest.components.Parameters.Page;
+            export type $4 = github.rest.components.Parameters.PerPage;
             export type State = "active" | "deleted";
         }
         export interface QueryParameters {
@@ -41691,118 +41057,118 @@ declare namespace octokit.paths {
              * Package Version
              * A version of a software package
              */
-            octokit.components.Schemas.PackageVersion[];
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.PackageVersion[];
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace PackagesGetAllPackageVersionsForPackageOwnedByUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.PackageType;
-            export type $1 = octokit.components.Parameters.PackageName;
-            export type $2 = octokit.components.Parameters.Username;
+            export type $0 = github.rest.components.Parameters.PackageType;
+            export type $1 = github.rest.components.Parameters.PackageName;
+            export type $2 = github.rest.components.Parameters.Username;
         }
         namespace Responses {
             export type $200 = /**
              * Package Version
              * A version of a software package
              */
-            octokit.components.Schemas.PackageVersion[];
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.PackageVersion[];
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace PackagesGetPackageForAuthenticatedUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.PackageType;
-            export type $1 = octokit.components.Parameters.PackageName;
+            export type $0 = github.rest.components.Parameters.PackageType;
+            export type $1 = github.rest.components.Parameters.PackageName;
         }
         namespace Responses {
             export type $200 = /**
              * Package
              * A software package
              */
-            octokit.components.Schemas.Package;
+            github.rest.components.Schemas.Package;
         }
     }
     namespace PackagesGetPackageForOrganization {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.PackageType;
-            export type $1 = octokit.components.Parameters.PackageName;
-            export type $2 = octokit.components.Parameters.Org;
+            export type $0 = github.rest.components.Parameters.PackageType;
+            export type $1 = github.rest.components.Parameters.PackageName;
+            export type $2 = github.rest.components.Parameters.Org;
         }
         namespace Responses {
             export type $200 = /**
              * Package
              * A software package
              */
-            octokit.components.Schemas.Package;
+            github.rest.components.Schemas.Package;
         }
     }
     namespace PackagesGetPackageForUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.PackageType;
-            export type $1 = octokit.components.Parameters.PackageName;
-            export type $2 = octokit.components.Parameters.Username;
+            export type $0 = github.rest.components.Parameters.PackageType;
+            export type $1 = github.rest.components.Parameters.PackageName;
+            export type $2 = github.rest.components.Parameters.Username;
         }
         namespace Responses {
             export type $200 = /**
              * Package
              * A software package
              */
-            octokit.components.Schemas.Package;
+            github.rest.components.Schemas.Package;
         }
     }
     namespace PackagesGetPackageVersionForAuthenticatedUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.PackageType;
-            export type $1 = octokit.components.Parameters.PackageName;
-            export type $2 = octokit.components.Parameters.PackageVersionId;
+            export type $0 = github.rest.components.Parameters.PackageType;
+            export type $1 = github.rest.components.Parameters.PackageName;
+            export type $2 = github.rest.components.Parameters.PackageVersionId;
         }
         namespace Responses {
             export type $200 = /**
              * Package Version
              * A version of a software package
              */
-            octokit.components.Schemas.PackageVersion;
+            github.rest.components.Schemas.PackageVersion;
         }
     }
     namespace PackagesGetPackageVersionForOrganization {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.PackageType;
-            export type $1 = octokit.components.Parameters.PackageName;
-            export type $2 = octokit.components.Parameters.Org;
-            export type $3 = octokit.components.Parameters.PackageVersionId;
+            export type $0 = github.rest.components.Parameters.PackageType;
+            export type $1 = github.rest.components.Parameters.PackageName;
+            export type $2 = github.rest.components.Parameters.Org;
+            export type $3 = github.rest.components.Parameters.PackageVersionId;
         }
         namespace Responses {
             export type $200 = /**
              * Package Version
              * A version of a software package
              */
-            octokit.components.Schemas.PackageVersion;
+            github.rest.components.Schemas.PackageVersion;
         }
     }
     namespace PackagesGetPackageVersionForUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.PackageType;
-            export type $1 = octokit.components.Parameters.PackageName;
-            export type $2 = octokit.components.Parameters.PackageVersionId;
-            export type $3 = octokit.components.Parameters.Username;
+            export type $0 = github.rest.components.Parameters.PackageType;
+            export type $1 = github.rest.components.Parameters.PackageName;
+            export type $2 = github.rest.components.Parameters.PackageVersionId;
+            export type $3 = github.rest.components.Parameters.Username;
         }
         namespace Responses {
             export type $200 = /**
              * Package Version
              * A version of a software package
              */
-            octokit.components.Schemas.PackageVersion;
+            github.rest.components.Schemas.PackageVersion;
         }
     }
     namespace PackagesRestorePackageForAuthenticatedUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.PackageType;
-            export type $1 = octokit.components.Parameters.PackageName;
+            export type $0 = github.rest.components.Parameters.PackageType;
+            export type $1 = github.rest.components.Parameters.PackageName;
             export type Token = string;
         }
         export interface QueryParameters {
@@ -41811,16 +41177,16 @@ declare namespace octokit.paths {
         namespace Responses {
             export interface $204 {
             }
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace PackagesRestorePackageForOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.PackageType;
-            export type $1 = octokit.components.Parameters.PackageName;
-            export type $2 = octokit.components.Parameters.Org;
+            export type $0 = github.rest.components.Parameters.PackageType;
+            export type $1 = github.rest.components.Parameters.PackageName;
+            export type $2 = github.rest.components.Parameters.Org;
             export type Token = string;
         }
         export interface QueryParameters {
@@ -41829,44 +41195,44 @@ declare namespace octokit.paths {
         namespace Responses {
             export interface $204 {
             }
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace PackagesRestorePackageVersionForAuthenticatedUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.PackageType;
-            export type $1 = octokit.components.Parameters.PackageName;
-            export type $2 = octokit.components.Parameters.PackageVersionId;
+            export type $0 = github.rest.components.Parameters.PackageType;
+            export type $1 = github.rest.components.Parameters.PackageName;
+            export type $2 = github.rest.components.Parameters.PackageVersionId;
         }
         namespace Responses {
             export interface $204 {
             }
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace PackagesRestorePackageVersionForOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.PackageType;
-            export type $1 = octokit.components.Parameters.PackageName;
-            export type $2 = octokit.components.Parameters.Org;
-            export type $3 = octokit.components.Parameters.PackageVersionId;
+            export type $0 = github.rest.components.Parameters.PackageType;
+            export type $1 = github.rest.components.Parameters.PackageName;
+            export type $2 = github.rest.components.Parameters.Org;
+            export type $3 = github.rest.components.Parameters.PackageVersionId;
         }
         namespace Responses {
             export interface $204 {
             }
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace ProjectsAddCollaborator {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.ProjectId;
-            export type $1 = octokit.components.Parameters.Username;
+            export type $0 = github.rest.components.Parameters.ProjectId;
+            export type $1 = github.rest.components.Parameters.Username;
         }
         export type RequestBody = {
             /**
@@ -41879,17 +41245,17 @@ declare namespace octokit.paths {
         namespace Responses {
             export interface $204 {
             }
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $415 = octokit.components.Responses.PreviewHeaderMissing;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $415 = github.rest.components.Responses.PreviewHeaderMissing;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace ProjectsCreateCard {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.ColumnId;
+            export type $0 = github.rest.components.Parameters.ColumnId;
         }
         export type RequestBody = {
             /**
@@ -41917,19 +41283,19 @@ declare namespace octokit.paths {
              * Project Card
              * Project cards represent a scope of work.
              */
-            octokit.components.Schemas.ProjectCard;
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
+            github.rest.components.Schemas.ProjectCard;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
             export type $422 = /**
              * Validation Error
              * Validation Error
              */
-            octokit.components.Schemas.ValidationError | /**
+            github.rest.components.Schemas.ValidationError | /**
              * Validation Error Simple
              * Validation Error Simple
              */
-            octokit.components.Schemas.ValidationErrorSimple;
+            github.rest.components.Schemas.ValidationErrorSimple;
             export interface $503 {
                 code?: string;
                 message?: string;
@@ -41943,7 +41309,7 @@ declare namespace octokit.paths {
     }
     namespace ProjectsCreateColumn {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.ProjectId;
+            export type $0 = github.rest.components.Parameters.ProjectId;
         }
         export interface RequestBody {
             /**
@@ -41958,11 +41324,11 @@ declare namespace octokit.paths {
              * Project Column
              * Project columns contain cards of work.
              */
-            octokit.components.Schemas.ProjectColumn;
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $422 = octokit.components.Responses.ValidationFailedSimple;
+            github.rest.components.Schemas.ProjectColumn;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $422 = github.rest.components.Responses.ValidationFailedSimple;
         }
     }
     namespace ProjectsCreateForAuthenticatedUser {
@@ -41985,17 +41351,17 @@ declare namespace octokit.paths {
              * Project
              * Projects are a way to organize columns and cards of work.
              */
-            octokit.components.Schemas.Project;
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $415 = octokit.components.Responses.PreviewHeaderMissing;
-            export type $422 = octokit.components.Responses.ValidationFailedSimple;
+            github.rest.components.Schemas.Project;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $415 = github.rest.components.Responses.PreviewHeaderMissing;
+            export type $422 = github.rest.components.Responses.ValidationFailedSimple;
         }
     }
     namespace ProjectsCreateForOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
+            export type $0 = github.rest.components.Parameters.Org;
         }
         export interface RequestBody {
             /**
@@ -42012,18 +41378,18 @@ declare namespace octokit.paths {
              * Project
              * Projects are a way to organize columns and cards of work.
              */
-            octokit.components.Schemas.Project;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $410 = octokit.components.Responses.Gone;
-            export type $422 = octokit.components.Responses.ValidationFailedSimple;
+            github.rest.components.Schemas.Project;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $410 = github.rest.components.Responses.Gone;
+            export type $422 = github.rest.components.Responses.ValidationFailedSimple;
         }
     }
     namespace ProjectsCreateForRepo {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         export interface RequestBody {
             /**
@@ -42040,132 +41406,132 @@ declare namespace octokit.paths {
              * Project
              * Projects are a way to organize columns and cards of work.
              */
-            octokit.components.Schemas.Project;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $410 = octokit.components.Responses.Gone;
-            export type $422 = octokit.components.Responses.ValidationFailedSimple;
+            github.rest.components.Schemas.Project;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $410 = github.rest.components.Responses.Gone;
+            export type $422 = github.rest.components.Responses.ValidationFailedSimple;
         }
     }
     namespace ProjectsDelete {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.ProjectId;
+            export type $0 = github.rest.components.Parameters.ProjectId;
         }
         namespace Responses {
             export interface $204 {
             }
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
             export interface $403 {
                 message?: string;
                 documentation_url?: string;
                 errors?: string[];
             }
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $410 = octokit.components.Responses.Gone;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $410 = github.rest.components.Responses.Gone;
         }
     }
     namespace ProjectsDeleteCard {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.CardId;
+            export type $0 = github.rest.components.Parameters.CardId;
         }
         namespace Responses {
             export interface $204 {
             }
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
             export interface $403 {
                 message?: string;
                 documentation_url?: string;
                 errors?: string[];
             }
-            export type $404 = octokit.components.Responses.NotFound;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace ProjectsDeleteColumn {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.ColumnId;
+            export type $0 = github.rest.components.Parameters.ColumnId;
         }
         namespace Responses {
             export interface $204 {
             }
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
         }
     }
     namespace ProjectsGet {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.ProjectId;
+            export type $0 = github.rest.components.Parameters.ProjectId;
         }
         namespace Responses {
             export type $200 = /**
              * Project
              * Projects are a way to organize columns and cards of work.
              */
-            octokit.components.Schemas.Project;
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
+            github.rest.components.Schemas.Project;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
         }
     }
     namespace ProjectsGetCard {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.CardId;
+            export type $0 = github.rest.components.Parameters.CardId;
         }
         namespace Responses {
             export type $200 = /**
              * Project Card
              * Project cards represent a scope of work.
              */
-            octokit.components.Schemas.ProjectCard;
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.ProjectCard;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace ProjectsGetColumn {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.ColumnId;
+            export type $0 = github.rest.components.Parameters.ColumnId;
         }
         namespace Responses {
             export type $200 = /**
              * Project Column
              * Project columns contain cards of work.
              */
-            octokit.components.Schemas.ProjectColumn;
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.ProjectColumn;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace ProjectsGetPermissionForUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.ProjectId;
-            export type $1 = octokit.components.Parameters.Username;
+            export type $0 = github.rest.components.Parameters.ProjectId;
+            export type $1 = github.rest.components.Parameters.Username;
         }
         namespace Responses {
             export type $200 = /**
              * Repository Collaborator Permission
              * Repository Collaborator Permission
              */
-            octokit.components.Schemas.RepositoryCollaboratorPermission;
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $415 = octokit.components.Responses.PreviewHeaderMissing;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.RepositoryCollaboratorPermission;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $415 = github.rest.components.Responses.PreviewHeaderMissing;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace ProjectsListCards {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.ColumnId;
-            export type $2 = octokit.components.Parameters.PerPage;
-            export type $3 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.ColumnId;
+            export type $2 = github.rest.components.Parameters.PerPage;
+            export type $3 = github.rest.components.Parameters.Page;
             export type ArchivedState = "all" | "archived" | "not_archived";
         }
         export interface QueryParameters {
@@ -42176,17 +41542,17 @@ declare namespace octokit.paths {
              * Project Card
              * Project cards represent a scope of work.
              */
-            octokit.components.Schemas.ProjectCard[];
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
+            github.rest.components.Schemas.ProjectCard[];
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
         }
     }
     namespace ProjectsListCollaborators {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.ProjectId;
-            export type $2 = octokit.components.Parameters.PerPage;
-            export type $3 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.ProjectId;
+            export type $2 = github.rest.components.Parameters.PerPage;
+            export type $3 = github.rest.components.Parameters.Page;
             export type Affiliation = "outside" | "direct" | "all";
         }
         export interface QueryParameters {
@@ -42197,37 +41563,37 @@ declare namespace octokit.paths {
              * Simple User
              * Simple User
              */
-            octokit.components.Schemas.SimpleUser[];
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $415 = octokit.components.Responses.PreviewHeaderMissing;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.SimpleUser[];
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $415 = github.rest.components.Responses.PreviewHeaderMissing;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace ProjectsListColumns {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.ProjectId;
-            export type $1 = octokit.components.Parameters.PerPage;
-            export type $2 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.ProjectId;
+            export type $1 = github.rest.components.Parameters.PerPage;
+            export type $2 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Project Column
              * Project columns contain cards of work.
              */
-            octokit.components.Schemas.ProjectColumn[];
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
+            github.rest.components.Schemas.ProjectColumn[];
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
         }
     }
     namespace ProjectsListForOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $2 = octokit.components.Parameters.PerPage;
-            export type $3 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $2 = github.rest.components.Parameters.PerPage;
+            export type $3 = github.rest.components.Parameters.Page;
             export type State = "open" | "closed" | "all";
         }
         export interface QueryParameters {
@@ -42238,16 +41604,16 @@ declare namespace octokit.paths {
              * Project
              * Projects are a way to organize columns and cards of work.
              */
-            octokit.components.Schemas.Project[];
-            export type $422 = octokit.components.Responses.ValidationFailedSimple;
+            github.rest.components.Schemas.Project[];
+            export type $422 = github.rest.components.Responses.ValidationFailedSimple;
         }
     }
     namespace ProjectsListForRepo {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $3 = octokit.components.Parameters.PerPage;
-            export type $4 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $3 = github.rest.components.Parameters.PerPage;
+            export type $4 = github.rest.components.Parameters.Page;
             export type State = "open" | "closed" | "all";
         }
         export interface QueryParameters {
@@ -42258,19 +41624,19 @@ declare namespace octokit.paths {
              * Project
              * Projects are a way to organize columns and cards of work.
              */
-            octokit.components.Schemas.Project[];
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $410 = octokit.components.Responses.Gone;
-            export type $422 = octokit.components.Responses.ValidationFailedSimple;
+            github.rest.components.Schemas.Project[];
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $410 = github.rest.components.Responses.Gone;
+            export type $422 = github.rest.components.Responses.ValidationFailedSimple;
         }
     }
     namespace ProjectsListForUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Username;
-            export type $2 = octokit.components.Parameters.PerPage;
-            export type $3 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Username;
+            export type $2 = github.rest.components.Parameters.PerPage;
+            export type $3 = github.rest.components.Parameters.Page;
             export type State = "open" | "closed" | "all";
         }
         export interface QueryParameters {
@@ -42281,14 +41647,14 @@ declare namespace octokit.paths {
              * Project
              * Projects are a way to organize columns and cards of work.
              */
-            octokit.components.Schemas.Project[];
-            export type $415 = octokit.components.Responses.PreviewHeaderMissing;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.Project[];
+            export type $415 = github.rest.components.Responses.PreviewHeaderMissing;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace ProjectsMoveCard {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.CardId;
+            export type $0 = github.rest.components.Parameters.CardId;
         }
         export interface RequestBody {
             /**
@@ -42307,8 +41673,8 @@ declare namespace octokit.paths {
         namespace Responses {
             export interface $201 {
             }
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
             export interface $403 {
                 message?: string;
                 documentation_url?: string;
@@ -42319,7 +41685,7 @@ declare namespace octokit.paths {
                     field?: string;
                 }[];
             }
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
             export interface $503 {
                 code?: string;
                 message?: string;
@@ -42333,7 +41699,7 @@ declare namespace octokit.paths {
     }
     namespace ProjectsMoveColumn {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.ColumnId;
+            export type $0 = github.rest.components.Parameters.ColumnId;
         }
         export interface RequestBody {
             /**
@@ -42346,31 +41712,31 @@ declare namespace octokit.paths {
         namespace Responses {
             export interface $201 {
             }
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $422 = octokit.components.Responses.ValidationFailedSimple;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $422 = github.rest.components.Responses.ValidationFailedSimple;
         }
     }
     namespace ProjectsRemoveCollaborator {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.ProjectId;
-            export type $1 = octokit.components.Parameters.Username;
+            export type $0 = github.rest.components.Parameters.ProjectId;
+            export type $1 = github.rest.components.Parameters.Username;
         }
         namespace Responses {
             export interface $204 {
             }
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $415 = octokit.components.Responses.PreviewHeaderMissing;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $415 = github.rest.components.Responses.PreviewHeaderMissing;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace ProjectsUpdate {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.ProjectId;
+            export type $0 = github.rest.components.Parameters.ProjectId;
         }
         export interface RequestBody {
             /**
@@ -42405,9 +41771,9 @@ declare namespace octokit.paths {
              * Project
              * Projects are a way to organize columns and cards of work.
              */
-            octokit.components.Schemas.Project;
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
+            github.rest.components.Schemas.Project;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
             export interface $403 {
                 message?: string;
                 documentation_url?: string;
@@ -42415,13 +41781,13 @@ declare namespace octokit.paths {
             }
             export interface $404 {
             }
-            export type $410 = octokit.components.Responses.Gone;
-            export type $422 = octokit.components.Responses.ValidationFailedSimple;
+            export type $410 = github.rest.components.Responses.Gone;
+            export type $422 = github.rest.components.Responses.ValidationFailedSimple;
         }
     }
     namespace ProjectsUpdateCard {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.CardId;
+            export type $0 = github.rest.components.Parameters.CardId;
         }
         export interface RequestBody {
             /**
@@ -42442,17 +41808,17 @@ declare namespace octokit.paths {
              * Project Card
              * Project cards represent a scope of work.
              */
-            octokit.components.Schemas.ProjectCard;
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $422 = octokit.components.Responses.ValidationFailedSimple;
+            github.rest.components.Schemas.ProjectCard;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $422 = github.rest.components.Responses.ValidationFailedSimple;
         }
     }
     namespace ProjectsUpdateColumn {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.ColumnId;
+            export type $0 = github.rest.components.Parameters.ColumnId;
         }
         export interface RequestBody {
             /**
@@ -42467,17 +41833,17 @@ declare namespace octokit.paths {
              * Project Column
              * Project columns contain cards of work.
              */
-            octokit.components.Schemas.ProjectColumn;
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
+            github.rest.components.Schemas.ProjectColumn;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
         }
     }
     namespace PullsCheckIfMerged {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.PullNumber;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.PullNumber;
         }
         namespace Responses {
             export interface $204 {
@@ -42488,8 +41854,8 @@ declare namespace octokit.paths {
     }
     namespace PullsCreate {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         export interface RequestBody {
             /**
@@ -42527,17 +41893,17 @@ declare namespace octokit.paths {
              * Pull Request
              * Pull requests let you tell others about changes you've pushed to a repository on GitHub. Once a pull request is sent, interested parties can review the set of changes, discuss potential modifications, and even push follow-up commits if necessary.
              */
-            octokit.components.Schemas.PullRequest;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.PullRequest;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace PullsCreateReplyForReviewComment {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.PullNumber;
-            export type $3 = octokit.components.Parameters.CommentId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.PullNumber;
+            export type $3 = github.rest.components.Parameters.CommentId;
         }
         export interface RequestBody {
             /**
@@ -42550,15 +41916,15 @@ declare namespace octokit.paths {
              * Pull Request Review Comment
              * Pull Request Review Comments are comments on a portion of the Pull Request's diff.
              */
-            octokit.components.Schemas.PullRequestReviewComment;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.PullRequestReviewComment;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace PullsCreateReview {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.PullNumber;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.PullNumber;
         }
         export interface RequestBody {
             /**
@@ -42616,16 +41982,16 @@ declare namespace octokit.paths {
              * Pull Request Review
              * Pull Request Reviews are reviews on pull requests.
              */
-            octokit.components.Schemas.PullRequestReview;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $422 = octokit.components.Responses.ValidationFailedSimple;
+            github.rest.components.Schemas.PullRequestReview;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $422 = github.rest.components.Responses.ValidationFailedSimple;
         }
     }
     namespace PullsCreateReviewComment {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.PullNumber;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.PullNumber;
         }
         export interface RequestBody {
             /**
@@ -42671,46 +42037,46 @@ declare namespace octokit.paths {
              * Pull Request Review Comment
              * Pull Request Review Comments are comments on a portion of the Pull Request's diff.
              */
-            octokit.components.Schemas.PullRequestReviewComment;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.PullRequestReviewComment;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace PullsDeletePendingReview {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.PullNumber;
-            export type $3 = octokit.components.Parameters.ReviewId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.PullNumber;
+            export type $3 = github.rest.components.Parameters.ReviewId;
         }
         namespace Responses {
             export type $200 = /**
              * Pull Request Review
              * Pull Request Reviews are reviews on pull requests.
              */
-            octokit.components.Schemas.PullRequestReview;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $422 = octokit.components.Responses.ValidationFailedSimple;
+            github.rest.components.Schemas.PullRequestReview;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $422 = github.rest.components.Responses.ValidationFailedSimple;
         }
     }
     namespace PullsDeleteReviewComment {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.CommentId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.CommentId;
         }
         namespace Responses {
             export interface $204 {
             }
-            export type $404 = octokit.components.Responses.NotFound;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace PullsDismissReview {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.PullNumber;
-            export type $3 = octokit.components.Parameters.ReviewId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.PullNumber;
+            export type $3 = github.rest.components.Parameters.ReviewId;
         }
         export interface RequestBody {
             /**
@@ -42728,65 +42094,65 @@ declare namespace octokit.paths {
              * Pull Request Review
              * Pull Request Reviews are reviews on pull requests.
              */
-            octokit.components.Schemas.PullRequestReview;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $422 = octokit.components.Responses.ValidationFailedSimple;
+            github.rest.components.Schemas.PullRequestReview;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $422 = github.rest.components.Responses.ValidationFailedSimple;
         }
     }
     namespace PullsGet {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.PullNumber;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.PullNumber;
         }
         namespace Responses {
             export type $200 = /**
              * Pull Request
              * Pull requests let you tell others about changes you've pushed to a repository on GitHub. Once a pull request is sent, interested parties can review the set of changes, discuss potential modifications, and even push follow-up commits if necessary.
              */
-            octokit.components.Schemas.PullRequest;
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $500 = octokit.components.Responses.InternalError;
+            github.rest.components.Schemas.PullRequest;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $500 = github.rest.components.Responses.InternalError;
         }
     }
     namespace PullsGetReview {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.PullNumber;
-            export type $3 = octokit.components.Parameters.ReviewId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.PullNumber;
+            export type $3 = github.rest.components.Parameters.ReviewId;
         }
         namespace Responses {
             export type $200 = /**
              * Pull Request Review
              * Pull Request Reviews are reviews on pull requests.
              */
-            octokit.components.Schemas.PullRequestReview;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.PullRequestReview;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace PullsGetReviewComment {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.CommentId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.CommentId;
         }
         namespace Responses {
             export type $200 = /**
              * Pull Request Review Comment
              * Pull Request Review Comments are comments on a portion of the Pull Request's diff.
              */
-            octokit.components.Schemas.PullRequestReviewComment;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.PullRequestReviewComment;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace PullsList {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $7 = octokit.components.Parameters.PerPage;
-            export type $8 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $7 = github.rest.components.Parameters.PerPage;
+            export type $8 = github.rest.components.Parameters.Page;
             export type Base = string;
             export type Direction = "asc" | "desc";
             export type Head = string;
@@ -42805,88 +42171,88 @@ declare namespace octokit.paths {
              * Pull Request Simple
              * Pull Request Simple
              */
-            octokit.components.Schemas.PullRequestSimple[];
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.PullRequestSimple[];
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace PullsListCommentsForReview {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.PullNumber;
-            export type $3 = octokit.components.Parameters.ReviewId;
-            export type $4 = octokit.components.Parameters.PerPage;
-            export type $5 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.PullNumber;
+            export type $3 = github.rest.components.Parameters.ReviewId;
+            export type $4 = github.rest.components.Parameters.PerPage;
+            export type $5 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Legacy Review Comment
              * Legacy Review Comment
              */
-            octokit.components.Schemas.ReviewComment[];
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.ReviewComment[];
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace PullsListCommits {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.PullNumber;
-            export type $3 = octokit.components.Parameters.PerPage;
-            export type $4 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.PullNumber;
+            export type $3 = github.rest.components.Parameters.PerPage;
+            export type $4 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Commit
              * Commit
              */
-            octokit.components.Schemas.Commit[];
+            github.rest.components.Schemas.Commit[];
         }
     }
     namespace PullsListFiles {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.PullNumber;
-            export type $3 = octokit.components.Parameters.PerPage;
-            export type $4 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.PullNumber;
+            export type $3 = github.rest.components.Parameters.PerPage;
+            export type $4 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Diff Entry
              * Diff Entry
              */
-            octokit.components.Schemas.DiffEntry[];
-            export type $422 = octokit.components.Responses.ValidationFailed;
-            export type $500 = octokit.components.Responses.InternalError;
+            github.rest.components.Schemas.DiffEntry[];
+            export type $422 = github.rest.components.Responses.ValidationFailed;
+            export type $500 = github.rest.components.Responses.InternalError;
         }
     }
     namespace PullsListRequestedReviewers {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.PullNumber;
-            export type $3 = octokit.components.Parameters.PerPage;
-            export type $4 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.PullNumber;
+            export type $3 = github.rest.components.Parameters.PerPage;
+            export type $4 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Pull Request Review Request
              * Pull Request Review Request
              */
-            octokit.components.Schemas.PullRequestReviewRequest;
+            github.rest.components.Schemas.PullRequestReviewRequest;
         }
     }
     namespace PullsListReviewComments {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.PullNumber;
-            export type $3 = octokit.components.Parameters.Sort;
-            export type $5 = octokit.components.Parameters.Since /* date-time */;
-            export type $6 = octokit.components.Parameters.PerPage;
-            export type $7 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.PullNumber;
+            export type $3 = github.rest.components.Parameters.Sort;
+            export type $5 = github.rest.components.Parameters.Since /* date-time */;
+            export type $6 = github.rest.components.Parameters.PerPage;
+            export type $7 = github.rest.components.Parameters.Page;
             export type Direction = "asc" | "desc";
         }
         export interface QueryParameters {
@@ -42897,16 +42263,16 @@ declare namespace octokit.paths {
              * Pull Request Review Comment
              * Pull Request Review Comments are comments on a portion of the Pull Request's diff.
              */
-            octokit.components.Schemas.PullRequestReviewComment[];
+            github.rest.components.Schemas.PullRequestReviewComment[];
         }
     }
     namespace PullsListReviewCommentsForRepo {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $4 = octokit.components.Parameters.Since /* date-time */;
-            export type $5 = octokit.components.Parameters.PerPage;
-            export type $6 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $4 = github.rest.components.Parameters.Since /* date-time */;
+            export type $5 = github.rest.components.Parameters.PerPage;
+            export type $6 = github.rest.components.Parameters.Page;
             export type Direction = "asc" | "desc";
             export type Sort = "created" | "updated" | "created_at";
         }
@@ -42919,30 +42285,30 @@ declare namespace octokit.paths {
              * Pull Request Review Comment
              * Pull Request Review Comments are comments on a portion of the Pull Request's diff.
              */
-            octokit.components.Schemas.PullRequestReviewComment[];
+            github.rest.components.Schemas.PullRequestReviewComment[];
         }
     }
     namespace PullsListReviews {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.PullNumber;
-            export type $3 = octokit.components.Parameters.PerPage;
-            export type $4 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.PullNumber;
+            export type $3 = github.rest.components.Parameters.PerPage;
+            export type $4 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Pull Request Review
              * Pull Request Reviews are reviews on pull requests.
              */
-            octokit.components.Schemas.PullRequestReview[];
+            github.rest.components.Schemas.PullRequestReview[];
         }
     }
     namespace PullsMerge {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.PullNumber;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.PullNumber;
         }
         export type RequestBody = {
             /**
@@ -42967,9 +42333,9 @@ declare namespace octokit.paths {
              * Pull Request Merge Result
              * Pull Request Merge Result
              */
-            octokit.components.Schemas.PullRequestMergeResult;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.PullRequestMergeResult;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
             export interface $405 {
                 message?: string;
                 documentation_url?: string;
@@ -42978,14 +42344,14 @@ declare namespace octokit.paths {
                 message?: string;
                 documentation_url?: string;
             }
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace PullsRemoveRequestedReviewers {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.PullNumber;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.PullNumber;
         }
         export interface RequestBody {
             /**
@@ -43002,15 +42368,15 @@ declare namespace octokit.paths {
              * Pull Request Simple
              * Pull Request Simple
              */
-            octokit.components.Schemas.PullRequestSimple;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.PullRequestSimple;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace PullsRequestReviewers {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.PullNumber;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.PullNumber;
         }
         export type RequestBody = {
             /**
@@ -43036,18 +42402,18 @@ declare namespace octokit.paths {
              * Pull Request Simple
              * Pull Request Simple
              */
-            octokit.components.Schemas.PullRequestSimple;
-            export type $403 = octokit.components.Responses.Forbidden;
+            github.rest.components.Schemas.PullRequestSimple;
+            export type $403 = github.rest.components.Responses.Forbidden;
             export interface $422 {
             }
         }
     }
     namespace PullsSubmitReview {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.PullNumber;
-            export type $3 = octokit.components.Parameters.ReviewId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.PullNumber;
+            export type $3 = github.rest.components.Parameters.ReviewId;
         }
         export interface RequestBody {
             /**
@@ -43064,17 +42430,17 @@ declare namespace octokit.paths {
              * Pull Request Review
              * Pull Request Reviews are reviews on pull requests.
              */
-            octokit.components.Schemas.PullRequestReview;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $422 = octokit.components.Responses.ValidationFailedSimple;
+            github.rest.components.Schemas.PullRequestReview;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $422 = github.rest.components.Responses.ValidationFailedSimple;
         }
     }
     namespace PullsUpdate {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.PullNumber;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.PullNumber;
         }
         export interface RequestBody {
             /**
@@ -43103,16 +42469,16 @@ declare namespace octokit.paths {
              * Pull Request
              * Pull requests let you tell others about changes you've pushed to a repository on GitHub. Once a pull request is sent, interested parties can review the set of changes, discuss potential modifications, and even push follow-up commits if necessary.
              */
-            octokit.components.Schemas.PullRequest;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.PullRequest;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace PullsUpdateBranch {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.PullNumber;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.PullNumber;
         }
         export type RequestBody = {
             /**
@@ -43125,17 +42491,17 @@ declare namespace octokit.paths {
                 message?: string;
                 url?: string;
             }
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $415 = octokit.components.Responses.PreviewHeaderMissing;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $415 = github.rest.components.Responses.PreviewHeaderMissing;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace PullsUpdateReview {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.PullNumber;
-            export type $3 = octokit.components.Parameters.ReviewId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.PullNumber;
+            export type $3 = github.rest.components.Parameters.ReviewId;
         }
         export interface RequestBody {
             /**
@@ -43148,15 +42514,15 @@ declare namespace octokit.paths {
              * Pull Request Review
              * Pull Request Reviews are reviews on pull requests.
              */
-            octokit.components.Schemas.PullRequestReview;
-            export type $422 = octokit.components.Responses.ValidationFailedSimple;
+            github.rest.components.Schemas.PullRequestReview;
+            export type $422 = github.rest.components.Responses.ValidationFailedSimple;
         }
     }
     namespace PullsUpdateReviewComment {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.CommentId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.CommentId;
         }
         export interface RequestBody {
             /**
@@ -43169,7 +42535,7 @@ declare namespace octokit.paths {
              * Pull Request Review Comment
              * Pull Request Review Comments are comments on a portion of the Pull Request's diff.
              */
-            octokit.components.Schemas.PullRequestReviewComment;
+            github.rest.components.Schemas.PullRequestReviewComment;
         }
     }
     namespace RateLimitGet {
@@ -43178,16 +42544,16 @@ declare namespace octokit.paths {
              * Rate Limit Overview
              * Rate Limit Overview
              */
-            octokit.components.Schemas.RateLimitOverview;
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.RateLimitOverview;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace ReactionsCreateForCommitComment {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.CommentId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.CommentId;
         }
         export interface RequestBody {
             /**
@@ -43200,21 +42566,21 @@ declare namespace octokit.paths {
              * Reaction
              * Reactions to conversations provide a way to help people express their feelings more simply and effectively.
              */
-            octokit.components.Schemas.Reaction;
+            github.rest.components.Schemas.Reaction;
             export type $201 = /**
              * Reaction
              * Reactions to conversations provide a way to help people express their feelings more simply and effectively.
              */
-            octokit.components.Schemas.Reaction;
-            export type $415 = octokit.components.Responses.PreviewHeaderMissing;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.Reaction;
+            export type $415 = github.rest.components.Responses.PreviewHeaderMissing;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace ReactionsCreateForIssue {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.IssueNumber;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.IssueNumber;
         }
         export interface RequestBody {
             /**
@@ -43227,21 +42593,21 @@ declare namespace octokit.paths {
              * Reaction
              * Reactions to conversations provide a way to help people express their feelings more simply and effectively.
              */
-            octokit.components.Schemas.Reaction;
+            github.rest.components.Schemas.Reaction;
             export type $201 = /**
              * Reaction
              * Reactions to conversations provide a way to help people express their feelings more simply and effectively.
              */
-            octokit.components.Schemas.Reaction;
-            export type $415 = octokit.components.Responses.PreviewHeaderMissing;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.Reaction;
+            export type $415 = github.rest.components.Responses.PreviewHeaderMissing;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace ReactionsCreateForIssueComment {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.CommentId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.CommentId;
         }
         export interface RequestBody {
             /**
@@ -43254,21 +42620,21 @@ declare namespace octokit.paths {
              * Reaction
              * Reactions to conversations provide a way to help people express their feelings more simply and effectively.
              */
-            octokit.components.Schemas.Reaction;
+            github.rest.components.Schemas.Reaction;
             export type $201 = /**
              * Reaction
              * Reactions to conversations provide a way to help people express their feelings more simply and effectively.
              */
-            octokit.components.Schemas.Reaction;
-            export type $415 = octokit.components.Responses.PreviewHeaderMissing;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.Reaction;
+            export type $415 = github.rest.components.Responses.PreviewHeaderMissing;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace ReactionsCreateForPullRequestReviewComment {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.CommentId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.CommentId;
         }
         export interface RequestBody {
             /**
@@ -43281,21 +42647,21 @@ declare namespace octokit.paths {
              * Reaction
              * Reactions to conversations provide a way to help people express their feelings more simply and effectively.
              */
-            octokit.components.Schemas.Reaction;
+            github.rest.components.Schemas.Reaction;
             export type $201 = /**
              * Reaction
              * Reactions to conversations provide a way to help people express their feelings more simply and effectively.
              */
-            octokit.components.Schemas.Reaction;
-            export type $415 = octokit.components.Responses.PreviewHeaderMissing;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.Reaction;
+            export type $415 = github.rest.components.Responses.PreviewHeaderMissing;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace ReactionsCreateForRelease {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.ReleaseId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.ReleaseId;
         }
         export interface RequestBody {
             /**
@@ -43308,22 +42674,22 @@ declare namespace octokit.paths {
              * Reaction
              * Reactions to conversations provide a way to help people express their feelings more simply and effectively.
              */
-            octokit.components.Schemas.Reaction;
+            github.rest.components.Schemas.Reaction;
             export type $201 = /**
              * Reaction
              * Reactions to conversations provide a way to help people express their feelings more simply and effectively.
              */
-            octokit.components.Schemas.Reaction;
-            export type $415 = octokit.components.Responses.PreviewHeaderMissing;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.Reaction;
+            export type $415 = github.rest.components.Responses.PreviewHeaderMissing;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace ReactionsCreateForTeamDiscussionCommentInOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.TeamSlug;
-            export type $2 = octokit.components.Parameters.DiscussionNumber;
-            export type $3 = octokit.components.Parameters.CommentNumber;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.TeamSlug;
+            export type $2 = github.rest.components.Parameters.DiscussionNumber;
+            export type $3 = github.rest.components.Parameters.CommentNumber;
         }
         export interface RequestBody {
             /**
@@ -43336,19 +42702,19 @@ declare namespace octokit.paths {
              * Reaction
              * Reactions to conversations provide a way to help people express their feelings more simply and effectively.
              */
-            octokit.components.Schemas.Reaction;
+            github.rest.components.Schemas.Reaction;
             export type $201 = /**
              * Reaction
              * Reactions to conversations provide a way to help people express their feelings more simply and effectively.
              */
-            octokit.components.Schemas.Reaction;
+            github.rest.components.Schemas.Reaction;
         }
     }
     namespace ReactionsCreateForTeamDiscussionCommentLegacy {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.TeamId;
-            export type $1 = octokit.components.Parameters.DiscussionNumber;
-            export type $2 = octokit.components.Parameters.CommentNumber;
+            export type $0 = github.rest.components.Parameters.TeamId;
+            export type $1 = github.rest.components.Parameters.DiscussionNumber;
+            export type $2 = github.rest.components.Parameters.CommentNumber;
         }
         export interface RequestBody {
             /**
@@ -43361,14 +42727,14 @@ declare namespace octokit.paths {
              * Reaction
              * Reactions to conversations provide a way to help people express their feelings more simply and effectively.
              */
-            octokit.components.Schemas.Reaction;
+            github.rest.components.Schemas.Reaction;
         }
     }
     namespace ReactionsCreateForTeamDiscussionInOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.TeamSlug;
-            export type $2 = octokit.components.Parameters.DiscussionNumber;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.TeamSlug;
+            export type $2 = github.rest.components.Parameters.DiscussionNumber;
         }
         export interface RequestBody {
             /**
@@ -43381,18 +42747,18 @@ declare namespace octokit.paths {
              * Reaction
              * Reactions to conversations provide a way to help people express their feelings more simply and effectively.
              */
-            octokit.components.Schemas.Reaction;
+            github.rest.components.Schemas.Reaction;
             export type $201 = /**
              * Reaction
              * Reactions to conversations provide a way to help people express their feelings more simply and effectively.
              */
-            octokit.components.Schemas.Reaction;
+            github.rest.components.Schemas.Reaction;
         }
     }
     namespace ReactionsCreateForTeamDiscussionLegacy {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.TeamId;
-            export type $1 = octokit.components.Parameters.DiscussionNumber;
+            export type $0 = github.rest.components.Parameters.TeamId;
+            export type $1 = github.rest.components.Parameters.DiscussionNumber;
         }
         export interface RequestBody {
             /**
@@ -43405,15 +42771,15 @@ declare namespace octokit.paths {
              * Reaction
              * Reactions to conversations provide a way to help people express their feelings more simply and effectively.
              */
-            octokit.components.Schemas.Reaction;
+            github.rest.components.Schemas.Reaction;
         }
     }
     namespace ReactionsDeleteForCommitComment {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.CommentId;
-            export type $3 = octokit.components.Parameters.ReactionId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.CommentId;
+            export type $3 = github.rest.components.Parameters.ReactionId;
         }
         namespace Responses {
             export interface $204 {
@@ -43422,10 +42788,10 @@ declare namespace octokit.paths {
     }
     namespace ReactionsDeleteForIssue {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.IssueNumber;
-            export type $3 = octokit.components.Parameters.ReactionId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.IssueNumber;
+            export type $3 = github.rest.components.Parameters.ReactionId;
         }
         namespace Responses {
             export interface $204 {
@@ -43434,10 +42800,10 @@ declare namespace octokit.paths {
     }
     namespace ReactionsDeleteForIssueComment {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.CommentId;
-            export type $3 = octokit.components.Parameters.ReactionId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.CommentId;
+            export type $3 = github.rest.components.Parameters.ReactionId;
         }
         namespace Responses {
             export interface $204 {
@@ -43446,10 +42812,10 @@ declare namespace octokit.paths {
     }
     namespace ReactionsDeleteForPullRequestComment {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.CommentId;
-            export type $3 = octokit.components.Parameters.ReactionId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.CommentId;
+            export type $3 = github.rest.components.Parameters.ReactionId;
         }
         namespace Responses {
             export interface $204 {
@@ -43458,10 +42824,10 @@ declare namespace octokit.paths {
     }
     namespace ReactionsDeleteForTeamDiscussion {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.TeamSlug;
-            export type $2 = octokit.components.Parameters.DiscussionNumber;
-            export type $3 = octokit.components.Parameters.ReactionId;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.TeamSlug;
+            export type $2 = github.rest.components.Parameters.DiscussionNumber;
+            export type $3 = github.rest.components.Parameters.ReactionId;
         }
         namespace Responses {
             export interface $204 {
@@ -43470,11 +42836,11 @@ declare namespace octokit.paths {
     }
     namespace ReactionsDeleteForTeamDiscussionComment {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.TeamSlug;
-            export type $2 = octokit.components.Parameters.DiscussionNumber;
-            export type $3 = octokit.components.Parameters.CommentNumber;
-            export type $4 = octokit.components.Parameters.ReactionId;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.TeamSlug;
+            export type $2 = github.rest.components.Parameters.DiscussionNumber;
+            export type $3 = github.rest.components.Parameters.CommentNumber;
+            export type $4 = github.rest.components.Parameters.ReactionId;
         }
         namespace Responses {
             export interface $204 {
@@ -43483,25 +42849,25 @@ declare namespace octokit.paths {
     }
     namespace ReactionsDeleteLegacy {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.ReactionId;
+            export type $0 = github.rest.components.Parameters.ReactionId;
         }
         namespace Responses {
             export interface $204 {
             }
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $410 = octokit.components.Responses.Gone;
-            export type $415 = octokit.components.Responses.PreviewHeaderMissing;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $410 = github.rest.components.Responses.Gone;
+            export type $415 = github.rest.components.Responses.PreviewHeaderMissing;
         }
     }
     namespace ReactionsListForCommitComment {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.CommentId;
-            export type $4 = octokit.components.Parameters.PerPage;
-            export type $5 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.CommentId;
+            export type $4 = github.rest.components.Parameters.PerPage;
+            export type $5 = github.rest.components.Parameters.Page;
             export type Content = "+1" | "-1" | "laugh" | "confused" | "heart" | "hooray" | "rocket" | "eyes";
         }
         export interface QueryParameters {
@@ -43512,18 +42878,18 @@ declare namespace octokit.paths {
              * Reaction
              * Reactions to conversations provide a way to help people express their feelings more simply and effectively.
              */
-            octokit.components.Schemas.Reaction[];
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $415 = octokit.components.Responses.PreviewHeaderMissing;
+            github.rest.components.Schemas.Reaction[];
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $415 = github.rest.components.Responses.PreviewHeaderMissing;
         }
     }
     namespace ReactionsListForIssue {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.IssueNumber;
-            export type $4 = octokit.components.Parameters.PerPage;
-            export type $5 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.IssueNumber;
+            export type $4 = github.rest.components.Parameters.PerPage;
+            export type $5 = github.rest.components.Parameters.Page;
             export type Content = "+1" | "-1" | "laugh" | "confused" | "heart" | "hooray" | "rocket" | "eyes";
         }
         export interface QueryParameters {
@@ -43534,19 +42900,19 @@ declare namespace octokit.paths {
              * Reaction
              * Reactions to conversations provide a way to help people express their feelings more simply and effectively.
              */
-            octokit.components.Schemas.Reaction[];
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $410 = octokit.components.Responses.Gone;
-            export type $415 = octokit.components.Responses.PreviewHeaderMissing;
+            github.rest.components.Schemas.Reaction[];
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $410 = github.rest.components.Responses.Gone;
+            export type $415 = github.rest.components.Responses.PreviewHeaderMissing;
         }
     }
     namespace ReactionsListForIssueComment {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.CommentId;
-            export type $4 = octokit.components.Parameters.PerPage;
-            export type $5 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.CommentId;
+            export type $4 = github.rest.components.Parameters.PerPage;
+            export type $5 = github.rest.components.Parameters.Page;
             export type Content = "+1" | "-1" | "laugh" | "confused" | "heart" | "hooray" | "rocket" | "eyes";
         }
         export interface QueryParameters {
@@ -43557,18 +42923,18 @@ declare namespace octokit.paths {
              * Reaction
              * Reactions to conversations provide a way to help people express their feelings more simply and effectively.
              */
-            octokit.components.Schemas.Reaction[];
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $415 = octokit.components.Responses.PreviewHeaderMissing;
+            github.rest.components.Schemas.Reaction[];
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $415 = github.rest.components.Responses.PreviewHeaderMissing;
         }
     }
     namespace ReactionsListForPullRequestReviewComment {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.CommentId;
-            export type $4 = octokit.components.Parameters.PerPage;
-            export type $5 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.CommentId;
+            export type $4 = github.rest.components.Parameters.PerPage;
+            export type $5 = github.rest.components.Parameters.Page;
             export type Content = "+1" | "-1" | "laugh" | "confused" | "heart" | "hooray" | "rocket" | "eyes";
         }
         export interface QueryParameters {
@@ -43579,19 +42945,19 @@ declare namespace octokit.paths {
              * Reaction
              * Reactions to conversations provide a way to help people express their feelings more simply and effectively.
              */
-            octokit.components.Schemas.Reaction[];
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $415 = octokit.components.Responses.PreviewHeaderMissing;
+            github.rest.components.Schemas.Reaction[];
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $415 = github.rest.components.Responses.PreviewHeaderMissing;
         }
     }
     namespace ReactionsListForTeamDiscussionCommentInOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.TeamSlug;
-            export type $2 = octokit.components.Parameters.DiscussionNumber;
-            export type $3 = octokit.components.Parameters.CommentNumber;
-            export type $5 = octokit.components.Parameters.PerPage;
-            export type $6 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.TeamSlug;
+            export type $2 = github.rest.components.Parameters.DiscussionNumber;
+            export type $3 = github.rest.components.Parameters.CommentNumber;
+            export type $5 = github.rest.components.Parameters.PerPage;
+            export type $6 = github.rest.components.Parameters.Page;
             export type Content = "+1" | "-1" | "laugh" | "confused" | "heart" | "hooray" | "rocket" | "eyes";
         }
         export interface QueryParameters {
@@ -43602,16 +42968,16 @@ declare namespace octokit.paths {
              * Reaction
              * Reactions to conversations provide a way to help people express their feelings more simply and effectively.
              */
-            octokit.components.Schemas.Reaction[];
+            github.rest.components.Schemas.Reaction[];
         }
     }
     namespace ReactionsListForTeamDiscussionCommentLegacy {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.TeamId;
-            export type $1 = octokit.components.Parameters.DiscussionNumber;
-            export type $2 = octokit.components.Parameters.CommentNumber;
-            export type $4 = octokit.components.Parameters.PerPage;
-            export type $5 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.TeamId;
+            export type $1 = github.rest.components.Parameters.DiscussionNumber;
+            export type $2 = github.rest.components.Parameters.CommentNumber;
+            export type $4 = github.rest.components.Parameters.PerPage;
+            export type $5 = github.rest.components.Parameters.Page;
             export type Content = "+1" | "-1" | "laugh" | "confused" | "heart" | "hooray" | "rocket" | "eyes";
         }
         export interface QueryParameters {
@@ -43622,16 +42988,16 @@ declare namespace octokit.paths {
              * Reaction
              * Reactions to conversations provide a way to help people express their feelings more simply and effectively.
              */
-            octokit.components.Schemas.Reaction[];
+            github.rest.components.Schemas.Reaction[];
         }
     }
     namespace ReactionsListForTeamDiscussionInOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.TeamSlug;
-            export type $2 = octokit.components.Parameters.DiscussionNumber;
-            export type $4 = octokit.components.Parameters.PerPage;
-            export type $5 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.TeamSlug;
+            export type $2 = github.rest.components.Parameters.DiscussionNumber;
+            export type $4 = github.rest.components.Parameters.PerPage;
+            export type $5 = github.rest.components.Parameters.Page;
             export type Content = "+1" | "-1" | "laugh" | "confused" | "heart" | "hooray" | "rocket" | "eyes";
         }
         export interface QueryParameters {
@@ -43642,15 +43008,15 @@ declare namespace octokit.paths {
              * Reaction
              * Reactions to conversations provide a way to help people express their feelings more simply and effectively.
              */
-            octokit.components.Schemas.Reaction[];
+            github.rest.components.Schemas.Reaction[];
         }
     }
     namespace ReactionsListForTeamDiscussionLegacy {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.TeamId;
-            export type $1 = octokit.components.Parameters.DiscussionNumber;
-            export type $3 = octokit.components.Parameters.PerPage;
-            export type $4 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.TeamId;
+            export type $1 = github.rest.components.Parameters.DiscussionNumber;
+            export type $3 = github.rest.components.Parameters.PerPage;
+            export type $4 = github.rest.components.Parameters.Page;
             export type Content = "+1" | "-1" | "laugh" | "confused" | "heart" | "hooray" | "rocket" | "eyes";
         }
         export interface QueryParameters {
@@ -43661,48 +43027,48 @@ declare namespace octokit.paths {
              * Reaction
              * Reactions to conversations provide a way to help people express their feelings more simply and effectively.
              */
-            octokit.components.Schemas.Reaction[];
+            github.rest.components.Schemas.Reaction[];
         }
     }
     namespace ReposAcceptInvitation {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.InvitationId;
+            export type $0 = github.rest.components.Parameters.InvitationId;
         }
         namespace Responses {
             export interface $204 {
             }
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $409 = octokit.components.Responses.Conflict;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $409 = github.rest.components.Responses.Conflict;
         }
     }
     namespace ReposAddAppAccessRestrictions {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.Branch;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.Branch;
         }
         export type RequestBody = {
             /**
              * apps parameter
              */
             apps: string[];
-        };
+        } | string[];
         namespace Responses {
             export type $200 = /**
              * GitHub app
              * GitHub apps are a new way to extend GitHub. They can be installed directly on organizations and user accounts and granted access to specific repositories. They come with granular permissions and built-in webhooks. GitHub apps are first class actors within GitHub.
              */
-            octokit.components.Schemas.Integration[];
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.Integration[];
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace ReposAddCollaborator {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.Username;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.Username;
         }
         export interface RequestBody {
             /**
@@ -43725,79 +43091,79 @@ declare namespace octokit.paths {
              * Repository Invitation
              * Repository invitations let you manage who you collaborate with.
              */
-            octokit.components.Schemas.RepositoryInvitation;
+            github.rest.components.Schemas.RepositoryInvitation;
             export interface $204 {
             }
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace ReposAddStatusCheckContexts {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.Branch;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.Branch;
         }
         export type RequestBody = {
             /**
              * contexts parameter
              */
             contexts: string[];
-        };
+        } | string[];
         namespace Responses {
             export type $200 = string[];
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace ReposAddTeamAccessRestrictions {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.Branch;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.Branch;
         }
         export type RequestBody = {
             /**
              * teams parameter
              */
             teams: string[];
-        };
+        } | string[];
         namespace Responses {
             export type $200 = /**
              * Team
              * Groups of organization members that gives permissions on specified repositories.
              */
-            octokit.components.Schemas.Team[];
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.Team[];
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace ReposAddUserAccessRestrictions {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.Branch;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.Branch;
         }
         export type RequestBody = {
             /**
              * users parameter
              */
             users: string[];
-        };
+        } | string[];
         namespace Responses {
             export type $200 = /**
              * Simple User
              * Simple User
              */
-            octokit.components.Schemas.SimpleUser[];
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.SimpleUser[];
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace ReposCheckCollaborator {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.Username;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.Username;
         }
         namespace Responses {
             export interface $204 {
@@ -43808,8 +43174,8 @@ declare namespace octokit.paths {
     }
     namespace ReposCheckVulnerabilityAlerts {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         namespace Responses {
             export interface $204 {
@@ -43820,33 +43186,10 @@ declare namespace octokit.paths {
     }
     namespace ReposCompareCommits {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $4 = octokit.components.Parameters.PerPage;
-            export type $5 = octokit.components.Parameters.Page;
-            export type Base = string;
-            export type Head = string;
-        }
-        export interface PathParameters {
-            base: Parameters.Base;
-            head: Parameters.Head;
-        }
-        namespace Responses {
-            export type $200 = /**
-             * Commit Comparison
-             * Commit Comparison
-             */
-            octokit.components.Schemas.CommitComparison;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $500 = octokit.components.Responses.InternalError;
-        }
-    }
-    namespace ReposCompareCommitsWithBasehead {
-        namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.Page;
-            export type $3 = octokit.components.Parameters.PerPage;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.Page;
+            export type $3 = github.rest.components.Parameters.PerPage;
             export type Basehead = string;
         }
         export interface PathParameters {
@@ -43857,15 +43200,15 @@ declare namespace octokit.paths {
              * Commit Comparison
              * Commit Comparison
              */
-            octokit.components.Schemas.CommitComparison;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $500 = octokit.components.Responses.InternalError;
+            github.rest.components.Schemas.CommitComparison;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $500 = github.rest.components.Responses.InternalError;
         }
     }
     namespace ReposCreateAutolink {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         export interface RequestBody {
             /**
@@ -43882,15 +43225,15 @@ declare namespace octokit.paths {
              * Autolink reference
              * An autolink reference.
              */
-            octokit.components.Schemas.Autolink;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.Autolink;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace ReposCreateCommitComment {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.CommitSha;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.CommitSha;
         }
         export interface RequestBody {
             /**
@@ -43915,30 +43258,30 @@ declare namespace octokit.paths {
              * Commit Comment
              * Commit Comment
              */
-            octokit.components.Schemas.CommitComment;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.CommitComment;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace ReposCreateCommitSignatureProtection {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.Branch;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.Branch;
         }
         namespace Responses {
             export type $200 = /**
              * Protected Branch Admin Enforced
              * Protected Branch Admin Enforced
              */
-            octokit.components.Schemas.ProtectedBranchAdminEnforced;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.ProtectedBranchAdminEnforced;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace ReposCreateCommitStatus {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
             export type Sha = string;
         }
         export interface PathParameters {
@@ -43969,13 +43312,13 @@ declare namespace octokit.paths {
              * Status
              * The status of a commit.
              */
-            octokit.components.Schemas.Status;
+            github.rest.components.Schemas.Status;
         }
     }
     namespace ReposCreateDeployKey {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         export interface RequestBody {
             /**
@@ -43998,14 +43341,14 @@ declare namespace octokit.paths {
              * Deploy Key
              * An SSH key granting access to a single repository.
              */
-            octokit.components.Schemas.DeployKey;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.DeployKey;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace ReposCreateDeployment {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         export interface RequestBody {
             /**
@@ -44051,20 +43394,20 @@ declare namespace octokit.paths {
              * Deployment
              * A request for a specific ref(branch,sha,tag) to be deployed
              */
-            octokit.components.Schemas.Deployment;
+            github.rest.components.Schemas.Deployment;
             export interface $202 {
                 message?: string;
             }
             export interface $409 {
             }
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace ReposCreateDeploymentStatus {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.DeploymentId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.DeploymentId;
         }
         export interface RequestBody {
             /**
@@ -44105,14 +43448,14 @@ declare namespace octokit.paths {
              * Deployment Status
              * The status of a deployment.
              */
-            octokit.components.Schemas.DeploymentStatus;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.DeploymentStatus;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace ReposCreateDispatchEvent {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         export interface RequestBody {
             /**
@@ -44129,7 +43472,7 @@ declare namespace octokit.paths {
         namespace Responses {
             export interface $204 {
             }
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace ReposCreateForAuthenticatedUser {
@@ -44209,6 +43552,12 @@ declare namespace octokit.paths {
              */
             allow_rebase_merge?: boolean;
             /**
+             * Whether to allow Auto-merge to be used on pull requests.
+             * example:
+             * false
+             */
+            allow_auto_merge?: boolean;
+            /**
              * Whether to delete head branches when pull requests are merged
              * example:
              * false
@@ -44232,19 +43581,19 @@ declare namespace octokit.paths {
              * Repository
              * A git repository
              */
-            octokit.components.Schemas.Repository;
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $400 = octokit.components.Responses.BadRequest;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.Repository;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $400 = github.rest.components.Responses.BadRequest;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace ReposCreateFork {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         export type RequestBody = {
             /**
@@ -44257,16 +43606,16 @@ declare namespace octokit.paths {
              * Full Repository
              * Full Repository
              */
-            octokit.components.Schemas.FullRepository;
-            export type $400 = octokit.components.Responses.BadRequest;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.FullRepository;
+            export type $400 = github.rest.components.Responses.BadRequest;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace ReposCreateInOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
+            export type $0 = github.rest.components.Parameters.Org;
         }
         export interface RequestBody {
             /**
@@ -44335,6 +43684,10 @@ declare namespace octokit.paths {
              */
             allow_rebase_merge?: boolean;
             /**
+             * Either `true` to allow auto-merge on pull requests, or `false` to disallow auto-merge.
+             */
+            allow_auto_merge?: boolean;
+            /**
              * Either `true` to allow automatically deleting head branches when pull requests are merged, or `false` to prevent automatic deletion.
              */
             delete_branch_on_merge?: boolean;
@@ -44344,16 +43697,16 @@ declare namespace octokit.paths {
              * Repository
              * A git repository
              */
-            octokit.components.Schemas.Repository;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.Repository;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace ReposCreateOrUpdateEnvironment {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.EnvironmentName;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.EnvironmentName;
         }
         export type RequestBody = {
             wait_timer?: /**
@@ -44361,7 +43714,7 @@ declare namespace octokit.paths {
              * example:
              * 30
              */
-            octokit.components.Schemas.WaitTimer;
+            github.rest.components.Schemas.WaitTimer;
             /**
              * The people or teams that may review jobs that reference the environment. You can list up to six users or teams as reviewers. The reviewers must have at least read access to the repository. Only one of the required reviewers needs to approve the job for it to proceed.
              */
@@ -44371,7 +43724,7 @@ declare namespace octokit.paths {
                  * example:
                  * User
                  */
-                octokit.components.Schemas.DeploymentReviewerType;
+                github.rest.components.Schemas.DeploymentReviewerType;
                 /**
                  * The id of the user or team who can review the deployment
                  * example:
@@ -44379,25 +43732,25 @@ declare namespace octokit.paths {
                  */
                 id?: number;
             }[] | null;
-            deployment_branch_policy?: /* The type of deployment branch policy for this environment. To allow all branches to deploy, set to `null`. */ octokit.components.Schemas.DeploymentBranchPolicy;
+            deployment_branch_policy?: /* The type of deployment branch policy for this environment. To allow all branches to deploy, set to `null`. */ github.rest.components.Schemas.DeploymentBranchPolicy;
         } | null;
         namespace Responses {
             export type $200 = /**
              * Environment
              * Details of a deployment environment
              */
-            octokit.components.Schemas.Environment;
+            github.rest.components.Schemas.Environment;
             export type $422 = /**
              * Basic Error
              * Basic Error
              */
-            octokit.components.Schemas.BasicError;
+            github.rest.components.Schemas.BasicError;
         }
     }
     namespace ReposCreateOrUpdateFileContents {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
             export type Path = string;
         }
         export interface PathParameters {
@@ -44462,21 +43815,21 @@ declare namespace octokit.paths {
              * File Commit
              * File Commit
              */
-            octokit.components.Schemas.FileCommit;
+            github.rest.components.Schemas.FileCommit;
             export type $201 = /**
              * File Commit
              * File Commit
              */
-            octokit.components.Schemas.FileCommit;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $409 = octokit.components.Responses.Conflict;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.FileCommit;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $409 = github.rest.components.Responses.Conflict;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace ReposCreatePagesSite {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         /**
          * The source branch and directory used to publish your Pages site.
@@ -44501,16 +43854,16 @@ declare namespace octokit.paths {
              * GitHub Pages
              * The configuration for GitHub Pages for a repository.
              */
-            octokit.components.Schemas.Page;
-            export type $409 = octokit.components.Responses.Conflict;
-            export type $415 = octokit.components.Responses.PreviewHeaderMissing;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.Page;
+            export type $409 = github.rest.components.Responses.Conflict;
+            export type $415 = github.rest.components.Responses.PreviewHeaderMissing;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace ReposCreateRelease {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         export interface RequestBody {
             /**
@@ -44547,13 +43900,13 @@ declare namespace octokit.paths {
              * Release
              * A release.
              */
-            octokit.components.Schemas.Release;
+            github.rest.components.Schemas.Release;
             export type $404 = /**
              * Basic Error
              * Basic Error
              */
-            octokit.components.Schemas.BasicError;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.BasicError;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace ReposCreateUsingTemplate {
@@ -44592,13 +43945,13 @@ declare namespace octokit.paths {
              * Repository
              * A git repository
              */
-            octokit.components.Schemas.Repository;
+            github.rest.components.Schemas.Repository;
         }
     }
     namespace ReposCreateWebhook {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         export type RequestBody = {
             /**
@@ -44614,20 +43967,20 @@ declare namespace octokit.paths {
                  * example:
                  * https://example.com/webhook
                  */
-                octokit.components.Schemas.WebhookConfigUrl /* uri */;
+                github.rest.components.Schemas.WebhookConfigUrl /* uri */;
                 content_type?: /**
                  * The media type used to serialize the payloads. Supported values include `json` and `form`. The default is `form`.
                  * example:
                  * "json"
                  */
-                octokit.components.Schemas.WebhookConfigContentType;
+                github.rest.components.Schemas.WebhookConfigContentType;
                 secret?: /**
                  * If provided, the `secret` will be used as the `key` to generate the HMAC hex digest value for [delivery signature headers](https://docs.github.com/webhooks/event-payloads/#delivery-headers).
                  * example:
                  * "********"
                  */
-                octokit.components.Schemas.WebhookConfigSecret;
-                insecure_ssl?: octokit.components.Schemas.WebhookConfigInsecureSsl;
+                github.rest.components.Schemas.WebhookConfigSecret;
+                insecure_ssl?: github.rest.components.Schemas.WebhookConfigInsecureSsl;
                 /**
                  * example:
                  * "abc"
@@ -44653,46 +44006,46 @@ declare namespace octokit.paths {
              * Webhook
              * Webhooks for repositories.
              */
-            octokit.components.Schemas.Hook;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.Hook;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace ReposDeclineInvitation {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.InvitationId;
+            export type $0 = github.rest.components.Parameters.InvitationId;
         }
         namespace Responses {
             export interface $204 {
             }
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $409 = octokit.components.Responses.Conflict;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $409 = github.rest.components.Responses.Conflict;
         }
     }
     namespace ReposDelete {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         namespace Responses {
             export interface $204 {
             }
-            export type $307 = octokit.components.Responses.TemporaryRedirect;
+            export type $307 = github.rest.components.Responses.TemporaryRedirect;
             export interface $403 {
                 message?: string;
                 documentation_url?: string;
             }
-            export type $404 = octokit.components.Responses.NotFound;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace ReposDeleteAccessRestrictions {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.Branch;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.Branch;
         }
         namespace Responses {
             export interface $204 {
@@ -44701,21 +44054,21 @@ declare namespace octokit.paths {
     }
     namespace ReposDeleteAdminBranchProtection {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.Branch;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.Branch;
         }
         namespace Responses {
             export interface $204 {
             }
-            export type $404 = octokit.components.Responses.NotFound;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace ReposDeleteAnEnvironment {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.EnvironmentName;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.EnvironmentName;
         }
         namespace Responses {
             export interface $204 {
@@ -44724,57 +44077,57 @@ declare namespace octokit.paths {
     }
     namespace ReposDeleteAutolink {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.AutolinkId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.AutolinkId;
         }
         namespace Responses {
             export interface $204 {
             }
-            export type $404 = octokit.components.Responses.NotFound;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace ReposDeleteBranchProtection {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.Branch;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.Branch;
         }
         namespace Responses {
             export interface $204 {
             }
-            export type $403 = octokit.components.Responses.Forbidden;
+            export type $403 = github.rest.components.Responses.Forbidden;
         }
     }
     namespace ReposDeleteCommitComment {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.CommentId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.CommentId;
         }
         namespace Responses {
             export interface $204 {
             }
-            export type $404 = octokit.components.Responses.NotFound;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace ReposDeleteCommitSignatureProtection {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.Branch;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.Branch;
         }
         namespace Responses {
             export interface $204 {
             }
-            export type $404 = octokit.components.Responses.NotFound;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace ReposDeleteDeployKey {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.KeyId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.KeyId;
         }
         namespace Responses {
             export interface $204 {
@@ -44783,21 +44136,21 @@ declare namespace octokit.paths {
     }
     namespace ReposDeleteDeployment {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.DeploymentId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.DeploymentId;
         }
         namespace Responses {
             export interface $204 {
             }
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $422 = octokit.components.Responses.ValidationFailedSimple;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $422 = github.rest.components.Responses.ValidationFailedSimple;
         }
     }
     namespace ReposDeleteFile {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
             export type Path = string;
         }
         export interface PathParameters {
@@ -44848,18 +44201,18 @@ declare namespace octokit.paths {
              * File Commit
              * File Commit
              */
-            octokit.components.Schemas.FileCommit;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $409 = octokit.components.Responses.Conflict;
-            export type $422 = octokit.components.Responses.ValidationFailed;
-            export type $503 = octokit.components.Responses.ServiceUnavailable;
+            github.rest.components.Schemas.FileCommit;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $409 = github.rest.components.Responses.Conflict;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
+            export type $503 = github.rest.components.Responses.ServiceUnavailable;
         }
     }
     namespace ReposDeleteInvitation {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.InvitationId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.InvitationId;
         }
         namespace Responses {
             export interface $204 {
@@ -44868,34 +44221,34 @@ declare namespace octokit.paths {
     }
     namespace ReposDeletePagesSite {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         namespace Responses {
             export interface $204 {
             }
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $415 = octokit.components.Responses.PreviewHeaderMissing;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $415 = github.rest.components.Responses.PreviewHeaderMissing;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace ReposDeletePullRequestReviewProtection {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.Branch;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.Branch;
         }
         namespace Responses {
             export interface $204 {
             }
-            export type $404 = octokit.components.Responses.NotFound;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace ReposDeleteRelease {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.ReleaseId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.ReleaseId;
         }
         namespace Responses {
             export interface $204 {
@@ -44904,9 +44257,9 @@ declare namespace octokit.paths {
     }
     namespace ReposDeleteReleaseAsset {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.AssetId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.AssetId;
         }
         namespace Responses {
             export interface $204 {
@@ -44915,20 +44268,20 @@ declare namespace octokit.paths {
     }
     namespace ReposDeleteWebhook {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.HookId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.HookId;
         }
         namespace Responses {
             export interface $204 {
             }
-            export type $404 = octokit.components.Responses.NotFound;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace ReposDisableAutomatedSecurityFixes {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         namespace Responses {
             export interface $204 {
@@ -44937,8 +44290,8 @@ declare namespace octokit.paths {
     }
     namespace ReposDisableVulnerabilityAlerts {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         namespace Responses {
             export interface $204 {
@@ -44947,8 +44300,8 @@ declare namespace octokit.paths {
     }
     namespace ReposDownloadTarballArchive {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
             export type Ref = string;
         }
         export interface PathParameters {
@@ -44961,8 +44314,8 @@ declare namespace octokit.paths {
     }
     namespace ReposDownloadZipballArchive {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
             export type Ref = string;
         }
         export interface PathParameters {
@@ -44975,8 +44328,8 @@ declare namespace octokit.paths {
     }
     namespace ReposEnableAutomatedSecurityFixes {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         namespace Responses {
             export interface $204 {
@@ -44985,8 +44338,8 @@ declare namespace octokit.paths {
     }
     namespace ReposEnableVulnerabilityAlerts {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         namespace Responses {
             export interface $204 {
@@ -44995,53 +44348,53 @@ declare namespace octokit.paths {
     }
     namespace ReposGet {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         namespace Responses {
             export type $200 = /**
              * Full Repository
              * Full Repository
              */
-            octokit.components.Schemas.FullRepository;
-            export type $301 = octokit.components.Responses.MovedPermanently;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.FullRepository;
+            export type $301 = github.rest.components.Responses.MovedPermanently;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace ReposGetAccessRestrictions {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.Branch;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.Branch;
         }
         namespace Responses {
             export type $200 = /**
              * Branch Restriction Policy
              * Branch Restriction Policy
              */
-            octokit.components.Schemas.BranchRestrictionPolicy;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.BranchRestrictionPolicy;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace ReposGetAdminBranchProtection {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.Branch;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.Branch;
         }
         namespace Responses {
             export type $200 = /**
              * Protected Branch Admin Enforced
              * Protected Branch Admin Enforced
              */
-            octokit.components.Schemas.ProtectedBranchAdminEnforced;
+            github.rest.components.Schemas.ProtectedBranchAdminEnforced;
         }
     }
     namespace ReposGetAllEnvironments {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         namespace Responses {
             export interface $200 {
@@ -45055,151 +44408,151 @@ declare namespace octokit.paths {
                  * Environment
                  * Details of a deployment environment
                  */
-                octokit.components.Schemas.Environment[];
+                github.rest.components.Schemas.Environment[];
             }
         }
     }
     namespace ReposGetAllStatusCheckContexts {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.Branch;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.Branch;
         }
         namespace Responses {
             export type $200 = string[];
-            export type $404 = octokit.components.Responses.NotFound;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace ReposGetAllTopics {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.Page;
-            export type $3 = octokit.components.Parameters.PerPage;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.Page;
+            export type $3 = github.rest.components.Parameters.PerPage;
         }
         namespace Responses {
             export type $200 = /**
              * Topic
              * A topic aggregates entities that are related to a subject.
              */
-            octokit.components.Schemas.Topic;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $415 = octokit.components.Responses.PreviewHeaderMissing;
+            github.rest.components.Schemas.Topic;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $415 = github.rest.components.Responses.PreviewHeaderMissing;
         }
     }
     namespace ReposGetAppsWithAccessToProtectedBranch {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.Branch;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.Branch;
         }
         namespace Responses {
             export type $200 = /**
              * GitHub app
              * GitHub apps are a new way to extend GitHub. They can be installed directly on organizations and user accounts and granted access to specific repositories. They come with granular permissions and built-in webhooks. GitHub apps are first class actors within GitHub.
              */
-            octokit.components.Schemas.Integration[];
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.Integration[];
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace ReposGetAutolink {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.AutolinkId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.AutolinkId;
         }
         namespace Responses {
             export type $200 = /**
              * Autolink reference
              * An autolink reference.
              */
-            octokit.components.Schemas.Autolink;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.Autolink;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace ReposGetBranch {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.Branch;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.Branch;
         }
         namespace Responses {
             export type $200 = /**
              * Branch With Protection
              * Branch With Protection
              */
-            octokit.components.Schemas.BranchWithProtection;
-            export type $301 = octokit.components.Responses.MovedPermanently;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $415 = octokit.components.Responses.PreviewHeaderMissing;
+            github.rest.components.Schemas.BranchWithProtection;
+            export type $301 = github.rest.components.Responses.MovedPermanently;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $415 = github.rest.components.Responses.PreviewHeaderMissing;
         }
     }
     namespace ReposGetBranchProtection {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.Branch;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.Branch;
         }
         namespace Responses {
             export type $200 = /**
              * Branch Protection
              * Branch Protection
              */
-            octokit.components.Schemas.BranchProtection;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.BranchProtection;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace ReposGetClones {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.Per;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.Per;
         }
         namespace Responses {
             export type $200 = /**
              * Clone Traffic
              * Clone Traffic
              */
-            octokit.components.Schemas.CloneTraffic;
-            export type $403 = octokit.components.Responses.Forbidden;
+            github.rest.components.Schemas.CloneTraffic;
+            export type $403 = github.rest.components.Responses.Forbidden;
         }
     }
     namespace ReposGetCodeFrequencyStats {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         namespace Responses {
             export type $200 = /**
              * Code Frequency Stat
              * Code Frequency Stat
              */
-            octokit.components.Schemas.CodeFrequencyStat[];
-            export type $202 = octokit.components.Responses.Accepted;
-            export type $204 = octokit.components.Responses.NoContent;
+            github.rest.components.Schemas.CodeFrequencyStat[];
+            export type $202 = github.rest.components.Responses.Accepted;
+            export type $204 = github.rest.components.Responses.NoContent;
         }
     }
     namespace ReposGetCollaboratorPermissionLevel {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.Username;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.Username;
         }
         namespace Responses {
             export type $200 = /**
              * Repository Collaborator Permission
              * Repository Collaborator Permission
              */
-            octokit.components.Schemas.RepositoryCollaboratorPermission;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.RepositoryCollaboratorPermission;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace ReposGetCombinedStatusForRef {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $3 = octokit.components.Parameters.PerPage;
-            export type $4 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $3 = github.rest.components.Parameters.PerPage;
+            export type $4 = github.rest.components.Parameters.Page;
             export type Ref = string;
         }
         export interface PathParameters {
@@ -45210,16 +44563,16 @@ declare namespace octokit.paths {
              * Combined Commit Status
              * Combined Commit Status
              */
-            octokit.components.Schemas.CombinedCommitStatus;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.CombinedCommitStatus;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace ReposGetCommit {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.Page;
-            export type $3 = octokit.components.Parameters.PerPage;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.Page;
+            export type $3 = github.rest.components.Parameters.PerPage;
             export type Ref = string;
         }
         export interface PathParameters {
@@ -45230,74 +44583,74 @@ declare namespace octokit.paths {
              * Commit
              * Commit
              */
-            octokit.components.Schemas.Commit;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $422 = octokit.components.Responses.ValidationFailed;
-            export type $500 = octokit.components.Responses.InternalError;
+            github.rest.components.Schemas.Commit;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
+            export type $500 = github.rest.components.Responses.InternalError;
         }
     }
     namespace ReposGetCommitActivityStats {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         namespace Responses {
             export type $200 = /**
              * Commit Activity
              * Commit Activity
              */
-            octokit.components.Schemas.CommitActivity[];
-            export type $202 = octokit.components.Responses.Accepted;
-            export type $204 = octokit.components.Responses.NoContent;
+            github.rest.components.Schemas.CommitActivity[];
+            export type $202 = github.rest.components.Responses.Accepted;
+            export type $204 = github.rest.components.Responses.NoContent;
         }
     }
     namespace ReposGetCommitComment {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.CommentId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.CommentId;
         }
         namespace Responses {
             export type $200 = /**
              * Commit Comment
              * Commit Comment
              */
-            octokit.components.Schemas.CommitComment;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.CommitComment;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace ReposGetCommitSignatureProtection {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.Branch;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.Branch;
         }
         namespace Responses {
             export type $200 = /**
              * Protected Branch Admin Enforced
              * Protected Branch Admin Enforced
              */
-            octokit.components.Schemas.ProtectedBranchAdminEnforced;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.ProtectedBranchAdminEnforced;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace ReposGetCommunityProfileMetrics {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         namespace Responses {
             export type $200 = /**
              * Community Profile
              * Community Profile
              */
-            octokit.components.Schemas.CommunityProfile;
+            github.rest.components.Schemas.CommunityProfile;
         }
     }
     namespace ReposGetContent {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
             export type Path = string;
             export type Ref = string;
         }
@@ -45312,74 +44665,74 @@ declare namespace octokit.paths {
              * Content Directory
              * A list of directory items
              */
-            octokit.components.Schemas.ContentDirectory | /**
+            github.rest.components.Schemas.ContentDirectory | /**
              * Content File
              * Content File
              */
-            octokit.components.Schemas.ContentFile | /**
+            github.rest.components.Schemas.ContentFile | /**
              * Symlink Content
              * An object describing a symlink
              */
-            octokit.components.Schemas.ContentSymlink | /**
+            github.rest.components.Schemas.ContentSymlink | /**
              * Symlink Content
              * An object describing a symlink
              */
-            octokit.components.Schemas.ContentSubmodule;
-            export type $302 = octokit.components.Responses.Found;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.ContentSubmodule;
+            export type $302 = github.rest.components.Responses.Found;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace ReposGetContributorsStats {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         namespace Responses {
             export type $200 = /**
              * Contributor Activity
              * Contributor Activity
              */
-            octokit.components.Schemas.ContributorActivity[];
-            export type $202 = octokit.components.Responses.Accepted;
-            export type $204 = octokit.components.Responses.NoContent;
+            github.rest.components.Schemas.ContributorActivity[];
+            export type $202 = github.rest.components.Responses.Accepted;
+            export type $204 = github.rest.components.Responses.NoContent;
         }
     }
     namespace ReposGetDeployKey {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.KeyId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.KeyId;
         }
         namespace Responses {
             export type $200 = /**
              * Deploy Key
              * An SSH key granting access to a single repository.
              */
-            octokit.components.Schemas.DeployKey;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.DeployKey;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace ReposGetDeployment {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.DeploymentId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.DeploymentId;
         }
         namespace Responses {
             export type $200 = /**
              * Deployment
              * A request for a specific ref(branch,sha,tag) to be deployed
              */
-            octokit.components.Schemas.Deployment;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.Deployment;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace ReposGetDeploymentStatus {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.DeploymentId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.DeploymentId;
             export type StatusId = number;
         }
         export interface PathParameters {
@@ -45390,69 +44743,69 @@ declare namespace octokit.paths {
              * Deployment Status
              * The status of a deployment.
              */
-            octokit.components.Schemas.DeploymentStatus;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $415 = octokit.components.Responses.PreviewHeaderMissing;
+            github.rest.components.Schemas.DeploymentStatus;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $415 = github.rest.components.Responses.PreviewHeaderMissing;
         }
     }
     namespace ReposGetEnvironment {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.EnvironmentName;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.EnvironmentName;
         }
         namespace Responses {
             export type $200 = /**
              * Environment
              * Details of a deployment environment
              */
-            octokit.components.Schemas.Environment;
+            github.rest.components.Schemas.Environment;
         }
     }
     namespace ReposGetLatestPagesBuild {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         namespace Responses {
             export type $200 = /**
              * Page Build
              * Page Build
              */
-            octokit.components.Schemas.PageBuild;
+            github.rest.components.Schemas.PageBuild;
         }
     }
     namespace ReposGetLatestRelease {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         namespace Responses {
             export type $200 = /**
              * Release
              * A release.
              */
-            octokit.components.Schemas.Release;
+            github.rest.components.Schemas.Release;
         }
     }
     namespace ReposGetPages {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         namespace Responses {
             export type $200 = /**
              * GitHub Pages
              * The configuration for GitHub Pages for a repository.
              */
-            octokit.components.Schemas.Page;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.Page;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace ReposGetPagesBuild {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
             export type BuildId = number;
         }
         export interface PathParameters {
@@ -45463,74 +44816,74 @@ declare namespace octokit.paths {
              * Page Build
              * Page Build
              */
-            octokit.components.Schemas.PageBuild;
+            github.rest.components.Schemas.PageBuild;
         }
     }
     namespace ReposGetPagesHealthCheck {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         namespace Responses {
             export type $200 = /**
              * Pages Health Check Status
              * Pages Health Check Status
              */
-            octokit.components.Schemas.PagesHealthCheck;
+            github.rest.components.Schemas.PagesHealthCheck;
             export type $202 = /**
              * Empty Object
              * An object without any properties.
              */
-            octokit.components.Schemas.EmptyObject;
+            github.rest.components.Schemas.EmptyObject;
             export interface $400 {
             }
-            export type $404 = octokit.components.Responses.NotFound;
+            export type $404 = github.rest.components.Responses.NotFound;
             export interface $422 {
             }
         }
     }
     namespace ReposGetParticipationStats {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         namespace Responses {
-            export type $200 = /* Participation Stats */ octokit.components.Schemas.ParticipationStats;
-            export type $404 = octokit.components.Responses.NotFound;
+            export type $200 = /* Participation Stats */ github.rest.components.Schemas.ParticipationStats;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace ReposGetPullRequestReviewProtection {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.Branch;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.Branch;
         }
         namespace Responses {
             export type $200 = /**
              * Protected Branch Pull Request Review
              * Protected Branch Pull Request Review
              */
-            octokit.components.Schemas.ProtectedBranchPullRequestReview;
+            github.rest.components.Schemas.ProtectedBranchPullRequestReview;
         }
     }
     namespace ReposGetPunchCardStats {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         namespace Responses {
             export type $200 = /**
              * Code Frequency Stat
              * Code Frequency Stat
              */
-            octokit.components.Schemas.CodeFrequencyStat[];
-            export type $204 = octokit.components.Responses.NoContent;
+            github.rest.components.Schemas.CodeFrequencyStat[];
+            export type $204 = github.rest.components.Responses.NoContent;
         }
     }
     namespace ReposGetReadme {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
             export type Ref = string;
         }
         export interface QueryParameters {
@@ -45541,15 +44894,15 @@ declare namespace octokit.paths {
              * Content File
              * Content File
              */
-            octokit.components.Schemas.ContentFile;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.ContentFile;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace ReposGetReadmeInDirectory {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
             export type Dir = string;
             export type Ref = string;
         }
@@ -45564,47 +44917,47 @@ declare namespace octokit.paths {
              * Content File
              * Content File
              */
-            octokit.components.Schemas.ContentFile;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.ContentFile;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace ReposGetRelease {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.ReleaseId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.ReleaseId;
         }
         namespace Responses {
             export type $200 = /**
              * Release
              * A release.
              */
-            octokit.components.Schemas.Release;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.Release;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace ReposGetReleaseAsset {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.AssetId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.AssetId;
         }
         namespace Responses {
             export type $200 = /**
              * Release Asset
              * Data related to a release.
              */
-            octokit.components.Schemas.ReleaseAsset;
-            export type $302 = octokit.components.Responses.Found;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $415 = octokit.components.Responses.PreviewHeaderMissing;
+            github.rest.components.Schemas.ReleaseAsset;
+            export type $302 = github.rest.components.Responses.Found;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $415 = github.rest.components.Responses.PreviewHeaderMissing;
         }
     }
     namespace ReposGetReleaseByTag {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
             export type Tag = string;
         }
         export interface PathParameters {
@@ -45615,164 +44968,164 @@ declare namespace octokit.paths {
              * Release
              * A release.
              */
-            octokit.components.Schemas.Release;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.Release;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace ReposGetStatusChecksProtection {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.Branch;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.Branch;
         }
         namespace Responses {
             export type $200 = /**
              * Status Check Policy
              * Status Check Policy
              */
-            octokit.components.Schemas.StatusCheckPolicy;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.StatusCheckPolicy;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace ReposGetTeamsWithAccessToProtectedBranch {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.Branch;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.Branch;
         }
         namespace Responses {
             export type $200 = /**
              * Team
              * Groups of organization members that gives permissions on specified repositories.
              */
-            octokit.components.Schemas.Team[];
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.Team[];
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace ReposGetTopPaths {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         namespace Responses {
             export type $200 = /**
              * Content Traffic
              * Content Traffic
              */
-            octokit.components.Schemas.ContentTraffic[];
-            export type $403 = octokit.components.Responses.Forbidden;
+            github.rest.components.Schemas.ContentTraffic[];
+            export type $403 = github.rest.components.Responses.Forbidden;
         }
     }
     namespace ReposGetTopReferrers {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         namespace Responses {
             export type $200 = /**
              * Referrer Traffic
              * Referrer Traffic
              */
-            octokit.components.Schemas.ReferrerTraffic[];
-            export type $403 = octokit.components.Responses.Forbidden;
+            github.rest.components.Schemas.ReferrerTraffic[];
+            export type $403 = github.rest.components.Responses.Forbidden;
         }
     }
     namespace ReposGetUsersWithAccessToProtectedBranch {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.Branch;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.Branch;
         }
         namespace Responses {
             export type $200 = /**
              * Simple User
              * Simple User
              */
-            octokit.components.Schemas.SimpleUser[];
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.SimpleUser[];
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace ReposGetViews {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.Per;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.Per;
         }
         namespace Responses {
             export type $200 = /**
              * View Traffic
              * View Traffic
              */
-            octokit.components.Schemas.ViewTraffic;
-            export type $403 = octokit.components.Responses.Forbidden;
+            github.rest.components.Schemas.ViewTraffic;
+            export type $403 = github.rest.components.Responses.Forbidden;
         }
     }
     namespace ReposGetWebhook {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.HookId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.HookId;
         }
         namespace Responses {
             export type $200 = /**
              * Webhook
              * Webhooks for repositories.
              */
-            octokit.components.Schemas.Hook;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.Hook;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace ReposGetWebhookConfigForRepo {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.HookId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.HookId;
         }
         namespace Responses {
             export type $200 = /**
              * Webhook Configuration
              * Configuration object of the webhook
              */
-            octokit.components.Schemas.WebhookConfig;
+            github.rest.components.Schemas.WebhookConfig;
         }
     }
     namespace ReposGetWebhookDelivery {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.HookId;
-            export type $3 = octokit.components.Parameters.DeliveryId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.HookId;
+            export type $3 = github.rest.components.Parameters.DeliveryId;
         }
         namespace Responses {
             export type $200 = /**
              * Webhook delivery
              * Delivery made by a webhook.
              */
-            octokit.components.Schemas.HookDelivery;
-            export type $400 = octokit.components.Responses.BadRequest;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.HookDelivery;
+            export type $400 = github.rest.components.Responses.BadRequest;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace ReposListAutolinks {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Autolink reference
              * An autolink reference.
              */
-            octokit.components.Schemas.Autolink[];
+            github.rest.components.Schemas.Autolink[];
         }
     }
     namespace ReposListBranches {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $3 = octokit.components.Parameters.PerPage;
-            export type $4 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $3 = github.rest.components.Parameters.PerPage;
+            export type $4 = github.rest.components.Parameters.Page;
             export type Protected = boolean;
         }
         export interface QueryParameters {
@@ -45783,32 +45136,32 @@ declare namespace octokit.paths {
              * Short Branch
              * Short Branch
              */
-            octokit.components.Schemas.ShortBranch[];
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.ShortBranch[];
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace ReposListBranchesForHeadCommit {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.CommitSha;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.CommitSha;
         }
         namespace Responses {
             export type $200 = /**
              * Branch Short
              * Branch Short
              */
-            octokit.components.Schemas.BranchShort[];
-            export type $415 = octokit.components.Responses.PreviewHeaderMissing;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.BranchShort[];
+            export type $415 = github.rest.components.Responses.PreviewHeaderMissing;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace ReposListCollaborators {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $3 = octokit.components.Parameters.PerPage;
-            export type $4 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $3 = github.rest.components.Parameters.PerPage;
+            export type $4 = github.rest.components.Parameters.Page;
             export type Affiliation = "outside" | "direct" | "all";
         }
         export interface QueryParameters {
@@ -45819,47 +45172,47 @@ declare namespace octokit.paths {
              * Collaborator
              * Collaborator
              */
-            octokit.components.Schemas.Collaborator[];
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.Collaborator[];
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace ReposListCommentsForCommit {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.CommitSha;
-            export type $3 = octokit.components.Parameters.PerPage;
-            export type $4 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.CommitSha;
+            export type $3 = github.rest.components.Parameters.PerPage;
+            export type $4 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Commit Comment
              * Commit Comment
              */
-            octokit.components.Schemas.CommitComment[];
+            github.rest.components.Schemas.CommitComment[];
         }
     }
     namespace ReposListCommitCommentsForRepo {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.PerPage;
-            export type $3 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.PerPage;
+            export type $3 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Commit Comment
              * Commit Comment
              */
-            octokit.components.Schemas.CommitComment[];
+            github.rest.components.Schemas.CommitComment[];
         }
     }
     namespace ReposListCommitStatusesForRef {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $3 = octokit.components.Parameters.PerPage;
-            export type $4 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $3 = github.rest.components.Parameters.PerPage;
+            export type $4 = github.rest.components.Parameters.Page;
             export type Ref = string;
         }
         export interface PathParameters {
@@ -45870,17 +45223,17 @@ declare namespace octokit.paths {
              * Status
              * The status of a commit.
              */
-            octokit.components.Schemas.Status[];
-            export type $301 = octokit.components.Responses.MovedPermanently;
+            github.rest.components.Schemas.Status[];
+            export type $301 = github.rest.components.Responses.MovedPermanently;
         }
     }
     namespace ReposListCommits {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $5 = octokit.components.Parameters.Since /* date-time */;
-            export type $7 = octokit.components.Parameters.PerPage;
-            export type $8 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $5 = github.rest.components.Parameters.Since /* date-time */;
+            export type $7 = github.rest.components.Parameters.PerPage;
+            export type $8 = github.rest.components.Parameters.Page;
             export type Author = string;
             export type Path = string;
             export type Sha = string;
@@ -45897,19 +45250,19 @@ declare namespace octokit.paths {
              * Commit
              * Commit
              */
-            octokit.components.Schemas.Commit[];
-            export type $400 = octokit.components.Responses.BadRequest;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $409 = octokit.components.Responses.Conflict;
-            export type $500 = octokit.components.Responses.InternalError;
+            github.rest.components.Schemas.Commit[];
+            export type $400 = github.rest.components.Responses.BadRequest;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $409 = github.rest.components.Responses.Conflict;
+            export type $500 = github.rest.components.Responses.InternalError;
         }
     }
     namespace ReposListContributors {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $3 = octokit.components.Parameters.PerPage;
-            export type $4 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $3 = github.rest.components.Parameters.PerPage;
+            export type $4 = github.rest.components.Parameters.Page;
             export type Anon = string;
         }
         export interface QueryParameters {
@@ -45920,51 +45273,51 @@ declare namespace octokit.paths {
              * Contributor
              * Contributor
              */
-            octokit.components.Schemas.Contributor[];
+            github.rest.components.Schemas.Contributor[];
             export interface $204 {
             }
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace ReposListDeployKeys {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.PerPage;
-            export type $3 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.PerPage;
+            export type $3 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Deploy Key
              * An SSH key granting access to a single repository.
              */
-            octokit.components.Schemas.DeployKey[];
+            github.rest.components.Schemas.DeployKey[];
         }
     }
     namespace ReposListDeploymentStatuses {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.DeploymentId;
-            export type $3 = octokit.components.Parameters.PerPage;
-            export type $4 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.DeploymentId;
+            export type $3 = github.rest.components.Parameters.PerPage;
+            export type $4 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Deployment Status
              * The status of a deployment.
              */
-            octokit.components.Schemas.DeploymentStatus[];
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.DeploymentStatus[];
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace ReposListDeployments {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $6 = octokit.components.Parameters.PerPage;
-            export type $7 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $6 = github.rest.components.Parameters.PerPage;
+            export type $7 = github.rest.components.Parameters.Page;
             export type Environment = string | null;
             export type Ref = string;
             export type Sha = string;
@@ -45981,15 +45334,15 @@ declare namespace octokit.paths {
              * Deployment
              * A request for a specific ref(branch,sha,tag) to be deployed
              */
-            octokit.components.Schemas.Deployment[];
+            github.rest.components.Schemas.Deployment[];
         }
     }
     namespace ReposListForAuthenticatedUser {
         namespace Parameters {
-            export type $5 = octokit.components.Parameters.PerPage;
-            export type $6 = octokit.components.Parameters.Page;
-            export type $7 = octokit.components.Parameters.Since /* date-time */;
-            export type $8 = octokit.components.Parameters.Before /* date-time */;
+            export type $5 = github.rest.components.Parameters.PerPage;
+            export type $6 = github.rest.components.Parameters.Page;
+            export type $7 = github.rest.components.Parameters.Since /* date-time */;
+            export type $8 = github.rest.components.Parameters.Before /* date-time */;
             export type Affiliation = string;
             export type Direction = "asc" | "desc";
             export type Sort = "created" | "updated" | "pushed" | "full_name";
@@ -46008,18 +45361,18 @@ declare namespace octokit.paths {
              * Repository
              * A git repository
              */
-            octokit.components.Schemas.Repository[];
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.Repository[];
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace ReposListForOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $4 = octokit.components.Parameters.PerPage;
-            export type $5 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $4 = github.rest.components.Parameters.PerPage;
+            export type $5 = github.rest.components.Parameters.Page;
             export type Direction = "asc" | "desc";
             export type Sort = "created" | "updated" | "pushed" | "full_name";
             export type Type = "all" | "public" | "private" | "forks" | "sources" | "member" | "internal";
@@ -46034,14 +45387,14 @@ declare namespace octokit.paths {
              * Minimal Repository
              * Minimal Repository
              */
-            octokit.components.Schemas.MinimalRepository[];
+            github.rest.components.Schemas.MinimalRepository[];
         }
     }
     namespace ReposListForUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Username;
-            export type $4 = octokit.components.Parameters.PerPage;
-            export type $5 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Username;
+            export type $4 = github.rest.components.Parameters.PerPage;
+            export type $5 = github.rest.components.Parameters.Page;
             export type Direction = "asc" | "desc";
             export type Sort = "created" | "updated" | "pushed" | "full_name";
             export type Type = "all" | "owner" | "member";
@@ -46056,15 +45409,15 @@ declare namespace octokit.paths {
              * Minimal Repository
              * Minimal Repository
              */
-            octokit.components.Schemas.MinimalRepository[];
+            github.rest.components.Schemas.MinimalRepository[];
         }
     }
     namespace ReposListForks {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $3 = octokit.components.Parameters.PerPage;
-            export type $4 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $3 = github.rest.components.Parameters.PerPage;
+            export type $4 = github.rest.components.Parameters.Page;
             export type Sort = "newest" | "oldest" | "stargazers" | "watchers";
         }
         export interface QueryParameters {
@@ -46075,201 +45428,201 @@ declare namespace octokit.paths {
              * Minimal Repository
              * Minimal Repository
              */
-            octokit.components.Schemas.MinimalRepository[];
-            export type $400 = octokit.components.Responses.BadRequest;
+            github.rest.components.Schemas.MinimalRepository[];
+            export type $400 = github.rest.components.Responses.BadRequest;
         }
     }
     namespace ReposListInvitations {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.PerPage;
-            export type $3 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.PerPage;
+            export type $3 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Repository Invitation
              * Repository invitations let you manage who you collaborate with.
              */
-            octokit.components.Schemas.RepositoryInvitation[];
+            github.rest.components.Schemas.RepositoryInvitation[];
         }
     }
     namespace ReposListInvitationsForAuthenticatedUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.PerPage;
-            export type $1 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.PerPage;
+            export type $1 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Repository Invitation
              * Repository invitations let you manage who you collaborate with.
              */
-            octokit.components.Schemas.RepositoryInvitation[];
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.RepositoryInvitation[];
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace ReposListLanguages {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         namespace Responses {
             export type $200 = /**
              * Language
              * Language
              */
-            octokit.components.Schemas.Language;
+            github.rest.components.Schemas.Language;
         }
     }
     namespace ReposListPagesBuilds {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.PerPage;
-            export type $3 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.PerPage;
+            export type $3 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Page Build
              * Page Build
              */
-            octokit.components.Schemas.PageBuild[];
+            github.rest.components.Schemas.PageBuild[];
         }
     }
     namespace ReposListPublic {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.SinceRepo;
+            export type $0 = github.rest.components.Parameters.SinceRepo;
         }
         namespace Responses {
             export type $200 = /**
              * Minimal Repository
              * Minimal Repository
              */
-            octokit.components.Schemas.MinimalRepository[];
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.MinimalRepository[];
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace ReposListPullRequestsAssociatedWithCommit {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.CommitSha;
-            export type $3 = octokit.components.Parameters.PerPage;
-            export type $4 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.CommitSha;
+            export type $3 = github.rest.components.Parameters.PerPage;
+            export type $4 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Pull Request Simple
              * Pull Request Simple
              */
-            octokit.components.Schemas.PullRequestSimple[];
-            export type $415 = octokit.components.Responses.PreviewHeaderMissing;
+            github.rest.components.Schemas.PullRequestSimple[];
+            export type $415 = github.rest.components.Responses.PreviewHeaderMissing;
         }
     }
     namespace ReposListReleaseAssets {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.ReleaseId;
-            export type $3 = octokit.components.Parameters.PerPage;
-            export type $4 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.ReleaseId;
+            export type $3 = github.rest.components.Parameters.PerPage;
+            export type $4 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Release Asset
              * Data related to a release.
              */
-            octokit.components.Schemas.ReleaseAsset[];
+            github.rest.components.Schemas.ReleaseAsset[];
         }
     }
     namespace ReposListReleases {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.PerPage;
-            export type $3 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.PerPage;
+            export type $3 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Release
              * A release.
              */
-            octokit.components.Schemas.Release[];
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.Release[];
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace ReposListTags {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.PerPage;
-            export type $3 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.PerPage;
+            export type $3 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Tag
              * Tag
              */
-            octokit.components.Schemas.Tag[];
+            github.rest.components.Schemas.Tag[];
         }
     }
     namespace ReposListTeams {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.PerPage;
-            export type $3 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.PerPage;
+            export type $3 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Team
              * Groups of organization members that gives permissions on specified repositories.
              */
-            octokit.components.Schemas.Team[];
+            github.rest.components.Schemas.Team[];
         }
     }
     namespace ReposListWebhookDeliveries {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.HookId;
-            export type $3 = octokit.components.Parameters.PerPage;
-            export type $4 = octokit.components.Parameters.Cursor;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.HookId;
+            export type $3 = github.rest.components.Parameters.PerPage;
+            export type $4 = github.rest.components.Parameters.Cursor;
         }
         namespace Responses {
             export type $200 = /**
              * Simple webhook delivery
              * Delivery made by a webhook, without request and response information.
              */
-            octokit.components.Schemas.HookDeliveryItem[];
-            export type $400 = octokit.components.Responses.BadRequest;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.HookDeliveryItem[];
+            export type $400 = github.rest.components.Responses.BadRequest;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace ReposListWebhooks {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.PerPage;
-            export type $3 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.PerPage;
+            export type $3 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Webhook
              * Webhooks for repositories.
              */
-            octokit.components.Schemas.Hook[];
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.Hook[];
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace ReposMerge {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         export interface RequestBody {
             /**
@@ -46290,68 +45643,68 @@ declare namespace octokit.paths {
              * Commit
              * Commit
              */
-            octokit.components.Schemas.Commit;
+            github.rest.components.Schemas.Commit;
             export interface $204 {
             }
-            export type $403 = octokit.components.Responses.Forbidden;
+            export type $403 = github.rest.components.Responses.Forbidden;
             export interface $404 {
             }
             export interface $409 {
             }
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace ReposPingWebhook {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.HookId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.HookId;
         }
         namespace Responses {
             export interface $204 {
             }
-            export type $404 = octokit.components.Responses.NotFound;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace ReposRedeliverWebhookDelivery {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.HookId;
-            export type $3 = octokit.components.Parameters.DeliveryId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.HookId;
+            export type $3 = github.rest.components.Parameters.DeliveryId;
         }
         namespace Responses {
-            export type $202 = octokit.components.Responses.Accepted;
-            export type $400 = octokit.components.Responses.BadRequest;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            export type $202 = github.rest.components.Responses.Accepted;
+            export type $400 = github.rest.components.Responses.BadRequest;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace ReposRemoveAppAccessRestrictions {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.Branch;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.Branch;
         }
         export type RequestBody = {
             /**
              * apps parameter
              */
             apps: string[];
-        };
+        } | string[];
         namespace Responses {
             export type $200 = /**
              * GitHub app
              * GitHub apps are a new way to extend GitHub. They can be installed directly on organizations and user accounts and granted access to specific repositories. They come with granular permissions and built-in webhooks. GitHub apps are first class actors within GitHub.
              */
-            octokit.components.Schemas.Integration[];
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.Integration[];
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace ReposRemoveCollaborator {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.Username;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.Username;
         }
         namespace Responses {
             export interface $204 {
@@ -46360,27 +45713,27 @@ declare namespace octokit.paths {
     }
     namespace ReposRemoveStatusCheckContexts {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.Branch;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.Branch;
         }
         export type RequestBody = {
             /**
              * contexts parameter
              */
             contexts: string[];
-        };
+        } | string[];
         namespace Responses {
             export type $200 = string[];
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace ReposRemoveStatusCheckProtection {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.Branch;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.Branch;
         }
         namespace Responses {
             export interface $204 {
@@ -46389,51 +45742,51 @@ declare namespace octokit.paths {
     }
     namespace ReposRemoveTeamAccessRestrictions {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.Branch;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.Branch;
         }
         export type RequestBody = {
             /**
              * teams parameter
              */
             teams: string[];
-        };
+        } | string[];
         namespace Responses {
             export type $200 = /**
              * Team
              * Groups of organization members that gives permissions on specified repositories.
              */
-            octokit.components.Schemas.Team[];
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.Team[];
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace ReposRemoveUserAccessRestrictions {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.Branch;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.Branch;
         }
         export type RequestBody = {
             /**
              * users parameter
              */
             users: string[];
-        };
+        } | string[];
         namespace Responses {
             export type $200 = /**
              * Simple User
              * Simple User
              */
-            octokit.components.Schemas.SimpleUser[];
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.SimpleUser[];
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace ReposRenameBranch {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.Branch;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.Branch;
         }
         export interface RequestBody {
             /**
@@ -46446,16 +45799,16 @@ declare namespace octokit.paths {
              * Branch With Protection
              * Branch With Protection
              */
-            octokit.components.Schemas.BranchWithProtection;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.BranchWithProtection;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace ReposReplaceAllTopics {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         export interface RequestBody {
             /**
@@ -46468,136 +45821,136 @@ declare namespace octokit.paths {
              * Topic
              * A topic aggregates entities that are related to a subject.
              */
-            octokit.components.Schemas.Topic;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $415 = octokit.components.Responses.PreviewHeaderMissing;
-            export type $422 = octokit.components.Responses.ValidationFailedSimple;
+            github.rest.components.Schemas.Topic;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $415 = github.rest.components.Responses.PreviewHeaderMissing;
+            export type $422 = github.rest.components.Responses.ValidationFailedSimple;
         }
     }
     namespace ReposRequestPagesBuild {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         namespace Responses {
             export type $201 = /**
              * Page Build Status
              * Page Build Status
              */
-            octokit.components.Schemas.PageBuildStatus;
+            github.rest.components.Schemas.PageBuildStatus;
         }
     }
     namespace ReposSetAdminBranchProtection {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.Branch;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.Branch;
         }
         namespace Responses {
             export type $200 = /**
              * Protected Branch Admin Enforced
              * Protected Branch Admin Enforced
              */
-            octokit.components.Schemas.ProtectedBranchAdminEnforced;
+            github.rest.components.Schemas.ProtectedBranchAdminEnforced;
         }
     }
     namespace ReposSetAppAccessRestrictions {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.Branch;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.Branch;
         }
         export type RequestBody = {
             /**
              * apps parameter
              */
             apps: string[];
-        };
+        } | string[];
         namespace Responses {
             export type $200 = /**
              * GitHub app
              * GitHub apps are a new way to extend GitHub. They can be installed directly on organizations and user accounts and granted access to specific repositories. They come with granular permissions and built-in webhooks. GitHub apps are first class actors within GitHub.
              */
-            octokit.components.Schemas.Integration[];
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.Integration[];
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace ReposSetStatusCheckContexts {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.Branch;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.Branch;
         }
         export type RequestBody = {
             /**
              * contexts parameter
              */
             contexts: string[];
-        };
+        } | string[];
         namespace Responses {
             export type $200 = string[];
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace ReposSetTeamAccessRestrictions {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.Branch;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.Branch;
         }
         export type RequestBody = {
             /**
              * teams parameter
              */
             teams: string[];
-        };
+        } | string[];
         namespace Responses {
             export type $200 = /**
              * Team
              * Groups of organization members that gives permissions on specified repositories.
              */
-            octokit.components.Schemas.Team[];
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.Team[];
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace ReposSetUserAccessRestrictions {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.Branch;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.Branch;
         }
         export type RequestBody = {
             /**
              * users parameter
              */
             users: string[];
-        };
+        } | string[];
         namespace Responses {
             export type $200 = /**
              * Simple User
              * Simple User
              */
-            octokit.components.Schemas.SimpleUser[];
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.SimpleUser[];
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace ReposTestPushWebhook {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.HookId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.HookId;
         }
         namespace Responses {
             export interface $204 {
             }
-            export type $404 = octokit.components.Responses.NotFound;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace ReposTransfer {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         export interface RequestBody {
             /**
@@ -46614,13 +45967,13 @@ declare namespace octokit.paths {
              * Minimal Repository
              * Minimal Repository
              */
-            octokit.components.Schemas.MinimalRepository;
+            github.rest.components.Schemas.MinimalRepository;
         }
     }
     namespace ReposUpdate {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         export interface RequestBody {
             /**
@@ -46700,6 +46053,10 @@ declare namespace octokit.paths {
              */
             allow_rebase_merge?: boolean;
             /**
+             * Either `true` to allow auto-merge on pull requests, or `false` to disallow auto-merge.
+             */
+            allow_auto_merge?: boolean;
+            /**
              * Either `true` to allow automatically deleting head branches when pull requests are merged, or `false` to prevent automatic deletion.
              */
             delete_branch_on_merge?: boolean;
@@ -46713,18 +46070,18 @@ declare namespace octokit.paths {
              * Full Repository
              * Full Repository
              */
-            octokit.components.Schemas.FullRepository;
-            export type $307 = octokit.components.Responses.TemporaryRedirect;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.FullRepository;
+            export type $307 = github.rest.components.Responses.TemporaryRedirect;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace ReposUpdateBranchProtection {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.Branch;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.Branch;
         }
         export interface RequestBody {
             /**
@@ -46813,18 +46170,18 @@ declare namespace octokit.paths {
              * Protected Branch
              * Branch protections protect branches
              */
-            octokit.components.Schemas.ProtectedBranch;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $415 = octokit.components.Responses.PreviewHeaderMissing;
-            export type $422 = octokit.components.Responses.ValidationFailedSimple;
+            github.rest.components.Schemas.ProtectedBranch;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $415 = github.rest.components.Responses.PreviewHeaderMissing;
+            export type $422 = github.rest.components.Responses.ValidationFailedSimple;
         }
     }
     namespace ReposUpdateCommitComment {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.CommentId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.CommentId;
         }
         export interface RequestBody {
             /**
@@ -46837,14 +46194,14 @@ declare namespace octokit.paths {
              * Commit Comment
              * Commit Comment
              */
-            octokit.components.Schemas.CommitComment;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.CommitComment;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace ReposUpdateInformationAboutPagesSite {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
         }
         export type RequestBody = {
             /**
@@ -46942,15 +46299,15 @@ declare namespace octokit.paths {
         namespace Responses {
             export interface $204 {
             }
-            export type $400 = octokit.components.Responses.BadRequest;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            export type $400 = github.rest.components.Responses.BadRequest;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace ReposUpdateInvitation {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.InvitationId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.InvitationId;
         }
         export interface RequestBody {
             /**
@@ -46963,14 +46320,14 @@ declare namespace octokit.paths {
              * Repository Invitation
              * Repository invitations let you manage who you collaborate with.
              */
-            octokit.components.Schemas.RepositoryInvitation;
+            github.rest.components.Schemas.RepositoryInvitation;
         }
     }
     namespace ReposUpdatePullRequestReviewProtection {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.Branch;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.Branch;
         }
         export interface RequestBody {
             /**
@@ -47004,15 +46361,15 @@ declare namespace octokit.paths {
              * Protected Branch Pull Request Review
              * Protected Branch Pull Request Review
              */
-            octokit.components.Schemas.ProtectedBranchPullRequestReview;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.ProtectedBranchPullRequestReview;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace ReposUpdateRelease {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.ReleaseId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.ReleaseId;
         }
         export interface RequestBody {
             /**
@@ -47049,19 +46406,19 @@ declare namespace octokit.paths {
              * Release
              * A release.
              */
-            octokit.components.Schemas.Release;
+            github.rest.components.Schemas.Release;
             export type $404 = /**
              * Basic Error
              * Basic Error
              */
-            octokit.components.Schemas.BasicError;
+            github.rest.components.Schemas.BasicError;
         }
     }
     namespace ReposUpdateReleaseAsset {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.AssetId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.AssetId;
         }
         export interface RequestBody {
             /**
@@ -47083,14 +46440,14 @@ declare namespace octokit.paths {
              * Release Asset
              * Data related to a release.
              */
-            octokit.components.Schemas.ReleaseAsset;
+            github.rest.components.Schemas.ReleaseAsset;
         }
     }
     namespace ReposUpdateStatusCheckProtection {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.Branch;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.Branch;
         }
         export interface RequestBody {
             /**
@@ -47107,16 +46464,16 @@ declare namespace octokit.paths {
              * Status Check Policy
              * Status Check Policy
              */
-            octokit.components.Schemas.StatusCheckPolicy;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.StatusCheckPolicy;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace ReposUpdateWebhook {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.HookId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.HookId;
         }
         export interface RequestBody {
             /**
@@ -47128,20 +46485,20 @@ declare namespace octokit.paths {
                  * example:
                  * https://example.com/webhook
                  */
-                octokit.components.Schemas.WebhookConfigUrl /* uri */;
+                github.rest.components.Schemas.WebhookConfigUrl /* uri */;
                 content_type?: /**
                  * The media type used to serialize the payloads. Supported values include `json` and `form`. The default is `form`.
                  * example:
                  * "json"
                  */
-                octokit.components.Schemas.WebhookConfigContentType;
+                github.rest.components.Schemas.WebhookConfigContentType;
                 secret?: /**
                  * If provided, the `secret` will be used as the `key` to generate the HMAC hex digest value for [delivery signature headers](https://docs.github.com/webhooks/event-payloads/#delivery-headers).
                  * example:
                  * "********"
                  */
-                octokit.components.Schemas.WebhookConfigSecret;
-                insecure_ssl?: octokit.components.Schemas.WebhookConfigInsecureSsl;
+                github.rest.components.Schemas.WebhookConfigSecret;
+                insecure_ssl?: github.rest.components.Schemas.WebhookConfigInsecureSsl;
                 /**
                  * example:
                  * "bar@example.com"
@@ -47175,16 +46532,16 @@ declare namespace octokit.paths {
              * Webhook
              * Webhooks for repositories.
              */
-            octokit.components.Schemas.Hook;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.Hook;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace ReposUpdateWebhookConfigForRepo {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.HookId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.HookId;
         }
         /**
          * example:
@@ -47201,34 +46558,34 @@ declare namespace octokit.paths {
              * example:
              * https://example.com/webhook
              */
-            octokit.components.Schemas.WebhookConfigUrl /* uri */;
+            github.rest.components.Schemas.WebhookConfigUrl /* uri */;
             content_type?: /**
              * The media type used to serialize the payloads. Supported values include `json` and `form`. The default is `form`.
              * example:
              * "json"
              */
-            octokit.components.Schemas.WebhookConfigContentType;
+            github.rest.components.Schemas.WebhookConfigContentType;
             secret?: /**
              * If provided, the `secret` will be used as the `key` to generate the HMAC hex digest value for [delivery signature headers](https://docs.github.com/webhooks/event-payloads/#delivery-headers).
              * example:
              * "********"
              */
-            octokit.components.Schemas.WebhookConfigSecret;
-            insecure_ssl?: octokit.components.Schemas.WebhookConfigInsecureSsl;
+            github.rest.components.Schemas.WebhookConfigSecret;
+            insecure_ssl?: github.rest.components.Schemas.WebhookConfigInsecureSsl;
         }
         namespace Responses {
             export type $200 = /**
              * Webhook Configuration
              * Configuration object of the webhook
              */
-            octokit.components.Schemas.WebhookConfig;
+            github.rest.components.Schemas.WebhookConfig;
         }
     }
     namespace ReposUploadReleaseAsset {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.ReleaseId;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.ReleaseId;
             export type Label = string;
             export type Name = string;
         }
@@ -47241,41 +46598,41 @@ declare namespace octokit.paths {
              * Release Asset
              * Data related to a release.
              */
-            octokit.components.Schemas.ReleaseAsset;
+            github.rest.components.Schemas.ReleaseAsset;
         }
     }
     namespace ScimDeleteUserFromOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.ScimUserId;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.ScimUserId;
         }
         namespace Responses {
             export interface $204 {
             }
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $403 = octokit.components.Responses.ScimForbidden;
-            export type $404 = octokit.components.Responses.ScimNotFound;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $403 = github.rest.components.Responses.ScimForbidden;
+            export type $404 = github.rest.components.Responses.ScimNotFound;
         }
     }
     namespace ScimGetProvisioningInformationForUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.ScimUserId;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.ScimUserId;
         }
         namespace Responses {
             export type $200 = /**
              * SCIM /Users
              * SCIM /Users provisioning endpoints
              */
-            octokit.components.Schemas.ScimUser;
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $403 = octokit.components.Responses.ScimForbidden;
-            export type $404 = octokit.components.Responses.ScimNotFound;
+            github.rest.components.Schemas.ScimUser;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $403 = github.rest.components.Responses.ScimForbidden;
+            export type $404 = github.rest.components.Responses.ScimNotFound;
         }
     }
     namespace ScimListProvisionedIdentities {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
+            export type $0 = github.rest.components.Parameters.Org;
             export type Count = number;
             export type Filter = string;
             export type StartIndex = number;
@@ -47290,16 +46647,16 @@ declare namespace octokit.paths {
              * SCIM User List
              * SCIM User List
              */
-            octokit.components.Schemas.ScimUserList;
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $400 = octokit.components.Responses.ScimBadRequest;
-            export type $403 = octokit.components.Responses.ScimForbidden;
-            export type $404 = octokit.components.Responses.ScimNotFound;
+            github.rest.components.Schemas.ScimUserList;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $400 = github.rest.components.Responses.ScimBadRequest;
+            export type $403 = github.rest.components.Responses.ScimForbidden;
+            export type $404 = github.rest.components.Responses.ScimNotFound;
         }
     }
     namespace ScimProvisionAndInviteUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
+            export type $0 = github.rest.components.Parameters.Org;
         }
         export interface RequestBody {
             /**
@@ -47362,19 +46719,19 @@ declare namespace octokit.paths {
              * SCIM /Users
              * SCIM /Users provisioning endpoints
              */
-            octokit.components.Schemas.ScimUser;
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $400 = octokit.components.Responses.ScimBadRequest;
-            export type $403 = octokit.components.Responses.ScimForbidden;
-            export type $404 = octokit.components.Responses.ScimNotFound;
-            export type $409 = octokit.components.Responses.ScimConflict;
-            export type $500 = octokit.components.Responses.ScimInternalError;
+            github.rest.components.Schemas.ScimUser;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $400 = github.rest.components.Responses.ScimBadRequest;
+            export type $403 = github.rest.components.Responses.ScimForbidden;
+            export type $404 = github.rest.components.Responses.ScimNotFound;
+            export type $409 = github.rest.components.Responses.ScimConflict;
+            export type $500 = github.rest.components.Responses.ScimInternalError;
         }
     }
     namespace ScimSetInformationForProvisionedUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.ScimUserId;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.ScimUserId;
         }
         export interface RequestBody {
             schemas?: string[];
@@ -47437,16 +46794,16 @@ declare namespace octokit.paths {
              * SCIM /Users
              * SCIM /Users provisioning endpoints
              */
-            octokit.components.Schemas.ScimUser;
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $403 = octokit.components.Responses.ScimForbidden;
-            export type $404 = octokit.components.Responses.ScimNotFound;
+            github.rest.components.Schemas.ScimUser;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $403 = github.rest.components.Responses.ScimForbidden;
+            export type $404 = github.rest.components.Responses.ScimNotFound;
         }
     }
     namespace ScimUpdateAttributeForUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.ScimUserId;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.ScimUserId;
         }
         export interface RequestBody {
             schemas?: string[];
@@ -47498,23 +46855,23 @@ declare namespace octokit.paths {
              * SCIM /Users
              * SCIM /Users provisioning endpoints
              */
-            octokit.components.Schemas.ScimUser;
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $400 = octokit.components.Responses.ScimBadRequest;
-            export type $403 = octokit.components.Responses.ScimForbidden;
-            export type $404 = octokit.components.Responses.ScimNotFound;
+            github.rest.components.Schemas.ScimUser;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $400 = github.rest.components.Responses.ScimBadRequest;
+            export type $403 = github.rest.components.Responses.ScimForbidden;
+            export type $404 = github.rest.components.Responses.ScimNotFound;
             export type $429 = /**
              * Basic Error
              * Basic Error
              */
-            octokit.components.Schemas.BasicError;
+            github.rest.components.Schemas.BasicError;
         }
     }
     namespace SearchCode {
         namespace Parameters {
-            export type $2 = octokit.components.Parameters.Order;
-            export type $3 = octokit.components.Parameters.PerPage;
-            export type $4 = octokit.components.Parameters.Page;
+            export type $2 = github.rest.components.Parameters.Order;
+            export type $3 = github.rest.components.Parameters.PerPage;
+            export type $4 = github.rest.components.Parameters.Page;
             export type Q = string;
             export type Sort = "indexed";
         }
@@ -47530,19 +46887,19 @@ declare namespace octokit.paths {
                  * Code Search Result Item
                  * Code Search Result Item
                  */
-                octokit.components.Schemas.CodeSearchResultItem[];
+                github.rest.components.Schemas.CodeSearchResultItem[];
             }
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $422 = octokit.components.Responses.ValidationFailed;
-            export type $503 = octokit.components.Responses.ServiceUnavailable;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
+            export type $503 = github.rest.components.Responses.ServiceUnavailable;
         }
     }
     namespace SearchCommits {
         namespace Parameters {
-            export type $2 = octokit.components.Parameters.Order;
-            export type $3 = octokit.components.Parameters.PerPage;
-            export type $4 = octokit.components.Parameters.Page;
+            export type $2 = github.rest.components.Parameters.Order;
+            export type $3 = github.rest.components.Parameters.PerPage;
+            export type $4 = github.rest.components.Parameters.Page;
             export type Q = string;
             export type Sort = "author-date" | "committer-date";
         }
@@ -47558,17 +46915,17 @@ declare namespace octokit.paths {
                  * Commit Search Result Item
                  * Commit Search Result Item
                  */
-                octokit.components.Schemas.CommitSearchResultItem[];
+                github.rest.components.Schemas.CommitSearchResultItem[];
             }
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $415 = octokit.components.Responses.PreviewHeaderMissing;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $415 = github.rest.components.Responses.PreviewHeaderMissing;
         }
     }
     namespace SearchIssuesAndPullRequests {
         namespace Parameters {
-            export type $2 = octokit.components.Parameters.Order;
-            export type $3 = octokit.components.Parameters.PerPage;
-            export type $4 = octokit.components.Parameters.Page;
+            export type $2 = github.rest.components.Parameters.Order;
+            export type $3 = github.rest.components.Parameters.PerPage;
+            export type $4 = github.rest.components.Parameters.Page;
             export type Q = string;
             export type Sort = "comments" | "reactions" | "reactions-+1" | "reactions--1" | "reactions-smile" | "reactions-thinking_face" | "reactions-heart" | "reactions-tada" | "interactions" | "created" | "updated";
         }
@@ -47584,19 +46941,19 @@ declare namespace octokit.paths {
                  * Issue Search Result Item
                  * Issue Search Result Item
                  */
-                octokit.components.Schemas.IssueSearchResultItem[];
+                github.rest.components.Schemas.IssueSearchResultItem[];
             }
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $422 = octokit.components.Responses.ValidationFailed;
-            export type $503 = octokit.components.Responses.ServiceUnavailable;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
+            export type $503 = github.rest.components.Responses.ServiceUnavailable;
         }
     }
     namespace SearchLabels {
         namespace Parameters {
-            export type $3 = octokit.components.Parameters.Order;
-            export type $4 = octokit.components.Parameters.PerPage;
-            export type $5 = octokit.components.Parameters.Page;
+            export type $3 = github.rest.components.Parameters.Order;
+            export type $4 = github.rest.components.Parameters.PerPage;
+            export type $5 = github.rest.components.Parameters.Page;
             export type Q = string;
             export type RepositoryId = number;
             export type Sort = "created" | "updated";
@@ -47614,19 +46971,19 @@ declare namespace octokit.paths {
                  * Label Search Result Item
                  * Label Search Result Item
                  */
-                octokit.components.Schemas.LabelSearchResultItem[];
+                github.rest.components.Schemas.LabelSearchResultItem[];
             }
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace SearchRepos {
         namespace Parameters {
-            export type $2 = octokit.components.Parameters.Order;
-            export type $3 = octokit.components.Parameters.PerPage;
-            export type $4 = octokit.components.Parameters.Page;
+            export type $2 = github.rest.components.Parameters.Order;
+            export type $3 = github.rest.components.Parameters.PerPage;
+            export type $4 = github.rest.components.Parameters.Page;
             export type Q = string;
             export type Sort = "stars" | "forks" | "help-wanted-issues" | "updated";
         }
@@ -47642,17 +46999,17 @@ declare namespace octokit.paths {
                  * Repo Search Result Item
                  * Repo Search Result Item
                  */
-                octokit.components.Schemas.RepoSearchResultItem[];
+                github.rest.components.Schemas.RepoSearchResultItem[];
             }
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $422 = octokit.components.Responses.ValidationFailed;
-            export type $503 = octokit.components.Responses.ServiceUnavailable;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
+            export type $503 = github.rest.components.Responses.ServiceUnavailable;
         }
     }
     namespace SearchTopics {
         namespace Parameters {
-            export type $1 = octokit.components.Parameters.PerPage;
-            export type $2 = octokit.components.Parameters.Page;
+            export type $1 = github.rest.components.Parameters.PerPage;
+            export type $2 = github.rest.components.Parameters.Page;
             export type Q = string;
         }
         export interface QueryParameters {
@@ -47666,17 +47023,17 @@ declare namespace octokit.paths {
                  * Topic Search Result Item
                  * Topic Search Result Item
                  */
-                octokit.components.Schemas.TopicSearchResultItem[];
+                github.rest.components.Schemas.TopicSearchResultItem[];
             }
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $415 = octokit.components.Responses.PreviewHeaderMissing;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $415 = github.rest.components.Responses.PreviewHeaderMissing;
         }
     }
     namespace SearchUsers {
         namespace Parameters {
-            export type $2 = octokit.components.Parameters.Order;
-            export type $3 = octokit.components.Parameters.PerPage;
-            export type $4 = octokit.components.Parameters.Page;
+            export type $2 = github.rest.components.Parameters.Order;
+            export type $3 = github.rest.components.Parameters.PerPage;
+            export type $4 = github.rest.components.Parameters.Page;
             export type Q = string;
             export type Sort = "followers" | "repositories" | "joined";
         }
@@ -47692,32 +47049,32 @@ declare namespace octokit.paths {
                  * User Search Result Item
                  * User Search Result Item
                  */
-                octokit.components.Schemas.UserSearchResultItem[];
+                github.rest.components.Schemas.UserSearchResultItem[];
             }
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $422 = octokit.components.Responses.ValidationFailed;
-            export type $503 = octokit.components.Responses.ServiceUnavailable;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
+            export type $503 = github.rest.components.Responses.ServiceUnavailable;
         }
     }
     namespace SecretScanningGetAlert {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.AlertNumber;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.AlertNumber;
         }
         namespace Responses {
-            export type $200 = octokit.components.Schemas.SecretScanningAlert;
+            export type $200 = github.rest.components.Schemas.SecretScanningAlert;
             export interface $404 {
             }
-            export type $503 = octokit.components.Responses.ServiceUnavailable;
+            export type $503 = github.rest.components.Responses.ServiceUnavailable;
         }
     }
     namespace SecretScanningListAlertsForRepo {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $4 = octokit.components.Parameters.Page;
-            export type $5 = octokit.components.Parameters.PerPage;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $4 = github.rest.components.Parameters.Page;
+            export type $5 = github.rest.components.Parameters.PerPage;
             export type SecretType = string;
             export type State = "open" | "resolved";
         }
@@ -47726,40 +47083,40 @@ declare namespace octokit.paths {
             secret_type?: Parameters.SecretType;
         }
         namespace Responses {
-            export type $200 = octokit.components.Schemas.SecretScanningAlert[];
+            export type $200 = github.rest.components.Schemas.SecretScanningAlert[];
             export interface $404 {
             }
-            export type $503 = octokit.components.Responses.ServiceUnavailable;
+            export type $503 = github.rest.components.Responses.ServiceUnavailable;
         }
     }
     namespace SecretScanningUpdateAlert {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Owner;
-            export type $1 = octokit.components.Parameters.Repo;
-            export type $2 = octokit.components.Parameters.AlertNumber;
+            export type $0 = github.rest.components.Parameters.Owner;
+            export type $1 = github.rest.components.Parameters.Repo;
+            export type $2 = github.rest.components.Parameters.AlertNumber;
         }
         export interface RequestBody {
-            state: /* Sets the state of the secret scanning alert. Can be either `open` or `resolved`. You must provide `resolution` when you set the state to `resolved`. */ octokit.components.Schemas.SecretScanningAlertState;
-            resolution?: /* **Required when the `state` is `resolved`.** The reason for resolving the alert. Can be one of `false_positive`, `wont_fix`, `revoked`, or `used_in_tests`. */ octokit.components.Schemas.SecretScanningAlertResolution;
+            state: /* Sets the state of the secret scanning alert. Can be either `open` or `resolved`. You must provide `resolution` when you set the state to `resolved`. */ github.rest.components.Schemas.SecretScanningAlertState;
+            resolution?: /* **Required when the `state` is `resolved`.** The reason for resolving the alert. Can be one of `false_positive`, `wont_fix`, `revoked`, or `used_in_tests`. */ github.rest.components.Schemas.SecretScanningAlertResolution;
         }
         namespace Responses {
-            export type $200 = octokit.components.Schemas.SecretScanningAlert;
+            export type $200 = github.rest.components.Schemas.SecretScanningAlert;
             export interface $404 {
             }
             export interface $422 {
             }
-            export type $503 = octokit.components.Responses.ServiceUnavailable;
+            export type $503 = github.rest.components.Responses.ServiceUnavailable;
         }
     }
     namespace TeamsAddMemberLegacy {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.TeamId;
-            export type $1 = octokit.components.Parameters.Username;
+            export type $0 = github.rest.components.Parameters.TeamId;
+            export type $1 = github.rest.components.Parameters.Username;
         }
         namespace Responses {
             export interface $204 {
             }
-            export type $403 = octokit.components.Responses.Forbidden;
+            export type $403 = github.rest.components.Responses.Forbidden;
             export interface $404 {
             }
             export interface $422 {
@@ -47768,9 +47125,9 @@ declare namespace octokit.paths {
     }
     namespace TeamsAddOrUpdateMembershipForUserInOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.TeamSlug;
-            export type $2 = octokit.components.Parameters.Username;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.TeamSlug;
+            export type $2 = github.rest.components.Parameters.Username;
         }
         export interface RequestBody {
             /**
@@ -47785,7 +47142,7 @@ declare namespace octokit.paths {
              * Team Membership
              * Team Membership
              */
-            octokit.components.Schemas.TeamMembership;
+            github.rest.components.Schemas.TeamMembership;
             export interface $403 {
             }
             export interface $422 {
@@ -47794,8 +47151,8 @@ declare namespace octokit.paths {
     }
     namespace TeamsAddOrUpdateMembershipForUserLegacy {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.TeamId;
-            export type $1 = octokit.components.Parameters.Username;
+            export type $0 = github.rest.components.Parameters.TeamId;
+            export type $1 = github.rest.components.Parameters.Username;
         }
         export interface RequestBody {
             /**
@@ -47810,19 +47167,19 @@ declare namespace octokit.paths {
              * Team Membership
              * Team Membership
              */
-            octokit.components.Schemas.TeamMembership;
+            github.rest.components.Schemas.TeamMembership;
             export interface $403 {
             }
-            export type $404 = octokit.components.Responses.NotFound;
+            export type $404 = github.rest.components.Responses.NotFound;
             export interface $422 {
             }
         }
     }
     namespace TeamsAddOrUpdateProjectPermissionsInOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.TeamSlug;
-            export type $2 = octokit.components.Parameters.ProjectId;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.TeamSlug;
+            export type $2 = github.rest.components.Parameters.ProjectId;
         }
         export type RequestBody = {
             /**
@@ -47845,8 +47202,8 @@ declare namespace octokit.paths {
     }
     namespace TeamsAddOrUpdateProjectPermissionsLegacy {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.TeamId;
-            export type $1 = octokit.components.Parameters.ProjectId;
+            export type $0 = github.rest.components.Parameters.TeamId;
+            export type $1 = github.rest.components.Parameters.ProjectId;
         }
         export interface RequestBody {
             /**
@@ -47865,17 +47222,17 @@ declare namespace octokit.paths {
                 message?: string;
                 documentation_url?: string;
             }
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $415 = octokit.components.Responses.PreviewHeaderMissing;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $415 = github.rest.components.Responses.PreviewHeaderMissing;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace TeamsAddOrUpdateRepoPermissionsInOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.TeamSlug;
-            export type $2 = octokit.components.Parameters.Owner;
-            export type $3 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.TeamSlug;
+            export type $2 = github.rest.components.Parameters.Owner;
+            export type $3 = github.rest.components.Parameters.Repo;
         }
         export interface RequestBody {
             /**
@@ -47897,9 +47254,9 @@ declare namespace octokit.paths {
     }
     namespace TeamsAddOrUpdateRepoPermissionsLegacy {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.TeamId;
-            export type $1 = octokit.components.Parameters.Owner;
-            export type $2 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.TeamId;
+            export type $1 = github.rest.components.Parameters.Owner;
+            export type $2 = github.rest.components.Parameters.Repo;
         }
         export interface RequestBody {
             /**
@@ -47915,55 +47272,55 @@ declare namespace octokit.paths {
         namespace Responses {
             export interface $204 {
             }
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace TeamsCheckPermissionsForProjectInOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.TeamSlug;
-            export type $2 = octokit.components.Parameters.ProjectId;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.TeamSlug;
+            export type $2 = github.rest.components.Parameters.ProjectId;
         }
         namespace Responses {
             export type $200 = /**
              * Team Project
              * A team's access to a project.
              */
-            octokit.components.Schemas.TeamProject;
+            github.rest.components.Schemas.TeamProject;
             export interface $404 {
             }
         }
     }
     namespace TeamsCheckPermissionsForProjectLegacy {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.TeamId;
-            export type $1 = octokit.components.Parameters.ProjectId;
+            export type $0 = github.rest.components.Parameters.TeamId;
+            export type $1 = github.rest.components.Parameters.ProjectId;
         }
         namespace Responses {
             export type $200 = /**
              * Team Project
              * A team's access to a project.
              */
-            octokit.components.Schemas.TeamProject;
+            github.rest.components.Schemas.TeamProject;
             export interface $404 {
             }
-            export type $415 = octokit.components.Responses.PreviewHeaderMissing;
+            export type $415 = github.rest.components.Responses.PreviewHeaderMissing;
         }
     }
     namespace TeamsCheckPermissionsForRepoInOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.TeamSlug;
-            export type $2 = octokit.components.Parameters.Owner;
-            export type $3 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.TeamSlug;
+            export type $2 = github.rest.components.Parameters.Owner;
+            export type $3 = github.rest.components.Parameters.Repo;
         }
         namespace Responses {
             export type $200 = /**
              * Team Repository
              * A team's access to a repository.
              */
-            octokit.components.Schemas.TeamRepository;
+            github.rest.components.Schemas.TeamRepository;
             export interface $204 {
             }
             export interface $404 {
@@ -47972,16 +47329,16 @@ declare namespace octokit.paths {
     }
     namespace TeamsCheckPermissionsForRepoLegacy {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.TeamId;
-            export type $1 = octokit.components.Parameters.Owner;
-            export type $2 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.TeamId;
+            export type $1 = github.rest.components.Parameters.Owner;
+            export type $2 = github.rest.components.Parameters.Repo;
         }
         namespace Responses {
             export type $200 = /**
              * Team Repository
              * A team's access to a repository.
              */
-            octokit.components.Schemas.TeamRepository;
+            github.rest.components.Schemas.TeamRepository;
             export interface $204 {
             }
             export interface $404 {
@@ -47990,7 +47347,7 @@ declare namespace octokit.paths {
     }
     namespace TeamsCreate {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
+            export type $0 = github.rest.components.Parameters.Org;
         }
         export interface RequestBody {
             /**
@@ -48037,16 +47394,16 @@ declare namespace octokit.paths {
              * Full Team
              * Groups of organization members that gives permissions on specified repositories.
              */
-            octokit.components.Schemas.TeamFull;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.TeamFull;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace TeamsCreateDiscussionCommentInOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.TeamSlug;
-            export type $2 = octokit.components.Parameters.DiscussionNumber;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.TeamSlug;
+            export type $2 = github.rest.components.Parameters.DiscussionNumber;
         }
         export interface RequestBody {
             /**
@@ -48059,13 +47416,13 @@ declare namespace octokit.paths {
              * Team Discussion Comment
              * A reply to a discussion within a team.
              */
-            octokit.components.Schemas.TeamDiscussionComment;
+            github.rest.components.Schemas.TeamDiscussionComment;
         }
     }
     namespace TeamsCreateDiscussionCommentLegacy {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.TeamId;
-            export type $1 = octokit.components.Parameters.DiscussionNumber;
+            export type $0 = github.rest.components.Parameters.TeamId;
+            export type $1 = github.rest.components.Parameters.DiscussionNumber;
         }
         export interface RequestBody {
             /**
@@ -48078,13 +47435,13 @@ declare namespace octokit.paths {
              * Team Discussion Comment
              * A reply to a discussion within a team.
              */
-            octokit.components.Schemas.TeamDiscussionComment;
+            github.rest.components.Schemas.TeamDiscussionComment;
         }
     }
     namespace TeamsCreateDiscussionInOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.TeamSlug;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.TeamSlug;
         }
         export interface RequestBody {
             /**
@@ -48105,12 +47462,12 @@ declare namespace octokit.paths {
              * Team Discussion
              * A team discussion is a persistent record of a free-form conversation within a team.
              */
-            octokit.components.Schemas.TeamDiscussion;
+            github.rest.components.Schemas.TeamDiscussion;
         }
     }
     namespace TeamsCreateDiscussionLegacy {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.TeamId;
+            export type $0 = github.rest.components.Parameters.TeamId;
         }
         export interface RequestBody {
             /**
@@ -48131,13 +47488,13 @@ declare namespace octokit.paths {
              * Team Discussion
              * A team discussion is a persistent record of a free-form conversation within a team.
              */
-            octokit.components.Schemas.TeamDiscussion;
+            github.rest.components.Schemas.TeamDiscussion;
         }
     }
     namespace TeamsCreateOrUpdateIdpGroupConnectionsInOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.TeamSlug;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.TeamSlug;
         }
         export interface RequestBody {
             /**
@@ -48163,12 +47520,12 @@ declare namespace octokit.paths {
              * GroupMapping
              * External Groups to be mapped to a team for membership
              */
-            octokit.components.Schemas.GroupMapping;
+            github.rest.components.Schemas.GroupMapping;
         }
     }
     namespace TeamsCreateOrUpdateIdpGroupConnectionsLegacy {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.TeamId;
+            export type $0 = github.rest.components.Parameters.TeamId;
         }
         export interface RequestBody {
             /**
@@ -48214,17 +47571,17 @@ declare namespace octokit.paths {
              * GroupMapping
              * External Groups to be mapped to a team for membership
              */
-            octokit.components.Schemas.GroupMapping;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.GroupMapping;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace TeamsDeleteDiscussionCommentInOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.TeamSlug;
-            export type $2 = octokit.components.Parameters.DiscussionNumber;
-            export type $3 = octokit.components.Parameters.CommentNumber;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.TeamSlug;
+            export type $2 = github.rest.components.Parameters.DiscussionNumber;
+            export type $3 = github.rest.components.Parameters.CommentNumber;
         }
         namespace Responses {
             export interface $204 {
@@ -48233,9 +47590,9 @@ declare namespace octokit.paths {
     }
     namespace TeamsDeleteDiscussionCommentLegacy {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.TeamId;
-            export type $1 = octokit.components.Parameters.DiscussionNumber;
-            export type $2 = octokit.components.Parameters.CommentNumber;
+            export type $0 = github.rest.components.Parameters.TeamId;
+            export type $1 = github.rest.components.Parameters.DiscussionNumber;
+            export type $2 = github.rest.components.Parameters.CommentNumber;
         }
         namespace Responses {
             export interface $204 {
@@ -48244,9 +47601,9 @@ declare namespace octokit.paths {
     }
     namespace TeamsDeleteDiscussionInOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.TeamSlug;
-            export type $2 = octokit.components.Parameters.DiscussionNumber;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.TeamSlug;
+            export type $2 = github.rest.components.Parameters.DiscussionNumber;
         }
         namespace Responses {
             export interface $204 {
@@ -48255,8 +47612,8 @@ declare namespace octokit.paths {
     }
     namespace TeamsDeleteDiscussionLegacy {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.TeamId;
-            export type $1 = octokit.components.Parameters.DiscussionNumber;
+            export type $0 = github.rest.components.Parameters.TeamId;
+            export type $1 = github.rest.components.Parameters.DiscussionNumber;
         }
         namespace Responses {
             export interface $204 {
@@ -48265,8 +47622,8 @@ declare namespace octokit.paths {
     }
     namespace TeamsDeleteInOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.TeamSlug;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.TeamSlug;
         }
         namespace Responses {
             export interface $204 {
@@ -48275,102 +47632,102 @@ declare namespace octokit.paths {
     }
     namespace TeamsDeleteLegacy {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.TeamId;
+            export type $0 = github.rest.components.Parameters.TeamId;
         }
         namespace Responses {
             export interface $204 {
             }
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace TeamsGetByName {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.TeamSlug;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.TeamSlug;
         }
         namespace Responses {
             export type $200 = /**
              * Full Team
              * Groups of organization members that gives permissions on specified repositories.
              */
-            octokit.components.Schemas.TeamFull;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.TeamFull;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace TeamsGetDiscussionCommentInOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.TeamSlug;
-            export type $2 = octokit.components.Parameters.DiscussionNumber;
-            export type $3 = octokit.components.Parameters.CommentNumber;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.TeamSlug;
+            export type $2 = github.rest.components.Parameters.DiscussionNumber;
+            export type $3 = github.rest.components.Parameters.CommentNumber;
         }
         namespace Responses {
             export type $200 = /**
              * Team Discussion Comment
              * A reply to a discussion within a team.
              */
-            octokit.components.Schemas.TeamDiscussionComment;
+            github.rest.components.Schemas.TeamDiscussionComment;
         }
     }
     namespace TeamsGetDiscussionCommentLegacy {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.TeamId;
-            export type $1 = octokit.components.Parameters.DiscussionNumber;
-            export type $2 = octokit.components.Parameters.CommentNumber;
+            export type $0 = github.rest.components.Parameters.TeamId;
+            export type $1 = github.rest.components.Parameters.DiscussionNumber;
+            export type $2 = github.rest.components.Parameters.CommentNumber;
         }
         namespace Responses {
             export type $200 = /**
              * Team Discussion Comment
              * A reply to a discussion within a team.
              */
-            octokit.components.Schemas.TeamDiscussionComment;
+            github.rest.components.Schemas.TeamDiscussionComment;
         }
     }
     namespace TeamsGetDiscussionInOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.TeamSlug;
-            export type $2 = octokit.components.Parameters.DiscussionNumber;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.TeamSlug;
+            export type $2 = github.rest.components.Parameters.DiscussionNumber;
         }
         namespace Responses {
             export type $200 = /**
              * Team Discussion
              * A team discussion is a persistent record of a free-form conversation within a team.
              */
-            octokit.components.Schemas.TeamDiscussion;
+            github.rest.components.Schemas.TeamDiscussion;
         }
     }
     namespace TeamsGetDiscussionLegacy {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.TeamId;
-            export type $1 = octokit.components.Parameters.DiscussionNumber;
+            export type $0 = github.rest.components.Parameters.TeamId;
+            export type $1 = github.rest.components.Parameters.DiscussionNumber;
         }
         namespace Responses {
             export type $200 = /**
              * Team Discussion
              * A team discussion is a persistent record of a free-form conversation within a team.
              */
-            octokit.components.Schemas.TeamDiscussion;
+            github.rest.components.Schemas.TeamDiscussion;
         }
     }
     namespace TeamsGetLegacy {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.TeamId;
+            export type $0 = github.rest.components.Parameters.TeamId;
         }
         namespace Responses {
             export type $200 = /**
              * Full Team
              * Groups of organization members that gives permissions on specified repositories.
              */
-            octokit.components.Schemas.TeamFull;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.TeamFull;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace TeamsGetMemberLegacy {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.TeamId;
-            export type $1 = octokit.components.Parameters.Username;
+            export type $0 = github.rest.components.Parameters.TeamId;
+            export type $1 = github.rest.components.Parameters.Username;
         }
         namespace Responses {
             export interface $204 {
@@ -48381,121 +47738,121 @@ declare namespace octokit.paths {
     }
     namespace TeamsGetMembershipForUserInOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.TeamSlug;
-            export type $2 = octokit.components.Parameters.Username;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.TeamSlug;
+            export type $2 = github.rest.components.Parameters.Username;
         }
         namespace Responses {
             export type $200 = /**
              * Team Membership
              * Team Membership
              */
-            octokit.components.Schemas.TeamMembership;
+            github.rest.components.Schemas.TeamMembership;
             export interface $404 {
             }
         }
     }
     namespace TeamsGetMembershipForUserLegacy {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.TeamId;
-            export type $1 = octokit.components.Parameters.Username;
+            export type $0 = github.rest.components.Parameters.TeamId;
+            export type $1 = github.rest.components.Parameters.Username;
         }
         namespace Responses {
             export type $200 = /**
              * Team Membership
              * Team Membership
              */
-            octokit.components.Schemas.TeamMembership;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.TeamMembership;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace TeamsList {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.PerPage;
-            export type $2 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.PerPage;
+            export type $2 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Team
              * Groups of organization members that gives permissions on specified repositories.
              */
-            octokit.components.Schemas.Team[];
-            export type $403 = octokit.components.Responses.Forbidden;
+            github.rest.components.Schemas.Team[];
+            export type $403 = github.rest.components.Responses.Forbidden;
         }
     }
     namespace TeamsListChildInOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.TeamSlug;
-            export type $2 = octokit.components.Parameters.PerPage;
-            export type $3 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.TeamSlug;
+            export type $2 = github.rest.components.Parameters.PerPage;
+            export type $3 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Team
              * Groups of organization members that gives permissions on specified repositories.
              */
-            octokit.components.Schemas.Team[];
+            github.rest.components.Schemas.Team[];
         }
     }
     namespace TeamsListChildLegacy {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.TeamId;
-            export type $1 = octokit.components.Parameters.PerPage;
-            export type $2 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.TeamId;
+            export type $1 = github.rest.components.Parameters.PerPage;
+            export type $2 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Team
              * Groups of organization members that gives permissions on specified repositories.
              */
-            octokit.components.Schemas.Team[];
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.Team[];
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace TeamsListDiscussionCommentsInOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.TeamSlug;
-            export type $2 = octokit.components.Parameters.DiscussionNumber;
-            export type $3 = octokit.components.Parameters.Direction;
-            export type $4 = octokit.components.Parameters.PerPage;
-            export type $5 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.TeamSlug;
+            export type $2 = github.rest.components.Parameters.DiscussionNumber;
+            export type $3 = github.rest.components.Parameters.Direction;
+            export type $4 = github.rest.components.Parameters.PerPage;
+            export type $5 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Team Discussion Comment
              * A reply to a discussion within a team.
              */
-            octokit.components.Schemas.TeamDiscussionComment[];
+            github.rest.components.Schemas.TeamDiscussionComment[];
         }
     }
     namespace TeamsListDiscussionCommentsLegacy {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.TeamId;
-            export type $1 = octokit.components.Parameters.DiscussionNumber;
-            export type $2 = octokit.components.Parameters.Direction;
-            export type $3 = octokit.components.Parameters.PerPage;
-            export type $4 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.TeamId;
+            export type $1 = github.rest.components.Parameters.DiscussionNumber;
+            export type $2 = github.rest.components.Parameters.Direction;
+            export type $3 = github.rest.components.Parameters.PerPage;
+            export type $4 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Team Discussion Comment
              * A reply to a discussion within a team.
              */
-            octokit.components.Schemas.TeamDiscussionComment[];
+            github.rest.components.Schemas.TeamDiscussionComment[];
         }
     }
     namespace TeamsListDiscussionsInOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.TeamSlug;
-            export type $2 = octokit.components.Parameters.Direction;
-            export type $3 = octokit.components.Parameters.PerPage;
-            export type $4 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.TeamSlug;
+            export type $2 = github.rest.components.Parameters.Direction;
+            export type $3 = github.rest.components.Parameters.PerPage;
+            export type $4 = github.rest.components.Parameters.Page;
             export type Pinned = string;
         }
         export interface QueryParameters {
@@ -48506,58 +47863,58 @@ declare namespace octokit.paths {
              * Team Discussion
              * A team discussion is a persistent record of a free-form conversation within a team.
              */
-            octokit.components.Schemas.TeamDiscussion[];
+            github.rest.components.Schemas.TeamDiscussion[];
         }
     }
     namespace TeamsListDiscussionsLegacy {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.TeamId;
-            export type $1 = octokit.components.Parameters.Direction;
-            export type $2 = octokit.components.Parameters.PerPage;
-            export type $3 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.TeamId;
+            export type $1 = github.rest.components.Parameters.Direction;
+            export type $2 = github.rest.components.Parameters.PerPage;
+            export type $3 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Team Discussion
              * A team discussion is a persistent record of a free-form conversation within a team.
              */
-            octokit.components.Schemas.TeamDiscussion[];
+            github.rest.components.Schemas.TeamDiscussion[];
         }
     }
     namespace TeamsListForAuthenticatedUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.PerPage;
-            export type $1 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.PerPage;
+            export type $1 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Full Team
              * Groups of organization members that gives permissions on specified repositories.
              */
-            octokit.components.Schemas.TeamFull[];
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.TeamFull[];
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace TeamsListIdpGroupsForLegacy {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.TeamId;
+            export type $0 = github.rest.components.Parameters.TeamId;
         }
         namespace Responses {
             export type $200 = /**
              * GroupMapping
              * External Groups to be mapped to a team for membership
              */
-            octokit.components.Schemas.GroupMapping;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.GroupMapping;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace TeamsListIdpGroupsForOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.PerPage;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.PerPage;
             export type Page = string;
         }
         export interface QueryParameters {
@@ -48568,28 +47925,28 @@ declare namespace octokit.paths {
              * GroupMapping
              * External Groups to be mapped to a team for membership
              */
-            octokit.components.Schemas.GroupMapping;
+            github.rest.components.Schemas.GroupMapping;
         }
     }
     namespace TeamsListIdpGroupsInOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.TeamSlug;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.TeamSlug;
         }
         namespace Responses {
             export type $200 = /**
              * GroupMapping
              * External Groups to be mapped to a team for membership
              */
-            octokit.components.Schemas.GroupMapping;
+            github.rest.components.Schemas.GroupMapping;
         }
     }
     namespace TeamsListMembersInOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.TeamSlug;
-            export type $3 = octokit.components.Parameters.PerPage;
-            export type $4 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.TeamSlug;
+            export type $3 = github.rest.components.Parameters.PerPage;
+            export type $4 = github.rest.components.Parameters.Page;
             export type Role = "member" | "maintainer" | "all";
         }
         export interface QueryParameters {
@@ -48600,14 +47957,14 @@ declare namespace octokit.paths {
              * Simple User
              * Simple User
              */
-            octokit.components.Schemas.SimpleUser[];
+            github.rest.components.Schemas.SimpleUser[];
         }
     }
     namespace TeamsListMembersLegacy {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.TeamId;
-            export type $2 = octokit.components.Parameters.PerPage;
-            export type $3 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.TeamId;
+            export type $2 = github.rest.components.Parameters.PerPage;
+            export type $3 = github.rest.components.Parameters.Page;
             export type Role = "member" | "maintainer" | "all";
         }
         export interface QueryParameters {
@@ -48618,104 +47975,104 @@ declare namespace octokit.paths {
              * Simple User
              * Simple User
              */
-            octokit.components.Schemas.SimpleUser[];
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.SimpleUser[];
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace TeamsListPendingInvitationsInOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.TeamSlug;
-            export type $2 = octokit.components.Parameters.PerPage;
-            export type $3 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.TeamSlug;
+            export type $2 = github.rest.components.Parameters.PerPage;
+            export type $3 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Organization Invitation
              * Organization Invitation
              */
-            octokit.components.Schemas.OrganizationInvitation[];
+            github.rest.components.Schemas.OrganizationInvitation[];
         }
     }
     namespace TeamsListPendingInvitationsLegacy {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.TeamId;
-            export type $1 = octokit.components.Parameters.PerPage;
-            export type $2 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.TeamId;
+            export type $1 = github.rest.components.Parameters.PerPage;
+            export type $2 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Organization Invitation
              * Organization Invitation
              */
-            octokit.components.Schemas.OrganizationInvitation[];
+            github.rest.components.Schemas.OrganizationInvitation[];
         }
     }
     namespace TeamsListProjectsInOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.TeamSlug;
-            export type $2 = octokit.components.Parameters.PerPage;
-            export type $3 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.TeamSlug;
+            export type $2 = github.rest.components.Parameters.PerPage;
+            export type $3 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Team Project
              * A team's access to a project.
              */
-            octokit.components.Schemas.TeamProject[];
+            github.rest.components.Schemas.TeamProject[];
         }
     }
     namespace TeamsListProjectsLegacy {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.TeamId;
-            export type $1 = octokit.components.Parameters.PerPage;
-            export type $2 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.TeamId;
+            export type $1 = github.rest.components.Parameters.PerPage;
+            export type $2 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Team Project
              * A team's access to a project.
              */
-            octokit.components.Schemas.TeamProject[];
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $415 = octokit.components.Responses.PreviewHeaderMissing;
+            github.rest.components.Schemas.TeamProject[];
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $415 = github.rest.components.Responses.PreviewHeaderMissing;
         }
     }
     namespace TeamsListReposInOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.TeamSlug;
-            export type $2 = octokit.components.Parameters.PerPage;
-            export type $3 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.TeamSlug;
+            export type $2 = github.rest.components.Parameters.PerPage;
+            export type $3 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Minimal Repository
              * Minimal Repository
              */
-            octokit.components.Schemas.MinimalRepository[];
+            github.rest.components.Schemas.MinimalRepository[];
         }
     }
     namespace TeamsListReposLegacy {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.TeamId;
-            export type $1 = octokit.components.Parameters.PerPage;
-            export type $2 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.TeamId;
+            export type $1 = github.rest.components.Parameters.PerPage;
+            export type $2 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Minimal Repository
              * Minimal Repository
              */
-            octokit.components.Schemas.MinimalRepository[];
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.MinimalRepository[];
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace TeamsRemoveMemberLegacy {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.TeamId;
-            export type $1 = octokit.components.Parameters.Username;
+            export type $0 = github.rest.components.Parameters.TeamId;
+            export type $1 = github.rest.components.Parameters.Username;
         }
         namespace Responses {
             export interface $204 {
@@ -48726,9 +48083,9 @@ declare namespace octokit.paths {
     }
     namespace TeamsRemoveMembershipForUserInOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.TeamSlug;
-            export type $2 = octokit.components.Parameters.Username;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.TeamSlug;
+            export type $2 = github.rest.components.Parameters.Username;
         }
         namespace Responses {
             export interface $204 {
@@ -48739,8 +48096,8 @@ declare namespace octokit.paths {
     }
     namespace TeamsRemoveMembershipForUserLegacy {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.TeamId;
-            export type $1 = octokit.components.Parameters.Username;
+            export type $0 = github.rest.components.Parameters.TeamId;
+            export type $1 = github.rest.components.Parameters.Username;
         }
         namespace Responses {
             export interface $204 {
@@ -48751,9 +48108,9 @@ declare namespace octokit.paths {
     }
     namespace TeamsRemoveProjectInOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.TeamSlug;
-            export type $2 = octokit.components.Parameters.ProjectId;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.TeamSlug;
+            export type $2 = github.rest.components.Parameters.ProjectId;
         }
         namespace Responses {
             export interface $204 {
@@ -48762,23 +48119,23 @@ declare namespace octokit.paths {
     }
     namespace TeamsRemoveProjectLegacy {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.TeamId;
-            export type $1 = octokit.components.Parameters.ProjectId;
+            export type $0 = github.rest.components.Parameters.TeamId;
+            export type $1 = github.rest.components.Parameters.ProjectId;
         }
         namespace Responses {
             export interface $204 {
             }
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $415 = octokit.components.Responses.PreviewHeaderMissing;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $415 = github.rest.components.Responses.PreviewHeaderMissing;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace TeamsRemoveRepoInOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.TeamSlug;
-            export type $2 = octokit.components.Parameters.Owner;
-            export type $3 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.TeamSlug;
+            export type $2 = github.rest.components.Parameters.Owner;
+            export type $3 = github.rest.components.Parameters.Repo;
         }
         namespace Responses {
             export interface $204 {
@@ -48787,9 +48144,9 @@ declare namespace octokit.paths {
     }
     namespace TeamsRemoveRepoLegacy {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.TeamId;
-            export type $1 = octokit.components.Parameters.Owner;
-            export type $2 = octokit.components.Parameters.Repo;
+            export type $0 = github.rest.components.Parameters.TeamId;
+            export type $1 = github.rest.components.Parameters.Owner;
+            export type $2 = github.rest.components.Parameters.Repo;
         }
         namespace Responses {
             export interface $204 {
@@ -48798,10 +48155,10 @@ declare namespace octokit.paths {
     }
     namespace TeamsUpdateDiscussionCommentInOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.TeamSlug;
-            export type $2 = octokit.components.Parameters.DiscussionNumber;
-            export type $3 = octokit.components.Parameters.CommentNumber;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.TeamSlug;
+            export type $2 = github.rest.components.Parameters.DiscussionNumber;
+            export type $3 = github.rest.components.Parameters.CommentNumber;
         }
         export interface RequestBody {
             /**
@@ -48814,14 +48171,14 @@ declare namespace octokit.paths {
              * Team Discussion Comment
              * A reply to a discussion within a team.
              */
-            octokit.components.Schemas.TeamDiscussionComment;
+            github.rest.components.Schemas.TeamDiscussionComment;
         }
     }
     namespace TeamsUpdateDiscussionCommentLegacy {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.TeamId;
-            export type $1 = octokit.components.Parameters.DiscussionNumber;
-            export type $2 = octokit.components.Parameters.CommentNumber;
+            export type $0 = github.rest.components.Parameters.TeamId;
+            export type $1 = github.rest.components.Parameters.DiscussionNumber;
+            export type $2 = github.rest.components.Parameters.CommentNumber;
         }
         export interface RequestBody {
             /**
@@ -48834,14 +48191,14 @@ declare namespace octokit.paths {
              * Team Discussion Comment
              * A reply to a discussion within a team.
              */
-            octokit.components.Schemas.TeamDiscussionComment;
+            github.rest.components.Schemas.TeamDiscussionComment;
         }
     }
     namespace TeamsUpdateDiscussionInOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.TeamSlug;
-            export type $2 = octokit.components.Parameters.DiscussionNumber;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.TeamSlug;
+            export type $2 = github.rest.components.Parameters.DiscussionNumber;
         }
         export interface RequestBody {
             /**
@@ -48858,13 +48215,13 @@ declare namespace octokit.paths {
              * Team Discussion
              * A team discussion is a persistent record of a free-form conversation within a team.
              */
-            octokit.components.Schemas.TeamDiscussion;
+            github.rest.components.Schemas.TeamDiscussion;
         }
     }
     namespace TeamsUpdateDiscussionLegacy {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.TeamId;
-            export type $1 = octokit.components.Parameters.DiscussionNumber;
+            export type $0 = github.rest.components.Parameters.TeamId;
+            export type $1 = github.rest.components.Parameters.DiscussionNumber;
         }
         export interface RequestBody {
             /**
@@ -48881,13 +48238,13 @@ declare namespace octokit.paths {
              * Team Discussion
              * A team discussion is a persistent record of a free-form conversation within a team.
              */
-            octokit.components.Schemas.TeamDiscussion;
+            github.rest.components.Schemas.TeamDiscussion;
         }
     }
     namespace TeamsUpdateInOrg {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Org;
-            export type $1 = octokit.components.Parameters.TeamSlug;
+            export type $0 = github.rest.components.Parameters.Org;
+            export type $1 = github.rest.components.Parameters.TeamSlug;
         }
         export interface RequestBody {
             /**
@@ -48924,12 +48281,12 @@ declare namespace octokit.paths {
              * Full Team
              * Groups of organization members that gives permissions on specified repositories.
              */
-            octokit.components.Schemas.TeamFull;
+            github.rest.components.Schemas.TeamFull;
         }
     }
     namespace TeamsUpdateLegacy {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.TeamId;
+            export type $0 = github.rest.components.Parameters.TeamId;
         }
         export interface RequestBody {
             /**
@@ -48966,15 +48323,15 @@ declare namespace octokit.paths {
              * Full Team
              * Groups of organization members that gives permissions on specified repositories.
              */
-            octokit.components.Schemas.TeamFull;
+            github.rest.components.Schemas.TeamFull;
             export type $201 = /**
              * Full Team
              * Groups of organization members that gives permissions on specified repositories.
              */
-            octokit.components.Schemas.TeamFull;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.TeamFull;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace UsersAddEmailForAuthenticated {
@@ -48985,54 +48342,54 @@ declare namespace octokit.paths {
              * []
              */
             emails: string[];
-        };
+        } | string[] | string;
         namespace Responses {
             export type $201 = /**
              * Email
              * Email
              */
-            octokit.components.Schemas.Email[];
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.Email[];
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace UsersBlock {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Username;
+            export type $0 = github.rest.components.Parameters.Username;
         }
         namespace Responses {
             export interface $204 {
             }
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace UsersCheckBlocked {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Username;
+            export type $0 = github.rest.components.Parameters.Username;
         }
         namespace Responses {
             export interface $204 {
             }
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
             export type $404 = /**
              * Basic Error
              * Basic Error
              */
-            octokit.components.Schemas.BasicError;
+            github.rest.components.Schemas.BasicError;
         }
     }
     namespace UsersCheckFollowingForUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Username;
+            export type $0 = github.rest.components.Parameters.Username;
             export type TargetUser = string;
         }
         export interface PathParameters {
@@ -49047,19 +48404,19 @@ declare namespace octokit.paths {
     }
     namespace UsersCheckPersonIsFollowedByAuthenticated {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Username;
+            export type $0 = github.rest.components.Parameters.Username;
         }
         namespace Responses {
             export interface $204 {
             }
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
             export type $404 = /**
              * Basic Error
              * Basic Error
              */
-            octokit.components.Schemas.BasicError;
+            github.rest.components.Schemas.BasicError;
         }
     }
     namespace UsersCreateGpgKeyForAuthenticated {
@@ -49074,12 +48431,12 @@ declare namespace octokit.paths {
              * GPG Key
              * A unique encryption key
              */
-            octokit.components.Schemas.GpgKey;
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.GpgKey;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace UsersCreatePublicSshKeyForAuthenticated {
@@ -49100,12 +48457,12 @@ declare namespace octokit.paths {
              * Key
              * Key
              */
-            octokit.components.Schemas.Key;
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.Key;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace UsersDeleteEmailForAuthenticated {
@@ -49114,55 +48471,55 @@ declare namespace octokit.paths {
              * Email addresses associated with the GitHub user account.
              */
             emails: string[];
-        };
+        } | string[] | string;
         namespace Responses {
             export interface $204 {
             }
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace UsersDeleteGpgKeyForAuthenticated {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.GpgKeyId;
+            export type $0 = github.rest.components.Parameters.GpgKeyId;
         }
         namespace Responses {
             export interface $204 {
             }
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace UsersDeletePublicSshKeyForAuthenticated {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.KeyId;
+            export type $0 = github.rest.components.Parameters.KeyId;
         }
         namespace Responses {
             export interface $204 {
             }
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace UsersFollow {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Username;
+            export type $0 = github.rest.components.Parameters.Username;
         }
         namespace Responses {
             export interface $204 {
             }
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace UsersGetAuthenticated {
@@ -49171,37 +48528,37 @@ declare namespace octokit.paths {
              * Private User
              * Private User
              */
-            octokit.components.Schemas.PrivateUser | /**
+            github.rest.components.Schemas.PrivateUser | /**
              * Public User
              * Public User
              */
-            octokit.components.Schemas.PublicUser;
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
+            github.rest.components.Schemas.PublicUser;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
         }
     }
     namespace UsersGetByUsername {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Username;
+            export type $0 = github.rest.components.Parameters.Username;
         }
         namespace Responses {
             export type $200 = /**
              * Private User
              * Private User
              */
-            octokit.components.Schemas.PrivateUser | /**
+            github.rest.components.Schemas.PrivateUser | /**
              * Public User
              * Public User
              */
-            octokit.components.Schemas.PublicUser;
-            export type $202 = octokit.components.Responses.Accepted;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.PublicUser;
+            export type $202 = github.rest.components.Responses.Accepted;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace UsersGetContextForUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Username;
+            export type $0 = github.rest.components.Parameters.Username;
             export type SubjectId = string;
             export type SubjectType = "organization" | "repository" | "issue" | "pull_request";
         }
@@ -49214,55 +48571,55 @@ declare namespace octokit.paths {
              * Hovercard
              * Hovercard
              */
-            octokit.components.Schemas.Hovercard;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.Hovercard;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace UsersGetGpgKeyForAuthenticated {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.GpgKeyId;
+            export type $0 = github.rest.components.Parameters.GpgKeyId;
         }
         namespace Responses {
             export type $200 = /**
              * GPG Key
              * A unique encryption key
              */
-            octokit.components.Schemas.GpgKey;
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.GpgKey;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace UsersGetPublicSshKeyForAuthenticated {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.KeyId;
+            export type $0 = github.rest.components.Parameters.KeyId;
         }
         namespace Responses {
             export type $200 = /**
              * Key
              * Key
              */
-            octokit.components.Schemas.Key;
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.Key;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace UsersList {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.SinceUser;
-            export type $1 = octokit.components.Parameters.PerPage;
+            export type $0 = github.rest.components.Parameters.SinceUser;
+            export type $1 = github.rest.components.Parameters.PerPage;
         }
         namespace Responses {
             export type $200 = /**
              * Simple User
              * Simple User
              */
-            octokit.components.Schemas.SimpleUser[];
-            export type $304 = octokit.components.Responses.NotModified;
+            github.rest.components.Schemas.SimpleUser[];
+            export type $304 = github.rest.components.Responses.NotModified;
         }
     }
     namespace UsersListBlockedByAuthenticated {
@@ -49271,168 +48628,168 @@ declare namespace octokit.paths {
              * Simple User
              * Simple User
              */
-            octokit.components.Schemas.SimpleUser[];
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $415 = octokit.components.Responses.PreviewHeaderMissing;
+            github.rest.components.Schemas.SimpleUser[];
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $415 = github.rest.components.Responses.PreviewHeaderMissing;
         }
     }
     namespace UsersListEmailsForAuthenticated {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.PerPage;
-            export type $1 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.PerPage;
+            export type $1 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Email
              * Email
              */
-            octokit.components.Schemas.Email[];
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.Email[];
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace UsersListFollowedByAuthenticated {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.PerPage;
-            export type $1 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.PerPage;
+            export type $1 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Simple User
              * Simple User
              */
-            octokit.components.Schemas.SimpleUser[];
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
+            github.rest.components.Schemas.SimpleUser[];
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
         }
     }
     namespace UsersListFollowersForAuthenticatedUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.PerPage;
-            export type $1 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.PerPage;
+            export type $1 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Simple User
              * Simple User
              */
-            octokit.components.Schemas.SimpleUser[];
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
+            github.rest.components.Schemas.SimpleUser[];
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
         }
     }
     namespace UsersListFollowersForUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Username;
-            export type $1 = octokit.components.Parameters.PerPage;
-            export type $2 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Username;
+            export type $1 = github.rest.components.Parameters.PerPage;
+            export type $2 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Simple User
              * Simple User
              */
-            octokit.components.Schemas.SimpleUser[];
+            github.rest.components.Schemas.SimpleUser[];
         }
     }
     namespace UsersListFollowingForUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Username;
-            export type $1 = octokit.components.Parameters.PerPage;
-            export type $2 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Username;
+            export type $1 = github.rest.components.Parameters.PerPage;
+            export type $2 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Simple User
              * Simple User
              */
-            octokit.components.Schemas.SimpleUser[];
+            github.rest.components.Schemas.SimpleUser[];
         }
     }
     namespace UsersListGpgKeysForAuthenticated {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.PerPage;
-            export type $1 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.PerPage;
+            export type $1 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * GPG Key
              * A unique encryption key
              */
-            octokit.components.Schemas.GpgKey[];
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.GpgKey[];
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace UsersListGpgKeysForUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Username;
-            export type $1 = octokit.components.Parameters.PerPage;
-            export type $2 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Username;
+            export type $1 = github.rest.components.Parameters.PerPage;
+            export type $2 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * GPG Key
              * A unique encryption key
              */
-            octokit.components.Schemas.GpgKey[];
+            github.rest.components.Schemas.GpgKey[];
         }
     }
     namespace UsersListPublicEmailsForAuthenticated {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.PerPage;
-            export type $1 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.PerPage;
+            export type $1 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Email
              * Email
              */
-            octokit.components.Schemas.Email[];
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.Email[];
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace UsersListPublicKeysForUser {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Username;
-            export type $1 = octokit.components.Parameters.PerPage;
-            export type $2 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.Username;
+            export type $1 = github.rest.components.Parameters.PerPage;
+            export type $2 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Key Simple
              * Key Simple
              */
-            octokit.components.Schemas.KeySimple[];
+            github.rest.components.Schemas.KeySimple[];
         }
     }
     namespace UsersListPublicSshKeysForAuthenticated {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.PerPage;
-            export type $1 = octokit.components.Parameters.Page;
+            export type $0 = github.rest.components.Parameters.PerPage;
+            export type $1 = github.rest.components.Parameters.Page;
         }
         namespace Responses {
             export type $200 = /**
              * Key
              * Key
              */
-            octokit.components.Schemas.Key[];
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
+            github.rest.components.Schemas.Key[];
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace UsersSetPrimaryEmailVisibilityForAuthenticated {
@@ -49447,38 +48804,38 @@ declare namespace octokit.paths {
              * Email
              * Email
              */
-            octokit.components.Schemas.Email[];
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.Email[];
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
     namespace UsersUnblock {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Username;
+            export type $0 = github.rest.components.Parameters.Username;
         }
         namespace Responses {
             export interface $204 {
             }
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace UsersUnfollow {
         namespace Parameters {
-            export type $0 = octokit.components.Parameters.Username;
+            export type $0 = github.rest.components.Parameters.Username;
         }
         namespace Responses {
             export interface $204 {
             }
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
         }
     }
     namespace UsersUpdateAuthenticated {
@@ -49533,12 +48890,12 @@ declare namespace octokit.paths {
              * Private User
              * Private User
              */
-            octokit.components.Schemas.PrivateUser;
-            export type $304 = octokit.components.Responses.NotModified;
-            export type $401 = octokit.components.Responses.RequiresAuthentication;
-            export type $403 = octokit.components.Responses.Forbidden;
-            export type $404 = octokit.components.Responses.NotFound;
-            export type $422 = octokit.components.Responses.ValidationFailed;
+            github.rest.components.Schemas.PrivateUser;
+            export type $304 = github.rest.components.Responses.NotModified;
+            export type $401 = github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = github.rest.components.Responses.Forbidden;
+            export type $404 = github.rest.components.Responses.NotFound;
+            export type $422 = github.rest.components.Responses.ValidationFailed;
         }
     }
 }

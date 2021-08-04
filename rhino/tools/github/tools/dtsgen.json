@@ -10,11 +10,11 @@
             "map": [
                 {
                     "from": ["Components"],
-                    "to": ["octokit.components"]
+                    "to": ["github.rest.components"]
                 },
                 {
                     "from": ["Paths"],
-                    "to": ["octokit.paths"]
+                    "to": ["github.rest.paths"]
                 }
             ]
         }
