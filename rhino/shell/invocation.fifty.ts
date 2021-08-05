@@ -37,8 +37,14 @@ namespace slime.jrunscript.shell {
 		 */
 		directory: slime.jrunscript.file.Directory
 
+		stdio: invocation.Stdio
+	}
+
+	export namespace invocation {
+		export type Token = string | slime.jrunscript.file.Pathname | slime.jrunscript.file.Node
+
 		/**
-		 * The standard input, output, and error streams to use for the command.
+		 * Specifies the standard input, output, and error streams to use for an invocation.
 		 *
 		 * For the output streams:
 		 * * if the global `String` object is used as the value, the stream's output will be captured as a string and returned along with the result of the subprocess.
@@ -47,15 +53,11 @@ namespace slime.jrunscript.shell {
 		 * For the input stream:
 		 * * if the value is a string, that string will be provided on the standard input stream for the subprocess.
 		 */
-		stdio: {
+		 export interface Stdio {
 			output?: StringConstructor | slime.jrunscript.runtime.io.OutputStream | { line: (line: string) => void }
 			error?: StringConstructor | slime.jrunscript.runtime.io.OutputStream | { line: (line: string) => void }
 			input?: string | slime.jrunscript.runtime.io.InputStream
 		}
-	}
-
-	export namespace invocation {
-		export type Token = string | slime.jrunscript.file.Pathname | slime.jrunscript.file.Node
 
 		/**
 		 * Type used by callers to specify {@link Invocation}s, without requiring boilerplate defaults; only the `command`

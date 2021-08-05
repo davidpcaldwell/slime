@@ -102,85 +102,86 @@
 		/**
 		 *
 		 * @param { Parameters<slime.jrunscript.shell.Exports["run"]>[0] } p
-		 * @return { slime.jrunscript.shell.Stdio & { close?: () => void } }
+		 * @return { Parameters<slime.jrunscript.shell.Exports["run"]>[0]["stdio"] }
 		 */
-		var getStdio = function(p) {
-			/** @type { any } */
-			var rv = (function() {
-				if (typeof(p.stdio) != "undefined") return p.stdio;
+		var extractStdioIncludingDeprecatedForm = function(p) {
+			if (typeof(p.stdio) != "undefined") return p.stdio;
 
-				if (typeof(p.stdin) != "undefined" || typeof(p.stdout) != "undefined" || typeof(p.stderr) != "undefined") {
-					return $api.deprecate(function() {
-						return {
-							input: p.stdin,
-							output: p.stdout,
-							error: p.stderr
-						};
-					})();
-				}
+			if (typeof(p.stdin) != "undefined" || typeof(p.stdout) != "undefined" || typeof(p.stderr) != "undefined") {
+				return $api.deprecate(function() {
+					return {
+						input: p.stdin,
+						output: p.stdout,
+						error: p.stderr
+					};
+				})();
+			}
 
-				return {};
-			})();
-			if (rv) {
-				var buffers = {};
-				rv.close = function() {
-					for (var x in buffers) {
-						buffers[x].close();
-						if (buffers[x].readText) {
-							this[x] = buffers[x].readText().asString();
-						}
-					}
-				};
-				["output","error"].forEach(function(stream) {
-					if (rv[stream] == String) {
-						buffers[stream] = new $context.api.io.Buffer();
-						rv[stream] = buffers[stream].writeBinary();
-					} else if (rv[stream] && typeof(rv[stream]) == "object" && rv[stream].line) {
-						buffers[stream] = new (function(callback) {
-							var buffer = new $context.api.io.Buffer();
+			return {};
+		}
 
-							var thread = $context.api.java.Thread.start({
-								call: function() {
-									buffer.readText().readLines(callback);
-								}
-							});
+		/**
+		 *
+		 * @param { slime.jrunscript.shell.invocation.Stdio } p
+		 * @returns { slime.jrunscript.shell.internal.module.RunStdio }
+		 */
+		var buildStdio = function(p) {
+			var rv = {};
+			var buffers = {};
 
-							this.buffer = buffer;
+			["output","error"].forEach(function(stream) {
+				if (p[stream] == String) {
+					buffers[stream] = new $context.api.io.Buffer();
+					rv[stream] = buffers[stream].writeBinary();
+				} else if (p[stream] && typeof(p[stream]) == "object" && p[stream].line) {
+					buffers[stream] = new (function(callback) {
+						var buffer = new $context.api.io.Buffer();
 
-							this.close = function() {
-								buffer.close();
-								thread.join();
+						var thread = $context.api.java.Thread.start({
+							call: function() {
+								buffer.readText().readLines(callback);
 							}
-						})(rv[stream].line);
-						rv[stream] = buffers[stream].buffer.writeBinary();
-					}
-				});
-				if (typeof(rv.input) == "string") {
-					var buffer = new $context.api.io.Buffer();
-					buffer.writeText().write(rv.input);
-					buffer.close();
-					rv.input = buffer.readBinary();
+						});
+
+						this.buffer = buffer;
+
+						this.close = function() {
+							buffer.close();
+							thread.join();
+						}
+					})(p[stream].line);
+					rv[stream] = buffers[stream].buffer.writeBinary();
+				} else if (typeof(p[stream]) == "undefined" && $context.stdio) {
+					rv[stream] = $context.stdio[stream];
+				} else {
+					rv[stream] = p[stream];
 				}
-			}
-			if (rv) {
-				if ($context.stdio) {
-					["output","error"].forEach(function(stream) {
-						if (typeof(rv[stream]) == "undefined") rv[stream] = $context.stdio[stream];
-					});
-				}
-				if (typeof(rv.input) == "undefined") rv.input = null;
+			});
+
+			if (typeof(p.input) == "string") {
+				var buffer = new $context.api.io.Buffer();
+				buffer.writeText().write(p.input);
+				buffer.close();
+				rv.input = buffer.readBinary();
+			} else if (typeof(p.input) == "undefined") {
+				rv.input = null;
 			} else {
-				if (!$context.stdio) {
-					if (p.stdio === null) {
-						//	That's what we thought
-					} else {
-						//	The only way rv should be anything other than an object is if p.stdio was null
-						throw new Error("Unreachable");
+				rv.input = p.input;
+			}
+
+			rv.close = function() {
+				for (var x in buffers) {
+					buffers[x].close();
+
+					//	TODO	say what, now?
+					if (buffers[x].readText) {
+						this[x] = buffers[x].readText().asString();
 					}
 				}
-			}
+			};
+
 			return rv;
-		};
+		}
 
 		/**
 		 *
@@ -211,7 +212,8 @@
 			if (p.as) {
 				as = p.as;
 			}
-			var stdio = getStdio(p);
+			var stdioProperty = extractStdioIncludingDeprecatedForm(p);
+			var stdio = buildStdio(stdioProperty);
 			var directory = getDirectory(p);
 
 			var environment = (function(now,argument) {
@@ -286,7 +288,7 @@
 						return full.map(toErrorMessageString).join(" ");
 					}
 
-					return function(arg,index) {
+					return function(arg/*,index*/) {
 						var index = (arguments.length > 1) ? arguments[1] : null;
 						var label = (typeof(index) == "number") ? "property 'arguments[" + String(index) + "]'" : "property 'command'";
 						if (typeof(arg) == "undefined") {
@@ -402,23 +404,53 @@
 			if (result.status != 0) throw new Error("Exit code: " + result.status + " executing " + result.command + ((result.arguments && result.arguments.length) ? " " + result.arguments.join(" ") : ""));
 			return result;
 		};
-		//	TODO	the getStdio function is currently used in jsh.js, requiring us to export it; is that the best structure?
-		$exports.run.stdio = Object.assign(getStdio, {
-			LineBuffered: function(o) {
-				return Object.assign({}, o, {
-					output: {
-						line: function(line) {
-							o.stdio.output.write(line + $exports.os.newline);
-						}
-					},
-					error: {
-						line: function(line) {
-							o.stdio.error.write(line + $exports.os.newline);
-						}
+
+		$exports.run.stdio = Object.assign(
+			(
+				/**
+				 *
+				 * @param { Parameters<slime.jrunscript.shell.Exports["run"]>[0] } p
+				 * @return { slime.jrunscript.shell.internal.module.RunStdio }
+				 */
+				function getStdio(p) {
+					//	TODO	the getStdio function is currently used in jsh.js, requiring us to export it; is that the best structure?
+					var stdio = extractStdioIncludingDeprecatedForm(p);
+
+					if (stdio) {
+						return buildStdio(stdio);
 					}
-				});
+					if (!stdio) {
+						//	TODO	could be null if p.stdio === null. What would that mean? And what does $context.stdio have to do with
+						//			it?
+						if (!$context.stdio) {
+							if (p.stdio === null) {
+								//	That's what we thought
+							} else {
+								//	The only way rv should be anything other than an object is if p.stdio was null
+								throw new Error("Unreachable");
+							}
+						}
+						return null;
+					}
+				}
+			),
+			{
+				LineBuffered: function(o) {
+					return Object.assign({}, o, {
+						output: {
+							line: function(line) {
+								o.stdio.output.write(line + $exports.os.newline);
+							}
+						},
+						error: {
+							line: function(line) {
+								o.stdio.error.write(line + $exports.os.newline);
+							}
+						}
+					});
+				}
 			}
-		});
+		);
 
 		$exports.sudo = function(settings) {
 			return {

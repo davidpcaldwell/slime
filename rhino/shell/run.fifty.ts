@@ -5,6 +5,15 @@
 //	END LICENSE
 
 namespace slime.jrunscript.shell.internal.run {
-	export type Export = (context: any, configuration: any, stdio: any, module: any, events: any, p: any, result: any) => void
+	export type Export = (
+		context: any,
+		configuration: any,
+		stdio: slime.jrunscript.shell.internal.module.RunStdio,
+		module: any,
+		events: any,
+		p: any,
+		result: any
+	) => void
+
 	export type Factory = slime.loader.Product<void,Export>
 }

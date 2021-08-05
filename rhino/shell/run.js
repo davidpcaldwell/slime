@@ -20,32 +20,37 @@
 				//	TODO	could throw exception on launch; should deal with it
 				var _subprocess = Packages.inonit.system.OperatingSystem.get().start(context, configuration);
 
-				var handle = new function() {
-					this.command = result.command;
-					this.arguments = result.arguments;
+				(
+					function fireStartEvent() {
+						var startEvent = new function() {
+							this.command = result.command;
+							this.arguments = result.arguments;
 
-					this.environment = result.environment;
+							this.environment = result.environment;
 
-					this.directory = result.directory;
+							this.directory = result.directory;
 
-					Object.defineProperty(this, "pid", {
-						get: function() {
-							return _subprocess.getPid();
-						},
-						enumerable: true
-					});
+							Object.defineProperty(this, "pid", {
+								get: function() {
+									return _subprocess.getPid();
+								},
+								enumerable: true
+							});
 
-					this.kill = function() {
-						_subprocess.terminate();
+							this.kill = function() {
+								_subprocess.terminate();
+							}
+						};
+						if (p.on && p.on.start) {
+							$api.deprecate(function() {
+								p.on.start.call({}, startEvent);
+							})();
+						}
+						module.events.fire("run.start", startEvent);
+						events.fire("start", startEvent);
 					}
-				};
-				if (p.on && p.on.start) {
-					$api.deprecate(function() {
-						p.on.start.call({}, handle);
-					})();
-				}
-				module.events.fire("run.start", handle);
-				events.fire("start", handle);
+				)();
+
 				var listener = new function() {
 					this.status = void(0);
 
@@ -58,12 +63,15 @@
 						throw new Error("Unhandled Java thread interruption.");
 					};
 				};
+
 				//Packages.java.lang.System.err.println("Waiting for subprocess: " + _subprocess);
 				_subprocess.wait(new JavaAdapter(
 					Packages.inonit.system.Subprocess.Listener,
 					listener
 				));
+
 				result.status = listener.status;
+
 				stdio.close();
 
 				["output","error"].forEach(function(stream) {

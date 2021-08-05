@@ -154,10 +154,14 @@ namespace slime.jrunscript.shell {
 				as?: any
 				tokens?: any
 				on?: any
+				/** @deprecated */
 				workingDirectory?: any
-				stdout?: any
-				stdin?: any
-				stderr?: any
+				/** @deprecated */
+				stdout?: invocation.Argument["stdio"]["output"]
+				/** @deprecated */
+				stdin?: invocation.Argument["stdio"]["input"]
+				/** @deprecated */
+				stderr?: invocation.Argument["stdio"]["error"]
 				evaluate?: (p: any) => any
 			}, events?: any): any
 
@@ -377,6 +381,10 @@ namespace slime.jrunscript.shell {
 		}
 	//@ts-ignore
 	)($api,fifty);
+
+	export namespace internal.module {
+		export type RunStdio = slime.jrunscript.shell.Stdio & { close?: () => void }
+	}
 
 	(
 		function(fifty: slime.fifty.test.kit) {
