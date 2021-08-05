@@ -244,11 +244,20 @@ namespace slime.jrunscript.shell {
 
 	export type Loader = slime.loader.Product<Context,Exports>;
 
+	export interface Exports {
+		/** @deprecated Replaced by `world.Invocation` because it relies on external state. */
+		Invocation: (p: invocation.Argument) => Invocation
+	}
 
 	export interface World {
 		run: (invocation: Invocation) => slime.$api.fp.impure.Tell<{
 			exit: number
 		}>
+
+		/**
+		 * Creates a fully-specified {@link Invocation} from a given {@link invocation.Argument} and the surrounding context.
+		 */
+		Invocation: (p: invocation.Argument) => Invocation
 	}
 
 	(
@@ -259,7 +268,7 @@ namespace slime.jrunscript.shell {
 			const subject = fifty.global.jsh.shell;
 
 			fifty.tests.sandbox = function() {
-				var bogus: Invocation = subject.Invocation({
+				var bogus: Invocation = subject.world.Invocation({
 					command: "foobarbaz"
 				});
 
@@ -272,7 +281,7 @@ namespace slime.jrunscript.shell {
 				var directory = fifty.$loader.getRelativePath(".").directory;
 
 				if (fifty.global.jsh.shell.PATH.getCommand("ls")) {
-					var ls = subject.Invocation({
+					var ls = subject.world.Invocation({
 						command: "ls",
 						directory: directory
 					});
@@ -306,6 +315,64 @@ namespace slime.jrunscript.shell {
 						fifty.verify(tell).evaluate(function(f) { return f(); }).threw.message.is("Non-zero exit status: 1");
 					});
 				}
+
+				var isDirectory = function(directory) {
+					return Object.assign(function(p) {
+						return directory.toString() == p.toString();
+					}, {
+						toString: function() {
+							return "is directory " + directory;
+						}
+					})
+				};
+
+				var it = {
+					is: function(value) {
+						return function(p) {
+							return p === value;
+						}
+					}
+				}
+
+				fifty.run(function Invocation() {
+					var directory = fifty.$loader.getRelativePath(".").directory;
+
+					//	TODO	test for missing command
+
+					fifty.run(function defaults() {
+						var argument: invocation.Argument = {
+							command: "ls"
+						};
+						var invocation = fifty.global.jsh.shell.world.Invocation(argument);
+						fifty.verify(invocation, "invocation", function(its) {
+							its.command.is("ls");
+							its.arguments.is.type("object");
+							its.arguments.length.is(0);
+							//	TODO	environment
+							its.directory.evaluate(isDirectory(fifty.global.jsh.shell.PWD)).is(true);
+							its.stdio.input.evaluate(it.is(null)).is(true);
+							its.stdio.output.evaluate(it.is(fifty.global.jsh.shell.stdio.output)).is(true);
+							its.stdio.error.evaluate(it.is(fifty.global.jsh.shell.stdio.error)).is(true);
+						});
+					});
+
+					fifty.run(function specified() {
+						var argument: invocation.Argument = {
+							command: fifty.global.jsh.file.Pathname("/bin/ls"),
+							arguments: [directory.getRelativePath("invocation.fifty.ts")],
+							//	TODO	environment
+							directory: directory
+						};
+						var invocation = fifty.global.jsh.shell.world.Invocation(argument);
+						fifty.verify(invocation, "invocation", function(its) {
+							its.command.is("/bin/ls");
+							its.arguments.is.type("object");
+							its.arguments.length.is(1);
+							its.arguments[0].is(directory.getRelativePath("invocation.fifty.ts").toString());
+							its.directory.evaluate(isDirectory(directory)).is(true);
+						});
+					});
+				});
 			}
 		}
 	//@ts-ignore

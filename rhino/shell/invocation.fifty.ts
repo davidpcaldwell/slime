@@ -5,13 +5,7 @@
 //	END LICENSE
 
 namespace slime.jrunscript.shell.internal.invocation {
-	export interface Context {
-		environment: slime.jrunscript.shell.Exports["environment"]
-		stdio: slime.jrunscript.shell.Context["stdio"]
-		PWD: slime.jrunscript.file.Directory
-	}
-
-	export type Export = Pick<slime.jrunscript.shell.Exports, "Invocation" | "invocation">
+	export type Export = Pick<slime.jrunscript.shell.Exports, "invocation">
 
 	export type Factory = slime.loader.Product<Context,Export>
 }
@@ -98,11 +92,6 @@ namespace slime.jrunscript.shell {
 	}
 
 	export interface Exports {
-		/**
-		 * Creates a fully-specified {@link Invocation} from a given {@link invocation.Argument}.
-		 */
-		 Invocation: (p: invocation.Argument) => Invocation
-
 		 invocation: {
 			 //	TODO	probably should be conditional based on presence of sudo tool
 			 /**
@@ -122,11 +111,7 @@ namespace slime.jrunscript.shell {
 		) {
 			const code: slime.jrunscript.shell.internal.invocation.Factory = fifty.$loader.factory("invocation.js");
 
-			const subject: slime.jrunscript.shell.internal.invocation.Export = code({
-				environment: fifty.global.jsh.shell.environment,
-				stdio: fifty.global.jsh.shell.stdio,
-				PWD: fifty.global.jsh.shell.PWD
-			});
+			const subject: slime.jrunscript.shell.internal.invocation.Export = code();
 
 			fifty.tests.suite = function() {
 				var jsh = fifty.global.jsh;
@@ -153,64 +138,6 @@ namespace slime.jrunscript.shell {
 					verify(sudoed).arguments[0].is("--askpass");
 					verify(sudoed).arguments[1].is("ls");
 					verify(sudoed).environment.SUDO_ASKPASS.is("/path/to/askpass");
-				});
-
-				var isDirectory = function(directory) {
-					return Object.assign(function(p) {
-						return directory.toString() == p.toString();
-					}, {
-						toString: function() {
-							return "is directory " + directory;
-						}
-					})
-				};
-
-				var it = {
-					is: function(value) {
-						return function(p) {
-							return p === value;
-						}
-					}
-				}
-
-				fifty.run(function Invocation() {
-					var directory = fifty.$loader.getRelativePath(".").directory;
-
-					//	TODO	test for missing command
-
-					fifty.run(function defaults() {
-						var argument: invocation.Argument = {
-							command: "ls"
-						};
-						var invocation = subject.Invocation(argument);
-						verify(invocation, "invocation", function(its) {
-							its.command.is("ls");
-							its.arguments.is.type("object");
-							its.arguments.length.is(0);
-							//	TODO	environment
-							its.directory.evaluate(isDirectory(fifty.global.jsh.shell.PWD)).is(true);
-							its.stdio.input.evaluate(it.is(null)).is(true);
-							its.stdio.output.evaluate(it.is(jsh.shell.stdio.output)).is(true);
-							its.stdio.error.evaluate(it.is(jsh.shell.stdio.error)).is(true);
-						});
-					});
-
-					fifty.run(function specified() {
-						var argument: invocation.Argument = {
-							command: fifty.global.jsh.file.Pathname("/bin/ls"),
-							arguments: [directory.getRelativePath("invocation.fifty.ts")],
-							//	TODO	environment
-							directory: directory
-						};
-						var invocation = subject.Invocation(argument);
-						verify(invocation, "invocation", function(its) {
-							its.command.is("/bin/ls");
-							its.arguments.is.type("object");
-							its.arguments.length.is(1);
-							its.arguments[0].is(directory.getRelativePath("invocation.fifty.ts").toString());
-							its.directory.evaluate(isDirectory(directory)).is(true);
-						});
-					});
 				});
 			}
 		}

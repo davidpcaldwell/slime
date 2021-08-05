@@ -8,10 +8,9 @@
 (
 	/**
 	 * @param { slime.$api.Global } $api
-	 * @param { slime.jrunscript.shell.internal.invocation.Context } $context
 	 * @param { (value: slime.jrunscript.shell.internal.invocation.Export) => void } $export
 	 */
-	function($api,$context,$export) {
+	function($api,$export) {
 		$export({
 			invocation: {
 				sudo: function(settings) {
@@ -37,21 +36,8 @@
 						});
 					}
 				}
-			},
-			Invocation: function(p) {
-				return {
-					command: String(p.command),
-					arguments: (p.arguments) ? p.arguments.map(String) : [],
-					environment: (p.environment) ? p.environment : $context.environment,
-					stdio: $api.Object.compose({
-						input: null,
-						output: $context.stdio.output,
-						error: $context.stdio.error
-					}, p.stdio),
-					directory: (p.directory) ? p.directory : $context.PWD
-				};
 			}
 		})
 	}
 //@ts-ignore
-)($api,$context,$export);
+)($api,$export);

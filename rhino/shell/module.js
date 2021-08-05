@@ -81,21 +81,17 @@
 
 		var code = {
 			/** @type { slime.jrunscript.shell.internal.invocation.Factory } */
-			invocation: $loader.factory("invocation.js")
+			invocation: $loader.factory("invocation.js"),
+			/** @type { slime.jrunscript.shell.internal.run.Factory } */
+			run: $loader.factory("run.js")
 		};
 
 		var scripts = {
-			invocation: code.invocation({
-				stdio: $context.stdio,
-				environment: $exports.environment,
-				PWD: $exports.PWD
-			})
+			invocation: code.invocation(),
+			run: code.run()
 		};
 
-		Object.assign($exports, {
-			invocation: scripts.invocation.invocation,
-			Invocation: scripts.invocation.Invocation
-		});
+		$exports.invocation = scripts.invocation.invocation;
 
 		var module = {
 			events: $api.Events({ source: $exports })
@@ -387,77 +383,7 @@
 				}
 			}
 
-			if (true || p.on && p.on.start) {
-				//	TODO	could throw exception on launch; should deal with it
-				var _subprocess = Packages.inonit.system.OperatingSystem.get().start(context, configuration);
-
-				var handle = new function() {
-					this.command = result.command;
-					this.arguments = result.arguments;
-
-					this.environment = result.environment;
-
-					this.directory = result.directory;
-
-					Object.defineProperty(this, "pid", {
-						get: function() {
-							return _subprocess.getPid();
-						},
-						enumerable: true
-					});
-
-					this.kill = function() {
-						_subprocess.terminate();
-					}
-				};
-				if (p.on && p.on.start) {
-					$api.deprecate(function() {
-						p.on.start.call({}, handle);
-					})();
-				}
-				module.events.fire("run.start", handle);
-				events.fire("start", handle);
-				var listener = new function() {
-					this.status = void(0);
-
-					this.finished = function(status) {
-						this.status = status;
-					};
-
-					this.interrupted = function(_exception) {
-						//	who knows what we should do here. Kill the process?
-						throw new Error("Unhandled Java thread interruption.");
-					};
-				};
-				//Packages.java.lang.System.err.println("Waiting for subprocess: " + _subprocess);
-				_subprocess.wait(new JavaAdapter(
-					Packages.inonit.system.Subprocess.Listener,
-					listener
-				));
-				result.status = listener.status;
-			} else {
-				throw new Error();
-				//Packages.java.lang.System.err.println("Launching context/configuration: " + context + " " + configuration);
-				var _listener = Packages.inonit.system.OperatingSystem.get().run( context, configuration );
-				//Packages.java.lang.System.err.println("Finished.");
-				if (_listener.getLaunchException()) {
-					result.error = _listener.getLaunchException();
-				} else {
-					result.status = Number( _listener.getExitStatus().intValue() );
-				}
-			}
-			stdio.close();
-
-			//	TODO	this returning of stdio values is currently undocumented. Certainly they should be returned if String were specified
-			//			as their type; not sure what should happen otherwise.
-			["output","error"].forEach(function(stream) {
-				if (typeof(stdio[stream]) == "string") {
-					if (!result.stdio) result.stdio = {};
-					result.stdio[stream] = stdio[stream];
-				}
-			});
-
-			events.fire("terminate", result);
+			scripts.run(context, configuration, stdio, module, events, p, result);
 
 			var evaluate = (p.evaluate) ? p.evaluate : $exports.run.evaluate;
 			return evaluate(result);
@@ -907,8 +833,23 @@
 					}
 					return tell(on);
 				}
+			},
+			Invocation: function(p) {
+				return {
+					command: String(p.command),
+					arguments: (p.arguments) ? p.arguments.map(String) : [],
+					environment: (p.environment) ? p.environment : $exports.environment,
+					stdio: $api.Object.compose({
+						input: null,
+						output: $context.stdio.output,
+						error: $context.stdio.error
+					}, p.stdio),
+					directory: (p.directory) ? p.directory : $exports.PWD
+				};
 			}
 		}
+
+		$exports.Invocation = $exports.world.Invocation;
 	}
 //@ts-ignore
 )(Packages,JavaAdapter,$api,$context,$loader,$exports);
