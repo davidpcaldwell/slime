@@ -5,15 +5,26 @@
 //	END LICENSE
 
 namespace slime.jrunscript.shell.internal.run {
-	export type Export = (
-		context: any,
-		configuration: any,
-		stdio: slime.jrunscript.shell.internal.module.RunStdio,
-		module: any,
-		events: any,
-		p: any,
-		result: any
-	) => void
+	export interface Context {
+		api: {
+			java: slime.jrunscript.host.Exports
+			io: slime.jrunscript.io.Exports
+		}
+	}
 
-	export type Factory = slime.loader.Product<void,Export>
+	export interface Export {
+		run: (
+			context: any,
+			configuration: any,
+			stdio: slime.jrunscript.shell.internal.module.RunStdio,
+			module: any,
+			events: any,
+			p: any,
+			result: any
+		) => void
+
+		buildStdio: (p: slime.jrunscript.shell.invocation.Stdio) => slime.jrunscript.shell.internal.module.RunStdio
+	}
+
+	export type Factory = slime.loader.Product<Context,Export>
 }

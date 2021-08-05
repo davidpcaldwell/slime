@@ -104,7 +104,11 @@ namespace slime.jrunscript.shell {
 				 nocache?: boolean
 				 askpass?: string | slime.jrunscript.file.File
 			 }) => (p: Invocation) => Invocation
-		 }
+
+			 stdio: {
+				extractStdioIncludingDeprecatedForm: (p: Parameters<slime.jrunscript.shell.Exports["run"]>[0]) => Parameters<slime.jrunscript.shell.Exports["run"]>[0]["stdio"]
+			 }
+		}
 	}
 
 	(

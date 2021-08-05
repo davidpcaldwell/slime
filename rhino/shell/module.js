@@ -88,7 +88,12 @@
 
 		var scripts = {
 			invocation: code.invocation(),
-			run: code.run()
+			run: code.run({
+				api: {
+					java: $context.api.java,
+					io: $context.api.io
+				}
+			})
 		};
 
 		$exports.invocation = scripts.invocation.invocation;
@@ -101,86 +106,13 @@
 
 		/**
 		 *
-		 * @param { Parameters<slime.jrunscript.shell.Exports["run"]>[0] } p
-		 * @return { Parameters<slime.jrunscript.shell.Exports["run"]>[0]["stdio"] }
+		 * @param { slime.jrunscript.shell.internal.module.RunStdio } p
 		 */
-		var extractStdioIncludingDeprecatedForm = function(p) {
-			if (typeof(p.stdio) != "undefined") return p.stdio;
-
-			if (typeof(p.stdin) != "undefined" || typeof(p.stdout) != "undefined" || typeof(p.stderr) != "undefined") {
-				return $api.deprecate(function() {
-					return {
-						input: p.stdin,
-						output: p.stdout,
-						error: p.stderr
-					};
-				})();
-			}
-
-			return {};
-		}
-
-		/**
-		 *
-		 * @param { slime.jrunscript.shell.invocation.Stdio } p
-		 * @returns { slime.jrunscript.shell.internal.module.RunStdio }
-		 */
-		var buildStdio = function(p) {
-			var rv = {};
-			var buffers = {};
-
-			["output","error"].forEach(function(stream) {
-				if (p[stream] == String) {
-					buffers[stream] = new $context.api.io.Buffer();
-					rv[stream] = buffers[stream].writeBinary();
-				} else if (p[stream] && typeof(p[stream]) == "object" && p[stream].line) {
-					buffers[stream] = new (function(callback) {
-						var buffer = new $context.api.io.Buffer();
-
-						var thread = $context.api.java.Thread.start({
-							call: function() {
-								buffer.readText().readLines(callback);
-							}
-						});
-
-						this.buffer = buffer;
-
-						this.close = function() {
-							buffer.close();
-							thread.join();
-						}
-					})(p[stream].line);
-					rv[stream] = buffers[stream].buffer.writeBinary();
-				} else if (typeof(p[stream]) == "undefined" && $context.stdio) {
-					rv[stream] = $context.stdio[stream];
-				} else {
-					rv[stream] = p[stream];
-				}
-			});
-
-			if (typeof(p.input) == "string") {
-				var buffer = new $context.api.io.Buffer();
-				buffer.writeText().write(p.input);
-				buffer.close();
-				rv.input = buffer.readBinary();
-			} else if (typeof(p.input) == "undefined") {
-				rv.input = null;
-			} else {
-				rv.input = p.input;
-			}
-
-			rv.close = function() {
-				for (var x in buffers) {
-					buffers[x].close();
-
-					//	TODO	say what, now?
-					if (buffers[x].readText) {
-						this[x] = buffers[x].readText().asString();
-					}
-				}
-			};
-
-			return rv;
+		var fallbackToParentStdio = function(p) {
+			if (typeof(p.input) == "undefined") p.input = null;
+			["output","error"].forEach(function(property) {
+				if (typeof(p[property]) == "undefined" && $context.stdio) p[property] = $context.stdio[property];
+			})
 		}
 
 		/**
@@ -212,8 +144,9 @@
 			if (p.as) {
 				as = p.as;
 			}
-			var stdioProperty = extractStdioIncludingDeprecatedForm(p);
-			var stdio = buildStdio(stdioProperty);
+			var stdioProperty = scripts.invocation.invocation.stdio.extractStdioIncludingDeprecatedForm(p);
+			var stdio = scripts.run.buildStdio(stdioProperty);
+			fallbackToParentStdio(stdio);
 			var directory = getDirectory(p);
 
 			var environment = (function(now,argument) {
@@ -385,7 +318,7 @@
 				}
 			}
 
-			scripts.run(context, configuration, stdio, module, events, p, result);
+			scripts.run.run(context, configuration, stdio, module, events, p, result);
 
 			var evaluate = (p.evaluate) ? p.evaluate : $exports.run.evaluate;
 			return evaluate(result);
@@ -414,10 +347,12 @@
 				 */
 				function getStdio(p) {
 					//	TODO	the getStdio function is currently used in jsh.js, requiring us to export it; is that the best structure?
-					var stdio = extractStdioIncludingDeprecatedForm(p);
+					var stdio = scripts.invocation.invocation.stdio.extractStdioIncludingDeprecatedForm(p);
 
 					if (stdio) {
-						return buildStdio(stdio);
+						var rv = scripts.run.buildStdio(stdio);
+						fallbackToParentStdio(rv);
+						return rv;
 					}
 					if (!stdio) {
 						//	TODO	could be null if p.stdio === null. What would that mean? And what does $context.stdio have to do with

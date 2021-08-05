@@ -11,6 +11,27 @@
 	 * @param { (value: slime.jrunscript.shell.internal.invocation.Export) => void } $export
 	 */
 	function($api,$export) {
+		/**
+		 *
+		 * @param { Parameters<slime.jrunscript.shell.Exports["run"]>[0] } p
+		 * @return { Parameters<slime.jrunscript.shell.Exports["run"]>[0]["stdio"] }
+		 */
+		function extractStdioIncludingDeprecatedForm(p) {
+			if (typeof(p.stdio) != "undefined") return p.stdio;
+
+			if (typeof(p.stdin) != "undefined" || typeof(p.stdout) != "undefined" || typeof(p.stderr) != "undefined") {
+				return $api.deprecate(function() {
+					return {
+						input: p.stdin,
+						output: p.stdout,
+						error: p.stderr
+					};
+				})();
+			}
+
+			return {};
+		}
+
 		$export({
 			invocation: {
 				sudo: function(settings) {
@@ -35,6 +56,9 @@
 							stdio: invocation.stdio
 						});
 					}
+				},
+				stdio: {
+					extractStdioIncludingDeprecatedForm: extractStdioIncludingDeprecatedForm
 				}
 			}
 		})
