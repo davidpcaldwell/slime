@@ -288,11 +288,17 @@
 					};
 				}
 			);
+			/**
+			 * @type { slime.jrunscript.shell.run.Result }
+			 */
 			var result = {
 				command: invocation.result.command,
-				arguments: invocation.result.arguments
+				arguments: invocation.result.arguments,
+				environment: environment,
+				directory: void(0),
+				workingDirectory: void(0),
+				status: void(0)
 			};
-			result.environment = environment;
 			if (directory) {
 				if (typeof(directory) != "undefined") {
 					result.directory = directory;
@@ -303,7 +309,7 @@
 
 			scripts.run.run(context, configuration, stdio, module, events, p, result);
 
-			var evaluate = (p.evaluate) ? p.evaluate : $exports.run.evaluate;
+			var evaluate = (p["evaluate"]) ? p["evaluate"] : $exports.run.evaluate;
 			return evaluate(result);
 		};
 

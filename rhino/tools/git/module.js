@@ -80,8 +80,7 @@
 							stdio: stdio,
 							directory: p.directory,
 							evaluate: (m.evaluate) ? function(result) {
-								result.argument = p;
-								return m.evaluate(result);
+								return m.evaluate($api.Object.compose(result, { argument: p }));
 							} : m.evaluate
 						}, {
 							terminate: function(e) {

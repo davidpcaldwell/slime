@@ -72,14 +72,7 @@
 
 			result.status = listener.status;
 
-			stdio.close();
-
-			["output","error"].forEach(function(stream) {
-				if (typeof(stdio[stream]) == "string") {
-					if (!result.stdio) result.stdio = {};
-					result.stdio[stream] = stdio[stream];
-				}
-			});
+			result.stdio = stdio.close();
 
 			events.fire("terminate", result);
 		}
@@ -90,6 +83,7 @@
 		 * @returns { slime.jrunscript.shell.internal.module.RunStdio }
 		 */
 		function buildStdio(p) {
+			/** @type { slime.jrunscript.shell.internal.module.RunStdio } */
 			var rv = {};
 			var buffers = {};
 
@@ -129,15 +123,22 @@
 				rv.input = p.input;
 			}
 
+			/**
+			 * @returns { slime.jrunscript.shell.run.Stdio }
+			 */
 			rv.close = function() {
+				var rv = {
+				};
 				for (var x in buffers) {
 					buffers[x].close();
 
-					//	TODO	say what, now?
-					if (buffers[x].readText) {
-						this[x] = buffers[x].readText().asString();
+					//	this is horrendous, but it automatically replaces the stdio property with the string if the string
+					//	was requested. Will come up with a better way in the world-oriented API.
+					if ((x == "output" || x == "error") && p[x] == String) {
+						rv[x] = buffers[x].readText().asString();
 					}
 				}
+				return rv;
 			};
 
 			return rv;

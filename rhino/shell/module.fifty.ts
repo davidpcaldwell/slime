@@ -145,26 +145,51 @@ namespace slime.jrunscript.shell {
 	export interface World {
 	}
 
+	export namespace run {
+		export interface Stdio {
+			output?: string
+			error?: string
+		}
+
+		export interface Argument extends invocation.Argument {
+			as?: any
+			on?: any
+			/** @deprecated */
+			tokens?: any
+			/** @deprecated */
+			workingDirectory?: slime.jrunscript.file.Directory
+			/** @deprecated */
+			stdout?: invocation.Argument["stdio"]["output"]
+			/** @deprecated */
+			stdin?: invocation.Argument["stdio"]["input"]
+			/** @deprecated */
+			stderr?: invocation.Argument["stdio"]["error"]
+		}
+
+		export interface Result {
+			command: any
+			arguments: any[]
+			environment: any
+
+			directory: slime.jrunscript.file.Directory
+			/** @deprecated */
+			workingDirectory: slime.jrunscript.file.Directory
+
+			status: number
+			stdio?: run.Stdio
+		}
+	}
+
 	export interface Exports {
 		//	environment (maybe defined erroneously in jsh.d.ts)
 
 		//	listeners
 		run: {
-			(p: invocation.Argument & {
-				as?: any
-				on?: any
-				/** @deprecated */
-				tokens?: any
-				/** @deprecated */
-				workingDirectory?: slime.jrunscript.file.Directory
-				/** @deprecated */
-				stdout?: invocation.Argument["stdio"]["output"]
-				/** @deprecated */
-				stdin?: invocation.Argument["stdio"]["input"]
-				/** @deprecated */
-				stderr?: invocation.Argument["stdio"]["error"]
-				evaluate?: (p: any) => any
-			}, events?: any): any
+			<T>(p: run.Argument & {
+				evaluate?: (p: run.Result) => T
+			}, events?: any): T
+
+			(p: run.Argument, events?: any): run.Result
 
 			evaluate: any
 			stdio: any
@@ -384,7 +409,7 @@ namespace slime.jrunscript.shell {
 	)($api,fifty);
 
 	export namespace internal.module {
-		export type RunStdio = slime.jrunscript.shell.Stdio & { close?: () => void }
+		export type RunStdio = Required<slime.jrunscript.shell.Stdio> & { close: () => void }
 	}
 
 	(

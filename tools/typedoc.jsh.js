@@ -48,7 +48,6 @@
 						jsh.shell.exit(result.status);
 					}
 				});
-				jsh.shell.exit(result.status);
 			}
 		)({ options: {}, arguments: jsh.script.arguments })
 	}

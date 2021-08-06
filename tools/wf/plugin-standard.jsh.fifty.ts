@@ -200,7 +200,7 @@ namespace slime.jsh.wf {
 				fifty.tests.interface.tsc = function() {
 					var repository = test.fixtures.project();
 
-					var tscresult: { status: number, stdio: any } = jsh.shell.run({
+					var tscresult: { status: number, stdio?: any } = jsh.shell.run({
 						command: test.fixtures.wf,
 						arguments: ["tsc"],
 						directory: repository.directory,
@@ -248,7 +248,7 @@ namespace slime.jsh.wf {
 							return result;
 						}
 
-						var before: { status: number, stdio: any } = tsc();
+						var before: { status: number, stdio?: any } = tsc();
 						fifty.verify(before).status.is(0);
 
 						var wfjs = repository.directory.getFile("wf.js");
@@ -261,7 +261,7 @@ namespace slime.jsh.wf {
 						//	the issue claimed that a stack trace was dumped when tsc failed under nashorn, but there is no stack
 						//	trace, as the below output indicates. So hard to assert that there's no stack trace without knowing
 						//	what it would look like; disabling output since it is just manually-checked clutter
-						var after: { status: number, stdio: any } = tsc({ JSH_ENGINE: "nashorn" });
+						var after: { status: number, stdio?: any } = tsc({ JSH_ENGINE: "nashorn" });
 						fifty.verify(after).status.is(1);
 						if (false) {
 							jsh.shell.console("output = [" + after.stdio.output + "]");
@@ -327,7 +327,7 @@ namespace slime.jsh.wf {
 					fifty.verify(r1).status.is(0);
 
 					repository.directory.getRelativePath("b").write("", { append: false });
-					var result: { status: number, stdio: any } = jsh.shell.run({
+					var result: { status: number, stdio?: any } = jsh.shell.run({
 						command: test.fixtures.wf,
 						arguments: ["commit", "--message", "b"],
 						directory: repository.directory,

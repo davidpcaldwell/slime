@@ -54,7 +54,7 @@ namespace slime {
 						repository.config({ set: { name: "user.name", value: "foo" }});
 						repository.config({ set: { name: "user.email", value: "bar@example.com" }});
 					},
-					wf: function(repository: slime.jrunscript.git.repository.Local, p: any): { status: number, stdio: { output: string, error: string }} {
+					wf: function(repository: slime.jrunscript.git.repository.Local, p: any): { status: number, stdio?: { output?: string, error?: string }} {
 						return jsh.shell.run({
 							command: repository.directory.getFile("wf"),
 							arguments: p.arguments,
