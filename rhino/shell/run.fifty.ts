@@ -14,9 +14,9 @@ namespace slime.jrunscript.shell.internal.run {
 
 	export interface Invocation {
 		command: any
-		arguments: any[]
-		environment: any
-		directory: slime.jrunscript.file.Directory
+		arguments?: any[]
+		environment?: any
+		directory?: slime.jrunscript.file.Directory
 	}
 
 	export interface Result {

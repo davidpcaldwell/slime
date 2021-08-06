@@ -410,6 +410,17 @@ namespace slime.jrunscript.shell {
 
 	export namespace internal.module {
 		export type RunStdio = Required<slime.jrunscript.shell.Stdio> & { close: () => slime.jrunscript.shell.run.Stdio }
+		export type Invocation = {
+			configuration: {
+				command: any
+				arguments: any[]
+			}
+			result: {
+				command: any
+				arguments: any[]
+				as: string
+			}
+		}
 	}
 
 	(

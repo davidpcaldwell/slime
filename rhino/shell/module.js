@@ -185,79 +185,94 @@
 				}
 			);
 
-			var invocation = (function() {
-				var rv = {
-					configuration: {},
-					result: {}
-				};
-
-				var toCommandToken = function(invocation) {
-					var toErrorMessageString = function(v) {
-						if (typeof(v) == "undefined") return "(undefined)";
-						if (v === null) return "(null)";
-						return String(v);
+			/** @type { slime.jrunscript.shell.internal.module.Invocation } */
+			var invocation = (
+				/**
+				 *
+				 * @returns { slime.jrunscript.shell.internal.module.Invocation }
+				 */
+				function() {
+					/** @type { slime.jrunscript.shell.internal.module.Invocation } */
+					var rv = {
+						configuration: {
+							command: void(0),
+							arguments: void(0)
+						},
+						result: {
+							command: void(0),
+							arguments: void(0),
+							as: void(0)
+						}
 					};
 
-					var toErrorMessage = function() {
-						var full = [invocation.command];
-						if (invocation.arguments) full = full.concat(invocation.arguments);
-						return full.map(toErrorMessageString).join(" ");
+					var toCommandToken = function(invocation) {
+						var toErrorMessageString = function(v) {
+							if (typeof(v) == "undefined") return "(undefined)";
+							if (v === null) return "(null)";
+							return String(v);
+						};
+
+						var toErrorMessage = function() {
+							var full = [invocation.command];
+							if (invocation.arguments) full = full.concat(invocation.arguments);
+							return full.map(toErrorMessageString).join(" ");
+						}
+
+						return function(arg/*,index*/) {
+							var index = (arguments.length > 1) ? arguments[1] : null;
+							var label = (typeof(index) == "number") ? "property 'arguments[" + String(index) + "]'" : "property 'command'";
+							if (typeof(arg) == "undefined") {
+								throw new TypeError(label + " cannot be undefined; full invocation = " + toErrorMessage());
+							}
+							if (arg === null) throw new TypeError(label + " must not be null; full invocation = " + toErrorMessage());
+							if (arg && typeof(arg) == "object") return String(arg);
+							//	TODO	the below check does not allow the empty string to be a token
+							if (arg && typeof(arg) == "string") return arg;
+							throw new TypeError(label + " is not a string nor an object that can be converted to string.");
+						};
 					}
 
-					return function(arg/*,index*/) {
-						var index = (arguments.length > 1) ? arguments[1] : null;
-						var label = (typeof(index) == "number") ? "property 'arguments[" + String(index) + "]'" : "property 'command'";
-						if (typeof(arg) == "undefined") {
-							throw new TypeError(label + " cannot be undefined; full invocation = " + toErrorMessage());
-						}
-						if (arg === null) throw new TypeError(label + " must not be null; full invocation = " + toErrorMessage());
-						if (arg && typeof(arg) == "object") return String(arg);
-						//	TODO	the below check does not allow the empty string to be a token
-						if (arg && typeof(arg) == "string") return arg;
-						throw new TypeError(label + " is not a string nor an object that can be converted to string.");
-					};
-				}
+					// var toCommandToken = function(arg) {
+					// 	var index = (arguments.length > 1) ? arguments[1] : null;
+					// 	var label = (typeof(index) == "number") ? "token " + String(index) + " '" + arg + "'" : "command";
+					// 	if (typeof(arg) == "undefined") {
+					// 		throw new TypeError(label + " cannot be undefined.");
+					// 	}
+					// 	if (arg === null) throw new TypeError(label + " cannot be null.");
+					// 	if (arg && typeof(arg) == "object") return String(arg);
+					// 	//	TODO	the below check does not allow the empty string to be a token
+					// 	if (arg && typeof(arg) == "string") return arg;
+					// 	throw new TypeError(label + " is not a string nor an object that can be converted to string.");
+					// }
 
-				// var toCommandToken = function(arg) {
-				// 	var index = (arguments.length > 1) ? arguments[1] : null;
-				// 	var label = (typeof(index) == "number") ? "token " + String(index) + " '" + arg + "'" : "command";
-				// 	if (typeof(arg) == "undefined") {
-				// 		throw new TypeError(label + " cannot be undefined.");
-				// 	}
-				// 	if (arg === null) throw new TypeError(label + " cannot be null.");
-				// 	if (arg && typeof(arg) == "object") return String(arg);
-				// 	//	TODO	the below check does not allow the empty string to be a token
-				// 	if (arg && typeof(arg) == "string") return arg;
-				// 	throw new TypeError(label + " is not a string nor an object that can be converted to string.");
-				// }
-
-				if (p.tokens) {
-					return $api.deprecate(function() {
-						//	TODO	ensure array
-						if (p.tokens.length == 0) {
-							throw new TypeError("tokens cannot be zero-length.");
-						}
-						//	Use a raw copy of the arguments for the callback
-						rv.result.command = p.tokens[0];
-						rv.result.arguments = p.tokens.slice(1);
-						//	Convert the arguments to strings for invocation
-						var configuration = p.tokens.map(toCommandToken(rv.result));
-						rv.configuration.command = configuration[0];
-						rv.configuration.arguments = configuration.slice(1);
+					if (p.tokens) {
+						return $api.deprecate(function() {
+							//	TODO	ensure array
+							if (p.tokens.length == 0) {
+								throw new TypeError("tokens cannot be zero-length.");
+							}
+							//	Use a raw copy of the arguments for the callback
+							rv.result.command = p.tokens[0];
+							rv.result.arguments = p.tokens.slice(1);
+							//	Convert the arguments to strings for invocation
+							var configuration = p.tokens.map(toCommandToken(rv.result));
+							rv.configuration.command = configuration[0];
+							rv.configuration.arguments = configuration.slice(1);
+							return rv;
+						})();
+					} else if (typeof(p.command) != "undefined") {
+						rv.result.command = p.command;
+						//	TODO	switch to $api.Function.mutating
+						rv.result.arguments = p.arguments;
+						rv.result.as = p.as;
+						rv.configuration.command = toCommandToken(rv.result)(p.command);
+						rv.configuration.arguments = (p.arguments) ? p.arguments.map(toCommandToken(rv.result)) : [];
 						return rv;
-					})();
-				} else if (typeof(p.command) != "undefined") {
-					rv.result.command = p.command;
-					//	TODO	switch to $api.Function.mutating
-					rv.result.arguments = p.arguments;
-					rv.result.as = p.as;
-					rv.configuration.command = toCommandToken(rv.result)(p.command);
-					rv.configuration.arguments = (p.arguments) ? p.arguments.map(toCommandToken(rv.result)) : [];
-					return rv;
-				} else {
-					throw new TypeError("Required: command property or tokens property");
+					} else {
+						throw new TypeError("Required: command property or tokens property");
+					}
 				}
-			})();
+			)();
 
 			if (as) {
 				if ($exports.os.name == "Linux") {
@@ -289,15 +304,14 @@
 				}
 			);
 			/**
-			 * @type { slime.jrunscript.shell.run.Result }
+			 * @type { slime.jrunscript.shell.run.Argument }
 			 */
 			var input = {
 				command: invocation.result.command,
 				arguments: invocation.result.arguments,
 				environment: environment,
 				directory: void(0),
-				workingDirectory: void(0),
-				status: void(0)
+				workingDirectory: void(0)
 			};
 			if (directory) {
 				if (typeof(directory) != "undefined") {
