@@ -236,6 +236,8 @@ namespace slime.jrunscript {
 					getErrorStream(): slime.jrunscript.native.java.io.InputStream
 					getOutputStream(): slime.jrunscript.native.java.io.OutputStream
 					getResponseCode(): number
+					getHeaderFieldKey(i: number): slime.jrunscript.native.java.lang.String
+					getHeaderField(i: number): slime.jrunscript.native.java.lang.String
 				}
 
 				export interface URL {

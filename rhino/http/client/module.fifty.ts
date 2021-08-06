@@ -16,7 +16,7 @@ namespace slime.jrunscript.http.client {
 		authorization?: Authorization
 		proxy?: any
 		body?: request.Body
-		timeout?: any
+		timeout?: Timeouts
 		on?: any
 	}
 
@@ -42,10 +42,7 @@ namespace slime.jrunscript.http.client {
 			message: string
 		}
 		headers: (
-			{
-				name: string
-				value: string
-			}[]
+			Header[]
 			&
 			{
 				get: any
@@ -56,6 +53,11 @@ namespace slime.jrunscript.http.client {
 			//	TODO	Possibly should be slime.jrunscript.InputStream or slime.jrunscript.io.InputStream
 			stream: slime.jrunscript.runtime.io.InputStream
 		}
+	}
+
+	export interface Header {
+		name: string
+		value: string
 	}
 
 	type Authorization = string
@@ -88,32 +90,53 @@ namespace slime.jrunscript.http.client {
 	export type spi = (
 		p: {
 			method: string
-			url: any
-			headers: any
+			url: slime.web.Url
+			headers: Header[]
 			proxy: any
-			timeout: any
+			timeout: Timeouts
 			body: Request["body"]
-		},
-		cookies?: any
+		}
 	) => {
 		status: {
 			code: number
 			reason: string
 		}
-		headers: (
-			{
-				name: string
-				value: string
-			}[]
-		)
+		headers: Header[]
 		stream: slime.jrunscript.runtime.io.InputStream
+	}
+
+	export namespace internal {
+		export interface Cookies {
+			set(url: slime.web.Url, headers: Header[])
+			get(url: slime.web.Url, headers: Header[])
+		}
+	}
+
+	export interface Proxy {
+		http?: {
+			host: any
+			port: any
+		}
+		https?: {
+			host: any
+			port: any
+		}
+		socks?: {
+			host: any
+			port: any
+		}
+	}
+
+	export interface Timeouts {
+		connect: any
+		read: any
 	}
 
 	export interface Exports {
 		Client: new (configuration?: {
 			authorization?: any
 			spi?: (standard: spi) => spi
-			proxy?: any
+			proxy?: Proxy | ((p: Request) => Proxy)
 			TREAT_302_AS_303?: boolean
 		}) => Client
 

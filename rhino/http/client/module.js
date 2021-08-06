@@ -50,6 +50,131 @@
 		//			this much more advanced; probably should configure at instance level, not module level
 		var debug = ($context.debug) ? $context.debug : function(){};
 
+		/**
+		 * @returns { slime.jrunscript.http.client.internal.Cookies }
+		 */
+		function inonitCookies() {
+			var cookies = [];
+
+			var toString = function() {
+				return "Cookies: " + $context.api.js.toLiteral(cookies);
+			};
+
+			/** @type { slime.jrunscript.http.client.internal.Cookies["set"] } */
+			var set = function(url,headers) {
+				var sets = headers.filter( function(header) {
+					return header.name.toLowerCase() == "set-cookie";
+				});
+				sets.forEach( function(header) {
+					var trim = function(str) {
+						return str.replace(/^\s\s*/, "").replace(/\s\s*$/, "");
+					}
+
+					var parts = header.value.split(";");
+					var nvp = parts[0];
+					var cookie = {};
+					cookie.name = nvp.split("=")[0];
+					cookie.value = nvp.split("=").slice(1).join("=");
+					var jurl = new Packages.java.net.URL(url.toString());
+					cookie.domain = String(jurl.getHost());
+					cookie.path = String(jurl.getPath());
+					parts.slice(1).forEach( function(part) {
+						part = trim(part);
+						//	See http://tools.ietf.org/html/rfc6265#section-5.2.5 and 5.2.6 for documentation on httponly, secure
+						if (part.toLowerCase() == "httponly") {
+							cookie.httponly = true;
+						} else if (part.toLowerCase() == "secure") {
+							cookie.secure = true;
+						} else {
+							var attribute = part.split("=")[0].toLowerCase();
+							attribute = trim(attribute);
+							var value = part.split("=")[1];
+							value = trim(value);
+							if (attribute == "expires") {
+								cookie.expires = value;
+							} else if (attribute == "max-age") {
+								cookie.maxage = value;
+							} else if (attribute == "domain") {
+								cookie.domain = value;
+							} else if (attribute == "path") {
+								cookie.path = value;
+							}
+						}
+					});
+					//	put cookie at front of list so it automatically supersedes older ones
+					cookies.unshift(cookie);
+				})
+			}
+
+			/** @type { slime.jrunscript.http.client.internal.Cookies["get"] } */
+			var get = function(url,headers) {
+				//	TODO	obviously this does not work, but passes current unit tests because no cookies are apparently needed for
+				//			the Google module, which is the only module that uses the gae implementation currently
+				//	TODO	obviously this overincludes cookies
+				cookies.forEach( function(cookie) {
+					headers.push({ name: "Cookie", value: cookie.name + "=" + cookie.value });
+				});
+			}
+
+			var rv = {
+				set: set,
+				get: get
+			};
+
+			rv.toString = toString;
+
+			return rv;
+		}
+
+		/**
+		 * @returns { slime.jrunscript.http.client.internal.Cookies }
+		 */
+		function javaCookies() {
+			var peer = new Packages.java.net.CookieManager();
+			peer.setCookiePolicy(Packages.java.net.CookiePolicy.ACCEPT_ALL);
+
+			var toMap = function(headers) {
+				var rv = new Packages.java.util.HashMap();
+				headers.forEach(function(header) {
+					if (!rv.get(header.name)) {
+						rv.put(header.name,new Packages.java.util.ArrayList());
+					}
+					rv.get(header.name).add(header.value);
+				});
+				return rv;
+			}
+
+			var fromMap = function(cookies,headers) {
+				var i = cookies.keySet().iterator();
+				while(i.hasNext()) {
+					var $name = i.next();
+					var $values = cookies.get($name);
+					var name = String($name);
+					var j = $values.iterator();
+					while(j.hasNext()) {
+						headers.push({ name: name, value: String(j.next()) });
+					}
+				}
+			}
+
+			/** @type { slime.jrunscript.http.client.internal.Cookies } */
+			var rv = {
+				set: function(url,headers) {
+					peer.put(new Packages.java.net.URI(url.toString()),toMap(headers));
+				},
+				get: function(url,headers) {
+					var cookies = peer.get(new Packages.java.net.URI(url.toString()),toMap(headers));
+					fromMap(cookies,headers);
+				}
+			}
+
+			rv.toString = function() {
+				return peer.getCookieStore().getCookies().toString();
+			}
+
+			return rv;
+		}
+
 		var useJavaCookieManager = (function() {
 			var getProperty = function(name) {
 				var _rv = Packages.java.lang.System.getProperty(name);
@@ -64,105 +189,9 @@
 
 		var Cookies = function() {
 			if (!useJavaCookieManager) {
-				var cookies = [];
-
-				this.toString = function() {
-					return "Cookies: " + $context.api.js.toLiteral(cookies);
-				};
-
-				this.set = function(url,headers) {
-					var sets = headers.filter( function(header) {
-						return header.name.toLowerCase() == "set-cookie";
-					});
-					sets.forEach( function(header) {
-						var trim = function(str) {
-							return str.replace(/^\s\s*/, "").replace(/\s\s*$/, "");
-						}
-
-						var parts = header.value.split(";");
-						var nvp = parts[0];
-						var cookie = {};
-						cookie.name = nvp.split("=")[0];
-						cookie.value = nvp.split("=").slice(1).join("=");
-						var jurl = new Packages.java.net.URL(url);
-						cookie.domain = String(jurl.getHost());
-						cookie.path = String(jurl.getPath());
-						parts.slice(1).forEach( function(part) {
-							part = trim(part);
-							//	See http://tools.ietf.org/html/rfc6265#section-5.2.5 and 5.2.6 for documentation on httponly, secure
-							if (part.toLowerCase() == "httponly") {
-								cookie.httponly = true;
-							} else if (part.toLowerCase() == "secure") {
-								cookie.secure = true;
-							} else {
-								var attribute = part.split("=")[0].toLowerCase();
-								attribute = trim(attribute);
-								var value = part.split("=")[1];
-								value = trim(value);
-								if (attribute == "expires") {
-									cookie.expires = value;
-								} else if (attribute == "max-age") {
-									cookie.maxage = value;
-								} else if (attribute == "domain") {
-									cookie.domain = value;
-								} else if (attribute == "path") {
-									cookie.path = value;
-								}
-							}
-						});
-						//	put cookie at front of list so it automatically supersedes older ones
-						cookies.unshift(cookie);
-					})
-				}
-
-				this.get = function(url,headers) {
-					//	TODO	obviously this does not work, but passes current unit tests because no cookies are apparently needed for
-					//			the Google module, which is the only module that uses the gae implementation currently
-					//	TODO	obviously this overincludes cookies
-					cookies.forEach( function(cookie) {
-						headers.push({ name: "Cookie", value: cookie.name + "=" + cookie.value });
-					});
-				}
+				return inonitCookies();
 			} else {
-				var peer = new Packages.java.net.CookieManager();
-				peer.setCookiePolicy(Packages.java.net.CookiePolicy.ACCEPT_ALL);
-
-				var toMap = function(headers) {
-					var rv = new Packages.java.util.HashMap();
-					headers.forEach(function(header) {
-						if (!rv.get(header.name)) {
-							rv.put(header.name,new Packages.java.util.ArrayList());
-						}
-						rv.get(header.name).add(header.value);
-					});
-					return rv;
-				}
-
-				var fromMap = function(cookies,headers) {
-					var i = cookies.keySet().iterator();
-					while(i.hasNext()) {
-						var $name = i.next();
-						var $values = cookies.get($name);
-						var name = String($name);
-						var j = $values.iterator();
-						while(j.hasNext()) {
-							headers.push({ name: name, value: String(j.next()) });
-						}
-					}
-				}
-
-				this.toString = function() {
-					return peer.getCookieStore().getCookies().toString();
-				}
-
-				this.set = function(url,headers) {
-					peer.put(new Packages.java.net.URI(url),toMap(headers));
-				}
-
-				this.get = function(url,headers) {
-					var cookies = peer.get(new Packages.java.net.URI(url),toMap(headers));
-					fromMap(cookies,headers);
-				}
+				return javaCookies();
 			}
 		};
 
@@ -171,8 +200,15 @@
 		 * @returns { ReturnType<slime.jrunscript.http.client.spi> }
 		 */
 		function spi(p) {
+			/**
+			 *
+			 * @param { string } method
+			 * @param { slime.web.Url } url
+			 * @param { slime.jrunscript.http.client.Header[] } headers
+			 * @param { { proxy: slime.jrunscript.http.client.Proxy, timeout: slime.jrunscript.http.client.Timeouts } } mode
+			 * @returns { slime.jrunscript.native.java.net.URLConnection }
+			 */
 			var connect = function(method,url,headers,mode) {
-				if (typeof(url) == "string") url = $context.api.web.Url.parse(url);
 				var hostHeader;
 				if (url.scheme == "https" && mode.proxy && mode.proxy.https) {
 					//	Currently implemented by re-writing the URL; would be better to implement a tunnel through an HTTP proxy but
@@ -239,6 +275,11 @@
 				return rv;
 			}
 
+			/**
+			 *
+			 * @param { slime.jrunscript.native.java.net.URLConnection } $urlConnection
+			 * @returns { slime.jrunscript.http.client.Header[] }
+			 */
 			var getHeaders = function($urlConnection) {
 				var headers = [];
 				var more = true;
@@ -256,7 +297,7 @@
 				return headers;
 			}
 
-			var $urlConnection = connect(p.method,p.url.toString(),p.headers,{ proxy: p.proxy, timeout: p.timeout });
+			var $urlConnection = connect(p.method,p.url,p.headers,{ proxy: p.proxy, timeout: p.timeout });
 			if (p.body) {
 				$urlConnection.setDoOutput(true);
 				if (p.body.type) {
@@ -308,18 +349,22 @@
 					throw new TypeError("A message body must specify its content; no p.body.stream or p.body.string found.");
 				}
 			}
-			try {
-				var $input = $urlConnection.getInputStream();
-			} catch (e) {
-				var $error = $urlConnection.getErrorStream();
-			}
-			var result = ($input) ? $input : $error;
+
+			var result = (function() {
+				try {
+					return $urlConnection.getInputStream();
+				} catch (e) {
+					return $urlConnection.getErrorStream();
+				}
+			})();
+
 			/** @type { ReturnType<slime.jrunscript.http.client.spi> } */
 			var rv = {
 				status: getStatus($urlConnection),
 				headers: getHeaders($urlConnection),
 				stream: (result) ? $context.api.io.java.adapt(result) : null
 			}
+
 			return rv;
 		};
 
@@ -335,7 +380,7 @@
 
 				/** @type { (v: any) => v is Array } */
 				var isArray = function(v) {
-					return v instanceof Array
+					return v instanceof Array;
 				}
 
 				/** @type { (v: any) => v is string } */
@@ -345,7 +390,7 @@
 
 				/** @type { (v: any) => v is number } */
 				var isNumber = function(v) {
-					return typeof(v) == "number"
+					return typeof(v) == "number";
 				}
 
 				for (var x in p) {
@@ -373,7 +418,7 @@
 		 * @param { ConstructorParameters<slime.jrunscript.http.client.Exports["Client"]>[0] } configuration
 		 */
 		var Client = function(configuration) {
-			var cookies = new Cookies();
+			var cookies = Cookies();
 
 			/**
 			 * @param { slime.jrunscript.http.client.Request & { evaluate?: any, parse?: any } } p
@@ -410,9 +455,6 @@
 				if (authorization) {
 					headers.push({ name: "Authorization", value: authorization });
 				}
-				cookies.get(url,headers);
-
-				var myspi = (configuration && configuration.spi) ? configuration.spi(spi) : spi;
 
 				var proxy = (function() {
 					if (p.proxy) return p.proxy;
@@ -425,7 +467,9 @@
 					}
 				})();
 
-				//	TODO	is the cookies argument really used by alternative spis?
+				var myspi = (configuration && configuration.spi) ? configuration.spi(spi) : spi;
+
+				cookies.get(url,headers);
 				var spiresponse = myspi({
 					method: method,
 					url: url,
@@ -433,7 +477,8 @@
 					body: p.body,
 					proxy: proxy,
 					timeout: p.timeout
-				},cookies);
+				});
+				cookies.set(url,spiresponse.headers);
 
 				/**
 				 * @this { ReturnType<slime.jrunscript.http.client.spi>["headers"] }
@@ -460,8 +505,6 @@
 					rv.get = headersGetMethod;
 					return rv;
 				}
-
-				cookies.set(url.toString(),spiresponse.headers);
 
 				// response.headers.get = function(name) {
 				// 	var values = this

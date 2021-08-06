@@ -31,7 +31,12 @@ namespace slime.jrunscript.tools.github {
 	}
 
 	export interface Exports {
-		Session: (o: any) => slime.jrunscript.tools.github.Session
+		Session: (o: {
+			credentials: {
+				user: string
+				password: string
+			}
+		}) => slime.jrunscript.tools.github.Session
 	}
 }
 
