@@ -25,7 +25,7 @@ namespace slime.$api {
 				 * @param path A resource name.
 				 * @returns The type determined from the name, or `undefined` if the type cannot be determined.
 				 */
-				 fromName(path: string): slime.mime.Type
+				fromName(path: string): slime.mime.Type
 
 				/**
 				 * @deprecated Operations on MIME {@link slime.mime.Type}s are now defined as functions rather than methods.

@@ -51,6 +51,57 @@
 		var debug = ($context.debug) ? $context.debug : function(){};
 
 		/**
+		 *
+		 * @param { slime.jrunscript.http.client.request.Body } body
+		 */
+		function getRequestBodyType(body) {
+			if (typeof(body.type) == "string") {
+				return $api.mime.Type.codec.declaration.decode(body.type);
+			} else if (!body.type) {
+				//	TODO	Would be more accurate to return null and remove the content type, but this does not seem to work; Java
+				//			seems to default to application/x-www-form-urlencoded
+				return $api.mime.Type.codec.declaration.decode("application/octet-stream");
+			} else {
+				return body.type;
+			}
+		}
+
+		/**
+		 *
+		 * @param { slime.jrunscript.http.client.request.Body } body
+		 * @returns { slime.jrunscript.runtime.io.InputStream }
+		 */
+		function getRequestBodyStream(body) {
+			//	TODO	Does not handle stream/$stream from rhino/mime
+			//			above is a very old comment; may no longer apply
+
+			/** @type { (body: slime.jrunscript.http.client.request.Body) => body is slime.jrunscript.http.client.request.body.Stream } */
+			var isStream = function(body) {
+				return Boolean(body["stream"]);
+			}
+
+			/** @type { (body: slime.jrunscript.http.client.request.Body) => body is slime.jrunscript.http.client.request.body.Binary } */
+			var isBinary = function(body) {
+				return Boolean(body["read"] && body["read"].binary);
+			}
+
+			/** @type { (body: slime.jrunscript.http.client.request.Body) => body is slime.jrunscript.http.client.request.body.String } */
+			var isString = function(body) {
+				return typeof body["string"] != "undefined";
+			}
+
+			if (isStream(body)) return body.stream;
+			if (isBinary(body)) return body.read.binary();
+			if (isString(body)) {
+				var buffer = new $context.api.io.Buffer();
+				buffer.writeText().write(body.string);
+				buffer.writeText().close();
+				return buffer.readBinary();
+			}
+			throw new TypeError("Body is not a recognized type: " + body);
+		}
+
+		/**
 		 * @returns { slime.jrunscript.http.client.internal.Cookies }
 		 */
 		function inonitCookies() {
@@ -205,10 +256,15 @@
 			 * @param { string } method
 			 * @param { slime.web.Url } url
 			 * @param { slime.jrunscript.http.client.Header[] } headers
-			 * @param { { proxy: slime.jrunscript.http.client.Proxy, timeout: slime.jrunscript.http.client.Timeouts } } mode
+			 * @param { slime.jrunscript.http.client.Proxy } proxy
+			 * @param { slime.jrunscript.http.client.Timeouts } timeouts
 			 * @returns { slime.jrunscript.native.java.net.URLConnection }
 			 */
-			var connect = function(method,url,headers,mode) {
+			var connect = function(method,url,headers,proxy,timeouts) {
+				var mode = {
+					proxy: proxy,
+					timeout: timeouts
+				}
 				var hostHeader;
 				if (url.scheme == "https" && mode.proxy && mode.proxy.https) {
 					//	Currently implemented by re-writing the URL; would be better to implement a tunnel through an HTTP proxy but
@@ -297,57 +353,25 @@
 				return headers;
 			}
 
-			var $urlConnection = connect(p.method,p.url,p.headers,{ proxy: p.proxy, timeout: p.timeout });
+			var $urlConnection = connect(p.method, p.url, p.headers, p.proxy, p.timeout);
+
 			if (p.body) {
 				$urlConnection.setDoOutput(true);
-				if (p.body.type) {
-					if (typeof(p.body.type) == "string") {
-						$urlConnection.setRequestProperty("Content-Type", p.body.type);
-					} else {
-						$urlConnection.setRequestProperty("Content-Type", $api.mime.Type.codec.declaration.encode(p.body.type));
+
+				$urlConnection.setRequestProperty(
+					"Content-Type",
+					$api.mime.Type.codec.declaration.encode(getRequestBodyType(p.body))
+				);
+
+				$context.api.io.Streams.binary.copy(
+					getRequestBodyStream(p.body),
+					$context.api.io.java.adapt($urlConnection.getOutputStream()),
+					{
+						onFinish: function(from,to) {
+							to.close();
+						}
 					}
-				} else {
-					//	TODO	Would be more accurate to remove the content type, but this does not seem to work; seems to default
-					//			to application/x-www-form-urlencoded
-					$urlConnection.setRequestProperty("Content-Type", "application/octet-stream");
-				}
-
-				/** @type { (body: slime.jrunscript.http.client.request.Body) => body is slime.jrunscript.http.client.request.body.Stream } */
-				var isStream = function(body) {
-					return Boolean(body["stream"]);
-				}
-
-				/** @type { (body: slime.jrunscript.http.client.request.Body) => body is slime.jrunscript.http.client.request.body.Binary } */
-				var isBinary = function(body) {
-					return Boolean(body["read"] && body["read"].binary);
-				}
-
-				/** @type { (body: slime.jrunscript.http.client.request.Body) => body is slime.jrunscript.http.client.request.body.String } */
-				var isString = function(body) {
-					return typeof body["string"] != "undefined";
-				}
-
-				/** @type { (java: slime.jrunscript.native.java.io.OutputStream) => slime.jrunscript.runtime.io.OutputStream } */
-				var outputStream = function(java) {
-					return $context.api.io.java.adapt(java);
-				}
-
-				//	TODO	Does not handle stream/$stream from rhino/mime
-				if (false) {
-					//	just syntax to help chaining
-				} else if (isStream(p.body)) {
-					$context.api.io.Streams.binary.copy(p.body.stream,outputStream($urlConnection.getOutputStream()));
-					$urlConnection.getOutputStream().close();
-				} else if (isBinary(p.body)) {
-					$context.api.io.Streams.binary.copy(p.body.read.binary(),outputStream($urlConnection.getOutputStream()));
-					$urlConnection.getOutputStream().close();
-				} else if (isString(p.body)) {
-					var writer = $context.api.io.java.adapt($urlConnection.getOutputStream()).character();
-					writer.write(p.body.string);
-					writer.close();
-				} else {
-					throw new TypeError("A message body must specify its content; no p.body.stream or p.body.string found.");
-				}
+				);
 			}
 
 			var result = (function() {
@@ -366,7 +390,7 @@
 			}
 
 			return rv;
-		};
+		}
 
 		/**
 		 * @param { slime.jrunscript.http.client.Pairs } p
@@ -502,19 +526,9 @@
 				var withHeadersGet = function(headers) {
 					/** @type { slime.jrunscript.http.client.Response["headers"] } */
 					var rv = Object.assign(headers, { get: void(0) });
-					rv.get = headersGetMethod;
+					rv["get"] = headersGetMethod;
 					return rv;
 				}
-
-				// response.headers.get = function(name) {
-				// 	var values = this
-				// 		.filter(function(header) { return header.name.toUpperCase() == name.toUpperCase() })
-				// 		.map(function(header) { return header.value; })
-				// 	;
-				// 	if (values.length == 0) return null;
-				// 	if (values.length == 1) return values[0];
-				// 	return values;
-				// }
 
 				var isRedirect = function(status) {
 					return (status.code >= 300 && status.code <= 303) || status.code == 307;

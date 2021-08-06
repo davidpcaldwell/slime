@@ -33,21 +33,14 @@ namespace slime.jrunscript.http.client {
 
 	export interface Response {
 		request: Request
+		/**
+		 * See https://datatracker.ietf.org/doc/html/rfc7230#section-3.1.2
+		 */
 		status: {
 			code: number
 			reason: string
-			/**
-			 * @deprecated Same as `reason`
-			 */
-			message: string
 		}
-		headers: (
-			Header[]
-			&
-			{
-				get: any
-			}
-		)
+		headers: Header[]
 		body: {
 			type: slime.mime.Type
 			//	TODO	Possibly should be slime.jrunscript.InputStream or slime.jrunscript.io.InputStream
