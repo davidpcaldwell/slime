@@ -118,25 +118,6 @@
 		/**
 		 *
 		 * @param { Parameters<slime.jrunscript.shell.Exports["run"]>[0] } p
-		 */
-		var getDirectory = function(p) {
-			var getDirectoryProperty = function(p) {
-				if (p.directory && p.directory.pathname) {
-					return p.directory;
-				}
-			}
-
-			if (p.directory) {
-				return getDirectoryProperty(p);
-			}
-			if (p.workingDirectory) {
-				return $api.deprecate(getDirectoryProperty)({ directory: p.workingDirectory });
-			}
-		};
-
-		/**
-		 *
-		 * @param { Parameters<slime.jrunscript.shell.Exports["run"]>[0] } p
 		 * @param { any } events
 		 */
 		var run = function(p,events) {
@@ -144,10 +125,12 @@
 			if (p.as) {
 				as = p.as;
 			}
-			var stdioProperty = scripts.invocation.invocation.stdio.extractStdioIncludingDeprecatedForm(p);
+
+			var stdioProperty = scripts.invocation.stdio.forModuleRunArgument(p);
 			var stdio = scripts.run.buildStdio(stdioProperty);
 			fallbackToParentStdio(stdio);
-			var directory = getDirectory(p);
+
+			var directory = scripts.invocation.directory.forModuleRunArgument(p);
 
 			var environment = (function(now,argument) {
 				if (typeof(argument) == "undefined") return now;
@@ -347,7 +330,7 @@
 				 */
 				function getStdio(p) {
 					//	TODO	the getStdio function is currently used in jsh.js, requiring us to export it; is that the best structure?
-					var stdio = scripts.invocation.invocation.stdio.extractStdioIncludingDeprecatedForm(p);
+					var stdio = scripts.invocation.stdio.forModuleRunArgument(p);
 
 					if (stdio) {
 						var rv = scripts.run.buildStdio(stdio);

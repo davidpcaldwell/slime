@@ -152,10 +152,11 @@ namespace slime.jrunscript.shell {
 		run: {
 			(p: invocation.Argument & {
 				as?: any
-				tokens?: any
 				on?: any
 				/** @deprecated */
-				workingDirectory?: any
+				tokens?: any
+				/** @deprecated */
+				workingDirectory?: slime.jrunscript.file.Directory
 				/** @deprecated */
 				stdout?: invocation.Argument["stdio"]["output"]
 				/** @deprecated */

@@ -429,7 +429,7 @@ namespace slime.jrunscript {
 					currentTimeMillis(): number
 					setProperty(name: string, value: string)
 					getProperty(name: string): slime.jrunscript.native.java.lang.String
-					getProperties(): any
+					getProperties(): slime.jrunscript.native.java.util.Properties
 					exit(status: number)
 					getenv(name: string): string
 					getenv(): any

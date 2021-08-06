@@ -5,7 +5,17 @@
 //	END LICENSE
 
 namespace slime.jrunscript.shell.internal.invocation {
-	export type Export = Pick<slime.jrunscript.shell.Exports, "invocation">
+	export interface Export {
+		invocation: slime.jrunscript.shell.Exports["invocation"]
+
+		stdio: {
+			forModuleRunArgument: (p: Parameters<slime.jrunscript.shell.Exports["run"]>[0]) => Parameters<slime.jrunscript.shell.Exports["run"]>[0]["stdio"]
+		}
+
+		directory: {
+			forModuleRunArgument: (p: Parameters<slime.jrunscript.shell.Exports["run"]>[0]) => slime.jrunscript.file.Directory
+		}
+	}
 
 	export type Factory = slime.loader.Product<Context,Export>
 }
@@ -94,7 +104,7 @@ namespace slime.jrunscript.shell {
 	}
 
 	export interface Exports {
-		 invocation: {
+		invocation: {
 			 //	TODO	probably should be conditional based on presence of sudo tool
 			 /**
 			  * Given a set of `sudo` settings, provides a function that can convert an {@link Invocation} to an equivalent
@@ -104,10 +114,6 @@ namespace slime.jrunscript.shell {
 				 nocache?: boolean
 				 askpass?: string | slime.jrunscript.file.File
 			 }) => (p: Invocation) => Invocation
-
-			 stdio: {
-				extractStdioIncludingDeprecatedForm: (p: Parameters<slime.jrunscript.shell.Exports["run"]>[0]) => Parameters<slime.jrunscript.shell.Exports["run"]>[0]["stdio"]
-			 }
 		}
 	}
 

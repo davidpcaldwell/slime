@@ -8,7 +8,7 @@
 (
 	/**
 	 * @param { slime.$api.Global } $api
-	 * @param { (value: slime.jrunscript.shell.internal.invocation.Export) => void } $export
+	 * @param { slime.loader.Export<slime.jrunscript.shell.internal.invocation.Export> } $export
 	 */
 	function($api,$export) {
 		/**
@@ -30,6 +30,31 @@
 			}
 
 			return {};
+		}
+
+		/**
+		 *
+		 * @param { Parameters<slime.jrunscript.shell.Exports["run"]>[0] } p
+		 * @return { slime.jrunscript.file.Directory }
+		 */
+		function directoryForModuleRunArgument(p) {
+			/**
+			 *
+			 * @param { { directory?: Parameters<slime.jrunscript.shell.Exports["run"]>[0]["directory"] } } p
+			 * @return { slime.jrunscript.file.Directory }
+			 */
+			var getDirectoryProperty = function(p) {
+				if (p.directory && p.directory.pathname) {
+					return p.directory;
+				}
+			}
+
+			if (p.directory) {
+				return getDirectoryProperty(p);
+			}
+			if (p.workingDirectory) {
+				return $api.deprecate(getDirectoryProperty)({ directory: p.workingDirectory });
+			}
 		}
 
 		$export({
@@ -56,10 +81,13 @@
 							stdio: invocation.stdio
 						});
 					}
-				},
-				stdio: {
-					extractStdioIncludingDeprecatedForm: extractStdioIncludingDeprecatedForm
 				}
+			},
+			stdio: {
+				forModuleRunArgument: extractStdioIncludingDeprecatedForm
+			},
+			directory: {
+				forModuleRunArgument: directoryForModuleRunArgument
 			}
 		})
 	}
