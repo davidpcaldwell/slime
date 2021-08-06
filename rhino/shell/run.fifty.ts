@@ -12,6 +12,18 @@ namespace slime.jrunscript.shell.internal.run {
 		}
 	}
 
+	export interface Invocation {
+		command: any
+		arguments: any[]
+		environment: any
+		directory: slime.jrunscript.file.Directory
+	}
+
+	export interface Result {
+		status: number
+		stdio: slime.jrunscript.shell.run.Stdio
+	}
+
 	export interface Export {
 		run: (
 			context: any,
@@ -20,8 +32,8 @@ namespace slime.jrunscript.shell.internal.run {
 			module: any,
 			events: any,
 			p: any,
-			result: any
-		) => void
+			invocation: Invocation
+		) => Result
 
 		buildStdio: (p: slime.jrunscript.shell.invocation.Stdio) => slime.jrunscript.shell.internal.module.RunStdio
 	}

@@ -409,7 +409,7 @@ namespace slime.jrunscript.shell {
 	)($api,fifty);
 
 	export namespace internal.module {
-		export type RunStdio = Required<slime.jrunscript.shell.Stdio> & { close: () => void }
+		export type RunStdio = Required<slime.jrunscript.shell.Stdio> & { close: () => slime.jrunscript.shell.run.Stdio }
 	}
 
 	(

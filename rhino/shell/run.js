@@ -70,11 +70,14 @@
 				listener
 			));
 
-			result.status = listener.status;
+			var rv = {
+				status: listener.status,
+				stdio: stdio.close()
+			};
 
-			result.stdio = stdio.close();
+			events.fire("terminate", $api.Object.compose(result, rv));
 
-			events.fire("terminate", result);
+			return rv;
 		}
 
 		/**

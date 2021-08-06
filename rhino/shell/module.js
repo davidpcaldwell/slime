@@ -291,7 +291,7 @@
 			/**
 			 * @type { slime.jrunscript.shell.run.Result }
 			 */
-			var result = {
+			var input = {
 				command: invocation.result.command,
 				arguments: invocation.result.arguments,
 				environment: environment,
@@ -301,16 +301,16 @@
 			};
 			if (directory) {
 				if (typeof(directory) != "undefined") {
-					result.directory = directory;
-					result.workingDirectory = directory;
-					$api.deprecate(result,"workingDirectory");
+					input.directory = directory;
+					input.workingDirectory = directory;
+					$api.deprecate(input,"workingDirectory");
 				}
 			}
 
-			scripts.run.run(context, configuration, stdio, module, events, p, result);
+			var result = scripts.run.run(context, configuration, stdio, module, events, p, input);
 
 			var evaluate = (p["evaluate"]) ? p["evaluate"] : $exports.run.evaluate;
-			return evaluate(result);
+			return evaluate($api.Object.compose(input, result));
 		};
 
 		$exports.run = Object.assign(
