@@ -51,6 +51,32 @@
 		var debug = ($context.debug) ? $context.debug : function(){};
 
 		/**
+		 * @this { ReturnType<slime.jrunscript.http.client.spi>["headers"] }
+		 * @param { string } name
+		 */
+		function headersGetMethod(name) {
+			var values = this
+				.filter(function(header) { return header.name.toUpperCase() == name.toUpperCase() })
+				.map(function(header) { return header.value; })
+			;
+			if (values.length == 0) return null;
+			if (values.length == 1) return values[0];
+			return values;
+		}
+
+		/**
+		 *
+		 * @param { ReturnType<slime.jrunscript.http.client.spi>["headers"] } headers
+		 * @returns { slime.jrunscript.http.client.Response["headers"] }
+		 */
+		function withHeadersGet(headers) {
+			/** @type { slime.jrunscript.http.client.Response["headers"] } */
+			var rv = Object.assign(headers, { get: void(0) });
+			rv["get"] = headersGetMethod;
+			return rv;
+		}
+
+		/**
 		 *
 		 * @param { slime.jrunscript.http.client.request.Body } body
 		 */
@@ -251,74 +277,6 @@
 		 * @returns { ReturnType<slime.jrunscript.http.client.spi> }
 		 */
 		function spi(p) {
-			/**
-			 *
-			 * @param { string } method
-			 * @param { slime.web.Url } url
-			 * @param { slime.jrunscript.http.client.Header[] } headers
-			 * @param { slime.jrunscript.http.client.Proxy } proxy
-			 * @param { slime.jrunscript.http.client.Timeouts } timeouts
-			 * @returns { slime.jrunscript.native.java.net.URLConnection }
-			 */
-			var connect = function(method,url,headers,proxy,timeouts) {
-				var mode = {
-					proxy: proxy,
-					timeout: timeouts
-				}
-				var hostHeader;
-				if (url.scheme == "https" && mode.proxy && mode.proxy.https) {
-					//	Currently implemented by re-writing the URL; would be better to implement a tunnel through an HTTP proxy but
-					//	could not get that working with Tomcat, which returned 400 errors when https requests are sent to http listener
-					//	TODO	does this work for default port?
-					hostHeader = url.host + ((url.port) ? ":" + url.port : "");
-					url.host = mode.proxy.https.host;
-					url.port = mode.proxy.https.port;
-				}
-				var $url = new Packages.java.net.URL(url.toString());
-				debug("Requesting: " + url);
-				var $urlConnection = (function(proxy) {
-					if (!proxy) {
-						return $url.openConnection();
-					} else if (proxy.https) {
-						return $url.openConnection();
-					} else if (proxy.http || proxy.socks) {
-						var _type = (function() {
-							if (proxy.http) return {
-								type: Packages.java.net.Proxy.Type.HTTP,
-								specifier: proxy.http
-							}
-							if (proxy.socks) return {
-								type: Packages.java.net.Proxy.Type.SOCKS,
-								specifier: proxy.socks
-							};
-							throw new Error("Unrecognized proxy type in " + proxy);
-						})();
-						var _proxy = new Packages.java.net.Proxy(
-							_type.type,
-							new Packages.java.net.InetSocketAddress(_type.specifier.host,_type.specifier.port)
-						);
-						return $url.openConnection(_proxy);
-					}
-				})(mode.proxy);
-				$urlConnection.setRequestMethod(method);
-				if (mode && mode.timeout) {
-					if (mode.timeout.connect) {
-						$urlConnection.setConnectTimeout(mode.timeout.connect);
-					}
-					if (mode.timeout.read) {
-						$urlConnection.setReadTimeout(mode.timeout.read);
-					}
-				}
-				if (hostHeader) {
-					$urlConnection.addRequestProperty("Host",hostHeader);
-				}
-				headers.forEach( function(header) {
-					$urlConnection.addRequestProperty(header.name,header.value);
-				});
-				$urlConnection.setInstanceFollowRedirects(false);
-				return $urlConnection;
-			}
-
 			var getStatus = function($urlConnection) {
 				if ($urlConnection.getResponseCode() == -1) {
 					//	used to check for response message here, but at least one extant HTTP server (Stash) omits the OK
@@ -329,7 +287,7 @@
 					reason: String($urlConnection.getResponseMessage())
 				};
 				return rv;
-			}
+			};
 
 			/**
 			 *
@@ -351,9 +309,86 @@
 					i++;
 				}
 				return headers;
+			};
+
+			/**
+			 *
+			 * @param { slime.jrunscript.native.java.net.URLConnection } $urlConnection
+			 * @returns { slime.jrunscript.runtime.io.InputStream }
+			 */
+			var getStream = function($urlConnection) {
+				var result = (function() {
+					try {
+						return $urlConnection.getInputStream();
+					} catch (e) {
+						return $urlConnection.getErrorStream();
+					}
+				})();
+				return (result) ? $context.api.io.java.adapt(result) : null;
 			}
 
-			var $urlConnection = connect(p.method, p.url, p.headers, p.proxy, p.timeout);
+			// var mode = {
+			// 	proxy: p.proxy,
+			// 	timeout: p.timeout
+			// }
+
+			var hostHeader;
+			if (p.url.scheme == "https" && p.proxy && p.proxy.https) {
+				//	Currently implemented by re-writing the URL; would be better to implement a tunnel through an HTTP proxy but
+				//	could not get that working with Tomcat, which returned 400 errors when https requests are sent to http listener
+				//	TODO	does this work for default port?
+				hostHeader = p.url.host + ((p.url.port) ? ":" + p.url.port : "");
+				p.url.host = p.proxy.https.host;
+				p.url.port = p.proxy.https.port;
+			}
+
+			var $url = new Packages.java.net.URL(p.url.toString());
+			debug("Requesting: " + p.url);
+
+			var $urlConnection = (function(proxy) {
+				if (!proxy) {
+					return $url.openConnection();
+				} else if (proxy.https) {
+					return $url.openConnection();
+				} else if (proxy.http || proxy.socks) {
+					var _type = (function() {
+						if (proxy.http) return {
+							type: Packages.java.net.Proxy.Type.HTTP,
+							specifier: proxy.http
+						}
+						if (proxy.socks) return {
+							type: Packages.java.net.Proxy.Type.SOCKS,
+							specifier: proxy.socks
+						};
+						throw new Error("Unrecognized proxy type in " + proxy);
+					})();
+					var _proxy = new Packages.java.net.Proxy(
+						_type.type,
+						new Packages.java.net.InetSocketAddress(_type.specifier.host,_type.specifier.port)
+					);
+					return $url.openConnection(_proxy);
+				}
+			})(p.proxy);
+
+			$urlConnection.setRequestMethod(p.method);
+
+			if (p.timeout) {
+				if (p.timeout.connect) {
+					$urlConnection.setConnectTimeout(p.timeout.connect);
+				}
+				if (p.timeout.read) {
+					$urlConnection.setReadTimeout(p.timeout.read);
+				}
+			}
+
+			if (hostHeader) {
+				$urlConnection.addRequestProperty("Host",hostHeader);
+			}
+			p.headers.forEach( function(header) {
+				$urlConnection.addRequestProperty(header.name,header.value);
+			});
+
+			$urlConnection.setInstanceFollowRedirects(false);
 
 			if (p.body) {
 				$urlConnection.setDoOutput(true);
@@ -374,19 +409,11 @@
 				);
 			}
 
-			var result = (function() {
-				try {
-					return $urlConnection.getInputStream();
-				} catch (e) {
-					return $urlConnection.getErrorStream();
-				}
-			})();
-
 			/** @type { ReturnType<slime.jrunscript.http.client.spi> } */
 			var rv = {
 				status: getStatus($urlConnection),
 				headers: getHeaders($urlConnection),
-				stream: (result) ? $context.api.io.java.adapt(result) : null
+				stream: getStream($urlConnection)
 			}
 
 			return rv;
@@ -503,32 +530,6 @@
 					timeout: p.timeout
 				});
 				cookies.set(url,spiresponse.headers);
-
-				/**
-				 * @this { ReturnType<slime.jrunscript.http.client.spi>["headers"] }
-				 * @param { string } name
-				 */
-				var headersGetMethod = function(name) {
-					var values = this
-						.filter(function(header) { return header.name.toUpperCase() == name.toUpperCase() })
-						.map(function(header) { return header.value; })
-					;
-					if (values.length == 0) return null;
-					if (values.length == 1) return values[0];
-					return values;
-				}
-
-				/**
-				 *
-				 * @param { ReturnType<slime.jrunscript.http.client.spi>["headers"] } headers
-				 * @returns { slime.jrunscript.http.client.Response["headers"] }
-				 */
-				var withHeadersGet = function(headers) {
-					/** @type { slime.jrunscript.http.client.Response["headers"] } */
-					var rv = Object.assign(headers, { get: void(0) });
-					rv["get"] = headersGetMethod;
-					return rv;
-				}
 
 				var isRedirect = function(status) {
 					return (status.code >= 300 && status.code <= 303) || status.code == 307;
