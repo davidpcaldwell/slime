@@ -48,7 +48,7 @@ $set(function(module) {
 		}
 	})(module.Repository);
 
-	module.init = (function(was) {
+	if (module.init) module.init = (function(was) {
 		return function() {
 			var rv = was.apply(this,arguments);
 			Repository.call(rv);
