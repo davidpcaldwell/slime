@@ -15,6 +15,20 @@
 			"problemMatcher": []
 		},
 		{
+			"label": "status",
+			"type": "shell",
+			"command": "./wf status",
+			"problemMatcher": [],
+			"presentation": {
+				"echo": false,
+				"reveal": "always",
+				"focus": false,
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": true
+			}
+		},
+		{
 			"label": "eslint",
 			"type": "shell",
 			"command": "./wf eslint",

@@ -9,6 +9,10 @@ namespace slime.jrunscript.shell.internal.invocation {
 		invocation: slime.jrunscript.shell.Exports["invocation"]
 
 		stdio: {
+			/**
+			 * Returns the `stdio` property of the argument, synthesizing it from deprecated arguments if necessary, and returning
+			 * an empty object if nothing is specified.
+			 */
 			forModuleRunArgument: (p: Parameters<slime.jrunscript.shell.Exports["run"]>[0]) => Parameters<slime.jrunscript.shell.Exports["run"]>[0]["stdio"]
 		}
 
