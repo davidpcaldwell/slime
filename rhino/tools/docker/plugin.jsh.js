@@ -15,10 +15,28 @@
 	function(jsh,$loader,plugin) {
 		plugin({
 			isReady: function() {
-				return Boolean(jsh.shell && jsh.tools);
+				return Boolean(jsh.shell && jsh.tools && jsh.tools.install);
 			},
 			load: function() {
-				jsh.tools.docker = $loader.module("module.js");
+				var module = $loader.module("module.js");
+
+				var location = jsh.file.Pathname("/Applications/Docker.app");
+
+				jsh.tools.docker = {
+					engine: module.engine,
+					require: function() {
+						return module.install({
+							library: {
+								shell: jsh.shell,
+								install: jsh.tools.install
+							},
+							sudo: {
+								askpass: jsh.shell.jsh.src.getFile("rhino/shell/sudo-askpass.bash")
+							},
+							destination: location
+						})
+					}
+				};
 			}
 		})
 	}

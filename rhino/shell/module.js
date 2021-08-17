@@ -777,6 +777,20 @@
 			}), events);
 		});
 
+		var Invocation = function(p) {
+			return {
+				command: String(p.command),
+				arguments: (p.arguments) ? p.arguments.map(String) : [],
+				environment: (p.environment) ? p.environment : $exports.environment,
+				stdio: $api.Object.compose({
+					input: null,
+					output: $context.stdio.output,
+					error: $context.stdio.error
+				}, p.stdio),
+				directory: (p.directory) ? p.directory : $exports.PWD
+			};
+		};
+
 		$exports.world = {
 			run: function(invocation) {
 				return function(on) {
@@ -804,22 +818,10 @@
 					return tell(on);
 				}
 			},
-			Invocation: function(p) {
-				return {
-					command: String(p.command),
-					arguments: (p.arguments) ? p.arguments.map(String) : [],
-					environment: (p.environment) ? p.environment : $exports.environment,
-					stdio: $api.Object.compose({
-						input: null,
-						output: $context.stdio.output,
-						error: $context.stdio.error
-					}, p.stdio),
-					directory: (p.directory) ? p.directory : $exports.PWD
-				};
-			}
+			Invocation: $api.deprecate(Invocation)
 		}
 
-		$exports.Invocation = $exports.world.Invocation;
+		$exports.Invocation = Invocation;
 	}
 //@ts-ignore
 )(Packages,JavaAdapter,$api,$context,$loader,$exports);

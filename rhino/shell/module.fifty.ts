@@ -275,7 +275,9 @@ namespace slime.jrunscript.shell {
 	export type Loader = slime.loader.Product<Context,Exports>;
 
 	export interface Exports {
-		/** @deprecated Replaced by `world.Invocation` because it relies on external state. */
+		/**
+		 * Creates a fully-specified {@link Invocation} from a given {@link invocation.Argument} and the surrounding context.
+		 */
 		Invocation: (p: invocation.Argument) => Invocation
 	}
 
@@ -284,9 +286,7 @@ namespace slime.jrunscript.shell {
 			exit: number
 		}>
 
-		/**
-		 * Creates a fully-specified {@link Invocation} from a given {@link invocation.Argument} and the surrounding context.
-		 */
+		/** @deprecated Replaced by {@link Exports["Invocation"]} because it does not rely on external state. */
 		Invocation: (p: invocation.Argument) => Invocation
 	}
 

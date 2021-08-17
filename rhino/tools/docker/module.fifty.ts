@@ -55,6 +55,32 @@ namespace slime.jrunscript.tools.docker {
 		cli: cli.Interface
 	}
 
+	export namespace install {
+		export interface Events {
+			installed: slime.jrunscript.file.Directory
+			found: slime.jrunscript.file.Directory
+		}
+	}
+
+	export interface Export {
+		engine: slime.jrunscript.tools.docker.Engine
+		install: (p: {
+			library: {
+				shell: slime.jrunscript.shell.Exports
+				install: slime.jsh.tools.install.module.Exports
+			}
+			sudo?: {
+				askpass: slime.jrunscript.file.File
+			}
+			destination: slime.jrunscript.file.Pathname
+		}) => slime.$api.fp.impure.Tell<install.Events>
+	}
+
+	export interface Jsh {
+		engine: slime.jrunscript.tools.docker.Engine
+		require: () => slime.$api.fp.impure.Tell<install.Events>
+	}
+
 	export namespace test {
 		export const subject: Engine = (function(fifty: slime.fifty.test.kit) {
 			return fifty.$loader.module("module.js");

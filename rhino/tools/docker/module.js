@@ -9,7 +9,7 @@
 	/**
 	 *
 	 * @param { slime.$api.Global } $api
-	 * @param { slime.loader.Export<slime.jrunscript.tools.docker.Engine> } $export
+	 * @param { slime.loader.Export<slime.jrunscript.tools.docker.Export> } $export
 	 */
 	function($api,$export) {
 		var cli = {
@@ -34,7 +34,35 @@
 		};
 
 		$export({
-			cli: cli
+			engine: {
+				cli: cli
+			},
+			install: function(p) {
+				return $api.Function.impure.tell(function(events) {
+					if (!p.destination.directory) {
+						var dmg = p.library.install.get({
+							url: "https://desktop.docker.com/mac/stable/amd64/Docker.dmg"
+						});
+						p.library.shell.run({
+							command: "hdiutil",
+							arguments: ["attach", dmg]
+						});
+						var invocation = {
+							command: "cp",
+							arguments: ["-R", "/Volumes/Docker/Docker.app", p.destination]
+						};
+						if (p.sudo) {
+							invocation = p.library.shell.invocation.sudo({
+								askpass: p.sudo.askpass
+							})(p.library.shell.Invocation(invocation))
+						}
+						p.library.shell.run(invocation);
+						events.fire("installed", p.destination.directory);
+					} else {
+						events.fire("found", p.destination.directory);
+					}
+				})
+			}
 		});
 	}
 //@ts-ignore
