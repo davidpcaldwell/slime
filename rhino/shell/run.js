@@ -88,30 +88,62 @@
 		function buildStdio(p) {
 			/** @type { slime.jrunscript.shell.internal.module.RunStdio } */
 			var rv = {};
+			/** @type { { [x: string]: slime.jrunscript.shell.internal.run.Buffer } } */
 			var buffers = {};
+
+			/** @returns { slime.jrunscript.shell.internal.run.Buffer } */
+			var getStringBuffer = function() {
+				var buffer = new $context.api.io.Buffer();
+				return {
+					stream: buffer.writeBinary(),
+					close: function() {
+						buffer.close();
+					},
+					readText: function() {
+						return buffer.readText().asString();
+					}
+				}
+			};
+
+			/**
+			 * @param { (line: string) => void } callback
+			 * @returns { slime.jrunscript.shell.internal.run.Buffer }
+			 */
+			var getLineBuffer = function(callback) {
+				var buffer = new $context.api.io.Buffer();
+
+				var lines = [];
+
+				var thread = $context.api.java.Thread.start({
+					call: function() {
+						buffer.readText().readLines(function(line) {
+							lines.push(line);
+							callback(line);
+						});
+					}
+				});
+
+				return {
+					stream: buffer.writeBinary(),
+					close: function() {
+						buffer.close();
+						thread.join();
+					},
+					readText: function() {
+						return lines.join($context.api.io.system.delimiter.line);
+					}
+				}
+			};
 
 			["output","error"].forEach(function(stream) {
 				if (p[stream] == String) {
-					buffers[stream] = new $context.api.io.Buffer();
-					rv[stream] = buffers[stream].writeBinary();
+					buffers[stream] = getStringBuffer();
 				} else if (p[stream] && typeof(p[stream]) == "object" && p[stream].line) {
-					buffers[stream] = new (function(callback) {
-						var buffer = new $context.api.io.Buffer();
+					buffers[stream] = getLineBuffer(p[stream].line);
+				}
 
-						var thread = $context.api.java.Thread.start({
-							call: function() {
-								buffer.readText().readLines(callback);
-							}
-						});
-
-						this.buffer = buffer;
-
-						this.close = function() {
-							buffer.close();
-							thread.join();
-						}
-					})(p[stream].line);
-					rv[stream] = buffers[stream].buffer.writeBinary();
+				if (buffers[stream]) {
+					rv[stream] = buffers[stream].stream;
 				} else {
 					rv[stream] = p[stream];
 				}
@@ -135,10 +167,10 @@
 				for (var x in buffers) {
 					buffers[x].close();
 
-					//	this is horrendous, but it automatically replaces the stdio property with the string if the string
-					//	was requested. Will come up with a better way in the world-oriented API.
-					if ((x == "output" || x == "error") && p[x] == String) {
-						rv[x] = buffers[x].readText().asString();
+					//	this is horrendous, but it automatically replaces the stdio property with the string if a string-buffering
+					//	strategy was requested.
+					if ((x == "output" || x == "error") && buffers[x]) {
+						rv[x] = buffers[x].readText();
 					}
 				}
 				return rv;

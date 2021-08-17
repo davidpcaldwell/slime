@@ -49,6 +49,7 @@ namespace slime.jrunscript.io {
 			}
 		}
 		grid: any
+		system: slime.jrunscript.runtime.io.Exports["system"]
 	}
 
 	export type load = slime.loader.Product<Context,Exports>

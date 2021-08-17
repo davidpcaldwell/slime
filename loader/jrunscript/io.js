@@ -13,9 +13,11 @@
 	 * @param { any } XMLList
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jrunscript.runtime.io.Context } $context
-	 * @param { slime.jrunscript.runtime.io.Exports } $exports
+	 * @param { slime.loader.Export<slime.jrunscript.runtime.io.Exports> } $export
 	 */
-	function($platform,Packages,XMLList,$api,$context,$exports) {
+	function($platform,Packages,XMLList,$api,$context,$export) {
+		var LINE_SEPARATOR = String(Packages.java.lang.System.getProperty("line.separator"));
+
 		var _java = $context._streams;
 
 		/**
@@ -106,50 +108,61 @@
 		}
 
 		/**
-		 *
-		 * @param {*} peer
-		 * @param { { LINE_SEPARATOR?: string }} [properties]
+		 * @type { slime.jrunscript.runtime.io.Exports["Reader"] }
+		 * @param { ConstructorParameters<slime.jrunscript.runtime.io.Exports["Reader"]>[0] } peer
+		 * @param { ConstructorParameters<slime.jrunscript.runtime.io.Exports["Reader"]>[1] } properties
 		 */
 		var Reader = function(peer,properties) {
 			this.close = function() {
 				peer.close();
 			}
 
-			this.readLines = Object.assign(function(callback,mode) {
-				if (!mode) mode = {};
-				//	TODO	should we retrieve properties from the jrunscript/host module, or is this sufficient?
-				if (!mode.ending && properties && properties.LINE_SEPARATOR) mode.ending = properties.LINE_SEPARATOR;
-				if (!mode.ending) mode.ending = String(Packages.java.lang.System.getProperty("line.separator"));
-				if (!mode.onEnd) mode.onEnd = function() { peer.close(); }
-				var read;
-				var result;
-				var more = true;
-				while( more ) {
-					read = String(_java.readLine(peer,mode.ending));
-					var hasEnding = read.substring(read.length - mode.ending.length) == mode.ending;
-					var line;
-					if (!hasEnding) {
-						//	eof was reached
-						more = false;
-						line = read;
+			this.readLines = Object.assign(
+				/**
+				 * @type { slime.jrunscript.runtime.io.Reader["readLines"] }
+				 */
+				function(callback,mode) {
+					if (!mode) mode = {};
+					//	TODO	should we retrieve properties from the jrunscript/host module, or is this sufficient?
+					if (!mode.ending && properties && properties.LINE_SEPARATOR) mode.ending = properties.LINE_SEPARATOR;
+					if (!mode.ending) mode.ending = LINE_SEPARATOR;
+					if (!mode.onEnd) mode.onEnd = function() { peer.close(); }
+
+					/** @type { string } */
+					var read;
+					var result;
+					var more = true;
+					while( more ) {
+						read = String(_java.readLine(peer,mode.ending));
+						var hasEnding = read.substring(read.length - mode.ending.length) == mode.ending;
+						var line;
+						if (!hasEnding) {
+							//	eof was reached
+							more = false;
+							line = read;
+						} else {
+							line = read.substring(0,read.length-mode.ending.length);
+						}
+						result = callback( line );
+						if (typeof(result) != "undefined") {
+							break;
+						}
+					}
+					if (typeof(result) == "undefined") {
+						mode.onEnd.call(this);
 					} else {
-						line = read.substring(0,read.length-mode.ending.length);
+						mode.onEnd.call(this,result);
 					}
-					result = callback( line );
-					if (typeof(result) != "undefined") {
-						break;
-					}
+					return result;
+				},
+				{
+					UNIX: "\n",
+					DOS: "\r\n"
 				}
-				if (typeof(result) == "undefined") {
-					mode.onEnd.call(this);
-				} else {
-					mode.onEnd.call(this,result);
-				}
-				return result;
-			}, {
-				UNIX: void(0),
-				DOS: void(0)
-			});
+			);
+
+			$api.deprecate(this.readLines, "UNIX");
+			$api.deprecate(this.readLines, "DOS");
 
 			// this.read = function(callback,mode) {
 			// 	if (!mode) mode = {};
@@ -170,11 +183,6 @@
 			// 	}
 			// 	return result;
 			// }
-
-			this.readLines.UNIX = "\n";
-			this.readLines.DOS = "\r\n";
-			$api.deprecate(this.readLines, "UNIX");
-			$api.deprecate(this.readLines, "DOS");
 
 			this.asString = function() {
 				var buffer = new Packages.java.io.StringWriter();
@@ -316,13 +324,19 @@
 			}
 		};
 
-		$exports.OutputStream = OutputStream;
-		$exports.Writer = Writer;
-		$exports.InputStream = InputStream;
-		$exports.Reader = Reader;
-
-		$exports.Streams = Streams;
-		$exports.Buffer = Buffer;
+		$export({
+			OutputStream: OutputStream,
+			Writer: Writer,
+			InputStream: InputStream,
+			Reader: Reader,
+			Streams: Streams,
+			Buffer: Buffer,
+			system: {
+				delimiter: {
+					line: LINE_SEPARATOR
+				}
+			}
+		});
 	}
 //@ts-ignore
-)($platform, Packages, (function() { return this.XMLList })(), $api, $context, $exports);
+)($platform, Packages, (function() { return this.XMLList })(), $api, $context, $export);

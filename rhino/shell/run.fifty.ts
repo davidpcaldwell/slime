@@ -24,6 +24,12 @@ namespace slime.jrunscript.shell.internal.run {
 		stdio: slime.jrunscript.shell.run.Stdio
 	}
 
+	export interface Buffer {
+		stream: slime.jrunscript.runtime.io.OutputStream
+		close: () => void
+		readText: () => string
+	}
+
 	export interface Export {
 		run: (
 			context: any,

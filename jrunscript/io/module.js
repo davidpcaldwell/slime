@@ -11,22 +11,33 @@
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jrunscript.io.Context } $context
 	 * @param { slime.Loader } $loader
-	 * @param { slime.jrunscript.io.Exports } $exports
+	 * @param { slime.loader.Export<slime.jrunscript.io.Exports> } $export
 	 */
-	function($api,$context,$loader,$exports) {
-		$exports.Streams = $context.$slime.io.Streams;
-
-		$exports.Buffer = $context.$slime.io.Buffer;
-
-		$exports.Resource = $context.$slime.Resource;
-
-		$exports.Loader = $context.$slime.Loader;
-
-		$exports.java = {
-			adapt: $context.$slime.io.Streams.java.adapt
+	function($api,$context,$loader,$export) {
+		var $$exports = {
+			Streams: $context.$slime.io.Streams,
+			Buffer: $context.$slime.io.Buffer,
+			Resource: $context.$slime.Resource,
+			Loader: $context.$slime.Loader,
+			java: {
+				adapt: $context.$slime.io.Streams.java.adapt
+			},
+			mime: void(0),
+			archive: {
+				zip: $loader.file("zip.js", {
+					InputStream: $context.$slime.io.InputStream,
+					Streams: $context.$slime.io.Streams
+				})
+			},
+			grid: $loader.file("grid.js", {
+				getClass: function(name) {
+					return $context.api.java.getClass(name);
+				},
+				Streams: $context.$slime.io.Streams
+			}),
+			system: $context.$slime.io.system
 		};
-
-		$exports.mime = $loader.file("mime.js", {
+		$$exports.mime = $loader.file("mime.js", {
 			nojavamail: $context.nojavamail,
 			$slime: {
 				mime: $context.$slime.mime,
@@ -34,23 +45,10 @@
 			},
 			api: {
 				java: $context.api.java,
-				io: $exports
+				io: $$exports
 			}
 		});
-
-		$exports.archive = {
-			zip: $loader.file("zip.js", {
-				InputStream: $context.$slime.io.InputStream,
-				Streams: $context.$slime.io.Streams
-			})
-		};
-
-		$exports.grid = $loader.file("grid.js", {
-			getClass: function(name) {
-				return $context.api.java.getClass(name);
-			},
-			Streams: $context.$slime.io.Streams
-		});
+		$export($$exports);
 	}
 //@ts-ignore
-)($api, $context, $loader, $exports);
+)($api, $context, $loader, $export);

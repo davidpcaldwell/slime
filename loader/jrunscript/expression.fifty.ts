@@ -186,6 +186,7 @@ namespace slime.jrunscript {
 					close()
 				}
 				export interface Reader {
+					close()
 				}
 				export interface Writer {
 					write(string: string)
@@ -292,7 +293,10 @@ namespace slime.jrunscript {
 				export interface Streams {
 					split: any
 					readBytes: any
-					copy: (i: slime.jrunscript.native.java.io.InputStream, o: slime.jrunscript.native.java.io.OutputStream, closeInputStream?: boolean) => void
+					copy: {
+						(i: slime.jrunscript.native.java.io.InputStream, o: slime.jrunscript.native.java.io.OutputStream, closeInputStream?: boolean): void
+						(r: slime.jrunscript.native.java.io.Reader, w: slime.jrunscript.native.java.io.Writer): void
+					}
 					readLine: any
 				}
 			}

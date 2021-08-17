@@ -24,7 +24,13 @@ namespace slime.jrunscript.runtime.io {
 	export interface Reader {
 		close()
 		asString(): string
-		readLines: any
+		readLines(
+			callback: (line: string) => any,
+			mode?: {
+				ending?: string
+				onEnd?()
+			}
+		)
 	}
 
 	export interface Writer {
@@ -55,8 +61,10 @@ namespace slime.jrunscript.runtime.io {
 	export interface Exports {
 		OutputStream: any
 		Writer: any
+
 		InputStream: new (p: slime.jrunscript.native.java.io.InputStream) => InputStream
-		Reader: any
+		Reader: new (p: slime.jrunscript.native.java.io.Reader, properties?: { LINE_SEPARATOR?: string }) => Reader
+
 		Streams: {
 			binary: {
 				copy(from: slime.jrunscript.runtime.io.InputStream, to: slime.jrunscript.runtime.io.OutputStream, mode?: BinaryCopyMode)
@@ -73,7 +81,14 @@ namespace slime.jrunscript.runtime.io {
 				}
 			}
 		}
+
 		Buffer: new () => Buffer
+
+		system: {
+			delimiter: {
+				line: string
+			}
+		}
 	}
 }
 
