@@ -605,11 +605,9 @@ namespace slime.jrunscript.shell {
 
 		export namespace java {
 			export interface Context {
-				output: slime.jrunscript.native.java.io.OutputStream
-				error: slime.jrunscript.native.java.io.OutputStream
-				input: slime.jrunscript.native.java.io.InputStream
-				environment: slime.jrunscript.native.java.util.Map
-				directory: slime.jrunscript.native.java.io.File
+				stdio: RunStdio
+				environment: slime.jrunscript.host.Environment
+				directory: slime.jrunscript.file.Directory
 			}
 
 			export interface Configuration {

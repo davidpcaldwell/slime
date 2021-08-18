@@ -117,33 +117,14 @@
 
 		/**
 		 *
-		 * @param { slime.jrunscript.host.Environment } environment
-		 * @param { slime.jrunscript.file.Directory } directory
-		 * @param { slime.jrunscript.shell.internal.module.RunStdio } stdio
-		 * @returns { slime.jrunscript.shell.internal.module.java.Context }
+		 * @param { Parameters<slime.jrunscript.shell.Exports["run"]>[0] } p
+		 * @returns { slime.jrunscript.shell.internal.module.RunStdio }
 		 */
-		var createJavaContext = function(environment,directory,stdio) {
-			return {
-				output: (stdio && stdio.output) ? stdio.output.java.adapt() : Packages.inonit.script.runtime.io.Streams.Null.OUTPUT_STREAM,
-				error: (stdio && stdio.error) ? stdio.error.java.adapt() : Packages.inonit.script.runtime.io.Streams.Null.OUTPUT_STREAM,
-				input: (stdio && stdio.input) ? stdio.input.java.adapt() : Packages.inonit.script.runtime.io.Streams.Null.INPUT_STREAM,
-				environment: (function() {
-					var _hashMap = function(p) {
-						var rv = new Packages.java.util.HashMap();
-						for (var x in p) {
-							if (p[x] === null) {
-								//	do nothing
-							} else {
-								rv.put( new Packages.java.lang.String(String(x)), new Packages.java.lang.String(String(p[x])) );
-							}
-						}
-						return rv;
-					}
-
-					return _hashMap( environment );
-				})(),
-				directory: (directory) ? directory.pathname.java.adapt() : null
-			}
+		var getStdio = function(p) {
+			var stdioProperty = scripts.invocation.stdio.forModuleRunArgument(p);
+			var stdio = scripts.run.buildStdio(stdioProperty);
+			fallbackToParentStdio(stdio);
+			return stdio;
 		}
 
 		/**
@@ -158,25 +139,21 @@
 			}
 
 			/**
-			 * @type { slime.jrunscript.host.Environment }
+			 * @type { slime.jrunscript.shell.internal.module.java.Context }
 			 */
-			var environment = (function(now,argument) {
-				if (typeof(argument) == "undefined") return now;
-				if (argument === null) return now;
-				if (typeof(argument) == "object") return argument;
-				if (typeof(argument) == "function") {
-					var rv = Object.assign({}, now);
-					return $api.Function.mutating(argument)(rv);
-				}
-			})($exports.environment,p.environment)
-
-			var directory = scripts.invocation.directory.forModuleRunArgument(p);
-
-			var stdioProperty = scripts.invocation.stdio.forModuleRunArgument(p);
-			var stdio = scripts.run.buildStdio(stdioProperty);
-			fallbackToParentStdio(stdio);
-
-			var context = createJavaContext(environment, directory, stdio);
+			var context = {
+				stdio: getStdio(p),
+				environment: (function(now,argument) {
+					if (typeof(argument) == "undefined") return now;
+					if (argument === null) return now;
+					if (typeof(argument) == "object") return argument;
+					if (typeof(argument) == "function") {
+						var rv = Object.assign({}, now);
+						return $api.Function.mutating(argument)(rv);
+					}
+				})($exports.environment,p.environment),
+				directory: scripts.invocation.directory.forModuleRunArgument(p)
+			}
 
 			/** @type { slime.jrunscript.shell.internal.module.Invocation } */
 			var invocation = (
@@ -293,19 +270,13 @@
 			var input = {
 				command: invocation.result.command,
 				arguments: invocation.result.arguments,
-				environment: environment,
-				directory: void(0),
-				workingDirectory: void(0)
+				environment: context.environment,
+				directory: context.directory
 			};
-			if (directory) {
-				if (typeof(directory) != "undefined") {
-					input.directory = directory;
-					input.workingDirectory = directory;
-					$api.deprecate(input,"workingDirectory");
-				}
-			}
+			input.workingDirectory = context.directory;
+			$api.deprecate(input,"workingDirectory");
 
-			var result = scripts.run.run(context, invocation.configuration, stdio, module, events, p, input);
+			var result = scripts.run.run(context, invocation.configuration, module, events, p, input);
 
 			var evaluate = (p["evaluate"]) ? p["evaluate"] : $exports.run.evaluate;
 			return evaluate($api.Object.compose(input, result));

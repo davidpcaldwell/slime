@@ -21,19 +21,34 @@
 		 * @returns
 		 */
 		var createJavaCommandContext = function(context) {
+			var _environment = (function(environment) {
+				var _hashMap = function(p) {
+					var rv = new Packages.java.util.HashMap();
+					for (var x in p) {
+						if (p[x] === null) {
+							//	do nothing
+						} else {
+							rv.put( new Packages.java.lang.String(String(x)), new Packages.java.lang.String(String(p[x])) );
+						}
+					}
+					return rv;
+				}
+
+				return _hashMap( environment );
+			})(context.environment);
 			return new JavaAdapter(
 				Packages.inonit.system.Command.Context,
 				{
 					toString: function() {
 						return JSON.stringify({
-							environment: String(context.environment)
+							environment: context.environment
 						});
 					},
-					getStandardOutput: $api.Function.returning(context.output),
-					getStandardError: $api.Function.returning(context.error),
-					getStandardInput: $api.Function.returning(context.input),
-					getSubprocessEnvironment: $api.Function.returning(context.environment),
-					getWorkingDirectory: $api.Function.returning(context.directory)
+					getStandardOutput: $api.Function.returning( (context.stdio.output) ? context.stdio.output.java.adapt() : Packages.inonit.script.runtime.io.Streams.Null.OUTPUT_STREAM ),
+					getStandardError: $api.Function.returning( (context.stdio.error) ? context.stdio.error.java.adapt() : Packages.inonit.script.runtime.io.Streams.Null.OUTPUT_STREAM ),
+					getStandardInput: $api.Function.returning( (context.stdio.input) ? context.stdio.input.java.adapt() : Packages.inonit.script.runtime.io.Streams.Null.INPUT_STREAM ),
+					getSubprocessEnvironment: $api.Function.returning( _environment ),
+					getWorkingDirectory: $api.Function.returning((context.directory) ? context.directory.pathname.java.adapt() : null)
 				}
 			);
 		};
@@ -66,7 +81,7 @@
 		};
 
 		/** @type { slime.jrunscript.shell.internal.run.Export["run"] } */
-		function run(context, configuration, stdio, module, events, p, invocation) {
+		function run(context, configuration, module, events, p, invocation) {
 			//	TODO	could throw exception on launch; should deal with it
 			var _subprocess = Packages.inonit.system.OperatingSystem.get().start(
 				createJavaCommandContext(context),
@@ -128,7 +143,7 @@
 
 			var rv = {
 				status: listener.status,
-				stdio: stdio.close()
+				stdio: context.stdio.close()
 			};
 
 			events.fire("terminate", $api.Object.compose(invocation, rv));

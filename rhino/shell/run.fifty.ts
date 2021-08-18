@@ -27,7 +27,6 @@ namespace slime.jrunscript.shell.internal.run {
 		run: (
 			context: slime.jrunscript.shell.internal.module.java.Context,
 			configuration: slime.jrunscript.shell.internal.module.java.Configuration,
-			stdio: slime.jrunscript.shell.internal.module.RunStdio,
 			module: any,
 			events: slime.jrunscript.shell.run.Events,
 			p: any,
