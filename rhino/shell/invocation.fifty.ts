@@ -4,26 +4,6 @@
 //
 //	END LICENSE
 
-namespace slime.jrunscript.shell.internal.invocation {
-	export interface Export {
-		invocation: slime.jrunscript.shell.Exports["invocation"]
-
-		stdio: {
-			/**
-			 * Returns the `stdio` property of the argument, synthesizing it from deprecated arguments if necessary, and returning
-			 * an empty object if nothing is specified.
-			 */
-			forModuleRunArgument: (p: Parameters<slime.jrunscript.shell.Exports["run"]>[0]) => Parameters<slime.jrunscript.shell.Exports["run"]>[0]["stdio"]
-		}
-
-		directory: {
-			forModuleRunArgument: (p: Parameters<slime.jrunscript.shell.Exports["run"]>[0]) => slime.jrunscript.file.Directory
-		}
-	}
-
-	export type Factory = slime.loader.Product<Context,Export>
-}
-
 namespace slime.jrunscript.shell {
 	/**
 	 * A fully-specified invocation of a command to be run in an external process.
@@ -159,4 +139,24 @@ namespace slime.jrunscript.shell {
 		}
 	//@ts-ignore
 	)(fifty);
+}
+
+namespace slime.jrunscript.shell.internal.invocation {
+	export interface Export {
+		invocation: slime.jrunscript.shell.Exports["invocation"]
+
+		stdio: {
+			/**
+			 * Returns the `stdio` property of the argument, synthesizing it from deprecated arguments if necessary, and returning
+			 * an empty object if nothing is specified.
+			 */
+			forModuleRunArgument: (p: Parameters<slime.jrunscript.shell.Exports["run"]>[0]) => Parameters<slime.jrunscript.shell.Exports["run"]>[0]["stdio"]
+		}
+
+		directory: {
+			forModuleRunArgument: (p: Parameters<slime.jrunscript.shell.Exports["run"]>[0]) => slime.jrunscript.file.Directory
+		}
+	}
+
+	export type Factory = slime.loader.Product<Context,Export>
 }

@@ -16,31 +16,34 @@
 	 */
 	function(Packages,JavaAdapter,$api,$context,$export) {
 		/** @type { slime.jrunscript.shell.internal.run.Export["run"] } */
-		function run(context, configuration, stdio, module, events, p, result) {
+		function run(context, configuration, stdio, module, events, p, invocation) {
 			//	TODO	could throw exception on launch; should deal with it
 			var _subprocess = Packages.inonit.system.OperatingSystem.get().start(context, configuration);
 
 			(
 				function fireStartEvent() {
-					var startEvent = new function() {
-						this.command = result.command;
-						this.arguments = result.arguments;
+					var startEvent = (function() {
+						var rv = {
+							command: invocation.command,
+							arguments: invocation.arguments,
+							environment: invocation.environment,
+							directory: invocation.directory,
+							pid: void(0),
+							kill: function() {
+								_subprocess.terminate();
+							}
+						};
 
-						this.environment = result.environment;
-
-						this.directory = result.directory;
-
-						Object.defineProperty(this, "pid", {
+						Object.defineProperty(rv, "pid", {
 							get: function() {
-								return _subprocess.getPid();
+								return Number(_subprocess.getPid());
 							},
 							enumerable: true
 						});
 
-						this.kill = function() {
-							_subprocess.terminate();
-						}
-					};
+						return rv;
+					})();
+
 					if (p.on && p.on.start) {
 						$api.deprecate(function() {
 							p.on.start.call({}, startEvent);
@@ -75,7 +78,7 @@
 				stdio: stdio.close()
 			};
 
-			events.fire("terminate", $api.Object.compose(result, rv));
+			events.fire("terminate", $api.Object.compose(invocation, rv));
 
 			return rv;
 		}

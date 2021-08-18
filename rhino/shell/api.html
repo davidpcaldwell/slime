@@ -548,19 +548,6 @@ os.resolve(function() {
 									<div class="name">command</div>
 									<span class="type"><a href="#types.token">token</a></span>
 									<span>The command to pass to the underlying operating system.</span>
-									<script type="application/x.jsapi#tests">
-										verify(module).evaluate(function() {
-											this.run({
-												command: null
-											})
-										}).threw.message.is("property 'command' must not be null; full invocation = (null)");
-										verify(module).evaluate(function() {
-											this.run({
-												command: "java",
-												arguments: [null]
-											})
-										}).threw.message.is("property 'arguments[0]' must not be null; full invocation = java (null)");
-									</script>
 								</li>
 								<li class="value">
 									<div class="name">arguments</div>
@@ -616,54 +603,6 @@ os.resolve(function() {
 											<span>See the <code>output</code> property for detailed specification.</span>
 										</li>
 									</ul>
-									<script type="application/x.jsapi#tests">
-										var to = jsh.shell.TMPDIR.createTemporary({ directory: true });
-										jsh.java.tools.javac({
-											destination: to.pathname,
-											arguments: [$jsapi.loader.getRelativePath("test/java/inonit/jsh/test/Echo.java")]
-										});
-										var buffer = new jsh.io.Buffer();
-										var result = module.java({
-											classpath: jsh.file.Searchpath([to.pathname]),
-											main: "inonit.jsh.test.Echo",
-											stdio: {
-												input: "Hello, World!",
-												output: String
-											}
-										});
-										verify(result).stdio.output.is("Hello, World!");
-
-										var runLines = function(input) {
-											var buffered = [];
-											return module.java({
-												classpath: jsh.file.Searchpath([to.pathname]),
-												main: "inonit.jsh.test.Echo",
-												stdio: {
-													input: input,
-													output: {
-														line: function(string) {
-															buffered.push(string);
-														}
-													}
-												},
-												evaluate: function(result) {
-													result.stdio = {};
-													result.stdio.output = buffered;
-													return result;
-												}
-											});
-										};
-										var nl = jsh.shell.os.newline;
-										result = runLines("Hello, World!" + nl + "Line 2");
-										verify(result).stdio.output.length.is(2);
-										verify(result).stdio.output[0].is("Hello, World!");
-										verify(result).stdio.output[1].is("Line 2");
-										result = runLines("Hello, World!" + nl + "Line 2" + nl);
-										verify(result).stdio.output.length.is(3);
-										verify(result).stdio.output[0].is("Hello, World!");
-										verify(result).stdio.output[1].is("Line 2");
-										verify(result).stdio.output[2].is("");
-									</script>
 								</li>
 								<li class="value" jsapi:id="run.environment">
 									<div class="name">environment</div>
@@ -699,22 +638,6 @@ os.resolve(function() {
 										TODO	if this property is null, we should error, assuming the caller made a mistake
 										passing a non-existent directory.
 									-->
-									<script type="application/x.jsapi#tests">
-										var program = getJavaProgram("Directory");
-										var dir = jsh.shell.TMPDIR.createTemporary({ directory: true });
-										var workdir = module.java({
-											classpath: program.classpath,
-											main: program.main,
-											stdio: {
-												output: String
-											},
-											directory: dir,
-											evaluate: function(result) {
-												return result.stdio.output;
-											}
-										});
-										test(workdir == dir.toString());
-									</script>
 								</li>
 								<li class="function" jsapi:id="run.evaluate">
 									<div class="name"><a name="run.evaluate">evaluate</a></div>

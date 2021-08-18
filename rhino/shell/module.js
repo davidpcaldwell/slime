@@ -118,7 +118,7 @@
 		/**
 		 *
 		 * @param { Parameters<slime.jrunscript.shell.Exports["run"]>[0] } p
-		 * @param { any } events
+		 * @param { Parameters<slime.jrunscript.shell.Exports["run"]>[1] } events
 		 */
 		var run = function(p,events) {
 			var as;
@@ -205,6 +205,11 @@
 						}
 					};
 
+					/**
+					 *
+					 * @param { slime.jrunscript.shell.internal.module.Invocation["result"] } invocation
+					 * @returns { (arg: slime.jrunscript.shell.invocation.Token, index?: number) => string }
+					 */
 					var toCommandToken = function(invocation) {
 						var toErrorMessageString = function(v) {
 							if (typeof(v) == "undefined") return "(undefined)";
@@ -218,8 +223,14 @@
 							return full.map(toErrorMessageString).join(" ");
 						}
 
-						return function(arg/*,index*/) {
-							var index = (arguments.length > 1) ? arguments[1] : null;
+						/**
+						 *
+						 * @param { slime.jrunscript.shell.invocation.Token } arg
+						 * @param { number } index
+						 * @returns { string }
+						 */
+						var rv = function(arg,index) {
+							if (arguments.length == 1) index = null;
 							var label = (typeof(index) == "number") ? "property 'arguments[" + String(index) + "]'" : "property 'command'";
 							if (typeof(arg) == "undefined") {
 								throw new TypeError(label + " cannot be undefined; full invocation = " + toErrorMessage());
@@ -230,6 +241,8 @@
 							if (arg && typeof(arg) == "string") return arg;
 							throw new TypeError(label + " is not a string nor an object that can be converted to string.");
 						};
+
+						return rv;
 					}
 
 					// var toCommandToken = function(arg) {
