@@ -4,40 +4,44 @@
 //
 //	END LICENSE
 
-var parameters = jsh.script.getopts({
-	options: {
-		install: jsh.file.Pathname,
-		driver: jsh.file.Pathname,
-		view: "console"
+(
+	function() {
+		var parameters = jsh.script.getopts({
+			options: {
+				install: jsh.file.Pathname,
+				driver: jsh.file.Pathname,
+				view: "console"
+			}
+		});
+
+		if (!parameters.options.install) {
+			jsh.shell.console("Required: -install <directory> indicating directory in which Mongo is installed.");
+			jsh.shell.exit(1);
+		}
+
+		if (parameters.options.driver) jsh.loader.plugins(parameters.options.driver);
+		var shouldBeAvailable = jsh.loader.java.getClass("com.mongodb.ServerAddress");
+		if (!shouldBeAvailable) {
+			jsh.shell.console("Required: -driver <jar> indicating location of Mongo Java driver.");
+			jsh.shell.exit(1);
+		}
+
+		var environment = {
+			mongo: {
+				install: parameters.options.install.toString()
+			}
+		};
+
+		var suite = new jsh.unit.Suite({
+			parts: {
+				api: new jsh.unit.html.Part({
+					name: "api",
+					pathname: jsh.script.file.parent.getRelativePath("api.html"),
+					environment: environment
+				})
+			}
+		});
+
+		jsh.unit.interface.create(suite, { view: parameters.options.view });
 	}
-});
-
-if (!parameters.options.install) {
-	jsh.shell.console("Required: -install <directory> indicating directory in which Mongo is installed.");
-	jsh.shell.exit(1);
-}
-
-if (parameters.options.driver) jsh.loader.plugins(parameters.options.driver);
-var shouldBeAvailable = jsh.loader.java.getClass("com.mongodb.ServerAddress");
-if (!shouldBeAvailable) {
-	jsh.shell.console("Required: -driver <jar> indicating location of Mongo Java driver.");
-	jsh.shell.exit(1);
-}
-
-var environment = {
-	mongo: {
-		install: parameters.options.install.toString()
-	}
-};
-
-var suite = new jsh.unit.Suite({
-	parts: {
-		api: new jsh.unit.html.Part({
-			name: "api",
-			pathname: jsh.script.file.parent.getRelativePath("api.html"),
-			environment: environment
-		})
-	}
-});
-
-jsh.unit.interface.create(suite, { view: parameters.options.view });
+)();

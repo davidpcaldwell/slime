@@ -117,6 +117,60 @@
 
 		/**
 		 *
+		 * @param { slime.jrunscript.shell.internal.module.java.Context } context
+		 * @returns
+		 */
+		var createJavaCommandContext = function(context) {
+			return new JavaAdapter(
+				Packages.inonit.system.Command.Context,
+				{
+					toString: function() {
+						return JSON.stringify({
+							environment: String(context.environment)
+						});
+					},
+					getStandardOutput: $api.Function.returning(context.output),
+					getStandardError: $api.Function.returning(context.error),
+					getStandardInput: $api.Function.returning(context.input),
+					getSubprocessEnvironment: $api.Function.returning(context.environment),
+					getWorkingDirectory: $api.Function.returning(context.directory)
+				}
+			);
+		};
+
+		/**
+		 *
+		 * @param { slime.jrunscript.host.Environment } environment
+		 * @param { slime.jrunscript.file.Directory } directory
+		 * @param { slime.jrunscript.shell.internal.module.RunStdio } stdio
+		 * @returns { slime.jrunscript.shell.internal.module.java.Context }
+		 */
+		var createJavaContext = function(environment,directory,stdio) {
+			return {
+				output: (stdio && stdio.output) ? stdio.output.java.adapt() : Packages.inonit.script.runtime.io.Streams.Null.OUTPUT_STREAM,
+				error: (stdio && stdio.error) ? stdio.error.java.adapt() : Packages.inonit.script.runtime.io.Streams.Null.OUTPUT_STREAM,
+				input: (stdio && stdio.input) ? stdio.input.java.adapt() : Packages.inonit.script.runtime.io.Streams.Null.INPUT_STREAM,
+				environment: (function() {
+					var _hashMap = function(p) {
+						var rv = new Packages.java.util.HashMap();
+						for (var x in p) {
+							if (p[x] === null) {
+								//	do nothing
+							} else {
+								rv.put( new Packages.java.lang.String(String(x)), new Packages.java.lang.String(String(p[x])) );
+							}
+						}
+						return rv;
+					}
+
+					return _hashMap( environment );
+				})(),
+				directory: (directory) ? directory.pathname.java.adapt() : null
+			}
+		}
+
+		/**
+		 *
 		 * @param { Parameters<slime.jrunscript.shell.Exports["run"]>[0] } p
 		 * @param { Parameters<slime.jrunscript.shell.Exports["run"]>[1] } events
 		 */
@@ -126,12 +180,9 @@
 				as = p.as;
 			}
 
-			var stdioProperty = scripts.invocation.stdio.forModuleRunArgument(p);
-			var stdio = scripts.run.buildStdio(stdioProperty);
-			fallbackToParentStdio(stdio);
-
-			var directory = scripts.invocation.directory.forModuleRunArgument(p);
-
+			/**
+			 * @type { slime.jrunscript.host.Environment }
+			 */
 			var environment = (function(now,argument) {
 				if (typeof(argument) == "undefined") return now;
 				if (argument === null) return now;
@@ -142,48 +193,13 @@
 				}
 			})($exports.environment,p.environment)
 
-			var context = new JavaAdapter(
-				Packages.inonit.system.Command.Context,
-				new function() {
-					this.toString = function() {
-						return JSON.stringify({
-							environment: environment
-						});
-					};
+			var directory = scripts.invocation.directory.forModuleRunArgument(p);
 
-					this.getStandardOutput = function() {
-						return (stdio && stdio.output) ? stdio.output.java.adapt() : Packages.inonit.script.runtime.io.Streams.Null.OUTPUT_STREAM;
-					};
+			var stdioProperty = scripts.invocation.stdio.forModuleRunArgument(p);
+			var stdio = scripts.run.buildStdio(stdioProperty);
+			fallbackToParentStdio(stdio);
 
-					this.getStandardError = function() {
-						return (stdio && stdio.error) ? stdio.error.java.adapt() : Packages.inonit.script.runtime.io.Streams.Null.OUTPUT_STREAM;
-					};
-
-					this.getStandardInput = function() {
-						return (stdio && stdio.input) ? stdio.input.java.adapt() : Packages.inonit.script.runtime.io.Streams.Null.INPUT_STREAM;
-					};
-
-					this.getSubprocessEnvironment = function() {
-						var _hashMap = function(p) {
-							var rv = new Packages.java.util.HashMap();
-							for (var x in p) {
-								if (p[x] === null) {
-									//	do nothing
-								} else {
-									rv.put( new Packages.java.lang.String(String(x)), new Packages.java.lang.String(String(p[x])) );
-								}
-							}
-							return rv;
-						}
-
-						return _hashMap( environment );
-					};
-
-					this.getWorkingDirectory = function() {
-						return (directory) ? directory.pathname.java.adapt() : null;
-					};
-				}
-			);
+			var context = createJavaCommandContext(createJavaContext(environment, directory, stdio));
 
 			/** @type { slime.jrunscript.shell.internal.module.Invocation } */
 			var invocation = (
