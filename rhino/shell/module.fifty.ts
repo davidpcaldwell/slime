@@ -593,11 +593,9 @@ namespace slime.jrunscript.shell {
 
 	export namespace internal.module {
 		export type RunStdio = Required<slime.jrunscript.shell.Stdio> & { close: () => slime.jrunscript.shell.run.Stdio }
+
 		export type Invocation = {
-			configuration: {
-				command: any
-				arguments: any[]
-			}
+			configuration: java.Configuration
 			result: {
 				command: slime.jrunscript.shell.invocation.Token
 				arguments: slime.jrunscript.shell.invocation.Token[]
@@ -612,6 +610,11 @@ namespace slime.jrunscript.shell {
 				input: slime.jrunscript.native.java.io.InputStream
 				environment: slime.jrunscript.native.java.util.Map
 				directory: slime.jrunscript.native.java.io.File
+			}
+
+			export interface Configuration {
+				command: string
+				arguments: string[]
 			}
 		}
 	}

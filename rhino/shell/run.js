@@ -15,10 +15,63 @@
 	 * @param { slime.loader.Export<slime.jrunscript.shell.internal.run.Export> } $export
 	 */
 	function(Packages,JavaAdapter,$api,$context,$export) {
+		/**
+		 *
+		 * @param { slime.jrunscript.shell.internal.module.java.Context } context
+		 * @returns
+		 */
+		var createJavaCommandContext = function(context) {
+			return new JavaAdapter(
+				Packages.inonit.system.Command.Context,
+				{
+					toString: function() {
+						return JSON.stringify({
+							environment: String(context.environment)
+						});
+					},
+					getStandardOutput: $api.Function.returning(context.output),
+					getStandardError: $api.Function.returning(context.error),
+					getStandardInput: $api.Function.returning(context.input),
+					getSubprocessEnvironment: $api.Function.returning(context.environment),
+					getWorkingDirectory: $api.Function.returning(context.directory)
+				}
+			);
+		};
+
+		/**
+		 * @param { slime.jrunscript.shell.internal.module.java.Configuration } configuration
+		 */
+		var createJavaCommandConfiguration = function(configuration) {
+			var toJavaString = function(p) { return new Packages.java.lang.String(p); };
+
+			var adapted = {
+				command: toJavaString(configuration.command),
+				arguments: $context.api.java.Array.create({
+					type: Packages.java.lang.String,
+					array: configuration.arguments.map(toJavaString)
+				})
+			}
+
+			return new JavaAdapter(
+				Packages.inonit.system.Command.Configuration,
+				new function() {
+					this.toString = function() {
+						return "command: " + configuration.command + " arguments: " + configuration.arguments;
+					};
+
+					this.getCommand = $api.Function.returning(adapted.command);
+					this.getArguments = $api.Function.returning(adapted.arguments);
+				}
+			);
+		};
+
 		/** @type { slime.jrunscript.shell.internal.run.Export["run"] } */
 		function run(context, configuration, stdio, module, events, p, invocation) {
 			//	TODO	could throw exception on launch; should deal with it
-			var _subprocess = Packages.inonit.system.OperatingSystem.get().start(context, configuration);
+			var _subprocess = Packages.inonit.system.OperatingSystem.get().start(
+				createJavaCommandContext(context),
+				createJavaCommandConfiguration(configuration)
+			);
 
 			(
 				function fireStartEvent() {

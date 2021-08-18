@@ -117,29 +117,6 @@
 
 		/**
 		 *
-		 * @param { slime.jrunscript.shell.internal.module.java.Context } context
-		 * @returns
-		 */
-		var createJavaCommandContext = function(context) {
-			return new JavaAdapter(
-				Packages.inonit.system.Command.Context,
-				{
-					toString: function() {
-						return JSON.stringify({
-							environment: String(context.environment)
-						});
-					},
-					getStandardOutput: $api.Function.returning(context.output),
-					getStandardError: $api.Function.returning(context.error),
-					getStandardInput: $api.Function.returning(context.input),
-					getSubprocessEnvironment: $api.Function.returning(context.environment),
-					getWorkingDirectory: $api.Function.returning(context.directory)
-				}
-			);
-		};
-
-		/**
-		 *
 		 * @param { slime.jrunscript.host.Environment } environment
 		 * @param { slime.jrunscript.file.Directory } directory
 		 * @param { slime.jrunscript.shell.internal.module.RunStdio } stdio
@@ -199,7 +176,7 @@
 			var stdio = scripts.run.buildStdio(stdioProperty);
 			fallbackToParentStdio(stdio);
 
-			var context = createJavaCommandContext(createJavaContext(environment, directory, stdio));
+			var context = createJavaContext(environment, directory, stdio);
 
 			/** @type { slime.jrunscript.shell.internal.module.Invocation } */
 			var invocation = (
@@ -310,28 +287,6 @@
 				}
 			}
 
-			var configuration = new JavaAdapter(
-				Packages.inonit.system.Command.Configuration,
-				new function() {
-					this.toString = function() {
-						return "command: " + invocation.configuration.command + " arguments: " + invocation.configuration.arguments;
-					};
-
-					var args = $context.api.java.Array.create({
-						type: Packages.java.lang.String,
-						array: invocation.configuration.arguments.map(function(s) {
-							return new Packages.java.lang.String(s);
-						})
-					});
-					this.getCommand = function() {
-						return new Packages.java.lang.String(invocation.configuration.command);
-					};
-
-					this.getArguments = function() {
-						return args;
-					};
-				}
-			);
 			/**
 			 * @type { slime.jrunscript.shell.run.Argument }
 			 */
@@ -350,7 +305,7 @@
 				}
 			}
 
-			var result = scripts.run.run(context, configuration, stdio, module, events, p, input);
+			var result = scripts.run.run(context, invocation.configuration, stdio, module, events, p, input);
 
 			var evaluate = (p["evaluate"]) ? p["evaluate"] : $exports.run.evaluate;
 			return evaluate($api.Object.compose(input, result));
