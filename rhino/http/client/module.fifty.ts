@@ -10,9 +10,9 @@ namespace slime.jrunscript.http.client {
 	export interface Request {
 		method?: string
 		url: slime.web.Url | string
-		headers?: Pairs
 		params?: Pairs
 		parameters?: Pairs
+		headers?: Pairs
 		authorization?: Authorization
 		proxy?: any
 		body?: request.Body
@@ -71,7 +71,7 @@ namespace slime.jrunscript.http.client {
 
 	export interface Context {
 		debug: any
-		gae: any
+		gae: boolean
 		api: {
 			web: slime.web.Exports
 			java: slime.jrunscript.host.Exports
