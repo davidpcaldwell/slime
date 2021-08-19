@@ -86,6 +86,7 @@ namespace slime.jrunscript.git {
 		export interface argument {
 			config?: { [x: string]: string }
 			credentialHelper?: string
+			credentialHelpers?: string[]
 			directory?: slime.jrunscript.file.Directory
 		}
 

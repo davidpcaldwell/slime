@@ -32,7 +32,10 @@
 						all: true,
 						prune: true,
 						recurseSubmodules: true,
-						credentialHelper: credentialHelper
+						credentialHelpers: [
+							"cache",
+							credentialHelper
+						]
 					}, {
 						remote: function(e) {
 							var remote = e.detail;

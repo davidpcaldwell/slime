@@ -62,6 +62,11 @@
 						addConfigurationArgumentsTo(args,p.config);
 						if (p.credentialHelper) {
 							args.push("-c", "credential.helper=", "-c", "credential.helper=" + p.credentialHelper);
+						} else if (p.credentialHelpers) {
+							args.push("-c", "credential.helper=");
+							p.credentialHelpers.forEach(function(helper) {
+								args.push("-c", "credential.helper=" + helper);
+							});
 						}
 						args.push(m.command);
 						var r = $api.Object.compose(p, { _this: this });
