@@ -40,7 +40,10 @@ namespace slime.jrunscript.file {
 	}
 
 	export interface File extends Node {
-		read: (any) => any
+		read: {
+			(p: StringConstructor): string
+			(p: any): any
+		}
 		length: any
 		modified: Date
 	}
