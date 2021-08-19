@@ -164,8 +164,12 @@ namespace slime.jrunscript.shell {
 		}
 
 		export interface Argument extends invocation.Argument {
-			as?: any
+			as?: {
+				user: string
+			}
+
 			on?: any
+
 			/** @deprecated */
 			tokens?: any
 			/** @deprecated */
@@ -599,7 +603,7 @@ namespace slime.jrunscript.shell {
 			result: {
 				command: slime.jrunscript.shell.invocation.Token
 				arguments: slime.jrunscript.shell.invocation.Token[]
-				as: string
+				as: Parameters<Exports["run"]>[0]["as"]
 			}
 		}
 
