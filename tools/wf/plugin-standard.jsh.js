@@ -317,6 +317,7 @@
 								]
 							})
 							if (submodule.branch) {
+								submodule.repository.checkout({ branch: revision });
 								submodule.repository.branch({
 									force: true,
 									name: submodule.branch
