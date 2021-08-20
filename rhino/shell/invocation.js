@@ -81,6 +81,22 @@
 							stdio: invocation.stdio
 						});
 					}
+				},
+				toBashScript: function() {
+					/** @type { (invocation: { command: string, arguments?: string[], directory?: slime.jrunscript.file.Directory } ) => string } */
+					var toScriptCode = function(invocation) {
+						return $api.Array.build(function(script) {
+							script.push("#!/bin/bash");
+							if (invocation.directory) script.push("cd " + invocation.directory.pathname.toString());
+							script.push($api.Array.build(function(rv) {
+								if (invocation.directory) rv.push("")
+								rv.push(invocation.command);
+								if (invocation.arguments) rv.push.apply(rv, invocation.arguments);
+							}).join(" "))
+						}).join("\n");
+					};
+
+					return toScriptCode;
 				}
 			},
 			stdio: {

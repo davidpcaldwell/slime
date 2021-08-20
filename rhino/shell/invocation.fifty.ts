@@ -98,6 +98,12 @@ namespace slime.jrunscript.shell {
 				 nocache?: boolean
 				 askpass?: string | slime.jrunscript.file.File
 			 }) => (p: Invocation) => Invocation
+
+			 toBashScript: () => (p: {
+				command: string
+				arguments?: string[]
+				directory?: slime.jrunscript.file.Directory
+			 }) => string
 		}
 	}
 
