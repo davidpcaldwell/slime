@@ -168,6 +168,10 @@ namespace slime.jsh.wf {
 				 */
 				attach: slime.jsh.script.cli.Command<Options>
 
+				/**
+				 * Resets a submodule of this module to point at the current commit for that submodule, and if there is a tracking
+				 * branch, resets the tracking branch to that commit.
+				 */
 				reset:  slime.jsh.script.cli.Command<Options>
 			}
 
