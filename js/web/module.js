@@ -204,9 +204,8 @@
 
 		/**
 		 * @constructor
-		 * @param { slime.web.form.Argument } p
 		 */
-		$exports.Form = Object.assign(function(p) {
+		var Form = function(p) {
 			//	See https://www.w3.org/TR/REC-html40/interact/forms.html#h-17.13.4
 			/** @type { slime.web.form.Control[] } */
 			var controls;
@@ -244,12 +243,69 @@
 					string: this.getUrlencoded()
 				}
 			}
-		}, {
-			//	Present in Java; used here for (potentially flawed) TypeScript definition
-			Multipart: void(0),
-			//	TODO	make strongly-typed
-			type: FORM_TYPE
-		});
+		};
+
+		/**
+		 *
+		 * @param { slime.web.form.Control[] } controls
+		 * @returns { { [x: string]: string } }
+		 */
+		var controlsToObject = $api.Function.pipe(
+			$api.Function.Array.map(
+				/** @returns { readonly [string, string] } */
+				function(control) {
+					return [control.name,control.value]
+				}
+			),
+			$api.Function.Object.fromEntries
+		);
+
+		/**
+		 * @constructor
+		 * @param { slime.web.form.Argument } p
+		 */
+		$exports.Form = Object.assign(
+			/**
+			 * @constructor
+			 * @param {*} p
+			 * @returns
+			 */
+			function(p) {
+				//	TODO	should error out if called as a function; this will not work in that case
+
+				//			no idea why these properties must be declared this way
+				this.controls = void(0);
+				this.getUrlencoded = void(0);
+				this.getEntityBody = void(0);
+
+				Form.apply(this,arguments);
+			},
+			{
+				//	Present in Java; used here for (potentially flawed) TypeScript definition
+				Multipart: void(0),
+				//	TODO	make strongly-typed
+				type: FORM_TYPE,
+				construct: Form,
+				codec: {
+					urlencoded: {
+						encode: function(form) {
+							return new Form({ controls: form.controls }).getUrlencoded();
+						},
+						decode: function(string) {
+							var object = new Form({ urlencoded: string });
+							return {
+								controls: object.controls
+							}
+						}
+					}
+				},
+				object: function() {
+					return function(form) {
+						return controlsToObject(form.controls);
+					}
+				}
+			}
+		);
 
 		if ($context.window) {
 			$exports.window = new function() {

@@ -65,11 +65,6 @@ namespace slime.web {
 
 	export interface Form {
 		controls: form.Control[]
-		getUrlencoded: () => string
-		getEntityBody: () => {
-			type: slime.mime.Type
-			string: string
-		}
 	}
 
 	export namespace form {
@@ -79,18 +74,6 @@ namespace slime.web {
 		export interface Control {
 			name: string
 			value: string
-		}
-
-		export type Argument = Argument.UrlEncoded | Argument.Controls
-
-		export namespace Argument {
-			export interface UrlEncoded {
-				urlencoded: string
-			}
-
-			export interface Controls {
-				controls: Control[]
-			}
 		}
 	}
 }
@@ -248,25 +231,117 @@ namespace slime.web {
 }
 
 namespace slime.web {
-	export interface Exports {
-		Form: {
-			new (p: form.Argument): Form
-
-			//	TODO	is this the right place for this? Present for jrunscript, not present in browser implementation.
-			Multipart?: any
-			type: slime.mime.Type
+	(
+		function(
+			fifty: slime.fifty.test.kit
+		) {
+			fifty.tests.exports.form = {};
 		}
-		/**
-		 * An object representing the current browser window; provides browser-specific APIs.
-		 * Present if $context.window supplied.
-		 */
-		window?: {
-			url: () => Url
-			query: {
-				controls: () => form.Control[]
-				object: () => { [name: string]: string }
+	//@ts-ignore
+	)(fifty);
+
+	export namespace exports {
+		export interface Form {
+			codec: {
+				urlencoded: slime.Codec<slime.web.Form,string>
 			}
 		}
+
+		(
+			function(
+				fifty: slime.fifty.test.kit
+			) {
+				fifty.tests.exports.form.codec = function() {
+					fifty.verify(1).is(1);
+					var form: slime.web.Form = {
+						controls: [
+							{ name: "foo", value: "bar" }
+						]
+					};
+					var encoded = test.subject.Form.codec.urlencoded.encode(form);
+					fifty.verify(encoded).is("foo=bar");
+
+					var decoded = test.subject.Form.codec.urlencoded.decode("foo=bar");
+					fifty.verify(decoded).controls.length.is(1);
+					fifty.verify(decoded).controls[0].name.is("foo");
+					fifty.verify(decoded).controls[0].value.is("bar");
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+	}
+
+	export namespace exports {
+		export interface Form {
+			object: () => (form: slime.web.Form) => {
+				[x: string]: string
+			}
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.kit
+			) {
+				fifty.tests.exports.form.object = function() {
+					var form: slime.web.Form = {
+						controls: [
+							{ name: "foo", value: "bar" },
+							{ name: "baz", value: "bizzy" }
+						]
+					}
+					var x = test.subject.Form.object()(form);
+					fifty.verify(x).foo.is("bar");
+					fifty.verify(x).baz.is("bizzy");
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+	}
+
+	export namespace form {
+		export type Argument = Argument.UrlEncoded | Argument.Controls
+
+		export namespace Argument {
+			export interface UrlEncoded {
+				urlencoded: string
+			}
+
+			export interface Controls {
+				controls: Control[]
+			}
+		}
+
+		export interface Object extends Form {
+			getUrlencoded: () => string
+			getEntityBody: () => {
+				type: slime.mime.Type
+				string: string
+			}
+		}
+	}
+
+	export namespace exports {
+		export interface Form {
+			//	TODO	is this the right place for this? Present for jrunscript, not present in browser implementation.
+			Multipart?: any
+
+			/**
+			 * The MIME type for forms: `application/x-www-form-urlencoded`.
+			 */
+			type: slime.mime.Type
+
+			/**
+			 * Creates a {@link form.Object} that can be used to operate on {@link Form}s in an object-oriented style.
+			 */
+			construct: new (p: form.Argument) => form.Object
+
+			/** @deprecated { Replaced by `construct` function. } */
+			new (p: form.Argument): form.Object
+		}
+	}
+
+	export interface Exports {
+		Form: exports.Form
 	}
 
 	(
@@ -299,6 +374,20 @@ namespace slime.web {
 	//@ts-ignore
 	)(fifty);
 
+	export interface Exports {
+		/**
+		 * An object representing the current browser window; provides browser-specific APIs.
+		 * Present if $context.window supplied.
+		 */
+		 window?: {
+			url: () => Url
+			query: {
+				controls: () => form.Control[]
+				object: () => { [name: string]: string }
+			}
+		}
+	}
+
 	(
 		function(
 			fifty: slime.fifty.test.kit
@@ -327,6 +416,8 @@ namespace slime.web {
 					verify(form).controls[0].value.is("1");
 					verify(form).controls[1].name.is("two");
 					verify(form).controls[1].value.is("2");
+
+					//	TODO	add test coverage for module.window.query.controls and module.window.query.object
 				}
 			}
 		}
@@ -342,6 +433,8 @@ namespace slime.web {
 			fifty.run(fifty.tests.Url);
 
 			fifty.run(fifty.tests.exports.Form);
+			fifty.run(fifty.tests.exports.form.codec);
+			fifty.run(fifty.tests.exports.form.object);
 			fifty.run(fifty.tests.exports.window);
 		}
 	}
