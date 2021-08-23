@@ -25,6 +25,8 @@
 			//	Selects a part of the test suite to run; default is to run the entire suite
 			jsh.wf.cli.$f.option.string({ longname: "part" }),
 
+			jsh.script.cli.option.pathname({ longname: "base" }),
+
 			function(p) {
 				var page = jsh.script.file.parent.getFile("test-browser.html");
 				var client = jsh.shell.jsh.src.getFile("loader/browser/client.js");
@@ -34,25 +36,31 @@
 
 				if (!target.file) throw new Error("File not found: " + target);
 
+				var base = (p.options.base) ? p.options.base.directory : void(0);
+
 				var paths = (function() {
 					var clientToShell = jsh.file.navigate({
 						from: client,
-						to: jsh.shell.jsh.src
+						to: jsh.shell.jsh.src,
+						base: base
 					});
 
 					var toResult = jsh.file.navigate({
 						from: clientToShell.base,
-						to: target.file
+						to: target.file,
+						base: base
 					});
 
 					var toHtmlRunner = jsh.file.navigate({
 						from: toResult.base,
-						to: page
+						to: page,
+						base: base
 					});
 
 					var toFile = jsh.file.navigate({
 						from: page,
-						to: target.file
+						to: target.file,
+						base: base
 					});
 
 					return {

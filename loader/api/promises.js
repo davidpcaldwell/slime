@@ -15,6 +15,41 @@
 		/** @type { slime.definition.test.promises.internal.Events } */
 		var events = $api.Events();
 
+		var NativePromise = window.Promise;
+
+		window.Promise = (function(was) {
+			/**
+			 * @constructor
+			 */
+			function RegisteredPromise(executor) {
+				console.log("Created promise", executor.toString());
+				this.then = void(0);
+				this.catch = void(0);
+				var rv = new was(executor);
+				rv["executor"] = executor.toString();
+				events.fire("created", rv);
+				rv.then(function(value) {
+					console.log("settled - fulfilled", rv, value);
+					events.fire("settled", rv);
+					return value;
+				})
+				return rv;
+			}
+			//	Copy all properties
+			for (var x in was) {
+				RegisteredPromise[x] = was[x];
+			}
+			//	Make typescript happy if above didn't work
+
+			//	At least in Chrome, this calls Promise constructor
+			RegisteredPromise.resolve = was.resolve;
+
+			RegisteredPromise.race = was.race;
+			RegisteredPromise.all = was.all;
+			RegisteredPromise.reject = was.reject;
+			return RegisteredPromise;
+		})(window.Promise);
+
 		var controlledPromiseId = 0;
 		/**
 		 *
@@ -34,7 +69,8 @@
 			executor.toString = function() {
 				return "<ControlledPromise " + id + ">";
 			}
-			var promise = new Promise(executor);
+			var promise = new NativePromise(executor);
+			promise.toString = executor.toString;
 			return {
 				promise: promise,
 				resolve: resolver,
@@ -75,7 +111,9 @@
 			events.listeners.add("settled", settled);
 
 			var controlled = ControlledPromise();
-			remove(controlled.promise);
+			//	We used to use our own promises here and did not want the ControlledPromise to count as "registered." Now we just
+			//	use the out-of-the-box Promise implementation for ControlledPromise objects.
+			//	remove(controlled.promise);
 
 			// var allSettled = function(promises) {
 			// 	// /**
@@ -128,39 +166,6 @@
 				}
 			}
 		};
-
-		window.Promise = (function(was) {
-			/**
-			 * @constructor
-			 */
-			function RegisteredPromise(executor) {
-				console.log("Created promise", executor.toString());
-				this.then = void(0);
-				this.catch = void(0);
-				var rv = new was(executor);
-				rv["executor"] = executor.toString();
-				events.fire("created", rv);
-				rv.then(function(value) {
-					console.log("settled - fulfilled", rv, value);
-					events.fire("settled", rv);
-					return value;
-				})
-				return rv;
-			}
-			//	Copy all properties
-			for (var x in was) {
-				RegisteredPromise[x] = was[x];
-			}
-			//	Make typescript happy if above didn't work
-
-			//	At least in Chrome, this calls Promise constructor
-			RegisteredPromise.resolve = was.resolve;
-
-			RegisteredPromise.race = was.race;
-			RegisteredPromise.all = was.all;
-			RegisteredPromise.reject = was.reject;
-			return RegisteredPromise;
-		})(window.Promise);
 
 		$export({
 			Promise: window.Promise,
