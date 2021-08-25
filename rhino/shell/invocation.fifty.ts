@@ -100,7 +100,7 @@ namespace slime.jrunscript.shell {
 			 }) => (p: Invocation) => Invocation
 
 			 toBashScript: () => (p: {
-				command: string
+				command: string | slime.jrunscript.file.File
 				arguments?: string[]
 				directory?: slime.jrunscript.file.Directory
 			 }) => string
