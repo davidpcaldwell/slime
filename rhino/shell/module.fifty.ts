@@ -601,7 +601,7 @@ namespace slime.jrunscript.shell {
 		export type Invocation = {
 			configuration: java.Configuration
 			result: {
-				command: slime.jrunscript.shell.invocation.Token
+				command: string | slime.jrunscript.file.Pathname | slime.jrunscript.file.File
 				arguments: slime.jrunscript.shell.invocation.Token[]
 				as: Parameters<Exports["run"]>[0]["as"]
 			}

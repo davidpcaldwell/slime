@@ -188,6 +188,7 @@
 						};
 
 						var toErrorMessage = function() {
+							/** @type { slime.jrunscript.shell.invocation.Token[] } */
 							var full = [invocation.command];
 							if (invocation.arguments) full = full.concat(invocation.arguments);
 							return full.map(toErrorMessageString).join(" ");

@@ -61,20 +61,24 @@ namespace slime.jrunscript.shell {
 			/**
 			 * The command to run.
 			 */
-			command: Token
+			command: string | slime.jrunscript.file.Pathname | slime.jrunscript.file.File
+
 			/**
 			 * The arguments to supply to the command. If not present, an empty array will be supplied.
 			 */
 			arguments?: Token[]
+
 			/**
 			 * The environment to supply to the command. If not specified, this process's environment will be provided.
 			 */
 			environment?: Invocation["environment"]
+
 			/**
 			 * The working directory in which the command will be executed. If not specified, this process's working directory
 			 * will be provided.
 			 */
 			directory?: Invocation["directory"]
+
 			/**
 			 * The standard I/O streams to supply to the subprocess. If unspecified, or if any properties are unspecified,
 			 * defaults will be used. The defaults are:
