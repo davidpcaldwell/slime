@@ -69,7 +69,7 @@
 			executor.toString = function() {
 				return "<ControlledPromise " + id + ">";
 			}
-			var promise = new NativePromise(executor);
+			var promise = new Promise(executor);
 			promise.toString = executor.toString;
 			return {
 				promise: promise,
@@ -113,7 +113,7 @@
 			var controlled = ControlledPromise();
 			//	We used to use our own promises here and did not want the ControlledPromise to count as "registered." Now we just
 			//	use the out-of-the-box Promise implementation for ControlledPromise objects.
-			//	remove(controlled.promise);
+			remove(controlled.promise);
 
 			// var allSettled = function(promises) {
 			// 	// /**
