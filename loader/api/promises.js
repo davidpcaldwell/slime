@@ -17,12 +17,12 @@
 
 		var NativePromise = window.Promise;
 
-		window.Promise = (function(was) {
+		var RegisteredPromise = (function(was) {
 			/**
 			 * @constructor
 			 */
 			function RegisteredPromise(executor) {
-				console.log("Created promise", executor.toString());
+				console.log("Created RegisteredPromise with executor", executor.toString() + " from " + new Error("Stack trace").stack);
 				this.then = void(0);
 				this.catch = void(0);
 				var rv = new was(executor);
@@ -50,6 +50,8 @@
 			return RegisteredPromise;
 		})(window.Promise);
 
+		window.Promise = RegisteredPromise;
+
 		var controlledPromiseId = 0;
 		/**
 		 *
@@ -69,7 +71,7 @@
 			executor.toString = function() {
 				return "<ControlledPromise " + id + ">";
 			}
-			var promise = new Promise(executor);
+			var promise = new RegisteredPromise(executor);
 			promise.toString = executor.toString;
 			return {
 				promise: promise,
@@ -83,7 +85,7 @@
 			var list = [];
 
 			var created = function(e) {
-				console.log("adding promise to registry", name, e.detail);
+				console.log("registering created promise with", name, e.detail);
 				list.push(e.detail);
 			};
 
@@ -93,7 +95,7 @@
 			var remove = function(instance) {
 				var index = list.indexOf(instance);
 				if (index == -1) {
-					console.log("Not pertinent to", name, instance);
+					console.log("Not registered with", name, instance, instance.toString());
 				} else {
 					list.splice(index,1);
 				}

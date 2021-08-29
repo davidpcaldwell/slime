@@ -52,7 +52,15 @@ namespace slime.fifty.test.internal.test {
 		current: () => AsynchronousScope
 	}
 
-	export type Export = (loader: slime.fifty.test.$loader, path: string, part?: string) => Result
+	/**
+	 * Executes a Fifty page at the given path from the given loader, optionally limiting the test to a single part.
+	 */
+	export type Export = (
+		/** A loader. */
+		loader: slime.fifty.test.$loader,
+		path: string,
+		part?: string
+	) => Result
 
 	export type Factory = slime.loader.Product<Context,Export>
 }

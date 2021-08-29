@@ -54,7 +54,7 @@ document.domain = document.domain;
 		}
 
 		this.started = function(process) {
-			console.log("Started: " + process + " from " + arguments.caller);
+			console.log("Asynchrony notified: start of " + process + " from " + new Error("Stack trace").stack);
 			pending.push(process);
 		};
 
@@ -266,7 +266,7 @@ document.domain = document.domain;
 
 	if (window.Promise) {
 		window.Promise = (function(was) {
-			var Promise = function(executor) {
+			var AsynchronyPromise = function(executor) {
 				this.toString = function() {
 					if (typeof(executor) == "function") return "asynchrony: " + executor;
 					if (typeof(executor) == "object" && executor.delegate) return "asynchrony delegate: " + executor.delegate;
@@ -310,7 +310,7 @@ document.domain = document.domain;
 						window.console.log("Rejecting", executor, arguments[0]);
 						return rejected.apply(this,arguments);
 					});
-					return new Promise({
+					return new AsynchronyPromise({
 						delegate: raw,
 						track: true,
 						string: "raw " + raw,
@@ -354,22 +354,22 @@ document.domain = document.domain;
 					return rv;
 				};
 			};
-			Promise.resolve = function(v) {
+			AsynchronyPromise.resolve = function(v) {
 				var rv = was.resolve(v);
-				return new Promise({
+				return new AsynchronyPromise({
 					delegate: rv,
 					track: true
 				});
 			};
-			Promise.all = function(array) {
+			AsynchronyPromise.all = function(array) {
 				var now = was.all(array);
-				return new Promise({
+				return new AsynchronyPromise({
 					delegate: now,
 					track: true
 				});
 			}
 			//	TODO	other methods, surely
-			return Promise;
+			return AsynchronyPromise;
 		})(window.Promise)
 	}
 
