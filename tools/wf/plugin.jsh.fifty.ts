@@ -45,7 +45,7 @@ namespace slime.jsh.wf {
 	 * An object that, given a Git repository, can provide the Git user.name and user.email values for that repository (perhaps
 	 * by prompting the user).
 	 */
-	interface GitIdentityProvider {
+	export interface GitIdentityProvider {
 		name: (p: { repository: slime.jrunscript.git.repository.Local }) => string,
 		email: (p: { repository: slime.jrunscript.git.repository.Local }) => string
 	}
