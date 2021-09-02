@@ -14,7 +14,7 @@ namespace slime.jrunscript.shell.internal.run {
 
 	export interface Result {
 		status: number
-		stdio: slime.jrunscript.shell.run.Stdio
+		stdio: slime.jrunscript.shell.run.Output
 	}
 
 	export interface Buffer {
@@ -22,6 +22,8 @@ namespace slime.jrunscript.shell.internal.run {
 		close: () => void
 		readText: () => string
 	}
+
+	export type Stdio = Required<slime.jrunscript.shell.Stdio> & { close: () => slime.jrunscript.shell.run.Output }
 
 	export interface Events {
 		start: {
@@ -31,28 +33,25 @@ namespace slime.jrunscript.shell.internal.run {
 
 		exit: {
 			status: number
-			stdio: {
-				output?: string
-				error?: string
-			}
+			stdio?: slime.jrunscript.shell.run.Output
 		}
 	}
 
 	export interface Export {
 		old: {
-		run: (
-			context: slime.jrunscript.shell.internal.module.java.Context,
-			configuration: slime.jrunscript.shell.internal.module.java.Configuration,
-			module: {
-				events: any
-			},
-				events: slime.jrunscript.shell.run.old.Events,
-				p: slime.jrunscript.shell.run.old.Argument,
-				invocation: slime.jrunscript.shell.run.old.Argument
-		) => Result
+			run: (
+				context: slime.jrunscript.shell.internal.module.java.Context,
+				configuration: slime.jrunscript.shell.internal.module.java.Configuration,
+				module: {
+					events: any
+				},
+					events: slime.jrunscript.shell.run.old.Events,
+					p: slime.jrunscript.shell.run.old.Argument,
+					invocation: slime.jrunscript.shell.run.old.Argument
+			) => Result
 		}
 
-		buildStdio: (p: slime.jrunscript.shell.invocation.Stdio) => slime.jrunscript.shell.internal.module.RunStdio
+		buildStdio: (p: slime.jrunscript.shell.invocation.Stdio) => Stdio
 	}
 
 	export type Factory = slime.loader.Product<Context,Export>

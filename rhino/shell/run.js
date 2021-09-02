@@ -84,10 +84,10 @@
 		 *
 		 * @param { slime.jrunscript.shell.internal.module.java.Context } context
 		 * @param { slime.jrunscript.shell.internal.module.java.Configuration } configuration
-		 * @param { slime.$api.events.Handler<slime.jrunscript.shell.internal.run.Events> } handler
+		 * @returns { slime.$api.fp.impure.Tell<slime.jrunscript.shell.internal.run.Events> }
 		 */
-		var run = function(context,configuration,handler) {
-			var tell = $api.Function.impure.tell(
+		var run = function(context,configuration) {
+			return $api.Function.impure.tell(
 				/**
 				 *
 				 * @param { slime.$api.Events<slime.jrunscript.shell.internal.run.Events> } events
@@ -131,14 +131,13 @@
 					});
 				}
 			);
-
-			tell(handler);
 		};
 
 		/** @type { slime.jrunscript.shell.internal.run.Export["old"]["run"] } */
 		function oldRun(context, configuration, module, events, p, invocation) {
 			var rv;
-			run(context, configuration, {
+			var tell = run(context, configuration);
+			tell({
 				start: function(e) {
 					var startEvent = {
 						command: invocation.command,
@@ -168,10 +167,10 @@
 		/**
 		 *
 		 * @param { slime.jrunscript.shell.invocation.Stdio } p
-		 * @returns { slime.jrunscript.shell.internal.module.RunStdio }
+		 * @returns { slime.jrunscript.shell.internal.run.Stdio }
 		 */
 		function buildStdio(p) {
-			/** @type { slime.jrunscript.shell.internal.module.RunStdio } */
+			/** @type { slime.jrunscript.shell.internal.run.Stdio } */
 			var rv = {};
 			/** @type { { [x: string]: slime.jrunscript.shell.internal.run.Buffer } } */
 			var buffers = {};

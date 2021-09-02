@@ -105,7 +105,7 @@
 
 		/**
 		 *
-		 * @param { slime.jrunscript.shell.internal.module.RunStdio } p
+		 * @param { slime.jrunscript.shell.internal.run.Stdio } p
 		 */
 		var fallbackToParentStdio = function(p) {
 			if (typeof(p.input) == "undefined") p.input = null;
@@ -117,7 +117,7 @@
 		/**
 		 *
 		 * @param { Parameters<slime.jrunscript.shell.Exports["run"]>[0] } p
-		 * @returns { slime.jrunscript.shell.internal.module.RunStdio }
+		 * @returns { slime.jrunscript.shell.internal.run.Stdio }
 		 */
 		var getStdio = function(p) {
 			var stdioProperty = scripts.invocation.stdio.forModuleRunArgument(p);
@@ -176,23 +176,32 @@
 
 					/**
 					 *
+					 * @param { slime.jrunscript.shell.invocation.Token } v
+					 * @returns
+					 */
+					var toErrorMessageString = function(v) {
+						if (typeof(v) == "undefined") return "(undefined)";
+						if (v === null) return "(null)";
+						return String(v);
+					};
+
+					/**
+					 *
+					 * @param { slime.jrunscript.shell.internal.module.Invocation["result"] } invocation
+					 */
+					var toErrorMessage = function(invocation) {
+						/** @type { slime.jrunscript.shell.invocation.Token[] } */
+						var full = [invocation.command];
+						if (invocation.arguments) full = full.concat(invocation.arguments);
+						return full.map(toErrorMessageString).join(" ");
+					}
+
+					/**
+					 *
 					 * @param { slime.jrunscript.shell.internal.module.Invocation["result"] } invocation
 					 * @returns { (arg: slime.jrunscript.shell.invocation.Token, index?: number) => string }
 					 */
 					var toCommandToken = function(invocation) {
-						var toErrorMessageString = function(v) {
-							if (typeof(v) == "undefined") return "(undefined)";
-							if (v === null) return "(null)";
-							return String(v);
-						};
-
-						var toErrorMessage = function() {
-							/** @type { slime.jrunscript.shell.invocation.Token[] } */
-							var full = [invocation.command];
-							if (invocation.arguments) full = full.concat(invocation.arguments);
-							return full.map(toErrorMessageString).join(" ");
-						}
-
 						/**
 						 *
 						 * @param { slime.jrunscript.shell.invocation.Token } arg
@@ -203,9 +212,9 @@
 							if (arguments.length == 1) index = null;
 							var label = (typeof(index) == "number") ? "property 'arguments[" + String(index) + "]'" : "property 'command'";
 							if (typeof(arg) == "undefined") {
-								throw new TypeError(label + " cannot be undefined; full invocation = " + toErrorMessage());
+								throw new TypeError(label + " cannot be undefined; full invocation = " + toErrorMessage(invocation));
 							}
-							if (arg === null) throw new TypeError(label + " must not be null; full invocation = " + toErrorMessage());
+							if (arg === null) throw new TypeError(label + " must not be null; full invocation = " + toErrorMessage(invocation));
 							if (arg && typeof(arg) == "object") return String(arg);
 							//	TODO	the below check does not allow the empty string to be a token
 							if (arg && typeof(arg) == "string") return arg;
@@ -214,19 +223,6 @@
 
 						return rv;
 					}
-
-					// var toCommandToken = function(arg) {
-					// 	var index = (arguments.length > 1) ? arguments[1] : null;
-					// 	var label = (typeof(index) == "number") ? "token " + String(index) + " '" + arg + "'" : "command";
-					// 	if (typeof(arg) == "undefined") {
-					// 		throw new TypeError(label + " cannot be undefined.");
-					// 	}
-					// 	if (arg === null) throw new TypeError(label + " cannot be null.");
-					// 	if (arg && typeof(arg) == "object") return String(arg);
-					// 	//	TODO	the below check does not allow the empty string to be a token
-					// 	if (arg && typeof(arg) == "string") return arg;
-					// 	throw new TypeError(label + " is not a string nor an object that can be converted to string.");
-					// }
 
 					if (p.tokens) {
 						return $api.deprecate(function() {
@@ -301,7 +297,7 @@
 				/**
 				 *
 				 * @param { Parameters<slime.jrunscript.shell.Exports["run"]>[0] } p
-				 * @return { slime.jrunscript.shell.internal.module.RunStdio }
+				 * @return { slime.jrunscript.shell.internal.run.Stdio }
 				 */
 				function getStdio(p) {
 					//	TODO	the getStdio function is currently used in jsh.js, requiring us to export it; is that the best structure?

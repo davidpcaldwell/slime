@@ -184,7 +184,7 @@ namespace slime.jrunscript.shell {
 	}
 
 	export namespace run {
-		export interface Stdio {
+		export interface Output {
 			output?: string
 			error?: string
 		}
@@ -221,7 +221,7 @@ namespace slime.jrunscript.shell {
 				workingDirectory: slime.jrunscript.file.Directory
 
 				status: number
-				stdio?: run.Stdio
+				stdio?: run.Output
 			}
 
 			export namespace events {
@@ -240,7 +240,7 @@ namespace slime.jrunscript.shell {
 
 					terminate: Event & {
 						status: number
-						stdio: slime.jrunscript.shell.run.Stdio
+						stdio?: slime.jrunscript.shell.run.Output
 					}
 				}
 			}
@@ -626,8 +626,6 @@ namespace slime.jrunscript.shell {
 	)($api,fifty);
 
 	export namespace internal.module {
-		export type RunStdio = Required<slime.jrunscript.shell.Stdio> & { close: () => slime.jrunscript.shell.run.Stdio }
-
 		export type Invocation = {
 			configuration: java.Configuration
 			result: {
@@ -639,7 +637,7 @@ namespace slime.jrunscript.shell {
 
 		export namespace java {
 			export interface Context {
-				stdio: RunStdio
+				stdio: internal.run.Stdio
 				environment: slime.jrunscript.host.Environment
 				directory: slime.jrunscript.file.Directory
 			}
