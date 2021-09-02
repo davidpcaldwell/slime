@@ -135,7 +135,7 @@
 			tell(handler);
 		};
 
-		/** @type { slime.jrunscript.shell.internal.run.Export["run"] } */
+		/** @type { slime.jrunscript.shell.internal.run.Export["old"]["run"] } */
 		function oldRun(context, configuration, module, events, p, invocation) {
 			var rv;
 			run(context, configuration, {
@@ -266,7 +266,9 @@
 		}
 
 		$export({
-			run: oldRun,
+			old: {
+				run: oldRun
+			},
 			buildStdio: buildStdio
 		});
 	}

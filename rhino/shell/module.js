@@ -9,13 +9,12 @@
 	/**
 	 *
 	 * @param { slime.jrunscript.Packages } Packages
-	 * @param { any } JavaAdapter
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jrunscript.shell.Context } $context
 	 * @param { slime.Loader } $loader
 	 * @param { slime.jrunscript.shell.Exports } $exports
 	 */
-	function(Packages,JavaAdapter,$api,$context,$loader,$exports) {
+	function(Packages,$api,$context,$loader,$exports) {
 		if (!$context.api.io) {
 			throw new Error("Missing: $context.api.io");
 		}
@@ -266,7 +265,7 @@
 			}
 
 			/**
-			 * @type { slime.jrunscript.shell.run.Argument }
+			 * @type { slime.jrunscript.shell.run.old.Argument }
 			 */
 			var input = {
 				command: invocation.result.command,
@@ -277,7 +276,7 @@
 			input.workingDirectory = context.directory;
 			$api.deprecate(input,"workingDirectory");
 
-			var result = scripts.run.run(context, invocation.configuration, module, events, p, input);
+			var result = scripts.run.old.run(context, invocation.configuration, module, events, p, input);
 
 			var evaluate = (p["evaluate"]) ? p["evaluate"] : $exports.run.evaluate;
 			return evaluate($api.Object.compose(input, result));
@@ -780,4 +779,4 @@
 		$exports.Invocation = Invocation;
 	}
 //@ts-ignore
-)(Packages,JavaAdapter,$api,$context,$loader,$exports);
+)(Packages,$api,$context,$loader,$exports);

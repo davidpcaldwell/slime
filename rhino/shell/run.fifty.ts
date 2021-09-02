@@ -39,16 +39,18 @@ namespace slime.jrunscript.shell.internal.run {
 	}
 
 	export interface Export {
+		old: {
 		run: (
 			context: slime.jrunscript.shell.internal.module.java.Context,
 			configuration: slime.jrunscript.shell.internal.module.java.Configuration,
 			module: {
 				events: any
 			},
-			events: slime.jrunscript.shell.run.Events,
-			p: slime.jrunscript.shell.run.Argument,
-			invocation: slime.jrunscript.shell.run.Argument
+				events: slime.jrunscript.shell.run.old.Events,
+				p: slime.jrunscript.shell.run.old.Argument,
+				invocation: slime.jrunscript.shell.run.old.Argument
 		) => Result
+		}
 
 		buildStdio: (p: slime.jrunscript.shell.invocation.Stdio) => slime.jrunscript.shell.internal.module.RunStdio
 	}

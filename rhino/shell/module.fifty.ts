@@ -104,7 +104,7 @@ namespace slime.jrunscript.shell {
 					start: void(0)
 				}
 
-				var events: run.events.Events = {
+				var events: run.old.events.Events = {
 					start: void(0),
 					terminate: void(0)
 				}
@@ -189,76 +189,78 @@ namespace slime.jrunscript.shell {
 			error?: string
 		}
 
-		export interface Argument extends invocation.Argument {
-			as?: {
-				user: string
-			}
-
-			on?: {
-				start: (data: run.events.Events["start"]) => void
-			}
-
-			/** @deprecated */
-			tokens?: any
-			/** @deprecated */
-			workingDirectory?: slime.jrunscript.file.Directory
-			/** @deprecated */
-			stdout?: invocation.Argument["stdio"]["output"]
-			/** @deprecated */
-			stdin?: invocation.Argument["stdio"]["input"]
-			/** @deprecated */
-			stderr?: invocation.Argument["stdio"]["error"]
-		}
-
-		export interface Result {
-			command: any
-			arguments: any[]
-			environment: any
-
-			directory: slime.jrunscript.file.Directory
-			/** @deprecated */
-			workingDirectory: slime.jrunscript.file.Directory
-
-			status: number
-			stdio?: run.Stdio
-		}
-
-		export namespace events {
-			export interface Event {
-				command: slime.jrunscript.shell.invocation.Token
-				arguments?: slime.jrunscript.shell.invocation.Token[]
-				environment?: slime.jrunscript.shell.Invocation["environment"]
-				directory?: slime.jrunscript.file.Directory
-			}
-
-			export interface Events {
-				start: Event & {
-					pid: number
-					kill: () => void
+		export namespace old {
+			export interface Argument extends invocation.Argument {
+				as?: {
+					user: string
 				}
 
-				terminate: Event & {
-					status: number
-					stdio: slime.jrunscript.shell.run.Stdio
+				on?: {
+					start: (data: old.events.Events["start"]) => void
+				}
+
+				/** @deprecated */
+				tokens?: any
+				/** @deprecated */
+				workingDirectory?: slime.jrunscript.file.Directory
+				/** @deprecated */
+				stdout?: invocation.Argument["stdio"]["output"]
+				/** @deprecated */
+				stdin?: invocation.Argument["stdio"]["input"]
+				/** @deprecated */
+				stderr?: invocation.Argument["stdio"]["error"]
+			}
+
+			export interface Result {
+				command: any
+				arguments: any[]
+				environment: any
+
+				directory: slime.jrunscript.file.Directory
+				/** @deprecated */
+				workingDirectory: slime.jrunscript.file.Directory
+
+				status: number
+				stdio?: run.Stdio
+			}
+
+			export namespace events {
+				export interface Event {
+					command: slime.jrunscript.shell.invocation.Token
+					arguments?: slime.jrunscript.shell.invocation.Token[]
+					environment?: slime.jrunscript.shell.Invocation["environment"]
+					directory?: slime.jrunscript.file.Directory
+				}
+
+				export interface Events {
+					start: Event & {
+						pid: number
+						kill: () => void
+					}
+
+					terminate: Event & {
+						status: number
+						stdio: slime.jrunscript.shell.run.Stdio
+					}
 				}
 			}
+
+			export type Events = slime.$api.Events<events.Events>
+
+			export type Handler = slime.$api.events.Handler<events.Events>
 		}
-
-		export type Events = slime.$api.Events<events.Events>
-
-		export type Handler = slime.$api.events.Handler<events.Events>
 	}
 
 	export interface Exports {
 		run: {
 			<T>(
-				p: run.Argument & {
-					evaluate?: (p: run.Result) => T
+				p: run.old.Argument & {
+					evaluate?: (p: run.old.Result) => T
 				},
-				events?: run.Handler
+				events?: run.old.Handler
 			): T
 
-			(p: run.Argument, events?: run.Events): run.Result
+			(p: run.old.Argument, events?: run.old.Events): run.old.Result
 
 			evaluate: any
 			stdio: any
@@ -287,12 +289,12 @@ namespace slime.jrunscript.shell {
 
 				var here: slime.jrunscript.file.Directory = fifty.$loader.getRelativePath(".").directory;
 
-				var argument: slime.jrunscript.shell.run.Argument = {
+				var argument: slime.jrunscript.shell.run.old.Argument = {
 					command: "ls",
 					directory: here
 				};
 
-				var captured: run.events.Events = {
+				var captured: run.old.events.Events = {
 					start: void(0),
 					terminate: void(0)
 				};
