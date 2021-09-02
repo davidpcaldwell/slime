@@ -103,6 +103,9 @@ namespace slime.$api {
 		threads: any
 	}
 
+	/**
+	 * An occurrence in which other parts of a program might be interested. Events have a
+	 */
 	export interface Event<T> {
 		type: string
 		source: object
@@ -112,6 +115,9 @@ namespace slime.$api {
 	}
 
 	export namespace event {
+		/**
+		 * A function that receives events.
+		 */
 		export type Handler<T> = (e: Event<T>) => void
 	}
 
@@ -124,6 +130,9 @@ namespace slime.$api {
 	}
 
 	export namespace events {
+		/**
+		 * An object whose methods process events; events of a type are mapped to a method with the same name as that type.
+		 */
 		export type Handler<D> = {
 			[k in keyof D]?: event.Handler<D[k]>
 		}

@@ -110,7 +110,7 @@
 		};
 
 		/**
-		 * @param { { name?: string, getDestinationPath?: (file: slime.jrunscript.file.File) => string, url?: any, file?: slime.jrunscript.file.File, format?: any, to: slime.jrunscript.file.Pathname, replace?: boolean } } p
+		 * @param { { name?: string, getDestinationPath?: (file: slime.jrunscript.file.File) => string, url?: any, file?: slime.jrunscript.file.File, format?: Parameters<slime.jsh.tools.install.module.Exports["install"]>[0]["format"], to: slime.jrunscript.file.Pathname, replace?: boolean } } p
 		 * @param { any } events
 		 * @returns { slime.jrunscript.file.Directory }
 		 */
@@ -182,7 +182,7 @@
 		};
 
 		/**
-		 * @param { { name?: string, getDestinationPath?: (file: slime.jrunscript.file.File) => string, url?: any, file?: slime.jrunscript.file.File, format?: any, to: slime.jrunscript.file.Pathname, replace?: boolean } } p
+		 * @param { Parameters<slime.jsh.tools.install.module.Exports["install"]>[0] } p
 		 * @param { any } events
 		 * @returns { slime.jrunscript.file.Directory }
 		 */

@@ -80,37 +80,74 @@
 			);
 		};
 
-		/** @type { slime.jrunscript.shell.internal.run.Export["run"] } */
-		function run(context, configuration, module, events, p, invocation) {
-			//	TODO	could throw exception on launch; should deal with it
-			var _subprocess = Packages.inonit.system.OperatingSystem.get().start(
-				createJavaCommandContext(context),
-				createJavaCommandConfiguration(configuration)
-			);
+		/**
+		 *
+		 * @param { slime.jrunscript.shell.internal.module.java.Context } context
+		 * @param { slime.jrunscript.shell.internal.module.java.Configuration } configuration
+		 * @param { slime.$api.events.Handler<slime.jrunscript.shell.internal.run.Events> } handler
+		 */
+		var run = function(context,configuration,handler) {
+			var tell = $api.Function.impure.tell(
+				/**
+				 *
+				 * @param { slime.$api.Events<slime.jrunscript.shell.internal.run.Events> } events
+				 */
+				function(events) {
+					//	TODO	could throw exception on launch; should deal with it
+					var _subprocess = Packages.inonit.system.OperatingSystem.get().start(
+						createJavaCommandContext(context),
+						createJavaCommandConfiguration(configuration)
+					);
 
-			(
-				function fireStartEvent() {
-					var startEvent = (function() {
-						var rv = {
-							command: invocation.command,
-							arguments: invocation.arguments,
-							environment: invocation.environment,
-							directory: invocation.directory,
-							pid: void(0),
-							kill: function() {
-								_subprocess.terminate();
-							}
+					events.fire("start", {
+						pid: Number(_subprocess.getPid()),
+						kill: function() {
+							_subprocess.terminate();
+						}
+					});
+
+					var listener = new function() {
+						this.status = void(0);
+
+						this.finished = function(status) {
+							this.status = status;
 						};
 
-						Object.defineProperty(rv, "pid", {
-							get: function() {
-								return Number(_subprocess.getPid());
-							},
-							enumerable: true
-						});
+						this.interrupted = function(_exception) {
+							//	who knows what we should do here. Kill the process?
+							throw new Error("Unhandled Java thread interruption.");
+						};
+					};
 
-						return rv;
-					})();
+					//Packages.java.lang.System.err.println("Waiting for subprocess: " + _subprocess);
+					_subprocess.wait(new JavaAdapter(
+						Packages.inonit.system.Subprocess.Listener,
+						listener
+					));
+
+					events.fire("exit", {
+						status: listener.status,
+						stdio: context.stdio.close()
+					});
+				}
+			);
+
+			tell(handler);
+		};
+
+		/** @type { slime.jrunscript.shell.internal.run.Export["run"] } */
+		function oldRun(context, configuration, module, events, p, invocation) {
+			var rv;
+			run(context, configuration, {
+				start: function(e) {
+					var startEvent = {
+						command: invocation.command,
+						arguments: invocation.arguments,
+						environment: invocation.environment,
+						directory: invocation.directory,
+						pid: e.detail.pid,
+						kill: e.detail.kill
+					};
 
 					if (p.on && p.on.start) {
 						$api.deprecate(function() {
@@ -119,35 +156,12 @@
 					}
 					module.events.fire("run.start", startEvent);
 					events.fire("start", startEvent);
+				},
+				exit: function(e) {
+					rv = $api.Object.compose(invocation, e.detail);
+					events.fire("terminate", rv);
 				}
-			)();
-
-			var listener = new function() {
-				this.status = void(0);
-
-				this.finished = function(status) {
-					this.status = status;
-				};
-
-				this.interrupted = function(_exception) {
-					//	who knows what we should do here. Kill the process?
-					throw new Error("Unhandled Java thread interruption.");
-				};
-			};
-
-			//Packages.java.lang.System.err.println("Waiting for subprocess: " + _subprocess);
-			_subprocess.wait(new JavaAdapter(
-				Packages.inonit.system.Subprocess.Listener,
-				listener
-			));
-
-			var rv = {
-				status: listener.status,
-				stdio: context.stdio.close()
-			};
-
-			events.fire("terminate", $api.Object.compose(invocation, rv));
-
+			});
 			return rv;
 		}
 
@@ -230,17 +244,18 @@
 			}
 
 			/**
-			 * @returns { slime.jrunscript.shell.run.Stdio }
+			 * @returns { { output?: string, error?: string } }
 			 */
 			rv.close = function() {
-				var rv = {
-				};
+				/** @type { { output?: string, error?: string } } */
+				var rv;
 				for (var x in buffers) {
 					buffers[x].close();
 
 					//	this is horrendous, but it automatically replaces the stdio property with the string if a string-buffering
 					//	strategy was requested.
 					if ((x == "output" || x == "error") && buffers[x]) {
+						if (!rv) rv = {};
 						rv[x] = buffers[x].readText();
 					}
 				}
@@ -251,7 +266,7 @@
 		}
 
 		$export({
-			run: run,
+			run: oldRun,
 			buildStdio: buildStdio
 		});
 	}

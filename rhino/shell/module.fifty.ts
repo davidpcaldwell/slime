@@ -100,11 +100,37 @@ namespace slime.jrunscript.shell {
 
 				fifty.verify(log).captured().length.is(0);
 
+				var on = {
+					start: void(0)
+				}
+
+				var events: run.events.Events = {
+					start: void(0),
+					terminate: void(0)
+				}
+
 				subject.run({
-					command: command
+					command: command,
+					on: {
+						start: function(e) {
+							on.start = e;
+						}
+					}
+				}, {
+					start: function(e) {
+						if (events.start) throw new Error();
+						events.start = e.detail;
+					},
+					terminate: function(e) {
+						if (events.terminate) throw new Error();
+						events.terminate = e.detail;
+					}
 				});
 
 				fifty.verify(log).captured().length.is(1);
+				fifty.verify(events).start.is.type("object");
+				fifty.verify(events).terminate.is.type("object");
+				fifty.verify(on).start.is.type("object");
 			}
 		}
 	//@ts-ignore
@@ -168,7 +194,9 @@ namespace slime.jrunscript.shell {
 				user: string
 			}
 
-			on?: any
+			on?: {
+				start: (data: run.events.Events["start"]) => void
+			}
 
 			/** @deprecated */
 			tokens?: any

@@ -15,8 +15,15 @@ namespace slime.jsh.tools.install.module {
 		downloads: any
 	}
 
+	interface Format {
+		extract: (f: slime.jrunscript.file.File, d: slime.jrunscript.file.Directory) => void
+		getDestinationPath: (basename: string) => string
+	}
+
 	interface Exports {
-		format: any
+		format: {
+			[x: string]: Format
+		}
 
 		get: (
 			p: { file?: slime.jrunscript.file.File, url?: string, name?: string },
@@ -28,7 +35,7 @@ namespace slime.jsh.tools.install.module {
 			getDestinationPath?: (file: slime.jrunscript.file.File) => string,
 			url?: any,
 			file?: slime.jrunscript.file.File,
-			format?: any,
+			format?: Format,
 			to: slime.jrunscript.file.Pathname,
 			replace?: boolean
 		}, events?: $api.events.Function.Receiver) => slime.jrunscript.file.Directory

@@ -23,13 +23,30 @@ namespace slime.jrunscript.shell.internal.run {
 		readText: () => string
 	}
 
+	export interface Events {
+		start: {
+			pid: number
+			kill: () => void
+		}
+
+		exit: {
+			status: number
+			stdio: {
+				output?: string
+				error?: string
+			}
+		}
+	}
+
 	export interface Export {
 		run: (
 			context: slime.jrunscript.shell.internal.module.java.Context,
 			configuration: slime.jrunscript.shell.internal.module.java.Configuration,
-			module: any,
+			module: {
+				events: any
+			},
 			events: slime.jrunscript.shell.run.Events,
-			p: any,
+			p: slime.jrunscript.shell.run.Argument,
 			invocation: slime.jrunscript.shell.run.Argument
 		) => Result
 
