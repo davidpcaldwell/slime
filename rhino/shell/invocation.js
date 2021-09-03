@@ -11,6 +11,47 @@
 	 * @param { slime.loader.Export<slime.jrunscript.shell.internal.invocation.Export> } $export
 	 */
 	function($api,$export) {
+		var parseCommandToken = (
+			function() {
+				var ArgumentError = $api.Error.Type({ name: "ArgumentError", extends: TypeError });
+
+				/**
+				 *
+				 * @param { slime.jrunscript.shell.invocation.Token } arg
+				 * @param { number } index
+				 * @returns { string }
+				 */
+				var rv = function(arg,index) {
+					if (arguments.length == 1) index = null;
+					var label = (typeof(index) == "number") ? "property 'arguments[" + String(index) + "]'" : "property 'command'";
+					if (typeof(arg) == "undefined") {
+						throw new ArgumentError(label + " cannot be undefined");
+					}
+					if (arg === null) throw new ArgumentError(label + " must not be null");
+					if (arg && typeof(arg) == "object") return String(arg);
+					//	TODO	the below check does not allow the empty string to be a token
+					if (arg && typeof(arg) == "string") return arg;
+					throw new ArgumentError(label + " is not a string nor an object that can be converted to string.");
+				}
+				rv.Error = ArgumentError;
+				return rv;
+			}
+		)();
+
+		/**
+		 *
+		 * @param { slime.jrunscript.shell.invocation.Argument["command"] } command
+		 * @param { slime.jrunscript.shell.invocation.Argument["arguments"] } args
+		 * @param { slime.jrunscript.shell.internal.invocation.Export["parseCommandToken"] } parseCommandToken
+		 * @returns { slime.jrunscript.shell.internal.run.java.Configuration }
+		 */
+		var toConfiguration = function(command,args,parseCommandToken) {
+			return {
+				command: parseCommandToken(command),
+				arguments: (args) ? args.map(parseCommandToken) : []
+			}
+		}
+
 		/**
 		 *
 		 * @param { Parameters<slime.jrunscript.shell.Exports["run"]>[0] } p
@@ -58,6 +99,8 @@
 		}
 
 		$export({
+			parseCommandToken: parseCommandToken,
+			toConfiguration: toConfiguration,
 			invocation: {
 				sudo: function(settings) {
 					//	TODO	sudo has preserve-env and preserver-env= flags. Should make the relationship

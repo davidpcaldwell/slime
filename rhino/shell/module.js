@@ -176,53 +176,46 @@
 
 					/**
 					 *
-					 * @param { slime.jrunscript.shell.invocation.Token } v
-					 * @returns
-					 */
-					var toErrorMessageString = function(v) {
-						if (typeof(v) == "undefined") return "(undefined)";
-						if (v === null) return "(null)";
-						return String(v);
-					};
-
-					/**
-					 *
 					 * @param { slime.jrunscript.shell.internal.module.Invocation["result"] } invocation
-					 */
-					var toErrorMessage = function(invocation) {
-						/** @type { slime.jrunscript.shell.invocation.Token[] } */
-						var full = [invocation.command];
-						if (invocation.arguments) full = full.concat(invocation.arguments);
-						return full.map(toErrorMessageString).join(" ");
-					}
-
-					/**
-					 *
-					 * @param { slime.jrunscript.shell.internal.module.Invocation["result"] } invocation
-					 * @returns { (arg: slime.jrunscript.shell.invocation.Token, index?: number) => string }
+					 * @returns { slime.jrunscript.shell.internal.invocation.Export["parseCommandToken"] }
 					 */
 					var toCommandToken = function(invocation) {
 						/**
 						 *
-						 * @param { slime.jrunscript.shell.invocation.Token } arg
-						 * @param { number } index
-						 * @returns { string }
+						 * @param { slime.jrunscript.shell.invocation.Token } v
+						 * @returns
 						 */
-						var rv = function(arg,index) {
-							if (arguments.length == 1) index = null;
-							var label = (typeof(index) == "number") ? "property 'arguments[" + String(index) + "]'" : "property 'command'";
-							if (typeof(arg) == "undefined") {
-								throw new TypeError(label + " cannot be undefined; full invocation = " + toErrorMessage(invocation));
-							}
-							if (arg === null) throw new TypeError(label + " must not be null; full invocation = " + toErrorMessage(invocation));
-							if (arg && typeof(arg) == "object") return String(arg);
-							//	TODO	the below check does not allow the empty string to be a token
-							if (arg && typeof(arg) == "string") return arg;
-							throw new TypeError(label + " is not a string nor an object that can be converted to string.");
+						var toErrorMessageString = function(v) {
+							if (typeof(v) == "undefined") return "(undefined)";
+							if (v === null) return "(null)";
+							return String(v);
 						};
 
+						/**
+						 *
+						 * @param { slime.jrunscript.shell.internal.module.Invocation["result"] } invocation
+						 */
+						var toErrorMessage = function(invocation) {
+							/** @type { slime.jrunscript.shell.invocation.Token[] } */
+							var full = [invocation.command];
+							if (invocation.arguments) full = full.concat(invocation.arguments);
+							return full.map(toErrorMessageString).join(" ");
+						};
+
+						var rv = function(arg,index) {
+							try {
+								return scripts.invocation.parseCommandToken(arg,index);
+							} catch (e) {
+								if (e instanceof scripts.invocation.parseCommandToken.Error) {
+									throw new TypeError(e.message + "; full invocation = " + toErrorMessage(invocation));
+								} else {
+									throw e;
+								}
+							}
+						}
+						rv.Error = scripts.invocation.parseCommandToken.Error;
 						return rv;
-					}
+					};
 
 					if (p.tokens) {
 						return $api.deprecate(function() {
@@ -233,10 +226,7 @@
 							//	Use a raw copy of the arguments for the callback
 							rv.result.command = p.tokens[0];
 							rv.result.arguments = p.tokens.slice(1);
-							//	Convert the arguments to strings for invocation
-							var configuration = p.tokens.map(toCommandToken(rv.result));
-							rv.configuration.command = configuration[0];
-							rv.configuration.arguments = configuration.slice(1);
+							rv.configuration = scripts.invocation.toConfiguration(p.tokens[0], p.tokens.slice(1), toCommandToken(rv.result));
 							return rv;
 						})();
 					} else if (typeof(p.command) != "undefined") {
@@ -244,8 +234,7 @@
 						//	TODO	switch to $api.Function.mutating
 						rv.result.arguments = p.arguments;
 						rv.result.as = p.as;
-						rv.configuration.command = toCommandToken(rv.result)(p.command);
-						rv.configuration.arguments = (p.arguments) ? p.arguments.map(toCommandToken(rv.result)) : [];
+						rv.configuration = scripts.invocation.toConfiguration(p.command, p.arguments, toCommandToken(rv.result));
 						return rv;
 					} else {
 						throw new TypeError("Required: command property or tokens property");

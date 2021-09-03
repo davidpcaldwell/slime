@@ -100,37 +100,11 @@ namespace slime.jrunscript.shell {
 
 				fifty.verify(log).captured().length.is(0);
 
-				var on = {
-					start: void(0)
-				}
-
-				var events: run.old.events.Events = {
-					start: void(0),
-					terminate: void(0)
-				}
-
 				subject.run({
-					command: command,
-					on: {
-						start: function(e) {
-							on.start = e;
-						}
-					}
-				}, {
-					start: function(e) {
-						if (events.start) throw new Error();
-						events.start = e.detail;
-					},
-					terminate: function(e) {
-						if (events.terminate) throw new Error();
-						events.terminate = e.detail;
-					}
+					command: command
 				});
 
 				fifty.verify(log).captured().length.is(1);
-				fifty.verify(events).start.is.type("object");
-				fifty.verify(events).terminate.is.type("object");
-				fifty.verify(on).start.is.type("object");
 			}
 		}
 	//@ts-ignore
@@ -289,9 +263,18 @@ namespace slime.jrunscript.shell {
 
 				var here: slime.jrunscript.file.Directory = fifty.$loader.getRelativePath(".").directory;
 
+				var on = {
+					start: void(0)
+				}
+
 				var argument: slime.jrunscript.shell.run.old.Argument = {
 					command: "ls",
-					directory: here
+					directory: here,
+					on: {
+						start: function(target) {
+							on.start = target;
+						}
+					}
 				};
 
 				var captured: run.old.events.Events = {
@@ -310,6 +293,8 @@ namespace slime.jrunscript.shell {
 					}
 				};
 
+				fifty.verify(on).start.is.type("undefined");
+
 				subject.run(argument, events);
 
 				fifty.verify(captured).start.command.evaluate(function(p) { return String(p) }).is("ls");
@@ -319,7 +304,9 @@ namespace slime.jrunscript.shell {
 
 				fifty.verify(captured).terminate.status.is(0);
 
-				fifty.run(function() {
+				fifty.verify(on).start.is.type("object");
+
+				fifty.run(function argumentChecking() {
 					fifty.verify(subject).evaluate(function() {
 						this.run({
 							command: null
@@ -343,7 +330,6 @@ namespace slime.jrunscript.shell {
 						destination: to.pathname,
 						arguments: [fifty.$loader.getRelativePath("test/java/inonit/jsh/test/Echo.java")]
 					});
-					var buffer = new jsh.io.Buffer();
 					var result = module.java({
 						classpath: jsh.file.Searchpath([to.pathname]),
 						main: "inonit.jsh.test.Echo",
@@ -627,7 +613,7 @@ namespace slime.jrunscript.shell {
 
 	export namespace internal.module {
 		export type Invocation = {
-			configuration: java.Configuration
+			configuration: internal.run.java.Configuration
 			result: {
 				command: string | slime.jrunscript.file.Pathname | slime.jrunscript.file.File
 				arguments: slime.jrunscript.shell.invocation.Token[]
@@ -640,11 +626,6 @@ namespace slime.jrunscript.shell {
 				stdio: internal.run.Stdio
 				environment: slime.jrunscript.host.Environment
 				directory: slime.jrunscript.file.Directory
-			}
-
-			export interface Configuration {
-				command: string
-				arguments: string[]
 			}
 		}
 	}

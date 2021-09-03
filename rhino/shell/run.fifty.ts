@@ -37,11 +37,18 @@ namespace slime.jrunscript.shell.internal.run {
 		}
 	}
 
+	export namespace java {
+		export interface Configuration {
+			command: string
+			arguments: string[]
+		}
+	}
+
 	export interface Export {
 		old: {
 			run: (
 				context: slime.jrunscript.shell.internal.module.java.Context,
-				configuration: slime.jrunscript.shell.internal.module.java.Configuration,
+				configuration: slime.jrunscript.shell.internal.run.java.Configuration,
 				module: {
 					events: any
 				},

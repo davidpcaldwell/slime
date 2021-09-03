@@ -54,7 +54,7 @@
 		};
 
 		/**
-		 * @param { slime.jrunscript.shell.internal.module.java.Configuration } configuration
+		 * @param { slime.jrunscript.shell.internal.run.java.Configuration } configuration
 		 */
 		var createJavaCommandConfiguration = function(configuration) {
 			var toJavaString = function(p) { return new Packages.java.lang.String(p); };
@@ -83,7 +83,7 @@
 		/**
 		 *
 		 * @param { slime.jrunscript.shell.internal.module.java.Context } context
-		 * @param { slime.jrunscript.shell.internal.module.java.Configuration } configuration
+		 * @param { slime.jrunscript.shell.internal.run.java.Configuration } configuration
 		 * @returns { slime.$api.fp.impure.Tell<slime.jrunscript.shell.internal.run.Events> }
 		 */
 		var run = function(context,configuration) {

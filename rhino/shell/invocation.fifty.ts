@@ -153,6 +153,20 @@ namespace slime.jrunscript.shell {
 
 namespace slime.jrunscript.shell.internal.invocation {
 	export interface Export {
+		parseCommandToken: {
+			/**
+			 * `index` is provided only for arguments, not for commands.
+			 */
+			(arg: slime.jrunscript.shell.invocation.Token, index?: number): string
+			Error: slime.$api.Error.Type<TypeError>
+		}
+
+		toConfiguration: (
+			command: slime.jrunscript.shell.invocation.Argument["command"],
+			args: slime.jrunscript.shell.invocation.Argument["arguments"],
+			parseCommandToken: slime.jrunscript.shell.internal.invocation.Export["parseCommandToken"]
+		) => slime.jrunscript.shell.internal.run.java.Configuration
+
 		invocation: slime.jrunscript.shell.Exports["invocation"]
 
 		stdio: {
