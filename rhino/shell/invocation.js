@@ -92,33 +92,37 @@
 		 *
 		 * @param { { stdio?: slime.jrunscript.shell.invocation.Argument["stdio"] } } p
 		 * @param { slime.jrunscript.shell.Stdio } parent
-		 * @returns { slime.jrunscript.shell.internal.run.Stdio }
+		 * @returns { (events: slime.$api.Events<slime.jrunscript.shell.internal.run.Events>) => slime.jrunscript.shell.internal.run.Stdio }
 		 */
 		var getStdio = function(p, parent) {
-			var stdio = $context.run.buildStdio(p.stdio);
-			fallbackToParentStdio(stdio, parent);
-			return stdio;
+			return function(events) {
+				var stdio = $context.run.buildStdio(p.stdio)(events);
+				fallbackToParentStdio(stdio, parent);
+				return stdio;
+			}
 		}
 
 		/**
 		 * @param { Pick<slime.jrunscript.shell.invocation.Argument, "stdio" | "environment" | "directory"> } p
 		 * @param { slime.jrunscript.host.Environment } parentEnvironment
 		 * @param { slime.jrunscript.shell.Stdio } parentStdio
-		 * @returns { slime.jrunscript.shell.internal.run.java.Context }
+		 * @returns { (events: slime.$api.Events<slime.jrunscript.shell.internal.run.Events>) => slime.jrunscript.shell.internal.run.java.Context }
 		 */
 		var toContext = function(p, parentEnvironment, parentStdio) {
-			return {
-				stdio: getStdio(p, parentStdio),
-				environment: (function(now, argument) {
-					if (typeof(argument) == "undefined") return now;
-					if (argument === null) return now;
-					if (typeof(argument) == "object") return argument;
-					if (typeof(argument) == "function") {
-						var rv = Object.assign({}, now);
-						return $api.Function.mutating(argument)(rv);
-					}
-				})(parentEnvironment, p.environment),
-				directory: directoryForModuleRunArgument(p)
+			return function(events) {
+				return {
+					stdio: getStdio(p, parentStdio)(events),
+					environment: (function(now, argument) {
+						if (typeof(argument) == "undefined") return now;
+						if (argument === null) return now;
+						if (typeof(argument) == "object") return argument;
+						if (typeof(argument) == "function") {
+							var rv = Object.assign({}, now);
+							return $api.Function.mutating(argument)(rv);
+						}
+					})(parentEnvironment, p.environment),
+					directory: directoryForModuleRunArgument(p)
+				}
 			}
 		}
 

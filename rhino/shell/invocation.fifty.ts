@@ -167,7 +167,7 @@ namespace slime.jrunscript.shell.internal.invocation {
 			p: slime.jrunscript.shell.invocation.Argument,
 			parentEnvironment: slime.jrunscript.host.Environment,
 			parentStdio: slime.jrunscript.shell.Stdio
-		) => slime.jrunscript.shell.internal.run.java.Context
+		) => (events: slime.$api.Events<slime.jrunscript.shell.internal.run.Events>) => slime.jrunscript.shell.internal.run.java.Context
 
 		fallbackToParentStdio: (
 			p: slime.jrunscript.shell.internal.run.Stdio,

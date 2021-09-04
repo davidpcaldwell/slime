@@ -165,9 +165,7 @@
 		}
 
 		/**
-		 *
-		 * @param { slime.jrunscript.shell.invocation.Stdio } p
-		 * @returns { slime.jrunscript.shell.internal.run.Stdio }
+		 * @type { slime.jrunscript.shell.internal.run.Export["buildStdio"] }
 		 */
 		function buildStdio(p) {
 			/** @type { slime.jrunscript.shell.internal.run.Stdio } */
@@ -190,10 +188,11 @@
 			};
 
 			/**
-			 * @param { (line: string) => void } callback
+			 * @param { slime.$api.Events<slime.jrunscript.shell.internal.run.Events> } events
+			 * @param { "stdout" | "stderr" } type
 			 * @returns { slime.jrunscript.shell.internal.run.Buffer }
 			 */
-			var getLineBuffer = function(callback) {
+			var getLineBuffer = function(events,type) {
 				var buffer = new $context.api.io.Buffer();
 
 				var lines = [];
@@ -202,7 +201,7 @@
 					call: function() {
 						buffer.readText().readLines(function(line) {
 							lines.push(line);
-							callback(line);
+							events.fire(type, { line: line });
 						});
 					}
 				});
@@ -219,20 +218,6 @@
 				}
 			};
 
-			["output","error"].forEach(function(stream) {
-				if (p[stream] == String) {
-					buffers[stream] = getStringBuffer();
-				} else if (p[stream] && typeof(p[stream]) == "object" && p[stream].line) {
-					buffers[stream] = getLineBuffer(p[stream].line);
-				}
-
-				if (buffers[stream]) {
-					rv[stream] = buffers[stream].stream;
-				} else {
-					rv[stream] = p[stream];
-				}
-			});
-
 			if (typeof(p.input) == "string") {
 				var buffer = new $context.api.io.Buffer();
 				buffer.writeText().write(p.input);
@@ -240,6 +225,25 @@
 				rv.input = buffer.readBinary();
 			} else {
 				rv.input = p.input;
+			}
+
+			var listeners = {
+				stdout: void(0),
+				stderr: void(0)
+			};
+
+			var toListener = function(type,callback,events) {
+				var handler = function(e) {
+					callback(e.detail.line);
+				};
+
+				events.listeners.add(type, handler);
+
+				return {
+					close: function() {
+						events.listeners.remove(type, handler);
+					}
+				}
 			}
 
 			/**
@@ -251,6 +255,9 @@
 				for (var x in buffers) {
 					buffers[x].close();
 
+					if (listeners.stdout) listeners.stdout.close();
+					if (listeners.stderr) listeners.stderr.close();
+
 					//	this is horrendous, but it automatically replaces the stdio property with the string if a string-buffering
 					//	strategy was requested.
 					if ((x == "output" || x == "error") && buffers[x]) {
@@ -261,7 +268,36 @@
 				return rv;
 			};
 
-			return rv;
+			/** @type { ReturnType<slime.jrunscript.shell.internal.run.Export["buildStdio"]>}  */
+			var returned = function(events) {
+				/**
+				 * @param { string } stream
+				 * @returns { "stdout" | "stderr" }
+				 */
+				var toStreamEventType = function(stream) {
+					if (stream == "output") return "stdout";
+					if (stream == "error") return "stderr";
+				};
+
+				["output","error"].forEach(function(stream) {
+					if (p[stream] == String) {
+						buffers[stream] = getStringBuffer();
+					} else if (p[stream] && typeof(p[stream]) == "object" && p[stream].line) {
+						buffers[stream] = getLineBuffer(events, toStreamEventType(stream));
+						listeners[toStreamEventType(stream)] = toListener(toStreamEventType(stream), p[stream].line, events);
+					}
+
+					if (buffers[stream]) {
+						rv[stream] = buffers[stream].stream;
+					} else {
+						rv[stream] = p[stream];
+					}
+				});
+
+				return rv;
+			};
+
+			return returned;
 		}
 
 		$export({

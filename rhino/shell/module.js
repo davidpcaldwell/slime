@@ -140,7 +140,37 @@
 
 			p.stdio = extractStdioIncludingDeprecatedForm(p);
 
-			var context = scripts.invocation.toContext(p, $exports.environment, $context.stdio);
+			/**
+			 *
+			 * @param { slime.jrunscript.shell.run.old.Events } oldEvents
+			 * @returns { slime.$api.Events<slime.jrunscript.shell.internal.run.Events> }
+			 */
+			var OldEventsAdapter = function(oldEvents) {
+				var oldFields = {
+					command: p.command,
+					arguments: p.arguments,
+					environment: p.environment,
+					directory: p.directory
+				}
+				/** @type { slime.$api.events.Handler<slime.jrunscript.shell.internal.run.Events> } */
+				var handler = {
+					start: function(e) {
+						oldEvents.fire("start", $api.Object.compose(oldFields, {
+							pid: e.detail.pid,
+							kill: e.detail.kill
+						}))
+					},
+					exit: function(e) {
+						oldEvents.fire("terminate", $api.Object.compose(oldFields, {
+							status: e.detail.status
+						}));
+					}
+				}
+
+				return $api.Events.toHandler(handler).emitter;
+			}
+
+			var context = scripts.invocation.toContext(p, $exports.environment, $context.stdio)(OldEventsAdapter(events));
 
 			/** @type { slime.jrunscript.shell.internal.module.Invocation } */
 			var invocation = (
@@ -281,7 +311,9 @@
 					var stdio = extractStdioIncludingDeprecatedForm(p);
 
 					if (stdio) {
-						var rv = scripts.run.buildStdio(stdio);
+						//	TODO	the below $api.Events() is highly dubious, inserted just to get past TypeScript; who knows
+						//			whether it will work but refactoring in progress may change it further
+						var rv = scripts.run.buildStdio(stdio)($api.Events());
 						scripts.invocation.fallbackToParentStdio(rv, $context.stdio);
 						return rv;
 					}

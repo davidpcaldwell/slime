@@ -23,12 +23,24 @@ namespace slime.jrunscript.shell.internal.run {
 		readText: () => string
 	}
 
+	/**
+	 * Extends the standard shell `Stdio` type to make all fields required and add a `close()` method that closes the streams and
+	 * returns the output of the program.
+	 */
 	export type Stdio = Required<slime.jrunscript.shell.Stdio> & { close: () => slime.jrunscript.shell.run.Output }
 
 	export interface Events {
 		start: {
 			pid: number
 			kill: () => void
+		}
+
+		stdout: {
+			line: string
+		}
+
+		stderr: {
+			line: string
 		}
 
 		exit: {
@@ -69,7 +81,7 @@ namespace slime.jrunscript.shell.internal.run {
 			) => Result
 		}
 
-		buildStdio: (p: slime.jrunscript.shell.invocation.Stdio) => Stdio
+		buildStdio: (p: slime.jrunscript.shell.invocation.Stdio) => (events: slime.$api.Events<Events>) => Stdio
 	}
 
 	export type Factory = slime.loader.Product<Context,Export>
