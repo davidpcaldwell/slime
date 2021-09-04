@@ -17,7 +17,7 @@
 	function(Packages,JavaAdapter,$api,$context,$export) {
 		/**
 		 *
-		 * @param { slime.jrunscript.shell.internal.module.java.Context } context
+		 * @param { slime.jrunscript.shell.internal.run.java.Context } context
 		 * @returns
 		 */
 		var createJavaCommandContext = function(context) {
@@ -82,7 +82,7 @@
 
 		/**
 		 *
-		 * @param { slime.jrunscript.shell.internal.module.java.Context } context
+		 * @param { slime.jrunscript.shell.internal.run.java.Context } context
 		 * @param { slime.jrunscript.shell.internal.run.java.Configuration } configuration
 		 * @returns { slime.$api.fp.impure.Tell<slime.jrunscript.shell.internal.run.Events> }
 		 */
@@ -265,6 +265,7 @@
 		}
 
 		$export({
+			run: run,
 			old: {
 				run: oldRun
 			},

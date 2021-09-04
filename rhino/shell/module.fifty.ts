@@ -620,14 +620,6 @@ namespace slime.jrunscript.shell {
 				as: Parameters<Exports["run"]>[0]["as"]
 			}
 		}
-
-		export namespace java {
-			export interface Context {
-				stdio: internal.run.Stdio
-				environment: slime.jrunscript.host.Environment
-				directory: slime.jrunscript.file.Directory
-			}
-		}
 	}
 
 	(

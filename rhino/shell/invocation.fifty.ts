@@ -156,16 +156,18 @@ namespace slime.jrunscript.shell.internal.invocation {
 		run: slime.jrunscript.shell.internal.run.Export
 	}
 
+	export type Configuration = Pick<slime.jrunscript.shell.invocation.Argument, "command" | "arguments">
+
 	export interface Export {
 		error: {
 			BadCommandToken: slime.$api.Error.Type<TypeError>
 		}
 
 		toContext: (
-			p: Parameters<slime.jrunscript.shell.Exports["run"]>[0],
+			p: slime.jrunscript.shell.invocation.Argument,
 			parentEnvironment: slime.jrunscript.host.Environment,
 			parentStdio: slime.jrunscript.shell.Stdio
-		) => slime.jrunscript.shell.internal.module.java.Context
+		) => slime.jrunscript.shell.internal.run.java.Context
 
 		fallbackToParentStdio: (
 			p: slime.jrunscript.shell.internal.run.Stdio,
@@ -173,19 +175,10 @@ namespace slime.jrunscript.shell.internal.invocation {
 		) => void
 
 		toConfiguration: (
-			command: slime.jrunscript.shell.invocation.Argument["command"],
-			args: slime.jrunscript.shell.invocation.Argument["arguments"]
+			p: Configuration
 		) => slime.jrunscript.shell.internal.run.java.Configuration
 
 		invocation: slime.jrunscript.shell.Exports["invocation"]
-
-		stdio: {
-			/**
-			 * Returns the `stdio` property of the argument, synthesizing it from deprecated properties if necessary, and returning
-			 * an empty object if nothing is specified.
-			 */
-			forModuleRunArgument: (p: Parameters<slime.jrunscript.shell.Exports["run"]>[0]) => Parameters<slime.jrunscript.shell.Exports["run"]>[0]["stdio"]
-		}
 	}
 
 	export type Factory = slime.loader.Product<Context,Export>

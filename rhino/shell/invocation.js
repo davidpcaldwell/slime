@@ -41,41 +41,19 @@
 
 		/**
 		 *
-		 * @param { slime.jrunscript.shell.invocation.Argument["command"] } command
-		 * @param { slime.jrunscript.shell.invocation.Argument["arguments"] } args
+		 * @param { slime.jrunscript.shell.internal.invocation.Configuration } p
 		 * @returns { slime.jrunscript.shell.internal.run.java.Configuration }
 		 */
-		var toConfiguration = function(command,args) {
+		var toConfiguration = function(p) {
 			return {
-				command: parseCommandToken(command),
-				arguments: (args) ? args.map(parseCommandToken) : []
+				command: parseCommandToken(p.command),
+				arguments: (p.arguments) ? p.arguments.map(parseCommandToken) : []
 			}
 		}
 
 		/**
 		 *
-		 * @param { Parameters<slime.jrunscript.shell.Exports["run"]>[0] } p
-		 * @return { Parameters<slime.jrunscript.shell.Exports["run"]>[0]["stdio"] }
-		 */
-		function extractStdioIncludingDeprecatedForm(p) {
-			if (typeof(p.stdio) != "undefined") return p.stdio;
-
-			if (typeof(p.stdin) != "undefined" || typeof(p.stdout) != "undefined" || typeof(p.stderr) != "undefined") {
-				return $api.deprecate(function() {
-					return {
-						input: p.stdin,
-						output: p.stdout,
-						error: p.stderr
-					};
-				})();
-			}
-
-			return {};
-		}
-
-		/**
-		 *
-		 * @param { Parameters<slime.jrunscript.shell.Exports["run"]>[0] } p
+		 * @param { { directory?: slime.jrunscript.file.Directory, workingDirectory?: slime.jrunscript.file.Directory } } p
 		 * @return { slime.jrunscript.file.Directory }
 		 */
 		function directoryForModuleRunArgument(p) {
@@ -112,22 +90,21 @@
 
 		/**
 		 *
-		 * @param { Parameters<slime.jrunscript.shell.Exports["run"]>[0] } p
+		 * @param { { stdio?: slime.jrunscript.shell.invocation.Argument["stdio"] } } p
 		 * @param { slime.jrunscript.shell.Stdio } parent
 		 * @returns { slime.jrunscript.shell.internal.run.Stdio }
 		 */
 		var getStdio = function(p, parent) {
-			var stdioProperty = extractStdioIncludingDeprecatedForm(p);
-			var stdio = $context.run.buildStdio(stdioProperty);
+			var stdio = $context.run.buildStdio(p.stdio);
 			fallbackToParentStdio(stdio, parent);
 			return stdio;
 		}
 
 		/**
-		 * @param { Parameters<slime.jrunscript.shell.Exports["run"]>[0] } p
+		 * @param { Pick<slime.jrunscript.shell.invocation.Argument, "stdio" | "environment" | "directory"> } p
 		 * @param { slime.jrunscript.host.Environment } parentEnvironment
 		 * @param { slime.jrunscript.shell.Stdio } parentStdio
-		 * @returns { slime.jrunscript.shell.internal.module.java.Context }
+		 * @returns { slime.jrunscript.shell.internal.run.java.Context }
 		 */
 		var toContext = function(p, parentEnvironment, parentStdio) {
 			return {
@@ -192,9 +169,6 @@
 
 					return toScriptCode;
 				}
-			},
-			stdio: {
-				forModuleRunArgument: extractStdioIncludingDeprecatedForm
 			}
 		})
 	}

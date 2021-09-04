@@ -38,6 +38,12 @@ namespace slime.jrunscript.shell.internal.run {
 	}
 
 	export namespace java {
+		export interface Context {
+			stdio: internal.run.Stdio
+			environment: slime.jrunscript.host.Environment
+			directory: slime.jrunscript.file.Directory
+		}
+
 		export interface Configuration {
 			command: string
 			arguments: string[]
@@ -45,16 +51,21 @@ namespace slime.jrunscript.shell.internal.run {
 	}
 
 	export interface Export {
+		run: (
+			context: slime.jrunscript.shell.internal.run.java.Context,
+			configuration: slime.jrunscript.shell.internal.run.java.Configuration
+		) => slime.$api.fp.impure.Tell<slime.jrunscript.shell.internal.run.Events>
+
 		old: {
 			run: (
-				context: slime.jrunscript.shell.internal.module.java.Context,
+				context: slime.jrunscript.shell.internal.run.java.Context,
 				configuration: slime.jrunscript.shell.internal.run.java.Configuration,
 				module: {
 					events: any
 				},
-					events: slime.jrunscript.shell.run.old.Events,
-					p: slime.jrunscript.shell.run.old.Argument,
-					invocation: slime.jrunscript.shell.run.old.Argument
+				events: slime.jrunscript.shell.run.old.Events,
+				p: slime.jrunscript.shell.run.old.Argument,
+				invocation: slime.jrunscript.shell.run.old.Argument
 			) => Result
 		}
 

@@ -108,6 +108,27 @@
 
 		/**
 		 *
+		 * @param { slime.jrunscript.shell.run.old.Argument } p
+		 * @return { slime.jrunscript.shell.invocation.Argument["stdio"] }
+		 */
+		function extractStdioIncludingDeprecatedForm(p) {
+			if (typeof(p.stdio) != "undefined") return p.stdio;
+
+			if (typeof(p.stdin) != "undefined" || typeof(p.stdout) != "undefined" || typeof(p.stderr) != "undefined") {
+				return $api.deprecate(function() {
+					return {
+						input: p.stdin,
+						output: p.stdout,
+						error: p.stderr
+					};
+				})();
+			}
+
+			return {};
+		}
+
+		/**
+		 *
 		 * @param { Parameters<slime.jrunscript.shell.Exports["run"]>[0] } p
 		 * @param { Parameters<slime.jrunscript.shell.Exports["run"]>[1] } events
 		 */
@@ -116,6 +137,8 @@
 			if (p.as) {
 				as = p.as;
 			}
+
+			p.stdio = extractStdioIncludingDeprecatedForm(p);
 
 			var context = scripts.invocation.toContext(p, $exports.environment, $context.stdio);
 
@@ -169,7 +192,10 @@
 						};
 
 						try {
-							return scripts.invocation.toConfiguration(command, args);
+							return scripts.invocation.toConfiguration({
+								command: command,
+								arguments: args
+							});
 						} catch (e) {
 							if (e instanceof scripts.invocation.error.BadCommandToken) {
 								throw new TypeError(e.message + "; full invocation = " + toErrorMessage(command, args));
@@ -252,7 +278,7 @@
 				 */
 				function getStdio(p) {
 					//	TODO	the getStdio function is currently used in jsh.js, requiring us to export it; is that the best structure?
-					var stdio = scripts.invocation.stdio.forModuleRunArgument(p);
+					var stdio = extractStdioIncludingDeprecatedForm(p);
 
 					if (stdio) {
 						var rv = scripts.run.buildStdio(stdio);
