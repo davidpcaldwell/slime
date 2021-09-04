@@ -79,21 +79,24 @@
 		}
 
 		var code = {
-			/** @type { slime.jrunscript.shell.internal.invocation.Factory } */
-			invocation: $loader.factory("invocation.js"),
 			/** @type { slime.jrunscript.shell.internal.run.Factory } */
-			run: $loader.factory("run.js")
+			run: $loader.factory("run.js"),
+			/** @type { slime.jrunscript.shell.internal.invocation.Factory } */
+			invocation: $loader.factory("invocation.js")
 		};
 
-		var scripts = {
-			invocation: code.invocation(),
-			run: code.run({
+		var scripts = (function() {
+			var run = code.run({
 				api: {
 					java: $context.api.java,
 					io: $context.api.io
 				}
-			})
-		};
+			});
+			return {
+				run: run,
+				invocation: code.invocation({ run: run })
+			}
+		})();
 
 		$exports.invocation = scripts.invocation.invocation;
 
@@ -102,29 +105,6 @@
 		};
 
 		$exports.listeners = module.events.listeners;
-
-		/**
-		 *
-		 * @param { slime.jrunscript.shell.internal.run.Stdio } p
-		 */
-		var fallbackToParentStdio = function(p) {
-			if (typeof(p.input) == "undefined") p.input = null;
-			["output","error"].forEach(function(property) {
-				if (typeof(p[property]) == "undefined" && $context.stdio) p[property] = $context.stdio[property];
-			})
-		}
-
-		/**
-		 *
-		 * @param { Parameters<slime.jrunscript.shell.Exports["run"]>[0] } p
-		 * @returns { slime.jrunscript.shell.internal.run.Stdio }
-		 */
-		var getStdio = function(p) {
-			var stdioProperty = scripts.invocation.stdio.forModuleRunArgument(p);
-			var stdio = scripts.run.buildStdio(stdioProperty);
-			fallbackToParentStdio(stdio);
-			return stdio;
-		}
 
 		/**
 		 *
@@ -137,22 +117,7 @@
 				as = p.as;
 			}
 
-			/**
-			 * @type { slime.jrunscript.shell.internal.module.java.Context }
-			 */
-			var context = {
-				stdio: getStdio(p),
-				environment: (function(now,argument) {
-					if (typeof(argument) == "undefined") return now;
-					if (argument === null) return now;
-					if (typeof(argument) == "object") return argument;
-					if (typeof(argument) == "function") {
-						var rv = Object.assign({}, now);
-						return $api.Function.mutating(argument)(rv);
-					}
-				})($exports.environment,p.environment),
-				directory: scripts.invocation.directory.forModuleRunArgument(p)
-			}
+			var context = scripts.invocation.toContext(p, $exports.environment, $context.stdio);
 
 			/** @type { slime.jrunscript.shell.internal.module.Invocation } */
 			var invocation = (
@@ -175,11 +140,11 @@
 					};
 
 					/**
-					 *
-					 * @param { slime.jrunscript.shell.internal.module.Invocation["result"] } invocation
-					 * @returns { slime.jrunscript.shell.internal.invocation.Export["parseCommandToken"] }
+					 * @param { slime.jrunscript.shell.invocation.Argument["command"] } command
+					 * @param { slime.jrunscript.shell.invocation.Argument["arguments"] } args
+					 * @returns { slime.jrunscript.shell.internal.run.java.Configuration }
 					 */
-					var toCommandToken = function(invocation) {
+					var toConfiguration = function(command,args) {
 						/**
 						 *
 						 * @param { slime.jrunscript.shell.invocation.Token } v
@@ -193,28 +158,25 @@
 
 						/**
 						 *
-						 * @param { slime.jrunscript.shell.internal.module.Invocation["result"] } invocation
+						 * @param { slime.jrunscript.shell.invocation.Argument["command"] } command
+						 * @param { slime.jrunscript.shell.invocation.Argument["arguments"] } args
 						 */
-						var toErrorMessage = function(invocation) {
+						var toErrorMessage = function(command,args) {
 							/** @type { slime.jrunscript.shell.invocation.Token[] } */
-							var full = [invocation.command];
-							if (invocation.arguments) full = full.concat(invocation.arguments);
+							var full = [command];
+							if (args) full = full.concat(args);
 							return full.map(toErrorMessageString).join(" ");
 						};
 
-						var rv = function(arg,index) {
-							try {
-								return scripts.invocation.parseCommandToken(arg,index);
-							} catch (e) {
-								if (e instanceof scripts.invocation.parseCommandToken.Error) {
-									throw new TypeError(e.message + "; full invocation = " + toErrorMessage(invocation));
-								} else {
-									throw e;
-								}
+						try {
+							return scripts.invocation.toConfiguration(command, args);
+						} catch (e) {
+							if (e instanceof scripts.invocation.error.BadCommandToken) {
+								throw new TypeError(e.message + "; full invocation = " + toErrorMessage(command, args));
+							} else {
+								throw e;
 							}
 						}
-						rv.Error = scripts.invocation.parseCommandToken.Error;
-						return rv;
 					};
 
 					if (p.tokens) {
@@ -226,7 +188,7 @@
 							//	Use a raw copy of the arguments for the callback
 							rv.result.command = p.tokens[0];
 							rv.result.arguments = p.tokens.slice(1);
-							rv.configuration = scripts.invocation.toConfiguration(p.tokens[0], p.tokens.slice(1), toCommandToken(rv.result));
+							rv.configuration = toConfiguration(p.tokens[0], p.tokens.slice(1));
 							return rv;
 						})();
 					} else if (typeof(p.command) != "undefined") {
@@ -234,7 +196,7 @@
 						//	TODO	switch to $api.Function.mutating
 						rv.result.arguments = p.arguments;
 						rv.result.as = p.as;
-						rv.configuration = scripts.invocation.toConfiguration(p.command, p.arguments, toCommandToken(rv.result));
+						rv.configuration = toConfiguration(p.command, p.arguments);
 						return rv;
 					} else {
 						throw new TypeError("Required: command property or tokens property");
@@ -294,7 +256,7 @@
 
 					if (stdio) {
 						var rv = scripts.run.buildStdio(stdio);
-						fallbackToParentStdio(rv);
+						scripts.invocation.fallbackToParentStdio(rv, $context.stdio);
 						return rv;
 					}
 					if (!stdio) {

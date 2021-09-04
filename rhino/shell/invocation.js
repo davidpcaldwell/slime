@@ -8,9 +8,10 @@
 (
 	/**
 	 * @param { slime.$api.Global } $api
+	 * @param { slime.jrunscript.shell.internal.invocation.Context } $context
 	 * @param { slime.loader.Export<slime.jrunscript.shell.internal.invocation.Export> } $export
 	 */
-	function($api,$export) {
+	function($api,$context,$export) {
 		var parseCommandToken = (
 			function() {
 				var ArgumentError = $api.Error.Type({ name: "ArgumentError", extends: TypeError });
@@ -18,7 +19,7 @@
 				/**
 				 *
 				 * @param { slime.jrunscript.shell.invocation.Token } arg
-				 * @param { number } index
+				 * @param { number } [index]
 				 * @returns { string }
 				 */
 				var rv = function(arg,index) {
@@ -42,10 +43,9 @@
 		 *
 		 * @param { slime.jrunscript.shell.invocation.Argument["command"] } command
 		 * @param { slime.jrunscript.shell.invocation.Argument["arguments"] } args
-		 * @param { slime.jrunscript.shell.internal.invocation.Export["parseCommandToken"] } parseCommandToken
 		 * @returns { slime.jrunscript.shell.internal.run.java.Configuration }
 		 */
-		var toConfiguration = function(command,args,parseCommandToken) {
+		var toConfiguration = function(command,args) {
 			return {
 				command: parseCommandToken(command),
 				arguments: (args) ? args.map(parseCommandToken) : []
@@ -98,8 +98,59 @@
 			}
 		}
 
+		/**
+		 *
+		 * @param { slime.jrunscript.shell.internal.run.Stdio } p
+		 * @param { slime.jrunscript.shell.Stdio } parent
+		 */
+		var fallbackToParentStdio = function(p, parent) {
+			if (typeof(p.input) == "undefined") p.input = null;
+			["output","error"].forEach(function(property) {
+				if (typeof(p[property]) == "undefined" && parent) p[property] = parent[property];
+			})
+		}
+
+		/**
+		 *
+		 * @param { Parameters<slime.jrunscript.shell.Exports["run"]>[0] } p
+		 * @param { slime.jrunscript.shell.Stdio } parent
+		 * @returns { slime.jrunscript.shell.internal.run.Stdio }
+		 */
+		var getStdio = function(p, parent) {
+			var stdioProperty = extractStdioIncludingDeprecatedForm(p);
+			var stdio = $context.run.buildStdio(stdioProperty);
+			fallbackToParentStdio(stdio, parent);
+			return stdio;
+		}
+
+		/**
+		 * @param { Parameters<slime.jrunscript.shell.Exports["run"]>[0] } p
+		 * @param { slime.jrunscript.host.Environment } parentEnvironment
+		 * @param { slime.jrunscript.shell.Stdio } parentStdio
+		 * @returns { slime.jrunscript.shell.internal.module.java.Context }
+		 */
+		var toContext = function(p, parentEnvironment, parentStdio) {
+			return {
+				stdio: getStdio(p, parentStdio),
+				environment: (function(now, argument) {
+					if (typeof(argument) == "undefined") return now;
+					if (argument === null) return now;
+					if (typeof(argument) == "object") return argument;
+					if (typeof(argument) == "function") {
+						var rv = Object.assign({}, now);
+						return $api.Function.mutating(argument)(rv);
+					}
+				})(parentEnvironment, p.environment),
+				directory: directoryForModuleRunArgument(p)
+			}
+		}
+
 		$export({
-			parseCommandToken: parseCommandToken,
+			error: {
+				BadCommandToken: parseCommandToken.Error
+			},
+			toContext: toContext,
+			fallbackToParentStdio: fallbackToParentStdio,
 			toConfiguration: toConfiguration,
 			invocation: {
 				sudo: function(settings) {
@@ -144,11 +195,8 @@
 			},
 			stdio: {
 				forModuleRunArgument: extractStdioIncludingDeprecatedForm
-			},
-			directory: {
-				forModuleRunArgument: directoryForModuleRunArgument
 			}
 		})
 	}
 //@ts-ignore
-)($api,$export);
+)($api,$context,$export);

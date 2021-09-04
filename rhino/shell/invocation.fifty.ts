@@ -152,33 +152,39 @@ namespace slime.jrunscript.shell {
 }
 
 namespace slime.jrunscript.shell.internal.invocation {
+	export interface Context {
+		run: slime.jrunscript.shell.internal.run.Export
+	}
+
 	export interface Export {
-		parseCommandToken: {
-			/**
-			 * `index` is provided only for arguments, not for commands.
-			 */
-			(arg: slime.jrunscript.shell.invocation.Token, index?: number): string
-			Error: slime.$api.Error.Type<TypeError>
+		error: {
+			BadCommandToken: slime.$api.Error.Type<TypeError>
 		}
+
+		toContext: (
+			p: Parameters<slime.jrunscript.shell.Exports["run"]>[0],
+			parentEnvironment: slime.jrunscript.host.Environment,
+			parentStdio: slime.jrunscript.shell.Stdio
+		) => slime.jrunscript.shell.internal.module.java.Context
+
+		fallbackToParentStdio: (
+			p: slime.jrunscript.shell.internal.run.Stdio,
+			parent: slime.jrunscript.shell.Stdio
+		) => void
 
 		toConfiguration: (
 			command: slime.jrunscript.shell.invocation.Argument["command"],
-			args: slime.jrunscript.shell.invocation.Argument["arguments"],
-			parseCommandToken: slime.jrunscript.shell.internal.invocation.Export["parseCommandToken"]
+			args: slime.jrunscript.shell.invocation.Argument["arguments"]
 		) => slime.jrunscript.shell.internal.run.java.Configuration
 
 		invocation: slime.jrunscript.shell.Exports["invocation"]
 
 		stdio: {
 			/**
-			 * Returns the `stdio` property of the argument, synthesizing it from deprecated arguments if necessary, and returning
+			 * Returns the `stdio` property of the argument, synthesizing it from deprecated properties if necessary, and returning
 			 * an empty object if nothing is specified.
 			 */
 			forModuleRunArgument: (p: Parameters<slime.jrunscript.shell.Exports["run"]>[0]) => Parameters<slime.jrunscript.shell.Exports["run"]>[0]["stdio"]
-		}
-
-		directory: {
-			forModuleRunArgument: (p: Parameters<slime.jrunscript.shell.Exports["run"]>[0]) => slime.jrunscript.file.Directory
 		}
 	}
 
