@@ -153,6 +153,9 @@ namespace slime.jrunscript.shell {
 
 namespace slime.jrunscript.shell.internal.invocation {
 	export interface Context {
+		library: {
+			io: slime.jrunscript.io.Exports
+		}
 		run: slime.jrunscript.shell.internal.run.Export
 	}
 
@@ -162,6 +165,8 @@ namespace slime.jrunscript.shell.internal.invocation {
 		error: {
 			BadCommandToken: slime.$api.Error.Type<TypeError>
 		}
+
+		updateForStringInput: (p: slime.jrunscript.shell.invocation.Argument["stdio"]) => Parameters<slime.jrunscript.shell.internal.run.Export["buildStdio"]>[0]
 
 		toContext: (
 			p: slime.jrunscript.shell.invocation.Argument,

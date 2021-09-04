@@ -81,7 +81,11 @@ namespace slime.jrunscript.shell.internal.run {
 			) => Result
 		}
 
-		buildStdio: (p: slime.jrunscript.shell.invocation.Stdio) => (events: slime.$api.Events<Events>) => Stdio
+		buildStdio: (p: {
+			input: slime.jrunscript.runtime.io.InputStream
+			output?: slime.jrunscript.shell.invocation.Stdio["output"]
+			error?: slime.jrunscript.shell.invocation.Stdio["error"]
+		}) => (events: slime.$api.Events<Events>) => Stdio
 	}
 
 	export type Factory = slime.loader.Product<Context,Export>

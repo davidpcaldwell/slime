@@ -94,7 +94,12 @@
 			});
 			return {
 				run: run,
-				invocation: code.invocation({ run: run })
+				invocation: code.invocation({
+					library: {
+						io: $context.api.io
+					},
+					run: run
+				})
 			}
 		})();
 
@@ -313,7 +318,7 @@
 					if (stdio) {
 						//	TODO	the below $api.Events() is highly dubious, inserted just to get past TypeScript; who knows
 						//			whether it will work but refactoring in progress may change it further
-						var rv = scripts.run.buildStdio(stdio)($api.Events());
+						var rv = scripts.run.buildStdio(scripts.invocation.updateForStringInput(stdio))($api.Events());
 						scripts.invocation.fallbackToParentStdio(rv, $context.stdio);
 						return rv;
 					}

@@ -77,6 +77,27 @@
 		}
 
 		/**
+		 * @param { slime.jrunscript.shell.invocation.Argument["stdio"] } p
+		 */
+		var updateForStringInput = function(p) {
+			/** @type { Parameters<slime.jrunscript.shell.internal.run.Export["buildStdio"]>[0] } */
+			return {
+				input: (function(p) {
+					if (typeof(p) == "string") {
+						var buffer = new $context.library.io.Buffer();
+						buffer.writeText().write(p);
+						buffer.close();
+						return buffer.readBinary();
+					} else {
+						return p;
+					}
+				})(p.input),
+				output: p.output,
+				error: p.error
+			};
+		}
+
+		/**
 		 *
 		 * @param { slime.jrunscript.shell.internal.run.Stdio } p
 		 * @param { slime.jrunscript.shell.Stdio } parent
@@ -96,7 +117,8 @@
 		 */
 		var getStdio = function(p, parent) {
 			return function(events) {
-				var stdio = $context.run.buildStdio(p.stdio)(events);
+				var stdio1 = updateForStringInput(p.stdio);
+				var stdio = $context.run.buildStdio(stdio1)(events);
 				fallbackToParentStdio(stdio, parent);
 				return stdio;
 			}
@@ -130,6 +152,7 @@
 			error: {
 				BadCommandToken: parseCommandToken.Error
 			},
+			updateForStringInput: updateForStringInput,
 			toContext: toContext,
 			fallbackToParentStdio: fallbackToParentStdio,
 			toConfiguration: toConfiguration,
