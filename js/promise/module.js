@@ -4,9 +4,17 @@
 //
 //	END LICENSE
 
+//@ts-check
 (
-	function() {
-		var SlimePromise = function Targeter(p) {
+	/**
+	 *
+	 * @param { { Promise?: PromiseConstructor } } global
+	 * @param { slime.$api.Global } $api
+	 * @param { slime.promise.Context } $context
+	 * @param { slime.loader.Export<slime.promise.Export> } $export
+	 */
+	function(global,$api,$context,$export) {
+		var SlimePromise = Object.assign(function Targeter(p) {
 			if (!p) p = {};
 
 			if (typeof(p) == "function") {
@@ -28,7 +36,6 @@
 				//	TODO	this is a bit of a mess; the customization provided by browser/test/initialize.js means that it is not easy
 				//			to keep track via instanceof of types. Would need to do some more serious investigation to clean that up
 				//			(to make all promises instanceof $context.Promise), or maybe loosen rules to then-able?
-				var global = (function() { return this; })();
 				return function(v) {
 					if (typeof(v) != "object" || v === null) return false;
 					if (v instanceof $context.Promise) return true;
@@ -81,9 +88,12 @@
 					return rejected.apply(p.target,arguments);
 				});
 			};
-		};
-
-		$exports.Promise = SlimePromise;
+		}, {
+			all: $context.Promise.all,
+			race: $context.Promise.race,
+			reject: $context.Promise.reject,
+			resolve: $context.Promise.resolve
+		});
 
 		var Controllable = function(evaluator) {
 			var resolveIt;
@@ -115,6 +125,10 @@
 			}
 		};
 
-		$exports.Controlled = Controllable;
+		$export({
+			Promise: SlimePromise,
+			Controlled: Controllable
+		})
 	}
-)();
+//@ts-ignore
+)((function() { return this; })(), $api, $context, $export);

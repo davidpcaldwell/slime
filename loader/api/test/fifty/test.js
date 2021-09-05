@@ -342,6 +342,7 @@
 			var fifty = {
 				global: global,
 				$loader: loader,
+				promises: $context.promises,
 				$api: {
 					Function: $api.Function,
 					Events: {

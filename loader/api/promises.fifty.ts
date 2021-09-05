@@ -41,7 +41,7 @@ namespace slime.definition.test.promises {
 		function(
 			fifty: slime.fifty.test.kit
 		) {
-			var subject: Export = fifty.$loader.module("promises.js");
+			var subject: Export = fifty.promises;
 
 			fifty.tests.controlled = function() {
 				var controlled = subject.controlled();
@@ -51,6 +51,12 @@ namespace slime.definition.test.promises {
 					}
 				)
 				controlled.resolve(222);
+			}
+
+			fifty.tests.rejection = function() {
+				fifty.verify("before").is("before");
+				Promise.reject(new Error("REJECTED!"));
+				fifty.verify("after").is("after");
 			}
 
 			fifty.tests.suite = function() {

@@ -130,6 +130,7 @@ namespace slime.fifty {
 				$api: slime.$api.Global
 				window?: Window
 			},
+			promises: slime.definition.test.promises.Export
 			$api: {
 				Function: slime.$api.Global["Function"]
 				Events: {

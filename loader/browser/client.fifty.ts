@@ -20,7 +20,7 @@
  * `js/web/`      | {@link slime.web.Exports}
  * `js/time/`     | {@link slime.time.Exports}
  * `js/document/` | XML and HTML documents
- * `js/promise/`  | Asynchronous programming using A+-like promises
+ * `js/promise/`  | **Deprecated.** {@link slime.promise.Export}
  * `js/object/`   | {@link slime.runtime.old.Exports}
  */
 namespace slime.browser {

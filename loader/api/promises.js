@@ -12,10 +12,13 @@
 	 * @param { slime.loader.Export<slime.definition.test.promises.Export> } $export
 	 */
 	function($api,$export) {
+		//	TODO	this log message is because loading this more than once may cause it not to work; should come up with optimal
+		//			strategy for dealing with this (either making it work or a strategy to prevent multiple loads or make a second
+		//			load a no-op)
+		window.console.log("loading loader/api/promises.js ..." + new Error("Stack trace").stack);
+
 		/** @type { slime.definition.test.promises.internal.Events } */
 		var events = $api.Events();
-
-		var NativePromise = window.Promise;
 
 		var RegisteredPromise = (function(was) {
 			/**
@@ -32,6 +35,10 @@
 					console.log("settled - fulfilled", rv, value);
 					events.fire("settled", rv);
 					return value;
+				}).catch(function(error) {
+					console.log("settled - rejected", rv, error);
+					events.fire("settled", rv);
+					throw error;
 				})
 				return rv;
 			}
@@ -43,10 +50,10 @@
 
 			//	At least in Chrome, this calls Promise constructor
 			RegisteredPromise.resolve = was.resolve;
+			RegisteredPromise.reject = was.reject;
 
 			RegisteredPromise.race = was.race;
 			RegisteredPromise.all = was.all;
-			RegisteredPromise.reject = was.reject;
 			return RegisteredPromise;
 		})(window.Promise);
 
