@@ -10,18 +10,30 @@
 	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jrunscript.http.client.Context } $context
+	 * @param { slime.Loader } $loader
 	 * @param { slime.jrunscript.http.client.Exports } $exports
 	 */
-	function(Packages,$api,$context,$exports) {
+	function(Packages,$api,$context,$loader,$exports) {
 		Packages.java.lang.System.setProperty("sun.net.http.allowRestrictedHeaders", "true");
 
-		(function($context) {
-			$context.property("api").require();
-			$context.property("api","js").require();
-			$context.property("api","js").require();
-			$context.property("api","java").require();
-			$context.property("api","web").require();
-		})($api.Value($context,"$context"));
+		(
+			function verifyContext($context) {
+				$context.property("api").require();
+				$context.property("api","js").require();
+				$context.property("api","js").require();
+				$context.property("api","java").require();
+				$context.property("api","web").require();
+			}
+		)($api.Value($context,"$context"));
+
+		var code = {
+			/** @type { slime.jrunscript.http.client.internal.cookies.Load } */
+			cookies: $loader.factory("cookies.js")
+		};
+
+		var scripts = {
+			cookies: code.cookies()
+		};
 
 		var allowMethods = function() {
 			var methodsField = $context.api.java.toNativeClass(Packages.java.net.HttpURLConnection).getDeclaredField("methods");
@@ -51,10 +63,10 @@
 		var debug = ($context.debug) ? $context.debug : function(){};
 
 		/**
-		 * @this { ReturnType<slime.jrunscript.http.client.spi>["headers"] }
+		 * @this { slime.jrunscript.http.client.spi.Response["headers"] }
 		 * @param { string } name
 		 */
-		function headersGetMethod(name) {
+		function headersImplementationForGet(name) {
 			var values = this
 				.filter(function(header) { return header.name.toUpperCase() == name.toUpperCase() })
 				.map(function(header) { return header.value; })
@@ -66,13 +78,13 @@
 
 		/**
 		 *
-		 * @param { ReturnType<slime.jrunscript.http.client.spi>["headers"] } headers
+		 * @param { slime.jrunscript.http.client.spi.Response["headers"] } headers
 		 * @returns { slime.jrunscript.http.client.Response["headers"] }
 		 */
 		function withHeadersGet(headers) {
 			/** @type { slime.jrunscript.http.client.Response["headers"] } */
 			var rv = Object.assign(headers, { get: void(0) });
-			rv["get"] = headersGetMethod;
+			rv["get"] = headersImplementationForGet;
 			return rv;
 		}
 
@@ -127,132 +139,10 @@
 			throw new TypeError("Body is not a recognized type: " + body);
 		}
 
-		/**
-		 * @returns { slime.jrunscript.http.client.internal.Cookies }
-		 */
-		function inonitCookies() {
-			var cookies = [];
-
-			var toString = function() {
-				return "Cookies: " + $context.api.js.toLiteral(cookies);
-			};
-
-			/** @type { slime.jrunscript.http.client.internal.Cookies["set"] } */
-			var set = function(url,headers) {
-				var sets = headers.filter( function(header) {
-					return header.name.toLowerCase() == "set-cookie";
-				});
-				sets.forEach( function(header) {
-					var trim = function(str) {
-						return str.replace(/^\s\s*/, "").replace(/\s\s*$/, "");
-					}
-
-					var parts = header.value.split(";");
-					var nvp = parts[0];
-					var cookie = {};
-					cookie.name = nvp.split("=")[0];
-					cookie.value = nvp.split("=").slice(1).join("=");
-					var jurl = new Packages.java.net.URL(url.toString());
-					cookie.domain = String(jurl.getHost());
-					cookie.path = String(jurl.getPath());
-					parts.slice(1).forEach( function(part) {
-						part = trim(part);
-						//	See http://tools.ietf.org/html/rfc6265#section-5.2.5 and 5.2.6 for documentation on httponly, secure
-						if (part.toLowerCase() == "httponly") {
-							cookie.httponly = true;
-						} else if (part.toLowerCase() == "secure") {
-							cookie.secure = true;
-						} else {
-							var attribute = part.split("=")[0].toLowerCase();
-							attribute = trim(attribute);
-							var value = part.split("=")[1];
-							value = trim(value);
-							if (attribute == "expires") {
-								cookie.expires = value;
-							} else if (attribute == "max-age") {
-								cookie.maxage = value;
-							} else if (attribute == "domain") {
-								cookie.domain = value;
-							} else if (attribute == "path") {
-								cookie.path = value;
-							}
-						}
-					});
-					//	put cookie at front of list so it automatically supersedes older ones
-					cookies.unshift(cookie);
-				})
-			}
-
-			/** @type { slime.jrunscript.http.client.internal.Cookies["get"] } */
-			var get = function(url,headers) {
-				//	TODO	obviously this does not work, but passes current unit tests because no cookies are apparently needed for
-				//			the Google module, which is the only module that uses the gae implementation currently
-				//	TODO	obviously this overincludes cookies
-				cookies.forEach( function(cookie) {
-					headers.push({ name: "Cookie", value: cookie.name + "=" + cookie.value });
-				});
-			}
-
-			var rv = {
-				set: set,
-				get: get
-			};
-
-			rv.toString = toString;
-
-			return rv;
-		}
-
-		/**
-		 * @returns { slime.jrunscript.http.client.internal.Cookies }
-		 */
-		function javaCookies() {
-			var peer = new Packages.java.net.CookieManager();
-			peer.setCookiePolicy(Packages.java.net.CookiePolicy.ACCEPT_ALL);
-
-			var toMap = function(headers) {
-				var rv = new Packages.java.util.HashMap();
-				headers.forEach(function(header) {
-					if (!rv.get(header.name)) {
-						rv.put(header.name,new Packages.java.util.ArrayList());
-					}
-					rv.get(header.name).add(header.value);
-				});
-				return rv;
-			}
-
-			var fromMap = function(cookies,headers) {
-				var i = cookies.keySet().iterator();
-				while(i.hasNext()) {
-					var $name = i.next();
-					var $values = cookies.get($name);
-					var name = String($name);
-					var j = $values.iterator();
-					while(j.hasNext()) {
-						headers.push({ name: name, value: String(j.next()) });
-					}
-				}
-			}
-
-			/** @type { slime.jrunscript.http.client.internal.Cookies } */
-			var rv = {
-				set: function(url,headers) {
-					peer.put(new Packages.java.net.URI(url.toString()),toMap(headers));
-				},
-				get: function(url,headers) {
-					var cookies = peer.get(new Packages.java.net.URI(url.toString()),toMap(headers));
-					fromMap(cookies,headers);
-				}
-			}
-
-			rv.toString = function() {
-				return peer.getCookieStore().getCookies().toString();
-			}
-
-			return rv;
-		}
-
 		var useJavaCookieManager = (function() {
+			//	Currently we handle the bridge to Java properties here so as not to introduce a dependency on rhino/shell, but
+			//	there may be a better way to deal with this;
+			//	TODO	perhaps system properties should be moved into rhino/host
 			var getProperty = function(name) {
 				var _rv = Packages.java.lang.System.getProperty(name);
 				if (_rv) return String(_rv);
@@ -266,27 +156,30 @@
 
 		var Cookies = function() {
 			if (!useJavaCookieManager) {
-				return inonitCookies();
+				return scripts.cookies.inonit();
 			} else {
-				return javaCookies();
+				return scripts.cookies.java();
 			}
 		};
 
 		/**
-		 * @type { slime.jrunscript.http.client.spi }
-		 * @returns { ReturnType<slime.jrunscript.http.client.spi> }
+		 * @type { slime.jrunscript.http.client.spi.implementation }
+		 * @returns { slime.jrunscript.http.client.spi.Response }
 		 */
 		function spi(p) {
-			var getStatus = function($urlConnection) {
+			/**
+			 *
+			 * @param { slime.jrunscript.native.java.net.URLConnection } $urlConnection
+			 */
+			var getResponseStatus = function($urlConnection) {
 				if ($urlConnection.getResponseCode() == -1) {
 					//	used to check for response message here, but at least one extant HTTP server (Stash) omits the OK
 					throw new Error("Response was not valid HTTP: " + $urlConnection);
 				}
-				var rv = {
+				return {
 					code: Number($urlConnection.getResponseCode()),
 					reason: String($urlConnection.getResponseMessage())
 				};
-				return rv;
 			};
 
 			/**
@@ -294,7 +187,7 @@
 			 * @param { slime.jrunscript.native.java.net.URLConnection } $urlConnection
 			 * @returns { slime.jrunscript.http.client.Header[] }
 			 */
-			var getHeaders = function($urlConnection) {
+			var getResponseHeaders = function($urlConnection) {
 				var headers = [];
 				var more = true;
 				var i = 1;
@@ -316,7 +209,7 @@
 			 * @param { slime.jrunscript.native.java.net.URLConnection } $urlConnection
 			 * @returns { slime.jrunscript.runtime.io.InputStream }
 			 */
-			var getStream = function($urlConnection) {
+			var getResponseBodyStream = function($urlConnection) {
 				var result = (function() {
 					try {
 						return $urlConnection.getInputStream();
@@ -409,11 +302,11 @@
 				);
 			}
 
-			/** @type { ReturnType<slime.jrunscript.http.client.spi> } */
+			/** @type { slime.jrunscript.http.client.spi.Response } */
 			var rv = {
-				status: getStatus($urlConnection),
-				headers: getHeaders($urlConnection),
-				stream: getStream($urlConnection)
+				status: getResponseStatus($urlConnection),
+				headers: getResponseHeaders($urlConnection),
+				stream: getResponseBodyStream($urlConnection)
 			}
 
 			return rv;
@@ -466,7 +359,100 @@
 
 		/**
 		 *
-		 * @param { ConstructorParameters<slime.jrunscript.http.client.Exports["Client"]>[0] } configuration
+		 * @param { slime.jrunscript.http.client.spi.Response } spiresponse
+		 * @param { slime.jrunscript.http.client.Request } request
+		 * @returns { slime.jrunscript.http.client.Response }
+		 */
+		var toResponse = function(spiresponse,request) {
+			var type = (function() {
+				var string = headersImplementationForGet.call(spiresponse.headers, "Content-Type");
+				if (string) {
+					return $context.api.io.mime.Type.parse(string);
+				}
+				return null;
+			})();
+
+			var rv = {
+				request: request,
+				status: $api.Object.compose(spiresponse.status, { message: spiresponse.status.reason }),
+				headers: withHeadersGet(spiresponse.headers),
+				body: {
+					type: type,
+					stream: spiresponse.stream
+				}
+			}
+
+			$api.deprecate(rv.status, "message");
+
+			return rv;
+		};
+
+		/**
+		 *
+		 * @param { slime.jrunscript.http.client.Configuration } configuration
+		 * @param { slime.jrunscript.http.client.internal.Cookies } cookies
+		 * @param { slime.jrunscript.http.client.Request } p
+		 * @returns { slime.jrunscript.http.client.spi.Request }
+		 */
+		var interpretRequest = function(configuration,cookies,p) {
+			var method = (p.method) ? p.method.toUpperCase() : "GET";
+			var url = (function() {
+				var rv = (typeof(p.url) == "string") ? $context.api.web.Url.parse(p.url) : p.url;
+				if (p.params || p.parameters) {
+					$api.deprecate(function() {
+						//	First deal with really old "params" version
+						if (p.params && !p.parameters) {
+							p.parameters = p.params;
+							delete p.params;
+						}
+						//	Then deal with slightly less old "parameters" version
+						var string = $context.api.web.Url.query(Parameters(p.parameters));
+						if (string) {
+							if (rv.query) {
+								rv.query += "&" + string;
+							} else {
+								rv.query = string;
+							}
+						}
+					})();
+				}
+				return rv;
+			})();
+			var headers = (p.headers) ? Parameters(p.headers) : [];
+			var authorization = (function() {
+				if (configuration && configuration.authorization) return configuration.authorization;
+				if (p.authorization) return p.authorization;
+			})();
+			if (authorization) {
+				headers.push({ name: "Authorization", value: authorization });
+			}
+
+			var proxy = (function() {
+				if (p.proxy) return p.proxy;
+				if (configuration && configuration.proxy) {
+					if (typeof(configuration.proxy) == "function") {
+						return configuration.proxy(p);
+					} else if (typeof(configuration.proxy) == "object") {
+						return configuration.proxy;
+					}
+				}
+			})();
+
+			cookies.get(url,headers);
+
+			return {
+				method: method,
+				url: url,
+				headers: headers,
+				body: p.body,
+				proxy: proxy,
+				timeout: p.timeout
+			};
+		}
+
+		/**
+		 *
+		 * @param { slime.jrunscript.http.client.Configuration } configuration
 		 */
 		var Client = function(configuration) {
 			var cookies = Cookies();
@@ -475,89 +461,19 @@
 			 * @param { slime.jrunscript.http.client.Request & { evaluate?: any, parse?: any } } p
 			 */
 			this.request = function(p) {
-				var method = (p.method) ? p.method.toUpperCase() : "GET";
-				var url = (function() {
-					var rv = (typeof(p.url) == "string") ? $context.api.web.Url.parse(p.url) : p.url;
-					if (p.params || p.parameters) {
-						$api.deprecate(function() {
-							//	First deal with really old "params" version
-							if (p.params && !p.parameters) {
-								p.parameters = p.params;
-								delete p.params;
-							}
-							//	Then deal with slightly less old "parameters" version
-							var string = $context.api.web.Url.query(Parameters(p.parameters));
-							if (string) {
-								if (rv.query) {
-									rv.query += "&" + string;
-								} else {
-									rv.query = string;
-								}
-							}
-						})();
-					}
-					return rv;
-				})();
-				var headers = (p.headers) ? Parameters(p.headers) : [];
-				var authorization = (function() {
-					if (configuration && configuration.authorization) return configuration.authorization;
-					if (p.authorization) return p.authorization;
-				})();
-				if (authorization) {
-					headers.push({ name: "Authorization", value: authorization });
-				}
-
-				var proxy = (function() {
-					if (p.proxy) return p.proxy;
-					if (configuration && configuration.proxy) {
-						if (typeof(configuration.proxy) == "function") {
-							return configuration.proxy(p);
-						} else if (typeof(configuration.proxy) == "object") {
-							return configuration.proxy;
-						}
-					}
-				})();
-
+				var spirequest = interpretRequest(configuration,cookies,p);
 				var myspi = (configuration && configuration.spi) ? configuration.spi(spi) : spi;
-
-				cookies.get(url,headers);
-				var spiresponse = myspi({
-					method: method,
-					url: url,
-					headers: headers,
-					body: p.body,
-					proxy: proxy,
-					timeout: p.timeout
-				});
-				cookies.set(url,spiresponse.headers);
+				var spiresponse = myspi(spirequest);
+				cookies.set(spirequest.url,spiresponse.headers);
 
 				var isRedirect = function(status) {
 					return (status.code >= 300 && status.code <= 303) || status.code == 307;
 				}
 
-				/**
-				 *
-				 * @param { ReturnType<slime.jrunscript.http.client.spi> } spiresponse
-				 * @returns { slime.jrunscript.http.client.Response }
-				 */
-				var toResponse = function(spiresponse) {
-					var rv = {
-						request: p,
-						status: $api.Object.compose(spiresponse.status, { message: spiresponse.status.reason }),
-						headers: withHeadersGet(spiresponse.headers),
-						body: {
-							type: type,
-							stream: spiresponse.stream
-						}
-					}
-					$api.deprecate(rv.status,"message");
-					return rv;
-				}
-
 				if (isRedirect(spiresponse.status)) {
-					var redirectTo = headersGetMethod.call(spiresponse.headers, "Location");
+					var redirectTo = headersImplementationForGet.call(spiresponse.headers, "Location");
 					if (!redirectTo) throw new Error("Redirect without location header.");
-					var redirectUrl = url.resolve(redirectTo);
+					var redirectUrl = spirequest.url.resolve(redirectTo);
 					//	TODO	copy object rather than modifying
 					var rv = {};
 					for (var x in p) {
@@ -583,9 +499,11 @@
 						p.on.redirect(callback);
 					}
 					//	rv.body is undefined
-					return (callback.next) ? arguments.callee(callback.next) : toResponse(spiresponse);
+					return (callback.next) ? arguments.callee(callback.next) : toResponse(spiresponse, p);
 				} else {
-					var parser = (function() {
+					var response = toResponse(spiresponse, p);
+
+					var postprocessor = (function() {
 						if (p.evaluate === JSON) {
 							return function(response) {
 								if (response.status.code >= 200 && response.status.code <= 299) {
@@ -601,15 +519,8 @@
 							return response;
 						};
 					})();
-					var type = (function() {
-						var string = headersGetMethod.call(spiresponse.headers, "Content-Type");
-						if (string) {
-							return $context.api.io.mime.Type.parse(string);
-						}
-						return null;
-					})();
 
-					return parser(toResponse(spiresponse));
+					return postprocessor(response);
 				}
 			}
 
@@ -758,4 +669,4 @@
 		};
 	}
 //@ts-ignore
-)(Packages,$api,$context,$exports)
+)(Packages,$api,$context,$loader,$exports)

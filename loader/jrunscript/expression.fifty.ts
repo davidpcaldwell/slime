@@ -237,6 +237,7 @@ namespace slime.jrunscript {
 					getErrorStream(): slime.jrunscript.native.java.io.InputStream
 					getOutputStream(): slime.jrunscript.native.java.io.OutputStream
 					getResponseCode(): number
+					getResponseMessage(): slime.jrunscript.native.java.lang.String
 					getHeaderFieldKey(i: number): slime.jrunscript.native.java.lang.String
 					getHeaderField(i: number): slime.jrunscript.native.java.lang.String
 				}

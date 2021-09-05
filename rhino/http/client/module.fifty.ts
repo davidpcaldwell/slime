@@ -75,27 +75,30 @@ namespace slime.jrunscript.http.client {
 		api: {
 			web: slime.web.Exports
 			java: slime.jrunscript.host.Exports
-			js: any
 			io: slime.jrunscript.io.Exports
 		}
 	}
 
-	export type spi = (
-		p: {
+	export namespace spi {
+		export interface Request {
 			method: string
 			url: slime.web.Url
 			headers: Header[]
 			proxy: any
 			timeout: Timeouts
-			body: Request["body"]
+			body: slime.jrunscript.http.client.Request["body"]
 		}
-	) => {
-		status: {
-			code: number
-			reason: string
+
+		export interface Response {
+			status: {
+				code: number
+				reason: string
+			}
+			headers: Header[]
+			stream: slime.jrunscript.runtime.io.InputStream
 		}
-		headers: Header[]
-		stream: slime.jrunscript.runtime.io.InputStream
+
+		export type implementation = (p: Request) => Response
 	}
 
 	export namespace internal {
@@ -125,13 +128,15 @@ namespace slime.jrunscript.http.client {
 		read: any
 	}
 
+	export interface Configuration {
+		authorization?: any
+		spi?: (standard: spi.implementation) => spi.implementation
+		proxy?: Proxy | ((p: Request) => Proxy)
+		TREAT_302_AS_303?: boolean
+	}
+
 	export interface Exports {
-		Client: new (configuration?: {
-			authorization?: any
-			spi?: (standard: spi) => spi
-			proxy?: Proxy | ((p: Request) => Proxy)
-			TREAT_302_AS_303?: boolean
-		}) => Client
+		Client: new (configuration?: Configuration) => Client
 
 		Authentication: {
 			Basic: {
