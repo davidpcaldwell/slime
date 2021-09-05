@@ -59,6 +59,23 @@ namespace slime.definition.test.promises {
 				fifty.verify("after").is("after");
 			}
 
+			fifty.tests.sequence = function() {
+				var value = 0;
+				var controlled = subject.controlled();
+				controlled.promise.then(function(v) {
+					value = v;
+				});
+				fifty.run(function() {
+					fifty.verify(value).is(0);
+				});
+				fifty.run(function() {
+					controlled.resolve(1);
+				});
+				fifty.run(function() {
+					fifty.verify(value).is(1);
+				})
+			}
+
 			fifty.tests.suite = function() {
 				var registry = subject.Registry();
 				fifty.verify(registry).test.list().length.is(0);
