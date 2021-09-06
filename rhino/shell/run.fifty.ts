@@ -29,19 +29,23 @@ namespace slime.jrunscript.shell.internal.run {
 	 */
 	export type Stdio = Required<slime.jrunscript.shell.Stdio> & { close: () => slime.jrunscript.shell.run.Output }
 
+	export type Line = {
+		line: string
+	}
+
+	export interface Listener {
+		close: () => void
+	}
+
 	export interface Events {
 		start: {
 			pid: number
 			kill: () => void
 		}
 
-		stdout: {
-			line: string
-		}
+		stdout: Line
 
-		stderr: {
-			line: string
-		}
+		stderr: Line
 
 		exit: {
 			status: number

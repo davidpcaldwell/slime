@@ -39,44 +39,14 @@
 			};
 
 			/**
-			 * @param { slime.$api.Events<slime.jrunscript.shell.internal.run.Events> } events
+			 *
 			 * @param { "stdout" | "stderr" } type
-			 * @returns { slime.jrunscript.shell.internal.run.Buffer }
+			 * @param { (string: string) => void } callback
+			 * @param { slime.$api.Events<slime.jrunscript.shell.internal.run.Events> } events
+			 * @returns { slime.jrunscript.shell.internal.run.Listener }
 			 */
-			var getLineBuffer = function(events,type) {
-				var buffer = new $context.api.io.Buffer();
-
-				var lines = [];
-
-				var thread = $context.api.java.Thread.start({
-					call: function() {
-						buffer.readText().readLines(function(line) {
-							lines.push(line);
-							events.fire(type, { line: line });
-						});
-					}
-				});
-
-				return {
-					stream: buffer.writeBinary(),
-					close: function() {
-						buffer.close();
-						thread.join();
-					},
-					readText: function() {
-						return lines.join($context.api.io.system.delimiter.line);
-					}
-				}
-			};
-
-			rv.input = p.input;
-
-			var listeners = {
-				stdout: void(0),
-				stderr: void(0)
-			};
-
 			var toListener = function(type,callback,events) {
+				/** @type { slime.$api.event.Handler<slime.jrunscript.shell.internal.run.Line> } */
 				var handler = function(e) {
 					callback(e.detail.line);
 				};
@@ -91,6 +61,52 @@
 			}
 
 			/**
+			 * @param { slime.$api.Events<slime.jrunscript.shell.internal.run.Events> } events
+			 * @param { "output" | "error" } stream
+			 * @param { (string: string) => void } callback
+			 * @returns { slime.jrunscript.shell.internal.run.Buffer }
+			 */
+			var getLineBuffer = function(events,stream,callback) {
+				/**
+				 * @param { string } stream
+				 * @returns { "stdout" | "stderr" }
+				 */
+				var toStreamEventType = function(stream) {
+					if (stream == "output") return "stdout";
+					if (stream == "error") return "stderr";
+				};
+
+				var listener = toListener(toStreamEventType(stream), callback, events);
+
+				var buffer = new $context.api.io.Buffer();
+
+				var lines = [];
+
+				var thread = $context.api.java.Thread.start({
+					call: function() {
+						buffer.readText().readLines(function(line) {
+							lines.push(line);
+							events.fire(toStreamEventType(stream), { line: line });
+						});
+					}
+				});
+
+				return {
+					stream: buffer.writeBinary(),
+					close: function() {
+						buffer.close();
+						thread.join();
+						listener.close();
+					},
+					readText: function() {
+						return lines.join($context.api.io.system.delimiter.line);
+					}
+				}
+			};
+
+			rv.input = p.input;
+
+			/**
 			 * @returns { { output?: string, error?: string } }
 			 */
 			rv.close = function() {
@@ -98,9 +114,6 @@
 				var rv;
 				for (var x in buffers) {
 					buffers[x].close();
-
-					if (listeners.stdout) listeners.stdout.close();
-					if (listeners.stderr) listeners.stderr.close();
 
 					//	this is horrendous, but it automatically replaces the stdio property with the string if a string-buffering
 					//	strategy was requested.
@@ -112,31 +125,48 @@
 				return rv;
 			};
 
+			/**
+			 * @param { slime.jrunscript.shell.invocation.OutputStreamConfiguration } configuration
+			 * @return { configuration is slime.jrunscript.shell.invocation.OutputStreamToLines }
+			 */
+			var isLineListener = function(configuration) {
+				return Object.prototype.hasOwnProperty.call(configuration, "line");
+			}
+
+			/**
+			 * @param { slime.jrunscript.shell.invocation.OutputStreamConfiguration } configuration
+			 * @return { configuration is slime.jrunscript.shell.invocation.OutputStreamToString }
+			 */
+			var isString = function(configuration) {
+				return configuration === String
+			};
+
+			/**
+			 * @param { slime.jrunscript.shell.invocation.OutputStreamConfiguration } configuration
+			 * @return { configuration is slime.jrunscript.shell.invocation.OutputStreamToStream }
+			 */
+			var isStream = function(configuration) {
+				return true;
+			}
+
 			/** @type { ReturnType<slime.jrunscript.shell.internal.run.Export["buildStdio"]>}  */
 			var returned = function(events) {
-				/**
-				 * @param { string } stream
-				 * @returns { "stdout" | "stderr" }
-				 */
-				var toStreamEventType = function(stream) {
-					if (stream == "output") return "stdout";
-					if (stream == "error") return "stderr";
-				};
 
-				["output","error"].forEach(function(stream) {
-					if (p[stream] == String) {
-						buffers[stream] = getStringBuffer();
-					} else if (p[stream] && typeof(p[stream]) == "object" && p[stream].line) {
-						buffers[stream] = getLineBuffer(events, toStreamEventType(stream));
-						listeners[toStreamEventType(stream)] = toListener(toStreamEventType(stream), p[stream].line, events);
+				["output","error"].forEach(
+					/** @param { "output" | "error" } stream */
+					function(stream) {
+						var configuration = p[stream];
+						if (isString(configuration)) {
+							buffers[stream] = getStringBuffer();
+							rv[stream] = buffers[stream].stream;
+						} else if (p[stream] && isLineListener(configuration)) {
+							buffers[stream] = getLineBuffer(events, stream, configuration.line);
+							rv[stream] = buffers[stream].stream;
+						} else if (isStream(configuration)) {
+							rv[stream] = configuration;
+						}
 					}
-
-					if (buffers[stream]) {
-						rv[stream] = buffers[stream].stream;
-					} else {
-						rv[stream] = p[stream];
-					}
-				});
+				);
 
 				return rv;
 			};

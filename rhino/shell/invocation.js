@@ -99,7 +99,7 @@
 
 		/**
 		 *
-		 * @param { slime.jrunscript.shell.internal.run.Stdio } p
+		 * @param { Parameters<slime.jrunscript.shell.internal.run.Export["buildStdio"]>[0] } p
 		 * @param { slime.jrunscript.shell.Stdio } parent
 		 */
 		var fallbackToParentStdio = function(p, parent) {
@@ -118,8 +118,8 @@
 		var getStdio = function(p, parent) {
 			return function(events) {
 				var stdio1 = updateForStringInput(p.stdio);
+				fallbackToParentStdio(stdio1, parent);
 				var stdio = $context.run.buildStdio(stdio1)(events);
-				fallbackToParentStdio(stdio, parent);
 				return stdio;
 			}
 		}

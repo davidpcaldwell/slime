@@ -37,6 +37,11 @@ namespace slime.jrunscript.shell {
 	export namespace invocation {
 		export type Token = string | slime.jrunscript.file.Pathname | slime.jrunscript.file.Node
 
+		export type OutputStreamToStream = slime.jrunscript.runtime.io.OutputStream
+		export type OutputStreamToString = StringConstructor
+		export type OutputStreamToLines = { line: (line: string) => void }
+		export type OutputStreamConfiguration = OutputStreamToStream | OutputStreamToString | OutputStreamToLines
+
 		/**
 		 * Specifies the standard input, output, and error streams to use for an invocation.
 		 *
@@ -47,9 +52,9 @@ namespace slime.jrunscript.shell {
 		 * For the input stream:
 		 * * if the value is a string, that string will be provided on the standard input stream for the subprocess.
 		 */
-		 export interface Stdio {
-			output?: StringConstructor | slime.jrunscript.runtime.io.OutputStream | { line: (line: string) => void }
-			error?: StringConstructor | slime.jrunscript.runtime.io.OutputStream | { line: (line: string) => void }
+		export interface Stdio {
+			output?: OutputStreamConfiguration
+			error?: OutputStreamConfiguration
 			input?: string | slime.jrunscript.runtime.io.InputStream
 		}
 
