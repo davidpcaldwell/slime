@@ -17,10 +17,12 @@ namespace slime.jrunscript.shell.internal.run {
 		stdio: slime.jrunscript.shell.run.Output
 	}
 
-	export interface Buffer {
+	export type OutputCapture = "string" | "line" | "none";
+
+	export interface OutputDestination {
 		stream: slime.jrunscript.runtime.io.OutputStream
 		close: () => void
-		readText: () => string
+		readText?: () => string
 	}
 
 	/**

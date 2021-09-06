@@ -21,11 +21,11 @@
 		function buildStdio(p) {
 			/** @type { slime.jrunscript.shell.internal.run.Stdio } */
 			var rv = {};
-			/** @type { { [x: string]: slime.jrunscript.shell.internal.run.Buffer } } */
-			var buffers = {};
+			/** @type { { [x: string]: slime.jrunscript.shell.internal.run.OutputDestination } } */
+			var destinations = {};
 
-			/** @returns { slime.jrunscript.shell.internal.run.Buffer } */
-			var getStringBuffer = function() {
+			/** @returns { slime.jrunscript.shell.internal.run.OutputDestination } */
+			var getStringBufferDestination = function() {
 				var buffer = new $context.api.io.Buffer();
 				return {
 					stream: buffer.writeBinary(),
@@ -64,9 +64,9 @@
 			 * @param { slime.$api.Events<slime.jrunscript.shell.internal.run.Events> } events
 			 * @param { "output" | "error" } stream
 			 * @param { (string: string) => void } callback
-			 * @returns { slime.jrunscript.shell.internal.run.Buffer }
+			 * @returns { slime.jrunscript.shell.internal.run.OutputDestination }
 			 */
-			var getLineBuffer = function(events,stream,callback) {
+			var getLineBufferDestination = function(events,stream,callback) {
 				/**
 				 * @param { string } stream
 				 * @returns { "stdout" | "stderr" }
@@ -104,6 +104,19 @@
 				}
 			};
 
+			/**
+			 *
+			 * @param { slime.jrunscript.runtime.io.OutputStream } stream
+			 * @returns { slime.jrunscript.shell.internal.run.OutputDestination }
+			 */
+			var getRawDestination = function(stream) {
+				return {
+					stream: stream,
+					close: function() {
+					}
+				}
+			}
+
 			rv.input = p.input;
 
 			/**
@@ -112,14 +125,14 @@
 			rv.close = function() {
 				/** @type { { output?: string, error?: string } } */
 				var rv;
-				for (var x in buffers) {
-					buffers[x].close();
+				for (var x in destinations) {
+					destinations[x].close();
 
 					//	this is horrendous, but it automatically replaces the stdio property with the string if a string-buffering
 					//	strategy was requested.
-					if ((x == "output" || x == "error") && buffers[x]) {
+					if ((x == "output" || x == "error") && destinations[x] && destinations[x].readText) {
 						if (!rv) rv = {};
-						rv[x] = buffers[x].readText();
+						rv[x] = destinations[x].readText();
 					}
 				}
 				return rv;
@@ -130,7 +143,7 @@
 			 * @return { configuration is slime.jrunscript.shell.invocation.OutputStreamToLines }
 			 */
 			var isLineListener = function(configuration) {
-				return Object.prototype.hasOwnProperty.call(configuration, "line");
+				return configuration && Object.prototype.hasOwnProperty.call(configuration, "line");
 			}
 
 			/**
@@ -145,9 +158,27 @@
 			 * @param { slime.jrunscript.shell.invocation.OutputStreamConfiguration } configuration
 			 * @return { configuration is slime.jrunscript.shell.invocation.OutputStreamToStream }
 			 */
-			var isStream = function(configuration) {
+			var isRaw = function(configuration) {
 				return true;
 			}
+
+			var destinationFactory = function(events, stream) {
+				/**
+				 * @param { slime.jrunscript.shell.invocation.OutputStreamConfiguration } configuration
+				 * @returns { slime.jrunscript.shell.internal.run.OutputDestination }
+				 */
+				var getDestination = function(configuration) {
+					if (isString(configuration)) {
+						return getStringBufferDestination();
+					} else if (isLineListener(configuration)) {
+						return getLineBufferDestination(events, stream, configuration.line);
+					} else if (isRaw(configuration)) {
+						return getRawDestination(configuration);
+					}
+				};
+
+				return getDestination;
+			};
 
 			/** @type { ReturnType<slime.jrunscript.shell.internal.run.Export["buildStdio"]>}  */
 			var returned = function(events) {
@@ -155,16 +186,9 @@
 				["output","error"].forEach(
 					/** @param { "output" | "error" } stream */
 					function(stream) {
-						var configuration = p[stream];
-						if (isString(configuration)) {
-							buffers[stream] = getStringBuffer();
-							rv[stream] = buffers[stream].stream;
-						} else if (p[stream] && isLineListener(configuration)) {
-							buffers[stream] = getLineBuffer(events, stream, configuration.line);
-							rv[stream] = buffers[stream].stream;
-						} else if (isStream(configuration)) {
-							rv[stream] = configuration;
-						}
+						var toDestination = destinationFactory(events, stream);
+						destinations[stream] = toDestination(p[stream]);
+						rv[stream] = destinations[stream].stream;
 					}
 				);
 
