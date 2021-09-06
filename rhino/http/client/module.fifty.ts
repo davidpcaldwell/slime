@@ -7,18 +7,10 @@
 namespace slime.jrunscript.http.client {
 	export type Pairs = { name: string, value: string }[] | { [x: string]: string | string[] }
 
-	export interface Request {
-		method?: string
-		url: slime.web.Url | string
-		params?: Pairs
-		parameters?: Pairs
-		headers?: Pairs
-		authorization?: Authorization
-		proxy?: any
-		body?: request.Body
-		timeout?: Timeouts
-		on?: any
-	}
+	/** @deprecated Replaced by `client.Request`. */
+	export type Request = client.Request;
+	/** @deprecated Replaced by `client.Response`. */
+	export type Response = client.Response;
 
 	export namespace request {
 		export type Body = body.Stream | body.Binary | body.String
@@ -31,23 +23,6 @@ namespace slime.jrunscript.http.client {
 		}
 	}
 
-	export interface Response {
-		request: Request
-		/**
-		 * See https://datatracker.ietf.org/doc/html/rfc7230#section-3.1.2
-		 */
-		status: {
-			code: number
-			reason: string
-		}
-		headers: Header[]
-		body: {
-			type: slime.mime.Type
-			//	TODO	Possibly should be slime.jrunscript.InputStream or slime.jrunscript.io.InputStream
-			stream: slime.jrunscript.runtime.io.InputStream
-		}
-	}
-
 	export interface Header {
 		name: string
 		value: string
@@ -56,11 +31,45 @@ namespace slime.jrunscript.http.client {
 	type Authorization = string
 
 	export namespace client {
+		export interface Request {
+			method?: string
+			url: slime.web.Url | string
+
+			/** @deprecated */
+			params?: Pairs
+			/** @deprecated */
+			parameters?: Pairs
+
+			headers?: Pairs
+			authorization?: Authorization
+			proxy?: Proxy
+			body?: request.Body
+			timeout?: Timeouts
+			on?: any
+		}
+
 		export interface request {
 			(p: Request & { evaluate: JSON }): any
 			<T>(p: Request & { evaluate: (Response) => T }): T
 			<T>(p: Request & { parse: (Response) => T }): T
 			(p: Request): Response
+		}
+
+		export interface Response {
+			request: Request
+			/**
+			 * See https://datatracker.ietf.org/doc/html/rfc7230#section-3.1.2
+			 */
+			status: {
+				code: number
+				reason: string
+			}
+			headers: Header[]
+			body: {
+				type: slime.mime.Type
+				//	TODO	Possibly should be slime.jrunscript.InputStream or slime.jrunscript.io.InputStream
+				stream: slime.jrunscript.runtime.io.InputStream
+			}
 		}
 	}
 
@@ -84,9 +93,9 @@ namespace slime.jrunscript.http.client {
 			method: string
 			url: slime.web.Url
 			headers: Header[]
-			proxy: any
+			body: request.Body
+			proxy: Proxy
 			timeout: Timeouts
-			body: slime.jrunscript.http.client.Request["body"]
 		}
 
 		export interface Response {
@@ -99,13 +108,6 @@ namespace slime.jrunscript.http.client {
 		}
 
 		export type implementation = (p: Request) => Response
-	}
-
-	export namespace internal {
-		export interface Cookies {
-			set(url: slime.web.Url, headers: Header[])
-			get(url: slime.web.Url, headers: Header[])
-		}
 	}
 
 	export interface Proxy {

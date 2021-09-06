@@ -389,13 +389,12 @@
 
 		/**
 		 *
-		 * @param { slime.jrunscript.http.client.Configuration } configuration
-		 * @param { slime.jrunscript.http.client.internal.Cookies } cookies
 		 * @param { slime.jrunscript.http.client.Request } p
 		 * @returns { slime.jrunscript.http.client.spi.Request }
 		 */
-		var interpretRequest = function(configuration,cookies,p) {
+		var interpretRequest = function(p) {
 			var method = (p.method) ? p.method.toUpperCase() : "GET";
+
 			var url = (function() {
 				var rv = (typeof(p.url) == "string") ? $context.api.web.Url.parse(p.url) : p.url;
 				if (p.params || p.parameters) {
@@ -418,37 +417,62 @@
 				}
 				return rv;
 			})();
+
 			var headers = (p.headers) ? Parameters(p.headers) : [];
-			var authorization = (function() {
-				if (configuration && configuration.authorization) return configuration.authorization;
-				if (p.authorization) return p.authorization;
-			})();
-			if (authorization) {
-				headers.push({ name: "Authorization", value: authorization });
-			}
-
-			var proxy = (function() {
-				if (p.proxy) return p.proxy;
-				if (configuration && configuration.proxy) {
-					if (typeof(configuration.proxy) == "function") {
-						return configuration.proxy(p);
-					} else if (typeof(configuration.proxy) == "object") {
-						return configuration.proxy;
-					}
-				}
-			})();
-
-			cookies.get(url,headers);
 
 			return {
 				method: method,
 				url: url,
 				headers: headers,
 				body: p.body,
-				proxy: proxy,
+				proxy: p.proxy,
 				timeout: p.timeout
 			};
 		}
+
+		/**
+		 *
+		 * @param { slime.jrunscript.http.client.internal.Cookies } cookies
+		 * @returns { (request: slime.jrunscript.http.client.spi.Request ) => slime.jrunscript.http.client.spi.Request }
+		 */
+		var sessionRequest = function(cookies) {
+			return function(request) {
+				//	TODO	this implementation mutates the request but provides an immutable-appearing signature for
+				//			forward-compatibility
+				cookies.get(request.url, request.headers);
+				return request;
+			}
+		};
+
+		/**
+		 *
+		 * @param { string } authorization
+		 * @returns { (request: slime.jrunscript.http.client.spi.Request ) => slime.jrunscript.http.client.spi.Request }
+		 */
+		var authorizedRequest = function(authorization) {
+			return function(request) {
+				//	TODO	this implementation mutates the request but provides an immutable-appearing signature for
+				//			forward-compatibility
+				if (authorization) {
+					request.headers.push({ name: "Authorization", value: authorization });
+				}
+				return request;
+			}
+		};
+
+		/**
+		 *
+		 * @param { slime.jrunscript.http.client.Proxy } proxy
+		 * @returns { (request: slime.jrunscript.http.client.spi.Request ) => slime.jrunscript.http.client.spi.Request }
+		 */
+		var proxiedRequest = function(proxy) {
+			return function(request) {
+				//	TODO	this implementation mutates the request but provides an immutable-appearing signature for
+				//			forward-compatibility
+				request.proxy = proxy;
+				return request;
+			}
+		};
 
 		/**
 		 *
@@ -461,9 +485,32 @@
 			 * @param { slime.jrunscript.http.client.Request & { evaluate?: any, parse?: any } } p
 			 */
 			this.request = function(p) {
-				var spirequest = interpretRequest(configuration,cookies,p);
-				var myspi = (configuration && configuration.spi) ? configuration.spi(spi) : spi;
-				var spiresponse = myspi(spirequest);
+				var authorization = (function() {
+					if (p.authorization) return p.authorization;
+					if (configuration && configuration.authorization) return configuration.authorization;
+				})();
+
+				var proxy = (function() {
+					if (p.proxy) return p.proxy;
+					if (configuration && configuration.proxy) {
+						if (typeof(configuration.proxy) == "function") {
+							return configuration.proxy(p);
+						} else if (typeof(configuration.proxy) == "object") {
+							return configuration.proxy;
+						}
+					}
+				})();
+
+				var spirequest = $api.Function.result(
+					interpretRequest(p),
+					sessionRequest(cookies),
+					authorizedRequest(authorization),
+					proxiedRequest(proxy)
+				);
+
+				var spiImplementation = (configuration && configuration.spi) ? configuration.spi(spi) : spi;
+
+				var spiresponse = spiImplementation(spirequest);
 				cookies.set(spirequest.url,spiresponse.headers);
 
 				var isRedirect = function(status) {

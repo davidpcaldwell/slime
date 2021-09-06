@@ -4,6 +4,25 @@
 //
 //	END LICENSE
 
+namespace slime.jrunscript.http.client.internal {
+	export interface Cookies {
+		/**
+		 * Sets the appropriate cookies on this object for response headers received when requesting the given URL.
+		 *
+		 * @param url - the URL requested
+		 * @param headers - the response headers received
+		 */
+		set(url: slime.web.Url, headers: Header[])
+
+		/**
+		 *
+		 * @param url - the URL to be requested
+		 * @param headers - the headers to be sent with it, which will be modified to include any appropriate `Cookie:` headers.
+		 */
+		get(url: slime.web.Url, headers: Header[])
+	}
+}
+
 namespace slime.jrunscript.http.client.internal.cookies {
 	export interface Export {
 		inonit: () => slime.jrunscript.http.client.internal.Cookies
@@ -12,14 +31,3 @@ namespace slime.jrunscript.http.client.internal.cookies {
 
 	export type Load = slime.loader.Product<void,Export>
 }
-
-(
-	function(
-		fifty: slime.fifty.test.kit
-	) {
-		fifty.tests.suite = function() {
-
-		}
-	}
-//@ts-ignore
-)(fifty);
