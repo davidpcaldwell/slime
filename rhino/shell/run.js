@@ -15,6 +15,73 @@
 	 * @param { slime.loader.Export<slime.jrunscript.shell.internal.run.Export> } $export
 	 */
 	function(Packages,JavaAdapter,$api,$context,$export) {
+		/** @returns { slime.jrunscript.shell.internal.run.OutputDestination } */
+		var getStringBufferDestination = function() {
+			var buffer = new $context.api.io.Buffer();
+			return {
+				stream: buffer.writeBinary(),
+				close: function() {
+					buffer.close();
+				},
+				readText: function() {
+					return buffer.readText().asString();
+				}
+			}
+		};
+
+		/**
+		 * @param { string } stream
+		 * @returns { "stdout" | "stderr" }
+		 */
+		var toStreamEventType = function(stream) {
+			if (stream == "output") return "stdout";
+			if (stream == "error") return "stderr";
+		};
+
+		/**
+		 * @param { slime.$api.Events<slime.jrunscript.shell.internal.run.Events> } events
+		 * @param { "output" | "error" } stream
+		 * @returns { slime.jrunscript.shell.internal.run.OutputDestination }
+		 */
+		var getLineBufferDestination = function(events,stream) {
+			var buffer = new $context.api.io.Buffer();
+
+			var lines = [];
+
+			var thread = $context.api.java.Thread.start({
+				call: function() {
+					buffer.readText().readLines(function(line) {
+						lines.push(line);
+						events.fire(toStreamEventType(stream), { line: line });
+					});
+				}
+			});
+
+			return {
+				stream: buffer.writeBinary(),
+				close: function() {
+					buffer.close();
+					thread.join();
+				},
+				readText: function() {
+					return lines.join($context.api.io.system.delimiter.line);
+				}
+			}
+		};
+
+		/**
+		 *
+		 * @param { slime.jrunscript.runtime.io.OutputStream } stream
+		 * @returns { slime.jrunscript.shell.internal.run.OutputDestination }
+		 */
+		var getRawDestination = function(stream) {
+			return {
+				stream: stream,
+				close: function() {
+				}
+			}
+		}
+
 		/**
 		 * @type { slime.jrunscript.shell.internal.run.Export["buildStdio"] }
 		 */
@@ -23,99 +90,6 @@
 			var rv = {};
 			/** @type { { [x: string]: slime.jrunscript.shell.internal.run.OutputDestination } } */
 			var destinations = {};
-
-			/** @returns { slime.jrunscript.shell.internal.run.OutputDestination } */
-			var getStringBufferDestination = function() {
-				var buffer = new $context.api.io.Buffer();
-				return {
-					stream: buffer.writeBinary(),
-					close: function() {
-						buffer.close();
-					},
-					readText: function() {
-						return buffer.readText().asString();
-					}
-				}
-			};
-
-			/**
-			 *
-			 * @param { "stdout" | "stderr" } type
-			 * @param { (string: string) => void } callback
-			 * @param { slime.$api.Events<slime.jrunscript.shell.internal.run.Events> } events
-			 * @returns { slime.jrunscript.shell.internal.run.Listener }
-			 */
-			var toListener = function(type,callback,events) {
-				/** @type { slime.$api.event.Handler<slime.jrunscript.shell.internal.run.Line> } */
-				var handler = function(e) {
-					callback(e.detail.line);
-				};
-
-				events.listeners.add(type, handler);
-
-				return {
-					close: function() {
-						events.listeners.remove(type, handler);
-					}
-				}
-			}
-
-			/**
-			 * @param { slime.$api.Events<slime.jrunscript.shell.internal.run.Events> } events
-			 * @param { "output" | "error" } stream
-			 * @param { (string: string) => void } callback
-			 * @returns { slime.jrunscript.shell.internal.run.OutputDestination }
-			 */
-			var getLineBufferDestination = function(events,stream,callback) {
-				/**
-				 * @param { string } stream
-				 * @returns { "stdout" | "stderr" }
-				 */
-				var toStreamEventType = function(stream) {
-					if (stream == "output") return "stdout";
-					if (stream == "error") return "stderr";
-				};
-
-				var listener = toListener(toStreamEventType(stream), callback, events);
-
-				var buffer = new $context.api.io.Buffer();
-
-				var lines = [];
-
-				var thread = $context.api.java.Thread.start({
-					call: function() {
-						buffer.readText().readLines(function(line) {
-							lines.push(line);
-							events.fire(toStreamEventType(stream), { line: line });
-						});
-					}
-				});
-
-				return {
-					stream: buffer.writeBinary(),
-					close: function() {
-						buffer.close();
-						thread.join();
-						listener.close();
-					},
-					readText: function() {
-						return lines.join($context.api.io.system.delimiter.line);
-					}
-				}
-			};
-
-			/**
-			 *
-			 * @param { slime.jrunscript.runtime.io.OutputStream } stream
-			 * @returns { slime.jrunscript.shell.internal.run.OutputDestination }
-			 */
-			var getRawDestination = function(stream) {
-				return {
-					stream: stream,
-					close: function() {
-					}
-				}
-			}
 
 			rv.input = p.input;
 
@@ -162,6 +136,11 @@
 				return true;
 			}
 
+			/**
+			 *
+			 * @param { slime.$api.Events<slime.jrunscript.shell.internal.run.Events> } events
+			 * @param { "output" | "error" } stream
+			 */
 			var destinationFactory = function(events, stream) {
 				/**
 				 * @param { slime.jrunscript.shell.invocation.OutputStreamConfiguration } configuration
@@ -171,7 +150,19 @@
 					if (isString(configuration)) {
 						return getStringBufferDestination();
 					} else if (isLineListener(configuration)) {
-						return getLineBufferDestination(events, stream, configuration.line);
+						var destination = getLineBufferDestination(events, stream);
+						var handler = function(e) {
+							configuration.line(e.detail.line);
+						};
+						events.listeners.add(toStreamEventType(stream), handler);
+						destination.close = (function(was) {
+							return function() {
+								var rv = was.apply(this,arguments);
+								events.listeners.remove(toStreamEventType(stream), handler);
+								return rv;
+							}
+						})(destination.close);
+						return destination;
 					} else if (isRaw(configuration)) {
 						return getRawDestination(configuration);
 					}
