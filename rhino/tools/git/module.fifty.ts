@@ -702,7 +702,7 @@ namespace slime.jrunscript.git {
 			invocation: (p: {
 				client: Client,
 				invocation: Invocation
-			}) => slime.jrunscript.shell.Invocation
+			}) => slime.jrunscript.shell.old.Invocation
 		}
 	}
 

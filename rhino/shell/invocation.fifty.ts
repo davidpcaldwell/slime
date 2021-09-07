@@ -5,63 +5,86 @@
 //	END LICENSE
 
 namespace slime.jrunscript.shell {
-	/**
-	 * A fully-specified invocation of a command to be run in an external process.
-	 */
-	 export interface Invocation {
+	export namespace old {
 		/**
-		 * The command to run.
+		 * A fully-specified invocation of a command to be run in an external process.
 		 */
-		command: string
+		export interface Invocation {
+			/**
+			 * The command to run.
+			 */
+			command: string
 
-		/**
-		 * The arguments to pass to the command.
-		 */
-		arguments: string[]
+			/**
+			 * The arguments to pass to the command.
+			 */
+			arguments: string[]
 
-		/**
-		 * The environment to pass to the command.
-		 */
-		environment: {
-			[name: string]: string
+			/**
+			 * The environment to pass to the command.
+			 */
+			environment: {
+				[name: string]: string
+			}
+
+			/**
+			 * The working directory to use when running the command.
+			 */
+			directory: slime.jrunscript.file.Directory
+
+			stdio: invocation.old.Stdio
 		}
-
-		/**
-		 * The working directory to use when running the command.
-		 */
-		directory: slime.jrunscript.file.Directory
-
-		stdio: invocation.Stdio
 	}
 
 	export namespace invocation {
 		export type Token = string | slime.jrunscript.file.Pathname | slime.jrunscript.file.Node
 
-		export type OutputStreamToStream = slime.jrunscript.runtime.io.OutputStream
-		export type OutputStreamToString = StringConstructor
-		export type OutputStreamToLines = { line: (line: string) => void }
-		export type OutputStreamConfiguration = OutputStreamToStream | OutputStreamToString | OutputStreamToLines
+		export type Input = string | slime.jrunscript.runtime.io.InputStream
 
-		/**
-		 * Specifies the standard input, output, and error streams to use for an invocation.
-		 *
-		 * For the output streams:
-		 * * if the global `String` object is used as the value, the stream's output will be captured as a string and returned along with the result of the subprocess.
-		 * * if an object with a `line()` function is used as the value, the output will be buffered and the given object will receive a callback for each line of output.
-		 *
-		 * For the input stream:
-		 * * if the value is a string, that string will be provided on the standard input stream for the subprocess.
-		 */
-		export interface Stdio {
-			output?: OutputStreamConfiguration
-			error?: OutputStreamConfiguration
-			input?: string | slime.jrunscript.runtime.io.InputStream
+		export namespace old {
+			export type OutputStreamToStream = slime.jrunscript.runtime.io.OutputStream
+			export type OutputStreamToString = StringConstructor
+			export type OutputStreamToLines = { line: (line: string) => void }
+			export type OutputStreamConfiguration = OutputStreamToStream | OutputStreamToString | OutputStreamToLines
+
+			/**
+			 * Specifies the standard input, output, and error streams to use for an invocation.
+			 *
+			 * For the output streams:
+			 * * if the global `String` object is used as the value, the stream's output will be captured as a string and returned along with the result of the subprocess.
+			 * * if an object with a `line()` function is used as the value, the output will be buffered and the given object will receive a callback for each line of output.
+			 *
+			 * For the input stream:
+			 * * if the value is a string, that string will be provided on the standard input stream for the subprocess.
+			 */
+			export interface Stdio {
+				output?: OutputStreamConfiguration
+				error?: OutputStreamConfiguration
+				input?: Input
+			}
+
+			/**
+			 * Type used by callers to specify {@link Invocation}s, without requiring boilerplate defaults; only the `command`
+			 * property is required.
+			 */
+			export interface Argument {
+				command: slime.jrunscript.shell.invocation.Argument["command"]
+				arguments?: slime.jrunscript.shell.invocation.Argument["arguments"]
+				environment?: slime.jrunscript.shell.invocation.Argument["environment"]
+				directory?: slime.jrunscript.shell.invocation.Argument["directory"]
+
+				/**
+				 * The standard I/O streams to supply to the subprocess. If unspecified, or if any properties are unspecified,
+				 * defaults will be used. The defaults are:
+				 *
+				 * * `input`: `null`
+				 * * `output`: This process's standard output stream
+				 * * `error`: This process's standard error stream
+				 */
+				stdio?: slime.jrunscript.shell.old.Invocation["stdio"]
+			}
 		}
 
-		/**
-		 * Type used by callers to specify {@link Invocation}s, without requiring boilerplate defaults; only the `command`
-		 * property is required.
-		 */
 		export interface Argument {
 			/**
 			 * The command to run.
@@ -76,24 +99,20 @@ namespace slime.jrunscript.shell {
 			/**
 			 * The environment to supply to the command. If not specified, this process's environment will be provided.
 			 */
-			environment?: Invocation["environment"]
+			environment?: slime.jrunscript.shell.old.Invocation["environment"]
 
 			/**
 			 * The working directory in which the command will be executed. If not specified, this process's working directory
 			 * will be provided.
 			 */
-			directory?: Invocation["directory"]
+			directory?: slime.jrunscript.shell.old.Invocation["directory"]
 
-			/**
-			 * The standard I/O streams to supply to the subprocess. If unspecified, or if any properties are unspecified,
-			 * defaults will be used. The defaults are:
-			 *
-			 * * `input`: `null`
-			 * * `output`: This process's standard output stream
-			 * * `error`: This process's standard error stream
-			 */
-			stdio?: Invocation["stdio"]
-		}
+			stdio?: {
+				input: Input
+				output: slime.jrunscript.shell.run.OutputCapture
+				error: slime.jrunscript.shell.run.OutputCapture
+			}
+		 }
 	}
 
 	export interface Exports {
@@ -106,7 +125,7 @@ namespace slime.jrunscript.shell {
 			 sudo: (settings?: {
 				 nocache?: boolean
 				 askpass?: string | slime.jrunscript.file.File
-			 }) => (p: Invocation) => Invocation
+			 }) => (p: slime.jrunscript.shell.old.Invocation) => slime.jrunscript.shell.old.Invocation
 
 			 toBashScript: () => (p: {
 				command: string | slime.jrunscript.file.File
@@ -129,7 +148,7 @@ namespace slime.jrunscript.shell {
 				var verify = fifty.verify;
 
 				fifty.run(function() {
-					var sudoed = subject.invocation.sudo()(jsh.shell.Invocation({
+					var sudoed = subject.invocation.sudo()(jsh.shell.Invocation.old({
 						command: "ls"
 					}));
 
@@ -141,7 +160,7 @@ namespace slime.jrunscript.shell {
 				fifty.run(function askpass() {
 					var sudoed = subject.invocation.sudo({
 						askpass: "/path/to/askpass"
-					})(jsh.shell.Invocation({
+					})(jsh.shell.Invocation.old({
 						command: "ls"
 					}));
 
@@ -164,12 +183,12 @@ namespace slime.jrunscript.shell.internal.invocation {
 		run: slime.jrunscript.shell.internal.run.Export
 	}
 
-	export type Configuration = Pick<slime.jrunscript.shell.invocation.Argument, "command" | "arguments">
+	export type Configuration = Pick<slime.jrunscript.shell.invocation.old.Argument, "command" | "arguments">
 
 	export type StdioWithInputFixed = {
 		input: slime.jrunscript.runtime.io.InputStream
-		output: slime.jrunscript.shell.invocation.Stdio["output"]
-		error: slime.jrunscript.shell.invocation.Stdio["error"]
+		output: slime.jrunscript.shell.invocation.old.Stdio["output"]
+		error: slime.jrunscript.shell.invocation.old.Stdio["error"]
 	}
 
 	export interface Export {
@@ -177,22 +196,24 @@ namespace slime.jrunscript.shell.internal.invocation {
 			BadCommandToken: slime.$api.Error.Type<TypeError>
 		}
 
-		updateForStringInput: (p: slime.jrunscript.shell.invocation.Stdio) => slime.jrunscript.shell.internal.invocation.StdioWithInputFixed
+		toInputStream: (p: slime.jrunscript.shell.invocation.Input) => slime.jrunscript.runtime.io.InputStream
 
-		toContext: (
-			p: slime.jrunscript.shell.invocation.Argument,
-			parentEnvironment: slime.jrunscript.host.Environment,
-			parentStdio: slime.jrunscript.shell.Stdio
-		) => slime.jrunscript.shell.internal.run.subprocess.Context
+		updateForStringInput: (p: slime.jrunscript.shell.invocation.old.Stdio) => slime.jrunscript.shell.internal.invocation.StdioWithInputFixed
 
 		fallbackToParentStdio: (
 			p: slime.jrunscript.shell.internal.invocation.StdioWithInputFixed,
 			parent: slime.jrunscript.shell.Stdio
 		) => void
 
-		isLineListener: (p: slime.jrunscript.shell.invocation.OutputStreamConfiguration) => p is slime.jrunscript.shell.invocation.OutputStreamToLines
+		toStdioConfiguration: (declaration: slime.jrunscript.shell.internal.invocation.StdioWithInputFixed) => slime.jrunscript.shell.run.StdioConfiguration
 
-		toStdioConfiguration: (declaration: slime.jrunscript.shell.internal.invocation.StdioWithInputFixed) => slime.jrunscript.shell.internal.run.StdioConfiguration
+		toContext: (
+			p: slime.jrunscript.shell.invocation.old.Argument,
+			parentEnvironment: slime.jrunscript.host.Environment,
+			parentStdio: slime.jrunscript.shell.Stdio
+		) => slime.jrunscript.shell.run.Context
+
+		isLineListener: (p: slime.jrunscript.shell.invocation.old.OutputStreamConfiguration) => p is slime.jrunscript.shell.invocation.old.OutputStreamToLines
 
 		toConfiguration: (
 			p: Configuration

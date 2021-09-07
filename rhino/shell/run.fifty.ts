@@ -17,8 +17,6 @@ namespace slime.jrunscript.shell.internal.run {
 		stdio: slime.jrunscript.shell.run.Output
 	}
 
-	export type OutputCapture = "string" | "line" | slime.jrunscript.runtime.io.OutputStream;
-
 	export interface OutputDestination {
 		stream: slime.jrunscript.runtime.io.OutputStream
 		close: () => void
@@ -31,34 +29,8 @@ namespace slime.jrunscript.shell.internal.run {
 	 */
 	export type Stdio = Required<slime.jrunscript.shell.Stdio> & { close: () => slime.jrunscript.shell.run.Output }
 
-	export interface StdioConfiguration {
-		input: slime.jrunscript.runtime.io.InputStream
-		output: OutputCapture
-		error: OutputCapture
-	}
-
-	export type Line = {
-		line: string
-	}
-
 	export interface Listener {
 		close: () => void
-	}
-
-	export interface Events {
-		start: {
-			pid: number
-			kill: () => void
-		}
-
-		stdout: Line
-
-		stderr: Line
-
-		exit: {
-			status: number
-			stdio?: slime.jrunscript.shell.run.Output
-		}
 	}
 
 	export namespace java {
@@ -74,41 +46,66 @@ namespace slime.jrunscript.shell.internal.run {
 		}
 	}
 
-	export namespace subprocess {
-		export interface Context {
-			environment: slime.jrunscript.host.Environment
-			directory: slime.jrunscript.file.Directory
-			stdio: StdioConfiguration
-		}
-
-		export interface Configuration {
-			command: string
-			arguments: string[]
-		}
-	}
-
 	export interface Export {
-		run: (
-			context: subprocess.Context,
-			configuration: subprocess.Configuration
-		) => slime.$api.fp.impure.Tell<slime.jrunscript.shell.internal.run.Events>
-
+		run: (p: slime.jrunscript.shell.run.Invocation) => slime.$api.fp.impure.Tell<slime.jrunscript.shell.run.Events>
 
 		old: {
-			buildStdio: (p: StdioConfiguration) => (events: slime.$api.Events<Events>) => Stdio
+			buildStdio: (p: slime.jrunscript.shell.run.StdioConfiguration) => (events: slime.$api.Events<slime.jrunscript.shell.run.Events>) => Stdio
 			run: (
-				context: subprocess.Context,
-				configuration: subprocess.Configuration,
+				context: slime.jrunscript.shell.run.Context,
+				configuration: slime.jrunscript.shell.run.Configuration,
 				module: {
 					events: any
 				},
 				events: slime.jrunscript.shell.run.old.Events,
 				p: slime.jrunscript.shell.run.old.Argument,
 				invocation: slime.jrunscript.shell.run.old.Argument,
-				isLineListener: (p: slime.jrunscript.shell.invocation.OutputStreamConfiguration) => p is slime.jrunscript.shell.invocation.OutputStreamToLines
+				isLineListener: (p: slime.jrunscript.shell.invocation.old.OutputStreamConfiguration) => p is slime.jrunscript.shell.invocation.old.OutputStreamToLines
 			) => Result
 		}
 	}
 
 	export type Factory = slime.loader.Product<Context,Export>
+
+	(
+		function(
+			fifty: slime.fifty.test.kit
+		) {
+			var loader: Factory = fifty.$loader.factory("run.js");
+			var subject: Export = loader({
+				api: {
+					java: fifty.global.jsh.java,
+					io: fifty.global.jsh.io
+				}
+			});
+
+			fifty.tests.suite = function() {
+				var tell = subject.run({
+					context: {
+						environment: fifty.global.jsh.shell.environment,
+						directory: fifty.$loader.getRelativePath(".").directory,
+						stdio: {
+							input: null,
+							output: "string",
+							error: fifty.global.jsh.shell.stdio.error
+						}
+					},
+					configuration: {
+						command: "ls",
+						arguments: []
+					}
+				});
+				tell({
+					exit: function(e) {
+						var listing = e.detail.stdio.output.split("\n");
+						listing = listing.slice(0, listing.length-1);
+						fifty.verify(e).detail.status.is(0);
+						fifty.verify(listing).evaluate(function(array) { return array.indexOf("run.fifty.ts") != -1; }).is(true);
+					}
+				})
+			}
+		}
+	//@ts-ignore
+	)(fifty);
 }
+

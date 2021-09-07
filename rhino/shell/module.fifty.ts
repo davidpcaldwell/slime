@@ -163,8 +163,52 @@ namespace slime.jrunscript.shell {
 			error?: string
 		}
 
+		export type Line = {
+			line: string
+		}
+
+		export interface Events {
+			start: {
+				pid: number
+				kill: () => void
+			}
+
+			stdout: Line
+
+			stderr: Line
+
+			exit: {
+				status: number
+				stdio?: slime.jrunscript.shell.run.Output
+			}
+		}
+
+		export type OutputCapture = "string" | "line" | slime.jrunscript.runtime.io.OutputStream;
+
+		export interface StdioConfiguration {
+			input: slime.jrunscript.runtime.io.InputStream
+			output: OutputCapture
+			error: OutputCapture
+		}
+
+		export interface Context {
+			environment: slime.jrunscript.host.Environment
+			directory: slime.jrunscript.file.Directory
+			stdio: StdioConfiguration
+		}
+
+		export interface Configuration {
+			command: string
+			arguments: string[]
+		}
+
+		export interface Invocation {
+			context: Context
+			configuration: Configuration
+		}
+
 		export namespace old {
-			export interface Argument extends invocation.Argument {
+			export interface Argument extends invocation.old.Argument {
 				as?: {
 					user: string
 				}
@@ -178,11 +222,11 @@ namespace slime.jrunscript.shell {
 				/** @deprecated */
 				workingDirectory?: slime.jrunscript.file.Directory
 				/** @deprecated */
-				stdout?: invocation.Argument["stdio"]["output"]
+				stdout?: invocation.old.Argument["stdio"]["output"]
 				/** @deprecated */
-				stdin?: invocation.Argument["stdio"]["input"]
+				stdin?: invocation.old.Argument["stdio"]["input"]
 				/** @deprecated */
-				stderr?: invocation.Argument["stdio"]["error"]
+				stderr?: invocation.old.Argument["stdio"]["error"]
 			}
 
 			export interface Result {
@@ -202,7 +246,7 @@ namespace slime.jrunscript.shell {
 				export interface Event {
 					command: slime.jrunscript.shell.invocation.Token
 					arguments?: slime.jrunscript.shell.invocation.Token[]
-					environment?: slime.jrunscript.shell.Invocation["environment"]
+					environment?: slime.jrunscript.shell.old.Invocation["environment"]
 					directory?: slime.jrunscript.file.Directory
 				}
 
@@ -405,7 +449,7 @@ namespace slime.jrunscript.shell {
 		 * Creates an object that can execute invocations under `sudo` using the settings given.
 		 */
 		sudo: (settings?: Parameters<Exports["invocation"]["sudo"]>[0]) => {
-			run: (invocation: invocation.Argument) => any
+			run: (invocation: invocation.old.Argument) => any
 		}
 
 		//	fires started, exception, stdout, stderr
@@ -480,19 +524,21 @@ namespace slime.jrunscript.shell {
 	export type Loader = slime.loader.Product<Context,Exports>;
 
 	export interface Exports {
-		/**
-		 * Creates a fully-specified {@link Invocation} from a given {@link invocation.Argument} and the surrounding context.
-		 */
-		Invocation: (p: invocation.Argument) => Invocation
+		Invocation: {
+			/**
+			 * Creates a fully-specified {@link Invocation} from a given {@link invocation.Argument} and the surrounding context.
+			 */
+			old: (p: invocation.old.Argument) => old.Invocation
+
+			create: (p: invocation.Argument) => run.Invocation
+		}
 	}
 
 	export interface World {
-		run: (invocation: Invocation) => slime.$api.fp.impure.Tell<{
-			exit: number
-		}>
+		run: (invocation: run.Invocation) => slime.$api.fp.impure.Tell<run.Events>
 
 		/** @deprecated Replaced by {@link Exports["Invocation"]} because it does not rely on external state. */
-		Invocation: (p: invocation.Argument) => Invocation
+		Invocation: (p: invocation.old.Argument) => old.Invocation
 	}
 
 	(
@@ -503,7 +549,7 @@ namespace slime.jrunscript.shell {
 			const subject = fifty.global.jsh.shell;
 
 			fifty.tests.sandbox = function() {
-				var bogus: Invocation = subject.world.Invocation({
+				var bogus = subject.Invocation.create({
 					command: "foobarbaz"
 				});
 
@@ -516,26 +562,29 @@ namespace slime.jrunscript.shell {
 				var directory = fifty.$loader.getRelativePath(".").directory;
 
 				if (fifty.global.jsh.shell.PATH.getCommand("ls")) {
-					var ls = subject.world.Invocation({
+					var ls = subject.Invocation.create({
 						command: "ls",
 						directory: directory
 					});
 					var status: number;
 					subject.world.run(ls)({
 						exit: function(e) {
-							status = e.detail;
+							status = e.detail.status;
 						}
 					});
 					fifty.verify(status).is(0);
 
 					fifty.run(function checkExitStatus() {
+						debugger;
 						var lserror = $api.Object.compose(ls, {
-							arguments: ["--foo"]
+							configuration: $api.Object.compose(ls.configuration, {
+								arguments: ["--foo"]
+							})
 						});
 						var status: number;
 						subject.world.run(lserror)({
 							exit: function(e) {
-								status = e.detail;
+								status = e.detail.status;
 							}
 						});
 						fifty.verify(status).is(1);
@@ -543,11 +592,22 @@ namespace slime.jrunscript.shell {
 
 					fifty.run(function checkErrorOnNonZero() {
 						var lserror = $api.Object.compose(ls, {
-							arguments: ["--foo"]
+							configuration: $api.Object.compose(ls.configuration, {
+								arguments: ["--foo"]
+							})
 						});
 						var tell = subject.world.run(lserror);
-						fifty.verify(tell).evaluate(function(f) { return f(); }).threw.type(Error);
-						fifty.verify(tell).evaluate(function(f) { return f(); }).threw.message.is("Non-zero exit status: 1");
+						//	TODO	this listener functionality was previously provided by default; will want to improve API over
+						//			time so that it's harder to accidentally ignore non-zero exit status
+						var listener: slime.$api.events.Handler<slime.jrunscript.shell.run.Events> = {
+							exit: function(e) {
+								if (e.detail.status != 0) {
+									throw new Error("Non-zero exit status: " + e.detail.status);
+								}
+							}
+						}
+						fifty.verify(tell).evaluate(function(f) { return f(listener); }).threw.type(Error);
+						fifty.verify(tell).evaluate(function(f) { return f(listener); }).threw.message.is("Non-zero exit status: 1");
 					});
 				}
 
@@ -578,16 +638,16 @@ namespace slime.jrunscript.shell {
 						var argument: invocation.Argument = {
 							command: "ls"
 						};
-						var invocation = fifty.global.jsh.shell.world.Invocation(argument);
+						var invocation = fifty.global.jsh.shell.Invocation.create(argument);
 						fifty.verify(invocation, "invocation", function(its) {
-							its.command.is("ls");
-							its.arguments.is.type("object");
-							its.arguments.length.is(0);
+							its.configuration.command.is("ls");
+							its.configuration.arguments.is.type("object");
+							its.configuration.arguments.length.is(0);
 							//	TODO	environment
-							its.directory.evaluate(isDirectory(fifty.global.jsh.shell.PWD)).is(true);
-							its.stdio.input.evaluate(it.is(null)).is(true);
-							its.stdio.output.evaluate(it.is(fifty.global.jsh.shell.stdio.output)).is(true);
-							its.stdio.error.evaluate(it.is(fifty.global.jsh.shell.stdio.error)).is(true);
+							its.context.directory.evaluate(isDirectory(fifty.global.jsh.shell.PWD)).is(true);
+							its.context.stdio.input.evaluate(it.is(null)).is(true);
+							its.context.stdio.output.evaluate(it.is(fifty.global.jsh.shell.stdio.output)).is(true);
+							its.context.stdio.error.evaluate(it.is(fifty.global.jsh.shell.stdio.error)).is(true);
 						});
 					});
 
@@ -598,13 +658,13 @@ namespace slime.jrunscript.shell {
 							//	TODO	environment
 							directory: directory
 						};
-						var invocation = fifty.global.jsh.shell.world.Invocation(argument);
+						var invocation = fifty.global.jsh.shell.Invocation.create(argument);
 						fifty.verify(invocation, "invocation", function(its) {
-							its.command.is("/bin/ls");
-							its.arguments.is.type("object");
-							its.arguments.length.is(1);
-							its.arguments[0].is(directory.getRelativePath("invocation.fifty.ts").toString());
-							its.directory.evaluate(isDirectory(directory)).is(true);
+							its.configuration.command.is("/bin/ls");
+							its.configuration.arguments.is.type("object");
+							its.configuration.arguments.length.is(1);
+							its.configuration.arguments[0].is(directory.getRelativePath("invocation.fifty.ts").toString());
+							its.context.directory.evaluate(isDirectory(directory)).is(true);
 						});
 					});
 				});

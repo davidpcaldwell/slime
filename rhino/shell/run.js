@@ -39,7 +39,7 @@
 		};
 
 		/**
-		 * @param { slime.$api.Events<slime.jrunscript.shell.internal.run.Events> } events
+		 * @param { slime.$api.Events<slime.jrunscript.shell.run.Events> } events
 		 * @param { "output" | "error" } stream
 		 * @returns { slime.jrunscript.shell.internal.run.OutputDestination }
 		 */
@@ -84,8 +84,8 @@
 
 		/**
 		 *
-		 * @param { slime.jrunscript.shell.internal.run.StdioConfiguration } p
-		 * @returns { (events: slime.$api.Events<slime.jrunscript.shell.internal.run.Events>) => slime.jrunscript.shell.internal.run.Stdio }
+		 * @param { slime.jrunscript.shell.run.StdioConfiguration } p
+		 * @returns { (events: slime.$api.Events<slime.jrunscript.shell.run.Events>) => slime.jrunscript.shell.internal.run.Stdio }
 		 */
 		function buildStdio(p) {
 			/** @type { slime.jrunscript.shell.internal.run.Stdio } */
@@ -116,12 +116,12 @@
 
 			/**
 			 *
-			 * @param { slime.$api.Events<slime.jrunscript.shell.internal.run.Events> } events
+			 * @param { slime.$api.Events<slime.jrunscript.shell.run.Events> } events
 			 * @param { "output" | "error" } stream
 			 */
 			var destinationFactory = function(events, stream) {
 				/**
-				 * @param { slime.jrunscript.shell.internal.run.OutputCapture } configuration
+				 * @param { slime.jrunscript.shell.run.OutputCapture } configuration
 				 * @returns { slime.jrunscript.shell.internal.run.OutputDestination }
 				 */
 				var getDestination = function(configuration) {
@@ -151,7 +151,6 @@
 
 			/** @type { ReturnType<buildStdio>}  */
 			var returned = function(events) {
-				debugger;
 				["output","error"].forEach(
 					/** @param { "output" | "error" } stream */
 					function(stream) {
@@ -234,18 +233,17 @@
 
 		/**
 		 *
-		 * @param { slime.jrunscript.shell.internal.run.subprocess.Context } context
-		 * @param { slime.jrunscript.shell.internal.run.subprocess.Configuration } configuration
-		 * @returns { slime.$api.fp.impure.Tell<slime.jrunscript.shell.internal.run.Events> }
+		 * @param { slime.jrunscript.shell.run.Context } context
+		 * @param { slime.jrunscript.shell.run.Configuration } configuration
+		 * @returns { slime.$api.fp.impure.Tell<slime.jrunscript.shell.run.Events> }
 		 */
 		var run = function(context,configuration) {
 			return $api.Function.impure.tell(
 				/**
 				 *
-				 * @param { slime.$api.Events<slime.jrunscript.shell.internal.run.Events> } events
+				 * @param { slime.$api.Events<slime.jrunscript.shell.run.Events> } events
 				 */
 				function(events) {
-					debugger;
 					var stdio = buildStdio(context.stdio)(events);
 					//	TODO	could throw exception on launch; should deal with it
 					var _subprocess = Packages.inonit.system.OperatingSystem.get().start(
@@ -332,7 +330,9 @@
 		}
 
 		$export({
-			run: run,
+			run: function(invocation) {
+				return run(invocation.context,invocation.configuration);
+			},
 			old: {
 				buildStdio: buildStdio,
 				run: oldRun

@@ -1356,7 +1356,7 @@
 
 		$exports.Client = {
 			invocation: function(p) {
-				/** @type { slime.jrunscript.shell.invocation.Argument } */
+				/** @type { slime.jrunscript.shell.invocation.old.Argument } */
 				var rv = {
 					command: p.client.command,
 					arguments: $api.Array.build(function(rv) {
@@ -1364,7 +1364,7 @@
 						if (p.invocation.arguments) rv.push.apply(rv, p.invocation.arguments);
 					})
 				};
-				return $context.api.shell.Invocation(rv);
+				return $context.api.shell.Invocation.old(rv);
 			}
 		}
 	}

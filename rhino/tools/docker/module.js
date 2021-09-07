@@ -54,7 +54,7 @@
 						if (p.sudo) {
 							invocation = p.library.shell.invocation.sudo({
 								askpass: p.sudo.askpass
-							})(p.library.shell.Invocation(invocation))
+							})(p.library.shell.Invocation.old(invocation))
 						}
 						p.library.shell.run(invocation);
 						events.fire("installed", p.destination.directory);

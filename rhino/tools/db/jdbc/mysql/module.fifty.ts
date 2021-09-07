@@ -62,7 +62,7 @@ namespace slime.jrunscript.db.mysql {
 		export type Client = {
 			command: (p: Server & Credentials & {
 				execute?: string
-			}) => slime.jrunscript.shell.invocation.Argument
+			}) => slime.jrunscript.shell.invocation.old.Argument
 		}
 	}
 

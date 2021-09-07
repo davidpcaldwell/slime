@@ -114,7 +114,7 @@
 		/**
 		 *
 		 * @param { slime.jrunscript.shell.run.old.Argument } p
-		 * @return { slime.jrunscript.shell.invocation.Argument["stdio"] }
+		 * @return { slime.jrunscript.shell.invocation.old.Argument["stdio"] }
 		 */
 		function extractStdioIncludingDeprecatedForm(p) {
 			if (typeof(p.stdio) != "undefined") return p.stdio;
@@ -145,36 +145,6 @@
 
 			p.stdio = extractStdioIncludingDeprecatedForm(p);
 
-			/**
-			 *
-			 * @param { slime.jrunscript.shell.run.old.Events } oldEvents
-			 * @returns { slime.$api.Events<slime.jrunscript.shell.internal.run.Events> }
-			 */
-			var OldEventsAdapter = function(oldEvents) {
-				var oldFields = {
-					command: p.command,
-					arguments: p.arguments,
-					environment: p.environment,
-					directory: p.directory
-				}
-				/** @type { slime.$api.events.Handler<slime.jrunscript.shell.internal.run.Events> } */
-				var handler = {
-					start: function(e) {
-						oldEvents.fire("start", $api.Object.compose(oldFields, {
-							pid: e.detail.pid,
-							kill: e.detail.kill
-						}))
-					},
-					exit: function(e) {
-						oldEvents.fire("terminate", $api.Object.compose(oldFields, {
-							status: e.detail.status
-						}));
-					}
-				}
-
-				return $api.Events.toHandler(handler).emitter;
-			}
-
 			var context = scripts.invocation.toContext(p, $exports.environment, $context.stdio);
 
 			/** @type { slime.jrunscript.shell.internal.module.Invocation } */
@@ -198,8 +168,8 @@
 					};
 
 					/**
-					 * @param { slime.jrunscript.shell.invocation.Argument["command"] } command
-					 * @param { slime.jrunscript.shell.invocation.Argument["arguments"] } args
+					 * @param { slime.jrunscript.shell.invocation.old.Argument["command"] } command
+					 * @param { slime.jrunscript.shell.invocation.old.Argument["arguments"] } args
 					 * @returns { slime.jrunscript.shell.internal.run.java.Configuration }
 					 */
 					var toConfiguration = function(command,args) {
@@ -216,8 +186,8 @@
 
 						/**
 						 *
-						 * @param { slime.jrunscript.shell.invocation.Argument["command"] } command
-						 * @param { slime.jrunscript.shell.invocation.Argument["arguments"] } args
+						 * @param { slime.jrunscript.shell.invocation.old.Argument["command"] } command
+						 * @param { slime.jrunscript.shell.invocation.old.Argument["arguments"] } args
 						 */
 						var toErrorMessage = function(command,args) {
 							/** @type { slime.jrunscript.shell.invocation.Token[] } */
@@ -360,7 +330,7 @@
 		$exports.sudo = function(settings) {
 			return {
 				run: function(invocation) {
-					var toRun = $exports.invocation.sudo(settings)($exports.Invocation(invocation));
+					var toRun = $exports.invocation.sudo(settings)($exports.Invocation.old(invocation));
 					return $exports.run(toRun);
 				}
 			}
@@ -760,35 +730,58 @@
 
 		$exports.world = {
 			run: function(invocation) {
-				return function(on) {
-					var tell = $api.Function.impure.tell(function(events) {
-						var result = $exports.run(
-							$api.Object.compose(
-								invocation,
-								{
-									evaluate: function(result) {
-										return result;
-									}
-								}
-							)
-						);
-						events.fire("exit", result.status);
-					});
-					if (!on) on = {};
-					if (!on.exit) {
-						on.exit = function(e) {
-							if (e.detail !== 0) {
-								throw new Error("Non-zero exit status: " + e.detail);
-							}
-						}
-					}
-					return tell(on);
-				}
+				return scripts.run.run(invocation);
+				// return function(on) {
+				// 	var tell = $api.Function.impure.tell(function(events) {
+				// 		var result = $exports.run(
+				// 			$api.Object.compose(
+				// 				invocation,
+				// 				{
+				// 					evaluate: function(result) {
+				// 						return result;
+				// 					}
+				// 				}
+				// 			)
+				// 		);
+				// 		events.fire("exit", result.status);
+				// 	});
+				// 	if (!on) on = {};
+				// 	if (!on.exit) {
+				// 		on.exit = function(e) {
+				// 			if (e.detail !== 0) {
+				// 				throw new Error("Non-zero exit status: " + e.detail);
+				// 			}
+				// 		}
+				// 	}
+				// 	return tell(on);
+				// }
 			},
 			Invocation: $api.deprecate(Invocation)
 		}
 
-		$exports.Invocation = Invocation;
+		$exports.Invocation = {
+			old: Invocation,
+			create: function(p) {
+				return {
+					context: {
+						environment: (p.environment) ? p.environment : $exports.environment,
+						directory: (p.directory) ? p.directory : $exports.PWD,
+						stdio: {
+							input: (function() {
+								if (p.stdio && p.stdio.input) return scripts.invocation.toInputStream(p.stdio.input);
+								return null;
+							})(),
+							output: (p.stdio && p.stdio.output) ? p.stdio.output : $context.stdio.output,
+							error: (p.stdio && p.stdio.error) ? p.stdio.error : $context.stdio.error,
+						}
+					},
+					configuration: {
+						command: String(p.command),
+						arguments: (p.arguments) ? p.arguments.map(String) : []
+					}
+				}
+			}
+		}
 	}
 //@ts-ignore
 )(Packages,$api,$context,$loader,$exports);

@@ -77,22 +77,29 @@
 		}
 
 		/**
-		 * @param { slime.jrunscript.shell.invocation.Stdio } p
+		 *
+		 * @param { slime.jrunscript.shell.invocation.Input } p
+		 * @return { slime.jrunscript.runtime.io.InputStream }
+		 */
+		var toInputStream = function(p) {
+			if (typeof(p) == "string") {
+				var buffer = new $context.library.io.Buffer();
+				buffer.writeText().write(p);
+				buffer.close();
+				return buffer.readBinary();
+			} else {
+				return p;
+			}
+		}
+
+		/**
+		 * @param { slime.jrunscript.shell.invocation.old.Stdio } p
 		 * @return { slime.jrunscript.shell.internal.invocation.StdioWithInputFixed }
 		 */
 		var updateForStringInput = function(p) {
-			/** @type { slime.jrunscript.shell.internal.run.StdioConfiguration } */
+			/** @type { slime.jrunscript.shell.run.StdioConfiguration } */
 			return {
-				input: (function(p) {
-					if (typeof(p) == "string") {
-						var buffer = new $context.library.io.Buffer();
-						buffer.writeText().write(p);
-						buffer.close();
-						return buffer.readBinary();
-					} else {
-						return p;
-					}
-				})(p.input),
+				input: toInputStream(p.input),
 				output: p.output,
 				error: p.error
 			};
@@ -111,30 +118,30 @@
 		}
 
 		/**
-		 * @param { slime.jrunscript.shell.invocation.OutputStreamConfiguration } configuration
-		 * @return { configuration is slime.jrunscript.shell.invocation.OutputStreamToLines }
+		 * @param { slime.jrunscript.shell.invocation.old.OutputStreamConfiguration } configuration
+		 * @return { configuration is slime.jrunscript.shell.invocation.old.OutputStreamToLines }
 		 */
 		var isLineListener = function(configuration) {
 			return configuration && Object.prototype.hasOwnProperty.call(configuration, "line");
 		}
 
 		/**
-		 * @param { slime.jrunscript.shell.invocation.OutputStreamConfiguration } configuration
-		 * @return { configuration is slime.jrunscript.shell.invocation.OutputStreamToString }
+		 * @param { slime.jrunscript.shell.invocation.old.OutputStreamConfiguration } configuration
+		 * @return { configuration is slime.jrunscript.shell.invocation.old.OutputStreamToString }
 		 */
 		var isString = function(configuration) {
 			return configuration === String
 		};
 
 		/**
-		 * @param { slime.jrunscript.shell.invocation.OutputStreamConfiguration } configuration
+		 * @param { slime.jrunscript.shell.invocation.old.OutputStreamConfiguration } configuration
 		 * @return { configuration is slime.jrunscript.shell.invocation.OutputStreamToStream }
 		 */
 		var isRaw = function(configuration) {
 			return true;
 		}
 
-		/** @type { (configuration: slime.jrunscript.shell.invocation.OutputStreamConfiguration) => slime.jrunscript.shell.internal.run.OutputCapture } */
+		/** @type { (configuration: slime.jrunscript.shell.invocation.old.OutputStreamConfiguration) => slime.jrunscript.shell.run.OutputCapture } */
 		var toCapture = function(configuration) {
 			if (isLineListener(configuration)) {
 				return "line";
@@ -148,7 +155,7 @@
 		/**
 		 *
 		 * @param { slime.jrunscript.shell.internal.invocation.StdioWithInputFixed } declaration
-		 * @return { slime.jrunscript.shell.internal.run.StdioConfiguration }
+		 * @return { slime.jrunscript.shell.run.StdioConfiguration }
 		 */
 		function toStdioConfiguration(declaration) {
 			return {
@@ -159,10 +166,10 @@
 		}
 
 		/**
-		 * @param { Pick<slime.jrunscript.shell.invocation.Argument, "stdio" | "environment" | "directory"> } p
+		 * @param { Pick<slime.jrunscript.shell.invocation.old.Argument, "stdio" | "environment" | "directory"> } p
 		 * @param { slime.jrunscript.host.Environment } parentEnvironment
 		 * @param { slime.jrunscript.shell.Stdio } parentStdio
-		 * @returns { slime.jrunscript.shell.internal.run.subprocess.Context }
+		 * @returns { slime.jrunscript.shell.run.Context }
 		 */
 		var toContext = function(p, parentEnvironment, parentStdio) {
 			var stdio1 = updateForStringInput(p.stdio);
@@ -187,6 +194,7 @@
 			error: {
 				BadCommandToken: parseCommandToken.Error
 			},
+			toInputStream: toInputStream,
 			updateForStringInput: updateForStringInput,
 			toContext: toContext,
 			fallbackToParentStdio: fallbackToParentStdio,
