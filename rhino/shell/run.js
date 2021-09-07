@@ -83,7 +83,9 @@
 		}
 
 		/**
-		 * @type { slime.jrunscript.shell.internal.run.Export["buildStdio"] }
+		 *
+		 * @param { slime.jrunscript.shell.internal.run.StdioConfiguration } p
+		 * @returns { (events: slime.$api.Events<slime.jrunscript.shell.internal.run.Events>) => slime.jrunscript.shell.internal.run.Stdio }
 		 */
 		function buildStdio(p) {
 			/** @type { slime.jrunscript.shell.internal.run.Stdio } */
@@ -113,55 +115,31 @@
 			};
 
 			/**
-			 * @param { slime.jrunscript.shell.invocation.OutputStreamConfiguration } configuration
-			 * @return { configuration is slime.jrunscript.shell.invocation.OutputStreamToLines }
-			 */
-			var isLineListener = function(configuration) {
-				return configuration && Object.prototype.hasOwnProperty.call(configuration, "line");
-			}
-
-			/**
-			 * @param { slime.jrunscript.shell.invocation.OutputStreamConfiguration } configuration
-			 * @return { configuration is slime.jrunscript.shell.invocation.OutputStreamToString }
-			 */
-			var isString = function(configuration) {
-				return configuration === String
-			};
-
-			/**
-			 * @param { slime.jrunscript.shell.invocation.OutputStreamConfiguration } configuration
-			 * @return { configuration is slime.jrunscript.shell.invocation.OutputStreamToStream }
-			 */
-			var isRaw = function(configuration) {
-				return true;
-			}
-
-			/**
 			 *
 			 * @param { slime.$api.Events<slime.jrunscript.shell.internal.run.Events> } events
 			 * @param { "output" | "error" } stream
 			 */
 			var destinationFactory = function(events, stream) {
 				/**
-				 * @param { slime.jrunscript.shell.invocation.OutputStreamConfiguration } configuration
+				 * @param { slime.jrunscript.shell.internal.run.OutputCapture } configuration
 				 * @returns { slime.jrunscript.shell.internal.run.OutputDestination }
 				 */
 				var getDestination = function(configuration) {
-					if (isString(configuration)) {
+					if (configuration == "string") {
 						return getStringBufferDestination();
-					} else if (isLineListener(configuration)) {
+					} else if (configuration == "line") {
 						var destination = getLineBufferDestination(events, stream);
-						var handler = function(e) {
-							configuration.line(e.detail.line);
-						};
-						events.listeners.add(toStreamEventType(stream), handler);
-						destination.close = (function(was) {
-							return function() {
-								var rv = was.apply(this,arguments);
-								events.listeners.remove(toStreamEventType(stream), handler);
-								return rv;
-							}
-						})(destination.close);
+						// var handler = function(e) {
+						// 	configuration.line(e.detail.line);
+						// };
+						// events.listeners.add(toStreamEventType(stream), handler);
+						// destination.close = (function(was) {
+						// 	return function() {
+						// 		var rv = was.apply(this,arguments);
+						// 		events.listeners.remove(toStreamEventType(stream), handler);
+						// 		return rv;
+						// 	}
+						// })(destination.close);
 						return destination;
 					} else if (isRaw(configuration)) {
 						return getRawDestination(configuration);
@@ -173,7 +151,7 @@
 
 			/** @type { ReturnType<slime.jrunscript.shell.internal.run.Export["buildStdio"]>}  */
 			var returned = function(events) {
-
+				debugger;
 				["output","error"].forEach(
 					/** @param { "output" | "error" } stream */
 					function(stream) {
@@ -256,7 +234,7 @@
 
 		/**
 		 *
-		 * @param { slime.jrunscript.shell.internal.run.java.Context } context
+		 * @param { slime.jrunscript.shell.internal.run.SubprocessContext } context
 		 * @param { slime.jrunscript.shell.internal.run.java.Configuration } configuration
 		 * @returns { slime.$api.fp.impure.Tell<slime.jrunscript.shell.internal.run.Events> }
 		 */
@@ -267,9 +245,15 @@
 				 * @param { slime.$api.Events<slime.jrunscript.shell.internal.run.Events> } events
 				 */
 				function(events) {
+					debugger;
+					var stdio = buildStdio(context.stdio)(events);
 					//	TODO	could throw exception on launch; should deal with it
 					var _subprocess = Packages.inonit.system.OperatingSystem.get().start(
-						createJavaCommandContext(context),
+						createJavaCommandContext({
+							directory: context.directory,
+							environment: context.environment,
+							stdio: stdio
+						}),
 						createJavaCommandConfiguration(configuration)
 					);
 
@@ -301,11 +285,59 @@
 
 					events.fire("exit", {
 						status: listener.status,
-						stdio: context.stdio.close()
+						stdio: stdio.close()
 					});
 				}
 			);
 		};
+
+		/**
+		 * @param { slime.jrunscript.shell.invocation.OutputStreamConfiguration } configuration
+		 * @return { configuration is slime.jrunscript.shell.invocation.OutputStreamToLines }
+		 */
+		var isLineListener = function(configuration) {
+			return configuration && Object.prototype.hasOwnProperty.call(configuration, "line");
+		}
+
+		/**
+		 * @param { slime.jrunscript.shell.invocation.OutputStreamConfiguration } configuration
+		 * @return { configuration is slime.jrunscript.shell.invocation.OutputStreamToString }
+		 */
+		var isString = function(configuration) {
+			return configuration === String
+		};
+
+		/**
+		 * @param { slime.jrunscript.shell.invocation.OutputStreamConfiguration } configuration
+		 * @return { configuration is slime.jrunscript.shell.invocation.OutputStreamToStream }
+		 */
+		var isRaw = function(configuration) {
+			return true;
+		}
+
+		/** @type { (configuration: slime.jrunscript.shell.invocation.OutputStreamConfiguration) => slime.jrunscript.shell.internal.run.OutputCapture } */
+		var toCapture = function(configuration) {
+			if (isLineListener(configuration)) {
+				return "line";
+			} else if (isString(configuration)) {
+				return "string";
+			} else {
+				return configuration;
+			}
+		}
+
+		/**
+		 *
+		 * @param { Parameters<slime.jrunscript.shell.internal.run.Export["buildStdio"]>[0] } declaration
+		 * @return { slime.jrunscript.shell.internal.run.StdioConfiguration }
+		 */
+		function toStdioConfiguration(declaration) {
+			return {
+				input: declaration.input,
+				output: toCapture(declaration.output),
+				error: toCapture(declaration.error)
+			};
+		}
 
 		/** @type { slime.jrunscript.shell.internal.run.Export["old"]["run"] } */
 		function oldRun(context, configuration, module, events, p, invocation) {
@@ -330,6 +362,16 @@
 					module.events.fire("run.start", startEvent);
 					events.fire("start", startEvent);
 				},
+				stdout: function(e) {
+					if (p.stdio && p.stdio.output && isLineListener(p.stdio.output)) {
+						p.stdio.output.line(e.detail.line);
+					}
+				},
+				stderr: function(e) {
+					if (p.stdio && p.stdio.error && isLineListener(p.stdio.error)) {
+						p.stdio.error.line(e.detail.line);
+					}
+				},
 				exit: function(e) {
 					rv = $api.Object.compose(invocation, e.detail);
 					events.fire("terminate", rv);
@@ -339,7 +381,10 @@
 		}
 
 		$export({
-			buildStdio: buildStdio,
+			buildStdio: function(p) {
+				return buildStdio(toStdioConfiguration(p));
+			},
+			toStdioConfiguration: toStdioConfiguration,
 			run: run,
 			old: {
 				run: oldRun

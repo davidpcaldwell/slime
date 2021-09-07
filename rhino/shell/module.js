@@ -175,7 +175,7 @@
 				return $api.Events.toHandler(handler).emitter;
 			}
 
-			var context = scripts.invocation.toContext(p, $exports.environment, $context.stdio)(OldEventsAdapter(events));
+			var context = scripts.invocation.toContext(p, $exports.environment, $context.stdio);
 
 			/** @type { slime.jrunscript.shell.internal.module.Invocation } */
 			var invocation = (

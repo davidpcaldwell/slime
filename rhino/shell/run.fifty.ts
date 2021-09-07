@@ -17,7 +17,7 @@ namespace slime.jrunscript.shell.internal.run {
 		stdio: slime.jrunscript.shell.run.Output
 	}
 
-	export type OutputCapture = "string" | "line" | "none";
+	export type OutputCapture = "string" | "line" | slime.jrunscript.runtime.io.OutputStream;
 
 	export interface OutputDestination {
 		stream: slime.jrunscript.runtime.io.OutputStream
@@ -30,6 +30,12 @@ namespace slime.jrunscript.shell.internal.run {
 	 * returns the output of the program.
 	 */
 	export type Stdio = Required<slime.jrunscript.shell.Stdio> & { close: () => slime.jrunscript.shell.run.Output }
+
+	export interface StdioConfiguration {
+		input: slime.jrunscript.runtime.io.InputStream
+		output: OutputCapture
+		error: OutputCapture
+	}
 
 	export type Line = {
 		line: string
@@ -68,15 +74,21 @@ namespace slime.jrunscript.shell.internal.run {
 		}
 	}
 
+	export interface SubprocessContext {
+		environment: slime.jrunscript.host.Environment
+		directory: slime.jrunscript.file.Directory
+		stdio: StdioConfiguration
+	}
+
 	export interface Export {
 		run: (
-			context: slime.jrunscript.shell.internal.run.java.Context,
+			context: SubprocessContext,
 			configuration: slime.jrunscript.shell.internal.run.java.Configuration
 		) => slime.$api.fp.impure.Tell<slime.jrunscript.shell.internal.run.Events>
 
 		old: {
 			run: (
-				context: slime.jrunscript.shell.internal.run.java.Context,
+				context: SubprocessContext,
 				configuration: slime.jrunscript.shell.internal.run.java.Configuration,
 				module: {
 					events: any
@@ -92,6 +104,8 @@ namespace slime.jrunscript.shell.internal.run {
 			output?: slime.jrunscript.shell.invocation.Stdio["output"]
 			error?: slime.jrunscript.shell.invocation.Stdio["error"]
 		}) => (events: slime.$api.Events<Events>) => Stdio
+
+		toStdioConfiguration: (p: Parameters<slime.jrunscript.shell.internal.run.Export["buildStdio"]>[0]) => StdioConfiguration
 	}
 
 	export type Factory = slime.loader.Product<Context,Export>

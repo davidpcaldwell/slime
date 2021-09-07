@@ -102,6 +102,7 @@
 
 			this.modules = new function() {
 				var installed = function() {
+					debugger;
 					var json = npm({
 						command: "ls",
 						global: true,

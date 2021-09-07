@@ -128,23 +128,24 @@
 		 * @param { Pick<slime.jrunscript.shell.invocation.Argument, "stdio" | "environment" | "directory"> } p
 		 * @param { slime.jrunscript.host.Environment } parentEnvironment
 		 * @param { slime.jrunscript.shell.Stdio } parentStdio
-		 * @returns { (events: slime.$api.Events<slime.jrunscript.shell.internal.run.Events>) => slime.jrunscript.shell.internal.run.java.Context }
+		 * @returns { slime.jrunscript.shell.internal.run.SubprocessContext }
 		 */
 		var toContext = function(p, parentEnvironment, parentStdio) {
-			return function(events) {
-				return {
-					stdio: getStdio(p, parentStdio)(events),
-					environment: (function(now, argument) {
-						if (typeof(argument) == "undefined") return now;
-						if (argument === null) return now;
-						if (typeof(argument) == "object") return argument;
-						if (typeof(argument) == "function") {
-							var rv = Object.assign({}, now);
-							return $api.Function.mutating(argument)(rv);
-						}
-					})(parentEnvironment, p.environment),
-					directory: directoryForModuleRunArgument(p)
-				}
+			var stdio1 = updateForStringInput(p.stdio);
+			fallbackToParentStdio(stdio1, parentStdio);
+			var stdio = $context.run.toStdioConfiguration(stdio1);
+			return {
+				stdio: stdio,
+				environment: (function(now, argument) {
+					if (typeof(argument) == "undefined") return now;
+					if (argument === null) return now;
+					if (typeof(argument) == "object") return argument;
+					if (typeof(argument) == "function") {
+						var rv = Object.assign({}, now);
+						return $api.Function.mutating(argument)(rv);
+					}
+				})(parentEnvironment, p.environment),
+				directory: directoryForModuleRunArgument(p)
 			}
 		}
 

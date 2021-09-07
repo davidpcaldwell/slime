@@ -320,59 +320,7 @@ namespace slime.jrunscript.shell {
 					}).threw.message.is("property 'arguments[0]' must not be null; full invocation = java (null)");
 				});
 
-				fifty.run(function stdio() {
-					var jsh = fifty.global.jsh;
-					var module = subject;
-					var verify = fifty.verify;
-
-					var to = jsh.shell.TMPDIR.createTemporary({ directory: true });
-					jsh.java.tools.javac({
-						destination: to.pathname,
-						arguments: [fifty.$loader.getRelativePath("test/java/inonit/jsh/test/Echo.java")]
-					});
-					var result = module.java({
-						classpath: jsh.file.Searchpath([to.pathname]),
-						main: "inonit.jsh.test.Echo",
-						stdio: {
-							input: "Hello, World!",
-							output: String
-						}
-					});
-					verify(result).stdio.output.is("Hello, World!");
-
-					var runLines = function(input) {
-						var buffered = [];
-						var rv = module.java({
-							classpath: jsh.file.Searchpath([to.pathname]),
-							main: "inonit.jsh.test.Echo",
-							stdio: {
-								input: input,
-								output: {
-									line: function(string) {
-										buffered.push(string);
-									}
-								}
-							}
-						});
-						return {
-							stdio: {
-								output: buffered
-							}
-						};
-					};
-
-					var lines: { stdio: { output: string[] }};
-					var nl = jsh.shell.os.newline;
-					lines = runLines("Hello, World!" + nl + "Line 2");
-					verify(lines).stdio.output.length.is(2);
-					verify(lines).stdio.output[0].is("Hello, World!");
-					verify(lines).stdio.output[1].is("Line 2");
-					lines = runLines("Hello, World!" + nl + "Line 2" + nl);
-					verify(lines).stdio.output.length.is(3);
-					verify(lines).stdio.output[0].is("Hello, World!");
-					verify(lines).stdio.output[1].is("Line 2");
-					verify(lines).stdio.output[2].is("");
-				});
+				fifty.run(fifty.tests.run.stdio);
 
 				fifty.run(function directory() {
 					var jsh = fifty.global.jsh;
@@ -391,6 +339,60 @@ namespace slime.jrunscript.shell {
 					var workdir = result.stdio.output;
 					fifty.verify(workdir).is(dir.toString());
 				})
+			}
+			fifty.tests.run.stdio = function() {
+				var subject: Exports = fifty.global.jsh.shell;
+				var jsh = fifty.global.jsh;
+				var module = subject;
+				var verify = fifty.verify;
+
+				var to = jsh.shell.TMPDIR.createTemporary({ directory: true });
+				jsh.java.tools.javac({
+					destination: to.pathname,
+					arguments: [fifty.$loader.getRelativePath("test/java/inonit/jsh/test/Echo.java")]
+				});
+				var result = module.java({
+					classpath: jsh.file.Searchpath([to.pathname]),
+					main: "inonit.jsh.test.Echo",
+					stdio: {
+						input: "Hello, World!",
+						output: String
+					}
+				});
+				verify(result).stdio.output.is("Hello, World!");
+
+				var runLines = function(input) {
+					var buffered = [];
+					var rv = module.java({
+						classpath: jsh.file.Searchpath([to.pathname]),
+						main: "inonit.jsh.test.Echo",
+						stdio: {
+							input: input,
+							output: {
+								line: function(string) {
+									buffered.push(string);
+								}
+							}
+						}
+					});
+					return {
+						stdio: {
+							output: buffered
+						}
+					};
+				};
+
+				var lines: { stdio: { output: string[] }};
+				var nl = jsh.shell.os.newline;
+				lines = runLines("Hello, World!" + nl + "Line 2");
+				verify(lines).stdio.output.length.is(2);
+				verify(lines).stdio.output[0].is("Hello, World!");
+				verify(lines).stdio.output[1].is("Line 2");
+				lines = runLines("Hello, World!" + nl + "Line 2" + nl);
+				verify(lines).stdio.output.length.is(3);
+				verify(lines).stdio.output[0].is("Hello, World!");
+				verify(lines).stdio.output[1].is("Line 2");
+				verify(lines).stdio.output[2].is("");
 			}
 		}
 	//@ts-ignore
