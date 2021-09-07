@@ -108,9 +108,9 @@ namespace slime.jrunscript.shell {
 			directory?: slime.jrunscript.shell.old.Invocation["directory"]
 
 			stdio?: {
-				input: Input
-				output: slime.jrunscript.shell.run.OutputCapture
-				error: slime.jrunscript.shell.run.OutputCapture
+				input?: Input
+				output?: slime.jrunscript.shell.run.OutputCapture
+				error?: slime.jrunscript.shell.run.OutputCapture
 			}
 		 }
 	}
