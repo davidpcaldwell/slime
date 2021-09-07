@@ -166,23 +166,33 @@ namespace slime.jrunscript.shell.internal.invocation {
 
 	export type Configuration = Pick<slime.jrunscript.shell.invocation.Argument, "command" | "arguments">
 
+	export type StdioWithInputFixed = {
+		input: slime.jrunscript.runtime.io.InputStream
+		output: slime.jrunscript.shell.invocation.Stdio["output"]
+		error: slime.jrunscript.shell.invocation.Stdio["error"]
+	}
+
 	export interface Export {
 		error: {
 			BadCommandToken: slime.$api.Error.Type<TypeError>
 		}
 
-		updateForStringInput: (p: slime.jrunscript.shell.invocation.Argument["stdio"]) => Parameters<slime.jrunscript.shell.internal.run.Export["buildStdio"]>[0]
+		updateForStringInput: (p: slime.jrunscript.shell.invocation.Stdio) => slime.jrunscript.shell.internal.invocation.StdioWithInputFixed
 
 		toContext: (
 			p: slime.jrunscript.shell.invocation.Argument,
 			parentEnvironment: slime.jrunscript.host.Environment,
 			parentStdio: slime.jrunscript.shell.Stdio
-		) => slime.jrunscript.shell.internal.run.SubprocessContext
+		) => slime.jrunscript.shell.internal.run.subprocess.Context
 
 		fallbackToParentStdio: (
-			p: slime.jrunscript.shell.internal.run.Stdio,
+			p: slime.jrunscript.shell.internal.invocation.StdioWithInputFixed,
 			parent: slime.jrunscript.shell.Stdio
 		) => void
+
+		isLineListener: (p: slime.jrunscript.shell.invocation.OutputStreamConfiguration) => p is slime.jrunscript.shell.invocation.OutputStreamToLines
+
+		toStdioConfiguration: (declaration: slime.jrunscript.shell.internal.invocation.StdioWithInputFixed) => slime.jrunscript.shell.internal.run.StdioConfiguration
 
 		toConfiguration: (
 			p: Configuration

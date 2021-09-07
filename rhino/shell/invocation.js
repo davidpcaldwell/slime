@@ -77,10 +77,11 @@
 		}
 
 		/**
-		 * @param { slime.jrunscript.shell.invocation.Argument["stdio"] } p
+		 * @param { slime.jrunscript.shell.invocation.Stdio } p
+		 * @return { slime.jrunscript.shell.internal.invocation.StdioWithInputFixed }
 		 */
 		var updateForStringInput = function(p) {
-			/** @type { Parameters<slime.jrunscript.shell.internal.run.Export["buildStdio"]>[0] } */
+			/** @type { slime.jrunscript.shell.internal.run.StdioConfiguration } */
 			return {
 				input: (function(p) {
 					if (typeof(p) == "string") {
@@ -99,7 +100,7 @@
 
 		/**
 		 *
-		 * @param { Parameters<slime.jrunscript.shell.internal.run.Export["buildStdio"]>[0] } p
+		 * @param { slime.jrunscript.shell.internal.invocation.StdioWithInputFixed } p
 		 * @param { slime.jrunscript.shell.Stdio } parent
 		 */
 		var fallbackToParentStdio = function(p, parent) {
@@ -110,30 +111,63 @@
 		}
 
 		/**
-		 *
-		 * @param { { stdio?: slime.jrunscript.shell.invocation.Argument["stdio"] } } p
-		 * @param { slime.jrunscript.shell.Stdio } parent
-		 * @returns { (events: slime.$api.Events<slime.jrunscript.shell.internal.run.Events>) => slime.jrunscript.shell.internal.run.Stdio }
+		 * @param { slime.jrunscript.shell.invocation.OutputStreamConfiguration } configuration
+		 * @return { configuration is slime.jrunscript.shell.invocation.OutputStreamToLines }
 		 */
-		var getStdio = function(p, parent) {
-			return function(events) {
-				var stdio1 = updateForStringInput(p.stdio);
-				fallbackToParentStdio(stdio1, parent);
-				var stdio = $context.run.buildStdio(stdio1)(events);
-				return stdio;
+		var isLineListener = function(configuration) {
+			return configuration && Object.prototype.hasOwnProperty.call(configuration, "line");
+		}
+
+		/**
+		 * @param { slime.jrunscript.shell.invocation.OutputStreamConfiguration } configuration
+		 * @return { configuration is slime.jrunscript.shell.invocation.OutputStreamToString }
+		 */
+		var isString = function(configuration) {
+			return configuration === String
+		};
+
+		/**
+		 * @param { slime.jrunscript.shell.invocation.OutputStreamConfiguration } configuration
+		 * @return { configuration is slime.jrunscript.shell.invocation.OutputStreamToStream }
+		 */
+		var isRaw = function(configuration) {
+			return true;
+		}
+
+		/** @type { (configuration: slime.jrunscript.shell.invocation.OutputStreamConfiguration) => slime.jrunscript.shell.internal.run.OutputCapture } */
+		var toCapture = function(configuration) {
+			if (isLineListener(configuration)) {
+				return "line";
+			} else if (isString(configuration)) {
+				return "string";
+			} else {
+				return configuration;
 			}
+		}
+
+		/**
+		 *
+		 * @param { slime.jrunscript.shell.internal.invocation.StdioWithInputFixed } declaration
+		 * @return { slime.jrunscript.shell.internal.run.StdioConfiguration }
+		 */
+		function toStdioConfiguration(declaration) {
+			return {
+				input: declaration.input,
+				output: toCapture(declaration.output),
+				error: toCapture(declaration.error)
+			};
 		}
 
 		/**
 		 * @param { Pick<slime.jrunscript.shell.invocation.Argument, "stdio" | "environment" | "directory"> } p
 		 * @param { slime.jrunscript.host.Environment } parentEnvironment
 		 * @param { slime.jrunscript.shell.Stdio } parentStdio
-		 * @returns { slime.jrunscript.shell.internal.run.SubprocessContext }
+		 * @returns { slime.jrunscript.shell.internal.run.subprocess.Context }
 		 */
 		var toContext = function(p, parentEnvironment, parentStdio) {
 			var stdio1 = updateForStringInput(p.stdio);
 			fallbackToParentStdio(stdio1, parentStdio);
-			var stdio = $context.run.toStdioConfiguration(stdio1);
+			var stdio = toStdioConfiguration(stdio1);
 			return {
 				stdio: stdio,
 				environment: (function(now, argument) {
@@ -156,7 +190,9 @@
 			updateForStringInput: updateForStringInput,
 			toContext: toContext,
 			fallbackToParentStdio: fallbackToParentStdio,
+			toStdioConfiguration: toStdioConfiguration,
 			toConfiguration: toConfiguration,
+			isLineListener: isLineListener,
 			invocation: {
 				sudo: function(settings) {
 					//	TODO	sudo has preserve-env and preserver-env= flags. Should make the relationship

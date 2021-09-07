@@ -284,7 +284,7 @@
 			input.workingDirectory = context.directory;
 			$api.deprecate(input,"workingDirectory");
 
-			var result = scripts.run.old.run(context, invocation.configuration, module, events, p, input);
+			var result = scripts.run.old.run(context, invocation.configuration, module, events, p, input, scripts.invocation.isLineListener);
 
 			var evaluate = (p["evaluate"]) ? p["evaluate"] : $exports.run.evaluate;
 			return evaluate($api.Object.compose(input, result));
@@ -318,8 +318,10 @@
 					if (stdio) {
 						//	TODO	the below $api.Events() is highly dubious, inserted just to get past TypeScript; who knows
 						//			whether it will work but refactoring in progress may change it further
-						var rv = scripts.run.buildStdio(scripts.invocation.updateForStringInput(stdio))($api.Events());
-						scripts.invocation.fallbackToParentStdio(rv, $context.stdio);
+						var fixed = scripts.invocation.updateForStringInput(stdio);
+						scripts.invocation.fallbackToParentStdio(fixed, $context.stdio);
+						var x = scripts.invocation.toStdioConfiguration(fixed);
+						var rv = scripts.run.old.buildStdio(x)($api.Events());
 						return rv;
 					}
 					if (!stdio) {
