@@ -6,10 +6,13 @@
 
 //@ts-check
 (
-	function($loader,$export) {
+	function($context,$loader,$export) {
+		if (!$context.window) {
+			$context.window = (function() { return this; })();
+		}
 		$export(
 			$loader.module("module.js", {
-				window: window,
+				window: $context.window,
 				escaper: {
 					encode: window.escape,
 					decode: window.unescape
@@ -18,4 +21,4 @@
 		)
 	}
 //@ts-ignore
-)($loader,$export);
+)($context,$loader,$export);

@@ -14,7 +14,9 @@
 		var $api = inonit.loader.$api;
 		//	TODO	establish new slime loader relative to ../../../..?
 		/** @type { slime.web.Exports } */
-		var web = inonit.loader.loader.module("../../../../js/web/module.browser.js");
+		var web = inonit.loader.loader.module("../../../../js/web/module.browser.js", {
+			window: window
+		});
 
 		var code = {
 			verify: inonit.loader.loader.factory("../../../../loader/api/verify.js")
