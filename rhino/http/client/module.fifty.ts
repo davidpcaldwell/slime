@@ -7,10 +7,10 @@
 namespace slime.jrunscript.http.client {
 	export type Pairs = { name: string, value: string }[] | { [x: string]: string | string[] }
 
-	/** @deprecated Replaced by `client.Request`. */
-	export type Request = client.Request;
-	/** @deprecated Replaced by `client.Response`. */
-	export type Response = client.Response;
+	/** @deprecated Replaced by `object.Request`. */
+	export type Request = object.Request;
+	/** @deprecated Replaced by `object.Response`. */
+	export type Response = object.Response;
 
 	export namespace request {
 		export type Body = body.Stream | body.Binary | body.String
@@ -30,7 +30,7 @@ namespace slime.jrunscript.http.client {
 
 	type Authorization = string
 
-	export namespace client {
+	export namespace object {
 		export interface Request {
 			method?: string
 			url: slime.web.Url | string
@@ -74,7 +74,7 @@ namespace slime.jrunscript.http.client {
 	}
 
 	export interface Client {
-		request: client.request,
+		request: object.request,
 		Loader: any
 	}
 
@@ -89,11 +89,13 @@ namespace slime.jrunscript.http.client {
 	}
 
 	export namespace spi {
-		export interface Request {
-			method: string
-			url: slime.web.Url
-			headers: Header[]
-			body: request.Body
+		export interface Argument {
+			request: {
+				method: string
+				url: slime.web.Url
+				headers: Header[]
+				body: request.Body
+			}
 			proxy: Proxy
 			timeout: Timeouts
 		}
@@ -107,7 +109,18 @@ namespace slime.jrunscript.http.client {
 			stream: slime.jrunscript.runtime.io.InputStream
 		}
 
-		export type implementation = (p: Request) => Response
+		export namespace old {
+			export interface Request {
+				method: string
+				url: slime.web.Url
+				headers: Header[]
+				body: request.Body
+				proxy: Proxy
+				timeout: Timeouts
+			}
+
+			export type implementation = (p: Request) => Response
+		}
 	}
 
 	export interface Proxy {
@@ -132,7 +145,7 @@ namespace slime.jrunscript.http.client {
 
 	export interface Configuration {
 		authorization?: any
-		spi?: (standard: spi.implementation) => spi.implementation
+		spi?: (standard: spi.old.implementation) => spi.old.implementation
 		proxy?: Proxy | ((p: Request) => Proxy)
 		TREAT_302_AS_303?: boolean
 	}

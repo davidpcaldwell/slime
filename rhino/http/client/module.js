@@ -163,7 +163,23 @@
 		};
 
 		/**
-		 * @type { slime.jrunscript.http.client.spi.implementation }
+		 *
+		 * @param { slime.jrunscript.http.client.spi.Argument } argument
+		 * @returns { slime.jrunscript.http.client.spi.old.Request }
+		 */
+		function toOldRequest(argument) {
+			return {
+				method: argument.request.method,
+				url: argument.request.url,
+				headers: argument.request.headers,
+				body: argument.request.body,
+				proxy: argument.proxy,
+				timeout: argument.timeout
+			}
+		}
+
+		/**
+		 * @type { slime.jrunscript.http.client.spi.old.implementation }
 		 * @returns { slime.jrunscript.http.client.spi.Response }
 		 */
 		function spi(p) {
@@ -389,8 +405,8 @@
 
 		/**
 		 *
-		 * @param { slime.jrunscript.http.client.Request } p
-		 * @returns { slime.jrunscript.http.client.spi.Request }
+		 * @param { slime.jrunscript.http.client.object.Request } p
+		 * @returns { slime.jrunscript.http.client.spi.Argument }
 		 */
 		var interpretRequest = function(p) {
 			var method = (p.method) ? p.method.toUpperCase() : "GET";
@@ -421,10 +437,12 @@
 			var headers = (p.headers) ? Parameters(p.headers) : [];
 
 			return {
-				method: method,
-				url: url,
-				headers: headers,
-				body: p.body,
+				request: {
+					method: method,
+					url: url,
+					headers: headers,
+					body: p.body
+				},
 				proxy: p.proxy,
 				timeout: p.timeout
 			};
@@ -433,44 +451,44 @@
 		/**
 		 *
 		 * @param { slime.jrunscript.http.client.internal.Cookies } cookies
-		 * @returns { (request: slime.jrunscript.http.client.spi.Request ) => slime.jrunscript.http.client.spi.Request }
+		 * @returns { (argument: slime.jrunscript.http.client.spi.Argument ) => slime.jrunscript.http.client.spi.Argument }
 		 */
 		var sessionRequest = function(cookies) {
-			return function(request) {
+			return function(argument) {
 				//	TODO	this implementation mutates the request but provides an immutable-appearing signature for
 				//			forward-compatibility
-				cookies.get(request.url, request.headers);
-				return request;
+				cookies.get(argument.request.url, argument.request.headers);
+				return argument;
 			}
 		};
 
 		/**
 		 *
 		 * @param { string } authorization
-		 * @returns { (request: slime.jrunscript.http.client.spi.Request ) => slime.jrunscript.http.client.spi.Request }
+		 * @returns { (argument: slime.jrunscript.http.client.spi.Argument ) => slime.jrunscript.http.client.spi.Argument }
 		 */
 		var authorizedRequest = function(authorization) {
-			return function(request) {
+			return function(argument) {
 				//	TODO	this implementation mutates the request but provides an immutable-appearing signature for
 				//			forward-compatibility
 				if (authorization) {
-					request.headers.push({ name: "Authorization", value: authorization });
+					argument.request.headers.push({ name: "Authorization", value: authorization });
 				}
-				return request;
+				return argument;
 			}
 		};
 
 		/**
 		 *
 		 * @param { slime.jrunscript.http.client.Proxy } proxy
-		 * @returns { (request: slime.jrunscript.http.client.spi.Request ) => slime.jrunscript.http.client.spi.Request }
+		 * @returns { (argument: slime.jrunscript.http.client.spi.Argument ) => slime.jrunscript.http.client.spi.Argument }
 		 */
 		var proxiedRequest = function(proxy) {
-			return function(request) {
+			return function(argument) {
 				//	TODO	this implementation mutates the request but provides an immutable-appearing signature for
 				//			forward-compatibility
-				request.proxy = proxy;
-				return request;
+				argument.proxy = proxy;
+				return argument;
 			}
 		};
 
@@ -510,8 +528,8 @@
 
 				var spiImplementation = (configuration && configuration.spi) ? configuration.spi(spi) : spi;
 
-				var spiresponse = spiImplementation(spirequest);
-				cookies.set(spirequest.url,spiresponse.headers);
+				var spiresponse = spiImplementation(toOldRequest(spirequest));
+				cookies.set(spirequest.request.url,spiresponse.headers);
 
 				var isRedirect = function(status) {
 					return (status.code >= 300 && status.code <= 303) || status.code == 307;
@@ -520,7 +538,7 @@
 				if (isRedirect(spiresponse.status)) {
 					var redirectTo = headersImplementationForGet.call(spiresponse.headers, "Location");
 					if (!redirectTo) throw new Error("Redirect without location header.");
-					var redirectUrl = spirequest.url.resolve(redirectTo);
+					var redirectUrl = spirequest.request.url.resolve(redirectTo);
 					//	TODO	copy object rather than modifying
 					var rv = {};
 					for (var x in p) {
