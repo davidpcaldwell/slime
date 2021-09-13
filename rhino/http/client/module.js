@@ -179,10 +179,10 @@
 		}
 
 		/**
-		 * @type { slime.jrunscript.http.client.spi.old.implementation }
+		 * @param { slime.jrunscript.http.client.spi.Argument } p
 		 * @returns { slime.jrunscript.http.client.spi.Response }
 		 */
-		function spi(p) {
+		function urlConnectionImplementation(p) {
 			/**
 			 *
 			 * @param { slime.jrunscript.native.java.net.URLConnection } $urlConnection
@@ -242,17 +242,17 @@
 			// }
 
 			var hostHeader;
-			if (p.url.scheme == "https" && p.proxy && p.proxy.https) {
+			if (p.request.url.scheme == "https" && p.proxy && p.proxy.https) {
 				//	Currently implemented by re-writing the URL; would be better to implement a tunnel through an HTTP proxy but
 				//	could not get that working with Tomcat, which returned 400 errors when https requests are sent to http listener
 				//	TODO	does this work for default port?
-				hostHeader = p.url.host + ((p.url.port) ? ":" + p.url.port : "");
-				p.url.host = p.proxy.https.host;
-				p.url.port = p.proxy.https.port;
+				hostHeader = p.request.url.host + ((p.request.url.port) ? ":" + p.request.url.port : "");
+				p.request.url.host = p.proxy.https.host;
+				p.request.url.port = p.proxy.https.port;
 			}
 
-			var $url = new Packages.java.net.URL(p.url.toString());
-			debug("Requesting: " + p.url);
+			var $url = new Packages.java.net.URL(p.request.url.toString());
+			debug("Requesting: " + p.request.url);
 
 			var $urlConnection = (function(proxy) {
 				if (!proxy) {
@@ -279,7 +279,7 @@
 				}
 			})(p.proxy);
 
-			$urlConnection.setRequestMethod(p.method);
+			$urlConnection.setRequestMethod(p.request.method);
 
 			if (p.timeout) {
 				if (p.timeout.connect) {
@@ -293,22 +293,22 @@
 			if (hostHeader) {
 				$urlConnection.addRequestProperty("Host",hostHeader);
 			}
-			p.headers.forEach( function(header) {
+			p.request.headers.forEach( function(header) {
 				$urlConnection.addRequestProperty(header.name,header.value);
 			});
 
 			$urlConnection.setInstanceFollowRedirects(false);
 
-			if (p.body) {
+			if (p.request.body) {
 				$urlConnection.setDoOutput(true);
 
 				$urlConnection.setRequestProperty(
 					"Content-Type",
-					$api.mime.Type.codec.declaration.encode(getRequestBodyType(p.body))
+					$api.mime.Type.codec.declaration.encode(getRequestBodyType(p.request.body))
 				);
 
 				$context.api.io.Streams.binary.copy(
-					getRequestBodyStream(p.body),
+					getRequestBodyStream(p.request.body),
 					$context.api.io.java.adapt($urlConnection.getOutputStream()),
 					{
 						onFinish: function(from,to) {
@@ -326,6 +326,23 @@
 			}
 
 			return rv;
+		}
+
+		/**
+		 * @type { slime.jrunscript.http.client.spi.old.implementation }
+		 * @returns { slime.jrunscript.http.client.spi.Response }
+		 */
+		function oldspi(p) {
+			return urlConnectionImplementation({
+				request: {
+					method: p.method,
+					url: p.url,
+					headers: p.headers,
+					body: p.body
+				},
+				proxy: p.proxy,
+				timeout: p.timeout
+			});
 		}
 
 		/**
@@ -526,7 +543,7 @@
 					proxiedRequest(proxy)
 				);
 
-				var spiImplementation = (configuration && configuration.spi) ? configuration.spi(spi) : spi;
+				var spiImplementation = (configuration && configuration.spi) ? configuration.spi(oldspi) : oldspi;
 
 				var spiresponse = spiImplementation(toOldRequest(spirequest));
 				cookies.set(spirequest.request.url,spiresponse.headers);
