@@ -9,6 +9,7 @@ namespace slime.jrunscript.shell.internal.run {
 		api: {
 			java: slime.jrunscript.host.Exports
 			io: slime.jrunscript.io.Exports
+			file: slime.jrunscript.file.Exports
 		}
 	}
 
@@ -75,7 +76,8 @@ namespace slime.jrunscript.shell.internal.run {
 			var subject: Export = loader({
 				api: {
 					java: fifty.global.jsh.java,
-					io: fifty.global.jsh.io
+					io: fifty.global.jsh.io,
+					file: fifty.global.jsh.file
 				}
 			});
 

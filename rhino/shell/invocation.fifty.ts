@@ -71,7 +71,7 @@ namespace slime.jrunscript.shell {
 				command: slime.jrunscript.shell.invocation.Argument["command"]
 				arguments?: slime.jrunscript.shell.invocation.Argument["arguments"]
 				environment?: slime.jrunscript.shell.invocation.Argument["environment"]
-				directory?: slime.jrunscript.shell.invocation.Argument["directory"]
+				directory?: slime.jrunscript.file.Directory
 
 				/**
 				 * The standard I/O streams to supply to the subprocess. If unspecified, or if any properties are unspecified,
@@ -105,7 +105,7 @@ namespace slime.jrunscript.shell {
 			 * The working directory in which the command will be executed. If not specified, this process's working directory
 			 * will be provided.
 			 */
-			directory?: slime.jrunscript.shell.old.Invocation["directory"]
+			directory?: string
 
 			stdio?: {
 				input?: Input

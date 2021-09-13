@@ -1366,6 +1366,20 @@
 				};
 				return $context.api.shell.Invocation.old(rv);
 			}
+		};
+
+		$exports.invoker = function(program) {
+			return function(invocation) {
+				return {
+					command: program.command,
+					arguments: $api.Array.build(function(rv) {
+						rv.push(invocation.command);
+						if (invocation.arguments) invocation.arguments.forEach(function(argument) {
+							rv.push(argument);
+						});
+					})
+				};
+			}
 		}
 	}
 //@ts-ignore

@@ -89,7 +89,8 @@
 			var run = code.run({
 				api: {
 					java: $context.api.java,
-					io: $context.api.io
+					io: $context.api.io,
+					file: $context.api.file
 				}
 			});
 			return {
@@ -242,6 +243,8 @@
 				}
 			}
 
+			var directory = (typeof(context.directory) == "string") ? $context.api.file.Pathname(context.directory).directory : context.directory;
+
 			/**
 			 * @type { slime.jrunscript.shell.run.old.Argument }
 			 */
@@ -249,9 +252,9 @@
 				command: invocation.result.command,
 				arguments: invocation.result.arguments,
 				environment: context.environment,
-				directory: context.directory
+				directory: directory
 			};
-			input.workingDirectory = context.directory;
+			input.workingDirectory = directory;
 			$api.deprecate(input,"workingDirectory");
 
 			var result = scripts.run.old.run(context, invocation.configuration, module, events, p, input, scripts.invocation.isLineListener);
@@ -765,7 +768,7 @@
 				return {
 					context: {
 						environment: (p.environment) ? p.environment : $exports.environment,
-						directory: (p.directory) ? p.directory : $exports.PWD,
+						directory: (p.directory) ? p.directory.toString() : $exports.PWD.toString(),
 						stdio: {
 							input: (function() {
 								if (p.stdio && p.stdio.input) return scripts.invocation.toInputStream(p.stdio.input);

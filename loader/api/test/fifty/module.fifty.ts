@@ -126,8 +126,8 @@ namespace slime.fifty {
 			load: load
 
 			global: {
-				jsh?: slime.jsh.Global
 				$api: slime.$api.Global
+				jsh?: slime.jsh.Global
 				window?: Window
 			},
 			promises: slime.definition.test.promises.Export

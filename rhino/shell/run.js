@@ -248,7 +248,7 @@
 					//	TODO	could throw exception on launch; should deal with it
 					var _subprocess = Packages.inonit.system.OperatingSystem.get().start(
 						createJavaCommandContext({
-							directory: context.directory,
+							directory: (typeof(context.directory) == "string") ? $context.api.file.Pathname(context.directory).directory : context.directory,
 							environment: context.environment,
 							stdio: stdio
 						}),

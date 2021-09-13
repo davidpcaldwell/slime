@@ -340,7 +340,11 @@
 			 * @type { slime.fifty.test.kit }
 			 */
 			var fifty = {
-				global: global,
+				global: {
+					$api: $api,
+					jsh: global.jsh,
+					window: global.window
+				},
 				$loader: loader,
 				promises: $context.promises,
 				$api: {

@@ -688,6 +688,14 @@ namespace slime.jrunscript.git {
 }
 
 namespace slime.jrunscript.git {
+	export interface Program {
+		command: slime.jrunscript.shell.invocation.Argument["command"]
+	}
+
+	export interface Exports {
+		invoker: (program: Program) => (invocation: Invocation) => slime.jrunscript.shell.invocation.Argument
+	}
+
 	export interface Client {
 		command: slime.jrunscript.file.Pathname
 	}

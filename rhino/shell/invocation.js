@@ -54,7 +54,7 @@
 		/**
 		 *
 		 * @param { { directory?: slime.jrunscript.file.Directory, workingDirectory?: slime.jrunscript.file.Directory } } p
-		 * @return { slime.jrunscript.file.Directory }
+		 * @return { string }
 		 */
 		function directoryForModuleRunArgument(p) {
 			/**
@@ -69,10 +69,10 @@
 			}
 
 			if (p.directory) {
-				return getDirectoryProperty(p);
+				return getDirectoryProperty(p).toString();
 			}
 			if (p.workingDirectory) {
-				return $api.deprecate(getDirectoryProperty)({ directory: p.workingDirectory });
+				return $api.deprecate(getDirectoryProperty)({ directory: p.workingDirectory }).toString();
 			}
 		}
 

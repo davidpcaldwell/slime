@@ -193,7 +193,7 @@ namespace slime.jrunscript.shell {
 
 		export interface Context {
 			environment: slime.jrunscript.host.Environment
-			directory: slime.jrunscript.file.Directory
+			directory: string
 			stdio: StdioConfiguration
 		}
 
