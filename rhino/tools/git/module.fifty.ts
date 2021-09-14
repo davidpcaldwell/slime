@@ -696,13 +696,48 @@ namespace slime.jrunscript.git {
 		invoker: (program: Program) => (invocation: Invocation) => slime.jrunscript.shell.invocation.Argument
 	}
 
-	export interface Client {
-		command: slime.jrunscript.file.Pathname
-	}
-
 	export interface Invocation {
 		command: string
 		arguments?: string[]
+	}
+
+	export interface Command<I,O> {
+		input: (i: I) => Invocation
+		output: (output: string) => O
+	}
+
+	export namespace command.status {
+		export interface Output {
+			/**
+			 * The current checked out branch, or `null` if a detached HEAD is checked out.
+			 */
+			branch: string
+
+			/**
+			 * An object whose keys are string paths within the repository, and whose values are the two-letter output
+			 * of the `git status --porcelain` command. This property is absent if no files have a status.
+			 */
+			paths?: { [path: string]: string }
+		}
+	}
+
+	export interface Commands {
+		status: Command<void,command.status.Output>
+	}
+
+	export interface Exports {
+		commands: Commands
+
+		run: <I,O>(p: {
+			program: Program
+			pathname?: string
+			command: Command<I,O>
+			input: I
+		}) => O
+	}
+
+	export interface Client {
+		command: slime.jrunscript.file.Pathname
 	}
 
 	export interface Exports {

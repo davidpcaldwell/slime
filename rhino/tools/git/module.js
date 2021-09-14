@@ -14,6 +14,47 @@
 	 * @param { slime.jrunscript.git.Exports } $exports
 	 */
 	function($api,$context,$exports) {
+		/**
+		 * @type { slime.jrunscript.git.Exports["commands"]["status"] }
+		 */
+		var status = {
+			input: function() {
+				return {
+					command: "status",
+					arguments: [
+						"--porcelain", "-b"
+					]
+				}
+			},
+			output: function(output) {
+				//	TODO	This ignores renamed files; see git help status
+				var parser = /(..) (\S+)/;
+				var rv = {
+					branch: void(0)
+				};
+				output.split("\n").forEach(function(line) {
+					if (line.substring(0,2) == "##") {
+						var branchName = line.substring(3);
+						if (branchName.indexOf("...") != -1) {
+							branchName = branchName.substring(0,branchName.indexOf("..."));
+						}
+						var detached = Boolean(branchName == "HEAD (no branch)")
+						rv.branch = (detached) ? null : branchName;
+					} else {
+						var match = parser.exec(line);
+						if (match) {
+							if (!rv.paths) rv.paths = {};
+							rv.paths[match[2]] = match[1];
+						} else if (line == "") {
+							//	do nothing
+						} else {
+							throw new Error("Unexpected line: [" + line + "]");
+						}
+					}
+				});
+				return rv;
+			}
+		}
 
 		/** @type { new (environment: Parameters<slime.jrunscript.git.Exports["Installation"]>[0] ) => slime.jrunscript.git.Installation } */
 		var Installation = function(environment) {
@@ -719,42 +760,29 @@
 				/** @type { slime.jrunscript.git.repository.Local["status"] } */
 				this.status = function() {
 					var self = this;
-
+					var input = status.input();
 					return execute({
-						command: "status",
-						arguments: ["--porcelain", "-b"],
+						command: input.command,
+						arguments: input.arguments,
 						stdio: {
 							output: String
 						},
+						/**
+						 *
+						 * @param { { stdio: { output: string } } } result
+						 * @returns { ReturnType<slime.jrunscript.git.repository.Local["status"]> }
+						 */
 						evaluate: function(result) {
 							//	TODO	This ignores renamed files; see git help status
-							var parser = /(..) (\S+)/;
-							var rv = {};
-							result.stdio.output.split("\n").forEach(function(line) {
-								if (line.substring(0,2) == "##") {
-									var branchName = line.substring(3);
-									if (branchName.indexOf("...") != -1) {
-										branchName = branchName.substring(0,branchName.indexOf("..."));
-									}
-									var detached = Boolean(branchName == "HEAD (no branch)")
-									rv.branch = {
-										name: (detached) ? null : branchName,
-										current: true,
-										commit: self.show({ object: (detached) ? "HEAD" : branchName })
-									};
-								} else {
-									var match = parser.exec(line);
-									if (match) {
-										if (!rv.paths) rv.paths = {};
-										rv.paths[match[2]] = match[1];
-									} else if (line == "") {
-										//	do nothing
-									} else {
-										throw new Error("Unexpected line: [" + line + "]");
-									}
-								}
-							});
-							return rv;
+							var parsed = status.output(result.stdio.output);
+							return {
+								branch: {
+									name: parsed.branch,
+									current: true,
+									commit: self.show({ object: (parsed.branch == null) ? "HEAD" : parsed.branch })
+								},
+								paths: parsed.paths
+							}
 						}
 					});
 				};
@@ -1380,6 +1408,29 @@
 					})
 				};
 			}
+		}
+
+		$exports.commands = {
+			status: status
+		}
+
+		$exports.run = function(p) {
+			var invoker = $exports.invoker(p.program);
+			var invocation = p.command.input(p.input);
+			var shellArgument = invoker(invocation);
+			shellArgument.stdio = {
+				output: "string"
+			};
+			if (p.pathname) shellArgument.directory = p.pathname;
+			var shellInvocation = $context.api.shell.Invocation.create(shellArgument);
+			var output;
+			$context.api.shell.world.run(shellInvocation)({
+				exit: function(e) {
+					if (e.detail.status) throw new Error();
+					output = e.detail.stdio.output;
+				}
+			});
+			return p.command.output(output);
 		}
 	}
 //@ts-ignore
