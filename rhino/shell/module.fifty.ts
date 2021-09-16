@@ -530,6 +530,8 @@ namespace slime.jrunscript.shell {
 			 */
 			old: (p: invocation.old.Argument) => old.Invocation
 
+			modernize: (p: old.Invocation) => run.Invocation
+
 			create: (p: invocation.Argument) => run.Invocation
 		}
 	}

@@ -764,6 +764,7 @@
 
 		$exports.Invocation = {
 			old: Invocation,
+			modernize: scripts.invocation.modernize,
 			create: function(p) {
 				return {
 					context: {

@@ -207,6 +207,8 @@ namespace slime.jrunscript.shell.internal.invocation {
 
 		toStdioConfiguration: (declaration: slime.jrunscript.shell.internal.invocation.StdioWithInputFixed) => slime.jrunscript.shell.run.StdioConfiguration
 
+		modernize: (p: old.Invocation) => slime.jrunscript.shell.run.Invocation
+
 		toContext: (
 			p: slime.jrunscript.shell.invocation.old.Argument,
 			parentEnvironment: slime.jrunscript.host.Environment,

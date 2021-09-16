@@ -190,6 +190,25 @@
 			}
 		}
 
+		/**
+		 *
+		 * @param { slime.jrunscript.shell.old.Invocation } invocation
+		 * @returns { slime.jrunscript.shell.run.Invocation }
+		 */
+		var modernize = function(invocation) {
+			return {
+				context: {
+					environment: invocation.environment,
+					directory: invocation.directory.toString(),
+					stdio: toStdioConfiguration(updateForStringInput(invocation.stdio))
+				},
+				configuration: {
+					command: invocation.command,
+					arguments: invocation.arguments
+				}
+			}
+		}
+
 		$export({
 			error: {
 				BadCommandToken: parseCommandToken.Error
@@ -199,6 +218,7 @@
 			toContext: toContext,
 			fallbackToParentStdio: fallbackToParentStdio,
 			toStdioConfiguration: toStdioConfiguration,
+			modernize: modernize,
 			toConfiguration: toConfiguration,
 			isLineListener: isLineListener,
 			invocation: {
