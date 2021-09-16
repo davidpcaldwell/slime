@@ -5,7 +5,10 @@
 //	END LICENSE
 
 namespace slime.servlet {
-	interface httpd {
+	export interface httpd {
+		Request: {
+			host: (request: slime.servlet.Request) => string
+		}
 		Handler: {
 			series: (...handlers: slime.servlet.handler[]) => slime.servlet.handler
 			Child: (p: {
@@ -42,6 +45,14 @@ namespace slime.servlet {
 					sameSite?: "Strict" | "Lax" | "None"
 				}) => slime.servlet.Header
 			}
+		}
+	}
+
+	export namespace internal.server.loader {
+		export interface Export {
+			Request: slime.servlet.httpd["Request"]
+			Handler: slime.servlet.httpd["Handler"]
+			http: slime.servlet.httpd["http"]
 		}
 	}
 }

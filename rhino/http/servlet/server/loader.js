@@ -8,9 +8,17 @@
 (
 	/**
 	 * @param { { api: { web: slime.web.Exports, http: slime.jrunscript.http.client.Exports }} } $context
-	 * @param { { http: slime.servlet.httpd["http"], Handler: slime.servlet.httpd["Handler"] } } $exports
+	 * @param { slime.loader.Export<slime.servlet.internal.server.loader.Export> } $export
 	 */
-	function($context,$exports) {
+	function($context,$export) {
+		/** @type { slime.servlet.internal.server.loader.Export } */
+		var $exports = {};
+		$exports.Request = {
+			host: function(request) {
+				var header = request.headers.value("host");
+				return header;
+			}
+		}
 		$exports.http = {
 			Response: void(0)
 		};
@@ -209,6 +217,7 @@
 				}
 			};
 		}
+		$export($exports);
 	}
 //@ts-ignore
-)($context,$exports);
+)($context,$export);

@@ -303,6 +303,7 @@
 			io: api.io,
 			web: api.web,
 			http: void(0),
+			Request: void(0),
 			Handler: void(0)
 		};
 
@@ -310,7 +311,9 @@
 			//	Populates the http and Handler methods of httpd
 			"loader.js",
 			{
-				$exports: scope.httpd,
+				$export: function(value) {
+					Object.assign(scope.httpd, value);
+				},
 				$context: {
 					api: {
 						web: scope.httpd.js.web
