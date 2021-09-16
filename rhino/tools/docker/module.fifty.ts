@@ -65,6 +65,7 @@ namespace slime.jrunscript.tools.docker {
 	export interface Export {
 		engine: slime.jrunscript.tools.docker.Engine
 		install: (p: {
+			version?: string
 			library: {
 				shell: slime.jrunscript.shell.Exports
 				install: slime.jsh.tools.install.module.Exports

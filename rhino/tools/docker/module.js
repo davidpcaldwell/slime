@@ -38,27 +38,54 @@
 				cli: cli
 			},
 			install: function(p) {
+				var versions = {
+					macos: {
+						"3.6.0": {
+							intel: "https://desktop.docker.com/mac/stable/amd64/67351/Docker.dmg"
+						},
+						latest: {
+							intel: "https://desktop.docker.com/mac/stable/amd64/Docker.dmg"
+						}
+					}
+				}
 				return $api.Function.impure.tell(function(events) {
 					if (!p.destination.directory) {
-						var dmg = p.library.install.get({
-							url: "https://desktop.docker.com/mac/stable/amd64/Docker.dmg"
-						});
-						p.library.shell.run({
-							command: "hdiutil",
-							arguments: ["attach", dmg]
-						});
-						var invocation = {
-							command: "cp",
-							arguments: ["-R", "/Volumes/Docker/Docker.app", p.destination]
-						};
-						if (p.sudo) {
-							invocation = p.library.shell.invocation.sudo({
-								askpass: p.sudo.askpass
-							})(p.library.shell.Invocation.old(invocation))
+						if (p.library.shell.os.name == "Mac OS X") {
+							//	https://docs.docker.com/desktop/mac/release-notes/
+							var distribution = (function() {
+								if (p.version) {
+									return versions.macos[p.version].intel;
+								} else {
+									return versions.macos.latest.intel;
+								}
+							})();
+							if (p.version) {
+								//	TODO	note that this will get an arbitrary version if it is cached, since the basename is
+								//			still Docker.dmg
+								var dmg = p.library.install.get({
+									url: distribution
+								});
+								p.library.shell.run({
+									command: "hdiutil",
+									arguments: ["attach", dmg]
+								});
+								var invocation = {
+									command: "cp",
+									arguments: ["-R", "/Volumes/Docker/Docker.app", p.destination]
+								};
+								if (p.sudo) {
+									invocation = p.library.shell.invocation.sudo({
+										askpass: p.sudo.askpass
+									})(p.library.shell.Invocation.old(invocation))
+								}
+								p.library.shell.run(invocation);
+								events.fire("installed", p.destination.directory);
+							}
+						} else {
+							throw new Error("Unsupported: Docker installation on non-macOS system.");
 						}
-						p.library.shell.run(invocation);
-						events.fire("installed", p.destination.directory);
 					} else {
+						//	TODO	check for version conflict and decide what to do
 						events.fire("found", p.destination.directory);
 					}
 				})
