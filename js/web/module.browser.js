@@ -6,12 +6,20 @@
 
 //@ts-check
 (
+	/**
+	 *
+	 * @param { { window: Window } } $context
+	 * @param { slime.Loader } $loader
+	 * @param { slime.loader.Export<slime.web.Exports> } $export
+	 */
 	function($context,$loader,$export) {
 		if (!$context.window) {
 			$context.window = (function() { return this; })();
 		}
+		/** @type { slime.web.load } */
+		var load = $loader.factory("module.js");
 		$export(
-			$loader.module("module.js", {
+			load({
 				window: $context.window,
 				escaper: {
 					encode: window.escape,
