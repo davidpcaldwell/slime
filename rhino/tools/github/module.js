@@ -74,7 +74,7 @@
 					return rv;
 				};
 
-				/** @type { (p: slime.jrunscript.http.client.Request) => slime.jrunscript.tools.github.Repository[] } */
+				/** @type { (p: slime.jrunscript.http.client.object.Request) => slime.jrunscript.tools.github.Repository[] } */
 				var request = (function(was) {
 					return function(p) {
 						var more = true;

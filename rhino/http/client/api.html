@@ -154,62 +154,6 @@ END LICENSE
 	<div>
 		<h1>Exports</h1>
 		<div class="type">
-			<a class="type" name="types.pair">pair</a>
-			<span>See <a href="../../../js/web/api.html#types.pair">pair</a>.</span>
-		</div>
-		<div class="type">
-			<a class="type" name="types.values">values</a>
-			<span>
-				An object with properties. Each named property represents one or more <a href="#types.pair">pair</a> objects. If
-				the value of the property is a <code>string</code>, the property represents a single pair with the given name and
-				the given value. If the value of the property is an <code>Array</code> of <code>string</code>, the property
-				represents a collection of pairs with the given name and the <code>string</code> values contained in the array.
-			</span>
-		</div>
-		<div class="type">
-			<a class="type" name="types.parameters">parameters</a>
-			<span>Either an <code>Array</code> of <a href="#types.pair">pair</a>, or a <a href="#types.values">values</a>.</span>
-		</div>
-		<div class="type">
-			<a class="type" name="types.query">query</a>
-			<span>Either a <a href="#types.parameters">parameters</a>, or a <code>string</code> representing a query string.</span>
-		</div>
-		<div class="type">
-			<a class="type" name="types.body">body</a>
-			<span>A message body.</span>
-			<div class="label">has properties:</div>
-			<ul>
-				<li class="value">
-					<div class="name">type</div>
-					<span class="type">string</span>
-					<span>
-						(optional)
-						The MIME type of the message body.
-					</span>
-				</li>
-				<li class="value">
-					<div class="name">stream</div>
-					<span class="type"><a href="../../io/api.html#types.binput">byte input stream</a></span>
-					<span>
-						(optional)
-						A stream from which the content of the message body can be read.
-					</span>
-				</li>
-				<li class="value">
-					<div class="name">string</div>
-					<span class="type">string</span>
-					<span>
-						(optional)
-						The content of the message body, as a string.
-					</span>
-				</li>
-			</ul>
-		</div>
-		<div class="type">
-			<a class="type" name="types.authorization">authorization</a>
-			<span>A header value for the <code>Authorization</code> header suitable for authorizing a request.</span>
-		</div>
-		<div class="type">
 			<a class="type" name="types.proxy">proxy</a>
 			<span>An object that specifies a server through which to proxy a request.</span>
 			<span>
@@ -846,39 +790,6 @@ END LICENSE
 					</ul>
 				</div>
 			</li>
-			<!--
-				TODO	Better API would have Form object that could be translated into query string and body, and probably
-						have two subtypes: one for ordinary forms, another for multipart
-			-->
-			<li class="object">
-				<div class="name">Body</div>
-				<span>Contains methods for creating request bodies.</span>
-				<div class="label">has properties:</div>
-				<ul>
-					<li class="constructor">
-						<div class="name">Form</div>
-						<span>
-							Creates request bodies representing HTML non-multipart
-							(<code>application/x-www-form-urlencoded</code>) forms.
-							See <a href="http://www.w3.org/TR/html401/interact/forms.html#h-17.13.3">HTML 4.01 section 17.13.3</a>.
-						</span>
-						<div class="arguments">
-							<div class="label">Arguments</div>
-							<ol>
-								<li class="value">
-									<span class="type"><a href="#types.query">query</a></span>
-									<span>An object specifying the form.</span>
-								</li>
-							</ol>
-						</div>
-						<div class="instances">
-							<div class="label">Instances</div>
-							<span class="type"><a href="#types.body">body</a></span>
-							<span>Objects suitable as request bodies.</span>
-						</div>
-					</li>
-				</ul>
-			</li>
 			<li class="object">
 				<div class="name">Authentication</div>
 				<span>Contains interfaces for implementing HTTP authentication.</span>
@@ -920,34 +831,6 @@ END LICENSE
 								</div>
 							</li>
 						</ul>
-					</li>
-				</ul>
-			</li>
-			<li class="object">
-				<div class="name">Parser</div>
-				<span>Contains interfaces for manipulating parsers.</span>
-				<div class="label">has properties:</div>
-				<ul>
-					<li class="function">
-						<div class="name">ok</div>
-						<span>A function that creates parsers that throw errors when unsuccessful responses are received.</span>
-						<div class="arguments">
-							<div class="label">Arguments</div>
-							<ol>
-								<li class="value">
-									<span class="type"><a href="#types.parser">parser</a></span>
-									<span>A parser for successful responses.</span>
-								</li>
-							</ol>
-						</div>
-						<div class="returns">
-							<div class="label">Returns</div>
-							<span class="type"><a href="#types.parser">parser</a></span>
-							<span>
-								A parser that invokes the given parser for successful responses, but throws an error for
-								non-successful responses.
-							</span>
-						</div>
 					</li>
 				</ul>
 			</li>
