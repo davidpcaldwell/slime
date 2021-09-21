@@ -79,6 +79,67 @@
 
 			/**
 			 *
+			 * @param { slime.jrunscript.http.client.request.Body } body
+			 * @returns { slime.mime.Type }
+			 */
+			function getRequestBodyType(body) {
+				if (typeof(body.type) == "string") {
+					return $api.mime.Type.codec.declaration.decode(body.type);
+				} else {
+					return body.type;
+				}
+			}
+
+			/**
+			 *
+			 * @param { slime.jrunscript.http.client.request.Body } body
+			 * @returns { slime.jrunscript.runtime.io.InputStream }
+			 */
+			function getRequestBodyStream(body) {
+				//	TODO	Does not handle stream/$stream from rhino/mime
+				//			above is a very old comment; may no longer apply
+
+				/** @type { (body: slime.jrunscript.http.client.request.Body) => body is slime.jrunscript.http.client.request.body.Stream } */
+				var isStream = function(body) {
+					return Boolean(body["stream"]);
+				}
+
+				/** @type { (body: slime.jrunscript.http.client.request.Body) => body is slime.jrunscript.http.client.request.body.Binary } */
+				var isBinary = function(body) {
+					return Boolean(body["read"] && body["read"].binary);
+				}
+
+				/** @type { (body: slime.jrunscript.http.client.request.Body) => body is slime.jrunscript.http.client.request.body.String } */
+				var isString = function(body) {
+					return typeof body["string"] != "undefined";
+				}
+
+				if (isStream(body)) return body.stream;
+				if (isBinary(body)) return body.read.binary();
+				if (isString(body)) {
+					var buffer = new $context.api.io.Buffer();
+					buffer.writeText().write(body.string);
+					buffer.writeText().close();
+					return buffer.readBinary();
+				}
+				throw new TypeError("Body is not a recognized type: " + body);
+			}
+
+			/**
+			 *
+			 * @param { slime.jrunscript.http.client.request.Body } p
+			 * @returns { slime.jrunscript.http.client.spi.Argument["request"]["body"] }
+			 */
+			var interpretRequestBody = function(p) {
+				if (!p) return null;
+				return {
+					type: getRequestBodyType(p),
+					stream: getRequestBodyStream(p)
+				};
+			}
+
+			/**
+			 *
 			 * @param { slime.jrunscript.http.client.object.Request } p
 			 * @returns { slime.jrunscript.http.client.spi.Argument }
 			 */
@@ -110,12 +171,14 @@
 
 				var headers = (p.headers) ? Parameters(p.headers) : [];
 
+				var body = interpretRequestBody(p.body);
+
 				return {
 					request: {
 						method: method,
 						url: url,
 						headers: headers,
-						body: p.body
+						body: body
 					},
 					proxy: p.proxy,
 					timeout: p.timeout
@@ -143,12 +206,13 @@
 			 * @returns { slime.jrunscript.http.client.spi.Response }
 			 */
 			function oldspi(p) {
+				var body = interpretRequestBody(p.body);
 				return urlConnectionImplementation({
 					request: {
 						method: p.method,
 						url: p.url,
 						headers: p.headers,
-						body: p.body
+						body: body
 					},
 					proxy: p.proxy,
 					timeout: p.timeout

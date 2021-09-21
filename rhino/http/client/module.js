@@ -80,41 +80,6 @@
 			}
 		}
 
-		/**
-		 *
-		 * @param { slime.jrunscript.http.client.request.Body } body
-		 * @returns { slime.jrunscript.runtime.io.InputStream }
-		 */
-		function getRequestBodyStream(body) {
-			//	TODO	Does not handle stream/$stream from rhino/mime
-			//			above is a very old comment; may no longer apply
-
-			/** @type { (body: slime.jrunscript.http.client.request.Body) => body is slime.jrunscript.http.client.request.body.Stream } */
-			var isStream = function(body) {
-				return Boolean(body["stream"]);
-			}
-
-			/** @type { (body: slime.jrunscript.http.client.request.Body) => body is slime.jrunscript.http.client.request.body.Binary } */
-			var isBinary = function(body) {
-				return Boolean(body["read"] && body["read"].binary);
-			}
-
-			/** @type { (body: slime.jrunscript.http.client.request.Body) => body is slime.jrunscript.http.client.request.body.String } */
-			var isString = function(body) {
-				return typeof body["string"] != "undefined";
-			}
-
-			if (isStream(body)) return body.stream;
-			if (isBinary(body)) return body.read.binary();
-			if (isString(body)) {
-				var buffer = new $context.api.io.Buffer();
-				buffer.writeText().write(body.string);
-				buffer.writeText().close();
-				return buffer.readBinary();
-			}
-			throw new TypeError("Body is not a recognized type: " + body);
-		}
-
 		var useJavaCookieManager = (function() {
 			//	Currently we handle the bridge to Java properties here so as not to introduce a dependency on rhino/shell, but
 			//	there may be a better way to deal with this;
@@ -265,7 +230,7 @@
 				);
 
 				$context.api.io.Streams.binary.copy(
-					getRequestBodyStream(p.request.body),
+					p.request.body.stream,
 					$context.api.io.java.adapt($urlConnection.getOutputStream()),
 					{
 						onFinish: function(from,to) {

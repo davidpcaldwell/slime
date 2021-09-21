@@ -137,7 +137,10 @@ namespace slime.jrunscript.http.client {
 				method: string
 				url: slime.web.Url
 				headers: Header[]
-				body: request.Body
+				body: {
+					type: slime.mime.Type
+					stream: slime.jrunscript.runtime.io.InputStream
+				}
 			}
 			proxy: Proxy
 			timeout: Timeouts
