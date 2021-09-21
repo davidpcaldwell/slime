@@ -79,7 +79,7 @@
 
 			/**
 			 *
-			 * @param { slime.jrunscript.http.client.request.Body } body
+			 * @param { slime.jrunscript.http.client.object.request.Body } body
 			 * @returns { slime.mime.Type }
 			 */
 			function getRequestBodyType(body) {
@@ -92,24 +92,24 @@
 
 			/**
 			 *
-			 * @param { slime.jrunscript.http.client.request.Body } body
+			 * @param { slime.jrunscript.http.client.object.request.Body } body
 			 * @returns { slime.jrunscript.runtime.io.InputStream }
 			 */
 			function getRequestBodyStream(body) {
 				//	TODO	Does not handle stream/$stream from rhino/mime
 				//			above is a very old comment; may no longer apply
 
-				/** @type { (body: slime.jrunscript.http.client.request.Body) => body is slime.jrunscript.http.client.request.body.Stream } */
+				/** @type { (body: slime.jrunscript.http.client.object.request.Body) => body is slime.jrunscript.http.client.object.request.body.Stream } */
 				var isStream = function(body) {
 					return Boolean(body["stream"]);
 				}
 
-				/** @type { (body: slime.jrunscript.http.client.request.Body) => body is slime.jrunscript.http.client.request.body.Binary } */
+				/** @type { (body: slime.jrunscript.http.client.object.request.Body) => body is slime.jrunscript.http.client.object.request.body.Binary } */
 				var isBinary = function(body) {
 					return Boolean(body["read"] && body["read"].binary);
 				}
 
-				/** @type { (body: slime.jrunscript.http.client.request.Body) => body is slime.jrunscript.http.client.request.body.String } */
+				/** @type { (body: slime.jrunscript.http.client.object.request.Body) => body is slime.jrunscript.http.client.object.request.body.String } */
 				var isString = function(body) {
 					return typeof body["string"] != "undefined";
 				}
@@ -127,7 +127,7 @@
 
 			/**
 			 *
-			 * @param { slime.jrunscript.http.client.request.Body } p
+			 * @param { slime.jrunscript.http.client.object.request.Body } p
 			 * @returns { slime.jrunscript.http.client.spi.Argument["request"]["body"] }
 			 */
 			var interpretRequestBody = function(p) {

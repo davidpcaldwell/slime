@@ -43,7 +43,7 @@
 
 			var apiClient = (function(o) {
 				/**
-				 * @type { slime.jrunscript.http.client.Client }
+				 * @type { slime.jrunscript.http.client.object.Client }
 				 */
 				var client = new $context.library.http.Client({
 					authorization: (o.credentials) ? $context.library.http.Authentication.Basic.Authorization({

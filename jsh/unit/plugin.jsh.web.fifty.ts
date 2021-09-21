@@ -37,14 +37,14 @@ namespace slime.jsh.unit {
 			port: number
 
 			/** described on definition page */
-			client: slime.jrunscript.http.client.Client
+			client: slime.jrunscript.http.client.object.Client
 
 			/** described on definition page */
 			jrunscript: Function
 
 			https: {
 				port: number
-				client: slime.jrunscript.http.client.Client
+				client: slime.jrunscript.http.client.object.Client
 			}
 
 			/** the environment to use when launching a process that proxies through this mock internet; sets http_proxy variable */

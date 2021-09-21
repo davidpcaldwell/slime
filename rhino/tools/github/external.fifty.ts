@@ -76,7 +76,7 @@
 			fifty.verify(buffers["slime-master/jsh/loader/nashorn.js"]).is.type("object");
 		};
 
-		var file = function(client: slime.jrunscript.http.client.Client) {
+		var file = function(client: slime.jrunscript.http.client.object.Client) {
 			return function() {
 				var launcher = client.request({
 					url: "https://raw.githubusercontent.com/davidpcaldwell/slime/master/jsh.bash"

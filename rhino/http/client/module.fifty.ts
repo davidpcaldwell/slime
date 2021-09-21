@@ -8,58 +8,31 @@ namespace slime.jrunscript.http.client {
 	//	See ../../../js/web/api.html#types.pair
 	export type pair = { name: string, value: string }
 
-	/**
-	 * An object with properties. Each named property represents one or more <a href="#types.pair">pair</a> objects. If the value
-	 * of the property is a <code>string</code>, the property represents a single pair with the given name and the given value. If
-	 * the value of the property is an <code>Array</code> of <code>string</code>, the property represents a collection of pairs with
-	 * the given name and the <code>string</code> values contained in the array.
-	 */
-	export type values = { [x: string]: string | string[] }
-
-	export type parameters = pair[] | values
+	export type parameters = pair[] | jsapi.values
 
 	/**
 	 * Either a {@link parameters}, or a `string` representing a query string.
 	 */
 	export type query = parameters | string
 
-	/**
-	 * @deprecated Replaced by {@link request.Body}.
-	 */
-	export type body = request.Body
-
-	/**
-	 * A header value for the `Authorization:` header suitable for authorizing a request.
-	 */
-	export type authorization = any
-
-	export namespace request {
+	export namespace jsapi {
 		/**
-		 * A message body.
+		 * An object with properties. Each named property represents one or more <a href="#types.pair">pair</a> objects. If the value
+		 * of the property is a <code>string</code>, the property represents a single pair with the given name and the given value. If
+		 * the value of the property is an <code>Array</code> of <code>string</code>, the property represents a collection of pairs with
+		 * the given name and the <code>string</code> values contained in the array.
 		 */
-		export type Body = body.Stream | body.Binary | body.String
+		export type values = { [x: string]: string | string[] }
 
-		export namespace body {
-			type Type = {
-				/**
-				 * The MIME type of the message body.
-				 */
-				type: slime.mime.Type | string
-			}
-			export type Stream = Type & {
-				/**
-				 * A stream from which the content of the message body can be read.
-				 */
-				stream: slime.jrunscript.runtime.io.InputStream
-			}
-			export type Binary = Type & { read: { binary: () => slime.jrunscript.runtime.io.InputStream } }
-			export type String = Type & {
-				/**
-				 * The content of the message body, as a string.
-				 */
-				string: string
-			}
-		}
+		/**
+		 * @deprecated Replaced by {@link object.request.Body}.
+		 */
+		export type body = object.request.Body
+
+		/**
+		 * A header value for the `Authorization:` header suitable for authorizing a request.
+		 */
+		export type authorization = any
 	}
 
 	export interface Header {
@@ -91,11 +64,33 @@ namespace slime.jrunscript.http.client {
 			(response: Response): T
 		}
 
-		export interface request {
-			(p: Request & { evaluate: JSON }): any
-			<T>(p: Request & { evaluate: parser<T> }): T
-			<T>(p: Request & { parse: parser<T> }): T
-			(p: Request): Response
+		export namespace request {
+			/**
+			 * A message body.
+			 */
+			export type Body = body.Stream | body.Binary | body.String
+
+			export namespace body {
+				type Type = {
+					/**
+					 * The MIME type of the message body.
+					 */
+					type: slime.mime.Type | string
+				}
+				export type Stream = Type & {
+					/**
+					 * A stream from which the content of the message body can be read.
+					 */
+					stream: slime.jrunscript.runtime.io.InputStream
+				}
+				export type Binary = Type & { read: { binary: () => slime.jrunscript.runtime.io.InputStream } }
+				export type String = Type & {
+					/**
+					 * The content of the message body, as a string.
+					 */
+					string: string
+				}
+			}
 		}
 
 		export interface Response {
@@ -114,16 +109,31 @@ namespace slime.jrunscript.http.client {
 				stream: slime.jrunscript.runtime.io.InputStream
 			}
 		}
-	}
 
-	export interface Client {
-		request: object.request,
-		Loader: any
+		export interface Client {
+			request: {
+				(p: Request & { evaluate: JSON }): any
+				<T>(p: Request & { evaluate: parser<T> }): T
+				<T>(p: Request & { parse: parser<T> }): T
+				(p: Request): Response
+			},
+			Loader: any
+		}
 	}
 
 	export interface Context {
 		debug: any
+
+		//	TODO	replace with individual properties governing these behaviors, and/or see whether the whole thing is obsolete
+		/**
+		 * If `true`, avoids the use of classes that are not whitelisted in Google App Engine. Currently, this means that a custom
+		 * cookie handler is supplied, rather than using the default from the `java.net` package.
+		 */
 		gae: boolean
+
+		/**
+		 * Modules used in implementing the HTTP client.
+		 */
 		api: {
 			web: slime.web.Exports
 			java: slime.jrunscript.host.Exports
@@ -162,7 +172,7 @@ namespace slime.jrunscript.http.client {
 				method: string
 				url: slime.web.Url
 				headers: Header[]
-				body: request.Body
+				body: object.request.Body
 				proxy: Proxy
 				timeout: Timeouts
 			}
@@ -199,7 +209,7 @@ namespace slime.jrunscript.http.client {
 	}
 
 	export interface Exports {
-		Client: new (configuration?: Configuration) => Client
+		Client: new (configuration?: Configuration) => object.Client
 
 		Authentication: {
 			Basic: {
@@ -224,7 +234,7 @@ namespace slime.jrunscript.http.client {
 			 * @param query An object specifying the form.
 			 * @returns Objects suitable as request bodies.
 			 */
-			Form: (query: query) => body
+			Form: (query: query) => object.request.Body
 		}
 
 		Loader: any

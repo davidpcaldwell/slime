@@ -66,7 +66,7 @@
 
 		/**
 		 *
-		 * @param { slime.jrunscript.http.client.request.Body } body
+		 * @param { slime.jrunscript.http.client.object.request.Body } body
 		 */
 		function getRequestBodyType(body) {
 			if (typeof(body.type) == "string") {
