@@ -110,6 +110,13 @@ namespace slime.jrunscript.http.client {
 			}
 		}
 
+		export interface Configuration {
+			authorization?: any
+			spi?: (standard: spi.old.implementation) => spi.old.implementation
+			proxy?: Proxy | ((p: object.Request) => Proxy)
+			TREAT_302_AS_303?: boolean
+		}
+
 		export interface Client {
 			request: {
 				(p: Request & { evaluate: JSON }): any
@@ -201,15 +208,8 @@ namespace slime.jrunscript.http.client {
 		read: any
 	}
 
-	export interface Configuration {
-		authorization?: any
-		spi?: (standard: spi.old.implementation) => spi.old.implementation
-		proxy?: Proxy | ((p: object.Request) => Proxy)
-		TREAT_302_AS_303?: boolean
-	}
-
 	export interface Exports {
-		Client: new (configuration?: Configuration) => object.Client
+		Client: new (configuration?: object.Configuration) => object.Client
 
 		Authentication: {
 			Basic: {

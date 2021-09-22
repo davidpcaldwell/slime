@@ -220,7 +220,7 @@
 			}
 
 			/**
-			 * @param { slime.jrunscript.http.client.Configuration } configuration
+			 * @param { slime.jrunscript.http.client.object.Configuration } configuration
 			 * @param { slime.jrunscript.http.client.internal.Cookies } cookies
 			 * @param { slime.jrunscript.http.client.object.Request & { evaluate?: any, parse?: any } } p
 			 */
@@ -313,7 +313,7 @@
 
 			/**
 			 *
-			 * @param { slime.jrunscript.http.client.Configuration } configuration
+			 * @param { slime.jrunscript.http.client.object.Configuration } configuration
 			 */
 			var Client = function(configuration) {
 				var cookies = Cookies();
