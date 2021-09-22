@@ -423,26 +423,6 @@
 
 			this.OK = $api.deprecate(this.ok);
 		}
-
-		//	TODO	is this used anywhere?
-		/** @constructor */
-		$exports.Loader = function(client) {
-			this.getCode = function(url) {
-				client.request({
-					url: url,
-					parse: function(response) {
-						if (response.status.code == 200) {
-							return {
-								name: url,
-								_in: response.body.stream.java.adapt()
-							};
-						} else {
-							throw new Error("Not found: " + url);
-						}
-					}
-				});
-			}
-		};
 	}
 //@ts-ignore
 )(Packages,$api,$context,$loader,$exports)

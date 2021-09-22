@@ -35,10 +35,7 @@ namespace slime.jrunscript.http.client {
 		export type authorization = any
 	}
 
-	export interface Header {
-		name: string
-		value: string
-	}
+	export type Header = pair
 
 	type Authorization = string
 
@@ -54,12 +51,15 @@ namespace slime.jrunscript.http.client {
 
 			headers?: parameters
 			authorization?: Authorization
-			proxy?: Proxy
+			proxy?: Proxies
 			body?: request.Body
 			timeout?: Timeouts
 			on?: any
 		}
 
+		/**
+		 * A function intended to process an HTTP response.
+		 */
 		export type parser<T> = {
 			(response: Response): T
 		}
@@ -93,19 +93,44 @@ namespace slime.jrunscript.http.client {
 			}
 		}
 
+		/**
+		 * Represents an HTTP response. See [RFC 2616, section 6](http://www.w3.org/Protocols/rfc2616/rfc2616-sec6.html).
+		 */
 		export interface Response {
 			request: Request
 			/**
-			 * See https://datatracker.ietf.org/doc/html/rfc7230#section-3.1.2
+			 * An object describing the response status.
+			 *
+			 * See https://datatracker.ietf.org/doc/html/rfc7230#section-3.1.2.
+			 *
+			 * See [RFC 2616 section 6.1](http://www.w3.org/Protocols/rfc2616/rfc2616-sec6.html#sec6.1)
 			 */
 			status: {
+				/**
+				 * The status code.
+				 */
 				code: number
+
+				/**
+				 * The message associated with the status code (RFC calls it "reason phrase").
+				 */
 				reason: string
 			}
-			headers: Header[]
+			headers: Header[] & {
+				/**
+				 * Provides the value or values of a given header.
+				 *
+				 * @param name A header name; case-insensitive.
+				 * @returns the single value of the given header, if it has one, or an array of values if there are multiple values.
+				 * If the header has no values, `null` is returned.
+				 */
+				get: (name: string) => string | string[]
+			}
+			/**
+			 * The message body associated with this response.
+			 */
 			body: {
 				type: slime.mime.Type
-				//	TODO	Possibly should be slime.jrunscript.InputStream or slime.jrunscript.io.InputStream
 				stream: slime.jrunscript.runtime.io.InputStream
 			}
 		}
@@ -113,7 +138,7 @@ namespace slime.jrunscript.http.client {
 		export interface Configuration {
 			authorization?: any
 			spi?: (standard: spi.old.implementation) => spi.old.implementation
-			proxy?: Proxy | ((p: object.Request) => Proxy)
+			proxy?: Proxies | ((p: object.Request) => Proxies)
 			TREAT_302_AS_303?: boolean
 		}
 
@@ -159,7 +184,7 @@ namespace slime.jrunscript.http.client {
 					stream: slime.jrunscript.runtime.io.InputStream
 				}
 			}
-			proxy: Proxy
+			proxy: Proxies
 			timeout: Timeouts
 		}
 
@@ -180,7 +205,7 @@ namespace slime.jrunscript.http.client {
 				url: slime.web.Url
 				headers: Header[]
 				body: object.request.Body
-				proxy: Proxy
+				proxy: Proxies
 				timeout: Timeouts
 			}
 
@@ -188,19 +213,26 @@ namespace slime.jrunscript.http.client {
 		}
 	}
 
+	/** Information specifying a proxy server. */
 	export interface Proxy {
-		http?: {
-			host: any
-			port: any
-		}
-		https?: {
-			host: any
-			port: any
-		}
-		socks?: {
-			host: any
-			port: any
-		}
+		/** A host name. */
+		host: string
+		/** A port number. */
+		port: number
+	}
+
+	//	TODO	can you specify all of these, or just one? Or none?
+	/**
+	 * An object that specifies a server through which to proxy a request.
+	 *
+	 * This object should contain a `http` property or a `socks` property specifying information about the proxy to use.
+	 */
+	export interface Proxies {
+		/** Specifies an HTTP proxy to use for this request. */
+		http?: Proxy
+		https?: Proxy
+		/** Specifies a SOCKS proxy to use for this request. */
+		socks?: Proxy
 	}
 
 	export interface Timeouts {
@@ -211,8 +243,17 @@ namespace slime.jrunscript.http.client {
 	export interface Exports {
 		Client: new (configuration?: object.Configuration) => object.Client
 
+		/** Contains interfaces for implementing HTTP authentication. */
 		Authentication: {
+			/**
+			 * The Basic authentication scheme, described by [RFC 2617](http://www.ietf.org/rfc/rfc2617.txt) section 2.
+			 */
 			Basic: {
+				/**
+				 * Creates objects representing a particular set of authorization credentials.
+				 *
+				 * @param p A set of credentials.
+				 */
 				Authorization: (p: { user: string, password: string }) => Authorization
 			}
 		}
@@ -237,8 +278,6 @@ namespace slime.jrunscript.http.client {
 			Form: (query: query) => object.request.Body
 		}
 
-		Loader: any
-
 		/**
 		 * Contains interfaces for manipulating parsers.
 		 */
@@ -261,5 +300,5 @@ namespace slime.jrunscript.http.client.internal {
 
 	export type sessionRequest = (cookies: slime.jrunscript.http.client.internal.Cookies) => ArgumentDecorator
 	export type authorizedRequest = (authorization: string) => ArgumentDecorator
-	export type proxiedRequest = (proxy: slime.jrunscript.http.client.Proxy) => ArgumentDecorator
+	export type proxiedRequest = (proxy: slime.jrunscript.http.client.Proxies) => ArgumentDecorator
 }
