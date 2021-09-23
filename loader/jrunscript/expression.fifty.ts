@@ -507,6 +507,7 @@ namespace slime.jrunscript {
 				HttpURLConnection: any
 				CookieManager: any
 				CookiePolicy: any
+				CookieHandler: any
 				Proxy: {
 					new (x: any, y: any): slime.jrunscript.native.java.net.Proxy
 					Type: {

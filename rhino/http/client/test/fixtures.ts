@@ -18,6 +18,13 @@ namespace slime.jrunscript.http.client.test {
 		$Context: any
 		context: any
 		module: slime.jrunscript.http.client.Exports
+		Cookie: any
+		skip: any
+		getServerRequestCookies: (request: any) => {
+			name: string
+			value: string
+		}[]
+		hasDefaultCookieHandler: boolean
 	}
 
 	export type Fixtures = {
@@ -158,7 +165,30 @@ namespace slime.jrunscript.http.client.test {
 						scope.context = context;
 						scope.module = $jsapi.loader.module("module.js", context);
 			//		}
-				}
+					scope.Cookie = Packages.javax.servlet.http.Cookie;
+					scope.skip = function(verify,message) {
+						if (typeof(verify) == "string") {
+							jsh.shell.console("DEPRECATED: skip(string) in api.html");
+							return {
+								success: true,
+								messages: {
+									success: "SKIP: " + verify
+								}
+							}
+						}
+						if (!message) message = "Skipping: no Tomcat";
+						verify(message).is(message);
+					};
+					scope.getServerRequestCookies = function(request) {
+						if (request.getCookies() === null) return [];
+						return jsh.java.Array.adapt(request.getCookies()).filter(function(_cookie) {
+							return String(_cookie.getName()) != "JSESSIONID";
+						}).map(function(_cookie) {
+							return { name: String(_cookie.getName()), value: String(_cookie.getValue()) }
+						});
+					};
+					scope.hasDefaultCookieHandler = Boolean(Packages.java.net.CookieHandler.getDefault());
+		}
 			);
 		//@ts-ignore
 		}($export)

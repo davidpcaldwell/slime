@@ -181,8 +181,8 @@
 			file: SRC.getFile("rhino/ip/module.fifty.ts")
 		}));
 
-		suite.add("jrunscript/http", new jsh.unit.html.Part({
-			pathname: SRC.getRelativePath("rhino/http/client/api.html")
+		suite.add("jrunscript/http", FiftyPart({
+			file: SRC.getFile("rhino/http/client/module.fifty.ts")
 		}));
 
 		suite.add("jrunscript/document/module", new jsh.unit.html.Part({

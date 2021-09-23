@@ -41,7 +41,11 @@ namespace slime.jrunscript.http.client {
 					tomcat: void(0),
 					$Context: void(0),
 					context: void(0),
-					module: void(0)
+					module: void(0),
+					Cookie: void(0),
+					getServerRequestCookies: void(0),
+					hasDefaultCookieHandler: void(0),
+					skip: void(0)
 				};
 				var fixtures: slime.jrunscript.http.client.test.Fixtures = fifty.$loader.module("test/fixtures.ts");
 				fixtures(
@@ -66,11 +70,20 @@ namespace slime.jrunscript.http.client {
 			function(
 				fifty: slime.fifty.test.kit
 			) {
+				fifty.tests.jsapi = {};
+			}
+		//@ts-ignore
+		)(fifty);
+
+		(
+			function(
+				fifty: slime.fifty.test.kit
+			) {
 				var scope = jsapi.scope;
 				var module = scope.module;
 				var context = scope.context;
 				var verify = fifty.verify;
-				fifty.tests.spi = function() {
+				fifty.tests.jsapi.spi = function() {
 					var client = new module.Client({
 						spi: function(original) {
 							return function(p) {
@@ -111,6 +124,227 @@ namespace slime.jrunscript.http.client {
 		//@ts-ignore
 		)(fifty);
 
+		(
+			function(
+				fifty: slime.fifty.test.kit
+			) {
+				fifty.tests.jsapi.proxy = function() {
+					var context = jsapi.scope.context;
+					var module = jsapi.scope.module;
+					var verify = fifty.verify;
+
+					fifty.run(function() {
+						if (!context.notomcat) {
+							servlet.set(function(_request,_response) {
+								_response.getWriter().print(_request.getHeader("host"));
+							});
+							var lastArgument: { url: any };
+							var client = new module.Client({
+								proxy: function(request) {
+									lastArgument = request;
+									return {
+										http: {
+											host: "127.0.0.1",
+											port: context.port
+										}
+									}
+								}
+							});
+							var host = client.request({
+								url: "http://foo.bar/baz",
+								evaluate: function(response) {
+									return response.body.stream.character().asString();
+								}
+							});
+							verify(lastArgument).url.evaluate(function(p) { return String(p); }).is("http://foo.bar/baz");
+							verify(host).is("foo.bar");
+						}
+					});
+
+					fifty.run(function() {
+						if (!context.notomcat) {
+							var all = new module.Client({
+								proxy: {
+									http: {
+										host: "127.0.0.1",
+										port: context.port
+									}
+								}
+							});
+							var host2 = all.request({
+								url: "http://foo.bar.baz/",
+								evaluate: function(response) {
+									return response.body.stream.character().asString();
+							}
+							});
+							verify(host2).is("foo.bar.baz");
+						}
+					});
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+
+		(
+			function(
+				fifty: slime.fifty.test.kit
+			) {
+				fifty.tests.jsapi.other = function() {
+					const $jsapi = {
+						environment: {
+							windowsSocketsError10106: false
+						}
+					};
+
+					const context = scope.context;
+					const module = scope.module;
+					const verify = fifty.verify;
+					const jsh = fifty.global.jsh;
+					const skip = scope.skip;
+					const hasDefaultCookieHandler = scope.hasDefaultCookieHandler;
+					const Cookie = scope.Cookie;
+					const getServerRequestCookies = scope.getServerRequestCookies;
+
+					fifty.run(function helloWorld() {
+						if (!$jsapi.environment.windowsSocketsError10106 && !context.notomcat) {
+							var client = new module.Client();
+							servlet.set(function(request,response) {
+								//	Nashorn does not allow request.getMethod() to be accessed through verify()
+								var getRequestMethod = function() {
+									return String(this._request.getMethod().toUpperCase());
+								}
+								verify({ _request: request }).evaluate(getRequestMethod).is("GET");
+								response.getWriter().print("Hello, World!");
+							});
+							var response = client.request({
+								method: "GET"
+								,url: "http://127.0.0.1:" + context.port + "/"
+								,evaluate: function(response) {
+									return response.body.stream.character().asString();
+								}
+							});
+							verify(response).is("Hello, World!");
+
+							var byUrlObject = client.request({
+								url: jsh.js.web.Url.parse("http://127.0.0.1:" + context.port + "/")
+								,evaluate: function(response) {
+									return response.body.stream.character().asString();
+								}
+							});
+							verify(byUrlObject,"byUrlObject").is("Hello, World!");
+						} else {
+							skip(verify);
+						}
+					});
+
+					fifty.run(function cookie() {
+						if (!$jsapi.environment.windowsSocketsError10106 && !context.notomcat && !hasDefaultCookieHandler) {
+							var client = new module.Client();
+							servlet.set(function(request,response) {
+								jsh.shell.echo("Received request; verify = " + verify);
+								jsh.shell.echo("request.getCookies() = " + request.getCookies());
+								//	TODO	for some reason with Nashorn, the verify() version of this statement does not work
+								verify(request.getCookies() === null).is(true);
+								//verify(request,"initial servlet request").getCookies().is(null);
+								jsh.shell.echo("Cookie = " + Cookie);
+								jsh.shell.echo("response.addCookie = " + response.addCookie);
+								response.addCookie(new Cookie("cname", "cvalue"));
+								jsh.shell.echo("addCookie returned");
+								response.setContentType("text/plain");
+								jsh.shell.echo("setContentType returned");
+								response.getWriter().print("Hello, World!");
+								jsh.shell.echo("getWriter().print returned");
+								jsh.shell.echo("Reached end of set()");
+							});
+							var response = client.request({
+								method: "GET"
+								,url: "http://127.0.0.1:" + context.port + "/"
+							});
+							var type = response.body.type.toString();
+							verify(type).is.not(null);
+							verify(type.split(";"))[0].is.not(null);
+							verify(response,"initial response").body.evaluate(function() { return this.type.toString().split(";")[0] }).is("text/plain");
+							if (response.body.type.toString().substring(0,"text/html".length) == "text/html") {
+								jsh.shell.echo("HTML response: " + response.body.stream.character().asString());
+							}
+							servlet.set(function(request,response) {
+								var cookies = getServerRequestCookies(request);
+								verify(cookies,"second servlet request cookies").length.is(1);
+								verify(cookies,"cookies")[0].name.is("cname");
+								verify(cookies,"cookies")[0].value.is("cvalue");
+							});
+							client.request({
+								method: "GET"
+								,url: "http://127.0.0.1:" + context.port + "/"
+							});
+						} else {
+							skip(verify, "No Tomcat, or WebView present");
+						}
+					});
+
+					fifty.run(function redirect() {
+						if (!$jsapi.environment.windowsSocketsError10106 && !context.notomcat && !hasDefaultCookieHandler) {
+							var client = new module.Client();
+							var redirected = false;
+							servlet.set(function(request,response) {
+								jsh.shell.echo("getting cookies " + request.getCookies());
+								var cookies = getServerRequestCookies(request);
+								jsh.shell.echo("cookies: " + JSON.stringify(cookies));
+								if (request.getRequestURI() == "/") {
+									verify(cookies).length.is(0);
+									response.addCookie(new Cookie("rname", "rvalue"));
+									response.sendRedirect("./redirected");
+								} else if (request.getRequestURI() == "/redirected") {
+									redirected = true;
+									verify(cookies).length.is(1);
+	//								test(Boolean(request.getCookies()) && request.getCookies().length == 1);
+									response.setContentType("text/plain");
+									response.getWriter().print("Redirected!");
+								} else {
+									debugger;
+									verify("url").is("Wrong URL: " + request.getRequestURI());
+								}
+							});
+							var response = client.request({
+								method: "GET",
+								url: "http://127.0.0.1:" + context.port + "/"
+								,evaluate: function(response) {
+									jsh.shell.echo("response = " + response.status.code);
+									jsh.shell.echo("error = ")
+									return response;
+								}
+							});
+							verify(redirected,"redirected").is(true);
+						} else {
+							skip(verify, "No Tomcat, or WebView present");
+						}
+					});
+
+					fifty.run(function urlWithQueryString() {
+						if (!$jsapi.environment.windowsSocketsError10106 && !context.notomcat) {
+							var client = new module.Client();
+							servlet.set(function(request,response) {
+								response.getWriter().print(request.getRequestURL()+"?"+request.getQueryString());
+							});
+							var url = "http://127.0.0.1:" + context.port + "/hello?world=earth";
+							var response = client.request({
+								method: "GET"
+								,url: url
+								,evaluate: function(response) {
+									return response.body.stream.character().asString();
+								}
+							});
+							verify(response).is(url);
+						} else {
+							skip(verify);
+						}
+					});
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+
+
 	}
 
 	export type Header = pair
@@ -119,20 +353,68 @@ namespace slime.jrunscript.http.client {
 
 	export namespace object {
 		export interface Request {
+			/**
+			 * The HTTP request method to use. If omitted, a `GET` is issued.
+			 */
 			method?: string
-			url: slime.web.Url | string
 
-			/** @deprecated */
+			/**
+			 * The URL to which to issue the request.
+			 */
+			url: request.url
+
+			/** @deprecated See `parameters`. */
 			params?: parameters
-			/** @deprecated */
+
+			/**
+			 * @deprecated
+			 *
+			 * Additional parameters to send to the request as part of the URL.
+			 */
 			parameters?: parameters
 
+			/**
+			 * Additional headers to send with this request.
+			 */
 			headers?: parameters
+
+			/**
+			 * Credentials information to be used to authorize this request.
+			 */
 			authorization?: Authorization
+
+			/**
+			 * The proxy server to use for this request.
+			 */
 			proxy?: Proxies
+
+			/**
+			 * The message body to use with the HTTP request. If no `type` property is provided, `application/octet-stream` will be
+			 * used. Must specify its content in some way. If a `stream` property is present, it will be read to provide the content
+			 * of the message body. Otherwise, if a `string` property is present, its content will be used.
+			 */
 			body?: request.Body
+
 			timeout?: Timeouts
-			on?: any
+
+			/**
+			 * An object containing a set of properties representing callbacks.
+			 */
+			on?: {
+				//	TODO	what 'this' will be used for this function?
+				/**
+				 * A function that will be invoked if the request is redirected.
+				 */
+				redirect: (p: {
+					request: any
+					response: any
+
+					/**
+					 * This property may be removed from the object in order to stop the client from following the redirect.
+					 */
+					next: any
+				}) => void
+			}
 		}
 
 		/**
@@ -143,6 +425,8 @@ namespace slime.jrunscript.http.client {
 		}
 
 		export namespace request {
+			export type url = slime.web.Url | string
+
 			/**
 			 * A message body.
 			 */
@@ -242,9 +526,27 @@ namespace slime.jrunscript.http.client {
 		}
 
 		export interface Client {
+			/**
+			 * Issues a request to a server and returns that server's response, after following any redirects.
+			 *
+			 * @param p An object representing the request, with an optional `evaluate` property that processes the response.
+			 * @returns The response, unless a <code>parse</code> function was provided; in that case, the result of that function
+			 * is returned.
+			 */
 			request: {
 				(p: Request & { evaluate: JSON }): any
-				<T>(p: Request & { evaluate: parser<T> }): T
+
+				<T>(p: Request & {
+					/**
+					 * A function that interprets the response from the server and returns it to the caller of `request()`
+					 * automatically.
+					 */
+					evaluate: parser<T>
+				}): T
+
+				/**
+				 * @deprecated Use `evaluate`, not `parse`.
+				 */
 				<T>(p: Request & { parse: parser<T> }): T
 				(p: Request): Response
 			},
@@ -335,8 +637,15 @@ namespace slime.jrunscript.http.client {
 	}
 
 	export interface Timeouts {
-		connect: any
-		read: any
+		/**
+		 * A timeout, in milliseconds, that should be used when attempting to connect to a remote URL.
+		 */
+		connect: number
+
+		/**
+		 * A timeout, in milliseconds, that should be used when attempting to read a remote URL.
+		 */
+		read: number
 	}
 
 	export interface Exports {
@@ -403,7 +712,9 @@ namespace slime.jrunscript.http.client {
 			fifty: slime.fifty.test.kit
 		) {
 			fifty.tests.suite = function() {
-				fifty.run(fifty.tests.spi);
+				fifty.run(fifty.tests.jsapi.spi);
+				fifty.run(fifty.tests.jsapi.proxy);
+				fifty.run(fifty.tests.jsapi.other);
 			}
 		}
 	//@ts-ignore
