@@ -32,7 +32,7 @@ namespace slime.jrunscript.http.client {
 		/**
 		 * A header value for the `Authorization:` header suitable for authorizing a request.
 		 */
-		export type authorization = any
+		export type authorization = Authorization
 	}
 
 	export type Header = pair
@@ -136,9 +136,30 @@ namespace slime.jrunscript.http.client {
 		}
 
 		export interface Configuration {
-			authorization?: any
+			/**
+			 * A value to be used to authorize requests from this client.
+			 */
+			authorization?: Authorization
+
 			spi?: (standard: spi.old.implementation) => spi.old.implementation
-			proxy?: Proxies | ((p: object.Request) => Proxies)
+
+			/**
+			 * A proxy server to use for requests, or a function specifying logic for determining the proxy server to use for a
+			 * given request.
+			 *
+			 * @param p The argument provided for a particular request
+			 *
+			 * @returns The proxy server to use for the given request.
+			 */
+			proxy?: Proxies | (
+				(p: object.Request) => Proxies
+			)
+
+			/**
+			 * Instructs the client to handle responses with status 302 as though they were responses with status 303, as most
+			 * browsers erroneously do. See the note at the end of
+			 * [RFC 2616 10.3.3](http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.3.3) for details.
+			 */
 			TREAT_302_AS_303?: boolean
 		}
 
@@ -241,8 +262,15 @@ namespace slime.jrunscript.http.client {
 	}
 
 	export interface Exports {
+		/**
+		 * Creates an object capable of issuing HTTP requests and returning their responses.
+		 *
+		 * @param configuration An object describing the configuration of this HTTP client.
+		 */
 		Client: new (configuration?: object.Configuration) => object.Client
+	}
 
+	export interface Exports {
 		/** Contains interfaces for implementing HTTP authentication. */
 		Authentication: {
 			/**

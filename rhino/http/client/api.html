@@ -31,44 +31,13 @@ END LICENSE
 		<ul>
 			<li class="constructor">
 				<div class="name">Client</div>
-				<span>Creates an object capable of issuing HTTP requests and returning their responses.</span>
 				<div class="arguments">
 					<div class="label">Arguments</div>
 					<ol>
 						<li class="object">
-							<span>An object describing the configuration of this HTTP client.</span>
 							<div class="label">has properties:</div>
 							<ul>
-								<li class="value">
-									<div class="name">TREAT_302_AS_303</div>
-									<span class="type">boolean</span>
-									<span>
-										(optional)
-										Instructs the client to handle responses with status 302 as though they were responses
-										with status 303, as most browsers erroneously do. See the note at
-										the end of
-										<a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.3.3">RFC 2616 10.3.3</a>
-										for details.
-									</span>
-								</li>
-								<li class="value">
-									<div class="name">authorization</div>
-									<span class="type"><a href="#types.authorization">authorization</a></span>
-									<span>A value to be used to authorize requests from this client.</span>
-								</li>
 								<li class="function">
-									<div class="name">spi</div>
-									<span>__DESCRIPTION__</span>
-									<div class="arguments">
-										<div class="label">Arguments</div>
-										<ol>
-										</ol>
-									</div>
-									<div class="returns">
-										<div class="label">Returns</div>
-										<span class="type">__TYPE__</span>
-										<span>__DESCRIPTION__</span>
-									</div>
 									<script type="application/x.jsapi#tests" jsapi:id="spi"><![CDATA[
 										if (!$jsapi.environment.windowsSocketsError10106 && !context.notomcat) {
 											var client = new module.Client({
@@ -113,19 +82,6 @@ END LICENSE
 								</li>
 								<li class="function">
 									<div class="name">proxy</div>
-									<span>
-										(optional)
-										Specifies logic for determining a proxy server for a given request.
-									</span>
-									<div class="arguments">
-										<div class="label">Arguments</div>
-										<div>The arguments passed to <code>request</code>.</div>
-									</div>
-									<div class="returns">
-										<div class="label">Returns</div>
-										<span class="type"><a href="#types.proxy">proxy</a></span>
-										<span>The proxy server to use for the given request.</span>
-									</div>
 									<script type="application/x.jsapi#tests">
 										if (!context.notomcat) {
 											servlet.set(function(_request,_response) {
@@ -157,10 +113,6 @@ END LICENSE
 								<li class="value">
 									<div class="name">proxy</div>
 									<span class="type"><a href="#types.proxy">proxy</a></span>
-									<span>
-										(optional)
-										A proxy server to use for all requests.
-									</span>
 									<script type="application/x.jsapi#tests">
 										if (!context.notomcat) {
 											var all = new module.Client({
