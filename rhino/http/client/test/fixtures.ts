@@ -147,24 +147,13 @@ namespace slime.jrunscript.http.client.test {
 						this.gae = gae;
 					};
 
-			//		if (false) {
-			//			if (tomcat) {
-			////				return [ new $Context(false), new $Context(true) ];
-			//				throw new Error();
-			//				return null;
-			//			} else {
-			//				var context = new $Context(false);
-			//				context.notomcat = true;
-			//				return [ context ];
-			//			}
-			//		} else {
-						var context = new scope.$Context(false);
-						context.notomcat = !Boolean(tomcat);
-						scope.servlet = servlet;
-						scope.tomcat = tomcat;
-						scope.context = context;
-						scope.module = $jsapi.loader.module("module.js", context);
-			//		}
+					var context = new scope.$Context(false);
+					context.notomcat = !Boolean(tomcat);
+					scope.servlet = servlet;
+					scope.tomcat = tomcat;
+					scope.context = context;
+					scope.module = $jsapi.loader.module("module.js", context);
+
 					scope.Cookie = Packages.javax.servlet.http.Cookie;
 					scope.skip = function(verify,message) {
 						if (typeof(verify) == "string") {
@@ -188,7 +177,7 @@ namespace slime.jrunscript.http.client.test {
 						});
 					};
 					scope.hasDefaultCookieHandler = Boolean(Packages.java.net.CookieHandler.getDefault());
-		}
+				}
 			);
 		//@ts-ignore
 		}($export)

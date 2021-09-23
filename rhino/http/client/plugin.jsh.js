@@ -20,7 +20,6 @@ plugin({
 
 		jsh.http.test = new function() {
 			this.disableHttpsSecurity = function() {
-				//	TODO	this HTTPS trust rigamarole should probably be in the shell somewhere, perhaps as a test API
 				var _trustManagers = jsh.java.Array.create({
 					type: Packages.javax.net.ssl.TrustManager,
 					array: [

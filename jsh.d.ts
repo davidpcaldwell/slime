@@ -33,8 +33,6 @@ namespace slime.jsh {
 			log: any
 		}
 
-		http: slime.jrunscript.http.client.Exports
-
 		tools: {
 			git: slime.jrunscript.git.Exports
 			hg: any
