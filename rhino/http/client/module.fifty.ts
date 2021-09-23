@@ -32,7 +32,85 @@ namespace slime.jrunscript.http.client {
 		/**
 		 * A header value for the `Authorization:` header suitable for authorizing a request.
 		 */
-		export type authorization = Authorization
+		export type authorization = Authorization;
+
+		export const scope = (function(Packages: any, JavaAdapter: any, fifty: slime.fifty.test.kit) {
+			function s(Packages: any, JavaAdapter: any, fifty: slime.fifty.test.kit): slime.jrunscript.http.client.test.Scope {
+				var scope: slime.jrunscript.http.client.test.Scope = {
+					servlet: void(0),
+					tomcat: void(0),
+					$Context: void(0),
+					context: void(0),
+					module: void(0)
+				};
+				var fixtures: slime.jrunscript.http.client.test.Fixtures = fifty.$loader.module("test/fixtures.ts");
+				fixtures(
+					Packages,
+					JavaAdapter,
+					fifty.global.jsh,
+					{
+						environment: {},
+						loader: fifty.$loader
+					},
+					scope
+				);
+				return scope;
+			}
+
+			var rv = s(Packages, JavaAdapter, fifty);
+			return rv;
+		//@ts-ignore
+		})(Packages,JavaAdapter,fifty);
+
+		(
+			function(
+				fifty: slime.fifty.test.kit
+			) {
+				var scope = jsapi.scope;
+				var module = scope.module;
+				var context = scope.context;
+				var verify = fifty.verify;
+				fifty.tests.spi = function() {
+					var client = new module.Client({
+						spi: function(original) {
+							return function(p) {
+								var buffer = new context.io.Buffer();
+								//	TODO	below was buffer.writeText("Hello, Dude!"), which counterintuitively, silently
+								//			failed; consider alternatives for jrunscript/io
+								buffer.writeText().write("Hello, Dude!");
+								buffer.close();
+								return {
+									status: {
+										code: 200,
+										reason: "OK"
+									},
+									headers: [
+										{ name: "Content-Type", value: "text/plain" }
+									],
+									stream: buffer.readBinary()
+								}
+							}
+						}
+					});
+					var redirected = false;
+					servlet.set(function(request,response) {
+						response.setContentType("text/plain");
+						response.getWriter().print("Hello, World!");
+					});
+					var response = client.request({
+						method: "GET",
+						url: "http://127.0.0.1:" + context.port + "/"
+						,evaluate: function(response) {
+							return response;
+						}
+					});
+					//	TODO	add jrunscript/io Resource capability
+					verify(response.body.stream.character().asString()).is("Hello, Dude!");
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+
 	}
 
 	export type Header = pair
@@ -319,6 +397,18 @@ namespace slime.jrunscript.http.client {
 			ok: <T>(parser: object.parser<T>) => object.parser<T>
 		}
 	}
+
+	(
+		function(
+			fifty: slime.fifty.test.kit
+		) {
+			fifty.tests.suite = function() {
+				fifty.run(fifty.tests.spi);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
 }
 
 namespace slime.jrunscript.http.client.internal {

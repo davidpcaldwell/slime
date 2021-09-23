@@ -5,6 +5,21 @@
 //	END LICENSE
 
 namespace slime.jrunscript.http.client.test {
+	export type service = (request: any, response: any) => void
+
+	export type Servlet = {
+		set: (implementation: service) => void
+		service: service
+	}
+
+	export type Scope = {
+		servlet: Servlet
+		tomcat: any
+		$Context: any
+		context: any
+		module: slime.jrunscript.http.client.Exports
+	}
+
 	export type Fixtures = {
 		(
 			Packages: slime.jrunscript.Packages,
@@ -14,7 +29,7 @@ namespace slime.jrunscript.http.client.test {
 				environment: { [x: string]: any },
 				loader: slime.Loader
 			},
-			scope: { [x: string]: any }
+			scope: Scope
 		): void
 	}
 
@@ -29,7 +44,7 @@ namespace slime.jrunscript.http.client.test {
 						environment: { [x: string]: any },
 						loader: slime.Loader
 					},
-					scope: { [x: string]: any }
+					scope: Scope
 				) {
 					var TOMCAT_CLASS = jsh.java.getClass("org.apache.catalina.startup.Tomcat");
 					var CATALINA_HOME = (function() {
