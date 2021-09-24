@@ -72,7 +72,7 @@ namespace slime.jrunscript.http.client {
 					stream: slime.jrunscript.runtime.io.InputStream
 				}
 			}
-			proxy: Proxies
+			proxy?: Proxies
 			timeout: Timeouts
 		}
 
