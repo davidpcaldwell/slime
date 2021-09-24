@@ -11,14 +11,18 @@ namespace slime.jrunscript.http.client.internal.objects {
 			io: slime.jrunscript.io.Exports
 			web: slime.web.Exports
 		}
-		Parameters: slime.jrunscript.http.client.internal.Parameters
 		urlConnectionImplementation: slime.jrunscript.http.client.spi.Implementation
 		sessionRequest: slime.jrunscript.http.client.internal.sessionRequest
 		authorizedRequest: slime.jrunscript.http.client.internal.authorizedRequest
 		proxiedRequest: slime.jrunscript.http.client.internal.proxiedRequest
 	}
 
-	export type Export = slime.jrunscript.http.client.Exports["Client"]
+	export type Export = {
+		Client: slime.jrunscript.http.client.Exports["Client"]
+		Body: slime.jrunscript.http.client.Exports["Body"]
+		Authentication: slime.jrunscript.http.client.Exports["Authentication"]
+		Parser: slime.jrunscript.http.client.Exports["Parser"]
+	}
 
 	export type load = slime.loader.Product<Context,Export>
 }

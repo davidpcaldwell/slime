@@ -101,6 +101,14 @@ namespace slime.jrunscript.http.client {
 		}
 	}
 
+	export interface World {
+		request: (p: spi.Argument) => slime.$api.fp.impure.Ask<void,spi.Response>
+	}
+
+	export interface Exports {
+		world: World
+	}
+
 	export namespace object {
 		export type Authorization = string
 

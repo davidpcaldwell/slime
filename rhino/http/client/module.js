@@ -11,9 +11,9 @@
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jrunscript.http.client.Context } $context
 	 * @param { slime.Loader } $loader
-	 * @param { slime.jrunscript.http.client.Exports } $exports
+	 * @param { slime.loader.Export<slime.jrunscript.http.client.Exports> } $export
 	 */
-	function(Packages,$api,$context,$loader,$exports) {
+	function(Packages,$api,$context,$loader,$export) {
 		Packages.java.lang.System.setProperty("sun.net.http.allowRestrictedHeaders", "true");
 
 		(
@@ -34,7 +34,9 @@
 		};
 
 		var scripts = {
-			cookies: code.cookies()
+			cookies: code.cookies(),
+			/** @type { slime.jrunscript.http.client.internal.objects.Export } */
+			objects: void(0)
 		};
 
 		var allowMethods = function() {
@@ -250,48 +252,6 @@
 			return rv;
 		}
 
-		/** @type { slime.jrunscript.http.client.internal.Parameters } */
-		var Parameters = function(p) {
-			if (typeof(p) == "object" && p instanceof Array) {
-				return p;
-			} else if (typeof(p) == "object") {
-				var rv = [];
-
-				/** @type { (v: any) => v is Array } */
-				var isArray = function(v) {
-					return v instanceof Array;
-				}
-
-				/** @type { (v: any) => v is string } */
-				var isString = function(v) {
-					return typeof(v) == "string";
-				}
-
-				/** @type { (v: any) => v is number } */
-				var isNumber = function(v) {
-					return typeof(v) == "number";
-				}
-
-				for (var x in p) {
-					var value = p[x];
-					if (isString(value)) {
-						rv.push({ name: x, value: value });
-					} else if (isNumber(value)) {
-						rv.push({ name: x, value: String(value) });
-					} else if (typeof(value) == "object" && isArray(value)) {
-						value.forEach( function(item) {
-							rv.push({ name: x, value: item });
-						});
-					} else {
-						throw new TypeError("Illegal argument to Parameters: property " + x + ": " + p[x]);
-					}
-				}
-				return rv;
-			} else {
-				throw new TypeError("Illegal argument to Parameters: " + p);
-			}
-		}
-
 		/** @type { slime.jrunscript.http.client.internal.sessionRequest } */
 		var sessionRequest = function(cookies) {
 			return function(argument) {
@@ -330,99 +290,25 @@
 				io: $context.api.io,
 				web: $context.api.web
 			},
-			Parameters: Parameters,
 			urlConnectionImplementation: urlConnectionImplementation,
 			sessionRequest: sessionRequest,
 			authorizedRequest: authorizedRequest,
 			proxiedRequest: proxiedRequest
 		});
 
-		$exports.Client = scripts.objects;
-
-		$exports.Authentication = {
-			Basic: {
-				/**
-				 * @param { { user: string, password: string }} p
-				 */
-				Authorization: function(p) {
-					return "Basic " + String(
-						Packages.javax.xml.bind.DatatypeConverter.printBase64Binary(
-							new Packages.java.lang.String(p.user + ":" + p.password).getBytes()
-						)
-					);
-				}
-			}
-		}
-
-		$exports.Body = new function() {
-			var QueryString = function(string) {
-				var decode = function(string) {
-					return String(Packages.java.net.URLDecoder.decode(string, "UTF-8"));
-				}
-
-				var pairs = string.split("&").map( function(token) {
-					var assign = token.split("=");
-					return { name: decode(assign[0]), value: decode(assign[1]) };
-				});
-
-				return pairs;
-			}
-			QueryString.encode = function(array) {
-				var encode = function(string) {
-					return String(Packages.java.net.URLEncoder.encode(string, "UTF-8"));
-				}
-
-				return array.map( function(item) {
-					return encode(item.name) + "=" + encode(item.value);
-				}).join("&");
-			};
-
-			var UrlQuery = function(p) {
-				if (typeof(p) == "string") {
-					return QueryString(p);
-				} else {
-					return Parameters(p);
-				}
-			}
-
-			this.Form = function(p) {
-				var TYPE = $context.api.web.Form.type;
-				if (p.form) {
-					return {
-						type: TYPE,
-						string: p.form.getUrlencoded()
+		$export({
+			world: {
+				request: function(p) {
+					return function(e) {
+						return urlConnectionImplementation(p);
 					}
 				}
-				return {
-					type: TYPE,
-					string: QueryString.encode(UrlQuery(p))
-				};
-			};
-
-			this.Json = function(p) {
-				return {
-					type: "application/json",
-					string: JSON.stringify(p)
-				}
-			};
-		}
-
-		$exports.Parser = new function() {
-			this.ok = function(f) {
-				return function(response) {
-					if (response.status.code != 200) {
-						var error = Object.assign(
-							new Error("HTTP Status code: " + response.status.code + " message=" + response.status.message),
-							{ page: response.body.stream.character().asString() }
-						);
-						throw error;
-					}
-					return f(response);
-				}
-			}
-
-			this.OK = $api.deprecate(this.ok);
-		}
+			},
+			Client: scripts.objects.Client,
+			Body: scripts.objects.Body,
+			Authentication: scripts.objects.Authentication,
+			Parser: scripts.objects.Parser
+		})
 	}
 //@ts-ignore
-)(Packages,$api,$context,$loader,$exports)
+)(Packages,$api,$context,$loader,$export)
