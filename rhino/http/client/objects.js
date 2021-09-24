@@ -258,7 +258,7 @@
 					},
 					proxy: p.proxy,
 					timeout: p.timeout
-				});
+				})();
 			}
 
 			/**

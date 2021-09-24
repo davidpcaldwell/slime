@@ -160,96 +160,132 @@
 				return (result) ? $context.api.io.java.adapt(result) : null;
 			}
 
-			// var mode = {
-			// 	proxy: p.proxy,
-			// 	timeout: p.timeout
-			// }
+			/**
+			 *
+			 * @param { slime.web.Url } url
+			 * @param { slime.jrunscript.http.client.Proxies } proxy
+			 * @param { slime.$api.Events<slime.jrunscript.http.client.spi.Events> } events
+			 * @returns
+			 */
+			var openUrlConnection = function(url,proxy,events) {
+				/**
+				 *
+				 * @param { slime.jrunscript.native.java.net.URL } _url
+				 * @param { slime.jrunscript.native.java.net.Proxy } _proxy
+				 * @returns { slime.jrunscript.native.java.net.URLConnection }
+				 */
+				var _open = function(_url,_proxy) {
+					if (_proxy) {
+						return _url.openConnection(_proxy);
+					} else {
+						return _url.openConnection();
+					}
+				}
 
-			var hostHeader;
-			if (p.request.url.scheme == "https" && p.proxy && p.proxy.https) {
-				//	Currently implemented by re-writing the URL; would be better to implement a tunnel through an HTTP proxy but
-				//	could not get that working with Tomcat, which returned 400 errors when https requests are sent to http listener
-				//	TODO	does this work for default port?
-				hostHeader = p.request.url.host + ((p.request.url.port) ? ":" + p.request.url.port : "");
-				p.request.url.host = p.proxy.https.host;
-				p.request.url.port = p.proxy.https.port;
+				/**
+				 *
+				 * @param { slime.jrunscript.http.client.Proxies } proxy
+				 * @returns { slime.jrunscript.native.java.net.Proxy }
+				 */
+				var toJavaProxy = function(proxy) {
+					if (!proxy) {
+						return null;
+					} else if (proxy.https) {
+						return null;
+					} else if (proxy.http || proxy.socks) {
+						var _type = (function() {
+							if (proxy.http) return {
+								type: Packages.java.net.Proxy.Type.HTTP,
+								specifier: proxy.http
+							}
+							if (proxy.socks) return {
+								type: Packages.java.net.Proxy.Type.SOCKS,
+								specifier: proxy.socks
+							};
+							throw new Error("Unrecognized proxy type in " + proxy);
+						})();
+						var _proxy = new Packages.java.net.Proxy(
+							_type.type,
+							new Packages.java.net.InetSocketAddress(_type.specifier.host,_type.specifier.port)
+						);
+						return _proxy;
+					}
+				}
+
+				events.fire("request", {
+					url: url,
+					proxy: proxy
+				})
+				return _open(new Packages.java.net.URL(p.request.url.toString()), toJavaProxy(proxy));
 			}
 
-			var $url = new Packages.java.net.URL(p.request.url.toString());
-			debug("Requesting: " + p.request.url);
+			var execute = $api.Events.action(
+				/**
+				 *
+				 * @param { slime.$api.Events<slime.jrunscript.http.client.spi.Events> } e
+				 */
+				function(e) {
+					/** @type { slime.jrunscript.http.client.Header } */
+					var hostHeader;
+					if (p.request.url.scheme == "https" && p.proxy && p.proxy.https) {
+						//	Currently implemented by re-writing the URL; would be better to implement a tunnel through an HTTP proxy but
+						//	could not get that working with Tomcat, which returned 400 errors when https requests are sent to http listener
+						//	TODO	does this work for default port?
+						hostHeader = { name: "Host", value: p.request.url.host + ((p.request.url.port) ? ":" + p.request.url.port : "") };
+						p.request.url.host = p.proxy.https.host;
+						p.request.url.port = p.proxy.https.port;
+					}
 
-			var $urlConnection = (function(proxy) {
-				if (!proxy) {
-					return $url.openConnection();
-				} else if (proxy.https) {
-					return $url.openConnection();
-				} else if (proxy.http || proxy.socks) {
-					var _type = (function() {
-						if (proxy.http) return {
-							type: Packages.java.net.Proxy.Type.HTTP,
-							specifier: proxy.http
+					var $urlConnection = openUrlConnection(p.request.url, p.proxy, e);
+
+					$urlConnection.setRequestMethod(p.request.method);
+
+					if (p.timeout) {
+						if (p.timeout.connect) {
+							$urlConnection.setConnectTimeout(p.timeout.connect);
 						}
-						if (proxy.socks) return {
-							type: Packages.java.net.Proxy.Type.SOCKS,
-							specifier: proxy.socks
-						};
-						throw new Error("Unrecognized proxy type in " + proxy);
-					})();
-					var _proxy = new Packages.java.net.Proxy(
-						_type.type,
-						new Packages.java.net.InetSocketAddress(_type.specifier.host,_type.specifier.port)
-					);
-					return $url.openConnection(_proxy);
-				}
-			})(p.proxy);
-
-			$urlConnection.setRequestMethod(p.request.method);
-
-			if (p.timeout) {
-				if (p.timeout.connect) {
-					$urlConnection.setConnectTimeout(p.timeout.connect);
-				}
-				if (p.timeout.read) {
-					$urlConnection.setReadTimeout(p.timeout.read);
-				}
-			}
-
-			if (hostHeader) {
-				$urlConnection.addRequestProperty("Host",hostHeader);
-			}
-			p.request.headers.forEach( function(header) {
-				$urlConnection.addRequestProperty(header.name,header.value);
-			});
-
-			$urlConnection.setInstanceFollowRedirects(false);
-
-			if (p.request.body) {
-				$urlConnection.setDoOutput(true);
-
-				$urlConnection.setRequestProperty(
-					"Content-Type",
-					$api.mime.Type.codec.declaration.encode(getRequestBodyType(p.request.body))
-				);
-
-				$context.api.io.Streams.binary.copy(
-					p.request.body.stream,
-					$context.api.io.java.adapt($urlConnection.getOutputStream()),
-					{
-						onFinish: function(from,to) {
-							to.close();
+						if (p.timeout.read) {
+							$urlConnection.setReadTimeout(p.timeout.read);
 						}
 					}
-				);
-			}
 
-			/** @type { slime.jrunscript.http.client.spi.Response } */
-			var rv = {
-				status: getResponseStatus($urlConnection),
-				headers: getResponseHeaders($urlConnection),
-				stream: getResponseBodyStream($urlConnection)
-			}
+					if (hostHeader) {
+						$urlConnection.addRequestProperty(hostHeader.name, hostHeader.value);
+					}
+					p.request.headers.forEach( function(header) {
+						$urlConnection.addRequestProperty(header.name,header.value);
+					});
 
-			return rv;
+					$urlConnection.setInstanceFollowRedirects(false);
+
+					if (p.request.body) {
+						$urlConnection.setDoOutput(true);
+
+						$urlConnection.setRequestProperty(
+							"Content-Type",
+							$api.mime.Type.codec.declaration.encode(getRequestBodyType(p.request.body))
+						);
+
+						$context.api.io.Streams.binary.copy(
+							p.request.body.stream,
+							$context.api.io.java.adapt($urlConnection.getOutputStream()),
+							{
+								onFinish: function(from,to) {
+									to.close();
+								}
+							}
+						);
+					}
+
+					return {
+						status: getResponseStatus($urlConnection),
+						headers: getResponseHeaders($urlConnection),
+						stream: getResponseBodyStream($urlConnection)
+					};
+				}
+			);
+
+			return execute;
 		}
 
 		/** @type { slime.jrunscript.http.client.internal.sessionRequest } */
@@ -299,9 +335,7 @@
 		$export({
 			world: {
 				request: function(p) {
-					return function(e) {
-						return urlConnectionImplementation(p);
-					}
+					return urlConnectionImplementation(p);
 				}
 			},
 			Client: scripts.objects.Client,

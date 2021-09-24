@@ -67,7 +67,7 @@ namespace slime.jrunscript.http.client {
 				method: string
 				url: slime.web.Url
 				headers: Header[]
-				body: {
+				body?: {
 					type: slime.mime.Type
 					stream: slime.jrunscript.runtime.io.InputStream
 				}
@@ -85,7 +85,14 @@ namespace slime.jrunscript.http.client {
 			stream: slime.jrunscript.runtime.io.InputStream
 		}
 
-		export type Implementation = (argument: Argument) => Response
+		export type Events = {
+			request: {
+				url: slime.web.Url
+				proxy: Proxies
+			}
+		}
+
+		export type Implementation = (p: Argument) => slime.$api.fp.impure.Ask<Events,Response>
 
 		export namespace old {
 			export interface Request {
@@ -102,7 +109,7 @@ namespace slime.jrunscript.http.client {
 	}
 
 	export interface World {
-		request: (p: spi.Argument) => slime.$api.fp.impure.Ask<void,spi.Response>
+		request: (p: spi.Argument) => slime.$api.fp.impure.Ask<spi.Events,spi.Response>
 	}
 
 	export interface Exports {
@@ -118,6 +125,8 @@ namespace slime.jrunscript.http.client {
 		 * Either a {@link parameters}, or a `string` representing a query string.
 		 */
 		export type query = parameters | string
+
+		export type Implementation = (argument: spi.Argument) => spi.Response
 
 		export interface Request {
 			/**
