@@ -11,14 +11,17 @@ namespace slime.time {
 		}
 		at: Function
 		format(mask: string): string
-		month: {
-			id: {
-				index: number
-			}
-		}
+		month: Month
 		day: number
 		add(n: number): Day
 		isAfter(day: Day): boolean
+	}
+
+	export interface Month {
+		id: {
+			index: number
+		}
+		day: (n: number) => Day
 	}
 
 	namespace Day {
