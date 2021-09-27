@@ -77,11 +77,6 @@ namespace slime.jrunscript.tools.docker {
 		}) => slime.$api.fp.impure.Tell<install.Events>
 	}
 
-	export interface Jsh {
-		engine: slime.jrunscript.tools.docker.Engine
-		require: () => slime.$api.fp.impure.Tell<install.Events>
-	}
-
 	export namespace test {
 		export const subject: Engine = (function(fifty: slime.fifty.test.kit) {
 			return fifty.$loader.module("module.js");

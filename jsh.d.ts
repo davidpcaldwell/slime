@@ -22,6 +22,15 @@ namespace slime.jsh {
 		}
 	}
 
+	export interface Tools {
+		git: slime.jrunscript.git.Exports
+		hg: any
+		node: slime.jrunscript.node.Exports
+		install: slime.jsh.tools.install.Exports
+		github: slime.jrunscript.tools.github.Exports
+		gradle: any
+	}
+
 	/**
 	 * The global `jsh` object provided by the `jsh` shell.
 	 *
@@ -33,15 +42,7 @@ namespace slime.jsh {
 			log: any
 		}
 
-		tools: {
-			git: slime.jrunscript.git.Exports
-			hg: any
-			node: slime.jrunscript.node.Exports
-			install: slime.jsh.tools.install.Exports
-			github: slime.jrunscript.tools.github.Exports
-			gradle: any
-			docker: slime.jrunscript.tools.docker.Jsh
-		} & {
+		tools: Tools & {
 			//	deprecated
 			rhino: {}
 			tomcat: {}

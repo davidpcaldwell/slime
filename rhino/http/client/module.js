@@ -62,10 +62,6 @@
 
 		allowMethods("PATCH");
 
-		//	TODO	Pretty much all this does currently is log "Requesting:" followed by the URL being requested; should document and make
-		//			this much more advanced; probably should configure at instance level, not module level
-		var debug = ($context.debug) ? $context.debug : function(){};
-
 		/**
 		 *
 		 * @param { slime.jrunscript.http.client.object.request.Body } body
