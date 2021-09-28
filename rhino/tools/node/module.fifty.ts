@@ -5,7 +5,7 @@
 //	END LICENSE
 
 namespace slime.jrunscript.node {
-	interface Context {
+	export interface Context {
 		module: {
 			file: any,
 			shell: any
@@ -19,7 +19,7 @@ namespace slime.jrunscript.node {
 		number: string
 	}
 
-	interface Installation {
+	export interface Installation {
 		version: Version
 		run: <T>(p: {
 			command?: string
@@ -48,17 +48,23 @@ namespace slime.jrunscript.node {
 		}
 	}
 
-	interface Exports {
-		Installation: new (o: any) => slime.jrunscript.node.Installation
+	export namespace install {
+		export interface Events {
+			console: string
+		}
+	}
+
+	export interface Exports {
+		Installation: new (o: { directory: slime.jrunscript.file.Directory }) => slime.jrunscript.node.Installation
 		at: (p: { location: slime.jrunscript.file.Pathname }) => slime.jrunscript.node.Installation
 		Project: Function,
 		install: (
 			p: {
-				location: slime.jrunscript.file.Pathname,
 				version?: string,
+				location: slime.jrunscript.file.Pathname,
 				update?: boolean
 			},
-			events?: any
+			events?: slime.$api.events.Handler<install.Events>
 		) => slime.jrunscript.node.Installation
 	}
 }

@@ -13,6 +13,7 @@
 	 */
 	function($api,$context,$exports) {
 		/**
+		 * @param { ConstructorParameters<slime.jrunscript.node.Exports["Installation"]>[0] } o
 		 * @constructor
 		 */
 		$exports.Installation = function(o) {
@@ -175,6 +176,7 @@
 
 		var versions = {
 			"Mac OS X": {
+				"8.16.2": { url: "https://nodejs.org/download/release/v8.16.2/node-v8.16.2-darwin-x64.tar.gz" },
 				"12.13.1": { url: "https://nodejs.org/dist/v12.13.1/node-v12.13.1-darwin-x64.tar.gz" },
 				"12.14.1": { url: "https://nodejs.org/dist/v12.14.1/node-v12.14.1-darwin-x64.tar.gz" },
 				"12.16.0": { url: "https://nodejs.org/dist/v12.16.0/node-v12.16.0-darwin-x64.tar.gz" },
@@ -196,7 +198,12 @@
 		};
 
 		$exports.install = $api.Events.Function(
-			/** @type { slime.jrunscript.node.Exports["install"] } */
+			/**
+			 *
+			 * @param { Parameters<slime.jrunscript.node.Exports["install"]>[0] } p
+			 * @param { slime.$api.Events<slime.jrunscript.node.install.Events> } events
+			 * @returns
+			 */
 			function(p,events) {
 				if (!p) throw new TypeError();
 				//	TODO	compute this somehow?
