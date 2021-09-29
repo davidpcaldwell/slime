@@ -523,16 +523,23 @@ namespace slime.jrunscript.shell {
 
 	export type Loader = slime.loader.Product<Context,Exports>;
 
+	export namespace sudo {
+		export interface Settings {
+			nocache?: boolean
+			askpass?: string | slime.jrunscript.file.File
+		}
+	}
+
 	export interface Exports {
-		Invocation: {
+		Invocation: exports.Invocation & {
+			create: (p: invocation.Argument) => run.Invocation
+
 			/**
-			 * Creates a fully-specified {@link Invocation} from a given {@link invocation.Argument} and the surrounding context.
+			 * @deprecated
+			 *
+			 * Creates a fully-specified {@link old.Invocation} from a given {@link invocation.old.Argument} and the surrounding context.
 			 */
 			old: (p: invocation.old.Argument) => old.Invocation
-
-			modernize: (p: old.Invocation) => run.Invocation
-
-			create: (p: invocation.Argument) => run.Invocation
 		}
 	}
 

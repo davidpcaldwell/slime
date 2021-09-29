@@ -525,6 +525,7 @@ namespace slime.jrunscript {
 					attribute: {
 						FileTime: any
 					}
+					LinkOption: any
 				}
 				charset: {
 					Charset: any

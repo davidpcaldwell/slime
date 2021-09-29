@@ -5,37 +5,6 @@
 //	END LICENSE
 
 namespace slime.jrunscript.shell {
-	export namespace old {
-		/**
-		 * A fully-specified invocation of a command to be run in an external process.
-		 */
-		export interface Invocation {
-			/**
-			 * The command to run.
-			 */
-			command: string
-
-			/**
-			 * The arguments to pass to the command.
-			 */
-			arguments: string[]
-
-			/**
-			 * The environment to pass to the command.
-			 */
-			environment: {
-				[name: string]: string
-			}
-
-			/**
-			 * The working directory to use when running the command.
-			 */
-			directory: slime.jrunscript.file.Directory
-
-			stdio: invocation.old.Stdio
-		}
-	}
-
 	export namespace invocation {
 		export type Token = string | slime.jrunscript.file.Pathname | slime.jrunscript.file.Node
 
@@ -115,6 +84,13 @@ namespace slime.jrunscript.shell {
 		 }
 	}
 
+	export namespace exports {
+		export interface Invocation {
+			modernize: (p: old.Invocation) => run.Invocation
+			sudo: (settings: sudo.Settings) => (invocation: run.Invocation) => run.Invocation
+		}
+	}
+
 	export interface Exports {
 		invocation: {
 			 //	TODO	probably should be conditional based on presence of sudo tool
@@ -122,16 +98,44 @@ namespace slime.jrunscript.shell {
 			  * Given a set of `sudo` settings, provides a function that can convert an {@link Invocation} to an equivalent
 			  * `Invocation` that runs the command under `sudo`.
 			  */
-			 sudo: (settings?: {
-				 nocache?: boolean
-				 askpass?: string | slime.jrunscript.file.File
-			 }) => (p: slime.jrunscript.shell.old.Invocation) => slime.jrunscript.shell.old.Invocation
+			 sudo: (settings?: sudo.Settings) => (p: slime.jrunscript.shell.old.Invocation) => slime.jrunscript.shell.old.Invocation
 
 			 toBashScript: () => (p: {
 				command: string | slime.jrunscript.file.File
 				arguments?: string[]
 				directory?: slime.jrunscript.file.Directory
 			 }) => string
+		}
+	}
+
+	export namespace old {
+		/**
+		 * A fully-specified invocation of a command to be run in an external process.
+		 */
+		export interface Invocation {
+			/**
+			 * The command to run.
+			 */
+			command: string
+
+			/**
+			 * The arguments to pass to the command.
+			 */
+			arguments: string[]
+
+			/**
+			 * The environment to pass to the command.
+			 */
+			environment: {
+				[name: string]: string
+			}
+
+			/**
+			 * The working directory to use when running the command.
+			 */
+			directory: slime.jrunscript.file.Directory
+
+			stdio: invocation.old.Stdio
 		}
 	}
 
@@ -207,8 +211,6 @@ namespace slime.jrunscript.shell.internal.invocation {
 
 		toStdioConfiguration: (declaration: slime.jrunscript.shell.internal.invocation.StdioWithInputFixed) => slime.jrunscript.shell.run.StdioConfiguration
 
-		modernize: (p: old.Invocation) => slime.jrunscript.shell.run.Invocation
-
 		toContext: (
 			p: slime.jrunscript.shell.invocation.old.Argument,
 			parentEnvironment: slime.jrunscript.host.Environment,
@@ -220,6 +222,9 @@ namespace slime.jrunscript.shell.internal.invocation {
 		toConfiguration: (
 			p: Configuration
 		) => slime.jrunscript.shell.internal.run.java.Configuration
+
+		modernize: slime.jrunscript.shell.exports.Invocation["modernize"]
+		sudo: slime.jrunscript.shell.exports.Invocation["sudo"]
 
 		invocation: slime.jrunscript.shell.Exports["invocation"]
 	}

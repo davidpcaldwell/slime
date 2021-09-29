@@ -209,6 +209,35 @@
 			}
 		}
 
+		/**
+		 *
+		 * @param { slime.jrunscript.host.Environment } environment
+		 * @param { slime.jrunscript.shell.sudo.Settings } settings
+		 * @returns { slime.jrunscript.host.Environment }
+		 */
+		var getEnvironmentToSudo = function(environment, settings) {
+			return $api.Object.compose(
+				environment,
+				(settings && settings.askpass) ? { SUDO_ASKPASS: settings.askpass } : {}
+			)
+		}
+
+		/**
+		 *
+		 * @param { string } command
+		 * @param { string[] } args
+		 * @param { slime.jrunscript.shell.sudo.Settings } settings
+		 * @returns { string[] }
+		 */
+		var getArgumentsToSudo = function(command, args, settings) {
+			return $api.Array.build(function(array) {
+				if (settings && settings.askpass) array.push("--askpass");
+				if (settings && settings.nocache) array.push("--reset-timestamp")
+				array.push(command);
+				array.push.apply(array, args);
+			});
+		}
+
 		$export({
 			error: {
 				BadCommandToken: parseCommandToken.Error
@@ -218,9 +247,24 @@
 			toContext: toContext,
 			fallbackToParentStdio: fallbackToParentStdio,
 			toStdioConfiguration: toStdioConfiguration,
-			modernize: modernize,
 			toConfiguration: toConfiguration,
 			isLineListener: isLineListener,
+			modernize: modernize,
+			sudo: function(settings) {
+				return function(invocation) {
+					return {
+						context: {
+							environment: getEnvironmentToSudo(invocation.context.environment, settings),
+							directory: invocation.context.directory,
+							stdio: invocation.context.stdio
+						},
+						configuration: {
+							command: "sudo",
+							arguments: getArgumentsToSudo(invocation.configuration.command, invocation.configuration.arguments, settings)
+						}
+					}
+				}
+			},
 			invocation: {
 				sudo: function(settings) {
 					//	TODO	sudo has preserve-env and preserver-env= flags. Should make the relationship

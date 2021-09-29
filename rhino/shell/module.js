@@ -717,7 +717,7 @@
 			}), events);
 		});
 
-		var Invocation = function(p) {
+		var Invocation_old = function(p) {
 			return {
 				command: String(p.command),
 				arguments: (p.arguments) ? p.arguments.map(String) : [],
@@ -759,12 +759,13 @@
 				// 	return tell(on);
 				// }
 			},
-			Invocation: $api.deprecate(Invocation)
+			Invocation: $api.deprecate(Invocation_old)
 		}
 
 		$exports.Invocation = {
-			old: Invocation,
+			old: Invocation_old,
 			modernize: scripts.invocation.modernize,
+			sudo: scripts.invocation.sudo,
 			create: function(p) {
 				return {
 					context: {
