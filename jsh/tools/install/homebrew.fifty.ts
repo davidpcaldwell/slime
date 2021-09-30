@@ -4,21 +4,22 @@
 //
 //	END LICENSE
 
-namespace slime.jsh.tools.install.module {
-	export interface Homebrew {
+namespace slime.jrunscript.tools.homebrew {
+	export interface Installation {
 		directory: slime.jrunscript.file.Directory
 		update: () => void
 		install: (p: { formula: string }) => void
 		upgrade: (p: { formula: string }) => void
 	}
 
-	export namespace homebrew {
-		export interface Exports {
-			get: (p: { location: slime.jrunscript.file.Pathname }) => Homebrew
-		}
-
-		export type Factory = slime.loader.Product<{},homebrew.Exports>
+	export interface Exports {
+		/**
+		 * Returns a Homebrew installation at the given location, creating the directory and installing Homebrew if necessary.
+		 */
+		get: (p: { location: slime.jrunscript.file.Pathname }) => Installation
 	}
+
+	export type load = slime.loader.Product<void,homebrew.Exports>
 
 	(
 		function(

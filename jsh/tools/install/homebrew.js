@@ -9,32 +9,35 @@
 	/**
 	 *
 	 * @param { slime.jsh.Global } jsh
-	 * @param { slime.loader.Export<slime.jsh.tools.install.module.homebrew.Exports> } $export
+	 * @param { slime.loader.Export<slime.jrunscript.tools.homebrew.Exports> } $export
 	 */
 	function(jsh,$export) {
 		/**
 		 *
-		 * @param { Parameters<slime.jsh.tools.install.module.homebrew.Exports["get"]>[0] } p
-		 * @returns { slime.jsh.tools.install.module.Homebrew }
+		 * @param { Parameters<slime.jrunscript.tools.homebrew.Exports["get"]>[0] } p
+		 * @returns { slime.jrunscript.tools.homebrew.Installation }
 		 */
 		function getLocalHomebrew(p) {
-			var to = p.location.createDirectory({
-				exists: function(dir) {
-					return false;
-				}
-			});
+			var to = p.location.directory;
+			if (!to) {
+				to = p.location.createDirectory({
+					exists: function(dir) {
+						return false;
+					}
+				});
 
-			jsh.shell.run({
-				command: "tar",
-				arguments: ["xz", "--strip", "1", "-C", to.pathname.basename],
-				//	TODO	might not exist
-				directory: to.parent,
-				stdio: {
-					input: new jsh.http.Client().request({
-						url: "https://github.com/Homebrew/brew/tarball/master"
-					}).body.stream
-				}
-			})
+				jsh.shell.run({
+					command: "tar",
+					arguments: ["xz", "--strip", "1", "-C", to.pathname.basename],
+					//	TODO	might not exist
+					directory: to.parent,
+					stdio: {
+						input: new jsh.http.Client().request({
+							url: "https://github.com/Homebrew/brew/tarball/master"
+						}).body.stream
+					}
+				});
+			}
 
 			var homebrew = (function(directory) {
 				var program = directory.getFile("bin/brew");
