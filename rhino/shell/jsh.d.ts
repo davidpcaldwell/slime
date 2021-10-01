@@ -4,6 +4,15 @@
 //
 //	END LICENSE
 
+namespace slime.jsh {
+	interface Global {
+		shell: slime.jsh.shell.Exports & {
+			/** @deprecated */
+			getopts: jsh["script"]["getopts"]
+		}
+	}
+}
+
 namespace slime.jsh.shell {
 	namespace internal {
 		interface Context {

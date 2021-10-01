@@ -27,6 +27,7 @@
 					github: void(0),
 					gradle: void(0),
 					docker: void(0),
+					kubectl: void(0),
 
 					//	deprecated
 					rhino: void(0),

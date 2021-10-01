@@ -4,8 +4,8 @@
 //
 //	END LICENSE
 
-namespace slime.jrunscript.tools.docker {
-	namespace cli {
+namespace slime.jrunscript.tools {
+	export namespace docker.cli {
 		interface Invocation {
 			command: string[]
 			arguments: string[]
@@ -24,57 +24,59 @@ namespace slime.jrunscript.tools.docker {
 		}
 	}
 
-	(
-		function(
-			fifty: slime.fifty.test.kit
-		) {
-			fifty.tests.cli = {};
-			fifty.tests.cli.exec = function() {
-				var invocation = test.subject.engine.cli.exec({
-					interactive: true,
-					tty: true,
-					container: "CONTAINER",
-					command: "COMMAND",
-					arguments: [
-						"--foo", "bar"
-					]
-				});
-				fifty.verify(invocation).command.evaluate(function(p) { return p.toString(); }).is("exec");
-				fifty.verify(invocation).arguments[0].is("--interactive");
-				fifty.verify(invocation).arguments[1].is("--tty");
-				fifty.verify(invocation).arguments[2].is("CONTAINER");
-				fifty.verify(invocation).arguments[3].is("COMMAND");
-				fifty.verify(invocation).arguments[4].is("--foo");
-				fifty.verify(invocation).arguments[5].is("bar");
+	export namespace docker {
+		export interface Engine {
+			cli: cli.Interface
+		}
+
+		export namespace install {
+			export interface Events {
+				installed: slime.jrunscript.file.Directory
+				found: slime.jrunscript.file.Directory
 			}
 		}
-	//@ts-ignore
-	)(fifty);
 
-	export interface Engine {
-		cli: cli.Interface
-	}
-
-	export namespace install {
-		export interface Events {
-			installed: slime.jrunscript.file.Directory
-			found: slime.jrunscript.file.Directory
+		export interface Export {
+			engine: slime.jrunscript.tools.docker.Engine
+			install: (p: {
+				version?: string
+				library: {
+					shell: slime.jrunscript.shell.Exports
+					install: slime.jsh.tools.install.module.Exports
+				}
+				sudo?: {
+					askpass: slime.jrunscript.file.File
+				}
+				destination: slime.jrunscript.file.Pathname
+			}) => slime.$api.fp.impure.Tell<install.Events>
 		}
-	}
 
-	export interface Export {
-		engine: slime.jrunscript.tools.docker.Engine
-		install: (p: {
-			version?: string
-			library: {
-				shell: slime.jrunscript.shell.Exports
-				install: slime.jsh.tools.install.module.Exports
+		(
+			function(
+				fifty: slime.fifty.test.kit
+			) {
+				fifty.tests.cli = {};
+				fifty.tests.cli.exec = function() {
+					var invocation = test.subject.engine.cli.exec({
+						interactive: true,
+						tty: true,
+						container: "CONTAINER",
+						command: "COMMAND",
+						arguments: [
+							"--foo", "bar"
+						]
+					});
+					fifty.verify(invocation).command.evaluate(function(p) { return p.toString(); }).is("exec");
+					fifty.verify(invocation).arguments[0].is("--interactive");
+					fifty.verify(invocation).arguments[1].is("--tty");
+					fifty.verify(invocation).arguments[2].is("CONTAINER");
+					fifty.verify(invocation).arguments[3].is("COMMAND");
+					fifty.verify(invocation).arguments[4].is("--foo");
+					fifty.verify(invocation).arguments[5].is("bar");
+				}
 			}
-			sudo?: {
-				askpass: slime.jrunscript.file.File
-			}
-			destination: slime.jrunscript.file.Pathname
-		}) => slime.$api.fp.impure.Tell<install.Events>
+		//@ts-ignore
+		)(fifty);
 	}
 
 	export namespace kubectl {
@@ -131,7 +133,7 @@ namespace slime.jrunscript.tools.docker {
 				fifty: slime.fifty.test.kit
 			) {
 				fifty.tests.kubectl = function() {
-					var installation = test.subject.kubectl.Installation({ command: "/path/to/kubectl" });
+					var installation = docker.test.subject.kubectl.Installation({ command: "/path/to/kubectl" });
 					var environment = installation.Environment.create({
 						environment: {
 							FOO: "bar"
@@ -153,11 +155,15 @@ namespace slime.jrunscript.tools.docker {
 
 	}
 
-	export interface Export {
-		kubectl: kubectl.Exports
+	export namespace docker {
+		export interface Export {
+			kubectl: slime.jrunscript.tools.kubectl.Exports
+		}
+
+		export type load = slime.loader.Product<void,Export>
 	}
 
-	export namespace test {
+	export namespace docker.test {
 		export const subject: Export = (function(fifty: slime.fifty.test.kit) {
 			return fifty.$loader.module("module.js");
 		//@ts-ignore

@@ -4,38 +4,21 @@
 //
 //	END LICENSE
 
-namespace slime.jrunscript.tools.docker.kubectl {
-	export namespace test {
-		export const subject: Export = (function(fifty: slime.fifty.test.kit) {
-			return fifty.$loader.module("module.js");
-		//@ts-ignore
-		})(fifty)
-	}
-
+namespace slime.jrunscript.tools.kubectl {
 	(
 		function(
 			fifty: slime.fifty.test.kit
 		) {
-			fifty.tests.suite = function() {
-				fifty.verify(test).subject.is.type("object");
 
-				var installation = test.subject.kubectl.Installation({ command: "kubectl" });
-				var environment = installation.Environment.create({
-					environment: fifty.global.jsh.shell.environment,
-					stdio: fifty.global.jsh.shell.stdio,
-					directory: fifty.global.jsh.shell.PWD.toString()
+			fifty.tests.suite = function() {
+				var ask = fifty.global.jsh.tools.kubectl.json({
+					command: "config",
+					subcommand: "view",
+					stdio: {
+						error: "line"
+					}
 				});
-				var run = environment.Invocation.create(
-					test.subject.kubectl.Invocation.toJson({
-						command: "config",
-						subcommand: "view",
-						stdio: {
-							error: "line"
-						}
-					})
-				);
-				var postprocessor = test.subject.kubectl.result(fifty.global.jsh.shell.world, run);
-				var result = postprocessor({
+				var result = ask({
 					stderr: function(e) {
 						fifty.global.jsh.shell.console("STDERR: [" + e.detail.line + "]");
 					}

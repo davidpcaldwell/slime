@@ -35,8 +35,8 @@
 
 		/**
 		 *
-		 * @param { slime.jrunscript.tools.docker.kubectl.Program } program
-		 * @returns { slime.jrunscript.tools.docker.kubectl.Installation }
+		 * @param { slime.jrunscript.tools.kubectl.Program } program
+		 * @returns { slime.jrunscript.tools.kubectl.Installation }
 		 */
 		var kubectl = function(program) {
 			return {

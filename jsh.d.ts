@@ -51,11 +51,6 @@ namespace slime.jsh {
 
 		script: slime.jsh.script.Exports
 
-		shell: slime.jsh.shell.Exports & {
-			/** @deprecated */
-			getopts: jsh["script"]["getopts"]
-		}
-
 		js: any
 		document: any
 		file: slime.jrunscript.file.Exports

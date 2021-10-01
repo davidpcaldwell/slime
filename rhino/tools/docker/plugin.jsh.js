@@ -18,7 +18,9 @@
 				return Boolean(jsh.shell && jsh.tools && jsh.tools.install);
 			},
 			load: function() {
-				var module = $loader.module("module.js");
+				/** @type { slime.jrunscript.tools.docker.load } */
+				var load = $loader.factory("module.js");
+				var module = load();
 
 				var location = jsh.file.Pathname("/Applications/Docker.app");
 
@@ -37,6 +39,35 @@
 						})
 					}
 				};
+
+				/**
+				 *
+				 * @param { slime.jsh.shell.Exports } shell
+				 * @returns { slime.jsh.Tools["kubectl"]["json"] }
+				 */
+				var jshFacade = function(shell) {
+					/**
+					 * @param { slime.jrunscript.tools.kubectl.Invocation } invocation
+					 */
+					function rv(invocation) {
+						var installation = module.kubectl.Installation({ command: "kubectl" });
+						var environment = installation.Environment.create({
+							environment: shell.environment,
+							stdio: shell.stdio,
+							directory: shell.PWD.toString()
+						});
+						var run = environment.Invocation.create(
+							module.kubectl.Invocation.toJson(invocation)
+						);
+						var postprocessor = module.kubectl.result(shell.world, run);
+						return postprocessor;
+					}
+					return rv;
+				};
+
+				jsh.tools.kubectl = Object.assign(module.kubectl, {
+					json: jshFacade(jsh.shell)
+				});
 			}
 		})
 	}
