@@ -8,6 +8,10 @@
 #	rm -Rvf local/jdk/default; rm -Rvf ~/.slime/jdk/default; ./jsh.bash jsh/test/jsh-data.jsh.js; ./jsh.bash --install-user-jdk; rm -Rvf local/jdk/default; ./jsh.bash jsh/test/jsh-data.jsh.js
 #	check java.home of last script invoked and ensure that it is the user JDK
 
+if [ -n "${JSH_LAUNCHER_BASH_DEBUG}" ]; then
+	set -x
+fi
+
 UNAME=$(uname)
 
 if [ "$0" == "bash" ]; then
@@ -122,6 +126,10 @@ install_jdk_8_corretto() {
 	fi
 	JDK_WORKDIR=$(mktemp -d)
 	tar xf ${JDK_TARBALL_LOCATION} -C ${JDK_WORKDIR}
+	local TAR_EXIT_CODE="$?"
+	if [ "${TAR_EXIT_CODE}" -ne 0 ]; then
+		exit ${TAR_EXIT_CODE}
+	fi
 	mv ${JDK_WORKDIR}/${JDK_TARBALL_PATH} ${TO}
 	>&2 echo "Installed ${JDK_TARBALL_URL} at ${TO}"
 }

@@ -229,6 +229,9 @@
 				})
 			);
 		}
+		suite.add("jrunscript/tools/docker", FiftyPart({
+			file: SRC.getFile("rhino/tools/docker/module.fifty.ts")
+		}));
 		suite.add("jrunscript/tools/github", FiftyPart({
 			file: SRC.getFile("rhino/tools/github/module.fifty.ts")
 		}));

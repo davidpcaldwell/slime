@@ -40,7 +40,15 @@ namespace slime.jsh.shell {
 
 		//	TODO	run.evaluate.wrap
 		exit: (code: number) => void
-		stdio: any
+		stdio: {
+			input: slime.jrunscript.runtime.io.InputStream
+			output: slime.jrunscript.runtime.io.OutputStream & {
+				write: any
+			}
+			error: slime.jrunscript.runtime.io.OutputStream & {
+				write: any
+			}
+		}
 		echo: {
 			(message: any, mode?: any): void
 			String: any
@@ -71,11 +79,8 @@ namespace slime.jsh.shell {
 			command: any
 			url: any
 		}
-		environment: any
 		HOME: slime.jrunscript.file.Directory
 		PATH: any
-		TMPDIR: slime.jrunscript.file.Directory
-		PWD: slime.jrunscript.file.Directory
 		browser: slime.jrunscript.shell.browser.Exports
 		listeners: any
 		system: {

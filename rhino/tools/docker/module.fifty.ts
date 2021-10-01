@@ -30,7 +30,7 @@ namespace slime.jrunscript.tools.docker {
 		) {
 			fifty.tests.cli = {};
 			fifty.tests.cli.exec = function() {
-				var invocation = test.subject.cli.exec({
+				var invocation = test.subject.engine.cli.exec({
 					interactive: true,
 					tty: true,
 					container: "CONTAINER",
@@ -77,11 +77,91 @@ namespace slime.jrunscript.tools.docker {
 		}) => slime.$api.fp.impure.Tell<install.Events>
 	}
 
+	export namespace kubectl {
+		export interface Program {
+			command: string
+		}
+
+		export interface Invocation {
+			command: string
+			subcommand?: string
+			type?: string
+			name?: string
+			flags?: string[]
+
+			directory?: string
+			stdio?: Partial<slime.jrunscript.shell.run.StdioConfiguration>
+		}
+
+		export interface Installation {
+			Environment: {
+				create: (p: {
+					environment: slime.jrunscript.host.Environment
+					directory: string
+					stdio: Required<slime.jrunscript.shell.Stdio>
+				}) => Environment
+			}
+		}
+
+		export interface Environment {
+			Invocation: {
+				create: (p: kubectl.Invocation) => slime.jrunscript.shell.run.Invocation
+			}
+		}
+
+		export interface Events {
+			stderr: slime.jrunscript.shell.run.Line
+		}
+
+		export type Result = object
+
+		export interface Exports {
+			Installation: (p: kubectl.Program) => kubectl.Installation
+			installation: kubectl.Installation
+
+			Invocation: {
+				toJson: (p: kubectl.Invocation) => kubectl.Invocation
+			}
+
+			result: (world: slime.jrunscript.shell.World, invocation: slime.jrunscript.shell.run.Invocation) => slime.$api.fp.impure.Ask<Events,Result>
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.kit
+			) {
+				fifty.tests.kubectl = function() {
+					var installation = test.subject.kubectl.Installation({ command: "/path/to/kubectl" });
+					var environment = installation.Environment.create({
+						environment: {
+							FOO: "bar"
+						},
+						stdio: fifty.global.jsh.shell.stdio,
+						directory: fifty.global.jsh.shell.PWD.toString()
+					});
+					var invocation = environment.Invocation.create({ command: "config", subcommand: "view" });
+					fifty.verify(invocation).configuration.command.is("/path/to/kubectl");
+					fifty.verify(invocation).context.environment.evaluate(function(p) { return p.FOO; }).is("bar");
+					fifty.verify(invocation).context.environment.evaluate(function(p) { return p.BAR; }).is(void(0));
+					fifty.verify(invocation).configuration.arguments.length.is(2);
+					fifty.verify(invocation).configuration.arguments[0].is("config");
+					fifty.verify(invocation).configuration.arguments[1].is("view");
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+
+	}
+
+	export interface Export {
+		kubectl: kubectl.Exports
+	}
+
 	export namespace test {
-		export const subject: Engine = (function(fifty: slime.fifty.test.kit) {
+		export const subject: Export = (function(fifty: slime.fifty.test.kit) {
 			return fifty.$loader.module("module.js");
 		//@ts-ignore
-		})(fifty)
+		})(fifty);
 	}
 
 	(
@@ -90,6 +170,7 @@ namespace slime.jrunscript.tools.docker {
 		) {
 			fifty.tests.suite = function() {
 				fifty.run(fifty.tests.cli.exec);
+				fifty.run(fifty.tests.kubectl);
 			}
 		}
 	//@ts-ignore
