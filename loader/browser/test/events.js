@@ -73,6 +73,7 @@
 						);
 						return rv;
 					} else {
+						/** @type { MouseEvent } */
 						var rv = document["createEventObject"]();
 						if (false) {
 							for (var x in this) {
