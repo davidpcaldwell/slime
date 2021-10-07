@@ -321,7 +321,7 @@
 				};
 				//	TODO	why is list necessary for children but apparently not for parent? assuming it was a bug; adding
 				this.toString = function() {
-					return "plugin.jsh.resources.js NewLoader: [" + mapping.map(function(map) {
+					return "plugin.jsh.resources.js NewLoader: prefix=" + p.prefix + " mapping=[" + mapping.map(function(map) {
 						return String(map);
 					}).join("\n");
 				}
