@@ -182,10 +182,12 @@
 				"12.16.0": { url: "https://nodejs.org/dist/v12.16.0/node-v12.16.0-darwin-x64.tar.gz" },
 				"12.16.1": { url: "https://nodejs.org/dist/v12.16.1/node-v12.16.1-darwin-x64.tar.gz" },
 				"12.16.2": { url: "https://nodejs.org/dist/v12.16.2/node-v12.16.2-darwin-x64.tar.gz" },
-				"12.22.1": { url: "https://nodejs.org/download/release/v12.22.1/node-v12.22.1-darwin-x64.tar.gz"}
+				"12.22.1": { url: "https://nodejs.org/download/release/v12.22.1/node-v12.22.1-darwin-x64.tar.gz"},
+				"14.18.0": { url: "https://nodejs.org/dist/v14.18.0/node-v14.18.0-darwin-x64.tar.gz" }
 			},
 			"Linux": {
-				"12.22.1": { url: "https://nodejs.org/download/release/v12.22.1/node-v12.22.1-linux-x64.tar.gz" }
+				"12.22.1": { url: "https://nodejs.org/download/release/v12.22.1/node-v12.22.1-linux-x64.tar.gz" },
+				"14.18.0": { url: "https://nodejs.org/dist/v14.18.0/node-v14.18.0-linux-x64.tar.gz" }
 			}
 		};
 
@@ -207,7 +209,7 @@
 			function(p,events) {
 				if (!p) throw new TypeError();
 				//	TODO	compute this somehow?
-				if (!p.version) p.version = "12.22.1";
+				if (!p.version) p.version = "14.18.0";
 				var existing = $exports.at({ location: p.location });
 				/** @type { slime.jrunscript.node.Installation } */
 				var rv;

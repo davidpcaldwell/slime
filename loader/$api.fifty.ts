@@ -208,7 +208,10 @@ namespace slime.$api {
 						left: (l: L) => void,
 						right: (r: R) => void
 					},
-					matched: (l: L, r: R) => void
+					matched: (p: {
+						left: L,
+						right: R
+					}) => void
 				}
 			): {
 				unmatched: {

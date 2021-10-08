@@ -31,9 +31,9 @@ namespace slime.jrunscript.node {
 			evaluate?: (p: any) => T
 		}) => T
 		modules: {
-			installed: { [key: string]: { version: string } },
-			install: Function,
-			require: Function,
+			installed: { [key: string]: { version: string } }
+			install: (p: { name: string }) => void
+			require: (p: { name: string, version?: string }) => void
 			uninstall: Function
 		},
 		npm: {

@@ -6,15 +6,8 @@
 
 /// <reference path="../../../local/jsh/lib/node/lib/node_modules/@types/js-yaml/index.d.ts" />
 
-namespace slime.jsh.tools.install {
-	export type Exports = slime.jsh.tools.install.module.Exports & {
-		rhino: any
-		tomcat: any
-	};
-}
-
 namespace slime.jsh.shell.tools {
-	namespace rhino {
+	export namespace rhino {
 		export interface InstallCommand {
 			mock?: { lib: slime.jrunscript.file.Directory, rhino: slime.jrunscript.file.File }
 			local?: slime.jrunscript.file.File
@@ -23,7 +16,7 @@ namespace slime.jsh.shell.tools {
 		}
 	}
 
-	namespace scala {
+	export namespace scala {
 		export interface Installation {
 			compile: (p: {
 				destination: slime.jrunscript.file.Pathname
@@ -43,6 +36,20 @@ namespace slime.jsh.shell.tools {
 			program: slime.jrunscript.file.File
 			isTrusted: () => boolean
 			pkcs12: (p: { hosts: string[], to?: slime.jrunscript.file.Pathname }) => void
+		}
+	}
+
+	export namespace node {
+		export interface Managed {
+			require: () => void
+		}
+
+		export interface Installed extends Managed, slime.jrunscript.node.Installation {
+			update: () => void
+		}
+
+		export interface Absent extends Managed {
+			install: (p?: { update?: boolean }) => void
 		}
 	}
 
@@ -88,17 +95,7 @@ namespace slime.jsh.shell.tools {
 			install: (p?: { destination?: slime.jrunscript.file.Pathname, replace?: boolean }) => mkcert.Installation
 			require: () => mkcert.Installation
 		}
-		node: (
-			(
-				slime.jrunscript.node.Installation & { update: () => void }
-				|
-				{
-					install: (p?: { update?: boolean }) => void
-				}
-			) & {
-				require: () => void
-			}
-		)
+		node: node.Installed | node.Absent
 		javamail: {
 			install: () => void
 			require: () => void
