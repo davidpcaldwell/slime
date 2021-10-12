@@ -321,6 +321,7 @@
 
 				//	TODO	should be treated as JVM-level variable
 				map("jsh.java.home", BOTH);
+				map("jsh.java.jpms", BOTH);
 
 				map("jsh.loader.noproxy", BOTH);
 				map("jsh.github.api.protocol", BOTH);

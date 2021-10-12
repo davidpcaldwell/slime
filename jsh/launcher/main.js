@@ -197,8 +197,13 @@
 
 		var hasJavaPlatformModuleSystem = (function() {
 			if ($api.slime.settings.get("jsh.java.home")) {
+				//	TODO	explore a way to detect this, or document the below environment variable
+				if ($api.slime.settings.get("jsh.java.jpms")) {
+					return true;
+				}
 				//	returning false if it *does* have the module system will produce extra warnings but still work
 				//	returning false if it doesn't will work
+				//	so we default to the safer option: false
 				return false;
 			} else {
 				var javaLangObjectClass = Packages.java.lang.Class.forName("java.lang.Object");
@@ -208,9 +213,15 @@
 
 		if (hasJavaPlatformModuleSystem) {
 			command.vm("--add-opens");
+			command.vm("java.base/java.lang=ALL-UNNAMED");
+			command.vm("--add-opens");
 			command.vm("java.base/java.lang.reflect=ALL-UNNAMED");
 			command.vm("--add-opens");
 			command.vm("java.base/java.net=ALL-UNNAMED");
+			command.vm("--add-opens");
+			command.vm("java.base/sun.net.www.protocol.http=ALL-UNNAMED");
+			command.vm("--add-opens");
+			command.vm("java.base/sun.net.www.protocol.https=ALL-UNNAMED");
 			command.vm("--add-opens");
 			command.vm("jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED");
 		}
