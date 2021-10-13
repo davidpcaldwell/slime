@@ -14,7 +14,7 @@
 	function($api,$context,$exports) {
 		/**
 		 * @param { string } string
-		 * @returns { slime.web.Url.Argument }
+		 * @returns { slime.web.url.Argument }
 		 */
 		var parse = function(string) {
 			var matcher = /(?:([^\:\/\?\#]+)\:)?(?:\/\/([^\:\/\?\#]+))?(?:\:(\d+))?([^\?\#]*)(?:\?([^#]*))?(?:\#(.*))?/;
@@ -45,7 +45,7 @@
 		$exports.Url = Object.assign(
 			/**
 			 * @constructor
-			 * @param { slime.web.Url.Argument } o
+			 * @param { slime.web.url.Argument } o
 			 */
 			function(o) {
 				this.scheme = o.scheme;
@@ -210,7 +210,7 @@
 			/** @type { slime.web.form.Control[] } */
 			var controls;
 
-			/** @type { (p: slime.web.form.Argument) => p is slime.web.form.Argument.UrlEncoded } */
+			/** @type { (p: slime.web.form.Argument) => p is slime.web.form.argument.UrlEncoded } */
 			var isString = function(p) {
 				return Boolean(p["urlencoded"]);
 			}
@@ -285,7 +285,9 @@
 				Multipart: void(0),
 				//	TODO	make strongly-typed
 				type: FORM_TYPE,
-				construct: Form,
+				construct: function(p) {
+					return new Form(p);
+				},
 				codec: {
 					urlencoded: {
 						encode: function(form) {

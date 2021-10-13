@@ -48,7 +48,7 @@ namespace slime.web {
 		resolve(reference: string): Url
 	}
 
-	export namespace Url {
+	export namespace url {
 		export interface Argument {
 			//	TODO	should authority.host and path also be optional? Check RFC
 			scheme?: string
@@ -102,7 +102,7 @@ namespace slime.web {
 			 * See [RFC 3986](http://tools.ietf.org/html/rfc3986). The `toString()` supplied for the
 			 * {@link Url} object is the string form of the URL.
 			 */
-			new (argument: Url.Argument): Url
+			new (argument: url.Argument): Url
 			parse: (string: string) => Url
 			query: {
 				(array: form.Control[]): string
@@ -299,9 +299,9 @@ namespace slime.web {
 	}
 
 	export namespace form {
-		export type Argument = Argument.UrlEncoded | Argument.Controls
+		export type Argument = argument.UrlEncoded | argument.Controls
 
-		export namespace Argument {
+		export namespace argument {
 			export interface UrlEncoded {
 				urlencoded: string
 			}
@@ -333,7 +333,7 @@ namespace slime.web {
 			/**
 			 * Creates a {@link form.Object} that can be used to operate on {@link Form}s in an object-oriented style.
 			 */
-			construct: new (p: form.Argument) => form.Object
+			construct: (p: form.Argument) => form.Object
 
 			/** @deprecated { Replaced by `construct` function. } */
 			new (p: form.Argument): form.Object
