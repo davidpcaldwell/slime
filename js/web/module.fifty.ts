@@ -298,6 +298,14 @@ namespace slime.web {
 		)(fifty);
 	}
 
+	export namespace exports {
+		export interface Form {
+			Control: {
+				isNamed: (name: string) => (control: form.Control) => boolean
+			}
+		}
+	}
+
 	export namespace form {
 		export type Argument = argument.UrlEncoded | argument.Controls
 
@@ -334,14 +342,14 @@ namespace slime.web {
 			 * Creates a {@link form.Object} that can be used to operate on {@link Form}s in an object-oriented style.
 			 */
 			construct: (p: form.Argument) => form.Object
-
-			/** @deprecated { Replaced by `construct` function. } */
-			new (p: form.Argument): form.Object
 		}
 	}
 
 	export interface Exports {
-		Form: exports.Form
+		Form: exports.Form & {
+			/** @deprecated { Replaced by `construct` function. } */
+			new (p: form.Argument): form.Object
+		}
 	}
 
 	(

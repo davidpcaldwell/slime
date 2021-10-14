@@ -176,6 +176,8 @@ namespace slime.$api {
 				or: <T>(...predicates: $api.fp.Predicate<T>[]) => $api.fp.Predicate<T>
 				not: <T>(predicate: $api.fp.Predicate<T>) => $api.fp.Predicate<T>
 				is: <T>(value: T) => fp.Predicate<T>
+
+				property: <T, K extends keyof T>(k: K, predicate: $api.fp.Predicate<T[K]>) => $api.fp.Predicate<T>
 			}
 			/** @deprecated Use {@link Exports["Predicate"]} */
 			filter: {
@@ -187,6 +189,35 @@ namespace slime.$api {
 				not: Exports["Predicate"]["not"]
 			}
 		}
+
+		(
+			function(
+				fifty: slime.fifty.test.kit
+			) {
+				const verify = fifty.verify;
+
+				fifty.tests.Predicate = function() {
+					fifty.run(function property() {
+						type T = { a: number, b: string };
+
+						const ts: T[] = [
+							{ a: 1, b: "a" },
+							{ a: 2, b: "b" }
+						]
+
+						const f1: Predicate<T> = fifty.$api.Function.Predicate.property("a", function(v) { return v == 1; });
+						const f2: Predicate<T> = fifty.$api.Function.Predicate.property("b", function(v) { return v == "b"; });
+
+						verify(ts).evaluate(function(ts) { return ts.filter(f1); }).length.is(1);
+						verify(ts.filter(f1))[0].a.is(1);
+						verify(ts).evaluate(function(ts) { return ts.filter(f2); }).length.is(1);
+						verify(ts.filter(f2))[0].a.is(2);
+					});
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+
 
 		export type Comparator<T> = (t1: T, t2: T) => number
 
