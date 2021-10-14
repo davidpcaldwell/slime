@@ -190,6 +190,12 @@
 				return function(p) {
 					return !f(p);
 				}
+			},
+			property: function(property, predicate) {
+				return $exports.Function.pipe(
+					$exports.Function.property(property),
+					predicate
+				);
 			}
 		}
 

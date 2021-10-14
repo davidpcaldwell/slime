@@ -261,6 +261,42 @@
 		);
 
 		/**
+		 * @type { slime.web.exports.Form }
+		 */
+		var FormExport = {
+			//	Present in Java; used here for (potentially flawed) TypeScript definition
+			Multipart: void(0),
+			//	TODO	make strongly-typed
+			type: FORM_TYPE,
+			construct: function(p) {
+				return new Form(p);
+			},
+			codec: {
+				urlencoded: {
+					encode: function(form) {
+						return new Form({ controls: form.controls }).getUrlencoded();
+					},
+					decode: function(string) {
+						var object = new Form({ urlencoded: string });
+						return {
+							controls: object.controls
+						}
+					}
+				}
+			},
+			object: function() {
+				return function(form) {
+					return controlsToObject(form.controls);
+				}
+			},
+			Control: {
+				isNamed: function(name) {
+					return $api.Function.Predicate.property("name", $api.Function.is(name));
+				}
+			}
+		}
+
+		/**
 		 * @constructor
 		 * @param { slime.web.form.Argument } p
 		 */
@@ -280,33 +316,7 @@
 
 				Form.apply(this,arguments);
 			},
-			{
-				//	Present in Java; used here for (potentially flawed) TypeScript definition
-				Multipart: void(0),
-				//	TODO	make strongly-typed
-				type: FORM_TYPE,
-				construct: function(p) {
-					return new Form(p);
-				},
-				codec: {
-					urlencoded: {
-						encode: function(form) {
-							return new Form({ controls: form.controls }).getUrlencoded();
-						},
-						decode: function(string) {
-							var object = new Form({ urlencoded: string });
-							return {
-								controls: object.controls
-							}
-						}
-					}
-				},
-				object: function() {
-					return function(form) {
-						return controlsToObject(form.controls);
-					}
-				}
-			}
+			FormExport
 		);
 
 		if ($context.window) {
