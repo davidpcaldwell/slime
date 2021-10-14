@@ -195,6 +195,33 @@
 					return (name === null) ? "(detached HEAD)" : name;
 				}
 
+				var submoduleStatus = function(prefix) {
+					/**
+					 *
+					 * @param { slime.jsh.wf.Submodule } item
+					 */
+					var rv = function(item) {
+						var remote = "origin";
+						if (item.branch && item.status.branch.name != item.branch) {
+							jsh.shell.console(prefix + item.path + ": tracking branch " + item.branch + ", but checked out branch is " + item.status.branch.name);
+						}
+						if (!item.state) {
+							jsh.shell.console(prefix + item.path + ": no remote tracking branch");
+						} else if (item.state.behind.length) {
+							jsh.shell.console(prefix + item.path + ": behind remote tracked branch " + remote + "/" + item.branch + " (" + item.state.behind.length + " commits)");
+						}
+						if (item.status.paths) {
+							jsh.shell.console(prefix + item.path + ": locally modified");
+						}
+						if (item.repository.submodule().length) {
+							item.repository.submodule().map(jsh.wf.project.Submodule.construct).forEach(function(submodule) {
+								submoduleStatus(prefix + item.path + "/")(submodule);
+							})
+						}
+					}
+					return rv;
+				}
+
 				$exports.status = function(p) {
 					//	TODO	add option for offline
 					var repository = fetch();
@@ -247,20 +274,7 @@
 						jsh.shell.console("");
 						jsh.shell.console("Submodules:");
 						var submodules = jsh.wf.project.submodule.status();
-						submodules.forEach(function(item) {
-							var remote = "origin";
-							if (item.branch && item.status.branch.name != item.branch) {
-								jsh.shell.console(item.path + ": tracking branch " + item.branch + ", but checked out branch is " + item.status.branch.name);
-							}
-							if (!item.state) {
-								jsh.shell.console(item.path + ": no remote tracking branch");
-							} else if (item.state.behind.length) {
-								jsh.shell.console(item.path + ": behind remote tracked branch " + remote + "/" + item.branch + " (" + item.state.behind.length + " commits)");
-							}
-							if (item.status.paths) {
-								jsh.shell.console(item.path + ": locally modified");
-							}
-						});
+						submodules.forEach(submoduleStatus(""));
 					}
 				}
 

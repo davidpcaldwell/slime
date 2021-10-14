@@ -41,22 +41,34 @@
 					return jsh.shell.PWD;
 				})();
 
+				/**
+				 *
+				 * @param { slime.jrunscript.git.Submodule } submodule
+				 * @returns { slime.jsh.wf.Submodule }
+				 */
+				var submoduleDecorate = function(submodule) {
+					var tracking = submodule.branch;
+					return $api.Object.compose(
+						submodule,
+						{
+							status: submodule.repository.status(),
+							state: (tracking) ? jsh.wf.git.compareTo("origin/" + tracking)(submodule.repository) : void(0)
+						}
+					)
+				};
+
 				jsh.wf.project = {
 					base: base,
+					Submodule: {
+						construct: function(submodule) {
+							return submoduleDecorate(submodule);
+						}
+					},
 					submodule: {
 						status: function() {
 							var repository = jsh.tools.git.Repository({ directory: base });
 							var submodules = repository.submodule();
-							return submodules.map(function(submodule) {
-								var tracking = submodule.branch;
-								return $api.Object.compose(
-									submodule,
-									{
-										status: submodule.repository.status(),
-										state: (tracking) ? jsh.wf.git.compareTo("origin/" + tracking)(submodule.repository) : void(0)
-									}
-								)
-							});
+							return submodules.map(submoduleDecorate);
 						},
 						remove: function(p) {
 							var repository = jsh.tools.git.Repository({ directory: base });

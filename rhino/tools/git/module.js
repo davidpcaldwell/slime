@@ -1054,7 +1054,7 @@
 							});
 						}
 
-						return command(submodule)(p).map(function(line) {
+						return (submoduleConfiguration) ? command(submodule)(p).map(function(line) {
 							//	commit, path
 							var subdirectory = directory.getSubdirectory(line.path);
 							if (!subdirectory) throw new Error("directory=" + directory + " path=" + line.path);
@@ -1064,7 +1064,7 @@
 								repository: sub,
 								commit: shown
 							});
-						});
+						}) : [];
 					}
 					if (p.command == "update") {
 						execute({

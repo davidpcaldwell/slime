@@ -87,6 +87,11 @@ namespace slime.jsh.wf {
 		}
 	}
 
+	export interface Submodule extends slime.jrunscript.git.Submodule {
+		status: ReturnType<slime.jrunscript.git.repository.Local["status"]>
+		state: ReturnType<ReturnType<Exports["git"]["compareTo"]>>
+	}
+
 	/**
 	 * The `project.initialize` function provides a default `wf` implementation for projects with a number of standard commands; it
 	 * requires project-level specification of operations like `commit`, `lint`, and/or `test`.
@@ -99,11 +104,12 @@ namespace slime.jsh.wf {
 		project: {
 			base: slime.jrunscript.file.Directory
 
+			Submodule: {
+				construct: (git: slime.jrunscript.git.Submodule) => Submodule
+			}
+
 			submodule: {
-				status: () => Array<slime.jrunscript.git.Submodule & {
-					status: ReturnType<slime.jrunscript.git.repository.Local["status"]>
-					state: ReturnType<ReturnType<Exports["git"]["compareTo"]>>
-				}>
+				status: () => Submodule[]
 				remove: (p: { path: string }) => void
 			}
 
