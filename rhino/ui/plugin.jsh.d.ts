@@ -60,7 +60,7 @@ namespace slime.jsh.ui.application {
 		}
 	}
 
-	type BrowserConfiguration = {
+	interface BrowserSpecification {
 		host?: string
 		chrome?: ChromeConfiguration
 
@@ -71,7 +71,9 @@ namespace slime.jsh.ui.application {
 		zoom?: any
 		console?: any
 		create?: any
-	} | ((p: any) => void)
+	}
+
+	type BrowserConfiguration = BrowserSpecification | ((p: any) => void)
 
 	interface ClientSpecification {
 		browser: BrowserConfiguration
