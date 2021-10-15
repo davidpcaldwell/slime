@@ -56,9 +56,9 @@ namespace slime.jrunscript.file {
 	}
 
 	export interface Directory extends Node {
-		getRelativePath: (string) => Pathname,
-		getFile: (string) => File,
-		getSubdirectory: (string) => Directory,
+		getRelativePath: (path: string) => Pathname
+		getFile: (path: string) => File
+		getSubdirectory: (path: string) => Directory
 		createTemporary: {
 			(p: { directory: true, prefix?: string, suffix?: string }): Directory
 			(p?: { directory?: false, prefix?: string, suffix?: string }): File
