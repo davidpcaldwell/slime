@@ -37,10 +37,10 @@ END LICENSE
 				padding: 0.5em 1em;
 				border: 1px solid grey;
 			}
+			[data-name="typedoc"] [data-name="console"] { white-space: pre-line; }
 		</style>
 		<script>
 			window.addEventListener("load", function() {
-//				document.body.style.backgroundColor = "#c0c0c0";
 				/** @type { HTMLElement[] } */
 				var elements = Array.prototype.slice.call(document.getElementsByTagName("*"));
 				elements.forEach(function(element) {
@@ -60,6 +60,34 @@ END LICENSE
 		<div>This page contains resources for developing SLIME itself.</div>
 		<div>
 			<h2><a href="../local/doc/typedoc/interfaces/slime.project.wf.interface.html"><code>wf</code> Commands for SLIME itself</a></h2>
+			<script>
+				window.addEventListener("load", function(e) {
+					var typedoc = document.querySelector("[data-name='typedoc']");
+					var button = typedoc.querySelector("[data-name='update']");
+					var output = typedoc.querySelector("[data-name='console']");
+					button.addEventListener("click", function(e) {
+						button.disabled = true;
+						fetch("../local/doc/typedoc/update", {
+							method: "POST"
+						}).then(function(response) {
+							return response.text();
+						}).then(function(string) {
+							output.innerHTML = string;
+							button.disabled = false;
+						})
+					});
+				});
+			</script>
+			<div data-name="typedoc">
+				<h3>TypeDoc</h3>
+				<button data-name="update">Update</button>
+				<div>
+					<h4>Console</h4>
+					<pre data-name="console">
+						TypeDoc output will appear here.
+					</pre>
+				</div>
+			</div>
 		</div>
 		<div>
 			<h2>Project Management</h2>
