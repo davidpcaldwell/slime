@@ -33,9 +33,32 @@ namespace slime.jsh.shell.tools {
 
 	export namespace mkcert {
 		export interface Installation {
+			/**
+			 * The location of the `mkcert` executable in this installation.
+			 */
 			program: slime.jrunscript.file.File
+
+			/**
+			 * Whether the root CA exists and is trusted by the system.
+			 */
 			isTrusted: () => boolean
-			pkcs12: (p: { hosts: string[], to?: slime.jrunscript.file.Pathname }) => void
+
+			/**
+			 * Creates a PKCS12 certificate pertaining to the given hosts at
+			 */
+			pkcs12: (p: {
+				/**
+				 * The list of hosts to which this certificate should pertain.
+				 */
+				hosts: string[]
+
+				/**
+				 * The destination path to which to generate the certificate. If omitted, `mkcert` itself will generate a path
+				 * and report it to the console. If you're writing an application that's intending to use the certificate, this
+				 * is probably not what you want.
+				 */
+				to?: slime.jrunscript.file.Pathname
+			}) => void
 		}
 	}
 
