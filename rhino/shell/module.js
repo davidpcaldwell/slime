@@ -407,8 +407,11 @@
 				}
 			};
 
+			/** @type { slime.jrunscript.shell.system.load } */
+			var code = $loader.factory("os.js");
+
 			/** @type { slime.jrunscript.shell.system.Exports } */
-			var system = $loader.file("os.js", {
+			var system = code({
 				PATH: $exports.PATH,
 				replacePath: function(PATH) {
 					$exports.PATH = PATH;
@@ -440,22 +443,6 @@
 		$exports.user = {};
 		if ($exports.HOME.getSubdirectory("Downloads")) $exports.user.downloads = $exports.HOME.getSubdirectory("Downloads");
 		//	TODO	document that this is optional; that there are some environments where "working directory" makes little sense
-
-		//$loader.run("os.js", {
-		//	$context: {
-		//		PATH: $exports.PATH,
-		//		TMPDIR: $exports.TMPDIR,
-		//		os: $exports.os,
-		//		run: $exports.run,
-		//		environment: $exports.environment,
-		//		api: {
-		//			js: $context.api.js,
-		//			io: $context.api.io,
-		//			file: $context.api.file
-		//		}
-		//	},
-		//	$exports: $exports.os
-		//});
 
 		Object.defineProperty(
 			$exports,

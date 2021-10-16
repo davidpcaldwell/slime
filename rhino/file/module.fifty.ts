@@ -86,7 +86,8 @@ namespace slime.jrunscript.file {
 		}
 	}
 
-	interface Searchpath {
+	export interface Searchpath {
+		pathnames: slime.jrunscript.file.Pathname[]
 		getCommand: any
 	}
 

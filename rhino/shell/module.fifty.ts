@@ -482,7 +482,7 @@ namespace slime.jrunscript.shell {
 		HOME: slime.jrunscript.file.Directory
 
 		PWD: slime.jrunscript.file.Directory
-		PATH?: any
+		PATH?: slime.jrunscript.file.Searchpath
 
 		os: {
 			name: string

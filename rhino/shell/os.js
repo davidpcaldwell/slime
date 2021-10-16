@@ -15,7 +15,7 @@
 		/** @type { slime.jrunscript.shell.system.Exports["ps"]} */
 		var ps = (function() {
 			/**
-			 * @returns {slime.jrunscript.shell.system.Process[]}
+			 * @returns {slime.jrunscript.shell.system.object.Process[]}
 			 */
 			var unix = function() {
 				//	Was thinking about developing an algorithm to try to detect left- and right-justification using the header
@@ -214,7 +214,7 @@
 										return $context.api.file.Pathname(result.stdio.output).file;
 									}
 								}));
-								var password = $context.run({
+								var password1 = $context.run({
 									command: SUDO_ASKPASS.pathname,
 									stdio: {
 										output: String
@@ -288,7 +288,7 @@
 
 		if ($context.os.name == "Mac OS X") {
 			$context.api.file.Searchpath = (function(was) {
-				return function() {
+				var rv = function() {
 					var rv = was.apply(this,arguments);
 					rv.getCommand = (function(was) {
 						return function(name) {
@@ -306,6 +306,8 @@
 					})(rv.getCommand);
 					return rv;
 				}
+				rv.createEmpty = was.createEmpty;
+				return rv;
 			})($context.api.file.Searchpath);
 			$context.replacePath($context.api.file.Searchpath($context.PATH.pathnames));
 		}
