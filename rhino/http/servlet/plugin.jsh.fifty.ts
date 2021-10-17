@@ -5,19 +5,19 @@
 //	END LICENSE
 
 namespace slime.jsh.httpd {
-	namespace servlet {
-		type byLoad = { load: (scope: slime.servlet.Scope) => void }
-		type byFile = { file: slime.jrunscript.file.File }
+	export namespace servlet {
+		export type byLoad = { load: (scope: slime.servlet.Scope) => void }
+		export type byFile = { file: slime.jrunscript.file.File }
 		type byResource = { resource: string }
 
-		type descriptor = (byLoad | byFile | byResource) & {
+		export type descriptor = (byLoad | byFile | byResource) & {
 			parameters?: Parameters
 		}
 
-		type Parameters = { [name: string]: any }
+		export type Parameters = { [name: string]: any }
 	}
 
-	interface Tomcat {
+	export interface Tomcat {
 		base: slime.jrunscript.file.Directory
 
 		port: number
@@ -45,8 +45,8 @@ namespace slime.jsh.httpd {
 		stop: () => void
 	}
 
-	namespace Tomcat {
-		interface Configuration {
+	export namespace tomcat {
+		export interface Configuration {
 			/**
 			 * The port on which the server's HTTP service should run; if omitted, an ephemeral port will be used.
 			 */
@@ -67,10 +67,10 @@ namespace slime.jsh.httpd {
 		}
 	}
 
-	interface Exports {
+	export interface Exports {
 		nugget: any
 		spi: {
-			argument: (resources: slime.Loader, servlet: jsh.httpd.servlet.descriptor) => {
+			argument: (resources: slime.Loader, servlet: slime.jsh.httpd.servlet.descriptor) => {
 				resources: slime.Loader,
 				load: servlet.byLoad["load"],
 				$loader?: slime.Loader
@@ -78,7 +78,7 @@ namespace slime.jsh.httpd {
 		}
 		Resources: slime.jsh.httpd.resources.Export
 		Tomcat?: {
-			new (p?: Tomcat.Configuration): Tomcat
+			new (p?: tomcat.Configuration): Tomcat
 
 			serve: any
 		}

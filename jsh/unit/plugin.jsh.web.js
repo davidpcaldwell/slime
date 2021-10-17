@@ -62,7 +62,7 @@
 
 							mkcert.pkcs12({ to: keystore, hosts: httpsHosts });
 
-							/** @type { ConstructorParameters<slime.jsh.httpd.Exports["Tomcat"]>[0]["https"] } */
+							/** @type { slime.jsh.httpd.tomcat.Configuration["https"] } */
 							return {
 								port: void(0),
 								keystore: {

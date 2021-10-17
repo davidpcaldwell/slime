@@ -37,7 +37,7 @@ namespace slime.jsh.ui.application {
 
 	interface ServerConfiguration {
 		/**
-		 * See {@link slime.jsh.httpd.Tomcat.Configuration}.
+		 * See {@link slime.jsh.httpd.tomcat.Configuration}.
 		 */
 		port?: number
 		resources: slime.Loader
