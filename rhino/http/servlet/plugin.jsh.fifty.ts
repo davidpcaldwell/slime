@@ -57,6 +57,9 @@ namespace slime.jsh.httpd {
 			 */
 			base?: slime.jrunscript.file.Directory
 
+			/**
+			 * If present, describes an HTTPS service that should run.
+			 */
 			https?: {
 				port: number
 				keystore?: {
