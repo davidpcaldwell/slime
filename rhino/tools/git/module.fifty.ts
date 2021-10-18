@@ -688,6 +688,9 @@ namespace slime.jrunscript.git {
 }
 
 namespace slime.jrunscript.git {
+	/**
+	 * A `git` installation.
+	 */
 	export interface Program {
 		command: slime.jrunscript.shell.invocation.Argument["command"]
 	}
@@ -730,8 +733,20 @@ namespace slime.jrunscript.git {
 
 		run: <I,O>(p: {
 			program: Program
+
+			/**
+			 * The directory in which to run the command; most likely the repository on which it is intended to act.
+			 */
 			pathname?: string
+
+			/**
+			 * A command implementation to run.
+			 */
 			command: Command<I,O>
+
+			/**
+			 * The input to pass to the command implementation.
+			 */
 			input: I
 		}) => O
 	}
