@@ -404,7 +404,7 @@
 							arguments: ["user.name", get.name({ repository: p.repository })]
 						});
 					} else {
-						events.fire("console", "Found user.name " + config["user.name"] + " for " + p.repository);
+						events.fire("debug", "Found user.name " + config["user.name"] + " for " + p.repository);
 					}
 					if (!config["user.email"]) {
 						events.fire("console", "Getting user.email for " + p.repository);
@@ -412,7 +412,7 @@
 							arguments: ["user.email", get.email({ repository: p.repository })]
 						});
 					} else {
-						events.fire("console", "Found user.email " + config["user.email"] + " for " + p.repository);
+						events.fire("debug", "Found user.email " + config["user.email"] + " for " + p.repository);
 					}
 				}), {
 					get: {
