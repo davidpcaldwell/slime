@@ -794,20 +794,14 @@ namespace slime.jrunscript.git {
 					command: command,
 					input: { foo: 2 },
 					run: function(invocation) {
-						return function(handler) {
-							handler.exit({
-								type: "exit",
-								path: [],
-								source: void(0),
-								timestamp: void(0),
-								detail: {
-									status: 0,
-									stdio: {
-										output: String(Number(invocation.configuration.arguments[2]) * 2)
-									}
+						return $api.Function.impure.tell(function(events) {
+							events.fire("exit", {
+								status: 0,
+								stdio: {
+									output: String(Number(invocation.configuration.arguments[2]) * 2)
 								}
-							})
-						};
+							});
+						});
 					}
 				});
 				fifty.verify(output).bar.is(4);
@@ -869,6 +863,8 @@ namespace slime.jrunscript.git {
 		fifty.run(fifty.tests.submoduleTrackingBranch);
 
 		fifty.run(fifty.tests.Client.invocation);
+
+		fifty.run(fifty.tests.test.run);
 	}
 //@ts-ignore
 })(fifty);
