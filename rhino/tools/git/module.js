@@ -1414,7 +1414,8 @@
 			status: status
 		}
 
-		$exports.run = function(p) {
+		/** @type { slime.jrunscript.git.Exports["test"]["run"] } */
+		var run = function(p) {
 			var invoker = $exports.invoker(p.program);
 			var invocation = p.command.input(p.input);
 			var shellArgument = invoker(invocation);
@@ -1424,13 +1425,23 @@
 			if (p.pathname) shellArgument.directory = p.pathname;
 			var shellInvocation = $context.api.shell.Invocation.create(shellArgument);
 			var output;
-			$context.api.shell.world.run(shellInvocation)({
+			p.run(shellInvocation)({
 				exit: function(e) {
 					if (e.detail.status) throw new Error();
 					output = e.detail.stdio.output;
 				}
 			});
 			return p.command.output(output);
+		}
+
+		$exports.run = function(p) {
+			return run($api.Object.compose(p, {
+				run: $context.api.shell.world.run
+			}));
+		};
+
+		$exports.test = {
+			run: run
 		}
 	}
 //@ts-ignore

@@ -728,16 +728,14 @@ namespace slime.jrunscript.git {
 		status: Command<void,command.status.Output>
 	}
 
-	export interface Exports {
-		commands: Commands
-
-		run: <I,O>(p: {
+	export namespace world {
+		export interface Invocation<I,O> {
 			program: Program
 
 			/**
 			 * The directory in which to run the command; most likely the repository on which it is intended to act.
 			 */
-			pathname?: string
+			pathname: string
 
 			/**
 			 * A command implementation to run.
@@ -748,8 +746,75 @@ namespace slime.jrunscript.git {
 			 * The input to pass to the command implementation.
 			 */
 			input: I
-		}) => O
+		}
 	}
+
+	export namespace test {
+		export interface Invocation<I,O> extends world.Invocation<I,O> {
+			run: (invocation: slime.jrunscript.shell.run.Invocation) => slime.$api.fp.impure.Tell<slime.jrunscript.shell.run.Events>
+		}
+	}
+
+	export interface Exports {
+		commands: Commands
+
+		run: <I,O>(p: world.Invocation<I,O>) => O
+
+		test: {
+			run: <I,O>(p: test.Invocation<I,O>) => O
+		}
+	}
+
+
+	(
+		function(
+			$api: slime.$api.Global,
+			fifty: slime.fifty.test.kit
+		) {
+			var exports: Exports = fifty.global.jsh.tools.git;
+			fifty.tests.test = {};
+			fifty.tests.test.run = function() {
+				type i = { foo: number };
+				type o = { bar: number };
+				var command: Command<i,o> = {
+					input: function(i) {
+						return {
+							command: "command",
+							arguments: ["--foo", String(i.foo)]
+						}
+					},
+					output: function(o) {
+						return { bar: Number(o) };
+					}
+				}
+				fifty.verify(exports).test.run.is.type("function");
+				var output = exports.test.run({
+					program: { command: "c" },
+					pathname: "/pathname/foo",
+					command: command,
+					input: { foo: 2 },
+					run: function(invocation) {
+						return function(handler) {
+							handler.exit({
+								type: "exit",
+								path: [],
+								source: void(0),
+								timestamp: void(0),
+								detail: {
+									status: 0,
+									stdio: {
+										output: String(Number(invocation.configuration.arguments[2]) * 2)
+									}
+								}
+							})
+						};
+					}
+				});
+				fifty.verify(output).bar.is(4);
+			}
+		}
+	//@ts-ignore
+	)($api,fifty);
 
 	export interface Client {
 		command: slime.jrunscript.file.Pathname

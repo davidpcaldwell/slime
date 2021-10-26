@@ -66,6 +66,7 @@ END LICENSE
 					var button = typedoc.querySelector("[data-name='update']");
 					var output = typedoc.querySelector("[data-name='console']");
 					button.addEventListener("click", function(e) {
+						output.innerHTML = "Running TypeDoc ...";
 						button.disabled = true;
 						fetch("../local/doc/typedoc/update", {
 							method: "POST"
@@ -84,7 +85,7 @@ END LICENSE
 				<div>
 					<h4>Console</h4>
 					<pre data-name="console">
-						TypeDoc output will appear here.
+						(TypeDoc output will appear here.)
 					</pre>
 				</div>
 			</div>

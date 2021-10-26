@@ -68,7 +68,7 @@
 									status: { code: 200 },
 									body: {
 										type: "text/plain",
-										string: "Ran typedoc successfully."
+										string: "Ran TypeDoc successfully."
 									}
 								}
 							}
