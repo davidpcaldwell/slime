@@ -719,33 +719,8 @@
 		};
 
 		$exports.world = {
-			run: function(invocation) {
-				return scripts.run.run(invocation);
-				// return function(on) {
-				// 	var tell = $api.Function.impure.tell(function(events) {
-				// 		var result = $exports.run(
-				// 			$api.Object.compose(
-				// 				invocation,
-				// 				{
-				// 					evaluate: function(result) {
-				// 						return result;
-				// 					}
-				// 				}
-				// 			)
-				// 		);
-				// 		events.fire("exit", result.status);
-				// 	});
-				// 	if (!on) on = {};
-				// 	if (!on.exit) {
-				// 		on.exit = function(e) {
-				// 			if (e.detail !== 0) {
-				// 				throw new Error("Non-zero exit status: " + e.detail);
-				// 			}
-				// 		}
-				// 	}
-				// 	return tell(on);
-				// }
-			},
+			run: scripts.run.run,
+			mock: scripts.run.mock,
 			Invocation: $api.deprecate(Invocation_old)
 		}
 

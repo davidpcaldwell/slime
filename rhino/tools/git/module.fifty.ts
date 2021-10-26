@@ -788,21 +788,24 @@ namespace slime.jrunscript.git {
 					}
 				}
 				fifty.verify(exports).test.run.is.type("function");
+
 				var output = exports.test.run({
 					program: { command: "c" },
 					pathname: "/pathname/foo",
 					command: command,
 					input: { foo: 2 },
-					run: function(invocation) {
-						return $api.Function.impure.tell(function(events) {
-							events.fire("exit", {
-								status: 0,
-								stdio: {
-									output: String(Number(invocation.configuration.arguments[2]) * 2)
+					run: fifty.global.jsh.shell.world.mock(
+						function(invocation) {
+							return {
+								exit: {
+									status: 0,
+									stdio: {
+										output: String(Number(invocation.configuration.arguments[2]) * 2)
+									}
 								}
-							});
-						});
-					}
+							}
+						}
+					)
 				});
 				fifty.verify(output).bar.is(4);
 			}

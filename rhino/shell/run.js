@@ -104,8 +104,6 @@
 				for (var x in destinations) {
 					destinations[x].close();
 
-					//	this is horrendous, but it automatically replaces the stdio property with the string if a string-buffering
-					//	strategy was requested.
 					if ((x == "output" || x == "error") && destinations[x] && destinations[x].readText) {
 						if (!rv) rv = {};
 						rv[x] = destinations[x].readText();
@@ -288,6 +286,104 @@
 				}
 			);
 		};
+
+		/**
+		 *
+		 * @param { (invocation: slime.jrunscript.shell.run.Invocation) => slime.jrunscript.shell.run.Mock } delegate
+		 * @returns
+		 */
+		var mockRun = function(delegate) {
+			return (
+				/**
+				 *
+				 * @param { slime.jrunscript.shell.run.Invocation } invocation
+				 * @returns
+				 */
+				function(invocation) {
+					var result = delegate(invocation);
+
+					var isLineWithProperty = function(name) {
+						return function(line) {
+							return Boolean(line[name]);
+						}
+					}
+
+					var hasLineWithProperty = function(name) {
+						return function(lines) {
+							return lines && lines.some(isLineWithProperty(name));
+						}
+					};
+
+					if (hasLineWithProperty("stdout")(result.lines) && result.exit.stdio && result.exit.stdio.output) throw new TypeError("Both stdout lines and stdout string supplied.");
+					if (hasLineWithProperty("stderr")(result.lines) && result.exit.stdio && result.exit.stdio.error) throw new TypeError("Both stderr lines and stderr string supplied.");
+
+					var killed = false;
+					return $api.Function.impure.tell(
+						/**
+						 * @param { slime.$api.Events<slime.jrunscript.shell.run.Events> } events
+						 */
+						function(events) {
+							events.fire("start", {
+								pid: result.pid || 0,
+								kill: function() {
+									killed = true;
+								}
+							});
+
+							//	TODO	should emit at least one empty line for each if line buffering
+							if (result.lines) result.lines.forEach(function(line) {
+								if (killed) return;
+								if (invocation.context.stdio.output == "line" && line["stdout"]) {
+									events.fire("stdout", { line: line["stdout"] });
+								} else if (invocation.context.stdio.error == "line" && line["stderr"]) {
+									events.fire("stderr", { line: line["stderr"] });
+								}
+							});
+
+							/**
+							 *
+							 * @param { string } stdioName
+							 * @param { string } eventName
+							 * @returns { string }
+							 */
+							var getStdioProperty = function(stdioName, eventName) {
+								if (invocation.context.stdio[stdioName] == "line" || invocation.context.stdio[stdioName] == "string") {
+									if (hasLineWithProperty(eventName)(result.lines)) {
+										return result.lines.filter(isLineWithProperty(eventName)).map(function(entry) {
+											return entry[eventName]
+										}).join("\n");
+									}
+									if (result.exit.stdio[stdioName]) return result.exit.stdio[stdioName];
+									return "";
+								}
+								return void(0);
+							};
+
+							if (!killed) {
+								events.fire("exit", {
+									status: result.exit.status,
+									stdio: {
+										output: getStdioProperty("output", "stdout"),
+										error: getStdioProperty("error", "stderr")
+									}
+								});
+							} else {
+								events.fire("exit", {
+									status: 143,
+									//	TODO	the below is wrong, should terminate output and include only what happened
+									//			before being killed
+									stdio: {
+										output: getStdioProperty("output", "stdout"),
+										error: getStdioProperty("error", "stderr")
+									}
+								})
+							}
+						}
+					)
+				}
+			)
+		};
+
 		/** @type { slime.jrunscript.shell.internal.run.Export["old"]["run"] } */
 		function oldRun(context, configuration, module, events, p, invocation, isLineListener) {
 			var rv;
@@ -333,6 +429,7 @@
 			run: function(invocation) {
 				return run(invocation.context,invocation.configuration);
 			},
+			mock: mockRun,
 			old: {
 				buildStdio: buildStdio,
 				run: oldRun

@@ -4,6 +4,20 @@
 //
 //	END LICENSE
 
+namespace slime.jrunscript.shell.run {
+	export interface Mock {
+		pid?: number
+		lines?: ({ stdout: string } | { stderr: string })[]
+		exit: {
+			status: number
+			stdio: {
+				output?: string
+				error?: string
+			}
+		}
+	}
+}
+
 namespace slime.jrunscript.shell.internal.run {
 	export interface Context {
 		api: {
@@ -48,7 +62,14 @@ namespace slime.jrunscript.shell.internal.run {
 	}
 
 	export interface Export {
-		run: (p: slime.jrunscript.shell.run.Invocation) => slime.$api.fp.impure.Tell<slime.jrunscript.shell.run.Events>
+		run: shell.World["run"]
+
+		/**
+		 * Allows a mock implementation of `run` to be created using a function that receives an invocation as an argument
+		 * and returns an object describing what the mocked subprocess should do. The system will use this object to create
+		 * the appropriate `Tell` and fire the appropriate events to the caller.
+		 */
+		mock: shell.World["mock"]
 
 		old: {
 			buildStdio: (p: slime.jrunscript.shell.run.StdioConfiguration) => (events: slime.$api.Events<slime.jrunscript.shell.run.Events>) => Stdio

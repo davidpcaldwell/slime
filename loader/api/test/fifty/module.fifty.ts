@@ -135,7 +135,7 @@ namespace slime.fifty {
 				Function: slime.$api.Global["Function"]
 				Events: {
 					/**
-					 * Creates an [[$api.Events.Handler]] that captures and stores all received [[$api.Event]]s for querying.
+					 * Creates a {@link slime.$api.events.Handler} that captures and stores all received {@link slime.$api.Event}s for querying.
 					 */
 					Captor: <T>(t: T) => {
 						events: $api.Event<any>[],

@@ -158,10 +158,13 @@ namespace slime.jrunscript.shell {
 	}
 
 	export namespace run {
+		//	TODO	right now we only capture output of type string; we could capture binary also
 		export interface Output {
 			output?: string
 			error?: string
 		}
+
+		export type OutputCapture = "string" | "line" | slime.jrunscript.runtime.io.OutputStream;
 
 		export type Line = {
 			line: string
@@ -182,8 +185,6 @@ namespace slime.jrunscript.shell {
 				stdio?: slime.jrunscript.shell.run.Output
 			}
 		}
-
-		export type OutputCapture = "string" | "line" | slime.jrunscript.runtime.io.OutputStream;
 
 		export interface StdioConfiguration {
 			input: slime.jrunscript.runtime.io.InputStream
@@ -546,7 +547,14 @@ namespace slime.jrunscript.shell {
 	export interface World {
 		run: (invocation: run.Invocation) => slime.$api.fp.impure.Tell<run.Events>
 
-		/** @deprecated Replaced by {@link Exports["Invocation"]} because it does not rely on external state. */
+		/**
+		 * Allows a mock implementation of `run` to be created using a function that receives an invocation as an argument
+		 * and returns an object describing what the mocked subprocess should do. The system will use this object to create
+		 * the appropriate `Tell` and fire the appropriate events to the caller.
+		 */
+		mock: (delegate: (invocation: shell.run.Invocation) => shell.run.Mock) => World["run"]
+
+		 /** @deprecated Replaced by {@link Exports["Invocation"]} because it does not rely on external state. */
 		Invocation: (p: invocation.old.Argument) => old.Invocation
 	}
 
@@ -556,6 +564,62 @@ namespace slime.jrunscript.shell {
 			fifty: slime.fifty.test.kit
 		) {
 			const subject = fifty.global.jsh.shell;
+
+			fifty.tests.explore = function() {
+				var directory = fifty.$loader.getRelativePath(".").directory;
+
+				if (fifty.global.jsh.shell.PATH.getCommand("ls")) {
+					var ls = subject.Invocation.create({
+						command: "ls",
+						directory: directory,
+						stdio: {
+							output: "line",
+							error: "line"
+						}
+					});
+					var tell = subject.world.run(ls);
+					var captor = fifty.$api.Events.Captor({
+						start: void(0),
+						stdout: void(0),
+						stderr: void(0),
+						exit: void(0)
+					});
+					tell(captor.handler);
+					fifty.global.jsh.shell.console(JSON.stringify(captor.events,void(0),4));
+
+					var killed = subject.Invocation.create({
+						command: "sleep",
+						arguments: ["1"],
+						directory: directory,
+						stdio: {
+							output: "line",
+							error: "line"
+						}
+					});
+					var events = [];
+					var subprocess;
+					var killtell = subject.world.run(killed);
+					killtell({
+						start: function(e) {
+							events.push(e);
+							subprocess = e.detail;
+							subprocess.kill();
+						},
+						stdout: function(e) {
+							events.push(e);
+						},
+						stderr: function(e) {
+							events.push(e);
+						},
+						exit: function(e) {
+							events.push(e);
+						}
+					});
+					fifty.global.jsh.shell.console(JSON.stringify(events,void(0),4));
+
+
+				}
+			}
 
 			fifty.tests.sandbox = function() {
 				var bogus = subject.Invocation.create({
