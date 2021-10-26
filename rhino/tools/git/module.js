@@ -1412,10 +1412,49 @@
 
 		$exports.commands = {
 			status: status
+		};
+
+		$exports.program = function(program) {
+			return {
+				Invocation: function(p) {
+					return {
+						program: program,
+						pathname: p.pathname,
+						command: p.command,
+						input: p.input
+					}
+				},
+				repository: function(pathname) {
+					var Invocation = function(p) {
+						return {
+							program: program,
+							pathname: pathname,
+							command: p.command,
+							input: p.input
+						};
+					}
+					return {
+						Invocation: Invocation,
+						run: function(p) {
+							var invocation = $api.Object.compose(
+								Invocation(p),
+								{
+									world: p.world
+								}
+							);
+							return run(invocation)
+						}
+					}
+				}
+			}
 		}
 
-		/** @type { slime.jrunscript.git.Exports["test"]["run"] } */
-		var run = function(p) {
+		/**
+		 * @template { any } I
+		 * @template { any } O
+		 * @param { { program: slime.jrunscript.git.Program, pathname?: string, command: slime.jrunscript.git.Command<I,O>, input: I } } p
+		 */
+		var shell = function(p) {
 			var invoker = $exports.invoker(p.program);
 			var invocation = p.command.input(p.input);
 			var shellArgument = invoker(invocation);
@@ -1424,8 +1463,24 @@
 			};
 			if (p.pathname) shellArgument.directory = p.pathname;
 			var shellInvocation = $context.api.shell.Invocation.create(shellArgument);
+			return shellInvocation;
+		}
+
+		$exports.shell = shell;
+
+		/** @type { slime.jrunscript.git.Exports["run"] } */
+		var run = function(p) {
+			var invoker = $exports.invoker(p.program);
+			var invocation = p.command.input(p.input);
+			var shellArgument = invoker(invocation);
+			shellArgument.stdio = {
+				output: "string"
+			};
+			if (p.pathname) shellArgument.directory = p.pathname;
+			var shellInvocation = shell(p);
 			var output;
-			p.run(shellInvocation)({
+			var run = (p.world && p.world.run) ? p.world.run : $context.api.shell.world.run;
+			run(shellInvocation)({
 				exit: function(e) {
 					if (e.detail.status) throw new Error();
 					output = e.detail.stdio.output;
@@ -1439,10 +1494,6 @@
 				run: $context.api.shell.world.run
 			}));
 		};
-
-		$exports.test = {
-			run: run
-		}
 	}
 //@ts-ignore
 )($api,$context,$exports)
