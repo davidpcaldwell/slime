@@ -713,10 +713,6 @@ namespace slime.jrunscript.git {
 	//@ts-ignore
 	)(fifty);
 
-	export interface Exports {
-		invoker: (program: Program) => (invocation: Invocation) => slime.jrunscript.shell.invocation.Argument
-	}
-
 	export interface Command<P,R> {
 		invocation: (parameter: P) => Invocation
 		result: (output: string) => R
@@ -799,9 +795,14 @@ namespace slime.jrunscript.git {
 					argument: P
 				}) => world.Invocation<P,R>
 
+				shell: (p: {
+					invocation: slime.jrunscript.git.Invocation
+					stdio: slime.jrunscript.shell.invocation.Argument["stdio"]
+				}) => shell.run.Invocation
+
 				command: <P,R>(command: slime.jrunscript.git.Command<P,R>) => {
 					argument: (argument: P) => {
-						run: (p: {
+						run: (p?: {
 							stdout?: world.Invocation<P,R>["stdout"]
 							stderr?: world.Invocation<P,R>["stderr"]
 							world?: world.Invocation<P,R>["world"]
@@ -912,14 +913,16 @@ namespace slime.jrunscript.git {
 
 
 	export interface Exports {
-		shell: <P,R>(p: {
-			program: slime.jrunscript.git.Program
-			pathname?: string
-			command: slime.jrunscript.git.Command<P,R>
-			argument: P
-		}) => slime.jrunscript.shell.run.Invocation
-
 		run: <P,R>(p: world.Invocation<P,R>) => R
+
+		Invocation: {
+			shell: (p: {
+				program: slime.jrunscript.git.Program
+				pathname?: string
+				invocation: slime.jrunscript.git.Invocation
+				stdio: slime.jrunscript.shell.invocation.Argument["stdio"]
+			}) => shell.run.Invocation
+		}
 	}
 
 

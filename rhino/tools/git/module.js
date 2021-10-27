@@ -1396,23 +1396,65 @@
 			}
 		};
 
-		$exports.invoker = function(program) {
-			return function(invocation) {
-				return {
-					command: program.command,
-					arguments: $api.Array.build(function(rv) {
-						rv.push(invocation.command);
-						if (invocation.arguments) invocation.arguments.forEach(function(argument) {
-							rv.push(argument);
-						});
-					})
-				};
-			}
-		}
-
 		$exports.commands = {
 			status: status
 		};
+
+		/**
+		 * @param { slime.jrunscript.git.Program } program
+		 * @param { slime.jrunscript.git.Invocation } invocation
+		 * @param { string } pathname
+		 * @param { slime.jrunscript.shell.invocation.Argument["stdio"] } stdio
+		 * @returns { slime.jrunscript.shell.run.Invocation }
+		 */
+		var createShellInvocation = function(program,pathname,invocation,stdio) {
+			return $context.api.shell.Invocation.create({
+				command: program.command,
+				arguments: $api.Array.build(function(rv) {
+					rv.push(invocation.command);
+					if (invocation.arguments) invocation.arguments.forEach(function(argument) {
+						rv.push(argument);
+					});
+				}),
+				stdio: stdio,
+				directory: pathname
+			});
+		}
+
+		/**
+		 * @template { any } P
+		 * @template { any } R
+		 * @param { slime.jrunscript.git.world.Invocation<P,R> } p
+		 */
+		var shell = function(p) {
+			var invocation = p.command.invocation(p.argument);
+			/** @type { slime.jrunscript.shell.invocation.Argument["stdio"] } */
+			var stdio = {
+				output: (p.stdout) ? "line" : "string",
+				error: (p.stderr) ? "line" : void(0)
+			}
+			return createShellInvocation(p.program, p.pathname, invocation, stdio);
+		}
+
+		/** @type { slime.jrunscript.git.Exports["run"] } */
+		var run = function(p) {
+			var shellInvocation = shell(p);
+			var output;
+			var run = (p.world && p.world.run) ? p.world.run : $context.api.shell.world.run;
+			run(shellInvocation)({
+				stdout: function(e) {
+					p.stdout(e.detail.line);
+				},
+				stderr: function(e) {
+					p.stderr(e.detail.line);
+				},
+				exit: function(e) {
+					if (e.detail.status) throw new Error();
+					output = e.detail.stdio.output;
+				}
+			});
+			return p.command.result(output);
+		}
 
 		$exports.program = function(program) {
 			return {
@@ -1435,6 +1477,14 @@
 					}
 					return {
 						Invocation: Invocation,
+						shell: function(invocation) {
+							return createShellInvocation(
+								program,
+								pathname,
+								invocation.invocation,
+								invocation.stdio
+							);
+						},
 						command: function(command) {
 							return {
 								argument: function(a) {
@@ -1471,51 +1521,17 @@
 			}
 		}
 
-		/**
-		 * @template { any } P
-		 * @template { any } R
-		 * @param { slime.jrunscript.git.world.Invocation<P,R> } p
-		 */
-		var shell = function(p) {
-			var invoker = $exports.invoker(p.program);
-			var invocation = p.command.invocation(p.argument);
-			var shellArgument = invoker(invocation);
-			shellArgument.stdio = {
-				output: (p.stdout) ? "line" : "string",
-				error: (p.stderr) ? "line" : void(0)
-			};
-			if (p.pathname) shellArgument.directory = p.pathname;
-			var shellInvocation = $context.api.shell.Invocation.create(shellArgument);
-			return shellInvocation;
-		}
-
-		$exports.shell = shell;
-
-		/** @type { slime.jrunscript.git.Exports["run"] } */
-		var run = function(p) {
-			var shellInvocation = shell(p);
-			var output;
-			var run = (p.world && p.world.run) ? p.world.run : $context.api.shell.world.run;
-			run(shellInvocation)({
-				stdout: function(e) {
-					p.stdout(e.detail.line);
-				},
-				stderr: function(e) {
-					p.stderr(e.detail.line);
-				},
-				exit: function(e) {
-					if (e.detail.status) throw new Error();
-					output = e.detail.stdio.output;
-				}
-			});
-			return p.command.result(output);
-		}
-
 		$exports.run = function(p) {
 			return run($api.Object.compose(p, {
 				run: $context.api.shell.world.run
 			}));
 		};
+
+		$exports.Invocation = {
+			shell: function(p) {
+				return createShellInvocation(p.program, p.pathname, p.invocation, p.stdio);
+			}
+		}
 	}
 //@ts-ignore
 )($api,$context,$exports)
