@@ -1435,6 +1435,24 @@
 					}
 					return {
 						Invocation: Invocation,
+						command: function(command) {
+							return {
+								run: function(p, world) {
+									var invocation = {
+										program: program,
+										pathname: pathname,
+										command: command,
+										input: p
+									};
+									return run(
+										$api.Object.compose(
+											invocation,
+											(world) ? { world: world } : {}
+										)
+									);
+								}
+							}
+						},
 						run: function(p) {
 							var invocation = $api.Object.compose(
 								Invocation(p),

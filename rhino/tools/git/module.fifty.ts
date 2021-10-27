@@ -784,6 +784,10 @@ namespace slime.jrunscript.git {
 					input: I
 				}) => world.Invocation<I,O>
 
+				command: <I,O>(command: slime.jrunscript.git.Command<I,O>) => {
+					run: (input: I, world?: world.Invocation<I,O>["world"]) => O
+				}
+
 				run: <I,O>(p: {
 					command: slime.jrunscript.git.Command<I,O>
 					input: I
@@ -833,10 +837,10 @@ namespace slime.jrunscript.git {
 					};
 
 					var invoked: shell.run.Invocation;
-					var output = internal.subject.program({ command: "boo" }).repository("/baz/path").run({
-						command: command,
-						input: 3,
-						world: {
+					var output = internal.subject.program({ command: "boo" })
+						.repository("/baz/path")
+						.command(command)
+						.run(3, {
 							run: fifty.global.jsh.shell.world.mock(
 								function(invocation) {
 									invoked = invocation;
@@ -850,8 +854,8 @@ namespace slime.jrunscript.git {
 									}
 								}
 							)
-						}
-					});
+						})
+					;
 
 					fifty.verify(output).is(6);
 					fifty.verify(invoked).configuration.command.is("boo");
