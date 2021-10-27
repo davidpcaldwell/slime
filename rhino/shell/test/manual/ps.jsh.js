@@ -4,13 +4,17 @@
 //
 //	END LICENSE
 
-var ps = (jsh.shell.os.process && jsh.shell.os.process.list) ? jsh.shell.os.process.list() : void(0);
-if (ps) {
-	for (var i=0; i<ps.length; i++) {
-		jsh.shell.echo("Process ID: " + ps[i].id + " parent: " + ps[i].parent.id);
-		jsh.shell.echo("Command: " + ps[i].command);
-		jsh.shell.echo();
+(
+	function() {
+		var ps = (jsh.shell.os.process && jsh.shell.os.process.list) ? jsh.shell.os.process.list() : void(0);
+		if (ps) {
+			for (var i=0; i<ps.length; i++) {
+				jsh.shell.echo("Process ID: " + ps[i].id + " parent: " + ps[i].parent.id);
+				jsh.shell.echo("Command: " + ps[i].command);
+				jsh.shell.echo();
+			}
+		} else {
+			jsh.shell.echo("ps not implemented for this platform.");
+		}
 	}
-} else {
-	jsh.shell.echo("ps not implemented for this platform.");
-}
+)();
