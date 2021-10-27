@@ -397,7 +397,11 @@ namespace slime.jrunscript.git {
 			log: (p?: {
 				author?: string
 				all?: boolean
-				revisionRange?: string, /* deprecated name */ range?: string
+				revisionRange?: string
+				/**
+				 * @deprecated
+				 */
+				range?: string
 			}) => Commit[]
 		}
 
@@ -713,13 +717,13 @@ namespace slime.jrunscript.git {
 		invoker: (program: Program) => (invocation: Invocation) => slime.jrunscript.shell.invocation.Argument
 	}
 
-	export interface Command<I,O> {
-		input: (i: I) => Invocation
-		output: (output: string) => O
+	export interface Command<P,R> {
+		invocation: (parameter: P) => Invocation
+		result: (output: string) => R
 	}
 
 	export namespace command.status {
-		export interface Output {
+		export interface Result {
 			/**
 			 * The current checked out branch, or `null` if a detached HEAD is checked out.
 			 */
@@ -734,11 +738,11 @@ namespace slime.jrunscript.git {
 	}
 
 	export interface Commands {
-		status: Command<void,command.status.Output>
+		status: Command<void,command.status.Result>
 	}
 
 	export namespace world {
-		export interface Invocation<I,O> {
+		export interface Invocation<P,R> {
 			program: Program
 
 			/**
@@ -749,12 +753,23 @@ namespace slime.jrunscript.git {
 			/**
 			 * A command implementation to run.
 			 */
-			command: Command<I,O>
+			command: Command<P,R>
 
 			/**
-			 * The input to pass to the command implementation.
+			 * The argument to pass to the command implementation.
 			 */
-			input: I
+			argument: P
+
+			/**
+			 * An optional callback method to which each line of the command's standard output will be provided.
+			 */
+			stdout?: (line: string) => void
+
+			/**
+			 * An optional callback method to which each line of the command's standard error stream will be provided.
+			 * If omitted, the stream will be redirected to the standard error stream of the parent process.
+			 */
+			stderr?: (line: string) => void
 
 			world?: {
 				/**
@@ -772,27 +787,33 @@ namespace slime.jrunscript.git {
 
 	export interface Exports {
 		program: (program: Program) => {
-			Invocation: <I,O>(p: {
+			Invocation: <P,R>(p: {
 				pathname?: string
-				command: slime.jrunscript.git.Command<I,O>
-				input: I
-			}) => world.Invocation<I,O>
+				command: slime.jrunscript.git.Command<P,R>
+				argument: P
+			}) => world.Invocation<P,R>
 
 			repository: (pathname: string) => {
-				Invocation: <I,O>(p: {
-					command: slime.jrunscript.git.Command<I,O>
-					input: I
-				}) => world.Invocation<I,O>
+				Invocation: <P,R>(p: {
+					command: slime.jrunscript.git.Command<P,R>
+					argument: P
+				}) => world.Invocation<P,R>
 
-				command: <I,O>(command: slime.jrunscript.git.Command<I,O>) => {
-					run: (input: I, world?: world.Invocation<I,O>["world"]) => O
+				command: <P,R>(command: slime.jrunscript.git.Command<P,R>) => {
+					argument: (argument: P) => {
+						run: (p: {
+							stdout?: world.Invocation<P,R>["stdout"]
+							stderr?: world.Invocation<P,R>["stderr"]
+							world?: world.Invocation<P,R>["world"]
+						}) => R
+					}
 				}
 
-				run: <I,O>(p: {
-					command: slime.jrunscript.git.Command<I,O>
-					input: I
-					world?: world.Invocation<I,O>["world"]
-				}) => O
+				run: <P,R>(p: {
+					command: slime.jrunscript.git.Command<P,R>
+					input: P
+					world?: world.Invocation<P,R>["world"]
+				}) => R
 			}
 		}
 	}
@@ -806,7 +827,7 @@ namespace slime.jrunscript.git {
 					var invocation = internal.subject.program({ command: "blah" }).Invocation({
 						pathname: "/foo/path",
 						command: internal.subject.commands.status,
-						input: void(0)
+						argument: void(0)
 					});
 
 					fifty.verify(invocation).program.command.evaluate(String).is("blah");
@@ -816,7 +837,7 @@ namespace slime.jrunscript.git {
 				fifty.run(function repository() {
 					var invocation = internal.subject.program({ command: "sigh" }).repository("/bar/path").Invocation({
 						command: internal.subject.commands.status,
-						input: void(0)
+						argument: void(0)
 					});
 
 					fifty.verify(invocation).program.command.evaluate(String).is("sigh");
@@ -825,41 +846,62 @@ namespace slime.jrunscript.git {
 
 				fifty.run(function run() {
 					var command: Command<number,number> = {
-						input: function(i) {
+						invocation: function(i) {
 							return {
-								command: "titansgo",
+								command: "titans-go",
 								arguments: [String(i)]
 							}
 						},
-						output: function(string) {
+						result: function(string) {
 							return Number(string);
 						}
 					};
 
+					var mock = fifty.global.jsh.shell.world.mock(
+						function(invocation) {
+							invoked = invocation;
+							return {
+								lines: [
+									{ stderr: "e1" },
+									{ stdout: String(Number(invocation.configuration.arguments[1]) * 2) },
+									{ stderr: "e2" }
+								],
+								exit: {
+									status: 0,
+									//	TODO	should not be required
+									stdio: void(0)
+								}
+							}
+						}
+					);
+
 					var invoked: shell.run.Invocation;
+					var stderr: string[] = [];
+					var stdout = [];
 					var output = internal.subject.program({ command: "boo" })
 						.repository("/baz/path")
 						.command(command)
-						.run(3, {
-							run: fifty.global.jsh.shell.world.mock(
-								function(invocation) {
-									invoked = invocation;
-									return {
-										exit: {
-											status: 0,
-											stdio: {
-												output: String(Number(invocation.configuration.arguments[1]) * 2)
-											}
-										}
-									}
-								}
-							)
+						.argument(3)
+						.run({
+							stdout: function(line) {
+								stdout.push(line);
+							},
+							stderr: function(line) {
+								stderr.push(line);
+							},
+							world: {
+								run: mock
+							}
 						})
 					;
 
 					fifty.verify(output).is(6);
+					fifty.verify(stdout).length.is(1);
+					fifty.verify(stderr).length.is(2);
+					fifty.verify(stderr)[0].is("e1");
+					fifty.verify(stderr)[1].is("e2");
 					fifty.verify(invoked).configuration.command.is("boo");
-					fifty.verify(invoked).configuration.arguments[0].is("titansgo");
+					fifty.verify(invoked).configuration.arguments[0].is("titans-go");
 					fifty.verify(invoked).configuration.arguments[1].is("3");
 					fifty.verify(invoked).context.directory.is("/baz/path");
 				});
@@ -870,14 +912,14 @@ namespace slime.jrunscript.git {
 
 
 	export interface Exports {
-		shell: <I,O>(p: {
+		shell: <P,R>(p: {
 			program: slime.jrunscript.git.Program
 			pathname?: string
-			command: slime.jrunscript.git.Command<I,O>
-			input: I
+			command: slime.jrunscript.git.Command<P,R>
+			argument: P
 		}) => slime.jrunscript.shell.run.Invocation
 
-		run: <I,O>(p: world.Invocation<I,O>) => O
+		run: <P,R>(p: world.Invocation<P,R>) => R
 	}
 
 
@@ -892,13 +934,13 @@ namespace slime.jrunscript.git {
 				type i = { foo: number };
 				type o = { bar: number };
 				var command: Command<i,o> = {
-					input: function(i) {
+					invocation: function(i) {
 						return {
 							command: "command",
 							arguments: ["--foo", String(i.foo)]
 						}
 					},
-					output: function(o) {
+					result: function(o) {
 						return { bar: Number(o) };
 					}
 				}
@@ -908,7 +950,7 @@ namespace slime.jrunscript.git {
 					program: { command: "c" },
 					pathname: "/pathname/foo",
 					command: command,
-					input: { foo: 2 },
+					argument: { foo: 2 },
 					world: {
 						run: fifty.global.jsh.shell.world.mock(
 							function(invocation) {

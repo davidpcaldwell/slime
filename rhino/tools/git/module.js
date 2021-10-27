@@ -18,7 +18,7 @@
 		 * @type { slime.jrunscript.git.Exports["commands"]["status"] }
 		 */
 		var status = {
-			input: function() {
+			invocation: function() {
 				return {
 					command: "status",
 					arguments: [
@@ -26,7 +26,7 @@
 					]
 				}
 			},
-			output: function(output) {
+			result: function(output) {
 				//	TODO	This ignores renamed files; see git help status
 				var parser = /(..) (\S+)/;
 				var rv = {
@@ -760,7 +760,7 @@
 				/** @type { slime.jrunscript.git.repository.Local["status"] } */
 				this.status = function() {
 					var self = this;
-					var input = status.input();
+					var input = status.invocation();
 					return execute({
 						command: input.command,
 						arguments: input.arguments,
@@ -774,7 +774,7 @@
 						 */
 						evaluate: function(result) {
 							//	TODO	This ignores renamed files; see git help status
-							var parsed = status.output(result.stdio.output);
+							var parsed = status.result(result.stdio.output);
 							return {
 								branch: {
 									name: parsed.branch,
@@ -1421,7 +1421,7 @@
 						program: program,
 						pathname: p.pathname,
 						command: p.command,
-						input: p.input
+						argument: p.argument
 					}
 				},
 				repository: function(pathname) {
@@ -1430,26 +1430,30 @@
 							program: program,
 							pathname: pathname,
 							command: p.command,
-							input: p.input
+							argument: p.argument
 						};
 					}
 					return {
 						Invocation: Invocation,
 						command: function(command) {
 							return {
-								run: function(p, world) {
-									var invocation = {
-										program: program,
-										pathname: pathname,
-										command: command,
-										input: p
-									};
-									return run(
-										$api.Object.compose(
-											invocation,
-											(world) ? { world: world } : {}
-										)
-									);
+								argument: function(a) {
+									return {
+										run: function(p) {
+											/** @type { slime.jrunscript.git.world.Invocation } */
+											var bound = {
+												program: program,
+												pathname: pathname,
+												command: command,
+												argument: a,
+												stderr: void(0),
+												stdout: void(0),
+												world: void(0)
+											};
+											var specified = $api.Object.compose(bound, p);
+											return run(specified);
+										}
+									}
 								}
 							}
 						},
@@ -1468,16 +1472,17 @@
 		}
 
 		/**
-		 * @template { any } I
-		 * @template { any } O
-		 * @param { { program: slime.jrunscript.git.Program, pathname?: string, command: slime.jrunscript.git.Command<I,O>, input: I } } p
+		 * @template { any } P
+		 * @template { any } R
+		 * @param { slime.jrunscript.git.world.Invocation<P,R> } p
 		 */
 		var shell = function(p) {
 			var invoker = $exports.invoker(p.program);
-			var invocation = p.command.input(p.input);
+			var invocation = p.command.invocation(p.argument);
 			var shellArgument = invoker(invocation);
 			shellArgument.stdio = {
-				output: "string"
+				output: (p.stdout) ? "line" : "string",
+				error: (p.stderr) ? "line" : void(0)
 			};
 			if (p.pathname) shellArgument.directory = p.pathname;
 			var shellInvocation = $context.api.shell.Invocation.create(shellArgument);
@@ -1488,23 +1493,22 @@
 
 		/** @type { slime.jrunscript.git.Exports["run"] } */
 		var run = function(p) {
-			var invoker = $exports.invoker(p.program);
-			var invocation = p.command.input(p.input);
-			var shellArgument = invoker(invocation);
-			shellArgument.stdio = {
-				output: "string"
-			};
-			if (p.pathname) shellArgument.directory = p.pathname;
 			var shellInvocation = shell(p);
 			var output;
 			var run = (p.world && p.world.run) ? p.world.run : $context.api.shell.world.run;
 			run(shellInvocation)({
+				stdout: function(e) {
+					p.stdout(e.detail.line);
+				},
+				stderr: function(e) {
+					p.stderr(e.detail.line);
+				},
 				exit: function(e) {
 					if (e.detail.status) throw new Error();
 					output = e.detail.stdio.output;
 				}
 			});
-			return p.command.output(output);
+			return p.command.result(output);
 		}
 
 		$exports.run = function(p) {
