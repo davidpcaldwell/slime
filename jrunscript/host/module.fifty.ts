@@ -215,5 +215,5 @@ namespace slime.jrunscript.host {
 	//@ts-ignore
 	)(fifty);
 
-	export type load = slime.loader.Product<Context,Exports>
+	export type load = slime.loader.Script<Context,Exports>
 }

@@ -29,5 +29,5 @@ namespace slime.jrunscript.http.client.internal.cookies {
 		java: () => slime.jrunscript.http.client.internal.Cookies
 	}
 
-	export type Load = slime.loader.Product<void,Export>
+	export type Load = slime.loader.Script<void,Export>
 }

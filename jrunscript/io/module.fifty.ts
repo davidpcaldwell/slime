@@ -52,5 +52,5 @@ namespace slime.jrunscript.io {
 		system: slime.jrunscript.runtime.io.Exports["system"]
 	}
 
-	export type load = slime.loader.Product<Context,Exports>
+	export type load = slime.loader.Script<Context,Exports>
 }

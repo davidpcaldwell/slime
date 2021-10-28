@@ -14,5 +14,5 @@ namespace slime.runtime.browser.test.server {
 		resultsPath: string
 	) => jsh.httpd.Tomcat
 
-	export type Factory = slime.loader.Product<void,Export>
+	export type Script = slime.loader.Script<void,Export>
 }

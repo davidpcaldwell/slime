@@ -27,6 +27,6 @@ namespace slime.tools.documentation {
 		 * Given the `httpd` object (see {@link Context}), provides an object that can serve the contents of a Loader and
 		 * understands the `as=text` query string.
 		 */
-		export type Factory = slime.loader.Product<Context,Export>
+		export type Factory = slime.loader.Script<Context,Export>
 	}
 }

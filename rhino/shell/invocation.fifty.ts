@@ -229,5 +229,5 @@ namespace slime.jrunscript.shell.internal.invocation {
 		invocation: slime.jrunscript.shell.Exports["invocation"]
 	}
 
-	export type Factory = slime.loader.Product<Context,Export>
+	export type Factory = slime.loader.Script<Context,Export>
 }

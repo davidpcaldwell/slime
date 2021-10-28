@@ -11,7 +11,7 @@
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.Global } jsh
 	 * @param { slime.Loader } $loader
-	 * @param { (value: slime.runtime.browser.test.server.Export) => void } $export
+	 * @param { slime.loader.Export<slime.runtime.browser.test.server.Export> } $export
 	 */
 	function($api,jsh,$loader,$export) {
 		$export(
@@ -64,7 +64,7 @@
 									(
 										(resultsPath)
 											? (function createResultHandler() {
-												/** @type { slime.loader.Product<slime.runtime.browser.test.results.Context,slime.runtime.browser.test.results.Factory> } */
+												/** @type { slime.loader.Script<slime.runtime.browser.test.results.Context,slime.runtime.browser.test.results.Factory> } */
 												var resultServletFactory = $loader.factory("handler-results.js");
 
 												var resultServletFile = resultServletFactory({

@@ -24,5 +24,5 @@ namespace slime.jrunscript.http.client.internal.objects {
 		Parser: slime.jrunscript.http.client.Exports["Parser"]
 	}
 
-	export type load = slime.loader.Product<Context,Export>
+	export type load = slime.loader.Script<Context,Export>
 }

@@ -55,7 +55,7 @@ namespace slime.definition.unit {
 		}
 	}
 
-	export type Factory = slime.loader.Product<Context,Exports>
+	export type Factory = slime.loader.Script<Context,Exports>
 }
 
 namespace slime.definition.unit.internal {

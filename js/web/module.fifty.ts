@@ -450,6 +450,6 @@ namespace slime.web {
 )(fifty)
 
 namespace slime.web {
-	export type load = slime.loader.Product<Context,Exports>
+	export type load = slime.loader.Script<Context,Exports>
 }
 

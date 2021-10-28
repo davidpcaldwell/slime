@@ -26,7 +26,7 @@ namespace slime.definition.test.promises {
 		}
 	}
 
-	export type Script = slime.loader.Product<void,Export>
+	export type Script = slime.loader.Script<void,Export>
 
 	export interface Export {
 		Registry: (p?: { name: string }) => Registry

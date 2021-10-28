@@ -116,7 +116,7 @@ namespace slime {
 		value: (path: string, scope?: any, target?: any) => any
 		file: (path: string, $context?: any, target?: any) => any
 		module: (path: string, $context?: any, target?: any) => any
-		factory: <C,E>(path: string) => loader.Product<C,E>
+		factory: <C,E>(path: string) => loader.Script<C,E>
 		Child: {
 			(prefix: string): Loader
 		}
@@ -137,9 +137,12 @@ namespace slime {
 			resource: any
 		}
 
-		export interface Product<C,E> {
+		export interface Script<C,E> {
 			(c?: C): E
 		}
+
+		/** @deprecated Replaced by {@link Script}. */
+		export type Product<C,E> = Script<C,E>
 
 		export type Export<T> = (value: T) => void
 
@@ -506,7 +509,7 @@ namespace slime {
 
 namespace slime.test {
 	declare type api = { convert: (input: number) => number };
-	export type factory = slime.loader.Product<{ scale: number }, api>;
+	export type factory = slime.loader.Script<{ scale: number }, api>;
 }
 
 (

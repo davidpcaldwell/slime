@@ -87,7 +87,7 @@ namespace slime.jrunscript.shell.internal.run {
 		}
 	}
 
-	export type Factory = slime.loader.Product<Context,Export>
+	export type Factory = slime.loader.Script<Context,Export>
 
 	(
 		function(

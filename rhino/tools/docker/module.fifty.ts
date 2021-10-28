@@ -160,7 +160,7 @@ namespace slime.jrunscript.tools {
 			kubectl: slime.jrunscript.tools.kubectl.Exports
 		}
 
-		export type load = slime.loader.Product<void,Export>
+		export type load = slime.loader.Script<void,Export>
 	}
 
 	export namespace docker.test {

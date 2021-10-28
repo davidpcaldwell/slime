@@ -522,7 +522,7 @@ namespace slime.jrunscript.shell {
 		world: World
 	}
 
-	export type Loader = slime.loader.Product<Context,Exports>;
+	export type Loader = slime.loader.Script<Context,Exports>;
 
 	export namespace sudo {
 		export interface Settings {
