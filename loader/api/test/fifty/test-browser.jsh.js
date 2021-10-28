@@ -95,38 +95,49 @@
 				/** @type { { kill: any } } */
 				var process;
 
-				var url = new jsh.web.Url({
-					scheme: "http",
-					authority: {
-						host: "127.0.0.1",
-						port: tomcat.port
-					},
-					path: "/" + paths.toHtmlRunner.relative,
-					query: [
-						{ name: "file", value: paths.toFile.relative },
-						{ name: "results", value: String(Boolean(resultsPath)) }
-					].concat(
-						(p.options.part) ? [{ name: "part", value: p.options.part }] : []
-					)
-				});
-
-				var run = function() {
-					chrome.run({
-						//	TODO	enhance chrome.run so it can take a Url object rather than just a string
-						uri: url.toString(),
-						arguments: (p.options["chrome:debug:vscode"]) ? ["--remote-debugging-port=9222"] : [],
-						on: {
-							start: function(p) {
-								process = p;
+				var getUrl = function(p) {
+					return new jsh.web.Url({
+						scheme: "http",
+						authority: {
+							host: "127.0.0.1",
+							port: tomcat.port
+						},
+						path: "/" + paths.toHtmlRunner.relative,
+						query: $api.Array.build(function(rv) {
+							rv.push({ name: "file", value: paths.toFile.relative });
+							rv.push({ name: "results", value: String(Boolean(resultsPath)) });
+							if (p.part) {
+								rv.push({ name: "part", value: p.part });
 							}
-						}
+							if (p.delay) {
+								rv.push({ name: "delay", value: p.delay });
+							}
+						})
 					});
-				};
+				}
+
+				var run = function(delay) {
+					return function() {
+						chrome.run({
+							//	TODO	enhance chrome.run so it can take a Url object rather than just a string
+							uri: getUrl({
+								part: p.options.part,
+								delay: delay
+							}).toString(),
+							arguments: (p.options["chrome:debug:vscode"]) ? ["--remote-debugging-port=9222"] : [],
+							on: {
+								start: function(p) {
+									process = p;
+								}
+							}
+						});
+					};
+				}
 
 				if (p.options.interactive) {
-					run();
+					run()();
 				} else {
-					jsh.java.Thread.start(run);
+					jsh.java.Thread.start(run(4000));
 					var resultsUrl = new jsh.web.Url({
 						scheme: "http",
 						authority: {

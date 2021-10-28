@@ -25,29 +25,11 @@
 		/** @type { slime.definition.test.promises.Export } */
 		var promises = inonit.loader.loader.module("../../../../loader/api/promises.js");
 
-		window.addEventListener("load", function() {
-			/** @type { slime.fifty.browser.test.internal.Query } */
-			var query = $api.Function.result(
-				void(0),
-				web.window.url,
-				$api.Function.property("query"),
-				web.Url.query.parse,
-				$api.Function.Array.map(
-					/** @returns { [string, string] } */
-					function(control) {
-						return [control.name, control.value];
-					}
-				),
-				$api.Function.Object.fromEntries,
-				function(p) {
-					return $api.Object.compose(p, {
-						results: p.results,
-						design: p.design,
-						file: p.file,
-						part: p.part
-					});
-				}
-			);
+		/**
+		 * @param { slime.fifty.browser.test.internal.Query } query
+		 * @returns
+		 */
+		var onload = function(query) {
 
 			/**
 			 *
@@ -229,6 +211,42 @@
 					xhr.send(JSON.stringify(payload));
 				}
 			})
+		};
+
+		window.addEventListener("load", function() {
+			//	TODO	web module probably has easier way to parse query string
+			/** @type { slime.fifty.browser.test.internal.Query } */
+			var query = $api.Function.result(
+				void(0),
+				web.window.url,
+				$api.Function.property("query"),
+				web.Url.query.parse,
+				$api.Function.Array.map(
+					/** @returns { [string, string] } */
+					function(control) {
+						return [control.name, control.value];
+					}
+				),
+				$api.Function.Object.fromEntries,
+				function(p) {
+					return $api.Object.compose(p, {
+						results: p.results,
+						design: p.design,
+						file: p.file,
+						part: p.part,
+						delay: p.delay
+					});
+				}
+			);
+
+			//	The need for this delay seems to stem from .ts files attempting to load .js files; wondering whether it has to do
+			//	with the preflight requests for .ts files being slow because of the need to run the TypeScript compiler. May want
+			//	to try handling the OPTIONS request without running tsc. The resulting error
+			//	"NetworkError: Failed to execute 'send' on 'XMLHttpRequest'" seems to commonly be caused by CORS issues, although
+			//	it also occurs in Chrome DevTools when attempting to executing synchronous XHRs from the console.
+			window.setTimeout(function() {
+				onload(query);
+			}, query.delay || 0);
 		});
 	}
 //@ts-ignore

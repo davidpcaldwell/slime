@@ -5,10 +5,11 @@
 //	END LICENSE
 
 namespace slime.fifty.browser.test.internal {
-	interface Query {
+	export interface Query {
 		results: "true" | "false"
 		design: any
 		file: any
 		part: any
+		delay: number
 	}
 }
