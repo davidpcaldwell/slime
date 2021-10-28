@@ -56,12 +56,8 @@
 			});
 		}
 
-		suite.add("internal/slime/fifty/runtime", FiftyPart({
-			file: SRC.getFile("loader/expression.fifty.ts")
-		}));
-
-		suite.add("internal/slime/fifty/mime", FiftyPart({
-			file: SRC.getFile("loader/mime.fifty.ts")
+		suite.add("fifty", FiftyPart({
+			file: jsh.script.file.parent.getFile("jrunscript.fifty.ts")
 		}));
 
 		suite.add("internal/slime/jsapi", new jsh.unit.html.Part({
@@ -75,9 +71,6 @@
 			//	TODO	redundant; now tested per-engine in contributor/suite.jsh.js
 			pathname: SRC.getRelativePath("loader/jrunscript/api.html")
 		}));
-		suite.add("internal/jrunscript/java/fifty", FiftyPart({
-			file: SRC.getFile("loader/jrunscript/java.fifty.ts")
-		}));
 		suite.add("internal/jrunscript/java/jsapi", new jsh.unit.html.Part({
 			//	Test cases of loader implementation
 			//	TODO	redundant; now tested per-engine in contributor/suite.jsh.js
@@ -88,12 +81,6 @@
 			environment: {
 				$slime: jsh.unit.$slime
 			}
-		}));
-		suite.add("internal/jrunscript/system", FiftyPart({
-			file: SRC.getFile("rhino/system/test/Packages.inonit.system.fifty.ts")
-		}));
-		suite.add("internal/jrunscript/bootstrap", FiftyPart({
-			file: SRC.getFile("rhino/jrunscript/api.fifty.ts")
 		}));
 
 		suite.add("internal/other", new jsh.unit.html.Part({
@@ -108,12 +95,6 @@
 			script: SRC.getFile("loader/document/test/suite.jsh.js"),
 			arguments: ["-view", "stdio"]
 		}));
-		suite.add("internal/document/fifty/old", FiftyPart({
-			file: SRC.getFile("loader/document/test/module.fifty.ts")
-		}));
-		suite.add("internal/document/fifty/source", FiftyPart({
-			file: SRC.getFile("loader/document/test/source.fifty.ts")
-		}));
 
 		suite.add("$api/flag", new jsh.unit.html.Part({
 			pathname: SRC.getRelativePath("loader/$api-flag.api.html")
@@ -123,10 +104,6 @@
 		}));
 		suite.add("$api/main", new jsh.unit.html.Part({
 			pathname: SRC.getRelativePath("loader/$api.api.html")
-		}));
-
-		suite.add("js/web", FiftyPart({
-			file: SRC.getFile("js/web/module.fifty.ts")
 		}));
 
 		suite.add("js/object/other", new jsh.unit.html.Part({
@@ -144,9 +121,6 @@
 			pathname: SRC.getRelativePath("js/time/api.html")
 		}));
 
-		suite.add("jrunscript/host/fifty", FiftyPart({
-			file: SRC.getFile("jrunscript/host/module.fifty.ts")
-		}));
 		suite.add("jrunscript/host/jsapi", new jsh.unit.html.Part({
 			pathname: SRC.getRelativePath("jrunscript/host/api.html"),
 			// TODO: why is supplying the module this way necessary?
@@ -155,10 +129,6 @@
 
 		suite.add("jrunscript/io/module", new jsh.unit.html.Part({
 			pathname: SRC.getRelativePath("jrunscript/io/api.html")
-		}));
-
-		suite.add("jrunscript/io/jsh", FiftyPart({
-			file: SRC.getFile("jrunscript/io/plugin.jsh.fifty.ts")
 		}));
 
 		suite.add("jrunscript/io/mime", new jsh.unit.html.Part({
@@ -177,14 +147,6 @@
 			pathname: SRC.getRelativePath("rhino/file/api.Searchpath.html")
 		}));
 
-		suite.add("jrunscript/ip", FiftyPart({
-			file: SRC.getFile("rhino/ip/module.fifty.ts")
-		}));
-
-		suite.add("jrunscript/http", FiftyPart({
-			file: SRC.getFile("rhino/http/client/module.fifty.ts")
-		}));
-
 		suite.add("jrunscript/document/module", new jsh.unit.html.Part({
 			pathname: SRC.getRelativePath("rhino/document/api.html")
 		}));
@@ -196,9 +158,6 @@
 		suite.add("jrunscript/shell/jsapi", new jsh.unit.html.Part({
 			pathname: SRC.getRelativePath("rhino/shell/api.html"),
 			environment: { noselfping: parameters.options.noselfping }
-		}));
-		suite.add("jrunscript/shell/fifty", FiftyPart({
-			file: SRC.getFile("rhino/shell/module.fifty.ts")
 		}));
 		suite.add("jrunscript/shell/browser", new jsh.unit.html.Part({
 			pathname: SRC.getRelativePath("rhino/shell/browser/api.html")
@@ -222,19 +181,7 @@
 					pathname: SRC.getRelativePath("rhino/tools/git/api.html")
 				})
 			);
-			suite.add(
-				"jrunscript/tools/git/fifty",
-				FiftyPart({
-					file: SRC.getFile("rhino/tools/git/module.fifty.ts")
-				})
-			);
 		}
-		suite.add("jrunscript/tools/docker", FiftyPart({
-			file: SRC.getFile("rhino/tools/docker/module.fifty.ts")
-		}));
-		suite.add("jrunscript/tools/github", FiftyPart({
-			file: SRC.getFile("rhino/tools/github/module.fifty.ts")
-		}));
 		suite.add("jrunscript/tools/node", new jsh.unit.html.Part({
 			pathname: SRC.getRelativePath("rhino/tools/node/api.html")
 		}));
@@ -278,10 +225,6 @@
 			environment: environment
 		}));
 
-		suite.add("jsh/jsh.loader/fifty", FiftyPart({
-			file: SRC.getFile("jsh/loader/jsh.fifty.ts")
-		}));
-
 		suite.add("jsh/jsh.shell/main", new jsh.unit.html.Part({
 			pathname: SRC.getRelativePath("rhino/shell/plugin.jsh.api.html"),
 			// TODO: do we actually need environment here?
@@ -311,10 +254,6 @@
 			environment: environment
 		}));
 
-		suite.add("jsh/jsh.script/fifty", FiftyPart({
-			file: SRC.getFile("jsh/script/plugin.jsh.fifty.ts")
-		}));
-
 		suite.add("jsh/jsh.tools", new jsh.unit.html.Part({
 			pathname: SRC.getRelativePath("rhino/tools/plugin.jsh.jsh.tools.api.html")
 		}));
@@ -332,9 +271,6 @@
 		}));
 		suite.add("testing/jsh.unit/definition/jsapi", new jsh.unit.html.Part({
 			pathname: SRC.getRelativePath("jsh/unit/plugin.jsh.api.html")
-		}));
-		suite.add("testing/jsh.unit/definition/fifty/web", FiftyPart({
-			file: SRC.getFile("jsh/unit/plugin.jsh.web.fifty.ts")
 		}));
 		suite.add("testing/fifty", new jsh.unit.html.Part({
 			pathname: SRC.getRelativePath("loader/api/test/fifty/test/data/api.html")
@@ -405,10 +341,6 @@
 			pathname: SRC.getRelativePath("rhino/http/servlet/plugin.jsh.resources.api.html")
 		}));
 
-		suite.add("servlet/resources/fifty", FiftyPart({
-			file: SRC.getFile("rhino/http/servlet/plugin.jsh.resources.fifty.ts")
-		}));
-
 		suite.add("servlet/server", new jsh.unit.html.Part({
 			pathname: SRC.getRelativePath("rhino/http/servlet/server/api.html")
 		}));
@@ -456,28 +388,6 @@
 
 		suite.add("jsh/jsh.ui", new jsh.unit.html.Part({
 			pathname: SRC.getRelativePath("rhino/ui/plugin.jsh.api.html")
-		}));
-
-		var fifty = function(p) {
-			return {
-				execute: function(scope,verify) {
-					var result = jsh.shell.jsh({
-						shell: jsh.shell.jsh.src,
-						script: jsh.shell.jsh.src.getFile("loader/api/test/fifty/test.jsh.js"),
-						arguments: [
-							jsh.shell.jsh.src.getFile(p.path)
-						]
-					});
-					verify(result).status.is(0);
-				}
-			}
-		}
-
-		if (!parameters.options.issue138) suite.add("tools/jsh/api", fifty({
-			path: "tools/wf/plugin.jsh.fifty.ts"
-		}));
-		if (!parameters.options.issue138) suite.add("tools/jsh/standard", fifty({
-			path: "tools/wf/plugin-standard.jsh.fifty.ts"
 		}));
 
 		//	TODO	disabling tests in order to try to get commit to succeed. Probably need to migrate this to a GitHub implementation

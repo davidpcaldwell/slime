@@ -5,15 +5,15 @@
 //	END LICENSE
 
 namespace slime.jsh.unit {
-	namespace internal.remote {
-		interface Context {
+	export namespace internal.remote {
+		export interface Context {
 			api: {
 				java: slime.jrunscript.host.Exports
 				unit: any
 			}
 		}
 
-		interface Exports {
+		export interface Exports {
 			Events: any
 			Decoder: any
 			Stream: any
@@ -22,7 +22,7 @@ namespace slime.jsh.unit {
 }
 
 namespace slime.jsh {
-	interface Global {
+	export interface Global {
 		unit: {
 			mock: slime.jsh.unit.mock;
 			html: any
@@ -30,7 +30,7 @@ namespace slime.jsh {
 			interface: any
 			$slime: slime.jsh.plugin.$slime
 			jsapi: any
-			Verify: slime.definition.unit.Verify.Factory
+			Verify: slime.definition.verify.Export
 			fifty: {
 				/**
 				 * Creates a Part that can be used in a jsapi test suite from a Fifty test file.
@@ -54,6 +54,12 @@ namespace slime.jsh {
 			}
 			JSON: {
 				Encoder: any
+			}
+			browser: {
+				/**
+				 * Browsers in precedence order
+				 */
+				installed: { id: string, name: string }[]
 			}
 		}
 	}

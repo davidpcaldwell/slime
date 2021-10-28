@@ -4,8 +4,13 @@
 //
 //	END LICENSE
 
+//@ts-check
 (
-	function() {
+	/**
+	 *
+	 * @param { slime.jsh.Global } jsh
+	 */
+	function(jsh) {
 		jsh.shell.tools.tomcat.require(void(0), {
 			console: function(e) {
 				jsh.shell.console(e.detail);
@@ -114,8 +119,6 @@
 			});
 		});
 
-		//	Browsers in precedence order: whichever is first in the array will be used if only one is being used
-		var browsers = jsh.unit.browser.installed;
 		suite.add("browsers", new function() {
 			this.name = "Browser tests";
 
@@ -222,4 +225,5 @@
 			this.path = (parameters.options.part) ? parameters.options.part.split("/") : void(0);
 		});
 	}
-)();
+//@ts-ignore
+)(jsh);
