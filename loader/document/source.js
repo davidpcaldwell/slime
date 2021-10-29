@@ -48,7 +48,7 @@
 				/**
 				 *
 				 * @param { slime.runtime.document.source.internal.State } state
-				 * @param { slime.runtime.document.source.Node } node
+				 * @param { slime.runtime.document.Node } node
 				 * @param { number } advance
 				 * @returns { slime.runtime.document.source.internal.State }
 				 */
@@ -107,7 +107,7 @@
 			var left = State.remaining(state);
 			var end = left.indexOf("-->");
 			if (end == -1) throw new Error("Comment not closed.");
-			/** @type { slime.runtime.document.source.Comment } */
+			/** @type { slime.runtime.document.Comment } */
 			var comment = {
 				type: "comment",
 				data: left.substring("<!--".length, end)
@@ -142,7 +142,7 @@
 			var left = State.remaining(state);
 			var end = left.indexOf("<");
 			if (end == -1) end = left.length;
-			/** @type { slime.runtime.document.source.Text } */
+			/** @type { slime.runtime.document.Text } */
 			var text = {
 				type: "text",
 				data: left.substring(0,end)
@@ -181,7 +181,7 @@
 		/**
 		 * @param { slime.runtime.document.source.internal.State } state
 		 * @param { slime.$api.Events<slime.runtime.document.source.ParseEvents> } events
-		 * @param { slime.runtime.document.source.internal.Parser<slime.runtime.document.source.Parent> } recurse
+		 * @param { slime.runtime.document.source.internal.Parser<slime.runtime.document.Parent> } recurse
 		 * @returns { slime.runtime.document.source.internal.State }
 		 */
 		var parseElement = function(state,events,recurse) {
@@ -201,7 +201,7 @@
 
 			var toAttributes = function(list,string) {
 				if (string.length == 0) return list;
-				/** @type { slime.runtime.document.source.Attribute } */
+				/** @type { slime.runtime.document.Attribute } */
 				var attribute = {
 					whitespace: "",
 					name: null,
@@ -281,7 +281,7 @@
 
 			var attributes = toAttributes([], parsed[2]);
 
-			/** @type { slime.runtime.document.source.internal.State<slime.runtime.document.source.Element> } */
+			/** @type { slime.runtime.document.source.internal.State<slime.runtime.document.Element> } */
 			var substate = {
 				parsed: {
 					type: "element",
@@ -350,7 +350,7 @@
 			}
 		}
 
-		/** @returns { slime.runtime.document.source.internal.Parser<slime.runtime.document.source.Parent> } */
+		/** @returns { slime.runtime.document.source.internal.Parser<slime.runtime.document.Parent> } */
 		var Parser = function(configuration) {
 			/**
 			 *
@@ -420,32 +420,32 @@
 			return rv;
 		}
 
-		/** @type { (node: slime.runtime.document.source.Node) => node is slime.runtime.document.source.Comment } */
+		/** @type { (node: slime.runtime.document.Node) => node is slime.runtime.document.Comment } */
 		var isComment = function(node) {
 			return node.type == "comment";
 		}
 
-		/** @type { (node: slime.runtime.document.source.Node) => node is slime.runtime.document.source.Text } */
+		/** @type { (node: slime.runtime.document.Node) => node is slime.runtime.document.Text } */
 		var isText = function(node) {
 			return node.type == "text";
 		}
 
-		/** @type { (node: slime.runtime.document.source.Node) => node is slime.runtime.document.source.Doctype } */
+		/** @type { (node: slime.runtime.document.Node) => node is slime.runtime.document.Doctype } */
 		var isDoctype = function(node) {
 			return node.type == "doctype";
 		}
 
-		/** @type { (node: slime.runtime.document.source.Node) => node is slime.runtime.document.source.Document } */
+		/** @type { (node: slime.runtime.document.Node) => node is slime.runtime.document.Document } */
 		var isDocument = function(node) {
 			return node.type == "document";
 		}
 
-		/** @type { (node: slime.runtime.document.source.Node) => node is slime.runtime.document.source.Element } */
+		/** @type { (node: slime.runtime.document.Node) => node is slime.runtime.document.Element } */
 		var isElement = function(node) {
 			return node.type == "element";
 		}
 
-		/** @type { (node: slime.runtime.document.source.Node) => node is slime.runtime.document.source.Fragment } */
+		/** @type { (node: slime.runtime.document.Node) => node is slime.runtime.document.Fragment } */
 		var isFragment = function(node) {
 			return node.type == "fragment";
 		}
@@ -453,7 +453,7 @@
 		var Serializer = function(configuration) {
 			/**
 			 *
-			 * @param { slime.runtime.document.source.Attribute } attribute
+			 * @param { slime.runtime.document.Attribute } attribute
 			 * @returns { string }
 			 */
 			function serializeAttribute(attribute) {

@@ -4,6 +4,70 @@
 //
 //	END LICENSE
 
+namespace slime.runtime.document {
+	export interface Node {
+		type: string
+	}
+
+	export interface Parent extends Node {
+		children: Node[]
+	}
+
+	export interface Comment extends Node {
+		type: "comment"
+		data: string
+	}
+
+	export interface Text extends Node {
+		type: "text"
+		data: string
+	}
+
+	export interface Doctype extends Node {
+		type: "doctype"
+		before: string
+		name: string
+		after: string
+	}
+
+	export interface Element extends Parent {
+		type: "element"
+		name: string
+		attributes: Attribute[]
+		selfClosing: boolean
+		endTag: string
+	}
+
+	export interface Attribute {
+		//	TODO	may be whitespace before equals
+		//	TODO	may be whitespace after equals
+		whitespace: string
+		name: string
+		quote: string
+		value: string
+	}
+
+	export interface Document extends Parent {
+		type: "document"
+	}
+
+	export interface Fragment extends Parent {
+		type: "fragment"
+	}
+
+	export interface Context {
+		$slime?: old.Context["$slime"]
+	}
+
+	export interface Export {
+		load: old.Exports["load"]
+
+		codec: {
+			document: slime.Codec<Document,string>
+		}
+	}
+}
+
 /**
  * The SLIME document parser is a parser and serializer that handles HTML (and XHTML/XML) documents, converting them to a
  * tree structure (which is somewhat analogous to a DOM tree).
@@ -51,9 +115,7 @@ namespace slime.runtime.document.old {
 				verify(page).document.element.element.attributes.get("foo").is(null);
 			}
 
-			fifty.tests.suite = function() {
-				fifty.verify("document").is("document");
-
+			fifty.tests.old = function() {
 				fifty.run(function files() {
 					//	This is not really a test of this module
 					var resource = fifty.$loader.get("test/data/1.html");
@@ -87,6 +149,12 @@ namespace slime.runtime.document.old {
 						fifty.verify(string).is(fifty.$loader.get("test/data/1.html").read(String));
 					}
 				});
+			}
+
+			fifty.tests.suite = function() {
+				fifty.load("source.fifty.ts");
+
+				fifty.run(fifty.tests.old);
 			}
 		}
 	//@ts-ignore

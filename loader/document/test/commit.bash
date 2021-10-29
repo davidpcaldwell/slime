@@ -7,4 +7,4 @@
 
 SLIME=$(dirname $0)/../../..
 SRC=$(dirname $0)/..
-"${SLIME}/fifty" test.browser "${SRC}/source.fifty.ts" && ${SLIME}/wf commit --notest "$@"
+"${SLIME}/fifty" test.jsh "${SRC}/module.fifty.ts" && "${SLIME}/fifty" test.browser "${SRC}/module.fifty.ts" && ${SLIME}/wf commit --notest "$@"

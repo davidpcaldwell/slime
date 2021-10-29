@@ -17,7 +17,6 @@
 			fifty.load("../rhino/system/test/Packages.inonit.system.fifty.ts");
 			fifty.load("../rhino/jrunscript/api.fifty.ts");
 			if (jsh.shell.tools.jsoup.installed) fifty.load("../loader/document/module.fifty.ts");
-			fifty.load("../loader/document/source.fifty.ts");
 			fifty.load("../js/web/module.fifty.ts");
 			fifty.load("../jrunscript/host/module.fifty.ts");
 			fifty.load("../jrunscript/io/plugin.jsh.fifty.ts");

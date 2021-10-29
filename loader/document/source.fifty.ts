@@ -32,63 +32,13 @@ namespace slime.runtime.document.source {
 		}
 
 		Node: {
-			isComment: (node: slime.runtime.document.source.Node) => node is slime.runtime.document.source.Comment
-			isText: (node: slime.runtime.document.source.Node) => node is slime.runtime.document.source.Text
-			isDoctype: (node: slime.runtime.document.source.Node) => node is slime.runtime.document.source.Doctype
-			isDocument: (node: slime.runtime.document.source.Node) => node is slime.runtime.document.source.Document
-			isElement: (node: slime.runtime.document.source.Node) => node is slime.runtime.document.source.Element
-			isFragment: (node: slime.runtime.document.source.Node) => node is slime.runtime.document.source.Fragment
+			isComment: (node: slime.runtime.document.Node) => node is slime.runtime.document.Comment
+			isText: (node: slime.runtime.document.Node) => node is slime.runtime.document.Text
+			isDoctype: (node: slime.runtime.document.Node) => node is slime.runtime.document.Doctype
+			isDocument: (node: slime.runtime.document.Node) => node is slime.runtime.document.Document
+			isElement: (node: slime.runtime.document.Node) => node is slime.runtime.document.Element
+			isFragment: (node: slime.runtime.document.Node) => node is slime.runtime.document.Fragment
 		}
-	}
-
-	export interface Node {
-		type: string
-	}
-
-	export interface Parent extends Node {
-		children: Node[]
-	}
-
-	export interface Comment extends Node {
-		type: "comment"
-		data: string
-	}
-
-	export interface Text extends Node {
-		type: "text"
-		data: string
-	}
-
-	export interface Doctype extends Node {
-		type: "doctype"
-		before: string
-		name: string
-		after: string
-	}
-
-	export interface Element extends Parent {
-		type: "element"
-		name: string
-		attributes: Attribute[]
-		selfClosing: boolean
-		endTag: string
-	}
-
-	export interface Attribute {
-		//	TODO	may be whitespace before equals
-		//	TODO	may be whitespace after equals
-		whitespace: string
-		name: string
-		quote: string
-		value: string
-	}
-
-	export interface Document extends Parent {
-		type: "document"
-	}
-
-	export interface Fragment extends Parent {
-		type: "fragment"
 	}
 
 	export namespace internal {
