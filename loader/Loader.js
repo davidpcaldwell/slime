@@ -95,13 +95,15 @@
 					return inner.$exports;
 				};
 
-				/** @type { slime.Loader["factory"] } */
-				this.factory = function(path) {
+				/** @type { slime.Loader["script"] } */
+				this.script = function(path) {
 					var $loader = this;
 					return function(c) {
 						return $loader.module(path, c);
 					}
-				}
+				};
+
+				this.factory = $api.deprecate(this.script);
 
 				var Child = (function(parent,argument) {
 					/**

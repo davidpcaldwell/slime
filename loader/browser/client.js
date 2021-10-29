@@ -260,6 +260,7 @@
 					this.value = void(0);
 					this.file = void(0);
 					this.module = void(0);
+					this.script = void(0);
 					this.factory = void(0);
 					this.Child = void(0);
 					this.get = void(0);

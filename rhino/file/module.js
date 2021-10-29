@@ -358,6 +358,7 @@
 			this.Child = void(0);
 			this.get = void(0);
 			this.factory = void(0);
+			this.script = void(0);
 			var args = Array.prototype.slice.call(arguments);
 			args.splice(0,1,a);
 			$context.api.io.Loader.apply(this,args);

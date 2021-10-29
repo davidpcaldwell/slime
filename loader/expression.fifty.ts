@@ -116,12 +116,15 @@ namespace slime {
 		value: (path: string, scope?: any, target?: any) => any
 		file: (path: string, $context?: any, target?: any) => any
 		module: (path: string, $context?: any, target?: any) => any
-		factory: <C,E>(path: string) => loader.Script<C,E>
+		script: <C,E>(path: string) => loader.Script<C,E>
 		Child: {
 			(prefix: string): Loader
 		}
 		get: (path: string) => Resource
 		list?: (m?: { filter?: any, descendants?: any }) => ( loader.LoaderEntry | loader.ResourceEntry )[]
+
+		/** @deprecated Replaced by `script`. */
+		factory: Loader["script"]
 	}
 
 	export namespace loader {

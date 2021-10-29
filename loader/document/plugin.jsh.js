@@ -4,16 +4,31 @@
 //
 //	END LICENSE
 
-plugin({
-	isReady: function() {
-		return jsh.document;
-	},
-	load: function() {
-		var module = $loader.module("module.js", {
-			$slime: $slime
+//@ts-check
+(
+	/**
+	 * @param { slime.jsh.plugin.$slime } $slime
+	 * @param { slime.jsh.Global } jsh
+	 * @param { slime.Loader } $loader
+	 * @param { slime.jsh.plugin.plugin } plugin
+	 */
+	function($slime,jsh,$loader,plugin) {
+		plugin({
+			isReady: function() {
+				return Boolean(jsh.document);
+			},
+			load: function() {
+				//	Although we'd like the source implementation to replace the existing jsh.document, right now because of the old
+				//	JSAPI implementation, we actually *depend* on an even older jsh.document in rhino/document. So we just have to
+				//	augment it here.
+				/** @type { slime.runtime.document.Script } */
+				var script = $loader.script("module.js");
+				Object.assign(jsh.document, script({
+					$slime: $slime
+				}));
+			}
 		});
-		jsh.document.load = function(p) {
-			return module.load(p);
-		};
 	}
-})
+//@ts-ignore
+)($slime,jsh,$loader,plugin);
+

@@ -41,6 +41,8 @@ namespace slime.runtime.document.source {
 		}
 	}
 
+	export type Script = slime.loader.Script<void,Export>
+
 	export namespace internal {
 		export namespace test {
 			export const subject: Export = (function(fifty: fifty.test.kit) {

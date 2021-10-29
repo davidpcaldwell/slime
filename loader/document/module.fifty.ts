@@ -66,6 +66,14 @@ namespace slime.runtime.document {
 			document: slime.Codec<Document,string>
 		}
 	}
+
+	export type Script = slime.loader.Script<Context,Export>
+}
+
+namespace slime.jsh {
+	export interface Global {
+		document: slime.runtime.document.Export & slime.jrunscript.document.Export
+	}
 }
 
 /**
