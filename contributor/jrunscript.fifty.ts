@@ -8,13 +8,15 @@
 	function(
 		fifty: slime.fifty.test.kit
 	) {
+		var jsh = fifty.global.jsh;
+
 		fifty.tests.suite = function() {
 			fifty.load("../loader/expression.fifty.ts");
 			fifty.load("../loader/mime.fifty.ts");
 			fifty.load("../loader/jrunscript/java.fifty.ts");
 			fifty.load("../rhino/system/test/Packages.inonit.system.fifty.ts");
 			fifty.load("../rhino/jrunscript/api.fifty.ts");
-			fifty.load("../loader/document/module.fifty.ts");
+			if (jsh.shell.tools.jsoup.installed) fifty.load("../loader/document/module.fifty.ts");
 			fifty.load("../loader/document/source.fifty.ts");
 			fifty.load("../js/web/module.fifty.ts");
 			fifty.load("../jrunscript/host/module.fifty.ts");

@@ -120,6 +120,9 @@
 					synchronizeEclipseSettings();
 				}
 
+				//	Required for old loader/document implementation
+				jsh.shell.tools.jsoup.require();
+
 				(function wiki() {
 					var remote = jsh.tools.git.Repository({ remote: "https://github.com/davidpcaldwell/slime.wiki.git" });
 					var location = $context.base.getRelativePath("local/wiki");

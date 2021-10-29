@@ -198,13 +198,9 @@ END LICENSE
 								into loader/api/api.html.js as the <code>html</code> argument to ApiHtmlTests.
 							</div>
 							<div>
-								First step should be to build an adapter at loader/api/document-adapter.js that converts a loader/document
+								First step would be to build an adapter at loader/api/document-adapter.js that converts a loader/document
 								document into a JSAPI-compatible html object. An additional property can be added to jsh/unit/html.js
 								PartDescriptor argument to specify the creation of this new kind of document in loadApiHtml().
-							</div>
-							<div>
-								Test case which runs the above scenario:
-								<code>./jsh.bash loader/document/test/suite.jsh.js -experimental -part document</code>
 							</div>
 							<div>
 								An equivalent browser migration for replacing the JSAPI DOM in loader/browser/test/api.js is then needed.

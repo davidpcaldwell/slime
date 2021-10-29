@@ -149,7 +149,7 @@
 					command: environment.jsh.src.getFile("fifty"),
 					arguments: [
 						"test.browser",
-						environment.jsh.src.getFile("loader/browser/test/suite.fifty.ts")
+						environment.jsh.src.getFile("contributor/browser.fifty.ts")
 					],
 					directory: environment.jsh.src
 				});

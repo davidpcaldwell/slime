@@ -4,12 +4,16 @@
 //
 //	END LICENSE
 
-var parameters = jsh.script.getopts({
-	options: {
-		upgrade: false
-	}
-});
+(
+	function() {
+		var parameters = jsh.script.getopts({
+			options: {
+				upgrade: false
+			}
+		});
 
-jsh.shell.tools.jsoup.install({
-	upgrade: parameters.options.upgrade
-});
+		jsh.shell.tools.jsoup.install({
+			upgrade: parameters.options.upgrade
+		});
+	}
+)();
