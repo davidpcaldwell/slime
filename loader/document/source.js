@@ -70,6 +70,20 @@
 					return state.position.offset == state.position.document.length
 				},
 
+				/**
+				 *
+				 * @param { slime.runtime.document.source.internal.State } state
+				 */
+				atXmlDeclaration: $api.Function.Predicate.and(
+					function(state) {
+						return state.position.offset == 0;
+					},
+					$api.Function.pipe(
+						remaining,
+						startsWith("<?xml")
+					)
+				),
+
 				atComment: $api.Function.pipe(
 					remaining,
 					startsWith("<!--")
@@ -99,6 +113,18 @@
 		var warnOnce = $api.Function.memoized(function() {
 			debugger;
 		});
+
+		/**
+		 * @type { slime.runtime.document.source.internal.Step }
+		 */
+		var parseXmlDeclaration = function(state) {
+			var end = state.position.document.indexOf("?>");
+			var xmlDeclaration = {
+				type: "xml-declaration",
+				data: state.position.document.substring("<?xml".length, end)
+			};
+			return State.step(state, xmlDeclaration, end + "?>".length);
+		}
 
 		/**
 		 * @type { slime.runtime.document.source.internal.Step }
@@ -271,7 +297,7 @@
 			var startTag = left.substring(1, left.indexOf(">"));
 			events.fire("startTag", "Parsing start tag " + startTag);
 			var parsed = (function() {
-				var parser = /^(\S+)([\s\S]*?)(\/?)$/;
+				var parser = /^(\S+?)((?:\s+\S*)*)(\/?)$/;
 				return parser.exec(startTag);
 			})();
 			var selfclosing = Boolean(parsed[3].length);
@@ -386,7 +412,9 @@
 				//	TODO	<!ENTITY	entity node
 				//	TODO	<!NOTATION	notation node
 
-				if (State.atComment(state)) {
+				if (State.atXmlDeclaration(state)) {
+					next = parseXmlDeclaration(state);
+				} else if (State.atComment(state)) {
 					next = parseComment(state);
 				} else if (State.atDoctype(state)) {
 					next = parseDoctype(state);
@@ -450,6 +478,11 @@
 			return node.type == "fragment";
 		}
 
+		/** @type { (node: slime.runtime.document.Node) => node is slime.runtime.document.XmlDeclaration } */
+		var isXmlDeclaration = function(node) {
+			return node.type == "xml-declaration";
+		}
+
 		var Serializer = function(configuration) {
 			/**
 			 *
@@ -469,7 +502,9 @@
 			}
 
 			return function recurse(node) {
-				if (isComment(node)) {
+				if (isXmlDeclaration(node)) {
+					return "<?xml" + node.data + "?>";
+				} else if (isComment(node)) {
 					return "<!--" + node.data + "-->";
 				} else if (isText(node)) {
 					return node.data;

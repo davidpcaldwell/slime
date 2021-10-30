@@ -124,7 +124,7 @@
 					java: loader.factory("WEB-INF/slime/jrunscript/host/"),
 					/** @type { slime.jrunscript.io.load } */
 					io: loader.factory("WEB-INF/slime/jrunscript/io/"),
-					/** @type { slime.web.load } */
+					/** @type { slime.web.Script } */
 					web: loader.factory("WEB-INF/slime/js/web/")
 				};
 				var rv = {};

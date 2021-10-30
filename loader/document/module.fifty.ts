@@ -55,6 +55,11 @@ namespace slime.runtime.document {
 		type: "fragment"
 	}
 
+	export interface XmlDeclaration extends Node {
+		type: "xml-declaration"
+		data: string
+	}
+
 	export interface Context {
 		$slime?: old.Context["$slime"]
 	}
@@ -100,7 +105,7 @@ namespace slime.runtime.document.old {
 		function(
 			fifty: slime.fifty.test.kit
 		) {
-			var load: Script = fifty.$loader.factory("module.js");
+			var load: Script = fifty.$loader.script("module.js");
 
 			var isBrowser = Boolean(fifty.global.window);
 			var isJsh = Boolean(fifty.global.jsh);

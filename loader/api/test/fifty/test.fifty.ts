@@ -62,5 +62,5 @@ namespace slime.fifty.test.internal.test {
 		part?: string
 	) => Result
 
-	export type Factory = slime.loader.Script<Context,Export>
+	export type Script = slime.loader.Script<Context,Export>
 }

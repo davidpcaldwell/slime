@@ -19,7 +19,7 @@
 		});
 
 		var code = {
-			verify: inonit.loader.loader.factory("../../../../loader/api/verify.js")
+			verify: inonit.loader.loader.script("../../../../loader/api/verify.js")
 		};
 
 		/** @type { slime.definition.test.promises.Export } */
@@ -161,8 +161,8 @@
 				var fiftyLoader = new inonit.loader.Loader(inonit.loader.nugget.page.base);
 
 				var code = {
-					/** @type { slime.fifty.test.internal.test.Factory } */
-					test: fiftyLoader.factory("test.js")
+					/** @type { slime.fifty.test.internal.test.Script } */
+					test: fiftyLoader.script("test.js")
 				}
 
 				var implementation = code.test({

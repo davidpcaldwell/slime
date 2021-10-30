@@ -16,8 +16,8 @@
 		if (!$context.window) {
 			$context.window = (function() { return this; })();
 		}
-		/** @type { slime.web.load } */
-		var load = $loader.factory("module.js");
+		/** @type { slime.web.Script } */
+		var load = $loader.script("module.js");
 		$export(
 			load({
 				window: $context.window,

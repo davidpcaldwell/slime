@@ -205,6 +205,7 @@ namespace slime.runtime.document.source {
 			}
 
 			fifty.tests.optionalTags = function() {
+				fifty.run(fifty.tests.optionalTags.tr);
 			};
 
 			fifty.tests.optionalTags.tr = function() {
@@ -212,6 +213,16 @@ namespace slime.runtime.document.source {
 				var fragment = api.fragment({ string: html });
 				var serialized = api.serialize({ fragment: fragment });
 				fifty.verify(serialized).is(html);
+			}
+
+			fifty.tests.xml = function() {
+				fifty.run(fifty.tests.xml.prolog);
+			};
+			fifty.tests.xml.prolog = function() {
+				var xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><root/>";
+				var document = api.parse({ string: xml });
+				var serialized = api.serialize({ document: document });
+				fifty.verify(serialized).is(xml);
 				debugger;
 			}
 
@@ -222,6 +233,7 @@ namespace slime.runtime.document.source {
 				fifty.run(fifty.tests.voidElements);
 				fifty.run(fifty.tests.multilineStartTag);
 				fifty.run(fifty.tests.emptyAttribute);
+				fifty.run(fifty.tests.optionalTags);
 			}
 		}
 	//@ts-ignore
