@@ -55,9 +55,16 @@ namespace slime.runtime.document {
 		type: "fragment"
 	}
 
-	export interface XmlDeclaration extends Node {
-		type: "xml-declaration"
-		data: string
+	export namespace xml {
+		export interface Declaration extends Node {
+			type: "xml-declaration"
+			data: string
+		}
+
+		export interface Cdata extends Node {
+			type: "cdata",
+			data: string
+		}
 	}
 
 	export interface Context {

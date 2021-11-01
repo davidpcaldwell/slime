@@ -33,6 +33,16 @@
 			}
 		}
 
+		var format = {
+			xml: {
+				cdata: {
+					start: "<![CDATA[",
+					end: "]]>"
+				}
+			}
+		}
+
+
 		var State = (function() {
 			/**
 			 *
@@ -84,6 +94,12 @@
 					)
 				),
 
+				//	https://www.w3.org/TR/xml/#sec-cdata-sect
+				atCdata: $api.Function.pipe(
+					remaining,
+					startsWith(format.xml.cdata.start)
+				),
+
 				atComment: $api.Function.pipe(
 					remaining,
 					startsWith("<!--")
@@ -124,6 +140,22 @@
 				data: state.position.document.substring("<?xml".length, end)
 			};
 			return State.step(state, xmlDeclaration, end + "?>".length);
+		}
+
+		/**
+		 * @type { slime.runtime.document.source.internal.Step }
+		 */
+		var parseCdata = function(state) {
+			var remaining = State.remaining(state);
+			//	https://www.w3.org/TR/xml/#sec-cdata-sect
+			var end = remaining.indexOf(format.xml.cdata.end);
+			if (end == -1) throw new Error("Unterminated CDATA section");
+			/** @type { slime.runtime.document.xml.Cdata } */
+			var cdata = {
+				type: "cdata",
+				data: remaining.substring(format.xml.cdata.start.length, end)
+			};
+			return State.step(state, cdata, end + format.xml.cdata.end.length);
 		}
 
 		/**
@@ -414,6 +446,8 @@
 
 				if (State.atXmlDeclaration(state)) {
 					next = parseXmlDeclaration(state);
+				} else if (State.atCdata(state)) {
+					next = parseCdata(state);
 				} else if (State.atComment(state)) {
 					next = parseComment(state);
 				} else if (State.atDoctype(state)) {
@@ -478,9 +512,14 @@
 			return node.type == "fragment";
 		}
 
-		/** @type { (node: slime.runtime.document.Node) => node is slime.runtime.document.XmlDeclaration } */
+		/** @type { (node: slime.runtime.document.Node) => node is slime.runtime.document.xml.Declaration } */
 		var isXmlDeclaration = function(node) {
 			return node.type == "xml-declaration";
+		}
+
+		/** @type { (node: slime.runtime.document.Node) => node is slime.runtime.document.xml.Cdata } */
+		var isCdata = function(node) {
+			return node.type == "cdata";
 		}
 
 		var Serializer = function(configuration) {
@@ -504,6 +543,8 @@
 			return function recurse(node) {
 				if (isXmlDeclaration(node)) {
 					return "<?xml" + node.data + "?>";
+				} else if (isCdata(node)) {
+					return format.xml.cdata.start + node.data + format.xml.cdata.end;
 				} else if (isComment(node)) {
 					return "<!--" + node.data + "-->";
 				} else if (isText(node)) {

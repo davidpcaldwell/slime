@@ -217,13 +217,25 @@ namespace slime.runtime.document.source {
 
 			fifty.tests.xml = function() {
 				fifty.run(fifty.tests.xml.prolog);
+				fifty.run(fifty.tests.xml.cdata);
 			};
 			fifty.tests.xml.prolog = function() {
 				var xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><root/>";
 				var document = api.parse({ string: xml });
 				var serialized = api.serialize({ document: document });
 				fifty.verify(serialized).is(xml);
-				debugger;
+			}
+			fifty.tests.xml.cdata = function() {
+				var xml = "<root><![CDATA[<data!/>]]></root>";
+				var document = api.parse({ string: xml });
+				fifty.verify(document).children.length.is(1);
+				fifty.verify(document).children[0].type.is("element");
+				var root = document.children[0] as slime.runtime.document.Element;
+				fifty.verify(root).children[0].type.is("cdata");
+				var cdata = root.children[0] as slime.runtime.document.xml.Cdata;
+				fifty.verify(cdata).data.is("<data!/>");
+				var serialized = api.serialize({ document: document });
+				fifty.verify(serialized).is(xml);
 			}
 
 			fifty.tests.suite = function() {
@@ -234,6 +246,7 @@ namespace slime.runtime.document.source {
 				fifty.run(fifty.tests.multilineStartTag);
 				fifty.run(fifty.tests.emptyAttribute);
 				fifty.run(fifty.tests.optionalTags);
+				fifty.run(fifty.tests.xml);
 			}
 		}
 	//@ts-ignore
