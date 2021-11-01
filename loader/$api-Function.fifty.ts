@@ -15,6 +15,33 @@ namespace slime.$api {
 		export type Filter<T> = (t: T) => boolean
 
 		export interface Exports {
+			string: {
+				split: (delimiter: string) => (string: string) => string[]
+				repeat: (count: number) => (string: string) => string
+				toUpperCase: (string: string) => string
+			}
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.kit
+			) {
+				fifty.tests.string = function() {
+					fifty.run(function repeat() {
+						var one = fifty.$api.Function.string.repeat(1)("foo");
+						fifty.verify(one).is("foo");
+						var three = fifty.$api.Function.string.repeat(3)("foo");
+						fifty.verify(three).is("foofoofoo");
+						var zero = fifty.$api.Function.string.repeat(0)("foo");
+						fifty.verify(zero).is("");
+					})
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+
+
+		export interface Exports {
 			identity: <T>(t: T) => T
 			returning: <T>(t: T) => () => T
 			is: <T>(value: T) => fp.Predicate<T>

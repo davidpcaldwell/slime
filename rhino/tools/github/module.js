@@ -22,7 +22,7 @@
 			var parseLinkHeader = function(value) {
 				return $api.Function.result(
 					value,
-					$api.Function.String.split(", "),
+					$api.Function.string.split(", "),
 					$api.Function.Array.map(function(string) {
 						var relationFormat = /^\<(.+?)\>\; rel\=\"(.+)\"/;
 						var parsed = relationFormat.exec(string);

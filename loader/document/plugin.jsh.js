@@ -23,9 +23,16 @@
 				//	augment it here.
 				/** @type { slime.runtime.document.Script } */
 				var script = $loader.script("module.js");
-				Object.assign(jsh.document, script({
+				var api = script({
 					$slime: $slime
-				}));
+				});
+				Object.assign(
+					jsh.document,
+					api,
+					{
+						Document: Object.assign(jsh.document.Document, api.Document)
+					}
+				);
 			}
 		});
 	}

@@ -8,7 +8,7 @@
 (
 	/**
 	 *
-	 * @param { { $api: any, old: Partial<slime.$api.fp.Exports>, events: slime.runtime.internal.events.Export } } $context
+	 * @param { { $api: any, old: Partial<slime.$api.fp.Exports>, events: slime.runtime.internal.events.Export, deprecate: slime.$api.Global["deprecate"] } } $context
 	 * @param { { Function: Partial<slime.$api.fp.Exports> }} $exports
 	 */
 	function($context,$exports) {
@@ -98,15 +98,25 @@
 			}
 		}
 
-		$exports.Function.String = {
+		$exports.Function.string = {
 			split: function(delimiter) {
 				return function(string) {
 					return string.split(delimiter);
 				}
 			},
+			repeat: function(number) {
+				return function(string) {
+					return new Array(number+1).join(string);
+				}
+			},
 			toUpperCase: function(string) {
 				return string.toUpperCase();
 			}
+		};
+
+		$exports.Function.String = {
+			split: $context.deprecate($exports.Function.string.split),
+			toUpperCase: $context.deprecate($exports.Function.string.toUpperCase)
 		};
 
 		$exports.Function.Array = {

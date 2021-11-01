@@ -31,14 +31,7 @@ namespace slime.runtime.document.source {
 			}): string
 		}
 
-		Node: {
-			isComment: (node: slime.runtime.document.Node) => node is slime.runtime.document.Comment
-			isText: (node: slime.runtime.document.Node) => node is slime.runtime.document.Text
-			isDoctype: (node: slime.runtime.document.Node) => node is slime.runtime.document.Doctype
-			isDocument: (node: slime.runtime.document.Node) => node is slime.runtime.document.Document
-			isElement: (node: slime.runtime.document.Node) => node is slime.runtime.document.Element
-			isFragment: (node: slime.runtime.document.Node) => node is slime.runtime.document.Fragment
-		}
+		Node: slime.runtime.document.Export["Node"]
 	}
 
 	export type Script = slime.loader.Script<void,Export>

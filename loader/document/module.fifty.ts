@@ -67,8 +67,65 @@ namespace slime.runtime.document {
 		}
 	}
 
+	export namespace test {
+		export const subject = (function(fifty: slime.fifty.test.kit) {
+			var script: Script = fifty.$loader.script("module.js");
+			var isBrowser = Boolean(fifty.global.window);
+			var isJsh = Boolean(fifty.global.jsh);
+			var api: Export = script({
+				$slime: (isJsh) ? fifty.global.jsh.unit.$slime : void(0)
+			});
+			return api;
+		//@ts-ignore
+		})(fifty);
+	}
+
 	export interface Context {
 		$slime?: old.Context["$slime"]
+	}
+
+
+
+	//	TODO	this nasty little workaround is needed because of name collisions between loader/document and
+	//			rhino/document
+
+	export namespace exports {
+		export type transform = (document: slime.runtime.document.Document) => slime.runtime.document.Document
+
+		export interface Document {
+			removeWhitespaceTextNodes: transform
+			prettify: (p: { indent: string }) => transform
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.kit
+			) {
+				var subject = test.subject;
+
+				fifty.tests.Document = function() {
+					var before = "<root><child/><child/><child/></root>";
+					var document = subject.codec.document.decode(before);
+					var pretty = subject.Document.prettify({
+						indent: "\t"
+					})(document);
+					var after = subject.codec.document.encode(pretty);
+					fifty.verify(
+						after == [
+							"<root>",
+							"\t<child/>",
+							"\t<child/>",
+							"\t<child/>",
+							"</root>"
+						].join("\n"),
+						"correct"
+					).is(true);
+					debugger;
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+
 	}
 
 	export interface Export {
@@ -77,6 +134,18 @@ namespace slime.runtime.document {
 		codec: {
 			document: slime.Codec<Document,string>
 		}
+
+		Node: {
+			isComment: (node: slime.runtime.document.Node) => node is slime.runtime.document.Comment
+			isText: (node: slime.runtime.document.Node) => node is slime.runtime.document.Text
+			isDoctype: (node: slime.runtime.document.Node) => node is slime.runtime.document.Doctype
+			isDocument: (node: slime.runtime.document.Node) => node is slime.runtime.document.Document
+			isElement: (node: slime.runtime.document.Node) => node is slime.runtime.document.Element
+			isFragment: (node: slime.runtime.document.Node) => node is slime.runtime.document.Fragment
+			isParent: (node: Node) => node is Parent
+		}
+
+		Document: exports.Document
 	}
 
 	export type Script = slime.loader.Script<Context,Export>
@@ -108,10 +177,8 @@ namespace slime.runtime.document.old {
 
 	export type Script = slime.loader.Script<Context,Exports>;
 
-	(
-		function(
-			fifty: slime.fifty.test.kit
-		) {
+	export namespace test {
+		export const subject = (function(fifty: slime.fifty.test.kit) {
 			var load: Script = fifty.$loader.script("module.js");
 
 			var isBrowser = Boolean(fifty.global.window);
@@ -119,6 +186,16 @@ namespace slime.runtime.document.old {
 			var api: Exports = load({
 				$slime: (isJsh) ? fifty.global.jsh.unit.$slime : void(0)
 			});
+			return api;
+		//@ts-ignore
+		})(fifty);
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.kit
+		) {
+			var api = test.subject;
 
 			function testsFor1(page,verify,withComments) {
 				var offset = (withComments) ? 1 : 0
@@ -161,7 +238,7 @@ namespace slime.runtime.document.old {
 					var reparsed = api.load({
 						string: string
 					});
-					testsFor1(reparsed,fifty.verify,isJsh);
+					testsFor1(reparsed,fifty.verify,Boolean(fifty.global.jsh));
 					//	TODO	below does not work in JSoup 1.12.1, which messes up some pieces of whitespace
 					//	TODO	below does not work in browser, either
 					//	See https://stackoverflow.com/questions/57394776/why-does-domparser-alter-whitespace
@@ -172,6 +249,8 @@ namespace slime.runtime.document.old {
 			}
 
 			fifty.tests.suite = function() {
+				fifty.run(fifty.tests.Document);
+
 				fifty.load("source.fifty.ts");
 
 				fifty.run(fifty.tests.old);

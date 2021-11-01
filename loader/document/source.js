@@ -517,6 +517,11 @@
 			return node.type == "xml-declaration";
 		}
 
+		/** @type { (node: slime.runtime.document.Node) => node is slime.runtime.document.Parent } */
+		var isParent = function(node) {
+			return node.type == "document" || node.type == "element" || node.type == "fragment";
+		};
+
 		/** @type { (node: slime.runtime.document.Node) => node is slime.runtime.document.xml.Cdata } */
 		var isCdata = function(node) {
 			return node.type == "cdata";
@@ -618,7 +623,8 @@
 				isFragment: isFragment,
 				isDocument: isDocument,
 				isElement: isElement,
-				isDoctype: isDoctype
+				isDoctype: isDoctype,
+				isParent: isParent
 			}
 		})
 	}

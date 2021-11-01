@@ -330,6 +330,76 @@
 						return source.serialize({ document: document });
 					}
 				}
+			},
+			Node: source.Node,
+			//	TODO	temporarily disabling TypeScript while we figure out the loader/document vs. rhino/document nightmare
+			//@ts-ignore
+			Document: {
+				removeWhitespaceTextNodes: function(document) {
+					/**
+					 * @template { slime.runtime.document.Node } T
+					 * @param { T } node
+					 * @returns { T }
+					 */
+					var convert = function(node) {
+						var copy = $api.Object.compose(node);
+						if (source.Node.isParent(copy)) {
+							copy.children = copy.children.filter(function(node) {
+								return !(source.Node.isText(node) && !node.data.trim())
+							}).map(convert)
+						}
+						return copy;
+					};
+
+					return convert(document);
+				},
+				prettify: function(p) {
+					/**
+					 *
+					 * @param { string } data
+					 * @returns { slime.runtime.document.Text }
+					 */
+					function text(data) {
+						return {
+							type: "text",
+							data: data
+						}
+					}
+
+					/**
+					 * @template { slime.runtime.document.Node } T
+					 * @param { T } node
+					 * @returns { T }
+					 */
+					function convert(node,depth) {
+						var copy = $api.Object.compose(node);
+						if (source.Node.isElement(copy)) {
+							copy.children = copy.children.filter(function(node) {
+								return !(source.Node.isText(node) && !node.data.trim())
+							});
+							/** @type { slime.runtime.document.Node[] } */
+							var result = [];
+							copy.children = copy.children.reduce(function(rv,child,index,children) {
+								rv.push(text("\n" + $api.Function.string.repeat(depth+1)(p.indent)));
+								rv.push(convert(child,depth+1));
+								if (index+1 == children.length) {
+									rv.push(text("\n" + $api.Function.string.repeat(depth)(p.indent)));
+								}
+								return rv;
+							},result);
+						}
+						return copy;
+					}
+
+					return function(document) {
+						return {
+							type: "document",
+							children: document.children.map(function(child) {
+								return convert(child,0);
+							})
+						}
+					}
+				}
 			}
 		};
 
