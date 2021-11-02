@@ -377,13 +377,15 @@
 							copy.children = copy.children.filter(function(node) {
 								return !(source.Node.isText(node) && !node.data.trim())
 							});
+							//	We omit newlining and indentation for elements with a single text child
+							var hasOneTextChild = copy.children.length == 1 && source.Node.isText(copy.children[0]);
 							/** @type { slime.runtime.document.Node[] } */
 							var result = [];
 							copy.children = copy.children.reduce(function(rv,child,index,children) {
-								rv.push(text("\n" + $api.Function.string.repeat(depth+1)(p.indent)));
+								if (!hasOneTextChild) rv.push(text("\n" + $api.Function.string.repeat(depth+1)(p.indent)));
 								rv.push(convert(child,depth+1));
 								if (index+1 == children.length) {
-									rv.push(text("\n" + $api.Function.string.repeat(depth)(p.indent)));
+									if (!hasOneTextChild) rv.push(text("\n" + $api.Function.string.repeat(depth)(p.indent)));
 								}
 								return rv;
 							},result);
