@@ -373,7 +373,7 @@
 					 */
 					function convert(node,depth) {
 						var copy = $api.Object.compose(node);
-						if (source.Node.isElement(copy) || source.Node.isDocument(copy)) {
+						if (source.Node.isElement(copy)) {
 							copy.children = copy.children.filter(function(node) {
 								return !(source.Node.isText(node) && !node.data.trim())
 							});
