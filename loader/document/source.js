@@ -237,6 +237,46 @@
 		}
 
 		/**
+		 *
+		 * @param { string } c
+		 * @returns { boolean }
+		 */
+		function isWhitespace(c) {
+			return /\s/.test(c);
+		}
+
+		/** @type { slime.runtime.document.source.internal.Export["parseStartTag"] } */
+		function parseStartTag(string) {
+			var index = 0;
+			/** @type { ReturnType<slime.runtime.document.source.internal.Export["parseStartTag"]> } */
+			var rv = {
+				tag: "",
+				attributes: "",
+				selfclose: void(0)
+			}
+			var tag = "";
+
+			//	TODO	does array subscript notation work in Rhino?
+			var at = function(index) {
+				return string.substring(index,index+1);
+			};
+
+			while(!isWhitespace(at(index)) && at(index) != "/" && index < string.length) {
+				rv.tag += at(index++);
+			}
+
+			if (string.substring(string.length-1) == "/") {
+				rv.attributes = string.substring(index, string.length-1);
+				rv.selfclose = true;
+			} else {
+				rv.attributes = string.substring(index);
+				rv.selfclose = false;
+			}
+
+			return rv;
+		}
+
+		/**
 		 * @param { slime.runtime.document.source.internal.State } state
 		 * @param { slime.$api.Events<slime.runtime.document.source.ParseEvents> } events
 		 * @param { slime.runtime.document.source.internal.Parser<slime.runtime.document.Parent> } recurse
@@ -328,16 +368,12 @@
 			var left = State.remaining(state);
 			var startTag = left.substring(1, left.indexOf(">"));
 			events.fire("startTag", "Parsing start tag " + startTag);
-			var parsed = (function() {
-				var parser = /^(\S+?)((?:\s+\S*)*)(\/?)$/;
-				return parser.exec(startTag);
-			})();
-			var selfclosing = Boolean(parsed[3].length);
-			if (!parsed) throw new Error("Could not parse start tag: [" + startTag + "]");
-			var tagName = parsed[1];
+			var parsed = parseStartTag(startTag);
+			var selfclosing = parsed.selfclose;
+			var tagName = parsed.tag;
 			events.fire("startElement", tagName);
 
-			var attributes = toAttributes([], parsed[2]);
+			var attributes = toAttributes([], parsed.attributes);
 
 			/** @type { slime.runtime.document.source.internal.State<slime.runtime.document.Element> } */
 			var substate = {
@@ -625,6 +661,9 @@
 				isElement: isElement,
 				isDoctype: isDoctype,
 				isParent: isParent
+			},
+			internal: {
+				parseStartTag: parseStartTag
 			}
 		})
 	}

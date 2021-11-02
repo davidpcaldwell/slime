@@ -32,13 +32,18 @@ namespace slime.runtime.document.source {
 		}
 
 		Node: slime.runtime.document.Export["Node"]
+
+		/**
+		 * Methods used internally, visible for testing.
+		 */
+		internal: internal.Export
 	}
 
 	export type Script = slime.loader.Script<void,Export>
 
 	export namespace internal {
 		export namespace test {
-			export const subject: Export = (function(fifty: fifty.test.kit) {
+			export const subject: slime.runtime.document.source.Export = (function(fifty: fifty.test.kit) {
 				return fifty.$loader.module("source.js");
 			//@ts-ignore
 			})(fifty)
@@ -65,6 +70,16 @@ namespace slime.runtime.document.source {
 			events: slime.$api.Events<ParseEvents>,
 			finished: (state: State<T>) => boolean
 		) => State<T>
+	}
+
+	export namespace internal {
+		export interface Export {
+			parseStartTag: (string: string) => {
+				tag: string
+				attributes: string
+				selfclose: boolean
+			}
+		}
 	}
 
 	(
@@ -231,6 +246,22 @@ namespace slime.runtime.document.source {
 				fifty.verify(serialized).is(xml);
 			}
 
+			fifty.tests.emptyTagsParsedCorrectly = function() {
+				var xml = "<root><foo bar=\"\"/><baz/></root>";
+				var document = api.parse({ string: xml });
+				fifty.verify(document).children[0].type.is("element");
+				var root = document.children[0] as slime.runtime.document.Element;
+				fifty.verify(root).children.length.is(2);
+				fifty.verify(root).children[0].type.is("element");
+				var foo = root.children[0] as slime.runtime.document.Element;
+				fifty.verify(foo).name.is("foo");
+				fifty.verify(root).children[1].type.is("element");
+				var baz = root.children[1] as slime.runtime.document.Element;
+				fifty.verify(baz).name.is("baz");
+				var serialized = api.serialize({ document: document });
+				fifty.verify(serialized == xml, "symmetric").is(true);
+			}
+
 			fifty.tests.suite = function() {
 				fifty.run(fifty.tests.happy);
 				fifty.run(fifty.tests.attributes);
@@ -239,6 +270,7 @@ namespace slime.runtime.document.source {
 				fifty.run(fifty.tests.multilineStartTag);
 				fifty.run(fifty.tests.emptyAttribute);
 				fifty.run(fifty.tests.optionalTags);
+				fifty.run(fifty.tests.emptyTagsParsedCorrectly);
 				fifty.run(fifty.tests.xml);
 			}
 		}
