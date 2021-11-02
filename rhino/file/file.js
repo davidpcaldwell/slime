@@ -10,7 +10,7 @@
 	 *
 	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { slime.$api.Global } $api
-	 * @param { { Resource: any, constant: any, fail: any, isPathname: any, Streams: any, pathext: any } } $context
+	 * @param { slime.jrunscript.file.internal.file.Context } $context
 	 * @param { { Searchpath: any, Pathname: any, list: slime.jrunscript.file.Exports["list"] }} $exports
 	 */
 	function (Packages, $api, $context, $exports) {
@@ -138,9 +138,16 @@
 			this.directory = void (0);
 			this.__defineGetter__("directory", getDirectory);
 
+			/**
+			 * @type { slime.jrunscript.file.Pathname["write"] }
+			 */
 			var write = function (dataOrType, mode) {
 				if (!mode) mode = {};
 
+				/**
+				 *
+				 * @param { slime.jrunscript.file.pathname.WriteMode } mode
+				 */
 				var prepareWrite = function prepareWrite(mode) {
 					$api.deprecate(mode, "overwrite");
 					//	TODO	Right now we can specify a file where we do not want to create its directory, and a file where we do want to
@@ -179,6 +186,7 @@
 						}
 					}
 				});
+				//@ts-ignore
 				return poorResource.write(dataOrType, mode);
 				// if (dataOrType == $context.Streams.binary) {
 				// 	return $filesystem.write.binary(peer,append);

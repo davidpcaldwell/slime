@@ -5,18 +5,6 @@
 //	END LICENSE
 
 namespace slime.jrunscript.file {
-	export interface Pathname {
-		directory: Directory
-		basename: string
-		parent: Pathname
-		createDirectory: (p?: { exists?: (d: Directory) => boolean, recursive?: boolean } ) => Directory
-		write: (content: any, mode?: any) => any
-		file: File
-		java: {
-			adapt: () => slime.jrunscript.native.java.io.File
-		}
-	}
-
 	export interface Node {
 		pathname: Pathname
 		directory: boolean
@@ -91,6 +79,18 @@ namespace slime.jrunscript.file {
 		getCommand: any
 	}
 
+	export interface Context {
+		$pwd: string
+		pathext: any
+		api: {
+			js: any
+			java: any
+			io: slime.jrunscript.io.Exports
+		}
+		cygwin: any
+		addFinalizer: any
+	}
+
 	export interface Exports {
 		//	TODO	would be nice to get rid of string below, but right now it's unknown exactly how to access MimeType from
 		//			jsh/browser/servlet environments
@@ -161,10 +161,11 @@ namespace slime.jrunscript.file {
 					throw new Error();
 				});
 				fifty.global.jsh.shell.console(listing.toString());
+				//	TODO	brittle; changing structure of module can break it
 				fifty.verify(listing)[0].relative.is("api.Loader.html");
 				fifty.verify(listing)[0].absolute.is(prefix + "/" + "api.Loader.html");
-				fifty.verify(listing)[9].relative.is("java/");
-				fifty.verify(listing)[9].absolute.is(prefix + "/" + "java/");
+				fifty.verify(listing)[10].relative.is("java/");
+				fifty.verify(listing)[10].absolute.is(prefix + "/" + "java/");
 			}
 
 			fifty.tests.action = {};
