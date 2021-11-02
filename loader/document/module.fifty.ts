@@ -13,14 +13,17 @@ namespace slime.runtime.document {
 		children: Node[]
 	}
 
+	export interface String extends Node {
+		data: string
+	}
+
 	export interface Comment extends Node {
 		type: "comment"
 		data: string
 	}
 
-	export interface Text extends Node {
+	export interface Text extends String {
 		type: "text"
-		data: string
 	}
 
 	export interface Doctype extends Node {
@@ -61,9 +64,8 @@ namespace slime.runtime.document {
 			data: string
 		}
 
-		export interface Cdata extends Node {
+		export interface Cdata extends String {
 			type: "cdata",
-			data: string
 		}
 	}
 
@@ -95,6 +97,7 @@ namespace slime.runtime.document {
 		export interface Document {
 			removeWhitespaceTextNodes: transform
 			prettify: (p: { indent: string }) => transform
+			element: (p: slime.runtime.document.Document) => slime.runtime.document.Element
 		}
 
 		(
@@ -143,9 +146,14 @@ namespace slime.runtime.document {
 			isElement: (node: slime.runtime.document.Node) => node is slime.runtime.document.Element
 			isFragment: (node: slime.runtime.document.Node) => node is slime.runtime.document.Fragment
 			isParent: (node: Node) => node is Parent
+			isString: (node: Node) => node is String
 		}
 
 		Document: exports.Document
+
+		Element: {
+			isName: (name: string) => (element: Element) => boolean
+		}
 	}
 
 	export type Script = slime.loader.Script<Context,Export>

@@ -563,6 +563,11 @@
 			return node.type == "cdata";
 		}
 
+		/** @type { (node: slime.runtime.document.Node) => node is slime.runtime.document.String } */
+		var isString = function(node) {
+			return node.type == "text" || node.type == "cdata";
+		}
+
 		var Serializer = function(configuration) {
 			/**
 			 *
@@ -660,7 +665,8 @@
 				isDocument: isDocument,
 				isElement: isElement,
 				isDoctype: isDoctype,
-				isParent: isParent
+				isParent: isParent,
+				isString: isString
 			},
 			internal: {
 				parseStartTag: parseStartTag

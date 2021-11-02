@@ -373,7 +373,7 @@
 					 */
 					function convert(node,depth) {
 						var copy = $api.Object.compose(node);
-						if (source.Node.isElement(copy)) {
+						if (source.Node.isElement(copy) || source.Node.isDocument(copy)) {
 							copy.children = copy.children.filter(function(node) {
 								return !(source.Node.isText(node) && !node.data.trim())
 							});
@@ -394,12 +394,34 @@
 					}
 
 					return function(document) {
+						var children = document.children.map(function(child) {
+							return convert(child,0);
+						}).reduce(function(rv,child,index,children) {
+							rv.push(child);
+							if (index+1 != children.length) {
+								rv.push({
+									type: "text",
+									data: "\n"
+								})
+							}
+							return rv;
+						}, []);
 						return {
 							type: "document",
-							children: document.children.map(function(child) {
-								return convert(child,0);
-							})
+							children: children
 						}
+					}
+				},
+				element: function(document) {
+					var elements = document.children.filter(source.Node.isElement);
+					if (elements.length != 1) throw new Error("Document has " + elements.length + " root elements.");
+					return elements[0];
+				}
+			},
+			Element: {
+				isName: function(name) {
+					return function(element) {
+						return element.name == name;
 					}
 				}
 			}
