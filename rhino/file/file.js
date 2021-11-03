@@ -138,9 +138,6 @@
 			this.directory = void (0);
 			this.__defineGetter__("directory", getDirectory);
 
-			/**
-			 * @type { slime.jrunscript.file.Pathname["write"] }
-			 */
 			var write = function (dataOrType, mode) {
 				if (!mode) mode = {};
 
@@ -186,7 +183,6 @@
 						}
 					}
 				});
-				//@ts-ignore
 				return poorResource.write(dataOrType, mode);
 				// if (dataOrType == $context.Streams.binary) {
 				// 	return $filesystem.write.binary(peer,append);

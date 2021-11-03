@@ -15,6 +15,14 @@ namespace slime.jrunscript.runtime {
 		}
 		length?: any
 		modified?: any
+		write?: {
+			(marker: slime.jrunscript.runtime.io.Exports["Streams"]["binary"], mode?: resource.WriteMode): slime.jrunscript.runtime.io.OutputStream
+			(marker: slime.jrunscript.runtime.io.Exports["Streams"]["text"], mode?: resource.WriteMode): slime.jrunscript.runtime.io.Writer
+			(input: slime.jrunscript.runtime.io.InputStream, mode?: resource.WriteMode): void
+			(input: slime.jrunscript.runtime.io.Reader, mode?: resource.WriteMode): void
+			(input: string, mode?: resource.WriteMode): void
+			(input: slime.jrunscript.native.java.util.Properties, mode?: resource.WriteMode): void
+		}
 	}
 
 	export namespace resource {
@@ -32,9 +40,14 @@ namespace slime.jrunscript.runtime {
 			}
 			length?: number
 			modified?: any
-			write?: any
+			write?: {
+				binary?: any
+				text?: any
+			}
 		}
 
+		export interface WriteMode {
+		}
 	}
 
 	export namespace Loader {

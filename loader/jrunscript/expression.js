@@ -410,7 +410,7 @@
 
 					// TODO: Resources are not really conceptually immuntable, since they can be written, so they should probably not
 					// cache length and modified
-					if (p.hasOwnProperty("length")) {
+					if (Object.prototype.hasOwnProperty.call(p, "length")) {
 						Object.defineProperty(this,"length",{
 							get: loader.$api.Function.memoized(function() {
 								if (typeof(p.length) == "number") {
@@ -440,7 +440,7 @@
 					// if (typeof(p.modified) == "object") {
 					// 	this.modified = p.modified;
 					// }
-					if (p.hasOwnProperty("modified")) {
+					if (Object.prototype.hasOwnProperty.call(p, "modified")) {
 						this.modified = void(0);
 						Object.defineProperty(this,"modified",{
 							get: loader.$api.Function.memoized(function() {

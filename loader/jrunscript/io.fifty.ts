@@ -70,7 +70,7 @@ namespace slime.jrunscript.runtime.io {
 				copy(from: slime.jrunscript.runtime.io.InputStream, to: slime.jrunscript.runtime.io.OutputStream, mode?: BinaryCopyMode)
 			}
 			text: {
-				copy(from: any, to: any)
+				copy(from: slime.jrunscript.runtime.io.Reader, to: slime.jrunscript.runtime.io.Writer)
 			}
 			java: {
 				adapt: {

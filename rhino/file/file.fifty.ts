@@ -10,9 +10,7 @@ namespace slime.jrunscript.file {
 		basename: string
 		parent: Pathname
 		createDirectory: (p?: { exists?: (d: Directory) => boolean, recursive?: boolean } ) => Directory
-		write: {
-			(content: any, mode?: pathname.WriteMode): any
-		}
+		write: slime.jrunscript.runtime.Resource["write"]
 		file: File
 		java: {
 			adapt: () => slime.jrunscript.native.java.io.File
