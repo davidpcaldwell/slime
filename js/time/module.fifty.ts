@@ -15,6 +15,14 @@ namespace slime.time {
 		day: number
 		add(n: number): Day
 		isAfter(day: Day): boolean
+
+		/** @experimental Has other undocumented properties */
+		weekday: {
+			/**
+			 * The full name of the weekday; e.g., `"MONDAY"`, `"WEDNESDAY"`.
+			 */
+			name: string
+		}
 	}
 
 	export interface Month {
@@ -24,7 +32,7 @@ namespace slime.time {
 		day: (n: number) => Day
 	}
 
-	namespace Day {
+	namespace day {
 		export interface Time {
 		}
 	}
@@ -54,7 +62,7 @@ namespace slime.time {
 		Day: {
 			new (year: number, month: number, day: number): slime.time.Day
 			new (p: any): slime.time.Day
-			Time: new (hours: number, minutes: number) => Day.Time
+			Time: new (hours: number, minutes: number) => day.Time
 			subtract: Function
 			order: Function
 			today: () => Day
