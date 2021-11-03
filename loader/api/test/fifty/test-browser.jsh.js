@@ -75,7 +75,7 @@
 
 				var code = {
 					/** @type { slime.runtime.browser.test.server.Script } */
-					server: loader.factory("loader/browser/test/server.js")
+					server: loader.script("loader/browser/test/server.js")
 				};
 
 				var start = code.server();

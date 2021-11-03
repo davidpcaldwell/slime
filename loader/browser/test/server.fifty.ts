@@ -5,12 +5,14 @@
 //	END LICENSE
 
 namespace slime.runtime.browser.test.server {
+	/**
+	 * @param { slime.jrunscript.file.Directory } resources The directory to use when serving servlet resources, which is the SLIME directory for this purpose.
+	 * @param { slime.jrunscript.file.Directory } serve The base directory to serve, which is the common root for SLIME and the test file.
+	 * @param { string } resultsPath A path, relative to the served directory, that will both accept the result via POST and return it via GET.
+	 */
 	export type Export = (
-		/** The directory to use when serving servlet resources, which is the SLIME directory for this purpose. */
 		resources: slime.jrunscript.file.Directory,
-		/** The base directory to serve, which is the common root for SLIME and the test file. */
 		serve: slime.jrunscript.file.Directory,
-		/** A path, relative to the served directory, that will both accept the result via POST and return it via GET. */
 		resultsPath: string
 	) => jsh.httpd.Tomcat
 
