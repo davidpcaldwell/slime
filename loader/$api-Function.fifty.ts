@@ -192,8 +192,11 @@ namespace slime.$api {
 			}
 			conditional: {
 				<T,R>(p: { condition: (t: T) => boolean, true: (t: T) => R, false: (t: T) => R }): (t: T) => R
+
+				/** @deprecated Replaced by version with condition/true/false. */
 				(test: any, yes: any, no: any): any
 			}
+			type: (v: any) => string
 			[name: string]: any
 		}
 
@@ -203,6 +206,7 @@ namespace slime.$api {
 				or: <T>(...predicates: $api.fp.Predicate<T>[]) => $api.fp.Predicate<T>
 				not: <T>(predicate: $api.fp.Predicate<T>) => $api.fp.Predicate<T>
 				is: <T>(value: T) => fp.Predicate<T>
+				equals: <T>(value: T) => fp.Predicate<T>
 
 				property: <T, K extends keyof T>(k: K, predicate: $api.fp.Predicate<T[K]>) => $api.fp.Predicate<T>
 			}

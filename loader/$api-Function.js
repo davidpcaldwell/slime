@@ -77,10 +77,10 @@
 
 		$exports.Function.conditional = function(test,yes,no) {
 			if (arguments.length == 3) {
-				return function() {
+				return $context.deprecate(function() {
 					var condition = test.apply(this,arguments);
 					return (condition) ? yes.apply(this,arguments) : no.apply(this,arguments);
-				};
+				});
 			} else {
 				var p = test;
 				return function(argument) {
@@ -169,6 +169,11 @@
 			is: function(value) {
 				return function(p) {
 					return p === value;
+				}
+			},
+			equals: function(value) {
+				return function(p) {
+					return p == value;
 				}
 			},
 			/** @type { slime.$api.fp.Exports["filter"]["or"] } */

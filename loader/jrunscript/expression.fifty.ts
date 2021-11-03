@@ -528,6 +528,7 @@ namespace slime.jrunscript {
 						HTTP: any
 					}
 				}
+				InetAddress: any
 				InetSocketAddress: any
 				ServerSocket: new (n: number) => slime.jrunscript.native.java.net.ServerSocket
 				Socket: any
