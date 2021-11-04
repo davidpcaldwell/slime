@@ -161,11 +161,65 @@
 						return false;
 					}
 				})
+			},
+			/** @type { slime.jrunscript.ip.World["tcp"] } */
+			tcp: {
+				isAvailable: function(p) {
+					return $api.Function.impure.ask(function(events) {
+						var number = p.port.number;
+
+						var debug = function(message) {
+							//Packages.java.lang.System.err.println(message);
+						}
+						debug.exception = function(e) {
+							//e.rhinoException.printStackTrace();
+						}
+
+						var _server;
+						var _client;
+						try {
+							_server = new Packages.java.net.ServerSocket(number);
+							debug("Opened server socket for " + number);
+							_server.close();
+							_server = null;
+							try {
+								_client = new Packages.java.net.Socket("localhost",number);
+								debug("Opened client socket for " + number);
+								return false;
+							} catch (e) {
+								debug("Did not open client socket for " + number);
+								debug.exception(e);
+								events.fire("exception", e);
+								return true;
+							}
+						} catch (e) {
+							debug("Did not open server socket for " + number);
+							debug.exception(e);
+							events.fire("exception", e);
+							return false;
+						} finally {
+							if (_server) _server.close();
+							if (_client) _client.close();
+						}
+					});
+				}
 			}
 		}
 
 		$export({
-			tcp: tcp,
+			tcp: {
+				getEphemeralPortNumber: tcp.getEphemeralPortNumber,
+				Port: {
+					isAvailable: function(q) {
+						return {
+							run: function(p) {
+								var ask = ( (p && p.world) ? p.world : world ).tcp.isAvailable({ port: q.port });
+								return ask();
+							}
+						}
+					}
+				}
+			},
 			Host: Host,
 			Port: Port,
 			getEphemeralPort: getEphemeralPort,

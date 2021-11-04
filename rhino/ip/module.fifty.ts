@@ -34,19 +34,42 @@ namespace slime.jrunscript.ip {
 			}): boolean
 		}
 
-		export interface Port {
-			number: number
+		export interface Port extends slime.jrunscript.ip.Port {
 			isOpen(): boolean
 		}
 	}
 
-	export interface Exports {
-		tcp: {
+	export namespace exports {
+		export interface Tcp {
 			/**
 			 * Returns a port number for an ephemeral TCP port that was available when the function was called.
 			 */
-			getEphemeralPortNumber: () => number
+			 getEphemeralPortNumber: () => number
 		}
+	}
+
+	export namespace test {
+		export const Spy = function <F extends (...args: any) => any>(f: F): {
+			spy: F
+			invocations: {
+				this: ThisType<F>
+				arguments: Parameters<F>
+			}[]
+		} {
+			var invocations = [];
+			return {
+				//@ts-ignore
+				spy: function() {
+					invocations.push({ this: this, arguments: Array.prototype.slice.call(arguments)});
+					return f.apply(this,arguments);
+				},
+				invocations: invocations
+			}
+		};
+	}
+
+	export interface Exports {
+		tcp: exports.Tcp
 
 		Host: (p: Host) => object.Host
 		Port: (p: Port) => object.Port
@@ -217,26 +240,8 @@ namespace slime.jrunscript.ip {
 					host: { name: "foo" }
 				});
 
-				var Spy = function <F extends (...args: any) => any>(f: F): {
-					spy: F
-					invocations: {
-						this: ThisType<F>
-						arguments: Parameters<F>
-					}[]
-				} {
-					var invocations = [];
-					return {
-						//@ts-ignore
-						spy: function() {
-							invocations.push({ this: this, arguments: Array.prototype.slice.call(arguments)});
-							return f.apply(this,arguments);
-						},
-						invocations: invocations
-					}
-				};
-
 				var Mock = function(isReachable: World["isReachable"]) {
-					var spy = Spy(isReachable);
+					var spy = test.Spy(isReachable);
 					return {
 						world: {
 							isReachable: spy.spy
@@ -294,7 +299,7 @@ namespace slime.jrunscript.ip {
 				});
 
 				fifty.run(function errorsPassedToHandler() {
-					var error = Spy(function(e: Error) {
+					var error = test.Spy(function(e: Error) {
 					});
 
 					verify(error).invocations.length.is(0);
@@ -320,4 +325,102 @@ namespace slime.jrunscript.ip {
 	//@ts-ignore
 	)(fifty);
 
+	export interface World {
+		tcp: {
+			isAvailable: (p: {
+				port: Port
+			}) => slime.$api.fp.impure.Ask<{
+				/**
+				 * An event that supplies underlying exceptions received by the JVM when attempting to open sockets.
+				 * Exceptions are expected in this situation; the implementation tries several operations, using whether
+				 * they succeed to help it determine the state of the port.
+				 */
+				exception: Error
+			}, boolean>
+		}
+	}
+
+	export namespace exports {
+		export interface Tcp {
+			Port: {
+				isAvailable: (p: {
+					port: Port
+				}) => {
+					run: (p?: {
+						world?: {
+							tcp: {
+								isAvailable: World["tcp"]["isAvailable"]
+							}
+						}
+					}) => boolean
+				}
+			}
+		}
+	}
+
+	(
+		function(
+			Packages: slime.jrunscript.Packages,
+			fifty: slime.fifty.test.kit
+		) {
+			const { verify } = fifty;
+			const { $api, jsh } = fifty.global;
+			const subject = jsh.ip;
+
+			fifty.tests.sandbox.tcp = {};
+			fifty.tests.sandbox.tcp.isAvailable = function() {
+				var ephemeral = jsh.ip.getEphemeralPort();
+				var available = subject.world.tcp.isAvailable({ port: ephemeral });
+				var one = available();
+				verify(one).is(true);
+				var _listener = new Packages.java.net.ServerSocket(ephemeral.number);
+				var two = available();
+				verify(two).is(false);
+				_listener.close();
+				var three = available();
+				verify(three).is(true);
+			}
+
+			var Mock = function(
+				implementation: (
+					p: Parameters<World["tcp"]["isAvailable"]>[0],
+					events: $api.Events<{ exception: Error }>
+				) => boolean
+			 ) {
+				var isAvailable: World["tcp"]["isAvailable"] = function(p) {
+					return $api.Function.impure.ask(function(events) {
+						return implementation(p, events);
+					})
+				};
+
+				var spy = test.Spy(isAvailable);
+				return {
+					world: {
+						tcp: {
+							isAvailable: spy.spy
+						}
+					},
+					invocations: spy.invocations
+				};
+			};
+
+			fifty.tests.tcp = {};
+			fifty.tests.tcp.isAvailable = function() {
+				var mock = Mock(function(p,events) {
+					if (p.port.number == 1024) return true;
+					return false;
+				});
+
+				var yes = jsh.ip.tcp.Port.isAvailable({ port: { number: 1024 }}).run({
+					world: mock.world
+				});
+				verify(yes).is(true);
+				var no = jsh.ip.tcp.Port.isAvailable({ port: { number: 2048 }}).run({
+					world: mock.world
+				});
+				verify(no).is(false);
+			}
+		}
+	//@ts-ignore
+	)(Packages,fifty);
 }
