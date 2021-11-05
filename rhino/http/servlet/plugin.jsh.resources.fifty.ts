@@ -80,12 +80,12 @@ namespace slime.jsh.httpd {
 					var one: { loader: slime.Loader } = api.script.old(
 						fifty.$loader.getRelativePath("test/resource/1.old.js").file
 					);
-					var indexOf = function(value) {
-						return function(p) {
+					var indexOf = function(value: string) {
+						return function(p: (slime.loader.LoaderEntry | slime.loader.ResourceEntry)[]) {
 							return p.map(function(entry) { return entry.path; }).indexOf(value);
 						}
 					};
-					var read = function(p) {
+					var read = function(p: Resource) {
 						return p.read(String);
 					}
 
@@ -170,9 +170,9 @@ namespace slime.jsh.httpd {
 							return o.path == path;
 						};
 					};
-					verify(slime).list().evaluate(function() { return this.filter(byPath(".hg")) }).length.is(0);
-					verify(slime).list().evaluate(function() { return this.filter(byPath("loader")) }).length.is(1);
-					verify(slime).list().evaluate(function() { return this.filter(byPath("jsh")) }).length.is(1);
+					verify(slime).list().evaluate(function(p) { return p.filter(byPath(".hg")) }).length.is(0);
+					verify(slime).list().evaluate(function(p) { return p.filter(byPath("loader")) }).length.is(1);
+					verify(slime).list().evaluate(function(p) { return p.filter(byPath("jsh")) }).length.is(1);
 					jsh.shell.echo(slime.list().map(function(item) { return item.path; }));
 
 					var tmpdir = jsh.shell.TMPDIR.createTemporary({ directory: true });

@@ -454,7 +454,7 @@ namespace slime {
 							}
 						}
 					});
-					var readString = function(p) {
+					var readString = function(p: Resource) {
 						return p.read(String);
 					};
 					var loader = new api.Loader(source);

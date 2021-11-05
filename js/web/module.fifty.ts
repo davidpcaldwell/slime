@@ -187,7 +187,7 @@ namespace slime.web {
 				function() {
 					fifty.run(function liveQueryProperty() {
 						var url = module.Url.parse("http://www.example.com/path/to/page.html");
-						var toString = function(p) { return p.toString(); };
+						var toString = function(p): string { return p.toString(); };
 						fifty.verify(url).evaluate(toString).is("http://www.example.com/path/to/page.html");
 						url.query = module.Url.query([
 							{ name: "foo", value: "bar" },
@@ -213,12 +213,12 @@ namespace slime.web {
 						var base = module.Url.parse("http://www.example.com/path/to/page.html?name=value&foo=bar#fragment");
 						fifty.run(function() {
 							var relative = base.resolve("../foo.js");
-							var toString = function(p) { return p.toString(); };
+							var toString = function(p): string { return p.toString(); };
 							fifty.verify(relative).evaluate(toString).is("http://www.example.com/path/foo.js");
 						});
 						fifty.run(function() {
 							var relative = base.resolve("./");
-							var toString = function(p) { return p.toString(); };
+							var toString = function(p): string { return p.toString(); };
 							fifty.verify(relative).evaluate(toString).is("http://www.example.com/path/to/");
 						});
 					}

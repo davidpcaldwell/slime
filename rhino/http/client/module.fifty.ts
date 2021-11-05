@@ -634,7 +634,7 @@ namespace slime.jrunscript.http.client {
 							var type = response.body.type.toString();
 							verify(type).is.not(null);
 							verify(type.split(";"))[0].is.not(null);
-							verify(response,"initial response").body.evaluate(function() { return this.type.toString().split(";")[0] }).is("text/plain");
+							verify(response,"initial response").body.evaluate(function(p) { return p.type.toString().split(";")[0] }).is("text/plain");
 							if (response.body.type.toString().substring(0,"text/html".length) == "text/html") {
 								jsh.shell.echo("HTML response: " + response.body.stream.character().asString());
 							}

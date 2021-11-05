@@ -22,18 +22,16 @@ namespace slime.definition.verify {
 	 * * `.threw.type(type)`, which asserts that a subtype of `type` was thrown
 	 * * `.threw.nothing()`, which asserts that nothing was thrown.
 	 */
-	type evaluate<T> = any
-	//	TODO	should refine in this sequence:
 	// type evaluate<T> = {
-	// 	(f: (t: T) => any): any
+	// 	<R>(f: (t: T) => R): Subject<R> & {
+	// 		threw: Subject<Error> & {
+	// 			type: <E extends ErrorConstructor>(type: E) => void
+	// 			nothing: () => void
+	// 		}
+	// 	}
 	// 	property: any
 	// }
-	//	... then the following more precise functions
-	//	(f: (t: T) => any): any
-	//	<R>(f: (t: T) => R): any
-	//	<R>(f: (t: T) => R) => Subject<R>
-	//	... also need a refinement for evaluate.property
-	//	... but any of this would require some cleanup, they cause ascending numbers of errors currently
+	type evaluate<T> = any
 
 	type is<T> = {
 		/**
@@ -41,7 +39,10 @@ namespace slime.definition.verify {
 		 */
 		(t: T): void
 		type: (name: string) => void
-		not: (t: T) => void
+		not: {
+			(t: T): void
+			equalTo: any
+		}
 	}
 
 	type ValueSubject<T> = {
@@ -131,6 +132,16 @@ namespace slime.definition.verify {
 				};
 
 				fifty.verify(target,"target").method().is(2);
+			}
+
+			fifty.tests.evaluateHasThrew = function() {
+				var object = {
+					method: function() {
+						return 2;
+					}
+				};
+
+				fifty.verify(object).evaluate(function(o) { return o.method(); }).threw.nothing();
 			}
 
 			fifty.tests.suite = function() {
