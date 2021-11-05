@@ -37,4 +37,10 @@ namespace slime.jrunscript.file.internal.file {
 		Streams: any
 		pathext: any
 	}
+
+	export interface Exports {
+		Searchpath: any
+		Pathname: any
+		list: slime.jrunscript.file.Exports["list"]
+	}
 }
