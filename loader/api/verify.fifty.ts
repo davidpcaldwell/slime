@@ -22,16 +22,15 @@ namespace slime.definition.verify {
 	 * * `.threw.type(type)`, which asserts that a subtype of `type` was thrown
 	 * * `.threw.nothing()`, which asserts that nothing was thrown.
 	 */
-	// type evaluate<T> = {
-	// 	<R>(f: (t: T) => R): Subject<R> & {
-	// 		threw: Subject<Error> & {
-	// 			type: <E extends ErrorConstructor>(type: E) => void
-	// 			nothing: () => void
-	// 		}
-	// 	}
-	// 	property: any
-	// }
-	type evaluate<T> = any
+	type evaluate<T> = {
+		<R>(f: (t: T) => R): Subject<R> & {
+			threw: Subject<Error> & {
+				type: <E extends ErrorConstructor>(type: E) => void
+				nothing: () => void
+			}
+		}
+		property: any
+	}
 
 	type is<T> = {
 		/**

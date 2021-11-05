@@ -214,7 +214,7 @@ namespace slime.jsh.script {
 							)
 						}
 					}).evaluate(function(application) {
-						return application.run(["--global", "foo", "universe", "--command", "bar"]);
+						return Number(application.run(["--global", "foo", "universe", "--command", "bar"]));
 					}).is(42);
 					fifty.verify(was).options.evaluate.property("global").is("foo");
 					fifty.verify(was).options.evaluate.property("command").is("bar");

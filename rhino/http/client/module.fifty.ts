@@ -509,7 +509,7 @@ namespace slime.jrunscript.http.client {
 							servlet.set(function(_request,_response) {
 								_response.getWriter().print(_request.getHeader("host"));
 							});
-							var lastArgument: { url: any };
+							var lastArgument: object.Request;
 							var client = new module.Client({
 								proxy: function(request) {
 									lastArgument = request;
@@ -527,6 +527,8 @@ namespace slime.jrunscript.http.client {
 									return response.body.stream.character().asString();
 								}
 							});
+							//	TODO	seems to work in latest version of TypeScript
+							//@ts-ignore
 							verify(lastArgument).url.evaluate(function(p) { return String(p); }).is("http://foo.bar/baz");
 							verify(host).is("foo.bar");
 						}

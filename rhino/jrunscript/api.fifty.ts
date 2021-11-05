@@ -268,7 +268,7 @@ namespace slime.internal.jrunscript.bootstrap {
 				var subject = global.$api;
 
 				var interpret = function(string) {
-					return Object.assign(function(p) {
+					return Object.assign(function(p): { url: string, file: string, zip: string } {
 						var result = p.interpret(string);
 						var entries: [name: string, value: any][] = [];
 						if (result.url) entries.push(["url",String(result.url)]);

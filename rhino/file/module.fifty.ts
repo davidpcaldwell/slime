@@ -197,7 +197,8 @@ namespace slime.jrunscript.file {
 
 					fifty.verify(captor).events.length.is(1);
 					fifty.verify(captor).events[0].type.is("wrote");
-					fifty.verify(captor).events[0].detail.evaluate(toString).is("bar");
+					var event: $api.Event<string> = captor.events[0];
+					fifty.verify(event).detail.evaluate(toString).is("bar");
 					fifty.verify(tmpdir).getFile("foo").is.type("object");
 					var readString = function(p: File) { return p.read(String); }
 					fifty.verify(tmpdir).getFile("foo").evaluate(readString).evaluate(toString).is("bar");
@@ -256,7 +257,9 @@ namespace slime.jrunscript.file {
 						exists: "overwrite"
 					})();
 
-					fifty.verify(tmpdir).getFile("foo").read(String).evaluate(toString).is("baz");
+					var readString = function(file: slime.jrunscript.file.File) { return file.read(String); }
+
+					fifty.verify(tmpdir).getFile("foo").evaluate(readString).evaluate(toString).is("baz");
 				});
 
 				fifty.run(function noCreateDirectory() {

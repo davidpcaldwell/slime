@@ -375,7 +375,8 @@ namespace slime.jrunscript.git {
 					verify(repository).directory.getFile("a").is.type("object");
 
 					verify(captor).events.evaluate(ofType("stdout")).length.is(2);
-					verify(captor).events.evaluate(ofType("stdout"))[1].detail.is("");
+					var event: $api.Event<string> = ofType("stdout")(captor.events)[1];
+					verify(event).detail.evaluate(function(p) { return String(p); }).is("");
 				});
 			};
 		}
@@ -831,6 +832,8 @@ namespace slime.jrunscript.git {
 						argument: void(0)
 					});
 
+					//	TODO	appears to work in latest TypeScript
+					//@ts-ignore
 					fifty.verify(invocation).program.command.evaluate(String).is("blah");
 					fifty.verify(invocation).pathname.is("/foo/path");
 				});
@@ -841,6 +844,8 @@ namespace slime.jrunscript.git {
 						argument: void(0)
 					});
 
+					//	TODO	appears to work in latest TypeScript
+					//@ts-ignore
 					fifty.verify(invocation).program.command.evaluate(String).is("sigh");
 					fifty.verify(invocation).pathname.is("/bar/path");
 				});

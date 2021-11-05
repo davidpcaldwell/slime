@@ -379,6 +379,8 @@ namespace slime.jsh.wf {
 					path: "sub"
 				});
 
+				var c = fifty.global.jsh.wf
+
 				var mock = fifty.$loader.jsh.plugin.mock({
 					jsh: {
 						file: jsh.file,
@@ -393,7 +395,7 @@ namespace slime.jsh.wf {
 						ui: {}
 					}
 				});
-				var plugin = mock.jsh.wf;
+				var plugin: slime.jsh.wf.Exports = mock.jsh.wf;
 
 				jsh.shell.console(Object.keys(plugin).toString());
 

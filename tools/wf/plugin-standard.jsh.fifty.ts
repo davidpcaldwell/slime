@@ -204,7 +204,7 @@ namespace slime.jsh.wf {
 				fifty.tests.interface.tsc = function() {
 					var repository = test.fixtures.project();
 
-					var tscresult: { status: number, stdio?: any } = jsh.shell.run({
+					var tscresult = jsh.shell.run({
 						command: test.fixtures.wf,
 						arguments: ["tsc"],
 						directory: repository.directory,
@@ -331,7 +331,7 @@ namespace slime.jsh.wf {
 					fifty.verify(r1).status.is(0);
 
 					repository.directory.getRelativePath("b").write("", { append: false });
-					var result: { status: number, stdio?: any } = jsh.shell.run({
+					var result = jsh.shell.run({
 						command: test.fixtures.wf,
 						arguments: ["commit", "--message", "b"],
 						directory: repository.directory,
