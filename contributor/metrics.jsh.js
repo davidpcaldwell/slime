@@ -13,6 +13,23 @@
 	function($api,jsh) {
 		var SLIME = jsh.script.file.parent.parent;
 
+		var getSourceFiles = function() {
+			return SLIME.list({
+				type: jsh.file.list.ENTRY,
+				filter: function(item) {
+					if (item.pathname.basename == ".git") return false;
+					if (item.pathname.basename == "local") return false;
+					if (item.directory) return false;
+					return true;
+				},
+				descendants: function(dir) {
+					if (dir.pathname.basename == ".git") return false;
+					if (dir.pathname.basename == "local") return false;
+					return true;
+				}
+			});
+		}
+
 		jsh.script.cli.wrap({
 			commands: {
 				jsapi: function(invocation) {
@@ -75,6 +92,68 @@
 					});
 
 					jsh.shell.console("Converted: " + ( size(fifty) / (size(fifty) + size(jsapi)) * 100 ).toFixed(1) + "%");
+				},
+				types: function(invocation) {
+					var getIgnores = function(code) {
+						var lines = code.split("\n");
+						return lines.reduce(function(rv,line,index,array) {
+							var indexOf = line.indexOf("@ts-ignore");
+							if (indexOf != -1 && index != array.length - 3) {
+								rv++;
+							}
+							return rv;
+						},0);
+					};
+
+					var isCovered = function(code) {
+						return code.indexOf("ts-check") != -1;
+					}
+
+					var src = getSourceFiles();
+					var grouper = $api.Function.Array.groupBy({
+						group: function(entry) {
+							if (/\.js$/.test(entry.path)) return "js";
+							if (/\.ts$/.test(entry.path)) return "ts";
+							return "other";
+						}
+					});
+					var groups = grouper(src);
+					var js = groups.find(function(group) {
+						return group.group == "js";
+					});
+					var ts = groups.find(function(group) {
+						return group.group == "ts";
+					});
+					var scripts = js.array.map(function(entry) {
+						var code = entry.node.read(String);
+						var covered = isCovered(code);
+						return {
+							path: entry.path,
+							ignores: getIgnores(code),
+							checked: covered,
+							lines: code.split("\n").length
+						};
+					}).map(function(file) {
+						return $api.Object.compose(file, {
+							uncovered: (file.checked) ? file.ignores : file.lines
+						});
+					}).filter(function(file) {
+						return file.uncovered > 0;
+					}).sort(function(a,b) {
+						return b.uncovered - a.uncovered;
+					});
+					jsh.shell.console(scripts.map(function(script) {
+						return script.path + ": " + script.uncovered;
+					}).join("\n"));
+					var coverage = scripts.reduce(function(rv,script) {
+						rv.covered += script.lines - script.uncovered;
+						rv.total += script.lines;
+						return rv;
+					}, {
+						covered: 0,
+						total: 0
+					});
+					jsh.shell.console("Total covereage: " + coverage.covered + "/" + coverage.total + ": " + Number(coverage.covered / coverage.total * 100).toFixed(1) + "%");
 				}
 			}
 		})
