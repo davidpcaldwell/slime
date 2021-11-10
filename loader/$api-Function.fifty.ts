@@ -19,6 +19,7 @@ namespace slime.$api {
 				split: (delimiter: string) => (string: string) => string[]
 				repeat: (count: number) => (string: string) => string
 				toUpperCase: (string: string) => string
+				match: (pattern: RegExp) => (string: string) => RegExpMatchArray
 			}
 		}
 
@@ -27,6 +28,8 @@ namespace slime.$api {
 				fifty: slime.fifty.test.kit
 			) {
 				fifty.tests.string = function() {
+					var subject = fifty.$api.Function.string;
+
 					fifty.run(function repeat() {
 						var one = fifty.$api.Function.string.repeat(1)("foo");
 						fifty.verify(one).is("foo");
@@ -34,7 +37,15 @@ namespace slime.$api {
 						fifty.verify(three).is("foofoofoo");
 						var zero = fifty.$api.Function.string.repeat(0)("foo");
 						fifty.verify(zero).is("");
-					})
+					});
+
+					fifty.run(function match() {
+						var one = subject.match(/foo(\d)bar(\d)/)("foo1bar2foo3bar");
+						fifty.verify(one).length.is(3);
+						fifty.verify(one)[0].is("foo1bar2");
+						fifty.verify(one)[1].is("1");
+						fifty.verify(one)[2].is("2");
+					});
 				}
 			}
 		//@ts-ignore
@@ -449,6 +460,7 @@ namespace slime.$api.fp {
 		}
 
 		tests.suite = function() {
+			fifty.run(tests.string);
 			fifty.run(tests.RegExp);
 			fifty.run(tests.impure);
 			fifty.run(tests.compare);

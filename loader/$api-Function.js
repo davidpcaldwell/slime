@@ -111,6 +111,11 @@
 			},
 			toUpperCase: function(string) {
 				return string.toUpperCase();
+			},
+			match: function(regexp) {
+				return function(string) {
+					return string.match(regexp);
+				}
 			}
 		};
 
