@@ -19,6 +19,10 @@ namespace slime.jrunscript.document {
 		/** @deprecated */
 		Document: slime.runtime.document.exports.Document
 
+		Text: any
+		Element: any
+		Cdata: any
+
 		/** @deprecated */
 		filter: any
 		/** @deprecated */
