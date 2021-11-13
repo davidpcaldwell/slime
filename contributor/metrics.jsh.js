@@ -13,85 +13,37 @@
 	function($api,jsh) {
 		var SLIME = jsh.script.file.parent.parent;
 
+		var code = {
+			/** @type { slime.project.metrics.Script } */
+			model: jsh.script.loader.script("metrics.js")
+		}
+
+		var model = code.model({
+			library: {
+				file: jsh.file
+			}
+		})
+
 		var getSourceFiles = function() {
-			return SLIME.list({
-				type: jsh.file.list.ENTRY,
-				filter: function(item) {
-					if (item.pathname.basename == ".git") return false;
-					if (item.pathname.basename == "local") return false;
-					if (item.directory) return false;
-					return true;
-				},
-				descendants: function(dir) {
-					if (dir.pathname.basename == ".git") return false;
-					if (dir.pathname.basename == "local") return false;
-					return true;
-				}
-			});
+			return model.getSourceFiles(SLIME);
 		}
 
 		jsh.script.cli.wrap({
 			commands: {
 				jsapi: function(invocation) {
-					var src = SLIME.list({
-						type: jsh.file.list.ENTRY,
-						filter: function(item) {
-							if (item.pathname.basename == ".git") return false;
-							if (item.pathname.basename == "local") return false;
-							if (item.directory) return false;
-							return true;
-						},
-						descendants: function(dir) {
-							if (dir.pathname.basename == ".git") return false;
-							if (dir.pathname.basename == "local") return false;
-							return true;
-						}
-					});
-					var grouper = $api.Function.Array.groupBy({
-						group: function(entry) {
-							var node = entry.node;
-							if (/\.api\.html$/.test(node.pathname.basename)) {
-								return "jsapi"
-							}
-							if (/\.fifty\.ts$/.test(node.pathname.basename)) {
-								return "fifty"
-							}
-							return "unknown";
-						}
-					});
-					var results = grouper(src);
+					var data = model.jsapi(SLIME);
 
-					var size = function(group) {
-						return group.array.reduce(function(rv,entry) {
-							return rv + entry.node.length;
-						},0);
-					};
-
-					var fifty = results.find(function(group) {
-						return group.group == "fifty";
-					});
-					var jsapi = results.find(function(group) {
-						return group.group == "jsapi";
-					});
-					[fifty, jsapi].forEach(function(group) {
-						jsh.shell.console(group.group + ": " + group.array.length + " files, " + size(group) + " bytes");
-						if (group.group == "jsapi") {
-							var sized = group.array.map(function(entry) {
-								return {
-									path: entry.path,
-									size: entry.node.length
-								}
-							}).sort(function(a,b) {
-								return b.size - a.size;
-							}).map(function(item) {
-								return item.path + " " + item.size;
-							}).join("\n");
-							jsh.shell.console(sized);
+					[data.fifty, data.jsapi].forEach(function(group) {
+						jsh.shell.console(group.name + ": " + group.files + " files, " + group.bytes + " bytes");
+						if (group["list"]) {
+							group["list"].forEach(function(item) {
+								jsh.shell.console(item.path + " " + item.bytes);
+							})
 						}
 						jsh.shell.console("");
 					});
 
-					jsh.shell.console("Converted: " + ( size(fifty) / (size(fifty) + size(jsapi)) * 100 ).toFixed(1) + "%");
+					jsh.shell.console("Converted: " + ( data.fifty.bytes / (data.fifty.bytes + data.jsapi.bytes) * 100 ).toFixed(1) + "%");
 				},
 				types: function(invocation) {
 					var getIgnores = function(code) {
