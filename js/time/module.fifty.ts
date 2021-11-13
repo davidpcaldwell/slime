@@ -73,6 +73,7 @@ namespace slime.time {
 				json: any
 				js: any
 			}
+			rehydrate: (p: any) => Day
 		}
 		Time: {
 			new (): slime.time.Time

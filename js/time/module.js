@@ -623,6 +623,9 @@
 				}
 			}
 		}
+		Day.rehydrate = function(json) {
+			return new Day(json.year.value, json.month.id.index, json.day);
+		}
 
 		function Time() {
 			var day;
