@@ -51,12 +51,231 @@ namespace slime.$api {
 		//@ts-ignore
 		)(fifty);
 
+		export interface Exports {
+			/**
+			 * @param name A property name.
+			 * @return A function that returns the named property of its argument.
+			 */
+			property: <T,K extends keyof T>(name: K) => (t: T) => T[K]
+		}
+
+		export interface Exports {
+			/**
+			 * A function that takes a function as an argument and returns a memoized version of that function. Memoized functions
+			 * currently cannot be invoked as methods (i.e., with a <code>this</code> value) and also may not receive arguments.
+			 *
+			 * @param f A function to memoize
+			 * @returns A memoized function whose underlying implementation will only be invoked the first time it is invoked;
+			 * succeeding invocations will simply return the value returned by the first invocation.
+			 */
+			 memoized: <T>(f: () => T) => () => T
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.kit
+			) {
+				const { verify } = fifty;
+
+				fifty.tests.memoized = function() {
+					var calls: number;
+
+					var counter = function() {
+						if (typeof(calls) == "undefined") calls = 0;
+						calls++;
+						return 42;
+					};
+
+					verify(calls).is(void(0));
+					var memoized = fifty.$api.Function.memoized(counter);
+					verify(calls).is(void(0));
+					var result = memoized();
+					verify(result).is(42);
+					verify(calls).is(1);
+					var result2 = memoized();
+					verify(result2).is(42);
+					verify(calls).is(1);
+					var result3 = counter();
+					verify(result3).is(42);
+					verify(calls).is(2);
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+
+		export interface Exports {
+			is: <T>(value: T) => fp.Predicate<T>
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.kit
+			) {
+				const { verify } = fifty;
+
+				fifty.tests.is = function() {
+					var is2 = fifty.$api.Function.is(2);
+
+					verify(is2(2)).is(true);
+					//@ts-ignore
+					verify(is2("2")).is(false);
+					verify(is2(3)).is(false);
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+
+		export interface Exports {
+			/**
+			 * Returns the result of invoking a function. `result(input, f)` is syntactic sugar for `f(input)` in situations where
+			 * writing the input before the function lends clarity (for example, if the function is a pipeline created by `pipe`).
+			 */
+			result: {
+				/** @deprecated Use the two-argument version of `result`, and `pipe` to compose the functions. */
+				<P,T,U,V,W,X,Y,Z,R>(
+					p: P,
+					f: (p: P) => T,
+					g: (t: T) => U,
+					h: (u: U) => V,
+					i: (v: V) => W,
+					j: (w: W) => X,
+					k: (x: X) => Y,
+					l: (y: Y) => Z,
+					m: (z: Z) => R
+				): R
+				/** @deprecated Use the two-argument version of `result`, and `pipe` to compose the functions. */
+				<P,T,U,V,W,X,Y,R>(
+					p: P,
+					f: (p: P) => T,
+					g: (t: T) => U,
+					h: (u: U) => V,
+					i: (v: V) => W,
+					j: (w: W) => X,
+					k: (x: X) => Y,
+					l: (y: Y) => R
+				): R
+				/** @deprecated Use the two-argument version of `result`, and `pipe` to compose the functions. */
+				<P,T,U,V,W,X,R>(
+					p: P,
+					f: (p: P) => T,
+					g: (t: T) => U,
+					h: (u: U) => V,
+					i: (v: V) => W,
+					j: (w: W) => X,
+					k: (x: X) => R
+				): R
+				/** @deprecated Use the two-argument version of `result`, and `pipe` to compose the functions. */
+				<P,T,U,V,W,R>(
+					p: P,
+					f: (p: P) => T,
+					g: (t: T) => U,
+					h: (u: U) => V,
+					i: (v: V) => W,
+					j: (w: W) => R
+				): R
+				/** @deprecated Use the two-argument version of `result`, and `pipe` to compose the functions. */
+				<P,T,U,V,R>(
+					p: P,
+					f: (p: P) => T,
+					g: (t: T) => U,
+					h: (u: U) => V,
+					i: (v: V) => R
+				): R
+				/** @deprecated Use the two-argument version of `result`, and `pipe` to compose the functions. */
+				<P,T,U,R>(
+					p: P,
+					f: (p: P) => T,
+					g: (t: T) => U,
+					h: (u: U) => R
+				): R
+				/** @deprecated Use the two-argument version of `result`, and `pipe` to compose the functions. */
+				<P,T,R>(
+					p: P,
+					f: (p: P) => T,
+					g: (t: T) => R
+				): R
+				<P,R>(
+					p: P,
+					f: (i: P) => R
+				): R
+			}
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.kit
+			) {
+				const { verify } = fifty;
+				fifty.tests.result = function() {
+					var times = function(x: number) {
+						return function(v: number) {
+							return v * x;
+						}
+					};
+
+					var plus = function(x: number) {
+						return function(v: number) {
+							return v + x;
+						}
+					};
+
+					var x = fifty.$api.Function.result(
+						2,
+						fifty.$api.Function.pipe(
+							times(3),
+							plus(4)
+						)
+					);
+					verify(x).is(10);
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+
+		export interface Exports {
+			Object: {
+				entries: {
+					(p: {}): [string, any][]
+				}
+
+				/**
+				 * Invokes `Object.fromEntries` with the argument and returns the result.
+				 */
+				fromEntries: {
+					(p: [string, any][]): { [x: string]: any }
+					//	TODO	the below works in VSCode, so is probably TypeScript version-dependent
+					// (p: Iterable<readonly [string | number | symbol, any]>): { [x: string]: any }
+				}
+			}
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.kit
+			) {
+				const { verify, run } = fifty;
+
+				fifty.tests.Object = function() {
+					run(function fromEntries() {
+						var array = [ ["a", 2], ["b", 3] ];
+						var result: { a: number, b: number } = fifty.$api.Function.result(
+							array,
+							fifty.$api.Function.Object.fromEntries
+						) as { a: number, b: number };
+						verify(result).a.is(2);
+						verify(result).b.is(3);
+						verify(result).evaluate.property("b").is(3);
+						verify(result).evaluate.property("c").is(void(0));
+					});
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+
 
 		export interface Exports {
 			identity: <T>(t: T) => T
 			returning: <T>(t: T) => () => T
-			is: <T>(value: T) => fp.Predicate<T>
-			property: <T,K extends keyof T>(name: K) => (t: T) => T[K]
 			Array: {
 				filter: <T>(f: fp.Predicate<T>) => (ts: T[]) => T[]
 				find: <T>(f: fp.Predicate<T>) => (ts: T[]) => T | undefined
@@ -81,12 +300,11 @@ namespace slime.$api {
 			 * undefined; if the value passed to the returned function is an object, the value of the property specified by the
 			 * given property key will be returned.
 			 *
-			 * @param { string } k - a property key
+			 * @param k a property key
 			 * @returns A function that returns the given property of its argument, or undefined if its argument is [nullish](https://developer.mozilla.org/en-US/docs/Glossary/Nullish).
 			 */
-			optionalChain<T,K extends keyof T>(k: K): (t: T) => T[K]
+			optionalChain: <T,K extends keyof T>(k: K) => (t: T) => T[K]
 
-			memoized: <T>(f: () => T) => () => T
 			pipe: {
 				<T,U,V,W,X,Y,Z,R>(
 					f: (t: T) => U,
@@ -129,78 +347,6 @@ namespace slime.$api {
 				): (t: T) => R
 				<T,R>(f: (t: T) => R): (t: T) => R
 			}
-			result: {
-				<P,T,U,V,W,X,Y,Z,R>(
-					p: P,
-					f: (p: P) => T,
-					g: (t: T) => U,
-					h: (u: U) => V,
-					i: (v: V) => W,
-					j: (w: W) => X,
-					k: (x: X) => Y,
-					l: (y: Y) => Z,
-					m: (z: Z) => R
-				): R
-				<P,T,U,V,W,X,Y,R>(
-					p: P,
-					f: (p: P) => T,
-					g: (t: T) => U,
-					h: (u: U) => V,
-					i: (v: V) => W,
-					j: (w: W) => X,
-					k: (x: X) => Y,
-					l: (y: Y) => R
-				): R
-				<P,T,U,V,W,X,R>(
-					p: P,
-					f: (p: P) => T,
-					g: (t: T) => U,
-					h: (u: U) => V,
-					i: (v: V) => W,
-					j: (w: W) => X,
-					k: (x: X) => R
-				): R
-				<P,T,U,V,W,R>(
-					p: P,
-					f: (p: P) => T,
-					g: (t: T) => U,
-					h: (u: U) => V,
-					i: (v: V) => W,
-					j: (w: W) => R
-				): R
-				<P,T,U,V,R>(
-					p: P,
-					f: (p: P) => T,
-					g: (t: T) => U,
-					h: (u: U) => V,
-					i: (v: V) => R
-				): R
-				<P,T,U,R>(
-					p: P,
-					f: (p: P) => T,
-					g: (t: T) => U,
-					h: (u: U) => R
-				): R
-				<P,T,R>(
-					p: P,
-					f: (p: P) => T,
-					g: (t: T) => R
-				): R
-				<P,R>(
-					p: P,
-					f: (i: P) => R
-				): R
-			}
-			Object: {
-				entries: {
-					(p: {}): [string, any][]
-				}
-				fromEntries: {
-					(p: [string, any][]): { [x: string]: any }
-					//	TODO	the below works in VSCode, so is probably TypeScript version-dependent
-					// (p: Iterable<readonly [string | number | symbol, any]>): { [x: string]: any }
-				}
-			}
 			conditional: {
 				<T,R>(p: { condition: (t: T) => boolean, true: (t: T) => R, false: (t: T) => R }): (t: T) => R
 
@@ -208,7 +354,6 @@ namespace slime.$api {
 				(test: any, yes: any, no: any): any
 			}
 			type: (v: any) => string
-			[name: string]: any
 		}
 
 		export interface Exports {
@@ -259,7 +404,6 @@ namespace slime.$api {
 			}
 		//@ts-ignore
 		)(fifty);
-
 
 		export type Comparator<T> = (t1: T, t2: T) => number
 
@@ -375,6 +519,78 @@ namespace slime.$api.fp {
 	}
 }
 
+namespace slime.$api.fp {
+	export interface Exports {
+		/** @deprecated */
+		argument: {
+			/**
+			 * Creates an argument-checking function that validates a single function argument.
+			 *
+			 * @returns A function that examines its arguments and throws a `TypeError` if the specified argument does not meet the
+			 * specified criteria.
+			 *
+			 * @deprecated
+			 */
+			check: (p: {
+				/** The index of the argument to check. */
+				index: number
+				/** The name of the argument. */
+				name: string
+				/**
+				 * The expected type of the argument, as returned by the JavaScript `typeof` operator. If the argument should be a
+				 * string, for example, the value `"string"` should be used.
+				 */
+				type: string
+				/** Whether the value `null` is also an acceptable value for the argument. */
+				null: boolean
+				/** Whether the value `undefined` is also an acceptable value for the argument. */
+				undefined: boolean
+			}) => (...args: any[]) => void
+
+			/**
+			 * @deprecated
+			 */
+			isString: (p: {
+				index: number
+				name: string
+				null?: boolean
+				undefined?: boolean
+			}) => (...args: any[]) => void
+		}
+		evaluator: any
+		String: any
+		JSON: any
+		series: any
+		mutating: any
+		//[name: string]: any
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.kit
+		) {
+			const { verify } = fifty;
+
+			fifty.tests.deprecated = function() {
+				var check = fifty.$api.Function.argument.check;
+
+				var tester = {
+					invoke: function(argument,array) {
+						var f = check(argument);
+						return f.apply(this,array);
+					}
+				};
+
+				verify(tester).evaluate(function() { return this.invoke({ index: 0, type: "string" },[1]) }).threw.type(TypeError);
+				verify(tester).evaluate(function() { return this.invoke({ index: 0, type: "string" },[void(0)]) }).threw.type(TypeError);
+				verify(tester).evaluate(function() { return this.invoke({ index: 0, type: "string" },[null]) }).threw.type(TypeError);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+}
+
 (
 	function(
 		fifty: slime.fifty.test.kit,
@@ -464,6 +680,11 @@ namespace slime.$api.fp {
 			fifty.run(tests.RegExp);
 			fifty.run(tests.impure);
 			fifty.run(tests.compare);
+			fifty.run(tests.memoized);
+			fifty.run(tests.is);
+			fifty.run(tests.result);
+			fifty.run(tests.Object);
+			fifty.run(tests.deprecated);
 		}
 	}
 //@ts-ignore

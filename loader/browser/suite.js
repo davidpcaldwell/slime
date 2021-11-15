@@ -28,7 +28,6 @@
 
 		add("loader/browser/client.js", getSlimePart("loader/browser/client.api.html"));
 		add("$api/old/Function", getSlimePart("loader/$api-Function-old.api.html"));
-		add("$api/Function", getSlimePart("loader/$api-Function.api.html"));
 		add("$api/flag", getSlimePart("loader/$api-flag.api.html"));
 		add("$api", getSlimePart("loader/$api.api.html"));
 		add("js/object/", getSlimePart("js/object/api.html"));

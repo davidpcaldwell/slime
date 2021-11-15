@@ -84,139 +84,6 @@ END LICENSE
 	-->
 	<div class="label">has properties:</div>
 	<ul>
-		<li class="function">
-			<div class="name">memoized</div>
-			<span>
-				A function that takes a function as an argument and returns a memoized version of that function.
-				Memoized arguments currently cannot be invoked as methods (i.e., with a <code>this</code> value)
-				and also may not receive arguments.
-			</span>
-			<div class="arguments">
-				<div class="label">Arguments</div>
-				<ol>
-					<li class="value">
-						<span class="type">function</span>
-						<span>A function to memoize</span>
-					</li>
-				</ol>
-			</div>
-			<div class="returns">
-				<div class="label">Returns</div>
-				<span class="type">function</span>
-				<span>A memoized function.</span>
-			</div>
-			<script type="application/x.jsapi#tests">
-				var counter = function() {
-					if (typeof(arguments.callee.calls) == "undefined") arguments.callee.calls = 0;
-					arguments.callee.calls++;
-					return 42;
-				};
-
-				verify(counter.calls).is(void(0));
-				var memoized = api.Function.memoized(counter);
-				verify(counter.calls).is(void(0));
-				var result = memoized();
-				verify(result).is(42);
-				verify(counter.calls).is(1);
-				var result2 = memoized();
-				verify(result2).is(42);
-				verify(counter.calls).is(1);
-				var result3 = counter();
-				verify(result3).is(42);
-				verify(counter.calls).is(2);
-			</script>
-		</li>
-		<li class="function">
-			<div class="name">property</div>
-			<span>__DESCRIPTION__</span>
-			<div class="arguments">
-				<div class="label">Arguments</div>
-				<ol>
-					<li class="value">
-						<span class="type">string</span>
-						<span>A property name.</span>
-					</li>
-				</ol>
-			</div>
-			<div class="returns">
-				<div class="label">Returns</div>
-				<span class="type">function</span>
-				<span>A function that returns the named property of its argument.</span>
-			</div>
-			<script type="application/x.jsapi#tests">
-
-			</script>
-		</li>
-		<li class="function">
-			<div class="name">is</div>
-			<span>__DESCRIPTION__</span>
-			<div class="arguments">
-				<div class="label">Arguments</div>
-				<ol>
-				</ol>
-			</div>
-			<div class="returns">
-				<div class="label">Returns</div>
-				<span class="type">__TYPE__</span>
-				<span>__DESCRIPTION__</span>
-			</div>
-			<script type="application/x.jsapi#tests">
-				var is2 = api.Function.is(2);
-
-				verify(is2(2)).is(true);
-				verify(is2("2")).is(false);
-				verify(is2(3)).is(false);
-			</script>
-		</li>
-		<li class="function">
-			<div class="name">result</div>
-			<span>
-				Returns the result of a chain of functions. The first argument is the input to the chain,
-				and succeeding arguments are the functions that make up the chain.
-			</span>
-			<script type="application/x.jsapi#tests">
-				var times = function(x) {
-					return function(v) {
-						return v * x;
-					}
-				};
-
-				var plus = function(x) {
-					return function(v) {
-						return v + x;
-					}
-				};
-
-				var x = $api.Function.result(
-					2,
-					times(3),
-					plus(4)
-				);
-				verify(x).is(10);
-			</script>
-		</li>
-		<li class="object">
-			<div class="name">Object</div>
-			<span>__DESCRIPTION__</span>
-			<div class="label">has properties:</div>
-			<ul>
-				<li class="function">
-					<div class="name">fromEntries</div>
-					<span>Invokes Object.fromEntries with the argument and returns the result.</span>
-					<script type="application/x.jsapi#tests">
-						var array = [ ["a", 2], ["b", 3] ];
-						var result = api.Function.result(
-							array,
-							api.Function.Object.fromEntries
-						);
-						verify(result).a.is(2);
-						verify(result).b.is(3);
-						verify(result).evaluate.property("b").is(3);
-						verify(result).evaluate.property("c").is(void(0));
-					</script>
-				</li>
-			</ul>
-		</li>
 		<li class="object">
 			<div class="name">argument</div>
 			<span>__DESCRIPTION__</span>
@@ -224,7 +91,6 @@ END LICENSE
 			<ul>
 				<li class="function">
 					<div class="name">check</div>
-					<span>Creates an argument-checking function that validates a single function argument.</span>
 					<div class="arguments">
 						<div class="label">Arguments</div>
 						<ol>
@@ -232,56 +98,9 @@ END LICENSE
 								<span>__DESCRIPTION__</span>
 								<div class="label">has properties:</div>
 								<ul>
-									<li class="value">
-										<div class="name">index</div>
-										<span class="type">number</span>
-										<span>
-											The index of the argument to check.
-										</span>
-									</li>
-									<li class="value">
-										<div class="name">name</div>
-										<span class="type">string</span>
-										<span>
-											The name of the argument.
-										</span>
-									</li>
-									<li class="value">
-										<div class="name">type</div>
-										<span class="type">string</span>
-										<span>
-											The expected type of the argument, as returned by the JavaScript
-											<code>typeof</code> operator. If the argument should be a string,
-											for example, the value <code>"string"</code> should be used.
-										</span>
-									</li>
-									<li class="value">
-										<div class="name">null</div>
-										<span class="type">boolean</span>
-										<span>
-											Whether the value <code>null</code> is also an acceptable value for
-											the argument.
-										</span>
-									</li>
-									<li class="value">
-										<div class="name">undefined</div>
-										<span class="type">boolean</span>
-										<span>
-											Whether the value <code>undefined</code> is also an acceptable value for
-											the argument.
-										</span>
-									</li>
 								</ul>
 							</li>
 						</ol>
-					</div>
-					<div class="returns">
-						<div class="label">Returns</div>
-						<span class="type">function</span>
-						<span>
-							A function that takes an <code>arguments</code> object and throws a
-							<code>TypeError</code> if the specified argument does not meet the specified criteria.
-						</span>
 					</div>
 					<script type="application/x.jsapi#tests">
 						var check = api.Function.argument.check;
