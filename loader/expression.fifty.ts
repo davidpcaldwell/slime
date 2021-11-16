@@ -508,6 +508,10 @@ namespace slime {
 		encode: (t: T) => E
 		decode: (e: E) => T
 	}
+
+	export namespace js {
+		export type Cast<T> = (p: any) => T
+	}
 }
 
 namespace slime.test {

@@ -16,6 +16,8 @@
 
 		$exports.Function.identity = function(v) { return v; };
 
+		$exports.Function.cast = function(v) { return v; };
+
 		$exports.Function.type = function(o) {
 			if (o === null) return "null";
 			return typeof(o);

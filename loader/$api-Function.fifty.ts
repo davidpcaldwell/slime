@@ -275,6 +275,7 @@ namespace slime.$api {
 
 		export interface Exports {
 			identity: <T>(t: T) => T
+			cast: <T>(t: any) => T
 			returning: <T>(t: T) => () => T
 			Array: {
 				filter: <T>(f: fp.Predicate<T>) => (ts: T[]) => T[]
