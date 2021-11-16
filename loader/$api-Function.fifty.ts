@@ -563,7 +563,6 @@ namespace slime.$api.fp {
 		JSON: any
 		series: any
 		mutating: any
-		//[name: string]: any
 	}
 
 	(
