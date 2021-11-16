@@ -11,10 +11,10 @@
 	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jrunscript.tools.github.Context } $context
-	 * @param { slime.jrunscript.tools.github.Exports } $exports
+	 * @param { slime.loader.Export<slime.jrunscript.tools.github.Exports> } $export
 	 */
-	function(Packages,$api,$context,$exports) {
-		$exports.Session = function(o) {
+	function(Packages,$api,$context,$export) {
+		var Session = function(o) {
 			var apiUrl = function(relative) {
 				return "https://api.github.com/" + relative;
 			};
@@ -121,6 +121,18 @@
 				}
 			};
 		}
+
+		$export({
+			Session: Session,
+			isProjectUrl: function(p) {
+				return function(url) {
+					return url.host == "github.com" && (
+						(url.path == "/" + p.owner + "/" + p.name)
+						|| (url.path == "/" + p.owner + "/" + p.name + ".git")
+					);
+				}
+			}
+		});
 	}
 //@ts-ignore
-)(Packages,$api,$context,$exports)
+)(Packages,$api,$context,$export)

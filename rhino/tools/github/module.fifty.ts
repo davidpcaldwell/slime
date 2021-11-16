@@ -37,6 +37,11 @@ namespace slime.jrunscript.tools.github {
 				password: string
 			}
 		}) => slime.jrunscript.tools.github.Session
+
+		isProjectUrl: (p: {
+			owner: string
+			name: string
+		}) => (url: slime.web.Url) => boolean
 	}
 }
 

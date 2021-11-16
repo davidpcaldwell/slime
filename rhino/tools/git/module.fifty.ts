@@ -233,6 +233,7 @@ namespace slime.jrunscript.git {
 			shell: slime.jrunscript.shell.Exports
 			Error: any
 			time: slime.time.Exports
+			web: slime.web.Exports
 		}
 		environment: any
 		console: any
@@ -251,6 +252,8 @@ namespace slime.jrunscript.git {
 		execute: slime.jrunscript.git.Installation["execute"]
 		install: Function & { GUI: any }
 	}
+
+	export type Script = slime.loader.Script<Context,Exports>
 }
 
 namespace slime.jrunscript.git {
@@ -1021,6 +1024,39 @@ namespace slime.jrunscript.git {
 	//@ts-ignore
 	)(fifty);
 
+	export interface Exports {
+		/**
+		 * Beginning with a starting directory, attempts to locate a clone of a particular remote repository in the local
+		 * filesystem by examining the URL of the `origin` remote.
+		 *
+		 * @experimental Considering whether to further generalize this; need to do more research into Git URL formats as well
+		 * to ensure adequate handling of error conditions
+		 */
+		local: (p: {
+			start: slime.jrunscript.file.Directory
+			match: (p: slime.web.Url) => boolean
+		}) => slime.jrunscript.file.Directory
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.kit
+		) {
+			var api: { github: slime.jrunscript.tools.github.Exports } = {
+				github: fifty.$loader.module("../github/module.js")
+			};
+
+			fifty.tests.sandbox = function() {
+				var base = fifty.global.jsh.tools.git.local({
+					start: fifty.$loader.getRelativePath(".").directory,
+					match: api.github.isProjectUrl({ owner: "davidpcaldwell", name: "slime" })
+				});
+				fifty.verify(base.toString()).is(fifty.$loader.getRelativePath("../../..").directory.toString());
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
 }
 
 (function(fifty: slime.fifty.test.kit) {
@@ -1036,6 +1072,8 @@ namespace slime.jrunscript.git {
 
 		fifty.run(fifty.tests.Exports.program);
 		fifty.run(fifty.tests.test.run);
+
+		fifty.run(fifty.tests.sandbox);
 	}
 //@ts-ignore
 })(fifty);

@@ -1532,6 +1532,20 @@
 				return createShellInvocation(p.program, p.pathname, p.invocation, p.stdio);
 			}
 		}
+
+		$exports.local = function(p) {
+			var directory = p.start;
+			while(directory) {
+				if (directory && (directory.getSubdirectory(".git") || directory.getFile(".git"))) {
+					var repository = $exports.Repository({ directory: directory });
+					var url = repository.remote.getUrl({ name: "origin" });
+					var fullurl = $context.api.web.Url.parse(url);
+					if (p.match(fullurl)) return directory;
+				}
+				directory = directory.parent;
+			}
+			return null;
+		}
 	}
 //@ts-ignore
 )($api,$context,$exports)
