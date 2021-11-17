@@ -198,8 +198,8 @@ namespace slime.jrunscript.git {
 		}
 
 		export interface InvocationConfiguration<T> {
-			arguments?: (p: T) => $api.fp.impure.Updater<string[]>
-			environment?: (p: T) => $api.fp.impure.Updater<Environment>,
+			arguments?: (p: T) => $api.fp.impure.Revision<string[]>
+			environment?: (p: T) => $api.fp.impure.Revision<Environment>,
 			createReturnValue?: (p: T) => (result: Result) => any
 		}
 

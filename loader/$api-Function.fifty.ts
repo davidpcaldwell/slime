@@ -485,39 +485,104 @@ namespace slime.$api.fp {
 		export type Ask<E,T> = (on?: slime.$api.events.Handler<E>) => T
 		export type Tell<E> = (on?: slime.$api.events.Handler<E>) => void
 
-		/**
-		 * An Updater is a function that takes an argument and either (potentially) modifies the argument, returning undefined,
-		 * or returns a completely new value to replace the argument.
-		 */
-		export type Updater<M> = (mutable: M) => M | void
-
 		/** @deprecated Replaced by {@link Ask} */
 		export type State<T> = Ask<void,T>
 
+		/** @experimental Identical to {@link Ask} but has slightly different semantics (analogous to HTTP POST). */
 		export type Action<E,R> = (on?: slime.$api.events.Handler<E>) => R
-	}
 
-	type Updater<M> = impure.Updater<M>
+		export type Update<T extends Object> = (t: T) => void
+
+		/**
+		 * A function that takes an argument and either (potentially) modifies the argument, returning
+		 * `undefined`, or returns a completely new value to replace the argument.
+		 */
+		export type Revision<M> = (mutable: M) => M | void
+	}
 
 	export interface Exports {
 		impure: {
+			ask: <E,T>(f: (events: slime.$api.Events<E>) => T) => impure.Ask<E,T>
+			tell: <E>(f: (events: slime.$api.Events<E>) => void) => impure.Tell<E>
+
 			/**
-			 * Converts an Updater to a function that can be used in a function pipeline; in other words, if it is an updater
+			 * Converts a Revision to a function that can be used in a function pipeline; in other words, if it is an revision
 			 * that modifies its argument in place, it will be augmented to return the argument. If the argument is `undefined`
 			 * or `null`, an identity function will be returned.
 			 */
-			revise: <M>(f: Updater<M>) => (mutable: M) => M
+			revise: <M>(f: impure.Revision<M>) => (mutable: M) => M
 
 			/**
-			 * Creates an Updater that runs the given updaters in a pipeline, allowing the Updaters to replace the pipeline input
-			 * by returning a value.
+			 * Creates a `Revision` that runs the given revisions in a pipeline, allowing the `Revision`s to replace the pipeline
+			 * input by returning a value.
 			 */
-			compose: <M>(...functions: Updater<M>[]) => Updater<M>
+			compose: <M>(...functions: impure.Revision<M>[]) => (mutable: M) => M
 
-			ask: <E,T>(f: (events: slime.$api.Events<E>) => T) => slime.$api.fp.impure.Ask<E,T>
-			tell: <E>(f: (events: slime.$api.Events<E>) => void) => slime.$api.fp.impure.Tell<E>
+			Update: {
+				compose: <M>(functions: impure.Update<M>[]) => impure.Update<M>
+			}
 		}
 	}
+
+	(
+		function(
+			fifty: slime.fifty.test.kit
+		) {
+			const { tests, verify } = fifty;
+
+			tests.impure = function() {
+				var f1 = function(p: { number: number }) {
+					p.number += 1;
+				};
+				var f2 = function(p: { number: number }) {
+					p.number *= 2;
+				};
+				var f3 = function(p: { number: number }) {
+					p.number -= 3;
+				}
+				var f = fifty.$api.Function.impure.compose(f1, f2, f3);
+				var input = { number: 4 };
+				var output = f(input);
+				verify(output).number.is(7);
+
+				var r1 = function(p: { number: number }): { number: number } {
+					return { number: 9 };
+				};
+
+				var r = fifty.$api.Function.impure.compose(f1, r1, f3);
+				var rinput = { number: 4 };
+				var routput = r(rinput);
+				verify(routput).number.is(6);
+
+				fifty.run(function() {
+					var nullRevision = fifty.$api.Function.impure.revise(null);
+					var undefinedRevision = fifty.$api.Function.impure.revise(void(0));
+
+					var two = { number: 2 }
+
+					verify( nullRevision(two) ).is(two);
+					verify( undefinedRevision(two) ).is(two);
+				});
+
+				fifty.run(function Update() {
+					type A = { a: number, b: number, c: number }
+					var a: A = { a: 1, b: 2, c: 3 };
+					var updates = [
+						function(a: A) { a.a++ },
+						function(a: A) { a.b++ },
+						function(a: A) { a.c = 0 }
+					];
+					var update = fifty.$api.Function.impure.Update.compose(updates);
+					update(a);
+					verify(a).a.is(2);
+					verify(a).b.is(3);
+					verify(a).c.is(0);
+				});
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
 }
 
 namespace slime.$api.fp {
@@ -598,41 +663,6 @@ namespace slime.$api.fp {
 		tests: slime.fifty.test.tests,
 		verify: slime.fifty.test.tests
 	) {
-		tests.impure = function() {
-			var f1 = function(p) {
-				p.number += 1;
-			};
-			var f2 = function(p) {
-				p.number *= 2;
-			};
-			var f3 = function(p) {
-				p.number -= 3;
-			}
-			var f = fifty.$api.Function.impure.compose(f1, f2, f3);
-			var input = { number: 4 };
-			var output = f(input);
-			verify(output).number.is(7);
-
-			var r1 = function(p) {
-				return { number: 9 };
-			};
-
-			var r = fifty.$api.Function.impure.compose(f1, r1, f3);
-			var rinput = { number: 4 };
-			var routput = r(rinput);
-			verify(routput).number.is(6);
-
-			fifty.run(function() {
-				var nullRevision: slime.$api.fp.impure.Updater<{ number: number }> = fifty.$api.Function.impure.revise(null);
-				var undefinedRevision: slime.$api.fp.impure.Updater<{ number: number }> = fifty.$api.Function.impure.revise(null);
-
-				var two = { number: 2 }
-
-				verify( nullRevision(two) ).is(two);
-				verify( undefinedRevision(two) ).is(two);
-			});
-		}
-
 		tests.compare = function() {
 			var array = [
 				{ name: "a", value: 1 },

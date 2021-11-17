@@ -341,7 +341,16 @@
 				}
 			},
 			ask: $context.events.ask,
-			tell: $context.events.tell
+			tell: $context.events.tell,
+			Update: {
+				compose: function(functions) {
+					return function(m) {
+						for (var i=0; i<functions.length; i++) {
+							functions[i](m);
+						}
+					}
+				}
+			}
 		};
 
 		$exports.Function.comparator = {
