@@ -119,6 +119,23 @@
 			});
 		});
 
+		var getSafariProcess = function() {
+			var processes = jsh.shell.os.process.list();
+			var safaris = processes.filter(function(process) {
+				return process.command == "/Applications/Safari.app/Contents/MacOS/Safari";
+			});
+			return (safaris.length) ? safaris[0] : null;
+		};
+
+		var safariWas = getSafariProcess();
+
+		if (!safariWas) {
+			jsh.java.addShutdownHook(function() {
+				var safari = getSafariProcess();
+				safari.kill();
+			});
+		}
+
 		suite.add("browsers", new function() {
 			this.name = "Browser tests";
 
