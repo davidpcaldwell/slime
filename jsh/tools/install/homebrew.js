@@ -23,7 +23,8 @@
 				to = p.location.createDirectory({
 					exists: function(dir) {
 						return false;
-					}
+					},
+					recursive: true
 				});
 
 				jsh.shell.run({

@@ -19,7 +19,7 @@ namespace slime.jrunscript.tools.homebrew {
 		get: (p: { location: slime.jrunscript.file.Pathname }) => Installation
 	}
 
-	export type load = slime.loader.Script<void,homebrew.Exports>
+	export type Script = slime.loader.Script<void,homebrew.Exports>
 
 	(
 		function(
