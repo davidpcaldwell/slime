@@ -276,6 +276,7 @@
 		this.py = new Line("#");
 		this.bashrc = new Line("#");
 		this.kts = cplusplus;
+		this.yaml = new Line("#");
 
 		this.bash = new Line("#");
 	}

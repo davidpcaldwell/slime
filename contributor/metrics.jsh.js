@@ -11,6 +11,8 @@
 	 * @param { slime.jsh.Global } jsh
 	 */
 	function($api,jsh) {
+		jsh.shell.tools.rhino.install();
+
 		var SLIME = jsh.script.file.parent.parent;
 
 		var code = {
