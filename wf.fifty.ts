@@ -101,6 +101,7 @@ namespace slime {
 			merge: slime.jsh.script.cli.Command<Options>
 
 			docker: {
+				fifty: slime.jsh.script.cli.Command<Options>
 				test: slime.jsh.script.cli.Command<Options>
 			}
 

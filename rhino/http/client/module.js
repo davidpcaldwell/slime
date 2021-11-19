@@ -28,9 +28,9 @@
 
 		var code = {
 			/** @type { slime.jrunscript.http.client.internal.cookies.Load } */
-			cookies: $loader.factory("cookies.js"),
+			cookies: $loader.script("cookies.js"),
 			/** @type { slime.jrunscript.http.client.internal.objects.load } */
-			objects: $loader.factory("objects.js")
+			objects: $loader.script("objects.js")
 		};
 
 		var scripts = {

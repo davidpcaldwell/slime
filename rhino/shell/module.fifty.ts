@@ -649,6 +649,11 @@ namespace slime.jrunscript.shell {
 					});
 					fifty.verify(status).is(0);
 
+					var lsIllegalArgumentStatus = (function() {
+						if (fifty.global.jsh.shell.os.name == "Mac OS X") return 1;
+						if (fifty.global.jsh.shell.os.name == "Linux") return 2;
+					})();
+
 					fifty.run(function checkExitStatus() {
 						debugger;
 						var lserror = $api.Object.compose(ls, {
@@ -662,7 +667,7 @@ namespace slime.jrunscript.shell {
 								status = e.detail.status;
 							}
 						});
-						fifty.verify(status).is(1);
+						fifty.verify(status).is(lsIllegalArgumentStatus);
 					});
 
 					fifty.run(function checkErrorOnNonZero() {
@@ -682,7 +687,7 @@ namespace slime.jrunscript.shell {
 							}
 						}
 						fifty.verify(tell).evaluate(function(f) { return f(listener); }).threw.type(Error);
-						fifty.verify(tell).evaluate(function(f) { return f(listener); }).threw.message.is("Non-zero exit status: 1");
+						fifty.verify(tell).evaluate(function(f) { return f(listener); }).threw.message.is("Non-zero exit status: " + lsIllegalArgumentStatus);
 					});
 				}
 

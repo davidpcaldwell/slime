@@ -143,7 +143,7 @@ namespace slime.jrunscript.shell {
 		function(
 			fifty: slime.fifty.test.kit
 		) {
-			const code: slime.jrunscript.shell.internal.invocation.Factory = fifty.$loader.factory("invocation.js");
+			const code: slime.jrunscript.shell.internal.invocation.Factory = fifty.$loader.script("invocation.js");
 
 			const subject: slime.jrunscript.shell.internal.invocation.Export = code();
 

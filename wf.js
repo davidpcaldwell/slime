@@ -88,9 +88,11 @@
 				//			git config core.hooksPath contributor/hooks
 				//			... and then appropriately implement contributor/hooks/pre-commit
 
+				var isDocker = $context.base.pathname.toString() == "/slime";
+
 				//	Provided for testing, allows an automated test to initialize without GUI prompting for git identity
 				//	Currently used by plugin-standard.jsh.fifty.ts to install TypeScript types so tsc passes in parent project
-				var skipGitIdentityRequirement = (p && p.arguments[0] == "--test-skip-git-identity-requirement");
+				var skipGitIdentityRequirement = (p && p.arguments[0] == "--test-skip-git-identity-requirement") || isDocker;
 
 				if (!skipGitIdentityRequirement) {
 					var gitIdentityProvider = (p && p.arguments[0] == "--test-git-identity-requirement") ? void(0) : jsh.wf.requireGitIdentity.get.gui;
@@ -394,36 +396,110 @@
 			}
 		)
 
-		$exports.docker = {
-			test: function(p) {
+		$exports.docker = (
+			function() {
+				var containerListAll = {
+					invocation: function() {
+						return {
+							command: ["container", "ls"],
+							arguments: ["-a"]
+						}
+					},
+					output: {
+						json: true,
+						truncated: true
+					},
+					result: function(json) {
+						return json;
+					}
+				};
+
+				var containerExists = function(name) {
+					var containers = jsh.tools.docker.engine.cli.command(containerListAll).input(void(0)).run({
+						stderr: function(e) {
+							if (e.detail) jsh.shell.console("STDERR: [" + e.detail + "]");
+						}
+					});
+					return containers.some(function(container) {
+						return container.Names == name;
+					});
+				};
+
+				var containerRemove = {
+					invocation: function(name) {
+						return {
+							command: ["container", "rm"],
+							arguments: ["-f", name]
+						}
+					},
+					output: {
+						json: false,
+						truncated: false
+					},
+					result: function(output) {
+						return output;
+					}
+				}
+
 				var docker = jsh.shell.PATH.getCommand("docker");
-				var logs = $context.base.getRelativePath("local/wf/logs/docker.test");
-				//	directory will be created by docker command below; we do this to empty it
-				if (logs.directory) logs.directory.remove();
-				//	delta
-				jsh.shell.run({
-					command: docker,
-					arguments: [
-						"build",
-						".",
-						"-t", "davidpcaldwell/slime"
-					],
-					directory: $context.base
-				});
-				jsh.shell.run({
-					command: docker,
-					arguments: [
-						"run",
-						"--name", "slime-test",
-						"-v", logs + ":" + "/slime/local/wf/logs/test/current/",
-						"davidpcaldwell/slime",
-						"/slime/wf", "test",
-						"--logs", "current"
-						/*, "--stdio"*/
-					]
-				});
+
+				var initialize = function() {
+					jsh.shell.run({
+						command: docker,
+						arguments: [
+							"build",
+							".",
+							"-t", "davidpcaldwell/slime"
+						],
+						directory: $context.base
+					});
+					if (containerExists("slime-test")) {
+						//	TODO	what if it's running?
+						jsh.tools.docker.engine.cli.command(containerRemove).input("slime-test").run({
+							stderr: function(e) {
+								if (e.detail) jsh.shell.console("container rm -f STDERR: [" + e.detail + "]");
+							}
+						})
+					}
+				}
+
+				return {
+					fifty: function(p) {
+						initialize();
+						jsh.shell.run({
+							command: docker,
+							arguments: [
+								"run",
+								"--name", "slime-test",
+								"--workdir", "/slime",
+								"davidpcaldwell/slime",
+								"./fifty",
+								"test.jsh"
+							].concat(p.arguments)
+						});
+					},
+					test: function(p) {
+						var logs = $context.base.getRelativePath("local/wf/logs/docker.test");
+						//	directory will be created by docker command below; we do this to empty it
+						if (logs.directory) logs.directory.remove();
+						//	delta
+						initialize();
+						jsh.shell.run({
+							command: docker,
+							arguments: [
+								"run",
+								"--name", "slime-test",
+								"-v", logs + ":" + "/slime/local/wf/logs/test/current/",
+								"davidpcaldwell/slime",
+								"/slime/wf", "test",
+								"--logs", "current"
+								/*, "--stdio"*/
+							]
+						});
+					}
+				}
 			}
-		}
+		)();
 
 		//	TODO	implement generation of git hooks so that we can get rid of separate pre-commit implementation
 

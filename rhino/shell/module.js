@@ -80,9 +80,9 @@
 
 		var code = {
 			/** @type { slime.jrunscript.shell.internal.run.Factory } */
-			run: $loader.factory("run.js"),
+			run: $loader.script("run.js"),
 			/** @type { slime.jrunscript.shell.internal.invocation.Factory } */
-			invocation: $loader.factory("invocation.js")
+			invocation: $loader.script("invocation.js")
 		};
 
 		var scripts = (function() {
@@ -408,7 +408,7 @@
 			};
 
 			/** @type { slime.jrunscript.shell.system.load } */
-			var code = $loader.factory("os.js");
+			var code = $loader.script("os.js");
 
 			/** @type { slime.jrunscript.shell.system.Exports } */
 			var system = code({

@@ -9,9 +9,11 @@
 	/**
 	 *
 	 * @param { slime.$api.Global } $api
+	 * @param { slime.jrunscript.tools.docker.Context } $context
 	 * @param { slime.loader.Export<slime.jrunscript.tools.docker.Export> } $export
 	 */
-	function($api,$export) {
+	function($api,$context,$export) {
+		/** @type { slime.jrunscript.tools.docker.cli.Interface } */
 		var cli = {
 			exec: function(p) {
 				return {
@@ -29,6 +31,49 @@
 				return {
 					command: "docker",
 					arguments: p.command.concat(p.arguments)
+				};
+			},
+			command: function(command) {
+				var rv = function(input) {
+					var invocation = command.invocation(input);
+					var tell = $context.library.shell.world.run(
+						$context.library.shell.Invocation.create({
+							command: "docker",
+							arguments: invocation.command.concat(invocation.arguments).concat(
+								(command.output.truncated) ? ["--no-trunc"] : []
+							).concat(
+								(command.output.json) ? ["--format", "{{json .}}"] : []
+							),
+							stdio: {
+								output: "string",
+								error: "line"
+							}
+						})
+					);
+					return {
+						run: $api.Function.impure.ask(function(events) {
+							var rv;
+							tell({
+								stderr: function(e) {
+									events.fire("stderr", e.detail.line);
+								},
+								exit: function(e) {
+									var status = e.detail.status;
+									if (status != 0) throw new Error("Exit status: " + status);
+									if (command.output.json) {
+										var array = e.detail.stdio.output.split("\n").filter(function(string) { return Boolean(string); }).map(function(string) { return JSON.parse(string); });
+										rv = command.result(array);
+									} else {
+										rv = command.result(e.detail.stdio.output);
+									}
+								}
+							})
+							return rv;
+						})
+					}
+				};
+				return {
+					input: rv
 				};
 			}
 		};
@@ -173,4 +218,4 @@
 		});
 	}
 //@ts-ignore
-)($api,$export);
+)($api,$context,$export);

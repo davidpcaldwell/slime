@@ -58,7 +58,7 @@
 
 			var code = {
 				/** @type { slime.jrunscript.db.mysql.Factory } */
-				mysql: $loader.factory("mysql/module.js")
+				mysql: $loader.script("mysql/module.js")
 			}
 
 			$exports.mysql = code.mysql({

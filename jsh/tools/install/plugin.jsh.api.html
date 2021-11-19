@@ -294,6 +294,7 @@ END LICENSE
 									findApache: function(o) {
 										if (o.path == "tomcat/tomcat-7/v7.0.98/bin/apache-tomcat-7.0.98.zip") return Distribution("7.0.98");
 										if (o.path == "tomcat/tomcat-7/v7.0.99/bin/apache-tomcat-7.0.99.zip") return Distribution("7.0.99");
+										if (o.path == "tomcat/tomcat-7/v7.0.109/bin/apache-tomcat-7.0.109.zip") return Distribution("7.0.109");
 										throw new Error("Mock: " + o.path);
 									}
 								};
@@ -311,13 +312,13 @@ END LICENSE
 									var events = [];
 									jsh.shell.tools.tomcat.install({ mock: mock }, new Captor(events,["console","installed"]));
 									verify(events)[0].type.is("console");
-									jsh.shell.console(events[0].detail);
-									verify(events)[0].evaluate(function() { return /^Unzipping (?:[a-zA-Z0-9\/\._]+) to\:(.*)$/.test(this.detail); }).is(true);
+									jsh.shell.console(events[1].detail);
+									verify(events)[1].evaluate(function() { return /^Unzipping (?:[a-zA-Z0-9\/\._]+) to\:(.*)$/.test(this.detail); }).is(true);
 									verify(mock.lib).getSubdirectory("tomcat").getFile("a").is.type("object");
 									verify(mock.lib).getSubdirectory("tomcat").getFile("b").is.type("null");
 									var installed = jsh.shell.tools.tomcat.installed({ home: mock.lib.getSubdirectory("tomcat") });
 									var version = installed.version.toString();
-									verify(version).is("7.0.99");
+									verify(version).is("7.0.109");
 									mock.lib.getSubdirectory("tomcat").remove();
 								})();
 
@@ -335,7 +336,7 @@ END LICENSE
 									var replace = [];
 									jsh.shell.tools.tomcat.install({ mock: mock, replace: true }, new Captor(replace,["installed"]));
 									installed = jsh.shell.tools.tomcat.installed({ home: mock.lib.getSubdirectory("tomcat") });
-									verify(installed).evaluate(getVersionString).is("7.0.99");
+									verify(installed).evaluate(getVersionString).is("7.0.109");
 									verify(replace).length.is(1);
 
 									mock.lib.getSubdirectory("tomcat").remove();

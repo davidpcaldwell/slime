@@ -472,13 +472,13 @@ namespace slime {
 
 				tests.loader.$export = function() {
 					fifty.run(function module() {
-						var module: slime.test.factory = $loader.factory("test/data/module-export.js");
+						var module: slime.test.factory = $loader.script("test/data/module-export.js");
 						var api = module({ scale: 2 });
 						verify(api).convert(3).is(6);
 					});
 
 					fifty.run(function file() {
-						var file: slime.test.factory = $loader.factory("test/data/file-export.js");
+						var file: slime.test.factory = $loader.script("test/data/file-export.js");
 						var api = file({ scale: 2 });
 						verify(api).convert(3).is(6);
 					});

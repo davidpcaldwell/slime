@@ -161,7 +161,8 @@
 				jsh.shell.tools.graal = graal;
 
 				var tomcat = $loader.file("plugin.jsh.tomcat.js", {
-					$api: jsh.tools.install.$api
+					$api: jsh.tools.install.$api,
+					jsh: jsh
 				});
 				jsh.shell.tools.tomcat = tomcat;
 

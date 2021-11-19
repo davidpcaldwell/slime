@@ -28,7 +28,7 @@
 
 				var code = {
 					/** @type { slime.jrunscript.shell.Loader } */
-					module: $loader.factory("module.js")
+					module: $loader.script("module.js")
 				}
 
 				var mContext = {

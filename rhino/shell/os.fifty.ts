@@ -55,7 +55,7 @@ namespace slime.jrunscript.shell.system {
 		function(
 			fifty: slime.fifty.test.kit
 		) {
-			var code: slime.jrunscript.shell.system.load = fifty.$loader.factory("os.js");
+			var code: slime.jrunscript.shell.system.load = fifty.$loader.script("os.js");
 
 			var subject = code({
 				run: fifty.global.jsh.shell.run,

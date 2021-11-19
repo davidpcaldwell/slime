@@ -11,6 +11,10 @@ namespace slime.jrunscript.tools {
 			arguments: string[]
 		}
 
+		export interface Events {
+			stderr: string
+		}
+
 		export interface Interface {
 			exec: (p: {
 				interactive: boolean
@@ -21,6 +25,21 @@ namespace slime.jrunscript.tools {
 			}) => Invocation
 
 			shell: (p: Invocation) => slime.jrunscript.shell.invocation.Argument
+
+			command: <I,O>(command: Command<I,O>) => {
+				input: (i: I) => {
+					run: slime.$api.fp.impure.Ask<Events, O>
+				}
+			}
+		}
+
+		export interface Command<P,R> {
+			invocation: (p: P) => Invocation
+			output: {
+				json: boolean
+				truncated: boolean
+			}
+			result: (json: any) => R
 		}
 	}
 
@@ -156,11 +175,17 @@ namespace slime.jrunscript.tools {
 	}
 
 	export namespace docker {
+		export interface Context {
+			library: {
+				shell: slime.jrunscript.shell.Exports
+			}
+		}
+
 		export interface Export {
 			kubectl: slime.jrunscript.tools.kubectl.Exports
 		}
 
-		export type load = slime.loader.Script<void,Export>
+		export type Script = slime.loader.Script<Context,Export>
 	}
 
 	export namespace docker.test {

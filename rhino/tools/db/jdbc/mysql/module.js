@@ -204,7 +204,7 @@
 
 		var code = {
 			/** @type { slime.jrunscript.db.mysql.local.Factory } */
-			local: $loader.factory("local.js")
+			local: $loader.script("local.js")
 		}
 
 		$exports.local = code.local({

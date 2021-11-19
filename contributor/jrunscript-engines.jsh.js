@@ -15,11 +15,14 @@
 
 		var Environment = jsh.script.loader.file("jrunscript-environment.js").Environment;
 
+		var isDocker = Boolean(jsh.file.Pathname("/slime").directory);
+		jsh.shell.console("is Docker?: " + isDocker);
+
 		var environment = new Environment({
 			src: jsh.script.file.parent.parent,
 			noselfping: parameters.options.noselfping,
 			tomcat: true,
-			executable: true
+			executable: !isDocker
 		});
 
 		var engines = jsh.shell.run({

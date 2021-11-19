@@ -11,6 +11,8 @@
 		var jsh = fifty.global.jsh;
 
 		fifty.tests.suite = function() {
+			var isDocker = Boolean(fifty.global.jsh.file.Pathname("/slime").directory);
+
 			fifty.load("../loader/expression.fifty.ts");
 			fifty.load("../loader/$api-Function.fifty.ts");
 			fifty.load("../loader/mime.fifty.ts");
@@ -29,10 +31,10 @@
 			fifty.load("../rhino/tools/git/module.fifty.ts");
 			fifty.load("../jsh/loader/jsh.fifty.ts");
 			fifty.load("../jsh/script/plugin.jsh.fifty.ts");
-			fifty.load("../jsh/unit/plugin.jsh.web.fifty.ts");
+			if (!isDocker) fifty.load("../jsh/unit/plugin.jsh.web.fifty.ts");
 			fifty.load("../rhino/http/servlet/plugin.jsh.resources.fifty.ts");
 			fifty.load("../tools/wf/plugin.jsh.fifty.ts");
-			fifty.load("../tools/wf/plugin-standard.jsh.fifty.ts");
+			if (!isDocker) fifty.load("../tools/wf/plugin-standard.jsh.fifty.ts");
 			//fifty.load("../");
 		}
 	}

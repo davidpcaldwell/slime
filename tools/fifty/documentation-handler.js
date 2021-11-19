@@ -23,7 +23,7 @@
 
 				var rv = function(httpd) {
 					/** @type { slime.tools.documentation.internal.asTextHandler.Factory } */
-					var asTextHandlerCode = $loader.factory("as-text-handler.js");
+					var asTextHandlerCode = $loader.script("as-text-handler.js");
 					var asTextHandler = asTextHandlerCode({ httpd: httpd });
 					function update(src) {
 						var result = jsh.wf.typescript.typedoc({

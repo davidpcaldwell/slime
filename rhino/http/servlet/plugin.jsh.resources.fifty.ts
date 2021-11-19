@@ -69,7 +69,7 @@ namespace slime.jsh.httpd {
 		function(
 			fifty: slime.fifty.test.kit
 		) {
-			var factory: resources.Factory = fifty.$loader.factory("plugin.jsh.resources.js");
+			var factory: resources.Factory = fifty.$loader.script("plugin.jsh.resources.js");
 			var api = factory({
 				getMimeType: fifty.global.jsh.httpd.nugget.getMimeType,
 				jsh: fifty.global.jsh

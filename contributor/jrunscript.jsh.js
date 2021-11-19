@@ -31,6 +31,8 @@
 			}
 		});
 
+		var isDocker = Boolean(jsh.file.Pathname("/slime").directory);
+
 		var Environment = jsh.script.loader.file("jrunscript-environment.js").Environment;
 
 		var environment = new Environment({
@@ -150,7 +152,7 @@
 			pathname: SRC.getRelativePath("rhino/shell/api.html"),
 			environment: { noselfping: parameters.options.noselfping }
 		}));
-		suite.add("jrunscript/shell/browser", new jsh.unit.html.Part({
+		if (!isDocker) suite.add("jrunscript/shell/browser", new jsh.unit.html.Part({
 			pathname: SRC.getRelativePath("rhino/shell/browser/api.html")
 		}));
 
@@ -207,7 +209,7 @@
 			environment: environment
 		}));
 
-		suite.add("jsh/jsh.tools.install", new jsh.unit.html.Part({
+		if (!isDocker) suite.add("jsh/jsh.tools.install", new jsh.unit.html.Part({
 			pathname: SRC.getRelativePath("jsh/tools/install/plugin.jsh.api.html")
 		}));
 
@@ -377,7 +379,7 @@
 		};
 		suite.add("servlet/suite", servletPart);
 
-		suite.add("jsh/jsh.ui", new jsh.unit.html.Part({
+		if (!isDocker) suite.add("jsh/jsh.ui", new jsh.unit.html.Part({
 			pathname: SRC.getRelativePath("rhino/ui/plugin.jsh.api.html")
 		}));
 

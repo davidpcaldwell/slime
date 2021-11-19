@@ -4,8 +4,18 @@
 //
 //	END LICENSE
 
+//@ts-check
 (
-	function() {
+	/**
+	 *
+	 * @param { slime.$api.Global } $api
+	 * @param { { $api: any, jsh: slime.jsh.Global } } $context
+	 * @param { { installed: any, install: any, require: any } } $exports
+	 */
+	function($api,$context,$exports) {
+		var jsh = $context.jsh;
+		if (!jsh) throw new TypeError("No jsh.");
+
 		var getLatestVersion = function() {
 			try {
 				var downloadRawHtml = new jsh.http.Client().request({
@@ -28,41 +38,43 @@
 				}
 				return version;
 			} catch (e) {
-				jsh.shell.console("Could not get latest Tomcat 7 version from tomcat.apache.org (offline?) ...");
-				//	TODO	probably should implement some sort of jsh.shell.user.downloads
-				if (jsh.shell.user.downloads) {
-					jsh.shell.console("Checking downloads at " + jsh.shell.user.downloads + " ...");
-					var downloads = jsh.shell.user.downloads;
-					var pattern = arguments.callee.pattern;
-					var local = downloads.list().filter(function(node) {
-						return !node.directory && pattern.test(node.pathname.basename);
-					});
-					if (local.length) {
-						var getVersion = function(node) {
-							var name = node.pathname.basename;
-							var match = pattern.exec(name);
-							return Number(match[1])*10000 + Number(match[2])*100 + Number(match[3]);
-						};
+				//	Tomcat 7 EOL; apparently last version
+				return "7.0.109";
+				// jsh.shell.console("Could not get latest Tomcat 7 version from tomcat.apache.org (offline?) ...");
+				// //	TODO	probably should implement some sort of jsh.shell.user.downloads
+				// if (jsh.shell.user.downloads) {
+				// 	jsh.shell.console("Checking downloads at " + jsh.shell.user.downloads + " ...");
+				// 	var downloads = jsh.shell.user.downloads;
+				// 	var pattern = arguments.callee.pattern;
+				// 	var local = downloads.list().filter(function(node) {
+				// 		return !node.directory && pattern.test(node.pathname.basename);
+				// 	});
+				// 	if (local.length) {
+				// 		var getVersion = function(node) {
+				// 			var name = node.pathname.basename;
+				// 			var match = pattern.exec(name);
+				// 			return Number(match[1])*10000 + Number(match[2])*100 + Number(match[3]);
+				// 		};
 
-						var getVersionString = function(node) {
-							var match = pattern.exec(node.pathname.basename);
-							return match[1] + "." + match[2] + "." + match[3]
-						}
+				// 		var getVersionString = function(node) {
+				// 			var match = pattern.exec(node.pathname.basename);
+				// 			return match[1] + "." + match[2] + "." + match[3]
+				// 		}
 
-						local.forEach(function(node) {
-							jsh.shell.console("Found local version " + getVersionString(node));
-						})
+				// 		local.forEach(function(node) {
+				// 			jsh.shell.console("Found local version " + getVersionString(node));
+				// 		})
 
-						local.sort(function(a,b) {
-							return getVersion(b) - getVersion(a);
-						});
+				// 		local.sort(function(a,b) {
+				// 			return getVersion(b) - getVersion(a);
+				// 		});
 
-						jsh.shell.console("Latest local version is " + getVersionString(local[0]));
-						var error = new Error("Obtained latest local version: " + getVersionString(local[0]));
-						error.version = getVersionString(local[0]);
-						throw error;
-					}
-				}
+				// 		jsh.shell.console("Latest local version is " + getVersionString(local[0]));
+				// 		var error = new Error("Obtained latest local version: " + getVersionString(local[0]));
+				// 		error.version = getVersionString(local[0]);
+				// 		throw error;
+				// 	}
+				// }
 			}
 		}
 		getLatestVersion.pattern = /^apache-tomcat-(\d+)\.(\d+)\.(\d+)\.zip$/;
@@ -112,6 +124,11 @@
 			}
 
 			if (!p.local) {
+				if (!p.version) {
+					//	TODO	this essentially disables the usage of Apache mirrors now that we are on a version that is EOLed.
+					//			We can go back to mirroring when we get onto a maintained version.
+					p.version = "7.0.109";
+				}
 				var mirror = (p.version) ? "https://archive.apache.org/dist/" : void(0);
 				if (!p.version) {
 					//	Check tomcat.apache.org; if unreachable, assume latest version is latest in downloads directory
@@ -168,4 +185,5 @@
 			});
 		});
 	}
-)();
+//@ts-ignore
+)($api,$context,$exports);

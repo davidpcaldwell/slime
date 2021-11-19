@@ -18,9 +18,13 @@
 				return Boolean(jsh.shell && jsh.tools && jsh.tools.install);
 			},
 			load: function() {
-				/** @type { slime.jrunscript.tools.docker.load } */
-				var load = $loader.factory("module.js");
-				var module = load();
+				/** @type { slime.jrunscript.tools.docker.Script } */
+				var load = $loader.script("module.js");
+				var module = load({
+					library: {
+						shell: jsh.shell
+					}
+				});
 
 				var location = jsh.file.Pathname("/Applications/Docker.app");
 

@@ -1047,6 +1047,9 @@ namespace slime.jrunscript.git {
 			};
 
 			fifty.tests.sandbox = function() {
+				var isDocker = Boolean(fifty.global.jsh.file.Pathname("/slime").directory);
+				//	Test will fail on Docker because .git is in .dockerignore
+				if (isDocker) return;
 				var base = fifty.global.jsh.tools.git.local({
 					start: fifty.$loader.getRelativePath(".").directory,
 					match: api.github.isProjectUrl({ owner: "davidpcaldwell", name: "slime" })

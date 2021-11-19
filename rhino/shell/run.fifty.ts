@@ -93,7 +93,7 @@ namespace slime.jrunscript.shell.internal.run {
 		function(
 			fifty: slime.fifty.test.kit
 		) {
-			var loader: Factory = fifty.$loader.factory("run.js");
+			var loader: Factory = fifty.$loader.script("run.js");
 			var subject: Export = loader({
 				api: {
 					java: fifty.global.jsh.java,

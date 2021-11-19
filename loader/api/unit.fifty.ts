@@ -60,7 +60,7 @@ namespace slime.definition.unit {
 
 namespace slime.definition.unit.internal {
 	export const { subject, types } = (function(fifty: slime.fifty.test.kit) {
-		const code = fifty.$loader.factory("unit.js") as slime.definition.unit.Factory;
+		const code = fifty.$loader.script("unit.js") as slime.definition.unit.Factory;
 
 		const verify = fifty.verify;
 

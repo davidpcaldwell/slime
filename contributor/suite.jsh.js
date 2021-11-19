@@ -50,11 +50,13 @@
 
 		var Environment = jsh.script.loader.file("jrunscript-environment.js").Environment;
 
+		var isDocker = Boolean(jsh.file.Pathname("/slime").directory);
+
 		var environment = new Environment({
 			src: jsh.script.file.parent.parent,
 			noselfping: parameters.options.noselfping,
 			tomcat: true,
-			executable: true
+			executable: !isDocker
 		});
 
 		var suite = new jsh.unit.html.Suite();
@@ -132,11 +134,11 @@
 		if (!safariWas) {
 			jsh.java.addShutdownHook(function() {
 				var safari = getSafariProcess();
-				safari.kill();
+				if (safari) safari.kill();
 			});
 		}
 
-		suite.add("browsers", new function() {
+		if (!isDocker) suite.add("browsers", new function() {
 			this.name = "Browser tests";
 
 			this.parts = new function() {
@@ -173,7 +175,7 @@
 			}
 		});
 
-		suite.add("tools", {
+		if (!isDocker) suite.add("tools", {
 			initialize: function() {
 				environment.jsh.built.requireTomcat();
 			},
@@ -216,7 +218,7 @@
 			}
 		});
 
-		suite.add(
+		if (!isDocker) suite.add(
 			"project",
 			{
 				parts: {

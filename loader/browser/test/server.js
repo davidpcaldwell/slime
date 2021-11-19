@@ -65,7 +65,7 @@
 										(resultsPath)
 											? (function createResultHandler() {
 												/** @type { slime.loader.Script<slime.runtime.browser.test.results.Context,slime.runtime.browser.test.results.Factory> } */
-												var resultServletFactory = $loader.factory("handler-results.js");
+												var resultServletFactory = $loader.script("handler-results.js");
 
 												var resultServletFile = resultServletFactory({
 													library: {
