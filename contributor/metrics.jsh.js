@@ -107,7 +107,7 @@
 						covered: 0,
 						total: 0
 					});
-					jsh.shell.console("Total covereage: " + coverage.covered + "/" + coverage.total + ": " + Number(coverage.covered / coverage.total * 100).toFixed(1) + "%");
+					jsh.shell.console("Total coverage: " + coverage.covered + "/" + coverage.total + ": " + Number(coverage.covered / coverage.total * 100).toFixed(1) + "%");
 				}
 			}
 		})
