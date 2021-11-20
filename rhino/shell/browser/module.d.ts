@@ -44,6 +44,7 @@ namespace slime.jrunscript.shell.browser {
 			proxy?: slime.jrunscript.shell.browser.ProxyTools
 			hostrules?: string[]
 			install?: boolean
+			devtools?: boolean
 		}) => any
 	}
 

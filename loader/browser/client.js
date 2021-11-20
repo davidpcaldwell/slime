@@ -7,10 +7,10 @@
 //@ts-check
 (
 	/**
-	 * @param { slime.browser.Settings } $context - provided by setting `inonit.loader` before loading this script
 	 * @param { slime.browser.Context & { inonit: slime.browser.Runtime } } window
+	 * @param { slime.browser.Settings } $context - provided by setting `inonit.loader` before loading this script
 	 */
-	function($context,window) {
+	function(window,$context) {
 		(
 			function setXmlHttpRequest() {
 				if ($context.XMLHttpRequest) {
@@ -30,32 +30,6 @@
 				}
 			}
 		)();
-
-		// var $exports = (function() {
-		// 	if (!window.inonit) window.inonit = {
-		// 		loader: void(0)
-		// 	};
-		// 	if (window.inonit.loader && window.inonit.loader.run && window.inonit.loader.file && window.inonit.loader.module) {
-		// 		throw new Error("Unimplemented: trying to reload inonit.loader");
-		// 	}
-		// 	window.inonit.loader = {
-		// 		run: void(0),
-		// 		file: void(0),
-		// 		module: void(0),
-		// 		value: void(0),
-		// 		get: void(0),
-		// 		loader: void(0),
-		// 		Loader: void(0),
-		// 		namespace: void(0),
-		// 		nugget: void(0),
-		// 		base: void(0),
-		// 		location: void(0),
-		// 		$api: void(0),
-		// 		$sdk: void(0),
-		// 		script: void(0)
-		// 	};
-		// 	return window.inonit.loader;
-		// })();
 
 		/**
 		 *
@@ -136,9 +110,6 @@
 		//	this one
 		/** @type { slime.browser.Exports } */
 		var $exports = (
-			/**
-			 * @this { { foo: boolean } }
-			 */
 			function() {
 
 				/** @type { { get: any, fetch: any, getCode: any } } */
@@ -350,4 +321,4 @@
 		window.inonit.loader = $exports;
 	}
 //@ts-ignore
-)((window.inonit && window.inonit.loader) ? window.inonit.loader : {}, window);
+)(window, (window.inonit && window.inonit.loader) ? window.inonit.loader : {});

@@ -243,7 +243,7 @@
 			//	with the preflight requests for .ts files being slow because of the need to run the TypeScript compiler. May want
 			//	to try handling the OPTIONS request without running tsc. The resulting error
 			//	"NetworkError: Failed to execute 'send' on 'XMLHttpRequest'" seems to commonly be caused by CORS issues, although
-			//	it also occurs in Chrome DevTools when attempting to executing synchronous XHRs from the console.
+			//	it also occurs in Chrome DevTools when attempting to execute synchronous XHRs from the console.
 			window.setTimeout(function() {
 				onload(query);
 			}, query.delay || 0);

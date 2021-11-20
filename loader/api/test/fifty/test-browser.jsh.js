@@ -27,6 +27,12 @@
 
 			jsh.script.cli.option.pathname({ longname: "base" }),
 
+			$api.Function.pipe(
+				//	See https://github.com/davidpcaldwell/slime/issues/317
+				jsh.script.cli.option.number({ longname: "debug:delay" }),
+				jsh.script.cli.option.boolean({ longname: "debug:devtools" })
+			),
+
 			function(p) {
 				var page = jsh.script.file.parent.getFile("test-browser.html");
 				var client = jsh.shell.jsh.src.getFile("loader/browser/client.js");
@@ -89,7 +95,8 @@
 				var tomcat = start(paths.toShell.base, paths.toResult.base, resultsPath);
 
 				var chrome = new jsh.shell.browser.chrome.Instance({
-					location: p.options["chrome:data"]
+					location: p.options["chrome:data"],
+					devtools: p.options["debug:devtools"]
 				});
 
 				/** @type { { kill: any } } */
@@ -137,7 +144,7 @@
 				if (p.options.interactive) {
 					run()();
 				} else {
-					jsh.java.Thread.start(run(4000));
+					jsh.java.Thread.start(run( (p.options["debug:delay"] ? void(0) : 4000 )));
 					var resultsUrl = new jsh.web.Url({
 						scheme: "http",
 						authority: {

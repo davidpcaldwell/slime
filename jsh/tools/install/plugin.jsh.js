@@ -129,8 +129,8 @@
 						this.install = $api.deprecate(installRhino);
 					};
 					$api.deprecate(jsh.tools,"rhino");
-					jsh.tools.install.rhino = {};
-					jsh.tools.install.rhino.install = $api.deprecate(installRhino);
+					jsh.tools.install["rhino"] = {};
+					jsh.tools.install["rhino"].install = $api.deprecate(installRhino);
 					$api.deprecate(jsh.tools.install,"rhino");
 				})();
 
@@ -169,7 +169,7 @@
 				(function deprecated() {
 					jsh.tools.tomcat = tomcat;
 					$api.deprecate(jsh.tools,"tomcat");
-					jsh.tools.install.tomcat = tomcat;
+					jsh.tools.install["tomcat"] = tomcat;
 					$api.deprecate(jsh.tools.install,"tomcat");
 				})();
 

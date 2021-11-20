@@ -113,6 +113,7 @@
 							Packages.java.lang.System.err.println("hostrules = " + value);
 							args.push("--host-rules=" + value);
 						}
+						if (u.devtools) args.push("--auto-open-devtools-for-tabs");
 						if (m.profile) args.push("--profile-directory=" + m.profile);
 						if (m.incognito) args.push("--incognito");
 					};

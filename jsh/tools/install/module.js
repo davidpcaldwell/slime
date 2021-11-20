@@ -96,7 +96,8 @@
 					if ($context.api.shell.PATH.getCommand("unzip")) {
 						$context.api.shell.run({
 							command: "unzip",
-							arguments: [file],
+							//	TODO	added -o option to deal with strange Selenium 4.0.0 ZIP file; examine further
+							arguments: ["-o", file],
 							directory: to
 						});
 					} else {
