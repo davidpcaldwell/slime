@@ -81,7 +81,7 @@
 		var code = {
 			/** @type { slime.jrunscript.shell.internal.run.Factory } */
 			run: $loader.script("run.js"),
-			/** @type { slime.jrunscript.shell.internal.invocation.Factory } */
+			/** @type { slime.jrunscript.shell.internal.invocation.Script } */
 			invocation: $loader.script("invocation.js")
 		};
 

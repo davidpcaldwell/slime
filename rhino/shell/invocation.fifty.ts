@@ -5,6 +5,14 @@
 //	END LICENSE
 
 namespace slime.jrunscript.shell {
+	export namespace test {
+		export const subject = (function(fifty: slime.fifty.test.kit) {
+			const code: slime.jrunscript.shell.internal.invocation.Script = fifty.$loader.script("invocation.js");
+			return code();
+		//@ts-ignore
+		})(fifty);
+	}
+
 	export namespace invocation {
 		export type Token = string | slime.jrunscript.file.Pathname | slime.jrunscript.file.Node
 
@@ -81,7 +89,7 @@ namespace slime.jrunscript.shell {
 				output?: slime.jrunscript.shell.run.OutputCapture
 				error?: slime.jrunscript.shell.run.OutputCapture
 			}
-		 }
+		}
 	}
 
 	export namespace exports {
@@ -100,13 +108,91 @@ namespace slime.jrunscript.shell {
 			  */
 			 sudo: (settings?: sudo.Settings) => (p: slime.jrunscript.shell.old.Invocation) => slime.jrunscript.shell.old.Invocation
 
+			 /**
+			  * Creates the code for a `bash` script from a single Invocation-like object and returns it as a string.
+			  */
 			 toBashScript: () => (p: {
+				/**
+				 * The command to execute.
+				 */
 				command: string | slime.jrunscript.file.File
+
+				/**
+				 * Arguments to be sent to the command. If omitted, no arguments will be sent.
+				 */
 				arguments?: string[]
-				directory?: slime.jrunscript.file.Directory
+
+				/**
+				 * The working directory to be used when executing the command. If omitted, the shell's current working directory
+				 * will be used.
+				 */
+				directory?: string | slime.jrunscript.file.Directory
+
+				/**
+				 * Configuration of the environment for the command. If omitted, the command will inherit the environment of the
+				 * invoking shell.
+				 */
+				environment?: {
+					/**
+					 * Whether to include the environment of the invoking shell. If `true`, the command's environment will include
+					 * the environment of the invoking shell. Defaults to `true`.
+					 */
+					inherit?: boolean
+
+					/**
+					 * Environment variables to be provided to the command, or to be removed from the environment of the command.
+					 * Properties with string values represent variables to be provided to the command (potentially overriding
+					 * values from the parent shell). Properties with `null` values represent variables to be **removed** from
+					 * the command's environment (even if they are present in the parent shell). Properties that are undefined
+					 * will have no effect.
+					 */
+					values: {
+						[x: string]: string | null
+					}
+				}
 			 }) => string
 		}
 	}
+
+	(
+		function(
+			fifty: slime.fifty.test.kit
+		) {
+			fifty.tests.invocation = {};
+
+			fifty.tests.invocation.sudo = function() {
+				var sudoed = test.subject.invocation.sudo()(fifty.global.jsh.shell.Invocation.old({
+					command: "ls"
+				}));
+
+				fifty.verify(sudoed).command.evaluate(String).is("sudo");
+				fifty.verify(sudoed).arguments[0].is("ls");
+				fifty.verify(sudoed).environment.evaluate.property("SUDO_ASKPASS").is(void(0));
+			};
+
+			fifty.tests.invocation.toBashScript = function() {
+				var parent = fifty.global.jsh.shell.environment;
+				fifty.verify(parent).evaluate.property("PATH").is.type("string");
+				fifty.verify(parent).evaluate.property("TO_BASH_SCRIPT_EXAMPLE").is(void(0));
+				var script = test.subject.invocation.toBashScript()({
+					command: "foo",
+					arguments: ["bar", "baz"],
+					directory: "/path/to/use",
+					environment: {
+						values: {
+							PATH: null,
+							TO_BASH_SCRIPT_EXAMPLE: "example"
+						}
+					}
+				});
+				var lines = script.split("\n");
+				fifty.verify(lines[0]).is("#!/bin/bash");
+				fifty.verify(lines[1]).is("cd /path/to/use");
+				fifty.verify(lines[2]).is("env -u PATH TO_BASH_SCRIPT_EXAMPLE=example foo bar baz");
+			}
+		}
+	//@ts-ignore
+	)(fifty);
 
 	export namespace old {
 		/**
@@ -143,23 +229,13 @@ namespace slime.jrunscript.shell {
 		function(
 			fifty: slime.fifty.test.kit
 		) {
-			const code: slime.jrunscript.shell.internal.invocation.Factory = fifty.$loader.script("invocation.js");
-
-			const subject: slime.jrunscript.shell.internal.invocation.Export = code();
+			const subject = test.subject;
 
 			fifty.tests.suite = function() {
 				var jsh = fifty.global.jsh;
 				var verify = fifty.verify;
 
-				fifty.run(function() {
-					var sudoed = subject.invocation.sudo()(jsh.shell.Invocation.old({
-						command: "ls"
-					}));
-
-					verify(sudoed).command.evaluate(String).is("sudo");
-					verify(sudoed).arguments[0].is("ls");
-					verify(sudoed).environment.evaluate.property("SUDO_ASKPASS").is(void(0));
-				});
+				fifty.run(fifty.tests.invocation.sudo);
 
 				fifty.run(function askpass() {
 					var sudoed = subject.invocation.sudo({
@@ -229,5 +305,5 @@ namespace slime.jrunscript.shell.internal.invocation {
 		invocation: slime.jrunscript.shell.Exports["invocation"]
 	}
 
-	export type Factory = slime.loader.Script<Context,Export>
+	export type Script = slime.loader.Script<Context,Export>
 }

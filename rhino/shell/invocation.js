@@ -289,14 +289,42 @@
 						});
 					}
 				},
+				//	The returned function is wrapped in this function because one could envision this function someday having
+				//	arguments containing some sort of information about how the script should be authored, maybe the path
+				//	to bash (which is different on FreeBSD), and so forth.
 				toBashScript: function() {
-					/** @type { (invocation: { command: string, arguments?: string[], directory?: slime.jrunscript.file.Directory } ) => string } */
+					/** @type { ReturnType<slime.jrunscript.shell.Exports["invocation"]["toBashScript"]> } */
 					var toScriptCode = function(invocation) {
 						return $api.Array.build(function(script) {
 							script.push("#!/bin/bash");
-							if (invocation.directory) script.push("cd " + invocation.directory.pathname.toString());
+
+							if (invocation.directory) {
+								if (typeof(invocation.directory) == "string") {
+									script.push("cd " + invocation.directory);
+								} else {
+									script.push("cd " + invocation.directory.pathname.toString());
+								}
+							}
+
+							/** @type { Parameters<ReturnType<slime.jrunscript.shell.Exports["invocation"]["toBashScript"]>>[0]["environment"]} */
+							var environment = (invocation.environment) || { inherit: void(0), values: {} };
+							var inherit = (typeof(environment.inherit) == "undefined") ? true : environment.inherit;
+							var values = (typeof(environment.values) == "undefined") ? {} : environment.values;
+							var set = Object.entries(values).filter(function(entry) {
+								return typeof(entry[1]) == "string";
+							});
+							var unset = Object.entries(values).filter(function(entry) {
+								return entry[1] === null;
+							});
+
 							script.push($api.Array.build(function(rv) {
-								if (invocation.directory) rv.push("")
+								if (!inherit || set.length || unset.length) rv.push("env");
+								unset.forEach(function(entry) {
+									rv.push("-u", entry[0]);
+								});
+								set.forEach(function(entry) {
+									rv.push(entry[0] + "=" + entry[1]);
+								});
 								rv.push(invocation.command);
 								if (invocation.arguments) rv.push.apply(rv, invocation.arguments);
 							}).join(" "))
