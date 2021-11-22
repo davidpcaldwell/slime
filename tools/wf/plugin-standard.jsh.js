@@ -278,6 +278,104 @@
 					}
 				}
 
+				$exports.prune = function(p) {
+					/** @type { slime.jrunscript.git.Command<string,{ head: string }> } */
+					var showNamedRemote = {
+						invocation: function(remote) {
+							return {
+								command: "remote",
+								arguments: ["show", remote]
+							}
+						},
+						result: function(output) {
+							var rv = {
+								head: void(0)
+							};
+							//	TODO	yuck
+							var headBranchPrefix = "  HEAD branch: ";
+							output.split("\n").forEach(function(line) {
+								if (line.substring(0,headBranchPrefix.length) == headBranchPrefix) {
+									rv.head = line.substring(headBranchPrefix.length);
+								}
+							});
+							return rv;
+						}
+					};
+
+					/** @type { slime.jrunscript.git.Command<string,{ name: string, remote?: string }[]> } */
+					var getAllBranchesMergedTo = {
+						invocation: function(name) {
+							return {
+								command: "branch",
+								arguments: ["-a", "--merged", name]
+							};
+						},
+						result: function(output) {
+							return output.split("\n").map(function(line) {
+								return line.substring(2);
+							}).filter(function(line) {
+								return line && line.substring(0,"remotes/origin/HEAD".length) != "remotes/origin/HEAD";
+							}).map(function(line) {
+								if (line.substring(0,"remotes/".length) == "remotes/") {
+									var descriptor = line.substring("remotes/".length);
+									var tokens = descriptor.split("/");
+									return {
+										remote: tokens[0],
+										name: tokens.slice(1).join("/")
+									};
+								} else {
+									return { name: line }
+								}
+							});
+						}
+					};
+
+					/** @type { slime.jrunscript.git.Command<{ name: string, remote?: string },void> } */
+					var deleteRemoteBranch = {
+						invocation: function(p) {
+							return {
+								command: "push",
+								arguments: ["-d", p.remote, p.name]
+							}
+						},
+						result: function(output) {
+						}
+					};
+
+					/** @type { slime.jrunscript.git.Command<string,void> } */
+					var deleteLocalBranch = {
+						invocation: function(name) {
+							return {
+								command: "branch",
+								arguments: ["-d", name]
+							}
+						},
+						result: function(output) {
+						}
+					};
+
+					var repository = jsh.tools.git.program({ command: "git" }).repository($context.base.pathname.toString());
+
+					var main = repository.command(
+						showNamedRemote
+					).argument(
+						"origin"
+					).run().head;
+
+					var merged = repository.command(getAllBranchesMergedTo).argument(main).run().filter(function(branch) {
+						return branch.name != main;
+					});
+					merged.forEach(function(branch) {
+						if (branch.remote) {
+							jsh.shell.console("Deleting " + branch.name + " at " + branch.remote + " ...");
+							repository.command(deleteRemoteBranch).argument(branch).run();
+						} else {
+							jsh.shell.console("Deleting " + branch.name + " ...");
+							repository.command(deleteLocalBranch).argument(branch.name).run();
+						}
+					});
+				}
+
 				if (operations.test) {
 					$exports.test = function(p) {
 						var success = operations.test();

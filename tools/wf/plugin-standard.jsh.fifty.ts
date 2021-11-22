@@ -147,6 +147,8 @@ namespace slime.jsh.wf {
 
 			status:  slime.jsh.script.cli.Command<Options>
 
+			prune: slime.jsh.script.cli.Command<Options>
+
 			test:  slime.jsh.script.cli.Command<Options>
 
 			submodule: {
