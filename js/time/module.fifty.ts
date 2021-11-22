@@ -14,6 +14,8 @@ namespace slime.time {
 		month: Month
 		day: number
 		add(n: number): Day
+		addMonths(n: number): Day
+		addYears(n: number): Day
 		isAfter(day: Day): boolean
 
 		/** @experimental Has other undocumented properties */
