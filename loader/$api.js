@@ -30,7 +30,7 @@
 			return $exports;
 		};
 
-		var factory = function(name) {
+		var script = function(name) {
 			/**
 			 *
 			 * @param { any } $context
@@ -44,9 +44,9 @@
 
 		var code = {
 			/** @type { slime.loader.Script<slime.runtime.internal.mime.Context,slime.$api.mime.Export> } */
-			mime: factory("mime.js"),
+			mime: script("mime.js"),
 			/** @type { slime.loader.Script<slime.runtime.internal.events.Context,slime.runtime.internal.events.Export> } */
-			events: factory("events.js")
+			events: script("events.js")
 		};
 
 		Object.assign($exports, load("$api-flag.js"));
