@@ -8,10 +8,11 @@
 (
 	/**
 	 *
-	 * @param { slime.jsh.Global } jsh
+	 * @param { slime.$api.Global } $api
+	 * @param { slime.jrunscript.tools.homebrew.Context } $context
 	 * @param { slime.loader.Export<slime.jrunscript.tools.homebrew.Exports> } $export
 	 */
-	function(jsh,$export) {
+	function($api,$context,$export) {
 		/**
 		 *
 		 * @param { Parameters<slime.jrunscript.tools.homebrew.Exports["get"]>[0] } p
@@ -27,60 +28,101 @@
 					recursive: true
 				});
 
-				jsh.shell.run({
+				$context.library.shell.run({
 					command: "tar",
 					arguments: ["xz", "--strip", "1", "-C", to.pathname.basename],
 					//	TODO	might not exist
 					directory: to.parent,
 					stdio: {
-						input: new jsh.http.Client().request({
+						input: new $context.library.http.Client().request({
 							url: "https://github.com/Homebrew/brew/tarball/master"
 						}).body.stream
 					}
 				});
 			}
 
-			var homebrew = (function(directory) {
-				var program = directory.getFile("bin/brew");
+			var homebrew = (
+				function(directory) {
+					var program = directory.getFile("bin/brew");
 
-				var brew = function(command,args) {
-					jsh.shell.run({
-						command: program,
-						arguments: (function() {
-							var rv = [command];
-							if (args) rv.push.apply(rv,args);
-							return rv;
-						})()
-					})
-				}
-
-				return {
-					directory: to,
-					update: function() {
-						brew("update")
-					},
-					install: function(p) {
-						brew(
-							"install",
-							(function() {
-								var rv = [];
-								rv.push(p.formula);
+					var brew = function(command,args) {
+						$context.library.shell.run({
+							command: program,
+							arguments: (function() {
+								var rv = [command];
+								if (args) rv.push.apply(rv,args);
 								return rv;
 							})()
-						)
-					},
-					upgrade: function(p) {
-						brew(
-							"upgrade",
-							(function() {
-								var rv = [];
-								rv.push(p.formula);
-								return rv;
-							})()
-						)
+						})
 					}
+
+					/** @type { slime.jrunscript.tools.homebrew.Installation } */
+					var rv = {
+						directory: to,
+						update: function() {
+							brew("update")
+						},
+						install: function(p) {
+							brew(
+								"install",
+								(function() {
+									var rv = [];
+									rv.push(p.formula);
+									return rv;
+								})()
+							)
+						},
+						upgrade: function(p) {
+							brew(
+								"upgrade",
+								(function() {
+									var rv = [];
+									rv.push(p.formula);
+									return rv;
+								})()
+							)
+						},
+						command: function(command) {
+							return {
+								parameters: function(parameters) {
+									var invocation = command.invocation(parameters);
+									var tell = $context.library.shell.world.run(
+										$context.library.shell.Invocation.create({
+											command: program,
+											arguments: [invocation.command].concat(invocation.arguments || []),
+											stdio: {
+												output: "line",
+												error: "line"
+											}
+										})
+									);
+									return {
+										run: $api.Function.impure.ask(function(events) {
+											var rv;
+											tell({
+												stdout: function(e) {
+													events.fire("stdout", e.detail.line);
+												},
+												stderr: function(e) {
+													events.fire("stderr", e.detail.line);
+												},
+												exit: function(e) {
+													var status = e.detail.status;
+													if (status != 0) throw new Error("Exit status: " + status);
+													rv = command.result(e.detail.stdio.output);
+												}
+											})
+											return rv;
+										})
+									}
+								}
+							}
+						}
+					}
+
+					return rv;
 				}
-			})(to);
+			)(to);
 
 			return homebrew;
 		}
@@ -88,8 +130,21 @@
 		$export({
 			get: function(p) {
 				return getLocalHomebrew(p);
+			},
+			commands: {
+				install: {
+					invocation: function(p) {
+						return {
+							command: "install",
+							arguments: [p.formula]
+						}
+					},
+					result: function(output) {
+						return output;
+					}
+				}
 			}
 		});
 	}
 //@ts-ignore
-)(jsh,$export);
+)($api,$context,$export);

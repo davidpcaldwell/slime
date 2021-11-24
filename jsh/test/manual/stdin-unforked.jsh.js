@@ -4,23 +4,27 @@
 //
 //	END LICENSE
 
-var parameters = jsh.script.getopts({
-	options: {
-		child: false,
-		fork: false
-	}
-});
+(
+	function() {
+		var parameters = jsh.script.getopts({
+			options: {
+				child: false,
+				fork: false
+			}
+		});
 
-if (parameters.options.child) {
-	var input = jsh.shell.stdio.input.character().asString();
-	jsh.shell.console(JSON.stringify({ input: input }));
-} else {
-	jsh.shell.jsh({
-		fork: parameters.options.fork,
-		script: jsh.script.file,
-		arguments: ["-child"],
-		stdio: {
-			input: "INPUT"
+		if (parameters.options.child) {
+			var input = jsh.shell.stdio.input.character().asString();
+			jsh.shell.console(JSON.stringify({ input: input }));
+		} else {
+			jsh.shell.jsh({
+				fork: parameters.options.fork,
+				script: jsh.script.file,
+				arguments: ["-child"],
+				stdio: {
+					input: "INPUT"
+				}
+			});
 		}
-	});
-}
+	}
+)();
