@@ -355,6 +355,7 @@ namespace slime.$api {
 				(test: any, yes: any, no: any): any
 			}
 			type: (v: any) => string
+			singleton: any
 		}
 
 		export interface Exports {
