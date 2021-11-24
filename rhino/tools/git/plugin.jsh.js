@@ -10,6 +10,13 @@
 
 //@ts-check
 (
+	/**
+	 *
+	 * @param { slime.$api.Global } $api
+	 * @param { slime.jsh.Global } jsh
+	 * @param { slime.Loader } $loader
+	 * @param { slime.jsh.plugin.plugin } plugin
+	 */
 	function($api,jsh,$loader,plugin) {
 		plugin({
 			isReady: function() {
