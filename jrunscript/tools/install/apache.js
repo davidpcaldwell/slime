@@ -4,8 +4,16 @@
 //
 //	END LICENSE
 
+//@ts-check
 (
-	function() {
+	/**
+	 *
+	 * @param { slime.jrunscript.Packages } Packages
+	 * @param { slime.$api.Global } $api
+	 * @param { { client: slime.jrunscript.http.client.object.Client, downloads: slime.jrunscript.file.Directory, get: slime.jrunscript.tools.install.Exports["get"] } } $context
+	 * @param { { find: slime.jrunscript.tools.install.Exports["apache"]["find"] } } $exports
+	 */
+	function(Packages,$api,$context,$exports) {
 		var getMirror = function() {
 			return $context.client.request({
 				url: "http://www.apache.org/dyn/closer.cgi?asjson=1",
@@ -16,28 +24,34 @@
 			});
 		}
 
-		$exports.find = $api.Events.Function(function(p,events) {
-			var name = p.path.split("/").slice(-1)[0];
-			if ($context.downloads) {
-				if ($context.downloads.getFile(name)) {
-					events.fire("console", "Found " + name + " in " + $context.downloads + "; using local copy.");
-					return $context.get({
-						file: $context.downloads.getFile(name)
+		$exports.find = $api.Events.Function(
+			function(p,events) {
+				var name = p.path.split("/").slice(-1)[0];
+				if ($context.downloads) {
+					if ($context.downloads.getFile(name)) {
+						events.fire("console", "Found " + name + " in " + $context.downloads + "; using local copy.");
+						return $context.get({
+							file: $context.downloads.getFile(name)
+						})
+					}
+				}
+				var mirror = (p.mirror) ? p.mirror : getMirror();
+				var argument = {
+					name: p.path.split("/").slice(-1)[0],
+					url: void(0)
+				};
+				Object.defineProperty(argument, "url", {
+					get: $api.Function.memoized(function() {
+						return mirror + p.path
 					})
+				});
+				return $context.get(argument);
+			}, {
+				console: function(e) {
+					Packages.java.lang.System.err.println(e.detail);
 				}
 			}
-			var mirror = (p.mirror) ? p.mirror : getMirror();
-			var argument = {
-				name: p.path.split("/").slice(-1)[0],
-				url: function() {
-					return mirror + p.path
-				}
-			};
-			return $context.get(argument);
-		}, {
-			console: function(e) {
-				jsh.shell.console(e.detail);
-			}
-		});
+		);
 	}
-)();
+//@ts-ignore
+)(Packages,$api,$context,$exports);

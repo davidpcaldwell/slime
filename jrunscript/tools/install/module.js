@@ -94,15 +94,14 @@
 			if (!p.file) {
 				if (p.url) {
 					//	Apache supplies name so that url property, which is getter that hits Apache mirror list, is not invoked
-					var find = (typeof(p.url) == "function") ? $api.Function.memoized(p.url) : function() { return p.url; };
-					if (!p.name) p.name = find().split("/").slice(-1)[0];
+					if (!p.name) p.name = p.url.split("/").slice(-1)[0];
 					var pathname = downloads.getRelativePath(p.name);
 					if (!pathname.file) {
 						//	TODO	we could check to make sure this URL is http
 						//	Only access url property once because in Apache case it is actually a getter that can return different values
-						events.fire("console", "Downloading from " + find() + " to: " + downloads);
+						events.fire("console", "Downloading from " + p.url + " to: " + downloads);
 						var response = client.request({
-							url: find()
+							url: p.url
 						});
 						pathname.write(response.body.stream, { append: false });
 						events.fire("console", "Wrote to: " + downloads);
@@ -131,8 +130,8 @@
 				if (/\.tgz$/.test(basename) && formats.gzip) p.format = formats.gzip;
 				if (/\.zip$/.test(basename)) p.format = formats.zip;
 				if (/\.jar$/.test(basename)) p.format = formats.zip;
+				if (!p.format) throw new TypeError("Required: 'format' property; basename = " + basename + "name=" + p.name + " url=" + p.url + " file=" + p.file);
 			}
-			if (!p.format) throw new TypeError("Required: 'format' property.");
 			var algorithm = p.format;
 			var untardir = $context.api.shell.TMPDIR.createTemporary({ directory: true });
 			events.fire("console", "Extracting " + p.file + " to " + untardir);
@@ -163,7 +162,17 @@
 		 * @returns { slime.jrunscript.file.Directory }
 		 */
 		var install = function(p,events) {
-			get(p,events);
+			get(
+				Object.assign(
+					p,
+					(
+						(p.url) ? {
+							url: String(p.url)
+						} : {}
+					)
+				),
+				events
+			);
 			return installLocalArchive(p,events);
 		};
 
@@ -187,6 +196,7 @@
 
 		$export({
 			get: $exports.get,
+			//	TODO	find is completely untested
 			find: function(p) {
 				return $api.Function.impure.ask(function(events) {
 					get(p,events);

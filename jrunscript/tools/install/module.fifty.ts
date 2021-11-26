@@ -116,32 +116,114 @@ namespace slime.jrunscript.tools.install {
 
 	export namespace events {
 		export interface Console {
+			/**
+			 * A message suitable for delay on the console.
+			 */
 			console: string
+		}
+
+		export namespace old {
+			/**
+			 * An old-style event handler that will receive `console` events with a string detail type.
+			 */
+			export type Receiver = slime.$api.events.Function.Receiver
 		}
 	}
 
 	export interface Exports {
 		format: {
 			zip: Format
+
+			/**
+			 * A format representing `gzip`ped `.tar` files. Conditional; requires `tar` to be in the `PATH`.
+			 */
 			gzip?: Format
 		}
 
+		find: (p: {
+			/**
+			 * The remote URL of the installation file.
+			 */
+			url?: string
+			name?: string
+			file?: slime.jrunscript.file.File
+		}) => slime.$api.fp.impure.Ask<events.Console,slime.jrunscript.file.File>
+
+		/**
+		 * Returns a file containing an installer, either using a specified local file or a specified URL.
+		 * If `file` is absent or
+		 * `null`, the method will attempt to locate it in the
+		 * `$context.downloads` directory by `name`. If it is
+		 * not found, and the `url` property is provided, the file will be downloaded.
+		 *
+		 * @returns A file containing the installer.
+		 */
 		get: (
-			p: { file?: slime.jrunscript.file.File, url?: string, name?: string },
-			events?: slime.$api.events.Function.Receiver
+			p: Parameters<Exports["find"]>[0],
+			events?: events.old.Receiver
 		) => slime.jrunscript.file.File
 
-		find: (p: { file?: slime.jrunscript.file.File, url?: string, name?: string }) => slime.$api.fp.impure.Ask<events.Console,slime.jrunscript.file.File>
+		//	installation: Specifies software to be installed (including where to obtain it and how it is structured) and a
+		//	destination to which to install it.
 
+		/**
+		 * This method can process both local and remote files. For remote files, it is assumed that the filename of
+		 * the file uniquely identifies the file, and that this assumption can be relied upon to determine whether the
+		 * remote file has already been downloaded. This restriction may be removed in a future release, perhaps by
+		 * adding additional configuration arguments.
+		 *
+		 * The file, when expanded, is assumed to create a single directory containing the installation. This directory
+		 * is assumed to have the same name as the file (minus the extension). For a given archive, if the desired
+		 * directory has a different path within, it can be specified with `getDestinationPath()`.
+		 *
+		 * @returns The directory to which the installation was installed.
+		 */
 		install: (p: {
-			name?: string,
-			getDestinationPath?: (file: slime.jrunscript.file.File) => string,
-			url?: any,
-			file?: slime.jrunscript.file.File,
-			format?: Format,
-			to: slime.jrunscript.file.Pathname,
+			/**
+			 * The filename to use if a file needs to be created when downloading this file. Defaults to terminal file name of URL.
+			 */
+			name?: string
+
+			//	TODO	it's not really specified what happens if `url` and `file` are both present.
+
+			/**
+			 * The URL from which the file can be downloaded. Currently, only `http` and `https` URLs are supported. Optional; not
+			 * necessary if `file` is provided.
+			 */
+			url?: slime.jrunscript.http.client.object.request.url
+
+			/**
+			 * The local copy of the installation file. Optional; not necessary if `url` is present.
+			 */
+			file?: slime.jrunscript.file.File
+
+			/**
+			 * Optional; if omitted, the implementation will attempt to determine it from `url` and `file`.
+			 */
+			format?: Format
+
+			 /**
+			 * A function specifying the path within the archive of the installation.
+			 *
+			 * Optional; if not specified, the provided {@link Format} will be used.
+			 *
+			 * @param file The archive file.
+			 * @returns A path within the archive to treat as the installation.
+			 */
+			getDestinationPath?: (file: slime.jrunscript.file.File) => string
+
+			/**
+			 * The location to which to install the installation.
+			 */
+			to: slime.jrunscript.file.Pathname
+
+			/**
+			 * If `true`, and a file or directory at the specified destination already exists, it will be removed and replaced by
+			 * the installation. If `false`, and the specified destination already exists, an error will be thrown. Defaults to
+			 * `false`.
+			 */
 			replace?: boolean
-		}, events?: $api.events.Function.Receiver) => slime.jrunscript.file.Directory
+		}, events?: events.old.Receiver) => slime.jrunscript.file.Directory
 
 		/**
 		 * @deprecated
@@ -153,12 +235,23 @@ namespace slime.jrunscript.tools.install {
 		 */
 		zip: any
 
-		apache: any
+		apache: {
+			/**
+			 * Locates a distribution from Apache, either in a local cache, or from an Apache mirror, and returns a local file
+			 * containing the distribution (downloading it if necessary).
+			 *
+			 * @returns A local file containing the content from Apache.
+			 */
+			find: (p: {
+				path: string
+				mirror?: string
+			}) => slime.jrunscript.file.File
+		}
 
 		/**
 		 * @deprecated
 		 */
-		 $api: any
+		$api: any
 	}
 
 	(
