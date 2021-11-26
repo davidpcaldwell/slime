@@ -5,49 +5,51 @@
 //	END LICENSE
 
 namespace slime.time {
-	export interface Day {
-		year: {
-			value: number
-		}
-		at: Function
-		format(mask: string): string
-		month: Month
-		day: number
-		add(n: number): Day
-		addMonths(n: number): Day
-		addYears(n: number): Day
-		isAfter(day: Day): boolean
+	export namespace old {
+		export interface Day {
+			year: {
+				value: number
+			}
+			at: Function
+			format(mask: string): string
+			month: Month
+			day: number
+			add(n: number): Day
+			addMonths(n: number): Day
+			addYears(n: number): Day
+			isAfter(day: Day): boolean
 
-		/** @experimental Has other undocumented properties */
-		weekday: {
-			/**
-			 * The full name of the weekday; e.g., `"MONDAY"`, `"WEDNESDAY"`.
-			 */
-			name: string
+			/** @experimental Has other undocumented properties */
+			weekday: {
+				/**
+				 * The full name of the weekday; e.g., `"MONDAY"`, `"WEDNESDAY"`.
+				 */
+				name: string
+			}
 		}
-	}
 
-	export interface Month {
-		id: {
-			index: number
+		export interface Month {
+			id: {
+				index: number
+			}
+			day: (n: number) => Day
 		}
-		day: (n: number) => Day
-	}
 
-	namespace day {
+		export namespace day {
+			export interface Time {
+			}
+		}
+
 		export interface Time {
+			day: any
+			format(mask: string): string
 		}
-	}
 
-	export interface Time {
-		day: any
-		format(mask: string): string
-	}
-
-	export interface When {
-		unix: number
-		local(): Time
-		local(zone: any): Time
+		export interface When {
+			unix: number
+			local(): Time
+			local(zone: any): Time
+		}
 	}
 
 	export interface Context {
@@ -62,37 +64,37 @@ namespace slime.time {
 		Year: Function
 		Month: Function
 		Day: {
-			new (year: number, month: number, day: number): slime.time.Day
-			new (p: any): slime.time.Day
-			Time: new (hours: number, minutes: number) => day.Time
+			new (year: number, month: number, day: number): old.Day
+			new (p: any): old.Day
+			Time: new (hours: number, minutes: number) => old.day.Time
 			subtract: Function
 			order: Function
-			today: () => Day
+			today: () => old.Day
 			codec: {
 				iso8601: {
-					extended: slime.Codec<Day,string>
+					extended: slime.Codec<old.Day,string>
 				}
 				json: any
 				js: any
 			}
-			rehydrate: (p: any) => Day
+			rehydrate: (p: any) => old.Day
 		}
 		Time: {
-			new (): slime.time.Time
+			new (): old.Time
 			Zone: object
 		}
 		When: {
-			new (p: { date: Date }): When
-			new (p: { unix: number }): When
-			new (date: Date): When
-			new (): When
+			new (p: { date: Date }): old.When
+			new (p: { unix: number }): old.When
+			new (date: Date): old.When
+			new (): old.When
 			codec: {
-				rfc3339: slime.Codec<When,string>
-				Date: slime.Codec<When,Date>
+				rfc3339: slime.Codec<old.When,string>
+				Date: slime.Codec<old.When,Date>
 				js: any
 			}
 			order: Function
-			now: () => When
+			now: () => old.When
 		}
 		java: object
 		install: Function
