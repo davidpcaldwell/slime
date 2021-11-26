@@ -114,6 +114,12 @@ namespace slime.jrunscript.tools.install {
 		getDestinationPath: (basename: string) => string
 	}
 
+	export namespace events {
+		export interface Console {
+			console: string
+		}
+	}
+
 	export interface Exports {
 		format: {
 			zip: Format
@@ -124,6 +130,8 @@ namespace slime.jrunscript.tools.install {
 			p: { file?: slime.jrunscript.file.File, url?: string, name?: string },
 			events?: slime.$api.events.Function.Receiver
 		) => slime.jrunscript.file.File
+
+		find: (p: { file?: slime.jrunscript.file.File, url?: string, name?: string }) => slime.$api.fp.impure.Ask<events.Console,slime.jrunscript.file.File>
 
 		install: (p: {
 			name?: string,
@@ -150,7 +158,7 @@ namespace slime.jrunscript.tools.install {
 		/**
 		 * @deprecated
 		 */
-		$api: any
+		 $api: any
 	}
 
 	(
