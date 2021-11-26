@@ -48,7 +48,7 @@
 				var grouper = $api.Function.Array.groupBy({
 					group: function(entry) {
 						var node = entry.node;
-						if (/\.api\.html$/.test(node.pathname.basename)) {
+						if (node.pathname.basename == "api.html" || /\.api\.html$/.test(node.pathname.basename)) {
 							return "jsapi"
 						}
 						if (/\.fifty\.ts$/.test(node.pathname.basename)) {
