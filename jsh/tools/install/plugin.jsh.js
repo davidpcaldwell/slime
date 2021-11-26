@@ -16,7 +16,7 @@
 	function(Packages,JavaAdapter,$api,jsh,plugins,plugin,$loader) {
 		plugin({
 			isReady: function() {
-				return jsh.js && jsh.web && jsh.java && jsh.ip && jsh.time && jsh.file && jsh.http && jsh.shell && jsh.java.tools && jsh.tools && jsh.tools.install;
+				return Boolean(jsh.js && jsh.web && jsh.java && jsh.ip && jsh.time && jsh.file && jsh.http && jsh.shell && jsh.java.tools && jsh.tools && jsh.tools.install);
 			},
 			load: function() {
 				/**

@@ -26,7 +26,7 @@ namespace slime.jsh {
 		git: slime.jrunscript.git.Exports
 		hg: any
 		node: slime.jrunscript.node.Exports
-		install: slime.jsh.tools.install.module.Exports
+		install: slime.jrunscript.tools.install.Exports
 		github: slime.jrunscript.tools.github.Exports
 		gradle: any
 	}
