@@ -481,6 +481,14 @@
 				return toGlobalDate(this).getTime() == toGlobalDate(day).getTime();
 			}
 
+			this.adapt = function() {
+				return {
+					year: year.value,
+					month: month.id.index,
+					day: day
+				}
+			}
+
 			return this;
 		}
 		Day.subtract = function(a,b) {
@@ -625,6 +633,14 @@
 		}
 		Day.rehydrate = function(json) {
 			return new Day(json.year.value, json.month.id.index, json.day);
+		};
+		/** @type {slime.time.Exports["Day"]["format"] } */
+		Day.format = function(mask) {
+			/** @type { ReturnType<slime.time.Exports["Day"]["format"]> } */
+			return function(day) {
+				var toDayObject = new Day(day.year, day.month, day.day);
+				return toDayObject.format(mask);
+			}
 		}
 
 		function Time() {
@@ -935,6 +951,12 @@
 		})();
 
 		$exports.install = install;
+
+		$exports.world = {
+			today: function() {
+				return Day.today().adapt()
+			}
+		}
 	}
 //@ts-ignore
 )($api,$context,$exports)

@@ -475,13 +475,6 @@ END LICENSE
 					<!--	formatting	-->
 					<script type="application/x.jsapi#tests">
 						var mar1 = leap09.add(1);
-						test(mar1.format("yyyy mm dd") == "2009 03 01");
-						test(mar1.format("yyyy/?m/?d") == "2009/3/1");
-						test(mar1.format("Mmmm ?d, yyyy") == "March 1, 2009");
-						test(mar1.format("Www Mmmm ?d, yyyy") == "Sun March 1, 2009");
-						test(mar1.format("WWWWWW Mmmm ?d, yyyy") == "SUNDAY March 1, 2009");
-						test(mar1.format("Wwwww Mmmm ?d, yyyy") == "Sun March 1, 2009");
-						test(mar1.format("Wwwww Mmmm dd, yyyy") == "Sun March 01, 2009");
 
 						var noon = new Day.Time(12,0);
 						var mar1_noon = mar1.at(noon);

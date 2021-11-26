@@ -5,6 +5,12 @@
 //	END LICENSE
 
 namespace slime.time {
+	export interface Day {
+		year: number
+		month: number
+		day: number
+	}
+
 	export namespace old {
 		export interface Day {
 			year: {
@@ -26,6 +32,7 @@ namespace slime.time {
 				 */
 				name: string
 			}
+			adapt: () => slime.time.Day
 		}
 
 		export interface Month {
@@ -60,10 +67,84 @@ namespace slime.time {
 		java: object
 	}
 
+	export namespace test {
+		export const subject: Exports = (
+			function(fifty: slime.fifty.test.kit) {
+				return fifty.$loader.module("module.js");
+			}
+		//@ts-ignore
+		)(fifty);
+	}
+
+	export interface World {
+		today: () => Day
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.kit
+		) {
+			fifty.tests.Day = function() {
+				fifty.run(fifty.tests.Day.format);
+			};
+		}
+	//@ts-ignore
+	)(fifty);
+
+
+	export namespace exports {
+		export interface Day {
+			format: (mask: string) => (day: slime.time.Day) => string
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.kit
+			) {
+				const verify = fifty.verify;
+				fifty.tests.Day.format = function() {
+					var mar1: slime.time.Day = {
+						year: 2009,
+						month: 3,
+						day: 1
+					};
+
+					var format = function(mask) {
+						return test.subject.Day.format(mask)(mar1);
+					}
+
+					verify(format("yyyy mm dd")).is("2009 03 01");
+					verify(format("yyyy/?m/?d")).is("2009/3/1");
+					verify(format("Mmmm ?d, yyyy")).is("March 1, 2009");
+					verify(format("Www Mmmm ?d, yyyy")).is("Sun March 1, 2009");
+					verify(format("WWWWWW Mmmm ?d, yyyy")).is("SUNDAY March 1, 2009");
+					verify(format("Wwwww Mmmm ?d, yyyy")).is("Sun March 1, 2009");
+					verify(format("Wwwww Mmmm dd, yyyy")).is("Sun March 01, 2009");
+
+					const subject = test.subject;
+					fifty.run(function old() {
+						var mar1 = new subject.Day(2009,3,1);
+						const test = function(b) { return verify(b).is(true); }
+						test(mar1.format("yyyy mm dd") == "2009 03 01");
+						test(mar1.format("yyyy/?m/?d") == "2009/3/1");
+						test(mar1.format("Mmmm ?d, yyyy") == "March 1, 2009");
+						test(mar1.format("Www Mmmm ?d, yyyy") == "Sun March 1, 2009");
+						test(mar1.format("WWWWWW Mmmm ?d, yyyy") == "SUNDAY March 1, 2009");
+						test(mar1.format("Wwwww Mmmm ?d, yyyy") == "Sun March 1, 2009");
+						test(mar1.format("Wwwww Mmmm dd, yyyy") == "Sun March 01, 2009");
+					});
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+
+	}
+
 	export interface Exports {
-		Year: Function
-		Month: Function
-		Day: {
+	}
+
+	export namespace exports {
+		export interface Day {
 			new (year: number, month: number, day: number): old.Day
 			new (p: any): old.Day
 			Time: new (hours: number, minutes: number) => old.day.Time
@@ -79,6 +160,12 @@ namespace slime.time {
 			}
 			rehydrate: (p: any) => old.Day
 		}
+	}
+
+	export interface Exports {
+		Year: Function
+		Month: Function
+		Day: exports.Day
 		Time: {
 			new (): old.Time
 			Zone: object
@@ -98,6 +185,7 @@ namespace slime.time {
 		}
 		java: object
 		install: Function
+		world: World
 	}
 
 	(
@@ -141,6 +229,8 @@ namespace slime.time {
 				var rounding = new subject.When({ unix: base.unix + 59750 });
 				var formatted = rounding.local().format("yyyy-mm-dd HR:mi:sc");
 				verify(formatted).is("2021-01-01 11:59:59");
+
+				fifty.run(fifty.tests.Day);
 			}
 		}
 	//@ts-ignore
