@@ -16,34 +16,9 @@
 	function(Packages,JavaAdapter,$api,jsh,plugins,plugin,$loader) {
 		plugin({
 			isReady: function() {
-				return jsh.js && jsh.web && jsh.java && jsh.ip && jsh.time && jsh.file && jsh.http && jsh.shell && jsh.java.tools;
+				return jsh.js && jsh.web && jsh.java && jsh.ip && jsh.time && jsh.file && jsh.http && jsh.shell && jsh.java.tools && jsh.tools && jsh.tools.install;
 			},
 			load: function() {
-				if (!jsh.tools) jsh.tools = {
-					git: void(0),
-					hg: void(0),
-					node: void(0),
-					install: void(0),
-					github: void(0),
-					gradle: void(0),
-					docker: void(0),
-					kubectl: void(0),
-
-					//	deprecated
-					rhino: void(0),
-					tomcat: void(0),
-					ncdbg: void(0)
-				};
-				jsh.tools.install = $loader.module("module.js", {
-					api: {
-						shell: jsh.shell,
-						http: jsh.http,
-						file: jsh.file,
-						Error: jsh.js.Error
-					},
-					downloads: jsh.shell.user.downloads
-				});
-
 				/**
 				 * @type { slime.jsh.shell.Exports["tools"]["rhino"]["install"] }
 				 */

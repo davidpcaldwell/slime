@@ -61,7 +61,7 @@ namespace slime.jrunscript.tools {
 				version?: string
 				library: {
 					shell: slime.jrunscript.shell.Exports
-					install: slime.jsh.tools.install.module.Exports
+					install: slime.jrunscript.tools.install.Exports
 				}
 				sudo?: {
 					askpass: slime.jrunscript.file.File

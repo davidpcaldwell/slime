@@ -23,6 +23,7 @@
 			fifty.load("../js/web/module.fifty.ts");
 			fifty.load("../jrunscript/host/module.fifty.ts");
 			fifty.load("../jrunscript/io/plugin.jsh.fifty.ts");
+			fifty.load("../jrunscript/tools/install/module.fifty.ts");
 			fifty.load("../rhino/ip/module.fifty.ts");
 			fifty.load("../rhino/http/client/module.fifty.ts");
 			fifty.load("../rhino/shell/module.fifty.ts");

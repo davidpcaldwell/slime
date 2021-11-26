@@ -8,9 +8,9 @@
 (
 	/**
 	 * @param { slime.$api.Global } $api
-	 * @param { slime.jsh.tools.install.module.Context } $context
+	 * @param { slime.jrunscript.tools.install.Context } $context
 	 * @param { slime.Loader } $loader
-	 * @param { slime.jsh.tools.install.module.Exports } $exports
+	 * @param { slime.jrunscript.tools.install.Exports } $exports
 	 */
 	function($api,$context,$loader,$exports) {
 		var downloads = $context.downloads ? $context.downloads : $context.api.shell.TMPDIR.createTemporary({ directory: true })
@@ -111,7 +111,7 @@
 		};
 
 		/**
-		 * @param { { name?: string, getDestinationPath?: (file: slime.jrunscript.file.File) => string, url?: any, file?: slime.jrunscript.file.File, format?: Parameters<slime.jsh.tools.install.module.Exports["install"]>[0]["format"], to: slime.jrunscript.file.Pathname, replace?: boolean } } p
+		 * @param { { name?: string, getDestinationPath?: (file: slime.jrunscript.file.File) => string, url?: any, file?: slime.jrunscript.file.File, format?: Parameters<slime.jrunscript.tools.install.Exports["install"]>[0]["format"], to: slime.jrunscript.file.Pathname, replace?: boolean } } p
 		 * @param { any } events
 		 * @returns { slime.jrunscript.file.Directory }
 		 */
@@ -153,7 +153,7 @@
 		};
 
 		/**
-		 * @param { Parameters<slime.jsh.tools.install.module.Exports["get"]>[0] } p
+		 * @param { Parameters<slime.jrunscript.tools.install.Exports["get"]>[0] } p
 		 * @param { any } events
 		 */
 		var get = function(p,events) {
@@ -183,7 +183,7 @@
 		};
 
 		/**
-		 * @param { Parameters<slime.jsh.tools.install.module.Exports["install"]>[0] } p
+		 * @param { Parameters<slime.jrunscript.tools.install.Exports["install"]>[0] } p
 		 * @param { any } events
 		 * @returns { slime.jrunscript.file.Directory }
 		 */
@@ -195,7 +195,7 @@
 		$exports.get = $api.Events.Function(
 			/**
 			 *
-			 * @param { Parameters<slime.jsh.tools.install.module.Exports["get"]>[0] } p
+			 * @param { Parameters<slime.jrunscript.tools.install.Exports["get"]>[0] } p
 			 * @param {*} events
 			 */
 			function(p,events) {
@@ -228,7 +228,11 @@
 			$exports.install(p,on);
 		});
 
-		var apache = $loader.file("apache.js", {
+		var scripts = {
+			apache: $loader.script("apache.js")
+		}
+
+		var apache = scripts.apache({
 			client: client,
 			get: $exports.get,
 			downloads: downloads
