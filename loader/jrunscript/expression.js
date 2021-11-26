@@ -101,9 +101,12 @@
 					return rv;
 				};
 
+				/** @type { slime.runtime.$engine } */
 				var $engine = {
 					Object: {
-						defineProperty: {}
+						defineProperty: {
+							setReadOnly: void(0)
+						}
 					},
 					execute: function(script,scope,target) {
 						return $javahost.script(script.name,script.js,scope,target);
@@ -113,7 +116,8 @@
 							return errorDecorate(was);
 							// throw new TypeError("Can't decorate nothing was: " + was);
 						}
-					}
+					},
+					MetaObject: void(0)
 				};
 				//	TODO	decorate global Error objects; see jrunscript/host/module.js
 

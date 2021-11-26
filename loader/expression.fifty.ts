@@ -246,6 +246,13 @@ namespace slime {
 		 * JavaScript engine may have.
 		 */
 		export interface $engine {
+			/**
+			 * @deprecated Possibly unused substantively (but used syntactically by loader/jrunscript, in a probably-obsolete way)
+			 */
+			Object: {
+				defineProperty: any
+			}
+
 			Error?: {
 				decorate: any
 			}
@@ -261,7 +268,7 @@ namespace slime {
 				script: {
 					name: string,
 					/** A string of JavaScript code to execute. */
-					code: string
+					js: string
 				},
 				scope: { [x: string]: any },
 				target: object
@@ -310,7 +317,7 @@ namespace slime {
 			/**
 			 * An internal object derived from {@link slime.runtime.$engine} which adds default implementations.
 			 */
-			export interface $engine {
+			export interface Engine {
 				execute: (code: { name?: string, js: string }, scope: { [x: string]: any }, target: any) => any
 				Error: {
 					decorate?: <T>(errorConstructor: T) => T

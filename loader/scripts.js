@@ -13,7 +13,7 @@
 	 * @param { slime.runtime.internal.scripts.Scope["mimeTypeIs"] } mimeTypeIs
 	 * @param { slime.runtime.$slime.Deployment } $slime
 	 * @param { slime.runtime.$platform } $platform
-	 * @param { slime.runtime.internal.$engine } $engine
+	 * @param { slime.runtime.internal.Engine } $engine
 	 * @param { (value: slime.runtime.internal.scripts) => void } $export
 	 */
 	function($api,mime,mimeTypeIs,$slime,$platform,$engine,$export) {

@@ -13,11 +13,11 @@
 	 * @returns { slime.runtime.Exports }
 	 */
 	function($engine,$slime,Packages) {
-		var $$engine = (
+		var engine = (
 			/**
 			 *
 			 * @param { slime.runtime.$engine } $engine
-			 * @returns { slime.runtime.internal.$engine }
+			 * @returns { slime.runtime.internal.Engine }
 			 */
 			function($engine) {
 				return {
@@ -26,24 +26,26 @@
 					},
 					execute: (function() {
 						if ($engine && $engine.execute) return $engine.execute;
-						return function(/*script{name,code},scope,target*/) {
-							return (function() {
-								//@ts-ignore
-								with( arguments[1] ) {
-									return eval(arguments[0]);
-								}
-							}).call(
-								arguments[2],
-								arguments[0].js, arguments[1]
-							);
-						}
+						return (
+							function(/*script{name,js},scope,target*/) {
+								return (function() {
+									//@ts-ignore
+									with( arguments[1] ) {
+										return eval(arguments[0]);
+									}
+								}).call(
+									arguments[2],
+									arguments[0].js, arguments[1]
+								);
+							}
+						)
 					})(),
 					MetaObject: ($engine && $engine.MetaObject) ? $engine.MetaObject : void(0)
 				}
 			}
 		)($engine);
 
-		$$engine.execute(
+		engine.execute(
 			$slime.getRuntimeScript("polyfill.js"),
 			{},
 			null
@@ -52,7 +54,7 @@
 		var $platform = (
 			/**
 			 *
-			 * @param { slime.runtime.internal.$engine } $engine
+			 * @param { slime.runtime.internal.Engine } $engine
 			 */
 			function($engine) {
 				/** @type { slime.runtime.$platform } */
@@ -126,17 +128,17 @@
 				}
 
 				//	TODO	get rid of this, but right now tests don't pass without it
-				$exports.execute = $$engine.execute;
+				$exports.execute = engine.execute;
 
 				return $exports;
 			}
-		)($$engine);
+		)(engine);
 
 		/** @type { slime.$api.Global } */
-		var $api = $$engine.execute(
+		var $api = engine.execute(
 			$slime.getRuntimeScript("$api.js"),
 			{
-				$engine: $$engine,
+				$engine: engine,
 				$slime: {
 					getRuntimeScript: function(path) {
 						return $slime.getRuntimeScript(path);
@@ -150,7 +152,7 @@
 			/** @type { any } */
 			var exported;
 
-			$$engine.execute(
+			engine.execute(
 				$slime.getRuntimeScript(path),
 				Object.assign(scope, {
 					$export: function(value) {
@@ -231,7 +233,7 @@
 				},
 				$slime: $slime,
 				$platform: $platform,
-				$engine: $$engine
+				$engine: engine
 			}
 		);
 
