@@ -27,7 +27,24 @@ namespace slime.jrunscript.tools.install {
 				const $api = fifty.global.$api;
 				const jsh = fifty.global.jsh;
 
-				var scope: { [x: string]: any } = {};
+				var scope: {
+					downloads: slime.jrunscript.file.Directory
+					load: (p?: any) => slime.jrunscript.tools.install.Exports
+					//	TODO	load and module are redundant
+					module: (p?: any) => slime.jrunscript.tools.install.Exports
+					api: slime.jrunscript.tools.install.Exports
+					harness: any
+					server: any
+					tmpdir: () => slime.jrunscript.file.Pathname
+				} = {
+					downloads: void(0),
+					load: void(0),
+					module: void(0),
+					api: void(0),
+					harness: void(0),
+					server: void(0),
+					tmpdir: void(0)
+				};
 				scope.downloads = jsh.shell.TMPDIR.createTemporary({ directory: true });
 
 				var defaults = {
@@ -109,11 +126,6 @@ namespace slime.jrunscript.tools.install {
 		)(fifty);
 	}
 
-	export interface Format {
-		extract: (f: slime.jrunscript.file.File, d: slime.jrunscript.file.Directory) => void
-		getDestinationPath: (basename: string) => string
-	}
-
 	export namespace events {
 		export interface Console {
 			/**
@@ -130,67 +142,61 @@ namespace slime.jrunscript.tools.install {
 		}
 	}
 
-	export interface Exports {
-		format: {
-			zip: Format
-
-			/**
-			 * A format representing `gzip`ped `.tar` files. Conditional; requires `tar` to be in the `PATH`.
-			 */
-			gzip?: Format
-		}
-
-		find: (p: {
-			/**
-			 * The remote URL of the installation file.
-			 */
-			url?: string
-			name?: string
-			file?: slime.jrunscript.file.File
-		}) => slime.$api.fp.impure.Ask<events.Console,slime.jrunscript.file.File>
+	export interface Source {
+		//	TODO	it's not really specified what happens if `url` and `file` are both present.
 
 		/**
-		 * Returns a file containing an installer, either using a specified local file or a specified URL.
-		 * If `file` is absent or
-		 * `null`, the method will attempt to locate it in the
-		 * `$context.downloads` directory by `name`. If it is
-		 * not found, and the `url` property is provided, the file will be downloaded.
-		 *
-		 * @returns A file containing the installer.
+		 * The URL from which the file can be downloaded. Currently, only `http` and `https` URLs are supported. Optional; not
+		 * necessary if `file` is provided.
 		 */
-		get: (
-			p: Parameters<Exports["find"]>[0],
-			events?: events.old.Receiver
-		) => slime.jrunscript.file.File
-
-		//	installation: Specifies software to be installed (including where to obtain it and how it is structured) and a
-		//	destination to which to install it.
+		url?: slime.jrunscript.http.client.object.request.url
 
 		/**
-		 * This method can process both local and remote files. For remote files, it is assumed that the filename of
-		 * the file uniquely identifies the file, and that this assumption can be relied upon to determine whether the
-		 * remote file has already been downloaded. This restriction may be removed in a future release, perhaps by
-		 * adding additional configuration arguments.
-		 *
-		 * The file, when expanded, is assumed to create a single directory containing the installation. This directory
-		 * is assumed to have the same name as the file (minus the extension). For a given archive, if the desired
-		 * directory has a different path within, it can be specified with `getDestinationPath()`.
-		 *
-		 * @returns The directory to which the installation was installed.
+		 * The filename to use if a file needs to be created when downloading this file. Defaults to terminal file name of URL.
 		 */
-		install: (p: {
-			/**
-			 * The filename to use if a file needs to be created when downloading this file. Defaults to terminal file name of URL.
-			 */
-			name?: string
+		name?: string
 
-			//	TODO	it's not really specified what happens if `url` and `file` are both present.
+		/**
+		 * The local copy of the installation file. Optional; not necessary if `url` is present.
+		 */
+		file?: slime.jrunscript.file.File
+	}
 
+	export interface Format {
+		extract: (f: slime.jrunscript.file.File, d: slime.jrunscript.file.Directory) => void
+		getDestinationPath: (basename: string) => string
+	}
+
+	export interface Archive {
+		format?: Format
+		folder?: (file: slime.jrunscript.file.File) => string
+	}
+
+	export interface Destination {
+		location: slime.jrunscript.file.Pathname
+		replace?: boolean
+	}
+
+	export interface Installation {
+		source: Source
+		archive?: Archive
+		destination: Destination
+	}
+
+	export namespace old {
+		export type install = (p: old.Installation, events?: events.old.Receiver) => slime.jrunscript.file.Directory;
+
+		export interface Installation {
 			/**
 			 * The URL from which the file can be downloaded. Currently, only `http` and `https` URLs are supported. Optional; not
 			 * necessary if `file` is provided.
 			 */
 			url?: slime.jrunscript.http.client.object.request.url
+
+				/**
+			 * The filename to use if a file needs to be created when downloading this file. Defaults to terminal file name of URL.
+			 */
+			name?: string
 
 			/**
 			 * The local copy of the installation file. Optional; not necessary if `url` is present.
@@ -202,10 +208,10 @@ namespace slime.jrunscript.tools.install {
 			 */
 			format?: Format
 
-			 /**
+			/**
 			 * A function specifying the path within the archive of the installation.
 			 *
-			 * Optional; if not specified, the provided {@link Format} will be used.
+			 * Optional; if not specified, the provided {@link Format} will be asked to guess the destination path.
 			 *
 			 * @param file The archive file.
 			 * @returns A path within the archive to treat as the installation.
@@ -223,7 +229,118 @@ namespace slime.jrunscript.tools.install {
 			 * `false`.
 			 */
 			replace?: boolean
-		}, events?: events.old.Receiver) => slime.jrunscript.file.Directory
+		}
+	}
+
+	export type install = (p: Installation) => slime.$api.fp.impure.Tell<events.Console>;
+
+	export interface Exports {
+		/**
+		 * This method can process both local and remote files. For remote files, it is assumed that the filename of
+		 * the file uniquely identifies the file, and that this assumption can be relied upon to determine whether the
+		 * remote file has already been downloaded. This restriction may be removed in a future release, perhaps by
+		 * adding additional configuration arguments.
+		 *
+		 * The file, when expanded, is assumed to create a single directory containing the installation. This directory
+		 * is assumed to have the same name as the file (minus the extension). For a given archive, if the desired
+		 * directory has a different path within, it can be specified with `getDestinationPath()`.
+		 *
+		 * @returns The directory to which the installation was installed.
+		 */
+		install: install & old.install
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.kit
+		) {
+			const { verify } = fifty;
+			const { jsh } = fifty.global;
+			const { api, harness } = test.scope;
+
+			fifty.tests.install = function() {
+				fifty.run(function happy() {
+					var to = test.scope.tmpdir();
+
+					var tell = api.install({
+						source: {
+							file: harness.zip
+						},
+						destination: {
+							location: to
+						}
+					});
+
+					verify(to).directory.is.type("null");
+					tell();
+					verify(to).directory.is.type("object");
+				});
+
+				fifty.run(function old() {
+					fifty.run(function replace() {
+						const harness = test.scope.harness;
+
+						var install = function(to,replace?) {
+							return function(p) {
+								p.install({
+									file: harness.zip,
+									to: to,
+									replace: replace
+								});
+							}
+						};
+
+						var clean = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
+						clean.directory.remove();
+						verify(api).evaluate(install(clean)).threw.nothing();
+
+						verify(api).evaluate(install(clean,true)).threw.nothing();
+
+						verify(api).evaluate(install(clean)).threw.type(Error);
+					});
+
+					fifty.run(function present() {
+						verify(api).is.type("object");
+						if (jsh.shell.PATH.getCommand("tar")) {
+							verify(api).evaluate(function() { return this.format.gzip; }).is.type("object");
+							verify(api).evaluate(function() { return this.gzip; }).is.type("function");
+						}
+					});
+				});
+			};
+		}
+	//@ts-ignore
+	)(fifty);
+
+
+	export interface Exports {
+		format: {
+			zip: Format
+
+			/**
+			 * A format representing `gzip`ped `.tar` files. Conditional; requires `tar` to be in the `PATH`.
+			 */
+			gzip?: Format
+		}
+
+		find: (p: Source) => slime.$api.fp.impure.Ask<events.Console,slime.jrunscript.file.File>
+
+		/**
+		 * Returns a file containing an installer, either using a specified local file or a specified URL.
+		 * If `file` is absent or
+		 * `null`, the method will attempt to locate it in the
+		 * `$context.downloads` directory by `name`. If it is
+		 * not found, and the `url` property is provided, the file will be downloaded.
+		 *
+		 * @returns A file containing the installer.
+		 */
+		get: (
+			p: Parameters<Exports["find"]>[0],
+			events?: events.old.Receiver
+		) => slime.jrunscript.file.File
+
+		//	installation: Specifies software to be installed (including where to obtain it and how it is structured) and a
+		//	destination to which to install it.
 
 		/**
 		 * @deprecated
@@ -275,8 +392,8 @@ namespace slime.jrunscript.tools.install {
 							messages.push(e);
 						}
 					});
-					var TOSTRING = function() {
-						return { string: this.toString() };
+					var TOSTRING = function(p: object) {
+						return { string: p.toString() };
 					};
 					var messageStartsWith = function(string) {
 						return function() {
@@ -309,40 +426,6 @@ namespace slime.jrunscript.tools.install {
 			const harness = test.scope.harness;
 			const tmpdir: () => slime.jrunscript.file.Pathname = test.scope.tmpdir;
 			const downloads: slime.jrunscript.file.Directory = test.scope.downloads;
-			const mock = test.scope.mock;
-
-			fifty.tests.install = function() {
-
-				fifty.run(function replace() {
-					const harness = test.scope.harness;
-
-					var install = function(to,replace?) {
-						return function(p) {
-							p.install({
-								file: harness.zip,
-								to: to,
-								replace: replace
-							});
-						}
-					};
-
-					var clean = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
-					clean.directory.remove();
-					verify(api).evaluate(install(clean)).threw.nothing();
-
-					verify(api).evaluate(install(clean,true)).threw.nothing();
-
-					verify(api).evaluate(install(clean)).threw.type(Error);
-				});
-
-				fifty.run(function present() {
-					verify(api).is.type("object");
-					if (jsh.shell.PATH.getCommand("tar")) {
-						verify(api).evaluate(function() { return this.format.gzip; }).is.type("object");
-						verify(api).evaluate(function() { return this.gzip; }).is.type("function");
-					}
-				})
-			};
 
 			fifty.tests.tar = function() {
 				//	Test .tar format

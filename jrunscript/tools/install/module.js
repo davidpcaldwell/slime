@@ -94,7 +94,7 @@
 			if (!p.file) {
 				if (p.url) {
 					//	Apache supplies name so that url property, which is getter that hits Apache mirror list, is not invoked
-					if (!p.name) p.name = p.url.split("/").slice(-1)[0];
+					if (!p.name) p.name = String(p.url).split("/").slice(-1)[0];
 					var pathname = downloads.getRelativePath(p.name);
 					if (!pathname.file) {
 						//	TODO	we could check to make sure this URL is http
@@ -157,8 +157,8 @@
 		};
 
 		/**
-		 * @param { Parameters<slime.jrunscript.tools.install.Exports["install"]>[0] } p
-		 * @param { any } events
+		 * @param { slime.jrunscript.tools.install.old.Installation } p
+		 * @param { slime.$api.Events<{ console: string }> } events
 		 * @returns { slime.jrunscript.file.Directory }
 		 */
 		var install = function(p,events) {
@@ -176,8 +176,27 @@
 			return installLocalArchive(p,events);
 		};
 
-		/** @type { { get: slime.jrunscript.tools.install.Exports["get"], install: slime.jrunscript.tools.install.Exports["install"] }} */
+		var oldInstall = $api.Events.Function(function(p,events) {
+			return install(p,events);
+		});
+
+		/** @type { slime.jrunscript.tools.install.install } */
+		var newInstall = function(p) {
+			return $api.Function.impure.tell(function(events) {
+				return install({
+					url: p.source.url,
+					name: p.source.name,
+					file: p.source.file,
+					format: (p.archive && p.archive.format),
+					getDestinationPath: (p.archive && p.archive.folder),
+					to: p.destination.location,
+					replace: p.destination.replace
+				}, events);
+			});
+		};
+
 		var $exports = {
+			/** @type { slime.jrunscript.tools.install.Exports["get"] } */
 			get: $api.Events.Function(
 				/**
 				 *
@@ -188,10 +207,7 @@
 					get(p,events);
 					return p.file;
 				}
-			),
-			install: $api.Events.Function(function(p,events) {
-				return install(p,events);
-			})
+			)
 		};
 
 		$export({
@@ -203,7 +219,20 @@
 					return p.file;
 				});
 			},
-			install: $exports.install,
+			//	Just cannot get the overloading right below with TypeScript 4.0.5; it only detects the old version of the overload
+			//@ts-ignore
+			install: (
+				/** @type { slime.jrunscript.tools.install.Exports["install"] } */
+				function(p,events) {
+					/** @type { (p: any) => p is slime.jrunscript.tools.install.old.Installation } */
+					var isOld = function(p) { return Boolean(p["url"]) || Boolean(p["name"]) || Boolean(p["file"]); };
+					if (isOld(p)) {
+						return oldInstall(p,events);
+					} else {
+						return newInstall(p);
+					}
+				}
+			),
 			format: formats,
 			apache: scripts.apache({
 				client: client,
@@ -212,11 +241,11 @@
 			}),
 			gzip: (algorithms.gzip.extract) ? $api.deprecate(function(p,on) {
 				p.format = algorithms.gzip;
-				$exports.install(p,on);
+				oldInstall(p,on);
 			}) : void(0),
 			zip: $api.deprecate(function(p,on) {
 				p.format = algorithms.zip;
-				$exports.install(p,on);
+				oldInstall(p,on);
 			}),
 			//	TODO	below seems to be used in plugin.jsh.tomcat.js
 			$api: {
