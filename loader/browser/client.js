@@ -170,6 +170,7 @@
 					this.getCode = getCode;
 				}
 
+				/** @type { slime.runtime.Scope } */
 				var scope = {
 					$engine: void(0),
 					$slime: {
@@ -183,7 +184,7 @@
 							return (window.CoffeeScript) ? { object: window.CoffeeScript } : null;
 						}
 					},
-					Packages: window["Packages"]
+					Packages: window.Packages
 				};
 
 				/** @type { slime.runtime.Exports } */

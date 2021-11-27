@@ -144,7 +144,7 @@
 				if (p.options.interactive) {
 					run()();
 				} else {
-					jsh.java.Thread.start(run( (p.options["debug:delay"] ? void(0) : 4000 )));
+					jsh.java.Thread.start(run( (typeof(p.options["debug:delay"]) == "number") ? p.options["debug:delay"] : 4000 ) );
 					var resultsUrl = new jsh.web.Url({
 						scheme: "http",
 						authority: {

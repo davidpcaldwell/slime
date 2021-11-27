@@ -45,6 +45,7 @@ namespace slime.browser {
 		readonly location: Location
 		XMLHttpRequest: typeof XMLHttpRequest
 		CoffeeScript: any
+		Packages: slime.jrunscript.Packages
 	}
 
 	interface Bootstrap {
