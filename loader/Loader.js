@@ -12,7 +12,7 @@
 	 * @param { slime.runtime.internal.methods } methods
 	 * @param { slime.runtime.internal.createFileScope } createFileScope
 	 * @param { slime.$api.Global } $api
-	 * @param { (value: slime.runtime.internal.LoaderConstructor) => void } $export
+	 * @param { slime.loader.Export<slime.runtime.internal.LoaderConstructor> } $export
 	 */
 	function(Resource,methods,createFileScope,$api,$export) {
 		$export(

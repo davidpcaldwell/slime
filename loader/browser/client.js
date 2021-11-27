@@ -170,21 +170,9 @@
 					this.getCode = getCode;
 				}
 
-				/** @type { slime.runtime.Exports } */
-				var runtime = (function($engine,$slime,Packages) {
-					var rv = eval(fetcher.getCode(bootstrap.getRelativePath("expression.js")));
-					rv.$api.deprecate.warning = function(access) {
-						debugger;
-					}
-					rv.$api.experimental.warning = function(access) {
-						//	TODO	should configure this via property of inonit.loader
-						//	Can set breakpoint here to pop into debugger on experimental accesses
-						var breakpoint = null;
-					}
-					return rv;
-				})(
-					/* $engine */ void(0),
-					/* $slime */ {
+				var scope = {
+					$engine: void(0),
+					$slime: {
 						getRuntimeScript: function(path) {
 							return {
 								name: bootstrap.getRelativePath(path),
@@ -195,8 +183,22 @@
 							return (window.CoffeeScript) ? { object: window.CoffeeScript } : null;
 						}
 					},
-					/* Packages */ window["Packages"]
-				);
+					Packages: window["Packages"]
+				};
+
+				/** @type { slime.runtime.Exports } */
+				var runtime = (function(scope) {
+					var rv = eval(fetcher.getCode(bootstrap.getRelativePath("expression.js")));
+					rv.$api.deprecate.warning = function(access) {
+						debugger;
+					}
+					rv.$api.experimental.warning = function(access) {
+						//	TODO	should configure this via property of inonit.loader
+						//	Can set breakpoint here to pop into debugger on experimental accesses
+						var breakpoint = null;
+					}
+					return rv;
+				})(scope);
 
 				/**
 				 * @constructor

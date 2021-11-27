@@ -7,12 +7,14 @@
 //@ts-check
 (
 	/**
-	 * @param { slime.runtime.$engine | undefined } $engine
-	 * @param { slime.runtime.$slime.Deployment } $slime
-	 * @param { slime.jrunscript.Packages } Packages - note that in the rare case of a browser with Java, Packages may not include inonit.* classes
+	 * @param { slime.runtime.Scope } scope
 	 * @returns { slime.runtime.Exports }
 	 */
-	function($engine,$slime,Packages) {
+	function(scope) {
+		var $engine = scope.$engine;
+		var $slime = scope.$slime;
+		var Packages = scope.Packages;
+
 		var engine = (
 			/**
 			 *
@@ -315,4 +317,4 @@
 		return rv;
 	}
 //@ts-ignore
-)($engine,$slime,Packages)
+)(scope)

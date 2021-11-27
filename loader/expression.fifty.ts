@@ -200,6 +200,16 @@ namespace slime {
 	 * [Older documentation](src/loader/api.html)
 	 */
 	export namespace runtime {
+		export interface Scope {
+			$engine: slime.runtime.$engine | undefined
+			$slime: slime.runtime.$slime.Deployment
+
+			/**
+			 * Note that in the rare case of a browser with Java, Packages may not include inonit.* classes
+			 */
+			Packages: slime.jrunscript.Packages
+		}
+
 		export namespace $slime {
 			export interface TypeScript {
 				compile: (code: string) => string
@@ -363,13 +373,15 @@ namespace slime {
 				var js = code.read(String);
 
 				var subject: slime.runtime.Exports = (function() {
-					var $slime = {
-						getRuntimeScript: function(path) {
-							var resource = fifty.$loader.get(path);
-							return { name: resource.name, js: resource.read(String) }
-						}
-					};
-					var $engine = void(0);
+					var scope = {
+						$slime: {
+							getRuntimeScript: function(path) {
+								var resource = fifty.$loader.get(path);
+								return { name: resource.name, js: resource.read(String) }
+							}
+						},
+						$engine: void(0)
+					}
 					return eval(js);
 				})();
 

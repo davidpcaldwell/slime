@@ -153,9 +153,14 @@
 						}
 					}
 				}
-				return $javahost.eval("slime://loader/expression.js",String($loader.getLoaderCode("expression.js")),{
+				/** @type { slime.runtime.Scope } */
+				var scope = {
 					$engine: $engine,
-					$slime: $slime
+					$slime: $slime,
+					Packages: Packages
+				};
+				return $javahost.eval("slime://loader/expression.js",String($loader.getLoaderCode("expression.js")),{
+					scope: scope
 				},null);
 			}
 		)();
