@@ -412,7 +412,11 @@
 
 			if (arguments.length == 1) {
 				var arg = arguments[0];
-				if (typeof(arg.year) != "undefined") {
+				if (typeof(arg.year) == "number" && typeof(arg.month) == "number" && typeof(arg.day) == "number") {
+					year = new Year(arg.year);
+					month = new Month({ year: year, id: MonthId.get(arg.month) });
+					day = arg.day;
+				} else if (typeof(arg.year) != "undefined") {
 					year = Year.cast(arg.year);
 					month = new Month({ year: year, id: MonthId.cast(arg.month) });
 					day = Number(arg.day);

@@ -102,6 +102,7 @@ namespace slime.time {
 				fifty: slime.fifty.test.kit
 			) {
 				const verify = fifty.verify;
+
 				fifty.tests.Day.format = function() {
 					var mar1: slime.time.Day = {
 						year: 2009,
@@ -134,6 +135,21 @@ namespace slime.time {
 						test(mar1.format("Wwwww Mmmm dd, yyyy") == "Sun March 01, 2009");
 					});
 				}
+
+				fifty.tests.Day.old = {};
+				fifty.tests.Day.old.constructor = function() {
+					var nov1: slime.time.Day = {
+						year: 2021,
+						month: 11,
+						day: 1
+					};
+
+					var day = new test.subject.Day(nov1);
+
+					verify(day).year.value.is(2021);
+					verify(day).month.id.index.is(11);
+					verify(day).day.is(1);
+				}
 			}
 		//@ts-ignore
 		)(fifty);
@@ -146,6 +162,7 @@ namespace slime.time {
 	export namespace exports {
 		export interface Day {
 			new (year: number, month: number, day: number): old.Day
+			new (p: Day): old.Day
 			new (p: any): old.Day
 			Time: new (hours: number, minutes: number) => old.day.Time
 			subtract: Function
@@ -231,6 +248,8 @@ namespace slime.time {
 				verify(formatted).is("2021-01-01 11:59:59");
 
 				fifty.run(fifty.tests.Day);
+
+				fifty.run(fifty.tests.Day.old.constructor);
 			}
 		}
 	//@ts-ignore
