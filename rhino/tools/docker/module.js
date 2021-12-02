@@ -130,7 +130,30 @@
 
 		$export({
 			engine: {
-				cli: cli
+				cli: cli,
+				isRunning: function() {
+					/** @type { slime.jrunscript.tools.docker.cli.Command<void,boolean> } */
+					var isRunning = {
+						invocation: function() {
+							return {
+								command: ["info"],
+								arguments: []
+							}
+						},
+						output: {
+							json: true,
+							truncated: false
+						},
+						result: function(json) {
+							return !json[0].ServerErrors || json[0].ServerErrors.length == 0;
+						}
+					};
+					return cli.command(isRunning).input().run({
+						stderr: function(e) {
+							//	do nothing
+						}
+					});
+				}
 			},
 			install: function(p) {
 				var versions = {

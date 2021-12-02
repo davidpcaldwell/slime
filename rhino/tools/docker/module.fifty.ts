@@ -15,6 +15,24 @@ namespace slime.jrunscript.tools {
 			stderr: string
 		}
 
+		export interface Command<P,R> {
+			invocation: (p: P) => Invocation
+			output: {
+				/**
+				 * Whether the command emits JSON-formatted lines, and hence whether `stdout` should be parsed as lines of JSON
+				 * or should be passed as a string.
+				 */
+				json: boolean
+
+				/**
+				 * Whether this *command* *can* be truncated, and hence the `--no-trunc` argument is available to cause it
+				 * *not* to be truncated.
+				 */
+				truncated: boolean
+			}
+			result: (json: any) => R
+		}
+
 		export interface Interface {
 			exec: (p: {
 				interactive: boolean
@@ -32,20 +50,16 @@ namespace slime.jrunscript.tools {
 				}
 			}
 		}
-
-		export interface Command<P,R> {
-			invocation: (p: P) => Invocation
-			output: {
-				json: boolean
-				truncated: boolean
-			}
-			result: (json: any) => R
-		}
 	}
 
 	export namespace docker {
 		export interface Engine {
 			cli: cli.Interface
+
+			/**
+			 * Determines whether the Docker daemon is running.
+			 */
+			isRunning: () => boolean
 		}
 
 		export namespace install {

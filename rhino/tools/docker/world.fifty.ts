@@ -10,29 +10,33 @@ namespace slime.jrunscript.tools.kubectl {
 			fifty: slime.fifty.test.kit
 		) {
 			fifty.tests.docker = function() {
-				var containerListAll: slime.jrunscript.tools.docker.cli.Command<void,object[]> = {
-					invocation: function() {
-						return {
-							command: ["container", "ls"],
-							arguments: [
-								"-a"
-							]
+				var isRunning = fifty.global.jsh.tools.docker.engine.isRunning();
+				fifty.global.jsh.shell.console("Docker running?: " + isRunning);
+				if (isRunning) {
+					var containerListAll: slime.jrunscript.tools.docker.cli.Command<void,object[]> = {
+						invocation: function() {
+							return {
+								command: ["container", "ls"],
+								arguments: [
+									"-a"
+								]
+							}
+						},
+						output: {
+							json: true,
+							truncated: true
+						},
+						result: function(json) {
+							return json;
 						}
-					},
-					output: {
-						json: true,
-						truncated: true
-					},
-					result: function(json) {
-						return json;
-					}
-				};
-				var result = fifty.global.jsh.tools.docker.engine.cli.command(containerListAll).input().run({
-					stderr: function(e) {
-						if (e.detail) fifty.global.jsh.shell.console("STDERR: [" + e.detail + "]");
-					}
-				});
-				fifty.global.jsh.shell.console(JSON.stringify(result,void(0),4));
+					};
+					var result = fifty.global.jsh.tools.docker.engine.cli.command(containerListAll).input().run({
+						stderr: function(e) {
+							if (e.detail) fifty.global.jsh.shell.console("STDERR: [" + e.detail + "]");
+						}
+					});
+					fifty.global.jsh.shell.console(JSON.stringify(result,void(0),4));
+				}
 			}
 
 			fifty.tests.suite = function() {
