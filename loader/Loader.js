@@ -10,7 +10,7 @@
 	 *
 	 * @param { slime.runtime.internal.Resource } Resource
 	 * @param { slime.runtime.internal.methods } methods
-	 * @param { slime.runtime.internal.createFileScope } createFileScope
+	 * @param { slime.runtime.internal.createScriptScope } createFileScope
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.loader.Export<slime.runtime.internal.LoaderConstructor> } $export
 	 */

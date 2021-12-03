@@ -296,7 +296,7 @@ namespace slime {
 			export type methods = {
 				run: any
 			}
-			export type createFileScope = <T>($context: T) => {
+			export type createScriptScope = <T extends { [x: string]: any }>($context: T) => {
 				$context: T
 				$export: any
 				$exports: any
@@ -325,7 +325,7 @@ namespace slime {
 						file: (code: slime.Resource, context: { [name: string]: any }) => { [x: string]: any }
 					}
 					toExportScope: slime.runtime.Exports["Loader"]["tools"]["toExportScope"]
-					createFileScope: createFileScope
+					createScriptScope: createScriptScope
 				}
 			}
 

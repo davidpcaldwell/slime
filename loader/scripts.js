@@ -41,10 +41,12 @@
 			return rv;
 		};
 
-		/** @type { slime.runtime.internal.createFileScope } */
-		var createFileScope = function($context) {
+		/** @type { slime.runtime.internal.createScriptScope } */
+		var createScriptScope = function($context) {
+			var toT = function(any) { return any; };
+
 			return toExportScope({
-				$context: ($context) ? $context : {}
+				$context: ($context) ? $context : toT({})
 			});
 		};
 
@@ -63,8 +65,6 @@
 			}
 		})();
 
-		var methods = {};
-
 		//	resource.type: optional, but if it is not a recognized type, this method will error
 		//	resource.name: optional, but used to determine default type if type is absent, and used for resource.js.name
 		//	resource.string: optional, but used to determine code
@@ -74,7 +74,7 @@
 		/**
 		 * @type { slime.runtime.internal.scripts.Exports["methods"]["run"] }
 		 */
-		methods.run = function run(object,scope) {
+		function run(object,scope) {
 			if (!object || typeof(object) != "object") {
 				throw new TypeError("'object' must be an object, not " + object);
 			}
@@ -137,33 +137,35 @@
 		}
 
 		/**
-		 * @param { slime.Resource & { js: { name: string, js: string } } } code
-		 * @param { any } $context
+		 * @type { slime.runtime.internal.scripts.Exports["methods"]["file"] }
 		 */
-		methods.file = function(code,$context) {
-			var inner = createFileScope($context);
-			methods.run.call(this,code,inner);
+		function file(code,$context) {
+			var inner = createScriptScope($context);
+			run.call(this,code,inner);
 			return inner.$exports;
 		};
 
 		/**
-		 * @param { slime.Resource & { js: { name: string, js: string } } } code
-		 * @param { any } scope
+		 * @type { slime.runtime.internal.scripts.Exports["methods"]["value"] }
 		 */
-		methods.value = function value(code,scope) {
+		function value(code,scope) {
 			var rv;
 			if (!scope) scope = {};
 			scope.$set = function(v) {
 				rv = v;
 			};
-			methods.run.call(this,code,scope);
+			run.call(this,code,scope);
 			return rv;
 		}
 
 		$export({
-			methods: methods,
+			methods: {
+				run: run,
+				file: file,
+				value: value
+			},
 			toExportScope: toExportScope,
-			createFileScope: createFileScope
+			createScriptScope: createScriptScope
 		});
 	}
 //@ts-ignore

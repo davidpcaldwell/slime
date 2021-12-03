@@ -255,7 +255,7 @@
 		var Loader = load("Loader.js", {
 			Resource: Resource,
 			methods: scripts.methods,
-			createFileScope: scripts.createFileScope,
+			createFileScope: scripts.createScriptScope,
 			$api: $api
 		});
 
