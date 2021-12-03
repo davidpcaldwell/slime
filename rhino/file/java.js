@@ -13,7 +13,11 @@
 	 * @param { slime.jrunscript.file.internal.java.Exports } $exports
 	 */
 	function(Packages,$context,$exports) {
-		$exports.FilesystemProvider = function(_peer) {
+		/**
+		 *
+		 * @param { slime.jrunscript.native.inonit.script.runtime.io.Filesystem } _peer
+		 */
+		$exports.FilesystemProvider = Object.assign(function(_peer) {
 			var separators = {
 				pathname: String(_peer.getPathnameSeparator()),
 				searchpath: String(_peer.getSearchpathSeparator()),
@@ -201,7 +205,7 @@
 			this.decorate = function(filesystem) {
 				filesystem.java = this.java;
 			}
-		}
+		}, { os: void(0) });
 	}
 //@ts-ignore
 )(Packages,$context,$exports);

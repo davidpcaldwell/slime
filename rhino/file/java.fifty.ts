@@ -15,6 +15,11 @@ namespace slime.jrunscript.file.internal.java {
 	}
 
 	export interface Exports {
-		FilesystemProvider: new (_peer: any) => any
+		FilesystemProvider: {
+			new (_peer: slime.jrunscript.native.inonit.script.runtime.io.Filesystem): any
+			os: any
+		}
 	}
+
+	export type Script = slime.loader.Script<Context,Exports>
 }

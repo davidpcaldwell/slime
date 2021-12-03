@@ -313,6 +313,20 @@ namespace slime.jrunscript {
 					}
 					readLine: any
 				}
+
+				export interface Filesystem {
+					getPathnameSeparator(): slime.jrunscript.native.java.lang.String
+					getSearchpathSeparator(): slime.jrunscript.native.java.lang.String
+					getLineSeparator(): slime.jrunscript.native.java.lang.String
+
+					getNode(path: string): Filesystem.Node
+					getNode(file: slime.jrunscript.native.java.io.File): Filesystem.Node
+				}
+
+				export namespace Filesystem {
+					export interface Node {
+					}
+				}
 			}
 
 			export namespace engine {
@@ -582,7 +596,9 @@ namespace slime.jrunscript {
 				runtime: {
 					io: {
 						Streams: any
-						Filesystem: any
+						Filesystem: {
+							create: () => slime.jrunscript.native.inonit.script.runtime.io.Filesystem
+						}
 					}
 					Throwables: any
 					Threads: any

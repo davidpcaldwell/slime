@@ -21,7 +21,9 @@
 
 		var code = {
 			/** @type { slime.jrunscript.file.internal.file.Script } */
-			file: $loader.script("file.js")
+			file: $loader.script("file.js"),
+			/** @type { slime.jrunscript.file.internal.java.Script } */
+			java: $loader.script("java.js")
 		}
 
 		/** @returns { item is slime.jrunscript.file.Pathname } */
@@ -46,7 +48,7 @@
 			Searchpath: file.Searchpath
 		});
 
-		var java = $loader.file("java.js", new function() {
+		var java = code.java(new function() {
 			this.spi = spi;
 
 			this.Pathname = file.Pathname;
@@ -98,26 +100,22 @@
 		$exports.filesystem = ($exports.filesystems.cygwin) ? $exports.filesystems.cygwin : $exports.filesystems.os;
 
 		//	TODO	perhaps should move selection of default filesystem into these definitions rather than inside file.js
-		$exports.Pathname = Object.assign(function(parameters) {
-			if (this.constructor != arguments.callee) {
-				var ctor = arguments.callee;
+		$exports.Pathname = Object.assign(function Pathname(parameters) {
+			if (this.constructor == arguments.callee) throw new Error("Cannot invoke Pathname as constructor.");
 
-				var decorator = function(rv) {
-					rv.constructor = ctor;
-					return rv;
-				}
+			var decorator = function(rv) {
+				rv.constructor = Pathname;
+				return rv;
+			}
 
-				//	not called as constructor but as function
-				//	perform a "cast"
-				if (typeof(parameters) == "string") {
-					return decorator($exports.filesystem.Pathname(parameters));
-				} else if (typeof(parameters) == "object" && parameters instanceof String) {
-					return decorator($exports.filesystem.Pathname(parameters.toString()));
-				} else {
-					throw new TypeError("Illegal argument to Pathname(): " + parameters);
-				}
+			//	not called as constructor but as function
+			//	perform a "cast"
+			if (typeof(parameters) == "string") {
+				return decorator($exports.filesystem.Pathname(parameters));
+			} else if (typeof(parameters) == "object" && parameters instanceof String) {
+				return decorator($exports.filesystem.Pathname(parameters.toString()));
 			} else {
-				throw new Error("Cannot invoke Pathname as constructor.");
+				throw new TypeError("Illegal argument to Pathname(): " + parameters);
 			}
 		}, { createDirectory: void(0) });
 
