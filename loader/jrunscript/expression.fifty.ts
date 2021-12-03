@@ -616,6 +616,7 @@ namespace slime.jrunscript {
 						Streams: any
 						Filesystem: {
 							create: () => slime.jrunscript.native.inonit.script.runtime.io.Filesystem
+							Optimizations: any
 						}
 					}
 					Throwables: any

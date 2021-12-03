@@ -10,9 +10,20 @@
 	 *
 	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { slime.jrunscript.file.internal.java.Context } $context
+	 * @param { slime.Loader } $loader
 	 * @param { slime.jrunscript.file.internal.java.Exports } $exports
 	 */
-	function(Packages,$context,$exports) {
+	function(Packages,$context,$loader,$exports) {
+		/** @type { slime.jrunscript.file.internal.spi.Script } */
+		var code = $loader.script("spi.js");
+
+		var spi = code();
+
+		var defined = function(value,fallback) {
+			if (typeof(value) != "undefined") return value;
+			return fallback;
+		};
+
 		$exports.FilesystemProvider = Object.assign(
 			/**
 			 *
@@ -64,6 +75,10 @@
 					}
 				}
 
+				/**
+				 *
+				 * @param { string } path
+				 */
 				var newPeer = function(path) {
 					if (path.substring(path.length-1) == separators.pathname) {
 						if (isRootPath(path)) {
@@ -73,7 +88,7 @@
 						}
 					}
 					if (isAbsolute(path)) {
-						path = $context.spi.canonicalize(path, separators.pathname);
+						path = spi.canonicalize(path, separators.pathname);
 						return _peer.getNode(path);
 					} else {
 						return _peer.getNode(new Packages.java.io.File(path));
@@ -106,8 +121,12 @@
 
 				this.isRootPath = isRootPath;
 
+				/**
+				 *
+				 * @param { string } path
+				 */
 				var newpath = function(path) {
-					return $context.spi.getParentPath(path,separators.pathname);
+					return spi.getParentPath(path,separators.pathname);
 				};
 
 				this.getParent = function getParent(peer) {
@@ -180,9 +199,9 @@
 
 				this.temporary = function(peer,parameters) {
 					if (!parameters) parameters = {};
-					var prefix = $context.api.defined(parameters.prefix, "jsh");
-					var suffix = $context.api.defined(parameters.suffix, null);
-					var directory = $context.api.defined(parameters.directory, false);
+					var prefix = defined(parameters.prefix, "jsh");
+					var suffix = defined(parameters.suffix, null);
+					var directory = defined(parameters.directory, false);
 					var jdir = (peer) ? peer.getHostFile() : null;
 					var jfile = Packages.java.io.File.createTempFile(prefix,suffix,jdir);
 					//	If this was request for directory, delete the temp file and create directory with same name
@@ -214,4 +233,4 @@
 		);
 	}
 //@ts-ignore
-)(Packages,$context,$exports);
+)(Packages,$context,$loader,$exports);

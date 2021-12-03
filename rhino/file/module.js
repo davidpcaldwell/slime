@@ -25,7 +25,9 @@
 			/** @type { slime.jrunscript.file.internal.java.Script } */
 			java: $loader.script("java.js"),
 			/** @type { slime.jrunscript.file.internal.filesystem.Script } */
-			filesystem: $loader.script("filesystem.js")
+			filesystem: $loader.script("filesystem.js"),
+			/** @type { slime.jrunscript.file.internal.spi.Script } */
+			spi: $loader.script("spi.js")
 		}
 
 		/** @returns { item is slime.jrunscript.file.Pathname } */
@@ -46,13 +48,7 @@
 		});
 		file.Searchpath.prototype = prototypes.Searchpath;
 
-		var spi = $loader.file("spi.js", {
-			Searchpath: file.Searchpath
-		});
-
 		var java = code.java(new function() {
-			this.spi = spi;
-
 			this.Pathname = file.Pathname;
 
 			this.api = {

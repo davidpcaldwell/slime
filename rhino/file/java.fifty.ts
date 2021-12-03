@@ -7,10 +7,8 @@
 namespace slime.jrunscript.file.internal.java {
 	export interface Context {
 		Pathname: slime.jrunscript.file.internal.file.Exports["Pathname"]
-		spi: any
 		api: {
 			io: slime.jrunscript.io.Exports
-			defined: any
 		}
 	}
 
@@ -53,4 +51,13 @@ namespace slime.jrunscript.file.internal.java {
 	}
 
 	export type Script = slime.loader.Script<Context,Exports>
+}
+
+namespace slime.jrunscript.file.internal.spi {
+	export interface Exports {
+		canonicalize: (path: string, separator: string) => string
+		getParentPath: (path: string, separator: string) => string
+	}
+
+	export type Script = slime.loader.Script<void,Exports>
 }
