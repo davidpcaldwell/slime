@@ -14,10 +14,18 @@ namespace slime.jrunscript.file.internal.java {
 		}
 	}
 
+	export interface FilesystemProvider {
+		separators: any
+		newPathname: any
+		temporary: any
+		java: any
+		decorate: any
+	}
+
 	export interface Exports {
 		FilesystemProvider: {
-			new (_peer: slime.jrunscript.native.inonit.script.runtime.io.Filesystem): any
-			os: any
+			new (_peer: slime.jrunscript.native.inonit.script.runtime.io.Filesystem): FilesystemProvider
+			os: FilesystemProvider
 		}
 	}
 

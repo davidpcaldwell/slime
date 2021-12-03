@@ -55,7 +55,7 @@ END LICENSE
 					map[item.path] = item;
 				});
 				//	TODO	this is pretty brittle
-				verify(list,"number of entries in rhino/file").length.is(18);
+				verify(list,"number of entries in rhino/file").length.is(19);
 				//	jsh.shell.echo(loader.list().map(function(item) { return item.path; }));
 				verify(map.java).loader.is.not.equalTo(void(0));
 				verify(map.java).evaluate(function() { return this.resource; }).is(void(0));

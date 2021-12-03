@@ -23,7 +23,9 @@
 			/** @type { slime.jrunscript.file.internal.file.Script } */
 			file: $loader.script("file.js"),
 			/** @type { slime.jrunscript.file.internal.java.Script } */
-			java: $loader.script("java.js")
+			java: $loader.script("java.js"),
+			/** @type { slime.jrunscript.file.internal.filesystem.Script } */
+			filesystem: $loader.script("filesystem.js")
 		}
 
 		/** @returns { item is slime.jrunscript.file.Pathname } */
@@ -60,22 +62,9 @@
 		});
 
 		//	TODO	separate out Cygwin and make it less tightly bound with the rest of this
-		var os = $loader.file("filesystem.js", new function() {
-			this.java = java;
-
-			this.Pathname = file.Pathname;
-
-			this.api = new function() {
-				this.io = $context.api.io;
-				this.defined = $context.api.js.defined;
-			};
-
-			this.cygwin = $context.cygwin;
-
-			this.Searchpath = file.Searchpath;
-			this.isPathname = isPathname;
-
-			this.addFinalizer = $context.addFinalizer;
+		var os = code.filesystem({
+			Pathname: file.Pathname,
+			Searchpath: file.Searchpath
 		});
 
 		var filesystems = {};

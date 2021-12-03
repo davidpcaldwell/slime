@@ -4,16 +4,27 @@
 //
 //	END LICENSE
 
+//@ts-check
 (
-	function() {
+	/**
+	 *
+	 * @param { slime.jrunscript.file.internal.filesystem.Context } $context
+	 * @param { slime.jrunscript.file.internal.filesystem.Exports } $exports
+	 */
+	function($context,$exports) {
+		/**
+		 *
+		 * @param { slime.jrunscript.file.internal.java.FilesystemProvider } system
+		 * @param { { interpretNativePathname: any } } [o] Used only for Cygwin.
+		 */
 		var Filesystem = function(system,o) {
 			this.toString = function() {
 				return "Filesystem: provider=" + system;
 			}
 
-			this.Searchpath = function(array) {
+			this.Searchpath = Object.assign(function(array) {
 				return new $context.Searchpath({ filesystem: system, array: array });
-			}
+			}, { parse: void(0) });
 			this.Searchpath.prototype = $context.Searchpath.prototype;
 			this.Searchpath.parse = function(string) {
 				if (!string) {
@@ -72,4 +83,5 @@
 
 		$exports.Filesystem = Filesystem;
 	}
-)();
+//@ts-ignore
+)($context,$exports);

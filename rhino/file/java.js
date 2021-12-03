@@ -15,6 +15,7 @@
 	function(Packages,$context,$exports) {
 		/**
 		 *
+		 * @constructor
 		 * @param { slime.jrunscript.native.inonit.script.runtime.io.Filesystem } _peer
 		 */
 		$exports.FilesystemProvider = Object.assign(function(_peer) {
