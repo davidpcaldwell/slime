@@ -67,15 +67,18 @@
 			Searchpath: file.Searchpath
 		});
 
-		var filesystems = {};
+		var filesystems = {
+			/** @type { slime.jrunscript.file.internal.filesystem.Filesystem } */
+			os: void(0),
+			/** @type { slime.jrunscript.file.internal.filesystem.Filesystem } */
+			cygwin: void(0)
+		};
 
 		java.FilesystemProvider.os = new java.FilesystemProvider(Packages.inonit.script.runtime.io.Filesystem.create());
 		filesystems.os = new os.Filesystem( java.FilesystemProvider.os );
 
-		$exports.filesystems = filesystems;
-
 		if ($context.cygwin) {
-			$exports.filesystems.cygwin = $loader.file("cygwin.js", {
+			filesystems.cygwin = $loader.file("cygwin.js", {
 				cygwin: $context.cygwin,
 				Filesystem: os.Filesystem,
 				java: java,
@@ -85,13 +88,21 @@
 			});
 		}
 
+		$exports.filesystems = filesystems;
+
 		//	By policy, default filesystem is cygwin filesystem if it is present.  Default can be set through module's filesystem property
-		$exports.filesystem = ($exports.filesystems.cygwin) ? $exports.filesystems.cygwin : $exports.filesystems.os;
+		var filesystem = (filesystems.cygwin) ? filesystems.cygwin : filesystems.os;
+
+		$exports.filesystem = filesystem;
 
 		//	TODO	perhaps should move selection of default filesystem into these definitions rather than inside file.js
 		$exports.Pathname = Object.assign(function Pathname(parameters) {
 			if (this.constructor == arguments.callee) throw new Error("Cannot invoke Pathname as constructor.");
 
+			/**
+			 * @template { any } T
+			 * @param { T } rv
+			 */
 			var decorator = function(rv) {
 				rv.constructor = Pathname;
 				return rv;
@@ -100,9 +111,9 @@
 			//	not called as constructor but as function
 			//	perform a "cast"
 			if (typeof(parameters) == "string") {
-				return decorator($exports.filesystem.Pathname(parameters));
+				return decorator(filesystem.Pathname(parameters));
 			} else if (typeof(parameters) == "object" && parameters instanceof String) {
-				return decorator($exports.filesystem.Pathname(parameters.toString()));
+				return decorator(filesystem.Pathname(parameters.toString()));
 			} else {
 				throw new TypeError("Illegal argument to Pathname(): " + parameters);
 			}

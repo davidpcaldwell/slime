@@ -22,6 +22,9 @@
 			throw new Error(message);
 		};
 
+		/**
+		 * @type { slime.jrunscript.file.internal.file.firstDefined }
+		 */
 		var firstDefined = function (object/*, names */) {
 			for (var i = 1; i < arguments.length; i++) {
 				if (typeof (object[arguments[i]]) != "undefined") {
@@ -65,8 +68,12 @@
 			}
 		}
 
+		/**
+		 * @constructor
+		 * @param { ConstructorParameters<slime.jrunscript.file.internal.file.Exports["Pathname"]>[0] } parameters
+		 */
 		var Pathname = function Pathname(parameters) {
-			if (parameters.directory) {
+			if (parameters["directory"]) {
 				$api.deprecate(function directorySpecified() {
 				})();
 			}

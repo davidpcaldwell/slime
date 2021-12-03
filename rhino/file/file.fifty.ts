@@ -29,6 +29,8 @@ namespace slime.jrunscript.file {
 }
 
 namespace slime.jrunscript.file.internal.file {
+	export type firstDefined = <T extends { [x: string]: any }>(o: T, ...names: (keyof T)[]) => any
+
 	export interface Context {
 		Resource: slime.jrunscript.io.Exports["Resource"]
 		Streams: slime.jrunscript.io.Exports["Streams"]
@@ -38,7 +40,15 @@ namespace slime.jrunscript.file.internal.file {
 
 	export interface Exports {
 		Searchpath: any
-		Pathname: any
+		Pathname: new (parameters: {
+			filesystem: any
+			peer: any
+			path?: any
+
+			$peer?: any
+			$filesystem?: any
+			$path?: any
+		}) => any
 		list: slime.jrunscript.file.Exports["list"]
 	}
 

@@ -6,7 +6,7 @@
 
 namespace slime.jrunscript.file.internal.java {
 	export interface Context {
-		Pathname: any
+		Pathname: slime.jrunscript.file.internal.file.Exports["Pathname"]
 		spi: any
 		api: {
 			io: any
