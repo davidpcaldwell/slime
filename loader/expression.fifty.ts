@@ -310,18 +310,23 @@ namespace slime {
 
 			export namespace scripts {
 				export interface Scope {
+					$slime: slime.runtime.$slime.Deployment
+					$platform: slime.runtime.$platform
+					$engine: slime.runtime.internal.Engine
+					$api: slime.$api.Global
+					mime: slime.runtime.Exports["mime"]
 					mimeTypeIs: (type: string) => (type: slime.mime.Type) => boolean
 				}
-			}
 
-			export type scripts = {
-				methods: {
-					run: (code: slime.Resource, scope: { [name: string]: any }) => void
-					value: (code: slime.Resource, scope: { [name: string]: any }) => any
-					file: (code: slime.Resource, context: { [name: string]: any }) => { [x: string]: any }
+				export interface Exports {
+					methods: {
+						run: (code: slime.Resource, scope: { [name: string]: any }) => void
+						value: (code: slime.Resource, scope: { [name: string]: any }) => any
+						file: (code: slime.Resource, context: { [name: string]: any }) => { [x: string]: any }
+					}
+					toExportScope: slime.runtime.Exports["Loader"]["tools"]["toExportScope"]
+					createFileScope: createFileScope
 				}
-				toExportScope: slime.runtime.Exports["Loader"]["tools"]["toExportScope"]
-				createFileScope: createFileScope
 			}
 
 			/**
@@ -424,7 +429,7 @@ namespace slime {
 				}
 				series: (loaders: Loader[]) => Loader
 				tools: {
-					toExportScope: <T>(t: T) => T & { $export: any, $exports: any }
+					toExportScope: <T extends { [x: string]: any }>(t: T) => T & { $export: any, $exports: any }
 				}
 			}
 		}

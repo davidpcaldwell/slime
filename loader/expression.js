@@ -136,6 +136,8 @@
 			}
 		)(engine);
 
+		//	The $api.js script currently evaluates to the $api value rather than exporting it, hence the below load() is not
+		//	applicable
 		/** @type { slime.$api.Global } */
 		var $api = engine.execute(
 			$slime.getRuntimeScript("$api.js"),
@@ -165,7 +167,18 @@
 			);
 
 			return exported;
-		}
+		};
+
+		var script = function(path) {
+			return function(scope) {
+				return load(path, scope);
+			}
+		};
+
+		var code = {
+			/** @type { slime.loader.Script<slime.runtime.internal.scripts.Scope,slime.runtime.internal.scripts.Exports> } */
+			scripts: script("scripts.js")
+		};
 
 		var mime = $api.mime;
 
@@ -216,8 +229,7 @@
 			}
 		}
 
-		var scripts = load(
-			"scripts.js",
+		var scripts = code.scripts(
 			{
 				$api: $api,
 				mime: {

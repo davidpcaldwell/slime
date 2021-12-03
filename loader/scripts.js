@@ -8,20 +8,19 @@
 (
 	/**
 	 *
-	 * @param { slime.$api.Global } $api
-	 * @param { slime.runtime.Exports["mime"] } mime
+	 * @param { slime.runtime.internal.scripts.Scope["$slime"] } $slime
+	 * @param { slime.runtime.internal.scripts.Scope["$platform"] } $platform
+	 * @param { slime.runtime.internal.scripts.Scope["$engine"] } $engine
+	 * @param { slime.runtime.internal.scripts.Scope["$api"] } $api
+	 * @param { slime.runtime.internal.scripts.Scope["mime"] } mime
 	 * @param { slime.runtime.internal.scripts.Scope["mimeTypeIs"] } mimeTypeIs
-	 * @param { slime.runtime.$slime.Deployment } $slime
-	 * @param { slime.runtime.$platform } $platform
-	 * @param { slime.runtime.internal.Engine } $engine
-	 * @param { (value: slime.runtime.internal.scripts) => void } $export
+	 * @param { slime.loader.Export<slime.runtime.internal.scripts.Exports> } $export
 	 */
-	function($api,mime,mimeTypeIs,$slime,$platform,$engine,$export) {
+	function($slime,$platform,$engine,$api,mime,mimeTypeIs,$export) {
 		/**
 		 * @type { slime.runtime.Exports["Loader"]["tools"]["toExportScope"] }
 		 */
 		var toExportScope = function(scope) {
-			/** @type { ReturnType<slime.runtime.Exports["Loader"]["tools"]["toExportScope"]> } */
 			var rv = Object.assign(scope, { $exports: void(0), $export: void(0) });
 			var $exports = {};
 			var $export = function(v) {
@@ -73,7 +72,7 @@
 		//	TODO	re-work resource.js
 
 		/**
-		 * @type { slime.runtime.internal.scripts["methods"]["run"] }
+		 * @type { slime.runtime.internal.scripts.Exports["methods"]["run"] }
 		 */
 		methods.run = function run(object,scope) {
 			if (!object || typeof(object) != "object") {
@@ -168,4 +167,4 @@
 		});
 	}
 //@ts-ignore
-)($api,mime,mimeTypeIs,$slime,$platform,$engine,$export);
+)($slime,$platform,$engine,$api,mime,mimeTypeIs,$export);
