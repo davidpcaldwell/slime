@@ -9,7 +9,13 @@ namespace slime.jrunscript.file {
 		directory: Directory
 		basename: string
 		parent: Pathname
-		createDirectory: (p?: { exists?: (d: Directory) => boolean, recursive?: boolean } ) => Directory
+		createDirectory: (p?: {
+			exists?: (d: Directory) => boolean
+			recursive?: boolean
+
+			/** @deprecated Use `exists`. */
+			ifExists?: (d: Directory) => boolean
+		}) => Directory
 		write: slime.jrunscript.runtime.Resource["write"]
 		file: File
 		java: {
@@ -48,7 +54,7 @@ namespace slime.jrunscript.file.internal.file {
 			$peer?: any
 			$filesystem?: any
 			$path?: any
-		}) => any
+		}) => Pathname
 		list: slime.jrunscript.file.Exports["list"]
 	}
 

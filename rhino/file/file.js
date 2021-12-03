@@ -72,7 +72,7 @@
 		 * @constructor
 		 * @param { ConstructorParameters<slime.jrunscript.file.internal.file.Exports["Pathname"]>[0] } parameters
 		 */
-		var Pathname = function Pathname(parameters) {
+		function Pathname(parameters) {
 			if (parameters["directory"]) {
 				$api.deprecate(function directorySpecified() {
 				})();
@@ -120,11 +120,13 @@
 				var tokens = path.split($filesystem.separators.pathname);
 				return tokens.pop();
 			});
+			this.basename = void(0);
 			this.__defineGetter__("basename", getBasename);
 
 			var getParent = constant(function () {
 				return $filesystem.getParent(peer);
 			});
+			this.parent = void(0);
 			this.__defineGetter__("parent", getParent);
 
 			var getFile = function () {
@@ -147,7 +149,10 @@
 			this.directory = void (0);
 			this.__defineGetter__("directory", getDirectory);
 
-			var write = function (dataOrType, mode) {
+			//	TODO	have some real work to do here getting type safety together with this heavy overloading
+			/** @type { slime.jrunscript.file.Pathname["write"] } */
+			//@ts-ignore
+			var write = function write(dataOrType, mode) {
 				if (!mode) mode = {};
 
 				/**
@@ -214,6 +219,7 @@
 
 			this.write = write;
 
+			/** @type { slime.jrunscript.file.Pathname["createDirectory"] } */
 			this.createDirectory = function (mode) {
 				if (!mode) mode = {};
 				var exists = (function (mode) {
@@ -527,6 +533,11 @@
 				this.getRelativePath = void (0);
 				this.toString = void (0);
 
+				this.pathname = void(0);
+				this.remove = void(0);
+				this.parent = void(0);
+				this.move = void(0);
+				this.copy = void(0);
 				Node.call(this, pathname, "");
 
 				this.toString = (function (was) {

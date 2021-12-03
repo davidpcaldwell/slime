@@ -16,7 +16,7 @@ namespace slime.jrunscript.file.internal.java {
 
 	export interface FilesystemProvider {
 		separators: any
-		newPathname: any
+		newPathname: (string: string) => slime.jrunscript.file.Pathname
 		temporary: any
 		java: any
 		decorate: any

@@ -7,7 +7,7 @@
 namespace slime.jrunscript.file.internal.filesystem {
 	export interface Context {
 		Searchpath: any
-		Pathname: any
+		Pathname: slime.jrunscript.file.internal.file.Exports["Pathname"]
 	}
 
 	export interface Exports {
@@ -15,7 +15,7 @@ namespace slime.jrunscript.file.internal.filesystem {
 	}
 
 	export interface Filesystem {
-		Pathname: (string: string) => any
+		Pathname: (string: string) => slime.jrunscript.file.Pathname
 	}
 
 	export type Script = slime.loader.Script<Context,Exports>

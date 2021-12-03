@@ -37,6 +37,7 @@
 				return new $context.Searchpath({ filesystem: system, array: array });
 			}
 
+			/** @type { slime.jrunscript.file.internal.filesystem.Filesystem["Pathname"] } */
 			this.Pathname = function(string) {
 				return system.newPathname(string);
 			}
