@@ -52,12 +52,12 @@ namespace slime.jrunscript.runtime {
 
 	export namespace Loader {
 		export interface Source extends slime.loader.Source {
-			zip: any
-			_source: any
-			_file: any
-			_url: any
+			_source?: slime.jrunscript.native.inonit.script.engine.Code.Loader
+			zip?: any
+			_file?: any
+			_url?: any
 			/** @deprecated */
-			resources: any
+			resources?: any
 		}
 	}
 
@@ -333,6 +333,8 @@ namespace slime.jrunscript {
 				export namespace Code {
 					export interface Loader {
 						getFile(path: string): Loader.Resource
+						child(path: string): Loader
+						getEnumerator(): any
 					}
 
 					export namespace Loader {
@@ -605,7 +607,13 @@ namespace slime.jrunscript {
 				}
 				engine: {
 					Code: {
-						Loader: any
+						Loader: {
+							zip: (p: any) => slime.jrunscript.native.inonit.script.engine.Code.Loader
+							create: (p: any) => slime.jrunscript.native.inonit.script.engine.Code.Loader
+							Resource: any
+							URI: any
+							github: any
+						}
 					}
 				}
 				rhino: {

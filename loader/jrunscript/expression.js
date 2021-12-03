@@ -612,7 +612,6 @@
 		loader.Loader = (function(was) {
 			/**
 			 * @this { slime.Loader & { java: any } }
-			 * @param { slime.jrunscript.runtime.Loader.Source } p
 			 */
 			var rv = function(p) {
 				//	Satisfy TypeScript
@@ -627,21 +626,24 @@
 				this.get = void(0);
 
 				if (!p) throw new TypeError("source argument required for Loader.");
-				if (p.zip) {
-					if (p.zip._file) {
-						p._source = Packages.inonit.script.engine.Code.Loader.zip(p.zip._file);
-					} else if (p.zip.resource) {
-						p._source = Packages.inonit.script.engine.Code.Loader.zip(p.zip.resource.java.adapt(p.zip.resource.name));
+				var _source = (function() {
+					if (p._source) return p._source;
+					if (p.zip) {
+						if (p.zip._file) {
+							return Packages.inonit.script.engine.Code.Loader.zip(p.zip._file);
+						} else if (p.zip.resource) {
+							return Packages.inonit.script.engine.Code.Loader.zip(p.zip.resource.java.adapt(p.zip.resource.name));
+						}
+					} else if (p._file && p._file.isDirectory()) {
+						return Packages.inonit.script.engine.Code.Loader.create(p._file);
+					} else if (p._url) {
+						//	TODO	no known test coverage
+						return Packages.inonit.script.engine.Code.Loader.create(p._url);
 					}
-				} else if (p._file && p._file.isDirectory()) {
-					p._source = Packages.inonit.script.engine.Code.Loader.create(p._file);
-				} else if (p._url) {
-					//	TODO	no known test coverage
-					p._source = Packages.inonit.script.engine.Code.Loader.create(p._url);
-				}
-				if (p._source) {
+				})();
+				if (_source) {
 					p.get = function(path) {
-						var _file = p._source.getFile(path);
+						var _file = _source.getFile(path);
 						if (!_file) return null;
 						return {
 							_loaded: {
@@ -653,12 +655,12 @@
 					};
 					p.child = function(prefix) {
 						return {
-							_source: p._source.child(prefix)
+							_source: _source.child(prefix)
 						}
 					};
-					if (p._source.getEnumerator()) {
+					if (_source.getEnumerator()) {
 						p.list = function(prefix) {
-							var _paths = p._source.getEnumerator().list(prefix);
+							var _paths = _source.getEnumerator().list(prefix);
 							var rv = [];
 							if (!_paths) return rv;
 							for (var i=0; i<_paths.length; i++) {
@@ -673,7 +675,7 @@
 						}
 					}
 					p.toString = function() {
-						return "Java loader: " + p._source.toString();
+						return "Java loader: " + _source.toString();
 					};
 				} else if (p.resources) {
 					if (Packages.java.lang.System.getenv("SLIME_LOADER_RHINO_REMOVE_DEPRECATED")) throw new Error();
