@@ -24,7 +24,7 @@ var build = (function() {
 	} else if (format == "directory") {
 		return parameters.options.to.createDirectory();
 	} else {
-		jsh.java.fail("Unknown -format: " + format);
+		throw new Error("Unknown -format: " + format);
 	}
 })();
 

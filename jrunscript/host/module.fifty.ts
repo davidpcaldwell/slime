@@ -194,7 +194,6 @@ namespace slime.jrunscript.host {
 	export interface Exports {
 		invoke: any
 		Properties: any
-		fail: any
 		ErrorType: any
 		toJsArray: any
 		toJavaArray: any

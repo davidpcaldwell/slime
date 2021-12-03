@@ -175,10 +175,6 @@
 				return new Packages.inonit.script.runtime.Throwables();
 			})();
 
-			this.fail = function(message) {
-				instance.fail(message);
-			}
-
 			this.decorate = function(implementation) {
 				var rv = function() {
 					//	TODO	what if called as function?
@@ -234,11 +230,6 @@
 				return rv;
 			};
 		}
-
-		$exports.fail = function(message) {
-			errors.fail(message);
-		};
-		$api.experimental($exports,"fail");
 
 		//	TODO	The below probably only needs to execute under Rhino, but need to figure out how to do that. For now it is effectively
 		//			disabled for Nashorn by checking for existence of stack property in errors.decorate

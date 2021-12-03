@@ -7,7 +7,7 @@
 //@ts-check
 (
 	/**
-	 * @param { any } Packages
+	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jrunscript.file.Context } $context
 	 * @param { slime.Loader } $loader
@@ -19,6 +19,11 @@
 			throw new Error("$pwd is object.");
 		}
 
+		var code = {
+			/** @type { slime.jrunscript.file.internal.file.Script } */
+			file: $loader.script("file.js")
+		}
+
 		/** @returns { item is slime.jrunscript.file.Pathname } */
 		var isPathname = function(item) {
 			return item && item.java && item.java.adapt() && $context.api.java.isJavaType(Packages.java.io.File)(item.java.adapt());
@@ -28,15 +33,12 @@
 			Searchpath: {}
 		};
 
-		var file = $loader.file("file.js", {
-			pathext: $context.pathext,
-			isPathname: isPathname,
-			defined: $context.api.js.defined,
-			constant: $context.api.js.constant,
-			fail: $context.api.java.fail,
-			isJavaType: $context.api.java.isJavaType,
+		var file = code.file({
+			//	Only use of $context.pathext in the module
 			Streams: $context.api.io.Streams,
-			Resource: $context.api.io.Resource
+			Resource: $context.api.io.Resource,
+			isPathname: isPathname,
+			pathext: $context.pathext
 		});
 		file.Searchpath.prototype = prototypes.Searchpath;
 
@@ -115,7 +117,7 @@
 					throw new TypeError("Illegal argument to Pathname(): " + parameters);
 				}
 			} else {
-				$context.api.java.fail("Cannot invoke Pathname as constructor.");
+				throw new Error("Cannot invoke Pathname as constructor.");
 			}
 		}, { createDirectory: void(0) });
 

@@ -11,13 +11,15 @@
 	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jrunscript.file.internal.file.Context } $context
-	 * @param { { Searchpath: any, Pathname: any, list: slime.jrunscript.file.Exports["list"] }} $exports
+	 * @param { slime.jrunscript.file.internal.file.Exports } $exports
 	 */
 	function (Packages, $api, $context, $exports) {
 		if (!$context.Resource) throw new Error();
 
-		var constant = $context.constant;
-		var fail = $context.fail;
+		var constant = $api.Function.memoized;
+		var fail = function(message) {
+			throw new Error(message);
+		};
 
 		var firstDefined = function (object/*, names */) {
 			for (var i = 1; i < arguments.length; i++) {
@@ -64,8 +66,7 @@
 
 		var Pathname = function Pathname(parameters) {
 			if (parameters.directory) {
-				$api.deprecate(function () {
-					var directorySpecified = true;
+				$api.deprecate(function directorySpecified() {
 				})();
 			}
 			if (!parameters) {

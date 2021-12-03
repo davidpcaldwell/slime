@@ -582,6 +582,7 @@ namespace slime.jrunscript {
 				runtime: {
 					io: {
 						Streams: any
+						Filesystem: any
 					}
 					Throwables: any
 					Threads: any

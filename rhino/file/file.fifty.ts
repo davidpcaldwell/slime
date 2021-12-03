@@ -30,12 +30,10 @@ namespace slime.jrunscript.file {
 
 namespace slime.jrunscript.file.internal.file {
 	export interface Context {
-		Resource: slime.jrunscript.file.Context["api"]["io"]["Resource"]
-		constant: any
-		fail: any
-		isPathname: any
-		Streams: any
-		pathext: any
+		Resource: slime.jrunscript.io.Exports["Resource"]
+		Streams: slime.jrunscript.io.Exports["Streams"]
+		isPathname: (item: any) => item is slime.jrunscript.file.Pathname
+		pathext: string[]
 	}
 
 	export interface Exports {
@@ -43,4 +41,6 @@ namespace slime.jrunscript.file.internal.file {
 		Pathname: any
 		list: slime.jrunscript.file.Exports["list"]
 	}
+
+	export type Script = slime.loader.Script<Context,Exports>
 }

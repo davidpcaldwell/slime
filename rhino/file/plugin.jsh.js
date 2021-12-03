@@ -18,17 +18,17 @@
 				return Boolean(jsh.loader && jsh.loader.addFinalizer && jsh.js && jsh.java && jsh.io);
 			},
 			load: function() {
+				/** @type { slime.jrunscript.file.Context } */
 				var context = {
-					$slime: {
-						Resource: $slime.Resource
-					},
 					$pwd: $slime.getSystemProperty("user.dir"),
 					addFinalizer: jsh.loader.addFinalizer,
 					api: {
 						js: jsh.js,
 						java: jsh.java,
 						io: jsh.io
-					}
+					},
+					pathext: void(0),
+					cygwin: void(0)
 				};
 
 				//	Windows
@@ -40,7 +40,10 @@
 				//	Cygwin
 				$loader.run("plugin.jsh.cygwin.js", { $slime: $slime, context: context });
 
-				jsh.file = $loader.module("module.js", context);
+				/** @type { slime.jrunscript.file.Script } */
+				var script = $loader.script("module.js");
+
+				jsh.file = script(context);
 			}
 		})
 	}
