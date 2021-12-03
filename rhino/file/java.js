@@ -9,11 +9,12 @@
 	/**
 	 *
 	 * @param { slime.jrunscript.Packages } Packages
+	 * @param { slime.$api.Global } $api
 	 * @param { slime.jrunscript.file.internal.java.Context } $context
 	 * @param { slime.Loader } $loader
 	 * @param { slime.jrunscript.file.internal.java.Exports } $exports
 	 */
-	function(Packages,$context,$loader,$exports) {
+	function(Packages,$api,$context,$loader,$exports) {
 		/** @type { slime.jrunscript.file.internal.spi.Script } */
 		var code = $loader.script("spi.js");
 
@@ -23,6 +24,114 @@
 			if (typeof(value) != "undefined") return value;
 			return fallback;
 		};
+
+		/**
+		 *
+		 * @param { string } path
+		 * @returns
+		 */
+		var fixWindowsForwardSlashes = function(path) {
+			return path.replace(/\//g, "\\");
+		}
+
+		var $$api = {
+			RegExp: {
+				/**
+				 *
+				 * @param { RegExp } r
+				 * @returns
+				 */
+				exec: function(r) {
+					/**
+					 * @param { string } s
+					 */
+					return function(s) {
+						return r.exec(s);
+					}
+				}
+			}
+		}
+
+		var systems = {
+			/** @type { slime.jrunscript.file.internal.java.System } */
+			unix: {
+				separator: {
+					file: "/"
+				},
+				isAbsolute: function(string) {
+					if (string.substring(0,1) != "/") {
+						return false;
+					} else {
+						return true;
+					}
+				},
+				isRootPath: function(string) {
+					return ( string == "" || string == "/" ) || (string.substring(0,2) == "//" && string.substring(2).indexOf("/") == -1);
+				}
+			},
+			/** @type { slime.jrunscript.file.internal.java.System } */
+			windows: {
+				separator: {
+					file: "\\"
+				},
+				isAbsolute: $api.Function.pipe(fixWindowsForwardSlashes, function(string) {
+					if (string[1] == ":" || string.substring(0,2) == "\\\\") {
+						return true;
+					} else {
+						return false;
+					}
+				}),
+				isRootPath: $api.Function.pipe(fixWindowsForwardSlashes, function(string) {
+					if (string.substring(1,2) == ":") {
+						return string.length == 3 && string[2] == "\\";
+					} else if (string.substring(0,2) == "\\\\") {
+						return string.substring(2).indexOf("\\") == -1;
+					} else {
+						return false;
+					}
+				})
+			}
+		};
+
+		/**
+		 *
+		 * @param { string } separator
+		 */
+		var systemForPathnameSeparator = function(separator) {
+			return Object.entries(systems).map(function(entry) {
+				return entry[1];
+			}).find(function(system) {
+				return system.separator.file == separator;
+			});
+		}
+
+		/**
+		 *
+		 * @param { slime.jrunscript.file.internal.java.System } system
+		 * @returns
+		 */
+		function trailingSeparatorRemover(system) {
+			/**
+			 *
+			 * @param { string } path
+			 */
+			function removeTrailingSeparator(path) {
+				var matchTrailingSlash = $api.Function.result(
+					/(.*)/,
+					$api.Function.RegExp.modify(function(pattern) {
+						return pattern + "\\" + system.separator.file + "$";
+					})
+				);
+				var withoutTrailingSlash = matchTrailingSlash.exec(path);
+				if (withoutTrailingSlash && !system.isRootPath(path)) {
+					return withoutTrailingSlash[1];
+				} else {
+					return path;
+				}
+			}
+			var fixArgument = (system == systems.windows) ? fixWindowsForwardSlashes : $api.Function.identity;
+			return $api.Function.pipe(fixArgument, removeTrailingSeparator);
+		}
 
 		$exports.FilesystemProvider = Object.assign(
 			/**
@@ -37,57 +146,16 @@
 					line: String(_peer.getLineSeparator())
 				};
 
+				var os = systemForPathnameSeparator(separators.pathname);
+
 				this.separators = separators;
-
-				//	TODO	Build this into each separate filesystem separately
-				var isAbsolute = function(string) {
-					if (separators.pathname == "/") {
-						if (string.substring(0,1) != "/") {
-							return false;
-						} else {
-							return true;
-						}
-					} else if (separators.pathname == "\\") {
-						if (string[1] == ":" || string.substring(0,2) == "\\\\") {
-							return true;
-						} else {
-							return false;
-						}
-					} else {
-						throw "Unreachable: separators.pathname = " + separators.pathname;
-					}
-				}
-
-				//	TODO	Build this into each separate filesystem separately
-				var isRootPath = function(string) {
-					if (separators.pathname == "/") {
-						return ( string == "" || string == "/" ) || (string.substring(0,2) == "//" && string.substring(2).indexOf("/") == -1);
-					} else if (separators.pathname == "\\") {
-						if (string[1] == ":") {
-							return string.length == 3 && string[2] == "\\";
-						} else if (string.substring(0,2) == "\\\\") {
-							return string.substring(2).indexOf("\\") == -1;
-						} else {
-							throw "Unreachable: path is " + string;
-						}
-					} else {
-						throw "Unreachable: separators.pathname = " + separators.pathname;
-					}
-				}
 
 				/**
 				 *
 				 * @param { string } path
 				 */
 				var newPeer = function(path) {
-					if (path.substring(path.length-1) == separators.pathname) {
-						if (isRootPath(path)) {
-							//	ok then
-						} else {
-							path = path.substring(0,path.length-1);
-						}
-					}
-					if (isAbsolute(path)) {
+					if (os.isAbsolute(path)) {
 						path = spi.canonicalize(path, separators.pathname);
 						return _peer.getNode(path);
 					} else {
@@ -119,7 +187,7 @@
 					return String( peer.getScriptPath() );
 				}
 
-				this.isRootPath = isRootPath;
+				this.isRootPath = os.isRootPath;
 
 				/**
 				 *
@@ -231,6 +299,13 @@
 			},
 			{ os: void(0) }
 		);
+
+		$exports.test = {
+			unix: systems.unix,
+			windows: systems.windows,
+			systemForPathnameSeparator: systemForPathnameSeparator,
+			trailingSeparatorRemover: trailingSeparatorRemover
+		}
 	}
 //@ts-ignore
-)(Packages,$context,$loader,$exports);
+)(Packages,$api,$context,$loader,$exports);

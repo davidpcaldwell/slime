@@ -294,6 +294,11 @@
 					set: setLastModified
 				})
 
+				/**
+				 *
+				 * @param { string } pathString
+				 * @returns
+				 */
 				var getRelativePath = function (pathString) {
 					var directoryPath = pathname.toString() + relativePathPrefix;
 					//	TODO	the below logic is counterintuitive for / on UNIX, but it works; the empty string does not end with slash,
