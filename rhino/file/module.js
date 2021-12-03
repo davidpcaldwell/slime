@@ -98,6 +98,7 @@
 		//	TODO	perhaps should move selection of default filesystem into these definitions rather than inside file.js
 		$exports.Pathname = Object.assign(function Pathname(parameters) {
 			if (this.constructor == arguments.callee) throw new Error("Cannot invoke Pathname as constructor.");
+			if (typeof(parameters) != "string") throw new TypeError("parameters must be string.");
 
 			/**
 			 * @template { any } T
@@ -108,15 +109,7 @@
 				return rv;
 			}
 
-			//	not called as constructor but as function
-			//	perform a "cast"
-			if (typeof(parameters) == "string") {
-				return decorator(filesystem.Pathname(parameters));
-			} else if (typeof(parameters) == "object" && parameters instanceof String) {
-				return decorator(filesystem.Pathname(parameters.toString()));
-			} else {
-				throw new TypeError("Illegal argument to Pathname(): " + parameters);
-			}
+			return decorator(filesystem.Pathname(parameters));
 		}, { createDirectory: void(0) });
 
 		$exports.Pathname.createDirectory = function(p) {

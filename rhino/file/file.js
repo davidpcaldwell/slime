@@ -87,16 +87,19 @@
 			// $api.deprecate(parameters,"$peer");
 			// $api.deprecate(parameters,"path");
 
+			/** @type { slime.jrunscript.file.internal.java.FilesystemProvider } */
 			var $filesystem = firstDefined(parameters, "filesystem", "$filesystem");
 			if (!$filesystem.peerToString) throw new Error("Internal error; Pathname constructed incorrectly: " + parameters);
 
+			/** @type { slime.jrunscript.native.inonit.script.runtime.io.Filesystem.Node } */
 			var peer = (function () {
 				var peer = firstDefined(parameters, "peer", "$peer");
 				if (peer) return peer;
-				var path = firstDefined(parameters, "path", "$path");
-				//	TODO	below line appears to invoke nonexistent method
-				if (path) return $filesystem.getPeer(path);
-				fail("Missing new Pathname() arguments: " + parameters);
+				throw new TypeError();
+				// var path = firstDefined(parameters, "path", "$path");
+				// //	TODO	below line appears to invoke nonexistent method
+				// if (path) return $filesystem.getPeer(path);
+				// fail("Missing new Pathname() arguments: " + parameters);
 			})();
 
 			var toString = constant(function () {
@@ -198,23 +201,6 @@
 					}
 				});
 				return poorResource.write(dataOrType, mode);
-				// if (dataOrType == $context.Streams.binary) {
-				// 	return $filesystem.write.binary(peer,append);
-				// } else if (dataOrType == $context.Streams.text) {
-				// 	return $filesystem.write.character(peer,append);
-				// } else if (typeof(dataOrType) == "string") {
-				// 	$filesystem.write.string(peer,append,dataOrType);
-				// } else if (dataOrType.java && dataOrType.java.adapt && $context.isJavaType(Packages.java.io.InputStream)(dataOrType.java.adapt())) {
-				// 	var stream = $filesystem.write.binary(peer,append);
-				// 	$context.Streams.binary.copy(dataOrType,stream);
-				// 	stream.close();
-				// } else if (dataOrType.java && dataOrType.java.adapt && $context.isJavaType(Packages.java.io.Reader)(dataOrType.java.adapt())) {
-				// 	var stream = $filesystem.write.character(peer,append);
-				// 	$context.Streams.text.copy(dataOrType,stream);
-				// 	stream.close();
-				// } else {
-				// 	fail("Unimplemented: write " + dataOrType);
-				// }
 			}
 
 			this.write = write;
@@ -271,7 +257,7 @@
 			 *
 			 * @param { any } pathname
 			 * @param { string } relativePathPrefix
-			 * @param { any } _peer
+			 * @param { slime.jrunscript.native.inonit.script.runtime.io.Filesystem.Node } _peer
 			 */
 			var Node = function Node(pathname, relativePathPrefix, _peer) {
 				if (!_peer) {

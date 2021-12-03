@@ -47,12 +47,12 @@ namespace slime.jrunscript.file.internal.file {
 	export interface Exports {
 		Searchpath: any
 		Pathname: new (parameters: {
-			filesystem: any
-			peer: any
+			filesystem: slime.jrunscript.file.internal.java.FilesystemProvider
+			peer: slime.jrunscript.native.inonit.script.runtime.io.Filesystem.Node
 			path?: any
 
-			$peer?: any
-			$filesystem?: any
+			$filesystem?: slime.jrunscript.file.internal.java.FilesystemProvider
+			$peer?: slime.jrunscript.native.inonit.script.runtime.io.Filesystem.Node
 			$path?: any
 		}) => Pathname
 		list: slime.jrunscript.file.Exports["list"]
