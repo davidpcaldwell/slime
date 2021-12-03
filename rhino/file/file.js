@@ -17,6 +17,7 @@
 		if (!$context.Resource) throw new Error();
 
 		var constant = $api.Function.memoized;
+
 		var fail = function(message) {
 			throw new Error(message);
 		};
@@ -253,7 +254,13 @@
 				}
 			}
 
-			var Node = function Node(pathname, prefix, _peer) {
+			/**
+			 *
+			 * @param { any } pathname
+			 * @param { string } relativePathPrefix
+			 * @param { any } _peer
+			 */
+			var Node = function Node(pathname, relativePathPrefix, _peer) {
 				if (!_peer) {
 					_peer = peer;
 				}
@@ -289,7 +296,7 @@
 				})
 
 				var getRelativePath = function (pathString) {
-					var directoryPath = pathname.toString() + prefix;
+					var directoryPath = pathname.toString() + relativePathPrefix;
 					//	TODO	the below logic is counterintuitive for / on UNIX, but it works; the empty string does not end with slash,
 					//			so a / is appended
 					// if (directoryPath.length > 0 && directoryPath.substring( directoryPath.length - 1 ) != $filesystem.separators.pathname)

@@ -164,8 +164,8 @@ namespace slime.jrunscript.file {
 				//	TODO	brittle; changing structure of module can break it
 				fifty.verify(listing)[0].relative.is("api.Loader.html");
 				fifty.verify(listing)[0].absolute.is(prefix + "/" + "api.Loader.html");
-				fifty.verify(listing)[10].relative.is("java/");
-				fifty.verify(listing)[10].absolute.is(prefix + "/" + "java/");
+				fifty.verify(listing)[11].relative.is("java/");
+				fifty.verify(listing)[11].absolute.is(prefix + "/" + "java/");
 			}
 
 			fifty.tests.action = {};

@@ -4,8 +4,15 @@
 //
 //	END LICENSE
 
+//@ts-check
 (
-	function() {
+	/**
+	 *
+	 * @param { slime.jrunscript.Packages } Packages
+	 * @param { slime.jrunscript.file.internal.java.Context } $context
+	 * @param { slime.jrunscript.file.internal.java.Exports } $exports
+	 */
+	function(Packages,$context,$exports) {
 		$exports.FilesystemProvider = function(_peer) {
 			var separators = {
 				pathname: String(_peer.getPathnameSeparator()),
@@ -72,7 +79,8 @@
 			}
 
 			this.importPathname = function(pathname) {
-				return new $context.Pathname({ filesystem: this, peer: peer.getNode( pathname.java.adapt() ) });
+				throw new Error("Theorized to be unused, at least excluding Cygwin.");
+				//return new $context.Pathname({ filesystem: this, peer: peer.getNode( pathname.java.adapt() ) });
 			}
 
 			this.exists = function(peer) {
@@ -195,4 +203,5 @@
 			}
 		}
 	}
-)();
+//@ts-ignore
+)(Packages,$context,$exports);

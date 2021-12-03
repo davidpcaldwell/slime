@@ -16,7 +16,7 @@
 	function(Packages,$api,$context,$loader,$exports) {
 		if (!$context.api) throw new Error("Missing 'api' member of context");
 		if ($context.$pwd && typeof($context.$pwd) != "string") {
-			throw new Error("$pwd is object.");
+			throw new Error("$pwd is " + typeof($context.$pwd) + ".");
 		}
 
 		var code = {
