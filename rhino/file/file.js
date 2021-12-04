@@ -300,13 +300,7 @@
 				 * @returns
 				 */
 				var getRelativePath = function (pathString) {
-					var directoryPath = pathname.toString() + relativePathPrefix;
-					//	TODO	the below logic is counterintuitive for / on UNIX, but it works; the empty string does not end with slash,
-					//			so a / is appended
-					// if (directoryPath.length > 0 && directoryPath.substring( directoryPath.length - 1 ) != $filesystem.separators.pathname)
-					if (directoryPath.substring(directoryPath.length - 1) != $filesystem.separators.pathname)
-						directoryPath += $filesystem.separators.pathname;
-					return $filesystem.newPathname(directoryPath + pathString);
+					return $filesystem.newPathname(pathname.toString() + relativePathPrefix + pathString);
 				}
 				this.getRelativePath = getRelativePath;
 
@@ -529,7 +523,7 @@
 				this.parent = void(0);
 				this.move = void(0);
 				this.copy = void(0);
-				Node.call(this, pathname, "");
+				Node.call(this, pathname, $filesystem.separators.pathname + "." + $filesystem.separators.pathname);
 
 				this.toString = (function (was) {
 					return function () {
