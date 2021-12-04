@@ -14,8 +14,6 @@
 			var isDocker = Boolean(fifty.global.jsh.file.Pathname("/slime").directory);
 
 			fifty.load("../loader/expression.fifty.ts");
-			fifty.load("../loader/$api-Function.fifty.ts");
-			fifty.load("../loader/mime.fifty.ts");
 			fifty.load("../loader/jrunscript/java.fifty.ts");
 			fifty.load("../rhino/system/test/Packages.inonit.system.fifty.ts");
 			fifty.load("../rhino/jrunscript/api.fifty.ts");

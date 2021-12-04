@@ -20,7 +20,7 @@
 		var _streams = new Packages.inonit.script.runtime.io.Streams();
 
 		/** @type { slime.jrunscript.runtime.Exports } */
-		var loader = {
+		var $exports = {
 			run: void(0),
 			Loader: void(0),
 			loader: void(0),
@@ -165,9 +165,9 @@
 			}
 		)();
 
-		Object.assign(loader, slime);
+		Object.assign($exports, slime);
 
-		loader.mime = (function(was) {
+		$exports.mime = (function(was) {
 			var guess_URLConnection = function(p) {
 				var _rv = Packages.java.net.URLConnection.getFileNameMap().getContentTypeFor(p.name);
 				if (!_rv) return function(){}();
@@ -188,23 +188,23 @@
 			})(was.Type.fromName);
 
 			return was;
-		})(loader.mime);
+		})($exports.mime);
 
-		loader.java = loader.file(new loader.Resource({ name: "slime://loader/jrunscript/java.js", string: String($loader.getLoaderCode("jrunscript/java.js")) }), {
+		$exports.java = $exports.file(new $exports.Resource({ name: "slime://loader/jrunscript/java.js", string: String($loader.getLoaderCode("jrunscript/java.js")) }), {
 			engine: $bridge,
 			classpath: $loader.getClasspath()
 		});
 
-		loader.io = loader.file(new loader.Resource({ name: "slime://loader/jrunscript/io.js", string: String($loader.getLoaderCode("jrunscript/io.js")) }), {
+		$exports.io = $exports.file(new $exports.Resource({ name: "slime://loader/jrunscript/io.js", string: String($loader.getLoaderCode("jrunscript/io.js")) }), {
 			_streams: _streams,
 			api: {
-				java: loader.java,
-				Resource: loader.Resource
+				java: $exports.java,
+				Resource: $exports.Resource
 			}
 		});
 
 		var getTypeFromPath = function(path) {
-			return loader.mime.Type.fromName(path);
+			return $exports.mime.Type.fromName(path);
 		}
 
 		/** @type { slime.jrunscript.runtime.Exports["Resource"] } */
@@ -224,7 +224,7 @@
 								if (!_bytes) {
 									_bytes = stream.java.array();
 								}
-								return new loader.io.InputStream(new Packages.java.io.ByteArrayInputStream(_bytes));
+								return new $exports.io.InputStream(new Packages.java.io.ByteArrayInputStream(_bytes));
 							}
 						})(p.stream.binary);
 					}
@@ -232,7 +232,7 @@
 					if (p._loaded) {
 						if (!p.read) p.read = {};
 						p.read.binary = function() {
-							return new loader.io.InputStream(p._loaded.resource.getInputStream());
+							return new $exports.io.InputStream(p._loaded.resource.getInputStream());
 						}
 					}
 
@@ -253,12 +253,12 @@
 						}
 						if (p.read && p.read.string) {
 							return function() {
-								return new loader.io.Reader(new Packages.java.io.StringReader(p.read.string()));
+								return new $exports.io.Reader(new Packages.java.io.StringReader(p.read.string()));
 							}
 						}
 						if (p.string) {
 							return function() {
-								return new loader.io.Reader(new Packages.java.io.StringReader(p.string));
+								return new $exports.io.Reader(new Packages.java.io.StringReader(p.string));
 							}
 						}
 						if (p.read && p.read.binary) {
@@ -279,7 +279,7 @@
 					//	TODO	probably should allow name property to be passed in and then passed through
 					if (p._loaded) {
 						if (!this.type) {
-							this.type = loader.mime.Type.fromName(p._loaded.path);
+							this.type = $exports.mime.Type.fromName(p._loaded.path);
 						}
 
 						if (typeof(p.length) == "undefined") Object.defineProperty(
@@ -362,14 +362,14 @@
 								}
 
 								if (binary) {
-									if (mode == loader.io.Streams.binary) return binary();
+									if (mode == $exports.io.Streams.binary) return binary();
 									if (mode == Packages.java.util.Properties) return _properties(binary().java.adapt());
 								}
 								if (text) {
-									if (mode == loader.io.Streams.text) return text();
+									if (mode == $exports.io.Streams.text) return text();
 									if (mode == String) return text().asString();
 									if (mode == Packages.java.util.Properties) return _properties(text().java.adapt());
-									if (mode == global.XML) return loader.$api.deprecate(function() {
+									if (mode == global.XML) return $exports.$api.deprecate(function() {
 										return XML(text().asString())
 									})();
 								}
@@ -379,8 +379,8 @@
 									return String(p);
 								})();
 								throw new TypeError("No compatible read() mode specified: parameters = " + parameters + " binary=" + binary + " text=" + text + " argument was " + mode
-									+ " Streams.binary " + (mode == loader.io.Streams.binary)
-									+ " Streams.text " + (mode == loader.io.Streams.text)
+									+ " Streams.binary " + (mode == $exports.io.Streams.binary)
+									+ " Streams.text " + (mode == $exports.io.Streams.text)
 									+ " XML " + (mode == global.XML)
 									+ " String " + (mode == String)
 								);
@@ -421,7 +421,7 @@
 					// cache length and modified
 					if (Object.prototype.hasOwnProperty.call(p, "length")) {
 						Object.defineProperty(this,"length",{
-							get: loader.$api.Function.memoized(function() {
+							get: $exports.$api.Function.memoized(function() {
 								if (typeof(p.length) == "number") {
 									return p.length;
 								} else if (typeof(p.length) == "undefined" && binary) {
@@ -452,7 +452,7 @@
 					if (Object.prototype.hasOwnProperty.call(p, "modified")) {
 						this.modified = void(0);
 						Object.defineProperty(this,"modified",{
-							get: loader.$api.Function.memoized(function() {
+							get: $exports.$api.Function.memoized(function() {
 								return p.modified;
 							}),
 							enumerable: true
@@ -482,23 +482,23 @@
 
 						this.write = function(dataOrType,mode) {
 							if (!mode) mode = {};
-							if (dataOrType == loader.io.Streams.binary && writeBinary) {
+							if (dataOrType == $exports.io.Streams.binary && writeBinary) {
 								return writeBinary(mode);
-							} else if (dataOrType == loader.io.Streams.text && writeText) {
+							} else if (dataOrType == $exports.io.Streams.text && writeText) {
 								return writeText(mode);
-							} else if (dataOrType.java && dataOrType.java.adapt && loader.java.isJavaType(Packages.java.io.InputStream)(dataOrType.java.adapt())) {
+							} else if (dataOrType.java && dataOrType.java.adapt && $exports.java.isJavaType(Packages.java.io.InputStream)(dataOrType.java.adapt())) {
 								var stream = writeBinary(mode);
-								loader.io.Streams.binary.copy(dataOrType,stream);
+								$exports.io.Streams.binary.copy(dataOrType,stream);
 								stream.close();
-							} else if (dataOrType.java && dataOrType.java.adapt && loader.java.isJavaType(Packages.java.io.Reader)(dataOrType.java.adapt())) {
+							} else if (dataOrType.java && dataOrType.java.adapt && $exports.java.isJavaType(Packages.java.io.Reader)(dataOrType.java.adapt())) {
 								stream = writeText(mode);
-								loader.io.Streams.text.copy(dataOrType,stream);
+								$exports.io.Streams.text.copy(dataOrType,stream);
 								stream.close();
 							} else if (typeof(dataOrType) == "string" && writeText) {
 								var writer = writeText(mode);
 								writer.write(dataOrType);
 								writer.close();
-							} else if (typeof(dataOrType) == "object" && loader.java.isJavaType(Packages.java.util.Properties)(dataOrType)) {
+							} else if (typeof(dataOrType) == "object" && $exports.java.isJavaType(Packages.java.util.Properties)(dataOrType)) {
 								var comments = (mode && mode.comments) ? mode.comments : null;
 								var writer = writeText(mode);
 								dataOrType.store(writer.java.adapt(), comments);
@@ -548,9 +548,9 @@
 			);
 			/** @type { slime.jrunscript.runtime.Exports["Resource"] } */
 			return rv;
-		})(loader.Resource);
+		})($exports.Resource);
 
-		loader.Resource = Resource;
+		$exports.Resource = Resource;
 
 		// //	Convert a Java inonit.script.engine.Code.Loader.Resource to a resource
 		// //	TODO	should this logic be pushed into loader.io? Probably
@@ -609,7 +609,7 @@
 		// 	)
 		// };
 
-		loader.Loader = (function(was) {
+		$exports.Loader = (function(was) {
 			/**
 			 * @this { slime.Loader & { java: any } }
 			 */
@@ -680,7 +680,7 @@
 				} else if (p.resources) {
 					if (Packages.java.lang.System.getenv("SLIME_LOADER_RHINO_REMOVE_DEPRECATED")) throw new Error();
 					//	TODO	would be nice to get rid of this, but it is used in rhino/http/servlet, it appears
-					loader.$api.deprecate(function() {
+					$exports.$api.deprecate(function() {
 						p.get = function(path) {
 							var resource = p.resources.get(String(path));
 							if (!resource) return null;
@@ -721,7 +721,7 @@
 						};
 					})();
 				}
-				p.Resource = loader.Resource;
+				p.Resource = $exports.Resource;
 				was.apply(this,arguments);
 				var source = this.source;
 				var self = this;
@@ -756,9 +756,9 @@
 			rv.tools = void(0);
 			Object.assign(rv, was);
 			return rv;
-		})(loader.Loader);
+		})($exports.Loader);
 
-		loader.classpath = new (function(_classpath /* Loader.Classes.Interface */) {
+		$exports.classpath = new (function(_classpath /* Loader.Classes.Interface */) {
 			this.toString = function() {
 				return String(_classpath);
 			};
@@ -814,7 +814,7 @@
 			};
 		})($loader.getClasspath());
 
-		loader.$api.jrunscript = {
+		$exports.$api.jrunscript = {
 			Properties: {
 				codec: {
 					object: {
@@ -841,7 +841,7 @@
 			}
 		}
 
-		return loader;
+		return $exports;
 	}
 //@ts-ignore
 )($javahost,$bridge,Packages,JavaAdapter, (function() { return this.XML })(),$loader)
