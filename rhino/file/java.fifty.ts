@@ -68,11 +68,13 @@ namespace slime.jrunscript.file.internal.java {
 			windows: System
 			systemForPathnameSeparator: (separator: string) => System
 			trailingSeparatorRemover: (system: System) => (pathname: string) => string
+			nodeCreator: (_peer: slime.jrunscript.native.inonit.script.runtime.io.Filesystem) => (path: string) => Peer
 		}
 	}
 
 	(
 		function(
+			Packages: slime.jrunscript.Packages,
 			fifty: slime.fifty.test.kit
 		) {
 			const { verify } = fifty;
@@ -140,10 +142,20 @@ namespace slime.jrunscript.file.internal.java {
 				verify(removeWindowsSlashes("C:\\foo\\bar")).is("C:\\foo\\bar");
 				//	TODO	do we like the below behavior? It's internal API, anyway.
 				verify(removeWindowsSlashes("C:/foo/bar/")).is("C:\\foo\\bar");
+
+				var _fs = Packages.inonit.script.runtime.io.Filesystem.create();
+				var createNode = subject.test.nodeCreator(_fs);
+				var thisFile = fifty.$loader.getRelativePath("java.fifty.ts");
+				//	The toString() below creates an absolute path. Haven't quite figured out how to use a relative path; we don't
+				//	know the PWD, I don't think
+				var thisNode = createNode(thisFile.toString());
+				// fifty.global.jsh.shell.console("thisNode = " + thisNode);
+				// fifty.global.jsh.shell.console("hostFile = " + thisNode.getHostFile());
+				// fifty.global.jsh.shell.console("scriptPath = " + thisNode.getScriptPath());
 			}
 		}
 	//@ts-ignore
-	)(fifty);
+	)(Packages,fifty);
 
 
 	export type Script = slime.loader.Script<Context,Exports>

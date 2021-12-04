@@ -221,7 +221,7 @@ public abstract class Filesystem {
 			}
 
 			public String toString() {
-				return getClass().getName() + " file= " + file;
+				return getClass().getName() + " file=" + file;
 			}
 
 			public boolean exists() {

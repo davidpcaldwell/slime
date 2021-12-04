@@ -96,6 +96,7 @@
 		/**
 		 *
 		 * @param { string } separator
+		 * @returns
 		 */
 		var systemForPathnameSeparator = function(separator) {
 			return Object.entries(systems).map(function(entry) {
@@ -103,6 +104,15 @@
 			}).find(function(system) {
 				return system.separator.file == separator;
 			});
+		}
+
+		/**
+		 *
+		 * @param { slime.jrunscript.native.inonit.script.runtime.io.Filesystem } _peer
+		 */
+		var systemForFilesystem = function(_peer) {
+			var separator = String(_peer.getPathnameSeparator());
+			return systemForPathnameSeparator(separator);
 		}
 
 		/**
@@ -133,6 +143,27 @@
 			return $api.Function.pipe(fixArgument, removeTrailingSeparator);
 		}
 
+		/**
+		 *
+		 * @param { slime.jrunscript.native.inonit.script.runtime.io.Filesystem } _peer
+		 */
+		function nodeCreator(_peer) {
+			var os = systemForFilesystem(_peer);
+			/**
+			 *
+			 * @param { string } path
+			 */
+			function createNode(path) {
+				if (os.isAbsolute(path)) {
+					path = spi.canonicalize(path, os.separator.file);
+					return _peer.getNode(path);
+				} else {
+					return _peer.getNode(new Packages.java.io.File(path));
+				}
+			}
+			return createNode;
+		}
+
 		$exports.FilesystemProvider = Object.assign(
 			/**
 			 *
@@ -140,28 +171,17 @@
 			 * @param { slime.jrunscript.native.inonit.script.runtime.io.Filesystem } _peer
 			 */
 			function(_peer) {
+				var os = systemForFilesystem(_peer);
+
 				var separators = {
 					pathname: String(_peer.getPathnameSeparator()),
 					searchpath: String(_peer.getSearchpathSeparator()),
 					line: String(_peer.getLineSeparator())
 				};
 
-				var os = systemForPathnameSeparator(separators.pathname);
-
 				this.separators = separators;
 
-				/**
-				 *
-				 * @param { string } path
-				 */
-				var newPeer = function(path) {
-					if (os.isAbsolute(path)) {
-						path = spi.canonicalize(path, separators.pathname);
-						return _peer.getNode(path);
-					} else {
-						return _peer.getNode(new Packages.java.io.File(path));
-					}
-				}
+				var newPeer = nodeCreator(_peer);
 
 				/** @type { slime.jrunscript.file.internal.java.FilesystemProvider["newPathname"] } */
 				this.newPathname = function(string) {
@@ -304,7 +324,8 @@
 			unix: systems.unix,
 			windows: systems.windows,
 			systemForPathnameSeparator: systemForPathnameSeparator,
-			trailingSeparatorRemover: trailingSeparatorRemover
+			trailingSeparatorRemover: trailingSeparatorRemover,
+			nodeCreator: nodeCreator
 		}
 	}
 //@ts-ignore
