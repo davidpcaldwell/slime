@@ -32,7 +32,7 @@ namespace slime.definition.test.promises {
 		Registry: (p?: { name: string }) => Registry
 		Promise: PromiseConstructor
 		console: slime.rename.JavascriptConsole
-		controlled: () => {
+		controlled: (p?: { id: string }) => {
 			promise: Promise<any>
 			resolve: (value: any) => void
 			reject: (value: Error) => void

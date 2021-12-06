@@ -21,8 +21,6 @@
 			 * @param { slime.loader.Source } p
 			 */
 			function(p) {
-				if (!p.get) throw new TypeError("Loader argument must have a 'get' property.");
-
 				if (!p.Resource) p.Resource = Resource;
 
 				this.toString = function() {
@@ -31,12 +29,29 @@
 
 				this.source = p;
 
+				/**
+				 *
+				 * @param { slime.resource.Descriptor } descriptor
+				 */
+				function get(descriptor) {
+					if (!descriptor) return null;
+					return new p.Resource(descriptor);
+				}
+
 				/** @type { slime.Loader["get"] } */
-				this.get = function(path) {
+				if (p.get) this.get = function(path) {
 					var rsource = this.source.get(path);
-					if (!rsource) return null;
-					return new p.Resource(rsource);
+					return get(rsource);
 				};
+
+				if (p.thread) this.thread = {
+					get: void(0),
+					module: void(0)
+				};
+
+				if (p.thread) this.thread.get = function(path) {
+					return p.thread.get(path).then(get);
+				}
 
 				/**
 				 * @this { slime.Loader }
@@ -58,54 +73,75 @@
 					);
 				};
 
-				/** @type { slime.Loader["run"] } */
-				this.run = void(0);
-				/** @type { slime.Loader["value"] } */
-				this.value = void(0);
-				/** @type { slime.Loader["file"] } */
-				this.file = void(0);
-				declare.call(this,"run");
-				declare.call(this,"value");
-				declare.call(this,"file");
+				if (p.get) {
+					/** @type { slime.Loader["run"] } */
+					this.run = void(0);
+					/** @type { slime.Loader["value"] } */
+					this.value = void(0);
+					/** @type { slime.Loader["file"] } */
+					this.file = void(0);
+					declare.call(this,"run");
+					declare.call(this,"value");
+					declare.call(this,"file");
+				}
 
-				/** @type { slime.Loader["module"] } */
-				this.module = function(path,$context,target) {
-					var getModuleLocations = function(path) {
-						var tokens = path.split("/");
-						var prefix = (tokens.length > 1) ? tokens.slice(0,tokens.length-1).join("/") + "/" : "";
-						var main = path;
-						if (!main || /\/$/.test(main)) {
-							main += "module.js";
-						}
-						return {
-							prefix: prefix,
-							main: main
-						}
-					};
-
-					var locations = getModuleLocations(path);
-
-					/** @type { slime.loader.Scope } */
-					var inner = createScriptScope($context);
-					inner.$loader = Child(locations.prefix);
-					var script = this.get(locations.main);
-					//	TODO	generalize error handling strategy; add to file, run, value
-					if (!script) throw new Error("Module not found at " + locations.main);
-					methods.run.call(target,script,inner);
-					return inner.$exports;
-				};
-
-				/** @type { slime.Loader["script"] } */
-				this.script = function(path) {
-					var $loader = this;
-					return function(c) {
-						return $loader.module(path, c);
+				var getModuleLocations = function(path) {
+					var tokens = path.split("/");
+					var prefix = (tokens.length > 1) ? tokens.slice(0,tokens.length-1).join("/") + "/" : "";
+					var main = path;
+					if (!main || /\/$/.test(main)) {
+						main += "module.js";
+					}
+					return {
+						prefix: prefix,
+						main: main
 					}
 				};
 
-				this.factory = $api.deprecate(this.script);
+				var getModuleScope = function($context,locations) {
+					/** @type { slime.loader.Scope } */
+					var inner = createScriptScope($context);
+					inner.$loader = Child(locations.prefix);
+					return inner;
+				}
 
-				var Child = (function(parent,argument) {
+				if (p.get) {
+					/** @type { slime.Loader["module"] } */
+					this.module = function(path,$context,target) {
+						var locations = getModuleLocations(path);
+						var inner = getModuleScope($context,locations);
+						var script = this.get(locations.main);
+						//	TODO	generalize error handling strategy; add to file, run, value
+						if (!script) throw new Error("Module not found at " + locations.main);
+						methods.run.call(target,script,inner);
+						return inner.$exports;
+					};
+				}
+
+				if (p.thread) {
+					this.thread.module = (function(path,$context,target) {
+						var locations = getModuleLocations(path);
+						var inner = getModuleScope($context,locations);
+						return this.thread.get(locations.main).then(function(script) {
+							methods.run.call(target,script,inner);
+							return inner.$exports;
+						});
+					}).bind(this);
+				}
+
+				if (p.get) {
+					/** @type { slime.Loader["script"] } */
+					this.script = function(path) {
+						var $loader = this;
+						return function(c) {
+							return $loader.module(path, c);
+						}
+					};
+
+					this.factory = $api.deprecate(this.script);
+				}
+
+				var Child = (function(parent,source) {
 					/**
 					 *
 					 * @param { string } prefix
@@ -114,14 +150,19 @@
 					function rv(prefix) {
 						//	TODO	should we short-circuit if prefix is empty string?
 						if (prefix && prefix.substring(prefix.length-1) != "/") throw new Error("Prefix not ending with /");
-						var parameter = (p.child) ? p.child(prefix) : {
+						var parameter = (source.child) ? source.child(prefix) : {
 							toString: function() {
-								return "Child [" + prefix + "] of " + argument.toString();
+								return "Child [" + prefix + "] of " + source.toString();
 							},
-							get: function(path) {
-								return argument.get(prefix + path);
-							},
-							list: (p.list) ? function(given) {
+							get: (source.get) ? function(path) {
+								return source.get(prefix + path);
+							} : void(0),
+							thread: (source.thread) ? {
+								get: function(path) {
+									return source.thread.get(prefix + path);
+								}
+							} : void(0),
+							list: (source.list) ? function(given) {
 								if (given) {
 									var slash = given.substring(given.length-1);
 									if (slash != "/") {
@@ -129,8 +170,8 @@
 									}
 								}
 								var nowprefix = (given) ? prefix + given : prefix;
-								return p.list(nowprefix);
-							} : null
+								return source.list(nowprefix);
+							} : void(0)
 						};
 
 						/**

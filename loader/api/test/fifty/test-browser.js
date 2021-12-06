@@ -13,10 +13,6 @@
 	function(inonit) {
 		var $api = inonit.loader.$api;
 		//	TODO	establish new slime loader relative to ../../../..?
-		/** @type { slime.web.Exports } */
-		var web = inonit.loader.loader.module("../../../../js/web/module.browser.js", {
-			window: window
-		});
 
 		var code = {
 			verify: inonit.loader.loader.script("../../../../loader/api/verify.js")
@@ -214,39 +210,53 @@
 		};
 
 		window.addEventListener("load", function() {
-			//	TODO	web module probably has easier way to parse query string
-			/** @type { slime.fifty.browser.test.internal.Query } */
-			var query = $api.Function.result(
-				void(0),
-				web.window.url,
-				$api.Function.property("query"),
-				web.Url.query.parse,
-				$api.Function.Array.map(
-					/** @returns { [string, string] } */
-					function(control) {
-						return [control.name, control.value];
-					}
-				),
-				$api.Function.Object.fromEntries,
-				function(p) {
-					return $api.Object.compose(p, {
-						results: p.results,
-						design: p.design,
-						file: p.file,
-						part: p.part,
-						delay: p.delay
-					});
+			// /** @type { slime.web.Exports } */
+			// var web = inonit.loader.loader.module("../../../../js/web/module.browser.js", {
+			// 	window: window
+			// });
+			inonit.loader.loader.thread.module("../../../../js/web/module.browser.js", {
+				window: window
+			}).then(
+				/**
+				 *
+				 * @param { slime.web.Exports } web
+				 */
+				function(web) {
+					//	TODO	web module probably has easier way to parse query string
+					/** @type { slime.fifty.browser.test.internal.Query } */
+					var query = $api.Function.result(
+						void(0),
+						web.window.url,
+						$api.Function.property("query"),
+						web.Url.query.parse,
+						$api.Function.Array.map(
+							/** @returns { [string, string] } */
+							function(control) {
+								return [control.name, control.value];
+							}
+						),
+						$api.Function.Object.fromEntries,
+						function(p) {
+							return $api.Object.compose(p, {
+								results: p.results,
+								design: p.design,
+								file: p.file,
+								part: p.part,
+								delay: p.delay
+							});
+						}
+					);
+
+					//	The need for this delay seems to stem from .ts files attempting to load .js files; wondering whether it has to do
+					//	with the preflight requests for .ts files being slow because of the need to run the TypeScript compiler. May want
+					//	to try handling the OPTIONS request without running tsc. The resulting error
+					//	"NetworkError: Failed to execute 'send' on 'XMLHttpRequest'" seems to commonly be caused by CORS issues, although
+					//	it also occurs in Chrome DevTools when attempting to execute synchronous XHRs from the console.
+					window.setTimeout(function() {
+						onload(query);
+					}, query.delay || 0);
 				}
 			);
-
-			//	The need for this delay seems to stem from .ts files attempting to load .js files; wondering whether it has to do
-			//	with the preflight requests for .ts files being slow because of the need to run the TypeScript compiler. May want
-			//	to try handling the OPTIONS request without running tsc. The resulting error
-			//	"NetworkError: Failed to execute 'send' on 'XMLHttpRequest'" seems to commonly be caused by CORS issues, although
-			//	it also occurs in Chrome DevTools when attempting to execute synchronous XHRs from the console.
-			window.setTimeout(function() {
-				onload(query);
-			}, query.delay || 0);
 		});
 	}
 //@ts-ignore
