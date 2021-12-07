@@ -9,7 +9,8 @@
 		var parameters = jsh.script.getopts({
 			options: {
 				interactive: false,
-				"chrome:profile": jsh.file.Pathname,
+				"chrome:data": jsh.file.Pathname,
+				"debug:devtools": false,
 				port: Number,
 				success: false
 			}
@@ -18,8 +19,11 @@
 		var SLIME = new jsh.file.Loader({ directory: jsh.script.file.parent.parent.parent.parent.parent });
 
 		var lock = new jsh.java.Thread.Monitor();
+
 		var result = {
+			success: void(0),
 			received: function(v) {
+				jsh.shell.console("Received result from client: " + v);
 				var self = this;
 				//	TODO	lock.Waiter may not have intelligent 'this' handling
 				lock.Waiter({
@@ -59,14 +63,16 @@
 				}
 			}
 		});
-
 		tomcat.start();
 
+		jsh.shell.console("Started Tomcat.");
+
 		var chrome = new jsh.shell.browser.chrome.Instance({
-			location: parameters.options["chrome:profile"],
+			location: parameters.options["chrome:data"],
 			proxy: new jsh.shell.browser.ProxyConfiguration({
 				port: tomcat.port
-			})
+			}),
+			devtools: parameters.options["debug:devtools"]
 		});
 
 		if (parameters.options.interactive) {
@@ -99,6 +105,8 @@
 				uri: "http://api-ui-test/loader/api/ui/test/browser.html?unit.run" + ((parameters.options.success) ? "&success" : ""),
 				on: on
 			});
+
+			jsh.shell.console("Chrome launched.");
 
 			new lock.Waiter({
 				until: function() { return Boolean(opened); },
