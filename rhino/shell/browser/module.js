@@ -16,8 +16,13 @@
 			$context.api.httpd = p.httpd;
 		}
 
+		var code = {
+			/** @type { slime.jrunscript.shell.browser.internal.chrome.Script } */
+			chrome: $loader.script("chrome.js")
+		};
+
 		//	TODO	tighten dependencies?
-		$exports.chrome = $loader.module("chrome.js", $context);
+		$exports.chrome = code.chrome($context);
 
 		$exports.ProxyConfiguration = function(o) {
 			var pac = (function() {

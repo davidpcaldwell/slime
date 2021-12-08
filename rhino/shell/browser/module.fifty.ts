@@ -5,15 +5,23 @@
 //	END LICENSE
 
 namespace slime.jrunscript.shell.browser {
-	interface Context {
+	export interface Context {
 		api: {
+			js: any
+			java: any
+			file: any
 			httpd: {
 				Tomcat: new (p: {}) => jsh.httpd.Tomcat
 			}
 		}
+		os: any
+		run: any
+		HOME: slime.jrunscript.file.Directory
+		TMPDIR: slime.jrunscript.file.Directory
+		environment: any
 	}
 
-	interface ProxyConfiguration {
+	export interface ProxyConfiguration {
 		/**
 		 * JavaScript code for a Proxy Auto-Configuration file, allowing the use of JavaScript code to define the mapping between
 		 * hosts and proxies. See the [Mozilla Developer Network](https://developer.mozilla.org/en-US/docs/Web/HTTP/Proxy_servers_and_tunneling/Proxy_Auto-Configuration_PAC_file)
@@ -27,7 +35,7 @@ namespace slime.jrunscript.shell.browser {
 		port?: number
 	}
 
-	interface ProxyTools {
+	export interface ProxyTools {
 		Server: () => {
 			url: string
 			start: () => void
@@ -37,7 +45,7 @@ namespace slime.jrunscript.shell.browser {
 		response: slime.servlet.Response
 	}
 
-	interface Chrome {
+	export interface Chrome {
 		Instance: new (u: {
 			location?: slime.jrunscript.file.Pathname
 			directory?: slime.jrunscript.file.Directory
@@ -48,7 +56,26 @@ namespace slime.jrunscript.shell.browser {
 		}) => any
 	}
 
-	interface Exports {
+	export namespace internal {
+		export namespace chrome {
+			export interface Context {
+				os: any
+				run: any
+				api: {
+					js: any
+					java: any
+					file: any
+				}
+				HOME: slime.jrunscript.file.Directory
+				TMPDIR: slime.jrunscript.file.Directory
+				environment: any
+			}
+
+			export type Script = slime.loader.Script<Context,Chrome>
+		}
+	}
+
+	export interface Exports {
 		inject: any
 
 		chrome: Chrome
