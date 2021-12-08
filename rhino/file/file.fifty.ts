@@ -46,10 +46,13 @@ namespace slime.jrunscript.file.internal.file {
 
 	export interface Exports {
 		Searchpath: any
+
+		//	TODO	the constructor for Pathname is really filesystem/peer or filesystem/path
+
 		Pathname: new (parameters: {
 			filesystem: slime.jrunscript.file.internal.java.FilesystemProvider
-			peer: slime.jrunscript.native.inonit.script.runtime.io.Filesystem.Node
-			path?: any
+			peer?: slime.jrunscript.native.inonit.script.runtime.io.Filesystem.Node
+			path?: string
 
 			$filesystem?: slime.jrunscript.file.internal.java.FilesystemProvider
 			$peer?: slime.jrunscript.native.inonit.script.runtime.io.Filesystem.Node

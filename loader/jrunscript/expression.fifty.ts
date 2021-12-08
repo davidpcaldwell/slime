@@ -329,6 +329,7 @@ namespace slime.jrunscript {
 
 				export namespace Filesystem {
 					export interface Node {
+						getScriptPath: () => slime.jrunscript.native.java.lang.String
 						exists(): boolean
 						isDirectory(): boolean
 						readBinary(): slime.jrunscript.native.java.io.InputStream

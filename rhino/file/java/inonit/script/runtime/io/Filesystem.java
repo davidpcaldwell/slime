@@ -28,7 +28,7 @@ public abstract class Filesystem {
 	/**
 	 *	Returns a node corresponding to the given path in this filesystem.
 	 *
-	 *	@param path A string representing a path in this filesystem; will be an absolute path (see os.js newPeer(), which uses
+	 *	@param path A string representing a path in this filesystem; will be an absolute path (see java.js newPeer(), which uses
 	 *		the getNode(java.io.File) method if the path is relative)
 	 *	@return A Node corresponding to that path.
 	 *	@throws IOException

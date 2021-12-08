@@ -183,9 +183,9 @@
 
 				var newPeer = nodeCreator(_peer);
 
-				/** @type { slime.jrunscript.file.internal.java.FilesystemProvider["newPathname"] } */
-				this.newPathname = function(string) {
-					return new $context.Pathname({ filesystem: this, peer: newPeer(string) });
+				/** @type { slime.jrunscript.file.internal.java.FilesystemProvider["newPeer"] } */
+				this.newPeer = function(string) {
+					return newPeer(string);
 				}
 
 				this.importPathname = function(pathname) {
@@ -217,13 +217,14 @@
 					return spi.getParentPath(path,separators.pathname);
 				};
 
+				/** @type { slime.jrunscript.file.internal.java.FilesystemProvider["getParent"] } */
 				this.getParent = function getParent(peer) {
 					//	TODO	Skeptical of this implementation; had to make changes when implementing for HTTP filesystem
 					var path = String( peer.getScriptPath() );
 					if (this.isRootPath(path)) {
 						return null;
 					} else {
-						return this.newPathname(newpath(path));
+						return this.newPeer(newpath(path));
 					}
 				}
 
@@ -271,12 +272,8 @@
 				}
 
 				/** @type { slime.jrunscript.file.internal.java.FilesystemProvider["move"] } */
-				this.move = function(fromPeer,toPathname) {
-					//	Seems Cygwin-ish but usage unknown
-					if (toPathname.java["invalidate"]) {
-						toPathname.java["invalidate"]();
-					}
-					var toPeer = _peer.getNode(toPathname.java.adapt());
+				this.move = function(fromPeer,to) {
+					var toPeer = _peer.getNode(to.getHostFile());
 					fromPeer.move(toPeer);
 				}
 

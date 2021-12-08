@@ -95,11 +95,9 @@
 			var peer = (function () {
 				var peer = firstDefined(parameters, "peer", "$peer");
 				if (peer) return peer;
-				throw new TypeError();
-				// var path = firstDefined(parameters, "path", "$path");
-				// //	TODO	below line appears to invoke nonexistent method
-				// if (path) return $filesystem.getPeer(path);
-				// fail("Missing new Pathname() arguments: " + parameters);
+				var path = firstDefined(parameters, "path", "$path");
+				if (typeof(path) == "string") return $filesystem.newPeer(path);
+				throw new TypeError("Missing new Pathname() arguments.");
 			})();
 
 			var toString = constant(function () {
@@ -127,7 +125,8 @@
 			this.__defineGetter__("basename", getBasename);
 
 			var getParent = constant(function () {
-				return $filesystem.getParent(peer);
+				var parent = $filesystem.getParent(peer);
+				return (parent) ? new Pathname({ filesystem: $filesystem, peer: parent }) : null;
 			});
 			this.parent = void(0);
 			this.__defineGetter__("parent", getParent);
@@ -300,7 +299,7 @@
 				 * @returns
 				 */
 				var getRelativePath = function (pathString) {
-					return $filesystem.newPathname(pathname.toString() + relativePathPrefix + pathString);
+					return new Pathname({ filesystem: $filesystem, path: pathname.toString() + relativePathPrefix + pathString });
 				}
 				this.getRelativePath = getRelativePath;
 
@@ -332,7 +331,11 @@
 							toPathname.parent.createDirectory({ recursive: true });
 						}
 					}
-					$filesystem.move(_peer, toPathname);
+					//	Seems Cygwin-ish but usage unknown
+					if (toPathname.java["invalidate"]) {
+						toPathname.java["invalidate"]();
+					}
+					$filesystem.move(_peer, toPathname.java.getPeer());
 					if (toPathname.file) {
 						return toPathname.file;
 					} else if (toPathname.directory) {
@@ -534,13 +537,13 @@
 				this.directory = true;
 
 				this.getFile = function (name) {
-					return $filesystem.newPathname(this.getRelativePath(name).toString()).file;
+					return new Pathname({ filesystem: $filesystem, path: this.getRelativePath(name).toString() }).file;
 				}
 
 				this.getSubdirectory = function (name) {
 					if (typeof (name) == "string" && !name.length) return this;
 					if (!name) throw new TypeError("Missing: subdirectory name.");
-					return $filesystem.newPathname(this.getRelativePath(name).toString()).directory;
+					return new Pathname({ filesystem: $filesystem, path: this.getRelativePath(name).toString() }).directory;
 				}
 
 				var toFilter = function (regexp) {

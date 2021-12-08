@@ -23,14 +23,14 @@ namespace slime.jrunscript.file.internal.java {
 			searchpath: string
 			line: string
 		}
-		newPathname: (string: string) => slime.jrunscript.file.Pathname
+		newPeer: (string: string) => Peer
 		temporary: any
 		java: any
 		decorate: any
 		peerToString: (peer: Peer) => string
 		isRootPath: (path: string) => boolean
 		exists: (peer: Peer) => any
-		getParent: (peer: Peer) => slime.jrunscript.file.Pathname
+		getParent: (peer: Peer) => Peer
 		isDirectory: (peer: Peer) => boolean
 		createDirectoryAt: (peer: Peer) => void
 		read: {
@@ -43,7 +43,7 @@ namespace slime.jrunscript.file.internal.java {
 		getLastModified: (peer: Peer) => Date
 		setLastModified: (peer: Peer, date: Date) => void
 		remove: (peer: Peer) => void
-		move: (peer: Peer, toPathname: slime.jrunscript.file.Pathname) => void
+		move: (peer: Peer, to: Peer) => void
 		list: (peer: Peer) => Peer[]
 	}
 
@@ -98,6 +98,19 @@ namespace slime.jrunscript.file.internal.java {
 				})()
 			});
 
+			fifty.tests.sandbox = function() {
+				var _fs = Packages.inonit.script.runtime.io.Filesystem.create();
+				var createNode = subject.test.nodeCreator(_fs);
+				var thisFile = fifty.$loader.getRelativePath("java.fifty.ts");
+
+				var thisNode = createNode(thisFile.toString());
+				verify(thisNode).exists().is(true);
+				verify(thisNode).isDirectory().is(false);
+
+				//	We don't really have a sandbox way to test creating nodes with relative paths, because we can't control the
+				//	PWD we are given and the files would be relative to the VM working directory.
+			}
+
 			fifty.tests.suite = function() {
 				var test = verify(subject.test);
 				test.unix.isAbsolute("/").is(true);
@@ -142,16 +155,6 @@ namespace slime.jrunscript.file.internal.java {
 				verify(removeWindowsSlashes("C:\\foo\\bar")).is("C:\\foo\\bar");
 				//	TODO	do we like the below behavior? It's internal API, anyway.
 				verify(removeWindowsSlashes("C:/foo/bar/")).is("C:\\foo\\bar");
-
-				var _fs = Packages.inonit.script.runtime.io.Filesystem.create();
-				var createNode = subject.test.nodeCreator(_fs);
-				var thisFile = fifty.$loader.getRelativePath("java.fifty.ts");
-				//	The toString() below creates an absolute path. Haven't quite figured out how to use a relative path; we don't
-				//	know the PWD, I don't think
-				var thisNode = createNode(thisFile.toString());
-				// fifty.global.jsh.shell.console("thisNode = " + thisNode);
-				// fifty.global.jsh.shell.console("hostFile = " + thisNode.getHostFile());
-				// fifty.global.jsh.shell.console("scriptPath = " + thisNode.getScriptPath());
 			}
 		}
 	//@ts-ignore

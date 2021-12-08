@@ -13,6 +13,13 @@
 	 */
 	function($context,$exports) {
 		/**
+		 * @param { slime.jrunscript.file.internal.java.FilesystemProvider } system
+		 * @param { string } string
+		 */
+		function newPathname(system, string) {
+			return new $context.Pathname({ filesystem: system, peer: system.newPeer(string) });
+		}
+		/**
 		 *
 		 * @param { slime.jrunscript.file.internal.java.FilesystemProvider } system
 		 * @param { { interpretNativePathname: any } } [o] Used only for Cygwin.
@@ -32,14 +39,14 @@
 				}
 				var elements = string.split(system.separators.searchpath);
 				var array = elements.map(function(element) {
-					return system.newPathname(element);
+					return newPathname(system, element);
 				});
 				return new $context.Searchpath({ filesystem: system, array: array });
 			}
 
 			/** @type { slime.jrunscript.file.internal.filesystem.Filesystem["Pathname"] } */
 			this.Pathname = function(string) {
-				return system.newPathname(string);
+				return newPathname(system, string);
 			}
 
 			this.$unit = new function() {
