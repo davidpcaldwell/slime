@@ -284,7 +284,7 @@
 
 				this.temporary = function(peer,parameters) {
 					if (!parameters) parameters = {};
-					var prefix = defined(parameters.prefix, "jsh");
+					var prefix = defined(parameters.prefix, "slime");
 					var suffix = defined(parameters.suffix, null);
 					var directory = defined(parameters.directory, false);
 					var jdir = (peer) ? peer.getHostFile() : null;
@@ -294,11 +294,11 @@
 						jfile["delete"]();
 						jfile.mkdir();
 					}
-					var path = new $context.Pathname({ filesystem: this, peer: _peer.getNode(jfile) });
+					var location = new $context.Pathname({ filesystem: this, peer: _peer.getNode(jfile) })
 					if (directory) {
-						return path.directory;
+						return location.directory;
 					} else {
-						return path.file;
+						return location.file;
 					}
 				}
 
@@ -310,6 +310,7 @@
 					}
 				})(this);
 
+				/** @type { slime.jrunscript.file.internal.java.FilesystemProvider["decorate"] } */
 				this.decorate = function(filesystem) {
 					filesystem.java = this.java;
 				}

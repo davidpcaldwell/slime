@@ -351,7 +351,7 @@
 			var args = Array.prototype.slice.call(arguments);
 			args.splice(0,1,a);
 			$context.api.io.Loader.apply(this,args);
-		};
+		}
 
 		$exports.Loader = Loader;
 

@@ -23,28 +23,51 @@ namespace slime.jrunscript.file.internal.java {
 			searchpath: string
 			line: string
 		}
+
 		newPeer: (string: string) => Peer
-		temporary: any
-		java: any
-		decorate: any
-		peerToString: (peer: Peer) => string
-		isRootPath: (path: string) => boolean
+
 		exists: (peer: Peer) => any
-		getParent: (peer: Peer) => Peer
+
 		isDirectory: (peer: Peer) => boolean
+
+		peerToString: (peer: Peer) => string
+
+		isRootPath: (path: string) => boolean
+
+		getParent: (peer: Peer) => Peer
+
 		createDirectoryAt: (peer: Peer) => void
+
 		read: {
 			binary: (peer: Peer) => slime.jrunscript.runtime.io.InputStream
 			character: (peer: Peer) => slime.jrunscript.runtime.io.Reader
 		}
+
 		write: {
 			binary: (peer: Peer, append: boolean) => slime.jrunscript.runtime.io.OutputStream
 		}
+
 		getLastModified: (peer: Peer) => Date
+
 		setLastModified: (peer: Peer, date: Date) => void
+
 		remove: (peer: Peer) => void
+
 		move: (peer: Peer, to: Peer) => void
+
 		list: (peer: Peer) => Peer[]
+
+		temporary: (parent: Peer, parameters: {
+			prefix: string
+			suffix: string
+			directory: boolean
+		}) => any /* slime.jrunscript.file.Node */
+
+		java: {
+			adapt: (_jfile: slime.jrunscript.native.java.io.File) => slime.jrunscript.file.Pathname
+		}
+
+		decorate: (filesystem: { java: FilesystemProvider["java"] }) => void
 	}
 
 	export interface System {
