@@ -658,7 +658,11 @@
 
 				if ($filesystem.temporary) {
 					this.createTemporary = function (parameters) {
-						return $filesystem.temporary(peer, parameters);
+						var _peer = $filesystem.temporary(peer, parameters);
+						var pathname = new Pathname({ filesystem: $filesystem, peer: _peer });
+						if (pathname.directory) return pathname.directory;
+						if (pathname.file) return pathname.file;
+						throw new Error();
 					}
 					$api.experimental(this, "createTemporary");
 				}

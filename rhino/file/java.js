@@ -294,12 +294,7 @@
 						jfile["delete"]();
 						jfile.mkdir();
 					}
-					var location = new $context.Pathname({ filesystem: this, peer: _peer.getNode(jfile) })
-					if (directory) {
-						return location.directory;
-					} else {
-						return location.file;
-					}
+					return _peer.getNode(jfile);
 				}
 
 				this.java = new (function(self) {

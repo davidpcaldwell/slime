@@ -57,8 +57,12 @@
 				this.getPathnameSeparator = function() {
 					return system.separators.pathname;
 				}
-				this.temporary = function() {
-					return system.temporary.apply(system,arguments);
+				this.temporary = function(parent,parameters) {
+					var peer = system.temporary(parent,parameters);
+					var pathname = new $context.Pathname({ filesystem: system, peer: peer });
+					if (pathname.directory) return pathname.directory;
+					if (pathname.file) return pathname.file;
+					throw new Error();
 				}
 				this.Pathname = function(peer) {
 					return new $context.Pathname({ filesystem: system, peer: peer });

@@ -61,7 +61,7 @@ namespace slime.jrunscript.file.internal.java {
 			prefix: string
 			suffix: string
 			directory: boolean
-		}) => any /* slime.jrunscript.file.Node */
+		}) => Peer
 
 		java: {
 			adapt: (_jfile: slime.jrunscript.native.java.io.File) => slime.jrunscript.file.Pathname
