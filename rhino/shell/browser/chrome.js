@@ -19,12 +19,16 @@
 		if (!$context.os.process) throw new Error("No $context.os.process");
 		if (!$context.os.process.list) throw new Error("No $context.os.process.list");
 
+		/**
+		 *
+		 * @param { { program: slime.jrunscript.file.File, user: slime.jrunscript.file.Directory }} b
+		 */
 		var Chrome = function(b) {
 			this.toString = function() {
 				return "Google Chrome: " + b.program + " user=" + b.user;
 			}
 
-			this.program = b.program;
+			this.program = String(b.program);
 
 			this.version = void(0);
 			Object.defineProperty(this, "version", {
