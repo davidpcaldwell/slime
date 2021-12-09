@@ -720,7 +720,8 @@
 					if (!filesystem.java) {
 						debugger;
 					}
-					var mapped = filesystem.java.adapt(pathname.java.adapt());
+					var peer = filesystem.java.adapt(pathname.java.adapt());
+					var mapped = new Pathname({ filesystem: filesystem, peer: peer });
 					return mapped.toString();
 				}).join(filesystem.separators.searchpath);
 			}

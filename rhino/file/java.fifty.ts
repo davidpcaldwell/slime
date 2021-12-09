@@ -6,7 +6,6 @@
 
 namespace slime.jrunscript.file.internal.java {
 	export interface Context {
-		Pathname: slime.jrunscript.file.internal.file.Exports["Pathname"]
 		api: {
 			io: slime.jrunscript.io.Exports
 		}
@@ -64,10 +63,8 @@ namespace slime.jrunscript.file.internal.java {
 		}) => Peer
 
 		java: {
-			adapt: (_jfile: slime.jrunscript.native.java.io.File) => slime.jrunscript.file.Pathname
+			adapt: (_jfile: slime.jrunscript.native.java.io.File) => Peer
 		}
-
-		decorate: (filesystem: { java: FilesystemProvider["java"] }) => void
 	}
 
 	export interface System {
@@ -108,17 +105,7 @@ namespace slime.jrunscript.file.internal.java {
 			var subject = code({
 				api: {
 					io: fifty.global.jsh.io
-				},
-				Pathname: (function() {
-					var f = file({
-						Resource: fifty.global.jsh.io.Resource,
-						Streams: fifty.global.jsh.io.Streams,
-						//	Not very important, used only in file copy
-						isPathname: function(item: any): item is slime.jrunscript.file.Pathname { return false; },
-						pathext: void(0)
-					});
-					return f.Pathname;
-				})()
+				}
 			});
 
 			fifty.tests.sandbox = function() {

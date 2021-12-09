@@ -74,11 +74,6 @@ namespace slime.jrunscript.file {
 		}
 	}
 
-	export interface Searchpath {
-		pathnames: slime.jrunscript.file.Pathname[]
-		getCommand: any
-	}
-
 	export interface Context {
 		$pwd: string
 		pathext: string[]
@@ -99,10 +94,6 @@ namespace slime.jrunscript.file {
 			(p: string): Pathname
 			createDirectory: any
 		}
-		Searchpath: {
-			(pathnames: slime.jrunscript.file.Pathname[]): Searchpath
-			createEmpty: any
-		}
 		filesystem: any
 		filesystems: any
 		navigate: (p: { from: Pathname | Node, to: Pathname | Node, base?: Directory }) => { base: Directory, relative: string }
@@ -118,6 +109,39 @@ namespace slime.jrunscript.file {
 			RESOURCE: slime.jrunscript.file.directory.Entry<{ path: string, resource: slime.jrunscript.file.File }>
 		}
 	}
+
+	export interface Searchpath {
+		pathnames: slime.jrunscript.file.Pathname[]
+		getCommand: any
+	}
+
+	export interface Exports {
+		Searchpath: {
+			(pathnames: slime.jrunscript.file.Pathname[]): Searchpath
+			createEmpty: any
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.kit
+		) {
+			const jsh = fifty.global.jsh;
+
+			fifty.tests.Searchpath = {};
+			fifty.tests.Searchpath.world = function() {
+				var searchpath = jsh.file.Searchpath([
+					fifty.$loader.getRelativePath(".")
+				]);
+				jsh.shell.console(searchpath.toString());
+				jsh.shell.console(String(searchpath.pathnames.length));
+				jsh.shell.console(searchpath.pathnames[0].toString());
+				jsh.shell.console(String(searchpath.pathnames[0].directory.directory));
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
 
 	export interface Exports {
 		state: {

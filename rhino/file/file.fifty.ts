@@ -45,7 +45,10 @@ namespace slime.jrunscript.file.internal.file {
 	}
 
 	export interface Exports {
-		Searchpath: any
+		Searchpath: new (parameters: {
+			filesystem: slime.jrunscript.file.internal.java.FilesystemProvider
+			array: slime.jrunscript.file.Pathname[]
+		}) => any
 
 		//	TODO	the constructor for Pathname is really filesystem/peer or filesystem/path
 

@@ -299,16 +299,9 @@
 
 				this.java = new (function(self) {
 					this.adapt = function(_jfile) {
-						//	TODO	if no arguments, may want to someday consider returning the peer of this object
-						//	TODO	document this and write unit tests for it
-						return new $context.Pathname({ filesystem: self, peer: _peer.getNode(_jfile) });
+						return _peer.getNode(_jfile);
 					}
 				})(this);
-
-				/** @type { slime.jrunscript.file.internal.java.FilesystemProvider["decorate"] } */
-				this.decorate = function(filesystem) {
-					filesystem.java = this.java;
-				}
 			},
 			{ os: void(0) }
 		);
