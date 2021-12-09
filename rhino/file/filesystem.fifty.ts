@@ -16,6 +16,7 @@ namespace slime.jrunscript.file.internal.filesystem {
 
 	export interface Filesystem {
 		Pathname: (string: string) => slime.jrunscript.file.Pathname
+		Searchpath: any
 	}
 
 	export type Script = slime.loader.Script<Context,Exports>

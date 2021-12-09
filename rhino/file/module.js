@@ -11,13 +11,16 @@
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jrunscript.file.Context } $context
 	 * @param { slime.Loader } $loader
-	 * @param { slime.jrunscript.file.Exports } $exports
+	 * @param { slime.loader.Export<slime.jrunscript.file.Exports> } $export
 	 */
-	function(Packages,$api,$context,$loader,$exports) {
+	function(Packages,$api,$context,$loader,$export) {
 		if (!$context.api) throw new Error("Missing 'api' member of context");
 		if ($context.$pwd && typeof($context.$pwd) != "string") {
 			throw new Error("$pwd is " + typeof($context.$pwd) + ".");
 		}
+
+		/** @type { Partial<slime.jrunscript.file.Exports> } */
+		var $exports = {};
 
 		var code = {
 			/** @type { slime.jrunscript.file.internal.file.Script } */
@@ -65,7 +68,7 @@
 			os: new os.Filesystem(
 				new java.FilesystemProvider(Packages.inonit.script.runtime.io.Filesystem.create())
 			),
-			/** @type { slime.jrunscript.file.internal.filesystem.Filesystem } */
+			/** @type { slime.jrunscript.file.internal.filesystem.Filesystem & { toUnix: any } } */
 			cygwin: ($context.cygwin) ? $loader.file("cygwin.js", {
 				cygwin: $context.cygwin,
 				Filesystem: os.Filesystem,
@@ -178,7 +181,7 @@
 		$exports.Searchpath = Object.assign(function(parameters) {
 			if (this.constructor != arguments.callee) {
 				if (parameters instanceof Array) {
-					return $exports.filesystem.Searchpath(parameters);
+					return filesystem.Searchpath(parameters);
 				} else {
 					throw new TypeError("Illegal argument to Searchpath(): " + parameters);
 				}
@@ -380,9 +383,9 @@
 		var workingDirectory = function() {
 			//	TODO	the call used by jsh.shell to translate OS paths to paths from this package can probably be used here
 			if ($context.$pwd) {
-				var osdir = $exports.filesystems.os.Pathname($context.$pwd);
+				var osdir = filesystems.os.Pathname($context.$pwd);
 				if ($exports.filesystem == $exports.filesystems.cygwin) {
-					osdir = $exports.filesystems.cygwin.toUnix(osdir);
+					osdir = filesystems.cygwin.toUnix(osdir);
 				}
 				return osdir.directory;
 			}
@@ -396,6 +399,11 @@
 		$api.deprecate($exports,"Streams");
 		$exports.java = $context.api.io.java;
 		$api.deprecate($exports,"java");
+
+		/** @type { slime.js.Cast<slime.jrunscript.file.Exports> } */
+		var assertComplete = $api.Function.cast;
+
+		$export(assertComplete($exports));
 	}
 //@ts-ignore
-)(Packages,$api,$context,$loader,$exports)
+)(Packages,$api,$context,$loader,$export)

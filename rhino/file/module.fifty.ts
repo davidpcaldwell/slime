@@ -87,27 +87,16 @@ namespace slime.jrunscript.file {
 	}
 
 	export interface Exports {
-		//	TODO	would be nice to get rid of string below, but right now it's unknown exactly how to access MimeType from
-		//			jsh/browser/servlet environments
-		Loader: new (p: { directory: Directory, type?: (path: slime.jrunscript.file.File) => (slime.mime.Type | string) }) => slime.Loader
+		filesystems: any
+		filesystem: any
+	}
+
+	export interface Exports {
 		Pathname: {
 			(p: string): Pathname
 			createDirectory: any
 		}
-		filesystem: any
-		filesystems: any
 		navigate: (p: { from: Pathname | Node, to: Pathname | Node, base?: Directory }) => { base: Directory, relative: string }
-		Filesystem: any
-		Streams: any
-		java: any
-		zip: any
-		unzip: any
-
-		list: {
-			NODE: slime.jrunscript.file.directory.Entry<slime.jrunscript.file.Node>,
-			ENTRY: slime.jrunscript.file.directory.Entry<{ path: string, node: slime.jrunscript.file.Node }>,
-			RESOURCE: slime.jrunscript.file.directory.Entry<{ path: string, resource: slime.jrunscript.file.File }>
-		}
 	}
 
 	export interface Searchpath {
@@ -142,6 +131,21 @@ namespace slime.jrunscript.file {
 	//@ts-ignore
 	)(fifty);
 
+	export interface Exports {
+		//	TODO	would be nice to get rid of string below, but right now it's unknown exactly how to access MimeType from
+		//			jsh/browser/servlet environments
+		Loader: new (p: { directory: Directory, type?: (path: slime.jrunscript.file.File) => (slime.mime.Type | string) }) => slime.Loader
+		Filesystem: any
+
+		zip: any
+		unzip: any
+
+		list: {
+			NODE: slime.jrunscript.file.directory.Entry<slime.jrunscript.file.Node>,
+			ENTRY: slime.jrunscript.file.directory.Entry<{ path: string, node: slime.jrunscript.file.Node }>,
+			RESOURCE: slime.jrunscript.file.directory.Entry<{ path: string, resource: slime.jrunscript.file.File }>
+		}
+	}
 
 	export interface Exports {
 		state: {
@@ -410,6 +414,13 @@ namespace slime.jrunscript.file {
 		}
 	//@ts-ignore
 	)(Packages,global.jsh,tests,verify,fifty);
+
+	export interface Exports {
+		/** @deprecated Use the {@link slime.jrunscript.io.Exports} provided by the platform. */
+		Streams: slime.jrunscript.io.Exports["Streams"]
+		/** @deprecated Use the {@link slime.jrunscript.io.Exports} provided by the platform. */
+		java: slime.jrunscript.io.Exports["java"]
+	}
 
 	export type Script = slime.loader.Script<Context,Exports>
 }
