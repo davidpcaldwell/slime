@@ -76,10 +76,7 @@ namespace slime.jrunscript.file.internal.java {
 	}
 
 	export interface Exports {
-		FilesystemProvider: {
-			new (_peer: slime.jrunscript.native.inonit.script.runtime.io.Filesystem): FilesystemProvider
-			os: FilesystemProvider
-		}
+		FilesystemProvider: new (_peer: slime.jrunscript.native.inonit.script.runtime.io.Filesystem) => FilesystemProvider
 	}
 
 	export interface Exports {

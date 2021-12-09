@@ -30,14 +30,20 @@
 			spi: $loader.script("spi.js")
 		}
 
+		var prototypes = {
+			Searchpath: {}
+		};
+
+		var java = code.java({
+			api: {
+				io: $context.api.io
+			}
+		});
+
 		/** @returns { item is slime.jrunscript.file.Pathname } */
 		var isPathname = function(item) {
 			return item && item.java && item.java.adapt() && $context.api.java.isJavaType(Packages.java.io.File)(item.java.adapt());
 		}
-
-		var prototypes = {
-			Searchpath: {}
-		};
 
 		var file = code.file({
 			//	Only use of $context.pathext in the module
@@ -48,15 +54,6 @@
 		});
 		file.Searchpath.prototype = prototypes.Searchpath;
 
-		var java = code.java(new function() {
-			this.Pathname = file.Pathname;
-
-			this.api = {
-				defined: $context.api.js.defined,
-				io: $context.api.io
-			};
-		});
-
 		//	TODO	separate out Cygwin and make it less tightly bound with the rest of this
 		var os = code.filesystem({
 			Pathname: file.Pathname,
@@ -65,24 +62,19 @@
 
 		var filesystems = {
 			/** @type { slime.jrunscript.file.internal.filesystem.Filesystem } */
-			os: void(0),
+			os: new os.Filesystem(
+				new java.FilesystemProvider(Packages.inonit.script.runtime.io.Filesystem.create())
+			),
 			/** @type { slime.jrunscript.file.internal.filesystem.Filesystem } */
-			cygwin: void(0)
-		};
-
-		java.FilesystemProvider.os = new java.FilesystemProvider(Packages.inonit.script.runtime.io.Filesystem.create());
-		filesystems.os = new os.Filesystem( java.FilesystemProvider.os );
-
-		if ($context.cygwin) {
-			filesystems.cygwin = $loader.file("cygwin.js", {
+			cygwin: ($context.cygwin) ? $loader.file("cygwin.js", {
 				cygwin: $context.cygwin,
 				Filesystem: os.Filesystem,
 				java: java,
 				isPathname: isPathname,
 				Searchpath: file.Searchpath,
 				addFinalizer: $context.addFinalizer
-			});
-		}
+			}) : void(0)
+		};
 
 		$exports.filesystems = filesystems;
 
@@ -182,27 +174,6 @@
 
 		$exports.navigate = $api.experimental(navigate);
 
-		// $exports.getRelativePathTo = function(to) {
-		// 	// TODO: no test coverage
-		// 	return function(from) {
-		// 		if (from.pathname && !from.pathname.directory && from.parent) {
-		// 			from = from.parent;
-		// 		}
-		// 		var startsWith = function(start,under) {
-		// 			return under.toString().substring(0,start.toString().length) == start.toString();
-		// 		};
-		// 		var common = from;
-		// 		var up = 0;
-		// 		while(!startsWith(common,to)) {
-		// 			var basename = common.pathname.basename;
-		// 			up++;
-		// 			common = common.parent;
-		// 		}
-		// 		var remaining = to.toString().substring(common.toString().length);
-		// 		return new Array(up+1).join("../") + remaining;
-		// 	}
-		// }
-
 		//	TODO	Searchpath implementation has multiple layers: in os.js, file.js, here ... consolidate and refactor
 		$exports.Searchpath = Object.assign(function(parameters) {
 			if (this.constructor != arguments.callee) {
@@ -220,36 +191,6 @@
 		}
 		$api.deprecate($exports.Searchpath,"createEmpty");
 		$exports.Searchpath.prototype = prototypes.Searchpath;
-
-		////	TODO	this implementation would be much simpler if we could use a normal loader/jrunscript loader with a _source, but
-		////			right now this would cause Cygwin loaders to fail, probably
-		//$context.$rhino.Loader.spi(function(underlying) {
-		//	return function(p) {
-		//		underlying.apply(this,arguments);
-		//		if (arguments[0].directory) {
-		//			var directory = arguments[0].directory;
-		//			this.list = function(m) {
-		//				return directory.list().map(function(node) {
-		//					if (node.directory) {
-		//						return { path: node.pathname.basename, loader: new $context.$rhino.Loader({ directory: node }) };
-		//					} else {
-		//						return {
-		//							path: node.pathname.basename,
-		//							resource: new $context.api.io.Resource({
-		//								type: p.type(node),
-		//								read: {
-		//									binary: function() {
-		//										return node.read($context.api.io.Streams.binary);
-		//									}
-		//								}
-		//							})
-		//						};
-		//					}
-		//				});
-		//			};
-		//		}
-		//	};
-		//});
 
 		/**
 		 * @param { ConstructorParameters<slime.jrunscript.file.Exports["Loader"]>[0] } p

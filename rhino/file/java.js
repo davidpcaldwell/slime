@@ -164,7 +164,7 @@
 			return createNode;
 		}
 
-		$exports.FilesystemProvider = Object.assign(
+		$exports.FilesystemProvider = (
 			/**
 			 *
 			 * @constructor
@@ -302,8 +302,7 @@
 						return _peer.getNode(_jfile);
 					}
 				})(this);
-			},
-			{ os: void(0) }
+			}
 		);
 
 		$exports.test = {
