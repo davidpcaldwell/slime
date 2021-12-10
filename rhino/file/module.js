@@ -79,12 +79,8 @@
 			}) : void(0)
 		};
 
-		$exports.filesystems = filesystems;
-
 		//	By policy, default filesystem is cygwin filesystem if it is present.  Default can be set through module's filesystem property
 		var filesystem = (filesystems.cygwin) ? filesystems.cygwin : filesystems.os;
-
-		$exports.filesystem = filesystem;
 
 		//	TODO	perhaps should move selection of default filesystem into these definitions rather than inside file.js
 		$exports.Pathname = Object.assign(function Pathname(parameters) {
@@ -384,7 +380,7 @@
 			//	TODO	the call used by jsh.shell to translate OS paths to paths from this package can probably be used here
 			if ($context.$pwd) {
 				var osdir = filesystems.os.Pathname($context.$pwd);
-				if ($exports.filesystem == $exports.filesystems.cygwin) {
+				if (filesystem == filesystems.cygwin) {
 					osdir = filesystems.cygwin.toUnix(osdir);
 				}
 				return osdir.directory;
@@ -400,10 +396,42 @@
 		$exports.java = $context.api.io.java;
 		$api.deprecate($exports,"java");
 
-		/** @type { slime.js.Cast<slime.jrunscript.file.Exports> } */
-		var assertComplete = $api.Function.cast;
-
-		$export(assertComplete($exports));
+		$export(
+			$api.Function.result(
+				(
+					function() {
+						/** @type { slime.jrunscript.file.Exports } */
+						var rv = {
+							filesystems: filesystems,
+							filesystem: filesystem,
+							Pathname: $exports.Pathname,
+							navigate: $exports.navigate,
+							Searchpath: $exports.Searchpath,
+							Loader: $exports.Loader,
+							Filesystem: $exports.Filesystem,
+							zip: $exports.zip,
+							unzip: $exports.unzip,
+							list: $exports.list,
+							state: $exports.state,
+							action: $exports.action,
+							world: {
+							},
+							Streams: $exports.Streams,
+							java: $exports.java,
+							workingDirectory: void(0)
+						}
+						Object.defineProperty(rv, "workingDirectory", {
+							get: workingDirectory,
+							enumerable: true
+						});
+						return rv;
+					}
+				)(),
+				function(rv) {
+					return rv;
+				}
+			)
+		);
 	}
 //@ts-ignore
 )(Packages,$api,$context,$loader,$export)

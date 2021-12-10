@@ -415,11 +415,20 @@ namespace slime.jrunscript.file {
 	//@ts-ignore
 	)(Packages,global.jsh,tests,verify,fifty);
 
+	export interface World {
+	}
+
+	export interface Exports {
+		world: World
+	}
+
 	export interface Exports {
 		/** @deprecated Use the {@link slime.jrunscript.io.Exports} provided by the platform. */
 		Streams: slime.jrunscript.io.Exports["Streams"]
 		/** @deprecated Use the {@link slime.jrunscript.io.Exports} provided by the platform. */
 		java: slime.jrunscript.io.Exports["java"]
+		/** @deprecated Covered by {@link slime.jrunscript.shell.Exports["PWD"]} */
+		workingDirectory: slime.jrunscript.file.Directory
 	}
 
 	export type Script = slime.loader.Script<Context,Exports>
