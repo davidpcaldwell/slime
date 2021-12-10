@@ -403,17 +403,36 @@
 		 * @returns { slime.jrunscript.file.world.Filesystem }
 		 */
 		function toWorldFilesystem(was) {
+			/**
+			 *
+			 * @param { string } pathname
+			 * @param { slime.$api.Events<{ notFound: void }> } events
+			 */
+			var openInputStream = function(pathname,events) {
+				var peer = was.newPeer(pathname);
+				if (!peer.exists()) {
+					events.fire("notFound");
+					return null;
+				}
+				return $context.api.io.Streams.java.adapt(peer.readBinary());
+			};
+
 			return {
 				File: {
-					read: function(pathname) {
-						var peer = was.newPeer(pathname);
-						return $api.Function.impure.ask(function(events) {
-							if (!peer.exists()) {
-								events.fire("notFound");
-								return null;
+					read: {
+						stream: {
+							bytes: function(pathname) {
+								return $api.Function.impure.ask(function(events) {
+									return openInputStream(pathname,events);
+								})
 							}
-							return $context.api.io.Streams.java.adapt(peer.readBinary());
-						})
+						},
+						string: function(pathname) {
+							return $api.Function.impure.ask(function(events) {
+								var stream = openInputStream(pathname,events);
+								return stream.character().asString();
+							});
+						}
 					}
 				}
 			};

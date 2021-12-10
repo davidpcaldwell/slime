@@ -420,9 +420,16 @@ namespace slime.jrunscript.file {
 	export namespace world {
 		export interface Filesystem {
 			File: {
-				read: (pathname: string) => slime.$api.fp.impure.Ask<{
-					notFound: void
-				},slime.jrunscript.runtime.io.InputStream>
+				read: {
+					stream: {
+						bytes: (pathname: string) => slime.$api.fp.impure.Ask<{
+							notFound: void
+						},slime.jrunscript.runtime.io.InputStream>
+					}
+					string: (pathname: string) => slime.$api.fp.impure.Ask<{
+						notFound: void
+					},string>
+				}
 			}
 		}
 	}
@@ -432,6 +439,19 @@ namespace slime.jrunscript.file {
 			os: world.Filesystem
 		}
 	}
+
+	(
+		function(
+			fifty: slime.fifty.test.kit
+		) {
+			fifty.tests.world = function() {
+				var pathname = fifty.$loader.getRelativePath("module.fifty.ts").toString();
+				fifty.global.jsh.shell.console(fifty.global.jsh.file.world.filesystems.os.File.read.string(pathname)().substring(0,500));
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
 
 	export interface Exports {
 		world: World
