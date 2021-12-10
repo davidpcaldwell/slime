@@ -19,6 +19,7 @@
 		function newPathname(system, string) {
 			return new $context.Pathname({ filesystem: system, peer: system.newPeer(string) });
 		}
+
 		/**
 		 *
 		 * @param { slime.jrunscript.file.internal.java.FilesystemProvider } system

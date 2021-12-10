@@ -63,12 +63,17 @@
 			Searchpath: file.Searchpath
 		});
 
+		//	World-oriented filesystem implementations. No world-oriented Cygwin implementation yet.
+		var providers = {
+			os: new java.FilesystemProvider(Packages.inonit.script.runtime.io.Filesystem.create())
+		};
+
+		//	Object-oriented filesystem implementations.
+		/**
+		 * @type { slime.jrunscript.file.Exports["filesystems"] }
+		 */
 		var filesystems = {
-			/** @type { slime.jrunscript.file.internal.filesystem.Filesystem } */
-			os: new os.Filesystem(
-				new java.FilesystemProvider(Packages.inonit.script.runtime.io.Filesystem.create())
-			),
-			/** @type { slime.jrunscript.file.internal.filesystem.Filesystem & { toUnix: any } } */
+			os: new os.Filesystem(providers.os),
 			cygwin: ($context.cygwin) ? $loader.file("cygwin.js", {
 				cygwin: $context.cygwin,
 				Filesystem: os.Filesystem,
@@ -188,7 +193,6 @@
 		$exports.Searchpath.createEmpty = function() {
 			return $exports.Searchpath([]);
 		}
-		$api.deprecate($exports.Searchpath,"createEmpty");
 		$exports.Searchpath.prototype = prototypes.Searchpath;
 
 		/**
@@ -389,12 +393,31 @@
 		$exports.__defineGetter__("workingDirectory", workingDirectory);
 		//	Property only makes sense in context of an execution environment, so moving to jsh.shell (other environments can provide their
 		//	own mechanisms)
-		$api.deprecate($exports,"workingDirectory");
 
 		$exports.Streams = $context.api.io.Streams;
-		$api.deprecate($exports,"Streams");
 		$exports.java = $context.api.io.java;
-		$api.deprecate($exports,"java");
+
+		/**
+		 *
+		 * @param { slime.jrunscript.file.internal.java.FilesystemProvider } was
+		 * @returns { slime.jrunscript.file.world.Filesystem }
+		 */
+		function toWorldFilesystem(was) {
+			return {
+				File: {
+					read: function(pathname) {
+						var peer = was.newPeer(pathname);
+						return $api.Function.impure.ask(function(events) {
+							if (!peer.exists()) {
+								events.fire("notFound");
+								return null;
+							}
+							return $context.api.io.Streams.java.adapt(peer.readBinary());
+						})
+					}
+				}
+			};
+		}
 
 		$export(
 			$api.Function.result(
@@ -415,6 +438,9 @@
 							state: $exports.state,
 							action: $exports.action,
 							world: {
+								filesystems: {
+									os: toWorldFilesystem(providers.os)
+								}
 							},
 							Streams: $exports.Streams,
 							java: $exports.java,
@@ -427,8 +453,12 @@
 						return rv;
 					}
 				)(),
-				function(rv) {
-					return rv;
+				function($exports) {
+					$api.deprecate($exports.Searchpath,"createEmpty");
+					$api.deprecate($exports,"workingDirectory");
+					$api.deprecate($exports,"Streams");
+					$api.deprecate($exports,"java");
+					return $exports;
 				}
 			)
 		);

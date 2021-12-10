@@ -415,7 +415,20 @@ namespace slime.jrunscript.file {
 	//@ts-ignore
 	)(Packages,global.jsh,tests,verify,fifty);
 
+	export namespace world {
+		export interface Filesystem {
+			File: {
+				read: (pathname: string) => slime.$api.fp.impure.Ask<{
+					notFound: void
+				},slime.jrunscript.runtime.io.InputStream>
+			}
+		}
+	}
+
 	export interface World {
+		filesystems: {
+			os: world.Filesystem
+		}
 	}
 
 	export interface Exports {
