@@ -14,11 +14,20 @@
 	 * @param { slime.loader.Export<slime.jrunscript.io.Exports> } $export
 	 */
 	function($api,$context,$loader,$export) {
+		/** @type { slime.jrunscript.io.Exports["InputStream"] } */
+		var InputStream = {
+			string: function(stream) {
+				return $api.Function.impure.ask(function() {
+					return stream.character().asString();
+				});
+			}
+		}
 		var $$exports = {
 			Streams: $context.$slime.io.Streams,
 			Buffer: $context.$slime.io.Buffer,
 			Resource: $context.$slime.Resource,
 			Loader: $context.$slime.Loader,
+			InputStream: InputStream,
 			java: {
 				adapt: $context.$slime.io.Streams.java.adapt
 			},

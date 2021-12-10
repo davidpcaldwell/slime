@@ -23,6 +23,9 @@ namespace slime.jrunscript.io {
 		Buffer: slime.jrunscript.runtime.io.Exports["Buffer"]
 		Resource: slime.jrunscript.runtime.Exports["Resource"]
 		Loader: slime.jrunscript.runtime.Exports["Loader"]
+		InputStream: {
+			string: (stream: slime.jrunscript.runtime.io.InputStream) => slime.$api.fp.impure.Ask<void,string>
+		}
 		java: {
 			adapt: {
 				(native: slime.jrunscript.native.java.io.InputStream): slime.jrunscript.runtime.io.InputStream

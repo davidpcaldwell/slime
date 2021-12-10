@@ -14,6 +14,9 @@ namespace slime.jrunscript.file.internal.filesystem {
 		Filesystem: new (provider: slime.jrunscript.file.internal.java.FilesystemProvider) => Filesystem
 	}
 
+	/**
+	 * A representation of a filesystem that provides support for object-oriented APIs.
+	 */
 	export interface Filesystem {
 		Pathname: (string: string) => slime.jrunscript.file.Pathname
 		Searchpath: any

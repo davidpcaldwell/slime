@@ -137,7 +137,9 @@ namespace slime.jrunscript.file {
 		Loader: new (p: { directory: Directory, type?: (path: slime.jrunscript.file.File) => (slime.mime.Type | string) }) => slime.Loader
 		Filesystem: any
 
+		/** @deprecated Use {@link slime.jrunscript.io.Exports["archive"]["zip"]["encode"] } */
 		zip: any
+		/** @deprecated Use {@link slime.jrunscript.io.Exports["archive"]["zip"]["decode"] } */
 		unzip: any
 
 		list: {
