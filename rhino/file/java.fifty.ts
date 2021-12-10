@@ -25,6 +25,8 @@ namespace slime.jrunscript.file.internal.java {
 
 		newPeer: (string: string) => Peer
 
+		relative: (base: string, relative: string) => Peer
+
 		exists: (peer: Peer) => any
 
 		isDirectory: (peer: Peer) => boolean

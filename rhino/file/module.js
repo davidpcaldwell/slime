@@ -57,18 +57,65 @@
 		});
 		file.Searchpath.prototype = prototypes.Searchpath;
 
-		//	TODO	separate out Cygwin and make it less tightly bound with the rest of this
-		var os = code.filesystem({
-			Pathname: file.Pathname,
-			Searchpath: file.Searchpath
-		});
-
 		//	World-oriented filesystem implementations. No world-oriented Cygwin implementation yet.
 		var providers = {
 			os: new java.FilesystemProvider(Packages.inonit.script.runtime.io.Filesystem.create())
 		};
 
+		/**
+		 *
+		 * @param { slime.jrunscript.file.internal.java.FilesystemProvider } was
+		 * @returns { slime.jrunscript.file.world.Filesystem }
+		 */
+		function toWorldFilesystem(was) {
+			/**
+			 *
+			 * @param { string } pathname
+			 * @param { slime.$api.Events<{ notFound: void }> } events
+			 */
+			var openInputStream = function(pathname,events) {
+				var peer = was.newPeer(pathname);
+				if (!peer.exists()) {
+					events.fire("notFound");
+					return null;
+				}
+				return $context.api.io.Streams.java.adapt(peer.readBinary());
+			};
+
+			return {
+				Pathname: {
+					relative: function(parent, relative) {
+						var peer = was.relative(parent, relative);
+						return was.peerToString(peer);
+					}
+				},
+				File: {
+					read: {
+						stream: {
+							bytes: function(pathname) {
+								return $api.Function.impure.ask(function(events) {
+									return openInputStream(pathname,events);
+								})
+							}
+						},
+						string: function(pathname) {
+							return $api.Function.impure.ask(function(events) {
+								var stream = openInputStream(pathname,events);
+								return (stream) ? stream.character().asString() : null;
+							});
+						}
+					}
+				}
+			};
+		}
+
 		//	Object-oriented filesystem implementations.
+
+		var os = code.filesystem({
+			Pathname: file.Pathname,
+			Searchpath: file.Searchpath
+		});
+
 		/**
 		 * @type { slime.jrunscript.file.Exports["filesystems"] }
 		 */
@@ -396,47 +443,6 @@
 
 		$exports.Streams = $context.api.io.Streams;
 		$exports.java = $context.api.io.java;
-
-		/**
-		 *
-		 * @param { slime.jrunscript.file.internal.java.FilesystemProvider } was
-		 * @returns { slime.jrunscript.file.world.Filesystem }
-		 */
-		function toWorldFilesystem(was) {
-			/**
-			 *
-			 * @param { string } pathname
-			 * @param { slime.$api.Events<{ notFound: void }> } events
-			 */
-			var openInputStream = function(pathname,events) {
-				var peer = was.newPeer(pathname);
-				if (!peer.exists()) {
-					events.fire("notFound");
-					return null;
-				}
-				return $context.api.io.Streams.java.adapt(peer.readBinary());
-			};
-
-			return {
-				File: {
-					read: {
-						stream: {
-							bytes: function(pathname) {
-								return $api.Function.impure.ask(function(events) {
-									return openInputStream(pathname,events);
-								})
-							}
-						},
-						string: function(pathname) {
-							return $api.Function.impure.ask(function(events) {
-								var stream = openInputStream(pathname,events);
-								return stream.character().asString();
-							});
-						}
-					}
-				}
-			};
-		}
 
 		$export(
 			$api.Function.result(

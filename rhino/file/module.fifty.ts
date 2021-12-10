@@ -406,19 +406,15 @@ namespace slime.jrunscript.file {
 					verify(top).relative.is("../../a/c/c");
 				}
 			}
-
-			tests.suite = function() {
-				fifty.run(tests.filetime);
-				fifty.run(tests.exports.navigate);
-				fifty.run(tests.state.list);
-				fifty.run(tests.action.delete);
-			}
 		}
 	//@ts-ignore
 	)(Packages,global.jsh,tests,verify,fifty);
 
 	export namespace world {
 		export interface Filesystem {
+			Pathname: {
+				relative: (parent: string, relative: string) => string
+			},
 			File: {
 				read: {
 					stream: {
@@ -432,6 +428,34 @@ namespace slime.jrunscript.file {
 				}
 			}
 		}
+
+		(
+			function(
+				fifty: slime.fifty.test.kit
+			) {
+				const { verify } = fifty;
+				const { jsh } = fifty.global;
+				const { world } = jsh.file;
+				const filesystem = world.filesystems.os;
+
+				fifty.tests.sandbox = {};
+				fifty.tests.sandbox.filesystem = function() {
+					var parent = fifty.$loader.getRelativePath(".").toString();
+					var relative = "module.fifty.ts";
+					var result = filesystem.Pathname.relative(parent, relative);
+					verify(result).is.type("string");
+					result = filesystem.Pathname.relative(parent, "foo");
+					verify(result).is.type("string");
+
+					var pathname = function(relative: string) { return fifty.$loader.getRelativePath(relative).toString(); };
+					var thisFile = pathname("module.fifty.ts");
+					var doesNotExist = pathname("foo");
+					verify(filesystem.File.read.string(thisFile)(), "thisFile").is.type("string");
+					verify(filesystem.File.read.string(doesNotExist)()).is.type("null");
+				}
+			}
+		//@ts-ignore
+		)(fifty);
 	}
 
 	export interface World {
@@ -444,9 +468,32 @@ namespace slime.jrunscript.file {
 		function(
 			fifty: slime.fifty.test.kit
 		) {
+			fifty.tests.suite = function() {
+				fifty.run(fifty.tests.filetime);
+				fifty.run(fifty.tests.exports.navigate);
+				fifty.run(fifty.tests.state.list);
+				fifty.run(fifty.tests.action.delete);
+				fifty.run(fifty.tests.sandbox.filesystem);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+	(
+		function(
+			fifty: slime.fifty.test.kit
+		) {
+			const { jsh } = fifty.global;
+			const { world } = jsh.file;
+
 			fifty.tests.world = function() {
 				var pathname = fifty.$loader.getRelativePath("module.fifty.ts").toString();
-				fifty.global.jsh.shell.console(fifty.global.jsh.file.world.filesystems.os.File.read.string(pathname)().substring(0,500));
+				jsh.shell.console(world.filesystems.os.File.read.string(pathname)().substring(0,500));
+
+				var folder = fifty.$loader.getRelativePath(".").toString();
+				var file = "module.fifty.ts";
+				var relative = world.filesystems.os.Pathname.relative(folder, file);
+				jsh.shell.console(relative);
 			}
 		}
 	//@ts-ignore

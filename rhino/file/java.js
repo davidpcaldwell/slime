@@ -183,9 +183,19 @@
 
 				var newPeer = nodeCreator(_peer);
 
+				var peerToString = function(peer) {
+					return String( peer.getScriptPath() );
+				};
+
 				/** @type { slime.jrunscript.file.internal.java.FilesystemProvider["newPeer"] } */
 				this.newPeer = function(string) {
 					return newPeer(string);
+				};
+
+				this.relative = function(parent, relative) {
+					var folder = newPeer(parent);
+					var _file = new Packages.java.io.File(folder.getHostFile(), relative);
+					return _peer.getNode(_file);
 				}
 
 				this.importPathname = function(pathname) {
@@ -203,9 +213,7 @@
 					return peer.isDirectory();
 				}
 
-				this.peerToString = function(peer) {
-					return String( peer.getScriptPath() );
-				}
+				this.peerToString = peerToString;
 
 				this.isRootPath = os.isRootPath;
 
