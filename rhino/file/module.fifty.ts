@@ -414,7 +414,8 @@ namespace slime.jrunscript.file {
 		export interface Filesystem {
 			Pathname: {
 				relative: (parent: string, relative: string) => string
-			},
+			}
+
 			File: {
 				read: {
 					stream: {
@@ -422,10 +423,18 @@ namespace slime.jrunscript.file {
 							notFound: void
 						},slime.jrunscript.runtime.io.InputStream>
 					}
+
 					string: (pathname: string) => slime.$api.fp.impure.Ask<{
 						notFound: void
 					},string>
 				}
+			}
+
+			Directory: {
+				require: (p: {
+					pathname: string
+					recursive?: boolean
+				}) => slime.$api.fp.impure.Tell<void>
 			}
 		}
 
@@ -433,12 +442,13 @@ namespace slime.jrunscript.file {
 			function(
 				fifty: slime.fifty.test.kit
 			) {
-				const { verify } = fifty;
+				const { verify, run } = fifty;
 				const { jsh } = fifty.global;
 				const { world } = jsh.file;
 				const filesystem = world.filesystems.os;
 
 				fifty.tests.sandbox = {};
+
 				fifty.tests.sandbox.filesystem = function() {
 					var parent = fifty.$loader.getRelativePath(".").toString();
 					var relative = "module.fifty.ts";
@@ -452,6 +462,63 @@ namespace slime.jrunscript.file {
 					var doesNotExist = pathname("foo");
 					verify(filesystem.File.read.string(thisFile)(), "thisFile").is.type("string");
 					verify(filesystem.File.read.string(doesNotExist)()).is.type("null");
+
+					run(fifty.tests.sandbox.filesystem.Directory.require);
+				}
+
+				fifty.tests.sandbox.filesystem.Directory = {};
+
+				fifty.tests.sandbox.filesystem.Directory.require = function() {
+					run(function recursiveRequired() {
+						var TMPDIR = jsh.shell.TMPDIR.createTemporary({ directory: true });
+						var destination = filesystem.Pathname.relative(TMPDIR.toString(), "foo/bar");
+
+						verify(TMPDIR).getSubdirectory("foo/bar").is.type("null");
+
+						verify(filesystem.Directory).evaluate(function(subject) {
+							return subject.require({
+								pathname: destination
+							})();
+						}).threw.type(Error);
+
+						verify(TMPDIR).getSubdirectory("foo/bar").is.type("null");
+
+						verify(filesystem.Directory).evaluate(function(subject) {
+							return subject.require({
+								pathname: destination,
+								recursive: true
+							})();
+						}).threw.nothing();
+
+						verify(TMPDIR).getSubdirectory("foo/bar").is.type("object");
+					});
+
+					run(function createsOnce() {
+						var TMPDIR = jsh.shell.TMPDIR.createTemporary({ directory: true });
+						var destination = filesystem.Pathname.relative(TMPDIR.toString(), "foo");
+
+						verify(TMPDIR).getSubdirectory("foo").is(null);
+
+						filesystem.Directory.require({
+							pathname: destination
+						})();
+
+						verify(TMPDIR).getSubdirectory("foo").is.type("object");
+						verify(TMPDIR).getSubdirectory("foo").getFile("a").is.type("null");
+
+						TMPDIR.getSubdirectory("foo").getRelativePath("a").write("", { append: false });
+
+						verify(TMPDIR).getSubdirectory("foo").is.type("object");
+						verify(TMPDIR).getSubdirectory("foo").getFile("a").is.type("object");
+
+						filesystem.Directory.require({
+							pathname: destination
+						})();
+
+						verify(TMPDIR).getSubdirectory("foo").is.type("object");
+						//	verify it was not recreated
+						verify(TMPDIR).getSubdirectory("foo").getFile("a").is.type("object");
+					})
 				}
 			}
 		//@ts-ignore

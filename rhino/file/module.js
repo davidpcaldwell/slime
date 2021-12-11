@@ -105,6 +105,18 @@
 							});
 						}
 					}
+				},
+				Directory: {
+					require: function(p) {
+						return $api.Function.impure.tell(function() {
+							var peer = was.newPeer(p.pathname);
+							var parent = was.getParent(peer);
+							if (!parent.exists() && !p.recursive) throw new Error();
+							if (!peer.exists()) {
+								was.createDirectoryAt(peer);
+							}
+						});
+					}
 				}
 			};
 		}
