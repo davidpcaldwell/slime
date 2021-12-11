@@ -114,6 +114,9 @@
 
 			var getBasename = constant(function () {
 				var path = toString();
+				//	TODO	maybe should be considered wrong?
+				//	$ basename /foo
+				//	foo
 				if ($filesystem.isRootPath(path)) return path;
 				if (path.substring(path.length - 1) == $filesystem.separators.pathname) {
 					path = path.substring(0, path.length - 1);

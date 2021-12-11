@@ -229,6 +229,11 @@ namespace slime.jrunscript {
 			export namespace nio {
 				export namespace file {
 					export interface Path {
+						getFileSystem(): FileSystem
+					}
+
+					export interface FileSystem {
+						supportedFileAttributeViews(): slime.jrunscript.native.java.util.Set
 					}
 				}
 			}
@@ -295,6 +300,7 @@ namespace slime.jrunscript {
 
 				export interface Set {
 					iterator(): Iterator
+					contains(element: any): boolean
 				}
 
 				export interface Map {

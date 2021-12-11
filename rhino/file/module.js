@@ -104,6 +104,23 @@
 								return (stream) ? stream.character().asString() : null;
 							});
 						}
+					},
+					copy: function(p) {
+						return $api.Function.impure.tell(function(events) {
+							var from = was.newPeer(p.from);
+							var to = was.newPeer(p.to);
+							$context.api.io.Streams.binary.copy(
+								was.read.binary(from),
+								was.write.binary(to, false)
+							);
+							var _from = from.getHostFile().toPath();
+							var _to = to.getHostFile().toPath();
+							var _Files = Packages.java.nio.file.Files;
+							if (_from.getFileSystem().supportedFileAttributeViews().contains("posix") && _to.getFileSystem().supportedFileAttributeViews().contains("posix")) {
+								var _fpermissions = _Files.getPosixFilePermissions(_from);
+								_Files.setPosixFilePermissions(_to, _fpermissions);
+							}
+						});
 					}
 				},
 				Directory: {

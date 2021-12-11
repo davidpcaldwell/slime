@@ -428,6 +428,12 @@ namespace slime.jrunscript.file {
 						notFound: void
 					},string>
 				}
+
+				//	TODO	no tests
+				copy: (p: {
+					from: string
+					to: string
+				}) => slime.$api.fp.impure.Tell<void>
 			}
 
 			Directory: {
