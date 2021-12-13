@@ -414,6 +414,8 @@ namespace slime.jrunscript.file {
 		export interface Filesystem {
 			Pathname: {
 				relative: (parent: string, relative: string) => string
+
+				isDirectory: (pathname: string) => boolean
 			}
 
 			File: {
@@ -456,21 +458,44 @@ namespace slime.jrunscript.file {
 				fifty.tests.sandbox = {};
 
 				fifty.tests.sandbox.filesystem = function() {
-					var parent = fifty.$loader.getRelativePath(".").toString();
-					var relative = "module.fifty.ts";
-					var result = filesystem.Pathname.relative(parent, relative);
-					verify(result).is.type("string");
-					result = filesystem.Pathname.relative(parent, "foo");
-					verify(result).is.type("string");
-
-					var pathname = function(relative: string) { return fifty.$loader.getRelativePath(relative).toString(); };
-					var thisFile = pathname("module.fifty.ts");
-					var doesNotExist = pathname("foo");
-					verify(filesystem.File.read.string(thisFile)(), "thisFile").is.type("string");
-					verify(filesystem.File.read.string(doesNotExist)()).is.type("null");
-
+					run(fifty.tests.sandbox.filesystem.Pathname.relative);
+					run(fifty.tests.sandbox.filesystem.Pathname.isDirectory);
 					run(fifty.tests.sandbox.filesystem.Directory.require);
 				}
+
+				fifty.tests.sandbox.filesystem.Pathname = {
+					relative: function() {
+						var parent = fifty.$loader.getRelativePath(".").toString();
+						var relative = "module.fifty.ts";
+						var result = filesystem.Pathname.relative(parent, relative);
+						verify(result).is.type("string");
+						result = filesystem.Pathname.relative(parent, "foo");
+						verify(result).is.type("string");
+
+						var pathname = function(relative: string) { return fifty.$loader.getRelativePath(relative).toString(); };
+						var thisFile = pathname("module.fifty.ts");
+						var doesNotExist = pathname("foo");
+						verify(filesystem.File.read.string(thisFile)(), "thisFile").is.type("string");
+						verify(filesystem.File.read.string(doesNotExist)()).is.type("null");
+					},
+					isDirectory: function() {
+						var parent = fifty.$loader.getRelativePath(".").toString();
+						var cases = {
+							parent: parent,
+							thisFile: filesystem.Pathname.relative(parent, "module.fifty.ts"),
+							nothing: filesystem.Pathname.relative(parent, "foo"),
+							subfolder: filesystem.Pathname.relative(parent, "java")
+						};
+						var isDirectory = function(property) {
+							return function(cases) { return filesystem.Pathname.isDirectory(cases[property]); };
+						}
+
+						verify(cases).evaluate(isDirectory("parent")).is(true);
+						verify(cases).evaluate(isDirectory("thisFile")).is(false);
+						verify(cases).evaluate(isDirectory("nothing")).is(false);
+						verify(cases).evaluate(isDirectory("subfolder")).is(true);
+					}
+				};
 
 				fifty.tests.sandbox.filesystem.Directory = {};
 
@@ -571,7 +596,6 @@ namespace slime.jrunscript.file {
 		}
 	//@ts-ignore
 	)(fifty);
-
 
 	export interface Exports {
 		world: World

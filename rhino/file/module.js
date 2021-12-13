@@ -87,6 +87,10 @@
 					relative: function(parent, relative) {
 						var peer = was.relative(parent, relative);
 						return was.peerToString(peer);
+					},
+					isDirectory: function(pathname) {
+						var peer = was.newPeer(pathname);
+						return was.exists(peer) && was.isDirectory(peer);
 					}
 				},
 				File: {
