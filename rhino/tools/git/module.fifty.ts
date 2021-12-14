@@ -4,6 +4,15 @@
 //
 //	END LICENSE
 
+/**
+ * Provides access to the `git` command-line tool from scripts.
+ *
+ * The main world-oriented entry point is the {@link slime.jrunscript.git.Exports} `program` function, which returns an API that allows the usage
+ * of commands against a particular executable; this function can then be chained with `repository` (targeting a specific
+ * repository), `command` (executing a specific {@link slime.jrunscript.git.Command} toward that repository), `argument` (passing
+ * specific information to that command), and finally, `run`, which executes the command, optionally supplying a world
+ * implementation and event handlers for the `stdout` and `stderr` streams.
+ */
 namespace slime.jrunscript.git {
 	export interface Commit {
 		names: string[],
@@ -785,6 +794,20 @@ namespace slime.jrunscript.git {
 		commands: Commands
 	}
 
+	export namespace exports {
+		export namespace command {
+			export type Executor = <P,R>(command: slime.jrunscript.git.Command<P,R>) => {
+				argument: (argument: P) => {
+					run: (p?: {
+						stdout?: world.Invocation<P,R>["stdout"]
+						stderr?: world.Invocation<P,R>["stderr"]
+						world?: world.Invocation<P,R>["world"]
+					}) => R
+				}
+			}
+		}
+	}
+
 	export interface Exports {
 		program: (program: Program) => {
 			Invocation: <P,R>(p: {
@@ -804,15 +827,7 @@ namespace slime.jrunscript.git {
 					stdio: slime.jrunscript.shell.invocation.Argument["stdio"]
 				}) => shell.run.Invocation
 
-				command: <P,R>(command: slime.jrunscript.git.Command<P,R>) => {
-					argument: (argument: P) => {
-						run: (p?: {
-							stdout?: world.Invocation<P,R>["stdout"]
-							stderr?: world.Invocation<P,R>["stderr"]
-							world?: world.Invocation<P,R>["world"]
-						}) => R
-					}
-				}
+				command: exports.command.Executor
 
 				run: <P,R>(p: {
 					command: slime.jrunscript.git.Command<P,R>
@@ -820,6 +835,8 @@ namespace slime.jrunscript.git {
 					world?: world.Invocation<P,R>["world"]
 				}) => R
 			}
+
+			command: exports.command.Executor
 		}
 	}
 
@@ -839,6 +856,34 @@ namespace slime.jrunscript.git {
 					//@ts-ignore
 					fifty.verify(invocation).program.command.evaluate(String).is("blah");
 					fifty.verify(invocation).pathname.is("/foo/path");
+				});
+
+				fifty.run(function command() {
+					var executor = internal.subject.program({ command: "sigh" })
+						.command(internal.subject.commands.status)
+						.argument()
+					;
+					var invocation: shell.run.Invocation;
+					executor.run({
+						world: {
+							run: function(created: shell.run.Invocation) {
+								invocation = created;
+								return fifty.global.$api.Function.impure.tell(function(events) {
+									events.fire("exit", {
+										status: 0,
+										stdio: {
+											output: ""
+										}
+									});
+								});
+							}
+						}
+					});
+
+					//	TODO	appears to work in latest TypeScript
+					//@ts-ignore
+					fifty.verify(invocation).configuration.command.evaluate(String).is("sigh");
+					fifty.verify(invocation).context.directory.is(fifty.global.jsh.shell.PWD.toString());
 				});
 
 				fifty.run(function repository() {

@@ -61,6 +61,20 @@ namespace slime.jrunscript.shell.internal.run {
 		}
 	}
 
+	export namespace test {
+		export const subject: Export = (function(fifty: slime.fifty.test.kit) {
+			var script: Script = fifty.$loader.script("run.js");
+			return script({
+				api: {
+					java: fifty.global.jsh.java,
+					io: fifty.global.jsh.io,
+					file: fifty.global.jsh.file
+				}
+			});
+		//@ts-ignore
+		})(fifty)
+	}
+
 	export interface Export {
 		run: shell.World["run"]
 
@@ -87,13 +101,50 @@ namespace slime.jrunscript.shell.internal.run {
 		}
 	}
 
-	export type Factory = slime.loader.Script<Context,Export>
+	(
+		function(
+			fifty: slime.fifty.test.kit
+		) {
+			const subject = test.subject;
+			const { verify, run } = fifty;
+			const { jsh } = fifty.global;
+
+			fifty.tests.run = function() {
+				run(function pwdIsShellWorkingDirectoryIfUnspecified() {
+					var PWD = jsh.shell.PWD.pathname.toString();
+					var tell = subject.run({
+						context: {
+							environment: jsh.shell.environment,
+							stdio: {
+								input: null,
+								output: "string",
+								error: "line"
+							},
+							directory: void(0)
+						},
+						configuration: {
+							command: "pwd",
+							arguments: []
+						}
+					});
+					tell({
+						exit: function(e) {
+							verify(e.detail.stdio.output).is(PWD + "\n");
+						}
+					});
+				});
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export type Script = slime.loader.Script<Context,Export>
 
 	(
 		function(
 			fifty: slime.fifty.test.kit
 		) {
-			var loader: Factory = fifty.$loader.script("run.js");
+			var loader: Script = fifty.$loader.script("run.js");
 			var subject: Export = loader({
 				api: {
 					java: fifty.global.jsh.java,

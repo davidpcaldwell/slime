@@ -1454,6 +1454,31 @@
 				}
 			});
 			return p.command.result(output);
+		};
+
+		var commandExecutor = function(program,pathname) {
+			return function(command) {
+				return {
+					argument: function(a) {
+						return {
+							run: function(p) {
+								/** @type { slime.jrunscript.git.world.Invocation } */
+								var bound = {
+									program: program,
+									pathname: pathname,
+									command: command,
+									argument: a,
+									stderr: void(0),
+									stdout: void(0),
+									world: void(0)
+								};
+								var specified = $api.Object.compose(bound, p);
+								return run(specified);
+							}
+						}
+					}
+				}
+			};
 		}
 
 		$exports.program = function(program) {
@@ -1485,28 +1510,7 @@
 								invocation.stdio
 							);
 						},
-						command: function(command) {
-							return {
-								argument: function(a) {
-									return {
-										run: function(p) {
-											/** @type { slime.jrunscript.git.world.Invocation } */
-											var bound = {
-												program: program,
-												pathname: pathname,
-												command: command,
-												argument: a,
-												stderr: void(0),
-												stdout: void(0),
-												world: void(0)
-											};
-											var specified = $api.Object.compose(bound, p);
-											return run(specified);
-										}
-									}
-								}
-							}
-						},
+						command: commandExecutor(program,pathname),
 						run: function(p) {
 							var invocation = $api.Object.compose(
 								Invocation(p),
@@ -1517,7 +1521,8 @@
 							return run(invocation)
 						}
 					}
-				}
+				},
+				command: commandExecutor(program,void(0))
 			}
 		}
 

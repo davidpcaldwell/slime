@@ -618,8 +618,6 @@ namespace slime.jrunscript.shell {
 						}
 					});
 					fifty.global.jsh.shell.console(JSON.stringify(events,void(0),4));
-
-
 				}
 			}
 
