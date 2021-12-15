@@ -122,6 +122,63 @@
 			};
 		}
 
+		function toWebFormControls(query) {
+			/** @type { slime.web.form.Control[] } */
+			var rv = [];
+			for (var x in query) {
+				rv.push({ name: x, value: query[x] });
+			}
+			return rv;
+		}
+
+		function toQueryString(query) {
+			var controls = toWebFormControls(query);
+			var form = (controls.length > 0) ? { controls: controls } : void(0);
+			return (form) ? $context.library.web.Form.codec.urlencoded.encode(form) : void(0);
+		}
+
+		/**
+		 *
+		 * @param { slime.web.Url } url
+		 * @param { string } string
+		 * @returns { slime.web.Url }
+		 */
+		function withQueryString(url,string) {
+			return $api.Object.compose(url, {
+				query: string
+			});
+		}
+
+		/**
+		 *
+		 * @param { Parameters<slime.jrunscript.tools.github.Exports["api"]>[0] } api
+		 * @param { Parameters<ReturnType<slime.jrunscript.tools.github.Exports["api"]>["authentication"]>[0] } authentication
+		 * @param { slime.jrunscript.tools.github.rest.Request } request
+		 * @returns { slime.jrunscript.http.client.spi.Argument }
+		 */
+		function toHttpArgument(api,authentication,request) {
+			return {
+				request: {
+					method: request.method,
+					url: withQueryString(api.server.resolve(request.path), toQueryString(request.query)),
+					headers: $api.Array.build(function(rv) {
+						if (authentication) rv.push({
+							name: "Authorization",
+							value: $context.library.http.Authentication.Basic.Authorization({
+								user: authentication.username,
+								password: authentication.token
+							})
+						});
+					})
+				},
+				timeout: {
+					connect: 1000,
+					read: 1000
+				},
+				proxy: void(0)
+			}
+		}
+
 		$export({
 			Session: Session,
 			isProjectUrl: function(p) {
@@ -130,6 +187,35 @@
 						(url.path == "/" + p.owner + "/" + p.name)
 						|| (url.path == "/" + p.owner + "/" + p.name + ".git")
 					);
+				}
+			},
+			api: function(api) {
+				return {
+					authentication: function(authentication) {
+						return {
+							operation: function(operation) {
+								return {
+									argument: function(argument) {
+										return {
+											run: function(run) {
+												var world = (run && run.world) ? run.world : $context.library.http.world;
+												return $api.Function.impure.ask(function(events) {
+													var response = world.request(
+														toHttpArgument(
+															api,
+															authentication,
+															operation.request(argument)
+														)
+													)();
+													return operation.response(response);
+												})
+											}
+										}
+									}
+								}
+							}
+						}
+					}
 				}
 			}
 		});

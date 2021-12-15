@@ -11,11 +11,10 @@
 	 * @param { slime.jsh.Global } jsh
 	 */
 	function($api,jsh) {
-		jsh.shell.console("Hello, dtsgenerator!");
 		jsh.shell.tools.node.require();
-		jsh.shell.tools.node["modules"].require({ name: "dtsgenerator" });
+		jsh.shell.tools.node["modules"].require({ name: "dtsgenerator", version: "3.12.1" });
 		jsh.shell.tools.node["modules"].require({ name: "tslib", version: "2.3.0" });
-		jsh.shell.tools.node["modules"].require({ name: "@dtsgenerator/replace-namespace" });
+		jsh.shell.tools.node["modules"].require({ name: "@dtsgenerator/replace-namespace", version: "1.5.0" });
 
 		var node = jsh.shell.tools.node;
 

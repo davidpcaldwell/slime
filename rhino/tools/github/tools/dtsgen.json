@@ -10,11 +10,11 @@
             "map": [
                 {
                     "from": ["Components"],
-                    "to": ["github.rest.components"]
+                    "to": ["slime.external.github.rest.components"]
                 },
                 {
                     "from": ["Paths"],
-                    "to": ["github.rest.paths"]
+                    "to": ["slime.external.github.rest.paths"]
                 }
             ]
         }
