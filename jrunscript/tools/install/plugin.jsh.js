@@ -37,7 +37,8 @@
 					api: {
 						shell: jsh.shell,
 						http: jsh.http,
-						file: jsh.file
+						file: jsh.file,
+						web: jsh.web
 					},
 					downloads: jsh.shell.user.downloads
 				});

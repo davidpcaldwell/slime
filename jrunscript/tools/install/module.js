@@ -86,7 +86,7 @@
 		)();
 
 		/**
-		 * @param { Parameters<slime.jrunscript.tools.install.Exports["get"]>[0] } p
+		 * @param { slime.jrunscript.tools.install.Source } p
 		 * @param { slime.$api.Events<{ console: string }> } events
 		 */
 		var get = function(p,events) {
@@ -108,11 +108,24 @@
 					} else {
 						events.fire("console", "Found " + pathname.file + "; using cached version.");
 					}
-					p.file = pathname.file;
+					p.file = pathname.file.toString();
 				}
 			}
 			return p;
 		};
+
+		/**
+		 *
+		 * @param { slime.jrunscript.tools.install.old.Source } oldSource
+		 * @returns { slime.jrunscript.tools.install.Source }
+		 */
+		var toModernSource = function(oldSource) {
+			return {
+				url: (oldSource.url) ? $context.api.web.Url.parse(oldSource.url.toString()) : void(0),
+				name: oldSource.name,
+				file: (oldSource.file) ? oldSource.file.toString() : void(0)
+			}
+		}
 
 		/**
 		 * @param { { name?: string, getDestinationPath?: (file: slime.jrunscript.file.File) => string, url?: any, file?: slime.jrunscript.file.File, format?: Parameters<slime.jrunscript.tools.install.Exports["install"]>[0]["format"], to: slime.jrunscript.file.Pathname, replace?: boolean } } p
@@ -120,6 +133,7 @@
 		 * @returns { slime.jrunscript.file.Directory }
 		 */
 		var installLocalArchive = function(p,events) {
+			var file = $context.api.file.Pathname(String(p.file)).file;
 			if (!p.format) {
 				var basename = (function() {
 					if (p.name) return p.name;
@@ -134,16 +148,16 @@
 			}
 			var algorithm = p.format;
 			var untardir = $context.api.shell.TMPDIR.createTemporary({ directory: true });
-			events.fire("console", "Extracting " + p.file + " to " + untardir);
-			algorithm.extract(p.file,untardir);
+			events.fire("console", "Extracting " + file + " to " + untardir);
+			algorithm.extract(file,untardir);
 			var unzippedDestination = (function() {
 				if (p.getDestinationPath) {
-					return p.getDestinationPath(p.file);
+					return p.getDestinationPath(file);
 				}
-				var path = algorithm.getDestinationPath(p.file.pathname.basename);
+				var path = algorithm.getDestinationPath(file.pathname.basename);
 				if (path) return path;
 				//	TODO	list directory and take only option if there is only one and it is a directory?
-				throw new Error("Cannot determine destination path for " + p.file);
+				throw new Error("Cannot determine destination path for " + file);
 			})();
 			events.fire("console", "Assuming destination directory created was " + unzippedDestination);
 			var unzippedTo = untardir.getSubdirectory(unzippedDestination);
@@ -167,7 +181,8 @@
 					p,
 					(
 						(p.url) ? {
-							url: String(p.url)
+							url: (p.url) ? $context.api.web.Url.parse(String(p.url)) : void(0),
+							file: (p.file) ? p.file.toString() : void(0)
 						} : {}
 					)
 				),
@@ -200,12 +215,13 @@
 			get: $api.Events.Function(
 				/**
 				 *
-				 * @param { Parameters<slime.jrunscript.tools.install.Exports["get"]>[0] } p
-				 * @param {*} events
+				 * @param { slime.jrunscript.tools.install.old.Source } p
+				 * @param { slime.$api.Events<slime.jrunscript.tools.install.events.Console> } events
 				 */
 				function(p,events) {
-					get(p,events);
-					return p.file;
+					var source = toModernSource(p);
+					get(source,events);
+					return $context.api.file.Pathname(source.file).file;
 				}
 			)
 		};

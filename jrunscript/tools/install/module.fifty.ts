@@ -14,6 +14,7 @@ namespace slime.jrunscript.tools.install {
 			shell: slime.jrunscript.shell.Exports
 			file: slime.jrunscript.file.Exports
 			http: slime.jrunscript.http.client.Exports
+			web: slime.web.Exports
 		}
 		/**
 		 * The directory in which to store downloaded files.
@@ -47,12 +48,12 @@ namespace slime.jrunscript.tools.install {
 				};
 				scope.downloads = jsh.shell.TMPDIR.createTemporary({ directory: true });
 
-				var defaults = {
+				var defaults: Context = {
 					api: {
 						shell: jsh.shell,
 						http: jsh.http,
 						file: jsh.file,
-						Error: jsh.js.Error
+						web: jsh.web
 					},
 					downloads: scope.downloads
 				};
@@ -342,7 +343,7 @@ namespace slime.jrunscript.tools.install {
 			gzip?: Format
 		}
 
-		find: (p: old.Source) => slime.$api.fp.impure.Ask<events.Console,slime.jrunscript.file.File>
+		find: (p: Source) => slime.$api.fp.impure.Ask<events.Console,string>
 
 		/**
 		 * Returns a file containing an installer, either using a specified local file or a specified URL.
@@ -577,7 +578,7 @@ namespace slime.jrunscript.tools.install {
 							shell: jsh.shell,
 							http: jsh.http,
 							file: jsh.file,
-							Error: jsh.js.Error
+							web: jsh.web
 						},
 						downloads: mockdownloads
 					});
