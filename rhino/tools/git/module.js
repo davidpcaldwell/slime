@@ -149,7 +149,7 @@
 					/**
 					 *
 					 * @param { slime.jrunscript.git.internal.InvocationConfiguration } o
-					 * @param { slime.jrunscript.git.repository.argument } p
+					 * @param { slime.jrunscript.git.repository.Argument } p
 					 * @param { any } events
 					 */
 					function invoke(o,p,events) {
@@ -1282,15 +1282,30 @@
 				}
 			}
 
+			/** @type { (p: any) => p is slime.jrunscript.git.repository.argument.Directory } */
+			var isDirectoryArgument = function(p) {
+				return Boolean(p.directory);
+			}
+
+			/** @type { (p: any) => p is slime.jrunscript.git.repository.argument.Local } */
+			var isLocalArgument = function(p) {
+				return Boolean(p.local);
+			}
+
+			/** @type { (p: any) => p is slime.jrunscript.git.repository.argument.Remote } */
+			var isRemoteArgument = function(p) {
+				return Boolean(p.remote);
+			}
+
 			/** @type { slime.jrunscript.git.Installation["Repository"] } */
 			this.Repository = (
 				function(p) {
-					if (p.local || p.directory) {
+					if (isDirectoryArgument(p) || isLocalArgument(p)) {
 						return new LocalRepository(p);
-					} else if (p.remote) {
+					} else if (isRemoteArgument(p)) {
 						return new RemoteRepository(p);
 					} else {
-						throw new TypeError("Required: .local or .remote property.");
+						throw new TypeError("Required: .directory, .local, or .remote property.");
 					}
 				}
 			);

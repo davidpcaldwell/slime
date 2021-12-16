@@ -45,12 +45,12 @@ namespace slime.jrunscript.git {
 		}) => Daemon
 
 		Repository: {
-			(p: { directory: slime.jrunscript.file.Directory }): slime.jrunscript.git.repository.Local
-			new (p: { directory: slime.jrunscript.file.Directory }): slime.jrunscript.git.repository.Local
-			(p: { local: slime.jrunscript.file.Directory }): slime.jrunscript.git.repository.Local
-			new (p: { local: slime.jrunscript.file.Directory }): slime.jrunscript.git.repository.Local
-			(p: { remote: string }): slime.jrunscript.git.Repository
-			new (p: { remote: string }): slime.jrunscript.git.Repository
+			(p: repository.argument.Directory): slime.jrunscript.git.repository.Local
+			new (p: repository.argument.Directory): slime.jrunscript.git.repository.Local
+			(p: repository.argument.Local): slime.jrunscript.git.repository.Local
+			new (p: repository.argument.Local): slime.jrunscript.git.repository.Local
+			(p: repository.argument.Remote): slime.jrunscript.git.Repository
+			new (p: repository.argument.Remote): slime.jrunscript.git.Repository
 		}
 
 		//	Uses Object.assign for rhino/shell run(), so should cross-check with those arguments
@@ -64,8 +64,8 @@ namespace slime.jrunscript.git {
 	}
 
 	export interface Repository {
-		reference: string,
-		clone: (argument: repository.argument & {
+		reference: string
+		clone: (argument: repository.Argument & {
 			to: slime.jrunscript.file.Pathname,
 			recurseSubmodules?: boolean
 		}, events?: object ) => slime.jrunscript.git.repository.Local
@@ -92,11 +92,26 @@ namespace slime.jrunscript.git {
 	}
 
 	export namespace repository {
-		export interface argument {
+		export interface Argument {
 			config?: { [x: string]: string }
 			credentialHelper?: string
 			credentialHelpers?: string[]
 			directory?: slime.jrunscript.file.Directory
+		}
+
+		export namespace argument {
+			export interface Directory {
+				directory: slime.jrunscript.file.Directory
+			}
+
+			/** @deprecated */
+			export interface Local {
+				local: slime.jrunscript.file.Directory
+			}
+
+			export interface Remote {
+				remote: string
+			}
 		}
 
 		export interface Local extends slime.jrunscript.git.Repository {
@@ -131,7 +146,7 @@ namespace slime.jrunscript.git {
 
 			show: (p: { object: string}  ) => Commit
 
-			fetch: (p: argument & {
+			fetch: (p: Argument & {
 				all?: boolean
 				prune?: boolean
 				recurseSubmodules?: boolean
@@ -174,12 +189,12 @@ namespace slime.jrunscript.git {
 					branch?: string
 				}) => slime.jrunscript.git.repository.Local
 
-				update: (p: argument & {
+				update: (p: Argument & {
 					init?: boolean,
 					recursive?: boolean
 				}) => void
 
-				deinit: (p: argument & {
+				deinit: (p: Argument & {
 					force?: boolean
 					path: string
 				}) => void
