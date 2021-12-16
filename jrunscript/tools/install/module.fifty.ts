@@ -149,7 +149,7 @@ namespace slime.jrunscript.tools.install {
 		 * The URL from which the file can be downloaded. Currently, only `http` and `https` URLs are supported. Optional; not
 		 * necessary if `file` is provided.
 		 */
-		url?: slime.jrunscript.http.client.object.request.url
+		url?: slime.web.Url
 
 		/**
 		 * The filename to use if a file needs to be created when downloading this file. Defaults to terminal file name of URL.
@@ -159,7 +159,7 @@ namespace slime.jrunscript.tools.install {
 		/**
 		 * The local copy of the installation file. Optional; not necessary if `url` is present.
 		 */
-		file?: slime.jrunscript.file.File
+		file?: string
 	}
 
 	export interface Format {
@@ -178,13 +178,33 @@ namespace slime.jrunscript.tools.install {
 	}
 
 	export interface Installation {
-		source: Source
+		source: old.Source
 		archive?: Archive
 		destination: Destination
 	}
 
 	export namespace old {
 		export type install = (p: old.Installation, events?: events.old.Receiver) => slime.jrunscript.file.Directory;
+
+		export interface Source {
+			//	TODO	it's not really specified what happens if `url` and `file` are both present.
+
+			/**
+			 * The URL from which the file can be downloaded. Currently, only `http` and `https` URLs are supported. Optional; not
+			 * necessary if `file` is provided.
+			 */
+			url?: slime.jrunscript.http.client.object.request.url
+
+			/**
+			 * The filename to use if a file needs to be created when downloading this file. Defaults to terminal file name of URL.
+			 */
+			name?: string
+
+			/**
+			 * The local copy of the installation file. Optional; not necessary if `url` is present.
+			 */
+			file?: slime.jrunscript.file.File
+		}
 
 		export interface Installation {
 			/**
@@ -312,7 +332,6 @@ namespace slime.jrunscript.tools.install {
 	//@ts-ignore
 	)(fifty);
 
-
 	export interface Exports {
 		format: {
 			zip: Format
@@ -323,7 +342,7 @@ namespace slime.jrunscript.tools.install {
 			gzip?: Format
 		}
 
-		find: (p: Source) => slime.$api.fp.impure.Ask<events.Console,slime.jrunscript.file.File>
+		find: (p: old.Source) => slime.$api.fp.impure.Ask<events.Console,slime.jrunscript.file.File>
 
 		/**
 		 * Returns a file containing an installer, either using a specified local file or a specified URL.
@@ -335,7 +354,7 @@ namespace slime.jrunscript.tools.install {
 		 * @returns A file containing the installer.
 		 */
 		get: (
-			p: Parameters<Exports["find"]>[0],
+			p: old.Source,
 			events?: events.old.Receiver
 		) => slime.jrunscript.file.File
 
