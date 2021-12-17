@@ -15,11 +15,12 @@ namespace slime.jsh.unit.mock.github {
 }
 
 /**
- * The GitHub API is in a state of flux.
+ * The SLIME GitHub API is in a state of flux.
  *
  * GitHub types are generated using a `dtsgenerator`-based impleementation that can be run via
  * `rhino/tools/github/tools/types.jsh.js`. This emits `rhino/tools/github/tools/github-rest.d.ts`, which **should** be committed
- * to source control (as it contains the latest GitHub API, generated at the time of running the program).
+ * to source control (as it contains the latest GitHub API, generated at the time of running the program). The generator output
+ * is based on the GitHub [OpenAPI description](https://raw.githubusercontent.com/github/rest-api-description/main/descriptions/api.github.com/api.github.com.json).
  */
 namespace slime.jrunscript.tools.github {
 	export interface Context {
@@ -74,9 +75,7 @@ namespace slime.jrunscript.tools.github {
 			link: Pagination
 		}
 
-		export interface Paged<I,O> {
-			request: (p: I) => Request
-			response: (p: slime.jrunscript.http.client.spi.Response) => O[]
+		export interface Paged<I,O> extends Operation<I,O[]> {
 		}
 	}
 
@@ -124,16 +123,29 @@ namespace slime.jrunscript.tools.github {
 			fifty: slime.fifty.test.kit
 		) {
 			const jsh = fifty.global.jsh;
+			const { run } = fifty;
+
+			var script: Script = fifty.$loader.script("module.js");
+			var subject = script({
+				library: {
+					http: jsh.http,
+					shell: jsh.shell,
+					web: jsh.web
+				}
+			});
+
+			var server = subject.api({
+				server: jsh.web.Url.parse("https://api.github.com/")
+			}).authentication({
+				username: "davidpcaldwell",
+				token: jsh.shell.environment.TOKEN
+			});
 
 			fifty.tests.world = function() {
-				var script: Script = fifty.$loader.script("module.js");
-				var subject = script({
-					library: {
-						http: jsh.http,
-						shell: jsh.shell,
-						web: jsh.web
-					}
-				});
+				run(fifty.tests.world.ReposListForAuthenticatedUser);
+			}
+
+			fifty.tests.world.ReposListForAuthenticatedUser = function() {
 				var listUserRepos: rest.Paged<
 					slime.external.github.rest.paths.ReposListForAuthenticatedUser.QueryParameters,
 					ArrayElement<slime.external.github.rest.paths.ReposListForAuthenticatedUser.Responses.$200>
@@ -142,12 +154,7 @@ namespace slime.jrunscript.tools.github {
 					response: subject.response.json
 				};
 
-				var ask = subject.api({
-					server: jsh.web.Url.parse("https://api.github.com/")
-				}).authentication({
-					username: "davidpcaldwell",
-					token: jsh.shell.environment.TOKEN
-				}).paginated(
+				var ask = server.paginated(
 					listUserRepos
 				).argument({
 				}).run({
@@ -164,6 +171,65 @@ namespace slime.jrunscript.tools.github {
 						}
 					}),void(0),4)
 				);
+			};
+
+			fifty.tests.world.ReposGet = function() {
+				var reposGet: rest.Operation<{ owner: string, repo: string },slime.external.github.rest.components.Schemas.FullRepository> = {
+					request: function(p) {
+						return {
+							method: "GET",
+							path: "/repos/" + p.owner + "/" + p.repo,
+							query: null
+						}
+					},
+					response: function(p) {
+						if (p.status.code == 404) return null;
+						return JSON.parse(p.stream.character().asString());
+					}
+				};
+
+				var ask = server.operation(reposGet).argument({
+					owner: "davidpcaldwell",
+					repo: "slime"
+				}).run({
+					world: void(0)
+				});
+
+				var result = ask();
+
+				function formatRepo(p: slime.external.github.rest.components.Schemas.FullRepository): { name: any, owner: any, size: any } {
+					if (!p) return p;
+					return {
+						name: p.name,
+						owner: p.owner,
+						size: p.size
+					};
+				}
+
+				jsh.shell.console(JSON.stringify(
+					fifty.global.$api.Function.result(
+						result,
+						formatRepo
+					),
+					void(0),
+					4
+				));
+
+				var notFound = server.operation(reposGet).argument({
+					owner: "davidpcaldwell",
+					repo: "foo"
+				}).run({
+					world: void(0)
+				})();
+
+				jsh.shell.console(
+					JSON.stringify(
+						fifty.global.$api.Function.result(
+							notFound,
+							formatRepo
+						)
+					)
+				)
 			}
 		}
 	//@ts-ignore
