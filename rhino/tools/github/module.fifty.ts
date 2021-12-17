@@ -95,6 +95,14 @@ namespace slime.jrunscript.tools.github {
 
 		parseLinkHeader: (value: string) => { [x: string]: string }
 
+		request: {
+			get: <Q extends object>(path: string) => (q: Q) => rest.Request
+		}
+
+		response: {
+			json: <T>(p: slime.jrunscript.http.client.spi.Response) => T
+		}
+
 		api: (p: {
 			server: slime.web.Url
 		}) => {
@@ -130,17 +138,8 @@ namespace slime.jrunscript.tools.github {
 					slime.external.github.rest.paths.ReposListForAuthenticatedUser.QueryParameters,
 					ArrayElement<slime.external.github.rest.paths.ReposListForAuthenticatedUser.Responses.$200>
 				> = {
-					request: function(p) {
-						return {
-							method: "GET",
-							path: "user/repos",
-							query: p
-						};
-					},
-					response: function(p) {
-						var string = p.stream.character().asString();
-						return JSON.parse(string);
-					}
+					request: subject.request.get("user/repos"),
+					response: subject.response.json
 				};
 
 				var ask = subject.api({

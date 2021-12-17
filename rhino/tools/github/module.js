@@ -237,6 +237,22 @@
 				}
 			},
 			parseLinkHeader: parseLinkHeader,
+			request: {
+				get: function(path) {
+					return function(q) {
+						return {
+							method: "GET",
+							path: path,
+							query: q
+						};
+					}
+				},
+			},
+			response: {
+				json: function(p) {
+					return JSON.parse(p.stream.character().asString());
+				}
+			},
 			api: function(api) {
 				return {
 					authentication: function(authentication) {
