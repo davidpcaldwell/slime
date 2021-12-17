@@ -14,32 +14,37 @@
 	 * @param { slime.loader.Export<slime.jrunscript.tools.github.Exports> } $export
 	 */
 	function(Packages,$api,$context,$export) {
+		/**
+		 *
+		 * @param { string } value
+		 * @returns
+		 */
+		var parseLinkHeader = function(value) {
+			return $api.Function.result(
+				value,
+				$api.Function.string.split(", "),
+				$api.Function.Array.map(function(string) {
+					var relationFormat = /^\<(.+?)\>\; rel\=\"(.+)\"/;
+					var parsed = relationFormat.exec(string);
+					return {
+						url: parsed[1],
+						rel: parsed[2]
+					}
+				}),
+				$api.Function.Array.map(
+					/** @returns { [string, string] } */
+					function(relation) {
+						return [relation.rel, relation.url];
+					}
+				),
+				$api.Function.Object.fromEntries
+			);
+		}
+
 		var Session = function(o) {
 			var apiUrl = function(relative) {
 				return "https://api.github.com/" + relative;
 			};
-
-			var parseLinkHeader = function(value) {
-				return $api.Function.result(
-					value,
-					$api.Function.string.split(", "),
-					$api.Function.Array.map(function(string) {
-						var relationFormat = /^\<(.+?)\>\; rel\=\"(.+)\"/;
-						var parsed = relationFormat.exec(string);
-						return {
-							url: parsed[1],
-							rel: parsed[2]
-						}
-					}),
-					$api.Function.Array.map(
-						/** @returns { [string, string] } */
-						function(relation) {
-							return [relation.rel, relation.url];
-						}
-					),
-					$api.Function.Object.fromEntries
-				);
-			}
 
 			var apiClient = (function(o) {
 				/**
@@ -179,6 +184,48 @@
 			}
 		}
 
+		/**
+		 *
+		 * @param { Parameters<slime.jrunscript.tools.github.Exports["api"]>[0] } api
+		 * @param { Parameters<ReturnType<slime.jrunscript.tools.github.Exports["api"]>["authentication"]>[0] } authentication
+		 * @param { slime.web.Url } url
+		 * @returns { slime.jrunscript.http.client.spi.Argument }
+		 */
+		function toPaginatedGetRequest(api,authentication,url) {
+			return {
+				request: {
+					method: "GET",
+					url: url,
+					headers: $api.Array.build(function(rv) {
+						if (authentication) rv.push({
+							name: "Authorization",
+							value: $context.library.http.Authentication.Basic.Authorization({
+								user: authentication.username,
+								password: authentication.token
+							})
+						});
+					})
+				},
+				timeout: {
+					connect: 1000,
+					read: 1000
+				},
+				proxy: void(0)
+			}
+		}
+
+		/**
+		 *
+		 * @param { slime.jrunscript.http.client.spi.Response } response
+		 * @returns { slime.jrunscript.tools.github.rest.Pagination }
+		 */
+		function links(response) {
+			var header = response.headers.find(function(header) {
+				return header.name.toLowerCase() == "link";
+			});
+			return (header) ? parseLinkHeader(header.value) : null;
+		}
+
 		$export({
 			Session: Session,
 			isProjectUrl: function(p) {
@@ -189,6 +236,7 @@
 					);
 				}
 			},
+			parseLinkHeader: parseLinkHeader,
 			api: function(api) {
 				return {
 					authentication: function(authentication) {
@@ -208,6 +256,41 @@
 														)
 													)();
 													return operation.response(response);
+												})
+											}
+										}
+									}
+								}
+							},
+							paginated: function(operation) {
+								return {
+									argument: function(argument) {
+										return {
+											run: function(run) {
+												var world = (run && run.world) ? run.world : $context.library.http.world;
+												return $api.Function.impure.ask(function(events) {
+													var request = toHttpArgument(
+														api,
+														authentication,
+														operation.request(argument)
+													);
+													var rv = [];
+													while(request) {
+														var response = world.request(request)();
+														var page = operation.response(response);
+														rv = rv.concat(page);
+														var link = links(response);
+														if (link.next) {
+															request = toPaginatedGetRequest(
+																api,
+																authentication,
+																$context.library.web.Url.parse(link.next)
+															)
+														} else {
+															request = null;
+														}
+													}
+													return rv;
 												})
 											}
 										}

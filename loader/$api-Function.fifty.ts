@@ -242,7 +242,7 @@ namespace slime.$api {
 				 * Invokes `Object.fromEntries` with the argument and returns the result.
 				 */
 				fromEntries: {
-					(p: [string, any][]): { [x: string]: any }
+					<T>(p: [string, T][]): { [x: string]: T }
 					//	TODO	the below works in VSCode, so is probably TypeScript version-dependent
 					// (p: Iterable<readonly [string | number | symbol, any]>): { [x: string]: any }
 				}

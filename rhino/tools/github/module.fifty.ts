@@ -52,6 +52,32 @@ namespace slime.jrunscript.tools.github {
 			request: (p: I) => Request
 			response: (p: slime.jrunscript.http.client.spi.Response) => O
 		}
+
+		export interface Invocation<I,E,O> {
+			argument: (i: I) => {
+				run: (r: {
+					world: slime.jrunscript.http.client.World
+				}) => slime.$api.fp.impure.Ask<E,O>
+			}
+		}
+
+		//	https://docs.github.com/en/rest/overview/resources-in-the-rest-api#pagination
+		export interface Pagination {
+			next?: string
+			last?: string
+			first?: string
+			prev?: string
+		}
+
+		export interface Page<T> {
+			page: T[]
+			link: Pagination
+		}
+
+		export interface Paged<I,O> {
+			request: (p: I) => Request
+			response: (p: slime.jrunscript.http.client.spi.Response) => O[]
+		}
 	}
 
 	export interface Exports {
@@ -67,6 +93,8 @@ namespace slime.jrunscript.tools.github {
 			name: string
 		}) => (url: slime.web.Url) => boolean
 
+		parseLinkHeader: (value: string) => { [x: string]: string }
+
 		api: (p: {
 			server: slime.web.Url
 		}) => {
@@ -74,13 +102,9 @@ namespace slime.jrunscript.tools.github {
 				username: string
 				token: string
 			}) => {
-				operation: <I,E,O>(operation: rest.Operation<I,O>) => {
-					argument: (i: I) => {
-						run: (r: {
-							world: slime.jrunscript.http.client.World
-						}) => slime.$api.fp.impure.Ask<E,O>
-					}
-				}
+				operation: <I,E,O>(operation: rest.Operation<I,O>) => rest.Invocation<I,E,O>
+
+				paginated: <I,E,O>(operation: rest.Paged<I,O>) => rest.Invocation<I,E,O[]>
 			}
 		}
 	}
@@ -102,7 +126,10 @@ namespace slime.jrunscript.tools.github {
 						web: jsh.web
 					}
 				});
-				var listUserRepos: rest.Operation<slime.external.github.rest.paths.ReposListForAuthenticatedUser.QueryParameters,slime.external.github.rest.paths.ReposListForAuthenticatedUser.Responses.$200> = {
+				var listUserRepos: rest.Paged<
+					slime.external.github.rest.paths.ReposListForAuthenticatedUser.QueryParameters,
+					ArrayElement<slime.external.github.rest.paths.ReposListForAuthenticatedUser.Responses.$200>
+				> = {
 					request: function(p) {
 						return {
 							method: "GET",
@@ -121,7 +148,7 @@ namespace slime.jrunscript.tools.github {
 				}).authentication({
 					username: "davidpcaldwell",
 					token: jsh.shell.environment.TOKEN
-				}).operation(
+				}).paginated(
 					listUserRepos
 				).argument({
 				}).run({
@@ -130,7 +157,14 @@ namespace slime.jrunscript.tools.github {
 
 				var result = ask();
 
-				jsh.shell.console(JSON.stringify(result));
+				jsh.shell.console("length = " + result.length);
+				jsh.shell.console(JSON.stringify(
+					result.map(function(repo) {
+						return {
+							name: repo.name
+						}
+					}),void(0),4)
+				);
 			}
 		}
 	//@ts-ignore

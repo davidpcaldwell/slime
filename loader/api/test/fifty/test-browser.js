@@ -229,12 +229,20 @@
 				),
 				$api.Function.Object.fromEntries,
 				function(p) {
+					/** @type { (value: string) => "true" | "false" } */
+					var toTrueFalse = function(value) {
+						if (value == "true" || value == "false") return value;
+					}
+					/** @type { (value: string) => number } */
+					var toNumber = function(value) {
+						return (typeof(value) == "string") ? Number(value) : void(0);
+					}
 					return $api.Object.compose(p, {
-						results: p.results,
+						results: toTrueFalse(p.results),
 						design: p.design,
 						file: p.file,
 						part: p.part,
-						delay: p.delay
+						delay: toNumber(p.delay)
 					});
 				}
 			);
