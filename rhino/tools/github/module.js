@@ -226,6 +226,24 @@
 			return (header) ? parseLinkHeader(header.value) : null;
 		}
 
+		function parsePathParameters(o,p) {
+			var path = o.path;
+			var query = $api.Object.compose(p);
+			while(path.indexOf("{") != -1) {
+				var start = path.indexOf("{");
+				var end = path.indexOf("}");
+				var name = path.substring(start+1,end);
+				var value = String(p[name]);
+				path = path.substring(0,start) + value + path.substring(end+1);
+				delete query[name];
+			}
+			return {
+				method: o.method,
+				path: path,
+				query: query
+			}
+		}
+
 		$export({
 			Session: Session,
 			isProjectUrl: function(p) {
@@ -238,19 +256,27 @@
 			},
 			parseLinkHeader: parseLinkHeader,
 			request: {
+				test: {
+					parsePathParameters: parsePathParameters
+				},
 				get: function(path) {
 					return function(q) {
-						return {
+						return parsePathParameters({
 							method: "GET",
-							path: path,
-							query: q
-						};
+							path: path
+						}, q);
 					}
 				},
 			},
 			response: {
-				json: function(p) {
-					return JSON.parse(p.stream.character().asString());
+				json: {
+					resource: function(p) {
+						if (p.status.code == 404) return null;
+						return JSON.parse(p.stream.character().asString());
+					},
+					page: function(p) {
+						return JSON.parse(p.stream.character().asString());
+					}
 				}
 			},
 			api: function(api) {

@@ -96,10 +96,21 @@ namespace slime.jrunscript.tools.github {
 
 		request: {
 			get: <Q extends object>(path: string) => (q: Q) => rest.Request
+
+			test: {
+				parsePathParameters: (specification: { method: string, path: string }, parameters: { [x: string]: string }) => {
+					method: string
+					path: string
+					query: { [x: string]: string }
+				}
+			}
 		}
 
 		response: {
-			json: <T>(p: slime.jrunscript.http.client.spi.Response) => T
+			json: {
+				resource: <T>(p: slime.jrunscript.http.client.spi.Response) => T
+				page: <T>(p: slime.jrunscript.http.client.spi.Response) => T
+			}
 		}
 
 		api: (p: {
@@ -123,7 +134,7 @@ namespace slime.jrunscript.tools.github {
 			fifty: slime.fifty.test.kit
 		) {
 			const jsh = fifty.global.jsh;
-			const { run } = fifty;
+			const { verify, run } = fifty;
 
 			var script: Script = fifty.$loader.script("module.js");
 			var subject = script({
@@ -143,6 +154,7 @@ namespace slime.jrunscript.tools.github {
 
 			fifty.tests.world = function() {
 				run(fifty.tests.world.ReposListForAuthenticatedUser);
+				run(fifty.tests.world.ReposGet);
 			}
 
 			fifty.tests.world.ReposListForAuthenticatedUser = function() {
@@ -151,7 +163,7 @@ namespace slime.jrunscript.tools.github {
 					ArrayElement<slime.external.github.rest.paths.ReposListForAuthenticatedUser.Responses.$200>
 				> = {
 					request: subject.request.get("user/repos"),
-					response: subject.response.json
+					response: subject.response.json.page
 				};
 
 				var ask = server.paginated(
@@ -171,21 +183,32 @@ namespace slime.jrunscript.tools.github {
 						}
 					}),void(0),4)
 				);
+
+				verify(result).evaluate(function(p) { return p.length > 1 }).is(true);
+				verify(result).evaluate(function(p) { return p.find(function(item) { return item.name == "slime"; }) != null } ).is(true);
 			};
+
+			fifty.tests.parsePathParameters = function() {
+				var specification = {
+					method: "GET",
+					path: "/path/{foo}/{bar}"
+				};
+				var parameters = {
+					foo: "FOO",
+					bar: "BAR",
+					baz: "BAZ"
+				};
+				var parsed = subject.request.test.parsePathParameters(specification,parameters);
+				verify(parsed).method.is("GET");
+				verify(parsed).path.is("/path/FOO/BAR");
+				verify(parsed).query.evaluate( function(p) { return Object.keys(p); }).length.is(1);
+				verify(parsed).query.baz.is("BAZ");
+			}
 
 			fifty.tests.world.ReposGet = function() {
 				var reposGet: rest.Operation<{ owner: string, repo: string },slime.external.github.rest.components.Schemas.FullRepository> = {
-					request: function(p) {
-						return {
-							method: "GET",
-							path: "/repos/" + p.owner + "/" + p.repo,
-							query: null
-						}
-					},
-					response: function(p) {
-						if (p.status.code == 404) return null;
-						return JSON.parse(p.stream.character().asString());
-					}
+					request: subject.request.get("/repos/{owner}/{repo}"),
+					response: subject.response.json.resource
 				};
 
 				var ask = server.operation(reposGet).argument({
@@ -197,23 +220,7 @@ namespace slime.jrunscript.tools.github {
 
 				var result = ask();
 
-				function formatRepo(p: slime.external.github.rest.components.Schemas.FullRepository): { name: any, owner: any, size: any } {
-					if (!p) return p;
-					return {
-						name: p.name,
-						owner: p.owner,
-						size: p.size
-					};
-				}
-
-				jsh.shell.console(JSON.stringify(
-					fifty.global.$api.Function.result(
-						result,
-						formatRepo
-					),
-					void(0),
-					4
-				));
+				verify(result).is.type("object");
 
 				var notFound = server.operation(reposGet).argument({
 					owner: "davidpcaldwell",
@@ -222,14 +229,7 @@ namespace slime.jrunscript.tools.github {
 					world: void(0)
 				})();
 
-				jsh.shell.console(
-					JSON.stringify(
-						fifty.global.$api.Function.result(
-							notFound,
-							formatRepo
-						)
-					)
-				)
+				verify(notFound).is(null);
 			}
 		}
 	//@ts-ignore
@@ -247,6 +247,8 @@ namespace slime.jrunscript.tools.github {
 			const api = fifty.global.jsh.tools.github;
 			verify(api).evaluate.property("Session").is.type("function");
 			verify(api).evaluate.property("Foo").is.type("undefined");
+
+			fifty.run(fifty.tests.parsePathParameters);
 		}
 	}
 //@ts-ignore
