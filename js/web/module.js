@@ -14,7 +14,7 @@
 	function($api,$context,$exports) {
 		/**
 		 * @param { string } string
-		 * @returns { slime.web.url.Argument }
+		 * @returns { Pick<slime.web.object.url.Argument,"scheme" | "authority" | "path" | "fragment"> & { query: string } }
 		 */
 		var parse = function(string) {
 			var matcher = /(?:([^\:\/\?\#]+)\:)?(?:\/\/([^\:\/\?\#]+))?(?:\:(\d+))?([^\?\#]*)(?:\?([^#]*))?(?:\#(.*))?/;
@@ -40,12 +40,42 @@
 				query: match[5],
 				fragment: match[6]
 			};
+		};
+
+		/**
+		 *
+		 * @param { slime.web.Url } url
+		 */
+		var toString = function(url) {
+			return (function() {
+				var rv = "";
+				if (this.scheme) {
+					rv += this.scheme + "://";
+				}
+				if (typeof(this.userinfo) != "undefined") {
+					rv += this.userinfo + "@";
+				}
+				if (this.host) {
+					rv += this.host;
+				}
+				if (typeof(this.port) != "undefined") {
+					rv += ":" + this.port;
+				}
+				rv += this.path;
+				if (typeof(this.query) != "undefined" && this.query !== null) {
+					rv += "?" + this.query;
+				}
+				if (typeof(this.fragment) != "undefined" && this.fragment !== null) {
+					rv += "#" + this.fragment;
+				}
+				return rv;
+			}).call(url);
 		}
 
 		$exports.Url = Object.assign(
 			/**
 			 * @constructor
-			 * @param { slime.web.url.Argument } o
+			 * @param { slime.web.object.url.Argument } o
 			 */
 			function(o) {
 				this.scheme = o.scheme;
@@ -143,30 +173,36 @@
 				}
 
 				this.toString = function() {
-					var rv = "";
-					if (this.scheme) {
-						rv += this.scheme + "://";
-					}
-					if (typeof(this.userinfo) != "undefined") {
-						rv += this.userinfo + "@";
-					}
-					if (this.host) {
-						rv += this.host;
-					}
-					if (typeof(this.port) != "undefined") {
-						rv += ":" + this.port;
-					}
-					rv += this.path;
-					if (typeof(this.query) != "undefined" && this.query !== null) {
-						rv += "?" + this.query;
-					}
-					if (typeof(this.fragment) != "undefined" && this.fragment !== null) {
-						rv += "#" + this.fragment;
-					}
-					return rv;
+					return toString(this);
 				}
 			},
-			{ parse: void(0), query: void(0) }
+			{
+				codec: {
+					string: {
+						decode: function(string) {
+							var argument = parse(string);
+							return {
+								scheme: argument.scheme,
+								userinfo: (argument.authority && argument.authority.userinfo),
+								host: (argument.authority && argument.authority.host),
+								port: (argument.authority && argument.authority.port),
+								path: argument.path,
+								query: argument.query,
+								fragment: argument.fragment
+							}
+						},
+						encode: function(url) {
+							return toString(url);
+						}
+					}
+				},
+				resolve: function(url, reference) {
+					var object = $exports.Url.parse($exports.Url.codec.string.encode(url));
+					return object.resolve(reference);
+				},
+				parse: void(0),
+				query: void(0)
+			}
 		);
 		$exports.Url.parse = function(string) {
 			return new $exports.Url(parse(string))

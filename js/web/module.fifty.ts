@@ -13,9 +13,23 @@ namespace slime.web {
 		escaper: slime.Codec<string,string>
 		window?: Window
 	}
-}
 
-namespace slime.web {
+	export namespace test {
+		export const subject: slime.web.Exports = (function(fifty: slime.fifty.test.kit) {
+			if (fifty.global.jsh) return fifty.$loader.module("module.js", fifty.$loader.file("context.java.js"));
+			if (fifty.global.window) return fifty.$loader.module("module.browser.js");
+		//@ts-ignore
+		})(fifty);
+
+		(
+			function(
+				fifty: slime.fifty.test.kit
+			) {
+				fifty.tests.exports = {};
+			}
+		//@ts-ignore
+		)(fifty);
+	}
 
 	/**
 	 * An object having several properties representing parts of the URL. These properties are "live" -- they can be
@@ -38,30 +52,79 @@ namespace slime.web {
 		 */
 		query: string
 		fragment: string
-
-		form: () => Form
-
-		/**
-		 *
-		 * @param reference A reference.
-		 */
-		resolve(reference: string): Url
 	}
 
 	export namespace url {
-		export interface Argument {
-			//	TODO	should authority.host and path also be optional? Check RFC
-			scheme?: string
-			authority?: {
-				host: string
-				port?: number
-				userinfo?: string
+		export interface Api {
+			codec: {
+				string: slime.Codec<Url,string>
 			}
-			path: string
-			query?: string | form.Control[]
-			fragment?: string
+			resolve: (url: Url, reference: string) => Url
 		}
 	}
+
+	export interface Exports {
+		Url: url.Api
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.kit
+		) {
+			const subject = test.subject;
+			const { verify, run } = fifty;
+
+			fifty.tests.codec = function() {
+				run(function full() {
+					var url = "scheme://user@server.com:999/path?q=query#section";
+					var parsed = subject.Url.codec.string.decode(url);
+					verify(parsed,url,function(it) {
+						it.scheme.is("scheme");
+						it.userinfo.is("user");
+						it.host.is("server.com");
+						it.port.is(999);
+						it.path.is("/path");
+						it.query.is("q=query");
+						it.fragment.is("section");
+
+					});
+					verify(subject).Url.codec.string.encode(parsed).is(url);
+				});
+
+				run(function noUserInfo() {
+					var url = "scheme://server.com:999/path?q=query#section";
+					var parsed = subject.Url.codec.string.decode(url);
+					verify(parsed,url,function(it) {
+						it.scheme.is("scheme");
+						it.userinfo.is(void(0));
+						it.host.is("server.com");
+						it.port.is(999);
+						it.path.is("/path");
+						it.query.is("q=query");
+						it.fragment.is("section");
+					});
+					verify(subject).Url.codec.string.encode(parsed).is(url);
+				});
+
+				run(function noPort() {
+					var url = "scheme://server.com/path?q=query#section";
+					var parsed = subject.Url.codec.string.decode(url);
+					verify(parsed,url,function(it) {
+						it.scheme.is("scheme");
+						it.userinfo.is(void(0));
+						it.host.is("server.com");
+						it.port.is(void(0));
+						it.path.is("/path");
+						it.query.is("q=query");
+						it.fragment.is("section");
+					});
+					verify(subject).Url.codec.string.encode(parsed).is(url);
+				});
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
 
 	export interface Form {
 		controls: form.Control[]
@@ -78,37 +141,51 @@ namespace slime.web {
 	}
 }
 
-namespace slime.web.test {
-	export const subject: slime.web.Exports = (function(fifty: slime.fifty.test.kit) {
-		if (fifty.global.jsh) return fifty.$loader.module("module.js", fifty.$loader.file("context.java.js"));
-		if (fifty.global.window) return fifty.$loader.module("module.browser.js");
-	//@ts-ignore
-	})(fifty);
-
-	(
-		function(
-			fifty: slime.fifty.test.kit
-		) {
-			fifty.tests.exports = {};
-		}
-	//@ts-ignore
-	)(fifty);
-}
-
 namespace slime.web {
-	export interface Exports {
-		Url: {
+	export namespace object {
+		export interface Url extends slime.web.Url {
+			form: () => Form
+
+			/**
+			 *
+			 * @param reference A reference.
+			 */
+			resolve(reference: string): Url
+		}
+
+		export namespace url {
+			export interface Argument {
+				//	TODO	should authority.host and path also be optional? Check RFC
+				scheme?: string
+				authority?: {
+					host: string
+					port?: number
+					userinfo?: string
+				}
+				path: string
+				query?: string | form.Control[]
+				fragment?: string
+			}
+		}
+	}
+
+	export namespace url {
+		export interface Api {
 			/**
 			 * See [RFC 3986](http://tools.ietf.org/html/rfc3986). The `toString()` supplied for the
 			 * {@link Url} object is the string form of the URL.
 			 */
-			new (argument: url.Argument): Url
-			parse: (string: string) => Url
-			query: {
-				(array: form.Control[]): string
-				parse: (string: string) => form.Control[]
-			}
+			 new (argument: object.url.Argument): object.Url
+			 parse: (string: string) => object.Url
+			 query: {
+				 (array: form.Control[]): string
+				 parse: (string: string) => form.Control[]
+			 }
 		}
+	}
+
+	export interface Exports {
+		Url: url.Api
 	}
 
 	(
@@ -388,7 +465,7 @@ namespace slime.web {
 		 * Present if $context.window supplied.
 		 */
 		 window?: {
-			url: () => Url
+			url: () => object.Url
 			query: {
 				controls: () => form.Control[]
 				object: () => { [name: string]: string }
@@ -436,6 +513,7 @@ namespace slime.web {
 (
 	function(fifty: slime.fifty.test.kit) {
 		fifty.tests.suite = function() {
+			fifty.run(fifty.tests.codec);
 			fifty.run(fifty.tests.exports.Url.parse);
 			fifty.run(fifty.tests.exports.Url.query);
 			fifty.run(fifty.tests.Url);

@@ -390,6 +390,7 @@
 					}
 
 					//	then, let's check to see if it's a URL. For now we only support URLs with schemes.
+					/** @type { slime.web.Url } */
 					var url = web.Url.parse(string);
 					if (url.scheme) {
 						return url;

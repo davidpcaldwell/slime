@@ -165,7 +165,7 @@
 			return {
 				request: {
 					method: request.method,
-					url: withQueryString(api.server.resolve(request.path), toQueryString(request.query)),
+					url: withQueryString($context.library.web.Url.resolve(api.server, request.path), toQueryString(request.query)),
 					headers: $api.Array.build(function(rv) {
 						if (authentication) rv.push({
 							name: "Authorization",
