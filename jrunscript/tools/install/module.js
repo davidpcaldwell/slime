@@ -198,10 +198,11 @@
 		/** @type { slime.jrunscript.tools.install.install } */
 		var newInstall = function(p) {
 			return $api.Function.impure.tell(function(events) {
+				if (typeof(p.source.file) != "string") throw new TypeError("source.file must be string.");
 				return install({
 					url: p.source.url,
 					name: p.source.name,
-					file: p.source.file,
+					file: (p.source.file) ? $context.api.file.Pathname(p.source.file).file : void(0),
 					format: (p.archive && p.archive.format),
 					getDestinationPath: (p.archive && p.archive.folder),
 					to: p.destination.location,

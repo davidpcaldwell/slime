@@ -11,10 +11,10 @@ namespace slime.jrunscript.tools.install {
 	export interface Context {
 		client?: slime.jrunscript.http.client.object.Client
 		api: {
+			web: slime.web.Exports
 			shell: slime.jrunscript.shell.Exports
 			file: slime.jrunscript.file.Exports
 			http: slime.jrunscript.http.client.Exports
-			web: slime.web.Exports
 		}
 		/**
 		 * The directory in which to store downloaded files.
@@ -34,7 +34,12 @@ namespace slime.jrunscript.tools.install {
 					//	TODO	load and module are redundant
 					module: (p?: any) => slime.jrunscript.tools.install.Exports
 					api: slime.jrunscript.tools.install.Exports
-					harness: any
+					harness: {
+						local: slime.jrunscript.file.Directory
+						zip: slime.jrunscript.file.File
+						tar: slime.jrunscript.file.File
+						renamed: slime.jrunscript.file.File
+					}
 					server: any
 					tmpdir: () => slime.jrunscript.file.Pathname
 				} = {
@@ -179,7 +184,7 @@ namespace slime.jrunscript.tools.install {
 	}
 
 	export interface Installation {
-		source: old.Source
+		source: Source
 		archive?: Archive
 		destination: Destination
 	}
@@ -285,7 +290,7 @@ namespace slime.jrunscript.tools.install {
 
 					var tell = api.install({
 						source: {
-							file: harness.zip
+							file: harness.zip.toString()
 						},
 						destination: {
 							location: to
