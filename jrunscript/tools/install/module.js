@@ -116,12 +116,21 @@
 
 		/**
 		 *
+		 * @param { slime.jrunscript.http.client.object.request.url } p
+		 */
+		var urlToString = function(p) {
+			if (typeof(p) == "string") return p;
+			return $context.api.web.Url.codec.string.encode(p);
+		}
+
+		/**
+		 *
 		 * @param { slime.jrunscript.tools.install.old.Source } oldSource
 		 * @returns { slime.jrunscript.tools.install.Source }
 		 */
 		var toModernSource = function(oldSource) {
 			return {
-				url: (oldSource.url) ? $context.api.web.Url.parse(oldSource.url.toString()) : void(0),
+				url: (oldSource.url) ? urlToString(oldSource.url) : void(0),
 				name: oldSource.name,
 				file: (oldSource.file) ? oldSource.file.toString() : void(0)
 			}
@@ -181,7 +190,7 @@
 					p,
 					(
 						(p.url) ? {
-							url: (p.url) ? $context.api.web.Url.parse(String(p.url)) : void(0),
+							url: (p.url) ? urlToString(p.url) : void(0),
 							file: (p.file) ? p.file.toString() : void(0)
 						} : {}
 					)

@@ -31,7 +31,7 @@ namespace slime.jsh {
 			run: (code: Code, scope?: { [name: string]: any }, target?: object) => void
 			value: (code: Code, scope?: { [name: string]: any }, target?: object) => any
 			file: (code: Code, context?: { [name: string]: any }, target?: object) => any
-			module: (code: Code | slime.jrunscript.file.Directory, context?: { [name: string]: any }, target?: object) => any
+			module: (code: Code | slime.jrunscript.file.Directory | slime.web.Url, context?: { [name: string]: any }, target?: object) => any
 		}
 
 		(

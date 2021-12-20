@@ -155,7 +155,7 @@ namespace slime.jrunscript.tools.install {
 		 * The URL from which the file can be downloaded. Currently, only `http` and `https` URLs are supported. Optional; not
 		 * necessary if `file` is provided.
 		 */
-		url?: slime.web.Url
+		url?: string
 
 		/**
 		 * The filename to use if a file needs to be created when downloading this file. Defaults to terminal file name of URL.

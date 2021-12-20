@@ -63,6 +63,16 @@ namespace slime.web {
 		}
 	}
 
+	(
+		function(
+			fifty: slime.fifty.test.kit
+		) {
+			fifty.tests.Url = {};
+		}
+	//@ts-ignore
+	)(fifty);
+
+
 	export interface Exports {
 		Url: url.Api
 	}
@@ -74,7 +84,13 @@ namespace slime.web {
 			const subject = test.subject;
 			const { verify, run } = fifty;
 
-			fifty.tests.codec = function() {
+			fifty.tests.Url.codec = function() {
+				var codec = function(url: string) {
+					var parsed = subject.Url.codec.string.decode(url);
+					var encoded = subject.Url.codec.string.encode(parsed);
+					verify(encoded).is(url);
+				}
+
 				run(function full() {
 					var url = "scheme://user@server.com:999/path?q=query#section";
 					var parsed = subject.Url.codec.string.decode(url);
@@ -88,7 +104,7 @@ namespace slime.web {
 						it.fragment.is("section");
 
 					});
-					verify(subject).Url.codec.string.encode(parsed).is(url);
+					codec(url);
 				});
 
 				run(function noUserInfo() {
@@ -103,7 +119,7 @@ namespace slime.web {
 						it.query.is("q=query");
 						it.fragment.is("section");
 					});
-					verify(subject).Url.codec.string.encode(parsed).is(url);
+					codec(url);
 				});
 
 				run(function noPort() {
@@ -118,13 +134,45 @@ namespace slime.web {
 						it.query.is("q=query");
 						it.fragment.is("section");
 					});
-					verify(subject).Url.codec.string.encode(parsed).is(url);
+					codec(url);
+				});
+
+				run(function pathOnly() {
+					var url = "hello.html";
+					var parsed = subject.Url.codec.string.decode(url);
+					verify(parsed,url,function(it) {
+						verify(parsed).path.is("hello.html");
+					});
+					codec(url);
+				});
+
+				run(function emptyQuery() {
+					var url = "scheme://server.tld/page?";
+					var parsed = subject.Url.codec.string.decode(url);
+					verify(parsed).query.is("");
+				});
+
+				run(function noQuery() {
+					var url = "scheme://server.tld/page";
+					var parsed = subject.Url.codec.string.decode(url);
+					verify(parsed).query.is(void(0));
+				});
+
+				run(function noScheme() {
+					var url = "//www.google.com/path?query#fragment";
+					var parsed = subject.Url.codec.string.decode(url);
+					verify(parsed,url,function(it) {
+						it.scheme.is(void(0));
+						it.host.is("www.google.com");
+						it.path.is("/path");
+						it.query.is("query");
+						it.fragment.is("fragment");
+					});
 				});
 			}
 		}
 	//@ts-ignore
 	)(fifty);
-
 
 	export interface Form {
 		controls: form.Control[]
@@ -196,71 +244,15 @@ namespace slime.web {
 			const { verify } = fifty;
 
 			fifty.tests.exports.Url = {
-				parse: function() {
-					var one = module.Url.parse("scheme://server.com:999/path?q=query#section");
-					verify(one).scheme.is("scheme");
-					verify(one).host.is("server.com");
-					verify(one).port.is(999);
-					verify(one).path.is("/path");
-					verify(one).query.is("q=query");
-					verify(one).fragment.is("section");
-
-					(function() {
-						var url = module.Url.parse("scheme://server.com/path?q=query#section");
-						//	TODO	test optional port, since it is a number
-						verify(url).scheme.is("scheme");
-						verify(url).host.is("server.com");
-						verify(url).evaluate.property("port").is(void(0));
-						//	TODO	should port be null or undefined
-						verify(url).path.is("/path");
-						verify(url).query.is("q=query");
-						verify(url).fragment.is("section");
-					})();
-
-					(function() {
-						var url = module.Url.parse("scheme://user@server.com/path?q=query#section");
-						//	TODO	test optional port, since it is a number
-						verify(url).scheme.is("scheme");
-						verify(url).userinfo.is("user");
-						verify(url).host.is("server.com");
-						//	TODO	should port be null or undefined
-						verify(url).path.is("/path");
-						verify(url).query.is("q=query");
-						verify(url).fragment.is("section");
-						verify(url).evaluate(function(p) { return p.toString() }).is("scheme://user@server.com/path?q=query#section");
-					})();
-
-					(function() {
-						var url = module.Url.parse("hello.html");
-						verify(url).path.is("hello.html");
-					})();
-
-					(function emptyQuery() {
-						var url = module.Url.parse("scheme://server.tld/page?");
-						verify(url).query.is("");
-					})();
-
-					(function noQuery() {
-						var url = module.Url.parse("scheme://server.tld/page");
-						verify(url).evaluate.property("query").is(void(0));
-					})();
-
-					fifty.run(function noScheme() {
-						var url = module.Url.parse("//www.google.com/path?query#fragment");
-						verify(url).evaluate.property("scheme").is(void(0));
-						verify(url).host.is("www.google.com");
-						verify(url).path.is("/path");
-						verify(url).query.is("query");
-						verify(url).fragment.is("fragment");
-					});
-				},
 				query: function() {
 					var array = [ { name: "foo", value: "bar" }, { name: "foo", value: "baz" } ];
 					verify(module.Url.query(array)).is("foo=bar&foo=baz");
 				}
 			};
 
-			fifty.tests.Url = Object.assign(
+			fifty.tests.object = {};
+
+			fifty.tests.object.Url = Object.assign(
 				function() {
 					fifty.run(function liveQueryProperty() {
 						var url = module.Url.parse("http://www.example.com/path/to/page.html");
@@ -273,7 +265,11 @@ namespace slime.web {
 						fifty.verify(url).evaluate(toString).is("http://www.example.com/path/to/page.html?foo=bar&foo=baz");
 					});
 
-					fifty.run(function constructor() {
+					fifty.run(fifty.tests.object.Url.constructor);
+					fifty.run(fifty.tests.object.Url.resolve);
+				},
+				{
+					constructor: function() {
 						var one = new module.Url({
 							path: "path",
 							query: [
@@ -281,11 +277,7 @@ namespace slime.web {
 							]
 						});
 						fifty.verify(one).evaluate(function(p) { return p.toString(); }).is("path?foo=bar");
-					})
-
-					fifty.run(fifty.tests.Url.resolve);
-				},
-				{
+					},
 					resolve: function() {
 						var base = module.Url.parse("http://www.example.com/path/to/page.html?name=value&foo=bar#fragment");
 						fifty.run(function() {
@@ -513,10 +505,10 @@ namespace slime.web {
 (
 	function(fifty: slime.fifty.test.kit) {
 		fifty.tests.suite = function() {
-			fifty.run(fifty.tests.codec);
-			fifty.run(fifty.tests.exports.Url.parse);
+			fifty.run(fifty.tests.Url.codec);
+
 			fifty.run(fifty.tests.exports.Url.query);
-			fifty.run(fifty.tests.Url);
+			fifty.run(fifty.tests.object.Url);
 
 			fifty.run(fifty.tests.exports.Form);
 			fifty.run(fifty.tests.exports.form.codec);

@@ -413,8 +413,19 @@
 				}
 
 				jsh.loader.module = (function(was) {
+					/** @type { (p: any) => p is slime.web.Url } */
+					var isUrl = function(p) {
+						return typeof(p) == "object" && p.scheme && p.host && p.path;
+					}
+
+					/**
+					 *
+					 * @param { slime.web.Url } location
+					 * @returns
+					 */
 					var fromUrl = function(location) {
-						var base = location.resolve("./");
+						var object = jsh.web.Url.parse(jsh.web.Url.codec.string.encode(location));
+						var base = object.resolve("./");
 						var path = (base.toString() == location.toString()) ? "module.js" : location.toString().substring(base.toString().length);
 						var loader = new jsh.http.Client().Loader(base);
 						return function(code) {
@@ -424,7 +435,7 @@
 					}
 
 					return function(code) {
-						if (typeof(code) == "object" && code.scheme && code.host && code.path) {
+						if (isUrl(code)) {
 							return fromUrl(code).apply(this, arguments);
 						}
 						if (typeof(code) == "string") {
