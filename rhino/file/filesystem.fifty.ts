@@ -17,9 +17,7 @@ namespace slime.jrunscript.file.internal.filesystem {
 	/**
 	 * A representation of a filesystem that provides support for object-oriented APIs.
 	 */
-	export interface Filesystem {
-		Pathname: (string: string) => slime.jrunscript.file.Pathname
-		Searchpath: any
+	export interface Filesystem extends slime.jrunscript.file.Filesystem {
 	}
 
 	export type Script = slime.loader.Script<Context,Exports>

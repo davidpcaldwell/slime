@@ -86,9 +86,43 @@ namespace slime.jrunscript.file {
 		addFinalizer: any
 	}
 
+	/**
+	 * A filesystem implementation from which files may be read and listed and to which files may be written.
+	 */
+	export interface Filesystem {
+		/**
+		 * @param value A path name that is valid in this filesystem.
+		 *
+		 * @returns A Pathname in this filesystem corresponding to the given string.
+		 */
+		Pathname: (value: string) => Pathname
+
+		/**
+		 * Creates a Searchpath in this filesystem.
+		 */
+		Searchpath: Exports["Searchpath"] & {
+			/**
+			 * Creates a searchpath in this filesystem from the given string.
+			 *
+			 * @returns The searchpath represented by the given string.
+			 */
+			parse: (string: string) => Searchpath
+		}
+
+		$unit: any
+		$jsh: any
+		java: any
+	}
+
 	export interface Exports {
-		filesystems: any
-		filesystem: any
+		filesystems: {
+			os: Filesystem
+			cygwin: Filesystem & { toUnix: any, toWindows: any }
+		}
+		/**
+		 * The current default filesystem.
+		 */
+		filesystem: Filesystem
 	}
 
 	export interface Exports {
@@ -98,38 +132,6 @@ namespace slime.jrunscript.file {
 		}
 		navigate: (p: { from: Pathname | Node, to: Pathname | Node, base?: Directory }) => { base: Directory, relative: string }
 	}
-
-	export interface Searchpath {
-		pathnames: slime.jrunscript.file.Pathname[]
-		getCommand: any
-	}
-
-	export interface Exports {
-		Searchpath: {
-			(pathnames: slime.jrunscript.file.Pathname[]): Searchpath
-			createEmpty: any
-		}
-	}
-
-	(
-		function(
-			fifty: slime.fifty.test.kit
-		) {
-			const jsh = fifty.global.jsh;
-
-			fifty.tests.Searchpath = {};
-			fifty.tests.Searchpath.world = function() {
-				var searchpath = jsh.file.Searchpath([
-					fifty.$loader.getRelativePath(".")
-				]);
-				jsh.shell.console(searchpath.toString());
-				jsh.shell.console(String(searchpath.pathnames.length));
-				jsh.shell.console(searchpath.pathnames[0].toString());
-				jsh.shell.console(String(searchpath.pathnames[0].directory.directory));
-			}
-		}
-	//@ts-ignore
-	)(fifty);
 
 	export interface Exports {
 		//	TODO	would be nice to get rid of string below, but right now it's unknown exactly how to access MimeType from
@@ -194,8 +196,8 @@ namespace slime.jrunscript.file {
 				//	TODO	brittle; changing structure of module can break it
 				fifty.verify(listing)[0].relative.is("api.Loader.html");
 				fifty.verify(listing)[0].absolute.is(prefix + "/" + "api.Loader.html");
-				fifty.verify(listing)[12].relative.is("java/");
-				fifty.verify(listing)[12].absolute.is(prefix + "/" + "java/");
+				fifty.verify(listing)[11].relative.is("java/");
+				fifty.verify(listing)[11].absolute.is(prefix + "/" + "java/");
 			}
 
 			fifty.tests.action = {};
@@ -572,6 +574,8 @@ namespace slime.jrunscript.file {
 				fifty.run(fifty.tests.state.list);
 				fifty.run(fifty.tests.action.delete);
 				fifty.run(fifty.tests.sandbox.filesystem);
+
+				fifty.load("module-Searchpath.fifty.ts");
 			}
 		}
 	//@ts-ignore

@@ -136,10 +136,6 @@
 			pathname: SRC.getRelativePath("rhino/file/api.html")
 		}));
 
-		suite.add("jrunscript/file/Searchpath", new jsh.unit.html.Part({
-			pathname: SRC.getRelativePath("rhino/file/api.Searchpath.html")
-		}));
-
 		suite.add("jrunscript/document/module", new jsh.unit.html.Part({
 			pathname: SRC.getRelativePath("rhino/document/api.html")
 		}));

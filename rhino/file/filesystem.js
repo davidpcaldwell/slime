@@ -30,9 +30,10 @@
 				return "Filesystem: provider=" + system;
 			}
 
+			//	TODO	we add createEmpty below, but do not seem to define it. Is it defined elsewhere, maybe?
 			this.Searchpath = Object.assign(function(array) {
 				return new $context.Searchpath({ filesystem: system, array: array });
-			}, { parse: void(0) });
+			}, { parse: void(0), createEmpty: void(0) });
 			this.Searchpath.prototype = $context.Searchpath.prototype;
 			this.Searchpath.parse = function(string) {
 				if (!string) {

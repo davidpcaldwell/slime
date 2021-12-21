@@ -142,7 +142,7 @@
 						}
 						if (start == "/" || start == "\\") {
 							//	using wrong path separator character, we handle as error
-							throw "Path separator for this platform is " + filesystem.$jsh.PATHNAME_SEPARATOR;
+							throw new Error("Path separator for this platform is " + filesystem.$jsh.PATHNAME_SEPARATOR);
 						}
 						return false;
 					}

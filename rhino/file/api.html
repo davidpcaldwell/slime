@@ -240,70 +240,8 @@ END LICENSE
 		]]></script>
 		<div class="type">
 			<a class="type" name="types.filesystem">filesystem</a>
-			<div>A filesystem implementation from which files may be read and listed and to which files may be written.</div>
 			<div class="label">has properties:</div>
 			<ul>
-				<li class="function">
-					<div class="name">Pathname</div>
-					<div class="arguments">
-						<div class="label">Arguments</div>
-						<ol>
-							<li class="value">
-								<span class="type">string</span>
-								<span>A path name that is valid in this filesystem.</span>
-							</li>
-						</ol>
-					</div>
-					<div class="returns">
-						<div class="label">Returns</div>
-						<span class="type"><a href="#types.Pathname">Pathname</a></span> A Pathname in this filesystem corresponding
-						to the given string.
-					</div>
-				</li>
-				<li class="function">
-					<!--	TODO	Move this documentation into api.Searchpath.html?	-->
-					<div class="name">Searchpath</div>
-					<span>Creates a Searchpath in this filesystem.</span>
-					<!--	TODO	Use anchors in the below two links if this documentation is not moved into that page	-->
-					<div class="arguments" jsapi:reference="getApi('api.Searchpath.html').getElement('main/arguments')">
-						<div class="label">Arguments</div>
-						See <a href="api.Searchpath.html">Searchpath</a> documentation.
-					</div>
-					<div class="returns" jsapi:reference="getApi('api.Searchpath.html').getElement('main/returns')">
-						<div class="label">Returns</div>
-						See <a href="api.Searchpath.html">Searchpath</a> documentation.
-					</div>
-					<div class="label">has properties:</div>
-					<ul>
-						<li class="function">
-							<div class="name">parse</div>
-							<span>Creates a searchpath in this filesystem from the given string.</span>
-							<div class="arguments">
-								<div class="label">Arguments</div>
-								<ol>
-									<li class="value">
-										<span class="type">string</span>
-										<span>A string.</span>
-									</li>
-								</ol>
-							</div>
-							<div class="returns">
-								<div class="label">Returns</div>
-								<span class="type" jsapi:reference="getApi('api.Searchpath.html').getElement('main/returns/typelink')"><a href="api.Searchpath.html#types.Searchpath">Searchpath</a></span>
-								<span>The searchpath represented by the given string.</span>
-							</div>
-							<script type="application/x.jsapi#tests">
-								var array = [jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname,jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname];
-								var searchpath = new filesystem.Searchpath(array);
-								var searchpathstring = searchpath.toString();
-								var parsed = filesystem.Searchpath.parse(searchpathstring);
-								test(parsed.pathnames[0].toString() == array[0].toString());
-								test(parsed.pathnames[1].toString() == array[1].toString());
-								test(parsed.toString() == searchpath.toString());
-							</script>
-						</li>
-					</ul>
-				</li>
 				<!--
 					$doc.types.filesystem = new $Doc.Type({
 						name: "(filesystem)",
@@ -397,10 +335,6 @@ END LICENSE
 						</ul>
 					</li>
 				</ul>
-			</li>
-			<li class="value">
-				<div class="name">filesystem</div>
-				<span class="type"><a href="#types.filesystem">filesystem</a></span> The current default filesystem.
 			</li>
 			<li class="function" jsapi:id="Pathname">
 				<div class="name">Pathname</div>
@@ -1230,10 +1164,6 @@ END LICENSE
 					verify(relative).is("../../loader/expression.js");
 				</script>
 			</li> -->
-			<li class="function" jsapi:id="Searchpath" jsapi:reference="getApi('api.Searchpath.html').getElement('main')">
-				<div class="name">Searchpath</div>
-				See <a href="api.Searchpath.html">detailed documentation</a>.
-			</li>
 			<li class="function" jsapi:id="Loader" jsapi:reference="getApi('api.Loader.html').getElement('main')">
 				<div class="name">Loader</div>
 				See <a href="api.Loader.html">detailed documentation</a>.
