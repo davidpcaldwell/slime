@@ -213,14 +213,14 @@ window.addEventListener('load', function() {
 					this.edit.value = child.innerHTML;
 				}
 			});
-// 			var span = document.createElement("span");
-// 			span.innerHTML = child.innerHTML;
-// 			editor.appendChild(span);
-// 			inline.call(span,function() {
-// 				document.getElementById("title").innerHTML = span.innerHTML;
-// 				var title = .getElementsByTagName("title")[0];
-// 				title.innerHTML = span.innerHTML;
-// 			});
+			// var span = document.createElement("span");
+			// span.innerHTML = child.innerHTML;
+			// editor.appendChild(span);
+			// inline.call(span,function() {
+			// 	document.getElementById("title").innerHTML = span.innerHTML;
+			// 	var title = .getElementsByTagName("title")[0];
+			// 	title.innerHTML = span.innerHTML;
+			// });
 		});
 
 		var handleLink = handleRow(function(child,label,editor) {
@@ -289,13 +289,13 @@ window.addEventListener('load', function() {
 				//			the width of the indent?
 				var maxWidth = function(content) {
 					var indent = 0;
-// 					for (var i=0; i<content.indent.length; i++) {
-// 						if (content.indent.substring(i,i+1) == "\t") {
-// 							indent += TAB_WIDTH;
-// 						} else {
-// 							indent++;
-// 						}
-// 					};
+					// for (var i=0; i<content.indent.length; i++) {
+					// 	if (content.indent.substring(i,i+1) == "\t") {
+					// 		indent += TAB_WIDTH;
+					// 	} else {
+					// 		indent++;
+					// 	}
+					// };
 					var rv = 0;
 					content.lines.forEach(function(line) {
 						if ((indent + line.length) > rv) {

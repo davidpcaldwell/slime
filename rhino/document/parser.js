@@ -72,7 +72,7 @@
 					})();
 				};
 				$exports.xhtml.id = "javafx";
-			};
+			}
 		};
 
 		load();

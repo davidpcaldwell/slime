@@ -660,7 +660,7 @@
 								jsh.shell.tools.node["install"]();
 							}
 						});
-					};
+					}
 
 					if (installed) {
 						//	TODO	update?

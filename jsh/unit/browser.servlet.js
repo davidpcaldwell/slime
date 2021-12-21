@@ -147,7 +147,7 @@
 					});
 					return waiter();
 				}
-			};
+			}
 
 			var handle = function(request) {
 				var resource = httpd.loader.get(request.path);

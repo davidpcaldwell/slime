@@ -40,14 +40,14 @@
 					call: function() {
 						jsh.shell.echo("Starting spool to destination");
 						_spool(_s.getInputStream(), _destination.getOutputStream());
-		//				jsh.io.java.adapt(_destination.getOutputStream()).write(jsh.io.java.adapt(_s.getInputStream()), { append: false });
+						// jsh.io.java.adapt(_destination.getOutputStream()).write(jsh.io.java.adapt(_s.getInputStream()), { append: false });
 					}
 				});
 				jsh.java.Thread.start({
 					call: function() {
 						jsh.shell.echo("Starting spool from destination");
 						_spool(_destination.getInputStream(), _s.getOutputStream());
-		//				jsh.io.java.adapt(_s.getOutputStream()).write(jsh.io.java.adapt(_destination.getInputStream()), { append: false });
+						// jsh.io.java.adapt(_s.getOutputStream()).write(jsh.io.java.adapt(_destination.getInputStream()), { append: false });
 					}
 				});
 			}

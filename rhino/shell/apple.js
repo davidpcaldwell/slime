@@ -140,7 +140,7 @@
 				})[0];
 				return decode(value);
 			}
-		};
+		}
 
 		$exports.plist = {
 			//	https://developer.apple.com/library/ios/documentation/Cocoa/Conceptual/PropertyLists/AboutPropertyLists/AboutPropertyLists.html

@@ -220,7 +220,7 @@ window.addEventListener("load", function() {
 					references[i].innerHTML = found.node.innerHTML;
 					new Markup({ node: references[i], base: found.base }).fix();
 				}
-			};
+			}
 
 			getElements(function(e) {
 				return e.getAttribute("jsapi:replace");

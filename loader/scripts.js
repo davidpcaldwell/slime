@@ -143,7 +143,7 @@
 			var inner = createScriptScope($context);
 			run.call(this,code,inner);
 			return inner.$exports;
-		};
+		}
 
 		/**
 		 * @type { slime.runtime.internal.scripts.Exports["methods"]["value"] }

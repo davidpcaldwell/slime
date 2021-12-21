@@ -128,11 +128,11 @@ plugin({
 				if (parameters.options.downloads) {
 					args.push("-Djsh.build.downloads=" + parameters.options.downloads);
 				}
-//				if (parameters.options.rhino) {
-//					args.push("-Djsh.build.rhino.jar=" + parameters.options.rhino);
-//				} else if (Packages.java.lang.System.getProperty("jsh.engine.rhino.classpath")) {
-//					args.push("-Djsh.engine.rhino.classpath=" + Packages.java.lang.System.getProperty("jsh.engine.rhino.classpath"));
-//				}
+				// if (parameters.options.rhino) {
+				// 	args.push("-Djsh.build.rhino.jar=" + parameters.options.rhino);
+				// } else if (Packages.java.lang.System.getProperty("jsh.engine.rhino.classpath")) {
+				// 	args.push("-Djsh.engine.rhino.classpath=" + Packages.java.lang.System.getProperty("jsh.engine.rhino.classpath"));
+				// }
 				var SLIME = (function(p) {
 					if (p && p.src) return p.src;
 					if (jsh.shell.jsh.home) return jsh.shell.jsh.home.getSubdirectory("src");

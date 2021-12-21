@@ -67,7 +67,7 @@
 					};
 				}
 			};
-		};
+		}
 
 		var install = function(p) {
 			var to = build(jsh.js.Object.set({}, p, { installer: true }));
