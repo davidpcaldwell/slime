@@ -8,10 +8,11 @@
 (
 	/**
 	 * @param { slime.jrunscript.Packages } Packages
+	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.Global } jsh
 	 * @param { slime.jsh.plugin.plugin } plugin
 	 */
-	function(Packages,jsh,plugin) {
+	function(Packages,$api,jsh,plugin) {
 		plugin({
 			isReady: function() {
 				return Boolean(jsh.unit.mock.Web);
@@ -131,7 +132,7 @@
 										return node.parent.toString() == jsh.shell.jsh.src.toString();
 									}
 									var entries = jsh.shell.jsh.src.list({
-										type: jsh.shell.jsh.src.list.ENTRY,
+										type: jsh.file.list.ENTRY,
 										filter: function(node) {
 											if (isTopLevel(node) && node.pathname.basename == "local") return false;
 											if (isTopLevel(node) && node.pathname.basename == "bin") return false;
@@ -155,9 +156,37 @@
 										}
 									});
 									var buffer = new jsh.io.Buffer();
+
+									/**
+									 *
+									 * @param { { path: string, resource: slime.jrunscript.file.Node }} nodeEntry
+									 * @returns { { path: string, resource: slime.jrunscript.runtime.Resource } }
+									 */
+									var toFileEntry = function(nodeEntry) {
+										/** @type { (node: slime.jrunscript.file.Node) => node is slime.jrunscript.file.File } */
+										var isFile = function(node) {
+											return true;
+										}
+										/** @type { (node: slime.jrunscript.file.Node) => slime.jrunscript.file.File } */
+										var toFile = function(node) {
+											if (isFile(node)) return node;
+											throw new Error();
+										}
+										/** @type { (file: slime.jrunscript.file.File) => slime.jrunscript.runtime.Resource } */
+										var toResource = $api.Function.cast;
+										if (isFile(nodeEntry.resource)) {
+											return {
+												path: nodeEntry.path,
+												resource: toResource(toFile(nodeEntry.resource))
+											};
+										} else {
+											throw new Error();
+										}
+									}
+
 									jsh.io.archive.zip.encode({
 										stream: buffer.writeBinary(),
-										entries: entries
+										entries: entries.map(toFileEntry)
 									});
 									return {
 										status: { code: 200 },
@@ -180,4 +209,4 @@
 		})
 	}
 //@ts-ignore
-)(Packages,jsh,plugin)
+)(Packages,$api,jsh,plugin)

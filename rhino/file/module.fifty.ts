@@ -36,44 +36,6 @@ namespace slime.jrunscript.file {
 		modified: Date
 	}
 
-	export namespace directory {
-		export interface Entry<T> {
-			filter?: (child: Node) => boolean
-			create: (self: Directory, child: Node) => T
-		}
-	}
-
-	export interface Directory extends Node {
-		getRelativePath: (path: string) => Pathname
-		getFile: (path: string) => File
-		getSubdirectory: (path: string) => Directory
-		createTemporary: {
-			(p: { directory: true, prefix?: string, suffix?: string }): Directory
-			(p?: { directory?: false, prefix?: string, suffix?: string }): File
-		}
-		list: {
-			<T>(mode?: {
-				type?: directory.Entry<T>
-				filter?: any
-				descendants?: any
-
-				/** @deprecated */
-				recursive?: any
-			}): T[]
-
-			(mode?: {
-				filter?: any
-				descendants?: any
-
-				/** @deprecated */
-				recursive?: any
-			}): Node[]
-
-			RESOURCE: directory.Entry<any>
-			ENTRY: directory.Entry<any>
-		}
-	}
-
 	export interface Context {
 		$pwd: string
 		pathext: string[]
@@ -109,9 +71,12 @@ namespace slime.jrunscript.file {
 			parse: (string: string) => Searchpath
 		}
 
+		java: {
+			adapt: (_file: slime.jrunscript.native.java.io.File) => slime.jrunscript.file.Pathname
+		}
+
 		$unit: any
 		$jsh: any
-		java: any
 	}
 
 	export interface Exports {
@@ -143,12 +108,6 @@ namespace slime.jrunscript.file {
 		zip: any
 		/** @deprecated Use {@link slime.jrunscript.io.Exports["archive"]["zip"]["decode"] } */
 		unzip: any
-
-		list: {
-			NODE: slime.jrunscript.file.directory.Entry<slime.jrunscript.file.Node>,
-			ENTRY: slime.jrunscript.file.directory.Entry<{ path: string, node: slime.jrunscript.file.Node }>,
-			RESOURCE: slime.jrunscript.file.directory.Entry<{ path: string, resource: slime.jrunscript.file.File }>
-		}
 	}
 
 	export interface Exports {
@@ -196,8 +155,8 @@ namespace slime.jrunscript.file {
 				//	TODO	brittle; changing structure of module can break it
 				fifty.verify(listing)[0].relative.is("api.Loader.html");
 				fifty.verify(listing)[0].absolute.is(prefix + "/" + "api.Loader.html");
-				fifty.verify(listing)[11].relative.is("java/");
-				fifty.verify(listing)[11].absolute.is(prefix + "/" + "java/");
+				fifty.verify(listing)[10].relative.is("java/");
+				fifty.verify(listing)[10].absolute.is(prefix + "/" + "java/");
 			}
 
 			fifty.tests.action = {};
@@ -576,10 +535,15 @@ namespace slime.jrunscript.file {
 				fifty.run(fifty.tests.sandbox.filesystem);
 
 				fifty.load("module-Searchpath.fifty.ts");
+				fifty.load("module-directory.fifty.ts");
 			}
 		}
 	//@ts-ignore
 	)(fifty);
+
+	export interface Exports {
+		world: World
+	}
 
 	(
 		function(
@@ -600,10 +564,6 @@ namespace slime.jrunscript.file {
 		}
 	//@ts-ignore
 	)(fifty);
-
-	export interface Exports {
-		world: World
-	}
 
 	export interface Exports {
 		/** @deprecated Use the {@link slime.jrunscript.io.Exports} provided by the platform. */

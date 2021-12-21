@@ -545,7 +545,7 @@ namespace slime.jrunscript {
 				PrintStream: {
 					new (stream: slime.jrunscript.native.java.io.OutputStream): slime.jrunscript.native.java.io.PrintStream
 				}
-			},
+			}
 			net: {
 				URLConnection: any
 				URI: any
@@ -591,8 +591,12 @@ namespace slime.jrunscript {
 				logging: any
 				Base64: any
 				Map: any
+				Date: any
 				zip: any
 				jar: any
+			}
+			text: {
+				SimpleDateFormat: any
 			}
 			awt: {
 				Desktop: any

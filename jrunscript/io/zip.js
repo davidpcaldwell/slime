@@ -117,7 +117,7 @@
 			};
 
 			for (var i=0; i<p.entries.length; i++) {
-				zipOutputStream.addEntry(p.entries[i].path,p.entries[i].resource.read($context.Streams.binary));
+				zipOutputStream.addEntry(p.entries[i].path,p.entries[i].resource.read.binary());
 			}
 
 			zipOutputStream.close();

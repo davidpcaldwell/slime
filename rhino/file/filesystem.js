@@ -74,7 +74,6 @@
 			var self = this;
 
 			this.java = {
-				/** */
 				adapt: function(_file) {
 					var peer = system.java.adapt(_file);
 					return new $context.Pathname({ filesystem: system, peer: peer });

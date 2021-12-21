@@ -38,7 +38,7 @@ namespace slime.jrunscript.io {
 		archive: {
 			zip: {
 				encode: (p: {
-					entries: { path: string, resource: slime.Resource }[]
+					entries: { path: string, resource: slime.jrunscript.runtime.Resource }[]
 					stream: slime.jrunscript.runtime.io.OutputStream
 				}) => void
 
