@@ -7,6 +7,7 @@
 namespace slime.project.metrics {
 	export interface Context {
 		library: {
+			document: slime.runtime.document.Exports
 			file: slime.jrunscript.file.Exports
 		}
 	}

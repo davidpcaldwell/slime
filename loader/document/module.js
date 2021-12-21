@@ -13,7 +13,7 @@
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.runtime.document.Context } $context
 	 * @param { slime.Loader } $loader
-	 * @param { slime.loader.Export<slime.runtime.document.Export> } $export
+	 * @param { slime.loader.Export<slime.runtime.document.Exports> } $export
 	 */
 	function(Packages,$platform,$api,$context,$loader,$export) {
 		var parsers = {};
@@ -305,10 +305,20 @@
 			if (parsers.jsoup) return parsers.jsoup;
 		})();
 
-		/** @type { slime.runtime.document.source.Export } */
+		/** @type { slime.runtime.document.source.Exports } */
 		var source = $loader.file("source.js");
 
-		/** @type { slime.runtime.document.Export } */
+		/** @type { slime.Codec<slime.runtime.document.Document,string> } */
+		var documentStringCodec = {
+			decode: function(string) {
+				return source.parse({ string: string });
+			},
+			encode: function(document) {
+				return source.serialize({ document: document });
+			}
+		};
+
+		/** @type { slime.runtime.document.Exports } */
 		var rv = {
 			load: function(p) {
 				if (!parser) throw new Error("Parser not found.");
@@ -322,19 +332,15 @@
 				}
 			},
 			codec: {
-				document: {
-					decode: function(string) {
-						return source.parse({ string: string });
-					},
-					encode: function(document) {
-						return source.serialize({ document: document });
-					}
-				}
+				document: documentStringCodec
 			},
 			Node: source.Node,
 			//	TODO	temporarily disabling TypeScript while we figure out the loader/document vs. rhino/document nightmare
 			//@ts-ignore
 			Document: {
+				codec: {
+					string: documentStringCodec
+				},
 				removeWhitespaceTextNodes: function(document) {
 					/**
 					 * @template { slime.runtime.document.Node } T

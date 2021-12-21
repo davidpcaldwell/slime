@@ -4,6 +4,11 @@
 //
 //	END LICENSE
 
+/**
+ * Provides a pure JavaScript parser/serializer for HTML and XML documents that, unlike a standard DOM HTML parser (but like a
+ * standard DOM XML parser), can provide accurate bidirectional translation from markup to its internal representation using the
+ * module's provided
+ */
 namespace slime.runtime.document {
 	export interface Node {
 		type: string
@@ -74,7 +79,7 @@ namespace slime.runtime.document {
 			var script: Script = fifty.$loader.script("module.js");
 			var isBrowser = Boolean(fifty.global.window);
 			var isJsh = Boolean(fifty.global.jsh);
-			var api: Export = script({
+			var api: Exports = script({
 				$slime: (isJsh) ? fifty.global.jsh.unit.$slime : void(0)
 			});
 			return api;
@@ -86,15 +91,13 @@ namespace slime.runtime.document {
 		$slime?: old.Context["$slime"]
 	}
 
-
-
-	//	TODO	this nasty little workaround is needed because of name collisions between loader/document and
-	//			rhino/document
-
 	export namespace exports {
 		export type transform = (document: slime.runtime.document.Document) => slime.runtime.document.Document
 
 		export interface Document {
+			codec: {
+				string: slime.Codec<slime.runtime.document.Document,string>
+			}
 			removeWhitespaceTextNodes: transform
 			prettify: (p: { indent: string }) => transform
 			element: (p: slime.runtime.document.Document) => slime.runtime.document.Element
@@ -131,7 +134,7 @@ namespace slime.runtime.document {
 
 	}
 
-	export interface Export {
+	export interface Exports {
 		load: old.Exports["load"]
 
 		codec: {
@@ -156,12 +159,15 @@ namespace slime.runtime.document {
 		}
 	}
 
-	export type Script = slime.loader.Script<Context,Export>
+	export type Script = slime.loader.Script<Context,Exports>
 }
 
 namespace slime.jsh {
 	export interface Global {
-		document: slime.runtime.document.Export & slime.jrunscript.document.Export
+		//	TODO	this nasty little workaround is needed because of name collisions between loader/document and
+		//			rhino/document
+
+		document: slime.runtime.document.Exports & slime.jrunscript.document.Export
 	}
 }
 

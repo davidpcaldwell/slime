@@ -8,7 +8,7 @@
 (
 	/**
 	 * @param { slime.$api.Global } $api
-	 * @param { slime.loader.Export<slime.runtime.document.source.Export> } $export
+	 * @param { slime.loader.Export<slime.runtime.document.source.Exports> } $export
 	 */
 	function($api,$export) {
 		//	TODO	for HTML, use this: https://html.spec.whatwg.org/multipage/syntax.html#optional-tags
@@ -609,27 +609,110 @@
 			}
 		}
 
-		$export({
-			parse: function(input) {
-				var events = $api.Events.toHandler(input.events);
-				events.attach();
-				var state = Parser()(
-					{
-						parsed: {
-							type: "document",
-							children: []
-						},
-						position: {
-							document: input.string,
-							offset: 0
-						}
+		/**
+		 *
+		 * @param { Parameters<slime.runtime.document.source.Exports["parse"]>[0] } input
+		 * @returns
+		 */
+		var parse = function(input) {
+			var events = $api.Events.toHandler(input.events);
+			events.attach();
+			var state = Parser()(
+				{
+					parsed: {
+						type: "document",
+						children: []
 					},
-					events.emitter,
-					State.atEnd
-				);
-				events.detach();
-				if (isDocument(state.parsed)) return state.parsed;
+					position: {
+						document: input.string,
+						offset: 0
+					}
+				},
+				events.emitter,
+				State.atEnd
+			);
+			events.detach();
+			if (isDocument(state.parsed)) return state.parsed;
+		};
+
+		var serialize = function(output) {
+			var serialize = Serializer();
+			var parent = (function() {
+				if (output.document) return output.document;
+				if (output.fragment) return output.fragment;
+			})();
+			return parent.children.map(serialize).join("");
+		}
+
+		/**
+		 *
+		 * @param { string } input
+		 * @param { slime.$api.Events<{ console: string }> } events
+		 */
+		var debugFidelity = function(input, events) {
+			var console = function(string) {
+				events.fire("console", string);
+			}
+
+			var document = parse({
+				string: input,
+				events: (function() {
+					/** @type { string[] } */
+					var stack = [];
+					/**
+					 * @type { slime.$api.events.Handler<slime.runtime.document.source.ParseEvents> }
+					 */
+					var rv = {
+						startElement: function(e) {
+							console(e.detail);
+							stack.push(e.detail);
+							console("Stack " + stack.join(" "));
+						},
+						endElement: function(e) {
+							console("/" + e.detail);
+							if (stack[stack.length-1] == e.detail) {
+								stack.pop();
+							} else {
+								console("Expected end tag for " + stack[stack.length-1] + " not " + e.detail);
+							}
+						}
+					}
+					return rv;
+				})()
+			});
+
+			console("Parsed.");
+
+			var serialized = serialize({
+				document: document
+			});
+
+			console("Serialized.");
+
+			var match = 1;
+			while( (input.substring(0,match) == serialized.substring(0,match)) && match < input.length) {
+				match++;
+			}
+
+			if (match < input.length) {
+				console("page " + input.substring(match));
+				console("serialized " + serialized.substring(match));
+			}
+
+			return input == serialized;
+		}
+
+		$export({
+			debug: {
+				fidelity: function(p) {
+					var events = $api.Events.toHandler(p.events);
+					events.attach();
+					var rv = debugFidelity(p.markup, events.emitter);
+					events.detach();
+					return rv;
+				}
 			},
+			parse: parse,
 			fragment: function(input) {
 				var events = $api.Events.toHandler(input.events);
 				events.attach();
@@ -650,14 +733,7 @@
 				events.detach();
 				if (isFragment(state.parsed)) return state.parsed;
 			},
-			serialize: function(output) {
-				var serialize = Serializer();
-				var parent = (function() {
-					if (output.document) return output.document;
-					if (output.fragment) return output.fragment;
-				})();
-				return parent.children.map(serialize).join("");
-			},
+			serialize: serialize,
 			Node: {
 				isComment: isComment,
 				isText: isText,

@@ -11,7 +11,14 @@ namespace slime.runtime.document.source {
 		endElement: string
 	}
 
-	export interface Export {
+	export interface Exports {
+		debug: {
+			fidelity: (p: {
+				markup: string
+				events: slime.$api.events.Handler<{ console: string }>
+			}) => boolean
+		}
+
 		parse: (p: {
 			string: string
 			events?: slime.$api.events.Handler<ParseEvents>
@@ -31,7 +38,7 @@ namespace slime.runtime.document.source {
 			}): string
 		}
 
-		Node: slime.runtime.document.Export["Node"]
+		Node: slime.runtime.document.Exports["Node"]
 
 		/**
 		 * Methods used internally, visible for testing.
@@ -39,11 +46,11 @@ namespace slime.runtime.document.source {
 		internal: internal.Export
 	}
 
-	export type Script = slime.loader.Script<void,Export>
+	export type Script = slime.loader.Script<void,Exports>
 
 	export namespace internal {
 		export namespace test {
-			export const subject: slime.runtime.document.source.Export = (function(fifty: fifty.test.kit) {
+			export const subject: slime.runtime.document.source.Exports = (function(fifty: fifty.test.kit) {
 				return fifty.$loader.module("source.js");
 			//@ts-ignore
 			})(fifty)
@@ -86,7 +93,7 @@ namespace slime.runtime.document.source {
 		function(
 			fifty: slime.fifty.test.kit
 		) {
-			var api: Export = fifty.$loader.module("source.js");
+			var api: Exports = fifty.$loader.module("source.js");
 
 			fifty.tests.happy = function() {
 				var input = fifty.$loader.get("test/data/1.html").read(String);

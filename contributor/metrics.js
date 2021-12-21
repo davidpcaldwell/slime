@@ -51,6 +51,56 @@
 						if (node.pathname.basename == "api.html" || /\.api\.html$/.test(node.pathname.basename)) {
 							return "jsapi"
 						}
+						if (/\.html$/.test(node.pathname.basename)) {
+							var markup = node.read(String);
+
+							var parsed = $context.library.document.Document.codec.string.decode(
+								markup
+							);
+
+							var serialized = $context.library.document.Document.codec.string.encode(parsed);
+
+							if (markup != serialized) {
+								throw new Error("Could not parse: " + node.pathname);
+							}
+
+							var getAttribute = function(name) {
+								/**
+								 *
+								 * @param { slime.runtime.document.Element } element
+								 */
+								return function(element) {
+									var found = element.attributes.find(function(attribute) {
+										return attribute.name == name;
+									});
+									return (found) ? found.value : null;
+								}
+							}
+							/**
+							 *
+							 * @param { slime.runtime.document.Element } element
+							 */
+							var isJsapiTest = function(element) {
+								return element.name == "script" && getAttribute("type")(element) == "application/x.jsapi#tests";
+							}
+
+							var isJsapi = false;
+
+							var process = function(node) {
+								if ($context.library.document.Node.isElement(node)) {
+									if (isJsapiTest(node)) isJsapi = true;
+								}
+								if ($context.library.document.Node.isParent(node)) {
+									node.children.forEach(process);
+								}
+							}
+
+							process(parsed);
+
+							if (isJsapi) {
+								return "jsapi";
+							}
+						}
 						if (/\.fifty\.ts$/.test(node.pathname.basename)) {
 							return "fifty"
 						}

@@ -22,6 +22,7 @@
 
 		var model = code.model({
 			library: {
+				document: jsh.document,
 				file: jsh.file
 			}
 		})
