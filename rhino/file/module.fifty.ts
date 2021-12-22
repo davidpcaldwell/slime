@@ -98,15 +98,7 @@ namespace slime.jrunscript.file {
 	}
 
 	export interface Exports {
-		//	TODO	would be nice to get rid of string below, but right now it's unknown exactly how to access MimeType from
-		//			jsh/browser/servlet environments
-		Loader: new (p: { directory: Directory, type?: (path: slime.jrunscript.file.File) => (slime.mime.Type | string) }) => slime.Loader
 		Filesystem: any
-
-		/** @deprecated Use {@link slime.jrunscript.io.Exports["archive"]["zip"]["encode"] } */
-		zip: any
-		/** @deprecated Use {@link slime.jrunscript.io.Exports["archive"]["zip"]["decode"] } */
-		unzip: any
 	}
 
 	export interface Exports {
@@ -152,10 +144,10 @@ namespace slime.jrunscript.file {
 				});
 				fifty.global.jsh.shell.console(listing.toString());
 				//	TODO	brittle; changing structure of module can break it
-				fifty.verify(listing)[0].relative.is("api.Loader.html");
-				fifty.verify(listing)[0].absolute.is(prefix + "/" + "api.Loader.html");
-				fifty.verify(listing)[10].relative.is("java/");
-				fifty.verify(listing)[10].absolute.is(prefix + "/" + "java/");
+				fifty.verify(listing)[0].relative.is("api.html");
+				fifty.verify(listing)[0].absolute.is(prefix + "/" + "api.html");
+				fifty.verify(listing)[9].relative.is("java/");
+				fifty.verify(listing)[9].absolute.is(prefix + "/" + "java/");
 			}
 
 			fifty.tests.action = {};
@@ -536,6 +528,7 @@ namespace slime.jrunscript.file {
 				fifty.load("module-Searchpath.fifty.ts");
 				fifty.load("module-directory.fifty.ts");
 				fifty.load("module-node.fifty.ts");
+				fifty.load("module-Loader.fifty.ts");
 			}
 		}
 	//@ts-ignore
@@ -566,6 +559,11 @@ namespace slime.jrunscript.file {
 	)(fifty);
 
 	export interface Exports {
+		/** @deprecated Use {@link slime.jrunscript.io.Exports["archive"]["zip"]["encode"] } */
+		zip: any
+		/** @deprecated Use {@link slime.jrunscript.io.Exports["archive"]["zip"]["decode"] } */
+		unzip: any
+
 		/** @deprecated Use the {@link slime.jrunscript.io.Exports} provided by the platform. */
 		Streams: slime.jrunscript.io.Exports["Streams"]
 		/** @deprecated Use the {@link slime.jrunscript.io.Exports} provided by the platform. */

@@ -13,7 +13,7 @@ namespace slime.jrunscript.runtime {
 			binary: () => slime.jrunscript.runtime.io.InputStream
 			text: () => slime.jrunscript.runtime.io.Reader
 		}
-		length?: any
+		length?: number
 		modified?: any
 		write?: {
 			(marker: slime.jrunscript.runtime.io.Exports["Streams"]["binary"], mode?: resource.WriteMode): slime.jrunscript.runtime.io.OutputStream
