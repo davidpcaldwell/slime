@@ -7,8 +7,8 @@
 namespace slime.jrunscript.node {
 	export interface Context {
 		module: {
-			file: any,
-			shell: any
+			file: slime.jrunscript.file.Exports
+			shell: slime.jrunscript.shell.Exports
 		},
 		library: {
 			install: any
@@ -21,6 +21,7 @@ namespace slime.jrunscript.node {
 
 	export interface Installation {
 		version: Version
+
 		run: <T>(p: {
 			command?: string
 			project?: slime.jrunscript.file.Directory
@@ -30,12 +31,25 @@ namespace slime.jrunscript.node {
 			stdio?: Parameters<slime.jrunscript.shell.Exports["run"]>[0]["stdio"]
 			evaluate?: (p: any) => T
 		}) => T
+
+		toBashScript: (p: {
+			command?: string
+			project?: string
+			arguments: string[]
+			directory: string
+			environment: {
+				inherit: boolean
+				values: { [x: string]: (string | null) }
+			}
+		}) => string
+
 		modules: {
 			installed: { [key: string]: { version: string } }
 			install: (p: { name: string }) => void
 			require: (p: { name: string, version?: string }) => void
 			uninstall: Function
-		},
+		}
+
 		npm: {
 			run: (p: {
 				command: string

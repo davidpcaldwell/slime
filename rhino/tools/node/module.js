@@ -51,19 +51,36 @@
 				return $context.module.file.Searchpath(elements);
 			})();
 
+			/**
+			 *
+			 * @param { { directory: slime.jrunscript.file.Directory } } install
+			 * @param { slime.jrunscript.file.Directory } project
+			 * @param { string } command
+			 */
+			var getCommand = function(install,project,command) {
+				if (command) {
+					if (project) return project.getFile("node_modules/.bin/" + command);
+					return o.directory.getFile("bin/" + command);
+				}
+				return install.directory.getFile("bin/node");
+			};
+
 			/** @type { slime.jrunscript.node.Installation["run"] } */
 			this.run = function(p) {
-				var command = (function() {
-					if (p.command) {
-						if (p.project) return p.project.getFile("node_modules/.bin/" + p.command);
-						return o.directory.getFile("bin/" + p.command);
-					}
-					return o.directory.getFile("bin/node");
-				})();
+				var command = getCommand(o, p.project, p.command);
+				// var command = (function() {
+				// 	if (p.command) {
+				// 		if (p.project) return p.project.getFile("node_modules/.bin/" + p.command);
+				// 		return o.directory.getFile("bin/" + p.command);
+				// 	}
+				// 	return o.directory.getFile("bin/node");
+				// })();
 				return $context.module.shell.run({
 					command: command,
 					arguments: p.arguments,
 					directory: p.directory,
+					//	TODO	not sure what's going on below with TypeScript, need to dig into the mutator concept
+					//@ts-ignore
 					environment: function(environment) {
 						//	TODO	check for other types besides object, function, falsy
 						//	TODO	can this be simplified further using mutator concept? Maybe; mutator could allow object and just return it
@@ -77,6 +94,39 @@
 					},
 					stdio: p.stdio,
 					evaluate: p.evaluate
+				});
+			};
+
+			/** @type { slime.jrunscript.node.Installation["toBashScript"] } */
+			this.toBashScript = function(p) {
+				var inherit = (function(environment) {
+					if (!environment) return true;
+					if (typeof(environment.inherit) == "undefined") return true;
+					return environment.inherit;
+				})(p.environment);
+
+				var PATH = (function(environment) {
+					var was = (inherit) ? $context.module.shell.PATH : $context.module.file.Searchpath([]);
+					var elements = was.pathnames.slice();
+					elements.unshift(o.directory.getRelativePath("bin"));
+					return $context.module.file.Searchpath(elements);
+				})();
+
+				return $context.module.shell.invocation.toBashScript()({
+					command: getCommand(
+						o,
+						(p.project) ? $context.module.file.Pathname(p.project).directory : void(0),
+						p.command
+					),
+					arguments: p.arguments,
+					directory: p.directory,
+					environment: {
+						inherit: inherit,
+						values: {
+							PATH: PATH.toString(),
+							NODE_PATH: o.directory.getRelativePath("lib/node_modules").toString()
+						}
+					}
 				});
 			}
 
