@@ -5,12 +5,23 @@
 //	END LICENSE
 
 namespace slime.jrunscript.file {
+	export interface Context {
+		$pwd: string
+		pathext: string[]
+		api: {
+			js: any
+			java: any
+			io: slime.jrunscript.io.Exports
+		}
+		cygwin: any
+		addFinalizer: any
+	}
+
 	export interface Node {
 		pathname: Pathname
 		directory: boolean
 		remove: () => void,
 		parent: Directory,
-		move: any
 		copy: (
 			pathname: Pathname | Directory,
 			mode?: {
@@ -34,18 +45,6 @@ namespace slime.jrunscript.file {
 		}
 		length: any
 		modified: Date
-	}
-
-	export interface Context {
-		$pwd: string
-		pathext: string[]
-		api: {
-			js: any
-			java: any
-			io: slime.jrunscript.io.Exports
-		}
-		cygwin: any
-		addFinalizer: any
 	}
 
 	/**
@@ -536,6 +535,7 @@ namespace slime.jrunscript.file {
 
 				fifty.load("module-Searchpath.fifty.ts");
 				fifty.load("module-directory.fifty.ts");
+				fifty.load("module-node.fifty.ts");
 			}
 		}
 	//@ts-ignore
