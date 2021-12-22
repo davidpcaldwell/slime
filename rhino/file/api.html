@@ -65,7 +65,6 @@ END LICENSE
 		scope.context = new $Context();
 		scope.module = $jsapi.loader.module("module.js", scope.context);
 	]]></script>
-	<div>Provides access to filesystems.</div>
 	<div>
 		<h1>Context</h1>
 		<ul>
@@ -86,14 +85,6 @@ END LICENSE
 						<span>The jrunscript/io module.</span>
 					</li>
 				</ul>
-			</li>
-			<li class="value">
-				<div class="name">pathext</div>
-				<span class="type">Array of string</span>
-				<span>
-					A list of file extensions that should be considered "executable." Corresponds to the PATHEXT environment
-					variable present on Microsoft Windows systems.
-				</span>
 			</li>
 			<li class="object">
 				<div class="name">cygwin</div>
@@ -283,59 +274,6 @@ END LICENSE
 			</ul>
 		</div>
 		<ul>
-			<li class="object">
-				<div class="name">filesystems</div>
-				Implementations of an abstract filesystem API that are available to scripts.
-				<div class="label">has properties:</div>
-				<ul>
-					<li class="value">
-						<div class="name">os</div>
-						<span class="type"><a href="#types.filesystem">filesystem</a></span> The underlying operating system's
-						filesystem.
-					</li>
-					<li class="object">
-						<div class="name">cygwin</div>
-						<span>(if $context.cygwin was specified)</span>
-						<span class="type"><a href="#types.filesystem">filesystem</a></span> A Cygwin file system that interoperates
-						with an underlying Windows file system. Along with the normal filesystem API, it supports the
-						following methods:
-						<ul>
-							<li class="function">
-								<div class="name">toUnix</div>
-								<div>Converts filesystem objects from Windows to Cygwin.</div>
-								<div class="arguments">
-									<div class="label">Arguments</div>
-									<ol>
-										<li>An object to convert to a Cygwin object.</li>
-									</ol>
-								</div>
-								<div class="returns">
-									<div class="label">Returns</div>
-									If the argument is a <code>Pathname</code>, the Pathname expressed as a Cygwin path will be
-									returned. If it is a <code>Searchpath</code>, the Searchpath expressed as a Cygwin search path
-									will be returned.  Otherwise, the argument is returned unchanged.
-								</div>
-							</li>
-							<li class="function">
-								<div class="name">toWindows</div>
-								<div>Converts filesystem objects from Cygwin to Windows.</div>
-								<div class="arguments">
-									<div class="label">Arguments</div>
-									<ol>
-										<li>An object to convert to a Windows object.</li>
-									</ol>
-								</div>
-								<div class="returns">
-									<div class="label">Returns</div>
-									If the argument is a <code>Pathname</code>, the Pathname expressed as a Windows path will be
-									returned. If it is a <code>Searchpath</code>, the Searchpath expressed as a Windows search path
-									will be returned.  Otherwise, the argument is returned unchanged.
-								</div>
-							</li>
-						</ul>
-					</li>
-				</ul>
-			</li>
 			<li class="function" jsapi:id="Pathname">
 				<div class="name">Pathname</div>
 				<span>
@@ -445,26 +383,8 @@ END LICENSE
 				</script>
 				<div class="type">
 					<a class="type" name="types.Pathname">Pathname</a>
-					<div>An object representing a path in the local file system.</div>
 					<div class="label">has properties:</div>
 					<ul>
-						<li class="value">
-							<div class="name">basename</div>
-							<span class="type">string</span> (Read-only) The name of this file, excluding any path information;
-							e.g., <code>"ls"</code> if this Pathname represents <code>/bin/ls</code>.
-						</li>
-						<li class="value">
-							<div class="name">parent</div>
-							<span class="type"><a href="#types.Pathname">Pathname</a></span> (Read-only) A <code>Pathname</code>
-							representing the path of the parent directory of this <code>Pathname</code>, or <code>null</code> if
-							this Pathname is at the top of the hierarchy.
-						</li>
-						<li class="value">
-							<div class="name">file</div>
-							<span class="type"><a href="#types.file">file</a></span> (Read-only) An object representing the file
-							located at the location of this <code>Pathname</code>, or <code>null</code> if a (non-directory) file
-							with this <code>Pathname</code> does not exist.
-						</li>
 						<li class="value">
 							<div class="name">directory</div>
 							<span class="type"><a href="#types.directory">directory</a></span> (Read-only) An object representing

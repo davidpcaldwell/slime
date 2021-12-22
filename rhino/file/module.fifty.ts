@@ -4,9 +4,17 @@
 //
 //	END LICENSE
 
+/**
+ * Provides access to filesystems.
+ */
 namespace slime.jrunscript.file {
 	export interface Context {
 		$pwd: string
+
+		/**
+		 * A list of file extensions that should be considered "executable." Corresponds to the PATHEXT environment variable
+		 * present on Microsoft Windows systems.
+		 */
 		pathext: string[]
 		api: {
 			js: any
@@ -79,9 +87,61 @@ namespace slime.jrunscript.file {
 	}
 
 	export interface Exports {
+		/**
+		 * Implementations of an abstract filesystem API that are available to scripts.
+		 */
 		filesystems: {
+			/**
+			 * The underlying operating system's filesystem.
+			 */
 			os: Filesystem
-			cygwin: Filesystem & { toUnix: any, toWindows: any }
+
+			/**
+			 * A Cygwin file system that interoperates with an underlying Windows file system.
+			 *
+			 * Present if `$context.cygwin` was specified.
+			 */
+			cygwin: Filesystem & {
+				//	TODO	use slime.Codec rather than toUnix / toWindows?
+
+				/**
+				 * Converts filesystem objects from Windows to Cygwin.
+				 *
+				 * If the argument is a `Pathname`, the Pathname expressed as a Cygwin path will be returned. If it is a
+				 * `Searchpath`, the Searchpath expressed as a Cygwin search path will be returned.  Otherwise, the argument is
+				 * returned unchanged.
+				 */
+				toUnix: {
+					/**
+					 * @param p A Windows `Pathname`.
+					 */
+					(p: Pathname): Pathname
+
+					/**
+					 * @param p A Windows `Searchpath`.
+					 */
+					(p: Searchpath): Searchpath
+				}
+
+				/**
+				 * Converts filesystem objects from Cygwin to Windows.
+				 *
+				 * If the argument is a `Pathname`, the Pathname expressed as a Windows path will be returned. If it is a
+				 * `Searchpath`, the Searchpath expressed as a Windows search path will be returned.  Otherwise, the argument is
+				 * returned unchanged.
+				 */
+				 toWindows: {
+					/**
+					 * @param p A Cygwin `Pathname`.
+					 */
+					 (p: Pathname): Pathname
+
+					 /**
+					  * @param p A Cygwin `Searchpath`.
+					  */
+					 (p: Searchpath): Searchpath
+				}
+			}
 		}
 		/**
 		 * The current default filesystem.

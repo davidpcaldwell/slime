@@ -24,12 +24,15 @@
 				filter: function(item) {
 					if (item.pathname.basename == ".git") return false;
 					if (item.pathname.basename == "local") return false;
+					//	TODO	currently no subdirectories called "bin," if there were, this might be wrong
+					if (item.pathname.basename == "bin") return false;
 					if (item.directory) return false;
 					return true;
 				},
 				descendants: function(dir) {
 					if (dir.pathname.basename == ".git") return false;
 					if (dir.pathname.basename == "local") return false;
+					if (dir.pathname.basename == "bin") return false;
 					return true;
 				}
 			});

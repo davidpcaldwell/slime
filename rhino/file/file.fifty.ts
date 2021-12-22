@@ -5,10 +5,23 @@
 //	END LICENSE
 
 namespace slime.jrunscript.file {
+	/**
+	 * An object representing a path in the local file system.
+	 */
 	export interface Pathname {
 		directory: Directory
-		basename: string
-		parent: Pathname
+
+		/**
+		 * The name of this file, excluding any path information; for example, `"ls"` if this Pathname represents `/bin/ls`.
+		 */
+		readonly basename: string
+
+		/**
+		 * A `Pathname` representing the path of the parent directory of this `Pathname`, or `null` if this Pathname is at the top
+		 * of the hierarchy.
+		 */
+		readonly parent: Pathname
+
 		createDirectory: (p?: {
 			exists?: (d: Directory) => boolean
 			recursive?: boolean
@@ -17,7 +30,13 @@ namespace slime.jrunscript.file {
 			ifExists?: (d: Directory) => boolean
 		}) => Directory
 		write: slime.jrunscript.runtime.Resource["write"]
-		file: File
+
+		/**
+		 * An object representing the file located at the location of this `Pathname`, or `null` if a (non-directory) file with
+		 * this `Pathname` does not exist.
+		 */
+		readonly file: File
+
 		java: {
 			adapt: () => slime.jrunscript.native.java.io.File
 		}
