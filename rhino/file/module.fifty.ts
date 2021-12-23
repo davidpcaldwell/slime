@@ -21,7 +21,23 @@ namespace slime.jrunscript.file {
 			java: any
 			io: slime.jrunscript.io.Exports
 		}
-		cygwin: any
+
+		/**
+		 * Data about the Cygwin installation.  If this attribute is present in the scope when this object is loaded, it
+		 * will be used to create the `cygwin` property of `filesystems`.
+		 */
+		cygwin?: {
+			/**
+			 * The Windows path of the Cygwin root directory.
+			 */
+			root: string
+
+			/**
+			 * The Windows path of the Cygwin path helper executable.
+			 */
+			paths: string
+		}
+
 		addFinalizer: any
 	}
 
