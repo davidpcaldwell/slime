@@ -26,6 +26,7 @@ namespace slime.jrunscript.tools.github {
 	export interface Context {
 		library: {
 			web: slime.web.Exports
+			io: slime.jrunscript.io.Exports
 			http: slime.jrunscript.http.client.Exports
 			shell: slime.jsh.Global["shell"]
 		}
@@ -47,6 +48,7 @@ namespace slime.jrunscript.tools.github {
 			method: string
 			path: string
 			query: object
+			body: object
 		}
 
 		export interface Operation<I,O> {
@@ -96,6 +98,8 @@ namespace slime.jrunscript.tools.github {
 
 		request: {
 			get: <Q extends object>(path: string) => (q: Q) => rest.Request
+			delete: <Q extends object>(path: string) => (q: Q) => rest.Request
+			post: <B extends object>(path: string) => (b: B) => rest.Request
 
 			test: {
 				parsePathParameters: (specification: { method: string, path: string }, parameters: { [x: string]: string }) => {
@@ -107,10 +111,17 @@ namespace slime.jrunscript.tools.github {
 		}
 
 		response: {
+			empty: (p: slime.jrunscript.http.client.spi.Response) => {}
 			json: {
-				resource: <T>(p: slime.jrunscript.http.client.spi.Response) => T
+				resource: (status: number) => <T>(p: slime.jrunscript.http.client.spi.Response) => T
 				page: <T>(p: slime.jrunscript.http.client.spi.Response) => T
 			}
+		}
+
+		operation: {
+			reposGet: rest.Operation<{ owner: string, repo: string },slime.external.github.rest.paths.ReposGet.Responses.$200>
+			reposCreateForAuthenticatedUser: rest.Operation<slime.external.github.rest.paths.ReposCreateForAuthenticatedUser.RequestBody,slime.external.github.rest.paths.ReposCreateForAuthenticatedUser.Responses.$201>
+			reposDelete: rest.Operation<{ owner: string, repo: string },slime.external.github.rest.paths.ReposDelete.Responses.$204>
 		}
 
 		api: (p: {
@@ -139,9 +150,10 @@ namespace slime.jrunscript.tools.github {
 			var script: Script = fifty.$loader.script("module.js");
 			var subject = script({
 				library: {
+					web: jsh.web,
+					io: jsh.io,
 					http: jsh.http,
-					shell: jsh.shell,
-					web: jsh.web
+					shell: jsh.shell
 				}
 			});
 
@@ -206,10 +218,7 @@ namespace slime.jrunscript.tools.github {
 			}
 
 			fifty.tests.world.ReposGet = function() {
-				var reposGet: rest.Operation<{ owner: string, repo: string },slime.external.github.rest.components.Schemas.FullRepository> = {
-					request: subject.request.get("/repos/{owner}/{repo}"),
-					response: subject.response.json.resource
-				};
+				var reposGet: rest.Operation<{ owner: string, repo: string },slime.external.github.rest.components.Schemas.FullRepository> = subject.operation.reposGet;
 
 				var ask = server.operation(reposGet).argument({
 					owner: "davidpcaldwell",

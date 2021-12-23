@@ -129,8 +129,12 @@
 				return Boolean(jsh.http && jsh.shell && jsh.tools);
 			},
 			load: function() {
-				jsh.tools.github = $loader.module("github/module.js", {
+				/** @type { slime.jrunscript.tools.github.Script } */
+				var script = $loader.script("github/module.js");
+				jsh.tools.github = script({
 					library: {
+						web: jsh.web,
+						io: jsh.io,
 						http: jsh.http,
 						shell: jsh.shell
 					}

@@ -174,7 +174,16 @@
 								password: authentication.token
 							})
 						});
-					})
+					}),
+					body: (request.body) ? {
+						type: $context.library.io.mime.Type.parse("application/json"),
+						stream: (function(body) {
+							var buffer = new $context.library.io.Buffer();
+							buffer.writeText().write(JSON.stringify(body));
+							buffer.writeText().close();
+							return buffer.readBinary();
+						})(request.body)
+					} : void(0)
 				},
 				timeout: {
 					connect: 1000,
@@ -240,9 +249,72 @@
 			return {
 				method: o.method,
 				path: path,
-				query: query
+				query: query,
+				body: void(0)
 			}
 		}
+
+		/** @type { slime.jrunscript.tools.github.Exports["request"] } */
+		var request = {
+			test: {
+				parsePathParameters: parsePathParameters
+			},
+			get: function(path) {
+				return function(q) {
+					return parsePathParameters({
+						method: "GET",
+						path: path
+					}, q);
+				}
+			},
+			delete: function(path) {
+				return function(q) {
+					return parsePathParameters({
+						method: "DELETE",
+						path: path
+					}, q);
+				}
+			},
+			post: function(path) {
+				return function(b) {
+					return {
+						method: "POST",
+						path: path,
+						query: void(0),
+						body: b
+					}
+				}
+			}
+		};
+
+		/** @type { slime.jrunscript.tools.github.Exports["response"] } */
+		var response = {
+			empty: function(p) {
+				if (p.status.code == 204) return {};
+				var body = p.stream.character().asString();
+				throw new Error("Expected 204, got " + p.status.code + "\nbody:\n" + body);
+			},
+			json: {
+				resource: function(status) {
+					return function(p) {
+						if (p.status.code == 404) return null;
+						if (p.status.code == status) {
+							var string = p.stream.character().asString();
+							try {
+								return JSON.parse(string);
+							} catch (e) {
+								throw new Error(e.message + "\response:\n" + string);
+							}
+						} else {
+							throw new Error("Status not " + status + " but " + p.status.code);
+						}
+					}
+				},
+				page: function(p) {
+					return JSON.parse(p.stream.character().asString());
+				}
+			}
+		};
 
 		$export({
 			Session: Session,
@@ -255,28 +327,20 @@
 				}
 			},
 			parseLinkHeader: parseLinkHeader,
-			request: {
-				test: {
-					parsePathParameters: parsePathParameters
+			request: request,
+			response: response,
+			operation: {
+				reposGet: {
+					request: request.get("/repos/{owner}/{repo}"),
+					response: response.json.resource(200)
 				},
-				get: function(path) {
-					return function(q) {
-						return parsePathParameters({
-							method: "GET",
-							path: path
-						}, q);
-					}
+				reposCreateForAuthenticatedUser: {
+					request: request.post("/user/repos"),
+					response: response.json.resource(201)
 				},
-			},
-			response: {
-				json: {
-					resource: function(p) {
-						if (p.status.code == 404) return null;
-						return JSON.parse(p.stream.character().asString());
-					},
-					page: function(p) {
-						return JSON.parse(p.stream.character().asString());
-					}
+				reposDelete: {
+					request: request.delete("/repos/{owner}/{repo}"),
+					response: response.empty
 				}
 			},
 			api: function(api) {
