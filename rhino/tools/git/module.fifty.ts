@@ -187,7 +187,7 @@ namespace slime.jrunscript.git {
 					path: string
 					name?: string
 					branch?: string
-				}) => slime.jrunscript.git.repository.Local
+				}, events?: any) => slime.jrunscript.git.repository.Local
 
 				update: (p: Argument & {
 					init?: boolean,

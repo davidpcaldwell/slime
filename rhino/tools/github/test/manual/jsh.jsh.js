@@ -119,7 +119,7 @@
 					function(p) {
 						var web = startMock();
 						jsh.shell.console("HTTP port: " + web.port + " HTTPS port: " + web.https.port);
-						var token = jsh.shell.jsh.src.getFile("local/github/token");
+						var token = jsh.shell.jsh.src.getFile("local/github/tokens/davidpcaldwell");
 						var command = getCommand({
 							mock: web,
 							optimize: p.options.optimize,
@@ -133,7 +133,7 @@
 				remote: function() {
 					//	TODO	for now, we do not fully automate this command because of the piping
 					var command = getCommand({
-						token: jsh.shell.jsh.src.getFile("local/github/token").read(String)
+						token: jsh.shell.jsh.src.getFile("local/github/tokens/davidpcaldwell").read(String)
 					});
 					emit(command);
 				},
