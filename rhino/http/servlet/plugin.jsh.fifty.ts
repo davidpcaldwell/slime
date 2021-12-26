@@ -62,6 +62,12 @@ namespace slime.jsh.httpd {
 			 */
 			https?: {
 				port: number
+
+				/**
+				 * If provided, the specified keystore will be used when setting up the HTTPS service; one useful way to do this is
+				 * using the `mkcert` integration provided by {@link slime.jsh.shell.tools.Exports}. If this property is omitted, a
+				 * default keystore will be generated and used.
+				 */
 				keystore?: {
 					file: slime.jrunscript.file.File
 					password: string

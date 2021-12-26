@@ -5,14 +5,14 @@
 //	END LICENSE
 
 namespace slime.jsh {
-	interface Global {
+	export interface Global {
 		ui: {
 			application: (
 				p: slime.jsh.ui.application.Argument,
 				events?: $api.events.Function.Receiver
 			) => {
-				port: number,
-				server: any,
+				port: number
+				server: any
 				browser: any
 			}
 
@@ -29,43 +29,52 @@ namespace slime.jsh {
 }
 
 namespace slime.jsh.ui.application {
-	namespace internal {
-		interface Exports {
+	export namespace internal {
+		export interface Exports {
 			Application: slime.jsh.Global["ui"]["application"]
 		}
 	}
 
-	interface ServerConfiguration {
+	export interface ServerConfiguration {
 		/**
 		 * See {@link slime.jsh.httpd.tomcat.Configuration}.
 		 */
 		port?: number
+
+		https?: slime.jsh.httpd.tomcat.Configuration["https"]
+
 		resources: slime.Loader
 		parameters: slime.jsh.httpd.servlet.Parameters
 		servlet: slime.jsh.httpd.servlet.descriptor
 	}
 
-	interface ServerRunning {
+	export interface ServerRunning {
 		server: slime.jsh.httpd.Tomcat
 	}
 
-	type ServerSpecification = ServerRunning | ServerConfiguration
+	export type ServerSpecification = ServerRunning | ServerConfiguration
 
-	interface ChromeConfiguration {
+	export interface ChromeConfiguration {
 		location?: slime.jrunscript.file.Pathname
 		directory?: slime.jrunscript.file.Directory
 		browser?: boolean
 		debug?: {
 			port?: number
 		}
+		hostrules: string[]
 	}
 
-	interface BrowserSpecification {
-		host?: string
-		chrome?: ChromeConfiguration
-
+	export interface BrowserSpecification {
 		proxy?: slime.jrunscript.shell.browser.ProxyConfiguration
 			| ( (p: { port: number }) => slime.jrunscript.shell.browser.ProxyConfiguration )
+
+		/**
+		 * If `proxy` is not specified, this value provides a simple way of mapping all requests for the given host to the HTTP
+		 * port of the application's server, and routing all other requests to their hosts.
+		 */
+		host?: string
+
+		chrome?: ChromeConfiguration
 
 		run?: any
 		zoom?: any
@@ -77,6 +86,9 @@ namespace slime.jsh.ui.application {
 
 	interface ClientSpecification {
 		browser: BrowserConfiguration
+
+		url?: string
+
 		/**
 		 * The path in the server application to open when opening the application.
 		 */
@@ -98,5 +110,5 @@ namespace slime.jsh.ui.application {
 		console?: any
 	}
 
-	type Argument = ServerSpecification & ClientSpecification & EventsSpecification & Deprecated
+	export type Argument = ServerSpecification & ClientSpecification & EventsSpecification & Deprecated
 }

@@ -41,7 +41,8 @@
 		 */
 		var Server = function(p) {
 			var server = new jsh.httpd.Tomcat({
-				port: (p.port) ? p.port : void(0)
+				port: (p.port) ? p.port : void(0),
+				https: p.https
 			});
 			var servlet = jsh.httpd.spi.argument(p.resources,p.servlet);
 			server.map({
@@ -89,7 +90,8 @@
 						var instance = new jsh.shell.browser.chrome.Instance({
 							location: o.location,
 							directory: o.directory,
-							proxy: p.proxy
+							proxy: p.proxy,
+							hostrules: p.hostrules
 						});
 
 						var process;
@@ -233,6 +235,20 @@
 			};
 		}
 
+		var hostToPort = function(name) {
+			/**
+			 * @param { { port: number } } o
+			 * @returns { slime.jrunscript.shell.browser.ProxyConfiguration }
+			 */
+			var rv = function(o) {
+				var code = $loader.get("application-hostToPort.pac").read(String).replace(/__HOST__/g, name).replace(/__PORT__/g, String(o.port));
+				return {
+					code: code
+				}
+			}
+			return rv;
+		};
+
 		/**
 		 * @param { slime.jsh.ui.application.Argument } p
 		 * @param { slime.$api.Events } events
@@ -284,10 +300,13 @@
 				return null;
 			})();
 			var proxy = (proxySettings) ? jsh.shell.browser.ProxyConfiguration(proxySettings) : void(0);
-			var authority = (p.browser.host) ? p.browser.host : "127.0.0.1:" + server.port;
-			var url = "http://" + authority + "/" + ((p.path) ? p.path : "");
+			var url = (function() {
+				if (p.url) return p.url;
+				var authority = (p.browser.host) ? p.browser.host : "127.0.0.1:" + server.port;
+				return "http://" + authority + "/" + ((p.path) ? p.path : "");
+			})();
 			if (p.browser.create) {
-				var browser = p.browser.create({ url: url, proxy: proxy });
+				var browser = p.browser.create({ url: url, proxy: proxy, hostrules: p.browser.chrome.hostrules });
 				jsh.java.Thread.start(function() {
 					browser.run();
 					server.stop();
@@ -310,20 +329,6 @@
 				server: server,
 				browser: browser
 			};
-		};
-
-		var hostToPort = function(name) {
-			/**
-			 * @param { { port: number } } o
-			 * @returns { slime.jrunscript.shell.browser.ProxyConfiguration }
-			 */
-			var rv = function(o) {
-				var code = $loader.get("application-hostToPort.pac").read(String).replace(/__HOST__/g, name).replace(/__PORT__/g, String(o.port));
-				return {
-					code: code
-				}
-			}
-			return rv;
 		};
 
 		$exports.Application = $api.Events.Function(function(p,events) {
