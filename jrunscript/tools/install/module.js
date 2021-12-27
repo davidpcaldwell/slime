@@ -214,7 +214,7 @@
 					file: (p.source.file) ? $context.api.file.Pathname(p.source.file).file : void(0),
 					format: (p.archive && p.archive.format),
 					getDestinationPath: (p.archive && p.archive.folder),
-					to: p.destination.location,
+					to: $context.api.file.Pathname(p.destination.location),
 					replace: p.destination.replace
 				}, events);
 			});

@@ -179,7 +179,7 @@ namespace slime.jrunscript.tools.install {
 	}
 
 	export interface Destination {
-		location: slime.jrunscript.file.Pathname
+		location: string
 		replace?: boolean
 	}
 
@@ -293,7 +293,7 @@ namespace slime.jrunscript.tools.install {
 							file: harness.zip.toString()
 						},
 						destination: {
-							location: to
+							location: to.toString()
 						}
 					});
 
