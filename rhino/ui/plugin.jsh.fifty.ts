@@ -61,7 +61,7 @@ namespace slime.jsh.ui.application {
 		debug?: {
 			port?: number
 		}
-		hostrules: string[]
+		hostrules?: string[]
 	}
 
 	export interface BrowserSpecification {
