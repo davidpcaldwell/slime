@@ -454,6 +454,11 @@ namespace slime.jrunscript.file {
 						},slime.jrunscript.runtime.io.InputStream>
 					}
 
+					/**
+					 * Returns an `Ask` that returns the contents of the file as a string, or `null` if the file does not exist.
+					 * The `Ask` also provides a `notFound` event to allow special handling of the case in which the file does not
+					 * exist.
+					 */
 					string: (pathname: string) => slime.$api.fp.impure.Ask<{
 						notFound: void
 					},string>
@@ -471,6 +476,16 @@ namespace slime.jrunscript.file {
 					pathname: string
 					recursive?: boolean
 				}) => slime.$api.fp.impure.Tell<void>
+
+				/**
+				 * Removes the directory at the given location. If there is nothing at the given location, will fire the `notFound`
+				 * event and return.
+				 */
+				remove: (p: {
+					pathname: string
+				}) => slime.$api.fp.impure.Tell<{
+					notFound: void
+				}>
 			}
 		}
 
@@ -488,7 +503,9 @@ namespace slime.jrunscript.file {
 				fifty.tests.sandbox.filesystem = function() {
 					run(fifty.tests.sandbox.filesystem.Pathname.relative);
 					run(fifty.tests.sandbox.filesystem.Pathname.isDirectory);
+					run(fifty.tests.sandbox.filesystem.File.read);
 					run(fifty.tests.sandbox.filesystem.Directory.require);
+					run(fifty.tests.sandbox.filesystem.Directory.remove);
 				}
 
 				fifty.tests.sandbox.filesystem.Pathname = {
@@ -524,6 +541,19 @@ namespace slime.jrunscript.file {
 						verify(cases).evaluate(isDirectory("subfolder")).is(true);
 					}
 				};
+
+				var here = fifty.$loader.getRelativePath(".").toString();
+
+				fifty.tests.sandbox.filesystem.File = {};
+
+				fifty.tests.sandbox.filesystem.File.read = function() {
+					var me = filesystem.Pathname.relative(here, "module.fifty.ts");
+					var nothing = filesystem.Pathname.relative(here, "nonono");
+					var code = filesystem.File.read.string(me)();
+					verify(code,"code").is.type("string");
+					var no = filesystem.File.read.string(nothing)();
+					verify(no,"no").is.type("null");
+				}
 
 				fifty.tests.sandbox.filesystem.Directory = {};
 
@@ -578,6 +608,30 @@ namespace slime.jrunscript.file {
 						//	verify it was not recreated
 						verify(TMPDIR).getSubdirectory("foo").getFile("a").is.type("object");
 					})
+				}
+
+				fifty.tests.sandbox.filesystem.Directory.remove = function() {
+					var TMPDIR = jsh.shell.TMPDIR.createTemporary({ directory: true });
+					var location = filesystem.Pathname.relative(TMPDIR.toString(), "toRemove");
+					var exists = function(location) {
+						return filesystem.Pathname.isDirectory(location);
+					}
+					verify(location).evaluate(exists).is(false);
+					filesystem.Directory.require({
+						pathname: location
+					})();
+					verify(location).evaluate(exists).is(true);
+					filesystem.Directory.remove({
+						pathname: location
+					})();
+					verify(location).evaluate(exists).is(false);
+
+					var doesNotExist = filesystem.Pathname.relative(TMPDIR.toString(), "notThere");
+					verify(doesNotExist).evaluate(exists).is(false);
+					filesystem.Directory.remove({
+						pathname: doesNotExist
+					})();
+					verify(doesNotExist).evaluate(exists).is(false);
 				}
 			}
 		//@ts-ignore

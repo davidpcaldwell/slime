@@ -137,6 +137,14 @@
 								was.createDirectoryAt(peer);
 							}
 						});
+					},
+					remove: function(p) {
+						return $api.Function.impure.tell(function(e) {
+							var peer = was.newPeer(p.pathname);
+							if (!peer.exists()) e.fire("notFound");
+							if (peer.exists() && !peer.isDirectory()) throw new Error();
+							if (peer.exists() && peer.isDirectory()) was.remove(peer);
+						});
 					}
 				}
 			};
