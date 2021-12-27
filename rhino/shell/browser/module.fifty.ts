@@ -5,7 +5,7 @@
 //	END LICENSE
 
 namespace slime.jrunscript.shell.browser {
-	interface Context {
+	export interface Context {
 		api: {
 			httpd: {
 				Tomcat: new (p: {}) => jsh.httpd.Tomcat
@@ -13,7 +13,7 @@ namespace slime.jrunscript.shell.browser {
 		}
 	}
 
-	interface ProxyConfiguration {
+	export interface ProxyConfiguration {
 		/**
 		 * JavaScript code for a Proxy Auto-Configuration file, allowing the use of JavaScript code to define the mapping between
 		 * hosts and proxies. See the [Mozilla Developer Network](https://developer.mozilla.org/en-US/docs/Web/HTTP/Proxy_servers_and_tunneling/Proxy_Auto-Configuration_PAC_file)
@@ -27,7 +27,7 @@ namespace slime.jrunscript.shell.browser {
 		port?: number
 	}
 
-	interface ProxyTools {
+	export interface ProxyTools {
 		Server: () => {
 			url: string
 			start: () => void
@@ -37,18 +37,18 @@ namespace slime.jrunscript.shell.browser {
 		response: slime.servlet.Response
 	}
 
-	interface Chrome {
+	export interface Chrome {
 		Instance: new (u: {
 			location?: slime.jrunscript.file.Pathname
 			directory?: slime.jrunscript.file.Directory
-			proxy?: slime.jrunscript.shell.browser.ProxyTools
+			proxy?: ProxyTools
 			hostrules?: string[]
 			install?: boolean
 			devtools?: boolean
 		}) => any
 	}
 
-	interface Exports {
+	export interface Exports {
 		inject: any
 
 		chrome: Chrome

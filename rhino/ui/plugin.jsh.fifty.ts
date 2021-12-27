@@ -44,7 +44,7 @@ namespace slime.jsh.ui.application {
 		https?: slime.jsh.httpd.tomcat.Configuration["https"]
 
 		resources: slime.Loader
-		parameters: slime.jsh.httpd.servlet.Parameters
+		parameters?: slime.jsh.httpd.servlet.Parameters
 		servlet: slime.jsh.httpd.servlet.descriptor
 	}
 

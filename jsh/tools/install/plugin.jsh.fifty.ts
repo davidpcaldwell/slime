@@ -44,7 +44,7 @@ namespace slime.jsh.shell.tools {
 			isTrusted: () => boolean
 
 			/**
-			 * Creates a PKCS12 certificate pertaining to the given hosts at
+			 * Creates a PKCS12 certificate pertaining to the given hosts at the given location.
 			 */
 			pkcs12: (p: {
 				/**

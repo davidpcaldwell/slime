@@ -49,8 +49,6 @@
 					}
 				}
 			},
-			//	TODO	should be able to omit if empty
-			parameters: {},
 			browser: {
 				chrome: {
 					browser: true,
