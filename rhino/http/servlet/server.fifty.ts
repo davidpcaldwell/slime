@@ -85,14 +85,12 @@ namespace slime.servlet {
 				api: slime.servlet.internal.api
 			}
 
-			export interface Servlet {
+			export interface Servlet extends slime.jrunscript.native.inonit.script.servlet.Servlet.Script {
 				reload: (script: slime.servlet.Scope["$exports"]) => void
-				service: (_request: any, _response: any) => void
-				destroy: () => void
 			}
 
 			export interface Exports {
-				Servlet: new (script: slime.servlet.Scope["$exports"]) => Servlet
+				Servlet: (script: slime.servlet.Scope["$exports"]) => Servlet
 			}
 
 			export type Script = slime.loader.Script<Context,Exports>

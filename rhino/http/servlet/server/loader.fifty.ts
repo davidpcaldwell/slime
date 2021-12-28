@@ -49,10 +49,18 @@ namespace slime.servlet {
 	}
 
 	export namespace internal.server.loader {
+		export interface Context {
+			api: {
+				web: slime.web.Exports
+			}
+		}
+
 		export interface Export {
 			Request: slime.servlet.httpd["Request"]
 			Handler: slime.servlet.httpd["Handler"]
 			http: slime.servlet.httpd["http"]
 		}
+
+		export type Script = slime.loader.Script<Context,Export>
 	}
 }

@@ -23,7 +23,7 @@ namespace slime.servlet {
 		java: slime.jrunscript.host.Exports
 		io: slime.jrunscript.io.Exports
 		web: slime.web.Exports
-		$java: any
+		$java: slime.jrunscript.runtime.Exports
 		$reload?: () => void
 	}
 
@@ -35,7 +35,8 @@ namespace slime.servlet {
 	}
 
 	/**
-	 * Various objects and APIs that allow a servlet to interact with its environment, answer requests, and do various computations.
+	 * Various objects and APIs that allow a servlet to interact with its environment, answer requests, and do various computations,
+	 * along with an `$exports` property to which servlet scripts can attach their implementations.
 	 */
 	export interface Scope {
 		httpd: httpd
@@ -78,7 +79,7 @@ namespace slime.servlet {
 				 */
 				parameters?: { [x: string]: any }
 
-				loadServletIntoScope?: (scope: Scope) => void
+				loadServletScriptIntoScope?: (scope: Scope) => void
 
 				$slime?: slime.jrunscript.runtime.Exports
 				script?: (servlet: slime.servlet.internal.server.Servlet) => void

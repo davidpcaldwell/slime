@@ -411,6 +411,8 @@ namespace slime.jrunscript {
 			export namespace servlet {
 				export namespace Servlet {
 					export interface Script {
+						service: (_request: any, _response: any) => void
+						destroy: () => void
 					}
 				}
 

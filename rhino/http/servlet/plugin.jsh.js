@@ -322,7 +322,7 @@
 
 													Loader: jsh.io.Loader,
 
-													loadServletIntoScope: function(scope) {
+													loadServletScriptIntoScope: function(scope) {
 														servletImplementation.load(scope);
 													},
 

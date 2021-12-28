@@ -7,7 +7,7 @@
 //@ts-check
 (
 	/**
-	 * @param { { api: { web: slime.web.Exports, http: slime.jrunscript.http.client.Exports }} } $context
+	 * @param { slime.servlet.internal.server.loader.Context } $context
 	 * @param { slime.loader.Export<slime.servlet.internal.server.loader.Export> } $export
 	 */
 	function($context,$export) {

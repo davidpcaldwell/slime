@@ -287,9 +287,9 @@
 		})();
 
 		/**
-		 * Loads the servlet into the scope; used both on initial load and if a reload is requested.
+		 * Loads the servlet script into the scope; used both on initial load and if a reload is requested.
 		 */
-		var loadServletIntoScope = (
+		var loadServletScriptIntoScope = (
 			/**
 			 *
 			 * @returns { (scope: slime.servlet.Scope) => void }
@@ -306,7 +306,7 @@
 					};
 					return rv;
 				} else if (isScript($host)) {
-					return $host.loadServletIntoScope;
+					return $host.loadServletScriptIntoScope;
 				} else {
 					throw new Error();
 				}
@@ -328,21 +328,23 @@
 			Handler: void(0)
 		};
 
-		loaders.api.run(
-			//	Populates the Request, http and Handler properties of httpd
-			"loader.js",
-			{
-				$export: function(value) {
-					Object.assign(scope.httpd, value);
-				},
-				$context: {
-					api: {
-						web: scope.httpd.web
+		(
+			function loadLoaderScript() {
+				//	Populates the Request, http and Handler properties of httpd
+				var loader = (
+					function() {
+						/** @type { slime.servlet.internal.server.loader.Script } */
+						var script = loaders.api.script("loader.js");
+						return script({
+							api: {
+								web: scope.httpd.web
+							}
+						});
 					}
-				},
-				$loader: loaders.api
+				)();
+				Object.assign(scope.httpd, loader);
 			}
-		);
+		)();
 
 		if (loaders.script) {
 			//	TODO	this should be a module loader, basically, for the code itself, so should somehow resolve relative paths in the
@@ -352,26 +354,32 @@
 
 		scope.$parameters = $parameters;
 
-		loadServletIntoScope(scope);
+		loadServletScriptIntoScope(scope);
 
-		/**
-		 * @type { slime.servlet.internal.server.Exports }
-		 */
-		var server = (function() {
-			if (isScript($host)) {
-				return $host.server;
-			} else if ($servlet) {
-				return loaders.container.module("WEB-INF/server.js", {
-					api: api
-				});
+		var servlet = (
+			function() {
+				/**
+				 * @type { slime.servlet.internal.server.Exports }
+				 */
+				var server = (function() {
+					if (isScript($host)) {
+						return $host.server;
+					} else if ($servlet) {
+						/** @type { slime.servlet.internal.server.Script } */
+						var script = loaders.container.script("WEB-INF/server.js");
+						return script({
+							api: api
+						});
+					}
+				})();
+
+				return server.Servlet(scope.$exports);
 			}
-		})();
-
-		var servlet = new server.Servlet(scope.$exports);
+		)();
 
 		scope.httpd.$reload = (isScript($host)) ? function() {
 			servlet.destroy();
-			loadServletIntoScope(scope);
+			loadServletScriptIntoScope(scope);
 			servlet.reload(scope.$exports);
 		} : null;
 

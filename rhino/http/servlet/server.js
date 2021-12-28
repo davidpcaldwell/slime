@@ -175,85 +175,87 @@
 
 		var Servlet = (
 			/**
-			 * @constructor
 			 * @param { slime.servlet.Scope["$exports"] } script
+			 * @returns { slime.servlet.internal.server.Servlet }
 			 */
 			function(script) {
-				this.reload = function(reloaded) {
-					script = reloaded;
-				};
+				return {
+					reload: function(reloaded) {
+						script = reloaded;
+					},
 
-				/** @type { slime.servlet.internal.native.Servlet.Script["service"] } */
-				this.service = function(_request,_response) {
-					debug("Received Java request: method=" + _request.getMethod() + " path=" + _request.getPathInfo());
-					try {
-						var request = new Request(_request);
-						debug("Received request: " + request);
-						var response = script.handle(request);
-						if (typeof(response) == "undefined") {
-							//	TODO	What would it take to write our own error page? Should we try to throw ServletException, for example?
-							//			Should we use setStatus and write some sort of error page normally?
-							//	TODO	log something
-							debugger;
-							_response.sendError(Packages.javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Script returned undefined");
-						} else if (response === null) {
-							//	TODO	log something
-							debugger;
-							_response.sendError(Packages.javax.servlet.http.HttpServletResponse.SC_NOT_FOUND);
-						} else if (typeof(response) == "object" && response.status && typeof(response.status.code) == "number") {
-							_response.setStatus(response.status.code);
-							if (response.headers) {
-								response.headers.forEach(function(header) {
-									_response.addHeader(header.name, header.value);
-								});
-							}
+					/** @type { slime.servlet.internal.native.Servlet.Script["service"] } */
+					service: function(_request,_response) {
+						debug("Received Java request: method=" + _request.getMethod() + " path=" + _request.getPathInfo());
+						try {
+							var request = new Request(_request);
+							debug("Received request: " + request);
+							var response = script.handle(request);
+							if (typeof(response) == "undefined") {
+								//	TODO	What would it take to write our own error page? Should we try to throw ServletException, for example?
+								//			Should we use setStatus and write some sort of error page normally?
+								//	TODO	log something
+								debugger;
+								_response.sendError(Packages.javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Script returned undefined");
+							} else if (response === null) {
+								//	TODO	log something
+								debugger;
+								_response.sendError(Packages.javax.servlet.http.HttpServletResponse.SC_NOT_FOUND);
+							} else if (typeof(response) == "object" && response.status && typeof(response.status.code) == "number") {
+								_response.setStatus(response.status.code);
+								if (response.headers) {
+									response.headers.forEach(function(header) {
+										_response.addHeader(header.name, header.value);
+									});
+								}
 
-							if (response.body && response.body["type"]) {
-								//	Documented to accept slime.MimeType and string
-								_response.setContentType(String(response.body["type"]));
-							}
-							if (response.body && typeof(response.body["length"]) == "number") {
-								_response.setContentLength(response.body["length"]);
-							}
-							if (response.body && response.body["modified"] instanceof Date) {
-								//	TODO	basically untested
-								_response.setDateHeader("Last-Modified", response.body["modified"].getTime());
-								var ifModifiedSince = _request.getDateHeader("If-Modified-Since");
-								if (ifModifiedSince != -1) {
-									if (response.body["modified"].getTime() <= ifModifiedSince) {
-										_response.setStatus(Packages.javax.servlet.http.HttpServletResponse.SC_NOT_MODIFIED);
-										return;
+								if (response.body && response.body["type"]) {
+									//	Documented to accept slime.MimeType and string
+									_response.setContentType(String(response.body["type"]));
+								}
+								if (response.body && typeof(response.body["length"]) == "number") {
+									_response.setContentLength(response.body["length"]);
+								}
+								if (response.body && response.body["modified"] instanceof Date) {
+									//	TODO	basically untested
+									_response.setDateHeader("Last-Modified", response.body["modified"].getTime());
+									var ifModifiedSince = _request.getDateHeader("If-Modified-Since");
+									if (ifModifiedSince != -1) {
+										if (response.body["modified"].getTime() <= ifModifiedSince) {
+											_response.setStatus(Packages.javax.servlet.http.HttpServletResponse.SC_NOT_MODIFIED);
+											return;
+										}
 									}
 								}
+								//	TODO	implement more intelligent caching
+								//	For now, be conservative; force re-validation of every request
+								_response.addHeader("Cache-Control", "max-age=0");
+								if (response.body && response.body["read"] && response.body["read"].binary) {
+									$context.api.io.Streams.binary.copy(response.body["read"].binary(),_response.getOutputStream());
+								// } else if (response.body && response.body.read && response.body.read.text) {
+								// 	var _stream = response.body.read.text().java.adapt();
+								// 	_streams.copy(_stream, _response.getWriter());
+								// 	_stream.close();
+								//	TODO	Not sure whether this if-else chain could open stream multiple times
+								} else if (response.body && !response.body["stream"] && response.body["string"]) {
+									//	Wrap in java.lang.String because Nashorn string type does not unambiguously match .write() signature
+									_response.getWriter().write(new Packages.java.lang.String(response.body["string"]));
+								} else if (response.body && response.body["stream"]) {
+									$context.api.io.Streams.binary.copy(response.body["stream"],_response.getOutputStream());
+								}
+							} else {
+								throw new TypeError("Servlet response is not of a known type.");
 							}
-							//	TODO	implement more intelligent caching
-							//	For now, be conservative; force re-validation of every request
-							_response.addHeader("Cache-Control", "max-age=0");
-							if (response.body && response.body["read"] && response.body["read"].binary) {
-								$context.api.io.Streams.binary.copy(response.body["read"].binary(),_response.getOutputStream());
-							// } else if (response.body && response.body.read && response.body.read.text) {
-							// 	var _stream = response.body.read.text().java.adapt();
-							// 	_streams.copy(_stream, _response.getWriter());
-							// 	_stream.close();
-							//	TODO	Not sure whether this if-else chain could open stream multiple times
-							} else if (response.body && !response.body["stream"] && response.body["string"]) {
-								//	Wrap in java.lang.String because Nashorn string type does not unambiguously match .write() signature
-								_response.getWriter().write(new Packages.java.lang.String(response.body["string"]));
-							} else if (response.body && response.body["stream"]) {
-								$context.api.io.Streams.binary.copy(response.body["stream"],_response.getOutputStream());
-							}
-						} else {
-							throw new TypeError("Servlet response is not of a known type.");
+						} catch (e) {
+							debug("Error creating request peer: " + e + " stack " + e.stack);
+							_response.sendError(Packages.javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 						}
-					} catch (e) {
-						debug("Error creating request peer: " + e + " stack " + e.stack);
-						_response.sendError(Packages.javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-					}
-				}
+					},
 
-				this.destroy = function() {
-					if (script.destroy) {
-						script.destroy();
+					destroy: function() {
+						if (script.destroy) {
+							script.destroy();
+						}
 					}
 				}
 			}
