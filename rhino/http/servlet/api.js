@@ -286,26 +286,37 @@
 			}
 		})();
 
-		var $code = (function() {
-			if ($servlet) {
-				var path = String($servlet.path);
-				var tokens = path.split("/");
-				var basename = tokens[tokens.length-1];
-				return function(scope) {
-					Packages.java.lang.System.err.println("Loading servlet from " + path);
-					loaders.script.run(basename,scope);
-				};
-			} else if (isScript($host)) {
-				return $host.getCode;
-			} else {
-				throw new Error();
+		/**
+		 * Loads the servlet into the scope; used both on initial load and if a reload is requested.
+		 */
+		var loadServletIntoScope = (
+			/**
+			 *
+			 * @returns { (scope: slime.servlet.Scope) => void }
+			 */
+			function() {
+				if ($servlet) {
+					var path = String($servlet.path);
+					var tokens = path.split("/");
+					var basename = tokens[tokens.length-1];
+					/** @type { (scope: slime.servlet.Scope) => void } */
+					var rv = function(scope) {
+						Packages.java.lang.System.err.println("Loading servlet from " + path);
+						loaders.script.run(basename,scope);
+					};
+					return rv;
+				} else if (isScript($host)) {
+					return $host.loadServletIntoScope;
+				} else {
+					throw new Error();
+				}
 			}
-		}).call(this);
+		)();
 
 		scope.httpd = {
 			$java: (function() {
 				if ($java && $servlet) return $java;
-				if (isScript($host)) return $host.$java;
+				if (isScript($host)) return $host.$slime;
 			})(),
 			loader: (loaders.container) ? loaders.container : void(0),
 			js: api.js,
@@ -341,7 +352,7 @@
 
 		scope.$parameters = $parameters;
 
-		$code(scope);
+		loadServletIntoScope(scope);
 
 		/**
 		 * @type { slime.servlet.internal.server.Exports }
@@ -360,7 +371,7 @@
 
 		scope.httpd.$reload = (isScript($host)) ? function() {
 			servlet.destroy();
-			$code(scope);
+			loadServletIntoScope(scope);
 			servlet.reload(scope.$exports);
 		} : null;
 

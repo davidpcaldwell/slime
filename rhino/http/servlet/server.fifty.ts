@@ -5,14 +5,14 @@
 //	END LICENSE
 
 namespace slime.servlet {
-	interface Header {
+	export interface Header {
 		name: string
 		value: string
 	}
 
-	type Headers = Array<Header> & { value: Function }
+	export type Headers = Array<Header> & { value: Function }
 
-	interface Request {
+	export interface Request {
 		uri: slime.web.Url
 		source: {
 			ip: string
@@ -53,8 +53,8 @@ namespace slime.servlet {
 		}
 	}
 
-	namespace internal {
-		namespace native {
+	export namespace internal {
+		export namespace native {
 			interface HttpServletRequest {
 				getMethod(): slime.jrunscript.native.java.lang.String
 				getPathInfo(): slime.jrunscript.native.java.lang.String
@@ -62,7 +62,7 @@ namespace slime.servlet {
 			}
 
 			interface HttpServletResponse {
-				sendError(code: number, string?: message)
+				sendError(code: number, message?: string)
 				setStatus(code: number)
 				addHeader(name: string, value: string)
 				setContentType(type: string)
@@ -72,26 +72,44 @@ namespace slime.servlet {
 				getOutputStream(): slime.jrunscript.native.java.io.OutputStream
 			}
 
-			namespace Servlet {
-				interface Script {
+			export namespace Servlet {
+				export interface Script {
 					service(_request: HttpServletRequest, _response: HttpServletResponse)
 					destroy()
 				}
 			}
 		}
+
+		export namespace server {
+			export interface Context {
+				api: slime.servlet.internal.api
+			}
+
+			export interface Servlet {
+				reload: (script: slime.servlet.Scope["$exports"]) => void
+				service: (_request: any, _response: any) => void
+				destroy: () => void
+			}
+
+			export interface Exports {
+				Servlet: new (script: slime.servlet.Scope["$exports"]) => Servlet
+			}
+
+			export type Script = slime.loader.Script<Context,Exports>
+		}
 	}
 
-	interface Response {
+	export interface Response {
 		status: { code: number }
 		headers?: Header[]
 		body?: (
 			slime.jrunscript.runtime.Resource
 			| {
-				type: string | slime.MimeType,
+				type: string | slime.mime.Type,
 				string: string
 			}
 			| {
-				type: string | slime.MimeType,
+				type: string | slime.mime.Type,
 				stream: any
 			}
 		)

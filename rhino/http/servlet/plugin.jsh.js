@@ -96,7 +96,7 @@
 						name: file.pathname.basename
 					});
 					if (type) return type;
-				};
+				}
 
 				jsh.httpd.nugget = {};
 				jsh.httpd.nugget.getMimeType = getMimeType;
@@ -178,7 +178,6 @@
 						throw new Error("Bad argument.");
 					}
 				};
-
 
 				jsh.httpd.Resources = $loader.module("plugin.jsh.resources.js", {
 					getMimeType: getMimeType,
@@ -279,9 +278,16 @@
 								//			reflect this
 								loader: void(0)
 							};
-							var server = $loader.module("server.js", {
-								api: api
-							});
+
+							var server = (
+								function() {
+									/** @type { slime.servlet.internal.server.Script } */
+									var script = $loader.script("server.js");
+									return script({
+										api: api
+									});
+								}
+							)();
 
 							var addContext = function(path,base) {
 								return tomcat.addContext(path, base.pathname.java.adapt().getCanonicalPath());
@@ -316,12 +322,12 @@
 
 													Loader: jsh.io.Loader,
 
-													getCode: function(scope) {
+													loadServletIntoScope: function(scope) {
 														servletImplementation.load(scope);
 													},
 
 													//	TODO	should not needlessly rename this
-													$java: $slime,
+													$slime: $slime,
 
 													server: server,
 													api: api,

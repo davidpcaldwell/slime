@@ -59,17 +59,30 @@ namespace slime.servlet {
 
 			export interface jsh {
 				api?: slime.servlet.internal.api
-				loaders?: any
+
+				loaders?: {
+					api: slime.Loader
+					script: slime.Loader
+					container: slime.Loader
+				}
+
 				Loader: {
 					tools: {
 						toExportScope: slime.runtime.Exports["loader"]["tools"]["toExportScope"]
 					}
 				}
+
+				/**
+				 * The set of parameters to provide to the servlet. Note that unlike native Java servlets, `jsh`-embedded servlets
+				 * may provide parameters of any type.
+				 */
 				parameters?: { [x: string]: any }
-				getCode?: any
-				$java?: any
-				script?: any
-				server?: any
+
+				loadServletIntoScope?: (scope: Scope) => void
+
+				$slime?: slime.jrunscript.runtime.Exports
+				script?: (servlet: slime.servlet.internal.server.Servlet) => void
+				server?: slime.servlet.internal.server.Exports
 			}
 		}
 
@@ -88,15 +101,5 @@ namespace slime.servlet {
 		}
 
 		export type $host = $host.Java | $host.jsh
-
-		export namespace server {
-			export interface Exports {
-				Servlet: new (script: slime.servlet.Scope["$exports"]) => {
-					reload: (script: slime.servlet.Scope["$exports"]) => void
-					service: (_request: any, _response: any) => void
-					destroy: () => void
-				}
-			}
-		}
 	}
 }
