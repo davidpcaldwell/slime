@@ -82,7 +82,7 @@ namespace slime.jsh.ui.application {
 		create?: any
 	}
 
-	type BrowserConfiguration = BrowserSpecification | ((p: any) => void)
+	export type BrowserConfiguration = BrowserSpecification | ((p: any) => void)
 
 	interface ClientSpecification {
 		browser: BrowserConfiguration
