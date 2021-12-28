@@ -312,6 +312,17 @@
 											/** @type { { $host: slime.servlet.internal.$host.jsh } } */
 											var apiScope = {
 												$host: {
+													context: {
+														stdio: {
+															output: function(string) {
+																jsh.shell.echo(string);
+															},
+															error: function(string) {
+																jsh.shell.console(string);
+															}
+														}
+													},
+
 													parameters: (servletDeclaration.parameters) ? servletDeclaration.parameters : {},
 
 													loaders: {

@@ -13,6 +13,17 @@ namespace slime.servlet {
 	}
 
 	export interface httpd {
+		context: {
+			/**
+			 * Provides a limited interface to the "standard I/O" streams of the server. These conceptually map to the
+			 * `stdout` and `stderr` streams of the server process, but may be altered by embedders.
+			 */
+			stdio: {
+				output: (line: string) => void
+				error: (line: string) => void
+			}
+		}
+
 		loader: slime.Loader
 
 		/**
@@ -23,7 +34,11 @@ namespace slime.servlet {
 		java: slime.jrunscript.host.Exports
 		io: slime.jrunscript.io.Exports
 		web: slime.web.Exports
+
+		$slime: slime.jrunscript.runtime.Exports
+		/** @deprecated Use `$slime`. */
 		$java: slime.jrunscript.runtime.Exports
+
 		$reload?: () => void
 	}
 
@@ -59,6 +74,8 @@ namespace slime.servlet {
 			}
 
 			export interface jsh {
+				context: slime.servlet.httpd["context"]
+
 				api?: slime.servlet.internal.api
 
 				loaders?: {

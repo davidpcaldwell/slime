@@ -313,11 +313,32 @@
 			}
 		)();
 
+		var $slime = (function() {
+			if ($java && $servlet) return $java;
+			if (isScript($host)) return $host.$slime;
+		})();
+
+		var context = (
+			/**
+			 * @returns { slime.servlet.httpd["context"] }
+			 */
+			function() {
+				if (isScript($host)) return $host.context;
+				return {
+					stdio: {
+						output: function(line) {
+							Packages.java.lang.System.out.println(line);
+						},
+						error: function(line) {
+							Packages.java.lang.System.err.println(line);
+						}
+					}
+				}
+			}
+		)();
+
 		scope.httpd = {
-			$java: (function() {
-				if ($java && $servlet) return $java;
-				if (isScript($host)) return $host.$slime;
-			})(),
+			context: context,
 			loader: (loaders.container) ? loaders.container : void(0),
 			js: api.js,
 			java: api.java,
@@ -325,7 +346,9 @@
 			web: api.web,
 			Request: void(0),
 			http: void(0),
-			Handler: void(0)
+			Handler: void(0),
+			$slime: $slime,
+			$java: $slime
 		};
 
 		(
