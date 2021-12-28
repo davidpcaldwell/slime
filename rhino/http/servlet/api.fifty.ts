@@ -58,9 +58,13 @@ namespace slime.servlet {
 			}
 
 			export interface jsh {
-				api?: any
+				api?: slime.servlet.internal.api
 				loaders?: any
-				Loader: any
+				Loader: {
+					tools: {
+						toExportScope: slime.runtime.Exports["loader"]["tools"]["toExportScope"]
+					}
+				}
 				parameters?: { [x: string]: any }
 				getCode?: any
 				$java?: any

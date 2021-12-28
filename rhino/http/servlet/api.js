@@ -75,11 +75,13 @@
 				rv.resources = Packages.inonit.script.engine.Code.Loader.create($host.getServlet().getServletConfig().getServletContext().getResource("/"));
 				rv.path = $host.getServlet().getServletConfig().getInitParameter("script");
 				rv.parameters = (function() {
+					/** @type { { [x: string]: string }} */
 					var rv = {};
 					var _enumeration = $host.getServlet().getServletConfig().getInitParameterNames();
 					while(_enumeration.hasMoreElements()) {
 						var _key = _enumeration.nextElement();
-						rv[_key] = $host.getServlet().getServletConfig().getInitParameter(_key);
+						var key = String(_key);
+						rv[key] = String($host.getServlet().getServletConfig().getInitParameter(_key));
 					}
 					return rv;
 				})();
@@ -155,15 +157,16 @@
 						},
 						nojavamail: false
 					});
-					var web = code.web(loader.file("WEB-INF/slime/js/web/context.java.js"));
-					rv.js.web = web;
-					$java.$api.deprecate(rv.js, "web");
-					rv.web = web;
+					rv.web = code.web(loader.file("WEB-INF/slime/js/web/context.java.js"));
 					rv.loader = {
 						paths: function(prefix) {
 							return $servlet.getResourcePaths(prefix);
 						}
 					}
+
+					rv.js.web = rv.web;
+					$java.$api.deprecate(rv.js, "web");
+
 					return rv;
 				}
 			}
@@ -277,11 +280,7 @@
 		 */
 		var $parameters = (function() {
 			if ($servlet) {
-				var rv = {};
-				for (var x in $servlet.parameters) {
-					rv[x] = String($servlet.parameters[x]);
-				}
-				return rv;
+				return $servlet.parameters;
 			} else if (isScript($host)) {
 				return $host.parameters;
 			}
@@ -313,13 +312,13 @@
 			java: api.java,
 			io: api.io,
 			web: api.web,
-			http: void(0),
 			Request: void(0),
+			http: void(0),
 			Handler: void(0)
 		};
 
 		loaders.api.run(
-			//	Populates the http and Handler methods of httpd
+			//	Populates the Request, http and Handler properties of httpd
 			"loader.js",
 			{
 				$export: function(value) {

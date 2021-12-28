@@ -299,6 +299,11 @@ namespace slime.jrunscript {
 					keySet(): any
 				}
 
+				export interface Enumeration<T> {
+					hasMoreElements(): boolean
+					nextElement(): T
+				}
+
 				export interface Date {
 					getTime(): number
 				}
@@ -410,7 +415,19 @@ namespace slime.jrunscript {
 				}
 
 				export interface Servlet {
-					getServletConfig(): any
+					getServletConfig(): {
+						getServletContext(): {
+							getResource(path: string): slime.jrunscript.native.java.net.URL
+							getMimeType(file: string): slime.jrunscript.native.java.lang.String
+						}
+
+						getInitParameter: {
+							(name: string): slime.jrunscript.native.java.lang.String
+							(name: slime.jrunscript.native.java.lang.String): slime.jrunscript.native.java.lang.String
+						}
+
+						getInitParameterNames(): slime.jrunscript.native.java.util.Enumeration<slime.jrunscript.native.java.lang.String>
+					}
 					getServletContext(): any
 				}
 			}
@@ -651,7 +668,14 @@ namespace slime.jrunscript {
 				}
 				engine: {
 					Code: {
-						Loader: any
+						Loader: {
+							create: (url: slime.jrunscript.native.java.net.URL) => slime.jrunscript.native.inonit.script.engine.Code.Loader
+
+							github: any
+							Resource: any
+							URI: any
+							zip: any
+						}
 					}
 				}
 				rhino: {

@@ -270,10 +270,14 @@
 							tomcat.setPort(port);
 
 							var api = {
+								$api: $api,
 								js: jsh.js,
 								java: jsh.java,
 								io: jsh.io,
-								web: jsh.web
+								web: jsh.web,
+								//	TODO	explain; is this unnecessary for jsh servlets? May want to refactor types in api.js to
+								//			reflect this
+								loader: void(0)
 							};
 							var server = $loader.module("server.js", {
 								api: api
