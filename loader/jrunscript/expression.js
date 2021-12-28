@@ -612,7 +612,7 @@
 		loader.Loader = (function(was) {
 			/**
 			 * @this { slime.Loader & { java: any } }
-			 * @param { slime.jrunscript.runtime.Loader.Source } p
+			 * @param { slime.jrunscript.runtime.loader.Source } p
 			 */
 			var rv = function(p) {
 				//	Satisfy TypeScript

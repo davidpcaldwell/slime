@@ -14,7 +14,12 @@ namespace slime.servlet {
 
 	export interface httpd {
 		loader: slime.Loader
+
+		/**
+		 * @deprecated
+		 */
 		js: any
+
 		java: slime.jrunscript.host.Exports
 		io: slime.jrunscript.io.Exports
 		web: slime.web.Exports
@@ -61,6 +66,20 @@ namespace slime.servlet {
 				$java?: any
 				script?: any
 				server?: any
+			}
+		}
+
+		export interface api {
+			$api: slime.$api.Global
+			/**
+			 * @deprecated
+			 */
+			js: any
+			java: slime.jrunscript.host.Exports
+			io: slime.jrunscript.io.Exports
+			web: slime.web.Exports
+			loader: {
+				paths: (prefix: string) => string[]
 			}
 		}
 

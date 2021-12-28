@@ -60,6 +60,10 @@
 					null
 				);
 				return rv;
+			} else if (isScript($host)) {
+				return void(0);
+			} else {
+				throw new Error("Unreachable.");
 			}
 		})();
 
@@ -101,7 +105,7 @@
 		})();
 
 		var toExportScope = (function() {
-			if ($java) return $java.Loader.tools.toExportScope;
+			if ($java) return $java.loader.tools.toExportScope;
 			if (isScript($host)) {
 				return $host.Loader.tools.toExportScope;
 			}
@@ -114,50 +118,56 @@
 			$parameters: void(0)
 		});
 
-		var bootstrap = (function() {
-			if ($java && $servlet) {
-				var loader = new $java.Loader({
-					_source: $servlet.resources
-				});
-				var code = {
-					/** @type { slime.jrunscript.host.load } */
-					java: loader.factory("WEB-INF/slime/jrunscript/host/"),
-					/** @type { slime.jrunscript.io.load } */
-					io: loader.factory("WEB-INF/slime/jrunscript/io/"),
-					/** @type { slime.web.Script } */
-					web: loader.factory("WEB-INF/slime/js/web/")
-				};
-				var rv = {};
-				rv.js = loader.module("WEB-INF/slime/js/object/", {
-					globals: true
-				});
-				rv.java = code.java({
-					globals: true,
-					$slime: $java,
-					logging: {
-						prefix: "slime.servlet"
+		var bootstrap = (
+			/**
+			 *
+			 * @returns { slime.servlet.internal.api }
+			 */
+			function() {
+				if ($java && $servlet) {
+					var loader = new $java.Loader({
+						_source: $servlet.resources
+					});
+					var code = {
+						/** @type { slime.jrunscript.host.Script } */
+						java: loader.script("WEB-INF/slime/jrunscript/host/"),
+						/** @type { slime.jrunscript.io.Script } */
+						io: loader.script("WEB-INF/slime/jrunscript/io/"),
+						/** @type { slime.web.Script } */
+						web: loader.script("WEB-INF/slime/js/web/")
+					};
+					var rv = {};
+					rv.$api = $java.$api;
+					rv.js = loader.module("WEB-INF/slime/js/object/", {
+						globals: true
+					});
+					rv.java = code.java({
+						globals: true,
+						$slime: $java,
+						logging: {
+							prefix: "slime.servlet"
+						}
+					});
+					rv.io = code.io({
+						$slime: $java,
+						api: {
+							java: rv.java
+						},
+						nojavamail: false
+					});
+					var web = code.web(loader.file("WEB-INF/slime/js/web/context.java.js"));
+					rv.js.web = web;
+					$java.$api.deprecate(rv.js, "web");
+					rv.web = web;
+					rv.loader = {
+						paths: function(prefix) {
+							return $servlet.getResourcePaths(prefix);
+						}
 					}
-				});
-				rv.io = code.io({
-					$slime: $java,
-					api: {
-						java: rv.java
-					},
-					nojavamail: false
-				});
-				var web = code.web(loader.file("WEB-INF/slime/js/web/context.java.js"));
-				rv.js.web = web;
-				// TODO: Deprecate rv.js.web, after figuring out how to access $api; is it loader.$api? Available only in servlet
-				// implementation
-				rv.web = web;
-				rv.loader = {
-					paths: function(prefix) {
-						return $servlet.getResourcePaths(prefix);
-					}
+					return rv;
 				}
-				return rv;
 			}
-		})();
+		)();
 
 		/**
 		 * @type { (p: any, prefix?: any) => slime.Loader }
@@ -182,7 +192,7 @@
 							var delegate = new bootstrap.io.Loader(pp);
 							var delegated = delegate.source.get(path);
 							if (!delegated) return null;
-							return bootstrap.js.Object.set({}, delegated, {
+							return bootstrap.$api.Object.compose(delegated, {
 								type: pp.type(path)
 							});
 						},
@@ -222,6 +232,7 @@
 			}
 		})();
 
+		/** @type { slime.servlet.internal.api } */
 		var api = (function() {
 			if (bootstrap) {
 				return bootstrap;
@@ -316,7 +327,7 @@
 				},
 				$context: {
 					api: {
-						web: scope.httpd.js.web
+						web: scope.httpd.web
 					}
 				},
 				$loader: loaders.api

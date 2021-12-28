@@ -50,14 +50,20 @@ namespace slime.jrunscript.runtime {
 		}
 	}
 
-	export namespace Loader {
+	export namespace loader {
 		export interface Source extends slime.loader.Source {
 			zip: any
-			_source: any
+			_source: slime.jrunscript.native.inonit.script.engine.Code.Loader
 			_file: any
 			_url: any
 			/** @deprecated */
 			resources: any
+		}
+	}
+
+	export interface Loader extends slime.Loader {
+		java: {
+			adapt: () => slime.jrunscript.native.inonit.script.engine.Code.Loader
 		}
 	}
 
@@ -130,18 +136,22 @@ namespace slime.jrunscript.runtime {
 		}
 	}
 
+	/**
+	 * The SLIME runtime, augmented with Java-specific capabilities: a `classpath`, the `jrunscript` `java` and `io` interfaces,
+	 * and Java-aware versions of `Resource`, `Loader`, and `mime`.
+	 */
 	export interface Exports extends slime.runtime.Exports {
 		/**
 		 * The `jrunscript` implementation enhances the default MIME implementation by using the
 		 * `java.net.URLConnection.getFileNameMap()` method as an additional way to guess content types from file names.
 		 */
-		mime: slime.runtime.Exports["mime"]
+		mime: $api.mime.Export
 
 		Loader: slime.runtime.Exports["Loader"] & {
 			new (p: { zip: { _file: any }}): any
 			new (p: { zip: { resource: any }}): any
 			new (p: { _file: any }): any
-			new (p: { _source: any }): any
+			new (p: { _source: slime.jrunscript.native.inonit.script.engine.Code.Loader }): Loader
 			new (p: { resources: any, Loader?: any }): any
 		}
 
@@ -358,6 +368,8 @@ namespace slime.jrunscript {
 				export namespace Code {
 					export interface Loader {
 						getFile(path: string): Loader.Resource
+						getEnumerator(): Code.Loader.Enumerator
+						child(path: string): Loader
 					}
 
 					export namespace Loader {
@@ -368,6 +380,10 @@ namespace slime.jrunscript {
 							}
 							getSourceName(): slime.jrunscript.native.java.lang.String
 							getLastModified(): slime.jrunscript.native.java.util.Date
+						}
+
+						export interface Enumerator {
+							list(prefix: string): slime.jrunscript.native.java.lang.String[]
 						}
 					}
 				}
