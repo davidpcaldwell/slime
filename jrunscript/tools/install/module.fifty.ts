@@ -190,6 +190,10 @@ namespace slime.jrunscript.tools.install {
 	}
 
 	export namespace old {
+		/**
+		 *
+		 * @returns The directory to which the installation was installed.
+		 */
 		export type install = (p: old.Installation, events?: events.old.Receiver) => slime.jrunscript.file.Directory;
 
 		export interface Source {
@@ -270,8 +274,6 @@ namespace slime.jrunscript.tools.install {
 		 * The file, when expanded, is assumed to create a single directory containing the installation. This directory
 		 * is assumed to have the same name as the file (minus the extension). For a given archive, if the desired
 		 * directory has a different path within, it can be specified with `getDestinationPath()`.
-		 *
-		 * @returns The directory to which the installation was installed.
 		 */
 		install: install & old.install
 	}
