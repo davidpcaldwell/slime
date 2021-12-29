@@ -556,7 +556,7 @@ namespace slime.jrunscript.shell {
 		 */
 		mock: (delegate: (invocation: shell.run.Invocation) => shell.run.Mock) => World["run"]
 
-		 /** @deprecated Replaced by {@link Exports["Invocation"]} because it does not rely on external state. */
+		 /** @deprecated Replaced by {@link Exports | Exports Invocation.create()} because it does not rely on external state. */
 		Invocation: (p: invocation.old.Argument) => old.Invocation
 	}
 

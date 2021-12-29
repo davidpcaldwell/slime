@@ -58,7 +58,8 @@
 				separator: {
 					file: "/"
 				},
-				isAbsolute: function(string) {
+				isAbsolute: function isAbsolute(string) {
+					if (typeof(string) == "undefined") throw new TypeError("'string' must not be undefined.")
 					if (string.substring(0,1) != "/") {
 						return false;
 					} else {
@@ -192,7 +193,8 @@
 					return newPeer(string);
 				};
 
-				this.relative = function(parent, relative) {
+				this.relative = function relative(parent, relative) {
+					if (typeof(parent) == "undefined") throw new TypeError("'parent' must not be undefined.");
 					var folder = newPeer(parent);
 					var _file = new Packages.java.io.File(folder.getHostFile(), relative);
 					return _peer.getNode(_file);

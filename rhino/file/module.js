@@ -84,7 +84,8 @@
 
 			return {
 				Pathname: {
-					relative: function(parent, relative) {
+					relative: function relative(parent, relative) {
+						if (typeof(parent) == "undefined") throw new TypeError("'parent' must not be undefined.");
 						var peer = was.relative(parent, relative);
 						return was.peerToString(peer);
 					},

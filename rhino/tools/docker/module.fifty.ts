@@ -17,6 +17,7 @@ namespace slime.jrunscript.tools {
 
 		export interface Command<P,R> {
 			invocation: (p: P) => Invocation
+
 			output: {
 				/**
 				 * Whether the command emits JSON-formatted lines, and hence whether `stdout` should be parsed as lines of JSON
@@ -30,6 +31,7 @@ namespace slime.jrunscript.tools {
 				 */
 				truncated: boolean
 			}
+
 			result: (json: any) => R
 		}
 
