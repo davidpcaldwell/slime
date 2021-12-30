@@ -18,33 +18,38 @@
 				return {
 					argument: function(argument) {
 						return {
-							run: $api.Function.impure.ask(function(e) {
-								var result;
-								var invocation = command.invocation(argument);
-								$context.library.shell.world.run(
-									$context.library.shell.Invocation.create({
-										//	TODO	could this dependency be narrowed to world filesystem rather than whole library?
-										command: executable,
-										arguments: $api.Array.build(function(rv) {
-											if (account) rv.push("--account", account);
-											if (project) rv.push("--project", project);
-											rv.push("--format", "json");
-											rv.push(invocation.command);
-											rv.push.apply(rv, invocation.arguments);
-										}),
-										stdio: {
-											output: "string",
-											error: "line"
+							run: $api.Function.impure.ask(
+								function(events) {
+									var result;
+									var invocation = command.invocation(argument);
+									$context.library.shell.world.run(
+										$context.library.shell.Invocation.create({
+											//	TODO	could this dependency be narrowed to world filesystem rather than whole library?
+											command: executable,
+											arguments: $api.Array.build(function(rv) {
+												if (account) rv.push("--account", account);
+												if (project) rv.push("--project", project);
+												rv.push("--format", "json");
+												rv.push(invocation.command);
+												rv.push.apply(rv, invocation.arguments);
+											}),
+											stdio: {
+												output: "string",
+												error: "line"
+											}
+										})
+									)({
+										stderr: function(e) {
+											events.fire("console", e.detail.line);
+										},
+										exit: function(e) {
+											if (e.detail.status != 0) throw new Error("Exit status: " + e.detail.status);
+											result = JSON.parse(e.detail.stdio.output);
 										}
-									})
-								)({
-									exit: function(e) {
-										if (e.detail.status != 0) throw new Error("Exit status: " + e.detail.status);
-										result = JSON.parse(e.detail.stdio.output);
-									}
-								});
-								return result;
-							})
+									});
+									return result;
+								}
+							)
 						}
 					}
 				}

@@ -16,9 +16,11 @@ namespace slime.jrunscript.tools.gcloud {
 			result: (json: any) => R
 		}
 
-		export type Executor = <P,E,R>(command: cli.Command<P,R>) => {
+		export type Executor = <P,R>(command: cli.Command<P,R>) => {
 			argument: (p: P) => {
-				run: slime.$api.fp.impure.Ask<E,R>
+				run: slime.$api.fp.impure.Ask<{
+					console: string
+				},R>
 			}
 		}
 	}
