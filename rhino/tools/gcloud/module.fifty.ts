@@ -13,7 +13,7 @@ namespace slime.jrunscript.tools.gcloud {
 
 		export interface Command<P,R> {
 			invocation: (p: P) => Invocation
-			result: (json: any) => R
+			result?: (json: any) => R
 		}
 
 		export type Executor = <P,R>(command: cli.Command<P,R>) => {
@@ -22,6 +22,20 @@ namespace slime.jrunscript.tools.gcloud {
 					console: string
 				},R>
 			}
+		}
+
+		export interface Project {
+			command: cli.Executor
+		}
+
+		export interface Account {
+			project: (project: string) => Project
+			command: cli.Executor
+		}
+
+		export interface Installation {
+			account: (account: string) => Account
+			command: cli.Executor
 		}
 	}
 

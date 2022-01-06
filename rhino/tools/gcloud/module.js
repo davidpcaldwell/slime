@@ -14,9 +14,11 @@
 	 */
 	function($api,$context,$export) {
 		var executeCommand = function(executable,account,project) {
-			return function(command) {
+			/** @type { slime.jrunscript.tools.gcloud.cli.Executor } */
+			var rv = function(command) {
 				return {
 					argument: function(argument) {
+						var toResult = command.result || $api.Function.identity;
 						return {
 							run: $api.Function.impure.ask(
 								function(events) {
@@ -44,7 +46,8 @@
 										},
 										exit: function(e) {
 											if (e.detail.status != 0) throw new Error("Exit status: " + e.detail.status);
-											result = JSON.parse(e.detail.stdio.output);
+											var json = JSON.parse(e.detail.stdio.output);
+											result = toResult(json);
 										}
 									});
 									return result;
@@ -54,6 +57,8 @@
 					}
 				}
 			};
+
+			return rv;
 		}
 
 		$export({
