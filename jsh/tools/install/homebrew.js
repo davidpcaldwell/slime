@@ -90,6 +90,7 @@
 										$context.library.shell.Invocation.create({
 											command: program,
 											arguments: [invocation.command].concat(invocation.arguments || []),
+											environment: invocation.environment,
 											stdio: {
 												output: "line",
 												error: "line"

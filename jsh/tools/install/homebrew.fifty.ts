@@ -8,6 +8,9 @@ namespace slime.jrunscript.tools.homebrew {
 	export interface Invocation {
 		command: string
 		arguments?: string[]
+		environment?: {
+			[x: string]: string
+		}
 	}
 
 	export interface Command<P,R> {
