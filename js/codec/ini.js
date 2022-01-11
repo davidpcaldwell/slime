@@ -172,17 +172,27 @@
 									}
 								});
 								if (!found) {
+									//	TODO	Probably could be smarter about this and insert it at end of global section
 									parsed.lines.splice(0,0,{
 										line: key.name + "=" + value
 									});
 								}
 								return parsed.serialize();
 							} else {
-								//	TODO	more intelligent implementation; this simply starts a new section and puts a value in
-								//			it (which works)
-								//	TODO	consider whitespace
-								parsed.lines.push({ line: "[" + key.section + "]" });
-								parsed.lines.push({ line: key.name + "=" + value });
+								var found = false;
+								parsed.lines.forEach(function(line) {
+									if (isValueLine(line) && line.section == key.section && line.name == key.name) {
+										line.line = key.name + "=" + value;
+										found = true;
+									}
+								});
+								if (!found) {
+									//	TODO	more intelligent implementation; this simply starts a new section and puts a value in
+									//			it (which works)
+									//	TODO	consider using whitespace
+									parsed.lines.push({ line: "[" + key.section + "]" });
+									parsed.lines.push({ line: key.name + "=" + value });
+								}
 								return parsed.serialize();
 							}
 						}
@@ -193,23 +203,6 @@
 
 		// $set(
 		// 	function (p) {
-		// 		this.set = function(section,name,value) {
-		// 			if (!section) {
-		// 				var now = parse(lines).lines;
-		// 				lines = now.map(function(line) {
-		// 					if (!line.section && line.name == name) {
-		// 						return line.name + " = " + value;
-		// 					} else {
-		// 						return line.line;
-		// 					}
-		// 				});
-		// 			} else {
-		// 				//	TODO	more intelligent implementation
-		// 				lines.push("[" + section + "]");
-		// 				lines.push(name + " = " + value);
-		// 			}
-		// 		};
-
 		// 		this.remove = function(section,name) {
 		// 			var now = parse(lines).lines;
 		// 			lines = now.filter(function(line) {

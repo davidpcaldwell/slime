@@ -36,29 +36,32 @@ namespace slime.codec.ini {
 			fifty.tests.suite = function() {
 				var codec = subject.codec();
 
-				verify(subject).codec().value(one, "global").is("foo");
+				verify(codec).value(one, "global").is("foo");
 
-				verify(subject).codec().value(one, "section.name").is("value");
-				verify(subject).codec().value(one, "section.foo").is(null);
+				verify(codec).value(one, "section.name").is("value");
+				verify(codec).value(one, "section.foo").is(null);
 
-				verify(subject).codec().value(one, "calendar.season").is(null);
+				verify(codec).value(one, "calendar.season").is(null);
 				var withNewProperty = subject.codec().with.set(one, "calendar.season", "winter");
-				verify(subject).codec().value(withNewProperty, "calendar.season").is("winter");
+				verify(codec).value(withNewProperty, "calendar.season").is("winter");
 
-				var withUpdatedSection = codec.with.set(one, "calendar.season", "summer");
-				verify(codec).value(withUpdatedSection, "calendar.season").is("summer");
+				verify(codec).value(one, "section.name").is("value");
+				var withUpdatedSection = codec.with.set(one, "section.name", "newValue");
+				verify(codec).value(withUpdatedSection, "section.name").is("newValue");
 
 				verify(codec).value(one, "top").is(null);
 				var withNewTopLevel = codec.with.set(one, "top", "bar");
 				verify(codec).value(withNewTopLevel, "top").is("bar");
 
+				verify(codec).value(one, "global").is("foo");
 				var updateTopLevel = codec.with.set(one, "global", "bar");
-				debugger;
 				verify(codec).value(updateTopLevel, "global").is("bar");
 			}
 		}
 	//@ts-ignore
 	)(fifty);
+
+	export type Script = slime.loader.Script<void,Exports>
 
 	export namespace internal {
 		export interface Line {
