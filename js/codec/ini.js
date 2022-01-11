@@ -79,6 +79,11 @@
 			throw new TypeError("Parse error.");
 		}
 
+		/** @type { (line: any) => line is slime.codec.ini.internal.ValueLine } */
+		var isValueLine = function(line) {
+			return typeof(line.section) != "undefined" && line.name;
+		}
+
 		/**
 		 *
 		 * @param { string[] } lines
@@ -92,11 +97,6 @@
 
 			var getName = function(line) {
 				return (typeof(line.section) != "undefined" && line.name) ? ((line.section) ? (line.section + ".") : line.section) + line.name : null;
-			}
-
-			/** @type { (line: any) => line is slime.codec.ini.internal.ValueLine } */
-			var isValueLine = function(line) {
-				return typeof(line.section) != "undefined" && line.name;
 			}
 
 			/**
@@ -119,6 +119,9 @@
 					});
 					return rv;
 				},
+				serialize: function() {
+					return this.lines.map(function(line) { return line.line; }).join("\n");
+				}
 			}
 
 			var state = {
@@ -145,6 +148,44 @@
 				return {
 					value: function(file, name) {
 						return parse(file.split("\n")).value(name);
+					},
+					with: {
+						set: function(file, name, value) {
+							var key = (
+								function(name) {
+									var tokens = name.split(".");
+									if (tokens.length == 1) {
+										return { section: "", name: tokens[0] };
+									} else {
+										return { section: tokens.slice(0,tokens.length-1).join("."), name: tokens[tokens.length-1] };
+									}
+								}
+							)(name);
+
+							var parsed = parse(file.split("\n"));
+							if (!key.section) {
+								var found = false;
+								parsed.lines.forEach(function(line) {
+									if (isValueLine(line) && !line.section && line.name == key.name) {
+										line.line = key.name + "=" + value;
+										found = true;
+									}
+								});
+								if (!found) {
+									parsed.lines.splice(0,0,{
+										line: key.name + "=" + value
+									});
+								}
+								return parsed.serialize();
+							} else {
+								//	TODO	more intelligent implementation; this simply starts a new section and puts a value in
+								//			it (which works)
+								//	TODO	consider whitespace
+								parsed.lines.push({ line: "[" + key.section + "]" });
+								parsed.lines.push({ line: key.name + "=" + value });
+								return parsed.serialize();
+							}
+						}
 					}
 				}
 			}

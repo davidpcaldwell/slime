@@ -1,2 +1,4 @@
+global = foo
+
 [section]
 name = value

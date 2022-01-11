@@ -18,6 +18,10 @@ namespace slime.codec.ini {
 			 * Extracts a value for the named key from the INI file. Key names are formatted as `[section].name`.
 			 */
 			value: (file: string, name: string) => string
+
+			with: {
+				set: (file: string, name: string, value: string) => string
+			}
 		}
 	}
 
@@ -30,8 +34,27 @@ namespace slime.codec.ini {
 			const one = fifty.$loader.get("test/1.txt").read(String);
 
 			fifty.tests.suite = function() {
+				var codec = subject.codec();
+
+				verify(subject).codec().value(one, "global").is("foo");
+
 				verify(subject).codec().value(one, "section.name").is("value");
 				verify(subject).codec().value(one, "section.foo").is(null);
+
+				verify(subject).codec().value(one, "calendar.season").is(null);
+				var withNewProperty = subject.codec().with.set(one, "calendar.season", "winter");
+				verify(subject).codec().value(withNewProperty, "calendar.season").is("winter");
+
+				var withUpdatedSection = codec.with.set(one, "calendar.season", "summer");
+				verify(codec).value(withUpdatedSection, "calendar.season").is("summer");
+
+				verify(codec).value(one, "top").is(null);
+				var withNewTopLevel = codec.with.set(one, "top", "bar");
+				verify(codec).value(withNewTopLevel, "top").is("bar");
+
+				var updateTopLevel = codec.with.set(one, "global", "bar");
+				debugger;
+				verify(codec).value(updateTopLevel, "global").is("bar");
 			}
 		}
 	//@ts-ignore
@@ -56,6 +79,7 @@ namespace slime.codec.ini {
 			lines: Line[]
 			values: () => { [x: string]: string }
 			value: (name: string) => string
+			serialize: () => string
 		}
 	}
 }
