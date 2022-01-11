@@ -12,6 +12,7 @@
 			fifty.load("../loader/$api-Function.fifty.ts");
 			fifty.load("../loader/document/module.fifty.ts");
 			fifty.load("../js/web/module.fifty.ts");
+			fifty.load("../js/codec/ini.fifty.ts");
 		}
 	}
 //@ts-ignore

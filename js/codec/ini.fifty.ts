@@ -19,6 +19,10 @@ namespace slime.codec.ini {
 			 */
 			value: (file: string, name: string) => string
 
+			values: (file: string) => {
+				[x: string]: string
+			}
+
 			with: {
 				set: (file: string, name: string, value: string) => string
 			}
@@ -40,6 +44,17 @@ namespace slime.codec.ini {
 
 				verify(codec).value(one, "section.name").is("value");
 				verify(codec).value(one, "section.foo").is(null);
+
+				verify(codec).values(one)
+					.evaluate(function(p) { return Object.entries(p); })
+					.evaluate(function(p) { return p.map(function(entry) { return entry[0]; }) })
+					.evaluate(function(p) { return p.sort(function(a,b) {
+						if (a < b) return -1;
+						if (b < a) return 1;
+						return 0;
+					})})
+					.evaluate(function(array) { return array.join("|"); })
+					.is("global|section.name");
 
 				verify(codec).value(one, "calendar.season").is(null);
 				var withNewProperty = subject.codec().with.set(one, "calendar.season", "winter");

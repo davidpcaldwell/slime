@@ -149,6 +149,9 @@
 					value: function(file, name) {
 						return parse(file.split("\n")).value(name);
 					},
+					values: function(file) {
+						return parse(file.split("\n")).values();
+					},
 					with: {
 						set: function(file, name, value) {
 							var key = (
