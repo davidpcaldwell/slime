@@ -23,9 +23,25 @@
 			Response: void(0)
 		};
 
-		$exports.http.Response = Object.assign(function() {
-			throw new Error("Reserved for future use.");
-		}, {
+		/**
+		 *
+		 * @param { number } code
+		 * @param { string } location
+		 * @returns { slime.servlet.Response }
+		 */
+		var redirect = function(code,location) {
+			return {
+				status: { code: code },
+				headers: [
+					{
+						name: "Location",
+						value: location
+					}
+				]
+			};
+		}
+
+		$exports.http.Response = {
 			text: function(string) {
 				return {
 					status: {
@@ -52,13 +68,10 @@
 				}
 			},
 			SEE_OTHER: function(p) {
-				var rv = {
-					status: { code: 303 },
-					headers: [
-						{ name: "Location", value: p.location }
-					]
-				};
-				return rv;
+				return redirect(303, p.location);
+			},
+			TEMPORARY_REDIRECT: function(p) {
+				return redirect(307, p.location);
 			},
 			javascript: function(p) {
 				if (typeof(p) == "string") {
@@ -88,7 +101,7 @@
 				if (p.sameSite) tokens.push("SameSite=" + p.sameSite);
 				return { name: name, value: tokens.join("; ") };
 			}
-		});
+		};
 
 		$exports.Handler = Object.assign(function(p) {
 			throw new Error("Reserved for future use.");

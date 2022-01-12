@@ -31,7 +31,15 @@ namespace slime.servlet {
 				text: (string: string) => Response
 				resource: (body: slime.jrunscript.runtime.Resource) => Response
 				NOT_FOUND: () => Response
-				SEE_OTHER: () => Response
+
+				SEE_OTHER: (p: {
+					location: string
+				}) => Response
+
+				TEMPORARY_REDIRECT: (p: {
+					location: string
+				}) => Response
+
 				javascript: (code: string) => Response
 				cookie: (p: {
 					name: string
