@@ -724,6 +724,24 @@
 			Invocation: $api.deprecate(Invocation_old)
 		}
 
+		$exports.Tell = {
+			result: function(p) {
+				function rv(tell) {
+					var rv;
+
+					tell({
+						exit: function(e) {
+							rv = p.interpret(e.detail);
+						}
+					});
+
+					return rv;
+				}
+
+				return rv;
+			}
+		}
+
 		$exports.Invocation = {
 			old: Invocation_old,
 			modernize: scripts.invocation.modernize,

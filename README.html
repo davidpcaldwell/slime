@@ -30,7 +30,7 @@ END LICENSE
 
 			#steps code { background-color: black; color: white; padding: 0.3em 0.5em 0.1em 0.5em; font-weight: bold; }
 
-			#what, #quickstart, #platforms, #platforms>div, #java-compatibility {
+			#what, #quickstart, #platforms, #platforms>div, #java-compatibility, #typedoc, #projects, #tools, #links {
 				border: 1px solid black;
 				padding: 1em;
 			}
@@ -144,39 +144,10 @@ END LICENSE
 				source files).
 			</div>
 		</div>
-		<div>
-			<h2>Using SLIME</h2>
-			<div>
-				<h3>SLIME Definitions (documentation and testing)</h3>
-				<p>
-					SLIME has the concept of a <dfn>definition</dfn>, which is a construct that provides both documentation and
-					a test suite for a particular software module.
-				</p>
-				<p>
-					Documentation for SLIME itself is mostly contained in SLIME definitions that define its APIs.
-				</p>
-				<p>
-					The best way to create SLIME definitions is via the <a href="local/doc/typedoc/modules/slime.fifty.html">Fifty</a>
-					definition framework, which uses TypeScript to provide type definitions and <code>tsdoc</code>-compatible
-					documentation (and uses <a href="https://typedoc.org/">Typedoc</a> to
-					publish that documentation, and the <code>fifty view</code> tool to serve it), and allows
-					inline tests to be authored within those TypeScript definitions. A simple example that contains tests
-					for the project's <code>wf</code> commands can be found at <a href="wf.fifty.ts?as=text"><code>wf.fifty.ts</code></a>.
-				</p>
-				<p>
-					Many existing SLIME APIs are currently
-					defined via the deprecated JSAPI definition format, which used literate definitions that allowed documentation
-					and tests to be defined via annotated HTML, using HTML constructs for documentation and embedded scripts for
-					testing. These definitions can be reached via links from the Typedoc-published Fifty definitinos.
-				</p>
-				<div>
-					<h4><a href="local/doc/typedoc/index.html">SLIME API</a> from Fifty definitions and published by Typedoc</h4>
-				</div>
-			</div>
-			<div>
-			</div>
+		<div id="typedoc">
+			<h2>View the SLIME Platform <a href="local/doc/typedoc/index.html">Documentation</a></h2>
 		</div>
-		<div>
+		<div id="projects">
 			<h2>Creating projects using SLIME</h2>
 			<div>
 				<div>
@@ -296,7 +267,7 @@ END LICENSE
 				</p>
 			</div>
 		</div>
-		<div>
+		<div id="tools">
 			<h2>Tools and examples</h2>
 			<ul>
 				<li>
@@ -316,11 +287,13 @@ END LICENSE
 				</li>
 			</ul>
 		</div>
-		<div>
-			<h2><a href="https://github.com/davidpcaldwell/slime">SLIME on GitHub</a></h2>
-		</div>
-		<div>
-			<h2><a href="contributor/README.html">Contributing to SLIME</a></h2>
+		<div id="links">
+			<div>
+				<h2><a href="https://github.com/davidpcaldwell/slime">SLIME on GitHub</a></h2>
+			</div>
+			<div>
+				<h2><a href="contributor/README.html">Contributing to SLIME</a></h2>
+			</div>
 		</div>
 	</body>
 </html>

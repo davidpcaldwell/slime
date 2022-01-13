@@ -445,7 +445,6 @@ namespace slime.jrunscript.shell {
 	//@ts-ignore
 	)(fifty);
 
-
 	export interface Exports {
 		//	TODO	probably should be conditional based on presence of sudo tool
 		/**
@@ -533,8 +532,8 @@ namespace slime.jrunscript.shell {
 		}
 	}
 
-	export interface Exports {
-		Invocation: exports.Invocation & {
+	export namespace exports {
+		export interface Invocation {
 			create: (p: invocation.Argument) => run.Invocation
 
 			/**
@@ -544,6 +543,10 @@ namespace slime.jrunscript.shell {
 			 */
 			old: (p: invocation.old.Argument) => old.Invocation
 		}
+	}
+
+	export interface Exports {
+		Invocation: exports.Invocation
 	}
 
 	export interface World {
@@ -567,7 +570,7 @@ namespace slime.jrunscript.shell {
 		) {
 			const subject = fifty.global.jsh.shell;
 
-			fifty.tests.explore = function() {
+			fifty.tests.world = function() {
 				var directory = fifty.$loader.getRelativePath(".").directory;
 
 				if (fifty.global.jsh.shell.PATH.getCommand("ls")) {
@@ -755,6 +758,45 @@ namespace slime.jrunscript.shell {
 	//@ts-ignore
 	)($api,fifty);
 
+	export interface Exports {
+		Tell: {
+			result: <R>(p: {
+				interpret: (events: run.Events["exit"]) => R
+			}) => (tell: slime.$api.fp.impure.Tell<run.Events>) => R
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.kit
+		) {
+			const { verify } = fifty;
+			const { $api, jsh } = fifty.global;
+
+			fifty.tests.exports = {};
+
+			fifty.tests.exports.Tell = function() {
+				var tell: slime.$api.fp.impure.Tell<run.Events> = $api.Function.impure.tell(function(events) {
+					events.fire("exit", {
+						status: 0,
+						stdio: {
+							output: "foobar"
+						}
+					})
+				});
+
+				var interpret = function(result: run.Events["exit"]): string {
+					return result.stdio.output;
+				};
+
+				var interpreter = jsh.shell.Tell.result({ interpret: interpret });
+				var result = interpreter(tell);
+				verify(result).is("foobar");
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
 	export namespace internal.module {
 		export type Invocation = {
 			configuration: internal.run.java.Configuration
@@ -772,6 +814,7 @@ namespace slime.jrunscript.shell {
 				fifty.run(fifty.tests.listeners);
 				fifty.run(fifty.tests.environment);
 
+				fifty.run(fifty.tests.exports.Tell);
 				fifty.load("invocation.fifty.ts");
 
 				fifty.run(fifty.tests.sandbox);
