@@ -720,7 +720,7 @@
 
 		$exports.world = {
 			run: scripts.run.run,
-			mock: scripts.run.mock,
+			mock: scripts.run.mock.run,
 			Invocation: $api.deprecate(Invocation_old)
 		}
 
@@ -739,7 +739,8 @@
 				}
 
 				return rv;
-			}
+			},
+			mock: scripts.run.mock.tell
 		}
 
 		$exports.Invocation = {

@@ -761,6 +761,7 @@ namespace slime.jrunscript.shell {
 	export interface Exports {
 		Tell: {
 			exit: () => (tell: slime.$api.fp.impure.Tell<run.Events>) => (run.Events["exit"])
+			mock: (stdio: Partial<Pick<slime.jrunscript.shell.run.StdioConfiguration,"output" | "error">>, result: slime.jrunscript.shell.run.Mock) => slime.$api.fp.impure.Tell<slime.jrunscript.shell.run.Events>
 		}
 	}
 
@@ -774,22 +775,24 @@ namespace slime.jrunscript.shell {
 			fifty.tests.exports = {};
 
 			fifty.tests.exports.Tell = function() {
-				var tell: slime.$api.fp.impure.Tell<run.Events> = $api.Function.impure.tell(function(events) {
-					events.fire("exit", {
+				var tell: slime.$api.fp.impure.Tell<run.Events> = jsh.shell.Tell.mock({
+					output: "string"
+				}, {
+					exit: {
 						status: 0,
 						stdio: {
 							output: "foobar"
 						}
-					})
-				});
+					}
+				})
 
 				var interpret = function(result: run.Events["exit"]): string {
-					return result.stdio.output;
+					return result.stdio.output + result.stdio.output;
 				};
 
 				var exit = jsh.shell.Tell.exit();
 				var result = $api.Function.result(exit(tell), interpret);
-				verify(result).is("foobar");
+				verify(result).is("foobarfoobar");
 			}
 		}
 	//@ts-ignore
