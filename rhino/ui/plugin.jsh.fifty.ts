@@ -61,6 +61,13 @@ namespace slime.jsh.ui.application {
 		debug?: {
 			port?: number
 		}
+
+		/**
+		 * A Chrome feature allowing host resolution rules to be specified. See [this list](http://imfly.github.io/electron-docs-gitbook/en/api/chrome-command-line-switches.html)
+		 * of Chrome command-line switches for one explanation of how these values work.
+		 *
+		 * The rules are represented as an array in this API (on the command line, they are delimited by `,`).
+		 */
 		hostrules?: string[]
 	}
 

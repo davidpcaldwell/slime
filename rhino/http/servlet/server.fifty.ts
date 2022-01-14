@@ -14,6 +14,7 @@ namespace slime.servlet {
 
 	export interface Request {
 		uri: slime.web.Url
+		url: slime.web.Url
 		source: {
 			ip: string
 		}

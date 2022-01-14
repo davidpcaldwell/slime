@@ -61,7 +61,7 @@ namespace slime.jsh.httpd {
 			 * If present, describes an HTTPS service that should run.
 			 */
 			https?: {
-				port: number
+				port?: number
 
 				/**
 				 * If provided, the specified keystore will be used when setting up the HTTPS service; one useful way to do this is

@@ -37,6 +37,12 @@
 
 				this.uri = $context.api.web.Url.parse(String(_request.getRequestURI()));
 
+				this.url = $context.api.web.Url.codec.string.decode(
+					String(
+						Packages.javax.servlet.http.HttpUtils.getRequestURL(_request).toString()
+					)
+				);
+
 				this.source = new function() {
 					this.ip = String(_request.getRemoteAddr());
 				};
