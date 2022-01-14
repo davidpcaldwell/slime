@@ -1468,7 +1468,7 @@
 					output = e.detail.stdio.output;
 				}
 			});
-			return p.command.result(output);
+			return (p.command.result) ? p.command.result(output) : void(0);
 		};
 
 		var commandExecutor = function(program,pathname) {

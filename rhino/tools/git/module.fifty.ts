@@ -743,7 +743,12 @@ namespace slime.jrunscript.git {
 
 	export interface Command<P,R> {
 		invocation: (parameter: P) => Invocation
-		result: (output: string) => R
+
+		/**
+		 * Converts the command output into the declared result type. If absent, an implementation that returns `undefined` will
+		 * be provided.
+		 */
+		result?: (output: string) => R
 	}
 
 	export namespace command.status {
