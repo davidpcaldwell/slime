@@ -725,13 +725,13 @@
 		}
 
 		$exports.Tell = {
-			result: function(p) {
+			exit: function() {
 				function rv(tell) {
 					var rv;
 
 					tell({
 						exit: function(e) {
-							rv = p.interpret(e.detail);
+							rv = e.detail;
 						}
 					});
 

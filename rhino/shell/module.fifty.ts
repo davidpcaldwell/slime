@@ -760,9 +760,7 @@ namespace slime.jrunscript.shell {
 
 	export interface Exports {
 		Tell: {
-			result: <R>(p: {
-				interpret: (events: run.Events["exit"]) => R
-			}) => (tell: slime.$api.fp.impure.Tell<run.Events>) => R
+			exit: () => (tell: slime.$api.fp.impure.Tell<run.Events>) => (run.Events["exit"])
 		}
 	}
 
@@ -789,8 +787,8 @@ namespace slime.jrunscript.shell {
 					return result.stdio.output;
 				};
 
-				var interpreter = jsh.shell.Tell.result({ interpret: interpret });
-				var result = interpreter(tell);
+				var exit = jsh.shell.Tell.exit();
+				var result = $api.Function.result(exit(tell), interpret);
 				verify(result).is("foobar");
 			}
 		}
