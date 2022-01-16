@@ -25,7 +25,8 @@
 		var module = script({
 			library: {
 				file: jsh.file,
-				shell: jsh.shell
+				shell: jsh.shell,
+				install: jsh.tools.install
 			}
 		});
 		var executor = (function() {

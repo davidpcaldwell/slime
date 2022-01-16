@@ -61,6 +61,13 @@
 			return rv;
 		}
 
+		/** @type { { [os: string]: { [arch: string ]: string }} } */
+		var INSTALLER = {
+			"Mac OS X": {
+				x86_64: "https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-368.0.0-darwin-x86_64.tar.gz"
+			}
+		};
+
 		$export({
 			cli: {
 				Installation: {
@@ -81,6 +88,35 @@
 							},
 							command: executeCommand(executable,void(0),void(0))
 						}
+					},
+					create: function create(pathname) {
+						return $api.Function.impure.tell(function(events) {
+							var url = $api.Function.result(INSTALLER, $api.Function.pipe(
+								$api.Function.optionalChain($context.library.shell.os.name),
+								$api.Function.optionalChain($context.library.shell.os.arch)
+							));
+							if (!url) {
+								throw new Error("Could not install.");
+							}
+							events.fire("console", "Installing from: " + url);
+							$context.library.install.install({
+								source: {
+									url: url
+								},
+								archive: {
+									folder: function(file) {
+										return "google-cloud-sdk";
+									}
+								},
+								destination: {
+									location: pathname
+								}
+							})({
+								console: function(e) {
+									events.fire("console", e.detail);
+								}
+							})
+						});
 					}
 				}
 			}

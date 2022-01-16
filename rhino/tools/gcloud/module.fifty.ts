@@ -43,6 +43,7 @@ namespace slime.jrunscript.tools.gcloud {
 		library: {
 			file: slime.jrunscript.file.Exports
 			shell: slime.jrunscript.shell.Exports
+			install: slime.jrunscript.tools.install.Exports
 		}
 	}
 
@@ -58,9 +59,44 @@ namespace slime.jrunscript.tools.gcloud {
 					}
 					command: cli.Executor
 				}
+
+				create: (pathname: string) => slime.$api.fp.impure.Tell<{
+					console: string
+				}>
 			}
 		}
 	}
+
+	(
+		function(
+			fifty: slime.fifty.test.kit
+		) {
+			const { jsh } = fifty.global;
+			const script: Script = fifty.$loader.script("module.js");
+			const install = jsh.tools.install;
+			const api = script({
+				library: {
+					file: jsh.file,
+					shell: jsh.shell,
+					install: jsh.tools.install
+				}
+			});
+
+			fifty.tests.world = function() {
+				//	TODO	think there is an API for getting a location to put a directory, maybe in Fifty, maybe somewhere else
+				var TMPDIR = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
+				TMPDIR.directory.remove();
+				api.cli.Installation.create(TMPDIR.toString())({
+					console: function(e) {
+						jsh.shell.console(e.detail);
+					}
+				});
+				jsh.shell.console("Installed to: " + TMPDIR);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
 
 	export type Script = slime.loader.Script<Context,Exports>
 }
