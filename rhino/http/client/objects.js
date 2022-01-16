@@ -218,7 +218,7 @@
 				return {
 					request: {
 						method: method,
-						url: url,
+						url: $context.api.web.Url.codec.string.encode(url),
 						headers: headers,
 						body: body
 					},
@@ -235,7 +235,7 @@
 			function toOldRequest(argument) {
 				return {
 					method: argument.request.method,
-					url: argument.request.url,
+					url: $context.api.web.Url.codec.string.decode(argument.request.url),
 					headers: argument.request.headers,
 					body: argument.request.body,
 					proxy: argument.proxy,
@@ -252,7 +252,7 @@
 				return urlConnectionImplementation({
 					request: {
 						method: p.method,
-						url: p.url,
+						url: $context.api.web.Url.codec.string.encode(p.url),
 						headers: p.headers,
 						body: body
 					},
@@ -302,7 +302,7 @@
 				if (isRedirect(spiresponse.status)) {
 					var redirectTo = headersImplementationForGet.call(spiresponse.headers, "Location");
 					if (!redirectTo) throw new Error("Redirect without location header.");
-					var redirectUrl = $context.api.web.Url.resolve(spirequest.request.url, redirectTo);
+					var redirectUrl = $context.api.web.Url.resolve($context.api.web.Url.codec.string.decode(spirequest.request.url), redirectTo);
 					//	TODO	copy object rather than modifying
 					var rv = {};
 					for (var x in p) {

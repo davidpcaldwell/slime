@@ -212,7 +212,7 @@
 					url: url,
 					proxy: proxy
 				})
-				return _open(new Packages.java.net.URL(p.request.url.toString()), toJavaProxy(proxy));
+				return _open(new Packages.java.net.URL($context.api.web.Url.codec.string.encode(url)), toJavaProxy(proxy));
 			}
 
 			var execute = $api.Events.action(
@@ -221,18 +221,19 @@
 				 * @param { slime.$api.Events<slime.jrunscript.http.client.spi.Events> } e
 				 */
 				function(e) {
+					var url = $context.api.web.Url.codec.string.decode(p.request.url);
 					/** @type { slime.jrunscript.http.client.Header } */
 					var hostHeader;
-					if (p.request.url.scheme == "https" && p.proxy && p.proxy.https) {
+					if (url.scheme == "https" && p.proxy && p.proxy.https) {
 						//	Currently implemented by re-writing the URL; would be better to implement a tunnel through an HTTP proxy but
 						//	could not get that working with Tomcat, which returned 400 errors when https requests are sent to http listener
 						//	TODO	does this work for default port?
-						hostHeader = { name: "Host", value: p.request.url.host + ((p.request.url.port) ? ":" + p.request.url.port : "") };
-						p.request.url.host = p.proxy.https.host;
-						p.request.url.port = p.proxy.https.port;
+						hostHeader = { name: "Host", value: url.host + ((url.port) ? ":" + url.port : "") };
+						url.host = p.proxy.https.host;
+						url.port = p.proxy.https.port;
 					}
 
-					var $urlConnection = openUrlConnection(p.request.url, p.proxy, e);
+					var $urlConnection = openUrlConnection(url, p.proxy, e);
 
 					$urlConnection.setRequestMethod(p.request.method);
 

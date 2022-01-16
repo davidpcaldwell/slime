@@ -12,14 +12,14 @@ namespace slime.jrunscript.http.client.internal {
 		 * @param url - the URL requested
 		 * @param headers - the response headers received
 		 */
-		set(url: slime.web.Url, headers: Header[])
+		set(url: string, headers: Header[])
 
 		/**
 		 *
 		 * @param url - the URL to be requested
 		 * @param headers - the headers to be sent with it, which will be modified to include any appropriate `Cookie:` headers.
 		 */
-		get(url: slime.web.Url, headers: Header[])
+		get(url: string, headers: Header[])
 	}
 }
 
