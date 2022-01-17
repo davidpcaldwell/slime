@@ -45,12 +45,26 @@ namespace slime.jrunscript.tools.gcloud {
 			shell: slime.jrunscript.shell.Exports
 			install: slime.jrunscript.tools.install.Exports
 		}
+		mock?: {
+			shell?: {
+				run: Parameters<slime.jrunscript.shell.World["mock"]>[0]
+			}
+		}
 	}
 
 	export interface Exports {
 		cli: {
 			Installation: {
 				at: (pathname: string) => {
+					config: (config: string) => {
+						account: (account: string) => {
+							project: (project: string) => {
+								command: cli.Executor
+							}
+							command: cli.Executor
+						}
+						command: cli.Executor
+					}
 					account: (account: string) => {
 						project: (project: string) => {
 							command: cli.Executor
@@ -71,27 +85,92 @@ namespace slime.jrunscript.tools.gcloud {
 		function(
 			fifty: slime.fifty.test.kit
 		) {
+			const { verify } = fifty;
 			const { jsh } = fifty.global;
 			const script: Script = fifty.$loader.script("module.js");
 			const install = jsh.tools.install;
-			const api = script({
+
+			var captor = (
+				function() {
+					var last: shell.run.Invocation;
+
+					return {
+						last: function() {
+							return last;
+						},
+						mock: function(invocation: shell.run.Invocation): shell.run.Mock {
+							last = invocation;
+							return {
+								exit: {
+									status: 0,
+									stdio: {
+										output: "{}"
+									}
+								}
+							}
+						}
+					}
+				}
+			)();
+
+			const subject = script({
 				library: {
 					file: jsh.file,
 					shell: jsh.shell,
 					install: jsh.tools.install
+				},
+				mock: {
+					shell: {
+						run: captor.mock
+					}
 				}
 			});
 
+			fifty.tests.Installation = function() {
+				var command: cli.Command<string,{}> = {
+					invocation: function(argument: string) {
+						return {
+							command: "foo",
+							arguments: [argument]
+						}
+					}
+				}
+				subject.cli.Installation.at(
+					"/gcloud/at"
+				).config(
+					"config"
+				).account(
+					"account"
+				).project(
+					"project"
+				).command(
+					command
+				).argument("bar").run();
+
+				verify(captor).last().configuration.command.is("/gcloud/at/bin/gcloud");
+			}
+
 			fifty.tests.world = function() {
+				const module = script({
+					library: {
+						file: jsh.file,
+						shell: jsh.shell,
+						install: jsh.tools.install
+					}
+				});
 				//	TODO	think there is an API for getting a location to put a directory, maybe in Fifty, maybe somewhere else
 				var TMPDIR = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
 				TMPDIR.directory.remove();
-				api.cli.Installation.create(TMPDIR.toString())({
+				module.cli.Installation.create(TMPDIR.toString())({
 					console: function(e) {
 						jsh.shell.console(e.detail);
 					}
 				});
 				jsh.shell.console("Installed to: " + TMPDIR);
+			}
+
+			fifty.tests.suite = function() {
+				fifty.run(fifty.tests.Installation);
 			}
 		}
 	//@ts-ignore

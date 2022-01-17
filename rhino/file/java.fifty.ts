@@ -23,8 +23,15 @@ namespace slime.jrunscript.file.internal.java {
 			line: string
 		}
 
+		/**
+		 * @param string A path which may be absolute or relative.
+		 */
 		newPeer: (string: string) => Peer
 
+		/**
+		 * @param base A parent pathname, which may itself be relative (in which case it will be interpreted relative to the process
+		 * working directory
+		 */
 		relative: (base: string, relative: string) => Peer
 
 		exists: (peer: Peer) => any
@@ -118,6 +125,12 @@ namespace slime.jrunscript.file.internal.java {
 
 				//	We don't really have a sandbox way to test creating nodes with relative paths, because we can't control the
 				//	PWD we are given and the files would be relative to the VM working directory.
+			}
+
+			fifty.tests.world = function() {
+				var os = new subject.FilesystemProvider(Packages.inonit.script.runtime.io.Filesystem.create());
+				var at = os.newPeer("at");
+				fifty.global.jsh.shell.console("at = " + at.getScriptPath());
 			}
 
 			fifty.tests.suite = function() {

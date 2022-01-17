@@ -13,7 +13,17 @@
 	 * @param { slime.loader.Export<slime.jrunscript.tools.gcloud.Exports> } $export
 	 */
 	function($api,$context,$export) {
-		var executeCommand = function(executable,account,project) {
+		var run = ($context.mock.shell.run) ? $context.library.shell.world.mock($context.mock.shell.run) : $context.library.shell.world.run;
+
+		/**
+		 *
+		 * @param { string } executable
+		 * @param { string } config
+		 * @param { string } account
+		 * @param { string } project
+		 * @returns
+		 */
+		var executeCommand = function(executable,config,account,project) {
 			/** @type { slime.jrunscript.tools.gcloud.cli.Executor } */
 			var rv = function(command) {
 				return {
@@ -24,7 +34,7 @@
 								function(events) {
 									var result;
 									var invocation = command.invocation(argument);
-									$context.library.shell.world.run(
+									run(
 										$context.library.shell.Invocation.create({
 											//	TODO	could this dependency be narrowed to world filesystem rather than whole library?
 											command: executable,
@@ -35,6 +45,7 @@
 												rv.push(invocation.command);
 												rv.push.apply(rv, invocation.arguments);
 											}),
+											environment: (config) ? $api.Object.compose($context.library.shell.environment, { CLOUDSDK_CONFIG: config }) : void(0),
 											stdio: {
 												output: "string",
 												error: "line"
@@ -75,18 +86,34 @@
 						if (typeof(installation) == "undefined") throw new TypeError("'installation' must not be undefined.");
 						//	TODO	could this dependency be narrowed to world filesystem rather than whole library?
 						var executable = $context.library.file.world.filesystems.os.Pathname.relative(installation, "bin/gcloud");
+						//	TODO	a lot of repetition below, but a lot of test coverage would be needed to safely refactor it
 						return {
+							config: function(config) {
+								return {
+									account: function(account) {
+										return {
+											project: function(project) {
+												return {
+													command: executeCommand(executable,config,account,project)
+												}
+											},
+											command: executeCommand(executable,config,account,void(0))
+										}
+									},
+									command: executeCommand(executable,config,void(0),void(0))
+								}
+							},
 							account: function(account) {
 								return {
 									project: function(project) {
 										return {
-											command: executeCommand(executable,account,project)
+											command: executeCommand(executable,void(0),account,project)
 										}
 									},
-									command: executeCommand(executable,account,void(0))
+									command: executeCommand(executable,void(0),account,void(0))
 								}
 							},
-							command: executeCommand(executable,void(0),void(0))
+							command: executeCommand(executable,void(0),void(0),void(0))
 						}
 					},
 					create: function create(pathname) {

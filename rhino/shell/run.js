@@ -344,7 +344,7 @@
 									return entry[eventName]
 								}).join("\n");
 							}
-							if (result.exit.stdio[stdioName]) return result.exit.stdio[stdioName];
+							if (result.exit.stdio && result.exit.stdio[stdioName]) return result.exit.stdio[stdioName];
 							return "";
 						}
 						return void(0);

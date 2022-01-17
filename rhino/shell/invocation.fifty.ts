@@ -74,7 +74,7 @@ namespace slime.jrunscript.shell {
 			arguments?: Token[]
 
 			/**
-			 * The environment to supply to the command. If not specified, this process's environment will be provided.
+			 * The environment to supply to the command. If `undefined`, this process's environment will be provided.
 			 */
 			environment?: slime.jrunscript.shell.old.Invocation["environment"]
 
