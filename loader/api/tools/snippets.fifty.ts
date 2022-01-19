@@ -10,8 +10,12 @@ namespace slime.tools.snippets {
 		vscode: vscode.Snippet[]
 	}
 
-	namespace vscode {
-		interface Snippet {
+	/**
+	 * Snippet syntax: [TextMate](https://macromates.com/manual/en/snippets) minus interpolated shell code and
+	 * \u; see [Snippets in Visual Studio Code](https://code.visualstudio.com/docs/editor/userdefinedsnippets).
+	 */
+	export namespace vscode {
+		export interface Snippet {
 			name: string
 			prefix: string
 			body: string[]
@@ -19,7 +23,7 @@ namespace slime.tools.snippets {
 		}
 	}
 
-	interface ApiHtmlSnippet {
+	export interface ApiHtmlSnippet {
 		name: string
 		abbreviation: string
 		html: string

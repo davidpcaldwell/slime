@@ -130,7 +130,7 @@
 			};
 		};
 
-		var snippetPattern = /^snippet\-(.*)-(.*)\.zzz$/;
+		var snippetPattern = /^(.*)-(.*)\.zzz$/;
 
 		var snippetFiles = function(p) {
 			function removeLicense(code) {
@@ -155,7 +155,7 @@
 						return pattern.replace(/zzz/g, p.extension)
 					})
 				);
-				var snippets = jsh.script.file.parent.list().filter(function(node) {
+				var snippets = jsh.script.file.parent.getSubdirectory("snippets").list().filter(function(node) {
 					var match = pattern.exec(node.pathname.basename);
 					return Boolean(match);
 				}).map(function(node) {
@@ -178,8 +178,11 @@
 							name: "slime " + snippet.name,
 							prefix: snippet.abbreviation,
 							body: snippet.code.split("\n").map(function(line) {
-								//	TODO	generalize; escaping everything except $0 is tricky, so we do just $api for now
-								return line.replace(/\/\*\$0\*\//g, "$0").replace(/\$api/g, "\\$api")
+								//	TODO	generalize; escaping everything except $0 is tricky, so we do some known values for now
+								return line.replace(/\/\*\$0\*\//g, "$0")
+									.replace(/\$api/g, "\\$api")
+									.replace(/\$context/g, "\\$context")
+									.replace(/\$export/g, "\\$export")
 							}),
 							description: "slime " + snippet.name
 						}
@@ -218,7 +221,11 @@
 
 				var toObject = function(array) {
 					return array.reduce(function(rv,element) {
-						rv[element.name] = $api.Object.compose(element, { name: void(0) });
+						rv[element.name] = $api.Function.result(element, $api.Function.pipe(
+							$api.Function.Object.entries,
+							$api.Function.Array.filter(function(entry) { return entry[0] != "name"; }),
+							$api.Function.Object.fromEntries
+						));
 						return rv;
 					},{});
 				}

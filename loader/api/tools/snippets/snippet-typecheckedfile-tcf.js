@@ -4,13 +4,16 @@
 //
 //	END LICENSE
 
+//@ts-check
 (
-	function(
-		fifty: slime.fifty.test.kit
-	) {
-		fifty.tests.suite = function() {
-			/*$0*/
-		}
+	/**
+	 *
+	 * @param { slime.$api.Global } $api
+	 * @param { ${1:__NAMESPACE__}.Context } $context
+	 * @param { slime.loader.Export<$1.Exports> } $export
+	 */
+	function($api,$context,$export) {
+		/*$0*/
 	}
 //@ts-ignore
-)(fifty);
+)($api,$context,$export);

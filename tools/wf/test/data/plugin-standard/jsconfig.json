@@ -4,4 +4,8 @@
 //
 //	END LICENSE
 
-{}
+{
+	"exclude": [
+		"slime/loader/api/tools/snippets"
+	]
+}
