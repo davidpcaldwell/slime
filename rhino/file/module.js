@@ -82,13 +82,28 @@
 				return $context.api.io.Streams.java.adapt(peer.readBinary());
 			};
 
-			return {
+			function pathname_relative(parent, relative) {
+				if (typeof(parent) == "undefined") throw new TypeError("'parent' must not be undefined.");
+				var peer = was.relative(parent, relative);
+				return was.peerToString(peer);
+			}
+
+			/** @type { slime.jrunscript.file.world.Filesystem } */
+			var filesystem = {
+				pathname: function(pathname) {
+					return {
+						filesystem: filesystem,
+						pathname: pathname,
+						relative: function(relative) {
+							return filesystem.pathname(pathname_relative(pathname, relative));
+						},
+						File: void(0),
+						Directory: void(0),
+						isDirectory: void(0)
+					}
+				},
 				Pathname: {
-					relative: function relative(parent, relative) {
-						if (typeof(parent) == "undefined") throw new TypeError("'parent' must not be undefined.");
-						var peer = was.relative(parent, relative);
-						return was.peerToString(peer);
-					},
+					relative: pathname_relative,
 					isDirectory: function(pathname) {
 						var peer = was.newPeer(pathname);
 						return was.exists(peer) && was.isDirectory(peer);
@@ -149,6 +164,8 @@
 					}
 				}
 			};
+
+			return filesystem;
 		}
 
 		//	Object-oriented filesystem implementations.

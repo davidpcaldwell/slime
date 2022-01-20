@@ -20,6 +20,8 @@ namespace slime.$api {
 				repeat: (count: number) => (string: string) => string
 				toUpperCase: (string: string) => string
 				match: (pattern: RegExp) => (string: string) => RegExpMatchArray
+
+				endsWith: (searchString: string, endPosition?: number) => (target: string) => boolean
 			}
 		}
 

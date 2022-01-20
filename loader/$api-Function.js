@@ -118,6 +118,11 @@
 				return function(string) {
 					return string.match(regexp);
 				}
+			},
+			endsWith: function(searchString, endPosition) {
+				return function(string) {
+					return string.endsWith(searchString, endPosition);
+				}
 			}
 		};
 

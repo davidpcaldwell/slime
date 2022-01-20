@@ -439,17 +439,95 @@ namespace slime.jrunscript.file {
 	)(Packages,global.jsh,tests,verify,fifty);
 
 	export namespace world {
-		export interface Filesystem {
-			Pathname: {
-				relative: (parent: string, relative: string) => string
+		(
+			function(
+				fifty: slime.fifty.test.kit
+			) {
+				const { run } = fifty;
 
-				isDirectory: (pathname: string) => boolean
+				fifty.tests.sandbox = {};
+
+				fifty.tests.sandbox.filesystem = function() {
+					run(fifty.tests.sandbox.filesystem.Pathname.relative);
+					run(fifty.tests.sandbox.filesystem.Pathname.isDirectory);
+					run(fifty.tests.sandbox.filesystem.File.read);
+					run(fifty.tests.sandbox.filesystem.Directory.require);
+					run(fifty.tests.sandbox.filesystem.Directory.remove);
+				}
 			}
+		//@ts-ignore
+		)(fifty);
+
+		export interface Pathname {
+			readonly filesystem: Filesystem
+			readonly pathname: string
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.kit
+			) {
+				//	TODO	generalize? Should this do filtering? Can build this into the Fifty test API
+				fifty["executeChildren"] = function() {
+					var runChildren = function(target) {
+						if (typeof(target) == "object") {
+							for (var x in target) {
+								runChildren(target[x]);
+							}
+						} else if (typeof(target) == "function") {
+							fifty.run(target);
+						}
+					}
+					var rv = function() {
+						var callee = rv;
+						for (var x in callee) {
+							fifty.run(callee[x])
+						}
+					};
+					return rv;
+				}
+				fifty.tests.sandbox.filesystem.pathname = fifty["executeChildren"]();
+			}
+		//@ts-ignore
+		)(fifty);
+
+		export interface Pathname {
+			relative: (relative: string) => Pathname
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.kit
+			) {
+				const { verify } = fifty;
+				const { $api, jsh } = fifty.global;
+				const { world } = jsh.file;
+				const filesystem = world.filesystems.os;
+
+				fifty.tests.sandbox.filesystem.pathname.relative = function() {
+					var parent = filesystem.pathname(fifty.$loader.getRelativePath(".").toString());
+					var relative = "module.fifty.ts";
+					var result = parent.relative(relative);
+					verify(result).is.type("object");
+					verify(result).relative.is.type("function");
+					verify(result).pathname.evaluate($api.Function.string.endsWith("module.fifty.ts")).is(true);
+					result = parent.relative("foo");
+					verify(result).is.type("object");
+					verify(result).relative.is.type("function");
+					verify(result).pathname.evaluate($api.Function.string.endsWith("module.fifty.ts")).is(false);
+					verify(result).pathname.evaluate($api.Function.string.endsWith("foo")).is(true);
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+
+		export interface Pathname {
+			isDirectory: () => boolean
 
 			File: {
 				read: {
 					stream: {
-						bytes: (pathname: string) => slime.$api.fp.impure.Ask<{
+						bytes: () => slime.$api.fp.impure.Ask<{
 							notFound: void
 						},slime.jrunscript.runtime.io.InputStream>
 					}
@@ -459,25 +537,86 @@ namespace slime.jrunscript.file {
 					 * The `Ask` also provides a `notFound` event to allow special handling of the case in which the file does not
 					 * exist.
 					 */
-					string: (pathname: string) => slime.$api.fp.impure.Ask<{
+					string: () => slime.$api.fp.impure.Ask<{
 						notFound: void
 					},string>
 				}
 
 				//	TODO	no tests
 				copy: (p: {
-					from: string
 					to: string
 				}) => slime.$api.fp.impure.Tell<void>
 			}
 
 			Directory: {
 				require: (p: {
+					recursive?: boolean
+				}) => slime.$api.fp.impure.Tell<void>
+
+				/**
+				 * Removes the directory at the given location. If there is nothing at the given location, will fire the `notFound`
+				 * event and return.
+				 */
+				remove: () => slime.$api.fp.impure.Tell<{
+					notFound: void
+				}>
+			}
+		}
+
+		export interface Filesystem {
+			pathname: (pathname: string) => Pathname
+
+			/** @deprecated Use .pathname() to obtain a {@link Pathname}. */
+			Pathname: {
+				/** @deprecated Use .pathname() to obtain a {@link Pathname}. */
+				relative: (parent: string, relative: string) => string
+
+				/** @deprecated Use .pathname() to obtain a {@link Pathname}. */
+				isDirectory: (pathname: string) => boolean
+			}
+
+			/** @deprecated Use .pathname() to obtain a {@link Pathname}. */
+			File: {
+				/** @deprecated Use .pathname() to obtain a {@link Pathname}. */
+				read: {
+					/** @deprecated Use .pathname() to obtain a {@link Pathname}. */
+					stream: {
+						/** @deprecated Use .pathname() to obtain a {@link Pathname}. */
+						bytes: (pathname: string) => slime.$api.fp.impure.Ask<{
+							notFound: void
+						},slime.jrunscript.runtime.io.InputStream>
+					}
+
+					/**
+					 * @deprecated Use .pathname() to obtain a {@link Pathname}.
+					 *
+					 * Returns an `Ask` that returns the contents of the file as a string, or `null` if the file does not exist.
+					 * The `Ask` also provides a `notFound` event to allow special handling of the case in which the file does not
+					 * exist.
+					 */
+					string: (pathname: string) => slime.$api.fp.impure.Ask<{
+						notFound: void
+					},string>
+				}
+
+				/** @deprecated Use .pathname() to obtain a {@link Pathname}. */
+				copy: (p: {
+					from: string
+					to: string
+				}) => slime.$api.fp.impure.Tell<void>
+			}
+
+			/** @deprecated Use .pathname() to obtain a {@link Pathname}. */
+			Directory: {
+				/** @deprecated Use .pathname() to obtain a {@link Pathname}. */
+				require: (p: {
 					pathname: string
 					recursive?: boolean
 				}) => slime.$api.fp.impure.Tell<void>
 
 				/**
+				 * @deprecated Use .pathname() to obtain a {@link Pathname}.
+				 *
 				 * Removes the directory at the given location. If there is nothing at the given location, will fire the `notFound`
 				 * event and return.
 				 */
@@ -498,25 +637,9 @@ namespace slime.jrunscript.file {
 				const { world } = jsh.file;
 				const filesystem = world.filesystems.os;
 
-				fifty.tests.sandbox = {};
-
-				fifty.tests.sandbox.filesystem = function() {
-					run(fifty.tests.sandbox.filesystem.Pathname.relative);
-					run(fifty.tests.sandbox.filesystem.Pathname.isDirectory);
-					run(fifty.tests.sandbox.filesystem.File.read);
-					run(fifty.tests.sandbox.filesystem.Directory.require);
-					run(fifty.tests.sandbox.filesystem.Directory.remove);
-				}
-
 				fifty.tests.sandbox.filesystem.Pathname = {
 					relative: function() {
-						var parent = fifty.$loader.getRelativePath(".").toString();
-						var relative = "module.fifty.ts";
-						var result = filesystem.Pathname.relative(parent, relative);
-						verify(result).is.type("string");
-						result = filesystem.Pathname.relative(parent, "foo");
-						verify(result).is.type("string");
-
+						//	TODO	the below tests may have been in the wrong place
 						var pathname = function(relative: string) { return fifty.$loader.getRelativePath(relative).toString(); };
 						var thisFile = pathname("module.fifty.ts");
 						var doesNotExist = pathname("foo");

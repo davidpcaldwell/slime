@@ -72,6 +72,16 @@ interface ObjectConstructor {
     entries(o: {}): [string, any][];
 }
 
+interface String {
+    //  Copied from https://github.com/microsoft/TypeScript/blob/main/lib/lib.es2015.core.d.ts
+    /**
+     * Returns true if the sequence of elements of searchString converted to a String is the
+     * same as the corresponding elements of this object (converted to a String) starting at
+     * endPosition – length(this). Otherwise returns false.
+     */
+    endsWith(searchString: string, endPosition?: number): boolean;
+}
+
 //	Copied from https://github.com/microsoft/TypeScript/blob/master/lib/lib.es2015.core.d.ts
 interface Array<T> {
     /**
