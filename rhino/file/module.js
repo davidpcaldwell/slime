@@ -82,10 +82,26 @@
 				return $context.api.io.Streams.java.adapt(peer.readBinary());
 			};
 
+			var openWriter = function(pathname,events) {
+				var peer = was.newPeer(pathname);
+				return peer.writeText(false);
+			}
+
 			function pathname_relative(parent, relative) {
 				if (typeof(parent) == "undefined") throw new TypeError("'parent' must not be undefined.");
 				var peer = was.relative(parent, relative);
 				return was.peerToString(peer);
+			}
+
+			function directory_require(p) {
+				return $api.Function.impure.tell(function() {
+					var peer = was.newPeer(p.pathname);
+					var parent = was.getParent(peer);
+					if (!parent.exists() && !p.recursive) throw new Error();
+					if (!peer.exists()) {
+						was.createDirectoryAt(peer);
+					}
+				});
 			}
 
 			/** @type { slime.jrunscript.file.world.Filesystem } */
@@ -97,8 +113,31 @@
 						relative: function(relative) {
 							return filesystem.pathname(pathname_relative(pathname, relative));
 						},
-						File: void(0),
-						Directory: void(0),
+						file: {
+							read: void(0),
+							write: {
+								string: function(p) {
+									return function() {
+										var writer = openWriter(pathname);
+										writer.write(p.content);
+										writer.close();
+									}
+								}
+							},
+							copy: void(0)
+						},
+						directory: {
+							exists: void(0),
+							require: function(p) {
+								return directory_require({
+									pathname: pathname,
+									recursive: Boolean(p && p.recursive)
+								});
+							},
+							remove: function() {
+								throw new Error("Unimplemented.");
+							}
+						},
 						isDirectory: void(0)
 					}
 				},
@@ -144,16 +183,7 @@
 					}
 				},
 				Directory: {
-					require: function(p) {
-						return $api.Function.impure.tell(function() {
-							var peer = was.newPeer(p.pathname);
-							var parent = was.getParent(peer);
-							if (!parent.exists() && !p.recursive) throw new Error();
-							if (!peer.exists()) {
-								was.createDirectoryAt(peer);
-							}
-						});
-					},
+					require: directory_require,
 					remove: function(p) {
 						return $api.Function.impure.tell(function(e) {
 							var peer = was.newPeer(p.pathname);

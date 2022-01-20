@@ -481,7 +481,7 @@ namespace slime.jrunscript.file {
 					var rv = function() {
 						var callee = rv;
 						for (var x in callee) {
-							fifty.run(callee[x])
+							runChildren(callee[x])
 						}
 					};
 					return rv;
@@ -521,46 +521,147 @@ namespace slime.jrunscript.file {
 		//@ts-ignore
 		)(fifty);
 
-		export interface Pathname {
-			isDirectory: () => boolean
+		export interface Directory {
+			require: (p?: {
+				recursive?: boolean
+			}) => slime.$api.fp.impure.Tell<void>
+		}
 
-			File: {
-				read: {
-					stream: {
-						bytes: () => slime.$api.fp.impure.Ask<{
-							notFound: void
-						},slime.jrunscript.runtime.io.InputStream>
-					}
+		(
+			function(
+				fifty: slime.fifty.test.kit
+			) {
+				const { verify, run } = fifty;
+				const { $api, jsh } = fifty.global;
+				const subject = jsh.file;
+				const filesystem = subject.world.filesystems.os;
 
-					/**
-					 * Returns an `Ask` that returns the contents of the file as a string, or `null` if the file does not exist.
-					 * The `Ask` also provides a `notFound` event to allow special handling of the case in which the file does not
-					 * exist.
-					 */
-					string: () => slime.$api.fp.impure.Ask<{
-						notFound: void
-					},string>
+				fifty.tests.sandbox.filesystem.pathname.directory = {};
+
+				fifty.tests.sandbox.filesystem.pathname.directory.require = function() {
+					run(function recursiveRequired() {
+						var TMPDIR = jsh.shell.TMPDIR.createTemporary({ directory: true });
+						var tmpdir = filesystem.pathname(TMPDIR.toString());
+						var destination = tmpdir.relative("foo/bar");
+
+						verify(TMPDIR).getSubdirectory("foo/bar").is.type("null");
+
+						verify(destination.directory).evaluate(function(subject) {
+							return subject.require()();
+						}).threw.type(Error);
+
+						verify(TMPDIR).getSubdirectory("foo/bar").is.type("null");
+
+						verify(destination.directory).evaluate(function(subject) {
+							return subject.require({
+								recursive: true
+							})();
+						}).threw.nothing();
+
+						verify(TMPDIR).getSubdirectory("foo/bar").is.type("object");
+					});
+
+					run(function createsOnce() {
+						var TMPDIR = jsh.shell.TMPDIR.createTemporary({ directory: true });
+						var tmpdir = filesystem.pathname(TMPDIR.toString());
+						var destination = tmpdir.relative("foo");
+
+						verify(TMPDIR).getSubdirectory("foo").is(null);
+
+						destination.directory.require()();
+
+						verify(TMPDIR).getSubdirectory("foo").is.type("object");
+						verify(TMPDIR).getSubdirectory("foo").getFile("a").is.type("null");
+
+						TMPDIR.getSubdirectory("foo").getRelativePath("a").write("", { append: false });
+
+						verify(TMPDIR).getSubdirectory("foo").is.type("object");
+						verify(TMPDIR).getSubdirectory("foo").getFile("a").is.type("object");
+
+						destination.directory.require()();
+
+						verify(TMPDIR).getSubdirectory("foo").is.type("object");
+						//	verify it was not recreated
+						verify(TMPDIR).getSubdirectory("foo").getFile("a").is.type("object");
+					})
 				}
-
-				//	TODO	no tests
-				copy: (p: {
-					to: string
-				}) => slime.$api.fp.impure.Tell<void>
 			}
+		//@ts-ignore
+		)(fifty);
 
-			Directory: {
-				require: (p: {
-					recursive?: boolean
-				}) => slime.$api.fp.impure.Tell<void>
+		export interface Directory {
+			/**
+			 * Removes the directory at the given location. If there is nothing at the given location, will fire the `notFound`
+			 * event and return.
+			 */
+			remove: () => slime.$api.fp.impure.Tell<{
+				notFound: void
+			}>
 
-				/**
-				 * Removes the directory at the given location. If there is nothing at the given location, will fire the `notFound`
-				 * event and return.
-				 */
-				remove: () => slime.$api.fp.impure.Tell<{
-					notFound: void
+			exists: () => slime.$api.fp.impure.Ask<{},boolean>
+		}
+
+		export interface File {
+			write: {
+				string: (p: {
+					content: string
+				}) => slime.$api.fp.impure.Tell<{
 				}>
 			}
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.kit
+			) {
+				const { verify } = fifty;
+				const { jsh } = fifty.global;
+				const filesystem = jsh.file.world.filesystems.os;
+
+				fifty.tests.sandbox.filesystem.pathname.file = {};
+				fifty.tests.sandbox.filesystem.pathname.file.write = {};
+				fifty.tests.sandbox.filesystem.pathname.file.write.string = function() {
+					var TMPDIR = jsh.shell.TMPDIR.createTemporary({ directory: true });
+					var read = function(at: Pathname): string {
+						var file = jsh.file.Pathname(at.pathname).file;
+						return (file) ? file.read(String) : null;
+					}
+					var at = filesystem.pathname(TMPDIR.toString()).relative("a");
+					verify(read(at)).is(null);
+					at.file.write.string({ content: "foo" })();
+					verify(read(at)).is("foo");
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+
+		export interface File {
+			read: {
+				stream: {
+					bytes: () => slime.$api.fp.impure.Ask<{
+						notFound: void
+					},slime.jrunscript.runtime.io.InputStream>
+				}
+
+				/**
+				 * Returns an `Ask` that returns the contents of the file as a string, or `null` if the file does not exist.
+				 * The `Ask` also provides a `notFound` event to allow special handling of the case in which the file does not
+				 * exist.
+				 */
+				string: () => slime.$api.fp.impure.Ask<{
+					notFound: void
+				},string>
+			}
+
+			//	TODO	no tests
+			copy: (p: {
+				to: string
+			}) => slime.$api.fp.impure.Tell<void>
+		}
+
+		export interface Pathname {
+			file: File
+			directory: Directory
 		}
 
 		export interface Filesystem {
