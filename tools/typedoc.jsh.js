@@ -67,6 +67,7 @@
 						}
 					}),
 					environment: environment,
+					directory: project,
 					evaluate: function(result) {
 						jsh.shell.exit(result.status);
 					}

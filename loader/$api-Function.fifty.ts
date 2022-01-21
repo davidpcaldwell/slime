@@ -9,11 +9,17 @@ namespace slime.$api {
 		Function: slime.$api.fp.Exports
 	}
 
+	/**
+	 * The {@link Exports} member of this namespace is available as `$api.Function` in all scripts loaded by the SLIME loader.
+	 */
 	export namespace fp {
 		export type Predicate<T> = (t: T) => boolean
 		/** @deprecated - Use {@link Predicate}. */
 		export type Filter<T> = (t: T) => boolean
 
+		/**
+		 * This object is available as `$api.Function` in all scripts loaded by the SLIME loader.
+		 */
 		export interface Exports {
 			string: {
 				split: (delimiter: string) => (string: string) => string[]
@@ -21,7 +27,7 @@ namespace slime.$api {
 				toUpperCase: (string: string) => string
 				match: (pattern: RegExp) => (string: string) => RegExpMatchArray
 
-				endsWith: (searchString: string, endPosition?: number) => (target: string) => boolean
+				endsWith: (searchString: string, endPosition?: number) => Predicate<string>
 			}
 		}
 
@@ -277,7 +283,12 @@ namespace slime.$api {
 
 		export interface Exports {
 			identity: <T>(t: T) => T
+
+			/**
+			 * A function that can be declared as type {@link slime.js.Cast | `slime.js.Cast<T>`} and cast any value to `T`.
+			 */
 			cast: <T>(t: any) => T
+
 			returning: <T>(t: T) => () => T
 			Array: {
 				filter: <T>(f: fp.Predicate<T>) => (ts: T[]) => T[]
