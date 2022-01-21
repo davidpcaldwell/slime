@@ -15,7 +15,7 @@
 		$api.Function.pipe(
 			//	TODO	this default is also stored in tools/wf/plugin.jsh.js
 			jsh.script.cli.option.string({ longname: "ts:version", default: "4.5.4" }),
-			jsh.wf.cli.$f.option.pathname({ longname: "tsconfig" }),
+			jsh.script.cli.option.pathname({ longname: "tsconfig", default: jsh.shell.PWD.getRelativePath("jsconfig.json") }),
 			jsh.wf.cli.$f.option.pathname({ longname: "output" }),
 			function(p) {
 				jsh.shell.tools.rhino.require();
@@ -36,14 +36,16 @@
 				var environment = $api.Object.compose(jsh.shell.environment, {
 					PATH: PATH.toString()
 				});
+				var project = p.options.tsconfig.parent.directory;
 				var readme = (function(project) {
-					var readme = project.directory.getFile("typedoc-index.md");
+					var readme = project.getFile("typedoc-index.md");
 					if (readme) return readme.toString();
 					return "none";
-				})(p.options.tsconfig.parent);
+				})(project);
 				var result = jsh.shell.run({
 					command: shell.getRelativePath("local/jsh/lib/node/bin/typedoc"),
 					arguments: $api.Array.build(function(rv) {
+						//	TODO	is this relative to tsconfig or to PWD?
 						rv.push("--out", p.options.output);
 						rv.push("--tsconfig", p.options.tsconfig);
 						if (typedocVersion == "0.19.2") {
@@ -53,16 +55,15 @@
 						rv.push("--excludeExternals");
 						rv.push("--readme", readme);
 						//	TODO	add --name
-						//	TODO	this seems to "work" in the sense that files are compiled, but unclear why.
 						if (typedocVersion == "0.22.11") {
-							//	Will this work? Can we just pick an arbitrary file from SLIME, no matter what the project structure?
-							var entryPoint = p.options.tsconfig.parent.directory.getRelativePath("README.fifty.ts");
-							if (!entryPoint.file) {
-								jsh.shell.console("Required: README.fifty.ts to use as TypeDoc entry point.");
-								jsh.shell.exit(1);
+							if (!project.getFile("typedoc.json")) {
+								var entryPoint = project.getRelativePath("README.fifty.ts");
+								if (!entryPoint.file) {
+									jsh.shell.console("Required: README.fifty.ts to use as TypeDoc entry point.");
+									jsh.shell.exit(1);
+								}
+								rv.push("--entryPoints", entryPoint);
 							}
-							rv.push("--entryPoints", entryPoint);
-							//rv.push("--entryPointStrategy", "expand");
 						}
 					}),
 					environment: environment,
