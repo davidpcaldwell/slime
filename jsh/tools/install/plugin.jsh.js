@@ -697,6 +697,13 @@
 						/** @type { slime.jrunscript.node.Installation["modules"] } */
 						var modules = jsh.shell.tools.node["modules"];
 
+						var getVersion = function(p) {
+							if (!p) return void(0);
+							var now = modules.installed[p.name];
+							if (now.version) return now.version;
+							if (now.required && now.required.version) return now.required.version;
+						}
+
 						//	Wraps the existing require and makes it pertain to the entire shell. Not sure whether this is necessary;
 						//	maybe for something like TypeScript that is built into the shell itself?
 						modules.require = function(p) {
@@ -704,8 +711,9 @@
 								satisfied: function() {
 									var now = modules.installed[p.name];
 									if (!now) return false;
+									var version = getVersion({ name: p.name });
 									if (p.version) {
-										return now.version == p.version;
+										return version == p.version;
 									} else {
 										return true;
 									}

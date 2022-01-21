@@ -343,7 +343,7 @@
 				jsh.wf.typescript = (function() {
 					function getVersion(project) {
 						if (project.getFile("tsc.version")) return project.getFile("tsc.version").read(String);
-						return "4.0.5";
+						return "4.5.4";
 					}
 
 					function getConfig(base) {
@@ -360,6 +360,8 @@
 						},
 						tsc: function(p) {
 							var project = (p && p.project) ? p.project : base;
+							var version = getVersion(project);
+							jsh.shell.console("Compiling with TypeScript " + version + " ...");
 							var result = jsh.shell.jsh({
 								script: jsh.shell.jsh.src.getFile("tools/tsc.jsh.js"),
 								arguments: [
@@ -371,6 +373,8 @@
 						},
 						typedoc: function(p) {
 							var project = (p && p.project) ? p.project : base;
+							var version = getVersion(project);
+							jsh.shell.console("Compiling with TypeScript " + version + " ...");
 							return jsh.shell.jsh({
 								shell: jsh.shell.jsh.src,
 								script: jsh.shell.jsh.src.getFile("tools/typedoc.jsh.js"),

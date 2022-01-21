@@ -44,7 +44,7 @@ namespace slime.servlet {
 
 	export type handler = (request: Request) => Response
 
-	interface Script {
+	export interface Script {
 		handle: handler
 		destroy?: () => void
 	}

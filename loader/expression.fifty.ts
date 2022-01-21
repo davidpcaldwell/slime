@@ -30,8 +30,6 @@ interface IteratorReturnResult<TReturn> {
 	value: TReturn;
 }
 
-//  TODO    in some version after 4.0.5, this is declared elsewhere
-//@ts-ignore
 type IteratorResult<T, TReturn = any> = IteratorYieldResult<T> | IteratorReturnResult<TReturn>;
 
 interface Iterator<T, TReturn = any, TNext = undefined> {

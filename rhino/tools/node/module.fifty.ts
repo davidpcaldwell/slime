@@ -44,7 +44,12 @@ namespace slime.jrunscript.node {
 		}) => string
 
 		modules: {
-			installed: { [key: string]: { version: string } }
+			installed: { [key: string]: {
+				version: string
+				required: {
+					version: string
+				}
+			} }
 			install: (p: { name: string }) => void
 			require: (p: { name: string, version?: string }) => void
 			uninstall: Function

@@ -28,6 +28,8 @@
 		var addLevelsTo = function(object) {
 			levels.forEach(function(item) {
 				this[item] = function() {
+					//	TODO	hastily-added for TypeDoc upgrade from 4.0.5 to 4.5.4
+					//@ts-ignore
 					this.log.apply(this, [_Level[item]].concat(Array.prototype.slice.call(arguments)));
 				};
 			}, object);

@@ -1298,6 +1298,8 @@
 			}
 
 			/** @type { slime.jrunscript.git.Installation["Repository"] } */
+			//	TODO	disabled to support upgrade to TypeScript 4.5.4 and Typedoc 0.22.11
+			//@ts-ignore
 			this.Repository = (
 				function(p) {
 					if (isDirectoryArgument(p) || isLocalArgument(p)) {

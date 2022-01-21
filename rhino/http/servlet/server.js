@@ -27,6 +27,8 @@
 		/**
 		 * @type { new (_request: any) => slime.servlet.Request }
 		 */
+		//	TODO	disabling to support upgrade to TypeScript 4.5.4
+		//@ts-ignore
 		var Request = (
 			/**
 			 * @constructor

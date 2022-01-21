@@ -13,15 +13,24 @@
 	 */
 	function($api,jsh) {
 		$api.Function.pipe(
-			jsh.wf.cli.$f.option.string({ longname: "ts:version" }),
+			//	TODO	this default is also stored in tools/wf/plugin.jsh.js
+			jsh.script.cli.option.string({ longname: "ts:version", default: "4.5.4" }),
 			jsh.wf.cli.$f.option.pathname({ longname: "tsconfig" }),
 			jsh.wf.cli.$f.option.pathname({ longname: "output" }),
 			function(p) {
 				jsh.shell.tools.rhino.require();
 				jsh.shell.tools.tomcat.require();
 				jsh.shell.tools.node.require();
+				if (false) jsh.shell.console("Require TypeScript: " + p.options["ts:version"]);
 				jsh.shell.tools.node["modules"].require({ name: "typescript", version: p.options["ts:version"] });
-				jsh.shell.tools.node["modules"].require({ name: "typedoc", version: "0.19.2" });
+				var typedocVersion = (function(tsVersion) {
+					if (tsVersion == "4.0.5") return "0.19.2";
+					if (tsVersion == "4.5.4") return "0.22.11";
+					throw new Error("Unspecified TypeDoc version for TypeScript " + tsVersion);
+				})(p.options["ts:version"])
+				if (false) jsh.shell.console("Require TypeDoc: " + typedocVersion);
+				jsh.shell.tools.node["modules"].require({ name: "typedoc", version: typedocVersion });
+				if (false) jsh.shell.console("Dependencies satisfied.");
 				var shell = jsh.script.file.parent.parent;
 				var PATH = jsh.file.Searchpath(jsh.shell.PATH.pathnames.concat([shell.getRelativePath("local/jsh/lib/node/bin")]));
 				var environment = $api.Object.compose(jsh.shell.environment, {
@@ -34,15 +43,28 @@
 				})(p.options.tsconfig.parent);
 				var result = jsh.shell.run({
 					command: shell.getRelativePath("local/jsh/lib/node/bin/typedoc"),
-					arguments: [
-						"--out", p.options.output,
-						"--tsconfig", p.options.tsconfig,
-						"--mode", "file",
-						"--includeDeclarations",
-						"--excludeExternals",
-						"--readme", readme
+					arguments: $api.Array.build(function(rv) {
+						rv.push("--out", p.options.output);
+						rv.push("--tsconfig", p.options.tsconfig);
+						if (typedocVersion == "0.19.2") {
+							rv.push("--mode", "file");
+							rv.push("--includeDeclarations");
+						}
+						rv.push("--excludeExternals");
+						rv.push("--readme", readme);
 						//	TODO	add --name
-					],
+						//	TODO	this seems to "work" in the sense that files are compiled, but unclear why.
+						if (typedocVersion == "0.22.11") {
+							//	Will this work? Can we just pick an arbitrary file from SLIME, no matter what the project structure?
+							var entryPoint = p.options.tsconfig.parent.directory.getRelativePath("README.fifty.ts");
+							if (!entryPoint.file) {
+								jsh.shell.console("Required: README.fifty.ts to use as TypeDoc entry point.");
+								jsh.shell.exit(1);
+							}
+							rv.push("--entryPoints", entryPoint);
+							//rv.push("--entryPointStrategy", "expand");
+						}
+					}),
 					environment: environment,
 					evaluate: function(result) {
 						jsh.shell.exit(result.status);
