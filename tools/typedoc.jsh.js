@@ -59,7 +59,7 @@
 							if (!project.getFile("typedoc.json")) {
 								var entryPoint = project.getRelativePath("README.fifty.ts");
 								if (!entryPoint.file) {
-									jsh.shell.console("Required: README.fifty.ts to use as TypeDoc entry point.");
+									jsh.shell.console("Required: typedoc.json, or README.fifty.ts to use as TypeDoc entry point.");
 									jsh.shell.exit(1);
 								}
 								rv.push("--entryPoints", entryPoint);
