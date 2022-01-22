@@ -147,7 +147,16 @@ namespace slime.jrunscript.tools.gcloud {
 					command
 				).argument("bar").run();
 
+				verify(captor).last().context.environment.CLOUDSDK_CONFIG.is("config");
 				verify(captor).last().configuration.command.is("/gcloud/at/bin/gcloud");
+				verify(captor).last().configuration.arguments[0].is("--account");
+				verify(captor).last().configuration.arguments[1].is("account");
+				verify(captor).last().configuration.arguments[2].is("--project");
+				verify(captor).last().configuration.arguments[3].is("project");
+				verify(captor).last().configuration.arguments[4].is("--format");
+				verify(captor).last().configuration.arguments[5].is("json");
+				verify(captor).last().configuration.arguments[6].is("foo");
+				verify(captor).last().configuration.arguments[7].is("bar");
 			}
 
 			fifty.tests.world = function() {

@@ -94,14 +94,11 @@ namespace slime.jsh.httpd {
 		plugin: {
 			tools: () => void
 		}
-		tools: {
-			build: {
-				(p: {
+	}
+}
 
-				}): void
-
-				getJavaSourceFiles: (p: any) => any[]
-			}
-		}
+namespace slime.jsh {
+	export interface Global {
+		httpd: slime.jsh.httpd.Exports
 	}
 }

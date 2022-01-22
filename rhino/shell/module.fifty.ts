@@ -17,36 +17,6 @@ namespace slime.jrunscript.shell {
 		}
 	}
 
-	interface java {
-		(p: {
-			vmarguments?: any
-			properties?: any
-			jar: any
-			arguments: any
-		}): Result
-
-		(p: {
-			vmarguments?: any
-			properties?: any
-			classpath: any
-			main: any
-			arguments?: any
-			environment?: any
-			stdio?: any
-			directory?: any
-			evaluate?: any
-		}): Result
-
-		version: string
-
-		keytool: any
-
-		launcher: slime.jrunscript.file.File
-
-		jrunscript: any
-		home: any
-	}
-
 	export interface Context {
 		stdio: Stdio
 		_environment: slime.jrunscript.native.inonit.system.OperatingSystem.Environment
@@ -65,6 +35,18 @@ namespace slime.jrunscript.shell {
 			xml: any
 		}
 	}
+
+	export interface Exports {
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.kit
+		) {
+			fifty.tests.exports = {};
+		}
+	//@ts-ignore
+	)(fifty);
 
 	export interface Exports {
 		listeners: $api.Events<{
@@ -446,6 +428,120 @@ namespace slime.jrunscript.shell {
 	)(fifty);
 
 	export interface Exports {
+		/**
+		 * Launches a Java program.
+		 */
+		java: {
+			//	TODO	The old comment stated that this argument was the same as the argument to `shell`, with classpath, jar, and
+			//			main added. This seems likely to be wrong but looking at the implementation may reveal whether the types
+			//			are related in the implementation.
+			/**
+			 * Launches a Java program.
+			 */
+			<R>(p: {
+				vmarguments?: any
+				properties?: any
+
+				/**
+				 * The classpath to pass to the Java process.
+				 */
+				classpath: slime.jrunscript.file.Searchpath
+
+				/**
+				 * The name of the main class to execute.
+				 */
+				main: string
+
+				arguments?: any
+				environment?: any
+				stdio?: any
+				directory?: any
+				evaluate: (result: Result) => R
+			}): R
+
+			/**
+			 * Launches a Java program.
+			 */
+			(p: {
+				vmarguments?: any
+				properties?: any
+				classpath: any
+				main: any
+				arguments?: any
+				environment?: any
+				stdio?: any
+				directory?: any
+			}): Result
+
+			/**
+			 * Launches a Java program.
+			 */
+			(p: {
+				vmarguments?: any
+				properties?: any
+
+				/**
+				 * A JAR file to pass to `java -jar`.
+				 */
+				jar: slime.jrunscript.file.File
+				arguments: any
+			}): Result
+
+			version: string
+
+			keytool: any
+
+			/**
+			 * The Java launcher program, that is, the executable used to launch Java programs.
+			 */
+			launcher: slime.jrunscript.file.File
+
+			jrunscript: any
+
+			/**
+			 * The home directory of the Java installation used to run this shell.
+			 */
+			home: slime.jrunscript.file.Directory
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.kit
+		) {
+			const { verify } = fifty;
+			const { jsh } = fifty.global;
+			const subject = jsh.shell;
+
+			fifty.tests.exports.java = function() {
+				debugger;
+				var to = jsh.shell.TMPDIR.createTemporary({ directory: true });
+				jsh.java.tools.javac({
+					destination: to.pathname,
+					arguments: [fifty.$loader.getRelativePath("test/java/inonit/jsh/test/Program.java")]
+				});
+				var buffer = new jsh.io.Buffer();
+				var output = subject.java({
+					classpath: jsh.file.Searchpath([to.pathname]),
+					main: "inonit.jsh.test.Program",
+					stdio: {
+						output: buffer.writeBinary()
+					},
+					evaluate: function(result) {
+						buffer.close();
+						return buffer.readText().asString();
+					}
+				});
+				verify(output).is("Hello");
+
+				verify(subject).java.home.is.type("object");
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+
+	export interface Exports {
 		//	TODO	probably should be conditional based on presence of sudo tool
 		/**
 		 * Creates an object that can execute invocations under `sudo` using the settings given.
@@ -510,8 +606,6 @@ namespace slime.jrunscript.shell {
 		//	browser
 
 		system: any
-
-		java: java
 
 		jrunscript: any
 
@@ -771,8 +865,6 @@ namespace slime.jrunscript.shell {
 		) {
 			const { verify } = fifty;
 			const { $api, jsh } = fifty.global;
-
-			fifty.tests.exports = {};
 
 			fifty.tests.exports.Tell = function() {
 				var tell: slime.$api.fp.impure.Tell<run.Events> = jsh.shell.Tell.mock({

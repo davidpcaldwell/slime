@@ -26,6 +26,8 @@ namespace slime.jsh.httpd {
 		) => void
 
 		loader: any
+
+		build: (to: slime.jrunscript.file.Directory) => void
 	}
 
 	export namespace resources {

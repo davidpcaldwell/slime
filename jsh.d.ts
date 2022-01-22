@@ -38,7 +38,7 @@ namespace slime.jsh {
 	 */
 	interface Global {
 		java: slime.jrunscript.host.Exports & {
-			tools: any,
+			tools: slime.jsh.java.tools.Exports,
 			log: any
 		}
 
@@ -55,7 +55,6 @@ namespace slime.jsh {
 		file: slime.jrunscript.file.Exports
 		time: slime.time.Exports
 		ip: slime.jrunscript.ip.Exports
-		httpd: slime.jsh.httpd.Exports
 		db: {
 			jdbc: slime.jsh.db.jdbc.Exports
 		}

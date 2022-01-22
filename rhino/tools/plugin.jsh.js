@@ -23,17 +23,21 @@
 				return typeof(jsh.js) != "undefined" && typeof(jsh.java) != "undefined"
 					&& (
 						Packages.javax.tools.ToolProvider.getSystemToolClassLoader() != null
-						|| Boolean(jsh.shell && jsh.file.Searchpath([ jsh.shell.java.home.getRelativePath("bin") ]).getCommand("javac"))
+						|| Boolean(jsh.file && jsh.shell && jsh.shell.java && jsh.shell.java.home && jsh.file.Searchpath([ jsh.shell.java.home.getRelativePath("bin") ]).getCommand("javac"))
 					)
 				;
 			},
 			load: function() {
-				jsh.java.tools = $loader.module("module.js", {
+				/** @type { slime.jrunscript.java.tools.Script } */
+				var module = $loader.script("module.js");
+				jsh.java.tools = Object.assign(module({
 					api: {
 						js: jsh.js,
-						java: jsh.java
+						java: jsh.java,
+						file: jsh.file,
+						shell: jsh.shell
 					}
-				});
+				}), { plugin: void(0) });
 			}
 		});
 
@@ -56,7 +60,7 @@
 
 		plugin({
 			isReady: function() {
-				return jsh.js && jsh.time && jsh.web && jsh.java && jsh.ip && jsh.file && jsh.shell && jsh.tools && jsh.tools.install && jsh.java.tools;
+				return Boolean(jsh.js && jsh.time && jsh.web && jsh.java && jsh.ip && jsh.file && jsh.shell && jsh.tools && jsh.tools.install && jsh.java.tools);
 			},
 			load: function() {
 				//	TODO	we are duplicating the isReady() logic both here and in the git plugin
@@ -102,16 +106,14 @@
 
 				loadHg();
 
-				if (!jsh.java.tools.plugin) jsh.java.tools.plugin = {};
-				jsh.java.tools.plugin.hg = $api.deprecate(function() {
-					loadHg();
-				});
-
-				//	TODO	provide alternate means of loading the plugin
-				if (!jsh.java.tools.plugin) jsh.java.tools.plugin = {};
-				jsh.java.tools.plugin.git = $api.deprecate(function() {
-					loadGit();
-				});
+				if (!jsh.java.tools.plugin) jsh.java.tools.plugin = {
+					hg: $api.deprecate(function() {
+						loadHg();
+					}),
+					git: $api.deprecate(function() {
+						loadGit();
+					})
+				};
 			}
 		});
 

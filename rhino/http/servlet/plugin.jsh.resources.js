@@ -415,6 +415,7 @@
 
 			this.file = void(0);
 			this.loader = void(0);
+			this.build = void(0);
 			Resources.call(this,mapping);
 
 			/** @type { slime.jsh.httpd.Resources["add"] } */

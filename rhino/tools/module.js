@@ -4,43 +4,66 @@
 //
 //	END LICENSE
 
+//@ts-check
 (
-	function() {
-		//	We do not want to pre-load the Java compiler as it is way too slow to do so.
-		//	TODO	verify that this setup does not load it
-		$exports.__defineGetter__("javac", $api.experimental($context.api.js.constant(function() {
-			var javac = (function() {
-				if (Packages.javax.tools.ToolProvider.getSystemJavaCompiler()) {
+	/**
+	 *
+	 * @param { slime.jrunscript.Packages } Packages
+	 * @param { slime.$api.Global } $api
+	 * @param { slime.jrunscript.java.tools.Context } $context
+	 * @param { slime.jrunscript.java.tools.Exports } $exports
+	 */
+	function(Packages,$api,$context,$exports) {
+		/** @type { { file: slime.jrunscript.file.Exports, shell: slime.jrunscript.shell.Exports } } */
+		var jsh = {
+			file: $context.api.file,
+			shell: $context.api.shell
+		};
+
+		/**
+		 *
+		 * @returns { { command: (args: string[]) => number } }
+		 */
+		function getJavaCompiler() {
+			if (Packages.javax.tools.ToolProvider.getSystemJavaCompiler()) {
+				return new function() {
+					this.command = function javac(args) {
+						return Packages.javax.tools.ToolProvider.getSystemJavaCompiler().run(
+							null, null, null,
+							$context.api.java.Array.create({
+								type: Packages.java.lang.String,
+								array: args.map(function(s) { return new Packages.java.lang.String(s); })
+							})
+						)
+					}
+				};
+			} else {
+				var toolpath = jsh.file.Searchpath([ jsh.shell.java.home.getRelativePath("bin") ]);
+				if (toolpath.getCommand("javac")) {
 					return new function() {
-						this.command = function javac(args) {
-							return Packages.javax.tools.ToolProvider.getSystemJavaCompiler().run(
-								null, null, null,
-								$context.api.java.Array.create({
-									type: Packages.java.lang.String,
-									array: args.map(function(s) { return new Packages.java.lang.String(s); })
-								})
-							)
-						}
-					};
-				} else {
-					var toolpath = jsh.file.Searchpath([ jsh.shell.java.home.getRelativePath("bin") ]);
-					if (toolpath.getCommand("javac")) {
-						return new function() {
-							this.command = function(args) {
-								return jsh.shell.run({
-									command: toolpath.getCommand("javac"),
-									arguments: args,
-									evaluate: function(result) {
-										return result.status;
-									}
-								});
-							}
+						this.command = function(args) {
+							return jsh.shell.run({
+								command: toolpath.getCommand("javac"),
+								arguments: args,
+								evaluate: function(result) {
+									return result.status;
+								}
+							});
 						}
 					}
 				}
-			})();
+			}
+		}
+
+		//	We do not want to pre-load the Java compiler as it is way too slow to do so.
+		//	TODO	verify that this setup does not load it
+		$exports.__defineGetter__("javac", $api.experimental($context.api.js.constant(function() {
+			var javac = getJavaCompiler();
+
 			if (!javac) return function(){}();
-			return function(p) {
+			/** @type { slime.jrunscript.java.tools.Exports["javac"] } */
+			var rv = function(p) {
+				/** @type { string[] } */
 				var args = [];
 				//	TODO	add documentation and test
 				if (p.debug === true) {
@@ -55,13 +78,13 @@
 						},
 						recursive: false
 					});
-					args.push("-d", p.destination);
+					args.push("-d", p.destination.toString());
 				}
 				if (p.classpath && p.classpath.pathnames.length) {
-					args.push("-classpath", p.classpath);
+					args.push("-classpath", p.classpath.toString());
 				}
 				if (p.sourcepath && p.sourcepath.pathnames.length) {
-					args.push("-sourcepath", p.sourcepath);
+					args.push("-sourcepath", p.sourcepath.toString());
 				}
 				if (p.source) {
 					args.push("-source", p.source);
@@ -96,6 +119,7 @@
 					arguments: args
 				});
 			};
+			return rv;
 		})));
 
 		$exports.Jar = function(o) {
@@ -122,4 +146,5 @@
 			})();
 		};
 	}
-)();
+//@ts-ignore
+)(Packages,$api,$context,$exports);

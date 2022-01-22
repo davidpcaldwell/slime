@@ -20,7 +20,7 @@
 	function($api,jsh,$loader,plugin) {
 		plugin({
 			isReady: function() {
-				return jsh.js && jsh.time && jsh.web && jsh.java && jsh.ip && jsh.file && jsh.shell && jsh.tools && jsh.tools.install && jsh.java.tools;
+				return Boolean(jsh.js && jsh.time && jsh.web && jsh.java && jsh.ip && jsh.file && jsh.shell && jsh.tools && jsh.tools.install && jsh.java.tools);
 			},
 			load: function() {
 				/** @type { slime.jrunscript.git.Script } */

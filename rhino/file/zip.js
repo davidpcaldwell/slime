@@ -86,16 +86,16 @@
 							var entry = new Packages.java.util.zip.ZipEntry(directoryName + "/");
 							peer.putNextEntry(entry);
 							peer.closeEntry();
-		//					zipOutputStream.addDirectory(directoryName);
+							// zipOutputStream.addDirectory(directoryName);
 						}
 					}
 				}
 
 				this.addDirectory = function(name) {
 					createDirectory(name);
-		//			var entry = new Packages.java.util.zip.ZipEntry(name + "/");
-		//			peer.putNextEntry(entry);
-		//			peer.closeEntry();
+					// var entry = new Packages.java.util.zip.ZipEntry(name + "/");
+					// peer.putNextEntry(entry);
+					// peer.closeEntry();
 				}
 
 				this.addEntry = function(name,$stream) {
