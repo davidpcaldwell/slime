@@ -205,6 +205,9 @@
 						 * @type { slime.jsh.httpd.Exports["tools"]["build"]["getJavaSourceFiles"] }
 						 */
 						getJavaSourceFiles: function(pathname) {
+							/** @type { (node: slime.jrunscript.file.Node) => node is slime.jrunscript.file.File } */
+							var isFile = function(node) { return true; };
+							var toFile = function(node) { if (isFile(node)) return node; }
 							if (pathname.directory) {
 								var nodes = pathname.directory.list({
 									recursive: true,
@@ -213,7 +216,7 @@
 									return /\.java/.test(entry.node.pathname.basename);
 								}).map(function(entry) {
 									return entry.node;
-								});
+								}).map(toFile);
 								return nodes;
 							} else {
 								return [pathname.file];

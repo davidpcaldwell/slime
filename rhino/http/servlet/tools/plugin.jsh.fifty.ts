@@ -16,7 +16,7 @@ namespace slime.jsh.httpd {
 						war?: any
 					}
 					rhino: boolean
-					libraries: {
+					libraries?: {
 						[x: string]: {
 							copy(pathname: slime.jrunscript.file.Pathname, mode: { recursive: boolean })
 						}
@@ -24,7 +24,7 @@ namespace slime.jsh.httpd {
 					java?: {
 						version?: string
 					}
-					compile?: slime.jrunscript.file.Node[]
+					compile?: slime.jrunscript.file.File[]
 					parameters: {
 						[x: string]: string
 					}
@@ -32,7 +32,7 @@ namespace slime.jsh.httpd {
 					Resources: (this: slime.jsh.httpd.Resources) => void
 				}): void
 
-				getJavaSourceFiles: (p: any) => any[]
+				getJavaSourceFiles: (p: slime.jrunscript.file.Pathname) => slime.jrunscript.file.File[]
 			}
 		}
 	}
