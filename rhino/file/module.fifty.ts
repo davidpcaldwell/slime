@@ -4,9 +4,6 @@
 //
 //	END LICENSE
 
-/**
- * Provides access to filesystems.
- */
 namespace slime.jrunscript.file {
 	export interface Context {
 		$pwd: string

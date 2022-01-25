@@ -81,6 +81,19 @@ END LICENSE
 			</script>
 			<div data-name="typedoc">
 				<h3><a href="../local/doc/typedoc/index.html">TypeDoc</a></h3>
+				<div>
+					<h4>Namespaces split across multiple files</h4>
+					<p>
+						For namespace comments, the current version of TypeDoc as of this writing, 0.22.11, will handle namespaces
+						split across multiple files by using the comment from the "first" file declaring the namespace. The ordering
+						of the files appears to be related to alphabetical order and perhaps a depth search starting from the root
+						(perhaps related to the location of jsconfig.json, or perhaps related to <code>entryPoints</code>).
+					</p>
+					<p>
+						As of this writing, for namespaces split across multiple files, SLIME adopts a workaround of creating a
+						file called `_.fifty.ts` to contain simply a namespace declaration and the top-level namespace comment.
+					</p>
+				</div>
 				<button data-name="update">Update</button>
 				<div>
 					<h4>Console</h4>
