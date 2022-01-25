@@ -97,9 +97,34 @@
 				return $api.Function.impure.tell(function() {
 					var peer = was.newPeer(p.pathname);
 					var parent = was.getParent(peer);
-					if (!parent.exists() && !p.recursive) throw new Error();
+					if (!parent.exists() && !p.recursive) throw new Error("Parent " + parent.getScriptPath() + " does not exist; specify recursive: true to override.");
 					if (!peer.exists()) {
 						was.createDirectoryAt(peer);
+					}
+				});
+			}
+
+
+			/**
+			 *
+			 * @param { string } file
+			 * @param { string } destination
+			 * @returns { slime.$api.fp.impure.Tell<void> }
+			 */
+			function copy(file,destination) {
+				return $api.Function.impure.tell(function(events) {
+					var from = was.newPeer(file);
+					var to = was.newPeer(destination);
+					$context.api.io.Streams.binary.copy(
+						was.read.binary(from),
+						was.write.binary(to, false)
+					);
+					var _from = from.getHostFile().toPath();
+					var _to = to.getHostFile().toPath();
+					var _Files = Packages.java.nio.file.Files;
+					if (_from.getFileSystem().supportedFileAttributeViews().contains("posix") && _to.getFileSystem().supportedFileAttributeViews().contains("posix")) {
+						var _fpermissions = _Files.getPosixFilePermissions(_from);
+						_Files.setPosixFilePermissions(_to, _fpermissions);
 					}
 				});
 			}
@@ -124,7 +149,9 @@
 									}
 								}
 							},
-							copy: void(0)
+							copy: function(p) {
+								return copy(pathname, p.to);
+							}
 						},
 						directory: {
 							exists: void(0),
@@ -165,21 +192,7 @@
 						}
 					},
 					copy: function(p) {
-						return $api.Function.impure.tell(function(events) {
-							var from = was.newPeer(p.from);
-							var to = was.newPeer(p.to);
-							$context.api.io.Streams.binary.copy(
-								was.read.binary(from),
-								was.write.binary(to, false)
-							);
-							var _from = from.getHostFile().toPath();
-							var _to = to.getHostFile().toPath();
-							var _Files = Packages.java.nio.file.Files;
-							if (_from.getFileSystem().supportedFileAttributeViews().contains("posix") && _to.getFileSystem().supportedFileAttributeViews().contains("posix")) {
-								var _fpermissions = _Files.getPosixFilePermissions(_from);
-								_Files.setPosixFilePermissions(_to, _fpermissions);
-							}
-						});
+						return copy(p.from,p.to);
 					}
 				},
 				Directory: {

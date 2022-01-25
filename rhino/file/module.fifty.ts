@@ -217,10 +217,10 @@ namespace slime.jrunscript.file {
 				});
 				fifty.global.jsh.shell.console(listing.toString());
 				//	TODO	brittle; changing structure of module can break it
-				fifty.verify(listing)[0].relative.is("api.html");
-				fifty.verify(listing)[0].absolute.is(prefix + "/" + "api.html");
-				fifty.verify(listing)[9].relative.is("java/");
-				fifty.verify(listing)[9].absolute.is(prefix + "/" + "java/");
+				fifty.verify(listing)[0].relative.is("_.fifty.ts");
+				fifty.verify(listing)[0].absolute.is(prefix + "/" + "_.fifty.ts");
+				fifty.verify(listing)[10].relative.is("java/");
+				fifty.verify(listing)[10].absolute.is(prefix + "/" + "java/");
 			}
 
 			fifty.tests.action = {};
@@ -651,6 +651,9 @@ namespace slime.jrunscript.file {
 			}
 
 			//	TODO	no tests
+			/**
+			 * @experimental May want to copy to another more general location, not just a path in the same filesystem
+			 */
 			copy: (p: {
 				to: string
 			}) => slime.$api.fp.impure.Tell<void>
