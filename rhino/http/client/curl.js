@@ -46,7 +46,11 @@
 							//	TODO	--connect-timeout
 							rv.push("--include");
 							rv.push("--request", argument.request.method);
-							if (argument.request.headers && argument.request.headers.length) throw new Error();
+							if (argument.request.headers) {
+								argument.request.headers.forEach(function(header) {
+									rv.push("--header", header.name + ": " + header.value);
+								});
+							}
 							if (argument.request.body) {
 								rv.push("--header", "Content-Type: " + jsh.io.mime.Type.codec.declaration.encode(argument.request.body.type));
 								//	TODO	does not handle binary data

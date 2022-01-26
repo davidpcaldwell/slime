@@ -109,7 +109,7 @@ namespace slime.jrunscript.http.client {
 	}
 
 	export interface World {
-		request: (p: spi.Argument) => slime.$api.fp.impure.Ask<spi.Events,spi.Response>
+		request: spi.Implementation
 	}
 
 	export interface Exports {
