@@ -782,7 +782,7 @@ namespace slime.jrunscript.http.client {
 namespace slime.jrunscript.http.client.internal {
 	export type Parameters = (p: slime.jrunscript.http.client.object.parameters) => { name: string, value: string }[]
 
-	type ArgumentDecorator = (argument: slime.jrunscript.http.client.spi.Argument ) => slime.jrunscript.http.client.spi.Argument
+	type ArgumentDecorator = (argument: slime.jrunscript.http.client.spi.Argument) => slime.jrunscript.http.client.spi.Argument
 
 	export type sessionRequest = (cookies: slime.jrunscript.http.client.internal.Cookies) => ArgumentDecorator
 	export type authorizedRequest = (authorization: string) => ArgumentDecorator
