@@ -5,7 +5,7 @@
 //	END LICENSE
 
 namespace slime.jrunscript.io.mime {
-	interface Context {
+	export interface Context {
 		/** @deprecated */
 		gae: boolean
 		nojavamail: boolean
@@ -27,22 +27,22 @@ namespace slime.jrunscript.io.mime {
 		string?: string
 	}
 
-	interface Part extends Entity {
+	export interface Part extends Entity {
 		filename: string
 	}
 
-	interface Multipart extends slime.jrunscript.runtime.Resource {
+	export interface Multipart extends slime.jrunscript.runtime.Resource {
 		java?: {
-			adapt: () => Packages.java.mail.internet.MimeMultipart
+			adapt: () => slime.jrunscript.native.javax.mail.internet.MimeMultipart
 		}
 	}
 
-	interface Exports {
+	export interface Exports {
 		Multipart: (p: {
 			subtype: string
 			parts: Part[]
 		}) => Multipart
 
-		Type: slime.runtime.Exports["mime"]["Type"] & { guess: (p: { name: string }) => slime.MimeType.Object }
+		Type: slime.runtime.Exports["mime"]["Type"] & { guess: (p: { name: string }) => slime.mime.Object }
 	}
 }

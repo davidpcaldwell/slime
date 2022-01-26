@@ -326,6 +326,13 @@ namespace slime.jrunscript {
 			}
 		}
 
+		export namespace javax.mail {
+			export namespace internet {
+				export interface MimeMultipart {
+				}
+			}
+		}
+
 		type EngineSpecificJshInterface = slime.jsh.plugin.EngineSpecific;
 
 		export namespace inonit.script {

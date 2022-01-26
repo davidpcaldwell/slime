@@ -13,7 +13,13 @@
 	 * @param { slime.loader.Export<slime.jrunscript.http.client.curl.Exports> } $export
 	 */
 	function($api,$context,$export) {
+		//	TODO	get rid of this shim
 		var jsh = {
+			/** @type { { Buffer: any, mime: slime.jrunscript.io.mime.Exports } } */
+			io: {
+				Buffer: $context.library.io.Buffer,
+				mime: $context.library.io.mime
+			},
 			/** @type { Pick<slime.jrunscript.shell.Exports,"world"|"Invocation"> & { console: (message: string) => void } } */
 			shell: {
 				Invocation: $context.library.shell.Invocation,
@@ -29,7 +35,8 @@
 		 */
 		var curl = function(argument) {
 			return $api.Function.impure.ask(function(events) {
-				var output;
+				/** @type { slime.jrunscript.http.client.spi.Response } */
+				var response;
 
 				jsh.shell.world.run(
 					jsh.shell.Invocation.create({
@@ -37,6 +44,7 @@
 						arguments: $api.Array.build(function(rv) {
 							//	TODO	consider --max-time, though there is no URLConnection equivalent
 							//	TODO	--connect-timeout
+							rv.push("--include");
 							rv.push("--request", argument.request.method);
 							if (argument.request.headers && argument.request.headers.length) throw new Error();
 							if (argument.request.body) {
@@ -59,17 +67,47 @@
 						jsh.shell.console(e.detail.line);
 					},
 					exit: function(e) {
-						output = e.detail.stdio.output;
+						var output = e.detail.stdio.output;
+						var lines = output.split("\n");
+
+						var noCarriageReturn = function(line) {
+							if ($api.Function.string.endsWith("\r")(line)) {
+								line = line.substring(0,line.length-1);
+							}
+							return line;
+						};
+
+						var notBlank = function(line) {
+							return noCarriageReturn(line).length != 0;
+						};
+
+						var statusLine = noCarriageReturn(lines[0]);
+						var statusTokens = statusLine.split(" ");
+						var index = 1;
+						var headers = [];
+
+
+						while(notBlank(lines[index])) {
+							var parsed = noCarriageReturn(lines[index]).split(": ");
+							headers.push({ name: parsed[0], value: parsed.slice(1).join(": ") });
+							index++;
+						}
+						response = {
+							status: {
+								code: Number(statusTokens[1]),
+								reason: statusTokens.slice(2).join(" "),
+							},
+							headers: headers,
+							stream: (function(string) {
+								var buffer = new jsh.io.Buffer();
+								buffer.writeText().write(string);
+								buffer.writeText().close();
+								return buffer.readBinary();
+							})(lines.slice(index+1).join("\n"))
+						}
 					}
 				});
-				var buffer = new jsh.io.Buffer();
-				buffer.writeText().write(output);
-				buffer.writeText().close();
-				return {
-					status: void(0),
-					headers: void(0),
-					stream: buffer.readBinary()
-				};
+				return response;
 			});
 		};
 

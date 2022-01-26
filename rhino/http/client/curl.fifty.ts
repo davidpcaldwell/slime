@@ -10,7 +10,6 @@
  *
  * Currently, `curl` must be on the `PATH` in order for this method to work, and it has several limitations:
  *
- * * it does not return status codes or headers
  * * it only accepts request bodies that are string data
  * * it only handles responses containing string data
  * * it does not support the read timeout supported by the `request` method
@@ -19,6 +18,7 @@ namespace slime.jrunscript.http.client.curl {
 	export interface Context {
 		console: (message: string) => void
 		library: {
+			io: slime.jrunscript.io.Exports
 			shell: slime.jrunscript.shell.Exports
 		}
 	}
