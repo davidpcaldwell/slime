@@ -248,13 +248,21 @@
 			}
 		}
 
-		$exports.Function.JSON = {};
-		$exports.Function.JSON.stringify = function(p) {
-			var replacer = (p && p.replacer) ? p.replacer : void(0);
-			//	TODO	is the below correct for 0 and '' ?
-			var space = (p && p.space) ? p.space : void(0);
-			return function(v) {
-				return JSON.stringify(v, replacer, space);
+		$exports.Function.JSON = {
+			stringify: function(p) {
+				var replacer = (p && p.replacer) ? p.replacer : void(0);
+				//	TODO	is the below correct for 0 and '' ?
+				var space = (p && p.space) ? p.space : void(0);
+				return function(v) {
+					return JSON.stringify(v, replacer, space);
+				}
+			},
+			prettify: function(p) {
+				//	TODO	is the below correct for 0 and '' ?
+				var space = (p && p.space) ? p.space : void(0);
+				return function(v) {
+					return JSON.stringify(JSON.parse(v), void(0), space);
+				}
 			}
 		};
 

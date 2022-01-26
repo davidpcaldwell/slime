@@ -17,6 +17,15 @@ namespace slime.$api {
 		/** @deprecated - Use {@link Predicate}. */
 		export type Filter<T> = (t: T) => boolean
 
+		export interface Exports {
+			identity: <T>(t: T) => T
+
+			/**
+			 * A function that can be declared as type {@link slime.js.Cast | `slime.js.Cast<T>`} and cast any value to `T`.
+			 */
+			cast: <T>(t: any) => T
+		}
+
 		/**
 		 * This object is available as `$api.Function` in all scripts loaded by the SLIME loader.
 		 */
@@ -282,13 +291,6 @@ namespace slime.$api {
 
 
 		export interface Exports {
-			identity: <T>(t: T) => T
-
-			/**
-			 * A function that can be declared as type {@link slime.js.Cast | `slime.js.Cast<T>`} and cast any value to `T`.
-			 */
-			cast: <T>(t: any) => T
-
 			returning: <T>(t: T) => () => T
 			Array: {
 				filter: <T>(f: fp.Predicate<T>) => (ts: T[]) => T[]
@@ -495,6 +497,21 @@ namespace slime.$api.fp {
 }
 
 namespace slime.$api.fp {
+	export interface Exports {
+		JSON: {
+			stringify: (p: {
+				replacer: Parameters<JSON["stringify"]>[1]
+				space: Parameters<JSON["stringify"]>[2]
+			}) => (v: any) => string
+
+			prettify: (p: {
+				space: Parameters<JSON["stringify"]>[2]
+			}) => (json: string) => string
+		}
+	}
+}
+
+namespace slime.$api.fp {
 	export namespace impure {
 		export type Ask<E,T> = (on?: slime.$api.events.Handler<E>) => T
 		export type Tell<E> = (on?: slime.$api.events.Handler<E>) => void
@@ -639,7 +656,6 @@ namespace slime.$api.fp {
 		}
 		evaluator: any
 		String: any
-		JSON: any
 		series: any
 		mutating: any
 	}
