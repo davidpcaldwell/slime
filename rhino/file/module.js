@@ -104,6 +104,18 @@
 				});
 			}
 
+			/**
+			 *
+			 * @param { string } pathname
+			 */
+			function directory_exists(pathname) {
+				return function() {
+					return $api.Function.impure.ask(function(events) {
+						var peer = was.newPeer(pathname);
+						return peer.exists() && peer.isDirectory();
+					});
+				}
+			}
 
 			/**
 			 *
@@ -154,7 +166,7 @@
 							}
 						},
 						directory: {
-							exists: void(0),
+							exists: directory_exists(pathname),
 							require: function(p) {
 								return directory_require({
 									pathname: pathname,
