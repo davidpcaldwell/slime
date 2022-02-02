@@ -30,11 +30,11 @@
 
 		/**
 		 *
-		 * @param { slime.servlet.proxy.Configuration } p
+		 * @param { slime.servlet.proxy.Server } p
 		 */
 		function createHttpServer(p) {
 			var hosts = p.hosts;
-			var pkcs12 = mkcert(hosts).pathname;
+			var pkcs12 = mkcert(["127.0.0.1"].concat(hosts)).pathname;
 
 			var port = $context.library.ip.getEphemeralPort().number;
 			var tomcat = new $context.library.jsh.httpd.Tomcat({
@@ -67,9 +67,7 @@
 							var url = $api.Object.compose(
 								requested,
 								{
-									scheme: "http",
-									host: "127.0.0.1",
-									port: p.server.http
+									scheme: "http"
 								}
 							);
 							return $context.library.web.Url.codec.string.encode(url);
@@ -87,6 +85,7 @@
 										if (name == "upgrade-insecure-requests") return false;
 										return false;
 									}));
+									rv.push({ name: "X-Forwarded-Proto", value: request.url.scheme });
 									// rv.push({ name: "Host", value: request.headers.value("Host")});
 								}),
 								body: (request.method == "GET" || request.method == "OPTIONS") ? void(0) : {
@@ -104,7 +103,13 @@
 						var argument = {
 							method: send.request.method,
 							url: url,
-							headers: send.request.headers
+							headers: send.request.headers,
+							proxy: {
+								http: {
+									host: "127.0.0.1",
+									port: p.server.http
+								}
+							}
 							// ,
 							// body: send.request.body
 						}
@@ -178,7 +183,29 @@
 			test: {
 				mkcert: mkcert
 			},
-			create: createHttpServer
+			server: createHttpServer,
+			application: function(p) {
+				var tomcat = createHttpServer(p);
+				$context.library.java.Thread.start(function() {
+					try {
+						tomcat.run();
+					} catch (e) {
+						console(e);
+						console(e.stack);
+					}
+				});
+
+				var instance = new $context.library.jsh.shell.browser.chrome.Instance({
+					location: p.chrome.location,
+					hostrules: p.hosts.map(function(host) {
+						return "MAP " + host + " " + "127.0.0.1:" + tomcat.https.port;
+					})
+				});
+
+				instance.run({
+					uri: p.chrome.uri
+				});
+			}
 		})
 	}
 //@ts-ignore
