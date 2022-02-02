@@ -4,18 +4,20 @@
 //
 //	END LICENSE
 
-var parameters = jsh.script.getopts({
-	options: {
-		port: Number,
-		directory: jsh.script.file.parent.parent.parent.parent.parent.pathname
+(
+	function() {
+		var parameters = jsh.script.getopts({
+			options: {
+				port: Number,
+				directory: jsh.script.file.parent.parent.parent.parent.parent.pathname
+			}
+		});
+
+		var tomcat = jsh.httpd.Tomcat.serve({
+			port: parameters.options.port,
+			directory: parameters.options.directory.directory
+		});
+		jsh.shell.echo("Tomcat started on port " + tomcat.port);
+		tomcat.run();
 	}
-});
-
-var tomcat = jsh.httpd.Tomcat.serve({
-	port: parameters.options.port,
-	directory: parameters.options.directory.directory
-});
-jsh.shell.echo("Tomcat started on port " + tomcat.port);
-tomcat.run();
-
-
+)();

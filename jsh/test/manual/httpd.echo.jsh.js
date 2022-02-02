@@ -4,22 +4,26 @@
 //
 //	END LICENSE
 
-var tomcat = new jsh.httpd.Tomcat({
-});
+(
+	function() {
+		var tomcat = new jsh.httpd.Tomcat({
+		});
 
-var map = function() {
-	var script = jsh.script.script.getRelativePath("../../../rhino/http/servlet/test/manual/echo.servlet.js").file;
-	tomcat.map({
-		path: "/",
-		servlets: {
-			"/*": {
-				file: script
-			}
-		}
-	});
-};
+		var map = function() {
+			var script = jsh.script.script.getRelativePath("../../../rhino/http/servlet/test/manual/echo.servlet.js").file;
+			tomcat.map({
+				path: "/",
+				servlets: {
+					"/*": {
+						file: script
+					}
+				}
+			});
+		};
 
-map();
+		map();
 
-jsh.shell.echo("Running Tomcat; process must be killed to exit.");
-tomcat.run();
+		jsh.shell.echo("Running Tomcat; process must be killed to exit.");
+		tomcat.run();
+	}
+)();

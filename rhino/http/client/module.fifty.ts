@@ -495,9 +495,7 @@ namespace slime.jrunscript.http.client {
 			function(
 				fifty: slime.fifty.test.kit
 			) {
-				var scope = jsapi.scope;
-				var module = scope.module;
-				var context = scope.context;
+				var { module, context, servlet } = jsapi.scope;
 				var verify = fifty.verify;
 				fifty.tests.jsapi.spi = function() {
 					var client = new module.Client({
@@ -545,8 +543,7 @@ namespace slime.jrunscript.http.client {
 				fifty: slime.fifty.test.kit
 			) {
 				fifty.tests.jsapi.proxy = function() {
-					var context = jsapi.scope.context;
-					var module = jsapi.scope.module;
+					var { context, module, servlet } = jsapi.scope;
 					var verify = fifty.verify;
 
 					fifty.run(function() {
@@ -614,8 +611,7 @@ namespace slime.jrunscript.http.client {
 						}
 					};
 
-					const context = scope.context;
-					const module = scope.module;
+					const { context, module, servlet } = scope;
 					const verify = fifty.verify;
 					const jsh = fifty.global.jsh;
 					const skip = scope.skip;
