@@ -8,13 +8,13 @@
 (
 	/**
 	 *
-	 * @param { slime.runtime.internal.Resource } Resource
-	 * @param { slime.runtime.internal.methods } methods
-	 * @param { slime.runtime.internal.createScriptScope } createFileScope
-	 * @param { slime.$api.Global } $api
+	 * @param { slime.runtime.internal.loader.Scope["Resource"] } Resource
+	 * @param { slime.runtime.internal.loader.Scope["methods"] } methods
+	 * @param { slime.runtime.internal.loader.Scope["createScriptScope"] } createScriptScope
+	 * @param { slime.runtime.internal.loader.Scope["$api"] } $api
 	 * @param { slime.loader.Export<slime.runtime.internal.LoaderConstructor> } $export
 	 */
-	function(Resource,methods,createFileScope,$api,$export) {
+	function(Resource,methods,createScriptScope,$api,$export) {
 		$export(
 			/**
 			 * @this { slime.Loader }
@@ -86,7 +86,7 @@
 					var locations = getModuleLocations(path);
 
 					/** @type { slime.loader.Scope } */
-					var inner = createFileScope($context);
+					var inner = createScriptScope($context);
 					inner.$loader = Child(locations.prefix);
 					var script = this.get(locations.main);
 					//	TODO	generalize error handling strategy; add to file, run, value
@@ -209,4 +209,4 @@
 		)
 	}
 //@ts-ignore
-)(Resource,methods,createFileScope,$api,$export);
+)(Resource,methods,createScriptScope,$api,$export);

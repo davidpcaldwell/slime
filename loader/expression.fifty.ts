@@ -293,7 +293,7 @@ namespace slime {
 		}
 
 		export namespace internal {
-			export type LoaderConstructor = new (p: loader.Source) => Loader
+			export type LoaderConstructor = new (p: slime.loader.Source) => Loader
 			export type Resource = resource.Factory
 			export type methods = {
 				run: any
@@ -329,6 +329,28 @@ namespace slime {
 					toExportScope: slime.runtime.Exports["Loader"]["tools"]["toExportScope"]
 					createScriptScope: createScriptScope
 				}
+
+				export type Script = slime.loader.Script<Scope,Exports>
+			}
+
+			export namespace loader {
+				export interface Scope {
+					Resource: new (o: ConstructorParameters<slime.resource.Factory>[0]) => slime.Resource
+					methods: scripts.Exports["methods"]
+					createScriptScope: scripts.Exports["createScriptScope"]
+					$api: slime.$api.Global
+				}
+
+				export type Script = slime.loader.Script<Scope,LoaderConstructor>
+			}
+
+			export namespace loaders {
+				export interface Scope {
+					toExportScope: slime.runtime.Exports["Loader"]["tools"]["toExportScope"]
+					Loader: LoaderConstructor
+				}
+
+				export type Script = slime.loader.Script<Scope,slime.runtime.Exports["loader"]>
 			}
 
 			/**

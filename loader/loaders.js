@@ -8,9 +8,9 @@
 (
 	/**
 	 *
-	 * @param { slime.runtime.Exports["loader"]["tools"]["toExportScope"] } toExportScope
-	 * @param { slime.runtime.internal.LoaderConstructor } Loader
-	 * @param { (value: slime.runtime.Exports["loader"]) => void } $export
+	 * @param { slime.runtime.internal.loaders.Scope["toExportScope"] } toExportScope
+	 * @param { slime.runtime.internal.loaders.Scope["Loader"] } Loader
+	 * @param { slime.loader.Export<slime.runtime.Exports["loader"]> } $export
 	 */
 	function(toExportScope,Loader,$export) {
 		$export({

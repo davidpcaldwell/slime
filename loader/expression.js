@@ -176,8 +176,12 @@
 		};
 
 		var code = {
-			/** @type { slime.loader.Script<slime.runtime.internal.scripts.Scope,slime.runtime.internal.scripts.Exports> } */
-			scripts: script("scripts.js")
+			/** @type { slime.runtime.internal.scripts.Script } */
+			scripts: script("scripts.js"),
+			/** @type { slime.runtime.internal.loader.Script } */
+			Loader: script("Loader.js"),
+			/** @type { slime.runtime.internal.loaders.Script } */
+			loaders: script("loaders.js")
 		};
 
 		var mime = $api.mime;
@@ -252,10 +256,10 @@
 		);
 
 		/** @type { slime.runtime.internal.LoaderConstructor } */
-		var Loader = load("Loader.js", {
+		var Loader = code.Loader({
 			Resource: Resource,
 			methods: scripts.methods,
-			createFileScope: scripts.createScriptScope,
+			createScriptScope: scripts.createScriptScope,
 			$api: $api
 		});
 
@@ -266,13 +270,10 @@
 		};
 
 		/** @type { slime.runtime.Exports["loader"] } */
-		var loaders = load(
-			"loaders.js",
-			{
-				toExportScope: scripts.toExportScope,
-				Loader: Loader
-			}
-		)
+		var loaders = code.loaders({
+			toExportScope: scripts.toExportScope,
+			Loader: Loader
+		})
 
 		/** @type { slime.runtime.Exports } */
 		var rv = $api.Object.compose(
