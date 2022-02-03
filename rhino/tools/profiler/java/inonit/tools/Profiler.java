@@ -370,7 +370,7 @@ public class Profiler {
 			filters.put("com.sun.tools.javac", false);
 			filters.put("org.mozilla.javascript", false);
 			filters.put("org.mozilla.classfile", false);
-			filters.put("inonit.script.rhino.Engine$Profiler", false);
+			filters.put("inonit.script.rhino.Debugger$Profiler", false);
 		}
 
 		final void debug() {
