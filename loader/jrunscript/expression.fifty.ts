@@ -637,6 +637,7 @@ namespace slime.jrunscript {
 				Date: any
 				zip: any
 				jar: any
+				UUID: any
 			}
 			text: {
 				SimpleDateFormat: any
