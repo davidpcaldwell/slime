@@ -19,8 +19,8 @@ public class Profiler {
 	private HashMap<Thread,Timing> profiles = new HashMap<Thread,Timing>();
 
 	private Timing getProfile() {
-		if (profiles.get(Thread.currentThread()) == null) {
-			synchronized(profiles) {
+		synchronized(profiles) {
+			if (profiles.get(Thread.currentThread()) == null) {
 				profiles.put(Thread.currentThread(), new Timing());
 			}
 		}

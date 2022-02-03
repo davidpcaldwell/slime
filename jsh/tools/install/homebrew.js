@@ -62,7 +62,7 @@
 						update: function() {
 							brew("update")
 						},
-						install: function(p) {
+						install: function install(p) {
 							brew(
 								"install",
 								(function() {
