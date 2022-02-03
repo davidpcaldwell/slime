@@ -9,8 +9,8 @@
 	/**
 	 *
 	 * @param { slime.$api.Global } $api
-	 * @param { { $api: any, jsh: slime.jsh.Global } } $context
-	 * @param { { installed: any, install: any, require: any } } $exports
+	 * @param { slime.jsh.shell.tools.internal.tomcat.Context } $context
+	 * @param { slime.jsh.shell.tools.internal.tomcat.Exports } $exports
 	 */
 	function($api,$context,$exports) {
 		var jsh = $context.jsh;
@@ -180,10 +180,14 @@
 
 		$exports.require = $api.Events.Function(function(p,events) {
 			jsh.shell.jsh.require({
-				satisfied: function() { return $exports.installed(); },
+				satisfied: function() { return Boolean($exports.installed()); },
 				install: function() { return $exports.install(p,events); }
 			});
 		});
+
+		$exports.test = {
+			getLatestVersion: getLatestVersion
+		}
 	}
 //@ts-ignore
 )($api,$context,$exports);
