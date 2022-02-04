@@ -39,6 +39,13 @@ namespace slime.servlet.proxy {
 			 */
 			http: number
 		}
+
+		override?: {
+			redirect?: (redirect: {
+				request: slime.servlet.Request
+				location: string
+			}) => string
+		}
 	}
 
 	export interface Application extends Server {

@@ -34,6 +34,8 @@ namespace slime.jsh.httpd {
 
 				getJavaSourceFiles: (p: slime.jrunscript.file.Pathname) => slime.jrunscript.file.File[]
 			}
+
+			proxy: slime.servlet.proxy.Exports
 		}
 	}
 }

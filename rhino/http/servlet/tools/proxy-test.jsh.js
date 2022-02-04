@@ -41,23 +41,9 @@
 		var directResponse = JSON.parse(direct.body.stream.character().asString());
 		jsh.shell.console("DIRECT: " + JSON.stringify(directResponse));
 
-		/** @type { slime.servlet.proxy.Script } */
-		var script = jsh.script.loader.script("proxy.js");
-		var api = script({
-			library: {
-				web: jsh.web,
-				java: jsh.java,
-				io: jsh.io,
-				ip: jsh.ip,
-				http: jsh.http,
-				jsh: {
-					shell: jsh.shell,
-					httpd: jsh.httpd
-				}
-			}
-		});
+		jsh.httpd.plugin.tools();
 
-		api.application({
+		jsh.httpd.tools.proxy.application({
 			hosts: ["destination.example.com"],
 			server: {
 				http: underlying.port

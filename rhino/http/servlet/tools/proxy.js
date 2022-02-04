@@ -81,9 +81,11 @@
 								headers: $api.Array.build(function(rv) {
 									rv.push.apply(rv, request.headers.filter(function(header) {
 										var name = header.name.toLowerCase();
+										//	TODO	test to see whether host has any effect
 										if (name == "host") return false;
+										if (name == "connection") return false;
 										if (name == "upgrade-insecure-requests") return false;
-										return false;
+										return true;
 									}));
 									rv.push({ name: "X-Forwarded-Proto", value: request.url.scheme });
 									// rv.push({ name: "Host", value: request.headers.value("Host")});
@@ -109,16 +111,34 @@
 									host: "127.0.0.1",
 									port: p.server.http
 								}
+							},
+							body: send.request.body,
+							on: {
+								redirect: function(p) {
+									p.response.headers.forEach(function(header) {
+										if (header.name == "Location") {
+											console("-------------------------------")
+											console("Location: " + header.value);
+											console("-------------------------------")
+										}
+									});
+									console("Next: " + p.next.method + " " + $context.library.web.Url.codec.string.encode(p.next.url));
+									p.next = null;
+								}
 							}
-							// ,
-							// body: send.request.body
 						}
 
+						var client = new $context.library.http.Client({
+							TREAT_302_AS_303: true
+						});
+
 						console("PROXY requesting via object: " + argument.url);
-						var object = new $context.library.http.Client().request(argument);
+						var object = client.request(argument);
 
 						//	TODO	for some reason the world-oriented HTTP client does not work here, hence the commented-out
 						//			code; it hangs for both internal clients and browser clients
+
+						//	TODO	could try world-oriented client again now that object-oriented client is working correctly
 
 						// delete send.request.body;
 						// jsh.shell.console("PROXY requesting: " + send.request.method + " " + send.request.url);
@@ -154,6 +174,25 @@
 								var name = header.name.toLowerCase();
 								if (name == "transfer-encoding") return false;
 								return true;
+							}).map(function(header) {
+								if (header.name == "Location") {
+									console("===============================");
+									console("Location: " + header.value);
+									console("port = " + p.server.http);
+									console("===============================");
+									if (p.override && p.override.redirect) {
+										header.value = p.override.redirect({
+											request: request,
+											location: header.value
+										})
+									} else {
+										//	By default we simply make all location headers https rather than http
+										var url = $context.library.web.Url.codec.string.decode(header.value);
+										if (url.scheme == "http") url.scheme = "https";
+										header.value = $context.library.web.Url.codec.string.encode(url);
+									}
+								}
+								return header;
 							}), { get: object.headers.get });
 
 							// if (request.method == "OPTIONS") {

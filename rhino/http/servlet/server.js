@@ -76,9 +76,16 @@
 						rv.scheme = getScheme();
 					}
 					return rv;
-				})(String(
-					Packages.javax.servlet.http.HttpUtils.getRequestURL(_request).toString()
-				));
+				})(
+					String(
+						Packages.javax.servlet.http.HttpUtils.getRequestURL(_request).toString()
+					)
+					+ (
+						(_request.getQueryString() != null)
+						? ("?" + String(_request.getQueryString()))
+						: ""
+					)
+				);
 
 				this.source = new function() {
 					this.ip = String(_request.getRemoteAddr());
