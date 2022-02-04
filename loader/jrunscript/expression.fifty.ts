@@ -52,12 +52,12 @@ namespace slime.jrunscript.runtime {
 
 	export namespace loader {
 		export interface Source extends slime.loader.Source {
-			zip: any
-			_source: slime.jrunscript.native.inonit.script.engine.Code.Loader
-			_file: any
-			_url: any
+			_source?: slime.jrunscript.native.inonit.script.engine.Code.Loader
+			zip?: any
+			_file?: any
+			_url?: any
 			/** @deprecated */
-			resources: any
+			resources?: any
 		}
 	}
 
@@ -684,7 +684,7 @@ namespace slime.jrunscript {
 							github: any
 							Resource: any
 							URI: any
-							zip: any
+							zip: (p: any) => slime.jrunscript.native.inonit.script.engine.Code.Loader
 						}
 					}
 				}
