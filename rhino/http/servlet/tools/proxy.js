@@ -10,9 +10,10 @@
 	 *
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.servlet.proxy.Context } $context
+	 * @param { slime.Loader } $loader
 	 * @param { slime.loader.Export<slime.servlet.proxy.Exports> } $export
 	 */
-	function($api,$context,$export) {
+	function($api,$context,$loader,$export) {
 		var console = function(message) {
 			$context.library.jsh.shell.console(message);
 		}
@@ -234,8 +235,20 @@
 					}
 				});
 
+				var pac = $loader.get("proxy.pac.js").read(String)
+					.replace(/__HOST__/g, p.hosts[0])
+					.replace(/__HTTP__/g, String(p.server.http))
+					.replace(/__HTTPS__/g, String(tomcat.https.port))
+				;
+
+				console("HTTP running on " + p.server.http);
+				console("HTTPS running on " + tomcat.https.port);
+
 				var instance = new $context.library.jsh.shell.browser.chrome.Instance({
 					location: p.chrome.location,
+					proxy: $context.library.jsh.shell.browser.ProxyConfiguration({
+						code: pac
+					}),
 					hostrules: p.hosts.map(function(host) {
 						return "MAP " + host + " " + "127.0.0.1:" + tomcat.https.port;
 					})
@@ -248,4 +261,4 @@
 		})
 	}
 //@ts-ignore
-)($api,$context,$export);
+)($api,$context,$loader,$export);

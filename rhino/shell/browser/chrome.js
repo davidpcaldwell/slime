@@ -111,7 +111,7 @@
 						if (u.hostrules) {
 							var value = u.hostrules.join(",");
 							Packages.java.lang.System.err.println("hostrules = " + value);
-							args.push("--host-rules=" + value);
+							args.push("--host-resolver-rules=" + value);
 						}
 						if (u.devtools) args.push("--auto-open-devtools-for-tabs");
 						if (m.profile) args.push("--profile-directory=" + m.profile);
