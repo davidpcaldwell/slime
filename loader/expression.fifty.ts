@@ -112,77 +112,6 @@ namespace slime {
 		export type Factory = new (o: Descriptor) => slime.Resource
 	}
 
-	export interface Loader {
-		source: loader.Source
-		run: (path: string, scope?: any, target?: any) => void
-		value: (path: string, scope?: any, target?: any) => any
-		file: (path: string, $context?: any, target?: any) => any
-		module: (path: string, $context?: any, target?: any) => any
-		script: <C,E>(path: string) => loader.Script<C,E>
-		Child: {
-			(prefix: string): Loader
-		}
-		get: (path: string) => Resource
-		list?: (m?: { filter?: any, descendants?: any }) => ( loader.LoaderEntry | loader.ResourceEntry )[]
-
-		/** @deprecated Replaced by `script`. */
-		factory: Loader["script"]
-	}
-
-	export namespace loader {
-		interface Entry {
-			path: string
-		}
-
-		export interface LoaderEntry extends Entry {
-			loader: slime.Loader
-		}
-
-		export interface ResourceEntry extends Entry {
-			resource: any
-		}
-
-		export interface Script<C,E> {
-			(c?: C): E
-		}
-
-		/** @deprecated Replaced by {@link Script}. */
-		export type Product<C,E> = Script<C,E>
-
-		export type Export<T> = (value: T) => void
-
-		/**
-		 * An object that provides the implementation for a {@link Loader}.
-		 */
-		export interface Source {
-			get: (path: string) => resource.Descriptor
-
-			list?: (path: string) => {
-				path: string
-				loader: boolean
-				resource: boolean
-			}[]
-
-			/**
-			 * Internal use only; may be removed.
-			 */
-			child?: any
-
-			/**
-			 * Internal use only; may be removed.
-			 */
-			//  TODO    is this used?
-			Resource?: resource.Factory
-		}
-
-		export interface Scope {
-			$context: any
-			$loader?: slime.Loader
-			$exports: any
-			$export: ($exports: any) => void
-		}
-	}
-
 	/**
 	 * Generally speaking, the SLIME runtime is responsible for providing basic constructs to SLIME embeddings.
 	 *
@@ -398,25 +327,9 @@ namespace slime {
 
 		export namespace test {
 			export const subject: slime.runtime.Exports = (function(fifty: slime.fifty.test.kit) {
-				var code = fifty.$loader.get("expression.js");
-				var js = code.read(String);
-
-				var subject: slime.runtime.Exports = (function() {
-					var scope = {
-						$slime: {
-							getRuntimeScript: function(path) {
-								var resource = fifty.$loader.get(path);
-								return { name: resource.name, js: resource.read(String) }
-							}
-						},
-						$engine: void(0)
-					}
-					return eval(js);
-				})();
-
-				return subject;
+				return fifty.$loader.module("fixtures.ts").subject;
 			//@ts-ignore
-			})(fifty)
+			})(fifty);
 		}
 
 		export interface Exports {
@@ -458,83 +371,6 @@ namespace slime {
 			}
 		}
 
-		(
-			function(
-				fifty: slime.fifty.test.kit
-			) {
-				var tests = fifty.tests;
-				var verify = fifty.verify;
-				var $loader = fifty.$loader;
-
-				tests.runtime.types.exports.Loader = function(it: Exports["Loader"]) {
-					verify(it).is.type("function");
-					var tools: { [x: string]: any } = it.tools;
-					verify(tools).is.type("object");
-					verify(tools).evaluate.property("toExportScope").is.type("function");
-				};
-
-				tests.loader = function() {
-					fifty.run(tests.loader.source);
-					fifty.run(tests.loader.closure);
-					fifty.run(tests.loader.$export);
-				}
-
-				tests.loader.source = function() {
-					fifty.run(tests.loader.source.object);
-				};
-
-				tests.loader.source.object = function() {
-					var api: slime.runtime.Exports = slime.runtime.test.subject;
-					verify(api).evaluate(function() { return this.Loader.source.object; }).is.type("function");
-					var source = api.loader.source.object({
-						a: {
-							resource: {
-								string: "a"
-							}
-						},
-						b: {
-							loader: {
-								c: {
-									resource: {
-										string: "c"
-									}
-								}
-							}
-						}
-					});
-					var readString = function(p: Resource) {
-						return p.read(String);
-					};
-					var loader = new api.Loader(source);
-					verify(loader).get("a").evaluate(readString).is("a");
-					verify(loader).get("b/c").evaluate(readString).is("c");
-					verify(loader).list().length.is(2);
-				}
-
-				tests.loader.closure = function() {
-					var closure: slime.test.factory = $loader.value("test/data/closure.js");
-					var context = { scale: 2 };
-					var module = closure(context);
-					verify(module).convert(2).is(4);
-				};
-
-				tests.loader.$export = function() {
-					fifty.run(function module() {
-						var module: slime.test.factory = $loader.script("test/data/module-export.js");
-						var api = module({ scale: 2 });
-						verify(api).convert(3).is(6);
-					});
-
-					fifty.run(function file() {
-						var file: slime.test.factory = $loader.script("test/data/file-export.js");
-						var api = file({ scale: 2 });
-						verify(api).convert(3).is(6);
-					});
-				}
-			}
-		//@ts-ignore
-		)(fifty)
-
 		export interface Exports {
 			run: (code: slime.Resource, scope?: { [name: string]: any }, target?: object ) => void
 			file: any
@@ -575,7 +411,9 @@ namespace slime.test {
 		fifty: slime.fifty.test.kit
 	) {
 		tests.suite = function() {
-			fifty.run(tests.loader);
+			fifty.load("mime.fifty.ts");
+			fifty.load("$api-Function.fifty.ts");
+			fifty.load("Loader.fifty.ts");
 		}
 	}
 //@ts-ignore

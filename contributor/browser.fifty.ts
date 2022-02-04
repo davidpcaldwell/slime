@@ -9,7 +9,7 @@
 		fifty: slime.fifty.test.kit
 	) {
 		fifty.tests.suite = function() {
-			fifty.load("../loader/$api-Function.fifty.ts");
+			fifty.load("../loader/expression.fifty.ts");
 			fifty.load("../loader/document/module.fifty.ts");
 			fifty.load("../js/web/module.fifty.ts");
 			fifty.load("../js/codec/ini.fifty.ts");

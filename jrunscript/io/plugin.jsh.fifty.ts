@@ -17,7 +17,7 @@ namespace slime.jsh {
 			var jsh = fifty.global.jsh;
 
 			fifty.tests.suite = function() {
-				fifty.load("../../loader/expression.fifty.ts", "runtime.types.exports.Loader", jsh.io.Loader);
+				fifty.load("../../loader/Loader.fifty.ts", "types.Loader", jsh.io.Loader);
 			}
 		}
 	//@ts-ignore
