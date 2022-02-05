@@ -42,6 +42,7 @@ namespace slime.browser {
 	 * The state of the `window` object prior to loading the `loader/browser/client.js` script.
 	 */
 	export interface Context {
+		readonly fetch: Window["fetch"]
 		readonly location: Location
 		XMLHttpRequest: typeof XMLHttpRequest
 		CoffeeScript: any

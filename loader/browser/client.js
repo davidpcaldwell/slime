@@ -112,7 +112,7 @@
 		var $exports = (
 			function() {
 
-				/** @type { { get: any, fetch: any, getCode: any } } */
+				/** @type { { get: any, threadGet: any, fetch: any, getCode: any } } */
 				var fetcher = new function() {
 					var downloads = {};
 
@@ -150,7 +150,19 @@
 						};
 					};
 
+					var threadGet = function(path) {
+						return window.fetch(path).then(function(response) {
+							return Promise.all([Promise.resolve(response.headers.get("Content-Type")), response.text()]);
+						}).then(function(resolved) {
+							return {
+								contentType: resolved[0],
+								responseText: resolved[1]
+							}
+						})
+					};
+
 					this.get = get;
+					this.threadGet = threadGet;
 
 					var fetch = function(path) {
 						var got = get(path);
@@ -208,19 +220,30 @@
 				var Loader = function(p) {
 					if (typeof(p) == "string") {
 						p = (function(prefix) {
+							var toResourceDescriptor = function(prefix,path,code) {
+								if (code.contentType == "application/javascript") {
+									//	Add sourceURL for JavaScript debuggers
+									code.responseText += "\n//# sourceURL=" + canonicalize(prefix+path);
+								}
+								// TODO: is 'path' used?
+								return { type: code.contentType, name: path, string: code.responseText, path: prefix+path };
+							}
+
 							return {
 								get: function(path) {
 									try {
 										var code = fetcher.get(prefix+path);
-										if (code.contentType == "application/javascript") {
-											//	Add sourceURL for JavaScript debuggers
-											code.responseText += "\n//# sourceURL=" + canonicalize(prefix+path);
-										}
-										// TODO: is 'path' used?
-										return { type: code.contentType, name: path, string: code.responseText, path: prefix+path };
+										return toResourceDescriptor(prefix,path,code);
 									} catch (e) {
 										if (e.code == 404) return null;
 										throw e;
+									}
+								},
+								thread: {
+									get: function(path) {
+										return fetcher.threadGet(prefix+path).then(function(code) {
+											return toResourceDescriptor(prefix,path,code);
+										})
 									}
 								},
 								toString: function() {

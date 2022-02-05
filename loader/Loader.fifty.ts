@@ -7,16 +7,23 @@
 namespace slime {
 	export interface Loader {
 		source: loader.Source
+
+		get: (path: string) => Resource
+		list?: (m?: { filter?: any, descendants?: any }) => ( loader.LoaderEntry | loader.ResourceEntry )[]
+		Child: {
+			(prefix: string): Loader
+		}
+
 		run: (path: string, scope?: any, target?: any) => void
 		value: (path: string, scope?: any, target?: any) => any
 		file: (path: string, $context?: any, target?: any) => any
 		module: (path: string, $context?: any, target?: any) => any
 		script: <C,E>(path: string) => loader.Script<C,E>
-		Child: {
-			(prefix: string): Loader
+
+		thread?: {
+			get: (path: string) => Promise<Resource>
+			module: (path: string, $context?: any, target?: any) => Promise<any>
 		}
-		get: (path: string) => Resource
-		list?: (m?: { filter?: any, descendants?: any }) => ( loader.LoaderEntry | loader.ResourceEntry )[]
 
 		/** @deprecated Replaced by `script`. */
 		factory: Loader["script"]
@@ -48,13 +55,17 @@ namespace slime {
 		 * An object that provides the implementation for a {@link Loader}.
 		 */
 		export interface Source {
-			get: (path: string) => resource.Descriptor
+			get?: (path: string) => resource.Descriptor
 
 			list?: (path: string) => {
 				path: string
 				loader: boolean
 				resource: boolean
 			}[]
+
+			thread?: {
+				get: (path: string) => Promise<resource.Descriptor>
+			}
 
 			/**
 			 * Allows the loader to customize the way child sources are created when creating child loaders.
@@ -150,6 +161,50 @@ namespace slime {
 					var file: slime.test.factory = $loader.script("test/data/file-export.js");
 					var api = file({ scale: 2 });
 					verify(api).convert(3).is(6);
+				});
+			}
+
+			tests.thread = function() {
+				var source: loader.Source = {
+					thread: {
+						get: function(path) {
+							if (path == "foo") {
+								return Promise.resolve({
+									string: path.toUpperCase()
+								});
+							} else if (path == "../js/web/module.js") {
+								return Promise.resolve({
+									string: fifty.$loader.get("../js/web/module.js").read(String)
+								});
+							}
+						}
+					}
+				};
+
+				var loader = new subject.Loader(source);
+
+				var readString = function(p: Resource): string { return p.read(String); };
+
+				fifty.run(function thread_get() {
+					loader.thread.get("foo").then(function(resource) {
+						verify(resource).evaluate(readString).is("FOO");
+					});
+				});
+
+				fifty.run(function thread_module() {
+					var hasKey = function(string) {
+						var rv = function(object) {
+							return Object.keys(object).indexOf(string) != -1;
+						};
+						rv.toString = function() { return "hasKey(" + string + ")"; };
+						return rv;
+					}
+
+					loader.thread.module("../js/web/").then(function(api: object) {
+						verify(api).evaluate(hasKey("Url")).is(true);
+						verify(api).evaluate(hasKey("Form")).is(true);
+						verify(api).evaluate(hasKey("foo")).is(false);
+					})
 				});
 			}
 		}

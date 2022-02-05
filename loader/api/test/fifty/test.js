@@ -86,6 +86,16 @@
 
 		/**
 		 *
+		 * @param { slime.fifty.test.internal.Scope } newScope
+		 * @param { slime.definition.verify.Verify } newVerify
+		 */
+		var setContext = function(newScope,newVerify) {
+			scope = newScope;
+			verify = newVerify;
+		}
+
+		/**
+		 *
 		 * @param { slime.fifty.test.tests } tests - the tests for this file
 		 * @param { any } code - the code to run
 		 * @returns
@@ -145,6 +155,8 @@
 		 */
 		var AsynchronousScope = function recurse(p) {
 			var name = (p && p.name);
+			$context.promises.console.log("creating scope", name);
+			var nextChild = 0;
 
 			var registry;
 			var promises;
@@ -160,9 +172,15 @@
 					log: $context.promises.console.log
 				},
 				start: function() {
-					promises = new Promise(function promises(resolve,reject) {
+					//	It appears need to launch a null promise here to trigger the flow in case there are no other asynhronous
+					//	promises involved
+					var executor = function promises(resolve,reject) {
 						resolve(void(0));
-					});
+					};
+					executor.toString = function() {
+						return "Null promise for AsynchronousScope <" + name + ">";
+					}
+					promises = new Promise(executor);
 
 					$context.promises.console.log("creating registry", name);
 					registry = $context.promises.Registry({ name: name });
@@ -180,7 +198,7 @@
 					return registry.wait();
 				},
 				child: function() {
-					return recurse();
+					return recurse({ name: name + "/" + String(nextChild++) });
 				}
 			}
 		};
@@ -217,8 +235,8 @@
 		 * @returns { slime.fifty.test.internal.test.Result }
 		 */
 		var executeTestScope = function(ascope,name,execute) {
+			if (ascope) ascope.test.log("async tests: starting scope", name, ascope.test.depth());
 			if (ascope) ascope.start();
-			if (ascope) ascope.test.log("executeTestScope", name, ascope.test.depth());
 			if (ascope) ascope.test.setName(name);
 
 			start(name);
@@ -232,14 +250,12 @@
 					scope.test(f);
 				}
 			);
-			scope = localscope;
-			verify = localverify;
+			setContext(localscope, localverify);
 
 			function after() {
 				var result = localscope.success;
-				if (ascope) ascope.test.log("restoring scope and verify to", was.scope, was.verify);
-				scope = was.scope;
-				verify = was.verify;
+				if (ascope) ascope.test.log("async tests: restoring scope and verify to", name, was.scope, was.verify);
+				setContext(was.scope, was.verify);
 				if (scope) {
 					scope.end(name,result);
 				} else {
@@ -249,13 +265,19 @@
 			}
 
 			if (ascope) {
-				return new $context.promises.Promise(function(resolve,reject) {
+				var executor = function(resolve,reject) {
 					execute();
 					resolve(void(0));
-				}).then(function(executed) {
+				};
+				executor.toString = function() {
+					return "executeTestScope <" + name + ">";
+				}
+
+				return new $context.promises.Promise(executor).then(function(executed) {
+					ascope.test.log("async tests: waiting for scope", name);
 					return ascope.wait();
 				}).then(function(done) {
-					$context.promises.console.log("computing after() for", name);
+					$context.promises.console.log("async tests: computing after() for", name);
 					return Promise.resolve(after());
 				});
 			} else {
@@ -370,7 +392,7 @@
 				run: function(f, name) {
 					if ($context.promises) $context.promises.console.log("run", f, name);
 
-					var controlled = (ascopes) ? $context.promises.controlled() : void(0);
+					var controlled = (ascopes) ? $context.promises.controlled({ id: "run:" + (name || f["name"] ) }) : void(0);
 
 					var run = function() {
 						if ($context.promises) $context.promises.console.log("processing next child", name);

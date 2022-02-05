@@ -62,10 +62,11 @@
 		var controlledPromiseId = 0;
 		/**
 		 *
+		 * @param { { id: string } } [p]
 		 * @returns { ReturnType<slime.definition.test.promises.Export["controlled"]> }
 		 */
-		var ControlledPromise = function() {
-			var id = ++controlledPromiseId;
+		var ControlledPromise = function(p) {
+			var id = (p && p.id) ? p.id : String(++controlledPromiseId);
 			var resolver;
 			var rejector;
 			var executor = function(resolve,reject) {
@@ -80,6 +81,7 @@
 			}
 			var promise = new RegisteredPromise(executor);
 			promise.toString = executor.toString;
+			//	TODO	seems like a race condition, how can we assume resolver and rejector have been initialized?
 			return {
 				promise: promise,
 				resolve: resolver,
@@ -89,6 +91,7 @@
 
 		var Registry = function(p) {
 			var name = (p && p.name);
+			console.log("Created registry", name);
 			var list = [];
 
 			var created = function(e) {
@@ -104,6 +107,7 @@
 				if (index == -1) {
 					console.log("Not registered with", name, instance, instance.toString());
 				} else {
+					console.log("Removing from registry", name, list[index]);
 					list.splice(index,1);
 				}
 			};
@@ -119,41 +123,16 @@
 
 			events.listeners.add("settled", settled);
 
-			var controlled = ControlledPromise();
+			var controlled = ControlledPromise({ id: "Promise for Registry " + name});
 			//	We used to use our own promises here and did not want the ControlledPromise to count as "registered." Now we just
 			//	use the out-of-the-box Promise implementation for ControlledPromise objects.
 			remove(controlled.promise);
 
-			// var allSettled = function(promises) {
-			// 	// /**
-			// 	//  *
-			// 	//  * @param { Promise<any> } promise
-			// 	//  * @returns { Promise<any> }
-			// 	//  */
-			// 	// var settle = function(promise) {
-			// 	// 	//	Not using .finally() to preserve IE compatibility, perhaps unwisely
-			// 	// 	return promise.then(function(value) {
-			// 	// 		console.log("settled - fulfilled", promise, value);
-			// 	// 		remove(promise);
-			// 	// 		return value;
-			// 	// 	}).catch(function(e) {
-			// 	// 		console.log("settled - rejected", promise, e)
-			// 	// 		remove(promise);
-			// 	// 		return e;
-			// 	// 	});
-			// 	// };
-
-			// 	// return Promise.all(
-			// 	// 	promises.map(settle)
-			// 	// );
-
-			// };
-
 			return {
 				wait: function() {
-					console.log("waiting for list length", list.length, name, list);
+					console.log("waiting for list with length", list.length, name, list);
 					if (list.length == 0) {
-						console.log("resolving wait promise for", name);
+						console.log("resolving empty wait", name);
 						controlled.resolve(void(0));
 					}
 					return controlled.promise.then(function() {
