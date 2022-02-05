@@ -46,39 +46,34 @@ namespace slime.jrunscript.shell.browser {
 	}
 
 	export interface Chrome {
-		Instance: new (u: {
-			location?: slime.jrunscript.file.Pathname
-			directory?: slime.jrunscript.file.Directory
-			proxy?: ProxyTools
-			hostrules?: string[]
-			install?: boolean
-			devtools?: boolean
-		}) => any
+		readonly version: string
 	}
 
-	export namespace internal {
-		export namespace chrome {
-			export interface Context {
-				os: any
-				run: any
-				api: {
-					js: any
-					java: any
-					file: any
-				}
-				HOME: slime.jrunscript.file.Directory
-				TMPDIR: slime.jrunscript.file.Directory
-				environment: any
-			}
-
-			export type Script = slime.loader.Script<Context,Chrome>
+	export namespace object {
+		export interface Chrome extends slime.jrunscript.shell.browser.Chrome {
+			Instance: new (u: {
+				location?: slime.jrunscript.file.Pathname
+				directory?: slime.jrunscript.file.Directory
+				proxy?: ProxyTools
+				hostrules?: string[]
+				install?: boolean
+				devtools?: boolean
+			}) => any
 		}
 	}
 
 	export interface Exports {
 		inject: any
 
-		chrome: Chrome
+		chrome: object.Chrome
+
+		world: {
+			chrome: slime.$api.fp.impure.Ask<void,Chrome>
+		}
+
+		Chrome: {
+			getMajorVersion: (chrome: Chrome) => number
+		}
 
 		ProxyConfiguration: (o: ProxyConfiguration) => ProxyTools
 	}

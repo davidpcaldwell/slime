@@ -21,8 +21,18 @@
 			chrome: $loader.script("chrome.js")
 		};
 
+		var library = {
+			chrome: code.chrome($context)
+		};
+
 		//	TODO	tighten dependencies?
-		$exports.chrome = code.chrome($context);
+		$exports.chrome = library.chrome.object;
+
+		$exports.Chrome = {
+			getMajorVersion: function(chrome) {
+				return library.chrome.getMajorVersion(chrome);
+			}
+		}
 
 		$exports.ProxyConfiguration = function(o) {
 			var pac = (function() {

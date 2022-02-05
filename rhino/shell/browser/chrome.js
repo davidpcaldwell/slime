@@ -12,7 +12,7 @@
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jrunscript.shell.browser.internal.chrome.Context } $context
 	 * @param { slime.Loader } $loader
-	 * @param { slime.loader.Export<slime.jrunscript.shell.browser.Chrome> } $export
+	 * @param { slime.loader.Export<slime.jrunscript.shell.browser.internal.chrome.Exports> } $export
 	 */
 	function(Packages,$api,$context,$loader,$export) {
 		if (!$context.os) throw new Error("No $context.os");
@@ -23,6 +23,27 @@
 			this.toString = function() {
 				return "Google Chrome: " + b.program + " user=" + b.user;
 			}
+
+			this.program = b.program;
+
+			this.version = void(0);
+			Object.defineProperty(this, "version", {
+				get: function() {
+					var rv = $context.run({
+						command: b.program,
+						arguments: ["--version"],
+						stdio: {
+							output: String
+						}
+					}).stdio.output.split("\n")[0];
+					var trailingWhitespace = /(.*)(?:\s+)$/;
+					if (trailingWhitespace.test(rv)) {
+						rv = trailingWhitespace.exec(rv)[1];
+					}
+					return rv;
+				},
+				enumerable: true
+			});
 
 			var ps = $loader.file("chrome-process.js", {
 				os: $context.os,
@@ -37,7 +58,7 @@
 			//	See https://www.chromium.org/user-experience/user-data-directory
 			//	See https://www.chromium.org/user-experience/multi-profiles
 			this.Instance = (
-				/** @param { ConstructorParameters<slime.jrunscript.shell.browser.Chrome["Instance"]>[0] } u */
+				/** @param { ConstructorParameters<slime.jrunscript.shell.browser.object.Chrome["Instance"]>[0] } u */
 				function(u) {
 					if (u.location) {
 						u.directory = u.location.createDirectory({
@@ -350,20 +371,35 @@
 			}
 		}
 
+		function getMajorVersion(chrome) {
+			var pattern = /Google Chrome (\d+)(.*)$/;
+			var match = pattern.exec(chrome.version);
+			if (match) {
+				return Number(match[1]);
+			}
+			throw new TypeError("Could not determine Chrome version from version string: " + chrome.version);
+		}
+
 		if ($context.os.name == "Mac OS X") {
 			if ($context.api.file.Pathname("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome").file) {
-				$export(new Chrome({
-					program: $context.api.file.Pathname("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome").file,
-					user: $context.HOME.getSubdirectory("Library/Application Support/Google/Chrome")
-				}));
+				$export({
+					getMajorVersion: getMajorVersion,
+					object: new Chrome({
+						program: $context.api.file.Pathname("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome").file,
+						user: $context.HOME.getSubdirectory("Library/Application Support/Google/Chrome")
+					})
+				});
 			}
 		}
 		if ($context.os.name == "Linux") {
 			if ($context.api.file.Pathname("/opt/google/chrome/chrome").file) {
-				$export(new Chrome({
-					program: $context.api.file.Pathname("/opt/google/chrome/chrome").file,
-					user: $context.HOME.getSubdirectory(".config/google-chrome")
-				}));
+				$export({
+					getMajorVersion: getMajorVersion,
+					object: new Chrome({
+						program: $context.api.file.Pathname("/opt/google/chrome/chrome").file,
+						user: $context.HOME.getSubdirectory(".config/google-chrome")
+					})
+				});
 			}
 		}
 	}
