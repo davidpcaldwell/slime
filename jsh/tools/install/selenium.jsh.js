@@ -13,7 +13,7 @@
 	function(jsh) {
 		var parameters = jsh.script.getopts({
 			options: {
-				url: "https://github.com/SeleniumHQ/selenium/releases/download/selenium-4.0.0/selenium-java-4.0.0.zip"
+				url: "https://github.com/SeleniumHQ/selenium/releases/download/selenium-4.1.0/selenium-java-4.1.0.zip"
 			}
 		});
 

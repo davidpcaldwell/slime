@@ -26,6 +26,7 @@
 				part: String,
 				//	https://github.com/davidpcaldwell/slime/issues/138
 				issue138: false,
+				issue317: false,
 				//	TODO	Remove the dubious noselfping argument
 				noselfping: false,
 				//	TODO	review below arguments
@@ -182,6 +183,7 @@
 			parts: {
 				browser: {
 					parts: new function() {
+						var debugging = (parameters.options["issue317"]) ? ["-debug:devtools"] : []
 						this.api = {
 							parts: {
 								failure: {
@@ -189,6 +191,7 @@
 										if (jsh.shell.browser.chrome) jsh.shell.jsh({
 											shell: environment.jsh.built.home,
 											script: environment.jsh.src.getFile("loader/api/ui/test/browser.jsh.js"),
+											arguments: [].concat(debugging),
 											evaluate: function(result) {
 												verify(result).status.is(0);
 											}
@@ -200,7 +203,7 @@
 										if (jsh.shell.browser.chrome) jsh.shell.jsh({
 											shell: environment.jsh.built.home,
 											script: environment.jsh.src.getFile("loader/api/ui/test/browser.jsh.js"),
-											arguments: ["-success"],
+											arguments: ["-success"].concat(debugging),
 											evaluate: function(result) {
 												verify(result).status.is(0);
 											}

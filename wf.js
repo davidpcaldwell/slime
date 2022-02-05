@@ -200,12 +200,13 @@
 				]
 			});
 			if (logs) jsh.shell.console("Running tests with output to " + logs + " ...");
+			var debugging = (jsh.shell.environment.JSH_TEST_ISSUE317) ? ["-issue317"] : [];
 			var invocation = {
 				command: "bash",
 				arguments: [
-					jsh.shell.jsh.src.getFile("jsh.bash"),
-					$context.base.getFile("contributor/suite.jsh.js")
-				],
+					jsh.shell.jsh.src.getFile("jsh.bash").toString(),
+					$context.base.getFile("contributor/suite.jsh.js").toString()
+				].concat(debugging),
 				stdio: {
 					output: {
 						line: function(line) {
