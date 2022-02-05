@@ -10,9 +10,9 @@
 	 *
 	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { slime.$api.Global } $api
-	 * @param { { os: any, run: any, api: { js: any, java: any, file: any }, HOME: slime.jrunscript.file.Directory, TMPDIR: slime.jrunscript.file.Directory, environment: any } } $context
+	 * @param { slime.jrunscript.shell.browser.internal.chrome.Context } $context
 	 * @param { slime.Loader } $loader
-	 * @param { (value: {}) => void } $export
+	 * @param { slime.loader.Export<slime.jrunscript.shell.browser.Chrome> } $export
 	 */
 	function(Packages,$api,$context,$loader,$export) {
 		if (!$context.os) throw new Error("No $context.os");

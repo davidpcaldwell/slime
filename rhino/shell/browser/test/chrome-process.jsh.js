@@ -8,7 +8,7 @@
 	function() {
 		var program = jsh.file.Pathname("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome").file;
 		var user = jsh.shell.HOME.getSubdirectory("Library/Application Support/Google/Chrome");
-		var api = jsh.script.loader.file("chrome-process.js", {
+		var api = jsh.script.loader.file("../chrome-process.js", {
 			os: jsh.shell.os,
 			program: program,
 			user: user

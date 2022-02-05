@@ -7,10 +7,18 @@
 namespace slime.jrunscript.shell.browser {
 	export interface Context {
 		api: {
+			js: any
+			java: any
+			file: any
 			httpd: {
 				Tomcat: new (p: {}) => jsh.httpd.Tomcat
 			}
 		}
+		os: any
+		run: any
+		HOME: slime.jrunscript.file.Directory
+		TMPDIR: slime.jrunscript.file.Directory
+		environment: any
 	}
 
 	export interface ProxyConfiguration {
@@ -46,6 +54,25 @@ namespace slime.jrunscript.shell.browser {
 			install?: boolean
 			devtools?: boolean
 		}) => any
+	}
+
+	export namespace internal {
+		export namespace chrome {
+			export interface Context {
+				os: any
+				run: any
+				api: {
+					js: any
+					java: any
+					file: any
+				}
+				HOME: slime.jrunscript.file.Directory
+				TMPDIR: slime.jrunscript.file.Directory
+				environment: any
+			}
+
+			export type Script = slime.loader.Script<Context,Chrome>
+		}
 	}
 
 	export interface Exports {
