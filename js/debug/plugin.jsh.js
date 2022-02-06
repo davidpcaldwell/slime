@@ -6,7 +6,7 @@
 
 plugin({
 	isReady: function() {
-		return Boolean(jsh.js) && jsh.hasOwnProperty("java");
+		return Boolean(jsh.js) && Object.prototype.hasOwnProperty.call(jsh, "java");
 	},
 	load: function() {
 		Object.defineProperty(
