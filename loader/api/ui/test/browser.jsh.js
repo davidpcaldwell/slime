@@ -77,7 +77,7 @@
 
 		if (parameters.options.interactive) {
 			chrome.run({
-				uri: "http://api-ui-test/loader/api/ui/test/browser.html" + ((parameters.options.success) ? "?success" : "")
+				uri: "http://" + "127.0.0.1:" + tomcat.port + "/loader/api/ui/test/browser.html" + ((parameters.options.success) ? "?success" : "")
 			});
 		} else {
 			var opened;
@@ -102,7 +102,7 @@
 			};
 
 			chrome.launch({
-				uri: "http://api-ui-test/loader/api/ui/test/browser.html?unit.run" + ((parameters.options.success) ? "&success" : ""),
+				uri: "http://" + "127.0.0.1:" + tomcat.port + "/loader/api/ui/test/browser.html?unit.run" + ((parameters.options.success) ? "&success" : ""),
 				on: on
 			});
 
