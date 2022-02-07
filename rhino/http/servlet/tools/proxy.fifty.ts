@@ -6,11 +6,14 @@
 
 /**
  * An experimental API providing the ability to run an HTTPS server that wraps an HTTP server; the API requires `jsh` presently.
+ * It can also connect a Chrome browser to that same server, providing Chrome hostrules that enable using HTTPS requests that do
+ * not require port numbers.
  */
 namespace slime.servlet.proxy {
 	export interface Context {
 		library: {
 			web: slime.web.Exports
+			java: slime.jrunscript.host.Exports
 			io: slime.jrunscript.io.Exports
 			ip: slime.jrunscript.ip.Exports
 			http: slime.jrunscript.http.client.Exports
@@ -21,7 +24,7 @@ namespace slime.servlet.proxy {
 		}
 	}
 
-	export interface Configuration {
+	export interface Server {
 		/**
 		 * The host names for which this server will support HTTPS.
 		 */
@@ -36,6 +39,20 @@ namespace slime.servlet.proxy {
 			 */
 			http: number
 		}
+
+		override?: {
+			redirect?: (redirect: {
+				request: slime.servlet.Request
+				location: string
+			}) => string
+		}
+	}
+
+	export interface Application extends Server {
+		chrome: {
+			location: slime.jrunscript.file.Pathname
+			uri: string
+		}
 	}
 
 	export interface Exports {
@@ -44,7 +61,9 @@ namespace slime.servlet.proxy {
 		 *
 		 * @experimental
 		 */
-		create: (configuration: Configuration) => slime.jsh.httpd.Tomcat
+		server: (configuration: Server) => slime.jsh.httpd.Tomcat
+
+		application: (configuration: Application) => void
 
 		test: {
 			mkcert: (hosts: string[]) => slime.jrunscript.file.File
@@ -57,6 +76,7 @@ namespace slime.servlet.proxy {
 			return script({
 				library: {
 					web: fifty.global.jsh.web,
+					java: fifty.global.jsh.java,
 					io: fifty.global.jsh.io,
 					ip: fifty.global.jsh.ip,
 					http: fifty.global.jsh.http,

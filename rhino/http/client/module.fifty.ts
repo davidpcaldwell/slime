@@ -179,16 +179,20 @@ namespace slime.jrunscript.http.client {
 			on?: {
 				//	TODO	what 'this' will be used for this function?
 				/**
-				 * A function that will be invoked if the request is redirected.
+				 * A function that will be invoked if the request is redirected; note that the argument may be modified in order
+				 * to stop the redirect from being followed.
 				 */
 				redirect: (p: {
-					request: any
-					response: any
+					request: slime.jrunscript.http.client.object.Request
+					response: slime.jrunscript.http.client.spi.Response
 
 					/**
 					 * This property may be removed from the object in order to stop the client from following the redirect.
 					 */
-					next: any
+					next: {
+						method: string
+						url: slime.web.Url
+					}
 				}) => void
 			}
 		}

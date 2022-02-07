@@ -88,7 +88,14 @@ namespace slime.jsh.shell.tools {
 			) => void
 		}
 		graal: any
-		tomcat: any
+		tomcat: {
+			installed: any
+			install: any
+			require: any
+			test: {
+				getLatestVersion: any
+			}
+		}
 		ncdbg: any
 		kotlin: any
 
@@ -129,4 +136,50 @@ namespace slime.jsh.shell.tools {
 			installation: scala.Installation
 		}
 	}
+
+	export namespace internal.tomcat {
+		export interface Context {
+			$api: slime.$api.Global
+			jsh: slime.jsh.Global
+		}
+
+		export type Version = {}
+
+		export interface Exports {
+			installed: (
+				p?: {
+					mock?: {
+						notes: slime.Resource
+					}
+					home?: slime.jrunscript.file.Directory
+				}
+			) => Version
+			install: any
+			require: any
+			test: {
+				getLatestVersion: any
+			}
+		}
+
+		export type Script = slime.loader.Script<Context,Exports>
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.kit
+		) {
+			const script: internal.tomcat.Script = fifty.$loader.script("plugin.jsh.tomcat.js");
+
+			const subject = script({
+				$api: fifty.global.$api,
+				jsh: fifty.global.jsh
+			});
+
+			fifty.tests.world = function() {
+				var version = subject.test.getLatestVersion();
+				fifty.global.jsh.shell.console(version);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
 }

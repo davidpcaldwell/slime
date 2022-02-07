@@ -301,7 +301,7 @@
 
 				if (isRedirect(spiresponse.status)) {
 					var redirectTo = headersImplementationForGet.call(spiresponse.headers, "Location");
-					if (!redirectTo) throw new Error("Redirect without location header.");
+					if (redirectTo === null) throw new Error("Redirect without location header.");
 					var redirectUrl = $context.api.web.Url.resolve($context.api.web.Url.codec.string.decode(spirequest.request.url), redirectTo);
 					//	TODO	copy object rather than modifying
 					var rv = {};

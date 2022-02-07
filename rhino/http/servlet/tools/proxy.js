@@ -10,9 +10,10 @@
 	 *
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.servlet.proxy.Context } $context
+	 * @param { slime.Loader } $loader
 	 * @param { slime.loader.Export<slime.servlet.proxy.Exports> } $export
 	 */
-	function($api,$context,$export) {
+	function($api,$context,$loader,$export) {
 		var console = function(message) {
 			$context.library.jsh.shell.console(message);
 		}
@@ -30,11 +31,11 @@
 
 		/**
 		 *
-		 * @param { slime.servlet.proxy.Configuration } p
+		 * @param { slime.servlet.proxy.Server } p
 		 */
 		function createHttpServer(p) {
 			var hosts = p.hosts;
-			var pkcs12 = mkcert(hosts).pathname;
+			var pkcs12 = mkcert(["127.0.0.1"].concat(hosts)).pathname;
 
 			var port = $context.library.ip.getEphemeralPort().number;
 			var tomcat = new $context.library.jsh.httpd.Tomcat({
@@ -67,9 +68,7 @@
 							var url = $api.Object.compose(
 								requested,
 								{
-									scheme: "http",
-									host: "127.0.0.1",
-									port: p.server.http
+									scheme: "http"
 								}
 							);
 							return $context.library.web.Url.codec.string.encode(url);
@@ -83,10 +82,13 @@
 								headers: $api.Array.build(function(rv) {
 									rv.push.apply(rv, request.headers.filter(function(header) {
 										var name = header.name.toLowerCase();
+										//	TODO	test to see whether host has any effect
 										if (name == "host") return false;
+										if (name == "connection") return false;
 										if (name == "upgrade-insecure-requests") return false;
-										return false;
+										return true;
 									}));
+									rv.push({ name: "X-Forwarded-Proto", value: request.url.scheme });
 									// rv.push({ name: "Host", value: request.headers.value("Host")});
 								}),
 								body: (request.method == "GET" || request.method == "OPTIONS") ? void(0) : {
@@ -104,16 +106,40 @@
 						var argument = {
 							method: send.request.method,
 							url: url,
-							headers: send.request.headers
-							// ,
-							// body: send.request.body
+							headers: send.request.headers,
+							proxy: {
+								http: {
+									host: "127.0.0.1",
+									port: p.server.http
+								}
+							},
+							body: send.request.body,
+							on: {
+								redirect: function(p) {
+									p.response.headers.forEach(function(header) {
+										if (header.name == "Location") {
+											console("-------------------------------")
+											console("Location: " + header.value);
+											console("-------------------------------")
+										}
+									});
+									console("Next: " + p.next.method + " " + $context.library.web.Url.codec.string.encode(p.next.url));
+									p.next = null;
+								}
+							}
 						}
 
+						var client = new $context.library.http.Client({
+							TREAT_302_AS_303: true
+						});
+
 						console("PROXY requesting via object: " + argument.url);
-						var object = new $context.library.http.Client().request(argument);
+						var object = client.request(argument);
 
 						//	TODO	for some reason the world-oriented HTTP client does not work here, hence the commented-out
 						//			code; it hangs for both internal clients and browser clients
+
+						//	TODO	could try world-oriented client again now that object-oriented client is working correctly
 
 						// delete send.request.body;
 						// jsh.shell.console("PROXY requesting: " + send.request.method + " " + send.request.url);
@@ -149,6 +175,25 @@
 								var name = header.name.toLowerCase();
 								if (name == "transfer-encoding") return false;
 								return true;
+							}).map(function(header) {
+								if (header.name == "Location") {
+									console("===============================");
+									console("Location: " + header.value);
+									console("port = " + p.server.http);
+									console("===============================");
+									if (p.override && p.override.redirect) {
+										header.value = p.override.redirect({
+											request: request,
+											location: header.value
+										})
+									} else {
+										//	By default we simply make all location headers https rather than http
+										var url = $context.library.web.Url.codec.string.decode(header.value);
+										if (url.scheme == "http") url.scheme = "https";
+										header.value = $context.library.web.Url.codec.string.encode(url);
+									}
+								}
+								return header;
 							}), { get: object.headers.get });
 
 							// if (request.method == "OPTIONS") {
@@ -178,8 +223,42 @@
 			test: {
 				mkcert: mkcert
 			},
-			create: createHttpServer
+			server: createHttpServer,
+			application: function(p) {
+				var tomcat = createHttpServer(p);
+				$context.library.java.Thread.start(function() {
+					try {
+						tomcat.run();
+					} catch (e) {
+						console(e);
+						console(e.stack);
+					}
+				});
+
+				var pac = $loader.get("proxy.pac.js").read(String)
+					.replace(/__HOST__/g, p.hosts[0])
+					.replace(/__HTTP__/g, String(p.server.http))
+					.replace(/__HTTPS__/g, String(tomcat.https.port))
+				;
+
+				console("HTTP running on " + p.server.http);
+				console("HTTPS running on " + tomcat.https.port);
+
+				var instance = new $context.library.jsh.shell.browser.chrome.Instance({
+					location: p.chrome.location,
+					proxy: $context.library.jsh.shell.browser.ProxyConfiguration({
+						code: pac
+					}),
+					hostrules: p.hosts.map(function(host) {
+						return "MAP " + host + " " + "127.0.0.1:" + tomcat.https.port;
+					})
+				});
+
+				instance.run({
+					uri: p.chrome.uri
+				});
+			}
 		})
 	}
 //@ts-ignore
-)($api,$context,$export);
+)($api,$context,$loader,$export);

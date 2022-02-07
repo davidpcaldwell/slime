@@ -9,9 +9,10 @@
 	/**
 	 *
 	 * @param { slime.jsh.Global } jsh
+	 * @param { slime.Loader } $loader
 	 * @param { slime.jsh.plugin.plugin } plugin
 	 */
-	function(jsh,plugin) {
+	function(jsh,$loader,plugin) {
 		plugin({
 			isReady: function() {
 				return true;
@@ -27,7 +28,8 @@
 					};
 				}
 				jsh.httpd.tools = {
-					build: void(0)
+					build: void(0),
+					proxy: void(0)
 				};
 				jsh.httpd.tools.build = Object.assign(
 					/**
@@ -225,7 +227,32 @@
 					}
 				);
 			}
+		});
+
+		plugin({
+			isReady: function() {
+				return Boolean(jsh.web && jsh.java && jsh.io && jsh.ip && jsh.http && jsh.shell && jsh.httpd && jsh.httpd.tools);
+			},
+			load: function() {
+				var scripts = {
+					/** @type { slime.servlet.proxy.Script } */
+					proxy: $loader.script("proxy.js")
+				};
+				jsh.httpd.tools.proxy = scripts.proxy({
+					library: {
+						web: jsh.web,
+						java: jsh.java,
+						io: jsh.io,
+						ip: jsh.ip,
+						http: jsh.http,
+						jsh: {
+							shell: jsh.shell,
+							httpd: jsh.httpd
+						}
+					}
+				});
+			}
 		})
 	}
 //@ts-ignore
-)(jsh,plugin);
+)(jsh,$loader,plugin);

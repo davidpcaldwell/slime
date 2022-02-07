@@ -173,9 +173,9 @@ document.domain = document.domain;
 			forEach(delegated, function(methodName) {
 				self[methodName] = (function(methodName) {
 					return function() {
-						var invoker = function(name,arguments) {
+						var invoker = function(name,parentArguments) {
 							var args = [];
-							for (var i=0; i<arguments.length; i++) {
+							for (var i=0; i<parentArguments.length; i++) {
 								args[i] = "arguments[" + i + "]";
 							}
 							var rv;

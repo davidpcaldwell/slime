@@ -151,7 +151,15 @@
 							return filesystem.pathname(pathname_relative(pathname, relative));
 						},
 						file: {
-							read: void(0),
+							read: {
+								stream: void(0),
+								string: function() {
+									return $api.Function.impure.ask(function(events) {
+										var stream = openInputStream(pathname, events);
+										return (stream === null) ? null : stream.character().asString();
+									});
+								}
+							},
 							write: {
 								string: function(p) {
 									return function() {

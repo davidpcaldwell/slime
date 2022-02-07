@@ -450,6 +450,8 @@ namespace slime.jrunscript.file {
 					run(fifty.tests.sandbox.filesystem.File.read);
 					run(fifty.tests.sandbox.filesystem.Directory.require);
 					run(fifty.tests.sandbox.filesystem.Directory.remove);
+					run(fifty.tests.sandbox.filesystem.pathname.file.write.string);
+					run(fifty.tests.sandbox.filesystem.pathname.file.read.string);
 				}
 			}
 		//@ts-ignore
@@ -598,6 +600,16 @@ namespace slime.jrunscript.file {
 			exists: () => slime.$api.fp.impure.Ask<{},boolean>
 		}
 
+		(
+			function(
+				fifty: slime.fifty.test.kit
+			) {
+				fifty.tests.sandbox.filesystem.pathname.file = {};
+			}
+		//@ts-ignore
+		)(fifty);
+
+
 		export interface File {
 			write: {
 				string: (p: {
@@ -615,7 +627,6 @@ namespace slime.jrunscript.file {
 				const { jsh } = fifty.global;
 				const filesystem = jsh.file.world.filesystems.os;
 
-				fifty.tests.sandbox.filesystem.pathname.file = {};
 				fifty.tests.sandbox.filesystem.pathname.file.write = {};
 				fifty.tests.sandbox.filesystem.pathname.file.write.string = function() {
 					var TMPDIR = jsh.shell.TMPDIR.createTemporary({ directory: true });
@@ -658,6 +669,27 @@ namespace slime.jrunscript.file {
 				to: string
 			}) => slime.$api.fp.impure.Tell<void>
 		}
+
+		(
+			function(
+				fifty: slime.fifty.test.kit
+			) {
+				const { verify } = fifty;
+				const { jsh } = fifty.global;
+				const here = jsh.file.world.filesystems.os.pathname(fifty.$loader.getRelativePath(".").toString());
+
+				fifty.tests.sandbox.filesystem.pathname.file.read = {};
+				fifty.tests.sandbox.filesystem.pathname.file.read.string = function() {
+					const readString = function(p: slime.jrunscript.file.world.Pathname): string {
+						return p.file.read.string()();
+					}
+					verify(here).relative("module.fifty.ts").evaluate(readString).is.type("string");
+					verify(here).relative("foobar.fifty.ts").evaluate(readString).is.type("null");
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+
 
 		export interface Pathname {
 			file: File

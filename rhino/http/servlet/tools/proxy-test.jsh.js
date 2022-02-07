@@ -22,10 +22,12 @@
 						body: {
 							type: "application/json",
 							string: JSON.stringify({
+								scheme: request.scheme,
 								method: request.method,
 								uri: request.uri,
-								url: request.url
-							})
+								url: request.url,
+								headers: request.headers
+							}, void(0), 4)
 						}
 					};
 				}
@@ -39,48 +41,17 @@
 		var directResponse = JSON.parse(direct.body.stream.character().asString());
 		jsh.shell.console("DIRECT: " + JSON.stringify(directResponse));
 
-		/** @type { slime.servlet.proxy.Script } */
-		var script = jsh.script.loader.script("proxy.js");
-		var api = script({
-			library: {
-				web: jsh.web,
-				io: jsh.io,
-				ip: jsh.ip,
-				http: jsh.http,
-				jsh: {
-					shell: jsh.shell,
-					httpd: jsh.httpd
-				}
-			}
-		});
+		jsh.httpd.plugin.tools();
 
-		var tomcat = api.create({
-			hosts: ["127.0.0.1","destination.example.com"],
+		jsh.httpd.tools.proxy.application({
+			hosts: ["destination.example.com"],
 			server: {
 				http: underlying.port
+			},
+			chrome: {
+				location: jsh.script.file.parent.parent.parent.parent.parent.getRelativePath("local/chrome/https-proxy"),
+				uri: "https://destination.example.com/test/path"
 			}
-		});
-		jsh.shell.console("http: " + String(tomcat.port));
-		jsh.shell.console("https: " + String(tomcat.https.port));
-
-		jsh.java.Thread.start(function() {
-			try {
-				tomcat.run();
-			} catch (e) {
-				jsh.shell.console(e);
-				jsh.shell.console(e.stack);
-			}
-		});
-
-		var instance = new jsh.shell.browser.chrome.Instance({
-			location: jsh.script.file.parent.parent.parent.parent.parent.getRelativePath("local/chrome/https-proxy"),
-			hostrules: [
-				"MAP destination.example.com 127.0.0.1:" + tomcat.https.port
-			]
-		});
-
-		instance.run({
-			uri: "https://destination.example.com/test/path"
 		});
 	}
 //@ts-ignore

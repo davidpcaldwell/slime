@@ -39,9 +39,51 @@
 
 				this.uri = $context.api.web.Url.parse(String(_request.getRequestURI()));
 
-				this.url = $context.api.web.Url.codec.string.decode(
+				/** @type { slime.servlet.Headers } */
+				var headers = Object.assign([], { value: void(0) });
+				headers.value = function(name) {
+					//	TODO	more robust check for multiple values, etc.
+					var rv = [];
+					for (var i=0; i<this.length; i++) {
+						if (this[i].name.toLowerCase() == name.toLowerCase()) {
+							rv.push(this[i].value);
+						}
+					}
+					if (rv.length) return rv.join(",");
+					return null;
+				};
+				var _names = _request.getHeaderNames();
+				while(_names.hasMoreElements()) {
+					var _name = _names.nextElement();
+					var _values = _request.getHeaders(_name);
+					while(_values.hasMoreElements()) {
+						var _value = _values.nextElement();
+						headers.push({ name: String(_name), value: String(_value) });
+					}
+				}
+				this.headers = headers;
+
+				var getScheme = function(detected) {
+					if (headers.value("X-Forwarded-Proto")) {
+						return headers.value("X-Forwarded-Proto");
+					}
+					return detected;
+				}
+
+				this.url = (function(requestUrl) {
+					var rv = $context.api.web.Url.codec.string.decode(requestUrl);
+					if (getScheme()) {
+						rv.scheme = getScheme();
+					}
+					return rv;
+				})(
 					String(
 						Packages.javax.servlet.http.HttpUtils.getRequestURL(_request).toString()
+					)
+					+ (
+						(_request.getQueryString() != null)
+						? ("?" + String(_request.getQueryString()))
+						: ""
 					)
 				);
 
@@ -49,7 +91,7 @@
 					this.ip = String(_request.getRemoteAddr());
 				};
 
-				this.scheme = String(_request.getScheme());
+				this.scheme = getScheme(String(_request.getScheme()));
 				this.method = String(_request.getMethod()).toUpperCase();
 				this.path = String(_request.getPathInfo()).substring(1);
 
@@ -97,30 +139,6 @@
 						})
 					});
 				}
-
-				/** @type { slime.servlet.Headers } */
-				var headers = Object.assign([], { value: void(0) });
-				headers.value = function(name) {
-					//	TODO	more robust check for multiple values, etc.
-					var rv = [];
-					for (var i=0; i<this.length; i++) {
-						if (this[i].name.toLowerCase() == name.toLowerCase()) {
-							rv.push(this[i].value);
-						}
-					}
-					if (rv.length) return rv.join(",");
-					return null;
-				};
-				var _names = _request.getHeaderNames();
-				while(_names.hasMoreElements()) {
-					var _name = _names.nextElement();
-					var _values = _request.getHeaders(_name);
-					while(_values.hasMoreElements()) {
-						var _value = _values.nextElement();
-						headers.push({ name: String(_name), value: String(_value) });
-					}
-				}
-				this.headers = headers;
 
 				this.cookies = (function(_cookies) {
 					var rv = [];

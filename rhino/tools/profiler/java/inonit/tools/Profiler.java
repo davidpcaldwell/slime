@@ -19,8 +19,8 @@ public class Profiler {
 	private HashMap<Thread,Timing> profiles = new HashMap<Thread,Timing>();
 
 	private Timing getProfile() {
-		if (profiles.get(Thread.currentThread()) == null) {
-			synchronized(profiles) {
+		synchronized(profiles) {
+			if (profiles.get(Thread.currentThread()) == null) {
 				profiles.put(Thread.currentThread(), new Timing());
 			}
 		}
@@ -370,7 +370,7 @@ public class Profiler {
 			filters.put("com.sun.tools.javac", false);
 			filters.put("org.mozilla.javascript", false);
 			filters.put("org.mozilla.classfile", false);
-			filters.put("inonit.script.rhino.Engine$Profiler", false);
+			filters.put("inonit.script.rhino.Debugger$Profiler", false);
 		}
 
 		final void debug() {

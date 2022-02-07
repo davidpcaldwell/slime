@@ -50,11 +50,12 @@ $jsh.setRuntime((function() {
 			try {
 				return Packages.inonit.script.jsh.Nashorn.execute(NASHORN_IN_SCOPE_$jsh.subshell(configuration,invocation));
 			} catch (e) {
-				if (e.getClass && e.getClass().getName().equals("inonit.script.jsh.Nashorn$UncaughtException")) {
-					e = e.getCause();
+				var ex = e;
+				if (ex.getClass && ex.getClass().getName().equals("inonit.script.jsh.Nashorn$UncaughtException")) {
+					ex = ex.getCause();
 				}
-				if (e.printStackTrace) {
-					e.printStackTrace();
+				if (ex.printStackTrace) {
+					ex.printStackTrace();
 				}
 				return 255;
 			}
