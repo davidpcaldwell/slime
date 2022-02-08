@@ -201,6 +201,7 @@
 
 				/** @type { slime.runtime.Exports } */
 				var runtime = (function(scope) {
+					//	TODO	still uses synchronous API
 					var rv = eval(fetcher.getCode(bootstrap.getRelativePath("expression.js")));
 					rv.$api.deprecate.warning = function(access) {
 						debugger;

@@ -210,17 +210,15 @@
 		};
 
 		window.addEventListener("load", function() {
+			/** @type { slime.loader.Script<{ window: Window },slime.web.Exports> } */
+			var script = inonit.loader.loader.script("../../../../js/web/module.browser.js");
 			// /** @type { slime.web.Exports } */
 			// var web = inonit.loader.loader.module("../../../../js/web/module.browser.js", {
 			// 	window: window
 			// });
-			inonit.loader.loader.thread.module("../../../../js/web/module.browser.js", {
+			script.thread({
 				window: window
 			}).then(
-				/**
-				 *
-				 * @param { slime.web.Exports } web
-				 */
 				function(web) {
 					//	TODO	web module probably has easier way to parse query string
 					/** @type { slime.fifty.browser.test.internal.Query } */

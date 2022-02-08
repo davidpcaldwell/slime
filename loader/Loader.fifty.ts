@@ -44,6 +44,7 @@ namespace slime {
 
 		export interface Script<C,E> {
 			(c?: C): E
+			thread: (c?: C) => Promise<E>
 		}
 
 		/** @deprecated Replaced by {@link Script}. */

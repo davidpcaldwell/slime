@@ -118,24 +118,52 @@
 					};
 				}
 
-				if (p.thread) {
-					this.thread.module = (function(path,$context,target) {
+				var inModule = (
+					/**
+					 * @this { slime.Loader }
+					 * @param { string } path
+					 * @param { any } $context
+					 * @param { any } target
+					 * @returns
+					 */
+					function(path,$context,target) {
 						var locations = getModuleLocations(path);
 						var inner = getModuleScope($context,locations);
 						return this.thread.get(locations.main).then(function(script) {
 							methods.run.call(target,script,inner);
 							return inner.$exports;
 						});
-					}).bind(this);
+					}
+				).bind(this);
+
+				if (p.thread) {
+					this.thread.module = inModule;
 				}
 
 				if (p.get) {
 					/** @type { slime.Loader["script"] } */
 					this.script = function(path) {
 						var $loader = this;
-						return function(c) {
+						var sync = function(c) {
 							return $loader.module(path, c);
 						}
+						var async = function(c) {
+							if (p.thread) {
+								return inModule(path, c, void(0));
+							} else {
+								return {
+									then: function(f) {
+										return f($loader.module(path, c));
+									}
+								}
+							}
+						}
+						return Object.assign(
+							sync,
+							{
+								thread: async
+							}
+						)
 					};
 
 					this.factory = $api.deprecate(this.script);

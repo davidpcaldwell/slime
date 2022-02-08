@@ -152,12 +152,18 @@
 			null
 		);
 
-		var load = function(path,scope) {
+		/**
+		 *
+		 * @param { { name: string, js: string } } code
+		 * @param { { [x: string]: any } } scope
+		 * @returns
+		 */
+		var execute = function(code,scope) {
 			/** @type { any } */
 			var exported;
 
 			engine.execute(
-				$slime.getRuntimeScript(path),
+				code,
 				Object.assign(scope, {
 					$export: function(value) {
 						exported = value;
@@ -167,12 +173,35 @@
 			);
 
 			return exported;
+		}
+
+		/**
+		 *
+		 * @param { string } path
+		 * @param { { [x: string]: any } } scope
+		 * @returns
+		 */
+		var load = function(path,scope) {
+			return execute($slime.getRuntimeScript(path), scope);
 		};
 
+		/**
+		 *
+		 * @param { string } path
+		 * @returns { slime.loader.Script<any,any> }
+		 */
 		var script = function(path) {
-			return function(scope) {
-				return load(path, scope);
-			}
+			return Object.assign(
+				function(scope) {
+					return load(path, scope);
+				},
+				{
+					thread: function(context) {
+						//	TODO
+						throw new Error();
+					}
+				}
+			)
 		};
 
 		var code = {

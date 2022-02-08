@@ -39,7 +39,15 @@
 			var rv = function($context) {
 				return load(name, $context);
 			}
-			return rv;
+			return Object.assign(
+				rv,
+				{
+					thread: function() {
+						//	TODO
+						throw new Error("Unimplemented.");
+					}
+				}
+			);
 		}
 
 		var code = {
