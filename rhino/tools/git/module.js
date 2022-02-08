@@ -11,9 +11,23 @@
 	/**
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jrunscript.git.Context } $context
+	 * @param { slime.Loader } $loader
 	 * @param { slime.jrunscript.git.Exports } $exports
 	 */
-	function($api,$context,$exports) {
+	function($api,$context,$loader,$exports) {
+		var scripts = {
+			/** @type { slime.jrunscript.git.internal.log.Script } */
+			log: $loader.script("log.js")
+		};
+
+		var library = {
+			log: scripts.log({
+				library: {
+					time: $context.api.time
+				}
+			})
+		}
+
 		/**
 		 * @type { slime.jrunscript.git.Exports["commands"]["status"] }
 		 */
@@ -655,58 +669,15 @@
 				};
 
 				var formats = {
-					log: new function() {
-						//	TODO	refactor parse() to refer to fields by name by indexing fields by string
-
-						var fields = ["H", "cn", "s", "ct", "an", "D", "ae", "at", "ce"];
-
-						this.format = fields.map(function(field) {
-							return "%" + field;
-						}).join("~~");
-
-						/**
-						 * @param { string } line
-						 * @returns { slime.jrunscript.git.Commit }
-						 */
-						this.parse = function(line) {
-							var tokens = line.split("~~");
-							if (typeof(tokens[5]) == "undefined") throw new Error("No tokens[5]: [" + line + "]");
-							var refs = (function(string) {
-								var rv = {};
-								if (string.length == 0) return rv;
-								var tokens = string.split(", ");
-								tokens.forEach(function(token) {
-									var t = token.split(" -> ");
-									if (t.length > 1) {
-										if (!rv.names) rv.names = [];
-										rv.names.push(t[1]);
-									} else {
-										if (!rv.names) rv.names = [];
-										rv.names.push(t[0]);
-									}
-								});
-								return rv;
-							})(tokens[5]);
-							return {
-								names: refs.names,
-								commit: {
-									hash: tokens[0]
-								},
-								author: {
-									name: tokens[4],
-									email: tokens[6],
-									date: ($context.api.time) ? new $context.api.time.When({ unix: Number(tokens[7])*1000 }) : Number(tokens[7])*1000
-								},
-								committer: {
-									name: tokens[1],
-									email: tokens[8],
-									date: ($context.api.time) ? new $context.api.time.When({ unix: Number(tokens[3])*1000 }) : Number(tokens[3])*1000
-								},
-								subject: tokens[2]
-							}
-						}
+					log: {
+						format: library.log.format.mask,
+						parse: library.log.format.parse
 					}
 				};
+
+				$exports.log = {
+					format: library.log.format
+				}
 
 				/** @type { slime.jrunscript.git.repository.Local["show"] } */
 				var show = function(p) {
@@ -1466,7 +1437,7 @@
 					p.stderr(e.detail.line);
 				},
 				exit: function(e) {
-					if (e.detail.status) throw new Error();
+					if (e.detail.status) throw new Error("Exit status: " + e.detail.status);
 					output = e.detail.stdio.output;
 				}
 			});
@@ -1570,4 +1541,4 @@
 		}
 	}
 //@ts-ignore
-)($api,$context,$exports)
+)($api,$context,$loader,$exports)

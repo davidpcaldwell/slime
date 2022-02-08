@@ -324,8 +324,31 @@
 				jsh.wf.git = {
 					compareTo: function(branchName) {
 						return function(repository) {
-							var ahead = repository.log({ revisionRange: branchName + ".." });
-							var behind = repository.log({ revisionRange: ".." + branchName });
+							/** @type { slime.jrunscript.git.Command<{ revisionRange: string },slime.jrunscript.git.Commit[]> } */
+							var logRange = {
+								invocation: function(p) {
+									return {
+										command: "log",
+										arguments: $api.Array.build(function(rv) {
+											rv.push(jsh.tools.git.log.format.argument);
+											rv.push(p.revisionRange);
+										})
+									}
+								},
+								result: function(output) {
+									return output.split("\n").map(function(line) {
+										if (line.length == 0) return null;
+										return jsh.tools.git.log.format.parse(line);
+									}).filter(function(commit) {
+										return Boolean(commit && commit.subject);
+									})
+								}
+							};
+
+							var repo = jsh.tools.git.program({ command: "git" }).repository(repository.directory.toString());
+
+							var ahead = repo.command(logRange).argument({ revisionRange: branchName + ".." }).run();
+							var behind = repo.command(logRange).argument({ revisionRange: ".." + branchName }).run();
 							var status = repository.status();
 							return {
 								ahead: ahead,
