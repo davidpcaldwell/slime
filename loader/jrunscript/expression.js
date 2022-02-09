@@ -481,6 +481,7 @@
 						})();
 
 						this.write = function(dataOrType,mode) {
+							if (typeof(dataOrType) == "undefined") throw new TypeError("Cannot write 'undefined'");
 							if (!mode) mode = {};
 							if (dataOrType == $exports.io.Streams.binary && writeBinary) {
 								return writeBinary(mode);

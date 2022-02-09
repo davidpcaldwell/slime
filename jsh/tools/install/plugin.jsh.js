@@ -591,7 +591,7 @@
 											return location.file.read(String);
 										} else {
 											var rv = fetchCode();
-											location.write(code, { append: false });
+											location.write(rv, { append: false });
 											return rv;
 										}
 									} else {
