@@ -344,6 +344,10 @@ namespace slime {
 			})(fifty);
 		}
 
+		/**
+		 * An object provided by SLIME to embedders who load its runtime with a suitable {@link slime.runtime.Scope}. Provides
+		 * tools that may be directly provided to callers as APIs, or may be used to build APIs useful for the embedding.
+		 */
 		export interface Exports {
 			Loader: internal.LoaderConstructor & {
 				/** @deprecated Use `loader.source` */

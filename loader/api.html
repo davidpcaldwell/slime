@@ -21,11 +21,6 @@ END LICENSE
 		<div>
 			<h2>Properties</h2>
 			<p>
-				The platform loader is normally loaded within an environment-specific embedding, so the following exports are not
-				normally available to application code: they are available to the environment-specific embedding to expose to
-				application code as needed.
-			</p>
-			<p>
 				Note that although there are global <code>run()</code>, <code>file()</code>, and <code>value()</code> methods that
 				can be used to execute code, there is no global <code>module()</code> method. Since modules themselves load code, in
 				order to create a module, code loading capability is needed. For this reason, the loader API exposes the ability to

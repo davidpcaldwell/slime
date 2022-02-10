@@ -24,6 +24,17 @@
  * Many existing SLIME APIs are currently defined via the deprecated JSAPI definition format, which used literate definitions that
  * allowed documentation and tests to be defined via annotated HTML (typically using the file extension `.api.html`), using HTML
  * constructs for documentation and embedded scripts for testing.
+ *
+ * ### Embedding
+ * SLIME provides several embeddings (`jsh`, a Java servlet=based embedding, a browser embedding, and a JXA embedding for macOS
+ * automation). A Node.js embedding is planned.
+ *
+ * Custom SLIME embeddings may be developed by creating a suitable implementation of {@link slime.runtime.Scope} and putting that
+ * object in scope when evaluating `loader/expression.js`, which yields an object of type {@link slime.runtime.Exports}.
+ *
+ * The SLIME {@link slime.runtime.Exports | runtime} provides APIs that are ordinarily not available to application code directly, but are
+ * provided to support embedders (who can provide them, in turn, to application code).
+ *
  */
 namespace slime {
 
