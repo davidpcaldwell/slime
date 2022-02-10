@@ -5,10 +5,10 @@
 //	END LICENSE
 
 namespace slime {
-	export interface Loader {
+	export interface Loader<R extends Resource = Resource> {
 		source: loader.Source
 
-		get: (path: string) => Resource
+		get: (path: string) => R
 		list?: (m?: { filter?: any, descendants?: any }) => ( loader.LoaderEntry | loader.ResourceEntry )[]
 		Child: {
 			(prefix: string): Loader
@@ -26,7 +26,7 @@ namespace slime {
 		}
 
 		/** @deprecated Replaced by `script`. */
-		factory: Loader["script"]
+		factory: Loader<R>["script"]
 	}
 
 	export namespace loader {

@@ -4,8 +4,13 @@
 //
 //	END LICENSE
 
+//@ts-check
 (
-	function() {
+	/**
+	 *
+	 * @param { slime.jsh.Global } jsh
+	 */
+	function(jsh) {
 		var parameters = jsh.script.getopts({
 			options: {
 				interactive: false,
@@ -43,12 +48,14 @@
 					load: function(scope) {
 						scope.$exports.handle = function(request) {
 							if (request.path == "loader/api/ui/test/result") {
+								jsh.shell.console("Resolving result from client ...");
 								var json = request.body.stream.character().asString();
 								jsh.shell.console("Got result JSON=" + json);
 								result.received(JSON.parse(json));
 								return { status: { code: 200 } };
 							}
 							if (SLIME.get(request.path)) {
+								jsh.shell.console("Request: GET " + request.path);
 								return {
 									status: { code: 200 },
 									body: SLIME.get(request.path)
@@ -69,7 +76,7 @@
 
 		var chrome = new jsh.shell.browser.chrome.Instance({
 			location: parameters.options["chrome:data"],
-			proxy: new jsh.shell.browser.ProxyConfiguration({
+			proxy: jsh.shell.browser.ProxyConfiguration({
 				port: tomcat.port
 			}),
 			devtools: parameters.options["debug:devtools"]
@@ -80,48 +87,55 @@
 				uri: "http://" + "127.0.0.1:" + tomcat.port + "/loader/api/ui/test/browser.html" + ((parameters.options.success) ? "?success" : "")
 			});
 		} else {
+			/** @type { { close: () => void } } */
 			var opened;
-
-			var on = {
-				start: function(p) {
-					new lock.Waiter({
-						until: function() {
-							return true;
-						},
-						then: function() {
-							opened = new function() {
-								this.close = function() {
-									jsh.shell.echo("Killing browser process " + p + " ...");
-									p.kill();
-									jsh.shell.echo("Killed.");
-								}
-							}
-						}
-					})();
-				}
-			};
 
 			chrome.launch({
 				uri: "http://" + "127.0.0.1:" + tomcat.port + "/loader/api/ui/test/browser.html?unit.run" + ((parameters.options.success) ? "&success" : ""),
-				on: on
+				on: {
+					start: function(p) {
+						new lock.Waiter({
+							until: function() {
+								return true;
+							},
+							then: function() {
+								opened = new function() {
+									this.close = function() {
+										jsh.shell.echo("Killing browser process " + p + " ...");
+										p.kill();
+										jsh.shell.echo("Killed.");
+									}
+								}
+							}
+						})();
+					}
+				}
 			});
 
-			jsh.shell.console("Chrome launched.");
+			jsh.shell.console("Initiated Chrome launch.");
 
+			jsh.shell.console("Waiting for Chrome launch to return process ...");
 			new lock.Waiter({
 				until: function() { return Boolean(opened); },
 				then: function() {
 					jsh.shell.console("opened = " + opened);
 				}
 			})();
+			//	Since we wait above until opened is truthy, we can now assert it's truthy for TypeScript
+			/** @type { (opened: any) => asserts opened } */
+			var untilOpened = function(opened) {}
+			untilOpened(opened);
 
+			jsh.shell.console("Chrome subprocess launched.");
+
+			jsh.shell.console("Waiting for result ...");
 			new lock.Waiter({
 				until: function() { return typeof(result.success) != "undefined" },
 				then: function() {
 				}
 			})();
 
-			jsh.shell.console("result.success = " + result.success);
+			jsh.shell.console("Result received; result.success = " + result.success);
 			opened.close();
 			if (result.success === parameters.options.success) {
 				jsh.shell.console("Success: " + result.success);
@@ -132,4 +146,5 @@
 			}
 		}
 	}
-)();
+//@ts-ignore
+)(jsh);

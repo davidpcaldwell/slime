@@ -49,19 +49,6 @@ namespace slime.jrunscript.shell.browser {
 		readonly version: string
 	}
 
-	export namespace object {
-		export interface Chrome extends slime.jrunscript.shell.browser.Chrome {
-			Instance: new (u: {
-				location?: slime.jrunscript.file.Pathname
-				directory?: slime.jrunscript.file.Directory
-				proxy?: ProxyTools
-				hostrules?: string[]
-				install?: boolean
-				devtools?: boolean
-			}) => any
-		}
-	}
-
 	export interface Exports {
 		inject: any
 

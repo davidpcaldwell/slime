@@ -4,6 +4,20 @@
 //
 //	END LICENSE
 
+namespace slime.jrunscript.shell.browser {
+	export namespace object {
+		export interface Chrome extends slime.jrunscript.shell.browser.Chrome {
+			Instance: new (u: {
+				location?: slime.jrunscript.file.Pathname
+				directory?: slime.jrunscript.file.Directory
+				proxy?: ProxyTools
+				hostrules?: string[]
+				install?: boolean
+				devtools?: boolean
+			}) => any
+		}
+	}
+}
 namespace slime.jrunscript.shell.browser.internal.chrome {
 	export interface Context {
 		os: any
