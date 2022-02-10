@@ -83,6 +83,7 @@
 
 	//  TODO    build Loader implementation on top of this
 	var runtime = (function(slime) {
+		/** @type { slime.runtime.$slime.Deployment } */
 		var $slime = {
 			getRuntimeScript: function(path) {
 				return {
@@ -94,7 +95,7 @@
 				return null;
 			}
 		};
-		var $engine = {}
+		var $engine = {};
 		return eval(load(slime+"loader/expression.js").code);
 	})(slimePath + "/");
 

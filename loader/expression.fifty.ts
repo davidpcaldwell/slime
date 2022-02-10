@@ -150,6 +150,11 @@ namespace slime {
 				compile: (code: string) => string
 			}
 
+			export interface Script {
+				name: string
+				js: string
+			}
+
 			/**
 			 * An object providing access to the SLIME execution environment.
 			 */
@@ -159,7 +164,7 @@ namespace slime {
 				 * @param path The path to a SLIME source file, relative to `expression.js`.
 				 * @returns An executable JavaScript script. The code contained in the source file. **This interface may change to return an instance of the *script* type.**
 				 */
-				getRuntimeScript(path: string): { name: string, js: string }
+				getRuntimeScript(path: string): Script
 
 				/**
 				 * Should provide an implementation of CoffeeScript, if one is present.
@@ -179,6 +184,10 @@ namespace slime {
 				}
 
 				typescript?: TypeScript
+
+				flags?: {
+					[name: string]: string
+				}
 			}
 		}
 
@@ -293,6 +302,9 @@ namespace slime {
 				MetaObject: slime.runtime.$engine["MetaObject"]
 			}
 
+			/**
+			 * A subset of the {@link $slime.Deployment} interface that can load SLIME runtime scripts.
+			 */
 			export interface Code {
 				getRuntimeScript: $slime.Deployment["getRuntimeScript"]
 			}

@@ -18,7 +18,7 @@
 
 		var getSlimePart = function(definition) {
 			return getPartDescriptor({
-				definition: "../../../../" + definition
+				definition: "../" + definition
 			});
 		};
 

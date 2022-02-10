@@ -125,6 +125,7 @@
 					if ($javahost.setReadOnly) $engine.Object.defineProperty.setReadOnly = $javahost.setReadOnly;
 					if ($javahost.MetaObject) $engine.MetaObject = $javahost.MetaObject;
 				})();
+				/** @type { slime.runtime.$slime.Deployment } */
 				var $slime = {
 					getRuntimeScript: function(path) {
 						return {
@@ -137,8 +138,7 @@
 						if (_code) return { code: String(_code) };
 						return null;
 					},
-					typescript: $loader.getTypescript(),
-					flags: {}
+					typescript: $loader.getTypescript()
 				};
 				if (!$javahost.noEnvironmentAccess) {
 					var flagPattern = /^SLIME_(.*)$/;
@@ -149,6 +149,7 @@
 						var value = String(_entry.getValue());
 						var match = flagPattern.exec(name);
 						if (match) {
+							if (!$slime.flags) $slime.flags = {};
 							$slime.flags[match[1]] = value;
 						}
 					}

@@ -11,7 +11,7 @@
 			var js = code.read(String);
 
 			var subject: slime.runtime.Exports = (function() {
-				var scope = {
+				var scope: { $slime: slime.runtime.internal.Code, $engine: slime.runtime.$engine } = {
 					$slime: {
 						getRuntimeScript: function(path) {
 							var resource = fifty.$loader.get(path);

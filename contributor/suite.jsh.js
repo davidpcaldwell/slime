@@ -153,7 +153,7 @@
 						shell: environment.jsh.home,
 						script: environment.jsh.src.getFile("loader/browser/test/suite.jsh.js"),
 						arguments: [
-							"-suite", environment.jsh.src.getFile("loader/browser/suite.js"),
+							"-suite", environment.jsh.src.getFile("contributor/browser-jsapi-suite.js"),
 							"-browser", browser.id,
 							"-view", "stdio"
 						].concat(parameters.arguments),
