@@ -48,6 +48,15 @@ type ArrayElement<ArrayType extends readonly unknown[]> =
   ArrayType extends readonly (infer ElementType)[] ? ElementType : never;
 
 namespace slime {
+	(
+		function(
+			fifty: slime.fifty.test.kit
+		) {
+			fifty.tests.types = {};
+		}
+	//@ts-ignore
+	)(fifty);
+
 	export namespace mime {
 		/**
 		 * A MIME type.
@@ -89,8 +98,17 @@ namespace slime {
 	}
 
 	export interface Resource {
+		/**
+		 * The name of the resource, if available.
+		 */
 		name: string
+
+		/**
+		 * The type of the resource, or `null` if the type cannot be determined. If no type was specified, and a name
+		 * was specified, the implementation will attempt to deduce the type from the name.
+		 */
 		type: mime.Type,
+
 		read?: {
 			(p: StringConstructor): string
 			(p: JSON): any
@@ -99,14 +117,112 @@ namespace slime {
 		}
 	}
 
+	(
+		function(
+			fifty: slime.fifty.test.kit
+		) {
+			const { verify } = fifty;
+
+			var api = (
+				function(): slime.runtime.Exports {
+					var scope = {
+						$slime: {
+							getRuntimeScript: function(path) {
+								return {
+									name: path,
+									js: fifty.$loader.get(path).read(String)
+								}
+							},
+							getCoffeeScript: function() {
+								return null;
+							}
+						},
+						$engine: void(0)
+					}
+
+					var rv;
+
+					var $slime = scope.$slime;
+					var $engine = scope.$engine;
+					rv = eval(fifty.$loader.get("expression.js").read(String))
+
+					return rv;
+				}
+			)();
+
+			fifty.tests.types.Resource = function() {
+				fifty.run(function type() {
+					var toString = function(p): string { return p.toString(); };
+
+					(function() {
+						var resource = new api.Resource({});
+						verify(resource).type.is(null);
+					})();
+					(function() {
+						var resource = new api.Resource({
+							type: api.mime.Type.parse("application/json")
+						});
+						verify(resource).type.evaluate(toString).is("application/json");
+					})();
+					(function() {
+						var resource = new api.Resource({
+							name: "foo.js"
+						});
+						verify(resource).type.evaluate(toString).is("application/javascript");
+					})();
+					(function() {
+						var resource = new api.Resource({
+							name: "foo.x"
+						});
+						verify(resource).type.is(null);
+					})();
+				});
+
+				fifty.run(function name() {
+					(function() {
+						var resource = new api.Resource({
+							name: "foo"
+						});
+						verify(resource).name.is("foo");
+					})();
+					(function() {
+						var resource = new api.Resource({});
+						verify(resource).evaluate.property("name").is(void(0));
+					})();
+				});
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
 	export namespace resource {
+		/**
+		 * An object that provides the implementation for a {@link slime.Resource}.
+		 */
 		export interface Descriptor {
+			/**
+			 * The MIME type of the resource.
+			 */
 			type?: string | mime.Type
+
+			/**
+			 * The name of the resource. May be used (by file extension, for example) to determine the type of the file.
+			 */
+			//	TODO	should we provide default implementation of this property that sets it to the basename as determined by
+			//			path? Or to the full path?
 			name?: string
-			read?: {
-				string?: () => string
-			},
+
+			/**
+			 * The content of the resource as a string.
+			 */
 			string?: string
+
+			read?: {
+				/**
+				 * Returns the content of the resource as a string.
+				 */
+				string?: () => string
+			}
 		}
 
 		export type Factory = new (o: Descriptor) => slime.Resource
@@ -396,10 +512,16 @@ namespace slime {
 		}
 
 		export interface Exports {
+			/**
+			 * Creates a {@link slime.Resource | Resource}.
+			 */
+			Resource: resource.Factory
+		}
+
+		export interface Exports {
 			run: (code: slime.Resource, scope?: { [name: string]: any }, target?: object ) => void
 			file: any
 			value: any
-			Resource: resource.Factory
 			namespace: any
 			$platform: $platform
 			java?: any
@@ -435,6 +557,7 @@ namespace slime.test {
 		fifty: slime.fifty.test.kit
 	) {
 		tests.suite = function() {
+			fifty.run(fifty.tests.types.Resource);
 			fifty.load("mime.fifty.ts");
 			fifty.load("$api-Function.fifty.ts");
 			fifty.load("Loader.fifty.ts");
