@@ -20,14 +20,6 @@ END LICENSE
 		<h1>Embedding</h1>
 		<div>
 			<h2>Properties</h2>
-			<p>
-				Note that although there are global <code>run()</code>, <code>file()</code>, and <code>value()</code> methods that
-				can be used to execute code, there is no global <code>module()</code> method. Since modules themselves load code, in
-				order to create a module, code loading capability is needed. For this reason, the loader API exposes the ability to
-				load modules via first creating a
-				<a href="#types.Loader">Loader</a> implementation and then using the <code>module()</code> method of the
-				<code>Loader</code>.
-			</p>
 			<script type="application/x.jsapi#initialize">
 				scope.api = $jsapi.loader.eval("expression.js", {
 					$slime: {
