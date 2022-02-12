@@ -109,12 +109,70 @@ namespace slime {
 		 */
 		type: mime.Type,
 
+		/**
+		 * Provides the content of this resource in a format specified by its argument.
+		 */
 		read?: {
+			/**
+			 * Returns the content of this resource as a string.
+			 */
 			(p: StringConstructor): string
+
+			/**
+			 * Returns the content of this resource as JSON.
+			 */
 			(p: JSON): any
+
 			//  XML, XMLList allowed
+			/**
+			 * @deprecated E4X is deprecated.
+			 *
+			 * Allows the XML and XMLList constructors as arguments, and returns the resource as an E4X `type="xml"` object.
+			 */
 			(p: any): any
 		}
+	}
+
+	export namespace runtime {
+		export interface Exports {
+			/**
+			 * Creates a {@link slime.Resource | Resource}.
+			 */
+			Resource: resource.Factory
+		}
+	}
+
+	export namespace resource {
+		/**
+		 * An object that provides the implementation for a {@link slime.Resource}.
+		 */
+		export interface Descriptor {
+			/**
+			 * The MIME type of the resource.
+			 */
+			type?: string | mime.Type
+
+			/**
+			 * The name of the resource. May be used (by file extension, for example) to determine the type of the file.
+			 */
+			//	TODO	should we provide default implementation of this property that sets it to the basename as determined by
+			//			path? Or to the full path?
+			name?: string
+
+			/**
+			 * The content of the resource as a string.
+			 */
+			string?: string
+
+			read?: {
+				/**
+				 * Returns the content of the resource as a string.
+				 */
+				string?: () => string
+			}
+		}
+
+		export type Factory = new (o: Descriptor) => slime.Resource
 	}
 
 	(
@@ -190,43 +248,43 @@ namespace slime {
 						verify(resource).evaluate.property("name").is(void(0));
 					})();
 				});
+
+				fifty.run(function() {
+					var readResource = function(resource: slime.Resource): string {
+						return resource.read(String);
+					};
+
+					(function() {
+						var resource = new api.Resource({
+							string: "foo"
+						});
+						verify(resource).evaluate(readResource).is("foo");
+					})();
+
+					(function() {
+						var resource = new api.Resource({
+							read: {
+								string: function() {
+									return "bar";
+								}
+							}
+						});
+						verify(resource).evaluate(readResource).is("bar");
+					})();
+
+					(function() {
+						var resource = new api.Resource({
+							string: JSON.stringify({ foo: "bar" })
+						});
+						var json: { foo: string, baz?: any } = resource.read(JSON);
+						verify(json).foo.is("bar");
+						verify(json).evaluate.property("baz").is(void(0));
+					})();
+				})
 			}
 		}
 	//@ts-ignore
 	)(fifty);
-
-	export namespace resource {
-		/**
-		 * An object that provides the implementation for a {@link slime.Resource}.
-		 */
-		export interface Descriptor {
-			/**
-			 * The MIME type of the resource.
-			 */
-			type?: string | mime.Type
-
-			/**
-			 * The name of the resource. May be used (by file extension, for example) to determine the type of the file.
-			 */
-			//	TODO	should we provide default implementation of this property that sets it to the basename as determined by
-			//			path? Or to the full path?
-			name?: string
-
-			/**
-			 * The content of the resource as a string.
-			 */
-			string?: string
-
-			read?: {
-				/**
-				 * Returns the content of the resource as a string.
-				 */
-				string?: () => string
-			}
-		}
-
-		export type Factory = new (o: Descriptor) => slime.Resource
-	}
 
 	/**
 	 * Generally speaking, the SLIME runtime is responsible for providing basic constructs to SLIME embeddings.
@@ -509,13 +567,6 @@ namespace slime {
 					toExportScope: <T extends { [x: string]: any }>(t: T) => T & { $export: any, $exports: any }
 				}
 			}
-		}
-
-		export interface Exports {
-			/**
-			 * Creates a {@link slime.Resource | Resource}.
-			 */
-			Resource: resource.Factory
 		}
 
 		export interface Exports {

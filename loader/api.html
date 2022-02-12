@@ -50,51 +50,8 @@ END LICENSE
 						<ul>
 							<li class="function">
 								<div class="name">read</div>
-								<span>Provides the content of this resource in a format specified by its argument.</span>
-								<div class="arguments">
-									<div class="label">Arguments</div>
-									<ol>
-										<li class="value">
-											<span class="type">The String function, the JSON function <span class="deprecated">, or the XML function</span>.</span>
-											<span>A constant value indicating the type desired.</span>
-										</li>
-									</ol>
-								</div>
-								<div class="returns">
-									<div class="label">Returns</div>
-									<span class="type">String</span>,
-									<span class="type">object</span>,
-									<span class="deprecated">or <span class="type">XML</span></span>
-									<span>Depending on the type argument given, returns the content of the resource in the given format.</span>
-								</div>
 								<script type="application/x.jsapi#tests"><![CDATA[
-									(function() {
-										var resource = new api.Resource({
-											string: "foo"
-										});
-										verify(resource).read(String).is("foo");
-									})();
-
-									(function() {
-										var resource = new api.Resource({
-											read: {
-												string: function() {
-													return "bar";
-												}
-											}
-										});
-										verify(resource).read(String).is("bar");
-									})();
-
-									(function() {
-										var resource = new api.Resource({
-											string: JSON.stringify({ foo: "bar" })
-										});
-										var json = resource.read(JSON);
-										verify(json).foo.is("bar");
-										verify(json).evaluate.property("baz").is(void(0));
-									})();
-
+									//	TODO	make $platform available in Fifty
 									if ($platform.e4x) {
 										var resource = new api.Resource({
 											string: "<a><b/></a>"

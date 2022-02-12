@@ -76,9 +76,6 @@
 
 		var chrome = new jsh.shell.browser.chrome.Instance({
 			location: parameters.options["chrome:data"],
-			proxy: jsh.shell.browser.ProxyConfiguration({
-				port: tomcat.port
-			}),
 			devtools: parameters.options["debug:devtools"]
 		});
 
