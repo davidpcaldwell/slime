@@ -41,33 +41,6 @@ END LICENSE
 			</script>
 			<div class="label">has properties:</div>
 			<ul>
-				<li class="constructor">
-					<div class="name">Resource</div>
-					<div class="instances">
-						<div class="label">Instances</div>
-						<span>Instances conform to the following type:</span>
-						<div class="label">has properties:</div>
-						<ul>
-							<li class="function">
-								<div class="name">read</div>
-								<script type="application/x.jsapi#tests"><![CDATA[
-									//	TODO	make $platform available in Fifty
-									if ($platform.e4x) {
-										var resource = new api.Resource({
-											string: "<a><b/></a>"
-										});
-										var xml = resource.read(XML);
-										verify(xml).is.type("xml");
-
-										var list = { list: resource.read(XMLList) };
-										verify(list).list.is.type("xml");
-										verify(list).evaluate(function(v) { return v.list.length(); }).is(1);
-									}
-								]]></script>
-							</li>
-						</ul>
-					</div>
-				</li>
 				<div class="type">
 					<a class="type" name="types.script">script</a>
 					<span>

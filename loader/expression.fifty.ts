@@ -177,6 +177,7 @@ namespace slime {
 
 	(
 		function(
+			$platform: slime.runtime.$platform,
 			fifty: slime.fifty.test.kit
 		) {
 			const { verify } = fifty;
@@ -280,11 +281,26 @@ namespace slime {
 						verify(json).foo.is("bar");
 						verify(json).evaluate.property("baz").is(void(0));
 					})();
+					var p = $platform;
+					var global = (function() { return this; })();
+					var XML = global["XML"];
+					var XMLList = global["XMLList"];
+					if ($platform.e4x) {
+						var resource = new api.Resource({
+							string: "<a><b/></a>"
+						});
+						var xml = resource.read(XML);
+						verify(xml).is.type("xml");
+
+						var list = { list: resource.read(XMLList) };
+						verify(list).list.is.type("xml");
+						verify(list).evaluate(function(v): number { return v.list.length(); }).is(1);
+					}
 				})
 			}
 		}
 	//@ts-ignore
-	)(fifty);
+	)($platform,fifty);
 
 	/**
 	 * Generally speaking, the SLIME runtime is responsible for providing basic constructs to SLIME embeddings.
