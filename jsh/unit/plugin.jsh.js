@@ -146,12 +146,16 @@ plugin({
 							output: buffer.writeBinary()
 						}
 					});
+					var ranWithoutException = true;
 					jsh.java.Thread.start(function() {
 						try {
 							p.run(arg);
 						} catch (e) {
 							Packages.java.lang.System.err.println(e);
 							Packages.java.lang.System.err.println(e.stack);
+							ranWithoutException = false;
+							//	Note that this is in a thread so will not be caught here, but may be caught by uncaught exception
+							//	handler
 							throw e;
 						} finally {
 							buffer.close();
@@ -164,6 +168,7 @@ plugin({
 						}
 					});
 					decoder.run();
+					verify(ranWithoutException, "Forked process ran without exception").is(true);
 				}
 			};
 		};
