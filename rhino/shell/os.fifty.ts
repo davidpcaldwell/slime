@@ -11,7 +11,7 @@ namespace slime.jrunscript.shell.system {
 			name: string
 		}
 		api: {
-			js: slime.runtime.old.Exports
+			js: slime.js.old.Exports
 			io: slime.jrunscript.io.Exports
 			file: slime.jrunscript.file.Exports
 		}

@@ -4,7 +4,10 @@
 //
 //	END LICENSE
 
-namespace slime.runtime.old {
+/**
+ * An older module containing general JavaScript utilities. Replaced by {@link slime.$api.Global}.
+ */
+namespace slime.js.old {
 	export interface Context {
 		globals: boolean
 	}

@@ -5,6 +5,7 @@
 //	END LICENSE
 
 interface Object {
+	/** @deprecated Replaced by {@link Object}'s `defineProperty` and related methods. */
 	__defineGetter__: Function
 }
 

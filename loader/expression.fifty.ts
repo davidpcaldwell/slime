@@ -232,6 +232,21 @@ namespace slime {
 			MetaObject: any
 		}
 
+		/**
+		 * An object provided by SLIME to embedders who load its runtime with a suitable {@link slime.runtime.Scope}. Provides
+		 * tools that may be directly provided to callers as APIs, or may be used to build APIs useful for the embedding.
+		 *
+		 * ## Loading code
+		 *
+		 * Note that although there are global `run()`, `file()`, and `value()` methods that
+		 * can be used to execute code, there is no global `module()` method. Since modules themselves load code, in
+		 * order to create a module, code loading capability is needed. For this reason, the loader API exposes the ability to
+		 * load modules via first creating a {@link slime.Loader} implementation and then using the
+		 * `module()` method of the `Loader`.
+		 */
+		export interface Exports {
+		}
+
 		(
 			function(
 				fifty: slime.fifty.test.kit
@@ -375,6 +390,79 @@ namespace slime {
 		//@ts-ignore
 		)($platform,fifty);
 
+		export interface Exports {
+			//	TODO	scope and target parameter documentation refers to slime.Loader, but that API does not actually define
+			//			them in Fifty (probably does in JSAPI).
+
+			/**
+			 * Analogous to {@link slime.Loader}'s `run()`, except that the caller specifies a
+			 * {@link slime.Resource} to execute rather than a path within a {@link slime.Loader}.
+			 *
+			 * @param code A resource to execute. If no MIME type can be determined, the type will be assumed to be
+			 * `application/javascript`.
+			 * `application/javascript` scripts will be executed as
+			 * JavaScript. `application/vnd.coffeescript` will be interpreted as CoffeeScript. The
+			 * `name` property, if provided, may be used by the underlying JavaScript engine when evaluating
+			 * the resource as code (for display in tools, for example).
+			 *
+			 * @param scope See {@link slime.Loader}'s `run()` method.
+			 *
+			 * @param target See {@link slime.Loader}'s `run()` method.
+			 */
+			run: (
+				code: slime.Resource,
+				scope?: { [name: string]: any },
+				target?: object
+			) => void
+
+			//	TODO	could parameterize types here, with C, E; must C and E extend object? any?
+			/**
+			 * Analogous to {@link slime.Loader}'s `file()` method, except that the caller specifies a
+			 * {@link slime.Resource} to execute rather than a path within a {@link slime.Loader}.
+			 *
+			 * @param code A resource to execute. See the `run()` method for details about this argument.
+			 *
+			 * @param $context See {@link slime.Loader}'s `file()` method.
+			 *
+			 * @param target See {@link slime.Loader}'s `file()` method.
+			 *
+			 * @returns See {@link slime.Loader}'s `file()` method.
+			 */
+			file: (
+				code: slime.Resource,
+				$context?: { [name: string]: any },
+				target?: object
+				//	TODO	return type should probably be { [name: string]: any }, but this causes a compilation failure currently
+			) => any
+
+			/**
+			 * Analogous to {@link slime.Loader}'s `value()` method, except that the caller specifies a
+			 * {@link slime.Resource} to execute rather than a path within a {@link slime.Loader}.
+			 *
+			 * @param code A resource to execute. See the `run()` method for details about this argument.
+			 *
+			 * @param scope See {@link slime.Loader}'s `value()` method.
+			 *
+			 * @param target See {@link slime.Loader}'s `value()` method.
+			 *
+			 * @returns See {@link slime.Loader}'s `value()` method.
+			 */
+			value: (
+				code: slime.Resource,
+				scope?: { [name: string]: any },
+				target?: object
+			) => { [name: string]: any }
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.kit
+			) {
+
+			}
+		//@ts-ignore
+		)(fifty);
+
 		export namespace internal {
 			export type LoaderConstructor = new (p: slime.loader.Source) => Loader
 			export type Resource = resource.Factory
@@ -391,29 +479,6 @@ namespace slime {
 					Function: slime.$api.Global["Function"]
 					deprecate: slime.$api.Global["deprecate"]
 				}
-			}
-
-			export namespace scripts {
-				export interface Scope {
-					$slime: slime.runtime.$slime.Deployment
-					$platform: slime.runtime.$platform
-					$engine: slime.runtime.internal.Engine
-					$api: slime.$api.Global
-					mime: slime.runtime.Exports["mime"]
-					mimeTypeIs: (type: string) => (type: slime.mime.Type) => boolean
-				}
-
-				export interface Exports {
-					methods: {
-						run: (code: slime.Resource, scope: { [name: string]: any }) => void
-						value: (code: slime.Resource, scope: { [name: string]: any }) => any
-						file: (code: slime.Resource, context: { [name: string]: any }) => { [x: string]: any }
-					}
-					toExportScope: slime.runtime.Exports["Loader"]["tools"]["toExportScope"]
-					createScriptScope: createScriptScope
-				}
-
-				export type Script = slime.loader.Script<Scope,Exports>
 			}
 
 			export namespace loader {
@@ -541,9 +606,6 @@ namespace slime {
 		}
 
 		export interface Exports {
-			run: (code: slime.Resource, scope?: { [name: string]: any }, target?: object ) => void
-			file: any
-			value: any
 			namespace: any
 			$platform: $platform
 			java?: any

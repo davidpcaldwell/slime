@@ -10,9 +10,9 @@
 	 *
 	 * @param { slime.runtime.$platform } $platform
 	 * @param { slime.$api.Global } $api
-	 * @param { slime.runtime.old.Context } $context
+	 * @param { slime.js.old.Context } $context
 	 * @param { slime.Loader } $loader
-	 * @param { slime.runtime.old.Exports } $exports
+	 * @param { slime.js.old.Exports } $exports
 	 */
 	function($platform,$api,$context,$loader,$exports) {
 		var globals = $loader.file("global.js");

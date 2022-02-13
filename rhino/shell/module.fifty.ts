@@ -25,7 +25,7 @@ namespace slime.jrunscript.shell {
 			compiler: slime.jrunscript.file.File
 		}
 		api: {
-			js: slime.runtime.old.Exports
+			js: slime.js.old.Exports
 			java: slime.jrunscript.host.Exports
 			io: slime.jrunscript.io.Exports
 			file: slime.jrunscript.file.Exports
