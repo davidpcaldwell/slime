@@ -5,15 +5,6 @@
 //	END LICENSE
 
 namespace slime {
-	(
-		function(
-			fifty: slime.fifty.test.kit
-		) {
-			fifty.tests.types = {};
-		}
-	//@ts-ignore
-	)(fifty);
-
 	export namespace mime {
 		/**
 		 * A MIME type.
@@ -90,15 +81,6 @@ namespace slime {
 		}
 	}
 
-	export namespace runtime {
-		export interface Exports {
-			/**
-			 * Creates a {@link slime.Resource | Resource}.
-			 */
-			Resource: resource.Factory
-		}
-	}
-
 	export namespace resource {
 		/**
 		 * An object that provides the implementation for a {@link slime.Resource}.
@@ -131,133 +113,6 @@ namespace slime {
 
 		export type Factory = new (o: Descriptor) => slime.Resource
 	}
-
-	(
-		function(
-			$platform: slime.runtime.$platform,
-			fifty: slime.fifty.test.kit
-		) {
-			const { verify } = fifty;
-
-			var api = (
-				function(): slime.runtime.Exports {
-					var scope = {
-						$slime: {
-							getRuntimeScript: function(path) {
-								return {
-									name: path,
-									js: fifty.$loader.get(path).read(String)
-								}
-							},
-							getCoffeeScript: function() {
-								return null;
-							}
-						},
-						$engine: void(0)
-					}
-
-					var rv;
-
-					var $slime = scope.$slime;
-					var $engine = scope.$engine;
-					rv = eval(fifty.$loader.get("expression.js").read(String))
-
-					return rv;
-				}
-			)();
-
-			fifty.tests.types.Resource = function() {
-				fifty.run(function type() {
-					var toString = function(p): string { return p.toString(); };
-
-					(function() {
-						var resource = new api.Resource({});
-						verify(resource).type.is(null);
-					})();
-					(function() {
-						var resource = new api.Resource({
-							type: api.mime.Type.parse("application/json")
-						});
-						verify(resource).type.evaluate(toString).is("application/json");
-					})();
-					(function() {
-						var resource = new api.Resource({
-							name: "foo.js"
-						});
-						verify(resource).type.evaluate(toString).is("application/javascript");
-					})();
-					(function() {
-						var resource = new api.Resource({
-							name: "foo.x"
-						});
-						verify(resource).type.is(null);
-					})();
-				});
-
-				fifty.run(function name() {
-					(function() {
-						var resource = new api.Resource({
-							name: "foo"
-						});
-						verify(resource).name.is("foo");
-					})();
-					(function() {
-						var resource = new api.Resource({});
-						verify(resource).evaluate.property("name").is(void(0));
-					})();
-				});
-
-				fifty.run(function() {
-					var readResource = function(resource: slime.Resource): string {
-						return resource.read(String);
-					};
-
-					(function() {
-						var resource = new api.Resource({
-							string: "foo"
-						});
-						verify(resource).evaluate(readResource).is("foo");
-					})();
-
-					(function() {
-						var resource = new api.Resource({
-							read: {
-								string: function() {
-									return "bar";
-								}
-							}
-						});
-						verify(resource).evaluate(readResource).is("bar");
-					})();
-
-					(function() {
-						var resource = new api.Resource({
-							string: JSON.stringify({ foo: "bar" })
-						});
-						var json: { foo: string, baz?: any } = resource.read(JSON);
-						verify(json).foo.is("bar");
-						verify(json).evaluate.property("baz").is(void(0));
-					})();
-					var p = $platform;
-					var global = (function() { return this; })();
-					var XML = global["XML"];
-					var XMLList = global["XMLList"];
-					if ($platform.e4x) {
-						var resource = new api.Resource({
-							string: "<a><b/></a>"
-						});
-						var xml = resource.read(XML);
-						verify(xml).is.type("xml");
-
-						var list = { list: resource.read(XMLList) };
-						verify(list).list.is.type("xml");
-						verify(list).evaluate(function(v): number { return v.list.length(); }).is(1);
-					}
-				})
-			}
-		}
-	//@ts-ignore
-	)($platform,fifty);
 
 	/**
 	 * Generally speaking, the SLIME runtime is responsible for providing basic constructs to SLIME embeddings.
@@ -376,6 +231,149 @@ namespace slime {
 			 */
 			MetaObject: any
 		}
+
+		(
+			function(
+				fifty: slime.fifty.test.kit
+			) {
+				fifty.tests.exports = {};
+			}
+		//@ts-ignore
+		)(fifty);
+
+		export interface Exports {
+			/**
+			 * Creates a {@link slime.Resource | Resource}.
+			 */
+			Resource: resource.Factory
+		}
+
+		(
+			function(
+				$platform: slime.runtime.$platform,
+				fifty: slime.fifty.test.kit
+			) {
+				const { verify } = fifty;
+
+				var api = (
+					function(): slime.runtime.Exports {
+						var scope = {
+							$slime: {
+								getRuntimeScript: function(path) {
+									return {
+										name: path,
+										js: fifty.$loader.get(path).read(String)
+									}
+								},
+								getCoffeeScript: function() {
+									return null;
+								}
+							},
+							$engine: void(0)
+						}
+
+						var rv;
+
+						var $slime = scope.$slime;
+						var $engine = scope.$engine;
+						rv = eval(fifty.$loader.get("expression.js").read(String))
+
+						return rv;
+					}
+				)();
+
+				fifty.tests.exports.Resource = function() {
+					fifty.run(function type() {
+						var toString = function(p): string { return p.toString(); };
+
+						(function() {
+							var resource = new api.Resource({});
+							verify(resource).type.is(null);
+						})();
+						(function() {
+							var resource = new api.Resource({
+								type: api.mime.Type.parse("application/json")
+							});
+							verify(resource).type.evaluate(toString).is("application/json");
+						})();
+						(function() {
+							var resource = new api.Resource({
+								name: "foo.js"
+							});
+							verify(resource).type.evaluate(toString).is("application/javascript");
+						})();
+						(function() {
+							var resource = new api.Resource({
+								name: "foo.x"
+							});
+							verify(resource).type.is(null);
+						})();
+					});
+
+					fifty.run(function name() {
+						(function() {
+							var resource = new api.Resource({
+								name: "foo"
+							});
+							verify(resource).name.is("foo");
+						})();
+						(function() {
+							var resource = new api.Resource({});
+							verify(resource).evaluate.property("name").is(void(0));
+						})();
+					});
+
+					fifty.run(function() {
+						var readResource = function(resource: slime.Resource): string {
+							return resource.read(String);
+						};
+
+						(function() {
+							var resource = new api.Resource({
+								string: "foo"
+							});
+							verify(resource).evaluate(readResource).is("foo");
+						})();
+
+						(function() {
+							var resource = new api.Resource({
+								read: {
+									string: function() {
+										return "bar";
+									}
+								}
+							});
+							verify(resource).evaluate(readResource).is("bar");
+						})();
+
+						(function() {
+							var resource = new api.Resource({
+								string: JSON.stringify({ foo: "bar" })
+							});
+							var json: { foo: string, baz?: any } = resource.read(JSON);
+							verify(json).foo.is("bar");
+							verify(json).evaluate.property("baz").is(void(0));
+						})();
+						var p = $platform;
+						var global = (function() { return this; })();
+						var XML = global["XML"];
+						var XMLList = global["XMLList"];
+						if ($platform.e4x) {
+							var resource = new api.Resource({
+								string: "<a><b/></a>"
+							});
+							var xml = resource.read(XML);
+							verify(xml).is.type("xml");
+
+							var list = { list: resource.read(XMLList) };
+							verify(list).list.is.type("xml");
+							verify(list).evaluate(function(v): number { return v.list.length(); }).is(1);
+						}
+					})
+				}
+			}
+		//@ts-ignore
+		)($platform,fifty);
 
 		export namespace internal {
 			export type LoaderConstructor = new (p: slime.loader.Source) => Loader
@@ -572,7 +570,7 @@ namespace slime.test {
 		fifty: slime.fifty.test.kit
 	) {
 		tests.suite = function() {
-			fifty.run(fifty.tests.types.Resource);
+			fifty.run(fifty.tests.exports.Resource);
 			fifty.load("mime.fifty.ts");
 			fifty.load("$api-Function.fifty.ts");
 			fifty.load("Loader.fifty.ts");
