@@ -172,7 +172,7 @@ namespace slime.jrunscript.tools.github {
 			fifty.tests.world.ReposListForAuthenticatedUser = function() {
 				var listUserRepos: rest.Paged<
 					slime.external.github.rest.paths.ReposListForAuthenticatedUser.QueryParameters,
-					ArrayElement<slime.external.github.rest.paths.ReposListForAuthenticatedUser.Responses.$200>
+					slime.js.ArrayElement<slime.external.github.rest.paths.ReposListForAuthenticatedUser.Responses.$200>
 				> = {
 					request: subject.request.get("user/repos"),
 					response: subject.response.json.page
