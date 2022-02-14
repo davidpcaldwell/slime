@@ -66,21 +66,24 @@
 
 		function synchronizeEclipseSettings() {
 			//	copy project settings to Eclipse project if they differ from current settings
-			var filename = "org.eclipse.jdt.core.prefs";
-			var destination = $context.base.getSubdirectory(".settings").getRelativePath(filename);
-			var now = (destination.file) ? destination.file.read(String) : void(0);
-			var after = $context.base.getFile("contributor/" + filename).read(String);
-			if (now != after) {
-				$context.base.getFile("contributor/" + filename).copy(
-					$context.base.getSubdirectory(".settings").getRelativePath(filename),
-					{
-						filter: function() {
-							return true;
+			var changed = false;
+			["org.eclipse.jdt.core.prefs","org.eclipse.buildship.core.prefs"].forEach(function(filename) {
+				var destination = $context.base.getSubdirectory(".settings").getRelativePath(filename);
+				var now = (destination.file) ? destination.file.read(String) : void(0);
+				var after = $context.base.getFile("contributor/" + filename).read(String);
+				if (now != after) {
+					$context.base.getFile("contributor/" + filename).copy(
+						$context.base.getSubdirectory(".settings").getRelativePath(filename),
+						{
+							filter: function() {
+								return true;
+							}
 						}
-					}
-				);
-				jsh.shell.console("VSCode: Execute the 'Java: Clean the Java language server workspace' command to update Java settubgs.");
-			}
+					);
+					changed = true;
+				}
+			});
+			if (changed) jsh.shell.console("VSCode: Execute the 'Java: Clean the Java language server workspace' command to update Java settubgs.");
 		}
 
 		$exports.initialize = $api.Function.pipe(

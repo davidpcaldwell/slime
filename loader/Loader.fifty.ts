@@ -212,3 +212,16 @@ namespace slime {
 	//@ts-ignore
 	)(fifty);
 }
+
+namespace slime.runtime.internal.loader {
+	export interface Scope {
+		Resource: new (o: ConstructorParameters<slime.resource.Factory>[0]) => slime.Resource
+		methods: scripts.Exports["methods"]
+		createScriptScope: scripts.Exports["createScriptScope"]
+		$api: slime.$api.Global
+	}
+
+	export type Constructor = new (p: slime.loader.Source) => Loader
+
+	export type Script = slime.loader.Script<Scope,Constructor>
+}

@@ -12,7 +12,7 @@
 	 * @param { slime.runtime.internal.loader.Scope["methods"] } methods
 	 * @param { slime.runtime.internal.loader.Scope["createScriptScope"] } createScriptScope
 	 * @param { slime.runtime.internal.loader.Scope["$api"] } $api
-	 * @param { slime.loader.Export<slime.runtime.internal.LoaderConstructor> } $export
+	 * @param { slime.loader.Export<slime.runtime.internal.loader.Constructor> } $export
 	 */
 	function(Resource,methods,createScriptScope,$api,$export) {
 		$export(

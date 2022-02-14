@@ -284,7 +284,7 @@
 			}
 		);
 
-		/** @type { slime.runtime.internal.LoaderConstructor } */
+		/** @type { slime.runtime.internal.loader.Constructor } */
 		var Loader = code.Loader({
 			Resource: Resource,
 			methods: scripts.methods,
