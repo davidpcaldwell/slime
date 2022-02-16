@@ -5,7 +5,7 @@
 //	END LICENSE
 
 (
-	function($exports) {
+	function($exports: { subject: (fifty: slime.fifty.test.kit) => slime.runtime.Exports }) {
 		$exports.subject = function(fifty: slime.fifty.test.kit) {
 			var code = fifty.$loader.get("expression.js");
 			var js = code.read(String);
