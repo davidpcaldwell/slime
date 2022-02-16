@@ -19,10 +19,12 @@ namespace slime.jrunscript.http.client.internal.objects {
 
 	export type Export = {
 		Client: slime.jrunscript.http.client.Exports["Client"]
-		Body: slime.jrunscript.http.client.Exports["Body"]
+		Body: {
+			Form: slime.jrunscript.http.client.Exports["Body"]["Form"]
+		}
 		Authentication: slime.jrunscript.http.client.Exports["Authentication"]
 		Parser: slime.jrunscript.http.client.Exports["Parser"]
 	}
 
-	export type load = slime.loader.Script<Context,Export>
+	export type Script = slime.loader.Script<Context,Export>
 }

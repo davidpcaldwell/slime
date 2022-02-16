@@ -118,6 +118,15 @@ namespace slime.fifty {
 			verify: verify
 			$loader: $loader
 			run: (f: () => void, name?: string) => void
+
+			test: {
+				/**
+				 * Creates a test that simply loops through its own properties and executes those as tests. Can be used to easily
+				 * create a test hiearchy without having to have the parent repeat the names of all its children.
+				 */
+				Parent: () => () => void
+			}
+
 			tests: tests
 
 			/**

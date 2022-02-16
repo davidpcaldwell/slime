@@ -466,26 +466,7 @@ namespace slime.jrunscript.file {
 			function(
 				fifty: slime.fifty.test.kit
 			) {
-				//	TODO	generalize? Should this do filtering? Can build this into the Fifty test API
-				fifty["executeChildren"] = function() {
-					var runChildren = function(target) {
-						if (typeof(target) == "object") {
-							for (var x in target) {
-								runChildren(target[x]);
-							}
-						} else if (typeof(target) == "function") {
-							fifty.run(target);
-						}
-					}
-					var rv = function() {
-						var callee = rv;
-						for (var x in callee) {
-							runChildren(callee[x])
-						}
-					};
-					return rv;
-				}
-				fifty.tests.sandbox.filesystem.pathname = fifty["executeChildren"]();
+				fifty.tests.sandbox.filesystem.pathname = fifty.test.Parent();
 			}
 		//@ts-ignore
 		)(fifty);

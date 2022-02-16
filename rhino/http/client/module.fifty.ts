@@ -25,6 +25,23 @@ namespace slime.jrunscript.http.client {
 		}
 	}
 
+	export namespace test {
+		export const subject = (function(fifty: slime.fifty.test.kit) {
+			var script: slime.loader.Script<Context,Exports> = fifty.$loader.script("module.js");
+			var api = script({
+				debug: false,
+				gae: false,
+				api: {
+					web: fifty.global.jsh.web,
+					java: fifty.global.jsh.java,
+					io: fifty.global.jsh.io
+				}
+			});
+			return api;
+		//@ts-ignore
+		})(fifty)
+	}
+
 	export type Header = { name: string, value: string }
 
 	/** Information specifying a proxy server. */
@@ -61,16 +78,74 @@ namespace slime.jrunscript.http.client {
 		read: number
 	}
 
+	export namespace request {
+		export interface Body {
+			type: slime.mime.Type
+			stream: slime.jrunscript.runtime.io.InputStream
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.kit
+		) {
+			fifty.tests.exports = {};
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export namespace exports {
+		/**
+		 * Contains methods for creating request bodies.
+		 */
+		export interface Body {
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.kit
+			) {
+				fifty.tests.exports.Body = fifty.test.Parent();
+			}
+		//@ts-ignore
+		)(fifty);
+	}
+
+	export interface Exports {
+		Body: exports.Body
+	}
+
+	export namespace exports {
+		export interface Body {
+			json: () => (value: any) => request.Body
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.kit
+			) {
+				const { verify } = fifty;
+
+				fifty.tests.exports.Body.json = function() {
+					var body = test.subject.Body.json()({ hello: "world" });
+					verify(body).type.media.is("application");
+					verify(body).type.subtype.is("json");
+					var parsed: { hello: string } = JSON.parse(body.stream.character().asString());
+					verify(parsed).hello.is("world");
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+
+	}
+
 	export namespace spi {
 		export interface Argument {
 			request: {
 				method: string
 				url: string
 				headers: Header[]
-				body?: {
-					type: slime.mime.Type
-					stream: slime.jrunscript.runtime.io.InputStream
-				}
+				body?: request.Body
 			}
 			proxy?: Proxies
 			timeout: Timeouts
@@ -334,6 +409,19 @@ namespace slime.jrunscript.http.client {
 		}
 	}
 
+	export namespace exports {
+		export interface Body {
+			/**
+			 * Creates request bodies representing HTML non-multipart (`application/x-www-form-urlencoded`) forms.
+			 * See [HTML 4.01 section 17.13.3](http://www.w3.org/TR/html401/interact/forms.html#h-17.13.3).
+			 *
+			 * @param query An object specifying the form.
+			 * @returns Objects suitable as request bodies.
+			 */
+			 Form: (query: object.query) => object.request.Body
+		}
+	}
+
 	export interface Exports {
 		/**
 		 * Creates an object capable of issuing HTTP requests and returning their responses.
@@ -343,20 +431,6 @@ namespace slime.jrunscript.http.client {
 		Client: new (configuration?: object.Configuration) => object.Client
 		//	TODO	Better API would have Form object that could be translated into query string and body, and probably
 		//			have two subtypes: one for ordinary forms, another for multipart
-
-		/**
-		 * Contains methods for creating request bodies.
-		 */
-		Body: {
-			/**
-			 * Creates request bodies representing HTML non-multipart (`application/x-www-form-urlencoded`) forms.
-			 * See [HTML 4.01 section 17.13.3](http://www.w3.org/TR/html401/interact/forms.html#h-17.13.3).
-			 *
-			 * @param query An object specifying the form.
-			 * @returns Objects suitable as request bodies.
-			 */
-			Form: (query: object.query) => object.request.Body
-		}
 
 		/**
 		 * Contains interfaces for manipulating parsers.
@@ -448,7 +522,6 @@ namespace slime.jrunscript.http.client {
 				const { verify } = fifty;
 				const { jsh } = fifty.global;
 
-				fifty.tests.exports = {};
 				fifty.tests.exports.world = function() {
 					var server = new jsh.httpd.Tomcat();
 					server.servlet({

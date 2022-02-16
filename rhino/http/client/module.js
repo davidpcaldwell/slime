@@ -19,22 +19,22 @@
 		(
 			function verifyContext($context) {
 				$context.property("api").require();
-				$context.property("api","js").require();
-				$context.property("api","js").require();
-				$context.property("api","java").require();
 				$context.property("api","web").require();
+				$context.property("api","java").require();
+				$context.property("api","io").require();
 			}
 		)($api.Value($context,"$context"));
 
 		var code = {
-			/** @type { slime.jrunscript.http.client.internal.cookies.Load } */
+			/** @type { slime.jrunscript.http.client.internal.cookies.Script } */
 			cookies: $loader.script("cookies.js"),
-			/** @type { slime.jrunscript.http.client.internal.objects.load } */
+			/** @type { slime.jrunscript.http.client.internal.objects.Script } */
 			objects: $loader.script("objects.js")
 		};
 
 		var scripts = {
 			cookies: code.cookies(),
+			//	'objects' is loaded later
 			/** @type { slime.jrunscript.http.client.internal.objects.Export } */
 			objects: void(0)
 		};
@@ -336,7 +336,22 @@
 				}
 			},
 			Client: scripts.objects.Client,
-			Body: scripts.objects.Body,
+			Body: {
+				Form: scripts.objects.Body.Form,
+				json: function() {
+					return function(value) {
+						return {
+							type: $api.mime.Type.parse("application/json"),
+							stream: (function(body) {
+								var buffer = new $context.api.io.Buffer();
+								buffer.writeText().write(JSON.stringify(body));
+								buffer.writeText().close();
+								return buffer.readBinary();
+							})(value)
+						};
+					}
+				}
+			},
 			Authentication: scripts.objects.Authentication,
 			Parser: scripts.objects.Parser
 		})

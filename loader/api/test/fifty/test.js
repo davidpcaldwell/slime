@@ -436,6 +436,27 @@
 						run();
 					}
 				},
+				test: {
+					//	TODO	Should this do filtering?
+					Parent: function() {
+						var runChildren = function(target) {
+							if (typeof(target) == "object") {
+								for (var x in target) {
+									runChildren(target[x]);
+								}
+							} else if (typeof(target) == "function") {
+								fifty.run(target);
+							}
+						}
+						var rv = function() {
+							var callee = rv;
+							for (var x in callee) {
+								runChildren(callee[x])
+							}
+						};
+						return rv;
+					}
+				},
 				tests: tests,
 				verify: function() {
 					return verify.apply(this,arguments);

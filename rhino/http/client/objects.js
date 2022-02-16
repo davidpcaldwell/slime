@@ -452,6 +452,7 @@
 				};
 			};
 
+			//	TODO	not declared in TypeScript so possibly unused
 			this.Json = function(p) {
 				return {
 					type: "application/json",
