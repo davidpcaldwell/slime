@@ -83,19 +83,21 @@
 
 	//  TODO    build Loader implementation on top of this
 	var runtime = (function(slime) {
-		/** @type { slime.runtime.$slime.Deployment } */
-		var $slime = {
-			getRuntimeScript: function(path) {
-				return {
-					name: path,
-					js: load(slime+"loader/" + path).code
+		/** @type { slime.runtime.Scope } */
+		var scope = {
+			$slime: {
+				getRuntimeScript: function(path) {
+					return {
+						name: path,
+						js: load(slime+"loader/" + path).code
+					}
+				},
+				getCoffeeScript: function() {
+					return null;
 				}
 			},
-			getCoffeeScript: function() {
-				return null;
-			}
-		};
-		var $engine = {};
+			$engine: {}
+		}
 		return eval(load(slime+"loader/expression.js").code);
 	})(slimePath + "/");
 

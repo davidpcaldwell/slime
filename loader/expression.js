@@ -26,20 +26,40 @@
 					Error: {
 						decorate: ($engine && $engine.Error) ? $engine.Error.decorate : void(0)
 					},
+					//@ts-ignore
 					execute: (function() {
 						if ($engine && $engine.execute) return $engine.execute;
-						return (
-							function(/*script{name,js},scope,target*/) {
-								return (function() {
-									//@ts-ignore
-									with( arguments[1] ) {
-										return eval(arguments[0]);
-									}
-								}).call(
-									arguments[2],
-									arguments[0].js, arguments[1]
-								);
-							}
+						return new Function(
+							"script",
+							"scope",
+							"target",
+							// return (
+							// 	function(/*script{name,js},scope,target*/) {
+							// 		return (function() {
+							// 			//@ts-ignore
+							// 			with( arguments[1] ) {
+							// 				return eval(arguments[0]);
+							// 			}
+							// 		}).call(
+							// 			arguments[2],
+							// 			arguments[0].js, arguments[1]
+							// 		);
+							// 	}
+							// )
+							[
+								"return(",
+								"function $engine_execute(/*script{name,js},scope,target*/) {",
+								"\treturn (function() {",
+								"\t\twith( arguments[1] ) {",
+								"\t\t\treturn eval(arguments[0]);",
+								"\t\t}",
+								"\t}).call(",
+								"\t\targuments[2],",
+								"\t\targuments[0].js, arguments[1]",
+								"\t);",
+								"}",
+								").apply(null,arguments)"
+							].join("\n")
 						)
 					})(),
 					MetaObject: ($engine && $engine.MetaObject) ? $engine.MetaObject : void(0)
@@ -71,7 +91,7 @@
 				}
 
 				var global = (function() { return this; })();
-				if (global.XML && global.XMLList) {
+				if (global && global.XML && global.XMLList) {
 					$exports.e4x = {};
 					$exports.e4x.XML = global.XML;
 					$exports.e4x.XMLList = global.XMLList;

@@ -8,17 +8,18 @@
 (
 	/**
 	 *
-	 * @param { any } Packages
 	 * @param { any } $platform
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.runtime.document.Context } $context
 	 * @param { slime.Loader } $loader
 	 * @param { slime.loader.Export<slime.runtime.document.Exports> } $export
 	 */
-	function(Packages,$platform,$api,$context,$loader,$export) {
+	function($platform,$api,$context,$loader,$export) {
 		var parsers = {};
 
 		var global = (function() { return this; })();
+
+		var Packages = global.Packages;
 
 		if (global.window == global) {
 			var parseDom = function(unparsed) {
@@ -436,4 +437,4 @@
 		$export(rv);
 	}
 //@ts-ignore
-)(Packages,$platform,$api,$context,$loader,$export);
+)($platform,$api,$context,$loader,$export);
