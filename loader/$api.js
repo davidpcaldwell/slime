@@ -10,9 +10,11 @@
 	/**
 	 * @param { slime.runtime.internal.Engine } $engine
 	 * @param { slime.runtime.internal.Code } $slime
-	 * @param { slime.$api.Global } $exports
+	 * @param { slime.loader.Export<slime.$api.Global> } $export
 	 */
-	function($engine,$slime,$exports) {
+	function($engine,$slime,$export) {
+		var $exports = {};
+
 		var load = function(name,$context) {
 			var $exports = {};
 			$engine.execute(
@@ -578,7 +580,9 @@
 
 		$exports.mime = mime;
 
-		return $exports;
+		//	TODO	we can refactor typechecking another day; for now we know this works
+		//@ts-ignore
+		$export($exports);
 	}
 //@ts-ignore
-)($engine,$slime,{})
+)($engine,$slime,$export)

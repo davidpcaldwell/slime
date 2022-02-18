@@ -156,22 +156,6 @@
 			}
 		)(engine);
 
-		//	The $api.js script currently evaluates to the $api value rather than exporting it, hence the below load() is not
-		//	applicable
-		/** @type { slime.$api.Global } */
-		var $api = engine.execute(
-			$slime.getRuntimeScript("$api.js"),
-			{
-				$engine: engine,
-				$slime: {
-					getRuntimeScript: function(path) {
-						return $slime.getRuntimeScript(path);
-					}
-				}
-			},
-			null
-		);
-
 		/**
 		 *
 		 * @param { { name: string, js: string } } code
@@ -223,6 +207,19 @@
 				}
 			)
 		};
+
+		/** @type { slime.$api.Global } */
+		var $api = load(
+			"$api.js",
+			{
+				$engine: engine,
+				$slime: {
+					getRuntimeScript: function(path) {
+						return $slime.getRuntimeScript(path);
+					}
+				}
+			}
+		);
 
 		var code = {
 			/** @type { slime.runtime.internal.scripts.Script } */

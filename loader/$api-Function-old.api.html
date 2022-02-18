@@ -28,7 +28,9 @@ END LICENSE
 			}
 		};
 		//	TODO	dubious; taking advantage of coincidental compatibility between $engine/$platform
-		scope.api = $jsapi.loader.eval("$api.js", { $engine: $platform, $slime: $slime });
+		$jsapi.loader.eval("$api.js", { $engine: $platform, $slime: $slime, $export: function(value) {
+			scope.api = value;
+		} });
 		scope.api.loadedByJsapi = true;
 	</script>
 	<div>
