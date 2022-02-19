@@ -31,6 +31,7 @@ interface IteratorReturnResult<TReturn> {
 	value: TReturn;
 }
 
+//@ts-ignore
 type IteratorResult<T, TReturn = any> = IteratorYieldResult<T> | IteratorReturnResult<TReturn>;
 
 interface Iterator<T, TReturn = any, TNext = undefined> {

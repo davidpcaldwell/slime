@@ -126,6 +126,7 @@
 		};
 
 		$export({
+			//@ts-ignore
 			Promise: SlimePromise,
 			Controlled: Controllable
 		})

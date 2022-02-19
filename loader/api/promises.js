@@ -57,6 +57,7 @@
 			return RegisteredPromise;
 		})(window.Promise);
 
+		//@ts-ignore
 		window.Promise = RegisteredPromise;
 
 		var controlledPromiseId = 0;
@@ -83,6 +84,7 @@
 			promise.toString = executor.toString;
 			//	TODO	seems like a race condition, how can we assume resolver and rejector have been initialized?
 			return {
+				//@ts-ignore
 				promise: promise,
 				resolve: resolver,
 				reject: rejector
