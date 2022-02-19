@@ -451,7 +451,8 @@
 				compose: void(0),
 				properties: void(0),
 				property: void(0),
-				optional: void(0)
+				optional: void(0),
+				values: void(0)
 			}
 		);
 		$exports.Object.compose = function() {
@@ -493,6 +494,17 @@
 			}
 			return Properties(rv);
 		};
+		$exports.Object.values = {
+			map: function(f) {
+				return function(o) {
+					var rv = {};
+					for (var x in o) {
+						rv[x] = f(o[x]);
+					}
+					return rv;
+				}
+			}
+		}
 
 		$exports.Array = {
 			build: function(f) {

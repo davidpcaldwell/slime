@@ -39,6 +39,12 @@ namespace slime.$api {
 			properties: slime.alias.GlobalFunction
 			property: any
 			optional: any
+			values: {
+				/**
+				 * @experimental Completely untested.
+				 */
+				map: <O,T,R>(f: (t: T) => R) => (o: { [x in keyof O]: T } ) => { [x in keyof O]: R }
+			}
 		},
 		Value: any,
 		Events: {

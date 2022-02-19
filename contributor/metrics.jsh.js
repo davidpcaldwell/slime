@@ -49,15 +49,26 @@
 					jsh.shell.console("Converted: " + ( data.fifty.bytes / (data.fifty.bytes + data.jsapi.bytes) * 100 ).toFixed(1) + "%");
 				},
 				types: function(invocation) {
-					var getIgnores = function(code) {
+					/**
+					 *
+					 * @param { string } code
+					 * @returns { { line: number, ignored: string }[] } The lines on which a @ts-ignore occurs; lines on the
+					 * second-to-last line of a .js file are not included.
+					 */
+					var getIgnores = function(type,code) {
 						var lines = code.split("\n");
 						return lines.reduce(function(rv,line,index,array) {
 							var indexOf = line.indexOf("@ts-ignore");
-							if (indexOf != -1 && index != array.length - 3) {
-								rv++;
+							var ok = (function() {
+								if (type == "js" && index == array.length-3) return true;
+								if (type == "ts" && lines[index+1] && lines[index+1].trim() == ")(fifty);") return true;
+								return false;
+							})();
+							if (indexOf != -1 && !ok) {
+								rv.push({ line: index+1, ignored: lines[index+1] });
 							}
 							return rv;
-						},0);
+						},[]);
 					};
 
 					var isCovered = function(code) {
@@ -73,24 +84,27 @@
 						}
 					});
 					var groups = grouper(src);
-					var js = groups.find(function(group) {
-						return group.group == "js";
+					var languages = groups.filter(function(group) {
+						return group.group != "other";
 					});
-					var ts = groups.find(function(group) {
-						return group.group == "ts";
-					});
-					var scripts = js.array.map(function(entry) {
-						var code = entry.node.read(String);
-						var covered = isCovered(code);
+					var scans = languages.map(function(language) {
 						return {
-							path: entry.path,
-							ignores: getIgnores(code),
-							checked: covered,
-							lines: code.split("\n").length
-						};
-					}).map(function(file) {
+							language: language.group,
+							files: language.array.map(function(entry) {
+								var code = entry.node.read(String);
+								var covered = isCovered(code);
+								return {
+									path: entry.path,
+									ignores: getIgnores(language.group,code),
+									checked: covered,
+									lines: code.split("\n").length
+								};
+							})
+						}
+					});
+					var scripts = scans.find(function(scan) { return scan.language == "js"; }).files.map(function(file) {
 						return $api.Object.compose(file, {
-							uncovered: (file.checked) ? file.ignores : file.lines
+							uncovered: (file.checked) ? file.ignores.length : file.lines
 						});
 					}).filter(function(file) {
 						return file.uncovered > 0;
@@ -109,6 +123,31 @@
 						total: 0
 					});
 					jsh.shell.console("Total coverage: " + coverage.covered + "/" + coverage.total + ": " + Number(coverage.covered / coverage.total * 100).toFixed(1) + "%");
+
+					var ignores = scans.reduce(function(rv,scan) {
+						return rv.concat(scan.files.reduce(function(s,file) {
+							return s.concat(file.ignores.map(function(ignore) {
+								return {
+									path: file.path,
+									line: ignore.line,
+									ignored: ignore.ignored
+								}
+							}))
+						}, []));
+					},[]);
+
+					jsh.shell.console("");
+					ignores.sort(function(a,b) {
+						if (a.path < b.path) return -1;
+						if (b.path < a.path) return 1;
+						if (a.line < b.line) return -1;
+						if (b.line < a.line) return 1;
+						return 0;
+					}).forEach(function(ignore) {
+						jsh.shell.console(ignore.path + ":" + ignore.line + ": " + ignore.ignored);
+					});
+					jsh.shell.console("");
+					jsh.shell.console("Total @ts-ignore comments violating rules: " + ignores.length);
 				}
 			}
 		})

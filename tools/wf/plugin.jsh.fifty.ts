@@ -244,7 +244,7 @@ namespace slime.jsh.wf {
 			}
 		}
 	//@ts-ignore
-	)(fifty)
+	)(fifty);
 
 	export interface Exports {
 		/**
@@ -331,7 +331,7 @@ namespace slime.jsh.wf {
 			}
 		}
 	//@ts-ignore
-	)(fifty)
+	)(fifty);
 
 	export interface Exports {
 		prohibitModifiedSubmodules: (p: { repository: slime.jrunscript.git.repository.Local }, events?: $api.events.Function.Receiver) => void
@@ -412,7 +412,7 @@ namespace slime.jsh.wf {
 			};
 		}
 	//@ts-ignore
-	)(fifty)
+	)(fifty);
 }
 
 (

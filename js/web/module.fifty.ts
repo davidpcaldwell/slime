@@ -517,7 +517,7 @@ namespace slime.web {
 		}
 	}
 //@ts-ignore
-)(fifty)
+)(fifty);
 
 namespace slime.web {
 	export type Script = slime.loader.Script<Context,Exports>
