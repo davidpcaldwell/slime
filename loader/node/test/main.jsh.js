@@ -21,7 +21,7 @@
 		if (isInstalled(node)) {
 			//	TODO	this API could use better documentation, struggled to get this right
 			node.run({
-				arguments: [jsh.script.file.parent.getRelativePath("test.js").toString()].concat(jsh.script.arguments)
+				arguments: [jsh.script.file.parent.getRelativePath("main.js").toString()].concat(jsh.script.arguments)
 			});
 		}
 	}

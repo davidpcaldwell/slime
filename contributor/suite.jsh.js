@@ -234,6 +234,19 @@
 			}
 		);
 
+		if (!isDocker) suite.add(
+			"node",
+			{
+				parts: {
+					runtime: jsh.unit.fifty.Part({
+						shell: environment.jsh.unbuilt.src,
+						script: environment.jsh.unbuilt.src.getFile("loader/api/test/fifty/test.jsh.js"),
+						file: environment.jsh.unbuilt.src.getFile("loader/node/loader.fifty.ts")
+					})
+				}
+			}
+		);
+
 		jsh.unit.interface.create(suite.build(), new function() {
 			if (parameters.options.view == "chrome") {
 				this.chrome = {

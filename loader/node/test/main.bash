@@ -6,5 +6,5 @@
 #	END LICENSE
 
 HERE="$(dirname $0)"
-BASE="$HERE/../.."
-${BASE}/jsh.bash $HERE/test.jsh.js "$@"
+BASE="$HERE/../../.."
+${BASE}/jsh.bash $HERE/main.jsh.js "$@"

@@ -4,4 +4,10 @@
 //
 //	END LICENSE
 
-console.log("Hello, World!");
+(
+	function() {
+		/** @type { slime.node.Exports } */
+		var slime = require("../loader.js");
+		console.log(slime.runtime.$api.Function.identity(3));
+	}
+)();
