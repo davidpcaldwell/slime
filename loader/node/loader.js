@@ -57,7 +57,49 @@
 			Packages: void(0)
 		});
 
+		/**
+		 *
+		 * @returns { slime.node.Exports["fs"] }
+		 */
+		var exports_fs = (
+			function() {
+				/**
+				 *
+				 * @param { string } path
+				 * @returns { slime.loader.Source }
+				 */
+				function toSource(path) {
+					return {
+						get: function(at) {
+							var location = path + at;
+							var stat = fs.statSync(location, {
+								//@ts-ignore
+								throwIfNoEntry: false
+							});
+							if (!stat) return null;
+							if (stat.isDirectory()) throw new TypeError("Cannot open directory.");
+							var name = at.split("/").slice(-1)[0];
+							return {
+								name: name,
+								read: {
+									string: function() {
+										return fs.readFileSync(location).toString();
+									}
+								}
+							}
+						}
+					}
+				}
+				return {
+					Loader: function(p) {
+						return new runtime.Loader(toSource(p.base));
+					}
+				}
+			}
+		)();
+
 		exports.runtime = runtime;
+		exports.fs = exports_fs;
 	}
 //@ts-ignore
 )();

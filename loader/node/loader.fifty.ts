@@ -11,6 +11,11 @@
 namespace slime.node {
 	export interface Exports {
 		runtime: slime.runtime.Exports
+		fs: {
+			Loader: (p: {
+				base: string
+			}) => slime.Loader
+		}
 	}
 
 	(
@@ -27,7 +32,25 @@ namespace slime.node {
 					})
 				)({
 					exit: function(e) {
-						fifty.verify(e.detail.stdio.output).is("3" + "\n");
+						var output: {
+							identity: number
+							loader: {
+								type: string
+								files: {
+									me: {
+										type: string
+										content: string
+									}
+									foo: any
+								}
+							}
+						} = JSON.parse(e.detail.stdio.output);
+
+						fifty.verify(output).identity.is(3);
+						fifty.verify(output).loader.type.is("object");
+						fifty.verify(output).loader.files.me.type.is("object");
+						fifty.verify(output).loader.files.me.content.is.type("string");
+						fifty.verify(output).loader.files.foo.is(null);
 					}
 				});
 			}

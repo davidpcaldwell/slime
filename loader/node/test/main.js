@@ -8,6 +8,25 @@
 	function() {
 		/** @type { slime.node.Exports } */
 		var slime = require("../loader.js");
-		console.log(slime.runtime.$api.Function.identity(3));
+		var base = __dirname + "/";
+		var loader = slime.fs.Loader({ base: base });
+		console.log(JSON.stringify({
+			identity: slime.runtime.$api.Function.identity(3),
+			base: base,
+			loader: {
+				type: typeof(loader),
+				files: {
+					me: (function() {
+						var resource = loader.get("main.js");
+						var content = resource.read(String);
+						return {
+							type: typeof(resource),
+							content: content
+						}
+					})(),
+					foo: loader.get("foo")
+				}
+			}
+		}, void(0), 4));
 	}
 )();

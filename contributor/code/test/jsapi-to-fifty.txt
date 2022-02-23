@@ -1,0 +1,9 @@
+{}
+			/**
+			 * Creates a <i>Loader</i>. A Loader loads resources from a specified source.
+			 */
+===
+			/**
+			 * Creates a *Loader*. A Loader loads resources from a specified source.
+			 */
+===
