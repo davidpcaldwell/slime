@@ -28,8 +28,10 @@ namespace slime.jrunscript.hg {
 			identify: Function
 			heads: () => any
 			log: (p?: any) => Commit[]
-			subrepositories: () => { [path: string]: { repository: slime.jrunscript.hg.Repository.Local, revision: string } }
-			subrepositories: ({ array: boolean }) => slime.jrunscript.hg.Repository.Local[]
+			subrepositories: {
+				(): { [path: string]: { repository: slime.jrunscript.hg.Repository.Local, revision: string } }
+				({ array: boolean }): slime.jrunscript.hg.Repository.Local[]
+			}
 			paths: {
 				default: {
 					url: any
