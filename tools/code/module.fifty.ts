@@ -35,6 +35,14 @@ namespace slime.tools.code {
 			isIdeGenerated: (name: string) => boolean
 		}
 
+		handleTrailingWhitespace: (code: string) => {
+			without: string
+			instances: {
+				line: number
+				content: string
+			}[]
+		}
+
 		getSourceFiles: (p: {
 			base: slime.jrunscript.file.Directory
 			isText: slime.project.code.isText

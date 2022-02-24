@@ -64,6 +64,55 @@
 			});
 		}
 
+		var trailingWhitespaceParser = /(.*?)\s+$/;
+
+		/**
+		 *
+		 * @param { string } line
+		 */
+		function hasTrailingWhitespace(line) {
+			return trailingWhitespaceParser.test(line);
+		}
+
+		/**
+		 *
+		 * @param { string } line
+		 * @returns
+		 */
+		function withoutTrailingWhitespace(line) {
+			var match = trailingWhitespaceParser.exec(line);
+			return (match) ? match[1] : line;
+		}
+
+		/**
+		 *
+		 * @type { slime.tools.code.Exports["handleTrailingWhitespace"] }
+		 */
+		function findTrailingWhitespaceIn(code) {
+			var ending = (code.indexOf("\r\n") != -1) ? "\r\n" : "\n";
+			var scan = code.split(ending).reduce(function(rv,line,index) {
+				if (hasTrailingWhitespace(line)) {
+					rv.instances.push({
+						line: index+1,
+						content: line
+					});
+					rv.without.push(withoutTrailingWhitespace(line));
+				} else {
+					rv.without.push(line);
+				}
+				return rv;
+			}, {
+				/** @type { { line: number, content: string }[] } */
+				instances: [],
+				/** @type { string[] } */
+				without: []
+			});
+			return {
+				without: scan.without.join(ending),
+				instances: scan.instances
+			}
+		}
+
 		/**
 		 *
 		 * @type { slime.tools.code.Exports["findTrailingWhitespace"] }
@@ -75,34 +124,20 @@
 				};
 				return $api.Function.impure.tell(function(events) {
 					var code = entry.file.read(String);
-					var ending = "\n";
-					if (code.indexOf("\r\n") != -1) {
-						ending = "\r\n";
-					}
-					var lines = [];
-					var changed = false;
-					entry.file.read(String).split(ending).forEach(function(line) {
-						var rv = line;
-						var match;
-						if (match = /(.*?)\s+$/.exec(line)) {
-							events.fire("foundAt", {
-								file: entry,
-								line: {
-									number: lines.length+1,
-									content: line
-								}
-							});
-							rv = match[1];
-						}
-						lines.push(rv);
-						if (rv != line) {
-							changed = true;
-						}
+					var scan = findTrailingWhitespaceIn(code);
+					scan.instances.forEach(function(instance) {
+						events.fire("foundAt", {
+							file: entry,
+							line: {
+								number: instance.line,
+								content: instance.content
+							}
+						});
 					});
-					if (changed) {
+					if (scan.instances.length) {
 						events.fire("foundIn", entry);
 						if (!configuration.nowrite) {
-							entry.file.pathname.write(lines.join(ending), { append: false });
+							entry.file.pathname.write(scan.without, { append: false });
 						}
 					} else {
 						events.fire("notFoundIn", entry);
@@ -156,7 +191,8 @@
 				}
 			},
 			getSourceFiles: getSourceFiles,
-			findTrailingWhitespace: findTrailingWhitespace
+			findTrailingWhitespace: findTrailingWhitespace,
+			handleTrailingWhitespace: findTrailingWhitespaceIn
 		})
 	}
 //@ts-ignore
