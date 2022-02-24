@@ -21,6 +21,7 @@ namespace slime.project.code {
 		console: (message: string) => void
 		library: {
 			file: slime.jrunscript.file.Exports
+			code: slime.tools.code.Exports
 		}
 	}
 

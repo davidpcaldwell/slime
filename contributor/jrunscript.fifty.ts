@@ -34,6 +34,7 @@
 			fifty.load("../jsh/script/plugin.jsh.fifty.ts");
 			if (!isDocker) fifty.load("../jsh/unit/plugin.jsh.web.fifty.ts");
 			fifty.load("../rhino/http/servlet/plugin.jsh.resources.fifty.ts");
+			fifty.load("../tools/code/module.fifty.ts");
 			fifty.load("../tools/wf/plugin.jsh.fifty.ts");
 			if (!isDocker) fifty.load("../tools/wf/plugin-standard.jsh.fifty.ts");
 			//fifty.load("../");

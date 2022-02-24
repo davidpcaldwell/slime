@@ -55,7 +55,8 @@
 			var code = script({
 				console: jsh.shell.console,
 				library: {
-					file: jsh.file
+					file: jsh.file,
+					code: jsh.tools.code
 				}
 			});
 			var failed = false;
