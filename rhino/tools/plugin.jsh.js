@@ -119,7 +119,7 @@
 
 		plugin({
 			isReady: function() {
-				return Boolean(jsh.shell && jsh.tools);
+				return Boolean(jsh.shell && jsh.tools && jsh.tools.install);
 			},
 			load: function() {
 				jsh.loader.plugins($loader.Child("docker/"));
