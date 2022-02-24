@@ -45,35 +45,6 @@
 			 * @returns { slime.project.code.Exports["files"] }
 			 */
 			function() {
-				/** @type { slime.js.Cast<slime.jrunscript.file.File> } */
-				var castToFile = $api.Function.cast;
-
-				/**
-				 *
-				 * @param { { path: string, node: slime.jrunscript.file.Node } } p
-				 * @returns { slime.tools.code.File }
-				 */
-				function toSourceFile(p) {
-					return {
-						path: p.path,
-						file: castToFile(p.node)
-					}
-				};
-
-				/**
-				 *
-				 * @param { slime.$api.fp.Predicate<slime.jrunscript.file.File> } isExcludedFile
-				 * @returns { slime.$api.fp.Predicate<slime.jrunscript.file.Node> }
-				 */
-				var isAuthoredTextFile = function(isExcludedFile) {
-					return function(node) {
-						if (false) $context.console("Checking: " + node);
-						if (node.directory) return false;
-						if (isExcludedFile(castToFile(node))) return false;
-						return true;
-					}
-				};
-
 				var isSourceDirectory = function(directory) {
 					return directory.pathname.basename != "local"
 						&& directory.pathname.basename != ".hg"
@@ -152,29 +123,6 @@
 					}
 				)();
 
-				/**
-				 *
-				 * @type { slime.project.code.GetSourceFiles }
-				 */
-				function getSourceFiles(p) {
-					if (!p.base) throw new Error("Required: base, specifying directory.");
-					return $api.Function.impure.ask(function(on) {
-						return p.base.list({
-							filter: isAuthoredTextFile(p.exclude.file),
-							descendants: $api.Function.Predicate.not(p.exclude.directory),
-							type: $context.library.file.list.ENTRY
-						}).map(toSourceFile).filter(
-							$api.Function.series(
-								p.isText,
-								function(file) {
-									on.fire("unknownFileType", file);
-									return void(0);
-								}
-							)
-						)
-					});
-				}
-
 				//	Appears to have been code to fix line endings
 				// var endings = function(p) {
 				// 	forEachTextEntry({
@@ -209,7 +157,9 @@
 						)
 					);
 
-					getSourceFiles({
+					var each = $context.library.code.findTrailingWhitespace(p);
+
+					$context.library.code.getSourceFiles({
 						base: p.base,
 						isText: (p.isText) ? p.isText : isTexts.extension,
 						exclude: {
@@ -221,39 +171,17 @@
 							if (p.on && p.on.unknownFileType) p.on.unknownFileType(e.detail);
 						}
 					}).forEach(function(entry) {
-						var code = entry.file.read(String);
-						var ending = "\n";
-						if (code.indexOf("\r\n") != -1) {
-							ending = "\r\n";
-						}
-						var lines = [];
-						var changed = false;
-						entry.file.read(String).split(ending).forEach(function(line) {
-							var rv = line;
-							var match;
-							if (match = /(.*?)\s+$/.exec(line)) {
-								p.on.change({
-									path: entry.path,
-									line: {
-										number: lines.length+1,
-										content: line
-									}
-								});
-								rv = match[1];
-							}
-							lines.push(rv);
-							if (rv != line) {
-								changed = true;
+						each(entry)({
+							foundAt: function(e) {
+								if (p.on && p.on.change) p.on.change(e.detail);
+							},
+							foundIn: function(e) {
+								if (p.on && p.on.changed) p.on.changed(e.detail);
+							},
+							notFoundIn: function(e) {
+								if (p.on && p.on.unchanged) p.on.unchanged(e.detail);
 							}
 						});
-						if (changed) {
-							p.on.changed(entry);
-							if (!p.nowrite) {
-								entry.file.pathname.write(lines.join(ending), { append: false });
-							}
-						} else {
-							p.on.unchanged(entry);
-						}
 					});
 				}
 

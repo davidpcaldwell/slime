@@ -245,7 +245,7 @@
 					if (!isNaN(name)) {
 						sensitive = null;
 						insensitive = null;
-					};
+					}
 					var lower = name.toLowerCase();
 					if (insensitive && insensitive[lower]) {
 						//	insensitive will not work

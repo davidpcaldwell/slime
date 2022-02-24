@@ -54,7 +54,7 @@
 						return $loader.file("drivers.js", Object.assign({}, { api: api }, configuration));
 					},
 				});
-			};
+			}
 
 			var code = {
 				/** @type { slime.jrunscript.db.mysql.Factory } */

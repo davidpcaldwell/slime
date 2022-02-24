@@ -188,7 +188,7 @@
 			$exports.rhino = new function() {
 				this.classpath = $exports.properties.searchpath("jsh.engine.rhino.classpath");
 			};
-		};
+		}
 
 		var getJshFork = function(p) {
 			if (p.fork) return true;

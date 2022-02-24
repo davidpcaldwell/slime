@@ -6,12 +6,19 @@
 
 namespace slime.tools.code {
 	export interface Context {
+		library: {
+			file: slime.jrunscript.file.Exports
+		}
 	}
 
 	export namespace test {
 		export const subject = (function(fifty: fifty.test.kit) {
 			const script: Script = fifty.$loader.script("module.js");
-			return script({});
+			return script({
+				library: {
+					file: fifty.global.jsh.file
+				}
+			});
 		//@ts-ignore
 		})(fifty);
 	}
@@ -27,6 +34,34 @@ namespace slime.tools.code {
 			isVcsGenerated: (name: string) => boolean
 			isIdeGenerated: (name: string) => boolean
 		}
+
+		getSourceFiles: (p: {
+			base: slime.jrunscript.file.Directory
+			isText: slime.project.code.isText
+			exclude: {
+				file: slime.$api.fp.Predicate<slime.jrunscript.file.File>
+				directory: slime.$api.fp.Predicate<slime.jrunscript.file.Directory>
+			}
+		}) => slime.$api.fp.impure.Ask<
+			{
+				unknownFileType: slime.tools.code.File
+			},
+			slime.tools.code.File[]
+		>
+
+		findTrailingWhitespace: (configuration?: {
+			nowrite?: boolean
+		}) => (file: slime.tools.code.File) => slime.$api.fp.impure.Tell<{
+			foundIn: slime.tools.code.File
+			notFoundIn: slime.tools.code.File
+			foundAt: {
+				file: slime.tools.code.File
+				line: {
+					number: number
+					content: string
+				}
+			}
+		}>
 	}
 
 	(

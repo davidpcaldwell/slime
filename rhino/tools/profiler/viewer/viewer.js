@@ -45,7 +45,7 @@ var render = function(profiles,settings) {
 		settings = {
 			threshold: 0
 		}
-	};
+	}
 	document.getElementById("data").innerHTML = "";
 
 	var top = document.createElement("div");

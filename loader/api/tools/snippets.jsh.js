@@ -128,7 +128,7 @@
 				body: lines,
 				description: "api.html " + snippet.name
 			};
-		};
+		}
 
 		var snippetPattern = /^(.*)-(.*)\.zzz$/;
 

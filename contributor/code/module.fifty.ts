@@ -9,7 +9,7 @@ namespace slime.project.code {
 
 	export type on = {
 		unknownFileType: (p: slime.tools.code.File) => void
-		change: (p: { path: string, line: { number: number, content: string } } ) => void
+		change: (p: { file: slime.tools.code.File, line: { number: number, content: string } } ) => void
 		changed: (p: slime.tools.code.File) => void
 		unchanged: (p: slime.tools.code.File) => void
 	}
@@ -35,6 +35,20 @@ namespace slime.project.code {
 		},
 		slime.tools.code.File[]
 	>
+
+	export type HandleTrailingWhitespace = (configuration?: {
+		nowrite?: boolean
+	}) => (file: slime.tools.code.File) => slime.$api.fp.impure.Tell<{
+		foundIn: slime.tools.code.File
+		notFoundIn: slime.tools.code.File
+		foundAt: {
+			file: slime.tools.code.File
+			line: {
+				number: number
+				content: string
+			}
+		}
+	}>
 
 	export interface Exports {
 		files: {

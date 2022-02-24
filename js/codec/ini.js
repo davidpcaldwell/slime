@@ -141,7 +141,7 @@
 			});
 
 			return rv;
-		};
+		}
 
 		$export({
 			codec: function() {

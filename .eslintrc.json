@@ -15,6 +15,7 @@
 		"no-shadow-restricted-names": "error",
 		"no-ex-assign": "error",
 		"no-prototype-builtins": "error",
+		"no-extra-semi": "error",
 
 		//	Implicit globals are very confusing for TypeScript
 		"no-implicit-globals": "warn",
@@ -22,7 +23,6 @@
 		"indent": ["warn", "tab", { "SwitchCase": 1 }],
 		"quotes": ["warn", "double"],
 
-		"no-extra-semi": "warn",
 		"no-empty": "warn",
 		"no-redeclare": "warn",
 		"no-debugger": "warn",

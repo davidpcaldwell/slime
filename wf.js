@@ -55,7 +55,7 @@
 						throw new Error("Unknown file type; cannot determine whether text: " + entry.file);
 					},
 					change: function(p) {
-						jsh.shell.console("Changed " + p.path + " at line " + p.line.number);
+						jsh.shell.console("Changed " + p.file.path + " at line " + p.line.number);
 					},
 					changed: function(entry) {
 						jsh.shell.console("Modified: " + entry.file);
