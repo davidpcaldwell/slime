@@ -50,71 +50,108 @@
 						|| directory.pathname.basename == ".settings"
 				};
 
-				/** @type { slime.project.code.Exports["files"]["isText"] } */
-				var isText = function(node) {
-					var basename = node.pathname.basename;
-					var rv = $context.library.code.filename.isText(basename);
-					if (typeof(rv) != "undefined") return rv;
+				/** @type { slime.tools.code.isText } */
+				var isText = $api.Function.series(
+					function wasFromWf(entry) {
+						if (/\.def$/.test(entry.path)) return true;
+						if (/\.prefs$/.test(entry.path)) return true;
+						if (/\.py$/.test(entry.path)) return true;
+						if (/\.yaml$/.test(entry.path)) return true;
 
-					//	Project-specific extensions
-					//	TODO	should be able to rename this one and get rid of it
-					if (/\.jsh$/.test(basename)) return true;
+						if (entry.path == ".hgsub") return true;
+						if (entry.path == ".hgignore") return true;
+						if (entry.path == ".gitignore") return true;
 
-					//	Seems to be a SLIME-ism, probably should use shebang to determine this
-					if (/\.bash$/.test(basename)) return true;
+						//	Really should ignore these files because they are VCS-ignored, not because they are binary
+						if (entry.path == ".classpath") return false;
+						if (entry.path == ".project") return false;
+						if (entry.path == ".hgsubstate") return false;
 
-					//	TODO	if license.js has a license for the file, should always return true; we are repeating information
+						if (entry.path == "documentation") return true;
+						if (entry.path == "fifty") return true;
+						if (entry.path == "wf") return true;
+						if (entry.path == "tools/wf") return true;
+						if (entry.path == "LICENSE") return true;
+						if (entry.path == "contributor/hooks/pre-commit") return true;
+					},
+					function wasFromDevelopScript(entry) {
+						if (entry.path == ".hgsub") return true;
+						if (entry.path == ".hgsubstate") return false;
+						if (entry.path == ".hgignore") return false;
+					},
+					function wasFromPrecommit(entry) {
+						if (/\.def$/.test(entry.path)) return true;
+						if (/\.prefs$/.test(entry.path)) return true;
+						if (entry.path == ".hgsub") return true;
+						if (entry.path == ".hgsubstate") return false;
+						if (entry.path == ".hgignore") return false;
+						if (entry.path == ".gitignore") return false;
+						if (entry.path == "contributor/hooks/pre-commit") return true;
+						if (entry.path == ".classpath") return false;
+						if (entry.path == ".project") return false;
+						if (entry.path == "contribute") return true;
+						if (entry.path == "tools/wf") return true;
+						if (entry.path == "wf") return true;
+					},
+					function(entry) {
+						return $context.library.code.filename.isText(entry.file.pathname.basename);
+					},
+					function(entry) {
+						var basename = entry.file.pathname.basename;
+						//	Project-specific extensions
+						//	TODO	should be able to rename this one and get rid of it
+						if (/\.jsh$/.test(basename)) return true;
 
-					//	This is a specific project file of test data for a ServiceLoader-related test
-					if (/META-INF\/services\/java.lang.Runnable$/.test(node.pathname.toString())) return false;
-				}
+						//	Seems to be a SLIME-ism, probably should use shebang to determine this
+						if (/\.bash$/.test(basename)) return true;
 
-				/** @type { { extension: slime.tools.code.isText }} */
-				var isTexts = (
-					function() {
-						var extension = function(entry) {
-							return isText(entry.node);
-						};
+						//	TODO	if license.js has a license for the file, should always return true; we are repeating information
 
-						// var options = function(options) {
-						// 	var extensions = {};
-						// 	var specified = {};
-						// 	options.text.forEach(function(path) {
-						// 		if (path.substring(0,1) == ".") {
-						// 			extensions[path.substring(1)] = true;
-						// 		} else {
-						// 			specified[path] = true;
-						// 		}
-						// 	});
-						// 	options.binary.forEach(function(path) {
-						// 		if (path.substring(0,1) == ".") {
-						// 			extensions[path] = false;
-						// 		} else {
-						// 			specified[path] = false;
-						// 		}
-						// 	});
-						// 	return function(entry) {
-						// 		if (typeof(specified[entry.path]) != "undefined") return specified[entry.path];
-						// 		var extension = (function() {
-						// 			var tokens = entry.node.pathname.basename.split(".");
-						// 			if (tokens.length > 1) {
-						// 				return tokens[tokens.length-1];
-						// 			} else {
-						// 				return null;
-						// 			}
-						// 		})();
-						// 		if (extension && typeof(extensions[extension]) != "undefined") {
-						// 			return extensions[extension];
-						// 		}
-						// 	}
-						// }
-
-						return {
-							extension: extension//,
-							// options: options
-						}
+						//	This is a specific project file of test data for a ServiceLoader-related test
+						if (/META-INF\/services\/java.lang.Runnable$/.test(entry.file.pathname.toString())) return false;
 					}
-				)();
+				)
+
+				// var isTexts = (
+				// 	function() {
+				// 		// var options = function(options) {
+				// 		// 	var extensions = {};
+				// 		// 	var specified = {};
+				// 		// 	options.text.forEach(function(path) {
+				// 		// 		if (path.substring(0,1) == ".") {
+				// 		// 			extensions[path.substring(1)] = true;
+				// 		// 		} else {
+				// 		// 			specified[path] = true;
+				// 		// 		}
+				// 		// 	});
+				// 		// 	options.binary.forEach(function(path) {
+				// 		// 		if (path.substring(0,1) == ".") {
+				// 		// 			extensions[path] = false;
+				// 		// 		} else {
+				// 		// 			specified[path] = false;
+				// 		// 		}
+				// 		// 	});
+				// 		// 	return function(entry) {
+				// 		// 		if (typeof(specified[entry.path]) != "undefined") return specified[entry.path];
+				// 		// 		var extension = (function() {
+				// 		// 			var tokens = entry.node.pathname.basename.split(".");
+				// 		// 			if (tokens.length > 1) {
+				// 		// 				return tokens[tokens.length-1];
+				// 		// 			} else {
+				// 		// 				return null;
+				// 		// 			}
+				// 		// 		})();
+				// 		// 		if (extension && typeof(extensions[extension]) != "undefined") {
+				// 		// 			return extensions[extension];
+				// 		// 		}
+				// 		// 	}
+				// 		// }
+
+				// 		return {
+				// 			// options: options
+				// 		}
+				// 	}
+				// )();
 
 				//	Appears to have been code to fix line endings
 				// var endings = function(p) {
@@ -139,9 +176,27 @@
 				// 	});
 				// }
 
+				var toHandler = function(on) {
+					return {
+						unknownFileType: function(e) {
+							if (on && on.unknownFileType) on.unknownFileType(e.detail);
+						},
+						foundAt: function(e) {
+							if (on && on.change) on.change(e.detail);
+						},
+						foundIn: function(e) {
+							if (on && on.changed) on.changed(e.detail);
+						},
+						notFoundIn: function(e) {
+							if (on && on.unchanged) on.unchanged(e.detail);
+						}
+					}
+				}
+
 				/** @type { slime.project.code.Exports["files"]["trailingWhitespace"] } */
 				var trailingWhitespace = function(p) {
-					$context.library.code.handleTrailingWhitespace({
+					//	TODO	return the Tell and have callers do normal event handling
+					return $context.library.code.handleTrailingWhitespace({
 						base: p.base,
 						exclude: {
 							directory: $api.Function.Predicate.or(
@@ -149,27 +204,15 @@
 								isVscodeJavaExtensionDirectory
 							)
 						},
-						isText: (p.isText) ? p.isText : isTexts.extension,
+						isText: isText,
 						nowrite: p.nowrite
-					})({
-						unknownFileType: function(e) {
-							if (p.on && p.on.unknownFileType) p.on.unknownFileType(e.detail);
-						},
-						foundAt: function(e) {
-							if (p.on && p.on.change) p.on.change(e.detail);
-						},
-						foundIn: function(e) {
-							if (p.on && p.on.changed) p.on.changed(e.detail);
-						},
-						notFoundIn: function(e) {
-							if (p.on && p.on.unchanged) p.on.unchanged(e.detail);
-						}
 					});
 				}
 
 				return {
 					isText: isText,
-					trailingWhitespace: trailingWhitespace
+					trailingWhitespace: trailingWhitespace,
+					toHandler: toHandler
 				}
 			}
 		)();

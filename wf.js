@@ -27,45 +27,21 @@
 			var failed = false;
 			code.files.trailingWhitespace({
 				base: $context.base,
-				isText: function(entry) {
-					if (/\.def$/.test(entry.path)) return true;
-					if (/\.prefs$/.test(entry.path)) return true;
-					if (/\.py$/.test(entry.path)) return true;
-					if (/\.yaml$/.test(entry.path)) return true;
-
-					if (entry.path == ".hgsub") return true;
-					if (entry.path == ".hgignore") return true;
-					if (entry.path == ".gitignore") return true;
-
-					//	Really should ignore these files because they are VCS-ignored, not because they are binary
-					if (entry.path == ".classpath") return false;
-					if (entry.path == ".project") return false;
-					if (entry.path == ".hgsubstate") return false;
-
-					if (entry.path == "documentation") return true;
-					if (entry.path == "fifty") return true;
-					if (entry.path == "wf") return true;
-					if (entry.path == "tools/wf") return true;
-					if (entry.path == "LICENSE") return true;
-					if (entry.path == "contributor/hooks/pre-commit") return true;
-					return code.files.isText(entry.file);
+			})(code.files.toHandler({
+				unknownFileType: function(entry) {
+					throw new Error("Unknown file type; cannot determine whether text: " + entry.file);
 				},
-				on: {
-					unknownFileType: function(entry) {
-						throw new Error("Unknown file type; cannot determine whether text: " + entry.file);
-					},
-					change: function(p) {
-						jsh.shell.console("Changed " + p.file.path + " at line " + p.line.number);
-					},
-					changed: function(entry) {
-						jsh.shell.console("Modified: " + entry.file);
-						failed = true;
-					},
-					unchanged: function(entry) {
-						//jsh.shell.echo("No change: " + entry.file);
-					}
+				change: function(p) {
+					jsh.shell.console("Changed " + p.file.path + " at line " + p.line.number);
+				},
+				changed: function(entry) {
+					jsh.shell.console("Modified: " + entry.file);
+					failed = true;
+				},
+				unchanged: function(entry) {
+					//jsh.shell.echo("No change: " + entry.file);
 				}
-			});
+			}));
 			if (failed) {
 				jsh.shell.console("Failing because trailing whitespace was modified.");
 				return false;

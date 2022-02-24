@@ -62,31 +62,21 @@
 			var failed = false;
 			code.files.trailingWhitespace({
 				base: jsh.script.file.parent.parent,
-				isText: function(entry) {
-					if (/\.def$/.test(entry.path)) {
-						return true;
-					}
-					if (entry.path == ".hgsub") return true;
-					if (entry.path == ".hgsubstate") return false;
-					if (entry.path == ".hgignore") return false;
-					return code.files.isText(entry.file);
+			})(code.files.toHandler({
+				unknownFileType: function(entry) {
+					throw new Error("Unknown file type; cannot determine whether text: " + entry.file);
 				},
-				on: {
-					unknownFileType: function(entry) {
-						throw new Error("Unknown file type; cannot determine whether text: " + entry.file);
-					},
-					change: function(p) {
-						jsh.shell.echo("Changed " + p.file.path + " at line " + p.line.number);
-					},
-					changed: function(entry) {
-						jsh.shell.echo("Modified: " + entry.file);
-						failed = true;
-					},
-					unchanged: function(entry) {
-						//jsh.shell.echo("No change: " + entry.node);
-					}
+				change: function(p) {
+					jsh.shell.echo("Changed " + p.file.path + " at line " + p.line.number);
+				},
+				changed: function(entry) {
+					jsh.shell.echo("Modified: " + entry.file);
+					failed = true;
+				},
+				unchanged: function(entry) {
+					//jsh.shell.echo("No change: " + entry.node);
 				}
-			});
+			}));
 			var licenseBase = jsh.script.file.parent.getRelativePath("code").directory;
 			var licenses = new jsh.document.Document({ string: licenseBase.getFile("licenses.xml").read(String) });
 			jsh.script.loader.run("code/license.jsh.js", {

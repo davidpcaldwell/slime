@@ -22,14 +22,14 @@ namespace slime.project.code {
 
 	export interface Exports {
 		files: {
-			isText: (node: slime.jrunscript.file.Node) => boolean | undefined
+			isText: slime.tools.code.isText
 
 			trailingWhitespace: (p: {
 				base: slime.jrunscript.file.Directory
-				isText: slime.tools.code.isText
-				on: on
 				nowrite?: boolean
-			}) => void
+			}) => slime.$api.fp.impure.Tell<slime.tools.code.FileEvents & slime.tools.code.CodeEvents>
+
+			toHandler: (on: on) => slime.$api.events.Handler<slime.tools.code.FileEvents & slime.tools.code.CodeEvents>
 		}
 	}
 

@@ -41,37 +41,21 @@
 		var failed = false;
 		code.files.trailingWhitespace({
 			base: base,
-			isText: function(entry) {
-				if (/\.def$/.test(entry.path)) return true;
-				if (/\.prefs$/.test(entry.path)) return true;
-				if (entry.path == ".hgsub") return true;
-				if (entry.path == ".hgsubstate") return false;
-				if (entry.path == ".hgignore") return false;
-				if (entry.path == ".gitignore") return false;
-				if (entry.path == "contributor/hooks/pre-commit") return true;
-				if (entry.path == ".classpath") return false;
-				if (entry.path == ".project") return false;
-				if (entry.path == "contribute") return true;
-				if (entry.path == "tools/wf") return true;
-				if (entry.path == "wf") return true;
-				return code.files.isText(entry.file);
+		})(code.files.toHandler({
+			unknownFileType: function(entry) {
+				throw new Error("Unknown file type; cannot determine whether text: " + entry.file);
 			},
-			on: {
-				unknownFileType: function(entry) {
-					throw new Error("Unknown file type; cannot determine whether text: " + entry.file);
-				},
-				change: function(p) {
-					jsh.shell.console("Changed " + p.file.path + " at line " + p.line.number);
-				},
-				changed: function(entry) {
-					jsh.shell.console("Modified: " + entry.file);
-					failed = true;
-				},
-				unchanged: function(entry) {
-					//jsh.shell.echo("No change: " + entry.node);
-				}
+			change: function(p) {
+				jsh.shell.console("Changed " + p.file.path + " at line " + p.line.number);
+			},
+			changed: function(entry) {
+				jsh.shell.console("Modified: " + entry.file);
+				failed = true;
+			},
+			unchanged: function(entry) {
+				//jsh.shell.echo("No change: " + entry.node);
 			}
-		});
+		}));
 		if (failed) {
 			jsh.shell.console("Failing because trailing whitespace was modified.");
 			jsh.shell.exit(1);
