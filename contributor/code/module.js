@@ -45,17 +45,12 @@
 			 * @returns { slime.project.code.Exports["files"] }
 			 */
 			function() {
-				//	TODO	probably need way to override these default excludes
-				var filter = function(node) {
+				var isAuthoredTextFile = function(node) {
 					if (false) $context.console("Checking: " + node);
-					if (node.pathname.basename == ".hg") return false;
-					if (node.pathname.basename == ".git") return false;
-					if (node.pathname.basename == ".hgtags") return false;
-					if (node.pathname.basename == ".svn") return false;
-					if (/\.iml$/.test(node.pathname.basename)) return false;
-					if (node.pathname.basename == "target") return false;
-					//	TODO	next line breaks encapsulation of rhino/file/
 					if (node.directory) return false;
+					if (node.pathname.basename == ".hgtags") return false;
+					if (node.pathname.basename == ".git") return false;
+					if (/\.iml$/.test(node.pathname.basename)) return false;
 					return true;
 				}
 
@@ -132,14 +127,16 @@
 					if (!p.base) throw new Error("Required: base, specifying directory.");
 					var entries = p.base.list({
 						// recursive: true,
-						filter: filter,
+						filter: isAuthoredTextFile,
 						descendants: function(directory) {
 							//jsh.shell.console("Checking directory: " + directory);
 							return directory.pathname.basename != "local"
 								&& directory.pathname.basename != ".hg"
 								&& directory.pathname.basename != ".git"
+								&& directory.pathname.basename != ".svn"
 								&& directory.pathname.basename != "bin"
 								&& directory.pathname.basename != "build"
+								&& directory.pathname.basename != "target"
 								&& directory.pathname.basename != ".settings"
 								&& directory.pathname.basename != ".gradle"
 						},

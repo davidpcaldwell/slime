@@ -559,9 +559,9 @@ namespace slime.$api.fp {
 		function(
 			fifty: slime.fifty.test.kit
 		) {
-			const { tests, verify } = fifty;
+			const { verify } = fifty;
 
-			tests.impure = function() {
+			fifty.tests.impure = function() {
 				var f1 = function(p: { number: number }) {
 					p.number += 1;
 				};
@@ -614,6 +614,41 @@ namespace slime.$api.fp {
 	//@ts-ignore
 	)(fifty);
 
+	export interface Exports {
+		series: <T>(...functions: ((...args: any[]) => T)[]) => (args: any[]) => T
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.kit
+		) {
+			const { verify } = fifty;
+
+			fifty.tests.series = function() {
+				var api = fifty.global.$api;
+				var one: (...args: any[]) => number = api.Function.series(
+					function() {
+						return 1;
+					},
+					function() {
+						return 2;
+					}
+				);
+				verify(one()).is(1);
+				var two: (...args: any[]) => number = api.Function.series(
+					function() {
+						return void(0);
+					},
+					function() {
+						return 2;
+					}
+				);
+				verify(two(), "two").is(2);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
 }
 
 namespace slime.$api.fp {
@@ -656,7 +691,6 @@ namespace slime.$api.fp {
 		}
 		evaluator: any
 		String: any
-		series: any
 		mutating: any
 	}
 
@@ -689,11 +723,11 @@ namespace slime.$api.fp {
 (
 	function(
 		fifty: slime.fifty.test.kit,
-		$api: slime.$api.Global,
-		tests: slime.fifty.test.tests,
-		verify: slime.fifty.test.tests
+		$api: slime.$api.Global
 	) {
-		tests.compare = function() {
+		const { verify } = fifty;
+
+		fifty.tests.compare = function() {
 			var array = [
 				{ name: "a", value: 1 },
 				{ name: "b", value: 0 },
@@ -735,16 +769,17 @@ namespace slime.$api.fp {
 			verify(multi)[3].name.is("a");
 		}
 
-		tests.suite = function() {
-			fifty.run(tests.string);
-			fifty.run(tests.RegExp);
-			fifty.run(tests.impure);
-			fifty.run(tests.compare);
-			fifty.run(tests.memoized);
-			fifty.run(tests.is);
-			fifty.run(tests.result);
-			fifty.run(tests.Object);
-			fifty.run(tests.deprecated);
+		fifty.tests.suite = function() {
+			fifty.run(fifty.tests.string);
+			fifty.run(fifty.tests.RegExp);
+			fifty.run(fifty.tests.impure);
+			fifty.run(fifty.tests.compare);
+			fifty.run(fifty.tests.memoized);
+			fifty.run(fifty.tests.is);
+			fifty.run(fifty.tests.result);
+			fifty.run(fifty.tests.Object);
+			fifty.run(fifty.tests.deprecated);
+			fifty.run(fifty.tests.series);
 		}
 	}
 //@ts-ignore
