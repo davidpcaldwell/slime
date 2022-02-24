@@ -45,16 +45,9 @@
 			 * @returns { slime.project.code.Exports["files"] }
 			 */
 			function() {
-				var isSourceDirectory = function(directory) {
-					return directory.pathname.basename != "local"
-						&& directory.pathname.basename != ".hg"
-						&& directory.pathname.basename != ".git"
-						&& directory.pathname.basename != ".svn"
-						&& directory.pathname.basename != "bin"
-						&& directory.pathname.basename != "build"
-						&& directory.pathname.basename != "target"
-						&& directory.pathname.basename != ".settings"
-						&& directory.pathname.basename != ".gradle"
+				var isVscodeJavaExtensionDirectory = function(directory) {
+					return directory.pathname.basename == "bin"
+						|| directory.pathname.basename == ".settings"
 				};
 
 				/** @type { slime.project.code.Exports["files"]["isText"] } */
@@ -76,7 +69,7 @@
 					if (/META-INF\/services\/java.lang.Runnable$/.test(node.pathname.toString())) return false;
 				}
 
-				/** @type { { extension: slime.project.code.isText }} */
+				/** @type { { extension: slime.tools.code.isText }} */
 				var isTexts = (
 					function() {
 						var extension = function(entry) {
@@ -148,40 +141,29 @@
 
 				/** @type { slime.project.code.Exports["files"]["trailingWhitespace"] } */
 				var trailingWhitespace = function(p) {
-					/** @type { slime.$api.fp.Predicate<slime.jrunscript.file.File> } */
-					var isGeneratedTextFile = $api.Function.pipe(
-						function(file) { return file.pathname.basename; },
-						$api.Function.Predicate.or(
-							$context.library.code.filename.isVcsGenerated,
-							$context.library.code.filename.isIdeGenerated
-						)
-					);
-
-					var each = $context.library.code.findTrailingWhitespace(p);
-
-					$context.library.code.getSourceFiles({
+					$context.library.code.handleTrailingWhitespace({
 						base: p.base,
-						isText: (p.isText) ? p.isText : isTexts.extension,
 						exclude: {
-							file: isGeneratedTextFile,
-							directory: $api.Function.Predicate.not(isSourceDirectory)
-						}
+							directory: $api.Function.Predicate.or(
+								$context.library.code.defaults.exclude.directory,
+								isVscodeJavaExtensionDirectory
+							)
+						},
+						isText: (p.isText) ? p.isText : isTexts.extension,
+						nowrite: p.nowrite
 					})({
 						unknownFileType: function(e) {
 							if (p.on && p.on.unknownFileType) p.on.unknownFileType(e.detail);
+						},
+						foundAt: function(e) {
+							if (p.on && p.on.change) p.on.change(e.detail);
+						},
+						foundIn: function(e) {
+							if (p.on && p.on.changed) p.on.changed(e.detail);
+						},
+						notFoundIn: function(e) {
+							if (p.on && p.on.unchanged) p.on.unchanged(e.detail);
 						}
-					}).forEach(function(entry) {
-						each(entry)({
-							foundAt: function(e) {
-								if (p.on && p.on.change) p.on.change(e.detail);
-							},
-							foundIn: function(e) {
-								if (p.on && p.on.changed) p.on.changed(e.detail);
-							},
-							notFoundIn: function(e) {
-								if (p.on && p.on.unchanged) p.on.unchanged(e.detail);
-							}
-						});
 					});
 				}
 

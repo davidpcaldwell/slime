@@ -28,6 +28,29 @@ namespace slime.tools.code {
 		file: slime.jrunscript.file.File
 	}
 
+	export type isText = (p: slime.tools.code.File) => boolean | undefined
+
+	export interface FileEvents {
+		unknownFileType: slime.tools.code.File
+	}
+
+	export interface CodeEvents {
+		foundIn: slime.tools.code.File
+		notFoundIn: slime.tools.code.File
+		foundAt: {
+			file: slime.tools.code.File
+			line: {
+				number: number
+				content: string
+			}
+		}
+	}
+
+	export interface Excludes {
+		file?: slime.$api.fp.Predicate<slime.jrunscript.file.File>
+		directory?: slime.$api.fp.Predicate<slime.jrunscript.file.Directory>
+	}
+
 	export interface Exports {
 		filename: {
 			isText: (name: string) => boolean | undefined
@@ -35,7 +58,17 @@ namespace slime.tools.code {
 			isIdeGenerated: (name: string) => boolean
 		}
 
-		handleTrailingWhitespace: (code: string) => {
+		directory: {
+			isLocal: slime.$api.fp.Predicate<slime.jrunscript.file.Directory>
+			isVcs: slime.$api.fp.Predicate<slime.jrunscript.file.Directory>
+			isBuildTool: slime.$api.fp.Predicate<slime.jrunscript.file.Directory>
+		}
+
+		defaults: {
+			exclude: Excludes
+		}
+
+		scanForTrailingWhitespace: (code: string) => {
 			without: string
 			instances: {
 				line: number
@@ -45,31 +78,23 @@ namespace slime.tools.code {
 
 		getSourceFiles: (p: {
 			base: slime.jrunscript.file.Directory
-			isText: slime.project.code.isText
-			exclude: {
-				file: slime.$api.fp.Predicate<slime.jrunscript.file.File>
-				directory: slime.$api.fp.Predicate<slime.jrunscript.file.Directory>
-			}
+			isText?: isText
+			exclude?: Excludes
 		}) => slime.$api.fp.impure.Ask<
-			{
-				unknownFileType: slime.tools.code.File
-			},
+			FileEvents,
 			slime.tools.code.File[]
 		>
 
-		findTrailingWhitespace: (configuration?: {
+		handleFileTrailingWhitespace: (configuration?: {
 			nowrite?: boolean
-		}) => (file: slime.tools.code.File) => slime.$api.fp.impure.Tell<{
-			foundIn: slime.tools.code.File
-			notFoundIn: slime.tools.code.File
-			foundAt: {
-				file: slime.tools.code.File
-				line: {
-					number: number
-					content: string
-				}
-			}
-		}>
+		}) => (file: slime.tools.code.File) => slime.$api.fp.impure.Tell<CodeEvents>
+
+		handleTrailingWhitespace: (p: {
+			base: slime.jrunscript.file.Directory
+			exclude?: Excludes
+			isText?: isText
+			nowrite?: boolean
+		}) => slime.$api.fp.impure.Tell<FileEvents & CodeEvents>
 	}
 
 	(

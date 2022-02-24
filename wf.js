@@ -62,7 +62,7 @@
 						failed = true;
 					},
 					unchanged: function(entry) {
-						//jsh.shell.echo("No change: " + entry.node);
+						//jsh.shell.echo("No change: " + entry.file);
 					}
 				}
 			});

@@ -5,15 +5,6 @@
 //	END LICENSE
 
 namespace slime.project.code {
-	export type isText = (p: slime.tools.code.File) => boolean | undefined
-
-	export type on = {
-		unknownFileType: (p: slime.tools.code.File) => void
-		change: (p: { file: slime.tools.code.File, line: { number: number, content: string } } ) => void
-		changed: (p: slime.tools.code.File) => void
-		unchanged: (p: slime.tools.code.File) => void
-	}
-
 	export interface Context {
 		console: (message: string) => void
 		library: {
@@ -22,33 +13,12 @@ namespace slime.project.code {
 		}
 	}
 
-	export type GetSourceFiles = (p: {
-		base: slime.jrunscript.file.Directory
-		isText: slime.project.code.isText
-		exclude: {
-			file: slime.$api.fp.Predicate<slime.jrunscript.file.File>
-			directory: slime.$api.fp.Predicate<slime.jrunscript.file.Directory>
-		}
-	}) => slime.$api.fp.impure.Ask<
-		{
-			unknownFileType: slime.tools.code.File
-		},
-		slime.tools.code.File[]
-	>
-
-	export type HandleTrailingWhitespace = (configuration?: {
-		nowrite?: boolean
-	}) => (file: slime.tools.code.File) => slime.$api.fp.impure.Tell<{
-		foundIn: slime.tools.code.File
-		notFoundIn: slime.tools.code.File
-		foundAt: {
-			file: slime.tools.code.File
-			line: {
-				number: number
-				content: string
-			}
-		}
-	}>
+	export type on = {
+		unknownFileType: (p: slime.tools.code.File) => void
+		change: (p: { file: slime.tools.code.File, line: { number: number, content: string } } ) => void
+		changed: (p: slime.tools.code.File) => void
+		unchanged: (p: slime.tools.code.File) => void
+	}
 
 	export interface Exports {
 		files: {
@@ -56,7 +26,7 @@ namespace slime.project.code {
 
 			trailingWhitespace: (p: {
 				base: slime.jrunscript.file.Directory
-				isText: isText
+				isText: slime.tools.code.isText
 				on: on
 				nowrite?: boolean
 			}) => void
