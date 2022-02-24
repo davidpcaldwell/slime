@@ -14,7 +14,15 @@
 	 */
 	function($api,jsh,$context,$exports) {
 		var noTrailingWhitespace = function() {
-			var code = jsh.loader.module($context.base.getRelativePath("contributor/code/module.js"));
+			var loader = new jsh.file.Loader({ directory: $context.base });
+			/** @type { slime.project.code.Script } */
+			var script = loader.script("contributor/code/module.js");
+			var code = script({
+				console: jsh.shell.console,
+				library: {
+					file: jsh.file
+				}
+			});
 			var failed = false;
 			code.files.trailingWhitespace({
 				base: $context.base,

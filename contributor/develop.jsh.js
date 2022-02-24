@@ -4,18 +4,23 @@
 //
 //	END LICENSE
 
+//@ts-check
 (
-	function() {
+	/**
+	 *
+	 * @param { slime.jsh.Global } jsh
+	 */
+	function(jsh) {
 		//	TODO	obsolete; harvest anything useful and remove. See contributor/hooks
-		jsh.loader.plugins(jsh.script.file.getRelativePath("../rhino/tools/hg"));
+		jsh.loader.plugins(jsh.script.file.parent.getRelativePath("../rhino/tools/hg"));
 
 		if (jsh.script.arguments.length == 0) {
-			var hgrc = jsh.script.file.getRelativePath("../.hg/hgrc");
+			var hgrc = jsh.script.file.parent.getRelativePath("../.hg/hgrc");
 			if (!hgrc.file) {
 				jsh.shell.echo("Not found: " + hgrc);
 				jsh.shell.exit(1);
 			}
-			var settings = new hg.Hgrc({ file: hgrc.file });
+			var settings = new jsh.tools.hg.Hgrc({ file: hgrc.file });
 			var runscript = (function() {
 				if (jsh.shell.jsh.home) {
 					return [
@@ -44,7 +49,15 @@
 			settings.normalize();
 			settings.write();
 		} else if (jsh.script.arguments.length == 1 && jsh.script.arguments[0] == "commit") {
-			var code = jsh.script.loader.module("code/module.js");
+			var loader = new jsh.file.Loader({ directory: jsh.script.file.parent });
+			/** @type { slime.project.code.Script } */
+			var script = loader.script("code/module.js");
+			var code = script({
+				console: jsh.shell.console,
+				library: {
+					file: jsh.file
+				}
+			});
 			var failed = false;
 			code.files.trailingWhitespace({
 				base: jsh.script.file.parent.parent,
@@ -73,7 +86,7 @@
 					}
 				}
 			});
-			var licenseBase = jsh.script.file.getRelativePath("code").directory;
+			var licenseBase = jsh.script.file.parent.getRelativePath("code").directory;
 			var licenses = new jsh.document.Document({ string: licenseBase.getFile("licenses.xml").read(String) });
 			jsh.script.loader.run("code/license.jsh.js", {
 				parameters: {
@@ -121,4 +134,5 @@
 			}
 		}
 	}
-)();
+//@ts-ignore
+)(jsh);

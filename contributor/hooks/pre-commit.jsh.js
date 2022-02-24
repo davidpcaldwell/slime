@@ -28,7 +28,15 @@
 			}
 		});
 
-		var code = jsh.loader.module(jsh.script.file.parent.parent.getRelativePath("code/module.js"));
+		var loader = new jsh.file.Loader({ directory: jsh.script.file.parent.parent });
+		/** @type { slime.project.code.Script } */
+		var script = loader.script("code/module.js");
+		var code = script({
+			console: jsh.shell.console,
+			library: {
+				file: jsh.file
+			}
+		});
 		var failed = false;
 		code.files.trailingWhitespace({
 			base: base,
