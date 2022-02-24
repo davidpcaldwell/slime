@@ -16,9 +16,16 @@ namespace slime.tools.code {
 		})(fifty);
 	}
 
+	export interface File {
+		path: string
+		file: slime.jrunscript.file.File
+	}
+
 	export interface Exports {
 		filename: {
 			isText: (name: string) => boolean | undefined
+			isVcsGenerated: (name: string) => boolean
+			isIdeGenerated: (name: string) => boolean
 		}
 	}
 

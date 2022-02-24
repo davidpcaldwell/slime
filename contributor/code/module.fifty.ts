@@ -5,16 +5,13 @@
 //	END LICENSE
 
 namespace slime.project.code {
-	export type isText = (p: {
-		path: string
-		node: slime.jrunscript.file.Node
-	}) => boolean | undefined
+	export type isText = (p: slime.tools.code.File) => boolean | undefined
 
 	export type on = {
-		unknownFileType: (p: { path: string, node: slime.jrunscript.file.File }) => void
+		unknownFileType: (p: slime.tools.code.File) => void
 		change: (p: { path: string, line: { number: number, content: string } } ) => void
-		changed: (p: { path: string, node: slime.jrunscript.file.File }) => void
-		unchanged: (p: { path: string, node: slime.jrunscript.file.File }) => void
+		changed: (p: slime.tools.code.File) => void
+		unchanged: (p: slime.tools.code.File) => void
 	}
 
 	export interface Context {
@@ -24,6 +21,20 @@ namespace slime.project.code {
 			code: slime.tools.code.Exports
 		}
 	}
+
+	export type GetSourceFiles = (p: {
+		base: slime.jrunscript.file.Directory
+		isText: slime.project.code.isText
+		exclude: {
+			file: slime.$api.fp.Predicate<slime.jrunscript.file.File>
+			directory: slime.$api.fp.Predicate<slime.jrunscript.file.Directory>
+		}
+	}) => slime.$api.fp.impure.Ask<
+		{
+			unknownFileType: slime.tools.code.File
+		},
+		slime.tools.code.File[]
+	>
 
 	export interface Exports {
 		files: {

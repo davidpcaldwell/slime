@@ -11,7 +11,7 @@
 	 * @param { slime.jsh.Global } jsh
 	 */
 	function(jsh) {
-		//	TODO	obsolete; harvest anything useful and remove. See contributor/hooks
+		//	TODO	obsolete; harvest anything useful and remove. See also contributor/hooks and wf.js
 		jsh.loader.plugins(jsh.script.file.parent.getRelativePath("../rhino/tools/hg"));
 
 		if (jsh.script.arguments.length == 0) {
@@ -69,17 +69,17 @@
 					if (entry.path == ".hgsub") return true;
 					if (entry.path == ".hgsubstate") return false;
 					if (entry.path == ".hgignore") return false;
-					return code.files.isText(entry.node);
+					return code.files.isText(entry.file);
 				},
 				on: {
 					unknownFileType: function(entry) {
-						throw new Error("Unknown file type; cannot determine whether text: " + entry.node);
+						throw new Error("Unknown file type; cannot determine whether text: " + entry.file);
 					},
 					change: function(p) {
 						jsh.shell.echo("Changed " + p.path + " at line " + p.line.number);
 					},
 					changed: function(entry) {
-						jsh.shell.echo("Modified: " + entry.node);
+						jsh.shell.echo("Modified: " + entry.file);
 						failed = true;
 					},
 					unchanged: function(entry) {

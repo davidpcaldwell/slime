@@ -48,6 +48,13 @@
 					if (/\.dockerignore$/.test(basename)) return true;
 					if (/Dockerfile$/.test(basename)) return true;
 					if (/\.bashrc$/.test(basename)) return true;
+				},
+				isVcsGenerated: function(name) {
+					if (name == ".hgtags") return true;
+					if (name == ".git") return true;
+				},
+				isIdeGenerated: function(name) {
+					if (/\.iml$/.test(name)) return true;
 				}
 			}
 		})

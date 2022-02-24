@@ -48,17 +48,17 @@
 					if (entry.path == "tools/wf") return true;
 					if (entry.path == "LICENSE") return true;
 					if (entry.path == "contributor/hooks/pre-commit") return true;
-					return code.files.isText(entry.node);
+					return code.files.isText(entry.file);
 				},
 				on: {
 					unknownFileType: function(entry) {
-						throw new Error("Unknown file type; cannot determine whether text: " + entry.node);
+						throw new Error("Unknown file type; cannot determine whether text: " + entry.file);
 					},
 					change: function(p) {
 						jsh.shell.console("Changed " + p.path + " at line " + p.line.number);
 					},
 					changed: function(entry) {
-						jsh.shell.console("Modified: " + entry.node);
+						jsh.shell.console("Modified: " + entry.file);
 						failed = true;
 					},
 					unchanged: function(entry) {

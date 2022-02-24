@@ -615,7 +615,7 @@ namespace slime.$api.fp {
 	)(fifty);
 
 	export interface Exports {
-		series: <T>(...functions: ((...args: any[]) => T)[]) => (args: any[]) => T
+		series: <P extends any[], T>(...functions: ((...args: P) => T)[]) => (...args: P) => T
 	}
 
 	(
@@ -626,7 +626,7 @@ namespace slime.$api.fp {
 
 			fifty.tests.series = function() {
 				var api = fifty.global.$api;
-				var one: (...args: any[]) => number = api.Function.series(
+				var one = api.Function.series(
 					function() {
 						return 1;
 					},
@@ -635,8 +635,8 @@ namespace slime.$api.fp {
 					}
 				);
 				verify(one()).is(1);
-				var two: (...args: any[]) => number = api.Function.series(
-					function() {
+				var two = api.Function.series(
+					function(): number {
 						return void(0);
 					},
 					function() {
