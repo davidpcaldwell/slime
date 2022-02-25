@@ -20,12 +20,13 @@ namespace slime.project.jsapi {
 	}
 
 	export interface Format {
+		tabSize: number
+		lineLength: number
 	}
 
 	export interface Exports {
 		test: {
 			prefix: (line: string) => string
-			text: (comment: string) => string
 		}
 	}
 
@@ -37,16 +38,8 @@ namespace slime.project.jsapi {
 			const subject = test.subject;
 
 			fifty.tests.prefix = function() {
-				verify(subject).test.prefix("\t\t\t *").is("\t\t\t * ");
-				verify(subject).test.prefix("\t\t\t/**").is("\t\t\t * ");
-			}
-
-			fifty.tests.wrap = function() {
-				var lines = [
-					"\t\t\t * foo bar",
-					"\t\t\t\t\tyou"
-				];
-				verify(subject).test.text(lines.join("\n")).is("foo bar you");
+				verify(subject).test.prefix("\t\t\t *").is("\t\t\t");
+				verify(subject).test.prefix("\t\t\t/**").is("\t\t\t");
 			}
 		}
 	//@ts-ignore
@@ -72,7 +65,7 @@ namespace slime.project.jsapi {
 			}
 
 			function interpret(input: any): Format {
-				return {};
+				return input as Format;
 			}
 
 			function parseTestData(input: string): Case[] {
@@ -128,10 +121,12 @@ namespace slime.project.jsapi {
 
 			fifty.tests.suite = function() {
 				fifty.run(fifty.tests.prefix);
-				fifty.run(fifty.tests.wrap);
 				var tests = parseTestData(fifty.$loader.get("test/jsapi-to-fifty.txt").read(String));
 				tests.forEach(function(test) {
 					var result = subject.comment(test.configuration)(test.input);
+					if (result != test.expected) {
+						debugger;
+					}
 					verify(result,"result").is(test.expected);
 				});
 			}

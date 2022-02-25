@@ -47,7 +47,7 @@
 			"type": "pwa-chrome",
 			"request": "attach",
 			"port": 9222,
-			"webRoot": "${workspaceFolder}"
+			"enableContentValidation": false
 		}
 	]
 }

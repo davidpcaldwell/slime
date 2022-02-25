@@ -1,7 +1,3 @@
-{}
-			 * Allows the loader to customize the way child sources are created when creating child loaders. if omitted, a child that delegates requests back to the parent, prepended by the
-									child's path, will be created
+{ "tabSize": 4, "lineLength": 132 }
 ===
-			 * Allows the loader to customize the way child sources are created when creating child loaders. if omitted, a child
-			 * that delegates requests back to the parent, prepended by the child's path, will be created
 ===
