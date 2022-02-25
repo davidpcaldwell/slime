@@ -5,17 +5,17 @@
 //	END LICENSE
 
 namespace slime.jsh {
-	interface Global {
+	export interface Global {
 		shell: slime.jsh.shell.Exports & {
 			/** @deprecated */
-			getopts: jsh["script"]["getopts"]
+			getopts: slime.jsh.Global["script"]["getopts"]
 		}
 	}
 }
 
 namespace slime.jsh.shell {
-	namespace internal {
-		interface Context {
+	export namespace internal {
+		export interface Context {
 			exit: any
 			stdio: any
 			_getSystemProperties: () => slime.jrunscript.native.java.util.Properties
@@ -32,7 +32,7 @@ namespace slime.jsh.shell {
 
 	type Argument = string | slime.jrunscript.file.Pathname | slime.jrunscript.file.Node | slime.jrunscript.file.File | slime.jrunscript.file.Directory
 
-	interface Exports extends slime.jrunscript.shell.Exports {
+	export interface Exports extends slime.jrunscript.shell.Exports {
 		/**
 		 * The JavaScript engine executing the loader process for the shell, e.g., `rhino`, `nashorn`.
 		 */

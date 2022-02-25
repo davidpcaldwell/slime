@@ -5,12 +5,12 @@
 //	END LICENSE
 
 namespace slime.jsh.plugin {
-	type plugin = (p: { isReady?: () => boolean, load: () => void }) => void;
-	type plugins = { [x: string]: any }
+	export type plugin = (p: { isReady?: () => boolean, load: () => void }) => void;
+	export type plugins = { [x: string]: any }
 }
 
 namespace slime.jsh.loader.internal.plugins {
-	interface Export {
+	export interface Export {
 		mock: (p: {
 			global?: { [x: string]: any }
 			jsh?: { [x: string]: any }

@@ -5,7 +5,7 @@
 //	END LICENSE
 
 namespace slime.jrunscript.mail {
-	interface Context {
+	export interface Context {
 		api: {
 			java: slime.jrunscript.host.Exports
 			io: slime.jrunscript.io.Exports
@@ -14,7 +14,7 @@ namespace slime.jrunscript.mail {
 		}
 	}
 
-	interface Session {
+	export interface Session {
 		send(message: Message): void
 		Message(o: Message): {
 			resource: slime.jrunscript.runtime.Resource
@@ -24,7 +24,7 @@ namespace slime.jrunscript.mail {
 		}
 	}
 
-	interface Recipient {
+	export interface Recipient {
 		name?: string
 		address: string
 	}
@@ -36,7 +36,7 @@ namespace slime.jrunscript.mail {
 		multipart: slime.jrunscript.io.mime.Multipart
 	}
 
-	interface Exports {
+	export interface Exports {
 		Session: {
 			(p?: {
 				properties?: $api.jrunscript.Properties

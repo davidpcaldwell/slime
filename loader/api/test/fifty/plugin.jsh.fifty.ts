@@ -4,14 +4,18 @@
 //
 //	END LICENSE
 
-namespace slime.jsh.typescript {
-	interface Exports {
-		compile: (code: string) => string
+namespace slime.jsh.$fifty {
+	//	TODO	should be making this available as part of Fifty object
+	export interface Exports {
+		plugin: {
+			mock: slime.jsh.loader.internal.plugins.Export["mock"]
+		}
 	}
 }
 
 namespace slime.jsh {
-	interface Global {
-		typescript: slime.jsh.typescript.Exports
+	export interface Global {
+		$fifty: slime.jsh.$fifty.Exports
 	}
 }
+

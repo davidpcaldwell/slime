@@ -5,11 +5,11 @@
 //	END LICENSE
 
 namespace slime.runtime.browser.test {
-	namespace results {
-		interface Context {
+	export namespace results {
+		export interface Context {
 			library: {
-				java: jsh["java"]
-				shell: jsh["shell"]
+				java: slime.jsh.Global["java"]
+				shell: slime.jsh.Global["shell"]
 			}
 		}
 
@@ -17,6 +17,6 @@ namespace slime.runtime.browser.test {
 			url: string
 		}
 
-		type Factory = (configuration: Configuration) => slime.servlet.handler
+		export type Factory = (configuration: Configuration) => slime.servlet.handler
 	}
 }

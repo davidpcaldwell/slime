@@ -15,15 +15,15 @@ namespace slime.jrunscript.hg {
 		date: Date
 	}
 
-	interface Repository {
+	export interface Repository {
 	}
 
-	namespace Repository {
+	export namespace Repository {
 		interface Remote extends slime.jrunscript.hg.Repository {
 			url: any
 		}
 
-		interface Local extends slime.jrunscript.hg.Repository {
+		export interface Local extends slime.jrunscript.hg.Repository {
 			directory: slime.jrunscript.file.Directory
 			identify: Function
 			heads: () => any

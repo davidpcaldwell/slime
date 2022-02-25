@@ -21,8 +21,10 @@
 					window.XMLHttpRequest = function() {
 						var req = false;
 						try {
+							//@ts-ignore
 							req = new ActiveXObject("Msxml2.XMLHTTP");
 						} catch(e) {
+							//@ts-ignore
 							req = new ActiveXObject("Microsoft.XMLHTTP");
 						}
 						return req;

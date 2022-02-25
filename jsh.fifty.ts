@@ -36,7 +36,7 @@ namespace slime.jsh {
 	 *
 	 * All code loaded by `jsh` also has access to the `$api` global object; see [$api](slime._api.global.html).
 	 */
-	interface Global {
+	export interface Global {
 		java: slime.jrunscript.host.Exports & {
 			tools: slime.jsh.java.tools.Exports,
 			log: any
