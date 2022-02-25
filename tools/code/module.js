@@ -256,6 +256,52 @@
 			});
 		}
 
+		/** @type { slime.tools.code.Exports["checkSingleFinalNewline"] } */
+		var checkSingleFinalNewline = function(string) {
+			var lines = string.split("\n");
+			var missing = false;
+			var multiple = false;
+			if (lines[lines.length-1] != "") {
+				missing = true;
+				lines.push("");
+			}
+			while(lines[lines.length-2] == "") {
+				multiple = true;
+				lines.splice(lines.length-2, 1);
+			}
+			return {
+				missing: missing,
+				multiple: multiple,
+				fixed: lines.join("\n")
+			}
+		}
+
+		/** @type { slime.tools.code.Exports["handleFinalNewlines"] } */
+		function handleFinalNewlines(p) {
+			return $api.Function.impure.tell(function(events) {
+				//	TODO	is there a simpler way to forward all those events below?
+				getSourceFiles({
+					base: p.base,
+					isText: (p.isText) ? p.isText : function(file) {
+						return filename.isText(file.file.pathname.basename);
+					},
+					exclude: p.exclude
+				})({
+					unknownFileType: function(e) {
+						events.fire("unknownFileType", e.detail);
+					}
+				}).forEach(function(entry) {
+					var code = entry.file.read(String);
+					var check = checkSingleFinalNewline(code);
+					if (check.missing) events.fire("missing", entry);
+					if (check.multiple) events.fire("multiple", entry);
+					if (!p.nowrite && (check.missing || check.multiple)) {
+						entry.file.pathname.write(check.fixed, { append: false });
+					}
+				});
+			});
+		}
+
 		$export({
 			filename: filename,
 			directory: directory,
@@ -263,7 +309,9 @@
 			getSourceFiles: getSourceFiles,
 			handleFileTrailingWhitespace: handleFileTrailingWhitespace,
 			scanForTrailingWhitespace: findTrailingWhitespaceIn,
-			handleTrailingWhitespace: trailingWhitespace
+			handleTrailingWhitespace: trailingWhitespace,
+			checkSingleFinalNewline: checkSingleFinalNewline,
+			handleFinalNewlines: handleFinalNewlines
 		})
 	}
 //@ts-ignore

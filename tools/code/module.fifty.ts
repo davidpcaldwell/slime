@@ -34,7 +34,7 @@ namespace slime.tools.code {
 		unknownFileType: slime.tools.code.File
 	}
 
-	export interface CodeEvents {
+	export interface TrailingWhitespaceEvents {
 		foundIn: slime.tools.code.File
 		notFoundIn: slime.tools.code.File
 		foundAt: {
@@ -44,6 +44,11 @@ namespace slime.tools.code {
 				content: string
 			}
 		}
+	}
+
+	export interface FinalNewlineEvents {
+		missing: slime.tools.code.File
+		multiple: slime.tools.code.File
 	}
 
 	export interface Excludes {
@@ -76,6 +81,12 @@ namespace slime.tools.code {
 			}[]
 		}
 
+		checkSingleFinalNewline: (code: string) => {
+			missing: boolean
+			multiple: boolean
+			fixed: string
+		}
+
 		getSourceFiles: (p: {
 			base: slime.jrunscript.file.Directory
 			isText?: isText
@@ -87,14 +98,21 @@ namespace slime.tools.code {
 
 		handleFileTrailingWhitespace: (configuration?: {
 			nowrite?: boolean
-		}) => (file: slime.tools.code.File) => slime.$api.fp.impure.Tell<CodeEvents>
+		}) => (file: slime.tools.code.File) => slime.$api.fp.impure.Tell<TrailingWhitespaceEvents>
 
 		handleTrailingWhitespace: (p: {
 			base: slime.jrunscript.file.Directory
 			exclude?: Excludes
 			isText?: isText
 			nowrite?: boolean
-		}) => slime.$api.fp.impure.Tell<FileEvents & CodeEvents>
+		}) => slime.$api.fp.impure.Tell<FileEvents & TrailingWhitespaceEvents>
+
+		handleFinalNewlines: (p: {
+			base: slime.jrunscript.file.Directory
+			exclude?: Excludes
+			isText?: isText
+			nowrite?: boolean
+		}) => slime.$api.fp.impure.Tell<FileEvents & FinalNewlineEvents>
 	}
 
 	(
@@ -103,10 +121,35 @@ namespace slime.tools.code {
 		) {
 			const { verify } = fifty;
 
-			fifty.tests.suite = function() {
+			fifty.tests.filename = fifty.test.Parent();
+
+			fifty.tests.filename.isText = function() {
 				verify(test).subject.filename.isText("foo.txt").is(true);
 				verify(test).subject.filename.isText("foo.wav").is(false);
 				verify(test).subject.filename.isText("foo").is(void(0));
+			}
+
+			fifty.tests.checkSingleFinalNewline = function() {
+				verify(test).subject.checkSingleFinalNewline("foo\n").missing.is(false);
+				verify(test).subject.checkSingleFinalNewline("foo\n").multiple.is(false);
+				verify(test).subject.checkSingleFinalNewline("foo\n").fixed.is("foo\n");
+
+				verify(test).subject.checkSingleFinalNewline("foo\n\n").missing.is(false);
+				verify(test).subject.checkSingleFinalNewline("foo\n\n").multiple.is(true);
+				verify(test).subject.checkSingleFinalNewline("foo\n\n").fixed.is("foo\n");
+
+				verify(test).subject.checkSingleFinalNewline("foo\n\n\n\n").missing.is(false);
+				verify(test).subject.checkSingleFinalNewline("foo\n\n\n\n").multiple.is(true);
+				verify(test).subject.checkSingleFinalNewline("foo\n\n\n\n").fixed.is("foo\n");
+
+				verify(test).subject.checkSingleFinalNewline("foo").missing.is(true);
+				verify(test).subject.checkSingleFinalNewline("foo").multiple.is(false);
+				verify(test).subject.checkSingleFinalNewline("foo").fixed.is("foo\n");
+			}
+
+			fifty.tests.suite = function() {
+				fifty.run(fifty.tests.filename);
+				fifty.run(fifty.tests.checkSingleFinalNewline);
 			}
 		}
 	//@ts-ignore
