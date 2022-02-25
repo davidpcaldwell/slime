@@ -37,4 +37,3 @@ jsh.shell.run({
 		JSH_JAVA_HOME: JSH_JAVA_HOME
 	})
 });
-

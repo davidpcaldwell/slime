@@ -68,4 +68,3 @@ namespace slime.jrunscript.tools.homebrew {
 	//@ts-ignore
 	)(fifty);
 }
-

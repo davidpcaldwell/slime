@@ -9,4 +9,3 @@ var line = jsh.shell.stdin.character().readLines(function(line) {
 	return line;
 });
 jsh.shell.echo("typed line [" + line + "]; should now exit.");
-

@@ -212,4 +212,3 @@
 	}
 //@ts-ignore
 )(Packages,JavaAdapter,$context,$export);
-

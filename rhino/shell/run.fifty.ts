@@ -200,4 +200,3 @@ namespace slime.jrunscript.shell.internal.run {
 	//@ts-ignore
 	)(fifty);
 }
-

@@ -522,4 +522,3 @@ namespace slime.web {
 namespace slime.web {
 	export type Script = slime.loader.Script<Context,Exports>
 }
-

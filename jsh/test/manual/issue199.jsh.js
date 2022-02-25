@@ -25,4 +25,3 @@ jsh.java.Thread.start(function() {
 jsh.java.Thread.start(function() {
 	emitStringSlowly("abcdefghijklmnoprstuvwxyz", jsh.shell.stdio.error);
 });
-

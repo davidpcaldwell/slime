@@ -13,4 +13,3 @@ $exports.handle = (request) ->
 		return httpd.http.Response.text String(coffee.a)
 	if request.path is "cup/file/b"
 		return httpd.http.Response.text String(cup.file.b)
-

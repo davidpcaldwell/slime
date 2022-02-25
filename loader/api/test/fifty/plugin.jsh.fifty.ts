@@ -18,4 +18,3 @@ namespace slime.jsh {
 		$fifty: slime.jsh.$fifty.Exports
 	}
 }
-

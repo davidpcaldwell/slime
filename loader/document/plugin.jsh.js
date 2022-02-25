@@ -38,4 +38,3 @@
 	}
 //@ts-ignore
 )($slime,jsh,$loader,plugin);
-

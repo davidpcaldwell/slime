@@ -16,4 +16,3 @@ try {
 	jsh.shell.echo("message: " + e.message);
 	jsh.shell.echo("stack: " + e.stack);
 }
-

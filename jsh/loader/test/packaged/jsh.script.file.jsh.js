@@ -9,4 +9,3 @@ jsh.shell.echo(JSON.stringify({
 	file: jsh.script.file.toString(),
 	resolved: jsh.script.file.pathname.file.toString()
 }));
-

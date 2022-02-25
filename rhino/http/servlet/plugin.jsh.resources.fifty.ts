@@ -104,7 +104,7 @@ namespace slime.jsh.httpd {
 					verify(one).loader.Child("WEB-INF/").list()[1].path.is("mozilla");
 					verify(one).loader.Child("WEB-INF/").list()[2].path.is("test");
 					verify(one).loader.file("WEB-INF/test/1.file.js").is.not(null);
-					verify(one).loader.get("WEB-INF/test/1.txt").evaluate(read).is("1");
+					verify(one).loader.get("WEB-INF/test/1.txt").evaluate(read).is("1\n");
 				},
 				resources: function() {
 					var verify = fifty.verify;

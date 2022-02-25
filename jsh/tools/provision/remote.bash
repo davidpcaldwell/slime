@@ -85,4 +85,3 @@ else
 	>&2 echo "Required: \$INONIT_PROVISION_SCRIPT_BASH or \$INONIT_PROVISION_SCRIPT_JSH"
 	exit 1
 fi
-
