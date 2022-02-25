@@ -203,20 +203,8 @@ namespace slime.jsh.wf {
 			) {
 				var jsh = fifty.global.jsh;
 
-				var fixIteratorResult = function(repository: slime.jrunscript.git.repository.Local) {
-					//	Unknown why adding this declaration is necessary in this scenario
-					var lib = repository.directory.getRelativePath("slime/loader/lib.fifty.ts");
-					var code = lib.file.read(String);
-					code += "\n" + "type IteratorResult<T, TReturn = any> = IteratorYieldResult<T> | IteratorReturnResult<TReturn>";
-					lib.write(code, { append: false });
-				};
-
-				//	We essentially need to "export" this because we need it for the commit tests also
-				fifty.tests.fixIteratorResult = fixIteratorResult;
-
 				fifty.tests.interface.tsc = function() {
 					var repository = test.fixtures.project();
-					fixIteratorResult(repository);
 
 					var tscresult = jsh.shell.run({
 						command: test.fixtures.wf,
@@ -242,7 +230,6 @@ namespace slime.jsh.wf {
 
 					fifty.run(function tscfail() {
 						var repository = test.fixtures.project();
-						fixIteratorResult(repository);
 
 						var tsc = function(environment?) {
 							var result = jsh.shell.run({
@@ -328,18 +315,6 @@ namespace slime.jsh.wf {
 
 				fifty.tests.interface.commit = function() {
 					var repository = test.fixtures.project();
-
-					fifty.tests.fixIteratorResult(repository);
-					var r0c: { status: number } = jsh.shell.run({
-						command: "git",
-						arguments: ["commit", "-a", "--message", "0c"],
-						directory: repository.directory.getSubdirectory("slime")
-					});
-					var r0p: { status: number } = jsh.shell.run({
-						command: "git",
-						arguments: ["commit", "-a", "--message", "0p"],
-						directory: repository.directory
-					});
 
 					var environment = {};
 

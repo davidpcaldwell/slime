@@ -10,5 +10,11 @@
 		"loader/api/tools/snippets",
 		"jsh/tools/test/foo.ts",
 		//	"**/*.jsh.js"
-	]
+	],
+	"compilerOptions": {
+		"lib": [
+			"ES5",
+			"DOM"
+		]
+	}
 }
