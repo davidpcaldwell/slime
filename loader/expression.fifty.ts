@@ -133,6 +133,15 @@ namespace slime {
 	 * [Older documentation](src/loader/api.html)
 	 */
 	export namespace runtime {
+		(
+			function(
+				fifty: slime.fifty.test.kit
+			) {
+				fifty.tests.runtime = {};
+			}
+		//@ts-ignore
+		)(fifty);
+
 		export interface Scope {
 			$engine: slime.runtime.$engine | undefined
 			$slime: slime.runtime.$slime.Deployment
@@ -191,6 +200,17 @@ namespace slime {
 					[name: string]: string
 				}
 			}
+
+			(
+				function(
+					fifty: slime.fifty.test.kit
+				) {
+					fifty.tests.runtime.$slime = function() {
+
+					}
+				}
+			//@ts-ignore
+			)(fifty);
 		}
 
 		/**
@@ -523,18 +543,6 @@ namespace slime {
 			java: any
 		}
 
-		(
-			function(fifty: slime.fifty.test.kit) {
-				fifty.tests.runtime = {
-					exports: {}
-				};
-				fifty.tests.runtime.types = {
-					exports: {}
-				};
-			}
-		//@ts-ignore
-		)(fifty);
-
 		export namespace test {
 			export const subject: slime.runtime.Exports = (function(fifty: slime.fifty.test.kit) {
 				return fifty.$loader.module("fixtures.ts").subject;
@@ -555,6 +563,9 @@ namespace slime {
 		 * `module()` method of the `Loader`.
 		 */
 		export interface Exports {
+			/**
+			 * Creates a *Loader*. A Loader loads resources from a specified source.
+			 */
 			Loader: internal.loader.Constructor & {
 				/** @deprecated Use `loader.source` */
 				source: {
@@ -620,6 +631,7 @@ namespace slime.test {
 		fifty: slime.fifty.test.kit
 	) {
 		tests.suite = function() {
+			fifty.run(fifty.tests.runtime.$slime);
 			fifty.run(fifty.tests.exports.Resource);
 			fifty.load("mime.fifty.ts");
 			fifty.load("$api-Function.fifty.ts");

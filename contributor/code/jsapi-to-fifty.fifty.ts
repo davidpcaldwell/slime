@@ -8,8 +8,50 @@ namespace slime.project.jsapi {
 	export interface Context {
 	}
 
+	export namespace test {
+		export const subject = (
+			function(fifty: slime.fifty.test.kit) {
+				var script: Script = fifty.$loader.script("jsapi-to-fifty.js");
+				var subject = script();
+				return subject;
+			}
+		//@ts-ignore
+		)(fifty);
+	}
+
 	export interface Format {
 	}
+
+	export interface Exports {
+		test: {
+			prefix: (line: string) => string
+			text: (comment: string) => string
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.kit
+		) {
+			const { verify } = fifty;
+			const subject = test.subject;
+
+			fifty.tests.prefix = function() {
+				verify(subject).test.prefix("\t\t\t *").is("\t\t\t * ");
+				verify(subject).test.prefix("\t\t\t/**").is("\t\t\t * ");
+			}
+
+			fifty.tests.wrap = function() {
+				var lines = [
+					"\t\t\t * foo bar",
+					"\t\t\t\t\tyou"
+				];
+				verify(subject).test.text(lines.join("\n")).is("foo bar you");
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
 
 	export interface Exports {
 		comment: (p: Format) => (input: string) => string
@@ -76,7 +118,17 @@ namespace slime.project.jsapi {
 				return rv;
 			}
 
+			fifty.tests.next = function() {
+				var tests = parseTestData(fifty.$loader.get("test/jsapi-to-fifty-next.txt").read(String));
+				tests.forEach(function(test) {
+					var result = subject.comment(test.configuration)(test.input);
+					verify(result,"result").is(test.expected);
+				});
+			}
+
 			fifty.tests.suite = function() {
+				fifty.run(fifty.tests.prefix);
+				fifty.run(fifty.tests.wrap);
 				var tests = parseTestData(fifty.$loader.get("test/jsapi-to-fifty.txt").read(String));
 				tests.forEach(function(test) {
 					var result = subject.comment(test.configuration)(test.input);

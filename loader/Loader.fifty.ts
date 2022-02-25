@@ -21,8 +21,8 @@ namespace slime {
 		script: <C,E>(path: string) => loader.Script<C,E>
 
 		thread?: {
-			get: (path: string) => Promise<Resource>
-			module: (path: string, $context?: any, target?: any) => Promise<any>
+			get: (path: string) => PromiseLike<Resource>
+			module: (path: string, $context?: any, target?: any) => PromiseLike<any>
 		}
 
 		/** @deprecated Replaced by `script`. */
@@ -44,7 +44,7 @@ namespace slime {
 
 		export interface Script<C,E> {
 			(c?: C): E
-			thread: (c?: C) => Promise<E>
+			thread: (c?: C) => PromiseLike<E>
 		}
 
 		/** @deprecated Replaced by {@link Script}. */
@@ -56,6 +56,17 @@ namespace slime {
 		 * An object that provides the implementation for a {@link Loader}.
 		 */
 		export interface Source {
+			/**
+			 * Provides the `toString` for the created Loader by default.
+			 */
+			toString?(): string
+
+			/**
+			 * Retrieves a resource.
+			 *
+			 * @param path The path from which to load a resource.
+			 * @returns The resource at the given path, or `null` if there is none.
+			 */
 			get?: (path: string) => resource.Descriptor
 
 			list?: (path: string) => {
@@ -65,11 +76,12 @@ namespace slime {
 			}[]
 
 			thread?: {
-				get: (path: string) => Promise<resource.Descriptor>
+				get: (path: string) => PromiseLike<resource.Descriptor>
 			}
 
 			/**
-			 * Allows the loader to customize the way child sources are created when creating child loaders.
+			 * Allows the loader to customize the way child sources are created when creating child loaders. if omitted, a child that delegates requests back to the parent, prepended by the
+									child's path, will be created
 			 */
 			child?: (prefix: string) => Source
 

@@ -13,7 +13,7 @@ namespace slime.promise {
 	export interface Export {
 		/** @deprecated */
 		Promise: PromiseConstructor & {
-			new (p: { delegate: any, target: any }): Promise<any>
+			new (p: { delegate: any, target: any }): PromiseLike<any>
 		}
 		/** @deprecated */
 		Controlled: any

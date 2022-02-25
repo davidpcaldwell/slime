@@ -43,43 +43,15 @@ END LICENSE
 			<ul>
 				<li class="constructor" jsapi:id="Loader">
 					<div class="name"><a name="exports.Loader">Loader</a></div>
-					<span>Creates a <i>Loader</i>. A Loader loads resources from a specified source.</span>
 					<div class="type">
 						<a class="type" name="types.Loader.source">source</a>
-						<span>__DESCRIPTION__</span>
 						<div class="label">has properties:</div>
 						<ul>
-							<li class="function">
-								<div class="name">toString</div>
-								<span>
-									(optional)
-									Provides the <code>toString</code> for the created Loader by default.
-								</span>
-							</li>
-							<li class="function">
-								<div class="name">get</div>
-								<span>Retrieves a resource.</span>
-								<div class="arguments">
-									<div class="label">Arguments</div>
-									<ol>
-										<li class="value">
-											<span class="type">string</span>
-											<span>The path from which to load a resource.</span>
-										</li>
-									</ol>
-								</div>
-								<div class="returns">
-									<div class="label">Returns</div>
-									<span class="type"><a href="#types.Loader.resource">resource</a></span>
-									<span>The resource at the given path, or <code>null</code> if there is none.</span>
-								</div>
-							</li>
 							<li class="function">
 								<div class="name">child</div>
 								<span>
 									(optional; if omitted, a child that delegates requests back to the parent, prepended by the
 									child's path, will be created)
-									A factory method that this loader implementation can use to create its own child implementations.
 								</span>
 								<div class="arguments">
 									<div class="label">Arguments</div>
