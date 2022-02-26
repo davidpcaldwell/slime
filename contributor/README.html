@@ -613,6 +613,18 @@ END LICENSE
 					</p>
 				</div>
 			</div>
+			<div>
+				<h3>GitHub</h3>
+				<p>
+					SLIME uses the GitHub REST API and so incorporates its type definitions. These definitions are available on the
+					web as OpenAPI definitions at
+					<a href="https://raw.githubusercontent.com/github/rest-api-description/main/descriptions/api.github.com/api.github.com.json">https://raw.githubusercontent.com/github/rest-api-description/main/descriptions/api.github.com/api.github.com.json</a>.
+					They are converted to TypeScript definitions using
+					<a href="https://www.npmjs.com/package/dtsgenerator">dtsgenerator</a>, and stored directly in the SLIME source
+					tree. They can be updated via:
+					<pre><code>./jsh.bash rhino/tools/github/tools/types.jsh.js</code></pre>
+				</p>
+			</div>
 		</div>
 		<div>
 			<h2>Writing Code</h2>

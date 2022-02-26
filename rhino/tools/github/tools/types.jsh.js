@@ -30,11 +30,15 @@
 		}
 
 		if (isInstallation(node)) {
+			var config = jsh.shell.TMPDIR.createTemporary({ suffix: ".json" });
+			var src = SLIME.getRelativePath("rhino/tools/github/tools/dtsgen.json").file.read(String);
+			src = src.split("\n").slice(6).join("\n");
+			config.pathname.write(src, { append: false });
 			node.run({
 				command: "dtsgen",
 				arguments: $api.Array.build(function(rv) {
 					rv.push("--url", "https://raw.githubusercontent.com/github/rest-api-description/main/descriptions/api.github.com/api.github.com.json");
-					rv.push("--config", SLIME.getRelativePath("rhino/tools/github/tools/dtsgen.json"));
+					rv.push("--config", config);
 					rv.push("--out", SLIME.getRelativePath("rhino/tools/github/tools/github-rest.d.ts"));
 				})
 			});

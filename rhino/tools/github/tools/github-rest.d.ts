@@ -44,6 +44,7 @@ declare namespace slime.external.github.rest.components {
         export type EnvironmentName = string;
         export type Event = string;
         export type ExcludePullRequests = boolean;
+        export type ExportId = string;
         export type GistId = string;
         export type GitRef = /**
          * The full Git reference, formatted as `refs/heads/<branch name>`,
@@ -71,6 +72,8 @@ declare namespace slime.external.github.rest.components {
         export type PackageVersionId = number;
         export type PackageVisibility = "public" | "private" | "internal";
         export type Page = number;
+        export type PaginationAfter = string;
+        export type PaginationBefore = string;
         export type Participating = boolean;
         export type Per = "" | "day" | "week";
         export type PerPage = number;
@@ -109,6 +112,7 @@ declare namespace slime.external.github.rest.components {
         export type Username = string;
         export type WorkflowId = number | string;
         export type WorkflowRunBranch = string;
+        export type WorkflowRunCheckSuiteId = number;
         export type WorkflowRunStatus = "completed" | "action_required" | "cancelled" | "failure" | "neutral" | "skipped" | "stale" | "success" | "timed_out" | "in_progress" | "queued" | "requested" | "waiting";
     }
     export interface PathParameters {
@@ -131,6 +135,7 @@ declare namespace slime.external.github.rest.components {
         repo: Parameters.Repo;
         "thread-id"?: Parameters.ThreadId;
         org: Parameters.Org;
+        "team-slug"?: Parameters.TeamSlug;
         "repository-id"?: Parameters.RepositoryId;
         "secret-name"?: Parameters.SecretName;
         username: Parameters.Username;
@@ -142,7 +147,6 @@ declare namespace slime.external.github.rest.components {
         "package-type"?: Parameters.PackageType;
         "package-name"?: Parameters.PackageName;
         "package-version-id"?: Parameters.PackageVersionId;
-        "team-slug"?: Parameters.TeamSlug;
         "discussion-number"?: Parameters.DiscussionNumber;
         "comment-number"?: Parameters.CommentNumber;
         "reaction-id"?: Parameters.ReactionId;
@@ -173,6 +177,7 @@ declare namespace slime.external.github.rest.components {
         "scim-user-id"?: Parameters.ScimUserId;
         "team-id"?: Parameters.TeamId;
         "codespace-name"?: Parameters.CodespaceName;
+        "export-id"?: Parameters.ExportId;
         "gpg-key-id"?: Parameters.GpgKeyId;
     }
     export interface QueryParameters {
@@ -185,6 +190,11 @@ declare namespace slime.external.github.rest.components {
         "audit-log-after"?: Parameters.AuditLogAfter;
         "audit-log-before"?: Parameters.AuditLogBefore;
         "audit-log-order"?: Parameters.AuditLogOrder;
+        "secret-scanning-alert-state"?: Parameters.SecretScanningAlertState;
+        "secret-scanning-alert-secret-type"?: Parameters.SecretScanningAlertSecretType;
+        "secret-scanning-alert-resolution"?: Parameters.SecretScanningAlertResolution;
+        "pagination-before"?: Parameters.PaginationBefore;
+        "pagination-after"?: Parameters.PaginationAfter;
         labels?: Parameters.Labels;
         direction?: Parameters.Direction;
         sort?: Parameters.Sort;
@@ -193,15 +203,13 @@ declare namespace slime.external.github.rest.components {
         before?: Parameters.Before /* date-time */;
         "since-org"?: Parameters.SinceOrg;
         "package-visibility"?: Parameters.PackageVisibility;
-        "secret-scanning-alert-state"?: Parameters.SecretScanningAlertState;
-        "secret-scanning-alert-secret-type"?: Parameters.SecretScanningAlertSecretType;
-        "secret-scanning-alert-resolution"?: Parameters.SecretScanningAlertResolution;
         actor?: Parameters.Actor;
         "workflow-run-branch"?: Parameters.WorkflowRunBranch;
         event?: Parameters.Event;
         "workflow-run-status"?: Parameters.WorkflowRunStatus;
         created?: Parameters.Created /* date-time */;
         "exclude-pull-requests"?: Parameters.ExcludePullRequests;
+        "workflow-run-check-suite-id"?: Parameters.WorkflowRunCheckSuiteId;
         "check-name"?: Parameters.CheckName;
         status?: Parameters.Status;
         "tool-name"?: Parameters.ToolName;
@@ -379,6 +387,14 @@ declare namespace slime.external.github.rest.components {
             };
         }
         /**
+         * Whether GitHub Actions can submit approving pull request reviews.
+         */
+        export type ActionsCanApprovePullRequestReviews = boolean;
+        /**
+         * The default workflow permissions granted to the GITHUB_TOKEN when running workflows in an organization.
+         */
+        export type ActionsDefaultWorkflowPermissions = "read" | "write";
+        /**
          * Whether GitHub Actions is enabled on the repository.
          */
         export type ActionsEnabled = boolean;
@@ -390,6 +406,10 @@ declare namespace slime.external.github.rest.components {
             selected_organizations_url?: string;
             allowed_actions?: /* The permissions policy that controls the actions that are allowed to run. Can be one of: `all`, `local_only`, or `selected`. */ AllowedActions;
             selected_actions_url?: /* The API URL to use to get or set the actions that are allowed to run, when `allowed_actions` is set to `selected`. */ SelectedActionsUrl;
+        }
+        export interface ActionsGetDefaultWorkflowPermissions {
+            default_workflow_permissions: /* The default workflow permissions granted to the GITHUB_TOKEN when running workflows in an organization. */ ActionsDefaultWorkflowPermissions;
+            can_approve_pull_request_reviews: /* Whether GitHub Actions can submit approving pull request reviews. */ ActionsCanApprovePullRequestReviews;
         }
         export interface ActionsOrganizationPermissions {
             enabled_repositories: /* The policy that controls the repositories in the organization that are allowed to run GitHub Actions. Can be one of: `all`, `none`, or `selected`. */ EnabledRepositories;
@@ -456,6 +476,10 @@ declare namespace slime.external.github.rest.components {
             name: string;
             created_at: string; // date-time
             updated_at: string; // date-time
+        }
+        export interface ActionsSetDefaultWorkflowPermissions {
+            default_workflow_permissions?: /* The default workflow permissions granted to the GITHUB_TOKEN when running workflows in an organization. */ ActionsDefaultWorkflowPermissions;
+            can_approve_pull_request_reviews?: /* Whether GitHub Actions can submit approving pull request reviews. */ ActionsCanApprovePullRequestReviews;
         }
         /**
          * Actor
@@ -573,6 +597,13 @@ declare namespace slime.external.github.rest.components {
                 SHA256_ECDSA?: string;
                 SHA256_ED25519?: string;
             };
+            /**
+             * example:
+             * [
+             *   "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl"
+             * ]
+             */
+            ssh_keys?: string[];
             /**
              * example:
              * [
@@ -1916,6 +1947,10 @@ declare namespace slime.external.github.rest.components {
              */
             name?: string;
             /**
+             * A set of tags applicable for the rule.
+             */
+            tags?: string[] | null;
+            /**
              * The severity of the alert.
              */
             severity?: "none" | "note" | "warning" | "error";
@@ -2041,6 +2076,31 @@ declare namespace slime.external.github.rest.components {
          * The REST API URL of the analysis resource.
          */
         export type CodeScanningAnalysisUrl = string; // uri
+        export interface CodeScanningOrganizationAlertItems {
+            number: /* The security alert number. */ AlertNumber;
+            created_at: /* The time that the alert was created in ISO 8601 format: `YYYY-MM-DDTHH:MM:SSZ`. */ AlertCreatedAt /* date-time */;
+            updated_at?: /* The time that the alert was last updated in ISO 8601 format: `YYYY-MM-DDTHH:MM:SSZ`. */ AlertUpdatedAt /* date-time */;
+            url: /* The REST API URL of the alert resource. */ AlertUrl /* uri */;
+            html_url: /* The GitHub URL of the alert resource. */ AlertHtmlUrl /* uri */;
+            instances_url: /* The REST API URL for fetching the list of instances for an alert. */ AlertInstancesUrl /* uri */;
+            state: /* State of a code scanning alert. */ CodeScanningAlertState;
+            fixed_at?: /* The time that the alert was no longer detected and was considered fixed in ISO 8601 format: `YYYY-MM-DDTHH:MM:SSZ`. */ CodeScanningAlertFixedAt /* date-time */;
+            dismissed_by: /**
+             * Simple User
+             * Simple User
+             */
+            NullableSimpleUser;
+            dismissed_at: /* The time that the alert was dismissed in ISO 8601 format: `YYYY-MM-DDTHH:MM:SSZ`. */ CodeScanningAlertDismissedAt /* date-time */;
+            dismissed_reason: /* **Required when the state is dismissed.** The reason for dismissing or closing the alert. Can be one of: `false positive`, `won't fix`, and `used in tests`. */ CodeScanningAlertDismissedReason;
+            rule: CodeScanningAlertRule;
+            tool: CodeScanningAnalysisTool;
+            most_recent_instance: CodeScanningAlertInstance;
+            repository: /**
+             * Minimal Repository
+             * Minimal Repository
+             */
+            MinimalRepository;
+        }
         /**
          * The full Git reference, formatted as `refs/heads/<branch name>`,
          * `refs/pull/<number>/merge`, or `refs/pull/<number>/head`.
@@ -2103,6 +2163,59 @@ declare namespace slime.external.github.rest.components {
             text_matches?: /* Search Result Text Matches */ SearchResultTextMatches;
         }
         /**
+         * CODEOWNERS errors
+         * A list of errors found in a repo's CODEOWNERS file
+         */
+        export interface CodeownersErrors {
+            errors: {
+                /**
+                 * The line number where this errors occurs.
+                 * example:
+                 * 7
+                 */
+                line: number;
+                /**
+                 * The column number where this errors occurs.
+                 * example:
+                 * 3
+                 */
+                column: number;
+                /**
+                 * The contents of the line where the error occurs.
+                 * example:
+                 * * user
+                 */
+                source?: string;
+                /**
+                 * The type of error.
+                 * example:
+                 * Invalid owner
+                 */
+                kind: string;
+                /**
+                 * Suggested action to fix the error. This will usually be `null`, but is provided for some common errors.
+                 * example:
+                 * The pattern `/` will never match anything, did you mean `*` instead?
+                 */
+                suggestion?: string | null;
+                /**
+                 * A human-readable description of the error, combining information from multiple fields, laid out for display in a monospaced typeface (for example, a command-line setting).
+                 * example:
+                 * Invalid owner on line 7:
+                 *
+                 *   * user
+                 *     ^
+                 */
+                message: string;
+                /**
+                 * The path of the file where the error occured.
+                 * example:
+                 * .github/CODEOWNERS
+                 */
+                path: string;
+            }[];
+        }
+        /**
          * Codespace
          * A codespace.
          */
@@ -2118,6 +2231,12 @@ declare namespace slime.external.github.rest.components {
              * monalisa-octocat-hello-world-g4wpq6h95q
              */
             name: string;
+            /**
+             * Display name for this codespace.
+             * example:
+             * bookish space pancake
+             */
+            display_name?: string | null;
             /**
              * UUID identifying this codespace's environment.
              * example:
@@ -2171,7 +2290,7 @@ declare namespace slime.external.github.rest.components {
              * example:
              * Available
              */
-            state: "None" | "Created" | "Queued" | "Provisioning" | "Available" | "Awaiting" | "Unavailable" | "Deleted" | "Moved" | "Shutdown" | "Archived" | "Starting" | "ShuttingDown" | "Failed" | "Exporting" | "Updating" | "Rebuilding";
+            state: "Unknown" | "Created" | "Queued" | "Provisioning" | "Available" | "Awaiting" | "Unavailable" | "Deleted" | "Moved" | "Shutdown" | "Archived" | "Starting" | "ShuttingDown" | "Failed" | "Exporting" | "Updating" | "Rebuilding";
             /**
              * API URL for this codespace.
              */
@@ -2246,6 +2365,48 @@ declare namespace slime.external.github.rest.components {
                  */
                 allowed_port_privacy_settings?: string[] | null;
             };
+        }
+        /**
+         * Fetches information about an export of a codespace.
+         * An export of a codespace. Also, latest export details for a codespace can be fetched with id = latest
+         */
+        export interface CodespaceExportDetails {
+            /**
+             * State of the latest export
+             * example:
+             * succeeded | failed | in_progress
+             */
+            state?: string | null;
+            /**
+             * Completion time of the last export operation
+             * example:
+             * 2021-01-01T19:01:12Z
+             */
+            completed_at?: string | null; // date-time
+            /**
+             * Name of the exported branch
+             * example:
+             * codespace-monalisa-octocat-hello-world-g4wpq6h95q
+             */
+            branch?: string | null;
+            /**
+             * Git commit SHA of the exported branch
+             * example:
+             * fd95a81ca01e48ede9f39c799ecbcef817b8a3b2
+             */
+            sha?: string | null;
+            /**
+             * Id for the export details
+             * example:
+             * latest
+             */
+            id?: string;
+            /**
+             * Url for fetching export details
+             * example:
+             * https://api.github.com/user/codespaces/:name/exports/latest
+             */
+            export_url?: string;
         }
         /**
          * Codespace machine
@@ -3164,6 +3325,38 @@ declare namespace slime.external.github.rest.components {
             milestone: {
                 title: string;
             };
+        }
+        /**
+         * DependabotPublicKey
+         * The public key used for setting Dependabot Secrets.
+         */
+        export interface DependabotPublicKey {
+            /**
+             * The identifier for the key.
+             * example:
+             * 1234567
+             */
+            key_id: string;
+            /**
+             * The Base64 encoded public key.
+             * example:
+             * hBT5WZEj8ZoOv6TYJsfWq7MxTEQopZO5/IT3ZCVQPzs=
+             */
+            key: string;
+        }
+        /**
+         * Dependabot Secret
+         * Set secrets for Dependabot.
+         */
+        export interface DependabotSecret {
+            /**
+             * The name of the secret.
+             * example:
+             * MY_ARTIFACTORY_PASSWORD
+             */
+            name: string;
+            created_at: string; // date-time
+            updated_at: string; // date-time
         }
         /**
          * Deploy Key
@@ -9244,6 +9437,29 @@ declare namespace slime.external.github.rest.components {
             name: string;
         }
         /**
+         * Dependabot Secret for an Organization
+         * Secrets for GitHub Dependabot for an organization.
+         */
+        export interface OrganizationDependabotSecret {
+            /**
+             * The name of the secret.
+             * example:
+             * SECRET_TOKEN
+             */
+            name: string;
+            created_at: string; // date-time
+            updated_at: string; // date-time
+            /**
+             * Visibility of a secret
+             */
+            visibility: "all" | "private" | "selected";
+            /**
+             * example:
+             * https://api.github.com/organizations/org/dependabot/secrets/my_secret/repositories
+             */
+            selected_repositories_url?: string; // uri
+        }
+        /**
          * Organization Full
          * Organization Full
          */
@@ -10485,6 +10701,18 @@ declare namespace slime.external.github.rest.components {
                      */
                     Team[];
                 };
+                bypass_pull_request_allowances?: {
+                    users: /**
+                     * Simple User
+                     * Simple User
+                     */
+                    SimpleUser[];
+                    teams: /**
+                     * Team
+                     * Groups of organization members that gives permissions on specified repositories.
+                     */
+                    Team[];
+                };
             };
             required_signatures?: {
                 /**
@@ -10579,6 +10807,27 @@ declare namespace slime.external.github.rest.components {
                  */
                 teams_url?: string;
             };
+            /**
+             * Allow specific users or teams to bypass pull request requirements. Set to `null` to disable.
+             */
+            bypass_pull_request_allowances?: {
+                /**
+                 * The list of users allowed to bypass pull request requirements.
+                 */
+                users?: /**
+                 * Simple User
+                 * Simple User
+                 */
+                SimpleUser[];
+                /**
+                 * The list of teams allowed to bypass pull request requirements.
+                 */
+                teams?: /**
+                 * Team
+                 * Groups of organization members that gives permissions on specified repositories.
+                 */
+                Team[];
+            } | null;
             /**
              * example:
              * true
@@ -16287,6 +16536,8 @@ declare namespace slime.external.github.rest.paths {
         namespace Responses {
             export interface $204 {
             }
+            export type $403 = slime.external.github.rest.components.Responses.Forbidden;
+            export type $500 = slime.external.github.rest.components.Responses.InternalError;
         }
     }
     namespace ActionsDisableSelectedRepositoryGithubActionsOrganization {
@@ -16436,6 +16687,14 @@ declare namespace slime.external.github.rest.paths {
              * Set secrets for GitHub Actions.
              */
             slime.external.github.rest.components.Schemas.ActionsSecret;
+        }
+    }
+    namespace ActionsGetGithubActionsDefaultWorkflowPermissionsOrganization {
+        namespace Parameters {
+            export type $0 = slime.external.github.rest.components.Parameters.Org;
+        }
+        namespace Responses {
+            export type $200 = slime.external.github.rest.components.Schemas.ActionsGetDefaultWorkflowPermissions;
         }
     }
     namespace ActionsGetGithubActionsPermissionsOrganization {
@@ -16980,6 +17239,7 @@ declare namespace slime.external.github.rest.paths {
             export type $0 = slime.external.github.rest.components.Parameters.Owner;
             export type $1 = slime.external.github.rest.components.Parameters.Repo;
             export type $10 = slime.external.github.rest.components.Parameters.ExcludePullRequests;
+            export type $11 = slime.external.github.rest.components.Parameters.WorkflowRunCheckSuiteId;
             export type $2 = slime.external.github.rest.components.Parameters.WorkflowId;
             export type $3 = slime.external.github.rest.components.Parameters.Actor;
             export type $4 = slime.external.github.rest.components.Parameters.WorkflowRunBranch;
@@ -17004,6 +17264,7 @@ declare namespace slime.external.github.rest.paths {
         namespace Parameters {
             export type $0 = slime.external.github.rest.components.Parameters.Owner;
             export type $1 = slime.external.github.rest.components.Parameters.Repo;
+            export type $10 = slime.external.github.rest.components.Parameters.WorkflowRunCheckSuiteId;
             export type $2 = slime.external.github.rest.components.Parameters.Actor;
             export type $3 = slime.external.github.rest.components.Parameters.WorkflowRunBranch;
             export type $4 = slime.external.github.rest.components.Parameters.Event;
@@ -17412,6 +17673,16 @@ declare namespace slime.external.github.rest.paths {
             export type $200 = slime.external.github.rest.components.Responses.ActionsRunnerLabels;
             export type $404 = slime.external.github.rest.components.Responses.NotFound;
             export type $422 = slime.external.github.rest.components.Responses.ValidationFailedSimple;
+        }
+    }
+    namespace ActionsSetGithubActionsDefaultWorkflowPermissionsOrganization {
+        namespace Parameters {
+            export type $0 = slime.external.github.rest.components.Parameters.Org;
+        }
+        export type RequestBody = slime.external.github.rest.components.Schemas.ActionsSetDefaultWorkflowPermissions;
+        namespace Responses {
+            export interface $204 {
+            }
         }
     }
     namespace ActionsSetGithubActionsPermissionsOrganization {
@@ -18919,7 +19190,7 @@ declare namespace slime.external.github.rest.paths {
                  */
                 text?: string;
                 /**
-                 * Adds information from your analysis to specific lines of code. Annotations are visible on GitHub in the **Checks** and **Files changed** tab of the pull request. The Checks API limits the number of annotations to a maximum of 50 per API request. To create more than 50 annotations, you have to make multiple requests to the [Update a check run](https://docs.github.com/rest/reference/checks#update-a-check-run) endpoint. Each time you update the check run, annotations are appended to the list of annotations that already exist for the check run. For details about how you can view annotations on GitHub, see "[About status checks](https://help.github.com/articles/about-status-checks#checks)". See the [`annotations` object](https://docs.github.com/rest/reference/checks#annotations-object) description for details about how to use this parameter.
+                 * Adds information from your analysis to specific lines of code. Annotations are visible on GitHub in the **Checks** and **Files changed** tab of the pull request. The Checks API limits the number of annotations to a maximum of 50 per API request. To create more than 50 annotations, you have to make multiple requests to the [Update a check run](https://docs.github.com/rest/reference/checks#update-a-check-run) endpoint. Each time you update the check run, annotations are appended to the list of annotations that already exist for the check run. For details about how you can view annotations on GitHub, see "[About status checks](https://docs.github.com/articles/about-status-checks#checks)". See the [`annotations` object](https://docs.github.com/rest/reference/checks#annotations-object) description for details about how to use this parameter.
                  */
                 annotations?: [
                     {
@@ -20940,7 +21211,7 @@ declare namespace slime.external.github.rest.paths {
                  */
                 text?: string;
                 /**
-                 * Adds information from your analysis to specific lines of code. Annotations are visible on GitHub in the **Checks** and **Files changed** tab of the pull request. The Checks API limits the number of annotations to a maximum of 50 per API request. To create more than 50 annotations, you have to make multiple requests to the [Update a check run](https://docs.github.com/rest/reference/checks#update-a-check-run) endpoint. Each time you update the check run, annotations are appended to the list of annotations that already exist for the check run. For details about how you can view annotations on GitHub, see "[About status checks](https://help.github.com/articles/about-status-checks#checks)". See the [`annotations` object](https://docs.github.com/rest/reference/checks#annotations-object) description for details about how to use this parameter.
+                 * Adds information from your analysis to specific lines of code. Annotations are visible on GitHub in the **Checks** and **Files changed** tab of the pull request. The Checks API limits the number of annotations to a maximum of 50 per API request. To create more than 50 annotations, you have to make multiple requests to the [Update a check run](https://docs.github.com/rest/reference/checks#update-a-check-run) endpoint. Each time you update the check run, annotations are appended to the list of annotations that already exist for the check run. For details about how you can view annotations on GitHub, see "[About status checks](https://docs.github.com/articles/about-status-checks#checks)". See the [`annotations` object](https://docs.github.com/rest/reference/checks#annotations-object) description for details about how to use this parameter.
                  */
                 annotations?: [
                     {
@@ -23183,7 +23454,7 @@ declare namespace slime.external.github.rest.paths {
                  */
                 text?: string;
                 /**
-                 * Adds information from your analysis to specific lines of code. Annotations are visible in GitHub's pull request UI. Annotations are visible in GitHub's pull request UI. The Checks API limits the number of annotations to a maximum of 50 per API request. To create more than 50 annotations, you have to make multiple requests to the [Update a check run](https://docs.github.com/rest/reference/checks#update-a-check-run) endpoint. Each time you update the check run, annotations are appended to the list of annotations that already exist for the check run. For details about annotations in the UI, see "[About status checks](https://help.github.com/articles/about-status-checks#checks)". See the [`annotations` object](https://docs.github.com/rest/reference/checks#annotations-object-1) description for details.
+                 * Adds information from your analysis to specific lines of code. Annotations are visible in GitHub's pull request UI. Annotations are visible in GitHub's pull request UI. The Checks API limits the number of annotations to a maximum of 50 per API request. To create more than 50 annotations, you have to make multiple requests to the [Update a check run](https://docs.github.com/rest/reference/checks#update-a-check-run) endpoint. Each time you update the check run, annotations are appended to the list of annotations that already exist for the check run. For details about annotations in the UI, see "[About status checks](https://docs.github.com/articles/about-status-checks#checks)". See the [`annotations` object](https://docs.github.com/rest/reference/checks#annotations-object-1) description for details.
                  */
                 annotations?: [
                     {
@@ -25200,7 +25471,7 @@ declare namespace slime.external.github.rest.paths {
                  */
                 text?: string;
                 /**
-                 * Adds information from your analysis to specific lines of code. Annotations are visible in GitHub's pull request UI. Annotations are visible in GitHub's pull request UI. The Checks API limits the number of annotations to a maximum of 50 per API request. To create more than 50 annotations, you have to make multiple requests to the [Update a check run](https://docs.github.com/rest/reference/checks#update-a-check-run) endpoint. Each time you update the check run, annotations are appended to the list of annotations that already exist for the check run. For details about annotations in the UI, see "[About status checks](https://help.github.com/articles/about-status-checks#checks)". See the [`annotations` object](https://docs.github.com/rest/reference/checks#annotations-object-1) description for details.
+                 * Adds information from your analysis to specific lines of code. Annotations are visible in GitHub's pull request UI. Annotations are visible in GitHub's pull request UI. The Checks API limits the number of annotations to a maximum of 50 per API request. To create more than 50 annotations, you have to make multiple requests to the [Update a check run](https://docs.github.com/rest/reference/checks#update-a-check-run) endpoint. Each time you update the check run, annotations are appended to the list of annotations that already exist for the check run. For details about annotations in the UI, see "[About status checks](https://docs.github.com/articles/about-status-checks#checks)". See the [`annotations` object](https://docs.github.com/rest/reference/checks#annotations-object-1) description for details.
                  */
                 annotations?: [
                     {
@@ -27266,6 +27537,28 @@ declare namespace slime.external.github.rest.paths {
             export type $503 = slime.external.github.rest.components.Responses.ServiceUnavailable;
         }
     }
+    namespace CodeScanningListAlertsForOrg {
+        namespace Parameters {
+            export type $0 = slime.external.github.rest.components.Parameters.Org;
+            export type $1 = slime.external.github.rest.components.Parameters.PaginationBefore;
+            export type $2 = slime.external.github.rest.components.Parameters.PaginationAfter;
+            export type $3 = slime.external.github.rest.components.Parameters.Page;
+            export type $4 = slime.external.github.rest.components.Parameters.PerPage;
+            export type $5 = slime.external.github.rest.components.Parameters.Direction;
+            export type Sort = "created" | "updated";
+            export type State = /* State of a code scanning alert. */ slime.external.github.rest.components.Schemas.CodeScanningAlertState;
+        }
+        export interface QueryParameters {
+            state?: Parameters.State;
+            sort?: Parameters.Sort;
+        }
+        namespace Responses {
+            export type $200 = slime.external.github.rest.components.Schemas.CodeScanningOrganizationAlertItems[];
+            export type $403 = slime.external.github.rest.components.Responses.CodeScanningForbiddenRead;
+            export type $404 = slime.external.github.rest.components.Responses.NotFound;
+            export type $503 = slime.external.github.rest.components.Responses.ServiceUnavailable;
+        }
+    }
     namespace CodeScanningListAlertsForRepo {
         namespace Parameters {
             export type $0 = slime.external.github.rest.components.Parameters.Owner;
@@ -27469,6 +27762,10 @@ declare namespace slime.external.github.rest.paths {
              * Time in minutes before codespace stops from inactivity
              */
             idle_timeout_minutes?: number;
+            /**
+             * Display name for this codespace
+             */
+            display_name?: string;
         } | {
             /**
              * Pull request number for this codespace
@@ -27566,6 +27863,10 @@ declare namespace slime.external.github.rest.paths {
              * Time in minutes before codespace stops from inactivity
              */
             idle_timeout_minutes?: number;
+            /**
+             * Display name for this codespace
+             */
+            display_name?: string;
         }
         namespace Responses {
             export type $201 = /**
@@ -27609,6 +27910,10 @@ declare namespace slime.external.github.rest.paths {
              * Time in minutes before codespace stops from inactivity
              */
             idle_timeout_minutes?: number;
+            /**
+             * Display name for this codespace
+             */
+            display_name?: string;
         }
         namespace Responses {
             export type $201 = /**
@@ -27646,6 +27951,37 @@ declare namespace slime.external.github.rest.paths {
         namespace Responses {
             export interface $204 {
             }
+        }
+    }
+    namespace CodespacesExportForAuthenticatedUser {
+        namespace Parameters {
+            export type $0 = slime.external.github.rest.components.Parameters.CodespaceName;
+        }
+        namespace Responses {
+            export type $202 = /**
+             * Fetches information about an export of a codespace.
+             * An export of a codespace. Also, latest export details for a codespace can be fetched with id = latest
+             */
+            slime.external.github.rest.components.Schemas.CodespaceExportDetails;
+            export type $401 = slime.external.github.rest.components.Responses.RequiresAuthentication;
+            export type $403 = slime.external.github.rest.components.Responses.Forbidden;
+            export type $404 = slime.external.github.rest.components.Responses.NotFound;
+            export type $422 = slime.external.github.rest.components.Responses.ValidationFailed;
+            export type $500 = slime.external.github.rest.components.Responses.InternalError;
+        }
+    }
+    namespace CodespacesGetExportDetailsForAuthenticatedUser {
+        namespace Parameters {
+            export type $0 = slime.external.github.rest.components.Parameters.CodespaceName;
+            export type $1 = slime.external.github.rest.components.Parameters.ExportId;
+        }
+        namespace Responses {
+            export type $200 = /**
+             * Fetches information about an export of a codespace.
+             * An export of a codespace. Also, latest export details for a codespace can be fetched with id = latest
+             */
+            slime.external.github.rest.components.Schemas.CodespaceExportDetails;
+            export type $404 = slime.external.github.rest.components.Responses.NotFound;
         }
     }
     namespace CodespacesGetForAuthenticatedUser {
@@ -27883,6 +28219,14 @@ declare namespace slime.external.github.rest.paths {
              * A valid machine to transition this codespace to.
              */
             machine?: string;
+            /**
+             * Display name for this codespace
+             */
+            display_name?: string;
+            /**
+             * Recently opened folders inside the codespace. It is currently used by the clients to determine the folder path to load the codespace in.
+             */
+            recent_folders?: string[];
         }
         namespace Responses {
             export type $200 = /**
@@ -27893,6 +28237,239 @@ declare namespace slime.external.github.rest.paths {
             export type $401 = slime.external.github.rest.components.Responses.RequiresAuthentication;
             export type $403 = slime.external.github.rest.components.Responses.Forbidden;
             export type $404 = slime.external.github.rest.components.Responses.NotFound;
+        }
+    }
+    namespace DependabotAddSelectedRepoToOrgSecret {
+        namespace Parameters {
+            export type $0 = slime.external.github.rest.components.Parameters.Org;
+            export type $1 = slime.external.github.rest.components.Parameters.SecretName;
+            export type RepositoryId = number;
+        }
+        export interface PathParameters {
+            repository_id: Parameters.RepositoryId;
+        }
+        namespace Responses {
+            export interface $204 {
+            }
+            export interface $409 {
+            }
+        }
+    }
+    namespace DependabotCreateOrUpdateOrgSecret {
+        namespace Parameters {
+            export type $0 = slime.external.github.rest.components.Parameters.Org;
+            export type $1 = slime.external.github.rest.components.Parameters.SecretName;
+        }
+        export interface RequestBody {
+            /**
+             * Value for your secret, encrypted with [LibSodium](https://libsodium.gitbook.io/doc/bindings_for_other_languages) using the public key retrieved from the [Get an organization public key](https://docs.github.com/rest/reference/dependabot#get-an-organization-public-key) endpoint.
+             */
+            encrypted_value?: string; // ^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{4})$
+            /**
+             * ID of the key you used to encrypt the secret.
+             */
+            key_id?: string;
+            /**
+             * Configures the access that repositories have to the organization secret. Can be one of:
+             * \- `all` - All repositories in an organization can access the secret.
+             * \- `private` - Private repositories in an organization can access the secret.
+             * \- `selected` - Only specific repositories can access the secret.
+             */
+            visibility: "all" | "private" | "selected";
+            /**
+             * An array of repository ids that can access the organization secret. You can only provide a list of repository ids when the `visibility` is set to `selected`. You can manage the list of selected repositories using the [List selected repositories for an organization secret](https://docs.github.com/rest/reference/dependabot#list-selected-repositories-for-an-organization-secret), [Set selected repositories for an organization secret](https://docs.github.com/rest/reference/dependabot#set-selected-repositories-for-an-organization-secret), and [Remove selected repository from an organization secret](https://docs.github.com/rest/reference/dependabot#remove-selected-repository-from-an-organization-secret) endpoints.
+             */
+            selected_repository_ids?: string[];
+        }
+        namespace Responses {
+            export type $201 = /**
+             * Empty Object
+             * An object without any properties.
+             */
+            slime.external.github.rest.components.Schemas.EmptyObject;
+            export interface $204 {
+            }
+        }
+    }
+    namespace DependabotCreateOrUpdateRepoSecret {
+        namespace Parameters {
+            export type $0 = slime.external.github.rest.components.Parameters.Owner;
+            export type $1 = slime.external.github.rest.components.Parameters.Repo;
+            export type $2 = slime.external.github.rest.components.Parameters.SecretName;
+        }
+        export interface RequestBody {
+            /**
+             * Value for your secret, encrypted with [LibSodium](https://libsodium.gitbook.io/doc/bindings_for_other_languages) using the public key retrieved from the [Get a repository public key](https://docs.github.com/rest/reference/dependabot#get-a-repository-public-key) endpoint.
+             */
+            encrypted_value?: string; // ^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{4})$
+            /**
+             * ID of the key you used to encrypt the secret.
+             */
+            key_id?: string;
+        }
+        namespace Responses {
+            export interface $201 {
+            }
+            export interface $204 {
+            }
+        }
+    }
+    namespace DependabotDeleteOrgSecret {
+        namespace Parameters {
+            export type $0 = slime.external.github.rest.components.Parameters.Org;
+            export type $1 = slime.external.github.rest.components.Parameters.SecretName;
+        }
+        namespace Responses {
+            export interface $204 {
+            }
+        }
+    }
+    namespace DependabotDeleteRepoSecret {
+        namespace Parameters {
+            export type $0 = slime.external.github.rest.components.Parameters.Owner;
+            export type $1 = slime.external.github.rest.components.Parameters.Repo;
+            export type $2 = slime.external.github.rest.components.Parameters.SecretName;
+        }
+        namespace Responses {
+            export interface $204 {
+            }
+        }
+    }
+    namespace DependabotGetOrgPublicKey {
+        namespace Parameters {
+            export type $0 = slime.external.github.rest.components.Parameters.Org;
+        }
+        namespace Responses {
+            export type $200 = /**
+             * DependabotPublicKey
+             * The public key used for setting Dependabot Secrets.
+             */
+            slime.external.github.rest.components.Schemas.DependabotPublicKey;
+        }
+    }
+    namespace DependabotGetOrgSecret {
+        namespace Parameters {
+            export type $0 = slime.external.github.rest.components.Parameters.Org;
+            export type $1 = slime.external.github.rest.components.Parameters.SecretName;
+        }
+        namespace Responses {
+            export type $200 = /**
+             * Dependabot Secret for an Organization
+             * Secrets for GitHub Dependabot for an organization.
+             */
+            slime.external.github.rest.components.Schemas.OrganizationDependabotSecret;
+        }
+    }
+    namespace DependabotGetRepoPublicKey {
+        namespace Parameters {
+            export type $0 = slime.external.github.rest.components.Parameters.Owner;
+            export type $1 = slime.external.github.rest.components.Parameters.Repo;
+        }
+        namespace Responses {
+            export type $200 = /**
+             * DependabotPublicKey
+             * The public key used for setting Dependabot Secrets.
+             */
+            slime.external.github.rest.components.Schemas.DependabotPublicKey;
+        }
+    }
+    namespace DependabotGetRepoSecret {
+        namespace Parameters {
+            export type $0 = slime.external.github.rest.components.Parameters.Owner;
+            export type $1 = slime.external.github.rest.components.Parameters.Repo;
+            export type $2 = slime.external.github.rest.components.Parameters.SecretName;
+        }
+        namespace Responses {
+            export type $200 = /**
+             * Dependabot Secret
+             * Set secrets for Dependabot.
+             */
+            slime.external.github.rest.components.Schemas.DependabotSecret;
+        }
+    }
+    namespace DependabotListOrgSecrets {
+        namespace Parameters {
+            export type $0 = slime.external.github.rest.components.Parameters.Org;
+            export type $1 = slime.external.github.rest.components.Parameters.PerPage;
+            export type $2 = slime.external.github.rest.components.Parameters.Page;
+        }
+        namespace Responses {
+            export interface $200 {
+                total_count: number;
+                secrets: /**
+                 * Dependabot Secret for an Organization
+                 * Secrets for GitHub Dependabot for an organization.
+                 */
+                slime.external.github.rest.components.Schemas.OrganizationDependabotSecret[];
+            }
+        }
+    }
+    namespace DependabotListRepoSecrets {
+        namespace Parameters {
+            export type $0 = slime.external.github.rest.components.Parameters.Owner;
+            export type $1 = slime.external.github.rest.components.Parameters.Repo;
+            export type $2 = slime.external.github.rest.components.Parameters.PerPage;
+            export type $3 = slime.external.github.rest.components.Parameters.Page;
+        }
+        namespace Responses {
+            export interface $200 {
+                total_count: number;
+                secrets: /**
+                 * Dependabot Secret
+                 * Set secrets for Dependabot.
+                 */
+                slime.external.github.rest.components.Schemas.DependabotSecret[];
+            }
+        }
+    }
+    namespace DependabotListSelectedReposForOrgSecret {
+        namespace Parameters {
+            export type $0 = slime.external.github.rest.components.Parameters.Org;
+            export type $1 = slime.external.github.rest.components.Parameters.SecretName;
+            export type $2 = slime.external.github.rest.components.Parameters.Page;
+            export type $3 = slime.external.github.rest.components.Parameters.PerPage;
+        }
+        namespace Responses {
+            export interface $200 {
+                total_count: number;
+                repositories: /**
+                 * Minimal Repository
+                 * Minimal Repository
+                 */
+                slime.external.github.rest.components.Schemas.MinimalRepository[];
+            }
+        }
+    }
+    namespace DependabotRemoveSelectedRepoFromOrgSecret {
+        namespace Parameters {
+            export type $0 = slime.external.github.rest.components.Parameters.Org;
+            export type $1 = slime.external.github.rest.components.Parameters.SecretName;
+            export type RepositoryId = number;
+        }
+        export interface PathParameters {
+            repository_id: Parameters.RepositoryId;
+        }
+        namespace Responses {
+            export interface $204 {
+            }
+            export interface $409 {
+            }
+        }
+    }
+    namespace DependabotSetSelectedReposForOrgSecret {
+        namespace Parameters {
+            export type $0 = slime.external.github.rest.components.Parameters.Org;
+            export type $1 = slime.external.github.rest.components.Parameters.SecretName;
+        }
+        export interface RequestBody {
+            /**
+             * An array of repository ids that can access the organization secret. You can only provide a list of repository ids when the `visibility` is set to `selected`. You can add and remove individual repositories using the [Set selected repositories for an organization secret](https://docs.github.com/rest/reference/dependabot#set-selected-repositories-for-an-organization-secret) and [Remove selected repository from an organization secret](https://docs.github.com/rest/reference/dependabot#remove-selected-repository-from-an-organization-secret) endpoints.
+             */
+            selected_repository_ids: number[];
+        }
+        namespace Responses {
+            export interface $204 {
+            }
         }
     }
     namespace EmojisGet {
@@ -29897,7 +30474,7 @@ declare namespace slime.external.github.rest.paths {
         }
         export type RequestBody = {
             /**
-             * The names of the labels to add to the issue. You can pass an empty array to remove all labels. **Note:** Alternatively, you can pass a single label as a `string` or an `array` of labels directly, but GitHub recommends passing an object with the `labels` key.
+             * The names of the labels to add to the issue's existing labels. You can pass an empty array to remove all labels. Alternatively, you can pass a single label as a `string` or an `array` of labels directly, but GitHub recommends passing an object with the `labels` key. You can also replace all of the labels for an issue. For more information, see "[Set labels for an issue](https://docs.github.com/rest/reference/issues#set-labels-for-an-issue)."
              */
             labels?: [
                 string,
@@ -30596,7 +31173,7 @@ declare namespace slime.external.github.rest.paths {
         }
         export type RequestBody = {
             /**
-             * The names of the labels to add to the issue. You can pass an empty array to remove all labels. **Note:** Alternatively, you can pass a single label as a `string` or an `array` of labels directly, but GitHub recommends passing an object with the `labels` key.
+             * The names of the labels to set for the issue. The labels you set replace any existing labels. You can pass an empty array to remove all labels. Alternatively, you can pass a single label as a `string` or an `array` of labels directly, but GitHub recommends passing an object with the `labels` key. You can also add labels to the existing labels for an issue. For more information, see "[Add labels to an issue](https://docs.github.com/rest/reference/issues#add-labels-to-an-issue)."
              */
             labels?: [
                 string,
@@ -32155,6 +32732,13 @@ declare namespace slime.external.github.rest.paths {
     namespace OrgsListSamlSsoAuthorizations {
         namespace Parameters {
             export type $0 = slime.external.github.rest.components.Parameters.Org;
+            export type $1 = slime.external.github.rest.components.Parameters.PerPage;
+            export type Login = string;
+            export type Page = number;
+        }
+        export interface QueryParameters {
+            page?: Parameters.Page;
+            login?: Parameters.Login;
         }
         namespace Responses {
             export type $200 = /**
@@ -32385,21 +32969,21 @@ declare namespace slime.external.github.rest.paths {
              * Toggles whether organization members can create internal repositories, which are visible to all enterprise members. You can only allow members to create internal repositories if your organization is associated with an enterprise account using GitHub Enterprise Cloud or GitHub Enterprise Server 2.20+. Can be one of:
              * \* `true` - all organization members can create internal repositories.
              * \* `false` - only organization owners can create internal repositories.
-             * Default: `true`. For more information, see "[Restricting repository creation in your organization](https://help.github.com/github/setting-up-and-managing-organizations-and-teams/restricting-repository-creation-in-your-organization)" in the GitHub Help documentation.
+             * Default: `true`. For more information, see "[Restricting repository creation in your organization](https://docs.github.com/github/setting-up-and-managing-organizations-and-teams/restricting-repository-creation-in-your-organization)" in the GitHub Help documentation.
              */
             members_can_create_internal_repositories?: boolean;
             /**
              * Toggles whether organization members can create private repositories, which are visible to organization members with permission. Can be one of:
              * \* `true` - all organization members can create private repositories.
              * \* `false` - only organization owners can create private repositories.
-             * Default: `true`. For more information, see "[Restricting repository creation in your organization](https://help.github.com/github/setting-up-and-managing-organizations-and-teams/restricting-repository-creation-in-your-organization)" in the GitHub Help documentation.
+             * Default: `true`. For more information, see "[Restricting repository creation in your organization](https://docs.github.com/github/setting-up-and-managing-organizations-and-teams/restricting-repository-creation-in-your-organization)" in the GitHub Help documentation.
              */
             members_can_create_private_repositories?: boolean;
             /**
              * Toggles whether organization members can create public repositories, which are visible to anyone. Can be one of:
              * \* `true` - all organization members can create public repositories.
              * \* `false` - only organization owners can create public repositories.
-             * Default: `true`. For more information, see "[Restricting repository creation in your organization](https://help.github.com/github/setting-up-and-managing-organizations-and-teams/restricting-repository-creation-in-your-organization)" in the GitHub Help documentation.
+             * Default: `true`. For more information, see "[Restricting repository creation in your organization](https://docs.github.com/github/setting-up-and-managing-organizations-and-teams/restricting-repository-creation-in-your-organization)" in the GitHub Help documentation.
              */
             members_can_create_public_repositories?: boolean;
             /**
@@ -33600,11 +34184,11 @@ declare namespace slime.external.github.rest.paths {
              */
             body?: string;
             /**
-             * Indicates whether [maintainers can modify](https://help.github.com/articles/allowing-changes-to-a-pull-request-branch-created-from-a-fork/) the pull request.
+             * Indicates whether [maintainers can modify](https://docs.github.com/articles/allowing-changes-to-a-pull-request-branch-created-from-a-fork/) the pull request.
              */
             maintainer_can_modify?: boolean;
             /**
-             * Indicates whether the pull request is a draft. See "[Draft Pull Requests](https://help.github.com/en/articles/about-pull-requests#draft-pull-requests)" in the GitHub Help documentation to learn more.
+             * Indicates whether the pull request is a draft. See "[Draft Pull Requests](https://docs.github.com/en/articles/about-pull-requests#draft-pull-requests)" in the GitHub Help documentation to learn more.
              */
             draft?: boolean;
             /**
@@ -33736,7 +34320,7 @@ declare namespace slime.external.github.rest.paths {
              */
             position?: number;
             /**
-             * **Required with `comfort-fade` preview unless using `in_reply_to`**. In a split diff view, the side of the diff that the pull request's changes appear on. Can be `LEFT` or `RIGHT`. Use `LEFT` for deletions that appear in red. Use `RIGHT` for additions that appear in green or unchanged lines that appear in white and are shown for context. For a multi-line comment, side represents whether the last line of the comment range is a deletion or addition. For more information, see "[Diff view options](https://help.github.com/en/articles/about-comparing-branches-in-pull-requests#diff-view-options)" in the GitHub Help documentation.
+             * **Required with `comfort-fade` preview unless using `in_reply_to`**. In a split diff view, the side of the diff that the pull request's changes appear on. Can be `LEFT` or `RIGHT`. Use `LEFT` for deletions that appear in red. Use `RIGHT` for additions that appear in green or unchanged lines that appear in white and are shown for context. For a multi-line comment, side represents whether the last line of the comment range is a deletion or addition. For more information, see "[Diff view options](https://docs.github.com/en/articles/about-comparing-branches-in-pull-requests#diff-view-options)" in the GitHub Help documentation.
              */
             side?: "LEFT" | "RIGHT";
             /**
@@ -33744,11 +34328,11 @@ declare namespace slime.external.github.rest.paths {
              */
             line?: number;
             /**
-             * **Required when using multi-line comments unless using `in_reply_to`**. To create multi-line comments, you must use the `comfort-fade` preview header. The `start_line` is the first line in the pull request diff that your multi-line comment applies to. To learn more about multi-line comments, see "[Commenting on a pull request](https://help.github.com/en/articles/commenting-on-a-pull-request#adding-line-comments-to-a-pull-request)" in the GitHub Help documentation.
+             * **Required when using multi-line comments unless using `in_reply_to`**. To create multi-line comments, you must use the `comfort-fade` preview header. The `start_line` is the first line in the pull request diff that your multi-line comment applies to. To learn more about multi-line comments, see "[Commenting on a pull request](https://docs.github.com/en/articles/commenting-on-a-pull-request#adding-line-comments-to-a-pull-request)" in the GitHub Help documentation.
              */
             start_line?: number;
             /**
-             * **Required when using multi-line comments unless using `in_reply_to`**. To create multi-line comments, you must use the `comfort-fade` preview header. The `start_side` is the starting side of the diff that the comment applies to. Can be `LEFT` or `RIGHT`. To learn more about multi-line comments, see "[Commenting on a pull request](https://help.github.com/en/articles/commenting-on-a-pull-request#adding-line-comments-to-a-pull-request)" in the GitHub Help documentation. See `side` in this table for additional context.
+             * **Required when using multi-line comments unless using `in_reply_to`**. To create multi-line comments, you must use the `comfort-fade` preview header. The `start_side` is the starting side of the diff that the comment applies to. Can be `LEFT` or `RIGHT`. To learn more about multi-line comments, see "[Commenting on a pull request](https://docs.github.com/en/articles/commenting-on-a-pull-request#adding-line-comments-to-a-pull-request)" in the GitHub Help documentation. See `side` in this table for additional context.
              */
             start_side?: "LEFT" | "RIGHT" | "side";
             /**
@@ -34186,7 +34770,7 @@ declare namespace slime.external.github.rest.paths {
              */
             base?: string;
             /**
-             * Indicates whether [maintainers can modify](https://help.github.com/articles/allowing-changes-to-a-pull-request-branch-created-from-a-fork/) the pull request.
+             * Indicates whether [maintainers can modify](https://docs.github.com/articles/allowing-changes-to-a-pull-request-branch-created-from-a-fork/) the pull request.
              */
             maintainer_can_modify?: boolean;
         }
@@ -34568,19 +35152,6 @@ declare namespace slime.external.github.rest.paths {
             }
         }
     }
-    namespace ReactionsDeleteLegacy {
-        namespace Parameters {
-            export type $0 = slime.external.github.rest.components.Parameters.ReactionId;
-        }
-        namespace Responses {
-            export interface $204 {
-            }
-            export type $304 = slime.external.github.rest.components.Responses.NotModified;
-            export type $401 = slime.external.github.rest.components.Responses.RequiresAuthentication;
-            export type $403 = slime.external.github.rest.components.Responses.Forbidden;
-            export type $410 = slime.external.github.rest.components.Responses.Gone;
-        }
-    }
     namespace ReactionsListForCommitComment {
         namespace Parameters {
             export type $0 = slime.external.github.rest.components.Parameters.Owner;
@@ -34901,6 +35472,25 @@ declare namespace slime.external.github.rest.paths {
             }
         }
     }
+    namespace ReposCodeownersErrors {
+        namespace Parameters {
+            export type $0 = slime.external.github.rest.components.Parameters.Owner;
+            export type $1 = slime.external.github.rest.components.Parameters.Repo;
+            export type Ref = string;
+        }
+        export interface QueryParameters {
+            ref?: Parameters.Ref;
+        }
+        namespace Responses {
+            export type $200 = /**
+             * CODEOWNERS errors
+             * A list of errors found in a repo's CODEOWNERS file
+             */
+            slime.external.github.rest.components.Schemas.CodeownersErrors;
+            export interface $404 {
+            }
+        }
+    }
     namespace ReposCompareCommits {
         namespace Parameters {
             export type $0 = slime.external.github.rest.components.Parameters.Owner;
@@ -35049,7 +35639,7 @@ declare namespace slime.external.github.rest.paths {
             /**
              * If `true`, the key will only be able to read repository contents. Otherwise, the key will be able to read and write.
              *
-             * Deploy keys with write access can perform the same actions as an organization member with admin access, or a collaborator on a personal repository. For more information, see "[Repository permission levels for an organization](https://help.github.com/articles/repository-permission-levels-for-an-organization/)" and "[Permission levels for a user account repository](https://help.github.com/articles/permission-levels-for-a-user-account-repository/)."
+             * Deploy keys with write access can perform the same actions as an organization member with admin access, or a collaborator on a personal repository. For more information, see "[Repository permission levels for an organization](https://docs.github.com/articles/repository-permission-levels-for-an-organization/)" and "[Permission levels for a user account repository](https://docs.github.com/articles/permission-levels-for-a-user-account-repository/)."
              */
             read_only?: boolean;
         }
@@ -35081,7 +35671,7 @@ declare namespace slime.external.github.rest.paths {
              */
             auto_merge?: boolean;
             /**
-             * The [status](https://docs.github.com/rest/reference/repos#statuses) contexts to verify against commit status checks. If you omit this parameter, GitHub verifies all unique contexts before creating a deployment. To bypass checking entirely, pass an empty array. Defaults to all unique contexts.
+             * The [status](https://docs.github.com/rest/reference/commits#commit-statuses) contexts to verify against commit status checks. If you omit this parameter, GitHub verifies all unique contexts before creating a deployment. To bypass checking entirely, pass an empty array. Defaults to all unique contexts.
              */
             required_contexts?: string[];
             payload?: {
@@ -35346,7 +35936,7 @@ declare namespace slime.external.github.rest.paths {
              */
             private?: boolean;
             /**
-             * Can be `public` or `private`. If your organization is associated with an enterprise account using GitHub Enterprise Cloud or GitHub Enterprise Server 2.20+, `visibility` can also be `internal`. Note: For GitHub Enterprise Server and GitHub AE, this endpoint will only list repositories available to all users on the enterprise. For more information, see "[Creating an internal repository](https://help.github.com/en/github/creating-cloning-and-archiving-repositories/about-repository-visibility#about-internal-repositories)" in the GitHub Help documentation.
+             * Can be `public` or `private`. If your organization is associated with an enterprise account using GitHub Enterprise Cloud or GitHub Enterprise Server 2.20+, `visibility` can also be `internal`. Note: For GitHub Enterprise Server and GitHub AE, this endpoint will only list repositories available to all users on the enterprise. For more information, see "[Creating an internal repository](https://docs.github.com/en/github/creating-cloning-and-archiving-repositories/about-repository-visibility#about-internal-repositories)" in the GitHub Help documentation.
              */
             visibility?: "public" | "private" | "internal";
             /**
@@ -35378,7 +35968,7 @@ declare namespace slime.external.github.rest.paths {
              */
             gitignore_template?: string;
             /**
-             * Choose an [open source license template](https://choosealicense.com/) that best suits your needs, and then use the [license keyword](https://help.github.com/articles/licensing-a-repository/#searching-github-by-license-type) as the `license_template` string. For example, "mit" or "mpl-2.0".
+             * Choose an [open source license template](https://choosealicense.com/) that best suits your needs, and then use the [license keyword](https://docs.github.com/articles/licensing-a-repository/#searching-github-by-license-type) as the `license_template` string. For example, "mit" or "mpl-2.0".
              */
             license_template?: string;
             /**
@@ -37773,7 +38363,7 @@ declare namespace slime.external.github.rest.paths {
             homepage?: string;
             /**
              * Either `true` to make the repository private or `false` to make it public. Default: `false`.
-             * **Note**: You will get a `422` error if the organization restricts [changing repository visibility](https://help.github.com/articles/repository-permission-levels-for-an-organization#changing-the-visibility-of-repositories) to organization owners and a non-owner tries to change the value of private. **Note**: You will get a `422` error if the organization restricts [changing repository visibility](https://help.github.com/articles/repository-permission-levels-for-an-organization#changing-the-visibility-of-repositories) to organization owners and a non-owner tries to change the value of private.
+             * **Note**: You will get a `422` error if the organization restricts [changing repository visibility](https://docs.github.com/articles/repository-permission-levels-for-an-organization#changing-the-visibility-of-repositories) to organization owners and a non-owner tries to change the value of private. **Note**: You will get a `422` error if the organization restricts [changing repository visibility](https://docs.github.com/articles/repository-permission-levels-for-an-organization#changing-the-visibility-of-repositories) to organization owners and a non-owner tries to change the value of private.
              */
             private?: boolean;
             /**
@@ -37924,13 +38514,26 @@ declare namespace slime.external.github.rest.paths {
                  */
                 dismiss_stale_reviews?: boolean;
                 /**
-                 * Blocks merging pull requests until [code owners](https://help.github.com/articles/about-code-owners/) review them.
+                 * Blocks merging pull requests until [code owners](https://docs.github.com/articles/about-code-owners/) review them.
                  */
                 require_code_owner_reviews?: boolean;
                 /**
-                 * Specify the number of reviewers required to approve pull requests. Use a number between 1 and 6.
+                 * Specify the number of reviewers required to approve pull requests. Use a number between 1 and 6 or 0 to not require reviewers.
                  */
                 required_approving_review_count?: number;
+                /**
+                 * Allow specific users or teams to bypass pull request requirements. Set to `null` to disable.
+                 */
+                bypass_pull_request_allowances?: {
+                    /**
+                     * The list of user `login`s allowed to bypass pull request requirements.
+                     */
+                    users?: string[];
+                    /**
+                     * The list of team `slug`s allowed to bypass pull request requirements.
+                     */
+                    teams?: string[];
+                } | null;
             } | null;
             /**
              * Restrict who can push to the protected branch. User, app, and team `restrictions` are only available for organization-owned repositories. Set to `null` to disable.
@@ -37950,15 +38553,15 @@ declare namespace slime.external.github.rest.paths {
                 apps?: string[];
             } | null;
             /**
-             * Enforces a linear commit Git history, which prevents anyone from pushing merge commits to a branch. Set to `true` to enforce a linear commit history. Set to `false` to disable a linear commit Git history. Your repository must allow squash merging or rebase merging before you can enable a linear commit history. Default: `false`. For more information, see "[Requiring a linear commit history](https://help.github.com/github/administering-a-repository/requiring-a-linear-commit-history)" in the GitHub Help documentation.
+             * Enforces a linear commit Git history, which prevents anyone from pushing merge commits to a branch. Set to `true` to enforce a linear commit history. Set to `false` to disable a linear commit Git history. Your repository must allow squash merging or rebase merging before you can enable a linear commit history. Default: `false`. For more information, see "[Requiring a linear commit history](https://docs.github.com/github/administering-a-repository/requiring-a-linear-commit-history)" in the GitHub Help documentation.
              */
             required_linear_history?: boolean;
             /**
-             * Permits force pushes to the protected branch by anyone with write access to the repository. Set to `true` to allow force pushes. Set to `false` or `null` to block force pushes. Default: `false`. For more information, see "[Enabling force pushes to a protected branch](https://help.github.com/en/github/administering-a-repository/enabling-force-pushes-to-a-protected-branch)" in the GitHub Help documentation."
+             * Permits force pushes to the protected branch by anyone with write access to the repository. Set to `true` to allow force pushes. Set to `false` or `null` to block force pushes. Default: `false`. For more information, see "[Enabling force pushes to a protected branch](https://docs.github.com/en/github/administering-a-repository/enabling-force-pushes-to-a-protected-branch)" in the GitHub Help documentation."
              */
             allow_force_pushes?: boolean | null;
             /**
-             * Allows deletion of the protected branch by anyone with write access to the repository. Set to `false` to prevent deletion of the protected branch. Default: `false`. For more information, see "[Enabling force pushes to a protected branch](https://help.github.com/en/github/administering-a-repository/enabling-force-pushes-to-a-protected-branch)" in the GitHub Help documentation.
+             * Allows deletion of the protected branch by anyone with write access to the repository. Set to `false` to prevent deletion of the protected branch. Default: `false`. For more information, see "[Enabling force pushes to a protected branch](https://docs.github.com/en/github/administering-a-repository/enabling-force-pushes-to-a-protected-branch)" in the GitHub Help documentation.
              */
             allow_deletions?: boolean;
             /**
@@ -38005,7 +38608,7 @@ declare namespace slime.external.github.rest.paths {
         }
         export type RequestBody = {
             /**
-             * Specify a custom domain for the repository. Sending a `null` value will remove the custom domain. For more about custom domains, see "[Using a custom domain with GitHub Pages](https://help.github.com/articles/using-a-custom-domain-with-github-pages/)."
+             * Specify a custom domain for the repository. Sending a `null` value will remove the custom domain. For more about custom domains, see "[Using a custom domain with GitHub Pages](https://docs.github.com/articles/using-a-custom-domain-with-github-pages/)."
              */
             cname?: string | null;
             /**
@@ -38028,7 +38631,7 @@ declare namespace slime.external.github.rest.paths {
             };
         } | {
             /**
-             * Specify a custom domain for the repository. Sending a `null` value will remove the custom domain. For more about custom domains, see "[Using a custom domain with GitHub Pages](https://help.github.com/articles/using-a-custom-domain-with-github-pages/)."
+             * Specify a custom domain for the repository. Sending a `null` value will remove the custom domain. For more about custom domains, see "[Using a custom domain with GitHub Pages](https://docs.github.com/articles/using-a-custom-domain-with-github-pages/)."
              */
             cname: string | null;
             /**
@@ -38051,7 +38654,7 @@ declare namespace slime.external.github.rest.paths {
             };
         } | {
             /**
-             * Specify a custom domain for the repository. Sending a `null` value will remove the custom domain. For more about custom domains, see "[Using a custom domain with GitHub Pages](https://help.github.com/articles/using-a-custom-domain-with-github-pages/)."
+             * Specify a custom domain for the repository. Sending a `null` value will remove the custom domain. For more about custom domains, see "[Using a custom domain with GitHub Pages](https://docs.github.com/articles/using-a-custom-domain-with-github-pages/)."
              */
             cname?: string | null;
             /**
@@ -38074,7 +38677,7 @@ declare namespace slime.external.github.rest.paths {
             };
         } | {
             /**
-             * Specify a custom domain for the repository. Sending a `null` value will remove the custom domain. For more about custom domains, see "[Using a custom domain with GitHub Pages](https://help.github.com/articles/using-a-custom-domain-with-github-pages/)."
+             * Specify a custom domain for the repository. Sending a `null` value will remove the custom domain. For more about custom domains, see "[Using a custom domain with GitHub Pages](https://docs.github.com/articles/using-a-custom-domain-with-github-pages/)."
              */
             cname?: string | null;
             /**
@@ -38148,13 +38751,26 @@ declare namespace slime.external.github.rest.paths {
              */
             dismiss_stale_reviews?: boolean;
             /**
-             * Blocks merging pull requests until [code owners](https://help.github.com/articles/about-code-owners/) have reviewed.
+             * Blocks merging pull requests until [code owners](https://docs.github.com/articles/about-code-owners/) have reviewed.
              */
             require_code_owner_reviews?: boolean;
             /**
-             * Specifies the number of reviewers required to approve pull requests. Use a number between 1 and 6.
+             * Specifies the number of reviewers required to approve pull requests. Use a number between 1 and 6 or 0 to not require reviewers.
              */
             required_approving_review_count?: number;
+            /**
+             * Allow specific users or teams to bypass pull request requirements. Set to `null` to disable.
+             */
+            bypass_pull_request_allowances?: {
+                /**
+                 * The list of user `login`s allowed to bypass pull request requirements.
+                 */
+                users?: string[];
+                /**
+                 * The list of team `slug`s allowed to bypass pull request requirements.
+                 */
+                teams?: string[];
+            } | null;
         }
         namespace Responses {
             export type $200 = /**
@@ -38884,6 +39500,22 @@ declare namespace slime.external.github.rest.paths {
             export type $503 = slime.external.github.rest.components.Responses.ServiceUnavailable;
         }
     }
+    namespace SecretScanningListAlertsForEnterprise {
+        namespace Parameters {
+            export type $0 = slime.external.github.rest.components.Parameters.Enterprise;
+            export type $1 = slime.external.github.rest.components.Parameters.SecretScanningAlertState;
+            export type $2 = slime.external.github.rest.components.Parameters.SecretScanningAlertSecretType;
+            export type $3 = slime.external.github.rest.components.Parameters.SecretScanningAlertResolution;
+            export type $4 = slime.external.github.rest.components.Parameters.PerPage;
+            export type $5 = slime.external.github.rest.components.Parameters.PaginationBefore;
+            export type $6 = slime.external.github.rest.components.Parameters.PaginationAfter;
+        }
+        namespace Responses {
+            export type $200 = slime.external.github.rest.components.Schemas.OrganizationSecretScanningAlert[];
+            export type $404 = slime.external.github.rest.components.Responses.NotFound;
+            export type $503 = slime.external.github.rest.components.Responses.ServiceUnavailable;
+        }
+    }
     namespace SecretScanningListAlertsForOrg {
         namespace Parameters {
             export type $0 = slime.external.github.rest.components.Parameters.Org;
@@ -39225,9 +39857,8 @@ declare namespace slime.external.github.rest.paths {
              * **Deprecated**. The permission that new repositories will be added to the team with when none is specified. Can be one of:
              * \* `pull` - team members can pull, but not push to or administer newly-added repositories.
              * \* `push` - team members can pull and push, but not administer newly-added repositories.
-             * \* `admin` - team members can pull, push and administer newly-added repositories.
              */
-            permission?: "pull" | "push" | "admin";
+            permission?: "pull" | "push";
             /**
              * The ID of a team to set as the parent team.
              */
@@ -39836,6 +40467,19 @@ declare namespace slime.external.github.rest.paths {
              * External Groups to be mapped to a team for membership
              */
             slime.external.github.rest.components.Schemas.GroupMapping;
+        }
+    }
+    namespace TeamsListLinkedExternalIdpGroupsToTeamForOrg {
+        namespace Parameters {
+            export type $0 = slime.external.github.rest.components.Parameters.Org;
+            export type $1 = slime.external.github.rest.components.Parameters.TeamSlug;
+        }
+        namespace Responses {
+            export type $200 = /**
+             * ExternalGroups
+             * A list of external groups available to be connected to a team
+             */
+            slime.external.github.rest.components.Schemas.ExternalGroups;
         }
     }
     namespace TeamsListMembersInOrg {
