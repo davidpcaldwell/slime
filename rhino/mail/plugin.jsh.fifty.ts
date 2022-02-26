@@ -9,7 +9,7 @@ namespace slime.jsh.mail {
 }
 
 namespace slime.jsh {
-	interface Global {
+	export interface Global {
 		mail: slime.jsh.mail.Exports
 	}
 }
