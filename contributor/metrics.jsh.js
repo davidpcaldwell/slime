@@ -144,7 +144,7 @@
 						if (b.line < a.line) return 1;
 						return 0;
 					}).forEach(function(ignore) {
-						jsh.shell.console(ignore.path + ":" + ignore.line + ": " + ignore.ignored);
+						jsh.shell.console(ignore.path + ":" + ignore.line + ": " + ignore.ignored.trim());
 					});
 					jsh.shell.console("");
 					jsh.shell.console("Total @ts-ignore comments violating rules: " + ignores.length);
