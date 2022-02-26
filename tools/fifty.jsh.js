@@ -13,13 +13,8 @@
 	function($api,jsh) {
 		var SLIME = jsh.script.file.parent.parent;
 
-		var args = jsh.wf.cli.$f.command.parse({
-			options: {},
-			arguments: jsh.script.arguments
-		});
-
-		jsh.wf.cli.$f.command.process({
-			interface: {
+		jsh.script.cli.wrap({
+			commands: {
 				view: $api.Function.pipe(
 					jsh.script.cli.option.boolean({ longname: "debug:rhino" }),
 					function(p) {
@@ -90,9 +85,8 @@
 						}
 					)
 				}
-			},
-			invocation: args
-		})
+			}
+		});
 	}
 //@ts-ignore
 )($api,jsh);

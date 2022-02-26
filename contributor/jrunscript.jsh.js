@@ -178,7 +178,7 @@
 		(function jshLauncher() {
 			var rhinoArgs = (jsh.shell.rhino) ? ["-rhino", jsh.shell.rhino.classpath.toString()] : [];
 
-			//	TODO	Move these tests elsewhere; see issue #335
+			//	TODO	Move these tests elsewhere; see issue #128
 			var part = jsh.unit.Suite.Fork({
 				name: "Launcher tests",
 				run: jsh.shell.jsh,
