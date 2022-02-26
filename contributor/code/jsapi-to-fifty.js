@@ -117,6 +117,8 @@
 						index++;
 					}
 					if (parsed.end) result.push(parsed.prefix + " */");
+					if (!lines[lines.length-1].comment && !lines[lines.length-1].prefix && !lines[lines.length-1].content)
+						result.push("");
 					//input = text(input);
 					return result.join("\n");
 				}

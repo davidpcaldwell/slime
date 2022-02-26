@@ -80,8 +80,13 @@ namespace slime {
 			}
 
 			/**
-			 * Allows the loader to customize the way child sources are created when creating child loaders. if omitted, a child that delegates requests back to the parent, prepended by the
-									child's path, will be created
+			 * Allows the loader to customize the way child sources are created when creating child loaders. If omitted, a child
+			 * that delegates requests back to the parent, prepended by the child's path, will be created.
+			 *
+			 * @param prefix The path representing this child underneath the parent. Currently, this path can be either the empty
+			 * string `""` or a string ending in `/`.
+			 *
+			 * @returns A source that represents a child of the parent source.
 			 */
 			child?: (prefix: string) => Source
 
