@@ -6,7 +6,6 @@
 
 namespace slime.project.code {
 	export interface Context {
-		console: (message: string) => void
 		library: {
 			file: slime.jrunscript.file.Exports
 			code: slime.tools.code.Exports
@@ -23,6 +22,8 @@ namespace slime.project.code {
 	export interface Exports {
 		files: {
 			isText: slime.tools.code.isText
+
+			exclude: slime.tools.code.Excludes
 
 			trailingWhitespace: (p: {
 				base: slime.jrunscript.file.Directory

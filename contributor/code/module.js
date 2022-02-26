@@ -193,23 +193,26 @@
 					}
 				}
 
+				var excludes = {
+					directory: $api.Function.Predicate.or(
+						$context.library.code.defaults.exclude.directory,
+						isVscodeJavaExtensionDirectory
+					)
+				};
+
 				/** @type { slime.project.code.Exports["files"]["trailingWhitespace"] } */
 				var trailingWhitespace = function(p) {
 					//	TODO	return the Tell and have callers do normal event handling
 					return $context.library.code.handleTrailingWhitespace({
 						base: p.base,
-						exclude: {
-							directory: $api.Function.Predicate.or(
-								$context.library.code.defaults.exclude.directory,
-								isVscodeJavaExtensionDirectory
-							)
-						},
+						exclude: excludes,
 						isText: isText,
 						nowrite: p.nowrite
 					});
 				}
 
 				return {
+					exclude: excludes,
 					isText: isText,
 					trailingWhitespace: trailingWhitespace,
 					toHandler: toHandler

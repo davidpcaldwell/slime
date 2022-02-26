@@ -13,42 +13,6 @@
 	 * @param { slime.project.wf.Interface } $exports
 	 */
 	function($api,jsh,$context,$exports) {
-		var noTrailingWhitespace = function() {
-			var loader = new jsh.file.Loader({ directory: $context.base });
-			/** @type { slime.project.code.Script } */
-			var script = loader.script("contributor/code/module.js");
-			var code = script({
-				console: jsh.shell.console,
-				library: {
-					file: jsh.file,
-					code: jsh.tools.code
-				}
-			});
-			var failed = false;
-			code.files.trailingWhitespace({
-				base: $context.base,
-			})(code.files.toHandler({
-				unknownFileType: function(entry) {
-					throw new Error("Unknown file type; cannot determine whether text: " + entry.file);
-				},
-				change: function(p) {
-					jsh.shell.console("Changed " + p.file.path + " at line " + p.line.number);
-				},
-				changed: function(entry) {
-					jsh.shell.console("Modified: " + entry.file);
-					failed = true;
-				},
-				unchanged: function(entry) {
-					//jsh.shell.echo("No change: " + entry.file);
-				}
-			}));
-			if (failed) {
-				jsh.shell.console("Failing because trailing whitespace was modified.");
-				return false;
-			}
-			return true;
-		};
-
 		function synchronizeEclipseSettings() {
 			//	copy project settings to Eclipse project if they differ from current settings
 			var changed = false;
@@ -224,8 +188,43 @@
 			$context,
 			{
 				lint: function() {
-					var success = noTrailingWhitespace();
-					if (!success) return false;
+					var success = true;
+
+					jsh.tools.code.handleTrailingWhitespace({
+						base: $context.base,
+						exclude: jsh.project.code.files.exclude,
+						isText: jsh.project.code.files.isText,
+						nowrite: false
+					})({
+						unknownFileType: function(e) {
+							jsh.shell.console("Could not determine whether file is text or binary: " + e.detail.path);
+							success = false;
+						},
+						foundAt: function(e) {
+							jsh.shell.console("Found trailing whitespace: " + e.detail.file.path + " line " + e.detail.line.number);
+							success = false;
+						}
+					});
+
+					jsh.tools.code.handleFinalNewlines({
+						base: $context.base,
+						exclude: jsh.project.code.files.exclude,
+						isText: jsh.project.code.files.isText,
+						nowrite: false
+					})({
+						unknownFileType: function(e) {
+							jsh.shell.console("Could not determine whether file is text or binary: " + e.detail.path);
+							success = false;
+						},
+						missing: function(e) {
+							jsh.shell.console("Missing final newline: " + e.detail.path);
+							success = false;
+						},
+						multiple: function(e) {
+							jsh.shell.console("Multiple final newlines: " + e.detail.path);
+							success = false;
+						}
+					});
 
 					jsh.shell.jsh({
 						shell: jsh.shell.jsh.src,
@@ -254,7 +253,7 @@
 					if (license.status) {
 						jsh.shell.console("License headers need to be updated; run:");
 						jsh.shell.console("./jsh.bash contributor/code/license.jsh.js --fix");
-						return false;
+						success = false;
 					} else {
 						jsh.shell.console("All license headers are correct.")
 					}
@@ -535,7 +534,8 @@
 					}
 				});
 
-				noTrailingWhitespace();
+				//	Below was replaced by new linting API
+				//noTrailingWhitespace();
 
 				jsh.shell.jsh({
 					shell: jsh.shell.jsh.src,

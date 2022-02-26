@@ -32,7 +32,6 @@
 		/** @type { slime.project.code.Script } */
 		var script = loader.script("code/module.js");
 		var code = script({
-			console: jsh.shell.console,
 			library: {
 				file: jsh.file,
 				code: jsh.tools.code
