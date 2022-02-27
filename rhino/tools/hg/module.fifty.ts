@@ -19,7 +19,7 @@ namespace slime.jrunscript.hg {
 	}
 
 	export namespace Repository {
-		interface Remote extends slime.jrunscript.hg.Repository {
+		export interface Remote extends slime.jrunscript.hg.Repository {
 			url: any
 		}
 
