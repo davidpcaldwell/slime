@@ -5,7 +5,7 @@
 //	END LICENSE
 
 namespace slime.jrunscript.hg {
-	interface Commit {
+	export interface Commit {
 		changeset: {
 			local: number
 			global: string
