@@ -1,0 +1,15 @@
+name: metrics
+on:
+  push:
+    branches:
+      - github-actions-suite
+jobs:
+  jsapi:
+    name: Test Suite
+    runs-on: macos-11
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+      - name: Run the script
+        run: env JSH_LAUNCHER_JDK_HOME=$JAVA_HOME_8_X64 JSH_JAVA_HOME=$JAVA_HOME_8_X64 ./jsh.bash contributor/suite.jsh.js
+        shell: bash
