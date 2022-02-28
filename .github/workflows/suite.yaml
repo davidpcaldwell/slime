@@ -1,4 +1,4 @@
-name: metrics
+name: suite
 on:
   push:
     branches:
