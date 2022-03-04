@@ -9,8 +9,7 @@
 	/**
 	 *
 	 * @param { slime.jrunscript.Packages } Packages
-	 * @param { slime.jrunscript.file.internal.spi.Context } $context
-	 * @param { slime.loader.Export<slime.jrunscript.file.internal.spi.Exports> } $export
+å	 * @param { slime.loader.Export<slime.jrunscript.file.internal.spi.Exports> } $export
 	 */
 	function(Packages,$export) {
 		var javaSpiAvailable = typeof(Packages.inonit.script.runtime.io.Filesystem.Optimizations) == "function";

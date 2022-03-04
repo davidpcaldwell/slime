@@ -366,7 +366,7 @@
 				jsh.wf.typescript = (function() {
 					function getVersion(project) {
 						if (project.getFile("tsc.version")) return project.getFile("tsc.version").read(String);
-						return "4.5.4";
+						return "4.6.2";
 					}
 
 					function getConfig(base) {

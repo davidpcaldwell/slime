@@ -14,10 +14,11 @@
 	function($api,jsh) {
 		$api.Function.pipe(
 			//	TODO	this default is also stored in tools/wf/plugin.jsh.js
-			jsh.script.cli.option.string({ longname: "ts:version", default: "4.5.4" }),
+			jsh.script.cli.option.string({ longname: "ts:version" }),
 			jsh.script.cli.option.pathname({ longname: "tsconfig", default: jsh.shell.PWD.getRelativePath("jsconfig.json") }),
 			jsh.wf.cli.$f.option.pathname({ longname: "output" }),
 			function(p) {
+				if (!p.options["ts:version"]) throw new Error("Required: --ts:version <version>");
 				jsh.shell.tools.rhino.require();
 				jsh.shell.tools.tomcat.require();
 				jsh.shell.tools.node.require();
@@ -26,6 +27,7 @@
 				var typedocVersion = (function(tsVersion) {
 					if (tsVersion == "4.0.5") return "0.19.2";
 					if (tsVersion == "4.5.4") return "0.22.11";
+					if (tsVersion == "4.6.2") return "0.22.12";
 					throw new Error("Unspecified TypeDoc version for TypeScript " + tsVersion);
 				})(p.options["ts:version"])
 				if (false) jsh.shell.console("Require TypeDoc: " + typedocVersion);
@@ -55,7 +57,7 @@
 						rv.push("--excludeExternals");
 						rv.push("--readme", readme);
 						//	TODO	add --name
-						if (typedocVersion == "0.22.11") {
+						if (typedocVersion == "0.22.11" || typedocVersion == "0.22.12") {
 							if (!project.getFile("typedoc.json")) {
 								var entryPoint = project.getRelativePath("README.fifty.ts");
 								if (!entryPoint.file) {
