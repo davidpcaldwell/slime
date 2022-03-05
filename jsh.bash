@@ -119,6 +119,9 @@ install_jdk_8_corretto() {
 		JDK_TARBALL_PATH="amazon-corretto-${VERSION}-linux-x64"
 	fi
 	JDK_TARBALL_URL="https://corretto.aws/downloads/resources/${VERSION}/${JDK_TARBALL_BASENAME}"
+	if [ ! -d "${HOME}/Downloads" ]; then
+		mkdir "${HOME}/Downloads"
+	fi
 	JDK_TARBALL_LOCATION="${HOME}/Downloads/${JDK_TARBALL_BASENAME}"
 
 	if [ ! -f "${JDK_TARBALL_LOCATION}" ]; then

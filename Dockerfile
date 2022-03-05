@@ -4,6 +4,7 @@
 #
 #	END LICENSE
 
-FROM openjdk:8
+FROM debian
+RUN apt-get update && apt-get upgrade && apt-get -y install wget
+RUN apt-get -y install git && apt-get -y install procps
 COPY . /slime
-ENV SLIME_WF_JDK_8=/usr/local/openjdk-8
