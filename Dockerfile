@@ -6,5 +6,5 @@
 
 FROM debian
 RUN apt-get update && apt-get upgrade && apt-get -y install wget
-RUN apt-get -y install git && apt-get -y install procps
+RUN apt-get -y install git
 COPY . /slime

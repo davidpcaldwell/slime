@@ -123,6 +123,7 @@
 		});
 
 		var getSafariProcess = function() {
+			if (jsh.shell.os.name != "Mac OS X") return null;
 			var processes = jsh.shell.os.process.list();
 			var safaris = processes.filter(function(process) {
 				return process.command == "/Applications/Safari.app/Contents/MacOS/Safari";
