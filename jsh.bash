@@ -44,7 +44,7 @@ announce_install() {
 }
 
 APT_UPDATED=
-require_package() {
+debian_install_package() {
 	local SUDO=""
 	local sudo="$(which sudo)"
 	if [ ${sudo} ]; then
@@ -72,7 +72,7 @@ download_install() {
 			curl -L -o ${LOCATION} ${URL}
 		elif [ "${UNAME}" == "Linux" ]; then
 			if [ ! "$(which wget)" ]; then
-				require_package wget
+				debian_install_package wget
 			fi
 			wget -O ${LOCATION} ${URL}
 		fi
