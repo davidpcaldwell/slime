@@ -43,6 +43,26 @@ announce_install() {
 	>&2 echo "Installing ${URL} to ${DESTINATION} ..."
 }
 
+APT_UPDATED=
+require_package() {
+	local SUDO=""
+	local sudo="$(which sudo)"
+	if [ ${sudo} ]; then
+		SUDO="${sudo}"
+	fi
+	local package="$1"
+	if [ "$(which apt-get)" ]; then
+		if [ -z "${APT_UPDATED}" ]; then
+			${SUDO} apt-get update
+			${SUDO} apt-get upgrade
+			APT_UPDATED=true
+		fi
+		${SUDO} apt-get -y install $package
+	else
+		exit 1
+	fi
+}
+
 download_install() {
 	URL="$1"
 	LOCATION="$2"
@@ -51,6 +71,9 @@ download_install() {
 		if [ "${UNAME}" == "Darwin" ]; then
 			curl -L -o ${LOCATION} ${URL}
 		elif [ "${UNAME}" == "Linux" ]; then
+			if [ ! "$(which wget)" ]; then
+				require_package wget
+			fi
 			wget -O ${LOCATION} ${URL}
 		fi
 	fi
