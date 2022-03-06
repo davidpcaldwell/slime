@@ -28,7 +28,7 @@
 			fifty.load("../rhino/shell/module.fifty.ts");
 			fifty.load("../rhino/tools/docker/module.fifty.ts");
 			fifty.load("../rhino/tools/github/module.fifty.ts");
-			fifty.load("../rhino/tools/git/module.fifty.ts");
+			if (jsh.shell.PATH.getCommand("git")) fifty.load("../rhino/tools/git/module.fifty.ts");
 			fifty.load("../rhino/tools/gcloud/module.fifty.ts");
 			fifty.load("../jsh/loader/jsh.fifty.ts");
 			fifty.load("../jsh/script/plugin.jsh.fifty.ts");

@@ -79,6 +79,7 @@
 				jsh.shell.tools.jsoup.require();
 
 				(function wiki() {
+					if (!jsh.tools.git.Repository) return;
 					var remote = jsh.tools.git.Repository({ remote: "https://github.com/davidpcaldwell/slime.wiki.git" });
 					var location = $context.base.getRelativePath("local/wiki");
 					if (!location.directory) {
@@ -273,7 +274,7 @@
 		)
 
 		$exports.git = {
-			branches: new function() {
+			branches: (jsh.tools.git.Repository) ? new function() {
 				var repository = jsh.tools.git.Repository({ directory: $context.base });
 
 				var notMaster = function(branch) {
@@ -336,7 +337,7 @@
 						}
 					}
 				);
-			}
+			} : void(0)
 		}
 
 		$exports.merge = $api.Function.pipe(

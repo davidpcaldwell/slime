@@ -162,8 +162,7 @@
 		if (jsh.tools.hg.init) suite.add("jrunscript/tools/hg", new jsh.unit.html.Part({
 			pathname: SRC.getRelativePath("rhino/tools/hg/api.html")
 		}));
-		// TODO: does this require git be installed?
-		if (!parameters.options.issue138) {
+		if (!parameters.options.issue138 && jsh.shell.PATH.getCommand("git")) {
 			suite.add(
 				"jrunscript/tools/git/jsapi",
 				new jsh.unit.html.Part({

@@ -502,8 +502,8 @@ namespace slime.jsh.wf {
 			}
 			tests.types.Exports(plugin, global.jsh);
 
-			run(tests.exports.requireGitIdentity);
-			run(tests.exports.prohibitModifiedSubmodules);
+			if (jsh.shell.PATH.getCommand("git")) run(tests.exports.requireGitIdentity);
+			if (jsh.shell.PATH.getCommand("git")) run(tests.exports.prohibitModifiedSubmodules);
 		}
 	}
 //@ts-ignore
