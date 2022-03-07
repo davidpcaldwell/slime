@@ -323,7 +323,7 @@
 									rv.push("-u", entry[0]);
 								});
 								set.forEach(function(entry) {
-									rv.push(entry[0] + "=" + entry[1]);
+									rv.push(entry[0] + "=" + "\"" + entry[1] + "\"");
 								});
 								rv.push(invocation.command);
 								if (invocation.arguments) rv.push.apply(rv, invocation.arguments);
