@@ -414,7 +414,11 @@
 					return !node.directory;
 				},
 				descendants: function(directory) {
-					if (directory.pathname.basename == ".hg") return false;
+					//	TODO	could we use .gitignore for this?
+					if (directory.pathname.basename == ".git") return false;
+					if (directory.pathname.basename == "bin") return false;
+					if (directory.pathname.basename == ".gradle") return false;
+					if (directory.pathname.basename == ".settings") return false;
 					if (directory.pathname.basename == "local") return false;
 					return true;
 				},

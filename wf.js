@@ -486,6 +486,18 @@
 								/*, "--stdio"*/
 							]
 						});
+					},
+					run: function(p) {
+						initialize();
+						jsh.shell.run({
+							command: docker,
+							arguments: [
+								"run",
+								"--name", "slime-test",
+								"davidpcaldwell/slime",
+								"sleep", "infinity"
+							]
+						});
 					}
 				}
 			}
