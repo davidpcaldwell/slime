@@ -109,7 +109,11 @@ namespace slime.jsh {
 			 */
 			plugins: (p: slime.jrunscript.file.Directory | slime.jrunscript.file.Pathname | slime.Loader) => void
 			addFinalizer: any
-			java: any
+			java: {
+				toString: () => string
+				add: (pathname: slime.jrunscript.file.Pathname) => void
+				getClass: (name: any) => any
+			}
 			worker: any
 			kotlin: {
 				/**

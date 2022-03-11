@@ -760,61 +760,66 @@
 			return rv;
 		})($exports.Loader);
 
-		$exports.classpath = new (function(_classpath /* Loader.Classes.Interface */) {
-			this.toString = function() {
-				return String(_classpath);
-			};
-
-			this.setAsThreadContextClassLoaderFor = function(_thread) {
-				_classpath.setAsThreadContextClassLoaderFor(_thread);
-			};
-
-			this.getClass = function(name) {
-				return _classpath.getClass(name);
-			};
-
-			this.add = function(p) {
-				if (p._file && p._file.isDirectory()) {
-					_classpath.add(Packages.inonit.script.engine.Code.Loader.create(p._file));
-				} else if (p._file && p._file.exists() && !p._file.isDirectory()) {
-					//	Currently can be used to add .jar directly to classpath through jsh.loader.java.add
-					//	TODO	determine whether this should be switched to jar._file; used by servlet plugin to put Tomcat classes
-					//			in classpath
-					_classpath.add(Packages.inonit.script.engine.Code.Loader.create(p._file));
-				} else if (p._file && !p._file.exists()) {
-					//	do nothing
-				} else if (p.slime) {
-					if (p.slime.loader) {
-						_classpath.add(p.slime.loader.java.adapt().child("$jvm/classes"));
-					} else {
-						throw new Error();
-					}
-				} else if (p.jar) {
-					if (p.jar._file) {
-						if (Packages.java.lang.System.getenv("SLIME_JAVA_SERVICELOADER_WORKS")) {
-							_classpath.add(Packages.inonit.script.engine.Code.Loader.zip(
-								Packages.inonit.script.engine.Code.Loader.Resource.create(p.jar._file)
-							));
-							// _classpath.add(Packages.inonit.script.engine.Code.Loader.create(p.jar._file));
+		$exports.classpath = (
+			/**
+			 *
+			 * @param { slime.jrunscript.native.inonit.script.engine.Loader.Classes.Interface } _classpath
+			 */
+			function(_classpath) {
+				return {
+					toString: function() {
+						return String(_classpath);
+					},
+					setAsThreadContextClassLoaderFor: function(_thread) {
+						_classpath.setAsThreadContextClassLoaderFor(_thread);
+					},
+					getClass: function(name) {
+						return _classpath.getClass(name);
+					},
+					add: function(p) {
+						if (p._file && p._file.isDirectory()) {
+							_classpath.add(Packages.inonit.script.engine.Code.Loader.create(p._file));
+						} else if (p._file && p._file.exists() && !p._file.isDirectory()) {
+							//	Currently can be used to add .jar directly to classpath through jsh.loader.java.add
+							//	TODO	determine whether this should be switched to jar._file; used by servlet plugin to put Tomcat classes
+							//			in classpath
+							_classpath.add(Packages.inonit.script.engine.Code.Loader.create(p._file));
+						} else if (p._file && !p._file.exists()) {
+							//	do nothing
+						} else if (p.slime) {
+							if (p.slime.loader) {
+								_classpath.add(p.slime.loader.java.adapt().child("$jvm/classes"));
+							} else {
+								throw new Error();
+							}
+						} else if (p.jar) {
+							if (p.jar._file) {
+								if (Packages.java.lang.System.getenv("SLIME_JAVA_SERVICELOADER_WORKS")) {
+									_classpath.add(Packages.inonit.script.engine.Code.Loader.zip(
+										Packages.inonit.script.engine.Code.Loader.Resource.create(p.jar._file)
+									));
+									// _classpath.add(Packages.inonit.script.engine.Code.Loader.create(p.jar._file));
+								} else {
+									_classpath.addJar(p.jar._file);
+								}
+							} else if (p.jar.resource) {
+								_classpath.add(Packages.inonit.script.engine.Code.Loader.zip(p.jar.resource.java.adapt(p.jar.resource.name)));
+							} else {
+								throw new Error();
+							}
+						} else if (p.src) {
+							if (p.src.loader) {
+								_classpath.add(_classpath.compiling(p.src.loader.java.adapt()));
+							} else {
+								throw new Error();
+							}
 						} else {
-							_classpath.addJar(p.jar._file);
+							throw new Error("No relevant handler for add(" + p + ")");
 						}
-					} else if (p.jar.resource) {
-						_classpath.add(Packages.inonit.script.engine.Code.Loader.zip(p.jar.resource.java.adapt(p.jar.resource.name)));
-					} else {
-						throw new Error();
 					}
-				} else if (p.src) {
-					if (p.src.loader) {
-						_classpath.add(_classpath.compiling(p.src.loader.java.adapt()));
-					} else {
-						throw new Error();
-					}
-				} else {
-					throw new Error("No relevant handler for add(" + p + ")");
 				}
-			};
-		})($loader.getClasspath());
+			}
+		)($loader.getClasspath());
 
 		$exports.$api.jrunscript = {
 			Properties: {

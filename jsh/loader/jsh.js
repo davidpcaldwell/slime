@@ -329,23 +329,29 @@
 							// 	}
 							// ));
 						},
-						java: new function() {
-							this.toString = function() {
-								return $slime.classpath.toString();
+						java: (
+							function() {
+								/**
+								 * @type { slime.jsh.loader.Exports["java"] }
+								 */
+								var rv = {
+									toString: function() {
+										return $slime.classpath.toString();
+									},
+									add: function(pathname) {
+										if (!pathname) throw new TypeError("'pathname' must be provided and not undefined or null.");
+										if (!pathname.directory && !pathname.file) {
+											return;
+										}
+										$slime.classpath.add({ _file: pathname.java.adapt() });
+									},
+									getClass: function(name) {
+										return $slime.classpath.getClass(name);
+									}
+								};
+								return rv;
 							}
-
-							this.add = function(pathname) {
-								if (!pathname) throw new TypeError("'pathname' must be provided and not undefined or null.");
-								if (!pathname.directory && !pathname.file) {
-									return;
-								}
-								$slime.classpath.add({ _file: pathname.java.adapt() });
-							};
-
-							this.getClass = function(name) {
-								return $slime.classpath.getClass(name);
-							}
-						},
+						)(),
 						plugins: function(from) {
 							var isPathname = from && from.java && from.java.adapt && $slime.classpath.getClass("java.io.File").isInstance(from.java.adapt());
 							var isFile = from && from.pathname && from.pathname.file;

@@ -410,7 +410,13 @@ namespace slime.jrunscript {
 
 				export namespace Loader {
 					export namespace Classes {
-						export interface Interface {}
+						export interface Interface {
+							setAsThreadContextClassLoaderFor: (_thread: any) => void
+							getClass: (name: any) => any
+							add: (argument: any) => void
+							addJar: (argument: any) => void
+							compiling: (argument: any) => any
+						}
 					}
 				}
 			}

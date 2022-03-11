@@ -48,7 +48,7 @@
 			"command": "./wf tsc",
 			"problemMatcher": [],
 			"presentation": {
-				"echo": true,
+				"echo": false,
 				"reveal": "always",
 				"focus": false,
 				"panel": "dedicated",
