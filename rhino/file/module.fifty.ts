@@ -926,6 +926,12 @@ namespace slime.jrunscript.file {
 	)(fifty);
 
 	export interface Exports {
+		object: {
+			directory: (pathname: slime.jrunscript.file.world.Pathname) => slime.jrunscript.file.Directory
+		}
+	}
+
+	export interface Exports {
 		/** @deprecated Use {@link slime.jrunscript.io.Exports["archive"]["zip"]["encode"] } */
 		zip: any
 		/** @deprecated Use {@link slime.jrunscript.io.Exports["archive"]["zip"]["decode"] } */

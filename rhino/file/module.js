@@ -589,6 +589,11 @@
 									os: toWorldFilesystem(providers.os)
 								}
 							},
+							object: {
+								directory: function(pathname) {
+									return $exports.Pathname(pathname.pathname).directory;
+								}
+							},
 							Streams: $exports.Streams,
 							java: $exports.java,
 							workingDirectory: void(0)
