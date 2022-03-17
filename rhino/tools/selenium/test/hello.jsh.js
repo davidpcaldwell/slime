@@ -12,23 +12,9 @@
 	 * @param { slime.jsh.Global } jsh
 	 */
 	function(Packages,$api,jsh) {
-		/** @type { slime.js.Cast<slime.jrunscript.Packages["org"] & { openqa: any }> } */
-		var cast = function(org) {
-			return org;
-		}
-		/** @type { slime.jrunscript.Packages["org"] & { openqa: any }} */
-		var org = cast(Packages.org);
-		Packages.java.lang.System.setProperty("webdriver.chrome.driver",jsh.shell.jsh.lib.getRelativePath("selenium/chrome/chromedriver").toString());
-		jsh.shell.jsh.lib.getSubdirectory("selenium/java/lib").list().forEach(function(node) {
-			//jsh.shell.console("node = " + node);
-			jsh.loader.java.add(node.pathname);
-		})
-		jsh.shell.jsh.lib.getSubdirectory("selenium/java").list().forEach(function(node) {
-			//jsh.shell.console("node = " + node);
-			jsh.loader.java.add(node.pathname);
-		})
-		var _options = new org.openqa.selenium.chrome.ChromeOptions();
-		var _driver = new org.openqa.selenium.chrome.ChromeDriver(_options);
+		jsh.shell.tools.selenium.load();
+		var _options = new Packages.org.openqa.selenium.chrome.ChromeOptions();
+		var _driver = new Packages.org.openqa.selenium.chrome.ChromeDriver(_options);
 		_driver.quit();
 		jsh.shell.console("Done.");
 	}

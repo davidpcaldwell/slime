@@ -669,6 +669,7 @@ namespace slime.jrunscript {
 			apache: any
 			graalvm: any
 			jetbrains: any
+			openqa: any
 		}
 		inonit: {
 			script: {

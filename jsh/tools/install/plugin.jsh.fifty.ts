@@ -125,6 +125,9 @@ namespace slime.jsh.shell.tools {
 			install: (p?: { destination?: slime.jrunscript.file.Pathname, replace?: boolean }) => mkcert.Installation
 			require: () => mkcert.Installation
 		}
+		selenium: {
+			load: () => void
+		}
 		node: node.Installed | node.Absent
 		javamail: {
 			install: () => void

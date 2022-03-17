@@ -36,14 +36,6 @@
 
 		/**
 		 *
-		 * @param { slime.jrunscript.shell.browser.object.Chrome } chrome
-		 */
-		var getMajorVersion = function(chrome) {
-			return jsh.shell.browser.Chrome.getMajorVersion(chrome)
-		}
-
-		/**
-		 *
 		 * @param { number } majorVersion
 		 */
 		var getLatestVersion = function(majorVersion) {
@@ -63,7 +55,7 @@
 			return latest;
 		}
 
-		var majorVersion = getMajorVersion(jsh.shell.browser.chrome);
+		var majorVersion = jsh.shell.browser.Chrome.getMajorVersion(jsh.shell.browser.chrome);
 		jsh.shell.console("Chrome major version: " + majorVersion);
 
 		var latestVersion = getLatestVersion(majorVersion);

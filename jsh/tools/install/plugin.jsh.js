@@ -82,6 +82,7 @@
 					kotlin: void(0),
 					jsyaml: void(0),
 					mkcert: void(0),
+					selenium: void(0),
 					node: void(0),
 					javamail: void(0),
 					jsoup: void(0),
@@ -355,6 +356,28 @@
 						}
 					}
 				})();
+
+				jsh.shell.tools.selenium = (
+					function() {
+						return {
+							load: function() {
+								if (jsh.shell.jsh.lib.getSubdirectory("selenium/java") && jsh.shell.jsh.lib.getSubdirectory("selenium/chrome")) {
+									Packages.java.lang.System.setProperty("webdriver.chrome.driver",jsh.shell.jsh.lib.getRelativePath("selenium/chrome/chromedriver").toString());
+									jsh.shell.jsh.lib.getSubdirectory("selenium/java/lib").list().forEach(function(node) {
+										//jsh.shell.console("node = " + node);
+										jsh.loader.java.add(node.pathname);
+									});
+									jsh.shell.jsh.lib.getSubdirectory("selenium/java").list().forEach(function(node) {
+										//jsh.shell.console("node = " + node);
+										jsh.loader.java.add(node.pathname);
+									});
+								} else {
+									throw new Error("Could not be loaded; is Selenium installed? Try ./jsh.bash jsh/tools/install/selenium.jsh.js");
+								}
+							}
+						};
+					}
+				)();
 
 				var kotlin = (jsh.shell.jsh.lib) ? new function() {
 					var location = jsh.shell.jsh.lib.getRelativePath("kotlin");
