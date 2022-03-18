@@ -119,6 +119,19 @@
 
 			/**
 			 *
+			 * @param { string } pathname
+			 */
+			function file_exists(pathname) {
+				return function() {
+					return $api.Function.impure.ask(function(events) {
+						var peer = was.newPeer(pathname);
+						return peer.exists() && !peer.isDirectory();
+					});
+				}
+			}
+
+			/**
+			 *
 			 * @param { string } file
 			 * @param { string } destination
 			 * @returns { slime.$api.fp.impure.Tell<void> }
@@ -171,7 +184,8 @@
 							},
 							copy: function(p) {
 								return copy(pathname, p.to);
-							}
+							},
+							exists: file_exists(pathname)
 						},
 						directory: {
 							exists: directory_exists(pathname),

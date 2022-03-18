@@ -38,36 +38,6 @@ namespace slime.jrunscript.file {
 		addFinalizer: any
 	}
 
-	export interface Node {
-		pathname: Pathname
-		directory: boolean
-		remove: () => void,
-		parent: Directory,
-		copy: (
-			pathname: Pathname | Directory,
-			mode?: {
-				filter?: (p: {
-					entry: {
-						path: string
-						node: slime.jrunscript.file.Node
-					},
-					exists: slime.jrunscript.file.Node
-				}) => boolean
-
-				recursive?: any
-			}
-		) => Node
-	}
-
-	export interface File extends Node {
-		read: {
-			(p: StringConstructor): string
-			(p: any): any
-		}
-		length: any
-		modified: Date
-	}
-
 	/**
 	 * A filesystem implementation from which files may be read and listed and to which files may be written.
 	 */
@@ -592,6 +562,8 @@ namespace slime.jrunscript.file {
 
 
 		export interface File {
+			exists: () => slime.$api.fp.impure.Ask<{},boolean>
+
 			write: {
 				string: (p: {
 					content: string
@@ -893,9 +865,10 @@ namespace slime.jrunscript.file {
 				fifty.run(fifty.tests.sandbox.filesystem);
 
 				fifty.load("module-Searchpath.fifty.ts");
-				fifty.load("module-directory.fifty.ts");
 				fifty.load("module-node.fifty.ts");
 				fifty.load("module-Loader.fifty.ts");
+
+				fifty.load("file.fifty.ts");
 			}
 		}
 	//@ts-ignore
