@@ -4,8 +4,14 @@
 //
 //	END LICENSE
 
+//@ts-check
 (
-	function() {
+	/**
+	 *
+	 * @param { slime.$api.Global } $api
+	 * @param { slime.jsh.Global } jsh
+	 */
+	function($api, jsh) {
 		jsh.shell.jsh.require({
 			satisfied: function() {
 				return Boolean(jsh.httpd.Tomcat);
@@ -109,6 +115,11 @@
 
 		var tomcat = new jsh.httpd.Tomcat();
 
+		/**
+		 *
+		 * @param { slime.runtime.browser.test.internal.suite.Browser } browser
+		 * @returns { slime.runtime.browser.test.internal.suite.Host }
+		 */
 		var run = function(browser) {
 			//	TODO	first two lines are now copied to loader/browser/test/server.js
 			tomcat.map({
@@ -128,6 +139,7 @@
 							scope.$exports.handle = scope.httpd.Handler.series(
 								function(request) {
 									jsh.shell.console("REQUEST: " + request.method + " " + request.path);
+									return void(0);
 								},
 								(
 									(jsh.typescript)
@@ -173,7 +185,7 @@
 										})()
 										: $api.Function.returning(void(0))
 								),
-								new scope.httpd.Handler.Loader({
+								scope.httpd.Handler.Loader({
 									loader: new jsh.file.Loader({
 										directory: toResult.base
 									})
@@ -224,6 +236,8 @@
 					process = p;
 				}
 			});
+
+			this.name = void(0);
 
 			this.start = function(p) {
 				open(p.uri);
@@ -321,4 +335,5 @@
 			});
 		}
 	}
-)();
+//@ts-ignore
+)($api, jsh);

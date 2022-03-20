@@ -126,6 +126,10 @@ namespace slime.jsh.shell.tools {
 			require: () => mkcert.Installation
 		}
 		selenium: {
+			/**
+			 * If both the Java Selenium API and the Chrome Selenium driver are installed into the shell, loads them; otherwise,
+			 * exits.
+			 */
 			load: () => void
 		}
 		node: node.Installed | node.Absent

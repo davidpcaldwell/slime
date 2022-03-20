@@ -20,3 +20,13 @@ namespace slime.runtime.browser.test {
 		export type Factory = (configuration: Configuration) => slime.servlet.handler
 	}
 }
+
+namespace slime.runtime.browser.test.internal.suite {
+	export interface Browser {
+		start: any
+	}
+
+	export interface Host {
+		port: number
+	}
+}

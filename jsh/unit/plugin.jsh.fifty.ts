@@ -59,7 +59,7 @@ namespace slime.jsh {
 				/**
 				 * Browsers in precedence order
 				 */
-				installed: { id: string, name: string }[]
+				installed: { id: string, name: string, delegate: any }[]
 			}
 		}
 	}
