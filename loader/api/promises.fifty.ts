@@ -4,10 +4,6 @@
 //
 //	END LICENSE
 
-namespace slime.rename {
-	export type JavascriptConsole = Console
-}
-
 namespace slime.definition.test.promises {
 	export namespace internal {
 		export type Events = slime.$api.Events<{
@@ -31,7 +27,7 @@ namespace slime.definition.test.promises {
 	export interface Export {
 		Registry: (p?: { name: string }) => Registry
 		Promise: PromiseConstructor
-		console: slime.rename.JavascriptConsole
+		console: slime.external.lib.dom.Console
 		controlled: (p?: { id: string }) => {
 			promise: Promise<any>
 			resolve: (value: any) => void

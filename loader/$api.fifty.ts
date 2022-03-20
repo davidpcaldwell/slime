@@ -13,20 +13,10 @@ type Iterable_match<L,R> = {
 	right: R
 }
 
-
-/**
- * A namespace that aliases global types so that they can be shadowed by namespaced type definitions and still be available within
- * those namespaces.
- */
-namespace slime.alias {
-	//	TODO	probably should reference these as slime.global.Function
-	export type GlobalFunction = Function
-}
-
 namespace slime.$api {
 	export interface Global {
 		debug: {
-			disableBreakOnExceptionsFor: <T extends slime.alias.GlobalFunction>(f: T) => T
+			disableBreakOnExceptionsFor: <T extends slime.external.lib.es5.Function>(f: T) => T
 		}
 		Object: {
 			(p: { properties: {name: string, value: any }[] }): { [x: string]: any }
@@ -36,7 +26,7 @@ namespace slime.$api {
 				<T,U,V>(t: T, u: U, v: V): T & U & V
 				<T,U,V,W>(t: T, u: U, v: V, w: W): T & U & V & W
 			}
-			properties: slime.alias.GlobalFunction
+			properties: slime.external.lib.es5.Function
 			property: any
 			optional: any
 			values: {
@@ -74,12 +64,12 @@ namespace slime.$api {
 		}
 		deprecate: {
 			(o: object, property: string): void
-			<T extends slime.alias.GlobalFunction>(f: T): T
+			<T extends slime.external.lib.es5.Function>(f: T): T
 			warning: any
 		}
 		experimental: {
 			(o: object, property: string): void
-			<T extends slime.alias.GlobalFunction>(f: T): T
+			<T extends slime.external.lib.es5.Function>(f: T): T
 		}
 		debugger: any
 		Filter: {
