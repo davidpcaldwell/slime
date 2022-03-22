@@ -136,7 +136,9 @@
 
 				jsh.shell.tools.graal = graal;
 
-				var tomcat = $loader.file("plugin.jsh.tomcat.js", {
+				/** @type { slime.jsh.shell.tools.internal.tomcat.Script } */
+				var script = $loader.script("plugin.jsh.tomcat.js");
+				var tomcat = script({
 					$api: jsh.tools.install.$api,
 					jsh: jsh
 				});

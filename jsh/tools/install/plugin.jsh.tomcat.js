@@ -89,13 +89,13 @@
 			if (!p) p = {};
 			var notes = (function() {
 				if (p.mock && p.mock.notes) return p.mock.notes;
-				var home = (typeof(p.home) != "undefined") ? p.home : jsh.shell.jsh.lib.getSubdirectory("tomcat");
+				var home = (typeof(p.home) != "undefined") ? p.home : jsh.shell.jsh.lib.getRelativePath("tomcat");
 				if (!home) return null;
-				return home.getFile("RELEASE-NOTES");
+				return home.directory.getFile("RELEASE-NOTES");
 			})();
 			if (!notes) return null;
 			var lines = notes.read(String).split("\n");
-			var rv;
+			var rv = null;
 			lines.forEach(function(line) {
 				if (rv) return;
 				var matcher = /(?:\s*)Apache Tomcat Version (\d+\.\d+\.\d+)(?:\s*)/;
@@ -107,7 +107,13 @@
 			return rv;
 		}
 
-		$exports.install = $context.$api.Events.Function(function(p,events) {
+		/**
+		 *
+		 * @param { Parameters<slime.jsh.shell.tools.internal.tomcat.Exports["install"]>[0] } p
+		 * @param { slime.$api.Events<slime.jsh.shell.tools.tomcat.install.Events> } events
+		 * @returns
+		 */
+		var install = function(p,events) {
 			if (!p) p = {};
 
 			var lib = (p.mock && p.mock.lib) ? p.mock.lib : jsh.shell.jsh.lib;
@@ -172,18 +178,30 @@
 			events.fire("console","Installing Tomcat at " + p.to);
 			to.getSubdirectory("apache-tomcat-" + p.version).move(p.to, { overwrite: true });
 			events.fire("installed", { to: p.to });
-		}, {
-			console: function(e) {
-				jsh.shell.console(e.detail);
-			}
-		});
+		};
 
-		$exports.require = $api.Events.Function(function(p,events) {
-			jsh.shell.jsh.require({
-				satisfied: function() { return Boolean($exports.installed()); },
-				install: function() { return $exports.install(p,events); }
-			});
-		});
+		$exports.install = $context.$api.Events.Function(
+			install,
+			{
+				console: function(e) {
+					jsh.shell.console(e.detail);
+				}
+			}
+		);
+
+		$exports.require = $api.Events.Function(
+			/**
+			 *
+			 * @param { Parameters<slime.jsh.shell.tools.internal.tomcat.Exports["install"]>[0] } p
+			 * @param { slime.$api.Events<slime.jsh.shell.tools.tomcat.install.Events> } events
+			 */
+			function(p,events) {
+				jsh.shell.jsh.require({
+					satisfied: function() { return Boolean($exports.installed()); },
+					install: function() { return install(p,events); }
+				});
+			}
+		);
 
 		$exports.test = {
 			getLatestVersion: getLatestVersion
