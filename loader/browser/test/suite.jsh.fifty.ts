@@ -35,4 +35,82 @@ namespace slime.runtime.browser.test.internal.suite {
 	export interface Host {
 		port: number
 	}
+
+	(
+		function(
+			fifty: slime.fifty.test.kit
+		) {
+			const { verify } = fifty;
+			const { $api, jsh } = fifty.global;
+			fifty.tests.manual = {};
+
+			fifty.tests.chrome = fifty.test.Parent();
+
+			fifty.tests.chrome.success = function() {
+				if (jsh.shell.browser.chrome) jsh.shell.jsh({
+					shell: jsh.shell.jsh.src,
+					script: jsh.shell.jsh.src.getFile("loader/browser/test/suite.jsh.js"),
+					arguments: [
+						"-suite", jsh.shell.jsh.src.getFile("loader/browser/test/test/issue300.suite.js"),
+						"-browser", "chrome"
+					],
+					evaluate: function(result: { status: number }) {
+						verify(result).status.is(0);
+					}
+				});
+			};
+
+			fifty.tests.chrome.failure = function() {
+				if (jsh.shell.browser.chrome) jsh.shell.jsh({
+					shell: jsh.shell.jsh.src,
+					script: jsh.shell.jsh.src.getFile("loader/browser/test/suite.jsh.js"),
+					arguments: [
+						"-suite", jsh.shell.jsh.src.getFile("loader/browser/test/test/issue300.suite.js"),
+						"-browser", "chrome",
+						"-parameter", "failure=true"
+					],
+					evaluate: function(result: { status: number }) {
+						verify(result).status.is(1);
+					}
+				})
+			};
+
+			fifty.tests.suite = function() {
+				fifty.run(fifty.tests.chrome);
+			}
+
+			function run(browser: string, suite: string = "contributor/browser-jsapi-suite.js"): slime.jrunscript.shell.run.Events["exit"] {
+				var rv: slime.jrunscript.shell.run.Events["exit"];
+				jsh.shell.world.run(
+					jsh.shell.Invocation.create({
+						command: jsh.shell.jsh.src.getRelativePath("jsh.bash"),
+						arguments: $api.Array.build(function(rv: string[]) {
+							rv.push("loader/browser/test/suite.jsh.js");
+							rv.push("-suite", suite);
+							rv.push("-browser", browser);
+							rv.push("-view", "stdio");
+						}),
+						directory: jsh.shell.jsh.src.toString()
+					})
+				)({
+					exit: function(e) {
+						rv = e.detail;
+					}
+				});
+				return rv;
+			}
+
+			fifty.tests.manual.chrome = function() {
+				var result = run("chrome");
+				jsh.shell.console("Exit status: " + result.status);
+			}
+
+			fifty.tests.manual.selenium = function() {
+				var result = run("selenium:chrome");
+				jsh.shell.console("Exit status: " + result.status);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
 }

@@ -8,10 +8,11 @@
 (
 	/**
 	 *
+	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.Global } jsh
 	 */
-	function($api, jsh) {
+	function(Packages, $api, jsh) {
 		jsh.shell.tools.tomcat.require();
 
 		var parameters = jsh.script.getopts({
@@ -276,10 +277,33 @@
 
 		/**
 		 *
+		 * @returns { slime.runtime.browser.test.internal.suite.Browser }
+		 */
+		var SeleniumChrome = function() {
+			jsh.shell.tools.selenium.load();
+			var _driver;
+			return {
+				name: "Chrome (Selenium)",
+				start: function(p) {
+					var _options = new Packages.org.openqa.selenium.chrome.ChromeOptions();
+					_driver = new Packages.org.openqa.selenium.chrome.ChromeDriver(_options);
+					_driver.get(p.uri);
+				},
+				kill: function() {
+					_driver.quit();
+				}
+			}
+		}
+
+		/**
+		 *
 		 * @param { string } argument
 		 * @returns { slime.runtime.browser.test.internal.suite.Browser }
 		 */
 		var toBrowser = function(argument) {
+			if (argument == "selenium:chrome") {
+				return SeleniumChrome();
+			}
 			if (argument == "chrome") {
 				var port = (function() {
 					if (parameters.options["chrome:debug:port"]) return parameters.options["chrome:debug:port"];
@@ -334,4 +358,4 @@
 		}
 	}
 //@ts-ignore
-)($api, jsh);
+)(Packages, $api, jsh);

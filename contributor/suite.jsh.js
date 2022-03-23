@@ -213,10 +213,6 @@
 								}
 							}
 						}
-
-						this.suite = new jsh.unit.html.Part({
-							pathname: jsh.shell.jsh.src.getRelativePath("loader/browser/test/suite.jsh.api.html")
-						});
 					}
 				}
 			}

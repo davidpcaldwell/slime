@@ -37,6 +37,7 @@
 			fifty.load("../tools/code/module.fifty.ts");
 			fifty.load("../tools/wf/plugin.jsh.fifty.ts");
 			if (!isDocker) fifty.load("../tools/wf/plugin-standard.jsh.fifty.ts");
+			if (!isDocker) fifty.load("../loader/browser/test/suite.jsh.fifty.ts")
 			//fifty.load("../");
 		}
 	}
