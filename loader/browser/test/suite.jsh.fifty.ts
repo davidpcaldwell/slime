@@ -23,7 +23,13 @@ namespace slime.runtime.browser.test {
 
 namespace slime.runtime.browser.test.internal.suite {
 	export interface Browser {
-		start: any
+		name: string
+
+		start: (p: {
+			uri: string
+		}) => void
+
+		kill: () => void
 	}
 
 	export interface Host {

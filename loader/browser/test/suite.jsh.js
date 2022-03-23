@@ -101,7 +101,7 @@
 
 		// TODO: automated test cases for this script. Manual test cases for now:
 		// rhino/jrunscript/api.js
-		// loader/browser/test/test/sample-suite.
+		// loader/browser/test/test/sample.suite.js
 		// $HOME/.bash_profile
 
 		var $loader = new jsh.file.Loader({ directory: jsh.script.file.parent });
@@ -274,6 +274,11 @@
 			}
 		};
 
+		/**
+		 *
+		 * @param { string } argument
+		 * @returns { slime.runtime.browser.test.internal.suite.Browser }
+		 */
 		var toBrowser = function(argument) {
 			if (argument == "chrome") {
 				var port = (function() {
