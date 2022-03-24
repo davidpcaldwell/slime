@@ -648,6 +648,9 @@ namespace slime.jrunscript {
 			text: {
 				SimpleDateFormat: any
 			}
+			security: {
+				KeyStore: any
+			}
 			awt: {
 				Desktop: any
 			}
