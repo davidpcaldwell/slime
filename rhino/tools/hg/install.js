@@ -4,8 +4,15 @@
 //
 //	END LICENSE
 
+//@ts-check
 (
-	function() {
+	/**
+	 *
+	 * @param { slime.$api.Global } $api
+	 * @param { slime.jrunscript.hg.install.Context } $context
+	 * @param { slime.jrunscript.hg.install.Exports} $exports
+	 */
+	function($api,$context,$exports) {
 		//	See https://www.mercurial-scm.org/downloads
 		var distributions = {
 			osx: [
@@ -57,11 +64,21 @@
 					distribution: {
 						url: "https://www.mercurial-scm.org/mac/binaries/Mercurial-4.5.2-macosx10.12.pkg"
 					}
+				},
+				{
+					version: "10.15",
+					distribution: {
+						url: "https://www.mercurial-scm.org/mac/binaries/Mercurial-6.0.2-macosx10.15.pkg"
+					}
 				}
 			].map(function(o) {
-				o.minor = Number(o.version.split(".")[1])
-				o.hg = /^(?:.*)Mercurial\-([\d\.]+)-.*/.exec(o.distribution.url)[1];
-				return o;
+				return $api.Object.compose(
+					o,
+					{
+						minor: Number(o.version.split(".")[1]),
+						hg: /^(?:.*)Mercurial\-([\d\.]+)-.*/.exec(o.distribution.url)[1]
+					}
+				);
 			})
 		};
 
@@ -114,79 +131,92 @@
 		};
 
 		var GUI = $context.api.Error.Type("Please execute the graphical installer.");
-		$exports.install = $context.api.Events.Function(function(p,events) {
-			var api = {
-				shell: (p && p.mock && p.mock.shell) ? p.mock.shell : $context.api.shell,
-				install: (p && p.mock && p.mock.install) ? p.mock.install : $context.api.install
-			};
-			var console = function(message) {
-				events.fire("console", message);
-			}
-			var installed = (p && p.mock && typeof(p.mock.installed) != "undefined") ? p.mock.installed : $exports.installed();
-			if (api.shell.os.name == "Mac OS X") {
-				console("Detected OS X " + api.shell.os.version);
-
-				var distribution = $exports.distribution.osx({ os: api.shell.os.version });
-
-				if (installed && distribution.hg == installed.version) {
-					console("Already installed: hg " + installed.version);
-					return;
-				} else if (installed) {
-					console("Found version: " + installed.version + "; upgrading to " + distribution.hg);
+		$exports.install = $context.api.Events.Function(
+			/**
+			 *
+			 * @param { Parameters<slime.jrunscript.hg.install.Exports["install"]>[0] } p
+			 * @param { slime.$api.Events<{ console: string }> } events
+			 * @returns
+			 */
+			function(p,events) {
+				var api = {
+					shell: (p && p.mock && p.mock.shell) ? p.mock.shell : $context.api.shell,
+					install: (p && p.mock && p.mock.install) ? p.mock.install : $context.api.install
+				};
+				var console = function(message) {
+					events.fire("console", message);
 				}
+				var installed = (p && p.mock && typeof(p.mock.installed) != "undefined") ? p.mock.installed : $exports.installed();
+				if (api.shell.os.name == "Mac OS X") {
+					//	Note that Mercurial currently does not work on macOS 12.3:
+					//	https://bz.mercurial-scm.org/show_bug.cgi?id=6668
+					//
+					//	Note also that 12.3 is detected as "10.16" using the method below; likely this applies to many versions,
+					//	perhaps all 11.x and 12.x versions?
+					console("Detected OS X " + api.shell.os.version);
 
-				console("Getting " + distribution.distribution.url);
-				var file = api.install.get({
-					url: distribution.distribution.url
-				});
+					var distribution = $exports.distribution.osx({ os: api.shell.os.version });
 
-				if (/\.pkg$/.test(file.pathname.basename)) {
-					console("Install: " + file);
-					api.shell.run({
-						command: "open",
-						arguments: [file]
+					if (installed && distribution.hg == installed.version) {
+						console("Already installed: hg " + installed.version);
+						return;
+					} else if (installed) {
+						console("Found version: " + installed.version + "; upgrading to " + distribution.hg);
+					}
+
+					console("Getting " + distribution.distribution.url);
+					var file = api.install.get({
+						url: distribution.distribution.url
 					});
-					//	TODO	probably this will not look pretty, should catch this error
-					throw new GUI("Please execute the graphical installer.");
-				} else {
-					throw new Error("Unimplemented: installation of file type that is not .pkg: " + file);
-				}
-			} else {
-				if (installed) {
-					$context.api.shell.console("hg installed: version " + installed.version);
-				} else if ($context.api.shell.PATH.getCommand("apt")) {
-					//	TODO	should actually detect GUI rather than assuming
-					//	TODO	GUI does not work under Nashorn because of problems with adapters, so Nashorn-based shells installing
-					//			Mercurial do not work, so moving back to non-GUI installation for now
-					var HAS_GUI = false;
-					if (HAS_GUI) {
-						var password = $context.api.ui.askpass.gui({
-							prompt: "Enter password for sudo:"
+
+					if (/\.pkg$/.test(file.pathname.basename)) {
+						console("Install: " + file);
+						api.shell.run({
+							command: "open",
+							arguments: [file]
 						});
-						$context.api.shell.run({
-							command: "sudo",
-							arguments: ["-S", "apt", "install", "mercurial"],
-							stdio: {
-								input: password + "\n"
-							}
-						});
+						//	TODO	probably this will not look pretty, should catch this error
+						throw new GUI("Please execute the graphical installer.");
 					} else {
-						//	TODO	options for sudo password
-						//			*	force user to do sudo ls beforehand to cache credentials
-						//			*	figure out way to use -S flag to route password typed from console to sudo
-						$context.api.shell.run({
-							command: "sudo",
-							arguments: ["apt", "install", "mercurial", "-y"],
-							stdio: {
-								input: $context.api.shell.stdio.input
-							}
-						});
+						throw new Error("Unimplemented: installation of file type that is not .pkg: " + file);
 					}
 				} else {
-					throw new Error("Unsupported: Mercurial install on non-OS X, non-apt system.");
+					if (installed) {
+						$context.api.shell.console("hg installed: version " + installed.version);
+					} else if ($context.api.shell.PATH.getCommand("apt")) {
+						//	TODO	should actually detect GUI rather than assuming
+						//	TODO	GUI does not work under Nashorn because of problems with adapters, so Nashorn-based shells installing
+						//			Mercurial do not work, so moving back to non-GUI installation for now
+						var HAS_GUI = false;
+						if (HAS_GUI) {
+							var password = $context.api.ui.askpass.gui({
+								prompt: "Enter password for sudo:"
+							});
+							$context.api.shell.run({
+								command: "sudo",
+								arguments: ["-S", "apt", "install", "mercurial"],
+								stdio: {
+									input: password + "\n"
+								}
+							});
+						} else {
+							//	TODO	options for sudo password
+							//			*	force user to do sudo ls beforehand to cache credentials
+							//			*	figure out way to use -S flag to route password typed from console to sudo
+							$context.api.shell.run({
+								command: "sudo",
+								arguments: ["apt", "install", "mercurial", "-y"],
+								stdio: {
+									input: $context.api.shell.stdio.input
+								}
+							});
+						}
+					} else {
+						throw new Error("Unsupported: Mercurial install on non-OS X, non-apt system.");
+					}
 				}
 			}
-		});
+		);
 		$exports.install.GUI = GUI;
 
 		for (var x in $context.api.module) {
@@ -202,4 +232,5 @@
 			});
 		}
 	}
-)();
+//@ts-ignore
+)($api,$context,$exports);

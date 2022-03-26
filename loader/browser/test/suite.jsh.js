@@ -210,9 +210,14 @@
 					//	TODO	url-encode the below
 					uri += "&" + argument;
 				});
-				browser.start({
-					uri: uri
-				});
+				try {
+					browser.start({
+						uri: uri
+					});
+				} catch (e) {
+					jsh.shell.console(e);
+					if (e.javaException) e.javaException.printStackTrace();
+				}
 			});
 			return {
 				port: tomcat.port
@@ -295,12 +300,46 @@
 			}
 		}
 
+		var DockerSeleniumChrome = function() {
+			jsh.shell.tools.selenium.load();
+			var _driver;
+			return {
+				name: "Remote (Selenium)",
+				start: function(p) {
+					//	TODO	extend Properties to properly include superclass methods?
+					//	TODO	remove need for the property manipulation by patching Selenium or transferring these global
+					//			properties to be in the inonit.script.jsh.Main Java class itself; would they be available where
+					//			needed?
+					/** @type { any } */
+					var _properties = Packages.java.lang.System.getProperties();
+					var saved = {};
+					var streams = ["stdin", "stdout", "stderr"];
+					streams.forEach(function(name) {
+						saved[name] = _properties.get("inonit.script.jsh.Main." + name);
+						_properties.remove("inonit.script.jsh.Main." + name);
+					});
+					var _options = new Packages.org.openqa.selenium.chrome.ChromeOptions();
+					_driver = new Packages.org.openqa.selenium.remote.RemoteWebDriver(new Packages.java.net.URL("http://localhost:4444/wd/hub"), _options);
+					streams.forEach(function(name) {
+						_properties.put("inonit.script.jsh.Main." + name, saved[name]);
+					})
+					_driver.get(p.uri.replace(/127\.0\.0\.1/g, "host.docker.internal"));
+				},
+				kill: function() {
+					_driver.quit();
+				}
+			}
+		}
+
 		/**
 		 *
 		 * @param { string } argument
 		 * @returns { slime.runtime.browser.test.internal.suite.Browser }
 		 */
 		var toBrowser = function(argument) {
+			if (argument == "docker:selenium:chrome") {
+				return DockerSeleniumChrome();
+			}
 			if (argument == "selenium:chrome") {
 				return SeleniumChrome();
 			}

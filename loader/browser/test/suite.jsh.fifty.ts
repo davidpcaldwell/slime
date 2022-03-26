@@ -109,8 +109,16 @@ namespace slime.runtime.browser.test.internal.suite {
 				var result = run("selenium:chrome");
 				jsh.shell.console("Exit status: " + result.status);
 			}
+
+			fifty.tests.manual.docker = {
+				selenium: {
+					chrome: function() {
+						var result = run("docker:selenium:chrome");
+						jsh.shell.console("Exit status: " + result.status);
+					}
+				}
+			}
 		}
 	//@ts-ignore
 	)(fifty);
-
 }

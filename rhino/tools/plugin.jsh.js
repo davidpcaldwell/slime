@@ -80,7 +80,10 @@
 						}
 					});
 
-					jsh.tools.hg = $loader.file("hg/install.js", {
+					/** @type { slime.jrunscript.hg.install.Script } */
+					var hgInstall = $loader.script("hg/install.js");
+
+					jsh.tools.hg = hgInstall({
 						api: {
 							module: module,
 							shell: jsh.shell,

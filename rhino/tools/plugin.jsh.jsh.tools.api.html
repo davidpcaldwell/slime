@@ -32,7 +32,7 @@ END LICENSE
 
 				verify(scope.api.hg).evaluate(function() { return this.distribution.osx({ os: "10.3.2" }) }).threw.type(Error);
 
-				verify(scope.api.hg).distribution.osx({ os: "10.13.1" }).distribution.url.is("https://www.mercurial-scm.org/mac/binaries/Mercurial-4.5.2-macosx10.12.pkg");
+				verify(scope.api.hg).distribution.osx({ os: "10.16" }).distribution.url.is("https://www.mercurial-scm.org/mac/binaries/Mercurial-6.0.2-macosx10.15.pkg");
 			</script>
 			<ul>
 				<li class="object">
