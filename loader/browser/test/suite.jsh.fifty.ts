@@ -83,8 +83,9 @@ namespace slime.runtime.browser.test.internal.suite {
 				var rv: slime.jrunscript.shell.run.Events["exit"];
 				jsh.shell.world.run(
 					jsh.shell.Invocation.create({
-						command: jsh.shell.jsh.src.getRelativePath("jsh.bash"),
+						command: "/bin/bash",
 						arguments: $api.Array.build(function(rv: string[]) {
+							rv.push(jsh.shell.jsh.src.getRelativePath("jsh.bash").toString())
 							rv.push("loader/browser/test/suite.jsh.js");
 							rv.push("-suite", suite);
 							rv.push("-browser", browser);
@@ -115,6 +116,20 @@ namespace slime.runtime.browser.test.internal.suite {
 					chrome: function() {
 						var result = run("docker:selenium:chrome");
 						jsh.shell.console("Exit status: " + result.status);
+					}
+				},
+				compose: {
+					selenium: {
+						chrome: function() {
+							jsh.shell.console("Installing Selenium ...");
+							jsh.shell.jsh({
+								shell: jsh.shell.jsh.src,
+								script: jsh.shell.jsh.src.getFile("jsh/tools/install/selenium.jsh.js")
+							});
+							jsh.shell.console("Installed Selenium.");
+							var result = run("dockercompose:selenium:chrome");
+							jsh.shell.console("Exit status: " + result.status);
+						}
 					}
 				}
 			}

@@ -34,50 +34,52 @@
 			});
 		}
 
-		/**
-		 *
-		 * @param { number } majorVersion
-		 */
-		var getLatestVersion = function(majorVersion) {
-			var response = jsh.http.world.request({
-				request: {
-					method: "GET",
-					url: "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_" + majorVersion,
-					headers: []
+		if (jsh.shell.browser.chrome) {
+			/**
+			 *
+			 * @param { number } majorVersion
+			 */
+			var getLatestVersion = function(majorVersion) {
+				var response = jsh.http.world.request({
+					request: {
+						method: "GET",
+						url: "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_" + majorVersion,
+						headers: []
+					},
+					timeout: {
+						connect: 1000,
+						read: 1000
+					}
+				});
+				var result = response();
+				var latest = result.stream.character().asString();
+				return latest;
+			}
+
+			var majorVersion = jsh.shell.browser.Chrome.getMajorVersion(jsh.shell.browser.chrome);
+			jsh.shell.console("Chrome major version: " + majorVersion);
+
+			var latestVersion = getLatestVersion(majorVersion);
+			jsh.shell.console("Latest version: [" + latestVersion + "]");
+
+			//	TODO	jsh.tools.install.install uses cached downloads by default; find a better way to do this rather than just
+			//			deleting to bust cache
+			if (jsh.shell.HOME.getFile("Downloads/chromedriver_mac64.zip")) {
+				jsh.shell.HOME.getFile("Downloads/chromedriver_mac64.zip").remove();
+			}
+
+			var seleniumChrome = jsh.shell.jsh.lib.getRelativePath("selenium/chrome");
+
+			if (seleniumChrome.directory) seleniumChrome.directory.remove();
+
+			jsh.tools.install.install({
+				url: "https://chromedriver.storage.googleapis.com/" + latestVersion + "/" + "chromedriver_mac64.zip",
+				getDestinationPath: function(file) {
+					return "";
 				},
-				timeout: {
-					connect: 1000,
-					read: 1000
-				}
+				to: seleniumChrome
 			});
-			var result = response();
-			var latest = result.stream.character().asString();
-			return latest;
 		}
-
-		var majorVersion = jsh.shell.browser.Chrome.getMajorVersion(jsh.shell.browser.chrome);
-		jsh.shell.console("Chrome major version: " + majorVersion);
-
-		var latestVersion = getLatestVersion(majorVersion);
-		jsh.shell.console("Latest version: [" + latestVersion + "]");
-
-		//	TODO	jsh.tools.install.install uses cached downloads by default; find a better way to do this rather than just
-		//			deleting to bust cache
-		if (jsh.shell.HOME.getFile("Downloads/chromedriver_mac64.zip")) {
-			jsh.shell.HOME.getFile("Downloads/chromedriver_mac64.zip").remove();
-		}
-
-		var seleniumChrome = jsh.shell.jsh.lib.getRelativePath("selenium/chrome");
-
-		if (seleniumChrome.directory) seleniumChrome.directory.remove();
-
-		jsh.tools.install.install({
-			url: "https://chromedriver.storage.googleapis.com/" + latestVersion + "/" + "chromedriver_mac64.zip",
-			getDestinationPath: function(file) {
-				return "";
-			},
-			to: seleniumChrome
-		});
 	}
 //@ts-ignore
 )(jsh);

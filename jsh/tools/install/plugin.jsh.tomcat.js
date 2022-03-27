@@ -90,7 +90,7 @@
 			var notes = (function() {
 				if (p.mock && p.mock.notes) return p.mock.notes;
 				var home = (typeof(p.home) != "undefined") ? p.home : jsh.shell.jsh.lib.getRelativePath("tomcat");
-				if (!home) return null;
+				if (!home.directory) return null;
 				return home.directory.getFile("RELEASE-NOTES");
 			})();
 			if (!notes) return null;

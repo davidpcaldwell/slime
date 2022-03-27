@@ -363,8 +363,10 @@
 					function() {
 						return {
 							load: function() {
-								if (jsh.shell.jsh.lib.getSubdirectory("selenium/java") && jsh.shell.jsh.lib.getSubdirectory("selenium/chrome")) {
-									Packages.java.lang.System.setProperty("webdriver.chrome.driver",jsh.shell.jsh.lib.getRelativePath("selenium/chrome/chromedriver").toString());
+								if (jsh.shell.jsh.lib.getSubdirectory("selenium/java")) {
+									if (jsh.shell.jsh.lib.getSubdirectory("selenium/chrome")) {
+										Packages.java.lang.System.setProperty("webdriver.chrome.driver",jsh.shell.jsh.lib.getRelativePath("selenium/chrome/chromedriver").toString());
+									}
 									jsh.shell.jsh.lib.getSubdirectory("selenium/java/lib").list().forEach(function(node) {
 										//jsh.shell.console("node = " + node);
 										jsh.loader.java.add(node.pathname);

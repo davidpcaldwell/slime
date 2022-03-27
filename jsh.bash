@@ -53,8 +53,8 @@ debian_install_package() {
 	local package="$1"
 	if [ "$(which apt-get)" ]; then
 		if [ -z "${APT_UPDATED}" ]; then
-			${SUDO} apt-get update
-			${SUDO} apt-get upgrade
+			${SUDO} apt-get -y update
+			${SUDO} apt-get -y upgrade
 			APT_UPDATED=true
 		fi
 		${SUDO} apt-get -y install $package
