@@ -34,7 +34,7 @@
 			jsh.shell.console("Already exists: " + destination + "; remove first.");
 			jsh.shell.exit(1);
 		}
-		var template = jsh.file.Pathname(jsh.shell.environment.BASE).directory.getFile("loader/api/test/fifty/test/data/api.html");
+		var template = jsh.file.Pathname(jsh.shell.environment.BASE).directory.getFile("tools/fifty/test/data/api.html");
 		var html = template.read(String);
 		html = html.replace(/module\.fifty\.ts/g, tests.pathname.basename);
 		destination.write(html);

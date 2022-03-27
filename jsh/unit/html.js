@@ -291,7 +291,7 @@
 					var slime = new jsh.file.Loader({ directory: jsh.shell.jsh.src });
 
 					/** @type { slime.fifty.test.internal.test.Export } */
-					var run = slime.module("loader/api/test/fifty/test.js", {
+					var run = slime.module("tools/fifty/test.js", {
 						library: {
 							Verify: slime.file("loader/api/verify.js")
 						},

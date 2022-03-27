@@ -259,7 +259,7 @@
 						var verify = slime.file("loader/api/verify.js")
 
 						/** @type { slime.fifty.test.internal.test.Export } */
-						var run = slime.module("loader/api/test/fifty/test.js", {
+						var run = slime.module("tools/fifty/test.js", {
 							library: {
 								Verify: verify
 							},

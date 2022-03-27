@@ -223,7 +223,7 @@ plugin({
 				return new jsh.unit.Suite.Fork({
 					run: jsh.shell.jsh,
 					shell: p.shell,
-					//	always loader/api/test/fifty/test.jsh.js, but used as argument because could be a built shell
+					//	always tools/fifty/test.jsh.js, but used as argument because could be a built shell
 					script: p.script,
 					arguments: [p.file,"--view", "jsapi"]
 				})

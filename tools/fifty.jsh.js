@@ -53,7 +53,7 @@
 							},{});
 							return jsh.shell.jsh({
 								shell: SLIME,
-								script: SLIME.getFile("loader/api/test/fifty/test.jsh.js"),
+								script: SLIME.getFile("tools/fifty/test.jsh.js"),
 								arguments: p.arguments,
 								environment: $api.Object.compose(
 									jsh.shell.environment,
@@ -73,7 +73,7 @@
 						function(p) {
 							return jsh.shell.jsh({
 								shell: SLIME,
-								script: SLIME.getFile("loader/api/test/fifty/test-browser.jsh.js"),
+								script: SLIME.getFile("tools/fifty/test-browser.jsh.js"),
 								arguments: p.arguments,
 								environment: $api.Object.compose(
 									jsh.shell.environment

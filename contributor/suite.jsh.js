@@ -224,7 +224,7 @@
 				parts: {
 					wf: jsh.unit.fifty.Part({
 						shell: environment.jsh.unbuilt.src,
-						script: environment.jsh.unbuilt.src.getFile("loader/api/test/fifty/test.jsh.js"),
+						script: environment.jsh.unbuilt.src.getFile("tools/fifty/test.jsh.js"),
 						file: environment.jsh.unbuilt.src.getFile("wf.fifty.ts")
 					})
 				}
@@ -237,7 +237,7 @@
 				parts: {
 					runtime: jsh.unit.fifty.Part({
 						shell: environment.jsh.unbuilt.src,
-						script: environment.jsh.unbuilt.src.getFile("loader/api/test/fifty/test.jsh.js"),
+						script: environment.jsh.unbuilt.src.getFile("tools/fifty/test.jsh.js"),
 						file: environment.jsh.unbuilt.src.getFile("loader/node/loader.fifty.ts")
 					})
 				}

@@ -152,7 +152,7 @@
 			if (files[i].path == "jsconfig.json") extension = "js";
 			if (files[i].path == "rhino/tools/github/tools/dtsgen.json") extension = "js";
 			if (files[i].path == "tools/wf/test/data/plugin-standard/jsconfig.json") extension = "js";
-			if (files[i].path == "loader/api/test/fifty/vscode-tasks-obsolete.json") extension = "js";
+			if (files[i].path == "tools/fifty/vscode-tasks-obsolete.json") extension = "js";
 			if (extension == "json" && files[i].path.split("/")[0] == ".vscode") extension = "js";
 			if (files[i].path == "loader/jrunscript/test/data/ServiceLoader/META-INF/services/java.lang.Runnable") extension = "properties";
 			if (extension === null) {

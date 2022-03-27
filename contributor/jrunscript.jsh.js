@@ -53,7 +53,7 @@
 		var FiftyPart = function(p) {
 			return jsh.unit.fifty.Part({
 				shell: environment.jsh.unbuilt.src,
-				script: SRC.getFile("loader/api/test/fifty/test.jsh.js"),
+				script: SRC.getFile("tools/fifty/test.jsh.js"),
 				file: p.file
 			});
 		}
@@ -261,7 +261,7 @@
 			pathname: SRC.getRelativePath("jsh/unit/plugin.jsh.api.html")
 		}));
 		suite.add("testing/fifty", new jsh.unit.html.Part({
-			pathname: SRC.getRelativePath("loader/api/test/fifty/test/data/api.html")
+			pathname: SRC.getRelativePath("tools/fifty/test/data/api.html")
 		}));
 		//	TODO	disabling Bitbucket testing to try to get tests to pass after migration to GitHub. Examine to see whether there is
 		//			something still needed, something analogous still needed, or whether this can be discarded

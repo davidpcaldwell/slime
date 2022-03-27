@@ -13,7 +13,7 @@
 			"label": "Fifty tsc harness: debug",
 			"detail": "Runs the tsc node.js program on test data using a debugger",
 			"type": "shell",
-			"command": "node --inspect-brk loader/api/test/fifty/tsc.node.js loader/api/test/fifty/test/data/module.d.ts; echo \"Terminated with exit status $?.\"",
+			"command": "node --inspect-brk tools/fifty/tsc.node.js tools/fifty/test/data/module.d.ts; echo \"Terminated with exit status $?.\"",
 			"options": {
 				"env": {
 					"PROJECT": ".",
@@ -35,7 +35,7 @@
 			"label": "Fifty tsc harness: debug project",
 			"detail": "Runs the tsc node.js program on a specified project using a debugger",
 			"type": "shell",
-			"command": "node --inspect-brk loader/api/test/fifty/tsc.node.js; echo \"Terminated with exit status $?.\"",
+			"command": "node --inspect-brk tools/fifty/tsc.node.js; echo \"Terminated with exit status $?.\"",
 			"options": {
 				"env": {
 					"PROJECT": "${input:project}",
@@ -57,25 +57,25 @@
 			"label": "Fifty tsc harness",
 			"detail": "Runs the UI, opening the tsc JSON page",
 			"type": "shell",
-			"command": "loader/api/test/fifty/ui.bash --tsc-harness",
+			"command": "tools/fifty/ui.bash --tsc-harness",
 			"problemMatcher": []
 		},
 		{
 			"label": "Fifty UI harness",
 			"type": "shell",
-			"command": "loader/api/test/fifty/ui.bash --harness",
+			"command": "tools/fifty/ui.bash --harness",
 			"problemMatcher": []
 		},
 		{
 			"label": "Fifty UI: design",
 			"type": "shell",
-			"command": "loader/api/test/fifty/ui.bash --design",
+			"command": "tools/fifty/ui.bash --design",
 			"problemMatcher": []
 		},
 		{
 			"label": "Fifty UI: SLIME",
 			"type": "shell",
-			"command": "loader/api/test/fifty/ui.bash",
+			"command": "tools/fifty/ui.bash",
 			"problemMatcher": []
 		}
 	],

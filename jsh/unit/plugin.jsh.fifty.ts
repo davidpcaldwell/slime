@@ -42,7 +42,7 @@ namespace slime.jsh {
 					shell: slime.jrunscript.file.Directory
 
 					/**
-					 * The `loader/api/test/fifty/test.jsh.js` script.
+					 * The `tools/fifty/test.jsh.js` script.
 					 */
 					script: slime.jrunscript.file.File
 

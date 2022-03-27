@@ -71,7 +71,7 @@
 		if (invocation.options.harness || invocation.options["tsc-harness"]) invocation.options.nocache = true;
 
 		invocation.options.file = (invocation.options.harness || invocation.options["tsc-harness"] || invocation.options.design)
-			? slime.directory.getRelativePath("loader/api/test/fifty/test/data/module.d.ts")
+			? slime.directory.getRelativePath("tools/fifty/test/data/module.d.ts")
 			: void(0)
 		;
 
@@ -82,7 +82,7 @@
 		var getTscOutput = (function(options) {
 			var rv = function() {
 				return jsh.shell.run({
-					command: slime.directory.getFile("loader/api/test/fifty/tsc.bash"),
+					command: slime.directory.getFile("tools/fifty/tsc.bash"),
 					arguments: (options.file) ? [options.file] : [],
 					environment: $api.Object.compose(
 						jsh.shell.environment,
