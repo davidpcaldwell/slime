@@ -12,14 +12,14 @@
 	 */
 	function(inonit) {
 		var $api = inonit.loader.$api;
-		//	TODO	establish new slime loader relative to ../../../..?
+		//	TODO	establish new slime loader relative to ../..?
 
 		var code = {
-			verify: inonit.loader.loader.script("../../../../loader/api/verify.js")
+			verify: inonit.loader.loader.script("../../loader/api/verify.js")
 		};
 
 		/** @type { slime.definition.test.promises.Export } */
-		var promises = inonit.loader.loader.module("../../../../loader/api/promises.js");
+		var promises = inonit.loader.loader.module("../../loader/api/promises.js");
 
 		/**
 		 * @param { slime.fifty.browser.test.internal.Query } query
@@ -211,9 +211,9 @@
 
 		window.addEventListener("load", function() {
 			/** @type { slime.loader.Script<{ window: Window },slime.web.Exports> } */
-			var script = inonit.loader.loader.script("../../../../js/web/module.browser.js");
+			var script = inonit.loader.loader.script("../../js/web/module.browser.js");
 			// /** @type { slime.web.Exports } */
-			// var web = inonit.loader.loader.module("../../../../js/web/module.browser.js", {
+			// var web = inonit.loader.loader.module("../../js/web/module.browser.js", {
 			// 	window: window
 			// });
 			script.thread({
