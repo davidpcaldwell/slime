@@ -149,7 +149,10 @@ namespace slime.jsh.wf {
 
 			prune: slime.jsh.script.cli.Command<Options>
 
-			test:  slime.jsh.script.cli.Command<Options>
+			test:  slime.jsh.script.cli.Command<Options & {
+				stdio: boolean
+				logs: string
+			}>
 
 			submodule: {
 				/**
@@ -168,7 +171,9 @@ namespace slime.jsh.wf {
 				 *
 				 * `--path <path-to-submodule>`
 				 */
-				attach: slime.jsh.script.cli.Command<Options>
+				attach: slime.jsh.script.cli.Command<Options & {
+					path: string
+				}>
 
 				/**
 				 * Resets a submodule of this module to point at the current commit for that submodule, and if there is a tracking

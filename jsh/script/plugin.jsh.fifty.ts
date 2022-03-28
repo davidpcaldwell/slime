@@ -78,11 +78,11 @@ namespace slime.jsh.script {
 			}
 
 			option: {
-				string: (c: { longname: string, default?: string }) => cli.Processor<any>
-				boolean: (c: { longname: string }) => cli.Processor<any>
-				number: (c: { longname: string, default?: number }) => cli.Processor<any>
-				pathname: (c: { longname: string, default?: slime.jrunscript.file.Pathname }) => cli.Processor<any>
-				array: (c: { longname: string, value: (s: string) => any }) => cli.Processor<any>
+				string: <T>(c: { longname: string, default?: string }) => cli.Processor<T>
+				boolean: <T>(c: { longname: string }) => cli.Processor<T>
+				number: <T>(c: { longname: string, default?: number }) => cli.Processor<T>
+				pathname: <T>(c: { longname: string, default?: slime.jrunscript.file.Pathname }) => cli.Processor<T>
+				array: <T>(c: { longname: string, value: (s: string) => any }) => cli.Processor<T>
 			}
 
 			/**
@@ -158,10 +158,11 @@ namespace slime.jsh.script {
 						arguments: ["--a", "A", "--b", "1", "--b", "3", "--c", "C"]
 					};
 					fifty.verify(invocation).options.b.length.is(0);
-					var after: cli.Invocation<{ a: string, b: number[], c: string }> = subject.cli.option.array({
+					var processor: cli.Processor<{ a: string, b: number[], c: string }> = subject.cli.option.array({
 						longname: "b",
 						value: Number
-					})(invocation);
+					});
+					var after: cli.Invocation<{ a: string, b: number[], c: string }> = processor(invocation);
 					fifty.verify(after).options.b.length.is(2);
 					fifty.verify(after).options.b[0].is(1);
 					fifty.verify(after).options.b[1].is(3);

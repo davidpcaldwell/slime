@@ -12,18 +12,85 @@
 	 * @param { slime.jsh.Global } jsh
 	 */
 	function($api,jsh) {
+		/**
+		 *
+		 * @param { { part: string, delay: number, host: string, port: number, paths: { toHtmlRunner: string, toFile: string, results: string } }} p
+		 * @returns { slime.web.object.Url }
+		 */
+		var getUrl = function(p) {
+			return new jsh.web.Url({
+				scheme: "http",
+				authority: {
+					host: p.host,
+					port: p.port
+				},
+				path: "/" + p.paths.toHtmlRunner,
+				query: $api.Array.build(function(rv) {
+					rv.push({ name: "file", value: p.paths.toFile });
+					rv.push({ name: "results", value: String(Boolean(p.paths.results)) });
+					if (p.part) {
+						rv.push({ name: "part", value: p.part });
+					}
+					if (p.delay) {
+						rv.push({ name: "delay", value: String(p.delay) });
+					}
+				})
+			});
+		};
+
+		/**
+		 *
+		 * @param { slime.fifty.browser.test.internal.script.Chrome } configuration
+		 * @returns { slime.fifty.browser.test.internal.script.Browser }
+		 */
+		var Chrome = function(configuration) {
+			var chrome = new jsh.shell.browser.chrome.Instance({
+				location: configuration.location,
+				devtools: configuration.devtools
+			});
+			/** @type { { kill: any } } */
+			var process;
+			return {
+				open: function(p) {
+					chrome.run({
+						//	TODO	enhance chrome.run so it can take a Url object rather than just a string
+						uri: getUrl({
+							part: p.part,
+							delay: p.delay,
+							host: p.host,
+							port: p.port,
+							paths: {
+								toHtmlRunner: p.paths.toHtmlRunner,
+								toFile: p.paths.toFile,
+								results: p.paths.results
+							}
+						}).toString(),
+						arguments: (configuration.debugPort) ? ["--remote-debugging-port=" + configuration.debugPort ] : [],
+						on: {
+							start: function(p) {
+								process = p;
+							}
+						}
+					});
+				},
+				close: function() {
+					process.kill();
+				}
+			}
+		}
+
 		$api.Function.pipe(
 			//	Keeps the browser open after running the tests so that they can be re-run by refreshing the page
-			jsh.wf.cli.$f.option.boolean({ longname: "interactive" }),
+			jsh.script.cli.option.boolean({ longname: "interactive" }),
 
 			//	Selects a location to use for Google Chrome configuration; if unspecified, a temporary directory will be used
-			jsh.wf.cli.$f.option.pathname({ longname: "chrome:data" }),
+			jsh.script.cli.option.pathname({ longname: "chrome:data" }),
 
 			//	Configures the browser to allow remote debugging connections on the SLIME Visual Studio Code debugger port
-			jsh.wf.cli.$f.option.boolean({ longname: "chrome:debug:vscode" }),
+			jsh.script.cli.option.boolean({ longname: "chrome:debug:vscode" }),
 
 			//	Selects a part of the test suite to run; default is to run the entire suite
-			jsh.wf.cli.$f.option.string({ longname: "part" }),
+			jsh.script.cli.option.string({ longname: "part" }),
 
 			jsh.script.cli.option.pathname({ longname: "base" }),
 
@@ -94,57 +161,37 @@
 
 				var tomcat = start(paths.toShell.base, paths.toResult.base, resultsPath);
 
-				var chrome = new jsh.shell.browser.chrome.Instance({
+				var browser = Chrome({
 					location: p.options["chrome:data"],
-					devtools: p.options["debug:devtools"]
+					devtools: p.options["debug:devtools"],
+					debugPort: (p.options["chrome:debug:vscode"]) ? 9222 : void(0)
 				});
 
-				/** @type { { kill: any } } */
-				var process;
-
-				var getUrl = function(p) {
-					return new jsh.web.Url({
-						scheme: "http",
-						authority: {
-							host: "127.0.0.1",
-							port: tomcat.port
-						},
-						path: "/" + paths.toHtmlRunner.relative,
-						query: $api.Array.build(function(rv) {
-							rv.push({ name: "file", value: paths.toFile.relative });
-							rv.push({ name: "results", value: String(Boolean(resultsPath)) });
-							if (p.part) {
-								rv.push({ name: "part", value: p.part });
-							}
-							if (p.delay) {
-								rv.push({ name: "delay", value: p.delay });
-							}
-						})
-					});
-				}
-
-				var run = function(delay) {
-					return function() {
-						chrome.run({
-							//	TODO	enhance chrome.run so it can take a Url object rather than just a string
-							uri: getUrl({
-								part: p.options.part,
-								delay: delay
-							}).toString(),
-							arguments: (p.options["chrome:debug:vscode"]) ? ["--remote-debugging-port=9222"] : [],
-							on: {
-								start: function(p) {
-									process = p;
-								}
-							}
-						});
-					};
-				}
+				/** @type { Parameters<slime.fifty.browser.test.internal.script.Browser["open"]>[0] } */
+				var argument = {
+					host: "127.0.0.1",
+					port: tomcat.port,
+					paths: {
+						toHtmlRunner: paths.toHtmlRunner.relative,
+						toFile: paths.toFile.relative,
+						results: resultsPath
+					},
+					delay: void(0),
+					part: p.options.part
+				};
 
 				if (p.options.interactive) {
-					run()();
+					browser.open(argument);
 				} else {
-					jsh.java.Thread.start(run( (typeof(p.options["debug:delay"]) == "number") ? p.options["debug:delay"] : 4000 ) );
+					var delay = (typeof(p.options["debug:delay"]) == "number") ? p.options["debug:delay"] : 4000;
+					jsh.java.Thread.start(function() {
+						browser.open(
+							$api.Object.compose(
+								argument,
+								{ delay: delay }
+							)
+						)
+					});
 					var resultsUrl = new jsh.web.Url({
 						scheme: "http",
 						authority: {
@@ -165,15 +212,17 @@
 					});
 					jsh.shell.console("response = " + response);
 					jsh.shell.console("Killing browser ...");
-					process.kill();
+					browser.close();
+					//	TODO	make it possible to retrieve results of the tests to be consumed by JSAPI?
 					var status = (response) ? 0 : 1;
 					jsh.shell.console("Exiting with status " + status);
 					jsh.shell.exit(status);
 				}
-
-				//	TODO	make it possible to retrieve results of the tests; probably need to start browser in thread
 			}
-		)({ options: {}, arguments: jsh.script.arguments })
+		)({
+			options: {},
+			arguments: jsh.script.arguments
+		})
 	}
 //@ts-ignore
 )($api,jsh);
