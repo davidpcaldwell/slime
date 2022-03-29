@@ -8,10 +8,13 @@
 (
 	/**
 	 *
+	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.Global } jsh
 	 */
-	function($api,jsh) {
+	function(Packages,$api,jsh) {
+		jsh.shell.tools.tomcat.require();
+
 		/**
 		 *
 		 * @param { { part: string, delay: number, host: string, port: number, paths: { toHtmlRunner: string, toFile: string, results: string } }} p
@@ -54,17 +57,7 @@
 				open: function(p) {
 					chrome.run({
 						//	TODO	enhance chrome.run so it can take a Url object rather than just a string
-						uri: getUrl({
-							part: p.part,
-							delay: p.delay,
-							host: p.host,
-							port: p.port,
-							paths: {
-								toHtmlRunner: p.paths.toHtmlRunner,
-								toFile: p.paths.toFile,
-								results: p.paths.results
-							}
-						}).toString(),
+						uri: p.uri,
 						arguments: (configuration.debugPort) ? ["--remote-debugging-port=" + configuration.debugPort ] : [],
 						on: {
 							start: function(p) {
@@ -77,17 +70,79 @@
 					process.kill();
 				}
 			}
+		};
+
+		/**
+		 *
+		 * @param { slime.fifty.browser.test.internal.script.SeleniumChrome } [configuration]
+		 * @returns { slime.fifty.browser.test.internal.script.Browser }
+		 */
+		var SeleniumChrome = function(configuration) {
+			jsh.shell.tools.selenium.load();
+			var _driver;
+			return {
+				open: function(p) {
+					var _options = new Packages.org.openqa.selenium.chrome.ChromeOptions();
+					_driver = new Packages.org.openqa.selenium.chrome.ChromeDriver(_options);
+					_driver.get(p.uri);
+				},
+				close: function() {
+					_driver.quit();
+				}
+			}
+		};
+
+		/**
+		 *
+		 * @param { slime.fifty.browser.test.internal.script.RemoteSelenium } configuration
+		 * @returns { slime.fifty.browser.test.internal.script.Browser }
+		 */
+		var RemoteSelenium = function(configuration) {
+			jsh.shell.tools.selenium.load();
+			var _driver;
+			return {
+				open: function(p) {
+					//	TODO	extend Properties to properly include superclass methods?
+					//	TODO	remove need for the property manipulation by patching Selenium or transferring these global
+					//			properties to be in the inonit.script.jsh.Main Java class itself; would they be available where
+					//			needed?
+					/** @type { any } */
+					var _properties = Packages.java.lang.System.getProperties();
+					var saved = {};
+					var streams = ["stdin", "stdout", "stderr"];
+					streams.forEach(function(name) {
+						saved[name] = _properties.get("inonit.script.jsh.Main." + name);
+						_properties.remove("inonit.script.jsh.Main." + name);
+					});
+					var _options = new Packages.org.openqa.selenium.chrome.ChromeOptions();
+					_driver = new Packages.org.openqa.selenium.remote.RemoteWebDriver(
+						new Packages.java.net.URL("http://" + configuration.browser.host + ":" + configuration.browser.port + "/wd/hub"),
+						_options
+					);
+					streams.forEach(function(name) {
+						_properties.put("inonit.script.jsh.Main." + name, saved[name]);
+					})
+					_driver.get(p.uri);
+				},
+				close: function() {
+					_driver.quit();
+				}
+			}
 		}
 
 		$api.Function.pipe(
 			//	Keeps the browser open after running the tests so that they can be re-run by refreshing the page
 			jsh.script.cli.option.boolean({ longname: "interactive" }),
 
-			//	Selects a location to use for Google Chrome configuration; if unspecified, a temporary directory will be used
-			jsh.script.cli.option.pathname({ longname: "chrome:data" }),
+			jsh.script.cli.option.string({ longname: "browser", default: "chrome" }),
 
-			//	Configures the browser to allow remote debugging connections on the SLIME Visual Studio Code debugger port
-			jsh.script.cli.option.boolean({ longname: "chrome:debug:vscode" }),
+			$api.Function.pipe(
+				//	Selects a location to use for Google Chrome configuration; if unspecified, a temporary directory will be used
+				jsh.script.cli.option.pathname({ longname: "chrome:data" }),
+
+				//	Configures the browser to allow remote debugging connections on the SLIME Visual Studio Code debugger port
+				jsh.script.cli.option.boolean({ longname: "chrome:debug:vscode" })
+			),
 
 			//	Selects a part of the test suite to run; default is to run the entire suite
 			jsh.script.cli.option.string({ longname: "part" }),
@@ -161,36 +216,56 @@
 
 				var tomcat = start(paths.toShell.base, paths.toResult.base, resultsPath);
 
-				var browser = Chrome({
-					location: p.options["chrome:data"],
-					devtools: p.options["debug:devtools"],
-					debugPort: (p.options["chrome:debug:vscode"]) ? 9222 : void(0)
-				});
+				var host = (function() {
+					if (p.options.browser == "dockercompose:selenium:chrome") {
+						return "slime";
+					}
+					return "127.0.0.1";
+				})();
 
-				/** @type { Parameters<slime.fifty.browser.test.internal.script.Browser["open"]>[0] } */
-				var argument = {
-					host: "127.0.0.1",
-					port: tomcat.port,
-					paths: {
-						toHtmlRunner: paths.toHtmlRunner.relative,
-						toFile: paths.toFile.relative,
-						results: resultsPath
-					},
-					delay: void(0),
-					part: p.options.part
-				};
+				var browser = (function() {
+					if (p.options.browser == "chrome") {
+						return Chrome({
+							location: p.options["chrome:data"],
+							devtools: p.options["debug:devtools"],
+							debugPort: (p.options["chrome:debug:vscode"]) ? 9222 : void(0)
+						});
+					} else if (p.options.browser == "selenium:chrome") {
+						return SeleniumChrome();
+					} else if (p.options.browser == "dockercompose:selenium:chrome") {
+						return RemoteSelenium({
+							browser: {
+								host: "chrome",
+								port: 4444
+							}
+						})
+					}
+				})();
+
+				var getUri = function(host,delay) {
+					return jsh.web.Url.codec.string.encode(getUrl({
+						host: host,
+						port: tomcat.port,
+						paths: {
+							toHtmlRunner: paths.toHtmlRunner.relative,
+							toFile: paths.toFile.relative,
+							results: resultsPath
+						},
+						delay: delay,
+						part: p.options.part
+					}));
+				}
 
 				if (p.options.interactive) {
-					browser.open(argument);
+					browser.open({
+						uri: getUri(host)
+					});
 				} else {
 					var delay = (typeof(p.options["debug:delay"]) == "number") ? p.options["debug:delay"] : 4000;
 					jsh.java.Thread.start(function() {
-						browser.open(
-							$api.Object.compose(
-								argument,
-								{ delay: delay }
-							)
-						)
+						browser.open({
+							uri: getUri(host,delay)
+						});
 					});
 					var resultsUrl = new jsh.web.Url({
 						scheme: "http",
@@ -225,4 +300,4 @@
 		})
 	}
 //@ts-ignore
-)($api,jsh);
+)(Packages,$api,jsh);

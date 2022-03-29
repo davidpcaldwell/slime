@@ -14,17 +14,19 @@ namespace slime.fifty.browser.test.internal.script {
 		debugPort: number
 	}
 
-	export interface Browser {
-		open: (p: {
+	export interface SeleniumChrome {
+	}
+
+	export interface RemoteSelenium {
+		browser: {
 			host: string
 			port: number
-			paths: {
-				toHtmlRunner: string
-				toFile: string
-				results: string
-			}
-			delay: number
-			part: string
+		}
+	}
+
+	export interface Browser {
+		open: (p: {
+			uri: string
 		}) => void
 
 		close: () => void
@@ -33,16 +35,61 @@ namespace slime.fifty.browser.test.internal.script {
 	export interface Exports {
 	}
 
-	(
-		function(
-			fifty: slime.fifty.test.kit
-		) {
-			fifty.tests.suite = function() {
-
-			}
-		}
-	//@ts-ignore
-	)(fifty);
-
 	export type Script = slime.loader.Script<Context,Exports>
 }
+
+(
+	function(
+		fifty: slime.fifty.test.kit
+	) {
+		const { $api, jsh } = fifty.global;
+
+		fifty.tests.manual = {};
+
+		var run = function(browser) {
+			jsh.shell.world.run(
+				jsh.shell.Invocation.create({
+					command: "/bin/bash",
+					arguments: $api.Array.build(function(rv) {
+						rv.push("./fifty");
+						rv.push("test.browser");
+						rv.push("contributor/browser.fifty.ts");
+						rv.push("--browser", browser);
+					}),
+					directory: jsh.shell.jsh.src.toString()
+				})
+			)({
+				exit: function(e) {
+					jsh.shell.console("Status: " + e.detail.status);
+				}
+			});
+		}
+
+		fifty.tests.manual.chrome = function() {
+			run("chrome");
+		}
+
+		fifty.tests.manual.selenium = {};
+
+		fifty.tests.manual.selenium.chrome = function() {
+			run("selenium:chrome");
+		}
+
+		fifty.tests.manual.docker = {
+			compose: {
+				selenium: {
+					chrome: function() {
+						jsh.shell.console("Installing Selenium ...");
+						jsh.shell.jsh({
+							shell: jsh.shell.jsh.src,
+							script: jsh.shell.jsh.src.getFile("jsh/tools/install/selenium.jsh.js")
+						});
+						jsh.shell.console("Installed Selenium.");
+						run("dockercompose:selenium:chrome");
+					}
+				}
+			}
+		}
+	}
+//@ts-ignore
+)(fifty);
