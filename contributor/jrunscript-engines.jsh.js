@@ -13,7 +13,7 @@
 			}
 		});
 
-		var Environment = jsh.script.loader.file("jrunscript-environment.js").Environment;
+		var Environment = jsh.script.loader.module("jrunscript-environment.js");
 
 		var isDocker = Boolean(jsh.file.Pathname("/slime").directory);
 		jsh.shell.console("is Docker?: " + isDocker);

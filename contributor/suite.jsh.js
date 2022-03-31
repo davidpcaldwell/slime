@@ -49,7 +49,7 @@
 			parameters.options.engine = [""];
 		}
 
-		var Environment = jsh.script.loader.file("jrunscript-environment.js").Environment;
+		var Environment = jsh.script.loader.module("jrunscript-environment.js");
 
 		var isDocker = Boolean(jsh.file.Pathname("/slime").directory);
 
@@ -57,7 +57,7 @@
 			src: jsh.script.file.parent.parent,
 			noselfping: parameters.options.noselfping,
 			tomcat: true,
-			executable: !isDocker
+			executable: Boolean(jsh.shell.PATH.getCommand("gcc"))
 		});
 
 		var suite = new jsh.unit.html.Suite();

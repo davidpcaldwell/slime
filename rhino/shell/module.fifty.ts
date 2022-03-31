@@ -484,7 +484,9 @@ namespace slime.jrunscript.shell {
 				 * A JAR file to pass to `java -jar`.
 				 */
 				jar: slime.jrunscript.file.File
-				arguments: any
+				arguments?: any
+				stdio: any
+				evaluate: any
 			}): Result
 
 			version: string

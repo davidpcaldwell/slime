@@ -487,6 +487,11 @@
 							]
 						});
 					},
+					compose: {
+						test: function(p) {
+							jsh.shell.console("Hello, World!");
+						}
+					},
 					run: function(p) {
 						initialize();
 						jsh.shell.run({
