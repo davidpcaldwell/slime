@@ -10,7 +10,7 @@
 	 *
 	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { slime.jsh.Global } jsh
-	 * @param { any } $exports
+	 * @param { slime.jsh.unit.Exports["browser"] } $exports
 	 */
 	function(Packages,jsh,$exports) {
 		$exports.Modules = function(slime,pathnames) {
@@ -360,7 +360,10 @@
 			};
 		};
 
-		$exports.installed = [];
+		/** @type { { [id: string]: slime.jsh.unit.Browser } } */
+		var browsers = {};
+
+		$exports.installed = Object.assign([], browsers);
 
 		var addBrowser = function(id,value) {
 			$exports.installed.push(value);
