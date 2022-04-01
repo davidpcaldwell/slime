@@ -471,7 +471,9 @@
 			};
 
 			var scope = {
-				fifty: fifty
+				fifty: fifty,
+				//	We also provide $fifty for namespaces containing the name "fifty"
+				$fifty: fifty
 			}
 
 			//	TODO	deprecate
