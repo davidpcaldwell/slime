@@ -197,7 +197,14 @@
 			//	TODO	currently result is just a boolean indicating success/failure. We may want a more sophisticated regime which
 			//			communicates events that can be reconstructed
 
-			var result = execute(query.file, query.part);
+			var result = (function() {
+				try {
+					return execute(query.file, query.part);
+				} catch (e) {
+					window.alert(e);
+					return Promise.resolve(false);
+				}
+			})();
 
 			result.then(function(result) {
 				if (query.results == "true") {
@@ -205,8 +212,10 @@
 					xhr.open("POST","result",false);
 					var payload = result;
 					xhr.send(JSON.stringify(payload));
+				} else {
+					window.console.log("result = ", result);
 				}
-			})
+			});
 		};
 
 		window.addEventListener("load", function() {

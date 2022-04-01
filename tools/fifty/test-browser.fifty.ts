@@ -6,6 +6,7 @@
 
 namespace slime.fifty.browser.test.internal {
 	export interface Query {
+		/** Whether to POST the result back to the server upon completion of the test suite. */
 		results: "true" | "false"
 		design: any
 		file: any
