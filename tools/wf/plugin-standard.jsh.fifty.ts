@@ -183,6 +183,12 @@ namespace slime.jsh.wf {
 			}
 
 			documentation:  slime.jsh.script.cli.Command<Options>
+
+			/**
+			 * Intended to support interactively writing documentation; executes `fifty view` with the `--watch` option enabled.
+			 * **This process is currently very inefficient; it re-generates the project documentation for each request for a
+			 * `.html` URL.**
+			 */
 			document:  slime.jsh.script.cli.Command<Options>
 		}
 

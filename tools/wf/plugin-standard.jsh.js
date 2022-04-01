@@ -551,6 +551,7 @@
 				}
 
 				$exports.documentation = serveDocumentation({ watch: false });
+
 				$exports.document = serveDocumentation({ watch: true });
 			}
 		)

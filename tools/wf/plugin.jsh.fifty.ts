@@ -116,7 +116,7 @@ namespace slime.jsh.wf {
 			updateSubmodule: (p: { path: string }) => void
 
 			/**
-			 * Given an {@link standard.Project} defining a few simple operations, initializes the given `$exports` object
+			 * Given a {@link standard.Project} defining a few simple operations, initializes the given `$exports` object
 			 * with a standard set of `wf` commands defined by {@link standard.Interface}.
 			 */
 			initialize: {
