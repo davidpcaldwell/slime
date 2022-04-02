@@ -11,7 +11,7 @@ namespace slime.jsh.wf {
 				function(fifty: slime.fifty.test.kit) {
 					const jsh = fifty.global.jsh;
 
-					function configure(repository: slime.jrunscript.git.repository.Local) {
+					function configure(repository: slime.jrunscript.tools.git.repository.Local) {
 						repository.config({ set: { name: "user.name", value: "foo" }});
 						repository.config({ set: { name: "user.email", value: "bar@example.com" }});
 					}

@@ -71,7 +71,7 @@
 
 				/**
 				 *
-				 * @param { slime.jrunscript.git.repository.Local } repository
+				 * @param { slime.jrunscript.tools.git.repository.Local } repository
 				 * @param { string } path
 				 */
 				var isSubmodulePath = function(repository,path) {
@@ -279,7 +279,7 @@
 				}
 
 				$exports.prune = function(p) {
-					/** @type { slime.jrunscript.git.Command<string,{ head: string }> } */
+					/** @type { slime.jrunscript.tools.git.Command<string,{ head: string }> } */
 					var showNamedRemote = {
 						invocation: function(remote) {
 							return {
@@ -302,7 +302,7 @@
 						}
 					};
 
-					/** @type { slime.jrunscript.git.Command<string,{ name: string, remote?: string }[]> } */
+					/** @type { slime.jrunscript.tools.git.Command<string,{ name: string, remote?: string }[]> } */
 					var getAllBranchesMergedTo = {
 						invocation: function(name) {
 							return {
@@ -330,7 +330,7 @@
 						}
 					};
 
-					/** @type { slime.jrunscript.git.Command<{ name: string, remote?: string },void> } */
+					/** @type { slime.jrunscript.tools.git.Command<{ name: string, remote?: string },void> } */
 					var deleteRemoteBranch = {
 						invocation: function(p) {
 							return {
@@ -342,7 +342,7 @@
 						}
 					};
 
-					/** @type { slime.jrunscript.git.Command<string,void> } */
+					/** @type { slime.jrunscript.tools.git.Command<string,void> } */
 					var deleteLocalBranch = {
 						invocation: function(name) {
 							return {

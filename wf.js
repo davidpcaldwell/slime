@@ -284,7 +284,7 @@
 				this.clean = $api.Function.pipe(
 					function(p) {
 						repository.fetch({ all: true, prune: true, recurseSubmodules: true, stdio: { output: null } });
-						/** @type { slime.jrunscript.git.Branch[] } */
+						/** @type { slime.jrunscript.tools.git.Branch[] } */
 						var branches = repository.branch({ all: true });
 						var target = "remotes/origin/master";
 						branches.filter(notMaster).forEach(function(branch) {
@@ -313,7 +313,7 @@
 				this.list = $api.Function.pipe(
 					function(p) {
 						repository.fetch({ all: true, prune: true, recurseSubmodules: true, stdio: { output: null } });
-						/** @type { slime.jrunscript.git.Branch[] } */
+						/** @type { slime.jrunscript.tools.git.Branch[] } */
 						var branches = repository.branch({ all: true });
 						var target = "remotes/origin/master";
 						branches.filter(notMaster).forEach(function(branch) {

@@ -43,7 +43,7 @@
 
 				/**
 				 *
-				 * @param { slime.jrunscript.git.Submodule } submodule
+				 * @param { slime.jrunscript.tools.git.Submodule } submodule
 				 * @returns { slime.jsh.wf.Submodule }
 				 */
 				var submoduleDecorate = function(submodule) {
@@ -324,7 +324,7 @@
 				jsh.wf.git = {
 					compareTo: function(branchName) {
 						return function(repository) {
-							/** @type { slime.jrunscript.git.Command<{ revisionRange: string },slime.jrunscript.git.Commit[]> } */
+							/** @type { slime.jrunscript.tools.git.Command<{ revisionRange: string },slime.jrunscript.tools.git.Commit[]> } */
 							var logRange = {
 								invocation: function(p) {
 									return {

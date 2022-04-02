@@ -7,13 +7,13 @@
 /**
  * Provides access to the `git` command-line tool from scripts.
  *
- * The main world-oriented entry point is the {@link slime.jrunscript.git.Exports} `program` function, which returns an API that allows the usage
+ * The main world-oriented entry point is the {@link slime.jrunscript.tools.git.Exports} `program` function, which returns an API that allows the usage
  * of commands against a particular executable; this function can then be chained with `repository` (targeting a specific
- * repository), `command` (executing a specific {@link slime.jrunscript.git.Command} toward that repository), `argument` (passing
+ * repository), `command` (executing a specific {@link slime.jrunscript.tools.git.Command} toward that repository), `argument` (passing
  * specific information to that command), and finally, `run`, which executes the command, optionally supplying a world
  * implementation and event handlers for the `stdout` and `stderr` streams.
  */
-namespace slime.jrunscript.git {
+namespace slime.jrunscript.tools.git {
 	export interface Commit {
 		names: string[],
 		commit: { hash: string },
@@ -45,12 +45,12 @@ namespace slime.jrunscript.git {
 		}) => Daemon
 
 		Repository: {
-			(p: repository.argument.Directory): slime.jrunscript.git.repository.Local
-			new (p: repository.argument.Directory): slime.jrunscript.git.repository.Local
-			(p: repository.argument.Local): slime.jrunscript.git.repository.Local
-			new (p: repository.argument.Local): slime.jrunscript.git.repository.Local
-			(p: repository.argument.Remote): slime.jrunscript.git.Repository
-			new (p: repository.argument.Remote): slime.jrunscript.git.Repository
+			(p: repository.argument.Directory): slime.jrunscript.tools.git.repository.Local
+			new (p: repository.argument.Directory): slime.jrunscript.tools.git.repository.Local
+			(p: repository.argument.Local): slime.jrunscript.tools.git.repository.Local
+			new (p: repository.argument.Local): slime.jrunscript.tools.git.repository.Local
+			(p: repository.argument.Remote): slime.jrunscript.tools.git.Repository
+			new (p: repository.argument.Remote): slime.jrunscript.tools.git.Repository
 		}
 
 		//	Uses Object.assign for rhino/shell run(), so should cross-check with those arguments
@@ -68,7 +68,7 @@ namespace slime.jrunscript.git {
 		clone: (argument: repository.Argument & {
 			to: slime.jrunscript.file.Pathname,
 			recurseSubmodules?: boolean
-		}, events?: object ) => slime.jrunscript.git.repository.Local
+		}, events?: object ) => slime.jrunscript.tools.git.repository.Local
 	}
 
 	export interface Submodule {
@@ -114,7 +114,7 @@ namespace slime.jrunscript.git {
 			}
 		}
 
-		export interface Local extends slime.jrunscript.git.Repository {
+		export interface Local extends slime.jrunscript.tools.git.Repository {
 			directory: slime.jrunscript.file.Directory
 
 			add: any
@@ -131,11 +131,11 @@ namespace slime.jrunscript.git {
 					/** @deprecated */
 					remote?: boolean
 					all?: boolean
-				}): slime.jrunscript.git.Branch[]
+				}): slime.jrunscript.tools.git.Branch[]
 
 				(p: {
 					old: boolean
-				}): slime.jrunscript.git.Branch
+				}): slime.jrunscript.tools.git.Branch
 
 				(p: {
 					name: string
@@ -183,11 +183,11 @@ namespace slime.jrunscript.git {
 				(p?: { cached?: boolean }): Submodule[]
 
 				add: (p: {
-					repository: slime.jrunscript.git.Repository
+					repository: slime.jrunscript.tools.git.Repository
 					path: string
 					name?: string
 					branch?: string
-				}, events?: any) => slime.jrunscript.git.repository.Local
+				}, events?: any) => slime.jrunscript.tools.git.repository.Local
 
 				update: (p: Argument & {
 					init?: boolean,
@@ -266,21 +266,21 @@ namespace slime.jrunscript.git {
 	export interface Exports {
 		Installation: (environment: {
 			program: slime.jrunscript.file.File
-		}) => slime.jrunscript.git.Installation
+		}) => slime.jrunscript.tools.git.Installation
 
 		credentialHelper: any
-		installation: slime.jrunscript.git.Installation
-		daemon: slime.jrunscript.git.Installation["daemon"]
-		Repository: slime.jrunscript.git.Installation["Repository"]
-		init: slime.jrunscript.git.Installation["init"]
-		execute: slime.jrunscript.git.Installation["execute"]
+		installation: slime.jrunscript.tools.git.Installation
+		daemon: slime.jrunscript.tools.git.Installation["daemon"]
+		Repository: slime.jrunscript.tools.git.Installation["Repository"]
+		init: slime.jrunscript.tools.git.Installation["init"]
+		execute: slime.jrunscript.tools.git.Installation["execute"]
 		install: Function & { GUI: any }
 	}
 
 	export type Script = slime.loader.Script<Context,Exports>
 }
 
-namespace slime.jrunscript.git {
+namespace slime.jrunscript.tools.git {
 	export namespace internal {
 		export const subject = (
 			function(fifty: slime.fifty.test.kit) {
@@ -290,7 +290,7 @@ namespace slime.jrunscript.git {
 		)(fifty);
 
 		export interface Fixtures {
-			init: slime.jrunscript.git.Exports["init"]
+			init: slime.jrunscript.tools.git.Exports["init"]
 			write: (p: {
 				repository?: repository.Local
 				directory?: slime.jrunscript.file.Directory
@@ -326,7 +326,7 @@ namespace slime.jrunscript.git {
 				stdout: slime.$api.event.Handler<string>
 				stderr: slime.$api.event.Handler<string>
 			}
-		) => slime.jrunscript.git.repository.Local
+		) => slime.jrunscript.tools.git.repository.Local
 	}
 
 	(
@@ -350,7 +350,7 @@ namespace slime.jrunscript.git {
 
 			fifty.tests.Installation = {};
 			fifty.tests.Installation.init = function() {
-				var verifyEmptyRepository = function(repository: slime.jrunscript.git.repository.Local) {
+				var verifyEmptyRepository = function(repository: slime.jrunscript.tools.git.repository.Local) {
 					verify(repository).is.type("object");
 					verify(repository).log().length.is(0);
 				};
@@ -719,7 +719,7 @@ namespace slime.jrunscript.git {
 	})(fifty);
 }
 
-namespace slime.jrunscript.git {
+namespace slime.jrunscript.tools.git {
 	/**
 	 * A `git` installation.
 	 */
@@ -816,7 +816,7 @@ namespace slime.jrunscript.git {
 
 	export namespace exports {
 		export namespace command {
-			export type Executor = <P,R>(command: slime.jrunscript.git.Command<P,R>) => {
+			export type Executor = <P,R>(command: slime.jrunscript.tools.git.Command<P,R>) => {
 				argument: (argument: P) => {
 					run: (p?: {
 						stdout?: world.Invocation<P,R>["stdout"]
@@ -832,25 +832,25 @@ namespace slime.jrunscript.git {
 		program: (program: Program) => {
 			Invocation: <P,R>(p: {
 				pathname?: string
-				command: slime.jrunscript.git.Command<P,R>
+				command: slime.jrunscript.tools.git.Command<P,R>
 				argument: P
 			}) => world.Invocation<P,R>
 
 			repository: (pathname: string) => {
 				Invocation: <P,R>(p: {
-					command: slime.jrunscript.git.Command<P,R>
+					command: slime.jrunscript.tools.git.Command<P,R>
 					argument: P
 				}) => world.Invocation<P,R>
 
 				shell: (p: {
-					invocation: slime.jrunscript.git.Invocation
+					invocation: slime.jrunscript.tools.git.Invocation
 					stdio: slime.jrunscript.shell.invocation.Argument["stdio"]
 				}) => shell.run.Invocation
 
 				command: exports.command.Executor
 
 				run: <P,R>(p: {
-					command: slime.jrunscript.git.Command<P,R>
+					command: slime.jrunscript.tools.git.Command<P,R>
 					input: P
 					world?: world.Invocation<P,R>["world"]
 				}) => R
@@ -990,9 +990,9 @@ namespace slime.jrunscript.git {
 
 		Invocation: {
 			shell: (p: {
-				program: slime.jrunscript.git.Program
+				program: slime.jrunscript.tools.git.Program
 				pathname?: string
-				invocation: slime.jrunscript.git.Invocation
+				invocation: slime.jrunscript.tools.git.Invocation
 				stdio: slime.jrunscript.shell.invocation.Argument["stdio"]
 			}) => shell.run.Invocation
 		}
@@ -1065,7 +1065,7 @@ namespace slime.jrunscript.git {
 		function(
 			fifty: slime.fifty.test.kit
 		) {
-			var subject: slime.jrunscript.git.Exports = fifty.global.jsh.tools.git;
+			var subject: slime.jrunscript.tools.git.Exports = fifty.global.jsh.tools.git;
 
 			fifty.tests.Client = {};
 			fifty.tests.Client.invocation = function() {

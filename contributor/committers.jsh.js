@@ -16,7 +16,7 @@
 		var byCommitter = $api.Function.Array.groupBy({
 			/**
 			 *
-			 * @param { slime.jrunscript.git.Commit } v
+			 * @param { slime.jrunscript.tools.git.Commit } v
 			 */
 			group: function(v) {
 				return v.committer.name + " <" + v.committer.email + ">";
@@ -25,7 +25,7 @@
 		var byAuthor = $api.Function.Array.groupBy({
 			/**
 			 *
-			 * @param { slime.jrunscript.git.Commit } v
+			 * @param { slime.jrunscript.tools.git.Commit } v
 			 */
 			group: function(v) {
 				return v.author.name + " <" + v.author.email + ">";

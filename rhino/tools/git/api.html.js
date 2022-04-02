@@ -19,7 +19,7 @@
 			/**
 			 * @type { {
 			 * 		init: Function
-			 * 		module: slime.jrunscript.git.Exports
+			 * 		module: slime.jrunscript.tools.git.Exports
 			 * 		remotes: slime.jrunscript.file.Directory
 			 * 		fixtures: {
 			 * 			location: {
@@ -30,8 +30,8 @@
 			 * 				remote: () => void
 			 * 			}
 			 * 		}
-			 * 		remote: slime.jrunscript.git.Repository
-			 * 		child: slime.jrunscript.git.Repository
+			 * 		remote: slime.jrunscript.tools.git.Repository
+			 * 		child: slime.jrunscript.tools.git.Repository
 			 * 		fixture: {
 			 * 			write: Function
 			 * 		}

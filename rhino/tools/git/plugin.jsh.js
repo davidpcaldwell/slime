@@ -23,7 +23,7 @@
 				return Boolean(jsh.js && jsh.time && jsh.web && jsh.java && jsh.ip && jsh.file && jsh.shell && jsh.tools && jsh.tools.install && jsh.java.tools);
 			},
 			load: function() {
-				/** @type { slime.jrunscript.git.Script } */
+				/** @type { slime.jrunscript.tools.git.Script } */
 				var code = $loader.script("module.js");
 				jsh.tools.git = code({
 					api: {

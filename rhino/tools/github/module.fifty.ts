@@ -6,7 +6,7 @@
 
 namespace slime.jsh.unit.mock.github {
 	interface User {
-		[x: string]: slime.jrunscript.git.repository.Local
+		[x: string]: slime.jrunscript.tools.git.repository.Local
 	}
 
 	export interface src {

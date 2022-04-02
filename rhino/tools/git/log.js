@@ -9,8 +9,8 @@
 	/**
 	 *
 	 * @param { slime.$api.Global } $api
-	 * @param { slime.jrunscript.git.internal.log.Context } $context
-	 * @param { slime.loader.Export<slime.jrunscript.git.internal.log.Exports> } $export
+	 * @param { slime.jrunscript.tools.git.internal.log.Context } $context
+	 * @param { slime.loader.Export<slime.jrunscript.tools.git.internal.log.Exports> } $export
 	 */
 	function($api,$context,$export) {
 		var format = (
@@ -25,7 +25,7 @@
 
 				/**
 				 * @param { string } line
-				 * @returns { slime.jrunscript.git.Commit }
+				 * @returns { slime.jrunscript.tools.git.Commit }
 				 */
 				var parse = function(line) {
 					var tokens = line.split("~~");

@@ -7,8 +7,8 @@
 //@ts-check
 (
 	/**
-	 * @param { { module: slime.jrunscript.git.Exports }} $context
-	 * @param { slime.loader.Export<slime.jrunscript.git.internal.Fixtures> } $export
+	 * @param { { module: slime.jrunscript.tools.git.Exports }} $context
+	 * @param { slime.loader.Export<slime.jrunscript.tools.git.internal.Fixtures> } $export
 	 */
 	function($context,$export) {
 		var module = $context.module;
