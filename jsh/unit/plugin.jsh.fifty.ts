@@ -20,12 +20,6 @@ namespace slime.jsh.unit {
 		}
 	}
 
-	export interface Browser {
-		id: string
-		name: string
-		delegate: any
-	}
-
 	export interface Exports {
 		mock: slime.jsh.unit.mock;
 		html: any

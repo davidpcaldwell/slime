@@ -604,6 +604,9 @@
 								}
 							},
 							object: {
+								pathname: function(pathname) {
+									return $exports.Pathname(pathname.pathname);
+								},
 								directory: function(pathname) {
 									return $exports.Pathname(pathname.pathname).directory;
 								}

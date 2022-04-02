@@ -900,6 +900,7 @@ namespace slime.jrunscript.file {
 
 	export interface Exports {
 		object: {
+			pathname: (pathname: slime.jrunscript.file.world.Pathname) => slime.jrunscript.file.Pathname
 			directory: (pathname: slime.jrunscript.file.world.Pathname) => slime.jrunscript.file.Directory
 		}
 	}

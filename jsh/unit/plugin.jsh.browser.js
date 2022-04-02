@@ -360,7 +360,7 @@
 			};
 		};
 
-		/** @type { { [id: string]: slime.jsh.unit.Browser } } */
+		/** @type { { [id: string]: slime.jsh.unit.old.Browser } } */
 		var browsers = {};
 
 		$exports.installed = Object.assign([], browsers);
@@ -391,6 +391,49 @@
 
 		//	Linux
 		add("Firefox", "/usr/bin/firefox");
+
+		var local = (
+			function local() {
+				/** @type { slime.jsh.unit.Exports["browser"]["local"]["Chrome"] } */
+				var Chrome = function(configuration) {
+					var chrome = new jsh.shell.browser.chrome.Instance({
+						location: jsh.file.object.pathname(
+							jsh.file.world.filesystems.os.pathname(configuration.location)
+						),
+						devtools: configuration.devtools
+					});
+
+					/** @type { { kill: any } } */
+					var process;
+					return {
+						//name: "Google Chrome",
+						open: function(p) {
+							jsh.java.Thread.start(function() {
+								chrome.run({
+									//	TODO	enhance chrome.run so it can take a Url object rather than just a string
+									uri: p.uri,
+									arguments: (configuration.debugPort) ? ["--remote-debugging-port=" + configuration.debugPort ] : [],
+									on: {
+										start: function(p) {
+											process = p;
+										}
+									}
+								});
+							});
+						},
+						close: function() {
+							process.kill();
+						}
+					}
+				}
+
+				return {
+					Chrome: Chrome
+				}
+			}
+		)();
+
+		$exports.local = local;
 	}
 //@ts-ignore
 )(Packages,jsh,$exports);
