@@ -4,7 +4,7 @@
 //
 //	END LICENSE
 
-namespace slime.jrunscript.hg {
+namespace slime.jrunscript.tools.hg {
 	export interface Commit {
 		changeset: {
 			local: number
@@ -19,18 +19,18 @@ namespace slime.jrunscript.hg {
 	}
 
 	export namespace Repository {
-		export interface Remote extends slime.jrunscript.hg.Repository {
+		export interface Remote extends slime.jrunscript.tools.hg.Repository {
 			url: any
 		}
 
-		export interface Local extends slime.jrunscript.hg.Repository {
+		export interface Local extends slime.jrunscript.tools.hg.Repository {
 			directory: slime.jrunscript.file.Directory
 			identify: Function
 			heads: () => any
 			log: (p?: any) => Commit[]
 			subrepositories: {
-				(): { [path: string]: { repository: slime.jrunscript.hg.Repository.Local, revision: string } }
-				({ array: boolean }): slime.jrunscript.hg.Repository.Local[]
+				(): { [path: string]: { repository: slime.jrunscript.tools.hg.Repository.Local, revision: string } }
+				({ array: boolean }): slime.jrunscript.tools.hg.Repository.Local[]
 			}
 			paths: {
 				default: {
