@@ -6,6 +6,11 @@
 
 namespace slime.jrunscript.shell.browser {
 	export namespace object {
+		export interface Instance {
+			launch: any
+			run: any
+		}
+
 		export interface Chrome extends slime.jrunscript.shell.browser.Chrome {
 			Instance: new (u: {
 				location?: slime.jrunscript.file.Pathname
@@ -14,7 +19,7 @@ namespace slime.jrunscript.shell.browser {
 				hostrules?: string[]
 				install?: boolean
 				devtools?: boolean
-			}) => any
+			}) => Instance
 		}
 	}
 }
@@ -70,9 +75,14 @@ namespace slime.jrunscript.shell.browser.internal.chrome {
 	//@ts-ignore
 	)(fifty);
 
+	export interface Exports {
+		Installation: (p: {
+			executable: string
+		}) => object.Chrome
+	}
 
 	export interface Exports {
-		object: object.Chrome
+		installed: object.Chrome
 	}
 
 	(
@@ -88,17 +98,37 @@ namespace slime.jrunscript.shell.browser.internal.chrome {
 
 	(
 		function(
+			Packages: slime.jrunscript.Packages,
 			fifty: slime.fifty.test.kit
 		) {
+			const { jsh } = fifty.global;
+
 			const { subject } = test;
 
 			fifty.tests.world = function() {
-				var version = subject.object.version;
+				var version = subject.installed.version;
 				fifty.global.jsh.shell.console("Chrome version = [" + version + "]");
+			}
+
+			fifty.tests.manual = {};
+			fifty.tests.manual.chrome = {};
+			fifty.tests.manual.chrome.Installation = function() {
+				var chrome = subject.Installation({
+					executable: fifty.global.jsh.shell.environment.JSH_TEST_SHELL_CHROME_EXECUTABLE
+				});
+				var TMP = jsh.shell.TMPDIR.createTemporary({ directory: true });
+				var instance = new chrome.Instance({
+					location: TMP.pathname
+				});
+				instance.launch({
+					uri: "https://google.com/"
+				});
+				Packages.java.lang.Thread.sleep(5000);
+
 			}
 		}
 	//@ts-ignore
-	)(fifty);
+	)(Packages,fifty);
 
 
 	export type Script = slime.loader.Script<Context,Exports>

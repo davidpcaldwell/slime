@@ -26,7 +26,7 @@
 		};
 
 		//	TODO	tighten dependencies?
-		$exports.chrome = library.chrome.object;
+		$exports.chrome = library.chrome.installed;
 
 		$exports.Chrome = {
 			getMajorVersion: function(chrome) {

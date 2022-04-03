@@ -21,7 +21,7 @@
 
 		/**
 		 *
-		 * @param { { program: slime.jrunscript.file.File, user: slime.jrunscript.file.Directory }} b
+		 * @param { { program: slime.jrunscript.file.File, user?: slime.jrunscript.file.Directory }} b
 		 */
 		var Chrome = function(b) {
 			this.toString = function() {
@@ -384,28 +384,37 @@
 			throw new TypeError("Could not determine Chrome version from version string: " + chrome.version);
 		}
 
-		if ($context.os.name == "Mac OS X") {
-			if ($context.api.file.Pathname("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome").file) {
-				$export({
-					getMajorVersion: getMajorVersion,
-					object: new Chrome({
-						program: $context.api.file.Pathname("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome").file,
-						user: $context.HOME.getSubdirectory("Library/Application Support/Google/Chrome")
-					})
-				});
+		var installed = (
+			function() {
+				if ($context.os.name == "Mac OS X") {
+					if ($context.api.file.Pathname("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome").file) {
+						return new Chrome({
+							program: $context.api.file.Pathname("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome").file,
+							user: $context.HOME.getSubdirectory("Library/Application Support/Google/Chrome")
+						});
+					}
+				}
+
+				if ($context.os.name == "Linux") {
+					if ($context.api.file.Pathname("/opt/google/chrome/chrome").file) {
+						return new Chrome({
+							program: $context.api.file.Pathname("/opt/google/chrome/chrome").file,
+							user: $context.HOME.getSubdirectory(".config/google-chrome")
+						});
+					}
+				}
 			}
-		}
-		if ($context.os.name == "Linux") {
-			if ($context.api.file.Pathname("/opt/google/chrome/chrome").file) {
-				$export({
-					getMajorVersion: getMajorVersion,
-					object: new Chrome({
-						program: $context.api.file.Pathname("/opt/google/chrome/chrome").file,
-						user: $context.HOME.getSubdirectory(".config/google-chrome")
-					})
+		)();
+
+		$export({
+			getMajorVersion: getMajorVersion,
+			Installation: function(p) {
+				return new Chrome({
+					program: $context.api.file.Pathname(p.executable).file
 				});
-			}
-		}
+			},
+			installed: installed
+		});
 	}
 //@ts-ignore
 )(Packages,$api,$context,$loader,$export);

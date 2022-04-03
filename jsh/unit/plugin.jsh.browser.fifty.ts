@@ -66,17 +66,21 @@ namespace slime.jsh.unit {
 				})
 			}
 
+			function manualTest(browser: Browser) {
+				browser.open({ uri: "https://www.google.com/ "});
+				jsh.shell.console("Sleeping ...");
+				Packages.java.lang.Thread.sleep(5000);
+				jsh.shell.console("Closing ...");
+				browser.close();
+				jsh.shell.console("Closed.");
+			}
+
 			fifty.tests.manual.browsers = {};
 			fifty.tests.manual.browsers.chrome = function() {
 				var chrome = subject.local.Chrome({
 					location: jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname.toString()
 				});
-				chrome.open({ uri: "https://www.google.com/ "});
-				jsh.shell.console("Sleeping ...");
-				Packages.java.lang.Thread.sleep(5000);
-				jsh.shell.console("Closing ...");
-				chrome.close();
-				jsh.shell.console("Closed.");
+				manualTest(chrome);
 			}
 		}
 	//@ts-ignore
