@@ -80,7 +80,7 @@
 						}
 					});
 
-					/** @type { slime.jrunscript.hg.install.Script } */
+					/** @type { slime.jrunscript.tools.hg.install.Script } */
 					var hgInstall = $loader.script("hg/install.js");
 
 					jsh.tools.hg = hgInstall({

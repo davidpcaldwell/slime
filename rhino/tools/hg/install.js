@@ -9,8 +9,8 @@
 	/**
 	 *
 	 * @param { slime.$api.Global } $api
-	 * @param { slime.jrunscript.hg.install.Context } $context
-	 * @param { slime.jrunscript.hg.install.Exports} $exports
+	 * @param { slime.jrunscript.tools.hg.install.Context } $context
+	 * @param { slime.jrunscript.tools.hg.install.Exports} $exports
 	 */
 	function($api,$context,$exports) {
 		//	See https://www.mercurial-scm.org/downloads
@@ -134,7 +134,7 @@
 		$exports.install = $context.api.Events.Function(
 			/**
 			 *
-			 * @param { Parameters<slime.jrunscript.hg.install.Exports["install"]>[0] } p
+			 * @param { Parameters<slime.jrunscript.tools.hg.install.Exports["install"]>[0] } p
 			 * @param { slime.$api.Events<{ console: string }> } events
 			 * @returns
 			 */

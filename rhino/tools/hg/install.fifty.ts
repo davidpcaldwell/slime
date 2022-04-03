@@ -4,7 +4,7 @@
 //
 //	END LICENSE
 
-namespace slime.jrunscript.hg.install {
+namespace slime.jrunscript.tools.hg.install {
 	export interface Context {
 		api: {
 			Error: any
