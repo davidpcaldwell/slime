@@ -153,7 +153,7 @@
 								var isDefaultRunning = function() {
 									return ps.isDefaultRunning();
 								}
-								if (!isDefaultRunning()) {
+								if (b.user && !isDefaultRunning()) {
 									Packages.java.lang.System.err.println("Starting background Chrome ...");
 									$context.run({
 										command: "open",
@@ -411,7 +411,7 @@
 			Installation: function(p) {
 				return new Chrome({
 					program: $context.api.file.Pathname(p.executable).file,
-					user: $context.api.file.Pathname(p.user).directory
+					user: (p.user) ? $context.api.file.Pathname(p.user).directory : null
 				});
 			},
 			installed: installed

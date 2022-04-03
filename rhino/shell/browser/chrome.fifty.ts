@@ -78,6 +78,10 @@ namespace slime.jrunscript.shell.browser.internal.chrome {
 	export interface Exports {
 		Installation: (p: {
 			executable: string
+
+			/**
+			 * The default user data directory for this installation.
+			 */
 			user: string
 		}) => object.Chrome
 	}
