@@ -410,7 +410,8 @@
 			getMajorVersion: getMajorVersion,
 			Installation: function(p) {
 				return new Chrome({
-					program: $context.api.file.Pathname(p.executable).file
+					program: $context.api.file.Pathname(p.executable).file,
+					user: $context.api.file.Pathname(p.user).directory
 				});
 			},
 			installed: installed

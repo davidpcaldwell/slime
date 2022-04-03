@@ -78,6 +78,7 @@ namespace slime.jrunscript.shell.browser.internal.chrome {
 	export interface Exports {
 		Installation: (p: {
 			executable: string
+			user: string
 		}) => object.Chrome
 	}
 
@@ -113,18 +114,35 @@ namespace slime.jrunscript.shell.browser.internal.chrome {
 			fifty.tests.manual = {};
 			fifty.tests.manual.chrome = {};
 			fifty.tests.manual.chrome.Installation = function() {
+				//	macOS: env JSH_TEST_SHELL_CHROME_EXECUTABLE="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" JSH_TEST_SHELL_CHROME_USER="${HOME}/Library/Application Support/Google/Chrome"
 				var chrome = subject.Installation({
-					executable: fifty.global.jsh.shell.environment.JSH_TEST_SHELL_CHROME_EXECUTABLE
+					executable: jsh.shell.environment.JSH_TEST_SHELL_CHROME_EXECUTABLE,
+					user: jsh.shell.environment.JSH_TEST_SHELL_CHROME_USER
 				});
 				var TMP = jsh.shell.TMPDIR.createTemporary({ directory: true });
 				var instance = new chrome.Instance({
 					location: TMP.pathname
 				});
-				instance.launch({
-					uri: "https://google.com/"
+				var process;
+				jsh.java.Thread.start(function() {
+					Packages.java.lang.System.err.println("Starting ...");
+					try {
+						instance.run({
+							uri: "https://google.com/",
+							on: {
+								start: function(p) {
+									Packages.java.lang.System.err.println("Got start callback.");
+									process = p;
+								}
+							}
+						});
+					} catch (e)  {
+						jsh.shell.console(e);
+						jsh.shell.console(e.stack);
+					}
 				});
 				Packages.java.lang.Thread.sleep(5000);
-
+				process.kill();
 			}
 		}
 	//@ts-ignore
