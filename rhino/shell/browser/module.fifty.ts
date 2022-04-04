@@ -45,21 +45,29 @@ namespace slime.jrunscript.shell.browser {
 		response: slime.servlet.Response
 	}
 
-	export interface Chrome {
-		readonly version: string
-	}
-
 	export interface Exports {
 		inject: any
 
 		chrome: object.Chrome
 
-		world: {
-			chrome: slime.$api.fp.impure.Ask<void,Chrome>
-		}
-
 		Chrome: {
 			getMajorVersion: (chrome: Chrome) => number
+
+			Installation: (p: {
+				/**
+				 * The Chrome executable for this installation.
+				 */
+				 program: string
+
+				/**
+				 * The default user data directory for this installation.
+				 */
+				user: string
+			}) => object.Chrome
+		}
+
+		installed: {
+			chrome: Chrome
 		}
 
 		ProxyConfiguration: (o: ProxyConfiguration) => ProxyTools

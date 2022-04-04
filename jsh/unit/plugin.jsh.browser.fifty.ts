@@ -32,7 +32,8 @@ namespace slime.jsh.unit {
 
 			local: {
 				Chrome: (configuration: {
-					location: string
+					program: string
+					user: string
 					devtools?: boolean
 					debugPort?: number
 				}) => Browser
@@ -76,9 +77,11 @@ namespace slime.jsh.unit {
 			}
 
 			fifty.tests.manual.browsers = {};
+
 			fifty.tests.manual.browsers.chrome = function() {
 				var chrome = subject.local.Chrome({
-					location: jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname.toString()
+					program: jsh.shell.browser.installed.chrome.program,
+					user: jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname.toString()
 				});
 				manualTest(chrome);
 			}

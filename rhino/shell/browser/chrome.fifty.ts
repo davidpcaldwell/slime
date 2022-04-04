@@ -5,6 +5,18 @@
 //	END LICENSE
 
 namespace slime.jrunscript.shell.browser {
+	export interface Chrome {
+		/**
+		 * The version of this browser, e.g., `"Google Chrome 99.0.4844.84"`.
+		 */
+		readonly version: string
+
+		/**
+		 * The pathname of the browser executable.
+		 */
+		readonly program: string
+	}
+
 	export namespace object {
 		export interface Instance {
 			launch: any
@@ -69,21 +81,14 @@ namespace slime.jrunscript.shell.browser.internal.chrome {
 			const { subject } = test;
 
 			fifty.tests.getMajorVersion = function() {
-				verify(subject).getMajorVersion({ version: "Google Chrome 96.0.4664.93" }).is(96);
+				verify(subject).getMajorVersion({ version: "Google Chrome 96.0.4664.93", program: "/foo" }).is(96);
 			}
 		}
 	//@ts-ignore
 	)(fifty);
 
 	export interface Exports {
-		Installation: (p: {
-			executable: string
-
-			/**
-			 * The default user data directory for this installation.
-			 */
-			user: string
-		}) => object.Chrome
+		Installation: slime.jrunscript.shell.browser.Exports["Chrome"]["Installation"]
 	}
 
 	export interface Exports {
@@ -116,11 +121,13 @@ namespace slime.jrunscript.shell.browser.internal.chrome {
 			}
 
 			fifty.tests.manual = {};
+
 			fifty.tests.manual.chrome = {};
+
 			fifty.tests.manual.chrome.Installation = function() {
-				//	macOS: env JSH_TEST_SHELL_CHROME_EXECUTABLE="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" JSH_TEST_SHELL_CHROME_USER="${HOME}/Library/Application Support/Google/Chrome"
+				//	macOS: env JSH_TEST_SHELL_CHROME_PROGRAM="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" JSH_TEST_SHELL_CHROME_USER="${HOME}/Library/Application Support/Google/Chrome"
 				var chrome = subject.Installation({
-					executable: jsh.shell.environment.JSH_TEST_SHELL_CHROME_EXECUTABLE,
+					program: jsh.shell.environment.JSH_TEST_SHELL_CHROME_PROGRAM,
 					user: jsh.shell.environment.JSH_TEST_SHELL_CHROME_USER
 				});
 				var TMP = jsh.shell.TMPDIR.createTemporary({ directory: true });
@@ -147,6 +154,11 @@ namespace slime.jrunscript.shell.browser.internal.chrome {
 				});
 				Packages.java.lang.Thread.sleep(5000);
 				process.kill();
+			};
+
+			fifty.tests.manual.chrome.installed = function() {
+				jsh.shell.console("version = " + subject.installed.version);
+				jsh.shell.console("program = " + subject.installed.program);
 			}
 		}
 	//@ts-ignore

@@ -29,10 +29,13 @@
 		$exports.chrome = library.chrome.installed;
 
 		$exports.Chrome = {
-			getMajorVersion: function(chrome) {
-				return library.chrome.getMajorVersion(chrome);
-			}
+			getMajorVersion: library.chrome.getMajorVersion,
+			Installation: library.chrome.Installation
 		}
+
+		$exports.installed = {
+			chrome: library.chrome.installed
+		};
 
 		$exports.ProxyConfiguration = function(o) {
 			var pac = (function() {
