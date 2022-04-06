@@ -37,6 +37,10 @@ namespace slime.jsh.unit {
 					devtools?: boolean
 					debugPort?: number
 				}) => Browser
+
+				Firefox: (configuration: {
+					program: string
+				}) => Browser
 			}
 
 			//	TODO	below are probably unused
@@ -84,8 +88,24 @@ namespace slime.jsh.unit {
 					user: jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname.toString()
 				});
 				manualTest(chrome);
+			};
+
+			fifty.tests.manual.browsers.firefox = function() {
+				var firefox = subject.local.Firefox({
+					//	TODO	push knowledge of these locations back into rhino/shell
+					program: "/Applications/Firefox.app/Contents/MacOS/firefox"
+					//	Linux: /usr/bin/firefox
+				});
+				manualTest(firefox);
 			}
 		}
 	//@ts-ignore
 	)(Packages,fifty);
+}
+
+namespace slime.jsh.unit.internal.browser {
+	export interface Configuration {
+		program: string
+		arguments: string[]
+	}
 }

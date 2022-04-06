@@ -9,10 +9,11 @@
 	/**
 	 *
 	 * @param { slime.jrunscript.Packages } Packages
+	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.Global } jsh
 	 * @param { slime.jsh.unit.Exports["browser"] } $exports
 	 */
-	function(Packages,jsh,$exports) {
+	function(Packages,$api,jsh,$exports) {
 		$exports.Modules = function(slime,pathnames) {
 			var common = (function() {
 				var isCommonAncestor = function(directory,list) {
@@ -394,6 +395,45 @@
 
 		var local = (
 			function local() {
+				/**
+				 *
+				 * @param { slime.jsh.unit.internal.browser.Configuration } configuration
+				 * @returns { slime.jsh.unit.Browser }
+				 */
+				var Browser = function(configuration) {
+					var process;
+					return {
+						open: function(p) {
+							jsh.java.Thread.start(function() {
+								jsh.shell.world.run(
+									jsh.shell.Invocation.create({
+										command: configuration.program,
+										arguments: configuration.arguments.concat([p.uri])
+									})
+								)({
+									start: function(e) {
+										process = e.detail;
+									}
+								})
+							});
+						},
+						close: function() {
+							process.kill();
+						}
+					}
+				}
+
+				var Firefox = function(configuration) {
+					var PROFILE = jsh.shell.TMPDIR.createTemporary({ directory: true });
+					return Browser({
+						program: configuration.program,
+						arguments: $api.Array.build(function(rv) {
+							rv.push("-no-remote");
+							rv.push("-profile", PROFILE.toString())
+						})
+					});
+				}
+
 				/** @type { slime.jsh.unit.Exports["browser"]["local"]["Chrome"] } */
 				var Chrome = function(configuration) {
 					var chrome = new jsh.shell.browser.chrome.Instance({
@@ -428,7 +468,8 @@
 				}
 
 				return {
-					Chrome: Chrome
+					Chrome: Chrome,
+					Firefox: Firefox
 				}
 			}
 		)();
@@ -436,4 +477,4 @@
 		$exports.local = local;
 	}
 //@ts-ignore
-)(Packages,jsh,$exports);
+)(Packages,$api,jsh,$exports);
