@@ -26,7 +26,7 @@ namespace slime {
 									p.exists.remove();
 									return true;
 								}
-							return true;
+								return true;
 							}
 						});
 						return rv;

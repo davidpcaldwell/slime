@@ -181,9 +181,6 @@
 				var loader = Object.assign(
 					new inonit.loader.Loader(path.parent),
 					{
-						getRelativePath: function(path) {
-							throw new Error("Unimplemented.");
-						}
 					}
 				);
 
