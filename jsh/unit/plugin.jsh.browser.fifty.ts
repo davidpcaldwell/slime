@@ -41,6 +41,10 @@ namespace slime.jsh.unit {
 				Firefox: (configuration: {
 					program: string
 				}) => Browser
+
+				selenium: {
+					Chrome: () => Browser
+				}
 			}
 
 			//	TODO	below are probably unused
@@ -97,6 +101,13 @@ namespace slime.jsh.unit {
 					//	Linux: /usr/bin/firefox
 				});
 				manualTest(firefox);
+			}
+
+			fifty.tests.manual.browsers.selenium = {};
+
+			fifty.tests.manual.browsers.selenium.chrome = function() {
+				var driven = subject.local.selenium.Chrome();
+				manualTest(driven);
 			}
 		}
 	//@ts-ignore

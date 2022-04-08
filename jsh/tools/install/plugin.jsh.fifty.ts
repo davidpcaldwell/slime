@@ -284,8 +284,8 @@ namespace slime.jsh.shell.tools {
 		}
 		selenium: {
 			/**
-			 * If both the Java Selenium API and the Chrome Selenium driver are installed into the shell, loads them; otherwise,
-			 * exits.
+			 * Loads the Selenium Java API if it is present; otherwise, throws an exception. If the Chrome Selenium driver is
+			 * installed into the shell, the API will be configured to use it.
 			 */
 			load: () => void
 		}

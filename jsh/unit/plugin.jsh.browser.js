@@ -467,9 +467,32 @@
 					}
 				}
 
+				/**
+				 *
+				 * @param { slime.fifty.browser.test.internal.script.SeleniumChrome } [configuration]
+				 * @returns { slime.jsh.unit.Browser }
+				 */
+				var FiftySeleniumChrome = function(configuration) {
+					jsh.shell.tools.selenium.load();
+					var _driver;
+					return {
+						open: function(p) {
+							var _options = new Packages.org.openqa.selenium.chrome.ChromeOptions();
+							_driver = new Packages.org.openqa.selenium.chrome.ChromeDriver(_options);
+							_driver.get(p.uri);
+						},
+						close: function() {
+							_driver.quit();
+						}
+					}
+				};
+
 				return {
 					Chrome: Chrome,
-					Firefox: Firefox
+					Firefox: Firefox,
+					selenium: {
+						Chrome: FiftySeleniumChrome
+					}
 				}
 			}
 		)();
