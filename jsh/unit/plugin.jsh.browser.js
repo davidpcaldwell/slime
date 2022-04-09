@@ -394,6 +394,10 @@
 		add("Firefox", "/usr/bin/firefox");
 
 		var local = (
+			/**
+			 *
+			 * @returns { slime.jsh.unit.Exports["browser"]["local"] }
+			 */
 			function local() {
 				/**
 				 *
@@ -467,6 +471,56 @@
 					}
 				}
 
+				return {
+					Chrome: Chrome,
+					Firefox: Firefox
+				}
+			}
+		)();
+
+		$exports.local = local;
+
+		var selenium = (
+			/**
+			 *
+			 * @returns { slime.jsh.unit.Exports["browser"]["selenium"] }
+			 */
+			function() {
+				/**
+				 * The `jsh` shell uses the Java system properties as a convenient global storage location, and puts its own
+				 * streams into properties to communicate between, if memory servers, the launcher and loader. This could perhaps
+				 * be refactored so that they were stored in a class loaded by a shared classloader, or a ThreadLocal, or something,
+				 * but for now they're there. And the Selenium remote driver loops through system properties, assuming they're
+				 * strings, and does something with them. So we need to remove these streams before creating the RemoteWebDriver
+				 * and replace them afterward (this second part is probably not necessary, as the system property stream references
+				 * are probably only used at startup,  but seems like good hygiene)
+				 * @returns
+				 */
+				var SystemPropertyStreams = function() {
+					//	TODO	remove need for the property manipulation by patching Selenium or transferring these global
+					//			properties to be in the inonit.script.jsh.Main Java class itself; would they be available where
+					//			needed?
+					//	TODO	extend Properties to properly include superclass methods?
+					/** @type { any } */
+					var _properties = Packages.java.lang.System.getProperties();
+					var saved = {};
+					var streams = ["stdin", "stdout", "stderr"];
+
+					return {
+						remove: function() {
+							streams.forEach(function(name) {
+								saved[name] = _properties.get("inonit.script.jsh.Main." + name);
+								_properties.remove("inonit.script.jsh.Main." + name);
+							});
+						},
+						replace: function() {
+							streams.forEach(function(name) {
+								_properties.put("inonit.script.jsh.Main." + name, saved[name]);
+							})
+						}
+					}
+				}
+
 				/**
 				 *
 				 * @param { slime.fifty.browser.test.internal.script.SeleniumChrome } [configuration]
@@ -487,17 +541,49 @@
 					}
 				};
 
+				/**
+				 *
+				 * @param { { host: string, port: number }} configuration
+				 * @param { slime.jrunscript.native.org.openqa.selenium.Capabilities } _capabilities
+				 */
+				var RemoteSelenium = function(configuration, _capabilities) {
+					jsh.shell.tools.selenium.load();
+					var _driver;
+					return {
+						open: function(p) {
+							var streams = SystemPropertyStreams();
+							streams.remove();
+							_driver = new Packages.org.openqa.selenium.remote.RemoteWebDriver(
+								new Packages.java.net.URL("http://" + configuration.host + ":" + configuration.port + "/wd/hub"),
+								_capabilities
+							);
+							streams.replace();
+							_driver.get(p.uri);
+						},
+						close: function() {
+							_driver.quit();
+						}
+					}
+				}
+
+				/** @type { slime.jsh.unit.Exports["browser"]["selenium"]["remote"]["Chrome"] } */
+				var RemoteSeleniumChrome = function(configuration) {
+					return RemoteSelenium(
+						configuration,
+						new Packages.org.openqa.selenium.chrome.ChromeOptions()
+					);
+				}
+
 				return {
-					Chrome: Chrome,
-					Firefox: Firefox,
-					selenium: {
-						Chrome: FiftySeleniumChrome
+					Chrome: FiftySeleniumChrome,
+					remote: {
+						Chrome: RemoteSeleniumChrome
 					}
 				}
 			}
 		)();
 
-		$exports.local = local;
+		$exports.selenium = selenium;
 	}
 //@ts-ignore
 )(Packages,$api,jsh,$exports);

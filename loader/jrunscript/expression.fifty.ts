@@ -333,6 +333,15 @@ namespace slime.jrunscript {
 			}
 		}
 
+		export namespace org {
+			export namespace openqa {
+				export namespace selenium {
+					export interface Capabilities {
+					}
+				}
+			}
+		}
+
 		type EngineSpecificJshInterface = slime.jsh.plugin.EngineSpecific;
 
 		export namespace inonit.script {

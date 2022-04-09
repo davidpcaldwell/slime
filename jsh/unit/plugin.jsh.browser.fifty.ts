@@ -41,9 +41,17 @@ namespace slime.jsh.unit {
 				Firefox: (configuration: {
 					program: string
 				}) => Browser
+			}
 
-				selenium: {
-					Chrome: () => Browser
+
+			selenium: {
+				Chrome: () => Browser
+
+				remote: {
+					Chrome: (configuration: {
+						host: string
+						port: number
+					}) => Browser
 				}
 			}
 
@@ -106,9 +114,11 @@ namespace slime.jsh.unit {
 			fifty.tests.manual.browsers.selenium = {};
 
 			fifty.tests.manual.browsers.selenium.chrome = function() {
-				var driven = subject.local.selenium.Chrome();
+				var driven = subject.selenium.Chrome();
 				manualTest(driven);
 			}
+
+			fifty.tests.manual.browsers
 		}
 	//@ts-ignore
 	)(Packages,fifty);
