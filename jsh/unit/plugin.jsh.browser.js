@@ -547,7 +547,6 @@
 				 * @param { slime.jrunscript.native.org.openqa.selenium.Capabilities } _capabilities
 				 */
 				var RemoteSelenium = function(configuration, _capabilities) {
-					jsh.shell.tools.selenium.load();
 					var _driver;
 					return {
 						open: function(p) {
@@ -568,6 +567,7 @@
 
 				/** @type { slime.jsh.unit.Exports["browser"]["selenium"]["remote"]["Chrome"] } */
 				var RemoteSeleniumChrome = function(configuration) {
+					jsh.shell.tools.selenium.load();
 					return RemoteSelenium(
 						configuration,
 						new Packages.org.openqa.selenium.chrome.ChromeOptions()

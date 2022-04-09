@@ -70,7 +70,7 @@ namespace slime.jsh.unit {
 			Packages: slime.jrunscript.Packages,
 			fifty: slime.fifty.test.kit
 		) {
-			const { jsh } = fifty.global;
+			const { $api, jsh } = fifty.global;
 			var subject = jsh.unit.browser;
 
 			fifty.tests.manual = {};
@@ -84,7 +84,7 @@ namespace slime.jsh.unit {
 			}
 
 			function manualTest(browser: Browser) {
-				browser.open({ uri: "https://www.google.com/ "});
+				browser.open({ uri: "https://github.com/davidpcaldwell/slime" });
 				jsh.shell.console("Sleeping ...");
 				Packages.java.lang.Thread.sleep(5000);
 				jsh.shell.console("Closing ...");
@@ -118,7 +118,68 @@ namespace slime.jsh.unit {
 				manualTest(driven);
 			}
 
-			fifty.tests.manual.browsers
+			fifty.tests.manual.browsers.selenium.remote = {};
+
+			var runDockerSelenium = function(image) {
+				return jsh.shell.world.run(
+					jsh.shell.Invocation.create({
+						command: "docker",
+						arguments: $api.Array.build(function(rv) {
+							rv.push("run");
+							rv.push("-d");
+							rv.push("-p", "4444:4444");
+							rv.push("-p", "7900:7900");
+							rv.push("--shm-size=2g");
+							rv.push(image);
+						}),
+						stdio: {
+							output: "string"
+						}
+					})
+				)
+			}
+
+			fifty.tests.manual.browsers.selenium.remote.chrome = function() {
+				var tell = runDockerSelenium("selenium/standalone-chrome");
+				var container;
+				tell({
+					exit: function(e) {
+						container = e.detail.stdio.output.trim();
+						jsh.shell.console("container = [" + container + "]");
+					}
+				});
+				var chrome = subject.selenium.remote.Chrome({
+					host: "127.0.0.1",
+					port: 4444
+				});
+				manualTest(chrome);
+				jsh.shell.world.run(
+					jsh.shell.Invocation.create({
+						command: "docker",
+						arguments: $api.Array.build(function(rv) {
+							rv.push("stop");
+							rv.push(container);
+						})
+					})
+				)({
+					exit: function(e) {
+						jsh.shell.console("Docker stop exit status: " + e.detail.status);
+					}
+				})
+				jsh.shell.world.run(
+					jsh.shell.Invocation.create({
+						command: "docker",
+						arguments: $api.Array.build(function(rv) {
+							rv.push("rm");
+							rv.push(container);
+						})
+					})
+				)({
+					exit: function(e) {
+						jsh.shell.console("Docker rm exit status: " + e.detail.status);
+					}
+				});
+			}
 		}
 	//@ts-ignore
 	)(Packages,fifty);
