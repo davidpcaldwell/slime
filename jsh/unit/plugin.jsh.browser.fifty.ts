@@ -52,6 +52,11 @@ namespace slime.jsh.unit {
 						host: string
 						port: number
 					}) => Browser
+
+					Firefox: (configuration: {
+						host: string
+						port: number
+					}) => Browser
 				}
 			}
 
@@ -139,6 +144,23 @@ namespace slime.jsh.unit {
 				)
 			}
 
+			var removeDockerContainer = function(id) {
+				jsh.shell.world.run(
+					jsh.shell.Invocation.create({
+						command: "docker",
+						arguments: $api.Array.build(function(rv) {
+							rv.push("rm");
+							rv.push("-f");
+							rv.push(id);
+						})
+					})
+				)({
+					exit: function(e) {
+						jsh.shell.console("Docker rm exit status: " + e.detail.status);
+					}
+				});
+			};
+
 			fifty.tests.manual.browsers.selenium.remote.chrome = function() {
 				var tell = runDockerSelenium("selenium/standalone-chrome");
 				var container;
@@ -153,32 +175,25 @@ namespace slime.jsh.unit {
 					port: 4444
 				});
 				manualTest(chrome);
-				jsh.shell.world.run(
-					jsh.shell.Invocation.create({
-						command: "docker",
-						arguments: $api.Array.build(function(rv) {
-							rv.push("stop");
-							rv.push(container);
-						})
-					})
-				)({
+				removeDockerContainer(container);
+			}
+
+
+			fifty.tests.manual.browsers.selenium.remote.firefox = function() {
+				var tell = runDockerSelenium("selenium/standalone-firefox");
+				var container;
+				tell({
 					exit: function(e) {
-						jsh.shell.console("Docker stop exit status: " + e.detail.status);
-					}
-				})
-				jsh.shell.world.run(
-					jsh.shell.Invocation.create({
-						command: "docker",
-						arguments: $api.Array.build(function(rv) {
-							rv.push("rm");
-							rv.push(container);
-						})
-					})
-				)({
-					exit: function(e) {
-						jsh.shell.console("Docker rm exit status: " + e.detail.status);
+						container = e.detail.stdio.output.trim();
+						jsh.shell.console("container = [" + container + "]");
 					}
 				});
+				var chrome = subject.selenium.remote.Firefox({
+					host: "127.0.0.1",
+					port: 4444
+				});
+				manualTest(chrome);
+				removeDockerContainer(container);
 			}
 		}
 	//@ts-ignore

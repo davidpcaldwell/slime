@@ -237,6 +237,7 @@ plugin({
 		return jsh.js && jsh.web && jsh.shell && jsh.httpd && jsh.httpd.Tomcat && jsh.http && jsh.unit && jsh.unit.Scenario && jsh.unit.Scenario.Events && jsh.java && jsh.file;
 	},
 	load: function() {
+		//	TODO	probably can switch this to the $loader.script mechanism, it looks like a normal script
 		var $exports = {};
 		$loader.run("plugin.jsh.browser.js", { $exports: $exports, jsh: jsh });
 		jsh.unit.browser = $exports;

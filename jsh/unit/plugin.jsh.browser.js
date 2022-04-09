@@ -574,10 +574,20 @@
 					);
 				}
 
+				/** @type { slime.jsh.unit.Exports["browser"]["selenium"]["remote"]["Firefox"] } */
+				var RemoteSeleniumFirefox = function(configuration) {
+					jsh.shell.tools.selenium.load();
+					return RemoteSelenium(
+						configuration,
+						new Packages.org.openqa.selenium.firefox.FirefoxOptions()
+					);
+				}
+
 				return {
 					Chrome: FiftySeleniumChrome,
 					remote: {
-						Chrome: RemoteSeleniumChrome
+						Chrome: RemoteSeleniumChrome,
+						Firefox: RemoteSeleniumFirefox
 					}
 				}
 			}

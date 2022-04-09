@@ -22,3 +22,8 @@ services:
     ports:
       - 7901:7900
   suite:
+    build: ..
+    command: sleep infinity
+    depends_on:
+      - chrome
+      - firefox
