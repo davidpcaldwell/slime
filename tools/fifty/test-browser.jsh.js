@@ -41,95 +41,6 @@
 			});
 		};
 
-		/**
-		 *
-		 * @param { slime.fifty.browser.test.internal.script.Chrome } configuration
-		 * @returns { slime.fifty.browser.test.internal.script.Browser }
-		 */
-		var Chrome = function(configuration) {
-			var chrome = new jsh.shell.browser.chrome.Instance({
-				location: configuration.location,
-				devtools: configuration.devtools
-			});
-			/** @type { { kill: any } } */
-			var process;
-			return {
-				open: function(p) {
-					chrome.run({
-						//	TODO	enhance chrome.run so it can take a Url object rather than just a string
-						uri: p.uri,
-						arguments: (configuration.debugPort) ? ["--remote-debugging-port=" + configuration.debugPort ] : [],
-						on: {
-							start: function(p) {
-								process = p;
-							}
-						}
-					});
-				},
-				close: function() {
-					process.kill();
-				}
-			}
-		};
-
-		/**
-		 *
-		 * @param { slime.fifty.browser.test.internal.script.SeleniumChrome } [configuration]
-		 * @returns { slime.fifty.browser.test.internal.script.Browser }
-		 */
-		var SeleniumChrome = function(configuration) {
-			jsh.shell.tools.selenium.load();
-			var _driver;
-			return {
-				open: function(p) {
-					var _options = new Packages.org.openqa.selenium.chrome.ChromeOptions();
-					_driver = new Packages.org.openqa.selenium.chrome.ChromeDriver(_options);
-					_driver.get(p.uri);
-				},
-				close: function() {
-					_driver.quit();
-				}
-			}
-		};
-
-		/**
-		 *
-		 * @param { slime.fifty.browser.test.internal.script.RemoteSelenium } configuration
-		 * @returns { slime.fifty.browser.test.internal.script.Browser }
-		 */
-		var RemoteSelenium = function(configuration) {
-			jsh.shell.tools.selenium.load();
-			var _driver;
-			return {
-				open: function(p) {
-					//	TODO	extend Properties to properly include superclass methods?
-					//	TODO	remove need for the property manipulation by patching Selenium or transferring these global
-					//			properties to be in the inonit.script.jsh.Main Java class itself; would they be available where
-					//			needed?
-					/** @type { any } */
-					var _properties = Packages.java.lang.System.getProperties();
-					var saved = {};
-					var streams = ["stdin", "stdout", "stderr"];
-					streams.forEach(function(name) {
-						saved[name] = _properties.get("inonit.script.jsh.Main." + name);
-						_properties.remove("inonit.script.jsh.Main." + name);
-					});
-					var _options = new Packages.org.openqa.selenium.chrome.ChromeOptions();
-					_driver = new Packages.org.openqa.selenium.remote.RemoteWebDriver(
-						new Packages.java.net.URL("http://" + configuration.browser.host + ":" + configuration.browser.port + "/wd/hub"),
-						_options
-					);
-					streams.forEach(function(name) {
-						_properties.put("inonit.script.jsh.Main." + name, saved[name]);
-					})
-					_driver.get(p.uri);
-				},
-				close: function() {
-					_driver.quit();
-				}
-			}
-		}
-
 		$api.Function.pipe(
 			//	Keeps the browser open after running the tests so that they can be re-run by refreshing the page
 			jsh.script.cli.option.boolean({ longname: "interactive" }),
@@ -217,7 +128,7 @@
 				var tomcat = start(paths.toShell.base, paths.toResult.base, resultsPath);
 
 				var host = (function() {
-					if (p.options.browser == "dockercompose:selenium:chrome") {
+					if (p.options.browser == "dockercompose:selenium:chrome" || p.options.browser == "dockercompose:selenium:firefox") {
 						return "slime";
 					}
 					return "127.0.0.1";
@@ -225,19 +136,30 @@
 
 				var browser = (function() {
 					if (p.options.browser == "chrome") {
-						return Chrome({
-							location: p.options["chrome:data"],
+						var user = (p.options["chrome:data"]) ? p.options["chrome:data"] : jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
+						return jsh.unit.browser.local.Chrome({
+							program: jsh.shell.browser.installed.chrome.program,
+							user: user.toString(),
 							devtools: p.options["debug:devtools"],
 							debugPort: (p.options["chrome:debug:vscode"]) ? 9222 : void(0)
 						});
+					} else if (p.options.browser == "firefox") {
+						return jsh.unit.browser.local.Firefox({
+							//	TODO	push knowledge of these locations back into rhino/shell
+							program: "/Applications/Firefox.app/Contents/MacOS/firefox"
+							//	Linux: /usr/bin/firefox
+						});
 					} else if (p.options.browser == "selenium:chrome") {
-						return SeleniumChrome();
+						return jsh.unit.browser.selenium.Chrome()
 					} else if (p.options.browser == "dockercompose:selenium:chrome") {
-						return RemoteSelenium({
-							browser: {
-								host: "chrome",
-								port: 4444
-							}
+						return jsh.unit.browser.selenium.remote.Chrome({
+							host: "chrome",
+							port: 4444
+						})
+					} else if (p.options.browser == "dockercompose:selenium:firefox") {
+						return jsh.unit.browser.selenium.remote.Firefox({
+							host: "firefox",
+							port: 4444
 						})
 					}
 				})();

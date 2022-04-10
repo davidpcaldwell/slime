@@ -24,14 +24,6 @@ namespace slime.fifty.browser.test.internal.script {
 		}
 	}
 
-	export interface Browser {
-		open: (p: {
-			uri: string
-		}) => void
-
-		close: () => void
-	}
-
 	export interface Exports {
 	}
 
@@ -69,6 +61,10 @@ namespace slime.fifty.browser.test.internal.script {
 			run("chrome");
 		}
 
+		fifty.tests.manual.firefox = function() {
+			run("firefox");
+		}
+
 		fifty.tests.manual.selenium = {};
 
 		fifty.tests.manual.selenium.chrome = function() {
@@ -86,6 +82,15 @@ namespace slime.fifty.browser.test.internal.script {
 						});
 						jsh.shell.console("Installed Selenium.");
 						run("dockercompose:selenium:chrome");
+					},
+					firefox: function() {
+						jsh.shell.console("Installing Selenium ...");
+						jsh.shell.jsh({
+							shell: jsh.shell.jsh.src,
+							script: jsh.shell.jsh.src.getFile("jsh/tools/install/selenium.jsh.js")
+						});
+						jsh.shell.console("Installed Selenium.");
+						run("dockercompose:selenium:firefox");
 					}
 				}
 			}

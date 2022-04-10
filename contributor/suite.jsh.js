@@ -122,23 +122,27 @@
 			});
 		});
 
-		var getSafariProcess = function() {
-			if (jsh.shell.os.name != "Mac OS X") return null;
-			var processes = jsh.shell.os.process.list();
-			var safaris = processes.filter(function(process) {
-				return process.command == "/Applications/Safari.app/Contents/MacOS/Safari";
-			});
-			return (safaris.length) ? safaris[0] : null;
-		};
+		(
+			function safariLifecycle() {
+				var getSafariProcess = function() {
+					if (jsh.shell.os.name != "Mac OS X") return null;
+					var processes = jsh.shell.os.process.list();
+					var safaris = processes.filter(function(process) {
+						return process.command == "/Applications/Safari.app/Contents/MacOS/Safari";
+					});
+					return (safaris.length) ? safaris[0] : null;
+				};
 
-		var safariWas = getSafariProcess();
+				var safariWas = getSafariProcess();
 
-		if (!safariWas) {
-			jsh.java.addShutdownHook(function() {
-				var safari = getSafariProcess();
-				if (safari) safari.kill();
-			});
-		}
+				if (!safariWas) {
+					jsh.java.addShutdownHook(function() {
+						var safari = getSafariProcess();
+						if (safari) safari.kill();
+					});
+				}
+			}
+		)();
 
 		if (!isDocker) suite.add("browsers", new function() {
 			this.name = "Browser tests";
