@@ -248,89 +248,6 @@
 			}
 		};
 
-		var Chrome = function(o) {
-			var instance = new jsh.shell.browser.chrome.Instance({
-				location: o.location
-			});
-
-			var kill;
-
-			this.name = "Google Chrome";
-
-			this.start = function(p) {
-				instance.run({
-					uri: p.uri,
-					arguments: (function() {
-						var rv = [];
-						if (o.remoteDebugPort) rv.push("--remote-debugging-port=" + o.remoteDebugPort);
-						return rv;
-					})(),
-					on: {
-						start: function(e) {
-							kill = function() {
-								e.kill();
-							}
-						}
-					}
-				});
-			};
-
-			this.kill = function() {
-				kill();
-			}
-		};
-
-		/**
-		 *
-		 * @returns { slime.runtime.browser.test.internal.suite.Browser }
-		 */
-		var SeleniumChrome = function() {
-			jsh.shell.tools.selenium.load();
-			var _driver;
-			return {
-				name: "Chrome (Selenium)",
-				start: function(p) {
-					var _options = new Packages.org.openqa.selenium.chrome.ChromeOptions();
-					_driver = new Packages.org.openqa.selenium.chrome.ChromeDriver(_options);
-					_driver.get(p.uri);
-				},
-				kill: function() {
-					_driver.quit();
-				}
-			}
-		}
-
-		var DockerSeleniumChrome = function() {
-			jsh.shell.tools.selenium.load();
-			var _driver;
-			return {
-				name: "Remote (Selenium)",
-				start: function(p) {
-					//	TODO	extend Properties to properly include superclass methods?
-					//	TODO	remove need for the property manipulation by patching Selenium or transferring these global
-					//			properties to be in the inonit.script.jsh.Main Java class itself; would they be available where
-					//			needed?
-					/** @type { any } */
-					var _properties = Packages.java.lang.System.getProperties();
-					var saved = {};
-					var streams = ["stdin", "stdout", "stderr"];
-					streams.forEach(function(name) {
-						saved[name] = _properties.get("inonit.script.jsh.Main." + name);
-						_properties.remove("inonit.script.jsh.Main." + name);
-					});
-					var _options = new Packages.org.openqa.selenium.chrome.ChromeOptions();
-					_driver = new Packages.org.openqa.selenium.remote.RemoteWebDriver(new Packages.java.net.URL("http://localhost:4444/wd/hub"), _options);
-					streams.forEach(function(name) {
-						_properties.put("inonit.script.jsh.Main." + name, saved[name]);
-					})
-					_driver.get(p.uri.replace(/127\.0\.0\.1/g, "host.docker.internal"));
-				},
-				kill: function() {
-					_driver.quit();
-				}
-			}
-		}
-
 		/**
 		 *
 		 * @param { slime.jsh.unit.Browser } browser
@@ -359,28 +276,60 @@
 		var toBrowser = function(argument) {
 			if (argument == "dockercompose:selenium:chrome") {
 				return jshUnitBrowserToBrowser(
-					"Remote (Selenium)",
+					"Remote (Selenium) - slime",
 					function(url) { return url.replace(/127\.0\.0\.1/g, "slime") },
-					jsh.unit.browser.selenium.Chrome()
+					jsh.unit.browser.selenium.remote.Chrome({
+						host: "chrome",
+						port: 4444
+					})
 				);
 			}
 			if (argument == "docker:selenium:chrome") {
-				return DockerSeleniumChrome();
+				return jshUnitBrowserToBrowser(
+					"Remote (Selenium) - local",
+					function(url) { return url.replace(/127\.0\.0\.1/g, "host.docker.internal") },
+					jsh.unit.browser.selenium.remote.Chrome({
+						host: "localhost",
+						port: 4444
+					})
+				)
 			}
 			if (argument == "selenium:chrome") {
-				return SeleniumChrome();
+				return jshUnitBrowserToBrowser(
+					"Chrome (Selenium)",
+					$api.Function.identity,
+					jsh.unit.browser.selenium.Chrome()
+				);
 			}
 			if (argument == "chrome") {
 				var port = (function() {
 					if (parameters.options["chrome:debug:port"]) return parameters.options["chrome:debug:port"];
 					if (parameters.options["chrome:debug:vscode"]) return 9222;
 				})();
-				return new Chrome({
-					location: parameters.options["chrome:instance"],
-					remoteDebugPort: port
-				});
+				var instance = (parameters.options["chrome:instance"]) || jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
+				return jshUnitBrowserToBrowser(
+					"Chrome",
+					$api.Function.identity,
+					jsh.unit.browser.local.Chrome({
+						program: jsh.shell.browser.installed.chrome.program,
+						user: instance.toString(),
+						debugPort: port,
+						devtools: false
+					})
+				)
 			}
-			var browsers = ["IE","Firefox","Safari"];
+			if (argument == "firefox") {
+				return jshUnitBrowserToBrowser(
+					"Firefox",
+					$api.Function.identity,
+					jsh.unit.browser.local.Firefox({
+						//	TODO	push knowledge of these locations back into rhino/shell
+						program: "/Applications/Firefox.app/Contents/MacOS/firefox"
+						//	Linux: /usr/bin/firefox
+					})
+				)
+			}
+			var browsers = ["IE","Safari"];
 			for (var i=0; i<browsers.length; i++) {
 				if (argument == browsers[i].toLowerCase()) {
 					var rv = new Browser(jsh.unit.browser.installed[argument].delegate);
