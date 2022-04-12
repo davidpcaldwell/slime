@@ -13,6 +13,9 @@ services:
 #      - /slime/local
     environment:
       - JSH_LAUNCHER_BASH_DEBUG=true
+    depends_on:
+      - chrome
+      - firefox
   chrome:
     image: selenium/standalone-chrome
     ports:

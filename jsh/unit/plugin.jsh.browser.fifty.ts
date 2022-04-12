@@ -41,6 +41,8 @@ namespace slime.jsh.unit {
 				Firefox: (configuration: {
 					program: string
 				}) => Browser
+
+				Safari: () => Browser
 			}
 
 
@@ -194,6 +196,13 @@ namespace slime.jsh.unit {
 				});
 				manualTest(chrome);
 				removeDockerContainer(container);
+			}
+
+			fifty.tests.world = {};
+			fifty.tests.world.installed = function() {
+				jsh.unit.browser.installed.forEach(function(browser) {
+					jsh.shell.console(browser.id + ": " + browser.name);
+				})
 			}
 		}
 	//@ts-ignore

@@ -116,7 +116,7 @@
 		}
 
 		/**
-		 * @param { { logs: slime.jrunscript.file.Directory } } p
+		 * @param { { docker: boolean, logs: slime.jrunscript.file.Directory } } p
 		 */
 		var test = function(p) {
 			var logs = p.logs;
@@ -159,7 +159,7 @@
 				arguments: [
 					jsh.shell.jsh.src.getFile("jsh.bash").toString(),
 					$context.base.getFile("contributor/suite.jsh.js").toString()
-				].concat(debugging),
+				].concat(p.docker ? ["-docker"] : []).concat(debugging),
 				stdio: {
 					output: {
 						line: function(line) {
@@ -267,7 +267,7 @@
 						recursive: true,
 						exists: function(dir) { return false; }
 					}).getRelativePath(timestamp.local().format("yyyy.mm.dd.HR.mi.sc")).createDirectory();
-					return test({ logs: logs });
+					return test({ docker: false, logs: logs });
 				}
 			},
 			$exports
@@ -369,6 +369,7 @@
 		$exports.test = $api.Function.pipe(
 			jsh.script.cli.option.boolean({ longname: "stdio" }),
 			jsh.script.cli.option.string({ longname: "logs" }),
+			jsh.script.cli.option.boolean({ longname: "docker" }),
 			function(p) {
 				var logs = (function(stdio,logs) {
 					if (stdio) return void(0);
@@ -382,9 +383,23 @@
 						exists: $api.Function.returning(false)
 					});
 				})(p.options.stdio,p.options.logs);
-				test({ logs: logs });
+
+				if (p.options["docker"]) {
+					var library = jsh.shell.jsh.lib.getRelativePath("selenium/java");
+
+					if (!library.directory) {
+						jsh.shell.console("Installing Selenium Java driver ...");
+						jsh.tools.install.install({
+							url: "https://github.com/SeleniumHQ/selenium/releases/download/selenium-4.1.0/selenium-java-4.1.2.zip",
+							getDestinationPath: function(file) { return ""; },
+							to: library
+						});
+					}
+				}
+
+				test({ docker: p.options["docker"], logs: logs });
 			}
-		)
+		);
 
 		$exports.docker = (
 			function() {
@@ -489,7 +504,104 @@
 					},
 					compose: {
 						test: function(p) {
-							jsh.shell.console("Hello, World!");
+							var EXPECTED_NAME = "contributor-slime-1";
+							/** @type { slime.jrunscript.tools.docker.cli.Command<void,any[]> } */
+							var listContainers = {
+								invocation: function() {
+									return {
+										command: ["container", "ls"],
+										arguments: ["-a"]
+									}
+								},
+								output: {
+									json: true,
+									truncated: true
+								},
+								result: function(json) {
+									return json;
+								}
+							};
+							/** @type { slime.jrunscript.tools.docker.cli.Command<{ name: string },void> } */
+							var removeContainer = {
+								invocation: function(p) {
+									return {
+										command: ["container", "rm"],
+										arguments: ["-f", p.name]
+									}
+								},
+								output: {
+									json: false,
+									truncated: false
+								},
+								result: function(json) {
+									return void(0);
+								}
+							}
+							var containers = jsh.tools.docker.engine.cli.command(listContainers).input().run();
+							var existing = containers.find(function(container) {
+								return container.Names == EXPECTED_NAME
+							});
+							if (existing) {
+								jsh.shell.console("Removing existing container ...");
+								jsh.tools.docker.engine.cli.command(removeContainer).input({ name: EXPECTED_NAME }).run();
+							}
+
+							//	TODO	below is kludgy; probably need improved world filesystem APIs
+							var logs = jsh.file.world.filesystems.os.pathname($context.base.getRelativePath("local/wf/logs/docker.compose.test").toString());
+							if (logs.directory.exists()()) {
+								logs.directory.remove()();
+							}
+							logs.directory.require({ recursive: true })();
+
+							jsh.shell.world.run(
+								jsh.shell.Invocation.create({
+									command: docker,
+									arguments: $api.Array.build(function(rv) {
+										rv.push("compose");
+										rv.push("-f", $context.base.getRelativePath("contributor/docker-compose.yaml"));
+										rv.push("build");
+										rv.push("slime");
+									})
+								})
+							)();
+
+							var args = $api.Array.build(function(rv) {
+								rv.push("compose");
+								rv.push("-f", $context.base.getRelativePath("contributor/docker-compose.yaml"));
+								rv.push("run");
+								//rv.push("--rm");
+								//rv.push("--name", "slime-docker-compose-test");
+								rv.push("--use-aliases");
+								rv.push("-v", logs.pathname + ":" + "/slime/local/wf/logs/test/current/")
+								rv.push("-w", "/slime");
+								rv.push("slime");
+								rv.push("/bin/bash");
+								rv.push("/slime/wf");
+								rv.push("test");
+								rv.push("--logs", "current");
+								rv.push("--docker");
+							});
+
+							var script = jsh.shell.invocation.toBashScript()({
+								command: docker,
+								arguments: args
+							});
+
+							var tmp = jsh.shell.TMPDIR.createTemporary({ prefix: "slime-docker-compose-", suffix: ".command" }).pathname;
+
+							tmp.write(script, { append: false });
+
+							jsh.shell.run({
+								command: "chmod",
+								arguments: [
+									"+x", tmp.toString()
+								]
+							});
+
+							jsh.shell.run({
+								command: "open",
+								arguments: [tmp]
+							});
 						}
 					},
 					run: function(p) {

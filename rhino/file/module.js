@@ -104,6 +104,13 @@
 				});
 			}
 
+			function directory_remove(p) {
+				return $api.Function.impure.tell(function() {
+					var peer = was.newPeer(p.pathname);
+					peer.delete();
+				});
+			}
+
 			/**
 			 *
 			 * @param { string } pathname
@@ -196,7 +203,9 @@
 								});
 							},
 							remove: function() {
-								throw new Error("Unimplemented.");
+								return directory_remove({
+									pathname: pathname
+								})
 							}
 						},
 						isDirectory: void(0)

@@ -149,6 +149,8 @@
 							program: "/Applications/Firefox.app/Contents/MacOS/firefox"
 							//	Linux: /usr/bin/firefox
 						});
+					} else if (p.options.browser == "safari") {
+						return jsh.unit.browser.local.Safari();
 					} else if (p.options.browser == "selenium:chrome") {
 						return jsh.unit.browser.selenium.Chrome()
 					} else if (p.options.browser == "dockercompose:selenium:chrome") {
@@ -161,6 +163,8 @@
 							host: "firefox",
 							port: 4444
 						})
+					} else {
+						throw new TypeError("Browser not found: " + p.options.browser);
 					}
 				})();
 

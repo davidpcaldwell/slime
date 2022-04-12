@@ -436,7 +436,52 @@
 							rv.push("-profile", PROFILE.toString())
 						})
 					});
-				}
+				};
+
+				var Safari = (
+					function() {
+						var executable = "/Applications/Safari.app/Contents/MacOS/Safari";
+						var application = "/Applications/Safari.app";
+
+						var getSafariProcess = function() {
+							if (jsh.shell.os.name != "Mac OS X") return null;
+							var processes = jsh.shell.os.process.list();
+							var safaris = processes.filter(function(process) {
+								return process.command == executable;
+							});
+							return (safaris.length) ? safaris[0] : null;
+						};
+
+						/**
+						 * @return { slime.jsh.unit.Browser }
+						 */
+						var Safari = function() {
+							var safariWas;
+
+							return {
+								open: function(p) {
+									safariWas = getSafariProcess();
+									jsh.shell.console("Safari open ...");
+									jsh.shell.run({
+										command: "open",
+										arguments: $api.Array.build(function(rv) {
+											rv.push("-a", application);
+											rv.push(p.uri);
+										})
+									})
+								},
+								close: function() {
+									if (!safariWas) {
+										var process = getSafariProcess();
+										if (process) process.kill();
+									}
+								}
+							}
+						};
+
+						return Safari;
+					}
+				)();
 
 				/** @type { slime.jsh.unit.Exports["browser"]["local"]["Chrome"] } */
 				var Chrome = function(configuration) {
@@ -473,7 +518,8 @@
 
 				return {
 					Chrome: Chrome,
-					Firefox: Firefox
+					Firefox: Firefox,
+					Safari: Safari
 				}
 			}
 		)();

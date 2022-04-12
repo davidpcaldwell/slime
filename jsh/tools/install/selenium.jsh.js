@@ -11,6 +11,7 @@
 	 * @param { slime.jsh.Global } jsh
 	 */
 	function(jsh) {
+		//	TODO	part of this is reproduced in wf.js ... probably should consolidate into an API
 		var parameters = jsh.script.getopts({
 			options: {
 				url: "https://github.com/SeleniumHQ/selenium/releases/download/selenium-4.1.0/selenium-java-4.1.2.zip",
