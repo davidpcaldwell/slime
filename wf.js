@@ -122,8 +122,8 @@
 		var test = function(p) {
 			var logs = p.logs;
 			var stdio = (logs) ? {
-				output: logs.getRelativePath("stdout.txt").write(jsh.io.Streams.text),
-				error: logs.getRelativePath("stderr.txt").write(jsh.io.Streams.text)
+				output: logs.getRelativePath("stdout.txt").write(jsh.io.Streams.text, { append: false }),
+				error: logs.getRelativePath("stderr.txt").write(jsh.io.Streams.text, { append: false })
 			} : {
 				output: {
 					write: function(s) {
@@ -263,12 +263,47 @@
 					return success;
 				},
 				test: function() {
-					var timestamp = jsh.time.When.now();
-					var logs = $context.base.getRelativePath("local/wf/logs/commit").createDirectory({
-						recursive: true,
-						exists: function(dir) { return false; }
-					}).getRelativePath(timestamp.local().format("yyyy.mm.dd.HR.mi.sc")).createDirectory();
-					return test({ docker: false, logs: logs });
+					var success = true;
+
+					jsh.shell.world.run(
+						jsh.shell.Invocation.create({
+							command: "docker",
+							arguments: $api.Array.build(function(rv) {
+								rv.push("compose");
+								rv.push("-f", $context.base.getRelativePath("contributor/docker-compose.yaml"));
+								rv.push("build", "test");
+							})
+						})
+					)({
+						exit: function(e) {
+							if (e.detail.status != 0) {
+								jsh.shell.console("docker compose build exit status: " + e.detail.status);
+								success = false;
+							}
+						}
+					});
+
+					if (!success) return false;
+
+					jsh.shell.world.run(
+						jsh.shell.Invocation.create({
+							command: "docker",
+							arguments: $api.Array.build(function(rv) {
+								rv.push("compose");
+								rv.push("-f", $context.base.getRelativePath("contributor/docker-compose.yaml"));
+								rv.push("run", "test");
+							})
+						})
+					)({
+						exit: function(e) {
+							if (e.detail.status != 0) {
+								jsh.shell.console("docker compose build exit status: " + e.detail.status);
+								success = false;
+							}
+						}
+					})
+
+					return success;
 				}
 			},
 			$exports

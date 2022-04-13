@@ -277,7 +277,7 @@
 			if (argument == "dockercompose:selenium:chrome") {
 				return jshUnitBrowserToBrowser(
 					"Remote (Selenium Chrome) - slime",
-					function(url) { return url.replace(/127\.0\.0\.1/g, "slime") },
+					function(url) { return url.replace(/127\.0\.0\.1/g, jsh.shell.environment.HOSTNAME) },
 					jsh.unit.browser.selenium.remote.Chrome({
 						host: "chrome",
 						port: 4444
@@ -287,7 +287,7 @@
 			if (argument == "dockercompose:selenium:firefox") {
 				return jshUnitBrowserToBrowser(
 					"Remote (Selenium Firefox) - slime",
-					function(url) { return url.replace(/127\.0\.0\.1/g, "slime") },
+					function(url) { return url.replace(/127\.0\.0\.1/g, jsh.shell.environment.HOSTNAME) },
 					jsh.unit.browser.selenium.remote.Firefox({
 						host: "firefox",
 						port: 4444

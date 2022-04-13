@@ -5,14 +5,16 @@
 #	END LICENSE
 
 services:
-  slime:
+  test:
     build: ..
-    command: sleep infinity
-#    volumes:
-#      - ..:/slime
-#      - /slime/local
+    volumes:
+      - ../local/wf/logs/docker.compose.test:/slime/local/wf/logs/test/current/
+      # - ..:/slime
+      # - /slime/local
     environment:
       - SLIME_WF_SKIP_GIT_IDENTITY_REEQUIREMENT=1
+    working_dir: /slime
+    command: /bin/bash /slime/wf test --logs current --docker
     depends_on:
       - chrome
       - firefox

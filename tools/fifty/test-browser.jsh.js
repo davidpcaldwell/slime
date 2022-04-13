@@ -129,7 +129,7 @@
 
 				var host = (function() {
 					if (p.options.browser == "dockercompose:selenium:chrome" || p.options.browser == "dockercompose:selenium:firefox") {
-						return "slime";
+						return jsh.shell.environment.HOSTNAME;
 					}
 					return "127.0.0.1";
 				})();
