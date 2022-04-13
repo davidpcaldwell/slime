@@ -41,11 +41,12 @@
 				//			git config core.hooksPath contributor/hooks
 				//			... and then appropriately implement contributor/hooks/pre-commit
 
-				var isDocker = $context.base.pathname.toString() == "/slime";
-
 				//	Provided for testing, allows an automated test to initialize without GUI prompting for git identity
 				//	Currently used by plugin-standard.jsh.fifty.ts to install TypeScript types so tsc passes in parent project
-				var skipGitIdentityRequirement = (p && p.arguments[0] == "--test-skip-git-identity-requirement") || isDocker;
+				var skipGitIdentityRequirement =
+					(p && p.arguments[0] == "--test-skip-git-identity-requirement")
+					|| jsh.shell.environment.SLIME_WF_SKIP_GIT_IDENTITY_REEQUIREMENT
+				;
 
 				if (!skipGitIdentityRequirement) {
 					var gitIdentityProvider = (p && p.arguments[0] == "--test-git-identity-requirement") ? void(0) : jsh.wf.requireGitIdentity.get.gui;

@@ -160,6 +160,7 @@
 				if (files[i].path == "contributor/hooks/pre-commit") extension = "bash";
 				if (files[i].path == "fifty") extension = "bash";
 				if (files[i].path == "wf") extension = "bash";
+				if (files[i].path == "contributor/docker-compose-run") extension = "bash";
 				if (!extension) throw new Error("Extension null for " + files[i].path);
 			}
 			var text = toFile(file).node.read(String);

@@ -1112,14 +1112,16 @@ namespace slime.jrunscript.tools.git {
 			};
 
 			fifty.tests.sandbox = function() {
-				var isDocker = Boolean(fifty.global.jsh.file.Pathname("/slime").directory);
-				//	Test will fail on Docker because .git is in .dockerignore
-				if (isDocker) return;
+				var SLIME = fifty.$loader.getRelativePath("../../..").directory;
+				if (!SLIME.getFile(".git") || !SLIME.getSubdirectory(".git")) {
+					//	This test will not work on an export or other format without git metadata
+					return;
+				}
 				var base = fifty.global.jsh.tools.git.local({
 					start: fifty.$loader.getRelativePath(".").directory,
 					match: api.github.isProjectUrl({ owner: "davidpcaldwell", name: "slime" })
 				});
-				fifty.verify(base.toString()).is(fifty.$loader.getRelativePath("../../..").directory.toString());
+				fifty.verify(base.toString()).is(SLIME.toString());
 			}
 		}
 	//@ts-ignore

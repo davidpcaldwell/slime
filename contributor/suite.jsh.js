@@ -53,7 +53,11 @@
 
 		var Environment = jsh.script.loader.module("jrunscript-environment.js");
 
-		var isDocker = Boolean(jsh.file.Pathname("/slime").directory);
+		var hasGit = Boolean(jsh.shell.PATH.getCommand("git"));
+		var isGitClone = (function() {
+			var SLIME = jsh.script.file.parent.parent;
+			return Boolean(SLIME.getSubdirectory(".git") || SLIME.getFile(".git"));
+		})();
 
 		var environment = new Environment({
 			src: jsh.script.file.parent.parent,
@@ -207,7 +211,7 @@
 			}
 		});
 
-		if (!isDocker) suite.add("tools", {
+		suite.add("tools", {
 			initialize: function() {
 				environment.jsh.built.requireTomcat();
 			},
@@ -248,7 +252,7 @@
 			}
 		});
 
-		if (!isDocker) suite.add(
+		if (hasGit && isGitClone) suite.add(
 			"project",
 			{
 				parts: {
@@ -261,7 +265,7 @@
 			}
 		);
 
-		if (!isDocker) suite.add(
+		suite.add(
 			"node",
 			{
 				parts: {

@@ -52,6 +52,9 @@
 
 				/** @type { slime.tools.code.isText } */
 				var isText = $api.Function.series(
+					function(entry) {
+						if (entry.path == "contributor/docker-compose-run") return true;
+					},
 					function wasFromWf(entry) {
 						if (/\.def$/.test(entry.path)) return true;
 						if (/\.prefs$/.test(entry.path)) return true;

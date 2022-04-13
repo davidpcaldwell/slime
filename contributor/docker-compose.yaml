@@ -12,7 +12,7 @@ services:
 #      - ..:/slime
 #      - /slime/local
     environment:
-      - JSH_LAUNCHER_BASH_DEBUG=true
+      - SLIME_WF_SKIP_GIT_IDENTITY_REEQUIREMENT=1
     depends_on:
       - chrome
       - firefox

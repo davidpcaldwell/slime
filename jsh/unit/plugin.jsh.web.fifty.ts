@@ -70,6 +70,7 @@ namespace slime.jsh.unit {
 
 				fifty.tests.old = function() {
 					fifty.verify("mock").is("mock");
+					if (!jsh.unit.mock.Web) return;
 
 					var web = new jsh.unit.mock.Web({ trace: true });
 					web.addHttpsHost("mockweb.xlime.com");
@@ -114,6 +115,7 @@ namespace slime.jsh.unit {
 			) {
 				fifty.tests.https = function() {
 					fifty.verify(1).is(1);
+					if (!fifty.global.jsh.unit.mock.Web) return;
 					var web = new fifty.global.jsh.unit.mock.Web();
 					web.addHttpsHost("https.fifty.com");
 					web.add(function(request) {
