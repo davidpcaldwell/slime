@@ -413,11 +413,13 @@
 						recursive: true,
 						exists: function(dir) { return false; }
 					});
-					if (!logs) logs = jsh.time.When.now().local().format("yyyy.mm.dd.HR.mi.sc");
-					return directory.getRelativePath(logs).createDirectory({
+					//	We used to log to a default directory, but as we move to running the test suite on GitHub we would now
+					//	rather default to the console. We can always explicitly
+					//	if (!logs) logs = jsh.time.When.now().local().format("yyyy.mm.dd.HR.mi.sc");
+					return (logs) ? directory.getRelativePath(logs).createDirectory({
 						//	might exist because docker creates it when mapping container directory to host directory
 						exists: $api.Function.returning(false)
-					});
+					}) : void(0);
 				})(p.options.stdio,p.options.logs);
 
 				if (p.options["docker"]) {
