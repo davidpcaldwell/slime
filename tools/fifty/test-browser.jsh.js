@@ -189,8 +189,10 @@
 				} else {
 					var delay = (typeof(p.options["debug:delay"]) == "number") ? p.options["debug:delay"] : 4000;
 					jsh.java.Thread.start(function() {
+						var uri = getUri(host, delay);
+						jsh.shell.console("Browser opening " + uri + " ...");
 						browser.open({
-							uri: getUri(host,delay)
+							uri: uri
 						});
 					});
 					var resultsUrl = new jsh.web.Url({

@@ -152,7 +152,7 @@
 					rv.push({ id: "dockercompose:selenium:chrome", name: "Chrome (Selenium)" });
 					//	TODO	need to debug why this didn't work:
 					//	TypeError: Cannot call method "start" of undefined
-					if (false) rv.push({ id: "dockercompose:selenium:firefox", name: "Firefox (Selenium)" });
+					rv.push({ id: "dockercompose:selenium:firefox", name: "Firefox (Selenium)" });
 				})
 				: jsh.unit.browser.installed;
 

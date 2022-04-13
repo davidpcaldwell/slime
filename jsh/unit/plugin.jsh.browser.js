@@ -623,10 +623,12 @@
 				/** @type { slime.jsh.unit.Exports["browser"]["selenium"]["remote"]["Firefox"] } */
 				var RemoteSeleniumFirefox = function(configuration) {
 					jsh.shell.tools.selenium.load();
-					return RemoteSelenium(
+					var rv = RemoteSelenium(
 						configuration,
 						new Packages.org.openqa.selenium.firefox.FirefoxOptions()
 					);
+					//rv.close = function() {};
+					return rv;
 				}
 
 				return {
