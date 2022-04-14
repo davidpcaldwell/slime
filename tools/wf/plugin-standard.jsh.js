@@ -222,16 +222,47 @@
 					return rv;
 				}
 
+				/** @type { slime.jrunscript.tools.git.Command<void,{ current: boolean, name: string }[]> } */
+				var getBranches = {
+					invocation: function() {
+						return {
+							command: "branch",
+							arguments: $api.Array.build(function(rv) {
+								rv.push("-a");
+							})
+						}
+					},
+					result: function(output) {
+						var lines = output.split("\n");
+						return lines.map(function(line) {
+							return {
+								current: line.substring(0,1) == "*",
+								name: line.substring(2)
+							}
+						})
+					}
+				}
+
 				$exports.status = function(p) {
 					//	TODO	add option for offline
 					var repository = fetch();
 					var remote = "origin";
 					var status = repository.status();
 					var branch = status.branch.name;
-					var vsOriginMaster = (branch) ? jsh.wf.git.compareTo(remote + "/" + branch)(repository) : null;
+					var base = remote + "/" + branch;
+					var allBranches = jsh.tools.git.program({ command: "git" }).repository(repository.directory.toString())
+						.command(getBranches).argument().run()
+						.map(function(branch) {
+							if (branch.name.substring(0,"remote/".length) == "remote/") return branch.name.substring("remote/".length);
+							return branch.name;
+						});
+					if (!allBranches.find(function(branch) { return branch == base; })) {
+						base = "origin/master";
+					}
+					var vsRemote = (branch) ? jsh.wf.git.compareTo(base)(repository) : null;
 					jsh.shell.console("Current branch: " + displayBranchName(status.branch.name));
-					if (vsOriginMaster && vsOriginMaster.ahead.length) jsh.shell.console("ahead of " + remote + "/" + branch + ": " + vsOriginMaster.ahead.length);
-					if (vsOriginMaster && vsOriginMaster.behind.length) jsh.shell.console("behind " + remote + "/" + branch + ": " + vsOriginMaster.behind.length);
+					if (vsRemote && vsRemote.ahead.length) jsh.shell.console("ahead of " + base + ": " + vsRemote.ahead.length);
+					if (vsRemote && vsRemote.behind.length) jsh.shell.console("behind " + base + ": " + vsRemote.behind.length);
 					var output = $api.Function.result(
 						status.paths,
 						$api.Function.conditional({
@@ -247,7 +278,7 @@
 						})
 					);
 					if (output) jsh.shell.console(output);
-					if (vsOriginMaster && vsOriginMaster.behind.length && !vsOriginMaster.ahead.length && !vsOriginMaster.paths) {
+					if (vsRemote && vsRemote.behind.length && !vsRemote.ahead.length && !vsRemote.paths) {
 						jsh.shell.console("Fast-forwarding ...");
 						repository.merge({ ffOnly: true, name: remote + "/" + branch });
 					}
