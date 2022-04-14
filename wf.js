@@ -13,6 +13,13 @@
 	 * @param { slime.project.wf.Interface } $exports
 	 */
 	function($api,jsh,$context,$exports) {
+		var gitInstalled = Boolean(jsh.shell.PATH.getCommand("git"));
+		var isGitClone = (
+			function(base) {
+				return Boolean(base.getSubdirectory(".git") || base.getFile(".git"));
+			}
+		)($context.base);
+
 		function synchronizeEclipseSettings() {
 			//	copy project settings to Eclipse project if they differ from current settings
 			var changed = false;
@@ -37,6 +44,31 @@
 
 		$exports.initialize = $api.Function.pipe(
 			function(p) {
+				if (gitInstalled && isGitClone) {
+					var gitConfigSet = jsh.tools.git.program({ command: "git" }).repository($context.base.toString()).command({
+						invocation: function(p) {
+							return {
+								command: "config",
+								arguments: [
+									p.name,
+									p.value
+								]
+							}
+						},
+						result: function(output) {
+							return void(0);
+						}
+					});
+
+					var clone = jsh.tools.git.Repository({ directory: $context.base });
+					var config = clone.config({
+						arguments: ["--list"]
+					});
+					if (!config["core.hookspath"]) {
+						jsh.shell.console("Installing git hooks ...");
+						gitConfigSet.argument({ name: "core.hookspath", value: "contributor/hooks" }).run();
+					}
+				}
 				//	TODO	could consider whether we can wire our commit process into the git hooks mechanism:
 				//			git config core.hooksPath contributor/hooks
 				//			... and then appropriately implement contributor/hooks/pre-commit
@@ -192,6 +224,7 @@
 				lint: function() {
 					var success = true;
 
+					jsh.shell.console("Checking for trailing whitespace ...");
 					jsh.tools.code.handleTrailingWhitespace({
 						base: $context.base,
 						exclude: jsh.project.code.files.exclude,
@@ -208,6 +241,7 @@
 						}
 					});
 
+					jsh.shell.console("Handling final newlines ...");
 					jsh.tools.code.handleFinalNewlines({
 						base: $context.base,
 						exclude: jsh.project.code.files.exclude,
@@ -228,6 +262,7 @@
 						}
 					});
 
+					jsh.shell.console("Running ESLint ...");
 					jsh.shell.jsh({
 						shell: jsh.shell.jsh.src,
 						script: $context.base.getFile("contributor/eslint.jsh.js"),
@@ -244,6 +279,7 @@
 						}
 					});
 
+					jsh.shell.console("Verifying MPL license headers ...");
 					var license = jsh.shell.jsh({
 						shell: jsh.shell.jsh.src,
 						script: $context.base.getFile("contributor/code/license.jsh.js"),

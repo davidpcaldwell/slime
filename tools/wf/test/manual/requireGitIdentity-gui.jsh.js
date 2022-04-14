@@ -4,8 +4,13 @@
 //
 //	END LICENSE
 
+//@ts-check
 (
-	function() {
+	/**
+	 *
+	 * @param { slime.jsh.Global } jsh
+	 */
+	function(jsh) {
 		var directory = jsh.shell.TMPDIR.createTemporary({ directory: true });
 		var repository = jsh.tools.git.init({ pathname: directory.pathname });
 		jsh.wf.requireGitIdentity({
@@ -20,4 +25,5 @@
 			email: config["user.email"]
 		}));
 	}
-)()
+//@ts-ignore
+)(jsh)

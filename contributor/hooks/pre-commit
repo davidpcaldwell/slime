@@ -5,4 +5,4 @@
 #
 #	END LICENSE
 
-./jsh.bash contributor/hooks/pre-commit.jsh.js
+./wf lint
