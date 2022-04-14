@@ -280,7 +280,7 @@
 					if (output) jsh.shell.console(output);
 					if (vsRemote && vsRemote.behind.length && !vsRemote.ahead.length && !vsRemote.paths) {
 						jsh.shell.console("Fast-forwarding ...");
-						repository.merge({ ffOnly: true, name: remote + "/" + branch });
+						repository.merge({ ffOnly: true, name: base });
 					}
 					var branches = repository.branch({ remote: true, all: true });
 					var first = true;
