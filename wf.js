@@ -45,7 +45,7 @@
 		$exports.initialize = $api.Function.pipe(
 			function(p) {
 				if (gitInstalled && isGitClone) {
-					var config = jsh.tools.git.program({ command: "git" }).repository($context.base.toString()).command({
+					var gitConfigSet = jsh.tools.git.program({ command: "git" }).repository($context.base.toString()).command({
 						invocation: function(p) {
 							return {
 								command: "config",
@@ -59,8 +59,15 @@
 							return void(0);
 						}
 					});
-					jsh.shell.console("Installing git hooks ...");
-					config.argument({ name: "core.hooksPath", value: "contributor/hooks" }).run();
+
+					var clone = jsh.tools.git.Repository({ directory: $context.base });
+					var config = clone.config({
+						arguments: ["--list"]
+					});
+					if (!config["core.hookspath"]) {
+						jsh.shell.console("Installing git hooks ...");
+						gitConfigSet.argument({ name: "core.hookspath", value: "contributor/hooks" }).run();
+					}
 				}
 				//	TODO	could consider whether we can wire our commit process into the git hooks mechanism:
 				//			git config core.hooksPath contributor/hooks
