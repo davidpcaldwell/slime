@@ -149,10 +149,7 @@ namespace slime.jsh.wf {
 
 			prune: slime.jsh.script.cli.Command<Options>
 
-			test:  slime.jsh.script.cli.Command<Options & {
-				stdio: boolean
-				logs: string
-			}>
+			test:  slime.jsh.script.cli.Command<Options>
 
 			submodule: {
 				/**

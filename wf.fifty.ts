@@ -91,6 +91,23 @@ namespace slime {
 				}
 			}
 
+			/**
+			 * Runs linting and TypeScript compiler. Used as part of Git pre-commit hook installed by initialize.
+			 */
+			precommit: slime.jsh.script.cli.Command<Options>
+
+			/**
+			 * Runs linting, TypeScript compiler, and tests. Used as part of GitHub Action pre-merge check.
+			 */
+			check: slime.jsh.script.cli.Command<Options & {
+				docker: boolean
+			}>
+
+			test: slime.jsh.script.cli.Command<Options & {
+				docker: boolean
+				logs: string
+			}>
+
 			git: {
 				branches: {
 					clean: slime.jsh.script.cli.Command<Options>

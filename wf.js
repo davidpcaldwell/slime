@@ -148,10 +148,104 @@
 			}
 		}
 
+		var lint = function() {
+			var success = true;
+
+			jsh.shell.console("Checking for trailing whitespace ...");
+			jsh.tools.code.handleTrailingWhitespace({
+				base: $context.base,
+				exclude: jsh.project.code.files.exclude,
+				isText: jsh.project.code.files.isText,
+				nowrite: false
+			})({
+				unknownFileType: function(e) {
+					jsh.shell.console("Could not determine whether file is text or binary: " + e.detail.path);
+					success = false;
+				},
+				foundAt: function(e) {
+					jsh.shell.console("Found trailing whitespace: " + e.detail.file.path + " line " + e.detail.line.number);
+					success = false;
+				}
+			});
+
+			jsh.shell.console("Handling final newlines ...");
+			jsh.tools.code.handleFinalNewlines({
+				base: $context.base,
+				exclude: jsh.project.code.files.exclude,
+				isText: jsh.project.code.files.isText,
+				nowrite: false
+			})({
+				unknownFileType: function(e) {
+					jsh.shell.console("Could not determine whether file is text or binary: " + e.detail.path);
+					success = false;
+				},
+				missing: function(e) {
+					jsh.shell.console("Missing final newline: " + e.detail.path);
+					success = false;
+				},
+				multiple: function(e) {
+					jsh.shell.console("Multiple final newlines: " + e.detail.path);
+					success = false;
+				}
+			});
+
+			jsh.shell.console("Running ESLint ...");
+			jsh.shell.jsh({
+				shell: jsh.shell.jsh.src,
+				script: $context.base.getFile("contributor/eslint.jsh.js"),
+				stdio: {
+					output: null
+				},
+				evaluate: function(result) {
+					if (result.status) {
+						jsh.shell.console("ESLint status: " + result.status + "; failing.");
+						success = false;
+					} else {
+						jsh.shell.console("ESLint passed.");
+					}
+				}
+			});
+
+			jsh.shell.console("Verifying MPL license headers ...");
+			var license = jsh.shell.jsh({
+				shell: jsh.shell.jsh.src,
+				script: $context.base.getFile("contributor/code/license.jsh.js"),
+				evaluate: function(result) {
+					return result;
+				}
+			});
+
+			if (license.status) {
+				jsh.shell.console("License headers need to be updated; run:");
+				jsh.shell.console("./jsh.bash contributor/code/license.jsh.js --fix");
+				success = false;
+			} else {
+				jsh.shell.console("All license headers are correct.")
+			}
+
+			return success;
+		};
+
 		/**
+		 * Runs the test suite, first installing Java, Rhino, and (if Docker testing is indicated) the Selenium Java driver.
+		 * Exits the VM with exit status 1 on failure; otherwise, returns `true`.
+		 *
 		 * @param { { docker: boolean, logs: slime.jrunscript.file.Directory } } p
 		 */
 		var test = function(p) {
+			if (p.docker) {
+				var library = jsh.shell.jsh.lib.getRelativePath("selenium/java");
+
+				if (!library.directory) {
+					jsh.shell.console("Installing Selenium Java driver ...");
+					jsh.tools.install.install({
+						url: "https://github.com/SeleniumHQ/selenium/releases/download/selenium-4.1.0/selenium-java-4.1.3.zip",
+						getDestinationPath: function(file) { return ""; },
+						to: library
+					});
+				}
+			}
+
 			var logs = p.logs;
 			var stdio = (logs) ? {
 				output: logs.getRelativePath("stdout.txt").write(jsh.io.Streams.text, { append: false }),
@@ -221,83 +315,7 @@
 		jsh.wf.project.initialize(
 			$context,
 			{
-				lint: function() {
-					var success = true;
-
-					jsh.shell.console("Checking for trailing whitespace ...");
-					jsh.tools.code.handleTrailingWhitespace({
-						base: $context.base,
-						exclude: jsh.project.code.files.exclude,
-						isText: jsh.project.code.files.isText,
-						nowrite: false
-					})({
-						unknownFileType: function(e) {
-							jsh.shell.console("Could not determine whether file is text or binary: " + e.detail.path);
-							success = false;
-						},
-						foundAt: function(e) {
-							jsh.shell.console("Found trailing whitespace: " + e.detail.file.path + " line " + e.detail.line.number);
-							success = false;
-						}
-					});
-
-					jsh.shell.console("Handling final newlines ...");
-					jsh.tools.code.handleFinalNewlines({
-						base: $context.base,
-						exclude: jsh.project.code.files.exclude,
-						isText: jsh.project.code.files.isText,
-						nowrite: false
-					})({
-						unknownFileType: function(e) {
-							jsh.shell.console("Could not determine whether file is text or binary: " + e.detail.path);
-							success = false;
-						},
-						missing: function(e) {
-							jsh.shell.console("Missing final newline: " + e.detail.path);
-							success = false;
-						},
-						multiple: function(e) {
-							jsh.shell.console("Multiple final newlines: " + e.detail.path);
-							success = false;
-						}
-					});
-
-					jsh.shell.console("Running ESLint ...");
-					jsh.shell.jsh({
-						shell: jsh.shell.jsh.src,
-						script: $context.base.getFile("contributor/eslint.jsh.js"),
-						stdio: {
-							output: null
-						},
-						evaluate: function(result) {
-							if (result.status) {
-								jsh.shell.console("ESLint status: " + result.status + "; failing.");
-								success = false;
-							} else {
-								jsh.shell.console("ESLint passed.");
-							}
-						}
-					});
-
-					jsh.shell.console("Verifying MPL license headers ...");
-					var license = jsh.shell.jsh({
-						shell: jsh.shell.jsh.src,
-						script: $context.base.getFile("contributor/code/license.jsh.js"),
-						evaluate: function(result) {
-							return result;
-						}
-					});
-
-					if (license.status) {
-						jsh.shell.console("License headers need to be updated; run:");
-						jsh.shell.console("./jsh.bash contributor/code/license.jsh.js --fix");
-						success = false;
-					} else {
-						jsh.shell.console("All license headers are correct.")
-					}
-
-					return success;
-				},
+				lint: lint,
 				test: function() {
 					var success = true;
 
@@ -344,6 +362,30 @@
 			},
 			$exports
 		)
+
+		$exports.precommit = function(p) {
+			jsh.shell.console("Linting ...");
+			lint();
+			jsh.shell.console("Running TypeScript compiler ...");
+			jsh.wf.typescript.tsc();
+			jsh.shell.console("Passed.");
+		};
+
+		$exports.check = $api.Function.pipe(
+			jsh.script.cli.option.boolean({ longname: "docker" }),
+			function(p) {
+				jsh.shell.console("Linting ...");
+				lint();
+				jsh.shell.console("Running TypeScript compiler ...");
+				jsh.wf.typescript.tsc();
+				jsh.shell.console("Running tests ...");
+				test({
+					docker: p.options.docker,
+					logs: void(0)
+				});
+				jsh.shell.console("Passed.");
+			}
+		);
 
 		$exports.git = {
 			branches: (jsh.tools.git.Repository) ? new function() {
@@ -439,39 +481,27 @@
 		)
 
 		$exports.test = $api.Function.pipe(
-			jsh.script.cli.option.boolean({ longname: "stdio" }),
 			jsh.script.cli.option.string({ longname: "logs" }),
 			jsh.script.cli.option.boolean({ longname: "docker" }),
 			function(p) {
 				var logs = (function(stdio,logs) {
-					if (stdio) return void(0);
-					var directory = $context.base.getRelativePath("local/wf/logs/test").createDirectory({
-						recursive: true,
-						exists: function(dir) { return false; }
-					});
+					if (logs) {
+						var directory = $context.base.getRelativePath("local/wf/logs/test").createDirectory({
+							recursive: true,
+							exists: function(dir) { return false; }
+						});
+						return directory.getRelativePath(logs).createDirectory({
+							//	might exist because docker creates it when mapping container directory to host directory
+							exists: $api.Function.returning(false)
+						});
+					}
 					//	We used to log to a default directory, but as we move to running the test suite on GitHub we would now
 					//	rather default to the console. We can always explicitly
 					//	if (!logs) logs = jsh.time.When.now().local().format("yyyy.mm.dd.HR.mi.sc");
-					return (logs) ? directory.getRelativePath(logs).createDirectory({
-						//	might exist because docker creates it when mapping container directory to host directory
-						exists: $api.Function.returning(false)
-					}) : void(0);
-				})(p.options.stdio,p.options.logs);
+					return void(0);
+				})(p.options.logs);
 
-				if (p.options["docker"]) {
-					var library = jsh.shell.jsh.lib.getRelativePath("selenium/java");
-
-					if (!library.directory) {
-						jsh.shell.console("Installing Selenium Java driver ...");
-						jsh.tools.install.install({
-							url: "https://github.com/SeleniumHQ/selenium/releases/download/selenium-4.1.0/selenium-java-4.1.3.zip",
-							getDestinationPath: function(file) { return ""; },
-							to: library
-						});
-					}
-				}
-
-				test({ docker: p.options["docker"], logs: logs });
+				test({ docker: p.options.docker, logs: logs });
 			}
 		);
 
