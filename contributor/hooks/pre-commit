@@ -5,4 +5,4 @@
 #
 #	END LICENSE
 
-./wf lint
+./wf precommit

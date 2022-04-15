@@ -127,6 +127,7 @@
 						}
 
 						jsh.wf.typescript.tsc();
+
 						if (!p.notest) {
 							var success = operations.test();
 							if (!success) {
@@ -137,10 +138,12 @@
 						} else {
 							jsh.shell.console("Skipping tests because 'notest' is true.");
 						}
+
 						repository.commit({
 							all: true,
 							message: p.message
 						});
+
 						//	We checked for upstream changes, so now we're going to push
 						//	If we allow branching, we may or may not really want to push, or may not want to push to
 						//	master
