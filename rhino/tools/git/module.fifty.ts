@@ -283,7 +283,7 @@ namespace slime.jrunscript.tools.git {
 namespace slime.jrunscript.tools.git {
 	export namespace internal {
 		export const subject = (
-			function(fifty: slime.fifty.test.kit) {
+			function(fifty: slime.fifty.test.Kit) {
 				return fifty.global.jsh.tools.git;
 			}
 		//@ts-ignore
@@ -301,7 +301,7 @@ namespace slime.jrunscript.tools.git {
 		}
 
 		export const fixtures: Fixtures = (
-			function(fifty: slime.fifty.test.kit) {
+			function(fifty: slime.fifty.test.Kit) {
 				return fifty.$loader.file("fixtures.js", { module: subject });
 			}
 		//@ts-ignore
@@ -331,7 +331,7 @@ namespace slime.jrunscript.tools.git {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			var verify = fifty.verify;
 
@@ -413,7 +413,7 @@ namespace slime.jrunscript.tools.git {
 	export namespace repository {
 		(
 			function(
-				fifty: slime.fifty.test.kit
+				fifty: slime.fifty.test.Kit
 			) {
 				fifty.tests.types.Repository = {};
 				fifty.tests.types.Repository.Local = {};
@@ -465,7 +465,7 @@ namespace slime.jrunscript.tools.git {
 
 		(
 			function(
-				fifty: slime.fifty.test.kit
+				fifty: slime.fifty.test.Kit
 			) {
 				fifty.tests.types.Repository = {};
 				fifty.tests.types.Repository.Local = {};
@@ -558,7 +558,7 @@ namespace slime.jrunscript.tools.git {
 
 		(
 			function(
-				fifty: slime.fifty.test.kit
+				fifty: slime.fifty.test.Kit
 			) {
 				var verify = fifty.verify;
 
@@ -596,7 +596,7 @@ namespace slime.jrunscript.tools.git {
 		)(fifty);
 	}
 
-	(function(fifty: slime.fifty.test.kit) {
+	(function(fifty: slime.fifty.test.Kit) {
 		const { verify, run } = fifty;
 
 		var debug = function(s) {
@@ -734,7 +734,7 @@ namespace slime.jrunscript.tools.git {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.Exports = {};
 		}
@@ -862,7 +862,7 @@ namespace slime.jrunscript.tools.git {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.Exports.program = function() {
 				fifty.run(function program() {
@@ -1002,7 +1002,7 @@ namespace slime.jrunscript.tools.git {
 	(
 		function(
 			$api: slime.$api.Global,
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			var exports: Exports = fifty.global.jsh.tools.git;
 			fifty.tests.test = {};
@@ -1063,7 +1063,7 @@ namespace slime.jrunscript.tools.git {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			var subject: slime.jrunscript.tools.git.Exports = fifty.global.jsh.tools.git;
 
@@ -1105,7 +1105,7 @@ namespace slime.jrunscript.tools.git {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			var api: { github: slime.jrunscript.tools.github.Exports } = {
 				github: fifty.$loader.module("../github/module.js")
@@ -1129,7 +1129,7 @@ namespace slime.jrunscript.tools.git {
 
 }
 
-(function(fifty: slime.fifty.test.kit) {
+(function(fifty: slime.fifty.test.Kit) {
 	fifty.tests.suite = function() {
 		fifty.run(fifty.tests.Installation.init);
 		fifty.run(fifty.tests.types.Repository.Local.config);

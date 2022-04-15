@@ -69,7 +69,7 @@ namespace slime.jsh.httpd {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			var factory: resources.Factory = fifty.$loader.script("plugin.jsh.resources.js");
 			var api = factory({

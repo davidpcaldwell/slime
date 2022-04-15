@@ -36,7 +36,7 @@ namespace slime.jrunscript.file {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			const { jsh } = fifty.global;
 			const { verify, run } = fifty;
@@ -155,7 +155,7 @@ namespace slime.jrunscript.file {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 		}
 	//@ts-ignore
@@ -164,7 +164,7 @@ namespace slime.jrunscript.file {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			const jsh = fifty.global.jsh;
 
@@ -183,7 +183,7 @@ namespace slime.jrunscript.file {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			const { run } = fifty;
 

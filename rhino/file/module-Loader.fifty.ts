@@ -24,7 +24,7 @@ namespace slime.jrunscript.file {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			const { verify, run } = fifty;
 			const { $api } = fifty.global;

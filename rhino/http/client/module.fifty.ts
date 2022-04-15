@@ -26,7 +26,7 @@ namespace slime.jrunscript.http.client {
 	}
 
 	export namespace test {
-		export const subject = (function(fifty: slime.fifty.test.kit) {
+		export const subject = (function(fifty: slime.fifty.test.Kit) {
 			var script: slime.loader.Script<Context,Exports> = fifty.$loader.script("module.js");
 			var api = script({
 				debug: false,
@@ -87,7 +87,7 @@ namespace slime.jrunscript.http.client {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.exports = {};
 		}
@@ -103,7 +103,7 @@ namespace slime.jrunscript.http.client {
 
 		(
 			function(
-				fifty: slime.fifty.test.kit
+				fifty: slime.fifty.test.Kit
 			) {
 				fifty.tests.exports.Body = fifty.test.Parent();
 			}
@@ -122,7 +122,7 @@ namespace slime.jrunscript.http.client {
 
 		(
 			function(
-				fifty: slime.fifty.test.kit
+				fifty: slime.fifty.test.Kit
 			) {
 				const { verify } = fifty;
 
@@ -483,8 +483,8 @@ namespace slime.jrunscript.http.client {
 		 */
 		export type authorization = object.Authorization;
 
-		export const scope = (function(Packages: any, JavaAdapter: any, fifty: slime.fifty.test.kit) {
-			function s(Packages: any, JavaAdapter: any, fifty: slime.fifty.test.kit): slime.jrunscript.http.client.test.Scope {
+		export const scope = (function(Packages: any, JavaAdapter: any, fifty: slime.fifty.test.Kit) {
+			function s(Packages: any, JavaAdapter: any, fifty: slime.fifty.test.Kit): slime.jrunscript.http.client.test.Scope {
 				var scope: slime.jrunscript.http.client.test.Scope = {
 					servlet: void(0),
 					tomcat: void(0),
@@ -517,7 +517,7 @@ namespace slime.jrunscript.http.client {
 
 		(
 			function(
-				fifty: slime.fifty.test.kit
+				fifty: slime.fifty.test.Kit
 			) {
 				const { verify } = fifty;
 				const { jsh } = fifty.global;
@@ -560,7 +560,7 @@ namespace slime.jrunscript.http.client {
 
 		(
 			function(
-				fifty: slime.fifty.test.kit
+				fifty: slime.fifty.test.Kit
 			) {
 				fifty.tests.jsapi = {};
 			}
@@ -570,7 +570,7 @@ namespace slime.jrunscript.http.client {
 
 		(
 			function(
-				fifty: slime.fifty.test.kit
+				fifty: slime.fifty.test.Kit
 			) {
 				var { module, context, servlet } = jsapi.scope;
 				var verify = fifty.verify;
@@ -617,7 +617,7 @@ namespace slime.jrunscript.http.client {
 
 		(
 			function(
-				fifty: slime.fifty.test.kit
+				fifty: slime.fifty.test.Kit
 			) {
 				fifty.tests.jsapi.proxy = function() {
 					var { context, module, servlet } = jsapi.scope;
@@ -679,7 +679,7 @@ namespace slime.jrunscript.http.client {
 
 		(
 			function(
-				fifty: slime.fifty.test.kit
+				fifty: slime.fifty.test.Kit
 			) {
 				fifty.tests.jsapi.other = function() {
 					const $jsapi = {
@@ -838,7 +838,7 @@ namespace slime.jrunscript.http.client {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.suite = function() {
 				fifty.run(fifty.tests.exports.world);

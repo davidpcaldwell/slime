@@ -23,7 +23,7 @@ namespace slime.project.internal.jrunscript_environment {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.suite = function() {
 

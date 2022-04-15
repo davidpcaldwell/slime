@@ -7,7 +7,7 @@
 ///<reference lib="es2015.promise"/>
 (
 	function(
-		fifty: slime.fifty.test.kit
+		fifty: slime.fifty.test.Kit
 	) {
 		var memory = 0;
 

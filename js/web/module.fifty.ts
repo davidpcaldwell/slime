@@ -15,7 +15,7 @@ namespace slime.web {
 	}
 
 	export namespace test {
-		export const subject: slime.web.Exports = (function(fifty: slime.fifty.test.kit) {
+		export const subject: slime.web.Exports = (function(fifty: slime.fifty.test.Kit) {
 			if (fifty.global.jsh) return fifty.$loader.module("module.js", fifty.$loader.file("context.java.js"));
 			if (fifty.global.window) return fifty.$loader.module("module.browser.js");
 		//@ts-ignore
@@ -23,7 +23,7 @@ namespace slime.web {
 
 		(
 			function(
-				fifty: slime.fifty.test.kit
+				fifty: slime.fifty.test.Kit
 			) {
 				fifty.tests.exports = {};
 			}
@@ -65,7 +65,7 @@ namespace slime.web {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.Url = {};
 		}
@@ -79,7 +79,7 @@ namespace slime.web {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			const subject = test.subject;
 			const { verify, run } = fifty;
@@ -238,7 +238,7 @@ namespace slime.web {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			const module = test.subject;
 			const { verify } = fifty;
@@ -302,7 +302,7 @@ namespace slime.web {
 namespace slime.web {
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.exports.form = {};
 		}
@@ -318,7 +318,7 @@ namespace slime.web {
 
 		(
 			function(
-				fifty: slime.fifty.test.kit
+				fifty: slime.fifty.test.Kit
 			) {
 				fifty.tests.exports.form.codec = function() {
 					fifty.verify(1).is(1);
@@ -349,7 +349,7 @@ namespace slime.web {
 
 		(
 			function(
-				fifty: slime.fifty.test.kit
+				fifty: slime.fifty.test.Kit
 			) {
 				fifty.tests.exports.form.object = function() {
 					var form: slime.web.Form = {
@@ -423,7 +423,7 @@ namespace slime.web {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.exports.Form = function() {
 				const { verify } = fifty
@@ -467,7 +467,7 @@ namespace slime.web {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			const module = test.subject;
 
@@ -503,7 +503,7 @@ namespace slime.web {
 }
 
 (
-	function(fifty: slime.fifty.test.kit) {
+	function(fifty: slime.fifty.test.Kit) {
 		fifty.tests.suite = function() {
 			fifty.run(fifty.tests.Url.codec);
 

@@ -18,7 +18,7 @@ namespace slime.jsh.java.tools {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.suite = function() {
 

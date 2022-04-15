@@ -12,7 +12,7 @@ namespace slime.tools.code {
 	}
 
 	export namespace test {
-		export const subject = (function(fifty: fifty.test.kit) {
+		export const subject = (function(fifty: fifty.test.Kit) {
 			const script: Script = fifty.$loader.script("module.js");
 			return script({
 				library: {
@@ -117,7 +117,7 @@ namespace slime.tools.code {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			const { verify } = fifty;
 

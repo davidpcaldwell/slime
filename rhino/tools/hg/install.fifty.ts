@@ -49,7 +49,7 @@ namespace slime.jrunscript.tools.hg.install {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			const { jsh } = fifty.global;
 

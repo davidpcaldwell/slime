@@ -29,7 +29,7 @@ namespace slime.jrunscript.tools.git.internal.log {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.suite = function() {
 

@@ -137,7 +137,7 @@ namespace slime.jsh.shell.tools {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			const { verify } = fifty;
 			const { jsh } = fifty.global;
@@ -314,7 +314,7 @@ namespace slime.jsh.shell.tools {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			const script: internal.tomcat.Script = fifty.$loader.script("plugin.jsh.tomcat.js");
 

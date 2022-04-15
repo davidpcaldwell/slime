@@ -69,7 +69,7 @@ namespace slime.time {
 
 	export namespace test {
 		export const subject: Exports = (
-			function(fifty: slime.fifty.test.kit) {
+			function(fifty: slime.fifty.test.Kit) {
 				return fifty.$loader.module("module.js");
 			}
 		//@ts-ignore
@@ -82,7 +82,7 @@ namespace slime.time {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.Day = function() {
 				fifty.run(fifty.tests.Day.format);
@@ -99,7 +99,7 @@ namespace slime.time {
 
 		(
 			function(
-				fifty: slime.fifty.test.kit
+				fifty: slime.fifty.test.Kit
 			) {
 				const verify = fifty.verify;
 
@@ -207,7 +207,7 @@ namespace slime.time {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit,
+			fifty: slime.fifty.test.Kit,
 			$loader: slime.Loader,
 			verify: slime.fifty.test.verify,
 			tests: slime.fifty.test.tests

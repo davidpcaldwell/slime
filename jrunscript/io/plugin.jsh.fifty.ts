@@ -11,7 +11,7 @@ namespace slime.jsh {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			var verify = fifty.verify;
 			var jsh = fifty.global.jsh;

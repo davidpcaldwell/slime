@@ -25,7 +25,7 @@ namespace slime.jrunscript.shell.system {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.world = {};
 		}
@@ -53,7 +53,7 @@ namespace slime.jrunscript.shell.system {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			var code: slime.jrunscript.shell.system.load = fifty.$loader.script("os.js");
 

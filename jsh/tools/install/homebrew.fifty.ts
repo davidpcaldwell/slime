@@ -60,7 +60,7 @@ namespace slime.jrunscript.tools.homebrew {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.suite = function() {
 			}

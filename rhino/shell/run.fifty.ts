@@ -81,7 +81,7 @@ namespace slime.jrunscript.shell.internal.run {
 	}
 
 	export namespace test {
-		export const subject: Export = (function(fifty: slime.fifty.test.kit) {
+		export const subject: Export = (function(fifty: slime.fifty.test.Kit) {
 			var script: Script = fifty.$loader.script("run.js");
 			return script({
 				api: {
@@ -121,7 +121,7 @@ namespace slime.jrunscript.shell.internal.run {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			const subject = test.subject;
 			const { verify, run } = fifty;
@@ -160,7 +160,7 @@ namespace slime.jrunscript.shell.internal.run {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			var loader: Script = fifty.$loader.script("run.js");
 			var subject: Export = loader({

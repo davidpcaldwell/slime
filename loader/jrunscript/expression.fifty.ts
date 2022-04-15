@@ -730,13 +730,13 @@ namespace slime.jrunscript {
 
 (
 	function(
-		fifty: slime.fifty.test.kit,
+		fifty: slime.fifty.test.Kit,
 		$slime: slime.jrunscript.runtime.Exports,
 		$api: slime.$api.Global,
 		$loader: slime.Loader,
 		verify: slime.fifty.test.verify,
 		tests: slime.fifty.test.tests,
-		run: slime.fifty.test.kit["run"]
+		run: slime.fifty.test.Kit["run"]
 	) {
 		tests.exports = {};
 		tests.exports.Resource = function() {

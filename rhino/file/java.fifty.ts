@@ -101,7 +101,7 @@ namespace slime.jrunscript.file.internal.java {
 	(
 		function(
 			Packages: slime.jrunscript.Packages,
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			const { verify } = fifty;
 

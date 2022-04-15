@@ -24,7 +24,7 @@ namespace slime.jrunscript.tools.install {
 
 	export namespace test {
 		export const scope = (
-			function(fifty: slime.fifty.test.kit) {
+			function(fifty: slime.fifty.test.Kit) {
 				const $api = fifty.global.$api;
 				const jsh = fifty.global.jsh;
 
@@ -280,7 +280,7 @@ namespace slime.jrunscript.tools.install {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			const { verify } = fifty;
 			const { jsh } = fifty.global;
@@ -400,7 +400,7 @@ namespace slime.jrunscript.tools.install {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			const verify = fifty.verify;
 			const jsh = fifty.global.jsh;
@@ -444,7 +444,7 @@ namespace slime.jrunscript.tools.install {
 	(
 		function(
 			Packages: slime.jrunscript.Packages,
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			const verify = fifty.verify;
 			const jsh = fifty.global.jsh;
@@ -610,7 +610,7 @@ namespace slime.jrunscript.tools.install {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.suite = function() {
 				fifty.run(fifty.tests.get);

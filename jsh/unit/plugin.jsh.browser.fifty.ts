@@ -75,7 +75,7 @@ namespace slime.jsh.unit {
 	(
 		function(
 			Packages: slime.jrunscript.Packages,
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			const { $api, jsh } = fifty.global;
 			var subject = jsh.unit.browser;

@@ -19,7 +19,7 @@ namespace slime.jrunscript.host {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.exports = {};
 		}
@@ -27,7 +27,7 @@ namespace slime.jrunscript.host {
 	)(fifty);
 
 	export namespace internal.test {
-		export const subject: Exports = (function(fifty: slime.fifty.test.kit) {
+		export const subject: Exports = (function(fifty: slime.fifty.test.Kit) {
 			return fifty.$loader.module("module.js", {
 				$slime: fifty.jsh.$slime,
 				globals: false,
@@ -61,7 +61,7 @@ namespace slime.jrunscript.host {
 	(
 		function(
 			Packages: any,
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.exports.Environment = function() {
 				const { subject } = internal.test;
@@ -129,7 +129,7 @@ namespace slime.jrunscript.host {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.exports.Map = function() {
 				const { subject } = internal.test;
@@ -178,7 +178,7 @@ namespace slime.jrunscript.host {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.exports.log = function() {
 				const { subject } = internal.test;
@@ -203,7 +203,7 @@ namespace slime.jrunscript.host {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.suite = function() {
 				fifty.run(fifty.tests.exports.Environment);

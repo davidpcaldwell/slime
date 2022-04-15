@@ -10,7 +10,7 @@ namespace slime.project.jsapi {
 
 	export namespace test {
 		export const subject = (
-			function(fifty: slime.fifty.test.kit) {
+			function(fifty: slime.fifty.test.Kit) {
 				var script: Script = fifty.$loader.script("jsapi-to-fifty.js");
 				var subject = script();
 				return subject;
@@ -32,7 +32,7 @@ namespace slime.project.jsapi {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			const { verify } = fifty;
 			const subject = test.subject;
@@ -52,7 +52,7 @@ namespace slime.project.jsapi {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			const { verify } = fifty;
 			var script: Script = fifty.$loader.script("jsapi-to-fifty.js");

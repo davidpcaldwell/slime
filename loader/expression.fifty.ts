@@ -135,7 +135,7 @@ namespace slime {
 	export namespace runtime {
 		(
 			function(
-				fifty: slime.fifty.test.kit
+				fifty: slime.fifty.test.Kit
 			) {
 				fifty.tests.runtime = {};
 			}
@@ -203,7 +203,7 @@ namespace slime {
 
 			(
 				function(
-					fifty: slime.fifty.test.kit
+					fifty: slime.fifty.test.Kit
 				) {
 					fifty.tests.runtime.$slime = function() {
 
@@ -269,7 +269,7 @@ namespace slime {
 
 		(
 			function(
-				fifty: slime.fifty.test.kit
+				fifty: slime.fifty.test.Kit
 			) {
 				fifty.tests.exports = {};
 			}
@@ -286,7 +286,7 @@ namespace slime {
 		(
 			function(
 				$platform: slime.runtime.$platform,
-				fifty: slime.fifty.test.kit
+				fifty: slime.fifty.test.Kit
 			) {
 				const { verify } = fifty;
 
@@ -476,7 +476,7 @@ namespace slime {
 
 		(
 			function(
-				fifty: slime.fifty.test.kit
+				fifty: slime.fifty.test.Kit
 			) {
 
 			}
@@ -544,7 +544,7 @@ namespace slime {
 		}
 
 		export namespace test {
-			export const subject: slime.runtime.Exports = (function(fifty: slime.fifty.test.kit) {
+			export const subject: slime.runtime.Exports = (function(fifty: slime.fifty.test.Kit) {
 				return fifty.$loader.module("fixtures.ts").subject;
 			//@ts-ignore
 			})(fifty);
@@ -628,7 +628,7 @@ namespace slime.test {
 		$loader: slime.Loader,
 		verify: slime.fifty.test.verify,
 		tests: any,
-		fifty: slime.fifty.test.kit
+		fifty: slime.fifty.test.Kit
 	) {
 		tests.suite = function() {
 			fifty.run(fifty.tests.runtime.$slime);

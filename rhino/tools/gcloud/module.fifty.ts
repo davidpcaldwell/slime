@@ -83,7 +83,7 @@ namespace slime.jrunscript.tools.gcloud {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			const { verify } = fifty;
 			const { jsh } = fifty.global;

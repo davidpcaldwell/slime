@@ -12,23 +12,12 @@
  * Fifty provides an API for {@link slime.fifty.test | authoring tests} right in the middle of TypeScript definitions.
  */
 namespace slime.fifty {
-	(
-		function(
-			fifty: slime.fifty.test.kit
-		) {
-			fifty.tests.suite = function() {
-
-			}
-		}
-	//@ts-ignore
-	)(fifty);
-
 	/**
 	 * Fifty allows tests to be embedded in TypeScript definitions.
 	 *
 	 * It does so by providing tools that
 	 * execute definitions (in both the browser and using the {@link slime.jsh | `jsh`} shell) providing a scope variable to the
-	 * tests called {@link slime.fifty.test.kit | `fifty` } allowing tests to be defined.
+	 * tests called {@link slime.fifty.test.Kit | `fifty` } allowing tests to be defined.
 	 *
 	 * A minimal Fifty test file looks something like this:
 	 * ```
@@ -55,7 +44,7 @@ namespace slime.fifty {
 	 * being executed. By default, they run the `suite()` function. Within test functions, test subjects can be created with the
 	 * `fifty.verify()` function, which creates subjects that have various methods that can be invoked to represent assertions.
 	 *
-	 * For details, see the documentation on {@link slime.fifty.test.kit | the `fifty` object}.
+	 * For details, see the documentation on {@link slime.fifty.test.Kit | the `fifty` object}.
 	 */
 	export namespace test {
 		export type verify = slime.definition.verify.Verify
@@ -86,7 +75,7 @@ namespace slime.fifty {
 		/**
 		 * The variable that appears as `fifty` within the scope of Fifty definition files when executing tests.
 		 */
-		export interface kit {
+		export interface Kit {
 			/**
 			 * A function that can be used to create subjects and make assertions about them. See {@link slime.definition.verify.Verify}.
 			 */
@@ -131,7 +120,7 @@ namespace slime.fifty {
 				$slime: jsh.plugin.$slime
 				file: {
 					object: {
-						getRelativePath: (p: string) => any
+						getRelativePath: (p: string) => slime.jrunscript.file.Pathname
 						temporary: {
 							location: () => slime.jrunscript.file.Pathname
 							directory: () => slime.jrunscript.file.Directory
@@ -154,6 +143,29 @@ namespace slime.fifty {
 			}
 		}
 
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { jsh } = fifty.global;
+
+				fifty.tests.test = {};
+
+				fifty.tests.test.jsh = function() {
+					var object = fifty.jsh.file.object.getRelativePath("../..");
+					verify(object).evaluate(function(p) { return p.toString(); }).is(jsh.shell.jsh.src.pathname.toString());
+				}
+
+				fifty.tests.test.suite = function() {
+					if (jsh) {
+						fifty.run(fifty.tests.test.jsh);
+					}
+				}
+			}
+		//@ts-ignore
+		)($fifty)
+
 		export namespace internal {
 			export interface Console {
 				start: (scope: Scope, name: string) => void
@@ -174,4 +186,15 @@ namespace slime.fifty {
 			interpret: (p: { ast: object }) => object
 		}
 	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.suite = function() {
+				fifty.run(fifty.tests.test.suite);
+			}
+		}
+	//@ts-ignore
+	)($fifty);
 }

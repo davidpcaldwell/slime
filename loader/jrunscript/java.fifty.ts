@@ -7,7 +7,7 @@
 namespace slime.jrunscript.runtime.java {
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.exports = {};
 		}
@@ -43,7 +43,7 @@ namespace slime.jrunscript.runtime.java {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			var verify = fifty.verify;
 
@@ -83,7 +83,7 @@ namespace slime.jrunscript.runtime.java {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.suite = function() {
 				fifty.run(fifty.tests.exports.getClass);

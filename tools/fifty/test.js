@@ -370,7 +370,7 @@
 			};
 
 			/**
-			 * @type { slime.fifty.test.kit }
+			 * @type { slime.fifty.test.Kit }
 			 */
 			var fifty = {
 				global: {
@@ -385,7 +385,7 @@
 					Events: {
 						Captor: function(template) {
 							var events = [];
-							/** @type { ReturnType<slime.fifty.test.kit["$api"]["Events"]["Captor"]>["handler"] } */
+							/** @type { ReturnType<slime.fifty.test.Kit["$api"]["Events"]["Captor"]>["handler"] } */
 							var initial = {};
 							var handler = $api.Function.Object.entries(template).reduce(function(rv,entry) {
 								rv[entry[0]] = function(e) {

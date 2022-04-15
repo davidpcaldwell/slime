@@ -71,7 +71,7 @@ namespace slime.servlet.proxy {
 	}
 
 	export namespace test {
-		export const subject = (function(fifty: slime.fifty.test.kit) {
+		export const subject = (function(fifty: slime.fifty.test.Kit) {
 			var script: Script = fifty.$loader.script("proxy.js");
 			return script({
 				library: {
@@ -92,7 +92,7 @@ namespace slime.servlet.proxy {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.world = {};
 		}
@@ -101,7 +101,7 @@ namespace slime.servlet.proxy {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.world.mkcert = function() {
 				var file = test.subject.test.mkcert([ "proxy.example.com", "127.0.0.1" ]);
@@ -115,7 +115,7 @@ namespace slime.servlet.proxy {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.suite = function() {
 

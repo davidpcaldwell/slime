@@ -141,7 +141,7 @@ namespace slime.$api {
 }
 
 (
-	function(fifty: slime.fifty.test.kit) {
+	function(fifty: slime.fifty.test.Kit) {
 		fifty.tests.exports = {};
 	}
 //@ts-ignore
@@ -224,7 +224,7 @@ namespace slime.$api {
 (
 	function(
 		$api: slime.$api.Global,
-		fifty: slime.fifty.test.kit
+		fifty: slime.fifty.test.Kit
 	) {
 		var verify = fifty.verify;
 
@@ -315,7 +315,7 @@ namespace slime.$api {
 
 (
 	function(
-		fifty: slime.fifty.test.kit,
+		fifty: slime.fifty.test.Kit,
 		$api: slime.$api.Global
 	) {
 		var verify = fifty.verify;
@@ -386,7 +386,7 @@ namespace slime.$api {
 
 (
 	function(
-		fifty: slime.fifty.test.kit,
+		fifty: slime.fifty.test.Kit,
 	) {
 		fifty.tests.suite = function() {
 			fifty.run(fifty.tests.exports.Iterable);

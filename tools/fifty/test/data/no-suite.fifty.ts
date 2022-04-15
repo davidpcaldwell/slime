@@ -7,7 +7,7 @@
 namespace slime.fifty.internal.test.data {
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.manual = function() {
 				if (fifty.global.jsh) fifty.global.jsh.shell.console("Hello, World!");

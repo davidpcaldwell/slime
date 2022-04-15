@@ -22,7 +22,7 @@ namespace slime.jrunscript.file.test {
 
 	export namespace fixtures {
 		export interface Context {
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		}
 
 		export type Script = slime.loader.Script<Context,Fixtures>

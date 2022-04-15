@@ -54,7 +54,7 @@ namespace slime.jrunscript.shell.browser.internal.chrome {
 	}
 
 	export namespace test {
-		export const subject = (function(fifty: slime.fifty.test.kit) {
+		export const subject = (function(fifty: slime.fifty.test.Kit) {
 			var script: Script = fifty.$loader.script("chrome.js");
 			return script({
 				HOME: fifty.global.jsh.shell.HOME,
@@ -75,7 +75,7 @@ namespace slime.jrunscript.shell.browser.internal.chrome {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			const { verify } = fifty;
 			const { subject } = test;
@@ -97,7 +97,7 @@ namespace slime.jrunscript.shell.browser.internal.chrome {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.suite = function() {
 				fifty.run(fifty.tests.getMajorVersion);
@@ -109,7 +109,7 @@ namespace slime.jrunscript.shell.browser.internal.chrome {
 	(
 		function(
 			Packages: slime.jrunscript.Packages,
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			const { jsh } = fifty.global;
 

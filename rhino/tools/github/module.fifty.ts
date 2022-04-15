@@ -142,7 +142,7 @@ namespace slime.jrunscript.tools.github {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			const jsh = fifty.global.jsh;
 			const { verify, run } = fifty;
@@ -248,7 +248,7 @@ namespace slime.jrunscript.tools.github {
 
 (
 	function(
-		fifty: slime.fifty.test.kit
+		fifty: slime.fifty.test.Kit
 	) {
 
 		fifty.tests.suite = function() {

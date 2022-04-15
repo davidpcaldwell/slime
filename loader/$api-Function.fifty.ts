@@ -42,7 +42,7 @@ namespace slime.$api {
 
 		(
 			function(
-				fifty: slime.fifty.test.kit
+				fifty: slime.fifty.test.Kit
 			) {
 				fifty.tests.string = function() {
 					var subject = fifty.$api.Function.string;
@@ -90,7 +90,7 @@ namespace slime.$api {
 
 		(
 			function(
-				fifty: slime.fifty.test.kit
+				fifty: slime.fifty.test.Kit
 			) {
 				const { verify } = fifty;
 
@@ -126,7 +126,7 @@ namespace slime.$api {
 
 		(
 			function(
-				fifty: slime.fifty.test.kit
+				fifty: slime.fifty.test.Kit
 			) {
 				const { verify } = fifty;
 
@@ -220,7 +220,7 @@ namespace slime.$api {
 
 		(
 			function(
-				fifty: slime.fifty.test.kit
+				fifty: slime.fifty.test.Kit
 			) {
 				const { verify } = fifty;
 				fifty.tests.result = function() {
@@ -268,7 +268,7 @@ namespace slime.$api {
 
 		(
 			function(
-				fifty: slime.fifty.test.kit
+				fifty: slime.fifty.test.Kit
 			) {
 				const { verify, run } = fifty;
 
@@ -396,7 +396,7 @@ namespace slime.$api {
 
 		(
 			function(
-				fifty: slime.fifty.test.kit
+				fifty: slime.fifty.test.Kit
 			) {
 				const verify = fifty.verify;
 
@@ -471,7 +471,7 @@ namespace slime.$api.fp {
 	(
 		function(
 			$api: slime.$api.Global,
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.RegExp = function() {
 				var foo = /^(.*)foo$/;
@@ -557,7 +557,7 @@ namespace slime.$api.fp {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			const { verify } = fifty;
 
@@ -620,7 +620,7 @@ namespace slime.$api.fp {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			const { verify } = fifty;
 
@@ -696,7 +696,7 @@ namespace slime.$api.fp {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			const { verify } = fifty;
 
@@ -722,7 +722,7 @@ namespace slime.$api.fp {
 
 (
 	function(
-		fifty: slime.fifty.test.kit,
+		fifty: slime.fifty.test.Kit,
 		$api: slime.$api.Global
 	) {
 		const { verify } = fifty;
