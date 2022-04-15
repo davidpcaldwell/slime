@@ -103,11 +103,6 @@ namespace slime {
 				docker: boolean
 			}>
 
-			test: slime.jsh.script.cli.Command<Options & {
-				docker: boolean
-				logs: string
-			}>
-
 			git: {
 				branches: {
 					clean: slime.jsh.script.cli.Command<Options>

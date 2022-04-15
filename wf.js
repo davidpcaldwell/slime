@@ -480,31 +480,6 @@
 			}
 		)
 
-		$exports.test = $api.Function.pipe(
-			jsh.script.cli.option.string({ longname: "logs" }),
-			jsh.script.cli.option.boolean({ longname: "docker" }),
-			function(p) {
-				var logs = (function(stdio,logs) {
-					if (logs) {
-						var directory = $context.base.getRelativePath("local/wf/logs/test").createDirectory({
-							recursive: true,
-							exists: function(dir) { return false; }
-						});
-						return directory.getRelativePath(logs).createDirectory({
-							//	might exist because docker creates it when mapping container directory to host directory
-							exists: $api.Function.returning(false)
-						});
-					}
-					//	We used to log to a default directory, but as we move to running the test suite on GitHub we would now
-					//	rather default to the console. We can always explicitly
-					//	if (!logs) logs = jsh.time.When.now().local().format("yyyy.mm.dd.HR.mi.sc");
-					return void(0);
-				})(p.options.logs);
-
-				test({ docker: p.options.docker, logs: logs });
-			}
-		);
-
 		$exports.docker = (
 			function() {
 				var containerListAll = {
