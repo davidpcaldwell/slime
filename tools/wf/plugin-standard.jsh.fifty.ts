@@ -16,11 +16,11 @@ namespace slime.jsh.wf {
 						repository.config({ set: { name: "user.email", value: "bar@example.com" }});
 					}
 
-					var src: slime.jrunscript.file.Directory = fifty.$loader.getRelativePath("../..").directory;
+					var src: slime.jrunscript.file.Directory = fifty.jsh.file.object.getRelativePath("../..").directory;
 
 					function fixture() {
-						var project = fifty.jsh.file.location();
-						fifty.$loader.getRelativePath("test/data/plugin-standard").directory.copy(project);
+						var project = fifty.jsh.file.object.temporary.location();
+						fifty.jsh.file.object.getRelativePath("test/data/plugin-standard").directory.copy(project);
 						var repository = jsh.tools.git.init({
 							pathname: project
 						});
@@ -59,11 +59,11 @@ namespace slime.jsh.wf {
 					}
 
 					return {
-						wf: fifty.$loader.getRelativePath("../wf.bash").file,
+						wf: fifty.jsh.file.object.getRelativePath("../wf.bash").file,
 						project: function() {
 							var origin = fixture();
 							var repository = origin.clone({
-								to: fifty.jsh.file.location()
+								to: fifty.jsh.file.object.temporary.location()
 							});
 							repository.submodule.update({
 								init: true

@@ -277,7 +277,7 @@ namespace slime.jrunscript.shell {
 				var to = jsh.shell.TMPDIR.createTemporary({ directory: true });
 				jsh.java.tools.javac({
 					destination: to.pathname,
-					arguments: [fifty.$loader.getRelativePath("test/java/inonit/jsh/test/" + name + ".java")]
+					arguments: [fifty.jsh.file.object.getRelativePath("test/java/inonit/jsh/test/" + name + ".java")]
 				});
 				return {
 					classpath: jsh.file.Searchpath([to.pathname]),
@@ -288,7 +288,7 @@ namespace slime.jrunscript.shell {
 			fifty.tests.run = function() {
 				var subject: Exports = fifty.global.jsh.shell;
 
-				var here: slime.jrunscript.file.Directory = fifty.$loader.getRelativePath(".").directory;
+				var here: slime.jrunscript.file.Directory = fifty.jsh.file.object.getRelativePath(".").directory;
 
 				var on = {
 					start: void(0)
@@ -378,7 +378,7 @@ namespace slime.jrunscript.shell {
 				var to = jsh.shell.TMPDIR.createTemporary({ directory: true });
 				jsh.java.tools.javac({
 					destination: to.pathname,
-					arguments: [fifty.$loader.getRelativePath("test/java/inonit/jsh/test/Echo.java")]
+					arguments: [fifty.jsh.file.object.getRelativePath("test/java/inonit/jsh/test/Echo.java")]
 				});
 				var result = module.java({
 					classpath: jsh.file.Searchpath([to.pathname]),
@@ -520,7 +520,7 @@ namespace slime.jrunscript.shell {
 				var to = jsh.shell.TMPDIR.createTemporary({ directory: true });
 				jsh.java.tools.javac({
 					destination: to.pathname,
-					arguments: [fifty.$loader.getRelativePath("test/java/inonit/jsh/test/Program.java")]
+					arguments: [fifty.jsh.file.object.getRelativePath("test/java/inonit/jsh/test/Program.java")]
 				});
 				var buffer = new jsh.io.Buffer();
 				var output = subject.java({
@@ -667,7 +667,7 @@ namespace slime.jrunscript.shell {
 			const subject = fifty.global.jsh.shell;
 
 			fifty.tests.world = function() {
-				var directory = fifty.$loader.getRelativePath(".").directory;
+				var directory = fifty.jsh.file.object.getRelativePath(".").directory;
 
 				if (fifty.global.jsh.shell.PATH.getCommand("ls")) {
 					var ls = subject.Invocation.create({
@@ -731,7 +731,7 @@ namespace slime.jrunscript.shell {
 					fifty.verify(tell).evaluate(function(f) { return f(); }).threw.name.is("JavaException");
 				})();
 
-				var directory = fifty.$loader.getRelativePath(".").directory;
+				var directory = fifty.jsh.file.object.getRelativePath(".").directory;
 
 				if (fifty.global.jsh.shell.PATH.getCommand("ls")) {
 					var ls = subject.Invocation.create({
@@ -807,7 +807,7 @@ namespace slime.jrunscript.shell {
 				}
 
 				fifty.run(function Invocation() {
-					var directory = fifty.$loader.getRelativePath(".").directory;
+					var directory = fifty.jsh.file.object.getRelativePath(".").directory;
 
 					//	TODO	test for missing command
 

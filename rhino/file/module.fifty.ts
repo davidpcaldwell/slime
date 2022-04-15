@@ -178,7 +178,7 @@ namespace slime.jrunscript.file {
 			fifty.tests.state.list = function() {
 				var subject = fifty.global.jsh.file;
 
-				var prefix = fifty.$loader.getRelativePath(".").toString();
+				var prefix = fifty.jsh.file.object.getRelativePath(".").toString();
 				var lister = subject.state.list(prefix);
 				var listing = lister().sort(function(a,b) {
 					if (a.relative < b.relative) return -1;
@@ -316,7 +316,7 @@ namespace slime.jrunscript.file {
 			fifty.tests.action.delete = function() {
 				var subject = fifty.global.jsh.file;
 
-				var dir = fifty.jsh.file.directory();
+				var dir = fifty.jsh.file.object.temporary.directory();
 				dir.getRelativePath("file").write("foo", { append: false });
 				fifty.verify(dir).getFile("file").is.type("object");
 				var d2 = subject.action.delete(dir.getRelativePath("file").toString());
@@ -455,7 +455,7 @@ namespace slime.jrunscript.file {
 				const filesystem = world.filesystems.os;
 
 				fifty.tests.sandbox.filesystem.pathname.relative = function() {
-					var parent = filesystem.pathname(fifty.$loader.getRelativePath(".").toString());
+					var parent = filesystem.pathname(fifty.jsh.file.object.getRelativePath(".").toString());
 					var relative = "module.fifty.ts";
 					var result = parent.relative(relative);
 					verify(result).is.type("object");
@@ -629,7 +629,7 @@ namespace slime.jrunscript.file {
 			) {
 				const { verify } = fifty;
 				const { jsh } = fifty.global;
-				const here = jsh.file.world.filesystems.os.pathname(fifty.$loader.getRelativePath(".").toString());
+				const here = jsh.file.world.filesystems.os.pathname(fifty.jsh.file.object.getRelativePath(".").toString());
 
 				fifty.tests.sandbox.filesystem.pathname.file.read = {};
 				fifty.tests.sandbox.filesystem.pathname.file.read.string = function() {
@@ -726,14 +726,14 @@ namespace slime.jrunscript.file {
 				fifty.tests.sandbox.filesystem.Pathname = {
 					relative: function() {
 						//	TODO	the below tests may have been in the wrong place
-						var pathname = function(relative: string) { return fifty.$loader.getRelativePath(relative).toString(); };
+						var pathname = function(relative: string) { return fifty.jsh.file.object.getRelativePath(relative).toString(); };
 						var thisFile = pathname("module.fifty.ts");
 						var doesNotExist = pathname("foo");
 						verify(filesystem.File.read.string(thisFile)(), "thisFile").is.type("string");
 						verify(filesystem.File.read.string(doesNotExist)()).is.type("null");
 					},
 					isDirectory: function() {
-						var parent = fifty.$loader.getRelativePath(".").toString();
+						var parent = fifty.jsh.file.object.getRelativePath(".").toString();
 						var cases = {
 							parent: parent,
 							thisFile: filesystem.Pathname.relative(parent, "module.fifty.ts"),
@@ -751,7 +751,7 @@ namespace slime.jrunscript.file {
 					}
 				};
 
-				var here = fifty.$loader.getRelativePath(".").toString();
+				var here = fifty.jsh.file.object.getRelativePath(".").toString();
 
 				fifty.tests.sandbox.filesystem.File = {};
 
@@ -886,10 +886,10 @@ namespace slime.jrunscript.file {
 			const { world } = jsh.file;
 
 			fifty.tests.world = function() {
-				var pathname = fifty.$loader.getRelativePath("module.fifty.ts").toString();
+				var pathname = fifty.jsh.file.object.getRelativePath("module.fifty.ts").toString();
 				jsh.shell.console(world.filesystems.os.File.read.string(pathname)().substring(0,500));
 
-				var folder = fifty.$loader.getRelativePath(".").toString();
+				var folder = fifty.jsh.file.object.getRelativePath(".").toString();
 				var file = "module.fifty.ts";
 				var relative = world.filesystems.os.Pathname.relative(folder, file);
 				jsh.shell.console(relative);

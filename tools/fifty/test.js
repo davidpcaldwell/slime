@@ -164,7 +164,8 @@
 			return {
 				test: {
 					depth: function() {
-						return scopes.length;
+						//	TODO	Probable bug / unused
+						return scopes["length"];
 					},
 					setName: function(value) {
 						registry.test.setName(value);
@@ -335,22 +336,26 @@
 
 		var global = (function() { return this; })();
 
-		var scopes = (function() {
-			var rv = {};
-			if (global.jsh) rv.jsh = $loader.file("scope-jsh.ts");
-			return rv;
-		})();
+		/** @type { { jsh: (scope: { directory: slime.jrunscript.file.Directory }) => slime.fifty.test.kit["jsh"] } } */
+		var scopes = (
+			function() {
+				var rv = {};
+				if (global.jsh) rv.jsh = $loader.file("scope-jsh.ts");
+				return rv;
+			}
+		)();
 
 		/**
 		 *
 		 * @param { slime.fifty.test.internal.test.AsynchronousScopes } ascopes
 		 * @param { slime.fifty.test.$loader } loader
+		 * @param { Parameters<slime.fifty.test.internal.test.Export>[1] } contexts
 		 * @param { string } path
 		 * @param { string } part - the part to execute. If `undefined`, the default value `"suite"` will be used.
 		 * @param { any } [argument]
 		 * @returns { slime.fifty.test.internal.test.Result }
 		 */
-		var load = function recurse(ascopes,loader,path,part,argument) {
+		var load = function recurse(ascopes,loader,contexts,path,part,argument) {
 			if (!part) part = "suite";
 
 			//	TODO	this should probably be completely empty
@@ -421,7 +426,20 @@
 						var subloader = (path.folder) ? loader.Child(path.folder) : loader;
 						if (isMyLoader(subloader)) {
 							if (ascopes) ascopes.push();
-							var rv = recurse(ascopes, subloader, path.file, part, argument);
+							var rv = recurse(
+								ascopes,
+								subloader,
+								{
+									jsh: (scopes.jsh)
+										? {
+											directory: (path.folder) ? contexts.jsh.directory.getSubdirectory(path.folder) : contexts.jsh.directory
+										}
+										: void(0)
+								},
+								path.file,
+								part,
+								argument
+							);
 							if (controlled) controlled.resolve(void(0));
 							if (ascopes) ascopes.pop();
 							return rv;
@@ -461,13 +479,7 @@
 				verify: function() {
 					return verify.apply(this,arguments);
 				},
-				jsh: (scopes.jsh) ? $api.Object.compose(
-					scopes.jsh,
-					{
-						//	TODO	What the heck is this doing? Can't we just provide the one from scope-jsh.ts?
-						$slime: (loader && loader.jsh) ? loader.jsh.$slime : void(0)
-					}
-				) : void(0)
+				jsh: (scopes.jsh) ? scopes.jsh({ directory: contexts.jsh.directory }) : void(0)
 			};
 
 			var scope = {
@@ -530,11 +542,11 @@
 		}
 
 		$export(
-			function(loader,path,part) {
+			function(loader,scopes,path,part) {
 				var ascopes = ($context.promises) ? AsynchronousScopes(
 					AsynchronousScope({ name: "(top)" })
 				) : void(0);
-				return load(ascopes,loader,path,part);
+				return load(ascopes,loader,scopes,path,part);
 			}
 		)
 	}

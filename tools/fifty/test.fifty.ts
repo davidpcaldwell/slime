@@ -21,11 +21,12 @@ namespace slime.fifty.test.internal {
 
 namespace slime.fifty.test.internal.test {
 	export interface Context {
-		promises: slime.definition.test.promises.Export
 		library: {
 			Verify: slime.definition.verify.Export
 		}
 		console: slime.fifty.test.internal.Console
+
+		promises?: slime.definition.test.promises.Export
 	}
 
 	export type Result = {
@@ -58,6 +59,11 @@ namespace slime.fifty.test.internal.test {
 	export type Export = (
 		/** A loader. */
 		loader: slime.fifty.test.$loader,
+		scopes: {
+			jsh?: {
+				directory: slime.jrunscript.file.Directory
+			}
+		},
 		path: string,
 		part?: string
 	) => Result

@@ -80,7 +80,7 @@ namespace slime.jsh.httpd {
 			fifty.tests.script = {
 				old: function() {
 					var one: { loader: slime.Loader } = api.script.old(
-						fifty.$loader.getRelativePath("test/resource/1.old.js").file
+						fifty.jsh.file.object.getRelativePath("test/resource/1.old.js").file
 					);
 					var indexOf = function(value: string) {
 						return function(p: (slime.loader.LoaderEntry | slime.loader.ResourceEntry)[]) {
@@ -112,7 +112,7 @@ namespace slime.jsh.httpd {
 					var code = api;
 					verify(code,"code").is.type("function");
 					var one: { loader: slime.Loader, add: any } = new code();
-					var top = fifty.$loader.getRelativePath(".").directory;
+					var top = fifty.jsh.file.object.getRelativePath(".").directory;
 					one.add({ prefix: "WEB-INF/generic/", directory: top.getSubdirectory("java") });
 					one.add({ prefix: "WEB-INF/mozilla/", directory: top.getSubdirectory("rhino") });
 					one.add({ prefix: "WEB-INF/test/", directory: top.getSubdirectory("test") });
@@ -162,7 +162,7 @@ namespace slime.jsh.httpd {
 				hg: function() {
 					var verify = fifty.verify;
 					var jsh = fifty.global.jsh;
-					var mapping: { loader: slime.Loader, build: any } = api.script(fifty.$loader.getRelativePath("test/resource/1.hg.js").file);
+					var mapping: { loader: slime.Loader, build: any } = api.script(fifty.jsh.file.object.getRelativePath("test/resource/1.hg.js").file);
 					verify(mapping).is.not(null);
 					verify(mapping).loader.is.not(null);
 					verify(mapping).loader.evaluate.property("list").is.type("function");

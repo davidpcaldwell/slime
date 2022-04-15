@@ -48,16 +48,16 @@ namespace slime.jsh {
 				type pathsFileExports = { value: string }
 
 				tests.exports.module = function() {
-					var byFullPathname: exports = jsh.loader.module(fifty.$loader.getRelativePath("test/code/module.js"));
+					var byFullPathname: exports = jsh.loader.module(fifty.jsh.file.object.getRelativePath("test/code/module.js"));
 					verify(byFullPathname).foo.is("bar");
 
-					var byModulePathname: exports = jsh.loader.module(fifty.$loader.getRelativePath("test/code"));
+					var byModulePathname: exports = jsh.loader.module(fifty.jsh.file.object.getRelativePath("test/code"));
 					verify(byModulePathname).foo.is("bar");
 
-					var byModuleFile: exports = jsh.loader.module(fifty.$loader.getRelativePath("test/code/module.js").file);
+					var byModuleFile: exports = jsh.loader.module(fifty.jsh.file.object.getRelativePath("test/code/module.js").file);
 					verify(byModuleFile).foo.is("bar");
 
-					var byModuleDirectory: exports = jsh.loader.module(fifty.$loader.getRelativePath("test/code").directory);
+					var byModuleDirectory: exports = jsh.loader.module(fifty.jsh.file.object.getRelativePath("test/code").directory);
 					verify(byModuleDirectory).foo.is("bar");
 
 					var paths: {
@@ -78,7 +78,7 @@ namespace slime.jsh {
 					} = (function() {
 						var result = jsh.shell.jsh({
 							shell: jsh.shell.jsh.src,
-							script: fifty.$loader.getRelativePath("test/jsh-loader-code/main.jsh.js").file,
+							script: fifty.jsh.file.object.getRelativePath("test/jsh-loader-code/main.jsh.js").file,
 							stdio: {
 								output: String
 							}

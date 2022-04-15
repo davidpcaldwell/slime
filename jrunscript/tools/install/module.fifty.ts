@@ -575,7 +575,7 @@ namespace slime.jrunscript.tools.install {
 						}
 					};
 
-					var mockdownloads = fifty.jsh.file.directory();
+					var mockdownloads = fifty.jsh.file.object.temporary.directory();
 					var mockclient = new jsh.http.Client({
 						proxy: PROXY
 					});

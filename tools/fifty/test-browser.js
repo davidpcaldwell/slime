@@ -186,6 +186,7 @@
 
 				return implementation(
 					loader,
+					{},
 					path.file,
 					part
 				);

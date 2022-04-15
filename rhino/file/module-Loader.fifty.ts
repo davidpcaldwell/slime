@@ -38,7 +38,7 @@ namespace slime.jrunscript.file {
 
 			const { module } = fixtures;
 
-			const loader = new fixtures.module.Loader({ directory: fifty.$loader.getRelativePath("api.html").parent.directory })
+			const loader = new fixtures.module.Loader({ directory: fifty.jsh.file.object.getRelativePath("api.html").parent.directory })
 
 			fifty.tests.suite = function() {
 				run(function() {

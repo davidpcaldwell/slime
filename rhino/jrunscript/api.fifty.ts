@@ -155,7 +155,7 @@ namespace slime.internal.jrunscript.bootstrap {
 				};
 				fifty.$loader.run("api.js", {}, configuration);
 				var global: slime.internal.jrunscript.bootstrap.Global<{},{}> = configuration as slime.internal.jrunscript.bootstrap.Global<{},{}>;
-				var thisPathname = fifty.$loader.getRelativePath("api.fifty.ts");
+				var thisPathname = fifty.jsh.file.object.getRelativePath("api.fifty.ts");
 				var jshReadThisFile = thisPathname.file.read(String);
 				var bootstrapReadThisFile = (function() {
 					var javaFile = thisPathname.java.adapt();
@@ -208,7 +208,7 @@ namespace slime.internal.jrunscript.bootstrap {
 				}
 				var resource = new jsh.io.Resource(descriptor);
 				var fromZip = resource.read(String);
-				var fromFilesystem = fifty.$loader.getRelativePath("api.fifty.ts").file.read(String);
+				var fromFilesystem = fifty.jsh.file.object.getRelativePath("api.fifty.ts").file.read(String);
 				var filesAreEqual = fromZip == fromFilesystem
 				verify(filesAreEqual,"filesAreEqual").is(true);
 

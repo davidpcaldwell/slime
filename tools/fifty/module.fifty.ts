@@ -61,9 +61,6 @@ namespace slime.fifty {
 		export type verify = slime.definition.verify.Verify
 
 		export type $loader = slime.Loader & {
-			//	will return a Pathname in jsh; does not currently exist in browser
-			getRelativePath?: (p: string) => any
-
 			/**
 			 * Present if Fifty is being run in a `jsh` shell; provides the ability to load `jsh` plugins into a mock shell.
 			 */
@@ -155,8 +152,13 @@ namespace slime.fifty {
 			jsh?: {
 				$slime: jsh.plugin.$slime
 				file: {
-					location: () => slime.jrunscript.file.Pathname
-					directory: () => slime.jrunscript.file.Directory
+					object: {
+						getRelativePath: (p: string) => any
+						temporary: {
+							location: () => slime.jrunscript.file.Pathname
+							directory: () => slime.jrunscript.file.Directory
+						}
+					}
 				}
 			}
 		}

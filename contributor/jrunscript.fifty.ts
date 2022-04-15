@@ -14,7 +14,7 @@
 			var hasJsoup = Boolean(jsh.shell.tools.jsoup.installed);
 			var hasGit = Boolean(jsh.shell.PATH.getCommand("git"));
 			var isGitClone = (function() {
-				var SLIME = fifty.$loader.getRelativePath("..").directory;
+				var SLIME = fifty.jsh.file.object.getRelativePath("..").directory;
 				return Boolean(SLIME.getSubdirectory(".git") || SLIME.getFile(".git"));
 			})();
 			var isMkcertImplemented = (function() {

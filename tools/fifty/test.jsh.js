@@ -152,8 +152,9 @@
 		var execute = function(file,part,view) {
 			var fiftyLoader = jsh.script.loader;
 
-			/** @type { slime.fifty.test.internal.run } */
-			var implementation = fiftyLoader.module("test.js", {
+			/** @type { slime.fifty.test.internal.test.Script } */
+			var script = fiftyLoader.script("test.js");
+			var implementation = script({
 				library: {
 					Verify: verify
 				},
@@ -166,6 +167,11 @@
 
 			return implementation(
 				loader,
+				{
+					jsh: {
+						directory: file.parent
+					}
+				},
 				file.pathname.basename,
 				part
 			)
