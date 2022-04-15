@@ -208,7 +208,7 @@ namespace slime.time {
 	(
 		function(
 			fifty: slime.fifty.test.kit,
-			$loader: slime.fifty.test.$loader,
+			$loader: slime.Loader,
 			verify: slime.fifty.test.verify,
 			tests: slime.fifty.test.tests
 		) {

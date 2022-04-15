@@ -176,7 +176,7 @@ namespace slime.jsh.script {
 						subject.cli.option.string({ longname: "foo" })
 					);
 					var was = fifty.global.jsh.unit.$slime;
-					var mocked = fifty.$loader.jsh.plugin.mock({
+					var mocked = fifty.jsh.plugin.mock({
 						jsh: fifty.global.jsh,
 						$slime: Object.assign({}, was, {
 							getPackaged: function() { return null; },

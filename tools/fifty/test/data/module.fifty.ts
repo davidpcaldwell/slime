@@ -37,7 +37,7 @@ namespace slime.fifty.internal.test.data {
 			fifty: slime.fifty.test.kit,
 			verify: slime.fifty.test.verify,
 			tests: slime.fifty.test.tests,
-			$loader: slime.fifty.test.$loader,
+			$loader: slime.Loader,
 			run: slime.fifty.test.kit["run"],
 			load: slime.fifty.test.load
 		) {

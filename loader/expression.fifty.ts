@@ -625,7 +625,7 @@ namespace slime.test {
 
 (
 	function(
-		$loader: slime.fifty.test.$loader,
+		$loader: slime.Loader,
 		verify: slime.fifty.test.verify,
 		tests: any,
 		fifty: slime.fifty.test.kit

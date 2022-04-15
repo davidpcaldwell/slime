@@ -336,11 +336,15 @@
 
 		var global = (function() { return this; })();
 
-		/** @type { { jsh: (scope: { directory: slime.jrunscript.file.Directory }) => slime.fifty.test.kit["jsh"] } } */
 		var scopes = (
 			function() {
 				var rv = {};
-				if (global.jsh) rv.jsh = $loader.file("scope-jsh.ts");
+				/** @type { slime.fifty.test.internal.scope.jsh.Script } */
+				var script = $loader.script("scope-jsh.ts");
+				if (global.jsh) {
+					var scope = script();
+					rv.jsh = scope;
+				}
 				return rv;
 			}
 		)();
@@ -348,7 +352,7 @@
 		/**
 		 *
 		 * @param { slime.fifty.test.internal.test.AsynchronousScopes } ascopes
-		 * @param { slime.fifty.test.$loader } loader
+		 * @param { slime.Loader } loader
 		 * @param { Parameters<slime.fifty.test.internal.test.Export>[1] } contexts
 		 * @param { string } path
 		 * @param { string } part - the part to execute. If `undefined`, the default value `"suite"` will be used.
@@ -356,6 +360,8 @@
 		 * @returns { slime.fifty.test.internal.test.Result }
 		 */
 		var load = function recurse(ascopes,loader,contexts,path,part,argument) {
+			//	TODO	it appears loader and contexts.jsh.loader may be redundant?
+
 			if (!part) part = "suite";
 
 			//	TODO	this should probably be completely empty
@@ -418,34 +424,27 @@
 					var controlled = ($context.promises) ? $context.promises.controlled() : void(0);
 
 					var run = function() {
-						/** @type { (p: slime.Loader) => p is slime.fifty.test.$loader } */
-						function isMyLoader(p) {
-							return true;
-						}
 						var path = parsePath(at);
 						var subloader = (path.folder) ? loader.Child(path.folder) : loader;
-						if (isMyLoader(subloader)) {
-							if (ascopes) ascopes.push();
-							var rv = recurse(
-								ascopes,
-								subloader,
-								{
-									jsh: (scopes.jsh)
-										? {
-											directory: (path.folder) ? contexts.jsh.directory.getSubdirectory(path.folder) : contexts.jsh.directory
-										}
-										: void(0)
-								},
-								path.file,
-								part,
-								argument
-							);
-							if (controlled) controlled.resolve(void(0));
-							if (ascopes) ascopes.pop();
-							return rv;
-						} else {
-							throw new Error("Runtime downcast failed.");
-						}
+						if (ascopes) ascopes.push();
+						var rv = recurse(
+							ascopes,
+							subloader,
+							{
+								jsh: (scopes.jsh)
+									? {
+										loader: (path.folder) ? contexts.jsh.loader.Child(path.folder) : contexts.jsh.loader,
+										directory: (path.folder) ? contexts.jsh.directory.getSubdirectory(path.folder) : contexts.jsh.directory
+									}
+									: void(0)
+							},
+							path.file,
+							part,
+							argument
+						);
+						if (controlled) controlled.resolve(void(0));
+						if (ascopes) ascopes.pop();
+						return rv;
 					};
 
 					if (ascopes) {
@@ -479,7 +478,10 @@
 				verify: function() {
 					return verify.apply(this,arguments);
 				},
-				jsh: (scopes.jsh) ? scopes.jsh({ directory: contexts.jsh.directory }) : void(0)
+				jsh: (scopes.jsh) ? scopes.jsh({
+					loader: contexts.jsh.loader,
+					directory: contexts.jsh.directory
+				}) : void(0)
 			};
 
 			var scope = {

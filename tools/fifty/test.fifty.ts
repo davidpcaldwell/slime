@@ -58,10 +58,11 @@ namespace slime.fifty.test.internal.test {
 	 */
 	export type Export = (
 		/** A loader. */
-		loader: slime.fifty.test.$loader,
+		loader: slime.Loader,
 		scopes: {
 			jsh?: {
 				directory: slime.jrunscript.file.Directory
+				loader: slime.Loader
 			}
 		},
 		path: string,

@@ -381,7 +381,7 @@ namespace slime.jsh.wf {
 
 				var c = fifty.global.jsh.wf
 
-				var mock = fifty.$loader.jsh.plugin.mock({
+				var mock = fifty.jsh.plugin.mock({
 					jsh: {
 						file: jsh.file,
 						tools: {
@@ -417,12 +417,11 @@ namespace slime.jsh.wf {
 
 (
 	function(
-		jsh: slime.jsh.Global,
-		verify: slime.definition.verify.Verify,
-		run: slime.fifty.test.kit["run"],
-		tests: any,
-		$loader: slime.Loader & { getRelativePath: any, plugin: any }
+		fifty: slime.fifty.test.kit
 	) {
+		const { tests, verify, run } = fifty;
+		const { jsh } = fifty.global;
+
 		tests.types.Exports = function(module: slime.jsh.wf.Exports,jsh: slime.jsh.Global) {
 			(function() {
 				var invocation = {
@@ -493,7 +492,7 @@ namespace slime.jsh.wf {
 				ui: jsh.ui,
 				tools: jsh.tools
 			};
-			var mock = $loader.plugin.mock({
+			var mock = fifty.jsh.plugin.mock({
 				jsh: mockjsh
 			});
 			var plugin = mock.jsh.wf;
@@ -507,4 +506,4 @@ namespace slime.jsh.wf {
 		}
 	}
 //@ts-ignore
-)( (function() { return this; })().jsh, verify, run, tests, $loader)
+)(fifty)
