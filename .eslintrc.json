@@ -16,21 +16,18 @@
 		"no-ex-assign": "error",
 		"no-prototype-builtins": "error",
 		"no-extra-semi": "error",
+		"getter-return": "error",
 
 		//	Implicit globals are very confusing for TypeScript
 		"no-implicit-globals": "warn",
-
-		"indent": ["warn", "tab", { "SwitchCase": 1 }],
-		"quotes": ["warn", "double"],
-
-		"no-empty": "warn",
-		"no-redeclare": "warn",
-		"no-debugger": "warn",
-		"no-cond-assign": "warn",
-		"getter-return": "warn",
-
 		//	Possibly should be allowed, at least for unused parameters?
 		"no-unused-vars": ["warn", { "args": "none" }],
+		"no-redeclare": "warn",
+		"no-debugger": "warn",
+		"indent": ["warn", "tab", { "SwitchCase": 1 }],
+		"no-empty": "warn",
+		"quotes": ["warn", "double"],
+		"no-cond-assign": "warn",
 
 		//	things like if (false), used often to disable code while retaining syntax highlighting, etc.
 		"no-constant-condition": "off",

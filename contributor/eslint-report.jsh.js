@@ -16,7 +16,7 @@
 		var json = base.getFile(".eslintrc.json").read(String);
 		var configuration = eval("(" + json + ")");
 		var rules = Object.entries(configuration.rules).filter(function(entry) {
-			return entry[1] == "warn";
+			return entry[1] == "warn" || entry[1].length > 1 && entry[1][0] == "warn";
 		}).map(function(entry) {
 			return entry[0];
 		});
