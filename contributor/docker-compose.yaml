@@ -14,7 +14,7 @@ services:
     environment:
       - SLIME_WF_SKIP_GIT_IDENTITY_REEQUIREMENT=1
     working_dir: /slime
-    command: /bin/bash /slime/wf test --docker
+    command: /bin/bash /slime/wf check --docker
     depends_on:
       - chrome
       - firefox

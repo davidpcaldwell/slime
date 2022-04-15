@@ -672,7 +672,7 @@ namespace slime.jrunscript.shell {
 				if (fifty.global.jsh.shell.PATH.getCommand("ls")) {
 					var ls = subject.Invocation.create({
 						command: "ls",
-						directory: directory,
+						directory: directory.toString(),
 						stdio: {
 							output: "line",
 							error: "line"
@@ -691,7 +691,7 @@ namespace slime.jrunscript.shell {
 					var killed = subject.Invocation.create({
 						command: "sleep",
 						arguments: ["1"],
-						directory: directory,
+						directory: directory.toString(),
 						stdio: {
 							output: "line",
 							error: "line"
@@ -736,7 +736,7 @@ namespace slime.jrunscript.shell {
 				if (fifty.global.jsh.shell.PATH.getCommand("ls")) {
 					var ls = subject.Invocation.create({
 						command: "ls",
-						directory: directory
+						directory: directory.toString()
 					});
 					var status: number;
 					subject.world.run(ls)({
@@ -837,7 +837,7 @@ namespace slime.jrunscript.shell {
 							command: fifty.global.jsh.file.Pathname("/bin/ls"),
 							arguments: [directory.getRelativePath("invocation.fifty.ts")],
 							//	TODO	environment
-							directory: directory
+							directory: directory.toString()
 						};
 						var invocation = fifty.global.jsh.shell.Invocation.create(argument);
 						fifty.verify(invocation, "invocation", function(its) {
