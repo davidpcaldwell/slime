@@ -43,6 +43,20 @@
 			}
 		},
 		{
+			"label": "ESLint Report",
+			"type": "shell",
+			"command": "./jsh.bash contributor/eslint-report.jsh.js",
+			"problemMatcher": [],
+			"presentation": {
+				"echo": false,
+				"reveal": "always",
+				"focus": false,
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": true
+			}
+		},
+		{
 			"label": "tsc",
 			"type": "shell",
 			"command": "./wf tsc",

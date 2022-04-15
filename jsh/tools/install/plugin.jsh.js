@@ -472,6 +472,7 @@
 									directory: location.directory
 								});
 							}
+							return void(0);
 						}
 					})
 				} : null;
@@ -568,6 +569,7 @@
 										version: manifest.main["Implementation-Version"]
 									};
 								}
+								return void(0);
 							}
 						});
 
