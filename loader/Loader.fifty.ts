@@ -106,7 +106,7 @@ namespace slime {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			var tests = fifty.tests;
 			var verify = fifty.verify;

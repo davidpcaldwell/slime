@@ -46,7 +46,7 @@ namespace slime.jrunscript.native {
 	function(
 		Packages: any,
 		JavaAdapter: any,
-		fifty: slime.fifty.test.kit
+		fifty: slime.fifty.test.Kit
 	) {
 		const fixtures: slime.jrunscript.native.inonit.system.test.Fixtures = fifty.$loader.file("system.fixtures.ts");
 

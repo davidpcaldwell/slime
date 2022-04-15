@@ -37,7 +37,7 @@ namespace slime.definition.test.promises {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			var subject: Export = fifty.promises;
 

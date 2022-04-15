@@ -6,7 +6,7 @@
 
 (
 	function(
-		fifty: slime.fifty.test.kit
+		fifty: slime.fifty.test.Kit
 	) {
 		const real = (function() {
 			var jsh = fifty.global.jsh;

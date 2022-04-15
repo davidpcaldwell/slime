@@ -6,7 +6,7 @@
 
 (
 	function(
-		fifty: slime.fifty.test.kit
+		fifty: slime.fifty.test.Kit
 	) {
 		fifty.tests.safari = function() {
 			var processes = fifty.global.jsh.shell.os.process.list().map(function(process) {

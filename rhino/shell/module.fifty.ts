@@ -41,7 +41,7 @@ namespace slime.jrunscript.shell {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.exports = {};
 		}
@@ -56,7 +56,7 @@ namespace slime.jrunscript.shell {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.listeners = function() {
 				const jsh = fifty.global.jsh;
@@ -102,7 +102,7 @@ namespace slime.jrunscript.shell {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.environment = function() {
 				const jsh = fifty.global.jsh;
@@ -270,7 +270,7 @@ namespace slime.jrunscript.shell {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			var getJavaProgram = function(name) {
 				var jsh = fifty.global.jsh;
@@ -509,7 +509,7 @@ namespace slime.jrunscript.shell {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			const { verify } = fifty;
 			const { jsh } = fifty.global;
@@ -662,7 +662,7 @@ namespace slime.jrunscript.shell {
 	(
 		function(
 			$api: slime.$api.Global,
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			const subject = fifty.global.jsh.shell;
 
@@ -863,7 +863,7 @@ namespace slime.jrunscript.shell {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			const { verify } = fifty;
 			const { $api, jsh } = fifty.global;
@@ -904,7 +904,7 @@ namespace slime.jrunscript.shell {
 	}
 
 	(
-		function(fifty: slime.fifty.test.kit) {
+		function(fifty: slime.fifty.test.Kit) {
 			fifty.tests.suite = function() {
 				fifty.run(fifty.tests.listeners);
 				fifty.run(fifty.tests.environment);

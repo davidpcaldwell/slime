@@ -8,7 +8,7 @@ namespace slime.jsh.script {
 	/**
 	 * Represents the module inside the Fifty test suite.
 	 */
-	const subject: Exports = (function(fifty: slime.fifty.test.kit) {
+	const subject: Exports = (function(fifty: slime.fifty.test.Kit) {
 		const jsh = fifty.global.jsh;
 		const subject = jsh.script;
 		return subject;
@@ -111,7 +111,7 @@ namespace slime.jsh.script {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.cli = {
 				option: function() {

@@ -8,7 +8,7 @@ namespace slime.jsh {
 	export namespace loader {
 		(
 			function(
-				fifty: slime.fifty.test.kit
+				fifty: slime.fifty.test.Kit
 			) {
 				fifty.tests.exports = {};
 			}
@@ -36,7 +36,7 @@ namespace slime.jsh {
 
 		(
 			function(
-				fifty: slime.fifty.test.kit
+				fifty: slime.fifty.test.Kit
 			) {
 				var verify = fifty.verify;
 				var tests = fifty.tests;
@@ -134,7 +134,7 @@ namespace slime.jsh {
 
 		(
 			function(
-				fifty: slime.fifty.test.kit
+				fifty: slime.fifty.test.Kit
 			) {
 				fifty.tests.suite = function() {
 					fifty.run(fifty.tests.exports.module);

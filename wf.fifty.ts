@@ -7,7 +7,7 @@
 namespace slime {
 	export namespace project.wf {
 		namespace test {
-			export const fixtures = (function(fifty: slime.fifty.test.kit) {
+			export const fixtures = (function(fifty: slime.fifty.test.Kit) {
 				const jsh = fifty.global.jsh;
 				return {
 					clone: function() {
@@ -110,7 +110,7 @@ namespace slime {
 
 		(
 			function(
-				fifty: slime.fifty.test.kit
+				fifty: slime.fifty.test.Kit
 			) {
 				var jsh = fifty.global.jsh;
 

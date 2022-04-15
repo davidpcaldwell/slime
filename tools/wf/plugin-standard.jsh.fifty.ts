@@ -8,7 +8,7 @@ namespace slime.jsh.wf {
 	export namespace standard {
 		namespace test {
 			export const fixtures = (
-				function(fifty: slime.fifty.test.kit) {
+				function(fifty: slime.fifty.test.Kit) {
 					const jsh = fifty.global.jsh;
 
 					function configure(repository: slime.jrunscript.tools.git.repository.Local) {
@@ -194,7 +194,7 @@ namespace slime.jsh.wf {
 
 		(
 			function(
-				fifty: slime.fifty.test.kit
+				fifty: slime.fifty.test.Kit
 			) {
 				fifty.tests.interface = {};
 			}
@@ -210,7 +210,7 @@ namespace slime.jsh.wf {
 
 		(
 			function(
-				fifty: slime.fifty.test.kit
+				fifty: slime.fifty.test.Kit
 			) {
 				var jsh = fifty.global.jsh;
 
@@ -320,7 +320,7 @@ namespace slime.jsh.wf {
 
 		(
 			function(
-				fifty: slime.fifty.test.kit
+				fifty: slime.fifty.test.Kit
 			) {
 				var jsh = fifty.global.jsh;
 
@@ -371,7 +371,7 @@ namespace slime.jsh.wf {
 
 		(
 			function(
-				fifty: slime.fifty.test.kit
+				fifty: slime.fifty.test.Kit
 			) {
 				fifty.tests.suite = function() {
 					fifty.run(fifty.tests.interface.tsc);

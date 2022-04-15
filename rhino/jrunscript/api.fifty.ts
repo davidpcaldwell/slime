@@ -138,7 +138,7 @@ namespace slime.internal.jrunscript.bootstrap {
 	(
 		function(
 			Packages: any,
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			var jsh = fifty.global.jsh;
 			var verify = fifty.verify;

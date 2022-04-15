@@ -8,7 +8,7 @@
 	//	Dependency test
 	function(
 		Packages: slime.jrunscript.Packages,
-		fifty: slime.fifty.test.kit
+		fifty: slime.fifty.test.Kit
 	) {
 		var jsh = fifty.global.jsh;
 

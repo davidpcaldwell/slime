@@ -64,7 +64,7 @@ namespace slime.jsh.unit {
 
 		(
 			function(
-				fifty: slime.fifty.test.kit
+				fifty: slime.fifty.test.Kit
 			) {
 				var jsh = fifty.global.jsh;
 
@@ -111,7 +111,7 @@ namespace slime.jsh.unit {
 
 		(
 			function(
-				fifty: slime.fifty.test.kit
+				fifty: slime.fifty.test.Kit
 			) {
 				fifty.tests.https = function() {
 					fifty.verify(1).is(1);
@@ -156,7 +156,7 @@ namespace slime.jsh.unit {
 
 (
 	function(
-		fifty: slime.fifty.test.kit
+		fifty: slime.fifty.test.Kit
 	) {
 		fifty.tests.suite = function() {
 			fifty.run(fifty.tests.old);

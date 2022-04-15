@@ -38,7 +38,7 @@ namespace slime.runtime.browser.test.internal.suite {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			const { verify } = fifty;
 			const { $api, jsh } = fifty.global;

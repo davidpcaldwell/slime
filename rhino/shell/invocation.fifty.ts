@@ -6,7 +6,7 @@
 
 namespace slime.jrunscript.shell {
 	export namespace test {
-		export const subject = (function(fifty: slime.fifty.test.kit) {
+		export const subject = (function(fifty: slime.fifty.test.Kit) {
 			const code: slime.jrunscript.shell.internal.invocation.Script = fifty.$loader.script("invocation.js");
 			return code();
 		//@ts-ignore
@@ -156,7 +156,7 @@ namespace slime.jrunscript.shell {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.invocation = {};
 
@@ -227,7 +227,7 @@ namespace slime.jrunscript.shell {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			const subject = test.subject;
 

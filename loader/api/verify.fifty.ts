@@ -94,7 +94,7 @@ namespace slime.definition.verify {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.primitivesCanHaveEvaluateCalled = function() {
 				fifty.verify(2,"2").evaluate(function(p) { return p * 2; }).is(4);

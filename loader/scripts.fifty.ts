@@ -26,7 +26,7 @@ namespace slime.runtime.internal.scripts {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.suite = function() {
 

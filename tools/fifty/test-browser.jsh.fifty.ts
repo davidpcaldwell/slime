@@ -32,7 +32,7 @@ namespace slime.fifty.browser.test.internal.script {
 
 (
 	function(
-		fifty: slime.fifty.test.kit
+		fifty: slime.fifty.test.Kit
 	) {
 		const { $api, jsh } = fifty.global;
 

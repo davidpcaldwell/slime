@@ -50,7 +50,7 @@ namespace slime.runtime.document.source {
 
 	export namespace internal {
 		export namespace test {
-			export const subject: slime.runtime.document.source.Exports = (function(fifty: fifty.test.kit) {
+			export const subject: slime.runtime.document.source.Exports = (function(fifty: fifty.test.Kit) {
 				return fifty.$loader.module("source.js");
 			//@ts-ignore
 			})(fifty)
@@ -91,7 +91,7 @@ namespace slime.runtime.document.source {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			var api: Exports = fifty.$loader.module("source.js");
 
@@ -286,7 +286,7 @@ namespace slime.runtime.document.source {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			//	TODO	possibly add to Fifty?
 			var console = function(...args: any[]) {

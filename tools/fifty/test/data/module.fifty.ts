@@ -34,11 +34,11 @@ namespace slime.fifty.internal.test.data {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit,
+			fifty: slime.fifty.test.Kit,
 			verify: slime.fifty.test.verify,
 			tests: slime.fifty.test.tests,
 			$loader: slime.Loader,
-			run: slime.fifty.test.kit["run"],
+			run: slime.fifty.test.Kit["run"],
 			load: slime.fifty.test.load
 		) {
 			tests.types.Database = function(database: slime.fifty.internal.test.data.shopping.Database) {

@@ -31,7 +31,7 @@ namespace slime.codec.ini {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			const { verify } = fifty;
 			const subject: Exports = fifty.$loader.module("ini.js");

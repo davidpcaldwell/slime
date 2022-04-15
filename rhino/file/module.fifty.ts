@@ -172,7 +172,7 @@ namespace slime.jrunscript.file {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.state = {};
 			fifty.tests.state.list = function() {
@@ -341,7 +341,7 @@ namespace slime.jrunscript.file {
 			jsh: slime.jsh.Global,
 			tests: slime.fifty.test.tests,
 			verify: slime.fifty.test.verify,
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			var MODIFIED_TIME = new jsh.time.When({ unix: 1599862384355 });
 
@@ -408,7 +408,7 @@ namespace slime.jrunscript.file {
 	export namespace world {
 		(
 			function(
-				fifty: slime.fifty.test.kit
+				fifty: slime.fifty.test.Kit
 			) {
 				const { run } = fifty;
 
@@ -434,7 +434,7 @@ namespace slime.jrunscript.file {
 
 		(
 			function(
-				fifty: slime.fifty.test.kit
+				fifty: slime.fifty.test.Kit
 			) {
 				fifty.tests.sandbox.filesystem.pathname = fifty.test.Parent();
 			}
@@ -447,7 +447,7 @@ namespace slime.jrunscript.file {
 
 		(
 			function(
-				fifty: slime.fifty.test.kit
+				fifty: slime.fifty.test.Kit
 			) {
 				const { verify } = fifty;
 				const { $api, jsh } = fifty.global;
@@ -479,7 +479,7 @@ namespace slime.jrunscript.file {
 
 		(
 			function(
-				fifty: slime.fifty.test.kit
+				fifty: slime.fifty.test.Kit
 			) {
 				const { verify, run } = fifty;
 				const { $api, jsh } = fifty.global;
@@ -553,7 +553,7 @@ namespace slime.jrunscript.file {
 
 		(
 			function(
-				fifty: slime.fifty.test.kit
+				fifty: slime.fifty.test.Kit
 			) {
 				fifty.tests.sandbox.filesystem.pathname.file = {};
 			}
@@ -574,7 +574,7 @@ namespace slime.jrunscript.file {
 
 		(
 			function(
-				fifty: slime.fifty.test.kit
+				fifty: slime.fifty.test.Kit
 			) {
 				const { verify } = fifty;
 				const { jsh } = fifty.global;
@@ -625,7 +625,7 @@ namespace slime.jrunscript.file {
 
 		(
 			function(
-				fifty: slime.fifty.test.kit
+				fifty: slime.fifty.test.Kit
 			) {
 				const { verify } = fifty;
 				const { jsh } = fifty.global;
@@ -716,7 +716,7 @@ namespace slime.jrunscript.file {
 
 		(
 			function(
-				fifty: slime.fifty.test.kit
+				fifty: slime.fifty.test.Kit
 			) {
 				const { verify, run } = fifty;
 				const { jsh } = fifty.global;
@@ -855,7 +855,7 @@ namespace slime.jrunscript.file {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.suite = function() {
 				fifty.run(fifty.tests.filetime);
@@ -880,7 +880,7 @@ namespace slime.jrunscript.file {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			const { jsh } = fifty.global;
 			const { world } = jsh.file;

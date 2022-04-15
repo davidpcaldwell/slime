@@ -10,7 +10,7 @@ namespace slime.fifty.test.internal.scope.jsh {
 		directory: slime.jrunscript.file.Directory
 	}
 
-	export type Export = (scope: slime.fifty.test.internal.scope.jsh.Scope) => slime.fifty.test.kit["jsh"]
+	export type Export = (scope: slime.fifty.test.internal.scope.jsh.Scope) => slime.fifty.test.Kit["jsh"]
 
 	export type Script = slime.loader.Script<void,Export>
 }

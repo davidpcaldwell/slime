@@ -193,7 +193,7 @@ namespace slime.jrunscript.file {
 	(
 		function(
 			Packages: slime.jrunscript.Packages,
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			const { verify } = fifty;
 			const { jsh } = fifty.global;

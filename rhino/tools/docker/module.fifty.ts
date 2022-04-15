@@ -88,7 +88,7 @@ namespace slime.jrunscript.tools {
 
 		(
 			function(
-				fifty: slime.fifty.test.kit
+				fifty: slime.fifty.test.Kit
 			) {
 				fifty.tests.cli = {};
 				fifty.tests.cli.exec = function() {
@@ -165,7 +165,7 @@ namespace slime.jrunscript.tools {
 
 		(
 			function(
-				fifty: slime.fifty.test.kit
+				fifty: slime.fifty.test.Kit
 			) {
 				fifty.tests.kubectl = function() {
 					var installation = docker.test.subject.kubectl.Installation({ command: "/path/to/kubectl" });
@@ -205,7 +205,7 @@ namespace slime.jrunscript.tools {
 	}
 
 	export namespace docker.test {
-		export const subject: Export = (function(fifty: slime.fifty.test.kit) {
+		export const subject: Export = (function(fifty: slime.fifty.test.Kit) {
 			return fifty.$loader.module("module.js");
 		//@ts-ignore
 		})(fifty);
@@ -213,7 +213,7 @@ namespace slime.jrunscript.tools {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.suite = function() {
 				fifty.run(fifty.tests.cli.exec);

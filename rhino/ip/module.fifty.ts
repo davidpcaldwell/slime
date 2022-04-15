@@ -94,7 +94,7 @@ namespace slime.jrunscript.ip {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.sandbox = function() {
 				fifty.run(fifty.tests.sandbox.reachable);
@@ -112,7 +112,7 @@ namespace slime.jrunscript.ip {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			var jsh = fifty.global.jsh;
 			var verify = fifty.verify;
@@ -155,7 +155,7 @@ namespace slime.jrunscript.ip {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			var jsh = fifty.global.jsh;
 			var world = jsh.ip.world;
@@ -218,7 +218,7 @@ namespace slime.jrunscript.ip {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			const $api = fifty.global.$api;
 			const jsh = fifty.global.jsh;
@@ -361,7 +361,7 @@ namespace slime.jrunscript.ip {
 	(
 		function(
 			Packages: slime.jrunscript.Packages,
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			const { verify } = fifty;
 			const { $api, jsh } = fifty.global;

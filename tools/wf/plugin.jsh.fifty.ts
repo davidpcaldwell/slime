@@ -223,7 +223,7 @@ namespace slime.jsh.wf {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.exports = {};
 		}
@@ -238,7 +238,7 @@ namespace slime.jsh.wf {
 	}
 
 	(
-		function(fifty: slime.fifty.test.kit) {
+		function(fifty: slime.fifty.test.Kit) {
 			fifty.tests.exports.prohibitUntrackedFiles = function() {
 				fifty.global.jsh.shell.console("foo");
 			}
@@ -266,7 +266,7 @@ namespace slime.jsh.wf {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			var jsh = fifty.global.jsh;
 			var verify = fifty.verify;
@@ -339,7 +339,7 @@ namespace slime.jsh.wf {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			var jsh = fifty.global.jsh;
 			var verify = fifty.verify;
@@ -417,7 +417,7 @@ namespace slime.jsh.wf {
 
 (
 	function(
-		fifty: slime.fifty.test.kit
+		fifty: slime.fifty.test.Kit
 	) {
 		const { tests, verify, run } = fifty;
 		const { jsh } = fifty.global;

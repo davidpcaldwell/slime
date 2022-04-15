@@ -27,7 +27,7 @@ namespace slime.jrunscript.http.client.curl {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.suite = function() {
 

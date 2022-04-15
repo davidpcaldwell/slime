@@ -6,7 +6,7 @@
 
 (
 	function(
-		fifty: slime.fifty.test.kit,
+		fifty: slime.fifty.test.Kit,
 		tests: slime.fifty.test.tests,
 		load: slime.fifty.test.load
 	) {

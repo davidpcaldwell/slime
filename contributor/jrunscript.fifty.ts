@@ -6,7 +6,7 @@
 
 (
 	function(
-		fifty: slime.fifty.test.kit
+		fifty: slime.fifty.test.Kit
 	) {
 		var jsh = fifty.global.jsh;
 
@@ -44,6 +44,7 @@
 			if (isMkcertImplemented) fifty.load("../jsh/unit/plugin.jsh.web.fifty.ts");
 			fifty.load("../rhino/http/servlet/plugin.jsh.resources.fifty.ts");
 			fifty.load("../tools/code/module.fifty.ts");
+			fifty.load("../tools/fifty/module.fifty.ts");
 			fifty.load("../tools/wf/plugin.jsh.fifty.ts");
 			if (hasGit && isGitClone) fifty.load("../tools/wf/plugin-standard.jsh.fifty.ts");
 			//	TODO	below test is probably pointless, probably doesn't run anything. Should we find a way to short-circuit it?

@@ -75,7 +75,7 @@ namespace slime.runtime.document {
 	}
 
 	export namespace test {
-		export const subject = (function(fifty: slime.fifty.test.kit) {
+		export const subject = (function(fifty: slime.fifty.test.Kit) {
 			var script: Script = fifty.$loader.script("module.js");
 			var isBrowser = Boolean(fifty.global.window);
 			var isJsh = Boolean(fifty.global.jsh);
@@ -105,7 +105,7 @@ namespace slime.runtime.document {
 
 		(
 			function(
-				fifty: slime.fifty.test.kit
+				fifty: slime.fifty.test.Kit
 			) {
 				var subject = test.subject;
 
@@ -192,7 +192,7 @@ namespace slime.runtime.document.old {
 	export type Script = slime.loader.Script<Context,Exports>;
 
 	export namespace test {
-		export const subject = (function(fifty: slime.fifty.test.kit) {
+		export const subject = (function(fifty: slime.fifty.test.Kit) {
 			var load: Script = fifty.$loader.script("module.js");
 
 			var isBrowser = Boolean(fifty.global.window);
@@ -207,7 +207,7 @@ namespace slime.runtime.document.old {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			var api = test.subject;
 
