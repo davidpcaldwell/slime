@@ -176,7 +176,7 @@ namespace slime.jsh.script {
 						subject.cli.option.string({ longname: "foo" })
 					);
 					var was = fifty.global.jsh.unit.$slime;
-					var mocked = fifty.$loader.jsh.plugin.mock({
+					var mocked = fifty.jsh.plugin.mock({
 						jsh: fifty.global.jsh,
 						$slime: Object.assign({}, was, {
 							getPackaged: function() { return null; },
@@ -240,7 +240,7 @@ namespace slime.jsh.script {
 					const $api = fifty.$api;
 					var result: { status: number } = fifty.global.jsh.shell.jsh({
 						shell: fifty.global.jsh.shell.jsh.src,
-						script: fifty.$loader.getRelativePath("test/cli.jsh.js").file,
+						script: fifty.jsh.file.object.getRelativePath("test/cli.jsh.js").file,
 						arguments: ["status"],
 						evaluate: $api.Function.identity
 					});
@@ -248,7 +248,7 @@ namespace slime.jsh.script {
 
 					result = fifty.global.jsh.shell.jsh({
 						shell: fifty.global.jsh.shell.jsh.src,
-						script: fifty.$loader.getRelativePath("test/cli.jsh.js").file,
+						script: fifty.jsh.file.object.getRelativePath("test/cli.jsh.js").file,
 						arguments: ["status", "42"],
 						evaluate: $api.Function.identity
 					});
@@ -256,7 +256,7 @@ namespace slime.jsh.script {
 
 					result = fifty.global.jsh.shell.jsh({
 						shell: fifty.global.jsh.shell.jsh.src,
-						script: fifty.$loader.getRelativePath("test/cli.jsh.js").file,
+						script: fifty.jsh.file.object.getRelativePath("test/cli.jsh.js").file,
 						arguments: [],
 						evaluate: $api.Function.identity
 					});

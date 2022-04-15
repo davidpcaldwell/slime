@@ -733,7 +733,7 @@ namespace slime.jrunscript {
 		fifty: slime.fifty.test.kit,
 		$slime: slime.jrunscript.runtime.Exports,
 		$api: slime.$api.Global,
-		$loader: slime.fifty.test.$loader,
+		$loader: slime.Loader,
 		verify: slime.fifty.test.verify,
 		tests: slime.fifty.test.tests,
 		run: slime.fifty.test.kit["run"]

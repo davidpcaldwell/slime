@@ -4,22 +4,59 @@
 //
 //	END LICENSE
 
+namespace slime.fifty.test.internal.scope.jsh {
+	export interface Scope {
+		loader: slime.Loader
+		directory: slime.jrunscript.file.Directory
+	}
+
+	export type Export = (scope: slime.fifty.test.internal.scope.jsh.Scope) => slime.fifty.test.kit["jsh"]
+
+	export type Script = slime.loader.Script<void,Export>
+}
+
 (
-	function(jsh: slime.jsh.Global, $export: (value: slime.fifty.test.kit["jsh"]) => void) {
-		$export({
-			file: {
-				location: function() {
-					var directory = jsh.shell.TMPDIR.createTemporary({ directory: true });
-					var rv = directory.pathname;
-					directory.remove();
-					return rv;
-				},
-				directory: function() {
-					return jsh.shell.TMPDIR.createTemporary({ directory: true }) as slime.jrunscript.file.Directory;
-				}
+	function($api: slime.$api.Global, jsh: slime.jsh.Global, $export: slime.loader.Export<slime.fifty.test.internal.scope.jsh.Export>) {
+		var tmp = {
+			location: function() {
+				var directory = jsh.shell.TMPDIR.createTemporary({ directory: true });
+				var rv = directory.pathname;
+				directory.remove();
+				return rv;
 			},
-			$slime: jsh.unit.$slime
-		})
+			directory: function() {
+				return jsh.shell.TMPDIR.createTemporary({ directory: true }) as slime.jrunscript.file.Directory;
+			}
+		};
+
+		$export(
+			function(scope) {
+				return {
+					file: {
+						object: {
+							temporary: {
+								location: tmp.location,
+								directory: tmp.directory
+							},
+							getRelativePath: function(path) {
+								return scope.directory.getRelativePath(path);
+							}
+						}
+					},
+					plugin: {
+						mock: function(p) {
+							return jsh.$fifty.plugin.mock(
+								$api.Object.compose(
+									p,
+									{ $loader: scope.loader }
+								)
+							)
+						}
+					},
+					$slime: jsh.unit.$slime
+				}
+			}
+		);
 	}
 //@ts-ignore
-)(jsh, $export)
+)($api, jsh, $export)

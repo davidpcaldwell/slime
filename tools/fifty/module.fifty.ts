@@ -60,31 +60,6 @@ namespace slime.fifty {
 	export namespace test {
 		export type verify = slime.definition.verify.Verify
 
-		export type $loader = slime.Loader & {
-			//	will return a Pathname in jsh; does not currently exist in browser
-			getRelativePath?: (p: string) => any
-
-			/**
-			 * Present if Fifty is being run in a `jsh` shell; provides the ability to load `jsh` plugins into a mock shell.
-			 */
-			jsh?: {
-				plugin: {
-					/**
-					 * Allows a test to load `jsh` plugins into a mock shell. Loads plugins from the same directory as the
-					 * shell, optionally specifying the global object, `jsh`, and the shared `plugins` object used by the jsh plugin
-					 * loader.
-					 */
-					mock: (p: {
-						global?: { [x: string]: any }
-						jsh?: { [x: string]: any }
-						plugins?: { [x: string]: any }
-						$slime?: slime.jsh.plugin.$slime
-					}) => ReturnType<slime.jsh.loader.internal.plugins.Export["mock"]>
-				},
-				$slime: jsh.plugin.$slime
-			}
-		}
-
 		export type tests = any
 
 		/**
@@ -116,7 +91,7 @@ namespace slime.fifty {
 			 * A function that can be used to create subjects and make assertions about them. See {@link slime.definition.verify.Verify}.
 			 */
 			verify: verify
-			$loader: $loader
+			$loader: slime.Loader
 			run: (f: () => void, name?: string) => void
 
 			test: {
@@ -155,8 +130,26 @@ namespace slime.fifty {
 			jsh?: {
 				$slime: jsh.plugin.$slime
 				file: {
-					location: () => slime.jrunscript.file.Pathname
-					directory: () => slime.jrunscript.file.Directory
+					object: {
+						getRelativePath: (p: string) => any
+						temporary: {
+							location: () => slime.jrunscript.file.Pathname
+							directory: () => slime.jrunscript.file.Directory
+						}
+					}
+				}
+				plugin: {
+					/**
+					 * Allows a test to load `jsh` plugins into a mock shell. Loads plugins from the same directory as the
+					 * shell, optionally specifying the global object, `jsh`, and the shared `plugins` object used by the jsh plugin
+					 * loader.
+					 */
+					mock: (p: {
+						global?: { [x: string]: any }
+						jsh?: { [x: string]: any }
+						plugins?: { [x: string]: any }
+						$slime?: slime.jsh.plugin.$slime
+					}) => ReturnType<slime.jsh.loader.internal.plugins.Export["mock"]>
 				}
 			}
 		}

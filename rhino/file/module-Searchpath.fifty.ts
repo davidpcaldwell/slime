@@ -170,7 +170,7 @@ namespace slime.jrunscript.file {
 
 			fifty.tests.world = function() {
 				var searchpath = jsh.file.Searchpath([
-					fifty.$loader.getRelativePath(".")
+					fifty.jsh.file.object.getRelativePath(".")
 				]);
 				jsh.shell.console(searchpath.toString());
 				jsh.shell.console(String(searchpath.pathnames.length));

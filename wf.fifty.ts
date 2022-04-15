@@ -11,9 +11,9 @@ namespace slime {
 				const jsh = fifty.global.jsh;
 				return {
 					clone: function() {
-						var src : slime.jrunscript.file.Directory = fifty.$loader.getRelativePath(".").directory;
+						var src : slime.jrunscript.file.Directory = fifty.jsh.file.object.getRelativePath(".").directory;
 						var origin = new jsh.tools.git.Repository({ directory: src });
-						var rv = origin.clone({ to: fifty.jsh.file.location() });
+						var rv = origin.clone({ to: fifty.jsh.file.object.temporary.location() });
 						//	copy code so that we get local modifications in our "clone"
 						src.copy(rv.directory.pathname, {
 							filter: function(p) {

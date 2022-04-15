@@ -111,61 +111,28 @@
 			})()
 		};
 
-		var Loader = function recurse(delegate,directory) {
-			/** @type { slime.fifty.test.$loader["jsh"]["plugin"]["mock"] } */
-			var mockPlugin = function(p) {
-				return jsh.$fifty.plugin.mock(
-					$api.Object.compose(
-						p,
-						{ $loader: delegate }
-					)
-				);
-			}
-
-			var loader = Object.assign(
-				delegate,
-				{
-					getRelativePath: function(path) { return directory.getRelativePath(path); },
-					plugin: {
-						mock: mockPlugin
-					},
-					jsh: {
-						$slime: jsh.unit.$slime,
-						plugin: {
-							mock: mockPlugin
-						}
-					},
-					Child: (function(was) {
-						return function(path) {
-							var rv = was.apply(this,arguments);
-							var container = directory.getRelativePath(path).directory;
-							recurse(rv,container);
-							return rv;
-						}
-					})(delegate.Child)
-				}
-			);
-
-			return loader;
-		}
-
 		var execute = function(file,part,view) {
 			var fiftyLoader = jsh.script.loader;
 
-			/** @type { slime.fifty.test.internal.run } */
-			var implementation = fiftyLoader.module("test.js", {
+			/** @type { slime.fifty.test.internal.test.Script } */
+			var script = fiftyLoader.script("test.js");
+			var implementation = script({
 				library: {
 					Verify: verify
 				},
 				console: view
 			});
 
-			var delegate = new jsh.file.Loader({ directory: file.parent });
-
-			var loader = Loader(delegate,file.parent);
+			var loader = new jsh.file.Loader({ directory: file.parent });
 
 			return implementation(
 				loader,
+				{
+					jsh: {
+						directory: file.parent,
+						loader: loader
+					}
+				},
 				file.pathname.basename,
 				part
 			)

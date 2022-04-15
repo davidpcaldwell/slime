@@ -109,7 +109,7 @@ namespace slime.jrunscript.db.mysql {
 			var verify = fifty.verify;
 			fifty.tests.suite = function() {
 				//	TODO	fifty.jsh.file is undocumented
-				var tmp = fifty.jsh.file.location();
+				var tmp = fifty.jsh.file.object.temporary.location();
 				var port = jsh.ip.getEphemeralPort();
 				var installed = jsh.db.jdbc.mysql.install({
 					to: tmp

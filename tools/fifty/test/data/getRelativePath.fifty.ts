@@ -8,7 +8,7 @@
 	function(
 		fifty: slime.fifty.test.kit
 	) {
-		var relative = fifty.$loader.getRelativePath("module.js");
+		var relative = fifty.jsh.file.object.getRelativePath("module.js");
 
 		fifty.tests.suite = function() {
 			var r = relative;

@@ -356,7 +356,7 @@ namespace slime.jrunscript.tools.git {
 				};
 
 				fifty.run(function worksWhenCreatingDirectory() {
-					var location = fifty.jsh.file.location();
+					var location = fifty.jsh.file.object.temporary.location();
 					verify(location).directory.is(null);
 					var createdLocation = internal.subject.init({
 						pathname: location
@@ -367,7 +367,7 @@ namespace slime.jrunscript.tools.git {
 
 				fifty.run(function worksWithEmptyDirectory() {
 					const $api = fifty.$api;
-					var directory = fifty.jsh.file.directory();
+					var directory = fifty.jsh.file.object.temporary.directory();
 
 					fixture.write({
 						directory: directory,
@@ -472,7 +472,7 @@ namespace slime.jrunscript.tools.git {
 				fifty.tests.types.Repository.Local.config = function() {
 					fifty.run(function old() {
 						var empty = internal.subject.init({
-							pathname: fifty.jsh.file.location()
+							pathname: fifty.jsh.file.object.temporary.location()
 						});
 						var old = empty.config({
 							arguments: ["--list", "--local"]
@@ -493,7 +493,7 @@ namespace slime.jrunscript.tools.git {
 
 					fifty.run(function list() {
 						var empty = internal.subject.init({
-							pathname: fifty.jsh.file.location()
+							pathname: fifty.jsh.file.object.temporary.location()
 						});
 						var local = empty.config({
 							list: {
@@ -523,7 +523,7 @@ namespace slime.jrunscript.tools.git {
 						}
 
 						var empty = internal.subject.init({
-							pathname: fifty.jsh.file.location()
+							pathname: fifty.jsh.file.object.temporary.location()
 						});
 						fifty.verify(empty).evaluate(getConfigObject).evaluate.property("foo.bar").is(void(0));
 
@@ -563,7 +563,7 @@ namespace slime.jrunscript.tools.git {
 				var verify = fifty.verify;
 
 				fifty.tests.types.Repository.Local.status = function() {
-					var at = fifty.jsh.file.location();
+					var at = fifty.jsh.file.object.temporary.location();
 					var repository = internal.fixtures.init({ pathname: at });
 					debugger;
 					var status = repository.status();
@@ -634,7 +634,7 @@ namespace slime.jrunscript.tools.git {
 
 		fifty.tests.submoduleTrackingBranch = function() {
 			function initialize() {
-				var tmpdir = fifty.jsh.file.directory();
+				var tmpdir = fifty.jsh.file.object.temporary.directory();
 
 				var library = internal.subject.init({ pathname: tmpdir.getRelativePath("sub") });
 				configure(library);
@@ -667,7 +667,7 @@ namespace slime.jrunscript.tools.git {
 		}
 
 		fifty.tests.submoduleWithDifferentNameAndPath = function() {
-			var tmpdir = fifty.jsh.file.directory();
+			var tmpdir = fifty.jsh.file.object.temporary.directory();
 			var sub = internal.subject.init({ pathname: tmpdir.getRelativePath("sub") });
 			configure(sub);
 			commitFile(sub, "b");
@@ -688,7 +688,7 @@ namespace slime.jrunscript.tools.git {
 		};
 
 		fifty.tests.submoduleStatusCached = function() {
-			var tmpdir = fifty.jsh.file.directory();
+			var tmpdir = fifty.jsh.file.object.temporary.directory();
 
 			var library = internal.subject.init({ pathname: tmpdir.getRelativePath("sub") });
 			configure(library);
@@ -1069,7 +1069,7 @@ namespace slime.jrunscript.tools.git {
 
 			fifty.tests.Client = {};
 			fifty.tests.Client.invocation = function() {
-				var fakeCommand = fifty.$loader.getRelativePath("git");
+				var fakeCommand = fifty.jsh.file.object.getRelativePath("git");
 				var client = {
 					command: fakeCommand
 				};
@@ -1112,13 +1112,13 @@ namespace slime.jrunscript.tools.git {
 			};
 
 			fifty.tests.sandbox = function() {
-				var SLIME = fifty.$loader.getRelativePath("../../..").directory;
+				var SLIME = fifty.jsh.file.object.getRelativePath("../../..").directory;
 				if (!SLIME.getFile(".git") || !SLIME.getSubdirectory(".git")) {
 					//	This test will not work on an export or other format without git metadata
 					return;
 				}
 				var base = fifty.global.jsh.tools.git.local({
-					start: fifty.$loader.getRelativePath(".").directory,
+					start: fifty.jsh.file.object.getRelativePath(".").directory,
 					match: api.github.isProjectUrl({ owner: "davidpcaldwell", name: "slime" })
 				});
 				fifty.verify(base.toString()).is(SLIME.toString());

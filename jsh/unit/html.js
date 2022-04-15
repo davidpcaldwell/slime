@@ -206,7 +206,8 @@
 			};
 
 			var Loader = function(suite) {
-				var delegate = new jsh.file.Loader({ directory: suite.getRelativePath(".").directory });
+				var directory = suite.getRelativePath(".").directory;
+				var delegate = new jsh.file.Loader({ directory: directory });
 
 				delegate.eval = function(name,scope) {
 					var code = this.get(name).read(String);
@@ -317,28 +318,14 @@
 						}
 					})(p.path);
 
-					/** @type { mockjshplugin } */
-					var mockPlugin = function(p) {
-						return jsh.$fifty.plugin.mock(
-							$api.Object.compose(
-								p,
-								{ $loader: delegate }
-							)
-						);
-					};
-
-					var toFiftyLoader = function(loader) {
-						return Object.assign(loader, {
-							jsh: {
-								plugin: {
-									mock: mockPlugin
-								}
-							}
-						})
-					};
-
 					var promise = run(
-						(path.folder) ? toFiftyLoader(delegate.Child(path.folder)) : toFiftyLoader(delegate),
+						(path.folder) ? delegate.Child(path.folder) : delegate,
+						{
+							jsh: {
+								loader: (path.folder) ? delegate.Child(path.folder) : delegate,
+								directory: (path.folder) ? directory.getSubdirectory(path.folder) : directory
+							}
+						},
 						path.file
 					);
 

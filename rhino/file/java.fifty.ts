@@ -117,7 +117,7 @@ namespace slime.jrunscript.file.internal.java {
 			fifty.tests.sandbox = function() {
 				var _fs = Packages.inonit.script.runtime.io.Filesystem.create();
 				var createNode = subject.test.nodeCreator(_fs);
-				var thisFile = fifty.$loader.getRelativePath("java.fifty.ts");
+				var thisFile = fifty.jsh.file.object.getRelativePath("java.fifty.ts");
 
 				var thisNode = createNode(thisFile.toString());
 				verify(thisNode).exists().is(true);

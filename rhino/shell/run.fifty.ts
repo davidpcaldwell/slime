@@ -175,7 +175,7 @@ namespace slime.jrunscript.shell.internal.run {
 				var tell = subject.run({
 					context: {
 						environment: fifty.global.jsh.shell.environment,
-						directory: fifty.$loader.getRelativePath(".").directory,
+						directory: fifty.jsh.file.object.getRelativePath(".").directory,
 						stdio: {
 							input: null,
 							output: "string",
