@@ -125,6 +125,10 @@ namespace slime.fifty {
 					 */
 					relative: (path: string) => slime.jrunscript.file.world.Pathname
 
+					temporary: {
+						location: () => slime.jrunscript.file.world.Pathname
+					}
+
 					object: {
 						getRelativePath: (p: string) => slime.jrunscript.file.Pathname
 						temporary: {
@@ -161,6 +165,11 @@ namespace slime.fifty {
 				fifty.tests.test.jsh = function() {
 					var relative = fifty.jsh.file.relative("../..");
 					verify(relative).pathname.is(jsh.shell.jsh.src.pathname.toString());
+
+					var temporary = fifty.jsh.file.temporary.location();
+					//	TODO	normal verify chaining didn't work for exists()(), second invocation result is not wrapped
+					verify(temporary).evaluate(function(p) { return p.file.exists()(); }).is(false);
+					verify(temporary).evaluate(function(p) { return p.directory.exists()(); }).is(false);
 
 					var object = fifty.jsh.file.object.getRelativePath("../..");
 					verify(object).evaluate(function(p) { return p.toString(); }).is(jsh.shell.jsh.src.pathname.toString());
