@@ -38,5 +38,5 @@ jobs:
         run: env JSH_LAUNCHER_JDK_HOME=$JAVA_HOME_8_X64 JSH_JAVA_HOME=$JAVA_HOME_8_X64 ./jsh.bash contributor/eslint.jsh.js
         shell: bash
       - name: Run the ESLint warning report
-        run: env JSH_LAUNCHER_JDK_HOME=$JAVA_HOME_8_X64 JSH_JAVA_HOME=$JAVA_HOME_8_X64 ./jsh.bash contributor/eslint.jsh.js
+        run: env JSH_LAUNCHER_JDK_HOME=$JAVA_HOME_8_X64 JSH_JAVA_HOME=$JAVA_HOME_8_X64 ./jsh.bash contributor/eslint-report.jsh.js
         shell: bash
