@@ -8,14 +8,29 @@ namespace slime {
 	export namespace project.wf {
 		namespace test {
 			export const fixtures = (function(fifty: slime.fifty.test.Kit) {
-				const jsh = fifty.global.jsh;
+				const { $api, jsh } = fifty.global;
 				return {
 					clone: function() {
-						var src : slime.jrunscript.file.Directory = fifty.jsh.file.object.getRelativePath(".").directory;
-						var origin = new jsh.tools.git.Repository({ directory: src });
-						var rv = origin.clone({ to: fifty.jsh.file.object.temporary.location() });
+						type Repository = ReturnType<ReturnType<slime.jrunscript.tools.git.Exports["program"]>["repository"]>
+						var clone: slime.jrunscript.tools.git.Command<{ repository: string, to: string }, Repository> = {
+							invocation: function(p) {
+								return {
+									command: "clone",
+									arguments: $api.Array.build(function(rv) {
+										rv.push(p.repository);
+										if (p.to) rv.push(p.to);
+									})
+								}
+							}
+						};
+						var src: slime.jrunscript.file.world.Pathname = fifty.jsh.file.relative(".");
+						var destination = fifty.jsh.file.object.temporary.location();
+						jsh.tools.git.program({ command: "git" }).command(clone).argument({
+							repository: src.pathname,
+							to: destination.toString()
+						});
 						//	copy code so that we get local modifications in our "clone"
-						src.copy(rv.directory.pathname, {
+						jsh.file.object.directory(src).copy(destination, {
 							filter: function(p) {
 								//	TODO	need to review copy implementation; how do directories work?
 								if (p.entry.path == ".git") return false;
@@ -29,7 +44,7 @@ namespace slime {
 								return true;
 							}
 						});
-						return rv;
+						return jsh.tools.git.Repository({ directory: jsh.file.Pathname(src.pathname).directory });
 						//	good utility functions for git module?
 						// function unset(repository,setting) {
 						// 	jsh.shell.console("Unset: " + repository.directory);
