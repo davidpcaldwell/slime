@@ -119,6 +119,12 @@ namespace slime.fifty {
 			jsh?: {
 				$slime: jsh.plugin.$slime
 				file: {
+					/**
+					 * Returns a filesystem pathname corresponding to the given relative path, relative to the currently executing
+					 * file.
+					 */
+					relative: (path: string) => slime.jrunscript.file.world.Pathname
+
 					object: {
 						getRelativePath: (p: string) => slime.jrunscript.file.Pathname
 						temporary: {
@@ -153,6 +159,9 @@ namespace slime.fifty {
 				fifty.tests.test = {};
 
 				fifty.tests.test.jsh = function() {
+					var relative = fifty.jsh.file.relative("../..");
+					verify(relative).pathname.is(jsh.shell.jsh.src.pathname.toString());
+
 					var object = fifty.jsh.file.object.getRelativePath("../..");
 					verify(object).evaluate(function(p) { return p.toString(); }).is(jsh.shell.jsh.src.pathname.toString());
 				}

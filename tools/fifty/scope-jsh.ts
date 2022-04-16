@@ -33,6 +33,10 @@ namespace slime.fifty.test.internal.scope.jsh {
 			function(scope) {
 				return {
 					file: {
+						relative: function(path) {
+							var page = jsh.file.world.filesystems.os.pathname(scope.directory.toString());
+							return page.relative(path);
+						},
 						object: {
 							temporary: {
 								location: tmp.location,
