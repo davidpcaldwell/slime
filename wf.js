@@ -62,12 +62,15 @@
 						}
 					}
 				},
-				/** @type { slime.jrunscript.tools.git.Command<{ name: string, startPoint: string },void> } */
+				/** @type { slime.jrunscript.tools.git.Command<{ name: string, startPoint: string, track?: "direct" | "inherit" | "no" },void> } */
 				createBranch: {
 					invocation: function(p) {
 						return {
 							command: "branch",
 							arguments: $api.Array.build(function(rv) {
+								if (p.track === "no") {
+									rv.push("--no-track");
+								}
 								rv.push(p.name);
 								if (p.startPoint) rv.push(p.startPoint);
 							})
@@ -424,7 +427,7 @@
 				function(p) {
 					var name = p.arguments[0];
 					git.repository.command(git.command.fetch).argument().run();
-					git.repository.command(git.command.createBranch).argument({ name: name, startPoint: "origin/master" }).run();
+					git.repository.command(git.command.createBranch).argument({ name: name, startPoint: "origin/master", track: "no" }).run();
 					git.repository.command(git.command.checkout).argument({ branch: name }).run();
 				}
 			),
