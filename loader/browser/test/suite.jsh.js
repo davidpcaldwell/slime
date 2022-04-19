@@ -76,6 +76,10 @@
 		var testBase = toSuite.base;
 
 		if (parameters.options.definition) {
+			if (!parameters.options.definition.file) {
+				jsh.shell.console("File not found: " + parameters.options.definition);
+				jsh.shell.exit(1);
+			}
 			var toDefinition = jsh.file.navigate({
 				from: testBase,
 				to: parameters.options.definition.file
