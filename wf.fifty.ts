@@ -24,13 +24,13 @@ namespace slime {
 							}
 						};
 						var src: slime.jrunscript.file.world.Pathname = fifty.jsh.file.relative(".");
-						var destination = fifty.jsh.file.temporary.location();
+						var destination = fifty.jsh.file.temporary.directory();
 						jsh.tools.git.program({ command: "git" }).command(clone).argument({
 							repository: src.pathname,
 							to: destination.pathname
-						});
+						}).run();
 						//	copy code so that we get local modifications in our "clone"
-						jsh.file.object.directory(src).copy(jsh.file.object.directory(destination), {
+						jsh.file.object.directory(src).copy(jsh.file.object.pathname(destination), {
 							filter: function(p) {
 								//	TODO	need to review copy implementation; how do directories work?
 								if (p.entry.path == ".git") return false;
@@ -44,7 +44,7 @@ namespace slime {
 								return true;
 							}
 						});
-						return jsh.tools.git.Repository({ directory: jsh.file.Pathname(src.pathname).directory });
+						return jsh.tools.git.Repository({ directory: jsh.file.Pathname(destination.pathname).directory });
 						//	good utility functions for git module?
 						// function unset(repository,setting) {
 						// 	jsh.shell.console("Unset: " + repository.directory);
