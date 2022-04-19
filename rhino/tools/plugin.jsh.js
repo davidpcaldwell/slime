@@ -8,6 +8,7 @@
 (
 	/**
 	 *
+	 * @param { any } global
 	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.Global } jsh
@@ -15,7 +16,7 @@
 	 * @param { slime.jsh.plugin.plugin } plugin
 	 * @param { slime.Loader } $loader
 	 */
-	function(Packages,$api,jsh,plugins,plugin,$loader) {
+	function(global,Packages,$api,jsh,plugins,plugin,$loader) {
 		plugin({
 			//	TODO	it does not make much sense to check for jsh.shell in .isReady() and then not pass it to the plugin. Is this
 			//			method of running the compiler obsolete?
@@ -171,4 +172,4 @@
 		});
 	}
 //@ts-ignore
-)(Packages,$api,jsh,plugins,plugin,$loader);
+)( (function() { return this; })(), Packages,$api,jsh,plugins,plugin,$loader);

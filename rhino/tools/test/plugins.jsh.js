@@ -4,7 +4,11 @@
 //
 //	END LICENSE
 
-var global = (function() { return this; })();
-jsh.shell.console("git = " + global.git);
-jsh.java.tools.plugin.git();
-jsh.shell.console("git = " + global.git);
+(
+	function() {
+		var global = (function() { return this; })();
+		jsh.shell.console("git = " + global.git);
+		jsh.java.tools.plugin.git();
+		jsh.shell.console("git = " + global.git);
+	}
+)();
