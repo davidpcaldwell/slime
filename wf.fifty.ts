@@ -9,6 +9,8 @@ namespace slime {
 		namespace test {
 			export const fixtures = (function(fifty: slime.fifty.test.Kit) {
 				const { $api, jsh } = fifty.global;
+				var script: slime.jsh.wf.test.Script = fifty.$loader.script("tools/wf/test/fixtures.ts");
+				var x = script();
 				return {
 					clone: function() {
 						type Repository = ReturnType<ReturnType<slime.jrunscript.tools.git.Exports["program"]>["repository"]>
@@ -37,10 +39,13 @@ namespace slime {
 								if (p.entry.path == "local") return false;
 								if (p.entry.path.substring(0,"local/".length) == "local/") return false;
 								if (p.entry.path.substring(0,".git/".length) == ".git/") return false;
+
+								//	If we are a directory but the clone contains a file, remove the directory and overwrite
 								if (p.exists && !p.exists.directory && p.entry.node.directory) {
 									p.exists.remove();
 									return true;
 								}
+
 								return true;
 							}
 						});
@@ -65,10 +70,7 @@ namespace slime {
 						// 	}
 						// })();
 					},
-					configure: function(repository: slime.jrunscript.tools.git.repository.Local) {
-						repository.config({ set: { name: "user.name", value: "foo" }});
-						repository.config({ set: { name: "user.email", value: "bar@example.com" }});
-					},
+					configure: x.configure,
 					wf: function(repository: slime.jrunscript.tools.git.repository.Local, p: any): { status: number, stdio?: { output?: string, error?: string }} {
 						return jsh.shell.run({
 							command: repository.directory.getFile("wf"),
@@ -158,6 +160,9 @@ namespace slime {
 					fifty.run(function ensureInitializeInstallsEslint() {
 						var fresh = test.fixtures.clone();
 						test.fixtures.configure(fresh);
+
+						fifty.verify(fresh).directory.getSubdirectory("local/jsh/lib/node/lib/node_modules/eslint").is.type("null");
+
 						var result = test.fixtures.wf(fresh, {
 							arguments: ["initialize"]
 						});
@@ -167,7 +172,6 @@ namespace slime {
 							fifty.global.jsh.shell.console(result.stdio.error);
 						}
 						fifty.verify(fresh).directory.getSubdirectory("local/jsh/lib/node/lib/node_modules/eslint").is.type("object");
-						fifty.verify(fresh).directory.getSubdirectory("local/jsh/lib/node/lib/node_modules/foo").is.type("null");
 					});
 
 					fifty.run(function requireGitIdentityDuringInitialize() {

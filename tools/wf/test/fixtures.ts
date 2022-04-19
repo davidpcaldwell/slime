@@ -5,17 +5,21 @@
 //	END LICENSE
 
 namespace slime.jsh.wf.test {
-	export interface Exports {
+	export interface Fixtures {
+		configure: (repository: slime.jrunscript.tools.git.repository.Local) => void
 	}
 
-	export type Script = slime.loader.Script<void, Exports>
+	export type Script = slime.loader.Script<void, Fixtures>
 
 	(
 		function(
-			$export: slime.loader.Export<Exports>
+			$export: slime.loader.Export<Fixtures>
 		) {
 			$export({
-
+				configure: function(repository) {
+					repository.config({ set: { name: "user.name", value: "foo" }});
+					repository.config({ set: { name: "user.email", value: "bar@example.com" }});
+				}
 			})
 		}
 	//@ts-ignore
