@@ -69,6 +69,42 @@
 					return repository;
 				});
 
+				/** @type { slime.jrunscript.tools.git.Command<void,{ current: boolean, name: string }[]> } */
+				var getBranches = {
+					invocation: function() {
+						return {
+							command: "branch",
+							arguments: $api.Array.build(function(rv) {
+								rv.push("-a");
+							})
+						}
+					},
+					result: function(output) {
+						var lines = output.split("\n");
+						return lines.map(function(line) {
+							return {
+								current: line.substring(0,1) == "*",
+								name: line.substring(2)
+							}
+						})
+					}
+				}
+
+				/**
+				 *
+				 * @param { string } repository
+				 * @param { string } base
+				 * @returns
+				 */
+				var branchExists = function(repository,base) {
+					var allBranches = jsh.tools.git.program({ command: "git" }).repository(repository).command(getBranches).argument().run()
+					.map(function(branch) {
+						if (branch.name.substring(0,"remote/".length) == "remote/") return branch.name.substring("remote/".length);
+						return branch.name;
+					});
+					return Boolean(allBranches.find(function(branch) { return branch == base; }));
+				}
+
 				/**
 				 *
 				 * @param { slime.jrunscript.tools.git.repository.Local } repository
@@ -85,7 +121,7 @@
 
 				if (operations.test && !operations.commit) {
 					operations.commit = function(p) {
-						var repository = jsh.tools.git.Repository({ directory: $context.base });
+						var repository = fetch();
 
 						jsh.wf.requireGitIdentity({ repository: repository }, {
 							console: function(e) {
@@ -97,27 +133,31 @@
 
 						jsh.wf.prohibitModifiedSubmodules({ repository: repository });
 
-						var branch = repository.status().branch;
-
-						if (branch.name === null) {
+						var remote = "origin";
+						var status = repository.status();
+						if (status.branch.name === null) {
 							throw new Failure("Cannot commit a detached HEAD.");
+						}
+						var branch = status.branch.name;
+						var tracked = remote + "/" + branch;
+						if (!branchExists(repository.directory.toString(), tracked)) {
+							tracked = "origin/master";
 						}
 
 						//	TODO	looks like the below is duplicative, checking vs origin/master twice; maybe there's an offline
 						//			scenario where that makes sense?
 						var allowDivergeFromOrigin = false;
-						var vsLocalOrigin = jsh.wf.git.compareTo("origin/" + branch.name)(repository);
+						var vsLocalOrigin = jsh.wf.git.compareTo(tracked)(repository);
 						if (vsLocalOrigin.behind && vsLocalOrigin.behind.length && !allowDivergeFromOrigin) {
-							throw new Failure("Behind origin/" + branch.name + " by " + vsLocalOrigin.behind.length + " commits.");
+							throw new Failure("Behind " + tracked + " by " + vsLocalOrigin.behind.length + " commits.");
 						}
-						repository = fetch();
-						var vsOrigin = jsh.wf.git.compareTo("origin/" + branch.name)(repository);
+						var vsOrigin = jsh.wf.git.compareTo(tracked)(repository);
 						//	var status = repository.status();
 						//	maybe check branch above if we allow non-master-based workflow
 						//	Perhaps allow a command-line argument or something for this, need to think through branching
 						//	strategy overall
 						if (vsLocalOrigin.behind && vsOrigin.behind.length && !allowDivergeFromOrigin) {
-							throw new Failure("Behind origin/" + branch.name + " by " + vsOrigin.behind.length + " commits.");
+							throw new Failure("Behind " + tracked + " by " + vsOrigin.behind.length + " commits.");
 						}
 
 						if (operations.lint) {
@@ -225,27 +265,6 @@
 					return rv;
 				}
 
-				/** @type { slime.jrunscript.tools.git.Command<void,{ current: boolean, name: string }[]> } */
-				var getBranches = {
-					invocation: function() {
-						return {
-							command: "branch",
-							arguments: $api.Array.build(function(rv) {
-								rv.push("-a");
-							})
-						}
-					},
-					result: function(output) {
-						var lines = output.split("\n");
-						return lines.map(function(line) {
-							return {
-								current: line.substring(0,1) == "*",
-								name: line.substring(2)
-							}
-						})
-					}
-				}
-
 				$exports.status = function(p) {
 					//	TODO	add option for offline
 					var repository = fetch();
@@ -253,13 +272,7 @@
 					var status = repository.status();
 					var branch = status.branch.name;
 					var base = remote + "/" + branch;
-					var allBranches = jsh.tools.git.program({ command: "git" }).repository(repository.directory.toString())
-						.command(getBranches).argument().run()
-						.map(function(branch) {
-							if (branch.name.substring(0,"remote/".length) == "remote/") return branch.name.substring("remote/".length);
-							return branch.name;
-						});
-					if (!allBranches.find(function(branch) { return branch == base; })) {
+					if (!branchExists(repository.directory.toString(), base)) {
 						base = "origin/master";
 					}
 					var vsRemote = (branch) ? jsh.wf.git.compareTo(base)(repository) : null;
