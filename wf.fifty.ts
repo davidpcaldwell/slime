@@ -119,6 +119,12 @@ namespace slime {
 			}>
 
 			git: {
+				/**
+				 * Creates a branch based on the current `master` from `origin` and checks it out. The first argument is used as
+				 * the branch name.
+				 */
+				branch: slime.jsh.script.cli.Command<Options>
+
 				branches: {
 					clean: slime.jsh.script.cli.Command<Options>
 					list: slime.jsh.script.cli.Command<Options>

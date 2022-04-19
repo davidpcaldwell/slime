@@ -42,31 +42,63 @@
 			if (changed) jsh.shell.console("VSCode: Execute the 'Java: Clean the Java language server workspace' command to update Java settubgs.");
 		}
 
+		var git = {
+			repository: jsh.tools.git.program({ command: "git" }).repository($context.base.toString()),
+			command: {
+				/** @type { slime.jrunscript.tools.git.Command<void,void> } */
+				fetch: {
+					invocation: function() {
+						return { command: "fetch" }
+					}
+				},
+				/** @type { slime.jrunscript.tools.git.Command<{ branch: string },void> } */
+				checkout: {
+					invocation: function(p) {
+						return {
+							command: "checkout",
+							arguments: $api.Array.build(function(rv) {
+								rv.push(p.branch);
+							})
+						}
+					}
+				},
+				/** @type { slime.jrunscript.tools.git.Command<{ name: string, startPoint: string },void> } */
+				createBranch: {
+					invocation: function(p) {
+						return {
+							command: "branch",
+							arguments: $api.Array.build(function(rv) {
+								rv.push(p.name);
+								if (p.startPoint) rv.push(p.startPoint);
+							})
+						}
+					}
+				},
+				/** @type { slime.jrunscript.tools.git.Command<{ name: string, value: string },void> } */
+				setConfigValue: {
+					invocation: function(p) {
+						return {
+							command: "config",
+							arguments: [
+								p.name,
+								p.value
+							]
+						}
+					}
+				}
+			}
+		};
+
 		$exports.initialize = $api.Function.pipe(
 			function(p) {
 				if (gitInstalled && isGitClone) {
-					var gitConfigSet = jsh.tools.git.program({ command: "git" }).repository($context.base.toString()).command({
-						invocation: function(p) {
-							return {
-								command: "config",
-								arguments: [
-									p.name,
-									p.value
-								]
-							}
-						},
-						result: function(output) {
-							return void(0);
-						}
-					});
-
 					var clone = jsh.tools.git.Repository({ directory: $context.base });
 					var config = clone.config({
 						arguments: ["--list"]
 					});
 					if (!config["core.hookspath"]) {
 						jsh.shell.console("Installing git hooks ...");
-						gitConfigSet.argument({ name: "core.hookspath", value: "contributor/hooks" }).run();
+						git.repository.command(git.command.setConfigValue).argument({ name: "core.hookspath", value: "contributor/hooks" }).run();
 					}
 				}
 				//	TODO	could consider whether we can wire our commit process into the git hooks mechanism:
@@ -388,6 +420,14 @@
 		);
 
 		$exports.git = {
+			branch: $api.Function.pipe(
+				function(p) {
+					var name = p.arguments[0];
+					git.repository.command(git.command.fetch).argument().run();
+					git.repository.command(git.command.createBranch).argument({ name: name, startPoint: "origin/master" }).run();
+					git.repository.command(git.command.checkout).argument({ branch: name }).run();
+				}
+			),
 			branches: (jsh.tools.git.Repository) ? new function() {
 				var repository = jsh.tools.git.Repository({ directory: $context.base });
 
