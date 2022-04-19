@@ -12,12 +12,13 @@
 (
 	/**
 	 *
+	 * @param { any } global
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.Global } jsh
 	 * @param { slime.Loader } $loader
 	 * @param { slime.jsh.plugin.plugin } plugin
 	 */
-	function($api,jsh,$loader,plugin) {
+	function(global,$api,jsh,$loader,plugin) {
 		plugin({
 			isReady: function() {
 				return Boolean(jsh.js && jsh.time && jsh.web && jsh.java && jsh.ip && jsh.file && jsh.shell && jsh.tools && jsh.tools.install && jsh.java.tools);
@@ -64,4 +65,4 @@
 		})
 	}
 //@ts-ignore
-)($api,jsh,$loader,plugin)
+)( (function() { return this; })(), $api,jsh,$loader,plugin)
