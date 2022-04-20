@@ -102,16 +102,16 @@ namespace slime.jrunscript.tools {
 			) {
 				const { $api, jsh } = fifty.global;
 
-				fifty.tests.lab.containerCreateRemove = function() {
-					const containerCreate: StringCommand<{ image: string}> = {
-						invocation: function(p) {
-							return {
-								command: ["container", "create"],
-								arguments: [p.image]
-							}
+				const containerCreate: StringCommand<{ image: string }> = {
+					invocation: function(p) {
+						return {
+							command: ["container", "create"],
+							arguments: [p.image]
 						}
-					};
+					}
+				};
 
+				fifty.tests.lab.containerCreateRemove = function() {
 					const containerRemove: StringCommand<{ id: string }> = {
 						invocation: function(p) {
 							return {
@@ -154,6 +154,94 @@ namespace slime.jrunscript.tools {
 						}
 					});
 					fifty.verify(containerExists(created)).is(false);
+				}
+
+				const containerRun: StringCommand<{
+					cidfile?: string
+					mounts?: string[]
+					image: string
+					command: string
+					arguments?: string[]
+				}> = (
+					function() {
+						return {
+							invocation: function(p) {
+								return {
+									command: ["container", "run"],
+									arguments: $api.Array.build(function(rv) {
+										if (p.cidfile) rv.push("--cidfile", p.cidfile);
+										if (p.mounts) p.mounts.forEach(function(mount) {
+											rv.push("--mount", mount)
+										});
+										rv.push(p.image);
+										rv.push(p.command);
+										if (p.arguments) rv.push.apply(rv, p.arguments);
+									})
+								}
+							}
+						}
+					}
+				)();
+
+				const volumeCreate: StringCommand<void> = {
+					invocation: function(p) {
+						return {
+							command: ["volume", "create"],
+							arguments: []
+						}
+					}
+				}
+
+				const cp: StringCommand<{ source: string, container: string, target: string }> = {
+					invocation: function(p) {
+						return {
+							command: ["cp"],
+							arguments: [
+								p.source, p.container + ":" + p.target
+							]
+						}
+					}
+				}
+
+				fifty.tests.wip = function() {
+					const dumpErrors: $api.events.Handler<Events> = {
+						stderr: function(e) {
+							jsh.shell.console(e.detail);
+						}
+					}
+					var tmpcid = jsh.shell.TMPDIR.createTemporary({ prefix: "slime-docker-", suffix: ".cid" }).pathname;
+					tmpcid.file.remove();
+					const cli = test.subject.engine.cli;
+					const volume = cli.command(volumeCreate).input().run(dumpErrors);
+					const ran = cli.command(containerRun).input({
+						cidfile: tmpcid.toString(),
+						mounts: [
+							"source=" + volume +",target=/volume"
+						],
+						image: "busybox",
+						command: "true"
+					}).run(dumpErrors);
+					jsh.shell.console("Ran: [" + ran + "]");
+					const container = tmpcid.file.read(String);
+					jsh.shell.console("container [" + container + "]");
+					const copied = cli.command(cp).input({
+						source: fifty.jsh.file.relative("module.fifty.ts").pathname,
+						container: container,
+						target: "/volume/module.fifty.ts"
+					}).run(dumpErrors);
+					jsh.shell.console("copied [" + copied + "]");
+					const modified = cli.command(containerRun).input({
+						mounts: [
+							"source=" + volume +",target=/volume"
+						],
+						image: "busybox",
+						command: "chown",
+						arguments: [
+							"root:root",
+							"/volume/module.fifty.ts"
+						]
+					}).run(dumpErrors);
+					jsh.shell.console("modified [" + modified + "]");
 				}
 			}
 		//@ts-ignore
