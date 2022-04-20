@@ -5,6 +5,15 @@
 //	END LICENSE
 
 namespace slime.jrunscript.tools {
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.lab = fifty.test.Parent();
+		}
+	//@ts-ignore
+	)(fifty);
+
 	export namespace docker.cli {
 		interface Invocation {
 			command: string[]
@@ -32,8 +41,28 @@ namespace slime.jrunscript.tools {
 				truncated: boolean
 			}
 
-			result: (json: any) => R
+			result: (output: any) => R
 		}
+
+		export interface JsonCommand<P,R> {
+			invocation: (p: P) => Invocation
+
+			output: {
+				json: {
+					truncated: boolean
+				}
+			}
+
+			map?: (json: any) => R
+		}
+
+		export interface StringCommand<P,R = string> {
+			invocation: (p: P) => Invocation
+
+			result?: (output: string) => R
+		}
+
+		export type AnyCommand = Command<any,any> | JsonCommand<any,any> | StringCommand<any,any>
 
 		export interface Interface {
 			exec: (p: {
@@ -46,12 +75,89 @@ namespace slime.jrunscript.tools {
 
 			shell: (p: Invocation) => slime.jrunscript.shell.invocation.Argument
 
-			command: <I,O>(command: Command<I,O>) => {
-				input: (i: I) => {
-					run: slime.$api.fp.impure.Ask<Events, O>
+			command: {
+				<I,O>(command: Command<I,O>): {
+					input: (i: I) => {
+						run: slime.$api.fp.impure.Ask<Events, O>
+					}
+				}
+
+				<I,O>(command: StringCommand<I,O>): {
+					input: (i: I) => {
+						run: slime.$api.fp.impure.Ask<Events, O>
+					}
+				}
+
+				<I,O>(command: JsonCommand<I,O>): {
+					input: (i: I) => {
+						run: slime.$api.fp.impure.Ask<Events, O[]>
+					}
 				}
 			}
 		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { $api, jsh } = fifty.global;
+
+				fifty.tests.lab.containerCreateRemove = function() {
+					const containerCreate: StringCommand<{ image: string}> = {
+						invocation: function(p) {
+							return {
+								command: ["container", "create"],
+								arguments: [p.image]
+							}
+						}
+					};
+
+					const containerRemove: StringCommand<{ id: string }> = {
+						invocation: function(p) {
+							return {
+								command: ["container", "rm"],
+								arguments: [p.id]
+							}
+						}
+					};
+
+					const containerListAll: JsonCommand<void,{ ID: string }> = {
+						invocation: () => {
+							return {
+								command: ["container", "ls"],
+								arguments: ["-a"]
+							}
+						},
+						output: {
+							json: {
+								truncated: true
+							}
+						}
+					};
+
+					var containerExists = function(id: string): boolean {
+						return test.subject.engine.cli.command(containerListAll).input().run().some(function(container) {
+							return container.ID == id;
+						})
+					}
+
+					var created = test.subject.engine.cli.command(containerCreate).input({ image: "busybox" }).run({
+						stderr: function(e) {
+							jsh.shell.console(e.detail);
+						}
+					});
+					fifty.verify(containerExists(created)).is(true);
+
+					var removed = test.subject.engine.cli.command(containerRemove).input({ id: created }).run({
+						stderr: function(e) {
+							jsh.shell.console(e.detail);
+						}
+					});
+					fifty.verify(containerExists(created)).is(false);
+				}
+			}
+		//@ts-ignore
+		)(fifty);
 	}
 
 	export namespace docker {
@@ -206,7 +312,12 @@ namespace slime.jrunscript.tools {
 
 	export namespace docker.test {
 		export const subject: Export = (function(fifty: slime.fifty.test.Kit) {
-			return fifty.$loader.module("module.js");
+			const script: Script = fifty.$loader.script("module.js");
+			return script({
+				library: {
+					shell: fifty.global.jsh.shell
+				}
+			});
 		//@ts-ignore
 		})(fifty);
 	}
@@ -217,6 +328,7 @@ namespace slime.jrunscript.tools {
 		) {
 			fifty.tests.suite = function() {
 				fifty.run(fifty.tests.cli.exec);
+				if (fifty.global.jsh.shell.PATH.getCommand("docker")) fifty.run(fifty.tests.lab);
 				fifty.run(fifty.tests.kubectl);
 			}
 		}
