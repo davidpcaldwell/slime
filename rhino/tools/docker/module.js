@@ -33,7 +33,87 @@
 					arguments: p.command.concat(p.arguments)
 				};
 			},
-			command: function(command) {
+			/**
+			 *
+			 * @param { slime.jrunscript.tools.docker.cli.AnyCommand } argument
+			 * @returns
+			 */
+			command: function(argument) {
+				/**
+				 *
+				 * @param { slime.jrunscript.tools.docker.cli.JsonCommand } p
+				 * @returns { slime.jrunscript.tools.docker.cli.Command }
+				 */
+				var fromJsonCommand = function(p) {
+					return {
+						invocation: p.invocation,
+						output: {
+							json: true,
+							truncated: p.output.json.truncated
+						},
+						result: function(output) {
+							return (p.map) ? output.map(p.map) : output;
+						}
+					}
+				};
+
+				/**
+				 *
+				 * @param { slime.jrunscript.tools.docker.cli.StringCommand } p
+				 * @returns { slime.jrunscript.tools.docker.cli.Command }
+				 */
+				var fromStringCommand = function(p) {
+					return {
+						invocation: p.invocation,
+						output: {
+							json: false,
+							truncated: false
+						},
+						result: function(output) {
+							return (p.result) ? p.result(output) : (function(output) {
+								//	Strip newline
+								return output.substring(0, output.length-1);
+							})(output);
+						}
+					}
+				};
+
+				/**
+				 *
+				 * @param { slime.jrunscript.tools.docker.cli.AnyCommand } argument
+				 * @returns { argument is slime.jrunscript.tools.docker.cli.JsonCommand }
+				 */
+				var isJsonCommand = function(argument) {
+					return argument["output"] && typeof(argument["output"].json) == "object";
+				}
+
+				/**
+				 *
+				 * @param { slime.jrunscript.tools.docker.cli.AnyCommand } argument
+				 * @returns { argument is slime.jrunscript.tools.docker.cli.StringCommand }
+				 */
+				var isStringCommand = function(argument) {
+					return typeof(argument["output"]) == "undefined";
+				}
+
+				/**
+				 *
+				 * @param { slime.jrunscript.tools.docker.cli.AnyCommand } argument
+				 * @returns { argument is slime.jrunscript.tools.docker.cli.Command }
+				 */
+				var isRawCommand = function(argument) {
+					return true;
+				}
+
+				var command = (
+					function(argument) {
+						if (isJsonCommand(argument)) return fromJsonCommand(argument);
+						if (isStringCommand(argument)) return fromStringCommand(argument);
+						if (isRawCommand(argument)) return argument;
+						throw new Error("Unreachable");
+					}
+				)(argument);
+
 				var rv = function(input) {
 					var invocation = command.invocation(input);
 					var tell = $context.library.shell.world.run(
