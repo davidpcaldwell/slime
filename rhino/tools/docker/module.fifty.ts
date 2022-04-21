@@ -192,44 +192,19 @@ namespace slime.jrunscript.tools {
 					}
 				}
 
-				const cp: StringCommand<{ source: string, container: string, target: string }> = {
-					invocation: function(p) {
-						return {
-							command: ["cp"],
-							arguments: [
-								p.source, p.container + ":" + p.target
-							]
-						}
+				const dumpErrors: $api.events.Handler<Events> = {
+					stderr: function(e) {
+						jsh.shell.console(e.detail);
 					}
 				}
 
 				fifty.tests.wip = function() {
-					const dumpErrors: $api.events.Handler<Events> = {
-						stderr: function(e) {
-							jsh.shell.console(e.detail);
-						}
-					}
-					var tmpcid = jsh.shell.TMPDIR.createTemporary({ prefix: "slime-docker-", suffix: ".cid" }).pathname;
-					tmpcid.file.remove();
 					const cli = test.subject.engine.cli;
+
 					const volume = cli.command(volumeCreate).input().run(dumpErrors);
-					const ran = cli.command(containerRun).input({
-						cidfile: tmpcid.toString(),
-						mounts: [
-							"source=" + volume +",target=/volume"
-						],
-						image: "busybox",
-						command: "true"
-					}).run(dumpErrors);
-					jsh.shell.console("Ran: [" + ran + "]");
-					const container = tmpcid.file.read(String);
-					jsh.shell.console("container [" + container + "]");
-					const copied = cli.command(cp).input({
-						source: fifty.jsh.file.relative("module.fifty.ts").pathname,
-						container: container,
-						target: "/volume/module.fifty.ts"
-					}).run(dumpErrors);
-					jsh.shell.console("copied [" + copied + "]");
+
+					test.subject.engine.copyToVolume(fifty.jsh.file.relative("module.fifty.ts").pathname, volume, "module.fifty.ts");
+
 					const modified = cli.command(containerRun).input({
 						mounts: [
 							"source=" + volume +",target=/volume"
@@ -256,6 +231,8 @@ namespace slime.jrunscript.tools {
 			 * Determines whether the Docker daemon is running.
 			 */
 			isRunning: () => boolean
+
+			copyToVolume: (from: string, volume: string, path: string) => void
 		}
 
 		export namespace install {
