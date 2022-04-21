@@ -10,6 +10,7 @@ namespace slime.jrunscript.tools {
 			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.lab = fifty.test.Parent();
+			fifty.tests.manual = {};
 		}
 	//@ts-ignore
 	)(fifty);
@@ -155,8 +156,49 @@ namespace slime.jrunscript.tools {
 					});
 					fifty.verify(containerExists(created)).is(false);
 				}
+			}
+		//@ts-ignore
+		)(fifty);
+	}
 
-				const containerRun: StringCommand<{
+	export namespace docker {
+		export interface Engine {
+			cli: cli.Interface
+
+			/**
+			 * Determines whether the Docker daemon is running.
+			 */
+			isRunning: () => boolean
+
+			volume: {
+				/**
+				 * Copies a file from the host machine, at `from` to the volume specified by `volume` at the
+				 * volume-relative path indicated by `path`.
+				 */
+				copyFileTo: (p: {
+					from: string
+					volume: string
+					path: string
+				}) => void
+
+				/**
+				 * Runs a command on busybox with the given volume mounted at `/volume`.
+				 */
+				executeCommandWith: (p: {
+					volume: string
+					command: string
+					arguments?: string[]
+				}) => string
+			}
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { $api, jsh } = fifty.global;
+
+				const containerRun: cli.StringCommand<{
 					cidfile?: string
 					mounts?: string[]
 					image: string
@@ -183,7 +225,7 @@ namespace slime.jrunscript.tools {
 					}
 				)();
 
-				const volumeCreate: StringCommand<void> = {
+				const volumeCreate: cli.StringCommand<void> = {
 					invocation: function(p) {
 						return {
 							command: ["volume", "create"],
@@ -192,48 +234,55 @@ namespace slime.jrunscript.tools {
 					}
 				}
 
-				const dumpErrors: $api.events.Handler<Events> = {
+				const dumpErrors: $api.events.Handler<cli.Events> = {
 					stderr: function(e) {
 						jsh.shell.console(e.detail);
 					}
 				}
 
-				fifty.tests.wip = function() {
+				fifty.tests.manual.wip = function() {
 					const cli = test.subject.engine.cli;
 
 					const volume = cli.command(volumeCreate).input().run(dumpErrors);
 
-					test.subject.engine.copyToVolume(fifty.jsh.file.relative("module.fifty.ts").pathname, volume, "module.fifty.ts");
+					const ls = function() {
+						var result = test.subject.engine.volume.executeCommandWith({
+							volume: volume,
+							command: "ls",
+							arguments: [
+								"-l",
+								"/volume"
+							]
+						});
+						jsh.shell.console(result);
+					}
 
-					const modified = cli.command(containerRun).input({
-						mounts: [
-							"source=" + volume +",target=/volume"
-						],
-						image: "busybox",
+					//	TODO	Use world-oriented Tell
+					test.subject.engine.volume.copyFileTo({
+						from: fifty.jsh.file.relative("module.fifty.ts").pathname,
+						volume: volume,
+						path: "module.fifty.ts"
+					});
+
+					ls();
+
+					//	TODO	this command should use shell-based stdout / stderr handling, rather than the standard
+					//			Docker CLI swallow-standard-output handling. Need another kind of Command, probably.
+					//	TODO	Use world-oriented Ask/Tell
+					test.subject.engine.volume.executeCommandWith({
+						volume: volume,
 						command: "chown",
 						arguments: [
 							"root:root",
 							"/volume/module.fifty.ts"
 						]
-					}).run(dumpErrors);
-					jsh.shell.console("modified [" + modified + "]");
+					});
+
+					ls();
 				}
 			}
 		//@ts-ignore
 		)(fifty);
-	}
-
-	export namespace docker {
-		export interface Engine {
-			cli: cli.Interface
-
-			/**
-			 * Determines whether the Docker daemon is running.
-			 */
-			isRunning: () => boolean
-
-			copyToVolume: (from: string, volume: string, path: string) => void
-		}
 
 		export namespace install {
 			export interface Events {
