@@ -273,18 +273,38 @@
 			return tmpcid.file.read(String);
 		}
 
+		function copyToVolume(from, volume, path) {
+			var container = createVolumeHostContainer(volume);
+
+			cli.command(cp).input({
+				source: from,
+				container: container,
+				target: "/volume/" + path
+			}).run();
+		}
+
+		function executeWithVolume(volume,command,args) {
+			return cli.command(containerRun).input({
+				mounts: [
+					"source=" + volume +",target=/volume"
+				],
+				image: "busybox",
+				command: command,
+				arguments: args
+			}).run();
+		}
+
 		$export({
 			engine: {
 				cli: cli,
 
-				copyToVolume: function copyToVolume(from, volume, path) {
-					var container = createVolumeHostContainer(volume);
-
-					cli.command(cp).input({
-						source: from,
-						container: container,
-						target: "/volume/" + path
-					}).run();
+				volume: {
+					copyFileTo: function(p) {
+						copyToVolume(p.from, p.volume, p.path);
+					},
+					executeCommandWith: function(p) {
+						return executeWithVolume(p.volume, p.command, p.arguments);
+					}
 				},
 
 				isRunning: function() {
