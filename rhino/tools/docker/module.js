@@ -208,9 +208,85 @@
 			}
 		}
 
+		/** @type { slime.jrunscript.tools.docker.cli.StringCommand<{
+			cidfile?: string
+			mounts?: string[]
+			image: string
+			command: string
+			arguments?: string[]
+		}> } */
+		var containerRun = (
+			function() {
+				return {
+					invocation: function(p) {
+						return {
+							command: ["container", "run"],
+							arguments: $api.Array.build(function(rv) {
+								if (p.cidfile) rv.push("--cidfile", p.cidfile);
+								if (p.mounts) p.mounts.forEach(function(mount) {
+									rv.push("--mount", mount)
+								});
+								rv.push(p.image);
+								rv.push(p.command);
+								if (p.arguments) rv.push.apply(rv, p.arguments);
+							})
+						}
+					}
+				}
+			}
+		)();
+
+		/**
+		 * @type { slime.jrunscript.tools.docker.cli.StringCommand<{ source: string, container: string, target: string }> }
+		 */
+		var cp = {
+			invocation: function(p) {
+				return {
+					command: ["cp"],
+					arguments: [
+						p.source, p.container + ":" + p.target
+					]
+				}
+			}
+		}
+
+
+
+		/**
+		 *
+		 * @param { string } volume
+		 * @returns { string }
+		 */
+		function createVolumeHostContainer(volume) {
+			var tmpcid = $context.library.shell.TMPDIR.createTemporary({ prefix: "slime-docker-", suffix: ".cid" }).pathname;
+			tmpcid.file.remove();
+
+			cli.command(containerRun).input({
+				cidfile: tmpcid.toString(),
+				mounts: [
+					"source=" + volume +",target=/volume"
+				],
+				image: "busybox",
+				command: "true"
+			}).run();
+
+			return tmpcid.file.read(String);
+		}
+
 		$export({
 			engine: {
 				cli: cli,
+
+				copyToVolume: function copyToVolume(from, volume, path) {
+					var container = createVolumeHostContainer(volume);
+
+					cli.command(cp).input({
+						source: from,
+						container: container,
+						target: "/volume/" + path
+					}).run();
+				},
+
 				isRunning: function() {
 					/** @type { slime.jrunscript.tools.docker.cli.Command<void,boolean> } */
 					var isRunning = {
