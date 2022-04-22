@@ -225,7 +225,11 @@
 								],
 								directory: local.directory
 							});
-							var distribution = src.directory.getSubdirectory("build/distributions").list()[0];
+
+							/** @type { slime.js.Cast<slime.jrunscript.file.File> } */
+							var castToFile = $api.Function.cast;
+
+							var distribution = src.directory.getSubdirectory("build/distributions").list().map(castToFile)[0];
 							jsh.tools.install.install({
 								file: distribution,
 								format: jsh.tools.install.format.zip,
