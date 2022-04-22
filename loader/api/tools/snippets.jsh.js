@@ -155,17 +155,32 @@
 						return pattern.replace(/zzz/g, p.extension)
 					})
 				);
-				var snippets = jsh.script.file.parent.getSubdirectory("snippets").list().filter(function(node) {
-					var match = pattern.exec(node.pathname.basename);
-					return Boolean(match);
-				}).map(function(node) {
-					var match = pattern.exec(node.pathname.basename);
-					return {
-						name: match[1],
-						abbreviation: match[2],
-						code: removeLicense(node.read(String))
-					}
-				});
+
+				/**
+				 *
+				 * @param { slime.jrunscript.file.Node } node
+				 * @returns { node is slime.jrunscript.file.File }
+				 */
+				var isFile = function(node) {
+					if (!node["file"]) throw new TypeError("Not file: " + node);
+					return true;
+				}
+
+				var snippets = jsh.script.file.parent.getSubdirectory("snippets").list()
+					.filter(isFile)
+					.filter(function(node) {
+						var match = pattern.exec(node.pathname.basename);
+						return Boolean(match);
+					}).map(function(node) {
+						var match = pattern.exec(node.pathname.basename);
+						return {
+							name: match[1],
+							abbreviation: match[2],
+							code: removeLicense(node.read(String))
+						}
+					})
+				;
+
 				return {
 					json: snippets.map(function(snippet) {
 						return {

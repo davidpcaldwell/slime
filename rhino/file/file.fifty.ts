@@ -178,9 +178,11 @@ namespace slime.jrunscript.file {
 		 * Lists the nodes (or a subset of those nodes) contained in this directory.
 		 */
 		list: {
-			<T>(mode?: directory.list.Settings<T>): T[]
+			<T>(mode: directory.list.Settings<T>): T[]
 
-			(mode?: Pick<directory.list.Settings<Node>,"filter" | "descendants" | "recursive">): Node[]
+			(mode: Pick<directory.list.Settings<Node>,"filter" | "descendants" | "recursive">): Node[]
+
+			(): Node[]
 
 			/** @deprecated Use {@link Exports | Exports.list.RESOURCE } */
 			RESOURCE: Exports["list"]["RESOURCE"]
