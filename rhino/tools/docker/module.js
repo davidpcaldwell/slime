@@ -276,11 +276,11 @@
 		function copyToVolume(from, volume, path) {
 			var container = createVolumeHostContainer(volume);
 
-			cli.command(cp).input({
+			return cli.command(cp).input({
 				source: from,
 				container: container,
 				target: "/volume/" + path
-			}).run();
+			});
 		}
 
 		function executeWithVolume(volume,command,args) {
@@ -291,7 +291,7 @@
 				image: "busybox",
 				command: command,
 				arguments: args
-			}).run();
+			});
 		}
 
 		$export({
@@ -300,10 +300,10 @@
 
 				volume: {
 					copyFileTo: function(p) {
-						copyToVolume(p.from, p.volume, p.path);
+						return copyToVolume(p.from, p.volume, p.path).run;
 					},
 					executeCommandWith: function(p) {
-						return executeWithVolume(p.volume, p.command, p.arguments);
+						return executeWithVolume(p.volume, p.command, p.arguments).run;
 					}
 				},
 

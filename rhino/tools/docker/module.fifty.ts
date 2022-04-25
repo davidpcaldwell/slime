@@ -179,7 +179,7 @@ namespace slime.jrunscript.tools {
 					from: string
 					volume: string
 					path: string
-				}) => void
+				}) => slime.$api.fp.impure.Tell<cli.Events>
 
 				/**
 				 * Runs a command on busybox with the given volume mounted at `/volume`.
@@ -188,7 +188,7 @@ namespace slime.jrunscript.tools {
 					volume: string
 					command: string
 					arguments?: string[]
-				}) => string
+				}) => slime.$api.fp.impure.Ask<cli.Events, string>
 			}
 		}
 
@@ -254,7 +254,7 @@ namespace slime.jrunscript.tools {
 								"/volume"
 							]
 						});
-						jsh.shell.console(result);
+						jsh.shell.console(result());
 					}
 
 					//	TODO	Use world-oriented Tell
