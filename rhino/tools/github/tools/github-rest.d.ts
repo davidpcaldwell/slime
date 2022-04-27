@@ -41662,7 +41662,7 @@ declare namespace slime.external.github.rest.paths {
             /**
              * The public SSH key to add to your GitHub account.
              */
-            key: string; // ^ssh-(rsa|dss|ed25519) |^ecdsa-sha2-nistp(256|384|521) 
+            key: string; // ^ssh-(rsa|dss|ed25519) |^ecdsa-sha2-nistp(256|384|521)
         }
         namespace Responses {
             export type $201 = /**
