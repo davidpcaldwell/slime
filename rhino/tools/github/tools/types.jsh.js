@@ -11,20 +11,13 @@
 	 * @param { slime.jsh.Global } jsh
 	 */
 	function($api,jsh) {
-		var configuration = jsh.project.openapi.initialize();
-
-		var config = jsh.shell.TMPDIR.createTemporary({ suffix: ".json" });
-		var src = configuration.src.getRelativePath("rhino/tools/github/tools/dtsgen.json").file.read(String);
-		src = src.split("\n").slice(6).join("\n");
-		config.pathname.write(src, { append: false });
-		configuration.node.run({
-			command: "dtsgen",
-			arguments: $api.Array.build(function(rv) {
-				rv.push("--url", "https://raw.githubusercontent.com/github/rest-api-description/main/descriptions/api.github.com/api.github.com.json");
-				rv.push("--config", config);
-				rv.push("--out", configuration.src.getRelativePath("rhino/tools/github/tools/github-rest.d.ts"));
-			})
-		});
+		jsh.project.openapi.generate({
+			specification: {
+				url: "https://raw.githubusercontent.com/github/rest-api-description/main/descriptions/api.github.com/api.github.com.json"
+			},
+			config: jsh.shell.jsh.src.getFile("rhino/tools/github/tools/dtsgen.json"),
+			destination: jsh.shell.jsh.src.getRelativePath("rhino/tools/github/tools/github-rest.d.ts")
+		})
 	}
 //@ts-ignore
 )($api,jsh);

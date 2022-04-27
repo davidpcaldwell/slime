@@ -1,19 +1,33 @@
 namespace slime.project.openapi {
 	export interface Context {
+		library: {
+			shell: slime.jrunscript.shell.Exports
+		}
+	}
+
+	export interface Configuration {
+		src: slime.jrunscript.file.Directory
+		node: slime.jrunscript.node.Installation
+	}
+
+	export interface Parameters {
+		config: slime.jrunscript.file.File
+		specification: {
+			url: string
+		}
+		destination: slime.jrunscript.file.Pathname
 	}
 
 	export interface Exports {
-		initialize: (jsh: slime.jsh.Global) => {
-			src: slime.jrunscript.file.Directory
-			node: slime.jrunscript.node.Installation
-		}
+		initialize: (jsh: slime.jsh.Global) => Configuration
+		generate: (p: Parameters & {
+			configuration: Configuration
+		}) => void
 	}
 
 	export interface Plugin {
-		initialize: () => {
-			src: slime.jrunscript.file.Directory
-			node: slime.jrunscript.node.Installation
-		}
+		//	TODO	world-oriented
+		generate: (p: Parameters) => void
 	}
 
 	(

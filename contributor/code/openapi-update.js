@@ -7,6 +7,18 @@
 	 * @param { slime.loader.Export<slime.project.openapi.Exports> } $export
 	 */
 	function($api,$context,$export) {
+		/**
+		 *
+		 * @param { slime.jrunscript.file.File } src
+		 * @returns
+		 */
+		function sanitizeJson(src) {
+			var config = $context.library.shell.TMPDIR.createTemporary({ suffix: ".json" });
+			var value = eval("(" + src.read(String) + ")");
+			config.pathname.write(JSON.stringify(value, void(0), 4), { append: false });
+			return config.pathname.file;
+		}
+
 		$export({
 			initialize: function(jsh) {
 				jsh.shell.tools.node.require();
@@ -33,6 +45,17 @@
 				} else {
 					throw new Error("Unreachable.");
 				}
+			},
+			generate: function(p) {
+				var config = sanitizeJson(p.config);
+				p.configuration.node.run({
+					command: "dtsgen",
+					arguments: $api.Array.build(function(rv) {
+						rv.push("--url", p.specification.url);
+						rv.push("--config", config);
+						rv.push("--out", p.destination);
+					})
+				});
 			}
 		})
 	}
