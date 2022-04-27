@@ -11,5 +11,8 @@
 		"javascript"
 	],
 	"debug.node.autoAttach": "on",
-	"java.configuration.updateBuildConfiguration": "interactive"
+	"java.configuration.updateBuildConfiguration": "interactive",
+	"files.associations": {
+		"*.json": "jsonc"
+	}
 }

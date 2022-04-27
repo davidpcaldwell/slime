@@ -18,7 +18,8 @@
 			},
 			load: function() {
 				if (!jsh.project) jsh.project = {
-					code: void(0)
+					code: void(0),
+					openapi: void(0)
 				};
 				/** @type { slime.project.code.Script } */
 				var script = $loader.script("module.js");
@@ -27,7 +28,23 @@
 						file: jsh.file,
 						code: jsh.tools.code
 					}
-				})
+				});
+
+				var openapi = (
+					function() {
+						/** @type { slime.project.openapi.Script } */
+						var script = $loader.script("openapi-update.js");
+						return script({
+
+						})
+					}
+				)();
+
+				jsh.project.openapi = {
+					initialize: function() {
+						return openapi.initialize(jsh);
+					}
+				}
 			}
 		})
 	}
