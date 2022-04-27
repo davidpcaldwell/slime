@@ -11,40 +11,20 @@
 	 * @param { slime.jsh.Global } jsh
 	 */
 	function($api,jsh) {
-		jsh.shell.tools.node.require();
-		jsh.shell.tools.node["modules"].require({ name: "dtsgenerator", version: "3.12.1" });
-		jsh.shell.tools.node["modules"].require({ name: "tslib", version: "2.3.0" });
-		jsh.shell.tools.node["modules"].require({ name: "@dtsgenerator/replace-namespace", version: "1.5.0" });
+		var configuration = jsh.project.openapi.initialize();
 
-		var node = jsh.shell.tools.node;
-
-		var SLIME = jsh.script.file.parent.parent.parent.parent.parent;
-
-		/**
-		 *
-		 * @param { any } node
-		 * @returns { node is slime.jrunscript.node.Installation }
-		 */
-		function isInstallation(node) {
-			return true;
-		}
-
-		if (isInstallation(node)) {
-			var config = jsh.shell.TMPDIR.createTemporary({ suffix: ".json" });
-			var src = SLIME.getRelativePath("rhino/tools/github/tools/dtsgen.json").file.read(String);
-			src = src.split("\n").slice(6).join("\n");
-			config.pathname.write(src, { append: false });
-			node.run({
-				command: "dtsgen",
-				arguments: $api.Array.build(function(rv) {
-					rv.push("--url", "https://raw.githubusercontent.com/github/rest-api-description/main/descriptions/api.github.com/api.github.com.json");
-					rv.push("--config", config);
-					rv.push("--out", SLIME.getRelativePath("rhino/tools/github/tools/github-rest.d.ts"));
-				})
-			});
-		} else {
-			throw new Error("Unreachable.");
-		}
+		var config = jsh.shell.TMPDIR.createTemporary({ suffix: ".json" });
+		var src = configuration.src.getRelativePath("rhino/tools/github/tools/dtsgen.json").file.read(String);
+		src = src.split("\n").slice(6).join("\n");
+		config.pathname.write(src, { append: false });
+		configuration.node.run({
+			command: "dtsgen",
+			arguments: $api.Array.build(function(rv) {
+				rv.push("--url", "https://raw.githubusercontent.com/github/rest-api-description/main/descriptions/api.github.com/api.github.com.json");
+				rv.push("--config", config);
+				rv.push("--out", configuration.src.getRelativePath("rhino/tools/github/tools/github-rest.d.ts"));
+			})
+		});
 	}
 //@ts-ignore
 )($api,jsh);

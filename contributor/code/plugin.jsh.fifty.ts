@@ -8,6 +8,7 @@ namespace slime.jsh {
 	export interface Global {
 		project: {
 			code: slime.project.code.Exports
+			openapi: slime.project.openapi.Plugin
 		}
 	}
 }

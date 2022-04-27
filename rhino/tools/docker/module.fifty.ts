@@ -50,6 +50,10 @@ namespace slime.jrunscript.tools {
 
 			output: {
 				json: {
+					/**
+					 * Whether this command *can* be truncated, and hence the `--no-trunc` argument is available to cause it
+					 * *not* to be truncated.
+					 */
 					truncated: boolean
 				}
 			}
