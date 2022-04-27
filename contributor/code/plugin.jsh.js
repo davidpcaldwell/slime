@@ -7,14 +7,15 @@
 //@ts-check
 (
 	/**
+	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.Global } jsh
 	 * @param { slime.Loader } $loader
 	 * @param { slime.jsh.plugin.plugin } plugin
 	 */
-	function(jsh,$loader,plugin) {
+	function($api,jsh,$loader,plugin) {
 		plugin({
 			isReady: function() {
-				return Boolean(jsh.file && jsh.tools && jsh.tools.code);
+				return Boolean(jsh.file && jsh.shell && jsh.tools && jsh.tools.code);
 			},
 			load: function() {
 				if (!jsh.project) jsh.project = {
@@ -35,18 +36,27 @@
 						/** @type { slime.project.openapi.Script } */
 						var script = $loader.script("openapi-update.js");
 						return script({
-
+							library: {
+								shell: jsh.shell
+							}
 						})
 					}
 				)();
 
 				jsh.project.openapi = {
-					initialize: function() {
-						return openapi.initialize(jsh);
+					generate: function(p) {
+						var configuration = openapi.initialize(jsh);
+						openapi.generate(
+							$api.Object.compose(
+								{ configuration: configuration },
+								p
+							)
+						)
+						jsh.shell.console("Wrote TypeScript definition to " + p.destination);
 					}
 				}
 			}
 		})
 	}
 //@ts-ignore
-)(jsh,$loader,plugin);
+)($api,jsh,$loader,plugin);

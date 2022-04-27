@@ -468,7 +468,7 @@ declare namespace slime.external.github.rest.components {
             total_active_caches_size_in_bytes: number;
         }
         /**
-         * Whether GitHub Actions can submit approving pull request reviews.
+         * Whether GitHub Actions can approve pull requests. Enabling this can be a security risk.
          */
         export type ActionsCanApprovePullRequestReviews = boolean;
         /**
@@ -490,7 +490,7 @@ declare namespace slime.external.github.rest.components {
         }
         export interface ActionsGetDefaultWorkflowPermissions {
             default_workflow_permissions: /* The default workflow permissions granted to the GITHUB_TOKEN when running workflows. */ ActionsDefaultWorkflowPermissions;
-            can_approve_pull_request_reviews: /* Whether GitHub Actions can submit approving pull request reviews. */ ActionsCanApprovePullRequestReviews;
+            can_approve_pull_request_reviews: /* Whether GitHub Actions can approve pull requests. Enabling this can be a security risk. */ ActionsCanApprovePullRequestReviews;
         }
         export interface ActionsOrganizationPermissions {
             enabled_repositories: /* The policy that controls the repositories in the organization that are allowed to run GitHub Actions. Can be one of: `all`, `none`, or `selected`. */ EnabledRepositories;
@@ -560,7 +560,7 @@ declare namespace slime.external.github.rest.components {
         }
         export interface ActionsSetDefaultWorkflowPermissions {
             default_workflow_permissions?: /* The default workflow permissions granted to the GITHUB_TOKEN when running workflows. */ ActionsDefaultWorkflowPermissions;
-            can_approve_pull_request_reviews?: /* Whether GitHub Actions can submit approving pull request reviews. */ ActionsCanApprovePullRequestReviews;
+            can_approve_pull_request_reviews?: /* Whether GitHub Actions can approve pull requests. Enabling this can be a security risk. */ ActionsCanApprovePullRequestReviews;
         }
         export interface ActionsWorkflowAccessToRepository {
             /**
@@ -17073,6 +17073,14 @@ declare namespace slime.external.github.rest.paths {
             slime.external.github.rest.components.Schemas.ActionsSecret;
         }
     }
+    namespace ActionsGetGithubActionsDefaultWorkflowPermissionsEnterprise {
+        namespace Parameters {
+            export type $0 = slime.external.github.rest.components.Parameters.Enterprise;
+        }
+        namespace Responses {
+            export type $200 = slime.external.github.rest.components.Schemas.ActionsGetDefaultWorkflowPermissions;
+        }
+    }
     namespace ActionsGetGithubActionsDefaultWorkflowPermissionsOrganization {
         namespace Parameters {
             export type $0 = slime.external.github.rest.components.Parameters.Org;
@@ -18107,6 +18115,16 @@ declare namespace slime.external.github.rest.paths {
             export type $422 = slime.external.github.rest.components.Responses.ValidationFailedSimple;
         }
     }
+    namespace ActionsSetGithubActionsDefaultWorkflowPermissionsEnterprise {
+        namespace Parameters {
+            export type $0 = slime.external.github.rest.components.Parameters.Enterprise;
+        }
+        export type RequestBody = slime.external.github.rest.components.Schemas.ActionsSetDefaultWorkflowPermissions;
+        namespace Responses {
+            export interface $204 {
+            }
+        }
+    }
     namespace ActionsSetGithubActionsDefaultWorkflowPermissionsOrganization {
         namespace Parameters {
             export type $0 = slime.external.github.rest.components.Parameters.Org;
@@ -18114,6 +18132,8 @@ declare namespace slime.external.github.rest.paths {
         export type RequestBody = slime.external.github.rest.components.Schemas.ActionsSetDefaultWorkflowPermissions;
         namespace Responses {
             export interface $204 {
+            }
+            export interface $409 {
             }
         }
     }
