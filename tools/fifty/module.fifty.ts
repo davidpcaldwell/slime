@@ -85,8 +85,9 @@ namespace slime.fifty {
 
 			test: {
 				/**
-				 * Creates a test that simply loops through its own properties and executes those as tests. Can be used to easily
-				 * create a test hiearchy without having to have the parent repeat the names of all its children.
+				 * Creates a test that simply loops through its own properties (and if its properties are objects, those properties'
+				 * properties, recursively) and executes those as tests. Can be used to easily create a test hierarchy without
+				 * having to have the parent repeat the names of all its children.
 				 */
 				Parent: () => () => void
 			}
