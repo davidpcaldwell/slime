@@ -89,7 +89,7 @@ namespace slime.jsh.shell {
 			url: any
 		}
 		HOME: slime.jrunscript.file.Directory
-		PATH: any
+		PATH: slime.jrunscript.file.Searchpath
 		browser: slime.jrunscript.shell.browser.Exports
 		listeners: any
 		system: {

@@ -23,14 +23,55 @@ namespace slime.jrunscript.http.client.curl {
 		}
 	}
 
-	export type Exports = slime.jrunscript.http.client.Exports["world"]["request"]
+	export type Exports = (configuration?: {
+		unixSocket?: string
+	}) => slime.jrunscript.http.client.Exports["world"]["request"]
 
 	(
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
-			fifty.tests.suite = function() {
+			const { jsh } = fifty.global;
 
+			var script: Script = fifty.$loader.script("curl.js");
+
+			var api = script({
+				console: jsh.shell.console,
+				library: {
+					io: jsh.io,
+					shell: jsh.shell
+				}
+			});
+
+			fifty.tests.lab = function() {
+				var subject = api();
+				fifty.load("module.fifty.ts", "types.spi.Implementation", subject);
+			}
+
+			fifty.tests.manual = {};
+
+			fifty.tests.manual.docker = function() {
+				var implementation = api({
+					unixSocket: "/var/run/docker.sock"
+				});
+				var response = implementation({
+					request: {
+						method: "GET",
+						url: "http://docker.local.unix/info",
+						headers: []
+					},
+					timeout: {
+						connect: void(0),
+						read: void(0)
+					}
+				})();
+				jsh.shell.console("status = " + response.status);
+				jsh.shell.console("headers = " + JSON.stringify(response.headers));
+				jsh.shell.console("stream = " + JSON.stringify(JSON.parse(response.stream.character().asString()), void(0), 4));
+			}
+
+			fifty.tests.suite = function() {
+				fifty.run(fifty.tests.lab);
 			}
 		}
 	//@ts-ignore

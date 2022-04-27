@@ -5,6 +5,16 @@
 //	END LICENSE
 
 namespace slime.jrunscript.http.client {
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.exports = {};
+			fifty.tests.types = {};
+		}
+	//@ts-ignore
+	)(fifty);
+
 	export interface Context {
 		debug: any
 
@@ -85,15 +95,6 @@ namespace slime.jrunscript.http.client {
 		}
 	}
 
-	(
-		function(
-			fifty: slime.fifty.test.Kit
-		) {
-			fifty.tests.exports = {};
-		}
-	//@ts-ignore
-	)(fifty);
-
 	export namespace exports {
 		/**
 		 * Contains methods for creating request bodies.
@@ -168,6 +169,51 @@ namespace slime.jrunscript.http.client {
 		}
 
 		export type Implementation = (p: Argument) => slime.$api.fp.impure.Ask<Events,Response>
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { jsh } = fifty.global;
+
+				fifty.tests.types.spi = {};
+				fifty.tests.types.spi.Implementation = function(subject: Implementation) {
+					var server = new jsh.httpd.Tomcat();
+					server.servlet({
+						load: function(scope) {
+							scope.$exports.handle = function(request) {
+								return {
+									status: { code: 200 },
+									body: {
+										type: "application/json",
+										string: JSON.stringify({
+											path: request.path
+										})
+									}
+								}
+							}
+						}
+					});
+					server.start();
+					var ask = subject({
+						request: {
+							method: "GET",
+							url: "http://127.0.0.1:" + server.port + "/foo",
+							headers: []
+						},
+						timeout: void(0)
+					});
+					var response = ask();
+					verify(response).status.code.is(200);
+					var body: { path: string } = JSON.parse(response.stream.character().asString());
+					verify(body).path.is("foo");
+					server.stop();
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+
 
 		export namespace old {
 			export interface Request {
@@ -523,36 +569,7 @@ namespace slime.jrunscript.http.client {
 				const { jsh } = fifty.global;
 
 				fifty.tests.exports.world = function() {
-					var server = new jsh.httpd.Tomcat();
-					server.servlet({
-						load: function(scope) {
-							scope.$exports.handle = function(request) {
-								return {
-									status: { code: 200 },
-									body: {
-										type: "application/json",
-										string: JSON.stringify({
-											path: request.path
-										})
-									}
-								}
-							}
-						}
-					});
-					server.start();
-					var ask = jsh.http.world.request({
-						request: {
-							method: "GET",
-							url: "http://127.0.0.1:" + server.port + "/foo",
-							headers: []
-						},
-						timeout: void(0)
-					});
-					var response = ask();
-					verify(response).status.code.is(200);
-					var body: { path: string } = JSON.parse(response.stream.character().asString());
-					verify(body).path.is("foo");
-					server.stop();
+					fifty.tests.types.spi.Implementation(jsh.http.world.request);
 				}
 			}
 		//@ts-ignore
@@ -845,6 +862,10 @@ namespace slime.jrunscript.http.client {
 				fifty.run(fifty.tests.jsapi.spi);
 				fifty.run(fifty.tests.jsapi.proxy);
 				fifty.run(fifty.tests.jsapi.other);
+
+				if (fifty.global.jsh.shell.PATH.getCommand("curl")) {
+					fifty.load("curl.fifty.ts");
+				}
 			}
 		}
 	//@ts-ignore
