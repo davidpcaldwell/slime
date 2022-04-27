@@ -25,8 +25,8 @@ END LICENSE
 			document.domain = document.domain;
 		</script>
 		<style>
-			#jsapi table { border-collapse: collapse; }
-			#jsapi th, #jsapi td {
+			#jsapi table, #openapi table { border-collapse: collapse; }
+			#jsapi th, #jsapi td, #openapi th, #openapi td {
 				border: 1px solid black;
 				padding: 0.5em 1.0em;
 			}
@@ -613,16 +613,37 @@ END LICENSE
 					</p>
 				</div>
 			</div>
-			<div>
-				<h3>GitHub</h3>
+			<div id="openapi">
+				<h3>GitHub / Docker TypeScript definitions</h3>
 				<p>
-					SLIME uses the GitHub REST API and so incorporates its type definitions. These definitions are available on the
-					web as OpenAPI definitions at
-					<a href="https://raw.githubusercontent.com/github/rest-api-description/main/descriptions/api.github.com/api.github.com.json">https://raw.githubusercontent.com/github/rest-api-description/main/descriptions/api.github.com/api.github.com.json</a>.
-					They are converted to TypeScript definitions using
-					<a href="https://www.npmjs.com/package/dtsgenerator">dtsgenerator</a>, and stored directly in the SLIME source
-					tree. They can be updated via:
-					<pre><code>./jsh.bash rhino/tools/github/tools/types.jsh.js</code></pre>
+					SLIME uses the GitHub REST API and the Docker Engine API and so incorporates their TypeScript type definitions.
+					Both APIs use OpenAPI documents to describe themselves; these are downloaded from the web and converted to
+					TypeScript type definitions using <a href="https://www.npmjs.com/package/dtsgenerator">dtsgenerator</a>, and
+					stored directly in the SLIME source tree.
+					<table>
+						<thead>
+							<tr>
+								<th>API</th>
+								<th>OpenAPI</th>
+								<th>TypeScript definition</th>
+								<th>Script</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>GitHub REST API</td>
+								<td><a href="https://raw.githubusercontent.com/github/rest-api-description/main/descriptions/api.github.com/api.github.com.json">Link</a></td>
+								<td><code>rhino/tools/github/tools/github-rest.d.ts</code></td>
+								<td><code>rhino/tools/github/tools/types.jsh.js</code></td>
+							</tr>
+							<tr>
+								<td>Docker Engine API</td>
+								<td><a href="https://docs.docker.com/engine/api/v1.41.yaml">Link</a></td>
+								<td><code>rhino/tools/docker/tools/docker-api.d.ts</code></td>
+								<td><code>rhino/tools/docker/tools/types.jsh.js</code></td>
+							</tr>
+						</tbody>
+					</table>
 				</p>
 			</div>
 		</div>
