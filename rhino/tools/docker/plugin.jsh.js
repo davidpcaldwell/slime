@@ -15,13 +15,25 @@
 	function(jsh,$loader,plugin) {
 		plugin({
 			isReady: function() {
-				return Boolean(jsh.shell && jsh.tools && jsh.tools.install);
+				return Boolean(jsh.web && jsh.http && jsh.io && jsh.file && jsh.shell && jsh.tools && jsh.tools.install);
 			},
 			load: function() {
 				/** @type { slime.jrunscript.tools.docker.Script } */
 				var load = $loader.script("module.js");
+				/** @type { slime.jrunscript.http.client.curl.Script } */
+				var curl = $loader.script("../../../rhino/http/client/curl.js");
 				var module = load({
 					library: {
+						web: jsh.web,
+						http: jsh.http,
+						curl: curl({
+							console: jsh.shell.console,
+							library: {
+								io: jsh.io,
+								shell: jsh.shell
+							}
+						}),
+						file: jsh.file,
 						shell: jsh.shell
 					}
 				});
