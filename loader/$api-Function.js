@@ -121,6 +121,7 @@
 			},
 			endsWith: function(searchString, endPosition) {
 				return function(string) {
+					if (typeof(string) == "undefined") throw new TypeError("Cannot test whether undefined ends with search string.");
 					return string.endsWith(searchString, endPosition);
 				}
 			}

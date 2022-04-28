@@ -167,12 +167,12 @@ namespace slime.jrunscript.tools {
 
 	export namespace docker {
 		export interface Engine {
-			cli: cli.Interface
-
 			/**
 			 * Determines whether the Docker daemon is running.
 			 */
 			isRunning: () => boolean
+
+			cli: cli.Interface
 
 			volume: {
 				/**
@@ -338,6 +338,130 @@ namespace slime.jrunscript.tools {
 		)(fifty);
 	}
 
+	export namespace docker {
+		export interface Context {
+			library: {
+				shell: slime.jrunscript.shell.Exports
+			}
+		}
+
+		export interface Export {
+			kubectl: slime.jrunscript.tools.kubectl.Exports
+		}
+
+		export type Script = slime.loader.Script<Context,Export>
+	}
+
+	export namespace docker.test {
+		export const subject: Export = (function(fifty: slime.fifty.test.Kit) {
+			const script: Script = fifty.$loader.script("module.js");
+			return script({
+				library: {
+					shell: fifty.global.jsh.shell
+				}
+			});
+		//@ts-ignore
+		})(fifty);
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { $api, jsh } = fifty.global;
+
+			type Endpoint<P,Q,B,R> = (
+				spi: slime.jrunscript.http.client.spi.Implementation,
+				p: {
+					path: P
+					query: Q
+					body: B
+				}
+			) => R
+
+			var define = function<P,Q,B,R>(e: { method?: string, url: string }): Endpoint<P,Q,B,R> {
+				return function(spi: slime.jrunscript.http.client.spi.Implementation, p: {
+					path?: P
+					query?: Q,
+					body?: B
+				}): R {
+					if (!p) p = {};
+					var url = e.url;
+					if (p.path) {
+						for (var x in p.path) {
+							throw new Error("Unimplemented.");
+						}
+					}
+					var query = $api.Function.result(
+						p.query,
+						$api.Function.pipe(
+							$api.Function.Object.entries,
+							$api.Function.Array.map(function(entry) {
+								return { name: entry[0], value: String(entry[1]) }
+							}),
+							jsh.web.Url.query,
+							function(query) {
+								return (query) ? "?" + query : ""
+							}
+						)
+					)
+					var ask = spi({
+						request: {
+							method: (e.method) ? e.method : "GET",
+							url: "http://docker.sock.unix" + url + query,
+							headers: [],
+							body: (p.body) ? jsh.http.Body.json()(p.body) : void(0)
+						},
+						timeout: void(0),
+						proxy: void(0)
+					});
+					var result = ask();
+					var json = result.stream.character().asString();
+					return JSON.parse(json);
+				}
+			}
+
+			var Api = function(p: {
+				implementation: slime.jrunscript.http.client.spi.Implementation
+			}): {
+				info: Endpoint<void, void, void, slime.external.docker.engine.definitions.SystemInfo>
+			} {
+				return {
+					info: define(
+						{
+							url: "/info"
+						}
+					)
+				};
+			}
+
+			fifty.tests.wip = function() {
+				var client = (
+					function() {
+						var curl: slime.jrunscript.http.client.curl.Script = fifty.$loader.script("../../../rhino/http/client/curl.js");
+						var api = curl({
+							console: jsh.shell.console,
+							library: {
+								io: jsh.io,
+								shell: jsh.shell
+							}
+						});
+						var client = api({
+							unixSocket: "/var/run/docker.sock"
+						});
+						return client;
+					}
+				)();
+				var api = Api({
+					implementation: client
+				});
+				var info = api.info(client, void(0));
+				jsh.shell.console(JSON.stringify(info, void(0), 4));
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
 	export namespace kubectl {
 		export interface Program {
 			command: string
@@ -412,32 +536,6 @@ namespace slime.jrunscript.tools {
 		//@ts-ignore
 		)(fifty);
 
-	}
-
-	export namespace docker {
-		export interface Context {
-			library: {
-				shell: slime.jrunscript.shell.Exports
-			}
-		}
-
-		export interface Export {
-			kubectl: slime.jrunscript.tools.kubectl.Exports
-		}
-
-		export type Script = slime.loader.Script<Context,Export>
-	}
-
-	export namespace docker.test {
-		export const subject: Export = (function(fifty: slime.fifty.test.Kit) {
-			const script: Script = fifty.$loader.script("module.js");
-			return script({
-				library: {
-					shell: fifty.global.jsh.shell
-				}
-			});
-		//@ts-ignore
-		})(fifty);
 	}
 
 	(

@@ -34,8 +34,6 @@
 							command: "curl",
 							arguments: $api.Array.build(function(rv) {
 								if (p.unixSocket) rv.push("--unix-socket", p.unixSocket);
-								//	TODO	consider --max-time, though there is no URLConnection equivalent
-								//	TODO	--connect-timeout
 								rv.push("--include");
 								rv.push("--request", argument.request.method);
 								if (argument.request.headers) {
@@ -51,6 +49,8 @@
 								if (argument.timeout && argument.timeout.connect) {
 									rv.push("--connect-timeout", (argument.timeout.connect / 1000).toFixed(3));
 								}
+								//	TODO	consider --max-time, though there is no URLConnection equivalent
+								//	TODO	investigate whether there is a read timeout equivalent
 								rv.push(argument.request.url);
 							}),
 							stdio: {
@@ -63,6 +63,7 @@
 							$context.console(e.detail.line);
 						},
 						exit: function(e) {
+							if (e.detail.status == 7) throw new Error("Connection refused.");
 							var output = e.detail.stdio.output;
 							var lines = output.split("\n");
 
@@ -83,7 +84,7 @@
 							var headers = [];
 
 
-							while(notBlank(lines[index])) {
+							while(typeof(lines[index]) == "string" && notBlank(lines[index])) {
 								var parsed = noCarriageReturn(lines[index]).split(": ");
 								headers.push({ name: parsed[0], value: parsed.slice(1).join(": ") });
 								index++;

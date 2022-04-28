@@ -224,14 +224,19 @@
 					var url = $context.api.web.Url.codec.string.decode(p.request.url);
 					/** @type { slime.jrunscript.http.client.Header } */
 					var hostHeader;
-					if (url.scheme == "https" && p.proxy && p.proxy.https) {
-						//	Currently implemented by re-writing the URL; would be better to implement a tunnel through an HTTP proxy but
-						//	could not get that working with Tomcat, which returned 400 errors when https requests are sent to http listener
-						//	TODO	does this work for default port?
-						hostHeader = { name: "Host", value: url.host + ((url.port) ? ":" + url.port : "") };
-						url.host = p.proxy.https.host;
-						url.port = p.proxy.https.port;
-					}
+
+					(
+						function implementHttpProxying() {
+							if (url.scheme == "https" && p.proxy && p.proxy.https) {
+								//	Currently implemented by re-writing the URL; would be better to implement a tunnel through an HTTP proxy but
+								//	could not get that working with Tomcat, which returned 400 errors when https requests are sent to http listener
+								//	TODO	does this work for default port?
+								hostHeader = { name: "Host", value: url.host + ((url.port) ? ":" + url.port : "") };
+								url.host = p.proxy.https.host;
+								url.port = p.proxy.https.port;
+							}
+						}
+					)();
 
 					var $urlConnection = openUrlConnection(url, p.proxy, e);
 
@@ -333,6 +338,32 @@
 			world: {
 				request: function(p) {
 					return urlConnectionImplementation(p);
+				},
+				Argument: {
+					request: function(request) {
+						/**
+						 *
+						 * @param { slime.jrunscript.http.client.request.Body } argument
+						 * @returns { slime.jrunscript.http.client.spi.request.Body }
+						 */
+						function body(argument) {
+							return {
+								type: $api.mime.Type.codec.declaration.decode(argument.type),
+								stream: argument.stream
+							}
+						}
+
+						return {
+							request: {
+								method: (request.method) ? request.method : "GET",
+								url: request.url,
+								headers: (request.headers) ? request.headers : [],
+								body: (request.body) ? body(request.body) : null
+							},
+							timeout: void(0),
+							proxy: void(0)
+						}
+					}
 				}
 			},
 			Client: scripts.objects.Client,
