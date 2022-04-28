@@ -411,9 +411,14 @@
 
 							return {
 								SystemInfo: toMethod("GET", "/info"),
+
 								ContainerList: toMethod("GET", "/containers/json"),
 								ContainerCreate: toMethod("POST", "/containers/create"),
-								ContainerDelete: toMethod("DELETE", "/containers/{id}")
+								ContainerDelete: toMethod("DELETE", "/containers/{id}"),
+
+								VolumeList: toMethod("GET", "/volumes"),
+								VolumeCreate: toMethod("POST", "/volumes/create"),
+								VolumeDelete: toMethod("DELETE", "/volumes/{name}")
 							};
 						}
 
