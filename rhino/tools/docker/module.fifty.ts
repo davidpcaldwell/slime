@@ -397,9 +397,14 @@ namespace slime.jrunscript.tools {
 		//	TODO	automatically generate this by parsing the YAML
 		export interface Interface {
 			SystemInfo: Endpoint<void, void, void, slime.external.docker.engine.paths.SystemInfo.Responses.$200>
-			ContainerCreate: Endpoint<void, slime.external.docker.engine.paths.ContainerCreate.QueryParameters, slime.external.docker.engine.paths.ContainerCreate.Parameters.Body, slime.external.docker.engine.paths.ContainerCreate.Responses.$201>
+
 			ContainerList: Endpoint<void, slime.external.docker.engine.paths.ContainerList.QueryParameters, void, slime.external.docker.engine.paths.ContainerList.Responses.$200>
+			ContainerCreate: Endpoint<void, slime.external.docker.engine.paths.ContainerCreate.QueryParameters, slime.external.docker.engine.paths.ContainerCreate.Parameters.Body, slime.external.docker.engine.paths.ContainerCreate.Responses.$201>
 			ContainerDelete: Endpoint<slime.external.docker.engine.paths.ContainerDelete.PathParameters, slime.external.docker.engine.paths.ContainerDelete.QueryParameters, void, void>
+
+			VolumeList: Endpoint<void, slime.external.docker.engine.paths.VolumeList.QueryParameters, void, slime.external.docker.engine.paths.VolumeList.Responses.$200>
+			VolumeCreate: Endpoint<void, void, slime.external.docker.engine.paths.VolumeCreate.Parameters.VolumeConfig, slime.external.docker.engine.paths.VolumeCreate.Responses.$201>
+			VolumeDelete: Endpoint<slime.external.docker.engine.paths.VolumeDelete.PathParameters, slime.external.docker.engine.paths.VolumeDelete.QueryParameters, void, void>
 		}
 
 		(
@@ -432,6 +437,19 @@ namespace slime.jrunscript.tools {
 					verify(exists(created.Id)).is(true);
 					api.ContainerDelete({ path: { id: created.Id }});
 					verify(exists(created.Id)).is(false);
+				}
+
+				fifty.tests.lab.api.volumeCd = function() {
+					function exists(name: string): boolean {
+						return api.VolumeList({ query: {} }).Volumes.some(function(volume) {
+							return volume.Name == name;
+						});
+					}
+
+					var created = api.VolumeCreate({ body: {} });
+					verify(exists(created.Name)).is(true);
+					api.VolumeDelete({ path: { name: created.Name }});
+					verify(exists(created.Name)).is(false);
 				}
 			}
 		//@ts-ignore
