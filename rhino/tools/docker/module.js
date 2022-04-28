@@ -350,7 +350,7 @@
 								var url = e.url;
 								if (p.path) {
 									for (var x in p.path) {
-										throw new Error("Unimplemented.");
+										url = url.replace("{" + x + "}", String(p.path[x]));
 									}
 								}
 								var query = $api.Function.result(
@@ -378,7 +378,7 @@
 								});
 								var result = ask();
 								var json = result.stream.character().asString();
-								return JSON.parse(json);
+								return (json) ? JSON.parse(json) : void(0);
 							}
 						}
 
@@ -411,7 +411,9 @@
 
 							return {
 								SystemInfo: toMethod("GET", "/info"),
-								ContainerList: toMethod("GET", "/containers/json")
+								ContainerList: toMethod("GET", "/containers/json"),
+								ContainerCreate: toMethod("POST", "/containers/create"),
+								ContainerDelete: toMethod("DELETE", "/containers/{id}")
 							};
 						}
 
