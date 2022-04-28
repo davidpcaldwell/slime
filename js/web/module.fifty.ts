@@ -67,7 +67,7 @@ namespace slime.web {
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
-			fifty.tests.Url = {};
+			fifty.tests.exports.Url = fifty.test.Parent();
 		}
 	//@ts-ignore
 	)(fifty);
@@ -84,7 +84,7 @@ namespace slime.web {
 			const subject = test.subject;
 			const { verify, run } = fifty;
 
-			fifty.tests.Url.codec = function() {
+			fifty.tests.exports.Url.codec = function() {
 				var codec = function(url: string) {
 					var parsed = subject.Url.codec.string.decode(url);
 					var encoded = subject.Url.codec.string.encode(parsed);
@@ -224,12 +224,35 @@ namespace slime.web {
 			 * {@link Url} object is the string form of the URL.
 			 */
 			 new (argument: object.url.Argument): object.Url
+
 			 parse: (string: string) => object.Url
+
 			 query: {
+				 /**
+				  * Converts the given form control array into a query string, omitting the leading `?`.
+				  */
 				 (array: form.Control[]): string
+
 				 parse: (string: string) => form.Control[]
 			 }
 		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				fifty.tests.exports.Url.query = function() {
+					var controls: form.Control[] = [
+						{ name: "foo", value: "bar" },
+						{ name: "baz", value: "bizzy" }
+					];
+					var encoded = test.subject.Url.query(controls);
+					fifty.verify(encoded).is("foo=bar&baz=bizzy");
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+
 	}
 
 	export interface Exports {
@@ -243,11 +266,9 @@ namespace slime.web {
 			const module = test.subject;
 			const { verify } = fifty;
 
-			fifty.tests.exports.Url = {
-				query: function() {
-					var array = [ { name: "foo", value: "bar" }, { name: "foo", value: "baz" } ];
-					verify(module.Url.query(array)).is("foo=bar&foo=baz");
-				}
+			fifty.tests.exports.Url.query = function() {
+				var array = [ { name: "foo", value: "bar" }, { name: "foo", value: "baz" } ];
+				verify(module.Url.query(array)).is("foo=bar&foo=baz");
 			};
 
 			fifty.tests.object = {};
@@ -505,9 +526,7 @@ namespace slime.web {
 (
 	function(fifty: slime.fifty.test.Kit) {
 		fifty.tests.suite = function() {
-			fifty.run(fifty.tests.Url.codec);
-
-			fifty.run(fifty.tests.exports.Url.query);
+			fifty.run(fifty.tests.exports.Url);
 			fifty.run(fifty.tests.object.Url);
 
 			fifty.run(fifty.tests.exports.Form);

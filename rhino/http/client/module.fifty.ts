@@ -88,13 +88,6 @@ namespace slime.jrunscript.http.client {
 		read: number
 	}
 
-	export namespace request {
-		export interface Body {
-			type: slime.mime.Type
-			stream: slime.jrunscript.runtime.io.InputStream
-		}
-	}
-
 	export namespace exports {
 		/**
 		 * Contains methods for creating request bodies.
@@ -118,7 +111,7 @@ namespace slime.jrunscript.http.client {
 
 	export namespace exports {
 		export interface Body {
-			json: () => (value: any) => request.Body
+			json: () => (value: any) => spi.request.Body
 		}
 
 		(
@@ -141,6 +134,13 @@ namespace slime.jrunscript.http.client {
 	}
 
 	export namespace spi {
+		export namespace request {
+			export interface Body {
+				type: slime.mime.Type
+				stream: slime.jrunscript.runtime.io.InputStream
+			}
+		}
+
 		export interface Argument {
 			request: {
 				method: string
@@ -229,8 +229,26 @@ namespace slime.jrunscript.http.client {
 		}
 	}
 
+	export namespace request {
+		export interface Body {
+			type: string
+			stream: slime.jrunscript.runtime.io.InputStream
+		}
+	}
+
+	export interface Request {
+		method?: string
+		url: string
+		headers?: Header[]
+		body?: request.Body
+	}
+
 	export interface World {
 		request: spi.Implementation
+
+		Argument: {
+			request: (request: Request) => spi.Argument
+		}
 	}
 
 	export interface Exports {

@@ -308,6 +308,8 @@
 				},
 
 				isRunning: function() {
+					//	Current implementation attempts to use the CLI
+
 					/** @type { slime.jrunscript.tools.docker.cli.Command<void,boolean> } */
 					var isRunning = {
 						invocation: function() {
