@@ -15,13 +15,17 @@
 	function(jsh,$loader,plugin) {
 		plugin({
 			isReady: function() {
-				return Boolean(jsh.shell && jsh.tools && jsh.tools.install);
+				return Boolean(jsh.web && jsh.http && jsh.io && jsh.file && jsh.shell && jsh.tools && jsh.tools.install);
 			},
 			load: function() {
 				/** @type { slime.jrunscript.tools.docker.Script } */
 				var load = $loader.script("module.js");
 				var module = load({
 					library: {
+						web: jsh.web,
+						http: jsh.http,
+						curl: jsh.http.curl,
+						file: jsh.file,
 						shell: jsh.shell
 					}
 				});

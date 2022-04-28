@@ -10,9 +10,10 @@
 	 *
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jrunscript.tools.docker.Context } $context
-	 * @param { slime.loader.Export<slime.jrunscript.tools.docker.Export> } $export
+	 * @param { slime.loader.Export<slime.jrunscript.tools.docker.Exports> } $export
 	 */
 	function($api,$context,$export) {
+		if (!$context.library.file) throw new Error("Required: library.file");
 		/** @type { slime.jrunscript.tools.docker.cli.Interface } */
 		var cli = {
 			exec: function(p) {
@@ -296,17 +297,6 @@
 
 		$export({
 			engine: {
-				cli: cli,
-
-				volume: {
-					copyFileTo: function(p) {
-						return copyToVolume(p.from, p.volume, p.path).run;
-					},
-					executeCommandWith: function(p) {
-						return executeWithVolume(p.volume, p.command, p.arguments).run;
-					}
-				},
-
 				isRunning: function() {
 					//	Current implementation attempts to use the CLI
 
@@ -331,7 +321,107 @@
 							//	do nothing
 						}
 					});
-				}
+				},
+
+				volume: {
+					copyFileTo: function(p) {
+						return copyToVolume(p.from, p.volume, p.path).run;
+					},
+					executeCommandWith: function(p) {
+						return executeWithVolume(p.volume, p.command, p.arguments).run;
+					}
+				},
+
+				cli: cli,
+
+				api: (
+					function() {
+						/**
+						 * @template { any } P
+						 * @template { any } Q
+						 * @template { any } B
+						 * @template { any } R
+						 * @param { { method?: string, url: string } } e
+						 * @returns { slime.jrunscript.tools.docker.internal.Endpoint<P,Q,B,R> }
+						 */
+						var define = function(e) {
+							return function(spi, p) {
+								if (!p) p = {};
+								var url = e.url;
+								if (p.path) {
+									for (var x in p.path) {
+										throw new Error("Unimplemented.");
+									}
+								}
+								var query = $api.Function.result(
+									p.query,
+									$api.Function.pipe(
+										$api.Function.Object.entries,
+										$api.Function.Array.map(function(entry) {
+											return { name: entry[0], value: String(entry[1]) }
+										}),
+										$context.library.web.Url.query,
+										function(query) {
+											return (query) ? "?" + query : ""
+										}
+									)
+								)
+								var ask = spi({
+									request: {
+										method: (e.method) ? e.method : "GET",
+										url: "http://docker.sock.unix" + url + query,
+										headers: [],
+										body: (p.body) ? $context.library.http.Body.json()(p.body) : void(0)
+									},
+									timeout: void(0),
+									proxy: void(0)
+								});
+								var result = ask();
+								var json = result.stream.character().asString();
+								return JSON.parse(json);
+							}
+						}
+
+						/**
+						 *
+						 * @param { slime.jrunscript.http.client.spi.Implementation } implementation
+						 * @returns { slime.jrunscript.tools.docker.api.Interface }
+						 */
+						var Api = function(implementation) {
+							/**
+							 *
+							 * @template { any } P
+							 * @template { any } Q
+							 * @template { any } B
+							 * @template { any } R
+							 * @param { string } method
+							 * @param { string } path
+							 * @returns { slime.jrunscript.tools.docker.api.Endpoint<P,Q,B,R> }
+							 */
+							var toMethod = function(method, path) {
+								var defined = define({ method: method, url: path });
+								/** @type { slime.js.Cast<R> } */
+								var toR = $api.Function.cast;
+								return function(p) {
+									/** @type { R } */
+									var rv = toR(defined(implementation, p));
+									return rv;
+								}
+							}
+
+							return {
+								SystemInfo: toMethod("GET", "/info"),
+								ContainerList: toMethod("GET", "/containers/json")
+							};
+						}
+
+						if ($context.library.shell.PATH.getCommand("curl") && $context.library.file.world.filesystems.os.pathname("/var/run/docker.sock").file.exists()) {
+							return Api($context.library.curl({
+								unixSocket: "/var/run/docker.sock"
+							}))
+						}
+					}
+				)()
 			},
 			install: function(p) {
 				var versions = {

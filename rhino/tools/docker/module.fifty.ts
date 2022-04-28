@@ -5,6 +5,18 @@
 //	END LICENSE
 
 namespace slime.jrunscript.tools {
+	export namespace docker {
+		export interface Context {
+			library: {
+				web: slime.web.Exports
+				file: slime.jrunscript.file.Exports
+				http: slime.jrunscript.http.client.Exports
+				curl: slime.jrunscript.http.client.curl.Exports
+				shell: slime.jrunscript.shell.Exports
+			}
+		}
+	}
+
 	(
 		function(
 			fifty: slime.fifty.test.Kit
@@ -14,6 +26,180 @@ namespace slime.jrunscript.tools {
 		}
 	//@ts-ignore
 	)(fifty);
+
+	export namespace docker {
+		export namespace install {
+			export interface Events {
+				installed: slime.jrunscript.file.Directory
+				found: slime.jrunscript.file.Directory
+			}
+		}
+
+		export interface Exports {
+			install: (p: {
+				version?: string
+				library: {
+					shell: slime.jrunscript.shell.Exports
+					install: slime.jrunscript.tools.install.Exports
+				}
+				sudo?: {
+					askpass: slime.jrunscript.file.File
+				}
+				destination: slime.jrunscript.file.Pathname
+			}) => slime.$api.fp.impure.Tell<install.Events>
+		}
+
+		export interface Engine {
+			/**
+			 * Determines whether the Docker daemon is running.
+			 */
+			isRunning: () => boolean
+
+			volume: {
+				/**
+				 * Copies a file from the host machine, at `from` to the volume specified by `volume` at the
+				 * volume-relative path indicated by `path`.
+				 */
+				copyFileTo: (p: {
+					from: string
+					volume: string
+					path: string
+				}) => slime.$api.fp.impure.Tell<cli.Events>
+
+				/**
+				 * Runs a command on busybox with the given volume mounted at `/volume`.
+				 */
+				executeCommandWith: (p: {
+					volume: string
+					command: string
+					arguments?: string[]
+				}) => slime.$api.fp.impure.Ask<cli.Events, string>
+			}
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { $api, jsh } = fifty.global;
+
+				const containerRun: cli.StringCommand<{
+					cidfile?: string
+					mounts?: string[]
+					image: string
+					command: string
+					arguments?: string[]
+				}> = (
+					function() {
+						return {
+							invocation: function(p) {
+								return {
+									command: ["container", "run"],
+									arguments: $api.Array.build(function(rv) {
+										if (p.cidfile) rv.push("--cidfile", p.cidfile);
+										if (p.mounts) p.mounts.forEach(function(mount) {
+											rv.push("--mount", mount)
+										});
+										rv.push(p.image);
+										rv.push(p.command);
+										if (p.arguments) rv.push.apply(rv, p.arguments);
+									})
+								}
+							}
+						}
+					}
+				)();
+
+				const volumeCreate: cli.StringCommand<void> = {
+					invocation: function(p) {
+						return {
+							command: ["volume", "create"],
+							arguments: []
+						}
+					}
+				}
+
+				const dumpErrors: $api.events.Handler<cli.Events> = {
+					stderr: function(e) {
+						jsh.shell.console(e.detail);
+					}
+				}
+
+				fifty.tests.manual.volume = function() {
+					const cli = test.subject.engine.cli;
+
+					const volume = cli.command(volumeCreate).input().run(dumpErrors);
+
+					const ls = function() {
+						var result = test.subject.engine.volume.executeCommandWith({
+							volume: volume,
+							command: "ls",
+							arguments: [
+								"-l",
+								"/volume"
+							]
+						});
+						jsh.shell.console(result());
+					}
+
+					//	TODO	Use world-oriented Tell
+					test.subject.engine.volume.copyFileTo({
+						from: fifty.jsh.file.relative("module.fifty.ts").pathname,
+						volume: volume,
+						path: "module.fifty.ts"
+					});
+
+					ls();
+
+					//	TODO	this command should use shell-based stdout / stderr handling, rather than the standard
+					//			Docker CLI swallow-standard-output handling. Need another kind of Command, probably.
+					//	TODO	Use world-oriented Ask/Tell
+					test.subject.engine.volume.executeCommandWith({
+						volume: volume,
+						command: "chown",
+						arguments: [
+							"root:root",
+							"/volume/module.fifty.ts"
+						]
+					});
+
+					ls();
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+
+		export interface Exports {
+			engine: slime.jrunscript.tools.docker.Engine
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				fifty.tests.cli = {};
+				fifty.tests.cli.exec = function() {
+					var invocation = test.subject.engine.cli.exec({
+						interactive: true,
+						tty: true,
+						container: "CONTAINER",
+						command: "COMMAND",
+						arguments: [
+							"--foo", "bar"
+						]
+					});
+					fifty.verify(invocation).command.evaluate(function(p) { return p.toString(); }).is("exec");
+					fifty.verify(invocation).arguments[0].is("--interactive");
+					fifty.verify(invocation).arguments[1].is("--tty");
+					fifty.verify(invocation).arguments[2].is("CONTAINER");
+					fifty.verify(invocation).arguments[3].is("COMMAND");
+					fifty.verify(invocation).arguments[4].is("--foo");
+					fifty.verify(invocation).arguments[5].is("bar");
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+	}
 
 	export namespace docker.cli {
 		interface Invocation {
@@ -167,196 +353,55 @@ namespace slime.jrunscript.tools {
 
 	export namespace docker {
 		export interface Engine {
-			/**
-			 * Determines whether the Docker daemon is running.
-			 */
-			isRunning: () => boolean
-
 			cli: cli.Interface
-
-			volume: {
-				/**
-				 * Copies a file from the host machine, at `from` to the volume specified by `volume` at the
-				 * volume-relative path indicated by `path`.
-				 */
-				copyFileTo: (p: {
-					from: string
-					volume: string
-					path: string
-				}) => slime.$api.fp.impure.Tell<cli.Events>
-
-				/**
-				 * Runs a command on busybox with the given volume mounted at `/volume`.
-				 */
-				executeCommandWith: (p: {
-					volume: string
-					command: string
-					arguments?: string[]
-				}) => slime.$api.fp.impure.Ask<cli.Events, string>
-			}
 		}
+	}
 
-		(
-			function(
-				fifty: slime.fifty.test.Kit
-			) {
-				const { $api, jsh } = fifty.global;
+	export namespace docker.api {
+		export type Endpoint<P,Q,B,R> = (p?: {
+			path?: P
+			query?: Q
+			body?: B
+		}) => R
 
-				const containerRun: cli.StringCommand<{
-					cidfile?: string
-					mounts?: string[]
-					image: string
-					command: string
-					arguments?: string[]
-				}> = (
-					function() {
-						return {
-							invocation: function(p) {
-								return {
-									command: ["container", "run"],
-									arguments: $api.Array.build(function(rv) {
-										if (p.cidfile) rv.push("--cidfile", p.cidfile);
-										if (p.mounts) p.mounts.forEach(function(mount) {
-											rv.push("--mount", mount)
-										});
-										rv.push(p.image);
-										rv.push(p.command);
-										if (p.arguments) rv.push.apply(rv, p.arguments);
-									})
-								}
-							}
-						}
-					}
-				)();
-
-				const volumeCreate: cli.StringCommand<void> = {
-					invocation: function(p) {
-						return {
-							command: ["volume", "create"],
-							arguments: []
-						}
-					}
-				}
-
-				const dumpErrors: $api.events.Handler<cli.Events> = {
-					stderr: function(e) {
-						jsh.shell.console(e.detail);
-					}
-				}
-
-				fifty.tests.manual.wip = function() {
-					const cli = test.subject.engine.cli;
-
-					const volume = cli.command(volumeCreate).input().run(dumpErrors);
-
-					const ls = function() {
-						var result = test.subject.engine.volume.executeCommandWith({
-							volume: volume,
-							command: "ls",
-							arguments: [
-								"-l",
-								"/volume"
-							]
-						});
-						jsh.shell.console(result());
-					}
-
-					//	TODO	Use world-oriented Tell
-					test.subject.engine.volume.copyFileTo({
-						from: fifty.jsh.file.relative("module.fifty.ts").pathname,
-						volume: volume,
-						path: "module.fifty.ts"
-					});
-
-					ls();
-
-					//	TODO	this command should use shell-based stdout / stderr handling, rather than the standard
-					//			Docker CLI swallow-standard-output handling. Need another kind of Command, probably.
-					//	TODO	Use world-oriented Ask/Tell
-					test.subject.engine.volume.executeCommandWith({
-						volume: volume,
-						command: "chown",
-						arguments: [
-							"root:root",
-							"/volume/module.fifty.ts"
-						]
-					});
-
-					ls();
-				}
-			}
-		//@ts-ignore
-		)(fifty);
-
-		export namespace install {
-			export interface Events {
-				installed: slime.jrunscript.file.Directory
-				found: slime.jrunscript.file.Directory
-			}
+		//	TODO	automatically generate this by parsing the YAML
+		export interface Interface {
+			SystemInfo: Endpoint<void, void, void, slime.external.docker.engine.paths.SystemInfo.Responses.$200>
+			ContainerList: Endpoint<void, slime.external.docker.engine.paths.ContainerList.QueryParameters, void, slime.external.docker.engine.paths.ContainerList.Responses.$200>
 		}
-
-		export interface Export {
-			engine: slime.jrunscript.tools.docker.Engine
-			install: (p: {
-				version?: string
-				library: {
-					shell: slime.jrunscript.shell.Exports
-					install: slime.jrunscript.tools.install.Exports
-				}
-				sudo?: {
-					askpass: slime.jrunscript.file.File
-				}
-				destination: slime.jrunscript.file.Pathname
-			}) => slime.$api.fp.impure.Tell<install.Events>
-		}
-
-		(
-			function(
-				fifty: slime.fifty.test.Kit
-			) {
-				fifty.tests.cli = {};
-				fifty.tests.cli.exec = function() {
-					var invocation = test.subject.engine.cli.exec({
-						interactive: true,
-						tty: true,
-						container: "CONTAINER",
-						command: "COMMAND",
-						arguments: [
-							"--foo", "bar"
-						]
-					});
-					fifty.verify(invocation).command.evaluate(function(p) { return p.toString(); }).is("exec");
-					fifty.verify(invocation).arguments[0].is("--interactive");
-					fifty.verify(invocation).arguments[1].is("--tty");
-					fifty.verify(invocation).arguments[2].is("CONTAINER");
-					fifty.verify(invocation).arguments[3].is("COMMAND");
-					fifty.verify(invocation).arguments[4].is("--foo");
-					fifty.verify(invocation).arguments[5].is("bar");
-				}
-			}
-		//@ts-ignore
-		)(fifty);
 	}
 
 	export namespace docker {
-		export interface Context {
-			library: {
-				shell: slime.jrunscript.shell.Exports
-			}
+		export interface Engine {
+			api: api.Interface
 		}
+	}
 
-		export interface Export {
-			kubectl: slime.jrunscript.tools.kubectl.Exports
-		}
-
-		export type Script = slime.loader.Script<Context,Export>
+	export namespace docker {
+		export type Script = slime.loader.Script<Context,Exports>
 	}
 
 	export namespace docker.test {
-		export const subject: Export = (function(fifty: slime.fifty.test.Kit) {
+		export const subject: Exports = (function(fifty: slime.fifty.test.Kit) {
+			const curl = (
+				function() {
+					var script: slime.jrunscript.http.client.curl.Script = fifty.$loader.script("../../../rhino/http/client/curl.js");
+					return script({
+						console: fifty.global.jsh.shell.console,
+						library: {
+							io: fifty.global.jsh.io,
+							shell: fifty.global.jsh.shell
+						}
+					});
+				}
+			)();
 			const script: Script = fifty.$loader.script("module.js");
 			return script({
 				library: {
+					web: fifty.global.jsh.web,
+					file: fifty.global.jsh.file,
+					http: fifty.global.jsh.http,
+					curl: curl,
 					shell: fifty.global.jsh.shell
 				}
 			});
@@ -370,92 +415,10 @@ namespace slime.jrunscript.tools {
 		) {
 			const { $api, jsh } = fifty.global;
 
-			type Endpoint<P,Q,B,R> = (
-				spi: slime.jrunscript.http.client.spi.Implementation,
-				p: {
-					path: P
-					query: Q
-					body: B
-				}
-			) => R
+			var api: docker.api.Interface = docker.test.subject.engine.api;
 
-			var define = function<P,Q,B,R>(e: { method?: string, url: string }): Endpoint<P,Q,B,R> {
-				return function(spi: slime.jrunscript.http.client.spi.Implementation, p: {
-					path?: P
-					query?: Q,
-					body?: B
-				}): R {
-					if (!p) p = {};
-					var url = e.url;
-					if (p.path) {
-						for (var x in p.path) {
-							throw new Error("Unimplemented.");
-						}
-					}
-					var query = $api.Function.result(
-						p.query,
-						$api.Function.pipe(
-							$api.Function.Object.entries,
-							$api.Function.Array.map(function(entry) {
-								return { name: entry[0], value: String(entry[1]) }
-							}),
-							jsh.web.Url.query,
-							function(query) {
-								return (query) ? "?" + query : ""
-							}
-						)
-					)
-					var ask = spi({
-						request: {
-							method: (e.method) ? e.method : "GET",
-							url: "http://docker.sock.unix" + url + query,
-							headers: [],
-							body: (p.body) ? jsh.http.Body.json()(p.body) : void(0)
-						},
-						timeout: void(0),
-						proxy: void(0)
-					});
-					var result = ask();
-					var json = result.stream.character().asString();
-					return JSON.parse(json);
-				}
-			}
-
-			var Api = function(p: {
-				implementation: slime.jrunscript.http.client.spi.Implementation
-			}): {
-				info: Endpoint<void, void, void, slime.external.docker.engine.definitions.SystemInfo>
-			} {
-				return {
-					info: define(
-						{
-							url: "/info"
-						}
-					)
-				};
-			}
-
-			fifty.tests.wip = function() {
-				var client = (
-					function() {
-						var curl: slime.jrunscript.http.client.curl.Script = fifty.$loader.script("../../../rhino/http/client/curl.js");
-						var api = curl({
-							console: jsh.shell.console,
-							library: {
-								io: jsh.io,
-								shell: jsh.shell
-							}
-						});
-						var client = api({
-							unixSocket: "/var/run/docker.sock"
-						});
-						return client;
-					}
-				)();
-				var api = Api({
-					implementation: client
-				});
-				var info = api.info(client, void(0));
+			fifty.tests.manual.api = function() {
+				var info = api.SystemInfo();
 				jsh.shell.console(JSON.stringify(info, void(0), 4));
 			}
 		}
@@ -538,6 +501,12 @@ namespace slime.jrunscript.tools {
 
 	}
 
+	export namespace docker {
+		export interface Exports {
+			kubectl: slime.jrunscript.tools.kubectl.Exports
+		}
+	}
+
 	(
 		function(
 			fifty: slime.fifty.test.Kit
@@ -550,4 +519,8 @@ namespace slime.jrunscript.tools {
 		}
 	//@ts-ignore
 	)(fifty);
+}
+
+namespace slime.jrunscript.tools.docker.internal {
+	export type Endpoint<P,Q,B,R> = (spi: slime.jrunscript.http.client.spi.Implementation, p: Parameters<slime.jrunscript.tools.docker.api.Endpoint<P,Q,B,R>>[0]) => R
 }
