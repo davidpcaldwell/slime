@@ -659,6 +659,7 @@ namespace slime.jrunscript {
 			}
 			security: {
 				KeyStore: any
+				SecureRandom: any
 			}
 			awt: {
 				Desktop: any

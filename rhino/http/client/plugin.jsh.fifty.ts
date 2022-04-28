@@ -7,6 +7,7 @@
 namespace slime.jsh {
 	export interface Global {
 		http: slime.jrunscript.http.client.Exports & {
+			curl: slime.jrunscript.http.client.curl.Exports
 			test: {
 				/**
 				 * Disables SSL verification for the Java VM in which the shell is running.

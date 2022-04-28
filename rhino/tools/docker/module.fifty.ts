@@ -367,6 +367,7 @@ namespace slime.jrunscript.tools {
 		//	TODO	automatically generate this by parsing the YAML
 		export interface Interface {
 			SystemInfo: Endpoint<void, void, void, slime.external.docker.engine.paths.SystemInfo.Responses.$200>
+			ContainerList: Endpoint<void, slime.external.docker.engine.paths.ContainerList.QueryParameters, void, slime.external.docker.engine.paths.ContainerList.Responses.$200>
 		}
 	}
 

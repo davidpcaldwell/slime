@@ -20,19 +20,11 @@
 			load: function() {
 				/** @type { slime.jrunscript.tools.docker.Script } */
 				var load = $loader.script("module.js");
-				/** @type { slime.jrunscript.http.client.curl.Script } */
-				var curl = $loader.script("../../../rhino/http/client/curl.js");
 				var module = load({
 					library: {
 						web: jsh.web,
 						http: jsh.http,
-						curl: curl({
-							console: jsh.shell.console,
-							library: {
-								io: jsh.io,
-								shell: jsh.shell
-							}
-						}),
+						curl: jsh.http.curl,
 						file: jsh.file,
 						shell: jsh.shell
 					}

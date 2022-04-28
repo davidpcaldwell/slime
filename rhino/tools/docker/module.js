@@ -394,11 +394,12 @@
 							 * @template { any } Q
 							 * @template { any } B
 							 * @template { any } R
-							 * @param { { method?: string, url: string } } e
+							 * @param { string } method
+							 * @param { string } path
 							 * @returns { slime.jrunscript.tools.docker.api.Endpoint<P,Q,B,R> }
 							 */
-							var toMethod = function(e) {
-								var defined = define(e);
+							var toMethod = function(method, path) {
+								var defined = define({ method: method, url: path });
 								/** @type { slime.js.Cast<R> } */
 								var toR = $api.Function.cast;
 								return function(p) {
@@ -409,11 +410,8 @@
 							}
 
 							return {
-								SystemInfo: toMethod(
-									{
-										url: "/info"
-									}
-								)
+								SystemInfo: toMethod("GET", "/info"),
+								ContainerList: toMethod("GET", "/containers/json")
 							};
 						}
 
