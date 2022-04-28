@@ -686,7 +686,7 @@
 			while(i.hasNext()) {
 				var name = String(i.next());
 				var value = String(_environment.getValue(name));
-				Object.defineProperty(rv, name, { value: value, enumerable: true });
+				Object.defineProperty(rv, name, { value: value, enumerable: true, configurable: true });
 				//	The below handling of case sensitivity deals with GraalVM unwrapping java.lang.Boolean to JavaScript boolean,
 				//	while Nashorn and Rhino do not (untested, but the code below should have broken if not?)
 				var isCaseSensitiveObject;
