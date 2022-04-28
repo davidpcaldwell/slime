@@ -17,6 +17,34 @@ namespace slime.jrunscript.tools {
 		}
 	}
 
+	export namespace docker.test {
+		export const subject: Exports = (function(fifty: slime.fifty.test.Kit) {
+			const curl = (
+				function() {
+					var script: slime.jrunscript.http.client.curl.Script = fifty.$loader.script("../../../rhino/http/client/curl.js");
+					return script({
+						console: fifty.global.jsh.shell.console,
+						library: {
+							io: fifty.global.jsh.io,
+							shell: fifty.global.jsh.shell
+						}
+					});
+				}
+			)();
+			const script: Script = fifty.$loader.script("module.js");
+			return script({
+				library: {
+					web: fifty.global.jsh.web,
+					file: fifty.global.jsh.file,
+					http: fifty.global.jsh.http,
+					curl: curl,
+					shell: fifty.global.jsh.shell
+				}
+			});
+		//@ts-ignore
+		})(fifty);
+	}
+
 	(
 		function(
 			fifty: slime.fifty.test.Kit
@@ -302,7 +330,9 @@ namespace slime.jrunscript.tools {
 					}
 				};
 
-				fifty.tests.lab.containerCreateRemove = function() {
+				fifty.tests.lab.cli = fifty.test.Parent();
+
+				fifty.tests.lab.cli.containerCreateRemove = function() {
 					const containerRemove: StringCommand<{ id: string }> = {
 						invocation: function(p) {
 							return {
@@ -367,8 +397,45 @@ namespace slime.jrunscript.tools {
 		//	TODO	automatically generate this by parsing the YAML
 		export interface Interface {
 			SystemInfo: Endpoint<void, void, void, slime.external.docker.engine.paths.SystemInfo.Responses.$200>
+			ContainerCreate: Endpoint<void, slime.external.docker.engine.paths.ContainerCreate.QueryParameters, slime.external.docker.engine.paths.ContainerCreate.Parameters.Body, slime.external.docker.engine.paths.ContainerCreate.Responses.$201>
 			ContainerList: Endpoint<void, slime.external.docker.engine.paths.ContainerList.QueryParameters, void, slime.external.docker.engine.paths.ContainerList.Responses.$200>
+			ContainerDelete: Endpoint<slime.external.docker.engine.paths.ContainerDelete.PathParameters, slime.external.docker.engine.paths.ContainerDelete.QueryParameters, void, void>
 		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { $api, jsh } = fifty.global;
+
+				jsh.shell.console("Loading ...");
+				var api: docker.api.Interface = docker.test.subject.engine.api;
+				jsh.shell.console("Loaded.");
+
+				fifty.tests.lab.api = fifty.test.Parent();
+				fifty.tests.manual.api = {};
+
+				fifty.tests.manual.api.info = function() {
+					var info = api.SystemInfo();
+					jsh.shell.console(JSON.stringify(info, void(0), 4));
+				}
+
+				fifty.tests.lab.api.containerCd = function() {
+					function exists(id: string): boolean {
+						return api.ContainerList({ query: { all: true } }).some(function(container) {
+							return container.Id == id;
+						});
+					}
+
+					var created = api.ContainerCreate({ query: {}, body: { Image: "busybox" } });
+					verify(exists(created.Id)).is(true);
+					api.ContainerDelete({ path: { id: created.Id }});
+					verify(exists(created.Id)).is(false);
+				}
+			}
+		//@ts-ignore
+		)(fifty);
 	}
 
 	export namespace docker {
@@ -380,50 +447,6 @@ namespace slime.jrunscript.tools {
 	export namespace docker {
 		export type Script = slime.loader.Script<Context,Exports>
 	}
-
-	export namespace docker.test {
-		export const subject: Exports = (function(fifty: slime.fifty.test.Kit) {
-			const curl = (
-				function() {
-					var script: slime.jrunscript.http.client.curl.Script = fifty.$loader.script("../../../rhino/http/client/curl.js");
-					return script({
-						console: fifty.global.jsh.shell.console,
-						library: {
-							io: fifty.global.jsh.io,
-							shell: fifty.global.jsh.shell
-						}
-					});
-				}
-			)();
-			const script: Script = fifty.$loader.script("module.js");
-			return script({
-				library: {
-					web: fifty.global.jsh.web,
-					file: fifty.global.jsh.file,
-					http: fifty.global.jsh.http,
-					curl: curl,
-					shell: fifty.global.jsh.shell
-				}
-			});
-		//@ts-ignore
-		})(fifty);
-	}
-
-	(
-		function(
-			fifty: slime.fifty.test.Kit
-		) {
-			const { $api, jsh } = fifty.global;
-
-			var api: docker.api.Interface = docker.test.subject.engine.api;
-
-			fifty.tests.manual.api = function() {
-				var info = api.SystemInfo();
-				jsh.shell.console(JSON.stringify(info, void(0), 4));
-			}
-		}
-	//@ts-ignore
-	)(fifty);
 
 	export namespace kubectl {
 		export interface Program {
@@ -513,7 +536,8 @@ namespace slime.jrunscript.tools {
 		) {
 			fifty.tests.suite = function() {
 				fifty.run(fifty.tests.cli.exec);
-				if (fifty.global.jsh.shell.PATH.getCommand("docker")) fifty.run(fifty.tests.lab);
+				if (fifty.global.jsh.shell.PATH.getCommand("docker")) fifty.run(fifty.tests.lab.cli);
+				if (fifty.global.jsh.tools.docker.engine.api) fifty.run(fifty.tests.lab.api);
 				fifty.run(fifty.tests.kubectl);
 			}
 		}
