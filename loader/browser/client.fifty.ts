@@ -60,7 +60,16 @@ namespace slime.browser {
 	}
 
 	interface Bootstrap {
+		/**
+		 * The base URL of this script: the URL of the script, excluding the file name.
+		 */
+		base: string
 
+		/**
+		 * @param path A relative path.
+		 * @returns A full path representing the specified relative path relative to the base URL of this script.
+		 */
+		getRelativePath: (path: string) => string
 	}
 
 	export interface Exports {
@@ -71,39 +80,184 @@ namespace slime.browser {
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
+			var endsWith = function(suffix: string) {
+				return Object.assign(
+					function(string: string) {
+						return string.endsWith(suffix);
+					},
+					{
+						toString: function() { return "endsWith(" + suffix + ")"; }
+					}
+				);
+			}
+
 			fifty.tests.exports.base = function() {
-				var runtime = fifty.global.window["inonit"].loader;
-				var base = runtime.base;
-				var endsInSlash = base.substring(base.length-1) == "/";
-				fifty.verify(endsInSlash).is(true);
+				var runtime: slime.browser.Exports = fifty.global.window["inonit"].loader;
+				fifty.verify(runtime,"runtime").base.evaluate(endsWith("/")).is(true);
 			}
 		}
 	//@ts-ignore
 	)(fifty);
 
+	export interface Exports {
+		Loader: {
+			/**
+			 * Creates a SLIME {@link slime.Loader | Loader}.
+			 *
+			 * @param p A URL which should be used as the base URL of the loader.
+			 */
+			new (p: string): slime.Loader
+
+			/**
+			 * Creates a SLIME {@link slime.Loader | Loader}; see {@link slime.loader.Source}.
+			 */
+			new (p: slime.loader.Source): slime.Loader
+
+			series: slime.runtime.Exports["Loader"]["series"]
+			//	TODO	JSAPI-declared properties below
+			//	getCode
+			//	fetch
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const inonit: Runtime = fifty.global.window["inonit"];
+
+			fifty.tests.bitbucketIssue296 = function() {
+				var hasSourceUrl = function(p) {
+					return p.string.indexOf("sourceURL") != -1;
+				};
+
+				var loader = new inonit.loader.Loader(inonit.loader.base + "../");
+
+				var resource = function(path) {
+					var resource = loader.get(path);
+					return {
+						type: resource.type,
+						string: resource.read(String)
+					};
+				}
+
+				verify(inonit).loader.base.is(inonit.loader.base);
+				var js = resource("loader/expression.js");
+				var css = resource("loader/api/api.css");
+				var html = resource("README.html");
+				verify(js,"js").evaluate(hasSourceUrl).is(true);
+				verify(js).type.media.is("application");
+				verify(js).type.subtype.is("javascript");
+				verify(css,"css").evaluate(hasSourceUrl).is(false);
+				//verify(css,"css").type.is.type("text/css");
+				if (css.type) {
+					verify(css).type.media.is("text");
+					verify(css).type.subtype.is("css");
+				}
+				verify(html,"html").evaluate(hasSourceUrl).is(false);
+				//	TODO: Unclear why the below construct does not work; is it because of the property named 'type', or maybe
+				//	the 'is' method?
+				// verify(html,"html").type.is.type("object");
+				if (html.type) {
+					verify(html).type.media.is("text");
+					verify(html).type.subtype.is("html");
+				}
+			}
+		}
+	//@ts-ignore
+	)(fifty);
 
 	export interface Exports {
-		//	top-level loader methods that operate by URL
+		/**
+		 * See {@link slime.runtime.Exports.namespace}.
+		 */
+		namespace: slime.runtime.Exports["namespace"]
+	}
+
+	(
+		function(
+			$window: Window,
+			fifty: slime.fifty.test.Kit
+		) {
+			const inonit: Runtime = $window["inonit"];
+			const window = $window as Window & { foo: any }
+			fifty.tests.exports.namespace = {};
+
+			const test = function(value) {
+				fifty.verify(value).is(true);
+			};
+
+			fifty.tests.exports.namespace.happy = function() {
+				test(typeof(window.foo) == "undefined");
+				var ns = inonit.loader.namespace("foo.bar.baz");
+				test(ns == window.foo.bar.baz);
+			}
+
+			fifty.tests.exports.namespace.topLevelScope = function() {
+				var f = function() {
+					return this;
+				}
+
+				var x = new function() {
+					this.f = f;
+				}
+
+				test(f() == window);
+				test(x.f() != window);
+			}
+		}
+	//@ts-ignore
+	)(window,fifty);
+
+
+
+	export interface Exports {
+		/**
+		 * See {@link slime.Loader.run}. Note that the first argument will be interpreted relative to the current page.
+		 */
 		run: slime.Loader["run"]
+
+		/**
+		 * See {@link slime.Loader.file}. Note that the first argument will be interpreted relative to the current page.
+		 */
 		file: slime.Loader["file"]
+
+		/**
+		 * See {@link slime.Loader.module}. Note that the first argument will be interpreted relative to the current page.
+		 */
 		module: slime.Loader["module"]
+
+		/**
+		 * See {@link slime.Loader.value}. Note that the first argument will be interpreted relative to the current page.
+		 */
 		value: slime.Loader["value"]
+
 		get: slime.Loader["get"]
 
+		/**
+		 * A loader that loads resources using the current page as the base URL for the loader.
+		 */
 		loader: slime.Loader
-		Loader: {
-			new (p: string | slime.loader.Source): slime.Loader
-			series: slime.runtime.Exports["Loader"]["series"]
-		}
-		namespace: any
+
+		/**
+		 * Contains useful pieces of code that are exported for general use.
+		 */
 		nugget: {
+			/**
+			 * Returns an object based on the current script being loaded (that is, the script from which the method is invoked).
+			 */
 			getCurrentScript: () => Bootstrap
+
+			//	TODO	this structure is almost the same as the Bootstrap structure above; can we combine them?
 			page: {
 				base: string
 				relative: (path: string) => string
 			}
 		}
 		$api: slime.$api.Global
+
+		//	(undocumented) According to very old documentation, used to support development-related functions.
 		$sdk: any
 
 		/** @deprecated */
@@ -121,6 +275,7 @@ namespace slime.browser {
 	) {
 		fifty.tests.suite = function() {
 			fifty.run(fifty.tests.exports);
+			fifty.run(fifty.tests.bitbucketIssue296);
 		}
 	}
 //@ts-ignore
