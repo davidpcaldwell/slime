@@ -38,6 +38,16 @@ namespace slime.browser {
 		XMLHttpRequest?: typeof XMLHttpRequest
 	}
 
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.exports = fifty.test.Parent();
+		}
+	//@ts-ignore
+	)(fifty);
+
+
 	/**
 	 * The state of the `window` object prior to loading the `loader/browser/client.js` script.
 	 */
@@ -52,6 +62,25 @@ namespace slime.browser {
 	interface Bootstrap {
 
 	}
+
+	export interface Exports {
+		base: string
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.exports.base = function() {
+				var runtime = fifty.global.window["inonit"].loader;
+				var base = runtime.base;
+				var endsInSlash = base.substring(base.length-1) == "/";
+				fifty.verify(endsInSlash).is(true);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
 
 	export interface Exports {
 		//	top-level loader methods that operate by URL
@@ -74,7 +103,6 @@ namespace slime.browser {
 				relative: (path: string) => string
 			}
 		}
-		base: string
 		$api: slime.$api.Global
 		$sdk: any
 
@@ -92,11 +120,7 @@ namespace slime.browser {
 		fifty: slime.fifty.test.Kit
 	) {
 		fifty.tests.suite = function() {
-			var runtime = fifty.global.window["inonit"].loader;
-			var base = runtime.base;
-			var endsInSlash = base.substring(base.length-1) == "/";
-			fifty.verify(endsInSlash).is(true);
-			fifty.verify(1).is(1);
+			fifty.run(fifty.tests.exports);
 		}
 	}
 //@ts-ignore
