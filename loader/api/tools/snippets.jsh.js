@@ -162,8 +162,7 @@
 				 * @returns { node is slime.jrunscript.file.File }
 				 */
 				var isFile = function(node) {
-					if (!node["file"]) throw new TypeError("Not file: " + node);
-					return true;
+					return !node.directory;
 				}
 
 				var snippets = jsh.script.file.parent.getSubdirectory("snippets").list()
