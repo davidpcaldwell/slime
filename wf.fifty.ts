@@ -9,8 +9,12 @@ namespace slime {
 		namespace test {
 			export const fixtures = (function(fifty: slime.fifty.test.Kit) {
 				const { $api, jsh } = fifty.global;
-				var script: slime.jsh.wf.test.Script = fifty.$loader.script("tools/wf/test/fixtures.ts");
-				var x = script();
+				const fixtures = (
+					function() {
+						var script: slime.jsh.wf.test.Script = fifty.$loader.script("tools/wf/test/fixtures.ts");
+						return script();
+					}
+				)();
 				return {
 					clone: function() {
 						type Repository = ReturnType<ReturnType<slime.jrunscript.tools.git.Exports["program"]>["repository"]>
@@ -70,7 +74,7 @@ namespace slime {
 						// 	}
 						// })();
 					},
-					configure: x.configure,
+					configure: fixtures.configure,
 					wf: function(repository: slime.jrunscript.tools.git.repository.Local, p: any): { status: number, stdio?: { output?: string, error?: string }} {
 						return jsh.shell.run({
 							command: repository.directory.getFile("wf"),
