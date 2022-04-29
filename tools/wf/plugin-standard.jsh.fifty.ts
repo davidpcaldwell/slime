@@ -11,10 +11,12 @@ namespace slime.jsh.wf {
 				function(fifty: slime.fifty.test.Kit) {
 					const jsh = fifty.global.jsh;
 
-					function configure(repository: slime.jrunscript.tools.git.repository.Local) {
-						repository.config({ set: { name: "user.name", value: "foo" }});
-						repository.config({ set: { name: "user.email", value: "bar@example.com" }});
-					}
+					const fixtures = (
+						function() {
+							var script: slime.jsh.wf.test.Script = fifty.$loader.script("../../tools/wf/test/fixtures.ts");
+							return script();
+						}
+					)();
 
 					var src: slime.jrunscript.file.Directory = fifty.jsh.file.object.getRelativePath("../..").directory;
 
@@ -24,7 +26,7 @@ namespace slime.jsh.wf {
 						var repository = jsh.tools.git.init({
 							pathname: project
 						});
-						configure(repository);
+						fixtures.configure(repository);
 						repository.config({
 							set: {
 								name: "receive.denyCurrentBranch",
@@ -68,7 +70,7 @@ namespace slime.jsh.wf {
 							repository.submodule.update({
 								init: true
 							});
-							configure(repository);
+							fixtures.configure(repository);
 							//	copy local modifications to source tree since we are testing this source code
 							src.copy(repository.directory.getRelativePath("slime"), {
 								filter: function(item) {
