@@ -233,10 +233,40 @@
 		var mime = $api.mime;
 
 		/**
-		 * @param { ConstructorParameters<slime.resource.Factory>[0] } o
+		 *
+		 * @param { slime.resource.HistoricSupportedDescriptor } o
+		 * @returns { o is slime.resource.DeprecatedStringDescriptor }
+		 */
+		function isStringDescriptor(o) {
+			return (!o["read"] || !o["read"]["string"]) && o["string"];
+		}
+
+		/**
+		 *
+		 * @param { slime.resource.DeprecatedStringDescriptor } stringDescriptor
+		 * @returns { slime.resource.Descriptor }
+		 */
+		function toDescriptor(stringDescriptor) {
+			return {
+				name: stringDescriptor.name,
+				type: stringDescriptor.type,
+				read: {
+					string: function() {
+						return stringDescriptor.string;
+					}
+				}
+			}
+		}
+
+		/**
+		 * @param { slime.resource.HistoricSupportedDescriptor } o
 		 * @this { slime.Resource }
 		 */
 		function Resource(o) {
+			if (isStringDescriptor(o)) {
+				return new Resource(toDescriptor(o));
+			}
+
 			this.type = (function(type,name) {
 				if (typeof(type) == "string") return mime.Type.parse(type);
 				if (type && type.media && type.subtype) return type;
@@ -249,14 +279,6 @@
 			})(o.type,o.name);
 
 			this.name = (o.name) ? o.name : void(0);
-
-			if ( (!o.read || !o.read.string) && typeof(o.string) == "string") {
-				if (!o.read) o.read = {
-					string: function() {
-						return o.string;
-					}
-				};
-			}
 
 			if (o.read && o.read.string) {
 				this.read = function(v) {
@@ -353,7 +375,15 @@
 				},
 				//	TODO	currently only used by jsapi in jsh/unit via jsh.js, so undocumented
 				//	TODO	also used by client.html unit tests
-				$platform: $platform
+				$platform: $platform,
+				internal: {
+					resource: {
+						stringDescriptor: {
+							is: isStringDescriptor,
+							adapt: toDescriptor
+						}
+					}
+				}
 			},
 			($platform.java) ? { java: $platform.java } : {},
 			{

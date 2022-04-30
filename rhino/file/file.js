@@ -196,6 +196,7 @@
 
 				//	TODO	adapt to use jrunscript/io Resource write method
 				var poorResource = new $context.Resource({
+					read: void(0),
 					write: {
 						binary: function (mode) {
 							return $filesystem.write.binary(peer, Boolean(mode.append));

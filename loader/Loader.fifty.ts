@@ -67,7 +67,7 @@ namespace slime {
 			 * @param path The path from which to load a resource.
 			 * @returns The resource at the given path, or `null` if there is none.
 			 */
-			get?: (path: string) => resource.Descriptor
+			get?: (path: string) => resource.HistoricSupportedDescriptor
 
 			list?: (path: string) => {
 				path: string
@@ -76,7 +76,7 @@ namespace slime {
 			}[]
 
 			thread?: {
-				get: (path: string) => PromiseLike<resource.Descriptor>
+				get: (path: string) => PromiseLike<resource.HistoricSupportedDescriptor>
 			}
 
 			/**
