@@ -25,7 +25,7 @@ namespace slime.jsh {
 		 * * See whether it represents an absolute path on the filesystem, and if so, load the code from that file,
 		 * * Otherwise, treat it as a path relative to the main script (see {@link slime.jsh.script}) and try to load it from there.
 		 */
-		export type Code = slime.resource.Descriptor | slime.jrunscript.file.Pathname | slime.jrunscript.file.File | slime.web.Url | string
+		export type Code = slime.resource.HistoricSupportedDescriptor | slime.jrunscript.file.Pathname | slime.jrunscript.file.File | slime.web.Url | string
 
 		export interface Exports {
 			run: (code: Code, scope?: { [name: string]: any }, target?: object) => void

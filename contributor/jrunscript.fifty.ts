@@ -23,6 +23,7 @@
 			})();
 
 			fifty.load("../loader/expression.fifty.ts");
+			fifty.load("../loader/jrunscript/expression.fifty.ts");
 			fifty.load("../loader/jrunscript/java.fifty.ts");
 			fifty.load("../rhino/system/test/Packages.inonit.system.fifty.ts");
 			fifty.load("../rhino/jrunscript/api.fifty.ts");

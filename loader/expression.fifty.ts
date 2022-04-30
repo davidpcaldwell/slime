@@ -98,12 +98,7 @@ namespace slime {
 			//			path? Or to the full path?
 			name?: string
 
-			/**
-			 * The content of the resource as a string.
-			 */
-			string?: string
-
-			read?: {
+			read: {
 				/**
 				 * Returns the content of the resource as a string.
 				 */
@@ -111,7 +106,22 @@ namespace slime {
 			}
 		}
 
-		export type Factory = new (o: Descriptor) => slime.Resource
+		/**
+		 * @deprecated
+		 */
+		export interface DeprecatedStringDescriptor {
+			type?: Descriptor["type"]
+			name?: Descriptor["name"]
+
+			/**
+			 * The content of the resource as a string.
+			 */
+			string: string
+		}
+
+		export type HistoricSupportedDescriptor = Descriptor | DeprecatedStringDescriptor
+
+		export type Factory = new (o: HistoricSupportedDescriptor) => slime.Resource
 	}
 
 	/**
@@ -317,29 +327,36 @@ namespace slime {
 					}
 				)();
 
+				var dummyRead = {};
+
 				fifty.tests.exports.Resource = function() {
 					fifty.run(function type() {
 						var toString = function(p): string { return p.toString(); };
 
 						(function() {
-							var resource = new api.Resource({});
+							var resource = new api.Resource({
+								read: dummyRead
+							});
 							verify(resource).type.is(null);
 						})();
 						(function() {
 							var resource = new api.Resource({
-								type: api.mime.Type.parse("application/json")
+								type: api.mime.Type.parse("application/json"),
+								read: dummyRead
 							});
 							verify(resource).type.evaluate(toString).is("application/json");
 						})();
 						(function() {
 							var resource = new api.Resource({
-								name: "foo.js"
+								name: "foo.js",
+								read: dummyRead
 							});
 							verify(resource).type.evaluate(toString).is("application/javascript");
 						})();
 						(function() {
 							var resource = new api.Resource({
-								name: "foo.x"
+								name: "foo.x",
+								read: dummyRead
 							});
 							verify(resource).type.is(null);
 						})();
@@ -348,12 +365,15 @@ namespace slime {
 					fifty.run(function name() {
 						(function() {
 							var resource = new api.Resource({
-								name: "foo"
+								name: "foo",
+								read: dummyRead
 							});
 							verify(resource).name.is("foo");
 						})();
 						(function() {
-							var resource = new api.Resource({});
+							var resource = new api.Resource({
+								read: dummyRead
+							});
 							verify(resource).evaluate.property("name").is(void(0));
 						})();
 					});
@@ -614,6 +634,20 @@ namespace slime {
 			 */
 			mime: slime.$api.mime.Export
 			readonly typescript: slime.runtime.$slime.TypeScript
+		}
+
+		export interface Exports {
+			/**
+			 * Interfaces used internally by SLIME that are probably not of interest.
+			 */
+			internal: {
+				resource: {
+					stringDescriptor: {
+						is: (o: slime.resource.HistoricSupportedDescriptor) => o is slime.resource.DeprecatedStringDescriptor
+						adapt: (stringDescriptor: slime.resource.DeprecatedStringDescriptor) => slime.resource.Descriptor
+					}
+				}
+			}
 		}
 	}
 }
