@@ -233,40 +233,10 @@
 		var mime = $api.mime;
 
 		/**
-		 *
-		 * @param { slime.resource.HistoricSupportedDescriptor } o
-		 * @returns { o is slime.resource.DeprecatedStringDescriptor }
-		 */
-		function isStringDescriptor(o) {
-			return (!o["read"] || !o["read"]["string"]) && o["string"];
-		}
-
-		/**
-		 *
-		 * @param { slime.resource.DeprecatedStringDescriptor } stringDescriptor
-		 * @returns { slime.resource.Descriptor }
-		 */
-		function toDescriptor(stringDescriptor) {
-			return {
-				name: stringDescriptor.name,
-				type: stringDescriptor.type,
-				read: {
-					string: function() {
-						return stringDescriptor.string;
-					}
-				}
-			}
-		}
-
-		/**
 		 * @param { slime.resource.HistoricSupportedDescriptor } o
 		 * @this { slime.Resource }
 		 */
 		function Resource(o) {
-			if (isStringDescriptor(o)) {
-				return new Resource(toDescriptor(o));
-			}
-
 			this.type = (function(type,name) {
 				if (typeof(type) == "string") return mime.Type.parse(type);
 				if (type && type.media && type.subtype) return type;
@@ -282,7 +252,10 @@
 
 			if (o.read && o.read.string) {
 				this.read = function(v) {
-					if (v === String) return o.read.string();
+					if (v === String) {
+						var rv = o.read.string();
+						return rv;
+					}
 					if (v === JSON) return JSON.parse(this.read(String));
 
 					var e4xRead = function() {
@@ -300,6 +273,22 @@
 				}
 			}
 		}
+
+		var ResourceExport = Object.assign(
+			Resource,
+			{
+				/** @type { slime.resource.Exports["ReadInterface"]} */
+				ReadInterface: {
+					string: function(content) {
+						return {
+							string: function() {
+								return content;
+							}
+						}
+					}
+				}
+			}
+		)
 
 		var scripts = code.scripts(
 			{
@@ -325,7 +314,7 @@
 
 		/** @type { slime.runtime.internal.loader.Constructor } */
 		var Loader = code.Loader({
-			Resource: Resource,
+			Resource: ResourceExport,
 			methods: scripts.methods,
 			createScriptScope: scripts.createScriptScope,
 			$api: $api
@@ -352,7 +341,7 @@
 				run: topMethod("run"),
 				file: topMethod("file"),
 				value: topMethod("value"),
-				Resource: Resource,
+				Resource: ResourceExport,
 				Loader: Object.assign(Loader, loaders),
 				loader: loaders,
 				namespace: function(string) {
@@ -375,15 +364,7 @@
 				},
 				//	TODO	currently only used by jsapi in jsh/unit via jsh.js, so undocumented
 				//	TODO	also used by client.html unit tests
-				$platform: $platform,
-				internal: {
-					resource: {
-						stringDescriptor: {
-							is: isStringDescriptor,
-							adapt: toDescriptor
-						}
-					}
-				}
+				$platform: $platform
 			},
 			($platform.java) ? { java: $platform.java } : {},
 			{

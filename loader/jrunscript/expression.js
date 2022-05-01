@@ -34,8 +34,7 @@
 			namespace: void(0),
 			$platform: void(0),
 			$api: void(0),
-			typescript: void(0),
-			internal: void(0)
+			typescript: void(0)
 		};
 
 		var slime = (
@@ -192,18 +191,28 @@
 			return was;
 		})($exports.mime);
 
-		$exports.java = $exports.file(new $exports.Resource({ name: "slime://loader/jrunscript/java.js", string: String($loader.getLoaderCode("jrunscript/java.js")) }), {
-			engine: $bridge,
-			classpath: $loader.getClasspath()
-		});
-
-		$exports.io = $exports.file(new $exports.Resource({ name: "slime://loader/jrunscript/io.js", string: String($loader.getLoaderCode("jrunscript/io.js")) }), {
-			_streams: _streams,
-			api: {
-				java: $exports.java,
-				Resource: $exports.Resource
+		$exports.java = $exports.file(
+			new $exports.Resource({
+				name: "slime://loader/jrunscript/java.js",
+				read: $exports.Resource.ReadInterface.string(String($loader.getLoaderCode("jrunscript/java.js")))
+			}), {
+				engine: $bridge,
+				classpath: $loader.getClasspath()
 			}
-		});
+		);
+
+		$exports.io = $exports.file(
+			new $exports.Resource({
+				name: "slime://loader/jrunscript/io.js",
+				read: $exports.Resource.ReadInterface.string(String($loader.getLoaderCode("jrunscript/io.js")))
+			}), {
+				_streams: _streams,
+				api: {
+					java: $exports.java,
+					Resource: $exports.Resource
+				}
+			}
+		);
 
 		var getTypeFromPath = function(path) {
 			return $exports.mime.Type.fromName(path);
@@ -277,8 +286,8 @@
 						};
 					}
 
-					if ($exports.internal.resource.stringDescriptor.is(p)) {
-						return new Resource($exports.internal.resource.stringDescriptor.adapt(p));
+					if (p["string"]) {
+						throw new TypeError();
 					}
 
 					if (isJrunscriptDescriptor(p) && !p.read) {
@@ -595,7 +604,12 @@
 				}
 			);
 			/** @type { slime.jrunscript.runtime.Exports["Resource"] } */
-			return rv;
+			return Object.assign(
+				rv,
+				{
+					ReadInterface: was.ReadInterface
+				}
+			);
 		})($exports.Resource);
 
 		$exports.Resource = Resource;

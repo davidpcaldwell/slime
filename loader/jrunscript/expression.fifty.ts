@@ -27,7 +27,7 @@ namespace slime.jrunscript.runtime {
 
 	export namespace resource {
 		export interface Descriptor extends slime.resource.Descriptor {
-			read: slime.resource.Descriptor["read"] & {
+			read?: slime.resource.ReadInterface & {
 				binary?: () => slime.jrunscript.runtime.io.InputStream
 				text?: any
 			}
@@ -167,7 +167,7 @@ namespace slime.jrunscript.runtime {
 			new (p: { resources: any, Loader?: any }): any
 		}
 
-		Resource: {
+		Resource: slime.runtime.Exports["Resource"] & {
 			new (p: resource.HistoricSupportedDescriptor): Resource
 		}
 

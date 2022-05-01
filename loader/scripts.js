@@ -85,11 +85,13 @@
 			var string = (function() {
 				if (resource.read) {
 					var rv = resource.read(String);
+					if (typeof(rv) == "undefined") throw new Error("resource.read(String) returned undefined");
 					if (typeof(rv) == "string") return rv;
+					throw new Error("Not string: " + typeof(rv) + " " + rv + " using " + resource.read);
 				}
 			})();
 			if (typeof(string) != "string") {
-				throw new TypeError("Resource: " + resource.name + " is not convertible to string, so cannot be executed.");
+				throw new TypeError("Resource: " + resource.name + " is not convertible to string, it is " + typeof(string) + ", so cannot be executed. resource.read = " + resource.read);
 			}
 
 			var typeIs = function(string) {

@@ -93,7 +93,7 @@ namespace slime {
 			/**
 			 * Allows the loader to customize the way resource descriptors are turned into resources.
 			 */
-			Resource?: resource.Factory
+			Resource?: resource.Exports
 		}
 
 		export interface Scope {
@@ -139,20 +139,25 @@ namespace slime {
 				var source = api.loader.source.object({
 					a: {
 						resource: {
-							string: "a"
+							read: {
+								string: function() { return "a"; }
+							}
 						}
 					},
 					b: {
 						loader: {
 							c: {
 								resource: {
-									string: "c"
+									read: {
+										string: function() { return "c"; }
+									}
 								}
 							}
 						}
 					}
 				});
 				var readString = function(p: Resource) {
+					if (typeof(p.read) != "function") throw new Error("p.read is " + typeof(p.read));
 					return p.read(String);
 				};
 				var loader = new api.Loader(source);
@@ -188,11 +193,15 @@ namespace slime {
 						get: function(path) {
 							if (path == "foo") {
 								return Promise.resolve({
-									string: path.toUpperCase()
+									read: {
+										string: function() { return path.toUpperCase(); }
+									}
 								});
 							} else if (path == "../js/web/module.js") {
 								return Promise.resolve({
-									string: fifty.$loader.get("../js/web/module.js").read(String)
+									read: {
+										string: function() { return fifty.$loader.get("../js/web/module.js").read(String) }
+									}
 								});
 							}
 						}
@@ -232,7 +241,7 @@ namespace slime {
 
 namespace slime.runtime.internal.loader {
 	export interface Scope {
-		Resource: new (o: ConstructorParameters<slime.resource.Factory>[0]) => slime.Resource
+		Resource: slime.resource.Exports
 		methods: scripts.Exports["methods"]
 		createScriptScope: scripts.Exports["createScriptScope"]
 		$api: slime.$api.Global
