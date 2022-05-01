@@ -56,7 +56,7 @@ namespace slime.jrunscript.runtime {
 			}
 		}
 
-		export type HistoricSupportedDescriptor = resource.Descriptor | resource.LoadedDescriptor | slime.resource.HistoricSupportedDescriptor | DeprecatedStreamDescriptor
+		export type HistoricSupportedDescriptor = resource.Descriptor | resource.LoadedDescriptor | slime.resource.Descriptor | DeprecatedStreamDescriptor
 
 		export interface WriteMode {
 		}
