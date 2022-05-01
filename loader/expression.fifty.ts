@@ -109,8 +109,6 @@ namespace slime {
 			read?: ReadInterface
 		}
 
-		export type HistoricSupportedDescriptor = Descriptor
-
 		export interface Exports {
 			new (o: Descriptor): slime.Resource
 
