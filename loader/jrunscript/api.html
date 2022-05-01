@@ -447,7 +447,9 @@ END LICENSE
 									"foo.bar=baz"
 								];
 								var resource = new module.Resource({
-									string: lines.join("\n")
+									read: {
+										string: function() { return lines.join("\n"); }
+									}
 								});
 								var _properties = resource.read(Packages.java.util.Properties);
 								var properties = new function() {

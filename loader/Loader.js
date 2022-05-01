@@ -41,7 +41,11 @@
 				/** @type { slime.Loader["get"] } */
 				if (p.get) this.get = function(path) {
 					var rsource = this.source.get(path);
-					return get(rsource);
+					var rv = get(rsource);
+					if (rv && !rv.read) {
+						throw new TypeError("woo");
+					}
+					return rv;
 				};
 
 				if (p.thread) this.thread = {

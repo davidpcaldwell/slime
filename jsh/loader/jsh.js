@@ -79,7 +79,7 @@
 									getLoaderScript: function(path) {
 										return new $slime.Resource({
 											name: "jsh://" + path,
-											string: getLoaderCode(path)
+											read: $slime.Resource.ReadInterface.string(getLoaderCode(path))
 										});
 									}
 								};
@@ -162,14 +162,27 @@
 						if (code.java && code.java.adapt() && $slime.classpath.getClass("java.io.File").isInstance(code.java.adapt())) {
 							return new $slime.Resource({
 								name: code.toString(),
-								string: (function() {
-									var _in = new Packages.java.io.FileInputStream(code.java.adapt());
-									var rv = String(new Packages.inonit.script.runtime.io.Streams().readString(_in));
-									return rv;
-								})()
+								read: $slime.Resource.ReadInterface.string(
+									(function() {
+										var _in = new Packages.java.io.FileInputStream(code.java.adapt());
+										var rv = String(new Packages.inonit.script.runtime.io.Streams().readString(_in));
+										return rv;
+									})()
+								)
 							});
 						} else {
 							if (typeof(code.read) == "function") return code;
+							if (typeof(code.string) == "string") {
+								return $slime.$api.deprecate(function() {
+									return new $slime.Resource({
+										name: code.name,
+										type: code.type,
+										read: {
+											string: function() { return code.string; }
+										}
+									});
+								})();
+							}
 							return new $slime.Resource(code);
 						}
 					};

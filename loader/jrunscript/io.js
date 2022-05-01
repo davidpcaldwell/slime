@@ -195,8 +195,11 @@
 
 			if ($platform.e4x) {
 				this.asXml = function() {
+					var string = this.asString();
 					var resource = new $context.api.Resource({
-						string: this.asString()
+						read: {
+							string: function() { return string; }
+						}
 					});
 					return resource.read(XMLList);
 				}

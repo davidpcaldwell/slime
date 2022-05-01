@@ -82,10 +82,18 @@ namespace slime {
 	}
 
 	export namespace resource {
+		export interface ReadInterface {
+			/**
+			 * Returns the content of the resource as a string.
+			 */
+			string?: () => string
+		}
+
 		/**
 		 * An object that provides the implementation for a {@link slime.Resource}.
 		 */
 		export interface Descriptor {
+			//	TODO	remove mime.Type
 			/**
 			 * The MIME type of the resource.
 			 */
@@ -98,30 +106,18 @@ namespace slime {
 			//			path? Or to the full path?
 			name?: string
 
-			read: {
-				/**
-				 * Returns the content of the resource as a string.
-				 */
-				string?: () => string
+			read?: ReadInterface
+		}
+
+		export type HistoricSupportedDescriptor = Descriptor
+
+		export interface Exports {
+			new (o: Descriptor): slime.Resource
+
+			ReadInterface: {
+				string: (content: string) => ReadInterface
 			}
 		}
-
-		/**
-		 * @deprecated
-		 */
-		export interface DeprecatedStringDescriptor {
-			type?: Descriptor["type"]
-			name?: Descriptor["name"]
-
-			/**
-			 * The content of the resource as a string.
-			 */
-			string: string
-		}
-
-		export type HistoricSupportedDescriptor = Descriptor | DeprecatedStringDescriptor
-
-		export type Factory = new (o: HistoricSupportedDescriptor) => slime.Resource
 	}
 
 	/**
@@ -210,17 +206,6 @@ namespace slime {
 					[name: string]: string
 				}
 			}
-
-			(
-				function(
-					fifty: slime.fifty.test.Kit
-				) {
-					fifty.tests.runtime.$slime = function() {
-
-					}
-				}
-			//@ts-ignore
-			)(fifty);
 		}
 
 		/**
@@ -290,7 +275,7 @@ namespace slime {
 			/**
 			 * Creates a {@link slime.Resource | Resource}.
 			 */
-			Resource: resource.Factory
+			Resource: resource.Exports
 		}
 
 		(
@@ -327,36 +312,29 @@ namespace slime {
 					}
 				)();
 
-				var dummyRead = {};
-
 				fifty.tests.exports.Resource = function() {
 					fifty.run(function type() {
 						var toString = function(p): string { return p.toString(); };
 
 						(function() {
-							var resource = new api.Resource({
-								read: dummyRead
-							});
+							var resource = new api.Resource({});
 							verify(resource).type.is(null);
 						})();
 						(function() {
 							var resource = new api.Resource({
-								type: api.mime.Type.parse("application/json"),
-								read: dummyRead
+								type: api.mime.Type.parse("application/json")
 							});
 							verify(resource).type.evaluate(toString).is("application/json");
 						})();
 						(function() {
 							var resource = new api.Resource({
-								name: "foo.js",
-								read: dummyRead
+								name: "foo.js"
 							});
 							verify(resource).type.evaluate(toString).is("application/javascript");
 						})();
 						(function() {
 							var resource = new api.Resource({
-								name: "foo.x",
-								read: dummyRead
+								name: "foo.x"
 							});
 							verify(resource).type.is(null);
 						})();
@@ -365,27 +343,24 @@ namespace slime {
 					fifty.run(function name() {
 						(function() {
 							var resource = new api.Resource({
-								name: "foo",
-								read: dummyRead
+								name: "foo"
 							});
 							verify(resource).name.is("foo");
 						})();
 						(function() {
-							var resource = new api.Resource({
-								read: dummyRead
-							});
+							var resource = new api.Resource({});
 							verify(resource).evaluate.property("name").is(void(0));
 						})();
 					});
 
-					fifty.run(function() {
+					fifty.run(function read() {
 						var readResource = function(resource: slime.Resource): string {
 							return resource.read(String);
 						};
 
 						(function() {
 							var resource = new api.Resource({
-								string: "foo"
+								read: api.Resource.ReadInterface.string("foo")
 							});
 							verify(resource).evaluate(readResource).is("foo");
 						})();
@@ -403,19 +378,19 @@ namespace slime {
 
 						(function() {
 							var resource = new api.Resource({
-								string: JSON.stringify({ foo: "bar" })
+								read: api.Resource.ReadInterface.string(JSON.stringify({ foo: "bar" }))
 							});
 							var json: { foo: string, baz?: any } = resource.read(JSON);
 							verify(json).foo.is("bar");
 							verify(json).evaluate.property("baz").is(void(0));
 						})();
-						var p = $platform;
-						var global = (function() { return this; })();
-						var XML = global["XML"];
-						var XMLList = global["XMLList"];
+
 						if ($platform.e4x) {
+							var global = (function() { return this; })();
+							var XML = global["XML"];
+							var XMLList = global["XMLList"];
 							var resource = new api.Resource({
-								string: "<a><b/></a>"
+								read: api.Resource.ReadInterface.string("<a><b/></a>")
 							});
 							var xml = resource.read(XML);
 							verify(xml).is.type("xml");
@@ -494,17 +469,8 @@ namespace slime {
 			) => { [name: string]: any }
 		}
 
-		(
-			function(
-				fifty: slime.fifty.test.Kit
-			) {
-
-			}
-		//@ts-ignore
-		)(fifty);
-
 		export namespace internal {
-			export type Resource = resource.Factory
+			export type Resource = resource.Exports
 			export type methods = {
 				run: any
 			}
@@ -635,20 +601,6 @@ namespace slime {
 			mime: slime.$api.mime.Export
 			readonly typescript: slime.runtime.$slime.TypeScript
 		}
-
-		export interface Exports {
-			/**
-			 * Interfaces used internally by SLIME that are probably not of interest.
-			 */
-			internal: {
-				resource: {
-					stringDescriptor: {
-						is: (o: slime.resource.HistoricSupportedDescriptor) => o is slime.resource.DeprecatedStringDescriptor
-						adapt: (stringDescriptor: slime.resource.DeprecatedStringDescriptor) => slime.resource.Descriptor
-					}
-				}
-			}
-		}
 	}
 }
 
@@ -659,13 +611,9 @@ namespace slime.test {
 
 (
 	function(
-		$loader: slime.Loader,
-		verify: slime.fifty.test.verify,
-		tests: any,
 		fifty: slime.fifty.test.Kit
 	) {
-		tests.suite = function() {
-			fifty.run(fifty.tests.runtime.$slime);
+		fifty.tests.suite = function() {
 			fifty.run(fifty.tests.exports.Resource);
 			fifty.load("mime.fifty.ts");
 			fifty.load("$api-Function.fifty.ts");
@@ -673,4 +621,4 @@ namespace slime.test {
 		}
 	}
 //@ts-ignore
-)($loader,verify,tests,fifty)
+)(fifty)
