@@ -78,6 +78,8 @@ namespace slime {
 			 * Allows the XML and XMLList constructors as arguments, and returns the resource as an E4X `type="xml"` object.
 			 */
 			(p: any): any
+
+			string: () => string
 		}
 	}
 
@@ -108,14 +110,6 @@ namespace slime {
 
 			read?: ReadInterface
 		}
-
-		export interface Exports {
-			new (o: Descriptor): slime.Resource
-
-			ReadInterface: {
-				string: (content: string) => ReadInterface
-			}
-		}
 	}
 
 	/**
@@ -141,20 +135,12 @@ namespace slime {
 			function(
 				fifty: slime.fifty.test.Kit
 			) {
-				fifty.tests.runtime = {};
+				fifty.tests.runtime = {
+					exports: fifty.test.Parent()
+				};
 			}
 		//@ts-ignore
 		)(fifty);
-
-		export interface Scope {
-			$engine: slime.runtime.$engine | undefined
-			$slime: slime.runtime.$slime.Deployment
-
-			/**
-			 * Note that in the rare case of a browser with Java, Packages may not include inonit.* classes
-			 */
-			Packages: slime.jrunscript.Packages
-		}
 
 		export namespace $slime {
 			export interface TypeScript {
@@ -245,6 +231,16 @@ namespace slime {
 			MetaObject: any
 		}
 
+		export interface Scope {
+			$engine: slime.runtime.$engine | undefined
+			$slime: slime.runtime.$slime.Deployment
+
+			/**
+			 * Note that in the rare case of a browser with Java, Packages may not include inonit.* classes
+			 */
+			Packages: slime.jrunscript.Packages
+		}
+
 		/**
 		 * An object provided by SLIME to embedders who load its runtime with a suitable {@link slime.runtime.Scope}. Provides
 		 * tools that may be directly provided to callers as APIs, or may be used to build APIs useful for the embedding.
@@ -260,14 +256,15 @@ namespace slime {
 		export interface Exports {
 		}
 
-		(
-			function(
-				fifty: slime.fifty.test.Kit
-			) {
-				fifty.tests.exports = {};
+		export namespace resource {
+			export interface Exports {
+				new (o: slime.resource.Descriptor): slime.Resource
+
+				ReadInterface: {
+					string: (content: string) => slime.resource.ReadInterface
+				}
 			}
-		//@ts-ignore
-		)(fifty);
+		}
 
 		export interface Exports {
 			/**
@@ -310,7 +307,7 @@ namespace slime {
 					}
 				)();
 
-				fifty.tests.exports.Resource = function() {
+				fifty.tests.runtime.exports.Resource = function() {
 					fifty.run(function type() {
 						var toString = function(p): string { return p.toString(); };
 
@@ -352,15 +349,26 @@ namespace slime {
 					});
 
 					fifty.run(function read() {
-						var readResource = function(resource: slime.Resource): string {
-							return resource.read(String);
-						};
+						var readResource = fifty.evaluate.create(
+							function(resource: slime.Resource): string {
+								return resource.read(String);
+							},
+							"read(String)"
+						);
+
+						var newReadResource = fifty.evaluate.create(
+							function(resource: slime.Resource): string {
+								return resource.read.string();
+							},
+							"read.string()"
+						);
 
 						(function() {
 							var resource = new api.Resource({
 								read: api.Resource.ReadInterface.string("foo")
 							});
 							verify(resource).evaluate(readResource).is("foo");
+							verify(resource).evaluate(newReadResource).is("foo");
 						})();
 
 						(function() {
@@ -602,17 +610,12 @@ namespace slime {
 	}
 }
 
-namespace slime.test {
-	declare type api = { convert: (input: number) => number };
-	export type factory = slime.loader.Script<{ scale: number }, api>;
-}
-
 (
 	function(
 		fifty: slime.fifty.test.Kit
 	) {
 		fifty.tests.suite = function() {
-			fifty.run(fifty.tests.exports.Resource);
+			fifty.run(fifty.tests.runtime.exports);
 			fifty.load("mime.fifty.ts");
 			fifty.load("$api-Function.fifty.ts");
 			fifty.load("Loader.fifty.ts");

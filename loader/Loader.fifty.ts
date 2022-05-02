@@ -93,7 +93,7 @@ namespace slime {
 			/**
 			 * Allows the loader to customize the way resource descriptors are turned into resources.
 			 */
-			Resource?: resource.Exports
+			Resource?: runtime.resource.Exports
 		}
 
 		export interface Scope {
@@ -102,6 +102,11 @@ namespace slime {
 			$exports: any
 			$export: ($exports: any) => void
 		}
+	}
+
+	export namespace loader.test {
+		declare type api = { convert: (input: number) => number };
+		export type factory = slime.loader.Script<{ scale: number }, api>;
 	}
 
 	(
@@ -167,7 +172,7 @@ namespace slime {
 			}
 
 			tests.closure = function() {
-				var closure: slime.test.factory = $loader.value("test/data/closure.js");
+				var closure: slime.loader.test.factory = $loader.value("test/data/closure.js");
 				var context = { scale: 2 };
 				var module = closure(context);
 				verify(module).convert(2).is(4);
@@ -175,13 +180,13 @@ namespace slime {
 
 			tests.$export = function() {
 				fifty.run(function module() {
-					var module: slime.test.factory = $loader.script("test/data/module-export.js");
+					var module: slime.loader.test.factory = $loader.script("test/data/module-export.js");
 					var api = module({ scale: 2 });
 					verify(api).convert(3).is(6);
 				});
 
 				fifty.run(function file() {
-					var file: slime.test.factory = $loader.script("test/data/file-export.js");
+					var file: slime.loader.test.factory = $loader.script("test/data/file-export.js");
 					var api = file({ scale: 2 });
 					verify(api).convert(3).is(6);
 				});
@@ -241,7 +246,7 @@ namespace slime {
 
 namespace slime.runtime.internal.loader {
 	export interface Scope {
-		Resource: slime.resource.Exports
+		Resource: slime.runtime.resource.Exports
 		methods: scripts.Exports["methods"]
 		createScriptScope: scripts.Exports["createScriptScope"]
 		$api: slime.$api.Global

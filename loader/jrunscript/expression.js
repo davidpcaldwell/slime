@@ -397,11 +397,10 @@
 						}).call(this,this.name);
 					}
 
-					/** @type { slime.jrunscript.runtime.Resource["read"] } */
-					var read = this.read;
+					/** @type { slime.js.Cast<slime.Resource["read"]> } */
+					var cast = $exports.$api.Function.cast;
 
-					/** @property { slime.jrunscript.runtime.Exports["Resources"] } */
-					this.read = read;
+					this.read = cast(this.read);
 
 					this.read = Object.assign(
 						(function(was,global) {
@@ -445,6 +444,7 @@
 						{
 							binary: void(0),
 							text: void(0),
+							string: void(0),
 							lines: void(0)
 						}
 					);
@@ -473,7 +473,7 @@
 						};
 					}
 
-					// TODO: Resources are not really conceptually immuntable, since they can be written, so they should probably not
+					// TODO: Resources are not really conceptually immutable, since they can be written, so they should probably not
 					// cache length and modified
 					if (isJrunscriptDescriptor(p) && Object.prototype.hasOwnProperty.call(p, "length")) {
 						Object.defineProperty(this,"length",{
