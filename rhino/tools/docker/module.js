@@ -452,28 +452,26 @@
 									return versions.macos.latest.intel;
 								}
 							})();
-							if (p.version) {
-								//	TODO	note that this will get an arbitrary version if it is cached, since the basename is
-								//			still Docker.dmg
-								var dmg = p.library.install.get({
-									url: distribution
-								});
-								p.library.shell.run({
-									command: "hdiutil",
-									arguments: ["attach", dmg]
-								});
-								var invocation = {
-									command: "cp",
-									arguments: ["-R", "/Volumes/Docker/Docker.app", p.destination]
-								};
-								if (p.sudo) {
-									invocation = p.library.shell.invocation.sudo({
-										askpass: p.sudo.askpass
-									})(p.library.shell.Invocation.old(invocation))
-								}
-								p.library.shell.run(invocation);
-								events.fire("installed", p.destination.directory);
+							//	TODO	note that this will get an arbitrary version if it is cached, since the basename is
+							//			still Docker.dmg
+							var dmg = p.library.install.get({
+								url: distribution
+							});
+							p.library.shell.run({
+								command: "hdiutil",
+								arguments: ["attach", dmg]
+							});
+							var invocation = {
+								command: "cp",
+								arguments: ["-R", "/Volumes/Docker/Docker.app", p.destination]
+							};
+							if (p.sudo) {
+								invocation = p.library.shell.invocation.sudo({
+									askpass: p.sudo.askpass
+								})(p.library.shell.Invocation.old(invocation))
 							}
+							p.library.shell.run(invocation);
+							events.fire("installed", p.destination.directory);
 						} else {
 							throw new Error("Unsupported: Docker installation on non-macOS system.");
 						}
