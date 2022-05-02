@@ -251,33 +251,40 @@
 			this.name = (o.name) ? o.name : void(0);
 
 			if (o.read && o.read.string) {
-				this.read = function(v) {
-					if (v === String) {
-						var rv = o.read.string();
-						return rv;
-					}
-					if (v === JSON) return JSON.parse(this.read(String));
+				this.read = Object.assign(
+					function(v) {
+						if (v === String) {
+							var rv = o.read.string();
+							return rv;
+						}
+						if (v === JSON) return JSON.parse(this.read(String));
 
-					var e4xRead = function() {
-						var string = this.read(String);
-						string = string.replace(/\<\?xml.*\?\>/, "");
-						string = string.replace(/\<\!DOCTYPE.*?\>/, "");
-						return string;
-					};
+						var e4xRead = function() {
+							var string = this.read(String);
+							string = string.replace(/\<\?xml.*\?\>/, "");
+							string = string.replace(/\<\!DOCTYPE.*?\>/, "");
+							return string;
+						};
 
-					if ($platform.e4x && v == $platform.e4x.XML) {
-						return $platform.e4x.XML( e4xRead.call(this) );
-					} else if ($platform.e4x && v == $platform.e4x.XMLList) {
-						return $platform.e4x.XMLList( e4xRead.call(this) );
+						if ($platform.e4x && v == $platform.e4x.XML) {
+							return $platform.e4x.XML( e4xRead.call(this) );
+						} else if ($platform.e4x && v == $platform.e4x.XMLList) {
+							return $platform.e4x.XMLList( e4xRead.call(this) );
+						}
+					},
+					{
+						string: function() {
+							return o.read.string();
+						}
 					}
-				}
+				)
 			}
 		}
 
 		var ResourceExport = Object.assign(
 			Resource,
 			{
-				/** @type { slime.resource.Exports["ReadInterface"]} */
+				/** @type { slime.runtime.resource.Exports["ReadInterface"]} */
 				ReadInterface: {
 					string: function(content) {
 						return {

@@ -49,7 +49,9 @@ namespace slime.fifty {
 	export namespace test {
 		export type verify = slime.definition.verify.Verify
 
-		export type tests = any
+		export type tests = {
+			[x: string]: any
+		}
 
 		/**
 		 * Executes a test part from another file. The version that takes a third argument allows an argument of that type
@@ -90,6 +92,13 @@ namespace slime.fifty {
 				 * having to have the parent repeat the names of all its children.
 				 */
 				Parent: () => () => void
+			}
+
+			evaluate: {
+				create: <T,R>(
+					f: (t: T) => R,
+					string: string
+				) => (t: T) => R
 			}
 
 			tests: tests

@@ -474,6 +474,18 @@
 						return rv;
 					}
 				},
+				evaluate: {
+					create: function(f,string) {
+						return Object.assign(
+							f,
+							{
+								toString: function() {
+									return string;
+								}
+							}
+						)
+					}
+				},
 				tests: tests,
 				verify: function() {
 					return verify.apply(this,arguments);
