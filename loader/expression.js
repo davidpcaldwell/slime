@@ -233,7 +233,7 @@
 		var mime = $api.mime;
 
 		/**
-		 * @param { slime.resource.HistoricSupportedDescriptor } o
+		 * @param { slime.resource.Descriptor } o
 		 * @this { slime.Resource }
 		 */
 		function Resource(o) {

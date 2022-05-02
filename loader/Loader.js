@@ -31,7 +31,7 @@
 
 				/**
 				 *
-				 * @param { slime.resource.HistoricSupportedDescriptor } descriptor
+				 * @param { slime.resource.Descriptor } descriptor
 				 */
 				function get(descriptor) {
 					if (!descriptor) return null;
