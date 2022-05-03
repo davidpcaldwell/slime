@@ -78,14 +78,24 @@ namespace slime {
 			 * Allows the XML and XMLList constructors as arguments, and returns the resource as an E4X `type="xml"` object.
 			 */
 			(p: any): any
+
+			string: () => string
 		}
 	}
 
 	export namespace resource {
+		export interface ReadInterface {
+			/**
+			 * Returns the content of the resource as a string.
+			 */
+			string?: () => string
+		}
+
 		/**
 		 * An object that provides the implementation for a {@link slime.Resource}.
 		 */
 		export interface Descriptor {
+			//	TODO	remove mime.Type
 			/**
 			 * The MIME type of the resource.
 			 */
@@ -98,20 +108,8 @@ namespace slime {
 			//			path? Or to the full path?
 			name?: string
 
-			/**
-			 * The content of the resource as a string.
-			 */
-			string?: string
-
-			read?: {
-				/**
-				 * Returns the content of the resource as a string.
-				 */
-				string?: () => string
-			}
+			read?: ReadInterface
 		}
-
-		export type Factory = new (o: Descriptor) => slime.Resource
 	}
 
 	/**
@@ -137,20 +135,12 @@ namespace slime {
 			function(
 				fifty: slime.fifty.test.Kit
 			) {
-				fifty.tests.runtime = {};
+				fifty.tests.runtime = {
+					exports: fifty.test.Parent()
+				};
 			}
 		//@ts-ignore
 		)(fifty);
-
-		export interface Scope {
-			$engine: slime.runtime.$engine | undefined
-			$slime: slime.runtime.$slime.Deployment
-
-			/**
-			 * Note that in the rare case of a browser with Java, Packages may not include inonit.* classes
-			 */
-			Packages: slime.jrunscript.Packages
-		}
 
 		export namespace $slime {
 			export interface TypeScript {
@@ -200,17 +190,6 @@ namespace slime {
 					[name: string]: string
 				}
 			}
-
-			(
-				function(
-					fifty: slime.fifty.test.Kit
-				) {
-					fifty.tests.runtime.$slime = function() {
-
-					}
-				}
-			//@ts-ignore
-			)(fifty);
 		}
 
 		/**
@@ -252,6 +231,16 @@ namespace slime {
 			MetaObject: any
 		}
 
+		export interface Scope {
+			$engine: slime.runtime.$engine | undefined
+			$slime: slime.runtime.$slime.Deployment
+
+			/**
+			 * Note that in the rare case of a browser with Java, Packages may not include inonit.* classes
+			 */
+			Packages: slime.jrunscript.Packages
+		}
+
 		/**
 		 * An object provided by SLIME to embedders who load its runtime with a suitable {@link slime.runtime.Scope}. Provides
 		 * tools that may be directly provided to callers as APIs, or may be used to build APIs useful for the embedding.
@@ -267,20 +256,21 @@ namespace slime {
 		export interface Exports {
 		}
 
-		(
-			function(
-				fifty: slime.fifty.test.Kit
-			) {
-				fifty.tests.exports = {};
+		export namespace resource {
+			export interface Exports {
+				new (o: slime.resource.Descriptor): slime.Resource
+
+				ReadInterface: {
+					string: (content: string) => slime.resource.ReadInterface
+				}
 			}
-		//@ts-ignore
-		)(fifty);
+		}
 
 		export interface Exports {
 			/**
 			 * Creates a {@link slime.Resource | Resource}.
 			 */
-			Resource: resource.Factory
+			Resource: resource.Exports
 		}
 
 		(
@@ -317,7 +307,7 @@ namespace slime {
 					}
 				)();
 
-				fifty.tests.exports.Resource = function() {
+				fifty.tests.runtime.exports.Resource = function() {
 					fifty.run(function type() {
 						var toString = function(p): string { return p.toString(); };
 
@@ -358,16 +348,27 @@ namespace slime {
 						})();
 					});
 
-					fifty.run(function() {
-						var readResource = function(resource: slime.Resource): string {
-							return resource.read(String);
-						};
+					fifty.run(function read() {
+						var readResource = fifty.evaluate.create(
+							function(resource: slime.Resource): string {
+								return resource.read(String);
+							},
+							"read(String)"
+						);
+
+						var newReadResource = fifty.evaluate.create(
+							function(resource: slime.Resource): string {
+								return resource.read.string();
+							},
+							"read.string()"
+						);
 
 						(function() {
 							var resource = new api.Resource({
-								string: "foo"
+								read: api.Resource.ReadInterface.string("foo")
 							});
 							verify(resource).evaluate(readResource).is("foo");
+							verify(resource).evaluate(newReadResource).is("foo");
 						})();
 
 						(function() {
@@ -383,19 +384,19 @@ namespace slime {
 
 						(function() {
 							var resource = new api.Resource({
-								string: JSON.stringify({ foo: "bar" })
+								read: api.Resource.ReadInterface.string(JSON.stringify({ foo: "bar" }))
 							});
 							var json: { foo: string, baz?: any } = resource.read(JSON);
 							verify(json).foo.is("bar");
 							verify(json).evaluate.property("baz").is(void(0));
 						})();
-						var p = $platform;
-						var global = (function() { return this; })();
-						var XML = global["XML"];
-						var XMLList = global["XMLList"];
+
 						if ($platform.e4x) {
+							var global = (function() { return this; })();
+							var XML = global["XML"];
+							var XMLList = global["XMLList"];
 							var resource = new api.Resource({
-								string: "<a><b/></a>"
+								read: api.Resource.ReadInterface.string("<a><b/></a>")
 							});
 							var xml = resource.read(XML);
 							verify(xml).is.type("xml");
@@ -474,17 +475,8 @@ namespace slime {
 			) => { [name: string]: any }
 		}
 
-		(
-			function(
-				fifty: slime.fifty.test.Kit
-			) {
-
-			}
-		//@ts-ignore
-		)(fifty);
-
 		export namespace internal {
-			export type Resource = resource.Factory
+			export type Resource = resource.Exports
 			export type methods = {
 				run: any
 			}
@@ -618,25 +610,16 @@ namespace slime {
 	}
 }
 
-namespace slime.test {
-	declare type api = { convert: (input: number) => number };
-	export type factory = slime.loader.Script<{ scale: number }, api>;
-}
-
 (
 	function(
-		$loader: slime.Loader,
-		verify: slime.fifty.test.verify,
-		tests: any,
 		fifty: slime.fifty.test.Kit
 	) {
-		tests.suite = function() {
-			fifty.run(fifty.tests.runtime.$slime);
-			fifty.run(fifty.tests.exports.Resource);
+		fifty.tests.suite = function() {
+			fifty.run(fifty.tests.runtime.exports);
 			fifty.load("mime.fifty.ts");
 			fifty.load("$api-Function.fifty.ts");
 			fifty.load("Loader.fifty.ts");
 		}
 	}
 //@ts-ignore
-)($loader,verify,tests,fifty)
+)(fifty)

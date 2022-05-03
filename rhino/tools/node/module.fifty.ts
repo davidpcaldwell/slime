@@ -19,12 +19,32 @@ namespace slime.jrunscript.node {
 		number: string
 	}
 
+	/**
+	 * A particular local installation of Node.js
+	 */
 	export interface Installation {
 		version: Version
 
-		run: <T>(p: {
+		//	TODO	make the below a link?
+		/**
+		 * Executes a command or script using this Node.js installation.
+		 *
+		 * @param p Invocations are largely compatible with `rhino/shell` `run()`; differences are noted in the type definition
+		 * for this parameter.
+		 *
+		 * @returns The type returned by `evaluate`, or the `rhino/shell` return value including process status, output, etc.
+		 */
+		run: <T = ReturnType<slime.jrunscript.shell.Exports["run"]>>(p: {
+			/**
+			 * (optional; default is just to run `node`) The Node.js command to run (as located in the Node `bin` directory).
+			 */
 			command?: string
+
+			/**
+			 * Specifies the location of a Node project; if indicated, commands will also be located in `node_modules/.bin`.
+			 */
 			project?: slime.jrunscript.file.Directory
+
 			arguments?: Parameters<slime.jrunscript.shell.Exports["run"]>[0]["arguments"]
 			directory?: Parameters<slime.jrunscript.shell.Exports["run"]>[0]["directory"]
 			environment?: Parameters<slime.jrunscript.shell.Exports["run"]>[0]["environment"]
@@ -43,14 +63,26 @@ namespace slime.jrunscript.node {
 			}
 		}) => string
 
+		/**
+		 * An object representing the modules installed globally in this Node installation.
+		 */
 		modules: {
+			/**
+			 * An object with a property for each installed module; the name of the module is the name of the property.
+			 */
 			installed: { [key: string]: {
 				version: string
 				required: {
 					version: string
 				}
 			} }
-			install: (p: { name: string }) => void
+
+			install: (p: {
+				/**
+				 * The name of the module to install.
+				 */
+				name: string
+			}) => void
 			require: (p: { name: string, version?: string }) => void
 			uninstall: Function
 		}
@@ -86,4 +118,92 @@ namespace slime.jrunscript.node {
 			events?: slime.$api.events.Handler<install.Events>
 		) => slime.jrunscript.node.Installation
 	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { jsh } = fifty.global;
+
+			function isInstalled(node: slime.jsh.Global["shell"]["tools"]["node"]): node is slime.jsh.shell.tools.node.Installed {
+				return node["run"];
+			}
+
+			if (!isInstalled(jsh.shell.tools.node)) {
+				jsh.shell.tools.node.install();
+			}
+
+			const node = jsh.shell.tools.node;
+
+			var api: slime.jsh.shell.tools.node.Installed;
+			if (isInstalled(node)) {
+				api = node;
+			} else {
+				throw new TypeError();
+			}
+
+			fifty.tests.jsapi = fifty.test.Parent();
+
+			fifty.tests.jsapi.a = function() {
+				var result = api.run({
+					arguments: [fifty.jsh.file.object.getRelativePath("test/hello.js")],
+					stdio: {
+						output: String
+					}
+				});
+				verify(result).stdio.output.is("Hello, World (Node.js)\n");
+			}
+
+			fifty.tests.jsapi.b = function() {
+				//	TODO	should not be messing with global installation in tests
+				if (api.modules["minimal-package"]) {
+					api.run({
+						command: "npm",
+						arguments: ["uninstall", "-g", "minimal-package"]
+					});
+					api.modules["refresh"]();
+				}
+				verify(api).modules.installed.evaluate.property("minimal-package").is(void(0));
+				var result = api.run({
+					command: "npm",
+					arguments: ["install", "-g", "minimal-package"]
+				});
+				api.modules["refresh"]();
+				verify(api).modules.installed["minimal-package"].is.type("object");
+
+				api.run({
+					command: "npm",
+					arguments: ["uninstall", "-g", "minimal-package"]
+				});
+				api.modules["refresh"]();
+				verify(api).modules.installed.evaluate.property("minimal-package").is(void(0));
+			}
+
+			fifty.tests.jsapi.c = function() {
+				if (api.modules["minimal-package"]) {
+					api.modules.uninstall({
+						name: "minimal-package"
+					});
+				}
+				verify(api).modules.installed.evaluate.property("minimal-package").is(void(0));
+				api.modules.install({
+					name: "minimal-package"
+				});
+				verify(api).modules.installed["minimal-package"].is.type("object");
+
+				api.modules.uninstall({
+					name: "minimal-package"
+				});
+				verify(api).modules.installed.evaluate.property("minimal-package").is(void(0));
+			}
+
+			fifty.tests.suite = function() {
+				jsh.shell.console("version: " + api.version.number);
+				fifty.run(fifty.tests.jsapi);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
 }

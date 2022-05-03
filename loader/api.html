@@ -481,7 +481,13 @@ END LICENSE
 									var tokens = path.split("/");
 									if (tokens.length == 1) {
 										if (typeof(value) == "string") {
-											value = { string: value };
+											value = (function(string) {
+												return {
+													read: {
+														string: function() { return string; }
+													}
+												}
+											})(value);
 										}
 										contents[path] = { resource: value };
 									} else {
@@ -496,6 +502,7 @@ END LICENSE
 									get: function(path) {
 										var tokens = path.split("/");
 										if (tokens.length == 1) {
+											debugger;
 											return (contents[path]) ? contents[path].resource : null;
 										} else {
 											if (contents[tokens[0]]) {

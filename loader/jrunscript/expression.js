@@ -191,54 +191,114 @@
 			return was;
 		})($exports.mime);
 
-		$exports.java = $exports.file(new $exports.Resource({ name: "slime://loader/jrunscript/java.js", string: String($loader.getLoaderCode("jrunscript/java.js")) }), {
-			engine: $bridge,
-			classpath: $loader.getClasspath()
-		});
-
-		$exports.io = $exports.file(new $exports.Resource({ name: "slime://loader/jrunscript/io.js", string: String($loader.getLoaderCode("jrunscript/io.js")) }), {
-			_streams: _streams,
-			api: {
-				java: $exports.java,
-				Resource: $exports.Resource
+		$exports.java = $exports.file(
+			new $exports.Resource({
+				name: "slime://loader/jrunscript/java.js",
+				read: $exports.Resource.ReadInterface.string(String($loader.getLoaderCode("jrunscript/java.js")))
+			}), {
+				engine: $bridge,
+				classpath: $loader.getClasspath()
 			}
-		});
+		);
+
+		$exports.io = $exports.file(
+			new $exports.Resource({
+				name: "slime://loader/jrunscript/io.js",
+				read: $exports.Resource.ReadInterface.string(String($loader.getLoaderCode("jrunscript/io.js")))
+			}), {
+				_streams: _streams,
+				api: {
+					java: $exports.java,
+					Resource: $exports.Resource
+				}
+			}
+		);
 
 		var getTypeFromPath = function(path) {
 			return $exports.mime.Type.fromName(path);
+		}
+
+		/**
+		 *
+		 * @param { slime.jrunscript.runtime.resource.HistoricSupportedDescriptor } o
+		 * @returns { o is slime.jrunscript.runtime.resource.DeprecatedStreamDescriptor }
+		 */
+		var isStreamDescriptor = function(o) {
+			return o["stream"] && o["stream"]["binary"]
+		};
+
+		/**
+		 *
+		 * @param { slime.jrunscript.runtime.resource.DeprecatedStreamDescriptor } o
+		 * @returns { slime.jrunscript.runtime.resource.Descriptor }
+		 */
+		var fromStreamDescriptor = function(o) {
+			return {
+				read: {
+					binary: (function(stream) {
+						var _bytes;
+
+						return function() {
+							if (!_bytes) {
+								_bytes = stream.java.array();
+							}
+							return new $exports.io.InputStream(new Packages.java.io.ByteArrayInputStream(_bytes));
+						}
+					})(o.stream.binary)
+				}
+			}
+		}
+
+		/**
+		 *
+		 * @param { slime.jrunscript.runtime.resource.HistoricSupportedDescriptor } o
+		 * @returns { o is slime.jrunscript.runtime.resource.LoadedDescriptor }
+		 */
+		var isLoadedDescriptor = function(o) {
+			return o["_loaded"];
+		};
+
+		/**
+		 *
+		 * @param { slime.resource.Descriptor | slime.jrunscript.runtime.resource.Descriptor } p
+		 * @returns { p is slime.jrunscript.runtime.resource.Descriptor }
+		 */
+		var isJrunscriptDescriptor = function(p) {
+			return (p.read && (p.read["binary"] || p.read["text"])) || p["write"];
 		}
 
 		/** @type { slime.jrunscript.runtime.Exports["Resource"] } */
 		var Resource = (function(was) {
 			var rv = (
 				/**
-				 * @param { slime.jrunscript.runtime.resource.Descriptor } p
+				 * @param { slime.jrunscript.runtime.resource.HistoricSupportedDescriptor } p
 				 * @constructor
 				 */
 				function(p) {
-					if (p.stream && p.stream.binary) {
-						if (!p.read) p.read = {};
-						p.read.binary = (function(stream) {
-							var _bytes;
-
-							return function() {
-								if (!_bytes) {
-									_bytes = stream.java.array();
-								}
-								return new $exports.io.InputStream(new Packages.java.io.ByteArrayInputStream(_bytes));
-							}
-						})(p.stream.binary);
+					if (isStreamDescriptor(p)) {
+						return new Resource(fromStreamDescriptor(p));
 					}
 
-					if (p._loaded) {
+					if (isLoadedDescriptor(p)) {
 						if (!p.read) p.read = {};
 						p.read.binary = function() {
 							return new $exports.io.InputStream(p._loaded.resource.getInputStream());
-						}
+						};
+					}
+
+					if (p["string"]) {
+						throw new TypeError();
+					}
+
+					if (isJrunscriptDescriptor(p) && !p.read) {
+						$exports.$api.deprecate(function() {
+							//	'read' is mandatory in TypeScript but not present, why?
+							//	TODO	leads to a lot of extra && p.read && p.read.foo below
+						})();
 					}
 
 					var binary = (function() {
-						if (p.read && p.read.binary) {
+						if (isJrunscriptDescriptor(p) && p.read && p.read.binary) {
 							return function() {
 								return p.read.binary();
 							}
@@ -247,7 +307,7 @@
 
 					// TODO: Probably should implement this method if the argument provides a string or read.string also
 					var text = (function() {
-						if (p.read && p.read.text) {
+						if (isJrunscriptDescriptor(p) && p.read && p.read.text) {
 							return function() {
 								return p.read.text();
 							}
@@ -257,12 +317,7 @@
 								return new $exports.io.Reader(new Packages.java.io.StringReader(p.read.string()));
 							}
 						}
-						if (p.string) {
-							return function() {
-								return new $exports.io.Reader(new Packages.java.io.StringReader(p.string));
-							}
-						}
-						if (p.read && p.read.binary) {
+						if (isJrunscriptDescriptor(p) && p.read && p.read.binary) {
 							return function() {
 								return p.read.binary().character();
 							}
@@ -278,7 +333,7 @@
 					was.apply(this,arguments);
 
 					//	TODO	probably should allow name property to be passed in and then passed through
-					if (p._loaded) {
+					if (isLoadedDescriptor(p)) {
 						if (!this.type) {
 							this.type = $exports.mime.Type.fromName(p._loaded.path);
 						}
@@ -342,11 +397,10 @@
 						}).call(this,this.name);
 					}
 
-					/** @type { slime.jrunscript.runtime.Resource["read"] } */
-					var read = this.read;
+					/** @type { slime.js.Cast<slime.Resource["read"]> } */
+					var cast = $exports.$api.Function.cast;
 
-					/** @property { slime.jrunscript.runtime.Exports["Resources"] } */
-					this.read = read;
+					this.read = cast(this.read);
 
 					this.read = Object.assign(
 						(function(was,global) {
@@ -390,6 +444,7 @@
 						{
 							binary: void(0),
 							text: void(0),
+							string: void(0),
 							lines: void(0)
 						}
 					);
@@ -418,9 +473,9 @@
 						};
 					}
 
-					// TODO: Resources are not really conceptually immuntable, since they can be written, so they should probably not
+					// TODO: Resources are not really conceptually immutable, since they can be written, so they should probably not
 					// cache length and modified
-					if (Object.prototype.hasOwnProperty.call(p, "length")) {
+					if (isJrunscriptDescriptor(p) && Object.prototype.hasOwnProperty.call(p, "length")) {
 						Object.defineProperty(this,"length",{
 							get: $exports.$api.Function.memoized(function() {
 								if (typeof(p.length) == "number") {
@@ -450,7 +505,7 @@
 					// if (typeof(p.modified) == "object") {
 					// 	this.modified = p.modified;
 					// }
-					if (Object.prototype.hasOwnProperty.call(p, "modified")) {
+					if (isJrunscriptDescriptor(p) && Object.prototype.hasOwnProperty.call(p, "modified")) {
 						this.modified = void(0);
 						Object.defineProperty(this,"modified",{
 							get: $exports.$api.Function.memoized(function() {
@@ -460,7 +515,7 @@
 						});
 					}
 
-					if (p.write) {
+					if (isJrunscriptDescriptor(p) && p.write) {
 						var writeBinary = (function() {
 							if (p.write.binary) {
 								return function(mode) {
@@ -549,7 +604,12 @@
 				}
 			);
 			/** @type { slime.jrunscript.runtime.Exports["Resource"] } */
-			return rv;
+			return Object.assign(
+				rv,
+				{
+					ReadInterface: was.ReadInterface
+				}
+			);
 		})($exports.Resource);
 
 		$exports.Resource = Resource;

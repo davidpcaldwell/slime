@@ -60,7 +60,7 @@
 			file: jsh.script.file.parent.getFile("jrunscript.fifty.ts")
 		}));
 
-		suite.add("internal/slime/jsapi", new jsh.unit.html.Part({
+		suite.add("internal/runtime", new jsh.unit.html.Part({
 			//	TODO	redundant; now tested per-engine in contributor/suite.jsh.js
 			//	Functionality used internally or accessed through loader/jrunscript (although untested by loader/jrunscript)
 			pathname: SRC.getRelativePath("loader/api.html")
@@ -168,9 +168,6 @@
 				})
 			);
 		}
-		suite.add("jrunscript/tools/node", new jsh.unit.html.Part({
-			pathname: SRC.getRelativePath("rhino/tools/node/api.html")
-		}));
 
 		(function jshLauncher() {
 			var rhinoArgs = (jsh.shell.rhino) ? ["-rhino", jsh.shell.rhino.classpath.toString()] : [];

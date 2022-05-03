@@ -59,6 +59,11 @@
 		"no-self-assign": "off",
 
 		//	Disallows assigning global variables
-		"no-global-assign": "off"
+		"no-global-assign": "off",
+
+		//	TODO	why is this needed?
+		//	VSCode error with latest eslint complaining about the definition for the below rule not being found, so disabling it
+		//	for now, since we are not using the optional chain operator anyway (it is not supported by several supported runtimes).
+		"no-unsafe-optional-chaining": "off"
 	}
 }

@@ -222,38 +222,56 @@
 				 */
 				var Loader = function(p) {
 					if (typeof(p) == "string") {
-						p = (function(prefix) {
-							var toResourceDescriptor = function(prefix,path,code) {
-								if (code.contentType == "application/javascript") {
-									//	Add sourceURL for JavaScript debuggers
-									code.responseText += "\n//# sourceURL=" + canonicalize(prefix+path);
+						p = (
+							/**
+							 *
+							 * @param { string } prefix
+							 * @returns { slime.loader.Source }
+							 */
+							function(prefix) {
+								/**
+								 *
+								 * @param { string } prefix
+								 * @param { string } path
+								 * @param { { contentType: string, responseText: string } } code
+								 * @returns { slime.resource.Descriptor }
+								 */
+								var toResourceDescriptor = function(prefix,path,code) {
+									if (code.contentType == "application/javascript") {
+										//	Add sourceURL for JavaScript debuggers
+										code.responseText += "\n//# sourceURL=" + canonicalize(prefix+path);
+									}
+									// TODO: is 'path' used?
+									return {
+										type: code.contentType,
+										name: path,
+										read: runtime.Resource.ReadInterface.string(code.responseText)
+									};
 								}
-								// TODO: is 'path' used?
-								return { type: code.contentType, name: path, string: code.responseText, path: prefix+path };
-							}
 
-							return {
-								get: function(path) {
-									try {
-										var code = fetcher.get(prefix+path);
-										return toResourceDescriptor(prefix,path,code);
-									} catch (e) {
-										if (e.code == 404) return null;
-										throw e;
-									}
-								},
-								thread: {
+								return {
 									get: function(path) {
-										return fetcher.threadGet(prefix+path).then(function(code) {
+										try {
+											var code = fetcher.get(prefix+path);
 											return toResourceDescriptor(prefix,path,code);
-										})
+										} catch (e) {
+											if (e.code == 404) return null;
+											throw e;
+										}
+									},
+									thread: {
+										get: function(path) {
+											return fetcher.threadGet(prefix+path).then(function(code) {
+												return toResourceDescriptor(prefix,path,code);
+											})
+										}
+									},
+									toString: function() {
+										return "Browser loader: prefix=[" + prefix + "]";
 									}
-								},
-								toString: function() {
-									return "Browser loader: prefix=[" + prefix + "]";
 								}
 							}
-						})(canonicalize(p));
+						)(canonicalize(p));
 					}
 					this.source = void(0);
 					this.run = void(0);

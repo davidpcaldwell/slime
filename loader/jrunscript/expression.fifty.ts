@@ -27,16 +27,9 @@ namespace slime.jrunscript.runtime {
 
 	export namespace resource {
 		export interface Descriptor extends slime.resource.Descriptor {
-			read?: slime.resource.Descriptor["read"] & {
+			read?: slime.resource.ReadInterface & {
 				binary?: () => slime.jrunscript.runtime.io.InputStream
 				text?: any
-			}
-			stream?: {
-				binary: slime.jrunscript.runtime.io.InputStream
-			}
-			_loaded?: {
-				path: string
-				resource: slime.jrunscript.native.inonit.script.engine.Code.Loader.Resource
 			}
 			length?: number
 			modified?: any
@@ -45,6 +38,25 @@ namespace slime.jrunscript.runtime {
 				text?: any
 			}
 		}
+
+		/**
+		 * @deprecated
+		 */
+		export interface DeprecatedStreamDescriptor {
+			stream?: {
+				binary: slime.jrunscript.runtime.io.InputStream
+			}
+		}
+
+		//	TODO	not even sure what this is
+		export interface LoadedDescriptor extends Descriptor {
+			_loaded?: {
+				path: string
+				resource: slime.jrunscript.native.inonit.script.engine.Code.Loader.Resource
+			}
+		}
+
+		export type HistoricSupportedDescriptor = resource.Descriptor | resource.LoadedDescriptor | slime.resource.Descriptor | DeprecatedStreamDescriptor
 
 		export interface WriteMode {
 		}
@@ -155,8 +167,8 @@ namespace slime.jrunscript.runtime {
 			new (p: { resources: any, Loader?: any }): any
 		}
 
-		Resource: {
-			new (p: resource.Descriptor): Resource
+		Resource: slime.runtime.Exports["Resource"] & {
+			new (p: resource.HistoricSupportedDescriptor): Resource
 		}
 
 		io: slime.jrunscript.runtime.io.Exports
@@ -741,7 +753,7 @@ namespace slime.jrunscript {
 	) {
 		tests.exports = {};
 		tests.exports.Resource = function() {
-			var file: slime.jrunscript.runtime.resource.Descriptor = $loader.source.get("expression.fifty.ts");
+			var file: slime.jrunscript.runtime.resource.Descriptor = $loader.source.get("expression.fifty.ts") as slime.jrunscript.runtime.resource.Descriptor;
 			var resource = new $slime.Resource({
 				type: $slime.mime.Type.parse("application/x.typescript"),
 				read: {
@@ -789,8 +801,8 @@ namespace slime.jrunscript {
 
 			var encoded = $api.jrunscript.Properties.codec.object.encode(values);
 			jsh.shell.console(String(encoded));
-			verify(encoded).getProperty("a").evaluate(String).is("1");
-			verify(encoded).getProperty("foo").is(null);
+			verify(encoded.getProperty("a")).evaluate(String).is("1");
+			verify(encoded.getProperty("foo")).is(null);
 
 			var decoded = $api.jrunscript.Properties.codec.object.decode(encoded);
 			verify(decoded).a.is("1");
