@@ -36,6 +36,7 @@
 			fifty.load("../rhino/ip/module.fifty.ts");
 			fifty.load("../rhino/http/client/module.fifty.ts");
 			fifty.load("../rhino/shell/module.fifty.ts");
+			fifty.load("../rhino/tools/node/module.fifty.ts");
 			fifty.load("../rhino/tools/docker/module.fifty.ts");
 			fifty.load("../rhino/tools/github/module.fifty.ts");
 			if (hasGit) fifty.load("../rhino/tools/git/module.fifty.ts");
