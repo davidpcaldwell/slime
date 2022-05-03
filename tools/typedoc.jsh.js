@@ -28,6 +28,7 @@
 					if (tsVersion == "4.0.5") return "0.19.2";
 					if (tsVersion == "4.5.4") return "0.22.11";
 					if (tsVersion == "4.6.2") return "0.22.12";
+					if (tsVersion == "4.6.3") return "0.22.15";
 					throw new Error("Unspecified TypeDoc version for TypeScript " + tsVersion);
 				})(p.options["ts:version"])
 				if (false) jsh.shell.console("Require TypeDoc: " + typedocVersion);
@@ -57,7 +58,7 @@
 						rv.push("--excludeExternals");
 						rv.push("--readme", readme);
 						//	TODO	add --name
-						if (typedocVersion == "0.22.11" || typedocVersion == "0.22.12") {
+						if (typedocVersion == "0.22.11" || typedocVersion == "0.22.12" || typedocVersion == "0.22.15") {
 							if (!project.getFile("typedoc.json")) {
 								var entryPoint = project.getRelativePath("README.fifty.ts");
 								if (!entryPoint.file) {
