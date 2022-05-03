@@ -174,6 +174,65 @@ namespace slime.web {
 	//@ts-ignore
 	)(fifty);
 
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const module = test.subject;
+			const { verify } = fifty;
+
+			fifty.tests.exports.Url.query = function() {
+				var array = [ { name: "foo", value: "bar" }, { name: "foo", value: "baz" } ];
+				verify(module.Url.query(array)).is("foo=bar&foo=baz");
+			};
+
+			fifty.tests.object = {};
+
+			fifty.tests.object.Url = Object.assign(
+				function() {
+					fifty.run(function liveQueryProperty() {
+						var url = module.Url.parse("http://www.example.com/path/to/page.html");
+						var toString = function(p): string { return p.toString(); };
+						fifty.verify(url).evaluate(toString).is("http://www.example.com/path/to/page.html");
+						url.query = module.Url.query([
+							{ name: "foo", value: "bar" },
+							{ name: "foo", value: "baz" }
+						]);
+						fifty.verify(url).evaluate(toString).is("http://www.example.com/path/to/page.html?foo=bar&foo=baz");
+					});
+
+					fifty.run(fifty.tests.object.Url.constructor);
+					fifty.run(fifty.tests.object.Url.resolve);
+				},
+				{
+					constructor: function() {
+						var one = new module.Url({
+							path: "path",
+							query: [
+								{ name: "foo", value: "bar" }
+							]
+						});
+						fifty.verify(one).evaluate(function(p) { return p.toString(); }).is("path?foo=bar");
+					},
+					resolve: function() {
+						var base = module.Url.parse("http://www.example.com/path/to/page.html?name=value&foo=bar#fragment");
+						fifty.run(function() {
+							var relative = base.resolve("../foo.js");
+							var toString = function(p): string { return p.toString(); };
+							fifty.verify(relative).evaluate(toString).is("http://www.example.com/path/foo.js");
+						});
+						fifty.run(function() {
+							var relative = base.resolve("./");
+							var toString = function(p): string { return p.toString(); };
+							fifty.verify(relative).evaluate(toString).is("http://www.example.com/path/to/");
+						});
+					}
+				}
+			)
+		}
+	//@ts-ignore
+	)(fifty);
+
 	export interface Form {
 		controls: form.Control[]
 	}
@@ -254,70 +313,6 @@ namespace slime.web {
 		)(fifty);
 
 	}
-
-	export interface Exports {
-		Url: url.Api
-	}
-
-	(
-		function(
-			fifty: slime.fifty.test.Kit
-		) {
-			const module = test.subject;
-			const { verify } = fifty;
-
-			fifty.tests.exports.Url.query = function() {
-				var array = [ { name: "foo", value: "bar" }, { name: "foo", value: "baz" } ];
-				verify(module.Url.query(array)).is("foo=bar&foo=baz");
-			};
-
-			fifty.tests.object = {};
-
-			fifty.tests.object.Url = Object.assign(
-				function() {
-					fifty.run(function liveQueryProperty() {
-						var url = module.Url.parse("http://www.example.com/path/to/page.html");
-						var toString = function(p): string { return p.toString(); };
-						fifty.verify(url).evaluate(toString).is("http://www.example.com/path/to/page.html");
-						url.query = module.Url.query([
-							{ name: "foo", value: "bar" },
-							{ name: "foo", value: "baz" }
-						]);
-						fifty.verify(url).evaluate(toString).is("http://www.example.com/path/to/page.html?foo=bar&foo=baz");
-					});
-
-					fifty.run(fifty.tests.object.Url.constructor);
-					fifty.run(fifty.tests.object.Url.resolve);
-				},
-				{
-					constructor: function() {
-						var one = new module.Url({
-							path: "path",
-							query: [
-								{ name: "foo", value: "bar" }
-							]
-						});
-						fifty.verify(one).evaluate(function(p) { return p.toString(); }).is("path?foo=bar");
-					},
-					resolve: function() {
-						var base = module.Url.parse("http://www.example.com/path/to/page.html?name=value&foo=bar#fragment");
-						fifty.run(function() {
-							var relative = base.resolve("../foo.js");
-							var toString = function(p): string { return p.toString(); };
-							fifty.verify(relative).evaluate(toString).is("http://www.example.com/path/foo.js");
-						});
-						fifty.run(function() {
-							var relative = base.resolve("./");
-							var toString = function(p): string { return p.toString(); };
-							fifty.verify(relative).evaluate(toString).is("http://www.example.com/path/to/");
-						});
-					}
-				}
-			)
-		}
-	//@ts-ignore
-	)(fifty);
-
 }
 
 namespace slime.web {
