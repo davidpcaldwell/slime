@@ -168,9 +168,6 @@
 				})
 			);
 		}
-		suite.add("jrunscript/tools/node", new jsh.unit.html.Part({
-			pathname: SRC.getRelativePath("rhino/tools/node/api.html")
-		}));
 
 		(function jshLauncher() {
 			var rhinoArgs = (jsh.shell.rhino) ? ["-rhino", jsh.shell.rhino.classpath.toString()] : [];
