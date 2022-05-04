@@ -422,6 +422,43 @@
 			}
 		);
 
+		var repository = jsh.tools.git.Repository({ directory: $context.base });
+
+		var notMaster = function(branch) {
+			return branch.name != "remotes/origin/master" && branch.name != "master";
+		};
+
+		function cleanGitBranches() {
+			return $api.Function.pipe(
+				function(p) {
+					repository.fetch({ all: true, prune: true, recurseSubmodules: true, stdio: { output: null } });
+					/** @type { slime.jrunscript.tools.git.Branch[] } */
+					var branches = repository.branch({ all: true });
+					var target = "remotes/origin/master";
+					branches.filter(notMaster).forEach(function(branch) {
+						var common = repository.mergeBase({ commits: [target, branch.commit.commit.hash] });
+						if (common.commit.hash == branch.commit.commit.hash) {
+							if (/^remotes\//.test(branch.name)) {
+								var parsed = branch.name.split("/");
+								jsh.shell.console("Merged; removing remotely: " + branch.name);
+								var argument = {
+									delete: true,
+									repository: parsed[1],
+									refspec: parsed.slice(2).join("/")
+								};
+								repository.push(argument);
+							} else {
+								jsh.shell.console("Merged to " + target + "; removing " + branch.name);
+								repository.branch({ delete: branch.name });
+							}
+						} else {
+							jsh.shell.console("Unmerged: " + branch.name);
+						}
+					});
+				}
+			);
+		}
+
 		$exports.git = {
 			branch: $api.Function.pipe(
 				function(p) {
@@ -431,41 +468,25 @@
 					git.repository.command(git.command.checkout).argument({ branch: name }).run();
 				}
 			),
-			branches: (jsh.tools.git.Repository) ? new function() {
-				var repository = jsh.tools.git.Repository({ directory: $context.base });
-
-				var notMaster = function(branch) {
-					return branch.name != "remotes/origin/master" && branch.name != "master";
-				};
-
-				this.clean = $api.Function.pipe(
-					function(p) {
-						repository.fetch({ all: true, prune: true, recurseSubmodules: true, stdio: { output: null } });
-						/** @type { slime.jrunscript.tools.git.Branch[] } */
-						var branches = repository.branch({ all: true });
-						var target = "remotes/origin/master";
-						branches.filter(notMaster).forEach(function(branch) {
-							var common = repository.mergeBase({ commits: [target, branch.commit.commit.hash] });
-							if (common.commit.hash == branch.commit.commit.hash) {
-								if (/^remotes\//.test(branch.name)) {
-									var parsed = branch.name.split("/");
-									jsh.shell.console("Merged; removing remotely: " + branch.name);
-									var argument = {
-										delete: true,
-										repository: parsed[1],
-										refspec: parsed.slice(2).join("/")
-									};
-									repository.push(argument);
-								} else {
-									jsh.shell.console("Merged to " + target + "; removing " + branch.name);
-									repository.branch({ delete: branch.name });
-								}
-							} else {
-								jsh.shell.console("Unmerged: " + branch.name);
-							}
-						});
+			trunk: function(p) {
+				/** @type { slime.jrunscript.tools.git.Command<{ name: string }, void> } */
+				var merge = {
+					invocation: function(p) {
+						return {
+							command: "merge",
+							arguments: $api.Array.build(function(rv) {
+								rv.push(p.name);
+							})
+						}
 					}
-				);
+				}
+				git.repository.command(git.command.fetch).argument().run();
+				git.repository.command(git.command.checkout).argument({ branch: "master" }).run();
+				git.repository.command(merge).argument({ name: "origin/master" }).run();
+				cleanGitBranches()();
+			},
+			branches: (jsh.tools.git.Repository) ? new function() {
+				this.clean = cleanGitBranches();
 
 				this.list = $api.Function.pipe(
 					function(p) {

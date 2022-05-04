@@ -131,6 +131,8 @@ namespace slime {
 				 */
 				branch: slime.jsh.script.cli.Command<Options>
 
+				trunk: slime.jsh.script.cli.Command<Options>
+
 				branches: {
 					clean: slime.jsh.script.cli.Command<Options>
 					list: slime.jsh.script.cli.Command<Options>
