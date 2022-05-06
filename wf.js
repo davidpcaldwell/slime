@@ -422,7 +422,7 @@
 			}
 		);
 
-		if (jsh.tools.git) {
+		if (jsh.tools.git.Repository) {
 			(
 				function() {
 					var repository = jsh.tools.git.Repository({ directory: $context.base });
