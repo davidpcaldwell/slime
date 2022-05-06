@@ -20,6 +20,7 @@ namespace slime.jrunscript.http.client.curl {
 		library: {
 			io: slime.jrunscript.io.Exports
 			shell: slime.jrunscript.shell.Exports
+			web: slime.web.Exports
 		}
 	}
 
@@ -38,6 +39,7 @@ namespace slime.jrunscript.http.client.curl {
 			var api = script({
 				console: jsh.shell.console,
 				library: {
+					web: jsh.web,
 					io: jsh.io,
 					shell: jsh.shell
 				}
@@ -45,7 +47,7 @@ namespace slime.jrunscript.http.client.curl {
 
 			fifty.tests.lab = function() {
 				var subject = api();
-				fifty.load("module.fifty.ts", "types.spi.Implementation", subject);
+				fifty.load("spi.fifty.ts", "types.Implementation", subject);
 			}
 
 			fifty.tests.manual = {};
@@ -57,7 +59,7 @@ namespace slime.jrunscript.http.client.curl {
 				var response = implementation({
 					request: {
 						method: "GET",
-						url: "http://docker.local.unix/info",
+						url: jsh.web.Url.codec.string.decode("http://docker.local.unix/info"),
 						headers: []
 					},
 					timeout: {

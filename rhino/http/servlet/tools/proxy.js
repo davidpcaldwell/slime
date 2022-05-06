@@ -78,7 +78,7 @@
 						var send = {
 							request: {
 								method: request.method,
-								url: url,
+								url: $context.library.web.Url.codec.string.decode(url),
 								headers: $api.Array.build(function(rv) {
 									rv.push.apply(rv, request.headers.filter(function(header) {
 										var name = header.name.toLowerCase();

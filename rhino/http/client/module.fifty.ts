@@ -130,115 +130,42 @@ namespace slime.jrunscript.http.client {
 			}
 		//@ts-ignore
 		)(fifty);
-
-	}
-
-	export namespace spi {
-		export namespace request {
-			export interface Body {
-				type: slime.mime.Type
-				stream: slime.jrunscript.runtime.io.InputStream
-			}
-		}
-
-		export interface Argument {
-			request: {
-				method: string
-				url: string
-				headers: Header[]
-				body?: request.Body
-			}
-			proxy?: Proxies
-			timeout: Timeouts
-		}
-
-		export interface Response {
-			status: {
-				code: number
-				reason: string
-			}
-			headers: Header[]
-			stream: slime.jrunscript.runtime.io.InputStream
-		}
-
-		export type Events = {
-			request: {
-				url: slime.web.Url
-				proxy: Proxies
-			}
-		}
-
-		export type Implementation = (p: Argument) => slime.$api.fp.impure.Ask<Events,Response>
-
-		(
-			function(
-				fifty: slime.fifty.test.Kit
-			) {
-				const { verify } = fifty;
-				const { jsh } = fifty.global;
-
-				fifty.tests.types.spi = {};
-				fifty.tests.types.spi.Implementation = function(subject: Implementation) {
-					var server = new jsh.httpd.Tomcat();
-					server.servlet({
-						load: function(scope) {
-							scope.$exports.handle = function(request) {
-								return {
-									status: { code: 200 },
-									body: {
-										type: "application/json",
-										string: JSON.stringify({
-											path: request.path
-										})
-									}
-								}
-							}
-						}
-					});
-					server.start();
-					var ask = subject({
-						request: {
-							method: "GET",
-							url: "http://127.0.0.1:" + server.port + "/foo",
-							headers: []
-						},
-						timeout: void(0)
-					});
-					var response = ask();
-					verify(response).status.code.is(200);
-					var body: { path: string } = JSON.parse(response.stream.character().asString());
-					verify(body).path.is("foo");
-					server.stop();
-				}
-			}
-		//@ts-ignore
-		)(fifty);
-
-
-		export namespace old {
-			export interface Request {
-				method: string
-				url: slime.web.Url
-				headers: Header[]
-				body: object.request.Body
-				proxy: Proxies
-				timeout: Timeouts
-			}
-
-			export type implementation = (p: Request) => Response
-		}
 	}
 
 	export namespace request {
-		export interface Body {
-			type: string
-			stream: slime.jrunscript.runtime.io.InputStream
+		export type url = slime.web.Url | string
+
+		/**
+		 * A message body.
+		 */
+		export type Body = body.Stream | body.Binary | body.String
+
+		export namespace body {
+			type Type = {
+				/**
+				 * The MIME type of the message body.
+				 */
+				type: slime.mime.Type | string
+			}
+			export type Stream = Type & {
+				/**
+				 * A stream from which the content of the message body can be read.
+				 */
+				stream: slime.jrunscript.runtime.io.InputStream
+			}
+			export type Binary = Type & { read: { binary: () => slime.jrunscript.runtime.io.InputStream } }
+			export type String = Type & {
+				/**
+				 * The content of the message body, as a string.
+				 */
+				string: string
+			}
 		}
 	}
 
 	export interface Request {
 		method?: string
-		url: string
+		url: request.url
 		headers?: Header[]
 		body?: request.Body
 	}
@@ -255,224 +182,6 @@ namespace slime.jrunscript.http.client {
 		world: World
 	}
 
-	export namespace object {
-		export type Authorization = string
-
-		export type parameters = { name: string, value: string }[] | jsapi.values
-
-		/**
-		 * Either a {@link parameters}, or a `string` representing a query string.
-		 */
-		export type query = parameters | string
-
-		export type Implementation = (argument: spi.Argument) => spi.Response
-
-		export interface Request {
-			/**
-			 * The HTTP request method to use. If omitted, a `GET` is issued.
-			 */
-			method?: string
-
-			/**
-			 * The URL to which to issue the request.
-			 */
-			url: request.url
-
-			/** @deprecated See `parameters`. */
-			params?: parameters
-
-			/**
-			 * @deprecated
-			 *
-			 * Additional parameters to send to the request as part of the URL.
-			 */
-			parameters?: parameters
-
-			/**
-			 * Additional headers to send with this request.
-			 */
-			headers?: parameters
-
-			/**
-			 * Credentials information to be used to authorize this request.
-			 */
-			authorization?: Authorization
-
-			/**
-			 * The proxy server to use for this request.
-			 */
-			proxy?: Proxies
-
-			/**
-			 * The message body to use with the HTTP request. If no `type` property is provided, `application/octet-stream` will be
-			 * used. Must specify its content in some way. If a `stream` property is present, it will be read to provide the content
-			 * of the message body. Otherwise, if a `string` property is present, its content will be used.
-			 */
-			body?: request.Body
-
-			timeout?: Timeouts
-
-			/**
-			 * An object containing a set of properties representing callbacks.
-			 */
-			on?: {
-				//	TODO	what 'this' will be used for this function?
-				/**
-				 * A function that will be invoked if the request is redirected; note that the argument may be modified in order
-				 * to stop the redirect from being followed.
-				 */
-				redirect: (p: {
-					request: slime.jrunscript.http.client.object.Request
-					response: slime.jrunscript.http.client.spi.Response
-
-					/**
-					 * This property may be removed from the object in order to stop the client from following the redirect.
-					 */
-					next: {
-						method: string
-						url: slime.web.Url
-					}
-				}) => void
-			}
-		}
-
-		/**
-		 * A function intended to process an HTTP response.
-		 */
-		export type parser<T> = {
-			(response: Response): T
-		}
-
-		export namespace request {
-			export type url = slime.web.Url | string
-
-			/**
-			 * A message body.
-			 */
-			export type Body = body.Stream | body.Binary | body.String
-
-			export namespace body {
-				type Type = {
-					/**
-					 * The MIME type of the message body.
-					 */
-					type: slime.mime.Type | string
-				}
-				export type Stream = Type & {
-					/**
-					 * A stream from which the content of the message body can be read.
-					 */
-					stream: slime.jrunscript.runtime.io.InputStream
-				}
-				export type Binary = Type & { read: { binary: () => slime.jrunscript.runtime.io.InputStream } }
-				export type String = Type & {
-					/**
-					 * The content of the message body, as a string.
-					 */
-					string: string
-				}
-			}
-		}
-
-		/**
-		 * Represents an HTTP response. See [RFC 2616, section 6](http://www.w3.org/Protocols/rfc2616/rfc2616-sec6.html).
-		 */
-		export interface Response {
-			request: Request
-			/**
-			 * An object describing the response status.
-			 *
-			 * See https://datatracker.ietf.org/doc/html/rfc7230#section-3.1.2.
-			 *
-			 * See [RFC 2616 section 6.1](http://www.w3.org/Protocols/rfc2616/rfc2616-sec6.html#sec6.1)
-			 */
-			status: {
-				/**
-				 * The status code.
-				 */
-				code: number
-
-				/**
-				 * The message associated with the status code (RFC calls it "reason phrase").
-				 */
-				reason: string
-			}
-			headers: Header[] & {
-				/**
-				 * Provides the value or values of a given header.
-				 *
-				 * @param name A header name; case-insensitive.
-				 * @returns the single value of the given header, if it has one, or an array of values if there are multiple values.
-				 * If the header has no values, `null` is returned.
-				 */
-				get: (name: string) => string | string[]
-			}
-			/**
-			 * The message body associated with this response.
-			 */
-			body: {
-				type: slime.mime.Type
-				stream: slime.jrunscript.runtime.io.InputStream
-			}
-		}
-
-		export interface Configuration {
-			/**
-			 * A value to be used to authorize requests from this client.
-			 */
-			authorization?: Authorization
-
-			spi?: (standard: spi.old.implementation) => spi.old.implementation
-
-			/**
-			 * A proxy server to use for requests, or a function specifying logic for determining the proxy server to use for a
-			 * given request.
-			 *
-			 * @param p The argument provided for a particular request
-			 *
-			 * @returns The proxy server to use for the given request.
-			 */
-			proxy?: Proxies | (
-				(p: object.Request) => Proxies
-			)
-
-			/**
-			 * Instructs the client to handle responses with status 302 as though they were responses with status 303, as most
-			 * browsers erroneously do. See the note at the end of
-			 * [RFC 2616 10.3.3](http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.3.3) for details.
-			 */
-			TREAT_302_AS_303?: boolean
-		}
-
-		export interface Client {
-			/**
-			 * Issues a request to a server and returns that server's response, after following any redirects.
-			 *
-			 * @param p An object representing the request, with an optional `evaluate` property that processes the response.
-			 * @returns The response, unless a <code>parse</code> function was provided; in that case, the result of that function
-			 * is returned.
-			 */
-			request: {
-				(p: Request & { evaluate: JSON }): any
-
-				<T>(p: Request & {
-					/**
-					 * A function that interprets the response from the server and returns it to the caller of `request()`
-					 * automatically.
-					 */
-					evaluate: parser<T>
-				}): T
-
-				/**
-				 * @deprecated Use `evaluate`, not `parse`.
-				 */
-				<T>(p: Request & { parse: parser<T> }): T
-				(p: Request): Response
-			},
-			Loader: any
-		}
-	}
-
 	export namespace exports {
 		export interface Body {
 			/**
@@ -482,7 +191,7 @@ namespace slime.jrunscript.http.client {
 			 * @param query An object specifying the form.
 			 * @returns Objects suitable as request bodies.
 			 */
-			 Form: (query: object.query) => object.request.Body
+			 Form: (query: object.query) => request.Body
 		}
 	}
 
@@ -528,7 +237,7 @@ namespace slime.jrunscript.http.client {
 	/**
 	 * @deprecated Represents constructs ported from the old JSAPI definition to ease transition of its tests to Fifty.
 	 */
-	 export namespace jsapi {
+	export namespace jsapi {
 		/**
 		 * An object with properties. Each named property represents one or more <a href="#types.pair">pair</a> objects. If the value
 		 * of the property is a <code>string</code>, the property represents a single pair with the given name and the given value. If
@@ -540,7 +249,7 @@ namespace slime.jrunscript.http.client {
 		/**
 		 * @deprecated Replaced by {@link object.request.Body}.
 		 */
-		export type body = object.request.Body
+		export type body = request.Body
 
 		/**
 		 * A header value for the `Authorization:` header suitable for authorizing a request.
@@ -587,7 +296,7 @@ namespace slime.jrunscript.http.client {
 				const { jsh } = fifty.global;
 
 				fifty.tests.exports.world = function() {
-					fifty.tests.types.spi.Implementation(jsh.http.world.request);
+					fifty.load("spi.fifty.ts", "types.Implementation", jsh.http.world.request);
 				}
 			}
 		//@ts-ignore
@@ -899,4 +608,5 @@ namespace slime.jrunscript.http.client.internal {
 	export type sessionRequest = (cookies: slime.jrunscript.http.client.internal.Cookies) => ArgumentDecorator
 	export type authorizedRequest = (authorization: string) => ArgumentDecorator
 	export type proxiedRequest = (proxy: slime.jrunscript.http.client.Proxies) => ArgumentDecorator
+	export type interpretRequestBody = (body: slime.jrunscript.http.client.request.Body) => slime.jrunscript.http.client.spi.request.Body
 }
