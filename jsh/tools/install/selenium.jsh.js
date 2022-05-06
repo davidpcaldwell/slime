@@ -44,7 +44,7 @@
 				var response = jsh.http.world.request({
 					request: {
 						method: "GET",
-						url: "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_" + majorVersion,
+						url: jsh.web.Url.codec.string.decode("https://chromedriver.storage.googleapis.com/LATEST_RELEASE_" + majorVersion),
 						headers: []
 					},
 					timeout: {

@@ -74,6 +74,7 @@
 					jsh.http.curl = script({
 						console: jsh.shell.console,
 						library: {
+							web: jsh.web,
 							io: jsh.io,
 							shell: jsh.shell
 						}

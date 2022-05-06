@@ -369,7 +369,7 @@
 								var ask = spi({
 									request: {
 										method: (e.method) ? e.method : "GET",
-										url: "http://docker.sock.unix" + url + query,
+										url: $context.library.web.Url.codec.string.decode("http://docker.sock.unix" + url + query),
 										headers: [],
 										body: (p.body) ? $context.library.http.Body.json()(p.body) : void(0)
 									},

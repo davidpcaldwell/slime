@@ -116,7 +116,7 @@
 
 		/**
 		 *
-		 * @param { slime.jrunscript.http.client.object.request.url } p
+		 * @param { slime.jrunscript.http.client.request.url } p
 		 */
 		var urlToString = function(p) {
 			if (typeof(p) == "string") return p;
