@@ -165,7 +165,7 @@
 			return {
 				request: {
 					method: request.method,
-					url: $context.library.web.Url.codec.string.encode(withQueryString($context.library.web.Url.resolve(api.server, request.path), toQueryString(request.query))),
+					url: withQueryString($context.library.web.Url.resolve(api.server, request.path), toQueryString(request.query)),
 					headers: $api.Array.build(function(rv) {
 						if (authentication) rv.push({
 							name: "Authorization",
@@ -204,7 +204,7 @@
 			return {
 				request: {
 					method: "GET",
-					url: $context.library.web.Url.codec.string.encode(url),
+					url: url,
 					headers: $api.Array.build(function(rv) {
 						if (authentication) rv.push({
 							name: "Authorization",

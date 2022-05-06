@@ -51,7 +51,7 @@
 								}
 								//	TODO	consider --max-time, though there is no URLConnection equivalent
 								//	TODO	investigate whether there is a read timeout equivalent
-								rv.push(argument.request.url);
+								rv.push($context.library.web.Url.codec.string.encode(argument.request.url));
 							}),
 							stdio: {
 								output: "string",

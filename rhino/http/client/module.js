@@ -64,7 +64,68 @@
 
 		/**
 		 *
-		 * @param { slime.jrunscript.http.client.object.request.Body } body
+		 * @param { slime.jrunscript.http.client.request.Body } body
+		 * @returns { slime.mime.Type }
+		 */
+		function _getRequestBodyType(body) {
+			if (typeof(body.type) == "string") {
+				return $api.mime.Type.codec.declaration.decode(body.type);
+			} else {
+				return body.type;
+			}
+		}
+
+		/**
+		 *
+		 * @param { slime.jrunscript.http.client.request.Body } body
+		 * @returns { slime.jrunscript.runtime.io.InputStream }
+		 */
+		function _getRequestBodyStream(body) {
+			//	TODO	Does not handle stream/$stream from rhino/mime
+			//			above is a very old comment; may no longer apply
+
+			/** @type { (body: slime.jrunscript.http.client.request.Body) => body is slime.jrunscript.http.client.request.body.Stream } */
+			var isStream = function(body) {
+				return Boolean(body["stream"]);
+			}
+
+			/** @type { (body: slime.jrunscript.http.client.request.Body) => body is slime.jrunscript.http.client.request.body.Binary } */
+			var isBinary = function(body) {
+				return Boolean(body["read"] && body["read"].binary);
+			}
+
+			/** @type { (body: slime.jrunscript.http.client.request.Body) => body is slime.jrunscript.http.client.request.body.String } */
+			var isString = function(body) {
+				return typeof body["string"] != "undefined";
+			}
+
+			if (isStream(body)) return body.stream;
+			if (isBinary(body)) return body.read.binary();
+			if (isString(body)) {
+				var buffer = new $context.api.io.Buffer();
+				buffer.writeText().write(body.string);
+				buffer.writeText().close();
+				return buffer.readBinary();
+			}
+			throw new TypeError("Body is not a recognized type: " + body);
+		}
+
+		/**
+		 *
+		 * @param { slime.jrunscript.http.client.request.Body } p
+		 * @returns { slime.jrunscript.http.client.spi.request.Body }
+		 */
+		var _interpretRequestBody = function(p) {
+			if (!p) return null;
+			return {
+				type: _getRequestBodyType(p),
+				stream: _getRequestBodyStream(p)
+			};
+		}
+
+		/**
+		 *
+		 * @param { slime.jrunscript.http.client.request.Body } body
 		 */
 		function getRequestBodyType(body) {
 			if (typeof(body.type) == "string") {
@@ -221,7 +282,7 @@
 				 * @param { slime.$api.Events<slime.jrunscript.http.client.spi.Events> } e
 				 */
 				function(e) {
-					var url = $context.api.web.Url.codec.string.decode(p.request.url);
+					var url = p.request.url;
 					/** @type { slime.jrunscript.http.client.Header } */
 					var hostHeader;
 
@@ -295,7 +356,7 @@
 			return function(argument) {
 				//	TODO	this implementation mutates the request but provides an immutable-appearing signature for
 				//			forward-compatibility
-				cookies.get(argument.request.url, argument.request.headers);
+				cookies.get($context.api.web.Url.codec.string.encode(argument.request.url), argument.request.headers);
 				return argument;
 			}
 		};
@@ -331,7 +392,8 @@
 			urlConnectionImplementation: urlConnectionImplementation,
 			sessionRequest: sessionRequest,
 			authorizedRequest: authorizedRequest,
-			proxiedRequest: proxiedRequest
+			proxiedRequest: proxiedRequest,
+			interpretRequestBody: _interpretRequestBody
 		});
 
 		$export({
@@ -343,22 +405,23 @@
 					request: function(request) {
 						/**
 						 *
-						 * @param { slime.jrunscript.http.client.request.Body } argument
-						 * @returns { slime.jrunscript.http.client.spi.request.Body }
+						 * @param { slime.jrunscript.http.client.request.url } value
+						 * @returns { slime.web.Url }
 						 */
-						function body(argument) {
-							return {
-								type: $api.mime.Type.codec.declaration.decode(argument.type),
-								stream: argument.stream
+						function url(value) {
+							if (typeof(value) == "string") {
+								return $context.api.web.Url.codec.string.decode(value);
+							} else {
+								return value;
 							}
 						}
 
 						return {
 							request: {
 								method: (request.method) ? request.method : "GET",
-								url: request.url,
+								url: url(request.url),
 								headers: (request.headers) ? request.headers : [],
-								body: (request.body) ? body(request.body) : null
+								body: (request.body) ? _interpretRequestBody(request.body) : null
 							},
 							timeout: void(0),
 							proxy: void(0)

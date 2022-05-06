@@ -25,6 +25,7 @@ namespace slime.jrunscript.tools {
 					return script({
 						console: fifty.global.jsh.shell.console,
 						library: {
+							web: fifty.global.jsh.web,
 							io: fifty.global.jsh.io,
 							shell: fifty.global.jsh.shell
 						}
