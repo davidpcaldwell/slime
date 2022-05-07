@@ -4,7 +4,7 @@
 //
 //	END LICENSE
 
-namespace slime.jrunscript.tools.kubectl {
+namespace slime.jrunscript.tools.kubernetes.cli {
 	export interface Program {
 		command: string
 	}
@@ -32,7 +32,7 @@ namespace slime.jrunscript.tools.kubectl {
 
 	export interface Environment {
 		Invocation: {
-			create: (p: kubectl.Invocation) => slime.jrunscript.shell.run.Invocation
+			create: (p: cli.Invocation) => slime.jrunscript.shell.run.Invocation
 		}
 	}
 
@@ -43,11 +43,11 @@ namespace slime.jrunscript.tools.kubectl {
 	export type Result = object
 
 	export interface Exports {
-		Installation: (p: kubectl.Program) => kubectl.Installation
-		installation: kubectl.Installation
+		Installation: (p: cli.Program) => cli.Installation
+		installation: cli.Installation
 
 		Invocation: {
-			toJson: (p: kubectl.Invocation) => kubectl.Invocation
+			toJson: (p: cli.Invocation) => cli.Invocation
 		}
 
 		result: (world: slime.jrunscript.shell.World, invocation: slime.jrunscript.shell.run.Invocation) => slime.$api.fp.impure.Ask<Events,Result>
@@ -89,11 +89,6 @@ namespace slime.jrunscript.tools.kubectl {
 		}
 	//@ts-ignore
 	)(fifty);
-}
-
-namespace slime.jrunscript.tools.docker.internal.kubectl {
-	export interface Context {
-	}
 
 	(
 		function(
@@ -106,5 +101,37 @@ namespace slime.jrunscript.tools.docker.internal.kubectl {
 	//@ts-ignore
 	)(fifty);
 
-	export type Script = slime.loader.Script<Context,slime.jrunscript.tools.kubectl.Exports>
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { jsh } = fifty.global;
+
+			fifty.tests.wip = function() {
+				var getPods: Invocation = {
+					command: "get",
+					type: "pods",
+					flags: [
+						"--context", jsh.shell.environment.SLIME_TEST_KUBECTL_CONTEXT,
+						"--namespace", jsh.shell.environment.SLIME_TEST_KUBECTL_NAMESPACE
+					]
+				};
+
+				var ask = jsh.tools.kubectl.json(getPods);
+
+				var result = ask();
+
+				jsh.shell.console(JSON.stringify(result));
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+}
+
+namespace slime.jrunscript.tools.docker.internal.kubectl {
+	export interface Context {
+	}
+
+	export type Script = slime.loader.Script<Context,slime.jrunscript.tools.kubernetes.cli.Exports>
 }
