@@ -316,6 +316,7 @@
 			});
 			if (logs) jsh.shell.console("Running tests with output to " + logs + " ...");
 			var debugging = (jsh.shell.environment.JSH_TEST_ISSUE317) ? ["-issue317"] : [];
+			var success = true;
 			var invocation = {
 				command: "bash",
 				arguments: [
@@ -338,13 +339,13 @@
 					if (result.status != 0) {
 						jsh.shell.console("Failing because tests failed.");
 						jsh.shell.console("Output directory: " + logs);
-						jsh.shell.exit(1);
+						success = false;
 					}
 				}
 			};
 			jsh.shell.run(invocation);
 			//	TODO	adapt the jsh.shell.exit-based status handling above to the boolean handling desired here
-			return true;
+			return success;
 		};
 
 		jsh.wf.project.initialize(
@@ -410,14 +411,22 @@
 			jsh.script.cli.option.boolean({ longname: "docker" }),
 			function(p) {
 				jsh.shell.console("Linting ...");
-				lint();
+				var lintingPassed = lint();
+				if (!lintingPassed) {
+					jsh.shell.console("Linting failed.");
+					return 1;
+				}
 				jsh.shell.console("Running TypeScript compiler ...");
 				jsh.wf.typescript.tsc();
 				jsh.shell.console("Running tests ...");
-				test({
+				var testsPassed = test({
 					docker: p.options.docker,
 					logs: void(0)
 				});
+				if (!testsPassed) {
+					jsh.shell.console("Tests failed.");
+					return 1;
+				}
 				jsh.shell.console("Passed.");
 			}
 		);
