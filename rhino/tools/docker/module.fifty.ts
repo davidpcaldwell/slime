@@ -469,7 +469,7 @@ namespace slime.jrunscript.tools {
 
 	export namespace docker {
 		export interface Exports {
-			kubectl: slime.jrunscript.tools.kubectl.Exports
+			kubectl: slime.jrunscript.tools.kubernetes.cli.Exports
 		}
 	}
 

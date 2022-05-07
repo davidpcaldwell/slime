@@ -10,13 +10,13 @@
 	 *
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jrunscript.tools.docker.internal.kubectl.Context } $context
-	 * @param { slime.loader.Export<slime.jrunscript.tools.kubectl.Exports> } $export
+	 * @param { slime.loader.Export<slime.jrunscript.tools.kubernetes.cli.Exports> } $export
 	 */
 	function($api,$context,$export) {
 		/**
 		 *
-		 * @param { slime.jrunscript.tools.kubectl.Program } program
-		 * @returns { slime.jrunscript.tools.kubectl.Installation }
+		 * @param { slime.jrunscript.tools.kubernetes.cli.Program } program
+		 * @returns { slime.jrunscript.tools.kubernetes.cli.Installation }
 		 */
 		var kubectl = function(program) {
 			return {

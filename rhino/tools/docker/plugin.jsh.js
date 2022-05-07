@@ -55,7 +55,7 @@
 				 */
 				var jshFacade = function(shell) {
 					/**
-					 * @param { slime.jrunscript.tools.kubectl.Invocation } invocation
+					 * @param { slime.jrunscript.tools.kubernetes.cli.Invocation } invocation
 					 */
 					function rv(invocation) {
 						var installation = module.kubectl.Installation({ command: "kubectl" });
