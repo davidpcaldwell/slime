@@ -10,9 +10,10 @@
 	 *
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jrunscript.tools.docker.Context } $context
+	 * @param { slime.Loader } $loader
 	 * @param { slime.loader.Export<slime.jrunscript.tools.docker.Exports> } $export
 	 */
-	function($api,$context,$export) {
+	function($api,$context,$loader,$export) {
 		if (!$context.library.file) throw new Error("Required: library.file");
 		/** @type { slime.jrunscript.tools.docker.cli.Interface } */
 		var cli = {
@@ -159,56 +160,6 @@
 			}
 		};
 
-		/**
-		 *
-		 * @param { slime.jrunscript.tools.kubectl.Program } program
-		 * @returns { slime.jrunscript.tools.kubectl.Installation }
-		 */
-		var kubectl = function(program) {
-			return {
-				Environment: {
-					create: function(environment) {
-						/**
-						 *
-						 * @param { Partial<slime.jrunscript.shell.run.StdioConfiguration> } argument
-						 * @returns { slime.jrunscript.shell.run.StdioConfiguration }
-						 */
-						var stdio = function(argument) {
-							return {
-								input: (argument && argument.input) ? argument.input : null,
-								output: (argument && argument.output) ? argument.output : environment.stdio.output,
-								error: (argument && argument.error) ? argument.error : environment.stdio.error
-							}
-						}
-
-						return {
-							Invocation: {
-								create: function(p) {
-									return {
-										configuration: {
-											command: program.command,
-											arguments: $api.Array.build(function(rv) {
-												rv.push(p.command);
-												if (p.subcommand) rv.push(p.subcommand);
-												if (p.type) rv.push(p.type);
-												if (p.name) rv.push(p.name);
-												if (p.flags) rv.push.apply(rv, p.flags);
-											})
-										},
-										context: {
-											environment: environment.environment,
-											stdio: stdio(p.stdio),
-											directory: p.directory || environment.directory
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-
 		/** @type { slime.jrunscript.tools.docker.cli.StringCommand<{
 			cidfile?: string
 			mounts?: string[]
@@ -294,6 +245,14 @@
 				arguments: args
 			});
 		}
+
+		var kubectl = (
+			function() {
+				/** @type { slime.jrunscript.tools.docker.internal.kubectl.Script } */
+				var script = $loader.script("kubectl.js");
+				return script();
+			}
+		)();
 
 		$export({
 			engine: {
@@ -481,37 +440,8 @@
 					}
 				})
 			},
-			kubectl: {
-				Installation: kubectl,
-				installation: kubectl({ command: "kubectl" }),
-				Invocation: {
-					toJson: function(invocation) {
-						return $api.Object.compose(invocation, {
-							flags: (invocation.flags || []).concat(["-o", "json"]),
-							stdio: $api.Object.compose(invocation.stdio || {}, {
-								output: "string"
-							})
-						});
-					}
-				},
-				result: function(world,invocation) {
-					return $api.Function.impure.ask(function(events) {
-						var tell = world.run(invocation);
-						var rv;
-						tell({
-							stderr: function(e) {
-								events.fire("stderr", e.detail);
-							},
-							exit: function(e) {
-								if (e.detail.status != 0) throw new Error("Exit status: " + e.detail.status);
-								if (e.detail.stdio && e.detail.stdio.output) rv = JSON.parse(e.detail.stdio.output);
-							}
-						});
-						return rv;
-					})
-				}
-			}
+			kubectl: kubectl
 		});
 	}
 //@ts-ignore
-)($api,$context,$export);
+)($api,$context,$loader,$export);
