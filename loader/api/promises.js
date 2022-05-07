@@ -159,6 +159,7 @@
 
 		$export({
 			Promise: window.Promise,
+			//@ts-ignore
 			controlled: ControlledPromise,
 			Registry: Registry,
 			console: console

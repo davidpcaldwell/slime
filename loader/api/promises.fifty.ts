@@ -24,15 +24,22 @@ namespace slime.definition.test.promises {
 
 	export type Script = slime.loader.Script<void,Export>
 
+	/**
+	 * An object that provides a `Promise` that can be controlled by calls to its `resolve` and `reject` methods, so that tests can
+	 * reliably and synchronously set it to a given state. On creation, its `Promise` is pending, until and unless the `resolve`
+	 * or `reject` methods are called.
+	 */
+	export interface Puppet<T> {
+		promise: Promise<T>
+		resolve: (value: T) => void
+		reject: (value: Error) => void
+	}
+
 	export interface Export {
 		Registry: (p?: { name: string }) => Registry
 		Promise: PromiseConstructor
 		console: slime.external.lib.dom.Console
-		controlled: (p?: { id: string }) => {
-			promise: Promise<any>
-			resolve: (value: any) => void
-			reject: (value: Error) => void
-		}
+		controlled: <T>(p?: { id: string }) => Puppet<T>
 	}
 
 	(
@@ -59,7 +66,7 @@ namespace slime.definition.test.promises {
 
 			fifty.tests.sequence = function() {
 				var value = 0;
-				var controlled = subject.controlled();
+				var controlled: Puppet<number> = subject.controlled();
 				controlled.promise.then(function(v) {
 					value = v;
 				});
