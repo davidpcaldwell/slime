@@ -401,7 +401,11 @@
 
 		$exports.precommit = function(p) {
 			jsh.shell.console("Linting ...");
-			lint();
+			var lintSuccess = lint();
+			if (!lintSuccess) {
+				jsh.shell.console("Linting failed.");
+				return 1;
+			}
 			jsh.shell.console("Running TypeScript compiler ...");
 			jsh.wf.typescript.tsc();
 			jsh.shell.console("Passed.");
