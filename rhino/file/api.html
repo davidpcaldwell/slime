@@ -275,49 +275,6 @@ END LICENSE
 					<div class="label">Returns</div>
 					<span class="type"><a href="#types.Pathname">Pathname</a></span> The pathname represented by the argument.
 				</div>
-				<div class="label">has properties:</div>
-				<ul>
-					<li class="object">
-						<div class="name">createDirectory</div>
-						<span>__DESCRIPTION__</span>
-						<div class="label">has properties:</div>
-						<ul>
-							<li class="object">
-								<div class="name">exists</div>
-								<span>__DESCRIPTION__</span>
-								<div class="label">has properties:</div>
-								<ul>
-									<li class="value">
-										<div class="name">LEAVE</div>
-										<span class="type"><code>function</code></span>
-										<span>__DESCRIPTION__</span>
-									</li>
-									<li class="value">
-										<div class="name">RECREATE</div>
-										<span class="type"><code>function</code></span>
-										<span>__DESCRIPTION__</span>
-									</li>
-								</ul>
-							</li>
-						</ul>
-						<script type="application/x.jsapi#tests">
-							var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true });
-							var at = tmp.getRelativePath("doesNotExist");
-							var existing = newTemporaryDirectory().pathname;
-							createFile(existing.directory,"file",10);
-							var replace = newTemporaryDirectory().pathname;
-							createFile(replace.directory,"file",10);
-							verify(module).is.type("object");
-							verify(at).directory.is.type("null");
-							at.createDirectory();
-							verify(at).directory.is.type("object");
-							existing.createDirectory({ exists: module.Pathname.createDirectory.exists.LEAVE });
-							verify(existing).directory.getFile("file").is.type("object");
-							replace.createDirectory({ exists: module.Pathname.createDirectory.exists.RECREATE });
-							verify(replace).directory.getFile("file").is.type("null");
-						</script>
-					</li>
-				</ul>
 				<script type="application/x.jsapi#tests">
 					var dir = newTemporaryDirectory();
 

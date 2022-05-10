@@ -296,12 +296,20 @@
 			return decorator(filesystem.Pathname(parameters));
 		}, { createDirectory: void(0) });
 
-		$exports.Pathname.createDirectory = function(p) {
-			return p.pathname.createDirectory({
-				ifExists: p.exists
-			});
+		$exports.Pathname.createDirectory = Object.assign(
+			function(p) {
+				return p.pathname.createDirectory({
+					ifExists: p.exists
+				});
+			},
+			{
+				exists: void(0)
+			}
+		);
+		$exports.Pathname.createDirectory.exists = {
+			LEAVE: void(0),
+			RECREATE: void(0)
 		};
-		$exports.Pathname.createDirectory.exists = {};
 		$exports.Pathname.createDirectory.exists.LEAVE = function(dir) {
 			return false;
 		};

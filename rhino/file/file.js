@@ -649,7 +649,7 @@
 						rv = rv.filter(filter);
 						return toReturn(rv);
 					}
-				}, { RESOURCE: void(0), ENTRY: void(0) });
+				}, { NODE: void(0), RESOURCE: void(0), ENTRY: void(0) });
 
 				this.list = list;
 				Object.assign(this.list, {
