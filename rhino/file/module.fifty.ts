@@ -135,7 +135,12 @@ namespace slime.jrunscript.file {
 	export interface Exports {
 		Pathname: {
 			(p: string): Pathname
-			createDirectory: any
+			createDirectory: {
+				exists: {
+					LEAVE: (dir: slime.jrunscript.file.Directory) => boolean
+					RECREATE: (dir: slime.jrunscript.file.Directory) => boolean
+				}
+			}
 		}
 		navigate: (p: { from: Pathname | Node, to: Pathname | Node, base?: Directory }) => { base: Directory, relative: string }
 	}

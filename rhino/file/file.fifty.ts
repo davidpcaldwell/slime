@@ -9,6 +9,51 @@ namespace slime.jrunscript.file {
 	 * An object representing a path in the local file system.
 	 */
 	export interface Pathname {
+		createDirectory: {
+			(p?: {
+				exists?: (d: Directory) => boolean
+				recursive?: boolean
+
+				/** @deprecated Use `exists`. */
+				ifExists?: (d: Directory) => boolean
+			}): Directory
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { jsh } = fifty.global;
+			const { verify } = fifty;
+
+			var script: test.fixtures.Script = fifty.$loader.script("fixtures.ts");
+			var fixtures = script({ fifty: fifty });
+
+			const { module, newTemporaryDirectory, createFile } = fixtures;
+
+			fifty.tests.createDirectory = function() {
+				var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true });
+				var at = tmp.getRelativePath("doesNotExist");
+				var existing = newTemporaryDirectory().pathname;
+				createFile(existing.directory,"file",10);
+				var replace = newTemporaryDirectory().pathname;
+				createFile(replace.directory,"file",10);
+				verify(module).is.type("object");
+				verify(at).directory.is.type("null");
+				at.createDirectory();
+				verify(at).directory.is.type("object");
+				existing.createDirectory({ exists: module.Pathname.createDirectory.exists.LEAVE });
+				verify(existing).directory.getFile("file").is.type("object");
+				replace.createDirectory({ exists: module.Pathname.createDirectory.exists.RECREATE });
+				verify(replace).directory.getFile("file").is.type("null");
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+
+	export interface Pathname {
 		directory: Directory
 
 		/**
@@ -22,13 +67,6 @@ namespace slime.jrunscript.file {
 		 */
 		readonly parent: Pathname
 
-		createDirectory: (p?: {
-			exists?: (d: Directory) => boolean
-			recursive?: boolean
-
-			/** @deprecated Use `exists`. */
-			ifExists?: (d: Directory) => boolean
-		}) => Directory
 		write: slime.jrunscript.runtime.Resource["write"]
 
 		/**
@@ -184,6 +222,9 @@ namespace slime.jrunscript.file {
 
 			(): Node[]
 
+			/** @deprecated Use {@link Exports | Exports.list.NODE } */
+			NODE: Exports["list"]["NODE"]
+
 			/** @deprecated Use {@link Exports | Exports.list.RESOURCE } */
 			RESOURCE: Exports["list"]["RESOURCE"]
 
@@ -272,16 +313,16 @@ namespace slime.jrunscript.file {
 					return entry.path == "e" + filesystem.$unit.getPathnameSeparator();
 				} );
 				test(entrye.length == 1);
-				entryf = entryf[0];
-				test(entryf.node.pathname.basename == "f");
+				var entryf0 = entryf[0];
+				test(entryf0.node.pathname.basename == "f");
 
 				var resources = dir.list({ type: RESOURCE, descendants: descendants.all });
 				var resourcef = resources.filter( function(resource) {
 					return resource.path == "e/f";
 				} );
 				test(resourcef.length == 1);
-				resourcef = resourcef[0];
-				test(resourcef.resource.read(String) == "");
+				var resourcef0 = resourcef[0];
+				test(resourcef0.resource.read(String) == "");
 
 				test(
 					dir.list({
@@ -349,6 +390,8 @@ namespace slime.jrunscript.file {
 						}
 					)();
 				}
+
+				fifty.run(fifty.tests.createDirectory);
 			}
 		}
 	//@ts-ignore

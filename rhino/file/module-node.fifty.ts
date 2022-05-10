@@ -18,11 +18,11 @@ namespace slime.jrunscript.file {
 		 */
 		move: (
 			to: Pathname | Directory,
-			mode: {
+			mode?: {
 				/**
 				 * Whether to overwrite an existing node at the destination location if one is found.
 				 */
-				overwrite: boolean
+				overwrite?: boolean
 
 				//	TODO	specify default
 				/**
