@@ -648,7 +648,6 @@ namespace slime.jrunscript.file {
 		//@ts-ignore
 		)(fifty);
 
-
 		export interface Pathname {
 			file: File
 			directory: Directory
