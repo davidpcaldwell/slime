@@ -37,13 +37,13 @@ namespace slime.$api {
 			}
 		},
 		Value: any,
-		Events: {
-			(p?: {
+		events: {
+			create: (p?: {
 				source?: any
 				parent?: slime.$api.Events<any>
 				getParent?: () => slime.$api.Events<any>
 				on?: { [x: string]: any }
-			}): slime.$api.Events<any>
+			}) => slime.$api.Events<any>
 
 			//	TODO	could probably use parameterized types to improve accuracy
 			Function: <P,R>(f: (p: P, events: any) => R, defaultListeners?: object) => (argument: P, receiver?: slime.$api.events.Function.Receiver) => R
@@ -55,6 +55,23 @@ namespace slime.$api {
 			}
 
 			action: <E,R>(f: ( events: slime.$api.Events<E> ) => R) => (handler: slime.$api.events.Handler<E>) => R
+		}
+		/** @deprecated Replaced by {@link slime.$api.Global["events"] } */
+		Events: {
+			/** @deprecated Replaced by {@link slime.$api.Global["events"]["create"]} */
+			(p?: {
+				source?: any
+				parent?: slime.$api.Events<any>
+				getParent?: () => slime.$api.Events<any>
+				on?: { [x: string]: any }
+			}): slime.$api.Events<any>
+
+			/** @deprecated Replaced by {@link slime.$api.Global["events"]["Function"]} */
+			Function: $api.Global["events"]["Function"]
+			/** @deprecated Replaced by {@link slime.$api.Global["events"]["toHandler"]} */
+			toHandler: $api.Global["events"]["toHandler"]
+			/** @deprecated Replaced by {@link slime.$api.Global["events"]["action"]} */
+			action: $api.Global["events"]["action"]
 		},
 		Array: {
 			/**
