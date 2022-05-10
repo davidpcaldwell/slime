@@ -13,6 +13,7 @@
 	 * @param { slime.loader.Export<slime.$api.Global> } $export
 	 */
 	function($engine,$slime,$export) {
+		/** @type { slime.$api.Global } */
 		var $exports = {};
 
 		var load = function(name,$context) {
@@ -55,7 +56,7 @@
 		var code = {
 			/** @type { slime.loader.Script<slime.runtime.internal.mime.Context,slime.$api.mime.Export> } */
 			mime: script("mime.js"),
-			/** @type { slime.loader.Script<slime.runtime.internal.events.Context,slime.runtime.internal.events.Export> } */
+			/** @type { slime.loader.Script<slime.runtime.internal.events.Context,slime.runtime.internal.events.Exports> } */
 			events: script("events.js")
 		};
 
@@ -495,10 +496,12 @@
 			return Properties(rv);
 		};
 		$exports.Object.values = {
+			//@ts-ignore
 			map: function(f) {
 				return function(o) {
 					var rv = {};
 					for (var x in o) {
+						//@ts-ignore
 						rv[x] = f(o[x]);
 					}
 					return rv;
@@ -568,12 +571,19 @@
 			Type: ErrorType
 		}
 
+		$exports.events = {
+			create: events.create,
+			Function: events.Function,
+			toHandler: events.toHandler,
+			action: events.action
+		}
+
 		$exports.Events = Object.assign(
-			events.create,
+			$exports.deprecate(events.create),
 			{
-				Function: events.Function,
-				toHandler: events.toHandler,
-				action: events.action
+				Function: $exports.deprecate(events.Function),
+				toHandler: $exports.deprecate(events.toHandler),
+				action: $exports.deprecate(events.action)
 			}
 		);
 

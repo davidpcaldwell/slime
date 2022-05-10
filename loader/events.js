@@ -9,7 +9,7 @@
 	/**
 	 *
 	 * @param { slime.runtime.internal.events.Context } $context
-	 * @param { slime.loader.Export<slime.runtime.internal.events.Export> } $export
+	 * @param { slime.loader.Export<slime.runtime.internal.events.Exports> } $export
 	 */
 	function($context,$export) {
 		/**
