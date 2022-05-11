@@ -87,6 +87,60 @@
 				return peer.writeText(false);
 			}
 
+			/**
+			 *
+			 * @param { string } pathname
+			 * @returns { slime.jrunscript.file.world.Pathname }
+			 */
+			function pathname_create(pathname) {
+				return {
+					filesystem: filesystem,
+					pathname: pathname,
+					relative: function(relative) {
+						return filesystem.pathname(pathname_relative(pathname, relative));
+					},
+					file: {
+						read: {
+							stream: void(0),
+							string: function() {
+								return $api.Function.impure.ask(function(events) {
+									var stream = openInputStream(pathname, events);
+									return (stream === null) ? null : stream.character().asString();
+								});
+							}
+						},
+						write: {
+							string: function(p) {
+								return function() {
+									var writer = openWriter(pathname);
+									writer.write(p.content);
+									writer.close();
+								}
+							}
+						},
+						copy: function(p) {
+							return copy(pathname, p.to);
+						},
+						exists: file_exists(pathname)
+					},
+					directory: {
+						exists: directory_exists(pathname),
+						require: function(p) {
+							return directory_require({
+								pathname: pathname,
+								recursive: Boolean(p && p.recursive)
+							});
+						},
+						remove: function() {
+							return directory_remove({
+								pathname: pathname
+							})
+						},
+						list: directory_list(pathname)
+					}
+				}
+			}
+
 			function pathname_relative(parent, relative) {
 				if (typeof(parent) == "undefined") throw new TypeError("'parent' must not be undefined.");
 				var peer = was.relative(parent, relative);
@@ -120,6 +174,21 @@
 					return $api.Function.impure.ask(function(events) {
 						var peer = was.newPeer(pathname);
 						return peer.exists() && peer.isDirectory();
+					});
+				}
+			}
+
+			/**
+			 *
+			 * @param { string } pathname
+			 */
+			function directory_list(pathname) {
+				return function() {
+					return $api.Function.impure.ask(function(events) {
+						var peer = was.newPeer(pathname);
+						return peer.list(null).map(function(node) {
+							return pathname_create(String(node.getScriptPath()));
+						})
 					});
 				}
 			}
@@ -163,54 +232,7 @@
 
 			/** @type { slime.jrunscript.file.world.Filesystem } */
 			var filesystem = {
-				pathname: function(pathname) {
-					return {
-						filesystem: filesystem,
-						pathname: pathname,
-						relative: function(relative) {
-							return filesystem.pathname(pathname_relative(pathname, relative));
-						},
-						file: {
-							read: {
-								stream: void(0),
-								string: function() {
-									return $api.Function.impure.ask(function(events) {
-										var stream = openInputStream(pathname, events);
-										return (stream === null) ? null : stream.character().asString();
-									});
-								}
-							},
-							write: {
-								string: function(p) {
-									return function() {
-										var writer = openWriter(pathname);
-										writer.write(p.content);
-										writer.close();
-									}
-								}
-							},
-							copy: function(p) {
-								return copy(pathname, p.to);
-							},
-							exists: file_exists(pathname)
-						},
-						directory: {
-							exists: directory_exists(pathname),
-							require: function(p) {
-								return directory_require({
-									pathname: pathname,
-									recursive: Boolean(p && p.recursive)
-								});
-							},
-							remove: function() {
-								return directory_remove({
-									pathname: pathname
-								})
-							}
-						},
-						isDirectory: void(0)
-					}
-				},
+				pathname: pathname_create,
 				Pathname: {
 					relative: pathname_relative,
 					isDirectory: function(pathname) {

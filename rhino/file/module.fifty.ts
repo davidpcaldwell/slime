@@ -419,15 +419,7 @@ namespace slime.jrunscript.file {
 
 				fifty.tests.sandbox = {};
 
-				fifty.tests.sandbox.filesystem = function() {
-					run(fifty.tests.sandbox.filesystem.Pathname.relative);
-					run(fifty.tests.sandbox.filesystem.Pathname.isDirectory);
-					run(fifty.tests.sandbox.filesystem.File.read);
-					run(fifty.tests.sandbox.filesystem.Directory.require);
-					run(fifty.tests.sandbox.filesystem.Directory.remove);
-					run(fifty.tests.sandbox.filesystem.pathname.file.write.string);
-					run(fifty.tests.sandbox.filesystem.pathname.file.read.string);
-				}
+				fifty.tests.sandbox.filesystem = fifty.test.Parent();
 			}
 		//@ts-ignore
 		)(fifty);
@@ -476,6 +468,15 @@ namespace slime.jrunscript.file {
 		//@ts-ignore
 		)(fifty);
 
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				fifty.tests.sandbox.filesystem.pathname.directory = {};
+			}
+		//@ts-ignore
+		)(fifty);
+
 		export interface Directory {
 			require: (p?: {
 				recursive?: boolean
@@ -490,8 +491,6 @@ namespace slime.jrunscript.file {
 				const { $api, jsh } = fifty.global;
 				const subject = jsh.file;
 				const filesystem = subject.world.filesystems.os;
-
-				fifty.tests.sandbox.filesystem.pathname.directory = {};
 
 				fifty.tests.sandbox.filesystem.pathname.directory.require = function() {
 					run(function recursiveRequired() {
@@ -545,6 +544,54 @@ namespace slime.jrunscript.file {
 		)(fifty);
 
 		export interface Directory {
+			list: () => slime.$api.fp.impure.Ask<void,Pathname[]>
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { $api, jsh } = fifty.global;
+
+				fifty.tests.sandbox.filesystem.pathname.directory.list = function() {
+					var TMPDIR = fifty.jsh.file.temporary.directory();
+					verify(TMPDIR).directory.evaluate(function(i) { return i.exists()(); }).is(true);
+					//	TODO	below function threw an exception at one point, but it just returns undefined because of the hacks
+					//			supporting .threw
+					verify(TMPDIR).directory.evaluate(function(i) { return i.list()(); }).length.is(0);
+					TMPDIR.relative("a").file.write.string({ content: "foo" })();
+					verify(TMPDIR).directory.evaluate(function(i) { return i.list()(); }).length.is(1);
+					TMPDIR.relative("b").directory.require()();
+					verify(TMPDIR).directory.evaluate(function(i) { return i.list()(); }).length.is(2);
+
+					function matches(a: slime.jrunscript.file.world.Pathname, b: slime.jrunscript.file.world.Pathname): boolean {
+						return a.pathname == b.pathname;
+					}
+
+					//	TODO	push back into Fifty, or farther
+					function isSameSet<L,R>(ls: L[], rs: R[], match: (l: L, r: R) => boolean): boolean {
+						var matched = $api.Iterable.match({
+							left: ls,
+							right: rs,
+							matches: match
+						});
+						return matched.unmatched.left.length == 0 && matched.unmatched.right.length == 0;
+					}
+
+					var actual = TMPDIR.directory.list()();
+					var expected = [
+						TMPDIR.relative("a"),
+						TMPDIR.relative("b")
+					];
+					verify(isSameSet(actual, expected, matches), "isSameSet").is(true);
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+
+
+		export interface Directory {
 			/**
 			 * Removes the directory at the given location. If there is nothing at the given location, will fire the `notFound`
 			 * event and return.
@@ -553,7 +600,7 @@ namespace slime.jrunscript.file {
 				notFound: void
 			}>
 
-			exists: () => slime.$api.fp.impure.Ask<{},boolean>
+			exists: () => slime.$api.fp.impure.Ask<void,boolean>
 		}
 
 		(

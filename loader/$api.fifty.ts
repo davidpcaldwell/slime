@@ -8,11 +8,6 @@ interface Function {
 	construct: any
 }
 
-type Iterable_match<L,R> = {
-	left: L,
-	right: R
-}
-
 namespace slime.$api {
 	export interface Global {
 		debug: {
@@ -191,11 +186,11 @@ namespace slime.$api {
 					left: L[],
 					right: R[],
 					matches: (l: L, r: R) => boolean,
-					unmatched: {
-						left: (l: L) => void,
-						right: (r: R) => void
+					unmatched?: {
+						left?: (l: L) => void,
+						right?: (r: R) => void
 					},
-					matched: (p: {
+					matched?: (p: {
 						left: L,
 						right: R
 					}) => void
@@ -205,7 +200,10 @@ namespace slime.$api {
 					left: L[],
 					right: R[]
 				},
-				matched: Iterable_match<L,R>[]
+				matched: {
+					left: L,
+					right: R
+				}[]
 			}
 		}
 	}
