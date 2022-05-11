@@ -571,19 +571,14 @@
 			Type: ErrorType
 		}
 
-		$exports.events = {
-			create: events.create,
-			Function: events.Function,
-			toHandler: events.toHandler,
-			action: events.action
-		}
+		$exports.events = events.api
 
 		$exports.Events = Object.assign(
-			$exports.deprecate(events.create),
+			$exports.deprecate(events.api.create),
 			{
-				Function: $exports.deprecate(events.Function),
-				toHandler: $exports.deprecate(events.toHandler),
-				action: $exports.deprecate(events.action)
+				Function: $exports.deprecate(events.api.Function),
+				toHandler: $exports.deprecate(events.api.toHandler),
+				action: $exports.deprecate(events.api.action)
 			}
 		);
 
