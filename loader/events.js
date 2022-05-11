@@ -213,31 +213,31 @@
 		}
 
 		$export({
-			/**
-			 * @param { Parameters<slime.$api.Global["Events"]>[0] } p
-			 */
-			create: function(p) {
-				return new Emitter(p);
+			api: {
+				create: function(p) {
+					return new Emitter(p);
+				},
+				Function: listening,
+				toHandler: function(handler) {
+					return new ListenersInvocationReceiver(handler);
+				},
+				action: function(f) {
+					return function(handler) {
+						var invocationReceiver = new ListenersInvocationReceiver(handler);
+						invocationReceiver.attach();
+						try {
+							return f.call( this, invocationReceiver.emitter );
+						} finally {
+							invocationReceiver.detach();
+						}
+					}
+				}
 			},
-			Function: listening,
+
 			//@ts-ignore
 			ask: ask,
 			//@ts-ignore
 			tell: tell,
-			toHandler: function(handler) {
-				return new ListenersInvocationReceiver(handler);
-			},
-			action: function(f) {
-				return function(handler) {
-					var invocationReceiver = new ListenersInvocationReceiver(handler);
-					invocationReceiver.attach();
-					try {
-						return f.call( this, invocationReceiver.emitter );
-					} finally {
-						invocationReceiver.detach();
-					}
-				}
-			}
 		});
 	}
 //@ts-ignore

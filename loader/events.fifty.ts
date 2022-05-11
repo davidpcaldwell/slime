@@ -38,10 +38,7 @@ namespace slime.runtime.internal.events {
 	}
 
 	export interface Exports {
-		create: slime.$api.Global["events"]["create"]
-		Function: slime.$api.Global["events"]["Function"]
-		toHandler: slime.$api.Global["events"]["toHandler"]
-		action: slime.$api.Global["events"]["action"]
+		api: slime.$api.Global["events"]
 
 		ask: slime.$api.fp.Exports["impure"]["ask"]
 		tell: slime.$api.fp.Exports["impure"]["tell"]
