@@ -4,8 +4,28 @@
 //
 //	END LICENSE
 
-plugin({
-	load: function() {
-		global.jenkins = $loader.module("module.js");
+//@ts-check
+(
+	/**
+	 *
+	 * @param { { jenkins: slime.jrunscript.tools.jenkins.Exports } } global
+	 * @param { slime.jsh.Global } jsh
+	 * @param { slime.Loader } $loader
+	 * @param { slime.jsh.plugin.plugin } plugin
+	 */
+	function(global, jsh, $loader, plugin) {
+		plugin({
+			load: function() {
+				/** @type { slime.jrunscript.tools.jenkins.Script } */
+				var script = $loader.script("module.js");
+				global.jenkins = script({
+					library: {
+						http: jsh.http,
+						document: void(0)
+					}
+				});
+			}
+		});
 	}
-});
+//@ts-ignore
+)( global, jsh, $loader, plugin );
