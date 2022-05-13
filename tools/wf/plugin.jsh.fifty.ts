@@ -104,6 +104,14 @@ namespace slime.jsh.wf {
 		project: {
 			base: slime.jrunscript.file.Directory
 
+			git: {
+				installHooks(p: { path: string }): void
+			}
+
+			lint: {
+				eslint(): boolean
+			}
+
 			Submodule: {
 				construct: (git: slime.jrunscript.tools.git.Submodule) => Submodule
 			}
@@ -204,7 +212,7 @@ namespace slime.jsh.wf {
 			 * Ensures that Node.js is installed and that the project-appropriate version of TypeScript is present.
 			 */
 			require: (p?: { project: slime.jrunscript.file.Directory }) => void
-			tsc: (p?: { project: slime.jrunscript.file.Directory }) => void
+			tsc: (p?: { project: slime.jrunscript.file.Directory }) => boolean
 
 			/**
 			 * Runs TypeDoc on the project, emitting the output to `local/doc/typedoc`.

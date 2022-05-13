@@ -98,10 +98,10 @@
 				 */
 				var branchExists = function(repository,base) {
 					var allBranches = jsh.tools.git.program({ command: "git" }).repository(repository).command(getBranches).argument().run()
-					.map(function(branch) {
-						if (branch.name.substring(0,"remote/".length) == "remote/") return branch.name.substring("remote/".length);
-						return branch.name;
-					});
+						.map(function(branch) {
+							if (branch.name.substring(0,"remote/".length) == "remote/") return branch.name.substring("remote/".length);
+							return branch.name;
+						});
 					return Boolean(allBranches.find(function(branch) { return branch == base; }));
 				}
 
@@ -198,14 +198,9 @@
 				}
 
 				if ($context.base.getFile(".eslintrc.json")) {
-					jsh.shell.tools.node.require();
-					jsh.shell.tools.node["modules"].require({ name: "eslint" });
 					$exports.eslint = function() {
-						jsh.shell.jsh({
-							shell: jsh.shell.jsh.src,
-							script: jsh.shell.jsh.src.getFile("contributor/eslint.jsh.js"),
-							arguments: ["-project", $context.base]
-						});
+						var result = jsh.wf.project.lint.eslint();
+						return (result) ? 0 : 1;
 					}
 				}
 

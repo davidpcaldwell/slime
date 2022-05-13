@@ -13,13 +13,6 @@
 	 * @param { slime.project.wf.Interface } $exports
 	 */
 	function($api,jsh,$context,$exports) {
-		var gitInstalled = Boolean(jsh.shell.PATH.getCommand("git"));
-		var isGitClone = (
-			function(base) {
-				return Boolean(base.getSubdirectory(".git") || base.getFile(".git"));
-			}
-		)($context.base);
-
 		function synchronizeEclipseSettings() {
 			//	copy project settings to Eclipse project if they differ from current settings
 			var changed = false;
@@ -77,15 +70,22 @@
 						}
 					}
 				},
-				/** @type { slime.jrunscript.tools.git.Command<{ name: string, value: string },void> } */
-				setConfigValue: {
-					invocation: function(p) {
+				/**
+				 * @type { slime.jrunscript.tools.git.Command<string,{ head: string }> }
+				 */
+				remoteShow: {
+					invocation: function(name) {
 						return {
-							command: "config",
-							arguments: [
-								p.name,
-								p.value
-							]
+							command: "remote",
+							arguments: ["show", name]
+						};
+					},
+					result: function(output) {
+						var lines = output.split("\n");
+						var parser = /HEAD branch\: (.*)/;
+						var branch = parser.exec(lines[3])[1];
+						return {
+							head: branch
 						}
 					}
 				}
@@ -94,16 +94,7 @@
 
 		$exports.initialize = $api.Function.pipe(
 			function(p) {
-				if (gitInstalled && isGitClone) {
-					var clone = jsh.tools.git.Repository({ directory: $context.base });
-					var config = clone.config({
-						arguments: ["--list"]
-					});
-					if (!config["core.hookspath"]) {
-						jsh.shell.console("Installing git hooks ...");
-						git.repository.command(git.command.setConfigValue).argument({ name: "core.hookspath", value: "contributor/hooks" }).run();
-					}
-				}
+				jsh.wf.project.git.installHooks({ path: "contributor/hooks" });
 				//	TODO	could consider whether we can wire our commit process into the git hooks mechanism:
 				//			git config core.hooksPath contributor/hooks
 				//			... and then appropriately implement contributor/hooks/pre-commit
@@ -400,6 +391,13 @@
 		)
 
 		$exports.precommit = function(p) {
+			var trunk = git.repository.command(git.command.remoteShow).argument("origin").run().head;
+			var repository = jsh.tools.git.Repository({ directory: $context.base });
+			var branch = repository.status().branch.name;
+			if (branch == trunk) {
+				jsh.shell.console("Cannot commit directly to " + trunk);
+				return 1;
+			}
 			jsh.shell.console("Linting ...");
 			var lintSuccess = lint();
 			if (!lintSuccess) {
