@@ -439,9 +439,12 @@
 								arguments: [
 									"-version", getVersion(project),
 									"-tsconfig", getConfig(project)
-								]
+								],
+								evaluate: function(result) {
+									return result;
+								}
 							});
-							if (result.status) throw new jsh.wf.error.Failure("tsc failed.");
+							return (result.status == 0);
 						},
 						typedoc: function(p) {
 							var project = (p && p.project) ? p.project : base;
