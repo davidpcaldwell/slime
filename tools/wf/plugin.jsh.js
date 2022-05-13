@@ -57,11 +57,60 @@
 					)
 				};
 
+				var gitInstalled = Boolean(jsh.shell.PATH.getCommand("git"));
+				var isGitClone = (
+					function(base) {
+						return Boolean(base.getSubdirectory(".git") || base.getFile(".git"));
+					}
+				)(base);
+
+				/** @type { slime.jrunscript.tools.git.Command<{ name: string, value: string },void> } */
+				var setConfigValue = {
+					invocation: function(p) {
+						return {
+							command: "config",
+							arguments: [
+								p.name,
+								p.value
+							]
+						}
+					}
+				}
+
 				jsh.wf.project = {
 					base: base,
 					Submodule: {
 						construct: function(submodule) {
 							return submoduleDecorate(submodule);
+						}
+					},
+					lint: {
+						eslint: function() {
+							jsh.shell.tools.node.require();
+							jsh.shell.tools.node["modules"].require({ name: "eslint" });
+							return jsh.shell.jsh({
+								shell: jsh.shell.jsh.src,
+								script: jsh.shell.jsh.src.getFile("contributor/eslint.jsh.js"),
+								arguments: ["-project", base],
+								evaluate: function(result) {
+									return result.status == 0;
+								}
+							});
+						}
+					},
+					git: {
+						installHooks: function(p) {
+							if (gitInstalled && isGitClone) {
+								var repository = jsh.tools.git.program({ command: "git" }).repository(base.toString())
+								var clone = jsh.tools.git.Repository({ directory: base });
+								var config = clone.config({
+									arguments: ["--list"]
+								});
+								if (!config["core.hookspath"]) {
+									jsh.shell.console("Installing git hooks ...");
+									repository.command(setConfigValue).argument({ name: "core.hookspath", value: p.path }).run();
+								}
+							}
 						}
 					},
 					submodule: {

@@ -104,6 +104,14 @@ namespace slime.jsh.wf {
 		project: {
 			base: slime.jrunscript.file.Directory
 
+			git: {
+				installHooks(p: { path: string }): void
+			}
+
+			lint: {
+				eslint(): boolean
+			}
+
 			Submodule: {
 				construct: (git: slime.jrunscript.tools.git.Submodule) => Submodule
 			}
