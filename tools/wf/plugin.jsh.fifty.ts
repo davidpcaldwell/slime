@@ -156,6 +156,10 @@ namespace slime.jsh.wf {
 			 * Ensures that Node.js is installed and that the project-appropriate version of TypeScript is present.
 			 */
 			require: (p?: { project: slime.jrunscript.file.Directory }) => void
+
+			/**
+			 * @deprecated Replaced by {@link slime.jsh.wf.exports.Checks["tsc"]}.
+			 */
 			tsc: (p?: { project: slime.jrunscript.file.Directory }) => boolean
 
 			/**
@@ -654,17 +658,19 @@ namespace slime.jsh.wf {
 		boolean
 	>
 
+	export type Precommit = slime.$api.fp.impure.Ask<
+		{
+			console: string
+		},
+		boolean
+	>
+
 	export namespace exports {
 		export interface Checks {
 			precommit: (p?: {
 				lint?: Lint
 				test?: Test
-			}) => slime.$api.fp.impure.Ask<
-				{
-					console: string
-				},
-				boolean
-			>
+			}) => Precommit
 		}
 	}
 

@@ -14,13 +14,13 @@
 	 */
 	function($api,jsh,$export) {
 		$export(
-			function($context,operations,$exports) {
+			function($context,project,$exports) {
 				if (arguments.length == 2) {
 					//	old signature
 					$api.deprecate(function(invocation) {
 						$context = invocation[0];
 						$exports = invocation[1];
-						operations = {};
+						project = {};
 					})(arguments);
 				}
 
@@ -117,89 +117,34 @@
 					});
 				}
 
-				var Failure = jsh.wf.error.Failure;
+				if ( (project.lint || project.test) && !project.precommit ) {
+					project.precommit = jsh.wf.checks.precommit({
+						lint: project.lint,
+						test: project.test
+					})
+				}
 
-				if (operations.test && !operations.commit) {
-					operations.commit = function(p) {
-						var repository = fetch();
+				/**
+				 *
+				 * @param { slime.jrunscript.tools.git.repository.Local } repository
+				 * @param { string } message
+				 */
+				var commit = function(repository,message) {
+					repository.commit({
+						all: true,
+						message: message
+					});
 
-						jsh.wf.requireGitIdentity({ repository: repository }, {
-							console: function(e) {
-								jsh.shell.console(e.detail);
-							}
-						});
-
-						jsh.wf.prohibitUntrackedFiles({ repository: repository });
-
-						jsh.wf.prohibitModifiedSubmodules({ repository: repository });
-
-						var status = repository.status();
-						if (status.branch.name === null) {
-							throw new Failure("Cannot commit a detached HEAD.");
+					//	We checked for upstream changes, so now we're going to push
+					//	If we allow branching, we may or may not really want to push, or may not want to push to
+					//	master
+					repository.push({
+						repository: "origin",
+						refspec: "HEAD",
+						config: {
+							"credential.helper": credentialHelper
 						}
-
-						(
-							function checkForDivergence() {
-								var remote = "origin";
-								var branch = status.branch.name;
-								var tracked = remote + "/" + branch;
-								if (!branchExists(repository.directory.toString(), tracked)) {
-									tracked = "origin/master";
-								}
-
-								//	TODO	looks like the below is duplicative, checking vs origin/master twice; maybe there's an offline
-								//			scenario where that makes sense?
-								var allowDivergeFromOrigin = false;
-								var vsLocalOrigin = jsh.wf.git.compareTo(tracked)(repository);
-								if (vsLocalOrigin.behind && vsLocalOrigin.behind.length && !allowDivergeFromOrigin) {
-									throw new Failure("Behind " + tracked + " by " + vsLocalOrigin.behind.length + " commits.");
-								}
-								var vsOrigin = jsh.wf.git.compareTo(tracked)(repository);
-								//	var status = repository.status();
-								//	maybe check branch above if we allow non-master-based workflow
-								//	Perhaps allow a command-line argument or something for this, need to think through branching
-								//	strategy overall
-								if (vsLocalOrigin.behind && vsOrigin.behind.length && !allowDivergeFromOrigin) {
-									throw new Failure("Behind " + tracked + " by " + vsOrigin.behind.length + " commits.");
-								}
-							}
-						)();
-
-						if (operations.lint) {
-							if (!operations.lint()) {
-								throw new Failure("Linting failed.");
-							}
-						}
-
-						jsh.wf.typescript.tsc();
-
-						if (!p.notest) {
-							var success = operations.test();
-							if (!success) {
-								throw new Failure("Tests failed.");
-							} else {
-								jsh.shell.console("Tests passed; proceeding with commit.");
-							}
-						} else {
-							jsh.shell.console("Skipping tests because 'notest' is true.");
-						}
-
-						repository.commit({
-							all: true,
-							message: p.message
-						});
-
-						//	We checked for upstream changes, so now we're going to push
-						//	If we allow branching, we may or may not really want to push, or may not want to push to
-						//	master
-						repository.push({
-							repository: "origin",
-							refspec: "HEAD",
-							config: {
-								"credential.helper": credentialHelper
-							}
-						});
-					}
+					});
 				}
 
 				if ($context.base.getFile(".eslintrc.json")) {
@@ -209,9 +154,14 @@
 					}
 				}
 
-				if (operations.lint) {
+				if (project.lint) {
 					$exports.lint = function(p) {
-						if (!operations.lint()) {
+						var result = project.lint({
+							console: function(e) {
+								jsh.shell.console(e.detail);
+							}
+						})
+						if (!result) {
 							jsh.shell.console("Linting failed.");
 							return 1;
 						} else {
@@ -221,12 +171,16 @@
 				}
 
 				$exports.tsc = function() {
-					try {
-						jsh.wf.typescript.tsc();
+					var result = jsh.wf.checks.tsc()({
+						console: function(e) {
+							jsh.shell.console(e.detail);
+						}
+					});
+					if (result) {
 						jsh.shell.console("Passed.");
-					} catch (e) {
+					} else {
 						jsh.shell.console("tsc failed.");
-						jsh.shell.exit(1);
+						return 1;
 					}
 				};
 
@@ -423,16 +377,72 @@
 					});
 				}
 
-				if (operations.test) {
+				if (project.test) {
 					$exports.test = function(p) {
-						var success = operations.test();
+						var success = project.test({
+							output: function(e) {
+								jsh.shell.console(e.detail);
+							},
+							console: function(e) {
+								jsh.shell.console(e.detail);
+							}
+						});
 						jsh.shell.console("Tests: " + ( (success) ? "passed." : "FAILED!") );
+						return (success) ? 0 : 1;
+					}
+				}
+
+				if (project.precommit) {
+					$exports.precommit = function(p) {
+						var success = project.precommit({
+							console: function(e) {
+								jsh.shell.console(e.detail);
+							}
+						});
+						jsh.shell.console("Checks: " + ( (success) ? "passed." : "FAILED!") );
+						return (success) ? 0 : 1;
 					}
 				}
 
 				$exports.submodule = {
-					update: void(0),
-					remove: void(0),
+					update: (project.precommit) ? $api.Function.pipe(
+						/**
+						 *
+						 * @param { slime.jsh.script.cli.Invocation<slime.jsh.wf.standard.Options & { path: string }> } p
+						 */
+						function(p) {
+							var rv = {
+								options: $api.Object.compose(p.options),
+								arguments: []
+							};
+							for (var i=0; i<p.arguments.length; i++) {
+								if (p.arguments[i] == "--path") {
+									rv.options.path = p.arguments[++i];
+								} else {
+									rv.arguments.push(p.arguments[i]);
+								}
+							}
+							return rv;
+						},
+						function(p) {
+							jsh.wf.project.updateSubmodule({ path: p.options.path });
+							var result = project.precommit({
+								console: function(e) {
+									jsh.shell.console(e.detail);
+								}
+							});
+							if (result) {
+								commit(jsh.tools.git.Repository({ directory: $context.base }), "Update " + p.options.path + " submodule");
+							}
+						}
+					) : void(0),
+					remove: $api.Function.pipe(
+						$api.Function.impure.revise(jsh.wf.cli.$f.option.string({ longname: "path" })),
+						function(p) {
+							var path = p.options.path;
+							jsh.wf.project.submodule.remove({ path: path });
+						}
+					),
 					attach: $api.Function.pipe(
 						jsh.script.cli.option.string({ longname: "path" }),
 						function(p) {
@@ -487,42 +497,7 @@
 					)
 				};
 
-				$exports.submodule.remove = $api.Function.pipe(
-					$api.Function.impure.revise(jsh.wf.cli.$f.option.string({ longname: "path" })),
-					function(p) {
-						var path = p.options.path;
-						jsh.wf.project.submodule.remove({ path: path });
-					}
-				)
-
-				if (operations.commit) $exports.submodule.update = $api.Function.pipe(
-					/**
-					 *
-					 * @param { slime.jsh.script.cli.Invocation<slime.jsh.wf.standard.Options & { path: string }> } p
-					 */
-					function(p) {
-						var rv = {
-							options: $api.Object.compose(p.options),
-							arguments: []
-						};
-						for (var i=0; i<p.arguments.length; i++) {
-							if (p.arguments[i] == "--path") {
-								rv.options.path = p.arguments[++i];
-							} else {
-								rv.arguments.push(p.arguments[i]);
-							}
-						}
-						return rv;
-					},
-					function(p) {
-						jsh.wf.project.updateSubmodule({ path: p.options.path });
-						operations.commit({
-							message: "Update " + p.options.path + " submodule"
-						});
-					}
-				);
-
-				if (operations.commit) $exports.commit = $api.Function.pipe(
+				if (project.precommit) $exports.commit = $api.Function.pipe(
 					jsh.wf.cli.$f.option.string({ longname: "message" }),
 					jsh.script.cli.option.boolean({ longname: "notest" }),
 					function(p) {
@@ -553,8 +528,16 @@
 
 						if (!p.options.message) throw new Error("No default commit message, and no message given.");
 						try {
-							operations.commit({ message: p.options.message, notest: p.options.notest });
-							jsh.shell.console("Committed changes to " + $context.base);
+							//	TODO	removed a notest option that could be used here
+							var check = project.precommit({
+								console: function(e) {
+									jsh.shell.console(e.detail);
+								}
+							});
+							if (check) {
+								commit(jsh.tools.git.Repository({ directory: $context.base }), p.options.message);
+								jsh.shell.console("Committed changes to " + $context.base);
+							}
 						} catch (e) {
 							//	TODO	should generalize this in the wf.jsh.js script, perhaps even adding an error handler
 							//			to jsh.script.cli.wrap or Descriptor or something
