@@ -133,32 +133,37 @@
 
 						jsh.wf.prohibitModifiedSubmodules({ repository: repository });
 
-						var remote = "origin";
 						var status = repository.status();
 						if (status.branch.name === null) {
 							throw new Failure("Cannot commit a detached HEAD.");
 						}
-						var branch = status.branch.name;
-						var tracked = remote + "/" + branch;
-						if (!branchExists(repository.directory.toString(), tracked)) {
-							tracked = "origin/master";
-						}
 
-						//	TODO	looks like the below is duplicative, checking vs origin/master twice; maybe there's an offline
-						//			scenario where that makes sense?
-						var allowDivergeFromOrigin = false;
-						var vsLocalOrigin = jsh.wf.git.compareTo(tracked)(repository);
-						if (vsLocalOrigin.behind && vsLocalOrigin.behind.length && !allowDivergeFromOrigin) {
-							throw new Failure("Behind " + tracked + " by " + vsLocalOrigin.behind.length + " commits.");
-						}
-						var vsOrigin = jsh.wf.git.compareTo(tracked)(repository);
-						//	var status = repository.status();
-						//	maybe check branch above if we allow non-master-based workflow
-						//	Perhaps allow a command-line argument or something for this, need to think through branching
-						//	strategy overall
-						if (vsLocalOrigin.behind && vsOrigin.behind.length && !allowDivergeFromOrigin) {
-							throw new Failure("Behind " + tracked + " by " + vsOrigin.behind.length + " commits.");
-						}
+						(
+							function checkForDivergence() {
+								var remote = "origin";
+								var branch = status.branch.name;
+								var tracked = remote + "/" + branch;
+								if (!branchExists(repository.directory.toString(), tracked)) {
+									tracked = "origin/master";
+								}
+
+								//	TODO	looks like the below is duplicative, checking vs origin/master twice; maybe there's an offline
+								//			scenario where that makes sense?
+								var allowDivergeFromOrigin = false;
+								var vsLocalOrigin = jsh.wf.git.compareTo(tracked)(repository);
+								if (vsLocalOrigin.behind && vsLocalOrigin.behind.length && !allowDivergeFromOrigin) {
+									throw new Failure("Behind " + tracked + " by " + vsLocalOrigin.behind.length + " commits.");
+								}
+								var vsOrigin = jsh.wf.git.compareTo(tracked)(repository);
+								//	var status = repository.status();
+								//	maybe check branch above if we allow non-master-based workflow
+								//	Perhaps allow a command-line argument or something for this, need to think through branching
+								//	strategy overall
+								if (vsLocalOrigin.behind && vsOrigin.behind.length && !allowDivergeFromOrigin) {
+									throw new Failure("Behind " + tracked + " by " + vsOrigin.behind.length + " commits.");
+								}
+							}
+						)();
 
 						if (operations.lint) {
 							if (!operations.lint()) {

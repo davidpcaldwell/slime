@@ -70,25 +70,7 @@
 						}
 					}
 				},
-				/**
-				 * @type { slime.jrunscript.tools.git.Command<string,{ head: string }> }
-				 */
-				remoteShow: {
-					invocation: function(name) {
-						return {
-							command: "remote",
-							arguments: ["show", name]
-						};
-					},
-					result: function(output) {
-						var lines = output.split("\n");
-						var parser = /HEAD branch\: (.*)/;
-						var branch = parser.exec(lines[3])[1];
-						return {
-							head: branch
-						}
-					}
-				}
+				remoteShow: jsh.wf.git.commands.remoteShow
 			}
 		};
 
@@ -174,65 +156,17 @@
 			}
 		}
 
-		var lint = function() {
+		/** @type { slime.jsh.wf.Lint } */
+		var lint = $api.Function.impure.ask(function(events) {
 			var success = true;
 
-			jsh.shell.console("Checking for trailing whitespace ...");
-			jsh.tools.code.handleTrailingWhitespace({
-				base: $context.base,
-				exclude: jsh.project.code.files.exclude,
-				isText: jsh.project.code.files.isText,
-				nowrite: false
-			})({
-				unknownFileType: function(e) {
-					jsh.shell.console("Could not determine whether file is text or binary: " + e.detail.path);
-					success = false;
-				},
-				foundAt: function(e) {
-					jsh.shell.console("Found trailing whitespace: " + e.detail.file.path + " line " + e.detail.line.number);
-					success = false;
+			success = success && jsh.wf.checks.lint()({
+				console: function(e) {
+					events.fire("console", e.detail);
 				}
 			});
 
-			jsh.shell.console("Handling final newlines ...");
-			jsh.tools.code.handleFinalNewlines({
-				base: $context.base,
-				exclude: jsh.project.code.files.exclude,
-				isText: jsh.project.code.files.isText,
-				nowrite: false
-			})({
-				unknownFileType: function(e) {
-					jsh.shell.console("Could not determine whether file is text or binary: " + e.detail.path);
-					success = false;
-				},
-				missing: function(e) {
-					jsh.shell.console("Missing final newline: " + e.detail.path);
-					success = false;
-				},
-				multiple: function(e) {
-					jsh.shell.console("Multiple final newlines: " + e.detail.path);
-					success = false;
-				}
-			});
-
-			jsh.shell.console("Running ESLint ...");
-			jsh.shell.jsh({
-				shell: jsh.shell.jsh.src,
-				script: $context.base.getFile("contributor/eslint.jsh.js"),
-				stdio: {
-					output: null
-				},
-				evaluate: function(result) {
-					if (result.status) {
-						jsh.shell.console("ESLint status: " + result.status + "; failing.");
-						success = false;
-					} else {
-						jsh.shell.console("ESLint passed.");
-					}
-				}
-			});
-
-			jsh.shell.console("Verifying MPL license headers ...");
+			events.fire("console", "Verifying MPL license headers ...");
 			var license = jsh.shell.jsh({
 				shell: jsh.shell.jsh.src,
 				script: $context.base.getFile("contributor/code/license.jsh.js"),
@@ -242,15 +176,15 @@
 			});
 
 			if (license.status) {
-				jsh.shell.console("License headers need to be updated; run:");
-				jsh.shell.console("./jsh.bash contributor/code/license.jsh.js --fix");
+				events.fire("console", "License headers need to be updated; run:");
+				events.fire("console", "./jsh.bash contributor/code/license.jsh.js --fix");
 				success = false;
 			} else {
-				jsh.shell.console("All license headers are correct.")
+				events.fire("console", "All license headers are correct.")
 			}
 
 			return success;
-		};
+		});
 
 		/**
 		 * Runs the test suite, first installing Java, Rhino, and (if Docker testing is indicated) the Selenium Java driver.
@@ -398,15 +332,18 @@
 				jsh.shell.console("Cannot commit directly to " + trunk);
 				return 1;
 			}
-			jsh.shell.console("Linting ...");
-			var lintSuccess = lint();
-			if (!lintSuccess) {
-				jsh.shell.console("Linting failed.");
-				return 1;
-			}
-			jsh.shell.console("Running TypeScript compiler ...");
-			jsh.wf.typescript.tsc();
-			jsh.shell.console("Passed.");
+
+			var success = true;
+
+			success = success && jsh.wf.checks.precommit({
+				lint: lint
+			})({
+				console: function(e) {
+					jsh.shell.console(e.detail);
+				}
+			});
+
+			return (success) ? 0 : 1;
 		};
 
 		$exports.check = $api.Function.pipe(

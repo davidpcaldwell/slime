@@ -23,6 +23,8 @@
 					project: void(0),
 					git: void(0),
 					typescript: void(0),
+					inputs: void(0),
+					checks: void(0),
 					requireGitIdentity: void(0),
 					prohibitUntrackedFiles: void(0),
 					prohibitModifiedSubmodules: void(0),
@@ -370,7 +372,93 @@
 					}
 				};
 
+				var credentialHelper = jsh.shell.jsh.src.getFile("rhino/tools/github/git-credential-github-tokens-directory.bash").toString();
+				var fetch = $api.Function.memoized(function() {
+					var repository = jsh.tools.git.Repository({ directory: base });
+					jsh.shell.console("Fetching all updates ...");
+					repository.fetch({
+						all: true,
+						prune: true,
+						recurseSubmodules: true,
+						credentialHelpers: [
+							"cache",
+							credentialHelper
+						]
+					}, {
+						remote: function(e) {
+							var remote = e.detail;
+							var url = repository.remote.getUrl({ name: remote });
+							jsh.shell.console("Fetching updates from: " + url);
+						},
+						submodule: (function() {
+							var first = true;
+							return function(e) {
+								if (first) {
+									jsh.shell.stdio.error.write("Submodules: ");
+									first = false;
+								}
+								if (e.detail) {
+									jsh.shell.stdio.error.write(".");
+								} else {
+									jsh.shell.console("");
+								}
+							}
+						})(),
+						stdout_other: function(e) {
+							if (e.detail) jsh.shell.console("STDOUT: " + e.detail);
+						},
+						stderr_other: function(e) {
+							if (e.detail) jsh.shell.console("STDERR: " + e.detail);
+						}
+					});
+					jsh.shell.console("");
+					jsh.shell.console("Fetched updates.");
+					jsh.shell.console("");
+					return repository;
+				});
+
 				jsh.wf.git = {
+					commands: {
+						/**
+						 * @type { slime.jrunscript.tools.git.Command<string,{ head: string }> }
+						 */
+						remoteShow: {
+							invocation: function(name) {
+								return {
+									command: "remote",
+									arguments: ["show", name]
+								};
+							},
+							result: function(output) {
+								var lines = output.split("\n");
+								var parser = /HEAD branch\: (.*)/;
+								var branch = parser.exec(lines[3])[1];
+								return {
+									head: branch
+								}
+							}
+						},
+						/** @type { slime.jrunscript.tools.git.Command<void,{ current: boolean, name: string }[]> } */
+						getBranches: {
+							invocation: function() {
+								return {
+									command: "branch",
+									arguments: $api.Array.build(function(rv) {
+										rv.push("-a");
+									})
+								}
+							},
+							result: function(output) {
+								var lines = output.split("\n");
+								return lines.map(function(line) {
+									return {
+										current: line.substring(0,1) == "*",
+										name: line.substring(2)
+									}
+								})
+							}
+						}
+					},
 					compareTo: function(branchName) {
 						return function(repository) {
 							/** @type { slime.jrunscript.tools.git.Command<{ revisionRange: string },slime.jrunscript.tools.git.Commit[]> } */
@@ -412,33 +500,35 @@
 					Failure: $api.Error.Type({ name: "jsh.wf.Failure" })
 				}
 
-				jsh.wf.typescript = (function() {
-					function getVersion(project) {
-						if (project.getFile("tsc.version")) return project.getFile("tsc.version").read(String);
+				var typescript = {
+					getVersion: function(base) {
+						if (base.getFile("tsc.version")) return base.getFile("tsc.version").read(String);
 						return "4.6.3";
-					}
-
-					function getConfig(base) {
+					},
+					getConfig: function(base) {
 						if (base.getFile("tsconfig.json")) return base.getFile("tsconfig.json");
 						if (base.getFile("jsconfig.json")) return base.getFile("jsconfig.json");
 						throw new Error("No TypeScript configuration file found at " + base);
 					}
+				}
+
+				jsh.wf.typescript = (function() {
 
 					return {
 						require: function(p) {
 							var project = (p && p.project) ? p.project : base;
 							jsh.shell.tools.node.require();
-							jsh.shell.tools.node["modules"].require({ name: "typescript", version: getVersion(project) });
+							jsh.shell.tools.node["modules"].require({ name: "typescript", version: typescript.getVersion(project) });
 						},
 						tsc: function(p) {
 							var project = (p && p.project) ? p.project : base;
-							var version = getVersion(project);
+							var version = typescript.getVersion(project);
 							jsh.shell.console("Compiling with TypeScript " + version + " ...");
 							var result = jsh.shell.jsh({
 								script: jsh.shell.jsh.src.getFile("tools/tsc.jsh.js"),
 								arguments: [
-									"-version", getVersion(project),
-									"-tsconfig", getConfig(project)
+									"-version", version,
+									"-tsconfig", typescript.getConfig(project)
 								],
 								evaluate: function(result) {
 									return result;
@@ -448,14 +538,14 @@
 						},
 						typedoc: function(p) {
 							var project = (p && p.project) ? p.project : base;
-							var version = getVersion(project);
+							var version = typescript.getVersion(project);
 							jsh.shell.console("Compiling with TypeScript " + version + " ...");
 							return jsh.shell.jsh({
 								shell: jsh.shell.jsh.src,
 								script: jsh.shell.jsh.src.getFile("tools/typedoc.jsh.js"),
 								arguments: [
-									"--ts:version", getVersion(project),
-									"--tsconfig", getConfig(project),
+									"--ts:version", typescript.getVersion(project),
+									"--tsconfig", typescript.getConfig(project),
 									"--output", project.getRelativePath("local/doc/typedoc"),
 								],
 								stdio: p.stdio,
@@ -464,6 +554,342 @@
 						}
 					}
 				})();
+
+				jsh.wf.inputs = {
+					gitIdentityProvider: {
+						gui: {
+							name: guiAsk({ name: "user.name" }),
+							email: guiAsk({ name: "user.email" })
+						}
+					}
+				}
+
+				/** @type { slime.jsh.wf.exports.Checks["noUntrackedFiles"] } */
+				function noUntrackedFiles(p) {
+					return $api.Function.impure.ask(function(events) {
+						events.fire("console", "Verifying no untracked files ...");
+						var status = p.repository.status();
+						var untracked = (status.paths) ? $api.Object.properties(status.paths).filter(function(property) {
+							return property.value == "??"
+						}).map(function(property) { return property.name; }) : [];
+						if (untracked.length) {
+							events.fire("untracked", untracked);
+						}
+						return untracked.length == 0;
+					});
+				}
+
+				/** @type { slime.jsh.wf.exports.Checks["requireGitIdentity"] } */
+				function requireGitIdentity(p) {
+					/**
+					 *
+					 * @param { { [name: string]: string } } config
+					 */
+					function hasGitIdentity(config) {
+						return Boolean(config["user.name"] && config["user.email"]);
+					}
+
+					return $api.Function.impure.ask(function(events) {
+						events.fire("console", "Verifying git identity ...");
+						var config = p.repository.config({
+							arguments: ["--list"]
+						});
+						if (!config["user.name"] && p.get && p.get.name) {
+							events.fire("console", "Getting user.name for " + p.repository);
+							p.repository.config({
+								arguments: ["user.name", p.get.name({ repository: p.repository })]
+							});
+						} else {
+							events.fire("debug", "Found user.name " + config["user.name"] + " for " + p.repository);
+						}
+						if (!config["user.email"] && p.get && p.get.email) {
+							events.fire("console", "Getting user.email for " + p.repository);
+							p.repository.config({
+								arguments: ["user.email", p.get.email({ repository: p.repository })]
+							});
+						} else {
+							events.fire("debug", "Found user.email " + config["user.email"] + " for " + p.repository);
+						}
+						var after = p.repository.config({
+							arguments: ["--list"]
+						});
+						if (!after["user.name"]) events.fire("console", "git repository configuration missing user.name");
+						if (!after["user.email"]) events.fire("console", "git repository configuration missing user.email");
+						return hasGitIdentity(after);
+					});
+				}
+
+				/** @type { slime.jsh.wf.exports.Checks["noModifiedSubmodules"] } */
+				function noModifiedSubmodules(p) {
+					return $api.Function.impure.ask(function(events) {
+						events.fire("console", "Verifying submodules unmodified ...");
+						var success = true;
+						p.repository.submodule().forEach(function(sub) {
+							var submodule = jsh.tools.git.Repository({ directory: p.repository.directory.getSubdirectory(sub.path) });
+							var status = submodule.status();
+							if (status.paths) {
+								success = false;
+								events.fire(
+									"console",
+									"Submodule " + sub.path + " " + submodule + " "
+										+ "is modified in " + p.repository
+										+ " paths=" + JSON.stringify(status.paths)
+								);
+							}
+						});
+						return success;
+					});
+				}
+
+				/** @type { slime.jsh.wf.exports.Checks["noDetachedHead"] } */
+				function noDetachedHead(p) {
+					return $api.Function.impure.ask(function(events) {
+						events.fire("console", "Verifying not a detached HEAD ...");
+						var status = p.repository.status();
+						if (status.branch.name === null) {
+							events.fire("console", "Cannot commit a detached HEAD.");
+						}
+						return status.branch.name !== null;
+					});
+				}
+
+				/** @type { slime.jsh.wf.exports.Checks["upToDateWithOrigin"] } */
+				function upToDateWiithOrigin(p) {
+					/**
+					 *
+					 * @param { string } repository
+					 * @param { string } base
+					 * @returns
+					 */
+					var branchExists = function(repository,base) {
+						var allBranches = jsh.tools.git.program({ command: "git" }).repository(repository).command(jsh.wf.git.commands.getBranches).argument().run()
+							.map(function(branch) {
+								if (branch.name.substring(0,"remote/".length) == "remote/") return branch.name.substring("remote/".length);
+								return branch.name;
+							});
+						return Boolean(allBranches.find(function(branch) { return branch == base; }));
+					}
+
+					return $api.Function.impure.ask(function(events) {
+						events.fire("console", "Verifying up to date with origin ...");
+						var remote = "origin";
+						var origin = jsh.tools.git.program({ command: "git" })
+							.repository(base.pathname.toString())
+							.command(jsh.wf.git.commands.remoteShow)
+							.argument(remote)
+							.run()
+						;
+						var repository = p.repository;
+						var status = repository.status();
+						var branch = status.branch.name;
+						var tracked = remote + "/" + branch;
+						if (!branchExists(repository.directory.toString(), tracked)) {
+							tracked = remote + "/" + origin.head;
+						}
+
+						//	TODO	looks like the below is duplicative, checking vs origin/master twice; maybe there's an offline
+						//			scenario where that makes sense?
+						var allowDivergeFromOrigin = false;
+						var vsLocalOrigin = jsh.wf.git.compareTo(tracked)(repository);
+						if (vsLocalOrigin.behind && vsLocalOrigin.behind.length && !allowDivergeFromOrigin) {
+							events.fire("console", "Behind " + tracked + " by " + vsLocalOrigin.behind.length + " commits.");
+							return false;
+						}
+						var vsOrigin = jsh.wf.git.compareTo(tracked)(repository);
+						//	var status = repository.status();
+						//	maybe check branch above if we allow non-master-based workflow
+						//	Perhaps allow a command-line argument or something for this, need to think through branching
+						//	strategy overall
+						if (vsLocalOrigin.behind && vsOrigin.behind.length && !allowDivergeFromOrigin) {
+							events.fire("console", "Behind " + tracked + " by " + vsOrigin.behind.length + " commits.");
+							return false;
+						}
+						return true;
+					});
+				}
+
+				/** @type { slime.jsh.wf.exports.Checks["lint"] } */
+				function lint(p) {
+					return $api.Function.impure.ask(function(events) {
+						var success = true;
+
+						if (!p) p = {};
+						var isText = (p.isText) ? p.isText : jsh.project.code.files.isText;
+						var handleTrailingWhitespace = (typeof(p.trailingWhitespace) == "undefined") ? true : p.trailingWhitespace;
+						var handleFinalNewlines = (typeof(p.handleFinalNewlines) == "undefined") ? true : p.handleFinalNewlines;
+
+						if (handleTrailingWhitespace) {
+							events.fire("console", "Checking for trailing whitespace ...");
+							jsh.tools.code.handleTrailingWhitespace({
+								base: base,
+								exclude: jsh.project.code.files.exclude,
+								isText: isText,
+								nowrite: false
+							})({
+								unknownFileType: function(e) {
+									events.fire("console", "Could not determine whether file is text or binary: " + e.detail.path);
+									success = false;
+								},
+								foundAt: function(e) {
+									events.fire("console", "Found trailing whitespace: " + e.detail.file.path + " line " + e.detail.line.number);
+									success = false;
+								}
+							});
+						}
+
+						if (handleFinalNewlines) {
+							events.fire("console", "Handling final newlines ...");
+							jsh.tools.code.handleFinalNewlines({
+								base: base,
+								exclude: jsh.project.code.files.exclude,
+								isText: isText,
+								nowrite: false
+							})({
+								unknownFileType: function(e) {
+									events.fire("console", "Could not determine whether file is text or binary: " + e.detail.path);
+									success = false;
+								},
+								missing: function(e) {
+									events.fire("console", "Missing final newline: " + e.detail.path);
+									success = false;
+								},
+								multiple: function(e) {
+									events.fire("console", "Multiple final newlines: " + e.detail.path);
+									success = false;
+								}
+							});
+						}
+
+						if (base.getFile(".eslintrc.json")) {
+							events.fire("console", "Running ESLint ...");
+							jsh.shell.jsh({
+								shell: jsh.shell.jsh.src,
+								script: jsh.shell.jsh.src.getFile("contributor/eslint.jsh.js"),
+								stdio: {
+									output: null
+								},
+								evaluate: function(result) {
+									if (result.status) {
+										events.fire("console", "ESLint status: " + result.status + "; failing.");
+										success = false;
+									} else {
+										events.fire("console", "ESLint passed.");
+									}
+								}
+							});
+						}
+
+						return success;
+					});
+				}
+
+				/** @type { slime.jsh.wf.exports.Checks["tsc"] } */
+				function tsc() {
+					return $api.Function.impure.ask(function(events) {
+						events.fire("console", "Verifying with TypeScript compiler ...");
+						var project = base;
+						var version = typescript.getVersion(project);
+						events.fire("console", "Compiling with TypeScript " + version + " ...");
+						var result = jsh.shell.jsh({
+							script: jsh.shell.jsh.src.getFile("tools/tsc.jsh.js"),
+							arguments: [
+								"-version", version,
+								"-tsconfig", typescript.getConfig(project)
+							],
+							evaluate: function(result) {
+								return result;
+							}
+						});
+						return (result.status == 0);
+					});
+				}
+
+				jsh.wf.checks = {
+					noUntrackedFiles: noUntrackedFiles,
+					requireGitIdentity: requireGitIdentity,
+					noModifiedSubmodules: noModifiedSubmodules,
+					noDetachedHead: noDetachedHead,
+					upToDateWithOrigin: upToDateWiithOrigin,
+					tsc: tsc,
+					lint: lint,
+					precommit: function(p) {
+						return $api.Function.impure.ask(function(events) {
+							var repository = fetch();
+
+							var success = true;
+
+							success = success && requireGitIdentity({
+								repository: repository
+							})({
+								console: function(e) {
+									events.fire("console", e.detail);
+								}
+							});
+
+							success = success && noUntrackedFiles({
+								repository: repository
+							})({
+								console: function(e) {
+									events.fire("console", e.detail);
+								},
+								untracked: function(e) {
+									events.fire("console", e.detail.join(" "));
+								}
+							});
+
+							success = success && noModifiedSubmodules({
+								repository: repository
+							})({
+								console: function(e) {
+									events.fire("console", e.detail);
+								}
+							});
+
+							success = success && noDetachedHead({
+								repository: repository
+							})({
+								console: function(e) {
+									events.fire("console", e.detail);
+								}
+							});
+
+							success = success && upToDateWiithOrigin({
+								repository: repository
+							})({
+								console: function(e) {
+									events.fire("console", e.detail);
+								}
+							});
+
+							if (p.lint) {
+								success = success && p.lint({
+									console: function(e) {
+										events.fire("console", e.detail);
+									}
+								});
+							}
+
+							success = success && tsc()({
+								console: function(e) {
+									events.fire("console", e.detail);
+								}
+							});
+
+							if (p.test) {
+								success = success && p.test({
+									output: function(e) {
+										events.fire("console", e.detail);
+									},
+									console: function(e) {
+										events.fire("console", e.detail);
+									}
+								});
+							}
+
+							return success;
+						});
+					}
+				}
 
 				jsh.wf.requireGitIdentity = Object.assign($api.Events.Function(function(p,events) {
 					var get = p.get || {

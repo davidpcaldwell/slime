@@ -42,8 +42,7 @@ namespace slime.jsh {
  */
 namespace slime.jsh.wf {
 	/**
-	 * An object that, given a Git repository, can provide the Git user.name and user.email values for that repository (perhaps
-	 * by prompting the user).
+	 * @deprecated Replaced by inputs.GitIdentityProvider
 	 */
 	export interface GitIdentityProvider {
 		name: (p: { repository: slime.jrunscript.tools.git.repository.Local }) => string,
@@ -82,6 +81,8 @@ namespace slime.jsh.wf {
 	export namespace error {
 		/**
 		 * An error indicating something failed, with a useful message that can be displayed to a user.
+		 *
+		 * @deprecated Not using exceptions to indicate failure now; using boolean return values.
 		 */
 		export interface Failure extends Error {
 		}
@@ -136,6 +137,52 @@ namespace slime.jsh.wf {
 			}
 		}
 
+		git: {
+			commands: {
+				remoteShow: slime.jrunscript.tools.git.Command<string,{ head: string }>
+				getBranches: slime.jrunscript.tools.git.Command<void,{ current: boolean, name: string }[]>
+			}
+
+			compareTo: (branchName: string) =>
+				(repository: slime.jrunscript.tools.git.repository.Local) => {
+					ahead: slime.jrunscript.tools.git.Commit[],
+					behind: slime.jrunscript.tools.git.Commit[],
+					paths: any
+				}
+		}
+
+		typescript: {
+			/**
+			 * Ensures that Node.js is installed and that the project-appropriate version of TypeScript is present.
+			 */
+			require: (p?: { project: slime.jrunscript.file.Directory }) => void
+			tsc: (p?: { project: slime.jrunscript.file.Directory }) => boolean
+
+			/**
+			 * Runs TypeDoc on the project, emitting the output to `local/doc/typedoc`.
+			 */
+			typedoc: (
+				/**
+				 * Information about the project. Defaults to running on the `wf` project directory.
+				 */
+				p?: {
+					project: slime.jrunscript.file.Directory
+					stdio?: Parameters<slime.jrunscript.shell.Exports["run"]>[0]["stdio"]
+				}
+			) => any
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.exports = fifty.test.Parent();
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export interface Exports {
 		cli: {
 			error: {
 				TargetNotFound: $api.Error.Type<cli.error.TargetNotFound>
@@ -197,76 +244,166 @@ namespace slime.jsh.wf {
 				): void
 			}
 		}
-
-		git: {
-			compareTo: (branchName: string) =>
-				(repository: slime.jrunscript.tools.git.repository.Local) => {
-					ahead: slime.jrunscript.tools.git.Commit[],
-					behind: slime.jrunscript.tools.git.Commit[],
-					paths: any
-				}
-		}
-
-		typescript: {
-			/**
-			 * Ensures that Node.js is installed and that the project-appropriate version of TypeScript is present.
-			 */
-			require: (p?: { project: slime.jrunscript.file.Directory }) => void
-			tsc: (p?: { project: slime.jrunscript.file.Directory }) => boolean
-
-			/**
-			 * Runs TypeDoc on the project, emitting the output to `local/doc/typedoc`.
-			 */
-			typedoc: (
-				/**
-				 * Information about the project. Defaults to running on the `wf` project directory.
-				 */
-				p?: {
-					project: slime.jrunscript.file.Directory
-					stdio?: Parameters<slime.jrunscript.shell.Exports["run"]>[0]["stdio"]
-				}
-			) => any
-		}
 	}
 
 	(
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
-			fifty.tests.exports = {};
-		}
-	//@ts-ignore
-	)(fifty);
+			const { verify } = fifty;
+			const { jsh } = fifty.global;
 
-	export interface Exports {
-		/**
-		 * Errs if files untracked by Git are found in the given repository.
-		 */
-		 prohibitUntrackedFiles: (p: { repository: slime.jrunscript.tools.git.repository.Local }, events?: $api.events.Function.Receiver) => void
-	}
+			fifty.tests.exports.cli = function() {
+				var mockjsh = {
+					script: {
+						arguments: ["--a", "aaa", "--b", "--c", "c"]
+					},
+					file: jsh.file,
+					shell: jsh.shell,
+					ui: jsh.ui,
+					tools: jsh.tools
+				};
+				var mock = fifty.jsh.plugin.mock({
+					jsh: mockjsh
+				});
+				var plugin = mock.jsh.wf;
+				if (!plugin) {
+					throw new TypeError("No jsh.wf loaded.");
+				}
+				const module = plugin;
 
-	(
-		function(fifty: slime.fifty.test.Kit) {
-			fifty.tests.exports.prohibitUntrackedFiles = function() {
-				fifty.global.jsh.shell.console("foo");
+				(function() {
+					var invocation = {
+						options: {},
+						arguments: ["--foo", "bar"]
+					};
+					module.cli.$f.option.string({
+						longname: "baz"
+					})(invocation);
+					verify(invocation).options.evaluate.property("foo").is(void(0));
+					verify(invocation).arguments.length.is(2);
+				})();
+
+				(function() {
+					var invocation = {
+						options: {},
+						arguments: ["--foo", "bar"]
+					};
+					module.cli.$f.option.string({
+						longname: "foo"
+					})(invocation);
+					verify(invocation).options.evaluate.property("foo").is("bar");
+					verify(invocation).arguments.length.is(0);
+				})();
+
+				(function() {
+					var invocation = {
+						options: {
+							baz: false
+						},
+						arguments: ["--baz", "--bizzy"]
+					};
+					module.cli.$f.option.boolean({
+						longname: "baz"
+					})(invocation);
+					verify(invocation).options.baz.is(true);
+					verify(invocation).options.evaluate.property("bizzy").is(void(0));
+					verify(invocation).arguments.length.is(1);
+					verify(invocation).arguments[0].is("--bizzy");
+				})();
+
+				(function() {
+					var invocation: { arguments: string[], options: { a: string, b: boolean }} = <{ arguments: string[], options: { a: string, b: boolean }}>module.cli.invocation(
+						//	TODO	should module.$f.option.string("a") work?
+						module.cli.$f.option.string({ longname: "a" }),
+						module.cli.$f.option.boolean({ longname: "b" }),
+						module.cli.$f.option.string({ longname: "aa" }),
+						module.cli.$f.option.boolean({ longname: "bb" })
+					);
+					verify(invocation).arguments.length.is(2);
+					verify(invocation).arguments[0] == "--c";
+					verify(invocation).arguments[1] == "c";
+					verify(invocation).options.a.is("aaa");
+					verify(invocation).options.b.is(true);
+					verify(invocation).options.evaluate.property("aa").is(void(0));
+					verify(invocation).options.evaluate.property("bb").is(void(0));
+				})();
 			}
 		}
 	//@ts-ignore
 	)(fifty);
+
+	export namespace exports {
+		export interface Checks {
+		}
+
+		export interface Inputs {
+		}
+	}
+
+	export interface Exports {
+		checks: exports.Checks
+		inputs: exports.Inputs
+	}
+
+	export namespace inputs {
+		/**
+		 * An object that, given a Git repository, can provide the Git user.name and user.email values for that repository (perhaps
+		 * by prompting the user).
+		 */
+		export interface GitIdentityProvider {
+			name: (p: { repository: slime.jrunscript.tools.git.repository.Local }) => string,
+			email: (p: { repository: slime.jrunscript.tools.git.repository.Local }) => string
+		}
+	}
+
+	export namespace exports {
+		export interface Inputs {
+			gitIdentityProvider: {
+				/**
+				 * A {@link inputs.GitIdentityProvider} that asks for values for `user.name` and `user.email` via the desktop GUI.
+				 */
+				gui: inputs.GitIdentityProvider
+			}
+		}
+	}
+
+	export namespace exports {
+		export interface Checks {
+			requireGitIdentity: (p: {
+				repository: slime.jrunscript.tools.git.repository.Local
+				get?: GitIdentityProvider
+			}) => slime.$api.fp.impure.Ask<
+				{
+					console: string
+					debug: string
+				},
+				boolean
+			>
+		}
+	}
 
 	export interface Exports {
 		/**
 		 * Errs if the given repository does not supply Git `user.name` and `user.email`
 		 * values. Callers may provide an implementation that obtains the configuration values if they are missing, including a
 		 * provided implementation that prompts the user in a GUI dialog.
+		 *
+		 * @deprecated Replaced by checks.requireGitIdentity
 		 */
-		requireGitIdentity: {
+		 requireGitIdentity: {
 			(p: {
 				repository: slime.jrunscript.tools.git.repository.Local
 				get?: GitIdentityProvider
 			}, events?: $api.events.Function.Receiver)
 
+			/**
+			 * @deprecated
+			 */
 			get: {
+				/**
+				 * @deprecated Replaced by inputs.gitIdentityProvider.gui
+				 */
 				gui: GitIdentityProvider
 			}
 		}
@@ -280,9 +417,11 @@ namespace slime.jsh.wf {
 			var verify = fifty.verify;
 
 			fifty.tests.exports.requireGitIdentity = function() {
-				fifty.run(fifty.tests.exports.requireGitIdentity.first);
-				fifty.run(fifty.tests.exports.requireGitIdentity.second);
-				fifty.run(fifty.tests.exports.requireGitIdentity.third);
+				if (jsh.shell.PATH.getCommand("git")) {
+					fifty.run(fifty.tests.exports.requireGitIdentity.first);
+					fifty.run(fifty.tests.exports.requireGitIdentity.second);
+					fifty.run(fifty.tests.exports.requireGitIdentity.third);
+				}
 			};
 
 			fifty.tests.exports.requireGitIdentity.first = function() {
@@ -341,6 +480,33 @@ namespace slime.jsh.wf {
 	//@ts-ignore
 	)(fifty);
 
+	export namespace exports {
+		export interface Checks {
+			noUntrackedFiles: (p: { repository: slime.jrunscript.tools.git.repository.Local }) => slime.$api.fp.impure.Ask<{
+				console: string
+				untracked: string[]
+			},boolean>
+		}
+	}
+
+	export interface Exports {
+		/**
+		 * Errs if files untracked by Git are found in the given repository.
+		 */
+		prohibitUntrackedFiles: (p: { repository: slime.jrunscript.tools.git.repository.Local }, events?: $api.events.Function.Receiver) => void
+	}
+
+	export namespace exports {
+		export interface Checks {
+			noModifiedSubmodules: (p: { repository: slime.jrunscript.tools.git.repository.Local }) => slime.$api.fp.impure.Ask<
+				{
+					console: string
+				},
+				boolean
+			>
+		}
+	}
+
 	export interface Exports {
 		prohibitModifiedSubmodules: (p: { repository: slime.jrunscript.tools.git.repository.Local }, events?: $api.events.Function.Receiver) => void
 	}
@@ -368,150 +534,151 @@ namespace slime.jsh.wf {
 			}
 
 			fifty.tests.exports.prohibitModifiedSubmodules = function() {
-				var directory = jsh.shell.TMPDIR.createTemporary({ directory: true }) as slime.jrunscript.file.Directory;
-				jsh.shell.console("directory = " + directory);
-				var parent = jsh.tools.git.init({ pathname: directory.pathname });
-				configure(parent);
-				directory.getRelativePath("a").write("a", { append: false });
-				parent.add({ path: "." });
-				parent.commit({ all: true, message: "message a" });
-				var subdirectory = directory.getRelativePath("sub").createDirectory();
-				var child = jsh.tools.git.init({ pathname: subdirectory.pathname });
-				configure(child);
-				subdirectory.getRelativePath("b").write("b", { append: false });
-				child.add({ path: "." });
-				child.commit({ all: true, message: "message b" });
-				verify(parent).submodule().length.is(0);
-				parent.submodule.add({
-					repository: child,
-					path: "sub"
-				});
+				if (jsh.shell.PATH.getCommand("git")) {
+					var directory = jsh.shell.TMPDIR.createTemporary({ directory: true }) as slime.jrunscript.file.Directory;
+					jsh.shell.console("directory = " + directory);
+					var parent = jsh.tools.git.init({ pathname: directory.pathname });
+					configure(parent);
+					directory.getRelativePath("a").write("a", { append: false });
+					parent.add({ path: "." });
+					parent.commit({ all: true, message: "message a" });
+					var subdirectory = directory.getRelativePath("sub").createDirectory();
+					var child = jsh.tools.git.init({ pathname: subdirectory.pathname });
+					configure(child);
+					subdirectory.getRelativePath("b").write("b", { append: false });
+					child.add({ path: "." });
+					child.commit({ all: true, message: "message b" });
+					verify(parent).submodule().length.is(0);
+					parent.submodule.add({
+						repository: child,
+						path: "sub"
+					});
 
-				var c = fifty.global.jsh.wf
+					var c = fifty.global.jsh.wf
 
-				var mock = fifty.jsh.plugin.mock({
-					jsh: {
-						file: jsh.file,
-						tools: {
-							git: jsh.tools.git
-						},
-						shell: {
-							environment: {
-								PROJECT: directory.pathname.toString()
-							}
-						},
-						ui: {}
-					}
-				});
-				var plugin: slime.jsh.wf.Exports = mock.jsh.wf;
+					var mock = fifty.jsh.plugin.mock({
+						jsh: {
+							file: jsh.file,
+							tools: {
+								git: jsh.tools.git
+							},
+							shell: {
+								environment: {
+									PROJECT: directory.pathname.toString()
+								},
+								PATH: jsh.shell.PATH
+							},
+							ui: {}
+						}
+					});
+					var plugin: slime.jsh.wf.Exports = mock.jsh.wf;
 
-				jsh.shell.console(Object.keys(plugin).toString());
+					jsh.shell.console(Object.keys(plugin).toString());
 
-				var prohibitModifiedSubmodules = function(module) {
-					return module.prohibitModifiedSubmodules({ repository: parent })
-				};
+					var prohibitModifiedSubmodules = function(module) {
+						return module.prohibitModifiedSubmodules({ repository: parent })
+					};
 
-				verify(plugin).evaluate(prohibitModifiedSubmodules).threw.nothing();
+					verify(plugin).evaluate(prohibitModifiedSubmodules).threw.nothing();
 
-				subdirectory.getRelativePath("c").write("", { append: false });
-				verify(plugin).evaluate(prohibitModifiedSubmodules).threw.type(Error);
+					subdirectory.getRelativePath("c").write("", { append: false });
+					verify(plugin).evaluate(prohibitModifiedSubmodules).threw.type(Error);
 
-				verify(parent).submodule().length.is(1);
+					verify(parent).submodule().length.is(1);
+				}
 			};
 		}
 	//@ts-ignore
 	)(fifty);
-}
 
-(
-	function(
-		fifty: slime.fifty.test.Kit
-	) {
-		const { tests, verify, run } = fifty;
-		const { jsh } = fifty.global;
-
-		tests.types.Exports = function(module: slime.jsh.wf.Exports,jsh: slime.jsh.Global) {
-			(function() {
-				var invocation = {
-					options: {},
-					arguments: ["--foo", "bar"]
-				};
-				module.cli.$f.option.string({
-					longname: "baz"
-				})(invocation);
-				verify(invocation).options.evaluate.property("foo").is(void(0));
-				verify(invocation).arguments.length.is(2);
-			})();
-
-			(function() {
-				var invocation = {
-					options: {},
-					arguments: ["--foo", "bar"]
-				};
-				module.cli.$f.option.string({
-					longname: "foo"
-				})(invocation);
-				verify(invocation).options.evaluate.property("foo").is("bar");
-				verify(invocation).arguments.length.is(0);
-			})();
-
-			(function() {
-				var invocation = {
-					options: {
-						baz: false
-					},
-					arguments: ["--baz", "--bizzy"]
-				};
-				module.cli.$f.option.boolean({
-					longname: "baz"
-				})(invocation);
-				verify(invocation).options.baz.is(true);
-				verify(invocation).options.evaluate.property("bizzy").is(void(0));
-				verify(invocation).arguments.length.is(1);
-				verify(invocation).arguments[0].is("--bizzy");
-			})();
-
-			(function() {
-				var invocation: { arguments: string[], options: { a: string, b: boolean }} = <{ arguments: string[], options: { a: string, b: boolean }}>module.cli.invocation(
-					//	TODO	should module.$f.option.string("a") work?
-					module.cli.$f.option.string({ longname: "a" }),
-					module.cli.$f.option.boolean({ longname: "b" }),
-					module.cli.$f.option.string({ longname: "aa" }),
-					module.cli.$f.option.boolean({ longname: "bb" })
-				);
-				verify(invocation).arguments.length.is(2);
-				verify(invocation).arguments[0] == "--c";
-				verify(invocation).arguments[1] == "c";
-				verify(invocation).options.a.is("aaa");
-				verify(invocation).options.b.is(true);
-				verify(invocation).options.evaluate.property("aa").is(void(0));
-				verify(invocation).options.evaluate.property("bb").is(void(0));
-			})();
-		}
-
-		tests.suite = function() {
-			var global = (function() { return this; })();
-			var mockjsh = {
-				script: {
-					arguments: ["--a", "aaa", "--b", "--c", "c"]
+	export namespace exports {
+		export interface Checks {
+			noDetachedHead: (p: { repository: slime.jrunscript.tools.git.repository.Local }) => slime.$api.fp.impure.Ask<
+				{
+					console: string
 				},
-				file: jsh.file,
-				shell: jsh.shell,
-				ui: jsh.ui,
-				tools: jsh.tools
-			};
-			var mock = fifty.jsh.plugin.mock({
-				jsh: mockjsh
-			});
-			var plugin = mock.jsh.wf;
-			if (!plugin) {
-				throw new TypeError("No jsh.wf loaded.");
-			}
-			tests.types.Exports(plugin, global.jsh);
-
-			if (jsh.shell.PATH.getCommand("git")) run(tests.exports.requireGitIdentity);
-			if (jsh.shell.PATH.getCommand("git")) run(tests.exports.prohibitModifiedSubmodules);
+				boolean
+			>
 		}
 	}
-//@ts-ignore
-)(fifty)
+
+	export namespace exports {
+		export interface Checks {
+			upToDateWithOrigin: (p: { repository: slime.jrunscript.tools.git.repository.Local }) => slime.$api.fp.impure.Ask<
+				{
+					console: string
+				},
+				boolean
+			>
+		}
+	}
+
+	export namespace exports {
+		export interface Checks {
+			tsc: () => slime.$api.fp.impure.Ask<
+				{
+					console: string
+				},
+				boolean
+			>
+		}
+	}
+
+	export namespace exports {
+		export interface Checks {
+			lint: (p?: {
+				isText?: slime.tools.code.isText
+				trailingWhitespace?: boolean
+				handleFinalNewlines?: boolean
+			}) => slime.$api.fp.impure.Ask<
+				{
+					console: string
+				},
+				boolean
+			>
+		}
+	}
+
+	export type Lint = slime.$api.fp.impure.Ask<
+		{
+			console: string
+		},
+		boolean
+	>
+
+	export type Test = slime.$api.fp.impure.Ask<
+		{
+			output: string
+			console: string
+		},
+		boolean
+	>
+
+	export namespace exports {
+		export interface Checks {
+			precommit: (p?: {
+				lint?: Lint
+				test?: Test
+			}) => slime.$api.fp.impure.Ask<
+				{
+					console: string
+				},
+				boolean
+			>
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { tests, run } = fifty;
+			const { jsh } = fifty.global;
+
+			tests.suite = function() {
+				run(fifty.tests.exports);
+			}
+		}
+	//@ts-ignore
+	)(fifty)
+}
