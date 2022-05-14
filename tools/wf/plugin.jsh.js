@@ -622,22 +622,66 @@
 				/** @type { slime.jsh.wf.exports.Checks["noModifiedSubmodules"] } */
 				function noModifiedSubmodules(p) {
 					return $api.Function.impure.ask(function(events) {
-						events.fire("console", "Verifying submodules unmodified ...");
-						var success = true;
-						p.repository.submodule().forEach(function(sub) {
-							var submodule = jsh.tools.git.Repository({ directory: p.repository.directory.getSubdirectory(sub.path) });
-							var status = submodule.status();
-							if (status.paths) {
-								success = false;
-								events.fire(
-									"console",
-									"Submodule " + sub.path + " " + submodule + " "
-										+ "is modified in " + p.repository
-										+ " paths=" + JSON.stringify(status.paths)
-								);
+						events.fire("console", "Verifying submodules unmodified ...")
+						// var success = true;
+						// p.repository.submodule().forEach(function(sub) {
+						// 	var submodule = jsh.tools.git.Repository({ directory: p.repository.directory.getSubdirectory(sub.path) });
+						// 	var status = submodule.status();
+						// 	if (status.paths) {
+						// 		success = false;
+						// 		events.fire(
+						// 			"console",
+						// 			"Submodule " + sub.path + " " + submodule + " "
+						// 				+ "is modified in " + p.repository
+						// 				+ " paths=" + JSON.stringify(status.paths)
+						// 		);
+						// 	}
+						// });
+						/** @type { { submodule: string, file: string, status: string }[] } */
+						var modified = [];
+
+						jsh.shell.world.run(
+							jsh.shell.Invocation.create({
+								command: "git",
+								arguments: $api.Array.build(function(rv) {
+									rv.push("submodule", "foreach");
+									rv.push("git status --porcelain");
+								}),
+								stdio: {
+									output: "string"
+								}
+							})
+						)({
+							exit: function(e) {
+								var lines = e.detail.stdio.output.split("\n");
+								var current;
+								var patterns = {
+									repo: /^Entering \'(.*)\'/,
+									file: /^(..) (.*)$/
+								}
+								lines.forEach(function(line) {
+									if (patterns.repo.exec(line)) {
+										var match = patterns.repo.exec(line);
+										current = match[1];
+									} else if (patterns.file.exec(line)) {
+										var m2 = patterns.file.exec(line);
+										modified.push({
+											submodule: current,
+											file: m2[2],
+											status: m2[1]
+										});
+									} else {
+										//jsh.shell.console("Ignoring line: [" + line + "]");
+									}
+								})
 							}
 						});
-						return success;
+						if (modified.length) {
+							modified.forEach(function(modification) {
+								events.fire("console", "Modified: " + modification.submodule + " " + modification.file + ": " + modification.status);
+							})
+						}
+						return modified.length == 0;
 					});
 				}
 
