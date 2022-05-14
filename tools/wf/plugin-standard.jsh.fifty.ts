@@ -124,12 +124,9 @@ namespace slime.jsh.wf {
 			)(fifty);
 		}
 		export interface Project {
-			lint?: () => boolean
-			test?: () => boolean
-			commit?: (p: {
-				message: string
-				notest?: boolean
-			}) => void
+			lint?: slime.jsh.wf.Lint
+			test?: slime.jsh.wf.Test
+			precommit?: slime.jsh.wf.Precommit
 		}
 
 		export type Options = {};
@@ -138,8 +135,14 @@ namespace slime.jsh.wf {
 		 * Implements the standard `wf` commands provided by {@link slime.jsh.wf.Exports | `jsh.wf.project.initialize()`}.
 		 */
 		export interface Interface {
-			eslint:  slime.jsh.script.cli.Command<Options>
+			/**
+			 * Runs `eslint` on the project; property is present only if `.eslintrc.json` is defined at the top level of the project.
+			 */
+			eslint?:  slime.jsh.script.cli.Command<Options>
 
+			/**
+			 * Runs the configured {@link slime.jsh.wf.Lint} check; property is present only if a lint check is provided.
+			 */
 			lint?: slime.jsh.script.cli.Command<Options>
 
 			/**
@@ -151,7 +154,9 @@ namespace slime.jsh.wf {
 
 			prune: slime.jsh.script.cli.Command<Options>
 
-			test:  slime.jsh.script.cli.Command<Options>
+			test: slime.jsh.script.cli.Command<Options>
+
+			precommit: slime.jsh.script.cli.Command<Options>
 
 			submodule: {
 				/**
@@ -204,7 +209,7 @@ namespace slime.jsh.wf {
 			/**
 			 * Runs the TypeScript compiler on the project.
 			 */
-			 tsc:  slime.jsh.script.cli.Command<Options>
+			tsc:  slime.jsh.script.cli.Command<Options>
 		}
 
 		(

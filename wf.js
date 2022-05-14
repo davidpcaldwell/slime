@@ -16,6 +16,12 @@
 		function synchronizeEclipseSettings() {
 			//	copy project settings to Eclipse project if they differ from current settings
 			var changed = false;
+			$context.base.getRelativePath(".settings").createDirectory({
+				exists: function(dir) {
+					return false;
+				}
+			});
+
 			["org.eclipse.jdt.core.prefs","org.eclipse.buildship.core.prefs"].forEach(function(filename) {
 				var destination = $context.base.getSubdirectory(".settings").getRelativePath(filename);
 				var now = (destination.file) ? destination.file.read(String) : void(0);
@@ -111,7 +117,7 @@
 				jsh.shell.tools.node["modules"].require({ name: "eslint" });
 				jsh.shell.tools.node["modules"].require({ name: "@types/js-yaml" });
 
-				var isEclipseProject = Boolean($context.base.getSubdirectory(".settings"));
+				var isEclipseProject = Boolean($context.base.getSubdirectory("bin"));
 				if (isEclipseProject) {
 					synchronizeEclipseSettings();
 				}
@@ -150,7 +156,7 @@
 					jsh.shell.console("To complete the process of re-generating the VSCode project:");
 					jsh.shell.console("VSCode: Execute the 'Java: Clean the Java language server workspace' command.");
 					jsh.shell.console("When prompted, choose Restart and delete.");
-					jsh.shell.console("When prompted to import Java projects in the workspace, choose Yes.");
+					jsh.shell.console("If prompted to import Java projects in the workspace, choose Yes.");
 					jsh.shell.console("After the import is complete, run the wf initialize command and follow its instructions.");
 				}
 			}
@@ -273,11 +279,13 @@
 			return success;
 		};
 
-		jsh.wf.project.initialize(
-			$context,
-			{
-				lint: lint,
-				test: function() {
+		var project = (
+			/**
+			 *
+			 * @returns { slime.jsh.wf.standard.Project }
+			 */
+			function() {
+				var test = function() {
 					var success = true;
 
 					jsh.shell.world.run(
@@ -319,32 +327,44 @@
 					})
 
 					return success;
-				}
-			},
-			$exports
-		)
+				};
 
-		$exports.precommit = function(p) {
-			var trunk = git.repository.command(git.command.remoteShow).argument("origin").run().head;
-			var repository = jsh.tools.git.Repository({ directory: $context.base });
-			var branch = repository.status().branch.name;
-			if (branch == trunk) {
-				jsh.shell.console("Cannot commit directly to " + trunk);
-				return 1;
+				/** @type { slime.jsh.wf.Precommit } */
+				var precommit = $api.Function.impure.ask(function(events) {
+					var success = true;
+
+					var trunk = git.repository.command(git.command.remoteShow).argument("origin").run().head;
+					var repository = jsh.tools.git.Repository({ directory: $context.base });
+					var branch = repository.status().branch.name;
+					if (branch == trunk) {
+						events.fire("console", "Cannot commit directly to " + trunk);
+						success = false;
+					}
+
+					success = success && jsh.wf.checks.precommit({
+						lint: lint
+					})({
+						console: function(e) {
+							events.fire("console", e.detail);
+						}
+					});
+
+					return success;
+				});
+
+				return {
+					lint: lint,
+					test: test,
+					precommit: precommit
+				}
 			}
+		)();
 
-			var success = true;
-
-			success = success && jsh.wf.checks.precommit({
-				lint: lint
-			})({
-				console: function(e) {
-					jsh.shell.console(e.detail);
-				}
-			});
-
-			return (success) ? 0 : 1;
-		};
+		jsh.wf.project.initialize(
+			$context,
+			project,
+			$exports
+		);
 
 		$exports.check = $api.Function.pipe(
 			jsh.script.cli.option.boolean({ longname: "docker" }),
