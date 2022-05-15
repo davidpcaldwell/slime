@@ -773,7 +773,7 @@
 								base: base,
 								exclude: jsh.project.code.files.exclude,
 								isText: isText,
-								nowrite: false
+								nowrite: true
 							})({
 								unknownFileType: function(e) {
 									events.fire("console", "Could not determine whether file is text or binary: " + e.detail.path);
@@ -792,7 +792,7 @@
 								base: base,
 								exclude: jsh.project.code.files.exclude,
 								isText: isText,
-								nowrite: false
+								nowrite: true
 							})({
 								unknownFileType: function(e) {
 									events.fire("console", "Could not determine whether file is text or binary: " + e.detail.path);
