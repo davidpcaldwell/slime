@@ -143,7 +143,9 @@ namespace slime.jsh.wf {
 			/**
 			 * Runs the configured {@link slime.jsh.wf.Lint} check; property is present only if a lint check is provided.
 			 */
-			lint?: slime.jsh.script.cli.Command<Options>
+			lint?: slime.jsh.script.cli.Command<Options> & {
+				fix: slime.jsh.script.cli.Command<Options>
+			}
 
 			/**
 			 * Runs the Typedoc documentation generator.

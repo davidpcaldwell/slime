@@ -634,21 +634,22 @@ namespace slime.jsh.wf {
 				isText?: slime.tools.code.isText
 				trailingWhitespace?: boolean
 				handleFinalNewlines?: boolean
-			}) => slime.$api.fp.impure.Ask<
-				{
-					console: string
-				},
-				boolean
-			>
+			}) => Lint
 		}
 	}
 
-	export type Lint = slime.$api.fp.impure.Ask<
-		{
+	export type Lint = {
+		check: slime.$api.fp.impure.Ask<
+			{
+				console: string
+			},
+			boolean
+		>
+
+		fix: slime.$api.fp.impure.Tell<{
 			console: string
-		},
-		boolean
-	>
+		}>
+	}
 
 	export type Test = slime.$api.fp.impure.Ask<
 		{
@@ -668,7 +669,12 @@ namespace slime.jsh.wf {
 	export namespace exports {
 		export interface Checks {
 			precommit: (p?: {
-				lint?: Lint
+				lint?: slime.$api.fp.impure.Ask<
+					{
+						console: string
+					},
+					boolean
+				>
 				test?: Test
 			}) => Precommit
 		}

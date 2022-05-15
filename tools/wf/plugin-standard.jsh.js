@@ -119,7 +119,7 @@
 
 				if ( (project.lint || project.test) && !project.precommit ) {
 					project.precommit = jsh.wf.checks.precommit({
-						lint: project.lint,
+						lint: (project.lint) ? project.lint.check : void(0),
 						test: project.test
 					})
 				}
@@ -155,19 +155,30 @@
 				}
 
 				if (project.lint) {
-					$exports.lint = function(p) {
-						var result = project.lint({
-							console: function(e) {
-								jsh.shell.console(e.detail);
+					$exports.lint = Object.assign(
+						function(p) {
+							var result = project.lint.check({
+								console: function(e) {
+									jsh.shell.console(e.detail);
+								}
+							})
+							if (!result) {
+								jsh.shell.console("Linting failed.");
+								return 1;
+							} else {
+								jsh.shell.console("Linting passed.");
 							}
-						})
-						if (!result) {
-							jsh.shell.console("Linting failed.");
-							return 1;
-						} else {
-							jsh.shell.console("Linting passed.");
+						},
+						{
+							fix: function(p) {
+								project.lint.fix({
+									console: function(e) {
+										jsh.shell.console(e.detail);
+									}
+								})
+							}
 						}
-					}
+					);
 				}
 
 				$exports.tsc = function() {
