@@ -640,6 +640,10 @@
 						/** @type { { submodule: string, file: string, status: string }[] } */
 						var modified = [];
 
+						//	In precommit hooks the working directory or target repository is not reliable, so we rely on the fact
+						//	that we should always be running against the base repository when inside a commit hook and thus ought to
+						//	be able to list its submodules. We set the working directory any so that this check also works outside
+						//	git commit hooks (and when executed from somewhere other than the project directory).
 						jsh.shell.world.run(
 							jsh.shell.Invocation.create({
 								command: "git",
@@ -649,7 +653,8 @@
 								}),
 								stdio: {
 									output: "string"
-								}
+								},
+								directory: base.toString()
 							})
 						)({
 							exit: function(e) {
