@@ -759,77 +759,118 @@
 
 				/** @type { slime.jsh.wf.exports.Checks["lint"] } */
 				function lint(p) {
-					return $api.Function.impure.ask(function(events) {
-						var success = true;
+					if (!p) p = {};
+					var isText = (p.isText) ? p.isText : jsh.project.code.files.isText;
+					var handleTrailingWhitespace = (typeof(p.trailingWhitespace) == "undefined") ? true : p.trailingWhitespace;
+					var handleFinalNewlines = (typeof(p.handleFinalNewlines) == "undefined") ? true : p.handleFinalNewlines;
+					return {
+						check: $api.Function.impure.ask(function(events) {
+							var success = true;
 
-						if (!p) p = {};
-						var isText = (p.isText) ? p.isText : jsh.project.code.files.isText;
-						var handleTrailingWhitespace = (typeof(p.trailingWhitespace) == "undefined") ? true : p.trailingWhitespace;
-						var handleFinalNewlines = (typeof(p.handleFinalNewlines) == "undefined") ? true : p.handleFinalNewlines;
-
-						if (handleTrailingWhitespace) {
-							events.fire("console", "Checking for trailing whitespace ...");
-							jsh.tools.code.handleTrailingWhitespace({
-								base: base,
-								exclude: jsh.project.code.files.exclude,
-								isText: isText,
-								nowrite: true
-							})({
-								unknownFileType: function(e) {
-									events.fire("console", "Could not determine whether file is text or binary: " + e.detail.path);
-									success = false;
-								},
-								foundAt: function(e) {
-									events.fire("console", "Found trailing whitespace: " + e.detail.file.path + " line " + e.detail.line.number);
-									success = false;
-								}
-							});
-						}
-
-						if (handleFinalNewlines) {
-							events.fire("console", "Handling final newlines ...");
-							jsh.tools.code.handleFinalNewlines({
-								base: base,
-								exclude: jsh.project.code.files.exclude,
-								isText: isText,
-								nowrite: true
-							})({
-								unknownFileType: function(e) {
-									events.fire("console", "Could not determine whether file is text or binary: " + e.detail.path);
-									success = false;
-								},
-								missing: function(e) {
-									events.fire("console", "Missing final newline: " + e.detail.path);
-									success = false;
-								},
-								multiple: function(e) {
-									events.fire("console", "Multiple final newlines: " + e.detail.path);
-									success = false;
-								}
-							});
-						}
-
-						if (base.getFile(".eslintrc.json")) {
-							events.fire("console", "Running ESLint ...");
-							jsh.shell.jsh({
-								shell: jsh.shell.jsh.src,
-								script: jsh.shell.jsh.src.getFile("contributor/eslint.jsh.js"),
-								stdio: {
-									output: null
-								},
-								evaluate: function(result) {
-									if (result.status) {
-										events.fire("console", "ESLint status: " + result.status + "; failing.");
+							if (handleTrailingWhitespace) {
+								events.fire("console", "Checking for trailing whitespace ...");
+								jsh.tools.code.handleTrailingWhitespace({
+									base: base,
+									exclude: jsh.project.code.files.exclude,
+									isText: isText,
+									nowrite: true
+								})({
+									unknownFileType: function(e) {
+										events.fire("console", "Could not determine whether file is text or binary: " + e.detail.path);
 										success = false;
-									} else {
-										events.fire("console", "ESLint passed.");
+									},
+									foundAt: function(e) {
+										events.fire("console", "Found trailing whitespace: " + e.detail.file.path + " line " + e.detail.line.number);
+										success = false;
 									}
-								}
-							});
-						}
+								});
+							}
 
-						return success;
-					});
+							if (handleFinalNewlines) {
+								events.fire("console", "Handling final newlines ...");
+								jsh.tools.code.handleFinalNewlines({
+									base: base,
+									exclude: jsh.project.code.files.exclude,
+									isText: isText,
+									nowrite: true
+								})({
+									unknownFileType: function(e) {
+										events.fire("console", "Could not determine whether file is text or binary: " + e.detail.path);
+										success = false;
+									},
+									missing: function(e) {
+										events.fire("console", "Missing final newline: " + e.detail.path);
+										success = false;
+									},
+									multiple: function(e) {
+										events.fire("console", "Multiple final newlines: " + e.detail.path);
+										success = false;
+									}
+								});
+							}
+
+							if (base.getFile(".eslintrc.json")) {
+								events.fire("console", "Running ESLint ...");
+								jsh.shell.jsh({
+									shell: jsh.shell.jsh.src,
+									script: jsh.shell.jsh.src.getFile("contributor/eslint.jsh.js"),
+									stdio: {
+										output: null
+									},
+									evaluate: function(result) {
+										if (result.status) {
+											events.fire("console", "ESLint status: " + result.status + "; failing.");
+											success = false;
+										} else {
+											events.fire("console", "ESLint passed.");
+										}
+									}
+								});
+							}
+
+							return success;
+						}),
+						fix: $api.Function.impure.tell(function(events) {
+							if (handleTrailingWhitespace) {
+								events.fire("console", "Checking for trailing whitespace ...");
+								jsh.tools.code.handleTrailingWhitespace({
+									base: base,
+									exclude: jsh.project.code.files.exclude,
+									isText: isText,
+									nowrite: false
+								})({
+									unknownFileType: function(e) {
+										events.fire("console", "Could not determine whether file is text or binary: " + e.detail.path);
+									},
+									foundAt: function(e) {
+										events.fire("console", "Found trailing whitespace: " + e.detail.file.path + " line " + e.detail.line.number);
+									}
+								});
+							}
+
+							if (handleFinalNewlines) {
+								events.fire("console", "Handling final newlines ...");
+								jsh.tools.code.handleFinalNewlines({
+									base: base,
+									exclude: jsh.project.code.files.exclude,
+									isText: isText,
+									nowrite: false
+								})({
+									unknownFileType: function(e) {
+										events.fire("console", "Could not determine whether file is text or binary: " + e.detail.path);
+									},
+									missing: function(e) {
+										events.fire("console", "Missing final newline: " + e.detail.path);
+									},
+									multiple: function(e) {
+										events.fire("console", "Multiple final newlines: " + e.detail.path);
+									}
+								});
+							}
+
+							//	TODO	eslint has a fix option also, could consider adding it here
+						})
+					};
 				}
 
 				/** @type { slime.jsh.wf.exports.Checks["tsc"] } */

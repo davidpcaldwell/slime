@@ -162,11 +162,11 @@
 			}
 		}
 
-		/** @type { slime.jsh.wf.Lint } */
+		/** @type { slime.jsh.wf.Lint["check"] } */
 		var lint = $api.Function.impure.ask(function(events) {
 			var success = true;
 
-			success = success && jsh.wf.checks.lint()({
+			success = success && jsh.wf.checks.lint().check({
 				console: function(e) {
 					events.fire("console", e.detail);
 				}
@@ -353,7 +353,10 @@
 				});
 
 				return {
-					lint: lint,
+					lint: {
+						check: lint,
+						fix: jsh.wf.checks.lint().fix
+					},
 					test: test,
 					precommit: precommit
 				}
