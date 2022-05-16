@@ -162,6 +162,8 @@ namespace slime.jsh.wf {
 
 			submodule: {
 				/**
+				 * Completely removes a top-level submodule from the project.
+				 *
 				 * `--path <path-to-submodule>`
 				 */
 				remove:  slime.jsh.script.cli.Command<Options>
