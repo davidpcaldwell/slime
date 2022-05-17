@@ -238,7 +238,7 @@ namespace slime {
 			/**
 			 * Note that in the rare case of a browser with Java, Packages may not include inonit.* classes
 			 */
-			Packages: slime.jrunscript.Packages
+			Packages?: slime.jrunscript.Packages
 		}
 
 		/**

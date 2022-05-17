@@ -43,7 +43,7 @@
 					var rsource = this.source.get(path);
 					var rv = get(rsource);
 					if (rv && !rv.read) {
-						throw new TypeError("woo");
+						throw new TypeError("source.get returned object with no read() method");
 					}
 					return rv;
 				};
