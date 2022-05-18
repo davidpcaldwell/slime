@@ -56,7 +56,7 @@
 		bootstrap.includeStandardAdditions = true
 		var bootstrapPath = bootstrap.pathTo(this)
 
-		var system = Application('System Events')
+		var system = Application("System Events")
 
 		function load(path) {
 			//console.log("loading " + path);

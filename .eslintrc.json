@@ -17,6 +17,7 @@
 		"no-prototype-builtins": "error",
 		"no-extra-semi": "error",
 		"getter-return": "error",
+		"quotes": ["error", "double"],
 
 		//	Implicit globals are very confusing for TypeScript
 		"no-implicit-globals": "warn",
@@ -26,7 +27,6 @@
 		"no-debugger": "warn",
 		"indent": ["warn", "tab", { "SwitchCase": 1 }],
 		"no-empty": "warn",
-		"quotes": ["warn", "double"],
 		"no-cond-assign": "warn",
 
 		//	things like if (false), used often to disable code while retaining syntax highlighting, etc.
