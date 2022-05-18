@@ -17,8 +17,7 @@ namespace slime {
 				)();
 				return {
 					clone: function() {
-						type Repository = ReturnType<ReturnType<slime.jrunscript.tools.git.Exports["program"]>["repository"]>
-						var clone: slime.jrunscript.tools.git.Command<{ repository: string, to: string }, Repository> = {
+						var clone: slime.jrunscript.tools.git.Command<{ repository: string, to: string }, void> = {
 							invocation: function(p) {
 								return {
 									command: "clone",
