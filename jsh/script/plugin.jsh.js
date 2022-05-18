@@ -206,6 +206,44 @@
 					}
 				}
 
+				/**
+				 * @template { object } T
+				 * @param { slime.jsh.script.cli.Commands<T> } commands
+				 * @param { string } command
+				 * @returns { slime.jsh.script.cli.Command<T> | slime.jsh.script.cli.error.TargetNotFound | slime.jsh.script.cli.error.TargetNotFunction }
+				 */
+				function getCommand(commands, command) {
+					var referenced = (function() {
+						/** @type { slime.jsh.script.cli.Commands | slime.jsh.script.cli.Command } */
+						var rv = commands;
+						var tokens = command.split(".");
+						for (var i=0; i<tokens.length; i++) {
+							rv = rv[tokens[i]];
+							if (!rv) return rv;
+						}
+						return rv;
+					})();
+
+					/** @type { (v: any) => v is slime.jsh.script.cli.Command } */
+					var isCommand = function(v) {
+						return typeof(v) == "function";
+					};
+
+					if (!referenced) {
+						return new jsh.script.cli.error.TargetNotFound("Command " + command + " is " + referenced, {
+							command: command
+						});
+					}
+					if (!isCommand(referenced)) {
+						return new jsh.script.cli.error.TargetNotFunction(command + " is object.", {
+							command: command,
+							target: referenced
+						});
+					} else {
+						return referenced;
+					}
+				}
+
 				jsh.script.cli = {
 					error: {
 						NoTargetProvided: $api.Error.Type({ name: "NoTargetProvided" }),
@@ -252,6 +290,9 @@
 							options: {},
 							arguments: Array.prototype.slice.call(jsh.script.arguments)
 						});
+					},
+					Commands: {
+						getCommand: getCommand
 					},
 					Application: function(p) {
 						return {
