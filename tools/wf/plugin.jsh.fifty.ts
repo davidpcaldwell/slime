@@ -63,7 +63,7 @@ namespace slime.jsh.wf {
 			/**
 			 * A special {@link Command} that is run each time any (other) `Command` is run.
 			 */
-			 initialize?:  slime.jsh.script.cli.Command<T>
+			 initialize?: slime.jsh.script.cli.Command<T>
 		}
 
 		export namespace error {
