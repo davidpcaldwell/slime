@@ -539,26 +539,18 @@
 						}
 
 						if (!p.options.message) throw new Error("No default commit message, and no message given.");
-						try {
-							//	TODO	removed a notest option that could be used here
-							var check = project.precommit({
-								console: function(e) {
-									jsh.shell.console(e.detail);
-								}
-							});
-							if (check) {
-								commit(jsh.tools.git.Repository({ directory: $context.base }), p.options.message);
-								jsh.shell.console("Committed changes to " + $context.base);
+
+						//	TODO	removed a notest option that could be used here
+						var check = project.precommit({
+							console: function(e) {
+								jsh.shell.console(e.detail);
 							}
-						} catch (e) {
-							//	TODO	should generalize this in the wf.jsh.js script, perhaps even adding an error handler
-							//			to jsh.script.cli.wrap or Descriptor or something
-							if (e instanceof jsh.wf.error.Failure) {
-								jsh.shell.console("ERROR: " + e.message);
-							} else {
-								jsh.shell.console(e);
-								jsh.shell.console(e.stack);
-							}
+						});
+						if (check) {
+							commit(jsh.tools.git.Repository({ directory: $context.base }), p.options.message);
+							jsh.shell.console("Committed changes to " + $context.base);
+						} else {
+							jsh.shell.console("Precommit checks failed; aborting commit.");
 							return 1;
 						}
 					}
