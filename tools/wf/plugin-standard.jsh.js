@@ -132,6 +132,7 @@
 				var commit = function(repository,message) {
 					repository.commit({
 						all: true,
+						noVerify: true,
 						message: message
 					});
 
