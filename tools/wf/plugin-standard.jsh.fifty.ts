@@ -36,8 +36,11 @@ namespace slime.jsh.wf {
 						repository.add({
 							path: "."
 						});
-						var slime = jsh.tools.git.Repository({
-							directory: src
+						var slime = fixtures.clone({
+							src: jsh.file.world.filesystems.os.pathname(src.toString()),
+							commit: {
+								message: "Local modifications"
+							}
 						});
 						//	TODO	Note that this adds committed version of SLIME (or something), rather than local version. May not work
 						//			as expected. May want to overwrite (so that submodule config is preserved) with a local copy

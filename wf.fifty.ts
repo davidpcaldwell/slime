@@ -17,61 +17,9 @@ namespace slime {
 				)();
 				return {
 					clone: function() {
-						var clone: slime.jrunscript.tools.git.Command<{ repository: string, to: string }, void> = {
-							invocation: function(p) {
-								return {
-									command: "clone",
-									arguments: $api.Array.build(function(rv) {
-										rv.push(p.repository);
-										if (p.to) rv.push(p.to);
-									})
-								}
-							}
-						};
-						var src: slime.jrunscript.file.world.Pathname = fifty.jsh.file.relative(".");
-						var destination = fifty.jsh.file.temporary.directory();
-						jsh.tools.git.program({ command: "git" }).command(clone).argument({
-							repository: src.pathname,
-							to: destination.pathname
-						}).run();
-						//	copy code so that we get local modifications in our "clone"
-						jsh.file.object.directory(src).copy(jsh.file.object.pathname(destination), {
-							filter: function(p) {
-								//	TODO	need to review copy implementation; how do directories work?
-								if (p.entry.path == ".git") return false;
-								if (p.entry.path == "local") return false;
-								if (p.entry.path.substring(0,"local/".length) == "local/") return false;
-								if (p.entry.path.substring(0,".git/".length) == ".git/") return false;
-
-								//	If we are a directory but the clone contains a file, remove the directory and overwrite
-								if (p.exists && !p.exists.directory && p.entry.node.directory) {
-									p.exists.remove();
-									return true;
-								}
-
-								return true;
-							}
+						return fixtures.clone({
+							src: fifty.jsh.file.relative(".")
 						});
-						return jsh.tools.git.Repository({ directory: jsh.file.Pathname(destination.pathname).directory });
-						//	good utility functions for git module?
-						// function unset(repository,setting) {
-						// 	jsh.shell.console("Unset: " + repository.directory);
-						// 	jsh.shell.run({
-						// 		command: "git",
-						// 		arguments: ["config", "--local", "--unset", setting],
-						// 		directory: repository.directory
-						// 	});
-						// }
-						// var gitdir = (function() {
-						// 	if (src.getSubdirectory(".git")) {
-						// 		return src.getSubdirectory(".git");
-						// 	}
-						// 	if (src.getFile(".git")) {
-						// 		var parsed = /^gitdir\: (.*)/.exec(src.getFile(".git").read(String));
-						// 		var relative = (parsed) ? parsed[1] : null;
-						// 		return (relative) ? src.getRelativePath(relative).directory : void(0);
-						// 	}
-						// })();
 					},
 					configure: fixtures.configure,
 					wf: function(repository: slime.jrunscript.tools.git.repository.Local, p: any): { status: number, stdio?: { output?: string, error?: string }} {
@@ -151,14 +99,7 @@ namespace slime {
 			function(
 				fifty: slime.fifty.test.Kit
 			) {
-				var jsh = fifty.global.jsh;
-
-				fifty.tests.fixtures = {
-					clone: function() {
-						var clone = test.fixtures.clone();
-						jsh.shell.console("clone = " + clone);
-					}
-				}
+				const { jsh } = fifty.global;
 
 				fifty.tests.suite = function() {
 					fifty.run(function ensureInitializeInstallsEslint() {
@@ -189,6 +130,14 @@ namespace slime {
 							fifty.verify(result).status.is(expected);
 						});
 					})
+				}
+
+				fifty.tests.manual = {};
+				fifty.tests.manual.fixtures = {
+					clone: function() {
+						var clone = test.fixtures.clone();
+						jsh.shell.console("clone = " + clone);
+					}
 				}
 			}
 		//@ts-ignore
