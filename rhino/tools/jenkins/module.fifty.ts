@@ -20,13 +20,15 @@ namespace slime.jrunscript.tools.jenkins {
 			url: string
 		}
 
+		export type Credentials = (url: string) => {
+			user: string
+			token: string
+		};
+
 		export interface Request {
 			method: "GET"
 			url: string
-			credentials?: (url: string) => {
-				user: string
-				token: string
-			}
+			credentials?: Credentials
 		}
 	}
 
@@ -46,6 +48,10 @@ namespace slime.jrunscript.tools.jenkins {
 	export interface Exports {
 		Server: new (o: {}) => {}
 
+		Credentials: {
+			list: (p: { server: string, use: { user: string, token: string } }[]) => api.Credentials
+		}
+
 		url: (p: {
 			server: api.Server
 			path: string
@@ -57,16 +63,12 @@ namespace slime.jrunscript.tools.jenkins {
 			json: <R>(p: api.Request) => R
 		}
 
-		server: (p: api.Server) => {
-			getVersion: () => string
-
-			credentials: (p: api.Request["credentials"]) => {
-				request: (p: {
-					method: api.Request["method"]
-					path: string
-				}) => {
-					json: <R>() => R
-				}
+		client: (p: api.Credentials) => {
+			request: (p: {
+				method: api.Request["method"]
+				url: string
+			}) => {
+				json: <R>() => R
 			}
 		}
 	}
@@ -102,49 +104,44 @@ namespace slime.jrunscript.tools.jenkins {
 
 			fifty.tests.manual.root = fifty.test.Parent();
 
+			var server: api.Server = {
+				url: jsh.shell.environment["JENKINS_SERVER"]
+			};
+
+			var credentials: api.Credentials = (url: string) => {
+				return {
+					user: jsh.shell.environment["JENKINS_USER"],
+					token: jsh.shell.environment["JENKINS_TOKEN"]
+				}
+			};
+
 			fifty.tests.manual.root.raw = function() {
 				var response = subject.request.json({
 					method: "GET",
 					url: subject.url({
-						server: {
-							url: jsh.shell.environment["JENKINS_SERVER"]
-						},
+						server: server,
 						path: "api/json"
 					}),
-					credentials: () => {
-						return {
-							user: jsh.shell.environment["JENKINS_USER"],
-							token: jsh.shell.environment["JENKINS_TOKEN"]
-						}
-					}
+					credentials: credentials
 				});
 				jsh.shell.console(JSON.stringify(response, void(0), 4));
 			};
 
 			fifty.tests.manual.root.bound = function() {
-				var server = subject.server({
-					url: jsh.shell.environment["JENKINS_SERVER"]
-				}).credentials(() => {
-					return {
-						user: jsh.shell.environment["JENKINS_USER"],
-						token: jsh.shell.environment["JENKINS_TOKEN"]
-					}
-				});
+				var client = subject.client(credentials);
 
-				var response = <slime.jrunscript.tools.jenkins.Server>server.request({
+				var response = client.request({
 					method: "GET",
-					path: "/"
+					url: server.url
 				}).json();
 
 				jsh.shell.console(JSON.stringify(response, void(0), 4));
 			};
 
 			fifty.tests.manual.getVersion = function() {
-				var server = subject.server({
-					url: jsh.shell.environment["JENKINS_SERVER"]
-				});
+				var version = subject.getVersion(server)
 
-				jsh.shell.console("[" + server.getVersion() + "]");
+				jsh.shell.console("[" + version + "]");
 			};
 		}
 	//@ts-ignore

@@ -79,6 +79,19 @@
 		}
 
 		$export({
+			Credentials: {
+				list: function(p) {
+					return function(url) {
+						for (var i=0; i<p.length; i++) {
+							var server = p[i].server;
+							if (url.substring(0,server.length) == server) {
+								return p[i].use;
+							}
+						}
+						return null;
+					}
+				}
+			},
 			request: {
 				json: function(p) {
 					var response = request(p);
@@ -92,29 +105,22 @@
 			getVersion: function(s) {
 				return getVersion(s);
 			},
-			server: function(s) {
+			client: function(c) {
 				return {
-					getVersion: function() {
-						return getVersion(s);
-					},
-					credentials: function(c) {
+					request: function(r) {
 						return {
-							request: function(r) {
-								return {
-									json: function() {
-										var toPath = function(given) {
-											if (given.substring(0,1) == "/") given = given.substring(1);
-											return given + "api/json";
-										}
-										var response = request({
-											method: r.method,
-											url: url(s, toPath(r.path)),
-											credentials: c
-										});
-										if (response.status.code != 200) throw new TypeError("Response code: " + response.status.code);
-										return JSON.parse(response.stream.character().asString());
-									}
-								}
+							json: function() {
+								// var toPath = function(given) {
+								// 	if (given.substring(0,1) == "/") given = given.substring(1);
+								// 	return given + "api/json";
+								// }
+								var response = request({
+									method: r.method,
+									url: r.url + "api/json",
+									credentials: c
+								});
+								if (response.status.code != 200) throw new TypeError("Response code: " + response.status.code + " for " + r.method + " " + r.url + "api/json");
+								return JSON.parse(response.stream.character().asString());
 							}
 						}
 					}
