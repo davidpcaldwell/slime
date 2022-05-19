@@ -32,17 +32,21 @@ namespace slime.jrunscript.tools.jenkins {
 		}
 	}
 
+	export interface JobSummary {
+		_class: string
+		name: string
+		url: string
+		color: string
+	}
+
 	export interface Server {
-		jobs: server.Job[]
+		jobs: JobSummary[]
+	}
+
+	export interface Job {
 	}
 
 	export namespace server {
-		export interface Job {
-			_class: string
-			name: string
-			url: string
-			color: string
-		}
 	}
 
 	export interface Exports {
@@ -69,6 +73,10 @@ namespace slime.jrunscript.tools.jenkins {
 				url: string
 			}) => {
 				json: <R>() => R
+			}
+
+			fetch: {
+				(job: JobSummary): Job
 			}
 		}
 	}
