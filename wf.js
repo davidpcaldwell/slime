@@ -108,10 +108,10 @@
 				;
 
 				if (!skipGitIdentityRequirement) {
-					var gitIdentityProvider = (p && p.arguments[0] == "--test-git-identity-requirement") ? void(0) : jsh.wf.requireGitIdentity.get.gui;
+					var gitIdentityProvider = (p && p.arguments[0] == "--test-git-identity-requirement") ? void(0) : jsh.wf.inputs.gitIdentityProvider.gui;
 
 					try {
-						jsh.wf.requireGitIdentity({
+						jsh.wf.checks.requireGitIdentity({
 							repository: jsh.tools.git.Repository({ directory: $context.base }),
 							get: gitIdentityProvider
 						});
