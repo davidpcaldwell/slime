@@ -100,6 +100,10 @@
 				}
 			},
 			url: function(p) {
+				// var toPath = function(given) {
+				// 	if (given.substring(0,1) == "/") given = given.substring(1);
+				// 	return given + "api/json";
+				// }
 				return url(p.server, p.path);
 			},
 			getVersion: function(s) {
@@ -110,10 +114,6 @@
 					request: function(r) {
 						return {
 							json: function() {
-								// var toPath = function(given) {
-								// 	if (given.substring(0,1) == "/") given = given.substring(1);
-								// 	return given + "api/json";
-								// }
 								var response = request({
 									method: r.method,
 									url: r.url + "api/json",
@@ -123,6 +123,15 @@
 								return JSON.parse(response.stream.character().asString());
 							}
 						}
+					},
+					fetch: function(o) {
+						var response = request({
+							method: "GET",
+							url: o.url + "api/json",
+							credentials: c
+						});
+						if (response.status.code != 200) throw new TypeError("Response code: " + response.status.code + " for " + "GET" + " " + o.url + "api/json");
+						return JSON.parse(response.stream.character().asString());
 					}
 				}
 			},
@@ -144,9 +153,7 @@
 					if (p.depth) parameters.depth = p.depth;
 					if (p.tree) parameters.tree = p.tree;
 					var evaluate = (p.evaluate) ? p.evaluate : function(response) {
-						var version = response.headers.get("X-Jenkins");
 						var string = response.body.stream.character().asString();
-						//jsh.shell.echo(JSON.stringify(,void(0),"    "));
 						return eval("(" + string + ")");
 					};
 					return client.request({
