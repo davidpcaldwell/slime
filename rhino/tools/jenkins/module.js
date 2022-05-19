@@ -132,6 +132,18 @@
 						});
 						if (response.status.code != 200) throw new TypeError("Response code: " + response.status.code + " for " + "GET" + " " + o.url + "api/json");
 						return JSON.parse(response.stream.character().asString());
+					},
+					Job: {
+						config: function(p) {
+							var response = request({
+								method: "GET",
+								url: p.url + "config.xml",
+								credentials: c
+							});
+							var xml = response.stream.character().asString();
+							var parsed = $context.library.document.codec.document.decode(xml);
+							return parsed;
+						}
 					}
 				}
 			},
