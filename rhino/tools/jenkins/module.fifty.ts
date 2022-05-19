@@ -8,7 +8,7 @@ namespace slime.jrunscript.tools.jenkins {
 	export interface Context {
 		library: {
 			http: slime.jrunscript.http.client.Exports
-			document: any
+			document: slime.runtime.document.Exports
 		}
 	}
 
@@ -77,6 +77,10 @@ namespace slime.jrunscript.tools.jenkins {
 
 			fetch: {
 				(job: JobSummary): Job
+			}
+
+			Job: {
+				config: (job: JobSummary) => slime.runtime.document.Document
 			}
 		}
 	}

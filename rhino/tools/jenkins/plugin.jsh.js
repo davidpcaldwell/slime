@@ -21,7 +21,7 @@
 				global.jenkins = script({
 					library: {
 						http: jsh.http,
-						document: void(0)
+						document: jsh.document
 					}
 				});
 			}
