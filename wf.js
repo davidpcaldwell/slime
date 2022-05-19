@@ -13,6 +13,19 @@
 	 * @param { slime.project.wf.Interface } $exports
 	 */
 	function($api,jsh,$context,$exports) {
+		var $$api = {
+			Function: {
+				switch: function() {
+					var patterns = arguments;
+					return function() {
+						for (var i=0; i<patterns.length; i++) {
+							if (patterns[i].case.apply(this,arguments)) return patterns[i].use.apply(this,arguments);
+						}
+					}
+				}
+			}
+		}
+
 		function synchronizeEclipseSettings() {
 			//	copy project settings to Eclipse project if they differ from current settings
 			var changed = false;
@@ -766,19 +779,6 @@
 				})
 			}
 		)
-
-		var $$api = {
-			Function: {
-				switch: function() {
-					var patterns = arguments;
-					return function() {
-						for (var i=0; i<patterns.length; i++) {
-							if (patterns[i].case.apply(this,arguments)) return patterns[i].use.apply(this,arguments);
-						}
-					}
-				}
-			}
-		}
 
 		/** @type { (p: string) => void } */
 		var deleteIfExists = $$api.Function.switch(
