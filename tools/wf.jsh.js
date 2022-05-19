@@ -9,8 +9,31 @@
 	/**
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.Global } jsh
+	 *
+	 * @template { {} } T
 	 */
 	function($api,jsh) {
+		var $$api = {
+			Function: {
+				RegExp: {
+					/**
+					 * @template { any } T
+					 * @param { { pattern: RegExp, match: (p: RegExpMatchArray) => T } } p
+					 * @returns { (s: string) => T }
+					 */
+					processor: function(p) {
+						return function(string) {
+							var match = p.pattern.exec(string);
+							if (match) {
+								return p.match(match);
+							} else {
+								return void(0);
+							}
+						}
+					}
+				}
+			}
+		}
 		if (!jsh.wf.project.base) {
 			jsh.shell.console("No wf project base defined; PROJECT = " + jsh.shell.environment.PROJECT);
 			jsh.shell.exit(1);
@@ -21,7 +44,7 @@
 			jsh.shell.exit(1);
 		}
 
-		/** @type { slime.jsh.script.cli.Descriptor<{}> } */
+		/** @type { slime.jsh.script.cli.Descriptor<T> } */
 		var descriptor = {
 			options: $api.Function.identity,
 			commands: new jsh.file.Loader({ directory: jsh.wf.project.base }).module("wf.js", {
@@ -29,17 +52,37 @@
 			})
 		}
 
-		/** @type { slime.jsh.script.cli.Commands<{}> & { initialize?: slime.jsh.script.cli.Command<{}> } } */
+		/** @type { slime.jsh.script.cli.Commands<T> & { initialize?: slime.jsh.script.cli.Command<T> } } */
 		var project = descriptor.commands;
 
 		var invocation = jsh.script.cli.invocation(descriptor.options);
 
+		/** @type { slime.js.Cast<T> } */
+		var toT = $api.Function.cast;
+
 		if (invocation.arguments[0] != "initialize" && project.initialize) {
 			project.initialize({
-				options: {},
+				options: toT({}),
 				arguments: []
 			});
 		}
+
+		var gitHookProcessor = $$api.Function.RegExp.processor({
+			pattern: /^git.hook.(.*)$/,
+			match: function(match) {
+				var hook = match[1];
+				var command = jsh.script.cli.Commands.getCommand(descriptor.commands, invocation.arguments[0]);
+				if (command instanceof slime.jsh.script.cli.error.TargetNotFound) {
+					//	Probably fine, do nothing, hook is just not defined
+					return true;
+				} else if (command instanceof slime.jsh.script.cli.error.TargetNotFunction) {
+					//	unsure what to do, think it through
+				} else {
+					//	probably run the hook?
+					return true;
+				}
+			}
+		});
 
 		jsh.script.cli.wrap(
 			descriptor
