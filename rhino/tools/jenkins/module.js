@@ -13,28 +13,111 @@
 	 * @param { slime.loader.Export<slime.jrunscript.tools.jenkins.Exports> } $export
 	 */
 	function($api,$context,$export) {
+		/**
+		 *
+		 * @param { slime.jrunscript.tools.jenkins.api.Server } server
+		 * @param { string } path
+		 * @returns
+		 */
+		function url(server, path) {
+			return server.url + path;
+		}
+
+		/**
+		 *
+		 * @param { slime.jrunscript.tools.jenkins.api.Request } p
+		 * @returns { slime.jrunscript.http.client.spi.Argument }
+		 */
+		function toRequest(p) {
+			return $context.library.http.world.Argument.request({
+				method: p.method,
+				url: p.url,
+				headers: $api.Array.build(function(rv) {
+					var credentials = (p.credentials) ? p.credentials(p.url) : void(0);
+					if (credentials) rv.push({
+						name: "Authorization",
+						value: $context.library.http.Authentication.Basic.Authorization({
+							user: credentials.user,
+							password: credentials.token
+						})
+					});
+				})
+			});
+		}
+
+		/**
+		 *
+		 * @param { slime.jrunscript.tools.jenkins.api.Request } p
+		 * @returns { slime.jrunscript.http.client.spi.Response }
+		 */
+		function request(p) {
+			return $context.library.http.world.request(
+				toRequest(p)
+			)({
+				//	TODO	setting an event handler to void(0) below causes an error, which is somewhat unintuitive
+			});
+		}
+
+		/**
+		 *
+		 * @param { slime.jrunscript.tools.jenkins.api.Server } server
+		 */
+		function getVersion(server) {
+			var rv = request({
+				method: "GET",
+				url: url(server, "api/json"),
+				credentials: void(0),
+			});
+			/** @type { string } */
+			var version;
+			rv.headers.forEach(function(header) {
+				if (header.name.toLowerCase() == "x-jenkins") {
+					version = header.value;
+				}
+			});
+			return version;
+		}
+
 		$export({
 			request: {
 				json: function(p) {
-					var response = $context.library.http.world.request(
-						$context.library.http.world.Argument.request({
-							method: p.method,
-							url: p.server.url + p.path,
-							headers: $api.Array.build(function(rv) {
-								rv.push({
-									name: "Authorization",
-									value: $context.library.http.Authentication.Basic.Authorization({
-										user: p.credentials.user,
-										password: p.credentials.token
-									})
-								});
-							})
-						})
-					)({
-						//	TODO	setting an event handler to void(0) below causes an error, which is somewhat unintuitive
-					});
+					var response = request(p);
 					if (response.status.code != 200) throw new TypeError("Response: " + response.status.code);
 					return JSON.parse(response.stream.character().asString());
+				}
+			},
+			url: function(p) {
+				return url(p.server, p.path);
+			},
+			getVersion: function(s) {
+				return getVersion(s);
+			},
+			server: function(s) {
+				return {
+					getVersion: function() {
+						return getVersion(s);
+					},
+					credentials: function(c) {
+						return {
+							request: function(r) {
+								return {
+									json: function() {
+										var toPath = function(given) {
+											if (given.substring(0,1) == "/") given = given.substring(1);
+											return given + "api/json";
+										}
+										var response = request({
+											method: r.method,
+											url: url(s, toPath(r.path)),
+											credentials: c
+										});
+										if (response.status.code != 200) throw new TypeError("Response code: " + response.status.code);
+										return JSON.parse(response.stream.character().asString());
+									}
+								}
+							}
+						}
+					}
 				}
 			},
 			Server: function(o) {
