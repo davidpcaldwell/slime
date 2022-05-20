@@ -652,6 +652,25 @@ namespace slime.$api.fp {
 }
 
 namespace slime.$api.fp {
+	export namespace old {
+		/**
+		 * A function intended to mutate or replace a value.
+		 *
+		 * A mutator function may modify the value it is given in two ways:
+		 *
+		 * * It may directly modify the value (if the value is mutable, like an object) in its implementation,
+		 * * It may _replace_ the value entirely by returning a value.
+		 *
+		 * The special value $api.Function.value.UNDEFINED can be returned to replace the value with `undefined`.
+		 *
+		 * @param p A value to mutate or replace.
+		 *
+		 * @returns A replacement value, or `undefined` to indicate that the original value (which, if mutable, may have been modified)
+		 * should be used.
+		 */
+		export type Mutator<P> = (p: P) => P
+	}
+
 	export interface Exports {
 		/** @deprecated */
 		argument: {
@@ -691,7 +710,38 @@ namespace slime.$api.fp {
 		}
 		evaluator: any
 		String: any
-		mutating: any
+
+		/**
+		 * @deprecated
+		 */
+		mutating: {
+			/**
+			 * @deprecated
+			 *
+			 * Creates a function that wraps a supplied mutator function for the purpose of modifying a default value.
+			 * `mutating()` is designed for use by API designers who wish to provide an override mechanism for a particular
+			 * default value (especially an object). API designers may provide for a single value to be supplied which can be an
+			 * object to replace the default, a function which returns a value to replace the default, or a value that mutates
+			 * the default.
+			 */
+			<T>(f: old.Mutator<T>): (t?: T) => T
+
+			/**
+			 * @deprecated
+			 *
+			 * Creates a function that returns the given value, regardless of what it is passed.
+			 *
+			 * @param t The value to always return.
+			 */
+			<T>(t: T): (t: T) => T
+
+			/**
+			 * @deprecated
+			 *
+			 * Creates a function that will simply return its argument.
+			 */
+			<T>(f: undefined): (t: T) => T
+		}
 	}
 
 	(
