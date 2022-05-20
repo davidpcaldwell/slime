@@ -8,8 +8,8 @@
 (
 	/**
 	 *
-	 * @param { { $api: any, old: { Function: Partial<slime.$api.fp.Exports> }, events: slime.runtime.internal.events.Exports, deprecate: slime.$api.Global["deprecate"] } } $context
-	 * @param { { Function: Partial<slime.$api.fp.Exports> }} $exports
+	 * @param { slime.$api.fp.internal.Context } $context
+	 * @param { slime.$api.fp.internal.Exports } $exports
 	 */
 	function($context,$exports) {
 		$exports.Function = $context.old.Function;
