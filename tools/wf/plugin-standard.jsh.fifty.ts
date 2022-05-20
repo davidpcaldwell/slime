@@ -14,7 +14,10 @@ namespace slime.jsh.wf {
 					const fixtures = (
 						function() {
 							var script: slime.jsh.wf.test.Script = fifty.$loader.script("../../tools/wf/test/fixtures.ts");
-							return script();
+							return script({
+								$api: fifty.global.$api,
+								jsh: fifty.global.jsh
+							});
 						}
 					)();
 
@@ -42,9 +45,6 @@ namespace slime.jsh.wf {
 								message: "Local modifications"
 							}
 						});
-						//	TODO	Note that this adds committed version of SLIME (or something), rather than local version. May not work
-						//			as expected. May want to overwrite (so that submodule config is preserved) with a local copy
-						//			that excludes local/
 						repository.submodule.add({
 							repository: slime,
 							path: "slime"
@@ -373,6 +373,7 @@ namespace slime.jsh.wf {
 					});
 					fifty.verify(result).status.is(1);
 					fifty.verify(result).stdio.evaluate(function(stdio) {
+						jsh.shell.console("error: [" + stdio.error + "]");
 						return stdio.error.indexOf("Found untracked files:\nb") != -1;
 					}).is(true);
 				}

@@ -49,6 +49,7 @@
 			fifty.load("../tools/fifty/module.fifty.ts");
 			fifty.load("../tools/wf/plugin.jsh.fifty.ts");
 			if (hasGit && isGitClone) fifty.load("../tools/wf/plugin-standard.jsh.fifty.ts");
+			if (hasGit && isGitClone) fifty.load("../wf.fifty.ts");
 			//	TODO	below test is probably pointless, probably doesn't run anything. Should we find a way to short-circuit it?
 			fifty.load("../loader/browser/test/suite.jsh.fifty.ts");
 		}

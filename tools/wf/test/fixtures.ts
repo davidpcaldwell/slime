@@ -5,6 +5,11 @@
 //	END LICENSE
 
 namespace slime.jsh.wf.test {
+	export interface Context {
+		$api: slime.$api.Global
+		jsh: slime.jsh.Global
+	}
+
 	export interface Fixtures {
 		clone: (p: {
 			src: slime.jrunscript.file.world.Pathname
@@ -15,14 +20,16 @@ namespace slime.jsh.wf.test {
 		configure: (repository: slime.jrunscript.tools.git.repository.Local) => void
 	}
 
-	export type Script = slime.loader.Script<void, Fixtures>
+	export type Script = slime.loader.Script<Context, Fixtures>
 
 	(
 		function(
-			$api: slime.$api.Global,
-			jsh: slime.jsh.Global,
+			$context: Context,
 			$export: slime.loader.Export<Fixtures>
 		) {
+			const $api = $context.$api;
+			const jsh = $context.jsh;
+
 			$export({
 				clone: function(p) {
 					var clone: slime.jrunscript.tools.git.Command<{ repository: string, to: string }, void> = {
@@ -38,7 +45,7 @@ namespace slime.jsh.wf.test {
 					};
 					var src = p.src;
 					var destination = (() => {
-						var object = tmp.directory();
+						var object = jsh.shell.TMPDIR.createTemporary({ directory: true });
 						return jsh.file.world.filesystems.os.pathname(object.toString());
 					})();
 					jsh.tools.git.program({ command: "git" }).command(clone).argument({
@@ -48,9 +55,13 @@ namespace slime.jsh.wf.test {
 					//	copy code so that we get local modifications in our "clone"
 					jsh.file.object.directory(src).copy(jsh.file.object.pathname(destination), {
 						filter: function(p) {
-							//	TODO	need to review copy implementation; how do directories work?
 							if (p.entry.path == ".git") return false;
 							if (p.entry.path == "local") return false;
+
+							//	TODO	The following two lines are currently necessary, for reasons that are not obvious by
+							//	examining the copy() implementation
+							if (/\.git\//.test(p.entry.path)) return false;
+							if (/local\//.test(p.entry.path)) return false;
 
 							//	If we are a directory but the clone contains a file, remove the directory and overwrite
 							if (p.exists && !p.exists.directory && p.entry.node.directory) {
@@ -96,5 +107,5 @@ namespace slime.jsh.wf.test {
 			})
 		}
 	//@ts-ignore
-	)($api,jsh,$export);
+	)($context,$export);
 }

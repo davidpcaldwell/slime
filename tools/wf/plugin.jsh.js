@@ -923,7 +923,7 @@
 									events.fire("console", e.detail);
 								},
 								untracked: function(e) {
-									events.fire("console", e.detail.join(" "));
+									events.fire("console", "Found untracked files:\n" + e.detail.join(" "));
 								}
 							});
 
