@@ -718,69 +718,90 @@ namespace slime.$api.fp {
 	//@ts-ignore
 	)(fifty);
 
+	(
+		function(
+			fifty: slime.fifty.test.Kit,
+			$api: slime.$api.Global
+		) {
+			const { verify } = fifty;
+
+			fifty.tests.compare = function() {
+				var array = [
+					{ name: "a", value: 1 },
+					{ name: "b", value: 0 },
+					{ name: "c", value: 2 }
+				];
+				var comparator: slime.$api.fp.Comparator<{ name: string, value: number }> = fifty.$api.Function.comparator.create(
+					fifty.$api.Function.property("value"),
+					fifty.$api.Function.comparator.operators
+				);
+				array.sort(comparator);
+				verify(array)[0].name.is("b");
+				verify(array)[1].name.is("a");
+				verify(array)[2].name.is("c");
+				array.sort(fifty.$api.Function.comparator.reverse(comparator));
+				verify(array)[0].name.is("c");
+				verify(array)[1].name.is("a");
+				verify(array)[2].name.is("b");
+
+				var tiebreaking: slime.$api.fp.Comparator<{ name: string, value: number, tiebreaker: number }> = fifty.$api.Function.comparator.create(
+					fifty.$api.Function.property("tiebreaker"),
+					fifty.$api.Function.comparator.operators
+				);
+
+				var multicomparator: slime.$api.fp.Comparator<{ name: string, value: number, tiebreaker: number }> = fifty.$api.Function.comparator.compose(
+					fifty.$api.Function.comparator.reverse(comparator),
+					fifty.$api.Function.comparator.reverse(tiebreaking)
+				);
+
+				var multi = [
+					{ name: "a", value: 1, tiebreaker: 2 },
+					{ name: "b", value: 2, tiebreaker: 0 },
+					{ name: "c", value: 1, tiebreaker: 3 },
+					{ name: "d", value: 2, tiebreaker: 2 }
+				].sort(multicomparator);
+
+				verify(multi)[0].name.is("d");
+				verify(multi)[1].name.is("b");
+				verify(multi)[2].name.is("c");
+				verify(multi)[3].name.is("a");
+			}
+
+			fifty.tests.suite = function() {
+				fifty.run(fifty.tests.string);
+				fifty.run(fifty.tests.RegExp);
+				fifty.run(fifty.tests.impure);
+				fifty.run(fifty.tests.compare);
+				fifty.run(fifty.tests.memoized);
+				fifty.run(fifty.tests.is);
+				fifty.run(fifty.tests.result);
+				fifty.run(fifty.tests.Object);
+				fifty.run(fifty.tests.deprecated);
+				fifty.run(fifty.tests.series);
+			}
+		}
+	//@ts-ignore
+	)(fifty, $api, tests, verify)
 }
 
-(
-	function(
-		fifty: slime.fifty.test.Kit,
-		$api: slime.$api.Global
-	) {
-		const { verify } = fifty;
-
-		fifty.tests.compare = function() {
-			var array = [
-				{ name: "a", value: 1 },
-				{ name: "b", value: 0 },
-				{ name: "c", value: 2 }
-			];
-			var comparator: slime.$api.fp.Comparator<{ name: string, value: number }> = fifty.$api.Function.comparator.create(
-				fifty.$api.Function.property("value"),
-				fifty.$api.Function.comparator.operators
-			);
-			array.sort(comparator);
-			verify(array)[0].name.is("b");
-			verify(array)[1].name.is("a");
-			verify(array)[2].name.is("c");
-			array.sort(fifty.$api.Function.comparator.reverse(comparator));
-			verify(array)[0].name.is("c");
-			verify(array)[1].name.is("a");
-			verify(array)[2].name.is("b");
-
-			var tiebreaking: slime.$api.fp.Comparator<{ name: string, value: number, tiebreaker: number }> = fifty.$api.Function.comparator.create(
-				fifty.$api.Function.property("tiebreaker"),
-				fifty.$api.Function.comparator.operators
-			);
-
-			var multicomparator: slime.$api.fp.Comparator<{ name: string, value: number, tiebreaker: number }> = fifty.$api.Function.comparator.compose(
-				fifty.$api.Function.comparator.reverse(comparator),
-				fifty.$api.Function.comparator.reverse(tiebreaking)
-			);
-
-			var multi = [
-				{ name: "a", value: 1, tiebreaker: 2 },
-				{ name: "b", value: 2, tiebreaker: 0 },
-				{ name: "c", value: 1, tiebreaker: 3 },
-				{ name: "d", value: 2, tiebreaker: 2 }
-			].sort(multicomparator);
-
-			verify(multi)[0].name.is("d");
-			verify(multi)[1].name.is("b");
-			verify(multi)[2].name.is("c");
-			verify(multi)[3].name.is("a");
+namespace slime.$api.fp.internal {
+	export interface Context {
+		$api: {
+			Iterable: any
 		}
 
-		fifty.tests.suite = function() {
-			fifty.run(fifty.tests.string);
-			fifty.run(fifty.tests.RegExp);
-			fifty.run(fifty.tests.impure);
-			fifty.run(fifty.tests.compare);
-			fifty.run(fifty.tests.memoized);
-			fifty.run(fifty.tests.is);
-			fifty.run(fifty.tests.result);
-			fifty.run(fifty.tests.Object);
-			fifty.run(fifty.tests.deprecated);
-			fifty.run(fifty.tests.series);
+		old: {
+			Function: Partial<slime.$api.fp.Exports>
 		}
+
+		events: slime.runtime.internal.events.Exports
+
+		deprecate: slime.$api.Global["deprecate"]
 	}
-//@ts-ignore
-)(fifty, $api, tests, verify)
+
+	export interface Exports {
+		Function: Partial<slime.$api.fp.Exports>
+	}
+
+	export type Script = slime.loader.Script<Context,Exports>
+}

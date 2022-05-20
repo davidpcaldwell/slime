@@ -618,6 +618,7 @@ namespace slime {
 			fifty.run(fifty.tests.runtime.exports);
 			fifty.load("mime.fifty.ts");
 			fifty.load("$api-Function.fifty.ts");
+			fifty.load("$api-Function-old.fifty.ts");
 			fifty.load("Loader.fifty.ts");
 		}
 	}

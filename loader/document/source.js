@@ -453,7 +453,7 @@
 			 * @param { (state: slime.runtime.document.source.internal.State) => boolean } finished
 			 * @returns { slime.runtime.document.source.internal.State }
 			 */
-			var rv = function recurse(state,events,finished) {
+			return function recurse(state,events,finished) {
 				if (finished(state)) {
 					return state;
 				}
@@ -515,7 +515,6 @@
 
 				return recurse(next, events, finished);
 			};
-			return rv;
 		}
 
 		/** @type { (node: slime.runtime.document.Node) => node is slime.runtime.document.Comment } */
@@ -615,7 +614,7 @@
 		 * @returns
 		 */
 		var parse = function(input) {
-			var events = $api.Events.toHandler(input.events);
+			var events = $api.events.toHandler(input.events);
 			events.attach();
 			var state = Parser()(
 				{

@@ -141,17 +141,6 @@ namespace slime.runtime.document {
 			document: slime.Codec<Document,string>
 		}
 
-		Node: {
-			isComment: (node: slime.runtime.document.Node) => node is slime.runtime.document.Comment
-			isText: (node: slime.runtime.document.Node) => node is slime.runtime.document.Text
-			isDoctype: (node: slime.runtime.document.Node) => node is slime.runtime.document.Doctype
-			isDocument: (node: slime.runtime.document.Node) => node is slime.runtime.document.Document
-			isElement: (node: slime.runtime.document.Node) => node is slime.runtime.document.Element
-			isFragment: (node: slime.runtime.document.Node) => node is slime.runtime.document.Fragment
-			isParent: (node: Node) => node is Parent
-			isString: (node: Node) => node is String
-		}
-
 		Document: exports.Document
 
 		Element: {
