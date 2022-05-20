@@ -57,7 +57,11 @@
 			/** @type { slime.loader.Script<slime.runtime.internal.mime.Context,slime.$api.mime.Export> } */
 			mime: script("mime.js"),
 			/** @type { slime.loader.Script<slime.runtime.internal.events.Context,slime.runtime.internal.events.Exports> } */
-			events: script("events.js")
+			events: script("events.js"),
+			/** @type { slime.$api.fp.internal.Script } */
+			Function: script("$api-Function.js"),
+			/** @type { slime.$api.fp.internal.old.Script } */
+			Function_old: script("$api-Function-old.js")
 		};
 
 		Object.assign($exports, load("$api-flag.js"));
@@ -67,9 +71,9 @@
 		});
 
 		(function() {
-			var old = {};
-			Object.assign(old, load("$api-Function-old.js", { deprecate: $exports.deprecate }));
-			Object.assign($exports, load("$api-Function.js", { $api: $exports, events: events, old: old, deprecate: $exports.deprecate }));
+			var old = code.Function_old({ deprecate: $exports.deprecate });
+			var current = code.Function({ $api: $exports, events: events, old: old, deprecate: $exports.deprecate });
+			Object.assign($exports, current);
 		})();
 
 		$exports.debug = {

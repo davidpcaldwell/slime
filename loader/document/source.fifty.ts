@@ -4,6 +4,20 @@
 //
 //	END LICENSE
 
+namespace slime.runtime.document {
+	export interface Exports {
+		Node: {
+			isComment: (node: slime.runtime.document.Node) => node is slime.runtime.document.Comment
+			isText: (node: slime.runtime.document.Node) => node is slime.runtime.document.Text
+			isDoctype: (node: slime.runtime.document.Node) => node is slime.runtime.document.Doctype
+			isDocument: (node: slime.runtime.document.Node) => node is slime.runtime.document.Document
+			isElement: (node: slime.runtime.document.Node) => node is slime.runtime.document.Element
+			isFragment: (node: slime.runtime.document.Node) => node is slime.runtime.document.Fragment
+			isParent: (node: Node) => node is Parent
+			isString: (node: Node) => node is String
+		}
+	}
+}
 namespace slime.runtime.document.source {
 	export type ParseEvents = {
 		startTag: string
