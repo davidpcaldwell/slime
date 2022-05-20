@@ -124,7 +124,6 @@
 					var branches = repository.branch({ all: true });
 					var target = "remotes/origin/master";
 					var checkedOut = repository.status().branch;
-					debugger;
 					branches.filter(notMaster).filter(notBranch(checkedOut)).forEach(function(branch) {
 						var common = repository.mergeBase({ commits: [target, branch.commit.commit.hash] });
 						if (common.commit.hash == branch.commit.commit.hash) {
@@ -152,7 +151,6 @@
 		$exports.initialize = $api.Function.pipe(
 			function(p) {
 				jsh.wf.project.git.installHooks({ path: "contributor/hooks" });
-				cleanGitBranches()();
 				//	TODO	could consider whether we can wire our commit process into the git hooks mechanism:
 				//			git config core.hooksPath contributor/hooks
 				//			... and then appropriately implement contributor/hooks/pre-commit
@@ -499,9 +497,10 @@
 							git.repository.command(git.command.fetch).argument().run();
 							git.repository.command(git.command.checkout).argument({ branch: "master" }).run();
 							git.repository.command(merge).argument({ name: "origin/master" }).run();
+							cleanGitBranches()();
 						},
-						branches: (jsh.tools.git.Repository) ? new function() {
-							this.list = $api.Function.pipe(
+						branches: (jsh.tools.git.Repository) ? {
+							list: $api.Function.pipe(
 								function(p) {
 									repository.fetch({ all: true, prune: true, recurseSubmodules: true, stdio: { output: null } });
 									/** @type { slime.jrunscript.tools.git.Branch[] } */
@@ -527,7 +526,10 @@
 										repository.merge({ ffOnly: true, name: "origin/master" });
 									}
 								}
-							);
+							),
+							prune: function(p) {
+								cleanGitBranches()();
+							}
 						} : void(0)
 					}
 				}
