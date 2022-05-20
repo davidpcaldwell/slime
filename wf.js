@@ -115,7 +115,7 @@
 		}
 
 		function cleanGitBranches() {
-			if (!repository) return void(0);
+			if (!repository) return function(){};
 
 			return $api.Function.pipe(
 				function(p) {
