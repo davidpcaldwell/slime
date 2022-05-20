@@ -93,9 +93,66 @@
 			}
 		};
 
+		var repository = (jsh.tools.git.Repository) ? jsh.tools.git.Repository({ directory: $context.base }) : void(0);
+
+		/**
+		 *
+		 * @param { slime.jrunscript.tools.git.Branch } branch
+		 */
+		var notMaster = function(branch) {
+			return branch.name != "remotes/origin/master" && branch.name != "master";
+		};
+
+		/**
+		 *
+		 * @param { slime.jrunscript.tools.git.Branch } target
+		 * @returns { (p: slime.jrunscript.tools.git.Branch) => boolean }
+		 */
+		var notBranch = function(target) {
+			return function(branch) {
+				return branch.name != target.name;
+			}
+		}
+
+		function cleanGitBranches() {
+			if (!repository) return void(0);
+
+			return $api.Function.pipe(
+				function(p) {
+					repository.fetch({ all: true, prune: true, recurseSubmodules: true, stdio: { output: null } });
+					/** @type { slime.jrunscript.tools.git.Branch[] } */
+					var branches = repository.branch({ all: true });
+					var target = "remotes/origin/master";
+					var checkedOut = repository.status().branch;
+					debugger;
+					branches.filter(notMaster).filter(notBranch(checkedOut)).forEach(function(branch) {
+						var common = repository.mergeBase({ commits: [target, branch.commit.commit.hash] });
+						if (common.commit.hash == branch.commit.commit.hash) {
+							if (/^remotes\//.test(branch.name)) {
+								var parsed = branch.name.split("/");
+								jsh.shell.console("Merged; removing remotely: " + branch.name);
+								var argument = {
+									delete: true,
+									repository: parsed[1],
+									refspec: parsed.slice(2).join("/")
+								};
+								repository.push(argument);
+							} else {
+								jsh.shell.console("Merged to " + target + "; removing " + branch.name);
+								repository.branch({ delete: branch.name });
+							}
+						} else {
+							jsh.shell.console("Unmerged: " + branch.name);
+						}
+					});
+				}
+			);
+		}
+
 		$exports.initialize = $api.Function.pipe(
 			function(p) {
 				jsh.wf.project.git.installHooks({ path: "contributor/hooks" });
+				cleanGitBranches()();
 				//	TODO	could consider whether we can wire our commit process into the git hooks mechanism:
 				//			git config core.hooksPath contributor/hooks
 				//			... and then appropriately implement contributor/hooks/pre-commit
@@ -418,43 +475,6 @@
 		if (jsh.tools.git.Repository) {
 			(
 				function() {
-					var repository = jsh.tools.git.Repository({ directory: $context.base });
-
-					var notMaster = function(branch) {
-						return branch.name != "remotes/origin/master" && branch.name != "master";
-					};
-
-					function cleanGitBranches() {
-						return $api.Function.pipe(
-							function(p) {
-								repository.fetch({ all: true, prune: true, recurseSubmodules: true, stdio: { output: null } });
-								/** @type { slime.jrunscript.tools.git.Branch[] } */
-								var branches = repository.branch({ all: true });
-								var target = "remotes/origin/master";
-								branches.filter(notMaster).forEach(function(branch) {
-									var common = repository.mergeBase({ commits: [target, branch.commit.commit.hash] });
-									if (common.commit.hash == branch.commit.commit.hash) {
-										if (/^remotes\//.test(branch.name)) {
-											var parsed = branch.name.split("/");
-											jsh.shell.console("Merged; removing remotely: " + branch.name);
-											var argument = {
-												delete: true,
-												repository: parsed[1],
-												refspec: parsed.slice(2).join("/")
-											};
-											repository.push(argument);
-										} else {
-											jsh.shell.console("Merged to " + target + "; removing " + branch.name);
-											repository.branch({ delete: branch.name });
-										}
-									} else {
-										jsh.shell.console("Unmerged: " + branch.name);
-									}
-								});
-							}
-						);
-					}
-
 					$exports.git = {
 						branch: $api.Function.pipe(
 							function(p) {
@@ -479,11 +499,8 @@
 							git.repository.command(git.command.fetch).argument().run();
 							git.repository.command(git.command.checkout).argument({ branch: "master" }).run();
 							git.repository.command(merge).argument({ name: "origin/master" }).run();
-							cleanGitBranches()();
 						},
 						branches: (jsh.tools.git.Repository) ? new function() {
-							this.clean = cleanGitBranches();
-
 							this.list = $api.Function.pipe(
 								function(p) {
 									repository.fetch({ all: true, prune: true, recurseSubmodules: true, stdio: { output: null } });
