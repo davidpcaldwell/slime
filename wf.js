@@ -148,7 +148,7 @@
 				jsh.shell.tools.jsoup.require();
 
 				(function wiki() {
-					if (!jsh.tools.git.Repository) return;
+					if (!jsh.tools.git.installation) return;
 					var remote = jsh.tools.git.Repository({ remote: "https://github.com/davidpcaldwell/slime.wiki.git" });
 					var location = $context.base.getRelativePath("local/wiki");
 					if (!location.directory) {
