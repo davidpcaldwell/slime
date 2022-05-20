@@ -110,18 +110,27 @@
 				if (!skipGitIdentityRequirement) {
 					var gitIdentityProvider = (p && p.arguments[0] == "--test-git-identity-requirement") ? void(0) : jsh.wf.inputs.gitIdentityProvider.gui;
 
-					try {
-						jsh.wf.checks.requireGitIdentity({
-							repository: jsh.tools.git.Repository({ directory: $context.base }),
-							get: gitIdentityProvider
-						});
-					} catch (e) {
+					var gitIdentityProvided = jsh.wf.checks.requireGitIdentity({
+						repository: jsh.tools.git.Repository({ directory: $context.base }),
+						get: gitIdentityProvider
+					})({
+						console: function(e) {
+							jsh.shell.console(e.detail);
+						},
+						debug: function(e) {
+							//	do nothing for now
+						}
+					});
+
+					if (!gitIdentityProvided) {
 						//	TODO	returning 1 here apparently does not function as expected. Perhaps wf still has a disjoint
 						//			implementation from jsh.script.cli?
 						jsh.shell.console("user.name and user.email must be set on the local repository.");
 						jsh.shell.console("From the source directory " + $context.base + ":");
 						jsh.shell.console("git config user.name \"Your Name\"");
 						jsh.shell.console("git config user.email \"youremail@yourdomain.com\"");
+						//	TODO	test whether returning 1 works. It might not, the special initialize hook might need to be
+						//			modified
 						jsh.shell.exit(1);
 					}
 				}

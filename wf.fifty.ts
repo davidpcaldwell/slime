@@ -12,7 +12,10 @@ namespace slime {
 				const fixtures = (
 					function() {
 						var script: slime.jsh.wf.test.Script = fifty.$loader.script("tools/wf/test/fixtures.ts");
-						return script();
+						return script({
+							$api: $api,
+							jsh: jsh
+						});
 					}
 				)();
 				return {

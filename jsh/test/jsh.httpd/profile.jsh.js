@@ -4,21 +4,25 @@
 //
 //	END LICENSE
 
-var parameters = jsh.script.getopts({
-	options: {
-		resources: jsh.file.Pathname
+(
+	function() {
+		var parameters = jsh.script.getopts({
+			options: {
+				resources: jsh.file.Pathname
+			}
+		});
+
+		var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true });
+
+		jsh.loader.plugins(jsh.shell.jsh.src.getRelativePath("rhino/http/servlet/tools"));
+
+		jsh.httpd.tools.build({
+			destination: tmp.pathname,
+			Resources: function() {
+				this.file(parameters.options.resources.file);
+			},
+			compile: [],
+			servlet: "WEB-INF/foo"
+		});
 	}
-});
-
-var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true });
-
-jsh.loader.plugins(jsh.shell.jsh.src.getRelativePath("rhino/http/servlet/tools"));
-
-jsh.httpd.tools.build({
-	destination: tmp.pathname,
-	Resources: function() {
-		this.file(parameters.options.resources.file);
-	},
-	compile: [],
-	servlet: "WEB-INF/foo"
-});
+)();
