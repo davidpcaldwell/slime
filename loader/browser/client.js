@@ -177,7 +177,7 @@
 						if (!downloads[path]) {
 							downloads[path] = get(path);
 						}
-						return downloads[path].responseText;
+						return downloads[path].responseText + "//# sourceURL=" + path;
 					}
 
 					//	TODO	probably should reorganize so that sourceURL can be added for CoffeeScript after compilation
