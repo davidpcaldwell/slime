@@ -141,12 +141,74 @@ namespace slime.runtime.document {
 			document: slime.Codec<Document,string>
 		}
 
+		Parent: {
+			nodes: (p: Parent) => slime.$api.fp.Stream<Node>
+		}
+
 		Document: exports.Document
 
 		Element: {
 			isName: (name: string) => (element: Element) => boolean
 		}
 	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { $api, window } = fifty.global;
+			const subject = test.subject;
+
+			fifty.tests.Parent = fifty.test.Parent();
+
+			fifty.tests.Parent.one = function() {
+				var document = subject.codec.document.decode("<root/>");
+				var nodes = $api.Function.result(
+					subject.Parent.nodes(document),
+					$api.Function.Stream.collect
+				);
+				verify(nodes).length.is(2);
+			}
+
+			fifty.tests.Parent.two = function() {
+				var document = subject.codec.document.decode("<root><a/><b><b2/></b></root>");
+				var nodes = $api.Function.result(
+					subject.Parent.nodes(document),
+					$api.Function.Stream.collect
+				);
+
+				var isElement = function(name: string) {
+					return function(node: slime.runtime.document.Node) {
+						if (subject.Node.isElement(node)) {
+							return node.name == name;
+						}
+					}
+				}
+				verify(nodes).length.is(5);
+				verify(nodes)[0].type.is("document");
+				verify(nodes)[1].evaluate(isElement("root")).is(true);
+				verify(nodes)[2].evaluate(isElement("a")).is(true);
+				verify(nodes)[3].evaluate(isElement("b")).is(true);
+				verify(nodes)[4].evaluate(isElement("b2")).is(true);
+
+				var elements = $api.Function.result(
+					subject.Parent.nodes(document),
+					$api.Function.pipe(
+						$api.Function.Stream.filter(subject.Node.isElement),
+						$api.Function.Stream.collect
+					)
+				);
+				verify(elements).length.is(4);
+				verify(elements)[0].evaluate(isElement("root")).is(true);
+				verify(elements)[1].evaluate(isElement("a")).is(true);
+				verify(elements)[2].evaluate(isElement("b")).is(true);
+				verify(elements)[3].evaluate(isElement("b2")).is(true);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
 
 	export type Script = slime.loader.Script<Context,Exports>
 }

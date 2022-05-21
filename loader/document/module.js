@@ -319,6 +319,63 @@
 			}
 		};
 
+		/**
+		 *
+		 * @param { slime.runtime.document.Parent } root
+		 * @param { number[] } cursor
+		 * @returns { slime.$api.fp.Stream<slime.runtime.document.Node> }
+		 */
+		function NodesStream(root, cursor) {
+			/** @type { slime.js.Cast<slime.runtime.document.Parent> } */
+			var asParent = $api.Function.cast;
+
+			/**
+			 *
+			 * @param { slime.runtime.document.Parent } root
+			 * @param { number[] } cursor
+			 * @returns { slime.runtime.document.Node }
+			 */
+			var getNode = function(root,cursor) {
+				/** @type { slime.runtime.document.Node } */
+				var position = root;
+				for (var i=0; i<cursor.length; i++) {
+					position = asParent(position).children[cursor[i]];
+				}
+				return position;
+			}
+
+			var checkParent = function recurse(root, cursor) {
+				if (cursor.length == 0) return null;
+				var parentCursor = cursor.slice(0, cursor.length-1);
+				var index = cursor[cursor.length-1];
+				var parent = asParent(getNode(root, parentCursor));
+				if (index+1 < parent.children.length) {
+					return parentCursor.concat([index+1]);
+				} else {
+					return checkParent(root, parentCursor);
+				}
+			}
+
+			return {
+				iterate: function() {
+					/** @type { slime.runtime.document.Node } */
+					var position = getNode(root, cursor);
+					/** @type { number[] } */
+					var next;
+					//	find the next one
+					if (source.Node.isParent(position) && position.children.length > 0) {
+						next = cursor.concat([0]);
+					} else {
+						next = checkParent(root, cursor);
+					}
+					return {
+						next: $api.Function.Maybe.value(position),
+						remaining: (next) ? NodesStream(root, next) : $api.Function.Stream.empty()
+					};
+				}
+			}
+		}
+
 		/** @type { slime.runtime.document.Exports } */
 		var rv = {
 			load: function(p) {
@@ -336,6 +393,11 @@
 				document: documentStringCodec
 			},
 			Node: source.Node,
+			Parent: {
+				nodes: function(p) {
+					return NodesStream(p, []);
+				}
+			},
 			//	TODO	temporarily disabling TypeScript while we figure out the loader/document vs. rhino/document nightmare
 			//@ts-ignore
 			Document: {

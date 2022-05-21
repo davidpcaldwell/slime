@@ -380,16 +380,20 @@ namespace slime.$api.fp {
 	//@ts-ignore
 	)(fifty);
 
-	export interface Iterator<T> {
-		hasNext: () => boolean
-		next: () => T
+	export type Nothing = { present: false }
+	export type Some<T> = { present: true, value: T }
+	export type Maybe<T> = Some<T> | Nothing
+
+	export interface Exports {
+		Maybe: {
+			nothing: () => Nothing
+			value: <T>(t: T) => Some<T>
+		}
 	}
 
 	export interface Stream<T> {
 		iterate: () => {
-			next: {
-				value: T
-			},
+			next: Maybe<T>,
 			remaining: Stream<T>
 		}
 	}
@@ -426,14 +430,12 @@ namespace slime.$api.fp {
 						iterate: function() {
 							if (start < limit) {
 								return {
-									next: {
-										value: start
-									},
+									next: $api.Function.Maybe.value(start),
 									remaining: streamRange(start+1, limit)
 								}
 							} else {
 								return {
-									next: null,
+									next: $api.Function.Maybe.nothing(),
 									remaining: emptyStream()
 								}
 							}
