@@ -410,6 +410,7 @@ namespace slime.$api.fp {
 				<W,N extends W>(filter: (w: W) => w is N): (ws: Stream<W>) => Stream<N>
 				<T>(filter: Predicate<T>): (ts: Stream<T>) => Stream<T>
 			}
+			array: <T>(ts: T[]) => Stream<T>
 		}
 	}
 
@@ -470,6 +471,17 @@ namespace slime.$api.fp {
 						)
 					);
 					verify(rv.join(",")).is("1,3,5,7,9");
+				});
+
+				fifty.run(function testArrayStream() {
+					var array = [1,2,3,4];
+					var stream = $api.Function.Stream.array(array);
+					var rv = $api.Function.Stream.collect(stream);
+					verify(rv).length.is(4);
+					verify(rv)[0].is(1);
+					verify(rv)[1].is(2);
+					verify(rv)[2].is(3);
+					verify(rv)[3].is(4);
 				});
 			}
 		}
