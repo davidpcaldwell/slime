@@ -132,6 +132,74 @@
 			toUpperCase: $context.deprecate($exports.Function.string.toUpperCase)
 		};
 
+		$exports.Function.Object = {
+			entries: function(o) {
+				return Object.entries(o);
+			},
+			fromEntries: function(iterable) {
+				//	This casting step may not be necessary in higher versions of TypeScript; was not needed in VSCode but was
+				//	needed for command line tsc 4.0.5
+				/** @type { (p: any) => Iterable<readonly any[]> } */
+				var castToIterable = function(p) {
+					return p;
+				}
+
+				return Object.fromEntries(castToIterable(iterable));
+			}
+		}
+
+		$exports.Function.Stream = {
+			empty: function() {
+				return {
+					iterate: function() {
+						return {
+							next: null,
+							remaining: $exports.Function.Stream.empty()
+						}
+					}
+				}
+			},
+			collect: function(stream) {
+				var rv = [];
+				var more = true;
+				while(more) {
+					var current = stream.iterate();
+					if (current.next) {
+						rv.push(current.next.value);
+						stream = current.remaining;
+					} else {
+						more = false;
+					}
+				}
+				return rv;
+			},
+			filter: function filter(predicate) {
+				return function(stream) {
+					return {
+						iterate: function() {
+							while(true) {
+								var current = stream.iterate();
+								if (!current.next) {
+									return {
+										next: null,
+										remaining: $exports.Function.Stream.empty()
+									}
+								}
+								if (current.next && predicate(current.next.value)) {
+									return {
+										next: current.next,
+										remaining: filter(predicate)(current.remaining)
+									}
+								} else {
+									stream = current.remaining;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
 		$exports.Function.Array = {
 			filter: function(f) {
 				return function(array) {
@@ -228,26 +296,10 @@
 		}
 
 		$exports.Function.filter = {
-			or: $exports.Function.Predicate.or,
-			and: $exports.Function.Predicate.and,
-			not: $exports.Function.Predicate.not
+			or: $context.deprecate($exports.Function.Predicate.or),
+			and: $context.deprecate($exports.Function.Predicate.and),
+			not: $context.deprecate($exports.Function.Predicate.not)
 		};
-
-		$exports.Function.Object = {
-			entries: function(o) {
-				return Object.entries(o);
-			},
-			fromEntries: function(iterable) {
-				//	This casting step may not be necessary in higher versions of TypeScript; was not needed in VSCode but was
-				//	needed for command line tsc 4.0.5
-				/** @type { (p: any) => Iterable<readonly any[]> } */
-				var castToIterable = function(p) {
-					return p;
-				}
-
-				return Object.fromEntries(castToIterable(iterable));
-			}
-		}
 
 		$exports.Function.JSON = {
 			stringify: function(p) {
@@ -274,6 +326,77 @@
 				}
 			}
 		}
+
+		$exports.Function.comparator = {
+			create: function(mapping, comparator) {
+				return function(a, b) {
+					return comparator(mapping(a), mapping(b));
+				}
+			},
+			operators: function(a, b) {
+				if (a < b) return -1;
+				if (b < a) return 1;
+				return 0;
+			},
+			reverse: function(comparator) {
+				return function(a, b) {
+					return -(comparator(a,b));
+				}
+			},
+			compose: function() {
+				var comparators = Array.prototype.slice.call(arguments);
+				return function(a, b) {
+					for (var i=0; i<comparators.length; i++) {
+						var rv = comparators[i](a, b);
+						if (rv !== 0) return rv;
+					}
+					return 0;
+				}
+			}
+		}
+
+		/** @type { slime.$api.fp.Exports["impure"] } */
+		$exports.Function.impure = {
+			/** @type { slime.$api.fp.Exports["impure"]["revise"] } */
+			revise: function(f) {
+				if (f === null || f === void(0)) return $exports.Function.identity;
+				return function(p) {
+					var rv = f.call(this,p);
+					return (rv) ? rv : p;
+				}
+			},
+			compose: function() {
+				var functions = Array.prototype.slice.call(arguments).map($exports.Function.impure.revise);
+				return function(p) {
+					var rv = p;
+					for (var i=0; i<functions.length; i++) {
+						rv = functions[i].call(this,rv);
+					}
+					return rv;
+				}
+			},
+			ask: $context.events.ask,
+			tell: $context.events.tell,
+			Update: {
+				compose: function(functions) {
+					return function(m) {
+						for (var i=0; i<functions.length; i++) {
+							functions[i](m);
+						}
+					}
+				}
+			}
+		};
+
+		$exports.Function.series = function() {
+			var functions = arguments;
+			return function() {
+				for (var i=0; i<functions.length; i++) {
+					var rv = functions[i].apply(this,arguments);
+					if (typeof(rv) != "undefined") return rv;
+				}
+			};
+		};
 
 		$exports.Function.argument = {
 			check: function(p) {
@@ -323,77 +446,6 @@
 				return rv;
 			};
 		};
-
-		$exports.Function.series = function() {
-			var functions = arguments;
-			return function() {
-				for (var i=0; i<functions.length; i++) {
-					var rv = functions[i].apply(this,arguments);
-					if (typeof(rv) != "undefined") return rv;
-				}
-			};
-		};
-
-		/** @type { slime.$api.fp.Exports["impure"] } */
-		$exports.Function.impure = {
-			/** @type { slime.$api.fp.Exports["impure"]["revise"] } */
-			revise: function(f) {
-				if (f === null || f === void(0)) return $exports.Function.identity;
-				return function(p) {
-					var rv = f.call(this,p);
-					return (rv) ? rv : p;
-				}
-			},
-			compose: function() {
-				var functions = Array.prototype.slice.call(arguments).map($exports.Function.impure.revise);
-				return function(p) {
-					var rv = p;
-					for (var i=0; i<functions.length; i++) {
-						rv = functions[i].call(this,rv);
-					}
-					return rv;
-				}
-			},
-			ask: $context.events.ask,
-			tell: $context.events.tell,
-			Update: {
-				compose: function(functions) {
-					return function(m) {
-						for (var i=0; i<functions.length; i++) {
-							functions[i](m);
-						}
-					}
-				}
-			}
-		};
-
-		$exports.Function.comparator = {
-			create: function(mapping, comparator) {
-				return function(a, b) {
-					return comparator(mapping(a), mapping(b));
-				}
-			},
-			operators: function(a, b) {
-				if (a < b) return -1;
-				if (b < a) return 1;
-				return 0;
-			},
-			reverse: function(comparator) {
-				return function(a, b) {
-					return -(comparator(a,b));
-				}
-			},
-			compose: function() {
-				var comparators = Array.prototype.slice.call(arguments);
-				return function(a, b) {
-					for (var i=0; i<comparators.length; i++) {
-						var rv = comparators[i](a, b);
-						if (rv !== 0) return rv;
-					}
-					return 0;
-				}
-			}
-		}
 	}
 //@ts-ignore
 )($context,$exports)
