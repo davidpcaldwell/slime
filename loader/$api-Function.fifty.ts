@@ -388,6 +388,9 @@ namespace slime.$api.fp {
 		Maybe: {
 			nothing: () => Nothing
 			value: <T>(t: T) => Some<T>
+			from: <T>(t: T) => Maybe<T>
+			map: <T,R>(f: (t: T) => R) => (m: Maybe<T>) => Maybe<R>
+			else: <T>(f: () => T) => (m: Maybe<T>) => T
 		}
 	}
 
@@ -401,8 +404,12 @@ namespace slime.$api.fp {
 	export interface Exports {
 		Stream: {
 			empty: <T>() => Stream<T>
+			first: <T>(ts: Stream<T>) => Maybe<T>
 			collect: <T>(ts: Stream<T>) => T[]
-			filter: <T>(filter: Predicate<T>) => (ts: Stream<T>) => Stream<T>
+			filter: {
+				<W,N extends W>(filter: (w: W) => w is N): (ws: Stream<W>) => Stream<N>
+				<T>(filter: Predicate<T>): (ts: Stream<T>) => Stream<T>
+			}
 		}
 	}
 

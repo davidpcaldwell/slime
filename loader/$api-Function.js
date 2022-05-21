@@ -154,6 +154,26 @@
 			},
 			value: function(t) {
 				return { present: true, value: t };
+			},
+			from: function(v) {
+				if (v === null) return $exports.Function.Maybe.nothing();
+				if (typeof(v) == "undefined") return $exports.Function.Maybe.nothing();
+				return $exports.Function.Maybe.value(v);
+			},
+			map: function(f) {
+				return function(maybe) {
+					if (maybe.present) {
+						return $exports.Function.Maybe.value(f(maybe.value));
+					} else {
+						return $exports.Function.Maybe.nothing();
+					}
+				}
+			},
+			else: function(f) {
+				return function(maybe) {
+					if (maybe.present) return maybe.value;
+					return f();
+				}
 			}
 		}
 
@@ -167,6 +187,9 @@
 						}
 					}
 				}
+			},
+			first: function(stream) {
+				return stream.iterate().next;
 			},
 			collect: function(stream) {
 				var rv = [];
