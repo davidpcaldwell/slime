@@ -5,5 +5,4 @@
 #	END LICENSE
 
 ./wf initialize
-#	Next line does not work yet; see https://github.com/davidpcaldwell/slime/issues/455
-#	./jsh.bash --add-jdk-11
+./jsh.bash --add-jdk-11
