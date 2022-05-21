@@ -721,15 +721,15 @@ namespace slime.jrunscript.shell {
 			}
 
 			fifty.tests.sandbox = function() {
-				var bogus = subject.Invocation.create({
-					command: "foobarbaz"
-				});
+				fifty.run(function checkErrorForBogusInvocation() {
+					var bogus = subject.Invocation.create({
+						command: "foobarbaz"
+					});
 
-				(function() {
 					var tell = subject.world.run(bogus);
 					fifty.verify(tell).evaluate(function(f) { return f(); }).threw.type(Error);
 					fifty.verify(tell).evaluate(function(f) { return f(); }).threw.name.is("JavaException");
-				})();
+				});
 
 				var directory = fifty.jsh.file.object.getRelativePath(".").directory;
 
