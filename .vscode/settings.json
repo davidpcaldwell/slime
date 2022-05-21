@@ -11,7 +11,6 @@
 		"javascript"
 	],
 	"debug.node.autoAttach": "on",
-	"java.jdt.ls.java.home": "local/jdk/11",
 	"java.configuration.updateBuildConfiguration": "interactive",
 	"files.associations": {
 		"*.json": "jsonc"

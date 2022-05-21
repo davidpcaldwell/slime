@@ -14,6 +14,9 @@
 		"vscjava.vscode-java-pack",
 		"dbaeumer.vscode-eslint"
 	],
+	"settings": {
+		"java.jdt.ls.java.home": "/slime/local/jdk/11"
+	},
 	"service": "test",
 	"workspaceFolder": "/slime",
 	"postCreateCommand": "/bin/bash .devcontainer/post-create-command.bash"
