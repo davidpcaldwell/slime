@@ -148,12 +148,21 @@
 			}
 		}
 
+		$exports.Function.Maybe = {
+			nothing: function() {
+				return { present: false };
+			},
+			value: function(t) {
+				return { present: true, value: t };
+			}
+		}
+
 		$exports.Function.Stream = {
 			empty: function() {
 				return {
 					iterate: function() {
 						return {
-							next: null,
+							next: $exports.Function.Maybe.nothing(),
 							remaining: $exports.Function.Stream.empty()
 						}
 					}
@@ -164,7 +173,7 @@
 				var more = true;
 				while(more) {
 					var current = stream.iterate();
-					if (current.next) {
+					if (current.next.present) {
 						rv.push(current.next.value);
 						stream = current.remaining;
 					} else {
@@ -179,13 +188,13 @@
 						iterate: function() {
 							while(true) {
 								var current = stream.iterate();
-								if (!current.next) {
+								if (!current.next.present) {
 									return {
-										next: null,
+										next: $exports.Function.Maybe.nothing(),
 										remaining: $exports.Function.Stream.empty()
 									}
 								}
-								if (current.next && predicate(current.next.value)) {
+								if (current.next.present && predicate(current.next.value)) {
 									return {
 										next: current.next,
 										remaining: filter(predicate)(current.remaining)
