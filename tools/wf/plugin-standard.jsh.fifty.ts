@@ -67,51 +67,15 @@ namespace slime.jsh.wf {
 						wf: fifty.jsh.file.object.getRelativePath("../wf.bash").file,
 						project: function() {
 							var origin = fixture();
-							var repository = origin.clone({
-								to: fifty.jsh.file.object.temporary.location()
+							var repository = fixtures.clone({
+								src: jsh.file.world.filesystems.os.pathname(origin.directory.toString())
 							});
 							repository.submodule.update({
 								init: true
 							});
 							fixtures.configure(repository);
-							//	copy local modifications to source tree since we are testing this source code
-							src.copy(repository.directory.getRelativePath("slime"), {
-								filter: function(item) {
-									if (item.entry.path.substring(0,"local/".length) == "local/") return false;
-									if (item.entry.path == ".git") return false;
-									if (item.entry.path.substring(0,".git/".length) == ".git/") return false;
-									//jsh.shell.console("conflict: " + item.entry.path);
-									//	If we have a file in the way of a directory, remove it
-									if (item.exists && !item.exists.directory && item.entry.node.directory) {
-										item.exists.remove();
-										return true;
-									}
-									return true;
-								}
-							});
-							var cloned = repository.directory.getSubdirectory("slime").list({
-								type: repository.directory.list.ENTRY,
-								filter: function(node) {
-									return !node.directory;
-								},
-								descendants: function(directory) {
-									return directory.pathname.basename != ".git" && directory.pathname.basename != "local";
-								}
-							});
-							cloned.forEach(function(entry) {
-								var deleted = !src.getFile(entry.path);
-								if (deleted) {
-									if (entry.path != ".git") {
-										jsh.shell.console("Deleting cloned file deleted locally: " + entry.path);
-										repository.directory.getSubdirectory("slime").getFile(entry.path).remove();
-									}
-								}
-							});
+
 							var slime = jsh.tools.git.Repository({ directory: repository.directory.getSubdirectory("slime") });
-							if (slime.status().paths) {
-								slime.add({ path: "." });
-								slime.commit({ message: "Local modifications committed by plugin-standard.jsh.fifty.ts tests." });
-							}
 
 							//	Initialize SLIME external types (e.g., jsyaml) so that tsc will pass
 							jsh.shell.run({

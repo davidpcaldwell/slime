@@ -53,17 +53,22 @@ namespace slime.jsh.wf.test {
 						to: destination.pathname
 					}).run();
 					//	copy code so that we get local modifications in our "clone"
+					//	TODO	this is horrendouly inefficient, listing and iterating through lots of directories we are not
+					//			going to copy. We should rather filter the directory listing and then only copy
 					jsh.file.object.directory(src).copy(jsh.file.object.pathname(destination), {
 						filter: function(p) {
-							if (p.entry.path == ".git") return false;
-							if (p.entry.path == "local") return false;
+							//	Prevents copying of the .git *file* in submodules
+							if (/\.git$/.test(p.entry.path)) return false;
 
-							//	TODO	The following two lines are currently necessary, for reasons that are not obvious by
-							//	examining the copy() implementation
+							//	Prevents copying of files under the .git and local directories
 							if (/\.git\//.test(p.entry.path)) return false;
 							if (/local\//.test(p.entry.path)) return false;
 
-							//	If we are a directory but the clone contains a file, remove the directory and overwrite
+							//	Prevents copying of files under the submodule path
+							//	TODO	this is not very generalized; it does allow the standard wf plugin tests to pass
+							if (/slime\//.test(p.entry.path)) return false;
+
+							//	If we are a directory but the clone contains a file, remove the file and overwrite
 							if (p.exists && !p.exists.directory && p.entry.node.directory) {
 								p.exists.remove();
 								return true;
@@ -72,6 +77,28 @@ namespace slime.jsh.wf.test {
 							return true;
 						}
 					});
+					(
+						function removeLocallyRemovedFilesFromClone() {
+							var cloned = jsh.file.object.directory(destination).list({
+								type: jsh.file.list.ENTRY,
+								filter: function(node) {
+									return !node.directory;
+								},
+								descendants: function(directory) {
+									return directory.pathname.basename != ".git" && directory.pathname.basename != "local";
+								}
+							});
+							cloned.forEach(function(entry) {
+								var deleted = !jsh.file.object.directory(src).getFile(entry.path);
+								if (deleted) {
+									if (entry.path != ".git") {
+										jsh.shell.console("Deleting cloned file deleted locally: " + entry.path);
+										jsh.file.object.directory(destination).getFile(entry.path).remove();
+									}
+								}
+							});
+						}
+					)();
 					var rv = jsh.tools.git.Repository({ directory: jsh.file.Pathname(destination.pathname).directory });
 					if (p.commit && rv.status().paths) {
 						rv.commit({
