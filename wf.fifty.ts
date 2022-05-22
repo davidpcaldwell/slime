@@ -85,6 +85,7 @@ namespace slime {
 
 				branches: {
 					list: slime.jsh.script.cli.Command<Options>
+					prune: slime.jsh.script.cli.Command<Options>
 				}
 			}
 

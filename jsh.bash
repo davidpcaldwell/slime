@@ -130,13 +130,14 @@ install_jdk_11_liberica() {
 	mv ${JDK_WORKDIR}/${JDK_ZIP_PATH} ${TO}
 }
 
-install_jdk_8_corretto() {
-	TO=$(clean_destination $1)
+install_jdk_corretto() {
+	local VERSION="$1"
+	local MAJOR_VERSION="$2"
+	TO=$(clean_destination "$3")
 
-	local VERSION="8.282.08.1"
 	if [ "${UNAME}" == "Darwin" ]; then
 		JDK_TARBALL_BASENAME="amazon-corretto-${VERSION}-macosx-x64.tar.gz"
-		JDK_TARBALL_PATH="amazon-corretto-8.jdk/Contents/Home"
+		JDK_TARBALL_PATH="amazon-corretto-${MAJOR_VERSION}.jdk/Contents/Home"
 	elif [ "${UNAME}" == "Linux" ]; then
 		JDK_TARBALL_BASENAME="amazon-corretto-${VERSION}-linux-x64.tar.gz"
 		JDK_TARBALL_PATH="amazon-corretto-${VERSION}-linux-x64"
@@ -146,7 +147,6 @@ install_jdk_8_corretto() {
 		mkdir "${HOME}/Downloads"
 	fi
 	JDK_TARBALL_LOCATION="${HOME}/Downloads/${JDK_TARBALL_BASENAME}"
-
 	if [ ! -f "${JDK_TARBALL_LOCATION}" ]; then
 		download_install "${JDK_TARBALL_URL}" "${JDK_TARBALL_LOCATION}"
 	fi
@@ -160,21 +160,13 @@ install_jdk_8_corretto() {
 	>&2 echo "Installed ${JDK_TARBALL_URL} at ${TO}"
 }
 
-install_jdk_11_corretto() {
-	TO=$(clean_destination $1)
+install_jdk_8_corretto() {
+	install_jdk_corretto "8.332.08.1" "8" $1
+}
 
-	JDK_TARBALL_URL="https://corretto.aws/downloads/resources/11.0.9.12.1/amazon-corretto-11.0.9.12.1-macosx-x64.tar.gz"
-	JDK_TARBALL_BASENAME="amazon-corretto-11.0.9.12.1-macosx-x64.tar.gz"
-	JDK_TARBALL_LOCATION="${HOME}/Downloads/${JDK_TARBALL_BASENAME}"
-	JDK_TARBALL_PATH="amazon-corretto-11.jdk/Contents/Home"
-	if [ ! -f "${JDK_TARBALL_LOCATION}" ]; then
-		echo "Downloading ${JDK_TARBALL_URL} ..."
-		curl -L -o ${HOME}/Downloads/${JDK_TARBALL_BASENAME} ${JDK_TARBALL_URL}
-	fi
-	JDK_WORKDIR=$(mktemp -d)
-	tar xf ${JDK_TARBALL_LOCATION} -C ${JDK_WORKDIR}
-	mv ${JDK_WORKDIR}/${JDK_TARBALL_PATH} ${TO}
-	>&2 echo "Installed ${JDK_TARBALL_URL} at ${TO}"
+#	TODO	a lot of copy-paste with install_jdk_8_corretto
+install_jdk_11_corretto() {
+	install_jdk_corretto "11.0.15.9.1" "11" $1
 }
 
 install_jdk_8() {

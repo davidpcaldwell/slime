@@ -111,34 +111,6 @@
 			}
 		});
 
-		$exports.Function.postprocessing = Object.assign(
-			$context.deprecate(function(f,postprocessor) {
-				//	TODO	may want to think through whether to give postprocessor the ability to handle exceptions
-				var UNDEFINED = $exports.Function.value.UNDEFINED;
-				var rv = function() {
-					var returned = f.apply(this,arguments);
-					var rv = postprocessor({
-						target: this,
-						arguments: Array.prototype.slice.call(arguments),
-						returned: returned
-					});
-					if (typeof(rv) != "undefined") {
-						returned = (rv == UNDEFINED) ? void(0) : rv;
-					}
-					return returned;
-				};
-				for (var x in f) {
-					//  TODO    check to see what these properties are
-					rv[x] = f[x];
-				}
-				//  TODO    consider altering rv.toString()
-				return rv;
-			}),
-			{
-				UNDEFINED: void(0)
-			}
-		);
-
 		$exports.Function.value = {
 			UNDEFINED: {
 				toString: function() {
@@ -148,17 +120,16 @@
 		};
 		$context.deprecate($exports.Function, "value");
 
-		$exports.Function.postprocessing.UNDEFINED = $exports.Function.value.UNDEFINED;
-		$context.deprecate($exports.Function.postprocessing, "UNDEFINED");
-
 		$exports.Function.mutating = $context.deprecate(function(v) {
 			var implementation;
 			if (typeof(v) == "function") {
 				var mutator = v;
-				implementation = $exports.Function.postprocessing(mutator, function(result) {
-					if (result.returned === $exports.Function.value.UNDEFINED) return result.returned;
-					if (typeof(result.returned) == "undefined") return result.arguments[0];
-				});
+				implementation = function(value) {
+					var returned = mutator(value);
+					if (returned === $exports.Function.value.UNDEFINED) return void(0);
+					if (typeof(returned) == "undefined") return value;
+					return returned;
+				}
 			} else if (typeof(v) == "object" && v) {
 				implementation = function() {
 					return v;
