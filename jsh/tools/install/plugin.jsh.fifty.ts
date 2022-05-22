@@ -10,9 +10,27 @@ namespace slime.jsh.shell.tools {
 	export namespace rhino {
 		export interface InstallCommand {
 			mock?: { lib: slime.jrunscript.file.Directory, rhino: slime.jrunscript.file.File }
+
+			/**
+			 * A local copy of the Rhino JAR file to install.
+			 */
 			local?: slime.jrunscript.file.File
-			replace?: boolean
+
+			/**
+			 * A named version of Rhino to download and install; ignored if `local` is specified. Available versions include:
+			 *
+			 * * mozilla/1.7.14 (the default)
+			 * * mozilla/1.7R3
+			 * * mozilla/1.7.12
+			 * * mozilla/1.7.13
+			 */
 			version?: string
+
+			/**
+			 * Whether to replace the existing installation if one is found (`true`), or to leave it in place (`false`, the
+			 * default).
+			 */
+			replace?: boolean
 		}
 	}
 

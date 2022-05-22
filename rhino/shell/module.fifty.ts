@@ -728,7 +728,7 @@ namespace slime.jrunscript.shell {
 
 					var tell = subject.world.run(bogus);
 					fifty.verify(tell).evaluate(function(f) { return f(); }).threw.type(Error);
-					fifty.verify(tell).evaluate(function(f) { return f(); }).threw.name.is("JavaException");
+					fifty.verify(tell).evaluate(function(f) { return f(); }).threw.evaluate.property("name").is("JavaException");
 				});
 
 				var directory = fifty.jsh.file.object.getRelativePath(".").directory;
