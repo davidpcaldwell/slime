@@ -22,7 +22,7 @@
 				/**
 				 * @type { slime.jsh.shell.Exports["tools"]["rhino"]["install"] }
 				 */
-				var installRhino = $api.Events.Function(
+				var installRhino = $api.events.Function(
 					function(p,events) {
 						if (!p) p = {};
 						var lib = (p.mock && p.mock.lib) ? p.mock.lib : jsh.shell.jsh.lib;
@@ -92,7 +92,7 @@
 
 				jsh.shell.tools.rhino = {
 					install: installRhino,
-					require: $api.Events.Function(function(p,events) {
+					require: $api.events.Function(function(p,events) {
 						jsh.shell.jsh.require({
 							satisfied: function() { return Boolean(jsh.shell.jsh.lib.getFile("js.jar")); },
 							install: function() { return installRhino(p); }

@@ -580,12 +580,11 @@ END LICENSE
 			<div>
 				<h3>Rhino</h3>
 				<p>
-					Rhino is currently downloaded and installed as part of the <code>jrunscript</code> bootstrap API
+					Rhino download/installation is currently implemented as part of the <code>jrunscript</code> bootstrap API
 					(see <a href="../rhino/jrunscript/api.js"><code>rhino/jrunscript/api.js</code></a>, specifically
-					<code>$api.rhino.download()</code>)
-					in order to
-					preserve the ability to restore support for older JDKs (6 or 7, where the built-in engine cannot
-					run the loader, so the launcher would need to install it).
+					<code>$api.rhino.download()</code>) for historical reasons, because JDK 6 and 7 relied on being able to
+					download it. The built-in Rhino fork bundled with JDK 6 and 7 cannot run the loader, so the JDK 6-7 launcher
+					downloaded and installed Mozilla Rhino. This structure was preserved to ease a hypothetical backport to JDK 6-7.
 				</p>
 				<p>
 					The implementation could be simplified at the cost of making it harder to restore support for JDK 6 and
@@ -593,8 +592,12 @@ END LICENSE
 					would be running the shell that installed Rhino.
 				</p>
 				<p>
-					Rhino can be updated by updating the default version in <code>rhino/jrunscript/api.js</code>, along with
-					(so that contributors can work properly) the version in <code>build.gradle</code>.
+					Rhino's default version can be updated by updating the default version in <code>rhino/jrunscript/api.js</code>,
+					along with (so that contributors can work properly) the version in <code>build.gradle</code>.
+				</p>
+				<p>
+					The locally installed version of Rhino can be altered using the <code>jsh/tools/install/rhino.jsh.js</code>
+					script, with the `-replace` option.
 				</p>
 			</div>
 			<div>
