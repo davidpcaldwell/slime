@@ -190,9 +190,27 @@
 					}
 				}
 
-				jsh.shell.tools.node.require();
-				jsh.shell.tools.node["modules"].require({ name: "eslint" });
-				jsh.shell.tools.node["modules"].require({ name: "@types/js-yaml" });
+				(
+					function node() {
+						(
+							function core() {
+								jsh.shell.tools.node.require();
+							}
+						)();
+						(
+							function eslint() {
+								jsh.shell.console("eslint");
+								jsh.shell.tools.node["modules"].require({ name: "eslint" });
+							}
+						)();
+						(
+							function jsyaml() {
+								jsh.shell.console("jsyaml");
+								jsh.shell.tools.node["modules"].require({ name: "@types/js-yaml" });
+							}
+						)();
+					}
+				)();
 
 				var isEclipseProject = Boolean($context.base.getSubdirectory("bin"));
 				if (isEclipseProject) {
