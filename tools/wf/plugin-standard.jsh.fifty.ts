@@ -65,7 +65,7 @@ namespace slime.jsh.wf {
 
 					return {
 						wf: fifty.jsh.file.object.getRelativePath("../wf.bash").file,
-						project: function() {
+						project: function project() {
 							var origin = fixture();
 							var repository = fixtures.clone({
 								src: jsh.file.world.filesystems.os.pathname(origin.directory.toString())
@@ -78,10 +78,14 @@ namespace slime.jsh.wf {
 							var slime = jsh.tools.git.Repository({ directory: repository.directory.getSubdirectory("slime") });
 
 							//	Initialize SLIME external types (e.g., jsyaml) so that tsc will pass
-							jsh.shell.run({
-								command: slime.directory.getFile("wf"),
-								arguments: ["initialize", "--test-skip-git-identity-requirement"]
-							});
+							(
+								function wfInitialize() {
+									jsh.shell.run({
+										command: slime.directory.getFile("wf"),
+										arguments: ["initialize", "--test-skip-git-identity-requirement"]
+									});
+								}
+							)();
 
 							return repository;
 						}
