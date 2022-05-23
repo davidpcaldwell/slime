@@ -65,7 +65,8 @@ namespace slime.jsh.wf {
 
 					return {
 						wf: fifty.jsh.file.object.getRelativePath("../wf.bash").file,
-						project: function project() {
+						project: function project(p?: { noInitialize?: boolean }) {
+							if (!p) p = {};
 							var origin = fixture();
 							var repository = fixtures.clone({
 								src: jsh.file.world.filesystems.os.pathname(origin.directory.toString())
@@ -78,7 +79,7 @@ namespace slime.jsh.wf {
 							var slime = jsh.tools.git.Repository({ directory: repository.directory.getSubdirectory("slime") });
 
 							//	Initialize SLIME external types (e.g., jsyaml) so that tsc will pass
-							(
+							if (!p.noInitialize) (
 								function wfInitialize() {
 									jsh.shell.run({
 										command: slime.directory.getFile("wf"),
@@ -353,9 +354,42 @@ namespace slime.jsh.wf {
 			function(
 				fifty: slime.fifty.test.Kit
 			) {
+				const { $api, jsh } = fifty.global;
+
 				fifty.tests.suite = function() {
 					fifty.run(fifty.tests.interface.tsc);
 					fifty.run(fifty.tests.interface.commit);
+				}
+
+				fifty.tests.manual = {};
+				fifty.tests.manual.profile = function() {
+					var project = test.fixtures.project({ noInitialize: true });
+					var getSlimePath = function(relative) {
+						return jsh.file.world.filesystems.os.pathname(project.directory.toString()).relative("slime").relative(relative);
+					}
+					//	TODO	should profiler install Rhino?
+					jsh.shell.world.run(
+						jsh.shell.Invocation.create({
+							command: getSlimePath("jsh.bash").pathname,
+							arguments: $api.Array.build(function(rv) {
+								rv.push(getSlimePath("jsh/tools/install/rhino.jsh.js").pathname);
+							}),
+							directory: getSlimePath(".").pathname
+						})
+					)();
+					jsh.shell.world.run(
+						jsh.shell.Invocation.create({
+							//	TODO	perhaps should accept world Pathname
+							command: getSlimePath("jsh.bash").pathname,
+							arguments: $api.Array.build(function(rv) {
+								rv.push(getSlimePath("jsh/tools/profile.jsh.js").pathname);
+								rv.push(getSlimePath("tools/wf.jsh.js").pathname);
+								rv.push("initialize");
+								rv.push("--test-skip-git-identity-requirement");
+							}),
+							directory: getSlimePath(".").pathname
+						})
+					)();
 				}
 			}
 		//@ts-ignore
