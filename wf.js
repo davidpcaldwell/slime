@@ -199,13 +199,11 @@
 						)();
 						(
 							function eslint() {
-								jsh.shell.console("eslint");
 								jsh.shell.tools.node["modules"].require({ name: "eslint" });
 							}
 						)();
 						(
 							function jsyaml() {
-								jsh.shell.console("jsyaml");
 								jsh.shell.tools.node["modules"].require({ name: "@types/js-yaml" });
 							}
 						)();
