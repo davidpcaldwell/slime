@@ -28,7 +28,6 @@ namespace slime.jsh {
 		node: slime.jrunscript.node.Exports
 		install: slime.jrunscript.tools.install.Exports
 		github: slime.jrunscript.tools.github.Exports
-		gradle: any
 	}
 
 	/**
