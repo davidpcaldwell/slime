@@ -34,64 +34,25 @@ namespace slime.jsh.shell.tools {
 		}
 	}
 
-	export namespace scala {
-		export interface Installation {
-			compile: (p: {
-				destination: slime.jrunscript.file.Pathname
-				deprecation: boolean
-				files: any[]
-			}) => void
-
-			run: (p: {
-				classpath: slime.jrunscript.file.Pathname
-				main: string
-			}) => void
+	export interface Exports {
+		rhino: {
+			install: (
+				p?: rhino.InstallCommand,
+				events?: any
+			) => void
+			require: (
+				p?: rhino.InstallCommand,
+				events?: any
+			) => void
 		}
 	}
 
-	export namespace mkcert {
-		export interface Installation {
-			/**
-			 * The location of the `mkcert` executable in this installation.
-			 */
-			program: slime.jrunscript.file.File
-
-			/**
-			 * Whether the root CA exists and is trusted by the system.
-			 */
-			isTrusted: () => boolean
-
-			/**
-			 * Creates a PKCS12 certificate pertaining to the given hosts at the given location.
-			 */
-			pkcs12: (p: {
-				/**
-				 * The list of hosts to which this certificate should pertain.
-				 */
-				hosts: string[]
-
-				/**
-				 * The destination path to which to generate the certificate. If omitted, `mkcert` itself will generate a path
-				 * and report it to the console. If you're writing an application that's intending to use the certificate, this
-				 * is probably not what you want.
-				 */
-				to?: slime.jrunscript.file.Pathname
-			}) => void
-		}
+	export interface Exports {
+		ncdbg: any
 	}
 
-	export namespace node {
-		export interface Managed {
-			require: () => void
-		}
-
-		export interface Installed extends Managed, slime.jrunscript.node.Installation {
-			update: () => void
-		}
-
-		export interface Absent extends Managed {
-			install: (p?: { update?: boolean }) => void
-		}
+	export interface Exports {
+		graal: any
 	}
 
 	export namespace tomcat {
@@ -258,22 +219,55 @@ namespace slime.jsh.shell.tools {
 	//@ts-ignore
 	)(fifty);
 
+	export namespace mkcert {
+		export interface Installation {
+			/**
+			 * The location of the `mkcert` executable in this installation.
+			 */
+			program: slime.jrunscript.file.File
+
+			/**
+			 * Whether the root CA exists and is trusted by the system.
+			 */
+			isTrusted: () => boolean
+
+			/**
+			 * Creates a PKCS12 certificate pertaining to the given hosts at the given location.
+			 */
+			pkcs12: (p: {
+				/**
+				 * The list of hosts to which this certificate should pertain.
+				 */
+				hosts: string[]
+
+				/**
+				 * The destination path to which to generate the certificate. If omitted, `mkcert` itself will generate a path
+				 * and report it to the console. If you're writing an application that's intending to use the certificate, this
+				 * is probably not what you want.
+				 */
+				to?: slime.jrunscript.file.Pathname
+			}) => void
+		}
+	}
 
 	export interface Exports {
-		rhino: {
-			install: (
-				p?: rhino.InstallCommand,
-				events?: any
-			) => void
-			require: (
-				p?: rhino.InstallCommand,
-				events?: any
-			) => void
+		mkcert: {
+			install: (p?: { destination?: slime.jrunscript.file.Pathname, replace?: boolean }) => mkcert.Installation
+			require: () => mkcert.Installation
 		}
-		graal: any
-		ncdbg: any
-		kotlin: any
+	}
 
+	export interface Exports {
+		selenium: {
+			/**
+			 * Loads the Selenium Java API if it is present; otherwise, throws an exception. If the Chrome Selenium driver is
+			 * installed into the shell, the API will be configured to use it.
+			 */
+			load: () => void
+		}
+	}
+
+	export interface Exports {
 		/**
 		 * Integration with [`js-yaml`](https://github.com/nodeca/js-yaml) v3, which provides support for the YAML serialization format.
 		 */
@@ -295,30 +289,77 @@ namespace slime.jsh.shell.tools {
 			 */
 			load: () => typeof jsyaml
 		}
+	}
 
-		mkcert: {
-			install: (p?: { destination?: slime.jrunscript.file.Pathname, replace?: boolean }) => mkcert.Installation
-			require: () => mkcert.Installation
+	export interface Exports {
+		kotlin: any
+	}
+
+	export namespace scala {
+		export interface Installation {
+			compile: (p: {
+				destination: slime.jrunscript.file.Pathname
+				deprecation: boolean
+				files: any[]
+			}) => void
+
+			run: (p: {
+				classpath: slime.jrunscript.file.Pathname
+				main: string
+			}) => void
 		}
-		selenium: {
-			/**
-			 * Loads the Selenium Java API if it is present; otherwise, throws an exception. If the Chrome Selenium driver is
-			 * installed into the shell, the API will be configured to use it.
-			 */
-			load: () => void
-		}
-		node: node.Installed | node.Absent
-		javamail: {
-			install: () => void
-			require: () => void
-		}
-		jsoup: any
-		postgresql: any
+	}
+
+	export interface Exports {
 		scala: {
 			installation: scala.Installation
 		}
 	}
 
+	export interface Exports {
+		jsoup: any
+	}
+
+	export interface Exports {
+		javamail: {
+			install: () => void
+			require: () => void
+		}
+	}
+
+	export interface Exports {
+		postgresql: any
+	}
+}
+
+namespace slime.jsh {
+	//	TODO	the need to modify slime.jsh in this plugin, as well as jsh.shell.tools, probably means a refactor is needed
+	export interface Tools {
+		gradle: any
+	}
+}
+
+namespace slime.jsh.shell.tools {
+	export namespace node {
+		export interface Managed {
+			require: () => void
+		}
+
+		export interface Installed extends Managed, slime.jrunscript.node.Installation {
+			update: () => void
+		}
+
+		export interface Absent extends Managed {
+			install: (p?: { update?: boolean }) => void
+		}
+	}
+
+	export interface Exports {
+		node: node.Installed | node.Absent
+	}
+}
+
+namespace slime.jsh.shell.tools {
 	export namespace internal.tomcat {
 		export interface Context {
 			$api: slime.$api.Global

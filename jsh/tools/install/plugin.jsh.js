@@ -110,69 +110,6 @@
 					$api.deprecate(jsh.tools.install,"rhino");
 				})();
 
-				var graal = new function() {
-					var VERSION = {
-						number: "21.0.0.2",
-						jdk: "8",
-						edition: "ce"
-					};
-					this.install = $api.Events.Function(function(p,events) {
-						if (jsh.shell.os.name == "Mac OS X") {
-							jsh.tools.install.install({
-								url: "https://github.com/graalvm/graalvm-ce-builds/releases/download/"
-									+ "vm-" + VERSION.number + "/"
-									+ "graalvm-" + VERSION.edition + "-" + "java" + VERSION.jdk + "-" + "darwin" + "-" + "amd64" + "-" + VERSION.number + ".tar.gz"
-								,
-								getDestinationPath: function(file) {
-									return "graalvm-" + VERSION.edition + "-" + "java" + VERSION.jdk + "-" + VERSION.number;
-								},
-								to: jsh.shell.jsh.lib.getRelativePath("graal")
-							});
-						} else {
-							throw new Error("Unsupported: os " + jsh.shell.os.name);
-						}
-					});
-				};
-
-				jsh.shell.tools.graal = graal;
-
-				/** @type { slime.jsh.shell.tools.internal.tomcat.Script } */
-				var script = $loader.script("plugin.jsh.tomcat.js");
-				var tomcat = script({
-					$api: jsh.tools.install.$api,
-					jsh: jsh
-				});
-				jsh.shell.tools.tomcat = tomcat;
-
-				(function deprecated() {
-					jsh.tools.tomcat = tomcat;
-					$api.deprecate(jsh.tools,"tomcat");
-					jsh.tools.install["tomcat"] = tomcat;
-					$api.deprecate(jsh.tools.install,"tomcat");
-				})();
-
-				var gradle = (function() {
-					var URL = "https://services.gradle.org/distributions/gradle-6.8-bin.zip";
-
-					return new function() {
-						this.install = function(p,events) {
-							jsh.tools.install.install({
-								url: URL,
-								format: jsh.tools.install.format.zip,
-								to: jsh.shell.jsh.lib.getRelativePath("gradle"),
-								getDestinationPath: function(file) {
-									return "gradle-6.8";
-								},
-								replace: true
-							}, events);
-							jsh.shell.run({
-								command: "chmod",
-								arguments: ["+x", jsh.shell.jsh.lib.getSubdirectory("gradle").getFile("bin/gradle")]
-							});
-						}
-					}
-				})();
-
 				var ncdbg = new function() {
 					Object.defineProperty(this, "installed", {
 						get: function() {
@@ -263,6 +200,47 @@
 				(function deprecated() {
 					jsh.tools.ncdbg = ncdbg;
 					$api.deprecate(jsh.tools,"ncdbg");
+				})();
+
+				var graal = new function() {
+					var VERSION = {
+						number: "21.0.0.2",
+						jdk: "8",
+						edition: "ce"
+					};
+					this.install = $api.Events.Function(function(p,events) {
+						if (jsh.shell.os.name == "Mac OS X") {
+							jsh.tools.install.install({
+								url: "https://github.com/graalvm/graalvm-ce-builds/releases/download/"
+									+ "vm-" + VERSION.number + "/"
+									+ "graalvm-" + VERSION.edition + "-" + "java" + VERSION.jdk + "-" + "darwin" + "-" + "amd64" + "-" + VERSION.number + ".tar.gz"
+								,
+								getDestinationPath: function(file) {
+									return "graalvm-" + VERSION.edition + "-" + "java" + VERSION.jdk + "-" + VERSION.number;
+								},
+								to: jsh.shell.jsh.lib.getRelativePath("graal")
+							});
+						} else {
+							throw new Error("Unsupported: os " + jsh.shell.os.name);
+						}
+					});
+				};
+
+				jsh.shell.tools.graal = graal;
+
+				/** @type { slime.jsh.shell.tools.internal.tomcat.Script } */
+				var script = $loader.script("plugin.jsh.tomcat.js");
+				var tomcat = script({
+					$api: jsh.tools.install.$api,
+					jsh: jsh
+				});
+				jsh.shell.tools.tomcat = tomcat;
+
+				(function deprecated() {
+					jsh.tools.tomcat = tomcat;
+					$api.deprecate(jsh.tools,"tomcat");
+					jsh.tools.install["tomcat"] = tomcat;
+					$api.deprecate(jsh.tools.install,"tomcat");
 				})();
 
 				jsh.shell.tools.mkcert = (function() {
@@ -361,6 +339,61 @@
 							return Installation(location.file);
 						}
 					}
+				})();
+
+				//	TODO	probably want to create a jrunscript/io version of this also, or even a loader/ version given that this
+				//			is pure JavaScript
+				jsh.shell.tools.jsyaml = (function() {
+					var location = (jsh.shell.jsh.lib) ? jsh.shell.jsh.lib.getRelativePath("js-yaml.js") : null;
+
+					var fetchCode = function() {
+						return new jsh.http.Client().request({
+							url: "https://raw.githubusercontent.com/nodeca/js-yaml/v3/dist/js-yaml.js",
+							evaluate: function(response) {
+								return response.body.stream.character().asString();
+							}
+						});
+					};
+
+					var load = function(code) {
+						return $api.debug.disableBreakOnExceptionsFor(function() {
+							var global = {};
+							eval(code);
+							return global.jsyaml;
+						})();
+					}
+
+					var install = (location) ? function() {
+						var code = fetchCode();
+						location.write(code, { append: false });
+						return load(code);
+					} : void(0)
+
+					return $api.Object.compose(
+						(install) ? { install: install } : {},
+						{
+							require: function() {
+								var code = (function() {
+									if (location) {
+										if (location.file) {
+											return location.file.read(String);
+										} else {
+											var rv = fetchCode();
+											location.write(rv, { append: false });
+											return rv;
+										}
+									} else {
+										return fetchCode();
+									}
+								})();
+								return load(code);
+							},
+							load: function() {
+								var code = (location && location.file) ? location.file.read(String) : fetchCode();
+								return load(code);
+							}
+						}
+					);
 				})();
 
 				jsh.shell.tools.selenium = (
@@ -586,59 +619,26 @@
 					}
 				}
 
-				//	TODO	probably want to create a jrunscript/io version of this also, or even a loader/ version given that this
-				//			is pure JavaScript
-				jsh.shell.tools.jsyaml = (function() {
-					var location = (jsh.shell.jsh.lib) ? jsh.shell.jsh.lib.getRelativePath("js-yaml.js") : null;
+				var gradle = (function() {
+					var URL = "https://services.gradle.org/distributions/gradle-6.8-bin.zip";
 
-					var fetchCode = function() {
-						return new jsh.http.Client().request({
-							url: "https://raw.githubusercontent.com/nodeca/js-yaml/v3/dist/js-yaml.js",
-							evaluate: function(response) {
-								return response.body.stream.character().asString();
-							}
-						});
-					};
-
-					var load = function(code) {
-						return $api.debug.disableBreakOnExceptionsFor(function() {
-							var global = {};
-							eval(code);
-							return global.jsyaml;
-						})();
-					}
-
-					var install = (location) ? function() {
-						var code = fetchCode();
-						location.write(code, { append: false });
-						return load(code);
-					} : void(0)
-
-					return $api.Object.compose(
-						(install) ? { install: install } : {},
-						{
-							require: function() {
-								var code = (function() {
-									if (location) {
-										if (location.file) {
-											return location.file.read(String);
-										} else {
-											var rv = fetchCode();
-											location.write(rv, { append: false });
-											return rv;
-										}
-									} else {
-										return fetchCode();
-									}
-								})();
-								return load(code);
-							},
-							load: function() {
-								var code = (location && location.file) ? location.file.read(String) : fetchCode();
-								return load(code);
-							}
+					return new function() {
+						this.install = function(p,events) {
+							jsh.tools.install.install({
+								url: URL,
+								format: jsh.tools.install.format.zip,
+								to: jsh.shell.jsh.lib.getRelativePath("gradle"),
+								getDestinationPath: function(file) {
+									return "gradle-6.8";
+								},
+								replace: true
+							}, events);
+							jsh.shell.run({
+								command: "chmod",
+								arguments: ["+x", jsh.shell.jsh.lib.getSubdirectory("gradle").getFile("bin/gradle")]
+							});
 						}
-					);
+					}
 				})();
 
 				jsh.tools.gradle = gradle;
