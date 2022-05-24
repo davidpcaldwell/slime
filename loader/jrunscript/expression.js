@@ -234,6 +234,8 @@
 		 */
 		var fromStreamDescriptor = function(o) {
 			return {
+				type: o.type,
+				name: o.name,
 				read: {
 					binary: (function(stream) {
 						var _bytes;

@@ -42,7 +42,7 @@ namespace slime.jrunscript.runtime {
 		/**
 		 * @deprecated
 		 */
-		export interface DeprecatedStreamDescriptor {
+		export interface DeprecatedStreamDescriptor extends slime.resource.Descriptor {
 			stream?: {
 				binary: slime.jrunscript.runtime.io.InputStream
 			}
