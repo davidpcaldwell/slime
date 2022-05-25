@@ -6,13 +6,31 @@
 
 namespace slime.jrunscript.node {
 	export interface Context {
+		//	TODO	these obviously should be renamed to library
 		module: {
 			file: slime.jrunscript.file.Exports
 			shell: slime.jrunscript.shell.Exports
 		},
 		library: {
-			install: any
+			install: slime.jrunscript.tools.install.Exports
 		}
+	}
+
+	export namespace test {
+		export const subject = (function(fifty: slime.fifty.test.Kit) {
+			const { jsh } = fifty.global;
+			var script: Script = fifty.$loader.script("module.js");
+			return script({
+				module: {
+					file: jsh.file,
+					shell: jsh.shell
+				},
+				library: {
+					install: jsh.tools.install
+				}
+			});
+		//@ts-ignore
+		})(fifty);
 	}
 
 	interface Version {
@@ -106,8 +124,37 @@ namespace slime.jrunscript.node {
 	}
 
 	export interface Exports {
-		Installation: new (o: { directory: slime.jrunscript.file.Directory }) => slime.jrunscript.node.Installation
 		at: (p: { location: slime.jrunscript.file.Pathname }) => slime.jrunscript.node.Installation
+
+		/** @deprecated Use `at()`. */
+		Installation: new (o: { directory: slime.jrunscript.file.Directory }) => slime.jrunscript.node.Installation
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { jsh } = fifty.global;
+			const { subject } = test;
+
+			fifty.tests.installation = function() {
+				var TMPDIR = fifty.jsh.file.temporary.location();
+				verify(subject).at({ location: jsh.file.Pathname(TMPDIR.pathname) }).is(null);
+				subject.install({
+					location: jsh.file.Pathname(TMPDIR.pathname)
+				}, {
+					console: function(e) {
+						jsh.shell.console(e.detail);
+					}
+				});
+				verify(subject).at({ location: jsh.file.Pathname(TMPDIR.pathname) }).is.type("object");
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export interface Exports {
 		Project: Function,
 		install: (
 			p: {
@@ -200,10 +247,12 @@ namespace slime.jrunscript.node {
 
 			fifty.tests.suite = function() {
 				jsh.shell.console("version: " + api.version.number);
+				fifty.run(fifty.tests.installation);
 				fifty.run(fifty.tests.jsapi);
 			}
 		}
 	//@ts-ignore
 	)(fifty);
 
+	export type Script = slime.loader.Script<Context,Exports>
 }

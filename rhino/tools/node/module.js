@@ -16,7 +16,7 @@
 		 * @param { ConstructorParameters<slime.jrunscript.node.Exports["Installation"]>[0] } o
 		 * @constructor
 		 */
-		$exports.Installation = function(o) {
+		var Installation = function(o) {
 			this.toString = function() {
 				return "Node installation at " + o.directory;
 			};
@@ -220,29 +220,6 @@
 			};
 		};
 
-		$exports.Project = function(o) {
-			throw new Error();
-		}
-
-		var versions = {
-			"Mac OS X": {
-				"8.16.2": { url: "https://nodejs.org/download/release/v8.16.2/node-v8.16.2-darwin-x64.tar.gz" },
-				"12.13.1": { url: "https://nodejs.org/dist/v12.13.1/node-v12.13.1-darwin-x64.tar.gz" },
-				"12.14.1": { url: "https://nodejs.org/dist/v12.14.1/node-v12.14.1-darwin-x64.tar.gz" },
-				"12.16.0": { url: "https://nodejs.org/dist/v12.16.0/node-v12.16.0-darwin-x64.tar.gz" },
-				"12.16.1": { url: "https://nodejs.org/dist/v12.16.1/node-v12.16.1-darwin-x64.tar.gz" },
-				"12.16.2": { url: "https://nodejs.org/dist/v12.16.2/node-v12.16.2-darwin-x64.tar.gz" },
-				"12.22.1": { url: "https://nodejs.org/download/release/v12.22.1/node-v12.22.1-darwin-x64.tar.gz"},
-				"14.18.0": { url: "https://nodejs.org/dist/v14.18.0/node-v14.18.0-darwin-x64.tar.gz" },
-				"16.13.1": { url: "https://nodejs.org/dist/v16.13.1/node-v16.13.1-darwin-x64.tar.gz" }
-			},
-			"Linux": {
-				"12.22.1": { url: "https://nodejs.org/download/release/v12.22.1/node-v12.22.1-linux-x64.tar.gz" },
-				"14.18.0": { url: "https://nodejs.org/dist/v14.18.0/node-v14.18.0-linux-x64.tar.gz" },
-				"16.13.1": { url: "https://nodejs.org/dist/v16.13.1/node-v16.13.1-linux-x64.tar.gz" }
-			}
-		};
-
 		$exports.at = function(p) {
 			if (!p.location) throw new TypeError("Required: 'location' property.");
 			if (!p.location.directory) return null;
@@ -251,7 +228,29 @@
 			})
 		};
 
-		$exports.install = $api.Events.Function(
+		var versions = {
+			byOs: {
+				"Mac OS X": {
+					"8.16.2": { url: "https://nodejs.org/download/release/v8.16.2/node-v8.16.2-darwin-x64.tar.gz" },
+					"12.13.1": { url: "https://nodejs.org/dist/v12.13.1/node-v12.13.1-darwin-x64.tar.gz" },
+					"12.14.1": { url: "https://nodejs.org/dist/v12.14.1/node-v12.14.1-darwin-x64.tar.gz" },
+					"12.16.0": { url: "https://nodejs.org/dist/v12.16.0/node-v12.16.0-darwin-x64.tar.gz" },
+					"12.16.1": { url: "https://nodejs.org/dist/v12.16.1/node-v12.16.1-darwin-x64.tar.gz" },
+					"12.16.2": { url: "https://nodejs.org/dist/v12.16.2/node-v12.16.2-darwin-x64.tar.gz" },
+					"12.22.1": { url: "https://nodejs.org/download/release/v12.22.1/node-v12.22.1-darwin-x64.tar.gz"},
+					"14.18.0": { url: "https://nodejs.org/dist/v14.18.0/node-v14.18.0-darwin-x64.tar.gz" },
+					"16.13.1": { url: "https://nodejs.org/dist/v16.13.1/node-v16.13.1-darwin-x64.tar.gz" }
+				},
+				"Linux": {
+					"12.22.1": { url: "https://nodejs.org/download/release/v12.22.1/node-v12.22.1-linux-x64.tar.gz" },
+					"14.18.0": { url: "https://nodejs.org/dist/v14.18.0/node-v14.18.0-linux-x64.tar.gz" },
+					"16.13.1": { url: "https://nodejs.org/dist/v16.13.1/node-v16.13.1-linux-x64.tar.gz" }
+				}
+			},
+			default: "16.13.1"
+		};
+
+		$exports.install = $api.events.Function(
 			/**
 			 *
 			 * @param { Parameters<slime.jrunscript.node.Exports["install"]>[0] } p
@@ -261,7 +260,7 @@
 			function(p,events) {
 				if (!p) throw new TypeError();
 				//	TODO	compute this somehow?
-				if (!p.version) p.version = "16.13.1";
+				if (!p.version) p.version = versions.default;
 				var existing = $exports.at({ location: p.location });
 				/** @type { slime.jrunscript.node.Installation } */
 				var rv;
@@ -269,7 +268,7 @@
 					if (existing) {
 						p.location.directory.remove();
 					}
-					var os = versions[$context.module.shell.os.name];
+					var os = versions.byOs[$context.module.shell.os.name];
 					if (!os) throw new TypeError("Unsupported operating system: " + $context.module.shell.os.name);
 					var version = os[p.version];
 					$context.library.install.install({
@@ -287,6 +286,14 @@
 				return rv;
 			}
 		);
+
+		$exports.Installation = $api.deprecate(Installation);
+
+		$exports.Project = function(o) {
+			throw new Error();
+		}
+
+
 	}
 	//@ts-ignore
 )($api,$context,$exports)
