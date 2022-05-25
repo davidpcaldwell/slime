@@ -19,15 +19,15 @@
 					/**
 					 * @template { any } T
 					 * @param { { pattern: RegExp, match: (p: RegExpMatchArray) => T } } p
-					 * @returns { (s: string) => T }
+					 * @returns { (s: string) => slime.$api.fp.Maybe<T> }
 					 */
 					processor: function(p) {
 						return function(string) {
 							var match = p.pattern.exec(string);
 							if (match) {
-								return p.match(match);
+								return $api.Function.Maybe.value(p.match(match));
 							} else {
-								return void(0);
+								return $api.Function.Maybe.nothing();
 							}
 						}
 					}
@@ -70,23 +70,62 @@
 		var gitHookProcessor = $$api.Function.RegExp.processor({
 			pattern: /^git.hook.(.*)$/,
 			match: function(match) {
-				var hook = match[1];
+				/** @type { (v: any) => v is slime.jsh.script.cli.error.TargetNotFound } */
+				var isTargetNotFound = function(v) {
+					return command instanceof jsh.script.cli.error.TargetNotFound;
+				}
+
+				/** @type { (v: any) => v is slime.jsh.script.cli.error.TargetNotFunction } */
+				var isTargetNotFunction = function(v) {
+					return command instanceof jsh.script.cli.error.TargetNotFunction;
+				}
+
 				var command = jsh.script.cli.Commands.getCommand(descriptor.commands, invocation.arguments[0]);
-				if (command instanceof slime.jsh.script.cli.error.TargetNotFound) {
+				if (isTargetNotFound(command)) {
 					//	Probably fine, do nothing, hook is just not defined
-					return true;
-				} else if (command instanceof slime.jsh.script.cli.error.TargetNotFunction) {
+					return function() {
+						return 0;
+					};
+				} else if (isTargetNotFunction(command)) {
+					return function() {
+						throw new Error("Not a function: " + invocation.arguments[0]);
+						return 1;
+					}
 					//	unsure what to do, think it through
 				} else {
+					/** @type { slime.js.Cast<slime.jsh.script.cli.Command<T>>} */
+					var cast = $api.Function.cast;
+
 					//	probably run the hook?
-					return true;
+					return function() {
+						var run = cast(command);
+						return run({
+							options: invocation.options,
+							arguments: []
+						});
+					}
 				}
 			}
 		});
 
-		jsh.script.cli.wrap(
-			descriptor
-		)
+		var hook = gitHookProcessor(invocation.arguments[0]);
+
+		if (hook.present) {
+			var status = hook.value();
+			try {
+				if (typeof(status) == "number") {
+					jsh.shell.exit(status);
+				}
+			} catch (e) {
+				jsh.shell.console(e);
+				jsh.shell.console(e.stack);
+				jsh.shell.exit(1);
+			}
+		} else {
+			jsh.script.cli.wrap(
+				descriptor
+			)
+		}
 
 		// var getCommand = function(project,command) {
 		// 	if (typeof(command) == "undefined") return void(0);

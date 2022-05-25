@@ -253,6 +253,7 @@
 					parser: parser,
 					option: {
 						string: option($api.Function.identity),
+						$string: option($api.Function.identity),
 						boolean: function(o) {
 							var rv = function(p) {
 								var args = [];
@@ -268,6 +269,7 @@
 							return $api.Function.impure.revise(rv);
 						},
 						number: option(Number),
+						$number: option(Number),
 						pathname: option(jsh.script.getopts.parser.Pathname),
 						array: function(o) {
 							var rv = function(p) {
@@ -285,9 +287,15 @@
 							return $api.Function.impure.revise(rv);
 						}
 					},
+					/**
+					 * @template { any } T
+					 * @param { slime.jsh.script.cli.Processor<T> } f
+					 */
 					invocation: function(f) {
+						/** @type { slime.js.Cast<T> } */
+						var cast = $api.Function.cast;
 						return f({
-							options: {},
+							options: cast({}),
 							arguments: Array.prototype.slice.call(jsh.script.arguments)
 						});
 					},

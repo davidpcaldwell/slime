@@ -23,8 +23,6 @@ namespace slime.jsh.script {
 			arguments: string[]
 		}
 
-		//	TODO	an ambition to make Processor to have a parameterized type that matches Invocation, but haven't been able to get
-		//			that to work
 		export interface Processor<T> {
 			(invocation: Invocation<T>): Invocation<T>
 		}
@@ -116,27 +114,126 @@ namespace slime.jsh.script {
 
 	export namespace cli {
 		export interface Exports {
-			error: {
-				NoTargetProvided: $api.Error.Type<cli.error.NoTargetProvided>
-				TargetNotFound: $api.Error.Type<cli.error.TargetNotFound>
-				TargetNotFunction: $api.Error.Type<cli.error.TargetNotFunction>
-			}
-			parser: {
-				pathname: (argument: string) => slime.jrunscript.file.Pathname
-			}
-
 			option: {
 				string: <T>(c: { longname: string, default?: string }) => cli.Processor<T>
 				boolean: <T>(c: { longname: string }) => cli.Processor<T>
 				number: <T>(c: { longname: string, default?: number }) => cli.Processor<T>
 				pathname: <T>(c: { longname: string, default?: slime.jrunscript.file.Pathname }) => cli.Processor<T>
 				array: <T>(c: { longname: string, value: (s: string) => any }) => cli.Processor<T>
+
+				//	TODO	this Record notation works, but is there a more elegant way?
+
+				$string: <T extends object,N extends keyof any>(c: { longname: N, default?: string })
+					=> (i: cli.Invocation<T>)
+					=> cli.Invocation<T & Record<N, string>>
+
+				$number: <T extends object,N extends keyof any>(c: { longname: N, default?: number })
+					=> (i: cli.Invocation<T>)
+					=> cli.Invocation<T & Record<N, number>>
+			}
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { $api } = fifty.global;
+
+				fifty.tests.cli.option = function() {
+					const subject = test.subject;
+
+					var invoked = $api.Function.result(
+						{
+							options: {},
+							arguments: ["--foo", "bar", "--baz", 42]
+						},
+						$api.Function.pipe(
+							subject.cli.option.$string({ longname: "foo" }),
+							subject.cli.option.$number({ longname: "baz" })
+						)
+					);
+					verify(invoked).options.foo.is("bar");
+					verify(invoked).options.baz.is(42);
+
+					var trial = function(p: cli.Processor<any>, args: string[]) {
+						return p({
+							options: {},
+							arguments: args
+						});
+					}
+
+					fifty.run(function string() {
+						var one = trial(subject.cli.option.string({ longname: "a" }), []);
+						var two = trial(subject.cli.option.string({ longname: "a" }), ["--a", "foo"]);
+
+						fifty.verify(one).options.evaluate.property("a").is(void(0));
+						fifty.verify(two).options.evaluate.property("a").is("foo");
+					});
+
+					//	TODO	number is tested below in defaults, but not on its own
+
+					//	TODO	pathname is not tested explicitly
+
+					fifty.run(function defaults() {
+						var noDefault = subject.cli.option.number({ longname: "a" });
+						var withDefault = subject.cli.option.number({ longname: "a", default: 2 });
+
+						var one = trial(noDefault, []);
+						var two = trial(noDefault, ["--a", "1"]);
+						var three = trial(withDefault, []);
+						var four = trial(withDefault, ["--a", "1"]);
+
+						fifty.verify(one).options.evaluate.property("a").is(void(0));
+						fifty.verify(two).options.evaluate.property("a").is(1);
+						fifty.verify(three).options.evaluate.property("a").is(2);
+						fifty.verify(four).options.evaluate.property("a").is(1);
+					});
+
+					var invocation: cli.Invocation<{ a: string, b: number[], c: string }> = {
+						options: {
+							a: void(0),
+							b: [],
+							c: void(0)
+						},
+						arguments: ["--a", "A", "--b", "1", "--b", "3", "--c", "C"]
+					};
+					fifty.verify(invocation).options.b.length.is(0);
+					var processor: cli.Processor<{ a: string, b: number[], c: string }> = subject.cli.option.array({
+						longname: "b",
+						value: Number
+					});
+					var after: cli.Invocation<{ a: string, b: number[], c: string }> = processor(invocation);
+					fifty.verify(after).options.b.length.is(2);
+					fifty.verify(after).options.b[0].is(1);
+					fifty.verify(after).options.b[1].is(3);
+					fifty.verify(after).arguments[0].is("--a");
+					fifty.verify(after).arguments[1].is("A");
+					fifty.verify(after).arguments[2].is("--c");
+					fifty.verify(after).arguments[3].is("C");
+				};
+			}
+		//@ts-ignore
+		)(fifty);
+
+	}
+
+	export namespace cli {
+		export interface Exports {
+			error: {
+				NoTargetProvided: $api.Error.Type<cli.error.NoTargetProvided>
+				TargetNotFound: $api.Error.Type<cli.error.TargetNotFound>
+				TargetNotFunction: $api.Error.Type<cli.error.TargetNotFunction>
+			}
+
+			parser: {
+				pathname: (argument: string) => slime.jrunscript.file.Pathname
 			}
 
 			/**
 			 * Parses the `jsh` shell's arguments using the given {@link Processor}, returning the result of the processing.
 			 */
-			invocation: (processor: cli.Processor<any>) => cli.Invocation<any>
+			invocation: <T>(processor: cli.Processor<T>) => cli.Invocation<T>
 
 			/**
 			 * Given a {@link Descriptor} implementing the application's global options and commands, returns an object capable of
@@ -161,66 +258,6 @@ namespace slime.jsh.script {
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
-			fifty.tests.cli.option = function() {
-				const subject = test.subject;
-
-				var trial = function(p: cli.Processor<any>, args: string[]) {
-					return p({
-						options: {},
-						arguments: args
-					});
-				}
-
-				fifty.run(function string() {
-					var one = trial(subject.cli.option.string({ longname: "a" }), []);
-					var two = trial(subject.cli.option.string({ longname: "a" }), ["--a", "foo"]);
-
-					fifty.verify(one).options.evaluate.property("a").is(void(0));
-					fifty.verify(two).options.evaluate.property("a").is("foo");
-				});
-
-				//	TODO	number is tested below in defaults, but not on its own
-
-				//	TODO	pathname is not tested explicitly
-
-				fifty.run(function defaults() {
-					var noDefault = subject.cli.option.number({ longname: "a" });
-					var withDefault = subject.cli.option.number({ longname: "a", default: 2 });
-
-					var one = trial(noDefault, []);
-					var two = trial(noDefault, ["--a", "1"]);
-					var three = trial(withDefault, []);
-					var four = trial(withDefault, ["--a", "1"]);
-
-					fifty.verify(one).options.evaluate.property("a").is(void(0));
-					fifty.verify(two).options.evaluate.property("a").is(1);
-					fifty.verify(three).options.evaluate.property("a").is(2);
-					fifty.verify(four).options.evaluate.property("a").is(1);
-				});
-
-				var invocation: cli.Invocation<{ a: string, b: number[], c: string }> = {
-					options: {
-						a: void(0),
-						b: [],
-						c: void(0)
-					},
-					arguments: ["--a", "A", "--b", "1", "--b", "3", "--c", "C"]
-				};
-				fifty.verify(invocation).options.b.length.is(0);
-				var processor: cli.Processor<{ a: string, b: number[], c: string }> = subject.cli.option.array({
-					longname: "b",
-					value: Number
-				});
-				var after: cli.Invocation<{ a: string, b: number[], c: string }> = processor(invocation);
-				fifty.verify(after).options.b.length.is(2);
-				fifty.verify(after).options.b[0].is(1);
-				fifty.verify(after).options.b[1].is(3);
-				fifty.verify(after).arguments[0].is("--a");
-				fifty.verify(after).arguments[1].is("A");
-				fifty.verify(after).arguments[2].is("--c");
-				fifty.verify(after).arguments[3].is("C");
-			};
-
 			fifty.tests.cli.invocation = function() {
 				const subject = test.subject;
 
