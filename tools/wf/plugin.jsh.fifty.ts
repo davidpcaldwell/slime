@@ -214,29 +214,12 @@ namespace slime.jsh.wf {
 					 */
 					execute: (p: { interface: cli.Interface<any>, arguments: jsh.script.cli.Invocation<any> }) => void
 				}
-				option: {
-					string: (c: { longname: string }) => slime.jsh.script.cli.Processor<any>
-					boolean: (c: { longname: string }) => slime.jsh.script.cli.Processor<any>
-					number: (c: { longname: string }) => slime.jsh.script.cli.Processor<any>
-					pathname: (c: { longname: string }) => slime.jsh.script.cli.Processor<any>
-				},
 				/**
 				 * Returns an object representing the global invocation of `jsh`.
 				 */
 				invocation: <T>(
 					f: (p: jsh.script.cli.Invocation<any>) => T
 				) => T
-			}
-
-			/**
-			 * Provides an imperative way to process the arguments of a script. The function takes an array of argument
-			 * revisers and returns the result of processing `jsh.script.arguments` through the revisers.
-			 */
-			invocation: {
-				<T>(mutator: slime.jsh.script.cli.Processor<T>, m2:  slime.jsh.script.cli.Processor<T>, m3:  slime.jsh.script.cli.Processor<T>, m4:  slime.jsh.script.cli.Processor<T>): jsh.script.cli.Invocation<T>
-				<T>(mutator: slime.jsh.script.cli.Processor<T>, m2:  slime.jsh.script.cli.Processor<T>, m3:  slime.jsh.script.cli.Processor<T>): jsh.script.cli.Invocation<T>
-				<T>(mutator:  slime.jsh.script.cli.Processor<T>, m2:  slime.jsh.script.cli.Processor<T>): jsh.script.cli.Invocation<T>
-				<T>(mutator:  slime.jsh.script.cli.Processor<T>): slime.jsh.script.cli.Invocation<T>
 			}
 
 			/** @deprecated Replaced by `project.initialize`. */
@@ -249,93 +232,6 @@ namespace slime.jsh.wf {
 			}
 		}
 	}
-
-	(
-		function(
-			fifty: slime.fifty.test.Kit
-		) {
-			const { verify } = fifty;
-			const { jsh } = fifty.global;
-
-			fifty.tests.exports.cli = function() {
-				var mockjsh = {
-					script: {
-						arguments: ["--a", "aaa", "--b", "--c", "c"]
-					},
-					file: jsh.file,
-					shell: jsh.shell,
-					ui: jsh.ui,
-					tools: jsh.tools
-				};
-				var mock = fifty.jsh.plugin.mock({
-					jsh: mockjsh
-				});
-				var plugin = mock.jsh.wf;
-				if (!plugin) {
-					throw new TypeError("No jsh.wf loaded.");
-				}
-				const module = plugin;
-
-				(function() {
-					var invocation = {
-						options: {},
-						arguments: ["--foo", "bar"]
-					};
-					module.cli.$f.option.string({
-						longname: "baz"
-					})(invocation);
-					verify(invocation).options.evaluate.property("foo").is(void(0));
-					verify(invocation).arguments.length.is(2);
-				})();
-
-				(function() {
-					var invocation = {
-						options: {},
-						arguments: ["--foo", "bar"]
-					};
-					module.cli.$f.option.string({
-						longname: "foo"
-					})(invocation);
-					verify(invocation).options.evaluate.property("foo").is("bar");
-					verify(invocation).arguments.length.is(0);
-				})();
-
-				(function() {
-					var invocation = {
-						options: {
-							baz: false
-						},
-						arguments: ["--baz", "--bizzy"]
-					};
-					module.cli.$f.option.boolean({
-						longname: "baz"
-					})(invocation);
-					verify(invocation).options.baz.is(true);
-					verify(invocation).options.evaluate.property("bizzy").is(void(0));
-					verify(invocation).arguments.length.is(1);
-					verify(invocation).arguments[0].is("--bizzy");
-				})();
-
-				(function() {
-					var invocation: { arguments: string[], options: { a: string, b: boolean }} = <{ arguments: string[], options: { a: string, b: boolean }}>module.cli.invocation(
-						//	TODO	should module.$f.option.string("a") work?
-						module.cli.$f.option.string({ longname: "a" }),
-						module.cli.$f.option.boolean({ longname: "b" }),
-						module.cli.$f.option.string({ longname: "aa" }),
-						module.cli.$f.option.boolean({ longname: "bb" })
-					);
-					verify(invocation).arguments.length.is(2);
-					verify(invocation).arguments[0] == "--c";
-					verify(invocation).arguments[1] == "c";
-					verify(invocation).options.a.is("aaa");
-					verify(invocation).options.b.is(true);
-					verify(invocation).options.evaluate.property("aa").is(void(0));
-					verify(invocation).options.evaluate.property("bb").is(void(0));
-				})();
-			}
-		}
-	//@ts-ignore
-	)(fifty);
 
 	export namespace exports {
 		export interface Checks {

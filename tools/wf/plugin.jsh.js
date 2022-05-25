@@ -269,70 +269,6 @@
 								jsh.wf.cli.$f.command.process({ interface: p.interface, invocation: invocation });
 							}
 						},
-						option: {
-							/**
-							 * @param { Parameters<slime.jsh.wf.Exports["cli"]["$f"]["option"]["string"]>[0] } o
-							 */
-							string: function(o) {
-								var rv = function(p) {
-									var args = [];
-									for (var i=0; i<p.arguments.length; i++) {
-										if (o.longname && p.arguments[i] == "--" + o.longname) {
-											p.options[o.longname] = p.arguments[++i];
-										} else {
-											args.push(p.arguments[i]);
-										}
-									}
-									p.arguments = args;
-								}
-								return $api.Function.impure.revise(rv);
-							},
-							/**
-							 * @param { Parameters<slime.jsh.wf.Exports["cli"]["$f"]["option"]["boolean"]>[0] } o
-							 */
-							boolean: function(o) {
-								var rv = function(p) {
-									var args = [];
-									for (var i=0; i<p.arguments.length; i++) {
-										if (o.longname && p.arguments[i] == "--" + o.longname) {
-											p.options[o.longname] = true;
-										} else {
-											args.push(p.arguments[i]);
-										}
-									}
-									p.arguments = args;
-								}
-								return $api.Function.impure.revise(rv);
-							},
-							number: function(o) {
-								var rv = function(p) {
-									var args = [];
-									for (var i=0; i<p.arguments.length; i++) {
-										if (o.longname && p.arguments[i] == "--" + o.longname) {
-											p.options[o.longname] = Number(p.arguments[++i]);
-										} else {
-											args.push(p.arguments[i]);
-										}
-									}
-									p.arguments = args;
-								}
-								return $api.Function.impure.revise(rv);
-							},
-							pathname: function(o) {
-								var rv = function(p) {
-									var args = [];
-									for (var i=0; i<p.arguments.length; i++) {
-										if (o.longname && p.arguments[i] == "--" + o.longname) {
-											p.options[o.longname] = jsh.script.getopts.parser.Pathname(p.arguments[++i]);
-										} else {
-											args.push(p.arguments[i]);
-										}
-									}
-									p.arguments = args;
-								}
-								return $api.Function.impure.revise(rv);
-							}
-						},
 						invocation: function(f) {
 							return $api.Function.result(
 								{
@@ -342,19 +278,6 @@
 								f
 							);
 						}
-					},
-					invocation: function() {
-						/** @type { slime.jsh.script.cli.Invocation<any> } */
-						var rv = {
-							options: {},
-							arguments: Array.prototype.slice.call(jsh.script.arguments)
-						};
-						/** @type { slime.jsh.script.cli.Processor[] } */
-						var mutators = Array.prototype.slice.call(arguments);
-						mutators.forEach(function(mutator) {
-							mutator(rv);
-						})
-						return rv;
 					},
 					/**
 					 * @type { slime.jsh.wf.Exports["cli"]["initialize"] }

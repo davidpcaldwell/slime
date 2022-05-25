@@ -285,9 +285,15 @@
 							return $api.Function.impure.revise(rv);
 						}
 					},
+					/**
+					 * @template { any } T
+					 * @param { slime.jsh.script.cli.Processor<T> } f
+					 */
 					invocation: function(f) {
+						/** @type { slime.js.Cast<T> } */
+						var cast = $api.Function.cast;
 						return f({
-							options: {},
+							options: cast({}),
 							arguments: Array.prototype.slice.call(jsh.script.arguments)
 						});
 					},

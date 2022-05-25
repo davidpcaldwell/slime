@@ -16,9 +16,9 @@
 
 		$api.Function.result(
 			{ options: { index: "index.html" }, arguments: jsh.script.arguments },
-			jsh.wf.cli.$f.option.pathname({ longname: "chrome:data" }),
-			jsh.wf.cli.$f.option.string({ longname: "index" }),
-			jsh.wf.cli.$f.option.number({ longname: "chrome:debug:port" }),
+			jsh.script.cli.option.pathname({ longname: "chrome:data" }),
+			jsh.script.cli.option.string({ longname: "index" }),
+			jsh.script.cli.option.number({ longname: "chrome:debug:port" }),
 			function(p) {
 				if (p.arguments.length == 0) {
 					jsh.shell.console("Usage: serve.jsh.js [options] <directory>");

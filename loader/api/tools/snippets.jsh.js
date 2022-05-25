@@ -226,8 +226,8 @@
 
 		$api.Function.result(
 			{ options: {}, arguments: jsh.script.arguments },
-			jsh.wf.cli.$f.option.string({ longname: "language" }),
-			jsh.wf.cli.$f.option.string({ longname: "format" }),
+			jsh.script.cli.option.string({ longname: "language" }),
+			jsh.script.cli.option.string({ longname: "format" }),
 			function(p) {
 				jsh.shell.console("language = " + p.options.language);
 				var language = languages[p.options.language];
