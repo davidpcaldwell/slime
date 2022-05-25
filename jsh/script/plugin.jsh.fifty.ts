@@ -23,8 +23,8 @@ namespace slime.jsh.script {
 			arguments: string[]
 		}
 
-		export interface Processor<T> {
-			(invocation: Invocation<T>): Invocation<T>
+		export interface Processor<T,R> {
+			(invocation: Invocation<T>): Invocation<R>
 		}
 
 		/**
@@ -47,7 +47,7 @@ namespace slime.jsh.script {
 		}
 
 		export interface Descriptor<T> {
-			options?: Processor<T>
+			options?: Processor<{},T>
 			commands: Commands<T>
 		}
 
@@ -113,23 +113,18 @@ namespace slime.jsh.script {
 	}
 
 	export namespace cli {
+		type OptionParser<T> = <O extends object,N extends keyof any>(c: { longname: N, default?: T })
+			=> (i: cli.Invocation<O>)
+			=> cli.Invocation<O & { [n in N]: T }>
+
 		export interface Exports {
 			option: {
-				string: <T>(c: { longname: string, default?: string }) => cli.Processor<T>
-				boolean: <T>(c: { longname: string }) => cli.Processor<T>
-				number: <T>(c: { longname: string, default?: number }) => cli.Processor<T>
-				pathname: <T>(c: { longname: string, default?: slime.jrunscript.file.Pathname }) => cli.Processor<T>
-				array: <T>(c: { longname: string, value: (s: string) => any }) => cli.Processor<T>
+				string: OptionParser<string>
+				boolean: OptionParser<boolean>
+				number: OptionParser<number>
+				pathname: OptionParser<slime.jrunscript.file.Pathname>
 
-				//	TODO	this Record notation works, but is there a more elegant way?
-
-				$string: <T extends object,N extends keyof any>(c: { longname: N, default?: string })
-					=> (i: cli.Invocation<T>)
-					=> cli.Invocation<T & Record<N, string>>
-
-				$number: <T extends object,N extends keyof any>(c: { longname: N, default?: number })
-					=> (i: cli.Invocation<T>)
-					=> cli.Invocation<T & Record<N, number>>
+				array: <T,R>(c: { longname: string, value: (s: string) => any }) => cli.Processor<T,R>
 			}
 		}
 
@@ -149,14 +144,14 @@ namespace slime.jsh.script {
 							arguments: ["--foo", "bar", "--baz", 42]
 						},
 						$api.Function.pipe(
-							subject.cli.option.$string({ longname: "foo" }),
-							subject.cli.option.$number({ longname: "baz" })
+							subject.cli.option.string({ longname: "foo" }),
+							subject.cli.option.number({ longname: "baz" })
 						)
 					);
 					verify(invoked).options.foo.is("bar");
 					verify(invoked).options.baz.is(42);
 
-					var trial = function(p: cli.Processor<any>, args: string[]) {
+					var trial = function(p: cli.Processor<any,any>, args: string[]) {
 						return p({
 							options: {},
 							arguments: args
@@ -199,7 +194,7 @@ namespace slime.jsh.script {
 						arguments: ["--a", "A", "--b", "1", "--b", "3", "--c", "C"]
 					};
 					fifty.verify(invocation).options.b.length.is(0);
-					var processor: cli.Processor<{ a: string, b: number[], c: string }> = subject.cli.option.array({
+					var processor: cli.Processor<{ a: string, b: number[], c: string }, { a: string, b: number[], c: string }> = subject.cli.option.array({
 						longname: "b",
 						value: Number
 					});
@@ -233,7 +228,7 @@ namespace slime.jsh.script {
 			/**
 			 * Parses the `jsh` shell's arguments using the given {@link Processor}, returning the result of the processing.
 			 */
-			invocation: <T>(processor: cli.Processor<T>) => cli.Invocation<T>
+			invocation: <T,R>(processor: cli.Processor<T,R>) => cli.Invocation<R>
 
 			/**
 			 * Given a {@link Descriptor} implementing the application's global options and commands, returns an object capable of

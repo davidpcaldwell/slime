@@ -26,8 +26,8 @@
 						p.options.definition = definition.file;
 					}
 				}),
-				jsh.wf.cli.$f.option.string({ longname: "part" }),
-				jsh.wf.cli.$f.option.string({ longname: "view" }),
+				jsh.script.cli.option.string({ longname: "part" }),
+				jsh.script.cli.option.string({ longname: "view" }),
 				$api.Function.impure.revise(function(p) {
 					if (!p.options.view) p.options.view = "console";
 				})

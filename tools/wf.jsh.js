@@ -46,7 +46,7 @@
 
 		/** @type { slime.jsh.script.cli.Descriptor<T> } */
 		var descriptor = {
-			options: $api.Function.identity,
+			options: $api.Function.cast,
 			commands: new jsh.file.Loader({ directory: jsh.wf.project.base }).module("wf.js", {
 				base: jsh.wf.project.base
 			})

@@ -253,7 +253,6 @@
 					parser: parser,
 					option: {
 						string: option($api.Function.identity),
-						$string: option($api.Function.identity),
 						boolean: function(o) {
 							var rv = function(p) {
 								var args = [];
@@ -269,7 +268,6 @@
 							return $api.Function.impure.revise(rv);
 						},
 						number: option(Number),
-						$number: option(Number),
 						pathname: option(jsh.script.getopts.parser.Pathname),
 						array: function(o) {
 							var rv = function(p) {

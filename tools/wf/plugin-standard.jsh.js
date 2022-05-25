@@ -449,7 +449,7 @@
 						}
 					) : void(0),
 					remove: $api.Function.pipe(
-						$api.Function.impure.revise(jsh.wf.cli.$f.option.string({ longname: "path" })),
+						$api.Function.impure.revise(jsh.script.cli.option.string({ longname: "path" })),
 						function(p) {
 							var path = p.options.path;
 							jsh.wf.project.submodule.remove({ path: path });
@@ -482,7 +482,7 @@
 						}
 					),
 					reset: $api.Function.pipe(
-						jsh.wf.cli.$f.option.string({ longname: "path" }),
+						jsh.script.cli.option.string({ longname: "path" }),
 						function(p) {
 							var repository = jsh.tools.git.Repository({ directory: $context.base });
 							var submodule = repository.submodule({ cached: true }).find(function(submodule) {
@@ -510,7 +510,7 @@
 				};
 
 				if (project.precommit) $exports.commit = $api.Function.pipe(
-					jsh.wf.cli.$f.option.string({ longname: "message" }),
+					jsh.script.cli.option.string({ longname: "message" }),
 					jsh.script.cli.option.boolean({ longname: "notest" }),
 					function(p) {
 						//	Leave redundant check for message for now, in case there are existing implementations of

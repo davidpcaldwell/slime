@@ -33,7 +33,7 @@
 				),
 				test: {
 					jsh: $api.Function.pipe(
-						jsh.wf.cli.$f.option.boolean({ longname: "debug:rhino" }),
+						jsh.script.cli.option.boolean({ longname: "debug:rhino" }),
 						jsh.script.cli.option.array({
 							longname: "property",
 							value: function(string) {

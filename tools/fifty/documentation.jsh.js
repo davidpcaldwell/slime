@@ -15,11 +15,11 @@
 	function(Packages,$api,jsh) {
 		$api.Function.result(
 			{ options: {}, arguments: jsh.script.arguments.slice() },
-			jsh.wf.cli.$f.option.pathname({ longname: "base" }),
-			jsh.wf.cli.$f.option.string({ longname: "chrome:id" }),
-			jsh.wf.cli.$f.option.string({ longname: "host" }),
-			jsh.wf.cli.$f.option.string({ longname: "index" }),
-			jsh.wf.cli.$f.option.boolean({ longname: "watch"}),
+			jsh.script.cli.option.pathname({ longname: "base" }),
+			jsh.script.cli.option.string({ longname: "chrome:id" }),
+			jsh.script.cli.option.string({ longname: "host" }),
+			jsh.script.cli.option.string({ longname: "index" }),
+			jsh.script.cli.option.boolean({ longname: "watch"}),
 			function(p) {
 				jsh.shell.tools.tomcat.require();
 

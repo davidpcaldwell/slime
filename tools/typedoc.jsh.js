@@ -16,7 +16,7 @@
 			//	TODO	this default is also stored in tools/wf/plugin.jsh.js
 			jsh.script.cli.option.string({ longname: "ts:version" }),
 			jsh.script.cli.option.pathname({ longname: "tsconfig", default: jsh.shell.PWD.getRelativePath("jsconfig.json") }),
-			jsh.wf.cli.$f.option.pathname({ longname: "output" }),
+			jsh.script.cli.option.pathname({ longname: "output" }),
 			function(p) {
 				if (!p.options["ts:version"]) throw new Error("Required: --ts:version <version>");
 				jsh.shell.tools.rhino.require();

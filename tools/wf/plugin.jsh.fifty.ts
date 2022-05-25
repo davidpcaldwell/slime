@@ -214,29 +214,12 @@ namespace slime.jsh.wf {
 					 */
 					execute: (p: { interface: cli.Interface<any>, arguments: jsh.script.cli.Invocation<any> }) => void
 				}
-				option: {
-					string: (c: { longname: string }) => slime.jsh.script.cli.Processor<any>
-					boolean: (c: { longname: string }) => slime.jsh.script.cli.Processor<any>
-					number: (c: { longname: string }) => slime.jsh.script.cli.Processor<any>
-					pathname: (c: { longname: string }) => slime.jsh.script.cli.Processor<any>
-				},
 				/**
 				 * Returns an object representing the global invocation of `jsh`.
 				 */
 				invocation: <T>(
 					f: (p: jsh.script.cli.Invocation<any>) => T
 				) => T
-			}
-
-			/**
-			 * Provides an imperative way to process the arguments of a script. The function takes an array of argument
-			 * revisers and returns the result of processing `jsh.script.arguments` through the revisers.
-			 */
-			invocation: {
-				<T>(mutator: slime.jsh.script.cli.Processor<T>, m2:  slime.jsh.script.cli.Processor<T>, m3:  slime.jsh.script.cli.Processor<T>, m4:  slime.jsh.script.cli.Processor<T>): jsh.script.cli.Invocation<T>
-				<T>(mutator: slime.jsh.script.cli.Processor<T>, m2:  slime.jsh.script.cli.Processor<T>, m3:  slime.jsh.script.cli.Processor<T>): jsh.script.cli.Invocation<T>
-				<T>(mutator:  slime.jsh.script.cli.Processor<T>, m2:  slime.jsh.script.cli.Processor<T>): jsh.script.cli.Invocation<T>
-				<T>(mutator:  slime.jsh.script.cli.Processor<T>): slime.jsh.script.cli.Invocation<T>
 			}
 
 			/** @deprecated Replaced by `project.initialize`. */

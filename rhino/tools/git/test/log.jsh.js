@@ -13,7 +13,7 @@
 	 */
 	function($api,jsh) {
 		$api.Function.pipe(
-			jsh.wf.cli.$f.option.string({ longname: "revisionRange" }),
+			jsh.script.cli.option.string({ longname: "revisionRange" }),
 			function(p) {
 				var repository = jsh.tools.git.Repository({ directory: jsh.shell.PWD });
 				jsh.shell.console("revision range = " + p.options.revisionRange);
