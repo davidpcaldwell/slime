@@ -95,7 +95,6 @@
 				} else {
 					//	TODO	this weird redeclaration should not be needed; type narrowing should apply to `command` here
 					var target = command;
-					//	probably run the hook?
 					return function() {
 						return target({
 							options: invocation.options,

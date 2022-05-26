@@ -576,6 +576,12 @@
 		} else if ($exports.jsh.home) {
 			$exports.jsh.lib = $exports.jsh.home.getSubdirectory("lib");
 		}
+
+		$exports.world.exit = function(status) {
+			return function() {
+				$exports.exit(status);
+			}
+		}
 	}
 //@ts-ignore
 )(Packages,JavaAdapter,$api,$context,$exports);

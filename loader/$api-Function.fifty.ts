@@ -690,11 +690,10 @@ namespace slime.$api.fp {
 		export type Ask<E,T> = (on?: slime.$api.events.Handler<E>) => T
 		export type Tell<E> = (on?: slime.$api.events.Handler<E>) => void
 
+		export type Action<P,E> = (p?: P) => Tell<E>
+
 		/** @deprecated Replaced by {@link Ask} */
 		export type State<T> = Ask<void,T>
-
-		/** @experimental Identical to {@link Ask} but has slightly different semantics (analogous to HTTP POST). */
-		export type Action<E,R> = (on?: slime.$api.events.Handler<E>) => R
 
 		export type Update<T extends Object> = (t: T) => void
 
@@ -703,6 +702,11 @@ namespace slime.$api.fp {
 		 * `undefined`, or returns a completely new value to replace the argument.
 		 */
 		export type Revision<M> = (mutable: M) => M | void
+
+		export namespace old {
+			/** @deprecated Identical to {@link Ask} but has slightly different semantics (analogous to HTTP POST). */
+			export type Action<E,R> = (on?: slime.$api.events.Handler<E>) => R
+		}
 	}
 
 	export interface Exports {

@@ -12,7 +12,7 @@
 	 * @param { any } JavaAdapter
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jrunscript.shell.internal.run.Context } $context
-	 * @param { slime.loader.Export<slime.jrunscript.shell.internal.run.Export> } $export
+	 * @param { slime.loader.Export<slime.jrunscript.shell.internal.run.Exports> } $export
 	 */
 	function(Packages,JavaAdapter,$api,$context,$export) {
 		/** @returns { slime.jrunscript.shell.internal.run.OutputDestination } */
@@ -396,7 +396,7 @@
 			)
 		};
 
-		/** @type { slime.jrunscript.shell.internal.run.Export["old"]["run"] } */
+		/** @type { slime.jrunscript.shell.internal.run.Exports["old"]["run"] } */
 		function oldRun(context, configuration, module, events, p, invocation, isLineListener) {
 			var rv;
 			var tell = run(context, configuration);
