@@ -278,7 +278,19 @@ namespace slime.$api {
 
 namespace slime.$api {
 	export namespace error {
-		export type Type<T extends Error> = new (message: string, properties?: object) => T
+		export type Instance<N extends string, P extends {}> = {
+			name: N
+			message: string
+			stack?: string
+		} & P
+
+		export type x = ErrorConstructor
+
+		export type Type<N extends string, P extends {}> = {
+			new (message: string, properties?: P): Instance<N,P>
+			(message: string, properties?: P): Instance<N,P>
+			readonly prototype: Instance<N,P>
+		}
 	}
 
 	export interface Global {
@@ -286,17 +298,17 @@ namespace slime.$api {
 			/**
 			 * Creates a subtype of the JavaScript global constructor {@link Error} for use in APIs.
 			 */
-			Type: <T extends Error>(p: {
+			Type: <N extends string, P extends {}>(p: {
 				/**
 				 * The `name` property to use for errors of this type; see the ECMA-262 {@link https://262.ecma-international.org/11.0/#sec-error.prototype.name | error.prototype.name} definition.
 				 */
-				name: string
+				name: N
 				/**
 				 * An {@link Error} subtype to use as the supertype for errors created by this constructor. Defaults to `Error`,
 				 * but subtypes of other errors (like `TypeError`) can be created, as can subtypes of user-defined error types.
 				 */
-				extends?: new (message: string) => Error
-			}) => slime.$api.error.Type<T>
+				extends?: ErrorConstructor
+			}) => slime.$api.error.Type<N,P>
 		}
 	}
 

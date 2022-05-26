@@ -65,27 +65,6 @@ namespace slime.jsh.wf {
 			 */
 			 initialize?: slime.jsh.script.cli.Command<T>
 		}
-
-		export namespace error {
-			export interface TargetNotFound extends Error {
-				command: string
-			}
-
-			export interface TargetNotFunction extends Error {
-				command: string
-				target: any
-			}
-		}
-	}
-
-	export namespace error {
-		/**
-		 * An error indicating something failed, with a useful message that can be displayed to a user.
-		 *
-		 * @deprecated Not using exceptions to indicate failure now; using boolean return values.
-		 */
-		export interface Failure extends Error {
-		}
 	}
 
 	export interface Submodule extends slime.jrunscript.tools.git.Submodule {
@@ -99,7 +78,7 @@ namespace slime.jsh.wf {
 	 */
 	export interface Exports {
 		error: {
-			Failure: $api.error.Type<error.Failure>
+			Failure: $api.error.Type<"jsh.wf.Failure",{}>
 		}
 
 		project: {
@@ -188,10 +167,6 @@ namespace slime.jsh.wf {
 
 	export interface Exports {
 		cli: {
-			error: {
-				TargetNotFound: $api.error.Type<cli.error.TargetNotFound>
-				TargetNotFunction: $api.error.Type<cli.error.TargetNotFunction>
-			}
 			$f: {
 				command: {
 					/**
@@ -201,8 +176,8 @@ namespace slime.jsh.wf {
 					parse: (p: jsh.script.cli.Invocation<any>) => cli.CommandInvocation
 
 					/**
-					 * @throws { cli.error.TargetNotFound } if the specified target is not found on the interface
-					 * @throws { cli.error.TargetNotFunction } if the specified target is not a function
+					 * @throws { slime.jsh.script.cli.error.TargetNotFound } if the specified target is not found on the interface
+					 * @throws { slime.jsh.script.cli.error.TargetNotFunction } if the specified target is not a function
 					 */
 					target: (p: { interface: cli.Interface<any>, target: string }) =>  slime.jsh.script.cli.Command<any>
 

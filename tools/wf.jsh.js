@@ -93,13 +93,11 @@
 					}
 					//	unsure what to do, think it through
 				} else {
-					/** @type { slime.js.Cast<slime.jsh.script.cli.Command<T>>} */
-					var cast = $api.Function.cast;
-
+					//	TODO	this weird redeclaration should not be needed; type narrowing should apply to `command` here
+					var target = command;
 					//	probably run the hook?
 					return function() {
-						var run = cast(command);
-						return run({
+						return target({
 							options: invocation.options,
 							arguments: []
 						});
