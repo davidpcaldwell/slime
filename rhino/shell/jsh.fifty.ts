@@ -47,6 +47,10 @@ namespace slime.jsh.shell {
 			}
 		}
 
+		world: slime.jrunscript.shell.Exports["world"] & {
+			exit: slime.$api.fp.impure.Action<number,void>
+		}
+
 		//	TODO	run.evaluate.wrap
 		exit: (code: number) => void
 		stdio: {

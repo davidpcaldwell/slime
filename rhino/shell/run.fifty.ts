@@ -81,7 +81,7 @@ namespace slime.jrunscript.shell.internal.run {
 	}
 
 	export namespace test {
-		export const subject: Export = (function(fifty: slime.fifty.test.Kit) {
+		export const subject: Exports = (function(fifty: slime.fifty.test.Kit) {
 			var script: Script = fifty.$loader.script("run.js");
 			return script({
 				api: {
@@ -94,7 +94,7 @@ namespace slime.jrunscript.shell.internal.run {
 		})(fifty)
 	}
 
-	export interface Export {
+	export interface Exports {
 		run: shell.World["run"]
 
 		mock: {
@@ -156,14 +156,14 @@ namespace slime.jrunscript.shell.internal.run {
 	//@ts-ignore
 	)(fifty);
 
-	export type Script = slime.loader.Script<Context,Export>
+	export type Script = slime.loader.Script<Context,Exports>
 
 	(
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
 			var loader: Script = fifty.$loader.script("run.js");
-			var subject: Export = loader({
+			var subject: Exports = loader({
 				api: {
 					java: fifty.global.jsh.java,
 					io: fifty.global.jsh.io,

@@ -158,7 +158,7 @@ namespace slime.jrunscript.file {
 		}
 
 		action: {
-			delete: (location: string) => slime.$api.fp.impure.Action<{
+			delete: (location: string) => slime.$api.fp.impure.old.Action<{
 				deleted: string
 			},void>
 
@@ -168,7 +168,7 @@ namespace slime.jrunscript.file {
 					content: string
 					createDirectory?: boolean
 					exists: "fail" | "leave" | "overwrite"
-				}): slime.$api.fp.impure.Action<{
+				}): slime.$api.fp.impure.old.Action<{
 					wrote: string
 				},void>
 			}

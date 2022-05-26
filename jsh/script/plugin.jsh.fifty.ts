@@ -192,100 +192,80 @@ namespace slime.jsh.script {
 					fifty.verify(after).arguments[1].is("A");
 					fifty.verify(after).arguments[2].is("--c");
 					fifty.verify(after).arguments[3].is("C");
+
+					fifty.run(function harvestedFromWf() {
+						fifty.run(
+							function() {
+								var invocation = {
+									options: {},
+									arguments: ["--foo", "bar"]
+								};
+								subject.cli.option.string({
+									longname: "baz"
+								})(invocation);
+								verify(invocation).options.evaluate.property("foo").is(void(0));
+								verify(invocation).arguments.length.is(2);
+							}
+						);
+
+						fifty.run(
+				 			function() {
+								var invocation = {
+									options: {},
+									arguments: ["--foo", "bar"]
+								};
+								subject.cli.option.string({
+									longname: "foo"
+								})(invocation);
+								verify(invocation).options.evaluate.property("foo").is("bar");
+								verify(invocation).arguments.length.is(0);
+							}
+						);
+
+						fifty.run(
+				 			function() {
+								var invocation = {
+									options: {
+										baz: false
+									},
+									arguments: ["--baz", "--bizzy"]
+								};
+								subject.cli.option.boolean({
+									longname: "baz"
+								})(invocation);
+								verify(invocation).options.baz.is(true);
+								verify(invocation).options.evaluate.property("bizzy").is(void(0));
+								verify(invocation).arguments.length.is(1);
+								verify(invocation).arguments[0].is("--bizzy");
+							}
+						);
+
+						fifty.run(
+				 			function() {
+								var processor = $api.Function.pipe(
+									subject.cli.option.string({ longname: "a" }),
+									subject.cli.option.boolean({ longname: "b" }),
+									subject.cli.option.string({ longname: "aa" }),
+									subject.cli.option.boolean({ longname: "bb" })
+								)
+								var invocation = processor({
+									options: {},
+									arguments: ["--a", "aaa", "--b", "--c", "c"]
+								});
+								verify(invocation).arguments.length.is(2);
+								verify(invocation).arguments[0] == "--c";
+								verify(invocation).arguments[1] == "c";
+								verify(invocation).options.a.is("aaa");
+								verify(invocation).options.b.is(true);
+								verify(invocation).options.evaluate.property("aa").is(void(0));
+								verify(invocation).options.evaluate.property("bb").is(void(0));
+							}
+						)
+					})
 				};
-
-				//	TODO	Remove or incorporate the below tests harvested when the jsh.wf CLI handling was removed
-
-				// (
-				// 	function(
-				// 		fifty: slime.fifty.test.Kit
-				// 	) {
-				// 		const { verify } = fifty;
-				// 		const { jsh } = fifty.global;
-
-				// 		fifty.tests.exports.cli = function() {
-				// 			var mockjsh = {
-				// 				script: {
-				// 					arguments: ["--a", "aaa", "--b", "--c", "c"]
-				// 				},
-				// 				file: jsh.file,
-				// 				shell: jsh.shell,
-				// 				ui: jsh.ui,
-				// 				tools: jsh.tools
-				// 			};
-				// 			var mock = fifty.jsh.plugin.mock({
-				// 				jsh: mockjsh
-				// 			});
-				// 			var plugin: Exports = mock.jsh.wf;
-				// 			if (!plugin) {
-				// 				throw new TypeError("No jsh.wf loaded.");
-				// 			}
-				// 			const module = plugin;
-
-				// 			(function() {
-				// 				var invocation = {
-				// 					options: {},
-				// 					arguments: ["--foo", "bar"]
-				// 				};
-				// 				module.cli.$f.option.string({
-				// 					longname: "baz"
-				// 				})(invocation);
-				// 				verify(invocation).options.evaluate.property("foo").is(void(0));
-				// 				verify(invocation).arguments.length.is(2);
-				// 			})();
-
-				// 			(function() {
-				// 				var invocation = {
-				// 					options: {},
-				// 					arguments: ["--foo", "bar"]
-				// 				};
-				// 				module.cli.$f.option.string({
-				// 					longname: "foo"
-				// 				})(invocation);
-				// 				verify(invocation).options.evaluate.property("foo").is("bar");
-				// 				verify(invocation).arguments.length.is(0);
-				// 			})();
-
-				// 			(function() {
-				// 				var invocation = {
-				// 					options: {
-				// 						baz: false
-				// 					},
-				// 					arguments: ["--baz", "--bizzy"]
-				// 				};
-				// 				module.cli.$f.option.boolean({
-				// 					longname: "baz"
-				// 				})(invocation);
-				// 				verify(invocation).options.baz.is(true);
-				// 				verify(invocation).options.evaluate.property("bizzy").is(void(0));
-				// 				verify(invocation).arguments.length.is(1);
-				// 				verify(invocation).arguments[0].is("--bizzy");
-				// 			})();
-
-				// 			(function() {
-				// 				var invocation: { arguments: string[], options: { a: string, b: boolean }} = <{ arguments: string[], options: { a: string, b: boolean }}>module.cli.invocation(
-				// 					//	TODO	should module.$f.option.string("a") work?
-				// 					module.cli.$f.option.string({ longname: "a" }),
-				// 					module.cli.$f.option.boolean({ longname: "b" }),
-				// 					module.cli.$f.option.string({ longname: "aa" }),
-				// 					module.cli.$f.option.boolean({ longname: "bb" })
-				// 				);
-				// 				verify(invocation).arguments.length.is(2);
-				// 				verify(invocation).arguments[0] == "--c";
-				// 				verify(invocation).arguments[1] == "c";
-				// 				verify(invocation).options.a.is("aaa");
-				// 				verify(invocation).options.b.is(true);
-				// 				verify(invocation).options.evaluate.property("aa").is(void(0));
-				// 				verify(invocation).options.evaluate.property("bb").is(void(0));
-				// 			})();
-				// 		}
-				// 	}
-				// //@ts-ignore
-				// )(fifty);
 			}
 		//@ts-ignore
 		)(fifty);
-
 	}
 
 	export namespace cli {

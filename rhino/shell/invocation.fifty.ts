@@ -260,7 +260,7 @@ namespace slime.jrunscript.shell.internal.invocation {
 		library: {
 			io: slime.jrunscript.io.Exports
 		}
-		run: slime.jrunscript.shell.internal.run.Export
+		run: slime.jrunscript.shell.internal.run.Exports
 	}
 
 	export type Configuration = Pick<slime.jrunscript.shell.invocation.old.Argument, "command" | "arguments">
