@@ -222,9 +222,11 @@
 
 		$exports.at = function(p) {
 			if (!p.location) throw new TypeError("Required: 'location' property.");
-			if (!p.location.directory) return null;
-			return new $exports.Installation({
-				directory: p.location.directory
+			if (typeof(p.location) != "string") throw new TypeError("'location' property must be string.");
+			var location = $context.module.file.Pathname(p.location);
+			if (!location.directory) return null;
+			return new Installation({
+				directory: location.directory
 			})
 		};
 
@@ -261,7 +263,7 @@
 				if (!p) throw new TypeError();
 				//	TODO	compute this somehow?
 				if (!p.version) p.version = versions.default;
-				var existing = $exports.at({ location: p.location });
+				var existing = $exports.at({ location: p.location.toString() });
 				/** @type { slime.jrunscript.node.Installation } */
 				var rv;
 				if (!existing || (existing.version.number != p.version && p.update)) {

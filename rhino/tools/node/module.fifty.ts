@@ -124,10 +124,19 @@ namespace slime.jrunscript.node {
 	}
 
 	export interface Exports {
-		at: (p: { location: slime.jrunscript.file.Pathname }) => slime.jrunscript.node.Installation
+		at: (p: { location: string }) => slime.jrunscript.node.Installation
 
 		/** @deprecated Use `at()`. */
 		Installation: new (o: { directory: slime.jrunscript.file.Directory }) => slime.jrunscript.node.Installation
+
+		install: (
+			p: {
+				version?: string
+				location: slime.jrunscript.file.Pathname
+				update?: boolean
+			},
+			events?: slime.$api.events.Handler<install.Events>
+		) => slime.jrunscript.node.Installation
 	}
 
 	(
@@ -140,7 +149,7 @@ namespace slime.jrunscript.node {
 
 			fifty.tests.installation = function() {
 				var TMPDIR = fifty.jsh.file.temporary.location();
-				verify(subject).at({ location: jsh.file.Pathname(TMPDIR.pathname) }).is(null);
+				verify(subject).at({ location: TMPDIR.pathname }).is(null);
 				subject.install({
 					location: jsh.file.Pathname(TMPDIR.pathname)
 				}, {
@@ -148,7 +157,7 @@ namespace slime.jrunscript.node {
 						jsh.shell.console(e.detail);
 					}
 				});
-				verify(subject).at({ location: jsh.file.Pathname(TMPDIR.pathname) }).is.type("object");
+				verify(subject).at({ location: TMPDIR.pathname }).is.type("object");
 			}
 		}
 	//@ts-ignore
@@ -156,14 +165,6 @@ namespace slime.jrunscript.node {
 
 	export interface Exports {
 		Project: Function,
-		install: (
-			p: {
-				version?: string,
-				location: slime.jrunscript.file.Pathname,
-				update?: boolean
-			},
-			events?: slime.$api.events.Handler<install.Events>
-		) => slime.jrunscript.node.Installation
 	}
 
 	(

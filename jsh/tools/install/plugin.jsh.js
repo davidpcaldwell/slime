@@ -669,7 +669,7 @@
 					var location = jsh.shell.jsh.lib.getRelativePath("node");
 
 					/** @type { slime.jrunscript.node.Installation } */
-					var installed = node.at({ location: location });
+					var installed = node.at({ location: location.toString() });
 
 					function update() {
 						jsh.shell.tools.node = Object.assign(
