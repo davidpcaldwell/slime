@@ -555,6 +555,20 @@
 				if (this instanceof Subtype) {
 					this.name = p.name;
 					this.message = (typeof(message) == "string") ? message : "";
+					var stack = new Error("__message__").stack;
+					var errorTypePattern = /^Error/;
+					var messagePattern = /__message__/;
+					var isChromeFormat = errorTypePattern.test(stack) && messagePattern.test(stack);
+					if (isChromeFormat) {
+						stack = stack.replace(errorTypePattern, this.name).replace(messagePattern, this.message);
+					} else {
+						//	leave it alone for now
+						//	untested: Rhino, Nashorn, GraalVM, Node.js
+						//	Rhino appears with current implementation to dump the stack without the type / message fields, but this
+						//	may be affected by our code intercepting it; Rhino's underlying code may have changed
+						//	TODO	get these tested
+					}
+					this.stack = stack;
 					Object.assign(this, properties);
 				} else {
 					return new Subtype(message);
@@ -562,7 +576,7 @@
 			}
 			Subtype.prototype = $exports.debug.disableBreakOnExceptionsFor(function() {
 				var rv = new Supertype();
-				delete rv.stack;
+				//delete rv.stack;
 				return rv;
 			})();
 			var rv = Subtype;
@@ -576,7 +590,17 @@
 		$exports.Error = {
 			//	TODO	see whether we can get rid of this
 			//@ts-ignore
-			Type: ErrorType
+			Type: ErrorType,
+			/** @type { slime.$api.Global["Error"]["isType"] } */
+			isType: function(type) {
+				//@ts-ignore
+				return function(e) {
+					if (e instanceof Error) {
+						return e.name == type.prototype.name;
+					}
+					return false;
+				}
+			}
 		}
 
 		$exports.events = events.api

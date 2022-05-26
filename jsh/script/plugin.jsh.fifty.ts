@@ -39,16 +39,14 @@ namespace slime.jsh.script {
 			[x: string]: Commands<T> | Command<T>
 		}
 
-		export interface Application {
-			/**
-			 * @throws
-			 */
-			run: (args: string[]) => number | void
-		}
-
 		export interface Descriptor<T> {
 			options?: Processor<{},T>
 			commands: Commands<T>
+		}
+
+		export interface Call<T> {
+			command: Command<T>
+			invocation: Invocation<T>
 		}
 	}
 
@@ -68,8 +66,14 @@ namespace slime.jsh.script {
 
 	export namespace cli {
 		export interface Exports {
-			Commands: {
-				getCommand: <T>(commands: slime.jsh.script.cli.Commands<T>, argument: string) => slime.jsh.script.cli.Command<T> | slime.jsh.script.cli.error.TargetNotFound | slime.jsh.script.cli.error.TargetNotFunction
+			Call: {
+				get: <T>(p: {
+					descriptor: Descriptor<T>
+					arguments: string[]
+				}) => Call<T>
+					| slime.jsh.script.cli.error.NoTargetProvided
+					| slime.jsh.script.cli.error.TargetNotFound
+					| slime.jsh.script.cli.error.TargetNotFunction
 			}
 		}
 
@@ -78,18 +82,30 @@ namespace slime.jsh.script {
 				fifty: slime.fifty.test.Kit
 			) {
 				const { verify } = fifty;
+				const { $api, jsh } = fifty.global;
 
 				var hello = function(p) {
 				};
 
-				fifty.tests.cli.Commands = {
-					getCommand: function() {
+				fifty.tests.cli.Call = {
+					get: function() {
 						var commands: Commands<{}> = {
 							hello: hello
 						};
 
-						var one = test.subject.cli.Commands.getCommand(commands, "hello") as slime.jsh.script.cli.Command<{}>;
-						verify(one).is(hello);
+						var one = test.subject.cli.Call.get({
+							descriptor: {
+								options: $api.Function.identity,
+								commands: commands
+							},
+							arguments: ["hello"]
+						}) as slime.jsh.script.cli.Call<{}>;
+
+						debugger;
+
+						verify(one).evaluate.property("command").is(hello);
+						verify(one).invocation.options.is.type("object");
+						verify(one).invocation.arguments.length.is(0);
 					}
 				}
 			}
@@ -291,14 +307,15 @@ namespace slime.jsh.script {
 			 */
 			invocation: <T,R>(processor: cli.Processor<T,R>) => cli.Invocation<R>
 
-			/**
-			 * Given a {@link Descriptor} implementing the application's global options and commands, returns an object capable of
-			 * invoking a {@link Command} with an appropriate {@link Invocation}. Options provided by the `Descriptor` will be processed into
-			 * an `Invocation`,
-			 * and the first remaining argument will be interpreted as a command name. If the command name exists and is a function,
-			 * it will be invoked with the {@link Invocation}.
-			 */
-			Application: (p: cli.Descriptor<any>) => cli.Application
+			//	TODO	harvest the below documentation if it has useful writing
+			// /**
+			//  * Given a {@link Descriptor} implementing the application's global options and commands, returns an object capable of
+			//  * invoking a {@link Command} with an appropriate {@link Invocation}. Options provided by the `Descriptor` will be processed into
+			//  * an `Invocation`,
+			//  * and the first remaining argument will be interpreted as a command name. If the command name exists and is a function,
+			//  * it will be invoked with the {@link Invocation}.
+			//  */
+			// Application: (p: cli.Descriptor<any>) => cli.Application
 
 			/**
 			 * Executes the program with the given descriptor inside this shell, with the arguments of the shell, and exits the
@@ -346,42 +363,59 @@ namespace slime.jsh.script {
 			fifty.tests.cli.run = function() {
 				const $api = fifty.$api;
 				const subject = test.subject;
+
 				var was: cli.Invocation<any>;
 				var invocationWas = function(invocation: cli.Invocation<any>) {
 					was = invocation;
 				}
-				fifty.verify(subject).cli.Application({
-					options: subject.cli.option.string({ longname: "global" }),
-					commands: {
-						universe: $api.Function.pipe(
-							subject.cli.option.string({ longname: "command" }),
-							function(invocation) {
-								invocationWas(invocation);
-								return 42;
-							}
-						)
-					}
-				}).evaluate(function(application) {
-					return Number(application.run(["--global", "foo", "universe", "--command", "bar"]));
-				}).is(42);
+				var call = subject.cli.Call.get({
+					descriptor: {
+						options: subject.cli.option.string({ longname: "global" }),
+						commands: {
+							universe: $api.Function.pipe(
+								subject.cli.option.string({ longname: "command" }),
+								function(invocation) {
+									invocationWas(invocation);
+									return 42;
+								}
+							)
+						}
+					},
+					arguments: ["--global", "foo", "universe", "--command", "bar"]
+				}) as cli.Call<{}>;
+				fifty.verify(call).command(call.invocation).evaluate(function(n) { return n as number; }).is(42);
 				fifty.verify(was).options.evaluate.property("global").is("foo");
 				fifty.verify(was).options.evaluate.property("command").is("bar");
 
-				fifty.verify(subject).cli.Application({
-					commands: {
-						foo: function nothing(){}
+				fifty.run(
+					function() {
+						var call = subject.cli.Call.get({
+							descriptor: {
+								commands: {
+									foo: function nothing(){}
+								}
+							},
+							arguments: ["foo"]
+						}) as cli.Call<{}>;
+						fifty.verify(call).command(call.invocation).is.type("undefined");
 					}
-				}).run(["foo"]).is.type("undefined");
+				);
 
-				fifty.verify(subject).cli.Application({
-					commands: {
-						foo: function error() {
-							throw new Error();
-						}
+				fifty.run(
+					function() {
+						var call = subject.cli.Call.get({
+							descriptor: {
+								commands: {
+									foo: function error() {
+										throw new Error();
+									}
+								}
+							},
+							arguments: ["foo"]
+						}) as cli.Call<{}>;
+						fifty.verify(call).evaluate(function(call) { return call.command(call.invocation); }).threw.type(Error);
 					}
-				}).evaluate(function(application) {
-					return application.run(["foo"]);
-				}).threw.type(Error);
+				);
 			};
 
 			fifty.tests.cli.wrap = function() {
