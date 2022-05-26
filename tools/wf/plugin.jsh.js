@@ -197,10 +197,6 @@
 				};
 
 				jsh.wf.cli = {
-					error: {
-						TargetNotFound: $api.Error.Type({ name: "TargetNotFound" }),
-						TargetNotFunction: $api.Error.Type({ name: "TargetNotFunction", extends: TypeError })
-					},
 					$f: {
 						command: {
 							parse: function(p) {
@@ -227,11 +223,11 @@
 								if (typeof(method) == "function") {
 									return method;
 								} else if (!method) {
-									throw new jsh.wf.cli.error.TargetNotFound("Command not found: [" + command + "]", {
+									throw new jsh.script.cli.error.TargetNotFound("Command not found: [" + command + "]", {
 										command: command
 									});
 								} else {
-									throw new jsh.wf.cli.error.TargetNotFunction("Implementation is not a function: [" + command + "]" + ", but " + method, {
+									throw new jsh.script.cli.error.TargetNotFunction("Implementation is not a function: [" + command + "]" + ", but " + method, {
 										command: command,
 										target: method
 									});
@@ -251,10 +247,10 @@
 										}
 									);
 								} catch (e) {
-									if (e instanceof jsh.wf.cli.error.TargetNotFound) {
+									if (e instanceof jsh.script.cli.error.TargetNotFound) {
 										jsh.shell.console(String(e));
 										jsh.shell.exit(1);
-									} else if (e instanceof jsh.wf.cli.error.TargetNotFunction) {
+									} else if (e instanceof jsh.script.cli.error.TargetNotFunction) {
 										jsh.shell.console(String(e));
 										jsh.shell.exit(1);
 									} else {

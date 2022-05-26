@@ -50,20 +50,6 @@ namespace slime.jsh.script {
 			options?: Processor<{},T>
 			commands: Commands<T>
 		}
-
-		export namespace error {
-			export interface NoTargetProvided extends Error {
-			}
-
-			export interface TargetNotFound extends Error {
-				command: string
-			}
-
-			export interface TargetNotFunction extends Error {
-				command: string
-				target: any
-			}
-		}
 	}
 
 	export interface Exports {
@@ -303,11 +289,17 @@ namespace slime.jsh.script {
 	}
 
 	export namespace cli {
+		export namespace error {
+			export type NoTargetProvided = $api.error.Instance<"NoTargetProvided",{}>
+			export type TargetNotFound = $api.error.Instance<"TargetNotFound", { command: string }>
+			export type TargetNotFunction = $api.error.Instance<"TargetNotFunction", { command: string, target: any }>
+		}
+
 		export interface Exports {
 			error: {
-				NoTargetProvided: $api.error.Type<cli.error.NoTargetProvided>
-				TargetNotFound: $api.error.Type<cli.error.TargetNotFound>
-				TargetNotFunction: $api.error.Type<cli.error.TargetNotFunction>
+				NoTargetProvided: $api.error.Type<"NoTargetProvided",{}>
+				TargetNotFound: $api.error.Type<"TargetNotFound", { command: string }>
+				TargetNotFunction: $api.error.Type<"TargetNotFunction", { command: string, target: any }>
 			}
 
 			parser: {
