@@ -128,7 +128,8 @@ namespace slime.$api {
 
 (
 	function(fifty: slime.fifty.test.Kit) {
-		fifty.tests.exports = {};
+		fifty.tests.exports = fifty.test.Parent();
+		fifty.tests.manual = {};
 	}
 //@ts-ignore
 )(fifty);
@@ -287,8 +288,8 @@ namespace slime.$api {
 		export type x = ErrorConstructor
 
 		export type Type<N extends string, P extends {}> = {
-			new (message: string, properties?: P): Instance<N,P>
-			(message: string, properties?: P): Instance<N,P>
+			new (message?: string, properties?: P): Instance<N,P>
+			(message?: string, properties?: P): Instance<N,P>
 			readonly prototype: Instance<N,P>
 		}
 	}
@@ -309,6 +310,8 @@ namespace slime.$api {
 				 */
 				extends?: ErrorConstructor
 			}) => slime.$api.error.Type<N,P>
+
+			isType: <N extends string,P extends {}>(type: slime.$api.error.Type<N,P>) => (e: any) => e is slime.$api.error.Instance<N,P>
 		}
 	}
 
@@ -319,22 +322,25 @@ namespace slime.$api {
 			const { verify } = fifty;
 			const { $api } = fifty.global;
 
-			fifty.tests.exports.Error = function() {
-				var Type = $api.Error.Type({
-					name: "foo",
-					extends: TypeError
-				});
+			fifty.tests.manual.Error = {
+				//	Given that stack is non-standard, not adding this to suite and not really asserting on its format
+				//	TODO	*is* stack still non-standard?
+				stack: function() {
+					var Type = $api.Error.Type({
+						name: "foo",
+						extends: TypeError
+					});
 
-				try {
-					throw new Type("bar");
-				} catch (e) {
-					//	Given that stack is non-standard, not adding this to suite and not really asserting on its format
-					var error: Error = e;
-					verify(error).stack.is.not(void(0));
+					try {
+						throw new Type("bar");
+					} catch (e) {
+						var error: Error = e;
+						verify(error).stack.is.not(void(0));
+					}
 				}
 			};
 
-			fifty.tests.Error = function() {
+			fifty.tests.exports.Error = function() {
 				var CustomError = $api.Error.Type({
 					name: "Custom"
 				});
@@ -389,8 +395,7 @@ namespace slime.$api {
 		fifty: slime.fifty.test.Kit,
 	) {
 		fifty.tests.suite = function() {
-			fifty.run(fifty.tests.exports.Iterable);
-			fifty.run(fifty.tests.Error);
+			fifty.run(fifty.tests.exports);
 		}
 	}
 //@ts-ignore

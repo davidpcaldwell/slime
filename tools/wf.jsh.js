@@ -70,6 +70,11 @@
 		var gitHookProcessor = $$api.Function.RegExp.processor({
 			pattern: /^git.hook.(.*)$/,
 			match: function(match) {
+				/** @type { (v: any) => v is slime.jsh.script.cli.error.NoTargetProvided } */
+				var isNoTargetProvided = function(v) {
+					return command instanceof jsh.script.cli.error.NoTargetProvided;
+				}
+
 				/** @type { (v: any) => v is slime.jsh.script.cli.error.TargetNotFound } */
 				var isTargetNotFound = function(v) {
 					return command instanceof jsh.script.cli.error.TargetNotFound;
@@ -80,8 +85,14 @@
 					return command instanceof jsh.script.cli.error.TargetNotFunction;
 				}
 
-				var command = jsh.script.cli.Commands.getCommand(descriptor.commands, invocation.arguments[0]);
-				if (isTargetNotFound(command)) {
+				var command = jsh.script.cli.Call.get({
+					descriptor: descriptor,
+					arguments: jsh.script.arguments
+				});
+				if (isNoTargetProvided(command)) {
+					//	this can't happen because we already are checking whether the first argument begins with git.hook
+					throw new Error("Unreachable");
+				} else if (isTargetNotFound(command)) {
 					//	Probably fine, do nothing, hook is just not defined
 					return function() {
 						return 0;
@@ -96,10 +107,7 @@
 					//	TODO	this weird redeclaration should not be needed; type narrowing should apply to `command` here
 					var target = command;
 					return function() {
-						return target({
-							options: invocation.options,
-							arguments: []
-						});
+						return target.command(target.invocation);
 					}
 				}
 			}
