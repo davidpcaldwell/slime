@@ -162,19 +162,23 @@
 			var rv = function() {
 				var invokedAsConstructor = this.constructor == arguments.callee;
 				if (false) {
-					var delimited = "";
-					for (var i=0; i<arguments.length; i++) {
-						if (i > 0) {
-							delimited += ",";
+					return (
+						function() {
+							var delimited = "";
+							for (var i=0; i<arguments.length; i++) {
+								if (i > 0) {
+									delimited += ",";
+								}
+								delimited += "arguments[" + i + "]";
+							}
+							var defaulted = eval("new original(" + delimited + ")");
+							var decorated = decorator.apply(defaulted,arguments);
+							if (typeof(decorated) == "object" && decorated !== null) {
+								return decorated;
+							}
+							return defaulted;
 						}
-						delimited += "arguments[" + i + "]";
-					}
-					var defaulted = eval("new original(" + delimited + ")");
-					var decorated = decorator.apply(defaulted,arguments);
-					if (typeof(decorated) == "object" && decorated !== null) {
-						return decorated;
-					}
-					return defaulted;
+					)();
 				} else {
 					var rv = (invokedAsConstructor) ? this : {};
 					var functions = [original,decorator];
