@@ -273,7 +273,7 @@ namespace slime.jrunscript.shell.internal.invocation {
 
 	export interface Export {
 		error: {
-			BadCommandToken: slime.$api.Error.Type<TypeError>
+			BadCommandToken: slime.$api.error.Type<TypeError>
 		}
 
 		toInputStream: (p: slime.jrunscript.shell.invocation.Input) => slime.jrunscript.runtime.io.InputStream

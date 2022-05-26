@@ -305,9 +305,9 @@ namespace slime.jsh.script {
 	export namespace cli {
 		export interface Exports {
 			error: {
-				NoTargetProvided: $api.Error.Type<cli.error.NoTargetProvided>
-				TargetNotFound: $api.Error.Type<cli.error.TargetNotFound>
-				TargetNotFunction: $api.Error.Type<cli.error.TargetNotFunction>
+				NoTargetProvided: $api.error.Type<cli.error.NoTargetProvided>
+				TargetNotFound: $api.error.Type<cli.error.TargetNotFound>
+				TargetNotFunction: $api.error.Type<cli.error.TargetNotFunction>
 			}
 
 			parser: {
