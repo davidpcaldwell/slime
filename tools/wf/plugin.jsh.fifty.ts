@@ -99,7 +99,7 @@ namespace slime.jsh.wf {
 	 */
 	export interface Exports {
 		error: {
-			Failure: $api.Error.Type<error.Failure>
+			Failure: $api.error.Type<error.Failure>
 		}
 
 		project: {
@@ -189,8 +189,8 @@ namespace slime.jsh.wf {
 	export interface Exports {
 		cli: {
 			error: {
-				TargetNotFound: $api.Error.Type<cli.error.TargetNotFound>
-				TargetNotFunction: $api.Error.Type<cli.error.TargetNotFunction>
+				TargetNotFound: $api.error.Type<cli.error.TargetNotFound>
+				TargetNotFunction: $api.error.Type<cli.error.TargetNotFunction>
 			}
 			$f: {
 				command: {
