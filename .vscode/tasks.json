@@ -8,14 +8,14 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
-			"label": "Install JDK",
+			"label": "Java: Install JDK",
 			"detail": "Installs the default JDK into this shell",
 			"type": "shell",
 			"command": "./jsh.bash --install-jdk",
 			"problemMatcher": []
 		},
 		{
-			"label": "Show git status",
+			"label": "Git: Show status",
 			"type": "shell",
 			"command": "./wf status",
 			"problemMatcher": [],
@@ -29,14 +29,14 @@
 			}
 		},
 		{
-			"label": "Create branch",
+			"label": "Git: Create branch",
 			"detail": "Creates a new branch based on newly-fetched origin/master and checks it out.",
 			"type": "shell",
 			"command": "./wf git.branch ${input:branchName}",
 			"problemMatcher": []
 		},
 		{
-			"label": "Run eslint",
+			"label": "ESLint: Run",
 			"type": "shell",
 			"command": "./wf eslint",
 			"problemMatcher": [],
@@ -50,7 +50,7 @@
 			}
 		},
 		{
-			"label": "Show ESLint report",
+			"label": "ESLint: Create categorized report",
 			"type": "shell",
 			"command": "./jsh.bash contributor/eslint-report.jsh.js",
 			"problemMatcher": [],
@@ -64,7 +64,7 @@
 			}
 		},
 		{
-			"label": "Check static types",
+			"label": "TypeScript: Check types",
 			"type": "shell",
 			"command": "./wf tsc",
 			"problemMatcher": [],
@@ -78,7 +78,7 @@
 			}
 		},
 		{
-			"label": "Show Documentation",
+			"label": "Documentation: Show",
 			"detail": "Serves the project documentation and opens a browser to view it",
 			"type": "shell",
 			"command": "./wf documentation",

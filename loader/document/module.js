@@ -370,7 +370,7 @@
 					}
 					return {
 						next: $api.Function.Maybe.value(position),
-						remaining: (next) ? NodesStream(root, next) : $api.Function.Stream.empty()
+						remaining: (next) ? NodesStream(root, next) : $api.Function.Stream.from.empty()
 					};
 				}
 			}

@@ -178,14 +178,43 @@
 		}
 
 		$exports.Function.Stream = {
-			empty: function() {
-				return {
-					iterate: function() {
-						return {
-							next: $exports.Function.Maybe.nothing(),
-							remaining: $exports.Function.Stream.empty()
+			from: {
+				empty: function() {
+					return {
+						iterate: function() {
+							return {
+								next: $exports.Function.Maybe.nothing(),
+								remaining: $exports.Function.Stream.from.empty()
+							}
 						}
 					}
+				},
+				array: function(array) {
+					/**
+					 * @template { any } T
+					 * @param { T[] } array
+					 * @param { number } index
+					 * @returns { slime.$api.fp.Stream<T> }
+					 */
+					var ArrayStream = function recurse(array,index) {
+						return {
+							iterate: function() {
+								if (index < array.length) {
+									return {
+										next: $exports.Function.Maybe.value(array[index]),
+										remaining: recurse(array, index+1)
+									}
+								} else {
+									return {
+										next: $exports.Function.Maybe.nothing(),
+										remaining: $exports.Function.Stream.from.empty()
+									}
+								}
+							}
+						}
+					}
+
+					return ArrayStream(array, 0);
 				}
 			},
 			first: function(stream) {
@@ -214,7 +243,7 @@
 								if (!current.next.present) {
 									return {
 										next: $exports.Function.Maybe.nothing(),
-										remaining: $exports.Function.Stream.empty()
+										remaining: $exports.Function.Stream.from.empty()
 									}
 								}
 								if (current.next.present && predicate(current.next.value)) {
@@ -230,32 +259,11 @@
 					}
 				}
 			},
-			array: function(array) {
-				/**
-				 * @template { any } T
-				 * @param { T[] } array
-				 * @param { number } index
-				 * @returns { slime.$api.fp.Stream<T> }
-				 */
-				var ArrayStream = function recurse(array,index) {
-					return {
-						iterate: function() {
-							if (index < array.length) {
-								return {
-									next: $exports.Function.Maybe.value(array[index]),
-									remaining: recurse(array, index+1)
-								}
-							} else {
-								return {
-									next: $exports.Function.Maybe.nothing(),
-									remaining: $exports.Function.Stream.empty()
-								}
-							}
-						}
-					}
-				}
-
-				return ArrayStream(array, 0);
+			find: function find(predicate) {
+				return $exports.Function.pipe(
+					$exports.Function.Stream.filter(predicate),
+					$exports.Function.Stream.first
+				)
 			}
 		}
 
