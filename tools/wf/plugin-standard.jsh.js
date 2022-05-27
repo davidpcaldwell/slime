@@ -24,7 +24,11 @@
 					})(arguments);
 				}
 
+				//	TODO	the below credentialHelper / fetch code also appears to be in tools/wf/plugin.jsh.js
+
+				//	TODO	is this stuff documented anywhere?
 				var credentialHelper = jsh.shell.jsh.src.getFile("rhino/tools/github/git-credential-github-tokens-directory.bash").toString();
+
 				var fetch = $api.Function.memoized(function() {
 					var repository = jsh.tools.git.Repository({ directory: $context.base });
 					jsh.shell.console("Fetching all updates ...");
@@ -448,6 +452,21 @@
 					if ($context.base.getFile(".gitmodules")) {
 						repository.command(jsh.tools.git.commands.submodule.update).argument().run();
 					}
+				}
+
+				$exports.git.hooks["post-commit"] = function() {
+					var repository = jsh.tools.git.Repository({ directory: $context.base });
+
+					//	We checked for upstream changes, so now we're going to push
+					//	If we allow branching, we may or may not really want to push, or may not want to push to
+					//	master
+					repository.push({
+						repository: "origin",
+						refspec: "HEAD",
+						config: {
+							"credential.helper": credentialHelper
+						}
+					});
 				}
 
 				$exports.submodule = {

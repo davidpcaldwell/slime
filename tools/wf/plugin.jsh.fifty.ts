@@ -189,8 +189,11 @@ namespace slime.jsh.wf {
 					 */
 					execute: (p: { interface: cli.Interface<any>, arguments: jsh.script.cli.Invocation<any> }) => void
 				}
+
 				/**
 				 * Returns an object representing the global invocation of `jsh`.
+				 *
+				 * @deprecated Can be replaced by `jsh.script.cli.invocation()`.
 				 */
 				invocation: <T>(
 					f: (p: jsh.script.cli.Invocation<any>) => T
@@ -198,13 +201,7 @@ namespace slime.jsh.wf {
 			}
 
 			/** @deprecated Replaced by `project.initialize`. */
-			initialize: {
-				(
-					$context: jsh.wf.cli.Context,
-					operations: standard.Project,
-					$exports: standard.Interface
-				): void
-			}
+			initialize: Exports["project"]["initialize"]
 		}
 	}
 
