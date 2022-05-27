@@ -103,14 +103,27 @@
 					git: {
 						installHooks: function(p) {
 							if (gitInstalled && isGitClone) {
+								var path = (p) ? p.path : "local/git/hooks";
 								var repository = jsh.tools.git.program({ command: "git" }).repository(base.toString())
 								var clone = jsh.tools.git.Repository({ directory: base });
 								var config = clone.config({
 									arguments: ["--list"]
 								});
-								if (!config["core.hookspath"]) {
+								if (config["core.hookspath"] != path) {
 									jsh.shell.console("Installing git hooks ...");
-									repository.command(setConfigValue).argument({ name: "core.hookspath", value: p.path }).run();
+									repository.command(setConfigValue).argument({ name: "core.hookspath", value: path }).run();
+								}
+								if (!p) {
+									["pre-commit"].forEach(function(hook) {
+										var location = base.getRelativePath(path + "/" + hook);
+										location.write("./wf " + "git.hooks." + hook, { append: false, recursive: true });
+										jsh.shell.run({
+											command: "chmod",
+											arguments: $api.Array.build(function(rv) {
+												rv.push("+x", location);
+											})
+										})
+									});
 								}
 							}
 						}

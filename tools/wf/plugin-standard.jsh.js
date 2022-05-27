@@ -404,8 +404,12 @@
 					}
 				}
 
+				$exports.git = {
+					hooks: {}
+				};
+
 				if (project.precommit) {
-					$exports.precommit = function(p) {
+					$exports.precommit = function() {
 						var success = project.precommit({
 							console: function(e) {
 								jsh.shell.console(e.detail);
@@ -413,6 +417,13 @@
 						});
 						jsh.shell.console("Checks: " + ( (success) ? "passed." : "FAILED!") );
 						return (success) ? 0 : 1;
+					};
+
+					$exports.git.hooks["pre-commit"] = function() {
+						return $exports.precommit({
+							options: {},
+							arguments: []
+						});
 					}
 				}
 

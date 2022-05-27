@@ -170,6 +170,12 @@ namespace slime.jsh.wf {
 			 * `.html` URL.**
 			 */
 			document:  slime.jsh.script.cli.Command<Options>
+
+			git: {
+				hooks: {
+					"pre-commit"?: slime.jsh.script.cli.Command<Options>
+				}
+			}
 		}
 
 		(
