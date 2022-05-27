@@ -33,6 +33,18 @@ namespace slime.jrunscript.node {
 		})(fifty);
 	}
 
+	export interface Exports {
+		test: {
+			versions: {
+				/**
+				 * A previous Node version available for both macOS and Linux.
+				 */
+				previous: string
+				current: string
+			}
+		}
+	}
+
 	interface Version {
 		number: string
 	}
@@ -158,14 +170,11 @@ namespace slime.jrunscript.node {
 					}
 				});
 				verify(subject).at({ location: TMPDIR.pathname }).is.type("object");
+				verify(subject).at({ location: TMPDIR.pathname }).version.number.is(subject.test.versions.current);
 			}
 		}
 	//@ts-ignore
 	)(fifty);
-
-	export interface Exports {
-		Project: Function,
-	}
 
 	(
 		function(
