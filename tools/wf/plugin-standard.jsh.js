@@ -438,6 +438,16 @@
 						//	TODO	below is implemented in top-level wf.js, and is used in git.branches.prune
 						// cleanGitBranches()();
 					}
+					if ($context.base.getFile(".gitmodules")) {
+						repository.command(jsh.tools.git.commands.submodule.update).argument().run();
+					}
+				}
+
+				$exports.git.hooks["post-merge"] = function() {
+					var repository = jsh.tools.git.program({ command: "git" }).repository($context.base.pathname.toString());
+					if ($context.base.getFile(".gitmodules")) {
+						repository.command(jsh.tools.git.commands.submodule.update).argument().run();
+					}
 				}
 
 				$exports.submodule = {
