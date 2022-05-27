@@ -93,6 +93,18 @@
 			}
 		}
 
+		/** @type { slime.jrunscript.tools.git.Commands["submodule"] } */
+		var submodule = {
+			update: {
+				invocation: function() {
+					return {
+						command: "submodule",
+						arguments: ["update", "--init", "--recursive"]
+					}
+				}
+			}
+		};
+
 		/** @type { new (environment: Parameters<slime.jrunscript.tools.git.Exports["Installation"]>[0] ) => slime.jrunscript.tools.git.Installation } */
 		var Installation = function(environment) {
 
@@ -1410,7 +1422,8 @@
 		$exports.commands = {
 			status: status,
 			fetch: fetch,
-			merge: merge
+			merge: merge,
+			submodule: submodule
 		};
 
 		/**
