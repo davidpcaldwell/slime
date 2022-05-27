@@ -105,7 +105,8 @@
 							var ALL_GIT_HOOKS = [
 								"pre-commit",
 								"post-checkout",
-								"post-merge"
+								"post-merge",
+								"post-commit"
 							];
 
 							if (gitInstalled && isGitClone) {
@@ -295,7 +296,7 @@
 						}
 					},
 					/**
-					 * @type { slime.jsh.wf.Exports["cli"]["initialize"] }
+					 * @type { slime.jsh.wf.Exports["project"]["initialize"] }
 					 */
 					initialize: $api.deprecate(jsh.wf.project.initialize)
 				};
@@ -311,6 +312,7 @@
 				};
 
 				var credentialHelper = jsh.shell.jsh.src.getFile("rhino/tools/github/git-credential-github-tokens-directory.bash").toString();
+
 				var fetch = $api.Function.memoized(function() {
 					var repository = jsh.tools.git.Repository({ directory: base });
 					jsh.shell.console("Fetching all updates ...");
@@ -451,7 +453,6 @@
 				}
 
 				jsh.wf.typescript = (function() {
-
 					return {
 						require: function(p) {
 							var project = (p && p.project) ? p.project : base;

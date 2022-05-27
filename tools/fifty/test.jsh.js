@@ -13,26 +13,24 @@
 	function($api,jsh) {
 		jsh.wf.typescript.require();
 
-		var parameters = jsh.wf.cli.$f.invocation(
-			$api.Function.pipe(
-				$api.Function.impure.revise(function(p) {
-					var path = p.arguments.shift();
-					if (typeof(path) != "undefined") {
-						var definition = jsh.script.getopts.parser.Pathname(path);
-						if (!definition.file) {
-							jsh.shell.console("File not found: " + path);
-							jsh.shell.exit(1);
-						}
-						p.options.definition = definition.file;
+		/** @type { slime.jsh.script.cli.Processor<any, { definition: slime.jrunscript.file.File, part: string, view: string }> } */
+		var processor = $api.Function.pipe(
+			$api.Function.impure.revise(function(p) {
+				var path = p.arguments.shift();
+				if (typeof(path) != "undefined") {
+					var definition = jsh.script.getopts.parser.Pathname(path);
+					if (!definition.file) {
+						jsh.shell.console("File not found: " + path);
+						jsh.shell.exit(1);
 					}
-				}),
-				jsh.script.cli.option.string({ longname: "part" }),
-				jsh.script.cli.option.string({ longname: "view" }),
-				$api.Function.impure.revise(function(p) {
-					if (!p.options.view) p.options.view = "console";
-				})
-			)
-		);
+					p.options.definition = definition.file;
+				}
+			}),
+			jsh.script.cli.option.string({ longname: "part" }),
+			jsh.script.cli.option.string({ longname: "view", default: "console" })
+		)
+
+		var parameters = jsh.script.cli.invocation(processor);
 
 		if (!parameters.options.definition) {
 			jsh.shell.console("Required: test file to execute; not specified or not found.");
