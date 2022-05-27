@@ -74,7 +74,7 @@ namespace slime {
 				docker: boolean
 			}>
 
-			git: {
+			git: slime.jsh.wf.standard.Interface["git"] & {
 				/**
 				 * Creates a branch based on the current `master` from `origin` and checks it out. The first argument is used as
 				 * the branch name.

@@ -150,7 +150,7 @@
 
 		$exports.initialize = $api.Function.pipe(
 			function(p) {
-				jsh.wf.project.git.installHooks({ path: "contributor/hooks" });
+				jsh.wf.project.git.installHooks();
 				//	TODO	could consider whether we can wire our commit process into the git hooks mechanism:
 				//			git config core.hooksPath contributor/hooks
 				//			... and then appropriately implement contributor/hooks/pre-commit
@@ -489,65 +489,65 @@
 		if (jsh.tools.git.Repository) {
 			(
 				function() {
-					$exports.git = {
-						branch: $api.Function.pipe(
+					$exports.git.branch = $api.Function.pipe(
+						function(p) {
+							var name = p.arguments[0];
+							git.repository.command(git.command.fetch).argument().run();
+							git.repository.command(git.command.createBranch).argument({ name: name, startPoint: "origin/master", track: "no" }).run();
+							git.repository.command(git.command.checkout).argument({ branch: name }).run();
+						}
+					);
+
+					$exports.git.trunk = function(p) {
+						/** @type { slime.jrunscript.tools.git.Command<{ name: string }, void> } */
+						var merge = {
+							invocation: function(p) {
+								return {
+									command: "merge",
+									arguments: $api.Array.build(function(rv) {
+										rv.push(p.name);
+									})
+								}
+							}
+						}
+						git.repository.command(git.command.fetch).argument().run();
+						git.repository.command(git.command.checkout).argument({ branch: "master" }).run();
+						git.repository.command(merge).argument({ name: "origin/master" }).run();
+						cleanGitBranches()();
+					};
+
+					$exports.git.branches = (jsh.tools.git.Repository) ? {
+						list: $api.Function.pipe(
 							function(p) {
-								var name = p.arguments[0];
-								git.repository.command(git.command.fetch).argument().run();
-								git.repository.command(git.command.createBranch).argument({ name: name, startPoint: "origin/master", track: "no" }).run();
-								git.repository.command(git.command.checkout).argument({ branch: name }).run();
+								repository.fetch({ all: true, prune: true, recurseSubmodules: true, stdio: { output: null } });
+								/** @type { slime.jrunscript.tools.git.Branch[] } */
+								var branches = repository.branch({ all: true });
+								var target = "remotes/origin/master";
+								branches.filter(notMaster).forEach(function(branch) {
+									var common = repository.mergeBase({ commits: [target, branch.commit.commit.hash] });
+									if (common.commit.hash == branch.commit.commit.hash) {
+										jsh.shell.console("Merged: " + branch.name);
+									} else {
+										jsh.shell.console("Unmerged: " + branch.name);
+									}
+								});
+
+								var status = repository.status();
+								var ahead = repository.log({ revisionRange: "origin/master.." });
+								var behind = repository.log({ revisionRange: "..origin/master"});
+								jsh.shell.console("Current branch: " + status.branch.name);
+								if (ahead.length) jsh.shell.console("ahead of origin/master: " + ahead.length);
+								if (behind.length) jsh.shell.console("behind origin/master: " + behind.length);
+								if (behind.length && !ahead.length && !status.paths) {
+									jsh.shell.console("Fast-forwarding ...");
+									repository.merge({ ffOnly: true, name: "origin/master" });
+								}
 							}
 						),
-						trunk: function(p) {
-							/** @type { slime.jrunscript.tools.git.Command<{ name: string }, void> } */
-							var merge = {
-								invocation: function(p) {
-									return {
-										command: "merge",
-										arguments: $api.Array.build(function(rv) {
-											rv.push(p.name);
-										})
-									}
-								}
-							}
-							git.repository.command(git.command.fetch).argument().run();
-							git.repository.command(git.command.checkout).argument({ branch: "master" }).run();
-							git.repository.command(merge).argument({ name: "origin/master" }).run();
+						prune: function(p) {
 							cleanGitBranches()();
-						},
-						branches: (jsh.tools.git.Repository) ? {
-							list: $api.Function.pipe(
-								function(p) {
-									repository.fetch({ all: true, prune: true, recurseSubmodules: true, stdio: { output: null } });
-									/** @type { slime.jrunscript.tools.git.Branch[] } */
-									var branches = repository.branch({ all: true });
-									var target = "remotes/origin/master";
-									branches.filter(notMaster).forEach(function(branch) {
-										var common = repository.mergeBase({ commits: [target, branch.commit.commit.hash] });
-										if (common.commit.hash == branch.commit.commit.hash) {
-											jsh.shell.console("Merged: " + branch.name);
-										} else {
-											jsh.shell.console("Unmerged: " + branch.name);
-										}
-									});
-
-									var status = repository.status();
-									var ahead = repository.log({ revisionRange: "origin/master.." });
-									var behind = repository.log({ revisionRange: "..origin/master"});
-									jsh.shell.console("Current branch: " + status.branch.name);
-									if (ahead.length) jsh.shell.console("ahead of origin/master: " + ahead.length);
-									if (behind.length) jsh.shell.console("behind origin/master: " + behind.length);
-									if (behind.length && !ahead.length && !status.paths) {
-										jsh.shell.console("Fast-forwarding ...");
-										repository.merge({ ffOnly: true, name: "origin/master" });
-									}
-								}
-							),
-							prune: function(p) {
-								cleanGitBranches()();
-							}
-						} : void(0)
-					}
+						}
+					} : void(0)
 				}
 			)();
 		}
