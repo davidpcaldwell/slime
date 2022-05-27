@@ -403,14 +403,24 @@ namespace slime.$api.fp {
 
 	export interface Exports {
 		Stream: {
-			empty: <T>() => Stream<T>
-			first: <T>(ts: Stream<T>) => Maybe<T>
-			collect: <T>(ts: Stream<T>) => T[]
-			filter: {
-				<W,N extends W>(filter: (w: W) => w is N): (ws: Stream<W>) => Stream<N>
-				<T>(filter: Predicate<T>): (ts: Stream<T>) => Stream<T>
+			from: {
+				empty: <T>() => Stream<T>
+				array: <T>(ts: T[]) => Stream<T>
 			}
-			array: <T>(ts: T[]) => Stream<T>
+
+			first: <T>(ts: Stream<T>) => Maybe<T>
+
+			collect: <T>(ts: Stream<T>) => T[]
+
+			filter: {
+				<W,N extends W>(predicate: (w: W) => w is N): (ws: Stream<W>) => Stream<N>
+				<T>(predicate: Predicate<T>): (ts: Stream<T>) => Stream<T>
+			}
+
+			find: {
+				<W,N extends W>(predicate: (w: W) => w is N): (ws: Stream<W>) => Maybe<N>
+				<T>(predicate: Predicate<T>): (ts: Stream<T>) => Maybe<T>
+			}
 		}
 	}
 
@@ -422,18 +432,40 @@ namespace slime.$api.fp {
 			const { $api } = fifty.global;
 
 			fifty.tests.Stream = function() {
-				function emptyStream(): Stream<number> {
-					return {
-						iterate: function() {
-							return {
-								next: null,
-								remaining: emptyStream()
+				fifty.run(function testEmptyStream() {
+					var stream = $api.Function.Stream.from.empty();
+					var first = $api.Function.Stream.first(stream);
+					verify(first).present.is(false);
+					var collected = $api.Function.Stream.collect(stream);
+					verify(collected).length.is(0);
+				});
+
+				fifty.run(function testArrayStream() {
+					var array = [1,2,3,4];
+					var stream = $api.Function.Stream.from.array(array);
+					var first = $api.Function.Stream.first(stream);
+					verify(first).present.is(true);
+					verify(first).evaluate.property("value").is(1);
+					var collected = $api.Function.Stream.collect(stream);
+					verify(collected).length.is(4);
+					verify(collected)[0].is(1);
+					verify(collected)[1].is(2);
+					verify(collected)[2].is(3);
+					verify(collected)[3].is(4);
+				});
+
+				function streamRange(start: number, limit: number): Stream<number> {
+					function emptyStream(): Stream<number> {
+						return {
+							iterate: function() {
+								return {
+									next: null,
+									remaining: emptyStream()
+								}
 							}
 						}
 					}
-				}
 
-				function streamRange(start: number, limit: number): Stream<number> {
 					return {
 						iterate: function() {
 							if (start < limit) {
@@ -473,15 +505,19 @@ namespace slime.$api.fp {
 					verify(rv.join(",")).is("1,3,5,7,9");
 				});
 
-				fifty.run(function testArrayStream() {
-					var array = [1,2,3,4];
-					var stream = $api.Function.Stream.array(array);
-					var rv = $api.Function.Stream.collect(stream);
-					verify(rv).length.is(4);
-					verify(rv)[0].is(1);
-					verify(rv)[1].is(2);
-					verify(rv)[2].is(3);
-					verify(rv)[3].is(4);
+				fifty.run(function testFind() {
+					var firstOdd = $api.Function.result(
+						streamTo(10),
+						$api.Function.Stream.find(isOdd)
+					);
+					verify(firstOdd).present.is(true);
+					verify(firstOdd).evaluate.property("value").is(1);
+
+					var firstOver10 = $api.Function.result(
+						streamTo(10),
+						$api.Function.Stream.find(function(v) { return v > 10; })
+					);
+					verify(firstOver10).present.is(false);
 				});
 			}
 		}
