@@ -252,6 +252,13 @@
 			default: "16.13.1"
 		};
 
+		$exports.test = {
+			versions: {
+				previous: "14.18.0",
+				current: versions.default
+			}
+		};
+
 		$exports.install = $api.events.Function(
 			/**
 			 *
@@ -290,12 +297,6 @@
 		);
 
 		$exports.Installation = $api.deprecate(Installation);
-
-		$exports.Project = function(o) {
-			throw new Error();
-		}
-
-
 	}
 	//@ts-ignore
 )($api,$context,$exports)
