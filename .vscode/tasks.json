@@ -29,6 +29,18 @@
 			}
 		},
 		{
+			"label": "Switch to trunk",
+			"type" :"shell",
+			"command": "./wf git.trunk",
+			"problemMatcher": []
+		},
+		{
+			"label": "Switch to branch",
+			"type": "shell",
+			"command": "./wf git.branch ${input:branchName}",
+			"problemMatcher": []
+		},
+		{
 			"label": "eslint",
 			"type": "shell",
 			"command": "./wf eslint",
@@ -102,6 +114,13 @@
 				"showReuseMessage": true,
 				"clear": true
 			}
+		}
+	],
+	"inputs": [
+		{
+			"id": "branchName",
+			"type": "promptString",
+			"description": "Name of a branch to create"
 		}
 	]
 }
