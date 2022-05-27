@@ -34,6 +34,7 @@
 				}
 			}
 		}
+
 		if (!jsh.wf.project.base) {
 			jsh.shell.console("No wf project base defined; PROJECT = " + jsh.shell.environment.PROJECT);
 			jsh.shell.exit(1);
@@ -87,20 +88,20 @@
 
 				var command = jsh.script.cli.Call.get({
 					descriptor: descriptor,
-					arguments: jsh.script.arguments
+					arguments: [match[0]]
 				});
 				if (isNoTargetProvided(command)) {
 					//	this can't happen because we already are checking whether the first argument begins with git.hook
-					throw new Error("Unreachable");
+					return function() {
+						throw new Error("Unreachable");
+					}
 				} else if (isTargetNotFound(command)) {
 					//	Probably fine, do nothing, hook is just not defined
-					return function() {
-						return 0;
+					return function targetNotFound() {
 					};
 				} else if (isTargetNotFunction(command)) {
 					return function() {
 						throw new Error("Not a function: " + invocation.arguments[0]);
-						return 1;
 					}
 					//	unsure what to do, think it through
 				} else {
@@ -131,35 +132,6 @@
 				descriptor
 			)
 		}
-
-		// var getCommand = function(project,command) {
-		// 	if (typeof(command) == "undefined") return void(0);
-		// 	var rv = project;
-		// 	var tokens = command.split(".");
-		// 	for (var i=0; i<tokens.length; i++) {
-		// 		if (rv) {
-		// 			rv = rv[tokens[i]];
-		// 		}
-		// 	}
-		// 	return rv;
-		// };
-
-		// var command = getCommand(project,parameters.command);
-
-		// if (command) {
-		// 	command({
-		// 		options: parameters.options,
-		// 		arguments: parameters.arguments
-		// 	});
-		// } else {
-		// 	if (typeof(parameters.command) != "undefined") {
-		// 		jsh.shell.console("Project at " + jsh.wf.project.base + " does not have a '" + parameters.command + "' command.");
-		// 	}
-		// 	var list = [];
-		// 	getCommandList(list,project);
-		// 	jsh.shell.console("Available wf commands for " + jsh.wf.project.base + ":");
-		// 	jsh.shell.console(list.join("\n"));
-		// }
 	}
 //@ts-ignore
 )($api,jsh);

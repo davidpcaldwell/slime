@@ -85,7 +85,7 @@ namespace slime.jsh.wf {
 			base: slime.jrunscript.file.Directory
 
 			git: {
-				installHooks(p: { path: string }): void
+				installHooks(p?: { path: string }): void
 			}
 
 			lint: {
