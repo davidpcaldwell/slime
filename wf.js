@@ -498,24 +498,6 @@
 						}
 					);
 
-					$exports.git.trunk = function(p) {
-						/** @type { slime.jrunscript.tools.git.Command<{ name: string }, void> } */
-						var merge = {
-							invocation: function(p) {
-								return {
-									command: "merge",
-									arguments: $api.Array.build(function(rv) {
-										rv.push(p.name);
-									})
-								}
-							}
-						}
-						git.repository.command(git.command.fetch).argument().run();
-						git.repository.command(git.command.checkout).argument({ branch: "master" }).run();
-						git.repository.command(merge).argument({ name: "origin/master" }).run();
-						cleanGitBranches()();
-					};
-
 					$exports.git.branches = (jsh.tools.git.Repository) ? {
 						list: $api.Function.pipe(
 							function(p) {

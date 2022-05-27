@@ -88,7 +88,7 @@
 
 				var command = jsh.script.cli.Call.get({
 					descriptor: descriptor,
-					arguments: [match[0]]
+					arguments: jsh.script.arguments
 				});
 				if (isNoTargetProvided(command)) {
 					//	this can't happen because we already are checking whether the first argument begins with git.hook

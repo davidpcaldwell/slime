@@ -15,7 +15,7 @@
 			"problemMatcher": []
 		},
 		{
-			"label": "status",
+			"label": "Show git status",
 			"type": "shell",
 			"command": "./wf status",
 			"problemMatcher": [],
@@ -29,19 +29,14 @@
 			}
 		},
 		{
-			"label": "Switch to trunk",
-			"type" :"shell",
-			"command": "./wf git.trunk",
-			"problemMatcher": []
-		},
-		{
-			"label": "Switch to branch",
+			"label": "Create branch",
+			"detail": "Creates a new branch based on newly-fetched origin/master and checks it out.",
 			"type": "shell",
 			"command": "./wf git.branch ${input:branchName}",
 			"problemMatcher": []
 		},
 		{
-			"label": "eslint",
+			"label": "Run eslint",
 			"type": "shell",
 			"command": "./wf eslint",
 			"problemMatcher": [],
@@ -55,7 +50,7 @@
 			}
 		},
 		{
-			"label": "ESLint Report",
+			"label": "Show ESLint report",
 			"type": "shell",
 			"command": "./jsh.bash contributor/eslint-report.jsh.js",
 			"problemMatcher": [],
@@ -69,7 +64,7 @@
 			}
 		},
 		{
-			"label": "tsc",
+			"label": "Check static types",
 			"type": "shell",
 			"command": "./wf tsc",
 			"problemMatcher": [],
@@ -83,7 +78,7 @@
 			}
 		},
 		{
-			"label": "documentation",
+			"label": "Show Documentation",
 			"detail": "Serves the project documentation and opens a browser to view it",
 			"type": "shell",
 			"command": "./wf documentation",
@@ -98,21 +93,6 @@
 			},
 			"runOptions": {
 				"runOn": "folderOpen"
-			}
-		},
-		{
-			"label": "document",
-			"detail": "Serves the project documentation and opens a browser to view it, re-rendering the documentation as it changes",
-			"type": "shell",
-			"command": "./wf document",
-			"problemMatcher": [],
-			"presentation": {
-				"echo": true,
-				"reveal": "always",
-				"focus": false,
-				"panel": "shared",
-				"showReuseMessage": true,
-				"clear": true
 			}
 		}
 	],
