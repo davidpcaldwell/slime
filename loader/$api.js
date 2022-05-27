@@ -595,10 +595,7 @@
 			isType: function(type) {
 				//@ts-ignore
 				return function(e) {
-					if (e instanceof Error) {
-						return e.name == type.prototype.name;
-					}
-					return false;
+					return e instanceof type;
 				}
 			}
 		}

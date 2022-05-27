@@ -359,9 +359,13 @@ namespace slime.$api {
 					throw new CustomError("hey", { custom: true });
 				} catch (e) {
 					verify(e instanceof CustomError).is(true);
+					verify($api.Error.isType(CustomError)(e)).is(true);
 					verify(e instanceof ParentError).is(false);
+					verify($api.Error.isType(ParentError)(e)).is(false);
 					verify(e instanceof ChildError).is(false);
+					verify($api.Error.isType(ChildError)(e)).is(false);
 					verify(e instanceof TypeError).is(false);
+					verify($api.Error.isType(TypeError)(e)).is(false);
 					verify(Boolean(e.custom)).is(true);
 					verify(String(e.message)).is("hey");
 					verify(String(e.toString())).is("Custom: hey");
@@ -371,18 +375,26 @@ namespace slime.$api {
 					throw new ParentError("how", { custom: true });
 				} catch (e) {
 					verify(e instanceof CustomError).is(false);
+					verify($api.Error.isType(CustomError)(e)).is(false);
 					verify(e instanceof ParentError).is(true);
+					verify($api.Error.isType(ParentError)(e)).is(true);
 					verify(e instanceof ChildError).is(false);
+					verify($api.Error.isType(ChildError)(e)).is(false);
 					verify(e instanceof TypeError).is(true);
+					verify($api.Error.isType(TypeError)(e)).is(true);
 				}
 
 				try {
 					throw new ChildError("now", { custom: true });
 				} catch (e) {
 					verify(e instanceof CustomError).is(false);
+					verify($api.Error.isType(CustomError)(e)).is(false);
 					verify(e instanceof ParentError).is(true);
+					verify($api.Error.isType(ParentError)(e)).is(true);
 					verify(e instanceof ChildError).is(true);
+					verify($api.Error.isType(ChildError)(e)).is(true);
 					verify(e instanceof TypeError).is(true);
+					verify($api.Error.isType(TypeError)(e)).is(true);
 				}
 			}
 		}
