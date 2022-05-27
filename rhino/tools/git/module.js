@@ -70,6 +70,29 @@
 			}
 		}
 
+		/**
+		 * @type { slime.jrunscript.tools.git.Exports["commands"]["fetch"] }
+		 */
+		var fetch = {
+			invocation: function() {
+				return {
+					command: "fetch"
+				}
+			}
+		}
+
+		/** @type { slime.jrunscript.tools.git.Command<{ name: string }, void> } */
+		var merge = {
+			invocation: function(p) {
+				return {
+					command: "merge",
+					arguments: $api.Array.build(function(rv) {
+						rv.push(p.name);
+					})
+				}
+			}
+		}
+
 		/** @type { new (environment: Parameters<slime.jrunscript.tools.git.Exports["Installation"]>[0] ) => slime.jrunscript.tools.git.Installation } */
 		var Installation = function(environment) {
 
@@ -1326,7 +1349,7 @@
 		});
 
 		$exports.install = Object.assign(
-			$api.Events.Function(
+			$api.events.Function(
 				function(p,events) {
 					var console = function(message) {
 						events.fire("console", message);
@@ -1385,7 +1408,9 @@
 		};
 
 		$exports.commands = {
-			status: status
+			status: status,
+			fetch: fetch,
+			merge: merge
 		};
 
 		/**

@@ -102,6 +102,12 @@
 					},
 					git: {
 						installHooks: function(p) {
+							var ALL_GIT_HOOKS = [
+								"pre-commit",
+								"post-checkout",
+								"post-merge"
+							];
+
 							if (gitInstalled && isGitClone) {
 								var path = (p) ? p.path : "local/git/hooks";
 								var repository = jsh.tools.git.program({ command: "git" }).repository(base.toString())
@@ -114,9 +120,9 @@
 									repository.command(setConfigValue).argument({ name: "core.hookspath", value: path }).run();
 								}
 								if (!p) {
-									["pre-commit"].forEach(function(hook) {
+									ALL_GIT_HOOKS.forEach(function(hook) {
 										var location = base.getRelativePath(path + "/" + hook);
-										location.write("./wf " + "git.hooks." + hook, { append: false, recursive: true });
+										location.write("./wf " + "git.hooks." + hook + " " + "\"$@\"", { append: false, recursive: true });
 										jsh.shell.run({
 											command: "chmod",
 											arguments: $api.Array.build(function(rv) {
@@ -522,7 +528,7 @@
 					}
 
 					return $api.Function.impure.ask(function(events) {
-						events.fire("console", "Verifying git identity ...");
+						events.fire("debug", "Verifying git identity ...");
 						var config = p.repository.config({
 							arguments: ["--list"]
 						});
