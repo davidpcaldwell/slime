@@ -340,26 +340,6 @@ namespace slime.jsh {
 }
 
 namespace slime.jsh.shell.tools {
-	export namespace node {
-		export interface Managed {
-			require: () => void
-		}
-
-		export interface Installed extends Managed, slime.jrunscript.node.Installation {
-			update: () => void
-		}
-
-		export interface Absent extends Managed {
-			install: (p?: { update?: boolean }) => void
-		}
-	}
-
-	export interface Exports {
-		node: node.Installed | node.Absent
-	}
-}
-
-namespace slime.jsh.shell.tools {
 	export namespace internal.tomcat {
 		export interface Context {
 			$api: slime.$api.Global

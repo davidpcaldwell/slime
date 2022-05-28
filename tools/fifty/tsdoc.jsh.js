@@ -8,9 +8,10 @@
 (
 	/**
 	 *
+	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.Global } jsh
 	 */
-	function(jsh) {
+	function($api,jsh) {
 		var parameters = jsh.script.getopts({
 			options: {
 				"node:debug": false,
@@ -20,9 +21,9 @@
 			}
 		})
 
-		jsh.shell.tools.node.require();
-		jsh.shell.tools.node["modules"].require({ name: "typescript" });
-		jsh.shell.tools.node["modules"].require({ name: "@microsoft/tsdoc" });
+		$api.Function.world.tell(jsh.shell.tools.node.require());
+		jsh.shell.tools.node.installed.modules.require({ name: "typescript" });
+		jsh.shell.tools.node.installed.modules.require({ name: "@microsoft/tsdoc" });
 
 		/** @type { slime.fifty.ui.Exports } */
 		var module = jsh.script.loader.module("module.js", {
@@ -47,4 +48,4 @@
 		parameters.options.to.write(JSON.stringify(documentation, void(0), "    "), { append: false });
 	}
 //@ts-ignore
-)(jsh)
+)($api,jsh)

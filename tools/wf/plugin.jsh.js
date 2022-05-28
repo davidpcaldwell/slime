@@ -88,8 +88,8 @@
 					},
 					lint: {
 						eslint: function() {
-							jsh.shell.tools.node.require();
-							jsh.shell.tools.node["modules"].require({ name: "eslint" });
+							$api.Function.world.tell(jsh.shell.tools.node.require());
+							jsh.shell.tools.node.installed.modules.require({ name: "eslint" });
 							return jsh.shell.jsh({
 								shell: jsh.shell.jsh.src,
 								script: jsh.shell.jsh.src.getFile("contributor/eslint.jsh.js"),
@@ -456,8 +456,8 @@
 					return {
 						require: function(p) {
 							var project = (p && p.project) ? p.project : base;
-							jsh.shell.tools.node.require();
-							jsh.shell.tools.node["modules"].require({ name: "typescript", version: typescript.getVersion(project) });
+							$api.Function.world.tell(jsh.shell.tools.node.require());
+							jsh.shell.tools.node.installed.modules.require({ name: "typescript", version: typescript.getVersion(project) });
 						},
 						tsc: function(p) {
 							var project = (p && p.project) ? p.project : base;

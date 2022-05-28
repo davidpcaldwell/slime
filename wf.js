@@ -194,17 +194,17 @@
 					function node() {
 						(
 							function core() {
-								jsh.shell.tools.node.require();
+								$api.Function.world.tell(jsh.shell.tools.node.require());
 							}
 						)();
 						(
 							function eslint() {
-								jsh.shell.tools.node["modules"].require({ name: "eslint" });
+								jsh.shell.tools.node.installed.modules.require({ name: "eslint" });
 							}
 						)();
 						(
 							function jsyaml() {
-								jsh.shell.tools.node["modules"].require({ name: "@types/js-yaml" });
+								jsh.shell.tools.node.installed.modules.require({ name: "@types/js-yaml" });
 							}
 						)();
 					}
