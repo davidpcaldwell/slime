@@ -4,8 +4,12 @@
 //
 //	END LICENSE
 
+//@ts-check
 (
 	function() {
+		/** @type { slime.jrunscript.tools.profiler.viewer.Profile[] } */
+		var profiles = window["profiles"];
+
 		//	TODO	requires relatively advanced JavaScript implementation for Array.prototype.forEach
 		var div = function(className,parent) {
 			var rv = document.createElement("div");
@@ -14,6 +18,10 @@
 			return rv;
 		};
 
+		/**
+		 *
+		 * @param { slime.jrunscript.tools.profiler.viewer.Profile[] } profiles
+		 */
 		var calculate = function(profiles) {
 			profiles.forEach(function(profile) {
 				var calculateNode = function(node) {
@@ -42,6 +50,11 @@
 			});
 		};
 
+		/**
+		 *
+		 * @param { slime.jrunscript.tools.profiler.viewer.Profile[] } profiles
+		 * @param { slime.jrunscript.tools.profiler.viewer.Settings } [settings]
+		 */
 		var render = function(profiles,settings) {
 			if (!settings) {
 				settings = {
@@ -69,26 +82,51 @@
 				div_tree.appendChild(heading);
 				div_profile.appendChild(div_tree);
 
-				var nodeName = function(node) {
-					if (node.code.className && node.code.methodName) {
-						return node.code.className + " " + node.code.methodName + " " + node.code.signature;
-					} else if (node.code.sourceName) {
-						var location = (node.code.lineNumber) ? node.code.sourceName + ":" + node.code.lineNumber : node.code.sourceName;
-						var lineRange = (node.code.lineNumbers) ? "[" + node.code.lineNumbers[0] + "-" + node.code.lineNumbers[node.code.lineNumbers.length-1] + "]" : "";
-						var nameToken = (node.code.functionName) ? ": " + node.code.functionName + "()" : "";
+				/** @type { (code: slime.jrunscript.tools.profiler.viewer.Code) => code is slime.jrunscript.tools.profiler.viewer.JavaCode } */
+				var isJavaCode = function(code) {
+					return code["className"] && code["methodName"];
+				}
+
+				/** @type { (code: slime.jrunscript.tools.profiler.viewer.Code) => code is slime.jrunscript.tools.profiler.viewer.JavascriptCode } */
+				var isJavascriptCode = function(code) {
+					return code["sourceName"];
+				}
+
+				/** @type { (code: slime.jrunscript.tools.profiler.viewer.Code) => code is slime.jrunscript.tools.profiler.viewer.SelfCode } */
+				var isSelfCode = function(code) {
+					return code["self"];
+				}
+
+				/**
+				 *
+				 * @param { slime.jrunscript.tools.profiler.viewer.Code } code
+				 * @returns
+				 */
+				var nodeName = function(code) {
+					if (isJavaCode(code)) {
+						return code.className + " " + code.methodName + " " + code.signature;
+					} else if (isJavascriptCode(code)) {
+						var location = (code.lineNumber) ? code.sourceName + ":" + code.lineNumber : code.sourceName;
+						var lineRange = (code.lineNumbers) ? "[" + code.lineNumbers[0] + "-" + code.lineNumbers[code.lineNumbers.length-1] + "]" : "";
+						var nameToken = (code.functionName) ? ": " + code.functionName + "()" : "";
 						return location + lineRange + nameToken;
-					} else if (node.code.self) {
+					} else if (isSelfCode(code)) {
 						return "(self)";
 					} else {
 						return "(top)";
 					}
 				}
 
+				/**
+				 *
+				 * @param { slime.jrunscript.tools.profiler.viewer.Node } node
+				 * @returns
+				 */
 				var renderNode = function(node) {
 					var top = document.createElement("div");
 					top.className = "node";
 					var total = div("total", top);
-					var name = nodeName(node);
+					var name = nodeName(node.code);
 					total.innerHTML = (node.statistics.elapsed/1000).toFixed(3) + " " + node.statistics.count + " " + name.replace(/\</g, "&lt;");
 					node.children.filter(function(child) {
 						//	Work around problem with top level
@@ -118,10 +156,14 @@
 
 				var map = {};
 
+				/**
+				 *
+				 * @param { slime.jrunscript.tools.profiler.viewer.Node } node
+				 */
 				var addToHotspots = function(node) {
 					var key = (function() {
-						if (!node.code.self) return nodeName(node);
-						if (node.code.self) return nodeName({ code: node.code.self });
+						if (!isSelfCode(node.code)) return nodeName(node.code);
+						if (isSelfCode(node.code)) return nodeName(node.code.self);
 						// return nodeName({ code: node.self.code.self })
 					})();
 					if (!map[key]) {
@@ -173,8 +215,13 @@
 			calculate(profiles);
 			render(profiles);
 			document.getElementById("refresh").addEventListener("click", function() {
+				/** @type { slime.js.Cast<HTMLInputElement> } */
+				var asInputElement = function(v) { return v; };
+
+				/** @type { HTMLInputElement } */
+				var threshold = asInputElement(document.getElementById("threshold"));
 				var settings = {
-					threshold: Number(document.getElementById("threshold").value) * 1000
+					threshold: Number(threshold.value) * 1000
 				};
 				render(profiles,settings);
 			});

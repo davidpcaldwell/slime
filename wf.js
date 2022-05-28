@@ -149,7 +149,7 @@
 		}
 
 		$exports.initialize = $api.Function.pipe(
-			function(p) {
+			function initialize(p) {
 				jsh.wf.project.git.installHooks();
 				//	TODO	could consider whether we can wire our commit process into the git hooks mechanism:
 				//			git config core.hooksPath contributor/hooks
@@ -216,7 +216,11 @@
 				}
 
 				//	Required for old loader/document implementation
-				jsh.shell.tools.jsoup.require();
+				(
+					function jsoup() {
+						jsh.shell.tools.jsoup.require();
+					}
+				)();
 
 				(function wiki() {
 					if (!jsh.tools.git.installation) return;
