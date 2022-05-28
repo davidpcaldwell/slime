@@ -317,7 +317,7 @@
 					Call: {
 						get: getCall
 					},
-					wrap: function(descriptor) {
+					wrap: function wrap(descriptor) {
 						function showUsage() {
 							jsh.shell.console("Usage: " + jsh.script.file + " [options] <command> [arguments]");
 						}

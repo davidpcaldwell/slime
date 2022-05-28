@@ -185,7 +185,7 @@
 					}
 				};
 
-				this.require = $api.Events.Function(function(p,events) {
+				this.require = $api.events.Function(function(p,events) {
 					if (p.name) {
 						if (!this.installed[p.name]) {
 							events.fire("installing", p);

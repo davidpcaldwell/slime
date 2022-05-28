@@ -544,7 +544,7 @@
 						}
 					});
 
-					rv.require = function(p) {
+					rv.require = function require(p) {
 						jsh.shell.jsh.require({
 							satisfied: function() { return Boolean(jsh.shell.jsh.lib.getFile("jsoup.jar")); },
 							install: function() {
