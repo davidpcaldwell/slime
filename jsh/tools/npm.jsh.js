@@ -18,7 +18,7 @@
 		}
 
 		$api.Function.result(
-			jsh.shell.tools.node["modules"].installed,
+			jsh.shell.tools.node.installed.modules.installed,
 			$api.Function.Object.entries,
 			function(entries) {
 				entries.forEach(function(item) {

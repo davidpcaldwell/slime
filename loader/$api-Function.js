@@ -422,6 +422,13 @@
 			}
 		}
 
+		$exports.Function.world = {
+			tell: function(tell, handler) {
+				var adapted = $context.events.tell(tell);
+				adapted(handler);
+			}
+		}
+
 		/** @type { slime.$api.fp.Exports["impure"] } */
 		$exports.Function.impure = {
 			/** @type { slime.$api.fp.Exports["impure"]["revise"] } */

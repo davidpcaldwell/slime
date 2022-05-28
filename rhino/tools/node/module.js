@@ -26,7 +26,7 @@
 			this.version = void(0);
 			Object.defineProperty(this, "version", {
 				get: function() {
-					var string = $context.module.shell.run({
+					return $context.module.shell.run({
 						command: o.directory.getFile("bin/node"),
 						arguments: ["--version"],
 						stdio: {
@@ -36,14 +36,10 @@
 							return result.stdio.output.split("\n")[0];
 						}
 					});
-					return {
-						toString: function() {
-							return string;
-						},
-						number: string.substring(1)
-					};
 				}
-			})
+			});
+
+			this.location = o.directory.toString();
 
 			var PATH = (function() {
 				var elements = $context.module.shell.PATH.pathnames.slice();
@@ -259,42 +255,23 @@
 			}
 		};
 
-		$exports.install = $api.events.Function(
-			/**
-			 *
-			 * @param { Parameters<slime.jrunscript.node.Exports["install"]>[0] } p
-			 * @param { slime.$api.Events<slime.jrunscript.node.install.Events> } events
-			 * @returns
-			 */
-			function(p,events) {
-				if (!p) throw new TypeError();
-				//	TODO	compute this somehow?
-				if (!p.version) p.version = versions.default;
+		$exports.install = function(p) {
+			if (!p) throw new TypeError();
+			//	TODO	compute this somehow?
+			if (!p.version) p.version = versions.default;
+			return function(events) {
 				var existing = $exports.at({ location: p.location.toString() });
-				/** @type { slime.jrunscript.node.Installation } */
-				var rv;
-				if (!existing || (existing.version.number != p.version && p.update)) {
-					if (existing) {
-						p.location.directory.remove();
-					}
-					var os = versions.byOs[$context.module.shell.os.name];
-					if (!os) throw new TypeError("Unsupported operating system: " + $context.module.shell.os.name);
-					var version = os[p.version];
-					$context.library.install.install({
-						url: version.url,
-						to: p.location
-					});
-					rv = new $exports.Installation({
-						directory: p.location.directory
-					});
-					events.fire("console", "Node " + rv.version + " installed.");
-				} else {
-					rv = existing;
-					events.fire("console", "Node " + existing.version + " already installed.");
-				}
-				return rv;
+				if (existing) throw new Error("Node instlalation directory exists: " + p.location.toString());
+				var os = versions.byOs[$context.module.shell.os.name];
+				if (!os) throw new TypeError("Unsupported operating system: " + $context.module.shell.os.name);
+				var version = os[p.version];
+				$context.library.install.install({
+					url: version.url,
+					to: p.location
+				});
+				events.fire("installed", $exports.at({ location: p.location.toString() }));
 			}
-		);
+		};
 
 		$exports.Installation = $api.deprecate(Installation);
 	}

@@ -663,108 +663,138 @@
 					}
 				});
 
-				(function integratedNode() {
+				jsh.shell.tools.node = (function integratedNode() {
 					if (!jsh.shell.jsh.lib) return;
 
 					var location = jsh.shell.jsh.lib.getRelativePath("node");
 
-					/** @type { slime.jrunscript.node.Installation } */
-					var installed = node.at({ location: location.toString() });
-
-					function update() {
-						jsh.shell.tools.node = Object.assign(
-							node.install({
-								location: location,
-								update: true
-							}),
-							{
-								update: update,
-								require: require
-							}
-						);
+					/** @type { slime.jsh.shell.tools.Exports["node"] } */
+					var rv = {
+						installed: void(0),
+						require: void(0)
 					}
 
-					function require() {
-						jsh.shell.jsh.require({
-							satisfied: function() {
-								return Boolean(jsh.shell.tools.node["version"])
-							},
-							install: function() {
-								jsh.shell.tools.node["install"]();
-							}
-						});
-					}
+					Object.defineProperty(rv, "installed", {
+						get: function() {
+							return node.at({ location: location.toString() });
+						},
+						enumerable: true
+					});
 
-					if (installed) {
-						//	TODO	update?
-						jsh.shell.tools.node = Object.assign(
-							installed,
-							{
-								update: update,
-								require: require
-							}
-						);
-					} else {
-						jsh.shell.tools.node = {
-							install: function(p) {
-								if (!p) p = {};
-								jsh.shell.tools.node = Object.assign(
-									node.install(
-										{
-											location: location,
-											update: p.update
-										},
-										{
-											console: function(e) {
-												jsh.shell.console(e.detail);
-											}
-										}
-									),
-									{ update: update, require: require }
-								)
-							},
-							require: require
-						};
-					}
-					if (jsh.shell.tools.node["modules"]) {
-						/** @type { slime.jrunscript.node.Installation["modules"] } */
-						var modules = jsh.shell.tools.node["modules"];
-
-						var getVersion = function(p) {
-							if (!p) return void(0);
-							var now = modules.installed[p.name];
-							if (now.version) return now.version;
-							if (now.required && now.required.version) return now.required.version;
-						}
-
-						//	Wraps the existing require and makes it pertain to the entire shell. Not sure whether this is necessary;
-						//	maybe for something like TypeScript that is built into the shell itself?
-						modules.require = function(p) {
-							jsh.shell.jsh.require({
-								satisfied: function() {
-									var now = modules.installed[p.name];
-									if (!now) return false;
-									var version = getVersion({ name: p.name });
-									if (p.version) {
-										return version == p.version;
-									} else {
-										return true;
-									}
-								},
-								install: function() {
-									if (p.version) {
-										modules.install({
-											name: p.name + "@" + p.version
-										});
-									} else {
-										modules.install({
-											name: p.name
-										});
-									}
+					rv.require = function() {
+						return function(events) {
+							var now = node.at({ location: location.toString() });
+							if (now && now.version == "v16.13.1") {
+								events.fire("found", now);
+							} else {
+								if (now) {
+									location.directory.remove();
+									events.fire("removed", now);
 								}
-							})
+								node.install({ version: "16.13.1", location: location })(events);
+							}
 						}
-					}
+					};
+
+					return rv;
+
+					// function update() {
+					// 	jsh.shell.tools.node = Object.assign(
+					// 		(
+					// 			function() {
+					// 				node.install({
+					// 					location: location
+					// 				})
+					// 			}
+					// 		)();
+					// 		{
+					// 			update: update,
+					// 			require: require
+					// 		}
+					// 	);
+					// }
+
+					// function require() {
+					// 	jsh.shell.jsh.require({
+					// 		satisfied: function() {
+					// 			return Boolean(jsh.shell.tools.node["version"])
+					// 		},
+					// 		install: function() {
+					// 			jsh.shell.tools.node["install"]();
+					// 		}
+					// 	});
+					// }
+
+					// if (installed) {
+					// 	//	TODO	update?
+					// 	jsh.shell.tools.node = Object.assign(
+					// 		installed,
+					// 		{
+					// 			update: update,
+					// 			require: require
+					// 		}
+					// 	);
+					// } else {
+					// 	jsh.shell.tools.node = {
+					// 		install: function(p) {
+					// 			if (!p) p = {};
+					// 			jsh.shell.tools.node = Object.assign(
+					// 				node.install(
+					// 					{
+					// 						location: location,
+					// 						update: p.update
+					// 					},
+					// 					{
+					// 						console: function(e) {
+					// 							jsh.shell.console(e.detail);
+					// 						}
+					// 					}
+					// 				),
+					// 				{ update: update, require: require }
+					// 			)
+					// 		},
+					// 		require: require
+					// 	};
+					// }
+					// if (jsh.shell.tools.node.installed.modules) {
+					// 	/** @type { slime.jrunscript.node.Installation["modules"] } */
+					// 	var modules = jsh.shell.tools.node.installed.modules;
+
+					// 	var getVersion = function(p) {
+					// 		if (!p) return void(0);
+					// 		var now = modules.installed[p.name];
+					// 		if (now.version) return now.version;
+					// 		if (now.required && now.required.version) return now.required.version;
+					// 	}
+
+					// 	//	Wraps the existing require and makes it pertain to the entire shell. Not sure whether this is necessary;
+					// 	//	maybe for something like TypeScript that is built into the shell itself?
+					// 	modules.require = function(p) {
+					// 		jsh.shell.jsh.require({
+					// 			satisfied: function() {
+					// 				var now = modules.installed[p.name];
+					// 				if (!now) return false;
+					// 				var version = getVersion({ name: p.name });
+					// 				if (p.version) {
+					// 					return version == p.version;
+					// 				} else {
+					// 					return true;
+					// 				}
+					// 			},
+					// 			install: function() {
+					// 				if (p.version) {
+					// 					modules.install({
+					// 						name: p.name + "@" + p.version
+					// 					});
+					// 				} else {
+					// 					modules.install({
+					// 						name: p.name
+					// 					});
+					// 				}
+					// 			}
+					// 		})
+					// 	}
+					// }
 				})();
 
 				jsh.tools.node = node;

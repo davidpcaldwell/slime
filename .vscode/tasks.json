@@ -36,6 +36,12 @@
 			"problemMatcher": []
 		},
 		{
+			"label": "Git: Prune branches",
+			"type": "shell",
+			"command": "./wf git.branches.prune",
+			"problemMatcher": []
+		},
+		{
 			"label": "ESLint: Run",
 			"type": "shell",
 			"command": "./wf eslint",
