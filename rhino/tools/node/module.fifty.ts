@@ -45,12 +45,8 @@ namespace slime.jrunscript.node {
 		}
 	}
 
-	interface Version {
-		number: string
-	}
-
 	/**
-	 * A particular local installation of Node.js
+	 * A particular local installation of Node.js.
 	 */
 	export interface Installation {
 		version: string
@@ -102,12 +98,14 @@ namespace slime.jrunscript.node {
 			/**
 			 * An object with a property for each installed module; the name of the module is the name of the property.
 			 */
-			installed: { [key: string]: {
-				version: string
-				required: {
+			installed: {
+				[key: string]: {
 					version: string
+					required: {
+						version: string
+					}
 				}
-			} }
+			}
 
 			install: (p: {
 				/**
@@ -115,7 +113,9 @@ namespace slime.jrunscript.node {
 				 */
 				name: string
 			}) => void
+
 			require: (p: { name: string, version?: string }) => void
+
 			uninstall: Function
 		}
 
