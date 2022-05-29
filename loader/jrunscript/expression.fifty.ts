@@ -708,6 +708,9 @@ namespace slime.jrunscript {
 				}
 			}
 			system: slime.jrunscript.native.inonit.system
+			tools: {
+				Profiler: any
+			}
 		}
 	}
 }
