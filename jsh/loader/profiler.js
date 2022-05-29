@@ -4,8 +4,15 @@
 //
 //	END LICENSE
 
+//@ts-check
 (
-	function() {
+	/**
+	 *
+	 * @param { slime.jrunscript.Packages } Packages
+	 * @param { any } JavaAdapter
+	 * @param { slime.jsh.Global } jsh
+	 */
+	function(Packages,JavaAdapter,jsh) {
 		var _args = _properties.get("inonit.tools.Profiler.args");
 		var options = {};
 		//	TODO	currently does not contemplate repeated options
@@ -16,7 +23,9 @@
 		}
 		if (options.listener || options.output) {
 			//	TODO	test for existence of this class as well?
+			//@ts-ignore
 			Packages.inonit.tools.Profiler.javaagent().addListener(new JavaAdapter(
+				//@ts-ignore
 				Packages.inonit.tools.Profiler.Listener,
 				new function() {
 					var Code = function(_peer) {
@@ -89,6 +98,7 @@
 						this.code = new Code(_peer.getCode());
 						this.statistics = new Statistics(_peer.getStatistics());
 						this.children = jsh.java.toJsArray(_peer.getChildren(), function(_child) {
+							//@ts-ignore
 							return new Constructor(_child);
 						});
 					}
@@ -152,4 +162,5 @@
 			));
 		}
 	}
-)();
+//@ts-ignore
+)(Packages,JavaAdapter,jsh);
