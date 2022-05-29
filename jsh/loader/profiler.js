@@ -150,10 +150,12 @@
 							} else {
 								jsh.shell.echo("Emitting profiling data to " + options.output + " ...", { stream: jsh.shell.stdio.error });
 								jsh.loader.run(pathname, {
-									$loader: new jsh.io.Loader({ _file: pathname.parent.java.adapt() }),
-		//							jsh: jsh,
-									profiles: profiles,
-									to: jsh.file.filesystems.os.Pathname(String(new Packages.java.io.File(options.output).getCanonicalPath()))
+									$context: {
+										profiles: profiles,
+										console: jsh.shell.console,
+										to: jsh.file.filesystems.os.Pathname(String(new Packages.java.io.File(options.output).getCanonicalPath()))
+									},
+									$loader: new jsh.io.Loader({ _file: pathname.parent.java.adapt() })
 								});
 							}
 						}

@@ -4,21 +4,54 @@
 //
 //	END LICENSE
 
+//@ts-check
 (
-	function() {
+	/**
+	 *
+	 * @param { slime.jrunscript.tools.profiler.Context } $context
+	 * @param { slime.Loader } $loader
+	 */
+	function($context,$loader) {
+		var settings = {
+			inline: {
+				json: true
+			}
+		}
+
+		var profiles = $context.profiles;
+		var directory = $context.to.parent.createDirectory({
+			exists: function(dir) {
+				return false;
+			}
+		});
+		var output = {
+			html: $context.to,
+			json: directory.getRelativePath("profiles.json")
+		};
 		//	First, copy the HTML
-		var output = (typeof(to) != "undefined") ? to : jsh.shell.TMPDIR.createTemporary({ suffix: ".html" }).pathname;
+		output.html = $context.to;
+		//	TODO	wherever this implementation comes from, it does *not* have .read.string(); fix it
 		var html = $loader.get("viewer.html").read(String);
 		var scriptElement = function(s) {
 			return "<script type=\"text/javascript\">" + s + "</script>";
 		}
 		//	TODO	this is pretty brittle; perhaps there is a better solution, especially as we mature jsh.document
 		html = html.replace("<link rel=\"stylesheet\" type=\"text/css\" href=\"viewer.css\" />", "<style type=\"text/css\">" + $loader.get("viewer.css").read(String) + "</style>");
-		var json = (false) ? jsh.js.toLiteral(profiles) : JSON.stringify(profiles);
-		html = html.replace("<script type=\"text/javascript\" src=\"profiles.js\"></script>", scriptElement("var profiles = " + json));
+
+		//	Pretty-printing explodes the size of this by about 7x even using tab (more with spaces)
+		var json = JSON.stringify(profiles);
+
+		if (settings.inline.json) {
+			html = html.replace("<script type=\"text/javascript\" src=\"profiles.js\"></script>", scriptElement("var profiles = " + json));
+		} else {
+			output.json.write(json, { append: false });
+		}
+
 		html = html.replace("<script type=\"text/javascript\" src=\"viewer.js\"></script>", scriptElement($loader.get("viewer.js").read(String)));
 
-		output.write(html, { append: false, recursive: true });
-		jsh.shell.echo("Wrote profiling data to " + output, { stream: jsh.shell.stderr });
+		output.html.write(html, { append: false });
+
+		$context.console("Wrote profiling data to " + output.html);
 	}
-)();
+//@ts-ignore
+)($context,$loader);

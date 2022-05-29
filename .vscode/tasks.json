@@ -100,6 +100,12 @@
 			"runOptions": {
 				"runOn": "folderOpen"
 			}
+		},
+		{
+			"label": "Project: Update MPL headers",
+			"type": "shell",
+			"command": "./jsh.bash contributor/code/license.jsh.js --fix",
+			"problemMatcher": []
 		}
 	],
 	"inputs": [
