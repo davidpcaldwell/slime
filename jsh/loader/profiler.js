@@ -23,9 +23,7 @@
 		}
 		if (options.listener || options.output) {
 			//	TODO	test for existence of this class as well?
-			//@ts-ignore
 			Packages.inonit.tools.Profiler.javaagent().addListener(new JavaAdapter(
-				//@ts-ignore
 				Packages.inonit.tools.Profiler.Listener,
 				new function() {
 					var Code = function(_peer) {
@@ -92,19 +90,18 @@
 						this.elapsed = _peer.getElapsed();
 					}
 
-					var Node = function(_peer) {
-						var Constructor = arguments.callee;
-
-						this.code = new Code(_peer.getCode());
-						this.statistics = new Statistics(_peer.getStatistics());
-						this.children = jsh.java.toJsArray(_peer.getChildren(), function(_child) {
-							//@ts-ignore
-							return new Constructor(_child);
-						});
+					var Node = function recurse(_peer) {
+						return {
+							code: new Code(_peer.getCode()),
+							statistics: new Statistics(_peer.getStatistics()),
+							children: jsh.java.toJsArray(_peer.getChildren(), function(_child) {
+								return recurse(_child);
+							})
+						}
 					}
 
 					var Timing = function(_peer) {
-						this.root = new Node(_peer.getRoot());
+						this.root = Node(_peer.getRoot());
 					}
 
 					var Profile = function(_peer) {
