@@ -86,7 +86,10 @@ namespace slime.jsh.httpd {
 			}
 		}
 		Resources: slime.jsh.httpd.resources.Export
+
 		Tomcat?: {
+			//	TODO	figure out why constructor definition not output
+			//	TODO	convert to function
 			new (p?: tomcat.Configuration): Tomcat
 
 			serve: any

@@ -5,10 +5,27 @@
 //	END LICENSE
 
 namespace slime.jrunscript.tools.profiler {
+	export interface Scope {
+		$context: Context
+		$loader: slime.Loader
+	}
+
 	export interface Context {
 		console: (message: string) => void
 		profiles: slime.jrunscript.tools.profiler.Profile[]
-		to: slime.jrunscript.file.Pathname
+		to: {
+			html?: {
+				location: slime.jrunscript.file.Pathname
+				inline: {
+					css: boolean
+					json: boolean
+					js: boolean
+				}
+			}
+			json?: {
+				location: slime.jrunscript.file.Pathname
+			}
+		}
 	}
 
 	export interface JavaCode {

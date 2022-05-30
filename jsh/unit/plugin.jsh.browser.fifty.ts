@@ -34,6 +34,10 @@ namespace slime.jsh.unit {
 				Chrome: (configuration: {
 					program: string
 					user: string
+
+					/**
+					 * See {@link slime.jrunscript.shell.browser.Chrome}'s Instance constructor.
+					 */
 					devtools?: boolean
 					debugPort?: number
 				}) => Browser

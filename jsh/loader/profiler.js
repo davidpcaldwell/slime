@@ -148,15 +148,26 @@
 									to: jsh.file.filesystems.os.Pathname(String(new Packages.java.io.File(options.output).getCanonicalPath()))
 								});
 							} else {
-								jsh.shell.echo("Emitting profiling data to " + options.output + " ...", { stream: jsh.shell.stdio.error });
-								jsh.loader.run(pathname, {
+								jsh.shell.console("Emitting profiling data to " + options.output + " ...");
+								/** @type { slime.jrunscript.tools.profiler.Scope } */
+								var scope = {
 									$context: {
 										profiles: profiles,
 										console: jsh.shell.console,
-										to: jsh.file.filesystems.os.Pathname(String(new Packages.java.io.File(options.output).getCanonicalPath()))
+										to: {
+											html: {
+												location: jsh.file.filesystems.os.Pathname(String(new Packages.java.io.File(options.output).getCanonicalPath())),
+												inline: {
+													css: true,
+													json: true,
+													js: true
+												}
+											}
+										}
 									},
 									$loader: new jsh.io.Loader({ _file: pathname.parent.java.adapt() })
-								});
+								};
+								jsh.loader.run(pathname, scope);
 							}
 						}
 					}
