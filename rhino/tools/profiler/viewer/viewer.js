@@ -7,7 +7,7 @@
 //@ts-check
 (
 	function() {
-		/** @type { slime.jrunscript.tools.profiler.viewer.Profile[] } */
+		/** @type { slime.jrunscript.tools.profiler.Profile[] } */
 		var profiles = window["profiles"];
 
 		//	TODO	requires relatively advanced JavaScript implementation for Array.prototype.forEach
@@ -20,7 +20,7 @@
 
 		/**
 		 *
-		 * @param { slime.jrunscript.tools.profiler.viewer.Profile[] } profiles
+		 * @param { slime.jrunscript.tools.profiler.Profile[] } profiles
 		 */
 		var calculate = function(profiles) {
 			profiles.forEach(function(profile) {
@@ -52,7 +52,7 @@
 
 		/**
 		 *
-		 * @param { slime.jrunscript.tools.profiler.viewer.Profile[] } profiles
+		 * @param { slime.jrunscript.tools.profiler.Profile[] } profiles
 		 * @param { slime.jrunscript.tools.profiler.viewer.Settings } [settings]
 		 */
 		var render = function(profiles,settings) {
@@ -82,24 +82,24 @@
 				div_tree.appendChild(heading);
 				div_profile.appendChild(div_tree);
 
-				/** @type { (code: slime.jrunscript.tools.profiler.viewer.Code) => code is slime.jrunscript.tools.profiler.viewer.JavaCode } */
+				/** @type { (code: slime.jrunscript.tools.profiler.Code) => code is slime.jrunscript.tools.profiler.JavaCode } */
 				var isJavaCode = function(code) {
 					return code["className"] && code["methodName"];
 				}
 
-				/** @type { (code: slime.jrunscript.tools.profiler.viewer.Code) => code is slime.jrunscript.tools.profiler.viewer.JavascriptCode } */
+				/** @type { (code: slime.jrunscript.tools.profiler.Code) => code is slime.jrunscript.tools.profiler.JavascriptCode } */
 				var isJavascriptCode = function(code) {
 					return code["sourceName"];
 				}
 
-				/** @type { (code: slime.jrunscript.tools.profiler.viewer.Code) => code is slime.jrunscript.tools.profiler.viewer.SelfCode } */
+				/** @type { (code: slime.jrunscript.tools.profiler.Code) => code is slime.jrunscript.tools.profiler.SelfCode } */
 				var isSelfCode = function(code) {
 					return code["self"];
 				}
 
 				/**
 				 *
-				 * @param { slime.jrunscript.tools.profiler.viewer.Code } code
+				 * @param { slime.jrunscript.tools.profiler.Code } code
 				 * @returns
 				 */
 				var nodeName = function(code) {
@@ -119,7 +119,7 @@
 
 				/**
 				 *
-				 * @param { slime.jrunscript.tools.profiler.viewer.Node } node
+				 * @param { slime.jrunscript.tools.profiler.Node } node
 				 * @returns
 				 */
 				var renderNode = function(node) {
@@ -158,7 +158,7 @@
 
 				/**
 				 *
-				 * @param { slime.jrunscript.tools.profiler.viewer.Node } node
+				 * @param { slime.jrunscript.tools.profiler.Node } node
 				 */
 				var addToHotspots = function(node) {
 					var key = (function() {

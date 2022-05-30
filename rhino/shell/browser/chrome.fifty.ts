@@ -19,8 +19,9 @@ namespace slime.jrunscript.shell.browser {
 
 	export namespace object {
 		export interface Instance {
-			launch: any
-			run: any
+			open?: any
+			launch?: any
+			run?: any
 		}
 
 		export interface Chrome extends slime.jrunscript.shell.browser.Chrome {
@@ -30,8 +31,15 @@ namespace slime.jrunscript.shell.browser {
 				proxy?: ProxyTools
 				hostrules?: string[]
 				install?: boolean
+
+				/**
+				 * Whether to open DevTools for each tab; in other words, whether to pass the `--auto-open-devtools-for-tabs` option
+				 * to the Chrome command line.
+				 */
 				devtools?: boolean
 			}) => Instance
+
+			instance?: Instance
 		}
 	}
 }

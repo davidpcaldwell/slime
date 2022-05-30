@@ -22,6 +22,8 @@
 						return rv;
 					}
 				};
+				/** @type { slime.Loader<slime.jrunscript.runtime.Resource> } */
+				//@ts-ignore
 				var asTextLoader = new $context.httpd.io.Loader(asTextLoaderSource);
 
 				/**

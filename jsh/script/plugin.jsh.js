@@ -262,12 +262,9 @@
 				}
 
 				jsh.script.cli = {
-					error: {
-						NoTargetProvided: $api.Error.Type({ name: "NoTargetProvided" }),
-						TargetNotFound: $api.Error.Type({ name: "TargetNotFound" }),
-						TargetNotFunction: $api.Error.Type({ name: "TargetNotFunction", extends: TypeError })
+					Call: {
+						get: getCall
 					},
-					parser: parser,
 					option: {
 						string: option($api.Function.identity),
 						boolean: function(o) {
@@ -302,6 +299,12 @@
 							return $api.Function.impure.revise(rv);
 						}
 					},
+					error: {
+						NoTargetProvided: $api.Error.Type({ name: "NoTargetProvided" }),
+						TargetNotFound: $api.Error.Type({ name: "TargetNotFound" }),
+						TargetNotFunction: $api.Error.Type({ name: "TargetNotFunction", extends: TypeError })
+					},
+					parser: parser,
 					/**
 					 * @template { any } T
 					 * @param { slime.jsh.script.cli.Processor<T> } f
@@ -314,8 +317,21 @@
 							arguments: Array.prototype.slice.call(jsh.script.arguments)
 						});
 					},
-					Call: {
-						get: getCall
+					run: function(command) {
+						try {
+							var status = command({
+								options: {},
+								arguments: jsh.script.arguments
+							});
+							if (typeof(status) == "number") {
+								jsh.shell.exit(status);
+							}
+							jsh.shell.exit(0);
+						} catch (e) {
+							jsh.shell.console(e);
+							jsh.shell.console(e.stack);
+							jsh.shell.exit(1);
+						}
 					},
 					wrap: function wrap(descriptor) {
 						function showUsage() {

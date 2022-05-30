@@ -243,6 +243,7 @@ namespace slime.jrunscript {
 					getParentFile(): File
 					getAbsoluteFile(): File
 					toURI(): net.URI
+					toURL(): net.URL
 					mkdirs()
 					isAbsolute(): boolean
 					lastModified(): number

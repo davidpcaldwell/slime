@@ -208,22 +208,7 @@
 					})(request.path, o.index)
 					var resource = o.loader.get(path);
 					if (resource) {
-						/**
-						 *
-						 * @param { slime.Resource } resource
-						 * @returns { resource is slime.jrunscript.runtime.Resource }
-						 */
-						var isJrunscriptResource = function(resource) {
-							return true;
-						}
-						//	TODO	investigate whether there's a better way to do this type stuff than "casting"
-						//	TODO	maybe there's a flaw in the type definitions downstream, or maybe we need a type of loader
-						//			that returns jrunscript resources always
-						if (isJrunscriptResource(resource)) {
-							return $exports.http.Response.resource(resource);
-						} else {
-							throw new Error("Unreachable.");
-						}
+						return $exports.http.Response.resource(resource);
 					} else if (resource === null) {
 						return null;
 					}

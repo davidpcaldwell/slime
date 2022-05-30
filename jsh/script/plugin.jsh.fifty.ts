@@ -126,7 +126,9 @@ namespace slime.jsh.script {
 				number: OptionParser<number>
 				pathname: OptionParser<slime.jrunscript.file.Pathname>
 
-				array: <T,R>(c: { longname: string, value: (s: string) => any }) => cli.Processor<T,R>
+				array: <O extends object,N extends keyof any,T>(c: { longname: string, value: (s: string) => T })
+					=> (i: cli.Invocation<O>)
+					=> cli.Invocation<O & { [n in N]: T[] }>
 			}
 		}
 
@@ -306,6 +308,8 @@ namespace slime.jsh.script {
 			 * Parses the `jsh` shell's arguments using the given {@link Processor}, returning the result of the processing.
 			 */
 			invocation: <T,R>(processor: cli.Processor<T,R>) => cli.Invocation<R>
+
+			run: (command: slime.jsh.script.cli.Command<{}>) => never
 
 			//	TODO	harvest the below documentation if it has useful writing
 			// /**
