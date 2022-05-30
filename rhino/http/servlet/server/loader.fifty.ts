@@ -16,10 +16,20 @@ namespace slime.servlet {
 				handle: slime.servlet.handler
 			}) => slime.servlet.handler
 			HostRedirect: any
+
+			/**
+			 * Creates a handler that servers the contents of a {@link slime.Loader} that loads
+			 * {@link slime.jrunscript.runtime.Resource}s.
+			 */
 			Loader: (o: {
-				loader: slime.Loader
+				loader: slime.Loader<slime.jrunscript.runtime.Resource>
+
+				/**
+				 * An optional path within the loader to use if the path is empty.
+				 */
 				index?: string
 			}) => slime.servlet.handler
+
 			Proxy: (o: {
 				client: any
 				target: { host: string, port: number }

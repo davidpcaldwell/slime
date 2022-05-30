@@ -52,7 +52,7 @@ namespace slime.jsh.shell {
 		}
 
 		//	TODO	run.evaluate.wrap
-		exit: (code: number) => void
+		exit: (code: number) => never
 		stdio: {
 			input: slime.jrunscript.runtime.io.InputStream
 			output: slime.jrunscript.runtime.io.OutputStream & {

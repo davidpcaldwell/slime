@@ -12,46 +12,50 @@
 	 * @param { slime.Loader } $loader
 	 */
 	function($context,$loader) {
-		var settings = {
-			inline: {
-				json: true
-			}
-		}
-
 		var profiles = $context.profiles;
-		var directory = $context.to.parent.createDirectory({
-			exists: function(dir) {
-				return false;
-			}
-		});
-		var output = {
-			html: $context.to,
-			json: directory.getRelativePath("profiles.json")
-		};
-		//	First, copy the HTML
-		output.html = $context.to;
-		//	TODO	wherever this implementation comes from, it does *not* have .read.string(); fix it
-		var html = $loader.get("viewer.html").read(String);
-		var scriptElement = function(s) {
-			return "<script type=\"text/javascript\">" + s + "</script>";
-		}
-		//	TODO	this is pretty brittle; perhaps there is a better solution, especially as we mature jsh.document
-		html = html.replace("<link rel=\"stylesheet\" type=\"text/css\" href=\"viewer.css\" />", "<style type=\"text/css\">" + $loader.get("viewer.css").read(String) + "</style>");
 
 		//	Pretty-printing explodes the size of this by about 7x even using tab (more with spaces)
 		var json = JSON.stringify(profiles);
 
-		if (settings.inline.json) {
-			html = html.replace("<script type=\"text/javascript\" src=\"profiles.js\"></script>", scriptElement("var profiles = " + json));
-		} else {
-			output.json.write(json, { append: false });
+		if ($context.to.html) {
+			var directory = $context.to.html.location.parent.createDirectory({
+				exists: function(dir) {
+					return false;
+				}
+			});
+
+			var scriptElement = function(s) {
+				return "<script type=\"text/javascript\">" + s + "</script>";
+			}
+
+			//	TODO	wherever this implementation comes from, it does *not* have .read.string(); fix it
+			var html = $loader.get("viewer.html").read(String);
+			//	TODO	this is pretty brittle; perhaps there is a better solution, especially as we mature jsh.document
+			if ($context.to.html.inline.css) {
+				html = html.replace("<link rel=\"stylesheet\" type=\"text/css\" href=\"viewer.css\" />", "<style type=\"text/css\">" + $loader.get("viewer.css").read(String) + "</style>");
+			} else {
+				directory.getRelativePath("viewer.css").write($loader.get("viewer.css").read(String));
+			}
+
+			if ($context.to.html.inline.json) {
+				html = html.replace("<script type=\"text/javascript\" src=\"profiles.js\"></script>", scriptElement("var profiles = " + json));
+			} else {
+				directory.getRelativePath("profiles.json").write(json, { append: false, recursive: true });
+			}
+
+			if ($context.to.html.inline.js) {
+				html = html.replace("<script type=\"text/javascript\" src=\"viewer.js\"></script>", scriptElement($loader.get("viewer.js").read(String)));
+			} else {
+				directory.getRelativePath("viewer.js").write($loader.get("viewer.js").read(String));
+			}
+			$context.to.html.location.write(html, { append: false, recursive: true });
+			$context.console("Wrote profile viewer to " + $context.to.html.location);
 		}
 
-		html = html.replace("<script type=\"text/javascript\" src=\"viewer.js\"></script>", scriptElement($loader.get("viewer.js").read(String)));
-
-		output.html.write(html, { append: false });
-
-		$context.console("Wrote profiling data to " + output.html);
+		if ($context.to.json) {
+			$context.to.json.location.write(json, { append: false });
+			$context.console("Wrote profiling data to " + $context.to.json.location);
+		}
 	}
 //@ts-ignore
 )($context,$loader);
