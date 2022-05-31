@@ -256,6 +256,13 @@
 						return rv;
 					}
 				}
+			},
+			api: {
+				JobSummary: {
+					isName: function(name) {
+						return $api.Function.pipe($api.Function.property("name"), $api.Function.is(name));
+					}
+				}
 			}
 		})
 	}

@@ -32,11 +32,24 @@ namespace slime.jrunscript.tools.jenkins {
 		}
 	}
 
+	export interface Api {
+	}
+
+	export interface Exports {
+		api: Api
+	}
+
 	export interface JobSummary {
 		_class: string
 		name: string
 		url: string
 		color: string
+	}
+
+	export interface Api {
+		JobSummary: {
+			isName: (name: string) => slime.$api.fp.Predicate<slime.jrunscript.tools.jenkins.JobSummary>
+		}
 	}
 
 	export interface Server {
@@ -158,7 +171,6 @@ namespace slime.jrunscript.tools.jenkins {
 		}
 	//@ts-ignore
 	)(fifty);
-
 
 	export type Script = slime.loader.Script<Context,Exports>
 }
