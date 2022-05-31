@@ -14,7 +14,8 @@
 	function($api,jsh) {
 		var options = $api.Function.pipe(
 			jsh.script.cli.option.pathname({ longname: "profiler:javassist" }),
-			jsh.script.cli.option.pathname({ longname: "profiler:output" }),
+			jsh.script.cli.option.pathname({ longname: "profiler:output:html" }),
+			jsh.script.cli.option.pathname({ longname: "profiler:output:json" }),
 			jsh.script.cli.option.array({ longname: "profiler:exclude", value: function(string) {
 				return string;
 			}}),
@@ -27,16 +28,25 @@
 			$api.Function.pipe(
 				options,
 				function(parameters) {
-					if (!parameters.options["profiler:output"]) {
-						parameters.options["profiler:output"] = jsh.shell.TMPDIR.createTemporary({ directory: true }).getRelativePath("profile.html");
-					} else {
-						parameters.options["profiler:output"].parent.createDirectory({
+					var output = (function() {
+						if (!parameters.options["profiler:output:html"] && !parameters.options["profiler:output:json"]) {
+							return {
+								html: jsh.shell.TMPDIR.createTemporary({ directory: true }).getRelativePath("profile.html"),
+								json: null
+							}
+						}
+						return {
+							html: parameters.options["profiler:output:html"],
+							json: parameters.options["profiler:output:json"]
+						};
+					})();
+					[output.html, output.json].forEach(function(location) {
+						if (location) location.parent.createDirectory({
 							exists: function(dir) {
 								return false;
-							},
-							recursive: true
-						});
-					}
+							}
+						})
+					});
 
 					var src = jsh.script.file.parent.parent.parent;
 					var profiler;
@@ -77,8 +87,11 @@
 					}
 
 					var configuration = [];
-					if (parameters.options["profiler:output"]) {
-						configuration.push("output=" + parameters.options["profiler:output"]);
+					if (output.html) {
+						configuration.push("html=" + output.html);
+					}
+					if (output.json) {
+						configuration.push("json=" + output.json);
 					}
 					parameters.options["profiler:exclude"].forEach(function(pattern) {
 						configuration.push("exclude=" + pattern);
@@ -107,8 +120,8 @@
 						});
 					}
 
-					if (parameters.options["profiler:output"] && jsh.shell.browser.chrome && !parameters.options["profiler:nobrowser"]) {
-						jsh.shell.browser.chrome.instance.open( { uri: String(parameters.options["profiler:output"].java.adapt().toURL().toExternalForm()) } );
+					if (output.html && jsh.shell.browser.chrome && !parameters.options["profiler:nobrowser"]) {
+						jsh.shell.browser.chrome.instance.open( { uri: String(output.html.java.adapt().toURL().toExternalForm()) } );
 					}
 				}
 			)
