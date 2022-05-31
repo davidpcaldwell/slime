@@ -21,7 +21,7 @@
 			var tokens = pair.split("=");
 			options[tokens[0]] = tokens[1];
 		}
-		if (options.listener || options.output) {
+		if (options.listener || (options.html || options.json)) {
 			//	TODO	test for existence of this class as well?
 			Packages.inonit.tools.Profiler.javaagent().addListener(new JavaAdapter(
 				Packages.inonit.tools.Profiler.Listener,
@@ -125,7 +125,7 @@
 								jsh: jsh,
 								profiles: profiles
 							});
-						} else if (options.output && /\.html$/.test(options.output) && (jsh.shell.jsh.home || jsh.shell.jsh.src)) {
+						} else if (options.html && /\.html$/.test(options.html) && (jsh.shell.jsh.home || jsh.shell.jsh.src)) {
 							var pathname = (function() {
 								//	The JSH_PROFILER_MODULE hack is to support the profiler suite.jsh.js program, but there is probably a
 								//	better long-term design
@@ -145,7 +145,7 @@
 									to: jsh.file.filesystems.os.Pathname(String(new Packages.java.io.File(options.output).getCanonicalPath()))
 								});
 							} else {
-								jsh.shell.console("Emitting profiling data to " + options.output + " ...");
+								jsh.shell.console("Emitting profiling data to " + options.html + " ...");
 								/** @type { slime.jrunscript.tools.profiler.Scope } */
 								var scope = {
 									$context: {
@@ -153,7 +153,7 @@
 										console: jsh.shell.console,
 										to: {
 											html: {
-												location: jsh.file.filesystems.os.Pathname(String(new Packages.java.io.File(options.output).getCanonicalPath())),
+												location: jsh.file.filesystems.os.Pathname(String(new Packages.java.io.File(options.html).getCanonicalPath())),
 												inline: {
 													css: true,
 													json: true,
