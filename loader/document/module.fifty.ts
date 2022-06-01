@@ -7,7 +7,7 @@
 /**
  * Provides a pure JavaScript parser/serializer for HTML and XML documents that, unlike a standard DOM HTML parser (but like a
  * standard DOM XML parser), can provide accurate bidirectional translation from markup to its internal representation using the
- * module's provided
+ * module's provided {@link slime.Codec}.
  */
 namespace slime.runtime.document {
 	export interface Node {
