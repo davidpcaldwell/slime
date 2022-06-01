@@ -125,7 +125,7 @@
 								jsh: jsh,
 								profiles: profiles
 							});
-						} else if (options.html && /\.html$/.test(options.html) && (jsh.shell.jsh.home || jsh.shell.jsh.src)) {
+						} else if ( (options.html || options.json) && (jsh.shell.jsh.home || jsh.shell.jsh.src) ) {
 							var pathname = (function() {
 								//	The JSH_PROFILER_MODULE hack is to support the profiler suite.jsh.js program, but there is probably a
 								//	better long-term design
@@ -139,27 +139,36 @@
 							//
 							//			The good news is that we can now use the same scope strategy to send profiles (not
 							//			putting it within $context).
+							//
+							//	TODO	the above comment is quite old and may be obsolete. .resource() does not exist anymore, for
+							//			example.
 							if (false) {
 								jsh.loader.module(pathname, {
 									profiles: profiles,
 									to: jsh.file.filesystems.os.Pathname(String(new Packages.java.io.File(options.output).getCanonicalPath()))
 								});
 							} else {
-								jsh.shell.console("Emitting profiling data to " + options.html + " ...");
+								if (options.html) jsh.shell.console("Emitting profiling UI to " + options.html + " ...");
+								if (options.json) jsh.shell.console("Emitting profiling data to " + options.json + " ...");
 								/** @type { slime.jrunscript.tools.profiler.Scope } */
 								var scope = {
 									$context: {
 										profiles: profiles,
 										console: jsh.shell.console,
 										to: {
-											html: {
+											//	TODO	the expansive expressions with os.Pathname seem unnecessary, aren't they
+											//			literally just no-ops that wrap the options.html and options.json?
+											html: (options.html) ? {
 												location: jsh.file.filesystems.os.Pathname(String(new Packages.java.io.File(options.html).getCanonicalPath())),
 												inline: {
 													css: true,
 													json: true,
 													js: true
 												}
-											}
+											} : void(0),
+											json: (options.json) ? {
+												location: jsh.file.filesystems.os.Pathname(String(new Packages.java.io.File(options.json).getCanonicalPath()))
+											} : void(0)
 										}
 									},
 									$loader: new jsh.io.Loader({ _file: pathname.parent.java.adapt() })
