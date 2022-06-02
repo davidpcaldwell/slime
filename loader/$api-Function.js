@@ -423,6 +423,10 @@
 		}
 
 		$exports.Function.world = {
+			ask: function(ask, handler) {
+				var adapted = $context.events.ask(ask);
+				return adapted(handler);
+			},
 			tell: function(tell, handler) {
 				var adapted = $context.events.tell(tell);
 				adapted(handler);
