@@ -731,6 +731,7 @@ namespace slime.$api.fp {
 
 	export interface Exports {
 		world: {
+			ask: <E,T>(ask: world.Ask<E,T>, handler?: slime.$api.events.Handler<E>) => T
 			tell: <E>(tell: world.Tell<E>, handler?: slime.$api.events.Handler<E>) => void
 		}
 	}
