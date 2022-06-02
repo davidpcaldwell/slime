@@ -311,9 +311,9 @@
 					}
 				};
 
-				var credentialHelper = jsh.shell.jsh.src.getFile("rhino/tools/github/git-credential-github-tokens-directory.bash").toString();
-
 				var fetch = $api.Function.memoized(function() {
+					var credentialHelper = jsh.shell.jsh.src.getFile("rhino/tools/github/git-credential-github-tokens-directory.bash").toString();
+
 					var repository = jsh.tools.git.Repository({ directory: base });
 					jsh.shell.console("Fetching all updates ...");
 					repository.fetch({
@@ -399,6 +399,7 @@
 							}
 						}
 					},
+					fetch: fetch,
 					compareTo: function(branchName) {
 						return function(repository) {
 							/** @type { slime.jrunscript.tools.git.Command<{ revisionRange: string },slime.jrunscript.tools.git.Commit[]> } */
