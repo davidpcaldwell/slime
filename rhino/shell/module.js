@@ -214,10 +214,9 @@
 				}
 			};
 
-			/** @type { slime.jrunscript.shell.system.load } */
+			/** @type { slime.jrunscript.shell.internal.os.Script } */
 			var code = $loader.script("os.js");
 
-			/** @type { slime.jrunscript.shell.system.Exports } */
 			var system = code({
 				PATH: $exports.PATH,
 				replacePath: function(PATH) {

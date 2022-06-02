@@ -415,11 +415,15 @@ namespace slime.jrunscript.shell {
 			version: string
 			newline: string
 			resolve: any
+
 			process?: {
 				list: slime.jrunscript.shell.system.ps
 			}
+
 			sudo?: slime.jrunscript.shell.system.sudo
-			ping?: slime.jrunscript.shell.system.Exports["ping"]
+
+			//	TODO	should not be using internal types
+			ping?: slime.jrunscript.shell.internal.os.Exports["ping"]
 
 			//	TODO	should not depend on jsh; need to disentangle jsh["ui"] from jsh first and have a separate TypeScript
 			//			definition for something like slime.jrunscript.ui or something
