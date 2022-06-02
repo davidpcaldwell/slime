@@ -502,6 +502,13 @@
 						}
 					);
 
+					$exports.git.trunk = $api.Function.pipe(
+						function(p) {
+							var origin = git.repository.command(git.command.remoteShow).argument("origin").run();
+							git.repository.command(git.command.checkout).argument({ branch: origin.head }).run();
+						}
+					)
+
 					$exports.git.branches = (jsh.tools.git.Repository) ? {
 						list: $api.Function.pipe(
 							function(p) {

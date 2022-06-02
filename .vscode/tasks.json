@@ -36,6 +36,12 @@
 			"problemMatcher": []
 		},
 		{
+			"label": "Git: Switch to trunk",
+			"type": "shell",
+			"command": "./wf git.trunk",
+			"problemMatcher": []
+		},
+		{
 			"label": "Git: Prune branches",
 			"type": "shell",
 			"command": "./wf git.branches.prune",
