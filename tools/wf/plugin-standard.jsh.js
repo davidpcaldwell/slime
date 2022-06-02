@@ -24,54 +24,10 @@
 					})(arguments);
 				}
 
-				//	TODO	the below credentialHelper / fetch code also appears to be in tools/wf/plugin.jsh.js
+				//	TODO	the below credentialHelper code also appears to be in tools/wf/plugin.jsh.js
 
 				//	TODO	is this stuff documented anywhere?
 				var credentialHelper = jsh.shell.jsh.src.getFile("rhino/tools/github/git-credential-github-tokens-directory.bash").toString();
-
-				var fetch = $api.Function.memoized(function() {
-					var repository = jsh.tools.git.Repository({ directory: $context.base });
-					jsh.shell.console("Fetching all updates ...");
-					repository.fetch({
-						all: true,
-						prune: true,
-						recurseSubmodules: true,
-						credentialHelpers: [
-							"cache",
-							credentialHelper
-						]
-					}, {
-						remote: function(e) {
-							var remote = e.detail;
-							var url = repository.remote.getUrl({ name: remote });
-							jsh.shell.console("Fetching updates from: " + url);
-						},
-						submodule: (function() {
-							var first = true;
-							return function(e) {
-								if (first) {
-									jsh.shell.stdio.error.write("Submodules: ");
-									first = false;
-								}
-								if (e.detail) {
-									jsh.shell.stdio.error.write(".");
-								} else {
-									jsh.shell.console("");
-								}
-							}
-						})(),
-						stdout_other: function(e) {
-							if (e.detail) jsh.shell.console("STDOUT: " + e.detail);
-						},
-						stderr_other: function(e) {
-							if (e.detail) jsh.shell.console("STDERR: " + e.detail);
-						}
-					});
-					jsh.shell.console("");
-					jsh.shell.console("Fetched updates.");
-					jsh.shell.console("");
-					return repository;
-				});
 
 				/** @type { slime.jrunscript.tools.git.Command<void,{ current: boolean, name: string }[]> } */
 				var getBranches = {
@@ -213,31 +169,33 @@
 					 *
 					 * @param { slime.jsh.wf.Submodule } item
 					 */
-					var rv = function(item) {
+					return function(item) {
 						var remote = "origin";
+						var rv = [];
 						if (item.branch && item.status.branch.name != item.branch) {
-							jsh.shell.console(prefix + item.path + ": tracking branch " + item.branch + ", but checked out branch is " + item.status.branch.name);
+							rv.push(prefix + item.path + ": tracking branch " + item.branch + ", but checked out branch is " + item.status.branch.name);
 						}
 						if (!item.state) {
-							jsh.shell.console(prefix + item.path + ": no remote tracking branch");
+							rv.push(prefix + item.path + ": no remote tracking branch");
 						} else if (item.state.behind.length) {
-							jsh.shell.console(prefix + item.path + ": behind remote tracked branch " + remote + "/" + item.branch + " (" + item.state.behind.length + " commits)");
+							rv.push(prefix + item.path + ": behind remote tracked branch " + remote + "/" + item.branch + " (" + item.state.behind.length + " commits)");
 						}
 						if (item.status.paths) {
-							jsh.shell.console(prefix + item.path + ": locally modified");
+							rv.push(prefix + item.path + ": locally modified");
 						}
 						if (item.repository.submodule().length) {
 							item.repository.submodule().map(jsh.wf.project.Submodule.construct).forEach(function(submodule) {
-								submoduleStatus(prefix + item.path + "/")(submodule);
-							})
+								var messages = submoduleStatus(prefix + item.path + "/")(submodule);
+								rv.push.apply(rv, messages);
+							});
 						}
+						return rv;
 					}
-					return rv;
 				}
 
 				$exports.status = function(p) {
 					//	TODO	add option for offline
-					var repository = fetch();
+					var repository = jsh.wf.git.fetch();
 					var remote = "origin";
 					var status = repository.status();
 					var branch = status.branch.name;
@@ -291,8 +249,16 @@
 						jsh.shell.console("");
 						jsh.shell.console("Submodules:");
 						var submodules = jsh.wf.project.submodule.status();
-						submodules.forEach(submoduleStatus(""));
+						var messages = submodules.reduce(function(rv,submodule) {
+							return rv.concat(submoduleStatus("")(submodule))
+						}, []);
+						messages.forEach(jsh.shell.console);
+						if (messages.length == 0) {
+							jsh.shell.console("All submodules up to date.");
+						}
 					}
+					jsh.shell.console("");
+					jsh.shell.console("Finished.");
 				}
 
 				$exports.prune = function(p) {

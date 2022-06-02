@@ -122,6 +122,8 @@ namespace slime.jsh.wf {
 				getBranches: slime.jrunscript.tools.git.Command<void,{ current: boolean, name: string }[]>
 			}
 
+			fetch: () => slime.jrunscript.tools.git.repository.Local
+
 			compareTo: (branchName: string) =>
 				(repository: slime.jrunscript.tools.git.repository.Local) => {
 					ahead: slime.jrunscript.tools.git.Commit[],
