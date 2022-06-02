@@ -8,11 +8,11 @@
 (
 	/**
 	 * @param { slime.$api.Global } $api
-	 * @param {slime.jrunscript.shell.system.Context} $context
-	 * @param {slime.jrunscript.shell.system.Exports} $exports
+	 * @param {slime.jrunscript.shell.internal.os.Context} $context
+	 * @param {slime.jrunscript.shell.internal.os.Exports} $exports
 	 */
 	function($api,$context,$exports) {
-		/** @type { slime.jrunscript.shell.system.Exports["ps"]} */
+		/** @type { slime.jrunscript.shell.internal.os.Exports["ps"]} */
 		var ps = (function() {
 			/**
 			 * @returns {slime.jrunscript.shell.system.object.Process[]}
@@ -165,7 +165,7 @@
 				script.remove();
 				correctPassword = password;
 			};
-			/** @type { slime.jrunscript.shell.system.Exports["sudo"] } */
+			/** @type { slime.jrunscript.shell.internal.os.Exports["sudo"] } */
 			var sudo = function sudo(p) {
 				if (!correctPassword) {
 					if (p.password) {

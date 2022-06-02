@@ -592,9 +592,9 @@ namespace slime.$api.fp {
 
 	export interface Exports {
 		JSON: {
-			stringify: (p: {
-				replacer: Parameters<JSON["stringify"]>[1]
-				space: Parameters<JSON["stringify"]>[2]
+			stringify: (p?: {
+				replacer?: Parameters<JSON["stringify"]>[1]
+				space?: Parameters<JSON["stringify"]>[2]
 			}) => (v: any) => string
 
 			prettify: (p: {
