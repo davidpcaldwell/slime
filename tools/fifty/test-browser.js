@@ -240,7 +240,7 @@
 								return [control.name, control.value];
 							}
 						),
-						$api.Function.Object.fromEntries,
+						Object.fromEntries,
 						function(p) {
 							/** @type { (value: string) => "true" | "false" } */
 							var toTrueFalse = function(value) {

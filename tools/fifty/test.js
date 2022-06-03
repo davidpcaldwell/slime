@@ -387,7 +387,7 @@
 							var events = [];
 							/** @type { ReturnType<slime.fifty.test.Kit["$api"]["Events"]["Captor"]>["handler"] } */
 							var initial = {};
-							var handler = $api.Function.Object.entries(template).reduce(function(rv,entry) {
+							var handler = Object.entries(template).reduce(function(rv,entry) {
 								rv[entry[0]] = function(e) {
 									events.push(e);
 								}

@@ -37,7 +37,7 @@
 						return [relation.rel, relation.url];
 					}
 				),
-				$api.Function.Object.fromEntries
+				Object.fromEntries
 			);
 		}
 

@@ -341,19 +341,15 @@ namespace slime.$api.fp {
 	)(fifty);
 
 	export interface Exports {
+		/**
+		 * @deprecated All of these methods are just duplicates of ECMAScript standard methods. If we want to have these, perhaps
+		 * they should instead return streams.
+		 */
 		Object: {
-			entries: {
-				(p: {}): [string, any][]
-			}
-
-			/**
-			 * Invokes `Object.fromEntries` with the argument and returns the result.
-			 */
-			fromEntries: {
-				<T>(p: [string, T][]): { [x: string]: T }
-				//	TODO	the below works in VSCode, so is probably TypeScript version-dependent
-				// (p: Iterable<readonly [string | number | symbol, any]>): { [x: string]: any }
-			}
+			/** @deprecated This can be replaced by the stock ECMAScript `Object.entries`. */
+			entries: ObjectConstructor["entries"]
+			/** @deprecated This can be replaced by the stock ECMAScript `Object.fromEntries`. */
+			fromEntries: ObjectConstructor["fromEntries"]
 		}
 	}
 
@@ -368,7 +364,7 @@ namespace slime.$api.fp {
 					var array = [ ["a", 2], ["b", 3] ];
 					var result: { a: number, b: number } = fifty.$api.Function.result(
 						array,
-						fifty.$api.Function.Object.fromEntries
+						Object.fromEntries
 					) as { a: number, b: number };
 					verify(result).a.is(2);
 					verify(result).b.is(3);

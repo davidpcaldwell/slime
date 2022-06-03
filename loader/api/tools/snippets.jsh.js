@@ -83,7 +83,7 @@
 			 */
 			var snippets = $api.Function.result(
 				snippetAbbreviations,
-				$api.Function.Object.entries,
+				Object.entries,
 				$api.Function.Array.map(
 					function(p) {
 						return {
@@ -236,9 +236,9 @@
 				var toObject = function(array) {
 					return array.reduce(function(rv,element) {
 						rv[element.name] = $api.Function.result(element, $api.Function.pipe(
-							$api.Function.Object.entries,
+							Object.entries,
 							$api.Function.Array.filter(function(entry) { return entry[0] != "name"; }),
-							$api.Function.Object.fromEntries
+							Object.fromEntries
 						));
 						return rv;
 					},{});

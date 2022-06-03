@@ -19,7 +19,7 @@
 
 		$api.Function.result(
 			jsh.shell.tools.node.installed.modules.installed,
-			$api.Function.Object.entries,
+			Object.entries,
 			function(entries) {
 				entries.forEach(function(item) {
 					jsh.shell.console(item[0] + ": " + item[1].version)
