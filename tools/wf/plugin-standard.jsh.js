@@ -212,7 +212,7 @@
 						$api.Function.conditional({
 							condition: Boolean,
 							true: $api.Function.pipe(
-								$api.Function.Object.entries,
+								Object.entries,
 								$api.Function.Array.map(function(entry) {
 									return entry[1] + " " + entry[0];
 								}),
@@ -540,7 +540,7 @@
 						if (status.paths) {
 							var modified = $api.Function.result(
 								status.paths,
-								$api.Function.Object.entries
+								Object.entries
 							);
 							if (
 								modified.length &&

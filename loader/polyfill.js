@@ -64,6 +64,18 @@
 			});
 		}
 
+		if (!Object.values) {
+			Object.defineProperty(Object, "values", {
+				value: function(object) {
+					var rv = [];
+					for (var x in object) {
+						rv.push(object[x]);
+					}
+					return rv;
+				}
+			});
+		}
+
 		//	Copied from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/endsWith
 		if (!String.prototype.endsWith) {
 			String.prototype.endsWith = function(search, this_len) {

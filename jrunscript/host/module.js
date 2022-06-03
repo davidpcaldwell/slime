@@ -82,7 +82,7 @@
 		$exports.Map = function(o) {
 			return $api.Function.result(
 				o.object,
-				$api.Function.Object.entries,
+				Object.entries,
 				function(entries) {
 					return entries.reduce(function(rv,entry) {
 						rv.put(entry[0],entry[1]);

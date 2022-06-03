@@ -315,7 +315,7 @@
 								var query = $api.Function.result(
 									p.query,
 									$api.Function.pipe(
-										$api.Function.Object.entries,
+										Object.entries,
 										$api.Function.Array.map(function(entry) {
 											return { name: entry[0], value: String(entry[1]) }
 										}),

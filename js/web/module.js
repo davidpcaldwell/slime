@@ -293,7 +293,7 @@
 					return [control.name,control.value]
 				}
 			),
-			$api.Function.Object.fromEntries
+			Object.fromEntries
 		);
 
 		/**
@@ -380,7 +380,7 @@
 									return [control.name,control.value]
 								}
 							),
-							$api.Function.Object.fromEntries
+							Object.fromEntries
 						)
 					}
 				}

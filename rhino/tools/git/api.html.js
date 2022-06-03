@@ -82,7 +82,7 @@
 						//	TODO	should use execute and forEach
 						$api.Function.result(
 							files,
-							$api.Function.Object.entries,
+							Object.entries,
 							$api.Function.Array.map(function(entry) {
 								repository.directory.getRelativePath(entry[0]).write(entry[1], { append: false, recursive: true });
 								repository.add({ path: entry[0] });

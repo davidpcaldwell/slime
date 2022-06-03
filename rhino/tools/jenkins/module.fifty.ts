@@ -62,6 +62,23 @@ namespace slime.jrunscript.tools.jenkins {
 	export namespace server {
 	}
 
+	export interface Client {
+		request: (p: {
+			method: api.Request["method"]
+			url: string
+		}) => {
+			json: <R>() => R
+		}
+
+		fetch: {
+			(job: JobSummary): Job
+		}
+
+		Job: {
+			config: (job: JobSummary) => slime.runtime.document.Document
+		}
+	}
+
 	export interface Exports {
 		Server: new (o: {}) => {}
 
@@ -80,22 +97,7 @@ namespace slime.jrunscript.tools.jenkins {
 			json: <R>(p: api.Request) => R
 		}
 
-		client: (p: api.Credentials) => {
-			request: (p: {
-				method: api.Request["method"]
-				url: string
-			}) => {
-				json: <R>() => R
-			}
-
-			fetch: {
-				(job: JobSummary): Job
-			}
-
-			Job: {
-				config: (job: JobSummary) => slime.runtime.document.Document
-			}
-		}
+		client: (p: api.Credentials) => Client
 	}
 
 	(

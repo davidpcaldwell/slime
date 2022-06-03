@@ -72,6 +72,21 @@ interface ObjectConstructor {
     entries(o: {}): [string, any][];
 }
 
+//	Copied from https://github.com/microsoft/TypeScript/blob/master/lib/lib.es2017.object.d.ts
+interface ObjectConstructor {
+    /**
+     * Returns an array of values of the enumerable properties of an object
+     * @param o Object that contains the properties and methods. This can be an object that you created or an existing Document Object Model (DOM) object.
+     */
+     values<T>(o: { [s: string]: T } | ArrayLike<T>): T[];
+
+     /**
+      * Returns an array of values of the enumerable properties of an object
+      * @param o Object that contains the properties and methods. This can be an object that you created or an existing Document Object Model (DOM) object.
+      */
+     values(o: {}): any[];
+}
+
 interface String {
     //  Copied from https://github.com/microsoft/TypeScript/blob/main/lib/lib.es2015.core.d.ts
     /**
