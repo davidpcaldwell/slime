@@ -412,13 +412,32 @@
 		}
 
 		$exports.Function.world = {
-			ask: function(ask, handler) {
-				var adapted = $context.events.ask(ask);
-				return adapted(handler);
-			},
 			tell: function(tell, handler) {
 				var adapted = $context.events.tell(tell);
 				adapted(handler);
+			},
+			input: function(ask, handler) {
+				return function() {
+					var adapted = $context.events.ask(ask);
+					return adapted(handler);
+				}
+			},
+			question: function(question, handler) {
+				return function(p) {
+					var ask = question(p);
+					var adapted = $context.events.ask(ask);
+					return adapted(handler);
+				}
+			},
+			action: function(action, handler) {
+				return function(p) {
+					var tell = action(p);
+					var adapted = $context.events.tell(tell);
+					adapted(handler);
+				}
+			},
+			process: function(process) {
+				process();
 			}
 		}
 
