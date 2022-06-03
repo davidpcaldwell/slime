@@ -52,6 +52,9 @@ namespace slime.jrunscript.tools.jenkins {
 		}
 	}
 
+	/**
+	 * An object representing an entire Jenkins server as returned by the root API endpoint.
+	 */
 	export interface Server {
 		jobs: JobSummary[]
 	}
