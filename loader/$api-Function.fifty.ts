@@ -83,7 +83,7 @@ namespace slime.$api.fp {
 				j: (x: X) => Y,
 				k: (y: Y) => Z,
 				l: (z: Z) => R
-			): (t: T) => R
+			): (t?: T) => R
 			<T,U,V,W,X,Y,R>(
 				f: (t: T) => U,
 				g: (u: U) => V,
@@ -91,30 +91,30 @@ namespace slime.$api.fp {
 				i: (w: W) => X,
 				j: (x: X) => Y,
 				k: (y: Y) => R
-			): (t: T) => R
+			): (t?: T) => R
 			<T,U,V,W,X,R>(
 				f: (t: T) => U,
 				g: (u: U) => V,
 				h: (v: V) => W,
 				i: (w: W) => X,
 				j: (x: X) => R
-			): (t: T) => R
+			): (t?: T) => R
 			<T,U,V,W,R>(
 				f: (t: T) => U,
 				g: (u: U) => V,
 				h: (v: V) => W,
 				i: (w: W) => R
-			): (t: T) => R
+			): (t?: T) => R
 			<T,U,V,R>(
 				f: (t: T) => U,
 				g: (u: U) => V,
 				h: (v: V) => R
-			): (t: T) => R
+			): (t?: T) => R
 			<T,U,R>(
 				f: (t: T) => U,
 				g: (u: U) => R
-			): (t: T) => R
-			<T,R>(f: (t: T) => R): (t: T) => R
+			): (t?: T) => R
+			<T,R>(f: (t: T) => R): (t?: T) => R
 		}
 	}
 
@@ -722,13 +722,22 @@ namespace slime.$api.fp {
 		export type Ask<E,T> = (events: slime.$api.Events<E>) => T
 		export type Tell<E> = (events: slime.$api.Events<E>) => void
 
+		export type Question<P,E,A> = (p?: P) => Ask<E,A>
 		export type Action<P,E> = (p?: P) => Tell<E>
+
+		export type Process = () => void
 	}
 
 	export interface Exports {
 		world: {
-			ask: <E,T>(ask: world.Ask<E,T>, handler?: slime.$api.events.Handler<E>) => T
+			input: <E,T>(ask: world.Ask<E,T>, handler?: slime.$api.events.Handler<E>) => () => T
+			question: <P,E,A>(question: world.Question<P,E,A>, handler?: slime.$api.events.Handler<E>) => (p: P) => A
+			action: <P,E>(action: world.Action<P,E>, handler?: slime.$api.events.Handler<E>) => (p: P) => void
+
+			/** @experimental May not be needed. */
 			tell: <E>(tell: world.Tell<E>, handler?: slime.$api.events.Handler<E>) => void
+
+			process: (process: world.Process) => void
 		}
 	}
 
