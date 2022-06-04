@@ -21,7 +21,7 @@
 				if (!p.options["ts:version"]) throw new Error("Required: --ts:version <version>");
 				jsh.shell.tools.rhino.require();
 				jsh.shell.tools.tomcat.require();
-				$api.Function.world.tell(jsh.shell.tools.node.require());
+				$api.Function.world.execute(jsh.shell.tools.node.require());
 				if (false) jsh.shell.console("Require TypeScript: " + p.options["ts:version"]);
 				jsh.shell.tools.node.installed.modules.require({ name: "typescript", version: p.options["ts:version"] });
 				var typedocVersion = (function(tsVersion) {

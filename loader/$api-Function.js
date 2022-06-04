@@ -412,10 +412,6 @@
 		}
 
 		$exports.Function.world = {
-			tell: function(tell, handler) {
-				var adapted = $context.events.tell(tell);
-				adapted(handler);
-			},
 			input: function(ask, handler) {
 				return function() {
 					var adapted = $context.events.ask(ask);
@@ -434,6 +430,25 @@
 					var tell = action(p);
 					var adapted = $context.events.tell(tell);
 					adapted(handler);
+				}
+			},
+			tell: function(tell, handler) {
+				return function() {
+					var adapted = $context.events.tell(tell);
+					adapted(handler);
+				}
+			},
+			execute: function(tell, handler) {
+				var adapted = $context.events.tell(tell);
+				adapted(handler);
+			},
+			Process: {
+				compose: function(processes) {
+					return function() {
+						processes.forEach(function(process) {
+							process();
+						});
+					}
 				}
 			},
 			process: function(process) {

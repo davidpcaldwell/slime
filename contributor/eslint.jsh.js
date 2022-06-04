@@ -18,7 +18,7 @@
 			}
 		});
 
-		$api.Function.world.tell(jsh.shell.tools.node.require());
+		$api.Function.world.execute(jsh.shell.tools.node.require());
 		jsh.shell.tools.node.installed.modules.require({ name: "eslint" });
 
 		jsh.shell.tools.node.installed.run({

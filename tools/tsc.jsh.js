@@ -30,7 +30,7 @@
 			jsh.shell.exit(1);
 		}
 
-		$api.Function.world.tell(jsh.shell.tools.node.require());
+		$api.Function.world.execute(jsh.shell.tools.node.require());
 		jsh.shell.tools.node.installed.modules.require({ name: "typescript", version: parameters.options.version });
 
 		//	TODO	should jsh.shell.tools.node.require return an installation? does it? Should the below be part of it?

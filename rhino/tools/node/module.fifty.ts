@@ -163,7 +163,7 @@ namespace slime.jrunscript.node {
 				var tell = subject.install({
 					location: jsh.file.Pathname(TMPDIR.pathname)
 				});
-				$api.Function.world.tell(tell, {
+				$api.Function.world.execute(tell, {
 					installed: function(e) {
 						jsh.shell.console("Installed: Node " + e.detail.version + " at " + e.detail.location);
 					}
@@ -196,7 +196,7 @@ namespace slime.jsh.shell.tools {
 			const { verify } = fifty;
 			const { $api, jsh } = fifty.global;
 
-			$api.Function.world.tell(jsh.shell.tools.node.require());
+			$api.Function.world.execute(jsh.shell.tools.node.require());
 
 			const api = jsh.shell.tools.node.installed;
 
