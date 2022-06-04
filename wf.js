@@ -194,7 +194,7 @@
 					function node() {
 						(
 							function core() {
-								$api.Function.world.tell(jsh.shell.tools.node.require());
+								$api.Function.world.execute(jsh.shell.tools.node.require());
 							}
 						)();
 						(
