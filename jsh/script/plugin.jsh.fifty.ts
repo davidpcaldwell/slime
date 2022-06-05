@@ -115,7 +115,7 @@ namespace slime.jsh.script {
 	}
 
 	export namespace cli {
-		type OptionParser<T> = <O extends object,N extends keyof any>(c: { longname: N, default?: T })
+		type OptionParser<T> = <O extends object,N extends string>(c: { longname: N, default?: T })
 			=> (i: cli.Invocation<O>)
 			=> cli.Invocation<O & { [n in N]: T }>
 
