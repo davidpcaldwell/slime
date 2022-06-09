@@ -4,6 +4,12 @@
 //
 //	END LICENSE
 
+namespace slime.jrunscript.shell {
+	export interface World {
+		question: slime.$api.fp.world.Question<slime.jrunscript.shell.run.Invocation, slime.jrunscript.shell.run.AskEvents, slime.jrunscript.shell.run.Exit>
+	}
+}
+
 namespace slime.jrunscript.shell.run {
 	export type Line = {
 		line: string
@@ -168,7 +174,6 @@ namespace slime.jrunscript.shell.internal.run {
 		}
 	//@ts-ignore
 	)(fifty);
-
 
 	export interface Exports {
 		run: slime.$api.fp.impure.Action<slime.jrunscript.shell.run.Invocation,slime.jrunscript.shell.run.TellEvents>
