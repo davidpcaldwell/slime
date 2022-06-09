@@ -96,27 +96,6 @@ namespace slime.jrunscript.shell.internal.run {
 
 	export interface Exports {
 		run: shell.World["run"]
-
-		mock: {
-			run: shell.World["mock"]
-
-			tell: shell.Exports["Tell"]["mock"]
-		}
-
-		old: {
-			buildStdio: (p: slime.jrunscript.shell.run.StdioConfiguration) => (events: slime.$api.Events<slime.jrunscript.shell.run.Events>) => Stdio
-			run: (
-				context: slime.jrunscript.shell.run.Context,
-				configuration: slime.jrunscript.shell.run.Configuration,
-				module: {
-					events: any
-				},
-				events: slime.jrunscript.shell.run.old.Events,
-				p: slime.jrunscript.shell.run.old.Argument,
-				invocation: slime.jrunscript.shell.run.old.Argument,
-				isLineListener: (p: slime.jrunscript.shell.invocation.old.OutputStreamConfiguration) => p is slime.jrunscript.shell.invocation.old.OutputStreamToLines
-			) => Result
-		}
 	}
 
 	(
@@ -128,6 +107,33 @@ namespace slime.jrunscript.shell.internal.run {
 			const { jsh } = fifty.global;
 
 			fifty.tests.run = function() {
+				run(function() {
+					var tell = subject.run({
+						context: {
+							environment: fifty.global.jsh.shell.environment,
+							directory: fifty.jsh.file.object.getRelativePath(".").toString(),
+							stdio: {
+								input: null,
+								output: "string",
+								error: fifty.global.jsh.shell.stdio.error
+							}
+						},
+						configuration: {
+							command: "ls",
+							arguments: []
+						}
+					});
+
+					tell({
+						exit: function(e) {
+							var listing = e.detail.stdio.output.split("\n");
+							listing = listing.slice(0, listing.length-1);
+							fifty.verify(e).detail.status.is(0);
+							fifty.verify(listing).evaluate(function(array) { return array.indexOf("run.fifty.ts") != -1; }).is(true);
+						}
+					})
+				});
+
 				run(function pwdIsShellWorkingDirectoryIfUnspecified() {
 					var PWD = jsh.shell.PWD.pathname.toString();
 					var tell = subject.run({
@@ -156,45 +162,37 @@ namespace slime.jrunscript.shell.internal.run {
 	//@ts-ignore
 	)(fifty);
 
+	export interface Exports {
+		mock: {
+			run: shell.World["mock"]
+
+			tell: shell.Exports["Tell"]["mock"]
+		}
+
+		old: {
+			buildStdio: (p: slime.jrunscript.shell.run.StdioConfiguration) => (events: slime.$api.Events<slime.jrunscript.shell.run.Events>) => Stdio
+			run: (
+				context: slime.jrunscript.shell.run.Context,
+				configuration: slime.jrunscript.shell.run.Configuration,
+				module: {
+					events: any
+				},
+				events: slime.jrunscript.shell.run.old.Events,
+				p: slime.jrunscript.shell.run.old.Argument,
+				invocation: slime.jrunscript.shell.run.old.Argument,
+				isLineListener: (p: slime.jrunscript.shell.invocation.old.OutputStreamConfiguration) => p is slime.jrunscript.shell.invocation.old.OutputStreamToLines
+			) => Result
+		}
+	}
+
 	export type Script = slime.loader.Script<Context,Exports>
 
 	(
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
-			var loader: Script = fifty.$loader.script("run.js");
-			var subject: Exports = loader({
-				api: {
-					java: fifty.global.jsh.java,
-					io: fifty.global.jsh.io,
-					file: fifty.global.jsh.file
-				}
-			});
-
 			fifty.tests.suite = function() {
-				var tell = subject.run({
-					context: {
-						environment: fifty.global.jsh.shell.environment,
-						directory: fifty.jsh.file.object.getRelativePath(".").toString(),
-						stdio: {
-							input: null,
-							output: "string",
-							error: fifty.global.jsh.shell.stdio.error
-						}
-					},
-					configuration: {
-						command: "ls",
-						arguments: []
-					}
-				});
-				tell({
-					exit: function(e) {
-						var listing = e.detail.stdio.output.split("\n");
-						listing = listing.slice(0, listing.length-1);
-						fifty.verify(e).detail.status.is(0);
-						fifty.verify(listing).evaluate(function(array) { return array.indexOf("run.fifty.ts") != -1; }).is(true);
-					}
-				})
+				fifty.run(fifty.tests.run);
 			}
 		}
 	//@ts-ignore
