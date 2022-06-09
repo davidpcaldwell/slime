@@ -18,7 +18,17 @@ namespace slime.runtime.document {
 		}
 	}
 }
-namespace slime.runtime.document.source {
+
+namespace slime.runtime.document.internal.source {
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.manual = {};
+		}
+	//@ts-ignore
+	)(fifty);
+
 	export type ParseEvents = {
 		startTag: string
 		startElement: string
@@ -64,7 +74,7 @@ namespace slime.runtime.document.source {
 
 	export namespace internal {
 		export namespace test {
-			export const subject: slime.runtime.document.source.Exports = (function(fifty: fifty.test.Kit) {
+			export const subject: slime.runtime.document.internal.source.Exports = (function(fifty: fifty.test.Kit) {
 				return fifty.$loader.module("source.js");
 			//@ts-ignore
 			})(fifty)
@@ -360,6 +370,13 @@ namespace slime.runtime.document.source {
 				}
 
 				fifty.verify(input == serialized, "page == serialized").is(true);
+			}
+
+			fifty.tests.manual.fidelity = function() {
+				const { jsh } = fifty.global;
+
+				var markup = jsh.file.Pathname(jsh.shell.environment.MARKUP).file.read(String);
+				fifty.tests.fidelity(markup);
 			}
 		}
 	//@ts-ignore
