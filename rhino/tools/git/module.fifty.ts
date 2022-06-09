@@ -829,7 +829,7 @@ namespace slime.jrunscript.tools.git {
 				 * An alternative implementation for the launching of the `git` subprocess. The most likely use case for
 				 * this is in mocking.
 				 */
-				run: (invocation: slime.jrunscript.shell.run.Invocation) => slime.$api.fp.impure.Tell<slime.jrunscript.shell.run.Events>
+				run: (invocation: slime.jrunscript.shell.run.Invocation) => slime.$api.fp.impure.Tell<slime.jrunscript.shell.run.TellEvents>
 			}
 		}
 	}

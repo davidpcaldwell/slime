@@ -412,7 +412,7 @@
 		}
 
 		$exports.Function.world = {
-			input: function(ask, handler) {
+			ask: function(ask, handler) {
 				return function() {
 					var adapted = $context.events.ask(ask);
 					return adapted(handler);
@@ -450,6 +450,9 @@
 						});
 					}
 				}
+			},
+			input: function(input) {
+				return input();
 			},
 			process: function(process) {
 				process();

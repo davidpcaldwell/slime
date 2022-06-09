@@ -140,33 +140,7 @@ namespace slime.jrunscript.shell {
 	}
 
 	export namespace run {
-		//	TODO	right now we only capture output of type string; we could capture binary also
-		export interface Output {
-			output?: string
-			error?: string
-		}
-
 		export type OutputCapture = "string" | "line" | slime.jrunscript.runtime.io.OutputStream;
-
-		export type Line = {
-			line: string
-		}
-
-		export interface Events {
-			start: {
-				pid: number
-				kill: () => void
-			}
-
-			stdout: Line
-
-			stderr: Line
-
-			exit: {
-				status: number
-				stdio?: slime.jrunscript.shell.run.Output
-			}
-		}
 
 		export interface StdioConfiguration {
 			input: slime.jrunscript.runtime.io.InputStream
@@ -475,14 +449,14 @@ namespace slime.jrunscript.shell {
 	}
 
 	export interface World {
-		run: slime.$api.fp.impure.Action<run.Invocation,run.Events>
+		run: slime.$api.fp.impure.Action<run.Invocation,run.TellEvents>
 
 		/**
 		 * Allows a mock implementation of the `run` action to be created using a function that receives an invocation as an
 		 * argument and returns an object describing what the mocked subprocess should do. The system will use this object to create
 		 * the appropriate `Tell` and fire the appropriate events to the caller.
 		 */
-		mock: (delegate: (invocation: shell.run.Invocation) => shell.run.Mock) => slime.$api.fp.impure.Action<run.Invocation,run.Events>
+		mock: (delegate: (invocation: shell.run.Invocation) => shell.run.Mock) => slime.$api.fp.impure.Action<run.Invocation,run.TellEvents>
 
 		 /** @deprecated Replaced by {@link Exports | Exports Invocation.create()} because it does not rely on external state. */
 		Invocation: (p: invocation.old.Argument) => old.Invocation
@@ -605,7 +579,7 @@ namespace slime.jrunscript.shell {
 						var tell = subject.world.run(lserror);
 						//	TODO	this listener functionality was previously provided by default; will want to improve API over
 						//			time so that it's harder to accidentally ignore non-zero exit status
-						var listener: slime.$api.events.Handler<slime.jrunscript.shell.run.Events> = {
+						var listener: slime.$api.events.Handler<slime.jrunscript.shell.run.TellEvents> = {
 							exit: function(e) {
 								if (e.detail.status != 0) {
 									throw new Error("Non-zero exit status: " + e.detail.status);
@@ -685,8 +659,8 @@ namespace slime.jrunscript.shell {
 
 	export interface Exports {
 		Tell: {
-			exit: () => (tell: slime.$api.fp.impure.Tell<run.Events>) => run.Events["exit"]
-			mock: (stdio: Partial<Pick<slime.jrunscript.shell.run.StdioConfiguration,"output" | "error">>, result: slime.jrunscript.shell.run.Mock) => slime.$api.fp.impure.Tell<slime.jrunscript.shell.run.Events>
+			exit: () => (tell: slime.$api.fp.impure.Tell<run.TellEvents>) => run.TellEvents["exit"]
+			mock: (stdio: Partial<Pick<slime.jrunscript.shell.run.StdioConfiguration,"output" | "error">>, result: slime.jrunscript.shell.run.Mock) => slime.$api.fp.impure.Tell<slime.jrunscript.shell.run.TellEvents>
 		}
 	}
 
@@ -698,7 +672,7 @@ namespace slime.jrunscript.shell {
 			const { $api, jsh } = fifty.global;
 
 			fifty.tests.exports.Tell = function() {
-				var tell: slime.$api.fp.impure.Tell<run.Events> = jsh.shell.Tell.mock({
+				var tell: slime.$api.fp.impure.Tell<run.TellEvents> = jsh.shell.Tell.mock({
 					output: "string"
 				}, {
 					exit: {
@@ -709,7 +683,7 @@ namespace slime.jrunscript.shell {
 					}
 				})
 
-				var interpret = function(result: run.Events["exit"]): string {
+				var interpret = function(result: run.TellEvents["exit"]): string {
 					return result.stdio.output + result.stdio.output;
 				};
 

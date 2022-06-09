@@ -79,8 +79,8 @@ namespace slime.runtime.browser.test.internal.suite {
 				fifty.run(fifty.tests.chrome);
 			}
 
-			function run(browser: string, suite: string = "contributor/browser-jsapi-suite.js"): slime.jrunscript.shell.run.Events["exit"] {
-				var rv: slime.jrunscript.shell.run.Events["exit"];
+			function run(browser: string, suite: string = "contributor/browser-jsapi-suite.js"): slime.jrunscript.shell.run.TellEvents["exit"] {
+				var rv: slime.jrunscript.shell.run.TellEvents["exit"];
 				jsh.shell.world.run(
 					jsh.shell.Invocation.create({
 						command: "/bin/bash",
