@@ -19,7 +19,7 @@
 		//	TODO	there should be jsh.loader.script
 		var base = jsh.shell.jsh.src;
 		var loader = new jsh.file.Loader({ directory: base });
-		/** @type { slime.runtime.document.source.Script } */
+		/** @type { slime.runtime.document.internal.source.Script } */
 		var script = loader.script("loader/document/source.js");
 		var subject = script();
 		jsh.shell.console("markup = " + invocation.options.markup);
