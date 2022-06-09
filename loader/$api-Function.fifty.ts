@@ -726,20 +726,22 @@ namespace slime.$api.fp {
 		export type Action<P,E> = (p?: P) => Tell<E>
 
 		export type Process = () => void
+		export type Input<T> = () => T
 	}
 
 	export interface Exports {
 		world: {
-			input: <E,T>(ask: world.Ask<E,T>, handler?: slime.$api.events.Handler<E>) => () => T
 			question: <P,E,A>(question: world.Question<P,E,A>, handler?: slime.$api.events.Handler<E>) => (p: P) => A
 			action: <P,E>(action: world.Action<P,E>, handler?: slime.$api.events.Handler<E>) => (p?: P) => void
 
+			ask: <E,A>(ask: world.Ask<E,A>, handler?: slime.$api.events.Handler<E>) => world.Input<A>
 			tell: <E>(tell: world.Tell<E>, handler?: slime.$api.events.Handler<E>) => world.Process
 
 			Process: {
 				compose: (processes: world.Process[]) => world.Process
 			}
 
+			input: <T>(input: world.Input<T>) => T
 			process: (process: world.Process) => void
 
 			/** @experimental May not be needed. Should be able to use tell() to turn into {@link world.Process}, then process that. */

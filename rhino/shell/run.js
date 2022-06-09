@@ -39,7 +39,7 @@
 		};
 
 		/**
-		 * @param { slime.$api.Events<slime.jrunscript.shell.run.Events> } events
+		 * @param { slime.$api.Events<slime.jrunscript.shell.run.TellEvents> } events
 		 * @param { "output" | "error" } stream
 		 * @returns { slime.jrunscript.shell.internal.run.OutputDestination }
 		 */
@@ -85,7 +85,7 @@
 		/**
 		 *
 		 * @param { slime.jrunscript.shell.run.StdioConfiguration } p
-		 * @returns { (events: slime.$api.Events<slime.jrunscript.shell.run.Events>) => slime.jrunscript.shell.internal.run.Stdio }
+		 * @returns { (events: slime.$api.Events<slime.jrunscript.shell.run.TellEvents>) => slime.jrunscript.shell.internal.run.Stdio }
 		 */
 		function buildStdio(p) {
 			/** @type { slime.jrunscript.shell.internal.run.Stdio } */
@@ -114,7 +114,7 @@
 
 			/**
 			 *
-			 * @param { slime.$api.Events<slime.jrunscript.shell.run.Events> } events
+			 * @param { slime.$api.Events<slime.jrunscript.shell.run.TellEvents> } events
 			 * @param { "output" | "error" } stream
 			 */
 			var destinationFactory = function(events, stream) {
@@ -233,57 +233,67 @@
 		 *
 		 * @param { slime.jrunscript.shell.run.Context } context
 		 * @param { slime.jrunscript.shell.run.Configuration } configuration
-		 * @returns { slime.$api.fp.impure.Tell<slime.jrunscript.shell.run.Events> }
+		 * @returns { slime.$api.fp.world.Tell<slime.jrunscript.shell.run.TellEvents> }
 		 */
-		var run = function(context,configuration) {
-			return $api.Function.impure.tell(
-				/**
-				 *
-				 * @param { slime.$api.Events<slime.jrunscript.shell.run.Events> } events
-				 */
-				function(events) {
-					var stdio = buildStdio(context.stdio)(events);
-					//	TODO	could throw exception on launch; should deal with it
-					var _subprocess = Packages.inonit.system.OperatingSystem.get().start(
-						createJavaCommandContext({
-							directory: (typeof(context.directory) == "string") ? $context.api.file.Pathname(context.directory).directory : context.directory,
-							environment: context.environment,
-							stdio: stdio
-						}),
-						createJavaCommandConfiguration(configuration)
-					);
+		var tell = function(context,configuration) {
+			/**
+			 *
+			 * @param { slime.$api.Events<slime.jrunscript.shell.run.TellEvents> } events
+			 */
+			return function(events) {
+				var stdio = buildStdio(context.stdio)(events);
+				//	TODO	could throw exception on launch; should deal with it
+				var _subprocess = Packages.inonit.system.OperatingSystem.get().start(
+					createJavaCommandContext({
+						directory: (typeof(context.directory) == "string") ? $context.api.file.Pathname(context.directory).directory : context.directory,
+						environment: context.environment,
+						stdio: stdio
+					}),
+					createJavaCommandConfiguration(configuration)
+				);
 
-					events.fire("start", {
-						pid: Number(_subprocess.getPid()),
-						kill: function() {
-							_subprocess.terminate();
-						}
-					});
+				events.fire("start", {
+					pid: Number(_subprocess.getPid()),
+					kill: function() {
+						_subprocess.terminate();
+					}
+				});
 
-					var listener = new function() {
-						this.status = void(0);
+				var listener = new function() {
+					this.status = void(0);
 
-						this.finished = function(status) {
-							this.status = status;
-						};
-
-						this.interrupted = function(_exception) {
-							//	who knows what we should do here. Kill the process?
-							throw new Error("Unhandled Java thread interruption.");
-						};
+					this.finished = function(status) {
+						this.status = status;
 					};
 
-					//Packages.java.lang.System.err.println("Waiting for subprocess: " + _subprocess);
-					_subprocess.wait(new JavaAdapter(
-						Packages.inonit.system.Subprocess.Listener,
-						listener
-					));
+					this.interrupted = function(_exception) {
+						//	who knows what we should do here. Kill the process?
+						throw new Error("Unhandled Java thread interruption.");
+					};
+				};
 
-					events.fire("exit", {
-						status: listener.status,
-						stdio: stdio.close()
-					});
-				}
+				//Packages.java.lang.System.err.println("Waiting for subprocess: " + _subprocess);
+				_subprocess.wait(new JavaAdapter(
+					Packages.inonit.system.Subprocess.Listener,
+					listener
+				));
+
+				events.fire("exit", {
+					status: listener.status,
+					stdio: stdio.close()
+				});
+			}
+		};
+
+		/**
+		 *
+		 * @param { slime.jrunscript.shell.run.Context } context
+		 * @param { slime.jrunscript.shell.run.Configuration } configuration
+		 * @returns { slime.$api.fp.impure.Tell<slime.jrunscript.shell.run.TellEvents> }
+		 */
+		var impure = function(context,configuration) {
+			return $api.Function.impure.tell(
+				tell(context, configuration)
 			);
 		};
 
@@ -309,7 +319,7 @@
 			var killed = false;
 			return $api.Function.impure.tell(
 				/**
-				 * @param { slime.$api.Events<slime.jrunscript.shell.run.Events> } events
+				 * @param { slime.$api.Events<slime.jrunscript.shell.run.TellEvents> } events
 				 */
 				function(events) {
 					events.fire("start", {
@@ -399,7 +409,7 @@
 		/** @type { slime.jrunscript.shell.internal.run.Exports["old"]["run"] } */
 		function oldRun(context, configuration, module, events, p, invocation, isLineListener) {
 			var rv;
-			var tell = run(context, configuration);
+			var tell = impure(context, configuration);
 			tell({
 				start: function(e) {
 					var startEvent = {
@@ -438,8 +448,31 @@
 		}
 
 		$export({
+			question: function(invocation) {
+				return function(events) {
+					/** @type { slime.jrunscript.shell.run.Exit } */
+					var rv;
+					$api.Function.world.process(
+						$api.Function.world.tell(tell(invocation.context, invocation.configuration), {
+							start: function(e) {
+								events.fire("start", e.detail);
+							},
+							stdout: function(e) {
+								events.fire("stdout", e.detail);
+							},
+							stderr: function(e) {
+								events.fire("stderr", e.detail);
+							},
+							exit: function(e) {
+								rv = e.detail;
+							}
+						})
+					);
+					return rv;
+				}
+			},
 			run: function(invocation) {
-				return run(invocation.context,invocation.configuration);
+				return impure(invocation.context,invocation.configuration);
 			},
 			mock: {
 				run: mockRun,

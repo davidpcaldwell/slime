@@ -5,6 +5,36 @@
 //	END LICENSE
 
 namespace slime.jrunscript.shell.run {
+	export type Line = {
+		line: string
+	}
+
+	export interface AskEvents {
+		start: {
+			pid: number
+			kill: () => void
+		}
+
+		stdout: Line
+
+		stderr: Line
+	}
+
+	//	TODO	right now we only capture output of type string; we could capture binary also
+	export interface Output {
+		output?: string
+		error?: string
+	}
+
+	export interface Exit {
+		status: number
+		stdio?: Output
+	}
+
+	export interface TellEvents extends AskEvents {
+		exit: Exit
+	}
+
 	/**
 	 * Represents the result of a mock shell invocation. Currently, if line-based output is provided for a stream, the
 	 * string given as part of `exit` is ignored.
@@ -91,11 +121,57 @@ namespace slime.jrunscript.shell.internal.run {
 				}
 			});
 		//@ts-ignore
-		})(fifty)
+		})(fifty);
+
+		export const ls: shell.run.Invocation = (function(fifty: slime.fifty.test.Kit) {
+			return {
+				context: {
+					environment: fifty.global.jsh.shell.environment,
+					directory: fifty.jsh.file.object.getRelativePath(".").toString(),
+					stdio: {
+						input: null,
+						output: "string",
+						error: fifty.global.jsh.shell.stdio.error
+					}
+				},
+				configuration: {
+					command: "ls",
+					arguments: []
+				}
+			};
+		//@ts-ignore
+		})(fifty);
 	}
 
 	export interface Exports {
-		run: shell.World["run"]
+		question: slime.$api.fp.world.Question<slime.jrunscript.shell.run.Invocation, slime.jrunscript.shell.run.AskEvents, slime.jrunscript.shell.run.Exit>
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { $api } = fifty.global;
+
+			fifty.tests.question = $api.Function.pipe(
+				$api.Function.world.ask(
+					test.subject.question(test.ls)
+				),
+				function(exit) {
+					verify(exit).status.is(0);
+					var listing = exit.stdio.output.split("\n");
+					verify(listing).evaluate(function(array) { return array.indexOf("run.fifty.ts") != -1; }).is(true);
+					verify(listing).evaluate(function(array) { return array.indexOf("foobar.fifty.ts") != -1; }).is(false);
+				}
+			)
+		}
+	//@ts-ignore
+	)(fifty);
+
+
+	export interface Exports {
+		run: slime.$api.fp.impure.Action<slime.jrunscript.shell.run.Invocation,slime.jrunscript.shell.run.TellEvents>
 	}
 
 	(
@@ -108,21 +184,7 @@ namespace slime.jrunscript.shell.internal.run {
 
 			fifty.tests.run = function() {
 				run(function() {
-					var tell = subject.run({
-						context: {
-							environment: fifty.global.jsh.shell.environment,
-							directory: fifty.jsh.file.object.getRelativePath(".").toString(),
-							stdio: {
-								input: null,
-								output: "string",
-								error: fifty.global.jsh.shell.stdio.error
-							}
-						},
-						configuration: {
-							command: "ls",
-							arguments: []
-						}
-					});
+					var tell = subject.run(test.ls);
 
 					tell({
 						exit: function(e) {
@@ -170,7 +232,7 @@ namespace slime.jrunscript.shell.internal.run {
 		}
 
 		old: {
-			buildStdio: (p: slime.jrunscript.shell.run.StdioConfiguration) => (events: slime.$api.Events<slime.jrunscript.shell.run.Events>) => Stdio
+			buildStdio: (p: slime.jrunscript.shell.run.StdioConfiguration) => (events: slime.$api.Events<slime.jrunscript.shell.run.TellEvents>) => Stdio
 			run: (
 				context: slime.jrunscript.shell.run.Context,
 				configuration: slime.jrunscript.shell.run.Configuration,
