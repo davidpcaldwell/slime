@@ -740,6 +740,7 @@ namespace slime.jrunscript.shell {
 
 				fifty.run(fifty.tests.exports.Tell);
 				fifty.load("invocation.fifty.ts");
+				fifty.load("run.fifty.ts");
 				fifty.load("run-old.fifty.ts");
 
 				fifty.run(fifty.tests.sandbox);
