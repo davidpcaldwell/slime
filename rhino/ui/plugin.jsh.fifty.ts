@@ -89,7 +89,12 @@ namespace slime.jsh.ui.application {
 		create?: any
 	}
 
-	export type BrowserConfiguration = BrowserSpecification | ((p: any) => void)
+	/**
+	 * @deprecated Use {@link slime.jsh.ui.application.BrowserSpecification}.
+	 */
+	export type BrowserFunction = (p: any) => void
+
+	export type BrowserConfiguration = BrowserSpecification | BrowserFunction
 
 	interface ClientSpecification {
 		browser: BrowserConfiguration

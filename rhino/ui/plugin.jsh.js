@@ -77,6 +77,7 @@
 				return Boolean(jsh.ui && jsh.ui.javafx && jsh.ui.javafx.WebView && jsh.httpd && jsh.httpd.Tomcat && jsh.java);
 			},
 			load: function() {
+				//	TODO	rename to slime.jsh.ui.internal.application.Exports
 				/** @type { slime.jsh.ui.application.internal.Exports } */
 				var api = $loader.module("application.js", { jsh: jsh });
 				(function(v) {
