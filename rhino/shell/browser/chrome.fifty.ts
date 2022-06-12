@@ -18,28 +18,47 @@ namespace slime.jrunscript.shell.browser {
 	}
 
 	export namespace object {
-		export interface Instance {
+		export interface DefaultInstance {
 			open?: any
+		}
+
+		export interface CreatedInstance {
 			launch?: any
 			run?: any
 		}
 
-		export interface Chrome extends slime.jrunscript.shell.browser.Chrome {
-			Instance: new (u: {
+		export interface Instance {
+		}
+
+		export namespace instance {
+			export interface DefaultConfiguration {
+				install: true
+				directory?: slime.jrunscript.file.Directory
+			}
+
+			//	TODO	review; it looks like probably this should be bifurcated for default and created instances
+			export interface CreatedConfiguration {
 				location?: slime.jrunscript.file.Pathname
 				directory?: slime.jrunscript.file.Directory
 				proxy?: ProxyTools
 				hostrules?: string[]
-				install?: boolean
 
 				/**
 				 * Whether to open DevTools for each tab; in other words, whether to pass the `--auto-open-devtools-for-tabs` option
 				 * to the Chrome command line.
 				 */
 				devtools?: boolean
-			}) => Instance
+			}
+		}
 
-			instance?: Instance
+		export interface Chrome extends slime.jrunscript.shell.browser.Chrome {
+			Instance: {
+				new (u: instance.DefaultConfiguration): DefaultInstance
+
+				new (u: instance.CreatedConfiguration): CreatedInstance
+			}
+
+			instance?: DefaultInstance
 		}
 	}
 }

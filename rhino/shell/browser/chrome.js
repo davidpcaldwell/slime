@@ -61,9 +61,15 @@
 			//
 			//	See https://www.chromium.org/user-experience/user-data-directory
 			//	See https://www.chromium.org/user-experience/multi-profiles
+			/** @type { slime.jrunscript.shell.browser.object.Chrome["Instance"]} */
 			this.Instance = (
 				/** @param { ConstructorParameters<slime.jrunscript.shell.browser.object.Chrome["Instance"]>[0] } u */
 				function(u) {
+					/** @type { (u: any) => u is slime.jrunscript.shell.browser.object.instance.DefaultConfiguration } */
+					var isDefaultConfiguration = function(u) {
+						return u["isntall"];
+					};
+
 					if (u.location) {
 						u.directory = u.location.createDirectory({
 							exists: function(dir) {
@@ -312,7 +318,7 @@
 
 						this.preferences = data.read("Preferences");
 
-						if (u.install) {
+						if (isDefaultConfiguration(u)) {
 							this.open = function(m) {
 								if (isRunning()) {
 									//	On OS X, if we do not use "launch," the tabs open in the profile last used, regardless of the arguments
@@ -343,7 +349,7 @@
 
 					this.directory = u.directory;
 
-					if (u.install) {
+					if (isDefaultConfiguration(u)) {
 						this.open = function(m) {
 							open(m);
 						}
